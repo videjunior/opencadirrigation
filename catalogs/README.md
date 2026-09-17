@@ -41,63 +41,70 @@ A pack is a JSON object (UTF-8). Recommended extension: `.oci.cat`. Keys:
 
 `catalog` has six lists: `pipes`, `outlets`, `tapes`, `valves`, `pumps`, `fittings`. Every item
 has a globally unique `id` (use a manufacturer prefix: `rb_5004`, `ntf_uniram_16_16_50`), a
-`name`, optional `supplier`/`code` and a `cost` (price, 0 = unknown). Internal units are SI: flows
-in m³/s, pressures in metres of water column, diameters in mm where the field name says so
-(`innerMm`, `sizeMm`, `nominalMm`).
+`name`, optional `sup` (supplier), `code` and `enabled`, and a `cost` (price, 0 = unknown). Internal
+units are SI: flows in m³/s, pressures in metres of water column, diameters in mm where the field
+name says so (`idMm`, `sizeMm`, `nominalMm`). The key names below are exactly the ones the app
+reads and writes; unknown `kind` values are rejected.
 
 ### Emitters (`outlets`)
 
 ```json
 {
   "id": "rb_5004", "name": "Rain Bird 5004 Plus rotor", "kind": "sprinkler",
-  "inletMm": 20, "riser": 0.1, "supplier": "Rain Bird", "cost": 0,
+  "inletMm": 20, "riser": 0.1, "sup": "Rain Bird", "cost": 0,
   "nozzles": [
     { "id": "5004_15", "name": "#1.5 (0.31 m³/h, R 7.6 m)",
-      "curve": { "k": 1.57e-5, "x": 0.5, "radius": 7.6, "radiusB": 0.35 },
-      "default": 30, "minH": 17, "maxH": 45, "cv": 0.03, "arc": 360 }
+      "curve": { "k": 1.57e-5, "x": 0.5, "ra": 7.6, "rb": 0.35 },
+      "defH": 30, "minH": 17, "maxH": 45, "cv": 0.03, "arc": 360 }
   ]
 }
 ```
 
-- `kind`: `sprinkler`, `microSprinkler`, `dripper`, `gun`, `demandPoint`.
+- `kind`: `sprinkler`, `microSprinkler`, `dripper`, `bubbler`, `gun`, `demandPoint`.
 - `curve.k` and `curve.x`: flow `q = k·H^x` in m³/s with `H` in m. To convert a nominal flow
   `q_n` (L/h) at `H_n` (m): `k = (q_n / 3.6e6) / H_n^x`. `x ≈ 0.5` for orifices, `≈ 0` for
-  pressure-compensating (PC) emitters. `radius` is the wetted radius in m at `H_n`; `radiusB` the
+  pressure-compensating (PC) emitters. `ra` is the wetted radius in m at `H_n`; `rb` the
   exponent of the radius with pressure (0.35 is typical).
-- `default`, `minH`, `maxH`: design pressure and allowable range (m). `cv`: manufacturing
-  coefficient of variation. `arc`: sector in degrees.
+- `defH`, `minH`, `maxH`: design pressure and allowable range (m). `cv`: manufacturing
+  coefficient of variation. `arc`: sector in degrees. `tolB` / `tolA` (optional, default 0.05):
+  flow tolerance below / above nominal as a fraction, used by the sizing.
 
 ### Tapes and driplines (`tapes`)
 
 ```json
 { "id": "ntf_uniram_16_16_50", "name": "Netafim UniRam AS 16 mm 1.6 L/h @ 0.50 m",
-  "innerMm": 14.2, "spacing": 0.5, "nominalMm": 16,
+  "idMm": 14.2, "spacing": 0.5, "nominalMm": 16,
   "emitter": { "k": 3.2e-7, "x": 0.02 }, "barbK": 0.3, "cv": 0.03,
-  "minH": 5, "maxH": 40, "defaultInletH": 15, "tolBelow": 50, "tolAbove": 160,
-  "ratingM": 40, "supplier": "Netafim", "cost": 0 }
+  "minH": 5, "maxH": 40, "inletH": 15, "tolB": 50, "tolA": 160,
+  "ratingM": 40, "sup": "Netafim", "cost": 0 }
 ```
 
-`spacing` is the emitter spacing (m); `emitter` the curve of one emitter; `tolBelow` /
-`tolAbove` the pressure tolerance (% of nominal) accepted by the sizing; `ratingM` the pressure
-rating (m).
+`idMm` is the inner diameter (mm); `spacing` the emitter spacing (m); `emitter` the curve of one
+emitter; `inletH` the default inlet pressure (m); `tolB` / `tolA` the pressure tolerance (% of
+nominal) accepted by the sizing; `ratingM` the pressure rating (m). Optional `c` (Hazen-Williams)
+and `roughMm` override the defaults for the tape wall.
 
 ### Valves and devices (`valves`)
 
-`kind`: `control` (zone valve), `prv`, `gate`, `check`, `filter`, `meter`, `backflow`, `air`…
-The head loss is `loss`: `{ "k": …, "n": 2 }` with `h = k·Q^n` (Q in m³/s, h in m), or
-`DeviceLossCurve.fromK` in the app from the dimensionless K and the diameter. `minFlow`/`maxFlow`
-in m³/s; `setting` the default outlet pressure of a PRV (m).
+`kind`: `control` (zone valve), `prv`, `isolation` (gate or ball valve), `check`, `backflow`,
+`filter`, `meter`, `airRelease`, `other`. The head loss is `loss`: `{ "k": …, "n": 2, "c": 0 }`
+with `h = k·Q^n + c` (Q in m³/s, h in m; `n` defaults to 2 and `c` to 0), or `DeviceLossCurve.fromK`
+in the app from the dimensionless K and the diameter. `sizeMm` the diameter; `minQ`/`maxQ` in
+m³/s; `setting` the default outlet pressure of a PRV (m).
 
 ### Pumps (`pumps`)
 
-`points`: list of `[Q, H]` (m³/s, m) along the curve; the app fits `H = a − b·Q²` through them.
-`efficiency` (0–1), `powerKw`, `cost`.
+`points`: list of `[Q, H]` (m³/s, m) along the curve; the app fits a least-squares quadratic
+`H = a·Q² + b·Q + c` through them (three or more points; two give a straight line; one gives the
+EPANET-style three-point curve). `eff` (0–1), `kw` (motor power), `minQ`/`maxQ` (m³/s), `cost`.
 
 ### Pipes (`pipes`) and fittings (`fittings`)
 
-Pipes: `nominalMm`, `innerMm`, `material`, `c` (Hazen-Williams), `roughnessMm`, `ratingM`,
-`usage` (list among `lateral`, `zone`, `mainline`), `cost` per metre. Fittings: `kind`
-(`tee`, `elbow`, `coupler`, `reducer`, `endCap`, `riser`, `valveBox`…), `sizeMm`, `size2Mm`.
+Pipes: `nominalMm`, `idMm` (inner diameter), `material` (`pvc`, `pehd`, `peld`, `steel`, `aluminium`, `concrete`), `c`
+(Hazen-Williams), `roughMm`, `ratingM`, `wallMm`, `usage` (list among `lateral`, `zone`,
+`mainline`), `cost` per metre. Fittings: `kind` (`coupler`, `elbow90`, `elbow45`, `tee`, `cross`,
+`reducer`, `endCap`, `adapter`, `takeOff`, `tapeEnd`, `riser`), `sizeMm`, `size2Mm` (second size of
+reducers and reducing tees), optional `mat`.
 
 ## Index (`index.json`)
 

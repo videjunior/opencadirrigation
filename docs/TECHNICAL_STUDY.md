@@ -3,7 +3,7 @@
 > Canonical version, maintained in English. Portuguese translation: [PESQUISA.pt-BR.md](PESQUISA.pt-BR.md).
 
 Study started on 15 September 2026 and extended on 16 September 2026. This document gathers the
-research that guides the architecture of OpenCADIrrigation (an open-source irrigation CAD for the
+research that guides the architecture of OpenCADIrrigation (an irrigation CAD for the
 browser): what commercial CADs do, the hydraulics and agronomy the engine implements, with the
 equations and numerical examples, the sizing formulations, the terrain and performance algorithms,
 the file formats studied and the sources. Wherever a formula appears, the module that implements
@@ -827,7 +827,7 @@ catalogue in the project makes the file self-contained and readable.
 
 ## 22. Validation
 
-The suite has 343 tests (`flutter test`). Those validating the hydraulics against references:
+The suite has 350 tests (`flutter test`). Those validating the hydraulics against references:
 
 | Test | Reference |
 |---|---|

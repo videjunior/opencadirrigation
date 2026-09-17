@@ -355,7 +355,9 @@ e acessórios**, **bombas** e **conexões**. Todos os valores hidráulicos inter
 O **catálogo padrão** traz 17 tubos (PE 16–50 mm, PVC DN 35–250, PEAD 110 e 160, aço 6"), 9 famílias
 de emissores (gotejadores PC e turbulentos, microaspersores, aspersor de impacto, canhão, rotor e
 spray de jardim, ponto de demanda), 6 fitas e tubos gotejadores, 15 válvulas e acessórios, 4 bombas e
-15 conexões, com nomes traduzidos e preços ilustrativos.
+cerca de 320 conexões geradas para cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas,
+tampões, adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida), com
+nomes traduzidos e preços ilustrativos.
 
 O editor (Projeto → Catálogo de componentes) edita, duplica e remove itens, importa e exporta JSON,
 CSV por grupo e **Excel** (exporte, preencha preços na planilha e importe de volta), define o
@@ -642,6 +644,7 @@ lib/
       geoimage.dart, dem_tiff.dart, dem_online.dart, geo.dart, geo_export.dart,
       plot.dart, pdf.dart, pdf_sheet.dart, svg.dart, xlsx.dart, catalog_io.dart, project_export.dart
     units.dart              unidades (métrico/US), viscosidade da água
+    translate.dart          gancho de tradução para relatórios e plotagens rotularem a saída sem Flutter
   app/                      Flutter
     state/                  ProjectController (projeto, seleção, câmera, undo, índice espacial, cálculo),
                             Workspace (abas e área de transferência), DesignRunner (worker/isolate/thread)
@@ -650,13 +653,17 @@ lib/
     keys/                   despachador de atalhos e listener nativo
     widgets/                menus, paleta, painéis, relatórios, gráficos, diálogos, layout compacto
     tutorial/               tutorial interativo
-    io/                     arquivos, preferências, HTTP, armazenamento local, documento HTML
+    io/                     arquivos, preferências, HTTP, armazenamento local, documento HTML, links externos
+    actions.dart            ações de arquivo, área de transferência e exportação compartilhadas por menus, paleta e atalhos
     examples.dart           galeria de exemplos
     i18n.dart               tabela de textos pt/en/es e escolha de idioma
+    shortcuts.dart          aliases de comando (pt/en/es) e tabela de atalhos
+    theme.dart              tema Material escuro do app
+    version.dart            versão do app gerada (tool/gen_version.dart)
   worker/design_worker.dart entrada do Web Worker
 catalogs/                   pacotes de fabricantes (JSON) e índice
 examples/                   projetos de exemplo em pt, en, es
-tool/                       geradores: site, catálogos, exemplos, marca; build do worker
+tool/                       geradores: site, catálogos, exemplos, marca, versão; builds do worker e da web
 test/                       testes do motor, do modelo, dos formatos e da interface
 web/                        páginas, manifest, ícones, robots, sitemap, worker compilado
 ```
@@ -689,13 +696,13 @@ Requisitos: Flutter estável recente (desenvolvido com 3.47, Dart 3.13). Sem dep
 ```bash
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # 343 testes: motor, modelo, formatos, interface
+flutter test                       # 350 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
 tool/build_web.sh                  # build de publicação: worker + flutter build web com o commit git e a data
                                    # gravados na versão (boas-vindas, barra de status, Ajuda → Sobre, console)
-flutter build web --release        # o mesmo sem commit/data (build/web; GitHub Pages: CNAME em web/)
+flutter build web --release        # o mesmo sem commit/data (build/web, pronto para hospedagem estática; web/CNAME guarda o domínio)
 dart run tool/gen_version.dart     # regenera lib/app/version.dart após mudar `version:` no pubspec.yaml
 dart run tool/gen_site.dart        # páginas do site (index pt-BR, /en/, /es/, sitemap, 404)
 dart run tool/gen_catalogs.dart    # valida e normaliza catalogs/*.oci.cat e refaz index.json
@@ -724,7 +731,7 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 
 ## 16. Testes
 
-`flutter test` roda 343 testes em cerca de dois minutos. O que cada grupo garante:
+`flutter test` roda 350 testes em cerca de um minuto e meio. O que cada grupo garante:
 
 | Arquivo | Cobertura |
 |---|---|
@@ -769,7 +776,7 @@ tamanho de janela definido; o carregamento de assets (catálogos) usa `rootBundl
 
 Roteiro sugerido: splines e hachuras no DWG; exportação de planilhas de bocais de pivô; catálogos
 adicionais da comunidade; testes de navegador automatizados para a troca de idioma em tempo de
-execução; publicação de um arquivo de licença.
+execução.
 
 ---
 

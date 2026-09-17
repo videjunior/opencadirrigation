@@ -354,8 +354,10 @@ and devices**, **pumps** and **fittings**. All internal hydraulic values are in 
 
 The **default catalogue** ships 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel),
 9 emitter families (PC and turbulent drippers, micro-sprinklers, impact sprinkler, gun, garden rotor
-and spray, demand point), 6 tapes and driplines, 15 valves and devices, 4 pumps and 15 fittings,
-with translated names and illustrative prices.
+and spray, demand point), 6 tapes and driplines, 15 valves and devices, 4 pumps and about 320
+fittings generated for every nominal diameter (couplers, 90° and 45° elbows, tees, crosses, end caps,
+adapters and reducers, plus lateral take-offs, tape ends and risers), with translated names and
+illustrative prices.
 
 The editor (Project → Component catalogue) edits, duplicates and removes items, imports and exports
 JSON, CSV per group and **Excel** (export, fill in prices in the spreadsheet and import it back), sets
@@ -644,6 +646,7 @@ lib/
       geoimage.dart, dem_tiff.dart, dem_online.dart, geo.dart, geo_export.dart,
       plot.dart, pdf.dart, pdf_sheet.dart, svg.dart, xlsx.dart, catalog_io.dart, project_export.dart
     units.dart              units (metric/US), water viscosity
+    translate.dart          translation hook so reports and plots label their output without Flutter
   app/                      Flutter
     state/                  ProjectController (project, selection, camera, undo, spatial index, calculation),
                             Workspace (tabs and clipboard), DesignRunner (worker/isolate/thread)
@@ -653,8 +656,11 @@ lib/
     widgets/                menus, palette, panels, reports, charts, dialogs, compact layout
     tutorial/               interactive tutorial
     io/                     files, preferences, HTTP, local storage, HTML document, external links
+    actions.dart            file, clipboard and export actions shared by menus, palette and aliases
     examples.dart           example gallery
     i18n.dart               pt/en/es text table and language choice
+    shortcuts.dart          command aliases (pt/en/es) and the shortcut table
+    theme.dart              dark Material theme of the app
     version.dart            generated app version (tool/gen_version.dart)
   worker/design_worker.dart Web Worker entry point
 catalogs/                   manufacturer packs (JSON) and index
@@ -693,13 +699,13 @@ Requirements: a recent stable Flutter (developed with 3.47, Dart 3.13). No nativ
 ```bash
 flutter pub get
 flutter run -d chrome              # development in the browser
-flutter test                       # 343 tests: engine, model, formats, interface
+flutter test                       # 350 tests: engine, model, formats, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompiles web/design_worker.js after changing lib/core (the app falls
                                    # back to the interface thread when the file is missing)
 tool/build_web.sh                  # release build: worker + flutter build web with the git commit and date
                                    # baked into the version (welcome, status bar, Help → About, console)
-flutter build web --release        # the same without commit/date (build/web; GitHub Pages: CNAME in web/)
+flutter build web --release        # the same without commit/date (build/web, ready for static hosting; web/CNAME holds the domain)
 dart run tool/gen_version.dart     # regenerates lib/app/version.dart after changing `version:` in pubspec.yaml
 dart run tool/gen_site.dart        # site pages (pt-BR index, /en/, /es/, sitemap, 404)
 dart run tool/gen_catalogs.dart    # validates and normalises catalogs/*.oci.cat and rebuilds index.json
@@ -728,7 +734,7 @@ isolate for the calculation.
 
 ## 16. Tests
 
-`flutter test` runs 343 tests in about two minutes. What each group guarantees:
+`flutter test` runs 350 tests in about a minute and a half. What each group guarantees:
 
 | File | Coverage |
 |---|---|
@@ -770,7 +776,7 @@ loading (catalogues) uses `rootBundle` and works in `flutter test`.
   flushing step is the heaviest.
 
 Suggested roadmap: splines and hatches in DWG; export of pivot nozzle charts; additional community
-catalogues; automated browser tests for runtime language switching; publication of a licence file.
+catalogues; automated browser tests for runtime language switching.
 
 ---
 

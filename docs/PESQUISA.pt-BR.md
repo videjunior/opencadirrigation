@@ -3,7 +3,7 @@
 > Tradução em português. A versão canônica, mantida em inglês, é [TECHNICAL_STUDY.md](TECHNICAL_STUDY.md).
 
 Estudo iniciado em 15/09/2026 e ampliado em 16/09/2026. Este documento reúne a pesquisa que
-orienta a arquitetura do OpenCADIrrigation (CAD de irrigação de código aberto para o navegador):
+orienta a arquitetura do OpenCADIrrigation (CAD de irrigação para o navegador):
 o que os CADs comerciais fazem, a hidráulica e a agronomia que o motor implementa, com as
 equações e exemplos numéricos, as formulações de dimensionamento, os algoritmos de terreno e de
 desempenho, os formatos de arquivo estudados e as fontes. Onde uma fórmula aparece, o módulo que a
@@ -814,7 +814,7 @@ arquivo autossuficiente e legível.
 
 ## 22. Validação
 
-A suíte tem 343 testes (`flutter test`). Os que validam a hidráulica contra referências:
+A suíte tem 350 testes (`flutter test`). Os que validam a hidráulica contra referências:
 
 | Teste | Referência |
 |---|---|
