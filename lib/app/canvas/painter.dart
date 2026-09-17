@@ -138,8 +138,10 @@ class CadPainter extends CustomPainter {
           _poly(canvas, ct.points, ct.derived ? (_stroke(color.withValues(alpha: 0.7), selected ? 2 : 0.8)) : _stroke(color, selected ? 2 : 1));
           if (c.showLabels && ct.points.isNotEmpty) {
             final lenPx = ct.length * cam.scale;
-            if (lenPx > 40) _label(canvas, cam.toScreen(ct.points.first), fmt(ct.elevation, 1), color: color, size: 10);
-            if (lenPx > 400) _label(canvas, cam.toScreen(pointAlongPolyline(ct.points, ct.length / 2)), fmt(ct.elevation, 1), color: color, size: 10);
+            // generated contours all start on the model's edge, so their
+            // labels sit along the line instead of piling up at the ends
+            if (lenPx > 40) _label(canvas, cam.toScreen(ct.derived ? pointAlongPolyline(ct.points, ct.length * 0.3) : ct.points.first), fmt(ct.elevation, 1), color: color, size: 10);
+            if (lenPx > 400) _label(canvas, cam.toScreen(pointAlongPolyline(ct.points, ct.length * (ct.derived ? 0.7 : 0.5))), fmt(ct.elevation, 1), color: color, size: 10);
           }
         case PivotEntity pv:
           _pivot(canvas, pv, color, selected);

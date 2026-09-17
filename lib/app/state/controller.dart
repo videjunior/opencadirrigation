@@ -1297,38 +1297,99 @@ class ProjectController extends ChangeNotifier {
     return created.length;
   }
 
+  /// Fetches a DEM request (GET url → body): the app's HTTP helper by
+  /// default, overridable by tests.
+  static Future<String> Function(String url) demUrlLoader = (url) => httpRequest('GET', url);
+
+  /// Fetches a DEM tile (GET url → bytes); overridable by tests.
+  static Future<List<int>> Function(String url) demTileLoader = httpBytes;
+
+  /// Elevation data the user put in the project (survey contours, typed
+  /// spot heights, example data): everything but downloaded DEM points and
+  /// generated contours.
+  OwnTerrainData ownTerrainData() {
+    var spots = 0, contours = 0;
+    var lo = double.infinity, hi = -double.infinity;
+    for (final e in project.entities) {
+      if (e is SpotHeightEntity && !e.isDem) {
+        spots++;
+        lo = math.min(lo, e.elevation);
+        hi = math.max(hi, e.elevation);
+      } else if (e is ContourEntity && !e.derived) {
+        contours++;
+        lo = math.min(lo, e.elevation);
+        hi = math.max(hi, e.elevation);
+      }
+    }
+    return OwnTerrainData(spots, contours, lo, hi);
+  }
+
+  /// Removes the user's own elevation data (see [ownTerrainData]); the
+  /// downloaded DEM and the generated contours stay. Returns the number of
+  /// entities removed.
+  int removeOwnTerrainData() {
+    var n = 0;
+    mutate(() {
+      project.entities.removeWhere((e) {
+        final own = (e is SpotHeightEntity && !e.isDem) || (e is ContourEntity && !e.derived);
+        if (own) n++;
+        return own;
+      });
+    }, label: 'hist.demClear');
+    return n;
+  }
+
   /// Downloads a grid of elevations over the project (or the visible area)
-  /// from a public DEM and adds them as spot heights. Returns the number of
-  /// points imported; [onProgress] gets (done, total) requests.
-  Future<int> importOnlineDem(DemSource source, {double spacing = 25, bool useView = false, bool replacePrevious = true, int maxPoints = 5000, void Function(int done, int total)? onProgress}) async {
+  /// from a public DEM and adds them as spot heights on the DEM layer.
+  /// [replacePrevious] drops the points of an earlier download,
+  /// [replaceExisting] also drops the user's own contours and spot heights
+  /// (they usually sit on another datum, e.g. example data at 100 m, and
+  /// would turn the model into spikes). [onProgress] gets (done, total)
+  /// requests.
+  Future<DemImportResult> importOnlineDem(DemSource source, {double spacing = 25, bool useView = false, bool replacePrevious = true, bool replaceExisting = false, int maxPoints = 5000, void Function(int done, int total)? onProgress, void Function(Duration wait)? onWait, bool Function()? cancelled}) async {
     final geo = project.meta.georef;
     if (geo == null) throw const GeoReferenceMissing();
     var b = useView ? camera.visible : project.bounds;
     if (b.isEmpty) b = camera.visible;
-    if (b.isEmpty) return 0;
+    if (b.isEmpty) return const DemImportResult(0, 0, (0, 0), (0, 0));
     final pts = demGrid(b, spacing, geo, maxPoints: maxPoints);
-    final urls = demRequestUrls(source, pts);
-    final zs = <double?>[];
-    for (var i = 0; i < urls.length; i++) {
-      onProgress?.call(i, urls.length);
-      if (i > 0 && source != DemSource.openMeteo) await Future<void>.delayed(const Duration(milliseconds: 1100));
-      final body = await httpRequest('GET', urls[i]);
-      zs.addAll(demParseResponse(source, body));
-    }
-    onProgress?.call(urls.length, urls.length);
+    // 5xx and network errors are retried; 429 waits for the server's minute
+    bool retryable(Object e) => e is HttpStatusException ? e.status >= 500 : e is! FormatException;
+    final zs = source.kind == DemKind.tiles
+        ? await demDownloadTiles(pts, demGridStep(pts, spacing), demTileLoader, onProgress: onProgress, cancelled: cancelled, retryable: retryable)
+        : await demDownload(
+            source,
+            pts,
+            demUrlLoader,
+            onProgress: onProgress,
+            onWait: onWait,
+            cancelled: cancelled,
+            retryable: retryable,
+            rateLimited: (e) => e is HttpStatusException && e.status == 429,
+          );
     final name = 'DEM ${source.name}';
-    var n = 0;
+    var n = 0, noData = 0;
+    var lo = double.infinity, hi = -double.infinity;
     mutate(() {
-      if (replacePrevious) project.entities.removeWhere((e) => e is SpotHeightEntity && e.name.startsWith('DEM '));
+      if (replacePrevious) project.entities.removeWhere((e) => e is SpotHeightEntity && e.isDem);
+      if (replaceExisting) project.entities.removeWhere((e) => (e is SpotHeightEntity && !e.isDem) || (e is ContourEntity && !e.derived));
+      if (project.findLayer(Layers.dem) == null) project.layers.add(Layer(name: Layers.dem, color: Layers.defaultColors[Layers.dem]!));
       for (var i = 0; i < pts.length && i < zs.length; i++) {
         final z = zs[i];
-        if (z == null) continue;
-        project.entities.add(SpotHeightEntity(id: project.newId(), position: pts[i].local, elevation: z, name: name));
+        if (z == null) {
+          noData++;
+          continue;
+        }
+        project.entities.add(SpotHeightEntity(id: project.newId(), layer: Layers.dem, position: pts[i].local, elevation: z, name: name));
+        lo = math.min(lo, z);
+        hi = math.max(hi, z);
         n++;
       }
     }, label: 'hist.dem');
     track('dem');
-    return n;
+    final own = ownTerrainData();
+    final demRange = n == 0 ? (0.0, 0.0) : (lo, hi);
+    return DemImportResult(n, noData, demRange, own.range, datumMismatch: own.isNotEmpty && n > 0 && demDatumMismatch(own.range, demRange));
   }
 
   /// Georeferences the project with the drawing origin (0, 0) at the given
@@ -1673,3 +1734,36 @@ class ProjectController extends ChangeNotifier {
 double mathMax(double a, double b) => a > b ? a : b;
 
 String prettyJson(Object o) => const JsonEncoder.withIndent('  ').convert(o);
+
+/// Outcome of an online DEM download.
+class DemImportResult {
+  const DemImportResult(this.count, this.noData, this.range, this.ownRange, {this.datumMismatch = false});
+
+  /// Spot heights created.
+  final int count;
+
+  /// Grid points the source had no data for.
+  final int noData;
+
+  /// Elevation range of the downloaded points (m).
+  final (double, double) range;
+
+  /// Elevation range of the user's own terrain data kept in the project.
+  final (double, double) ownRange;
+
+  /// The kept data cannot share a datum with the download (see
+  /// [demDatumMismatch]).
+  final bool datumMismatch;
+}
+
+/// Summary of the user's own elevation data (see
+/// [ProjectController.ownTerrainData]).
+class OwnTerrainData {
+  const OwnTerrainData(this.spots, this.contours, this.lo, this.hi);
+  final int spots;
+  final int contours;
+  final double lo, hi;
+  int get count => spots + contours;
+  bool get isNotEmpty => count > 0;
+  (double, double) get range => (lo, hi);
+}

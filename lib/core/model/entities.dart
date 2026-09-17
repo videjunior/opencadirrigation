@@ -46,6 +46,7 @@ class Layers {
   static const dimensions = 'DIMENSIONS';
   static const contours = 'CONTOURS';
   static const spotHeights = 'SPOT_HEIGHTS';
+  static const dem = 'DEM';
   static const zonePipes = 'ZONE_PIPES';
   static const mainlinePipes = 'MAINLINE_PIPES';
   static const spraylines = 'SPRAYLINES';
@@ -65,7 +66,7 @@ class Layers {
   static const pivots = 'PIVOTS';
 
   static const all = [
-    images, drawing, hatches, symbols, text, dimensions, contours, spotHeights, zonePipes, mainlinePipes, spraylines, tapes,
+    images, drawing, hatches, symbols, text, dimensions, contours, spotHeights, dem, zonePipes, mainlinePipes, spraylines, tapes,
     outlets, wettedRadii, controlValves, waterSupply, pumps, misc, junctions, pivots, areas, labels,
   ];
 
@@ -75,6 +76,7 @@ class Layers {
     dimensions: 0xFF90A4AE,
     contours: 0xFF8D6E63,
     spotHeights: 0xFFA1887F,
+    dem: 0xFF7E8A97,
     zonePipes: 0xFF42A5F5,
     mainlinePipes: 0xFF1E88E5,
     spraylines: 0xFF26C6DA,
@@ -795,6 +797,10 @@ class SpotHeightEntity extends Entity with PointEntity {
   double elevation;
   @override
   EntityType get type => EntityType.spotHeight;
+
+  /// A point downloaded from an online elevation model (named "DEM …" by
+  /// the import), as opposed to a surveyed or typed spot height.
+  bool get isDem => name.startsWith('DEM ');
   @override
   SpotHeightEntity clone({String? newId}) => SpotHeightEntity(id: newId ?? id, layer: layer, name: name, position: position, elevation: elevation);
   @override

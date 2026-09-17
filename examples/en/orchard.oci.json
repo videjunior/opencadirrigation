@@ -4246,6 +4246,12 @@
       "locked": false
     },
     {
+      "name": "DEM",
+      "color": 4286483095,
+      "visible": true,
+      "locked": false
+    },
+    {
       "name": "ZONE_PIPES",
       "color": 4282557941,
       "visible": true,
