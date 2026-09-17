@@ -1,0 +1,363 @@
+/// Terrain and checking dialogs: elevation prompt for contours / spot
+/// heights, online DEM download, contour generation, the design check and
+/// the manufacturer catalogue packs.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../core/design/design_check.dart';
+import '../../../core/io/dem_online.dart';
+import '../../../core/io/geo.dart' show parseLatLon;
+import '../../../core/io/project_export.dart' show GeoReferenceMissing;
+import '../../../core/model/entities.dart';
+import '../../../core/units.dart';
+import '../../state/controller.dart';
+import '../../theme.dart';
+import '../fields.dart';
+import 'export_dialogs.dart';
+
+Widget _row(List<Widget> children) => Row(children: [for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: children[i])]]);
+
+/// Dialog width that fits phones as well as desktops.
+double dialogWidth(BuildContext context, double preferred) {
+  final w = MediaQuery.sizeOf(context).width;
+  return preferred.clamp(200, w - 32).toDouble();
+}
+
+// ---------------------------------------------------------------- elevation prompt
+
+/// Asks the elevation of a contour or spot height that was just drawn.
+/// Cancel removes the entity again (undo).
+Future<void> showElevationDialog(BuildContext context, ProjectController c, Entity e) async {
+  final t = c.t;
+  final s = c.toolSettings;
+  final isContour = e is ContourEntity;
+  final initial = isContour ? e.elevation : (e as SpotHeightEntity).elevation;
+  final ctl = TextEditingController(text: fmt(initial, 2));
+  final intervalCtl = TextEditingController(text: fmt(s.contourInterval, 2));
+  var autoInc = s.contourAutoIncrement;
+  var ask = s.askElevation;
+  void apply(BuildContext ctx) {
+    final z = double.tryParse(ctl.text.replaceAll(',', '.'));
+    if (z == null) return;
+    final interval = double.tryParse(intervalCtl.text.replaceAll(',', '.')) ?? s.contourInterval;
+    c.mutate(() {
+      if (e is ContourEntity) e.elevation = z;
+      if (e is SpotHeightEntity) e.elevation = z;
+    }, label: 'hist.elevation');
+    s.askElevation = ask;
+    if (isContour) {
+      s.contourInterval = interval;
+      s.contourAutoIncrement = autoInc;
+      s.contourElevation = autoInc ? z + interval : z;
+    } else {
+      s.spotElevation = z;
+    }
+    c.track('elevation');
+    Navigator.pop(ctx);
+  }
+
+  final ok = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      return AlertDialog(
+        title: Text(t(isContour ? 'elev.contourTitle' : 'elev.spotTitle'), style: const TextStyle(fontSize: 15)),
+        content: SizedBox(
+          width: dialogWidth(ctx, 380),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t(isContour ? 'elev.explainContour' : 'elev.explainSpot'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            const SizedBox(height: 10),
+            TextField(
+              key: const Key('elev_value'),
+              controller: ctl,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\-]'))],
+              decoration: InputDecoration(labelText: t('elev.value'), isDense: true),
+              onSubmitted: (_) => apply(ctx),
+              onTap: () => ctl.selection = TextSelection(baseOffset: 0, extentOffset: ctl.text.length),
+            ),
+            if (isContour) ...[
+              const SizedBox(height: 8),
+              TextField(
+                key: const Key('elev_interval'),
+                controller: intervalCtl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: t('elev.interval'), isDense: true),
+                onSubmitted: (_) => apply(ctx),
+              ),
+              SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('elev.autoIncrement'), style: const TextStyle(fontSize: 12)), value: autoInc, onChanged: (v) => setState(() => autoInc = v)),
+            ],
+            SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('elev.ask'), style: const TextStyle(fontSize: 12)), value: ask, onChanged: (v) => setState(() => ask = v)),
+          ]),
+        ),
+        actions: [
+          TextButton(key: const Key('elev_cancel'), onPressed: () => Navigator.pop(ctx, false), child: Text(t('cancel'))),
+          FilledButton(key: const Key('elev_ok'), onPressed: () => apply(ctx), child: Text(t('ok'))),
+        ],
+      );
+    }),
+  );
+  if (ok == false) c.undo();
+}
+
+// ---------------------------------------------------------------- online DEM
+
+Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
+  final t = c.t;
+  var source = DemSource.openMeteo;
+  var spacing = 25.0;
+  var maxPoints = 5000.0;
+  var useView = c.project.bounds.isEmpty;
+  var replace = true;
+  var busy = false;
+  var done = 0, total = 0;
+  String? error;
+  // "type a coordinate": georeference an empty drawing at a pasted position
+  final coordCtl = TextEditingController();
+  var areaSize = 500.0;
+  String? coordError;
+  // contours drawn from the downloaded model when the download finishes
+  var contours = c.terrainIsEmpty;
+  var contourInterval = 0.0;
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      final geo = c.project.meta.georef;
+      var b = useView ? c.camera.visible : c.project.bounds;
+      if (b.isEmpty) b = c.camera.visible;
+      final n = geo == null || b.isEmpty ? 0 : demGrid(b, spacing, geo, maxPoints: maxPoints.round()).length;
+      final requests = (n / source.batch).ceil();
+      void useCoordinate() {
+        final pair = parseLatLon(coordCtl.text);
+        if (pair == null) {
+          setState(() => coordError = t('dem.online.coordInvalid'));
+          return;
+        }
+        c.setGeoreferenceAt(pair.$1, pair.$2, viewSizeM: areaSize);
+        setState(() {
+          coordError = null;
+          if (c.project.bounds.isEmpty) useView = true;
+        });
+      }
+
+      return AlertDialog(
+        title: Text(t('dem.online.title'), style: const TextStyle(fontSize: 15)),
+        content: SizedBox(
+          width: dialogWidth(ctx, 460),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('dem.online.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            const SizedBox(height: 8),
+            if (geo == null) ...[
+              Text(t('dem.online.coordExplain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+              const SizedBox(height: 4),
+              TextField(
+                key: const Key('dem_coord'),
+                controller: coordCtl,
+                style: const TextStyle(fontSize: 12),
+                decoration: InputDecoration(labelText: t('dem.online.coord'), hintText: t('dem.online.coordHint'), isDense: true, errorText: coordError),
+                onSubmitted: (_) => useCoordinate(),
+              ),
+              const SizedBox(height: 4),
+              _row([
+                if (c.project.bounds.isEmpty) NumField(label: t('dem.online.areaSize'), value: areaSize, decimals: 0, onChanged: (v) => setState(() => areaSize = v.clamp(50, 20000))),
+                FilledButton.tonal(key: const Key('dem_use_coord'), onPressed: useCoordinate, child: Text(t('dem.online.useCoord'), style: const TextStyle(fontSize: 12))),
+                OutlinedButton.icon(
+                  key: const Key('dem_georef'),
+                  onPressed: () async {
+                    await showGeoreferenceDialog(ctx, c);
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.public, size: 16),
+                  label: Text(t('file.georef'), style: const TextStyle(fontSize: 12)),
+                ),
+              ]),
+            ] else ...[
+              Text(geo.crsName, style: const TextStyle(fontSize: 11, color: Colors.white54)),
+              SpecDropdown<DemSource>(label: t('dem.online.source'), value: source.name, items: DemSource.values, labelOf: (x) => x.label, idOf: (x) => x.name, onChanged: (v) => setState(() => source = DemSource.values.byName(v!))),
+              _row([
+                NumField(label: t('dem.online.spacing'), value: spacing, onChanged: (v) => setState(() => spacing = v <= 1 ? 1 : v)),
+                NumField(label: t('dem.online.maxPoints'), value: maxPoints, decimals: 0, onChanged: (v) => setState(() => maxPoints = v.clamp(100, 20000))),
+              ]),
+              SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.useView'), style: const TextStyle(fontSize: 12)), value: useView, onChanged: (v) => setState(() => useView = v)),
+              SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.replace'), style: const TextStyle(fontSize: 12)), value: replace, onChanged: (v) => setState(() => replace = v)),
+              Text(b.isEmpty ? t('dem.online.empty') : t('dem.online.extent', {'w': fmt(b.width, 0), 'h': fmt(b.height, 0), 'n': '$n', 'r': '$requests'}), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+              Text(source.attribution, style: const TextStyle(fontSize: 10, color: Colors.white38)),
+              SwitchListTile(key: const Key('dem_contours'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.contours'), style: const TextStyle(fontSize: 12)), value: contours, onChanged: (v) => setState(() => contours = v)),
+              if (contours) NumField(label: t('dem.online.contourInterval'), value: contourInterval, onChanged: (v) => setState(() => contourInterval = v < 0 ? 0 : v)),
+            ],
+            if (busy) ...[
+              const SizedBox(height: 8),
+              LinearProgressIndicator(value: total == 0 ? null : done / total),
+              Text(t('dem.online.progress', {'i': '$done', 'n': '$total'}), style: const TextStyle(fontSize: 11)),
+            ],
+            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(t('dem.online.error', {'e': error!}), style: const TextStyle(fontSize: 11.5, color: CadColors.unconnected))),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: busy ? null : () => Navigator.pop(ctx), child: Text(t('close'))),
+          FilledButton.icon(
+            key: const Key('dem_run'),
+            onPressed: geo == null || busy || n == 0
+                ? null
+                : () async {
+                    setState(() {
+                      busy = true;
+                      error = null;
+                    });
+                    try {
+                      final count = await c.importOnlineDem(source, spacing: spacing, useView: useView, replacePrevious: replace, maxPoints: maxPoints.round(), onProgress: (d, tot) {
+                        done = d;
+                        total = tot;
+                        if (ctx.mounted) setState(() {});
+                      });
+                      if (contours && count > 0) {
+                        final interval = contourInterval > 0 ? contourInterval : c.autoContourInterval();
+                        final drawn = c.generateContours(interval);
+                        c.notify(t('dem.online.doneContours', {'n': '$count', 's': source.attribution, 'c': '$drawn', 'i': fmt(interval, 2)}));
+                      } else {
+                        c.notify(t('dem.online.done', {'n': '$count', 's': source.attribution}));
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    } catch (e) {
+                      error = e is GeoReferenceMissing ? t('geo.none') : c.describeError(e);
+                      if (ctx.mounted) setState(() => busy = false);
+                    }
+                  },
+            icon: const Icon(Icons.cloud_download_outlined, size: 16),
+            label: Text(t('dem.online.run')),
+          ),
+        ],
+      );
+    }),
+  );
+}
+
+// ---------------------------------------------------------------- contour generation
+
+Future<void> showGenerateContoursDialog(BuildContext context, ProjectController c) {
+  final t = c.t;
+  final terrain = c.project.buildTerrain();
+  if (terrain.isEmpty) {
+    c.notify(t('dem.noData'));
+    return Future.value();
+  }
+  final (lo, hi) = terrain.elevationRange;
+  var interval = (hi - lo) > 20 ? 5.0 : ((hi - lo) > 5 ? 1.0 : 0.5);
+  var replace = true;
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      final preview = interval > 0 ? terrain.generateContours(interval) : const <(double, List<Object>)>[];
+      return AlertDialog(
+        title: Text(t('cgen.title'), style: const TextStyle(fontSize: 15)),
+        content: SizedBox(
+          width: dialogWidth(ctx, 420),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('cgen.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            const SizedBox(height: 8),
+            Text(t('terrain.stats', {'n': '${terrain.sampleCount}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: const TextStyle(fontSize: 11.5)),
+            NumField(label: t('cgen.interval'), value: interval, onChanged: (v) => setState(() => interval = v <= 0 ? interval : v)),
+            SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('cgen.replace'), style: const TextStyle(fontSize: 12)), value: replace, onChanged: (v) => setState(() => replace = v)),
+            Text(t('cgen.preview', {'n': '${preview.length}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+          FilledButton(
+            key: const Key('cgen_run'),
+            onPressed: () {
+              final n = c.generateContours(interval, replacePrevious: replace);
+              c.notify(t('cgen.done', {'n': '$n'}));
+              Navigator.pop(ctx);
+            },
+            child: Text(t('cgen.run')),
+          ),
+        ],
+      );
+    }),
+  );
+}
+
+// ---------------------------------------------------------------- design check
+
+Future<void> showDesignCheckDialog(BuildContext context, ProjectController c) {
+  final t = c.t;
+  var report = c.runDesignCheckReport();
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      final counts = {CheckSeverity.error: report.errors, CheckSeverity.warning: report.warnings, CheckSeverity.info: report.issues.length - report.errors - report.warnings};
+      Color colorOf(CheckSeverity s) => switch (s) { CheckSeverity.error => CadColors.unconnected, CheckSeverity.warning => CadColors.warning, CheckSeverity.info => Colors.white60 };
+      IconData iconOf(CheckSeverity s) => switch (s) { CheckSeverity.error => Icons.error_outline, CheckSeverity.warning => Icons.warning_amber_outlined, CheckSeverity.info => Icons.info_outline };
+      String message(CheckIssue i) {
+        final base = t.has('check.${i.code}') ? t('check.${i.code}') : (t.has('warn.${i.code}') ? t('warn.${i.code}') : i.code);
+        final names = i.entityIds.map((id) {
+          final e = c.project.byId(id);
+          final n = e?.name ?? '';
+          return n.isEmpty ? id : n;
+        }).join(', ');
+        final extra = [if (i.value.isNotEmpty) i.value, if (names.isNotEmpty) names].join(' · ');
+        return extra.isEmpty ? base : '$base ($extra)';
+      }
+
+      void locate(CheckIssue i) {
+        if (i.entityIds.isNotEmpty) c.select(i.entityIds.where((id) => c.project.byId(id) != null));
+        if (i.at != null) {
+          c.camera.center = i.at!;
+          c.camera.scale = c.camera.scale < 3 ? 3 : c.camera.scale;
+          c.refresh();
+        } else if (i.entityIds.isNotEmpty) {
+          c.zoomToEntity(i.entityIds.first);
+        }
+      }
+
+      return AlertDialog(
+        title: Text(t('check.title'), style: const TextStyle(fontSize: 15)),
+        content: SizedBox(
+          width: dialogWidth(ctx, 560),
+          height: 420,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('check.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            const SizedBox(height: 8),
+            Wrap(spacing: 12, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+              for (final s in CheckSeverity.values)
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(iconOf(s), size: 15, color: colorOf(s)),
+                  const SizedBox(width: 3),
+                  Text('${counts[s]} ${t('check.sev.${s.name}')}', style: TextStyle(fontSize: 11.5, color: colorOf(s))),
+                ]),
+            ]),
+            const SizedBox(height: 6),
+            if (report.ok) Text(t('check.ok'), style: const TextStyle(fontSize: 12, color: CadColors.ok)),
+            Expanded(
+              child: ListView(
+                key: const Key('check_list'),
+                children: [
+                  for (final i in report.issues)
+                    ListTile(
+                      dense: true,
+                      visualDensity: VisualDensity.compact,
+                      leading: Icon(iconOf(i.severity), size: 18, color: colorOf(i.severity)),
+                      title: Text(message(i), style: const TextStyle(fontSize: 12)),
+                      trailing: i.entityIds.isNotEmpty || i.at != null ? const Icon(Icons.center_focus_strong, size: 16) : null,
+                      onTap: i.entityIds.isNotEmpty || i.at != null ? () => locate(i) : null,
+                    ),
+                ],
+              ),
+            ),
+          ]),
+        ),
+        actions: [
+          TextButton.icon(key: const Key('check_rerun'), onPressed: () => setState(() => report = c.runDesignCheckReport()), icon: const Icon(Icons.refresh, size: 16), label: Text(t('check.run'))),
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
+        ],
+      );
+    }),
+  );
+}
+
+/// Convenience row helper shared with other dialog files.
+Widget dialogRow(List<Widget> children) => _row(children);

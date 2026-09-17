@@ -1,0 +1,393 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "rivulis",
+  "brand": "Rivulis",
+  "name": "Rivulis",
+  "description": "D5000 / D2000 PC driplines, T-Tape, Ro-Drip, Rondo and Supertif drippers, S2000 micro-sprinklers",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 10,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "riv_supertif",
+        "name": "Rivulis Supertif PC dripper",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "st2",
+            "name": "2 L/h PC",
+            "curve": {
+              "k": 5.262664324451034e-7,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "st4",
+            "name": "4 L/h PC",
+            "curve": {
+              "k": 0.0000010525328648902067,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "st8",
+            "name": "8 L/h PC",
+            "curve": {
+              "k": 0.0000021050657297804134,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_s2000",
+        "name": "Rivulis S2000 micro-sprinkler",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "s2_47",
+            "name": "47 L/h (R 3.5 m)",
+            "curve": {
+              "k": 0.0000029193109706247253,
+              "x": 0.5,
+              "ra": 1.2266129511756523,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s2_70",
+            "name": "70 L/h (R 4.5 m)",
+            "curve": {
+              "k": 0.0000043479099562495906,
+              "x": 0.5,
+              "ra": 1.5770737943686959,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s2_120",
+            "name": "120 L/h (R 5.5 m)",
+            "curve": {
+              "k": 0.000007453559924999297,
+              "x": 0.5,
+              "ra": 1.9275346375617395,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_rondo",
+        "name": "Rivulis Rondo micro-sprinkler",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "rd35",
+            "name": "35 L/h (R 3.0 m)",
+            "curve": {
+              "k": 0.0000021739549781247953,
+              "x": 0.5,
+              "ra": 1.0513825295791306,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "rd50",
+            "name": "50 L/h (R 3.7 m)",
+            "curve": {
+              "k": 0.0000031056499687497075,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "rd90",
+            "name": "90 L/h (R 4.5 m)",
+            "curve": {
+              "k": 0.000005590169943749474,
+              "x": 0.5,
+              "ra": 1.5770737943686959,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true,
+        "sup": "Rivulis"
+      }
+    ],
+    "tapes": [
+      {
+        "id": "riv_d5000_16_10_40",
+        "name": "Rivulis D5000 PC 16 mm 1.0 L/h @ 0.40 m",
+        "nominalMm": 16.0,
+        "idMm": 14.2,
+        "spacing": 0.4,
+        "emitter": {
+          "k": 2.652757183392877e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 40.0,
+        "inletH": 10.0,
+        "tolB": 50.0,
+        "tolA": 200.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_d5000_16_16_50",
+        "name": "Rivulis D5000 PC 16 mm 1.6 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 14.2,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 4.244411493428604e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 40.0,
+        "inletH": 10.0,
+        "tolB": 50.0,
+        "tolA": 200.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_d5000_20_20_75",
+        "name": "Rivulis D5000 PC 20 mm 2.0 L/h @ 0.75 m",
+        "nominalMm": 20.0,
+        "idMm": 17.5,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 5.305514366785754e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 40.0,
+        "inletH": 10.0,
+        "tolB": 50.0,
+        "tolA": 200.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_d2000_16_16_50",
+        "name": "Rivulis D2000 16 mm 1.6 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 1.4716938732559604e-7,
+          "x": 0.48,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 20.0,
+        "inletH": 10.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 25.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_ttape_508_20_100",
+        "name": "Rivulis T-Tape 508-20-1000 (16 mm, 1.0 L/h @ 0.20 m)",
+        "nominalMm": 16.0,
+        "idMm": 16.0,
+        "spacing": 0.2,
+        "emitter": {
+          "k": 1.0499013139145199e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 10.0,
+        "inletH": 7.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 10.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_ttape_508_30_500",
+        "name": "Rivulis T-Tape 508-30-500 (16 mm, 0.5 L/h @ 0.30 m)",
+        "nominalMm": 16.0,
+        "idMm": 16.0,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 5.2495065695725995e-8,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 10.0,
+        "inletH": 7.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 10.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      },
+      {
+        "id": "riv_rodrip_16_15_30",
+        "name": "Rivulis Ro-Drip 16 mm 1.5 L/h @ 0.30 m",
+        "nominalMm": 16.0,
+        "idMm": 16.0,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 1.57485197087178e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 10.0,
+        "inletH": 7.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 10.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rivulis"
+      }
+    ],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

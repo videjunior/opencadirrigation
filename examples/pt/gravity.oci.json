@@ -1,0 +1,6749 @@
+{
+  "format": "opencadirrigation",
+  "version": 1,
+  "meta": {
+    "uid": "example-gravity-pt",
+    "created": "2026-09-16T00:00:00.000Z",
+    "name": "Gotejamento por gravidade",
+    "client": "Sítio Exemplo",
+    "site": "Talhões 1 e 2",
+    "designer": "OpenCADIrrigation",
+    "notes": ""
+  },
+  "params": {
+    "units": {
+      "length": "m",
+      "flow": "lph",
+      "pressure": "mH2O",
+      "diameter": "mm"
+    },
+    "method": "hazenWilliams",
+    "temp": 20.0,
+    "vZone": 1.5,
+    "vMain": 2.0,
+    "vLat": 2.0,
+    "minorPct": 5.0,
+    "minor": true,
+    "tol": 0.05,
+    "interest": 0.1,
+    "term": 10,
+    "kwh": 0.75,
+    "eff": 0.65,
+    "hours": 2000.0,
+    "zoneHours": 500.0,
+    "trade": true,
+    "latSizes": 1,
+    "subSizes": 3,
+    "cScale": 1.0,
+    "cOffset": 0.0,
+    "densify": 5.0,
+    "currency": "R$",
+    "sizing": "lp",
+    "mainSizes": 3,
+    "epp": 1,
+    "maxNodes": 100,
+    "flushV": 0.3,
+    "flushH": 1.0,
+    "surge": true,
+    "closure": 3.0,
+    "fittings": true,
+    "stick": 6.0,
+    "zoneVar": 0.0,
+    "terrain": "tin"
+  },
+  "catalog": {
+    "pipes": [
+      {
+        "id": "pe16",
+        "name": "PE 16 mm (PN 4)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "material": "peld",
+        "c": 140.0,
+        "roughMm": 0.003,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.9,
+        "usage": [
+          "lateral"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe20",
+        "name": "PE 20 mm (PN 4)",
+        "nominalMm": 20.0,
+        "idMm": 17.0,
+        "material": "peld",
+        "c": 140.0,
+        "roughMm": 0.003,
+        "ratingM": 40.0,
+        "wallMm": 1.5,
+        "cost": 1.3,
+        "usage": [
+          "lateral"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe25",
+        "name": "PE 25 mm (PN 6)",
+        "nominalMm": 25.0,
+        "idMm": 21.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 2.0,
+        "cost": 2.1,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe32",
+        "name": "PE 32 mm (PN 6)",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 2.4,
+        "cost": 3.2,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe40",
+        "name": "PE 40 mm (PN 6)",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 3.0,
+        "cost": 4.9,
+        "usage": [
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe50",
+        "name": "PE 50 mm (PN 6)",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 3.7,
+        "cost": 7.4,
+        "usage": [
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc35",
+        "name": "PVC DN 35 PN 80",
+        "nominalMm": 35.0,
+        "idMm": 32.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.5,
+        "cost": 4.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc50",
+        "name": "PVC DN 50 PN 80",
+        "nominalMm": 50.0,
+        "idMm": 46.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.8,
+        "cost": 7.2,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc75",
+        "name": "PVC DN 75 PN 80",
+        "nominalMm": 75.0,
+        "idMm": 70.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.2,
+        "cost": 14.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc100",
+        "name": "PVC DN 100 PN 80",
+        "nominalMm": 100.0,
+        "idMm": 96.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.5,
+        "cost": 24.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc125",
+        "name": "PVC DN 125 PN 80",
+        "nominalMm": 125.0,
+        "idMm": 118.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.2,
+        "cost": 36.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc150",
+        "name": "PVC DN 150 PN 80",
+        "nominalMm": 150.0,
+        "idMm": 144.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.8,
+        "cost": 52.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc200",
+        "name": "PVC DN 200 PN 80",
+        "nominalMm": 200.0,
+        "idMm": 191.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 4.9,
+        "cost": 88.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc250",
+        "name": "PVC DN 250 PN 80",
+        "nominalMm": 250.0,
+        "idMm": 239.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 6.2,
+        "cost": 135.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pead110",
+        "name": "PEAD 110 mm PN 10",
+        "nominalMm": 110.0,
+        "idMm": 96.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 100.0,
+        "wallMm": 6.6,
+        "cost": 42.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pead160",
+        "name": "PEAD 160 mm PN 10",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 100.0,
+        "wallMm": 9.5,
+        "cost": 85.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "steel150",
+        "name": "Aço galvanizado 6\"",
+        "nominalMm": 150.0,
+        "idMm": 154.0,
+        "material": "steel",
+        "c": 120.0,
+        "roughMm": 0.15,
+        "ratingM": 200.0,
+        "wallMm": 4.5,
+        "cost": 160.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": false
+      }
+    ],
+    "outlets": [
+      {
+        "id": "drip_pc",
+        "name": "Gotejador PC (botão)",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "pc2",
+            "name": "2 L/h PC",
+            "curve": {
+              "k": 5.184746115538839e-7,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pc4",
+            "name": "4 L/h PC",
+            "curve": {
+              "k": 0.0000010369492231077677,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pc8",
+            "name": "8 L/h PC",
+            "curve": {
+              "k": 0.0000020738984462155354,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.6,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "drip_turb",
+        "name": "Gotejador turbulento",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "t2",
+            "name": "2 L/h",
+            "curve": {
+              "k": 1.756820922315766e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t4",
+            "name": "4 L/h",
+            "curve": {
+              "k": 3.513641844631532e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t8",
+            "name": "8 L/h",
+            "curve": {
+              "k": 7.027283689263064e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.35,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "micro",
+        "name": "Microaspersor 360°",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "m35",
+            "name": "35 L/h (raio 3,0 m)",
+            "curve": {
+              "k": 0.000002510266983652955,
+              "x": 0.5,
+              "ra": 1.1627579406332142,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m50",
+            "name": "50 L/h (raio 3,5 m)",
+            "curve": {
+              "k": 0.000003586095690932793,
+              "x": 0.5,
+              "ra": 1.35655093073875,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m70",
+            "name": "70 L/h (raio 4,0 m)",
+            "curve": {
+              "k": 0.00000502053396730591,
+              "x": 0.5,
+              "ra": 1.5503439208442855,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m120",
+            "name": "120 L/h (raio 5,0 m)",
+            "curve": {
+              "k": 0.000007453559924999297,
+              "x": 0.5,
+              "ra": 1.7523042159652176,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 2.8,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true
+      },
+      {
+        "id": "micro_pc",
+        "name": "Microaspersor PC",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "mpc40",
+            "name": "40 L/h PC (raio 3,5 m)",
+            "curve": {
+              "k": 0.000009704047811289222,
+              "x": 0.05,
+              "ra": 1.35655093073875,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 12.0,
+            "maxH": 40.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mpc70",
+            "name": "70 L/h PC (raio 4,5 m)",
+            "curve": {
+              "k": 0.00001698208366975614,
+              "x": 0.05,
+              "ra": 1.7441369109498213,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 12.0,
+            "maxH": 40.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 3.9,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true
+      },
+      {
+        "id": "impact34",
+        "name": "Aspersor de impacto 3/4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "i3.5",
+            "name": "Bocal 3,5 mm (0,9 m³/h, R 12 m)",
+            "curve": {
+              "k": 0.00004564354645876384,
+              "x": 0.5,
+              "ra": 3.649125559695976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i4.0",
+            "name": "Bocal 4,0 mm (1,2 m³/h, R 13 m)",
+            "curve": {
+              "k": 0.000060858061945018456,
+              "x": 0.5,
+              "ra": 3.9532193563373075,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i4.5",
+            "name": "Bocal 4,5 mm (1,5 m³/h, R 14 m)",
+            "curve": {
+              "k": 0.00007607257743127307,
+              "x": 0.5,
+              "ra": 4.2573131529786385,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i5.0",
+            "name": "Bocal 5,0 mm (1,9 m³/h, R 15 m)",
+            "curve": {
+              "k": 0.00009635859807961254,
+              "x": 0.5,
+              "ra": 4.56140694961997,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 50.0,
+            "defH": 35.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 18.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true
+      },
+      {
+        "id": "gun",
+        "name": "Canhão hidráulico 1,5\"",
+        "kind": "gun",
+        "nozzles": [
+          {
+            "id": "g14",
+            "name": "Bocal 14 mm (15 m³/h, R 32 m)",
+            "curve": {
+              "k": 0.0006588078458684123,
+              "x": 0.5,
+              "ra": 8.79891214415196,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 70.0,
+            "defH": 40.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "g18",
+            "name": "Bocal 18 mm (25 m³/h, R 40 m)",
+            "curve": {
+              "k": 0.0010352166562499026,
+              "x": 0.5,
+              "ra": 10.554450113538381,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 35.0,
+            "maxH": 80.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 420.0,
+        "inletMm": 40.0,
+        "riser": 1.5,
+        "enabled": true
+      },
+      {
+        "id": "rotor",
+        "name": "Rotor de jardim 1/2\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r1.5",
+            "name": "#1.5 (0,35 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.000019444444444444442,
+              "x": 0.5,
+              "ra": 2.5930505547084204,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3",
+            "name": "#3 (0,70 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000038888888888888884,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3_180",
+            "name": "#3 180° (0,35 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000019444444444444442,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3_90",
+            "name": "#3 90° (0,18 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000009999999999999999,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 45.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true
+      },
+      {
+        "id": "spray",
+        "name": "Spray pop-up 4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "s12",
+            "name": "12F (0,60 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000037267799624996494,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s12h",
+            "name": "12H (0,30 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000018633899812498247,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s12q",
+            "name": "12Q (0,15 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000009316949906249123,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s15",
+            "name": "15F (0,84 m³/h, R 4,6 m)",
+            "curve": {
+              "k": 0.00005217491947499509,
+              "x": 0.5,
+              "ra": 1.612119878688,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 12.0,
+        "inletMm": 15.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "demand",
+        "name": "Ponto de demanda",
+        "kind": "demandPoint",
+        "nozzles": [
+          {
+            "id": "d5",
+            "name": "5 m³/h @ 20 m",
+            "curve": {
+              "k": 0.0013888888888888887,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 80.0,
+            "defH": 20.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          },
+          {
+            "id": "d10",
+            "name": "10 m³/h @ 20 m",
+            "curve": {
+              "k": 0.0027777777777777775,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 80.0,
+            "defH": 20.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          },
+          {
+            "id": "d20",
+            "name": "20 m³/h @ 25 m",
+            "curve": {
+              "k": 0.005555555555555555,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 80.0,
+            "defH": 25.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 50.0,
+        "riser": 0.0,
+        "enabled": true
+      }
+    ],
+    "tapes": [
+      {
+        "id": "tape16_10_30",
+        "name": "Fita gotejadora 16 mm, 1,0 L/h @ 0,30 m",
+        "nominalMm": 16.0,
+        "idMm": 15.6,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 1.0499013139145199e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 15.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.45,
+        "enabled": true
+      },
+      {
+        "id": "tape16_16_20",
+        "name": "Fita gotejadora 16 mm, 1,6 L/h @ 0,20 m",
+        "nominalMm": 16.0,
+        "idMm": 15.6,
+        "spacing": 0.2,
+        "emitter": {
+          "k": 1.679842102263232e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 15.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.55,
+        "enabled": true
+      },
+      {
+        "id": "drip16_16_50",
+        "name": "Tubo gotejador 16 mm, 1,6 L/h @ 0,50 m",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 1.405456737852613e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 25.0,
+        "inletH": 10.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 30.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.1,
+        "enabled": true
+      },
+      {
+        "id": "drip16_24_75",
+        "name": "Tubo gotejador 16 mm, 2,4 L/h @ 0,75 m",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 2.1081851067789193e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 25.0,
+        "inletH": 10.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 30.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.05,
+        "enabled": true
+      },
+      {
+        "id": "drip16pc_16_50",
+        "name": "Tubo gotejador PC 16 mm, 1,6 L/h @ 0,50 m",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 4.0533815082484875e-7,
+          "x": 0.04,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 15.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.6,
+        "enabled": true
+      },
+      {
+        "id": "drip20pc_23_75",
+        "name": "Tubo gotejador PC 20 mm, 2,3 L/h @ 0,75 m",
+        "nominalMm": 20.0,
+        "idMm": 17.5,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 5.8267359181072e-7,
+          "x": 0.04,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 15.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 2.1,
+        "enabled": true
+      }
+    ],
+    "valves": [
+      {
+        "id": "ev25",
+        "name": "Válvula elétrica 1\"",
+        "kind": "control",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 1269582.073997794,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00005555555555555556,
+        "maxQ": 0.0016666666666666666,
+        "cost": 120.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev40",
+        "name": "Válvula elétrica 1½\"",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 177579.27975941633,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0002777777777777778,
+        "maxQ": 0.0044444444444444444,
+        "cost": 260.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev50",
+        "name": "Válvula elétrica 2\"",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 66124.06635405176,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0005555555555555556,
+        "maxQ": 0.008333333333333333,
+        "cost": 380.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev80",
+        "name": "Válvula hidráulica 3\"",
+        "kind": "control",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9080.758624061062,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.001388888888888889,
+        "maxQ": 0.022222222222222223,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev100",
+        "name": "Válvula hidráulica 4\"",
+        "kind": "control",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3306.2033177025883,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.002777777777777778,
+        "maxQ": 0.03888888888888889,
+        "cost": 1500.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "prv50",
+        "name": "Válvula reguladora de pressão 2\"",
+        "kind": "prv",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 39674.43981243106,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.008333333333333333,
+        "cost": 650.0,
+        "setting": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "prv80",
+        "name": "Válvula reguladora de pressão 3\"",
+        "kind": "prv",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 6053.839082707375,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 1200.0,
+        "setting": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "gate50",
+        "name": "Registro gaveta 2\"",
+        "kind": "isolation",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 2644.9626541620705,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.011111111111111112,
+        "cost": 90.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate100",
+        "name": "Registro gaveta 4\"",
+        "kind": "isolation",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 165.3101658851294,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.041666666666666664,
+        "cost": 420.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check100",
+        "name": "Válvula de retenção 4\"",
+        "kind": "check",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 1653.1016588512941,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.041666666666666664,
+        "cost": 380.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc50",
+        "name": "Filtro de discos 2\" (120 mesh)",
+        "kind": "filter",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 62208.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.006944444444444444,
+        "cost": 850.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen80",
+        "name": "Filtro de tela 3\"",
+        "kind": "filter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9000.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1400.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter50",
+        "name": "Hidrômetro 2\"",
+        "kind": "meter",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 92573.69289567247,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.005555555555555556,
+        "cost": 700.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "backflow50",
+        "name": "Válvula anti-refluxo 2\"",
+        "kind": "backflow",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 105798.50616648282,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.006944444444444444,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air50",
+        "name": "Ventosa 2\"",
+        "kind": "airRelease",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 180.0,
+        "setting": 0.0,
+        "enabled": true
+      }
+    ],
+    "pumps": [
+      {
+        "id": "pump_small",
+        "name": "Bomba centrífuga 3 cv (10 m³/h @ 35 m)",
+        "points": [
+          [
+            0.0,
+            45.0
+          ],
+          [
+            0.001388888888888889,
+            41.0
+          ],
+          [
+            0.002777777777777778,
+            35.0
+          ],
+          [
+            0.004166666666666667,
+            25.0
+          ]
+        ],
+        "eff": 0.55,
+        "minQ": 0.0,
+        "maxQ": 0.004166666666666667,
+        "cost": 2200.0,
+        "enabled": true
+      },
+      {
+        "id": "pump_mid",
+        "name": "Bomba centrífuga 10 cv (40 m³/h @ 45 m)",
+        "points": [
+          [
+            0.0,
+            58.0
+          ],
+          [
+            0.005555555555555556,
+            53.0
+          ],
+          [
+            0.011111111111111112,
+            45.0
+          ],
+          [
+            0.016666666666666666,
+            30.0
+          ]
+        ],
+        "eff": 0.65,
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 6500.0,
+        "enabled": true
+      },
+      {
+        "id": "pump_big",
+        "name": "Bomba centrífuga 30 cv (120 m³/h @ 55 m)",
+        "points": [
+          [
+            0.0,
+            70.0
+          ],
+          [
+            0.016666666666666666,
+            64.0
+          ],
+          [
+            0.03333333333333333,
+            55.0
+          ],
+          [
+            0.05,
+            38.0
+          ]
+        ],
+        "eff": 0.72,
+        "minQ": 0.0,
+        "maxQ": 0.05,
+        "cost": 18000.0,
+        "enabled": true
+      },
+      {
+        "id": "pump_sub",
+        "name": "Bomba submersa 7,5 cv (25 m³/h @ 60 m)",
+        "points": [
+          [
+            0.0,
+            80.0
+          ],
+          [
+            0.003333333333333333,
+            72.0
+          ],
+          [
+            0.006944444444444444,
+            60.0
+          ],
+          [
+            0.009722222222222222,
+            40.0
+          ]
+        ],
+        "eff": 0.6,
+        "minQ": 0.0,
+        "maxQ": 0.009722222222222222,
+        "cost": 5400.0,
+        "enabled": true
+      }
+    ],
+    "fittings": [
+      {
+        "id": "cpl16",
+        "name": "Luva 16 mm",
+        "kind": "coupler",
+        "sizeMm": 16.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_16",
+        "name": "Cotovelo 90° 16 mm",
+        "kind": "elbow90",
+        "sizeMm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_16",
+        "name": "Cotovelo 45° 16 mm",
+        "kind": "elbow45",
+        "sizeMm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "tee16",
+        "name": "Tê 16 mm",
+        "kind": "tee",
+        "sizeMm": 16.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "cross16",
+        "name": "Cruzeta 16 mm",
+        "kind": "cross",
+        "sizeMm": 16.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cap16",
+        "name": "Tampão (cap) 16 mm",
+        "kind": "endCap",
+        "sizeMm": 16.0,
+        "cost": 2.0,
+        "enabled": true
+      },
+      {
+        "id": "adp16",
+        "name": "Adaptador roscado 16 mm",
+        "kind": "adapter",
+        "sizeMm": 16.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl20",
+        "name": "Luva 20 mm",
+        "kind": "coupler",
+        "sizeMm": 20.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_20",
+        "name": "Cotovelo 90° 20 mm",
+        "kind": "elbow90",
+        "sizeMm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_20",
+        "name": "Cotovelo 45° 20 mm",
+        "kind": "elbow45",
+        "sizeMm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "tee20",
+        "name": "Tê 20 mm",
+        "kind": "tee",
+        "sizeMm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "cross20",
+        "name": "Cruzeta 20 mm",
+        "kind": "cross",
+        "sizeMm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cap20",
+        "name": "Tampão (cap) 20 mm",
+        "kind": "endCap",
+        "sizeMm": 20.0,
+        "cost": 2.0,
+        "enabled": true
+      },
+      {
+        "id": "adp20",
+        "name": "Adaptador roscado 20 mm",
+        "kind": "adapter",
+        "sizeMm": 20.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "red20x16",
+        "name": "Redução 20 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 20.0,
+        "size2Mm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer20x16",
+        "name": "Tê de redução 20 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 20.0,
+        "size2Mm": 16.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl25",
+        "name": "Luva 25 mm",
+        "kind": "coupler",
+        "sizeMm": 25.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_25",
+        "name": "Cotovelo 90° 25 mm",
+        "kind": "elbow90",
+        "sizeMm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_25",
+        "name": "Cotovelo 45° 25 mm",
+        "kind": "elbow45",
+        "sizeMm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "tee25",
+        "name": "Tê 25 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cross25",
+        "name": "Cruzeta 25 mm",
+        "kind": "cross",
+        "sizeMm": 25.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cap25",
+        "name": "Tampão (cap) 25 mm",
+        "kind": "endCap",
+        "sizeMm": 25.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp25",
+        "name": "Adaptador roscado 25 mm",
+        "kind": "adapter",
+        "sizeMm": 25.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "red25x16",
+        "name": "Redução 25 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 25.0,
+        "size2Mm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer25x16",
+        "name": "Tê de redução 25 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "size2Mm": 16.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "red25x20",
+        "name": "Redução 25 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 25.0,
+        "size2Mm": 20.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer25x20",
+        "name": "Tê de redução 25 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "size2Mm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl32",
+        "name": "Luva 32 mm",
+        "kind": "coupler",
+        "sizeMm": 32.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_32",
+        "name": "Cotovelo 90° 32 mm",
+        "kind": "elbow90",
+        "sizeMm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_32",
+        "name": "Cotovelo 45° 32 mm",
+        "kind": "elbow45",
+        "sizeMm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "tee32",
+        "name": "Tê 32 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cross32",
+        "name": "Cruzeta 32 mm",
+        "kind": "cross",
+        "sizeMm": 32.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cap32",
+        "name": "Tampão (cap) 32 mm",
+        "kind": "endCap",
+        "sizeMm": 32.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp32",
+        "name": "Adaptador roscado 32 mm",
+        "kind": "adapter",
+        "sizeMm": 32.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x16",
+        "name": "Redução 32 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 16.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x16",
+        "name": "Tê de redução 32 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 16.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x20",
+        "name": "Redução 32 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x20",
+        "name": "Tê de redução 32 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 20.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x25",
+        "name": "Redução 32 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x25",
+        "name": "Tê de redução 32 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 25.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl35",
+        "name": "Luva 35 mm",
+        "kind": "coupler",
+        "sizeMm": 35.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_35",
+        "name": "Cotovelo 90° 35 mm",
+        "kind": "elbow90",
+        "sizeMm": 35.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_35",
+        "name": "Cotovelo 45° 35 mm",
+        "kind": "elbow45",
+        "sizeMm": 35.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "tee35",
+        "name": "Tê 35 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "cross35",
+        "name": "Cruzeta 35 mm",
+        "kind": "cross",
+        "sizeMm": 35.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cap35",
+        "name": "Tampão (cap) 35 mm",
+        "kind": "endCap",
+        "sizeMm": 35.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp35",
+        "name": "Adaptador roscado 35 mm",
+        "kind": "adapter",
+        "sizeMm": 35.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x16",
+        "name": "Redução 35 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 16.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x16",
+        "name": "Tê de redução 35 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 16.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x20",
+        "name": "Redução 35 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x20",
+        "name": "Tê de redução 35 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 20.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x25",
+        "name": "Redução 35 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 25.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x25",
+        "name": "Tê de redução 35 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 25.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x32",
+        "name": "Redução 35 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x32",
+        "name": "Tê de redução 35 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 32.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl40",
+        "name": "Luva 40 mm",
+        "kind": "coupler",
+        "sizeMm": 40.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_40",
+        "name": "Cotovelo 90° 40 mm",
+        "kind": "elbow90",
+        "sizeMm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_40",
+        "name": "Cotovelo 45° 40 mm",
+        "kind": "elbow45",
+        "sizeMm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "tee40",
+        "name": "Tê 40 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cross40",
+        "name": "Cruzeta 40 mm",
+        "kind": "cross",
+        "sizeMm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "cap40",
+        "name": "Tampão (cap) 40 mm",
+        "kind": "endCap",
+        "sizeMm": 40.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "adp40",
+        "name": "Adaptador roscado 40 mm",
+        "kind": "adapter",
+        "sizeMm": 40.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x16",
+        "name": "Redução 40 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 16.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x16",
+        "name": "Tê de redução 40 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 16.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x20",
+        "name": "Redução 40 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x20",
+        "name": "Tê de redução 40 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 20.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x25",
+        "name": "Redução 40 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 25.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x25",
+        "name": "Tê de redução 40 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 25.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x32",
+        "name": "Redução 40 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x32",
+        "name": "Tê de redução 40 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 32.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x35",
+        "name": "Redução 40 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 35.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x35",
+        "name": "Tê de redução 40 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 35.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl50",
+        "name": "Luva 50 mm",
+        "kind": "coupler",
+        "sizeMm": 50.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_50",
+        "name": "Cotovelo 90° 50 mm",
+        "kind": "elbow90",
+        "sizeMm": 50.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_50",
+        "name": "Cotovelo 45° 50 mm",
+        "kind": "elbow45",
+        "sizeMm": 50.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "tee50",
+        "name": "Tê 50 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cross50",
+        "name": "Cruzeta 50 mm",
+        "kind": "cross",
+        "sizeMm": 50.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "cap50",
+        "name": "Tampão (cap) 50 mm",
+        "kind": "endCap",
+        "sizeMm": 50.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "adp50",
+        "name": "Adaptador roscado 50 mm",
+        "kind": "adapter",
+        "sizeMm": 50.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x16",
+        "name": "Redução 50 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 16.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x16",
+        "name": "Tê de redução 50 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 16.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x20",
+        "name": "Redução 50 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x20",
+        "name": "Tê de redução 50 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 20.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x25",
+        "name": "Redução 50 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 25.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x25",
+        "name": "Tê de redução 50 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 25.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x32",
+        "name": "Redução 50 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 32.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x32",
+        "name": "Tê de redução 50 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 32.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x35",
+        "name": "Redução 50 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 35.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x35",
+        "name": "Tê de redução 50 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 35.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x40",
+        "name": "Redução 50 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x40",
+        "name": "Tê de redução 50 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl75",
+        "name": "Luva 75 mm",
+        "kind": "coupler",
+        "sizeMm": 75.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_75",
+        "name": "Cotovelo 90° 75 mm",
+        "kind": "elbow90",
+        "sizeMm": 75.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_75",
+        "name": "Cotovelo 45° 75 mm",
+        "kind": "elbow45",
+        "sizeMm": 75.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "tee75",
+        "name": "Tê 75 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "cross75",
+        "name": "Cruzeta 75 mm",
+        "kind": "cross",
+        "sizeMm": 75.0,
+        "cost": 23.0,
+        "enabled": true
+      },
+      {
+        "id": "cap75",
+        "name": "Tampão (cap) 75 mm",
+        "kind": "endCap",
+        "sizeMm": 75.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "adp75",
+        "name": "Adaptador roscado 75 mm",
+        "kind": "adapter",
+        "sizeMm": 75.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x16",
+        "name": "Redução 75 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 16.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x16",
+        "name": "Tê de redução 75 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 16.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x20",
+        "name": "Redução 75 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 20.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x20",
+        "name": "Tê de redução 75 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 20.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x25",
+        "name": "Redução 75 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 25.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x25",
+        "name": "Tê de redução 75 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 25.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x32",
+        "name": "Redução 75 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 32.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x32",
+        "name": "Tê de redução 75 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 32.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x35",
+        "name": "Redução 75 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 35.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x35",
+        "name": "Tê de redução 75 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 35.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x40",
+        "name": "Redução 75 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 40.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x40",
+        "name": "Tê de redução 75 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 40.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x50",
+        "name": "Redução 75 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 50.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x50",
+        "name": "Tê de redução 75 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 50.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl100",
+        "name": "Luva 100 mm",
+        "kind": "coupler",
+        "sizeMm": 100.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_100",
+        "name": "Cotovelo 90° 100 mm",
+        "kind": "elbow90",
+        "sizeMm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_100",
+        "name": "Cotovelo 45° 100 mm",
+        "kind": "elbow45",
+        "sizeMm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "tee100",
+        "name": "Tê 100 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "cost": 22.0,
+        "enabled": true
+      },
+      {
+        "id": "cross100",
+        "name": "Cruzeta 100 mm",
+        "kind": "cross",
+        "sizeMm": 100.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "cap100",
+        "name": "Tampão (cap) 100 mm",
+        "kind": "endCap",
+        "sizeMm": 100.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "adp100",
+        "name": "Adaptador roscado 100 mm",
+        "kind": "adapter",
+        "sizeMm": 100.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x16",
+        "name": "Redução 100 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 16.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x20",
+        "name": "Redução 100 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 20.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x20",
+        "name": "Tê de redução 100 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 20.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x25",
+        "name": "Redução 100 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 25.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x25",
+        "name": "Tê de redução 100 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 25.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x32",
+        "name": "Redução 100 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 32.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x32",
+        "name": "Tê de redução 100 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 32.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x35",
+        "name": "Redução 100 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 35.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x35",
+        "name": "Tê de redução 100 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 35.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x40",
+        "name": "Redução 100 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x40",
+        "name": "Tê de redução 100 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 40.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x50",
+        "name": "Redução 100 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 50.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x50",
+        "name": "Tê de redução 100 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 50.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x75",
+        "name": "Redução 100 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 75.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x75",
+        "name": "Tê de redução 100 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 75.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl110",
+        "name": "Luva 110 mm",
+        "kind": "coupler",
+        "sizeMm": 110.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_110",
+        "name": "Cotovelo 90° 110 mm",
+        "kind": "elbow90",
+        "sizeMm": 110.0,
+        "cost": 18.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_110",
+        "name": "Cotovelo 45° 110 mm",
+        "kind": "elbow45",
+        "sizeMm": 110.0,
+        "cost": 18.0,
+        "enabled": true
+      },
+      {
+        "id": "tee110",
+        "name": "Tê 110 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "cross110",
+        "name": "Cruzeta 110 mm",
+        "kind": "cross",
+        "sizeMm": 110.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "cap110",
+        "name": "Tampão (cap) 110 mm",
+        "kind": "endCap",
+        "sizeMm": 110.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "adp110",
+        "name": "Adaptador roscado 110 mm",
+        "kind": "adapter",
+        "sizeMm": 110.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x16",
+        "name": "Redução 110 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 16.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x20",
+        "name": "Redução 110 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 20.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x20",
+        "name": "Tê de redução 110 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 20.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x25",
+        "name": "Redução 110 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 25.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x25",
+        "name": "Tê de redução 110 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 25.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x32",
+        "name": "Redução 110 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 32.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x32",
+        "name": "Tê de redução 110 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 32.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x35",
+        "name": "Redução 110 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 35.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x35",
+        "name": "Tê de redução 110 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 35.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x40",
+        "name": "Redução 110 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 40.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x40",
+        "name": "Tê de redução 110 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 40.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x50",
+        "name": "Redução 110 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 50.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x50",
+        "name": "Tê de redução 110 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 50.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x75",
+        "name": "Redução 110 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 75.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x75",
+        "name": "Tê de redução 110 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 75.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x100",
+        "name": "Redução 110 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 100.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x100",
+        "name": "Tê de redução 110 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 100.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl125",
+        "name": "Luva 125 mm",
+        "kind": "coupler",
+        "sizeMm": 125.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_125",
+        "name": "Cotovelo 90° 125 mm",
+        "kind": "elbow90",
+        "sizeMm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_125",
+        "name": "Cotovelo 45° 125 mm",
+        "kind": "elbow45",
+        "sizeMm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "tee125",
+        "name": "Tê 125 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "cross125",
+        "name": "Cruzeta 125 mm",
+        "kind": "cross",
+        "sizeMm": 125.0,
+        "cost": 37.0,
+        "enabled": true
+      },
+      {
+        "id": "cap125",
+        "name": "Tampão (cap) 125 mm",
+        "kind": "endCap",
+        "sizeMm": 125.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "adp125",
+        "name": "Adaptador roscado 125 mm",
+        "kind": "adapter",
+        "sizeMm": 125.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x16",
+        "name": "Redução 125 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 16.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x20",
+        "name": "Redução 125 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 20.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x20",
+        "name": "Tê de redução 125 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 20.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x25",
+        "name": "Redução 125 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 25.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x25",
+        "name": "Tê de redução 125 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 25.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x32",
+        "name": "Redução 125 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 32.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x32",
+        "name": "Tê de redução 125 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 32.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x35",
+        "name": "Redução 125 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 35.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x35",
+        "name": "Tê de redução 125 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 35.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x40",
+        "name": "Redução 125 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 40.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x40",
+        "name": "Tê de redução 125 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 40.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x50",
+        "name": "Redução 125 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 50.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x50",
+        "name": "Tê de redução 125 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 50.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x75",
+        "name": "Redução 125 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 75.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x75",
+        "name": "Tê de redução 125 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 75.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x100",
+        "name": "Redução 125 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x100",
+        "name": "Tê de redução 125 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 100.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x110",
+        "name": "Redução 125 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 110.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x110",
+        "name": "Tê de redução 125 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 110.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl150",
+        "name": "Luva 150 mm",
+        "kind": "coupler",
+        "sizeMm": 150.0,
+        "cost": 16.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_150",
+        "name": "Cotovelo 90° 150 mm",
+        "kind": "elbow90",
+        "sizeMm": 150.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_150",
+        "name": "Cotovelo 45° 150 mm",
+        "kind": "elbow45",
+        "sizeMm": 150.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "tee150",
+        "name": "Tê 150 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "cross150",
+        "name": "Cruzeta 150 mm",
+        "kind": "cross",
+        "sizeMm": 150.0,
+        "cost": 44.0,
+        "enabled": true
+      },
+      {
+        "id": "cap150",
+        "name": "Tampão (cap) 150 mm",
+        "kind": "endCap",
+        "sizeMm": 150.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "adp150",
+        "name": "Adaptador roscado 150 mm",
+        "kind": "adapter",
+        "sizeMm": 150.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x16",
+        "name": "Redução 150 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 16.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x20",
+        "name": "Redução 150 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 20.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x20",
+        "name": "Tê de redução 150 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 20.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x25",
+        "name": "Redução 150 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 25.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x25",
+        "name": "Tê de redução 150 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 25.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x32",
+        "name": "Redução 150 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 32.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x32",
+        "name": "Tê de redução 150 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 32.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x35",
+        "name": "Redução 150 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 35.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x35",
+        "name": "Tê de redução 150 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 35.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x40",
+        "name": "Redução 150 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 40.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x40",
+        "name": "Tê de redução 150 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 40.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x50",
+        "name": "Redução 150 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 50.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x50",
+        "name": "Tê de redução 150 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 50.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x75",
+        "name": "Redução 150 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 75.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x75",
+        "name": "Tê de redução 150 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 75.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x100",
+        "name": "Redução 150 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 100.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x100",
+        "name": "Tê de redução 150 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 100.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x110",
+        "name": "Redução 150 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 110.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x110",
+        "name": "Tê de redução 150 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 110.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x125",
+        "name": "Redução 150 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x125",
+        "name": "Tê de redução 150 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 125.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl160",
+        "name": "Luva 160 mm",
+        "kind": "coupler",
+        "sizeMm": 160.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_160",
+        "name": "Cotovelo 90° 160 mm",
+        "kind": "elbow90",
+        "sizeMm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_160",
+        "name": "Cotovelo 45° 160 mm",
+        "kind": "elbow45",
+        "sizeMm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "tee160",
+        "name": "Tê 160 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "cost": 34.0,
+        "enabled": true
+      },
+      {
+        "id": "cross160",
+        "name": "Cruzeta 160 mm",
+        "kind": "cross",
+        "sizeMm": 160.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "cap160",
+        "name": "Tampão (cap) 160 mm",
+        "kind": "endCap",
+        "sizeMm": 160.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "adp160",
+        "name": "Adaptador roscado 160 mm",
+        "kind": "adapter",
+        "sizeMm": 160.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x16",
+        "name": "Redução 160 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 16.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x20",
+        "name": "Redução 160 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 20.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x20",
+        "name": "Tê de redução 160 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 20.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x25",
+        "name": "Redução 160 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 25.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x25",
+        "name": "Tê de redução 160 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 25.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x32",
+        "name": "Redução 160 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 32.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x32",
+        "name": "Tê de redução 160 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 32.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x35",
+        "name": "Redução 160 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 35.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x35",
+        "name": "Tê de redução 160 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 35.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x40",
+        "name": "Redução 160 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 40.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x40",
+        "name": "Tê de redução 160 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 40.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x50",
+        "name": "Redução 160 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 50.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x50",
+        "name": "Tê de redução 160 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 50.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x75",
+        "name": "Redução 160 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 75.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x75",
+        "name": "Tê de redução 160 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 75.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x100",
+        "name": "Redução 160 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 100.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x100",
+        "name": "Tê de redução 160 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 100.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x110",
+        "name": "Redução 160 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 110.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x110",
+        "name": "Tê de redução 160 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 110.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x125",
+        "name": "Redução 160 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 125.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x125",
+        "name": "Tê de redução 160 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 125.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x150",
+        "name": "Redução 160 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 150.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x150",
+        "name": "Tê de redução 160 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 150.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl200",
+        "name": "Luva 200 mm",
+        "kind": "coupler",
+        "sizeMm": 200.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_200",
+        "name": "Cotovelo 90° 200 mm",
+        "kind": "elbow90",
+        "sizeMm": 200.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_200",
+        "name": "Cotovelo 45° 200 mm",
+        "kind": "elbow45",
+        "sizeMm": 200.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "tee200",
+        "name": "Tê 200 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "cost": 42.0,
+        "enabled": true
+      },
+      {
+        "id": "cross200",
+        "name": "Cruzeta 200 mm",
+        "kind": "cross",
+        "sizeMm": 200.0,
+        "cost": 58.0,
+        "enabled": true
+      },
+      {
+        "id": "cap200",
+        "name": "Tampão (cap) 200 mm",
+        "kind": "endCap",
+        "sizeMm": 200.0,
+        "cost": 16.0,
+        "enabled": true
+      },
+      {
+        "id": "adp200",
+        "name": "Adaptador roscado 200 mm",
+        "kind": "adapter",
+        "sizeMm": 200.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x16",
+        "name": "Redução 200 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 16.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x20",
+        "name": "Redução 200 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 20.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x20",
+        "name": "Tê de redução 200 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 20.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x25",
+        "name": "Redução 200 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 25.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x25",
+        "name": "Tê de redução 200 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 25.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x32",
+        "name": "Redução 200 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 32.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x32",
+        "name": "Tê de redução 200 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 32.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x35",
+        "name": "Redução 200 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 35.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x35",
+        "name": "Tê de redução 200 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 35.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x40",
+        "name": "Redução 200 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 40.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x40",
+        "name": "Tê de redução 200 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 40.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x50",
+        "name": "Redução 200 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 50.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x50",
+        "name": "Tê de redução 200 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 50.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x75",
+        "name": "Redução 200 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 75.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x75",
+        "name": "Tê de redução 200 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 75.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x100",
+        "name": "Redução 200 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 100.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x100",
+        "name": "Tê de redução 200 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 100.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x110",
+        "name": "Redução 200 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 110.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x110",
+        "name": "Tê de redução 200 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 110.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x125",
+        "name": "Redução 200 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 125.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x125",
+        "name": "Tê de redução 200 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 125.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x150",
+        "name": "Redução 200 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 150.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x150",
+        "name": "Tê de redução 200 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 150.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x160",
+        "name": "Redução 200 × 160 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x160",
+        "name": "Tê de redução 200 × 160 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 160.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl250",
+        "name": "Luva 250 mm",
+        "kind": "coupler",
+        "sizeMm": 250.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_250",
+        "name": "Cotovelo 90° 250 mm",
+        "kind": "elbow90",
+        "sizeMm": 250.0,
+        "cost": 39.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_250",
+        "name": "Cotovelo 45° 250 mm",
+        "kind": "elbow45",
+        "sizeMm": 250.0,
+        "cost": 39.0,
+        "enabled": true
+      },
+      {
+        "id": "tee250",
+        "name": "Tê 250 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "cost": 52.0,
+        "enabled": true
+      },
+      {
+        "id": "cross250",
+        "name": "Cruzeta 250 mm",
+        "kind": "cross",
+        "sizeMm": 250.0,
+        "cost": 72.0,
+        "enabled": true
+      },
+      {
+        "id": "cap250",
+        "name": "Tampão (cap) 250 mm",
+        "kind": "endCap",
+        "sizeMm": 250.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "adp250",
+        "name": "Adaptador roscado 250 mm",
+        "kind": "adapter",
+        "sizeMm": 250.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x16",
+        "name": "Redução 250 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 16.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x20",
+        "name": "Redução 250 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 20.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x20",
+        "name": "Tê de redução 250 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 20.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x25",
+        "name": "Redução 250 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 25.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x25",
+        "name": "Tê de redução 250 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 25.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x32",
+        "name": "Redução 250 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 32.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x32",
+        "name": "Tê de redução 250 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 32.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x35",
+        "name": "Redução 250 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 35.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x35",
+        "name": "Tê de redução 250 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 35.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x40",
+        "name": "Redução 250 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 40.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x40",
+        "name": "Tê de redução 250 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 40.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x50",
+        "name": "Redução 250 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 50.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x50",
+        "name": "Tê de redução 250 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 50.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x75",
+        "name": "Redução 250 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 75.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x75",
+        "name": "Tê de redução 250 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 75.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x100",
+        "name": "Redução 250 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 100.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x100",
+        "name": "Tê de redução 250 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 100.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x110",
+        "name": "Redução 250 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 110.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x110",
+        "name": "Tê de redução 250 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 110.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x125",
+        "name": "Redução 250 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 125.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x125",
+        "name": "Tê de redução 250 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 125.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x150",
+        "name": "Redução 250 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 150.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x150",
+        "name": "Tê de redução 250 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 150.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x160",
+        "name": "Redução 250 × 160 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 160.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x160",
+        "name": "Tê de redução 250 × 160 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 160.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x200",
+        "name": "Redução 250 × 200 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 200.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x200",
+        "name": "Tê de redução 250 × 200 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 200.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "to16",
+        "name": "Conector inicial de lateral 16 mm",
+        "kind": "takeOff",
+        "sizeMm": 16.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te16",
+        "name": "Final de linha 16 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 16.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to20",
+        "name": "Conector inicial de lateral 20 mm",
+        "kind": "takeOff",
+        "sizeMm": 20.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te20",
+        "name": "Final de linha 20 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 20.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to25",
+        "name": "Conector inicial de lateral 25 mm",
+        "kind": "takeOff",
+        "sizeMm": 25.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te25",
+        "name": "Final de linha 25 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 25.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to32",
+        "name": "Conector inicial de lateral 32 mm",
+        "kind": "takeOff",
+        "sizeMm": 32.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te32",
+        "name": "Final de linha 32 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 32.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "riser_micro",
+        "name": "Haste/tubinho de microaspersor",
+        "kind": "riser",
+        "sizeMm": 0.0,
+        "cost": 1.1,
+        "enabled": true
+      },
+      {
+        "id": "riser20",
+        "name": "Tubo de subida 20 mm",
+        "kind": "riser",
+        "sizeMm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "riser25",
+        "name": "Tubo de subida 25 mm",
+        "kind": "riser",
+        "sizeMm": 25.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "riser40",
+        "name": "Tubo de subida 40 mm",
+        "kind": "riser",
+        "sizeMm": 40.0,
+        "cost": 18.0,
+        "enabled": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "name": "IMAGES",
+      "color": 4294967295,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DRAWING",
+      "color": 4289773253,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "HATCHES",
+      "color": 4286091420,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SYMBOLS",
+      "color": 4289773253,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "TEXT",
+      "color": 4293718001,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DIMENSIONS",
+      "color": 4287669422,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTOURS",
+      "color": 4287458915,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SPOT_HEIGHTS",
+      "color": 4288776319,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "ZONE_PIPES",
+      "color": 4282557941,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "MAINLINE_PIPES",
+      "color": 4280191205,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SPRAYLINES",
+      "color": 4280731354,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "TAPES",
+      "color": 4284922730,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "OUTLETS",
+      "color": 4280923894,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WETTED_RADII",
+      "color": 1428797174,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTROL_VALVES",
+      "color": 4294944550,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WATER_SUPPLY",
+      "color": 4286470082,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "PUMPS",
+      "color": 4293874512,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "MISC_HYDRAULIC",
+      "color": 4294953512,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "JUNCTIONS",
+      "color": 4286091420,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "PIVOTS",
+      "color": 4283283116,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "AREAS",
+      "color": 867095937,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "LABELS",
+      "color": 4291811548,
+      "visible": true,
+      "locked": false
+    }
+  ],
+  "entities": [
+    {
+      "type": "contour",
+      "id": "e1",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -0.0
+        ],
+        [
+          250.0,
+          -0.0
+        ]
+      ],
+      "z": 100.0
+    },
+    {
+      "type": "contour",
+      "id": "e2",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -25.0
+        ],
+        [
+          250.0,
+          -25.0
+        ]
+      ],
+      "z": 105.0
+    },
+    {
+      "type": "contour",
+      "id": "e3",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -50.0
+        ],
+        [
+          250.0,
+          -50.0
+        ]
+      ],
+      "z": 110.0
+    },
+    {
+      "type": "contour",
+      "id": "e4",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -75.0
+        ],
+        [
+          250.0,
+          -75.0
+        ]
+      ],
+      "z": 115.0
+    },
+    {
+      "type": "contour",
+      "id": "e5",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -100.0
+        ],
+        [
+          250.0,
+          -100.0
+        ]
+      ],
+      "z": 120.0
+    },
+    {
+      "type": "contour",
+      "id": "e6",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -125.0
+        ],
+        [
+          250.0,
+          -125.0
+        ]
+      ],
+      "z": 125.0
+    },
+    {
+      "type": "contour",
+      "id": "e7",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -150.0
+        ],
+        [
+          250.0,
+          -150.0
+        ]
+      ],
+      "z": 130.0
+    },
+    {
+      "type": "contour",
+      "id": "e8",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -175.0
+        ],
+        [
+          250.0,
+          -175.0
+        ]
+      ],
+      "z": 135.0
+    },
+    {
+      "type": "contour",
+      "id": "e9",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -200.0
+        ],
+        [
+          250.0,
+          -200.0
+        ]
+      ],
+      "z": 140.0
+    },
+    {
+      "type": "contour",
+      "id": "e10",
+      "layer": "CONTOURS",
+      "pts": [
+        [
+          -40.0,
+          -225.0
+        ],
+        [
+          250.0,
+          -225.0
+        ]
+      ],
+      "z": 145.0
+    },
+    {
+      "type": "spotHeight",
+      "id": "e11",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        -40.0,
+        80.0
+      ],
+      "z": 99.6
+    },
+    {
+      "type": "spotHeight",
+      "id": "e12",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        250.0,
+        80.0
+      ],
+      "z": 99.6
+    },
+    {
+      "type": "spotHeight",
+      "id": "e13",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        100.0,
+        40.0
+      ],
+      "z": 99.8
+    },
+    {
+      "type": "circle",
+      "id": "e14",
+      "layer": "DRAWING",
+      "p": [
+        100.0,
+        -212.0
+      ],
+      "r": 8.0
+    },
+    {
+      "type": "symbol",
+      "id": "e15",
+      "layer": "SYMBOLS",
+      "p": [
+        100.0,
+        -212.0
+      ],
+      "kind": "tank",
+      "size": 4.0,
+      "rot": 0.0
+    },
+    {
+      "type": "text",
+      "id": "e16",
+      "layer": "TEXT",
+      "p": [
+        112.0,
+        -214.0
+      ],
+      "text": "Reservatório no alto",
+      "h": 3.0,
+      "rot": 0.0
+    },
+    {
+      "type": "text",
+      "id": "e17",
+      "layer": "TEXT",
+      "p": [
+        104.0,
+        -22.0
+      ],
+      "text": "Válvula reguladora de pressão",
+      "h": 2.0,
+      "rot": 0.0
+    },
+    {
+      "type": "polyline",
+      "id": "e18",
+      "layer": "DRAWING",
+      "name": "Gleba",
+      "pts": [
+        [
+          -8.0,
+          4.0
+        ],
+        [
+          212.0,
+          4.0
+        ],
+        [
+          212.0,
+          76.0
+        ],
+        [
+          -8.0,
+          76.0
+        ]
+      ],
+      "closed": true
+    },
+    {
+      "type": "text",
+      "id": "e19",
+      "layer": "TEXT",
+      "p": [
+        -8.0,
+        82.0
+      ],
+      "text": "Gotejamento por gravidade — exemplo OpenCADIrrigation",
+      "h": 3.5,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e20",
+      "layer": "SYMBOLS",
+      "p": [
+        206.0,
+        70.0
+      ],
+      "kind": "northArrow",
+      "size": 4.0,
+      "rot": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e21",
+      "layer": "TAPES",
+      "name": "L1",
+      "pts": [
+        [
+          0.0,
+          10.75
+        ],
+        [
+          100.0,
+          10.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e22",
+      "layer": "TAPES",
+      "name": "L2",
+      "pts": [
+        [
+          0.0,
+          12.25
+        ],
+        [
+          100.0,
+          12.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e23",
+      "layer": "TAPES",
+      "name": "L3",
+      "pts": [
+        [
+          0.0,
+          13.75
+        ],
+        [
+          100.0,
+          13.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e24",
+      "layer": "TAPES",
+      "name": "L4",
+      "pts": [
+        [
+          0.0,
+          15.25
+        ],
+        [
+          100.0,
+          15.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e25",
+      "layer": "TAPES",
+      "name": "L5",
+      "pts": [
+        [
+          0.0,
+          16.75
+        ],
+        [
+          100.0,
+          16.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e26",
+      "layer": "TAPES",
+      "name": "L6",
+      "pts": [
+        [
+          0.0,
+          18.25
+        ],
+        [
+          100.0,
+          18.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e27",
+      "layer": "TAPES",
+      "name": "L7",
+      "pts": [
+        [
+          0.0,
+          19.75
+        ],
+        [
+          100.0,
+          19.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e28",
+      "layer": "TAPES",
+      "name": "L8",
+      "pts": [
+        [
+          0.0,
+          21.25
+        ],
+        [
+          100.0,
+          21.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e29",
+      "layer": "TAPES",
+      "name": "L9",
+      "pts": [
+        [
+          0.0,
+          22.75
+        ],
+        [
+          100.0,
+          22.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e30",
+      "layer": "TAPES",
+      "name": "L10",
+      "pts": [
+        [
+          0.0,
+          24.25
+        ],
+        [
+          100.0,
+          24.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e31",
+      "layer": "TAPES",
+      "name": "L11",
+      "pts": [
+        [
+          0.0,
+          25.75
+        ],
+        [
+          100.0,
+          25.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e32",
+      "layer": "TAPES",
+      "name": "L12",
+      "pts": [
+        [
+          0.0,
+          27.25
+        ],
+        [
+          100.0,
+          27.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e33",
+      "layer": "TAPES",
+      "name": "L13",
+      "pts": [
+        [
+          0.0,
+          28.75
+        ],
+        [
+          100.0,
+          28.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e34",
+      "layer": "TAPES",
+      "name": "L14",
+      "pts": [
+        [
+          0.0,
+          30.25
+        ],
+        [
+          100.0,
+          30.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e35",
+      "layer": "TAPES",
+      "name": "L15",
+      "pts": [
+        [
+          0.0,
+          31.75
+        ],
+        [
+          100.0,
+          31.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e36",
+      "layer": "TAPES",
+      "name": "L16",
+      "pts": [
+        [
+          0.0,
+          33.25
+        ],
+        [
+          100.0,
+          33.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e37",
+      "layer": "TAPES",
+      "name": "L17",
+      "pts": [
+        [
+          0.0,
+          34.75
+        ],
+        [
+          100.0,
+          34.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e38",
+      "layer": "TAPES",
+      "name": "L18",
+      "pts": [
+        [
+          0.0,
+          36.25
+        ],
+        [
+          100.0,
+          36.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e39",
+      "layer": "TAPES",
+      "name": "L19",
+      "pts": [
+        [
+          0.0,
+          37.75
+        ],
+        [
+          100.0,
+          37.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e40",
+      "layer": "TAPES",
+      "name": "L20",
+      "pts": [
+        [
+          0.0,
+          39.25
+        ],
+        [
+          100.0,
+          39.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e41",
+      "layer": "TAPES",
+      "name": "L21",
+      "pts": [
+        [
+          0.0,
+          40.75
+        ],
+        [
+          100.0,
+          40.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e42",
+      "layer": "TAPES",
+      "name": "L22",
+      "pts": [
+        [
+          0.0,
+          42.25
+        ],
+        [
+          100.0,
+          42.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e43",
+      "layer": "TAPES",
+      "name": "L23",
+      "pts": [
+        [
+          0.0,
+          43.75
+        ],
+        [
+          100.0,
+          43.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e44",
+      "layer": "TAPES",
+      "name": "L24",
+      "pts": [
+        [
+          0.0,
+          45.25
+        ],
+        [
+          100.0,
+          45.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e45",
+      "layer": "TAPES",
+      "name": "L25",
+      "pts": [
+        [
+          0.0,
+          46.75
+        ],
+        [
+          100.0,
+          46.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e46",
+      "layer": "TAPES",
+      "name": "L26",
+      "pts": [
+        [
+          0.0,
+          48.25
+        ],
+        [
+          100.0,
+          48.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e47",
+      "layer": "TAPES",
+      "name": "L27",
+      "pts": [
+        [
+          0.0,
+          49.75
+        ],
+        [
+          100.0,
+          49.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e48",
+      "layer": "TAPES",
+      "name": "L28",
+      "pts": [
+        [
+          0.0,
+          51.25
+        ],
+        [
+          100.0,
+          51.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e49",
+      "layer": "TAPES",
+      "name": "L29",
+      "pts": [
+        [
+          0.0,
+          52.75
+        ],
+        [
+          100.0,
+          52.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e50",
+      "layer": "TAPES",
+      "name": "L30",
+      "pts": [
+        [
+          0.0,
+          54.25
+        ],
+        [
+          100.0,
+          54.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e51",
+      "layer": "TAPES",
+      "name": "L31",
+      "pts": [
+        [
+          0.0,
+          55.75
+        ],
+        [
+          100.0,
+          55.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e52",
+      "layer": "TAPES",
+      "name": "L32",
+      "pts": [
+        [
+          0.0,
+          57.25
+        ],
+        [
+          100.0,
+          57.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e53",
+      "layer": "TAPES",
+      "name": "L33",
+      "pts": [
+        [
+          0.0,
+          58.75
+        ],
+        [
+          100.0,
+          58.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e54",
+      "layer": "TAPES",
+      "name": "L34",
+      "pts": [
+        [
+          0.0,
+          60.25
+        ],
+        [
+          100.0,
+          60.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e55",
+      "layer": "TAPES",
+      "name": "L35",
+      "pts": [
+        [
+          0.0,
+          61.75
+        ],
+        [
+          100.0,
+          61.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e56",
+      "layer": "TAPES",
+      "name": "L36",
+      "pts": [
+        [
+          0.0,
+          63.25
+        ],
+        [
+          100.0,
+          63.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e57",
+      "layer": "TAPES",
+      "name": "L37",
+      "pts": [
+        [
+          0.0,
+          64.75
+        ],
+        [
+          100.0,
+          64.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e58",
+      "layer": "TAPES",
+      "name": "L38",
+      "pts": [
+        [
+          0.0,
+          66.25
+        ],
+        [
+          100.0,
+          66.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e59",
+      "layer": "TAPES",
+      "name": "L39",
+      "pts": [
+        [
+          0.0,
+          67.75
+        ],
+        [
+          100.0,
+          67.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e60",
+      "layer": "TAPES",
+      "name": "L40",
+      "pts": [
+        [
+          0.0,
+          69.25
+        ],
+        [
+          100.0,
+          69.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e61",
+      "layer": "ZONE_PIPES",
+      "name": "Submain Talhão 1",
+      "pts": [
+        [
+          0.0,
+          10.75
+        ],
+        [
+          0.0,
+          69.25
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e62",
+      "layer": "ZONE_PIPES",
+      "name": "Trecho Talhão 1",
+      "pts": [
+        [
+          -2.0,
+          40.0
+        ],
+        [
+          0.0,
+          40.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "controlValve",
+      "id": "e63",
+      "layer": "CONTROL_VALVES",
+      "name": "Talhão 1",
+      "p": [
+        -2.0,
+        40.0
+      ],
+      "spec": "ev40",
+      "zone": "Talhão 1",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e64",
+      "layer": "AREAS",
+      "name": "Talhão 1",
+      "pts": [
+        [
+          0.0,
+          10.0
+        ],
+        [
+          100.0,
+          10.0
+        ],
+        [
+          100.0,
+          70.0
+        ],
+        [
+          0.0,
+          70.0
+        ]
+      ],
+      "depth": 5.0,
+      "eff": 0.9,
+      "crop": "Hortaliças",
+      "epp": 2,
+      "wb": true,
+      "eto": 5.0,
+      "kc": 1.05,
+      "awc": 120.0,
+      "root": 0.4,
+      "mad": 0.45,
+      "psp": 0.3,
+      "rsp": 1.5,
+      "wf": 0.5
+    },
+    {
+      "type": "tape",
+      "id": "e65",
+      "layer": "TAPES",
+      "name": "L1",
+      "pts": [
+        [
+          204.0,
+          10.75
+        ],
+        [
+          104.0,
+          10.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e66",
+      "layer": "TAPES",
+      "name": "L2",
+      "pts": [
+        [
+          204.0,
+          12.25
+        ],
+        [
+          104.0,
+          12.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e67",
+      "layer": "TAPES",
+      "name": "L3",
+      "pts": [
+        [
+          204.0,
+          13.75
+        ],
+        [
+          104.0,
+          13.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e68",
+      "layer": "TAPES",
+      "name": "L4",
+      "pts": [
+        [
+          204.0,
+          15.25
+        ],
+        [
+          104.0,
+          15.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e69",
+      "layer": "TAPES",
+      "name": "L5",
+      "pts": [
+        [
+          204.0,
+          16.75
+        ],
+        [
+          104.0,
+          16.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e70",
+      "layer": "TAPES",
+      "name": "L6",
+      "pts": [
+        [
+          204.0,
+          18.25
+        ],
+        [
+          104.0,
+          18.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e71",
+      "layer": "TAPES",
+      "name": "L7",
+      "pts": [
+        [
+          204.0,
+          19.75
+        ],
+        [
+          104.0,
+          19.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e72",
+      "layer": "TAPES",
+      "name": "L8",
+      "pts": [
+        [
+          204.0,
+          21.25
+        ],
+        [
+          104.0,
+          21.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e73",
+      "layer": "TAPES",
+      "name": "L9",
+      "pts": [
+        [
+          204.0,
+          22.75
+        ],
+        [
+          104.0,
+          22.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e74",
+      "layer": "TAPES",
+      "name": "L10",
+      "pts": [
+        [
+          204.0,
+          24.25
+        ],
+        [
+          104.0,
+          24.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e75",
+      "layer": "TAPES",
+      "name": "L11",
+      "pts": [
+        [
+          204.0,
+          25.75
+        ],
+        [
+          104.0,
+          25.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e76",
+      "layer": "TAPES",
+      "name": "L12",
+      "pts": [
+        [
+          204.0,
+          27.25
+        ],
+        [
+          104.0,
+          27.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e77",
+      "layer": "TAPES",
+      "name": "L13",
+      "pts": [
+        [
+          204.0,
+          28.75
+        ],
+        [
+          104.0,
+          28.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e78",
+      "layer": "TAPES",
+      "name": "L14",
+      "pts": [
+        [
+          204.0,
+          30.25
+        ],
+        [
+          104.0,
+          30.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e79",
+      "layer": "TAPES",
+      "name": "L15",
+      "pts": [
+        [
+          204.0,
+          31.75
+        ],
+        [
+          104.0,
+          31.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e80",
+      "layer": "TAPES",
+      "name": "L16",
+      "pts": [
+        [
+          204.0,
+          33.25
+        ],
+        [
+          104.0,
+          33.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e81",
+      "layer": "TAPES",
+      "name": "L17",
+      "pts": [
+        [
+          204.0,
+          34.75
+        ],
+        [
+          104.0,
+          34.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e82",
+      "layer": "TAPES",
+      "name": "L18",
+      "pts": [
+        [
+          204.0,
+          36.25
+        ],
+        [
+          104.0,
+          36.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e83",
+      "layer": "TAPES",
+      "name": "L19",
+      "pts": [
+        [
+          204.0,
+          37.75
+        ],
+        [
+          104.0,
+          37.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e84",
+      "layer": "TAPES",
+      "name": "L20",
+      "pts": [
+        [
+          204.0,
+          39.25
+        ],
+        [
+          104.0,
+          39.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e85",
+      "layer": "TAPES",
+      "name": "L21",
+      "pts": [
+        [
+          204.0,
+          40.75
+        ],
+        [
+          104.0,
+          40.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e86",
+      "layer": "TAPES",
+      "name": "L22",
+      "pts": [
+        [
+          204.0,
+          42.25
+        ],
+        [
+          104.0,
+          42.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e87",
+      "layer": "TAPES",
+      "name": "L23",
+      "pts": [
+        [
+          204.0,
+          43.75
+        ],
+        [
+          104.0,
+          43.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e88",
+      "layer": "TAPES",
+      "name": "L24",
+      "pts": [
+        [
+          204.0,
+          45.25
+        ],
+        [
+          104.0,
+          45.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e89",
+      "layer": "TAPES",
+      "name": "L25",
+      "pts": [
+        [
+          204.0,
+          46.75
+        ],
+        [
+          104.0,
+          46.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e90",
+      "layer": "TAPES",
+      "name": "L26",
+      "pts": [
+        [
+          204.0,
+          48.25
+        ],
+        [
+          104.0,
+          48.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e91",
+      "layer": "TAPES",
+      "name": "L27",
+      "pts": [
+        [
+          204.0,
+          49.75
+        ],
+        [
+          104.0,
+          49.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e92",
+      "layer": "TAPES",
+      "name": "L28",
+      "pts": [
+        [
+          204.0,
+          51.25
+        ],
+        [
+          104.0,
+          51.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e93",
+      "layer": "TAPES",
+      "name": "L29",
+      "pts": [
+        [
+          204.0,
+          52.75
+        ],
+        [
+          104.0,
+          52.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e94",
+      "layer": "TAPES",
+      "name": "L30",
+      "pts": [
+        [
+          204.0,
+          54.25
+        ],
+        [
+          104.0,
+          54.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e95",
+      "layer": "TAPES",
+      "name": "L31",
+      "pts": [
+        [
+          204.0,
+          55.75
+        ],
+        [
+          104.0,
+          55.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e96",
+      "layer": "TAPES",
+      "name": "L32",
+      "pts": [
+        [
+          204.0,
+          57.25
+        ],
+        [
+          104.0,
+          57.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e97",
+      "layer": "TAPES",
+      "name": "L33",
+      "pts": [
+        [
+          204.0,
+          58.75
+        ],
+        [
+          104.0,
+          58.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e98",
+      "layer": "TAPES",
+      "name": "L34",
+      "pts": [
+        [
+          204.0,
+          60.25
+        ],
+        [
+          104.0,
+          60.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e99",
+      "layer": "TAPES",
+      "name": "L35",
+      "pts": [
+        [
+          204.0,
+          61.75
+        ],
+        [
+          104.0,
+          61.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e100",
+      "layer": "TAPES",
+      "name": "L36",
+      "pts": [
+        [
+          204.0,
+          63.25
+        ],
+        [
+          104.0,
+          63.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e101",
+      "layer": "TAPES",
+      "name": "L37",
+      "pts": [
+        [
+          204.0,
+          64.75
+        ],
+        [
+          104.0,
+          64.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e102",
+      "layer": "TAPES",
+      "name": "L38",
+      "pts": [
+        [
+          204.0,
+          66.25
+        ],
+        [
+          104.0,
+          66.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e103",
+      "layer": "TAPES",
+      "name": "L39",
+      "pts": [
+        [
+          204.0,
+          67.75
+        ],
+        [
+          104.0,
+          67.75
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e104",
+      "layer": "TAPES",
+      "name": "L40",
+      "pts": [
+        [
+          204.0,
+          69.25
+        ],
+        [
+          104.0,
+          69.25
+        ]
+      ],
+      "spec": "drip16_16_50",
+      "inlet": 10.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e105",
+      "layer": "ZONE_PIPES",
+      "name": "Submain Talhão 2",
+      "pts": [
+        [
+          204.0,
+          10.75
+        ],
+        [
+          204.0,
+          69.25
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e106",
+      "layer": "ZONE_PIPES",
+      "name": "Trecho Talhão 2",
+      "pts": [
+        [
+          206.0,
+          40.0
+        ],
+        [
+          204.0,
+          40.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "controlValve",
+      "id": "e107",
+      "layer": "CONTROL_VALVES",
+      "name": "Talhão 2",
+      "p": [
+        206.0,
+        40.0
+      ],
+      "spec": "ev40",
+      "zone": "Talhão 2",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e108",
+      "layer": "AREAS",
+      "name": "Talhão 2",
+      "pts": [
+        [
+          104.0,
+          10.0
+        ],
+        [
+          204.0,
+          10.0
+        ],
+        [
+          204.0,
+          70.0
+        ],
+        [
+          104.0,
+          70.0
+        ]
+      ],
+      "depth": 5.0,
+      "eff": 0.9,
+      "crop": "Hortaliças",
+      "epp": 2,
+      "wb": true,
+      "eto": 5.0,
+      "kc": 1.05,
+      "awc": 120.0,
+      "root": 0.4,
+      "mad": 0.45,
+      "psp": 0.3,
+      "rsp": 1.5,
+      "wf": 0.5
+    },
+    {
+      "type": "waterSupply",
+      "id": "e109",
+      "layer": "WATER_SUPPLY",
+      "name": "Reservatório no alto",
+      "p": [
+        100.0,
+        -210.0
+      ],
+      "calc": true,
+      "dh": 0.0,
+      "mh": 0.0,
+      "dq": 0.0,
+      "mq": 0.0,
+      "wl": 2.0
+    },
+    {
+      "type": "misc",
+      "id": "e110",
+      "layer": "MISC_HYDRAULIC",
+      "p": [
+        100.0,
+        -204.0
+      ],
+      "spec": "gate50",
+      "scope": "mainline",
+      "set": 0.0,
+      "rot": 0.0
+    },
+    {
+      "type": "misc",
+      "id": "e111",
+      "layer": "MISC_HYDRAULIC",
+      "p": [
+        100.0,
+        -20.0
+      ],
+      "spec": "prv50",
+      "scope": "mainline",
+      "set": 25.0,
+      "rot": 0.0
+    },
+    {
+      "type": "misc",
+      "id": "e112",
+      "layer": "MISC_HYDRAULIC",
+      "p": [
+        100.0,
+        -14.0
+      ],
+      "spec": "filter_disc50",
+      "scope": "mainline",
+      "set": 0.0,
+      "rot": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e113",
+      "layer": "MAINLINE_PIPES",
+      "name": "Adutora",
+      "pts": [
+        [
+          100.0,
+          -210.0
+        ],
+        [
+          100.0,
+          -204.0
+        ],
+        [
+          100.0,
+          -20.0
+        ],
+        [
+          100.0,
+          -14.0
+        ],
+        [
+          100.0,
+          -6.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e114",
+      "layer": "MAINLINE_PIPES",
+      "name": "Ramal oeste",
+      "pts": [
+        [
+          100.0,
+          -6.0
+        ],
+        [
+          -6.0,
+          -6.0
+        ],
+        [
+          -6.0,
+          40.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e115",
+      "layer": "MAINLINE_PIPES",
+      "name": "Trecho",
+      "pts": [
+        [
+          -6.0,
+          40.0
+        ],
+        [
+          -2.0,
+          40.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e116",
+      "layer": "MAINLINE_PIPES",
+      "name": "Ramal leste",
+      "pts": [
+        [
+          100.0,
+          -6.0
+        ],
+        [
+          210.0,
+          -6.0
+        ],
+        [
+          210.0,
+          40.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e117",
+      "layer": "MAINLINE_PIPES",
+      "name": "Trecho",
+      "pts": [
+        [
+          210.0,
+          40.0
+        ],
+        [
+          206.0,
+          40.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    }
+  ],
+  "systemFlows": [
+    {
+      "id": "sf1",
+      "name": "Turno 1 — Talhão 1",
+      "valves": [
+        "e63"
+      ],
+      "start": 6.0,
+      "dur": 3.0
+    },
+    {
+      "id": "sf2",
+      "name": "Turno 2 — Talhão 2",
+      "valves": [
+        "e107"
+      ],
+      "start": 9.0,
+      "dur": 3.0
+    }
+  ],
+  "nextId": 118
+}

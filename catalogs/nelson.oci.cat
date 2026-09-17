@@ -1,0 +1,416 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "nelson",
+  "brand": "Nelson Irrigation",
+  "name": "Nelson Irrigation",
+  "description": "R2000WF / R33 / R55 rotators and impact sprinklers for orchards and solid set, 3030 pivot sprinklers, SR100 big gun",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 6,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "nel_r2000wf",
+        "name": "Nelson R2000WF Rotator",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r2k_9",
+            "name": "#9 (0.39 m³/h, R 6.5 m)",
+            "curve": {
+              "k": 0.000024224069756247718,
+              "x": 0.5,
+              "ra": 2.277995480754783,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2k_11",
+            "name": "#11 (0.59 m³/h, R 7.5 m)",
+            "curve": {
+              "k": 0.000036646669631246545,
+              "x": 0.5,
+              "ra": 2.6284563239478262,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2k_13",
+            "name": "#13 (0.82 m³/h, R 8.5 m)",
+            "curve": {
+              "k": 0.000050932659487495205,
+              "x": 0.5,
+              "ra": 2.97891716714087,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2k_15",
+            "name": "#15 (1.09 m³/h, R 9.5 m)",
+            "curve": {
+              "k": 0.00006770316931874362,
+              "x": 0.5,
+              "ra": 3.3293780103339135,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "Nelson Irrigation"
+      },
+      {
+        "id": "nel_r33",
+        "name": "Nelson R33 Rotator",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r33_11",
+            "name": "#11 (0.55 m³/h, R 12 m)",
+            "curve": {
+              "k": 0.000027893278391466793,
+              "x": 0.5,
+              "ra": 3.649125559695976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r33_13",
+            "name": "#13 (0.77 m³/h, R 13 m)",
+            "curve": {
+              "k": 0.00003905058974805351,
+              "x": 0.5,
+              "ra": 3.9532193563373075,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r33_15",
+            "name": "#15 (1.02 m³/h, R 14 m)",
+            "curve": {
+              "k": 0.00005172935265326568,
+              "x": 0.5,
+              "ra": 4.2573131529786385,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "Nelson Irrigation"
+      },
+      {
+        "id": "nel_r55",
+        "name": "Nelson R55 Rotator",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r55_16",
+            "name": "#16 (1.6 m³/h, R 17 m)",
+            "curve": {
+              "k": 0.0000751248226425348,
+              "x": 0.5,
+              "ra": 4.8980713350156835,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 55.0,
+            "defH": 35.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r55_20",
+            "name": "#20 (2.5 m³/h, R 19 m)",
+            "curve": {
+              "k": 0.00011738253537896061,
+              "x": 0.5,
+              "ra": 5.474315021488116,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 55.0,
+            "defH": 35.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r55_24",
+            "name": "#24 (3.6 m³/h, R 21 m)",
+            "curve": {
+              "k": 0.0001690308509457033,
+              "x": 0.5,
+              "ra": 6.050558707960549,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 55.0,
+            "defH": 35.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 25.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "Nelson Irrigation"
+      },
+      {
+        "id": "nel_f33",
+        "name": "Nelson F33 impact sprinkler 3/4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "f33_35",
+            "name": "3.5 mm (0.9 m³/h, R 12 m)",
+            "curve": {
+              "k": 0.00004564354645876384,
+              "x": 0.5,
+              "ra": 3.649125559695976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "f33_40",
+            "name": "4.0 mm (1.2 m³/h, R 13 m)",
+            "curve": {
+              "k": 0.000060858061945018456,
+              "x": 0.5,
+              "ra": 3.9532193563373075,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "f33_45",
+            "name": "4.5 mm (1.5 m³/h, R 14 m)",
+            "curve": {
+              "k": 0.00007607257743127307,
+              "x": 0.5,
+              "ra": 4.2573131529786385,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "Nelson Irrigation"
+      },
+      {
+        "id": "nel_3030",
+        "name": "Nelson 3030 pivot sprinkler (R3000 rotator)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "3030_20",
+            "name": "#20 (0.55 m³/h, R 7 m)",
+            "curve": {
+              "k": 0.00004831257536368357,
+              "x": 0.5,
+              "ra": 3.126785145056742,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 6.0,
+            "maxH": 20.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3030_28",
+            "name": "#28 (1.07 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.00009398991934389349,
+              "x": 0.5,
+              "ra": 3.573468737207705,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 6.0,
+            "maxH": 20.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3030_36",
+            "name": "#36 (1.77 m³/h, R 9 m)",
+            "curve": {
+              "k": 0.0001554786516249453,
+              "x": 0.5,
+              "ra": 4.020152329358669,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 6.0,
+            "maxH": 20.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Nelson Irrigation"
+      },
+      {
+        "id": "nel_sr100",
+        "name": "Nelson SR100 big gun",
+        "kind": "gun",
+        "nozzles": [
+          {
+            "id": "sr100_16",
+            "name": "16 mm ring (22 m³/h, R 38 m)",
+            "curve": {
+              "k": 0.0009109906574999142,
+              "x": 0.5,
+              "ra": 10.026727607861462,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 80.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "sr100_20",
+            "name": "20 mm ring (34 m³/h, R 44 m)",
+            "curve": {
+              "k": 0.0014078946524998675,
+              "x": 0.5,
+              "ra": 11.609895124892219,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 80.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "sr100_24",
+            "name": "24 mm ring (49 m³/h, R 50 m)",
+            "curve": {
+              "k": 0.002029024646249809,
+              "x": 0.5,
+              "ra": 13.193062641922976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 80.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 50.0,
+        "riser": 1.5,
+        "enabled": true,
+        "sup": "Nelson Irrigation"
+      }
+    ],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "toro",
+  "brand": "Toro",
+  "name": "Toro",
+  "description": "Aqua-Traxx tape, Neptune PC / Blue Line driplines, DL2000, Toro golf/turf rotors",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 7,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "toro_t5",
+        "name": "Toro T5 RapidSet rotor",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "t5_15",
+            "name": "#1.5 (0.34 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.00001724311755108856,
+              "x": 0.5,
+              "ra": 2.432750373130651,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t5_30",
+            "name": "#3.0 (0.68 m³/h, R 11 m)",
+            "curve": {
+              "k": 0.00003448623510217712,
+              "x": 0.5,
+              "ra": 3.345031763054645,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t5_45",
+            "name": "#4.5 (1.02 m³/h, R 12 m)",
+            "curve": {
+              "k": 0.00005172935265326568,
+              "x": 0.5,
+              "ra": 3.649125559695976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Toro"
+      },
+      {
+        "id": "toro_570z",
+        "name": "Toro 570Z spray",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "570_12f",
+            "name": "12F (0.55 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.00003416214965624678,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "570_12h",
+            "name": "12H (0.27 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.00001677050983124842,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "570_15f",
+            "name": "15F (0.84 m³/h, R 4.6 m)",
+            "curve": {
+              "k": 0.00005217491947499509,
+              "x": 0.5,
+              "ra": 1.612119878688,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Toro"
+      }
+    ],
+    "tapes": [
+      {
+        "id": "toro_aquatraxx_16_10_30",
+        "name": "Toro Aqua-Traxx 16 mm 1.0 L/h @ 0.30 m",
+        "nominalMm": 16.0,
+        "idMm": 16.1,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 9.820927516479825e-8,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 12.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Toro"
+      },
+      {
+        "id": "toro_aquatraxx_16_15_20",
+        "name": "Toro Aqua-Traxx 16 mm 1.5 L/h @ 0.20 m",
+        "nominalMm": 16.0,
+        "idMm": 16.1,
+        "spacing": 0.2,
+        "emitter": {
+          "k": 1.473139127471974e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 12.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Toro"
+      },
+      {
+        "id": "toro_neptune_16_20_50",
+        "name": "Toro Neptune PC 16 mm 2.0 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 5.286203403453116e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 40.0,
+        "inletH": 12.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Toro"
+      },
+      {
+        "id": "toro_blueline_16_23_60",
+        "name": "Toro Blue Line PC 16 mm 2.3 L/h @ 0.60 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.6,
+        "emitter": {
+          "k": 6.079133913971083e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 40.0,
+        "inletH": 12.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Toro"
+      },
+      {
+        "id": "toro_dl2000_16_23_50",
+        "name": "Toro DL2000 16 mm 2.3 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 2.115559942805443e-7,
+          "x": 0.48,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 20.0,
+        "inletH": 10.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 25.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Toro"
+      }
+    ],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

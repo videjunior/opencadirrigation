@@ -1,0 +1,4 @@
+﻿id;name;nominalMm;idMm;material;c;ratingM;cost;supplier;code
+pvc50;"Tubo PVC PN60 DN50";50;46,4;pvc;150;60;8,90;"Fábrica X";"PVC-50-60"
+pvc75;"Tubo PVC PN60 DN75";75;70,4;pvc;150;60;15,20;"Fábrica X";"PVC-75-60"
+pe32;"PE 32 PN4";32;28;pe;140;40;2,10;"Fábrica Y";"PE32"

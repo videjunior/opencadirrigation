@@ -1,0 +1,262 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "senninger",
+  "brand": "Senninger",
+  "name": "Senninger",
+  "description": "Wobbler / Xi-Wob orchard sprinklers, i-Wob and LDN pivot sprinklers, pressure regulators",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 6,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "sen_xiwob",
+        "name": "Senninger Xi-Wob (orchard / solid set)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "xw_7",
+            "name": "#7 (0.41 m³/h, R 7 m)",
+            "curve": {
+              "k": 0.0000294059846656489,
+              "x": 0.5,
+              "ra": 2.7131018614775,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 25.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "xw_9",
+            "name": "#9 (0.68 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.00004877090139668599,
+              "x": 0.5,
+              "ra": 3.100687841688571,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 25.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "xw_11",
+            "name": "#11 (1.02 m³/h, R 9 m)",
+            "curve": {
+              "k": 0.00007315635209502897,
+              "x": 0.5,
+              "ra": 3.4882738218996425,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 25.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "Senninger"
+      },
+      {
+        "id": "sen_iwob",
+        "name": "Senninger i-Wob2 pivot sprinkler",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "iw_20",
+            "name": "#20 (0.53 m³/h, R 7 m)",
+            "curve": {
+              "k": 0.00004655575444136781,
+              "x": 0.5,
+              "ra": 3.126785145056742,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 6.0,
+            "maxH": 15.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "iw_28",
+            "name": "#28 (1.04 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.00009135468796041984,
+              "x": 0.5,
+              "ra": 3.573468737207705,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 6.0,
+            "maxH": 15.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "iw_36",
+            "name": "#36 (1.72 m³/h, R 9 m)",
+            "curve": {
+              "k": 0.0001510865993191559,
+              "x": 0.5,
+              "ra": 4.020152329358669,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 6.0,
+            "maxH": 15.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Senninger"
+      },
+      {
+        "id": "sen_ldn",
+        "name": "Senninger LDN pivot spray",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "ldn_20",
+            "name": "#20 (0.45 m³/h, R 5 m)",
+            "curve": {
+              "k": 0.0000472455591261534,
+              "x": 0.5,
+              "ra": 2.530379674024799,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 4.0,
+            "maxH": 15.0,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "ldn_28",
+            "name": "#28 (0.88 m³/h, R 6 m)",
+            "curve": {
+              "k": 0.00009239131562447776,
+              "x": 0.5,
+              "ra": 3.0364556088297587,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 4.0,
+            "maxH": 15.0,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "ldn_36",
+            "name": "#36 (1.46 m³/h, R 7 m)",
+            "curve": {
+              "k": 0.00015328559183151993,
+              "x": 0.5,
+              "ra": 3.5425315436347184,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 4.0,
+            "maxH": 15.0,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Senninger"
+      }
+    ],
+    "tapes": [],
+    "valves": [
+      {
+        "id": "sen_prlg_10",
+        "name": "Senninger PRLG pressure regulator 10 psi (7 m)",
+        "kind": "prv",
+        "sizeMm": 20.0,
+        "loss": {
+          "k": 1549782.805173088,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0008333333333333333,
+        "cost": 0.0,
+        "setting": 7.0,
+        "enabled": true,
+        "sup": "Senninger"
+      },
+      {
+        "id": "sen_prlg_15",
+        "name": "Senninger PRLG pressure regulator 15 psi (10.5 m)",
+        "kind": "prv",
+        "sizeMm": 20.0,
+        "loss": {
+          "k": 1549782.805173088,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0008333333333333333,
+        "cost": 0.0,
+        "setting": 10.5,
+        "enabled": true,
+        "sup": "Senninger"
+      },
+      {
+        "id": "sen_pmr_20",
+        "name": "Senninger PMR-MF pressure regulator 20 psi (14 m)",
+        "kind": "prv",
+        "sizeMm": 20.0,
+        "loss": {
+          "k": 1549782.805173088,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.001388888888888889,
+        "cost": 0.0,
+        "setting": 14.0,
+        "enabled": true,
+        "sup": "Senninger"
+      }
+    ],
+    "pumps": [],
+    "fittings": []
+  }
+}

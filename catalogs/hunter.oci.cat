@@ -1,0 +1,446 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "hunter",
+  "brand": "Hunter Industries",
+  "name": "Hunter Industries",
+  "description": "PGP Ultra / I-25 / I-40 rotors, MP Rotator, Pro-Spray, PLD dripline, ICV / PGV valves",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 10,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "hun_pgp",
+        "name": "Hunter PGP Ultra rotor",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "pgp_15",
+            "name": "#1.5 (0.34 m³/h, R 8.2 m)",
+            "curve": {
+              "k": 0.00001724311755108856,
+              "x": 0.5,
+              "ra": 2.4935691324589166,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_30",
+            "name": "#3.0 (0.68 m³/h, R 10.7 m)",
+            "curve": {
+              "k": 0.00003448623510217712,
+              "x": 0.5,
+              "ra": 3.253803624062245,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_40",
+            "name": "#4.0 (0.91 m³/h, R 11.9 m)",
+            "curve": {
+              "k": 0.00004615069697497233,
+              "x": 0.5,
+              "ra": 3.618716180031843,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_60",
+            "name": "#6.0 (1.36 m³/h, R 13.4 m)",
+            "curve": {
+              "k": 0.00006897247020435424,
+              "x": 0.5,
+              "ra": 4.07485687499384,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_80",
+            "name": "#8.0 (1.82 m³/h, R 14.3 m)",
+            "curve": {
+              "k": 0.00009230139394994466,
+              "x": 0.5,
+              "ra": 4.3485412919710384,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_i25",
+        "name": "Hunter I-25 rotor",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "i25_8",
+            "name": "#8 (1.8 m³/h, R 15 m)",
+            "curve": {
+              "k": 0.00007905694150420948,
+              "x": 0.5,
+              "ra": 4.124490067571231,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 60.0,
+            "defH": 40.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_13",
+            "name": "#13 (3.0 m³/h, R 18 m)",
+            "curve": {
+              "k": 0.00013176156917368246,
+              "x": 0.5,
+              "ra": 4.949388081085477,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 60.0,
+            "defH": 40.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_20",
+            "name": "#20 (4.5 m³/h, R 21 m)",
+            "curve": {
+              "k": 0.00019764235376052366,
+              "x": 0.5,
+              "ra": 5.774286094599723,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 60.0,
+            "defH": 40.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 25.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_mp",
+        "name": "Hunter MP Rotator (Pro-Spray body)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "mp1000_360",
+            "name": "MP1000 360° (0.24 m³/h, R 4.3 m)",
+            "curve": {
+              "k": 0.000012598815766974239,
+              "x": 0.5,
+              "ra": 1.3395630037063795,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 40.0,
+            "defH": 28.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp2000_360",
+            "name": "MP2000 360° (0.50 m³/h, R 5.8 m)",
+            "curve": {
+              "k": 0.000026247532847863002,
+              "x": 0.5,
+              "ra": 1.8068524236039538,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 40.0,
+            "defH": 28.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp3000_360",
+            "name": "MP3000 360° (1.05 m³/h, R 8.2 m)",
+            "curve": {
+              "k": 0.0000551198189805123,
+              "x": 0.5,
+              "ra": 2.5545154954400724,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 40.0,
+            "defH": 28.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp2000_180",
+            "name": "MP2000 180° (0.25 m³/h, R 5.8 m)",
+            "curve": {
+              "k": 0.000013123766423931501,
+              "x": 0.5,
+              "ra": 1.8068524236039538,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 17.0,
+            "maxH": 40.0,
+            "defH": 28.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_prospray",
+        "name": "Hunter Pro-Spray with Pro nozzles",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "ps_12f",
+            "name": "12F (0.57 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.00003455116595403213,
+              "x": 0.5,
+              "ra": 1.274749854033297,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "ps_12h",
+            "name": "12H (0.29 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.00001757866338012161,
+              "x": 0.5,
+              "ra": 1.274749854033297,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "ps_15f",
+            "name": "15F (0.84 m³/h, R 4.6 m)",
+            "curve": {
+              "k": 0.000050917507721731554,
+              "x": 0.5,
+              "ra": 1.584824142852207,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      }
+    ],
+    "tapes": [
+      {
+        "id": "hun_pld_16_23_30",
+        "name": "Hunter PLD 16 mm 2.3 L/h @ 0.30 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.9,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 6.01734255008601e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 20.0,
+        "tolB": 50.0,
+        "tolA": 100.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_pld_16_35_45",
+        "name": "Hunter PLD 16 mm 3.5 L/h @ 0.45 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.9,
+        "spacing": 0.45,
+        "emitter": {
+          "k": 9.156825619696103e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 20.0,
+        "tolB": 50.0,
+        "tolA": 100.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      }
+    ],
+    "valves": [
+      {
+        "id": "hun_pgv100",
+        "name": "Hunter PGV 1\"",
+        "kind": "control",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 1269582.073997794,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00002777777777777778,
+        "maxQ": 0.0025,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_icv151",
+        "name": "Hunter ICV 1½\"",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 177579.27975941633,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0001388888888888889,
+        "maxQ": 0.0075,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_icv201",
+        "name": "Hunter ICV 2\"",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 66124.06635405176,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0002777777777777778,
+        "maxQ": 0.0125,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      },
+      {
+        "id": "hun_icv301",
+        "name": "Hunter ICV 3\"",
+        "kind": "control",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9080.758624061062,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.001388888888888889,
+        "maxQ": 0.019444444444444445,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries"
+      }
+    ],
+    "pumps": [],
+    "fittings": []
+  }
+}

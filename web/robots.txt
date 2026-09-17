@@ -1,0 +1,6 @@
+# OpenCADIrrigation — https://opencadirrigation.com/
+# The app is a single page in three languages (/, /en/, /es/); everything is public.
+User-agent: *
+Allow: /
+
+Sitemap: https://opencadirrigation.com/sitemap.xml

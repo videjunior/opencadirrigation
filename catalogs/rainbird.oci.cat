@@ -1,0 +1,489 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "rainbird",
+  "brand": "Rain Bird",
+  "name": "Rain Bird",
+  "description": "XFS / XFD driplines, 5004 and 8005 rotors, 1800 sprays with MPR nozzles, PEB/PESB valves",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 11,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "rb_5004",
+        "name": "Rain Bird 5004 Plus rotor",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "5004_15",
+            "name": "#1.5 (0.31 m³/h, R 7.6 m)",
+            "curve": {
+              "k": 0.0000157216660024631,
+              "x": 0.5,
+              "ra": 2.311112854474118,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_30",
+            "name": "#3.0 (0.68 m³/h, R 10.4 m)",
+            "curve": {
+              "k": 0.00003448623510217712,
+              "x": 0.5,
+              "ra": 3.162575485069846,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_40",
+            "name": "#4.0 (0.91 m³/h, R 11.6 m)",
+            "curve": {
+              "k": 0.00004615069697497233,
+              "x": 0.5,
+              "ra": 3.5274880410394434,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_60",
+            "name": "#6.0 (1.36 m³/h, R 13.1 m)",
+            "curve": {
+              "k": 0.00006897247020435424,
+              "x": 0.5,
+              "ra": 3.98362873600144,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_80",
+            "name": "#8.0 (1.80 m³/h, R 14.0 m)",
+            "curve": {
+              "k": 0.00009128709291752768,
+              "x": 0.5,
+              "ra": 4.2573131529786385,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_8005",
+        "name": "Rain Bird 8005 rotor",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "8005_12",
+            "name": "#12 (2.7 m³/h, R 19 m)",
+            "curve": {
+              "k": 0.00011180339887498946,
+              "x": 0.5,
+              "ra": 5.013363803930731,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 65.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_16",
+            "name": "#16 (3.7 m³/h, R 21 m)",
+            "curve": {
+              "k": 0.00015321206512498557,
+              "x": 0.5,
+              "ra": 5.54108630960765,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 65.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_24",
+            "name": "#24 (5.7 m³/h, R 24 m)",
+            "curve": {
+              "k": 0.0002360293976249778,
+              "x": 0.5,
+              "ra": 6.332670068123028,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 65.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 25.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_1804",
+        "name": "Rain Bird 1804 spray (MPR nozzles)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "1804_10f",
+            "name": "10F (0.36 m³/h, R 3.0 m)",
+            "curve": {
+              "k": 0.000021821789023599237,
+              "x": 0.5,
+              "ra": 1.0335809627297003,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_12f",
+            "name": "12F (0.59 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.0000357634875664543,
+              "x": 0.5,
+              "ra": 1.274749854033297,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_12h",
+            "name": "12H (0.29 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.00001757866338012161,
+              "x": 0.5,
+              "ra": 1.274749854033297,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_12q",
+            "name": "12Q (0.15 m³/h, R 3.7 m)",
+            "curve": {
+              "k": 0.000009092412093166349,
+              "x": 0.5,
+              "ra": 1.274749854033297,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_15f",
+            "name": "15F (0.84 m³/h, R 4.6 m)",
+            "curve": {
+              "k": 0.000050917507721731554,
+              "x": 0.5,
+              "ra": 1.584824142852207,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 21.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_xb",
+        "name": "Rain Bird Xeri-Bug PC dripper",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "xb2",
+            "name": "2 L/h PC",
+            "curve": {
+              "k": 5.262664324451034e-7,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "xb4",
+            "name": "4 L/h PC",
+            "curve": {
+              "k": 0.0000010525328648902067,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "xb8",
+            "name": "8 L/h PC",
+            "curve": {
+              "k": 0.0000021050657297804134,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.0,
+            "defH": 15.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      }
+    ],
+    "tapes": [
+      {
+        "id": "rb_xfd_16_23_30",
+        "name": "Rain Bird XFD 16 mm 2.3 L/h @ 0.30 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 6.01734255008601e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 20.0,
+        "tolB": 50.0,
+        "tolA": 100.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_xfd_16_35_45",
+        "name": "Rain Bird XFD 16 mm 3.5 L/h @ 0.45 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.45,
+        "emitter": {
+          "k": 9.156825619696103e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 20.0,
+        "tolB": 50.0,
+        "tolA": 100.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_xfs_16_23_45",
+        "name": "Rain Bird XFS subsurface 16 mm 2.3 L/h @ 0.45 m (PC, Copper Shield)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.45,
+        "emitter": {
+          "k": 6.01734255008601e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 20.0,
+        "tolB": 50.0,
+        "tolA": 100.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      }
+    ],
+    "valves": [
+      {
+        "id": "rb_peb100",
+        "name": "Rain Bird PEB 1\" (100-PEB)",
+        "kind": "control",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 1269582.073997794,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00002777777777777778,
+        "maxQ": 0.0025,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_peb150",
+        "name": "Rain Bird PEB 1½\" (150-PEB)",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 177579.27975941633,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0001388888888888889,
+        "maxQ": 0.006388888888888889,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_peb200",
+        "name": "Rain Bird PEB 2\" (200-PEB)",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 66124.06635405176,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0002777777777777778,
+        "maxQ": 0.009444444444444445,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      },
+      {
+        "id": "rb_pesb200",
+        "name": "Rain Bird PESB 2\" (scrubber)",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 72736.47298945693,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0002777777777777778,
+        "maxQ": 0.009444444444444445,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird"
+      }
+    ],
+    "pumps": [],
+    "fittings": []
+  }
+}

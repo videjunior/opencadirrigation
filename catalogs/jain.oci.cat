@@ -1,0 +1,252 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "jain",
+  "brand": "Jain Irrigation",
+  "name": "Jain Irrigation",
+  "description": "Jain Turbo Excel / Turbo Line driplines, Chapin tape, J-Turbo Key drippers, Jain micro-sprinklers",
+  "license": "CC0-1.0",
+  "updated": "2026-09-16",
+  "author": "OpenCADIrrigation",
+  "items": 6,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "jain_jturbokey",
+        "name": "Jain J-Turbo Key dripper",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "jtk2",
+            "name": "2 L/h",
+            "curve": {
+              "k": 1.756820922315766e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 20.0,
+            "defH": 10.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "jtk4",
+            "name": "4 L/h",
+            "curve": {
+              "k": 3.513641844631532e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 20.0,
+            "defH": 10.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "jtk8",
+            "name": "8 L/h",
+            "curve": {
+              "k": 7.027283689263064e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 20.0,
+            "defH": 10.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Jain Irrigation"
+      },
+      {
+        "id": "jain_micro",
+        "name": "Jain micro-sprinkler (Jet)",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "jm40",
+            "name": "40 L/h (R 3.0 m)",
+            "curve": {
+              "k": 0.000002484519974999766,
+              "x": 0.5,
+              "ra": 1.0513825295791306,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "jm70",
+            "name": "70 L/h (R 4.0 m)",
+            "curve": {
+              "k": 0.0000043479099562495906,
+              "x": 0.5,
+              "ra": 1.4018433727721742,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "jm120",
+            "name": "120 L/h (R 5.0 m)",
+            "curve": {
+              "k": 0.000007453559924999297,
+              "x": 0.5,
+              "ra": 1.7523042159652176,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true,
+        "sup": "Jain Irrigation"
+      }
+    ],
+    "tapes": [
+      {
+        "id": "jain_turboexcel_16_20_50",
+        "name": "Jain Turbo Excel PC 16 mm 2.0 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 5.286203403453116e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 35.0,
+        "inletH": 12.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 35.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Jain Irrigation"
+      },
+      {
+        "id": "jain_turboline_16_20_40",
+        "name": "Jain Turbo Line 16 mm 2.0 L/h @ 0.40 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.4,
+        "emitter": {
+          "k": 1.8824675341066808e-7,
+          "x": 0.47,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 20.0,
+        "inletH": 10.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 25.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Jain Irrigation"
+      },
+      {
+        "id": "jain_turboline_16_40_60",
+        "name": "Jain Turbo Line 16 mm 4.0 L/h @ 0.60 m",
+        "nominalMm": 16.0,
+        "idMm": 14.0,
+        "spacing": 0.6,
+        "emitter": {
+          "k": 3.7649350682133616e-7,
+          "x": 0.47,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 20.0,
+        "inletH": 10.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 25.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Jain Irrigation"
+      },
+      {
+        "id": "jain_chapin_16_10_30",
+        "name": "Jain Chapin tape 16 mm 1.0 L/h @ 0.30 m",
+        "nominalMm": 16.0,
+        "idMm": 15.9,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 1.0499013139145199e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 10.0,
+        "inletH": 7.0,
+        "tolB": 10.0,
+        "tolA": 10.0,
+        "ratingM": 10.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Jain Irrigation"
+      }
+    ],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

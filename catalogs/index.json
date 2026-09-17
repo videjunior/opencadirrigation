@@ -1,0 +1,105 @@
+{
+  "format": "opencadirrigation-catalog-index",
+  "version": 1,
+  "packs": [
+    {
+      "id": "hunter",
+      "brand": "Hunter Industries",
+      "name": "Hunter Industries",
+      "description": "PGP Ultra / I-25 / I-40 rotors, MP Rotator, Pro-Spray, PLD dripline, ICV / PGV valves",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "hunter.oci.cat",
+      "items": 10
+    },
+    {
+      "id": "jain",
+      "brand": "Jain Irrigation",
+      "name": "Jain Irrigation",
+      "description": "Jain Turbo Excel / Turbo Line driplines, Chapin tape, J-Turbo Key drippers, Jain micro-sprinklers",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "jain.oci.cat",
+      "items": 6
+    },
+    {
+      "id": "naandanjain",
+      "brand": "NaanDanJain",
+      "name": "NaanDanJain",
+      "description": "NaanDanJain 5022 / 5035 impact sprinklers, Amnon / TopPC driplines, Hadar and Aquamaster micro-sprinklers",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "naandanjain.oci.cat",
+      "items": 7
+    },
+    {
+      "id": "nelson",
+      "brand": "Nelson Irrigation",
+      "name": "Nelson Irrigation",
+      "description": "R2000WF / R33 / R55 rotators and impact sprinklers for orchards and solid set, 3030 pivot sprinklers, SR100 big gun",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "nelson.oci.cat",
+      "items": 6
+    },
+    {
+      "id": "netafim",
+      "brand": "Netafim",
+      "name": "Netafim",
+      "description": "UniRam / DripNet PC / Streamline / Typhoon driplines, SuperNet and GyroNet micro-sprinklers, PCJ drippers",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "netafim.oci.cat",
+      "items": 12
+    },
+    {
+      "id": "rainbird",
+      "brand": "Rain Bird",
+      "name": "Rain Bird",
+      "description": "XFS / XFD driplines, 5004 and 8005 rotors, 1800 sprays with MPR nozzles, PEB/PESB valves",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "rainbird.oci.cat",
+      "items": 11
+    },
+    {
+      "id": "rivulis",
+      "brand": "Rivulis",
+      "name": "Rivulis",
+      "description": "D5000 / D2000 PC driplines, T-Tape, Ro-Drip, Rondo and Supertif drippers, S2000 micro-sprinklers",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "rivulis.oci.cat",
+      "items": 10
+    },
+    {
+      "id": "senninger",
+      "brand": "Senninger",
+      "name": "Senninger",
+      "description": "Wobbler / Xi-Wob orchard sprinklers, i-Wob and LDN pivot sprinklers, pressure regulators",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "senninger.oci.cat",
+      "items": 6
+    },
+    {
+      "id": "toro",
+      "brand": "Toro",
+      "name": "Toro",
+      "description": "Aqua-Traxx tape, Neptune PC / Blue Line driplines, DL2000, Toro golf/turf rotors",
+      "license": "CC0-1.0",
+      "updated": "2026-09-16",
+      "author": "OpenCADIrrigation",
+      "file": "toro.oci.cat",
+      "items": 7
+    }
+  ]
+}
