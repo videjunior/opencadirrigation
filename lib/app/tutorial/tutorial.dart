@@ -437,6 +437,20 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         x.c.duplicateSelected();
       },
     ),
+    ev(
+      id: 'selectAll',
+      chapter: chEdit,
+      title: t('Selecionar tudo e edição em lote', 'Select all and batch editing', 'Seleccionar todo y edición en lote'),
+      target: TutorialTargets.menuEdit,
+      body: t(
+        'Ctrl+A (ou o alias ALL) seleciona tudo o que está visível e destravado. Com vários objetos selecionados, o painel de propriedades edita todos de uma vez: os campos com valores diferentes aparecem como "(valores diferentes)" e o que você digitar vale para todos. Útil para trocar o emissor de dezenas de laterais ou a camada de um lote de linhas.',
+        'Ctrl+A (or the alias ALL) selects everything visible and unlocked. With several objects selected, the properties panel edits them all at once: fields with different values show "(mixed values)" and whatever you type applies to all of them. Handy to change the outlet of dozens of laterals or the layer of a batch of lines.',
+        'Ctrl+A (o el alias ALL) selecciona todo lo visible y desbloqueado. Con varios objetos seleccionados, el panel de propiedades los edita todos a la vez: los campos con valores distintos muestran "(valores distintos)" y lo que escriba se aplica a todos. Útil para cambiar el emisor de decenas de laterales o la capa de un lote de líneas.',
+      ),
+      action: t('Pressione Ctrl+A', 'Press Ctrl+A', 'Pulse Ctrl+A'),
+      event: 'selectAll',
+      demo: (x) => x.c.selectAll(),
+    ),
     TutorialStep(
       id: 'layers',
       chapter: chEdit,
@@ -460,6 +474,26 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       demo: (x) => x.c.toggleLayer(Layers.wettedRadii),
     ),
     // ------------------------------------------------------------ drawing
+    state<int>(
+      id: 'layerNew',
+      chapter: chEdit,
+      title: t('Criar e organizar camadas', 'Creating and organising layers', 'Crear y organizar capas'),
+      target: TutorialTargets.sidePanel,
+      body: t(
+        'Além das camadas padrão, crie as suas com "Nova camada" no rodapé da aba Camadas: dê um nome e uma cor. Duplo clique renomeia, o ponto marca a camada atual (onde entram as novas linhas, textos e símbolos), o quadrado de cor a altera e Excluir devolve os objetos para DRAWING. As camadas viram layers no DXF/DWG e legenda na folha PDF.',
+        'Besides the default layers, create your own with "New layer" at the bottom of the Layers tab: give it a name and a colour. Double-click renames, the dot marks the current layer (where new lines, texts and symbols go), the colour square changes it and Delete moves its objects back to DRAWING. Layers become DXF/DWG layers and the legend of the PDF sheet.',
+        'Además de las capas predeterminadas, cree las suyas con "Nueva capa" al pie de la pestaña Capas: póngale un nombre y un color. Doble clic renombra, el punto marca la capa actual (donde entran las nuevas líneas, textos y símbolos), el cuadro de color la cambia y Eliminar devuelve sus objetos a DRAWING. Las capas pasan a ser capas del DXF/DWG y la leyenda de la hoja PDF.',
+      ),
+      action: t('Crie uma camada chamada Estradas', 'Create a layer called Roads', 'Cree una capa llamada Caminos'),
+      prepare: (x) => x.host.showLayersTab(true),
+      read: (x) => x.c.project.layers.length,
+      demo: (x) {
+        final name = t('Estradas', 'Roads', 'Caminos');
+        for (var i = 0; i < 20; i++) {
+          if (x.c.addLayer(i == 0 ? name : '$name ${i + 1}')) break;
+        }
+      },
+    ),
     state<bool>(
       id: 'snap',
       chapter: chDraw,
@@ -555,6 +589,21 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       match: (e) => e is DimensionEntity,
       tool: ToolId.dimension,
       demo: (x) => x.c.addEntity(DimensionEntity(id: nid(x), a: base(x) + const Pt(40, -12), b: base(x) + const Pt(70, -12), offset: 4)),
+    ),
+    count(
+      id: 'symbol',
+      chapter: chDraw,
+      title: t('Símbolos e chamadas', 'Symbols and leaders', 'Símbolos y llamadas'),
+      target: TutorialTargets.paletteDraw,
+      body: t(
+        'Símbolo (SY): insere um símbolo vetorial no desenho: seta norte, árvore, edificação, reservatório, poço, caixa de válvula, casa de bombas, portão ou estação de filtragem; tipo, tamanho e rotação ficam nas propriedades. Chamada (LE): clique a ponta da seta e os vértices, Enter abre o texto da anotação. Ambos vão para o DXF/DWG e para a folha PDF.',
+        'Symbol (SY): inserts a vector symbol in the drawing: north arrow, tree, building, tank, well, valve box, pump house, gate or filter station; kind, size and rotation are in the properties. Leader (LE): click the arrow tip and the vertices, Enter opens the note text. Both go to DXF/DWG and to the PDF sheet.',
+        'Símbolo (SY): inserta un símbolo vectorial en el dibujo: flecha norte, árbol, edificación, depósito, pozo, arqueta de válvula, caseta de bombas, portón o estación de filtrado; tipo, tamaño y rotación están en las propiedades. Llamada (LE): haga clic en la punta de la flecha y los vértices, Intro abre el texto de la nota. Ambos van al DXF/DWG y a la hoja PDF.',
+      ),
+      action: t('Digite SY e clique onde inserir o símbolo', 'Type SY and click where to insert the symbol', 'Escriba SY y haga clic donde insertar el símbolo'),
+      match: (e) => e is SymbolEntity,
+      tool: ToolId.symbol,
+      demo: (x) => x.c.addEntity(SymbolEntity(id: nid(x), position: base(x) + const Pt(30, 0), kind: SymbolKind.tree)),
     ),
     ev(
       id: 'commands',
@@ -655,6 +704,22 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       demo: (x) => x.c.addEntity(PumpEntity(id: nid(x), position: base(x) + const Pt(10, -60))),
     ),
     count(
+      id: 'junction',
+      chapter: chHyd,
+      title: t('Junção', 'Junction', 'Nudo'),
+      target: TutorialTargets.paletteZone,
+      body: t(
+        'Junção (J): um nó que une tubos. Dois tubos que se cruzam sem junção não estão conectados (a Verificação do projeto avisa): insira uma junção no cruzamento e os tubos são divididos e ligados nela. Também serve para ramificar um tubo no meio ou fixar uma elevação num ponto. O menu Linha principal tem a versão para a rede principal.',
+        'Junction (J): a node that joins pipes. Two pipes crossing without a junction are not connected (the Design check warns): insert a junction at the crossing and the pipes are split and joined there. It also serves to branch a pipe midway or to fix the elevation at a point. The Mainline menu has the mainline version.',
+        'Nudo (J): un nodo que une tuberías. Dos tuberías que se cruzan sin nudo no están conectadas (la Verificación del diseño avisa): inserte un nudo en el cruce y las tuberías se dividen y se unen allí. También sirve para ramificar una tubería a mitad o fijar la elevación en un punto. El menú Línea principal tiene la versión para la red principal.',
+      ),
+      action: t('Digite J e clique sobre um tubo de zona', 'Type J and click on a zone pipe', 'Escriba J y haga clic sobre una tubería de zona'),
+      match: (e) => e is JunctionEntity,
+      tool: ToolId.junction,
+      scope: HydraulicScope.zone,
+      demo: (x) => x.c.addEntity(JunctionEntity(id: nid(x), position: base(x) + const Pt(40, -60))),
+    ),
+    count(
       id: 'valve',
       chapter: chHyd,
       title: t('Válvula de controle', 'Control valve', 'Válvula de control'),
@@ -729,6 +794,17 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         ));
       },
     ),
+    TutorialStep(
+      id: 'guided',
+      chapter: chHyd,
+      title: t('Bloco guiado (laterais curvas)', 'Guided block (curved laterals)', 'Bloque guiado (laterales curvas)'),
+      target: TutorialTargets.paletteZone,
+      body: t(
+        'Em terreno inclinado as laterais seguem as curvas de nível. Selecione uma linha, polilinha, spline ou curva de nível antes de digitar B: o diálogo do bloco oferece "Laterais seguem a linha selecionada" e gera laterais como cópias deslocadas dessa linha, com o espaçamento escolhido, dentro do polígono. O exemplo "Cafezal em curvas de nível" usa esse recurso.',
+        'On sloping ground laterals follow the contour lines. Select a line, polyline, spline or contour before typing B: the block dialog offers "Laterals follow the selected line" and generates laterals as offset copies of that line, at the chosen spacing, inside the polygon. The "Coffee on contour lines" example uses this feature.',
+        'En terreno inclinado las laterales siguen las curvas de nivel. Seleccione una línea, polilínea, spline o curva de nivel antes de escribir B: el diálogo del bloque ofrece "Laterales siguen la línea seleccionada" y genera laterales como copias desplazadas de esa línea, con el espaciamiento elegido, dentro del polígono. El ejemplo "Cafetal en curvas de nivel" usa este recurso.',
+      ),
+    ),
     ev(
       id: 'grid',
       chapter: chHyd,
@@ -751,6 +827,28 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       target: TutorialTargets.menuDesign,
       body: t('Projeto → Parâmetros: fórmula de perda de carga (Hazen-Williams ou Darcy-Weisbach), temperatura, velocidades máximas, perdas localizadas, juros, prazo, custo da energia e horas/ano para o balanço entre custo de tubo e de bombeamento. Projeto → Catálogo: tubos, emissores, fitas, válvulas e bombas com preços; edite ou desabilite itens.', 'Design → Parameters: head-loss formula (Hazen-Williams or Darcy-Weisbach), temperature, maximum velocities, minor losses, interest, term, energy cost and hours/year for the pipe-cost versus pumping-cost trade-off. Design → Catalog: pipes, outlets, tapes, valves and pumps with prices; edit or disable items.', 'Diseño → Parámetros: fórmula de pérdida de carga (Hazen-Williams o Darcy-Weisbach), temperatura, velocidades máximas, pérdidas localizadas, interés, plazo, costo de la energía y horas/año para el balance entre costo de tubería y de bombeo. Diseño → Catálogo: tuberías, emisores, cintas, válvulas y bombas con precios; edite o desactive elementos.'),
       prepare: (x) => x.c.setTool(ToolId.select),
+    ),
+    TutorialStep(
+      id: 'sizingOptions',
+      chapter: chDesign,
+      title: t('Opções de dimensionamento', 'Sizing options', 'Opciones de dimensionamiento'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Ainda em Projeto → Parâmetros: método de dimensionamento (programação linear, que pondera custo dos tubos, energia e topografia, ou guloso por velocidade → janela de pressão → economia); número máximo de bitolas por lateral, ramal e tubo principal (telescopagem); emissores por planta (EU) e variação máxima de pressão na zona; velocidade de lavagem e pressão mínima no fim da fita; verificação de golpe de aríete com tempo de fechamento da válvula e classe do tubo; seleção automática de conexões e comprimento da barra (luvas); densificação do MDT e tolerância de conexão.',
+        'Also in Design → Parameters: sizing method (linear programming, which weighs pipe cost, energy and topography, or greedy by velocity → pressure window → economics); maximum number of sizes per lateral, submain and mainline pipe (telescoping); emitters per plant (EU) and maximum zone pressure variation; flushing velocity and minimum pressure at the tape end; water hammer check with valve closure time and pipe class; automatic fitting selection and pipe stick length (couplers); DEM densification and connection tolerance.',
+        'También en Diseño → Parámetros: método de dimensionamiento (programación lineal, que pondera costo de tuberías, energía y topografía, o voraz por velocidad → ventana de presión → economía); número máximo de diámetros por lateral, secundaria y tubería principal (telescópico); emisores por planta (EU) y variación máxima de presión en la zona; velocidad de lavado y presión mínima al final de la cinta; verificación de golpe de ariete con tiempo de cierre de la válvula y clase de tubería; selección automática de accesorios y longitud de barra (uniones); densificación del MDT y tolerancia de conexión.',
+      ),
+    ),
+    TutorialStep(
+      id: 'catalogPacks',
+      chapter: chDesign,
+      title: t('Catálogos de fabricantes', 'Manufacturer catalogues', 'Catálogos de fabricantes'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Em Projeto → Catálogo, "Catálogos de fabricantes…" lista pacotes com produtos representativos (tubos, emissores, fitas, válvulas, bombas): os embutidos no app e os carregados agora. Adicione um pacote ao projeto, importe um arquivo .oci.cat ou carregue-o por URL (um pacote ou um índice index.json). O catálogo também importa JSON, CSV ou Excel, exporta Excel/CSV/JSON e exporta o seu próprio catálogo como pacote para compartilhar. "Usar como padrão para novos projetos" e "Restaurar padrão" controlam o catálogo inicial.',
+        'In Design → Catalog, "Manufacturer catalogues…" lists packs of representative products (pipes, outlets, tapes, valves, pumps): those bundled with the app and those loaded now. Add a pack to the project, import an .oci.cat file or load it from a URL (a pack or an index.json). The catalog also imports JSON, CSV or Excel, exports Excel/CSV/JSON and exports your own catalogue as a pack to share. "Use as default for new projects" and "Restore default" control the starting catalogue.',
+        'En Diseño → Catálogo, "Catálogos de fabricantes…" lista paquetes con productos representativos (tuberías, emisores, cintas, válvulas, bombas): los incluidos en la app y los cargados ahora. Añada un paquete al proyecto, importe un archivo .oci.cat o cárguelo por URL (un paquete o un índice index.json). El catálogo también importa JSON, CSV o Excel, exporta Excel/CSV/JSON y exporta su propio catálogo como paquete para compartir. "Usar como predeterminado en proyectos nuevos" y "Restaurar predeterminado" controlan el catálogo inicial.',
+      ),
     ),
     TutorialStep(
       id: 'management',
@@ -779,6 +877,20 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       demo: (x) => x.c.runDesign(),
       isDone: (x) => x.c.results != null,
     ),
+    ev(
+      id: 'designModes',
+      chapter: chDesign,
+      title: t('Dimensionar por partes e analisar', 'Sizing in parts and analysing', 'Dimensionar por partes y analizar'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'O menu Projeto separa o ciclo: Dimensionar zonas calcula só laterais e ramais; Dimensionar linha principal só a rede principal e a fonte; Analisar (tamanhos atuais) não muda nenhum diâmetro, apenas calcula vazões e pressões com os tubos como estão desenhados, ideal para conferir uma instalação existente ou as suas próprias escolhas; Limpar resultados apaga resultados e rótulos. Qualquer edição na rede invalida os resultados até o próximo cálculo.',
+        'The Design menu splits the cycle: Size zones computes only laterals and submains; Size mainline only the mainline and the supply; Analyse (existing sizes) changes no diameter, it just computes flows and pressures with the pipes as drawn, ideal to check an existing installation or your own choices; Clear results removes results and labels. Any edit to the network invalidates the results until the next run.',
+        'El menú Diseño separa el ciclo: Dimensionar zonas calcula solo laterales y secundarias; Dimensionar línea principal solo la red principal y la fuente; Analizar (tamaños actuales) no cambia ningún diámetro, solo calcula caudales y presiones con las tuberías tal como están dibujadas, ideal para revisar una instalación existente o sus propias elecciones; Limpiar resultados borra resultados y etiquetas. Cualquier edición de la red invalida los resultados hasta el próximo cálculo.',
+      ),
+      action: t('Em Projeto, escolha Analisar (tamanhos atuais)', 'In Design, choose Analyse (existing sizes)', 'En Diseño, elija Analizar (tamaños actuales)'),
+      event: 'design',
+      demo: (x) => x.c.runDesign(sizeZones: false, sizeMain: false),
+    ),
     state<OverlayMode>(
       id: 'overlay',
       chapter: chDesign,
@@ -789,6 +901,29 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       read: (x) => x.c.overlay,
       demo: (x) {
         x.c.overlay = x.c.overlay == OverlayMode.pressure ? OverlayMode.sizes : OverlayMode.pressure;
+        x.c.refresh();
+      },
+    ),
+    state<OverlayMode>(
+      id: 'minMax',
+      chapter: chDesign,
+      title: t('Marcar pressão mínima e máxima', 'Marking minimum and maximum pressure', 'Marcar presión mínima y máxima'),
+      target: TutorialTargets.menuView,
+      body: t(
+        'Ver → Marcar pressão mín/máx por zona destaca, em cada zona, o emissor de menor e o de maior pressão: são eles que definem a variação real da zona comparada à janela admissível do resumo. Em Ver também se ligam e desligam Rótulos, Raios molhados e Alças de edição.',
+        'View → Mark min/max pressure per zone highlights, in every zone, the outlet with the lowest and the one with the highest pressure: they define the zone\'s actual variation compared with the allowable window of the summary. View also toggles Labels, Wetted radii and Edit grips.',
+        'Ver → Marcar presión mín/máx por zona resalta, en cada zona, el emisor de menor y el de mayor presión: son los que definen la variación real de la zona frente a la ventana admisible del resumen. En Ver también se activan y desactivan Etiquetas, Radios mojados y Pinzamientos de edición.',
+      ),
+      action: t('Em Ver, escolha Marcar pressão mín/máx por zona', 'In View, choose Mark min/max pressure per zone', 'En Ver, elija Marcar presión mín/máx por zona'),
+      prepare: (x) {
+        if (x.c.overlay == OverlayMode.minMax) {
+          x.c.overlay = OverlayMode.pressure;
+          x.c.refresh();
+        }
+      },
+      read: (x) => x.c.overlay,
+      demo: (x) {
+        x.c.overlay = OverlayMode.minMax;
         x.c.refresh();
       },
     ),
@@ -813,6 +948,66 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       prepare: (x) => x.host.openReports(true, tab: 0),
       demo: (x) => x.host.openReports(true, tab: reportTab('reports.pipes')),
       isDone: (x) => x.c.showReports && x.c.reportTab == reportTab('reports.pipes'),
+    ),
+    TutorialStep(
+      id: 'bom',
+      chapter: chDesign,
+      title: t('Lista de materiais', 'Bill of materials', 'Lista de materiales'),
+      target: TutorialTargets.reportsBar,
+      body: t(
+        'A aba Lista de materiais agrupa tubos (por bitola e classe), fitas, emissores, válvulas, acessórios, bombas e, com a seleção automática ligada, as conexões: luvas por barra, joelhos, tês, reduções, tampões, derivações de lateral e tubos de subida. Traz quantidades, custo unitário do catálogo, totais por categoria e custo anual (capital anualizado + energia). Sai em CSV, TXT, XLSX ou PDF por Arquivo → Exportar relatório, e a folha PDF pode trazer a lista.',
+        'The Bill of materials tab groups pipes (by size and class), tapes, outlets, valves, devices, pumps and, with automatic selection on, the fittings: couplers per stick, elbows, tees, reducers, end caps, lateral take-offs and risers. It shows quantities, unit cost from the catalog, totals per category and annual cost (annualised capital + energy). It exports as CSV, TXT, XLSX or PDF via File → Export report, and the PDF sheet can carry the list.',
+        'La pestaña Lista de materiales agrupa tuberías (por diámetro y clase), cintas, emisores, válvulas, accesorios, bombas y, con la selección automática activada, las conexiones: uniones por barra, codos, tes, reducciones, tapones, derivaciones de lateral y tubos de subida. Muestra cantidades, costo unitario del catálogo, totales por categoría y costo anual (capital anualizado + energía). Se exporta en CSV, TXT, XLSX o PDF por Archivo → Exportar informe, y la hoja PDF puede incluir la lista.',
+      ),
+      action: t('Clique na aba Lista de materiais', 'Click the Bill of materials tab', 'Clic en la pestaña Lista de materiales'),
+      prepare: (x) => x.host.openReports(true, tab: 0),
+      demo: (x) => x.host.openReports(true, tab: reportTab('reports.bom')),
+      isDone: (x) => x.c.showReports && x.c.reportTab == reportTab('reports.bom'),
+    ),
+    TutorialStep(
+      id: 'mainlineTab',
+      chapter: chDesign,
+      title: t('As outras abas de resultados', 'The other result tabs', 'Las otras pestañas de resultados'),
+      target: TutorialTargets.reportsBar,
+      body: t(
+        'Linha principal/duty: para cada turno de operação, vazão e pressão exigidas na fonte, pressão disponível, altura da bomba, energia por ano e situação (ok ou déficit). Emissores: cada emissor com vazão e pressão calculadas. Requisitos hídricos: por área, lâmina bruta, volume e horas por dia. Lavagem: velocidade no fim de cada fita/lateral contra a velocidade-alvo. Golpe de aríete: celeridade, sobrepressão e pressão total de cada tubo contra a classe (PN).',
+        'Mainline/duty: for each system flow, the flow and pressure required at the supply, the available pressure, pump head, energy per year and status (ok or deficit). Outlets: every outlet with its computed flow and pressure. Water requirements: per area, gross depth, volume and hours per day. Flushing: the velocity at the end of each tape/lateral against the target velocity. Water hammer: celerity, surge and total pressure of each pipe against its class (PN).',
+        'Línea principal/demanda: para cada turno de operación, caudal y presión exigidos en la fuente, presión disponible, altura de la bomba, energía por año y estado (ok o déficit). Emisores: cada emisor con su caudal y presión calculados. Requerimientos hídricos: por área, lámina bruta, volumen y horas por día. Lavado: velocidad al final de cada cinta/lateral frente a la velocidad objetivo. Golpe de ariete: celeridad, sobrepresión y presión total de cada tubería frente a su clase (PN).',
+      ),
+      action: t('Clique na aba Linha principal/duty', 'Click the Mainline/duty tab', 'Clic en la pestaña Línea principal/demanda'),
+      prepare: (x) => x.host.openReports(true, tab: 0),
+      demo: (x) => x.host.openReports(true, tab: reportTab('reports.mainline')),
+      isDone: (x) => x.c.showReports && x.c.reportTab == reportTab('reports.mainline'),
+    ),
+    TutorialStep(
+      id: 'agronomy',
+      chapter: chDesign,
+      title: t('Balanço hídrico e agronomia', 'Water balance and agronomy', 'Balance hídrico y agronomía'),
+      target: TutorialTargets.reportsBar,
+      body: t(
+        'Selecione uma área irrigada: além da lâmina líquida e da eficiência, a seção Balanço hídrico das propriedades aceita cultura (Kc pré-definido pela FAO-56), ETo, água disponível no solo, profundidade radicular, esgotamento permitido (MAD), fração molhada e espaçamento de plantas e linhas. A aba Agronomia calcula ETc, lâmina líquida e bruta por evento, intervalo entre regas e horas por evento com os emissores dentro da área, além do CU de sobreposição.',
+        'Select an irrigated area: besides net depth and efficiency, the Water balance section of the properties takes crop (Kc presets from FAO-56), ETo, soil available water, root depth, allowed depletion (MAD), wetted fraction and plant and row spacing. The Agronomy tab computes ETc, net and gross depth per event, the interval between irrigations and the hours per event with the outlets inside the area, plus the overlap CU.',
+        'Seleccione un área regada: además de la lámina neta y la eficiencia, la sección Balance hídrico de las propiedades admite cultivo (Kc predefinido según FAO-56), ETo, agua disponible del suelo, profundidad radicular, agotamiento permitido (MAD), fracción mojada y espaciamiento de plantas y filas. La pestaña Agronomía calcula ETc, lámina neta y bruta por evento, el intervalo entre riegos y las horas por evento con los emisores dentro del área, más el CU de solape.',
+      ),
+      action: t('Abra a aba Agronomia', 'Open the Agronomy tab', 'Abra la pestaña Agronomía'),
+      prepare: (x) => x.host.openReports(true, tab: 0),
+      demo: (x) => x.host.openReports(true, tab: reportTab('reports.crop')),
+      isDone: (x) => x.c.showReports && x.c.reportTab == reportTab('reports.crop'),
+    ),
+    TutorialStep(
+      id: 'schedule',
+      chapter: chDesign,
+      title: t('Programação do controlador', 'Controller programme', 'Programación del controlador'),
+      target: TutorialTargets.reportsBar,
+      body: t(
+        'Na janela de Turnos de operação, a seção Programação do controlador monta a agenda: número de dias, hora de início do dia, "usar os horários de início dos turnos" e "Aplicar durações calculadas aos turnos" preenche cada turno com as horas de rega vindas das áreas irrigadas (depois de um projeto). A aba Programação lista cada evento com data, turno, zonas, início, fim e duração; Arquivo → Exportar relatório → Exportar programação gera o CSV para o controlador.',
+        'In the System flows window, the Controller programme section builds the schedule: number of days, day start hour, "use the flows\' own start hours" and "Apply computed durations" fills each flow with the irrigation hours coming from the irrigated areas (after a design). The Schedule tab lists every event with date, system flow, zones, start, end and duration; File → Export report → Export programme writes the CSV for the controller.',
+        'En la ventana de Turnos de operación, la sección Programación del controlador arma la agenda: número de días, hora de inicio del día, "usar las horas de inicio de los turnos" y "Aplicar duraciones calculadas a los turnos" rellena cada turno con las horas de riego de las áreas regadas (tras un diseño). La pestaña Programación lista cada evento con fecha, turno, zonas, inicio, fin y duración; Archivo → Exportar informe → Exportar programación genera el CSV para el controlador.',
+      ),
+      action: t('Abra a aba Programação', 'Open the Schedule tab', 'Abra la pestaña Programación'),
+      prepare: (x) => x.host.openReports(true, tab: 0),
+      demo: (x) => x.host.openReports(true, tab: reportTab('reports.schedule')),
+      isDone: (x) => x.c.showReports && x.c.reportTab == reportTab('reports.schedule'),
     ),
     TutorialStep(
       id: 'messages',
@@ -894,6 +1089,17 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       },
     ),
     TutorialStep(
+      id: 'pivotSpans',
+      chapter: chDesign,
+      title: t('Vãos e aspersores do pivô', 'Pivot spans and sprinklers', 'Vanos y aspersores del pivote'),
+      target: TutorialTargets.reportsBar,
+      body: t(
+        'Nas propriedades do pivô escolha o aspersor e o regulador de pressão do catálogo, o espaçamento entre aspersores e o custo por torre. A aba Pivôs resume cada máquina (torres, área, pressão exigida e disponível, lâmina e horas por ciclo, taxa de aplicação de pico); a aba Vãos do pivô detalha cada vão: raio inicial e final, número de aspersores, vazão por aspersor, pressão no vão e bico sugerido. Torres, aspersores e canhão final entram na lista de materiais.',
+        'In the pivot properties choose the sprinkler and the pressure regulator from the catalogue, the sprinkler spacing and the cost per tower. The Pivots tab summarises each machine (towers, area, required and available pressure, depth and hours per cycle, peak application rate); the Pivot spans tab details every span: start and end radius, number of sprinklers, flow per sprinkler, pressure at the span and suggested nozzle. Towers, sprinklers and end gun go into the bill of materials.',
+        'En las propiedades del pivote elija el aspersor y el regulador de presión del catálogo, el espaciamiento entre aspersores y el costo por torre. La pestaña Pivotes resume cada máquina (torres, área, presión exigida y disponible, lámina y horas por ciclo, tasa de aplicación pico); la pestaña Vanos del pivote detalla cada vano: radio inicial y final, número de aspersores, caudal por aspersor, presión en el vano y boquilla sugerida. Torres, aspersores y cañón final entran en la lista de materiales.',
+      ),
+    ),
+    TutorialStep(
       id: 'align',
       chapter: chDesign,
       title: t('Alinhar imagem ou desenho por 2 pontos', 'Align an image or drawing by 2 points', 'Alinear imagen o dibujo por 2 puntos'),
@@ -928,10 +1134,32 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       body: t('Importar (Ctrl+I) aceita DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, pontos CSV/XYZ e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF, DWG, PDF (prancha com carimbo, legenda e escala; Ctrl+P), SVG, KML/KMZ e GeoJSON. Exportar relatório gera CSV, TXT, XLSX ou PDF.', 'Import (Ctrl+I) accepts DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, CSV/XYZ points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF, DWG, PDF (plot sheet with title block, legend and scale; Ctrl+P), SVG, KML/KMZ and GeoJSON. Export report writes CSV, TXT, XLSX or PDF.', 'Importar (Ctrl+I) acepta DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, puntos CSV/XYZ e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF, DWG, PDF (lámina con cajetín, leyenda y escala; Ctrl+P), SVG, KML/KMZ y GeoJSON. Exportar informe genera CSV, TXT, XLSX o PDF.'),
     ),
     TutorialStep(
+      id: 'baseMap',
+      chapter: chFiles,
+      title: t('Mapas base e imagens georreferenciadas', 'Base maps and georeferenced images', 'Mapas base e imágenes georreferenciadas'),
+      target: TutorialTargets.menuView,
+      body: t(
+        'Com o projeto georreferenciado (Arquivo → Georreferência, por latitude/longitude ou UTM), Ver → Mapa base coloca um mapa sob o desenho: OpenStreetMap, OpenTopoMap, CARTO e Esri (ruas, topográfico, satélite) sem chave; Google Maps (mapa, satélite, híbrido, relevo) com a sua própria chave da Map Tiles API; ou uma URL XYZ personalizada do seu servidor. Uma imagem importada pode ser posicionada por Arquivo → Georreferenciar imagem selecionada (canto, tamanho e rotação) ou por Alinhar por 2 pontos; GeoTIFF e world files já entram no lugar certo.',
+        'With the project georeferenced (File → Georeference, by latitude/longitude or UTM), View → Base map puts a map under the drawing: OpenStreetMap, OpenTopoMap, CARTO and Esri (streets, topographic, satellite) without a key; Google Maps (roadmap, satellite, hybrid, terrain) with your own Map Tiles API key; or a custom XYZ URL from your own server. An imported image can be placed with File → Georeference selected image (corner, size and rotation) or with Align by 2 points; GeoTIFF and world files land in the right place by themselves.',
+        'Con el proyecto georreferenciado (Archivo → Georreferencia, por latitud/longitud o UTM), Ver → Mapa base coloca un mapa bajo el dibujo: OpenStreetMap, OpenTopoMap, CARTO y Esri (calles, topográfico, satélite) sin clave; Google Maps (mapa, satélite, híbrido, relieve) con su propia clave de la Map Tiles API; o una URL XYZ personalizada de su propio servidor. Una imagen importada puede ubicarse con Archivo → Georreferenciar imagen seleccionada (esquina, tamaño y rotación) o con Alinear por 2 puntos; los GeoTIFF y world files ya entran en el lugar correcto.',
+      ),
+    ),
+    TutorialStep(
       id: 'tabs',
       chapter: chFiles,
       title: t('Abas de projeto', 'Project tabs', 'Pestañas de proyecto'),
       body: t('Vários projetos abertos ao mesmo tempo: Ctrl+Alt+N abre uma aba, Ctrl+Alt+W fecha, Ctrl+Alt+← → alterna. Copiar e colar funciona entre abas, e Arquivo → Detalhes do projeto guarda cliente, obra e projetista.', 'Several projects open at once: Ctrl+Alt+N opens a tab, Ctrl+Alt+W closes it, Ctrl+Alt+← → switches. Copy and paste work between tabs, and File → Project details stores client, site and designer.', 'Varios proyectos abiertos a la vez: Ctrl+Alt+N abre una pestaña, Ctrl+Alt+W la cierra, Ctrl+Alt+← → alterna. Copiar y pegar funcionan entre pestañas, y Archivo → Detalles del proyecto guarda cliente, obra y proyectista.'),
+    ),
+    TutorialStep(
+      id: 'examples',
+      chapter: chFiles,
+      title: t('Exemplos, recentes e boas-vindas', 'Examples, recent projects and welcome', 'Ejemplos, recientes y bienvenida'),
+      target: TutorialTargets.menuFile,
+      body: t(
+        'Arquivo → Exemplos abre 15 projetos prontos para dimensionar: pomar, jardim, campo de futebol, hortaliças em gotejamento, pivô central e setorial, lateral móvel, estufa, viveiro, cafezal em curvas de nível, banana, cana com gotejamento subterrâneo, gotejamento por gravidade, pastagem e buraco de golfe. Ajuda → Boas-vindas e galeria de exemplos mostra a mesma galeria com descrições. Arquivo → Projetos recentes reabre o que foi salvo neste navegador, e Ajuda → Sobre mostra a versão do programa.',
+        'File → Examples opens 15 projects ready to design: orchard, garden, football pitch, drip row crop, centre and sector pivot, linear move, greenhouse, nursery, coffee on contour lines, bananas, subsurface drip sugarcane, gravity-fed drip, pasture and a golf hole. Help → Welcome and example gallery shows the same gallery with descriptions. File → Recent projects reopens what was saved in this browser, and Help → About shows the program version.',
+        'Archivo → Ejemplos abre 15 proyectos listos para diseñar: huerto, jardín, campo de fútbol, hortalizas en goteo, pivote central y sectorial, lateral de avance, invernadero, vivero, cafetal en curvas de nivel, banano, caña con goteo subterráneo, goteo por gravedad, pastura y hoyo de golf. Ayuda → Bienvenida y galería de ejemplos muestra la misma galería con descripciones. Archivo → Proyectos recientes reabre lo guardado en este navegador, y Ayuda → Acerca de muestra la versión del programa.',
+      ),
     ),
     TutorialStep(
       id: 'shortcuts',

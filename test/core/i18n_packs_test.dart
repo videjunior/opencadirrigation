@@ -22,7 +22,8 @@ final _placeholder = RegExp(r'\{[^}]+\}');
 Set<String> _sourceTexts(String path, String fn) {
   final src = File(path).readAsStringSync();
   const str = r"'((?:[^'\\]|\\.)*)'";
-  final re = RegExp('(?<![\\w.])$fn\\(\\s*$str\\s*,\\s*$str\\s*,\\s*$str\\s*\\)', dotAll: true);
+  // A trailing comma is allowed: multi-line calls end with `'es',\n)`.
+  final re = RegExp('(?<![\\w.])$fn\\(\\s*$str\\s*,\\s*$str\\s*,\\s*$str\\s*,?\\s*\\)', dotAll: true);
   String un(String s) => s.replaceAll(r"\'", "'").replaceAll(r'\n', '\n').replaceAll(r'\$', r'$').replaceAll(r'\\', r'\');
   return {for (final m in re.allMatches(src)) un(m.group(2)!)};
 }
