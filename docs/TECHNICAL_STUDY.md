@@ -552,6 +552,13 @@ zone variation" parameter) and the actual one is measured over the lumped emitte
 - **Analysis per flow**: the complete mainline network with pumps (operating point), PRVs, check
   valves, devices and the demands; results per supply (duty: flow, available pressure, required
   pressure, deficit, elevation), per valve (available versus required) and per pipe; annual energy.
+- **Calculated supplies and pumps**: the required pressure of a calculated supply is the deficit
+  of the worst valve with the supply at zero pressure, i.e. after the head the pumps of the flow
+  add at their operating flow. When that deficit is negative the pumps (or the elevation) already
+  cover the need: the analysis keeps the supply at zero, reports the required pressure as zero
+  with the surplus beside it, and the extra pressure shows along the mainline and at the valves.
+  A pump is therefore judged by its duty (required head plus the head it adds) and by the
+  surplus, not by the valve pressures, which the design always meets.
 - **Loops**: the LP uses tree paths (message `lp_loops_approx`) and the final analysis checks the
   pressures; the test "looped mainline sizing with LP adds the approximation note and still
   converges" guards the behaviour.

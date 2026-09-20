@@ -538,6 +538,7 @@ const _table = <String, (String, String, String)>{
   'rep.pump': ('Bomba', 'Pump', 'Bomba'),
   'rep.device': ('Acessório', 'Device', 'Accesorio'),
   'rep.calculated': ('calculada', 'calculated', 'calculada'),
+  'rep.surplus': ('sobra', 'surplus', 'sobra'),
   'rep.fixed': ('fixa', 'fixed', 'fija'),
   'rep.deficit': ('déficit', 'deficit', 'déficit'),
   'rep.ok': ('ok', 'ok', 'ok'),

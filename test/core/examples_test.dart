@@ -79,6 +79,19 @@ void main() {
           expect(f.converged, isTrue, reason: f.name);
           expect(f.maxDeficit, lessThan(0.05), reason: '${f.name}: deficit ${f.maxDeficit} m, ${f.warnings}');
           expect(f.totalFlow / m3sPerM3h, greaterThan(0));
+          // the pump of the example works inside its range and is not grossly
+          // oversized; a calculated supply never runs at a negative pressure
+          expect(f.warnings.where((w) => w.startsWith('pump_out_of_range')), isEmpty, reason: f.name);
+          for (final s in f.supplies) {
+            expect(s.head, greaterThanOrEqualTo(0), reason: '${f.name}: ${s.name}');
+            expect(s.surplusHead, lessThan(35), reason: '${f.name}: ${s.name} surplus ${s.surplusHead} m');
+          }
+          // a pump inlet sees at worst the suction of the well (water level
+          // below ground), never a fictitious negative supply pressure
+          final lowestWater = p.entities.whereType<WaterSupplyEntity>().map((s) => s.waterLevelOffsetM).fold(0.0, (a, b) => a < b ? a : b);
+          for (final d in f.devices) {
+            expect(d.upstreamPressure, greaterThanOrEqualTo(lowestWater - 1), reason: '${f.name}: ${p.byId(d.entityId)?.name}');
+          }
         }
         expect(r.bom, isNotEmpty);
         // every report cell (PDF/CSV/TXT share these strings) is a plain

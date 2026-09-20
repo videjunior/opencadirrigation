@@ -1169,13 +1169,23 @@ class Designer {
       return d.isFinite ? d : 0;
     }
 
+    // Required pressure of the calculated supplies: the deficit of the worst
+    // valve with the supply at zero pressure, i.e. after the head the pumps of
+    // the flow add at their operating flow. A negative deficit is a surplus
+    // (the pumps or the elevation already cover the need): a supply cannot
+    // absorb head, so the analysis then keeps it at zero and the surplus shows
+    // as extra pressure along the mainline and at the valves
+    // (SupplyDuty.surplusHead); requiredHead keeps the signed value so the
+    // pump duty (required head plus the head the pumps add) stays right.
     var requiredExtra = 0.0;
     if (calc.isNotEmpty) {
       requiredExtra = deficit(r);
-      for (final s in calc) {
-        pressure[s.id] = requiredExtra;
+      if (requiredExtra > 0) {
+        for (final s in calc) {
+          pressure[s.id] = requiredExtra;
+        }
+        r = _mainlineNetwork(pressure, demand).solve();
       }
-      r = _mainlineNetwork(pressure, demand).solve();
     }
     if (!r.converged) warnings.add('not_converged');
 

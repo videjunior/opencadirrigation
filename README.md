@@ -354,9 +354,9 @@ and devices**, **pumps** and **fittings**. All internal hydraulic values are in 
 
 The **default catalogue** ships 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel),
 9 emitter families (PC and turbulent drippers, micro-sprinklers, impact sprinkler, gun, garden rotor
-and spray, demand point), 6 tapes and driplines, 15 valves and devices, 4 pumps and about 320
-fittings generated for every nominal diameter (couplers, 90° and 45° elbows, tees, crosses, end caps,
-adapters and reducers, plus lateral take-offs, tape ends and risers), with translated names and
+and spray, demand point), 6 tapes and driplines, 30 valves and devices (1" to 6"), 17 pumps
+(centrifugal 1 to 100 hp, submersible 3 to 25 hp) and about 330 fittings generated for every
+nominal diameter (couplers, 90° and 45° elbows, tees, crosses, end caps, adapters and reducers, plus lateral take-offs, tape ends and risers), with translated names and
 illustrative prices.
 
 The editor (Project → Component catalogue) edits, duplicates and removes items, imports and exports

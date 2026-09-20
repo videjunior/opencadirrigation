@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/design/agronomy.dart';
@@ -549,7 +551,8 @@ class PropertiesPanel extends StatelessWidget {
     if (e is WaterSupplyEntity) {
       for (final f in r.systemFlows) {
         for (final d in f.supplies.where((d) => d.supplyId == e.id)) {
-          out.add(KV(f.name, '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} @ ${fmt(u.pressureFromHead(d.requiredHead), 1)} ${u.pressureLabel}', color: d.headExceedsMax || d.flowExceedsDesign ? CadColors.warning : null));
+          final surplus = d.surplusHead > 0.05 ? ' (${t('rep.surplus')} ${fmt(u.pressureFromHead(d.surplusHead), 1)})' : '';
+          out.add(KV(f.name, '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} @ ${fmt(u.pressureFromHead(math.max(0, d.requiredHead)), 1)} ${u.pressureLabel}$surplus', color: d.headExceedsMax || d.flowExceedsDesign ? CadColors.warning : null));
         }
       }
     }

@@ -649,7 +649,8 @@ class CadPainter extends CustomPainter {
         }
         if (worst != null) {
           final u = c.units;
-          txt += '  ${fmt(u.flowFromSi(worst.flow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(worst.requiredHead), 1)} ${u.pressureLabel}';
+          txt += '  ${fmt(u.flowFromSi(worst.flow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(math.max(0, worst.requiredHead)), 1)} ${u.pressureLabel}';
+          if (worst.surplusHead > 0.05) txt += ' (${c.t('rep.surplus')} ${fmt(u.pressureFromHead(worst.surplusHead), 1)})';
         }
       }
       _label(canvas, s, txt, size: 10, color: color, shift: Offset(r + 3, -7));

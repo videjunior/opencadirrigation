@@ -2,6 +2,8 @@
 /// exporter (CSV, TXT, XLSX, PDF), so all outputs show the same numbers.
 library;
 
+import 'dart:math' as math;
+
 import '../model/entities.dart';
 import '../model/project.dart';
 import '../translate.dart';
@@ -129,7 +131,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     final mainWarn = <bool>[];
     for (final f in r.systemFlows) {
       for (final s in f.supplies) {
-        mainRows.add([f.name, '${t('rep.supply')}: ${s.name}', RNum(u.flowFromSi(s.flow), 1), RNum(u.pressureFromHead(s.head), 1), RNum(u.pressureFromHead(s.requiredHead), 1), s.calculated ? t('rep.calculated') : t('rep.fixed'), RNum(f.annualEnergyCost, 0)]);
+        final surplus = s.surplusHead > 0.05 ? ' · ${t('rep.surplus')} ${fmt(u.pressureFromHead(s.surplusHead), 1)}' : '';
+        mainRows.add([f.name, '${t('rep.supply')}: ${s.name}', RNum(u.flowFromSi(s.flow), 1), RNum(u.pressureFromHead(s.head), 1), RNum(u.pressureFromHead(math.max(0, s.requiredHead)), 1), '${s.calculated ? t('rep.calculated') : t('rep.fixed')}$surplus', RNum(f.annualEnergyCost, 0)]);
         mainWarn.add(s.flowExceedsDesign || s.headExceedsMax);
       }
       for (final v in f.valves) {

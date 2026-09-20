@@ -2,6 +2,8 @@
 /// stored in the project file and reopened without re-running the design).
 library;
 
+import 'dart:math' as math;
+
 import '../hydraulics/uniformity.dart';
 import '../model/geometry.dart';
 import 'pivot.dart';
@@ -207,6 +209,12 @@ class SupplyDuty {
   final double maxFlow;
   bool get flowExceedsDesign => designFlow > 0 && flow > designFlow + 1e-9;
   bool get headExceedsMax => maxHead > 0 && requiredHead > maxHead + 1e-6;
+
+  /// Pressure beyond the need at this supply (m): a calculated supply whose
+  /// pumps or elevation already cover the worst valve (its [requiredHead] is
+  /// then negative and the analysis runs it at zero), or a fixed supply set
+  /// above its requirement. Zero when the need is met exactly or not met.
+  double get surplusHead => math.max(0, head - requiredHead);
 
   Map<String, dynamic> toJson() => {'id': supplyId, 'name': name, 'q': flow, 'h': head, 'hreq': requiredHead, 'z': elevation, 'calc': calculated, 'dh': designHead, 'mh': maxHead, 'dq': designFlow, 'mq': maxFlow};
   static SupplyDuty fromJson(Map<String, dynamic> j) => SupplyDuty(supplyId: j['id'] as String, name: j['name'] as String? ?? '', flow: _d(j, 'q'), head: _d(j, 'h'), requiredHead: _d(j, 'hreq'), elevation: _d(j, 'z'), calculated: j['calc'] as bool? ?? true, designHead: _d(j, 'dh'), maxHead: _d(j, 'mh'), designFlow: _d(j, 'dq'), maxFlow: _d(j, 'mq'));

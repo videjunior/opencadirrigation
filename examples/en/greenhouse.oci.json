@@ -1160,6 +1160,22 @@
         "enabled": true
       },
       {
+        "id": "ev150",
+        "name": "Hydraulic valve 6\"",
+        "kind": "control",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 571.442548738719,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.006944444444444444,
+        "maxQ": 0.08333333333333333,
+        "cost": 2800.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
         "id": "prv50",
         "name": "Pressure reducing valve 2\"",
         "kind": "prv",
@@ -1192,6 +1208,22 @@
         "enabled": true
       },
       {
+        "id": "prv100",
+        "name": "Pressure reducing valve 4\"",
+        "kind": "prv",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 2479.6524882769413,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.03888888888888889,
+        "cost": 2100.0,
+        "setting": 30.0,
+        "enabled": true
+      },
+      {
         "id": "gate50",
         "name": "Gate valve 2\"",
         "kind": "isolation",
@@ -1208,6 +1240,22 @@
         "enabled": true
       },
       {
+        "id": "gate80",
+        "name": "Gate valve 3\"",
+        "kind": "isolation",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 403.58927218049166,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 220.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
         "id": "gate100",
         "name": "Gate valve 4\"",
         "kind": "isolation",
@@ -1220,6 +1268,54 @@
         "minQ": 0.0,
         "maxQ": 0.041666666666666664,
         "cost": 420.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate150",
+        "name": "Gate valve 6\"",
+        "kind": "isolation",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 32.6538599279268,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.09722222222222222,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check50",
+        "name": "Check valve 2\"",
+        "kind": "check",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 26449.626541620706,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.011111111111111112,
+        "cost": 150.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check80",
+        "name": "Check valve 3\"",
+        "kind": "check",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 4035.8927218049166,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 260.0,
         "setting": 0.0,
         "enabled": true
       },
@@ -1256,6 +1352,38 @@
         "enabled": true
       },
       {
+        "id": "filter_disc80",
+        "name": "Disc filter 3\" (120 mesh)",
+        "kind": "filter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 15552.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.013888888888888888,
+        "cost": 1600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc100",
+        "name": "Disc filter 4\" (120 mesh)",
+        "kind": "filter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 4800.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 2600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
         "id": "filter_screen80",
         "name": "Screen filter 3\"",
         "kind": "filter",
@@ -1268,6 +1396,38 @@
         "minQ": 0.0,
         "maxQ": 0.016666666666666666,
         "cost": 1400.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen100",
+        "name": "Screen filter 4\"",
+        "kind": "filter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3240.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.027777777777777776,
+        "cost": 2100.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen150",
+        "name": "Screen filter 6\"",
+        "kind": "filter",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 810.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.05555555555555555,
+        "cost": 3800.0,
         "setting": 0.0,
         "enabled": true
       },
@@ -1288,6 +1448,38 @@
         "enabled": true
       },
       {
+        "id": "meter80",
+        "name": "Water meter 3\"",
+        "kind": "meter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 14125.624526317208,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1100.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter100",
+        "name": "Water meter 4\"",
+        "kind": "meter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 5785.85580597953,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.03333333333333333,
+        "cost": 1600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
         "id": "backflow50",
         "name": "Backflow preventer 2\"",
         "kind": "backflow",
@@ -1300,6 +1492,38 @@
         "minQ": 0.0,
         "maxQ": 0.006944444444444444,
         "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "backflow80",
+        "name": "Backflow preventer 3\"",
+        "kind": "backflow",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 16143.570887219666,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1500.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air25",
+        "name": "Air release valve 1\"",
+        "kind": "airRelease",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 90.0,
         "setting": 0.0,
         "enabled": true
       },
@@ -1318,9 +1542,81 @@
         "cost": 180.0,
         "setting": 0.0,
         "enabled": true
+      },
+      {
+        "id": "air80",
+        "name": "Air release valve 3\"",
+        "kind": "airRelease",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 320.0,
+        "setting": 0.0,
+        "enabled": true
       }
     ],
     "pumps": [
+      {
+        "id": "pump_c1",
+        "name": "Centrifugal pump 1 hp (4 m³/h @ 20 m)",
+        "points": [
+          [
+            0.0,
+            27.0
+          ],
+          [
+            0.0005555555555555556,
+            25.0
+          ],
+          [
+            0.0011111111111111111,
+            20.0
+          ],
+          [
+            0.0016666666666666666,
+            12.0
+          ]
+        ],
+        "eff": 0.45,
+        "minQ": 0.0,
+        "maxQ": 0.0016666666666666666,
+        "cost": 900.0,
+        "enabled": true,
+        "kw": 0.75
+      },
+      {
+        "id": "pump_c2",
+        "name": "Centrifugal pump 2 hp (7 m³/h @ 28 m)",
+        "points": [
+          [
+            0.0,
+            37.0
+          ],
+          [
+            0.0009722222222222222,
+            34.0
+          ],
+          [
+            0.0019444444444444444,
+            28.0
+          ],
+          [
+            0.002777777777777778,
+            18.0
+          ]
+        ],
+        "eff": 0.5,
+        "minQ": 0.0,
+        "maxQ": 0.002777777777777778,
+        "cost": 1500.0,
+        "enabled": true,
+        "kw": 1.5
+      },
       {
         "id": "pump_small",
         "name": "Centrifugal pump 3 hp (10 m³/h @ 35 m)",
@@ -1346,7 +1642,64 @@
         "minQ": 0.0,
         "maxQ": 0.004166666666666667,
         "cost": 2200.0,
-        "enabled": true
+        "enabled": true,
+        "kw": 2.2
+      },
+      {
+        "id": "pump_c5",
+        "name": "Centrifugal pump 5 hp (18 m³/h @ 38 m)",
+        "points": [
+          [
+            0.0,
+            50.0
+          ],
+          [
+            0.0025,
+            46.0
+          ],
+          [
+            0.005,
+            38.0
+          ],
+          [
+            0.0075,
+            26.0
+          ]
+        ],
+        "eff": 0.6,
+        "minQ": 0.0,
+        "maxQ": 0.0075,
+        "cost": 3200.0,
+        "enabled": true,
+        "kw": 3.7
+      },
+      {
+        "id": "pump_c7_5",
+        "name": "Centrifugal pump 7.5 hp (28 m³/h @ 40 m)",
+        "points": [
+          [
+            0.0,
+            53.0
+          ],
+          [
+            0.0038888888888888888,
+            49.0
+          ],
+          [
+            0.0077777777777777776,
+            40.0
+          ],
+          [
+            0.011666666666666667,
+            27.0
+          ]
+        ],
+        "eff": 0.62,
+        "minQ": 0.0,
+        "maxQ": 0.011666666666666667,
+        "cost": 4500.0,
+        "enabled": true,
+        "kw": 5.5
       },
       {
         "id": "pump_mid",
@@ -1373,7 +1726,64 @@
         "minQ": 0.0,
         "maxQ": 0.016666666666666666,
         "cost": 6500.0,
-        "enabled": true
+        "enabled": true,
+        "kw": 7.5
+      },
+      {
+        "id": "pump_c15",
+        "name": "Centrifugal pump 15 hp (55 m³/h @ 45 m)",
+        "points": [
+          [
+            0.0,
+            60.0
+          ],
+          [
+            0.0077777777777777776,
+            55.0
+          ],
+          [
+            0.015277777777777777,
+            45.0
+          ],
+          [
+            0.022222222222222223,
+            31.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 9000.0,
+        "enabled": true,
+        "kw": 11.0
+      },
+      {
+        "id": "pump_c20",
+        "name": "Centrifugal pump 20 hp (70 m³/h @ 48 m)",
+        "points": [
+          [
+            0.0,
+            63.0
+          ],
+          [
+            0.009722222222222222,
+            58.0
+          ],
+          [
+            0.019444444444444445,
+            48.0
+          ],
+          [
+            0.027777777777777776,
+            33.0
+          ]
+        ],
+        "eff": 0.7,
+        "minQ": 0.0,
+        "maxQ": 0.027777777777777776,
+        "cost": 12000.0,
+        "enabled": true,
+        "kw": 15.0
       },
       {
         "id": "pump_big",
@@ -1400,7 +1810,148 @@
         "minQ": 0.0,
         "maxQ": 0.05,
         "cost": 18000.0,
-        "enabled": true
+        "enabled": true,
+        "kw": 22.0
+      },
+      {
+        "id": "pump_c50",
+        "name": "Centrifugal pump 50 hp (160 m³/h @ 55 m)",
+        "points": [
+          [
+            0.0,
+            72.0
+          ],
+          [
+            0.022222222222222223,
+            66.0
+          ],
+          [
+            0.044444444444444446,
+            55.0
+          ],
+          [
+            0.06388888888888888,
+            38.0
+          ]
+        ],
+        "eff": 0.74,
+        "minQ": 0.0,
+        "maxQ": 0.06388888888888888,
+        "cost": 28000.0,
+        "enabled": true,
+        "kw": 37.0
+      },
+      {
+        "id": "pump_c75",
+        "name": "Centrifugal pump 75 hp (230 m³/h @ 60 m)",
+        "points": [
+          [
+            0.0,
+            78.0
+          ],
+          [
+            0.03194444444444444,
+            72.0
+          ],
+          [
+            0.06388888888888888,
+            60.0
+          ],
+          [
+            0.09166666666666666,
+            42.0
+          ]
+        ],
+        "eff": 0.76,
+        "minQ": 0.0,
+        "maxQ": 0.09166666666666666,
+        "cost": 40000.0,
+        "enabled": true,
+        "kw": 55.0
+      },
+      {
+        "id": "pump_c100",
+        "name": "Centrifugal pump 100 hp (300 m³/h @ 65 m)",
+        "points": [
+          [
+            0.0,
+            85.0
+          ],
+          [
+            0.041666666666666664,
+            78.0
+          ],
+          [
+            0.08333333333333333,
+            65.0
+          ],
+          [
+            0.11666666666666667,
+            45.0
+          ]
+        ],
+        "eff": 0.78,
+        "minQ": 0.0,
+        "maxQ": 0.11666666666666667,
+        "cost": 55000.0,
+        "enabled": true,
+        "kw": 75.0
+      },
+      {
+        "id": "pump_s3",
+        "name": "Submersible pump 3 hp (8 m³/h @ 55 m)",
+        "points": [
+          [
+            0.0,
+            78.0
+          ],
+          [
+            0.0011111111111111111,
+            68.0
+          ],
+          [
+            0.0022222222222222222,
+            55.0
+          ],
+          [
+            0.003333333333333333,
+            36.0
+          ]
+        ],
+        "eff": 0.55,
+        "minQ": 0.0,
+        "maxQ": 0.003333333333333333,
+        "cost": 2800.0,
+        "enabled": true,
+        "kw": 2.2
+      },
+      {
+        "id": "pump_s5",
+        "name": "Submersible pump 5 hp (12 m³/h @ 65 m)",
+        "points": [
+          [
+            0.0,
+            90.0
+          ],
+          [
+            0.0016666666666666666,
+            80.0
+          ],
+          [
+            0.003333333333333333,
+            65.0
+          ],
+          [
+            0.005,
+            42.0
+          ]
+        ],
+        "eff": 0.58,
+        "minQ": 0.0,
+        "maxQ": 0.005,
+        "cost": 3900.0,
+        "enabled": true,
+        "kw": 3.7
       },
       {
         "id": "pump_sub",
@@ -1423,11 +1974,68 @@
             40.0
           ]
         ],
-        "eff": 0.6,
+        "eff": 0.68,
         "minQ": 0.0,
         "maxQ": 0.009722222222222222,
         "cost": 5400.0,
-        "enabled": true
+        "enabled": true,
+        "kw": 5.5
+      },
+      {
+        "id": "pump_s15",
+        "name": "Submersible pump 15 hp (40 m³/h @ 65 m)",
+        "points": [
+          [
+            0.0,
+            90.0
+          ],
+          [
+            0.005555555555555556,
+            80.0
+          ],
+          [
+            0.011111111111111112,
+            65.0
+          ],
+          [
+            0.016666666666666666,
+            42.0
+          ]
+        ],
+        "eff": 0.65,
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 9500.0,
+        "enabled": true,
+        "kw": 11.0
+      },
+      {
+        "id": "pump_s25",
+        "name": "Submersible pump 25 hp (55 m³/h @ 80 m)",
+        "points": [
+          [
+            0.0,
+            110.0
+          ],
+          [
+            0.0077777777777777776,
+            98.0
+          ],
+          [
+            0.015277777777777777,
+            80.0
+          ],
+          [
+            0.022222222222222223,
+            52.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 15000.0,
+        "enabled": true,
+        "kw": 18.5
       }
     ],
     "fittings": [
@@ -4163,6 +4771,54 @@
         "enabled": true
       },
       {
+        "id": "to35",
+        "name": "Lateral take-off 35 mm",
+        "kind": "takeOff",
+        "sizeMm": 35.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te35",
+        "name": "Line end 35 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 35.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to40",
+        "name": "Lateral take-off 40 mm",
+        "kind": "takeOff",
+        "sizeMm": 40.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te40",
+        "name": "Line end 40 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 40.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to50",
+        "name": "Lateral take-off 50 mm",
+        "kind": "takeOff",
+        "sizeMm": 50.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te50",
+        "name": "Line end 50 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 50.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
         "id": "riser_micro",
         "name": "Micro-sprinkler stake/tube",
         "kind": "riser",
@@ -5518,7 +6174,7 @@
         -9.0,
         -9.0
       ],
-      "spec": "pump_small",
+      "spec": "pump_c1",
       "speed": 1.0,
       "rot": 0.0,
       "scope": "mainline"

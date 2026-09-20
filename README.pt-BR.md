@@ -354,9 +354,9 @@ e acessórios**, **bombas** e **conexões**. Todos os valores hidráulicos inter
 
 O **catálogo padrão** traz 17 tubos (PE 16–50 mm, PVC DN 35–250, PEAD 110 e 160, aço 6"), 9 famílias
 de emissores (gotejadores PC e turbulentos, microaspersores, aspersor de impacto, canhão, rotor e
-spray de jardim, ponto de demanda), 6 fitas e tubos gotejadores, 15 válvulas e acessórios, 4 bombas e
-cerca de 320 conexões geradas para cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas,
-tampões, adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida), com
+spray de jardim, ponto de demanda), 6 fitas e tubos gotejadores, 30 válvulas e acessórios (1" a 6"),
+17 bombas (centrífugas de 1 a 100 cv, submersas de 3 a 25 cv) e cerca de 330 conexões geradas para
+cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas, tampões, adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida), com
 nomes traduzidos e preços ilustrativos.
 
 O editor (Projeto → Catálogo de componentes) edita, duplica e remove itens, importa e exporta JSON,

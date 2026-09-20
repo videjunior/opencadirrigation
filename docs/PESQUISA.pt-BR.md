@@ -540,6 +540,13 @@ principal. A variação admissível da zona vem da tolerância de vazão do emis
 - **Análise por turno**: rede completa da linha principal com bombas (ponto de operação), PRVs,
   retenções, acessórios e as demandas; resultado por fonte (duty: vazão, pressão disponível,
   requerida, déficit, cota), por válvula (disponível versus requerida) e por tubo; energia anual.
+- **Fontes calculadas e bombas**: a pressão requerida de uma fonte calculada é o déficit da pior
+  válvula com a fonte a pressão zero, ou seja, depois da carga que as bombas do turno acrescentam
+  na sua vazão de operação. Quando esse déficit é negativo as bombas (ou a cota) já cobrem a
+  necessidade: a análise mantém a fonte em zero, reporta a pressão requerida como zero com a sobra
+  ao lado, e o excesso aparece ao longo da linha principal e nas válvulas. Uma bomba é julgada,
+  portanto, pelo seu duty (carga requerida mais a carga que ela acrescenta) e pela sobra, não pelas
+  pressões das válvulas, que o projeto sempre atende.
 - **Malhas**: o LP usa caminhos em árvore (mensagem `lp_loops_approx`) e a análise final confere as
   pressões; o teste "looped mainline sizing with LP adds the approximation note and still converges"
   garante o comportamento.

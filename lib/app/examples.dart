@@ -136,7 +136,7 @@ Project buildOrchardExample(Tr t, String lang) {
   p.entities.add(PipeEntity(id: p.newId(), points: [tee, va], scope: HydraulicScope.mainline, name: t('ex.branchA')));
   p.entities.add(PipeEntity(id: p.newId(), points: [tee, Pt(vb.x, -8), vb], scope: HydraulicScope.mainline, name: t('ex.branchB')));
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.well'), calculatePressure: true, waterLevelOffsetM: -12));
-  p.entities.add(PumpEntity(id: p.newId(), position: Pt(well.x + 3, -8), pumpSpecId: 'pump_mid'));
+  p.entities.add(PumpEntity(id: p.newId(), position: Pt(well.x + 3, -8), pumpSpecId: 'pump_c5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: Pt(well.x + 8, -8), valveSpecId: 'filter_screen80'));
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.flow1'), valveIds: {a.valve!.id}, startHour: 6, durationHours: 3),
@@ -312,7 +312,7 @@ Project buildSportsFieldExample(Tr t, String lang) {
   // reservoir, pump, check valve and the trunk along the west side
   const tank = Pt(-6, -24), pump = Pt(-6, -21), check = Pt(-6, -18);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.f.tank'), calculatePressure: true, waterLevelOffsetM: 1.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_mid'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c7_5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: check, valveSpecId: 'check100'));
   p.entities.add(PipeEntity(id: p.newId(), points: [tank, pump, check, for (final y in rows) Pt(-6, y)], scope: HydraulicScope.mainline, name: t('ex.f.main')));
   for (var i = 0; i < valves.length; i++) {
@@ -379,7 +379,7 @@ Project buildRowCropExample(Tr t, String lang) {
   // trunk: reservoir → pump → filter → tee, then west and east branches with stubs to the valves
   const reservoir = Pt(122, -40), pump = Pt(122, -36), filter = Pt(122, -30), tee = Pt(122, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: reservoir, name: t('ex.c.reservoir'), calculatePressure: true, waterLevelOffsetM: 1.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_mid'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: filter, valveSpecId: 'filter_screen80'));
   p.entities.add(PipeEntity(id: p.newId(), points: [reservoir, pump, filter, tee], scope: HydraulicScope.mainline, name: t('ex.c.trunk')));
   final west = [valves[0].position, valves[2].position];
@@ -494,7 +494,7 @@ Project buildGreenhouseExample(Tr t, String lang) {
   }
   const tank = Pt(-9, -12), pump = Pt(-9, -9), filter = Pt(-9, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.gh.tank'), calculatePressure: true, waterLevelOffsetM: 2));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_small'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c1'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: filter, valveSpecId: 'filter_disc50'));
   p.entities.add(PipeEntity(id: p.newId(), points: [tank, pump, filter, for (final v in valves) Pt(v.position.x, -6)], scope: HydraulicScope.mainline, name: t('ex.gh.main')));
   for (final v in valves) {
@@ -631,7 +631,7 @@ Project buildPastureExample(Tr t, String lang) {
   }
   const tank = Pt(-24, -30), pump = Pt(-24, -24), check = Pt(-24, -18);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.pa.reservoir'), calculatePressure: true, waterLevelOffsetM: 1.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_mid'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c7_5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: check, valveSpecId: 'check100'));
   p.entities.add(PipeEntity(id: p.newId(), points: [tank, pump, check, const Pt(-24, -12), for (final v in valves) Pt(v.position.x, -12)], scope: HydraulicScope.mainline, name: t('ex.pa.main')));
   for (final v in valves) {
@@ -730,7 +730,7 @@ Project buildGolfExample(Tr t, String lang) {
   // pond, pump and a header along the cart path with stubs to the valves
   const pond = Pt(60, -42), pump = Pt(60, -36);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: pond, name: t('ex.go.pond'), calculatePressure: true, waterLevelOffsetM: -1.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_mid'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c5'));
   final mA = fairwayValves[0].position.y, mB = fairwayValves[1].position.y;
   p.entities.add(PipeEntity(id: p.newId(), points: [pond, pump, const Pt(60, -20)], scope: HydraulicScope.mainline, name: t('ex.go.main')));
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-44, -20), const Pt(-6, -20), const Pt(60, -20), const Pt(145, -20)], scope: HydraulicScope.mainline, name: t('ex.go.main')));
@@ -795,7 +795,7 @@ Project buildNurseryExample(Tr t, String lang) {
   }
   const tank = Pt(-10, -12), pump = Pt(-10, -9), filter = Pt(-10, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.nu.tank'), calculatePressure: true, waterLevelOffsetM: 2.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_small'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c1'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: filter, valveSpecId: 'filter_disc50'));
   p.entities.add(PipeEntity(id: p.newId(), points: [tank, pump, filter, for (final v in valves) Pt(v.position.x, -6)], scope: HydraulicScope.mainline, name: t('ex.nu.main')));
   for (final v in valves) {
@@ -862,7 +862,7 @@ Project buildSugarcaneExample(Tr t, String lang) {
   }
   const reservoir = Pt(182, -44), pump = Pt(182, -38), filter = Pt(182, -32), air = Pt(182, -20), tee = Pt(182, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: reservoir, name: t('ex.sc.reservoir'), calculatePressure: true, waterLevelOffsetM: 1.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_mid'));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c7_5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: filter, valveSpecId: 'filter_screen80'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: air, valveSpecId: 'air50'));
   p.entities.add(PipeEntity(id: p.newId(), points: [reservoir, pump, filter, air, tee], scope: HydraulicScope.mainline, name: t('ex.sc.trunk'), depth: 0.8));
