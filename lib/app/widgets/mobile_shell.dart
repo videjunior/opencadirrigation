@@ -221,7 +221,7 @@ class _MobileShellState extends State<MobileShell> {
               check('${t('view.baseMap')}: ${t('view.baseMap.${m.name}')}', c.baseMap == m, (_) => selectBaseMap(context, c, m)),
             row(t('view.baseMap.googleKey'), () => showGoogleMapsKeyDialog(context, c), icon: Icons.key_outlined),
             row(t('view.baseMap.customUrl'), () => showCustomTilesDialog(context, c), icon: Icons.link),
-            for (final l in supportedLanguages) check(t('lang.$l'), c.lang == l, (_) => c.setLanguage(l)),
+            for (final l in supportedLanguages) check(languageNames[l] ?? l, c.lang == l, (_) => c.setLanguage(l)),
             row(t('tools.units'), () => showUnitsDialog(context, c), icon: Icons.straighten),
           ]),
           section(t('menu.design'), Icons.play_circle_outline, [

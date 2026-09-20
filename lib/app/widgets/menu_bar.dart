@@ -160,7 +160,7 @@ class AppMenuBar extends StatelessWidget {
                   ], child: Text(t('view.baseMap'))),
                   SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, leadingIcon: const Icon(Icons.language, size: 16), menuChildren: [
                     for (final l in supportedLanguages)
-                      RadioMenuButton<String>(value: l, groupValue: c.lang, onChanged: (v) => c.setLanguage(v ?? 'en'), child: Text(t('lang.$l'))),
+                      RadioMenuButton<String>(value: l, groupValue: c.lang, onChanged: (v) => c.setLanguage(v ?? 'en'), child: Text(languageNames[l] ?? l)),
                   ], child: Text(t('view.language'))),
                 ], child: Text(t('menu.view'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuDraw, menuChildren: [

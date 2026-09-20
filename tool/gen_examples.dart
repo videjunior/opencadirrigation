@@ -27,7 +27,7 @@ void main() {
     readme.writeln('| `${ex.id.name}` | ${en(ex.titleKey)} — ${en(ex.tagsKey)} | ${en(ex.subtitleKey)} |');
   }
   var n = 0;
-  for (final lang in supportedLanguages) {
+  for (final lang in baseLanguages) {
     final dir = Directory('examples/$lang')..createSync(recursive: true);
     for (final ex in exampleGallery) {
       final p = buildExample(ex.id, I18n(lang).call, lang: lang);

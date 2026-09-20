@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/design/block_generator.dart';
+import '../../core/i18n/language_packs.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../io/prefs.dart';
@@ -167,7 +168,7 @@ class _T {
   final String pt;
   final String en;
   final String es;
-  String of(String lang) => switch (lang) { 'en' => en, 'es' => es, _ => pt };
+  String of(String lang) => switch (lang) { 'en' => en, 'es' => es, 'pt' => pt, _ => packTutorialText(lang, en) ?? en };
 }
 
 String tutorialText(String key, String lang) => (_texts[key] ?? _T(key, key, key)).of(lang);
@@ -196,7 +197,7 @@ const _texts = <String, _T>{
 /// controller (entity counts, event counters, state) and offer a "Show me"
 /// demo that performs it.
 List<TutorialStep> buildTutorialSteps(String lang) {
-  String t(String pt, String en, String es) => switch (lang) { 'en' => en, 'es' => es, _ => pt };
+  String t(String pt, String en, String es) => switch (lang) { 'en' => en, 'es' => es, 'pt' => pt, _ => packTutorialText(lang, en) ?? en };
   final chNav = t('Navegação', 'Navigation', 'Navegación');
   final chEdit = t('Seleção e edição', 'Selection and editing', 'Selección y edición');
   final chDraw = t('Desenho', 'Drawing', 'Dibujo');

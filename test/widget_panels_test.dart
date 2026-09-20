@@ -376,7 +376,7 @@ void main() {
     await settle(tester, 2);
     await tester.tap(find.text('Idioma'));
     await settle(tester, 2);
-    await tester.tap(find.text('Inglês'));
+    await tester.tap(find.text('English'));
     await settle(tester, 3);
     expect(c.lang, 'en');
     expect(find.text('View'), findsOneWidget);
@@ -384,7 +384,7 @@ void main() {
     await settle(tester, 2);
     await tester.tap(find.text('Language'));
     await settle(tester, 2);
-    await tester.tap(find.text('Portuguese'));
+    await tester.tap(find.text('Português'));
     await settle(tester, 3);
     expect(c.lang, 'pt');
     // edit menu

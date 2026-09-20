@@ -1,7 +1,73 @@
-/// String table: Portuguese (pt), English (en) and Spanish (es).
+/// String table: Portuguese (pt), English (en) and Spanish (es) compiled in,
+/// plus seventeen languages loaded on demand from `assets/i18n/<code>.json`
+/// (see [ensureLanguageLoaded]); together, the twenty most spoken languages.
 library;
 
-const supportedLanguages = ['pt', 'en', 'es'];
+
+import '../core/i18n/language_packs.dart';
+
+export '../core/i18n/language_packs.dart' show LanguagePack, installLanguagePack, isLanguagePackInstalled, languagePack;
+
+/// Languages whose strings are compiled into the app (the `_table` below).
+const baseLanguages = ['pt', 'en', 'es'];
+
+/// Every interface language, in the order of the language menu (native name,
+/// Latin scripts first).
+const supportedLanguages = [
+  'id', // Bahasa Indonesia
+  'de', // Deutsch
+  'en', // English
+  'es', // Español
+  'fr', // Français
+  'ha', // Hausa
+  'sw', // Kiswahili
+  'pt', // Português
+  'vi', // Tiếng Việt
+  'tr', // Türkçe
+  'ru', // Русский
+  'ar', // العربية
+  'ur', // اردو
+  'hi', // हिन्दी
+  'mr', // मराठी
+  'bn', // বাংলা
+  'pa', // ਪੰਜਾਬੀ
+  'te', // తెలుగు
+  'zh', // 中文
+  'ja', // 日本語
+];
+
+/// Name of each language in that language, for the language menu.
+const languageNames = <String, String>{
+  'id': 'Bahasa Indonesia',
+  'de': 'Deutsch',
+  'en': 'English',
+  'es': 'Español',
+  'fr': 'Français',
+  'ha': 'Hausa',
+  'sw': 'Kiswahili',
+  'pt': 'Português',
+  'vi': 'Tiếng Việt',
+  'tr': 'Türkçe',
+  'ru': 'Русский',
+  'ar': 'العربية',
+  'ur': 'اردو',
+  'hi': 'हिन्दी',
+  'mr': 'मराठी',
+  'bn': 'বাংলা',
+  'pa': 'ਪੰਜਾਬੀ',
+  'te': 'తెలుగు',
+  'zh': '中文',
+  'ja': '日本語',
+};
+
+/// BCP 47 tag of each language for the document `lang` attribute and for
+/// services that take one (Portuguese is the Brazilian variety, Chinese the
+/// simplified script).
+String languageTag(String lang) => switch (lang) { 'pt' => 'pt-BR', 'zh' => 'zh-CN', _ => lang };
+
+/// Languages written right to left (the layout stays left to right, as in
+/// most CAD software; text widgets shape and order the glyphs themselves).
+const rtlLanguages = {'ar', 'ur'};
 
 /// Interface language for the user's preferred locales, given as language
 /// tags in order of preference (`pt-BR`, `en_US`, `es`, as the browser's
@@ -25,15 +91,52 @@ String? languageFromPath(Iterable<String> pathSegments) {
   return null;
 }
 
+/// Reads the JSON of `assets/i18n/<code>.json` for [ensureLanguageLoaded];
+/// the app installs the asset-bundle reader at start-up, tests a file reader.
+/// Null (the default) means no loading: those languages show English.
+Future<Map<String, dynamic>> Function(String code)? languageLoader;
+
+final Map<String, Future<void>> _loading = {};
+
+/// Whether the strings of [lang] are available right now.
+bool isLanguageLoaded(String lang) => baseLanguages.contains(lang) || isLanguagePackInstalled(lang);
+
+/// Loads and installs the string table of [lang] when it is not compiled in
+/// and not yet installed. Completes at once for the base languages; a failed
+/// download is not remembered, so a later call tries again. Never throws.
+Future<void> ensureLanguageLoaded(String lang) {
+  if (isLanguageLoaded(lang) || !supportedLanguages.contains(lang)) return Future.value();
+  final loader = languageLoader;
+  if (loader == null) return Future.value();
+  return _loading[lang] ??= () async {
+    try {
+      installLanguagePack(lang, LanguagePack.fromJson(await loader(lang)));
+    } catch (_) {
+      // English until the next attempt.
+    } finally {
+      _loading.remove(lang);
+    }
+  }();
+}
+
 class I18n {
   I18n(String lang) : lang = supportedLanguages.contains(lang) ? lang : 'en';
   final String lang;
 
-  int get _i => switch (lang) { 'pt' => 0, 'es' => 2, _ => 1 };
+  /// Column of the compiled table, or -1 for a language loaded from a pack.
+  int get _i => switch (lang) { 'pt' => 0, 'en' => 1, 'es' => 2, _ => -1 };
+
+  /// The keys of the compiled table.
+  static Iterable<String> get keys => _table.keys;
 
   String call(String key, [Map<String, String>? args]) {
     final e = _table[key];
-    var s = e == null ? key : (_i == 0 ? e.$1 : (_i == 1 ? e.$2 : e.$3));
+    String s;
+    if (e == null) {
+      s = key;
+    } else {
+      s = switch (_i) { 0 => e.$1, 2 => e.$3, 1 => e.$2, _ => packString(lang, key) ?? e.$2 };
+    }
     args?.forEach((k, v) => s = s.replaceAll('{$k}', v));
     return s;
   }

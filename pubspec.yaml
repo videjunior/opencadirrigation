@@ -65,6 +65,8 @@ flutter:
     - assets/brand/
     # manufacturer catalogue packs (*.oci.cat + index.json), see catalogs/README.md
     - catalogs/
+    # string tables of the languages not compiled in (see lib/app/i18n.dart)
+    - assets/i18n/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

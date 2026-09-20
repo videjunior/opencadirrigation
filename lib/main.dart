@@ -5,6 +5,7 @@ import 'app/actions.dart';
 import 'app/canvas/cad_canvas.dart';
 import 'app/examples.dart';
 import 'app/i18n.dart';
+import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
 import 'app/io/unload.dart';
 import 'app/keys/hotkeys.dart';
@@ -34,7 +35,7 @@ import 'core/io/project_export.dart';
 import 'core/model/entities.dart';
 import 'core/model/geometry.dart';
 
-void main() {
+Future<void> main() async {
   // The exact build goes to the console at start-up (also shown in the
   // welcome dialog, the status bar and Help → About).
   debugPrint('$appName $appVersionLabel');
@@ -43,7 +44,22 @@ void main() {
   if (appBuildName != null && (appBuildName != appVersion || (appBuildNumber ?? '$appBuild') != '$appBuild')) {
     debugPrint('version.dart is stale: pubspec.yaml says $appBuildName+$appBuildNumber, run dart run tool/gen_version.dart');
   }
+  // Languages beyond Portuguese, English and Spanish come from
+  // assets/i18n/<code>.json: fetch the start language before the first frame
+  // so the interface never flashes English first.
+  WidgetsFlutterBinding.ensureInitialized();
+  useAssetLanguageLoader();
+  await ensureLanguageLoaded(startLanguage());
+  await warmUpFonts(startLanguage());
   runApp(const IrrigationCadApp());
+}
+
+/// The language the app will start in: the page address (`?lang=`, `/en/`)
+/// wins over the saved choice and the machine language.
+String startLanguage() {
+  final urlLang = Uri.base.queryParameters['lang'] ?? languageFromPath(Uri.base.pathSegments);
+  if (urlLang != null && supportedLanguages.contains(urlLang)) return urlLang;
+  return ProjectController.initialLanguage();
 }
 
 class IrrigationCadApp extends StatelessWidget {

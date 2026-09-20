@@ -12,9 +12,12 @@ import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/units.dart';
 
+import '../support/language_packs.dart';
+
 /// The example gallery: every project builds, is fully connected, designs
 /// without errors and matches the `.oci.json` files under examples/.
 void main() {
+  setUpAll(installLanguagePacksFromDisk);
   final t = I18n('pt');
 
   Map<String, dynamic> normalised(Project p) {
@@ -99,7 +102,7 @@ void main() {
       });
 
       test('matches the shipped .oci.json files', () {
-        for (final lang in supportedLanguages) {
+        for (final lang in baseLanguages) {
           final f = File('examples/$lang/${ex.id.name}.oci.json');
           expect(f.existsSync(), isTrue, reason: 'run dart run tool/gen_examples.dart');
           final shipped = Project.fromJson(jsonDecode(f.readAsStringSync()) as Map<String, dynamic>);

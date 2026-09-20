@@ -77,7 +77,7 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 | No navegador | Chrome, Edge, Firefox e Safari, em computador, tablet e celular; instalável como PWA. Também compila para desktop (macOS, Windows, Linux). |
 | Sem servidor | Nada é enviado a lugar nenhum. Projetos ficam no navegador e em arquivos locais. Só a elevação online e os mapas base acessam a internet, quando pedidos. |
 | Motor transparente | Cada fórmula está documentada no código e no [estudo técnico](docs/PESQUISA.pt-BR.md), com testes que a comparam a valores de referência. |
-| Trilíngue | Interface em português, inglês e espanhol; o app abre no idioma do sistema. |
+| 20 idiomas | Interface em português, inglês, espanhol, chinês, hindi, árabe, francês, bengali, russo, urdu, indonésio, alemão, japonês, marati, vietnamita, télugo, hauçá, turco, panjabi e suaíli; o app abre no idioma do sistema. |
 
 ---
 
@@ -129,7 +129,7 @@ menu Arquivo → Exemplos e pela URL. Os mesmos projetos estão em [examples/](e
 | `?example=garden` | Abre o exemplo indicado (`orchard`, `garden`, `sportsField`, `rowCrop`, `pivot`, `greenhouse`, `nursery`, `coffee`, `bananas`, `sugarcane`, `gravity`, `pasture`, `golf`, `sectorPivot`, `linear`). |
 | `?design=1` | Projeta ao carregar. |
 | `?tutorial=N` | Abre o tutorial interativo no passo N. |
-| `?lang=pt` `en` `es` | Idioma desta visita (não altera a preferência salva). |
+| `?lang=pt` (qualquer código da seção 13) | Idioma desta visita (não altera a preferência salva). |
 | `/en/`, `/es/` | Páginas de entrada em inglês e espanhol, com o mesmo efeito de `?lang`. |
 
 ---
@@ -590,10 +590,26 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
 
 ## 13. Idiomas e site
 
-A interface está em **português, inglês e espanhol**. O app abre no primeiro idioma da lista de
-idiomas preferidos do sistema (do navegador ou do sistema operacional) que ele fala, e em inglês
-quando nenhum deles é falado; a troca em Ver → Idioma fica salva. As páginas `/en/` e `/es/` e o
-parâmetro `?lang=` valem só para a visita. O atributo `lang` do documento acompanha o idioma do app.
+A interface está em **20 idiomas**, os mais falados do mundo. Português, inglês e espanhol vêm
+compilados no app; chinês (`zh`), hindi (`hi`), árabe (`ar`), francês (`fr`), bengali (`bn`), russo
+(`ru`), urdu (`ur`), indonésio (`id`), alemão (`de`), japonês (`ja`), marati (`mr`), vietnamita
+(`vi`), télugo (`te`), hauçá (`ha`), turco (`tr`), panjabi (`pa`, escrita gurmukhi) e suaíli (`sw`)
+são pacotes de idioma em `assets/i18n/<código>.json`, baixados só quando o idioma é escolhido (a
+interface mostra inglês até o pacote chegar, uma fração de segundo). Cada pacote traduz toda a tabela
+de textos, o tutorial interativo e os nomes do catálogo padrão; o worker de projeto recebe o pacote
+junto com o pedido, então relatórios e plotagens também saem no idioma escolhido. O app abre no
+primeiro idioma da lista de idiomas preferidos do sistema (do navegador ou do sistema operacional)
+que ele fala, e em inglês quando nenhum deles é falado; a troca em Ver → Idioma (cada idioma com o
+próprio nome) fica salva. As páginas `/en/` e `/es/` e o parâmetro `?lang=` valem só para a visita.
+O atributo `lang` do documento acompanha o idioma do app (`pt-BR`, `zh-CN`, senão o código). Os
+textos em árabe e urdu são escritos da direita para a esquerda; o layout da interface continua da
+esquerda para a direita. Os projetos de exemplo distribuídos mantêm os rótulos em português, inglês
+e espanhol.
+
+Um pacote é um JSON simples com três seções: `strings` (chave → texto), `tutorial` e `catalog`
+(texto de origem em inglês → texto). Tradutores podem revisá-lo sem tocar no código;
+`test/core/i18n_packs_test.dart` verifica que cada pacote cobre todas as chaves com os mesmos
+marcadores.
 
 O site é gerado por `dart run tool/gen_site.dart` a partir de `tool/site.dart`: `web/index.html`
 (pt-BR), `web/en/index.html`, `web/es/index.html`, `web/sitemap.xml` e `web/404.html`. Como o
@@ -645,6 +661,7 @@ lib/
       plot.dart, pdf.dart, pdf_sheet.dart, svg.dart, xlsx.dart, catalog_io.dart, project_export.dart
     units.dart              unidades (métrico/US), viscosidade da água
     translate.dart          gancho de tradução para relatórios e plotagens rotularem a saída sem Flutter
+    i18n/language_packs.dart registro dos pacotes de idioma (textos, tutorial, nomes do catálogo)
   app/                      Flutter
     state/                  ProjectController (projeto, seleção, câmera, undo, índice espacial, cálculo),
                             Workspace (abas e área de transferência), DesignRunner (worker/isolate/thread)
@@ -656,7 +673,8 @@ lib/
     io/                     arquivos, preferências, HTTP, armazenamento local, documento HTML, links externos
     actions.dart            ações de arquivo, área de transferência e exportação compartilhadas por menus, paleta e atalhos
     examples.dart           galeria de exemplos
-    i18n.dart               tabela de textos pt/en/es e escolha de idioma
+    i18n.dart               tabela de textos pt/en/es, lista de idiomas e carregamento sob demanda dos pacotes
+    i18n_assets.dart        lê assets/i18n/<código>.json para o idioma escolhido
     shortcuts.dart          aliases de comando (pt/en/es) e tabela de atalhos
     theme.dart              tema Material escuro do app
     version.dart            versão do app gerada (tool/gen_version.dart)
@@ -744,9 +762,10 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/formats_test.dart` | Cada formato de importação contra arquivos gravados por outros programas (ezdxf, LibreDWG, pyshp, tifffile, Pillow, openpyxl e KML no estilo do Google Earth; fixtures em `test/fixtures/formats`, gerados por `tool/formats/make_fixtures.py`) com posições, elevações, nomes e camadas conferidos; todas as exportações relidas pelos próprios leitores e gravadas em `build/formats` para `tool/formats/check_exports.py`, que as valida com ezdxf, LibreDWG, lxml, openpyxl e pypdf |
 | `core/export_test.dart`, `core/kml_test.dart` | UTM ida e volta; georreferência; KML ida e volta; GeoJSON; cena de plotagem; SVG; PDF válido e comprimido; prancha e páginas de relatório; mesmas tabelas em CSV/TXT/XLSX |
 | `core/catalog_packs_test.dart` | Todos os pacotes em `catalogs/` carregam, ids únicos sem colidir com o catálogo padrão, arquivos normalizados e índice coerente; formato do pacote; carregadores (assets e URL) |
-| `core/examples_test.dart` | Cada exemplo, nos três idiomas, constrói, é conectado, passa na verificação, projeta com zonas dentro da janela e sem déficit, e bate com os arquivos em `examples/` |
+| `core/examples_test.dart` | Cada exemplo, nos 20 idiomas, constrói, é conectado, passa na verificação, projeta com zonas dentro da janela e sem déficit, e bate com os arquivos em `examples/` |
 | `core/spatial_index_test.dart` | Índice contra força bruta, ordem de desenho, casos degenerados, invalidação no controller, seleção e snap |
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Coordenadas coladas (decimais, vírgula, hemisférios, DMS, links); intervalo de curvas; escolha de idioma pelo sistema e pela URL |
+| `core/i18n_packs_test.dart` | Cada pacote de idioma cobre todas as chaves da tabela, do tutorial e dos nomes do catálogo com os mesmos marcadores e não é majoritariamente inglês; pacotes instalados chegam aos textos, ao tutorial e ao catálogo; `setLanguage` carrega o pacote sob demanda com inglês enquanto isso e repete um carregamento que falhou |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Edição (grips, transformações, aparar, estender, cortar), JSON das entidades, abas e área de transferência, protocolo do worker, HTTP local, armazenamento de projetos, câmera e snap |
 | `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto |
 | `web_metadata_test.dart` | Páginas do site geradas, SEO, manifest, ícones, robots, sitemap, 404 |

@@ -189,7 +189,7 @@ Princípios que decorrem disso e que o OpenCADIrrigation adota:
 2. Formato de projeto e de catálogo em JSON aberto e documentado.
 3. Motor hidráulico transparente, com as equações documentadas e testadas contra referências
    públicas, e com o solver do EPANET como base para redes.
-4. Interface trilíngue e pensada também para toque.
+4. Interface nos 20 idiomas mais falados e pensada também para toque.
 
 ---
 
@@ -835,7 +835,7 @@ A suíte tem 350 testes (`flutter test`). Os que validam a hidráulica contra re
 | CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Arquivos reais e ferramenta independente |
 | LP design meets the pressure window and costs no more than greedy | Otimalidade relativa do LP |
 
-Os exemplos da galeria funcionam como testes de integração: os quinze projetos, nos três idiomas,
+Os exemplos da galeria funcionam como testes de integração: os quinze projetos, nos 20 idiomas,
 constroem, passam na verificação, dimensionam com todas as zonas dentro da janela e sem déficit
 de fonte, imprimem cada célula de relatório como número simples, e batem com os arquivos publicados.
 

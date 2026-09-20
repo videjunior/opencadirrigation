@@ -3,6 +3,7 @@
 library;
 
 import '../hydraulics/emitter.dart';
+import '../i18n/language_packs.dart';
 import '../hydraulics/minor_losses.dart';
 import '../hydraulics/pump.dart';
 import '../hydraulics/water_hammer.dart';
@@ -506,7 +507,7 @@ class Catalog {
   /// Generic default database (metric, illustrative prices) with names in the
   /// requested language. Curves are power-law fits of typical manufacturer data.
   static Catalog defaultCatalog({String lang = 'en'}) {
-    String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, _ => en };
+    String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, 'en' => en, _ => packCatalogName(lang, en) ?? en };
     EmitterCurve q(double lph, double headM, double x, {double radiusM = 0}) =>
         EmitterCurve.fromNominal(flow: lph * m3sPerLph, head: headM, x: x, radius: radiusM, radiusB: radiusM > 0 ? 0.35 : 0);
 
@@ -624,7 +625,7 @@ class Catalog {
   /// crosses, reducers, end caps, adapters) plus lateral take-offs, tape ends
   /// and risers, with illustrative prices scaled by size.
   static List<FittingSpec> defaultFittings(List<PipeSpec> pipes, {String lang = 'en'}) {
-    String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, _ => en };
+    String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, 'en' => en, _ => packCatalogName(lang, en) ?? en };
     final sizes = pipes.map((p) => p.nominalMm).toSet().toList()..sort();
     final out = <FittingSpec>[];
     String mm(double v) => v == v.roundToDouble() ? '${v.round()}' : v.toStringAsFixed(1);

@@ -316,7 +316,7 @@ class ProjectController extends ChangeNotifier {
   bool showWettedRadii = true;
   bool showGrips = true;
   bool dirty = false;
-  String lang = _initialLanguage();
+  String lang = initialLanguage();
   late I18n t = I18n(lang);
 
   /// Browser store used by autosave, recent projects and versions.
@@ -327,7 +327,7 @@ class ProjectController extends ChangeNotifier {
   /// The language chosen explicitly by the user (View → Language, saved in
   /// the browser), else the first of the system's preferred languages the
   /// app speaks, else English.
-  static String _initialLanguage() {
+  static String initialLanguage() {
     final saved = getPref('lang');
     if (saved != null && supportedLanguages.contains(saved)) return saved;
     return languageFromTags(systemLanguageTags());
@@ -424,8 +424,10 @@ class ProjectController extends ChangeNotifier {
   /// Switches the interface language. A choice made by the user is saved
   /// ([persist]); a language taken from the page address (`?lang=`, `/en/`)
   /// applies to this visit only, so the next plain visit follows the machine
-  /// language again.
-  void setLanguage(String l, {bool persist = true}) {
+  /// language again. A language that is not compiled in shows English until
+  /// its table has been loaded (see [ensureLanguageLoaded]); the returned
+  /// future completes when the strings are in place.
+  Future<void> setLanguage(String l, {bool persist = true}) async {
     if (!supportedLanguages.contains(l)) return;
     lang = l;
     t = I18n(l);
@@ -433,6 +435,11 @@ class ProjectController extends ChangeNotifier {
     setDocumentLanguage(l);
     notifyListeners();
     onLanguageChanged?.call(l);
+    if (isLanguageLoaded(l)) return;
+    await ensureLanguageLoaded(l);
+    if (lang != l) return;
+    t = I18n(l);
+    notifyListeners();
   }
 
   /// Human-readable text for an exception raised by an import.

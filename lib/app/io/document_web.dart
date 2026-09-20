@@ -1,6 +1,7 @@
 import 'package:web/web.dart' as web;
 
+import '../i18n.dart' show languageTag;
+
 void setDocumentLanguage(String lang) {
-  final tag = switch (lang) { 'pt' => 'pt-BR', 'es' => 'es', _ => 'en' };
-  web.document.documentElement?.setAttribute('lang', tag);
+  web.document.documentElement?.setAttribute('lang', languageTag(lang));
 }

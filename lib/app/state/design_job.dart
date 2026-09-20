@@ -15,28 +15,39 @@ import '../i18n.dart';
 export '../../core/design/designer.dart' show DesignProgress, DesignStage;
 
 /// What the worker needs: the project (without embedded images, which the
-/// design never reads), the language for names in the results and the
-/// sizing switches.
+/// design never reads), the language for names in the results (with its
+/// string table when the language is not compiled in, since the worker
+/// cannot read assets) and the sizing switches.
 class DesignRequest {
-  DesignRequest({required this.project, required this.lang, this.sizeZones = true, this.sizeMain = true});
+  DesignRequest({required this.project, required this.lang, this.strings, this.sizeZones = true, this.sizeMain = true});
 
   /// Builds the request for [project], leaving embedded images behind.
   factory DesignRequest.of(Project project, {required String lang, bool sizeZones = true, bool sizeMain = true}) {
     final j = project.toJson(includeEntities: false);
     j['entities'] = [for (final e in project.entities) if (!isDesignPassive(e)) e.toJson()];
-    return DesignRequest(project: j, lang: lang, sizeZones: sizeZones, sizeMain: sizeMain);
+    return DesignRequest(project: j, lang: lang, strings: languagePack(lang)?.strings, sizeZones: sizeZones, sizeMain: sizeMain);
   }
 
   final Map<String, dynamic> project;
   final String lang;
+
+  /// Strings of [lang] when it comes from a language pack (null otherwise).
+  final Map<String, String>? strings;
   final bool sizeZones;
   final bool sizeMain;
 
-  Map<String, dynamic> toJson() => {'project': project, 'lang': lang, 'sizeZones': sizeZones, 'sizeMain': sizeMain};
+  Map<String, dynamic> toJson() => {
+    'project': project,
+    'lang': lang,
+    if (strings != null) 'strings': strings,
+    'sizeZones': sizeZones,
+    'sizeMain': sizeMain,
+  };
 
   static DesignRequest fromJson(Map<String, dynamic> j) => DesignRequest(
     project: j['project'] as Map<String, dynamic>,
     lang: j['lang'] as String? ?? 'en',
+    strings: j['strings'] is Map ? {for (final e in (j['strings'] as Map).entries) '${e.key}': '${e.value}'} : null,
     sizeZones: j['sizeZones'] as bool? ?? true,
     sizeMain: j['sizeMain'] as bool? ?? true,
   );
@@ -84,6 +95,7 @@ Future<void> runDesignJob(Map<String, dynamic> request, void Function(Map<String
   try {
     final req = DesignRequest.fromJson(request);
     final project = Project.fromJson(req.project);
+    if (req.strings != null && !isLanguagePackInstalled(req.lang)) installLanguagePack(req.lang, LanguagePack(strings: req.strings!));
     final t = I18n(req.lang);
     final d = Designer(project, label: (k) => t(k));
     final r = await d.designAllAsync(

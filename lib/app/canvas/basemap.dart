@@ -202,8 +202,18 @@ class BaseMapLayer extends ChangeNotifier {
       _ => 'roadmap',
     },
     if (m == BaseMap.googleHybrid || m == BaseMap.googleTerrain) 'layerTypes': ['layerRoadmap'],
-    'language': switch (lang) { 'pt' => 'pt-BR', 'es' => 'es-419', _ => 'en-US' },
+    'language': googleMapsLanguage(lang),
     if (lang == 'pt') 'region': 'BR',
+  };
+
+  /// Map label language for the Map Tiles API session: the app language when
+  /// Google Maps speaks it, else English (Hausa has no Google Maps labels).
+  static String googleMapsLanguage(String lang) => switch (lang) {
+    'pt' => 'pt-BR',
+    'es' => 'es-419',
+    'zh' => 'zh-CN',
+    'ar' || 'bn' || 'de' || 'fr' || 'hi' || 'id' || 'ja' || 'mr' || 'pa' || 'ru' || 'sw' || 'te' || 'tr' || 'ur' || 'vi' => lang,
+    _ => 'en-US',
   };
 
   /// Zoom level whose tile pixel is close to one screen pixel.

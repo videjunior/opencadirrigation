@@ -11,15 +11,18 @@ void main() {
       expect(languageFromTags(['pt-BR', 'en-US']), 'pt');
       expect(languageFromTags(['pt_PT']), 'pt');
       expect(languageFromTags(['es-MX', 'pt-BR']), 'es');
-      expect(languageFromTags(['fr-CA', 'es-419', 'en']), 'es');
-      expect(languageFromTags(['de-DE', 'pt']), 'pt');
+      expect(languageFromTags(['nl-BE', 'es-419', 'en']), 'es');
+      expect(languageFromTags(['it-IT', 'pt']), 'pt');
       expect(languageFromTags(['EN-GB']), 'en');
       expect(languageFromTags([' es ']), 'es');
     });
 
     test('English when the machine speaks none of the three or nothing is known', () {
-      expect(languageFromTags(['fr', 'de', 'ja']), 'en');
-      expect(languageFromTags(['zh-Hans-CN']), 'en');
+      expect(languageFromTags(['nl', 'ko', 'it']), 'en');
+      expect(languageFromTags(['fr', 'de', 'ja']), 'fr');
+      expect(languageFromTags(['zh-Hans-CN']), 'zh');
+      expect(languageFromTags(['pa-Guru-IN']), 'pa');
+      expect(languageFromTags(['ko-KR', 'ar-EG']), 'ar');
       expect(languageFromTags(const []), 'en');
       expect(languageFromTags(['und', '']), 'en');
     });

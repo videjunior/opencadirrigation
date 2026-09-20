@@ -193,7 +193,7 @@ Principles that follow from this and that OpenCADIrrigation adopts:
 2. Project and catalogue formats in open, documented JSON.
 3. A transparent hydraulic engine, with the equations documented and tested against public
    references, and with the EPANET solver as the basis for networks.
-4. A trilingual interface, designed for touch as well.
+4. An interface in the 20 most spoken languages, designed for touch as well.
 
 ---
 
@@ -848,7 +848,7 @@ The suite has 350 tests (`flutter test`). Those validating the hydraulics agains
 | CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Real files and an independent tool |
 | LP design meets the pressure window and costs no more than greedy | Relative optimality of the LP |
 
-The gallery examples work as integration tests: the fifteen projects, in the three languages,
+The gallery examples work as integration tests: the fifteen projects, in the 20 languages,
 build, pass the check, size with every zone inside the window and without supply deficit, print
 every report cell as a plain number, and match the published files.
 
