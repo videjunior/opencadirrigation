@@ -238,6 +238,8 @@
   "status.snap": "স্ন্যাপ",
   "status.grid": "গ্রিড",
   "status.ortho": "অর্থো",
+  "status.keepLinks": "সংযুক্ত",
+  "status.keepLinksTip": "পাইপের নোড টানলে তার সঙ্গে যুক্ত পাইপের প্রান্ত ও উপকরণগুলিও সরে যায়",
   "status.entities": "ent.",
   "props.title": "বৈশিষ্ট্য",
   "props.none": "কিছু নির্বাচিত নয়",

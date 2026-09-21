@@ -238,6 +238,8 @@
   "status.snap": "اسنیپ",
   "status.grid": "گرڈ",
   "status.ortho": "آرتھو",
+  "status.keepLinks": "منسلک",
+  "status.keepLinksTip": "پائپ کا نوڈ گھسیٹنے پر اس سے جڑے پائپ کے سرے اور آلات بھی ساتھ منتقل ہو جاتے ہیں",
   "status.entities": "ent.",
   "props.title": "خصوصیات",
   "props.none": "کچھ منتخب نہیں",

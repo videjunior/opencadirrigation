@@ -238,6 +238,8 @@
   "status.snap": "स्नॅप",
   "status.grid": "ग्रिड",
   "status.ortho": "ऑर्थो",
+  "status.keepLinks": "जोडलेले",
+  "status.keepLinksTip": "पाइपचा नोड ओढल्यावर त्याला जोडलेली पाइपची टोके आणि घटकही सोबत सरकतात",
   "status.entities": "ent.",
   "props.title": "गुणधर्म",
   "props.none": "काहीही निवडलेले नाही",

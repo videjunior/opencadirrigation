@@ -238,6 +238,8 @@
   "status.snap": "ਸਨੈਪ",
   "status.grid": "ਗਰਿੱਡ",
   "status.ortho": "ਆਰਥੋ",
+  "status.keepLinks": "ਜੁੜਿਆ",
+  "status.keepLinksTip": "ਪਾਈਪ ਦਾ ਨੋਡ ਖਿੱਚਣ ’ਤੇ ਉਸ ਨਾਲ ਜੁੜੇ ਪਾਈਪ ਦੇ ਸਿਰੇ ਅਤੇ ਆਈਟਮਾਂ ਵੀ ਨਾਲ ਹਿੱਲਦੀਆਂ ਹਨ",
   "status.entities": "ent.",
   "props.title": "ਗੁਣ",
   "props.none": "ਕੁਝ ਵੀ ਚੁਣਿਆ ਨਹੀਂ",

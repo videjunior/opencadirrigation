@@ -238,6 +238,8 @@
   "status.snap": "స్నాప్",
   "status.grid": "గ్రిడ్",
   "status.ortho": "ఆర్థో",
+  "status.keepLinks": "అనుసంధానం",
+  "status.keepLinksTip": "పైపు నోడ్‌ను లాగినప్పుడు దానికి అనుసంధానమైన పైపు చివరలు, పరికరాలు కూడా కదులుతాయి",
   "status.entities": "ent.",
   "props.title": "లక్షణాలు",
   "props.none": "ఏదీ ఎంచుకోలేదు",

@@ -212,6 +212,10 @@ class _MobileShellState extends State<MobileShell> {
               c.snap.ortho = v;
               c.refresh();
             }),
+            check(t('status.keepLinks'), c.toolSettings.keepConnections, (v) {
+              c.toolSettings.keepConnections = v;
+              c.refresh();
+            }),
             for (final m in OverlayMode.values)
               check(t('view.overlay.${m.name}'), c.overlay == m, (_) {
                 c.overlay = m;

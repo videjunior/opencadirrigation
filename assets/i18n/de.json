@@ -238,6 +238,8 @@
   "status.snap": "Fang",
   "status.grid": "Raster",
   "status.ortho": "Ortho",
+  "status.keepLinks": "Verbunden",
+  "status.keepLinksTip": "Beim Ziehen eines Rohrknotens folgen die daran angeschlossenen Rohrenden und Bauteile",
   "status.entities": "ent.",
   "props.title": "Eigenschaften",
   "props.none": "Nichts ausgewählt",

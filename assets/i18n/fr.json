@@ -238,6 +238,8 @@
   "status.snap": "Accrochage",
   "status.grid": "Grille",
   "status.ortho": "Ortho",
+  "status.keepLinks": "Liaisons",
+  "status.keepLinksTip": "En déplaçant le nœud d’une conduite, les extrémités de conduite et les éléments raccordés suivent",
   "status.entities": "ent.",
   "props.title": "Propriétés",
   "props.none": "Rien n’est sélectionné",

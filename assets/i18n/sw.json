@@ -238,6 +238,8 @@
   "status.snap": "Kunasa",
   "status.grid": "Gridi",
   "status.ortho": "Ortho",
+  "status.keepLinks": "Viungo",
+  "status.keepLinksTip": "Unapoburuta nodi ya bomba, ncha za mabomba na vifaa vilivyounganishwa nayo husogea pamoja nayo",
   "status.entities": "ent.",
   "props.title": "Sifa",
   "props.none": "Hakuna kilichochaguliwa",

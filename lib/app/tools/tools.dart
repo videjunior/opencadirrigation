@@ -33,6 +33,12 @@ abstract class Tool {
   bool get usesSnap => true;
   Pt? get referencePoint => null;
 
+  /// Vector from the geometry being dragged to the pointer, measured when it
+  /// was grabbed. When it is set the canvas snaps the dragged point itself
+  /// instead of the cursor — the item lands on the pipe, not the mouse — and
+  /// the point given to [onMove] / [onUp] is that snapped position.
+  Pt? get snapOffset => null;
+
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) {}
   void onMove(Pt p, {bool dragging = false}) {
     cursor = p;
@@ -110,7 +116,10 @@ class SelectTool extends Tool {
   @override
   String get hintKey => 'hint.select';
   @override
-  bool get usesSnap => _moving || _grip != null;
+  bool get usesSnap => _dragged && (_moving || _grip != null);
+
+  @override
+  Pt? get snapOffset => _dragged ? _grabOffset : null;
 
   Pt? _downRaw;
   Pt? _dragCurrent;
@@ -120,6 +129,20 @@ class SelectTool extends Tool {
   Pt? _moveStart;
   GripHandle? _grip;
   Pt? _gripPos;
+
+  /// The pointer left the dead zone around the press (see the drag threshold
+  /// in the canvas): until then a press only selects, it never edits.
+  bool _dragged = false;
+
+  /// A midpoint grip was pressed: the vertex is only inserted once the drag
+  /// really starts, so clicking one does not change the polyline.
+  bool _pendingInsert = false;
+
+  /// Pointer minus the dragged point when it was grabbed, and the dragged
+  /// point itself: the snap then follows the item / node instead of the
+  /// cursor, so it lands exactly on the pipe it is dropped over.
+  Pt? _grabOffset;
+  Pt? _moveAnchor;
 
   static const maxGripEntities = 12;
 
@@ -164,6 +187,10 @@ class SelectTool extends Tool {
     _shift = shift;
     _downRaw = p;
     _dragCurrent = p;
+    _dragged = false;
+    _pendingInsert = false;
+    _grabOffset = null;
+    _moveAnchor = null;
     final grip = _hitGrip(p);
     if (grip != null) {
       if (ctrl && !grip.midpoint) {
@@ -171,13 +198,10 @@ class SelectTool extends Tool {
         _grip = null;
         return;
       }
-      if (grip.midpoint) {
-        c.insertVertex(grip.entityId, grip.index, grip.p);
-        _grip = GripHandle(grip.entityId, grip.index, grip.p);
-      } else {
-        _grip = grip;
-      }
+      _grip = grip.midpoint ? GripHandle(grip.entityId, grip.index, grip.p) : grip;
+      _pendingInsert = grip.midpoint;
       _gripPos = grip.p;
+      _grabOffset = p - grip.p;
       _moving = false;
       _windowing = false;
       return;
@@ -192,6 +216,12 @@ class SelectTool extends Tool {
       _moving = c.selection.contains(hit.id) && !shift;
       _moveStart = p;
       _windowing = false;
+      // a lone item (a sprinkler, a valve): the snap follows the item, so a
+      // move drops it on the pipe under it instead of beside it
+      if (_moving && c.selection.length == 1 && hit is PointEntity) {
+        _moveAnchor = hit.position;
+        _grabOffset = p - hit.position;
+      }
     } else {
       _moving = false;
       _windowing = true;
@@ -202,21 +232,32 @@ class SelectTool extends Tool {
   @override
   void onMove(Pt p, {bool dragging = false}) {
     cursor = p;
-    if (dragging) {
-      _dragCurrent = p;
-      if (_grip != null) _gripPos = p;
+    if (!dragging) return;
+    if (!_dragged) {
+      _dragged = true;
+      if (_pendingInsert && _grip != null) {
+        final g = _grip!;
+        _pendingInsert = false;
+        // the inserted vertex is the one that is dragged from now on
+        if (!c.insertVertex(g.entityId, g.index, g.p)) _grip = null;
+      }
     }
+    _dragCurrent = p;
+    if (_grip != null) _gripPos = p;
   }
 
   @override
   void onUp(Pt p) {
     if (_grip != null) {
       final g = _grip!;
-      if (g.p.distanceTo(p) > 1e-9) c.setGrip(g.entityId, g.index, p);
+      if (_dragged && g.p.distanceTo(p) > 1e-9) {
+        final e = c.project.byId(g.entityId);
+        c.setGrip(g.entityId, g.index, p, keepConnections: c.toolSettings.keepConnections && (e is PolyEntity || e is LineEntity));
+      }
       _grip = null;
       _gripPos = null;
-    } else if (_moving && _moveStart != null) {
-      final d = p - _moveStart!;
+    } else if (_dragged && _moving && _moveStart != null) {
+      final d = p - (_moveAnchor ?? _moveStart!);
       if (d.length > 1e-9) c.moveSelected(d);
     } else if (_windowing && _downRaw != null) {
       final a = _downRaw!, b = p;
@@ -232,6 +273,10 @@ class SelectTool extends Tool {
     _downRaw = null;
     _dragCurrent = null;
     _moveStart = null;
+    _moveAnchor = null;
+    _grabOffset = null;
+    _pendingInsert = false;
+    _dragged = false;
   }
 
   @override
@@ -251,8 +296,8 @@ class SelectTool extends Tool {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1);
     }
-    if (_moving && _moveStart != null && _dragCurrent != null) {
-      final d = _dragCurrent! - _moveStart!;
+    if (_dragged && _moving && _moveStart != null && _dragCurrent != null) {
+      final d = _dragCurrent! - (_moveAnchor ?? _moveStart!);
       paintTransformed(canvas, cam, Affine.translation(d));
     }
     // grips

@@ -238,6 +238,8 @@
   "status.snap": "Привязка",
   "status.grid": "Сетка",
   "status.ortho": "Орто",
+  "status.keepLinks": "Связи",
+  "status.keepLinksTip": "При перетаскивании узла трубы вместе с ним перемещаются присоединённые концы труб и элементы",
   "status.entities": "ent.",
   "props.title": "Свойства",
   "props.none": "Ничего не выбрано",

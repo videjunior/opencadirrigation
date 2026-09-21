@@ -238,6 +238,8 @@
   "status.snap": "Snap",
   "status.grid": "グリッド",
   "status.ortho": "直交",
+  "status.keepLinks": "連結",
+  "status.keepLinksTip": "配管の節点をドラッグすると、そこに接続された配管端や機器も一緒に移動します",
   "status.entities": "ent.",
   "props.title": "プロパティ",
   "props.none": "何も選択されていません",

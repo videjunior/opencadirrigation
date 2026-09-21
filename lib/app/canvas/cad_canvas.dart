@@ -45,6 +45,15 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   bool _dragging = false;
   DateTime _lastDown = DateTime.fromMillisecondsSinceEpoch(0);
   Offset? _lastDownPos;
+
+  /// Dead zone around a press: the tool only sees a drag once the pointer has
+  /// travelled this far, so clicking an item to look at it never nudges it out
+  /// of the pipe it sits on. Touch gets more room than a mouse.
+  static const dragSlopPx = 5.0;
+  static const touchDragSlopPx = 14.0;
+  bool _dragArmed = false;
+  Offset? _dragOrigin;
+  double _dragSlop = dragSlopPx;
   bool _spaceDown = false;
   final _repaint = ValueNotifier<int>(0);
   final BaseMapLayer basemap = BaseMapLayer();
@@ -100,8 +109,11 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       }
       return raw;
     }
+    // while an item or a node is dragged the snap runs on the dragged point,
+    // not on the cursor (see Tool.snapOffset)
+    final offset = _tool.snapOffset;
     _snap = _snapper.snap(
-      raw,
+      offset == null ? raw : raw - offset,
       reference: _tool.referencePoint,
       ignoreSelection: _tool is SelectTool,
       // Shift held while drawing: lock the segment to 0°/45°/90°
@@ -154,7 +166,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     }
   }
 
-  void _primaryDown(Offset local) {
+  void _primaryDown(Offset local, {bool touch = false}) {
     final now = DateTime.now();
     final isDouble =
         now.difference(_lastDown).inMilliseconds < 350 &&
@@ -175,7 +187,18 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       if (_snap?.locked ?? false) c.track('lock');
     }
     _dragging = true;
+    _dragArmed = false;
+    _dragOrigin = local;
+    _dragSlop = touch ? touchDragSlopPx : dragSlopPx;
     _redraw();
+  }
+
+  /// True once the pointer has left the dead zone of the current press.
+  bool _armDrag(Offset local) {
+    if (_dragging && !_dragArmed && _dragOrigin != null && (local - _dragOrigin!).distance > _dragSlop) {
+      _dragArmed = true;
+    }
+    return _dragging && _dragArmed;
   }
 
   void _onPointerMove(PointerMoveEvent e) {
@@ -204,7 +227,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
             _panning = true;
           } else {
             _touchDrawPending = false;
-            _primaryDown(_lastPointer!);
+            _primaryDown(_lastPointer!, touch: true);
           }
         }
       }
@@ -216,8 +239,9 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       return;
     }
     _lastPointer = e.localPosition;
+    final dragging = _armDrag(e.localPosition);
     final p = _snapped(e.localPosition);
-    _tool.onMove(p, dragging: _dragging);
+    _tool.onMove(p, dragging: dragging);
     _updateStatus(p);
     _redraw();
   }
@@ -257,7 +281,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       if (_touchDrawPending) {
         // simple tap: run the tool's down + up at the tap position
         _touchDrawPending = false;
-        _primaryDown(e.localPosition);
+        _primaryDown(e.localPosition, touch: true);
       }
     }
     if (_panning) {
@@ -266,8 +290,10 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       return;
     }
     if (_dragging) {
-      _dragging = false;
       final p = _snapped(e.localPosition);
+      _dragging = false;
+      _dragArmed = false;
+      _dragOrigin = null;
       _tool.onUp(p);
       _redraw();
     }
@@ -279,6 +305,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       _touchGesture = false;
       _touchDrawPending = false;
       _panning = false;
+      _dragArmed = false;
+      _dragOrigin = null;
     }
   }
 
@@ -314,7 +342,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     final lp = _lastPointer;
     if (lp == null || _panning) return;
     final p = _snapped(lp);
-    _tool.onMove(p, dragging: _dragging);
+    _tool.onMove(p, dragging: _dragging && _dragArmed);
     _updateStatus(p);
     _redraw();
   }

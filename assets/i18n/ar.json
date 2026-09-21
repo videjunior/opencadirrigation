@@ -238,6 +238,8 @@
   "status.snap": "التقاط",
   "status.grid": "شبكة",
   "status.ortho": "تعامد",
+  "status.keepLinks": "متصل",
+  "status.keepLinksTip": "عند سحب عقدة أنبوب تتحرك معها أطراف الأنابيب والعناصر المتصلة بها",
   "status.entities": "ent.",
   "props.title": "الخصائص",
   "props.none": "لم يتم تحديد شيء",

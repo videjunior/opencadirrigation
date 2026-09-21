@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,6 +53,16 @@ void main() {
     final g = await tester.startGesture(screenOf(tester, c, from));
     await tester.pump(const Duration(milliseconds: 50));
     await g.moveTo(screenOf(tester, c, to));
+    await tester.pump(const Duration(milliseconds: 50));
+    await g.up();
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+
+  /// Mouse press at [from] (world), moved by [by] pixels, then released.
+  Future<void> mouseDrag(WidgetTester tester, ProjectController c, Pt from, Offset by) async {
+    final g = await tester.startGesture(screenOf(tester, c, from), kind: PointerDeviceKind.mouse);
+    await tester.pump(const Duration(milliseconds: 50));
+    await g.moveBy(by);
     await tester.pump(const Duration(milliseconds: 50));
     await g.up();
     await tester.pump(const Duration(milliseconds: 50));
@@ -253,5 +264,98 @@ void main() {
     expect(c.project.meta.name, 'Perdido');
     expect(c.project.entities.length, 1);
     expect(store.recoverable(), isEmpty);
+  });
+
+  testWidgets('a click that wobbles a few pixels never moves what it selects', (tester) async {
+    final shell = await pumpShell(tester);
+    final ProjectController c = shell.c as ProjectController;
+    c.camera.center = const Pt(10, 0);
+    c.camera.scale = 12;
+    c.snap.enabled = true;
+    c.addEntity(PipeEntity(id: 'p', points: [Pt.zero, const Pt(20, 0)], scope: HydraulicScope.zone));
+    c.addEntity(OutletEntity(id: 'o', position: const Pt(5, 0), outletSpecId: 'micro'));
+    await settle(tester);
+    final history = c.historyIndex;
+    // press on the sprinkler and wobble inside the dead zone
+    await mouseDrag(tester, c, const Pt(5, 0), const Offset(3, -2));
+    await settle(tester);
+    expect(c.selection, {'o'});
+    expect((c.project.byId('o') as OutletEntity).position, const Pt(5, 0));
+    // it is selected now: pressing its grip and wobbling must not move it either
+    await mouseDrag(tester, c, const Pt(5.6, 0), const Offset(-2, 3));
+    await settle(tester);
+    expect((c.project.byId('o') as OutletEntity).position, const Pt(5, 0));
+    expect(c.historyIndex, history, reason: 'a click alone must not push an undo step');
+    // past the dead zone it does move, and lands on the pipe under it
+    await mouseDrag(tester, c, const Pt(4.4, 0), const Offset(60, 5));
+    await settle(tester);
+    final moved = (c.project.byId('o') as OutletEntity).position;
+    expect(moved.x, greaterThan(8));
+    expect(moved.y.abs(), lessThan(0.01));
+  });
+
+  testWidgets('dragging an item snaps the item onto the pipe, not the cursor', (tester) async {
+    final shell = await pumpShell(tester);
+    final ProjectController c = shell.c as ProjectController;
+    c.camera.center = const Pt(10, 0);
+    c.camera.scale = 12;
+    c.snap.enabled = true;
+    c.addEntity(PipeEntity(id: 'p', points: [Pt.zero, const Pt(20, 0)], scope: HydraulicScope.zone));
+    c.addEntity(OutletEntity(id: 'o', position: const Pt(5, 0), outletSpecId: 'micro'));
+    await settle(tester);
+    // grabbed off-centre (0.3 m up and to the right) and dropped above the pipe
+    await dragWorld(tester, c, const Pt(5.3, 0.3), const Pt(12.3, 0.6));
+    await settle(tester);
+    final p = (c.project.byId('o') as OutletEntity).position;
+    expect(p.y.abs(), lessThan(c.project.params.connectTolerance), reason: 'the sprinkler left the pipe: $p');
+    expect((p.x - 12).abs(), lessThan(0.4));
+  });
+
+  testWidgets('dragging a pipe node takes the joined pipe and item with it', (tester) async {
+    final shell = await pumpShell(tester);
+    final ProjectController c = shell.c as ProjectController;
+    c.camera.center = const Pt(8, 4);
+    c.camera.scale = 12;
+    c.addEntity(PipeEntity(id: 'a', points: [Pt.zero, const Pt(10, 0)], scope: HydraulicScope.zone));
+    c.addEntity(PipeEntity(id: 'b', points: [const Pt(10, 0), const Pt(10, 10)], scope: HydraulicScope.zone));
+    c.addEntity(ControlValveEntity(id: 'v', position: const Pt(10, 0), valveSpecId: 'ev50'));
+    expect(c.toolSettings.keepConnections, isTrue);
+    await settle(tester);
+    await clickWorld(tester, c, const Pt(5, 0)); // selects pipe a
+    expect(c.selection, {'a'});
+    await dragWorld(tester, c, const Pt(10, 0), const Pt(13, 3));
+    await settle(tester);
+    final a = (c.project.byId('a') as PipeEntity).points;
+    final b = (c.project.byId('b') as PipeEntity).points;
+    expect(a.last.distanceTo(const Pt(13, 3)), lessThan(0.3));
+    expect(b.first.distanceTo(a.last), lessThan(1e-9), reason: 'the junction broke');
+    expect((c.project.byId('v') as ControlValveEntity).position.distanceTo(a.last), lessThan(1e-9));
+    // switched off, the same drag detaches the other pipe
+    c.undo();
+    c.toolSettings.keepConnections = false;
+    await settle(tester);
+    await clickWorld(tester, c, const Pt(5, 0));
+    await dragWorld(tester, c, const Pt(10, 0), const Pt(13, 3));
+    await settle(tester);
+    expect((c.project.byId('b') as PipeEntity).points.first.distanceTo(const Pt(10, 0)), lessThan(1e-9));
+  });
+
+  testWidgets('clicking a midpoint grip does not add a vertex, dragging it does', (tester) async {
+    final shell = await pumpShell(tester);
+    final ProjectController c = shell.c as ProjectController;
+    c.camera.center = const Pt(5, 0);
+    c.camera.scale = 12;
+    c.addEntity(PipeEntity(id: 'p', points: [Pt.zero, const Pt(10, 0)], scope: HydraulicScope.zone));
+    await settle(tester);
+    await clickWorld(tester, c, const Pt(5, 0));
+    expect(c.selection, {'p'});
+    await mouseDrag(tester, c, const Pt(5.7, 0), const Offset(2, 2));
+    await settle(tester);
+    expect((c.project.byId('p') as PipeEntity).points.length, 2);
+    await mouseDrag(tester, c, const Pt(4.3, 0), const Offset(0, -40));
+    await settle(tester);
+    final pts = (c.project.byId('p') as PipeEntity).points;
+    expect(pts.length, 3);
+    expect(pts[1].y, greaterThan(2));
   });
 }

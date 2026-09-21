@@ -238,6 +238,8 @@
   "status.snap": "Snap",
   "status.grid": "Grid",
   "status.ortho": "Orto",
+  "status.keepLinks": "Terhubung",
+  "status.keepLinksTip": "Menyeret simpul pipa ikut memindahkan ujung pipa dan item yang tersambung padanya",
   "status.entities": "ent.",
   "props.title": "Properti",
   "props.none": "Tidak ada yang dipilih",

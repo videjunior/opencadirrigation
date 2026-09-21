@@ -401,6 +401,8 @@ const _table = <String, (String, String, String)>{
   'status.snap': ('Snap', 'Snap', 'Snap'),
   'status.grid': ('Grade', 'Grid', 'Cuadrícula'),
   'status.ortho': ('Orto', 'Ortho', 'Orto'),
+  'status.keepLinks': ('Conexão', 'Linked', 'Conexión'),
+  'status.keepLinksTip': ('Ao arrastar o nó de um tubo, as pontas de tubos e os itens ligados a ele acompanham o movimento', 'Dragging the node of a pipe drags along the pipe ends and items joined to it', 'Al arrastrar el nodo de una tubería, los extremos de tubería y los elementos unidos a él acompañan el movimiento'),
   'status.entities': ('ent.', 'ent.', 'ent.'),
   // properties
   'props.title': ('Propriedades', 'Properties', 'Propiedades'),

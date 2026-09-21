@@ -165,6 +165,10 @@ class ToolSettings {
   double offsetDistance = 2;
   bool splitPipesOnInsert = true;
 
+  /// Dragging the node of a pipe / lateral drags along every pipe end and
+  /// hydraulic item that shared that point, so the junction is not broken.
+  bool keepConnections = true;
+
   // drawing tools
   double hatchAngle = 45;
   double hatchSpacing = 1;
@@ -891,16 +895,58 @@ class ProjectController extends ChangeNotifier {
   }
 
   // ---- grips
-  void setGrip(String id, int index, Pt p) {
+  /// Moves the [index]th grip of [id] to [p]. With [keepConnections], every
+  /// hydraulic vertex / item that sat on the old point goes with it, so the
+  /// joint between two pipes (or a pipe and a valve) survives the edit.
+  void setGrip(String id, int index, Pt p, {bool keepConnections = false}) {
     final e = project.byId(id);
     if (e == null || _locked(e)) return;
-    mutate(() => e.setGrip(index, p), invalidateResults: e.isHydraulic);
+    final grips = e.grips;
+    final from = index >= 0 && index < grips.length ? grips[index] : null;
+    final joined = keepConnections && from != null && from.distanceTo(p) > 1e-12 ? _joinedAt(from, e.id) : const <Entity>[];
+    mutate(() {
+      e.setGrip(index, p);
+      final tol = _junctionTolerance;
+      for (final other in joined) {
+        if (other is PointEntity) {
+          other.position = p;
+        } else if (other is PolyEntity) {
+          final pts = other.points;
+          for (var i = 0; i < pts.length; i++) {
+            if (pts[i].distanceTo(from!) <= tol) pts[i] = p;
+          }
+        }
+      }
+    }, invalidateResults: e.isHydraulic || joined.isNotEmpty);
   }
 
-  void insertVertex(String id, int index, Pt p) {
+  double get _junctionTolerance => math.max(project.params.connectTolerance, 1e-6);
+
+  /// Hydraulic entities other than [exceptId] with a vertex / position on
+  /// [at]: the ones that share the junction and must go with it.
+  List<Entity> _joinedAt(Pt at, String exceptId) {
+    final tol = _junctionTolerance;
+    final out = <Entity>[];
+    for (final e in entitiesIn(Bounds(at.x - tol, at.y - tol, at.x + tol, at.y + tol))) {
+      if (e.id == exceptId || !e.isHydraulic || _locked(e)) continue;
+      if (e is PointEntity) {
+        if (e.position.distanceTo(at) <= tol) out.add(e);
+      } else if (e is PolyEntity) {
+        if (e.points.any((v) => v.distanceTo(at) <= tol)) out.add(e);
+      }
+    }
+    return out;
+  }
+
+  /// Adds a vertex at [p]; false when the edit was refused (locked layer,
+  /// design running) so the caller does not act on a vertex that is not there.
+  bool insertVertex(String id, int index, Pt p) {
     final e = project.byId(id);
-    if (e is! PolyEntity || _locked(e)) return;
-    mutate(() => e.insertVertex(index, p), invalidateResults: e.isHydraulic);
+    if (e is! PolyEntity || _locked(e)) return false;
+    return mutate(() {
+      e.insertVertex(index, p);
+      return true;
+    }, invalidateResults: e.isHydraulic) ?? false;
   }
 
   void removeVertex(String id, int index) {
@@ -976,8 +1022,10 @@ class ProjectController extends ChangeNotifier {
     for (final e in entitiesIn(Bounds(world.x - tolerance, world.y - tolerance, world.x + tolerance, world.y + tolerance))) {
       if (!includeLocked && _locked(e)) continue;
       final d = e.distanceTo(world);
-      // prefer point entities; images are backgrounds and lose to everything
-      final w = e is PointEntity ? d * 0.5 : (e is ImageEntity || e is HatchEntity ? d + tolerance * 0.9 : d);
+      // prefer point entities — a sprinkler sitting on a pipe is the smaller
+      // target and is what the click meant; images are backgrounds and lose
+      // to everything
+      final w = e is PointEntity ? d * 0.5 - tolerance * 0.25 : (e is ImageEntity || e is HatchEntity ? d + tolerance * 0.9 : d);
       if (d <= tolerance && w < bestD) {
         best = e;
         bestD = w;

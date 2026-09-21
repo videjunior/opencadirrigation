@@ -238,6 +238,8 @@
   "status.snap": "Yakalama",
   "status.grid": "Izgara",
   "status.ortho": "Orto",
+  "status.keepLinks": "Bağlı",
+  "status.keepLinksTip": "Bir borunun düğümü sürüklendiğinde ona bağlı boru uçları ve öğeler de birlikte hareket eder",
   "status.entities": "ent.",
   "props.title": "Özellikler",
   "props.none": "Hiçbir şey seçilmedi",

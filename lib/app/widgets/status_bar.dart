@@ -62,6 +62,13 @@ class StatusBar extends StatelessWidget {
             c.snap.ortho = !c.snap.ortho;
             c.refresh();
           }),
+          Tooltip(
+            message: t('status.keepLinksTip'),
+            child: toggle(t('status.keepLinks'), c.toolSettings.keepConnections, () {
+              c.toolSettings.keepConnections = !c.toolSettings.keepConnections;
+              c.refresh();
+            }),
+          ),
           ]),
           const SizedBox(width: 8),
           Text('${c.project.entities.length} ent.  1:${(1 / c.camera.scale * 100).toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, color: Colors.white54)),

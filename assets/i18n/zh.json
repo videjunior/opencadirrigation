@@ -238,6 +238,8 @@
   "status.snap": "Snap",
   "status.grid": "网格",
   "status.ortho": "正交",
+  "status.keepLinks": "联动",
+  "status.keepLinksTip": "拖动管道节点时，与其相连的管端和设备会一起移动",
   "status.entities": "ent.",
   "props.title": "属性",
   "props.none": "未选择任何对象",

@@ -238,6 +238,8 @@
   "status.snap": "स्नैप",
   "status.grid": "ग्रिड",
   "status.ortho": "ऑर्थो",
+  "status.keepLinks": "जुड़ा",
+  "status.keepLinksTip": "पाइप का नोड खींचने पर उससे जुड़े पाइप के सिरे और उपकरण भी साथ चलते हैं",
   "status.entities": "ent.",
   "props.title": "गुण",
   "props.none": "कुछ चयनित नहीं",

@@ -238,6 +238,8 @@
   "status.snap": "Bắt điểm",
   "status.grid": "Lưới",
   "status.ortho": "Vuông góc",
+  "status.keepLinks": "Liên kết",
+  "status.keepLinksTip": "Kéo nút của một đường ống sẽ kéo theo các đầu ống và thiết bị nối vào nút đó",
   "status.entities": "ent.",
   "props.title": "Thuộc tính",
   "props.none": "Chưa chọn gì",
