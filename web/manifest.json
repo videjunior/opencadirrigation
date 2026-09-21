@@ -1,5 +1,5 @@
 {
-  "name": "OpenCADIrrigation — CAD de irrigação pressurizada",
+  "name": "OpenCADIrrigation — pressurised irrigation CAD",
   "short_name": "OpenCADIrrig",
   "id": "./",
   "start_url": "./?source=pwa",
@@ -13,9 +13,9 @@
   "orientation": "any",
   "background_color": "#14171B",
   "theme_color": "#0D47A1",
-  "lang": "pt-BR",
+  "lang": "en",
   "dir": "ltr",
-  "description": "CAD gratuito para projeto de irrigação pressurizada no navegador: gotejamento, microaspersão, aspersão e pivô central, dimensionamento hidráulico, lista de materiais, DXF/DWG, PDF e Excel.",
+  "description": "Free CAD for pressurised irrigation design in the browser: drip, micro-sprinklers, sprinklers and centre pivots, hydraulic sizing, bill of materials, DXF/DWG, PDF and Excel.",
   "categories": [
     "productivity",
     "utilities",
@@ -61,14 +61,14 @@
       "sizes": "1440x900",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Projeto de irrigação dimensionado com resultados por zona"
+      "label": "Sized irrigation design with results by zone"
     }
   ],
   "shortcuts": [
     {
-      "name": "Tutorial interativo",
+      "name": "Interactive tutorial",
       "short_name": "Tutorial",
-      "description": "Abre o exemplo com o tutorial passo a passo",
+      "description": "Opens the example with the step-by-step tutorial",
       "url": "./?tutorial=1",
       "icons": [
         {
@@ -78,9 +78,9 @@
       ]
     },
     {
-      "name": "Exemplo dimensionado",
-      "short_name": "Exemplo",
-      "description": "Abre o pomar de exemplo já projetado",
+      "name": "Sized example",
+      "short_name": "Example",
+      "description": "Opens the sample orchard already designed",
       "url": "./?design=1",
       "icons": [
         {
@@ -90,9 +90,9 @@
       ]
     },
     {
-      "name": "Galeria de exemplos: jardim residencial",
-      "short_name": "Jardim",
-      "description": "Sprays, rotores e gotejamento ligados à rede pública",
+      "name": "Example gallery: home garden",
+      "short_name": "Garden",
+      "description": "Sprays, rotors and drip fed by the mains",
       "url": "./?example=garden",
       "icons": [
         {
@@ -102,9 +102,9 @@
       ]
     },
     {
-      "name": "Galeria de exemplos: pivô central",
-      "short_name": "Pivô",
-      "description": "Pivô de 300 m alimentado por poço e bomba",
+      "name": "Example gallery: centre pivot",
+      "short_name": "Pivot",
+      "description": "A 300 m pivot fed by a well and a pump",
       "url": "./?example=pivot",
       "icons": [
         {

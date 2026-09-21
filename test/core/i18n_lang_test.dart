@@ -28,15 +28,16 @@ void main() {
     });
   });
 
-  test('languageFromPath reads the /en/ and /es/ entry pages', () {
-    expect(languageFromPath(['en', '']), 'en');
+  test('languageFromPath reads the /pt/ and /es/ entry pages', () {
+    expect(languageFromPath(['pt', '']), 'pt');
     expect(languageFromPath(['es', 'index.html']), 'es');
-    expect(languageFromPath(['pt']), 'pt');
+    expect(languageFromPath(['en']), 'en');
     expect(languageFromPath(['']), isNull);
     expect(languageFromPath(const []), isNull);
     expect(languageFromPath(['app', 'v2']), isNull);
-    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/en/?example=garden').pathSegments), 'en');
-    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/').pathSegments), isNull);
+    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/pt/?example=garden').pathSegments), 'pt');
+    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/').pathSegments), isNull,
+        reason: 'the root page names no language: the machine decides, English when it names none');
   });
 
   test('a saved choice wins over the machine; URL languages are not saved', () {

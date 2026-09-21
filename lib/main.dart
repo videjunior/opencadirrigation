@@ -54,8 +54,9 @@ Future<void> main() async {
   runApp(const IrrigationCadApp());
 }
 
-/// The language the app will start in: the page address (`?lang=`, `/en/`)
-/// wins over the saved choice and the machine language.
+/// The language the app will start in: the page address (`?lang=`, `/pt/`)
+/// wins over the saved choice and the machine language, which is English
+/// when the machine asks for no language the app speaks.
 String startLanguage() {
   final urlLang = Uri.base.queryParameters['lang'] ?? languageFromPath(Uri.base.pathSegments);
   if (urlLang != null && supportedLanguages.contains(urlLang)) return urlLang;
@@ -121,7 +122,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     setUnloadGuard(() => ws.tabs.any((t) => t.dirty));
     _nativeKeys.install();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // ?lang=es or the /en/ and /es/ entry pages pick the language for this
+      // ?lang=es or the /pt/ and /es/ entry pages pick the language for this
       // visit; otherwise the saved choice or the machine language applies.
       final urlLang = Uri.base.queryParameters['lang'] ?? languageFromPath(Uri.base.pathSegments);
       if (urlLang != null) c.setLanguage(urlLang, persist: false);

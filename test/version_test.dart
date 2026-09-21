@@ -31,9 +31,9 @@ void main() {
   });
 
   test('the public pages declare the same software version', () {
-    for (final e in renderSite().entries) {
-      if (!e.key.endsWith('.html') || e.key == '404.html') continue;
-      expect(e.value, contains('"softwareVersion": "$appVersion"'), reason: e.key);
+    final pages = renderSite();
+    for (final l in siteLanguages) {
+      expect(pages[l.file], contains('"softwareVersion": "$appVersion"'), reason: l.file);
     }
   });
 }

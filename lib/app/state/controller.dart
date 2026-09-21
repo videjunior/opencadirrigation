@@ -422,7 +422,7 @@ class ProjectController extends ChangeNotifier {
   }
 
   /// Switches the interface language. A choice made by the user is saved
-  /// ([persist]); a language taken from the page address (`?lang=`, `/en/`)
+  /// ([persist]); a language taken from the page address (`?lang=`, `/pt/`)
   /// applies to this visit only, so the next plain visit follows the machine
   /// language again. A language that is not compiled in shows English until
   /// its table has been loaded (see [ensureLanguageLoaded]); the returned

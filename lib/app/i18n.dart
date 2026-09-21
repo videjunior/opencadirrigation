@@ -81,8 +81,9 @@ String languageFromTags(Iterable<String> tags) {
   return 'en';
 }
 
-/// Language chosen by the page address: the `/en/` and `/es/` entry pages
-/// of the web site. Null when the path names no supported language.
+/// Language chosen by the page address: the `/pt/` and `/es/` entry pages
+/// of the web site (the root page is the English one). Null when the path
+/// names no supported language.
 String? languageFromPath(Iterable<String> pathSegments) {
   for (final s in pathSegments) {
     final l = s.trim().toLowerCase();
