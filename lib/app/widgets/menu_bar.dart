@@ -17,6 +17,7 @@ import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
+import 'advice_panel.dart';
 import 'reports_panel.dart';
 
 class AppMenuBar extends StatelessWidget {
@@ -221,6 +222,8 @@ class AppMenuBar extends StatelessWidget {
                   ], child: Text(t('menu.terrain'))),
                   const Divider(height: 1),
                   item(t('design.check'), () => showDesignCheckDialog(context, c), icon: Icons.fact_check_outlined, shortcut: 'CHK ⏎', key: const Key('menu_check')),
+                  item(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, shortcut: 'FIX ⏎', key: const Key('menu_autofix')),
+                  item('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, shortcut: 'OPT ⏎', key: const Key('menu_optimize')),
                   item(t('design.zone'), c.busy ? null : () => c.runDesign(sizeZones: true, sizeMain: false), icon: Icons.account_tree_outlined),
                   item(t('design.mainline'), c.busy ? null : () => c.runDesign(sizeZones: false, sizeMain: true), icon: Icons.timeline),
                   item(t('design.all'), c.busy ? null : () => c.runDesign(), icon: Icons.play_arrow, shortcut: 'F5'),

@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../core/design/advisor.dart';
+import '../../core/design/auto_fix.dart';
 import '../../core/design/block_generator.dart';
 import '../../core/design/design_check.dart';
 import '../../core/design/network_builder.dart';
@@ -1130,18 +1132,29 @@ class ProjectController extends ChangeNotifier {
 
   // ------------------------------------------------------------ design
   Future<void> runDesign({bool sizeZones = true, bool sizeMain = true}) async {
-    if (project.entities.whereType<ControlValveEntity>().isEmpty && project.entities.whereType<WaterSupplyEntity>().isEmpty) {
+    if (!_canDesign) {
       notify(t('msg.noValves'));
       return;
     }
     if (busy) return;
+    _snapshot('hist.design');
+    final r = await _design(sizeZones: sizeZones, sizeMain: sizeMain);
+    if (r != null) _designNotice(r);
+  }
+
+  bool get _canDesign => project.entities.any((e) => e is ControlValveEntity || e is WaterSupplyEntity);
+
+  /// Runs the design (in the worker when there is one) and applies it to the
+  /// project. No undo snapshot and no message; null when the design cannot
+  /// run, fails or goes stale.
+  Future<DesignResults?> _design({bool sizeZones = true, bool sizeMain = true}) async {
+    if (!_canDesign || busy) return null;
     busy = true;
     progress = null;
     track('design');
     notifyListeners();
     await _yieldFrame();
     try {
-      _snapshot('hist.design');
       final gen = _editSeq;
       final request = DesignRequest.of(project, lang: lang, sizeZones: sizeZones, sizeMain: sizeMain);
       final response = await designRunner.run(
@@ -1160,7 +1173,7 @@ class ProjectController extends ChangeNotifier {
         // the project was replaced or edited meanwhile (mutate refuses while
         // busy, but opening a file or the example still swaps the project)
         notify(t('msg.designStale'));
-        return;
+        return null;
       }
       applyDesignResponse(project, response);
       _editSeq++; // pipes were resized / split: rebuild the spatial index
@@ -1170,15 +1183,138 @@ class ProjectController extends ChangeNotifier {
       dirty = true;
       showReports = true;
       feedEnvelope.clear();
-      notify(t('msg.designDone', {'z': '${r.zones.length}', 'f': '${r.systemFlows.length}'}));
       _autosaveMaybe(force: true);
+      return r;
     } catch (e, st) {
       debugPrint('$e\n$st');
       notify(t('msg.error', {'e': '$e'}));
+      return null;
     } finally {
       busy = false;
       progress = null;
       designMode = '';
+      notifyListeners();
+    }
+  }
+
+  /// After a design: the usual summary, or, when there are errors, a pointer
+  /// to the Messages tab (opened), where each one is explained.
+  void _designNotice(DesignResults r) {
+    final errors = advice.where((a) => a.level == AdviceLevel.error).length;
+    if (errors > 0) {
+      reportTab = messagesReportTab;
+      notify(t('adv.problemsAfterDesign', {'n': '$errors'}));
+    } else {
+      notify(t('msg.designDone', {'z': '${r.zones.length}', 'f': '${r.systemFlows.length}'}));
+    }
+  }
+
+  // ------------------------------------------------------------ advisor
+  List<Advice>? _advice;
+  String _adviceSig = '';
+
+  /// Problems of the project, each explained and with its corrections: the
+  /// design check, the settings and the latest results. Recomputed when the
+  /// drawing, the settings, the system flows or the results change.
+  List<Advice> get advice {
+    final sig = '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${jsonEncode(project.params.toJson())}|${jsonEncode([for (final f in project.systemFlows) f.toJson()])}';
+    if (_advice == null || sig != _adviceSig) {
+      _advice = buildAdvice(project, results: results);
+      _adviceSig = sig;
+    }
+    return _advice!;
+  }
+
+  /// Applies one correction (one undo step). With results on screen the
+  /// design runs again, so the message list shows what is left.
+  Future<FixResult?> applyAdviceFix(Advice a, FixKind kind) async {
+    if (!editAllowed()) return null;
+    track('fix');
+    final before = results;
+    _snapshot('hist.fix|${kind.name}');
+    final res = applyFix(project, a, kind, results: before, label: t.call, lang: lang);
+    if (!res.ok) {
+      _undo.removeLast(); // a correction that fails changes nothing
+      notify(t('adv.fixFailed', {'m': t(res.key, res.args)}));
+      return res;
+    }
+    _editSeq++;
+    dirty = true;
+    project.meta.modified = DateTime.now();
+    results = null;
+    feedEnvelope.clear();
+    notifyListeners();
+    final msg = t('adv.fixed', {'m': t(res.key, res.args)});
+    if (before != null && _canDesign) {
+      final r = await _design();
+      if (r != null) _designNotice(r);
+    }
+    notify(msg);
+    _autosaveMaybe();
+    return res;
+  }
+
+  /// Text of the progress of [autoFixAll] / [optimizeDesign] ('' = idle).
+  String assistantProgress = '';
+
+  /// "Fix automatically": safe corrections and designs in rounds until
+  /// nothing more can be fixed. One undo step.
+  Future<AutoFixReport?> autoFixAll() async {
+    if (!editAllowed()) return null;
+    track('autofix');
+    _snapshot('hist.autofix');
+    assistantProgress = t('adv.working', {'n': '1'});
+    notifyListeners();
+    try {
+      final report = await runAutoFix(project, () async {
+        _editSeq++;
+        return _design();
+      }, label: t.call, lang: lang, onRound: (n) {
+        assistantProgress = t('adv.working', {'n': '$n'});
+        notifyListeners();
+      });
+      _editSeq++;
+      dirty = true;
+      showReports = true;
+      reportTab = messagesReportTab;
+      notify(report.applied.isEmpty ? t('adv.summaryNone') : t('adv.summaryApplied', {'n': '${report.applied.length}'}).replaceAll(RegExp(r'\s*[:：]\s*$'), ''));
+      return report;
+    } finally {
+      assistantProgress = '';
+      notifyListeners();
+    }
+  }
+
+  /// Optimises the design (see [runOptimize]); keeps the result when it is
+  /// better, otherwise restores the project as it was. One undo step.
+  Future<OptimizeReport?> optimizeDesign(OptimizeOptions options) async {
+    if (!editAllowed()) return null;
+    track('optimize');
+    final base = results;
+    _snapshot('hist.optimize');
+    assistantProgress = t('opt.working');
+    notifyListeners();
+    try {
+      final report = await runOptimize(project, () async {
+        _editSeq++;
+        return _design();
+      }, options: options, baseline: base, label: t.call);
+      if (!report.improved) {
+        // nothing gained: back to the project as it was
+        final st = _undo.removeLast();
+        project = _restore(st);
+        results = base;
+        unconnected = base?.unconnected ?? unconnected;
+        _editSeq++;
+      } else {
+        dirty = true;
+        _editSeq++;
+      }
+      showReports = true;
+      notify(report.improved ? t('opt.kept') : t('opt.reverted'));
+      return report;
+    } finally {
+      assistantProgress = '';
       notifyListeners();
     }
   }
@@ -1318,6 +1454,9 @@ class ProjectController extends ChangeNotifier {
 
   /// Index of the Profile tab in the reports panel.
   static const profileReportTab = 8;
+
+  /// Index of the Messages tab in the reports panel.
+  static const messagesReportTab = 7;
 
   /// Removes the profile path from the drawing.
   void clearProfile() {

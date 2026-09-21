@@ -12,7 +12,7 @@ import 'i18n.dart';
 import 'state/controller.dart';
 
 /// Non-tool command identifiers.
-enum CadAction { select, zoomAll, zoomIn, zoomOut, erase, copy, cut, paste, undo, redo, selectAll, duplicate, array, feedEnvelope, run, check, snap, ortho, gridSnap, gridDisplay, reports, save, open }
+enum CadAction { select, zoomAll, zoomIn, zoomOut, erase, copy, cut, paste, undo, redo, selectAll, duplicate, array, feedEnvelope, run, check, autoFix, optimize, snap, ortho, gridSnap, gridDisplay, reports, save, open }
 
 /// Command alias → [ToolId] or [CadAction].
 const commandAliases = <String, Object>{
@@ -76,6 +76,8 @@ const commandAliases = <String, Object>{
   // design / toggles / files
   'RUN': CadAction.run, 'DESIGN': CadAction.run, 'PROJETAR': CadAction.run,
   'CHK': CadAction.check, 'CHECK': CadAction.check,
+  'FIX': CadAction.autoFix, 'AUTOFIX': CadAction.autoFix, 'CORRIGIR': CadAction.autoFix, 'CORREGIR': CadAction.autoFix,
+  'OPT': CadAction.optimize, 'OPTIMIZE': CadAction.optimize, 'OTIMIZAR': CadAction.optimize, 'OPTIMIZAR': CadAction.optimize,
   'OS': CadAction.snap, 'OSNAP': CadAction.snap, 'SNAP': CadAction.snap,
   'OR': CadAction.ortho, 'ORTHO': CadAction.ortho, 'ORTO': CadAction.ortho,
   'GS': CadAction.gridSnap, 'GRIDSNAP': CadAction.gridSnap,
@@ -118,6 +120,8 @@ String actionLabelKey(CadAction a) => switch (a) {
   CadAction.feedEnvelope => 'zone.feedEnvelope',
   CadAction.run => 'design.all',
   CadAction.check => 'design.check',
+  CadAction.autoFix => 'adv.fixAll',
+  CadAction.optimize => 'adv.optimize',
   CadAction.snap => 'status.snap',
   CadAction.ortho => 'status.ortho',
   CadAction.gridSnap => 'status.grid',

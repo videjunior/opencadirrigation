@@ -2,11 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/design/advisor.dart';
 import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
 import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import 'advice_panel.dart';
 import 'hgl_chart.dart';
 import 'profile_chart.dart';
 
@@ -27,6 +29,11 @@ const reportTabKeys = [
   'reports.pivots',
   'reports.pivotSpans',
 ];
+
+/// Report tab indices used in code.
+abstract final class ControllerTabs {
+  static const messages = ProjectController.messagesReportTab;
+}
 
 /// Tabs that do not need design results.
 const _noResultTabs = {5, 7, 8, 11, 12};
@@ -66,7 +73,7 @@ class ReportsPanel extends StatelessWidget {
                             decoration: BoxDecoration(
                               border: Border(bottom: BorderSide(color: c.reportTab == i ? const Color(0xFF42A5F5) : Colors.transparent, width: 2)),
                             ),
-                            child: Text(t(reportTabKeys[i]), style: TextStyle(fontSize: 11.5, color: c.reportTab == i ? Colors.white : Colors.white60)),
+                            child: Text(i == ControllerTabs.messages ? _messagesLabel() : t(reportTabKeys[i]), style: TextStyle(fontSize: 11.5, color: c.reportTab == i ? Colors.white : (i == ControllerTabs.messages && _errorCount() > 0 ? CadColors.unconnected : Colors.white60))),
                           ),
                         ),
                     ]),
@@ -128,14 +135,20 @@ class ReportsPanel extends StatelessWidget {
     }
   }
 
+  int _errorCount() => c.advice.where((a) => a.level == AdviceLevel.error).length;
+
+  /// "Messages (3)": the number of problems, so they are hard to miss.
+  String _messagesLabel() {
+    final n = c.advice.where((a) => a.level != AdviceLevel.info).length;
+    return n == 0 ? c.t('reports.messages') : '${c.t('reports.messages')} ($n)';
+  }
+
   Widget _table(List<String> headers, List<List<Object>> rows, {List<Color?>? rowColors, Key? key}) => ReportTableView(key: key, headers: headers, rows: rows, rowColors: rowColors);
 
   String _entityName(String id) {
     final n = c.project.byId(id)?.name ?? '';
     return n.isEmpty ? id : n;
   }
-
-  String _warn(String w) => c.t.warning(w, entityName: _entityName);
 
   /// Renders one of the shared report tables (same data as every exporter).
   Widget _fromTable(String key, {String? emptyKey}) {
@@ -294,54 +307,9 @@ class ReportsPanel extends StatelessWidget {
     );
   }
 
-  Widget _messages(DesignResults? r) {
-    final t = c.t;
-    final msgs = <(String, Color, String?)>[];
-    String? idOf(String w) {
-      final i = w.indexOf(':');
-      if (i < 0) return null;
-      final id = w.substring(i + 1).split(':').last;
-      return c.project.byId(id) != null ? id : null;
-    }
+  /// Every problem with its explanation and corrections (design assistant).
+  Widget _messages(DesignResults? r) => AdvicePanel(c: c);
 
-    if (r != null) {
-      for (final m in r.messages) {
-        msgs.add((_warn(m), CadColors.warning, idOf(m)));
-      }
-      for (final z in r.zones.values) {
-        for (final w in z.warnings) {
-          msgs.add(('${z.zoneName}: ${_warn(w)}', z.withinWindow ? Colors.white70 : CadColors.warning, idOf(w) ?? z.valveId));
-        }
-      }
-      for (final f in r.systemFlows) {
-        for (final w in f.warnings) {
-          msgs.add(('${f.name}: ${_warn(w)}', CadColors.warning, idOf(w)));
-        }
-      }
-    }
-    for (final id in c.unconnected) {
-      final e = c.project.byId(id);
-      msgs.add(('${t('msg.unconnectedItem')}: ${e != null ? t('tool.${toolNameOfEntity(e)}') : ''} ${_entityName(id)}', CadColors.unconnected, id));
-    }
-    if (msgs.isEmpty) {
-      return Center(child: Text(t('msg.noMessages'), style: const TextStyle(color: Colors.white54)));
-    }
-    return ListView(
-      padding: const EdgeInsets.all(8),
-      children: [
-        for (final (m, col, id) in msgs)
-          InkWell(
-            onTap: id == null
-                ? null
-                : () {
-                    c.select([id]);
-                    c.zoomToEntity(id);
-                  },
-            child: Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Text(m, style: TextStyle(fontSize: 11.5, color: col))),
-          ),
-      ],
-    );
-  }
 }
 
 /// Tool key matching an entity type (used for labels).

@@ -131,6 +131,12 @@ abstract class HotkeyActions {
 
   /// Opens the design check dialog (CHK command).
   void designCheck();
+
+  /// Runs "fix automatically" (FIX command).
+  void autoFix();
+
+  /// Opens the design optimisation (OPT command).
+  void optimize();
   void clipboard(CadAction action);
 }
 
@@ -434,6 +440,10 @@ class Hotkeys {
         actions.runDesign();
       case CadAction.check:
         actions.designCheck();
+      case CadAction.autoFix:
+        actions.autoFix();
+      case CadAction.optimize:
+        actions.optimize();
       case CadAction.snap:
         c.snap.enabled = !c.snap.enabled;
         c.refresh();

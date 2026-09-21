@@ -35,10 +35,11 @@ technical literature and public-domain software.
 19. [Terrain and geoprocessing](#19-terrain-and-geoprocessing)
 20. [File formats](#20-file-formats)
 21. [Performance and software architecture](#21-performance-and-software-architecture)
-22. [Validation](#22-validation)
-23. [Gaps and future work](#23-gaps-and-future-work)
-24. [Glossary](#24-glossary)
-25. [Sources](#25-sources)
+22. [Design assistant](#22-design-assistant)
+23. [Validation](#23-validation)
+24. [Gaps and future work](#24-gaps-and-future-work)
+25. [Glossary](#25-glossary)
+26. [Sources](#26-sources)
 
 ---
 
@@ -843,7 +844,46 @@ catalogue in the project makes the file self-contained and readable.
 
 ---
 
-## 22. Validation
+## 22. Design assistant
+
+Modules `advisor.dart` (read-only) and `auto_fix.dart`; panel `advice_panel.dart` (Messages tab and
+design check).
+
+- **Advice**: the design check, a sweep of the settings and the messages of the latest results are
+  merged into one list; each problem has a severity (error, warning, note), the items and the
+  zone / system flow involved, an explanation (why it matters, how to fix it) and the automatic
+  corrections that apply. The same problem reported by several flows is shown once with the flows
+  listed; without any water supply the unconnected mainline items are not repeated.
+- **Impossible settings**: velocity limits outside 0.3–5 m/s, hours per year outside 1–8760,
+  interest outside 0–50 %, term outside 1–100 years, pump efficiency outside 20–95 %, negative
+  tariff, connection tolerance outside 1 mm–1 m, zone variation outside 0–60 %, water temperature
+  outside 0–60 °C, no enabled catalogue pipe for a use the design needs, supply maxima below the
+  design values, zones in no system flow, empty flows, zero durations, emitter or tape pressures
+  outside the nozzle / tape range (which makes the pressure window empty) and pump speeds outside
+  40–130 %.
+- **Corrections** (one undo step each): join an unconnected item to the closest compatible pipe or
+  item within max(2 m, 20 × tolerance), cutting the pipe under it (a valve prefers the point where
+  the mainline meets the start of its zone); delete zero-length pipes; remove repeated vertices and
+  duplicated items; rename repeated zones; calculated supply pressure; the catalogue pump with the
+  lowest life-cycle cost that meets every duty of the supply (only submersible ones when the water
+  is deeper than the suction lift), or a new one on the pipe leaving the supply; the cheapest pipe
+  of the same use whose class withstands the steady (or steady + surge) pressure with a bore not
+  smaller; the smallest control valve whose range covers the zone flow; a catalogue model for a
+  missing one; system flows regrouped first-fit decreasing so none exceeds the supply design flow;
+  generic fittings; default parameters; a new flow for the zones left out; the nominal emitter
+  pressure. Joining crossing pipes and placing a supply at the only free mainline end guess the
+  intent and are offered, never applied on their own.
+- **Fix automatically**: rounds of safe corrections — drawing and settings first, then the ones
+  that need results — each followed by a design, until a round changes nothing (at most six), all
+  in one undo step; a correction already tried is not repeated.
+- **Optimise**: LP sizing with the energy cost, optionally every pipe free, the smallest suitable
+  valve per zone and the lowest life-cycle-cost pump per supply; the result is kept only when it
+  has fewer errors or, with as many, a lower annual cost (annualised investment + energy).
+- After a design with errors the Messages tab opens by itself and its label counts the problems.
+
+---
+
+## 23. Validation
 
 The suite has 350 tests (`flutter test`). Those validating the hydraulics against references:
 
@@ -872,7 +912,7 @@ every report cell as a plain number, and match the published files.
 
 ---
 
-## 23. Gaps and future work
+## 24. Gaps and future work
 
 From the research point of view, what the literature and design practice suggest as next steps:
 
@@ -893,7 +933,7 @@ From the research point of view, what the literature and design practice suggest
 
 ---
 
-## 24. Glossary
+## 25. Glossary
 
 | Term | Portuguese | Meaning |
 |---|---|---|
@@ -915,7 +955,7 @@ From the research point of view, what the literature and design practice suggest
 
 ---
 
-## 25. Sources
+## 26. Sources
 
 Hydraulics and networks:
 - Rossman, L. et al. EPANET 2.2 User Manual, Analysis Algorithms: https://epanet-manual.readthedocs.io/en/latest/analysis_algorithms.html

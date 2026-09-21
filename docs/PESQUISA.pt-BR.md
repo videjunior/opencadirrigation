@@ -35,10 +35,11 @@ literatura técnica e software de domínio público.
 19. [Terreno e geoprocessamento](#19-terreno-e-geoprocessamento)
 20. [Formatos de arquivo](#20-formatos-de-arquivo)
 21. [Desempenho e arquitetura de software](#21-desempenho-e-arquitetura-de-software)
-22. [Validação](#22-validação)
-23. [Lacunas e trabalhos futuros](#23-lacunas-e-trabalhos-futuros)
-24. [Glossário](#24-glossário)
-25. [Fontes](#25-fontes)
+22. [Assistente de projeto](#22-assistente-de-projeto)
+23. [Validação](#23-validação)
+24. [Lacunas e trabalhos futuros](#24-lacunas-e-trabalhos-futuros)
+25. [Glossário](#25-glossário)
+26. [Fontes](#26-fontes)
 
 ---
 
@@ -830,7 +831,47 @@ arquivo autossuficiente e legível.
 
 ---
 
-## 22. Validação
+## 22. Assistente de projeto
+
+Módulos `advisor.dart` (só leitura) e `auto_fix.dart`; painel `advice_panel.dart` (aba Mensagens e
+verificação do projeto).
+
+- **Conselhos**: a verificação do projeto, uma varredura das configurações e as mensagens dos
+  últimos resultados viram uma lista só; cada problema tem gravidade (erro, aviso, nota), os itens e
+  a zona / turno envolvidos, uma explicação (por que importa, como resolver) e as correções
+  automáticas que se aplicam. O mesmo problema vindo de vários turnos aparece uma vez, com os turnos
+  listados; sem nenhuma fonte de água, os itens desconectados da linha principal não são repetidos.
+- **Configurações impossíveis**: limites de velocidade fora de 0,3–5 m/s, horas por ano fora de
+  1–8760, juros fora de 0–50 %, prazo fora de 1–100 anos, rendimento da bomba fora de 20–95 %,
+  tarifa negativa, tolerância de conexão fora de 1 mm–1 m, variação na zona fora de 0–60 %,
+  temperatura da água fora de 0–60 °C, nenhum tubo habilitado no catálogo para um uso que o projeto
+  exige, máximos da fonte abaixo dos valores de projeto, zonas fora de todos os turnos, turnos
+  vazios, durações zero, pressão de emissor ou fita fora da faixa do bocal / fita (o que esvazia a
+  janela de pressão) e rotação de bomba fora de 40–130 %.
+- **Correções** (um passo de desfazer cada): ligar um item desconectado ao tubo ou item compatível
+  mais próximo a até max(2 m, 20 × tolerância), cortando o tubo sob ele (a válvula prefere o ponto
+  onde a linha principal encontra o início da sua zona); excluir tubos de comprimento zero; remover
+  vértices repetidos e itens duplicados; renomear zonas repetidas; pressão da fonte calculada; a
+  bomba do catálogo de menor custo de ciclo de vida que atende todos os duties da fonte (só
+  submersas quando a água está mais funda que a altura de sucção), ou uma nova no tubo que sai da
+  fonte; o tubo mais barato do mesmo uso cuja classe aguenta a pressão em regime (ou regime + golpe)
+  com diâmetro interno não menor; a menor válvula de controle cuja faixa cobre a vazão da zona; um
+  modelo do catálogo para um que falta; turnos reagrupados por first-fit decreasing para que nenhum
+  passe da vazão de projeto da fonte; conexões genéricas; parâmetros padrão; um turno novo para as
+  zonas deixadas de fora; a pressão nominal do emissor. Ligar tubos que se cruzam e pôr a fonte na
+  única ponta livre da linha principal supõem a intenção: são oferecidos, nunca aplicados sozinhos.
+- **Corrigir automaticamente**: rodadas de correções seguras — desenho e configurações primeiro,
+  depois as que precisam de resultados —, cada uma seguida de um cálculo, até uma rodada não mudar
+  nada (no máximo seis), tudo num único passo de desfazer; uma correção já tentada não se repete.
+- **Otimizar**: dimensionamento LP com o custo da energia, opcionalmente todos os tubos livres, a
+  menor válvula adequada por zona e a bomba de menor custo de ciclo de vida por fonte; o resultado
+  só fica quando tem menos erros ou, com os mesmos, menor custo anual (investimento anualizado +
+  energia).
+- Depois de um cálculo com erros a aba Mensagens abre sozinha e o seu rótulo conta os problemas.
+
+---
+
+## 23. Validação
 
 A suíte tem 350 testes (`flutter test`). Os que validam a hidráulica contra referências:
 
@@ -859,7 +900,7 @@ de fonte, imprimem cada célula de relatório como número simples, e batem com 
 
 ---
 
-## 23. Lacunas e trabalhos futuros
+## 24. Lacunas e trabalhos futuros
 
 Do ponto de vista da pesquisa, o que a literatura e a prática de projeto sugerem como próximos passos:
 
@@ -881,7 +922,7 @@ Do ponto de vista da pesquisa, o que a literatura e a prática de projeto sugere
 
 ---
 
-## 24. Glossário
+## 25. Glossário
 
 | Termo (pt) | Inglês | Significado |
 |---|---|---|
@@ -903,7 +944,7 @@ Do ponto de vista da pesquisa, o que a literatura e a prática de projeto sugere
 
 ---
 
-## 25. Fontes
+## 26. Fontes
 
 Hidráulica e redes:
 - Rossman, L. et al. EPANET 2.2 User Manual, Analysis Algorithms: https://epanet-manual.readthedocs.io/en/latest/analysis_algorithms.html

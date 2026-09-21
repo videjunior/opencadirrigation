@@ -16,6 +16,7 @@ import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../examples.dart';
 import '../tutorial/tutorial.dart';
+import 'advice_panel.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/dialogs.dart';
@@ -237,6 +238,8 @@ class _MobileShellState extends State<MobileShell> {
             row(t('design.dem3d'), () => showDemDialog(context, c), icon: Icons.view_in_ar_outlined),
             row(t('terrain.clearProfile'), c.profilePath == null ? null : c.clearProfile, icon: Icons.close),
             row(t('design.check'), widget.onDesignCheck, icon: Icons.fact_check_outlined, key: const Key('mobile_menu_check')),
+            row(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, key: const Key('mobile_menu_autofix')),
+            row('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, key: const Key('mobile_menu_optimize')),
             row(t('design.zone'), c.busy ? null : () => c.runDesign(sizeZones: true, sizeMain: false), icon: Icons.account_tree_outlined),
             row(t('design.mainline'), c.busy ? null : () => c.runDesign(sizeZones: false, sizeMain: true), icon: Icons.timeline),
             row(t('design.all'), c.busy ? null : () => c.runDesign(), icon: Icons.play_arrow),

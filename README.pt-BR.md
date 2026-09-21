@@ -487,6 +487,29 @@ pressão na válvula ou no pivô, LP inviável (com o método guloso assumindo),
 (o LP usa caminhos em árvore como aproximação e a análise final confere), componentes de catálogo
 ausentes, taxa de aplicação do pivô acima do limite do solo, entre outras.
 
+### Assistente de projeto: explicações e correção com um clique
+
+A aba Mensagens e a verificação do projeto mostram cada problema num cartão: o que aconteceu,
+**por que importa** e **como resolver**, um botão para mostrar o item no desenho e, quando existe,
+um botão que corrige (cada correção é um passo de desfazer). Além do desenho e dos resultados, o
+assistente confere **configurações impossíveis**: velocidade, horas, parâmetros econômicos,
+tolerância, variação na zona ou temperatura da água fora das faixas físicas, nenhum tubo habilitado
+no catálogo para um uso, máximos da fonte abaixo dos valores de projeto, zonas fora de todos os
+turnos, turnos vazios, pressão do emissor fora da faixa do bocal, rotação da bomba fora da faixa.
+
+- **Correções**: ligar um item solto ao lado do tubo, remover tubos de comprimento zero, vértices
+  repetidos e duplicados, renomear zonas repetidas, escolher (ou inserir) a bomba de menor custo de
+  ciclo de vida, trocar por submersa a bomba de superfície que não consegue succionar, tubo de
+  classe de pressão maior, válvula do tamanho certo, dividir as zonas em mais turnos, voltar aos
+  parâmetros padrão, pôr num turno as zonas esquecidas, a pressão nominal do emissor, entre outras.
+- **Corrigir automaticamente** (menu Projeto, `FIX`): correções seguras e cálculos em rodadas até
+  não haver mais o que corrigir, tudo num único passo de desfazer, com um resumo do que mudou e do
+  que depende de uma decisão sua.
+- **Otimizar projeto** (menu Projeto, `OPT`): menor custo anual (investimento anualizado + energia)
+  que atende todos os requisitos — dimensionamento LP, as menores válvulas adequadas e a bomba de
+  menor custo de ciclo de vida; só fica se melhorar, com comparação antes / depois.
+- Depois de um cálculo com erros a aba Mensagens abre sozinha e mostra quantos problemas há.
+
 ### Calculadoras (menu Ferramentas)
 
 - **Lateral**: comprimento máximo, perdas e uniformidade de uma lateral ou fita em declive.
@@ -657,6 +680,8 @@ lib/
       pump_selection.dart     escolha de bomba e motor
       agronomy.dart           ETc, balanço hídrico, programa do controlador
       design_check.dart       verificação de projeto
+      advisor.dart            problemas explicados, configurações impossíveis, correções aplicáveis
+      auto_fix.dart           correções, corrigir automaticamente, otimização
       results.dart, report_tables.dart  resultados serializáveis e tabelas dos relatórios
     io/                     leitura e escrita de formatos
       dxf.dart, dwg.dart, dwg_writer.dart, kml.dart, shp.dart, points_csv.dart,
@@ -761,6 +786,8 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/lp_test.dart` | Simplex: ≤/≥, igualdades, inviável, ilimitado, problema com a forma do dimensionamento |
 | `core/design_test.dart`, `core/sizing_features_test.dart`, `core/gaps_test.dart` | Gerador de blocos; grafo conectado; análise e dimensionamento completos; LP não pior que o guloso; telescopagem; conexões; lavagem; golpe de aríete; CU de sobreposição e emissores por planta; agronomia e programa do controlador; seleção de bomba e motor; DEM GeoTIFF; pivô (vãos, custos); linha principal em anel |
 | `core/terrain_pivot_test.dart` | TIN de Delaunay exato em planos; TIN vs IDW; geração de curvas; encadeamento de segmentos; geometria de alinhamento e recorte; blocos guiados; hidráulica de pivô; verificação de projeto; catálogo Excel e pacotes |
+| `core/advisor_test.dart` | Itens soltos ligados (a válvula volta ao início da zona), configurações impossíveis restauradas, pressão do emissor fora da faixa do bocal, zonas fora dos turnos, bomba de superfície em poço fundo → submersa, booster para rede pública sem pressão, turnos divididos pela vazão da fonte, corrigir automaticamente num projeto com vários erros, otimização que nunca aumenta o custo anual |
+| `widget_advice_test.dart` | A aba Mensagens explica e corrige com um clique (um passo de desfazer), cálculo com erros abre Mensagens, corrigir automaticamente num passo do histórico, otimização e itens de menu, fonte ausente com correção de um clique |
 | `core/dwg_test.dart`, `core/dwg_writer_test.dart` | Leitura de amostras R2000–R2018 e R2007, com blocos e cotas expandidos; rejeição de versões desconhecidas; CRC; ida e volta do escritor; validação com LibreDWG quando instalado |
 | `core/formats_test.dart` | Cada formato de importação contra arquivos gravados por outros programas (ezdxf, LibreDWG, pyshp, tifffile, Pillow, openpyxl e KML no estilo do Google Earth; fixtures em `test/fixtures/formats`, gerados por `tool/formats/make_fixtures.py`) com posições, elevações, nomes e camadas conferidos; todas as exportações relidas pelos próprios leitores e gravadas em `build/formats` para `tool/formats/check_exports.py`, que as valida com ezdxf, LibreDWG, lxml, openpyxl e pypdf |
 | `core/export_test.dart`, `core/kml_test.dart` | UTM ida e volta; georreferência; KML ida e volta; GeoJSON; cena de plotagem; SVG; PDF válido e comprimido; prancha e páginas de relatório; mesmas tabelas em CSV/TXT/XLSX |

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/i18n.dart';
+import 'package:opencadirrigation/core/design/advisor.dart';
 import 'package:opencadirrigation/core/design/design_check.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
@@ -98,6 +99,13 @@ void main() {
           }
         }
         expect(r.bom, isNotEmpty);
+        // the design assistant finds no error, and every message it shows
+        // has an explanation
+        final advice = buildAdvice(p, results: r);
+        expect(advice.where((a) => a.level == AdviceLevel.error).map((a) => '${a.code} ${a.entityIds}'), isEmpty);
+        for (final a in advice) {
+          expect(adviceCodes, contains(a.code), reason: a.raw);
+        }
         // every report cell (PDF/CSV/TXT share these strings) is a plain
         // positional number: no scientific notation, no "-0.00"
         final labels = ReportLabels(t: t.call, has: t.has, warning: (w) => w, entityName: (id) => p.byId(id)?.name ?? id);

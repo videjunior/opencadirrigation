@@ -26,6 +26,9 @@ class HistoryPanel extends StatelessWidget {
     'hist.props' => Icons.tune,
     'hist.import' => Icons.upload_file,
     'hist.design' => Icons.play_arrow,
+    'hist.fix' => Icons.build_circle_outlined,
+    'hist.autofix' => Icons.auto_fix_high,
+    'hist.optimize' => Icons.savings_outlined,
     'hist.contours' => Icons.gesture,
     'hist.dem' => Icons.cloud_download_outlined,
     'hist.paste' => Icons.content_paste,
@@ -43,7 +46,7 @@ class HistoryPanel extends StatelessWidget {
     final t = c.t;
     if (arg.isEmpty) return t(key);
     // argument: a tool key (entity kind) or a count
-    final n = t.has('tool.$arg') ? t('tool.$arg') : arg;
+    final n = t.has('tool.$arg') ? t('tool.$arg') : (t.has('fix.$arg') ? t('fix.$arg', {'d': ''}).replaceAll(RegExp(r'\s*\(\s*\)'), '') : arg);
     return t(key, {'n': n});
   }
 

@@ -17,6 +17,7 @@ import 'app/theme.dart';
 import 'app/tools/tools.dart';
 import 'app/tutorial/tutorial.dart';
 import 'app/version.dart';
+import 'app/widgets/advice_panel.dart';
 import 'app/widgets/dialogs/dialogs.dart';
 import 'app/widgets/dialogs/more_dialogs.dart';
 import 'app/widgets/dialogs/terrain_dialogs.dart';
@@ -280,6 +281,12 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   @override
   void designCheck() => showDesignCheckDialog(context, c);
+
+  @override
+  void autoFix() => showAutoFixDialog(context, c);
+
+  @override
+  void optimize() => showOptimizeDialog(context, c);
 
   @override
   void clipboard(CadAction action) {

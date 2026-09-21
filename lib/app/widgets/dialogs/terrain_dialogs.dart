@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/design/design_check.dart';
 import '../../../core/io/dem_online.dart';
 import '../../../core/io/geo.dart' show parseLatLon;
 import '../../../core/io/project_export.dart' show GeoReferenceMissing;
@@ -15,6 +14,7 @@ import '../../../core/model/entities.dart';
 import '../../../core/units.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
+import '../advice_panel.dart';
 import '../fields.dart';
 import 'export_dialogs.dart';
 
@@ -343,77 +343,26 @@ Future<void> showGenerateContoursDialog(BuildContext context, ProjectController 
 
 Future<void> showDesignCheckDialog(BuildContext context, ProjectController c) {
   final t = c.t;
-  var report = c.runDesignCheckReport();
+  c.runDesignCheckReport();
   return showDialog<void>(
     context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      final counts = {CheckSeverity.error: report.errors, CheckSeverity.warning: report.warnings, CheckSeverity.info: report.issues.length - report.errors - report.warnings};
-      Color colorOf(CheckSeverity s) => switch (s) { CheckSeverity.error => CadColors.unconnected, CheckSeverity.warning => CadColors.warning, CheckSeverity.info => Colors.white60 };
-      IconData iconOf(CheckSeverity s) => switch (s) { CheckSeverity.error => Icons.error_outline, CheckSeverity.warning => Icons.warning_amber_outlined, CheckSeverity.info => Icons.info_outline };
-      String message(CheckIssue i) {
-        final base = t.has('check.${i.code}') ? t('check.${i.code}') : (t.has('warn.${i.code}') ? t('warn.${i.code}') : i.code);
-        final names = i.entityIds.map((id) {
-          final e = c.project.byId(id);
-          final n = e?.name ?? '';
-          return n.isEmpty ? id : n;
-        }).join(', ');
-        final extra = [if (i.value.isNotEmpty) i.value, if (names.isNotEmpty) names].join(' · ');
-        return extra.isEmpty ? base : '$base ($extra)';
-      }
-
-      void locate(CheckIssue i) {
-        if (i.entityIds.isNotEmpty) c.select(i.entityIds.where((id) => c.project.byId(id) != null));
-        if (i.at != null) {
-          c.camera.center = i.at!;
-          c.camera.scale = c.camera.scale < 3 ? 3 : c.camera.scale;
-          c.refresh();
-        } else if (i.entityIds.isNotEmpty) {
-          c.zoomToEntity(i.entityIds.first);
-        }
-      }
-
-      return AlertDialog(
-        title: Text(t('check.title'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(
-          width: dialogWidth(ctx, 560),
-          height: 420,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('check.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
-            const SizedBox(height: 8),
-            Wrap(spacing: 12, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-              for (final s in CheckSeverity.values)
-                Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(iconOf(s), size: 15, color: colorOf(s)),
-                  const SizedBox(width: 3),
-                  Text('${counts[s]} ${t('check.sev.${s.name}')}', style: TextStyle(fontSize: 11.5, color: colorOf(s))),
-                ]),
-            ]),
-            const SizedBox(height: 6),
-            if (report.ok) Text(t('check.ok'), style: const TextStyle(fontSize: 12, color: CadColors.ok)),
-            Expanded(
-              child: ListView(
-                key: const Key('check_list'),
-                children: [
-                  for (final i in report.issues)
-                    ListTile(
-                      dense: true,
-                      visualDensity: VisualDensity.compact,
-                      leading: Icon(iconOf(i.severity), size: 18, color: colorOf(i.severity)),
-                      title: Text(message(i), style: const TextStyle(fontSize: 12)),
-                      trailing: i.entityIds.isNotEmpty || i.at != null ? const Icon(Icons.center_focus_strong, size: 16) : null,
-                      onTap: i.entityIds.isNotEmpty || i.at != null ? () => locate(i) : null,
-                    ),
-                ],
-              ),
-            ),
-          ]),
-        ),
-        actions: [
-          TextButton.icon(key: const Key('check_rerun'), onPressed: () => setState(() => report = c.runDesignCheckReport()), icon: const Icon(Icons.refresh, size: 16), label: Text(t('check.run'))),
-          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
-        ],
-      );
-    }),
+    builder: (ctx) => AlertDialog(
+      title: Text(t('check.title'), style: const TextStyle(fontSize: 15)),
+      content: SizedBox(
+        width: dialogWidth(ctx, 620),
+        height: 460,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(t('check.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+          const SizedBox(height: 4),
+          // the same assistant as the Messages tab: why, how to fix, corrections
+          Expanded(child: AdvicePanel(c: c, listKey: const Key('check_list'))),
+        ]),
+      ),
+      actions: [
+        TextButton.icon(key: const Key('check_rerun'), onPressed: c.runDesignCheckReport, icon: const Icon(Icons.refresh, size: 16), label: Text(t('check.run'))),
+        FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
+      ],
+    ),
   );
 }
 

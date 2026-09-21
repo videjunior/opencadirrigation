@@ -559,9 +559,9 @@ class PropertiesPanel extends StatelessWidget {
     if (e is PumpEntity || e is MiscHydraulicEntity) {
       for (final f in r.systemFlows) {
         for (final d in f.devices.where((d) => d.entityId == e.id)) {
-          final inOut = '${t('rep.pIn')} ${fmt(u.pressureFromHead(d.upstreamPressure), 1)} → ${t('rep.pOut')} ${fmt(u.pressureFromHead(d.downstreamPressure), 1)} ${u.pressureLabel}';
           final suction = f.warnings.contains('pump_suction_lift:${e.id}');
-          out.add(KV(f.name, e is PumpEntity ? '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} / H ${fmt(u.pressureFromHead(d.pumpHead), 1)} · $inOut' : 'Δh ${fmt(u.pressureFromHead(d.headLoss), 2)} · $inOut', color: suction ? CadColors.warning : null));
+          out.add(KV(f.name, e is PumpEntity ? '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} / H ${fmt(u.pressureFromHead(d.pumpHead), 1)}' : 'Δh ${fmt(u.pressureFromHead(d.headLoss), 2)} ${u.pressureLabel}'));
+          out.add(KV('  ${t('rep.pIn')} → ${t('rep.pOut')}', '${fmt(u.pressureFromHead(d.upstreamPressure), 1)} → ${fmt(u.pressureFromHead(d.downstreamPressure), 1)} ${u.pressureLabel}', color: suction ? CadColors.warning : null));
           if (suction) out.add(Text(c.t.warning('pump_suction_lift'), style: const TextStyle(fontSize: 11, color: CadColors.warning)));
         }
       }
