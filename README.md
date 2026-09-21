@@ -122,7 +122,8 @@ students. The interactive tutorial and the example gallery let you start without
 
 Examples open from the welcome screen (Help → Welcome and example gallery…), from the File →
 Examples menu and from the URL. The same projects are in [examples/](examples/) as `.oci.json`
-files in Portuguese, English and Spanish.
+files, one folder per interface language (`examples/de/`, `examples/ja/`, … 20 in all): the same
+drawing everywhere, with the names, crops and catalogue items in that language.
 
 ### URL parameters
 
@@ -682,7 +683,7 @@ lib/
     version.dart            generated app version (tool/gen_version.dart)
   worker/design_worker.dart Web Worker entry point
 catalogs/                   manufacturer packs (JSON) and index
-examples/                   example projects in pt, en, es
+examples/                   example projects, one folder per interface language (20)
 tool/                       generators: site, catalogues, examples, brand, version; worker and web builds
 test/                       engine, model, format and interface tests
 web/                        pages, manifest, icons, robots, sitemap, compiled worker

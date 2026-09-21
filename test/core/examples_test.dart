@@ -114,8 +114,8 @@ void main() {
         print('${ex.id.name}: ${r.zones.length} zones, ${r.systemFlows.length} flows, ${p.entities.length} entities, capital ${r.capitalCost.toStringAsFixed(0)}');
       });
 
-      test('matches the shipped .oci.json files', () {
-        for (final lang in baseLanguages) {
+      test('matches the shipped .oci.json files of every language', () {
+        for (final lang in supportedLanguages) {
           final f = File('examples/$lang/${ex.id.name}.oci.json');
           expect(f.existsSync(), isTrue, reason: 'run dart run tool/gen_examples.dart');
           final shipped = Project.fromJson(jsonDecode(f.readAsStringSync()) as Map<String, dynamic>);

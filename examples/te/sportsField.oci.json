@@ -1,0 +1,6545 @@
+{
+  "format": "opencadirrigation",
+  "version": 1,
+  "meta": {
+    "uid": "example-sportsField-te",
+    "created": "2026-09-16T00:00:00.000Z",
+    "name": "ఫుట్‌బాల్ మైదానం",
+    "client": "ఉదాహరణ క్లబ్",
+    "site": "పూర్తి పరిమాణ మైదానం 105 × 68 m",
+    "designer": "OpenCADIrrigation",
+    "notes": ""
+  },
+  "params": {
+    "units": {
+      "length": "m",
+      "flow": "lph",
+      "pressure": "mH2O",
+      "diameter": "mm"
+    },
+    "method": "hazenWilliams",
+    "temp": 20.0,
+    "vZone": 1.5,
+    "vMain": 2.0,
+    "vLat": 2.0,
+    "minorPct": 5.0,
+    "minor": true,
+    "tol": 0.05,
+    "interest": 0.1,
+    "term": 10,
+    "kwh": 0.75,
+    "eff": 0.65,
+    "hours": 2000.0,
+    "zoneHours": 500.0,
+    "trade": true,
+    "latSizes": 1,
+    "subSizes": 3,
+    "cScale": 1.0,
+    "cOffset": 0.0,
+    "densify": 5.0,
+    "currency": "R$",
+    "sizing": "lp",
+    "mainSizes": 3,
+    "epp": 1,
+    "maxNodes": 100,
+    "flushV": 0.3,
+    "flushH": 1.0,
+    "surge": true,
+    "closure": 3.0,
+    "fittings": true,
+    "stick": 6.0,
+    "zoneVar": 0.0,
+    "terrain": "tin"
+  },
+  "catalog": {
+    "pipes": [
+      {
+        "id": "pe16",
+        "name": "PE 16 mm (PN 4)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "material": "peld",
+        "c": 140.0,
+        "roughMm": 0.003,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.9,
+        "usage": [
+          "lateral"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe20",
+        "name": "PE 20 mm (PN 4)",
+        "nominalMm": 20.0,
+        "idMm": 17.0,
+        "material": "peld",
+        "c": 140.0,
+        "roughMm": 0.003,
+        "ratingM": 40.0,
+        "wallMm": 1.5,
+        "cost": 1.3,
+        "usage": [
+          "lateral"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe25",
+        "name": "PE 25 mm (PN 6)",
+        "nominalMm": 25.0,
+        "idMm": 21.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 2.0,
+        "cost": 2.1,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe32",
+        "name": "PE 32 mm (PN 6)",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 2.4,
+        "cost": 3.2,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe40",
+        "name": "PE 40 mm (PN 6)",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 3.0,
+        "cost": 4.9,
+        "usage": [
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe50",
+        "name": "PE 50 mm (PN 6)",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 3.7,
+        "cost": 7.4,
+        "usage": [
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc35",
+        "name": "PVC DN 35 PN 80",
+        "nominalMm": 35.0,
+        "idMm": 32.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.5,
+        "cost": 4.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc50",
+        "name": "PVC DN 50 PN 80",
+        "nominalMm": 50.0,
+        "idMm": 46.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.8,
+        "cost": 7.2,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc75",
+        "name": "PVC DN 75 PN 80",
+        "nominalMm": 75.0,
+        "idMm": 70.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.2,
+        "cost": 14.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc100",
+        "name": "PVC DN 100 PN 80",
+        "nominalMm": 100.0,
+        "idMm": 96.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.5,
+        "cost": 24.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc125",
+        "name": "PVC DN 125 PN 80",
+        "nominalMm": 125.0,
+        "idMm": 118.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.2,
+        "cost": 36.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc150",
+        "name": "PVC DN 150 PN 80",
+        "nominalMm": 150.0,
+        "idMm": 144.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.8,
+        "cost": 52.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc200",
+        "name": "PVC DN 200 PN 80",
+        "nominalMm": 200.0,
+        "idMm": 191.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 4.9,
+        "cost": 88.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc250",
+        "name": "PVC DN 250 PN 80",
+        "nominalMm": 250.0,
+        "idMm": 239.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 6.2,
+        "cost": 135.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pead110",
+        "name": "PEAD 110 mm PN 10",
+        "nominalMm": 110.0,
+        "idMm": 96.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 100.0,
+        "wallMm": 6.6,
+        "cost": 42.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pead160",
+        "name": "PEAD 160 mm PN 10",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 100.0,
+        "wallMm": 9.5,
+        "cost": 85.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "steel150",
+        "name": "గాల్వనైజ్డ్ స్టీల్ 6\"",
+        "nominalMm": 150.0,
+        "idMm": 154.0,
+        "material": "steel",
+        "c": 120.0,
+        "roughMm": 0.15,
+        "ratingM": 200.0,
+        "wallMm": 4.5,
+        "cost": 160.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": false
+      }
+    ],
+    "outlets": [
+      {
+        "id": "drip_pc",
+        "name": "PC డ్రిప్పర్ (బటన్)",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "pc2",
+            "name": "2 L/h PC",
+            "curve": {
+              "k": 5.184746115538839e-7,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pc4",
+            "name": "4 L/h PC",
+            "curve": {
+              "k": 0.0000010369492231077677,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pc8",
+            "name": "8 L/h PC",
+            "curve": {
+              "k": 0.0000020738984462155354,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.6,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "drip_turb",
+        "name": "టర్బులెంట్ డ్రిప్పర్",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "t2",
+            "name": "2 L/h",
+            "curve": {
+              "k": 1.756820922315766e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t4",
+            "name": "4 L/h",
+            "curve": {
+              "k": 3.513641844631532e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t8",
+            "name": "8 L/h",
+            "curve": {
+              "k": 7.027283689263064e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.35,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "micro",
+        "name": "మైక్రో-స్ప్రింక్లర్ 360°",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "m35",
+            "name": "35 L/h (వ్యాసార్ధం 3.0 m)",
+            "curve": {
+              "k": 0.000002510266983652955,
+              "x": 0.5,
+              "ra": 1.1627579406332142,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m50",
+            "name": "50 L/h (వ్యాసార్ధం 3.5 m)",
+            "curve": {
+              "k": 0.000003586095690932793,
+              "x": 0.5,
+              "ra": 1.35655093073875,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m70",
+            "name": "70 L/h (వ్యాసార్ధం 4.0 m)",
+            "curve": {
+              "k": 0.00000502053396730591,
+              "x": 0.5,
+              "ra": 1.5503439208442855,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m120",
+            "name": "120 L/h (వ్యాసార్ధం 5.0 m)",
+            "curve": {
+              "k": 0.000007453559924999297,
+              "x": 0.5,
+              "ra": 1.7523042159652176,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 2.8,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true
+      },
+      {
+        "id": "micro_pc",
+        "name": "PC మైక్రో-స్ప్రింక్లర్",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "mpc40",
+            "name": "40 L/h PC (వ్యాసార్ధం 3.5 m)",
+            "curve": {
+              "k": 0.000009704047811289222,
+              "x": 0.05,
+              "ra": 1.35655093073875,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 12.0,
+            "maxH": 40.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mpc70",
+            "name": "70 L/h PC (వ్యాసార్ధం 4.5 m)",
+            "curve": {
+              "k": 0.00001698208366975614,
+              "x": 0.05,
+              "ra": 1.7441369109498213,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 12.0,
+            "maxH": 40.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 3.9,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true
+      },
+      {
+        "id": "impact34",
+        "name": "ఇంపాక్ట్ స్ప్రింక్లర్ 3/4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "i3.5",
+            "name": "నాజిల్ 3.5 mm (0.9 m³/h, R 12 m)",
+            "curve": {
+              "k": 0.00004564354645876384,
+              "x": 0.5,
+              "ra": 3.649125559695976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i4.0",
+            "name": "నాజిల్ 4.0 mm (1.2 m³/h, R 13 m)",
+            "curve": {
+              "k": 0.000060858061945018456,
+              "x": 0.5,
+              "ra": 3.9532193563373075,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i4.5",
+            "name": "నాజిల్ 4.5 mm (1.5 m³/h, R 14 m)",
+            "curve": {
+              "k": 0.00007607257743127307,
+              "x": 0.5,
+              "ra": 4.2573131529786385,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i5.0",
+            "name": "నాజిల్ 5.0 mm (1.9 m³/h, R 15 m)",
+            "curve": {
+              "k": 0.00009635859807961254,
+              "x": 0.5,
+              "ra": 4.56140694961997,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 50.0,
+            "defH": 35.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 18.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true
+      },
+      {
+        "id": "gun",
+        "name": "బిగ్ గన్ 1.5\"",
+        "kind": "gun",
+        "nozzles": [
+          {
+            "id": "g14",
+            "name": "నాజిల్ 14 mm (15 m³/h, R 32 m)",
+            "curve": {
+              "k": 0.0006588078458684123,
+              "x": 0.5,
+              "ra": 8.79891214415196,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 70.0,
+            "defH": 40.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "g18",
+            "name": "నాజిల్ 18 mm (25 m³/h, R 40 m)",
+            "curve": {
+              "k": 0.0010352166562499026,
+              "x": 0.5,
+              "ra": 10.554450113538381,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 35.0,
+            "maxH": 80.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 420.0,
+        "inletMm": 40.0,
+        "riser": 1.5,
+        "enabled": true
+      },
+      {
+        "id": "rotor",
+        "name": "టర్ఫ్ రోటర్ 1/2\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r1.5",
+            "name": "#1.5 (0,35 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.000019444444444444442,
+              "x": 0.5,
+              "ra": 2.5930505547084204,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3",
+            "name": "#3 (0,70 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000038888888888888884,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3_180",
+            "name": "#3 180° (0,35 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000019444444444444442,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3_90",
+            "name": "#3 90° (0,18 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000009999999999999999,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 45.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true
+      },
+      {
+        "id": "spray",
+        "name": "పాప్-అప్ స్ప్రే 4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "s12",
+            "name": "12F (0,60 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000037267799624996494,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s12h",
+            "name": "12H (0,30 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000018633899812498247,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s12q",
+            "name": "12Q (0,15 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000009316949906249123,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s15",
+            "name": "15F (0,84 m³/h, R 4,6 m)",
+            "curve": {
+              "k": 0.00005217491947499509,
+              "x": 0.5,
+              "ra": 1.612119878688,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 12.0,
+        "inletMm": 15.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "demand",
+        "name": "డిమాండ్ బిందువు",
+        "kind": "demandPoint",
+        "nozzles": [
+          {
+            "id": "d5",
+            "name": "5 m³/h @ 20 m",
+            "curve": {
+              "k": 0.0013888888888888887,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 80.0,
+            "defH": 20.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          },
+          {
+            "id": "d10",
+            "name": "10 m³/h @ 20 m",
+            "curve": {
+              "k": 0.0027777777777777775,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 80.0,
+            "defH": 20.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          },
+          {
+            "id": "d20",
+            "name": "20 m³/h @ 25 m",
+            "curve": {
+              "k": 0.005555555555555555,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 80.0,
+            "defH": 25.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 50.0,
+        "riser": 0.0,
+        "enabled": true
+      }
+    ],
+    "tapes": [
+      {
+        "id": "tape16_10_30",
+        "name": "డ్రిప్ టేప్ 16 mm, 1.0 L/h @ 0.30 m",
+        "nominalMm": 16.0,
+        "idMm": 15.6,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 1.0499013139145199e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 15.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.45,
+        "enabled": true
+      },
+      {
+        "id": "tape16_16_20",
+        "name": "డ్రిప్ టేప్ 16 mm, 1.6 L/h @ 0.20 m",
+        "nominalMm": 16.0,
+        "idMm": 15.6,
+        "spacing": 0.2,
+        "emitter": {
+          "k": 1.679842102263232e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 15.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.55,
+        "enabled": true
+      },
+      {
+        "id": "drip16_16_50",
+        "name": "డ్రిప్‌లైన్ 16 mm, 1.6 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 1.405456737852613e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 25.0,
+        "inletH": 10.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 30.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.1,
+        "enabled": true
+      },
+      {
+        "id": "drip16_24_75",
+        "name": "డ్రిప్‌లైన్ 16 mm, 2.4 L/h @ 0.75 m",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 2.1081851067789193e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 25.0,
+        "inletH": 10.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 30.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.05,
+        "enabled": true
+      },
+      {
+        "id": "drip16pc_16_50",
+        "name": "PC డ్రిప్‌లైన్ 16 mm, 1.6 L/h @ 0.50 m",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 4.0533815082484875e-7,
+          "x": 0.04,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 15.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.6,
+        "enabled": true
+      },
+      {
+        "id": "drip20pc_23_75",
+        "name": "PC డ్రిప్‌లైన్ 20 mm, 2.3 L/h @ 0.75 m",
+        "nominalMm": 20.0,
+        "idMm": 17.5,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 5.8267359181072e-7,
+          "x": 0.04,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 15.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 2.1,
+        "enabled": true
+      }
+    ],
+    "valves": [
+      {
+        "id": "ev25",
+        "name": "సోలనాయిడ్ వాల్వ్ 1\"",
+        "kind": "control",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 1269582.073997794,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00005555555555555556,
+        "maxQ": 0.0016666666666666666,
+        "cost": 120.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev40",
+        "name": "సోలనాయిడ్ వాల్వ్ 1½\"",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 177579.27975941633,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0002777777777777778,
+        "maxQ": 0.0044444444444444444,
+        "cost": 260.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev50",
+        "name": "సోలనాయిడ్ వాల్వ్ 2\"",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 66124.06635405176,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0005555555555555556,
+        "maxQ": 0.008333333333333333,
+        "cost": 380.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev80",
+        "name": "హైడ్రాలిక్ వాల్వ్ 3\"",
+        "kind": "control",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9080.758624061062,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.001388888888888889,
+        "maxQ": 0.022222222222222223,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev100",
+        "name": "హైడ్రాలిక్ వాల్వ్ 4\"",
+        "kind": "control",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3306.2033177025883,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.002777777777777778,
+        "maxQ": 0.03888888888888889,
+        "cost": 1500.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev150",
+        "name": "హైడ్రాలిక్ వాల్వ్ 6\"",
+        "kind": "control",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 571.442548738719,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.006944444444444444,
+        "maxQ": 0.08333333333333333,
+        "cost": 2800.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "prv50",
+        "name": "పీడన తగ్గింపు వాల్వ్ 2\"",
+        "kind": "prv",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 39674.43981243106,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.008333333333333333,
+        "cost": 650.0,
+        "setting": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "prv80",
+        "name": "పీడన తగ్గింపు వాల్వ్ 3\"",
+        "kind": "prv",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 6053.839082707375,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 1200.0,
+        "setting": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "prv100",
+        "name": "పీడన తగ్గింపు వాల్వ్ 4\"",
+        "kind": "prv",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 2479.6524882769413,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.03888888888888889,
+        "cost": 2100.0,
+        "setting": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "gate50",
+        "name": "గేట్ వాల్వ్ 2\"",
+        "kind": "isolation",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 2644.9626541620705,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.011111111111111112,
+        "cost": 90.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate80",
+        "name": "గేట్ వాల్వ్ 3\"",
+        "kind": "isolation",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 403.58927218049166,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 220.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate100",
+        "name": "గేట్ వాల్వ్ 4\"",
+        "kind": "isolation",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 165.3101658851294,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.041666666666666664,
+        "cost": 420.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate150",
+        "name": "గేట్ వాల్వ్ 6\"",
+        "kind": "isolation",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 32.6538599279268,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.09722222222222222,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check50",
+        "name": "చెక్ వాల్వ్ 2\"",
+        "kind": "check",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 26449.626541620706,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.011111111111111112,
+        "cost": 150.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check80",
+        "name": "చెక్ వాల్వ్ 3\"",
+        "kind": "check",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 4035.8927218049166,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 260.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check100",
+        "name": "చెక్ వాల్వ్ 4\"",
+        "kind": "check",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 1653.1016588512941,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.041666666666666664,
+        "cost": 380.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc50",
+        "name": "డిస్క్ ఫిల్టర్ 2\" (120 మెష్)",
+        "kind": "filter",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 62208.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.006944444444444444,
+        "cost": 850.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc80",
+        "name": "డిస్క్ ఫిల్టర్ 3\" (120 మెష్)",
+        "kind": "filter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 15552.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.013888888888888888,
+        "cost": 1600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc100",
+        "name": "డిస్క్ ఫిల్టర్ 4\" (120 మెష్)",
+        "kind": "filter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 4800.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 2600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen80",
+        "name": "స్క్రీన్ ఫిల్టర్ 3\"",
+        "kind": "filter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9000.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1400.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen100",
+        "name": "స్క్రీన్ ఫిల్టర్ 4\"",
+        "kind": "filter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3240.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.027777777777777776,
+        "cost": 2100.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen150",
+        "name": "స్క్రీన్ ఫిల్టర్ 6\"",
+        "kind": "filter",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 810.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.05555555555555555,
+        "cost": 3800.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter50",
+        "name": "నీటి మీటర్ 2\"",
+        "kind": "meter",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 92573.69289567247,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.005555555555555556,
+        "cost": 700.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter80",
+        "name": "నీటి మీటర్ 3\"",
+        "kind": "meter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 14125.624526317208,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1100.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter100",
+        "name": "నీటి మీటర్ 4\"",
+        "kind": "meter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 5785.85580597953,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.03333333333333333,
+        "cost": 1600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "backflow50",
+        "name": "బ్యాక్‌ఫ్లో ప్రివెంటర్ 2\"",
+        "kind": "backflow",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 105798.50616648282,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.006944444444444444,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "backflow80",
+        "name": "బ్యాక్‌ఫ్లో ప్రివెంటర్ 3\"",
+        "kind": "backflow",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 16143.570887219666,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1500.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air25",
+        "name": "ఎయిర్ రిలీజ్ వాల్వ్ 1\"",
+        "kind": "airRelease",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 90.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air50",
+        "name": "ఎయిర్ రిలీజ్ వాల్వ్ 2\"",
+        "kind": "airRelease",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 180.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air80",
+        "name": "ఎయిర్ రిలీజ్ వాల్వ్ 3\"",
+        "kind": "airRelease",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 320.0,
+        "setting": 0.0,
+        "enabled": true
+      }
+    ],
+    "pumps": [
+      {
+        "id": "pump_c1",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 1 hp (4 m³/h @ 20 m)",
+        "points": [
+          [
+            0.0,
+            27.0
+          ],
+          [
+            0.0005555555555555556,
+            25.0
+          ],
+          [
+            0.0011111111111111111,
+            20.0
+          ],
+          [
+            0.0016666666666666666,
+            12.0
+          ]
+        ],
+        "eff": 0.45,
+        "minQ": 0.0,
+        "maxQ": 0.0016666666666666666,
+        "cost": 900.0,
+        "enabled": true,
+        "kw": 0.75
+      },
+      {
+        "id": "pump_c2",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 2 hp (7 m³/h @ 28 m)",
+        "points": [
+          [
+            0.0,
+            37.0
+          ],
+          [
+            0.0009722222222222222,
+            34.0
+          ],
+          [
+            0.0019444444444444444,
+            28.0
+          ],
+          [
+            0.002777777777777778,
+            18.0
+          ]
+        ],
+        "eff": 0.5,
+        "minQ": 0.0,
+        "maxQ": 0.002777777777777778,
+        "cost": 1500.0,
+        "enabled": true,
+        "kw": 1.5
+      },
+      {
+        "id": "pump_small",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 3 hp (10 m³/h @ 35 m)",
+        "points": [
+          [
+            0.0,
+            45.0
+          ],
+          [
+            0.001388888888888889,
+            41.0
+          ],
+          [
+            0.002777777777777778,
+            35.0
+          ],
+          [
+            0.004166666666666667,
+            25.0
+          ]
+        ],
+        "eff": 0.55,
+        "minQ": 0.0,
+        "maxQ": 0.004166666666666667,
+        "cost": 2200.0,
+        "enabled": true,
+        "kw": 2.2
+      },
+      {
+        "id": "pump_c5",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 5 hp (18 m³/h @ 38 m)",
+        "points": [
+          [
+            0.0,
+            50.0
+          ],
+          [
+            0.0025,
+            46.0
+          ],
+          [
+            0.005,
+            38.0
+          ],
+          [
+            0.0075,
+            26.0
+          ]
+        ],
+        "eff": 0.6,
+        "minQ": 0.0,
+        "maxQ": 0.0075,
+        "cost": 3200.0,
+        "enabled": true,
+        "kw": 3.7
+      },
+      {
+        "id": "pump_c7_5",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 7.5 hp (28 m³/h @ 40 m)",
+        "points": [
+          [
+            0.0,
+            53.0
+          ],
+          [
+            0.0038888888888888888,
+            49.0
+          ],
+          [
+            0.0077777777777777776,
+            40.0
+          ],
+          [
+            0.011666666666666667,
+            27.0
+          ]
+        ],
+        "eff": 0.62,
+        "minQ": 0.0,
+        "maxQ": 0.011666666666666667,
+        "cost": 4500.0,
+        "enabled": true,
+        "kw": 5.5
+      },
+      {
+        "id": "pump_mid",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 10 hp (40 m³/h @ 45 m)",
+        "points": [
+          [
+            0.0,
+            58.0
+          ],
+          [
+            0.005555555555555556,
+            53.0
+          ],
+          [
+            0.011111111111111112,
+            45.0
+          ],
+          [
+            0.016666666666666666,
+            30.0
+          ]
+        ],
+        "eff": 0.65,
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 6500.0,
+        "enabled": true,
+        "kw": 7.5
+      },
+      {
+        "id": "pump_c15",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 15 hp (55 m³/h @ 45 m)",
+        "points": [
+          [
+            0.0,
+            60.0
+          ],
+          [
+            0.0077777777777777776,
+            55.0
+          ],
+          [
+            0.015277777777777777,
+            45.0
+          ],
+          [
+            0.022222222222222223,
+            31.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 9000.0,
+        "enabled": true,
+        "kw": 11.0
+      },
+      {
+        "id": "pump_c20",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 20 hp (70 m³/h @ 48 m)",
+        "points": [
+          [
+            0.0,
+            63.0
+          ],
+          [
+            0.009722222222222222,
+            58.0
+          ],
+          [
+            0.019444444444444445,
+            48.0
+          ],
+          [
+            0.027777777777777776,
+            33.0
+          ]
+        ],
+        "eff": 0.7,
+        "minQ": 0.0,
+        "maxQ": 0.027777777777777776,
+        "cost": 12000.0,
+        "enabled": true,
+        "kw": 15.0
+      },
+      {
+        "id": "pump_big",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 30 hp (120 m³/h @ 55 m)",
+        "points": [
+          [
+            0.0,
+            70.0
+          ],
+          [
+            0.016666666666666666,
+            64.0
+          ],
+          [
+            0.03333333333333333,
+            55.0
+          ],
+          [
+            0.05,
+            38.0
+          ]
+        ],
+        "eff": 0.72,
+        "minQ": 0.0,
+        "maxQ": 0.05,
+        "cost": 18000.0,
+        "enabled": true,
+        "kw": 22.0
+      },
+      {
+        "id": "pump_c50",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 50 hp (160 m³/h @ 55 m)",
+        "points": [
+          [
+            0.0,
+            72.0
+          ],
+          [
+            0.022222222222222223,
+            66.0
+          ],
+          [
+            0.044444444444444446,
+            55.0
+          ],
+          [
+            0.06388888888888888,
+            38.0
+          ]
+        ],
+        "eff": 0.74,
+        "minQ": 0.0,
+        "maxQ": 0.06388888888888888,
+        "cost": 28000.0,
+        "enabled": true,
+        "kw": 37.0
+      },
+      {
+        "id": "pump_c75",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 75 hp (230 m³/h @ 60 m)",
+        "points": [
+          [
+            0.0,
+            78.0
+          ],
+          [
+            0.03194444444444444,
+            72.0
+          ],
+          [
+            0.06388888888888888,
+            60.0
+          ],
+          [
+            0.09166666666666666,
+            42.0
+          ]
+        ],
+        "eff": 0.76,
+        "minQ": 0.0,
+        "maxQ": 0.09166666666666666,
+        "cost": 40000.0,
+        "enabled": true,
+        "kw": 55.0
+      },
+      {
+        "id": "pump_c100",
+        "name": "సెంట్రిఫ్యూగల్ పంపు 100 hp (300 m³/h @ 65 m)",
+        "points": [
+          [
+            0.0,
+            85.0
+          ],
+          [
+            0.041666666666666664,
+            78.0
+          ],
+          [
+            0.08333333333333333,
+            65.0
+          ],
+          [
+            0.11666666666666667,
+            45.0
+          ]
+        ],
+        "eff": 0.78,
+        "minQ": 0.0,
+        "maxQ": 0.11666666666666667,
+        "cost": 55000.0,
+        "enabled": true,
+        "kw": 75.0
+      },
+      {
+        "id": "pump_s3",
+        "name": "సబ్‌మెర్సిబుల్ పంపు 3 hp (8 m³/h @ 55 m)",
+        "points": [
+          [
+            0.0,
+            78.0
+          ],
+          [
+            0.0011111111111111111,
+            68.0
+          ],
+          [
+            0.0022222222222222222,
+            55.0
+          ],
+          [
+            0.003333333333333333,
+            36.0
+          ]
+        ],
+        "eff": 0.55,
+        "minQ": 0.0,
+        "maxQ": 0.003333333333333333,
+        "cost": 2800.0,
+        "enabled": true,
+        "kw": 2.2
+      },
+      {
+        "id": "pump_s5",
+        "name": "సబ్‌మెర్సిబుల్ పంపు 5 hp (12 m³/h @ 65 m)",
+        "points": [
+          [
+            0.0,
+            90.0
+          ],
+          [
+            0.0016666666666666666,
+            80.0
+          ],
+          [
+            0.003333333333333333,
+            65.0
+          ],
+          [
+            0.005,
+            42.0
+          ]
+        ],
+        "eff": 0.58,
+        "minQ": 0.0,
+        "maxQ": 0.005,
+        "cost": 3900.0,
+        "enabled": true,
+        "kw": 3.7
+      },
+      {
+        "id": "pump_sub",
+        "name": "సబ్‌మెర్సిబుల్ పంపు 7.5 hp (25 m³/h @ 60 m)",
+        "points": [
+          [
+            0.0,
+            80.0
+          ],
+          [
+            0.003333333333333333,
+            72.0
+          ],
+          [
+            0.006944444444444444,
+            60.0
+          ],
+          [
+            0.009722222222222222,
+            40.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.009722222222222222,
+        "cost": 5400.0,
+        "enabled": true,
+        "kw": 5.5
+      },
+      {
+        "id": "pump_s15",
+        "name": "సబ్‌మెర్సిబుల్ పంపు 15 hp (40 m³/h @ 65 m)",
+        "points": [
+          [
+            0.0,
+            90.0
+          ],
+          [
+            0.005555555555555556,
+            80.0
+          ],
+          [
+            0.011111111111111112,
+            65.0
+          ],
+          [
+            0.016666666666666666,
+            42.0
+          ]
+        ],
+        "eff": 0.65,
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 9500.0,
+        "enabled": true,
+        "kw": 11.0
+      },
+      {
+        "id": "pump_s25",
+        "name": "సబ్‌మెర్సిబుల్ పంపు 25 hp (55 m³/h @ 80 m)",
+        "points": [
+          [
+            0.0,
+            110.0
+          ],
+          [
+            0.0077777777777777776,
+            98.0
+          ],
+          [
+            0.015277777777777777,
+            80.0
+          ],
+          [
+            0.022222222222222223,
+            52.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 15000.0,
+        "enabled": true,
+        "kw": 18.5
+      }
+    ],
+    "fittings": [
+      {
+        "id": "cpl16",
+        "name": "కప్లర్ 16 mm",
+        "kind": "coupler",
+        "sizeMm": 16.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_16",
+        "name": "ఎల్బో 90° 16 mm",
+        "kind": "elbow90",
+        "sizeMm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_16",
+        "name": "ఎల్బో 45° 16 mm",
+        "kind": "elbow45",
+        "sizeMm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "tee16",
+        "name": "టీ 16 mm",
+        "kind": "tee",
+        "sizeMm": 16.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "cross16",
+        "name": "క్రాస్ 16 mm",
+        "kind": "cross",
+        "sizeMm": 16.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cap16",
+        "name": "ఎండ్ క్యాప్ 16 mm",
+        "kind": "endCap",
+        "sizeMm": 16.0,
+        "cost": 2.0,
+        "enabled": true
+      },
+      {
+        "id": "adp16",
+        "name": "థ్రెడెడ్ అడాప్టర్ 16 mm",
+        "kind": "adapter",
+        "sizeMm": 16.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl20",
+        "name": "కప్లర్ 20 mm",
+        "kind": "coupler",
+        "sizeMm": 20.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_20",
+        "name": "ఎల్బో 90° 20 mm",
+        "kind": "elbow90",
+        "sizeMm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_20",
+        "name": "ఎల్బో 45° 20 mm",
+        "kind": "elbow45",
+        "sizeMm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "tee20",
+        "name": "టీ 20 mm",
+        "kind": "tee",
+        "sizeMm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "cross20",
+        "name": "క్రాస్ 20 mm",
+        "kind": "cross",
+        "sizeMm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cap20",
+        "name": "ఎండ్ క్యాప్ 20 mm",
+        "kind": "endCap",
+        "sizeMm": 20.0,
+        "cost": 2.0,
+        "enabled": true
+      },
+      {
+        "id": "adp20",
+        "name": "థ్రెడెడ్ అడాప్టర్ 20 mm",
+        "kind": "adapter",
+        "sizeMm": 20.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "red20x16",
+        "name": "రెడ్యూసర్ 20 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 20.0,
+        "size2Mm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer20x16",
+        "name": "రెడ్యూసింగ్ టీ 20 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 20.0,
+        "size2Mm": 16.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl25",
+        "name": "కప్లర్ 25 mm",
+        "kind": "coupler",
+        "sizeMm": 25.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_25",
+        "name": "ఎల్బో 90° 25 mm",
+        "kind": "elbow90",
+        "sizeMm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_25",
+        "name": "ఎల్బో 45° 25 mm",
+        "kind": "elbow45",
+        "sizeMm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "tee25",
+        "name": "టీ 25 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cross25",
+        "name": "క్రాస్ 25 mm",
+        "kind": "cross",
+        "sizeMm": 25.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cap25",
+        "name": "ఎండ్ క్యాప్ 25 mm",
+        "kind": "endCap",
+        "sizeMm": 25.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp25",
+        "name": "థ్రెడెడ్ అడాప్టర్ 25 mm",
+        "kind": "adapter",
+        "sizeMm": 25.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "red25x16",
+        "name": "రెడ్యూసర్ 25 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 25.0,
+        "size2Mm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer25x16",
+        "name": "రెడ్యూసింగ్ టీ 25 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "size2Mm": 16.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "red25x20",
+        "name": "రెడ్యూసర్ 25 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 25.0,
+        "size2Mm": 20.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer25x20",
+        "name": "రెడ్యూసింగ్ టీ 25 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "size2Mm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl32",
+        "name": "కప్లర్ 32 mm",
+        "kind": "coupler",
+        "sizeMm": 32.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_32",
+        "name": "ఎల్బో 90° 32 mm",
+        "kind": "elbow90",
+        "sizeMm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_32",
+        "name": "ఎల్బో 45° 32 mm",
+        "kind": "elbow45",
+        "sizeMm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "tee32",
+        "name": "టీ 32 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cross32",
+        "name": "క్రాస్ 32 mm",
+        "kind": "cross",
+        "sizeMm": 32.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cap32",
+        "name": "ఎండ్ క్యాప్ 32 mm",
+        "kind": "endCap",
+        "sizeMm": 32.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp32",
+        "name": "థ్రెడెడ్ అడాప్టర్ 32 mm",
+        "kind": "adapter",
+        "sizeMm": 32.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x16",
+        "name": "రెడ్యూసర్ 32 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 16.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x16",
+        "name": "రెడ్యూసింగ్ టీ 32 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 16.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x20",
+        "name": "రెడ్యూసర్ 32 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x20",
+        "name": "రెడ్యూసింగ్ టీ 32 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 20.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x25",
+        "name": "రెడ్యూసర్ 32 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x25",
+        "name": "రెడ్యూసింగ్ టీ 32 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 25.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl35",
+        "name": "కప్లర్ 35 mm",
+        "kind": "coupler",
+        "sizeMm": 35.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_35",
+        "name": "ఎల్బో 90° 35 mm",
+        "kind": "elbow90",
+        "sizeMm": 35.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_35",
+        "name": "ఎల్బో 45° 35 mm",
+        "kind": "elbow45",
+        "sizeMm": 35.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "tee35",
+        "name": "టీ 35 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "cross35",
+        "name": "క్రాస్ 35 mm",
+        "kind": "cross",
+        "sizeMm": 35.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cap35",
+        "name": "ఎండ్ క్యాప్ 35 mm",
+        "kind": "endCap",
+        "sizeMm": 35.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp35",
+        "name": "థ్రెడెడ్ అడాప్టర్ 35 mm",
+        "kind": "adapter",
+        "sizeMm": 35.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x16",
+        "name": "రెడ్యూసర్ 35 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 16.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x16",
+        "name": "రెడ్యూసింగ్ టీ 35 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 16.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x20",
+        "name": "రెడ్యూసర్ 35 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x20",
+        "name": "రెడ్యూసింగ్ టీ 35 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 20.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x25",
+        "name": "రెడ్యూసర్ 35 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 25.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x25",
+        "name": "రెడ్యూసింగ్ టీ 35 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 25.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x32",
+        "name": "రెడ్యూసర్ 35 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x32",
+        "name": "రెడ్యూసింగ్ టీ 35 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 32.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl40",
+        "name": "కప్లర్ 40 mm",
+        "kind": "coupler",
+        "sizeMm": 40.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_40",
+        "name": "ఎల్బో 90° 40 mm",
+        "kind": "elbow90",
+        "sizeMm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_40",
+        "name": "ఎల్బో 45° 40 mm",
+        "kind": "elbow45",
+        "sizeMm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "tee40",
+        "name": "టీ 40 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cross40",
+        "name": "క్రాస్ 40 mm",
+        "kind": "cross",
+        "sizeMm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "cap40",
+        "name": "ఎండ్ క్యాప్ 40 mm",
+        "kind": "endCap",
+        "sizeMm": 40.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "adp40",
+        "name": "థ్రెడెడ్ అడాప్టర్ 40 mm",
+        "kind": "adapter",
+        "sizeMm": 40.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x16",
+        "name": "రెడ్యూసర్ 40 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 16.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x16",
+        "name": "రెడ్యూసింగ్ టీ 40 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 16.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x20",
+        "name": "రెడ్యూసర్ 40 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x20",
+        "name": "రెడ్యూసింగ్ టీ 40 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 20.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x25",
+        "name": "రెడ్యూసర్ 40 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 25.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x25",
+        "name": "రెడ్యూసింగ్ టీ 40 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 25.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x32",
+        "name": "రెడ్యూసర్ 40 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x32",
+        "name": "రెడ్యూసింగ్ టీ 40 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 32.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x35",
+        "name": "రెడ్యూసర్ 40 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 35.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x35",
+        "name": "రెడ్యూసింగ్ టీ 40 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 35.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl50",
+        "name": "కప్లర్ 50 mm",
+        "kind": "coupler",
+        "sizeMm": 50.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_50",
+        "name": "ఎల్బో 90° 50 mm",
+        "kind": "elbow90",
+        "sizeMm": 50.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_50",
+        "name": "ఎల్బో 45° 50 mm",
+        "kind": "elbow45",
+        "sizeMm": 50.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "tee50",
+        "name": "టీ 50 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cross50",
+        "name": "క్రాస్ 50 mm",
+        "kind": "cross",
+        "sizeMm": 50.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "cap50",
+        "name": "ఎండ్ క్యాప్ 50 mm",
+        "kind": "endCap",
+        "sizeMm": 50.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "adp50",
+        "name": "థ్రెడెడ్ అడాప్టర్ 50 mm",
+        "kind": "adapter",
+        "sizeMm": 50.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x16",
+        "name": "రెడ్యూసర్ 50 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 16.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x16",
+        "name": "రెడ్యూసింగ్ టీ 50 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 16.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x20",
+        "name": "రెడ్యూసర్ 50 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x20",
+        "name": "రెడ్యూసింగ్ టీ 50 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 20.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x25",
+        "name": "రెడ్యూసర్ 50 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 25.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x25",
+        "name": "రెడ్యూసింగ్ టీ 50 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 25.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x32",
+        "name": "రెడ్యూసర్ 50 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 32.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x32",
+        "name": "రెడ్యూసింగ్ టీ 50 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 32.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x35",
+        "name": "రెడ్యూసర్ 50 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 35.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x35",
+        "name": "రెడ్యూసింగ్ టీ 50 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 35.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x40",
+        "name": "రెడ్యూసర్ 50 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x40",
+        "name": "రెడ్యూసింగ్ టీ 50 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl75",
+        "name": "కప్లర్ 75 mm",
+        "kind": "coupler",
+        "sizeMm": 75.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_75",
+        "name": "ఎల్బో 90° 75 mm",
+        "kind": "elbow90",
+        "sizeMm": 75.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_75",
+        "name": "ఎల్బో 45° 75 mm",
+        "kind": "elbow45",
+        "sizeMm": 75.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "tee75",
+        "name": "టీ 75 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "cross75",
+        "name": "క్రాస్ 75 mm",
+        "kind": "cross",
+        "sizeMm": 75.0,
+        "cost": 23.0,
+        "enabled": true
+      },
+      {
+        "id": "cap75",
+        "name": "ఎండ్ క్యాప్ 75 mm",
+        "kind": "endCap",
+        "sizeMm": 75.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "adp75",
+        "name": "థ్రెడెడ్ అడాప్టర్ 75 mm",
+        "kind": "adapter",
+        "sizeMm": 75.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x16",
+        "name": "రెడ్యూసర్ 75 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 16.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x16",
+        "name": "రెడ్యూసింగ్ టీ 75 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 16.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x20",
+        "name": "రెడ్యూసర్ 75 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 20.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x20",
+        "name": "రెడ్యూసింగ్ టీ 75 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 20.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x25",
+        "name": "రెడ్యూసర్ 75 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 25.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x25",
+        "name": "రెడ్యూసింగ్ టీ 75 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 25.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x32",
+        "name": "రెడ్యూసర్ 75 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 32.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x32",
+        "name": "రెడ్యూసింగ్ టీ 75 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 32.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x35",
+        "name": "రెడ్యూసర్ 75 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 35.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x35",
+        "name": "రెడ్యూసింగ్ టీ 75 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 35.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x40",
+        "name": "రెడ్యూసర్ 75 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 40.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x40",
+        "name": "రెడ్యూసింగ్ టీ 75 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 40.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x50",
+        "name": "రెడ్యూసర్ 75 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 50.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x50",
+        "name": "రెడ్యూసింగ్ టీ 75 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 50.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl100",
+        "name": "కప్లర్ 100 mm",
+        "kind": "coupler",
+        "sizeMm": 100.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_100",
+        "name": "ఎల్బో 90° 100 mm",
+        "kind": "elbow90",
+        "sizeMm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_100",
+        "name": "ఎల్బో 45° 100 mm",
+        "kind": "elbow45",
+        "sizeMm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "tee100",
+        "name": "టీ 100 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "cost": 22.0,
+        "enabled": true
+      },
+      {
+        "id": "cross100",
+        "name": "క్రాస్ 100 mm",
+        "kind": "cross",
+        "sizeMm": 100.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "cap100",
+        "name": "ఎండ్ క్యాప్ 100 mm",
+        "kind": "endCap",
+        "sizeMm": 100.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "adp100",
+        "name": "థ్రెడెడ్ అడాప్టర్ 100 mm",
+        "kind": "adapter",
+        "sizeMm": 100.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x16",
+        "name": "రెడ్యూసర్ 100 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 16.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x20",
+        "name": "రెడ్యూసర్ 100 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 20.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x20",
+        "name": "రెడ్యూసింగ్ టీ 100 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 20.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x25",
+        "name": "రెడ్యూసర్ 100 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 25.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x25",
+        "name": "రెడ్యూసింగ్ టీ 100 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 25.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x32",
+        "name": "రెడ్యూసర్ 100 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 32.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x32",
+        "name": "రెడ్యూసింగ్ టీ 100 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 32.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x35",
+        "name": "రెడ్యూసర్ 100 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 35.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x35",
+        "name": "రెడ్యూసింగ్ టీ 100 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 35.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x40",
+        "name": "రెడ్యూసర్ 100 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x40",
+        "name": "రెడ్యూసింగ్ టీ 100 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 40.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x50",
+        "name": "రెడ్యూసర్ 100 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 50.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x50",
+        "name": "రెడ్యూసింగ్ టీ 100 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 50.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x75",
+        "name": "రెడ్యూసర్ 100 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 75.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x75",
+        "name": "రెడ్యూసింగ్ టీ 100 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 75.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl110",
+        "name": "కప్లర్ 110 mm",
+        "kind": "coupler",
+        "sizeMm": 110.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_110",
+        "name": "ఎల్బో 90° 110 mm",
+        "kind": "elbow90",
+        "sizeMm": 110.0,
+        "cost": 18.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_110",
+        "name": "ఎల్బో 45° 110 mm",
+        "kind": "elbow45",
+        "sizeMm": 110.0,
+        "cost": 18.0,
+        "enabled": true
+      },
+      {
+        "id": "tee110",
+        "name": "టీ 110 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "cross110",
+        "name": "క్రాస్ 110 mm",
+        "kind": "cross",
+        "sizeMm": 110.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "cap110",
+        "name": "ఎండ్ క్యాప్ 110 mm",
+        "kind": "endCap",
+        "sizeMm": 110.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "adp110",
+        "name": "థ్రెడెడ్ అడాప్టర్ 110 mm",
+        "kind": "adapter",
+        "sizeMm": 110.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x16",
+        "name": "రెడ్యూసర్ 110 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 16.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x20",
+        "name": "రెడ్యూసర్ 110 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 20.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x20",
+        "name": "రెడ్యూసింగ్ టీ 110 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 20.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x25",
+        "name": "రెడ్యూసర్ 110 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 25.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x25",
+        "name": "రెడ్యూసింగ్ టీ 110 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 25.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x32",
+        "name": "రెడ్యూసర్ 110 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 32.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x32",
+        "name": "రెడ్యూసింగ్ టీ 110 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 32.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x35",
+        "name": "రెడ్యూసర్ 110 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 35.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x35",
+        "name": "రెడ్యూసింగ్ టీ 110 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 35.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x40",
+        "name": "రెడ్యూసర్ 110 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 40.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x40",
+        "name": "రెడ్యూసింగ్ టీ 110 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 40.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x50",
+        "name": "రెడ్యూసర్ 110 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 50.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x50",
+        "name": "రెడ్యూసింగ్ టీ 110 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 50.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x75",
+        "name": "రెడ్యూసర్ 110 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 75.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x75",
+        "name": "రెడ్యూసింగ్ టీ 110 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 75.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x100",
+        "name": "రెడ్యూసర్ 110 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 100.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x100",
+        "name": "రెడ్యూసింగ్ టీ 110 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 100.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl125",
+        "name": "కప్లర్ 125 mm",
+        "kind": "coupler",
+        "sizeMm": 125.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_125",
+        "name": "ఎల్బో 90° 125 mm",
+        "kind": "elbow90",
+        "sizeMm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_125",
+        "name": "ఎల్బో 45° 125 mm",
+        "kind": "elbow45",
+        "sizeMm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "tee125",
+        "name": "టీ 125 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "cross125",
+        "name": "క్రాస్ 125 mm",
+        "kind": "cross",
+        "sizeMm": 125.0,
+        "cost": 37.0,
+        "enabled": true
+      },
+      {
+        "id": "cap125",
+        "name": "ఎండ్ క్యాప్ 125 mm",
+        "kind": "endCap",
+        "sizeMm": 125.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "adp125",
+        "name": "థ్రెడెడ్ అడాప్టర్ 125 mm",
+        "kind": "adapter",
+        "sizeMm": 125.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x16",
+        "name": "రెడ్యూసర్ 125 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 16.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x20",
+        "name": "రెడ్యూసర్ 125 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 20.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x20",
+        "name": "రెడ్యూసింగ్ టీ 125 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 20.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x25",
+        "name": "రెడ్యూసర్ 125 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 25.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x25",
+        "name": "రెడ్యూసింగ్ టీ 125 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 25.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x32",
+        "name": "రెడ్యూసర్ 125 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 32.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x32",
+        "name": "రెడ్యూసింగ్ టీ 125 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 32.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x35",
+        "name": "రెడ్యూసర్ 125 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 35.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x35",
+        "name": "రెడ్యూసింగ్ టీ 125 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 35.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x40",
+        "name": "రెడ్యూసర్ 125 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 40.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x40",
+        "name": "రెడ్యూసింగ్ టీ 125 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 40.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x50",
+        "name": "రెడ్యూసర్ 125 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 50.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x50",
+        "name": "రెడ్యూసింగ్ టీ 125 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 50.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x75",
+        "name": "రెడ్యూసర్ 125 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 75.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x75",
+        "name": "రెడ్యూసింగ్ టీ 125 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 75.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x100",
+        "name": "రెడ్యూసర్ 125 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x100",
+        "name": "రెడ్యూసింగ్ టీ 125 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 100.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x110",
+        "name": "రెడ్యూసర్ 125 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 110.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x110",
+        "name": "రెడ్యూసింగ్ టీ 125 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 110.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl150",
+        "name": "కప్లర్ 150 mm",
+        "kind": "coupler",
+        "sizeMm": 150.0,
+        "cost": 16.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_150",
+        "name": "ఎల్బో 90° 150 mm",
+        "kind": "elbow90",
+        "sizeMm": 150.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_150",
+        "name": "ఎల్బో 45° 150 mm",
+        "kind": "elbow45",
+        "sizeMm": 150.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "tee150",
+        "name": "టీ 150 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "cross150",
+        "name": "క్రాస్ 150 mm",
+        "kind": "cross",
+        "sizeMm": 150.0,
+        "cost": 44.0,
+        "enabled": true
+      },
+      {
+        "id": "cap150",
+        "name": "ఎండ్ క్యాప్ 150 mm",
+        "kind": "endCap",
+        "sizeMm": 150.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "adp150",
+        "name": "థ్రెడెడ్ అడాప్టర్ 150 mm",
+        "kind": "adapter",
+        "sizeMm": 150.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x16",
+        "name": "రెడ్యూసర్ 150 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 16.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x20",
+        "name": "రెడ్యూసర్ 150 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 20.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x20",
+        "name": "రెడ్యూసింగ్ టీ 150 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 20.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x25",
+        "name": "రెడ్యూసర్ 150 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 25.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x25",
+        "name": "రెడ్యూసింగ్ టీ 150 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 25.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x32",
+        "name": "రెడ్యూసర్ 150 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 32.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x32",
+        "name": "రెడ్యూసింగ్ టీ 150 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 32.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x35",
+        "name": "రెడ్యూసర్ 150 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 35.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x35",
+        "name": "రెడ్యూసింగ్ టీ 150 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 35.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x40",
+        "name": "రెడ్యూసర్ 150 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 40.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x40",
+        "name": "రెడ్యూసింగ్ టీ 150 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 40.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x50",
+        "name": "రెడ్యూసర్ 150 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 50.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x50",
+        "name": "రెడ్యూసింగ్ టీ 150 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 50.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x75",
+        "name": "రెడ్యూసర్ 150 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 75.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x75",
+        "name": "రెడ్యూసింగ్ టీ 150 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 75.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x100",
+        "name": "రెడ్యూసర్ 150 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 100.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x100",
+        "name": "రెడ్యూసింగ్ టీ 150 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 100.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x110",
+        "name": "రెడ్యూసర్ 150 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 110.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x110",
+        "name": "రెడ్యూసింగ్ టీ 150 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 110.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x125",
+        "name": "రెడ్యూసర్ 150 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x125",
+        "name": "రెడ్యూసింగ్ టీ 150 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 125.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl160",
+        "name": "కప్లర్ 160 mm",
+        "kind": "coupler",
+        "sizeMm": 160.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_160",
+        "name": "ఎల్బో 90° 160 mm",
+        "kind": "elbow90",
+        "sizeMm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_160",
+        "name": "ఎల్బో 45° 160 mm",
+        "kind": "elbow45",
+        "sizeMm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "tee160",
+        "name": "టీ 160 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "cost": 34.0,
+        "enabled": true
+      },
+      {
+        "id": "cross160",
+        "name": "క్రాస్ 160 mm",
+        "kind": "cross",
+        "sizeMm": 160.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "cap160",
+        "name": "ఎండ్ క్యాప్ 160 mm",
+        "kind": "endCap",
+        "sizeMm": 160.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "adp160",
+        "name": "థ్రెడెడ్ అడాప్టర్ 160 mm",
+        "kind": "adapter",
+        "sizeMm": 160.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x16",
+        "name": "రెడ్యూసర్ 160 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 16.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x20",
+        "name": "రెడ్యూసర్ 160 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 20.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x20",
+        "name": "రెడ్యూసింగ్ టీ 160 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 20.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x25",
+        "name": "రెడ్యూసర్ 160 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 25.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x25",
+        "name": "రెడ్యూసింగ్ టీ 160 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 25.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x32",
+        "name": "రెడ్యూసర్ 160 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 32.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x32",
+        "name": "రెడ్యూసింగ్ టీ 160 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 32.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x35",
+        "name": "రెడ్యూసర్ 160 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 35.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x35",
+        "name": "రెడ్యూసింగ్ టీ 160 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 35.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x40",
+        "name": "రెడ్యూసర్ 160 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 40.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x40",
+        "name": "రెడ్యూసింగ్ టీ 160 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 40.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x50",
+        "name": "రెడ్యూసర్ 160 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 50.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x50",
+        "name": "రెడ్యూసింగ్ టీ 160 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 50.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x75",
+        "name": "రెడ్యూసర్ 160 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 75.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x75",
+        "name": "రెడ్యూసింగ్ టీ 160 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 75.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x100",
+        "name": "రెడ్యూసర్ 160 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 100.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x100",
+        "name": "రెడ్యూసింగ్ టీ 160 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 100.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x110",
+        "name": "రెడ్యూసర్ 160 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 110.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x110",
+        "name": "రెడ్యూసింగ్ టీ 160 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 110.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x125",
+        "name": "రెడ్యూసర్ 160 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 125.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x125",
+        "name": "రెడ్యూసింగ్ టీ 160 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 125.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x150",
+        "name": "రెడ్యూసర్ 160 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 150.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x150",
+        "name": "రెడ్యూసింగ్ టీ 160 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 150.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl200",
+        "name": "కప్లర్ 200 mm",
+        "kind": "coupler",
+        "sizeMm": 200.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_200",
+        "name": "ఎల్బో 90° 200 mm",
+        "kind": "elbow90",
+        "sizeMm": 200.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_200",
+        "name": "ఎల్బో 45° 200 mm",
+        "kind": "elbow45",
+        "sizeMm": 200.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "tee200",
+        "name": "టీ 200 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "cost": 42.0,
+        "enabled": true
+      },
+      {
+        "id": "cross200",
+        "name": "క్రాస్ 200 mm",
+        "kind": "cross",
+        "sizeMm": 200.0,
+        "cost": 58.0,
+        "enabled": true
+      },
+      {
+        "id": "cap200",
+        "name": "ఎండ్ క్యాప్ 200 mm",
+        "kind": "endCap",
+        "sizeMm": 200.0,
+        "cost": 16.0,
+        "enabled": true
+      },
+      {
+        "id": "adp200",
+        "name": "థ్రెడెడ్ అడాప్టర్ 200 mm",
+        "kind": "adapter",
+        "sizeMm": 200.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x16",
+        "name": "రెడ్యూసర్ 200 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 16.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x20",
+        "name": "రెడ్యూసర్ 200 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 20.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x20",
+        "name": "రెడ్యూసింగ్ టీ 200 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 20.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x25",
+        "name": "రెడ్యూసర్ 200 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 25.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x25",
+        "name": "రెడ్యూసింగ్ టీ 200 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 25.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x32",
+        "name": "రెడ్యూసర్ 200 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 32.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x32",
+        "name": "రెడ్యూసింగ్ టీ 200 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 32.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x35",
+        "name": "రెడ్యూసర్ 200 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 35.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x35",
+        "name": "రెడ్యూసింగ్ టీ 200 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 35.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x40",
+        "name": "రెడ్యూసర్ 200 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 40.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x40",
+        "name": "రెడ్యూసింగ్ టీ 200 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 40.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x50",
+        "name": "రెడ్యూసర్ 200 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 50.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x50",
+        "name": "రెడ్యూసింగ్ టీ 200 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 50.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x75",
+        "name": "రెడ్యూసర్ 200 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 75.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x75",
+        "name": "రెడ్యూసింగ్ టీ 200 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 75.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x100",
+        "name": "రెడ్యూసర్ 200 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 100.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x100",
+        "name": "రెడ్యూసింగ్ టీ 200 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 100.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x110",
+        "name": "రెడ్యూసర్ 200 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 110.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x110",
+        "name": "రెడ్యూసింగ్ టీ 200 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 110.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x125",
+        "name": "రెడ్యూసర్ 200 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 125.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x125",
+        "name": "రెడ్యూసింగ్ టీ 200 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 125.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x150",
+        "name": "రెడ్యూసర్ 200 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 150.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x150",
+        "name": "రెడ్యూసింగ్ టీ 200 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 150.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x160",
+        "name": "రెడ్యూసర్ 200 × 160 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x160",
+        "name": "రెడ్యూసింగ్ టీ 200 × 160 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 160.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl250",
+        "name": "కప్లర్ 250 mm",
+        "kind": "coupler",
+        "sizeMm": 250.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_250",
+        "name": "ఎల్బో 90° 250 mm",
+        "kind": "elbow90",
+        "sizeMm": 250.0,
+        "cost": 39.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_250",
+        "name": "ఎల్బో 45° 250 mm",
+        "kind": "elbow45",
+        "sizeMm": 250.0,
+        "cost": 39.0,
+        "enabled": true
+      },
+      {
+        "id": "tee250",
+        "name": "టీ 250 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "cost": 52.0,
+        "enabled": true
+      },
+      {
+        "id": "cross250",
+        "name": "క్రాస్ 250 mm",
+        "kind": "cross",
+        "sizeMm": 250.0,
+        "cost": 72.0,
+        "enabled": true
+      },
+      {
+        "id": "cap250",
+        "name": "ఎండ్ క్యాప్ 250 mm",
+        "kind": "endCap",
+        "sizeMm": 250.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "adp250",
+        "name": "థ్రెడెడ్ అడాప్టర్ 250 mm",
+        "kind": "adapter",
+        "sizeMm": 250.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x16",
+        "name": "రెడ్యూసర్ 250 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 16.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x20",
+        "name": "రెడ్యూసర్ 250 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 20.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x20",
+        "name": "రెడ్యూసింగ్ టీ 250 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 20.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x25",
+        "name": "రెడ్యూసర్ 250 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 25.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x25",
+        "name": "రెడ్యూసింగ్ టీ 250 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 25.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x32",
+        "name": "రెడ్యూసర్ 250 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 32.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x32",
+        "name": "రెడ్యూసింగ్ టీ 250 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 32.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x35",
+        "name": "రెడ్యూసర్ 250 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 35.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x35",
+        "name": "రెడ్యూసింగ్ టీ 250 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 35.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x40",
+        "name": "రెడ్యూసర్ 250 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 40.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x40",
+        "name": "రెడ్యూసింగ్ టీ 250 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 40.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x50",
+        "name": "రెడ్యూసర్ 250 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 50.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x50",
+        "name": "రెడ్యూసింగ్ టీ 250 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 50.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x75",
+        "name": "రెడ్యూసర్ 250 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 75.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x75",
+        "name": "రెడ్యూసింగ్ టీ 250 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 75.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x100",
+        "name": "రెడ్యూసర్ 250 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 100.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x100",
+        "name": "రెడ్యూసింగ్ టీ 250 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 100.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x110",
+        "name": "రెడ్యూసర్ 250 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 110.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x110",
+        "name": "రెడ్యూసింగ్ టీ 250 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 110.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x125",
+        "name": "రెడ్యూసర్ 250 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 125.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x125",
+        "name": "రెడ్యూసింగ్ టీ 250 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 125.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x150",
+        "name": "రెడ్యూసర్ 250 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 150.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x150",
+        "name": "రెడ్యూసింగ్ టీ 250 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 150.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x160",
+        "name": "రెడ్యూసర్ 250 × 160 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 160.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x160",
+        "name": "రెడ్యూసింగ్ టీ 250 × 160 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 160.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x200",
+        "name": "రెడ్యూసర్ 250 × 200 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 200.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x200",
+        "name": "రెడ్యూసింగ్ టీ 250 × 200 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 200.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "to16",
+        "name": "లేటరల్ టేక్-ఆఫ్ 16 mm",
+        "kind": "takeOff",
+        "sizeMm": 16.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te16",
+        "name": "లైన్ చివర 16 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 16.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to20",
+        "name": "లేటరల్ టేక్-ఆఫ్ 20 mm",
+        "kind": "takeOff",
+        "sizeMm": 20.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te20",
+        "name": "లైన్ చివర 20 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 20.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to25",
+        "name": "లేటరల్ టేక్-ఆఫ్ 25 mm",
+        "kind": "takeOff",
+        "sizeMm": 25.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te25",
+        "name": "లైన్ చివర 25 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 25.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to32",
+        "name": "లేటరల్ టేక్-ఆఫ్ 32 mm",
+        "kind": "takeOff",
+        "sizeMm": 32.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te32",
+        "name": "లైన్ చివర 32 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 32.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to35",
+        "name": "లేటరల్ టేక్-ఆఫ్ 35 mm",
+        "kind": "takeOff",
+        "sizeMm": 35.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te35",
+        "name": "లైన్ చివర 35 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 35.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to40",
+        "name": "లేటరల్ టేక్-ఆఫ్ 40 mm",
+        "kind": "takeOff",
+        "sizeMm": 40.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te40",
+        "name": "లైన్ చివర 40 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 40.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to50",
+        "name": "లేటరల్ టేక్-ఆఫ్ 50 mm",
+        "kind": "takeOff",
+        "sizeMm": 50.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te50",
+        "name": "లైన్ చివర 50 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 50.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "riser_micro",
+        "name": "మైక్రో-స్ప్రింక్లర్ స్టేక్/ట్యూబ్",
+        "kind": "riser",
+        "sizeMm": 0.0,
+        "cost": 1.1,
+        "enabled": true
+      },
+      {
+        "id": "riser20",
+        "name": "రైజర్ 20 mm",
+        "kind": "riser",
+        "sizeMm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "riser25",
+        "name": "రైజర్ 25 mm",
+        "kind": "riser",
+        "sizeMm": 25.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "riser40",
+        "name": "రైజర్ 40 mm",
+        "kind": "riser",
+        "sizeMm": 40.0,
+        "cost": 18.0,
+        "enabled": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "name": "IMAGES",
+      "color": 4294967295,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DRAWING",
+      "color": 4289773253,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "HATCHES",
+      "color": 4286091420,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SYMBOLS",
+      "color": 4289773253,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "TEXT",
+      "color": 4293718001,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DIMENSIONS",
+      "color": 4287669422,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTOURS",
+      "color": 4287458915,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SPOT_HEIGHTS",
+      "color": 4288776319,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DEM",
+      "color": 4286483095,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "ZONE_PIPES",
+      "color": 4282557941,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "MAINLINE_PIPES",
+      "color": 4280191205,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SPRAYLINES",
+      "color": 4280731354,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "TAPES",
+      "color": 4284922730,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "OUTLETS",
+      "color": 4280923894,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WETTED_RADII",
+      "color": 1428797174,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTROL_VALVES",
+      "color": 4294944550,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WATER_SUPPLY",
+      "color": 4286470082,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "PUMPS",
+      "color": 4293874512,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "MISC_HYDRAULIC",
+      "color": 4294953512,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "JUNCTIONS",
+      "color": 4286091420,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "PIVOTS",
+      "color": 4283283116,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "AREAS",
+      "color": 867095937,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "LABELS",
+      "color": 4291811548,
+      "visible": true,
+      "locked": false
+    }
+  ],
+  "entities": [
+    {
+      "type": "spotHeight",
+      "id": "e1",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        0.0,
+        0.0
+      ],
+      "z": 100.0
+    },
+    {
+      "type": "spotHeight",
+      "id": "e2",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        105.0,
+        0.0
+      ],
+      "z": 99.5
+    },
+    {
+      "type": "spotHeight",
+      "id": "e3",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        0.0,
+        68.0
+      ],
+      "z": 100.1
+    },
+    {
+      "type": "spotHeight",
+      "id": "e4",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        105.0,
+        68.0
+      ],
+      "z": 99.6
+    },
+    {
+      "type": "spotHeight",
+      "id": "e5",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        -6.0,
+        -24.0
+      ],
+      "z": 100.2
+    },
+    {
+      "type": "polyline",
+      "id": "e6",
+      "layer": "DRAWING",
+      "name": "మైదానం",
+      "pts": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          105.0,
+          0.0
+        ],
+        [
+          105.0,
+          68.0
+        ],
+        [
+          0.0,
+          68.0
+        ]
+      ],
+      "closed": true
+    },
+    {
+      "type": "line",
+      "id": "e7",
+      "layer": "DRAWING",
+      "a": [
+        52.5,
+        0.0
+      ],
+      "b": [
+        52.5,
+        68.0
+      ]
+    },
+    {
+      "type": "circle",
+      "id": "e8",
+      "layer": "DRAWING",
+      "p": [
+        52.5,
+        34.0
+      ],
+      "r": 9.15
+    },
+    {
+      "type": "polyline",
+      "id": "e9",
+      "layer": "DRAWING",
+      "pts": [
+        [
+          0.0,
+          13.85
+        ],
+        [
+          16.5,
+          13.85
+        ],
+        [
+          16.5,
+          54.15
+        ],
+        [
+          0.0,
+          54.15
+        ]
+      ],
+      "closed": false
+    },
+    {
+      "type": "polyline",
+      "id": "e10",
+      "layer": "DRAWING",
+      "pts": [
+        [
+          105.0,
+          13.85
+        ],
+        [
+          88.5,
+          13.85
+        ],
+        [
+          88.5,
+          54.15
+        ],
+        [
+          105.0,
+          54.15
+        ]
+      ],
+      "closed": false
+    },
+    {
+      "type": "polyline",
+      "id": "e11",
+      "layer": "DRAWING",
+      "pts": [
+        [
+          0.0,
+          24.84
+        ],
+        [
+          5.5,
+          24.84
+        ],
+        [
+          5.5,
+          43.16
+        ],
+        [
+          0.0,
+          43.16
+        ]
+      ],
+      "closed": false
+    },
+    {
+      "type": "polyline",
+      "id": "e12",
+      "layer": "DRAWING",
+      "pts": [
+        [
+          105.0,
+          24.84
+        ],
+        [
+          99.5,
+          24.84
+        ],
+        [
+          99.5,
+          43.16
+        ],
+        [
+          105.0,
+          43.16
+        ]
+      ],
+      "closed": false
+    },
+    {
+      "type": "polyline",
+      "id": "e13",
+      "layer": "DRAWING",
+      "pts": [
+        [
+          0.0,
+          30.34
+        ],
+        [
+          -2.0,
+          30.34
+        ],
+        [
+          -2.0,
+          37.66
+        ],
+        [
+          0.0,
+          37.66
+        ]
+      ],
+      "closed": false
+    },
+    {
+      "type": "polyline",
+      "id": "e14",
+      "layer": "DRAWING",
+      "pts": [
+        [
+          105.0,
+          30.34
+        ],
+        [
+          107.0,
+          30.34
+        ],
+        [
+          107.0,
+          37.66
+        ],
+        [
+          105.0,
+          37.66
+        ]
+      ],
+      "closed": false
+    },
+    {
+      "type": "text",
+      "id": "e15",
+      "layer": "TEXT",
+      "p": [
+        0.0,
+        74.0
+      ],
+      "text": "ఫుట్‌బాల్ మైదానం — OpenCADIrrigation ఉదాహరణ",
+      "h": 3.0,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e16",
+      "layer": "SYMBOLS",
+      "p": [
+        112.0,
+        64.0
+      ],
+      "kind": "northArrow",
+      "size": 4.0,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e17",
+      "layer": "SYMBOLS",
+      "p": [
+        -14.0,
+        -21.0
+      ],
+      "kind": "pumpHouse",
+      "size": 3.0,
+      "rot": 0.0
+    },
+    {
+      "type": "text",
+      "id": "e18",
+      "layer": "TEXT",
+      "p": [
+        -20.0,
+        -27.0
+      ],
+      "text": "పంపు హౌస్",
+      "h": 1.5,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e19",
+      "layer": "SYMBOLS",
+      "p": [
+        -14.0,
+        -28.0
+      ],
+      "kind": "tank",
+      "size": 2.5,
+      "rot": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e20",
+      "layer": "AREAS",
+      "name": "మైదానం",
+      "pts": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          105.0,
+          0.0
+        ],
+        [
+          105.0,
+          68.0
+        ],
+        [
+          0.0,
+          68.0
+        ]
+      ],
+      "depth": 6.0,
+      "eff": 0.8,
+      "crop": "క్రీడా గడ్డి",
+      "wb": true,
+      "eto": 6.0,
+      "kc": 0.9,
+      "awc": 110.0,
+      "root": 0.25,
+      "mad": 0.4
+    },
+    {
+      "type": "outlet",
+      "id": "e21",
+      "layer": "OUTLETS",
+      "p": [
+        0.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 90.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e22",
+      "layer": "OUTLETS",
+      "p": [
+        15.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e23",
+      "layer": "OUTLETS",
+      "p": [
+        30.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e24",
+      "layer": "OUTLETS",
+      "p": [
+        45.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e25",
+      "layer": "OUTLETS",
+      "p": [
+        60.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e26",
+      "layer": "OUTLETS",
+      "p": [
+        75.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e27",
+      "layer": "OUTLETS",
+      "p": [
+        90.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "outlet",
+      "id": "e28",
+      "layer": "OUTLETS",
+      "p": [
+        105.0,
+        0.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 90.0,
+      "rot": 90.0,
+      "riser": 0.0,
+      "zone": "వరుస 1"
+    },
+    {
+      "type": "controlValve",
+      "id": "e29",
+      "layer": "CONTROL_VALVES",
+      "name": "వరుస 1",
+      "p": [
+        -3.0,
+        0.0
+      ],
+      "spec": "ev50",
+      "zone": "వరుస 1",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e30",
+      "layer": "ZONE_PIPES",
+      "name": "వరుస 1",
+      "pts": [
+        [
+          -3.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          15.0,
+          0.0
+        ],
+        [
+          30.0,
+          0.0
+        ],
+        [
+          45.0,
+          0.0
+        ],
+        [
+          60.0,
+          0.0
+        ],
+        [
+          75.0,
+          0.0
+        ],
+        [
+          90.0,
+          0.0
+        ],
+        [
+          105.0,
+          0.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e31",
+      "layer": "MAINLINE_PIPES",
+      "name": "స్టబ్",
+      "pts": [
+        [
+          -6.0,
+          0.0
+        ],
+        [
+          -3.0,
+          0.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "outlet",
+      "id": "e32",
+      "layer": "OUTLETS",
+      "p": [
+        0.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 270.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e33",
+      "layer": "OUTLETS",
+      "p": [
+        15.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e34",
+      "layer": "OUTLETS",
+      "p": [
+        30.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e35",
+      "layer": "OUTLETS",
+      "p": [
+        45.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e36",
+      "layer": "OUTLETS",
+      "p": [
+        60.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e37",
+      "layer": "OUTLETS",
+      "p": [
+        75.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e38",
+      "layer": "OUTLETS",
+      "p": [
+        90.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "outlet",
+      "id": "e39",
+      "layer": "OUTLETS",
+      "p": [
+        105.0,
+        17.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 90.0,
+      "riser": 0.0,
+      "zone": "వరుస 2"
+    },
+    {
+      "type": "controlValve",
+      "id": "e40",
+      "layer": "CONTROL_VALVES",
+      "name": "వరుస 2",
+      "p": [
+        -3.0,
+        17.0
+      ],
+      "spec": "ev50",
+      "zone": "వరుస 2",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e41",
+      "layer": "ZONE_PIPES",
+      "name": "వరుస 2",
+      "pts": [
+        [
+          -3.0,
+          17.0
+        ],
+        [
+          0.0,
+          17.0
+        ],
+        [
+          15.0,
+          17.0
+        ],
+        [
+          30.0,
+          17.0
+        ],
+        [
+          45.0,
+          17.0
+        ],
+        [
+          60.0,
+          17.0
+        ],
+        [
+          75.0,
+          17.0
+        ],
+        [
+          90.0,
+          17.0
+        ],
+        [
+          105.0,
+          17.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e42",
+      "layer": "MAINLINE_PIPES",
+      "name": "స్టబ్",
+      "pts": [
+        [
+          -6.0,
+          17.0
+        ],
+        [
+          -3.0,
+          17.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "outlet",
+      "id": "e43",
+      "layer": "OUTLETS",
+      "p": [
+        0.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 270.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e44",
+      "layer": "OUTLETS",
+      "p": [
+        15.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e45",
+      "layer": "OUTLETS",
+      "p": [
+        30.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e46",
+      "layer": "OUTLETS",
+      "p": [
+        45.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e47",
+      "layer": "OUTLETS",
+      "p": [
+        60.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e48",
+      "layer": "OUTLETS",
+      "p": [
+        75.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e49",
+      "layer": "OUTLETS",
+      "p": [
+        90.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "outlet",
+      "id": "e50",
+      "layer": "OUTLETS",
+      "p": [
+        105.0,
+        34.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 90.0,
+      "riser": 0.0,
+      "zone": "వరుస 3"
+    },
+    {
+      "type": "controlValve",
+      "id": "e51",
+      "layer": "CONTROL_VALVES",
+      "name": "వరుస 3",
+      "p": [
+        -3.0,
+        34.0
+      ],
+      "spec": "ev50",
+      "zone": "వరుస 3",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e52",
+      "layer": "ZONE_PIPES",
+      "name": "వరుస 3",
+      "pts": [
+        [
+          -3.0,
+          34.0
+        ],
+        [
+          0.0,
+          34.0
+        ],
+        [
+          15.0,
+          34.0
+        ],
+        [
+          30.0,
+          34.0
+        ],
+        [
+          45.0,
+          34.0
+        ],
+        [
+          60.0,
+          34.0
+        ],
+        [
+          75.0,
+          34.0
+        ],
+        [
+          90.0,
+          34.0
+        ],
+        [
+          105.0,
+          34.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e53",
+      "layer": "MAINLINE_PIPES",
+      "name": "స్టబ్",
+      "pts": [
+        [
+          -6.0,
+          34.0
+        ],
+        [
+          -3.0,
+          34.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "outlet",
+      "id": "e54",
+      "layer": "OUTLETS",
+      "p": [
+        0.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 270.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e55",
+      "layer": "OUTLETS",
+      "p": [
+        15.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e56",
+      "layer": "OUTLETS",
+      "p": [
+        30.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e57",
+      "layer": "OUTLETS",
+      "p": [
+        45.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e58",
+      "layer": "OUTLETS",
+      "p": [
+        60.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e59",
+      "layer": "OUTLETS",
+      "p": [
+        75.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e60",
+      "layer": "OUTLETS",
+      "p": [
+        90.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 360.0,
+      "rot": 0.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "outlet",
+      "id": "e61",
+      "layer": "OUTLETS",
+      "p": [
+        105.0,
+        51.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 90.0,
+      "riser": 0.0,
+      "zone": "వరుస 4"
+    },
+    {
+      "type": "controlValve",
+      "id": "e62",
+      "layer": "CONTROL_VALVES",
+      "name": "వరుస 4",
+      "p": [
+        -3.0,
+        51.0
+      ],
+      "spec": "ev50",
+      "zone": "వరుస 4",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e63",
+      "layer": "ZONE_PIPES",
+      "name": "వరుస 4",
+      "pts": [
+        [
+          -3.0,
+          51.0
+        ],
+        [
+          0.0,
+          51.0
+        ],
+        [
+          15.0,
+          51.0
+        ],
+        [
+          30.0,
+          51.0
+        ],
+        [
+          45.0,
+          51.0
+        ],
+        [
+          60.0,
+          51.0
+        ],
+        [
+          75.0,
+          51.0
+        ],
+        [
+          90.0,
+          51.0
+        ],
+        [
+          105.0,
+          51.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e64",
+      "layer": "MAINLINE_PIPES",
+      "name": "స్టబ్",
+      "pts": [
+        [
+          -6.0,
+          51.0
+        ],
+        [
+          -3.0,
+          51.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "outlet",
+      "id": "e65",
+      "layer": "OUTLETS",
+      "p": [
+        0.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 90.0,
+      "rot": 270.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e66",
+      "layer": "OUTLETS",
+      "p": [
+        15.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e67",
+      "layer": "OUTLETS",
+      "p": [
+        30.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e68",
+      "layer": "OUTLETS",
+      "p": [
+        45.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e69",
+      "layer": "OUTLETS",
+      "p": [
+        60.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e70",
+      "layer": "OUTLETS",
+      "p": [
+        75.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e71",
+      "layer": "OUTLETS",
+      "p": [
+        90.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 180.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "outlet",
+      "id": "e72",
+      "layer": "OUTLETS",
+      "p": [
+        105.0,
+        68.0
+      ],
+      "scope": "zone",
+      "outlet": "impact34",
+      "nozzle": "i5.0",
+      "head": 35.0,
+      "arc": 90.0,
+      "rot": 180.0,
+      "riser": 0.0,
+      "zone": "వరుస 5"
+    },
+    {
+      "type": "controlValve",
+      "id": "e73",
+      "layer": "CONTROL_VALVES",
+      "name": "వరుస 5",
+      "p": [
+        -3.0,
+        68.0
+      ],
+      "spec": "ev50",
+      "zone": "వరుస 5",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e74",
+      "layer": "ZONE_PIPES",
+      "name": "వరుస 5",
+      "pts": [
+        [
+          -3.0,
+          68.0
+        ],
+        [
+          0.0,
+          68.0
+        ],
+        [
+          15.0,
+          68.0
+        ],
+        [
+          30.0,
+          68.0
+        ],
+        [
+          45.0,
+          68.0
+        ],
+        [
+          60.0,
+          68.0
+        ],
+        [
+          75.0,
+          68.0
+        ],
+        [
+          90.0,
+          68.0
+        ],
+        [
+          105.0,
+          68.0
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e75",
+      "layer": "MAINLINE_PIPES",
+      "name": "స్టబ్",
+      "pts": [
+        [
+          -6.0,
+          68.0
+        ],
+        [
+          -3.0,
+          68.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "waterSupply",
+      "id": "e76",
+      "layer": "WATER_SUPPLY",
+      "name": "జలాశయం",
+      "p": [
+        -6.0,
+        -24.0
+      ],
+      "calc": true,
+      "dh": 0.0,
+      "mh": 0.0,
+      "dq": 0.0,
+      "mq": 0.0,
+      "wl": 1.5
+    },
+    {
+      "type": "pump",
+      "id": "e77",
+      "layer": "PUMPS",
+      "p": [
+        -6.0,
+        -21.0
+      ],
+      "spec": "pump_c7_5",
+      "speed": 1.0,
+      "rot": 0.0,
+      "scope": "mainline"
+    },
+    {
+      "type": "misc",
+      "id": "e78",
+      "layer": "MISC_HYDRAULIC",
+      "p": [
+        -6.0,
+        -18.0
+      ],
+      "spec": "check100",
+      "scope": "mainline",
+      "set": 0.0,
+      "rot": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e79",
+      "layer": "MAINLINE_PIPES",
+      "name": "ప్రధాన లైన్",
+      "pts": [
+        [
+          -6.0,
+          -24.0
+        ],
+        [
+          -6.0,
+          -21.0
+        ],
+        [
+          -6.0,
+          -18.0
+        ],
+        [
+          -6.0,
+          0.0
+        ],
+        [
+          -6.0,
+          17.0
+        ],
+        [
+          -6.0,
+          34.0
+        ],
+        [
+          -6.0,
+          51.0
+        ],
+        [
+          -6.0,
+          68.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    }
+  ],
+  "systemFlows": [
+    {
+      "id": "sf1",
+      "name": "షిఫ్ట్ 1 — వరుస 1",
+      "valves": [
+        "e29"
+      ],
+      "start": 21.0,
+      "dur": 1.0
+    },
+    {
+      "id": "sf2",
+      "name": "షిఫ్ట్ 2 — వరుస 2",
+      "valves": [
+        "e40"
+      ],
+      "start": 22.0,
+      "dur": 1.0
+    },
+    {
+      "id": "sf3",
+      "name": "షిఫ్ట్ 3 — వరుస 3",
+      "valves": [
+        "e51"
+      ],
+      "start": 23.0,
+      "dur": 1.0
+    },
+    {
+      "id": "sf4",
+      "name": "షిఫ్ట్ 4 — వరుస 4",
+      "valves": [
+        "e62"
+      ],
+      "start": 0.0,
+      "dur": 1.0
+    },
+    {
+      "id": "sf5",
+      "name": "షిఫ్ట్ 5 — వరుస 5",
+      "valves": [
+        "e73"
+      ],
+      "start": 1.0,
+      "dur": 1.0
+    }
+  ],
+  "nextId": 80
+}

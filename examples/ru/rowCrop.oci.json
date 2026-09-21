@@ -1,0 +1,8676 @@
+{
+  "format": "opencadirrigation",
+  "version": 1,
+  "meta": {
+    "uid": "example-rowCrop-ru",
+    "created": "2026-09-16T00:00:00.000Z",
+    "name": "Пропашная культура на капле",
+    "client": "Ферма «Пример»",
+    "site": "Блоки 1–4",
+    "designer": "OpenCADIrrigation",
+    "notes": ""
+  },
+  "params": {
+    "units": {
+      "length": "m",
+      "flow": "lph",
+      "pressure": "mH2O",
+      "diameter": "mm"
+    },
+    "method": "hazenWilliams",
+    "temp": 20.0,
+    "vZone": 1.5,
+    "vMain": 2.0,
+    "vLat": 2.0,
+    "minorPct": 5.0,
+    "minor": true,
+    "tol": 0.05,
+    "interest": 0.1,
+    "term": 10,
+    "kwh": 0.75,
+    "eff": 0.65,
+    "hours": 2000.0,
+    "zoneHours": 500.0,
+    "trade": true,
+    "latSizes": 1,
+    "subSizes": 3,
+    "cScale": 1.0,
+    "cOffset": 0.0,
+    "densify": 5.0,
+    "currency": "R$",
+    "sizing": "lp",
+    "mainSizes": 3,
+    "epp": 1,
+    "maxNodes": 100,
+    "flushV": 0.3,
+    "flushH": 1.0,
+    "surge": true,
+    "closure": 3.0,
+    "fittings": true,
+    "stick": 6.0,
+    "zoneVar": 0.0,
+    "terrain": "tin"
+  },
+  "catalog": {
+    "pipes": [
+      {
+        "id": "pe16",
+        "name": "PE 16 mm (PN 4)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "material": "peld",
+        "c": 140.0,
+        "roughMm": 0.003,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.9,
+        "usage": [
+          "lateral"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe20",
+        "name": "PE 20 mm (PN 4)",
+        "nominalMm": 20.0,
+        "idMm": 17.0,
+        "material": "peld",
+        "c": 140.0,
+        "roughMm": 0.003,
+        "ratingM": 40.0,
+        "wallMm": 1.5,
+        "cost": 1.3,
+        "usage": [
+          "lateral"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe25",
+        "name": "PE 25 mm (PN 6)",
+        "nominalMm": 25.0,
+        "idMm": 21.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 2.0,
+        "cost": 2.1,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe32",
+        "name": "PE 32 mm (PN 6)",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 2.4,
+        "cost": 3.2,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe40",
+        "name": "PE 40 mm (PN 6)",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 3.0,
+        "cost": 4.9,
+        "usage": [
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pe50",
+        "name": "PE 50 mm (PN 6)",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 60.0,
+        "wallMm": 3.7,
+        "cost": 7.4,
+        "usage": [
+          "zone"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc35",
+        "name": "PVC DN 35 PN 80",
+        "nominalMm": 35.0,
+        "idMm": 32.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.5,
+        "cost": 4.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc50",
+        "name": "PVC DN 50 PN 80",
+        "nominalMm": 50.0,
+        "idMm": 46.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.8,
+        "cost": 7.2,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc75",
+        "name": "PVC DN 75 PN 80",
+        "nominalMm": 75.0,
+        "idMm": 70.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.2,
+        "cost": 14.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc100",
+        "name": "PVC DN 100 PN 80",
+        "nominalMm": 100.0,
+        "idMm": 96.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.5,
+        "cost": 24.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc125",
+        "name": "PVC DN 125 PN 80",
+        "nominalMm": 125.0,
+        "idMm": 118.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.2,
+        "cost": 36.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc150",
+        "name": "PVC DN 150 PN 80",
+        "nominalMm": 150.0,
+        "idMm": 144.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.8,
+        "cost": 52.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc200",
+        "name": "PVC DN 200 PN 80",
+        "nominalMm": 200.0,
+        "idMm": 191.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 4.9,
+        "cost": 88.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pvc250",
+        "name": "PVC DN 250 PN 80",
+        "nominalMm": 250.0,
+        "idMm": 239.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 6.2,
+        "cost": 135.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pead110",
+        "name": "PEAD 110 mm PN 10",
+        "nominalMm": 110.0,
+        "idMm": 96.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 100.0,
+        "wallMm": 6.6,
+        "cost": 42.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "pead160",
+        "name": "PEAD 160 mm PN 10",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 100.0,
+        "wallMm": 9.5,
+        "cost": 85.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true
+      },
+      {
+        "id": "steel150",
+        "name": "Оцинкованная сталь 6\"",
+        "nominalMm": 150.0,
+        "idMm": 154.0,
+        "material": "steel",
+        "c": 120.0,
+        "roughMm": 0.15,
+        "ratingM": 200.0,
+        "wallMm": 4.5,
+        "cost": 160.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": false
+      }
+    ],
+    "outlets": [
+      {
+        "id": "drip_pc",
+        "name": "Компенсированная капельница (кнопочная)",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "pc2",
+            "name": "2 L/h PC",
+            "curve": {
+              "k": 5.184746115538839e-7,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pc4",
+            "name": "4 L/h PC",
+            "curve": {
+              "k": 0.0000010369492231077677,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pc8",
+            "name": "8 L/h PC",
+            "curve": {
+              "k": 0.0000020738984462155354,
+              "x": 0.03,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 40.0,
+            "defH": 10.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.6,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "drip_turb",
+        "name": "Турбулентная капельница",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "t2",
+            "name": "2 L/h",
+            "curve": {
+              "k": 1.756820922315766e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t4",
+            "name": "4 L/h",
+            "curve": {
+              "k": 3.513641844631532e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "t8",
+            "name": "8 L/h",
+            "curve": {
+              "k": 7.027283689263064e-7,
+              "x": 0.5,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.0,
+            "maxH": 25.0,
+            "defH": 10.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.35,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "micro",
+        "name": "Микродождеватель 360°",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "m35",
+            "name": "35 л/ч (радиус 3,0 м)",
+            "curve": {
+              "k": 0.000002510266983652955,
+              "x": 0.5,
+              "ra": 1.1627579406332142,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m50",
+            "name": "50 л/ч (радиус 3,5 м)",
+            "curve": {
+              "k": 0.000003586095690932793,
+              "x": 0.5,
+              "ra": 1.35655093073875,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m70",
+            "name": "70 л/ч (радиус 4,0 м)",
+            "curve": {
+              "k": 0.00000502053396730591,
+              "x": 0.5,
+              "ra": 1.5503439208442855,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 15.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "m120",
+            "name": "120 л/ч (радиус 5,0 м)",
+            "curve": {
+              "k": 0.000007453559924999297,
+              "x": 0.5,
+              "ra": 1.7523042159652176,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 15.0,
+            "maxH": 35.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 2.8,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true
+      },
+      {
+        "id": "micro_pc",
+        "name": "Компенсированный микродождеватель",
+        "kind": "microSprinkler",
+        "nozzles": [
+          {
+            "id": "mpc40",
+            "name": "40 л/ч PC (радиус 3,5 м)",
+            "curve": {
+              "k": 0.000009704047811289222,
+              "x": 0.05,
+              "ra": 1.35655093073875,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 12.0,
+            "maxH": 40.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mpc70",
+            "name": "70 л/ч PC (радиус 4,5 м)",
+            "curve": {
+              "k": 0.00001698208366975614,
+              "x": 0.05,
+              "ra": 1.7441369109498213,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 12.0,
+            "maxH": 40.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 3.9,
+        "inletMm": 0.0,
+        "riser": 0.3,
+        "enabled": true
+      },
+      {
+        "id": "impact34",
+        "name": "Ударный дождеватель 3/4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "i3.5",
+            "name": "Сопло 3,5 мм (0,9 м³/ч, R 12 м)",
+            "curve": {
+              "k": 0.00004564354645876384,
+              "x": 0.5,
+              "ra": 3.649125559695976,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i4.0",
+            "name": "Сопло 4,0 мм (1,2 м³/ч, R 13 м)",
+            "curve": {
+              "k": 0.000060858061945018456,
+              "x": 0.5,
+              "ra": 3.9532193563373075,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i4.5",
+            "name": "Сопло 4,5 мм (1,5 м³/ч, R 14 м)",
+            "curve": {
+              "k": 0.00007607257743127307,
+              "x": 0.5,
+              "ra": 4.2573131529786385,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i5.0",
+            "name": "Сопло 5,0 мм (1,9 м³/ч, R 15 м)",
+            "curve": {
+              "k": 0.00009635859807961254,
+              "x": 0.5,
+              "ra": 4.56140694961997,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 50.0,
+            "defH": 35.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 18.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true
+      },
+      {
+        "id": "gun",
+        "name": "Дальнеструйная пушка 1,5\"",
+        "kind": "gun",
+        "nozzles": [
+          {
+            "id": "g14",
+            "name": "Сопло 14 мм (15 м³/ч, R 32 м)",
+            "curve": {
+              "k": 0.0006588078458684123,
+              "x": 0.5,
+              "ra": 8.79891214415196,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 70.0,
+            "defH": 40.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "g18",
+            "name": "Сопло 18 мм (25 м³/ч, R 40 м)",
+            "curve": {
+              "k": 0.0010352166562499026,
+              "x": 0.5,
+              "ra": 10.554450113538381,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 35.0,
+            "maxH": 80.0,
+            "defH": 45.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 420.0,
+        "inletMm": 40.0,
+        "riser": 1.5,
+        "enabled": true
+      },
+      {
+        "id": "rotor",
+        "name": "Роторный дождеватель 1/2\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r1.5",
+            "name": "#1.5 (0,35 m³/h, R 8 m)",
+            "curve": {
+              "k": 0.000019444444444444442,
+              "x": 0.5,
+              "ra": 2.5930505547084204,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3",
+            "name": "#3 (0,70 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000038888888888888884,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3_180",
+            "name": "#3 180° (0,35 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000019444444444444442,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r3_90",
+            "name": "#3 90° (0,18 m³/h, R 10 m)",
+            "curve": {
+              "k": 0.000009999999999999999,
+              "x": 0.5,
+              "ra": 3.2413131933855253,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 17.0,
+            "maxH": 45.0,
+            "defH": 25.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 45.0,
+        "inletMm": 15.0,
+        "riser": 0.1,
+        "enabled": true
+      },
+      {
+        "id": "spray",
+        "name": "Выдвижной распылитель 4\"",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "s12",
+            "name": "12F (0,60 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000037267799624996494,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s12h",
+            "name": "12H (0,30 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000018633899812498247,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 180.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s12q",
+            "name": "12Q (0,15 m³/h, R 3,7 m)",
+            "curve": {
+              "k": 0.000009316949906249123,
+              "x": 0.5,
+              "ra": 1.2967051198142612,
+              "rb": 0.35
+            },
+            "arc": 90.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "s15",
+            "name": "15F (0,84 m³/h, R 4,6 m)",
+            "curve": {
+              "k": 0.00005217491947499509,
+              "x": 0.5,
+              "ra": 1.612119878688,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 10.0,
+            "maxH": 30.0,
+            "defH": 20.0,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 12.0,
+        "inletMm": 15.0,
+        "riser": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "demand",
+        "name": "Точка потребления",
+        "kind": "demandPoint",
+        "nozzles": [
+          {
+            "id": "d5",
+            "name": "5 m³/h @ 20 m",
+            "curve": {
+              "k": 0.0013888888888888887,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 80.0,
+            "defH": 20.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          },
+          {
+            "id": "d10",
+            "name": "10 m³/h @ 20 m",
+            "curve": {
+              "k": 0.0027777777777777775,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 80.0,
+            "defH": 20.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          },
+          {
+            "id": "d20",
+            "name": "20 m³/h @ 25 m",
+            "curve": {
+              "k": 0.005555555555555555,
+              "x": 0.0,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 25.0,
+            "maxH": 80.0,
+            "defH": 25.0,
+            "cv": 0.0,
+            "tolB": 0.5,
+            "tolA": 0.5
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 50.0,
+        "riser": 0.0,
+        "enabled": true
+      }
+    ],
+    "tapes": [
+      {
+        "id": "tape16_10_30",
+        "name": "Капельная лента 16 мм, 1,0 л/ч @ 0,30 м",
+        "nominalMm": 16.0,
+        "idMm": 15.6,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 1.0499013139145199e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 15.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.45,
+        "enabled": true
+      },
+      {
+        "id": "tape16_16_20",
+        "name": "Капельная лента 16 мм, 1,6 л/ч @ 0,20 м",
+        "nominalMm": 16.0,
+        "idMm": 15.6,
+        "spacing": 0.2,
+        "emitter": {
+          "k": 1.679842102263232e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.3,
+        "cv": 0.03,
+        "minH": 4.0,
+        "maxH": 12.0,
+        "inletH": 8.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 15.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.55,
+        "enabled": true
+      },
+      {
+        "id": "drip16_16_50",
+        "name": "Капельная трубка 16 мм, 1,6 л/ч @ 0,50 м",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 1.405456737852613e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 25.0,
+        "inletH": 10.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 30.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.1,
+        "enabled": true
+      },
+      {
+        "id": "drip16_24_75",
+        "name": "Капельная трубка 16 мм, 2,4 л/ч @ 0,75 м",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 2.1081851067789193e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 5.0,
+        "maxH": 25.0,
+        "inletH": 10.0,
+        "tolB": 30.0,
+        "tolA": 20.0,
+        "ratingM": 30.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.05,
+        "enabled": true
+      },
+      {
+        "id": "drip16pc_16_50",
+        "name": "Компенсированная капельная трубка 16 мм, 1,6 л/ч @ 0,50 м",
+        "nominalMm": 16.0,
+        "idMm": 13.8,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 4.0533815082484875e-7,
+          "x": 0.04,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 15.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 1.6,
+        "enabled": true
+      },
+      {
+        "id": "drip20pc_23_75",
+        "name": "Компенсированная капельная трубка 20 мм, 2,3 л/ч @ 0,75 м",
+        "nominalMm": 20.0,
+        "idMm": 17.5,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 5.8267359181072e-7,
+          "x": 0.04,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 40.0,
+        "inletH": 15.0,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.0,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 2.1,
+        "enabled": true
+      }
+    ],
+    "valves": [
+      {
+        "id": "ev25",
+        "name": "Электромагнитный клапан 1\"",
+        "kind": "control",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 1269582.073997794,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00005555555555555556,
+        "maxQ": 0.0016666666666666666,
+        "cost": 120.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev40",
+        "name": "Электромагнитный клапан 1½\"",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 177579.27975941633,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0002777777777777778,
+        "maxQ": 0.0044444444444444444,
+        "cost": 260.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev50",
+        "name": "Электромагнитный клапан 2\"",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 66124.06635405176,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0005555555555555556,
+        "maxQ": 0.008333333333333333,
+        "cost": 380.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev80",
+        "name": "Гидравлический клапан 3\"",
+        "kind": "control",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9080.758624061062,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.001388888888888889,
+        "maxQ": 0.022222222222222223,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev100",
+        "name": "Гидравлический клапан 4\"",
+        "kind": "control",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3306.2033177025883,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.002777777777777778,
+        "maxQ": 0.03888888888888889,
+        "cost": 1500.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "ev150",
+        "name": "Гидравлический клапан 6\"",
+        "kind": "control",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 571.442548738719,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.006944444444444444,
+        "maxQ": 0.08333333333333333,
+        "cost": 2800.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "prv50",
+        "name": "Редуктор давления 2\"",
+        "kind": "prv",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 39674.43981243106,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.008333333333333333,
+        "cost": 650.0,
+        "setting": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "prv80",
+        "name": "Редуктор давления 3\"",
+        "kind": "prv",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 6053.839082707375,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 1200.0,
+        "setting": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "prv100",
+        "name": "Редуктор давления 4\"",
+        "kind": "prv",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 2479.6524882769413,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.03888888888888889,
+        "cost": 2100.0,
+        "setting": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "gate50",
+        "name": "Задвижка 2\"",
+        "kind": "isolation",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 2644.9626541620705,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.011111111111111112,
+        "cost": 90.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate80",
+        "name": "Задвижка 3\"",
+        "kind": "isolation",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 403.58927218049166,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 220.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate100",
+        "name": "Задвижка 4\"",
+        "kind": "isolation",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 165.3101658851294,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.041666666666666664,
+        "cost": 420.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "gate150",
+        "name": "Задвижка 6\"",
+        "kind": "isolation",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 32.6538599279268,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.09722222222222222,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check50",
+        "name": "Обратный клапан 2\"",
+        "kind": "check",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 26449.626541620706,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.011111111111111112,
+        "cost": 150.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check80",
+        "name": "Обратный клапан 3\"",
+        "kind": "check",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 4035.8927218049166,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 260.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "check100",
+        "name": "Обратный клапан 4\"",
+        "kind": "check",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 1653.1016588512941,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.041666666666666664,
+        "cost": 380.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc50",
+        "name": "Дисковый фильтр 2\" (120 mesh)",
+        "kind": "filter",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 62208.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.006944444444444444,
+        "cost": 850.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc80",
+        "name": "Дисковый фильтр 3\" (120 mesh)",
+        "kind": "filter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 15552.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.013888888888888888,
+        "cost": 1600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_disc100",
+        "name": "Дисковый фильтр 4\" (120 mesh)",
+        "kind": "filter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 4800.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.025,
+        "cost": 2600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen80",
+        "name": "Сетчатый фильтр 3\"",
+        "kind": "filter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 9000.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1400.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen100",
+        "name": "Сетчатый фильтр 4\"",
+        "kind": "filter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3240.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.027777777777777776,
+        "cost": 2100.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "filter_screen150",
+        "name": "Сетчатый фильтр 6\"",
+        "kind": "filter",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 810.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.05555555555555555,
+        "cost": 3800.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter50",
+        "name": "Счётчик воды 2\"",
+        "kind": "meter",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 92573.69289567247,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.005555555555555556,
+        "cost": 700.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter80",
+        "name": "Счётчик воды 3\"",
+        "kind": "meter",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 14125.624526317208,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1100.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "meter100",
+        "name": "Счётчик воды 4\"",
+        "kind": "meter",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 5785.85580597953,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.03333333333333333,
+        "cost": 1600.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "backflow50",
+        "name": "Клапан защиты от обратного потока 2\"",
+        "kind": "backflow",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 105798.50616648282,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.006944444444444444,
+        "cost": 900.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "backflow80",
+        "name": "Клапан защиты от обратного потока 3\"",
+        "kind": "backflow",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 16143.570887219666,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 1500.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air25",
+        "name": "Воздушный клапан 1\"",
+        "kind": "airRelease",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 90.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air50",
+        "name": "Воздушный клапан 2\"",
+        "kind": "airRelease",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 180.0,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "air80",
+        "name": "Воздушный клапан 3\"",
+        "kind": "airRelease",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 0.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 1.0,
+        "cost": 320.0,
+        "setting": 0.0,
+        "enabled": true
+      }
+    ],
+    "pumps": [
+      {
+        "id": "pump_c1",
+        "name": "Центробежный насос 1 л.с. (4 м³/ч @ 20 м)",
+        "points": [
+          [
+            0.0,
+            27.0
+          ],
+          [
+            0.0005555555555555556,
+            25.0
+          ],
+          [
+            0.0011111111111111111,
+            20.0
+          ],
+          [
+            0.0016666666666666666,
+            12.0
+          ]
+        ],
+        "eff": 0.45,
+        "minQ": 0.0,
+        "maxQ": 0.0016666666666666666,
+        "cost": 900.0,
+        "enabled": true,
+        "kw": 0.75
+      },
+      {
+        "id": "pump_c2",
+        "name": "Центробежный насос 2 л.с. (7 м³/ч @ 28 м)",
+        "points": [
+          [
+            0.0,
+            37.0
+          ],
+          [
+            0.0009722222222222222,
+            34.0
+          ],
+          [
+            0.0019444444444444444,
+            28.0
+          ],
+          [
+            0.002777777777777778,
+            18.0
+          ]
+        ],
+        "eff": 0.5,
+        "minQ": 0.0,
+        "maxQ": 0.002777777777777778,
+        "cost": 1500.0,
+        "enabled": true,
+        "kw": 1.5
+      },
+      {
+        "id": "pump_small",
+        "name": "Центробежный насос 3 л.с. (10 м³/ч @ 35 м)",
+        "points": [
+          [
+            0.0,
+            45.0
+          ],
+          [
+            0.001388888888888889,
+            41.0
+          ],
+          [
+            0.002777777777777778,
+            35.0
+          ],
+          [
+            0.004166666666666667,
+            25.0
+          ]
+        ],
+        "eff": 0.55,
+        "minQ": 0.0,
+        "maxQ": 0.004166666666666667,
+        "cost": 2200.0,
+        "enabled": true,
+        "kw": 2.2
+      },
+      {
+        "id": "pump_c5",
+        "name": "Центробежный насос 5 л.с. (18 м³/ч @ 38 м)",
+        "points": [
+          [
+            0.0,
+            50.0
+          ],
+          [
+            0.0025,
+            46.0
+          ],
+          [
+            0.005,
+            38.0
+          ],
+          [
+            0.0075,
+            26.0
+          ]
+        ],
+        "eff": 0.6,
+        "minQ": 0.0,
+        "maxQ": 0.0075,
+        "cost": 3200.0,
+        "enabled": true,
+        "kw": 3.7
+      },
+      {
+        "id": "pump_c7_5",
+        "name": "Центробежный насос 7,5 л.с. (28 м³/ч @ 40 м)",
+        "points": [
+          [
+            0.0,
+            53.0
+          ],
+          [
+            0.0038888888888888888,
+            49.0
+          ],
+          [
+            0.0077777777777777776,
+            40.0
+          ],
+          [
+            0.011666666666666667,
+            27.0
+          ]
+        ],
+        "eff": 0.62,
+        "minQ": 0.0,
+        "maxQ": 0.011666666666666667,
+        "cost": 4500.0,
+        "enabled": true,
+        "kw": 5.5
+      },
+      {
+        "id": "pump_mid",
+        "name": "Центробежный насос 10 л.с. (40 м³/ч @ 45 м)",
+        "points": [
+          [
+            0.0,
+            58.0
+          ],
+          [
+            0.005555555555555556,
+            53.0
+          ],
+          [
+            0.011111111111111112,
+            45.0
+          ],
+          [
+            0.016666666666666666,
+            30.0
+          ]
+        ],
+        "eff": 0.65,
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 6500.0,
+        "enabled": true,
+        "kw": 7.5
+      },
+      {
+        "id": "pump_c15",
+        "name": "Центробежный насос 15 л.с. (55 м³/ч @ 45 м)",
+        "points": [
+          [
+            0.0,
+            60.0
+          ],
+          [
+            0.0077777777777777776,
+            55.0
+          ],
+          [
+            0.015277777777777777,
+            45.0
+          ],
+          [
+            0.022222222222222223,
+            31.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 9000.0,
+        "enabled": true,
+        "kw": 11.0
+      },
+      {
+        "id": "pump_c20",
+        "name": "Центробежный насос 20 л.с. (70 м³/ч @ 48 м)",
+        "points": [
+          [
+            0.0,
+            63.0
+          ],
+          [
+            0.009722222222222222,
+            58.0
+          ],
+          [
+            0.019444444444444445,
+            48.0
+          ],
+          [
+            0.027777777777777776,
+            33.0
+          ]
+        ],
+        "eff": 0.7,
+        "minQ": 0.0,
+        "maxQ": 0.027777777777777776,
+        "cost": 12000.0,
+        "enabled": true,
+        "kw": 15.0
+      },
+      {
+        "id": "pump_big",
+        "name": "Центробежный насос 30 л.с. (120 м³/ч @ 55 м)",
+        "points": [
+          [
+            0.0,
+            70.0
+          ],
+          [
+            0.016666666666666666,
+            64.0
+          ],
+          [
+            0.03333333333333333,
+            55.0
+          ],
+          [
+            0.05,
+            38.0
+          ]
+        ],
+        "eff": 0.72,
+        "minQ": 0.0,
+        "maxQ": 0.05,
+        "cost": 18000.0,
+        "enabled": true,
+        "kw": 22.0
+      },
+      {
+        "id": "pump_c50",
+        "name": "Центробежный насос 50 л.с. (160 м³/ч @ 55 м)",
+        "points": [
+          [
+            0.0,
+            72.0
+          ],
+          [
+            0.022222222222222223,
+            66.0
+          ],
+          [
+            0.044444444444444446,
+            55.0
+          ],
+          [
+            0.06388888888888888,
+            38.0
+          ]
+        ],
+        "eff": 0.74,
+        "minQ": 0.0,
+        "maxQ": 0.06388888888888888,
+        "cost": 28000.0,
+        "enabled": true,
+        "kw": 37.0
+      },
+      {
+        "id": "pump_c75",
+        "name": "Центробежный насос 75 л.с. (230 м³/ч @ 60 м)",
+        "points": [
+          [
+            0.0,
+            78.0
+          ],
+          [
+            0.03194444444444444,
+            72.0
+          ],
+          [
+            0.06388888888888888,
+            60.0
+          ],
+          [
+            0.09166666666666666,
+            42.0
+          ]
+        ],
+        "eff": 0.76,
+        "minQ": 0.0,
+        "maxQ": 0.09166666666666666,
+        "cost": 40000.0,
+        "enabled": true,
+        "kw": 55.0
+      },
+      {
+        "id": "pump_c100",
+        "name": "Центробежный насос 100 л.с. (300 м³/ч @ 65 м)",
+        "points": [
+          [
+            0.0,
+            85.0
+          ],
+          [
+            0.041666666666666664,
+            78.0
+          ],
+          [
+            0.08333333333333333,
+            65.0
+          ],
+          [
+            0.11666666666666667,
+            45.0
+          ]
+        ],
+        "eff": 0.78,
+        "minQ": 0.0,
+        "maxQ": 0.11666666666666667,
+        "cost": 55000.0,
+        "enabled": true,
+        "kw": 75.0
+      },
+      {
+        "id": "pump_s3",
+        "name": "Погружной насос 3 л.с. (8 м³/ч @ 55 м)",
+        "points": [
+          [
+            0.0,
+            78.0
+          ],
+          [
+            0.0011111111111111111,
+            68.0
+          ],
+          [
+            0.0022222222222222222,
+            55.0
+          ],
+          [
+            0.003333333333333333,
+            36.0
+          ]
+        ],
+        "eff": 0.55,
+        "minQ": 0.0,
+        "maxQ": 0.003333333333333333,
+        "cost": 2800.0,
+        "enabled": true,
+        "kw": 2.2
+      },
+      {
+        "id": "pump_s5",
+        "name": "Погружной насос 5 л.с. (12 м³/ч @ 65 м)",
+        "points": [
+          [
+            0.0,
+            90.0
+          ],
+          [
+            0.0016666666666666666,
+            80.0
+          ],
+          [
+            0.003333333333333333,
+            65.0
+          ],
+          [
+            0.005,
+            42.0
+          ]
+        ],
+        "eff": 0.58,
+        "minQ": 0.0,
+        "maxQ": 0.005,
+        "cost": 3900.0,
+        "enabled": true,
+        "kw": 3.7
+      },
+      {
+        "id": "pump_sub",
+        "name": "Погружной насос 7,5 л.с. (25 м³/ч @ 60 м)",
+        "points": [
+          [
+            0.0,
+            80.0
+          ],
+          [
+            0.003333333333333333,
+            72.0
+          ],
+          [
+            0.006944444444444444,
+            60.0
+          ],
+          [
+            0.009722222222222222,
+            40.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.009722222222222222,
+        "cost": 5400.0,
+        "enabled": true,
+        "kw": 5.5
+      },
+      {
+        "id": "pump_s15",
+        "name": "Погружной насос 15 л.с. (40 м³/ч @ 65 м)",
+        "points": [
+          [
+            0.0,
+            90.0
+          ],
+          [
+            0.005555555555555556,
+            80.0
+          ],
+          [
+            0.011111111111111112,
+            65.0
+          ],
+          [
+            0.016666666666666666,
+            42.0
+          ]
+        ],
+        "eff": 0.65,
+        "minQ": 0.0,
+        "maxQ": 0.016666666666666666,
+        "cost": 9500.0,
+        "enabled": true,
+        "kw": 11.0
+      },
+      {
+        "id": "pump_s25",
+        "name": "Погружной насос 25 л.с. (55 м³/ч @ 80 м)",
+        "points": [
+          [
+            0.0,
+            110.0
+          ],
+          [
+            0.0077777777777777776,
+            98.0
+          ],
+          [
+            0.015277777777777777,
+            80.0
+          ],
+          [
+            0.022222222222222223,
+            52.0
+          ]
+        ],
+        "eff": 0.68,
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 15000.0,
+        "enabled": true,
+        "kw": 18.5
+      }
+    ],
+    "fittings": [
+      {
+        "id": "cpl16",
+        "name": "Муфта 16 mm",
+        "kind": "coupler",
+        "sizeMm": 16.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_16",
+        "name": "Отвод 90° 16 mm",
+        "kind": "elbow90",
+        "sizeMm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_16",
+        "name": "Отвод 45° 16 mm",
+        "kind": "elbow45",
+        "sizeMm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "tee16",
+        "name": "Тройник 16 mm",
+        "kind": "tee",
+        "sizeMm": 16.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "cross16",
+        "name": "Крестовина 16 mm",
+        "kind": "cross",
+        "sizeMm": 16.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cap16",
+        "name": "Заглушка 16 mm",
+        "kind": "endCap",
+        "sizeMm": 16.0,
+        "cost": 2.0,
+        "enabled": true
+      },
+      {
+        "id": "adp16",
+        "name": "Резьбовой адаптер 16 mm",
+        "kind": "adapter",
+        "sizeMm": 16.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl20",
+        "name": "Муфта 20 mm",
+        "kind": "coupler",
+        "sizeMm": 20.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_20",
+        "name": "Отвод 90° 20 mm",
+        "kind": "elbow90",
+        "sizeMm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_20",
+        "name": "Отвод 45° 20 mm",
+        "kind": "elbow45",
+        "sizeMm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "tee20",
+        "name": "Тройник 20 mm",
+        "kind": "tee",
+        "sizeMm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "cross20",
+        "name": "Крестовина 20 mm",
+        "kind": "cross",
+        "sizeMm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cap20",
+        "name": "Заглушка 20 mm",
+        "kind": "endCap",
+        "sizeMm": 20.0,
+        "cost": 2.0,
+        "enabled": true
+      },
+      {
+        "id": "adp20",
+        "name": "Резьбовой адаптер 20 mm",
+        "kind": "adapter",
+        "sizeMm": 20.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "red20x16",
+        "name": "Переход 20 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 20.0,
+        "size2Mm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer20x16",
+        "name": "Переходной тройник 20 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 20.0,
+        "size2Mm": 16.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl25",
+        "name": "Муфта 25 mm",
+        "kind": "coupler",
+        "sizeMm": 25.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_25",
+        "name": "Отвод 90° 25 mm",
+        "kind": "elbow90",
+        "sizeMm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_25",
+        "name": "Отвод 45° 25 mm",
+        "kind": "elbow45",
+        "sizeMm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "tee25",
+        "name": "Тройник 25 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "cross25",
+        "name": "Крестовина 25 mm",
+        "kind": "cross",
+        "sizeMm": 25.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cap25",
+        "name": "Заглушка 25 mm",
+        "kind": "endCap",
+        "sizeMm": 25.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp25",
+        "name": "Резьбовой адаптер 25 mm",
+        "kind": "adapter",
+        "sizeMm": 25.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "red25x16",
+        "name": "Переход 25 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 25.0,
+        "size2Mm": 16.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer25x16",
+        "name": "Переходной тройник 25 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "size2Mm": 16.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "red25x20",
+        "name": "Переход 25 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 25.0,
+        "size2Mm": 20.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "teer25x20",
+        "name": "Переходной тройник 25 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 25.0,
+        "size2Mm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl32",
+        "name": "Муфта 32 mm",
+        "kind": "coupler",
+        "sizeMm": 32.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_32",
+        "name": "Отвод 90° 32 mm",
+        "kind": "elbow90",
+        "sizeMm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_32",
+        "name": "Отвод 45° 32 mm",
+        "kind": "elbow45",
+        "sizeMm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "tee32",
+        "name": "Тройник 32 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "cross32",
+        "name": "Крестовина 32 mm",
+        "kind": "cross",
+        "sizeMm": 32.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cap32",
+        "name": "Заглушка 32 mm",
+        "kind": "endCap",
+        "sizeMm": 32.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp32",
+        "name": "Резьбовой адаптер 32 mm",
+        "kind": "adapter",
+        "sizeMm": 32.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x16",
+        "name": "Переход 32 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 16.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x16",
+        "name": "Переходной тройник 32 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 16.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x20",
+        "name": "Переход 32 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 20.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x20",
+        "name": "Переходной тройник 32 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 20.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "red32x25",
+        "name": "Переход 32 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 32.0,
+        "size2Mm": 25.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "teer32x25",
+        "name": "Переходной тройник 32 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 32.0,
+        "size2Mm": 25.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl35",
+        "name": "Муфта 35 mm",
+        "kind": "coupler",
+        "sizeMm": 35.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_35",
+        "name": "Отвод 90° 35 mm",
+        "kind": "elbow90",
+        "sizeMm": 35.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_35",
+        "name": "Отвод 45° 35 mm",
+        "kind": "elbow45",
+        "sizeMm": 35.0,
+        "cost": 7.0,
+        "enabled": true
+      },
+      {
+        "id": "tee35",
+        "name": "Тройник 35 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "cross35",
+        "name": "Крестовина 35 mm",
+        "kind": "cross",
+        "sizeMm": 35.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cap35",
+        "name": "Заглушка 35 mm",
+        "kind": "endCap",
+        "sizeMm": 35.0,
+        "cost": 3.0,
+        "enabled": true
+      },
+      {
+        "id": "adp35",
+        "name": "Резьбовой адаптер 35 mm",
+        "kind": "adapter",
+        "sizeMm": 35.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x16",
+        "name": "Переход 35 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 16.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x16",
+        "name": "Переходной тройник 35 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 16.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x20",
+        "name": "Переход 35 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x20",
+        "name": "Переходной тройник 35 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 20.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x25",
+        "name": "Переход 35 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 25.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x25",
+        "name": "Переходной тройник 35 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 25.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "red35x32",
+        "name": "Переход 35 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 35.0,
+        "size2Mm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer35x32",
+        "name": "Переходной тройник 35 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 35.0,
+        "size2Mm": 32.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl40",
+        "name": "Муфта 40 mm",
+        "kind": "coupler",
+        "sizeMm": 40.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_40",
+        "name": "Отвод 90° 40 mm",
+        "kind": "elbow90",
+        "sizeMm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_40",
+        "name": "Отвод 45° 40 mm",
+        "kind": "elbow45",
+        "sizeMm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "tee40",
+        "name": "Тройник 40 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "cross40",
+        "name": "Крестовина 40 mm",
+        "kind": "cross",
+        "sizeMm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "cap40",
+        "name": "Заглушка 40 mm",
+        "kind": "endCap",
+        "sizeMm": 40.0,
+        "cost": 4.0,
+        "enabled": true
+      },
+      {
+        "id": "adp40",
+        "name": "Резьбовой адаптер 40 mm",
+        "kind": "adapter",
+        "sizeMm": 40.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x16",
+        "name": "Переход 40 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 16.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x16",
+        "name": "Переходной тройник 40 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 16.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x20",
+        "name": "Переход 40 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x20",
+        "name": "Переходной тройник 40 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 20.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x25",
+        "name": "Переход 40 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 25.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x25",
+        "name": "Переходной тройник 40 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 25.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x32",
+        "name": "Переход 40 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 32.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x32",
+        "name": "Переходной тройник 40 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 32.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red40x35",
+        "name": "Переход 40 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 40.0,
+        "size2Mm": 35.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "teer40x35",
+        "name": "Переходной тройник 40 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 40.0,
+        "size2Mm": 35.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl50",
+        "name": "Муфта 50 mm",
+        "kind": "coupler",
+        "sizeMm": 50.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_50",
+        "name": "Отвод 90° 50 mm",
+        "kind": "elbow90",
+        "sizeMm": 50.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_50",
+        "name": "Отвод 45° 50 mm",
+        "kind": "elbow45",
+        "sizeMm": 50.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "tee50",
+        "name": "Тройник 50 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "cross50",
+        "name": "Крестовина 50 mm",
+        "kind": "cross",
+        "sizeMm": 50.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "cap50",
+        "name": "Заглушка 50 mm",
+        "kind": "endCap",
+        "sizeMm": 50.0,
+        "cost": 5.0,
+        "enabled": true
+      },
+      {
+        "id": "adp50",
+        "name": "Резьбовой адаптер 50 mm",
+        "kind": "adapter",
+        "sizeMm": 50.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x16",
+        "name": "Переход 50 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 16.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x16",
+        "name": "Переходной тройник 50 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 16.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x20",
+        "name": "Переход 50 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 20.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x20",
+        "name": "Переходной тройник 50 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 20.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x25",
+        "name": "Переход 50 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 25.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x25",
+        "name": "Переходной тройник 50 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 25.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x32",
+        "name": "Переход 50 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 32.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x32",
+        "name": "Переходной тройник 50 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 32.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x35",
+        "name": "Переход 50 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 35.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x35",
+        "name": "Переходной тройник 50 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 35.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red50x40",
+        "name": "Переход 50 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 50.0,
+        "size2Mm": 40.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "teer50x40",
+        "name": "Переходной тройник 50 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 50.0,
+        "size2Mm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl75",
+        "name": "Муфта 75 mm",
+        "kind": "coupler",
+        "sizeMm": 75.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_75",
+        "name": "Отвод 90° 75 mm",
+        "kind": "elbow90",
+        "sizeMm": 75.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_75",
+        "name": "Отвод 45° 75 mm",
+        "kind": "elbow45",
+        "sizeMm": 75.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "tee75",
+        "name": "Тройник 75 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "cross75",
+        "name": "Крестовина 75 mm",
+        "kind": "cross",
+        "sizeMm": 75.0,
+        "cost": 23.0,
+        "enabled": true
+      },
+      {
+        "id": "cap75",
+        "name": "Заглушка 75 mm",
+        "kind": "endCap",
+        "sizeMm": 75.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "adp75",
+        "name": "Резьбовой адаптер 75 mm",
+        "kind": "adapter",
+        "sizeMm": 75.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x16",
+        "name": "Переход 75 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 16.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x16",
+        "name": "Переходной тройник 75 × 16 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 16.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x20",
+        "name": "Переход 75 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 20.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x20",
+        "name": "Переходной тройник 75 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 20.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x25",
+        "name": "Переход 75 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 25.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x25",
+        "name": "Переходной тройник 75 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 25.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x32",
+        "name": "Переход 75 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 32.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x32",
+        "name": "Переходной тройник 75 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 32.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x35",
+        "name": "Переход 75 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 35.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x35",
+        "name": "Переходной тройник 75 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 35.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x40",
+        "name": "Переход 75 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 40.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x40",
+        "name": "Переходной тройник 75 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 40.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "red75x50",
+        "name": "Переход 75 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 75.0,
+        "size2Mm": 50.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "teer75x50",
+        "name": "Переходной тройник 75 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 75.0,
+        "size2Mm": 50.0,
+        "cost": 19.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl100",
+        "name": "Муфта 100 mm",
+        "kind": "coupler",
+        "sizeMm": 100.0,
+        "cost": 11.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_100",
+        "name": "Отвод 90° 100 mm",
+        "kind": "elbow90",
+        "sizeMm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_100",
+        "name": "Отвод 45° 100 mm",
+        "kind": "elbow45",
+        "sizeMm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "tee100",
+        "name": "Тройник 100 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "cost": 22.0,
+        "enabled": true
+      },
+      {
+        "id": "cross100",
+        "name": "Крестовина 100 mm",
+        "kind": "cross",
+        "sizeMm": 100.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "cap100",
+        "name": "Заглушка 100 mm",
+        "kind": "endCap",
+        "sizeMm": 100.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "adp100",
+        "name": "Резьбовой адаптер 100 mm",
+        "kind": "adapter",
+        "sizeMm": 100.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x16",
+        "name": "Переход 100 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 16.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x20",
+        "name": "Переход 100 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 20.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x20",
+        "name": "Переходной тройник 100 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 20.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x25",
+        "name": "Переход 100 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 25.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x25",
+        "name": "Переходной тройник 100 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 25.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x32",
+        "name": "Переход 100 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 32.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x32",
+        "name": "Переходной тройник 100 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 32.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x35",
+        "name": "Переход 100 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 35.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x35",
+        "name": "Переходной тройник 100 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 35.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x40",
+        "name": "Переход 100 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 40.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x40",
+        "name": "Переходной тройник 100 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 40.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x50",
+        "name": "Переход 100 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 50.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x50",
+        "name": "Переходной тройник 100 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 50.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "red100x75",
+        "name": "Переход 100 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 100.0,
+        "size2Mm": 75.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "teer100x75",
+        "name": "Переходной тройник 100 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 100.0,
+        "size2Mm": 75.0,
+        "cost": 25.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl110",
+        "name": "Муфта 110 mm",
+        "kind": "coupler",
+        "sizeMm": 110.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_110",
+        "name": "Отвод 90° 110 mm",
+        "kind": "elbow90",
+        "sizeMm": 110.0,
+        "cost": 18.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_110",
+        "name": "Отвод 45° 110 mm",
+        "kind": "elbow45",
+        "sizeMm": 110.0,
+        "cost": 18.0,
+        "enabled": true
+      },
+      {
+        "id": "tee110",
+        "name": "Тройник 110 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "cross110",
+        "name": "Крестовина 110 mm",
+        "kind": "cross",
+        "sizeMm": 110.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "cap110",
+        "name": "Заглушка 110 mm",
+        "kind": "endCap",
+        "sizeMm": 110.0,
+        "cost": 9.0,
+        "enabled": true
+      },
+      {
+        "id": "adp110",
+        "name": "Резьбовой адаптер 110 mm",
+        "kind": "adapter",
+        "sizeMm": 110.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x16",
+        "name": "Переход 110 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 16.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x20",
+        "name": "Переход 110 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 20.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x20",
+        "name": "Переходной тройник 110 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 20.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x25",
+        "name": "Переход 110 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 25.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x25",
+        "name": "Переходной тройник 110 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 25.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x32",
+        "name": "Переход 110 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 32.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x32",
+        "name": "Переходной тройник 110 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 32.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x35",
+        "name": "Переход 110 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 35.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x35",
+        "name": "Переходной тройник 110 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 35.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x40",
+        "name": "Переход 110 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 40.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x40",
+        "name": "Переходной тройник 110 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 40.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x50",
+        "name": "Переход 110 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 50.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x50",
+        "name": "Переходной тройник 110 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 50.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x75",
+        "name": "Переход 110 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 75.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x75",
+        "name": "Переходной тройник 110 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 75.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "red110x100",
+        "name": "Переход 110 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 110.0,
+        "size2Mm": 100.0,
+        "cost": 15.0,
+        "enabled": true
+      },
+      {
+        "id": "teer110x100",
+        "name": "Переходной тройник 110 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 110.0,
+        "size2Mm": 100.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl125",
+        "name": "Муфта 125 mm",
+        "kind": "coupler",
+        "sizeMm": 125.0,
+        "cost": 14.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_125",
+        "name": "Отвод 90° 125 mm",
+        "kind": "elbow90",
+        "sizeMm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_125",
+        "name": "Отвод 45° 125 mm",
+        "kind": "elbow45",
+        "sizeMm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "tee125",
+        "name": "Тройник 125 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "cost": 27.0,
+        "enabled": true
+      },
+      {
+        "id": "cross125",
+        "name": "Крестовина 125 mm",
+        "kind": "cross",
+        "sizeMm": 125.0,
+        "cost": 37.0,
+        "enabled": true
+      },
+      {
+        "id": "cap125",
+        "name": "Заглушка 125 mm",
+        "kind": "endCap",
+        "sizeMm": 125.0,
+        "cost": 10.0,
+        "enabled": true
+      },
+      {
+        "id": "adp125",
+        "name": "Резьбовой адаптер 125 mm",
+        "kind": "adapter",
+        "sizeMm": 125.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x16",
+        "name": "Переход 125 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 16.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x20",
+        "name": "Переход 125 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 20.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x20",
+        "name": "Переходной тройник 125 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 20.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x25",
+        "name": "Переход 125 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 25.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x25",
+        "name": "Переходной тройник 125 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 25.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x32",
+        "name": "Переход 125 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 32.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x32",
+        "name": "Переходной тройник 125 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 32.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x35",
+        "name": "Переход 125 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 35.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x35",
+        "name": "Переходной тройник 125 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 35.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x40",
+        "name": "Переход 125 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 40.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x40",
+        "name": "Переходной тройник 125 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 40.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x50",
+        "name": "Переход 125 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 50.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x50",
+        "name": "Переходной тройник 125 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 50.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x75",
+        "name": "Переход 125 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 75.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x75",
+        "name": "Переходной тройник 125 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 75.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x100",
+        "name": "Переход 125 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 100.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x100",
+        "name": "Переходной тройник 125 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 100.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "red125x110",
+        "name": "Переход 125 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 125.0,
+        "size2Mm": 110.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "teer125x110",
+        "name": "Переходной тройник 125 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 125.0,
+        "size2Mm": 110.0,
+        "cost": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl150",
+        "name": "Муфта 150 mm",
+        "kind": "coupler",
+        "sizeMm": 150.0,
+        "cost": 16.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_150",
+        "name": "Отвод 90° 150 mm",
+        "kind": "elbow90",
+        "sizeMm": 150.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_150",
+        "name": "Отвод 45° 150 mm",
+        "kind": "elbow45",
+        "sizeMm": 150.0,
+        "cost": 24.0,
+        "enabled": true
+      },
+      {
+        "id": "tee150",
+        "name": "Тройник 150 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "cross150",
+        "name": "Крестовина 150 mm",
+        "kind": "cross",
+        "sizeMm": 150.0,
+        "cost": 44.0,
+        "enabled": true
+      },
+      {
+        "id": "cap150",
+        "name": "Заглушка 150 mm",
+        "kind": "endCap",
+        "sizeMm": 150.0,
+        "cost": 12.0,
+        "enabled": true
+      },
+      {
+        "id": "adp150",
+        "name": "Резьбовой адаптер 150 mm",
+        "kind": "adapter",
+        "sizeMm": 150.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x16",
+        "name": "Переход 150 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 16.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x20",
+        "name": "Переход 150 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 20.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x20",
+        "name": "Переходной тройник 150 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 20.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x25",
+        "name": "Переход 150 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 25.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x25",
+        "name": "Переходной тройник 150 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 25.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x32",
+        "name": "Переход 150 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 32.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x32",
+        "name": "Переходной тройник 150 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 32.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x35",
+        "name": "Переход 150 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 35.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x35",
+        "name": "Переходной тройник 150 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 35.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x40",
+        "name": "Переход 150 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 40.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x40",
+        "name": "Переходной тройник 150 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 40.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x50",
+        "name": "Переход 150 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 50.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x50",
+        "name": "Переходной тройник 150 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 50.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x75",
+        "name": "Переход 150 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 75.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x75",
+        "name": "Переходной тройник 150 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 75.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x100",
+        "name": "Переход 150 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 100.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x100",
+        "name": "Переходной тройник 150 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 100.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x110",
+        "name": "Переход 150 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 110.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x110",
+        "name": "Переходной тройник 150 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 110.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "red150x125",
+        "name": "Переход 150 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 150.0,
+        "size2Mm": 125.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "teer150x125",
+        "name": "Переходной тройник 150 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 150.0,
+        "size2Mm": 125.0,
+        "cost": 36.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl160",
+        "name": "Муфта 160 mm",
+        "kind": "coupler",
+        "sizeMm": 160.0,
+        "cost": 17.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_160",
+        "name": "Отвод 90° 160 mm",
+        "kind": "elbow90",
+        "sizeMm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_160",
+        "name": "Отвод 45° 160 mm",
+        "kind": "elbow45",
+        "sizeMm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "tee160",
+        "name": "Тройник 160 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "cost": 34.0,
+        "enabled": true
+      },
+      {
+        "id": "cross160",
+        "name": "Крестовина 160 mm",
+        "kind": "cross",
+        "sizeMm": 160.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "cap160",
+        "name": "Заглушка 160 mm",
+        "kind": "endCap",
+        "sizeMm": 160.0,
+        "cost": 13.0,
+        "enabled": true
+      },
+      {
+        "id": "adp160",
+        "name": "Резьбовой адаптер 160 mm",
+        "kind": "adapter",
+        "sizeMm": 160.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x16",
+        "name": "Переход 160 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 16.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x20",
+        "name": "Переход 160 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 20.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x20",
+        "name": "Переходной тройник 160 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 20.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x25",
+        "name": "Переход 160 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 25.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x25",
+        "name": "Переходной тройник 160 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 25.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x32",
+        "name": "Переход 160 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 32.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x32",
+        "name": "Переходной тройник 160 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 32.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x35",
+        "name": "Переход 160 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 35.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x35",
+        "name": "Переходной тройник 160 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 35.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x40",
+        "name": "Переход 160 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 40.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x40",
+        "name": "Переходной тройник 160 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 40.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x50",
+        "name": "Переход 160 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 50.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x50",
+        "name": "Переходной тройник 160 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 50.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x75",
+        "name": "Переход 160 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 75.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x75",
+        "name": "Переходной тройник 160 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 75.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x100",
+        "name": "Переход 160 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 100.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x100",
+        "name": "Переходной тройник 160 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 100.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x110",
+        "name": "Переход 160 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 110.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x110",
+        "name": "Переходной тройник 160 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 110.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x125",
+        "name": "Переход 160 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 125.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x125",
+        "name": "Переходной тройник 160 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 125.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "red160x150",
+        "name": "Переход 160 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 160.0,
+        "size2Mm": 150.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "teer160x150",
+        "name": "Переходной тройник 160 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 160.0,
+        "size2Mm": 150.0,
+        "cost": 38.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl200",
+        "name": "Муфта 200 mm",
+        "kind": "coupler",
+        "sizeMm": 200.0,
+        "cost": 21.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_200",
+        "name": "Отвод 90° 200 mm",
+        "kind": "elbow90",
+        "sizeMm": 200.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_200",
+        "name": "Отвод 45° 200 mm",
+        "kind": "elbow45",
+        "sizeMm": 200.0,
+        "cost": 32.0,
+        "enabled": true
+      },
+      {
+        "id": "tee200",
+        "name": "Тройник 200 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "cost": 42.0,
+        "enabled": true
+      },
+      {
+        "id": "cross200",
+        "name": "Крестовина 200 mm",
+        "kind": "cross",
+        "sizeMm": 200.0,
+        "cost": 58.0,
+        "enabled": true
+      },
+      {
+        "id": "cap200",
+        "name": "Заглушка 200 mm",
+        "kind": "endCap",
+        "sizeMm": 200.0,
+        "cost": 16.0,
+        "enabled": true
+      },
+      {
+        "id": "adp200",
+        "name": "Резьбовой адаптер 200 mm",
+        "kind": "adapter",
+        "sizeMm": 200.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x16",
+        "name": "Переход 200 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 16.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x20",
+        "name": "Переход 200 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 20.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x20",
+        "name": "Переходной тройник 200 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 20.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x25",
+        "name": "Переход 200 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 25.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x25",
+        "name": "Переходной тройник 200 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 25.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x32",
+        "name": "Переход 200 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 32.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x32",
+        "name": "Переходной тройник 200 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 32.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x35",
+        "name": "Переход 200 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 35.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x35",
+        "name": "Переходной тройник 200 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 35.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x40",
+        "name": "Переход 200 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 40.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x40",
+        "name": "Переходной тройник 200 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 40.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x50",
+        "name": "Переход 200 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 50.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x50",
+        "name": "Переходной тройник 200 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 50.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x75",
+        "name": "Переход 200 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 75.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x75",
+        "name": "Переходной тройник 200 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 75.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x100",
+        "name": "Переход 200 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 100.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x100",
+        "name": "Переходной тройник 200 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 100.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x110",
+        "name": "Переход 200 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 110.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x110",
+        "name": "Переходной тройник 200 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 110.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x125",
+        "name": "Переход 200 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 125.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x125",
+        "name": "Переходной тройник 200 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 125.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x150",
+        "name": "Переход 200 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 150.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x150",
+        "name": "Переходной тройник 200 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 150.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "red200x160",
+        "name": "Переход 200 × 160 mm",
+        "kind": "reducer",
+        "sizeMm": 200.0,
+        "size2Mm": 160.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "teer200x160",
+        "name": "Переходной тройник 200 × 160 mm",
+        "kind": "tee",
+        "sizeMm": 200.0,
+        "size2Mm": 160.0,
+        "cost": 47.0,
+        "enabled": true
+      },
+      {
+        "id": "cpl250",
+        "name": "Муфта 250 mm",
+        "kind": "coupler",
+        "sizeMm": 250.0,
+        "cost": 26.0,
+        "enabled": true
+      },
+      {
+        "id": "el90_250",
+        "name": "Отвод 90° 250 mm",
+        "kind": "elbow90",
+        "sizeMm": 250.0,
+        "cost": 39.0,
+        "enabled": true
+      },
+      {
+        "id": "el45_250",
+        "name": "Отвод 45° 250 mm",
+        "kind": "elbow45",
+        "sizeMm": 250.0,
+        "cost": 39.0,
+        "enabled": true
+      },
+      {
+        "id": "tee250",
+        "name": "Тройник 250 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "cost": 52.0,
+        "enabled": true
+      },
+      {
+        "id": "cross250",
+        "name": "Крестовина 250 mm",
+        "kind": "cross",
+        "sizeMm": 250.0,
+        "cost": 72.0,
+        "enabled": true
+      },
+      {
+        "id": "cap250",
+        "name": "Заглушка 250 mm",
+        "kind": "endCap",
+        "sizeMm": 250.0,
+        "cost": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "adp250",
+        "name": "Резьбовой адаптер 250 mm",
+        "kind": "adapter",
+        "sizeMm": 250.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x16",
+        "name": "Переход 250 × 16 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 16.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x20",
+        "name": "Переход 250 × 20 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 20.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x20",
+        "name": "Переходной тройник 250 × 20 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 20.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x25",
+        "name": "Переход 250 × 25 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 25.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x25",
+        "name": "Переходной тройник 250 × 25 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 25.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x32",
+        "name": "Переход 250 × 32 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 32.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x32",
+        "name": "Переходной тройник 250 × 32 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 32.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x35",
+        "name": "Переход 250 × 35 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 35.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x35",
+        "name": "Переходной тройник 250 × 35 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 35.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x40",
+        "name": "Переход 250 × 40 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 40.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x40",
+        "name": "Переходной тройник 250 × 40 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 40.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x50",
+        "name": "Переход 250 × 50 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 50.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x50",
+        "name": "Переходной тройник 250 × 50 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 50.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x75",
+        "name": "Переход 250 × 75 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 75.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x75",
+        "name": "Переходной тройник 250 × 75 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 75.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x100",
+        "name": "Переход 250 × 100 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 100.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x100",
+        "name": "Переходной тройник 250 × 100 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 100.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x110",
+        "name": "Переход 250 × 110 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 110.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x110",
+        "name": "Переходной тройник 250 × 110 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 110.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x125",
+        "name": "Переход 250 × 125 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 125.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x125",
+        "name": "Переходной тройник 250 × 125 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 125.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x150",
+        "name": "Переход 250 × 150 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 150.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x150",
+        "name": "Переходной тройник 250 × 150 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 150.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x160",
+        "name": "Переход 250 × 160 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 160.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x160",
+        "name": "Переходной тройник 250 × 160 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 160.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "red250x200",
+        "name": "Переход 250 × 200 mm",
+        "kind": "reducer",
+        "sizeMm": 250.0,
+        "size2Mm": 200.0,
+        "cost": 33.0,
+        "enabled": true
+      },
+      {
+        "id": "teer250x200",
+        "name": "Переходной тройник 250 × 200 mm",
+        "kind": "tee",
+        "sizeMm": 250.0,
+        "size2Mm": 200.0,
+        "cost": 59.0,
+        "enabled": true
+      },
+      {
+        "id": "to16",
+        "name": "Стартовый коннектор 16 mm",
+        "kind": "takeOff",
+        "sizeMm": 16.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te16",
+        "name": "Концевик 16 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 16.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to20",
+        "name": "Стартовый коннектор 20 mm",
+        "kind": "takeOff",
+        "sizeMm": 20.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te20",
+        "name": "Концевик 20 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 20.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to25",
+        "name": "Стартовый коннектор 25 mm",
+        "kind": "takeOff",
+        "sizeMm": 25.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te25",
+        "name": "Концевик 25 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 25.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to32",
+        "name": "Стартовый коннектор 32 mm",
+        "kind": "takeOff",
+        "sizeMm": 32.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te32",
+        "name": "Концевик 32 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 32.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to35",
+        "name": "Стартовый коннектор 35 mm",
+        "kind": "takeOff",
+        "sizeMm": 35.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te35",
+        "name": "Концевик 35 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 35.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to40",
+        "name": "Стартовый коннектор 40 mm",
+        "kind": "takeOff",
+        "sizeMm": 40.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te40",
+        "name": "Концевик 40 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 40.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "to50",
+        "name": "Стартовый коннектор 50 mm",
+        "kind": "takeOff",
+        "sizeMm": 50.0,
+        "cost": 1.2,
+        "enabled": true
+      },
+      {
+        "id": "te50",
+        "name": "Концевик 50 mm",
+        "kind": "tapeEnd",
+        "sizeMm": 50.0,
+        "cost": 0.9,
+        "enabled": true
+      },
+      {
+        "id": "riser_micro",
+        "name": "Колышек/трубка микродождевателя",
+        "kind": "riser",
+        "sizeMm": 0.0,
+        "cost": 1.1,
+        "enabled": true
+      },
+      {
+        "id": "riser20",
+        "name": "Стояк 20 mm",
+        "kind": "riser",
+        "sizeMm": 20.0,
+        "cost": 6.0,
+        "enabled": true
+      },
+      {
+        "id": "riser25",
+        "name": "Стояк 25 mm",
+        "kind": "riser",
+        "sizeMm": 25.0,
+        "cost": 8.0,
+        "enabled": true
+      },
+      {
+        "id": "riser40",
+        "name": "Стояк 40 mm",
+        "kind": "riser",
+        "sizeMm": 40.0,
+        "cost": 18.0,
+        "enabled": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "name": "IMAGES",
+      "color": 4294967295,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DRAWING",
+      "color": 4289773253,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "HATCHES",
+      "color": 4286091420,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SYMBOLS",
+      "color": 4289773253,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "TEXT",
+      "color": 4293718001,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DIMENSIONS",
+      "color": 4287669422,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTOURS",
+      "color": 4287458915,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SPOT_HEIGHTS",
+      "color": 4288776319,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "DEM",
+      "color": 4286483095,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "ZONE_PIPES",
+      "color": 4282557941,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "MAINLINE_PIPES",
+      "color": 4280191205,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "SPRAYLINES",
+      "color": 4280731354,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "TAPES",
+      "color": 4284922730,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "OUTLETS",
+      "color": 4280923894,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WETTED_RADII",
+      "color": 1428797174,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTROL_VALVES",
+      "color": 4294944550,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WATER_SUPPLY",
+      "color": 4286470082,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "PUMPS",
+      "color": 4293874512,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "MISC_HYDRAULIC",
+      "color": 4294953512,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "JUNCTIONS",
+      "color": 4286091420,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "PIVOTS",
+      "color": 4283283116,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "AREAS",
+      "color": 867095937,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "LABELS",
+      "color": 4291811548,
+      "visible": true,
+      "locked": false
+    }
+  ],
+  "entities": [
+    {
+      "type": "spotHeight",
+      "id": "e1",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        0.0,
+        0.0
+      ],
+      "z": 100.0
+    },
+    {
+      "type": "spotHeight",
+      "id": "e2",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        244.0,
+        0.0
+      ],
+      "z": 102.44
+    },
+    {
+      "type": "spotHeight",
+      "id": "e3",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        0.0,
+        124.0
+      ],
+      "z": 100.62
+    },
+    {
+      "type": "spotHeight",
+      "id": "e4",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        244.0,
+        124.0
+      ],
+      "z": 103.06
+    },
+    {
+      "type": "spotHeight",
+      "id": "e5",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        122.0,
+        62.0
+      ],
+      "z": 101.53
+    },
+    {
+      "type": "spotHeight",
+      "id": "e6",
+      "layer": "SPOT_HEIGHTS",
+      "p": [
+        122.0,
+        -40.0
+      ],
+      "z": 101.02
+    },
+    {
+      "type": "polyline",
+      "id": "e7",
+      "layer": "DRAWING",
+      "name": "Поле",
+      "pts": [
+        [
+          -12.0,
+          -12.0
+        ],
+        [
+          256.0,
+          -12.0
+        ],
+        [
+          256.0,
+          136.0
+        ],
+        [
+          -12.0,
+          136.0
+        ]
+      ],
+      "closed": true
+    },
+    {
+      "type": "line",
+      "id": "e8",
+      "layer": "DRAWING",
+      "name": "Дорога",
+      "a": [
+        -12.0,
+        -50.0
+      ],
+      "b": [
+        256.0,
+        -50.0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "e9",
+      "layer": "DRAWING",
+      "name": "Дорога",
+      "a": [
+        -12.0,
+        -56.0
+      ],
+      "b": [
+        256.0,
+        -56.0
+      ]
+    },
+    {
+      "type": "text",
+      "id": "e10",
+      "layer": "TEXT",
+      "p": [
+        60.0,
+        -54.5
+      ],
+      "text": "Дорога",
+      "h": 2.5,
+      "rot": 0.0
+    },
+    {
+      "type": "text",
+      "id": "e11",
+      "layer": "TEXT",
+      "p": [
+        -10.0,
+        142.0
+      ],
+      "text": "Томаты на капельном орошении — пример OpenCADIrrigation",
+      "h": 5.0,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e12",
+      "layer": "SYMBOLS",
+      "p": [
+        248.0,
+        128.0
+      ],
+      "kind": "northArrow",
+      "size": 6.0,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e13",
+      "layer": "SYMBOLS",
+      "p": [
+        134.0,
+        -36.0
+      ],
+      "kind": "pumpHouse",
+      "size": 3.0,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e14",
+      "layer": "SYMBOLS",
+      "p": [
+        134.0,
+        -30.0
+      ],
+      "kind": "filterStation",
+      "size": 3.0,
+      "rot": 0.0
+    },
+    {
+      "type": "symbol",
+      "id": "e15",
+      "layer": "SYMBOLS",
+      "p": [
+        134.0,
+        -42.0
+      ],
+      "kind": "tank",
+      "size": 3.0,
+      "rot": 0.0
+    },
+    {
+      "type": "text",
+      "id": "e16",
+      "layer": "TEXT",
+      "p": [
+        139.0,
+        -43.0
+      ],
+      "text": "Резервуар",
+      "h": 2.0,
+      "rot": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e17",
+      "layer": "TAPES",
+      "name": "L1",
+      "pts": [
+        [
+          0.0,
+          0.9
+        ],
+        [
+          120.0,
+          0.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e18",
+      "layer": "TAPES",
+      "name": "L2",
+      "pts": [
+        [
+          0.0,
+          2.7
+        ],
+        [
+          120.0,
+          2.7
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e19",
+      "layer": "TAPES",
+      "name": "L3",
+      "pts": [
+        [
+          0.0,
+          4.5
+        ],
+        [
+          120.0,
+          4.5
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e20",
+      "layer": "TAPES",
+      "name": "L4",
+      "pts": [
+        [
+          0.0,
+          6.3
+        ],
+        [
+          120.0,
+          6.3
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e21",
+      "layer": "TAPES",
+      "name": "L5",
+      "pts": [
+        [
+          0.0,
+          8.1
+        ],
+        [
+          120.0,
+          8.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e22",
+      "layer": "TAPES",
+      "name": "L6",
+      "pts": [
+        [
+          0.0,
+          9.9
+        ],
+        [
+          120.0,
+          9.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e23",
+      "layer": "TAPES",
+      "name": "L7",
+      "pts": [
+        [
+          0.0,
+          11.700000000000001
+        ],
+        [
+          120.0,
+          11.700000000000001
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e24",
+      "layer": "TAPES",
+      "name": "L8",
+      "pts": [
+        [
+          0.0,
+          13.500000000000002
+        ],
+        [
+          120.0,
+          13.500000000000002
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e25",
+      "layer": "TAPES",
+      "name": "L9",
+      "pts": [
+        [
+          0.0,
+          15.300000000000002
+        ],
+        [
+          120.0,
+          15.300000000000002
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e26",
+      "layer": "TAPES",
+      "name": "L10",
+      "pts": [
+        [
+          0.0,
+          17.1
+        ],
+        [
+          120.0,
+          17.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e27",
+      "layer": "TAPES",
+      "name": "L11",
+      "pts": [
+        [
+          0.0,
+          18.900000000000002
+        ],
+        [
+          120.0,
+          18.900000000000002
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e28",
+      "layer": "TAPES",
+      "name": "L12",
+      "pts": [
+        [
+          0.0,
+          20.700000000000003
+        ],
+        [
+          120.0,
+          20.700000000000003
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e29",
+      "layer": "TAPES",
+      "name": "L13",
+      "pts": [
+        [
+          0.0,
+          22.500000000000004
+        ],
+        [
+          120.0,
+          22.500000000000004
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e30",
+      "layer": "TAPES",
+      "name": "L14",
+      "pts": [
+        [
+          0.0,
+          24.300000000000004
+        ],
+        [
+          120.0,
+          24.300000000000004
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e31",
+      "layer": "TAPES",
+      "name": "L15",
+      "pts": [
+        [
+          0.0,
+          26.100000000000005
+        ],
+        [
+          120.0,
+          26.100000000000005
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e32",
+      "layer": "TAPES",
+      "name": "L16",
+      "pts": [
+        [
+          0.0,
+          27.900000000000006
+        ],
+        [
+          120.0,
+          27.900000000000006
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e33",
+      "layer": "TAPES",
+      "name": "L17",
+      "pts": [
+        [
+          0.0,
+          29.700000000000006
+        ],
+        [
+          120.0,
+          29.700000000000006
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e34",
+      "layer": "TAPES",
+      "name": "L18",
+      "pts": [
+        [
+          0.0,
+          31.500000000000007
+        ],
+        [
+          120.0,
+          31.500000000000007
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e35",
+      "layer": "TAPES",
+      "name": "L19",
+      "pts": [
+        [
+          0.0,
+          33.300000000000004
+        ],
+        [
+          120.0,
+          33.300000000000004
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e36",
+      "layer": "TAPES",
+      "name": "L20",
+      "pts": [
+        [
+          0.0,
+          35.1
+        ],
+        [
+          120.0,
+          35.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e37",
+      "layer": "TAPES",
+      "name": "L21",
+      "pts": [
+        [
+          0.0,
+          36.9
+        ],
+        [
+          120.0,
+          36.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e38",
+      "layer": "TAPES",
+      "name": "L22",
+      "pts": [
+        [
+          0.0,
+          38.699999999999996
+        ],
+        [
+          120.0,
+          38.699999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e39",
+      "layer": "TAPES",
+      "name": "L23",
+      "pts": [
+        [
+          0.0,
+          40.49999999999999
+        ],
+        [
+          120.0,
+          40.49999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e40",
+      "layer": "TAPES",
+      "name": "L24",
+      "pts": [
+        [
+          0.0,
+          42.29999999999999
+        ],
+        [
+          120.0,
+          42.29999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e41",
+      "layer": "TAPES",
+      "name": "L25",
+      "pts": [
+        [
+          0.0,
+          44.09999999999999
+        ],
+        [
+          120.0,
+          44.09999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e42",
+      "layer": "TAPES",
+      "name": "L26",
+      "pts": [
+        [
+          0.0,
+          45.899999999999984
+        ],
+        [
+          120.0,
+          45.899999999999984
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e43",
+      "layer": "TAPES",
+      "name": "L27",
+      "pts": [
+        [
+          0.0,
+          47.69999999999998
+        ],
+        [
+          120.0,
+          47.69999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e44",
+      "layer": "TAPES",
+      "name": "L28",
+      "pts": [
+        [
+          0.0,
+          49.49999999999998
+        ],
+        [
+          120.0,
+          49.49999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e45",
+      "layer": "TAPES",
+      "name": "L29",
+      "pts": [
+        [
+          0.0,
+          51.299999999999976
+        ],
+        [
+          120.0,
+          51.299999999999976
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e46",
+      "layer": "TAPES",
+      "name": "L30",
+      "pts": [
+        [
+          0.0,
+          53.09999999999997
+        ],
+        [
+          120.0,
+          53.09999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e47",
+      "layer": "TAPES",
+      "name": "L31",
+      "pts": [
+        [
+          0.0,
+          54.89999999999997
+        ],
+        [
+          120.0,
+          54.89999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e48",
+      "layer": "TAPES",
+      "name": "L32",
+      "pts": [
+        [
+          0.0,
+          56.69999999999997
+        ],
+        [
+          120.0,
+          56.69999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e49",
+      "layer": "TAPES",
+      "name": "L33",
+      "pts": [
+        [
+          0.0,
+          58.499999999999964
+        ],
+        [
+          120.0,
+          58.499999999999964
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e50",
+      "layer": "ZONE_PIPES",
+      "name": "Распределитель Блок 1",
+      "pts": [
+        [
+          0.0,
+          0.9
+        ],
+        [
+          0.0,
+          58.499999999999964
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e51",
+      "layer": "ZONE_PIPES",
+      "name": "Отвод Блок 1",
+      "pts": [
+        [
+          -2.0,
+          29.69999999999998
+        ],
+        [
+          0.0,
+          29.69999999999998
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "controlValve",
+      "id": "e52",
+      "layer": "CONTROL_VALVES",
+      "name": "Блок 1",
+      "p": [
+        -2.0,
+        29.69999999999998
+      ],
+      "spec": "ev80",
+      "zone": "Блок 1",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e53",
+      "layer": "AREAS",
+      "name": "Блок 1",
+      "pts": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          120.0,
+          0.0
+        ],
+        [
+          120.0,
+          60.0
+        ],
+        [
+          0.0,
+          60.0
+        ]
+      ],
+      "depth": 5.5,
+      "eff": 0.92,
+      "crop": "Томат",
+      "epp": 1,
+      "wb": true,
+      "eto": 5.5,
+      "kc": 1.1,
+      "awc": 130.0,
+      "root": 0.5,
+      "mad": 0.4,
+      "psp": 0.4,
+      "rsp": 1.8,
+      "wf": 0.6
+    },
+    {
+      "type": "tape",
+      "id": "e54",
+      "layer": "TAPES",
+      "name": "L1",
+      "pts": [
+        [
+          244.0,
+          0.9
+        ],
+        [
+          124.0,
+          0.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e55",
+      "layer": "TAPES",
+      "name": "L2",
+      "pts": [
+        [
+          244.0,
+          2.7
+        ],
+        [
+          124.0,
+          2.7
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e56",
+      "layer": "TAPES",
+      "name": "L3",
+      "pts": [
+        [
+          244.0,
+          4.5
+        ],
+        [
+          124.0,
+          4.5
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e57",
+      "layer": "TAPES",
+      "name": "L4",
+      "pts": [
+        [
+          244.0,
+          6.3
+        ],
+        [
+          124.0,
+          6.3
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e58",
+      "layer": "TAPES",
+      "name": "L5",
+      "pts": [
+        [
+          244.0,
+          8.1
+        ],
+        [
+          124.0,
+          8.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e59",
+      "layer": "TAPES",
+      "name": "L6",
+      "pts": [
+        [
+          244.0,
+          9.9
+        ],
+        [
+          124.0,
+          9.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e60",
+      "layer": "TAPES",
+      "name": "L7",
+      "pts": [
+        [
+          244.0,
+          11.700000000000001
+        ],
+        [
+          124.0,
+          11.700000000000001
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e61",
+      "layer": "TAPES",
+      "name": "L8",
+      "pts": [
+        [
+          244.0,
+          13.500000000000002
+        ],
+        [
+          124.0,
+          13.500000000000002
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e62",
+      "layer": "TAPES",
+      "name": "L9",
+      "pts": [
+        [
+          244.0,
+          15.300000000000002
+        ],
+        [
+          124.0,
+          15.300000000000002
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e63",
+      "layer": "TAPES",
+      "name": "L10",
+      "pts": [
+        [
+          244.0,
+          17.1
+        ],
+        [
+          124.0,
+          17.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e64",
+      "layer": "TAPES",
+      "name": "L11",
+      "pts": [
+        [
+          244.0,
+          18.900000000000002
+        ],
+        [
+          124.0,
+          18.900000000000002
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e65",
+      "layer": "TAPES",
+      "name": "L12",
+      "pts": [
+        [
+          244.0,
+          20.700000000000003
+        ],
+        [
+          124.0,
+          20.700000000000003
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e66",
+      "layer": "TAPES",
+      "name": "L13",
+      "pts": [
+        [
+          244.0,
+          22.500000000000004
+        ],
+        [
+          124.0,
+          22.500000000000004
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e67",
+      "layer": "TAPES",
+      "name": "L14",
+      "pts": [
+        [
+          244.0,
+          24.300000000000004
+        ],
+        [
+          124.0,
+          24.300000000000004
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e68",
+      "layer": "TAPES",
+      "name": "L15",
+      "pts": [
+        [
+          244.0,
+          26.100000000000005
+        ],
+        [
+          124.0,
+          26.100000000000005
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e69",
+      "layer": "TAPES",
+      "name": "L16",
+      "pts": [
+        [
+          244.0,
+          27.900000000000006
+        ],
+        [
+          124.0,
+          27.900000000000006
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e70",
+      "layer": "TAPES",
+      "name": "L17",
+      "pts": [
+        [
+          244.0,
+          29.700000000000006
+        ],
+        [
+          124.0,
+          29.700000000000006
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e71",
+      "layer": "TAPES",
+      "name": "L18",
+      "pts": [
+        [
+          244.0,
+          31.500000000000007
+        ],
+        [
+          124.0,
+          31.500000000000007
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e72",
+      "layer": "TAPES",
+      "name": "L19",
+      "pts": [
+        [
+          244.0,
+          33.300000000000004
+        ],
+        [
+          124.0,
+          33.300000000000004
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e73",
+      "layer": "TAPES",
+      "name": "L20",
+      "pts": [
+        [
+          244.0,
+          35.1
+        ],
+        [
+          124.0,
+          35.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e74",
+      "layer": "TAPES",
+      "name": "L21",
+      "pts": [
+        [
+          244.0,
+          36.9
+        ],
+        [
+          124.0,
+          36.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e75",
+      "layer": "TAPES",
+      "name": "L22",
+      "pts": [
+        [
+          244.0,
+          38.699999999999996
+        ],
+        [
+          124.0,
+          38.699999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e76",
+      "layer": "TAPES",
+      "name": "L23",
+      "pts": [
+        [
+          244.0,
+          40.49999999999999
+        ],
+        [
+          124.0,
+          40.49999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e77",
+      "layer": "TAPES",
+      "name": "L24",
+      "pts": [
+        [
+          244.0,
+          42.29999999999999
+        ],
+        [
+          124.0,
+          42.29999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e78",
+      "layer": "TAPES",
+      "name": "L25",
+      "pts": [
+        [
+          244.0,
+          44.09999999999999
+        ],
+        [
+          124.0,
+          44.09999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e79",
+      "layer": "TAPES",
+      "name": "L26",
+      "pts": [
+        [
+          244.0,
+          45.899999999999984
+        ],
+        [
+          124.0,
+          45.899999999999984
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e80",
+      "layer": "TAPES",
+      "name": "L27",
+      "pts": [
+        [
+          244.0,
+          47.69999999999998
+        ],
+        [
+          124.0,
+          47.69999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e81",
+      "layer": "TAPES",
+      "name": "L28",
+      "pts": [
+        [
+          244.0,
+          49.49999999999998
+        ],
+        [
+          124.0,
+          49.49999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e82",
+      "layer": "TAPES",
+      "name": "L29",
+      "pts": [
+        [
+          244.0,
+          51.299999999999976
+        ],
+        [
+          124.0,
+          51.299999999999976
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e83",
+      "layer": "TAPES",
+      "name": "L30",
+      "pts": [
+        [
+          244.0,
+          53.09999999999997
+        ],
+        [
+          124.0,
+          53.09999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e84",
+      "layer": "TAPES",
+      "name": "L31",
+      "pts": [
+        [
+          244.0,
+          54.89999999999997
+        ],
+        [
+          124.0,
+          54.89999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e85",
+      "layer": "TAPES",
+      "name": "L32",
+      "pts": [
+        [
+          244.0,
+          56.69999999999997
+        ],
+        [
+          124.0,
+          56.69999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e86",
+      "layer": "TAPES",
+      "name": "L33",
+      "pts": [
+        [
+          244.0,
+          58.499999999999964
+        ],
+        [
+          124.0,
+          58.499999999999964
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e87",
+      "layer": "ZONE_PIPES",
+      "name": "Распределитель Блок 2",
+      "pts": [
+        [
+          244.0,
+          0.9
+        ],
+        [
+          244.0,
+          58.499999999999964
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e88",
+      "layer": "ZONE_PIPES",
+      "name": "Отвод Блок 2",
+      "pts": [
+        [
+          246.0,
+          29.69999999999998
+        ],
+        [
+          244.0,
+          29.69999999999998
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "controlValve",
+      "id": "e89",
+      "layer": "CONTROL_VALVES",
+      "name": "Блок 2",
+      "p": [
+        246.0,
+        29.69999999999998
+      ],
+      "spec": "ev80",
+      "zone": "Блок 2",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e90",
+      "layer": "AREAS",
+      "name": "Блок 2",
+      "pts": [
+        [
+          124.0,
+          0.0
+        ],
+        [
+          244.0,
+          0.0
+        ],
+        [
+          244.0,
+          60.0
+        ],
+        [
+          124.0,
+          60.0
+        ]
+      ],
+      "depth": 5.5,
+      "eff": 0.92,
+      "crop": "Томат",
+      "epp": 1,
+      "wb": true,
+      "eto": 5.5,
+      "kc": 1.1,
+      "awc": 130.0,
+      "root": 0.5,
+      "mad": 0.4,
+      "psp": 0.4,
+      "rsp": 1.8,
+      "wf": 0.6
+    },
+    {
+      "type": "tape",
+      "id": "e91",
+      "layer": "TAPES",
+      "name": "L1",
+      "pts": [
+        [
+          0.0,
+          64.9
+        ],
+        [
+          120.0,
+          64.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e92",
+      "layer": "TAPES",
+      "name": "L2",
+      "pts": [
+        [
+          0.0,
+          66.7
+        ],
+        [
+          120.0,
+          66.7
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e93",
+      "layer": "TAPES",
+      "name": "L3",
+      "pts": [
+        [
+          0.0,
+          68.5
+        ],
+        [
+          120.0,
+          68.5
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e94",
+      "layer": "TAPES",
+      "name": "L4",
+      "pts": [
+        [
+          0.0,
+          70.3
+        ],
+        [
+          120.0,
+          70.3
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e95",
+      "layer": "TAPES",
+      "name": "L5",
+      "pts": [
+        [
+          0.0,
+          72.1
+        ],
+        [
+          120.0,
+          72.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e96",
+      "layer": "TAPES",
+      "name": "L6",
+      "pts": [
+        [
+          0.0,
+          73.89999999999999
+        ],
+        [
+          120.0,
+          73.89999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e97",
+      "layer": "TAPES",
+      "name": "L7",
+      "pts": [
+        [
+          0.0,
+          75.69999999999999
+        ],
+        [
+          120.0,
+          75.69999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e98",
+      "layer": "TAPES",
+      "name": "L8",
+      "pts": [
+        [
+          0.0,
+          77.49999999999999
+        ],
+        [
+          120.0,
+          77.49999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e99",
+      "layer": "TAPES",
+      "name": "L9",
+      "pts": [
+        [
+          0.0,
+          79.29999999999998
+        ],
+        [
+          120.0,
+          79.29999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e100",
+      "layer": "TAPES",
+      "name": "L10",
+      "pts": [
+        [
+          0.0,
+          81.09999999999998
+        ],
+        [
+          120.0,
+          81.09999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e101",
+      "layer": "TAPES",
+      "name": "L11",
+      "pts": [
+        [
+          0.0,
+          82.89999999999998
+        ],
+        [
+          120.0,
+          82.89999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e102",
+      "layer": "TAPES",
+      "name": "L12",
+      "pts": [
+        [
+          0.0,
+          84.69999999999997
+        ],
+        [
+          120.0,
+          84.69999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e103",
+      "layer": "TAPES",
+      "name": "L13",
+      "pts": [
+        [
+          0.0,
+          86.49999999999997
+        ],
+        [
+          120.0,
+          86.49999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e104",
+      "layer": "TAPES",
+      "name": "L14",
+      "pts": [
+        [
+          0.0,
+          88.29999999999997
+        ],
+        [
+          120.0,
+          88.29999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e105",
+      "layer": "TAPES",
+      "name": "L15",
+      "pts": [
+        [
+          0.0,
+          90.09999999999997
+        ],
+        [
+          120.0,
+          90.09999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e106",
+      "layer": "TAPES",
+      "name": "L16",
+      "pts": [
+        [
+          0.0,
+          91.89999999999996
+        ],
+        [
+          120.0,
+          91.89999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e107",
+      "layer": "TAPES",
+      "name": "L17",
+      "pts": [
+        [
+          0.0,
+          93.69999999999996
+        ],
+        [
+          120.0,
+          93.69999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e108",
+      "layer": "TAPES",
+      "name": "L18",
+      "pts": [
+        [
+          0.0,
+          95.49999999999996
+        ],
+        [
+          120.0,
+          95.49999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e109",
+      "layer": "TAPES",
+      "name": "L19",
+      "pts": [
+        [
+          0.0,
+          97.29999999999995
+        ],
+        [
+          120.0,
+          97.29999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e110",
+      "layer": "TAPES",
+      "name": "L20",
+      "pts": [
+        [
+          0.0,
+          99.09999999999995
+        ],
+        [
+          120.0,
+          99.09999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e111",
+      "layer": "TAPES",
+      "name": "L21",
+      "pts": [
+        [
+          0.0,
+          100.89999999999995
+        ],
+        [
+          120.0,
+          100.89999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e112",
+      "layer": "TAPES",
+      "name": "L22",
+      "pts": [
+        [
+          0.0,
+          102.69999999999995
+        ],
+        [
+          120.0,
+          102.69999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e113",
+      "layer": "TAPES",
+      "name": "L23",
+      "pts": [
+        [
+          0.0,
+          104.49999999999994
+        ],
+        [
+          120.0,
+          104.49999999999994
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e114",
+      "layer": "TAPES",
+      "name": "L24",
+      "pts": [
+        [
+          0.0,
+          106.29999999999994
+        ],
+        [
+          120.0,
+          106.29999999999994
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e115",
+      "layer": "TAPES",
+      "name": "L25",
+      "pts": [
+        [
+          0.0,
+          108.09999999999994
+        ],
+        [
+          120.0,
+          108.09999999999994
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e116",
+      "layer": "TAPES",
+      "name": "L26",
+      "pts": [
+        [
+          0.0,
+          109.89999999999993
+        ],
+        [
+          120.0,
+          109.89999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e117",
+      "layer": "TAPES",
+      "name": "L27",
+      "pts": [
+        [
+          0.0,
+          111.69999999999993
+        ],
+        [
+          120.0,
+          111.69999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e118",
+      "layer": "TAPES",
+      "name": "L28",
+      "pts": [
+        [
+          0.0,
+          113.49999999999993
+        ],
+        [
+          120.0,
+          113.49999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e119",
+      "layer": "TAPES",
+      "name": "L29",
+      "pts": [
+        [
+          0.0,
+          115.29999999999993
+        ],
+        [
+          120.0,
+          115.29999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e120",
+      "layer": "TAPES",
+      "name": "L30",
+      "pts": [
+        [
+          0.0,
+          117.09999999999992
+        ],
+        [
+          120.0,
+          117.09999999999992
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e121",
+      "layer": "TAPES",
+      "name": "L31",
+      "pts": [
+        [
+          0.0,
+          118.89999999999992
+        ],
+        [
+          120.0,
+          118.89999999999992
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e122",
+      "layer": "TAPES",
+      "name": "L32",
+      "pts": [
+        [
+          0.0,
+          120.69999999999992
+        ],
+        [
+          120.0,
+          120.69999999999992
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e123",
+      "layer": "TAPES",
+      "name": "L33",
+      "pts": [
+        [
+          0.0,
+          122.49999999999991
+        ],
+        [
+          120.0,
+          122.49999999999991
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e124",
+      "layer": "ZONE_PIPES",
+      "name": "Распределитель Блок 3",
+      "pts": [
+        [
+          0.0,
+          64.9
+        ],
+        [
+          0.0,
+          122.49999999999991
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e125",
+      "layer": "ZONE_PIPES",
+      "name": "Отвод Блок 3",
+      "pts": [
+        [
+          -2.0,
+          93.69999999999996
+        ],
+        [
+          0.0,
+          93.69999999999996
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "controlValve",
+      "id": "e126",
+      "layer": "CONTROL_VALVES",
+      "name": "Блок 3",
+      "p": [
+        -2.0,
+        93.69999999999996
+      ],
+      "spec": "ev80",
+      "zone": "Блок 3",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e127",
+      "layer": "AREAS",
+      "name": "Блок 3",
+      "pts": [
+        [
+          0.0,
+          64.0
+        ],
+        [
+          120.0,
+          64.0
+        ],
+        [
+          120.0,
+          124.0
+        ],
+        [
+          0.0,
+          124.0
+        ]
+      ],
+      "depth": 5.5,
+      "eff": 0.92,
+      "crop": "Томат",
+      "epp": 1,
+      "wb": true,
+      "eto": 5.5,
+      "kc": 1.1,
+      "awc": 130.0,
+      "root": 0.5,
+      "mad": 0.4,
+      "psp": 0.4,
+      "rsp": 1.8,
+      "wf": 0.6
+    },
+    {
+      "type": "tape",
+      "id": "e128",
+      "layer": "TAPES",
+      "name": "L1",
+      "pts": [
+        [
+          244.0,
+          64.9
+        ],
+        [
+          124.0,
+          64.9
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e129",
+      "layer": "TAPES",
+      "name": "L2",
+      "pts": [
+        [
+          244.0,
+          66.7
+        ],
+        [
+          124.0,
+          66.7
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e130",
+      "layer": "TAPES",
+      "name": "L3",
+      "pts": [
+        [
+          244.0,
+          68.5
+        ],
+        [
+          124.0,
+          68.5
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e131",
+      "layer": "TAPES",
+      "name": "L4",
+      "pts": [
+        [
+          244.0,
+          70.3
+        ],
+        [
+          124.0,
+          70.3
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e132",
+      "layer": "TAPES",
+      "name": "L5",
+      "pts": [
+        [
+          244.0,
+          72.1
+        ],
+        [
+          124.0,
+          72.1
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e133",
+      "layer": "TAPES",
+      "name": "L6",
+      "pts": [
+        [
+          244.0,
+          73.89999999999999
+        ],
+        [
+          124.0,
+          73.89999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e134",
+      "layer": "TAPES",
+      "name": "L7",
+      "pts": [
+        [
+          244.0,
+          75.69999999999999
+        ],
+        [
+          124.0,
+          75.69999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e135",
+      "layer": "TAPES",
+      "name": "L8",
+      "pts": [
+        [
+          244.0,
+          77.49999999999999
+        ],
+        [
+          124.0,
+          77.49999999999999
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e136",
+      "layer": "TAPES",
+      "name": "L9",
+      "pts": [
+        [
+          244.0,
+          79.29999999999998
+        ],
+        [
+          124.0,
+          79.29999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e137",
+      "layer": "TAPES",
+      "name": "L10",
+      "pts": [
+        [
+          244.0,
+          81.09999999999998
+        ],
+        [
+          124.0,
+          81.09999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e138",
+      "layer": "TAPES",
+      "name": "L11",
+      "pts": [
+        [
+          244.0,
+          82.89999999999998
+        ],
+        [
+          124.0,
+          82.89999999999998
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e139",
+      "layer": "TAPES",
+      "name": "L12",
+      "pts": [
+        [
+          244.0,
+          84.69999999999997
+        ],
+        [
+          124.0,
+          84.69999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e140",
+      "layer": "TAPES",
+      "name": "L13",
+      "pts": [
+        [
+          244.0,
+          86.49999999999997
+        ],
+        [
+          124.0,
+          86.49999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e141",
+      "layer": "TAPES",
+      "name": "L14",
+      "pts": [
+        [
+          244.0,
+          88.29999999999997
+        ],
+        [
+          124.0,
+          88.29999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e142",
+      "layer": "TAPES",
+      "name": "L15",
+      "pts": [
+        [
+          244.0,
+          90.09999999999997
+        ],
+        [
+          124.0,
+          90.09999999999997
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e143",
+      "layer": "TAPES",
+      "name": "L16",
+      "pts": [
+        [
+          244.0,
+          91.89999999999996
+        ],
+        [
+          124.0,
+          91.89999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e144",
+      "layer": "TAPES",
+      "name": "L17",
+      "pts": [
+        [
+          244.0,
+          93.69999999999996
+        ],
+        [
+          124.0,
+          93.69999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e145",
+      "layer": "TAPES",
+      "name": "L18",
+      "pts": [
+        [
+          244.0,
+          95.49999999999996
+        ],
+        [
+          124.0,
+          95.49999999999996
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e146",
+      "layer": "TAPES",
+      "name": "L19",
+      "pts": [
+        [
+          244.0,
+          97.29999999999995
+        ],
+        [
+          124.0,
+          97.29999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e147",
+      "layer": "TAPES",
+      "name": "L20",
+      "pts": [
+        [
+          244.0,
+          99.09999999999995
+        ],
+        [
+          124.0,
+          99.09999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e148",
+      "layer": "TAPES",
+      "name": "L21",
+      "pts": [
+        [
+          244.0,
+          100.89999999999995
+        ],
+        [
+          124.0,
+          100.89999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e149",
+      "layer": "TAPES",
+      "name": "L22",
+      "pts": [
+        [
+          244.0,
+          102.69999999999995
+        ],
+        [
+          124.0,
+          102.69999999999995
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e150",
+      "layer": "TAPES",
+      "name": "L23",
+      "pts": [
+        [
+          244.0,
+          104.49999999999994
+        ],
+        [
+          124.0,
+          104.49999999999994
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e151",
+      "layer": "TAPES",
+      "name": "L24",
+      "pts": [
+        [
+          244.0,
+          106.29999999999994
+        ],
+        [
+          124.0,
+          106.29999999999994
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e152",
+      "layer": "TAPES",
+      "name": "L25",
+      "pts": [
+        [
+          244.0,
+          108.09999999999994
+        ],
+        [
+          124.0,
+          108.09999999999994
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e153",
+      "layer": "TAPES",
+      "name": "L26",
+      "pts": [
+        [
+          244.0,
+          109.89999999999993
+        ],
+        [
+          124.0,
+          109.89999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e154",
+      "layer": "TAPES",
+      "name": "L27",
+      "pts": [
+        [
+          244.0,
+          111.69999999999993
+        ],
+        [
+          124.0,
+          111.69999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e155",
+      "layer": "TAPES",
+      "name": "L28",
+      "pts": [
+        [
+          244.0,
+          113.49999999999993
+        ],
+        [
+          124.0,
+          113.49999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e156",
+      "layer": "TAPES",
+      "name": "L29",
+      "pts": [
+        [
+          244.0,
+          115.29999999999993
+        ],
+        [
+          124.0,
+          115.29999999999993
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e157",
+      "layer": "TAPES",
+      "name": "L30",
+      "pts": [
+        [
+          244.0,
+          117.09999999999992
+        ],
+        [
+          124.0,
+          117.09999999999992
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e158",
+      "layer": "TAPES",
+      "name": "L31",
+      "pts": [
+        [
+          244.0,
+          118.89999999999992
+        ],
+        [
+          124.0,
+          118.89999999999992
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e159",
+      "layer": "TAPES",
+      "name": "L32",
+      "pts": [
+        [
+          244.0,
+          120.69999999999992
+        ],
+        [
+          124.0,
+          120.69999999999992
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "tape",
+      "id": "e160",
+      "layer": "TAPES",
+      "name": "L33",
+      "pts": [
+        [
+          244.0,
+          122.49999999999991
+        ],
+        [
+          124.0,
+          122.49999999999991
+        ]
+      ],
+      "spec": "tape16_10_30",
+      "inlet": 8.0,
+      "reg": false,
+      "submin": 0.0,
+      "depth": 0.0,
+      "flush": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e161",
+      "layer": "ZONE_PIPES",
+      "name": "Распределитель Блок 4",
+      "pts": [
+        [
+          244.0,
+          64.9
+        ],
+        [
+          244.0,
+          122.49999999999991
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e162",
+      "layer": "ZONE_PIPES",
+      "name": "Отвод Блок 4",
+      "pts": [
+        [
+          246.0,
+          93.69999999999996
+        ],
+        [
+          244.0,
+          93.69999999999996
+        ]
+      ],
+      "scope": "zone",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "controlValve",
+      "id": "e163",
+      "layer": "CONTROL_VALVES",
+      "name": "Блок 4",
+      "p": [
+        246.0,
+        93.69999999999996
+      ],
+      "spec": "ev80",
+      "zone": "Блок 4",
+      "rot": 0.0,
+      "depth": 0.0
+    },
+    {
+      "type": "area",
+      "id": "e164",
+      "layer": "AREAS",
+      "name": "Блок 4",
+      "pts": [
+        [
+          124.0,
+          64.0
+        ],
+        [
+          244.0,
+          64.0
+        ],
+        [
+          244.0,
+          124.0
+        ],
+        [
+          124.0,
+          124.0
+        ]
+      ],
+      "depth": 5.5,
+      "eff": 0.92,
+      "crop": "Томат",
+      "epp": 1,
+      "wb": true,
+      "eto": 5.5,
+      "kc": 1.1,
+      "awc": 130.0,
+      "root": 0.5,
+      "mad": 0.4,
+      "psp": 0.4,
+      "rsp": 1.8,
+      "wf": 0.6
+    },
+    {
+      "type": "waterSupply",
+      "id": "e165",
+      "layer": "WATER_SUPPLY",
+      "name": "Резервуар",
+      "p": [
+        122.0,
+        -40.0
+      ],
+      "calc": true,
+      "dh": 0.0,
+      "mh": 0.0,
+      "dq": 0.0,
+      "mq": 0.0,
+      "wl": 1.5
+    },
+    {
+      "type": "pump",
+      "id": "e166",
+      "layer": "PUMPS",
+      "p": [
+        122.0,
+        -36.0
+      ],
+      "spec": "pump_c5",
+      "speed": 1.0,
+      "rot": 0.0,
+      "scope": "mainline"
+    },
+    {
+      "type": "misc",
+      "id": "e167",
+      "layer": "MISC_HYDRAULIC",
+      "p": [
+        122.0,
+        -30.0
+      ],
+      "spec": "filter_screen80",
+      "scope": "mainline",
+      "set": 0.0,
+      "rot": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e168",
+      "layer": "MAINLINE_PIPES",
+      "name": "Ствол",
+      "pts": [
+        [
+          122.0,
+          -40.0
+        ],
+        [
+          122.0,
+          -36.0
+        ],
+        [
+          122.0,
+          -30.0
+        ],
+        [
+          122.0,
+          -6.0
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e169",
+      "layer": "MAINLINE_PIPES",
+      "name": "Западная ветвь",
+      "pts": [
+        [
+          122.0,
+          -6.0
+        ],
+        [
+          -6.0,
+          -6.0
+        ],
+        [
+          -6.0,
+          29.69999999999998
+        ],
+        [
+          -6.0,
+          93.69999999999996
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e170",
+      "layer": "MAINLINE_PIPES",
+      "name": "Восточная ветвь",
+      "pts": [
+        [
+          122.0,
+          -6.0
+        ],
+        [
+          250.0,
+          -6.0
+        ],
+        [
+          250.0,
+          29.69999999999998
+        ],
+        [
+          250.0,
+          93.69999999999996
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e171",
+      "layer": "MAINLINE_PIPES",
+      "name": "Отвод",
+      "pts": [
+        [
+          -6.0,
+          29.69999999999998
+        ],
+        [
+          -2.0,
+          29.69999999999998
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e172",
+      "layer": "MAINLINE_PIPES",
+      "name": "Отвод",
+      "pts": [
+        [
+          -6.0,
+          93.69999999999996
+        ],
+        [
+          -2.0,
+          93.69999999999996
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e173",
+      "layer": "MAINLINE_PIPES",
+      "name": "Отвод",
+      "pts": [
+        [
+          250.0,
+          29.69999999999998
+        ],
+        [
+          246.0,
+          29.69999999999998
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    },
+    {
+      "type": "pipe",
+      "id": "e174",
+      "layer": "MAINLINE_PIPES",
+      "name": "Отвод",
+      "pts": [
+        [
+          250.0,
+          93.69999999999996
+        ],
+        [
+          246.0,
+          93.69999999999996
+        ]
+      ],
+      "scope": "mainline",
+      "auto": true,
+      "depth": 0.0
+    }
+  ],
+  "systemFlows": [
+    {
+      "id": "sf1",
+      "name": "Смена 1 — Блок 1 + Блок 4",
+      "valves": [
+        "e52",
+        "e163"
+      ],
+      "start": 6.0,
+      "dur": 5.0
+    },
+    {
+      "id": "sf2",
+      "name": "Смена 2 — Блок 2 + Блок 3",
+      "valves": [
+        "e89",
+        "e126"
+      ],
+      "start": 11.0,
+      "dur": 5.0
+    }
+  ],
+  "nextId": 175
+}

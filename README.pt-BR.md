@@ -120,7 +120,8 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 
 Os exemplos abrem pela tela de boas-vindas (Ajuda → Boas-vindas e galeria de exemplos…), pelo
 menu Arquivo → Exemplos e pela URL. Os mesmos projetos estão em [examples/](examples/) como
-`.oci.json` em português, inglês e espanhol.
+`.oci.json`, uma pasta por idioma da interface (`examples/de/`, `examples/ja/`, … 20 ao todo): o
+mesmo desenho em todas, com nomes, culturas e itens de catálogo no idioma da pasta.
 
 ### Parâmetros de URL
 
@@ -682,7 +683,7 @@ lib/
     version.dart            versão do app gerada (tool/gen_version.dart)
   worker/design_worker.dart entrada do Web Worker
 catalogs/                   pacotes de fabricantes (JSON) e índice
-examples/                   projetos de exemplo em pt, en, es
+examples/                   projetos de exemplo, uma pasta por idioma da interface (20)
 tool/                       geradores: site, catálogos, exemplos, marca, versão; builds do worker e da web
 test/                       testes do motor, do modelo, dos formatos e da interface
 web/                        páginas, manifest, ícones, robots, sitemap, worker compilado
