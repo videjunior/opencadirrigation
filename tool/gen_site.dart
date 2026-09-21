@@ -1,5 +1,6 @@
-/// Writes the public pages of the web site (web/index.html, web/en/index.html,
-/// web/es/index.html, web/sitemap.xml, web/404.html) from tool/site.dart.
+/// Writes the public pages of the web site (web/index.html in English,
+/// web/<code>/index.html for every other language, the redirect at
+/// web/en/index.html, web/sitemap.xml, web/404.html) from tool/site.dart.
 /// Run: dart run tool/gen_site.dart [--check]
 /// With --check nothing is written; exit code 1 when a file would change.
 library;

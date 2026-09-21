@@ -1,33 +1,543 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://opencadirrigation.com/</loc>
-    <lastmod>2026-09-16</lastmod>
+    <loc>https://opencadirrigation.com/id/</loc>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
   </url>
   <url>
-    <loc>https://opencadirrigation.com/pt/</loc>
-    <lastmod>2026-09-16</lastmod>
+    <loc>https://opencadirrigation.com/de/</loc>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
   </url>
   <url>
     <loc>https://opencadirrigation.com/es/</loc>
-    <lastmod>2026-09-16</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/fr/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ha/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/sw/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/vi/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/tr/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ru/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ar/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ur/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/hi/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/mr/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/bn/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pa/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/te/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/zh/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ja/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
   </url>
 </urlset>

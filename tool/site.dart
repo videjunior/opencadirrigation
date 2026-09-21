@@ -1,6 +1,9 @@
 /// The public web pages of opencadirrigation.com, rendered from one template
-/// in Portuguese (`/`, the Flutter entry page), English (`/en/`) and
-/// Spanish (`/es/`), plus the sitemap and the 404 page.
+/// in every interface language of the app: English at the root (`/`, the
+/// Flutter entry page), the others under their language code (`/pt/`,
+/// `/es/`, `/de/`, `/zh/`, …), plus the sitemap and the 404 page. The
+/// Portuguese, English and Spanish texts are below; the other languages live
+/// in `tool/site/<code>.dart`.
 ///
 /// Search engines cannot read what Flutter paints on its canvas, so every
 /// entry page carries the same content as real HTML: heading, description,
@@ -14,23 +17,67 @@ library;
 
 import 'dart:convert';
 
+import 'package:opencadirrigation/app/i18n.dart' show languageNames, languageTag, rtlLanguages, supportedLanguages;
 import 'package:opencadirrigation/app/version.dart' show appVersion;
+
+part 'site/ar.dart';
+part 'site/bn.dart';
+part 'site/de.dart';
+part 'site/fr.dart';
+part 'site/ha.dart';
+part 'site/hi.dart';
+part 'site/id.dart';
+part 'site/ja.dart';
+part 'site/mr.dart';
+part 'site/pa.dart';
+part 'site/ru.dart';
+part 'site/sw.dart';
+part 'site/te.dart';
+part 'site/tr.dart';
+part 'site/ur.dart';
+part 'site/vi.dart';
+part 'site/zh.dart';
 
 const siteUrl = 'https://opencadirrigation.com/';
 
 /// Google Analytics measurement id of the site.
 const analyticsId = 'G-3M0P4T8V2T';
-const siteLastMod = '2026-09-16';
+const siteLastMod = '2026-09-21';
 
-/// Languages of the site: code, BCP-47 tag, Open Graph locale, page path.
-/// English is the root page: what a visitor gets when nothing has chosen a
-/// language for them (the app then follows the machine language and falls
-/// back to English too). Portuguese and Spanish live under their own path.
-const siteLanguages = [
-  SiteLang('en', 'en', 'en_US', ''),
-  SiteLang('pt', 'pt-BR', 'pt_BR', 'pt/'),
-  SiteLang('es', 'es', 'es_ES', 'es/'),
+/// Languages of the site, one entry page per interface language of the app,
+/// in the order of its language menu: code, BCP-47 tag, Open Graph locale,
+/// page path. English is the root page: what a visitor gets when nothing has
+/// chosen a language for them (the app then follows the machine language and
+/// falls back to English too). Every other language lives under its code,
+/// where the app reads it back (`languageFromPath`).
+final siteLanguages = [
+  for (final code in supportedLanguages) SiteLang(code, languageTag(code), _ogLocales[code]!, code == 'en' ? '' : '$code/'),
 ];
+
+/// Open Graph locale of each language (the country is the one social
+/// networks expect for it).
+const _ogLocales = {
+  'id': 'id_ID',
+  'de': 'de_DE',
+  'en': 'en_US',
+  'es': 'es_ES',
+  'fr': 'fr_FR',
+  'ha': 'ha_NG',
+  'sw': 'sw_KE',
+  'pt': 'pt_BR',
+  'vi': 'vi_VN',
+  'tr': 'tr_TR',
+  'ru': 'ru_RU',
+  'ar': 'ar_AR',
+  'ur': 'ur_PK',
+  'hi': 'hi_IN',
+  'mr': 'mr_IN',
+  'bn': 'bn_IN',
+  'pa': 'pa_IN',
+  'te': 'te_IN',
+  'zh': 'zh_CN',
+  'ja': 'ja_JP',
+};
 
 class SiteLang {
   const SiteLang(this.code, this.tag, this.ogLocale, this.path);
@@ -42,6 +89,17 @@ class SiteLang {
   final String path;
   String get url => '$siteUrl$path';
   bool get isRoot => path.isEmpty;
+
+  /// Whether the text runs right to left (Arabic, Urdu): the readable page
+  /// content is laid out that way; the app keeps its own layout.
+  bool get rtl => rtlLanguages.contains(code);
+
+  /// ` dir="rtl"` for the elements holding text of a right-to-left language.
+  String get dirAttr => rtl ? ' dir="rtl"' : '';
+
+  /// Text direction, for a language name standing among names in other
+  /// scripts (the attribute also isolates it from its neighbours).
+  String get dir => rtl ? 'rtl' : 'ltr';
 
   /// Output file of the page inside `web/`.
   String get file => '${path}index.html';
@@ -124,7 +182,7 @@ const _pt = SiteText(
   keywords: 'projeto de irrigação, CAD irrigação, software de irrigação, irrigação pressurizada, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
   h1: 'CAD gratuito para projeto de irrigação pressurizada',
   tagline: 'Desenhe, dimensione e documente sistemas de gotejamento, microaspersão, aspersão e pivô central. Direto no navegador, sem instalar nada, com os projetos guardados no seu computador.',
-  intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica e o cálculo: você traça a área, lança laterais, válvulas e linha principal, aperta F5 e recebe diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. Funciona em português, inglês e espanhol e segue o idioma do seu computador.',
+  intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica e o cálculo: você traça a área, lança laterais, válvulas e linha principal, aperta F5 e recebe diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. Funciona em 20 idiomas e segue o idioma do seu computador.',
   openApp: 'Abrir o app',
   tutorial: 'Tutorial interativo',
   seeExamples: 'Ver exemplos prontos',
@@ -170,7 +228,7 @@ const _pt = SiteText(
     ('Preciso instalar alguma coisa?', 'Não. Ele roda em Chrome, Edge, Firefox e Safari, no computador, no tablet e no celular, e pode ser instalado como aplicativo (PWA) para abrir em janela própria.'),
     ('Meus projetos ficam na nuvem?', 'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser. Só a elevação online e os mapas base acessam a internet, quando você pede.'),
     ('Funciona com AutoCAD e outros CADs?', 'Sim. Importa e exporta DXF e DWG (AutoCAD 2000 a 2018), além de KML/KMZ do Google Earth, shapefile, GeoJSON, SVG e PDF.'),
-    ('Em que idiomas está disponível?', 'Português, inglês e espanhol. O app abre no idioma do seu computador e você pode trocar em Ver → Idioma.'),
+    ('Em que idiomas está disponível?', 'Em 20 idiomas, os mesmos deste site (a lista está no rodapé da página). O app abre no idioma do seu computador e você pode trocar a qualquer momento em Ver → Idioma.'),
   ],
   loading: 'Carregando o CAD de irrigação…',
   slow: 'O carregamento está demorando. Verifique a conexão ou recarregue a página; o conteúdo acima já pode ser lido.',
@@ -190,7 +248,7 @@ const _en = SiteText(
   keywords: 'irrigation design software, irrigation CAD, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
   h1: 'Free CAD for pressurised irrigation design',
   tagline: 'Draw, size and document drip, micro-sprinkler, sprinkler and centre-pivot systems. Right in the browser, nothing to install, with your projects kept on your own computer.',
-  intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation together: trace the area, lay out laterals, valves and the mainline, press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. Available in English, Portuguese and Spanish, following your computer\'s language.',
+  intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation together: trace the area, lay out laterals, valves and the mainline, press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. Available in 20 languages, following your computer\'s language.',
   openApp: 'Open the app',
   tutorial: 'Interactive tutorial',
   seeExamples: 'See ready examples',
@@ -236,7 +294,7 @@ const _en = SiteText(
     ('Do I need to install anything?', 'No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.'),
     ('Are my projects stored in the cloud?', 'No. Projects are saved in your browser and as .oci.json files you keep wherever you like. Only the online elevation and the base maps reach the internet, when you ask for them.'),
     ('Does it work with AutoCAD and other CADs?', 'Yes. It imports and exports DXF and DWG (AutoCAD 2000 to 2018), plus Google Earth KML/KMZ, shapefiles, GeoJSON, SVG and PDF.'),
-    ('Which languages are available?', 'English, Portuguese and Spanish. The app opens in your computer\'s language and you can switch under View → Language.'),
+    ('Which languages are available?', 'Twenty, the same as this site (the list is at the foot of the page). The app opens in your computer\'s language and you can switch at any time under View → Language.'),
   ],
   loading: 'Loading the irrigation CAD…',
   slow: 'Loading is taking long. Check the connection or reload the page; the content above can already be read.',
@@ -256,7 +314,7 @@ const _es = SiteText(
   keywords: 'diseño de riego, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
   h1: 'CAD gratuito para diseño de riego presurizado',
   tagline: 'Dibuje, dimensione y documente sistemas de goteo, microaspersión, aspersión y pivote central. Directamente en el navegador, sin instalar nada, con los proyectos guardados en su propio equipo.',
-  intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica y el cálculo: trace el área, coloque laterales, válvulas y línea principal, pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. Disponible en español, portugués e inglés, según el idioma de su equipo.',
+  intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica y el cálculo: trace el área, coloque laterales, válvulas y línea principal, pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. Disponible en 20 idiomas, según el idioma de su equipo.',
   openApp: 'Abrir la aplicación',
   tutorial: 'Tutorial interactivo',
   seeExamples: 'Ver ejemplos listos',
@@ -302,7 +360,7 @@ const _es = SiteText(
     ('¿Necesito instalar algo?', 'No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.'),
     ('¿Mis proyectos se guardan en la nube?', 'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide.'),
     ('¿Funciona con AutoCAD y otros CAD?', 'Sí. Importa y exporta DXF y DWG (AutoCAD 2000 a 2018), además de KML/KMZ de Google Earth, shapefile, GeoJSON, SVG y PDF.'),
-    ('¿En qué idiomas está disponible?', 'Español, portugués e inglés. La aplicación se abre en el idioma de su equipo y puede cambiarlo en Ver → Idioma.'),
+    ('¿En qué idiomas está disponible?', 'En 20 idiomas, los mismos de este sitio (la lista está al pie de la página). La aplicación se abre en el idioma de su equipo y puede cambiarlo en cualquier momento en Ver → Idioma.'),
   ],
   loading: 'Cargando el CAD de riego…',
   slow: 'La carga está tardando. Compruebe la conexión o recargue la página; el contenido de arriba ya puede leerse.',
@@ -316,9 +374,30 @@ const _es = SiteText(
   notFoundHome: 'Ir a OpenCADIrrigation',
 );
 
-SiteText siteText(String code) => switch (code) { 'pt' => _pt, 'es' => _es, _ => _en };
+const _siteTexts = {
+  'id': _id,
+  'de': _de,
+  'en': _en,
+  'es': _es,
+  'fr': _fr,
+  'ha': _ha,
+  'sw': _sw,
+  'pt': _pt,
+  'vi': _vi,
+  'tr': _tr,
+  'ru': _ru,
+  'ar': _ar,
+  'ur': _ur,
+  'hi': _hi,
+  'mr': _mr,
+  'bn': _bn,
+  'pa': _pa,
+  'te': _te,
+  'zh': _zh,
+  'ja': _ja,
+};
 
-const _languageNames = {'pt': 'Português', 'en': 'English', 'es': 'Español'};
+SiteText siteText(String code) => _siteTexts[code]!;
 
 String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
@@ -416,12 +495,12 @@ const _style = '''
     #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
-    #oci-landing ol.steps { padding-left: 1.3em; }
+    #oci-landing ol.steps { padding-inline-start: 1.3em; }
     #oci-landing ol.steps li { margin: 8px 0; }
     #oci-landing dl dt { font-weight: 600; color: #ECEFF1; margin-top: 14px; }
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
-    #oci-landing footer nav a { margin-right: 14px; }
+    #oci-landing footer nav { line-height: 1.9; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 ''';
 
@@ -434,7 +513,7 @@ String renderIndex(SiteLang lang) {
   b.writeln('<html lang="${lang.tag}">');
   b.writeln('<head>');
   if (lang.isRoot) {
-    b.writeln('  <!-- The base href placeholder is replaced by flutter build (--base-href); /pt/ and /es/ are copies of this page rooted at "/". -->');
+    b.writeln('  <!-- The base href placeholder is replaced by flutter build (--base-href); /pt/, /es/, /de/, … are copies of this page rooted at "/". -->');
   } else {
     b.writeln('  <!-- Generated by tool/gen_site.dart from tool/site.dart; do not edit by hand. -->');
   }
@@ -509,9 +588,9 @@ $_analytics
   <style>$_style  </style>
 </head>
 <body>
-  <noscript><div id="oci-noscript">${_esc(t.noScript)}</div></noscript>
+  <noscript><div id="oci-noscript"${lang.dirAttr}>${_esc(t.noScript)}</div></noscript>
   <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
-  <main id="oci-landing">
+  <main id="oci-landing"${lang.dirAttr}>
     <div class="wrap">
       <header>
         <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
@@ -566,7 +645,7 @@ $_analytics
       </section>
 
       <footer>
-        <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}">${_languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}">${_languageNames[l.code]}</a>'].join(' · ')}</nav>
+        <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>
         <p>${_esc(t.footer)}</p>
       </footer>
     </div>
@@ -588,7 +667,7 @@ $_analytics
   return b.toString();
 }
 
-/// sitemap.xml with the three entry pages and their hreflang alternates.
+/// sitemap.xml with the entry pages and their hreflang alternates.
 String renderSitemap() {
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
@@ -609,8 +688,9 @@ String renderSitemap() {
   return b.toString();
 }
 
-/// 404 page (GitHub Pages serves it for unknown paths): not indexed, points
-/// to the three entry pages.
+/// 404 page (GitHub Pages serves it for unknown paths): not indexed. It
+/// shows the message in English, or in the first browser language the site
+/// speaks, and links to every entry page.
 String render404() {
   final b = StringBuffer()..writeln('''<!DOCTYPE html>
 <html lang="en">
@@ -628,6 +708,8 @@ String render404() {
     a { color: #64B5F6; }
     .cta { display: inline-block; margin: 8px; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: linear-gradient(90deg, #0D47A1, #1976D2); color: #fff; }
     section { margin-top: 28px; }
+    section[hidden] { display: none; }
+    nav { margin-top: 36px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; line-height: 1.9; }
   </style>
 </head>
 <body>
@@ -635,13 +717,30 @@ String render404() {
     <img src="/brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336">''');
   for (final l in siteLanguages) {
     final t = siteText(l.code);
-    b.writeln('    <section lang="${l.tag}">');
+    b.writeln('    <section lang="${l.tag}"${l.dirAttr} data-lang="${l.code}"${l.code == 'en' ? '' : ' hidden'}>');
     b.writeln('      <h1>${_esc(t.notFoundTitle)}</h1>');
     b.writeln('      <p>${_esc(t.notFoundText)}</p>');
     b.writeln('      <a class="cta" href="${l.url}">${_esc(t.notFoundHome)}</a>');
     b.writeln('    </section>');
   }
+  b.writeln('    <nav aria-label="Languages">${[for (final l in siteLanguages) '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>');
   b.writeln('''  </main>
+  <script>
+    (function () {
+      var tags = navigator.languages || [navigator.language || ''];
+      for (var i = 0; i < tags.length; i++) {
+        var code = String(tags[i]).split(/[-_]/)[0].toLowerCase();
+        var s = document.querySelector('section[data-lang="' + code + '"]');
+        if (!s) continue;
+        if (code !== 'en') {
+          document.querySelector('section[data-lang="en"]').hidden = true;
+          s.hidden = false;
+          document.documentElement.lang = s.lang;
+        }
+        return;
+      }
+    })();
+  </script>
 </body>
 </html>''');
   return b.toString();

@@ -131,7 +131,7 @@ mesmo desenho em todas, com nomes, culturas e itens de catálogo no idioma da pa
 | `?design=1` | Projeta ao carregar. |
 | `?tutorial=N` | Abre o tutorial interativo no passo N. |
 | `?lang=pt` (qualquer código da seção 13) | Idioma desta visita (não altera a preferência salva). |
-| `/pt/`, `/es/` | Páginas de entrada em português e espanhol, com o mesmo efeito de `?lang` (a página raiz é a inglesa). |
+| `/pt/`, `/es/`, `/de/`, … | Página de entrada de cada idioma sob o seu código (os 20), com o mesmo efeito de `?lang` (a página raiz é a inglesa). |
 
 ---
 
@@ -624,7 +624,7 @@ de textos, o tutorial interativo e os nomes do catálogo padrão; o worker de pr
 junto com o pedido, então relatórios e plotagens também saem no idioma escolhido. O app abre no
 primeiro idioma da lista de idiomas preferidos do sistema (do navegador ou do sistema operacional)
 que ele fala, e em inglês quando nenhum deles é falado; a troca em Ver → Idioma (cada idioma com o
-próprio nome) fica salva. As páginas `/pt/` e `/es/` e o parâmetro `?lang=` valem só para a visita.
+próprio nome) fica salva. As páginas de idioma (`/pt/`, `/de/`, …) e o parâmetro `?lang=` valem só para a visita.
 O atributo `lang` do documento acompanha o idioma do app (`pt-BR`, `zh-CN`, senão o código). Os
 textos em árabe e urdu são escritos da direita para a esquerda; o layout da interface continua da
 esquerda para a direita. Os projetos de exemplo distribuídos mantêm os rótulos em português, inglês
@@ -636,12 +636,16 @@ Um pacote é um JSON simples com três seções: `strings` (chave → texto), `t
 marcadores.
 
 O site é gerado por `dart run tool/gen_site.dart` a partir de `tool/site.dart`: `web/index.html`
-(inglês, a página de quem chega sem idioma escolhido), `web/pt/index.html`, `web/es/index.html`,
-um redirecionamento em `web/en/index.html` para o endereço que o inglês tinha antes,
-`web/sitemap.xml` e `web/404.html`. Como o
+(inglês, a página de quem chega sem idioma escolhido), um `web/<código>/index.html` para cada um
+dos outros 19 idiomas da interface (`web/pt/`, `web/es/`, `web/de/`, `web/zh/`, …; a lista segue
+`supportedLanguages`, então um idioma novo no app precisa da sua página), um redirecionamento em
+`web/en/index.html` para o endereço que o inglês tinha antes, `web/sitemap.xml` e `web/404.html`
+(no idioma do navegador quando o site o tem). Os textos das páginas ficam em `tool/site.dart`
+(português, inglês, espanhol) e em `tool/site/<código>.dart` (os demais, com a galeria de exemplos
+tirada dos pacotes de idioma); as páginas em árabe e urdu são da direita para a esquerda. Como o
 Flutter desenha em canvas, cada página traz o conteúdo em HTML real (título, recursos, exemplos,
 perguntas frequentes), visível enquanto o app carrega e mantido na página depois, com canônica
-própria, `hreflang` entre as três versões, Open Graph e JSON-LD. O teste `test/web_metadata_test.dart`
+própria, `hreflang` entre todas as versões, Open Graph e JSON-LD. O teste `test/web_metadata_test.dart`
 falha quando os arquivos gerados divergem do template.
 
 ---
@@ -750,7 +754,7 @@ tool/build_web.sh                  # build de publicação: worker + flutter bui
                                    # gravados na versão (boas-vindas, barra de status, Ajuda → Sobre, console)
 flutter build web --release        # o mesmo sem commit/data (build/web, pronto para hospedagem estática; web/CNAME guarda o domínio)
 dart run tool/gen_version.dart     # regenera lib/app/version.dart após mudar `version:` no pubspec.yaml
-dart run tool/gen_site.dart        # páginas do site (index em inglês, /pt/, /es/, sitemap, 404)
+dart run tool/gen_site.dart        # páginas do site (index em inglês, /pt/, /es/, /de/, … sitemap, 404)
 dart run tool/gen_catalogs.dart    # valida e normaliza catalogs/*.oci.cat e refaz index.json
 dart run tool/gen_examples.dart    # regenera examples/<lang>/*.oci.json a partir de lib/app/examples.dart
 dart run tool/gen_brand.dart       # ícones e ativos de marca a partir de web/brand

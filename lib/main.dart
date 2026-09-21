@@ -123,7 +123,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     setUnloadGuard(() => ws.tabs.any((t) => t.dirty));
     _nativeKeys.install();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // ?lang=es or the /pt/ and /es/ entry pages pick the language for this
+      // ?lang=es or an entry page such as /pt/ or /de/ picks the language for this
       // visit; otherwise the saved choice or the machine language applies.
       final urlLang = Uri.base.queryParameters['lang'] ?? languageFromPath(Uri.base.pathSegments);
       if (urlLang != null) c.setLanguage(urlLang, persist: false);

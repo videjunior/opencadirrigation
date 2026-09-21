@@ -28,9 +28,11 @@ void main() {
     });
   });
 
-  test('languageFromPath reads the /pt/ and /es/ entry pages', () {
+  test('languageFromPath reads the localised entry pages (/pt/, /es/, /de/, …)', () {
     expect(languageFromPath(['pt', '']), 'pt');
     expect(languageFromPath(['es', 'index.html']), 'es');
+    expect(languageFromPath(['de', '']), 'de');
+    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/zh/?example=pivot').pathSegments), 'zh');
     expect(languageFromPath(['en']), 'en');
     expect(languageFromPath(['']), isNull);
     expect(languageFromPath(const []), isNull);
