@@ -135,7 +135,9 @@ Project buildOrchardExample(Tr t, String lang) {
   p.entities.add(PipeEntity(id: p.newId(), points: [well, tee], scope: HydraulicScope.mainline, name: t('ex.riser')));
   p.entities.add(PipeEntity(id: p.newId(), points: [tee, va], scope: HydraulicScope.mainline, name: t('ex.branchA')));
   p.entities.add(PipeEntity(id: p.newId(), points: [tee, Pt(vb.x, -8), vb], scope: HydraulicScope.mainline, name: t('ex.branchB')));
-  p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.well'), calculatePressure: true, waterLevelOffsetM: -12));
+  // shallow well: the surface pump lifts 5 m, within its practical suction
+  // lift (about 7 m at sea level)
+  p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.well'), calculatePressure: true, waterLevelOffsetM: -5));
   p.entities.add(PumpEntity(id: p.newId(), position: Pt(well.x + 3, -8), pumpSpecId: 'pump_c5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: Pt(well.x + 8, -8), valveSpecId: 'filter_screen80'));
   p.systemFlows.addAll([
@@ -424,7 +426,8 @@ Project buildPivotExample(Tr t, String lang) {
 
   const well = Pt(60, 400), pump = Pt(66, 400), gate = Pt(72, 400);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.p.well'), calculatePressure: true, waterLevelOffsetM: -25));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_big'));
+  // deep well (water 25 m down): submersible pump, a surface pump could not lift it
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_s30'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: gate, valveSpecId: 'gate100'));
   p.entities.add(PipeEntity(id: p.newId(), points: [well, pump, gate, centre], scope: HydraulicScope.mainline, name: t('ex.p.adductor')));
   final name = t('ex.p.pivot');
@@ -563,8 +566,10 @@ Project buildCoffeeExample(Tr t, String lang) {
     p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.cf.coffee'), netDepthMmPerDay: 4, efficiency: 0.92, useWaterBalance: true, etoMmDay: 4.5, kc: 0.95, awcMmPerM: 120, rootDepthM: 0.8, mad: 0.5, plantSpacingM: 0.7, rowSpacingM: 3.5, wettedFraction: 0.4, emittersPerPlant: 1));
   }
   const well = Pt(-8, -26), pump = Pt(-8, -18), filter = Pt(-8, -12);
-  p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.cf.well'), calculatePressure: true, waterLevelOffsetM: -10));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_mid'));
+  // shallow well: the surface pump lifts under 6 m, within its practical
+  // suction lift
+  p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.cf.well'), calculatePressure: true, waterLevelOffsetM: -5));
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c7_5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: filter, valveSpecId: 'filter_screen80'));
   p.entities.add(PipeEntity(id: p.newId(), points: [well, pump, filter, for (final v in valves) Pt(-8, v.position.y)], scope: HydraulicScope.mainline, name: t('ex.cf.main')));
   for (final v in valves) {

@@ -96,7 +96,9 @@ m³/s; `setting` the default outlet pressure of a PRV (m).
 
 `points`: list of `[Q, H]` (m³/s, m) along the curve; the app fits a least-squares quadratic
 `H = a·Q² + b·Q + c` through them (three or more points; two give a straight line; one gives the
-EPANET-style three-point curve). `eff` (0–1), `kw` (motor power), `minQ`/`maxQ` (m³/s), `cost`.
+EPANET-style three-point curve). `eff` (0–1), `kw` (motor power), `minQ`/`maxQ` (m³/s), `cost`,
+`sub` (`true` for a submersible pump, installed at the water level; `false` or absent for a
+surface pump, whose suction lift is checked).
 
 ### Pipes (`pipes`) and fittings (`fittings`)
 

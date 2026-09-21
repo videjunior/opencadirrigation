@@ -295,6 +295,9 @@ class ValveSpec {
   );
 }
 
+/// Ids of the submersible pumps of the default catalog.
+const defaultSubmersiblePumpIds = {'pump_s3', 'pump_s5', 'pump_sub', 'pump_s15', 'pump_s25', 'pump_s30'};
+
 class PumpSpec {
   PumpSpec({
     required this.id,
@@ -308,6 +311,7 @@ class PumpSpec {
     this.supplier = '',
     this.code = '',
     this.powerKw = 0,
+    this.submersible = false,
   }) : curve = PumpCurve.fit(points);
   final String id;
   String name;
@@ -316,6 +320,10 @@ class PumpSpec {
 
   /// Rated motor power (kW), informative.
   double powerKw;
+
+  /// Installed in the well below the water level (no suction lift); a
+  /// surface pump draws water up its suction pipe, limited by the NPSH.
+  bool submersible;
 
   /// (Q m³/s, H m) samples of the manufacturer's curve.
   List<(double, double)> points;
@@ -330,10 +338,12 @@ class PumpSpec {
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'points': points.map((p) => [p.$1, p.$2]).toList(), 'eff': efficiency,
-    'minQ': minFlow, 'maxQ': maxFlow, 'cost': cost, 'enabled': enabled, if (supplier.isNotEmpty) 'sup': supplier, if (code.isNotEmpty) 'code': code, if (powerKw > 0) 'kw': powerKw,
+    'minQ': minFlow, 'maxQ': maxFlow, 'cost': cost, 'enabled': enabled, if (supplier.isNotEmpty) 'sup': supplier, if (code.isNotEmpty) 'code': code, if (powerKw > 0) 'kw': powerKw, 'sub': submersible,
   };
   static PumpSpec fromJson(Map<String, dynamic> j) => PumpSpec(
     id: j['id'] as String,
+    // catalogs saved before the flag existed: the generic submersible units
+    submersible: j['sub'] as bool? ?? defaultSubmersiblePumpIds.contains(j['id']),
     name: j['name'] as String,
     supplier: j['sup'] as String? ?? '',
     code: j['code'] as String? ?? '',
@@ -627,7 +637,7 @@ class Catalog {
     ];
 
     // Generic pumps: an illustrative range of centrifugal (1 to 100 cv) and
-    // submersible (3 to 25 cv) units; the shaft power at the duty point stays
+    // submersible (3 to 30 cv) units; the shaft power at the duty point stays
     // within the rated motor (powerKw). Manufacturer curves replace them.
     final pumps = <PumpSpec>[
       PumpSpec(id: 'pump_c1', name: n('Bomba centrífuga 1 cv (4 m³/h @ 20 m)', 'Centrifugal pump 1 hp (4 m³/h @ 20 m)', 'Bomba centrífuga 1 CV (4 m³/h @ 20 m)'), points: [(0, 27), (2 * m3sPerM3h, 25), (4 * m3sPerM3h, 20), (6 * m3sPerM3h, 12)], efficiency: 0.45, maxFlow: 6 * m3sPerM3h, cost: 900, powerKw: 0.75),
@@ -642,11 +652,12 @@ class Catalog {
       PumpSpec(id: 'pump_c50', name: n('Bomba centrífuga 50 cv (160 m³/h @ 55 m)', 'Centrifugal pump 50 hp (160 m³/h @ 55 m)', 'Bomba centrífuga 50 CV (160 m³/h @ 55 m)'), points: [(0, 72), (80 * m3sPerM3h, 66), (160 * m3sPerM3h, 55), (230 * m3sPerM3h, 38)], efficiency: 0.74, maxFlow: 230 * m3sPerM3h, cost: 28000, powerKw: 37),
       PumpSpec(id: 'pump_c75', name: n('Bomba centrífuga 75 cv (230 m³/h @ 60 m)', 'Centrifugal pump 75 hp (230 m³/h @ 60 m)', 'Bomba centrífuga 75 CV (230 m³/h @ 60 m)'), points: [(0, 78), (115 * m3sPerM3h, 72), (230 * m3sPerM3h, 60), (330 * m3sPerM3h, 42)], efficiency: 0.76, maxFlow: 330 * m3sPerM3h, cost: 40000, powerKw: 55),
       PumpSpec(id: 'pump_c100', name: n('Bomba centrífuga 100 cv (300 m³/h @ 65 m)', 'Centrifugal pump 100 hp (300 m³/h @ 65 m)', 'Bomba centrífuga 100 CV (300 m³/h @ 65 m)'), points: [(0, 85), (150 * m3sPerM3h, 78), (300 * m3sPerM3h, 65), (420 * m3sPerM3h, 45)], efficiency: 0.78, maxFlow: 420 * m3sPerM3h, cost: 55000, powerKw: 75),
-      PumpSpec(id: 'pump_s3', name: n('Bomba submersa 3 cv (8 m³/h @ 55 m)', 'Submersible pump 3 hp (8 m³/h @ 55 m)', 'Bomba sumergible 3 CV (8 m³/h @ 55 m)'), points: [(0, 78), (4 * m3sPerM3h, 68), (8 * m3sPerM3h, 55), (12 * m3sPerM3h, 36)], efficiency: 0.55, maxFlow: 12 * m3sPerM3h, cost: 2800, powerKw: 2.2),
-      PumpSpec(id: 'pump_s5', name: n('Bomba submersa 5 cv (12 m³/h @ 65 m)', 'Submersible pump 5 hp (12 m³/h @ 65 m)', 'Bomba sumergible 5 CV (12 m³/h @ 65 m)'), points: [(0, 90), (6 * m3sPerM3h, 80), (12 * m3sPerM3h, 65), (18 * m3sPerM3h, 42)], efficiency: 0.58, maxFlow: 18 * m3sPerM3h, cost: 3900, powerKw: 3.7),
-      PumpSpec(id: 'pump_sub', name: n('Bomba submersa 7,5 cv (25 m³/h @ 60 m)', 'Submersible pump 7.5 hp (25 m³/h @ 60 m)', 'Bomba sumergible 7,5 CV (25 m³/h @ 60 m)'), points: [(0, 80), (12 * m3sPerM3h, 72), (25 * m3sPerM3h, 60), (35 * m3sPerM3h, 40)], efficiency: 0.68, maxFlow: 35 * m3sPerM3h, cost: 5400, powerKw: 5.5),
-      PumpSpec(id: 'pump_s15', name: n('Bomba submersa 15 cv (40 m³/h @ 65 m)', 'Submersible pump 15 hp (40 m³/h @ 65 m)', 'Bomba sumergible 15 CV (40 m³/h @ 65 m)'), points: [(0, 90), (20 * m3sPerM3h, 80), (40 * m3sPerM3h, 65), (60 * m3sPerM3h, 42)], efficiency: 0.65, maxFlow: 60 * m3sPerM3h, cost: 9500, powerKw: 11),
-      PumpSpec(id: 'pump_s25', name: n('Bomba submersa 25 cv (55 m³/h @ 80 m)', 'Submersible pump 25 hp (55 m³/h @ 80 m)', 'Bomba sumergible 25 CV (55 m³/h @ 80 m)'), points: [(0, 110), (28 * m3sPerM3h, 98), (55 * m3sPerM3h, 80), (80 * m3sPerM3h, 52)], efficiency: 0.68, maxFlow: 80 * m3sPerM3h, cost: 15000, powerKw: 18.5),
+      PumpSpec(id: 'pump_s3', name: n('Bomba submersa 3 cv (8 m³/h @ 55 m)', 'Submersible pump 3 hp (8 m³/h @ 55 m)', 'Bomba sumergible 3 CV (8 m³/h @ 55 m)'), points: [(0, 78), (4 * m3sPerM3h, 68), (8 * m3sPerM3h, 55), (12 * m3sPerM3h, 36)], efficiency: 0.55, maxFlow: 12 * m3sPerM3h, cost: 2800, powerKw: 2.2, submersible: true),
+      PumpSpec(id: 'pump_s5', name: n('Bomba submersa 5 cv (12 m³/h @ 65 m)', 'Submersible pump 5 hp (12 m³/h @ 65 m)', 'Bomba sumergible 5 CV (12 m³/h @ 65 m)'), points: [(0, 90), (6 * m3sPerM3h, 80), (12 * m3sPerM3h, 65), (18 * m3sPerM3h, 42)], efficiency: 0.58, maxFlow: 18 * m3sPerM3h, cost: 3900, powerKw: 3.7, submersible: true),
+      PumpSpec(id: 'pump_sub', name: n('Bomba submersa 7,5 cv (25 m³/h @ 60 m)', 'Submersible pump 7.5 hp (25 m³/h @ 60 m)', 'Bomba sumergible 7,5 CV (25 m³/h @ 60 m)'), points: [(0, 80), (12 * m3sPerM3h, 72), (25 * m3sPerM3h, 60), (35 * m3sPerM3h, 40)], efficiency: 0.68, maxFlow: 35 * m3sPerM3h, cost: 5400, powerKw: 5.5, submersible: true),
+      PumpSpec(id: 'pump_s15', name: n('Bomba submersa 15 cv (40 m³/h @ 65 m)', 'Submersible pump 15 hp (40 m³/h @ 65 m)', 'Bomba sumergible 15 CV (40 m³/h @ 65 m)'), points: [(0, 90), (20 * m3sPerM3h, 80), (40 * m3sPerM3h, 65), (60 * m3sPerM3h, 42)], efficiency: 0.65, maxFlow: 60 * m3sPerM3h, cost: 9500, powerKw: 11, submersible: true),
+      PumpSpec(id: 'pump_s25', name: n('Bomba submersa 25 cv (55 m³/h @ 80 m)', 'Submersible pump 25 hp (55 m³/h @ 80 m)', 'Bomba sumergible 25 CV (55 m³/h @ 80 m)'), points: [(0, 110), (28 * m3sPerM3h, 98), (55 * m3sPerM3h, 80), (80 * m3sPerM3h, 52)], efficiency: 0.68, maxFlow: 80 * m3sPerM3h, cost: 15000, powerKw: 18.5, submersible: true),
+      PumpSpec(id: 'pump_s30', name: n('Bomba submersa 30 cv (100 m³/h @ 60 m)', 'Submersible pump 30 hp (100 m³/h @ 60 m)', 'Bomba sumergible 30 CV (100 m³/h @ 60 m)'), points: [(0, 82), (50 * m3sPerM3h, 74), (100 * m3sPerM3h, 60), (140 * m3sPerM3h, 40)], efficiency: 0.72, maxFlow: 140 * m3sPerM3h, cost: 19000, powerKw: 22, submersible: true),
     ];
 
     return Catalog(pipes: pipes, outlets: outlets, tapes: tapes, valves: valves, pumps: pumps, fittings: defaultFittings(pipes, lang: lang));

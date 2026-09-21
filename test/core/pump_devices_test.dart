@@ -3,7 +3,9 @@ import 'package:opencadirrigation/core/design/block_generator.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
 import 'package:opencadirrigation/core/design/pump_selection.dart';
+import 'package:opencadirrigation/core/design/report_tables.dart';
 import 'package:opencadirrigation/core/design/results.dart';
+import 'package:opencadirrigation/core/io/catalog_io.dart';
 import 'package:opencadirrigation/core/hydraulics/pump.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
@@ -14,7 +16,7 @@ import 'package:opencadirrigation/core/units.dart';
 /// Every mainline device of the catalog in series between a tank and one
 /// micro-sprinkler zone: tank → pump → check valve → screen filter → meter →
 /// backflow preventer → gate valve → air valve → PRV → zone valve.
-Project series({String pump = 'pump_mid', bool calculated = true, double prvSetting = 40}) {
+Project series({String pump = 'pump_mid', bool calculated = true, double prvSetting = 40, double waterLevel = 1.5}) {
   final p = Project();
   final poly = [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)];
   final block = generateBlock(p, BlockOptions(
@@ -37,7 +39,7 @@ Project series({String pump = 'pump_mid', bool calculated = true, double prvSett
   final valve = block.valve!;
   final supplyPos = valve.position + const Pt(-100, 0);
   p.entities.add(PipeEntity(id: 'main', points: [supplyPos, valve.position], scope: HydraulicScope.mainline, name: 'Main'));
-  p.entities.add(WaterSupplyEntity(id: 'tank', position: supplyPos, name: 'Tank', calculatePressure: calculated, designHeadM: 0, waterLevelOffsetM: 1.5));
+  p.entities.add(WaterSupplyEntity(id: 'tank', position: supplyPos, name: 'Tank', calculatePressure: calculated, designHeadM: 0, waterLevelOffsetM: waterLevel));
   var x = supplyPos.x + 5;
   p.entities.add(PumpEntity(id: 'pump', position: Pt(x, supplyPos.y), pumpSpecId: pump, name: 'Pump'));
   for (final id in ['check100', 'filter_screen80', 'meter50', 'backflow50', 'gate50', 'air50', 'prv80']) {
@@ -177,6 +179,112 @@ void main() {
       expect(pump.upstreamPressure, closeTo(1.4, 0.2)); // tank level 1.5 m minus 5 m of pipe
       expect(f.valves.single.availableHead, greaterThan(f.valves.single.requiredHead));
       expect(s.surplusHead, closeTo(-f.maxDeficit, 1e-6));
+    });
+  });
+
+  group('suction lift and submersible pumps', () {
+    test('practical suction lift: about 7 m at sea level, less at altitude', () {
+      expect(atmosphericHead(0), closeTo(10.33, 1e-9));
+      expect(maxSuctionLift(0), closeTo(7.09, 0.01));
+      expect(maxSuctionLift(1000), closeTo(5.92, 0.02));
+      expect(maxSuctionLift(2500), lessThan(maxSuctionLift(1000)));
+    });
+
+    test('the supply node is the water surface: a well starts at zero pressure 12 m down', () {
+      final p = series(pump: 'pump_big', waterLevel: -12);
+      final m = NetworkBuilder(p).build();
+      final node = m.nodes[m.supplyNodes['tank']!]!;
+      expect(node.elevation, closeTo(-12, 1e-9));
+      final f = Designer(p).designAll().systemFlows.single;
+      final first = f.pipes.firstWhere((s) => s.elevationA == node.elevation || s.elevationB == node.elevation);
+      final atSupply = first.elevationA == node.elevation ? first.pressureStart : first.pressureEnd;
+      expect(atSupply, closeTo(0, 1e-6));
+      expect(f.supplies.single.elevation, closeTo(-12, 1e-9));
+    });
+
+    test('a surface pump lifting 12 m is flagged; the report shows its suction against the limit', () {
+      final p = series(pump: 'pump_big', waterLevel: -12);
+      final r = Designer(p).designAll();
+      final f = r.systemFlows.single;
+      final pump = device(f, 'pump');
+      expect(pump.upstreamPressure, lessThan(-12));
+      expect(pump.upstreamPressure, greaterThan(-12.5));
+      expect(pump.elevation, closeTo(0, 1e-9));
+      expect(f.warnings, contains('pump_suction_lift:pump'));
+      final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w));
+      final dev = tables.firstWhere((t) => t.key == 'devices');
+      expect(dev.headers, containsAllInOrder(['rep.pIn (m.c.a.)', 'rep.pOut', 'rep.pumpHead', 'rep.loss', 'rep.status']));
+      final row = dev.rows.firstWhere((r) => '${r[1]}'.startsWith('rep.pump:'));
+      expect((row[3] as RNum).value, closeTo(pump.upstreamPressure, 1e-9));
+      expect((row[4] as RNum).value, closeTo(pump.downstreamPressure, 1e-9));
+      expect(row.last, 'rep.st.running · rep.suction ${fmt(-pump.upstreamPressure, 1)} > ${fmt(maxSuctionLift(0), 1)}');
+      expect(dev.warn[dev.rows.indexOf(row)], isTrue);
+      // devices left the mainline table, whose columns are supply/valve duties
+      expect(tables.firstWhere((t) => t.key == 'mainline').rows.where((r) => '${r[1]}'.startsWith('rep.pump')), isEmpty);
+      // the device rows carry translated states, never the solver's names
+      final filter = dev.rows.firstWhere((r) => '${r[1]}'.contains('filter_screen80'));
+      expect(filter.last, 'rep.st.open');
+      // a lift within the limit is fine
+      final shallow = Designer(series(pump: 'pump_big', waterLevel: -5)).designAll().systemFlows.single;
+      expect(device(shallow, 'pump').upstreamPressure, lessThan(-5));
+      expect(shallow.warnings, isNot(contains('pump_suction_lift:pump')));
+    });
+
+    test('a submersible pump sits at the water level: no suction, same duty at the valve', () {
+      final surface = series(pump: 'pump_big', waterLevel: -12);
+      final sub = series(pump: 'pump_big', waterLevel: -12);
+      sub.catalog.pump('pump_big')!.submersible = true;
+      final m = NetworkBuilder(sub).build();
+      final link = m.links.firstWhere((l) => l.kind == GLinkKind.pump);
+      expect(m.nodes[link.from]!.elevation, closeTo(-12, 1e-9));
+      expect(m.nodes[link.to]!.elevation, closeTo(-12, 1e-9));
+      final fa = Designer(surface).designAll().systemFlows.single;
+      final fb = Designer(sub).designAll().systemFlows.single;
+      final pa = device(fa, 'pump'), pb = device(fb, 'pump');
+      expect(fb.warnings, isNot(contains('pump_suction_lift:pump')));
+      expect(pb.elevation, closeTo(-12, 1e-9));
+      expect(pb.upstreamPressure, closeTo(pa.upstreamPressure + 12, 1e-6)); // only the 5 m pipe loss left
+      expect(pb.upstreamPressure, greaterThan(-0.5));
+      expect(pb.downstreamPressure, closeTo(pa.downstreamPressure + 12, 1e-6));
+      // the energy balance does not depend on where the pump is installed
+      expect(pb.pumpHead, closeTo(pa.pumpHead, 1e-6));
+      expect(fb.valves.single.availableHead, closeTo(fa.valves.single.availableHead, 1e-6));
+      // the next device, back at ground level, sees the pressure after the rise
+      expect(device(fb, 'dev_check100').upstreamPressure, closeTo(device(fa, 'dev_check100').upstreamPressure, 1e-6));
+    });
+
+    test('pump selection keeps only submersible pumps when the water is too deep for suction', () {
+      final cat = Catalog.defaultCatalog();
+      final cands = rankPumps(cat, flow: 18 * m3sPerM3h, head: 45, staticHead: 30, hoursPerYear: 2000, costPerKwh: 0.75, requireSubmersible: true);
+      final ok = cands.where((c) => c.suitable).toList();
+      expect(ok, isNotEmpty);
+      expect(ok.every((c) => c.spec.submersible), isTrue);
+      expect(cands.where((c) => !c.spec.submersible).every((c) => !c.suctionOk && !c.suitable), isTrue);
+      final s = WaterSupplyEntity(id: 's', position: const Pt(0, 0), waterLevelOffsetM: -12);
+      SupplyDuty duty(double z) => SupplyDuty(supplyId: 's', name: '', flow: 0.005, head: 0, requiredHead: 30, elevation: z, calculated: true);
+      expect(suctionLiftTooDeep(s, duty(88)), isTrue);
+      s.waterLevelOffsetM = -5;
+      expect(suctionLiftTooDeep(s, duty(95)), isFalse);
+    });
+
+    test('the pump type survives JSON and CSV; older catalogs know the generic submersibles', () {
+      final cat = Catalog.defaultCatalog();
+      expect(cat.pumps.where((p) => p.submersible).map((p) => p.id).toSet(), defaultSubmersiblePumpIds);
+      final old = cat.toJson();
+      for (final p in old['pumps'] as List) {
+        (p as Map<String, dynamic>).remove('sub');
+      }
+      final back = Catalog.fromJson(old);
+      expect(back.pump('pump_s25')!.submersible, isTrue);
+      expect(back.pump('pump_c5')!.submersible, isFalse);
+      // a flag cleared by the user is kept
+      cat.pump('pump_s3')!.submersible = false;
+      expect(Catalog.fromJson(cat.toJson()).pump('pump_s3')!.submersible, isFalse);
+      final csv = CatalogIo.exportCsv(Catalog.defaultCatalog(), CatalogGroup.pumps);
+      expect(csv.split('\n').first, contains(';type;'));
+      final parsed = CatalogIo.parseCsv(csv, group: CatalogGroup.pumps).catalog;
+      expect(parsed.pumps.where((p) => p.submersible).map((p) => p.id).toSet(), defaultSubmersiblePumpIds);
+      expect(parsed.pump('pump_big')!.submersible, isFalse);
     });
   });
 

@@ -1587,7 +1587,8 @@
         "maxQ": 0.0016666666666666666,
         "cost": 900.0,
         "enabled": true,
-        "kw": 0.75
+        "kw": 0.75,
+        "sub": false
       },
       {
         "id": "pump_c2",
@@ -1615,7 +1616,8 @@
         "maxQ": 0.002777777777777778,
         "cost": 1500.0,
         "enabled": true,
-        "kw": 1.5
+        "kw": 1.5,
+        "sub": false
       },
       {
         "id": "pump_small",
@@ -1643,7 +1645,8 @@
         "maxQ": 0.004166666666666667,
         "cost": 2200.0,
         "enabled": true,
-        "kw": 2.2
+        "kw": 2.2,
+        "sub": false
       },
       {
         "id": "pump_c5",
@@ -1671,7 +1674,8 @@
         "maxQ": 0.0075,
         "cost": 3200.0,
         "enabled": true,
-        "kw": 3.7
+        "kw": 3.7,
+        "sub": false
       },
       {
         "id": "pump_c7_5",
@@ -1699,7 +1703,8 @@
         "maxQ": 0.011666666666666667,
         "cost": 4500.0,
         "enabled": true,
-        "kw": 5.5
+        "kw": 5.5,
+        "sub": false
       },
       {
         "id": "pump_mid",
@@ -1727,7 +1732,8 @@
         "maxQ": 0.016666666666666666,
         "cost": 6500.0,
         "enabled": true,
-        "kw": 7.5
+        "kw": 7.5,
+        "sub": false
       },
       {
         "id": "pump_c15",
@@ -1755,7 +1761,8 @@
         "maxQ": 0.022222222222222223,
         "cost": 9000.0,
         "enabled": true,
-        "kw": 11.0
+        "kw": 11.0,
+        "sub": false
       },
       {
         "id": "pump_c20",
@@ -1783,7 +1790,8 @@
         "maxQ": 0.027777777777777776,
         "cost": 12000.0,
         "enabled": true,
-        "kw": 15.0
+        "kw": 15.0,
+        "sub": false
       },
       {
         "id": "pump_big",
@@ -1811,7 +1819,8 @@
         "maxQ": 0.05,
         "cost": 18000.0,
         "enabled": true,
-        "kw": 22.0
+        "kw": 22.0,
+        "sub": false
       },
       {
         "id": "pump_c50",
@@ -1839,7 +1848,8 @@
         "maxQ": 0.06388888888888888,
         "cost": 28000.0,
         "enabled": true,
-        "kw": 37.0
+        "kw": 37.0,
+        "sub": false
       },
       {
         "id": "pump_c75",
@@ -1867,7 +1877,8 @@
         "maxQ": 0.09166666666666666,
         "cost": 40000.0,
         "enabled": true,
-        "kw": 55.0
+        "kw": 55.0,
+        "sub": false
       },
       {
         "id": "pump_c100",
@@ -1895,7 +1906,8 @@
         "maxQ": 0.11666666666666667,
         "cost": 55000.0,
         "enabled": true,
-        "kw": 75.0
+        "kw": 75.0,
+        "sub": false
       },
       {
         "id": "pump_s3",
@@ -1923,7 +1935,8 @@
         "maxQ": 0.003333333333333333,
         "cost": 2800.0,
         "enabled": true,
-        "kw": 2.2
+        "kw": 2.2,
+        "sub": true
       },
       {
         "id": "pump_s5",
@@ -1951,7 +1964,8 @@
         "maxQ": 0.005,
         "cost": 3900.0,
         "enabled": true,
-        "kw": 3.7
+        "kw": 3.7,
+        "sub": true
       },
       {
         "id": "pump_sub",
@@ -1979,7 +1993,8 @@
         "maxQ": 0.009722222222222222,
         "cost": 5400.0,
         "enabled": true,
-        "kw": 5.5
+        "kw": 5.5,
+        "sub": true
       },
       {
         "id": "pump_s15",
@@ -2007,7 +2022,8 @@
         "maxQ": 0.016666666666666666,
         "cost": 9500.0,
         "enabled": true,
-        "kw": 11.0
+        "kw": 11.0,
+        "sub": true
       },
       {
         "id": "pump_s25",
@@ -2035,7 +2051,37 @@
         "maxQ": 0.022222222222222223,
         "cost": 15000.0,
         "enabled": true,
-        "kw": 18.5
+        "kw": 18.5,
+        "sub": true
+      },
+      {
+        "id": "pump_s30",
+        "name": "Pompe immergée 30 ch (100 m³/h @ 60 m)",
+        "points": [
+          [
+            0.0,
+            82.0
+          ],
+          [
+            0.013888888888888888,
+            74.0
+          ],
+          [
+            0.027777777777777776,
+            60.0
+          ],
+          [
+            0.03888888888888889,
+            40.0
+          ]
+        ],
+        "eff": 0.72,
+        "minQ": 0.0,
+        "maxQ": 0.03888888888888889,
+        "cost": 19000.0,
+        "enabled": true,
+        "kw": 22.0,
+        "sub": true
       }
     ],
     "fittings": [
@@ -5405,7 +5451,7 @@
         66.0,
         400.0
       ],
-      "spec": "pump_big",
+      "spec": "pump_s30",
       "speed": 1.0,
       "rot": 0.0,
       "scope": "mainline"

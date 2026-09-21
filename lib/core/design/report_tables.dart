@@ -4,6 +4,8 @@ library;
 
 import 'dart:math' as math;
 
+import '../hydraulics/pump.dart';
+import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/project.dart';
 import '../translate.dart';
@@ -139,11 +141,6 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         mainRows.add([f.name, '${t('rep.valve')}: ${v.zoneName}', RNum(u.flowFromSi(v.flow), 1), RNum(u.pressureFromHead(v.availableHead), 1), RNum(u.pressureFromHead(v.requiredHead), 1), v.deficit > 0.01 ? '${t('rep.deficit')} ${fmt(u.pressureFromHead(v.deficit), 1)}' : t('rep.ok'), '']);
         mainWarn.add(v.deficit > 0.01);
       }
-      for (final d in f.devices) {
-        final e = project.byId(d.entityId);
-        mainRows.add([f.name, e is PumpEntity ? t('rep.pump') : t('rep.device'), RNum(u.flowFromSi(d.flow), 1), RNum(u.pressureFromHead(d.upstreamPressure), 1), RNum(u.pressureFromHead(d.downstreamPressure), 1), d.pumpHead > 0 ? '${t('rep.pumpHead')} ${fmt(u.pressureFromHead(d.pumpHead), 1)}' : 'Δh ${fmt(u.pressureFromHead(d.headLoss), 2)}', d.status]);
-        mainWarn.add(false);
-      }
     }
     out.add(ReportTable(
       key: 'mainline',
@@ -151,6 +148,41 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
       headers: [t('rep.flowName'), t('rep.item'), '${t('rep.q')} (${u.flowLabel})', '${t('rep.pAvailable')} (${u.pressureLabel})', t('rep.pRequired'), t('rep.status'), '${t('rep.energyYear')} (${project.params.currency})'],
       rows: mainRows,
       warn: mainWarn,
+    ));
+    // ---- pumps and inline devices of the mainline: pressure at the inlet
+    // (negative = suction) and at the outlet
+    final devRows = <List<Object>>[];
+    final devWarn = <bool>[];
+    for (final f in r.systemFlows) {
+      for (final d in f.devices) {
+        final e = project.byId(d.entityId);
+        final isPump = e is PumpEntity;
+        final specName = switch (e) {
+          PumpEntity p => project.catalog.pump(p.pumpSpecId)?.name,
+          MiscHydraulicEntity m => project.catalog.valve(m.valveSpecId)?.name,
+          _ => null,
+        };
+        final name = (e?.name.isNotEmpty ?? false) ? e!.name : (specName ?? labels.name(d.entityId));
+        final flagged = f.warnings.any((w) => w == 'pump_suction_lift:${d.entityId}' || w == 'pump_out_of_range:${d.entityId}');
+        devRows.add([
+          f.name,
+          '${isPump ? t('rep.pump') : t('rep.device')}: $name',
+          RNum(u.flowFromSi(d.flow), 1),
+          RNum(u.pressureFromHead(d.upstreamPressure), 1),
+          RNum(u.pressureFromHead(d.downstreamPressure), 1),
+          if (isPump) RNum(u.pressureFromHead(d.pumpHead), 1) else '',
+          if (isPump) '' else RNum(u.pressureFromHead(d.headLoss), 2),
+          deviceStatusText(t, d, f.warnings, pump: isPump ? project.catalog.pump(e.pumpSpecId) : null, isPump: isPump, units: u),
+        ]);
+        devWarn.add(flagged);
+      }
+    }
+    out.add(ReportTable(
+      key: 'devices',
+      title: t('reports.devices'),
+      headers: [t('rep.flowName'), t('rep.item'), '${t('rep.q')} (${u.flowLabel})', '${t('rep.pIn')} (${u.pressureLabel})', t('rep.pOut'), t('rep.pumpHead'), t('rep.loss'), t('rep.status')],
+      rows: devRows,
+      warn: devWarn,
     ));
     // ---- bill of materials
     final cur = project.params.currency;
@@ -287,6 +319,26 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     if (rows.isNotEmpty) out.add(ReportTable(key: 'messages', title: t('reports.messages'), headers: [t('rep.context'), t('reports.messages')], rows: rows, warn: warn));
   }
   return out;
+}
+
+/// Operating state of a pump or inline device for the reports: running /
+/// stopped (pumps), open / closed / regulating (devices), plus the suction
+/// lift against its limit, "submersible" and "out of range" when they apply
+/// ([warnings] are those of the analysis the device belongs to).
+String deviceStatusText(Translate t, DeviceResult d, List<String> warnings, {required bool isPump, PumpSpec? pump, required Units units}) {
+  final parts = <String>[
+    switch (d.status) {
+      'closed' => t(isPump ? 'rep.st.stopped' : 'rep.st.closed'),
+      'active' => t('rep.st.active'),
+      _ => t(isPump ? 'rep.st.running' : 'rep.st.open'),
+    },
+  ];
+  if (warnings.contains('pump_suction_lift:${d.entityId}')) {
+    parts.add('${t('rep.suction')} ${fmt(units.pressureFromHead(-d.upstreamPressure), 1)} > ${fmt(units.pressureFromHead(maxSuctionLift(d.elevation)), 1)}');
+  }
+  if (warnings.contains('pump_out_of_range:${d.entityId}')) parts.add(t('rep.outOfRange'));
+  if (pump?.submersible ?? false) parts.add(t('rep.submersible'));
+  return parts.join(' · ');
 }
 
 /// Semicolon-separated CSV (Excel-friendly in pt/es locales) with a UTF-8 BOM.

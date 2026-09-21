@@ -8,6 +8,7 @@ import 'package:opencadirrigation/core/design/design_check.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
 import 'package:opencadirrigation/core/design/report_tables.dart';
+import 'package:opencadirrigation/core/hydraulics/pump.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/units.dart';
@@ -86,11 +87,14 @@ void main() {
             expect(s.head, greaterThanOrEqualTo(0), reason: '${f.name}: ${s.name}');
             expect(s.surplusHead, lessThan(35), reason: '${f.name}: ${s.name} surplus ${s.surplusHead} m');
           }
-          // a pump inlet sees at worst the suction of the well (water level
-          // below ground), never a fictitious negative supply pressure
-          final lowestWater = p.entities.whereType<WaterSupplyEntity>().map((s) => s.waterLevelOffsetM).fold(0.0, (a, b) => a < b ? a : b);
+          // pumps work within their practical suction lift: a submersible
+          // sits at the water level, a surface pump lifts from a shallow
+          // source; no device sees a fictitious negative pressure
+          expect(f.warnings.where((w) => w.startsWith('pump_suction_lift')), isEmpty, reason: f.name);
           for (final d in f.devices) {
-            expect(d.upstreamPressure, greaterThanOrEqualTo(lowestWater - 1), reason: '${f.name}: ${p.byId(d.entityId)?.name}');
+            final e = p.byId(d.entityId);
+            final surfacePump = e is PumpEntity && !(p.catalog.pump(e.pumpSpecId)?.submersible ?? false);
+            expect(d.upstreamPressure, greaterThanOrEqualTo(surfacePump ? -maxSuctionLift(d.elevation) : -0.5), reason: '${f.name}: ${e?.name}');
           }
         }
         expect(r.bom, isNotEmpty);

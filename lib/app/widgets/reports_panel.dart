@@ -102,7 +102,7 @@ class ReportsPanel extends StatelessWidget {
       case 2:
         return _fromTable('outlets');
       case 3:
-        return _fromTable('mainline');
+        return _mainlineAndDevices();
       case 4:
         return _fromTable('bom');
       case 5:
@@ -145,6 +145,25 @@ class ReportsPanel extends StatelessWidget {
     }
     // keyed per table so switching tabs starts from a fresh scroll position
     return _table(tb.headers, tb.rows, rowColors: [for (final w in tb.warn) w ? CadColors.warning : null], key: ValueKey('report_table_$key'));
+  }
+
+  /// Mainline duties on top, the pumps and devices of the mainline below
+  /// (separate tables: their columns are inlet / outlet pressures).
+  Widget _mainlineAndDevices() {
+    final tables = c.reportTables();
+    final dev = tables.where((x) => x.key == 'devices').firstOrNull;
+    if (dev == null || dev.isEmpty) return _fromTable('mainline');
+    final main = tables.where((x) => x.key == 'mainline').firstOrNull;
+    return Column(children: [
+      if (main != null && !main.isEmpty) Expanded(flex: main.rows.length + 1, child: _fromTable('mainline')),
+      Container(
+        width: double.infinity,
+        color: const Color(0xFF1B1F24),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(dev.title, style: const TextStyle(fontSize: 11.5, color: Colors.white70, fontWeight: FontWeight.w600)),
+      ),
+      Expanded(flex: dev.rows.length + 1, child: _fromTable('devices')),
+    ]);
   }
 
   Widget _profile() {

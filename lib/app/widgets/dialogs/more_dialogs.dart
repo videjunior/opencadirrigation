@@ -110,7 +110,7 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
     final dutyHead = pd.head;
     final stat = staticLift(c.project, r, s, duty);
     final others = [for (final d in pumpDuties(r, s.id)) if (d.flowName != pd.flowName) (d.supply.flow, d.head)];
-    final cands = rankPumps(cat, flow: duty.flow, head: dutyHead, staticHead: stat, hoursPerYear: p.hoursPerYear, costPerKwh: p.powerCostPerKwh, otherDuties: others);
+    final cands = rankPumps(cat, flow: duty.flow, head: dutyHead, staticHead: stat, hoursPerYear: p.hoursPerYear, costPerKwh: p.powerCostPerKwh, otherDuties: others, requireSubmersible: suctionLiftTooDeep(s, duty));
     final existing = c.project.entities.whereType<PumpEntity>().toList();
     return SizedBox(
       height: 420,
@@ -135,7 +135,7 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
                         DataCell(Text(k.spec.name)),
                         DataCell(Text('${k.parallelCount}')),
                         DataCell(Text(fmt(u.pressureFromHead(k.headAtDuty), 1))),
-                        DataCell(Text(k.suitable ? '+${fmt(u.pressureFromHead(k.margin), 1)}' : (k.inRange ? fmt(u.pressureFromHead(k.margin), 1) : t('pump.unsuitable')))),
+                        DataCell(Text(k.suitable ? '+${fmt(u.pressureFromHead(k.margin), 1)}' : (!k.suctionOk ? t('pump.suction') : (k.inRange ? fmt(u.pressureFromHead(k.margin), 1) : t('pump.unsuitable'))))),
                         DataCell(Text(k.operatingFlow > 0 ? '${fmt(u.flowFromSi(k.operatingFlow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(k.operatingHead), 1)}' : '—')),
                         DataCell(Text(fmt(k.shaftPowerKw * k.parallelCount, 1))),
                         DataCell(Builder(builder: (_) {
@@ -480,7 +480,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ]),
         ],
     ]);
-    Widget pumps() => _catTable([t('cat.use'), t('cat.name'), t('cat.points'), t('cat.eff'), 'kW', cur, ''], [
+    Widget pumps() => _catTable([t('cat.use'), t('cat.name'), t('cat.points'), t('cat.eff'), 'kW', t('cat.submersible'), cur, ''], [
       for (final p in cat.pumps)
         [
           Checkbox(value: p.enabled, onChanged: (x) => setState(() => p.enabled = x ?? true)),
@@ -501,6 +501,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           }),
           _num(p.efficiency, (x) => p.efficiency = x),
           _num(p.powerKw, (x) => p.powerKw = x),
+          Checkbox(value: p.submersible, onChanged: (x) => setState(() => p.submersible = x ?? false)),
           _num(p.cost, (x) => p.cost = x),
           Row(mainAxisSize: MainAxisSize.min, children: [
             dupBtn(() => cat.pumps.add(PumpSpec.fromJson(p.toJson()..['id'] = cat.newId('pump'))..name = '${p.name} *')),

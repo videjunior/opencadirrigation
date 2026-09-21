@@ -441,7 +441,18 @@ Módulo `pump.dart`.
   de entrada entra no objetivo do LP (seção 14).
 - **Seleção automática** (`pump_selection.dart`): para o pior duty da fonte, classifica as bombas
   do catálogo pela capacidade de atender vazão e carga com folga e escolhe o motor padrão IEC que
-  cobre a potência de eixo com fator de serviço 1,15.
+  cobre a potência de eixo com fator de serviço 1,15. Quando a água está mais funda que a altura
+  de sucção prática, só bombas submersas servem.
+- **Altura de sucção**: o nó de uma fonte representa a superfície da água, então um poço começa
+  com pressão zero no nível da água e a pressão na entrada de uma bomba de superfície é menos a
+  altura de sucção (desnível estático mais as perdas da tubulação de sucção). O limite prático é
+  a carga atmosférica na cota do local (10,33 m ao nível do mar, atmosfera padrão) menos a pressão
+  de vapor a 20 °C (0,24 m) e uma reserva de 3 m para o NPSH requerido e a margem: cerca de 7,1 m
+  ao nível do mar e 5,9 m a 1000 m. Uma bomba de superfície em operação além disso gera o aviso
+  `pump_suction_lift`. Uma bomba marcada como *submersa* no catálogo fica instalada no nível da
+  água da fonte que a alimenta: sua entrada não tem sucção e o desnível aparece no tubo que sobe a
+  partir dela; o balanço de energia não muda. O relatório lista bombas e acessórios numa tabela
+  própria com pressões de entrada e saída, altura da bomba ou perda, e situação.
 
 ---
 

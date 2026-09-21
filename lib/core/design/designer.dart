@@ -492,7 +492,8 @@ class Designer {
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         if ((tape?.pressureRatingM ?? spec?.pressureRatingM ?? 0) > 0 && math.max(ha - na.elevation, hb - nb.elevation) > (tape?.pressureRatingM ?? spec!.pressureRatingM)) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
-        devices.add(DeviceResult(entityId: l.entityId, linkId: lid, flow: lr.flow, headLoss: lr.headLoss, pumpHead: lr.pumpHead, upstreamPressure: ha - na.elevation, downstreamPressure: hb - nb.elevation, status: lr.status.name));
+        devices.add(DeviceResult(entityId: l.entityId, linkId: lid, flow: lr.flow, headLoss: lr.headLoss, pumpHead: lr.pumpHead, upstreamPressure: ha - na.elevation, downstreamPressure: hb - nb.elevation, status: lr.status.name, elevation: na.elevation));
+        if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
       }
     }
     for (final o in outlets) {
@@ -1115,7 +1116,8 @@ class Designer {
       if (n.isSupply) {
         final s = project.byId(n.supplyEntityId!) as WaterSupplyEntity;
         final p = supplyPressure[s.id] ?? 0;
-        net.addNode(HNode(id: id, kind: HNodeKind.reservoir, elevation: n.elevation, fixedHead: n.elevation + s.waterLevelOffsetM + p));
+        // the supply node lies at the water level (NetworkBuilder)
+        net.addNode(HNode(id: id, kind: HNodeKind.reservoir, elevation: n.elevation, fixedHead: n.elevation + p));
         continue;
       }
       final h = HNode(id: id, elevation: n.elevation);
@@ -1141,6 +1143,16 @@ class Designer {
   }
 
   List<WaterSupplyEntity> get _supplies => project.entities.whereType<WaterSupplyEntity>().where((s) => model.supplyNodes.containsKey(s.id) && model.mainlineNodes.contains(model.supplyNodes[s.id])).toList();
+
+  /// A running surface pump whose inlet pressure is below minus the
+  /// practical suction lift (atmospheric head − vapour pressure − NPSH
+  /// allowance): it would cavitate or lose its prime.
+  bool _suctionLiftExceeded(GLink l, LinkResult lr, double inletPressure, double elevation) {
+    if (l.kind != GLinkKind.pump || lr.flow <= 0) return false;
+    final spec = catalog.pump(l.pumpSpecId);
+    if (spec == null || spec.submersible) return false;
+    return -inletPressure > maxSuctionLift(elevation) + 1e-6;
+  }
 
   SystemFlowResult analyzeSystemFlow(SystemFlow sf, {double totalDuration = 0}) {
     final warnings = <String>[];
@@ -1236,10 +1248,11 @@ class Designer {
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         if ((spec?.pressureRatingM ?? 0) > 0 && math.max(ha - na.elevation, hb - nb.elevation) > spec!.pressureRatingM) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
-        devices.add(DeviceResult(entityId: l.entityId, linkId: lid, flow: lr.flow, headLoss: lr.headLoss, pumpHead: lr.pumpHead, upstreamPressure: ha - na.elevation, downstreamPressure: hb - nb.elevation, status: lr.status.name));
+        devices.add(DeviceResult(entityId: l.entityId, linkId: lid, flow: lr.flow, headLoss: lr.headLoss, pumpHead: lr.pumpHead, upstreamPressure: ha - na.elevation, downstreamPressure: hb - nb.elevation, status: lr.status.name, elevation: na.elevation));
         if (l.kind == GLinkKind.pump) {
           final spec = catalog.pump(l.pumpSpecId);
           if (spec != null && (lr.flow > spec.maxFlow + 1e-9 || lr.flow <= 0)) warnings.add('pump_out_of_range:${l.entityId}');
+          if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
         }
       }
     }
@@ -1338,7 +1351,7 @@ class Designer {
             constant += r.links[l.id]?.headLoss ?? 0;
           }
         }
-        final dz = model.nodes[node]!.elevation + offset - (model.nodes[src]!.elevation + s.waterLevelOffsetM);
+        final dz = model.nodes[node]!.elevation + offset - model.nodes[src]!.elevation;
         constraints.add(LpHeadConstraint(headVar: headIndex['${s.id}|$fi']!, lossByUnitSpec: byUnit, constant: constant, minPressure: minPressure + dz, maxPressure: maxPressure != null ? maxPressure + dz : null, tag: node));
       }
 

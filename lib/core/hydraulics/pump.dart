@@ -142,6 +142,22 @@ class SystemCurve {
   return (q, pump.head(q));
 }
 
+/// Atmospheric pressure head (m of water) at [elevation] metres above sea
+/// level, standard atmosphere: 10.33 m at sea level, about 9.2 m at 1000 m.
+double atmosphericHead(double elevation) => 10.33 * math.pow(1 - 2.25577e-5 * elevation.clamp(-500.0, 8000.0), 5.25588).toDouble();
+
+/// Vapour pressure head of water at 20 °C (m).
+const vapourHead20C = 0.24;
+
+/// Allowance for the NPSH a surface pump requires plus a safety margin (m).
+const suctionNpshAllowance = 3.0;
+
+/// Practical suction lift limit (m) of a surface pump at [elevation]: the
+/// atmospheric head minus the vapour pressure and the NPSH allowance
+/// (about 7.1 m at sea level). The suction lift is the negative pressure
+/// head at the pump inlet: static lift plus the losses of the suction pipe.
+double maxSuctionLift(double elevation) => atmosphericHead(elevation) - vapourHead20C - suctionNpshAllowance;
+
 /// Hydraulic power (W) = ρ·g·Q·H; shaft power divides by efficiency.
 double hydraulicPower({required double flow, required double head}) =>
     waterDensity * gravity * flow * head;

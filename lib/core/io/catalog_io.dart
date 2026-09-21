@@ -262,6 +262,8 @@ class CatalogIo {
     final supC = col(['supplier', 'fornecedor', 'proveedor']), codeC = col(['code', 'codigo', 'sku']);
     double num(List<String> r, int i, [double def = 0]) => i >= 0 && i < r.length ? (double.tryParse(r[i].replaceAll(',', '.')) ?? def) : def;
     String str(List<String> r, int i, [String def = '']) => i >= 0 && i < r.length ? r[i] : def;
+    // pump type: "submersible", "submersa", "sumergible", "sub"…
+    bool isSubmersible(String v) => RegExp(r'^\s*(sub|sum)', caseSensitive: false).hasMatch(v);
     var n = 0;
     for (var li = 1; li < lines.length; li++) {
       final r = _splitLine(lines[li], sep);
@@ -316,7 +318,7 @@ class CatalogIo {
             if (q > 0 && h > 0) pts.add((q * m3sPerM3h, h));
           }
           if (pts.isEmpty) continue;
-          c.pumps.add(PumpSpec(id: id, name: name, points: pts, efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65), maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2, cost: cost, powerKw: num(r, col(['kw', 'power'])), supplier: sup, code: code));
+          c.pumps.add(PumpSpec(id: id, name: name, points: pts, efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65), maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2, cost: cost, powerKw: num(r, col(['kw', 'power'])), submersible: isSubmersible(str(r, col(['type', 'tipo', 'install']))), supplier: sup, code: code));
         case CatalogGroup.outlets:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'sprinkler').toLowerCase();
           final kind = OutletKind.values.firstWhere((k) => k.name.toLowerCase() == kindS, orElse: () => kindS.contains('micro') ? OutletKind.microSprinkler : (kindS.contains('drip') || kindS.contains('gotej') ? OutletKind.dripper : (kindS.contains('gun') || kindS.contains('canh') ? OutletKind.gun : OutletKind.sprinkler)));
@@ -447,9 +449,9 @@ class CatalogIo {
           b.writeln([v.id, q(v.name), v.kind.name, v.sizeMm, v.loss.k, v.loss.n, v.minFlow / m3sPerM3h, v.maxFlow / m3sPerM3h, v.defaultSettingM, v.cost, q(v.supplier), q(v.code)].join(';'));
         }
       case CatalogGroup.pumps:
-        b.writeln('id;name;points;eff;kw;cost;supplier;code');
+        b.writeln('id;name;points;eff;kw;type;cost;supplier;code');
         for (final p in c.pumps) {
-          b.writeln([p.id, q(p.name), q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')), p.efficiency, p.powerKw, p.cost, q(p.supplier), q(p.code)].join(';'));
+          b.writeln([p.id, q(p.name), q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')), p.efficiency, p.powerKw, p.submersible ? 'submersible' : 'surface', p.cost, q(p.supplier), q(p.code)].join(';'));
         }
       case CatalogGroup.outlets:
         b.writeln('id;name;kind;nozzle;qLph;headM;x;radiusM;minH;maxH;cv;arc;inletMm;cost;supplier;code');

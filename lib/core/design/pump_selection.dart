@@ -26,7 +26,7 @@ const standardMotorsKw = <(double, double)>[(0.75, 1), (1.1, 1.5), (1.5, 2), (2.
 }
 
 class PumpCandidate {
-  PumpCandidate({required this.spec, required this.headAtDuty, required this.margin, required this.operatingFlow, required this.operatingHead, required this.shaftPowerKw, required this.annualEnergy, required this.inRange, required this.parallelCount});
+  PumpCandidate({required this.spec, required this.headAtDuty, required this.margin, required this.operatingFlow, required this.operatingHead, required this.shaftPowerKw, required this.annualEnergy, required this.inRange, required this.parallelCount, this.suctionOk = true});
   final PumpSpec spec;
 
   /// Head the pump delivers at the duty flow (m).
@@ -44,7 +44,11 @@ class PumpCandidate {
 
   /// Pumps in parallel needed to reach the duty flow (1 = single pump).
   final int parallelCount;
-  bool get suitable => margin >= -1e-6 && inRange;
+
+  /// False for a surface pump when the water lies deeper than its
+  /// practical suction lift.
+  final bool suctionOk;
+  bool get suitable => margin >= -1e-6 && inRange && suctionOk;
 }
 
 /// System curve H = static + k·Q^1.852 through the duty point, with the
@@ -71,8 +75,10 @@ List<PumpDuty> pumpDuties(DesignResults r, String supplyId) {
 
 /// Ranks the catalog pumps for a duty (Q, H); [otherDuties] are further
 /// (flow, head) points every candidate must also satisfy (other system
-/// flows): the margin reported is the smallest over all points.
-List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required double head, double? staticHead, required double hoursPerYear, required double costPerKwh, int maxParallel = 3, List<(double, double)> otherDuties = const []}) {
+/// flows): the margin reported is the smallest over all points. With
+/// [requireSubmersible] (water deeper than the suction lift of a surface
+/// pump, see [suctionLiftTooDeep]) only submersible pumps are suitable.
+List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required double head, double? staticHead, required double hoursPerYear, required double costPerKwh, int maxParallel = 3, List<(double, double)> otherDuties = const [], bool requireSubmersible = false}) {
   final out = <PumpCandidate>[];
   if (!(flow > 0) || !(head > 0)) return out; // no meaningful duty
   final sys = systemCurveFromDuty(flow: flow, head: head, staticHead: staticHead ?? 0.6 * head);
@@ -94,7 +100,7 @@ List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required doubl
       final op = _operatingPoint(parallel, sys, qMax: math.max(flow * 3, 0.01));
       final oq = op?.$1 ?? 0, oh = op?.$2 ?? 0;
       final power = oq > 0 ? shaftPower(flow: oq, head: oh, efficiency: p.efficiency) / 1000 : 0.0;
-      out.add(PumpCandidate(spec: p, headAtDuty: hAt, margin: margin, operatingFlow: oq, operatingHead: oh, shaftPowerKw: power, annualEnergy: power * hoursPerYear * costPerKwh, inRange: inRange, parallelCount: n));
+      out.add(PumpCandidate(spec: p, headAtDuty: hAt, margin: margin, operatingFlow: oq, operatingHead: oh, shaftPowerKw: power, annualEnergy: power * hoursPerYear * costPerKwh, inRange: inRange, parallelCount: n, suctionOk: p.submersible || !requireSubmersible));
       if (margin >= 0 && inRange) break; // a single unit (or fewer units) is enough
     }
   }
@@ -172,7 +178,8 @@ SupplyDuty? worstDuty(DesignResults r, String supplyId) {
 }
 
 /// Static lift for a supply: highest (valve elevation + required pressure)
-/// minus supply water level.
+/// minus supply water level ([SupplyDuty.elevation], the supply node lies at
+/// the water surface).
 double staticLift(Project project, DesignResults r, WaterSupplyEntity s, SupplyDuty duty) {
   var top = -double.infinity;
   for (final f in r.systemFlows) {
@@ -182,8 +189,13 @@ double staticLift(Project project, DesignResults r, WaterSupplyEntity s, SupplyD
     }
   }
   if (!top.isFinite) return 0;
-  return math.max(0, top - (duty.elevation + s.waterLevelOffsetM));
+  return math.max(0, top - duty.elevation);
 }
+
+/// Whether the water of [s] lies deeper below the ground than a surface pump
+/// can lift it (static part only; the suction pipe losses add to it).
+/// [duty] gives the water level ([SupplyDuty.elevation]).
+bool suctionLiftTooDeep(WaterSupplyEntity s, SupplyDuty duty) => -s.waterLevelOffsetM > maxSuctionLift(duty.elevation - s.waterLevelOffsetM);
 
 /// Velocity in the delivery main at the duty, for information.
 double mainVelocity(double flow, double diameter) => diameter > 0 ? velocity(flow: flow, diameter: diameter) : 0;

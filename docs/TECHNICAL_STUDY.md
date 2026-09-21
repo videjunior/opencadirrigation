@@ -452,7 +452,18 @@ Module `pump.dart`.
   head enters the LP objective (section 14).
 - **Automatic selection** (`pump_selection.dart`): for the worst duty of the supply, ranks the
   catalogue pumps by their ability to meet flow and head with margin and picks the standard IEC
-  motor that covers the shaft power with a 1.15 service factor.
+  motor that covers the shaft power with a 1.15 service factor. When the water lies deeper than
+  the practical suction lift, only submersible pumps are suitable.
+- **Suction lift**: a supply node stands for its water surface, so a well starts at zero pressure
+  at the water level and the pressure at the inlet of a surface pump is minus the suction lift
+  (static lift plus suction pipe losses). The practical limit is the atmospheric head at the site
+  elevation (10.33 m at sea level, standard atmosphere) minus the vapour pressure at 20 °C
+  (0.24 m) and a 3 m allowance for the required NPSH and margin: about 7.1 m at sea level and
+  5.9 m at 1000 m. A running surface pump beyond it raises `pump_suction_lift`. A pump flagged
+  *submersible* in the catalogue is installed at the water level of the supply that feeds it: its
+  inlet sees no suction and the lift shows in the pipe that rises from it; the energy balance does
+  not change. The report lists pumps and devices in their own table with inlet and outlet
+  pressures, pump head or loss, and state.
 
 ---
 

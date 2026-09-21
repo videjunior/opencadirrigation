@@ -441,6 +441,7 @@ class NetworkBuilder {
         if (model.mainlineNodes.add(o)) mq.add(o);
       }
     }
+    _installElevations();
     for (final e in project.entities) {
       if (!e.isHydraulic) continue;
       if (model.unconnectedEntities.contains(e.id)) continue;
@@ -557,6 +558,49 @@ class NetworkBuilder {
 
   /// Inserts an in-line device at [p]: the node is split into an upstream and a
   /// downstream node; the side nearest to a supply (by hop count) is upstream.
+  /// A supply node stands for its water surface (the head of the reservoir),
+  /// so the pressure there is the supply pressure and a pipe leaving a well
+  /// climbs from the water level. A submersible pump is installed at the
+  /// water level of the supply that feeds it: its inlet sees no suction lift
+  /// and the lift shows in the pipe that rises from it.
+  void _installElevations() {
+    final waterLevel = <String, double>{};
+    for (final e in project.entities) {
+      if (e is! WaterSupplyEntity) continue;
+      final n = model.nodes[model.supplyNodes[e.id] ?? ''];
+      if (n == null) continue;
+      final z = n.ground + e.waterLevelOffsetM;
+      n.fixedElevation = z;
+      waterLevel[n.id] = z;
+    }
+    final submersible = [
+      for (final l in model.links)
+        if (l.kind == GLinkKind.pump && model.mainlineLinks.contains(l.id) && (project.catalog.pump(l.pumpSpecId)?.submersible ?? false)) l,
+    ];
+    if (submersible.isEmpty || waterLevel.isEmpty) return;
+    // nearest supply of every mainline node (multi-source BFS)
+    final source = <String, String>{for (final id in waterLevel.keys) id: id};
+    final queue = [...waterLevel.keys];
+    for (var i = 0; i < queue.length; i++) {
+      final id = queue[i];
+      for (final l in model.nodes[id]!.links) {
+        if (!model.mainlineLinks.contains(l.id)) continue;
+        final o = l.other(id);
+        if (source.containsKey(o)) continue;
+        source[o] = source[id]!;
+        queue.add(o);
+      }
+    }
+    for (final l in submersible) {
+      final src = source[l.from];
+      if (src == null) continue;
+      for (final id in [l.from, l.to]) {
+        final n = model.nodes[id]!;
+        if (!n.isSupply) n.fixedElevation = waterLevel[src];
+      }
+    }
+  }
+
   void _insertInline(String entityId, Pt p, HydraulicScope scope, GLink Function(String up, String down) make) {
     final n = _nodeAt(p, scope, create: false);
     if (n.id.isEmpty) {

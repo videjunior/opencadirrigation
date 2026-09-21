@@ -94,7 +94,7 @@ class OutletResult {
 }
 
 class DeviceResult {
-  DeviceResult({required this.entityId, required this.linkId, required this.flow, required this.headLoss, required this.pumpHead, required this.upstreamPressure, required this.downstreamPressure, this.status = ''});
+  DeviceResult({required this.entityId, required this.linkId, required this.flow, required this.headLoss, required this.pumpHead, required this.upstreamPressure, required this.downstreamPressure, this.status = '', this.elevation = 0});
   final String entityId;
   final String linkId;
   final double flow;
@@ -104,8 +104,12 @@ class DeviceResult {
   final double downstreamPressure;
   final String status;
 
-  Map<String, dynamic> toJson() => {'ent': entityId, 'link': linkId, 'q': flow, 'hf': headLoss, 'hp': pumpHead, 'pu': upstreamPressure, 'pd': downstreamPressure, 'st': status};
-  static DeviceResult fromJson(Map<String, dynamic> j) => DeviceResult(entityId: j['ent'] as String, linkId: j['link'] as String? ?? '', flow: _d(j, 'q'), headLoss: _d(j, 'hf'), pumpHead: _d(j, 'hp'), upstreamPressure: _d(j, 'pu'), downstreamPressure: _d(j, 'pd'), status: j['st'] as String? ?? '');
+  /// Elevation of the device (m): the installation level of a submersible
+  /// pump, the pipe level otherwise.
+  final double elevation;
+
+  Map<String, dynamic> toJson() => {'ent': entityId, 'link': linkId, 'q': flow, 'hf': headLoss, 'hp': pumpHead, 'pu': upstreamPressure, 'pd': downstreamPressure, 'st': status, 'z': elevation};
+  static DeviceResult fromJson(Map<String, dynamic> j) => DeviceResult(entityId: j['ent'] as String, linkId: j['link'] as String? ?? '', flow: _d(j, 'q'), headLoss: _d(j, 'hf'), pumpHead: _d(j, 'hp'), upstreamPressure: _d(j, 'pu'), downstreamPressure: _d(j, 'pd'), status: j['st'] as String? ?? '', elevation: _d(j, 'z'));
 }
 
 class ZoneResult {
