@@ -174,7 +174,7 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
 
     case FixKind.addFittings:
       final have = {for (final f in p.catalog.fittings) f.id};
-      final add = [for (final f in Catalog.defaultFittings(p.catalog.pipes, lang: lang)) if (!have.contains(f.id)) f];
+      final add = [for (final f in Catalog.defaultFittings(p.catalog.pipes, lang: lang, currency: p.params.currencyCode)) if (!have.contains(f.id)) f];
       if (add.isEmpty) return const FixResult.failed('fixfail.noChange');
       p.catalog.fittings.addAll(add);
       return FixResult.done('fixed.addFittings', {'n': '${add.length}'});
@@ -233,7 +233,7 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
       }
       if (n == 0) {
         final have = {for (final s in p.catalog.pipes) s.id};
-        for (final s in Catalog.defaultCatalog(lang: lang).pipes) {
+        for (final s in Catalog.defaultCatalog(lang: lang, currency: p.params.currencyCode).pipes) {
           if (s.enabled && s.usage.contains(usage) && !have.contains(s.id)) {
             p.catalog.pipes.add(s);
             n++;

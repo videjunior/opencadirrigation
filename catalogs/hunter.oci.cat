@@ -4,100 +4,160 @@
   "id": "hunter",
   "brand": "Hunter Industries",
   "name": "Hunter Industries",
-  "description": "PGP Ultra / I-25 / I-40 rotors, MP Rotator, Pro-Spray, PLD dripline, ICV / PGV valves",
+  "description": "PGP Ultra / I-20 and I-25 rotors, MP Rotator (Pro-Spray PRS40), HDL-PC 17 mm dripline, ICV and PGV valves (pressure loss fitted to the published tables)",
+  "source": "https://www.hunterirrigation.com/en-metric",
   "license": "CC0-1.0",
-  "updated": "2026-09-16",
+  "updated": "2026-09-21",
   "author": "OpenCADIrrigation",
-  "items": 10,
+  "sources": [
+    "PGP Ultra / I-20 performance charts, metric (LIT-651)",
+    "I-25 Ultra nozzle performance data, metric (INT-696)",
+    "MP Rotator performance data (LIT-418)",
+    "HDL-PC & HDL-R 17 mm dripline specifications",
+    "ICV pressure loss table (kPa, l/min)",
+    "PGV pressure loss table (bar, m3/h)"
+  ],
+  "items": 14,
   "catalog": {
     "pipes": [],
     "outlets": [
       {
         "id": "hun_pgp",
-        "name": "Hunter PGP Ultra rotor",
+        "name": "Hunter PGP Ultra / I-20 rotor (blue standard nozzles)",
         "kind": "sprinkler",
         "nozzles": [
           {
             "id": "pgp_15",
-            "name": "#1.5 (0.34 m³/h, R 8.2 m)",
+            "name": "#1.5 (0.35 m³/h, R 9.8 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00001724311755108856,
-              "x": 0.5,
-              "ra": 2.4935691324589166,
-              "rb": 0.35
+              "k": 0.0000184615,
+              "x": 0.486,
+              "ra": 7.19625,
+              "rb": 0.09
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_20",
+            "name": "#2.0 (0.43 m³/h, R 10.4 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000201669,
+              "x": 0.52,
+              "ra": 9.11577,
+              "rb": 0.039
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_25",
+            "name": "#2.5 (0.54 m³/h, R 10.7 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000237137,
+              "x": 0.539,
+              "ra": 8.95333,
+              "rb": 0.052
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "pgp_30",
-            "name": "#3.0 (0.68 m³/h, R 10.7 m)",
+            "name": "#3.0 (0.68 m³/h, R 11.6 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00003448623510217712,
-              "x": 0.5,
-              "ra": 3.253803624062245,
-              "rb": 0.35
+              "k": 0.00002965,
+              "x": 0.541,
+              "ra": 7.34591,
+              "rb": 0.134
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "pgp_40",
-            "name": "#4.0 (0.91 m³/h, R 11.9 m)",
+            "name": "#4.0 (0.90 m³/h, R 12.2 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00004615069697497233,
-              "x": 0.5,
-              "ra": 3.618716180031843,
-              "rb": 0.35
+              "k": 0.0000449409,
+              "x": 0.502,
+              "ra": 8.55057,
+              "rb": 0.104
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "pgp_50",
+            "name": "#5.0 (1.14 m³/h, R 12.8 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000504244,
+              "x": 0.537,
+              "ra": 7.85636,
+              "rb": 0.143
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "pgp_60",
-            "name": "#6.0 (1.36 m³/h, R 13.4 m)",
+            "name": "#6.0 (1.36 m³/h, R 13.1 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00006897247020435424,
-              "x": 0.5,
-              "ra": 4.07485687499384,
-              "rb": 0.35
+              "k": 0.0000632555,
+              "x": 0.522,
+              "ra": 7.52686,
+              "rb": 0.162
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "pgp_80",
-            "name": "#8.0 (1.82 m³/h, R 14.3 m)",
+            "name": "#8.0 (1.81 m³/h, R 13.4 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00009230139394994466,
-              "x": 0.5,
-              "ra": 4.3485412919710384,
-              "rb": 0.35
+              "k": 0.0000865148,
+              "x": 0.514,
+              "ra": 6.05882,
+              "rb": 0.232
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -107,60 +167,214 @@
         "inletMm": 20.0,
         "riser": 0.1,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "PGP-ADJ"
       },
       {
         "id": "hun_i25",
-        "name": "Hunter I-25 rotor",
+        "name": "Hunter I-25 Ultra rotor (standard nozzles)",
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "i25_8",
-            "name": "#8 (1.8 m³/h, R 15 m)",
+            "id": "i25_4",
+            "name": "#4 (1.05 m³/h, R 12.5 m @ 4.0 bar)",
             "curve": {
-              "k": 0.00007905694150420948,
-              "x": 0.5,
-              "ra": 4.124490067571231,
-              "rb": 0.35
+              "k": 0.0000429668,
+              "x": 0.516,
+              "ra": 7.75386,
+              "rb": 0.129
             },
             "arc": 360.0,
-            "minH": 25.0,
-            "maxH": 60.0,
-            "defH": 40.0,
+            "minH": 25.5,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_5",
+            "name": "#5 (1.17 m³/h, R 13.4 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.0000637593,
+              "x": 0.439,
+              "ra": 8.58379,
+              "rb": 0.12
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_7",
+            "name": "#7 (1.68 m³/h, R 14.3 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.000105875,
+              "x": 0.4,
+              "ra": 8.58636,
+              "rb": 0.138
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_8",
+            "name": "#8 (2.05 m³/h, R 15.2 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.000105845,
+              "x": 0.454,
+              "ra": 8.72899,
+              "rb": 0.15
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_10",
+            "name": "#10 (2.48 m³/h, R 15.8 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.000103049,
+              "x": 0.512,
+              "ra": 9.57313,
+              "rb": 0.135
+            },
+            "arc": 360.0,
+            "minH": 30.6,
+            "maxH": 56.1,
+            "defH": 40.8,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "i25_13",
-            "name": "#13 (3.0 m³/h, R 18 m)",
+            "name": "#13 (2.75 m³/h, R 16.5 m @ 4.0 bar)",
             "curve": {
-              "k": 0.00013176156917368246,
-              "x": 0.5,
-              "ra": 4.949388081085477,
-              "rb": 0.35
+              "k": 0.000117477,
+              "x": 0.505,
+              "ra": 11.3749,
+              "rb": 0.1
             },
             "arc": 360.0,
-            "minH": 25.0,
-            "maxH": 60.0,
-            "defH": 40.0,
+            "minH": 30.6,
+            "maxH": 56.1,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_15",
+            "name": "#15 (3.22 m³/h, R 17.4 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.000190541,
+              "x": 0.417,
+              "ra": 13.1658,
+              "rb": 0.075
+            },
+            "arc": 360.0,
+            "minH": 30.6,
+            "maxH": 56.1,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_18",
+            "name": "#18 (3.52 m³/h, R 18.0 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.000169299,
+              "x": 0.473,
+              "ra": 9.76667,
+              "rb": 0.165
+            },
+            "arc": 360.0,
+            "minH": 30.6,
+            "maxH": 56.1,
+            "defH": 40.8,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "i25_20",
-            "name": "#20 (4.5 m³/h, R 21 m)",
+            "name": "#20 (3.97 m³/h, R 18.6 m @ 4.0 bar)",
             "curve": {
-              "k": 0.00019764235376052366,
+              "k": 0.000172597,
               "x": 0.5,
-              "ra": 5.774286094599723,
-              "rb": 0.35
+              "ra": 10.2893,
+              "rb": 0.16
             },
             "arc": 360.0,
-            "minH": 25.0,
-            "maxH": 60.0,
-            "defH": 40.0,
+            "minH": 40.8,
+            "maxH": 66.3,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_23",
+            "name": "#23 (4.88 m³/h, R 19.2 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.00019194,
+              "x": 0.527,
+              "ra": 12.2371,
+              "rb": 0.121
+            },
+            "arc": 360.0,
+            "minH": 40.8,
+            "maxH": 66.3,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_25",
+            "name": "#25 (5.23 m³/h, R 19.8 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.00017179,
+              "x": 0.576,
+              "ra": 11.1204,
+              "rb": 0.156
+            },
+            "arc": 360.0,
+            "minH": 40.8,
+            "maxH": 66.3,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "i25_28",
+            "name": "#28 (5.93 m³/h, R 20.1 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.00028967,
+              "x": 0.454,
+              "ra": 10.8381,
+              "rb": 0.161
+            },
+            "arc": 360.0,
+            "minH": 45.9,
+            "maxH": 71.4,
+            "defH": 45.9,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -170,77 +384,163 @@
         "inletMm": 25.0,
         "riser": 0.1,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "I-25-04"
       },
       {
         "id": "hun_mp",
-        "name": "Hunter MP Rotator (Pro-Spray body)",
+        "name": "Hunter MP Rotator on Pro-Spray PRS40 body",
         "kind": "sprinkler",
         "nozzles": [
           {
             "id": "mp1000_360",
-            "name": "MP1000 360° (0.24 m³/h, R 4.3 m)",
+            "name": "MP1000 360° (0.17 m³/h, R 4.3 m @ 2.8 bar)",
             "curve": {
-              "k": 0.000012598815766974239,
-              "x": 0.5,
-              "ra": 1.3395630037063795,
-              "rb": 0.35
+              "k": 0.00000946891,
+              "x": 0.482,
+              "ra": 1.45666,
+              "rb": 0.322
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 40.0,
-            "defH": 28.0,
+            "minH": 21.1,
+            "maxH": 38.7,
+            "defH": 28.1,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "mp2000_360",
-            "name": "MP2000 360° (0.50 m³/h, R 5.8 m)",
+            "name": "MP2000 360° (0.33 m³/h, R 5.8 m @ 2.8 bar)",
             "curve": {
-              "k": 0.000026247532847863002,
-              "x": 0.5,
-              "ra": 1.8068524236039538,
-              "rb": 0.35
+              "k": 0.0000179269,
+              "x": 0.493,
+              "ra": 1.68266,
+              "rb": 0.37
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 40.0,
-            "defH": 28.0,
+            "minH": 17.6,
+            "maxH": 38.7,
+            "defH": 28.1,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "mp3000_360",
-            "name": "MP3000 360° (1.05 m³/h, R 8.2 m)",
+            "name": "MP3000 360° (0.83 m³/h, R 9.1 m @ 2.8 bar)",
             "curve": {
-              "k": 0.0000551198189805123,
+              "k": 0.0000432705,
               "x": 0.5,
-              "ra": 2.5545154954400724,
-              "rb": 0.35
+              "ra": 4.14955,
+              "rb": 0.237
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 40.0,
-            "defH": 28.0,
+            "minH": 17.6,
+            "maxH": 38.7,
+            "defH": 28.1,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp1000_180",
+            "name": "MP1000 180° (84 L/h, R 4.3 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.00000464571,
+              "x": 0.484,
+              "ra": 1.45666,
+              "rb": 0.322
+            },
+            "arc": 180.0,
+            "minH": 21.1,
+            "maxH": 38.7,
+            "defH": 28.1,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "mp2000_180",
-            "name": "MP2000 180° (0.25 m³/h, R 5.8 m)",
+            "name": "MP2000 180° (0.17 m³/h, R 5.8 m @ 2.8 bar)",
             "curve": {
-              "k": 0.000013123766423931501,
-              "x": 0.5,
-              "ra": 1.8068524236039538,
-              "rb": 0.35
+              "k": 0.000008739,
+              "x": 0.502,
+              "ra": 1.68266,
+              "rb": 0.37
             },
             "arc": 180.0,
-            "minH": 17.0,
-            "maxH": 40.0,
-            "defH": 28.0,
+            "minH": 17.6,
+            "maxH": 38.7,
+            "defH": 28.1,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp3000_180",
+            "name": "MP3000 180° (0.41 m³/h, R 9.1 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000217869,
+              "x": 0.498,
+              "ra": 4.14955,
+              "rb": 0.237
+            },
+            "arc": 180.0,
+            "minH": 17.6,
+            "maxH": 38.7,
+            "defH": 28.1,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp1000_90",
+            "name": "MP1000 90° (43 L/h, R 4.3 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.00000223843,
+              "x": 0.503,
+              "ra": 1.45666,
+              "rb": 0.322
+            },
+            "arc": 90.0,
+            "minH": 21.1,
+            "maxH": 38.7,
+            "defH": 28.1,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp2000_90",
+            "name": "MP2000 90° (91 L/h, R 6.1 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.00000422149,
+              "x": 0.536,
+              "ra": 2.29854,
+              "rb": 0.292
+            },
+            "arc": 90.0,
+            "minH": 17.6,
+            "maxH": 38.7,
+            "defH": 28.1,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "mp3000_90",
+            "name": "MP3000 90° (0.20 m³/h, R 9.1 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000105549,
+              "x": 0.491,
+              "ra": 4.14955,
+              "rb": 0.237
+            },
+            "arc": 90.0,
+            "minH": 17.6,
+            "maxH": 38.7,
+            "defH": 28.1,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
@@ -250,194 +550,246 @@
         "inletMm": 15.0,
         "riser": 0.1,
         "enabled": true,
-        "sup": "Hunter Industries"
-      },
-      {
-        "id": "hun_prospray",
-        "name": "Hunter Pro-Spray with Pro nozzles",
-        "kind": "sprinkler",
-        "nozzles": [
-          {
-            "id": "ps_12f",
-            "name": "12F (0.57 m³/h, R 3.7 m)",
-            "curve": {
-              "k": 0.00003455116595403213,
-              "x": 0.5,
-              "ra": 1.274749854033297,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
-            "cv": 0.04,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "ps_12h",
-            "name": "12H (0.29 m³/h, R 3.7 m)",
-            "curve": {
-              "k": 0.00001757866338012161,
-              "x": 0.5,
-              "ra": 1.274749854033297,
-              "rb": 0.35
-            },
-            "arc": 180.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
-            "cv": 0.04,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "ps_15f",
-            "name": "15F (0.84 m³/h, R 4.6 m)",
-            "curve": {
-              "k": 0.000050917507721731554,
-              "x": 0.5,
-              "ra": 1.584824142852207,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
-            "cv": 0.04,
-            "tolB": 0.05,
-            "tolA": 0.05
-          }
-        ],
-        "cost": 0.0,
-        "inletMm": 15.0,
-        "riser": 0.1,
-        "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "PROS-04-PRS40"
       }
     ],
     "tapes": [
       {
-        "id": "hun_pld_16_23_30",
-        "name": "Hunter PLD 16 mm 2.3 L/h @ 0.30 m (PC)",
-        "nominalMm": 16.0,
-        "idMm": 13.9,
+        "id": "hun_hdl_17_21_30",
+        "name": "Hunter HDL-PC 17 mm 2.1 L/h @ 0.30 m (PC)",
+        "nominalMm": 17.0,
+        "idMm": 14.22,
         "spacing": 0.3,
         "emitter": {
-          "k": 6.01734255008601e-7,
+          "k": 5.49195e-7,
           "x": 0.02,
           "ra": 0.0,
           "rb": 0.0
         },
-        "barbK": 0.3,
+        "barbK": 0.4,
         "cv": 0.03,
-        "minH": 6.0,
-        "maxH": 40.0,
-        "inletH": 20.0,
+        "minH": 10.2,
+        "maxH": 42.8,
+        "inletH": 20.4,
         "tolB": 50.0,
-        "tolA": 100.0,
-        "ratingM": 40.0,
+        "tolA": 150.0,
+        "ratingM": 42.8,
         "roughMm": 0.002,
         "c": 140.0,
         "cost": 0.0,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "HDL-PC"
       },
       {
-        "id": "hun_pld_16_35_45",
-        "name": "Hunter PLD 16 mm 3.5 L/h @ 0.45 m (PC)",
-        "nominalMm": 16.0,
-        "idMm": 13.9,
+        "id": "hun_hdl_17_21_45",
+        "name": "Hunter HDL-PC 17 mm 2.1 L/h @ 0.45 m (PC)",
+        "nominalMm": 17.0,
+        "idMm": 14.22,
         "spacing": 0.45,
         "emitter": {
-          "k": 9.156825619696103e-7,
+          "k": 5.49195e-7,
           "x": 0.02,
           "ra": 0.0,
           "rb": 0.0
         },
-        "barbK": 0.3,
+        "barbK": 0.4,
         "cv": 0.03,
-        "minH": 6.0,
-        "maxH": 40.0,
-        "inletH": 20.0,
+        "minH": 10.2,
+        "maxH": 42.8,
+        "inletH": 20.4,
         "tolB": 50.0,
-        "tolA": 100.0,
-        "ratingM": 40.0,
+        "tolA": 150.0,
+        "ratingM": 42.8,
         "roughMm": 0.002,
         "c": 140.0,
         "cost": 0.0,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "HDL-PC"
+      },
+      {
+        "id": "hun_hdl_17_34_30",
+        "name": "Hunter HDL-PC 17 mm 3.4 L/h @ 0.30 m (PC)",
+        "nominalMm": 17.0,
+        "idMm": 14.22,
+        "spacing": 0.3,
+        "emitter": {
+          "k": 8.89173e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 10.2,
+        "maxH": 42.8,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 42.8,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries",
+        "code": "HDL-PC"
+      },
+      {
+        "id": "hun_hdl_17_34_45",
+        "name": "Hunter HDL-PC 17 mm 3.4 L/h @ 0.45 m (PC)",
+        "nominalMm": 17.0,
+        "idMm": 14.22,
+        "spacing": 0.45,
+        "emitter": {
+          "k": 8.89173e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 10.2,
+        "maxH": 42.8,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 42.8,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries",
+        "code": "HDL-PC"
       }
     ],
     "valves": [
       {
-        "id": "hun_pgv100",
-        "name": "Hunter PGV 1\"",
+        "id": "hun_icv101",
+        "name": "Hunter ICV-101G 1\"",
         "kind": "control",
         "sizeMm": 25.0,
         "loss": {
-          "k": 1269582.073997794,
-          "n": 2.0,
-          "c": 0.0
+          "k": 73417900.0,
+          "n": 2.6,
+          "c": 0.953
         },
-        "minQ": 0.00002777777777777778,
+        "minQ": 0.00000833333,
         "maxQ": 0.0025,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "ICV-101G"
       },
       {
         "id": "hun_icv151",
-        "name": "Hunter ICV 1½\"",
+        "name": "Hunter ICV-151G 1½\"",
         "kind": "control",
         "sizeMm": 40.0,
         "loss": {
-          "k": 177579.27975941633,
-          "n": 2.0,
-          "c": 0.0
+          "k": 752329.0,
+          "n": 2.41,
+          "c": 0.844
         },
-        "minQ": 0.0001388888888888889,
-        "maxQ": 0.0075,
+        "minQ": 0.00000833333,
+        "maxQ": 0.00944444,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "ICV-151G"
       },
       {
         "id": "hun_icv201",
-        "name": "Hunter ICV 2\"",
+        "name": "Hunter ICV-201G 2\"",
         "kind": "control",
         "sizeMm": 50.0,
         "loss": {
-          "k": 66124.06635405176,
-          "n": 2.0,
-          "c": 0.0
+          "k": 112174.0,
+          "n": 2.12,
+          "c": 0.156
         },
-        "minQ": 0.0002777777777777778,
+        "minQ": 0.00000833333,
         "maxQ": 0.0125,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "ICV-201G"
       },
       {
         "id": "hun_icv301",
-        "name": "Hunter ICV 3\"",
+        "name": "Hunter ICV-301 3\" (globe)",
         "kind": "control",
         "sizeMm": 80.0,
         "loss": {
-          "k": 9080.758624061062,
-          "n": 2.0,
-          "c": 0.0
+          "k": 27960.1,
+          "n": 2.09,
+          "c": 0.003
         },
-        "minQ": 0.001388888888888889,
-        "maxQ": 0.019444444444444445,
+        "minQ": 0.00000833333,
+        "maxQ": 0.0188889,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Hunter Industries"
+        "sup": "Hunter Industries",
+        "code": "ICV-301"
+      },
+      {
+        "id": "hun_pgv100",
+        "name": "Hunter PGV-100G 1\"",
+        "kind": "control",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 50953300.0,
+          "n": 2.6,
+          "c": 0.797
+        },
+        "minQ": 0.0000166667,
+        "maxQ": 0.0025,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries",
+        "code": "PGV-100G"
+      },
+      {
+        "id": "hun_pgv151",
+        "name": "Hunter PGV-151 1½\" (globe)",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 687198.0,
+          "n": 2.37,
+          "c": 1.869
+        },
+        "minQ": 0.00138889,
+        "maxQ": 0.0075,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries",
+        "code": "PGV-151"
+      },
+      {
+        "id": "hun_pgv201",
+        "name": "Hunter PGV-201 2\" (globe)",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 1202390.0,
+          "n": 2.6,
+          "c": 0.764
+        },
+        "minQ": 0.00138889,
+        "maxQ": 0.00944444,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Hunter Industries",
+        "code": "PGV-201"
       }
     ],
     "pumps": [],

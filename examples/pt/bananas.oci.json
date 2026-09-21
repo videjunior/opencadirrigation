@@ -38,6 +38,7 @@
     "cOffset": 0.0,
     "densify": 5.0,
     "currency": "R$",
+    "currencyCode": "BRL",
     "sizing": "lp",
     "mainSizes": 3,
     "epp": 1,

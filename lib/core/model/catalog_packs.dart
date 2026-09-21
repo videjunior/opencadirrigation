@@ -14,6 +14,7 @@ library;
 
 import '../io/catalog_io.dart';
 import 'catalog.dart';
+import 'currency.dart';
 
 /// A loaded pack: where it came from and its products.
 class CatalogPack {
@@ -26,6 +27,9 @@ class CatalogPack {
   final String origin;
 
   String get id => meta.id;
+
+  /// Whether any product of the pack has a price.
+  bool get hasPrices => catalogHasPrices(catalog);
   String get brand => meta.brand;
   String get description => meta.description;
   int get itemCount => catalog.itemCount;
@@ -82,4 +86,40 @@ int mergeCatalogPack(Catalog target, Catalog pack) {
     n++;
   }
   return n;
+}
+
+/// What [addCatalogPack] did.
+class PackMergeResult {
+  const PackMergeResult({required this.added, this.from = '', this.to = '', this.rate, this.unknownCurrency = false});
+
+  /// Items added (those whose id the catalogue did not have yet).
+  final int added;
+
+  /// Currency of the pack prices and of the project.
+  final String from;
+  final String to;
+
+  /// Exchange rate applied to the pack prices (null: none applied).
+  final double? rate;
+
+  /// The pack has prices but its currency (or the project's) is unknown or
+  /// has no reference rate: the prices were added as they are.
+  final bool unknownCurrency;
+
+  bool get converted => rate != null && rate != 1;
+}
+
+/// Adds [pack] to [target] like [mergeCatalogPack], on a copy of its items
+/// (the pack itself is never changed) whose prices are converted from the
+/// pack currency ([CatalogPackMeta.currency]) to [projectCurrency] with the
+/// reference rates.
+PackMergeResult addCatalogPack(Catalog target, CatalogPack pack, {required String projectCurrency}) {
+  final copy = Catalog.fromJson(pack.catalog.toJson());
+  final from = pack.meta.currency;
+  final to = projectCurrency.trim().toUpperCase();
+  if (!catalogHasPrices(copy) || from == to) return PackMergeResult(added: mergeCatalogPack(target, copy), from: from, to: to);
+  final rate = from.isEmpty || to.isEmpty ? null : exchangeRate(from, to);
+  if (rate == null) return PackMergeResult(added: mergeCatalogPack(target, copy), from: from, to: to, unknownCurrency: true);
+  scaleCatalogPrices(copy, rate);
+  return PackMergeResult(added: mergeCatalogPack(target, copy), from: from, to: to, rate: rate);
 }

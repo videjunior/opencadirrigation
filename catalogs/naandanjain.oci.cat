@@ -4,11 +4,18 @@
   "id": "naandanjain",
   "brand": "NaanDanJain",
   "name": "NaanDanJain",
-  "description": "NaanDanJain 5022 / 5035 impact sprinklers, Amnon / TopPC driplines, Hadar and Aquamaster micro-sprinklers",
+  "description": "5022 (single / dual nozzle), 5022 SD, 5035 and 427B AG impact sprinklers, Hadar 7110 micro-sprinkler (today part of Rivulis)",
+  "source": "https://naandanjain.com",
   "license": "CC0-1.0",
-  "updated": "2026-09-16",
+  "updated": "2026-09-21",
   "author": "OpenCADIrrigation",
-  "items": 7,
+  "sources": [
+    "NaanDanJain IrriStand systems catalogue (08/2011)",
+    "NaanDanJain 5035 sheet (10/2010)",
+    "5022 SD data sheet (07/2022)",
+    "Hadar 7110 sheet (11/2013)"
+  ],
+  "items": 5,
   "catalog": {
     "pipes": [],
     "outlets": [
@@ -19,51 +26,136 @@
         "nozzles": [
           {
             "id": "5022_30",
-            "name": "3.0 mm (0.62 m³/h, R 11.5 m)",
+            "name": "3.0 mm red (0.63 m³/h, R 12.0 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00003444444444444444,
-              "x": 0.5,
-              "ra": 3.727510172393354,
-              "rb": 0.35
+              "k": 0.0000317431,
+              "x": 0.499,
+              "ra": 8.59839,
+              "rb": 0.097
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 40.0,
-            "defH": 25.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022_32",
+            "name": "3.2 mm green (0.70 m³/h, R 11.5 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000343309,
+              "x": 0.507,
+              "ra": 8.59363,
+              "rb": 0.085
+            },
+            "arc": 360.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5022_35",
-            "name": "3.5 mm (0.85 m³/h, R 12.5 m)",
+            "name": "3.5 mm blue (0.81 m³/h, R 12.0 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00004722222222222222,
-              "x": 0.5,
-              "ra": 4.051641491731907,
-              "rb": 0.35
+              "k": 0.0000413197,
+              "x": 0.495,
+              "ra": 5.29318,
+              "rb": 0.239
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 40.0,
-            "defH": 25.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5022_40",
-            "name": "4.0 mm (1.10 m³/h, R 13.5 m)",
+            "name": "4.0 mm black (1.03 m³/h, R 13.0 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00006111111111111111,
-              "x": 0.5,
-              "ra": 4.375772811070459,
-              "rb": 0.35
+              "k": 0.0000566798,
+              "x": 0.473,
+              "ra": 8.26953,
+              "rb": 0.132
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 40.0,
-            "defH": 25.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022_30x18",
+            "name": "3.0 × 1.8 mm red (dual) (0.84 m³/h, R 11.5 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.000040467,
+              "x": 0.512,
+              "ra": 7.2314,
+              "rb": 0.136
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022_32x18",
+            "name": "3.2 × 1.8 mm green (dual) (0.90 m³/h, R 12.0 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000435177,
+              "x": 0.511,
+              "ra": 10.3821,
+              "rb": 0.042
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022_35x25",
+            "name": "3.5 × 2.5 mm blue (dual) (1.23 m³/h, R 12.1 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000573459,
+              "x": 0.522,
+              "ra": 10.6403,
+              "rb": 0.038
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022_40x25",
+            "name": "4.0 × 2.5 mm black (dual) (1.46 m³/h, R 12.5 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000627175,
+              "x": 0.545,
+              "ra": 7.97272,
+              "rb": 0.131
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -73,7 +165,89 @@
         "inletMm": 15.0,
         "riser": 1.0,
         "enabled": true,
-        "sup": "NaanDanJain"
+        "sup": "NaanDanJain",
+        "code": "5022"
+      },
+      {
+        "id": "ndj_5022sd",
+        "name": "NaanDanJain 5022 SD sprinkler (super diffuser, germination)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "5022sd_30",
+            "name": "3.0 mm red (0.63 m³/h, R 11.0 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000317763,
+              "x": 0.499,
+              "ra": 5.42962,
+              "rb": 0.206
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022sd_32",
+            "name": "3.2 mm green (0.70 m³/h, R 11.1 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000346231,
+              "x": 0.504,
+              "ra": 5.94445,
+              "rb": 0.183
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022sd_35",
+            "name": "3.5 mm blue (0.81 m³/h, R 11.5 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000429624,
+              "x": 0.484,
+              "ra": 6.16975,
+              "rb": 0.182
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5022sd_40",
+            "name": "4.0 mm black (1.03 m³/h, R 12.1 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000586435,
+              "x": 0.463,
+              "ra": 5.35117,
+              "rb": 0.239
+            },
+            "arc": 360.0,
+            "minH": 25.5,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 15.0,
+        "riser": 0.7,
+        "enabled": true,
+        "sup": "NaanDanJain",
+        "code": "5022 SD"
       },
       {
         "id": "ndj_5035",
@@ -81,52 +255,103 @@
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "5035_45",
-            "name": "4.5 mm (1.45 m³/h, R 14.5 m)",
+            "id": "5035_35",
+            "name": "3.5 × 2.5 mm blue (1.43 m³/h, R 13.5 m @ 4.0 bar)",
             "curve": {
-              "k": 0.00007353682485023062,
-              "x": 0.5,
-              "ra": 4.409360051299305,
-              "rb": 0.35
+              "k": 0.0000573259,
+              "x": 0.522,
+              "ra": 13.5,
+              "rb": 0.0
             },
             "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 30.6,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5035_40",
+            "name": "4.0 × 2.5 mm black (1.74 m³/h, R 14.5 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.0000683955,
+              "x": 0.527,
+              "ra": 11.1348,
+              "rb": 0.071
+            },
+            "arc": 360.0,
+            "minH": 30.6,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5035_45",
+            "name": "4.5 × 2.5 mm brown (2.07 m³/h, R 15.0 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.0000875337,
+              "x": 0.508,
+              "ra": 8.45836,
+              "rb": 0.154
+            },
+            "arc": 360.0,
+            "minH": 30.6,
+            "maxH": 51.0,
+            "defH": 40.8,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5035_50",
-            "name": "5.0 mm (1.80 m³/h, R 15.5 m)",
+            "name": "5.0 × 2.5 mm purple (2.40 m³/h, R 16.5 m @ 4.0 bar)",
             "curve": {
-              "k": 0.00009128709291752768,
-              "x": 0.5,
-              "ra": 4.713453847940635,
-              "rb": 0.35
+              "k": 0.000114908,
+              "x": 0.474,
+              "ra": 7.73906,
+              "rb": 0.204
             },
             "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 30.6,
+            "maxH": 51.0,
+            "defH": 40.8,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5035_55",
+            "name": "5.5 × 2.5 mm orange (2.76 m³/h, R 17.0 m @ 4.0 bar)",
+            "curve": {
+              "k": 0.000118827,
+              "x": 0.503,
+              "ra": 8.81528,
+              "rb": 0.177
+            },
+            "arc": 360.0,
+            "minH": 30.6,
+            "maxH": 51.0,
+            "defH": 40.8,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5035_60",
-            "name": "6.0 mm (2.60 m³/h, R 17 m)",
+            "name": "6.0 × 2.5 mm red (3.16 m³/h, R 18.0 m @ 4.0 bar)",
             "curve": {
-              "k": 0.00013185913421420666,
-              "x": 0.5,
-              "ra": 5.169594542902633,
-              "rb": 0.35
+              "k": 0.000122492,
+              "x": 0.531,
+              "ra": 17.385,
+              "rb": 0.009
             },
             "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 30.6,
+            "maxH": 51.0,
+            "defH": 40.8,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -136,77 +361,176 @@
         "inletMm": 20.0,
         "riser": 1.0,
         "enabled": true,
-        "sup": "NaanDanJain"
+        "sup": "NaanDanJain",
+        "code": "5035"
+      },
+      {
+        "id": "ndj_427b",
+        "name": "NaanDanJain 427B AG part-circle sprinkler (field edges)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "427_30",
+            "name": "3.0 mm red (0.63 m³/h, R 12.0 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000317431,
+              "x": 0.499,
+              "ra": 7.97935,
+              "rb": 0.119
+            },
+            "arc": 180.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "427_32",
+            "name": "3.2 mm green (0.70 m³/h, R 12.0 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000343309,
+              "x": 0.507,
+              "ra": 6.65924,
+              "rb": 0.172
+            },
+            "arc": 180.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "427_35",
+            "name": "3.5 mm blue (0.81 m³/h, R 12.0 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000413197,
+              "x": 0.495,
+              "ra": 6.65924,
+              "rb": 0.172
+            },
+            "arc": 180.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "427_40",
+            "name": "4.0 mm black (1.03 m³/h, R 13.0 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000566798,
+              "x": 0.473,
+              "ra": 8.59809,
+              "rb": 0.121
+            },
+            "arc": 180.0,
+            "minH": 20.4,
+            "maxH": 40.8,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 15.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "NaanDanJain",
+        "code": "427B AG"
       },
       {
         "id": "ndj_hadar",
-        "name": "NaanDanJain Hadar 7110 micro-sprinkler",
+        "name": "NaanDanJain Hadar 7110 micro-sprinkler (inverted rotor)",
         "kind": "microSprinkler",
         "nozzles": [
           {
-            "id": "hd35",
-            "name": "35 L/h (R 3.0 m)",
+            "id": "hd87",
+            "name": "87 L/h 1.3 mm green @ 2.0 bar (Ø 9.5 m)",
             "curve": {
-              "k": 0.0000021739549781247953,
+              "k": 0.00000535138,
               "x": 0.5,
-              "ra": 1.0513825295791306,
-              "rb": 0.35
+              "ra": 2.59892,
+              "rb": 0.2
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
+            "minH": 15.3,
+            "maxH": 30.6,
+            "defH": 20.4,
             "cv": 0.05,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "hd58",
-            "name": "58 L/h (R 3.8 m)",
+            "id": "hd103",
+            "name": "103 L/h 1.4 mm blue @ 2.0 bar (Ø 10.0 m)",
             "curve": {
-              "k": 0.000003602553963749661,
+              "k": 0.00000633554,
               "x": 0.5,
-              "ra": 1.3317512041335653,
-              "rb": 0.35
+              "ra": 2.73571,
+              "rb": 0.2
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
+            "minH": 15.3,
+            "maxH": 30.6,
+            "defH": 20.4,
             "cv": 0.05,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "hd90",
-            "name": "90 L/h (R 4.5 m)",
+            "id": "hd128",
+            "name": "128 L/h 1.6 mm yellow @ 2.0 bar (Ø 10.2 m)",
             "curve": {
-              "k": 0.000005590169943749474,
+              "k": 0.00000787329,
               "x": 0.5,
-              "ra": 1.5770737943686959,
-              "rb": 0.35
+              "ra": 2.79042,
+              "rb": 0.2
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
+            "minH": 15.3,
+            "maxH": 30.6,
+            "defH": 20.4,
             "cv": 0.05,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "hd120",
-            "name": "120 L/h (R 5.0 m)",
+            "id": "hd166",
+            "name": "166 L/h 1.8 mm bright green @ 2.0 bar (Ø 10.6 m)",
             "curve": {
-              "k": 0.000007453559924999297,
+              "k": 0.0000102107,
               "x": 0.5,
-              "ra": 1.7523042159652176,
-              "rb": 0.35
+              "ra": 2.89985,
+              "rb": 0.2
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
+            "minH": 15.3,
+            "maxH": 30.6,
+            "defH": 20.4,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "hd199",
+            "name": "199 L/h 2.0 mm white @ 2.0 bar (Ø 11.0 m)",
+            "curve": {
+              "k": 0.0000122405,
+              "x": 0.5,
+              "ra": 3.00928,
+              "rb": 0.2
+            },
+            "arc": 360.0,
+            "minH": 15.3,
+            "maxH": 30.6,
+            "defH": 20.4,
             "cv": 0.05,
             "tolB": 0.05,
             "tolA": 0.05
@@ -214,154 +538,13 @@
         ],
         "cost": 0.0,
         "inletMm": 0.0,
-        "riser": 0.3,
+        "riser": 2.0,
         "enabled": true,
-        "sup": "NaanDanJain"
-      },
-      {
-        "id": "ndj_aquamaster",
-        "name": "NaanDanJain AquaMaster 2002 micro-sprinkler",
-        "kind": "microSprinkler",
-        "nozzles": [
-          {
-            "id": "am70",
-            "name": "70 L/h (R 4.0 m)",
-            "curve": {
-              "k": 0.0000043479099562495906,
-              "x": 0.5,
-              "ra": 1.4018433727721742,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
-            "cv": 0.05,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "am120",
-            "name": "120 L/h (R 5.0 m)",
-            "curve": {
-              "k": 0.000007453559924999297,
-              "x": 0.5,
-              "ra": 1.7523042159652176,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
-            "cv": 0.05,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "am200",
-            "name": "200 L/h (R 6.0 m)",
-            "curve": {
-              "k": 0.00001242259987499883,
-              "x": 0.5,
-              "ra": 2.102765059158261,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 30.0,
-            "defH": 20.0,
-            "cv": 0.05,
-            "tolB": 0.05,
-            "tolA": 0.05
-          }
-        ],
-        "cost": 0.0,
-        "inletMm": 0.0,
-        "riser": 0.3,
-        "enabled": true,
-        "sup": "NaanDanJain"
+        "sup": "NaanDanJain",
+        "code": "Hadar 7110"
       }
     ],
-    "tapes": [
-      {
-        "id": "ndj_amnon_16_16_50",
-        "name": "NaanDanJain Amnon 16 mm 1.6 L/h @ 0.50 m",
-        "nominalMm": 16.0,
-        "idMm": 14.0,
-        "spacing": 0.5,
-        "emitter": {
-          "k": 1.4716938732559604e-7,
-          "x": 0.48,
-          "ra": 0.0,
-          "rb": 0.0
-        },
-        "barbK": 0.3,
-        "cv": 0.03,
-        "minH": 5.0,
-        "maxH": 25.0,
-        "inletH": 10.0,
-        "tolB": 10.0,
-        "tolA": 10.0,
-        "ratingM": 30.0,
-        "roughMm": 0.002,
-        "c": 140.0,
-        "cost": 0.0,
-        "enabled": true,
-        "sup": "NaanDanJain"
-      },
-      {
-        "id": "ndj_toppc_16_16_50",
-        "name": "NaanDanJain TopPC 16 mm 1.6 L/h @ 0.50 m (PC)",
-        "nominalMm": 16.0,
-        "idMm": 14.0,
-        "spacing": 0.5,
-        "emitter": {
-          "k": 4.228962722762493e-7,
-          "x": 0.02,
-          "ra": 0.0,
-          "rb": 0.0
-        },
-        "barbK": 0.3,
-        "cv": 0.03,
-        "minH": 5.0,
-        "maxH": 40.0,
-        "inletH": 12.0,
-        "tolB": 50.0,
-        "tolA": 150.0,
-        "ratingM": 40.0,
-        "roughMm": 0.002,
-        "c": 140.0,
-        "cost": 0.0,
-        "enabled": true,
-        "sup": "NaanDanJain"
-      },
-      {
-        "id": "ndj_tif_16_10_30",
-        "name": "NaanDanJain TalDrip tape 16 mm 1.0 L/h @ 0.30 m",
-        "nominalMm": 16.0,
-        "idMm": 15.8,
-        "spacing": 0.3,
-        "emitter": {
-          "k": 1.0499013139145199e-7,
-          "x": 0.5,
-          "ra": 0.0,
-          "rb": 0.0
-        },
-        "barbK": 0.3,
-        "cv": 0.03,
-        "minH": 4.0,
-        "maxH": 10.0,
-        "inletH": 7.0,
-        "tolB": 10.0,
-        "tolA": 10.0,
-        "ratingM": 10.0,
-        "roughMm": 0.002,
-        "c": 140.0,
-        "cost": 0.0,
-        "enabled": true,
-        "sup": "NaanDanJain"
-      }
-    ],
+    "tapes": [],
     "valves": [],
     "pumps": [],
     "fittings": []

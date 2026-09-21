@@ -16,7 +16,10 @@ import 'http.dart';
 const bundledCatalogsPath = 'catalogs';
 
 /// Reads a text resource: the asset bundle by default, overridable by tests.
-Future<String> Function(String path) catalogAssetLoader = rootBundle.loadString;
+/// The bytes are decoded here: `rootBundle.loadString` moves texts above
+/// 50 KB to a background isolate, which never completes inside widget tests
+/// (and a pack of 100 KB decodes in well under a millisecond anyway).
+Future<String> Function(String path) catalogAssetLoader = (path) async => utf8.decode((await rootBundle.load(path)).buffer.asUint8List());
 
 /// Fetches a URL: the app's HTTP helper by default, overridable by tests.
 Future<String> Function(String url) catalogUrlLoader = (url) => httpRequest('GET', url);

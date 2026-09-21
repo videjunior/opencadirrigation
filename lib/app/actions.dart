@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/design/agronomy.dart';
 import '../core/io/pdf_sheet.dart';
 import '../core/io/project_export.dart';
+import '../core/model/currency.dart';
 import '../core/model/entities.dart';
 import '../core/model/project.dart';
 import 'examples.dart';
@@ -195,7 +196,13 @@ void feedEnvelopeAction(ProjectController c) {
 /// Loads one of the gallery examples (File → Examples, the welcome dialog,
 /// `?example=<id>` in the URL).
 void loadExampleAction(ProjectController c, [ExampleId id = ExampleId.orchard]) {
-  c.project = buildExample(id, c.t.call, lang: c.lang);
+  final p = buildExample(id, c.t.call, lang: c.lang);
+  // the user's currency (region or explicit choice) when it differs from the
+  // language default the example was written in
+  final code = c.defaultCurrency();
+  final rate = exchangeRate(p.params.currencyCode, code);
+  if (rate != null && code != p.params.currencyCode) p.setCurrency(code, rate: rate);
+  c.project = p;
   c.results = null;
   c.selection.clear();
   c.dirty = true;

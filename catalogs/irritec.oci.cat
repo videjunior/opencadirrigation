@@ -1,0 +1,460 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "irritec",
+  "brand": "Irritec",
+  "name": "Irritec",
+  "description": "Multibar C PC dripline 16 / 20 mm, P1 thin wall dripline 5/8\" and 7/8\", iDrop PC and turbulent on-line drippers",
+  "source": "https://www.irritec.com",
+  "license": "CC0-1.0",
+  "updated": "2026-09-21",
+  "author": "OpenCADIrrigation",
+  "sources": [
+    "https://asset.irritec.com/products/356519.pdf",
+    "https://www.dripdepot.com/file/parent/1676/irritec_p1_drip_tape_specifications.pdf",
+    "https://asset.irritec.com/products/356540.pdf"
+  ],
+  "items": 12,
+  "catalog": {
+    "pipes": [],
+    "outlets": [
+      {
+        "id": "irt_idrop_pc",
+        "name": "Irritec iDrop PC on-line dripper",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "idpc22",
+            "name": "2.2 L/h PC (0.5-4.0 bar)",
+            "curve": {
+              "k": 5.78667e-7,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 15.3,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "idpc32",
+            "name": "3.2 L/h PC (0.5-4.0 bar)",
+            "curve": {
+              "k": 8.41698e-7,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 15.3,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "idpc40",
+            "name": "4.0 L/h PC (0.5-4.0 bar)",
+            "curve": {
+              "k": 0.00000105212,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 15.3,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "idpc60",
+            "name": "6.0 L/h PC (0.5-4.0 bar)",
+            "curve": {
+              "k": 0.00000157818,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 15.3,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "idpc78",
+            "name": "7.8 L/h PC (0.5-4.0 bar)",
+            "curve": {
+              "k": 0.00000205164,
+              "x": 0.02,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 15.3,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "iDrop PC"
+      },
+      {
+        "id": "irt_idrop",
+        "name": "Irritec iDrop on-line dripper (turbulent, non-PC)",
+        "kind": "dripper",
+        "nozzles": [
+          {
+            "id": "idn21",
+            "name": "2.1 L/h @ 1.0 bar",
+            "curve": {
+              "k": 2.11111e-7,
+              "x": 0.46,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 10.2,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "idn40",
+            "name": "4.0 L/h @ 1.0 bar",
+            "curve": {
+              "k": 4e-7,
+              "x": 0.46,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 10.2,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "idn82",
+            "name": "8.2 L/h @ 1.0 bar",
+            "curve": {
+              "k": 8.05556e-7,
+              "x": 0.46,
+              "ra": 0.0,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 5.1,
+            "maxH": 40.8,
+            "defH": 10.2,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 0.0,
+        "riser": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "iDrop"
+      }
+    ],
+    "tapes": [
+      {
+        "id": "irt_multibar_16_16_50",
+        "name": "Irritec Multibar C 16 mm 35 mil 1.6 L/h @ 0.50 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 4.18434e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 1.0,
+        "cv": 0.03,
+        "minH": 5.1,
+        "maxH": 30.6,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 30.6,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "Multibar C"
+      },
+      {
+        "id": "irt_multibar_16_21_50",
+        "name": "Irritec Multibar C 16 mm 44 mil 2.1 L/h @ 0.50 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.5,
+        "emitter": {
+          "k": 5.49195e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 1.0,
+        "cv": 0.03,
+        "minH": 5.1,
+        "maxH": 40.8,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.8,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "Multibar C"
+      },
+      {
+        "id": "irt_multibar_16_38_100",
+        "name": "Irritec Multibar C 16 mm 44 mil 3.8 L/h @ 1.00 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 1.0,
+        "emitter": {
+          "k": 9.93782e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 1.0,
+        "cv": 0.03,
+        "minH": 5.1,
+        "maxH": 40.8,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.8,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "Multibar C"
+      },
+      {
+        "id": "irt_multibar_20_21_75",
+        "name": "Irritec Multibar C 20 mm 35 mil 2.1 L/h @ 0.75 m (PC)",
+        "nominalMm": 20.0,
+        "idMm": 17.5,
+        "spacing": 0.75,
+        "emitter": {
+          "k": 5.49195e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.65,
+        "cv": 0.03,
+        "minH": 5.1,
+        "maxH": 30.6,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 30.6,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "Multibar C"
+      },
+      {
+        "id": "irt_multibar_20_38_100",
+        "name": "Irritec Multibar C 20 mm 47 mil 3.8 L/h @ 1.00 m (PC)",
+        "nominalMm": 20.0,
+        "idMm": 17.5,
+        "spacing": 1.0,
+        "emitter": {
+          "k": 9.93782e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.65,
+        "cv": 0.03,
+        "minH": 5.1,
+        "maxH": 40.8,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 40.8,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "Multibar C"
+      },
+      {
+        "id": "irt_p1_16_05_20",
+        "name": "Irritec P1 5/8\" 8 mil 0.49 L/h @ 0.20 m",
+        "nominalMm": 16.0,
+        "idMm": 15.9,
+        "spacing": 0.203,
+        "emitter": {
+          "k": 5.15531e-8,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.1,
+        "cv": 0.025,
+        "minH": 4.2,
+        "maxH": 10.5,
+        "inletH": 7.0,
+        "tolB": 20.0,
+        "tolA": 20.0,
+        "ratingM": 10.5,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "P1"
+      },
+      {
+        "id": "irt_p1_16_09_20",
+        "name": "Irritec P1 5/8\" 8 mil 0.95 L/h @ 0.20 m",
+        "nominalMm": 16.0,
+        "idMm": 15.9,
+        "spacing": 0.203,
+        "emitter": {
+          "k": 9.91406e-8,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.1,
+        "cv": 0.025,
+        "minH": 4.2,
+        "maxH": 10.5,
+        "inletH": 7.0,
+        "tolB": 20.0,
+        "tolA": 20.0,
+        "ratingM": 10.5,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "P1"
+      },
+      {
+        "id": "irt_p1_16_09_30",
+        "name": "Irritec P1 5/8\" 8 mil 0.95 L/h @ 0.30 m",
+        "nominalMm": 16.0,
+        "idMm": 15.9,
+        "spacing": 0.305,
+        "emitter": {
+          "k": 9.91406e-8,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.1,
+        "cv": 0.025,
+        "minH": 4.2,
+        "maxH": 10.5,
+        "inletH": 7.0,
+        "tolB": 20.0,
+        "tolA": 20.0,
+        "ratingM": 10.5,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "P1"
+      },
+      {
+        "id": "irt_p1_16_13_30",
+        "name": "Irritec P1 5/8\" 13 mil 1.25 L/h @ 0.30 m",
+        "nominalMm": 16.0,
+        "idMm": 15.9,
+        "spacing": 0.305,
+        "emitter": {
+          "k": 1.30866e-7,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.1,
+        "cv": 0.025,
+        "minH": 4.2,
+        "maxH": 18.3,
+        "inletH": 7.0,
+        "tolB": 20.0,
+        "tolA": 20.0,
+        "ratingM": 18.3,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "P1"
+      },
+      {
+        "id": "irt_p1_22_09_30",
+        "name": "Irritec P1 7/8\" 8 mil 0.95 L/h @ 0.30 m",
+        "nominalMm": 22.0,
+        "idMm": 22.2,
+        "spacing": 0.305,
+        "emitter": {
+          "k": 9.91406e-8,
+          "x": 0.5,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.05,
+        "cv": 0.025,
+        "minH": 4.2,
+        "maxH": 8.4,
+        "inletH": 7.0,
+        "tolB": 20.0,
+        "tolA": 20.0,
+        "ratingM": 8.4,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Irritec",
+        "code": "P1"
+      }
+    ],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

@@ -26,6 +26,7 @@ import '../../core/io/points_csv.dart';
 import '../../core/io/project_export.dart';
 import '../../core/io/shp.dart';
 import '../../core/model/catalog.dart';
+import '../../core/model/currency.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/project.dart';
@@ -437,6 +438,7 @@ class ProjectController extends ChangeNotifier {
     if (!supportedLanguages.contains(l)) return;
     lang = l;
     t = I18n(l);
+    _followLanguageCurrency();
     if (persist) setPref('lang', l);
     setDocumentLanguage(l);
     notifyListeners();
@@ -1684,7 +1686,9 @@ class ProjectController extends ChangeNotifier {
 
   // ------------------------------------------------------------ files
   void newProject() {
-    project = Project(catalog: defaultCatalog());
+    final code = defaultCurrency();
+    project = Project(catalog: defaultCatalog(code));
+    _applyNewProjectCurrency(code);
     project.meta.name = t('name.newProject');
     results = null;
     selection.clear();
@@ -1697,17 +1701,81 @@ class ProjectController extends ChangeNotifier {
     zoomAll();
   }
 
-  /// Default catalog: the user's saved one (Catalog → "Use as default") or
-  /// the built-in generic database.
-  Catalog defaultCatalog() {
+  /// Default catalog in currency [code] (ISO 4217): the user's saved one
+  /// (Catalog → "Use as default", converted from the currency it was saved
+  /// in) or the built-in generic database.
+  Catalog defaultCatalog([String? code]) {
+    final cur = code ?? project.params.currencyCode;
     final saved = getPref('catalog.default');
     if (saved != null) {
       try {
         final c = Catalog.fromJson(jsonDecode(saved) as Map<String, dynamic>);
-        if (c.pipes.isNotEmpty) return c;
+        if (c.pipes.isNotEmpty) {
+          // catalogues saved before the currency was recorded were in reais
+          final rate = exchangeRate(getPref('catalog.default.currency') ?? catalogPriceCurrency, cur);
+          if (rate != null) scaleCatalogPrices(c, rate);
+          return c;
+        }
       } catch (_) {}
     }
-    return Catalog.defaultCatalog(lang: lang);
+    return Catalog.defaultCatalog(lang: lang, currency: cur);
+  }
+
+  /// Saves the project catalogue as the default of new projects (with its
+  /// currency, so a project in another currency gets it converted).
+  void saveDefaultCatalog() {
+    setPref('catalog.default', jsonEncode(project.catalog.toJson()));
+    setPref('catalog.default.currency', project.params.currencyCode);
+  }
+
+  /// Forgets the saved default catalogue.
+  void clearDefaultCatalog() {
+    removePref('catalog.default');
+    removePref('catalog.default.currency');
+  }
+
+  /// Currency of new projects: the user's choice (Parameters → currency,
+  /// saved in the browser), else the currency of the machine's region for
+  /// the interface language, else the language default.
+  String defaultCurrency() {
+    final saved = getPref('currency');
+    if (saved != null && currencyByCode(saved) != null) return saved;
+    return currencyForLocale(lang, systemLanguageTags());
+  }
+
+  /// True while the currency of the project is the automatic one of a new,
+  /// untouched project (switching the language may then change it).
+  bool _autoCurrency = false;
+
+  void _applyNewProjectCurrency(String code) {
+    final defaults = DesignParameters();
+    final rate = exchangeRate(defaults.currencyCode, code);
+    project.params.powerCostPerKwh = defaults.powerCostPerKwh * (rate ?? 1);
+    project.params.currencyCode = code;
+    project.params.currency = currencySymbol(code);
+    _autoCurrency = getPref('currency') == null;
+  }
+
+  /// Converts every price of the project to currency [code] with [rate]
+  /// (units of [code] per unit of the current currency); without a rate only
+  /// the currency changes. [symbol] overrides the symbol shown.
+  void setProjectCurrency(String code, {double? rate, String? symbol}) {
+    mutate(() => project.setCurrency(code, rate: rate, symbol: symbol), label: 'hist.currency');
+    _autoCurrency = false;
+  }
+
+  /// A new project nobody has touched follows the interface language: its
+  /// automatic currency (and the illustrative prices) move to the default
+  /// currency of the new language.
+  void _followLanguageCurrency() {
+    if (!_autoCurrency || dirty || project.entities.isNotEmpty || _undo.isNotEmpty) return;
+    final code = currencyForLocale(lang, systemLanguageTags());
+    final from = project.params.currencyCode;
+    if (code == from) return;
+    final rate = exchangeRate(from, code);
+    if (rate == null) return;
+    project.setCurrency(code, rate: rate);
+    results = null;
   }
 
   /// Project JSON including the design results (so a reopened project keeps

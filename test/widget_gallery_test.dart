@@ -113,7 +113,9 @@ void main() {
       await settle(tester);
       expect(find.byKey(const Key('pack_hunter')), findsOneWidget);
       expect(find.byKey(const Key('pack_netafim')), findsOneWidget);
-      // the first pack in the list is on screen without scrolling
+      // the list is alphabetical: bring the Hunter pack into view
+      await tester.ensureVisible(find.byKey(const Key('pack_hunter')));
+      await settle(tester);
       await tester.tap(find.byKey(const Key('pack_hunter')));
       await settle(tester);
       expect(c.project.catalog.itemCount, greaterThan(before));
@@ -126,7 +128,7 @@ void main() {
       await tester.tap(find.byKey(const Key('pack_load_url')));
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
       await settle(tester);
-      expect(find.byKey(const Key('pack_rainbird_community')), findsOneWidget);
+      expect(find.byKey(const Key('pack_rainbird_community'), skipOffstage: false), findsOneWidget);
       expect(find.byKey(const Key('pack_error')), findsNothing);
       // a bad URL reports the error
       await tester.enterText(find.byKey(const Key('pack_url')), 'https://community.example/nope');

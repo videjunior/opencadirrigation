@@ -4,11 +4,20 @@
   "id": "rainbird",
   "brand": "Rain Bird",
   "name": "Rain Bird",
-  "description": "XFS / XFD driplines, 5004 and 8005 rotors, 1800 sprays with MPR nozzles, PEB/PESB valves",
+  "description": "5004 Plus rotor (Rain Curtain, low-angle and MPR nozzles), 8005 rotor, 1804 spray with MPR 8/10/12/15 nozzles, XFD / XFS dripline, PEB / PESB valves",
+  "source": "https://www.rainbird.com/professionals/specifier",
   "license": "CC0-1.0",
-  "updated": "2026-09-16",
+  "updated": "2026-09-21",
   "author": "OpenCADIrrigation",
-  "items": 11,
+  "sources": [
+    "https://www.rainbird.com/sites/default/files/media/documents/2017-07/chart_5000.pdf",
+    "https://www.rainbird.com/sites/default/files/media/documents/2020-09/5000-series-mpr-nozzle-performance-chart.pdf",
+    "https://www.rainbird.com/sites/default/files/media/documents/2018-02/chart_8005.pdf",
+    "https://www.rainbird.com/sites/default/files/media/documents/2020-09/mpr-spray-nozzle-performance-charts_0.pdf",
+    "https://www.rainbird.com/media/10510",
+    "https://www.rainbird.com/sites/default/files/media/documents/2020-09/peb-pebs-performance-charts.pdf"
+  ],
+  "items": 12,
   "catalog": {
     "pipes": [],
     "outlets": [
@@ -19,85 +28,408 @@
         "nozzles": [
           {
             "id": "5004_15",
-            "name": "#1.5 (0.31 m³/h, R 7.6 m)",
+            "name": "#1.5 Rain Curtain (0.34 m³/h, R 10.6 m @ 3.0 bar)",
             "curve": {
-              "k": 0.0000157216660024631,
-              "x": 0.5,
-              "ra": 2.311112854474118,
-              "rb": 0.35
+              "k": 0.000015575,
+              "x": 0.527,
+              "ra": 9.08142,
+              "rb": 0.045
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_20",
+            "name": "#2.0 Rain Curtain (0.45 m³/h, R 11.2 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000219505,
+              "x": 0.509,
+              "ra": 10.3556,
+              "rb": 0.023
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_25",
+            "name": "#2.5 Rain Curtain (0.56 m³/h, R 11.3 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000254593,
+              "x": 0.529,
+              "ra": 9.40985,
+              "rb": 0.054
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5004_30",
-            "name": "#3.0 (0.68 m³/h, R 10.4 m)",
+            "name": "#3.0 Rain Curtain (0.69 m³/h, R 12.1 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00003448623510217712,
-              "x": 0.5,
-              "ra": 3.162575485069846,
-              "rb": 0.35
+              "k": 0.000032059,
+              "x": 0.523,
+              "ra": 7.9104,
+              "rb": 0.124
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5004_40",
-            "name": "#4.0 (0.91 m³/h, R 11.6 m)",
+            "name": "#4.0 Rain Curtain (0.89 m³/h, R 12.7 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00004615069697497233,
-              "x": 0.5,
-              "ra": 3.5274880410394434,
-              "rb": 0.35
+              "k": 0.0000397803,
+              "x": 0.534,
+              "ra": 7.96541,
+              "rb": 0.136
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_50",
+            "name": "#5.0 Rain Curtain (1.13 m³/h, R 13.5 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000514413,
+              "x": 0.529,
+              "ra": 7.67027,
+              "rb": 0.165
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5004_60",
-            "name": "#6.0 (1.36 m³/h, R 13.1 m)",
+            "name": "#6.0 Rain Curtain (1.34 m³/h, R 13.9 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00006897247020435424,
-              "x": 0.5,
-              "ra": 3.98362873600144,
-              "rb": 0.35
+              "k": 0.0000570633,
+              "x": 0.548,
+              "ra": 6.31981,
+              "rb": 0.23
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "5004_80",
-            "name": "#8.0 (1.80 m³/h, R 14.0 m)",
+            "name": "#8.0 Rain Curtain (1.79 m³/h, R 14.1 m @ 3.0 bar)",
             "curve": {
-              "k": 0.00009128709291752768,
-              "x": 0.5,
-              "ra": 4.2573131529786385,
+              "k": 0.0000882604,
+              "x": 0.505,
+              "ra": 4.25882,
               "rb": 0.35
             },
             "arc": 360.0,
-            "minH": 17.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_la10",
+            "name": "#1.0 LA (low angle) (0.22 m³/h, R 8.8 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000112097,
+              "x": 0.496,
+              "ra": 5.31934,
+              "rb": 0.147
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_la15",
+            "name": "#1.5 LA (low angle) (0.35 m³/h, R 9.4 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000152939,
+              "x": 0.541,
+              "ra": 5.8793,
+              "rb": 0.137
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_la20",
+            "name": "#2.0 LA (low angle) (0.45 m³/h, R 9.7 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000197737,
+              "x": 0.539,
+              "ra": 5.91108,
+              "rb": 0.145
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_la30",
+            "name": "#3.0 LA (low angle) (0.68 m³/h, R 10.6 m @ 3.0 bar)",
+            "curve": {
+              "k": 0.0000316839,
+              "x": 0.522,
+              "ra": 4.71578,
+              "rb": 0.237
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 30.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr25q",
+            "name": "MPR-25-Q (0.23 m³/h, R 7.6 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000122273,
+              "x": 0.479,
+              "ra": 5.5811,
+              "rb": 0.089
+            },
+            "arc": 90.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr30q",
+            "name": "MPR-30-Q (0.32 m³/h, R 9.1 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000150882,
+              "x": 0.514,
+              "ra": 8.17911,
+              "rb": 0.031
+            },
+            "arc": 90.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr35q",
+            "name": "MPR-35-Q (0.44 m³/h, R 10.7 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000215544,
+              "x": 0.502,
+              "ra": 7.82564,
+              "rb": 0.091
+            },
+            "arc": 90.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr25t",
+            "name": "MPR-25-T (0.31 m³/h, R 7.6 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000141555,
+              "x": 0.523,
+              "ra": 5.5811,
+              "rb": 0.089
+            },
+            "arc": 120.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr30t",
+            "name": "MPR-30-T (0.42 m³/h, R 9.1 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000178741,
+              "x": 0.543,
+              "ra": 8.17911,
+              "rb": 0.031
+            },
+            "arc": 120.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr35t",
+            "name": "MPR-35-T (0.56 m³/h, R 10.7 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000240311,
+              "x": 0.541,
+              "ra": 7.82564,
+              "rb": 0.091
+            },
+            "arc": 120.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr25h",
+            "name": "MPR-25-H (0.45 m³/h, R 7.6 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000203177,
+              "x": 0.526,
+              "ra": 5.5811,
+              "rb": 0.089
+            },
+            "arc": 180.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr30h",
+            "name": "MPR-30-H (0.67 m³/h, R 9.1 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000301088,
+              "x": 0.527,
+              "ra": 8.17911,
+              "rb": 0.031
+            },
+            "arc": 180.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr35h",
+            "name": "MPR-35-H (0.87 m³/h, R 10.7 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000377515,
+              "x": 0.538,
+              "ra": 7.82564,
+              "rb": 0.091
+            },
+            "arc": 180.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr25f",
+            "name": "MPR-25-F (0.87 m³/h, R 7.6 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.000039104,
+              "x": 0.527,
+              "ra": 5.5811,
+              "rb": 0.089
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr30f",
+            "name": "MPR-30-F (1.31 m³/h, R 9.1 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000632927,
+              "x": 0.506,
+              "ra": 8.17911,
+              "rb": 0.031
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "5004_mpr35f",
+            "name": "MPR-35-F (1.72 m³/h, R 10.7 m @ 3.1 bar)",
+            "curve": {
+              "k": 0.0000714547,
+              "x": 0.55,
+              "ra": 7.82564,
+              "rb": 0.091
+            },
+            "arc": 360.0,
+            "minH": 17.3,
+            "maxH": 45.9,
+            "defH": 31.6,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -107,7 +439,8 @@
         "inletMm": 20.0,
         "riser": 0.1,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "5004-PL"
       },
       {
         "id": "rb_8005",
@@ -115,52 +448,205 @@
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "8005_12",
-            "name": "#12 (2.7 m³/h, R 19 m)",
+            "id": "8005_4",
+            "name": "#4 Rain Curtain (1.00 m³/h, R 11.9 m @ 4.5 bar)",
             "curve": {
-              "k": 0.00011180339887498946,
-              "x": 0.5,
-              "ra": 5.013363803930731,
-              "rb": 0.35
+              "k": 0.0000279696,
+              "x": 0.6,
+              "ra": 11.9,
+              "rb": 0.0
             },
             "arc": 360.0,
-            "minH": 30.0,
-            "maxH": 65.0,
-            "defH": 45.0,
+            "minH": 35.7,
+            "maxH": 56.1,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_6",
+            "name": "#6 Rain Curtain (1.45 m³/h, R 13.7 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.0000548652,
+              "x": 0.521,
+              "ra": 13.7,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 56.1,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_8",
+            "name": "#8 Rain Curtain (1.92 m³/h, R 14.9 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.0000537017,
+              "x": 0.6,
+              "ra": 14.9,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 56.1,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_10",
+            "name": "#10 Rain Curtain (2.40 m³/h, R 16.5 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.0000913515,
+              "x": 0.519,
+              "ra": 11.3749,
+              "rb": 0.097
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 56.1,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_12",
+            "name": "#12 Rain Curtain (2.87 m³/h, R 18.0 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.000109108,
+              "x": 0.52,
+              "ra": 11.3272,
+              "rb": 0.121
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 61.2,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_14",
+            "name": "#14 Rain Curtain (3.37 m³/h, R 18.9 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.000105174,
+              "x": 0.571,
+              "ra": 10.5247,
+              "rb": 0.153
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 63.2,
+            "defH": 45.9,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "8005_16",
-            "name": "#16 (3.7 m³/h, R 21 m)",
+            "name": "#16 Rain Curtain (3.77 m³/h, R 20.1 m @ 4.5 bar)",
             "curve": {
-              "k": 0.00015321206512498557,
-              "x": 0.5,
-              "ra": 5.54108630960765,
-              "rb": 0.35
+              "k": 0.000120412,
+              "x": 0.565,
+              "ra": 9.97008,
+              "rb": 0.183
             },
             "arc": 360.0,
-            "minH": 30.0,
-            "maxH": 65.0,
-            "defH": 45.0,
+            "minH": 35.7,
+            "maxH": 63.2,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_18",
+            "name": "#18 Rain Curtain (4.22 m³/h, R 20.1 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.000144427,
+              "x": 0.547,
+              "ra": 8.90183,
+              "rb": 0.213
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 63.2,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_20",
+            "name": "#20 Rain Curtain (4.79 m³/h, R 21.1 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.000167139,
+              "x": 0.542,
+              "ra": 9.77442,
+              "rb": 0.201
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 70.4,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_22",
+            "name": "#22 Rain Curtain (5.51 m³/h, R 22.0 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.000214805,
+              "x": 0.513,
+              "ra": 9.52848,
+              "rb": 0.219
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 70.4,
+            "defH": 45.9,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "8005_24",
-            "name": "#24 (5.7 m³/h, R 24 m)",
+            "name": "#24 Rain Curtain (5.88 m³/h, R 22.0 m @ 4.5 bar)",
             "curve": {
-              "k": 0.0002360293976249778,
-              "x": 0.5,
-              "ra": 6.332670068123028,
-              "rb": 0.35
+              "k": 0.000192113,
+              "x": 0.559,
+              "ra": 6.27179,
+              "rb": 0.328
             },
             "arc": 360.0,
-            "minH": 30.0,
-            "maxH": 65.0,
-            "defH": 45.0,
+            "minH": 35.7,
+            "maxH": 70.4,
+            "defH": 45.9,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "8005_26",
+            "name": "#26 Rain Curtain (6.42 m³/h, R 22.6 m @ 4.5 bar)",
+            "curve": {
+              "k": 0.000203491,
+              "x": 0.567,
+              "ra": 7.60312,
+              "rb": 0.285
+            },
+            "arc": 360.0,
+            "minH": 35.7,
+            "maxH": 70.4,
+            "defH": 45.9,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -170,7 +656,8 @@
         "inletMm": 25.0,
         "riser": 0.1,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "8005"
       },
       {
         "id": "rb_1804",
@@ -178,86 +665,205 @@
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "1804_10f",
-            "name": "10F (0.36 m³/h, R 3.0 m)",
+            "id": "1804_8f",
+            "name": "8F MPR (0.24 m³/h, R 2.4 m @ 2.1 bar)",
             "curve": {
-              "k": 0.000021821789023599237,
-              "x": 0.5,
-              "ra": 1.0335809627297003,
-              "rb": 0.35
+              "k": 0.0000129171,
+              "x": 0.536,
+              "ra": 0.557595,
+              "rb": 0.476
             },
             "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_8h",
+            "name": "8H MPR (0.12 m³/h, R 2.4 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.00000591915,
+              "x": 0.564,
+              "ra": 0.557595,
+              "rb": 0.476
+            },
+            "arc": 180.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_8q",
+            "name": "8Q MPR (60 L/h, R 2.4 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.00000295958,
+              "x": 0.564,
+              "ra": 0.557595,
+              "rb": 0.476
+            },
+            "arc": 90.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_10f",
+            "name": "10F MPR (0.36 m³/h, R 3.1 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.000025588,
+              "x": 0.445,
+              "ra": 0.606276,
+              "rb": 0.533
+            },
+            "arc": 360.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_10h",
+            "name": "10H MPR (0.18 m³/h, R 3.1 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.0000118743,
+              "x": 0.469,
+              "ra": 0.606276,
+              "rb": 0.533
+            },
+            "arc": 180.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_10q",
+            "name": "10Q MPR (90 L/h, R 3.1 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.00000429452,
+              "x": 0.575,
+              "ra": 0.606276,
+              "rb": 0.533
+            },
+            "arc": 90.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "1804_12f",
-            "name": "12F (0.59 m³/h, R 3.7 m)",
+            "name": "12F MPR (0.60 m³/h, R 3.7 m @ 2.1 bar)",
             "curve": {
-              "k": 0.0000357634875664543,
-              "x": 0.5,
-              "ra": 1.274749854033297,
-              "rb": 0.35
+              "k": 0.0000300374,
+              "x": 0.559,
+              "ra": 1.0199,
+              "rb": 0.421
             },
             "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "1804_12h",
-            "name": "12H (0.29 m³/h, R 3.7 m)",
+            "name": "12H MPR (0.30 m³/h, R 3.7 m @ 2.1 bar)",
             "curve": {
-              "k": 0.00001757866338012161,
-              "x": 0.5,
-              "ra": 1.274749854033297,
-              "rb": 0.35
+              "k": 0.0000145103,
+              "x": 0.57,
+              "ra": 1.0199,
+              "rb": 0.421
             },
             "arc": 180.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "1804_12q",
-            "name": "12Q (0.15 m³/h, R 3.7 m)",
+            "name": "12Q MPR (0.15 m³/h, R 3.7 m @ 2.1 bar)",
             "curve": {
-              "k": 0.000009092412093166349,
-              "x": 0.5,
-              "ra": 1.274749854033297,
-              "rb": 0.35
+              "k": 0.00000725514,
+              "x": 0.57,
+              "ra": 1.0199,
+              "rb": 0.421
             },
             "arc": 90.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
             "id": "1804_15f",
-            "name": "15F (0.84 m³/h, R 4.6 m)",
+            "name": "15F MPR (0.84 m³/h, R 4.6 m @ 2.1 bar)",
             "curve": {
-              "k": 0.000050917507721731554,
-              "x": 0.5,
-              "ra": 1.584824142852207,
-              "rb": 0.35
+              "k": 0.0000555246,
+              "x": 0.469,
+              "ra": 1.30807,
+              "rb": 0.41
             },
             "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 30.0,
-            "defH": 21.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_15h",
+            "name": "15H MPR (0.42 m³/h, R 4.6 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.0000277623,
+              "x": 0.469,
+              "ra": 1.30807,
+              "rb": 0.41
+            },
+            "arc": 180.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
+            "cv": 0.04,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "1804_15q",
+            "name": "15Q MPR (0.21 m³/h, R 4.6 m @ 2.1 bar)",
+            "curve": {
+              "k": 0.0000138811,
+              "x": 0.469,
+              "ra": 1.30807,
+              "rb": 0.41
+            },
+            "arc": 90.0,
+            "minH": 10.2,
+            "maxH": 48.9,
+            "defH": 21.4,
             "cv": 0.04,
             "tolB": 0.05,
             "tolA": 0.05
@@ -267,70 +873,8 @@
         "inletMm": 15.0,
         "riser": 0.1,
         "enabled": true,
-        "sup": "Rain Bird"
-      },
-      {
-        "id": "rb_xb",
-        "name": "Rain Bird Xeri-Bug PC dripper",
-        "kind": "dripper",
-        "nozzles": [
-          {
-            "id": "xb2",
-            "name": "2 L/h PC",
-            "curve": {
-              "k": 5.262664324451034e-7,
-              "x": 0.02,
-              "ra": 0.0,
-              "rb": 0.0
-            },
-            "arc": 360.0,
-            "minH": 7.0,
-            "maxH": 35.0,
-            "defH": 15.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "xb4",
-            "name": "4 L/h PC",
-            "curve": {
-              "k": 0.0000010525328648902067,
-              "x": 0.02,
-              "ra": 0.0,
-              "rb": 0.0
-            },
-            "arc": 360.0,
-            "minH": 7.0,
-            "maxH": 35.0,
-            "defH": 15.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "xb8",
-            "name": "8 L/h PC",
-            "curve": {
-              "k": 0.0000021050657297804134,
-              "x": 0.02,
-              "ra": 0.0,
-              "rb": 0.0
-            },
-            "arc": 360.0,
-            "minH": 7.0,
-            "maxH": 35.0,
-            "defH": 15.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          }
-        ],
-        "cost": 0.0,
-        "inletMm": 0.0,
-        "riser": 0.0,
-        "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "1804"
       }
     ],
     "tapes": [
@@ -339,78 +883,135 @@
         "name": "Rain Bird XFD 16 mm 2.3 L/h @ 0.30 m (PC)",
         "nominalMm": 16.0,
         "idMm": 13.6,
-        "spacing": 0.3,
+        "spacing": 0.305,
         "emitter": {
-          "k": 6.01734255008601e-7,
+          "k": 6.015e-7,
           "x": 0.02,
           "ra": 0.0,
           "rb": 0.0
         },
-        "barbK": 0.3,
+        "barbK": 0.4,
         "cv": 0.03,
         "minH": 6.0,
-        "maxH": 40.0,
-        "inletH": 20.0,
+        "maxH": 42.2,
+        "inletH": 20.4,
         "tolB": 50.0,
-        "tolA": 100.0,
-        "ratingM": 40.0,
+        "tolA": 150.0,
+        "ratingM": 42.2,
         "roughMm": 0.002,
         "c": 140.0,
         "cost": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "XFD-06-12"
+      },
+      {
+        "id": "rb_xfd_16_23_45",
+        "name": "Rain Bird XFD 16 mm 2.3 L/h @ 0.45 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.457,
+        "emitter": {
+          "k": 6.015e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 42.2,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 42.2,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird",
+        "code": "XFD-06-18"
+      },
+      {
+        "id": "rb_xfd_16_35_30",
+        "name": "Rain Bird XFD 16 mm 3.5 L/h @ 0.30 m (PC)",
+        "nominalMm": 16.0,
+        "idMm": 13.6,
+        "spacing": 0.305,
+        "emitter": {
+          "k": 9.15325e-7,
+          "x": 0.02,
+          "ra": 0.0,
+          "rb": 0.0
+        },
+        "barbK": 0.4,
+        "cv": 0.03,
+        "minH": 6.0,
+        "maxH": 42.2,
+        "inletH": 20.4,
+        "tolB": 50.0,
+        "tolA": 150.0,
+        "ratingM": 42.2,
+        "roughMm": 0.002,
+        "c": 140.0,
+        "cost": 0.0,
+        "enabled": true,
+        "sup": "Rain Bird",
+        "code": "XFD-09-12"
       },
       {
         "id": "rb_xfd_16_35_45",
         "name": "Rain Bird XFD 16 mm 3.5 L/h @ 0.45 m (PC)",
         "nominalMm": 16.0,
         "idMm": 13.6,
-        "spacing": 0.45,
+        "spacing": 0.457,
         "emitter": {
-          "k": 9.156825619696103e-7,
+          "k": 9.15325e-7,
           "x": 0.02,
           "ra": 0.0,
           "rb": 0.0
         },
-        "barbK": 0.3,
+        "barbK": 0.4,
         "cv": 0.03,
         "minH": 6.0,
-        "maxH": 40.0,
-        "inletH": 20.0,
+        "maxH": 42.2,
+        "inletH": 20.4,
         "tolB": 50.0,
-        "tolA": 100.0,
-        "ratingM": 40.0,
+        "tolA": 150.0,
+        "ratingM": 42.2,
         "roughMm": 0.002,
         "c": 140.0,
         "cost": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "XFD-09-18"
       },
       {
         "id": "rb_xfs_16_23_45",
         "name": "Rain Bird XFS subsurface 16 mm 2.3 L/h @ 0.45 m (PC, Copper Shield)",
         "nominalMm": 16.0,
         "idMm": 13.6,
-        "spacing": 0.45,
+        "spacing": 0.457,
         "emitter": {
-          "k": 6.01734255008601e-7,
+          "k": 6.015e-7,
           "x": 0.02,
           "ra": 0.0,
           "rb": 0.0
         },
-        "barbK": 0.3,
+        "barbK": 0.4,
         "cv": 0.03,
         "minH": 6.0,
-        "maxH": 40.0,
-        "inletH": 20.0,
+        "maxH": 42.2,
+        "inletH": 20.4,
         "tolB": 50.0,
-        "tolA": 100.0,
-        "ratingM": 40.0,
+        "tolA": 150.0,
+        "ratingM": 42.2,
         "roughMm": 0.002,
         "c": 140.0,
         "cost": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "XFS-06-18"
       }
     ],
     "valves": [
@@ -420,16 +1021,17 @@
         "kind": "control",
         "sizeMm": 25.0,
         "loss": {
-          "k": 1269582.073997794,
-          "n": 2.0,
-          "c": 0.0
+          "k": 5038070.0,
+          "n": 2.28,
+          "c": 1.019
         },
-        "minQ": 0.00002777777777777778,
+        "minQ": 0.0000166667,
         "maxQ": 0.0025,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "100-PEB"
       },
       {
         "id": "rb_peb150",
@@ -437,16 +1039,17 @@
         "kind": "control",
         "sizeMm": 40.0,
         "loss": {
-          "k": 177579.27975941633,
-          "n": 2.0,
-          "c": 0.0
+          "k": 2419140.0,
+          "n": 2.6,
+          "c": 2.033
         },
-        "minQ": 0.0001388888888888889,
-        "maxQ": 0.006388888888888889,
+        "minQ": 0.00166667,
+        "maxQ": 0.00916667,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "150-PEB"
       },
       {
         "id": "rb_peb200",
@@ -454,33 +1057,35 @@
         "kind": "control",
         "sizeMm": 50.0,
         "loss": {
-          "k": 66124.06635405176,
-          "n": 2.0,
-          "c": 0.0
+          "k": 1024230.0,
+          "n": 2.6,
+          "c": 2.4
         },
-        "minQ": 0.0002777777777777778,
-        "maxQ": 0.009444444444444445,
+        "minQ": 0.00333333,
+        "maxQ": 0.0125,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "200-PEB"
       },
       {
         "id": "rb_pesb200",
-        "name": "Rain Bird PESB 2\" (scrubber)",
+        "name": "Rain Bird PESB 2\" (200-PESB, scrubber)",
         "kind": "control",
         "sizeMm": 50.0,
         "loss": {
-          "k": 72736.47298945693,
-          "n": 2.0,
-          "c": 0.0
+          "k": 1024230.0,
+          "n": 2.6,
+          "c": 2.4
         },
-        "minQ": 0.0002777777777777778,
-        "maxQ": 0.009444444444444445,
+        "minQ": 0.00333333,
+        "maxQ": 0.0125,
         "cost": 0.0,
         "setting": 0.0,
         "enabled": true,
-        "sup": "Rain Bird"
+        "sup": "Rain Bird",
+        "code": "200-PESB"
       }
     ],
     "pumps": [],

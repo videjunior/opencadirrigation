@@ -6,6 +6,7 @@ import 'package:opencadirrigation/app/io/catalog_packs.dart';
 import 'package:opencadirrigation/core/io/catalog_io.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/catalog_packs.dart';
+import 'package:opencadirrigation/core/model/currency.dart';
 
 /// Manufacturer catalogue packs: the `.oci.cat` format, the repository
 /// folder `catalogs/` and the loaders (bundled assets, file, URL).
@@ -15,7 +16,7 @@ void main() {
 
   group('catalogs/ repository', () {
     test('every pack parses, is normalised and is listed in index.json', () {
-      expect(files.length, greaterThanOrEqualTo(9));
+      expect(files.length, greaterThanOrEqualTo(14));
       final index = CatalogIo.parseIndex(File('catalogs/index.json').readAsStringSync());
       expect(index.map((e) => e.file).toSet(), files.map((f) => f.uri.pathSegments.last).toSet());
       final ids = <String>{};
@@ -45,9 +46,64 @@ void main() {
           }
         }
       }
-      expect(ids.length, greaterThan(60));
+      expect(ids.length, greaterThan(200));
       // index.json itself is normalised
       expect('${CatalogIo.encodeIndex(index)}\n', File('catalogs/index.json').readAsStringSync());
+    });
+
+    test('pack data are consistent: sources, ranges, curves, losses and pump curves', () {
+      for (final f in files) {
+        final pack = CatalogIo.parsePack(f.readAsStringSync());
+        final name = f.uri.pathSegments.last;
+        expect(pack.meta.sources, isNotEmpty, reason: '$name: list the documents the data came from');
+        expect(pack.meta.updated, matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')), reason: name);
+        final priced = catalogHasPrices(pack.catalog);
+        expect(priced ? pack.meta.currency.isNotEmpty : true, isTrue, reason: '$name: a pack with prices states their currency');
+        for (final o in pack.catalog.outlets) {
+          expect(o.nozzles, isNotEmpty, reason: o.id);
+          for (final n in o.nozzles) {
+            final why = '$name ${o.id}/${n.id}';
+            expect(n.minHeadM, lessThanOrEqualTo(n.defaultHeadM), reason: why);
+            expect(n.defaultHeadM, lessThanOrEqualTo(n.maxHeadM), reason: why);
+            expect(n.minHeadM, greaterThan(0), reason: why);
+            final q = n.curve.flow(n.defaultHeadM) * 3.6e6; // L/h
+            expect(q, inInclusiveRange(0.3, 70000), reason: '$why: $q L/h');
+            final spray = o.kind == OutletKind.sprinkler || o.kind == OutletKind.microSprinkler || o.kind == OutletKind.gun;
+            if (spray) expect(n.curve.radius(n.defaultHeadM), inInclusiveRange(1.0, 60.0), reason: why);
+          }
+        }
+        for (final t in pack.catalog.tapes) {
+          final why = '$name ${t.id}';
+          expect(t.innerDiameterMm, inInclusiveRange(9, 30), reason: why);
+          expect(t.emitterSpacingM, inInclusiveRange(0.1, 1.6), reason: why);
+          expect(t.minHeadM, lessThan(t.maxHeadM), reason: why);
+          expect(t.defaultInletHeadM, inInclusiveRange(t.minHeadM, t.maxHeadM), reason: why);
+          expect(t.emitter.flow(t.defaultInletHeadM) * 3.6e6, inInclusiveRange(0.2, 16), reason: why);
+        }
+        for (final v in pack.catalog.valves) {
+          final why = '$name ${v.id}';
+          expect(v.maxFlow, greaterThan(v.minFlow), reason: why);
+          final loss = v.loss.loss(v.maxFlow);
+          expect(loss, inInclusiveRange(0.3, 30), reason: '$why: ${loss.toStringAsFixed(2)} m at the maximum flow');
+          if (v.kind == ValveKind.prv) expect(v.defaultSettingM, greaterThan(0), reason: why);
+        }
+        for (final p in pack.catalog.pumps) {
+          final why = '$name ${p.id}';
+          expect(p.points.length, greaterThanOrEqualTo(3), reason: why);
+          for (var i = 1; i < p.points.length; i++) {
+            expect(p.points[i].$1, greaterThan(p.points[i - 1].$1), reason: '$why: flows increase');
+            expect(p.points[i].$2, lessThanOrEqualTo(p.points[i - 1].$2 + 1e-9), reason: '$why: head falls with flow');
+          }
+          expect(p.efficiency, inInclusiveRange(0.3, 0.85), reason: why);
+          expect(p.powerKw, greaterThan(0), reason: why);
+        }
+        for (final p in pack.catalog.pipes) {
+          final why = '$name ${p.id}';
+          expect(p.innerDiameterMm, greaterThan(0), reason: why);
+          expect(p.wallThicknessMm, greaterThan(0), reason: why);
+          expect(p.pressureRatingM, greaterThan(0), reason: why);
+        }
+      }
     });
 
     test('packs merge into a catalogue without id clashes', () {

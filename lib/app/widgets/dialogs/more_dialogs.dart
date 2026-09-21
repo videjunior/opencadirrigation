@@ -16,7 +16,6 @@ import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../../core/units.dart';
 import '../../io/file_io.dart';
-import '../../io/prefs.dart';
 import '../../io/project_store.dart';
 import '../../state/controller.dart';
 import '../../state/workspace.dart';
@@ -561,11 +560,11 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           }, icon: const Icon(Icons.factory_outlined, size: 15), label: Text(t('cat.packs'))),
           OutlinedButton(key: const Key('cat_export_pack'), onPressed: () => showExportCatalogPackDialog(ctx, c), child: Text(t('cat.packExport'))),
           OutlinedButton(onPressed: () {
-            setPref('catalog.default', jsonEncode(cat.toJson()));
+            c.saveDefaultCatalog();
             c.notify(t('msg.catalogDefaultSaved'));
           }, child: Text(t('cat.setDefault'))),
           OutlinedButton(onPressed: () {
-            final d = Catalog.defaultCatalog(lang: c.lang);
+            final d = Catalog.defaultCatalog(lang: c.lang, currency: c.project.params.currencyCode);
             setState(() {
               cat.pipes
                 ..clear()
@@ -586,7 +585,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                 ..clear()
                 ..addAll(d.fittings);
             });
-            removePref('catalog.default');
+            c.clearDefaultCatalog();
             c.notify(t('msg.catalogReset'));
           }, child: Text(t('cat.reset'))),
         ]),

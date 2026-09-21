@@ -36,7 +36,7 @@ const catalogPackVersion = 1;
 
 /// Metadata of a catalogue pack: who made the products, who wrote the file.
 class CatalogPackMeta {
-  const CatalogPackMeta({required this.id, required this.brand, this.name = '', this.description = '', this.source = '', this.license = '', this.updated = '', this.author = ''});
+  const CatalogPackMeta({required this.id, required this.brand, this.name = '', this.description = '', this.source = '', this.license = '', this.updated = '', this.author = '', this.currency = '', this.sources = const []});
 
   /// Stable identifier (lowercase, `[a-z0-9_-]`), also the file name.
   final String id;
@@ -52,6 +52,12 @@ class CatalogPackMeta {
   final String updated;
   final String author;
 
+  /// ISO 4217 code of the prices in the pack (empty: unknown, or no prices).
+  final String currency;
+
+  /// The documents the data were taken from (data sheets, catalogues, URLs).
+  final List<String> sources;
+
   String get title => name.isEmpty ? brand : name;
 
   Map<String, dynamic> toJson() => {
@@ -63,6 +69,8 @@ class CatalogPackMeta {
     if (license.isNotEmpty) 'license': license,
     if (updated.isNotEmpty) 'updated': updated,
     if (author.isNotEmpty) 'author': author,
+    if (currency.isNotEmpty) 'currency': currency,
+    if (sources.isNotEmpty) 'sources': sources,
   };
 
   static CatalogPackMeta fromJson(Map<String, dynamic> j, {String fallbackId = 'pack'}) {
@@ -77,6 +85,8 @@ class CatalogPackMeta {
       license: j['license'] as String? ?? '',
       updated: j['updated'] as String? ?? '',
       author: j['author'] as String? ?? '',
+      currency: (j['currency'] as String? ?? '').trim().toUpperCase(),
+      sources: [for (final x in (j['sources'] as List?) ?? const []) if (x is String && x.trim().isNotEmpty) x.trim()],
     );
   }
 
@@ -109,7 +119,8 @@ class CatalogIndexEntry {
   final String file;
   final int items;
 
-  Map<String, dynamic> toJson() => {...meta.toJson(), 'file': file, 'items': items};
+  // the index stays short: the document list lives in the pack only
+  Map<String, dynamic> toJson() => {...meta.toJson()..remove('sources'), 'file': file, 'items': items};
   static CatalogIndexEntry fromJson(Map<String, dynamic> j) => CatalogIndexEntry(
     meta: CatalogPackMeta.fromJson(j, fallbackId: CatalogPackMeta.idFrom(j['file'] as String? ?? 'pack')),
     file: j['file'] as String? ?? '',

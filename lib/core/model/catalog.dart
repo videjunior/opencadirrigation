@@ -2,8 +2,11 @@
 /// default database. All hydraulic values are stored in SI.
 library;
 
+import 'dart:math' as math;
+
 import '../hydraulics/emitter.dart';
 import '../i18n/language_packs.dart';
+import 'currency.dart';
 import '../hydraulics/minor_losses.dart';
 import '../hydraulics/pump.dart';
 import '../hydraulics/water_hammer.dart';
@@ -514,9 +517,50 @@ class Catalog {
     fittings: ((j['fittings'] as List?) ?? []).map((p) => FittingSpec.fromJson(p as Map<String, dynamic>)).toList(),
   );
 
+  /// Price per metre used by the economic sizing: the catalogue price, or
+  /// for a pipe without one (a manufacturer pack, prices still to be filled
+  /// in) an estimate proportional to the wall cross-section, the price per
+  /// mm² of wall being the median of the priced pipes of the same material
+  /// (of any material when none is priced). Without any priced pipe the
+  /// estimate only orders the diameters. Keyed by pipe id.
+  Map<String, double> sizingPipeCosts() {
+    double wall(PipeSpec s) {
+      final di = s.innerDiameterMm;
+      final t = s.wallThicknessMm > 0 ? s.wallThicknessMm : math.max(0.0, (s.nominalMm - di) / 2);
+      final dout = di + 2 * math.max(t, 0.1);
+      return math.pi / 4 * (dout * dout - di * di);
+    }
+    double? median(Iterable<double> v) {
+      final l = v.where((x) => x.isFinite && x > 0).toList()..sort();
+      if (l.isEmpty) return null;
+      return l.length.isOdd ? l[l.length ~/ 2] : (l[l.length ~/ 2 - 1] + l[l.length ~/ 2]) / 2;
+    }
+    final priced = pipes.where((s) => s.costPerM > 0).toList();
+    final all = median(priced.map((s) => s.costPerM / wall(s)));
+    final out = <String, double>{};
+    for (final s in pipes) {
+      if (s.costPerM > 0) {
+        out[s.id] = s.costPerM;
+        continue;
+      }
+      final perMm2 = median(priced.where((x) => x.material == s.material).map((x) => x.costPerM / wall(x))) ?? all ?? 1e-4;
+      out[s.id] = perMm2 * wall(s);
+    }
+    return out;
+  }
+
   /// Generic default database (metric, illustrative prices) with names in the
   /// requested language. Curves are power-law fits of typical manufacturer data.
-  static Catalog defaultCatalog({String lang = 'en'}) {
+  /// The prices are written in [catalogPriceCurrency] and converted to
+  /// [currency] (an ISO 4217 code) with the reference exchange rates.
+  static Catalog defaultCatalog({String lang = 'en', String currency = catalogPriceCurrency}) {
+    final c = _defaultCatalog(lang);
+    final rate = exchangeRate(catalogPriceCurrency, currency);
+    if (rate != null) scaleCatalogPrices(c, rate);
+    return c;
+  }
+
+  static Catalog _defaultCatalog(String lang) {
     String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, 'en' => en, _ => packCatalogName(lang, en) ?? en };
     EmitterCurve q(double lph, double headM, double x, {double radiusM = 0}) =>
         EmitterCurve.fromNominal(flow: lph * m3sPerLph, head: headM, x: x, radius: radiusM, radiusB: radiusM > 0 ? 0.35 : 0);
@@ -666,7 +710,18 @@ class Catalog {
   /// Generic fittings for every nominal pipe size (couplers, elbows, tees,
   /// crosses, reducers, end caps, adapters) plus lateral take-offs, tape ends
   /// and risers, with illustrative prices scaled by size.
-  static List<FittingSpec> defaultFittings(List<PipeSpec> pipes, {String lang = 'en'}) {
+  static List<FittingSpec> defaultFittings(List<PipeSpec> pipes, {String lang = 'en', String? currency}) {
+    final out = _defaultFittings(pipes, lang);
+    final rate = currency == null ? null : exchangeRate(catalogPriceCurrency, currency);
+    if (rate != null && rate != 1) {
+      for (final f in out) {
+        f.cost *= rate;
+      }
+    }
+    return out;
+  }
+
+  static List<FittingSpec> _defaultFittings(List<PipeSpec> pipes, String lang) {
     String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, 'en' => en, _ => packCatalogName(lang, en) ?? en };
     final sizes = pipes.map((p) => p.nominalMm).toSet().toList()..sort();
     final out = <FittingSpec>[];

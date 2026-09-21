@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import '../core/design/block_generator.dart';
 import '../core/design/pivot.dart';
 import '../core/model/catalog.dart';
+import '../core/model/currency.dart';
 import '../core/model/entities.dart';
 import '../core/model/geometry.dart';
 import '../core/model/project.dart';
@@ -53,7 +54,16 @@ const List<ExampleInfo> exampleGallery = [
 ExampleInfo exampleInfo(ExampleId id) => exampleGallery.firstWhere((e) => e.id == id);
 
 /// Builds the example [id] with names translated by [t].
-Project buildExample(ExampleId id, Tr t, {String lang = 'en'}) => exampleInfo(id).build(t, lang);
+///
+/// The prices (catalogue, energy tariff, pivot machines) are written in
+/// [catalogPriceCurrency] and converted to the default currency of [lang]
+/// ([currencyForLanguage]), so every language gets the same design.
+Project buildExample(ExampleId id, Tr t, {String lang = 'en'}) {
+  final p = exampleInfo(id).build(t, lang);
+  final code = currencyForLanguage(lang);
+  p.setCurrency(code, rate: exchangeRate(catalogPriceCurrency, code));
+  return p;
+}
 
 /// The example named in a URL parameter (`?example=garden`), or null.
 ExampleId? exampleIdFromName(String? name) {
@@ -154,7 +164,6 @@ Project buildOrchardExample(Tr t, String lang) {
 /// a backflow preventer.
 Project buildGardenExample(Tr t, String lang) {
   final p = _newProject(t, lang, name: 'ex.g.name', client: 'ex.g.client', site: 'ex.g.site');
-  p.params.currency = p.params.currency; // keep the default currency
   // terrain: gentle rise towards the back
   for (final (x, y, z) in [(0.0, 0.0, 100.0), (16.0, 0.0, 100.05), (0.0, 40.0, 100.6), (16.0, 40.0, 100.7), (8.0, -6.0, 99.9)]) {
     p.entities.add(SpotHeightEntity(id: p.newId(), position: Pt(x, y), elevation: z));

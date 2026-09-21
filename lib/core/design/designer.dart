@@ -664,6 +664,12 @@ class Designer {
 
   double _crf() => capitalRecoveryFactor(params.interestRate, params.termYears);
 
+  Map<String, double>? _sizingCosts;
+
+  /// Price per metre for the sizing: the catalogue price, or an estimate
+  /// for pipes without one ([Catalog.sizingPipeCosts]).
+  double _pipeCost(PipeSpec s) => (_sizingCosts ??= catalog.sizingPipeCosts())[s.id] ?? s.costPerM;
+
   /// Loss reduction (m) if [unit] is upsized to [next], given segment losses.
   double _lossReduction(List<GLink> unit, PipeSpec next, Map<String, double> lossByLink, Set<GLink> onPath) {
     var s = 0.0;
@@ -751,7 +757,7 @@ class Designer {
         final next = _next(cur, _candidates(e.value.first));
         if (next == null) continue;
         final red = _lossReduction(e.value, next, lossByLink, path);
-        final cost = (next.costPerM - cur.costPerM) * _unitLength(e.value);
+        final cost = (_pipeCost(next) - _pipeCost(cur)) * _unitLength(e.value);
         final score = red / (math.max(cost, 1e-6));
         if (score > bestScore) {
           bestScore = score;
@@ -881,7 +887,7 @@ class Designer {
       final dz = n.elevation + off - zRoot;
       constraints.add(LpHeadConstraint(headVar: 0, lossByUnitSpec: byUnit, constant: constant, minPressure: lo.isFinite ? lo + dz : null, maxPressure: hi.isFinite ? hi + dz : null, tag: k));
     }
-    return lpSize(LpSizingInput(units: units.keys.toList(), candidates: cands, unitLength: lengths, maxSizes: maxSizes, headVars: [LpHeadVar(energyPerMetre: energy, name: 'zone')], constraints: constraints, crf: _crf(), tradeCapital: params.tradeCapitalVsRunning));
+    return lpSize(LpSizingInput(units: units.keys.toList(), candidates: cands, unitLength: lengths, maxSizes: maxSizes, headVars: [LpHeadVar(energyPerMetre: energy, name: 'zone')], constraints: constraints, crf: _crf(), tradeCapital: params.tradeCapitalVsRunning, pipeCost: _pipeCost));
   }
 
   ZoneResult sizeZone(String valveId) {
@@ -950,7 +956,7 @@ class Designer {
           if (next == null) continue;
           final red = _lossReduction(e.value, next, lossByLink, path);
           final saving = annualEnergyCost(flow: res.totalFlow, head: red, hoursPerYear: params.zoneHoursPerYear, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency);
-          final capital = (next.costPerM - cur.costPerM) * _unitLength(e.value) * crf;
+          final capital = (_pipeCost(next) - _pipeCost(cur)) * _unitLength(e.value) * crf;
           final gain = saving - capital;
           if (gain > bestGain) {
             bestGain = gain;
@@ -1380,7 +1386,7 @@ class Designer {
         if (lo.isFinite) constrain(id, lo, hi.isFinite ? hi : null, off);
       }
     }
-    return lpSize(LpSizingInput(units: units.keys.toList(), candidates: cands, unitLength: lengths, maxSizes: maxSizes, headVars: headVars, constraints: constraints, crf: _crf(), tradeCapital: params.tradeCapitalVsRunning));
+    return lpSize(LpSizingInput(units: units.keys.toList(), candidates: cands, unitLength: lengths, maxSizes: maxSizes, headVars: headVars, constraints: constraints, crf: _crf(), tradeCapital: params.tradeCapitalVsRunning, pipeCost: _pipeCost));
   }
 
   void sizeMainline() {
@@ -1470,7 +1476,7 @@ class Designer {
           final next = _next(cur, _candidates(e.value.first));
           if (next == null) continue;
           final red = _lossReduction(e.value, next, lossByLink, path);
-          final cost = (next.costPerM - cur.costPerM) * _unitLength(e.value);
+          final cost = (_pipeCost(next) - _pipeCost(cur)) * _unitLength(e.value);
           final score = red / math.max(cost, 1e-6);
           if (score > bestScore) {
             bestScore = score;
@@ -1514,7 +1520,7 @@ class Designer {
             final share = totalDur > 0 ? f.durationHours / totalDur : 1.0;
             saving += annualEnergyCost(flow: f.totalFlow, head: red, hoursPerYear: params.hoursPerYear * share, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency);
           }
-          final capital = (next.costPerM - cur.costPerM) * _unitLength(e.value) * crf;
+          final capital = (_pipeCost(next) - _pipeCost(cur)) * _unitLength(e.value) * crf;
           final gain = saving - capital;
           if (gain > bestGain) {
             bestGain = gain;
@@ -1892,6 +1898,9 @@ class Designer {
       }
     }
     results.bom.sort((a, b) => a.category == b.category ? a.description.compareTo(b.description) : a.category.compareTo(b.category));
+    // catalogue items without a price (manufacturer packs come without them)
+    final unpriced = results.bom.where((l) => l.specId != null && l.quantity > 0 && !(l.unitCost > 0) && catalog.outlet(l.specId)?.kind != OutletKind.demandPoint).length;
+    if (unpriced > 0) results.messages.add('bom_unpriced:$unpriced');
     results.capitalCost = results.bom.fold(0.0, (s, l) => s + l.total);
     results.annualCapitalCost = results.capitalCost * _crf();
     results.annualEnergyCost = results.systemFlows.fold(0.0, (s, f) => s + f.annualEnergyCost);

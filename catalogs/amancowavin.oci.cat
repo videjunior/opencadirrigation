@@ -1,0 +1,480 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "amancowavin",
+  "brand": "Amanco Wavin",
+  "name": "Amanco Wavin",
+  "description": "PVC irrigation pipes: Linha Fixa PN 40 / PN 80 (NBR 14312, DN 35-150), DEFOFORT JERI PN 60 / PN 80 / PN 125 (DN 100-300), Linha Móvel ERR PN 80",
+  "source": "https://wavin.com/br",
+  "license": "CC0-1.0",
+  "updated": "2026-09-21",
+  "author": "OpenCADIrrigation",
+  "sources": [
+    "https://api.aecweb.com.br/cls/catalogos/amanco_pvc-irrigacao.pdf"
+  ],
+  "items": 26,
+  "catalog": {
+    "pipes": [
+      {
+        "id": "amw_lf_pn40_dn35",
+        "name": "Amanco Wavin Linha Fixa PVC DN 35 PN 40",
+        "nominalMm": 35.0,
+        "idMm": 35.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn40_dn50",
+        "name": "Amanco Wavin Linha Fixa PVC DN 50 PN 40",
+        "nominalMm": 50.0,
+        "idMm": 48.1,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn40_dn75",
+        "name": "Amanco Wavin Linha Fixa PVC DN 75 PN 40",
+        "nominalMm": 75.0,
+        "idMm": 72.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 1.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn40_dn100",
+        "name": "Amanco Wavin Linha Fixa PVC DN 100 PN 40",
+        "nominalMm": 100.0,
+        "idMm": 97.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 2.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn40_dn125",
+        "name": "Amanco Wavin Linha Fixa PVC DN 125 PN 40",
+        "nominalMm": 125.0,
+        "idMm": 120.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 2.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn40_dn150",
+        "name": "Amanco Wavin Linha Fixa PVC DN 150 PN 40",
+        "nominalMm": 150.0,
+        "idMm": 144.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 3.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn80_dn50",
+        "name": "Amanco Wavin Linha Fixa PVC DN 50 PN 80",
+        "nominalMm": 50.0,
+        "idMm": 46.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.9,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn80_dn75",
+        "name": "Amanco Wavin Linha Fixa PVC DN 75 PN 80",
+        "nominalMm": 75.0,
+        "idMm": 70.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_lf_pn80_dn100",
+        "name": "Amanco Wavin Linha Fixa PVC DN 100 PN 80",
+        "nominalMm": 100.0,
+        "idMm": 94.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.6,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn60_dn100",
+        "name": "Amanco Wavin DEFOFORT PVC DN 100 PN 60",
+        "nominalMm": 100.0,
+        "idMm": 112.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 2.7,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn60_dn150",
+        "name": "Amanco Wavin DEFOFORT PVC DN 150 PN 60",
+        "nominalMm": 150.0,
+        "idMm": 162.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 3.9,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn60_dn200",
+        "name": "Amanco Wavin DEFOFORT PVC DN 200 PN 60",
+        "nominalMm": 200.0,
+        "idMm": 212.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 5.0,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn60_dn250",
+        "name": "Amanco Wavin DEFOFORT PVC DN 250 PN 60",
+        "nominalMm": 250.0,
+        "idMm": 261.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 6.2,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn60_dn300",
+        "name": "Amanco Wavin DEFOFORT PVC DN 300 PN 60",
+        "nominalMm": 300.0,
+        "idMm": 311.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 7.4,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn80_dn100",
+        "name": "Amanco Wavin DEFOFORT PVC DN 100 PN 80",
+        "nominalMm": 100.0,
+        "idMm": 111.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.1,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn80_dn150",
+        "name": "Amanco Wavin DEFOFORT PVC DN 150 PN 80",
+        "nominalMm": 150.0,
+        "idMm": 161.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 4.4,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn80_dn200",
+        "name": "Amanco Wavin DEFOFORT PVC DN 200 PN 80",
+        "nominalMm": 200.0,
+        "idMm": 210.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 5.8,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn80_dn250",
+        "name": "Amanco Wavin DEFOFORT PVC DN 250 PN 80",
+        "nominalMm": 250.0,
+        "idMm": 259.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 7.1,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn80_dn300",
+        "name": "Amanco Wavin DEFOFORT PVC DN 300 PN 80",
+        "nominalMm": 300.0,
+        "idMm": 309.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 8.5,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn125_dn100",
+        "name": "Amanco Wavin DEFOFORT PVC DN 100 PN 125",
+        "nominalMm": 100.0,
+        "idMm": 108.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 125.0,
+        "wallMm": 4.8,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn125_dn150",
+        "name": "Amanco Wavin DEFOFORT PVC DN 150 PN 125",
+        "nominalMm": 150.0,
+        "idMm": 156.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 125.0,
+        "wallMm": 6.8,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn125_dn200",
+        "name": "Amanco Wavin DEFOFORT PVC DN 200 PN 125",
+        "nominalMm": 200.0,
+        "idMm": 204.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 125.0,
+        "wallMm": 8.9,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn125_dn250",
+        "name": "Amanco Wavin DEFOFORT PVC DN 250 PN 125",
+        "nominalMm": 250.0,
+        "idMm": 252.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 125.0,
+        "wallMm": 11.0,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_df_pn125_dn300",
+        "name": "Amanco Wavin DEFOFORT PVC DN 300 PN 125",
+        "nominalMm": 300.0,
+        "idMm": 299.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 125.0,
+        "wallMm": 13.1,
+        "cost": 0.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_err_pn80_dn50",
+        "name": "Amanco Wavin Linha Móvel ERR PVC DN 50 PN 80",
+        "nominalMm": 50.0,
+        "idMm": 46.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.9,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline",
+          "lateral"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      },
+      {
+        "id": "amw_err_pn80_dn75",
+        "name": "Amanco Wavin Linha Móvel ERR PVC DN 75 PN 80",
+        "nominalMm": 75.0,
+        "idMm": 70.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline",
+          "lateral"
+        ],
+        "enabled": true,
+        "sup": "Amanco Wavin"
+      }
+    ],
+    "outlets": [],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

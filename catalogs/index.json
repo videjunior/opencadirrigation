@@ -3,89 +3,157 @@
   "version": 1,
   "packs": [
     {
+      "id": "amancowavin",
+      "brand": "Amanco Wavin",
+      "name": "Amanco Wavin",
+      "description": "PVC irrigation pipes: Linha Fixa PN 40 / PN 80 (NBR 14312, DN 35-150), DEFOFORT JERI PN 60 / PN 80 / PN 125 (DN 100-300), Linha Móvel ERR PN 80",
+      "source": "https://wavin.com/br",
+      "license": "CC0-1.0",
+      "updated": "2026-09-21",
+      "author": "OpenCADIrrigation",
+      "file": "amancowavin.oci.cat",
+      "items": 26
+    },
+    {
+      "id": "bermad",
+      "brand": "Bermad",
+      "name": "Bermad",
+      "description": "IR-100 series (hYflow) hydraulic valves: IR-105 solenoid control and IR-120 pressure reducing, DN 40-150; head loss from Kv, maximum flow at 0.5 bar loss",
+      "source": "https://www.bermad.com",
+      "license": "CC0-1.0",
+      "updated": "2026-09-21",
+      "author": "OpenCADIrrigation",
+      "file": "bermad.oci.cat",
+      "items": 12
+    },
+    {
       "id": "hunter",
       "brand": "Hunter Industries",
       "name": "Hunter Industries",
-      "description": "PGP Ultra / I-25 / I-40 rotors, MP Rotator, Pro-Spray, PLD dripline, ICV / PGV valves",
+      "description": "PGP Ultra / I-20 and I-25 rotors, MP Rotator (Pro-Spray PRS40), HDL-PC 17 mm dripline, ICV and PGV valves (pressure loss fitted to the published tables)",
+      "source": "https://www.hunterirrigation.com/en-metric",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "hunter.oci.cat",
-      "items": 10
+      "items": 14
+    },
+    {
+      "id": "irritec",
+      "brand": "Irritec",
+      "name": "Irritec",
+      "description": "Multibar C PC dripline 16 / 20 mm, P1 thin wall dripline 5/8\" and 7/8\", iDrop PC and turbulent on-line drippers",
+      "source": "https://www.irritec.com",
+      "license": "CC0-1.0",
+      "updated": "2026-09-21",
+      "author": "OpenCADIrrigation",
+      "file": "irritec.oci.cat",
+      "items": 12
     },
     {
       "id": "jain",
       "brand": "Jain Irrigation",
       "name": "Jain Irrigation",
-      "description": "Jain Turbo Excel / Turbo Line driplines, Chapin tape, J-Turbo Key drippers, Jain micro-sprinklers",
+      "description": "Jain Turbo Excel Plus and J-Turbo Line Super driplines (non-PC, x 0.45-0.48), Turbo Cascade PC dripline, J-Turbo Key Plus drippers; pressure classes per IS 13488",
+      "source": "https://www.jains.com",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "jain.oci.cat",
-      "items": 6
+      "items": 11
+    },
+    {
+      "id": "multilit",
+      "brand": "Multilit",
+      "name": "Multilit",
+      "description": "PVC irrigation and drainage pipes PN 40 / PN 60 / PN 80 (NBR 14312), DN 35-150",
+      "source": "https://multilit.com.br",
+      "license": "CC0-1.0",
+      "updated": "2026-09-21",
+      "author": "OpenCADIrrigation",
+      "file": "multilit.oci.cat",
+      "items": 17
     },
     {
       "id": "naandanjain",
       "brand": "NaanDanJain",
       "name": "NaanDanJain",
-      "description": "NaanDanJain 5022 / 5035 impact sprinklers, Amnon / TopPC driplines, Hadar and Aquamaster micro-sprinklers",
+      "description": "5022 (single / dual nozzle), 5022 SD, 5035 and 427B AG impact sprinklers, Hadar 7110 micro-sprinkler (today part of Rivulis)",
+      "source": "https://naandanjain.com",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "naandanjain.oci.cat",
-      "items": 7
+      "items": 5
     },
     {
       "id": "nelson",
       "brand": "Nelson Irrigation",
       "name": "Nelson Irrigation",
-      "description": "R2000WF / R33 / R55 rotators and impact sprinklers for orchards and solid set, 3030 pivot sprinklers, SR100 big gun",
+      "description": "R2000WF / R2000LP and R33 Rotators (metric pocket guide), R3000 pivot Rotator with 3TN nozzles, SR100 Big Gun with taper bore nozzles",
+      "source": "https://nelsonirrigation.com",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "nelson.oci.cat",
-      "items": 6
+      "items": 5
     },
     {
       "id": "netafim",
       "brand": "Netafim",
       "name": "Netafim",
-      "description": "UniRam / DripNet PC / Streamline / Typhoon driplines, SuperNet and GyroNet micro-sprinklers, PCJ drippers",
+      "description": "UniRam AS / DripNet PC / Streamline X driplines (K, x and Kd from the product sheets), PCJ drippers, SuperNet LR, GyroNet LR micro-sprinklers, MegaNet 15D sprinklers",
+      "source": "https://www.netafim.com/en/products-and-solutions/product-offering/",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "netafim.oci.cat",
-      "items": 12
+      "items": 21
     },
     {
       "id": "rainbird",
       "brand": "Rain Bird",
       "name": "Rain Bird",
-      "description": "XFS / XFD driplines, 5004 and 8005 rotors, 1800 sprays with MPR nozzles, PEB/PESB valves",
+      "description": "5004 Plus rotor (Rain Curtain, low-angle and MPR nozzles), 8005 rotor, 1804 spray with MPR 8/10/12/15 nozzles, XFD / XFS dripline, PEB / PESB valves",
+      "source": "https://www.rainbird.com/professionals/specifier",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "rainbird.oci.cat",
-      "items": 11
+      "items": 12
     },
     {
       "id": "rivulis",
       "brand": "Rivulis",
       "name": "Rivulis",
-      "description": "D5000 / D2000 PC driplines, T-Tape, Ro-Drip, Rondo and Supertif drippers, S2000 micro-sprinklers",
+      "description": "D5000 and Hydro PC driplines, T-Tape and Ro-Drip drip tapes (flow vs pressure tables), Supertif drippers, S2000 (standard and flow regulated) and Rondo micro-sprinklers",
+      "source": "https://www.rivulis.com",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "rivulis.oci.cat",
-      "items": 10
+      "items": 20
+    },
+    {
+      "id": "schneider",
+      "brand": "Schneider (Franklin Electric)",
+      "name": "Schneider (Franklin Electric)",
+      "description": "Schneider BC-21 / BC-22 / BC-23 single-stage centrifugal pumps (1.5-30 cv) and SUB 4\" submersible pumps (1-10 cv), 60 Hz; curves from the selection table, efficiency estimated from the rated power",
+      "source": "https://schneider.ind.br",
+      "license": "CC0-1.0",
+      "updated": "2026-09-21",
+      "author": "OpenCADIrrigation",
+      "file": "schneider.oci.cat",
+      "items": 83
     },
     {
       "id": "senninger",
       "brand": "Senninger",
       "name": "Senninger",
-      "description": "Wobbler / Xi-Wob orchard sprinklers, i-Wob and LDN pivot sprinklers, pressure regulators",
+      "description": "Wobbler standard angle (solid set / orchard), i-Wob2 pivot sprinkler (9-groove), PMR-MF pressure regulators",
+      "source": "https://www.senninger.com",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "senninger.oci.cat",
       "items": 6
@@ -94,12 +162,13 @@
       "id": "toro",
       "brand": "Toro",
       "name": "Toro",
-      "description": "Aqua-Traxx tape, Neptune PC / Blue Line driplines, DL2000, Toro golf/turf rotors",
+      "description": "T5 RapidSet rotor (standard and low-angle nozzles), Aqua-Traxx PBX drip tape 16 / 22 mm, BlueLine PC dripline 16 / 18 / 20 mm",
+      "source": "https://www.toro.com/en/agriculture",
       "license": "CC0-1.0",
-      "updated": "2026-09-16",
+      "updated": "2026-09-21",
       "author": "OpenCADIrrigation",
       "file": "toro.oci.cat",
-      "items": 7
+      "items": 15
     }
   ]
 }

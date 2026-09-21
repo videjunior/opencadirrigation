@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/io/catalog_io.dart';
 import '../../../core/model/catalog_packs.dart';
+import '../../../core/model/currency.dart';
 import '../../io/catalog_packs.dart';
 import '../../io/file_io.dart';
 import '../../state/controller.dart';
@@ -50,18 +51,25 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
       Widget tile(CatalogPack pack) {
         final present = pack.isMergedInto(cat);
         final origin = pack.origin.isEmpty ? '' : '  ·  ${t('cat.packFrom', {'o': pack.origin.split('/').last})}';
+        final prices = pack.hasPrices ? t('cat.packPriced', {'c': pack.meta.currency.isEmpty ? '?' : pack.meta.currency}) : t('cat.packUnpriced');
+        final dated = pack.meta.updated.isEmpty ? '' : '  ·  ${pack.meta.updated}';
         return ListTile(
           dense: true,
           title: Text('${pack.brand}  ·  ${t('cat.packItems', {'n': '${pack.itemCount}'})}$origin', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-          subtitle: pack.description.isEmpty ? null : Text(pack.description, style: const TextStyle(fontSize: 11, color: Colors.white60)),
+          subtitle: Text([if (pack.description.isNotEmpty) pack.description, '$prices$dated', if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}'].join('\n'), style: const TextStyle(fontSize: 11, color: Colors.white60)),
+          isThreeLine: true,
           trailing: FilledButton.tonal(
             key: Key('pack_${pack.id}'),
             onPressed: present
                 ? null
                 : () {
-                    final n = c.mutate(() => mergeCatalogPack(cat, pack.catalog));
-                    if (n == null) return;
-                    c.notify(t('cat.packAdded', {'n': '$n', 'b': pack.brand}));
+                    final r = c.mutate(() => addCatalogPack(cat, pack, projectCurrency: c.project.params.currencyCode));
+                    if (r == null) return;
+                    c.notify([
+                      t('cat.packAdded', {'n': '${r.added}', 'b': pack.brand}),
+                      if (r.converted) t('cat.packConverted', {'from': r.from, 'to': r.to, 'r': fmtRate(r.rate!)}),
+                      if (r.unknownCurrency) t('cat.packNoCurrency'),
+                    ].join(' '));
                     setState(() {});
                   },
             child: Text(present ? '✓' : t('cat.packAdd')),
@@ -169,7 +177,7 @@ Future<void> showExportCatalogPackDialog(BuildContext context, ProjectController
           FilledButton(
             key: const Key('pack_export_ok'),
             onPressed: () async {
-              final meta = CatalogPackMeta(id: id, brand: brand.trim().isEmpty ? id : brand.trim(), name: name.trim(), description: description.trim(), source: source.trim(), updated: DateTime.now().toIso8601String().substring(0, 10), author: c.project.meta.designer);
+              final meta = CatalogPackMeta(id: id, brand: brand.trim().isEmpty ? id : brand.trim(), name: name.trim(), description: description.trim(), source: source.trim(), updated: DateTime.now().toIso8601String().substring(0, 10), author: c.project.meta.designer, currency: catalogHasPrices(cat) ? c.project.params.currencyCode : '');
               final file = '$id$catalogPackExtension';
               await saveTextFile(file, CatalogIo.encodePack(meta, cat));
               c.notify(t('cat.packExported', {'f': file, 'n': '${cat.itemCount}'}));

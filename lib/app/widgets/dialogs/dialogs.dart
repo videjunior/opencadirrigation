@@ -10,6 +10,7 @@ import '../../../core/hydraulics/lateral.dart';
 import '../../../core/hydraulics/pump.dart';
 import '../../../core/hydraulics/water_hammer.dart';
 import '../../../core/model/catalog.dart';
+import '../../../core/model/currency.dart';
 import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../../core/model/project.dart';
@@ -17,6 +18,7 @@ import '../../../core/model/terrain.dart';
 import '../../../core/units.dart';
 import '../../io/file_io.dart';
 import '../../io/links.dart';
+import '../../io/prefs.dart';
 import '../../state/controller.dart';
 import '../../version.dart';
 import '../fields.dart';
@@ -117,14 +119,39 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
           NumField(label: t('dlg.term'), value: p.termYears.toDouble(), decimals: 0, onChanged: (v) => p.termYears = v.round()),
         ]),
         _row([
-          NumField(label: t('dlg.energyCost', {'c': p.currency}), value: p.powerCostPerKwh, onChanged: (v) => p.powerCostPerKwh = v),
+          NumField(key: ValueKey('kwh_${p.currencyCode}_${p.currency}'), label: t('dlg.energyCost', {'c': p.currency}), value: p.powerCostPerKwh, decimals: 3, onChanged: (v) => p.powerCostPerKwh = v),
           NumField(label: t('dlg.pumpEff'), value: p.pumpEfficiency, onChanged: (v) => p.pumpEfficiency = v),
         ]),
         _row([
           NumField(label: t('dlg.hoursMain'), value: p.hoursPerYear, decimals: 0, onChanged: (v) => p.hoursPerYear = v),
           NumField(label: t('dlg.hoursZone'), value: p.zoneHoursPerYear, decimals: 0, onChanged: (v) => p.zoneHoursPerYear = v),
         ]),
-        TextFieldRow(label: t('dlg.currency'), value: p.currency, onChanged: (v) => p.currency = v),
+        _row([
+          SpecDropdown<Currency>(
+            key: ValueKey('cur_${p.currencyCode}'),
+            label: t('dlg.currency'),
+            value: p.currencyCode.isEmpty ? null : p.currencyCode,
+            items: currencies,
+            allowNull: p.currencyCode.isEmpty,
+            nullLabel: p.currency,
+            labelOf: (x) => '${x.code} — ${x.symbol}',
+            idOf: (x) => x.code,
+            onChanged: (v) async {
+              if (v == null || v == p.currencyCode) return;
+              final rate = await askCurrencyConversion(ctx, c, p.currencyCode, v);
+              if (rate == null) {
+                setState(() {});
+                return;
+              }
+              c.setProjectCurrency(v, rate: rate.$1 ? rate.$2 : null);
+              setPref('currency', v);
+              if (rate.$1) c.notify(t('msg.pricesConverted', {'from': rate.$3, 'to': v, 'r': fmtRate(rate.$2)}));
+              setState(() {});
+            },
+          ),
+          TextFieldRow(key: ValueKey('sym_${p.currencyCode}'), label: t('dlg.currencySymbol'), value: p.currency, onChanged: (v) => p.currency = v),
+        ]),
+        Text(t('dlg.currencyNote', {'d': exchangeRatesDate}), style: const TextStyle(fontSize: 10.5, color: Colors.white38)),
       ]),
     );
   }), actions: [FilledButton(onPressed: () {
@@ -691,6 +718,37 @@ class _ExternalLink extends StatelessWidget {
         ),
         const Icon(Icons.open_in_new, size: 14, color: Colors.white38),
       ]),
+    ),
+  );
+}
+
+
+/// Asks whether the prices follow a currency change from [from] to [to]:
+/// (convert?, rate, from label) or null when the change is cancelled. The
+/// reference rate is offered and can be edited.
+Future<(bool, double, String)?> askCurrencyConversion(BuildContext context, ProjectController c, String from, String to) {
+  final t = c.t;
+  final known = exchangeRate(from, to);
+  var rate = known ?? 1.0;
+  final fromLabel = from.isEmpty ? c.project.params.currency : from;
+  return showDialog<(bool, double, String)>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(t('dlg.convertPricesTitle'), style: const TextStyle(fontSize: 15)),
+      content: SizedBox(
+        width: 420,
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(t('dlg.convertPricesBody', {'from': fromLabel, 'to': to}), style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 8),
+          NumField(key: const Key('cur_rate'), label: t('dlg.rate', {'from': fromLabel, 'to': to}), value: rate, decimals: 6, onChanged: (v) => rate = v),
+          Text(known == null ? t('dlg.rateUnknown') : t('dlg.rateSource', {'d': exchangeRatesDate}), style: const TextStyle(fontSize: 10.5, color: Colors.white38)),
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+        TextButton(key: const Key('cur_only'), onPressed: () => Navigator.pop(ctx, (false, rate, fromLabel)), child: Text(t('dlg.onlyCurrency'))),
+        FilledButton(key: const Key('cur_convert'), onPressed: () => Navigator.pop(ctx, (rate > 0, rate, fromLabel)), child: Text(t('dlg.convert'))),
+      ],
     ),
   );
 }

@@ -4,83 +4,175 @@
   "id": "nelson",
   "brand": "Nelson Irrigation",
   "name": "Nelson Irrigation",
-  "description": "R2000WF / R33 / R55 rotators and impact sprinklers for orchards and solid set, 3030 pivot sprinklers, SR100 big gun",
+  "description": "R2000WF / R2000LP and R33 Rotators (metric pocket guide), R3000 pivot Rotator with 3TN nozzles, SR100 Big Gun with taper bore nozzles",
+  "source": "https://nelsonirrigation.com",
   "license": "CC0-1.0",
-  "updated": "2026-09-16",
+  "updated": "2026-09-21",
   "author": "OpenCADIrrigation",
-  "items": 6,
+  "sources": [
+    "https://www.r2000wf.com/assets/rotator_metric_perf_guide_1.pdf",
+    "https://nelsonirrigation.com/library/PIVOT_pocketguide.pdf",
+    "SR100 performance chart (metric units)",
+    "3TN nozzle flow chart"
+  ],
+  "items": 5,
   "catalog": {
     "pipes": [],
     "outlets": [
       {
         "id": "nel_r2000wf",
-        "name": "Nelson R2000WF Rotator",
+        "name": "Nelson R2000WF Rotator (solid set / orchard)",
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "r2k_9",
-            "name": "#9 (0.39 m³/h, R 6.5 m)",
+            "id": "r2kwf_10",
+            "name": "Dk. Blue #10 (0.29 m³/h, R 10.4 m @ 3.5 bar)",
             "curve": {
-              "k": 0.000024224069756247718,
-              "x": 0.5,
-              "ra": 2.277995480754783,
-              "rb": 0.35
+              "k": 0.0000127731,
+              "x": 0.511,
+              "ra": 6.82155,
+              "rb": 0.117
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 35.0,
-            "defH": 20.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "r2k_11",
-            "name": "#11 (0.59 m³/h, R 7.5 m)",
+            "id": "r2kwf_11",
+            "name": "Orange #11 (0.35 m³/h, R 11.0 m @ 3.5 bar)",
             "curve": {
-              "k": 0.000036646669631246545,
-              "x": 0.5,
-              "ra": 2.6284563239478262,
-              "rb": 0.35
+              "k": 0.0000145344,
+              "x": 0.532,
+              "ra": 7.3832,
+              "rb": 0.11
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 35.0,
-            "defH": 20.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "r2k_13",
-            "name": "#13 (0.82 m³/h, R 8.5 m)",
+            "id": "r2kwf_12",
+            "name": "Purple #12 (0.41 m³/h, R 11.4 m @ 3.5 bar)",
             "curve": {
-              "k": 0.000050932659487495205,
-              "x": 0.5,
-              "ra": 2.97891716714087,
-              "rb": 0.35
+              "k": 0.0000182635,
+              "x": 0.513,
+              "ra": 9.45545,
+              "rb": 0.053
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 35.0,
-            "defH": 20.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "r2k_15",
-            "name": "#15 (1.09 m³/h, R 9.5 m)",
+            "id": "r2kwf_13",
+            "name": "Yellow #13 (0.49 m³/h, R 11.4 m @ 3.5 bar)",
             "curve": {
-              "k": 0.00006770316931874362,
-              "x": 0.5,
-              "ra": 3.3293780103339135,
-              "rb": 0.35
+              "k": 0.0000211656,
+              "x": 0.519,
+              "ra": 9.45545,
+              "rb": 0.053
             },
             "arc": 360.0,
-            "minH": 15.0,
-            "maxH": 35.0,
-            "defH": 20.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2kwf_14",
+            "name": "Green #14 (0.55 m³/h, R 11.9 m @ 3.5 bar)",
+            "curve": {
+              "k": 0.0000246156,
+              "x": 0.511,
+              "ra": 8.23207,
+              "rb": 0.102
+            },
+            "arc": 360.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2kwf_15",
+            "name": "Tan #15 (0.65 m³/h, R 12.2 m @ 3.5 bar)",
+            "curve": {
+              "k": 0.0000287186,
+              "x": 0.513,
+              "ra": 8.5165,
+              "rb": 0.1
+            },
+            "arc": 360.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2kwf_16",
+            "name": "Red #16 (0.74 m³/h, R 12.2 m @ 3.5 bar)",
+            "curve": {
+              "k": 0.0000344447,
+              "x": 0.499,
+              "ra": 8.5165,
+              "rb": 0.1
+            },
+            "arc": 360.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2kwf_18",
+            "name": "Gold #18 (0.94 m³/h, R 12.6 m @ 3.5 bar)",
+            "curve": {
+              "k": 0.0000455944,
+              "x": 0.488,
+              "ra": 10.6379,
+              "rb": 0.048
+            },
+            "arc": 360.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2kwf_20",
+            "name": "Dk. Brown #20 (1.14 m³/h, R 13.2 m @ 3.5 bar)",
+            "curve": {
+              "k": 0.0000548583,
+              "x": 0.491,
+              "ra": 8.06363,
+              "rb": 0.138
+            },
+            "arc": 360.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -90,7 +182,123 @@
         "inletMm": 20.0,
         "riser": 1.0,
         "enabled": true,
-        "sup": "Nelson Irrigation"
+        "sup": "Nelson Irrigation",
+        "code": "R2000WF"
+      },
+      {
+        "id": "nel_r2000lp",
+        "name": "Nelson R2000LP Rotator (low pressure)",
+        "kind": "sprinkler",
+        "nozzles": [
+          {
+            "id": "r2klp_10",
+            "name": "Dk. Blue #10 (0.25 m³/h, R 9.5 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000130144,
+              "x": 0.507,
+              "ra": 6.68014,
+              "rb": 0.106
+            },
+            "arc": 360.0,
+            "minH": 17.8,
+            "maxH": 35.7,
+            "defH": 28.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2klp_12",
+            "name": "Purple #12 (0.36 m³/h, R 10.4 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000189027,
+              "x": 0.504,
+              "ra": 7.9393,
+              "rb": 0.082
+            },
+            "arc": 360.0,
+            "minH": 17.8,
+            "maxH": 35.7,
+            "defH": 28.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2klp_14",
+            "name": "Green #14 (0.49 m³/h, R 10.9 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000252194,
+              "x": 0.504,
+              "ra": 7.35646,
+              "rb": 0.118
+            },
+            "arc": 360.0,
+            "minH": 17.8,
+            "maxH": 35.7,
+            "defH": 28.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2klp_16",
+            "name": "Red #16 (0.66 m³/h, R 11.3 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.000034209,
+              "x": 0.501,
+              "ra": 8.81426,
+              "rb": 0.076
+            },
+            "arc": 360.0,
+            "minH": 17.8,
+            "maxH": 35.7,
+            "defH": 28.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2klp_18",
+            "name": "Gold #18 (0.83 m³/h, R 11.8 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000454184,
+              "x": 0.489,
+              "ra": 10.4282,
+              "rb": 0.036
+            },
+            "arc": 360.0,
+            "minH": 17.8,
+            "maxH": 35.7,
+            "defH": 28.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r2klp_20",
+            "name": "Dk. Brown #20 (1.02 m³/h, R 12.5 m @ 2.8 bar)",
+            "curve": {
+              "k": 0.0000553677,
+              "x": 0.489,
+              "ra": 9.98607,
+              "rb": 0.068
+            },
+            "arc": 360.0,
+            "minH": 17.8,
+            "maxH": 35.7,
+            "defH": 28.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 0.0,
+        "inletMm": 20.0,
+        "riser": 1.0,
+        "enabled": true,
+        "sup": "Nelson Irrigation",
+        "code": "R2000LP"
       },
       {
         "id": "nel_r33",
@@ -98,52 +306,69 @@
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "r33_11",
-            "name": "#11 (0.55 m³/h, R 12 m)",
+            "id": "r33_18",
+            "name": "Gold #18 (0.93 m³/h, R 13.2 m @ 3.5 bar)",
             "curve": {
-              "k": 0.000027893278391466793,
-              "x": 0.5,
-              "ra": 3.649125559695976,
-              "rb": 0.35
+              "k": 0.0000426103,
+              "x": 0.504,
+              "ra": 11.2302,
+              "rb": 0.046
             },
             "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "r33_13",
-            "name": "#13 (0.77 m³/h, R 13 m)",
+            "id": "r33_20",
+            "name": "Brown #20 (1.14 m³/h, R 14.0 m @ 3.5 bar)",
             "curve": {
-              "k": 0.00003905058974805351,
-              "x": 0.5,
-              "ra": 3.9532193563373075,
-              "rb": 0.35
+              "k": 0.0000526261,
+              "x": 0.503,
+              "ra": 10.2357,
+              "rb": 0.087
             },
             "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "r33_15",
-            "name": "#15 (1.02 m³/h, R 14 m)",
+            "id": "r33_22",
+            "name": "Gray #22 (1.38 m³/h, R 14.3 m @ 3.5 bar)",
             "curve": {
-              "k": 0.00005172935265326568,
-              "x": 0.5,
-              "ra": 4.2573131529786385,
-              "rb": 0.35
+              "k": 0.0000649683,
+              "x": 0.496,
+              "ra": 10.524,
+              "rb": 0.085
             },
             "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "r33_24",
+            "name": "Green #24 (1.64 m³/h, R 15.0 m @ 3.5 bar)",
+            "curve": {
+              "k": 0.000073015,
+              "x": 0.512,
+              "ra": 13.0108,
+              "rb": 0.04
+            },
+            "arc": 360.0,
+            "minH": 28.0,
+            "maxH": 45.9,
+            "defH": 35.7,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -153,186 +378,146 @@
         "inletMm": 20.0,
         "riser": 1.0,
         "enabled": true,
-        "sup": "Nelson Irrigation"
-      },
-      {
-        "id": "nel_r55",
-        "name": "Nelson R55 Rotator",
-        "kind": "sprinkler",
-        "nozzles": [
-          {
-            "id": "r55_16",
-            "name": "#16 (1.6 m³/h, R 17 m)",
-            "curve": {
-              "k": 0.0000751248226425348,
-              "x": 0.5,
-              "ra": 4.8980713350156835,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 25.0,
-            "maxH": 55.0,
-            "defH": 35.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "r55_20",
-            "name": "#20 (2.5 m³/h, R 19 m)",
-            "curve": {
-              "k": 0.00011738253537896061,
-              "x": 0.5,
-              "ra": 5.474315021488116,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 25.0,
-            "maxH": 55.0,
-            "defH": 35.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "r55_24",
-            "name": "#24 (3.6 m³/h, R 21 m)",
-            "curve": {
-              "k": 0.0001690308509457033,
-              "x": 0.5,
-              "ra": 6.050558707960549,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 25.0,
-            "maxH": 55.0,
-            "defH": 35.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          }
-        ],
-        "cost": 0.0,
-        "inletMm": 25.0,
-        "riser": 1.0,
-        "enabled": true,
-        "sup": "Nelson Irrigation"
-      },
-      {
-        "id": "nel_f33",
-        "name": "Nelson F33 impact sprinkler 3/4\"",
-        "kind": "sprinkler",
-        "nozzles": [
-          {
-            "id": "f33_35",
-            "name": "3.5 mm (0.9 m³/h, R 12 m)",
-            "curve": {
-              "k": 0.00004564354645876384,
-              "x": 0.5,
-              "ra": 3.649125559695976,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "f33_40",
-            "name": "4.0 mm (1.2 m³/h, R 13 m)",
-            "curve": {
-              "k": 0.000060858061945018456,
-              "x": 0.5,
-              "ra": 3.9532193563373075,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "f33_45",
-            "name": "4.5 mm (1.5 m³/h, R 14 m)",
-            "curve": {
-              "k": 0.00007607257743127307,
-              "x": 0.5,
-              "ra": 4.2573131529786385,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 20.0,
-            "maxH": 45.0,
-            "defH": 30.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          }
-        ],
-        "cost": 0.0,
-        "inletMm": 20.0,
-        "riser": 1.0,
-        "enabled": true,
-        "sup": "Nelson Irrigation"
+        "sup": "Nelson Irrigation",
+        "code": "R33"
       },
       {
         "id": "nel_3030",
-        "name": "Nelson 3030 pivot sprinkler (R3000 rotator)",
+        "name": "Nelson R3000 Rotator pivot sprinkler (3TN nozzles)",
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "3030_20",
-            "name": "#20 (0.55 m³/h, R 7 m)",
+            "id": "3tn_16",
+            "name": "3TN #16 (0.39 m³/h, R 8.4 m @ 1.0 bar)",
             "curve": {
-              "k": 0.00004831257536368357,
+              "k": 0.0000331953,
               "x": 0.5,
-              "ra": 3.126785145056742,
-              "rb": 0.35
+              "ra": 4.64075,
+              "rb": 0.251
             },
             "arc": 360.0,
-            "minH": 6.0,
-            "maxH": 20.0,
-            "defH": 10.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "3030_28",
-            "name": "#28 (1.07 m³/h, R 8 m)",
+            "id": "3tn_20",
+            "name": "3TN #20 (0.61 m³/h, R 8.4 m @ 1.0 bar)",
             "curve": {
-              "k": 0.00009398991934389349,
+              "k": 0.0000522208,
               "x": 0.5,
-              "ra": 3.573468737207705,
-              "rb": 0.35
+              "ra": 4.64075,
+              "rb": 0.251
             },
             "arc": 360.0,
-            "minH": 6.0,
-            "maxH": 20.0,
-            "defH": 10.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "3030_36",
-            "name": "#36 (1.77 m³/h, R 9 m)",
+            "id": "3tn_24",
+            "name": "3TN #24 (0.88 m³/h, R 8.4 m @ 1.0 bar)",
             "curve": {
-              "k": 0.0001554786516249453,
+              "k": 0.0000749936,
               "x": 0.5,
-              "ra": 4.020152329358669,
-              "rb": 0.35
+              "ra": 4.64075,
+              "rb": 0.251
             },
             "arc": 360.0,
-            "minH": 6.0,
-            "maxH": 20.0,
-            "defH": 10.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3tn_28",
+            "name": "3TN #28 (1.20 m³/h, R 8.4 m @ 1.0 bar)",
+            "curve": {
+              "k": 0.000102772,
+              "x": 0.5,
+              "ra": 4.64075,
+              "rb": 0.251
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3tn_32",
+            "name": "3TN #32 (1.56 m³/h, R 8.4 m @ 1.0 bar)",
+            "curve": {
+              "k": 0.000133785,
+              "x": 0.5,
+              "ra": 4.64075,
+              "rb": 0.251
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3tn_36",
+            "name": "3TN #36 (1.96 m³/h, R 8.4 m @ 1.0 bar)",
+            "curve": {
+              "k": 0.000168032,
+              "x": 0.5,
+              "ra": 4.64075,
+              "rb": 0.251
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3tn_40",
+            "name": "3TN #40 (2.46 m³/h, R 8.4 m @ 1.0 bar)",
+            "curve": {
+              "k": 0.000210573,
+              "x": 0.5,
+              "ra": 4.64075,
+              "rb": 0.251
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "3tn_44",
+            "name": "3TN #44 (2.99 m³/h, R 8.4 m @ 1.0 bar)",
+            "curve": {
+              "k": 0.000255869,
+              "x": 0.5,
+              "ra": 4.64075,
+              "rb": 0.251
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 35.2,
+            "defH": 10.5,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -342,60 +527,95 @@
         "inletMm": 20.0,
         "riser": 0.0,
         "enabled": true,
-        "sup": "Nelson Irrigation"
+        "sup": "Nelson Irrigation",
+        "code": "R3000"
       },
       {
         "id": "nel_sr100",
-        "name": "Nelson SR100 big gun",
+        "name": "Nelson SR100 Big Gun (24° taper bore)",
         "kind": "gun",
         "nozzles": [
           {
-            "id": "sr100_16",
-            "name": "16 mm ring (22 m³/h, R 38 m)",
+            "id": "sr100_127",
+            "name": "Taper bore 0.50\" (12.7 mm) (13.60 m³/h, R 34.5 m @ 4.9 bar)",
             "curve": {
-              "k": 0.0009109906574999142,
+              "k": 0.000534439,
               "x": 0.5,
-              "ra": 10.026727607861462,
-              "rb": 0.35
+              "ra": 9.71801,
+              "rb": 0.324
             },
             "arc": 360.0,
             "minH": 30.0,
             "maxH": 80.0,
-            "defH": 45.0,
+            "defH": 50.0,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "sr100_20",
-            "name": "20 mm ring (34 m³/h, R 44 m)",
+            "id": "sr100_152",
+            "name": "Taper bore 0.60\" (15.2 mm) (20.10 m³/h, R 38.2 m @ 4.9 bar)",
             "curve": {
-              "k": 0.0014078946524998675,
-              "x": 0.5,
-              "ra": 11.609895124892219,
-              "rb": 0.35
+              "k": 0.000786904,
+              "x": 0.501,
+              "ra": 11.6647,
+              "rb": 0.303
             },
             "arc": 360.0,
             "minH": 30.0,
             "maxH": 80.0,
-            "defH": 45.0,
+            "defH": 50.0,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "sr100_24",
-            "name": "24 mm ring (49 m³/h, R 50 m)",
+            "id": "sr100_178",
+            "name": "Taper bore 0.70\" (17.8 mm) (27.50 m³/h, R 42.2 m @ 4.9 bar)",
             "curve": {
-              "k": 0.002029024646249809,
-              "x": 0.5,
-              "ra": 13.193062641922976,
-              "rb": 0.35
+              "k": 0.0010334,
+              "x": 0.511,
+              "ra": 12.2869,
+              "rb": 0.315
             },
             "arc": 360.0,
             "minH": 30.0,
             "maxH": 80.0,
-            "defH": 45.0,
+            "defH": 50.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "sr100_203",
+            "name": "Taper bore 0.80\" (20.3 mm) (34.90 m³/h, R 45.2 m @ 4.9 bar)",
+            "curve": {
+              "k": 0.00145249,
+              "x": 0.485,
+              "ra": 14.1981,
+              "rb": 0.296
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 80.0,
+            "defH": 50.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "sr100_229",
+            "name": "Taper bore 0.90\" (22.9 mm) (45.20 m³/h, R 47.4 m @ 4.9 bar)",
+            "curve": {
+              "k": 0.00173652,
+              "x": 0.506,
+              "ra": 14.5807,
+              "rb": 0.301
+            },
+            "arc": 360.0,
+            "minH": 30.0,
+            "maxH": 80.0,
+            "defH": 50.0,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -405,7 +625,8 @@
         "inletMm": 50.0,
         "riser": 1.5,
         "enabled": true,
-        "sup": "Nelson Irrigation"
+        "sup": "Nelson Irrigation",
+        "code": "SR100"
       }
     ],
     "tapes": [],

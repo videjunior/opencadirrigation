@@ -356,7 +356,7 @@ e acessórios**, **bombas** e **conexões**. Todos os valores hidráulicos inter
 O **catálogo padrão** traz 17 tubos (PE 16–50 mm, PVC DN 35–250, PEAD 110 e 160, aço 6"), 9 famílias
 de emissores (gotejadores PC e turbulentos, microaspersores, aspersor de impacto, canhão, rotor e
 spray de jardim, ponto de demanda), 6 fitas e tubos gotejadores, 30 válvulas e acessórios (1" a 6"),
-17 bombas (centrífugas de 1 a 100 cv, submersas de 3 a 25 cv) e cerca de 330 conexões geradas para
+18 bombas (centrífugas de 1 a 100 cv, submersas de 3 a 30 cv) e cerca de 330 conexões geradas para
 cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas, tampões, adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida), com
 nomes traduzidos e preços ilustrativos.
 
@@ -364,10 +364,41 @@ O editor (Projeto → Catálogo de componentes) edita, duplica e remove itens, i
 CSV por grupo e **Excel** (exporte, preencha preços na planilha e importe de volta), define o
 catálogo padrão para novos projetos e restaura o original.
 
+### Preços e moeda
+
+Todos os preços de um projeto (catálogo, tarifa de energia, máquinas de pivô) estão em uma única
+moeda, guardada como código ISO 4217 junto com o símbolo mostrado nas tabelas e relatórios
+(Projeto → Parâmetros de projeto → Moeda). Um projeto novo usa a moeda da região da máquina quando a
+localidade do sistema no idioma da interface indica uma (`pt-PT` → EUR, `en-IN` → INR, `de-CH` → CHF);
+senão, a moeda do país mais populoso do idioma (pt BRL, en USD, es MXN, de/fr EUR, ja JPY, zh CNY,
+hi/mr/te/pa INR, bn BDT, ur PKR, ar EGP, ru RUB, tr TRY, id IDR, vi VND, ha NGN, sw TZS). Os preços
+ilustrativos do catálogo padrão e a tarifa de energia padrão (0,75 R$/kWh) estão em reais e são
+convertidos por câmbios de referência (Banco Central Europeu e exchangerate-api.com, 21/09/2026), de
+modo que todos os idiomas chegam ao mesmo projeto; eles só ordenam as opções do dimensionamento
+econômico e devem ser trocados pela tabela de preços local. Escolher outra moeda pergunta se todos os
+preços devem ser convertidos, com o câmbio de referência sugerido e editável, e ela passa a ser a
+moeda dos novos projetos. O catálogo padrão salvo guarda a sua moeda e é convertido para projetos em
+outra. Os exemplos da galeria usam a moeda do seu idioma (no app, a moeda do usuário).
+
+Itens sem preço (os pacotes de fabricantes vêm sem preço) são apontados pelo assistente de projeto
+(`bom_unpriced`); a lista de materiais os deixa fora dos totais e o dimensionamento econômico dá a um
+tubo sem custo um preço proporcional à seção da parede, calibrado pelos tubos com preço do mesmo
+material, para que os diâmetros mantenham a ordem.
+
 ### Catálogos de fabricantes (`.oci.cat`)
 
-Nove pacotes acompanham o app: Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain
-e Senninger, com produtos representativos e dados típicos de catálogo (75 itens). Eles ficam em
+Quatorze pacotes acompanham o app (259 itens): Hunter, Rain Bird, Toro, Netafim, Rivulis,
+NaanDanJain, Jain, Nelson e Senninger (aspersores, microaspersores, gotejadores, fitas e tubos
+gotejadores, emissores de pivô, canhões, válvulas e reguladores), Irritec (tubos gotejadores e
+gotejadores), Bermad (válvulas hidráulicas), Schneider (bombas centrífugas e submersas 4", 60 Hz) e
+Amanco Wavin e Multilit (tubos de PVC para irrigação, NBR 14312). Os dados vêm das tabelas publicadas
+pelos fabricantes: curvas dos bocais `q = k·H^x` e raios `R = a·H^b` ajustados por mínimos quadrados
+às linhas de pressão, vazão e raio (o raio ancorado na pressão de projeto), constantes, expoentes,
+diâmetros internos e perdas no gotejador (Kd) como impressos, faixas de pressão e classes de parede,
+perdas das válvulas ajustadas às tabelas de perda (ou tiradas do Kv) e curvas das bombas das tabelas
+de seleção (eficiência estimada pela potência nominal, já que as tabelas não a trazem). Cada pacote
+lista os documentos de origem (`sources`). Os preços ficam em zero; um pacote com preços informa a
+moeda (`currency`) e é convertido para a moeda do projeto ao ser adicionado. Eles ficam em
 [catalogs/](catalogs/) como arquivos JSON, um por fabricante, mais um `index.json`. Pelo diálogo
 *Catálogos de fabricantes…* você adiciona um pacote ao projeto, importa um arquivo `.oci.cat` ou
 carrega um pacote ou um índice inteiro por URL, o que permite a qualquer revenda ou comunidade manter
@@ -410,7 +441,7 @@ com os campos de cada grupo e as regras de contribuição, está em [catalogs/RE
 | Hidráulica | Fórmula de atrito: Hazen-Williams (padrão) ou Darcy-Weisbach; temperatura da água 20 °C (viscosidade calculada); perdas localizadas 5 % do comprimento, ligadas; escala e deslocamento do C (envelhecimento); tolerância de conexão 0,05 m; máximo de 100 nós agregados por lateral |
 | Velocidades máximas | 2,0 m/s em laterais, 1,5 m/s em zona, 2,0 m/s em linha principal |
 | Dimensionamento | Método LP (padrão) ou velocidade + janela de pressão (greedy); diâmetros por lateral (1), por submain (3) e por linha principal (3); variação máxima de pressão na zona (0 = derivada da tolerância de vazão do emissor); emissores por planta (1) |
-| Economia | Juros 10 %, prazo 10 anos, energia 0,75 por kWh, eficiência da bomba 65 %, 2000 h/ano de linha principal e 500 h/ano por zona, balanço capital × energia ligado, moeda R$ |
+| Economia | Juros 10 %, prazo 10 anos, energia 0,75 por kWh, eficiência da bomba 65 %, 2000 h/ano de linha principal e 500 h/ano por zona, balanço capital × energia ligado, moeda da região ou do idioma (veja *Preços e moeda*) |
 | Lavagem e segurança | Velocidade de lavagem das fitas 0,3 m/s com pressão mínima de 1 m na ponta aberta; verificação de golpe de aríete ligada com tempo de fechamento de válvula (0 = instantâneo) |
 | Materiais | Seleção automática de conexões ligada; barra de tubo de 6 m para contar luvas |
 | Terreno | Interpolação por triangulação (padrão) ou inverso da distância; densificação das curvas 5 m |
@@ -670,6 +701,7 @@ lib/
       entities.dart           entidades de desenho e hidráulicas (JSON, clone, transformar, grips, distância)
       catalog.dart            catálogo de componentes e base padrão
       catalog_packs.dart      pacotes de fabricantes (em memória) e fusão
+      currency.dart           moedas, padrão por idioma/região, câmbios de referência, conversão de preços
       project.dart            projeto: meta, parâmetros, catálogo, camadas, entidades, turnos
       terrain.dart, tin.dart  modelo do terreno: TIN de Delaunay, IDW, curvas de nível
       spatial_index.dart      R-tree STR para culling, seleção e snap

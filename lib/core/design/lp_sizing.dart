@@ -43,7 +43,7 @@ class LpHeadConstraint {
 }
 
 class LpSizingInput {
-  LpSizingInput({required this.units, required this.candidates, required this.unitLength, required this.maxSizes, required this.headVars, required this.constraints, required this.crf, required this.tradeCapital});
+  LpSizingInput({required this.units, required this.candidates, required this.unitLength, required this.maxSizes, required this.headVars, required this.constraints, required this.crf, required this.tradeCapital, this.pipeCost});
 
   /// Unit ids in order.
   final List<String> units;
@@ -54,6 +54,10 @@ class LpSizingInput {
   final List<LpHeadConstraint> constraints;
   final double crf;
   final bool tradeCapital;
+
+  /// Price per metre of a candidate (default: its catalogue price); lets the
+  /// designer supply estimates for pipes that have no price.
+  final double Function(PipeSpec spec)? pipeCost;
 }
 
 class LpAssignment {
@@ -82,7 +86,7 @@ LpAssignment lpSize(LpSizingInput input) {
     final len = input.unitLength[u] ?? 0;
     final m = <String, int>{};
     for (final s in cands) {
-      final cost = s.costPerM * len * (input.tradeCapital ? input.crf : 1.0);
+      final cost = (input.pipeCost?.call(s) ?? s.costPerM) * len * (input.tradeCapital ? input.crf : 1.0);
       m[s.id] = p.addVariable(cost, name: '$u:${s.id}');
     }
     varIndex[u] = m;

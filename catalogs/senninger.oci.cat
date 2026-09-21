@@ -4,66 +4,208 @@
   "id": "senninger",
   "brand": "Senninger",
   "name": "Senninger",
-  "description": "Wobbler / Xi-Wob orchard sprinklers, i-Wob and LDN pivot sprinklers, pressure regulators",
+  "description": "Wobbler standard angle (solid set / orchard), i-Wob2 pivot sprinkler (9-groove), PMR-MF pressure regulators",
+  "source": "https://www.senninger.com",
   "license": "CC0-1.0",
-  "updated": "2026-09-16",
+  "updated": "2026-09-21",
   "author": "OpenCADIrrigation",
+  "sources": [
+    "Senninger Wobbler specification sheet (02SSW4)",
+    "i-Wob brochure (nozzle flow table, diameters)",
+    "PMR-MF pressure regulator specifications (2-20 gpm, preset 6-60 psi)"
+  ],
   "items": 6,
   "catalog": {
     "pipes": [],
     "outlets": [
       {
-        "id": "sen_xiwob",
-        "name": "Senninger Xi-Wob (orchard / solid set)",
+        "id": "sen_wobbler",
+        "name": "Senninger Wobbler standard angle (solid set / orchard, 0.5 m riser)",
         "kind": "sprinkler",
         "nozzles": [
           {
-            "id": "xw_7",
-            "name": "#7 (0.41 m³/h, R 7 m)",
+            "id": "wob_6",
+            "name": "#6 Gold (0.25 m³/h, R 6.3 m @ 1.4 bar)",
             "curve": {
-              "k": 0.0000294059846656489,
-              "x": 0.5,
-              "ra": 2.7131018614775,
-              "rb": 0.35
+              "k": 0.000018608,
+              "x": 0.498,
+              "ra": 3.53724,
+              "rb": 0.22
             },
             "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 25.0,
-            "defH": 15.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "xw_9",
-            "name": "#9 (0.68 m³/h, R 8 m)",
+            "id": "wob_7",
+            "name": "#7 Lime (0.34 m³/h, R 6.6 m @ 1.4 bar)",
             "curve": {
-              "k": 0.00004877090139668599,
-              "x": 0.5,
-              "ra": 3.100687841688571,
-              "rb": 0.35
+              "k": 0.0000250756,
+              "x": 0.502,
+              "ra": 4.06036,
+              "rb": 0.185
             },
             "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 25.0,
-            "defH": 15.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "xw_11",
-            "name": "#11 (1.02 m³/h, R 9 m)",
+            "id": "wob_8",
+            "name": "#8 Lavender (0.45 m³/h, R 6.9 m @ 1.4 bar)",
             "curve": {
-              "k": 0.00007315635209502897,
+              "k": 0.0000333139,
               "x": 0.5,
-              "ra": 3.4882738218996425,
-              "rb": 0.35
+              "ra": 4.41341,
+              "rb": 0.167
             },
             "arc": 360.0,
-            "minH": 10.0,
-            "maxH": 25.0,
-            "defH": 15.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_9",
+            "name": "#9 Grey (0.58 m³/h, R 7.1 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.0000429173,
+              "x": 0.498,
+              "ra": 4.90477,
+              "rb": 0.139
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_10",
+            "name": "#10 Turquoise (0.71 m³/h, R 7.3 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.0000526773,
+              "x": 0.501,
+              "ra": 5.26238,
+              "rb": 0.125
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_11",
+            "name": "#11 Yellow (0.87 m³/h, R 7.5 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.0000637291,
+              "x": 0.502,
+              "ra": 5.40992,
+              "rb": 0.122
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_12",
+            "name": "#12 Red (1.04 m³/h, R 7.6 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.0000767483,
+              "x": 0.501,
+              "ra": 5.62685,
+              "rb": 0.115
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_13",
+            "name": "#13 White (1.22 m³/h, R 7.7 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.0000901739,
+              "x": 0.501,
+              "ra": 5.70102,
+              "rb": 0.114
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_14",
+            "name": "#14 Blue (1.41 m³/h, R 7.8 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.000104222,
+              "x": 0.502,
+              "ra": 5.77522,
+              "rb": 0.112
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_16",
+            "name": "#16 Orange (1.84 m³/h, R 7.9 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.000136001,
+              "x": 0.5,
+              "ra": 5.92375,
+              "rb": 0.11
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "wob_18",
+            "name": "#18 Purple (2.32 m³/h, R 8.1 m @ 1.4 bar)",
+            "curve": {
+              "k": 0.00017243,
+              "x": 0.498,
+              "ra": 6.07241,
+              "rb": 0.108
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 24.6,
+            "defH": 14.1,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
@@ -71,124 +213,147 @@
         ],
         "cost": 0.0,
         "inletMm": 20.0,
-        "riser": 1.0,
+        "riser": 0.5,
         "enabled": true,
-        "sup": "Senninger"
+        "sup": "Senninger",
+        "code": "Wobbler SA"
       },
       {
         "id": "sen_iwob",
-        "name": "Senninger i-Wob2 pivot sprinkler",
+        "name": "Senninger i-Wob2 pivot sprinkler (standard angle, 9-groove)",
         "kind": "sprinkler",
         "nozzles": [
+          {
+            "id": "iw_12",
+            "name": "#12 (0.74 m³/h, R 6.2 m @ 0.7 bar)",
+            "curve": {
+              "k": 0.0000768625,
+              "x": 0.502,
+              "ra": 6.25,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 10.5,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "iw_14",
+            "name": "#14 (1.00 m³/h, R 6.6 m @ 0.7 bar)",
+            "curve": {
+              "k": 0.000105445,
+              "x": 0.499,
+              "ra": 6.6,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 10.5,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "iw_16",
+            "name": "#16 (1.31 m³/h, R 6.9 m @ 0.7 bar)",
+            "curve": {
+              "k": 0.000137588,
+              "x": 0.5,
+              "ra": 6.95,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 10.5,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "iw_18",
+            "name": "#18 (1.66 m³/h, R 7.3 m @ 0.7 bar)",
+            "curve": {
+              "k": 0.000174939,
+              "x": 0.498,
+              "ra": 7.3,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 10.5,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
           {
             "id": "iw_20",
-            "name": "#20 (0.53 m³/h, R 7 m)",
+            "name": "#20 (2.05 m³/h, R 7.6 m @ 0.7 bar)",
             "curve": {
-              "k": 0.00004655575444136781,
+              "k": 0.00021445,
               "x": 0.5,
-              "ra": 3.126785145056742,
-              "rb": 0.35
+              "ra": 7.65,
+              "rb": 0.0
             },
             "arc": 360.0,
-            "minH": 6.0,
-            "maxH": 15.0,
-            "defH": 10.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "iw_28",
-            "name": "#28 (1.04 m³/h, R 8 m)",
-            "curve": {
-              "k": 0.00009135468796041984,
-              "x": 0.5,
-              "ra": 3.573468737207705,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 6.0,
-            "maxH": 15.0,
-            "defH": 10.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          },
-          {
-            "id": "iw_36",
-            "name": "#36 (1.72 m³/h, R 9 m)",
-            "curve": {
-              "k": 0.0001510865993191559,
-              "x": 0.5,
-              "ra": 4.020152329358669,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 6.0,
-            "maxH": 15.0,
-            "defH": 10.0,
-            "cv": 0.03,
-            "tolB": 0.05,
-            "tolA": 0.05
-          }
-        ],
-        "cost": 0.0,
-        "inletMm": 20.0,
-        "riser": 0.0,
-        "enabled": true,
-        "sup": "Senninger"
-      },
-      {
-        "id": "sen_ldn",
-        "name": "Senninger LDN pivot spray",
-        "kind": "sprinkler",
-        "nozzles": [
-          {
-            "id": "ldn_20",
-            "name": "#20 (0.45 m³/h, R 5 m)",
-            "curve": {
-              "k": 0.0000472455591261534,
-              "x": 0.5,
-              "ra": 2.530379674024799,
-              "rb": 0.35
-            },
-            "arc": 360.0,
-            "minH": 4.0,
-            "maxH": 15.0,
+            "minH": 7.0,
+            "maxH": 10.5,
             "defH": 7.0,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "ldn_28",
-            "name": "#28 (0.88 m³/h, R 6 m)",
+            "id": "iw_22",
+            "name": "#22 (2.47 m³/h, R 8.0 m @ 0.7 bar)",
             "curve": {
-              "k": 0.00009239131562447776,
-              "x": 0.5,
-              "ra": 3.0364556088297587,
-              "rb": 0.35
+              "k": 0.000258184,
+              "x": 0.501,
+              "ra": 8.0,
+              "rb": 0.0
             },
             "arc": 360.0,
-            "minH": 4.0,
-            "maxH": 15.0,
+            "minH": 7.0,
+            "maxH": 10.5,
             "defH": 7.0,
             "cv": 0.03,
             "tolB": 0.05,
             "tolA": 0.05
           },
           {
-            "id": "ldn_36",
-            "name": "#36 (1.46 m³/h, R 7 m)",
+            "id": "iw_24",
+            "name": "#24 (2.92 m³/h, R 8.3 m @ 0.7 bar)",
             "curve": {
-              "k": 0.00015328559183151993,
-              "x": 0.5,
-              "ra": 3.5425315436347184,
-              "rb": 0.35
+              "k": 0.000305759,
+              "x": 0.501,
+              "ra": 8.35,
+              "rb": 0.0
             },
             "arc": 360.0,
-            "minH": 4.0,
-            "maxH": 15.0,
+            "minH": 7.0,
+            "maxH": 10.5,
+            "defH": 7.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "iw_26",
+            "name": "#26 (3.40 m³/h, R 8.7 m @ 0.7 bar)",
+            "curve": {
+              "k": 0.000355813,
+              "x": 0.501,
+              "ra": 8.7,
+              "rb": 0.0
+            },
+            "arc": 360.0,
+            "minH": 7.0,
+            "maxH": 10.5,
             "defH": 7.0,
             "cv": 0.03,
             "tolB": 0.05,
@@ -199,61 +364,83 @@
         "inletMm": 20.0,
         "riser": 0.0,
         "enabled": true,
-        "sup": "Senninger"
+        "sup": "Senninger",
+        "code": "i-Wob2 UP3"
       }
     ],
     "tapes": [],
     "valves": [
       {
-        "id": "sen_prlg_10",
-        "name": "Senninger PRLG pressure regulator 10 psi (7 m)",
+        "id": "sen_pmr_10",
+        "name": "Senninger PMR-MF pressure regulator 10 psi (7.0 m)",
         "kind": "prv",
         "sizeMm": 20.0,
         "loss": {
-          "k": 1549782.805173088,
+          "k": 2207930.0,
           "n": 2.0,
           "c": 0.0
         },
-        "minQ": 0.0,
-        "maxQ": 0.0008333333333333333,
+        "minQ": 0.00012618,
+        "maxQ": 0.0012618,
         "cost": 0.0,
-        "setting": 7.0,
+        "setting": 7.03,
         "enabled": true,
-        "sup": "Senninger"
+        "sup": "Senninger",
+        "code": "PMR10MF"
       },
       {
-        "id": "sen_prlg_15",
-        "name": "Senninger PRLG pressure regulator 15 psi (10.5 m)",
+        "id": "sen_pmr_15",
+        "name": "Senninger PMR-MF pressure regulator 15 psi (10.5 m)",
         "kind": "prv",
         "sizeMm": 20.0,
         "loss": {
-          "k": 1549782.805173088,
+          "k": 2207930.0,
           "n": 2.0,
           "c": 0.0
         },
-        "minQ": 0.0,
-        "maxQ": 0.0008333333333333333,
+        "minQ": 0.00012618,
+        "maxQ": 0.0012618,
         "cost": 0.0,
-        "setting": 10.5,
+        "setting": 10.55,
         "enabled": true,
-        "sup": "Senninger"
+        "sup": "Senninger",
+        "code": "PMR15MF"
       },
       {
         "id": "sen_pmr_20",
-        "name": "Senninger PMR-MF pressure regulator 20 psi (14 m)",
+        "name": "Senninger PMR-MF pressure regulator 20 psi (14.1 m)",
         "kind": "prv",
         "sizeMm": 20.0,
         "loss": {
-          "k": 1549782.805173088,
+          "k": 2207930.0,
           "n": 2.0,
           "c": 0.0
         },
-        "minQ": 0.0,
-        "maxQ": 0.001388888888888889,
+        "minQ": 0.00012618,
+        "maxQ": 0.0012618,
         "cost": 0.0,
-        "setting": 14.0,
+        "setting": 14.06,
         "enabled": true,
-        "sup": "Senninger"
+        "sup": "Senninger",
+        "code": "PMR20MF"
+      },
+      {
+        "id": "sen_pmr_25",
+        "name": "Senninger PMR-MF pressure regulator 25 psi (17.6 m)",
+        "kind": "prv",
+        "sizeMm": 20.0,
+        "loss": {
+          "k": 2207930.0,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00012618,
+        "maxQ": 0.0012618,
+        "cost": 0.0,
+        "setting": 17.58,
+        "enabled": true,
+        "sup": "Senninger",
+        "code": "PMR25MF"
       }
     ],
     "pumps": [],

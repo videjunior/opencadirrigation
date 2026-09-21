@@ -1,0 +1,241 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "bermad",
+  "brand": "Bermad",
+  "name": "Bermad",
+  "description": "IR-100 series (hYflow) hydraulic valves: IR-105 solenoid control and IR-120 pressure reducing, DN 40-150; head loss from Kv, maximum flow at 0.5 bar loss",
+  "source": "https://www.bermad.com",
+  "license": "CC0-1.0",
+  "updated": "2026-09-21",
+  "author": "OpenCADIrrigation",
+  "sources": [
+    "https://catalog.bermad.com/BERMAD-Assets/Irrigation/100-Series/App-Eng.-tools/Engineering/IR-100-Series-Valves-Engineering-English.pdf"
+  ],
+  "items": 12,
+  "catalog": {
+    "pipes": [],
+    "outlets": [],
+    "tapes": [],
+    "valves": [
+      {
+        "id": "brm_ir100_40",
+        "name": "Bermad IR-105 1½\" (DN 40, Kv 50) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 40.0,
+        "loss": {
+          "k": 52861.2,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.00982093,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-40"
+      },
+      {
+        "id": "brm_ir100_50",
+        "name": "Bermad IR-105 2\" (DN 50, Kv 50) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 52861.2,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.00982093,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-50"
+      },
+      {
+        "id": "brm_ir100_50l",
+        "name": "Bermad IR-105 2\" L (DN 50, Kv 100) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 13215.3,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0196419,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-50L"
+      },
+      {
+        "id": "brm_ir100_65",
+        "name": "Bermad IR-105 2½\" (DN 65, Kv 100) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 65.0,
+        "loss": {
+          "k": 13215.3,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0196419,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-65"
+      },
+      {
+        "id": "brm_ir100_80",
+        "name": "Bermad IR-105 3\" (DN 80, Kv 100) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 13215.3,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0196419,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-80"
+      },
+      {
+        "id": "brm_ir100_80l",
+        "name": "Bermad IR-105 3\" L (DN 80, Kv 200) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 3303.83,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0392837,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-80L"
+      },
+      {
+        "id": "brm_ir100_100",
+        "name": "Bermad IR-105 4\" (DN 100, Kv 200) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3303.83,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0392837,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-100"
+      },
+      {
+        "id": "brm_ir100_150",
+        "name": "Bermad IR-105 6\" (DN 150, Kv 400) solenoid control valve",
+        "kind": "control",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 825.957,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0785674,
+        "cost": 0.0,
+        "setting": 0.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-105-150"
+      },
+      {
+        "id": "brm_ir120_50",
+        "name": "Bermad IR-120 2\" (DN 50, Kv 50) pressure reducing valve",
+        "kind": "prv",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 52861.2,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.00982093,
+        "cost": 0.0,
+        "setting": 30.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-120-50"
+      },
+      {
+        "id": "brm_ir120_80",
+        "name": "Bermad IR-120 3\" (DN 80, Kv 100) pressure reducing valve",
+        "kind": "prv",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 13215.3,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0196419,
+        "cost": 0.0,
+        "setting": 30.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-120-80"
+      },
+      {
+        "id": "brm_ir120_100",
+        "name": "Bermad IR-120 4\" (DN 100, Kv 200) pressure reducing valve",
+        "kind": "prv",
+        "sizeMm": 100.0,
+        "loss": {
+          "k": 3303.83,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0392837,
+        "cost": 0.0,
+        "setting": 30.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-120-100"
+      },
+      {
+        "id": "brm_ir120_150",
+        "name": "Bermad IR-120 6\" (DN 150, Kv 400) pressure reducing valve",
+        "kind": "prv",
+        "sizeMm": 150.0,
+        "loss": {
+          "k": 825.957,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.0785674,
+        "cost": 0.0,
+        "setting": 30.0,
+        "enabled": true,
+        "sup": "Bermad",
+        "code": "IR-120-150"
+      }
+    ],
+    "pumps": [],
+    "fittings": []
+  }
+}

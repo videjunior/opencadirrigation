@@ -7,6 +7,7 @@ import '../hydraulics/friction.dart';
 import '../io/geo.dart';
 import '../units.dart';
 import 'catalog.dart';
+import 'currency.dart';
 import 'entities.dart';
 import 'geometry.dart';
 import 'terrain.dart';
@@ -47,6 +48,7 @@ class DesignParameters {
     this.hazenCOffset = 0.0,
     this.terrainDensify = 5.0,
     this.currency = 'R\$',
+    this.currencyCode = catalogPriceCurrency,
     this.sizingMethod = SizingMethod.lp,
     this.maxMainlineSizes = 3,
     this.emittersPerPlant = 1,
@@ -84,7 +86,13 @@ class DesignParameters {
   double hazenCScale;
   double hazenCOffset;
   double terrainDensify;
+
+  /// Symbol shown next to the prices ([currencyCode] tells the currency).
   String currency;
+
+  /// ISO 4217 code of every price of the project (catalogue, energy tariff,
+  /// pivot costs); empty when unknown (a custom symbol in an old file).
+  String currencyCode;
 
   /// Pipe sizing: linear programming ("LP design") or the greedy
   /// velocity + pressure-window method.
@@ -129,7 +137,7 @@ class DesignParameters {
     'vMain': maxMainlineVelocity, 'vLat': maxLateralVelocity, 'minorPct': minorLossPct, 'minor': applyMinorLosses,
     'tol': connectTolerance, 'interest': interestRate, 'term': termYears, 'kwh': powerCostPerKwh, 'eff': pumpEfficiency,
     'hours': hoursPerYear, 'zoneHours': zoneHoursPerYear, 'trade': tradeCapitalVsRunning, 'latSizes': maxLateralSizes,
-    'subSizes': maxSubmainSizes, 'cScale': hazenCScale, 'cOffset': hazenCOffset, 'densify': terrainDensify, 'currency': currency,
+    'subSizes': maxSubmainSizes, 'cScale': hazenCScale, 'cOffset': hazenCOffset, 'densify': terrainDensify, 'currency': currency, 'currencyCode': currencyCode,
     'sizing': sizingMethod.name, 'mainSizes': maxMainlineSizes, 'epp': emittersPerPlant, 'maxNodes': maxNodesPerLateral, 'flushV': flushingVelocity, 'flushH': flushingMinEndHeadM,
     'surge': checkSurge, 'closure': valveClosureTimeS, 'fittings': selectFittings, 'stick': pipeStickLengthM, 'zoneVar': maxZoneVariationPct, 'terrain': terrainMethod.name,
   };
@@ -159,6 +167,8 @@ class DesignParameters {
       hazenCOffset: d('cOffset', 0),
       terrainDensify: d('densify', 5),
       currency: j['currency'] as String? ?? 'R\$',
+      // files written before the code existed: tell it from the symbol
+      currencyCode: j['currencyCode'] as String? ?? currencyCodeForSymbol(j['currency'] as String? ?? 'R\$') ?? '',
       sizingMethod: SizingMethod.values.byName(j['sizing'] as String? ?? 'lp'),
       maxMainlineSizes: (j['mainSizes'] as num?)?.toInt() ?? 3,
       emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 1,
@@ -263,6 +273,28 @@ class Project {
 
   String newId([String prefix = 'e']) => '$prefix${_nextId++}';
   int get nextIdValue => _nextId;
+
+  /// Multiplies every price of the project by [factor]: catalogue costs, the
+  /// energy tariff and the pivot machine and tower costs.
+  void scalePrices(double factor) {
+    if (factor == 1) return;
+    scaleCatalogPrices(catalog, factor);
+    params.powerCostPerKwh *= factor;
+    for (final e in entities) {
+      if (e is PivotEntity) {
+        e.machineCost *= factor;
+        e.towerCost *= factor;
+      }
+    }
+  }
+
+  /// Switches the project to currency [code]; with [rate] (units of the new
+  /// currency per unit of the old one) the prices are converted too.
+  void setCurrency(String code, {double? rate, String? symbol}) {
+    if (rate != null) scalePrices(rate);
+    params.currencyCode = code;
+    params.currency = symbol ?? currencySymbol(code);
+  }
 
   /// Raises the id counter so ids created elsewhere (a design job running in
   /// a worker) never collide with future ids.

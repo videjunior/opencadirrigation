@@ -184,7 +184,7 @@ const adviceCodes = [
   'supply_flow_exceeded', 'supply_head_exceeded', 'pump_out_of_range', 'pump_suction_lift', 'zone_overlap', 'lp_infeasible',
   'fitting_missing', 'pivot_no_flow', 'pivot_no_end_pressure', 'pivot_app_rate', 'valve_missing',
   'set_velocity', 'set_hours', 'set_economy', 'set_tolerance', 'set_variation', 'set_temperature', 'no_pipes_for_usage', 'supply_limits',
-  'valve_not_in_flow', 'flow_empty', 'flow_duration', 'emitter_head_range', 'pump_speed',
+  'valve_not_in_flow', 'flow_empty', 'flow_duration', 'emitter_head_range', 'pump_speed', 'bom_unpriced',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -192,7 +192,7 @@ AdviceLevel _level(String code) => switch (code) {
   'pressure_rating_exceeded' || 'valve_pressure_deficit' || 'pivot_pressure_deficit' || 'supply_flow_exceeded' || 'supply_head_exceeded' ||
   'pump_out_of_range' || 'pump_suction_lift' || 'zone_no_emitters' || 'valve_missing' || 'pivot_no_flow' || 'pivot_no_end_pressure' ||
   'no_pipes_for_usage' || 'emitter_head_range' || 'valve_not_in_flow' => AdviceLevel.error,
-  'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' => AdviceLevel.info,
+  'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 

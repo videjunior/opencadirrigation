@@ -355,8 +355,8 @@ and devices**, **pumps** and **fittings**. All internal hydraulic values are in 
 
 The **default catalogue** ships 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel),
 9 emitter families (PC and turbulent drippers, micro-sprinklers, impact sprinkler, gun, garden rotor
-and spray, demand point), 6 tapes and driplines, 30 valves and devices (1" to 6"), 17 pumps
-(centrifugal 1 to 100 hp, submersible 3 to 25 hp) and about 330 fittings generated for every
+and spray, demand point), 6 tapes and driplines, 30 valves and devices (1" to 6"), 18 pumps
+(centrifugal 1 to 100 hp, submersible 3 to 30 hp) and about 330 fittings generated for every
 nominal diameter (couplers, 90° and 45° elbows, tees, crosses, end caps, adapters and reducers, plus lateral take-offs, tape ends and risers), with translated names and
 illustrative prices.
 
@@ -364,16 +364,47 @@ The editor (Project → Component catalogue) edits, duplicates and removes items
 JSON, CSV per group and **Excel** (export, fill in prices in the spreadsheet and import it back), sets
 the default catalogue for new projects and restores the original.
 
+### Prices and currency
+
+Every price of a project (catalogue, energy tariff, pivot machines) is in one currency, stored as an
+ISO 4217 code with the symbol shown in tables and reports (Project → Design parameters → Currency).
+A new project takes the currency of the machine's region when the system locale of the interface
+language names one (`pt-PT` → EUR, `en-IN` → INR, `de-CH` → CHF), else the currency of the most
+populous country of the language (pt BRL, en USD, es MXN, de/fr EUR, ja JPY, zh CNY, hi/mr/te/pa INR,
+bn BDT, ur PKR, ar EGP, ru RUB, tr TRY, id IDR, vi VND, ha NGN, sw TZS). The illustrative prices of the
+default catalogue and the default energy tariff (0.75 R$/kWh) are written in reais and converted with
+reference exchange rates (European Central Bank and exchangerate-api.com, 2026-09-21), so every
+language gets the same design; they only order the options for the economic sizing and should be
+replaced by a local price list. Choosing another currency asks whether to convert every price, with
+the reference rate offered and editable, and becomes the currency of new projects. The saved default
+catalogue remembers its currency and is converted for projects in another one. The gallery examples
+use the currency of their language (in the app, the user's currency).
+
+Items without a price (manufacturer packs come without them) are reported by the design assistant
+(`bom_unpriced`); the bill of materials leaves them out of the totals and the economic sizing prices a
+pipe without cost in proportion to its wall cross-section, calibrated on the priced pipes of the same
+material, so the diameters keep their order.
+
 ### Manufacturer catalogues (`.oci.cat`)
 
-Nine packs ship with the app: Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain
-and Senninger, with representative products and typical catalogue data (75 items). They live in
-[catalogs/](catalogs/) as JSON files, one per manufacturer, plus an `index.json`. Through the
-*Manufacturer catalogues…* dialog you add a pack to the project, import an `.oci.cat` file or load a
-pack or a whole index by URL, which lets any dealer or community keep its own repository. The project
-catalogue is exported in the same format. The complete format, with the fields of every group and the
-contribution rules, is in [catalogs/README.md](catalogs/README.md); `dart run tool/gen_catalogs.dart`
-validates the packs (unique ids, plausible curves) and rebuilds the index.
+Fourteen packs ship with the app (259 items): Hunter, Rain Bird, Toro, Netafim, Rivulis,
+NaanDanJain, Jain, Nelson and Senninger (sprinklers, micro-sprinklers, drippers, tapes and
+driplines, pivot sprinklers, big guns, valves and regulators), Irritec (driplines and drippers),
+Bermad (hydraulic valves), Schneider (centrifugal and 4" submersible pumps, 60 Hz), and Amanco Wavin
+and Multilit (PVC irrigation pipes, NBR 14312). The data come from the manufacturers' published
+tables: nozzle curves `q = k·H^x` and radii `R = a·H^b` fitted by least squares to the pressure,
+flow and radius rows (the radius anchored at the design pressure), emitter constants, exponents,
+inner diameters and barb losses (Kd) as printed, pressure ranges and wall classes, valve losses
+fitted to the loss tables (or taken from Kv), and pump curves from the selection tables (pump
+efficiency estimated from the rated power, since the tables omit it). Each pack lists its source
+documents (`sources`). Prices are left at zero; a pack that carries prices states their currency
+(`currency`) and is converted to the project currency when added. They live in [catalogs/](catalogs/)
+as JSON files, one per manufacturer, plus an `index.json`. Through the *Manufacturer catalogues…*
+dialog you add a pack to the project, import an `.oci.cat` file or load a pack or a whole index by
+URL, which lets any dealer or community keep its own repository. The project catalogue is exported
+in the same format. The complete format, with the fields of every group and the contribution rules,
+is in [catalogs/README.md](catalogs/README.md); `dart run tool/gen_catalogs.dart` validates the packs
+(unique ids, plausible curves) and rebuilds the index.
 
 ---
 
@@ -410,7 +441,7 @@ validates the packs (unique ids, plausible curves) and rebuilds the index.
 | Hydraulics | Friction formula: Hazen-Williams (default) or Darcy-Weisbach; water temperature 20 °C (viscosity computed); minor losses 5 % of the length, enabled; C scale and offset (ageing); connection tolerance 0.05 m; at most 100 lumped nodes per lateral |
 | Maximum velocities | 2.0 m/s in laterals, 1.5 m/s in zone pipes, 2.0 m/s in the mainline |
 | Sizing | LP method (default) or velocity + pressure window (greedy); diameters per lateral (1), per submain (3) and per mainline (3); maximum pressure variation in the zone (0 = derived from the emitter flow tolerance); emitters per plant (1) |
-| Economics | Interest 10 %, term 10 years, energy 0.75 per kWh, pump efficiency 65 %, 2000 h/year for the mainline and 500 h/year per zone, capital × energy trade-off enabled, currency R$ |
+| Economics | Interest 10 %, term 10 years, energy 0.75 per kWh, pump efficiency 65 %, 2000 h/year for the mainline and 500 h/year per zone, capital × energy trade-off enabled, currency of the region or language (see *Prices and currency*) |
 | Flushing and safety | Tape flushing velocity 0.3 m/s with 1 m minimum pressure at the open end; water hammer check enabled with valve closure time (0 = instantaneous) |
 | Materials | Automatic fitting selection enabled; 6 m pipe sticks to count couplers |
 | Terrain | Triangulation (default) or inverse-distance interpolation; contour densification 5 m |
@@ -670,6 +701,7 @@ lib/
       entities.dart           drawing and hydraulic entities (JSON, clone, transform, grips, distance)
       catalog.dart            component catalogue and default database
       catalog_packs.dart      manufacturer packs (in memory) and merging
+      currency.dart           currencies, default by language/region, reference exchange rates, price conversion
       project.dart            project: meta, parameters, catalogue, layers, entities, system flows
       terrain.dart, tin.dart  terrain model: Delaunay TIN, IDW, contour lines
       spatial_index.dart      STR R-tree for culling, selection and snap

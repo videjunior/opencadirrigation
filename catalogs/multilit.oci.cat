@@ -1,0 +1,331 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "multilit",
+  "brand": "Multilit",
+  "name": "Multilit",
+  "description": "PVC irrigation and drainage pipes PN 40 / PN 60 / PN 80 (NBR 14312), DN 35-150",
+  "source": "https://multilit.com.br",
+  "license": "CC0-1.0",
+  "updated": "2026-09-21",
+  "author": "OpenCADIrrigation",
+  "sources": [
+    "https://multilit.com.br/wp-content/uploads/2020/03/Tubo-Irriga%C3%A7%C3%A3o-PN-40-PN-60-e-PN-80.pdf"
+  ],
+  "items": 17,
+  "catalog": {
+    "pipes": [
+      {
+        "id": "mlt_irr_pn40_dn35",
+        "name": "Multilit Irrigação PVC DN 35 PN 40",
+        "nominalMm": 35.0,
+        "idMm": 35.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn40_dn50",
+        "name": "Multilit Irrigação PVC DN 50 PN 40",
+        "nominalMm": 50.0,
+        "idMm": 48.1,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 1.2,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn40_dn75",
+        "name": "Multilit Irrigação PVC DN 75 PN 40",
+        "nominalMm": 75.0,
+        "idMm": 72.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 1.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn40_dn100",
+        "name": "Multilit Irrigação PVC DN 100 PN 40",
+        "nominalMm": 100.0,
+        "idMm": 97.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 2.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn40_dn125",
+        "name": "Multilit Irrigação PVC DN 125 PN 40",
+        "nominalMm": 125.0,
+        "idMm": 120.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 2.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn40_dn150",
+        "name": "Multilit Irrigação PVC DN 150 PN 40",
+        "nominalMm": 150.0,
+        "idMm": 144.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 40.0,
+        "wallMm": 3.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn60_dn50",
+        "name": "Multilit Irrigação PVC DN 50 PN 60",
+        "nominalMm": 50.0,
+        "idMm": 47.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 1.6,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn60_dn75",
+        "name": "Multilit Irrigação PVC DN 75 PN 60",
+        "nominalMm": 75.0,
+        "idMm": 71.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 2.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn60_dn100",
+        "name": "Multilit Irrigação PVC DN 100 PN 60",
+        "nominalMm": 100.0,
+        "idMm": 96.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 2.8,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn60_dn125",
+        "name": "Multilit Irrigação PVC DN 125 PN 60",
+        "nominalMm": 125.0,
+        "idMm": 118.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 3.4,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn60_dn150",
+        "name": "Multilit Irrigação PVC DN 150 PN 60",
+        "nominalMm": 150.0,
+        "idMm": 142.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 60.0,
+        "wallMm": 4.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn80_dn35",
+        "name": "Multilit Irrigação PVC DN 35 PN 80",
+        "nominalMm": 35.0,
+        "idMm": 34.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.9,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn80_dn50",
+        "name": "Multilit Irrigação PVC DN 50 PN 80",
+        "nominalMm": 50.0,
+        "idMm": 46.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 1.9,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn80_dn75",
+        "name": "Multilit Irrigação PVC DN 75 PN 80",
+        "nominalMm": 75.0,
+        "idMm": 70.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 2.5,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn80_dn100",
+        "name": "Multilit Irrigação PVC DN 100 PN 80",
+        "nominalMm": 100.0,
+        "idMm": 94.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 3.6,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn80_dn125",
+        "name": "Multilit Irrigação PVC DN 125 PN 80",
+        "nominalMm": 125.0,
+        "idMm": 116.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 4.2,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      },
+      {
+        "id": "mlt_irr_pn80_dn150",
+        "name": "Multilit Irrigação PVC DN 150 PN 80",
+        "nominalMm": 150.0,
+        "idMm": 140.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 80.0,
+        "wallMm": 5.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "Multilit"
+      }
+    ],
+    "outlets": [],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}
