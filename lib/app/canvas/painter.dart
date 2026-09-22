@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../core/design/densogram.dart';
 import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
@@ -93,6 +94,8 @@ class CadPainter extends CustomPainter {
       final e = ents[i];
       if (e is AreaEntity && (layersVisible[e.layer] ?? true) && index.boundsAt(i).intersects(vis)) _area(canvas, e);
     }
+    // densogram (water applied by the sprinklers) over the areas
+    if (c.overlay == OverlayMode.densogram) _densogram(canvas);
     // pass 2: drawing / terrain / linear hydraulics
     for (final i in cand) {
       final e = ents[i];
@@ -132,6 +135,10 @@ class CadPainter extends CustomPainter {
           _angular(canvas, d, color);
         case RadialDimensionEntity d:
           _radial(canvas, d, color);
+        case OrdinateDimensionEntity d:
+          _ordinate(canvas, d, color);
+        case WireEntity w:
+          _wire(canvas, w, color, selected);
         case LeaderEntity l:
           _leader(canvas, l, color);
         case ContourEntity ct:
@@ -186,6 +193,8 @@ class CadPainter extends CustomPainter {
           _misc(canvas, m, color, selected);
         case JunctionEntity j:
           canvas.drawCircle(cam.toScreen(j.position), 3, Paint()..color = color);
+        case ControllerEntity k:
+          _controller(canvas, k, color, selected);
         default:
           break;
       }
@@ -257,6 +266,60 @@ class CadPainter extends CustomPainter {
       canvas.drawLine(Offset(o.dx, 0), Offset(o.dx, size.height), p);
     }
     _scaleBar(canvas, size);
+    if (c.overlay == OverlayMode.densogram) _densogramLegend(canvas, size);
+  }
+
+  /// The densogram grid, as a picture (one pixel per cell) or, while the
+  /// picture is being decoded, as cells.
+  void _densogram(Canvas canvas) {
+    final d = c.densogram;
+    if (d.isEmpty) return;
+    final b = d.bounds;
+    final tl = cam.toScreen(Pt(b.minX, b.maxY)), br = cam.toScreen(Pt(b.maxX, b.minY));
+    final img = c.densogramImage;
+    if (img != null) {
+      canvas.drawImageRect(img, Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble()), Rect.fromPoints(tl, br), Paint()..filterQuality = FilterQuality.none);
+      return;
+    }
+    final px = d.cell * cam.scale;
+    if (px < 1.5) return;
+    final paint = Paint();
+    for (var j = 0; j < d.ny; j++) {
+      for (var i = 0; i < d.nx; i++) {
+        final v = d.rate[j * d.nx + i];
+        if (v <= 0) continue;
+        paint.color = Color(densogramColor(v, d.meanAt(j * d.nx + i))).withValues(alpha: d.inside[j * d.nx + i] == 1 ? 0.72 : 0.3);
+        final o = cam.toScreen(Pt(d.origin.x + i * d.cell, d.origin.y + (j + 1) * d.cell));
+        canvas.drawRect(Rect.fromLTWH(o.dx, o.dy, px, px), paint);
+      }
+    }
+  }
+
+  /// Colour key of the densogram (rate relative to the mean of the area)
+  /// with its uniformity, at the top left (the zoom buttons are on the
+  /// right).
+  void _densogramLegend(Canvas canvas, Size size) {
+    final d = c.densogram;
+    final t = c.t;
+    const w = 150.0, h = 10.0;
+    const o = Offset(14, 14);
+    if (d.isEmpty) {
+      _label(canvas, o, t('dens.none'), size: 10, shift: Offset.zero, color: Colors.orangeAccent);
+      return;
+    }
+    final maxR = densogramStops.last.$1;
+    for (var k = 0; k < 60; k++) {
+      final r = maxR * k / 60;
+      canvas.drawRect(Rect.fromLTWH(o.dx + w * k / 60, o.dy + 16, w / 60 + 0.5, h), Paint()..color = Color(densogramColor(r, 1)));
+    }
+    canvas.drawRect(Rect.fromLTWH(o.dx, o.dy + 16, w, h), _stroke(Colors.white54, 0.6));
+    // with several areas the worst one tells how uniform the design is
+    final worst = d.areas.isEmpty ? d.stats : d.areas.map((a) => a.stats).reduce((a, b) => a.cu <= b.cu ? a : b);
+    _label(canvas, o, t('dens.legend', {'cu': fmt(worst.cu, 0), 'du': fmt(worst.du, 0)}), size: 10, shift: Offset.zero);
+    for (final r in const [0.0, 1.0, 2.0]) {
+      final x = o.dx + w * r / maxR;
+      _label(canvas, Offset(x, o.dy + 28), r == 0 ? '0' : '×${r.round()}', size: 9, bg: false, shift: Offset(r == 0 ? 0 : (r == maxR ? -12 : -6), 0), color: Colors.white70);
+    }
   }
 
   Paint _stroke(Color color, double w) => Paint()
@@ -627,6 +690,13 @@ class CadPainter extends CustomPainter {
         txt += '  ${fmt(u.flowFromSi(z.totalFlow), 1)} ${u.flowLabel} / ${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}';
       }
       _label(canvas, s, txt, size: 10, color: z != null && !z.withinWindow ? CadColors.warning : color, shift: Offset(r + 3, -7));
+      // wiring: station, station wire and solenoid voltage
+      final run = c.results?.electrical?.runOf(v.id);
+      if (run != null && cam.scale > 0.8) {
+        final wire = c.project.catalog.wire(run.stationWireId);
+        final w = wire == null ? '' : '  ${fmt(wire.sectionMm2, wire.sectionMm2 < 10 ? 1 : 0)} mm²';
+        _label(canvas, s, '${c.t('elec.stationTag', {'n': '${run.station}'})}$w  ${fmt(run.volts, 1)} V', size: 9, color: run.ok ? const Color(0xFFFFEE58) : CadColors.warning, shift: Offset(r + 3, 7));
+      }
     }
   }
 
@@ -702,11 +772,54 @@ class CadPainter extends CustomPainter {
 
   void _radial(Canvas canvas, RadialDimensionEntity d, Color color) {
     final p = _stroke(color, 1);
-    final a = cam.toScreen(d.center), b = cam.toScreen(d.point);
+    final a = cam.toScreen(d.start), b = cam.toScreen(d.point);
     canvas.drawLine(a, b, p);
     _arrowHead(canvas, a, b, color);
-    canvas.drawCircle(a, 2, Paint()..color = color);
-    _label(canvas, Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2), 'R ${fmt(c.units.lengthFromSi(d.radius))} ${c.units.lengthLabel}', size: 10, color: color, shift: const Offset(4, -14));
+    if (d.diameter) _arrowHead(canvas, b, a, color);
+    canvas.drawCircle(cam.toScreen(d.center), 2, Paint()..color = color);
+    final m = cam.toScreen(d.diameter ? d.center : Pt.lerp(d.center, d.point, 0.5));
+    _label(canvas, m, '${d.diameter ? 'Ø' : 'R'} ${fmt(c.units.lengthFromSi(d.value))} ${c.units.lengthLabel}', size: 10, color: color, shift: const Offset(4, -14));
+  }
+
+  void _ordinate(Canvas canvas, OrdinateDimensionEntity d, Color color) {
+    _poly(canvas, d.leader, _stroke(color, 1));
+    canvas.drawCircle(cam.toScreen(d.point), 2, Paint()..color = color);
+    final e = cam.toScreen(d.leaderEnd);
+    _label(canvas, e, '${d.xAxis ? 'X' : 'Y'} ${fmt(c.units.lengthFromSi(d.value))}', size: 10, color: color, shift: d.xAxis ? const Offset(-12, -16) : const Offset(4, -7));
+  }
+
+  /// Wire route: a dashed line (the routes of the valve wiring).
+  void _wire(Canvas canvas, WireEntity w, Color color, bool selected) {
+    if (w.points.length < 2) return;
+    final paint = _stroke(color, selected ? 2.2 : 1.2);
+    final dash = 6.0, gap = 4.0;
+    for (var i = 1; i < w.points.length; i++) {
+      final a = cam.toScreen(w.points[i - 1]), b = cam.toScreen(w.points[i]);
+      final len = (b - a).distance;
+      if (len < 1e-6) continue;
+      final u = (b - a) / len;
+      for (var t = 0.0; t < len; t += dash + gap) {
+        canvas.drawLine(a + u * t, a + u * math.min(len, t + dash), paint);
+      }
+    }
+  }
+
+  /// Controller: a box with a clock face; after the design, the stations
+  /// used over the stations it has.
+  void _controller(Canvas canvas, ControllerEntity k, Color color, bool selected) {
+    final s = cam.toScreen(k.position);
+    final r = math.max(8.0, 1.0 * cam.scale);
+    final rect = Rect.fromCenter(center: s, width: 2 * r, height: 2 * r);
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(r * 0.25)), Paint()..color = color.withValues(alpha: 0.9));
+    canvas.drawCircle(s, r * 0.55, _stroke(Colors.black, 1.2));
+    canvas.drawLine(s, s + Offset(0, -r * 0.4), _stroke(Colors.black, 1.2));
+    canvas.drawLine(s, s + Offset(r * 0.3, 0), _stroke(Colors.black, 1.2));
+    if (selected) canvas.drawRect(rect.inflate(4), _stroke(CadColors.selection, 1.5));
+    if (c.showLabels) {
+      final duty = c.results?.electrical?.controllers.where((d) => d.controllerId == k.id).firstOrNull;
+      final txt = duty == null ? k.name : '${k.name}  ${duty.used}/${k.stations}';
+      _label(canvas, s, txt, size: 10, color: duty != null && duty.overloaded ? CadColors.warning : color, shift: Offset(r + 3, -7));
+    }
   }
 
   void _leader(Canvas canvas, LeaderEntity l, Color color) {

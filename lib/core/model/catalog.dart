@@ -407,14 +407,58 @@ class FittingSpec {
   );
 }
 
+/// Electrical wire (one insulated conductor for direct burial) that carries
+/// the 24 V AC from the controller to the valve solenoids.
+class WireSpec {
+  WireSpec({required this.id, required this.name, required this.sectionMm2, required this.ohmPerKm, this.costPerM = 0, this.enabled = true, this.supplier = '', this.code = ''});
+  final String id;
+  String name;
+  String supplier;
+  String code;
+
+  /// Conductor cross-section (mm²).
+  double sectionMm2;
+
+  /// Resistance of one conductor (Ω per km at 20 °C).
+  double ohmPerKm;
+  double costPerM;
+  bool enabled;
+
+  /// Resistance of [lengthM] metres of this conductor (Ω).
+  double resistance(double lengthM) => ohmPerKm * lengthM / 1000;
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'name': name, 'mm2': sectionMm2, 'ohm': ohmPerKm, 'cost': costPerM, 'enabled': enabled, if (supplier.isNotEmpty) 'sup': supplier, if (code.isNotEmpty) 'code': code,
+  };
+  static WireSpec fromJson(Map<String, dynamic> j) => WireSpec(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    sectionMm2: (j['mm2'] as num?)?.toDouble() ?? 1.5,
+    // a copper conductor when the file gives only the section
+    ohmPerKm: (j['ohm'] as num?)?.toDouble() ?? copperOhmPerKm((j['mm2'] as num?)?.toDouble() ?? 1.5),
+    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+    enabled: j['enabled'] as bool? ?? true,
+    supplier: j['sup'] as String? ?? '',
+    code: j['code'] as String? ?? '',
+  );
+}
+
+/// Resistance (Ω/km at 20 °C) of a stranded copper conductor of [mm2]
+/// (resistivity 0.0178 Ω·mm²/m with the IEC 60228 stranding allowance).
+double copperOhmPerKm(double mm2) => mm2 > 0 ? 18.1 / mm2 : double.infinity;
+
+/// Cross-section (mm²) of American Wire Gauge [awg].
+double awgMm2(int awg) => math.pi / 4 * math.pow(0.127 * math.pow(92, (36 - awg) / 39), 2);
+
 class Catalog {
-  Catalog({List<PipeSpec>? pipes, List<OutletSpec>? outlets, List<TapeSpec>? tapes, List<ValveSpec>? valves, List<PumpSpec>? pumps, List<FittingSpec>? fittings})
+  Catalog({List<PipeSpec>? pipes, List<OutletSpec>? outlets, List<TapeSpec>? tapes, List<ValveSpec>? valves, List<PumpSpec>? pumps, List<FittingSpec>? fittings, List<WireSpec>? wires})
       : pipes = pipes ?? [],
         outlets = outlets ?? [],
         tapes = tapes ?? [],
         valves = valves ?? [],
         pumps = pumps ?? [],
-        fittings = fittings ?? [];
+        fittings = fittings ?? [],
+        wires = wires ?? [];
 
   final List<PipeSpec> pipes;
   final List<OutletSpec> outlets;
@@ -422,6 +466,12 @@ class Catalog {
   final List<ValveSpec> valves;
   final List<PumpSpec> pumps;
   final List<FittingSpec> fittings;
+  final List<WireSpec> wires;
+
+  WireSpec? wire(String? id) => id == null ? null : wires.cast<WireSpec?>().firstWhere((w) => w!.id == id, orElse: () => null);
+
+  /// Enabled wires, thinnest (highest resistance) first.
+  List<WireSpec> get enabledWires => wires.where((w) => w.enabled && w.ohmPerKm > 0).toList()..sort((a, b) => b.ohmPerKm.compareTo(a.ohmPerKm));
 
   FittingSpec? fitting(String? id) => id == null ? null : fittings.cast<FittingSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
 
@@ -453,7 +503,7 @@ class Catalog {
 
   /// Unique id for a new catalog item with the given prefix.
   String newId(String prefix) {
-    final used = {...pipes.map((e) => e.id), ...outlets.map((e) => e.id), ...tapes.map((e) => e.id), ...valves.map((e) => e.id), ...pumps.map((e) => e.id), ...fittings.map((e) => e.id)};
+    final used = {...pipes.map((e) => e.id), ...outlets.map((e) => e.id), ...tapes.map((e) => e.id), ...valves.map((e) => e.id), ...pumps.map((e) => e.id), ...fittings.map((e) => e.id), ...wires.map((e) => e.id)};
     var i = 1;
     while (used.contains('$prefix$i')) {
       i++;
@@ -484,10 +534,11 @@ class Catalog {
     go(valves, other.valves, (p) => p.id);
     go(pumps, other.pumps, (p) => p.id);
     go(fittings, other.fittings, (p) => p.id);
+    go(wires, other.wires, (p) => p.id);
     return n;
   }
 
-  int get itemCount => pipes.length + outlets.length + tapes.length + valves.length + pumps.length + fittings.length;
+  int get itemCount => pipes.length + outlets.length + tapes.length + valves.length + pumps.length + fittings.length + wires.length;
 
   Catalog copy() => Catalog.fromJson(toJson());
 
@@ -507,6 +558,7 @@ class Catalog {
     'valves': valves.map((p) => p.toJson()).toList(),
     'pumps': pumps.map((p) => p.toJson()).toList(),
     'fittings': fittings.map((p) => p.toJson()).toList(),
+    if (wires.isNotEmpty) 'wires': wires.map((p) => p.toJson()).toList(),
   };
   static Catalog fromJson(Map<String, dynamic> j) => Catalog(
     pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSpec.fromJson(p as Map<String, dynamic>)).toList(),
@@ -515,6 +567,7 @@ class Catalog {
     valves: ((j['valves'] as List?) ?? []).map((p) => ValveSpec.fromJson(p as Map<String, dynamic>)).toList(),
     pumps: ((j['pumps'] as List?) ?? []).map((p) => PumpSpec.fromJson(p as Map<String, dynamic>)).toList(),
     fittings: ((j['fittings'] as List?) ?? []).map((p) => FittingSpec.fromJson(p as Map<String, dynamic>)).toList(),
+    wires: ((j['wires'] as List?) ?? []).map((p) => WireSpec.fromJson(p as Map<String, dynamic>)).toList(),
   );
 
   /// Price per metre used by the economic sizing: the catalogue price, or
@@ -704,7 +757,29 @@ class Catalog {
       PumpSpec(id: 'pump_s30', name: n('Bomba submersa 30 cv (100 m³/h @ 60 m)', 'Submersible pump 30 hp (100 m³/h @ 60 m)', 'Bomba sumergible 30 CV (100 m³/h @ 60 m)'), points: [(0, 82), (50 * m3sPerM3h, 74), (100 * m3sPerM3h, 60), (140 * m3sPerM3h, 40)], efficiency: 0.72, maxFlow: 140 * m3sPerM3h, cost: 19000, powerKw: 22, submersible: true),
     ];
 
-    return Catalog(pipes: pipes, outlets: outlets, tapes: tapes, valves: valves, pumps: pumps, fittings: defaultFittings(pipes, lang: lang));
+    return Catalog(pipes: pipes, outlets: outlets, tapes: tapes, valves: valves, pumps: pumps, fittings: defaultFittings(pipes, lang: lang), wires: defaultWires(lang: lang));
+  }
+
+  /// Single copper conductors for direct burial: metric sections (enabled)
+  /// and American gauges (disabled; enable them in the catalogue where AWG
+  /// is the norm), with illustrative prices in [catalogPriceCurrency].
+  static List<WireSpec> defaultWires({String lang = 'en', String? currency}) {
+    String n(String pt, String en, String es) => switch (lang) { 'pt' => pt, 'es' => es, 'en' => en, _ => packCatalogName(lang, en) ?? en };
+    final name = n('Fio de cobre', 'Copper wire', 'Cable de cobre');
+    String mm(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
+    final out = <WireSpec>[
+      for (final (mm2, cost) in const [(1.0, 1.3), (1.5, 1.7), (2.5, 2.6), (4.0, 4.0), (6.0, 5.9), (10.0, 9.6)])
+        WireSpec(id: 'w${mm(mm2)}', name: '$name ${mm(mm2)} mm²', sectionMm2: mm2, ohmPerKm: copperOhmPerKm(mm2), costPerM: cost),
+      for (final (awg, cost) in const [(18, 1.2), (16, 1.6), (14, 2.4), (12, 3.7), (10, 5.7), (8, 8.9)])
+        WireSpec(id: 'awg$awg', name: '$name AWG $awg', sectionMm2: double.parse(awgMm2(awg).toStringAsFixed(2)), ohmPerKm: double.parse(copperOhmPerKm(awgMm2(awg)).toStringAsFixed(2)), costPerM: cost, enabled: false),
+    ];
+    final rate = currency == null ? null : exchangeRate(catalogPriceCurrency, currency);
+    if (rate != null && rate != 1) {
+      for (final w in out) {
+        w.costPerM *= rate;
+      }
+    }
+    return out;
   }
 
   /// Generic fittings for every nominal pipe size (couplers, elbows, tees,

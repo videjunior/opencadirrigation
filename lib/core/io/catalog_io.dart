@@ -12,7 +12,7 @@ import '../model/catalog.dart';
 import '../units.dart';
 import 'xlsx.dart';
 
-enum CatalogGroup { pipes, outlets, tapes, valves, pumps, fittings }
+enum CatalogGroup { pipes, outlets, tapes, valves, pumps, fittings, wires }
 
 class CatalogImportResult {
   CatalogImportResult(this.catalog, this.count, {this.group});
@@ -159,7 +159,7 @@ class CatalogIo {
       final cat = Catalog.fromJson(j['catalog'] as Map<String, dynamic>);
       return CatalogPackFile(CatalogPackMeta.fromJson(j, fallbackId: fallbackId), cat);
     }
-    if (j.containsKey('pipes') || j.containsKey('fittings') || j.containsKey('outlets') || j.containsKey('tapes') || j.containsKey('valves') || j.containsKey('pumps')) {
+    if (j.containsKey('pipes') || j.containsKey('fittings') || j.containsKey('outlets') || j.containsKey('tapes') || j.containsKey('valves') || j.containsKey('pumps') || j.containsKey('wires')) {
       return CatalogPackFile(CatalogPackMeta(id: fallbackId, brand: fallbackId), Catalog.fromJson(j));
     }
     throw const FormatException('catalog_json_unknown');
@@ -187,7 +187,7 @@ class CatalogIo {
     if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
       final j = jsonDecode(trimmed);
       if (j is Map<String, dynamic>) {
-        if (j.containsKey('pipes') || j.containsKey('fittings') || j.containsKey('outlets')) {
+        if (j.containsKey('pipes') || j.containsKey('fittings') || j.containsKey('outlets') || j.containsKey('wires')) {
           final c = Catalog.fromJson(j);
           return CatalogImportResult(c, c.itemCount);
         }
@@ -222,6 +222,8 @@ class CatalogIo {
         c.pumps.add(PumpSpec.fromJson(e));
       case CatalogGroup.fittings:
         c.fittings.add(FittingSpec.fromJson(e));
+      case CatalogGroup.wires:
+        c.wires.add(WireSpec.fromJson(e));
     }
   }
 
@@ -330,6 +332,12 @@ class CatalogIo {
           }
           if (pts.isEmpty) continue;
           c.pumps.add(PumpSpec(id: id, name: name, points: pts, efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65), maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2, cost: cost, powerKw: num(r, col(['kw', 'power'])), submersible: isSubmersible(str(r, col(['type', 'tipo', 'install']))), supplier: sup, code: code));
+        case CatalogGroup.wires:
+          var mm2 = num(r, col(['mm2', 'section', 'secao', 'seccion', 'area']));
+          final awg = num(r, col(['awg', 'gauge']));
+          if (mm2 <= 0 && awg > 0) mm2 = awgMm2(awg.round());
+          if (mm2 <= 0) continue;
+          c.wires.add(WireSpec(id: id, name: name, sectionMm2: mm2, ohmPerKm: num(r, col(['ohmkm', 'ohm', 'resistance', 'resistencia']), copperOhmPerKm(mm2)), costPerM: cost, supplier: sup, code: code));
         case CatalogGroup.outlets:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'sprinkler').toLowerCase();
           final kind = OutletKind.values.firstWhere((k) => k.name.toLowerCase() == kindS, orElse: () => kindS.contains('micro') ? OutletKind.microSprinkler : (kindS.contains('drip') || kindS.contains('gotej') ? OutletKind.dripper : (kindS.contains('gun') || kindS.contains('canh') ? OutletKind.gun : OutletKind.sprinkler)));
@@ -370,6 +378,7 @@ class CatalogIo {
   static CatalogGroup? _detectGroup(List<String> header) {
     bool has(String s) => header.contains(s);
     if (has('points') || has('curve') || has('curva') || has('eff')) return CatalogGroup.pumps;
+    if (has('mm2') || has('awg') || has('ohmkm')) return CatalogGroup.wires;
     if (has('spacing') || has('espacamento')) return CatalogGroup.tapes;
     if (has('nozzle') || has('bocal') || has('radiusm') || has('radius') || has('arc')) return CatalogGroup.outlets;
     if (has('size2mm') || has('dn2') || (has('kind') && has('sizemm') && !has('k'))) return CatalogGroup.fittings;
@@ -428,6 +437,7 @@ class CatalogIo {
       merged.valves.addAll(part.catalog.valves);
       merged.pumps.addAll(part.catalog.pumps);
       merged.fittings.addAll(part.catalog.fittings);
+      merged.wires.addAll(part.catalog.wires);
       n += part.count;
       last = part.group;
     }
@@ -464,6 +474,11 @@ class CatalogIo {
         b.writeln('id;name;points;eff;kw;type;cost;supplier;code');
         for (final p in c.pumps) {
           b.writeln([p.id, q(p.name), q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')), p.efficiency, p.powerKw, p.submersible ? 'submersible' : 'surface', p.cost, q(p.supplier), q(p.code)].join(';'));
+        }
+      case CatalogGroup.wires:
+        b.writeln('id;name;mm2;ohmKm;cost;supplier;code');
+        for (final w in c.wires) {
+          b.writeln([w.id, q(w.name), w.sectionMm2, w.ohmPerKm, w.costPerM, q(w.supplier), q(w.code)].join(';'));
         }
       case CatalogGroup.outlets:
         b.writeln('id;name;kind;nozzle;qLph;headM;x;radiusM;minH;maxH;cv;arc;inletMm;cost;supplier;code');

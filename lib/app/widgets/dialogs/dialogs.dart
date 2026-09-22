@@ -1,9 +1,9 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
 import '../../../core/design/agronomy.dart';
 import '../../../core/design/block_generator.dart';
+import '../../../core/design/management.dart';
 import '../../../core/hydraulics/emitter.dart';
 import '../../../core/hydraulics/friction.dart';
 import '../../../core/hydraulics/lateral.dart';
@@ -36,6 +36,31 @@ Future<void> _show(BuildContext context, ProjectController c, String title, Widg
   },
 );
 
+/// A dialog that edits the project settings in place: however it is closed
+/// (OK, Esc, a tap outside), what was changed becomes one undo step and
+/// marks the project as modified (see [ProjectController.commitSettingsEdit]).
+Future<void> _showSettings(BuildContext context, ProjectController c, String label, String title, Widget body, {double width = 520, List<Widget> extraActions = const []}) {
+  final edit = c.beginSettingsEdit(label);
+  return _show(context, c, title, body, width: width, actions: [
+    ...extraActions,
+    FilledButton(onPressed: () => _closeCommitting(context), child: Text(c.t('ok'))),
+  ]).then((_) => _commitAfterFocus(c, edit));
+}
+
+/// Takes the focus from the field being typed in (it commits its value on
+/// focus loss) and closes the dialog.
+void _closeCommitting(BuildContext context) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  Navigator.pop(context);
+}
+
+/// Commits after the focus change has been applied (focus listeners run in
+/// a microtask), so the last value typed is part of the edit.
+Future<void> _commitAfterFocus(ProjectController c, SettingsEdit edit) async {
+  await Future<void>.delayed(Duration.zero);
+  c.commitSettingsEdit(edit);
+}
+
 Widget _row(List<Widget> children) => Row(children: [for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: children[i])]]);
 
 // ---------------------------------------------------------------- project details
@@ -43,7 +68,7 @@ Widget _row(List<Widget> children) => Row(children: [for (var i = 0; i < childre
 Future<void> showProjectDetailsDialog(BuildContext context, ProjectController c) {
   final t = c.t;
   final m = c.project.meta;
-  return _show(context, c, t('file.details'), StatefulBuilder(builder: (ctx, setState) {
+  return _showSettings(context, c, 'hist.details', t('file.details'), StatefulBuilder(builder: (ctx, setState) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
       TextFieldRow(label: t('dlg.project'), value: m.name, onChanged: (v) => m.name = v),
       TextFieldRow(label: t('dlg.client'), value: m.client, onChanged: (v) => m.client = v),
@@ -51,11 +76,7 @@ Future<void> showProjectDetailsDialog(BuildContext context, ProjectController c)
       TextFieldRow(label: t('dlg.designer'), value: m.designer, onChanged: (v) => m.designer = v),
       TextFieldRow(label: t('dlg.notes'), value: m.notes, onChanged: (v) => m.notes = v, maxLines: 3),
     ]);
-  }), actions: [FilledButton(onPressed: () {
-    c.dirty = true;
-    c.refresh();
-    Navigator.pop(context);
-  }, child: Text(t('ok')))]);
+  }));
 }
 
 // ---------------------------------------------------------------- design parameters
@@ -63,8 +84,7 @@ Future<void> showProjectDetailsDialog(BuildContext context, ProjectController c)
 Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
   final t = c.t;
   final p = c.project.params;
-  final before = jsonEncode(p.toJson());
-  return _show(context, c, t('design.params'), StatefulBuilder(builder: (ctx, setState) {
+  return _showSettings(context, c, 'hist.params', t('design.params'), width: 560, StatefulBuilder(builder: (ctx, setState) {
     return ScrollBody(
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         SectionTitle(t('dlg.hydraulics')),
@@ -112,6 +132,15 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
         SectionTitle(t('dlg.bom')),
         SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dlg.fittings'), style: const TextStyle(fontSize: 12)), value: p.selectFittings, onChanged: (v) => setState(() => p.selectFittings = v)),
         NumField(label: t('dlg.stick'), value: p.pipeStickLengthM, onChanged: (v) => p.pipeStickLengthM = v),
+        SectionTitle(t('dlg.electrical')),
+        _row([
+          NumField(key: const Key('param_inrush'), label: t('dlg.inrushA'), value: p.solenoidInrushA, decimals: 3, onChanged: (v) => p.solenoidInrushA = v <= 0 ? p.solenoidInrushA : v),
+          NumField(label: t('dlg.holdingA'), value: p.solenoidHoldingA, decimals: 3, onChanged: (v) => p.solenoidHoldingA = v < 0 ? p.solenoidHoldingA : v),
+        ]),
+        _row([
+          NumField(label: t('dlg.minVolts'), value: p.solenoidMinVolts, onChanged: (v) => p.solenoidMinVolts = v <= 0 ? p.solenoidMinVolts : v),
+          NumField(label: t('dlg.wireSlack'), value: p.wireSlackPct, onChanged: (v) => p.wireSlackPct = v < 0 ? 0 : v),
+        ]),
         SectionTitle(t('dlg.economics')),
         SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dlg.tradeCapital'), style: const TextStyle(fontSize: 12)), value: p.tradeCapitalVsRunning, onChanged: (v) => setState(() => p.tradeCapitalVsRunning = v)),
         _row([
@@ -154,12 +183,7 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
         Text(t('dlg.currencyNote', {'d': exchangeRatesDate}), style: const TextStyle(fontSize: 10.5, color: Colors.white38)),
       ]),
     );
-  }), actions: [FilledButton(onPressed: () {
-    if (jsonEncode(p.toJson()) != before) c.results = null;
-    c.dirty = true;
-    c.refresh();
-    Navigator.pop(context);
-  }, child: Text(t('ok')))], width: 560);
+  }));
 }
 
 // ---------------------------------------------------------------- units
@@ -180,8 +204,9 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
       SpecDropdown<DiameterUnit>(label: t('dlg.diameter'), value: u.diameter.name, items: DiameterUnit.values, labelOf: (x) => x.name, idOf: (x) => x.name, onChanged: (v) => setState(() => u = u.copyWith(diameter: DiameterUnit.values.byName(v!)))),
     ]);
   }), actions: [FilledButton(onPressed: () {
+    final edit = c.beginSettingsEdit('hist.units');
     c.project.params.units = u;
-    c.refresh();
+    c.commitSettingsEdit(edit);
     Navigator.pop(context);
   }, child: Text(t('ok')))], width: 360);
 }
@@ -190,16 +215,23 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
 
 Future<void> showManagementDialog(BuildContext context, ProjectController c) {
   final t = c.t;
-  final valves = c.project.entities.whereType<ControlValveEntity>().toList();
-  final flows = c.project.systemFlows;
-  final before = jsonEncode(flows.map((f) => f.toJson()).toList());
+  final u = c.units;
+  final project = c.project;
+  // zone valves and pivots: every demand a system flow can open
+  final demands = demandIds(project);
+  final flows = project.systemFlows;
   var tab = 0;
   var days = 7;
   var dayStart = 6.0;
   var keepStart = false;
-  return _show(context, c, t('design.management'), StatefulBuilder(builder: (ctx, setState) {
+  var showAuto = false;
+  final auto = AutoFlowOptions(firstStartHour: flows.isEmpty ? 6 : flows.first.startHour);
+  Map<String, double>? demandQ;
+  AutoFlowPlan? lastPlan;
+  String newId() => 'sf${DateTime.now().microsecondsSinceEpoch}';
+  return _showSettings(context, c, 'hist.flows', t('design.management'), width: 620, StatefulBuilder(builder: (ctx, setState) {
     if (tab == 1) {
-      final prog = buildControllerProgram(c.project, c.results, days: days, dayStartHour: dayStart, keepStartHours: keepStart);
+      final prog = buildControllerProgram(project, c.results, days: days, dayStartHour: dayStart, keepStartHours: keepStart);
       String hhmm(double h) {
         final hh = h.floor() % 24, mm = ((h - h.floor()) * 60).round();
         return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
@@ -226,7 +258,7 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                 if (h != null && h > 0) f.durationHours = double.parse(h.toStringAsFixed(2));
               }
             }), child: Text(t('mgmt.apply'))),
-            OutlinedButton(onPressed: prog.entries.isEmpty ? null : () => saveTextFile('${c.project.meta.name}_schedule.csv', controllerProgramCsv(prog, t: c.t.call), mime: 'text/csv'), child: Text(t('mgmt.export'))),
+            OutlinedButton(onPressed: prog.entries.isEmpty ? null : () => saveTextFile('${project.meta.name}_schedule.csv', controllerProgramCsv(prog, t: c.t.call), mime: 'text/csv'), child: Text(t('mgmt.export'))),
           ]),
           const SizedBox(height: 4),
           Expanded(
@@ -245,32 +277,76 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
         ]),
       );
     }
+    String q(double v) => '${fmt(u.flowFromSi(v), 1)} ${u.flowLabel}';
+    Widget autoPanel() {
+      final cap = auto.maxFlow > 0 ? auto.maxFlow : suppliesDesignFlow(project);
+      return Container(
+        key: const Key('mgmt_auto_panel'),
+        margin: const EdgeInsets.only(top: 6),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(border: Border.all(color: Colors.white24), borderRadius: BorderRadius.circular(4)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(t('mgmt.autoHint'), style: const TextStyle(fontSize: 11, color: Colors.white60)),
+          const SizedBox(height: 6),
+          _row([
+            NumField(key: const Key('mgmt_auto_q'), label: t('mgmt.autoMaxFlow', {'u': u.flowLabel}), value: u.flowFromSi(auto.maxFlow), onChanged: (v) => setState(() => auto.maxFlow = v <= 0 ? 0 : u.flowToSi(v))),
+            NumField(key: const Key('mgmt_auto_n'), label: t('mgmt.autoMaxValves'), value: auto.maxValves.toDouble(), decimals: 0, onChanged: (v) => setState(() => auto.maxValves = v.round().clamp(0, 999))),
+          ]),
+          _row([
+            NumField(label: t('dlg.startHour'), value: auto.firstStartHour, onChanged: (v) => setState(() => auto.firstStartHour = v.clamp(0, 23.99))),
+            NumField(label: t('dlg.durationHours'), value: auto.durationHours, onChanged: (v) => setState(() => auto.durationHours = v <= 0 ? 1 : v)),
+          ]),
+          Text(cap > 0 ? t('mgmt.autoCap', {'q': q(cap)}) : t('mgmt.autoNoCap'), style: TextStyle(fontSize: 11, color: cap > 0 ? Colors.white70 : Colors.orange)),
+          const SizedBox(height: 4),
+          FilledButton(key: const Key('mgmt_auto_run'), onPressed: demands.isEmpty ? null : () => setState(() {
+            final plan = autoSystemFlows(project, auto, results: c.results, label: t.call);
+            demandQ = plan.demands;
+            lastPlan = plan;
+            flows
+              ..clear()
+              ..addAll(plan.flows);
+          }), child: Text(t('mgmt.autoRun'))),
+          if (lastPlan != null) ...[
+            Text(t('mgmt.autoResult', {'n': '${lastPlan!.flows.length}', 'q': q(peakFlowDemand(lastPlan!.flows, lastPlan!.demands))}), style: const TextStyle(fontSize: 11.5)),
+            if (lastPlan!.oversized.isNotEmpty)
+              Text(t('mgmt.autoOversized', {'z': lastPlan!.oversized.map((id) => demandName(project, id)).join(', ')}), style: const TextStyle(fontSize: 11, color: Colors.orange)),
+          ],
+        ]),
+      );
+    }
+
     return SizedBox(
       height: 460,
       child: Column(children: [
         SegmentedButton<int>(segments: [ButtonSegment(value: 0, label: Text(t('mgmt.flows'))), ButtonSegment(value: 1, label: Text(t('mgmt.schedule')))], selected: {tab}, onSelectionChanged: (v) => setState(() => tab = v.first)),
         const SizedBox(height: 6),
         Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
-          FilledButton.tonal(onPressed: () => setState(() {
+          FilledButton.tonal(onPressed: demands.isEmpty ? null : () => setState(() {
             flows
               ..clear()
-              ..add(SystemFlow(id: 'sf${DateTime.now().millisecondsSinceEpoch}', name: t('name.allZones'), valveIds: valves.map((v) => v.id).toSet()));
+              ..add(SystemFlow(id: newId(), name: t('name.allZones'), valveIds: demands.toSet(), startHour: auto.firstStartHour));
           }), child: Text(t('dlg.allTogether'))),
-          FilledButton.tonal(onPressed: () => setState(() {
+          FilledButton.tonal(onPressed: demands.isEmpty ? null : () => setState(() {
             flows.clear();
-            var i = 1;
-            for (final v in valves) {
-              flows.add(SystemFlow(id: 'sf${i}_${DateTime.now().millisecondsSinceEpoch}', name: '${t('name.flow')} ${i++} — ${v.zoneName}', valveIds: {v.id}, startHour: (i - 2).toDouble()));
+            final base = newId();
+            for (var i = 0; i < demands.length; i++) {
+              flows.add(SystemFlow(id: '${base}_${i + 1}', name: '${t('name.flow')} ${i + 1} — ${demandName(project, demands[i])}', valveIds: {demands[i]}, startHour: (auto.firstStartHour + i) % 24));
             }
           }), child: Text(t('dlg.oneAtATime'))),
-          FilledButton.tonal(onPressed: () => setState(() => flows.add(SystemFlow(id: 'sf${DateTime.now().millisecondsSinceEpoch}', name: '${t('name.flow')} ${flows.length + 1}'))), child: Text(t('dlg.addFlow'))),
+          FilledButton.tonal(key: const Key('mgmt_auto'), onPressed: () => setState(() {
+            showAuto = !showAuto;
+            demandQ ??= nominalDemands(project, results: c.results);
+          }), child: Text(t('mgmt.auto'))),
+          FilledButton.tonal(onPressed: () => setState(() => flows.add(SystemFlow(id: newId(), name: '${t('name.flow')} ${flows.length + 1}'))), child: Text(t('dlg.addFlow'))),
           TextButton(onPressed: () => setState(flows.clear), child: Text(t('clear'))),
         ]),
+        if (showAuto) autoPanel(),
         const SizedBox(height: 6),
         Expanded(
           child: ListView(children: [
             for (final f in flows)
               Card(
+                key: ObjectKey(f),
                 margin: const EdgeInsets.symmetric(vertical: 3),
                 child: Padding(
                   padding: const EdgeInsets.all(8),
@@ -284,9 +360,10 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                       IconButton(icon: const Icon(Icons.delete_outline, size: 16), onPressed: () => setState(() => flows.remove(f))),
                     ]),
                     Wrap(spacing: 4, children: [
-                      for (final v in valves)
-                        FilterChip(label: Text(v.zoneName, style: const TextStyle(fontSize: 11)), selected: f.valveIds.contains(v.id), onSelected: (s) => setState(() => s ? f.valveIds.add(v.id) : f.valveIds.remove(v.id))),
+                      for (final id in demands)
+                        FilterChip(label: Text(demandName(project, id), style: const TextStyle(fontSize: 11)), selected: f.valveIds.contains(id), onSelected: (s) => setState(() => s ? f.valveIds.add(id) : f.valveIds.remove(id))),
                     ]),
+                    if (demandQ != null) Text(t('mgmt.demand', {'q': q(f.valveIds.fold(0.0, (s, id) => s + (demandQ![id] ?? 0)))}), style: const TextStyle(fontSize: 11, color: Colors.white60)),
                   ]),
                 ),
               ),
@@ -295,12 +372,7 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
         ),
       ]),
     );
-  }), actions: [FilledButton(onPressed: () {
-    if (jsonEncode(flows.map((f) => f.toJson()).toList()) != before) c.results = null;
-    c.dirty = true;
-    c.refresh();
-    Navigator.pop(context);
-  }, child: Text(t('ok')))], width: 620);
+  }));
 }
 
 // ---------------------------------------------------------------- block

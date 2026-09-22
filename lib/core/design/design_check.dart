@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
+import 'electrical.dart';
 import 'network_builder.dart';
 
 enum CheckSeverity { error, warning, info }
@@ -210,6 +211,15 @@ DesignCheckReport runDesignCheck(Project project) {
     if (a.points.length < 3) continue;
     final any = ents.any((e) => (e is OutletEntity && pointInPolygon(e.position, a.points)) || ((e is SpraylineEntity || e is TapeEntity) && (e as PolyEntity).points.any((p) => pointInPolygon(p, a.points))) || (e is PivotEntity && pointInPolygon(e.center, a.points)));
     if (!any) issues.add(CheckIssue('area_no_emitters', CheckSeverity.info, entityIds: [a.id], value: a.name));
+  }
+  // ---- valve wiring (routes, stations, solenoid voltage), when drawn
+  // as in the design: without system flows every zone runs at once
+  final wiring = designElectrical(project, flows: project.systemFlows.isEmpty ? [{for (final v in valves) v.id}] : [for (final f in project.systemFlows) f.valveIds.toSet()]);
+  for (final w in wiring?.warnings ?? const <String>[]) {
+    final idx = w.indexOf(':');
+    final code = idx > 0 ? w.substring(0, idx) : w;
+    final ids = idx > 0 ? [w.substring(idx + 1)] : const <String>[];
+    issues.add(CheckIssue(code, code == 'elec_stations' || code == 'elec_voltage' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};

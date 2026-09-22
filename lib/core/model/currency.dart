@@ -247,6 +247,9 @@ void scaleCatalogPrices(Catalog c, double factor) {
   for (final f in c.fittings) {
     f.cost *= factor;
   }
+  for (final w in c.wires) {
+    w.costPerM *= factor;
+  }
 }
 
 /// Whether any item of [c] has a price.
@@ -256,7 +259,8 @@ bool catalogHasPrices(Catalog c) =>
     c.tapes.any((t) => t.costPerM > 0) ||
     c.valves.any((v) => v.cost > 0) ||
     c.pumps.any((p) => p.cost > 0) ||
-    c.fittings.any((f) => f.cost > 0);
+    c.fittings.any((f) => f.cost > 0) ||
+    c.wires.any((w) => w.costPerM > 0);
 
 /// An exchange rate with four significant digits, in plain notation
 /// (`0.1695`, `30.61`, `3452`, `267526`).

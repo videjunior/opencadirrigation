@@ -77,6 +77,30 @@ void main() {
     expect(b.project.entities, isEmpty);
   });
 
+  test('a pivot carries its span pipe, sprinkler and regulator; wiring pastes as is', () async {
+    final w = ws();
+    final a = w.current;
+    a.addEntities([
+      PivotEntity(id: a.project.newId(), center: Pt.zero, pipeSpecId: 'pvc50', sprinklerSpecId: 'impact34', regulatorSpecId: 'prv50'),
+      ControllerEntity(id: a.project.newId(), position: const Pt(5, 5), stations: 8),
+      WireEntity(id: a.project.newId(), points: [const Pt(5, 5), const Pt(9, 5)]),
+    ]);
+    a.selectAll();
+    expect(await w.copy(), 3);
+    final c = w.clipboard!.catalog;
+    expect(c['pipes']!.map((j) => j['id']), ['pvc50']);
+    expect(c['outlets']!.map((j) => j['id']), ['impact34']);
+    expect(c['valves']!.map((j) => j['id']), ['prv50']);
+    final b = w.addTab();
+    b.project.catalog.outlets.removeWhere((o) => o.id == 'impact34');
+    b.project.catalog.valves.removeWhere((v) => v.id == 'prv50');
+    expect(await w.paste(), 3);
+    expect(b.project.catalog.outlet('impact34'), isNotNull);
+    expect(b.project.catalog.valve('prv50'), isNotNull);
+    expect(b.project.entities.whereType<ControllerEntity>().single.stations, 8);
+    expect(b.project.entities.whereType<WireEntity>().single.points.length, 2);
+  });
+
   test('paste into the source project offsets the copies; cut removes them', () async {
     final w = ws();
     final a = w.current;

@@ -28,6 +28,7 @@ const reportTabKeys = [
   'reports.schedule',
   'reports.pivots',
   'reports.pivotSpans',
+  'reports.electrical',
 ];
 
 /// Report tab indices used in code.
@@ -130,8 +131,10 @@ class ReportsPanel extends StatelessWidget {
         return _fromTable('schedule', emptyKey: 'msg.noAreas');
       case 13:
         return _fromTable('pivots');
-      default:
+      case 14:
         return _fromTable('pivotSpans');
+      default:
+        return _fromTable('electrical', emptyKey: 'msg.noElectrical');
     }
   }
 
@@ -313,35 +316,7 @@ class ReportsPanel extends StatelessWidget {
 }
 
 /// Tool key matching an entity type (used for labels).
-String toolNameOfEntity(Entity e) => switch (e) {
-  LineEntity _ => 'line',
-  PolylineEntity _ => 'polyline',
-  CircleEntity _ => 'circle',
-  ArcEntity _ => 'arc',
-  SplineEntity _ => 'spline',
-  HatchEntity _ => 'hatch',
-  SymbolEntity _ => 'symbol',
-  TextEntity _ => 'text',
-  DimensionEntity _ => 'dimension',
-  AngularDimensionEntity _ => 'dimAngular',
-  RadialDimensionEntity _ => 'dimRadial',
-  LeaderEntity _ => 'leader',
-  ImageEntity _ => 'image',
-  ContourEntity _ => 'contour',
-  SpotHeightEntity _ => 'spot',
-  PipeEntity p => p.scope == HydraulicScope.zone ? 'zonePipe' : 'mainPipe',
-  SpraylineEntity _ => 'sprayline',
-  TapeEntity _ => 'tape',
-  OutletEntity _ => 'outlet',
-  ControlValveEntity _ => 'valve',
-  WaterSupplyEntity _ => 'supply',
-  PumpEntity _ => 'pump',
-  MiscHydraulicEntity _ => 'misc',
-  JunctionEntity _ => 'junction',
-  PivotEntity _ => 'pivot',
-  AreaEntity _ => 'area',
-  _ => 'select',
-};
+String toolNameOfEntity(Entity e) => ProjectController.toolKeyOf(e);
 
 /// Virtualised report table: only the visible rows are built (the pipes
 /// table of a real project has thousands of rows, which made a [DataTable]
@@ -414,7 +389,7 @@ class _ReportTableViewState extends State<ReportTableView> {
     super.dispose();
   }
 
-  static String _text(Object v) => v is double ? fmt(v) : '$v';
+  static String _text(Object v) => reportCellText(v);
 
   /// Formats every cell once and sizes each column to its widest text (the
   /// longest string is the widest one in a monospace font).
@@ -507,3 +482,9 @@ class _ReportTableViewState extends State<ReportTableView> {
     );
   }
 }
+
+/// Text of a report cell: counts as they are, other numbers with two
+/// decimals. The int test comes first: on the web every number is a
+/// JavaScript double, so `1 is double` holds there and a count would read
+/// "1.00".
+String reportCellText(Object v) => v is int ? '$v' : (v is double ? fmt(v) : '$v');

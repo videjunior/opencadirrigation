@@ -483,3 +483,48 @@ List<List<Pt>> clipPolylineToPolygon(List<Pt> pts, List<Pt> poly, {double minLen
   flush();
   return out;
 }
+
+/// Points along a NURBS curve of [degree] with [control] points, [knots]
+/// (length = control + degree + 1; a clamped uniform vector is used when it
+/// does not fit) and optional [weights] (rational curve), evaluated with de
+/// Boor's algorithm at [samples] parameters evenly spread over the domain.
+List<Pt> nurbsCurve(int degree, List<Pt> control, {List<double> knots = const [], List<double> weights = const [], int samples = 0}) {
+  final n = control.length;
+  if (n == 0) return const [];
+  final p = degree.clamp(1, math.max(1, n - 1)).toInt();
+  if (n <= p) return List.of(control);
+  var u = knots;
+  if (u.length != n + p + 1) {
+    // clamped uniform knot vector
+    u = [for (var i = 0; i <= p; i++) 0.0, for (var i = 1; i < n - p; i++) i / (n - p), for (var i = 0; i <= p; i++) 1.0];
+  }
+  final w = weights.length == n ? weights : List<double>.filled(n, 1);
+  final lo = u[p], hi = u[n];
+  if (!(hi > lo)) return List.of(control);
+  final count = samples > 1 ? samples : math.max(16, n * 8);
+  final out = <Pt>[];
+  for (var s = 0; s < count; s++) {
+    final t = lo + (hi - lo) * s / (count - 1);
+    // knot span k with u[k] <= t < u[k+1] (the last span for t = hi)
+    var k = p;
+    while (k < n - 1 && t >= u[k + 1]) {
+      k++;
+    }
+    // homogeneous de Boor
+    final dx = List<double>.generate(p + 1, (j) => control[j + k - p].x * w[j + k - p]);
+    final dy = List<double>.generate(p + 1, (j) => control[j + k - p].y * w[j + k - p]);
+    final dw = List<double>.generate(p + 1, (j) => w[j + k - p]);
+    for (var r = 1; r <= p; r++) {
+      for (var j = p; j >= r; j--) {
+        final den = u[j + 1 + k - r] - u[j + k - p];
+        final a = den.abs() < 1e-15 ? 0.0 : (t - u[j + k - p]) / den;
+        dx[j] = (1 - a) * dx[j - 1] + a * dx[j];
+        dy[j] = (1 - a) * dy[j - 1] + a * dy[j];
+        dw[j] = (1 - a) * dw[j - 1] + a * dw[j];
+      }
+    }
+    final ww = dw[p].abs() < 1e-15 ? 1.0 : dw[p];
+    out.add(Pt(dx[p] / ww, dy[p] / ww));
+  }
+  return out;
+}

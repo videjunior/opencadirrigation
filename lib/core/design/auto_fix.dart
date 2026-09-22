@@ -12,6 +12,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import 'advisor.dart';
+import 'electrical.dart';
 import 'network_builder.dart';
 import 'pump_selection.dart';
 import 'results.dart';
@@ -241,6 +242,34 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
         }
       }
       return n == 0 ? const FixResult.failed('fixfail.noOption') : FixResult.done('fixed.enablePipes', {'n': '$n'});
+
+    case FixKind.enableWires:
+      var n = 0;
+      for (final w in p.catalog.wires) {
+        if (!w.enabled) {
+          w.enabled = true;
+          n++;
+        }
+      }
+      if (p.catalog.wires.isEmpty) {
+        p.catalog.wires.addAll(Catalog.defaultWires(lang: lang, currency: p.params.currencyCode));
+        n = p.catalog.wires.length;
+      }
+      return n == 0 ? const FixResult.failed('fixfail.noOption') : FixResult.done('fixed.enableWires', {'n': '$n'});
+
+    case FixKind.controllerStations:
+      final ctrls = [for (final id in a.entityIds) if (p.byId(id) is ControllerEntity) p.byId(id) as ControllerEntity];
+      final r = results?.electrical;
+      var n = 0;
+      for (final k in ctrls) {
+        final used = r?.controllers.where((d) => d.controllerId == k.id).firstOrNull?.used ?? 0;
+        final want = standardStations(used);
+        if (want > k.stations) {
+          k.stations = want;
+          n++;
+        }
+      }
+      return n == 0 ? const FixResult.failed('fixfail.noChange') : FixResult.done('fixed.controllerStations', {'n': '${ctrls.isEmpty ? 0 : ctrls.first.stations}'});
 
     case FixKind.fixSupplyLimits:
       var n = 0;

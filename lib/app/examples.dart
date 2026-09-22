@@ -260,6 +260,11 @@ Project buildGardenExample(Tr t, String lang) {
   for (final y in [4.0, 11.0, 33.0]) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-2, y), Pt(-1, y)], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: a 6-station controller on the side wall, routes along the valves
+  const ctrl = Pt(-1, 14);
+  p.entities.add(ControllerEntity(id: p.newId(), position: ctrl, name: t('name.controller'), stations: 6, cost: 650));
+  p.entities.add(WireEntity(id: p.newId(), points: [ctrl, v3.position, v1.position]));
+  p.entities.add(WireEntity(id: p.newId(), points: [ctrl, v2.position]));
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': z1}), valveIds: {v1.id}, startHour: 5, durationHours: 0.5),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': z2}), valveIds: {v2.id}, startHour: 5.5, durationHours: 0.75),

@@ -97,19 +97,22 @@ O modelo do OpenCADIrrigation (`entities.dart`) separa três famílias de itens:
   hídrico. Geradores criam blocos de laterais com submain e válvula e grades de aspersores.
 - **Itens de linha principal**: fonte de água, tubo principal, bomba, junção, acessório, válvula de
   controle e pivô central ou linear (uma demanda com pressão requerida própria).
+- **Itens elétricos**: controlador (estações, tensão de saída, custo) e rota de fio (o caminho dos
+  condutores de estação e comum do controlador pelas válvulas).
 - **Itens de desenho**: ponto, linha, polilinha, retângulo, círculo, arco, spline, hachura, cotas
-  (linear, angular, radial e chamada), símbolos, texto, imagem, curva de nível e cota de ponto.
+  (linear, angular, radial ou de diâmetro, por ordenada e chamada), símbolos, texto, imagem, curva
+  de nível e cota de ponto.
 
 Regras estruturais adotadas: uma válvula de controle sempre separa zona de linha principal; itens
 de zona não se ligam a itens de linha principal sem uma válvula entre eles; vértices coincidentes
 (dentro da tolerância de conexão) formam um nó; um item pontual sobre um tubo divide o tubo; não há
-limite para o número de conexões numa junção, porque o solver de rede aceita qualquer grau. Cotas
-por diâmetro e por ordenada não foram implementadas.
+limite para o número de conexões numa junção, porque o solver de rede aceita qualquer grau. As rotas
+de fio formam um grafo próprio e nunca tocam a rede hidráulica.
 
 ### 2.3 Banco de dados de componentes
 
-Seis grupos (tubos, emissores com bocais, fitas, válvulas e acessórios, bombas, conexões), todos em
-SI, com os campos que a hidráulica exige:
+Sete grupos (tubos, emissores com bocais, fitas, válvulas e acessórios, bombas, conexões, fios),
+todos em SI, com os campos que a hidráulica e a fiação exigem:
 
 - **Tubo**: diâmetro nominal, diâmetro interno real (o que entra no cálculo), C de Hazen-Williams,
   rugosidade, classe de pressão, uso (lateral, zona, linha principal), custo por metro.
@@ -123,6 +126,8 @@ SI, com os campos que a hidráulica exige:
   regulador.
 - **Bomba**: pontos (Q, H) ajustados a uma parábola, eficiência, potência.
 - **Conexão**: tipo, diâmetros, custo.
+- **Fio**: seção do condutor (mm², bitolas AWG convertidas), resistência por quilômetro (cobre
+  ≈ 18,1 Ω·mm²/km quando não informada), custo por metro.
 
 Os catálogos de fabricantes são arquivos JSON abertos (`catalogs/`), com dados típicos de catálogo
 público e preços a preencher localmente.
@@ -149,7 +154,10 @@ Do que a prática de projeto exige, o motor implementa:
 - **Fonte de água** com pressão calculada (poço com nível negativo, reservatório com altura
   positiva) ou fixa (rede pública, com vazão e pressão de projeto e máximas).
 - **Gerenciamento** por turnos, com duty de cada fonte por turno e tempos de operação a partir dos
-  requisitos hídricos das áreas.
+  requisitos hídricos das áreas; agrupamento automático das zonas e pivôs em turnos.
+- **Fiação das válvulas**: bitolas dos condutores de estação e comum pela queda de tensão nos
+  solenoides, estações do controlador e válvulas simultâneas.
+- **Densograma**: a água aplicada pelos aspersores como desenhados, com a uniformidade por área.
 - **Elevação** em cada nó do grafo a partir do modelo do terreno.
 
 ### 2.5 Relatórios e ferramentas gráficas
@@ -159,8 +167,9 @@ da válvula, perda na válvula), uniformidade (CU, DU do quartil inferior, EU de
 tabelas de tubos e emissores (cotas, pressões, vazões, velocidades, diâmetros), linha principal e
 duty das fontes, requisitos hídricos, agronomia, programa do controlador, lavagem, golpe de aríete,
 pivôs e vãos, lista de materiais com custos anualizados; gráficos de linha piezométrica e de perfil,
-sobreposições de velocidade, pressão, diâmetros e mínimos e máximos, envelope de posição do submain
-e vista 3D do terreno.
+sobreposições de velocidade, pressão, diâmetros e mínimos e máximos, envelope de posição do submain,
+densograma (a água aplicada pelos aspersores como desenhados) e vista 3D do terreno; fiação das
+válvulas (estações, bitolas, tensão nos solenoides).
 
 ### 2.6 Formatos
 
@@ -347,6 +356,31 @@ Módulo `uniformity.dart`.
   (q_max − q_min)/q_max, desejável ≤ 10 %, aceitável ≤ 20 %.
 - Regra de laterais de aspersão: variação de pressão ≤ 20 % da pressão de operação, que dá ≈ 10 % de
   vazão para x = 0,5.
+
+### 9.1 Densograma
+
+O CU de sobreposição da seção 7 idealiza o arranjo como uma malha infinita. O densograma (módulo
+`densogram.dart`) soma o setor molhado de cada aspersor e microaspersor **como desenhado**: posição,
+arco e orientação (anti-horário a partir da orientação, como na tela) e, depois de um cálculo, a
+pressão e a vazão de cada emissor (assim o raio R = a·H^b e a vazão seguem a pressão real ao longo
+das laterais). Um aspersor espalha sua vazão q pelo setor de ângulo θ com um perfil radial f(r/R)
+normalizado para que o volume integre de volta a q:
+
+- triangular f = 1 − r/R (aspersores de impacto de um bocal): i(r) = q·(1 − r/R) / (θR²/6);
+- elíptico f = √(1 − (r/R)²) (rotores de vários bocais, microaspersores): i(r) = q·f / (θR²/3);
+- uniforme f = 1 (sprays, precipitação equalizada): i = q / (θR²/2).
+
+As intensidades são somadas numa grade (um quarto do menor raio por padrão, engrossada para no
+máximo 60 000 células) e avaliadas dentro de cada área irrigada que contém aspersores (ou nas
+células molhadas quando não há nenhuma): intensidade média, mínima e máxima, CU, DU do quartil
+inferior, **coeficiente de programação** SC = média / média dos 5 % de células mais secas (quanto
+mais tempo o sistema precisa funcionar para os pontos mais secos receberem a lâmina média; 1 é
+perfeito, até cerca de 1,3 é bom) e a fração de células abaixo da metade da média. Cada área é
+julgada — e pintada — contra a sua própria média: um gramado de sprays (≈ 40 mm/h) ao lado de um de
+rotores (≈ 13 mm/h) são ambos uniformes mesmo com intensidades diferentes, o que uma estatística
+única misturada esconderia. Os testes conferem que cada perfil integra à vazão, que meio círculo
+molha a sua metade com o dobro da intensidade, que o espaçamento cabeça a cabeça dá CU alto e o
+espaçamento largo, bem mais baixo.
 
 ---
 
@@ -542,7 +576,13 @@ principal. A variação admissível da zona vem da tolerância de vazão do emis
 ## 15. Linha principal, turnos e fontes
 
 - **Turnos** (system flows): conjuntos de válvulas que operam juntas, com hora de início e duração.
-  Sem turnos definidos, cada válvula (e cada pivô) é um turno.
+  Sem turnos definidos, supõe-se que todas as válvulas e pivôs operam juntos (o pior caso para a
+  linha principal e a fonte).
+- **Turnos automáticos** (`management.dart`): a demanda de cada zona (a vazão de projeto, ou a vazão
+  nominal dos emissores na pressão nominal) e de cada pivô (a vazão da máquina) é empacotada por
+  first-fit decrescente no menor número de turnos cujo total fica dentro da vazão máxima (por padrão
+  a vazão de projeto das fontes) e, opcionalmente, de um número máximo de zonas; uma zona maior que
+  o limite ganha um turno só dela e é reportada. Os turnos funcionam um depois do outro.
 - **Demandas**: para cada válvula, a vazão da zona e a pressão requerida a montante; para cada pivô,
   a vazão e a pressão de entrada da máquina.
 - **LP da linha principal**: as mesmas variáveis de fração por diâmetro, com uma restrição de pressão
@@ -576,8 +616,35 @@ principal. A variação admissível da zona vem da tolerância de vazão do emis
   tampões nas pontas, derivações de lateral, finais de fita e hastes de emissores; cada uma procura o
   item do catálogo do tipo e diâmetro (ou o nome genérico quando não há).
 - **Lista de materiais** (`buildBom`): tubos por diâmetro e classe, emissores, fitas, válvulas,
-  acessórios, bombas selecionadas, pivôs (máquina, torres, aspersores, reguladores) e conexões, com
+  acessórios, bombas selecionadas, pivôs (máquina, torres, aspersores, reguladores), conexões e os
+  itens elétricos (fios por bitola, controladores, dois conectores à prova d'água por válvula), com
   custos unitários, total, custo anualizado (CRF) e energia anual.
+
+### 16.1 Fiação das válvulas
+
+Módulo `electrical.dart`, fiação convencional de solenoides de 24 V CA: cada válvula tem um condutor
+de estação vindo do controlador e todas compartilham um condutor comum (retorno) lançado pelas
+mesmas rotas. As rotas de fio formam um grafo (vértices dentro da tolerância de conexão se fundem; um
+controlador ou uma válvula sobre um vértice ou sobre uma rota vira nó, dividindo a rota ali); o
+caminho mínimo (Dijkstra) a partir de cada controlador alcança as válvulas, cada válvula vai para o
+controlador mais próximo e as estações são numeradas pela distância.
+
+Enquanto a válvula *v* abre ela puxa a corrente de partida I_in; as outras válvulas do seu turno já
+estão ligadas e puxam a corrente de retenção I_h. A tensão no solenoide é
+
+  U_v = U_c − I_in · r_s · L_v − Σ_{e ∈ caminho(v)} I_e · r_c · ℓ_e,
+
+onde U_c é a saída do controlador, r_s e r_c a resistência por metro dos condutores de estação e
+comum, L_v o comprimento da rota até *v* e, para cada trecho *e* do comum no caminho, ℓ_e o seu
+comprimento e I_e a corrente das válvulas do turno além dele (I_in para *v*, I_h para as outras). Os
+comprimentos incluem a folga (10 % por padrão). O projeto escolhe, para cada controlador, a bitola do
+comum e a bitola de estação de cada válvula com o **menor custo** tal que U_v ≥ U_min (20 V por
+padrão) para toda válvula em todo turno a que pertence: para cada comum candidato, cada válvula
+pega o fio de estação mais barato que mantém a sua tensão (as tensões não dependem dos fios de
+estação das outras válvulas), e vence a combinação viável mais barata. Quando nenhum fio atende uma
+válvula, fica o mais grosso e a válvula é reportada. Exemplo (conferido nos testes): rotas de 50,
+150 e 200 m com cobre de 1 mm² (18,1 Ω/km), três válvulas de um turno, 0,37 A de partida e 0,22 A
+de retenção, 10 % de folga: a válvula mais distante recebe 24 − 1,47 − 2,13 ≈ 20,4 V.
 
 ---
 
@@ -684,11 +751,23 @@ Formato de texto do AutoCAD organizado em pares "código de grupo / valor". O le
 percorre as seções BLOCKS e ENTITIES e lê LINE (10/20 e 11/21), LWPOLYLINE (vértices 10/20 em ordem,
 bulge 42, flag 70 de fechamento, elevação 38), POLYLINE com VERTEX (elevação no código 30 ou nos Z
 iguais dos vértices; vértices de controle de spline ignorados), CIRCLE, ARC (50/51 em graus),
-ELLIPSE e SPLINE (aproximados por polilinhas: a elipse pelos eixos 11/21 e razão 40, a spline pelos
-pontos de ajuste 11/21 ou pelo polígono de controle), TEXT, ATTRIB e MTEXT (blocos 3 seguidos do 1,
-códigos de formatação removidos, ponto de alinhamento 11/21 quando 72/73 pedem) e POINT, com a
-camada (8) e a cor (62); a tabela LAYER e a variável $INSUNITS definem camadas e a escala. Um bulge
-b descreve um arco de ângulo 4·atan(b) entre dois vértices, amostrado a cada 15°.
+ELLIPSE (polilinha pelos eixos 11/21, pela razão 40 e pelos parâmetros 41/42), SPLINE, HATCH, SOLID
+e TRACE, TEXT, ATTRIB e MTEXT (blocos 3 seguidos do 1, códigos de formatação removidos, ponto de
+alinhamento 11/21 quando 72/73 pedem) e POINT, com a camada (8) e a cor (62); a tabela LAYER e a
+variável $INSUNITS definem camadas e a escala. Um bulge b descreve um arco de ângulo 4·atan(b) entre
+dois vértices, amostrado a cada 15°.
+
+- **SPLINE**: com pontos de ajuste (11/21) vira uma spline editável por eles; senão a própria curva
+  NURBS é avaliada pelo algoritmo de de Boor a partir do grau (71), dos nós (40), dos pontos de
+  controle (10/20) e dos pesos (41, curvas racionais), com vetor de nós uniforme fixado nas pontas
+  quando o arquivo não traz nenhum, e importada como polilinha.
+- **HATCH**: os contornos (91/92) — contornos de polilinha com bulges ou contornos de arestas feitos
+  de linhas, arcos circulares (arcos horários espelhados), arcos elípticos e splines — viram uma
+  hachura cujo primeiro contorno é o limite e os demais são ilhas (mantidas como polilinhas
+  fechadas); o flag de sólido (70) e a primeira linha do padrão (ângulo 53, espaçamento pelos
+  deslocamentos 45/46, senão 3,175 mm vezes a escala do padrão) dão o preenchimento.
+- **SOLID e TRACE**: triângulos e quadriláteros preenchidos, cujos cantos vêm na ordem 1-2-4-3,
+  viram hachuras sólidas.
 
 Blocos: cada BLOCK guarda o ponto-base (10/20) e suas entidades; INSERT (ponto 10/20, escalas 41/42,
 rotação 50, matriz 70/71 com espaçamentos 44/45) e o bloco anônimo de cada DIMENSION (código 2, já
@@ -734,6 +813,13 @@ reversa que serviu de base para o leitor (`dwg.dart`, 1,6 mil linhas) e para o e
   são deslocamentos relativos ao handle do objeto que os contém; em R2007+ as entradas de tabela
   não têm os bits "xref referenciado" e "xref dependente" (só o índice BS); e em R13/R14 o tamanho
   em bits dos objetos vem depois do handle e dos dados estendidos, não antes.
+- **Curvas e preenchimentos**: ELLIPSE (35), SOLID (31), TRACE (32), SPLINE (36) e HATCH (78) são
+  decodificados com o mesmo layout que o LibreDWG usa (cenário da spline, grau, nós, pontos de
+  controle com pesos opcionais, pontos de ajuste; a partir do R2013 os flags da spline; os campos de
+  gradiente da hachura a partir do R2004, os contornos com seus tipos de aresta e, a partir do
+  R2010, os dados de ajuste das arestas spline) e entregues às mesmas conversões dos equivalentes
+  DXF. Os dez desenhos de exemplo de R13 a R2018 das fixtures de teste dão exatamente as entidades
+  que o LibreDWG lista para eles.
 
 ### 20.3 KML e KMZ
 
@@ -873,7 +959,7 @@ verificação do projeto).
 
 ## 23. Validação
 
-A suíte tem 350 testes (`flutter test`). Os que validam a hidráulica contra referências:
+A suíte tem 764 testes (`flutter test`). Os que validam a hidráulica contra referências:
 
 | Teste | Referência |
 |---|---|
@@ -893,6 +979,9 @@ A suíte tem 350 testes (`flutter test`). Os que validam a hidráulica contra re
 | UTM inverse round trip; georeference from a lat/lon origin | Karney 2011 |
 | CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Arquivos reais e ferramenta independente |
 | LP design meets the pressure window and costs no more than greedy | Otimalidade relativa do LP |
+| every profile spreads the whole flow over the wetted circle; head-to-head spacing is uniform, wide spacing is not | Balanço de volume; Keller & Bliesner, capítulo 5 |
+| solenoid voltage by hand (valve B opening, A and C holding); long runs get thicker wires and the choice is the cheapest one | Lei de Ohm ao longo dos condutores de estação e comum |
+| example_\<version\>: splines, hatches, solids and the ellipse like LibreDWG reads them | Entidades listadas pelo LibreDWG |
 
 Os exemplos da galeria funcionam como testes de integração: os quinze projetos, nos 20 idiomas,
 constroem, passam na verificação, dimensionam com todas as zonas dentro da janela e sem déficit
@@ -911,14 +1000,17 @@ Do ponto de vista da pesquisa, o que a literatura e a prática de projeto sugere
    da estimativa de Joukowsky.
 3. **Sprayline "unconnected"** automática e valve-in-head com zona própria por aspersor como
    entidade dedicada.
-4. **Splines e hachuras no DWG**: SPLINE e HATCH na importação; mais entidades e versões mais
-   novas na exportação.
+4. **Exportação DWG**: mais entidades (splines, hachuras, cotas) e versões mais novas que a R2000.
 5. **Fertirrigação e qualidade da água**: cálculo de injeção e tempos de deslocamento da água na
    rede.
-6. **Sistema elétrico**: fios, controladores e solenoides na lista de materiais.
-7. **Colaboração**: compartilhamento por link e edição simultânea, mantendo o princípio de não
+6. **Sistema elétrico, segunda etapa**: sistemas de dois fios com decodificadores, roteamento
+   automático dos fios ao longo dos tubos e diagramas de ligação de campo; hoje as rotas são
+   desenhadas pelo usuário e cada válvula tem o seu condutor de estação.
+7. **Densograma a partir de dados medidos**: curvas de distribuição radial por bocal a partir de
+   ensaios com coletores em vez dos três perfis idealizados, e a distorção pelo vento.
+8. **Colaboração**: compartilhamento por link e edição simultânea, mantendo o princípio de não
    depender de servidor próprio (por exemplo, arquivos em serviços do usuário).
-8. **Testes de navegador** para o comportamento em tempo de execução (idioma do sistema, PWA).
+9. **Testes de navegador** para o comportamento em tempo de execução (idioma do sistema, PWA).
 
 ---
 

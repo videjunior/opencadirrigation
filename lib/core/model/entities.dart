@@ -37,6 +37,9 @@ enum EntityType {
   junction,
   area,
   pivot,
+  controller,
+  wire,
+  ordinateDimension,
 }
 
 /// Default layer names.
@@ -64,10 +67,12 @@ class Layers {
   static const hatches = 'HATCHES';
   static const symbols = 'SYMBOLS';
   static const pivots = 'PIVOTS';
+  static const controllers = 'CONTROLLERS';
+  static const wires = 'WIRES';
 
   static const all = [
     images, drawing, hatches, symbols, text, dimensions, contours, spotHeights, dem, zonePipes, mainlinePipes, spraylines, tapes,
-    outlets, wettedRadii, controlValves, waterSupply, pumps, misc, junctions, pivots, areas, labels,
+    outlets, wettedRadii, controlValves, waterSupply, pumps, misc, junctions, pivots, wires, controllers, areas, labels,
   ];
 
   static const defaultColors = <String, int>{
@@ -94,6 +99,8 @@ class Layers {
     hatches: 0xFF78909C,
     symbols: 0xFFB0BEC5,
     pivots: 0xFF4DB6AC,
+    controllers: 0xFFFF7043,
+    wires: 0xFFFFEE58,
   };
 }
 
@@ -154,7 +161,7 @@ sealed class Entity {
       case EntityType.angularDimension:
         return AngularDimensionEntity(id: id, layer: layer, name: name, vertex: Pt.fromList(j['v'] as List), a: Pt.fromList(j['a'] as List), b: Pt.fromList(j['b'] as List), radius: d('r', 2));
       case EntityType.radialDimension:
-        return RadialDimensionEntity(id: id, layer: layer, name: name, center: Pt.fromList(j['c'] as List), point: pos());
+        return RadialDimensionEntity(id: id, layer: layer, name: name, center: Pt.fromList(j['c'] as List), point: pos(), diameter: j['dia'] as bool? ?? false);
       case EntityType.leader:
         return LeaderEntity(id: id, layer: layer, name: name, points: pts(), text: j['text'] as String? ?? '', height: d('h', 1));
       case EntityType.image:
@@ -195,6 +202,12 @@ sealed class Entity {
           machineLossM: d('hm', 2), maxAppRateMmH: d('imax'), sectorDeg: d('sector', 360), machineCost: d('cost'), zoneName: j['zone'] as String? ?? '',
           sprinklerSpacingM: d('ssp', 2.5), sprinklerSpecId: j['sspec'] as String?, regulatorSpecId: j['rspec'] as String?, towerCost: d('tcost'),
         );
+      case EntityType.controller:
+        return ControllerEntity(id: id, layer: layer, name: name, position: pos(), stations: (j['st'] as num?)?.toInt() ?? 12, outputVolts: d('v', 24), cost: d('cost'), maxSimultaneous: (j['sim'] as num?)?.toInt() ?? 0);
+      case EntityType.wire:
+        return WireEntity(id: id, layer: layer, name: name, points: pts());
+      case EntityType.ordinateDimension:
+        return OrdinateDimensionEntity(id: id, layer: layer, name: name, point: pos(), leaderEnd: Pt.fromList(j['e'] as List), origin: j['o'] == null ? Pt.zero : Pt.fromList(j['o'] as List), xAxis: j['x'] as bool? ?? true);
     }
   }
 }
@@ -649,29 +662,38 @@ class AngularDimensionEntity extends Entity {
   Map<String, dynamic> toJson() => {..._base(), 'v': vertex.toList(), 'a': a.toList(), 'b': b.toList(), 'r': radius};
 }
 
-/// Radius dimension from [center] to [point] on the circle.
+/// Radius dimension from [center] to [point] on the circle, or, with
+/// [diameter], a diameter dimension across the circle through the centre.
 class RadialDimensionEntity extends Entity {
-  RadialDimensionEntity({required super.id, super.layer = Layers.dimensions, super.name, required this.center, required this.point});
+  RadialDimensionEntity({required super.id, super.layer = Layers.dimensions, super.name, required this.center, required this.point, this.diameter = false});
   Pt center, point;
+  bool diameter;
   @override
   EntityType get type => EntityType.radialDimension;
   double get radius => center.distanceTo(point);
+
+  /// The value written: the radius, or twice it for a diameter dimension.
+  double get value => diameter ? 2 * radius : radius;
+
+  /// Far end of the dimension line: the centre (radius) or the point
+  /// opposite [point] on the circle (diameter).
+  Pt get start => diameter ? center * 2 - point : center;
   @override
-  Bounds get bounds => Bounds.ofPoints([center, point]);
+  Bounds get bounds => Bounds.ofPoints([center, point, start]);
   @override
-  double distanceTo(Pt p) => distanceToSegment(p, center, point);
+  double distanceTo(Pt p) => distanceToSegment(p, start, point);
   @override
   List<Pt> get grips => [center, point];
   @override
   void setGrip(int index, Pt p) => index == 0 ? center = p : point = p;
   @override
-  RadialDimensionEntity clone({String? newId}) => RadialDimensionEntity(id: newId ?? id, layer: layer, name: name, center: center, point: point);
+  RadialDimensionEntity clone({String? newId}) => RadialDimensionEntity(id: newId ?? id, layer: layer, name: name, center: center, point: point, diameter: diameter);
   @override
-  RadialDimensionEntity translated(Pt d) => RadialDimensionEntity(id: id, layer: layer, name: name, center: center + d, point: point + d);
+  RadialDimensionEntity translated(Pt d) => RadialDimensionEntity(id: id, layer: layer, name: name, center: center + d, point: point + d, diameter: diameter);
   @override
-  RadialDimensionEntity transformed(Affine t) => RadialDimensionEntity(id: id, layer: layer, name: name, center: t.apply(center), point: t.apply(point));
+  RadialDimensionEntity transformed(Affine t) => RadialDimensionEntity(id: id, layer: layer, name: name, center: t.apply(center), point: t.apply(point), diameter: diameter);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'c': center.toList(), 'p': point.toList()};
+  Map<String, dynamic> toJson() => {..._base(), 'c': center.toList(), 'p': point.toList(), if (diameter) 'dia': true};
 }
 
 /// Leader: arrow polyline ending at a text note.
@@ -1302,6 +1324,114 @@ class AreaEntity extends Entity with PolyEntity {
     if (emittersPerPlant > 0) 'epp': emittersPerPlant, if (useWaterBalance) 'wb': true, 'eto': etoMmDay, 'kc': kc, 'awc': awcMmPerM, 'root': rootDepthM, 'mad': mad,
     if (plantSpacingM > 0) 'psp': plantSpacingM, if (rowSpacingM > 0) 'rsp': rowSpacingM, if (wettedFraction != 1) 'wf': wettedFraction,
   };
+}
+
+// ---------------------------------------------------------------- electrical
+
+/// Irrigation controller (timer): powers the valve solenoids through the
+/// wire routes drawn from it; every valve reached gets a station.
+class ControllerEntity extends Entity with PointEntity {
+  ControllerEntity({required super.id, super.layer = Layers.controllers, super.name, required this.position, this.stations = 12, this.outputVolts = 24, this.cost = 0, this.maxSimultaneous = 0});
+  @override
+  Pt position;
+
+  /// Stations (valve outputs) of the controller.
+  int stations;
+
+  /// Output voltage (V AC) under load.
+  double outputVolts;
+
+  /// Price for the bill of materials (0 = not costed).
+  double cost;
+
+  /// Most stations the controller opens at once (0 = as the system flows
+  /// say): the common wire carries their currents together.
+  int maxSimultaneous;
+  @override
+  EntityType get type => EntityType.controller;
+  @override
+  ControllerEntity clone({String? newId}) => ControllerEntity(id: newId ?? id, layer: layer, name: name, position: position, stations: stations, outputVolts: outputVolts, cost: cost, maxSimultaneous: maxSimultaneous);
+  @override
+  ControllerEntity translated(Pt d) => clone()..position = position + d;
+  @override
+  ControllerEntity transformed(Affine t) => clone()..position = t.apply(position);
+  @override
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'st': stations, 'v': outputVolts, if (cost > 0) 'cost': cost, if (maxSimultaneous > 0) 'sim': maxSimultaneous};
+}
+
+/// Wire route (trench or conduit) from a controller towards the valves:
+/// routes sharing a vertex connect, and a controller or valve on a vertex
+/// or on the route joins it. Each valve reached gets its own station
+/// conductor along the route and shares the common conductor.
+class WireEntity extends Entity with PolyEntity {
+  WireEntity({required super.id, super.layer = Layers.wires, super.name, required this.points});
+  @override
+  List<Pt> points;
+  @override
+  EntityType get type => EntityType.wire;
+  @override
+  WireEntity clone({String? newId}) => WireEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points));
+  @override
+  WireEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  @override
+  WireEntity transformed(Affine t) => clone()..points = _map(points, t);
+  @override
+  Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points)};
+}
+
+/// Ordinate dimension: the X (or Y) coordinate of [point] measured from
+/// [origin], written at the end of a leader from the point to [leaderEnd].
+class OrdinateDimensionEntity extends Entity {
+  OrdinateDimensionEntity({required super.id, super.layer = Layers.dimensions, super.name, required this.point, required this.leaderEnd, this.origin = Pt.zero, this.xAxis = true});
+  Pt point, leaderEnd, origin;
+
+  /// Measures X (datum along the vertical axis) when true, else Y.
+  bool xAxis;
+  @override
+  EntityType get type => EntityType.ordinateDimension;
+
+  /// The coordinate written by the dimension.
+  double get value => xAxis ? point.x - origin.x : point.y - origin.y;
+
+  /// Leader from the point: straight out along the measured axis' normal,
+  /// with a jog when the text was moved sideways.
+  List<Pt> get leader {
+    if (xAxis) {
+      final mid = Pt(point.x, point.y + (leaderEnd.y - point.y) * 0.6);
+      return [point, mid, Pt(leaderEnd.x, mid.y + (leaderEnd.y - point.y) * 0.1), leaderEnd];
+    }
+    final mid = Pt(point.x + (leaderEnd.x - point.x) * 0.6, point.y);
+    return [point, mid, Pt(mid.x + (leaderEnd.x - point.x) * 0.1, leaderEnd.y), leaderEnd];
+  }
+
+  @override
+  Bounds get bounds => Bounds.ofPoints([point, leaderEnd]);
+  @override
+  double distanceTo(Pt p) {
+    final l = leader;
+    var best = double.infinity;
+    for (var i = 1; i < l.length; i++) {
+      best = math.min(best, distanceToSegment(p, l[i - 1], l[i]));
+    }
+    return best;
+  }
+
+  @override
+  List<Pt> get grips => [point, leaderEnd];
+  @override
+  void setGrip(int index, Pt p) => index == 0 ? point = p : leaderEnd = p;
+  @override
+  OrdinateDimensionEntity clone({String? newId}) => OrdinateDimensionEntity(id: newId ?? id, layer: layer, name: name, point: point, leaderEnd: leaderEnd, origin: origin, xAxis: xAxis);
+  @override
+  OrdinateDimensionEntity translated(Pt d) => clone()
+    ..point = point + d
+    ..leaderEnd = leaderEnd + d;
+  @override
+  OrdinateDimensionEntity transformed(Affine t) => clone()
+    ..point = t.apply(point)
+    ..leaderEnd = t.apply(leaderEnd);
+  @override
+  Map<String, dynamic> toJson() => {..._base(), 'p': point.toList(), 'e': leaderEnd.toList(), if (origin != Pt.zero) 'o': origin.toList(), 'x': xAxis};
 }
 
 extension EntityKindX on Entity {

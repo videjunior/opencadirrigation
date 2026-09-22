@@ -225,6 +225,24 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         ));
       }
     }
+    // ---- valve wiring
+    final el = r.electrical;
+    if (el != null && (el.runs.isNotEmpty || el.controllers.isNotEmpty)) {
+      final cat = project.catalog;
+      String wireName(String? id) => cat.wire(id)?.name ?? '-';
+      out.add(ReportTable(
+        key: 'electrical',
+        title: t('reports.electrical'),
+        headers: [t('rep.zone'), t('rep.controller'), t('rep.station'), '${t('rep.route')} (${u.lengthLabel})', '${t('rep.wireLength')} (${u.lengthLabel})', t('rep.stationWire'), t('rep.commonWire'), t('rep.openTogether'), '${t('rep.solenoidV')} (V)', t('rep.warnings')],
+        rows: [
+          for (final run in el.runs)
+            [run.zoneName, labels.name(run.controllerId), run.station, RNum(u.lengthFromSi(run.routeM), 0), RNum(u.lengthFromSi(run.wireM), 0), wireName(run.stationWireId), wireName(run.commonWireId), run.openTogether, RNum(run.volts, 1), run.ok ? '' : labels.warning('elec_voltage')],
+          for (final d in el.controllers)
+            [t('elec.commonRow'), labels.name(d.controllerId), '${d.used}/${d.stations}', RNum(u.lengthFromSi(d.commonRouteM), 0), RNum(u.lengthFromSi(d.commonWireM), 0), '-', wireName(d.commonWireId), d.maxOpen, '${fmt(d.peakCurrentA, 2)} A', d.overloaded ? labels.warning('elec_stations') : ''],
+        ],
+        warn: [for (final run in el.runs) !run.ok, for (final d in el.controllers) d.overloaded],
+      ));
+    }
     // ---- flushing
     if (r.flushing.isNotEmpty) {
       out.add(ReportTable(

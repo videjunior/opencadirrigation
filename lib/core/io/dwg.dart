@@ -303,6 +303,13 @@ class _Entity {
   int lastVertex = 0;
   List<int> ownedVertices = const [];
 
+  /// SPLINE with fit points (the curve passes through [points]).
+  bool fitSpline = false;
+
+  /// HATCH / SOLID: solid fill, and the island loops of a hatch.
+  bool solidFill = false;
+  List<List<Pt>> islands = const [];
+
   /// INSERT / MINSERT: scales, referenced block and array.
   double scaleX = 1;
   double scaleY = 1;
@@ -1101,7 +1108,7 @@ class DwgReader {
     } else {
       bitsize = 0; // R13/R14: after the handle and EED (objects) or the graphics (entities)
     }
-    final interesting = type == 51 || type == 49 || type == 7 || type == 8 || (type >= 20 && type <= 26) || type == 1 || type == 10 || type == 11 || type == 15 || type == 16 || type == 17 || type == 18 || type == 19 || type == 27 || type == 44 || type == 77;
+    final interesting = type == 51 || type == 49 || type == 7 || type == 8 || (type >= 20 && type <= 26) || type == 1 || type == 10 || type == 11 || type == 15 || type == 16 || type == 17 || type == 18 || type == 19 || type == 27 || type == 44 || type == 77 || type == 31 || type == 32 || type == 35 || type == 36 || type == 78;
     _t(handle, 'bitsize=$bitsize');
     if (!interesting) return;
     _stage = 'handle';
@@ -1375,6 +1382,225 @@ class DwgReader {
         final x = br.readBD(), y = br.readBD(), z = br.readBD();
         e.points = [Pt(x, y)];
         if (z != 0) e.elevation = z;
+      case 31: // SOLID
+      case 32: // TRACE
+        br.readBT(ver);
+        final elev = br.readBD();
+        final c = [for (var k = 0; k < 4; k++) Pt(br.readRD(), br.readRD())];
+        br.readBE(ver);
+        // corners in 1-2-4-3 order
+        final pts = <Pt>[];
+        for (final p in [c[0], c[1], c[3], c[2]]) {
+          if (pts.isEmpty || pts.last.distanceTo(p) > 1e-12) pts.add(p);
+        }
+        if (pts.length > 2 && pts.first.distanceTo(pts.last) < 1e-12) pts.removeLast();
+        e.points = pts;
+        e.closed = true;
+        e.solidFill = true;
+        if (elev != 0) e.elevation = elev;
+      case 35: // ELLIPSE
+        final c = Pt(br.readBD(), br.readBD());
+        br.readBD();
+        final major = Pt(br.readBD(), br.readBD());
+        br.readBD();
+        br.readBD();
+        br.readBD();
+        br.readBD(); // extrusion
+        final ratio = br.readBD();
+        final a0 = br.readBD(), a1 = br.readBD();
+        var sweep = a1 - a0;
+        if (sweep <= 1e-9) sweep += 2 * math.pi;
+        final full = sweep >= 2 * math.pi - 1e-9;
+        final n = math.max(8, (sweep / (math.pi / 18)).ceil());
+        final minor = major.perpendicular * ratio;
+        e.points = [for (var k = 0; k <= (full ? n - 1 : n); k++) c + major * math.cos(a0 + sweep * k / n) + minor * math.sin(a0 + sweep * k / n)];
+        e.closed = full;
+      case 36: // SPLINE
+        var scenario = br.readBL();
+        if (ver.index >= DwgVersion.r2013.index) {
+          final flags = br.readBL();
+          final knotParam = br.readBL();
+          if (flags & 1 != 0) scenario = 2;
+          if (knotParam == 15) scenario = 1;
+        }
+        final degree = br.readBL();
+        if (scenario & 1 != 0) {
+          final rational = br.readB() == 1;
+          e.closed = br.readB() == 1;
+          br.readB(); // periodic
+          br.readBD(); // knot tolerance
+          br.readBD(); // control tolerance
+          final nk = br.readBL(), nc = br.readBL();
+          final weighted = br.readB() == 1;
+          if (nk > 100000 || nc > 100000) return;
+          final knots = [for (var k = 0; k < nk; k++) br.readBD()];
+          final ctrl = <Pt>[];
+          final weights = <double>[];
+          for (var k = 0; k < nc; k++) {
+            final x = br.readBD(), y = br.readBD();
+            br.readBD();
+            ctrl.add(Pt(x, y));
+            if (weighted) weights.add(br.readBD());
+          }
+          e.points = nurbsCurve(degree, ctrl, knots: knots, weights: rational || weighted ? weights : const []);
+        } else {
+          br.readBD(); // fit tolerance
+          for (var k = 0; k < 6; k++) {
+            br.readBD(); // start and end tangents
+          }
+          final nf = br.readBL();
+          if (nf > 100000) return;
+          final pts = <Pt>[];
+          for (var k = 0; k < nf; k++) {
+            final x = br.readBD(), y = br.readBD();
+            br.readBD(); // z
+            pts.add(Pt(x, y));
+          }
+          e.points = pts;
+        }
+        e.fitSpline = scenario & 1 == 0;
+      case 78: // HATCH
+        if (ver.index >= DwgVersion.r2004.index) {
+          br.readBL(); // gradient fill
+          br.readBL(); // reserved
+          br.readBD(); // gradient angle
+          br.readBD(); // gradient shift
+          br.readBL(); // single colour
+          br.readBD(); // tint
+          final nColors = br.readBL();
+          for (var k = 0; k < nColors && k < 1000; k++) {
+            br.readBD();
+            _readCMC(br);
+          }
+          if (ver.index < DwgVersion.r2007.index) br.readTV(); // gradient name
+        }
+        final elev = br.readBD();
+        br.readBD();
+        br.readBD();
+        br.readBD(); // extrusion
+        if (ver.index < DwgVersion.r2007.index) br.readTV(); // pattern name
+        e.solidFill = br.readB() == 1;
+        br.readB(); // associative
+        final nPaths = br.readBL();
+        if (nPaths > 100000) return;
+        final loops = <List<Pt>>[];
+        var derived = false;
+        for (var p = 0; p < nPaths; p++) {
+          final flag = br.readBL();
+          if (flag & 4 != 0) derived = true;
+          final loop = <Pt>[];
+          if (flag & 2 == 0) {
+            final nSegs = br.readBL();
+            for (var sgm = 0; sgm < nSegs && sgm < 100000; sgm++) {
+              switch (br.readRC()) {
+                case 1:
+                  final a = Pt(br.readRD(), br.readRD()), b = Pt(br.readRD(), br.readRD());
+                  if (loop.isEmpty || loop.last.distanceTo(a) > 1e-9) loop.add(a);
+                  loop.add(b);
+                case 2:
+                  final c = Pt(br.readRD(), br.readRD());
+                  final r = br.readBD(), s = br.readBD(), en = br.readBD();
+                  final ccw = br.readB() == 1;
+                  final a0 = ccw ? s : -s, a1 = ccw ? en : -en;
+                  var sweep = ccw ? a1 - a0 : a0 - a1;
+                  if (sweep <= 1e-12) sweep += 2 * math.pi;
+                  final n = math.max(4, (sweep / (math.pi / 18)).ceil());
+                  for (var q = 0; q <= n; q++) {
+                    loop.add(c + Pt.polar(r, ccw ? a0 + sweep * q / n : a0 - sweep * q / n));
+                  }
+                case 3:
+                  final c = Pt(br.readRD(), br.readRD()), major = Pt(br.readRD(), br.readRD());
+                  final ratio = br.readBD(), s = br.readBD(), en = br.readBD();
+                  final ccw = br.readB() == 1;
+                  final minor = major.perpendicular * ratio;
+                  final a0 = ccw ? s : -s, a1 = ccw ? en : -en;
+                  var sweep = ccw ? a1 - a0 : a0 - a1;
+                  if (sweep <= 1e-12) sweep += 2 * math.pi;
+                  final n = math.max(8, (sweep / (math.pi / 18)).ceil());
+                  for (var q = 0; q <= n; q++) {
+                    final t = ccw ? a0 + sweep * q / n : a0 - sweep * q / n;
+                    loop.add(c + major * math.cos(t) + minor * math.sin(t));
+                  }
+                case 4:
+                  final degree = br.readBL();
+                  final rational = br.readB() == 1;
+                  br.readB(); // periodic
+                  final nk = br.readBL(), nc = br.readBL();
+                  if (nk > 100000 || nc > 100000) return;
+                  final knots = [for (var q = 0; q < nk; q++) br.readBD()];
+                  final ctrl = <Pt>[];
+                  final weights = <double>[];
+                  for (var q = 0; q < nc; q++) {
+                    ctrl.add(Pt(br.readRD(), br.readRD()));
+                    if (rational) weights.add(br.readBD());
+                  }
+                  if (ver.index >= DwgVersion.r2010.index) {
+                    final nf = br.readBL();
+                    if (nf > 0) {
+                      for (var q = 0; q < nf && q < 100000; q++) {
+                        br.readRD();
+                        br.readRD();
+                      }
+                      for (var q = 0; q < 4; q++) {
+                        br.readRD(); // start and end tangents
+                      }
+                    }
+                  }
+                  loop.addAll(nurbsCurve(degree, ctrl, knots: knots, weights: weights));
+                default:
+                  return; // unknown edge: the rest of the stream cannot be trusted
+              }
+            }
+          } else {
+            final bulges = br.readB() == 1;
+            br.readB(); // closed
+            final n = br.readBL();
+            if (n > 100000) return;
+            final pts = <Pt>[];
+            final bl = <double>[];
+            for (var q = 0; q < n; q++) {
+              pts.add(Pt(br.readRD(), br.readRD()));
+              bl.add(bulges ? br.readBD() : 0);
+            }
+            loop.addAll(bl.any((b) => b != 0) ? _tessellateBulges(pts, bl, true) : pts);
+          }
+          br.readBL(); // boundary handles (in the handle stream)
+          if (loop.length > 2 && loop.first.distanceTo(loop.last) < 1e-9) loop.removeLast();
+          if (loop.length >= 3) loops.add(loop);
+        }
+        br.readBS(); // style
+        br.readBS(); // pattern type
+        var angle = 45.0, spacing = 0.0;
+        if (!e.solidFill) {
+          angle = br.readBD() * 180 / math.pi;
+          final scale = br.readBD();
+          br.readB(); // double
+          final nLines = br.readBS();
+          for (var q = 0; q < nLines && q < 1000; q++) {
+            final a = br.readBD();
+            br.readBD();
+            br.readBD(); // base point
+            final ox = br.readBD(), oy = br.readBD();
+            final nd = br.readBS();
+            for (var k = 0; k < nd && k < 1000; k++) {
+              br.readBD();
+            }
+            if (q == 0) {
+              angle = a * 180 / math.pi;
+              spacing = (-math.sin(a) * ox + math.cos(a) * oy).abs();
+            }
+          }
+          if (spacing <= 1e-9) spacing = 3.175 * (scale > 0 ? scale : 1);
+        }
+        if (derived) br.readBD(); // pixel size
+        if (loops.isEmpty) return;
+        loops.sort((a, b) => polygonArea(b).abs().compareTo(polygonArea(a).abs()));
+        e.points = loops.first;
+        e.islands = loops.skip(1).toList();
+        e.closed = true;
+        e.rotation = angle;
+        e.height = spacing > 0 ? spacing : 1;
+        if (elev != 0) e.elevation = elev;
       case 10: // VERTEX_2D
       case 11: // VERTEX_3D
         br.readRC(); // flags
@@ -1611,6 +1837,9 @@ class DwgReader {
       ..firstVertex = e.firstVertex
       ..lastVertex = e.lastVertex
       ..ownedVertices = e.ownedVertices
+      ..fitSpline = e.fitSpline
+      ..solidFill = e.solidFill
+      ..islands = e.islands
       ..scaleX = e.scaleX
       ..scaleY = e.scaleY
       ..blockHandle = e.blockHandle
@@ -1687,6 +1916,14 @@ class DwgReader {
           return e.text.isNotEmpty ? DxfEntity(type: 'TEXT', layer: layer, color: color, points: e.points, text: e.text, height: e.height, rotation: e.rotation, elevation: e.elevation) : null;
         case 77:
           return e.points.length >= 2 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;
+        case 35:
+          return e.points.length >= 2 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;
+        case 36:
+          return e.points.length >= 2 ? DxfEntity(type: e.fitSpline ? 'SPLINE' : 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;
+        case 31:
+        case 32:
+        case 78:
+          return e.points.length >= 3 ? DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points, closed: true, rotation: e.rotation, height: e.height, solid: e.solidFill, elevation: e.elevation) : null;
         case 15:
         case 16:
           final handles = e.ownedVertices.isNotEmpty ? e.ownedVertices.where((h) => _vertices[h] != null).toList() : (_vertices.keys.where((h) => h >= e.firstVertex && h <= e.lastVertex).toList()..sort());
@@ -1734,12 +1971,21 @@ class DwgReader {
       // model space: entmode 2, or entmode 0 owned by *Model_Space
       final inModel = e.entmode == 2 || (e.entmode == 0 && (e.owner == _modelSpaceHandle || (_modelSpaceHandle == 0 && !_blockHeaders.contains(e.owner))));
       final isInsert = e.type == 7 || e.type == 8 || (e.type >= 20 && e.type <= 26);
+      // hatch islands become closed polylines next to the hatch
+      Iterable<DxfEntity> converted() sync* {
+        final d = toDxf(e);
+        if (d == null) return;
+        yield d;
+        for (final island in e.islands) {
+          yield DxfEntity(type: 'POLYLINE', layer: d.layer, color: d.color, points: island, closed: true);
+        }
+      }
+
       if (inModel) {
         if (isInsert) {
           inserts.add(toInsert(e));
         } else {
-          final d = toDxf(e);
-          if (d != null) ents.add(d);
+          ents.addAll(converted());
         }
         continue;
       }
@@ -1749,8 +1995,7 @@ class DwgReader {
       if (isInsert) {
         blockInserts.putIfAbsent(b.handle, () => []).add(toInsert(e));
       } else {
-        final d = toDxf(e);
-        if (d != null) blockEntities.putIfAbsent(b.handle, () => []).add(d);
+        blockEntities.putIfAbsent(b.handle, () => []).addAll(converted());
       }
     }
     final blocksByName = {for (final b in _blocks.values) b.name: DxfBlock(b.name, b.base, blockEntities[b.handle] ?? const [], blockInserts[b.handle] ?? const [])};

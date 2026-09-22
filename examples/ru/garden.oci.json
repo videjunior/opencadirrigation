@@ -50,7 +50,11 @@
     "fittings": true,
     "stick": 6.0,
     "zoneVar": 0.0,
-    "terrain": "tin"
+    "terrain": "tin",
+    "inrushA": 0.37,
+    "holdA": 0.22,
+    "minV": 20.0,
+    "slack": 10.0
   },
   "catalog": {
     "pipes": [
@@ -4897,6 +4901,104 @@
         "cost": 296.91,
         "enabled": true
       }
+    ],
+    "wires": [
+      {
+        "id": "w1",
+        "name": "Медный провод 1 mm²",
+        "mm2": 1.0,
+        "ohm": 18.1,
+        "cost": 21.443500000000004,
+        "enabled": true
+      },
+      {
+        "id": "w1.5",
+        "name": "Медный провод 1.5 mm²",
+        "mm2": 1.5,
+        "ohm": 12.066666666666668,
+        "cost": 28.0415,
+        "enabled": true
+      },
+      {
+        "id": "w2.5",
+        "name": "Медный провод 2.5 mm²",
+        "mm2": 2.5,
+        "ohm": 7.24,
+        "cost": 42.88700000000001,
+        "enabled": true
+      },
+      {
+        "id": "w4",
+        "name": "Медный провод 4 mm²",
+        "mm2": 4.0,
+        "ohm": 4.525,
+        "cost": 65.98,
+        "enabled": true
+      },
+      {
+        "id": "w6",
+        "name": "Медный провод 6 mm²",
+        "mm2": 6.0,
+        "ohm": 3.016666666666667,
+        "cost": 97.32050000000001,
+        "enabled": true
+      },
+      {
+        "id": "w10",
+        "name": "Медный провод 10 mm²",
+        "mm2": 10.0,
+        "ohm": 1.81,
+        "cost": 158.352,
+        "enabled": true
+      },
+      {
+        "id": "awg18",
+        "name": "Медный провод AWG 18",
+        "mm2": 0.82,
+        "ohm": 21.99,
+        "cost": 19.794,
+        "enabled": false
+      },
+      {
+        "id": "awg16",
+        "name": "Медный провод AWG 16",
+        "mm2": 1.31,
+        "ohm": 13.83,
+        "cost": 26.392000000000003,
+        "enabled": false
+      },
+      {
+        "id": "awg14",
+        "name": "Медный провод AWG 14",
+        "mm2": 2.08,
+        "ohm": 8.7,
+        "cost": 39.588,
+        "enabled": false
+      },
+      {
+        "id": "awg12",
+        "name": "Медный провод AWG 12",
+        "mm2": 3.31,
+        "ohm": 5.47,
+        "cost": 61.03150000000001,
+        "enabled": false
+      },
+      {
+        "id": "awg10",
+        "name": "Медный провод AWG 10",
+        "mm2": 5.26,
+        "ohm": 3.44,
+        "cost": 94.0215,
+        "enabled": false
+      },
+      {
+        "id": "awg8",
+        "name": "Медный провод AWG 8",
+        "mm2": 8.37,
+        "ohm": 2.16,
+        "cost": 146.80550000000002,
+        "enabled": false
+      }
     ]
   },
   "layers": [
@@ -5023,6 +5125,18 @@
     {
       "name": "PIVOTS",
       "color": 4283283116,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WIRES",
+      "color": 4294962776,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTROLLERS",
+      "color": 4294930499,
       "visible": true,
       "locked": false
     },
@@ -6437,6 +6551,53 @@
       "scope": "mainline",
       "auto": true,
       "depth": 0.0
+    },
+    {
+      "type": "controller",
+      "id": "e75",
+      "layer": "CONTROLLERS",
+      "name": "Контроллер",
+      "p": [
+        -1.0,
+        14.0
+      ],
+      "st": 6,
+      "v": 24.0,
+      "cost": 650.0
+    },
+    {
+      "type": "wire",
+      "id": "e76",
+      "layer": "WIRES",
+      "pts": [
+        [
+          -1.0,
+          14.0
+        ],
+        [
+          -1.0,
+          11.0
+        ],
+        [
+          -1.0,
+          4.0
+        ]
+      ]
+    },
+    {
+      "type": "wire",
+      "id": "e77",
+      "layer": "WIRES",
+      "pts": [
+        [
+          -1.0,
+          14.0
+        ],
+        [
+          -1.0,
+          33.0
+        ]
+      ]
     }
   ],
   "systemFlows": [
@@ -6468,5 +6629,5 @@
       "dur": 1.5
     }
   ],
-  "nextId": 75
+  "nextId": 78
 }

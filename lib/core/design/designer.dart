@@ -25,6 +25,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import '../units.dart';
+import 'electrical.dart';
 import 'fittings.dart';
 import 'lp_sizing.dart';
 import 'network_builder.dart';
@@ -1616,6 +1617,7 @@ class Designer {
       },
     );
     yield (stage: DesignStage.surge, zoneId: null, zoneIndex: 0, run: checkSurge);
+    yield (stage: DesignStage.bom, zoneId: null, zoneIndex: 0, run: designWiring);
     yield (stage: DesignStage.bom, zoneId: null, zoneIndex: 0, run: buildBom);
   }
 
@@ -1657,9 +1659,9 @@ class Designer {
   }) async {
     final pause = yieldControl ?? () => Future<void>.delayed(Duration.zero);
     final zoneCount = model.valveNodes.length;
-    // zones + mainline + flushing + surge + BOM; a split re-analysis adds
-    // one step per zone plus the split and the system-flow steps.
-    var total = zoneCount + 4;
+    // zones + mainline + flushing + surge + wiring + BOM; a split re-analysis
+    // adds one step per zone plus the split and the system-flow steps.
+    var total = zoneCount + 5;
     var done = 0;
     var splitsCounted = false;
     for (final s in _steps(sizeZones: sizeZones, sizeMain: sizeMain)) {
@@ -1827,6 +1829,17 @@ class Designer {
 
   // ------------------------------------------------------------ BOM
 
+  /// Valve wiring: controllers, station and common wires sized for the
+  /// solenoid voltage (see `electrical.dart`), with the system flows telling
+  /// which valves are on together.
+  ElectricalResult? designWiring() {
+    final flows = [for (final f in effectiveSystemFlows()) f.valveIds.toSet()];
+    final r = designElectrical(project, flows: flows);
+    results.electrical = r;
+    if (r != null) results.messages.addAll(r.warnings);
+    return r;
+  }
+
   List<BomLine> buildBom() {
     final lines = <String, BomLine>{};
     void add(String cat, String desc, String unit, double qty, double cost, String? specId, {String code = '', String supplier = ''}) {
@@ -1884,6 +1897,18 @@ class Designer {
         default:
           break;
       }
+    }
+    final el = results.electrical;
+    if (el != null) {
+      for (final e in el.wireMeters.entries) {
+        final w = catalog.wire(e.key);
+        if (w != null && e.value > 0) add('bom.electrical', w.name, 'm', e.value, w.costPerM, w.id, code: w.code, supplier: w.supplier);
+      }
+      for (final c in project.entities.whereType<ControllerEntity>()) {
+        add('bom.electrical', '${c.name.isNotEmpty ? c.name : _label('tool.controller')} (${c.stations} ${_label('elec.stationsShort')})', 'un', 1, c.cost, null);
+      }
+      // two waterproof splices per valve (station and common conductors)
+      if (el.runs.isNotEmpty) add('bom.electrical', _label('elec.splice'), 'un', 2.0 * el.runs.length, 0, null);
     }
     results.bom
       ..clear()

@@ -340,6 +340,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
   final cat = c.project.catalog;
   final cur = c.project.params.currency;
   var tab = CatalogGroup.pipes;
+  final edit = c.beginSettingsEdit('hist.catalog');
   return _show(context, c, t('design.catalog'), StatefulBuilder(builder: (ctx, setState) {
     // usage counts (for the remove confirmation)
     final used = <String, int>{};
@@ -352,6 +353,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
         ControlValveEntity x => [x.valveSpecId],
         MiscHydraulicEntity x => [x.valveSpecId],
         PumpEntity x => [x.pumpSpecId],
+        PivotEntity x => [x.pipeSpecId, x.sprinklerSpecId, x.regulatorSpecId],
         _ => const <String?>[],
       };
       for (final id in ids) {
@@ -391,6 +393,8 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
             cat.pumps.add(PumpSpec(id: cat.newId('pump'), name: t('tool.pump'), points: [(0, 50), (20 * m3sPerM3h, 45), (40 * m3sPerM3h, 35)], cost: 5000));
           case CatalogGroup.fittings:
             cat.fittings.add(FittingSpec(id: cat.newId('fit'), name: '${t('fit.tee')} 50 mm', kind: FittingKind.tee, sizeMm: 50, cost: 8));
+          case CatalogGroup.wires:
+            cat.wires.add(WireSpec(id: cat.newId('wire'), name: '${t('cat.wire')} 2.5 mm²', sectionMm2: 2.5, ohmPerKm: copperOhmPerKm(2.5), costPerM: 2.6));
         }
       });
     }
@@ -524,6 +528,26 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ]),
         ],
     ]);
+    Widget wires() => _catTable([t('cat.use'), t('cat.name'), t('cat.mm2'), t('cat.ohmKm'), t('cat.costM', {'c': cur}), '${t('cat.supplier')} / ${t('cat.code')}', ''], [
+      for (final w in cat.wires)
+        [
+          Checkbox(value: w.enabled, onChanged: (x) => setState(() => w.enabled = x ?? true)),
+          _cell(w.name, (x) => w.name = x),
+          _num(w.sectionMm2, (x) {
+            // a new section keeps the copper resistance unless it was edited
+            if ((w.ohmPerKm - copperOhmPerKm(w.sectionMm2)).abs() < 0.01 && x > 0) w.ohmPerKm = double.parse(copperOhmPerKm(x).toStringAsFixed(3));
+            w.sectionMm2 = x;
+            setState(() {});
+          }),
+          _num(w.ohmPerKm, (x) => w.ohmPerKm = x, decimals: 3),
+          _num(w.costPerM, (x) => w.costPerM = x),
+          meta(w.supplier, w.code, (v) => w.supplier = v, (v) => w.code = v),
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            dupBtn(() => cat.wires.add(WireSpec.fromJson(w.toJson()..['id'] = cat.newId('wire'))..name = '${w.name} *')),
+            removeBtn(w.id, w.name, () => cat.wires.remove(w)),
+          ]),
+        ],
+    ]);
     return SizedBox(
       height: 520,
       child: Column(children: [
@@ -584,22 +608,27 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
               cat.fittings
                 ..clear()
                 ..addAll(d.fittings);
+              cat.wires
+                ..clear()
+                ..addAll(d.wires);
             });
             c.clearDefaultCatalog();
             c.notify(t('msg.catalogReset'));
           }, child: Text(t('cat.reset'))),
         ]),
         const SizedBox(height: 6),
-        Expanded(child: switch (tab) { CatalogGroup.pipes => pipes(), CatalogGroup.outlets => outlets(), CatalogGroup.tapes => tapes(), CatalogGroup.valves => valves(), CatalogGroup.pumps => pumps(), CatalogGroup.fittings => fittings() }),
+        Expanded(child: switch (tab) { CatalogGroup.pipes => pipes(), CatalogGroup.outlets => outlets(), CatalogGroup.tapes => tapes(), CatalogGroup.valves => valves(), CatalogGroup.pumps => pumps(), CatalogGroup.fittings => fittings(), CatalogGroup.wires => wires() }),
         Text(t('cat.importHint'), style: const TextStyle(fontSize: 10, color: Colors.white38), maxLines: 3, overflow: TextOverflow.ellipsis),
       ]),
     );
   }), actions: [FilledButton(onPressed: () {
-    c.results = null;
-    c.dirty = true;
-    c.refresh();
+    FocusManager.instance.primaryFocus?.unfocus();
     Navigator.pop(context);
-  }, child: Text(t('ok')))], width: 1000);
+  }, child: Text(t('ok')))], width: 1000).then((_) async {
+    // however the dialog closes, the edits become one undo step
+    await Future<void>.delayed(Duration.zero);
+    c.commitSettingsEdit(edit);
+  });
 }
 
 Widget _catTable(List<String> headers, List<List<Widget>> rows) => SingleChildScrollView(

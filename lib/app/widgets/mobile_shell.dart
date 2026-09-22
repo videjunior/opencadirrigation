@@ -19,6 +19,7 @@ import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'dialogs/basemap_dialogs.dart';
+import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
@@ -246,6 +247,7 @@ class _MobileShellState extends State<MobileShell> {
             row(t('design.analyze'), c.busy ? null : () => c.runDesign(sizeZones: false, sizeMain: false), icon: Icons.analytics_outlined),
             row(t('design.pumpSelect'), c.results == null ? null : () => showPumpSelectionDialog(context, c), icon: Icons.settings_suggest_outlined),
             row(t('zone.feedEnvelope'), c.selection.isEmpty ? null : () => feedEnvelopeAction(c), icon: Icons.straighten),
+            row(t('dens.menu'), () => showDensogramDialog(context, c), icon: Icons.blur_on, key: const Key('mobile_menu_densogram')),
             row(t('design.clear'), c.results == null ? null : c.clearResults, icon: Icons.clear_all),
           ], key: const Key('mobile_menu_design')),
           section(t('menu.reports'), Icons.table_chart_outlined, [
