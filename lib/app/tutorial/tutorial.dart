@@ -9,8 +9,11 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/block_generator.dart';
 import '../../core/i18n/language_packs.dart';
+import '../../core/io/dem_online.dart';
+import '../../core/io/project_export.dart' show GeoReferenceMissing;
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
+import '../../core/units.dart';
 import '../io/prefs.dart';
 import '../state/controller.dart';
 import '../widgets/reports_panel.dart';
@@ -191,6 +194,11 @@ const _texts = <String, _T>{
   'finishedBody': _T('Você pode reabrir este tutorial em Ajuda → Tutorial interativo. Bom projeto!', 'You can reopen this tutorial from Help → Interactive tutorial. Happy designing!', 'Puede reabrir este tutorial en Ayuda → Tutorial interactivo. ¡Buen diseño!'),
 };
 
+/// Where the demos of the map steps place the example: coffee on gentle
+/// hills in the south of Minas Gerais, Brazil (satellite imagery down to
+/// the rows, relief of a few tens of metres).
+const tutorialDemoLat = -21.4459, tutorialDemoLon = -45.4592;
+
 /// Builds the ordered list of steps for the given language.
 ///
 /// Most steps are interactive: they state an action, detect it through the
@@ -198,6 +206,7 @@ const _texts = <String, _T>{
 /// demo that performs it.
 List<TutorialStep> buildTutorialSteps(String lang) {
   String t(String pt, String en, String es) => switch (lang) { 'en' => en, 'es' => es, 'pt' => pt, _ => packTutorialText(lang, en) ?? en };
+  final chMap = t('Primeiros passos: mapa e relevo', 'First steps: map and terrain', 'Primeros pasos: mapa y relieve');
   final chNav = t('Navegação', 'Navigation', 'Navegación');
   final chEdit = t('Seleção e edição', 'Selection and editing', 'Selección y edición');
   final chDraw = t('Desenho', 'Drawing', 'Dibujo');
@@ -264,21 +273,93 @@ List<TutorialStep> buildTutorialSteps(String lang) {
     isDone: (x) => read(x) != x.memo['s:$id'],
   );
 
+  /// Georeferences the example where the demos of the map steps look (a
+  /// coffee farm on gentle hills) unless the project already has a place.
+  void placeDemo(TutorialContext x) {
+    if (x.c.project.meta.georef == null) x.c.setGeoreferenceAt(tutorialDemoLat, tutorialDemoLon);
+  }
+
+  /// "Show me" of the terrain download: what the dialog does with its
+  /// defaults (Terrain Tiles, the example heights replaced, contours drawn).
+  Future<void> downloadDem(TutorialContext x) async {
+    final c = x.c;
+    placeDemo(x);
+    try {
+      final res = await c.importOnlineDem(DemSource.terrainTiles, replaceExisting: c.ownTerrainData().isNotEmpty);
+      if (res.count == 0) return;
+      final interval = c.autoContourInterval();
+      final drawn = c.generateContours(interval);
+      c.notify(c.t('dem.online.doneContours', {'n': '${res.count}', 's': DemSource.terrainTiles.attribution, 'c': '$drawn', 'i': fmt(interval, 2)}));
+    } catch (e) {
+      c.notify(e is GeoReferenceMissing ? c.t('geo.none') : c.describeError(e));
+    }
+  }
+
   final editTools = {ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe};
   final reportTab = reportTabKeys.indexOf;
 
   return [
-    // ------------------------------------------------------------ navigation
     TutorialStep(
       id: 'welcome',
-      chapter: chNav,
+      chapter: chMap,
       title: t('Visão geral', 'Overview', 'Visión general'),
       body: t(
-        'Menus no topo, paleta de ferramentas à esquerda, canvas CAD no centro, propriedades e camadas à direita, barra de status embaixo. Um pomar de exemplo com dois blocos já está carregado. Cada passo deste tutorial pede uma ação e reconhece quando você a fez; "Mostrar" faz por você.',
-        'Menus at the top, tool palette on the left, CAD canvas in the centre, properties and layers on the right, status bar at the bottom. An example orchard with two blocks is loaded. Each step of this tutorial asks for an action and recognises when you have done it; "Show me" does it for you.',
-        'Menús arriba, paleta de herramientas a la izquierda, lienzo CAD en el centro, propiedades y capas a la derecha, barra de estado abajo. Ya está cargado un huerto de ejemplo con dos bloques. Cada paso de este tutorial pide una acción y reconoce cuando la hizo; "Mostrar" la hace por usted.',
+        'Menus no topo, paleta de ferramentas à esquerda, canvas CAD no centro, propriedades e camadas à direita, barra de status embaixo. Um pomar de exemplo com dois blocos já está carregado. Todo projeto começa pelo lugar: primeiro você localiza a área, põe o mapa de satélite sob o desenho e baixa o relevo da internet. Cada passo deste tutorial pede uma ação e reconhece quando você a fez; "Mostrar" faz por você.',
+        'Menus at the top, tool palette on the left, CAD canvas in the centre, properties and layers on the right, status bar at the bottom. An example orchard with two blocks is loaded. Every design starts from the place: first you locate the site, put the satellite map under the drawing and download the terrain from the internet. Each step of this tutorial asks for an action and recognises when you have done it; "Show me" does it for you.',
+        'Menús arriba, paleta de herramientas a la izquierda, lienzo CAD en el centro, propiedades y capas a la derecha, barra de estado abajo. Ya está cargado un huerto de ejemplo con dos bloques. Todo proyecto empieza por el lugar: primero ubica el área, pone el mapa satelital bajo el dibujo y descarga el relieve de internet. Cada paso de este tutorial pide una acción y reconoce cuando la hizo; "Mostrar" la hace por usted.',
       ),
     ),
+    // ------------------------------------------------------------ map and terrain
+    state<Object?>(
+      id: 'georef',
+      chapter: chMap,
+      title: t('Localizar a área', 'Locate the site', 'Ubicar el área'),
+      target: TutorialTargets.menuFile,
+      body: t(
+        'O mapa e o relevo precisam saber onde a área fica. Arquivo → Georreferência liga a origem do desenho (0, 0) a uma latitude e longitude (ou a uma coordenada UTM). No Google Maps, clique com o botão direito sobre a área e copie as coordenadas: o par colado no campo Latitude (ex.: -21.4459, -45.4592), um link do Google Maps ou graus, minutos e segundos também servem.',
+        'The map and the terrain need to know where the site is. File → Georeference ties the drawing origin (0, 0) to a latitude and longitude (or to a UTM coordinate). In Google Maps, right-click the site and copy its coordinates: the pair pasted into the Latitude field (e.g. -21.4459, -45.4592), a Google Maps link or degrees, minutes and seconds work too.',
+        'El mapa y el relieve necesitan saber dónde está el área. Archivo → Georreferencia vincula el origen del dibujo (0, 0) a una latitud y longitud (o a una coordenada UTM). En Google Maps, haga clic derecho sobre el área y copie las coordenadas: el par pegado en el campo Latitud (p. ej. -21.4459, -45.4592), un enlace de Google Maps o grados, minutos y segundos también sirven.',
+      ),
+      action: t('Abra Arquivo → Georreferência, informe a latitude e a longitude da área e clique OK', 'Open File → Georeference, enter the site\'s latitude and longitude and click OK', 'Abra Archivo → Georreferencia, indique la latitud y la longitud del área y haga clic en Aceptar'),
+      read: (x) => x.c.project.meta.georef,
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.c.setGeoreferenceAt(tutorialDemoLat, tutorialDemoLon),
+    ),
+    TutorialStep(
+      id: 'satellite',
+      chapter: chMap,
+      title: t('Mapa de satélite sob o desenho', 'Satellite map under the drawing', 'Mapa satelital bajo el dibujo'),
+      target: TutorialTargets.menuView,
+      body: t(
+        'Ver → Mapa base → Satélite (Esri World Imagery) mostra a imagem da área por baixo do desenho, sem chave nem cadastro; aproxime com a roda do mouse para ver as linhas de plantio. No mesmo menu há mapas de ruas e topográficos (OpenStreetMap, Esri) e o Google Maps com a sua chave da Map Tiles API. A imagem só aparece com a georreferência definida.',
+        'View → Base map → Satellite (Esri World Imagery) shows the imagery of the site under the drawing, with no key or sign-up; zoom in with the mouse wheel to see the crop rows. The same menu has street and topographic maps (OpenStreetMap, Esri) and Google Maps with your own Map Tiles API key. The imagery only shows once the georeference is set.',
+        'Ver → Mapa base → Satélite (Esri World Imagery) muestra la imagen del área bajo el dibujo, sin clave ni registro; acerque con la rueda del ratón para ver las hileras del cultivo. En el mismo menú hay mapas de calles y topográficos (OpenStreetMap, Esri) y Google Maps con su propia clave de la Map Tiles API. La imagen solo aparece con la georreferencia definida.',
+      ),
+      action: t('Escolha Ver → Mapa base → Satélite', 'Choose View → Base map → Satellite', 'Elija Ver → Mapa base → Satélite'),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) {
+        placeDemo(x);
+        x.c.baseMap = BaseMap.satellite;
+        x.c.refresh();
+      },
+      isDone: (x) => x.c.baseMap != BaseMap.none,
+    ),
+    ev(
+      id: 'demDownload',
+      chapter: chMap,
+      title: t('Baixar o relevo', 'Download the terrain', 'Descargar el relieve'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Projeto → Terreno → Baixar elevação da internet (MDT) cria uma grade de cotas sobre a área a partir de um modelo digital de elevação público; a fonte Terrain Tiles (SRTM 30 m) é rápida e não pede cadastro. Deixe ligadas as opções de substituir as cotas existentes (as do exemplo estão a 100 m, fora da altitude real) e de gerar curvas de nível: as curvas aparecem sobre o satélite, e cada tubo e emissor passa a ter a elevação real no cálculo das pressões. Projeto → Terreno → Vista 3D do terreno mostra o relevo.',
+        'Design → Terrain → Download elevation from the internet (DEM) creates a grid of spot heights over the site from a public digital elevation model; the Terrain Tiles source (SRTM 30 m) is fast and needs no sign-up. Keep the options to replace the existing heights (the example\'s sit at 100 m, off the real altitude) and to generate contours switched on: the contours appear over the satellite image, and every pipe and outlet gets its real elevation in the pressure calculations. Design → Terrain → 3D terrain view shows the relief.',
+        'Diseño → Terreno → Descargar elevación de internet (MDT) crea una malla de cotas sobre el área desde un modelo digital de elevación público; la fuente Terrain Tiles (SRTM 30 m) es rápida y no pide registro. Deje activadas las opciones de reemplazar las cotas existentes (las del ejemplo están a 100 m, fuera de la altitud real) y de generar curvas de nivel: las curvas aparecen sobre el satélite, y cada tubería y emisor toma su elevación real en el cálculo de presiones. Diseño → Terreno → Vista 3D del terreno muestra el relieve.',
+      ),
+      action: t('Abra Projeto → Terreno → Baixar elevação da internet (MDT) e clique Baixar', 'Open Design → Terrain → Download elevation from the internet (DEM) and click Download', 'Abra Diseño → Terreno → Descargar elevación de internet (MDT) y haga clic en Descargar'),
+      event: 'dem',
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => unawaited(downloadDem(x)),
+    ),
+    // ------------------------------------------------------------ navigation
     state<double>(
       id: 'zoom',
       chapter: chNav,
