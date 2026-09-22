@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,7 @@ import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/state/design_runner.dart';
 import 'package:opencadirrigation/app/state/workspace.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
+import 'package:opencadirrigation/core/io/dem_online.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/main.dart';
@@ -66,7 +69,9 @@ void main() {
     expect(steps.map((s) => s.id).toSet().length, steps.length, reason: 'unique ids');
     expect(find.text(steps.first.title), findsOneWidget);
     expect(find.textContaining('Passo 1 de ${steps.length}'), findsOneWidget);
-    expect(find.textContaining('Navegação'), findsOneWidget);
+    expect(find.textContaining('Primeiros passos: mapa e relevo'), findsOneWidget);
+    // the tutorial starts by placing the site, the satellite map and the terrain
+    expect(steps.take(4).map((s) => s.id), ['welcome', 'georef', 'satellite', 'demDownload']);
     // next twice, back once
     await tester.tap(find.byKey(const Key('tut_next')));
     await settle(tester);
@@ -76,7 +81,7 @@ void main() {
     await tester.tap(find.byKey(const Key('tut_prev')));
     await settle(tester);
     expect(find.text(steps[1].title), findsOneWidget);
-    // the zoom step has a demo that changes the camera and marks it done
+    // the georeference step has a demo that places the site and marks it done
     await tester.tap(find.byKey(const Key('tut_demo')));
     await settle(tester);
     expect(find.text('Feito!'), findsOneWidget);
@@ -122,6 +127,10 @@ void main() {
     final ProjectController c = shell.c as ProjectController;
     c.autosaveEnabled = false;
     c.designRunner = InThreadDesignRunner();
+    // the terrain step downloads elevation tiles: a fake server answers
+    final tileLoader = ProjectController.demTileLoader;
+    addTearDown(() => ProjectController.demTileLoader = tileLoader);
+    ProjectController.demTileLoader = (url) async => demEncodeTerrarium(Float32List(demTileSize * demTileSize)..fillRange(0, demTileSize * demTileSize, 850));
     final steps = buildTutorialSteps('pt');
     final failed = <String>[];
     for (var i = 0; i < steps.length; i++) {
@@ -129,6 +138,7 @@ void main() {
       if (!step.interactive || step.id == 'save') continue;
       // fresh state for every step
       loadExampleAction(c);
+      c.baseMap = BaseMap.none;
       c.clearResults();
       c.select(const []);
       c.feedEnvelope.clear();

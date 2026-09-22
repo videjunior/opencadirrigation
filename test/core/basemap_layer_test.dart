@@ -119,14 +119,95 @@ void main() {
     return m == null ? null : int.parse(m[1]!);
   }
 
-  test('nothing to draw: no map, a Google map without key, a bad template, a view needing too many tiles', () {
+  test('nothing to draw: no map, a Google map without key, a bad template', () {
     serve((m, u, b) => (200, png));
     final layer = BaseMapLayer();
     expect(paint(layer, const BaseMapOptions(BaseMap.none)), 0);
     expect(paint(layer, const BaseMapOptions(BaseMap.googleSatellite)), 0);
     expect(paint(layer, const BaseMapOptions(BaseMap.custom, customUrl: 'tiles/{z}')), 0);
-    expect(paint(layer, const BaseMapOptions(BaseMap.streets), cam: camera(size: 40000)), 0);
     expect(client.requests, isEmpty);
+    layer.dispose();
+  });
+
+  test('a view needing too many tiles uses a coarser zoom instead of a blank map', () async {
+    serve((m, u, b) => (200, png));
+    final layer = BaseMapLayer();
+    var notified = 0;
+    layer.addListener(() => notified++);
+    const o = BaseMapOptions(BaseMap.streets);
+    paint(layer, o, cam: camera(size: 40000));
+    await settle(() => client.requests.isNotEmpty && notified >= client.requests.length);
+    final zooms = client.requests.map(zoomOf).toSet();
+    expect(zooms, hasLength(1));
+    expect(zooms.single, lessThan(18), reason: 'zoom 18 fits a 512 px view at this scale');
+    expect(client.requests.length, inInclusiveRange(1, layer.maxViewTiles));
+    expect(paint(layer, o, cam: camera(size: 40000)), client.requests.length);
+    layer.dispose();
+  });
+
+  test('zooming out keeps the finer tiles on screen while the coarser ones load', () async {
+    serve((m, u, b) => (200, png));
+    final layer = BaseMapLayer();
+    var notified = 0;
+    layer.addListener(() => notified++);
+    const o = BaseMapOptions(BaseMap.streets);
+    paint(layer, o);
+    await settle(() => client.requests.isNotEmpty && notified >= client.requests.length);
+    final close = client.requests.map(zoomOf).whereType<int>().toSet();
+    expect(close, hasLength(1));
+    // half the scale: one level up, nothing of it in the cache yet
+    final out = Camera(center: Pt.zero, scale: 1, size: const Size(512, 512));
+    expect(paint(layer, o, cam: out), greaterThan(0), reason: 'the cached children stand in for their parents');
+    await settle(() => false);
+    expect(client.requests.map(zoomOf).toSet(), {close.single, close.single - 1});
+    layer.dispose();
+  });
+
+  test('the tiles on screen are never evicted, however small the cache', () async {
+    serve((m, u, b) => (200, png));
+    final layer = BaseMapLayer(maxTiles: 2);
+    var notified = 0;
+    layer.addListener(() => notified++);
+    Future<void> answered() => settle(() => notified >= client.requests.length);
+    const o = BaseMapOptions(BaseMap.streets);
+    paint(layer, o);
+    await answered();
+    final inView = client.requests.toSet().length;
+    expect(inView, greaterThan(2));
+    expect(layer.tileCount, 2, reason: 'nothing was drawn yet, so the cache size applies');
+    var drawn = 0;
+    for (var i = 0; i < 3 * inView && drawn < inView; i++) {
+      drawn = paint(layer, o);
+      await answered();
+    }
+    expect(drawn, inView);
+    final asked = client.requests.length;
+    expect(paint(layer, o), inView);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(client.requests.length, asked, reason: 'every visible tile stays cached');
+    layer.dispose();
+  });
+
+  test('downloads are limited and the tiles nearest the view centre go first', () async {
+    serve((m, u, b) => (200, png));
+    final layer = BaseMapLayer(maxInFlight: 2);
+    const o = BaseMapOptions(BaseMap.streets);
+    final big = Camera(center: Pt.zero, scale: 2, size: const Size(1500, 1500));
+    paint(layer, o, cam: big);
+    await settle(() => client.requests.length >= 2);
+    final first = client.requests.take(2).toList();
+    await settle(() => false);
+    final all = client.requests.toSet();
+    expect(all.length, greaterThan(9));
+    // the first two are the tiles around the centre of the view
+    final geoC = geo.toLatLon(0, 0);
+    final z = zoomOf(first.first)!;
+    final n = 1 << z;
+    final cx = (geoC.$2 + 180) / 360 * n;
+    for (final r in first) {
+      final m = RegExp(r'/(\d+)/(\d+)/(\d+)').firstMatch(r)!;
+      expect((int.parse(m[2]!) + 0.5 - cx).abs(), lessThan(1.6), reason: r);
+    }
     layer.dispose();
   });
 

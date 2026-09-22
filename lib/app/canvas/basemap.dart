@@ -12,9 +12,15 @@
 /// exist through their `tilemap` resource (32×32 blocks, asked before the
 /// tiles); other servers answer 404 (or, on the web, a fetch error when the
 /// error page carries no CORS header), which is recorded the same way.
-/// Ancestors already in the cache are also shown while the finer tiles
-/// load, and the Google maps follow the maximum zoom the Map Tiles API
-/// reports for the viewport.
+/// While the tiles of the current zoom load, the ancestors already in the
+/// cache (zooming in) and the children and grandchildren left from a closer
+/// view (zooming out) stand in for them, so a zoom never blanks the map.
+/// The cache drops the least recently drawn tiles, never those on screen;
+/// downloads go through a queue rebuilt by every paint (view centre first),
+/// so a fast zoom does not keep fetching levels it has already left. A view
+/// that would need too many tiles (a large screen) uses the level below.
+/// The Google maps follow the maximum zoom the Map Tiles API reports for the
+/// viewport.
 library;
 
 import 'dart:async';
@@ -89,15 +95,41 @@ class TileBlock {
   }
 }
 
+/// A tile download the last paint asked for.
+class _TileJob {
+  _TileJob(this.map, this.key, this.url, this.priority);
+  final BaseMap map;
+  final String key, url;
+
+  /// Squared distance to the view centre, in tiles: nearest first.
+  final double priority;
+}
+
 class BaseMapLayer extends ChangeNotifier {
-  BaseMapLayer({this.maxTiles = 240});
+  BaseMapLayer({this.maxTiles = 320, this.maxInFlight = 12, this.maxViewTiles = 120});
+
+  /// Decoded tiles kept in memory (the tiles on screen are kept even past it).
   final int maxTiles;
+
+  /// Downloads running at the same time.
+  final int maxInFlight;
+
+  /// Tiles a view may need at its zoom; past it the level below is used.
+  final int maxViewTiles;
+
+  /// Decoded tiles, least recently drawn first.
   final Map<String, ui.Image> _tiles = {};
+
+  /// Tiles drawn by the last paint: never evicted, so a download finishing
+  /// while they are on screen cannot punch a hole in the map.
+  Set<String> _onScreen = {};
   final Set<String> _loading = {};
+
+  /// Downloads the last paint asked for, nearest to the view centre first.
+  final List<_TileJob> _queue = [];
 
   /// Tiles the server answered 404 for (no data at that zoom there).
   final Set<String> _missing = {};
-  final List<String> _order = [];
 
   /// ArcGIS tilemap blocks per '${map}/${z}'.
   final Map<String, List<TileBlock>> _blocks = {};
@@ -270,19 +302,35 @@ class BaseMapLayer extends ChangeNotifier {
 
   int get tileCount => _tiles.length;
 
+  /// Keeps a downloaded tile, dropping the least recently drawn ones past
+  /// [maxTiles] (never those on screen nor the new one).
   void _store(String key, ui.Image img) {
+    _tiles.remove(key)?.dispose();
     _tiles[key] = img;
-    _order.add(key);
-    while (_order.length > maxTiles) {
-      _tiles.remove(_order.removeAt(0))?.dispose();
+    if (_tiles.length <= maxTiles) return;
+    final drop = <String>[];
+    for (final k in _tiles.keys) {
+      if (_tiles.length - drop.length <= maxTiles) break;
+      if (k != key && !_onScreen.contains(k)) drop.add(k);
     }
+    for (final k in drop) {
+      _tiles.remove(k)!.dispose();
+    }
+  }
+
+  /// The cached tile [key], marked as just drawn.
+  ui.Image? _use(String key, Set<String> used) {
+    final img = _tiles.remove(key);
+    if (img == null) return null;
+    _tiles[key] = img;
+    used.add(key);
+    return img;
   }
 
   void _evict(bool Function(String key) test) {
     for (final k in _tiles.keys.where(test).toList()) {
       _tiles.remove(k)?.dispose();
     }
-    _order.removeWhere(test);
     _missing.removeWhere(test);
     _blocks.removeWhere((k, _) => test(k));
   }
@@ -302,18 +350,36 @@ class BaseMapLayer extends ChangeNotifier {
     return false;
   }
 
-  void _request(BaseMap m, int z, int x, int y, String session, String apiKey, String custom) {
+  /// Queues tile (z, x, y) unless it is cached, loading, missing or queued.
+  void _want(BaseMap m, int z, int x, int y, String session, String apiKey, String custom, double priority) {
     final key = _key(m, z, x, y);
     if (_tiles.containsKey(key) || _loading.contains(key) || _missing.contains(key) || _paused) return;
+    if (_queue.any((j) => j.key == key)) return;
+    _queue.add(_TileJob(m, key, url(m, z, x, y, session: session, key: apiKey, custom: custom), priority));
+  }
+
+  /// Starts queued downloads up to [maxInFlight].
+  void _pump() {
+    while (!_disposed && _loading.length < maxInFlight && _queue.isNotEmpty) {
+      final j = _queue.removeAt(0);
+      if (_tiles.containsKey(j.key) || _loading.contains(j.key) || _missing.contains(j.key) || _paused) continue;
+      _fetch(j);
+    }
+  }
+
+  void _fetch(_TileJob j) {
+    final m = j.map, key = j.key;
     _loading.add(key);
-    httpBytes(url(m, z, x, y, session: session, key: apiKey, custom: custom)).then((bytes) => ui.instantiateImageCodec(Uint8List.fromList(bytes))).then((codec) => codec.getNextFrame()).then((frame) {
+    httpBytes(j.url).then((bytes) => ui.instantiateImageCodec(Uint8List.fromList(bytes))).then((codec) => codec.getNextFrame()).then((frame) {
       _loading.remove(key);
       if (_disposed) {
         frame.image.dispose();
         return;
       }
+      _failures = 0;
       _store(key, frame.image);
       notifyListeners();
+      _pump();
     }).catchError((Object e) {
       _loading.remove(key);
       if (m.isGoogle && e is HttpStatusException && (e.status == 400 || e.status == 403)) {
@@ -328,6 +394,7 @@ class BaseMapLayer extends ChangeNotifier {
         }
       }
       _changed(); // the next paint asks for the parent tile
+      _pump();
     });
   }
 
@@ -469,9 +536,11 @@ class BaseMapLayer extends ChangeNotifier {
     }
   }
 
-  /// Draws the visible tiles. Returns the number of tiles drawn (ancestor
-  /// tiles standing in for missing or loading ones included).
+  /// Draws the visible tiles. Returns the number of tiles drawn (tiles
+  /// shown through a cached ancestor or cached children included).
   int paint(ui.Canvas canvas, Camera cam, GeoReference g, BaseMapOptions o) {
+    // the downloads wanted are those of this paint only
+    _queue.clear();
     final m = o.map;
     if (m == BaseMap.none) return 0;
     _prepare(o);
@@ -486,88 +555,139 @@ class BaseMapLayer extends ChangeNotifier {
       return 0;
     }
     final vis = cam.visible;
-    final (latC, _) = g.toLatLon(vis.center.x, vis.center.y);
-    final z = zoomFor(cam.metersPerPixel, latC, maxZoom: math.min(maxZoom(m), m.isGoogle ? (_googleMaxZoom ?? 99) : 99));
-    // tile range covering the view (from the corners)
-    final corners = [Pt(vis.minX, vis.minY), Pt(vis.maxX, vis.minY), Pt(vis.maxX, vis.maxY), Pt(vis.minX, vis.maxY)];
-    var xMin = double.infinity, xMax = -double.infinity, yMin = double.infinity, yMax = -double.infinity;
+    final (latC, lonC) = g.toLatLon(vis.center.x, vis.center.y);
+    // view corners in lat/lon, and the tile range covering them at zoom z
+    final corners = [
+      for (final c in [Pt(vis.minX, vis.minY), Pt(vis.maxX, vis.minY), Pt(vis.maxX, vis.maxY), Pt(vis.minX, vis.maxY)]) g.toLatLon(c.x, c.y),
+    ];
+    if (!latC.isFinite || !lonC.isFinite || corners.any((c) => !c.$1.isFinite || !c.$2.isFinite)) return 0;
     var latMin = double.infinity, latMax = -double.infinity, lonMin = double.infinity, lonMax = -double.infinity;
-    for (final c in corners) {
-      final (lat, lon) = g.toLatLon(c.x, c.y);
-      final (tx, ty) = _tileXY(lat, lon, z);
-      xMin = math.min(xMin, tx);
-      xMax = math.max(xMax, tx);
-      yMin = math.min(yMin, ty);
-      yMax = math.max(yMax, ty);
+    for (final (lat, lon) in corners) {
       latMin = math.min(latMin, lat);
       latMax = math.max(latMax, lat);
       lonMin = math.min(lonMin, lon);
       lonMax = math.max(lonMax, lon);
     }
-    final n = math.pow(2, z).toInt();
-    final x0 = xMin.floor().clamp(0, n - 1), x1 = xMax.floor().clamp(0, n - 1);
-    final y0 = yMin.floor().clamp(0, n - 1), y1 = yMax.floor().clamp(0, n - 1);
-    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 64) return 0; // too many tiles: zoom in first
+    (int, int, int, int) range(int z) {
+      var xMin = double.infinity, xMax = -double.infinity, yMin = double.infinity, yMax = -double.infinity;
+      for (final (lat, lon) in corners) {
+        final (tx, ty) = _tileXY(lat, lon, z);
+        xMin = math.min(xMin, tx);
+        xMax = math.max(xMax, tx);
+        yMin = math.min(yMin, ty);
+        yMax = math.max(yMax, ty);
+      }
+      final n = 1 << z;
+      return (xMin.floor().clamp(0, n - 1), xMax.floor().clamp(0, n - 1), yMin.floor().clamp(0, n - 1), yMax.floor().clamp(0, n - 1));
+    }
+
+    var z = zoomFor(cam.metersPerPixel, latC, maxZoom: math.min(maxZoom(m), m.isGoogle ? (_googleMaxZoom ?? 99) : 99));
+    var (x0, x1, y0, y1) = range(z);
+    // a large screen at a zoom rounded up needs many tiles: use the level
+    // below (slightly softer) instead of leaving the map blank
+    while ((x1 - x0 + 1) * (y1 - y0 + 1) > maxViewTiles && z > 1) {
+      z--;
+      (x0, x1, y0, y1) = range(z);
+    }
     if (m.isGoogle) _scheduleViewport(m, apiKey, session, z, latMax, latMin, lonMax, lonMin);
-    var drawn = 0;
+    final (cx, cy) = _tileXY(latC, lonC, z);
+
+    // local coordinates of a tile corner at zoom tz
+    Pt local(double tx, double ty, int tz) {
+      final (lat, lon) = _latLonOf(tx, ty, tz);
+      final u = latLonToUtm(lat, lon, zone: g.zone);
+      var northing = u.northing;
+      if (g.north && lat < 0) northing -= 10000000;
+      if (!g.north && lat >= 0) northing += 10000000;
+      return Pt(u.easting - g.originEasting, northing - g.originNorthing);
+    }
+
+    // the opacity applies to the map as a whole: tiles drawn over the
+    // stand-ins below them (and their shared edges) do not show through
+    final alpha = o.opacity.clamp(0.05, 1.0);
+    final layered = alpha < 0.999;
+    if (layered) canvas.saveLayer(ui.Offset.zero & cam.size, ui.Paint()..color = const ui.Color(0xFFFFFFFF).withValues(alpha: alpha));
     final paint = ui.Paint()
-      ..color = const ui.Color(0xFFFFFFFF).withValues(alpha: o.opacity.clamp(0.05, 1.0))
-      ..filterQuality = ui.FilterQuality.low;
+      ..filterQuality = ui.FilterQuality.low
+      ..isAntiAlias = false; // no hairline seams between neighbouring tiles
+
+    // draws [img] (or its part [src]) over tile (tx, ty) of zoom tz
+    void draw(ui.Image img, int tz, int tx, int ty, [ui.Rect? src]) {
+      final tl = cam.toScreen(local(tx.toDouble(), ty.toDouble(), tz));
+      final tr = cam.toScreen(local(tx + 1.0, ty.toDouble(), tz));
+      final bl = cam.toScreen(local(tx.toDouble(), ty + 1.0, tz));
+      final w = img.width.toDouble(), h = img.height.toDouble();
+      // affine: image (0,0)→tl, (w,0)→tr, (0,h)→bl
+      final a = (tr.dx - tl.dx) / w, b = (tr.dy - tl.dy) / w;
+      final c2 = (bl.dx - tl.dx) / h, d = (bl.dy - tl.dy) / h;
+      canvas.save();
+      canvas.transform(Float64List.fromList([a, b, 0, 0, c2, d, 0, 0, 0, 0, 1, 0, tl.dx, tl.dy, 0, 1]));
+      if (src == null) {
+        canvas.drawImage(img, ui.Offset.zero, paint);
+      } else {
+        canvas.drawImageRect(img, src, ui.Rect.fromLTWH(0, 0, w, h), paint);
+      }
+      canvas.restore();
+    }
+
+    final used = <String>{};
+    // cached children (then grandchildren) of a tile, left from a closer view
+    bool drawChildren(int tz, int tx, int ty, int depth) {
+      var any = false;
+      for (var i = 0; i < 4; i++) {
+        final cz = tz + 1, cx = 2 * tx + (i & 1), cy = 2 * ty + (i >> 1);
+        final img = _use(_key(m, cz, cx, cy), used);
+        if (img != null) {
+          draw(img, cz, cx, cy);
+          any = true;
+        } else if (depth > 1) {
+          any = drawChildren(cz, cx, cy, depth - 1) || any;
+        }
+      }
+      return any;
+    }
+
+    var drawn = 0;
     for (var x = x0; x <= x1; x++) {
       for (var y = y0; y <= y1; y++) {
-        final key = _key(m, z, x, y);
-        var img = _tiles[key];
-        ui.Rect? src;
-        if (img == null) {
-          // ask for the tile, or where the server has none for its nearest
-          // ancestor that may exist (unknown yet: wait for the tilemap)
-          var rz = z, rx = x, ry = y;
-          bool? avail;
-          while ((avail = _available(m, rz, rx, ry)) == false && rz > 1) {
-            rz--;
-            rx >>= 1;
-            ry >>= 1;
+        final img = _use(_key(m, z, x, y), used);
+        if (img != null) {
+          draw(img, z, x, y);
+          drawn++;
+          continue;
+        }
+        // ask for the tile, or where the server has none for its nearest
+        // ancestor that may exist (unknown yet: wait for the tilemap)
+        var rz = z, rx = x, ry = y;
+        bool? avail;
+        while ((avail = _available(m, rz, rx, ry)) == false && rz > 1) {
+          rz--;
+          rx >>= 1;
+          ry >>= 1;
+        }
+        final dx = x + 0.5 - cx, dy = y + 0.5 - cy;
+        if (avail == true && z - rz <= 8) _want(m, rz, rx, ry, session, apiKey, o.customUrl, dx * dx + dy * dy);
+        // meanwhile: the nearest ancestor in the cache (zooming in), unless
+        // the four children cover the tile, and the cached children and
+        // grandchildren over it (zooming out)
+        var shown = false;
+        final covered = [for (var i = 0; i < 4; i++) _tiles.containsKey(_key(m, z + 1, 2 * x + (i & 1), 2 * y + (i >> 1)))].every((v) => v);
+        for (var k = 1; !covered && k <= 8 && z - k >= 1; k++) {
+          final a = _use(_key(m, z - k, x >> k, y >> k), used);
+          if (a != null) {
+            draw(a, z, x, y, ancestorSource(x, y, k, a.width, a.height));
+            shown = true;
+            break;
           }
-          if (avail == true && z - rz <= 8) _request(m, rz, rx, ry, session, apiKey, o.customUrl);
-          // meanwhile draw the nearest ancestor already in the cache
-          for (var k = 1; k <= 8 && z - k >= 1; k++) {
-            final a = _tiles[_key(m, z - k, x >> k, y >> k)];
-            if (a != null) {
-              img = a;
-              src = ancestorSource(x, y, k, a.width, a.height);
-              break;
-            }
-          }
-          if (img == null) continue;
         }
-        // local coordinates of the tile corners: top-left, top-right, bottom-left
-        Pt local(double tx, double ty) {
-          final (lat, lon) = _latLonOf(tx, ty, z);
-          final u = latLonToUtm(lat, lon, zone: g.zone);
-          var northing = u.northing;
-          if (g.north && lat < 0) northing -= 10000000;
-          if (!g.north && lat >= 0) northing += 10000000;
-          return Pt(u.easting - g.originEasting, northing - g.originNorthing);
-        }
-
-        final tl = cam.toScreen(local(x.toDouble(), y.toDouble()));
-        final tr = cam.toScreen(local(x + 1.0, y.toDouble()));
-        final bl = cam.toScreen(local(x.toDouble(), y + 1.0));
-        final w = img.width.toDouble(), h = img.height.toDouble();
-        // affine: image (0,0)→tl, (w,0)→tr, (0,h)→bl
-        final a = (tr.dx - tl.dx) / w, b = (tr.dy - tl.dy) / w;
-        final c2 = (bl.dx - tl.dx) / h, d = (bl.dy - tl.dy) / h;
-        canvas.save();
-        canvas.transform(Float64List.fromList([a, b, 0, 0, c2, d, 0, 0, 0, 0, 1, 0, tl.dx, tl.dy, 0, 1]));
-        if (src == null) {
-          canvas.drawImage(img, ui.Offset.zero, paint);
-        } else {
-          canvas.drawImageRect(img, src, ui.Rect.fromLTWH(0, 0, w, h), paint);
-        }
-        canvas.restore();
-        drawn++;
+        if (drawChildren(z, x, y, 2)) shown = true;
+        if (shown) drawn++;
       }
     }
+    if (layered) canvas.restore();
+    _onScreen = used;
+    _queue.sort((a, b) => a.priority.compareTo(b.priority));
+    _pump();
     return drawn;
   }
 
