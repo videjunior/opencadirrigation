@@ -325,7 +325,7 @@ PlotScene buildPlotScene(
         final nozzle = project.catalog.outlet(o.outletSpecId)?.nozzle(o.nozzleId);
         final radius = nozzle?.curve.radius(o.headM) ?? 0;
         if (options.wettedRadii && radius > 0 && shown(Layers.wettedRadii)) {
-          final arc = o.arcDeg.clamp(1, 360).toDouble();
+          final arc = nozzle!.effectiveArcDeg(o.arcDeg);
           if (arc >= 360) {
             circle(Layers.wettedRadii, p, radius, widthMm: 0.13, fill: blendOverWhite(colorOf(Layers.wettedRadii), 0.08));
           } else {

@@ -8,7 +8,8 @@ import 'dart:math' as math;
 const double gravity = 9.80665; // m/s²
 const double waterDensity = 998.2; // kg/m³ at 20 °C
 const double kPaPerMeterHead = 9.80665; // kPa per metre of water
-const double psiPerMeterHead = 1.4219702; // psi per metre of water
+const double kPaPerPsi = 6.894757293168; // 1 lbf/in²
+const double psiPerMeterHead = kPaPerMeterHead / kPaPerPsi; // psi per metre of water (1.42233)
 const double barPerMeterHead = 0.0980665;
 const double metersPerFoot = 0.3048;
 const double metersPerInch = 0.0254;
@@ -182,6 +183,36 @@ String fmt(double v, [int decimals = 2]) {
   if (s.startsWith('-') && !s.contains(RegExp(r'[1-9]'))) s = s.substring(1);
   return s;
 }
+
+/// Parses a number written in any usual notation: a decimal point or comma
+/// and thousands separators ("1.234,56", "1,234.56", "1 234,5"). A single
+/// separator is the decimal one ("12,5" = "12.5"). With [lenient], the first
+/// number inside other text is taken ("R$ 1.234,56", "35 m"); otherwise the
+/// whole text must be the number. Null when there is none.
+double? parseNumber(String text, {bool lenient = false}) {
+  final plain = double.tryParse(text.trim());
+  // "NaN" and "Infinity" parse in Dart but are no value a field can hold
+  // (a project with them could not be saved)
+  if (plain != null) return plain.isFinite ? plain : null;
+  // spaces between digit groups (also no-break and thin spaces)
+  final s = text.replaceAll(RegExp(r'(?<=\d)[ \u00A0\u202F](?=\d{3}(?!\d))'), '').trim();
+  final m = lenient ? _numberPattern.firstMatch(s) : _numberPattern.matchAsPrefix(s);
+  if (m == null || (!lenient && m.end != s.length)) return null;
+  var t = m.group(0)!;
+  final dots = '.'.allMatches(t).length, commas = ','.allMatches(t).length;
+  if (dots > 0 && commas > 0) {
+    // the last separator is the decimal one
+    final decimalComma = t.lastIndexOf(',') > t.lastIndexOf('.');
+    t = decimalComma ? t.replaceAll('.', '').replaceAll(',', '.') : t.replaceAll(',', '');
+  } else if (commas > 0) {
+    t = commas == 1 ? t.replaceAll(',', '.') : t.replaceAll(',', '');
+  } else if (dots > 1) {
+    t = t.replaceAll('.', '');
+  }
+  return double.tryParse(t);
+}
+
+final _numberPattern = RegExp(r'[-+]?(?:\d[\d.,]*|[.,]\d+)(?:[eE][-+]?\d+)?');
 
 double roundTo(double v, int decimals) {
   final p = math.pow(10, decimals).toDouble();

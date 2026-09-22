@@ -126,7 +126,18 @@ void main() {
       }
       expect(r.submain, isNotNull);
       expect(r.valve, isNotNull);
-      expect(r.submain!.points.length, r.laterals.length);
+      // every lateral starts on the submain or on a branch of it (rows the
+      // rectangle cuts in two), and the submain crosses the rows once
+      final sub = r.submain!.points;
+      final lines = [sub, for (final b in r.branches) b.points];
+      for (final l in r.laterals) {
+        final start = (l as SpraylineEntity).points.first;
+        final d = [for (final line in lines) for (var k = 1; k < line.length; k++) distanceToSegment(start, line[k - 1], line[k])].reduce((a, b) => a < b ? a : b);
+        expect(d, lessThan(1e-6));
+      }
+      for (var k = 1; k < sub.length; k++) {
+        expect(sub[k].y, greaterThanOrEqualTo(sub[k - 1].y - 1e-9), reason: 'no zigzag');
+      }
     });
   });
 

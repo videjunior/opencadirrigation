@@ -768,13 +768,22 @@ dois vértices, amostrado a cada 15°.
   deslocamentos 45/46, senão 3,175 mm vezes a escala do padrão) dão o preenchimento.
 - **SOLID e TRACE**: triângulos e quadriláteros preenchidos, cujos cantos vêm na ordem 1-2-4-3,
   viram hachuras sólidas.
+- **Extrusão (0, 0, −1)**: as entidades planas (CIRCLE, ARC, LWPOLYLINE, POLYLINE 2D, HATCH,
+  SOLID, TRACE, TEXT, ATTRIB) são gravadas em coordenadas do objeto, e espelhar num programa de CAD
+  costuma deixar uma extrusão (210/220/230) de (0, 0, −1), cujo eixo X do objeto é o −X do mundo
+  pelo algoritmo do eixo arbitrário. Essas entidades, as referências INSERT e DIMENSION e o eixo
+  menor de uma ELLIPSE são espelhados de volta para coordenadas do mundo (um arco de a a b vira o
+  arco de 180° − b a 180° − a); LINE, POINT, SPLINE, MTEXT e polilinhas 3D já estão em coordenadas
+  do mundo. Outras extrusões (entidades 3D) são projetadas como estão.
 
 Blocos: cada BLOCK guarda o ponto-base (10/20) e suas entidades; INSERT (ponto 10/20, escalas 41/42,
 rotação 50, matriz 70/71 com espaçamentos 44/45) e o bloco anônimo de cada DIMENSION (código 2, já
 em coordenadas do desenho) são expandidos por uma transformação afim, com referências aninhadas
 compostas até oito níveis. Entidades na camada 0 ganham a camada da referência e a cor BYBLOCK a
-cor dela; círculos e arcos permanecem círculos e arcos quando a transformação é uma similaridade e
-viram polilinhas quando há escala anisotrópica ou espelhamento; os pontos de definição das cotas
+cor dela; círculos e arcos permanecem círculos e arcos quando a transformação preserva as formas
+(rotação, escala uniforme, espelhamento — um arco espelhado gira no outro sentido e os ângulos de
+textos e hachuras seguem as direções espelhadas) e viram polilinhas quando há escala anisotrópica;
+os pontos de definição das cotas
 (camada Defpoints) não entram. O texto é decodificado como UTF-8 (R2007+) ou Latin-1 (cp1252 dos
 arquivos antigos). O escritor produz um arquivo R12 com tabela de camadas, o denominador comum de
 todos os CADs.
@@ -820,6 +829,12 @@ reversa que serviu de base para o leitor (`dwg.dart`, 1,6 mil linhas) e para o e
   R2010, os dados de ajuste das arestas spline) e entregues às mesmas conversões dos equivalentes
   DXF. Os dez desenhos de exemplo de R13 a R2018 das fixtures de teste dão exatamente as entidades
   que o LibreDWG lista para eles.
+- **Detalhes iguais aos do leitor DXF**: polilinhas 2D mantêm os arcos dos vértices (o VERTEX_2D
+  traz as larguras inicial e final e o bulge; vértices do quadro de spline são ignorados), textos
+  alinhados são posicionados pelo ponto de alinhamento, e a extrusão de círculos, arcos,
+  polilinhas, textos, sólidos, hachuras, elipses e referências de bloco é lida e aplicada como no
+  DXF. Um desenho gravado pelo LibreDWG a partir de um arquivo do ezdxf (fixture de teste
+  `curves_r2000`) é lido igual ao próprio DXF.
 
 ### 20.3 KML e KMZ
 
@@ -959,7 +974,7 @@ verificação do projeto).
 
 ## 23. Validação
 
-A suíte tem 764 testes (`flutter test`). Os que validam a hidráulica contra referências:
+A suíte tem 834 testes (`flutter test`). Os que validam a hidráulica contra referências:
 
 | Teste | Referência |
 |---|---|

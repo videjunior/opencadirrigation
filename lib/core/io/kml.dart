@@ -150,7 +150,15 @@ class KmlReader {
       } else if (n == 'LinearRing') {
         final c = child.getElement('coordinates');
         if (c != null) out.add(_RawGeom('Polygon', _coords(c.innerText)));
-      } else if (n == 'MultiGeometry' || n == 'MultiTrack' || n == 'Track') {
+      } else if (n == 'Track') {
+        // gx:Track (a GPS walk): one "lon lat alt" per gx:coord
+        final pts = <(double, double, double)>[];
+        for (final c in child.childElements.where((e) => e.name.local == 'coord')) {
+          final v = c.innerText.trim().split(RegExp(r'\s+')).map(double.tryParse).toList();
+          if (v.length >= 2 && v[0] != null && v[1] != null) pts.add((v[0]!, v[1]!, v.length > 2 ? v[2] ?? 0 : 0));
+        }
+        if (pts.isNotEmpty) out.add(_RawGeom(pts.length == 1 ? 'Point' : 'LineString', pts));
+      } else if (n == 'MultiGeometry' || n == 'MultiTrack') {
         _collectGeoms(child, out);
       }
     }

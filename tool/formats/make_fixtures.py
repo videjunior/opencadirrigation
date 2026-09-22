@@ -18,6 +18,7 @@ import zipfile
 from pathlib import Path
 
 import ezdxf
+from ezdxf.enums import TextEntityAlignment
 import numpy as np
 import openpyxl
 import shapefile
@@ -254,6 +255,88 @@ if shutil.which('dxf2dwg'):
             print(f'  {target.name}: dxf2dwg failed ({r.returncode}) {r.stderr[-300:]}')
 else:
     print('  dxf2dwg not installed: DWG fixtures not rewritten')
+
+
+def ocs_drawing():
+    """Planar entities with the extrusion (0, 0, -1) that mirroring leaves
+    in CAD files: their object coordinates have X = world -X."""
+    doc = ezdxf.new('R2000', setup=False)
+    doc.header['$INSUNITS'] = 6
+    msp = doc.modelspace()
+    down = {'extrusion': (0, 0, -1)}
+    msp.add_circle((10, 5), 2, dxfattribs=down)
+    msp.add_arc((10, 5), 4, 0, 90, dxfattribs=down)
+    # 180° counter-clockwise bulge from (10, 0) to (10, 10) through (15, 5)
+    msp.add_lwpolyline([(0, 0, 0), (10, 0, 1.0), (10, 10, 0)], format='xyb', dxfattribs=down)
+    msp.add_text('OCS', dxfattribs={**down, 'height': 1}).set_placement((20, 5))
+    # quarter ellipse: minor axis = extrusion × major
+    msp.add_ellipse((0, -20), major_axis=(6, 0), ratio=0.5, start_param=0, end_param=math.pi / 2, dxfattribs=down)
+    blk = doc.blocks.new(name='ARCO')
+    blk.add_arc((0, 0), 1, 0, 90)
+    blk.add_line((0, 0), (2, 0))
+    msp.add_blockref('ARCO', (30, 0), dxfattribs=down)
+    hatch = msp.add_hatch(color=1, dxfattribs=down)
+    hatch.paths.add_polyline_path([(40, 0), (44, 0), (44, 4), (40, 4)], is_closed=True)
+    msp.add_solid([(50, 0), (52, 0), (50, 2), (52, 2)], dxfattribs=down)
+    # world coordinates whatever the extrusion
+    msp.add_line((0, 0), (1, 1), dxfattribs=down)
+    msp.add_mtext('WCS', dxfattribs={**down, 'char_height': 1}).set_location((60, 0))
+    return doc
+
+
+def curves_drawing():
+    """Curves and hatch boundaries: the DWG written from it by LibreDWG
+    must read back as the DXF does."""
+    doc = ezdxf.new('R2000', setup=False)
+    doc.header['$INSUNITS'] = 6
+    msp = doc.modelspace()
+    # hatch bounded by edges: line, arc, elliptic arc and spline
+    hatch = msp.add_hatch(color=3)
+    hatch.set_pattern_fill('ANSI31', scale=0.5, angle=30)
+    edges = hatch.paths.add_edge_path()
+    edges.add_line((0, 0), (10, 0))
+    edges.add_arc((10, 5), 5, -90, 90)
+    edges.add_ellipse((5, 10), major_axis=(5, 0), ratio=0.4, start_angle=0, end_angle=180)
+    edges.add_spline(control_points=[(0, 10), (-2, 7), (-2, 3), (0, 0)], degree=3, knot_values=[0, 0, 0, 0, 1, 1, 1, 1])
+    # a hatch with a bulged polyline boundary and an island
+    h2 = msp.add_hatch(color=4)
+    h2.paths.add_polyline_path([(20, 0, 0), (30, 0, 0.5), (30, 10, 0), (20, 10, 0)], is_closed=True)
+    h2.paths.add_polyline_path([(23, 3), (26, 3), (26, 6), (23, 6)], is_closed=True)
+    # a spline by its control points (LibreDWG keeps neither the weights of
+    # a rational spline nor fit points when it writes the DWG)
+    msp.add_open_spline([(40, 0), (45, 10), (50, 0), (55, 10), (58, 2)], degree=3)
+    # a heavy 2D polyline with a bulge
+    msp.add_polyline2d([(0, 20, 0, 0, 1.0), (10, 20, 0, 0, 0), (10, 30, 0, 0, 0)], format='xyseb')
+    # a block scaled unevenly, and a MINSERT array of it
+    blk = doc.blocks.new(name='MARCO')
+    blk.add_circle((0, 0), 1)
+    blk.add_lwpolyline([(-1, -1), (1, -1), (1, 1), (-1, 1)], close=True)
+    msp.add_blockref('MARCO', (40, 20), dxfattribs={'xscale': 2, 'yscale': 3})
+    # texts: left-aligned (insertion point) and centred (alignment point)
+    msp.add_text('Esquerda', dxfattribs={'height': 1}).set_placement((0, -5))
+    centred = msp.add_text('Centro', dxfattribs={'height': 1}).set_placement((20, -5), align=TextEntityAlignment.MIDDLE_CENTER)
+    centred.dxf.insert = (17, -5.5)  # the lower-left corner a CAD program works out
+    arr = msp.add_blockref('MARCO', (60, 20))
+    arr.dxf.column_count = 3
+    arr.dxf.row_count = 2
+    arr.dxf.column_spacing = 4
+    arr.dxf.row_spacing = 5
+    return doc
+
+
+curves_drawing().saveas(OUT / 'curves_r2000.dxf')
+print('  curves_r2000.dxf')
+if shutil.which('dxf2dwg'):
+    target = OUT / 'curves_r2000.dwg'
+    r = subprocess.run(['dxf2dwg', '--as', 'r2000', '-y', '-o', str(target), str(OUT / 'curves_r2000.dxf')], capture_output=True, text=True)
+    print(f'  {target.name} ({target.stat().st_size} bytes)' if r.returncode == 0 and target.exists() else f'  {target.name}: dxf2dwg failed ({r.returncode}) {r.stderr[-300:]}')
+
+ocs_drawing().saveas(OUT / 'ocs_mirrored_r2000.dxf')
+print('  ocs_mirrored_r2000.dxf')
+if shutil.which('dxf2dwg'):
+    target = OUT / 'ocs_mirrored_r2000.dwg'
+    r = subprocess.run(['dxf2dwg', '--as', 'r2000', '-y', '-o', str(target), str(OUT / 'ocs_mirrored_r2000.dxf')], capture_output=True, text=True)
+    print(f'  {target.name} ({target.stat().st_size} bytes)' if r.returncode == 0 and target.exists() else f'  {target.name}: dxf2dwg failed ({r.returncode}) {r.stderr[-300:]}')
 
 # ----------------------------------------------------------------- KML / KMZ
 print('KML / KMZ')

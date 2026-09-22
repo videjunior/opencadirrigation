@@ -1981,7 +1981,7 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
           if (n != null) flow += n.curve.flow(e.headM) * e.outletCount * inside;
         } else if (e is TapeEntity) {
           final t = project.catalog.tape(e.tapeSpecId);
-          if (t != null) flow += t.emitter.flow(e.inletHeadM) * (e.length / t.emitterSpacingM) * inside;
+          if (t != null && t.emitterSpacingM > 0) flow += t.emitter.flow(e.inletHeadM) * (e.length / t.emitterSpacingM) * inside;
         }
       }
     }

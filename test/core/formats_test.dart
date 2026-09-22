@@ -330,6 +330,143 @@ void main() {
       checkClientDrawing(c);
     });
 
+    test('curves read back as from the DXF: hatch edges, bulges, splines, 2D polylines, scaled blocks, MINSERT', () {
+      final dxf = DxfReader.parse(utf8.decode(fixture('curves_r2000.dxf'))).entities;
+      final r = DwgReader.parse(fixture('curves_r2000.dwg'));
+      expect(r.warnings, isEmpty);
+      final dwg = r.document.entities;
+      expect(dwg.map((e) => e.type).toList(), dxf.map((e) => e.type).toList());
+      // the same geometry, whatever the arc tessellation step of each reader
+      double gap(List<Pt> a, List<Pt> b, bool closed) {
+        var worst = 0.0;
+        for (final p in a) {
+          var best = double.infinity;
+          for (var i = 1; i < b.length + (closed ? 1 : 0); i++) {
+            best = math.min(best, distanceToSegment(p, b[i - 1], b[i % b.length]));
+          }
+          worst = math.max(worst, best);
+        }
+        return worst;
+      }
+
+      for (var i = 0; i < dxf.length; i++) {
+        final a = dxf[i], b = dwg[i];
+        if (a.center != null) {
+          expect(b.center, near(a.center!, 1e-9));
+          expect(b.radius, closeTo(a.radius, 1e-9));
+        }
+        if (a.points.length >= 2) {
+          expect(gap(a.points, b.points, a.closed), lessThan(0.05), reason: '${a.type} #$i');
+          expect(gap(b.points, a.points, a.closed), lessThan(0.05), reason: '${a.type} #$i');
+        }
+        expect(b.closed, a.closed);
+      }
+      // edge boundary: line, arc to x = 15, elliptic arc to y = 12, spline to x = −1.5
+      final edges = Bounds.ofPoints(dwg.first.points);
+      expect(edges.maxX, closeTo(15, 1e-6));
+      expect(edges.maxY, closeTo(12, 1e-6));
+      expect(edges.minX, closeTo(-1.5, 0.01));
+      expect(dwg.first.rotation, closeTo(75, 1e-9), reason: 'ANSI31 (45°) turned 30°');
+      // the 2D polyline keeps its semicircle below the chord
+      final heavy = dwg.firstWhere((e) => e.type == 'POLYLINE' && e.points.first.distanceTo(const Pt(0, 20)) < 1e-9);
+      expect(heavy.points.map((p) => p.y).reduce(math.min), closeTo(15, 1e-6));
+      // blocks: an uneven scale turns the circle into an ellipse, the array makes 3 × 2 copies
+      final ellipse = dwg.firstWhere((e) => e.type == 'POLYLINE' && e.closed && e.points.length > 20 && e.points.first.x > 37);
+      final eb = Bounds.ofPoints(ellipse.points);
+      expect(eb.width, closeTo(4, 1e-6));
+      expect(eb.height, closeTo(6, 1e-6));
+      expect(dwg.where((e) => e.type == 'CIRCLE').map((e) => e.center), unorderedEquals([for (final y in [20.0, 25.0]) for (final x in [60.0, 64.0, 68.0]) Pt(x, y)]));
+      // a left text sits on its insertion point, a centred one on its alignment point
+      for (final doc in [dxf, dwg]) {
+        expect(doc.singleWhere((e) => e.text == 'Esquerda').points.single, near(const Pt(0, -5), 1e-9));
+        expect(doc.singleWhere((e) => e.text == 'Centro').points.single, near(const Pt(20, -5), 1e-9));
+      }
+    });
+
+  });
+
+  group('extrusion (0, 0, −1): mirrored object coordinates', () {
+    // world positions as ezdxf's arbitrary axis algorithm gives them (see
+    // ocs_drawing in tool/formats/make_fixtures.py)
+    void checkOcs(DxfDocument d) {
+      DxfEntity one(String type, bool Function(DxfEntity) where) => d.entities.where((e) => e.type == type && where(e)).single;
+      final circle = one('CIRCLE', (_) => true);
+      expect(circle.center, near(const Pt(-10, 5), 1e-9));
+      expect(circle.radius, 2);
+      final arc = one('ARC', (e) => e.radius == 4);
+      expect(arc.center, near(const Pt(-10, 5), 1e-9));
+      // clockwise from (−14, 5) to (−10, 9) = counter-clockwise from 90° to 180°
+      expect(arc.startAngle, closeTo(90, 1e-9));
+      expect(arc.endAngle, closeTo(180, 1e-9));
+      // the bulge now bends to the world −X side
+      final lw = one('POLYLINE', (e) => e.points.first.distanceTo(Pt.zero) < 1e-9 && e.points.length > 3);
+      expect(lw.points[1], near(const Pt(-10, 0), 1e-9));
+      expect(lw.points.last, near(const Pt(-10, 10), 1e-9));
+      expect(lw.points.map((p) => p.x).reduce(math.min), closeTo(-15, 1e-6));
+      final text = one('TEXT', (e) => e.text == 'OCS');
+      expect(text.points.single, near(const Pt(-20, 5), 1e-9));
+      // the quarter ellipse ends below its centre (minor axis = extrusion × major)
+      final ellipse = one('POLYLINE', (e) => e.points.first.distanceTo(const Pt(6, -20)) < 1e-9);
+      expect(ellipse.points.last, near(const Pt(0, -23), 1e-6));
+      // the hatch (a solid fill by ezdxf's default) and the SOLID
+      bool spans(DxfEntity e, double x) => e.points.any((p) => (p.x.abs() - x).abs() < 1e-6);
+      final hatch = one('HATCH', (e) => spans(e, 44));
+      expect(Bounds.ofPoints(hatch.points).minX, closeTo(-44, 1e-9));
+      expect(Bounds.ofPoints(hatch.points).maxX, closeTo(-40, 1e-9));
+      final solid = one('HATCH', (e) => spans(e, 52));
+      expect(Bounds.ofPoints(solid.points).minX, closeTo(-52, 1e-9));
+      expect(Bounds.ofPoints(solid.points).maxX, closeTo(-50, 1e-9));
+      // the block inserted with the extrusion: the line runs to −X and the arc turns
+      final blockLine = one('LINE', (e) => e.points.first.distanceTo(const Pt(-30, 0)) < 1e-9);
+      expect(blockLine.points.last, near(const Pt(-32, 0), 1e-9));
+      final blockArc = one('ARC', (e) => e.radius == 1);
+      expect(blockArc.center, near(const Pt(-30, 0), 1e-9));
+      expect(blockArc.startAngle, closeTo(90, 1e-9));
+      expect(blockArc.endAngle, closeTo(180, 1e-9));
+      // LINE and MTEXT are in world coordinates whatever the extrusion
+      expect(one('LINE', (e) => e.points.first.distanceTo(Pt.zero) < 1e-9).points.last, near(const Pt(1, 1), 1e-9));
+      expect(one('TEXT', (e) => e.text == 'WCS').points.single, near(const Pt(60, 0), 1e-9));
+    }
+
+    test('DXF written by ezdxf', () {
+      checkOcs(DxfReader.parse(utf8.decode(fixture('ocs_mirrored_r2000.dxf'))));
+    });
+
+    test('DWG written by LibreDWG from it', () {
+      final r = DwgReader.parse(fixture('ocs_mirrored_r2000.dwg'));
+      expect(r.warnings.where((w) => w.startsWith('object_error')), isEmpty);
+      checkOcs(r.document);
+    });
+
+    test('the imported arcs stay arcs on the mirrored side', () {
+      final (c, _) = imported('ocs_mirrored_r2000.dwg');
+      final arc = c.project.entities.whereType<ArcEntity>().firstWhere((a) => (a.radius - 4).abs() < 1e-9);
+      expect(arc.startPoint, near(const Pt(-10, 9), 1e-9));
+      expect(arc.endPoint, near(const Pt(-14, 5), 1e-9));
+    });
+  });
+
+  test('a mirrored block keeps its circles and arcs, turned the other way', () {
+    final d = DxfReader.parse([
+      '0', 'SECTION', '2', 'BLOCKS', '0', 'BLOCK', '2', 'B', '10', '0', '20', '0',
+      '0', 'ARC', '8', '0', '10', '0', '20', '0', '40', '1', '50', '0', '51', '90',
+      '0', 'CIRCLE', '8', '0', '10', '2', '20', '0', '40', '0.5',
+      '0', 'TEXT', '8', '0', '10', '0', '20', '0', '40', '1', '1', 'T', '50', '30',
+      '0', 'ENDBLK', '0', 'ENDSEC',
+      '0', 'SECTION', '2', 'ENTITIES', '0', 'INSERT', '8', 'L', '2', 'B', '10', '10', '20', '0', '41', '-2', '42', '2',
+      '0', 'ENDSEC', '0', 'EOF',
+    ].join('\n'));
+    final arc = d.entities.singleWhere((e) => e.type == 'ARC');
+    expect(arc.center, near(const Pt(10, 0), 1e-9));
+    expect(arc.radius, 2);
+    // x → −x: the quarter from 0° to 90° becomes the one from 90° to 180°
+    expect(arc.startAngle, closeTo(90, 1e-9));
+    expect(arc.endAngle, closeTo(180, 1e-9));
+    final circle = d.entities.singleWhere((e) => e.type == 'CIRCLE');
+    expect(circle.center, near(const Pt(6, 0), 1e-9));
+    expect(circle.radius, 1);
+    // a text at 30° now runs at 150°
+    expect(d.entities.singleWhere((e) => e.type == 'TEXT').rotation, closeTo(150, 1e-9));
   });
 
   void checkFarm(ProjectController c) {

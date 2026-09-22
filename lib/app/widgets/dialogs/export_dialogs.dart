@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/io/geo.dart';
 import '../../../core/io/pdf_sheet.dart';
+import '../../../core/units.dart';
 import '../../state/controller.dart';
 
 /// Lets the user define (or edit/remove) the project's georeference.
@@ -23,7 +24,7 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
   return showDialog<bool>(
     context: context,
     builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      double? num(TextEditingController tc) => double.tryParse(tc.text.trim().replaceAll(',', '.'));
+      double? num(TextEditingController tc) => parseNumber(tc.text);
       GeoReference? parse() {
         if (useUtm) {
           final z = int.tryParse(zone.text.trim()), e = num(east), n = num(north);
@@ -177,7 +178,8 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
           FilledButton(
             key: const Key('plot_ok'),
             onPressed: () {
-              final s = double.tryParse(scaleCtl.text.trim().replaceAll(',', '.'));
+              // "500", or the whole ratio typed ("1:500", "1/500")
+              final s = parseNumber(scaleCtl.text.split(RegExp(r'[:/]')).last);
               Navigator.pop(ctx, fit || s == null || s <= 0 ? o.copyWith(clearScale: true) : o.copyWith(scale: s));
             },
             child: Text(t('plot.export')),

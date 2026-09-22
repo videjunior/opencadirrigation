@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/units.dart';
+
 /// Numeric text field that commits on submit / focus loss.
 class NumField extends StatefulWidget {
   const NumField({super.key, required this.label, required this.value, required this.onChanged, this.suffix, this.decimals = 2, this.enabled = true, this.width});
@@ -39,13 +41,13 @@ class _NumFieldState extends State<NumField> {
     if (_c.text == text) return;
     // a new value, or the one typed was not taken (clamped, rejected): show
     // what the model holds instead of the number typed
-    final shown = double.tryParse(_c.text.replaceAll(',', '.'));
+    final shown = parseNumber(_c.text);
     final tolerance = 0.5 * math.pow(10, -widget.decimals) + 1e-12;
     if (old.value != widget.value || shown == null || (shown - widget.value).abs() > tolerance) _c.text = text;
   }
 
   void _commit() {
-    final v = double.tryParse(_c.text.replaceAll(',', '.'));
+    final v = parseNumber(_c.text);
     if (v == null) {
       // not a number: back to the value in force
       _c.text = _fmt(widget.value);
@@ -176,10 +178,18 @@ class KV extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 1.5),
-    child: Row(children: [
-      Expanded(child: Text(k, style: const TextStyle(fontSize: 11.5, color: Colors.white60))),
-      Text(v, style: TextStyle(fontSize: 11.5, color: color ?? Colors.white, fontFamily: 'monospace')),
-    ]),
+    child: LayoutBuilder(
+      builder: (context, box) => Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(child: Text(k, style: const TextStyle(fontSize: 11.5, color: Colors.white60))),
+        const SizedBox(width: 6),
+        // a long value ("15.2 m³/h @ 31.4 m.c.a. (surplus 2.0)") wraps
+        // instead of running off a narrow panel
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: box.maxWidth * 0.62),
+          child: Text(v, textAlign: TextAlign.end, style: TextStyle(fontSize: 11.5, color: color ?? Colors.white, fontFamily: 'monospace')),
+        ),
+      ]),
+    ),
   );
 }
 

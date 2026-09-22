@@ -348,7 +348,11 @@ antigas são descartados.
   lateral com emissores ou fita, posição do submain (início, centro, fim), válvula (posição e modelo),
   comprimento do pé de válvula (stub), nomes. Se uma linha, polilinha, curva de nível ou spline
   estiver selecionada ao abrir o diálogo, ela pode servir de guia: as laterais seguem a curva
-  (paralelas a uma curva de nível ou a uma divisa curva) e são recortadas pelo polígono.
+  (paralelas a uma curva de nível ou a uma divisa curva) e são recortadas pelo polígono. O submain
+  passa pelo ponto de alimentação de cada fileira no lado escolhido, contornando por dentro do
+  talhão onde uma fileira não alcança essa linha (talhão em L); fileiras que o polígono corta em
+  vários pedaços (talhão em U, fileira curva recortada em dois) são alimentadas por ramais ligados
+  a ele, e toda lateral fica conectada.
 - **Grade de aspersores** (AH): polígono, aspersor e bocal, espaçamentos, padrão quadrado ou
   triangular, direção e pressão de projeto.
 - **Densograma** (Zona → Densograma, `DENS`): mapa da água aplicada pelos aspersores e
@@ -655,12 +659,12 @@ worker de cálculo.
 | Formato | O que entra | Detalhes |
 |---|---|---|
 | DXF (ASCII) | LINE, LWPOLYLINE e POLYLINE (com arcos de bulge), CIRCLE, ARC, ELLIPSE, SPLINE (pelos pontos de ajuste, ou a curva NURBS dos pontos de controle, nós e pesos), HATCH (contornos de polilinhas, linhas, arcos, elipses e splines; ângulo e espaçamento do padrão; ilhas como polilinhas), SOLID, TRACE, TEXT, MTEXT, ATTRIB, POINT, camadas e blocos (INSERT, MINSERT e o bloco das cotas DIMENSION, inclusive aninhados) | R12 a 2018, Latin-1 ou UTF-8; polilinhas com elevação (2D ou vértices 3D) viram curvas de nível; pontos com Z viram cotas; escala pelas unidades do arquivo |
-| DWG | Mesmas entidades (inclusive ELLIPSE, SPLINE, HATCH, SOLID e TRACE), camadas, blocos (INSERT, MINSERT) e cotas | R13/R14 (parcial), 2000, 2004, 2007, 2010, 2013 e 2018, em Dart puro; avisa objetos ignorados |
-| KML / KMZ | Placemarks, pastas como camadas, altitude ou atributo ELEV como elevação | WGS84 → UTM (fuso automático) com origem local; georreferencia o projeto |
+| DWG | Mesmas entidades (inclusive ELLIPSE, SPLINE, HATCH, SOLID e TRACE; polilinhas 2D com seus arcos), camadas, blocos (INSERT, MINSERT) e cotas; como no DXF, entidades espelhadas no programa de CAD (extrusão 0, 0, −1) ficam onde o CAD as mostra | R13/R14 (parcial), 2000, 2004, 2007, 2010, 2013 e 2018, em Dart puro; avisa objetos ignorados |
+| KML / KMZ | Placemarks, pastas como camadas, trilhas de GPS (gx:Track), altitude ou atributo ELEV como elevação | WGS84 → UTM (fuso automático) com origem local; georreferencia o projeto |
 | SHP (+ DBF, PRJ, CPG em zip) | Pontos, linhas, polígonos, multipontos, variantes Z | Elevação do Z ou de atributo ELEV/Z/COTA; nome de NAME/NOME/ID; atributos em UTF-8 ou Latin-1 (.cpg); sem .prj, graus são reconhecidos pela faixa e pela precisão |
-| CSV, TXT, XYZ, PNEZD | Pontos de levantamento | Colunas detectadas pelo cabeçalho ou posição; vírgula decimal aceita; lat/lon reconhecidos |
+| CSV, TXT, XYZ, PNEZD | Pontos de levantamento | Colunas detectadas pelo cabeçalho ou posição; vírgula decimal aceita (também em colunas separadas por espaço), separador de milhar também; uma coluna de texto dá nome aos pontos; lat/lon reconhecidos |
 | GeoTIFF de elevação | Grade de cotas | Uma banda de alturas, float ou inteiro, nodata ignorado |
-| JPG, PNG, GeoTIFF, zip com world file | Imagem de fundo | Georreferenciada (world file, inclusive rotacionado; tags GeoTIFF) ou colocada à mão e alinhada por 2 pontos |
+| JPG, PNG, GeoTIFF, zip com world file | Imagem de fundo | Georreferenciada (world file, inclusive rotacionado; tags GeoTIFF) ou colocada à mão e alinhada por 2 pontos; rasters com mais de 100 milhões de pixels são recusados antes de decodificar |
 
 ### Catálogos e exemplos
 
@@ -838,7 +842,7 @@ Requisitos: Flutter estável recente (desenvolvido com 3.47, Dart 3.13). Sem dep
 ```bash
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # 764 testes: motor, modelo, formatos, interface
+flutter test                       # 834 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
@@ -874,7 +878,7 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 
 ## 16. Testes
 
-`flutter test` roda 764 testes em pouco mais de dois minutos. O que cada grupo garante:
+`flutter test` roda 834 testes em pouco mais de dois minutos. O que cada grupo garante:
 
 | Arquivo | Cobertura |
 |---|---|
@@ -899,7 +903,9 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/management_test.dart` | Demandas de zonas e pivôs (nominais ou dos resultados); turnos automáticos: maiores primeiro dentro da vazão da fonte, limite de zonas, zonas maiores que o limite, ids que não colidem |
 | `core/import_curves_test.dart` | NURBS racional e fixada; SPLINE do DXF por pontos de controle ou de ajuste, HATCH com bordas de polilinha, linha, arco (nos dois sentidos), elipse e spline e ilhas, SOLID/TRACE, hachuras dentro de blocos; splines, hachuras, sólidos e a elipse do DWG R2000–R2018 iguais aos lidos pelo LibreDWG |
 | `core/controller_extra_test.dart` | Abrir arquivo ou exemplo descarta marcas, perfil, verificação e histórico antigos; edições de diálogo como um passo de desfazer (mutações incorporadas, unidades mantêm os resultados); desfazer sem nada a desfazer; grips arrastam fios com os nós de tubo; pintura das novas entidades e do densograma |
-| `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto; gerenciamento com pivôs e turnos automáticos, diálogos fechados por fora, densograma, ferramentas de controlador e fio com a aba Elétrico, cotas de ordenada e de diâmetro, a aba Fios do catálogo, campos numéricos que rejeitam um valor |
+| `core/regressions_test.dart` | Cada defeito corrigido na varredura de 2026-09-22, cada um falhando sem a sua correção: lateral cortada sobre um emissor o mantém uma vez só; curvas geradas continuam geradas; arquivos sem o contador de ids; aspersores de setor espelhados e cabeças de 360° com bocal de setor (também no PDF e na tela); arquivos de levantamento com espaço e vírgula decimal; imagens grandes demais para decodificar; arquivos danificados informados como tal; psi, kPa e bar; CU da grade com aspersores próximos; blocos em talhões em L e em U e fileiras guiadas recortadas em dois; telescopagem desenhada nos dois sentidos; números com separador de milhar, preços e curvas de bomba; espaçamentos 0 e valores NaN que travavam ou impediam salvar; trilhas de GPS no KML |
+| `core/hotkeys_dispatch_test.dart` | O despachante de teclado isolado: teclas do aplicativo, de edição e do canvas, o que diálogos e menus bloqueiam, cada alias de comando digitado |
+| `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto; gerenciamento com pivôs e turnos automáticos, diálogos fechados por fora, densograma, ferramentas de controlador e fio com a aba Elétrico, cotas de ordenada e de diâmetro, a aba Fios do catálogo, campos numéricos que rejeitam um valor; as propriedades de cada tipo de entidade, edição em lote e os resultados da seleção; a leitura do gráfico de perfil; navegação por roda, trackpad, botão do meio e dois dedos; diálogos de georreferência e de plotagem; menus da linha principal e do celular; o diálogo de turnos |
 | `web_metadata_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt |
 
 Armadilhas conhecidas ao escrever testes de widget: o cálculo é assíncrono de verdade e deve rodar

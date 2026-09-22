@@ -132,7 +132,8 @@ class ClipboardPayload {
         ids.add(e.id);
       }
     }, label: 'hist.paste');
-    c.select(ids);
+    // refused (a design is running): keep the selection
+    if (ids.isNotEmpty) c.select(ids);
     return ids;
   }
 }

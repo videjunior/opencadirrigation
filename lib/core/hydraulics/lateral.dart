@@ -48,7 +48,8 @@ class LateralSpec {
 
   int get outletCount {
     final off = firstOffset ?? spacing;
-    if (length < off) return 0;
+    if (!off.isFinite || off < 0 || length < off) return 0;
+    if (!(spacing > 0)) return 1;
     return ((length - off) / spacing).floor() + 1;
   }
 
@@ -289,6 +290,7 @@ double maxLateralLength(
     return r.minPressure >= minPressure - 1e-9 && r.maxPressure <= maxPressure + 1e-9 && r.maxVelocity <= maxVelocity;
   }
 
+  if (!(spec.spacing > 0)) return 0;
   var lo = spec.spacing;
   var hi = maxLength;
   if (!ok(lo)) return 0;

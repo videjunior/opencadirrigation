@@ -305,7 +305,7 @@ class NetworkBuilder {
             continue;
           }
           final total = polylineLength(pts);
-          final n = (total / spec.emitterSpacingM).floor();
+          final n = spec.emitterSpacingM > 0 ? (total / spec.emitterSpacingM).floor() : 0;
           final positions = [for (var i = 1; i <= n; i++) i * spec.emitterSpacingM];
           final lumps = _lump(positions, total);
           final lo = math.max(spec.minHeadM, t.inletHeadM * (1 - spec.tolBelowPct / 100));

@@ -348,7 +348,10 @@ results computed with the old settings are discarded.
   emitters or tape, submain position (start, centre, end), valve (position and model), valve stub
   length, names. If a line, polyline, contour line or spline is selected when the dialog opens it
   can act as a guide: the laterals follow the curve (parallel to a contour line or a curved
-  boundary) and are clipped by the polygon.
+  boundary) and are clipped by the polygon. The submain runs through the feed point of every row
+  on the chosen side, stepping inside the field where a row does not reach that line (an L-shaped
+  field); rows the polygon cuts in several pieces (a U-shaped field, a curved row clipped in two)
+  are fed by branches joined to it, so every lateral is connected.
 - **Sprinkler grid** (AH): polygon, sprinkler and nozzle, spacings, square or triangular pattern,
   direction and design pressure.
 - **Densogram** (Zone → Densogram, `DENS`): map of the water applied by the sprinklers and
@@ -654,12 +657,12 @@ calculation worker.
 | Format | What comes in | Details |
 |---|---|---|
 | DXF (ASCII) | LINE, LWPOLYLINE and POLYLINE (with bulge arcs), CIRCLE, ARC, ELLIPSE, SPLINE (through its fit points, or the NURBS curve of its control points, knots and weights), HATCH (boundary paths of polylines, lines, arcs, ellipses and splines; pattern angle and spacing; islands as polylines), SOLID, TRACE, TEXT, MTEXT, ATTRIB, POINT, layers and blocks (INSERT, MINSERT and the block of every DIMENSION, nested too) | R12 to 2018, Latin-1 or UTF-8; polylines with elevation (2D or 3D vertices) become contour lines; points with Z become spot heights; scale from the file units |
-| DWG | Same entities (ELLIPSE, SPLINE, HATCH, SOLID and TRACE included), layers, blocks (INSERT, MINSERT) and dimensions | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018, in pure Dart; reports skipped objects |
-| KML / KMZ | Placemarks, folders as layers, altitude or ELEV attribute as elevation | WGS84 → UTM (automatic zone) with a local origin; georeferences the project |
+| DWG | Same entities (ELLIPSE, SPLINE, HATCH, SOLID and TRACE included; 2D polylines with their arcs), layers, blocks (INSERT, MINSERT) and dimensions; like the DXF, entities mirrored in the CAD program (extrusion 0, 0, −1) land where the CAD shows them | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018, in pure Dart; reports skipped objects |
+| KML / KMZ | Placemarks, folders as layers, GPS tracks (gx:Track), altitude or ELEV attribute as elevation | WGS84 → UTM (automatic zone) with a local origin; georeferences the project |
 | SHP (+ DBF, PRJ, CPG in a zip) | Points, lines, polygons, multipoints, Z variants | Elevation from Z or from an ELEV/Z/COTA attribute; name from NAME/NOME/ID; attributes in UTF-8 or Latin-1 (.cpg); without .prj, degrees are recognised by range and precision |
-| CSV, TXT, XYZ, PNEZD | Survey points | Columns detected by header or position; decimal comma accepted; lat/lon recognised |
+| CSV, TXT, XYZ, PNEZD | Survey points | Columns detected by header or position; decimal comma accepted (also in columns separated by spaces), thousands separators too; a text column names the points; lat/lon recognised |
 | Elevation GeoTIFF | Elevation grid | One band of heights, float or integer, nodata ignored |
-| JPG, PNG, GeoTIFF, zip with world file | Background image | Georeferenced (world file, rotated too; GeoTIFF tags) or placed by hand and aligned by 2 points |
+| JPG, PNG, GeoTIFF, zip with world file | Background image | Georeferenced (world file, rotated too; GeoTIFF tags) or placed by hand and aligned by 2 points; rasters over 100 million pixels are refused before decoding |
 
 ### Catalogues and examples
 
@@ -837,7 +840,7 @@ Requirements: a recent stable Flutter (developed with 3.47, Dart 3.13). No nativ
 ```bash
 flutter pub get
 flutter run -d chrome              # development in the browser
-flutter test                       # 764 tests: engine, model, formats, interface
+flutter test                       # 834 tests: engine, model, formats, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompiles web/design_worker.js after changing lib/core (the app falls
                                    # back to the interface thread when the file is missing)
@@ -873,7 +876,7 @@ isolate for the calculation.
 
 ## 16. Tests
 
-`flutter test` runs 764 tests in a little over two minutes. What each group guarantees:
+`flutter test` runs 834 tests in a little over two minutes. What each group guarantees:
 
 | File | Coverage |
 |---|---|
@@ -898,7 +901,9 @@ isolate for the calculation.
 | `core/management_test.dart` | Demands of zones and pivots (nominal or from the results); automatic system flows: largest first within the supply flow, zone limit, zones larger than the limit, ids that do not collide |
 | `core/import_curves_test.dart` | Rational and clamped NURBS; DXF SPLINE by control points or fit points, HATCH with polyline, line, arc (both senses), ellipse and spline edges and islands, SOLID/TRACE, hatches inside blocks; DWG R2000–R2018 splines, hatches, solids and the ellipse matching LibreDWG |
 | `core/controller_extra_test.dart` | Opening a file or an example drops the old marks, profile, check and history; dialog edits as one undo step (mutations folded in, units keep the results); undo with nothing to undo; grips drag wires with pipe nodes; painter for the new entities and the densogram |
-| `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout; management with pivots and automatic flows, dialogs closed outside, densogram, controller and wire tools with the Electrical tab, ordinate and diameter dimensions, the Wires tab of the catalogue, numeric fields that reject a value |
+| `core/regressions_test.dart` | Every defect fixed in the 2026-09-22 sweep, each failing without its fix: a lateral cut on an outlet keeps it once; generated contours stay generated; files without the id counter; mirrored part-circle sprinklers and full-circle heads with a part-circle nozzle (plot and canvas too); survey files with spaces and decimal commas; rasters too large to decode; damaged files reported as such; psi, kPa and bar; grid CU with close heads; blocks on L and U fields and guided rows clipped in two; telescoping drawn either way; numbers with thousands separators, prices and pump curves; spacings of 0 and NaN values that used to hang or break the saving; GPS tracks in KML |
+| `core/hotkeys_dispatch_test.dart` | The keyboard dispatcher on its own: application, editing and canvas keys, what dialogs and menus block, every typed command alias |
+| `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout; management with pivots and automatic flows, dialogs closed outside, densogram, controller and wire tools with the Electrical tab, ordinate and diameter dimensions, the Wires tab of the catalogue, numeric fields that reject a value; the properties of every entity type, batch editing and the results of the selection; the profile chart readout; wheel, trackpad, middle-button and two-finger navigation; georeference and plot dialogs; mainline and phone menus; the system flows dialog |
 | `web_metadata_test.dart`, `version_test.dart` | Generated site pages, SEO, JSON-LD, manifest, icons, robots, sitemap, 404, llms.txt; app version consistent with pubspec.yaml and the site |
 
 Known pitfalls when writing widget tests: the calculation is truly asynchronous and must run inside

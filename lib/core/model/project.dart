@@ -2,6 +2,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import '../hydraulics/friction.dart';
 import '../io/geo.dart';
@@ -19,7 +20,10 @@ class Layer {
   bool visible;
   bool locked;
   Map<String, dynamic> toJson() => {'name': name, 'color': color, 'visible': visible, 'locked': locked};
-  static Layer fromJson(Map<String, dynamic> j) => Layer(name: j['name'] as String, color: j['color'] as int, visible: j['visible'] as bool? ?? true, locked: j['locked'] as bool? ?? false);
+  static Layer fromJson(Map<String, dynamic> j) {
+    final name = j['name'] as String;
+    return Layer(name: name, color: (j['color'] as num?)?.toInt() ?? Layers.defaultColors[name] ?? 0xFFB0BEC5, visible: j['visible'] as bool? ?? true, locked: j['locked'] as bool? ?? false);
+  }
 }
 
 enum SizingMethod { lp, greedy }
@@ -416,26 +420,51 @@ class Project {
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
   };
 
-  String toJsonString({bool pretty = false}) => pretty ? const JsonEncoder.withIndent('  ').convert(toJson()) : jsonEncode(toJson());
+  String toJsonString({bool pretty = false}) => encodeJson(toJson(), pretty: pretty);
 
   static Project fromJson(Map<String, dynamic> j) {
     if (j['format'] != formatName && j['format'] != legacyFormatName) throw const FormatException('Not an OpenCADIrrigation project');
+    final entities = ((j['entities'] as List?) ?? []).map((e) => Entity.fromJson(e as Map<String, dynamic>)).toList();
     return Project(
       meta: ProjectMeta.fromJson(j['meta'] as Map<String, dynamic>?),
       params: DesignParameters.fromJson(j['params'] as Map<String, dynamic>?),
       catalog: j['catalog'] != null ? Catalog.fromJson(j['catalog'] as Map<String, dynamic>) : Catalog.defaultCatalog(),
       layers: ((j['layers'] as List?) ?? []).map((l) => Layer.fromJson(l as Map<String, dynamic>)).toList().let((l) => l.isEmpty ? defaultLayers() : l),
-      entities: ((j['entities'] as List?) ?? []).map((e) => Entity.fromJson(e as Map<String, dynamic>)).toList(),
+      entities: entities,
       systemFlows: ((j['systemFlows'] as List?) ?? []).map((s) => SystemFlow.fromJson(s as Map<String, dynamic>)).toList(),
-      nextId: (j['nextId'] as num?)?.toInt() ?? 1,
+      // a file without the counter (written by hand or by another program)
+      // or with a stale one must not hand out ids that are already taken
+      nextId: math.max((j['nextId'] as num?)?.toInt() ?? 1, nextIdAfter(entities)),
     )..currentLayer = j['currentLayer'] as String? ?? Layers.drawing;
   }
+
+  /// The first free number for [newId] given the ids of [entities]
+  /// (`e<number>`).
+  static int nextIdAfter(Iterable<Entity> entities) {
+    var n = 1;
+    for (final e in entities) {
+      final m = _idNumber.firstMatch(e.id);
+      if (m == null) continue;
+      final v = int.tryParse(m.group(1)!);
+      if (v != null && v >= n) n = v + 1;
+    }
+    return n;
+  }
+
+  static final _idNumber = RegExp(r'^e(\d{1,15})$');
 
   static Project fromJsonString(String s) => fromJson(jsonDecode(s) as Map<String, dynamic>);
 
   /// Deep copy via JSON (used for undo snapshots).
   Project copy() => fromJson(toJson());
 }
+
+/// JSON text of [value] in which a number that is not finite (NaN, ±∞,
+/// left by a damaged import or a failed calculation) is written as null,
+/// instead of the whole project failing to save.
+String encodeJson(Object? value, {bool pretty = false}) => JsonEncoder.withIndent(pretty ? '  ' : null, _finiteOrNull).convert(value);
+
+Object? _finiteOrNull(Object? o) => o is double ? null : (o as dynamic).toJson();
 
 extension _Let<T> on T {
   R let<R>(R Function(T) f) => f(this);

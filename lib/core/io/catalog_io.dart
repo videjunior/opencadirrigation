@@ -253,6 +253,23 @@ class CatalogIo {
     return out;
   }
 
+  /// Pump curve points written as "Q@H" pairs (m³/h @ m), separated by
+  /// ";", "|", ", " or spaces ("10@30,20@25" also works), the numbers with
+  /// a decimal point or comma. Pairs that do not parse are skipped.
+  static List<(double, double)> parseCurvePoints(String text) {
+    final out = <(double, double)>[];
+    for (final tok in text.split(RegExp(r'[;|]|,\s+|\s+'))) {
+      final chunks = '@'.allMatches(tok).length > 1 ? tok.split(',') : [tok];
+      for (final c in chunks) {
+        final parts = c.split('@');
+        if (parts.length != 2) continue;
+        final q = parseNumber(parts[0]), h = parseNumber(parts[1]);
+        if (q != null && h != null) out.add((q, h));
+      }
+    }
+    return out;
+  }
+
   static CatalogImportResult parseCsv(String text, {CatalogGroup? group}) {
     final lines = text.split(RegExp(r'\r?\n')).where((l) => l.trim().isNotEmpty).toList();
     if (lines.length < 2) throw const FormatException('catalog_csv_empty');
@@ -273,8 +290,11 @@ class CatalogIo {
     final idC = col(['id']), nameC = col(['name', 'nome', 'nombre', 'description', 'descricao']);
     final costC = col(['cost', 'custo', 'costo', 'price', 'preco']);
     final supC = col(['supplier', 'fornecedor', 'proveedor']), codeC = col(['code', 'codigo', 'sku']);
-    double num(List<String> r, int i, [double def = 0]) => i >= 0 && i < r.length ? (double.tryParse(r[i].replaceAll(',', '.')) ?? def) : def;
+    // "1.234,56", "R$ 12,50", "35 m"…
+    double num(List<String> r, int i, [double def = 0]) => i >= 0 && i < r.length ? (parseNumber(r[i], lenient: true) ?? def) : def;
     String str(List<String> r, int i, [String def = '']) => i >= 0 && i < r.length ? r[i] : def;
+    // emitters along a tape: a spacing of 0 is a missing value
+    double tapeSpacing(double v) => v > 0 ? v : 0.5;
     // pump type: "submersible", "submersa", "sumergible", "sub"…
     bool isSubmersible(String v) => RegExp(r'^\s*(sub|sum)', caseSensitive: false).hasMatch(v);
     var n = 0;
@@ -308,7 +328,7 @@ class CatalogIo {
           final h = num(r, col(['headm', 'head', 'h', 'inleth']), 10);
           final x = num(r, col(['x', 'exponent']), 0.5);
           final inner = num(r, col(['idmm', 'di']), 15.6);
-          c.tapes.add(TapeSpec(id: id, name: name, innerDiameterMm: inner, emitterSpacingM: num(r, col(['spacing', 'espacamento', 'sp']), 0.5), emitter: EmitterCurve.fromNominal(flow: q * m3sPerLph, head: h, x: x), nominalMm: num(r, col(['nominalmm', 'dn']), 16), cv: num(r, col(['cv']), 0.03), minHeadM: num(r, col(['minh', 'pmin']), 4), maxHeadM: num(r, col(['maxh', 'pmax']), 15), defaultInletHeadM: h, pressureRatingM: num(r, col(['ratingm', 'pn']), 25), costPerM: cost, supplier: sup, code: code));
+          c.tapes.add(TapeSpec(id: id, name: name, innerDiameterMm: inner, emitterSpacingM: tapeSpacing(num(r, col(['spacing', 'espacamento', 'sp']), 0.5)), emitter: EmitterCurve.fromNominal(flow: q * m3sPerLph, head: h, x: x), nominalMm: num(r, col(['nominalmm', 'dn']), 16), cv: num(r, col(['cv']), 0.03), minHeadM: num(r, col(['minh', 'pmin']), 4), maxHeadM: num(r, col(['maxh', 'pmax']), 15), defaultInletHeadM: h, pressureRatingM: num(r, col(['ratingm', 'pn']), 25), costPerM: cost, supplier: sup, code: code));
         case CatalogGroup.valves:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'control').toLowerCase();
           final kind = ValveKind.values.firstWhere((k) => k.name == kindS, orElse: () => kindS.contains('prv') || kindS.contains('regul') ? ValveKind.prv : (kindS.contains('filt') ? ValveKind.filter : (kindS.contains('check') || kindS.contains('reten') ? ValveKind.check : ValveKind.control)));
@@ -318,14 +338,7 @@ class CatalogIo {
           c.valves.add(ValveSpec(id: id, name: name, kind: kind, sizeMm: size, loss: loss, minFlow: num(r, col(['minqm3h', 'qmin'])) * m3sPerM3h, maxFlow: num(r, col(['maxqm3h', 'qmax']), 1000) * m3sPerM3h, cost: cost, defaultSettingM: num(r, col(['setting'])), supplier: sup, code: code));
         case CatalogGroup.pumps:
           final ptsS = str(r, col(['points', 'curve', 'curva']));
-          final pts = <(double, double)>[];
-          for (final s in ptsS.split(RegExp(r'[;|]'))) {
-            final parts = s.split('@');
-            if (parts.length == 2) {
-              final q = double.tryParse(parts[0].trim().replaceAll(',', '.')), h = double.tryParse(parts[1].trim().replaceAll(',', '.'));
-              if (q != null && h != null) pts.add((q * m3sPerM3h, h));
-            }
-          }
+          final pts = [for (final (q, h) in parseCurvePoints(ptsS)) (q * m3sPerM3h, h)];
           if (pts.isEmpty) {
             final q = num(r, col(['qm3h', 'q'])), h = num(r, col(['hm', 'h', 'head']));
             if (q > 0 && h > 0) pts.add((q * m3sPerM3h, h));
