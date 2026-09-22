@@ -12,7 +12,7 @@ const appName = 'OpenCADIrrigation';
 const appVersion = '1.0.0';
 
 /// Build number: the pubspec `version` after the `+`.
-const appBuild = 4;
+const appBuild = 5;
 
 /// Date this version was generated (release date of [appVersion]).
 const appReleaseDate = '2026-09-22';
