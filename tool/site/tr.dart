@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _tr = SiteText(
   title: 'OpenCADIrrigation: tarayıcıda sulama projelendirme CAD',
-  description: 'Tarayıcıda basınçlı sulama projelendirmesi için ücretsiz CAD: damla sulama, mini yağmurlayıcılar, yağmurlama ve center pivot, hidrolik boyutlandırma, malzeme listesi, DXF/DWG, PDF ve Excel.',
+  description: 'Tarayıcıda sulama projelendirmesi için ücretsiz CAD: damla sulama, yağmurlama ve center pivot, hidrolik boyutlandırma, malzeme listesi, DXF/DWG.',
   keywords: 'sulama projesi, sulama yazılımı, sulama CAD, basınçlı sulama, damla sulama, mini yağmurlayıcı, yağmurlama sulama, center pivot, hidrolik hesap, boru çapı hesabı, sulama üniformitesi, DXF, DWG, bahçe sulama, tarımsal sulama, ücretsiz sulama programı',
   h1: 'Basınçlı sulama projelendirmesi için ücretsiz CAD',
   tagline: 'Damla, mini yağmurlayıcı, yağmurlama ve center pivot sistemlerini çizin, boyutlandırın ve belgeleyin. Doğrudan tarayıcıda, hiçbir şey kurmadan, projeleriniz kendi bilgisayarınızda kalarak.',

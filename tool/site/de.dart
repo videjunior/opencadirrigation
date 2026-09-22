@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _de = SiteText(
   title: 'OpenCADIrrigation: CAD für Bewässerungsplanung im Browser',
-  description: 'Kostenloses CAD für die Planung von Druckbewässerung im Browser: Tropfbewässerung, Mikroregner, Regner und Center-Pivots, hydraulische Dimensionierung, Stückliste, DXF/DWG, PDF und Excel.',
+  description: 'Kostenloses CAD für Bewässerungsplanung im Browser: Tropfbewässerung, Mikroregner, Regner und Center-Pivots, Hydraulikberechnung, Stückliste, DXF/DWG.',
   keywords: 'Bewässerungsplanung, Bewässerungssoftware, CAD Bewässerung, Tropfbewässerung, Mikroberegnung, Beregnung, Center-Pivot, hydraulische Berechnung, Rohrdimensionierung, Gleichmäßigkeit der Bewässerung, DXF, DWG, Gartenbewässerung, landwirtschaftliche Bewässerung, kostenlose Bewässerungssoftware',
   h1: 'Kostenloses CAD für die Planung von Druckbewässerung',
   tagline: 'Zeichnen, dimensionieren und dokumentieren Sie Tropf-, Mikroregner-, Regner- und Center-Pivot-Anlagen. Direkt im Browser, ohne Installation, mit den Projekten auf Ihrem eigenen Computer.',

@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _fr = SiteText(
   title: 'OpenCADIrrigation : CAO d’irrigation dans le navigateur',
-  description: 'CAO gratuite pour la conception de l’irrigation sous pression dans le navigateur : goutte-à-goutte, micro-asperseurs, aspersion et pivots, dimensionnement hydraulique, nomenclature, DXF/DWG, PDF et Excel.',
+  description: 'CAO gratuite d’irrigation dans le navigateur : goutte-à-goutte, micro-aspersion, aspersion et pivots, calcul hydraulique, nomenclature, DXF/DWG et PDF.',
   keywords: 'conception d’irrigation, logiciel d’irrigation, CAO irrigation, irrigation sous pression, goutte-à-goutte, micro-aspersion, aspersion, pivot central, dimensionnement hydraulique, dimensionnement des conduites, uniformité d’arrosage, DXF, DWG, arrosage des jardins, irrigation agricole, logiciel d’irrigation gratuit',
   h1: 'CAO gratuite pour la conception de l’irrigation sous pression',
   tagline: 'Dessinez, dimensionnez et documentez des réseaux en goutte-à-goutte, micro-aspersion, aspersion et pivot central. Directement dans le navigateur, sans rien installer, avec vos projets conservés sur votre ordinateur.',

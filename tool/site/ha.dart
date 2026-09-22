@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _ha = SiteText(
   title: 'OpenCADIrrigation: CAD na ƙirar ban ruwa a mai binciken gizo',
-  description: 'CAD kyauta don ƙirar ban ruwa ta matsi a mai binciken gizo: ban ruwa ta ɗigo, ƙananan masu fesa ruwa, masu fesa ruwa da pivot na tsakiya, lissafin girman bututu, jerin kayan aiki, DXF/DWG, PDF da Excel.',
+  description: 'CAD kyauta don ƙirar ban ruwa a mai binciken gizo: ban ruwa ta ɗigo, masu fesa ruwa da pivot na tsakiya, lissafin bututu, jerin kayan aiki da DXF/DWG.',
   keywords: 'ƙirar ban ruwa, manhajar ban ruwa, CAD ban ruwa, ban ruwa ta matsi, ban ruwa ta ɗigo, masu fesa ruwa, pivot na tsakiya, lissafin ruwa, girman bututu, daidaiton ban ruwa, DXF, DWG, ban ruwan lambu, ban ruwan gona',
   h1: 'CAD kyauta don ƙirar ban ruwa ta matsi',
   tagline: 'Zana, auna girma kuma ka rubuta bayanan tsarin ban ruwa ta ɗigo, ƙananan masu fesa ruwa, masu fesa ruwa da pivot na tsakiya. Kai tsaye a mai binciken gizo, ba tare da girka komai ba, kuma ayyukanka suna zama a kwamfutarka.',
