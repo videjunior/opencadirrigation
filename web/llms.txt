@@ -42,7 +42,7 @@ Every project opens complete and designs with F5. Use them to get to know the ap
 - [Gravity-fed drip](https://opencadirrigation.com/?example=gravity): A reservoir 40 m above the blocks, no pump, with a pressure reducing valve on the mainline.
 - [Sprinkler-irrigated pasture](https://opencadirrigation.com/?example=pasture): Three paddocks with impact-sprinkler spray lines at 12 × 18 m, reservoir and pump.
 - [Golf hole](https://opencadirrigation.com/?example=golf): Tee with sprays, fairway with rotors on a triangular grid and green with rotors around the edge.
-- [Sector pivot with end gun](https://opencadirrigation.com/?example=sectorPivot): A 250 m pivot sweeping 270° with an end gun, pond, 30 hp pump and gate valve.
+- [Sector pivot with end gun](https://opencadirrigation.com/?example=sectorPivot): A 250 m pivot sweeping 270° with an end gun, pond, 20 hp pump and gate valve.
 - [Linear move](https://opencadirrigation.com/?example=linear): A 392 m lateral-move machine travelling 800 m along a canal, with intake and pump.
 
 ## Other languages

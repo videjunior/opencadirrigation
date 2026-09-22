@@ -104,6 +104,13 @@ void main() {
       expect(pv.machineCost, closeTo(machine * 0.2, 1e-6));
       expect(p.params.powerCostPerKwh, closeTo(kwh * 0.2, 1e-12));
       expect(p.catalog.pipes.first.costPerM, closeTo(pipe * 0.2, 1e-12));
+      // controllers carry their own price too
+      final g = buildExample(ExampleId.garden, I18n('pt').call, lang: 'pt');
+      final ctrl = g.entities.whereType<ControllerEntity>().first;
+      final price = ctrl.cost;
+      expect(price, greaterThan(0));
+      g.setCurrency('EUR', rate: 0.2);
+      expect(ctrl.cost, closeTo(price * 0.2, 1e-9));
       // without a rate only the currency changes
       p.setCurrency('USD', symbol: r'$');
       expect(p.params.currency, r'$');

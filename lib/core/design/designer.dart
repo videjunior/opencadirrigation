@@ -336,6 +336,14 @@ class Designer {
     var first = true;
     var satellite = 0;
     for (final e in n.emitters) {
+      if (e.index == -2) {
+        // open tape end while flushing: a fixed outflow is a nodal demand. As
+        // an emitter (exponent 0) it would switch off at any negative
+        // pressure between iterations and, next to the last dripper, need a
+        // satellite link whose huge conductance ill-conditions the system.
+        h.demand += e.curve.k * e.count;
+        continue;
+      }
       if (first) {
         h.emitter = e.curve;
         h.emitterCount = e.count;
@@ -438,6 +446,7 @@ class Designer {
     var totalFlow = 0.0;
     var minP = double.infinity, maxP = -double.infinity, allowMin = -double.infinity, allowMax = double.infinity, nominalSum = 0.0, nominalW = 0.0, cvSum = 0.0;
     var emitterCount = 0;
+    var nominalFlowSum = 0.0;
     for (final id in nodeIds) {
       final n = model.nodes[id]!;
       final nr = r.nodes[id];
@@ -448,8 +457,13 @@ class Designer {
         totalFlow += q * e.count;
         if (e.index == -2) continue;
         outlets.add(OutletResult(entityId: e.entityId, index: e.index, p: n.p, elevation: n.elevation + e.offset, pressure: p, flow: q, nominalFlow: e.curve.flow(e.nominalHead), count: e.count, allowedMin: e.allowedMin, allowedMax: e.allowedMax, label: e.label));
+        // each flow relative to its own nominal flow: part-circle nozzles of
+        // a matched-precipitation zone differ by design, not by pressure
+        final qn = e.curve.flow(e.nominalHead);
+        final rel = qn > 0 ? e.curve.flow(math.max(p, 0)) / qn : 1.0;
         for (var k = 0; k < e.count; k++) {
-          flows.add(e.curve.flow(math.max(p, 0)));
+          flows.add(rel);
+          nominalFlowSum += qn;
         }
         emitterCount += e.count;
         minP = math.min(minP, p);
@@ -473,7 +487,10 @@ class Designer {
     }
     final cv = nominalW > 0 ? cvSum / nominalW : 0.0;
     final epp = _emittersPerPlantFor(outlets);
-    final uni = UniformityStats.compute(flows, manufacturerCv: cv, emittersPerPlant: epp);
+    // back to flows at the zone's mean nominal flow (the same numbers as
+    // before when every emitter has the same nozzle)
+    final qnMean = flows.isEmpty ? 0.0 : nominalFlowSum / flows.length;
+    final uni = UniformityStats.compute([for (final f in flows) f * qnMean], manufacturerCv: cv, emittersPerPlant: epp);
 
     // pipes and devices
     final pipes = <PipeSegmentResult>[];
@@ -1953,7 +1970,7 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
     if (a.points.length < 3) continue;
     var flow = 0.0;
     for (final e in project.entities) {
-      if (e is OutletEntity && pointInPolygonSafe(e.position, a.points)) {
+      if (e is OutletEntity && project.outletWatersArea(e, a.points)) {
         final res = outletsByEntity[e.id];
         if (res != null && res.isNotEmpty) {
           flow += res.first.flow * res.first.count;
@@ -1983,6 +2000,11 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
           final t = project.catalog.tape(e.tapeSpecId);
           if (t != null && t.emitterSpacingM > 0) flow += t.emitter.flow(e.inletHeadM) * (e.length / t.emitterSpacingM) * inside;
         }
+      } else if (e is PivotEntity) {
+        // a machine applies an even depth: the area gets the share of the
+        // flow that falls on the part of the irrigated outline inside it
+        final q = results?.pivots[e.id]?.flow ?? 0;
+        if (q > 0) flow += q * _shareInside(e.outline(), a.points);
       }
     }
     final area = a.area;
@@ -1995,6 +2017,23 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
     out.add(AreaRequirement(areaId: a.id, name: a.name.isEmpty ? a.id : a.name, areaM2: area, grossDepthMm: gross, dailyVolumeM3: vol, flow: flow, hoursPerDay: hours, precipitationMmH: pr));
   }
   return out;
+}
+
+/// Share of the polygon [src] that lies inside [area], sampled on a 40 × 40
+/// grid over [src].
+double _shareInside(List<Pt> src, List<Pt> area) {
+  final b = Bounds.ofPoints(src);
+  const n = 40;
+  var inSrc = 0, inBoth = 0;
+  for (var i = 0; i < n; i++) {
+    for (var j = 0; j < n; j++) {
+      final p = Pt(b.minX + (i + 0.5) * b.width / n, b.minY + (j + 0.5) * b.height / n);
+      if (!pointInPolygon(p, src)) continue;
+      inSrc++;
+      if (pointInPolygon(p, area)) inBoth++;
+    }
+  }
+  return inSrc == 0 ? 0 : inBoth / inSrc;
 }
 
 bool pointInPolygonSafe(dynamic p, List<dynamic> poly) {

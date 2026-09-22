@@ -43,7 +43,7 @@ const _id = SiteText(
     SiteExample('gravity', 'Tetes gravitasi', 'Reservoir 40 m di atas dua blok sayuran irigasi tetes, tanpa pompa: katup gerbang, katup pengurang tekanan, dan filter cakram di pipa utama; kontur lereng.'),
     SiteExample('pasture', 'Padang rumput dengan sprinkler', 'Tiga padang 72 × 72 m dengan baris sprinkler impak pada 12 × 18 m, manifold dengan katup, reservoir, pompa, dan katup searah.'),
     SiteExample('golf', 'Lubang golf', 'Tee dengan spray, fairway dengan rotor pada grid segitiga (dua zona), dan green dengan rotor di tepi, kolam dengan pompa, dan giliran malam.'),
-    SiteExample('sectorPivot', 'Pivot sektor dengan end gun', 'Pivot 250 m pada kedelai yang berputar 270°, menyisakan kuadran rumah pertanian, dengan end gun 12 m³/h; kolam, pompa 30 hp, dan katup gerbang.'),
+    SiteExample('sectorPivot', 'Pivot sektor dengan end gun', 'Pivot 250 m pada kedelai yang berputar 270°, menyisakan kuadran rumah pertanian, dengan end gun 12 m³/h; kolam, pompa 20 hp, dan katup gerbang.'),
     SiteExample('linear', 'Mesin linear', 'Mesin linear 392 m pada gandum yang menempuh 800 m di sepanjang kanal, intake dengan pompa 30 hp dan katup searah; laporan menara dan nosel.'),
   ],
   faqTitle: 'Pertanyaan umum',

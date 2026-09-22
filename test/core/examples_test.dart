@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/i18n.dart';
 import 'package:opencadirrigation/core/design/advisor.dart';
+import 'package:opencadirrigation/core/design/agronomy.dart';
 import 'package:opencadirrigation/core/design/design_check.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
@@ -52,12 +53,12 @@ void main() {
         }
       });
 
-      test('is connected and passes the design check without errors', () {
+      test('is connected and passes the design check without errors or warnings', () {
         final m = NetworkBuilder(p).build();
         expect(m.unconnectedEntities, isEmpty, reason: m.unconnectedEntities.map((id) => '${p.byId(id)?.type} ${p.byId(id)?.name}').join(', '));
         final rep = runDesignCheck(p);
-        final errors = rep.issues.where((i) => i.severity == CheckSeverity.error).toList();
-        expect(errors, isEmpty, reason: errors.map((i) => '${i.code} ${i.entityIds}').join('; '));
+        final issues = rep.issues.where((i) => i.severity != CheckSeverity.info || i.code == 'area_no_emitters').toList();
+        expect(issues, isEmpty, reason: issues.map((i) => '${i.code} ${i.entityIds}').join('; '));
       });
 
       test('designs: zones converge within the pressure window, supplies cope', () {
@@ -99,10 +100,45 @@ void main() {
           }
         }
         expect(r.bom, isNotEmpty);
-        // the design assistant finds no error, and every message it shows
-        // has an explanation
+        // every example with solenoid valves has its electrical part: each
+        // valve wired to a controller with stations to spare, the solenoid
+        // voltage kept while it opens, wires and controller in the BOM
+        final valves = p.entities.whereType<ControlValveEntity>().toList();
+        if (valves.isNotEmpty) {
+          final el = r.electrical;
+          expect(el, isNotNull, reason: 'no controller or wire route');
+          expect(el!.warnings, isEmpty);
+          expect({for (final w in el.runs) w.valveId}, {for (final v in valves) v.id});
+          for (final w in el.runs) {
+            expect(w.ok, isTrue, reason: '${w.zoneName}: ${w.volts} V');
+          }
+          for (final c in el.controllers) {
+            expect(c.overloaded, isFalse, reason: c.name);
+          }
+          expect(r.bom.where((b) => b.category == 'bom.electrical'), isNotEmpty);
+        }
+        // nothing else the reports show is a warning either: no water hammer
+        // over a pipe class, flushing converges, every zone is uniform, every
+        // area gets water within the day and the programme fits the days
+        expect(r.surge.where((s) => s.exceeds).map((s) => '${s.pipeName} ${s.totalHead}'), isEmpty);
+        for (final fl in r.flushing) {
+          expect(fl.converged, isTrue, reason: 'flushing ${fl.zoneName}');
+          expect(fl.minEndHead, closeTo(p.params.flushingMinEndHeadM, 0.05), reason: 'flushing ${fl.zoneName}');
+        }
+        for (final z in r.zones.values) {
+          expect(z.uniformity.eu, greaterThan(85), reason: '${z.zoneName}: EU ${z.uniformity.eu}');
+        }
+        for (final a in areaRequirements(p, r)) {
+          expect(a.flow, greaterThan(0), reason: '${a.name} gets no water');
+          expect(a.hoursPerDay, lessThan(24), reason: '${a.name}: ${a.hoursPerDay} h a day');
+        }
+        final prog = buildControllerProgram(p, r, startDate: DateTime(2026, 1, 1));
+        expect(prog.warnings, isEmpty);
+        expect(prog.maxDailyHours, lessThan(24));
+        // the design assistant finds no error nor warning, and every message
+        // it shows has an explanation
         final advice = buildAdvice(p, results: r);
-        expect(advice.where((a) => a.level == AdviceLevel.error).map((a) => '${a.code} ${a.entityIds}'), isEmpty);
+        expect(advice.where((a) => a.level != AdviceLevel.info).map((a) => '${a.code} ${a.entityIds}'), isEmpty);
         for (final a in advice) {
           expect(adviceCodes, contains(a.code), reason: a.raw);
         }

@@ -43,7 +43,7 @@ const _vi = SiteText(
     SiteExample('gravity', 'Nhỏ giọt tự chảy', 'Bể chứa cao hơn 40 m so với hai lô rau tưới nhỏ giọt, không bơm: van cổng, van giảm áp và lọc đĩa trên ống chính; đường đồng mức sườn đồi.'),
     SiteExample('pasture', 'Đồng cỏ tưới phun mưa', 'Ba bãi chăn 72 × 72 m với các hàng béc phun va đập bố trí 12 × 18 m, ống nhánh có van, bể chứa, máy bơm và van một chiều.'),
     SiteExample('golf', 'Lỗ golf', 'Điểm phát bóng dùng béc phun, fairway dùng rotor theo lưới tam giác (hai khu vực) và green có rotor quanh mép, ao có máy bơm và ca tưới ban đêm.'),
-    SiteExample('sectorPivot', 'Pivot hình quạt có súng phun cuối', 'Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 30 hp và van cổng.'),
+    SiteExample('sectorPivot', 'Pivot hình quạt có súng phun cuối', 'Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 20 hp và van cổng.'),
     SiteExample('linear', 'Máy tưới thẳng', 'Máy tưới thẳng 392 m trên lúa mì di chuyển 800 m dọc kênh, cửa lấy nước có bơm 30 hp và van một chiều; báo cáo tháp và vòi phun.'),
   ],
   faqTitle: 'Câu hỏi thường gặp',

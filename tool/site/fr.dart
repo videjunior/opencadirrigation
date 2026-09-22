@@ -43,7 +43,7 @@ const _fr = SiteText(
     SiteExample('gravity', 'Goutte-à-goutte gravitaire', 'Un réservoir 40 m au-dessus de deux parcelles maraîchères au goutte-à-goutte, sans pompe : vanne d’arrêt, réducteur de pression et filtre à disques sur la conduite principale ; courbes de niveau du coteau.'),
     SiteExample('pasture', 'Pâturage par aspersion', 'Trois enclos de 72 × 72 m avec des lignes d’asperseurs à impact en 12 × 18 m, porte-rampes avec vannes, réservoir, pompe et clapet anti-retour.'),
     SiteExample('golf', 'Trou de golf', 'Départ avec tuyères, fairway avec turbines en maille triangulaire (deux zones) et green avec turbines en périphérie, plan d’eau avec pompe et postes de nuit.'),
-    SiteExample('sectorPivot', 'Pivot sectoriel avec canon', 'Pivot de 250 m sur soja balayant 270°, laissant libre le quadrant du corps de ferme, avec un canon d’extrémité de 12 m³/h ; plan d’eau, pompe de 30 ch et vanne d’arrêt.'),
+    SiteExample('sectorPivot', 'Pivot sectoriel avec canon', 'Pivot de 250 m sur soja balayant 270°, laissant libre le quadrant du corps de ferme, avec un canon d’extrémité de 12 m³/h ; plan d’eau, pompe de 20 ch et vanne d’arrêt.'),
     SiteExample('linear', 'Rampe frontale', 'Rampe frontale de 392 m sur blé parcourant 800 m le long d’un canal, prise d’eau avec pompe de 30 ch et clapet anti-retour ; rapport des tours et des buses.'),
   ],
   faqTitle: 'Questions fréquentes',

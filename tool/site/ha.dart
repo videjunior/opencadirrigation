@@ -43,7 +43,7 @@ const _ha = SiteText(
     SiteExample('gravity', 'Ɗigo ta nauyi', 'Tafki m 40 sama da rukunin kayan lambu biyu masu ɗigo, ba tare da famfo ba: bawul na ƙofa, bawul na rage matsi da tace mai faifai a babban bututu; layukan tsayi na gangara.'),
     SiteExample('pasture', 'Makiyaya da fesa ruwa', 'Filaye uku na m 72 × 72 masu layukan masu fesa ruwa na bugu a m 12 × 18, manifolds da bawuloli, tafki, famfo da bawul na hana komawa.'),
     SiteExample('golf', 'Ramin golf', 'Tee da fesa, fairway da rotors a grid na triangular (yankuna biyu) da green da rotors kewaye da gefe, tafki da famfo da zangunan dare.'),
-    SiteExample('sectorPivot', 'Pivot na sashe da bindigar ƙarshe', 'Pivot na m 250 a waken soya da ke juyawa 270°, yana barin kwata na gidan gona a buɗe, da bindigar ƙarshe ta m³/h 12; tafki, famfo na hp 30 da bawul na ƙofa.'),
+    SiteExample('sectorPivot', 'Pivot na sashe da bindigar ƙarshe', 'Pivot na m 250 a waken soya da ke juyawa 270°, yana barin kwata na gidan gona a buɗe, da bindigar ƙarshe ta m³/h 12; tafki, famfo na hp 20 da bawul na ƙofa.'),
     SiteExample('linear', 'Injin layi', 'Injin layi na m 392 a alkama da ke tafiya m 800 tare da magudanar ruwa, ɗaukar ruwa da famfo na hp 30 da bawul na hana komawa; rahoton hasumiya da bakin fesawa.'),
   ],
   faqTitle: 'Tambayoyin da ake yawan yi',
