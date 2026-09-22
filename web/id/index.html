@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/id/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/id/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/id/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/id/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/id/",
+      "installUrl": "https://opencadirrigation.com/id/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "Desain irigasi yang sudah dihitung dengan hasil per zona"
       },
       "description": "CAD gratis untuk desain irigasi bertekanan di peramban: irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, perhitungan hidraulik, daftar material, DXF/DWG, PDF dan Excel.",
+      "abstract": "OpenCADIrrigation adalah aplikasi web gratis untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah.",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "CAD irigasi",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/id/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "desain irigasi, perangkat lunak irigasi, CAD irigasi, irigasi bertekanan, irigasi tetes, mikro sprinkler, irigasi sprinkler, pivot tengah, perhitungan hidraulik, dimensi pipa, keseragaman irigasi, DXF, DWG, irigasi taman, irigasi pertanian, software irigasi gratis",
       "featureList": [
-        "Gambar CAD lengkap",
-        "Jaringan hidraulik",
-        "Mesin hidraulik tervalidasi",
-        "Penentuan ukuran otomatis",
-        "Medan dan relief",
-        "Laporan dan material",
-        "Pertukaran berkas",
-        "Katalog produsen"
+        "Gambar CAD lengkap: Garis, polyline, busur, spline, arsiran, dimensi, teks dan layer, dengan snap, seleksi jendela, grip dan pintasan ala AutoCAD (L, PL, C, D, ZE…).",
+        "Jaringan hidraulik: Sumber air, pompa, pipa utama, katup zona, lateral dengan emitter, pita tetes dan selang tetes, filter, regulator tekanan, meteran air dan simpul; generator blok lateral dan grid sprinkler.",
+        "Mesin hidraulik tervalidasi: Hazen-Williams dan Darcy-Weisbach, kehilangan minor, emitter q = k·Hˣ, penyelesaian jaringan dengan Global Gradient Algorithm (seperti EPANET), kurva pompa dan titik operasi, water hammer serta analisis pembilasan.",
+        "Penentuan ukuran otomatis: Pemrograman linear atau kecepatan maksimum, sesuai rentang tekanan emitter dan kelas tekanan pipa, menimbang biaya pipa terhadap energi, dengan diameter bertingkat dan giliran operasi.",
+        "Medan dan relief: Kontur, titik tinggi, model medan digital dengan triangulasi, elevasi yang diunduh dari internet berdasarkan koordinat, profil memanjang dan garis tekanan hidraulik di atas permukaan tanah.",
+        "Laporan dan material: Zona, pipa, emitter, keseragaman (CU, DU, EU), kebutuhan air tanaman, program pengendali dan daftar material dengan fitting; ekspor ke PDF, Excel, CSV dan TXT.",
+        "Pertukaran berkas: Mengimpor DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF dan gambar bergeoreferensi; mengekspor DXF, DWG, lembar PDF, SVG, KML, KMZ dan GeoJSON.",
+        "Katalog produsen: Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL."
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/id/#faq",
+      "name": "Pertanyaan umum",
+      "inLanguage": "id",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/id/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Apa itu OpenCADIrrigation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation adalah aplikasi web gratis untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah OpenCADIrrigation gratis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Untuk siapa aplikasi ini?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Untuk perancang irigasi pertanian dan lanskap, agronom dan insinyur, dealer peralatan, pengajar dan mahasiswa. Tutorial interaktif dan 15 contoh siap pakai memungkinkan Anda mulai tanpa membaca manual."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah saya perlu memasang sesuatu?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tidak. Aplikasi berjalan di Chrome, Edge, Firefox dan Safari, di komputer, tablet dan ponsel, dan dapat dipasang sebagai aplikasi (PWA) yang terbuka di jendelanya sendiri."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah proyek saya disimpan di cloud?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja. Hanya elevasi online dan peta dasar yang mengakses internet, saat Anda memintanya."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bagaimana perhitungan hidrauliknya?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kehilangan tekanan akibat gesekan dengan Hazen-Williams atau Darcy-Weisbach, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Pipa diukur dengan pemrograman linear dalam rentang tekanan emitter, dan desain juga memeriksa keseragaman (CU, DU, EU), water hammer, dan pembilasan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah bisa dipakai dengan AutoCAD dan CAD lain?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ya. Aplikasi mengimpor dan mengekspor DXF dan DWG (AutoCAD 2000 hingga 2018), serta KML/KMZ Google Earth, shapefile, GeoJSON, SVG dan PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Tersedia dalam bahasa apa saja?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Dalam 20 bahasa, sama dengan situs ini (daftarnya ada di bagian bawah halaman). Aplikasi terbuka dalam bahasa komputer Anda dan Anda dapat menggantinya kapan saja di Tampilan → Bahasa."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/id/#how",
+      "name": "Cara kerjanya",
+      "description": "OpenCADIrrigation menyatukan gambar CAD, jaringan hidraulik dan perhitungan: gambar batas lahan, pasang lateral, katup dan pipa utama, tekan F5 dan dapatkan diameter pipa, tekanan, keseragaman, giliran operasi, daftar material serta laporan siap cetak. Tersedia dalam 20 bahasa, mengikuti bahasa komputer Anda.",
+      "inLanguage": "id",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Gambar atau impor lahan",
+          "text": "Masukkan DXF, DWG, KML atau citra satelit, atau gambar langsung lahan, taman atau lapangan. Tambahkan kontur atau unduh elevasi berdasarkan koordinat."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Susun jaringan",
+          "text": "Buat blok lateral atau grid sprinkler dengan satu klik, tempatkan katup, pompa dan sumber air, lalu hubungkan semuanya dengan pipa utama."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Desain dan dokumentasikan",
+          "text": "Tekan F5: aplikasi menghitung ukuran zona dan pipa utama, memeriksa tekanan dan kecepatan, lalu menghasilkan laporan, daftar material dan lembar PDF."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/id/#examples",
+      "name": "Contoh siap dibuka",
+      "description": "Setiap proyek terbuka lengkap dan dihitung dengan F5. Gunakan untuk mengenal aplikasi atau sebagai titik awal.",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Kebun buah",
+            "description": "Mikro-sprinkler pada jeruk dan tetes pada anggur, sumur dengan pompa dan filter, lahan miring.",
+            "url": "https://opencadirrigation.com/id/?example=orchard",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Taman rumah",
+            "description": "Spray pop-up di halaman depan, rotor di belakang, dan tetes di bedengan, dipasok dari jaringan PDAM dengan meteran dan pencegah aliran balik.",
+            "url": "https://opencadirrigation.com/id/?example=garden",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Lapangan sepak bola",
+            "description": "Lapangan ukuran penuh 105 × 68 m dengan sprinkler impak dalam lima baris, reservoir, pompa, dan giliran malam.",
+            "url": "https://opencadirrigation.com/id/?example=sportsField",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Tanaman baris dengan tetes",
+            "description": "Empat blok tomat dengan pita tetes, manifold dengan katup, filter saringan, pompa, dan lahan miring.",
+            "url": "https://opencadirrigation.com/id/?example=rowCrop",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivot tengah",
+            "description": "Pivot 300 m pada jagung yang dipasok pipa utama, sumur, dan pompa; laporan menara, bentang, dan nosel.",
+            "url": "https://opencadirrigation.com/id/?example=pivot",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Rumah kaca sayuran",
+            "description": "Empat terowongan paprika dengan selang tetes kompensasi tekanan, satu zona per terowongan, tangki, pompa kecil, dan filter cakram.",
+            "url": "https://opencadirrigation.com/id/?example=greenhouse",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pembibitan tanaman",
+            "description": "Tiga bedengan 12 × 48 m di bawah mikro-sprinkler gantung dengan grid 4 × 4 m, satu zona per bedengan, tangki tinggi, pompa kecil, dan filter cakram.",
+            "url": "https://opencadirrigation.com/id/?example=nursery",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Kopi mengikuti kontur",
+            "description": "Tiga blok kopi di lereng dengan lateral melengkung mengikuti kontur (blok terpandu), selang tetes PC, sumur dan pompa di kaki lereng.",
+            "url": "https://opencadirrigation.com/id/?example=coffee",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Perkebunan pisang",
+            "description": "Dua blok pisang di bawah mikro-sprinkler kompensasi tekanan pada 5 × 5 m, sumur dengan pompa celup, filter cakram, dan lahan miring.",
+            "url": "https://opencadirrigation.com/id/?example=bananas",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Tebu dengan tetes bawah permukaan",
+            "description": "Dua blok tebu dengan selang tetes PC 20 mm ditanam 0,3 m, lateral 180 m, manifold tertanam, reservoir, pompa, filter saringan, dan katup udara.",
+            "url": "https://opencadirrigation.com/id/?example=sugarcane",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Tetes gravitasi",
+            "description": "Reservoir 40 m di atas dua blok sayuran irigasi tetes, tanpa pompa: katup gerbang, katup pengurang tekanan, dan filter cakram di pipa utama; kontur lereng.",
+            "url": "https://opencadirrigation.com/id/?example=gravity",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Padang rumput dengan sprinkler",
+            "description": "Tiga padang 72 × 72 m dengan baris sprinkler impak pada 12 × 18 m, manifold dengan katup, reservoir, pompa, dan katup searah.",
+            "url": "https://opencadirrigation.com/id/?example=pasture",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Lubang golf",
+            "description": "Tee dengan spray, fairway dengan rotor pada grid segitiga (dua zona), dan green dengan rotor di tepi, kolam dengan pompa, dan giliran malam.",
+            "url": "https://opencadirrigation.com/id/?example=golf",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivot sektor dengan end gun",
+            "description": "Pivot 250 m pada kedelai yang berputar 270°, menyisakan kuadran rumah pertanian, dengan end gun 12 m³/h; kolam, pompa 30 hp, dan katup gerbang.",
+            "url": "https://opencadirrigation.com/id/?example=sectorPivot",
+            "inLanguage": "id"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Mesin linear",
+            "description": "Mesin linear 392 m pada gandum yang menempuh 800 m di sepanjang kanal, intake dengan pompa 30 hp dan katup searah; laporan menara dan nosel.",
+            "url": "https://opencadirrigation.com/id/?example=linear",
+            "inLanguage": "id"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>Medan dan relief</h3><p>Kontur, titik tinggi, model medan digital dengan triangulasi, elevasi yang diunduh dari internet berdasarkan koordinat, profil memanjang dan garis tekanan hidraulik di atas permukaan tanah.</p></li>
           <li><h3>Laporan dan material</h3><p>Zona, pipa, emitter, keseragaman (CU, DU, EU), kebutuhan air tanaman, program pengendali dan daftar material dengan fitting; ekspor ke PDF, Excel, CSV dan TXT.</p></li>
           <li><h3>Pertukaran berkas</h3><p>Mengimpor DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF dan gambar bergeoreferensi; mengekspor DXF, DWG, lembar PDF, SVG, KML, KMZ dan GeoJSON.</p></li>
-          <li><h3>Katalog produsen</h3><p>Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.</p></li>
+          <li><h3>Katalog produsen</h3><p>Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">Pertanyaan umum</h2>
         <dl>
+          <dt>Apa itu OpenCADIrrigation?</dt>
+          <dd>OpenCADIrrigation adalah aplikasi web gratis untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah.</dd>
           <dt>Apakah OpenCADIrrigation gratis?</dt>
           <dd>Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran.</dd>
+          <dt>Untuk siapa aplikasi ini?</dt>
+          <dd>Untuk perancang irigasi pertanian dan lanskap, agronom dan insinyur, dealer peralatan, pengajar dan mahasiswa. Tutorial interaktif dan 15 contoh siap pakai memungkinkan Anda mulai tanpa membaca manual.</dd>
           <dt>Apakah saya perlu memasang sesuatu?</dt>
           <dd>Tidak. Aplikasi berjalan di Chrome, Edge, Firefox dan Safari, di komputer, tablet dan ponsel, dan dapat dipasang sebagai aplikasi (PWA) yang terbuka di jendelanya sendiri.</dd>
           <dt>Apakah proyek saya disimpan di cloud?</dt>
           <dd>Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja. Hanya elevasi online dan peta dasar yang mengakses internet, saat Anda memintanya.</dd>
+          <dt>Bagaimana perhitungan hidrauliknya?</dt>
+          <dd>Kehilangan tekanan akibat gesekan dengan Hazen-Williams atau Darcy-Weisbach, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Pipa diukur dengan pemrograman linear dalam rentang tekanan emitter, dan desain juga memeriksa keseragaman (CU, DU, EU), water hammer, dan pembilasan.</dd>
           <dt>Apakah bisa dipakai dengan AutoCAD dan CAD lain?</dt>
           <dd>Ya. Aplikasi mengimpor dan mengekspor DXF dan DWG (AutoCAD 2000 hingga 2018), serta KML/KMZ Google Earth, shapefile, GeoJSON, SVG dan PDF.</dd>
           <dt>Tersedia dalam bahasa apa saja?</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="Bahasa">Bahasa: <strong lang="id" dir="ltr">Bahasa Indonesia</strong> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Katalog produsen dan proyek contoh dapat dikirim dalam format JSON untuk dimasukkan ke OpenCADIrrigation.</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

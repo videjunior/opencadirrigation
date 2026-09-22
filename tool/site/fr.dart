@@ -19,7 +19,7 @@ const _fr = SiteText(
     ('Terrain et relief', 'Courbes de niveau, points cotés, modèle numérique de terrain par triangulation, altitude téléchargée depuis Internet à partir d’une coordonnée, profils en long et ligne piézométrique au-dessus du terrain.'),
     ('Rapports et matériel', 'Zones, conduites, distributeurs, uniformité (CU, DU, EU), besoins en eau des cultures, programme du programmateur et nomenclature avec raccords ; export en PDF, Excel, CSV et TXT.'),
     ('Échange de fichiers', 'Importe DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF et images géoréférencées ; exporte DXF, DWG, plans PDF, SVG, KML, KMZ et GeoJSON.'),
-    ('Catalogues de fabricants', 'Catalogues de fabricants en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) prêts à l’emploi, ainsi que vos propres paquets chargés depuis un fichier ou une URL.'),
+    ('Catalogues de fabricants', 'Catalogues de fabricants en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prêts à l’emploi, ainsi que vos propres paquets chargés depuis un fichier ou une URL.'),
   ],
   howTitle: 'Comment ça marche',
   how: [
@@ -48,9 +48,12 @@ const _fr = SiteText(
   ],
   faqTitle: 'Questions fréquentes',
   faq: [
+    ('Qu’est-ce qu’OpenCADIrrigation ?', 'OpenCADIrrigation est une application web gratuite pour concevoir des systèmes d’irrigation sous pression : une CAO dotée d’un moteur hydraulique qui trace le réseau, dimensionne les conduites, vérifie les pressions et l’uniformité et produit la nomenclature et les rapports, du jardin résidentiel au pivot central.'),
     ('OpenCADIrrigation est-il gratuit ?', 'Oui. Il est gratuit pour un usage professionnel, universitaire et personnel, sans inscription.'),
+    ('À qui s’adresse-t-il ?', 'Aux concepteurs d’irrigation agricole et paysagère, aux agronomes et ingénieurs, aux distributeurs de matériel, aux enseignants et aux étudiants. Le tutoriel interactif et 15 exemples prêts à l’emploi permettent de commencer sans lire de manuel.'),
     ('Faut-il installer quelque chose ?', 'Non. Il fonctionne dans Chrome, Edge, Firefox et Safari, sur ordinateur, tablette et téléphone, et peut s’installer comme application (PWA) qui s’ouvre dans sa propre fenêtre.'),
     ('Mes projets sont-ils stockés dans le cloud ?', 'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous rangez où vous voulez. Seules l’altitude en ligne et les fonds de carte accèdent à Internet, quand vous les demandez.'),
+    ('Comment l’hydraulique est-elle calculée ?', 'Pertes de charge par Hazen-Williams ou Darcy-Weisbach, distributeurs selon q = k·Hˣ et réseau complet résolu par le Global Gradient Algorithm, la méthode d’EPANET. Les conduites sont dimensionnées par programmation linéaire dans la plage de pression des distributeurs, et le calcul vérifie aussi l’uniformité (CU, DU, EU), le coup de bélier et le rinçage.'),
     ('Fonctionne-t-il avec AutoCAD et d’autres CAO ?', 'Oui. Il importe et exporte DXF et DWG (AutoCAD 2000 à 2018), ainsi que KML/KMZ de Google Earth, shapefile, GeoJSON, SVG et PDF.'),
     ('Dans quelles langues est-il disponible ?', 'En 20 langues, les mêmes que ce site (la liste figure en bas de la page). L’application s’ouvre dans la langue de votre ordinateur et vous pouvez en changer à tout moment dans Affichage → Langue.'),
   ],

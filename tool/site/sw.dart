@@ -19,7 +19,7 @@ const _sw = SiteText(
     ('Ardhi na miinuko', 'Mistari ya kontua, nukta za kimo, modeli ya kidijitali ya ardhi kwa pembetatu, mwinuko unaopakuliwa kutoka intaneti kwa kuratibu, wasifu wa urefu na mstari wa shinikizo juu ya ardhi.'),
     ('Ripoti na vifaa', 'Kanda, mabomba, vitoa-maji, usawa (CU, DU, EU), mahitaji ya maji ya mazao, programu ya kidhibiti na orodha ya vifaa pamoja na viungo; kuhamisha kwenda PDF, Excel, CSV na TXT.'),
     ('Ubadilishanaji wa faili', 'Huingiza DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF na picha zenye marejeleo ya kijiografia; huhamisha DXF, DWG, karatasi za PDF, SVG, KML, KMZ na GeoJSON.'),
-    ('Katalogi za watengenezaji', 'Katalogi za watengenezaji katika JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) tayari kutumika, pamoja na vifurushi vyako vinavyopakiwa kutoka faili au URL.'),
+    ('Katalogi za watengenezaji', 'Katalogi za watengenezaji katika JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) tayari kutumika, pamoja na vifurushi vyako vinavyopakiwa kutoka faili au URL.'),
   ],
   howTitle: 'Jinsi inavyofanya kazi',
   how: [
@@ -48,9 +48,12 @@ const _sw = SiteText(
   ],
   faqTitle: 'Maswali yanayoulizwa mara kwa mara',
   faq: [
+    ('OpenCADIrrigation ni nini?', 'OpenCADIrrigation ni programu ya wavuti ya bure ya kusanifu mifumo ya umwagiliaji wa shinikizo: CAD yenye injini ya haidroliki inayopanga mtandao, kupima ukubwa wa mabomba, kukagua shinikizo na usawa, na kutoa orodha ya vifaa na ripoti, kuanzia bustani ya nyumbani hadi pivoti ya kati.'),
     ('Je, OpenCADIrrigation ni bure?', 'Ndiyo. Ni bure kwa kazi za kitaalamu, masomo na matumizi binafsi, bila kujisajili.'),
+    ('Ni kwa ajili ya nani?', 'Kwa wasanifu wa umwagiliaji wa kilimo na wa mandhari, wataalamu wa kilimo na wahandisi, wauzaji wa vifaa, walimu na wanafunzi. Mafunzo shirikishi na mifano 15 iliyo tayari hukuwezesha kuanza bila kusoma mwongozo.'),
     ('Je, ninahitaji kusakinisha chochote?', 'Hapana. Inafanya kazi kwenye Chrome, Edge, Firefox na Safari, kwenye kompyuta, kishikwambi na simu, na inaweza kusakinishwa kama programu (PWA) inayofunguka katika dirisha lake.'),
     ('Je, miradi yangu huhifadhiwa kwenye wingu?', 'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na katika faili za .oci.json unazoweka popote upendapo. Ni mwinuko wa mtandaoni na ramani za msingi tu zinazotumia intaneti, unapoziomba.'),
+    ('Ukokotoaji wa haidroliki hufanywaje?', 'Upotevu wa msuguano kwa Hazen-Williams au Darcy-Weisbach, vitoa-maji kwa q = k·Hˣ, na mtandao wote hutatuliwa kwa Global Gradient Algorithm, mbinu inayotumiwa na EPANET. Mabomba hupimwa kwa linear programming ndani ya dirisha la shinikizo la vitoa-maji, na usanifu pia hukagua usawa (CU, DU, EU), nyundo ya maji na usafishaji.'),
     ('Je, inafanya kazi na AutoCAD na CAD nyingine?', 'Ndiyo. Huingiza na kuhamisha DXF na DWG (AutoCAD 2000 hadi 2018), pamoja na KML/KMZ za Google Earth, shapefile, GeoJSON, SVG na PDF.'),
     ('Inapatikana kwa lugha zipi?', 'Kwa lugha 20, zile zile za tovuti hii (orodha iko chini ya ukurasa). Programu hufunguka kwa lugha ya kompyuta yako na unaweza kubadilisha wakati wowote kwenye Mwonekano → Lugha.'),
   ],

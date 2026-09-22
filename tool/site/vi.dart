@@ -19,7 +19,7 @@ const _vi = SiteText(
     ('Địa hình', 'Đường đồng mức, điểm cao độ, mô hình số địa hình bằng tam giác hóa, cao độ tải từ internet theo tọa độ, mặt cắt dọc và đường đo áp trên mặt đất.'),
     ('Báo cáo và vật tư', 'Khu vực, ống, đầu tưới, độ đồng đều (CU, DU, EU), nhu cầu nước của cây trồng, chương trình bộ điều khiển và bảng kê vật tư kèm phụ kiện; xuất ra PDF, Excel, CSV và TXT.'),
     ('Trao đổi tệp', 'Nhập DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF và ảnh có tham chiếu địa lý; xuất DXF, DWG, bản vẽ PDF, SVG, KML, KMZ và GeoJSON.'),
-    ('Danh mục nhà sản xuất', 'Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.'),
+    ('Danh mục nhà sản xuất', 'Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.'),
   ],
   howTitle: 'Cách hoạt động',
   how: [
@@ -48,9 +48,12 @@ const _vi = SiteText(
   ],
   faqTitle: 'Câu hỏi thường gặp',
   faq: [
+    ('OpenCADIrrigation là gì?', 'OpenCADIrrigation là ứng dụng web miễn phí để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm.'),
     ('OpenCADIrrigation có miễn phí không?', 'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký.'),
+    ('Ứng dụng dành cho ai?', 'Cho người thiết kế tưới nông nghiệp và tưới cảnh quan, kỹ sư nông học và kỹ sư, đại lý thiết bị, giảng viên và sinh viên. Hướng dẫn tương tác và 15 ví dụ sẵn có giúp bạn bắt đầu mà không cần đọc tài liệu.'),
     ('Tôi có cần cài đặt gì không?', 'Không. Ứng dụng chạy trên Chrome, Edge, Firefox và Safari, trên máy tính, máy tính bảng và điện thoại, và có thể cài như ứng dụng (PWA) để mở trong cửa sổ riêng.'),
     ('Dự án của tôi có được lưu trên đám mây không?', 'Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu. Chỉ cao độ trực tuyến và bản đồ nền mới truy cập internet, khi bạn yêu cầu.'),
+    ('Tính toán thủy lực được thực hiện thế nào?', 'Tổn thất ma sát theo Hazen-Williams hoặc Darcy-Weisbach, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới, đồng thời kiểm tra độ đồng đều (CU, DU, EU), nước va và xả rửa ống.'),
     ('Có dùng được với AutoCAD và các phần mềm CAD khác không?', 'Có. Ứng dụng nhập và xuất DXF và DWG (AutoCAD 2000 đến 2018), cùng KML/KMZ của Google Earth, shapefile, GeoJSON, SVG và PDF.'),
     ('Ứng dụng có những ngôn ngữ nào?', '20 ngôn ngữ, giống như trang web này (danh sách ở cuối trang). Ứng dụng mở bằng ngôn ngữ máy tính của bạn và bạn có thể đổi bất cứ lúc nào tại Xem → Ngôn ngữ.'),
   ],

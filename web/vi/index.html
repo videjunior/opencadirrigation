@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/vi/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/vi/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/vi/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/vi/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/vi/",
+      "installUrl": "https://opencadirrigation.com/vi/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "Thiết kế tưới đã tính kích thước với kết quả theo từng khu"
       },
       "description": "CAD miễn phí để thiết kế tưới có áp ngay trên trình duyệt: tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, tính toán thủy lực, bảng kê vật tư, DXF/DWG, PDF và Excel.",
+      "abstract": "OpenCADIrrigation là ứng dụng web miễn phí để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm.",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "CAD thiết kế tưới",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/vi/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "thiết kế tưới, phần mềm tưới, CAD tưới, tưới có áp, tưới nhỏ giọt, béc phun mini, tưới phun mưa, pivot trung tâm, tính toán thủy lực, chọn đường kính ống, độ đồng đều tưới, DXF, DWG, tưới sân vườn, tưới nông nghiệp, phần mềm tưới miễn phí",
       "featureList": [
-        "Bản vẽ CAD đầy đủ",
-        "Mạng thủy lực",
-        "Bộ tính thủy lực đã kiểm chứng",
-        "Tự động chọn kích thước",
-        "Địa hình",
-        "Báo cáo và vật tư",
-        "Trao đổi tệp",
-        "Danh mục nhà sản xuất"
+        "Bản vẽ CAD đầy đủ: Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản và lớp, với bắt điểm, chọn bằng cửa sổ, grip và phím tắt kiểu AutoCAD (L, PL, C, D, ZE…).",
+        "Mạng thủy lực: Nguồn nước, máy bơm, đường ống chính, van khu vực, ống nhánh gắn đầu tưới, dây và ống tưới nhỏ giọt, bộ lọc, van điều áp, đồng hồ nước và nút nối; công cụ tạo khối ống nhánh và lưới béc phun.",
+        "Bộ tính thủy lực đã kiểm chứng: Hazen-Williams và Darcy-Weisbach, tổn thất cục bộ, đầu tưới q = k·Hˣ, giải mạng bằng Global Gradient Algorithm (như EPANET), đường đặc tính bơm và điểm làm việc, nước va và phân tích xả rửa ống.",
+        "Tự động chọn kích thước: Quy hoạch tuyến tính hoặc vận tốc tối đa, tuân thủ dải áp suất của đầu tưới và cấp áp của ống, cân bằng chi phí ống và năng lượng, với đường kính thay đổi theo đoạn và ca vận hành.",
+        "Địa hình: Đường đồng mức, điểm cao độ, mô hình số địa hình bằng tam giác hóa, cao độ tải từ internet theo tọa độ, mặt cắt dọc và đường đo áp trên mặt đất.",
+        "Báo cáo và vật tư: Khu vực, ống, đầu tưới, độ đồng đều (CU, DU, EU), nhu cầu nước của cây trồng, chương trình bộ điều khiển và bảng kê vật tư kèm phụ kiện; xuất ra PDF, Excel, CSV và TXT.",
+        "Trao đổi tệp: Nhập DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF và ảnh có tham chiếu địa lý; xuất DXF, DWG, bản vẽ PDF, SVG, KML, KMZ và GeoJSON.",
+        "Danh mục nhà sản xuất: Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL."
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/vi/#faq",
+      "name": "Câu hỏi thường gặp",
+      "inLanguage": "vi",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/vi/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation là gì?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation là ứng dụng web miễn phí để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation có miễn phí không?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ứng dụng dành cho ai?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cho người thiết kế tưới nông nghiệp và tưới cảnh quan, kỹ sư nông học và kỹ sư, đại lý thiết bị, giảng viên và sinh viên. Hướng dẫn tương tác và 15 ví dụ sẵn có giúp bạn bắt đầu mà không cần đọc tài liệu."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Tôi có cần cài đặt gì không?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Không. Ứng dụng chạy trên Chrome, Edge, Firefox và Safari, trên máy tính, máy tính bảng và điện thoại, và có thể cài như ứng dụng (PWA) để mở trong cửa sổ riêng."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Dự án của tôi có được lưu trên đám mây không?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu. Chỉ cao độ trực tuyến và bản đồ nền mới truy cập internet, khi bạn yêu cầu."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Tính toán thủy lực được thực hiện thế nào?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tổn thất ma sát theo Hazen-Williams hoặc Darcy-Weisbach, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới, đồng thời kiểm tra độ đồng đều (CU, DU, EU), nước va và xả rửa ống."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Có dùng được với AutoCAD và các phần mềm CAD khác không?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Có. Ứng dụng nhập và xuất DXF và DWG (AutoCAD 2000 đến 2018), cùng KML/KMZ của Google Earth, shapefile, GeoJSON, SVG và PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ứng dụng có những ngôn ngữ nào?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "20 ngôn ngữ, giống như trang web này (danh sách ở cuối trang). Ứng dụng mở bằng ngôn ngữ máy tính của bạn và bạn có thể đổi bất cứ lúc nào tại Xem → Ngôn ngữ."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/vi/#how",
+      "name": "Cách hoạt động",
+      "description": "OpenCADIrrigation kết hợp bản vẽ CAD, mạng thủy lực và tính toán trong cùng một nơi: vẽ khu tưới, bố trí ống nhánh (lateral), van và đường ống chính, nhấn F5 và nhận đường kính ống, áp suất, độ đồng đều, ca vận hành, bảng kê vật tư và báo cáo sẵn sàng để in. Có 20 ngôn ngữ, tự theo ngôn ngữ máy tính của bạn.",
+      "inLanguage": "vi",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Vẽ hoặc nhập khu tưới",
+          "text": "Đưa vào tệp DXF, DWG, KML hoặc ảnh vệ tinh, hoặc vẽ trực tiếp lô ruộng, khu vườn hay sân bóng. Thêm đường đồng mức hoặc tải cao độ theo tọa độ."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Dựng mạng ống",
+          "text": "Tạo khối ống nhánh hoặc lưới béc phun chỉ với một cú nhấp, đặt van, máy bơm và nguồn nước rồi nối tất cả bằng đường ống chính."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Thiết kế và lập hồ sơ",
+          "text": "Nhấn F5: ứng dụng tính kích thước các khu và đường ống chính, kiểm tra áp suất và vận tốc, rồi tạo báo cáo, bảng kê vật tư và bản vẽ PDF."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/vi/#examples",
+      "name": "Ví dụ có sẵn để mở",
+      "description": "Mỗi dự án mở ra đầy đủ và được thiết kế bằng F5. Dùng chúng để làm quen với ứng dụng hoặc làm điểm xuất phát.",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Vườn cây ăn quả",
+            "description": "Phun mưa cục bộ trên cam quýt và nhỏ giọt trên nho, giếng có bơm và bộ lọc, đất dốc.",
+            "url": "https://opencadirrigation.com/vi/?example=orchard",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Sân vườn nhà ở",
+            "description": "Béc pop-up ở bãi cỏ trước, rotor phía sau và nhỏ giọt ở bồn hoa, cấp từ nước máy với đồng hồ và van chống chảy ngược.",
+            "url": "https://opencadirrigation.com/vi/?example=garden",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Sân bóng đá",
+            "description": "Sân tiêu chuẩn 105 × 68 m với béc phun va đập bố trí năm hàng, bể chứa, máy bơm và ca tưới ban đêm.",
+            "url": "https://opencadirrigation.com/vi/?example=sportsField",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Cây trồng hàng tưới nhỏ giọt",
+            "description": "Bốn lô cà chua dùng dây tưới nhỏ giọt, ống nhánh có van, lọc lưới, máy bơm và đất dốc.",
+            "url": "https://opencadirrigation.com/vi/?example=rowCrop",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivot trung tâm",
+            "description": "Pivot 300 m trên ngô cấp nước từ ống chính, giếng và máy bơm; báo cáo tháp, nhịp và vòi phun.",
+            "url": "https://opencadirrigation.com/vi/?example=pivot",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Nhà kính trồng rau",
+            "description": "Bốn nhà vòm ớt chuông dùng ống nhỏ giọt bù áp, một khu vực mỗi nhà vòm, bể chứa, máy bơm nhỏ và lọc đĩa.",
+            "url": "https://opencadirrigation.com/vi/?example=greenhouse",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Vườn ươm",
+            "description": "Ba luống 12 × 48 m dưới béc phun mưa cục bộ treo theo lưới 4 × 4 m, một khu vực mỗi luống, bể trên cao, máy bơm nhỏ và lọc đĩa.",
+            "url": "https://opencadirrigation.com/vi/?example=nursery",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Cà phê theo đường đồng mức",
+            "description": "Ba lô cà phê trên sườn đồi với lateral cong chạy theo đường đồng mức (khối dẫn hướng), ống nhỏ giọt bù áp, giếng và máy bơm ở chân dốc.",
+            "url": "https://opencadirrigation.com/vi/?example=coffee",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Vườn chuối",
+            "description": "Hai lô chuối dưới béc phun cục bộ bù áp bố trí 5 × 5 m, giếng có bơm chìm, lọc đĩa và đất dốc.",
+            "url": "https://opencadirrigation.com/vi/?example=bananas",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Mía tưới nhỏ giọt ngầm",
+            "description": "Hai lô mía dùng ống nhỏ giọt bù áp 20 mm chôn sâu 0,3 m, lateral 180 m, ống nhánh chôn ngầm, bể chứa, máy bơm, lọc lưới và van xả khí.",
+            "url": "https://opencadirrigation.com/vi/?example=sugarcane",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Nhỏ giọt tự chảy",
+            "description": "Bể chứa cao hơn 40 m so với hai lô rau tưới nhỏ giọt, không bơm: van cổng, van giảm áp và lọc đĩa trên ống chính; đường đồng mức sườn đồi.",
+            "url": "https://opencadirrigation.com/vi/?example=gravity",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Đồng cỏ tưới phun mưa",
+            "description": "Ba bãi chăn 72 × 72 m với các hàng béc phun va đập bố trí 12 × 18 m, ống nhánh có van, bể chứa, máy bơm và van một chiều.",
+            "url": "https://opencadirrigation.com/vi/?example=pasture",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Lỗ golf",
+            "description": "Điểm phát bóng dùng béc phun, fairway dùng rotor theo lưới tam giác (hai khu vực) và green có rotor quanh mép, ao có máy bơm và ca tưới ban đêm.",
+            "url": "https://opencadirrigation.com/vi/?example=golf",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivot hình quạt có súng phun cuối",
+            "description": "Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 30 hp và van cổng.",
+            "url": "https://opencadirrigation.com/vi/?example=sectorPivot",
+            "inLanguage": "vi"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Máy tưới thẳng",
+            "description": "Máy tưới thẳng 392 m trên lúa mì di chuyển 800 m dọc kênh, cửa lấy nước có bơm 30 hp và van một chiều; báo cáo tháp và vòi phun.",
+            "url": "https://opencadirrigation.com/vi/?example=linear",
+            "inLanguage": "vi"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>Địa hình</h3><p>Đường đồng mức, điểm cao độ, mô hình số địa hình bằng tam giác hóa, cao độ tải từ internet theo tọa độ, mặt cắt dọc và đường đo áp trên mặt đất.</p></li>
           <li><h3>Báo cáo và vật tư</h3><p>Khu vực, ống, đầu tưới, độ đồng đều (CU, DU, EU), nhu cầu nước của cây trồng, chương trình bộ điều khiển và bảng kê vật tư kèm phụ kiện; xuất ra PDF, Excel, CSV và TXT.</p></li>
           <li><h3>Trao đổi tệp</h3><p>Nhập DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF và ảnh có tham chiếu địa lý; xuất DXF, DWG, bản vẽ PDF, SVG, KML, KMZ và GeoJSON.</p></li>
-          <li><h3>Danh mục nhà sản xuất</h3><p>Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.</p></li>
+          <li><h3>Danh mục nhà sản xuất</h3><p>Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">Câu hỏi thường gặp</h2>
         <dl>
+          <dt>OpenCADIrrigation là gì?</dt>
+          <dd>OpenCADIrrigation là ứng dụng web miễn phí để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm.</dd>
           <dt>OpenCADIrrigation có miễn phí không?</dt>
           <dd>Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký.</dd>
+          <dt>Ứng dụng dành cho ai?</dt>
+          <dd>Cho người thiết kế tưới nông nghiệp và tưới cảnh quan, kỹ sư nông học và kỹ sư, đại lý thiết bị, giảng viên và sinh viên. Hướng dẫn tương tác và 15 ví dụ sẵn có giúp bạn bắt đầu mà không cần đọc tài liệu.</dd>
           <dt>Tôi có cần cài đặt gì không?</dt>
           <dd>Không. Ứng dụng chạy trên Chrome, Edge, Firefox và Safari, trên máy tính, máy tính bảng và điện thoại, và có thể cài như ứng dụng (PWA) để mở trong cửa sổ riêng.</dd>
           <dt>Dự án của tôi có được lưu trên đám mây không?</dt>
           <dd>Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu. Chỉ cao độ trực tuyến và bản đồ nền mới truy cập internet, khi bạn yêu cầu.</dd>
+          <dt>Tính toán thủy lực được thực hiện thế nào?</dt>
+          <dd>Tổn thất ma sát theo Hazen-Williams hoặc Darcy-Weisbach, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới, đồng thời kiểm tra độ đồng đều (CU, DU, EU), nước va và xả rửa ống.</dd>
           <dt>Có dùng được với AutoCAD và các phần mềm CAD khác không?</dt>
           <dd>Có. Ứng dụng nhập và xuất DXF và DWG (AutoCAD 2000 đến 2018), cùng KML/KMZ của Google Earth, shapefile, GeoJSON, SVG và PDF.</dd>
           <dt>Ứng dụng có những ngôn ngữ nào?</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="Ngôn ngữ">Ngôn ngữ: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <strong lang="vi" dir="ltr">Tiếng Việt</strong> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Danh mục của nhà sản xuất và dự án mẫu có thể được gửi ở định dạng JSON để đưa vào OpenCADIrrigation.</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

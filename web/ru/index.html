@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/ru/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/ru/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/ru/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ru/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/ru/",
+      "installUrl": "https://opencadirrigation.com/ru/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "Рассчитанный проект орошения с результатами по зонам"
       },
       "description": "Бесплатная САПР для проектирования напорного орошения в браузере: капельное орошение, микродождеватели, дождевание и круговые машины, гидравлический расчёт, спецификация, DXF/DWG, PDF и Excel.",
+      "abstract": "OpenCADIrrigation — бесплатное веб-приложение для проектирования систем напорного орошения: САПР с гидравлическим расчётом, которая прокладывает сеть, подбирает диаметры труб, проверяет давления и равномерность и формирует спецификацию и отчёты — от приусадебного участка до круговой машины.",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "САПР орошения",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ru/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "проектирование орошения, программа для орошения, САПР орошения, напорное орошение, капельное орошение, микродождевание, дождевание, круговая дождевальная машина, гидравлический расчёт, подбор диаметров труб, равномерность полива, DXF, DWG, автополив сада, сельскохозяйственное орошение, бесплатная программа для полива",
       "featureList": [
-        "Полноценный чертёж",
-        "Гидравлическая сеть",
-        "Проверенный гидравлический расчёт",
-        "Автоматический подбор диаметров",
-        "Рельеф",
-        "Отчёты и материалы",
-        "Обмен файлами",
-        "Каталоги производителей"
+        "Полноценный чертёж: Отрезки, полилинии, дуги, сплайны, штриховки, размеры, тексты и слои, с объектными привязками, выбором рамкой, ручками и командами в стиле AutoCAD (L, PL, C, D, ZE…).",
+        "Гидравлическая сеть: Источники воды, насосы, магистраль, клапаны зон, поливные трубопроводы с водовыпусками, капельные ленты и трубки, фильтры, регуляторы давления, водомеры и узлы; генераторы блоков поливных трубопроводов и сеток дождевателей.",
+        "Проверенный гидравлический расчёт: Хазен — Вильямс и Дарси — Вейсбах, местные потери, водовыпуски q = k·Hˣ, расчёт сети методом Global Gradient Algorithm (как в EPANET), характеристики насосов и рабочая точка, гидроудар и анализ промывки.",
+        "Автоматический подбор диаметров: Линейное программирование или предельная скорость с учётом диапазона давлений водовыпусков и классов труб, баланс стоимости труб и энергии, телескопические диаметры и очерёдность полива.",
+        "Рельеф: Горизонтали, отметки высот, цифровая модель рельефа триангуляцией, высоты из интернета по координате, продольные профили и пьезометрическая линия над поверхностью земли.",
+        "Отчёты и материалы: Зоны, трубы, водовыпуски, равномерность (CU, DU, EU), водопотребление культур, программа контроллера и спецификация с фитингами; экспорт в PDF, Excel, CSV и TXT.",
+        "Обмен файлами: Импорт DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF и геопривязанных изображений; экспорт в DXF, DWG, листы PDF, SVG, KML, KMZ и GeoJSON.",
+        "Каталоги производителей: Готовые каталоги производителей в JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit), а также собственные пакеты из файла или по URL."
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/ru/#faq",
+      "name": "Частые вопросы",
+      "inLanguage": "ru",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/ru/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Что такое OpenCADIrrigation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation — бесплатное веб-приложение для проектирования систем напорного орошения: САПР с гидравлическим расчётом, которая прокладывает сеть, подбирает диаметры труб, проверяет давления и равномерность и формирует спецификацию и отчёты — от приусадебного участка до круговой машины."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation бесплатна?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да. Она бесплатна для профессионального, учебного и личного использования, без регистрации."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Для кого она предназначена?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Для проектировщиков сельскохозяйственного и ландшафтного орошения, агрономов и инженеров, дилеров оборудования, преподавателей и студентов. Интерактивное обучение и 15 готовых примеров позволяют начать без чтения руководства."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Нужно ли что-то устанавливать?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Она работает в Chrome, Edge, Firefox и Safari на компьютере, планшете и телефоне и может быть установлена как приложение (PWA), открывающееся в отдельном окне."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Хранятся ли мои проекты в облаке?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Проекты сохраняются в вашем браузере и в файлах .oci.json, которые вы храните где угодно. В интернет обращаются только онлайн-высоты и базовые карты — когда вы их запрашиваете."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как выполняется гидравлический расчёт?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Потери на трение — по Хазену — Вильямсу или Дарси — Вейсбаху, водовыпуски — по q = k·Hˣ, а вся сеть рассчитывается методом Global Gradient Algorithm, как в EPANET. Диаметры подбираются линейным программированием в пределах диапазона давлений водовыпусков; также проверяются равномерность (CU, DU, EU), гидроудар и промывка."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Работает ли она с AutoCAD и другими САПР?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да. Она импортирует и экспортирует DXF и DWG (AutoCAD 2000–2018), а также KML/KMZ из Google Earth, shapefile, GeoJSON, SVG и PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "На каких языках она доступна?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "На 20 языках — тех же, что и этот сайт (список внизу страницы). Приложение открывается на языке вашего компьютера, а сменить язык можно в любой момент в меню Вид → Язык."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/ru/#how",
+      "name": "Как это работает",
+      "description": "OpenCADIrrigation объединяет чертёж САПР, гидравлическую сеть и расчёт: обведите участок, проложите поливные трубопроводы, клапаны и магистраль, нажмите F5 и получите диаметры, давления, равномерность, очерёдность полива, спецификацию и готовые к печати отчёты. Доступна на 20 языках и открывается на языке вашего компьютера.",
+      "inLanguage": "ru",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Начертите или импортируйте участок",
+          "text": "Загрузите DXF, DWG, KML или спутниковый снимок либо начертите поле, сад или спортивную площадку сами. Добавьте горизонтали или загрузите высоты по координате."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Соберите сеть",
+          "text": "Одним щелчком создайте блоки поливных трубопроводов или сетки дождевателей, расставьте клапаны, насос и источник воды и соедините всё магистралью."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Рассчитайте и оформите",
+          "text": "Нажмите F5: приложение подберёт диаметры зон и магистрали, проверит давления и скорости и выпустит отчёты, спецификацию и лист в PDF."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/ru/#examples",
+      "name": "Готовые примеры",
+      "description": "Каждый проект открывается полностью и рассчитывается по F5. Используйте их, чтобы познакомиться с приложением, или как основу для своего проекта.",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Сад",
+            "description": "Микродождевание цитрусовых и капельное орошение винограда, скважина с насосом и фильтром, наклонный участок.",
+            "url": "https://opencadirrigation.com/ru/?example=orchard",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Приусадебный участок",
+            "description": "Выдвижные распылители на переднем газоне, роторы сзади и капельное орошение на клумбах, питание от водопровода со счётчиком и обратным клапаном.",
+            "url": "https://opencadirrigation.com/ru/?example=garden",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Футбольное поле",
+            "description": "Стандартное поле 105 × 68 м с ударными дождевателями в пять рядов, резервуар, насос и ночные смены.",
+            "url": "https://opencadirrigation.com/ru/?example=sportsField",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Пропашная культура на капле",
+            "description": "Четыре блока томатов на капельной ленте, распределители с клапанами, сетчатый фильтр, насос и наклонный участок.",
+            "url": "https://opencadirrigation.com/ru/?example=rowCrop",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Круговая машина",
+            "description": "Пивот 300 м на кукурузе с питанием от магистрали, скважины и насоса; отчёт по башням, пролётам и соплам.",
+            "url": "https://opencadirrigation.com/ru/?example=pivot",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Овощная теплица",
+            "description": "Четыре тоннеля перца на компенсированной капельной трубке, по зоне на тоннель, бак, малый насос и дисковый фильтр.",
+            "url": "https://opencadirrigation.com/ru/?example=greenhouse",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Питомник",
+            "description": "Три гряды 12 × 48 м под подвесными микродождевателями с сеткой 4 × 4 м, по зоне на гряду, поднятый бак, малый насос и дисковый фильтр.",
+            "url": "https://opencadirrigation.com/ru/?example=nursery",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Кофе по горизонталям",
+            "description": "Три блока кофе на склоне с криволинейными латералями вдоль горизонталей (направляемый блок), компенсированная капельная трубка, скважина и насос у подножия склона.",
+            "url": "https://opencadirrigation.com/ru/?example=coffee",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Банановая плантация",
+            "description": "Два блока бананов под компенсированными микродождевателями 5 × 5 м, скважина с погружным насосом, дисковый фильтр и наклонный участок.",
+            "url": "https://opencadirrigation.com/ru/?example=bananas",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Сахарный тростник на подпочвенной капле",
+            "description": "Два блока тростника на компенсированной капельной трубке 20 мм, заглублённой на 0,3 м, латерали 180 м, заглублённые распределители, резервуар, насос, сетчатый фильтр и воздушный клапан.",
+            "url": "https://opencadirrigation.com/ru/?example=sugarcane",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Самотёчное капельное орошение",
+            "description": "Резервуар на 40 м выше двух овощных блоков на капле, без насоса: задвижка, редуктор давления и дисковый фильтр на магистрали; горизонтали склона.",
+            "url": "https://opencadirrigation.com/ru/?example=gravity",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Пастбище на дождевании",
+            "description": "Три загона 72 × 72 м с линиями ударных дождевателей 12 × 18 м, распределители с клапанами, резервуар, насос и обратный клапан.",
+            "url": "https://opencadirrigation.com/ru/?example=pasture",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Лунка гольф-поля",
+            "description": "Ти с распылителями, фервей с роторами в треугольной сетке (две зоны) и грин с роторами по краю, пруд с насосом и ночные смены.",
+            "url": "https://opencadirrigation.com/ru/?example=golf",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Секторный пивот с концевой пушкой",
+            "description": "Пивот 250 м на сое, проходящий 270° и оставляющий свободным квадрант усадьбы, с концевой пушкой 12 м³/ч; пруд, насос 30 л.с. и задвижка.",
+            "url": "https://opencadirrigation.com/ru/?example=sectorPivot",
+            "inLanguage": "ru"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Фронтальная машина",
+            "description": "Фронтальная машина 392 м на пшенице, проходящая 800 м вдоль канала, водозабор с насосом 30 л.с. и обратным клапаном; отчёт по башням и соплам.",
+            "url": "https://opencadirrigation.com/ru/?example=linear",
+            "inLanguage": "ru"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>Рельеф</h3><p>Горизонтали, отметки высот, цифровая модель рельефа триангуляцией, высоты из интернета по координате, продольные профили и пьезометрическая линия над поверхностью земли.</p></li>
           <li><h3>Отчёты и материалы</h3><p>Зоны, трубы, водовыпуски, равномерность (CU, DU, EU), водопотребление культур, программа контроллера и спецификация с фитингами; экспорт в PDF, Excel, CSV и TXT.</p></li>
           <li><h3>Обмен файлами</h3><p>Импорт DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF и геопривязанных изображений; экспорт в DXF, DWG, листы PDF, SVG, KML, KMZ и GeoJSON.</p></li>
-          <li><h3>Каталоги производителей</h3><p>Готовые каталоги производителей в JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger), а также собственные пакеты из файла или по URL.</p></li>
+          <li><h3>Каталоги производителей</h3><p>Готовые каталоги производителей в JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit), а также собственные пакеты из файла или по URL.</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">Частые вопросы</h2>
         <dl>
+          <dt>Что такое OpenCADIrrigation?</dt>
+          <dd>OpenCADIrrigation — бесплатное веб-приложение для проектирования систем напорного орошения: САПР с гидравлическим расчётом, которая прокладывает сеть, подбирает диаметры труб, проверяет давления и равномерность и формирует спецификацию и отчёты — от приусадебного участка до круговой машины.</dd>
           <dt>OpenCADIrrigation бесплатна?</dt>
           <dd>Да. Она бесплатна для профессионального, учебного и личного использования, без регистрации.</dd>
+          <dt>Для кого она предназначена?</dt>
+          <dd>Для проектировщиков сельскохозяйственного и ландшафтного орошения, агрономов и инженеров, дилеров оборудования, преподавателей и студентов. Интерактивное обучение и 15 готовых примеров позволяют начать без чтения руководства.</dd>
           <dt>Нужно ли что-то устанавливать?</dt>
           <dd>Нет. Она работает в Chrome, Edge, Firefox и Safari на компьютере, планшете и телефоне и может быть установлена как приложение (PWA), открывающееся в отдельном окне.</dd>
           <dt>Хранятся ли мои проекты в облаке?</dt>
           <dd>Нет. Проекты сохраняются в вашем браузере и в файлах .oci.json, которые вы храните где угодно. В интернет обращаются только онлайн-высоты и базовые карты — когда вы их запрашиваете.</dd>
+          <dt>Как выполняется гидравлический расчёт?</dt>
+          <dd>Потери на трение — по Хазену — Вильямсу или Дарси — Вейсбаху, водовыпуски — по q = k·Hˣ, а вся сеть рассчитывается методом Global Gradient Algorithm, как в EPANET. Диаметры подбираются линейным программированием в пределах диапазона давлений водовыпусков; также проверяются равномерность (CU, DU, EU), гидроудар и промывка.</dd>
           <dt>Работает ли она с AutoCAD и другими САПР?</dt>
           <dd>Да. Она импортирует и экспортирует DXF и DWG (AutoCAD 2000–2018), а также KML/KMZ из Google Earth, shapefile, GeoJSON, SVG и PDF.</dd>
           <dt>На каких языках она доступна?</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="Языки">Языки: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <strong lang="ru" dir="ltr">Русский</strong> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Каталоги производителей и примеры проектов можно прислать в формате JSON для включения в OpenCADIrrigation.</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

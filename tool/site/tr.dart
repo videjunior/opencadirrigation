@@ -19,7 +19,7 @@ const _tr = SiteText(
     ('Arazi ve topoğrafya', 'Eş yükselti eğrileri, kot noktaları, üçgenlemeyle sayısal arazi modeli, bir koordinattan internetten indirilen yükseklik, boy kesitler ve arazi üzerinde hidrolik eğim çizgisi.'),
     ('Raporlar ve malzemeler', 'Bölgeler, borular, damlatıcılar, üniformite (CU, DU, EU), bitki su ihtiyacı, kontrol ünitesi programı ve bağlantı parçalarıyla malzeme listesi; PDF, Excel, CSV ve TXT olarak dışa aktarma.'),
     ('Dosya alışverişi', 'DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF ve coğrafi referanslı görüntüleri içe aktarır; DXF, DWG, PDF paftalar, SVG, KML, KMZ ve GeoJSON dışa aktarır.'),
-    ('Üretici katalogları', 'JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.'),
+    ('Üretici katalogları', 'JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.'),
   ],
   howTitle: 'Nasıl çalışır',
   how: [
@@ -48,9 +48,12 @@ const _tr = SiteText(
   ],
   faqTitle: 'Sık sorulan sorular',
   faq: [
+    ('OpenCADIrrigation nedir?', 'OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar.'),
     ('OpenCADIrrigation ücretsiz mi?', 'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez.'),
+    ('Kimler için?', 'Tarımsal ve peyzaj sulama projecileri, ziraat mühendisleri ve mühendisler, ekipman bayileri, öğretmenler ve öğrenciler için. Etkileşimli eğitim ve 15 hazır örnek sayesinde kılavuz okumadan başlayabilirsiniz.'),
     ('Bir şey kurmam gerekiyor mu?', 'Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.'),
     ('Projelerim bulutta mı saklanıyor?', 'Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır. Yalnızca çevrimiçi yükseklik verisi ve altlık haritalar, siz istediğinizde internete erişir.'),
+    ('Hidrolik hesap nasıl yapılır?', 'Sürtünme kayıpları Hazen-Williams veya Darcy-Weisbach ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı içinde doğrusal programlama ile boyutlandırılır; ayrıca üniformite (CU, DU, EU), su darbesi ve yıkama kontrol edilir.'),
     ('AutoCAD ve diğer CAD programlarıyla çalışır mı?', 'Evet. DXF ve DWG (AutoCAD 2000–2018) içe ve dışa aktarır; ayrıca Google Earth KML/KMZ, shapefile, GeoJSON, SVG ve PDF desteği vardır.'),
     ('Hangi dillerde kullanılabilir?', 'Bu siteyle aynı 20 dilde (liste sayfanın altındadır). Uygulama bilgisayarınızın dilinde açılır ve Görünüm → Dil menüsünden istediğiniz zaman değiştirebilirsiniz.'),
   ],

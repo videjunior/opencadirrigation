@@ -19,7 +19,7 @@ const _de = SiteText(
     ('Gelände und Relief', 'Höhenlinien, Höhenpunkte, digitales Geländemodell durch Triangulation, Geländehöhen aus dem Internet ab einer Koordinate, Längsprofile und Drucklinie über dem Gelände.'),
     ('Berichte und Material', 'Zonen, Rohre, Emitter, Gleichmäßigkeit (CU, DU, EU), Wasserbedarf je Kultur, Programm des Steuergeräts und Stückliste mit Formteilen; Export als PDF, Excel, CSV und TXT.'),
     ('Datenaustausch', 'Importiert DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF und georeferenzierte Bilder; exportiert DXF, DWG, PDF-Pläne, SVG, KML, KMZ und GeoJSON.'),
-    ('Herstellerkataloge', 'Herstellerkataloge in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger), sofort einsatzbereit, dazu eigene Pakete aus einer Datei oder URL.'),
+    ('Herstellerkataloge', 'Herstellerkataloge in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit), sofort einsatzbereit, dazu eigene Pakete aus einer Datei oder URL.'),
   ],
   howTitle: 'So funktioniert es',
   how: [
@@ -48,9 +48,12 @@ const _de = SiteText(
   ],
   faqTitle: 'Häufige Fragen',
   faq: [
+    ('Was ist OpenCADIrrigation?', 'OpenCADIrrigation ist eine kostenlose Webanwendung für die Planung von Druckbewässerungsanlagen: ein CAD mit Hydraulik-Rechenkern, der das Netz anlegt, die Rohre dimensioniert, Drücke und Gleichmäßigkeit prüft und Stückliste und Berichte erstellt – vom Hausgarten bis zum Center-Pivot.'),
     ('Ist OpenCADIrrigation kostenlos?', 'Ja. Es ist kostenlos für berufliche, akademische und private Nutzung, ohne Registrierung.'),
+    ('Für wen ist es gedacht?', 'Für Planer landwirtschaftlicher und landschaftsgärtnerischer Bewässerung, Agronomen und Ingenieure, Fachhändler, Lehrende und Studierende. Mit dem interaktiven Tutorial und 15 fertigen Beispielen geht es ohne Handbuch los.'),
     ('Muss ich etwas installieren?', 'Nein. Es läuft in Chrome, Edge, Firefox und Safari auf Computer, Tablet und Smartphone und lässt sich als App (PWA) installieren, die sich in einem eigenen Fenster öffnet.'),
     ('Werden meine Projekte in der Cloud gespeichert?', 'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie ablegen, wo Sie möchten. Nur die Online-Geländehöhen und die Hintergrundkarten greifen auf das Internet zu, und nur wenn Sie sie anfordern.'),
+    ('Wie wird die Hydraulik berechnet?', 'Reibungsverluste nach Hazen-Williams oder Darcy-Weisbach, Emitter nach q = k·Hˣ und das gesamte Netz mit dem Global Gradient Algorithm, dem Verfahren von EPANET. Die Rohre werden per linearer Optimierung innerhalb des Druckfensters der Emitter dimensioniert; außerdem prüft die Berechnung Gleichmäßigkeit (CU, DU, EU), Druckstoß und Spülung.'),
     ('Funktioniert es mit AutoCAD und anderen CAD-Programmen?', 'Ja. Es importiert und exportiert DXF und DWG (AutoCAD 2000 bis 2018), dazu KML/KMZ aus Google Earth, Shapefiles, GeoJSON, SVG und PDF.'),
     ('In welchen Sprachen ist es verfügbar?', 'In 20 Sprachen, denselben wie auf dieser Website (die Liste steht am Seitenende). Die App öffnet sich in der Sprache Ihres Computers, und unter Ansicht → Sprache können Sie jederzeit wechseln.'),
   ],

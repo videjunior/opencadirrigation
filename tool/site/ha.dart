@@ -19,7 +19,7 @@ const _ha = SiteText(
     ('Ƙasa da tuddai', 'Layukan tsayi, wuraren tsayi, samfurin ƙasa na dijital ta triangulation, tsayin ƙasa da ake saukewa daga intanet ta coordinate, bayanan tsayi a tsawon layi da layin matsi a saman ƙasa.'),
     ('Rahotanni da kayan aiki', 'Yankuna, bututu, masu fitar da ruwa, daidaito (CU, DU, EU), bukatun ruwan amfanin gona, shirin na\'urar sarrafawa da jerin kayan aiki tare da haɗe-haɗe; fitarwa zuwa PDF, Excel, CSV da TXT.'),
     ('Musayar fayiloli', 'Yana shigo da DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF da hotuna masu georeference; yana fitar da DXF, DWG, takardun PDF, SVG, KML, KMZ da GeoJSON.'),
-    ('Kundin masana\'antun', 'Kundin masana\'antun a JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) a shirye don amfani, da kuma fakitinka da ake lodawa daga fayil ko URL.'),
+    ('Kundin masana\'antun', 'Kundin masana\'antun a JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) a shirye don amfani, da kuma fakitinka da ake lodawa daga fayil ko URL.'),
   ],
   howTitle: 'Yadda yake aiki',
   how: [
@@ -48,9 +48,12 @@ const _ha = SiteText(
   ],
   faqTitle: 'Tambayoyin da ake yawan yi',
   faq: [
+    ('Mene ne OpenCADIrrigation?', 'OpenCADIrrigation manhajar yanar gizo ce kyauta don ƙirar tsarin ban ruwa ta matsi: CAD mai injin lissafin ruwa wanda ke shimfiɗa hanyar sadarwa, yake auna girman bututu, yake duba matsi da daidaito, sannan yake samar da jerin kayan aiki da rahotanni, daga lambun gida har zuwa pivot na tsakiya.'),
     ('Shin OpenCADIrrigation kyauta ne?', 'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba.'),
+    ('Wa aka yi shi dominsa?', 'Ga masu ƙirar ban ruwa na gona da na lambuna, masana aikin gona da injiniyoyi, dillalan kayan aiki, malamai da ɗalibai. Koyarwa mai mu\'amala da misalai 15 da aka shirya suna ba ka damar farawa ba tare da karanta littafin jagora ba.'),
     ('Shin sai na girka wani abu?', 'A\'a. Yana aiki a Chrome, Edge, Firefox da Safari, a kwamfuta, tablet da waya, kuma ana iya girka shi a matsayin manhaja (PWA) mai buɗewa a tagarta.'),
     ('Shin ana ajiye ayyukana a gajimare (cloud)?', 'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a fayilolin .oci.json da kake ajiyewa inda kake so. Tsayin ƙasa na intanet da taswirorin bango ne kaɗai ke amfani da intanet, idan ka nema.'),
+    ('Yaya ake lissafin ruwa?', 'Asarar matsi ta gogayya da Hazen-Williams ko Darcy-Weisbach, masu fitar da ruwa da q = k·Hˣ, kuma ana warware duk hanyar sadarwa da Global Gradient Algorithm, hanyar da EPANET ke amfani da ita. Ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa, kuma ƙirar tana duba daidaito (CU, DU, EU), bugun ruwa da wanke bututu.'),
     ('Shin yana aiki da AutoCAD da sauran CAD?', 'Ee. Yana shigo da fitar da DXF da DWG (AutoCAD 2000 zuwa 2018), da KML/KMZ na Google Earth, shapefile, GeoJSON, SVG da PDF.'),
     ('A waɗanne harsuna ake samunsa?', 'A harsuna 20, iri ɗaya da na wannan shafin (jerin yana ƙasan shafin). Manhajar tana buɗewa a harshen kwamfutarka kuma kana iya canzawa kowane lokaci a Kallo → Harshe.'),
   ],

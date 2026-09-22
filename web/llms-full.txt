@@ -1,0 +1,257 @@
+# OpenCADIrrigation: complete reference
+
+> OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+
+This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.0.0, updated 2026-09-22.
+
+## At a glance
+
+| | |
+|---|---|
+| Name | OpenCADIrrigation (one word, "CAD" in capitals) |
+| What | Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, centre pivot and linear move) with a hydraulic engine, automatic pipe sizing, bill of materials and reports |
+| Price | Free for professional, academic and personal use; no account or sign-up |
+| Runs in | Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; nothing to download |
+| Privacy | Projects stay on the user's computer (browser storage and `.oci.json` files); nothing is uploaded to a server |
+| Languages | 20: Indonesian, German, English, Spanish, French, Hausa, Swahili, Portuguese, Vietnamese, Turkish, Russian, Arabic, Urdu, Hindi, Marathi, Bengali, Punjabi, Telugu, Chinese, Japanese |
+| Project file | `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results |
+| CAD and GIS exchange | DXF, DWG, KML/KMZ, shapefile, GeoJSON, CSV/XYZ survey points, GeoTIFF, georeferenced images, SVG and PDF |
+| Reports | PDF, Excel (XLSX), CSV and TXT |
+| Version | 1.0.0, updated 2026-09-22 |
+| Site | https://opencadirrigation.com/ |
+
+## Who it is for
+
+Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.
+
+## What OpenCADIrrigation does
+
+### Full CAD drawing
+
+Lines, polylines, arcs, splines, hatches, dimensions, text and layers, with snaps, window selection, grips and AutoCAD-style shortcuts (L, PL, C, D, ZE…).
+
+### Hydraulic network
+
+Water supplies, pumps, mainline, zone valves, laterals with emitters, drip tapes and driplines, filters, pressure regulators, meters and junctions; lateral-block and sprinkler-grid generators.
+
+### Validated hydraulic engine
+
+Hazen-Williams and Darcy-Weisbach, minor losses, emitters q = k·Hˣ, network solver by the Global Gradient Algorithm (as in EPANET), pump curves and operating point, water hammer and flushing analysis.
+
+### Automatic sizing
+
+Linear programming or maximum velocity, honouring the emitter pressure window and pipe pressure classes, trading pipe cost against energy, telescoping diameters and operating shifts.
+
+### Terrain and relief
+
+Contours, spot heights, a digital terrain model by triangulation, elevation downloaded from the internet at a coordinate, longitudinal profiles and the hydraulic grade line over the ground.
+
+### Reports and materials
+
+Zones, pipes, emitters, uniformity (CU, DU, EU), crop water requirements, controller programme and a bill of materials with fittings; export to PDF, Excel, CSV and TXT.
+
+### File exchange
+
+Imports DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF and georeferenced images; exports DXF, DWG, PDF sheets, SVG, KML, KMZ and GeoJSON.
+
+### Manufacturer catalogues
+
+Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ready to use, plus your own packs loaded from a file or a URL.
+
+## How it works
+
+1. **Draw or import the area.** Bring a DXF, DWG, KML or a satellite image, or draw the field, garden or pitch directly. Add contours or download the elevation from a coordinate.
+2. **Build the network.** Generate lateral blocks or sprinkler grids in one click, place valves, pump and water supply and connect everything with the mainline.
+3. **Design and document.** Press F5: the app sizes zones and mainline, checks pressures and velocities and produces reports, the bill of materials and the PDF sheet.
+
+## Design workflow
+
+1. **Project details**: name, client, site, designer and notes, printed in the sheet title block and the reports; metric or US units.
+2. **Background**: import a DXF, DWG, KML/KMZ, shapefile, survey CSV, GeoTIFF or satellite image, or draw boundaries, buildings and roads. Images out of scale are fitted by aligning two points. A georeference (UTM zone and origin) enables base maps, online elevation and KML/GeoJSON export.
+3. **Terrain**: contour lines and spot heights drawn or imported, an elevation GeoTIFF, or elevation downloaded for a coordinate; contours generated from the model and a 3D view.
+4. **Hydraulic layout**: water supply, pump, mainline, zone valves and, downstream of each valve, submains, laterals, drip tapes, single emitters and devices (filters, pressure regulators, meters, backflow preventers, air and check valves). A lateral-block generator (also along a curved guide such as a contour line) and a sprinkler-grid generator (square or triangular) do the repetitive work. Irrigated areas carry the crop, efficiency and water balance.
+5. **Management**: system flows, i.e. which valves open together, with start time and duration.
+6. **Check**: unconnected items, pipes crossing without a junction, dead ends, zones without emitters, missing catalogue items, missing terrain.
+7. **Design (F5)**: zones, mainline, telescoping, flushing, water hammer and materials; or only zones, only the mainline, or an analysis of the current diameters.
+8. **Reports and plotting**: reports panel, PDF sheet with title block, legend, north arrow, scale bar and bill of materials; exports to other CAD, GIS and spreadsheets.
+
+## Hydraulic engine
+
+- Friction: Hazen-Williams (default) or Darcy-Weisbach (Swamee-Jain, Colebrook, laminar and transition), with the water viscosity from its temperature (20 °C by default).
+- Minor losses as a share of the length (5 % by default) or from fitting coefficients; valves and devices by `h = K·Q^n + C`.
+- Emitters by `q = k·H^x`, wetted radius by `R = a·H^b`; pressure-compensating and turbulent drippers, micro-sprinklers, sprinklers, bubblers, guns and demand points.
+- Network solver: the Global Gradient Algorithm (Todini and Pilati), the method of EPANET, with pressure-dependent emitters, pumps, pressure-reducing valves and check valves, on a sparse LDLᵀ factorisation.
+- Laterals and tapes are lumped into at most 100 nodes each (adjustable), so lines with hundreds of emitters stay fast.
+- Terrain elevation at every node; emitter pressure accounts for ground level, riser height and burial depth.
+- Uniformity: Christiansen CU, low-quarter DU, Keller-Karmeli emission uniformity EU (with the manufacturing CV and emitters per plant), statistical uniformity and flow variation; overlap CU for sprinklers with a wetted radius.
+- Water hammer: wave celerity from pipe material and wall, Joukowsky surge, critical time 2L/a and comparison with the pipe pressure rating, including the valve closure time. It is an estimate, not a full transient simulation.
+- Flushing of drip tapes with open ends at the flushing velocity (0.3 m/s and 1 m end pressure by default).
+- The calculation runs in a Web Worker, off the interface thread.
+
+## Pipe sizing and optimisation
+
+- **Linear programming** (default): every pipe may be built from fractions of the candidate diameters; the programme minimises the annualised pipe cost plus the energy cost of the inlet pressure, subject to the pressure window of the critical emitters (end, highest and lowest point of every lateral), and repeats with the emitters found at the limits (up to four rounds).
+- **Maximum velocity** method as the classic alternative (defaults 2.0 m/s in laterals, 1.5 m/s in submains, 2.0 m/s in the mainline).
+- Greedy repair along the critical path, non-increasing diameters downstream and **telescoping** (up to 3 diameters per submain or mainline pipe by default).
+- Pipe pressure classes respected in operation and under water hammer.
+- The mainline is sized over all system flows with the energy weighted by the operating hours of each, with pump operating points and supply duties (flow, available and required pressure, deficit, annual energy).
+- Economics: interest rate, term, energy tariff, pump efficiency and operating hours; costs in the currency of the user's region.
+- **Design assistant**: every problem explained (what happened, why it matters, how to fix it), impossible settings detected, one-click corrections, *Fix automatically* and *Optimise design* (lowest annual cost that meets every requirement, kept only when it improves).
+
+## Agronomy and scheduling
+
+- Crop water requirement from ETo and Kc, water balance with available water, root depth and allowable depletion, application efficiency and wetted fraction.
+- Readily available water, irrigation interval, gross and net depths and hours per event.
+- Controller programme per system flow (days and start times), exportable as CSV.
+
+## Terrain
+
+- Sources: drawn contour lines and spot heights, survey points (CSV, TXT, XYZ, PNEZD, decimal comma accepted), DXF/DWG polylines with elevation, KML with altitude, shapefiles with Z or an elevation attribute, elevation GeoTIFF and online elevation.
+- Online elevation for a pasted coordinate (decimal, map link or degrees/minutes/seconds): free keyless services (Terrain Tiles on AWS Open Data from SRTM, and Open-Meteo with the Copernicus DEM).
+- Digital terrain model by Delaunay triangulation (TIN) or inverse-distance interpolation; contours generated from the model; 3D view with the pipes draped on the ground; longitudinal profiles with the pipe and the hydraulic grade line.
+
+## Centre pivots and linear moves
+
+- Machines with radius, spans and towers, applied depth, cycle time, end pressure, sector angle and end gun, fed from the mainline as a demand.
+- Report of towers, spans and sprinklers, and a check of the application rate against the soil intake limit.
+
+## Component catalogue
+
+- Six groups: pipes, emitters with nozzles, tapes and driplines, valves and devices, pumps (Q-H curve) and fittings.
+- Default catalogue: 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel), 9 emitter families, 6 tapes and driplines, 30 valves and devices (1" to 6"), 18 pumps (centrifugal 1 to 100 hp, submersible 3 to 30 hp) and about 330 fittings, with illustrative prices.
+- 14 manufacturer packs (259 items) built from published data sheets: Hunter, Rain Bird, Toro, Netafim, Rivulis, NaanDanJain, Jain, Nelson and Senninger (sprinklers, micro-sprinklers, drippers, tapes and driplines, pivot sprinklers, big guns, valves and regulators), Irritec (driplines and drippers), Bermad (hydraulic valves), Schneider (centrifugal and submersible pumps), and Amanco Wavin and Multilit (PVC irrigation pipes). Nozzle curves are fitted to the manufacturers' tables; prices are left to the user.
+- The catalogue editor imports and exports JSON, CSV and Excel; packs in the `.oci.cat` JSON format load from a file or a URL, so dealers can publish their own.
+
+## Reports and plotting
+
+- Reports: zone summary, pipes, emitters, mainline and supply duties, bill of materials with automatically selected fittings (couplers, elbows, tees, crosses, reducers, end caps, take-offs, risers), water requirements, agronomy, controller schedule, flushing, water hammer, pivots and spans, hydraulic grade line chart, terrain profile and messages.
+- PDF sheet from A4 to A0, Letter and Tabloid, automatic or fixed scale, title block, legend, north arrow, scale bar, bill of materials on the sheet and attached report pages.
+- Every table exports to PDF, Excel (one sheet per table, numbers as numbers), CSV and TXT.
+
+## File formats
+
+| Format | Import | Export |
+|---|---|---|
+| `.oci.json` project | yes | yes |
+| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines, texts, points, layers, blocks and dimensions | R12, by layer |
+| DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015) |
+| KML / KMZ | placemarks, folders as layers, altitude as elevation | folders per layer, WGS84 |
+| Shapefile (zip with DBF, PRJ, CPG) | points, lines, polygons, Z variants, attributes in UTF-8 or Latin-1 | — |
+| GeoJSON | — | FeatureCollection with attributes |
+| CSV, TXT | survey points | report tables, controller programme |
+| XYZ, PNEZD | survey points | — |
+| GeoTIFF | elevation grid or background image | — |
+| JPG, PNG, world file | background image, georeferenced or aligned by 2 points | — |
+| SVG | — | sheet in millimetres, one group per layer |
+| PDF | — | sheet and reports |
+| XLSX | catalogue prices | reports and catalogue |
+
+## Storage, privacy and network access
+
+- Autosave in the browser, recent projects, the last 10 versions of every project and recovery on start-up.
+- Save and Open work with `.oci.json` files on the user's disk; nothing is sent to a server and there is no account.
+- The internet is reached only when the user asks: online elevation, base maps (OpenStreetMap and other tile services, or Google Maps with the user's own key) and catalogues loaded by URL.
+
+## Known limitations
+
+- Looped mainlines are sized along tree paths (an approximation) and then checked by the full analysis.
+- DWG splines and hatches are not imported; the DWG writer produces version 2000 (AC1015) files with lines, polylines, circles, arcs, points and texts.
+- Steady-state hydraulics: water hammer is a Joukowsky estimate; there is no fertigation design or electrical design.
+- Pivots are modelled as machines with span tables and a demand on the mainline, without nozzle-by-nozzle design.
+- No simultaneous editing; projects are shared as `.oci.json` files.
+
+## Ready examples to open
+
+Every project opens complete and designs with F5. Use them to get to know the app or as a starting point.
+
+| Id | Example | What it shows |
+|---|---|---|
+| `orchard` | [Orchard](https://opencadirrigation.com/?example=orchard) | Micro-sprinklers on citrus and drip on grapes, well with pump and filter, sloping ground. |
+| `garden` | [Residential garden](https://opencadirrigation.com/?example=garden) | Pop-up sprays, rotors and drip in the beds, fed by the mains through a meter and a backflow preventer. |
+| `sportsField` | [Football pitch](https://opencadirrigation.com/?example=sportsField) | Full-size pitch with impact sprinklers in five rows, reservoir, pump and night-time shifts. |
+| `rowCrop` | [Drip row crop](https://opencadirrigation.com/?example=rowCrop) | Four tomato blocks on drip tape, screen filter, pump and a 1 % slope. |
+| `pivot` | [Centre pivot](https://opencadirrigation.com/?example=pivot) | A 300 m pivot on maize fed by a well and a pump, with a tower, span and sprinkler report. |
+| `greenhouse` | [Vegetable greenhouse](https://opencadirrigation.com/?example=greenhouse) | Four tunnels on pressure-compensating dripline, tank, small pump and disc filter. |
+| `nursery` | [Plant nursery](https://opencadirrigation.com/?example=nursery) | Beds under overhead micro-sprinklers on a 4 × 4 m grid, elevated tank and small pump. |
+| `coffee` | [Coffee on contour lines](https://opencadirrigation.com/?example=coffee) | Curved laterals following the hillside contours, PC dripline, well and pump. |
+| `bananas` | [Banana plantation](https://opencadirrigation.com/?example=bananas) | Pressure-compensating micro-sprinklers at 5 × 5 m, well with submersible pump and disc filter. |
+| `sugarcane` | [Subsurface drip sugarcane](https://opencadirrigation.com/?example=sugarcane) | PC dripline buried 0.3 m deep in 180 m laterals, screen filter and air valve. |
+| `gravity` | [Gravity-fed drip](https://opencadirrigation.com/?example=gravity) | A reservoir 40 m above the blocks, no pump, with a pressure reducing valve on the mainline. |
+| `pasture` | [Sprinkler-irrigated pasture](https://opencadirrigation.com/?example=pasture) | Three paddocks with impact-sprinkler spray lines at 12 × 18 m, reservoir and pump. |
+| `golf` | [Golf hole](https://opencadirrigation.com/?example=golf) | Tee with sprays, fairway with rotors on a triangular grid and green with rotors around the edge. |
+| `sectorPivot` | [Sector pivot with end gun](https://opencadirrigation.com/?example=sectorPivot) | A 250 m pivot sweeping 270° with an end gun, pond, 30 hp pump and gate valve. |
+| `linear` | [Linear move](https://opencadirrigation.com/?example=linear) | A 392 m lateral-move machine travelling 800 m along a canal, with intake and pump. |
+
+## Deep links
+
+Every page of the site accepts these parameters, for example https://opencadirrigation.com/?example=garden or https://opencadirrigation.com/pt/?tutorial=1:
+
+- `?example=<id>`: opens a ready example (ids in the table above)
+- `?tutorial=1`: opens the interactive tutorial (any step number works)
+- `?design=1`: designs the project on load
+- `?lang=<code>`: interface language for this visit (codes in the language list)
+
+## Frequently asked questions
+
+### What is OpenCADIrrigation?
+
+OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+
+### Is OpenCADIrrigation free?
+
+Yes. It is free for professional, academic and personal use, with no sign-up.
+
+### Who is it for?
+
+Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.
+
+### Do I need to install anything?
+
+No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.
+
+### Are my projects stored in the cloud?
+
+No. Projects are saved in your browser and as .oci.json files you keep wherever you like. Only the online elevation and the base maps reach the internet, when you ask for them.
+
+### How does it calculate the hydraulics?
+
+Friction losses by Hazen-Williams or Darcy-Weisbach, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window, and the design also checks uniformity (CU, DU, EU), water hammer and flushing.
+
+### Does it work with AutoCAD and other CADs?
+
+Yes. It imports and exports DXF and DWG (AutoCAD 2000 to 2018), plus Google Earth KML/KMZ, shapefiles, GeoJSON, SVG and PDF.
+
+### Which languages are available?
+
+Twenty, the same as this site (the list is at the foot of the page). The app opens in your computer's language and you can switch at any time under View → Language.
+
+## Languages
+
+The interface, the reports, the tutorial and the example projects are available in 20 languages. The app opens in the first language of the browser that it speaks, else in English. Each language has its own page:
+
+| Language | Code | Page | Description on that page |
+|---|---|---|---|
+| Bahasa Indonesia (Indonesian) | `id` | https://opencadirrigation.com/id/ | CAD gratis untuk desain irigasi bertekanan di peramban: irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, perhitungan hidraulik, daftar material, DXF/DWG, PDF dan Excel. |
+| Deutsch (German) | `de` | https://opencadirrigation.com/de/ | Kostenloses CAD für die Planung von Druckbewässerung im Browser: Tropfbewässerung, Mikroregner, Regner und Center-Pivots, hydraulische Dimensionierung, Stückliste, DXF/DWG, PDF und Excel. |
+| English | `en` | https://opencadirrigation.com/ | Free CAD for pressurised irrigation design in the browser: drip, micro-sprinklers, sprinklers and centre pivots, hydraulic sizing, bill of materials, DXF/DWG, PDF and Excel. |
+| Español (Spanish) | `es` | https://opencadirrigation.com/es/ | CAD gratuito para diseño de riego presurizado en el navegador: goteo, microaspersión, aspersión y pivote central, dimensionamiento hidráulico, lista de materiales, DXF/DWG, PDF y Excel. |
+| Français (French) | `fr` | https://opencadirrigation.com/fr/ | CAO gratuite pour la conception de l’irrigation sous pression dans le navigateur : goutte-à-goutte, micro-asperseurs, aspersion et pivots, dimensionnement hydraulique, nomenclature, DXF/DWG, PDF et Excel. |
+| Hausa | `ha` | https://opencadirrigation.com/ha/ | CAD kyauta don ƙirar ban ruwa ta matsi a mai binciken gizo: ban ruwa ta ɗigo, ƙananan masu fesa ruwa, masu fesa ruwa da pivot na tsakiya, lissafin girman bututu, jerin kayan aiki, DXF/DWG, PDF da Excel. |
+| Kiswahili (Swahili) | `sw` | https://opencadirrigation.com/sw/ | CAD ya bure kwa usanifu wa umwagiliaji wa shinikizo kwenye kivinjari: matone, vinyunyizio vidogo, vinyunyizio na pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa, DXF/DWG, PDF na Excel. |
+| Português (Portuguese) | `pt` | https://opencadirrigation.com/pt/ | CAD gratuito para projeto de irrigação pressurizada no navegador: gotejamento, microaspersão, aspersão e pivô central, dimensionamento hidráulico, lista de materiais, DXF/DWG, PDF e Excel. |
+| Tiếng Việt (Vietnamese) | `vi` | https://opencadirrigation.com/vi/ | CAD miễn phí để thiết kế tưới có áp ngay trên trình duyệt: tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, tính toán thủy lực, bảng kê vật tư, DXF/DWG, PDF và Excel. |
+| Türkçe (Turkish) | `tr` | https://opencadirrigation.com/tr/ | Tarayıcıda basınçlı sulama projelendirmesi için ücretsiz CAD: damla sulama, mini yağmurlayıcılar, yağmurlama ve center pivot, hidrolik boyutlandırma, malzeme listesi, DXF/DWG, PDF ve Excel. |
+| Русский (Russian) | `ru` | https://opencadirrigation.com/ru/ | Бесплатная САПР для проектирования напорного орошения в браузере: капельное орошение, микродождеватели, дождевание и круговые машины, гидравлический расчёт, спецификация, DXF/DWG, PDF и Excel. |
+| العربية (Arabic) | `ar` | https://opencadirrigation.com/ar/ | برنامج CAD مجاني لتصميم الري بالضغط في المتصفح: الري بالتنقيط والرشاشات الصغيرة والرش والمحور المركزي، والحساب الهيدروليكي، وقائمة المواد، وDXF/DWG وPDF وExcel. |
+| اردو (Urdu) | `ur` | https://opencadirrigation.com/ur/ | براؤزر میں دباؤ والی آبپاشی کے ڈیزائن کے لیے مفت CAD: ڈرپ، مائیکرو اسپرنکلر، اسپرنکلر اور سینٹر پیوٹ، ہائیڈرولک سائزنگ، سامان کی فہرست، DXF/DWG، PDF اور Excel۔ |
+| हिन्दी (Hindi) | `hi` | https://opencadirrigation.com/hi/ | ब्राउज़र में दबावयुक्त सिंचाई डिज़ाइन के लिए मुफ़्त CAD: ड्रिप, माइक्रो स्प्रिंकलर, स्प्रिंकलर और सेंटर पिवट, हाइड्रोलिक साइज़िंग, सामग्री सूची, DXF/DWG, PDF और Excel। |
+| मराठी (Marathi) | `mr` | https://opencadirrigation.com/mr/ | ब्राउझरमध्ये दाबयुक्त सिंचन डिझाइनसाठी मोफत CAD: ठिबक, मायक्रो स्प्रिंकलर, तुषार आणि सेंटर पिव्हट, हायड्रॉलिक आकारनिश्चिती, साहित्य यादी, DXF/DWG, PDF आणि Excel. |
+| বাংলা (Bengali) | `bn` | https://opencadirrigation.com/bn/ | ব্রাউজারে চাপযুক্ত সেচ ডিজাইনের জন্য বিনামূল্যের CAD: ড্রিপ, মাইক্রো স্প্রিংকলার, স্প্রিংকলার ও সেন্টার পিভট, হাইড্রোলিক সাইজিং, উপকরণ তালিকা, DXF/DWG, PDF ও Excel। |
+| ਪੰਜਾਬੀ (Punjabi) | `pa` | https://opencadirrigation.com/pa/ | ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਦਬਾਅ ਵਾਲੀ ਸਿੰਚਾਈ ਦੇ ਡਿਜ਼ਾਈਨ ਲਈ ਮੁਫ਼ਤ CAD: ਡ੍ਰਿਪ, ਮਾਈਕ੍ਰੋ ਸਪ੍ਰਿੰਕਲਰ, ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਸੈਂਟਰ ਪਿਵਟ, ਹਾਈਡ੍ਰੌਲਿਕ ਸਾਈਜ਼ਿੰਗ, ਸਮੱਗਰੀ ਸੂਚੀ, DXF/DWG, PDF ਅਤੇ Excel। |
+| తెలుగు (Telugu) | `te` | https://opencadirrigation.com/te/ | బ్రౌజర్‌లో పీడన నీటిపారుదల డిజైన్ కోసం ఉచిత CAD: బిందు సేద్యం, మైక్రో స్ప్రింక్లర్లు, స్ప్రింక్లర్లు మరియు సెంటర్ పివట్, హైడ్రాలిక్ సైజింగ్, సామగ్రి జాబితా, DXF/DWG, PDF మరియు Excel. |
+| 中文 (Chinese) | `zh` | https://opencadirrigation.com/zh/ | 在浏览器中进行压力灌溉设计的免费 CAD：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。 |
+| 日本語 (Japanese) | `ja` | https://opencadirrigation.com/ja/ | ブラウザで使える加圧灌漑設計用の無料CAD。点滴灌漑、マイクロスプリンクラー、スプリンクラー、センターピボット、水理計算と管径設計、部材リスト、DXF/DWG、PDF、Excelに対応。 |
+
+## Citing
+
+OpenCADIrrigation, version 1.0.0. https://opencadirrigation.com/

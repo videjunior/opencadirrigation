@@ -11,6 +11,12 @@
 /// hidden (kept in the DOM) on Flutter's first frame. Each page declares its
 /// language, a self canonical, the hreflang cluster and JSON-LD.
 ///
+/// Language models read the site too: robots.txt welcomes the AI crawlers by
+/// name, `llms.txt` (the llmstxt.org summary) and `llms-full.txt` (the whole
+/// reference in Markdown, `tool/site/llms.dart`) give them the facts without
+/// the app shell, and the JSON-LD carries the FAQ, the steps, the examples and
+/// the subject entities (Wikipedia/Wikidata) in every language.
+///
 /// `dart run tool/gen_site.dart` writes the files; the test
 /// `test/web_metadata_test.dart` fails when they drift from this template.
 library;
@@ -28,6 +34,7 @@ part 'site/ha.dart';
 part 'site/hi.dart';
 part 'site/id.dart';
 part 'site/ja.dart';
+part 'site/llms.dart';
 part 'site/mr.dart';
 part 'site/pa.dart';
 part 'site/ru.dart';
@@ -42,7 +49,12 @@ const siteUrl = 'https://opencadirrigation.com/';
 
 /// Google Analytics measurement id of the site.
 const analyticsId = 'G-3M0P4T8V2T';
-const siteLastMod = '2026-09-21';
+const siteLastMod = '2026-09-22';
+
+/// IndexNow key (Bing, Yandex, Seznam, Naver…): published as `/<key>.txt` so
+/// `dart run tool/indexnow.dart` can announce changed pages after a deploy.
+/// Bing's index also feeds the answers of Copilot and ChatGPT search.
+const indexNowKey = 'b2ba822c8eb67b60cb661d7a42eb9ef9';
 
 /// Languages of the site, one entry page per interface language of the app,
 /// in the order of its language menu: code, BCP-47 tag, Open Graph locale,
@@ -195,7 +207,7 @@ const _pt = SiteText(
     ('Terreno e relevo', 'Curvas de nível, cotas de ponto, modelo digital do terreno por triangulação, elevação baixada da internet a partir de uma coordenada, perfis longitudinais e linha piezométrica sobre o terreno.'),
     ('Relatórios e materiais', 'Zonas, tubos, emissores, uniformidade (CU, DU, EU), requisitos hídricos por cultura, programa do controlador e lista de materiais com conexões; exportação em PDF, Excel, CSV e TXT.'),
     ('Troca de arquivos', 'Importa DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF e imagens georreferenciadas; exporta DXF, DWG, PDF com prancha, SVG, KML, KMZ e GeoJSON.'),
-    ('Catálogos de fabricantes', 'Catálogos de fabricantes em JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) prontos para usar, além de pacotes próprios carregados por arquivo ou URL.'),
+    ('Catálogos de fabricantes', 'Catálogos de fabricantes em JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prontos para usar, além de pacotes próprios carregados por arquivo ou URL.'),
   ],
   howTitle: 'Como funciona',
   how: [
@@ -224,9 +236,12 @@ const _pt = SiteText(
   ],
   faqTitle: 'Perguntas frequentes',
   faq: [
+    ('O que é o OpenCADIrrigation?', 'O OpenCADIrrigation é um aplicativo web gratuito para projetar sistemas de irrigação pressurizada: um CAD com motor hidráulico que desenha a rede, dimensiona as tubulações, verifica pressões e uniformidade e produz a lista de materiais e os relatórios, do jardim residencial ao pivô central.'),
     ('O OpenCADIrrigation é gratuito?', 'Sim. É gratuito para uso profissional, acadêmico e pessoal, sem cadastro.'),
+    ('Para quem ele é?', 'Para projetistas de irrigação agrícola e paisagística, agrônomos e engenheiros, revendas de equipamentos, professores e estudantes. O tutorial interativo e 15 exemplos prontos permitem começar sem ler manual.'),
     ('Preciso instalar alguma coisa?', 'Não. Ele roda em Chrome, Edge, Firefox e Safari, no computador, no tablet e no celular, e pode ser instalado como aplicativo (PWA) para abrir em janela própria.'),
     ('Meus projetos ficam na nuvem?', 'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser. Só a elevação online e os mapas base acessam a internet, quando você pede.'),
+    ('Como é feito o cálculo hidráulico?', 'Perda de carga por Hazen-Williams ou Darcy-Weisbach, emissores por q = k·Hˣ e a rede inteira resolvida pelo Global Gradient Algorithm, o método do EPANET. As tubulações são dimensionadas por programação linear dentro da janela de pressão dos emissores, e o projeto verifica também uniformidade (CU, DU, EU), golpe de aríete e lavagem.'),
     ('Funciona com AutoCAD e outros CADs?', 'Sim. Importa e exporta DXF e DWG (AutoCAD 2000 a 2018), além de KML/KMZ do Google Earth, shapefile, GeoJSON, SVG e PDF.'),
     ('Em que idiomas está disponível?', 'Em 20 idiomas, os mesmos deste site (a lista está no rodapé da página). O app abre no idioma do seu computador e você pode trocar a qualquer momento em Ver → Idioma.'),
   ],
@@ -261,7 +276,7 @@ const _en = SiteText(
     ('Terrain and relief', 'Contours, spot heights, a digital terrain model by triangulation, elevation downloaded from the internet at a coordinate, longitudinal profiles and the hydraulic grade line over the ground.'),
     ('Reports and materials', 'Zones, pipes, emitters, uniformity (CU, DU, EU), crop water requirements, controller programme and a bill of materials with fittings; export to PDF, Excel, CSV and TXT.'),
     ('File exchange', 'Imports DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF and georeferenced images; exports DXF, DWG, PDF sheets, SVG, KML, KMZ and GeoJSON.'),
-    ('Manufacturer catalogues', 'Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) ready to use, plus your own packs loaded from a file or a URL.'),
+    ('Manufacturer catalogues', 'Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ready to use, plus your own packs loaded from a file or a URL.'),
   ],
   howTitle: 'How it works',
   how: [
@@ -290,9 +305,12 @@ const _en = SiteText(
   ],
   faqTitle: 'Frequently asked questions',
   faq: [
+    ('What is OpenCADIrrigation?', 'OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.'),
     ('Is OpenCADIrrigation free?', 'Yes. It is free for professional, academic and personal use, with no sign-up.'),
+    ('Who is it for?', 'Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.'),
     ('Do I need to install anything?', 'No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.'),
     ('Are my projects stored in the cloud?', 'No. Projects are saved in your browser and as .oci.json files you keep wherever you like. Only the online elevation and the base maps reach the internet, when you ask for them.'),
+    ('How does it calculate the hydraulics?', 'Friction losses by Hazen-Williams or Darcy-Weisbach, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window, and the design also checks uniformity (CU, DU, EU), water hammer and flushing.'),
     ('Does it work with AutoCAD and other CADs?', 'Yes. It imports and exports DXF and DWG (AutoCAD 2000 to 2018), plus Google Earth KML/KMZ, shapefiles, GeoJSON, SVG and PDF.'),
     ('Which languages are available?', 'Twenty, the same as this site (the list is at the foot of the page). The app opens in your computer\'s language and you can switch at any time under View → Language.'),
   ],
@@ -327,7 +345,7 @@ const _es = SiteText(
     ('Terreno y relieve', 'Curvas de nivel, cotas, modelo digital del terreno por triangulación, elevación descargada de internet a partir de una coordenada, perfiles longitudinales y línea piezométrica sobre el terreno.'),
     ('Informes y materiales', 'Zonas, tuberías, emisores, uniformidad (CU, DU, EU), necesidades de agua por cultivo, programa del controlador y lista de materiales con accesorios; exportación a PDF, Excel, CSV y TXT.'),
     ('Intercambio de archivos', 'Importa DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF e imágenes georreferenciadas; exporta DXF, DWG, PDF con plano, SVG, KML, KMZ y GeoJSON.'),
-    ('Catálogos de fabricantes', 'Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) listos para usar, además de paquetes propios cargados desde archivo o URL.'),
+    ('Catálogos de fabricantes', 'Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL.'),
   ],
   howTitle: 'Cómo funciona',
   how: [
@@ -356,9 +374,12 @@ const _es = SiteText(
   ],
   faqTitle: 'Preguntas frecuentes',
   faq: [
+    ('¿Qué es OpenCADIrrigation?', 'OpenCADIrrigation es una aplicación web gratuita para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.'),
     ('¿OpenCADIrrigation es gratuito?', 'Sí. Es gratuito para uso profesional, académico y personal, sin registro.'),
+    ('¿Para quién es?', 'Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo y 15 ejemplos listos permiten empezar sin leer un manual.'),
     ('¿Necesito instalar algo?', 'No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.'),
     ('¿Mis proyectos se guardan en la nube?', 'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide.'),
+    ('¿Cómo se hace el cálculo hidráulico?', 'Pérdidas de carga por Hazen-Williams o Darcy-Weisbach, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores, y el diseño verifica también la uniformidad (CU, DU, EU), el golpe de ariete y el lavado.'),
     ('¿Funciona con AutoCAD y otros CAD?', 'Sí. Importa y exporta DXF y DWG (AutoCAD 2000 a 2018), además de KML/KMZ de Google Earth, shapefile, GeoJSON, SVG y PDF.'),
     ('¿En qué idiomas está disponible?', 'En 20 idiomas, los mismos de este sitio (la lista está al pie de la página). La aplicación se abre en el idioma de su equipo y puede cambiarlo en cualquier momento en Ver → Idioma.'),
   ],
@@ -406,8 +427,20 @@ String _hreflangLinks() => [
   '  <link rel="alternate" hreflang="x-default" href="${siteLang('en').url}">',
 ].join('\n');
 
-/// JSON-LD graph of a page: organisation, web site, this web page, the
-/// application and a one-level breadcrumb.
+/// What the application is about, as entities search engines and language
+/// models already know: name, Wikipedia article, Wikidata item.
+const _subjects = [
+  ('Irrigation', 'Irrigation', 'Q11453'),
+  ('Drip irrigation', 'Drip_irrigation', 'Q746694'),
+  ('Micro-irrigation', 'Micro-irrigation', 'Q6692750'),
+  ('Irrigation sprinkler', 'Irrigation_sprinkler', 'Q998539'),
+  ('Center-pivot irrigation', 'Center-pivot_irrigation', 'Q2744831'),
+  ('Computer-aided design', 'Computer-aided_design', 'Q184793'),
+];
+
+/// JSON-LD graph of a page: organisation, web site, this web page, a
+/// one-level breadcrumb, the application, its FAQ, how it works and the
+/// example gallery, all in the language of the page.
 String jsonLd(SiteLang lang) {
   final t = siteText(lang.code);
   final graph = [
@@ -436,6 +469,12 @@ String jsonLd(SiteLang lang) {
       'inLanguage': lang.tag,
       'isPartOf': {'@id': '$siteUrl#site'},
       'about': {'@id': '$siteUrl#app'},
+      'mainEntity': {'@id': '$siteUrl#app'},
+      'hasPart': [
+        {'@id': '${lang.url}#faq'},
+        {'@id': '${lang.url}#how'},
+        {'@id': '${lang.url}#examples'},
+      ],
       'primaryImageOfPage': {'@type': 'ImageObject', 'url': '${siteUrl}og-image.png', 'width': 1200, 'height': 630},
       'dateModified': siteLastMod,
       'breadcrumb': {'@id': '${lang.url}#breadcrumb'},
@@ -448,26 +487,76 @@ String jsonLd(SiteLang lang) {
       ],
     },
     {
-      '@type': 'SoftwareApplication',
+      '@type': 'WebApplication',
       '@id': '$siteUrl#app',
       'name': 'OpenCADIrrigation',
       'alternateName': 'OpenCAD Irrigation',
       'url': lang.url,
+      'installUrl': lang.url,
       'image': '${siteUrl}og-image.png',
       'screenshot': {'@type': 'ImageObject', 'url': '${siteUrl}screenshots/design-1440x900.png', 'width': 1440, 'height': 900, 'caption': t.screenshotLabel},
       'description': t.description,
+      'abstract': t.faq.first.$2,
       'applicationCategory': 'DesignApplication',
       'applicationSubCategory': t.subCategory,
       'operatingSystem': 'Web browser (Chrome, Edge, Firefox, Safari)',
-      'browserRequirements': 'Requires JavaScript',
+      'browserRequirements': 'Requires JavaScript and WebAssembly',
+      'availableOnDevice': 'Desktop, tablet, phone',
       'softwareVersion': appVersion,
+      'dateModified': siteLastMod,
       'softwareHelp': {'@type': 'CreativeWork', 'url': '${lang.url}?tutorial=1', 'name': t.tutorial},
       'isAccessibleForFree': true,
       'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD', 'availability': 'https://schema.org/InStock'},
       'inLanguage': [for (final l in siteLanguages) l.tag],
       'keywords': t.keywords,
-      'featureList': [for (final (name, _) in t.features) name],
+      'featureList': [for (final (name, text) in t.features) '$name: $text'],
+      'about': [
+        for (final (name, article, wikidata) in _subjects)
+          {'@type': 'Thing', 'name': name, 'sameAs': ['https://en.wikipedia.org/wiki/$article', 'https://www.wikidata.org/wiki/$wikidata']},
+      ],
       'author': {'@id': '$siteUrl#org'},
+      'publisher': {'@id': '$siteUrl#org'},
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': '${lang.url}#faq',
+      'name': t.faqTitle,
+      'inLanguage': lang.tag,
+      'isPartOf': {'@id': '${lang.url}#page'},
+      'mainEntity': [
+        for (final (q, a) in t.faq)
+          {
+            '@type': 'Question',
+            'name': q,
+            'acceptedAnswer': {'@type': 'Answer', 'text': a},
+          },
+      ],
+    },
+    {
+      '@type': 'HowTo',
+      '@id': '${lang.url}#how',
+      'name': t.howTitle,
+      'description': t.intro,
+      'inLanguage': lang.tag,
+      'tool': {'@id': '$siteUrl#app'},
+      'step': [
+        for (final (i, (name, text)) in t.how.indexed) {'@type': 'HowToStep', 'position': i + 1, 'name': name, 'text': text},
+      ],
+    },
+    {
+      '@type': 'ItemList',
+      '@id': '${lang.url}#examples',
+      'name': t.examplesTitle,
+      'description': t.examplesIntro,
+      'numberOfItems': t.examples.length,
+      'itemListElement': [
+        for (final (i, ex) in t.examples.indexed)
+          {
+            '@type': 'ListItem',
+            'position': i + 1,
+            'item': {'@type': 'CreativeWork', 'name': ex.title, 'description': ex.text, 'url': '${lang.url}?example=${ex.id}', 'inLanguage': lang.tag},
+          },
+      ],
     },
   ];
   return const JsonEncoder.withIndent('  ').convert({'@context': 'https://schema.org', '@graph': graph});
@@ -501,6 +590,7 @@ const _style = '''
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 ''';
 
@@ -535,6 +625,7 @@ String renderIndex(SiteLang lang) {
   <meta name="color-scheme" content="dark">
   <link rel="canonical" href="${lang.url}">
 ${_hreflangLinks()}
+  <link rel="alternate" type="text/markdown" href="${siteUrl}llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -647,6 +738,7 @@ $_analytics
       <footer>
         <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>
         <p>${_esc(t.footer)}</p>
+        <p class="meta">OpenCADIrrigation $appVersion · <time datetime="$siteLastMod">$siteLastMod</time></p>
       </footer>
     </div>
   </main>
@@ -667,11 +759,12 @@ $_analytics
   return b.toString();
 }
 
-/// sitemap.xml with the entry pages and their hreflang alternates.
+/// sitemap.xml with the entry pages, their hreflang alternates and the
+/// images they show (for image search).
 String renderSitemap() {
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-    ..writeln('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">');
+    ..writeln('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">');
   for (final l in siteLanguages) {
     b.writeln('  <url>');
     b.writeln('    <loc>${l.url}</loc>');
@@ -682,10 +775,72 @@ String renderSitemap() {
       b.writeln('    <xhtml:link rel="alternate" hreflang="${a.tag}" href="${a.url}"/>');
     }
     b.writeln('    <xhtml:link rel="alternate" hreflang="x-default" href="${siteLang('en').url}"/>');
+    for (final image in ['screenshots/design-1440x900.png', 'og-image.png', 'brand/logo-horizontal-1000.png']) {
+      b.writeln('    <image:image><image:loc>$siteUrl$image</image:loc></image:image>');
+    }
     b.writeln('  </url>');
   }
   b.writeln('</urlset>');
   return b.toString();
+}
+
+/// Crawlers of search engines and of AI assistants, by the user-agent token
+/// each company documents: those that index or answer live questions and
+/// those that collect training data. All are allowed on the whole site; the
+/// named groups make the choice explicit and survive a stricter `*` later.
+const aiCrawlers = [
+  // OpenAI: ChatGPT search, live fetches, training
+  'OAI-SearchBot', 'ChatGPT-User', 'GPTBot',
+  // Anthropic: Claude search, live fetches, training
+  'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'anthropic-ai',
+  // Perplexity
+  'PerplexityBot', 'Perplexity-User',
+  // Google Gemini and Vertex AI grounding, Apple Intelligence
+  'Google-Extended', 'Applebot', 'Applebot-Extended',
+  // Microsoft Copilot answers from Bing's index
+  'bingbot',
+  // Meta AI, Amazon (Alexa, Rufus), DuckDuckGo assist, Mistral, Cohere, You.com
+  'meta-externalagent', 'meta-externalfetcher', 'Amazonbot', 'DuckAssistBot', 'MistralAI-User', 'cohere-ai', 'YouBot',
+  // Open datasets many models are trained on
+  'CCBot', 'AI2Bot', 'Diffbot',
+];
+
+/// robots.txt: everything is public, for every crawler.
+String renderRobots() {
+  final b = StringBuffer()
+    ..writeln('# OpenCADIrrigation — $siteUrl')
+    ..writeln('# A single application in ${siteLanguages.length} languages (/ in English, the others under their code: /pt/, /es/, /de/, /zh/, …); everything is public.')
+    ..writeln('# Language models: a summary is at ${siteUrl}llms.txt and the complete reference at ${siteUrl}llms-full.txt.')
+    ..writeln()
+    ..writeln('User-agent: *')
+    ..writeln('Allow: /')
+    ..writeln()
+    ..writeln('# Search and AI assistants are welcome to read, cite and learn from the site.');
+  for (final agent in aiCrawlers) {
+    b.writeln('User-agent: $agent');
+  }
+  b
+    ..writeln('Allow: /')
+    ..writeln()
+    ..writeln('Sitemap: ${siteUrl}sitemap.xml');
+  return b.toString();
+}
+
+/// humans.txt: who and what is behind the site.
+String renderHumans() {
+  final languages = [for (final l in siteLanguages) '${languageNames[l.code]} (/${l.path})'].join(', ');
+  return '''/* TEAM */
+Project: OpenCADIrrigation
+Site: $siteUrl
+
+/* SITE */
+Last update: $siteLastMod
+Version: $appVersion
+Standards: HTML5, CSS3, JavaScript, WebAssembly (Flutter web)
+Languages: $languages
+Pages: generated by tool/gen_site.dart
+For language models: ${siteUrl}llms.txt, ${siteUrl}llms-full.txt
+''';
 }
 
 /// 404 page (GitHub Pages serves it for unknown paths): not indexed. It
@@ -792,4 +947,9 @@ Map<String, String> renderSite() => {
   'en/index.html': renderLegacyEnRedirect(),
   'sitemap.xml': renderSitemap(),
   '404.html': render404(),
+  'robots.txt': renderRobots(),
+  'humans.txt': renderHumans(),
+  'llms.txt': renderLlmsTxt(),
+  'llms-full.txt': renderLlmsFullTxt(),
+  '$indexNowKey.txt': indexNowKey,
 };

@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/es/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/es/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/es/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/es/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/es/",
+      "installUrl": "https://opencadirrigation.com/es/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "Diseño de riego dimensionado con resultados por zona"
       },
       "description": "CAD gratuito para diseño de riego presurizado en el navegador: goteo, microaspersión, aspersión y pivote central, dimensionamiento hidráulico, lista de materiales, DXF/DWG, PDF y Excel.",
+      "abstract": "OpenCADIrrigation es una aplicación web gratuita para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "CAD para riego",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/es/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "diseño de riego, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola",
       "featureList": [
-        "Dibujo CAD completo",
-        "Red hidráulica",
-        "Motor hidráulico validado",
-        "Dimensionamiento automático",
-        "Terreno y relieve",
-        "Informes y materiales",
-        "Intercambio de archivos",
-        "Catálogos de fabricantes"
+        "Dibujo CAD completo: Líneas, polilíneas, arcos, splines, sombreados, cotas, textos y capas, con referencias a objetos, selección por ventana, pinzamientos y atajos al estilo AutoCAD (L, PL, C, D, ZE…).",
+        "Red hidráulica: Fuentes de agua, bombas, línea principal, válvulas de zona, laterales con emisores, cintas y tuberías de goteo, filtros, reguladores de presión, contadores y nudos; generadores de bloques de laterales y de mallas de aspersores.",
+        "Motor hidráulico validado: Hazen-Williams y Darcy-Weisbach, pérdidas localizadas, emisores q = k·Hˣ, resolución de redes por el Global Gradient Algorithm (como EPANET), curvas de bomba y punto de operación, golpe de ariete y análisis de lavado.",
+        "Dimensionamiento automático: Programación lineal o velocidad máxima, respetando la ventana de presión de los emisores y la clase de las tuberías, equilibrando coste de tubería y energía, con diámetros telescópicos y turnos de operación.",
+        "Terreno y relieve: Curvas de nivel, cotas, modelo digital del terreno por triangulación, elevación descargada de internet a partir de una coordenada, perfiles longitudinales y línea piezométrica sobre el terreno.",
+        "Informes y materiales: Zonas, tuberías, emisores, uniformidad (CU, DU, EU), necesidades de agua por cultivo, programa del controlador y lista de materiales con accesorios; exportación a PDF, Excel, CSV y TXT.",
+        "Intercambio de archivos: Importa DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF e imágenes georreferenciadas; exporta DXF, DWG, PDF con plano, SVG, KML, KMZ y GeoJSON.",
+        "Catálogos de fabricantes: Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL."
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/es/#faq",
+      "name": "Preguntas frecuentes",
+      "inLanguage": "es",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/es/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Qué es OpenCADIrrigation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation es una aplicación web gratuita para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿OpenCADIrrigation es gratuito?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Es gratuito para uso profesional, académico y personal, sin registro."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Para quién es?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo y 15 ejemplos listos permiten empezar sin leer un manual."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Necesito instalar algo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Mis proyectos se guardan en la nube?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo se hace el cálculo hidráulico?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pérdidas de carga por Hazen-Williams o Darcy-Weisbach, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores, y el diseño verifica también la uniformidad (CU, DU, EU), el golpe de ariete y el lavado."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Funciona con AutoCAD y otros CAD?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Importa y exporta DXF y DWG (AutoCAD 2000 a 2018), además de KML/KMZ de Google Earth, shapefile, GeoJSON, SVG y PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿En qué idiomas está disponible?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "En 20 idiomas, los mismos de este sitio (la lista está al pie de la página). La aplicación se abre en el idioma de su equipo y puede cambiarlo en cualquier momento en Ver → Idioma."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/es/#how",
+      "name": "Cómo funciona",
+      "description": "OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica y el cálculo: trace el área, coloque laterales, válvulas y línea principal, pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. Disponible en 20 idiomas, según el idioma de su equipo.",
+      "inLanguage": "es",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Dibuje o importe el área",
+          "text": "Traiga un DXF, DWG, KML o una imagen satelital, o dibuje la parcela, el jardín o el campo directamente. Añada curvas de nivel o descargue la elevación por coordenada."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Arme la red",
+          "text": "Genere bloques de laterales o mallas de aspersores con un clic, coloque válvulas, bomba y fuente de agua y conéctelo todo con la línea principal."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Diseñe y documente",
+          "text": "Pulse F5: la aplicación dimensiona zonas y línea principal, verifica presiones y velocidades y produce informes, lista de materiales y el plano en PDF."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/es/#examples",
+      "name": "Ejemplos listos para abrir",
+      "description": "Cada proyecto se abre completo y calcula con F5. Úselos para conocer la aplicación o como punto de partida.",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Huerto",
+            "description": "Microaspersión en cítricos y goteo en uva, pozo con bomba y filtro, terreno en pendiente.",
+            "url": "https://opencadirrigation.com/es/?example=orchard",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Jardín residencial",
+            "description": "Difusores emergentes, rotores y goteo en los canteros, conectados a la red pública con contador y antirretorno.",
+            "url": "https://opencadirrigation.com/es/?example=garden",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Campo de fútbol",
+            "description": "Campo oficial con aspersores de impacto en cinco filas, depósito, bomba y turnos nocturnos.",
+            "url": "https://opencadirrigation.com/es/?example=sportsField",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Cultivo con goteo",
+            "description": "Cuatro parcelas de tomate con cinta de goteo, filtro de malla, bomba y pendiente del 1 %.",
+            "url": "https://opencadirrigation.com/es/?example=rowCrop",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivote central",
+            "description": "Pivote de 300 m en maíz alimentado por pozo y bomba, con informe de torres, tramos y boquillas.",
+            "url": "https://opencadirrigation.com/es/?example=pivot",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Invernadero de hortalizas",
+            "description": "Cuatro túneles con tubería de goteo autocompensante, depósito, bomba pequeña y filtro de discos.",
+            "url": "https://opencadirrigation.com/es/?example=greenhouse",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Vivero de plantas",
+            "description": "Canteros con microaspersores suspendidos en malla de 4 × 4 m, tanque elevado y bomba pequeña.",
+            "url": "https://opencadirrigation.com/es/?example=nursery",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Cafetal en curvas de nivel",
+            "description": "Laterales curvos que siguen las curvas de nivel de la ladera, tubería de goteo PC, pozo y bomba.",
+            "url": "https://opencadirrigation.com/es/?example=coffee",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Platanal",
+            "description": "Microaspersores autocompensantes a 5 × 5 m, pozo con bomba sumergible y filtro de discos.",
+            "url": "https://opencadirrigation.com/es/?example=bananas",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Caña de azúcar con goteo subterráneo",
+            "description": "Tubería de goteo PC enterrada a 0,3 m en laterales de 180 m, filtro de malla y ventosa.",
+            "url": "https://opencadirrigation.com/es/?example=sugarcane",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Goteo por gravedad",
+            "description": "Depósito 40 m por encima de las parcelas, sin bomba, con válvula reguladora de presión en la conducción.",
+            "url": "https://opencadirrigation.com/es/?example=gravity",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pastura con aspersión",
+            "description": "Tres potreros con líneas de aspersores de impacto a 12 × 18 m, depósito y bomba.",
+            "url": "https://opencadirrigation.com/es/?example=pasture",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Hoyo de golf",
+            "description": "Tee con difusores, fairway con rotores en malla triangular y green con rotores en el perímetro.",
+            "url": "https://opencadirrigation.com/es/?example=golf",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivote sectorial con cañón",
+            "description": "Pivote de 250 m que gira 270° con cañón final, laguna, bomba de 30 CV y válvula de compuerta.",
+            "url": "https://opencadirrigation.com/es/?example=sectorPivot",
+            "inLanguage": "es"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Pivote lineal",
+            "description": "Lateral de avance frontal de 392 m que recorre 800 m a lo largo de un canal, con toma y bomba.",
+            "url": "https://opencadirrigation.com/es/?example=linear",
+            "inLanguage": "es"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>Terreno y relieve</h3><p>Curvas de nivel, cotas, modelo digital del terreno por triangulación, elevación descargada de internet a partir de una coordenada, perfiles longitudinales y línea piezométrica sobre el terreno.</p></li>
           <li><h3>Informes y materiales</h3><p>Zonas, tuberías, emisores, uniformidad (CU, DU, EU), necesidades de agua por cultivo, programa del controlador y lista de materiales con accesorios; exportación a PDF, Excel, CSV y TXT.</p></li>
           <li><h3>Intercambio de archivos</h3><p>Importa DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF e imágenes georreferenciadas; exporta DXF, DWG, PDF con plano, SVG, KML, KMZ y GeoJSON.</p></li>
-          <li><h3>Catálogos de fabricantes</h3><p>Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) listos para usar, además de paquetes propios cargados desde archivo o URL.</p></li>
+          <li><h3>Catálogos de fabricantes</h3><p>Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL.</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">Preguntas frecuentes</h2>
         <dl>
+          <dt>¿Qué es OpenCADIrrigation?</dt>
+          <dd>OpenCADIrrigation es una aplicación web gratuita para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.</dd>
           <dt>¿OpenCADIrrigation es gratuito?</dt>
           <dd>Sí. Es gratuito para uso profesional, académico y personal, sin registro.</dd>
+          <dt>¿Para quién es?</dt>
+          <dd>Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo y 15 ejemplos listos permiten empezar sin leer un manual.</dd>
           <dt>¿Necesito instalar algo?</dt>
           <dd>No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.</dd>
           <dt>¿Mis proyectos se guardan en la nube?</dt>
           <dd>No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide.</dd>
+          <dt>¿Cómo se hace el cálculo hidráulico?</dt>
+          <dd>Pérdidas de carga por Hazen-Williams o Darcy-Weisbach, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores, y el diseño verifica también la uniformidad (CU, DU, EU), el golpe de ariete y el lavado.</dd>
           <dt>¿Funciona con AutoCAD y otros CAD?</dt>
           <dd>Sí. Importa y exporta DXF y DWG (AutoCAD 2000 a 2018), además de KML/KMZ de Google Earth, shapefile, GeoJSON, SVG y PDF.</dd>
           <dt>¿En qué idiomas está disponible?</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="Idiomas">Idiomas: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <strong lang="es" dir="ltr">Español</strong> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Los catálogos de fabricantes y los proyectos de ejemplo pueden enviarse en formato JSON para incluirse en OpenCADIrrigation.</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

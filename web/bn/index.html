@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/bn/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/bn/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/bn/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/bn/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/bn/",
+      "installUrl": "https://opencadirrigation.com/bn/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "জোনভিত্তিক ফলাফলসহ আকার নির্ধারিত সেচ ডিজাইন"
       },
       "description": "ব্রাউজারে চাপযুক্ত সেচ ডিজাইনের জন্য বিনামূল্যের CAD: ড্রিপ, মাইক্রো স্প্রিংকলার, স্প্রিংকলার ও সেন্টার পিভট, হাইড্রোলিক সাইজিং, উপকরণ তালিকা, DXF/DWG, PDF ও Excel।",
+      "abstract": "OpenCADIrrigation চাপযুক্ত সেচব্যবস্থা ডিজাইনের জন্য একটি বিনামূল্যের ওয়েব অ্যাপ: হাইড্রোলিক ইঞ্জিনসহ একটি CAD, যা নেটওয়ার্ক বিন্যাস করে, পাইপের আকার নির্ধারণ করে, চাপ ও সমরূপতা যাচাই করে এবং উপকরণ তালিকা ও প্রতিবেদন তৈরি করে, বাসার বাগান থেকে সেন্টার পিভট পর্যন্ত।",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "সেচের জন্য CAD",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/bn/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "সেচ ডিজাইন, সেচ সফটওয়্যার, সেচ CAD, চাপযুক্ত সেচ, ড্রিপ সেচ, মাইক্রো স্প্রিংকলার, স্প্রিংকলার সেচ, সেন্টার পিভট, হাইড্রোলিক হিসাব, পাইপের আকার নির্ধারণ, সেচের সমরূপতা, DXF, DWG, বাগানের সেচ, কৃষি সেচ, বিনামূল্যের সেচ সফটওয়্যার",
       "featureList": [
-        "পূর্ণাঙ্গ CAD অঙ্কন",
-        "হাইড্রোলিক নেটওয়ার্ক",
-        "যাচাইকৃত হাইড্রোলিক ইঞ্জিন",
-        "স্বয়ংক্রিয় আকার নির্ধারণ",
-        "ভূমি ও উচ্চতা",
-        "প্রতিবেদন ও উপকরণ",
-        "ফাইল আদান-প্রদান",
-        "নির্মাতাদের ক্যাটালগ"
+        "পূর্ণাঙ্গ CAD অঙ্কন: রেখা, পলিলাইন, আর্ক, স্প্লাইন, হ্যাচ, মাত্রা, লেখা ও লেয়ার, সঙ্গে স্ন্যাপ, উইন্ডো নির্বাচন, গ্রিপ এবং AutoCAD-ধাঁচের শর্টকাট (L, PL, C, D, ZE…)।",
+        "হাইড্রোলিক নেটওয়ার্ক: পানির উৎস, পাম্প, মূল লাইন, জোন ভালভ, ইমিটারসহ ল্যাটারাল, ড্রিপ টেপ ও ড্রিপলাইন, ফিল্টার, চাপ নিয়ন্ত্রক, পানির মিটার ও জংশন; ল্যাটারাল ব্লক ও স্প্রিংকলার গ্রিড তৈরির সরঞ্জাম।",
+        "যাচাইকৃত হাইড্রোলিক ইঞ্জিন: হ্যাজেন-উইলিয়ামস ও ডার্সি-ভাইসবাখ, স্থানীয় ক্ষতি, ইমিটার q = k·Hˣ, Global Gradient Algorithm দিয়ে নেটওয়ার্ক সমাধান (EPANET-এর মতো), পাম্প বক্ররেখা ও কার্যবিন্দু, ওয়াটার হ্যামার ও ফ্লাশিং বিশ্লেষণ।",
+        "স্বয়ংক্রিয় আকার নির্ধারণ: লিনিয়ার প্রোগ্রামিং বা সর্বোচ্চ বেগ, ইমিটারের চাপসীমা ও পাইপের চাপ-শ্রেণি মেনে, পাইপের খরচ ও শক্তির মধ্যে ভারসাম্য রেখে, ধাপে ধাপে ব্যাস ও পরিচালনার পালাসহ।",
+        "ভূমি ও উচ্চতা: কনট্যুর, উচ্চতা বিন্দু, ত্রিভুজায়নের মাধ্যমে ডিজিটাল ভূমি মডেল, স্থানাঙ্ক ধরে ইন্টারনেট থেকে নামানো উচ্চতা, অনুদৈর্ঘ্য প্রোফাইল এবং ভূমির ওপর হাইড্রোলিক গ্রেড লাইন।",
+        "প্রতিবেদন ও উপকরণ: জোন, পাইপ, ইমিটার, সমরূপতা (CU, DU, EU), ফসলের পানির চাহিদা, কন্ট্রোলার প্রোগ্রাম এবং ফিটিংসহ উপকরণ তালিকা; PDF, Excel, CSV ও TXT-এ রপ্তানি।",
+        "ফাইল আদান-প্রদান: DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF ও ভূ-নির্দেশিত ছবি আমদানি করে; DXF, DWG, PDF শিট, SVG, KML, KMZ ও GeoJSON রপ্তানি করে।",
+        "নির্মাতাদের ক্যাটালগ: JSON-এ নির্মাতাদের ক্যাটালগ (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ব্যবহারের জন্য প্রস্তুত, সঙ্গে ফাইল বা URL থেকে লোড করা আপনার নিজের প্যাক।"
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/bn/#faq",
+      "name": "প্রায়শ জিজ্ঞাসিত প্রশ্ন",
+      "inLanguage": "bn",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/bn/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation কী?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation চাপযুক্ত সেচব্যবস্থা ডিজাইনের জন্য একটি বিনামূল্যের ওয়েব অ্যাপ: হাইড্রোলিক ইঞ্জিনসহ একটি CAD, যা নেটওয়ার্ক বিন্যাস করে, পাইপের আকার নির্ধারণ করে, চাপ ও সমরূপতা যাচাই করে এবং উপকরণ তালিকা ও প্রতিবেদন তৈরি করে, বাসার বাগান থেকে সেন্টার পিভট পর্যন্ত।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation কি বিনামূল্যে?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "হ্যাঁ। পেশাগত, শিক্ষাগত ও ব্যক্তিগত ব্যবহারের জন্য এটি বিনামূল্যে, নিবন্ধন ছাড়াই।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "এটি কাদের জন্য?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "কৃষি ও ল্যান্ডস্কেপ সেচের ডিজাইনার, কৃষিবিদ ও প্রকৌশলী, সরঞ্জাম বিক্রেতা, শিক্ষক ও শিক্ষার্থীদের জন্য। ইন্টারঅ্যাক্টিভ টিউটোরিয়াল ও 15টি তৈরি উদাহরণ দিয়ে ম্যানুয়াল না পড়েই শুরু করা যায়।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "আমাকে কি কিছু ইনস্টল করতে হবে?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "না। এটি Chrome, Edge, Firefox ও Safari-তে কম্পিউটার, ট্যাবলেট ও ফোনে চলে, এবং নিজস্ব উইন্ডোতে খোলা অ্যাপ (PWA) হিসেবে ইনস্টল করা যায়।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "আমার প্রকল্প কি ক্লাউডে রাখা হয়?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "না। প্রকল্প আপনার ব্রাউজারে এবং .oci.json ফাইলে সংরক্ষিত হয়, যা আপনি যেখানে খুশি রাখতে পারেন। শুধু অনলাইন উচ্চতা ও বেস ম্যাপ ইন্টারনেট ব্যবহার করে, আপনি চাইলে তবেই।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "হাইড্রোলিক হিসাব কীভাবে করা হয়?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ঘর্ষণজনিত ক্ষতি হ্যাজেন-উইলিয়ামস বা ডার্সি-ভাইসবাখ দিয়ে, ইমিটার q = k·Hˣ দিয়ে, আর পুরো নেটওয়ার্ক Global Gradient Algorithm দিয়ে সমাধান করা হয়, যা EPANET-এর পদ্ধতি। ইমিটারের চাপসীমার মধ্যে লিনিয়ার প্রোগ্রামিং দিয়ে পাইপের আকার নির্ধারণ হয়, এবং ডিজাইনে সমরূপতা (CU, DU, EU), ওয়াটার হ্যামার ও ফ্লাশিংও যাচাই করা হয়।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "এটি কি AutoCAD ও অন্যান্য CAD-এর সঙ্গে কাজ করে?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "হ্যাঁ। এটি DXF ও DWG (AutoCAD 2000 থেকে 2018) আমদানি ও রপ্তানি করে, পাশাপাশি Google Earth-এর KML/KMZ, শেপফাইল, GeoJSON, SVG ও PDF।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "এটি কোন কোন ভাষায় পাওয়া যায়?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "20টি ভাষায়, এই ওয়েবসাইটের ভাষাগুলোতেই (তালিকা পৃষ্ঠার নিচে আছে)। অ্যাপটি আপনার কম্পিউটারের ভাষায় খোলে এবং দৃশ্য → ভাষা থেকে যেকোনো সময় ভাষা বদলানো যায়।"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/bn/#how",
+      "name": "কীভাবে কাজ করে",
+      "description": "OpenCADIrrigation CAD অঙ্কন, হাইড্রোলিক নেটওয়ার্ক ও হিসাবকে এক জায়গায় আনে: এলাকার সীমা আঁকুন, ল্যাটারাল, ভালভ ও মূল লাইন বসান, F5 চাপুন এবং পাইপের ব্যাস, চাপ, সমরূপতা, পরিচালনার পালা, উপকরণ তালিকা ও ছাপার উপযোগী প্রতিবেদন পান। 20টি ভাষায় পাওয়া যায়, আপনার কম্পিউটারের ভাষা অনুসারে।",
+      "inLanguage": "bn",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "এলাকা আঁকুন বা আমদানি করুন",
+          "text": "একটি DXF, DWG, KML বা স্যাটেলাইট ছবি আনুন, অথবা সরাসরি খেত, বাগান বা মাঠ আঁকুন। কনট্যুর যোগ করুন বা স্থানাঙ্ক ধরে উচ্চতা নামান।"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "নেটওয়ার্ক তৈরি করুন",
+          "text": "এক ক্লিকে ল্যাটারাল ব্লক বা স্প্রিংকলার গ্রিড তৈরি করুন, ভালভ, পাম্প ও পানির উৎস বসান এবং সবকিছু মূল লাইনে যুক্ত করুন।"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "ডিজাইন ও নথিভুক্ত করুন",
+          "text": "F5 চাপুন: অ্যাপ জোন ও মূল লাইনের আকার নির্ধারণ করে, চাপ ও বেগ যাচাই করে এবং প্রতিবেদন, উপকরণ তালিকা ও PDF শিট তৈরি করে।"
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/bn/#examples",
+      "name": "খোলার জন্য তৈরি উদাহরণ",
+      "description": "প্রতিটি প্রকল্প সম্পূর্ণ অবস্থায় খোলে এবং F5 দিয়ে ডিজাইন হয়। অ্যাপটি চিনতে বা শুরুর বিন্দু হিসেবে এগুলো ব্যবহার করুন।",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "বাগান",
+            "description": "লেবুজাতীয়তে মাইক্রো-স্প্রিংকলার ও আঙুরে ড্রিপ, পাম্প ও ফিল্টারসহ কূপ, ঢালু জমি।",
+            "url": "https://opencadirrigation.com/bn/?example=orchard",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "বাসার বাগান",
+            "description": "সামনের লনে পপ-আপ স্প্রে, পেছনে রোটর ও বেডে ড্রিপ, মিটার ও ব্যাকফ্লো প্রিভেন্টারসহ পৌর সরবরাহ থেকে।",
+            "url": "https://opencadirrigation.com/bn/?example=garden",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "ফুটবল মাঠ",
+            "description": "পাঁচ সারিতে ইমপ্যাক্ট স্প্রিংকলারসহ পূর্ণ আকারের 105 × 68 m মাঠ, জলাধার, পাম্প ও রাতের শিফট।",
+            "url": "https://opencadirrigation.com/bn/?example=sportsField",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "ড্রিপ সারি ফসল",
+            "description": "ড্রিপ টেপে টমেটোর চারটি ব্লক, ভালভসহ সাবমেইন, স্ক্রিন ফিল্টার, পাম্প ও ঢালু জমি।",
+            "url": "https://opencadirrigation.com/bn/?example=rowCrop",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "সেন্টার পিভট",
+            "description": "ভুট্টায় 300 m পিভট, মূল লাইন, কূপ ও পাম্প থেকে সরবরাহ; টাওয়ার, স্প্যান ও নজল প্রতিবেদন।",
+            "url": "https://opencadirrigation.com/bn/?example=pivot",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "সবজি গ্রিনহাউস",
+            "description": "চাপ-ক্ষতিপূরক ড্রিপলাইনে ক্যাপসিকামের চারটি টানেল, প্রতি টানেলে এক জোন, ট্যাংক, ছোট পাম্প ও ডিস্ক ফিল্টার।",
+            "url": "https://opencadirrigation.com/bn/?example=greenhouse",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "চারা নার্সারি",
+            "description": "4 × 4 m গ্রিডে ঝুলন্ত মাইক্রো-স্প্রিংকলারের নিচে 12 × 48 m-এর তিনটি বেড, প্রতি বেডে এক জোন, উঁচু ট্যাংক, ছোট পাম্প ও ডিস্ক ফিল্টার।",
+            "url": "https://opencadirrigation.com/bn/?example=nursery",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "কনট্যুর রেখায় কফি",
+            "description": "পাহাড়ের ঢালে কফির তিনটি ব্লক, বাঁকা ল্যাটারাল কনট্যুর অনুসরণ করে (গাইডেড ব্লক), PC ড্রিপলাইন, ঢালের পাদদেশে কূপ ও পাম্প।",
+            "url": "https://opencadirrigation.com/bn/?example=coffee",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "কলা বাগান",
+            "description": "5 × 5 m-এ চাপ-ক্ষতিপূরক মাইক্রো-স্প্রিংকলারের নিচে কলার দুটি ব্লক, সাবমার্সিবল পাম্পসহ কূপ, ডিস্ক ফিল্টার ও ঢালু জমি।",
+            "url": "https://opencadirrigation.com/bn/?example=bananas",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "ভূগর্ভস্থ ড্রিপ আখ",
+            "description": "0.3 m গভীরে পোঁতা 20 mm PC ড্রিপলাইনে আখের দুটি ব্লক, 180 m ল্যাটারাল, পোঁতা সাবমেইন, জলাধার, পাম্প, স্ক্রিন ফিল্টার ও এয়ার ভালভ।",
+            "url": "https://opencadirrigation.com/bn/?example=sugarcane",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "মাধ্যাকর্ষণ-চালিত ড্রিপ",
+            "description": "ড্রিপ-সেচকৃত দুটি সবজি ব্লকের 40 m উপরে জলাধার, পাম্প ছাড়া: মূল লাইনে গেট ভালভ, চাপ হ্রাসকারী ভালভ ও ডিস্ক ফিল্টার; ঢালের কনট্যুর।",
+            "url": "https://opencadirrigation.com/bn/?example=gravity",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "স্প্রিংকলার-সেচকৃত চারণভূমি",
+            "description": "12 × 18 m-এ ইমপ্যাক্ট স্প্রিংকলার লাইনসহ 72 × 72 m-এর তিনটি প্যাডক, ভালভসহ সাবমেইন, জলাধার, পাম্প ও চেক ভালভ।",
+            "url": "https://opencadirrigation.com/bn/?example=pasture",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "গলফ হোল",
+            "description": "স্প্রেসহ টি, ত্রিভুজাকার গ্রিডে রোটরসহ ফেয়ারওয়ে (দুই জোন) ও কিনারে রোটরসহ গ্রিন, পাম্পসহ পুকুর ও রাতের শিফট।",
+            "url": "https://opencadirrigation.com/bn/?example=golf",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "এন্ড গানসহ সেক্টর পিভট",
+            "description": "সয়াবিনে 250 m পিভট যা 270° ঘোরে, খামারবাড়ির চতুর্থাংশ খালি রেখে, 12 m³/h এন্ড গানসহ; পুকুর, 30 hp পাম্প ও গেট ভালভ।",
+            "url": "https://opencadirrigation.com/bn/?example=sectorPivot",
+            "inLanguage": "bn"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "লিনিয়ার মুভ",
+            "description": "গমে 392 m লিনিয়ার মেশিন যা খালের পাশ দিয়ে 800 m চলে, 30 hp পাম্প ও চেক ভালভসহ ইনটেক; টাওয়ার ও নজল প্রতিবেদন।",
+            "url": "https://opencadirrigation.com/bn/?example=linear",
+            "inLanguage": "bn"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>ভূমি ও উচ্চতা</h3><p>কনট্যুর, উচ্চতা বিন্দু, ত্রিভুজায়নের মাধ্যমে ডিজিটাল ভূমি মডেল, স্থানাঙ্ক ধরে ইন্টারনেট থেকে নামানো উচ্চতা, অনুদৈর্ঘ্য প্রোফাইল এবং ভূমির ওপর হাইড্রোলিক গ্রেড লাইন।</p></li>
           <li><h3>প্রতিবেদন ও উপকরণ</h3><p>জোন, পাইপ, ইমিটার, সমরূপতা (CU, DU, EU), ফসলের পানির চাহিদা, কন্ট্রোলার প্রোগ্রাম এবং ফিটিংসহ উপকরণ তালিকা; PDF, Excel, CSV ও TXT-এ রপ্তানি।</p></li>
           <li><h3>ফাইল আদান-প্রদান</h3><p>DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF ও ভূ-নির্দেশিত ছবি আমদানি করে; DXF, DWG, PDF শিট, SVG, KML, KMZ ও GeoJSON রপ্তানি করে।</p></li>
-          <li><h3>নির্মাতাদের ক্যাটালগ</h3><p>JSON-এ নির্মাতাদের ক্যাটালগ (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) ব্যবহারের জন্য প্রস্তুত, সঙ্গে ফাইল বা URL থেকে লোড করা আপনার নিজের প্যাক।</p></li>
+          <li><h3>নির্মাতাদের ক্যাটালগ</h3><p>JSON-এ নির্মাতাদের ক্যাটালগ (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ব্যবহারের জন্য প্রস্তুত, সঙ্গে ফাইল বা URL থেকে লোড করা আপনার নিজের প্যাক।</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">প্রায়শ জিজ্ঞাসিত প্রশ্ন</h2>
         <dl>
+          <dt>OpenCADIrrigation কী?</dt>
+          <dd>OpenCADIrrigation চাপযুক্ত সেচব্যবস্থা ডিজাইনের জন্য একটি বিনামূল্যের ওয়েব অ্যাপ: হাইড্রোলিক ইঞ্জিনসহ একটি CAD, যা নেটওয়ার্ক বিন্যাস করে, পাইপের আকার নির্ধারণ করে, চাপ ও সমরূপতা যাচাই করে এবং উপকরণ তালিকা ও প্রতিবেদন তৈরি করে, বাসার বাগান থেকে সেন্টার পিভট পর্যন্ত।</dd>
           <dt>OpenCADIrrigation কি বিনামূল্যে?</dt>
           <dd>হ্যাঁ। পেশাগত, শিক্ষাগত ও ব্যক্তিগত ব্যবহারের জন্য এটি বিনামূল্যে, নিবন্ধন ছাড়াই।</dd>
+          <dt>এটি কাদের জন্য?</dt>
+          <dd>কৃষি ও ল্যান্ডস্কেপ সেচের ডিজাইনার, কৃষিবিদ ও প্রকৌশলী, সরঞ্জাম বিক্রেতা, শিক্ষক ও শিক্ষার্থীদের জন্য। ইন্টারঅ্যাক্টিভ টিউটোরিয়াল ও 15টি তৈরি উদাহরণ দিয়ে ম্যানুয়াল না পড়েই শুরু করা যায়।</dd>
           <dt>আমাকে কি কিছু ইনস্টল করতে হবে?</dt>
           <dd>না। এটি Chrome, Edge, Firefox ও Safari-তে কম্পিউটার, ট্যাবলেট ও ফোনে চলে, এবং নিজস্ব উইন্ডোতে খোলা অ্যাপ (PWA) হিসেবে ইনস্টল করা যায়।</dd>
           <dt>আমার প্রকল্প কি ক্লাউডে রাখা হয়?</dt>
           <dd>না। প্রকল্প আপনার ব্রাউজারে এবং .oci.json ফাইলে সংরক্ষিত হয়, যা আপনি যেখানে খুশি রাখতে পারেন। শুধু অনলাইন উচ্চতা ও বেস ম্যাপ ইন্টারনেট ব্যবহার করে, আপনি চাইলে তবেই।</dd>
+          <dt>হাইড্রোলিক হিসাব কীভাবে করা হয়?</dt>
+          <dd>ঘর্ষণজনিত ক্ষতি হ্যাজেন-উইলিয়ামস বা ডার্সি-ভাইসবাখ দিয়ে, ইমিটার q = k·Hˣ দিয়ে, আর পুরো নেটওয়ার্ক Global Gradient Algorithm দিয়ে সমাধান করা হয়, যা EPANET-এর পদ্ধতি। ইমিটারের চাপসীমার মধ্যে লিনিয়ার প্রোগ্রামিং দিয়ে পাইপের আকার নির্ধারণ হয়, এবং ডিজাইনে সমরূপতা (CU, DU, EU), ওয়াটার হ্যামার ও ফ্লাশিংও যাচাই করা হয়।</dd>
           <dt>এটি কি AutoCAD ও অন্যান্য CAD-এর সঙ্গে কাজ করে?</dt>
           <dd>হ্যাঁ। এটি DXF ও DWG (AutoCAD 2000 থেকে 2018) আমদানি ও রপ্তানি করে, পাশাপাশি Google Earth-এর KML/KMZ, শেপফাইল, GeoJSON, SVG ও PDF।</dd>
           <dt>এটি কোন কোন ভাষায় পাওয়া যায়?</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="ভাষা">ভাষা: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <strong lang="bn" dir="ltr">বাংলা</strong> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>নির্মাতাদের ক্যাটালগ ও উদাহরণ প্রকল্প JSON ফরম্যাটে পাঠানো যায়, যাতে সেগুলো OpenCADIrrigation-এ যুক্ত করা হয়।</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>
