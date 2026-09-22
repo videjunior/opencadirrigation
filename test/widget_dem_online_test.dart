@@ -14,6 +14,7 @@ import 'package:opencadirrigation/app/state/design_runner.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/core/io/dem_online.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
+import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/main.dart';
 
 /// Online DEM download over a project that already has its own elevation
@@ -102,6 +103,25 @@ void main() {
     tileRequests.clear();
     ProjectController.demUrlLoader = fakeServer;
     ProjectController.demTileLoader = fakeTiles;
+  });
+
+  testWidgets('a slow source shows the estimated download time in minutes', (tester) async {
+    final c = await pumpShell(tester);
+    c.setGeoreferenceAt(-21.8, -46.6);
+    // a 3 km farm: the grid hits the 5000-point cap
+    c.addEntity(LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(3000, 3000)));
+    await settle(tester);
+    await openDemDialog(tester);
+    expect(find.textContaining('Tempo estimado'), findsNothing, reason: 'tiles download in seconds');
+    await tester.tap(find.text('Terrain Tiles 30 m (SRTM · AWS)'));
+    await settle(tester, 2);
+    await tester.tap(find.text('Open-Meteo (Copernicus DEM 90 m)').last);
+    await settle(tester, 2);
+    // thousands of points at 550 per minute
+    expect(find.textContaining(RegExp(r'Tempo estimado: ≈ \d+ min')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('dem_close')));
+    await settle(tester);
+    expect(find.byKey(const Key('dem_close')), findsNothing);
   });
 
   testWidgets('replaces the example spot heights by default and draws contours on the DEM layer', (tester) async {

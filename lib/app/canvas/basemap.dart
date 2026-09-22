@@ -122,6 +122,13 @@ class BaseMapLayer extends ChangeNotifier {
 
   static const googleTilesHost = 'https://tile.googleapis.com';
 
+  /// Set by [dispose]: downloads still in flight then drop what they bring.
+  bool _disposed = false;
+
+  void _changed() {
+    if (!_disposed) notifyListeners();
+  }
+
   /// Tile URL. Google maps need the [session] token of the map type and the
   /// user's [key]; the custom map its [custom] template.
   static String url(BaseMap m, int z, int x, int y, {String session = '', String key = '', String custom = ''}) => switch (m) {
@@ -301,6 +308,10 @@ class BaseMapLayer extends ChangeNotifier {
     _loading.add(key);
     httpBytes(url(m, z, x, y, session: session, key: apiKey, custom: custom)).then((bytes) => ui.instantiateImageCodec(Uint8List.fromList(bytes))).then((codec) => codec.getNextFrame()).then((frame) {
       _loading.remove(key);
+      if (_disposed) {
+        frame.image.dispose();
+        return;
+      }
       _store(key, frame.image);
       notifyListeners();
     }).catchError((Object e) {
@@ -316,7 +327,7 @@ class BaseMapLayer extends ChangeNotifier {
           _lastFailure = DateTime.now();
         }
       }
-      notifyListeners(); // the next paint asks for the parent tile
+      _changed(); // the next paint asks for the parent tile
     });
   }
 
@@ -343,7 +354,7 @@ class BaseMapLayer extends ChangeNotifier {
       list.add(TileBlock(top, left, 32, 32, List.filled(32 * 32, 1)));
       _failures++;
       _lastFailure = DateTime.now();
-    }).whenComplete(notifyListeners);
+    }).whenComplete(_changed);
     return null;
   }
 
@@ -383,7 +394,7 @@ class BaseMapLayer extends ChangeNotifier {
       _googleError = e is HttpStatusException ? e.message : '$e';
     }).whenComplete(() {
       _sessionPending.remove(m);
-      notifyListeners();
+      _changed();
     });
     return null;
   }
@@ -435,7 +446,7 @@ class BaseMapLayer extends ChangeNotifier {
         if (c != _googleCopyright || mz != _googleMaxZoom) {
           _googleCopyright = c;
           _googleMaxZoom = mz;
-          notifyListeners();
+          _changed();
         }
       }).catchError((Object _) {});
     });
@@ -562,6 +573,7 @@ class BaseMapLayer extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _viewportTimer?.cancel();
     for (final t in _tiles.values) {
       t.dispose();

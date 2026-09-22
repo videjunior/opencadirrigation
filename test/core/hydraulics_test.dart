@@ -10,7 +10,7 @@ import 'package:opencadirrigation/core/units.dart';
 void main() {
   group('friction', () {
     test('Hazen-Williams matches textbook value', () {
-      // 100 m of 50 mm pipe, C=150, Q = 2 L/s -> J ≈ 0.0329 m/m
+      // 100 m of 50 mm pipe, C=150, Q = 2 L/s -> J ≈ 0.0217 m/m
       final hf = hazenWilliamsLoss(flow: 0.002, diameter: 0.05, length: 100, c: 150);
       expect(hf, closeTo(2.17, 0.05));
     });

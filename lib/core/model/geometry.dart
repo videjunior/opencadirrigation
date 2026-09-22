@@ -338,7 +338,14 @@ List<Pt> catmullRom(List<Pt> pts, {bool closed = false, int segments = 8}) {
   if (pts.length < 2) return List.of(pts);
   if (pts.length == 2) return [pts[0], pts[1]];
   final n = pts.length;
-  Pt at(int i) => closed ? pts[(i % n + n) % n] : pts[i.clamp(0, n - 1)];
+  // open curves: phantom points mirrored beyond the ends (repeating the end
+  // point would make the first and last spans degenerate, i.e. straight)
+  Pt at(int i) {
+    if (closed) return pts[(i % n + n) % n];
+    if (i < 0) return pts[0] * 2 - pts[1];
+    if (i >= n) return pts[n - 1] * 2 - pts[n - 2];
+    return pts[i];
+  }
   final out = <Pt>[];
   final spans = closed ? n : n - 1;
   for (var i = 0; i < spans; i++) {

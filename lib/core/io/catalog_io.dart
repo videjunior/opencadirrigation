@@ -299,7 +299,7 @@ class CatalogIo {
           c.pipes.add(PipeSpec(id: id, name: name, nominalMm: nominal > 0 ? nominal : inner, innerDiameterMm: inner, material: mat, hazenC: num(r, col(['c', 'hazenc']), 150), roughnessMm: num(r, col(['roughmm', 'roughness']), 0.0015), pressureRatingM: num(r, col(['ratingm', 'pn', 'rating']), 60), wallThicknessMm: num(r, col(['wallmm', 'wall']), 2), costPerM: cost, usage: usage.isEmpty ? {PipeUsage.zone, PipeUsage.mainline} : usage, supplier: sup, code: code));
         case CatalogGroup.fittings:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'coupler');
-          final kind = FittingKind.values.firstWhere((k) => k.name.toLowerCase() == kindS.toLowerCase(), orElse: () => _fittingKindFromText(kindS));
+          final kind = FittingKind.values.firstWhere((k) => k.name.toLowerCase() == kindS.toLowerCase(), orElse: () => fittingKindFromText(kindS));
           c.fittings.add(FittingSpec(id: id, name: name, kind: kind, sizeMm: num(r, col(['sizemm', 'dn', 'size'])), size2Mm: num(r, col(['size2mm', 'dn2', 'size2'])), cost: cost, supplier: sup, code: code));
         case CatalogGroup.tapes:
           final q = num(r, col(['qlph', 'q', 'flow']), 1.6);
@@ -352,15 +352,16 @@ class CatalogIo {
     return CatalogImportResult(c, n, group: g);
   }
 
-  static FittingKind _fittingKindFromText(String s) {
-    final l = s.toLowerCase();
+  static FittingKind fittingKindFromText(String s) {
+    final l = s.toLowerCase().trim();
     if (l.contains('90') || l.contains('cotov') || l.contains('elbow') || l.contains('codo')) return l.contains('45') ? FittingKind.elbow45 : FittingKind.elbow90;
-    if (l.contains('tee') || l.startsWith('t') || l.contains('tê')) return FittingKind.tee;
+    // before the tee: "tampão", "take-off" and "tape end" also start with a t
+    if (l.contains('cap') || l.contains('tamp') || l.contains('plug')) return FittingKind.endCap;
+    if (l.contains('take') || l.contains('inicial') || l.contains('start')) return FittingKind.takeOff;
+    if (l.contains('tee') || l.contains('tê') || RegExp(r'^t(?![a-z])').hasMatch(l)) return FittingKind.tee;
     if (l.contains('cross') || l.contains('cruz')) return FittingKind.cross;
     if (l.contains('red')) return FittingKind.reducer;
-    if (l.contains('cap') || l.contains('tamp') || l.contains('plug')) return FittingKind.endCap;
     if (l.contains('adapt')) return FittingKind.adapter;
-    if (l.contains('take') || l.contains('inicial') || l.contains('start')) return FittingKind.takeOff;
     if (l.contains('end') || l.contains('final')) return FittingKind.tapeEnd;
     if (l.contains('riser') || l.contains('haste') || l.contains('subida')) return FittingKind.riser;
     return FittingKind.coupler;

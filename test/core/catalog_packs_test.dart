@@ -224,7 +224,7 @@ void main() {
         final single = await loadCatalogPacksFromUrl(' https://cat.example/single.oci.cat ');
         expect(single.single.id, 'toro');
         expect(await loadCatalogPacksFromUrl(''), isEmpty);
-        expect(loadCatalogPacksFromUrl('https://cat.example/missing'), throwsException);
+        await expectLater(loadCatalogPacksFromUrl('https://cat.example/missing'), throwsException);
         expect(requested, hasLength(5));
       } finally {
         catalogUrlLoader = saved;

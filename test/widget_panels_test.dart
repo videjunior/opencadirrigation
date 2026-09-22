@@ -320,12 +320,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
     await tester.tap(find.text('MINHA'));
     await settle(tester, 2);
-    if (find.byKey(const Key('layer_name')).evaluate().isNotEmpty) {
-      await tester.enterText(find.byKey(const Key('layer_name')), 'OUTRA');
-      await tester.tap(find.text('OK').last);
-      await settle(tester, 2);
-      expect(c.project.findLayer('OUTRA'), isNotNull);
-    }
+    expect(find.byKey(const Key('layer_name')), findsOneWidget, reason: 'a double tap on the name opens the rename dialog');
+    await tester.enterText(find.byKey(const Key('layer_name')), 'OUTRA');
+    await tester.tap(find.text('OK').last);
+    await settle(tester, 2);
+    expect(c.project.findLayer('OUTRA'), isNotNull);
+    expect(c.project.findLayer('MINHA'), isNull);
+    c.renameLayer('OUTRA', 'MINHA');
     // lock / hide the tapes layer through the controller API used by the panel
     c.setLayerLocked(Layers.tapes, true);
     c.refresh();
@@ -370,8 +371,12 @@ void main() {
     final scale = c.camera.scale;
     await openMenu(tester, 'Ver', 'Aproximar');
     expect(c.camera.scale, greaterThan(scale));
+    final zoomedIn = c.camera.scale;
     await openMenu(tester, 'Ver', 'Afastar');
+    expect(c.camera.scale, lessThan(zoomedIn));
+    c.camera.center = const Pt(1e5, 1e5);
     await openMenu(tester, 'Ver', 'Enquadrar tudo');
+    expect(c.camera.visible.contains(c.project.entities.first.bounds.center), isTrue, reason: 'zoom all brings the drawing back into view');
     await tester.tap(find.text('Ver'));
     await settle(tester, 2);
     await tester.tap(find.text('Idioma'));
@@ -428,10 +433,7 @@ void main() {
     expect(shell.ws.tabs.length, 2);
     await tester.tap(find.byTooltip('Fechar aba (Ctrl+Alt+W)').last);
     await settle(tester, 2);
-    if (find.text('OK').evaluate().isNotEmpty) {
-      await tester.tap(find.text('OK').last);
-      await settle(tester, 2);
-    }
+    expect(find.byType(AlertDialog), findsNothing, reason: 'a clean new tab closes without asking');
     expect(shell.ws.tabs.length, 1);
     // keyboard: command alias, escape, F7, Home, Ctrl+A, Delete, Ctrl+Z
     await tester.tap(find.byType(CadCanvas));
@@ -461,7 +463,9 @@ void main() {
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     await settle(tester, 1);
     expect(c.project.entities.length, n);
+    c.camera.center = const Pt(1e5, 1e5);
     await tester.sendKeyEvent(LogicalKeyboardKey.home);
     await settle(tester, 1);
+    expect(c.camera.visible.contains(c.project.entities.first.bounds.center), isTrue, reason: 'Home zooms to the drawing');
   });
 }

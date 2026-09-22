@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -320,9 +319,9 @@ void main() {
       expect(GeoImageReader.parseWorldFile('0.5\n0\n0\n-0.5\n200000.25\n7499999.75\n')!.$5, 200000.25);
     });
 
-    test('units and json helpers used by the new tables', () {
+    test('flow units used by the new tables', () {
       expect(fmt(m3sPerLph * 3.6e6, 1), '1.0');
-      expect(jsonDecode(jsonEncode({'a': 1})), {'a': 1});
+      expect(fmt(Units.metric.flowFromSi(1000 * m3sPerLph), 0), '1000');
     });
   });
 }

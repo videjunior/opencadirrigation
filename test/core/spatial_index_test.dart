@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart' show Offset, Size;
+import 'package:flutter/material.dart' show Size;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/canvas/snapping.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
@@ -166,8 +166,6 @@ void main() {
       expect(s.entityId, 'a');
       final far = Snapper(c).snap(const Pt(15, 15));
       expect(far.isSnapped, isFalse);
-      // unused imports guard
-      expect(const Offset(1, 1).dx, 1);
     });
   });
 }

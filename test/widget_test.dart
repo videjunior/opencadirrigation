@@ -10,6 +10,7 @@ import 'package:opencadirrigation/app/state/design_runner.dart';
 import 'package:opencadirrigation/app/state/workspace.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
+import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/main.dart';
 
 void main() {
@@ -216,9 +217,12 @@ void main() {
     expect(c.project.entities.length, greaterThan(20));
     final dxf = c.exportDxf();
     expect(dxf, contains('ENTITIES'));
+    final before = c.project.entities.length;
     final n = c.importDxf(dxf);
     expect(n, greaterThan(0));
+    expect(c.project.entities.length, before + n);
     c.undo();
+    expect(c.project.entities.length, before, reason: 'one undo removes the whole import');
   });
 }
 
@@ -283,17 +287,22 @@ void tabsAndShortcutsTests() {
     expect(c.activeTool, ToolId.polyline);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pump();
-    // unknown alias is reported, buffer cleared by Esc
+    // an unknown alias stays in the buffer (nothing runs), Esc clears it
     await tester.sendKeyEvent(LogicalKeyboardKey.keyQ, character: 'q');
+    await tester.pump();
+    expect(c.command, 'Q');
+    expect(c.activeTool, ToolId.select);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pump();
     expect(c.command, '');
-    // ZE zooms all; F7 toggles the grid display; Home zooms all
+    // ZE zooms all; F7 toggles the grid display
+    c.camera.center = const Pt(1e5, 1e5);
     await tester.sendKeyEvent(LogicalKeyboardKey.keyZ, character: 'z');
     await tester.sendKeyEvent(LogicalKeyboardKey.keyE, character: 'e');
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await tester.pump();
     expect(c.command, '');
+    expect(c.camera.visible.contains(c.project.entities.first.bounds.center), isTrue, reason: 'ZE zooms to the drawing');
     final grid = c.showGrid;
     await tester.sendKeyEvent(LogicalKeyboardKey.f7);
     await tester.pump();

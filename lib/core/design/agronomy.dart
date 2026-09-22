@@ -158,7 +158,10 @@ List<AreaEntity> areasOfZone(Project project, DesignResults results, String valv
 ControllerProgram buildControllerProgram(Project project, DesignResults? results, {DateTime? startDate, int days = 14, double dayStartHour = 6, bool keepStartHours = false}) {
   final warnings = <String>[];
   final crops = {for (final c in cropWaterRequirements(project, results)) c.areaId: c};
-  final flows = project.systemFlows.isNotEmpty ? project.systemFlows : [SystemFlow(id: 'auto', name: 'all', valveIds: project.entities.whereType<ControlValveEntity>().map((v) => v.id).toSet())];
+  // flows without any zone have nothing to water (an empty project gets no
+  // automatic flow either)
+  final all = project.systemFlows.isNotEmpty ? project.systemFlows : [SystemFlow(id: 'auto', name: 'all', valveIds: project.entities.whereType<ControlValveEntity>().map((v) => v.id).toSet())];
+  final flows = [for (final f in all) if (f.valveIds.isNotEmpty) f];
   final perFlow = <String, double>{};
   final intervalOf = <String, double>{};
   final zoneNames = <String, List<String>>{};

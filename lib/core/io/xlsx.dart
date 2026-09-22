@@ -213,8 +213,9 @@ class XlsxReader {
       for (final row in XmlDocument.parse(xml).findAllElements('row')) {
         final cells = <Object?>[];
         for (final c in row.findElements('c')) {
+          // the cell reference is optional: without it the cell follows the previous one
           final ref = c.getAttribute('r') ?? '';
-          final col = _columnIndex(ref);
+          final col = ref.isEmpty ? cells.length : _columnIndex(ref);
           while (cells.length < col) {
             cells.add(null);
           }
@@ -246,7 +247,7 @@ class XlsxReader {
     return out;
   }
 
-  /// 0-based column of a cell reference such as `C12` (or the position when empty).
+  /// 0-based column of a cell reference such as `C12` (0 when it has no letters).
   static int _columnIndex(String ref) {
     var col = 0;
     var any = false;

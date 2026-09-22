@@ -17,7 +17,7 @@ void main() {
       expect(languageFromTags([' es ']), 'es');
     });
 
-    test('English when the machine speaks none of the three or nothing is known', () {
+    test('English when the machine speaks none of the supported languages or nothing is known', () {
       expect(languageFromTags(['nl', 'ko', 'it']), 'en');
       expect(languageFromTags(['fr', 'de', 'ja']), 'fr');
       expect(languageFromTags(['zh-Hans-CN']), 'zh');

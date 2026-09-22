@@ -32,7 +32,7 @@ class PumpCurve {
 
   /// Maximum flow where head reaches zero (runout), if any.
   double get runoutFlow {
-    if (a == 0) return b < 0 ? -c / b : double.infinity;
+    if (a == 0) return b < 0 ? -c / b * speedRatio : double.infinity;
     final disc = b * b - 4 * a * c;
     if (disc < 0) return double.infinity;
     final r1 = (-b - math.sqrt(disc)) / (2 * a);

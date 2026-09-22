@@ -523,12 +523,20 @@ class TextEntity extends Entity with PointEntity {
   double rotationDeg;
   @override
   EntityType get type => EntityType.text;
+
+  /// Corners of the (approximate) text box, turned with the text.
+  List<Pt> get corners {
+    final w = height * 0.6 * text.length;
+    if (rotationDeg == 0) return [position, position + Pt(w, 0), position + Pt(w, height), position + Pt(0, height)];
+    final u = Pt.polar(1, degToRad(rotationDeg)), v = u.perpendicular;
+    return [position, position + u * w, position + u * w + v * height, position + v * height];
+  }
+
   @override
-  Bounds get bounds => Bounds(position.x, position.y, position.x + height * 0.6 * text.length, position.y + height);
+  Bounds get bounds => Bounds.ofPoints(corners);
   @override
   double distanceTo(Pt p) {
-    final b = bounds;
-    if (b.contains(p)) return 0;
+    if (pointInPolygon(p, corners)) return 0;
     return position.distanceTo(p);
   }
 

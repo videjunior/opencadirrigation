@@ -19,38 +19,24 @@ import 'package:opencadirrigation/core/units.dart';
 void main() {
   group('http transport', () {
     late HttpServer server;
-    final saved = <String, String>{};
     final log = <String>[];
 
     setUpAll(() async {
       server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       server.listen((req) async {
-        final path = req.uri.path;
-        log.add('${req.method} ${req.uri}');
-        final auth = req.headers.value('authorization') ?? '';
+        log.add('${req.method} ${req.uri.path} ${req.headers.value('x-test') ?? ''}');
+        final body = await utf8.decoder.bind(req).join();
         req.response.headers.contentType = ContentType.json;
-        if (req.method == 'GET' && path == '/api/projects') {
-          req.response.write(jsonEncode([
-            {'uid': 'p1', 'name': 'Projeto 1', 'at': '2026-09-16T10:00:00Z', 'v': 3, 'bytes': 1234},
-            {'uid': 'p2', 'name': 'Projeto 2'},
-          ]));
-        } else if (req.method == 'GET' && path == '/api/projects/p1/versions') {
-          req.response.write(jsonEncode([
-            {'v': 3, 'at': '2026-09-16T10:00:00Z', 'label': 'final'},
-            {'v': 2, 'at': '2026-09-15T10:00:00Z'},
-          ]));
-        } else if (req.method == 'GET' && path == '/api/projects/p1/versions/2') {
-          req.response.write('{"format":"opencadirrigation","v":2}');
-        } else if (req.method == 'GET' && path == '/api/projects/p1') {
-          req.response.write('{"format":"opencadirrigation","auth":"$auth"}');
-        } else if (req.method == 'PUT' && path.startsWith('/api/projects/')) {
-          saved[path + (req.uri.query.isEmpty ? '' : '?${req.uri.query}')] = await utf8.decoder.bind(req).join();
-          req.response.write('{}');
-        } else if (req.method == 'DELETE' && path == '/api/projects/p1') {
-          req.response.write('{}');
-        } else if (path == '/bytes') {
+        if (req.uri.path == '/text') {
+          req.response.write('{"format":"opencadirrigation"}');
+        } else if (req.uri.path == '/echo') {
+          req.response.write(body);
+        } else if (req.uri.path == '/bytes') {
           req.response.headers.contentType = ContentType.binary;
           req.response.add([1, 2, 3, 250, 255]);
+        } else if (req.uri.path == '/denied') {
+          req.response.statusCode = 403;
+          req.response.write('{"error": {"code": 403, "message": "API key not valid"}}');
         } else {
           req.response.statusCode = 404;
           req.response.write('nope');
@@ -60,15 +46,17 @@ void main() {
     });
     tearDownAll(() => server.close(force: true));
 
-    String base() => 'http://127.0.0.1:${server.port}/api';
+    String url(String path) => 'http://127.0.0.1:${server.port}$path';
 
-    test('httpRequest returns bodies and throws on non-2xx; httpBytes downloads binary', () async {
-      expect(await httpRequest('GET', '${base()}/projects/p1'), contains('opencadirrigation'));
-      await expectLater(httpRequest('GET', '${base()}/missing'), throwsA(isA<Exception>()));
-      expect(await httpBytes('http://127.0.0.1:${server.port}/bytes'), [1, 2, 3, 250, 255]);
-      await expectLater(httpBytes('http://127.0.0.1:${server.port}/missing'), throwsA(isA<Exception>()));
+    test('httpRequest returns bodies, sends headers and bodies, throws HttpStatusException on non-2xx', () async {
+      expect(await httpRequest('GET', url('/text')), contains('opencadirrigation'));
+      expect(await httpRequest('POST', url('/echo'), headers: const {'x-test': 'yes'}, body: '{"a":1}'), '{"a":1}');
+      expect(log.last, 'POST /echo yes');
+      await expectLater(httpRequest('GET', url('/missing')), throwsA(isA<HttpStatusException>().having((e) => e.status, 'status', 404).having((e) => e.body, 'body', 'nope')));
+      await expectLater(httpRequest('GET', url('/denied')), throwsA(isA<HttpStatusException>().having((e) => e.message, 'message', 'API key not valid')));
+      expect(await httpBytes(url('/bytes')), [1, 2, 3, 250, 255]);
+      await expectLater(httpBytes(url('/missing')), throwsA(isA<HttpStatusException>().having((e) => e.status, 'status', 404)));
     });
-
   });
 
   group('LocalProjectStore', () {
@@ -281,6 +269,10 @@ void main() {
       expect(g.point.y, closeTo(50, 1e-9));
       c.snap.enabled = false;
       expect(snapper.snap(const Pt(9.8, 0.3)).isSnapped, isFalse);
+      // the pixel tolerance in metres at the current zoom
+      expect(snapper.tolerance, closeTo(10 / 10, 1e-12));
+      c.camera.scale = 40;
+      expect(snapper.tolerance, closeTo(10 / 40, 1e-12));
     });
   });
 

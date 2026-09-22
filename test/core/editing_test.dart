@@ -6,6 +6,7 @@ import 'package:opencadirrigation/app/i18n.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
+import 'package:opencadirrigation/core/model/currency.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
@@ -161,8 +162,17 @@ void main() {
       expect(c.project.entities.whereType<PipeEntity>().length, 2);
       final v = ControlValveEntity(id: 'v', position: const Pt(4, 0), zoneName: 'Z');
       c.addPointItem(v, const Pt(4, 0));
-      expect(c.project.entities.whereType<PipeEntity>().length, 3);
-      expect(c.project.entities.whereType<PipeEntity>().every((p) => p.points.any((q) => q.distanceTo(const Pt(4, 0)) < 1e-9 || q.distanceTo(const Pt(8, 0)) < 1e-6 || q == Pt.zero || q.x == 20)), isTrue);
+      final pipes = c.project.entities.whereType<PipeEntity>().toList();
+      expect(pipes.length, 3);
+      // the pieces run 0–4, 4–8 and 8–20 along the axis (the cut point is
+      // projected onto the pipe), and the valve sits on a shared vertex
+      final spans = [for (final p in pipes) (math.min(p.points.first.x, p.points.last.x), math.max(p.points.first.x, p.points.last.x))]..sort((a, b) => a.$1.compareTo(b.$1));
+      for (final (i, want) in [(0.0, 4.0), (4.0, 8.0), (8.0, 20.0)].indexed) {
+        expect(spans[i].$1, closeTo(want.$1, 1e-6), reason: 'piece $i start');
+        expect(spans[i].$2, closeTo(want.$2, 1e-6), reason: 'piece $i end');
+      }
+      expect(pipes.every((p) => p.points.every((q) => q.y.abs() < 1e-9)), isTrue);
+      expect(pipes.where((p) => p.points.first.distanceTo(v.position) < 1e-9 || p.points.last.distanceTo(v.position) < 1e-9).length, 2);
     });
 
     test('trim/extend through the controller use crossing entities', () {
@@ -268,16 +278,38 @@ void main() {
       expect(prof.first.$2, lessThan(prof.last.$2));
     });
 
-    test('new project uses the saved default catalog', () {
+    test('new project uses the saved default catalog, converted to the project currency', () {
       setPref('lang', 'pt');
-      final c = ProjectController()..autosaveEnabled = false;
-      c.newProject();
-      c.project.catalog.pipes.removeRange(1, c.project.catalog.pipes.length);
-      setPref('catalog.default', c.project.catalog.toJson().toString().isEmpty ? '' : '{"pipes":[${c.project.catalog.pipes.first.toJson().toString()}]}');
-      // invalid JSON above falls back to the built-in catalog
-      c.newProject();
-      expect(c.project.catalog.pipes.length, greaterThan(1));
-      removePref('catalog.default');
+      setPref('currency', 'BRL');
+      try {
+        final c = ProjectController()..autosaveEnabled = false;
+        c.newProject();
+        expect(c.project.params.currencyCode, 'BRL');
+        final keep = c.project.catalog.pipes.first;
+        c.project.catalog.pipes.removeRange(1, c.project.catalog.pipes.length);
+        c.saveDefaultCatalog();
+        expect(getPref('catalog.default.currency'), 'BRL');
+        c.newProject();
+        expect(c.project.catalog.pipes.map((p) => p.id), [keep.id], reason: 'the saved list, not the built-in one');
+        expect(c.project.catalog.pipes.single.costPerM, closeTo(keep.costPerM, 1e-9));
+        // another currency gets the saved prices converted
+        expect(c.defaultCatalog('USD').pipes.single.costPerM, closeTo(keep.costPerM * exchangeRate('BRL', 'USD')!, 1e-9));
+        // saves made before the currency was recorded were in reais
+        removePref('catalog.default.currency');
+        expect(c.defaultCatalog('EUR').pipes.single.costPerM, closeTo(keep.costPerM * exchangeRate('BRL', 'EUR')!, 1e-9));
+        // text that is not a catalogue falls back to the built-in one
+        setPref('catalog.default', '{pipes: [not json]}');
+        c.newProject();
+        expect(c.project.catalog.pipes.length, greaterThan(1));
+        c.saveDefaultCatalog();
+        c.clearDefaultCatalog();
+        expect(getPref('catalog.default'), isNull);
+        expect(getPref('catalog.default.currency'), isNull);
+      } finally {
+        removePref('catalog.default');
+        removePref('catalog.default.currency');
+        removePref('currency');
+      }
     });
   });
 

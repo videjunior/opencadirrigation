@@ -206,7 +206,6 @@ void main() {
   group('sheet bill of materials', () {
     test('the sheet carries a materials table when there are results', () {
       final p = Project();
-      final poly = [const Pt(0, 0), const Pt(60, 0), const Pt(60, 30), const Pt(0, 30)];
       final exporter = ProjectExporter(project: p, results: null, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
       expect(exporter.sheetBuilder().sheetScale(const SheetOptions()), 1000, reason: 'empty project keeps the default');
       // a designed block
@@ -230,7 +229,6 @@ void main() {
       final layWith = SheetLayout(const SheetOptions(), hasLegend: true, legendWidthMm: SheetLayout.legendWithBomMm);
       final layWithout = SheetLayout(const SheetOptions(), hasLegend: true);
       expect(layWith.areaW, lessThan(layWithout.areaW));
-      expect(polygonArea(poly), 1800);
     });
   });
 
