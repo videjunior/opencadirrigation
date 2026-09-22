@@ -156,7 +156,7 @@ on(a){return J.a5(a).gcN(a)},
 oo(a){return J.cJ(a).gS(a)},
 aC(a,b,c){return J.a5(a).aM(a,b,c)},
 op(a,b){return J.ae(a).sn(a,b)},
-mp(a,b){return J.a5(a).aa(a,b)},
+mp(a,b){return J.a5(a).ab(a,b)},
 dd(a){return J.cJ(a).t(a)},
 eA:function eA(){},
 eD:function eD(){},
@@ -2411,7 +2411,7 @@ b6=b7<(b6==null?1/0:b6)}else b6=!1
 if(b6){b2.h(0,a3,b7)
 b1.h(0,a3,b5)}}}for(a=0;a<e.length;e.length===a3||(0,A.j)(e),++a){a1=e[a].a
 if(!b1.E(a1))B.a.k(k,"elec_unwired:"+a1)}a1=A.K(h5)
-for(a3=new A.M(f,f.r,f.e,f.$ti.j("M<2>"));a3.l();)a1.B(0,a3.d.a.ga8())
+for(a3=new A.M(f,f.r,f.e,f.$ti.j("M<2>"));a3.l();)a1.B(0,a3.d.a.ga9())
 for(a3=r.length,a=0;a<r.length;r.length===a3||(0,A.j)(r),++a){a0=r[a]
 b8=b.bF(B.a.gu(a0.d))
 if(b8==null||!a1.v(0,b8))B.a.k(k,"elec_wire_orphan:"+a0.a)}for(a1=h7.length,a=0;a<h7.length;h7.length===a1||(0,A.j)(h7),++a){a3=h7[a].a
@@ -2613,10 +2613,10 @@ i=a5.length
 if(i!==0)h=a4!=null||a3!=null
 else h=!1
 if(h)for(h=a3 instanceof A.b6,g=a4!=null,f=j.a,d=A.t(a),c=d.j("e(1)"),d=d.j("u<1,e>"),q=0;q<a5.length;a5.length===i||(0,A.j)(a5),++q){if(a5[q].b!==f)continue
-if(g){b=e8.a9(a4.e)
+if(g){b=e8.aa(a4.e)
 a6=b==null?e7:b.f
 if(a6==null)a6=0}else a6=0
-if(h){b=e8.a9(a3.e)
+if(h){b=e8.aa(a3.e)
 a6=b==null?e7:b.f
 if(a6==null)a6=0}if(a.length!==0)a7=new A.u(a,c.a(f2),d).M(0,B.m)
 else a7=a0.length!==0?f2.$1(B.a.gu(a0)):0
@@ -3180,7 +3180,7 @@ a8=d3.length
 b5=""
 if(a8!==0&&b4>0)for(b6=1/0,k=0;k<d3.length;d3.length===a8||(0,A.j)(d3),++k){b2=d3[k]
 b7=b2.a
-c=Math.abs(b2.b.af(Math.max(b3,0.1))-b4)
+c=Math.abs(b2.b.a8(Math.max(b3,0.1))-b4)
 if(c<b6){b6=c
 b5=b7}}++m
 B.a.k(a3,new A.bO(m,a5,a7,a9,b4,b3,b5))}}return new A.cW(d1,a3,d2,o,c2,c1,r,c4,c5,c8,c7,s,p,q,c9.gcB(),c9.ay,c9.ch,a1,a2,b,b8)},
@@ -5203,7 +5203,7 @@ return new A.u(a,s.A(c).j("1(2)").a(b),s.j("@<1>").A(c).j("u<1,2>"))},
 ee(a,b){var s,r=A.bj(a.length,"",!1,t.N)
 for(s=0;s<a.length;++s)this.h(r,s,A.z(a[s]))
 return r.join(b)},
-aa(a,b){return A.c9(a,b,null,A.t(a).c)},
+ab(a,b){return A.c9(a,b,null,A.t(a).c)},
 M(a,b){var s,r,q
 A.t(a).j("1(1,1)").a(b)
 s=a.length
@@ -5218,7 +5218,7 @@ A.t(a).A(d).j("1(1,2)").a(c)
 s=a.length
 for(r=b,q=0;q<s;++q){r=c.$2(r,a[q])
 if(a.length!==s)throw A.n(A.ai(a))}return r},
-ae(a,b,c){var s,r,q,p=A.t(a)
+af(a,b,c){var s,r,q,p=A.t(a)
 p.j("q(1)").a(b)
 p.j("1()?").a(c)
 s=a.length
@@ -5446,22 +5446,22 @@ $iaS:1,
 $iji:1,
 $ic:1}
 A.cc.prototype={
-gq(a){return new A.dh(J.a0(this.gac()),A.k(this).j("dh<1,2>"))},
-gn(a){return J.at(this.gac())},
-gG(a){return J.mo(this.gac())},
-ga0(a){return J.om(this.gac())},
-aa(a,b){var s=A.k(this)
-return A.mu(J.mp(this.gac(),b),s.c,s.y[1])},
-K(a,b){return A.k(this).y[1].a(J.fR(this.gac(),b))},
-gu(a){return A.k(this).y[1].a(J.bZ(this.gac()))},
-gF(a){return A.k(this).y[1].a(J.lN(this.gac()))},
-t(a){return J.dd(this.gac())}}
+gq(a){return new A.dh(J.a0(this.gad()),A.k(this).j("dh<1,2>"))},
+gn(a){return J.at(this.gad())},
+gG(a){return J.mo(this.gad())},
+ga0(a){return J.om(this.gad())},
+ab(a,b){var s=A.k(this)
+return A.mu(J.mp(this.gad(),b),s.c,s.y[1])},
+K(a,b){return A.k(this).y[1].a(J.fR(this.gad(),b))},
+gu(a){return A.k(this).y[1].a(J.bZ(this.gad()))},
+gF(a){return A.k(this).y[1].a(J.lN(this.gad()))},
+t(a){return J.dd(this.gad())}}
 A.dh.prototype={
 l(){return this.a.l()},
 gp(){return this.$ti.y[1].a(this.a.gp())},
 $iR:1}
 A.ci.prototype={
-gac(){return this.a}}
+gad(){return this.a}}
 A.dX.prototype={$iB:1}
 A.dW.prototype={
 i(a,b){return this.$ti.y[1].a(J.dc(this.a,b))},
@@ -5474,7 +5474,7 @@ $iB:1,
 $ir:1}
 A.a9.prototype={
 b2(a,b){return new A.a9(this.a,this.$ti.j("@<1>").A(b).j("a9<1,2>"))},
-gac(){return this.a}}
+gad(){return this.a}}
 A.eK.prototype={
 t(a){return"LateInitializationError: "+this.a}}
 A.jC.prototype={}
@@ -5498,7 +5498,7 @@ if(s===0)throw A.n(A.ak())
 r=p.K(0,0)
 for(q=1;q<s;++q){r=b.$2(r,p.K(0,q))
 if(s!==p.gn(p))throw A.n(A.ai(p))}return r},
-aa(a,b){return A.c9(this,b,null,A.k(this).j("w.E"))},
+ab(a,b){return A.c9(this,b,null,A.k(this).j("w.E"))},
 aw(a){var s,r=this,q=A.eM(A.k(r).j("w.E"))
 for(s=0;s<r.gn(r);++s)q.k(0,r.K(0,s))
 return q}}
@@ -5517,7 +5517,7 @@ return s-q},
 K(a,b){var s=this,r=s.gdD()+b
 if(b<0||r>=s.gdf())throw A.n(A.iN(b,s.gn(0),s,"index"))
 return J.fR(s.a,r)},
-aa(a,b){var s,r,q=this
+ab(a,b){var s,r,q=this
 A.cZ(b,"count")
 s=q.b+b
 r=q.c
@@ -5569,14 +5569,14 @@ return!1},
 gp(){return this.a.gp()},
 $iR:1}
 A.dL.prototype={
-aa(a,b){this.b.ap(0,A.kK(b))
+ab(a,b){this.b.ap(0,A.kK(b))
 return void 1},
 gq(a){return new A.dM(J.a0(this.a),this.b,A.k(this).j("dM<1>"))}}
 A.iB.prototype={
 gn(a){var s=B.c.U(J.at(this.a),this.b)
 if(s>=0)return s
 return 0},
-aa(a,b){this.b.ap(0,A.kK(b))
+ab(a,b){this.b.ap(0,A.kK(b))
 return void 1},
 $iB:1}
 A.dM.prototype={
@@ -5593,7 +5593,7 @@ gn(a){return 0},
 gu(a){throw A.n(A.ak())},
 gF(a){throw A.n(A.ak())},
 K(a,b){throw A.n(A.aY(b,0,0,"index",null))},
-aa(a,b){A.cZ(b,"count")
+ab(a,b){A.cZ(b,"count")
 return this}}
 A.dm.prototype={
 l(){return!1},
@@ -5632,7 +5632,7 @@ gaL(){return new A.bF(this.e1(),A.k(this).j("bF<aq<1,2>>"))},
 e1(){var s=this
 return function(){var r=0,q=1,p=[],o,n,m,l,k
 return function $async$gaL(a,b,c){if(b===1){p.push(c)
-r=q}for(;;)switch(r){case 0:o=s.ga8(),o=o.gq(o),n=A.k(s),m=n.y[1],n=n.j("aq<1,2>")
+r=q}for(;;)switch(r){case 0:o=s.ga9(),o=o.gq(o),n=A.k(s),m=n.y[1],n=n.j("aq<1,2>")
 case 2:if(!o.l()){r=3
 break}l=o.gp()
 k=s.i(0,l)
@@ -5658,7 +5658,7 @@ this.$ti.j("~(1,2)").a(b)
 s=this.gc7()
 r=this.b
 for(q=s.length,p=0;p<q;++p)b.$2(s[p],r[p])},
-ga8(){return new A.dY(this.gc7(),this.$ti.j("dY<1>"))}}
+ga9(){return new A.dY(this.gc7(),this.$ti.j("dY<1>"))}}
 A.dY.prototype={
 gn(a){return this.a.length},
 gG(a){return 0===this.a.length},
@@ -5762,7 +5762,7 @@ t(a){return"RuntimeError: "+this.a}}
 A.bM.prototype={
 gn(a){return this.a},
 gG(a){return this.a===0},
-ga8(){return new A.aa(this,A.k(this).j("aa<1>"))},
+ga9(){return new A.aa(this,A.k(this).j("aa<1>"))},
 gaL(){return new A.J(this,A.k(this).j("J<1,2>"))},
 E(a){var s,r
 if(typeof a=="string"){s=this.b
@@ -6462,7 +6462,7 @@ A.a6(a).j("q(H.E)").a(b)
 s=this.gn(a)
 for(r=0;r<s;++r){if(b.$1(this.i(a,r)))return!0
 if(s!==this.gn(a))throw A.n(A.ai(a))}return!1},
-ae(a,b,c){var s,r,q,p=A.a6(a)
+af(a,b,c){var s,r,q,p=A.a6(a)
 p.j("q(H.E)").a(b)
 p.j("H.E()?").a(c)
 s=this.gn(a)
@@ -6478,7 +6478,7 @@ A.a6(a).A(d).j("1(1,H.E)").a(c)
 s=this.gn(a)
 for(r=b,q=0;q<s;++q){r=c.$2(r,this.i(a,q))
 if(s!==this.gn(a))throw A.n(A.ai(a))}return r},
-aa(a,b){return A.c9(a,b,null,A.a6(a).j("H.E"))},
+ab(a,b){return A.c9(a,b,null,A.a6(a).j("H.E"))},
 aw(a){var s,r=A.eM(A.a6(a).j("H.E"))
 for(s=0;s<this.gn(a);++s)r.k(0,this.i(a,s))
 return r},
@@ -6493,14 +6493,14 @@ t(a){return A.iO(a,"[","]")}}
 A.a7.prototype={
 a_(a,b){var s,r,q,p=A.k(this)
 p.j("~(a7.K,a7.V)").a(b)
-for(s=this.ga8(),s=s.gq(s),p=p.j("a7.V");s.l();){r=s.gp()
+for(s=this.ga9(),s=s.gq(s),p=p.j("a7.V");s.l();){r=s.gp()
 q=this.i(0,r)
 b.$2(r,q==null?p.a(q):q)}},
-gaL(){return this.ga8().aM(0,new A.iX(this),A.k(this).j("aq<a7.K,a7.V>"))},
-E(a){return this.ga8().v(0,a)},
-gn(a){var s=this.ga8()
+gaL(){return this.ga9().aM(0,new A.iX(this),A.k(this).j("aq<a7.K,a7.V>"))},
+E(a){return this.ga9().v(0,a)},
+gn(a){var s=this.ga9()
 return s.gn(s)},
-gG(a){var s=this.ga8()
+gG(a){var s=this.ga9()
 return s.gG(s)},
 t(a){return A.lS(this)},
 $ii:1}
@@ -6536,7 +6536,7 @@ e2(a,b){var s
 A.k(this).j("q(1)").a(b)
 for(s=this.gq(this);s.l();)if(!b.$1(s.gp()))return!1
 return!0},
-aa(a,b){return A.n1(this,b,A.k(this).c)},
+ab(a,b){return A.n1(this,b,A.k(this).c)},
 gu(a){var s=this.gq(this)
 if(!s.l())throw A.n(A.ak())
 return s.gp()},
@@ -6558,7 +6558,7 @@ for(s=A.as(p,p.r,A.k(p).c),r=s.$ti.c;s.l();){q=s.d
 if(q==null)q=r.a(q)
 if(a.v(0,q))o.k(0,q)}return o}}
 A.cd.prototype={
-sab(a){this.b=this.$ti.j("cd.1?").a(a)},
+sac(a){this.b=this.$ti.j("cd.1?").a(a)},
 sa6(a){this.c=this.$ti.j("cd.1?").a(a)}}
 A.bq.prototype={}
 A.bp.prototype={
@@ -6571,19 +6571,19 @@ for(q=f,p=s,o=q,n=o,m=n,l=m;;){q=r.$2(p.a,a)
 if(q>0){k=p.b
 if(k==null)break
 q=r.$2(k.a,a)
-if(q>0){p.sab(k.c)
+if(q>0){p.sac(k.c)
 k.sa6(p)
 j=k.b
 if(j==null){p=k
 break}p=k
 k=j}if(l==null)m=p
-else l.sab(p)
+else l.sac(p)
 l=p
 p=k}else{if(q<0){i=p.c
 if(i==null)break
 q=r.$2(i.a,a)
 if(q<0){p.sa6(i.b)
-i.sab(p)
+i.sac(p)
 h=i.c
 if(h==null){p=i
 break}p=i
@@ -6591,19 +6591,19 @@ i=h}if(n==null)o=p
 else n.sa6(p)}else break
 n=p
 p=i}}if(n!=null){n.sa6(p.b)
-p.sab(o)}if(l!=null){l.sab(p.c)
+p.sac(o)}if(l!=null){l.sac(p.c)
 p.sa6(m)}if(g.d!==p){g.d=p;++g.c}return q},
 bv(a){var s,r,q
 this.$ti.j("bp.1").a(a)
 for(s=a,r=0;;s=q,r=1){q=s.b
-if(q!=null){s.sab(q.c)
+if(q!=null){s.sac(q.c)
 q.sa6(s)}else break}this.c+=r
 return s},
 cn(a){var s,r,q
 this.$ti.j("bp.1").a(a)
 for(s=a,r=0;;s=q,r=1){q=s.c
 if(q!=null){s.sa6(q.b)
-q.sab(s)}else break}this.c+=r
+q.sac(s)}else break}this.c+=r
 return s},
 dv(){var s,r=this,q=r.d,p=q.b,o=q.c
 if(p==null)r.d=o
@@ -6669,11 +6669,11 @@ s=q.bu(a)
 if(s===0)return!1
 p=p.j("bp.1").a(new A.bq(a,p.j("bq<1>")))
 r=q.d
-if(r!=null)if(s<0){p.sab(r)
+if(r!=null)if(s<0){p.sac(r)
 p.sa6(r.c)
 r.sa6(null)}else{p.sa6(r)
-p.sab(r.b)
-r.sab(null)}++q.b;++q.a
+p.sac(r.b)
+r.sac(null)}++q.b;++q.a
 q.d=p
 return!0},
 T(a,b){if(this.cu(b)==null)return!1
@@ -6692,7 +6692,7 @@ else{s=r[b]
 return typeof s=="undefined"?this.dr(b):s}},
 gn(a){return this.b==null?this.c.a:this.aI().length},
 gG(a){return this.gn(0)===0},
-ga8(){if(this.b==null){var s=this.c
+ga9(){if(this.b==null){var s=this.c
 return new A.aa(s,A.k(s).j("aa<1>"))}return new A.fp(this)},
 h(a,b,c){var s,r,q=this
 A.D(b)
@@ -6734,12 +6734,12 @@ return this.b[a]=s}}
 A.fp.prototype={
 gn(a){return this.a.gn(0)},
 K(a,b){var s=this.a
-if(s.b==null)s=s.ga8().K(0,b)
+if(s.b==null)s=s.ga9().K(0,b)
 else{s=s.aI()
 if(!(b>=0&&b<s.length))return A.b(s,b)
 s=s[b]}return s},
 gq(a){var s=this.a
-if(s.b==null){s=s.ga8()
+if(s.b==null){s=s.ga9()
 s=s.gq(s)}else{s=s.aI()
 s=new J.ch(s,s.length,A.t(s).j("ch<1>"))}return s},
 v(a,b){return this.a.E(b)}}
@@ -7067,7 +7067,7 @@ for(s=0;r.l();)++s
 return s},
 gG(a){return!this.gq(this).l()},
 ga0(a){return!this.gG(this)},
-aa(a,b){return A.n1(this,b,A.a6(this).j("h.E"))},
+ab(a,b){return A.n1(this,b,A.a6(this).j("h.E"))},
 gu(a){var s=this.gq(this)
 if(!s.l())throw A.n(A.ak())
 return s.gp()},
@@ -7076,11 +7076,11 @@ if(!r.l())throw A.n(A.ak())
 do s=r.gp()
 while(r.l())
 return s},
-ae(a,b,c){var s,r
+af(a,b,c){var s,r
 A.a6(this).j("q(h.E)").a(b)
 for(s=this.gq(this);s.l();){r=s.gp()
 if(b.$1(r))return r}throw A.n(A.ak())},
-e4(a,b){return this.ae(0,b,null)},
+e4(a,b){return this.af(0,b,null)},
 K(a,b){var s,r
 A.cZ(b,"index")
 s=this.gq(this)
@@ -7200,7 +7200,7 @@ n=0
 for(;n<j.length;j.length===h||(0,A.j)(j),++n){m=j[n]
 k.push(new A.m(m.b,m.c))}return A.qH(r,p,a.a,o,k)},
 bl(a){var s,r,q,p,o=this
-if(o.c.e.E(a)){s=o.a.ad(a)
+if(o.c.e.E(a)){s=o.a.ae(a)
 if(!(s instanceof A.ba))return B.bC
 r=o.d.d
 q=r.i(0,a)
@@ -7246,17 +7246,17 @@ n=p==null?0.0000015:p}p=j.aA(a)
 m=j.bm(a)
 l=s.w?a.as:0
 return A.eu(!1,i,p,a.b,o*s.cx+s.cy,a.a,B.aq,m,l,0,i,n,a,a.c)
-case 1:q=j.a.c.a9(a.ay)
+case 1:q=j.a.c.aa(a.ay)
 s=q==null?i:q.r
 if(s==null)s=B.aY
 return A.eu(!1,s,0.05,a.b,150,a.a,B.bl,1,0,0,i,0.0000015,a,a.c)
-case 3:q=j.a.c.a9(a.ay)
+case 3:q=j.a.c.aa(a.ay)
 s=q==null
 k=s?i:q.r
 if(k==null)k=B.I
 p=k.a>0?k:B.aY
 return A.eu((s?i:q.e)===B.U,p,0.05,a.b,150,a.a,B.bl,1,0,0,i,0.0000015,a,a.c)
-case 4:q=j.a.c.a9(a.ay)
+case 4:q=j.a.c.aa(a.ay)
 s=q==null?i:q.r
 return A.eu(!1,s,0.05,a.b,150,a.a,B.M,1,0,a.ax,i,0.0000015,a,a.c)
 case 2:q=j.a.c.av(a.ch)
@@ -7378,7 +7378,8 @@ bZ(a,b,c,d){var s,r,q,p,o,n,m,l,k,j,i,h,g,f=c.f,e=f.length
 if(e===0)return
 if(!d){b.d=B.a.P(f,0,new A.i_(),t.i)
 return}for(s=a.b,r=c.a,q=a.c,p=r+"_s",o=c.c,n=!0,m=0,l=0;l<f.length;f.length===e||(0,A.j)(f),++l){k=f[l]
-if(n){b.f=k.c
+if(k.b===-2){b.d=b.d+k.c.a*k.d
+continue}if(n){b.f=k.c
 b.r=k.d
 b.w=k.x
 n=!1}else{j=k.c
@@ -7410,7 +7411,7 @@ for(m=l.f,j=m.length,i=l.c,h=0;h<m.length;m.length===j||(0,A.j)(m),++h){g=m[h]
 f=g.b
 if(f===-2)continue
 e=g.a
-if(e.length!==0&&s.ad(e) instanceof A.aG&&f!==0)continue
+if(e.length!==0&&s.ae(e) instanceof A.aG&&f!==0)continue
 f=l.Q
 if(f==null)f=i-l.e
 e=g.d
@@ -7418,203 +7419,210 @@ p+=(k-(f+g.x))*e
 o+=g.e*e
 n+=e}}if(n===0)return B.bC
 return new A.m(p/n,o/n)},
-am(g3,g4){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,f0,f1,f2,f3,f4,f5,f6=this,f7=null,f8=f6.a,f9=t.cH.a(f8.ad(g3)),g0=t.s,g1=A.d([],g0),g2=f9==null
-if(g2||!f6.c.c.E(g3)){f8=g2?f7:f9.f
-if(f8==null)f8=""
-return f6.c3(g3,f8,A.d(["valve_missing"],g0))}s=f6.c.c.i(0,g3)
+am(g7,g8){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,g0=this,g1=null,g2=g0.a,g3=t.cH.a(g2.ae(g7)),g4=t.s,g5=A.d([],g4),g6=g3==null
+if(g6||!g0.c.c.E(g7)){g2=g6?g1:g3.f
+if(g2==null)g2=""
+return g0.c3(g7,g2,A.d(["valve_missing"],g4))}s=g0.c.c.i(0,g7)
 r=s.a
 q=s.b
-g2=f6.c.a.i(0,q)
-g2.toString
-p=f6.c.f.i(0,g3)
+g6=g0.c.a.i(0,q)
+g6.toString
+p=g0.c.f.i(0,g7)
 if(p==null)p=A.K(t.N)
-if(p.a>1){o=f6.c.r.i(0,g3)
-o=o==null?f7:o.a===0
+if(p.a>1){o=g0.c.r.i(0,g7)
+o=o==null?g1:o.a===0
 o=o!==!1}else o=!0
-if(o)return f6.c3(g3,f9.f,A.d(["zone_empty"],g0))
-n=f9.w
-g0=n==null
-if(!g0)m=f6.V(g3,n,g4).J()
-else if(!g4){l=f6.aT(g3,f6.V(g3,10,!1).J())
+if(o)return g0.c3(g7,g3.f,A.d(["zone_empty"],g4))
+n=g3.w
+g4=n==null
+if(!g4)m=g0.V(g7,n,g8).J()
+else if(!g8){l=g0.aT(g7,g0.V(g7,10,!1).J())
 n=10+(l.b-l.a)
-m=f6.V(g3,n,!1).J()}else{k=f6.aT(g3,f6.V(g3,10,!1).J()).b
+m=g0.V(g7,n,!1).J()}else{k=g0.aT(g7,g0.V(g7,10,!1).J()).b
 j=Math.max(k*3,5)
-m=f6.V(g3,j,!0).J()
+m=g0.V(g7,j,!0).J()
 i=0
-for(;;){if(!(f6.aT(g3,m).a<k&&i<20))break
+for(;;){if(!(g0.aT(g7,m).a<k&&i<20))break
 j*=2
-m=f6.V(g3,j,!0).J();++i}for(h=0,g=0;g<28;++g){f=(h+j)/2
-if(f6.aT(g3,f6.V(g3,f,!0).J()).a>k)j=f
+m=g0.V(g7,j,!0).J();++i}for(h=0,g=0;g<28;++g){f=(h+j)/2
+if(g0.aT(g7,g0.V(g7,f,!0).J()).a>k)j=f
 else h=f
 if(j-h<0.001)break}n=(h+j)/2
-m=f6.V(g3,n,!0).J()
-g4=!0}if(!m.a)B.a.k(g1,"not_converged")
-if(g0){g0=f6.dq(g3,m).a
-e=g0[0]
-d=g0[1]
-c=g0[2]
-b=g0[3]
-if(d-e<=b-c+1e-9)g0=e<c-0.000001||d>b+0.000001
-else g0=!1
-if(g0){n+=(c+b)/2-(e+d)/2
-m=f6.V(g3,n,g4).J()}}a=A.d([],t.A)
-a0=A.d([],t.n)
-for(g0=A.as(p,p.r,A.k(p).c),o=m.c,a1=g0.$ti.c,a2=0,a3=1/0,a4=-1/0,a5=-1/0,a6=1/0,a7=0,a8=0,a9=0,b0=0;g0.l();){b1=g0.d
-if(b1==null)b1=a1.a(b1)
-b2=f6.c.a.i(0,b1)
-b2.toString
-b3=o.i(0,b1)
-if(b3==null)continue
-for(b1=b2.f,b4=b1.length,b5=b2.b,b6=b3.a,b7=b2.c,b8=0;b8<b1.length;b1.length===b4||(0,A.j)(b1),++b8){b9=b1[b8]
-c0=b2.Q
-if(c0==null)c0=b7-b2.e
-c1=b9.x
-c2=b6-(c0+c1)
-c0=b9.c
-c3=g4?c0.af(Math.max(c2,0)):c0.af(b9.e)
-c4=b9.d
-a2+=c3*c4
-c5=b9.b
-if(c5===-2)continue
-c6=b2.Q
-if(c6==null)c6=b7-b2.e
-c7=b9.e
-c8=b9.f
-c9=b9.r
-B.a.k(a,new A.aA(b9.a,c5,b5,c6+c1,c2,c3,c0.af(c7),c4,c8,c9,b9.y))
-for(d0=0;d0<c4;++d0)B.a.k(a0,c0.af(Math.max(c2,0)))
-b0+=c4
-a3=Math.min(a3,c2)
-a4=Math.max(a4,c2)
-a5=Math.max(a5,c8)
-a6=Math.min(a6,c9)
-a7+=c7*c4
-a8+=c4
-a9+=b9.w*c4}}if(a.length===0){a3=0
-a4=0
+m=g0.V(g7,n,!0).J()
+g8=!0}if(!m.a)B.a.k(g5,"not_converged")
+if(g4){g4=g0.dq(g7,m).a
+e=g4[0]
+d=g4[1]
+c=g4[2]
+b=g4[3]
+if(d-e<=b-c+1e-9)g4=e<c-0.000001||d>b+0.000001
+else g4=!1
+if(g4){n+=(c+b)/2-(e+d)/2
+m=g0.V(g7,n,g8).J()}}a=A.d([],t.A)
+g4=t.n
+a0=A.d([],g4)
+for(o=A.as(p,p.r,A.k(p).c),a1=m.c,a2=o.$ti.c,a3=0,a4=1/0,a5=-1/0,a6=-1/0,a7=1/0,a8=0,a9=0,b0=0,b1=0,b2=0;o.l();){b3=o.d
+if(b3==null)b3=a2.a(b3)
+b4=g0.c.a.i(0,b3)
+b4.toString
+b5=a1.i(0,b3)
+if(b5==null)continue
+for(b3=b4.f,b6=b3.length,b7=b4.b,b8=b5.a,b9=b4.c,c0=0;c0<b3.length;b3.length===b6||(0,A.j)(b3),++c0){c1=b3[c0]
+c2=b4.Q
+if(c2==null)c2=b9-b4.e
+c3=c1.x
+c4=b8-(c2+c3)
+c2=c1.c
+c5=g8?c2.a8(Math.max(c4,0)):c2.a8(c1.e)
+c6=c1.d
+a3+=c5*c6
+c7=c1.b
+if(c7===-2)continue
+c8=b4.Q
+if(c8==null)c8=b9-b4.e
+c9=c1.e
+d0=c1.f
+d1=c1.r
+B.a.k(a,new A.aA(c1.a,c7,b7,c8+c3,c4,c5,c2.a8(c9),c6,d0,d1,c1.y))
+d2=c2.a8(c9)
+d3=d2>0?c2.a8(Math.max(c4,0))/d2:1
+for(d4=0;d4<c6;++d4){B.a.k(a0,d3)
+b2+=d2}b1+=c6
+a4=Math.min(a4,c4)
+a5=Math.max(a5,c4)
+a6=Math.max(a6,d0)
+a7=Math.min(a7,d1)
+a8+=c9*c6
+a9+=c6
+b0+=c1.w*c6}}if(a.length===0){a4=0
 a5=0
-a6=0}g0=a8>0
-d1=g0?a7/a8:0
-a1=f8.b
-b1=a1.p1
-if(b1>0&&d1>0){b1/=200
-a5=Math.max(a5,d1*(1-b1))
-a6=Math.min(a6,d1*(1+b1))}d2=g0?a9/a8:0
-d3=f6.de(a)
-d4=A.pu(a0,d3,d2)
-d5=A.d([],t.dI)
-d6=A.d([],t.c)
-g0=f6.c.r.i(0,g3)
-if(g0==null)g0=A.K(t.N)
-g0=A.as(g0,g0.r,A.k(g0).c)
-b1=m.d
-b2=g0.$ti.c
-f8=f8.c
-b4=f6.e
-while(g0.l()){b5=g0.d
-if(b5==null)b5=b2.a(b5)
-b6=f6.c.ao(b5)
-b6.toString
-d7=b1.i(0,b5)
-if(d7==null)continue
-b7=b6.b
-c0=f6.c.a.i(0,b7)
-c0.toString
-c1=b6.c
-c4=f6.c.a.i(0,c1)
-c4.toString
-d8=o.i(0,b7).a
-d9=o.i(0,c1).a
-b7=b6.f
-if(b6.d===B.e){e0=b4.i(0,b7)
-e1=f8.R(e0==null?b6.x:e0)
-e2=f8.ai(b6.y)
-e3=f6.aA(b6)
-c1=d7.a
-e4=Math.abs(c1)/(3.141592653589793*e3*e3/4)
-c5=c0.Q
-c6=c5==null
-c7=c6?c0.c-c0.e:c5
-c8=c4.Q
+a6=0
+a7=0}o=a9>0
+d5=o?a8/a9:0
+a2=g2.b
+b3=a2.p1
+if(b3>0&&d5>0){b3/=200
+a6=Math.max(a6,d5*(1-b3))
+a7=Math.min(a7,d5*(1+b3))}d6=o?b0/a9:0
+d7=g0.de(a)
+o=a0.length
+d8=o===0?0:b2/o
+g4=A.d([],g4)
+for(o=a0.length,c0=0;c0<a0.length;a0.length===o||(0,A.j)(a0),++c0)g4.push(a0[c0]*d8)
+d9=A.pu(g4,d7,d6)
+e0=A.d([],t.dI)
+e1=A.d([],t.c)
+g4=g0.c.r.i(0,g7)
+if(g4==null)g4=A.K(t.N)
+g4=A.as(g4,g4.r,A.k(g4).c)
+o=m.d
+b3=g4.$ti.c
+g2=g2.c
+b4=g0.e
+while(g4.l()){b6=g4.d
+if(b6==null)b6=b3.a(b6)
+b7=g0.c.ao(b6)
+b7.toString
+e2=o.i(0,b6)
+if(e2==null)continue
+b8=b7.b
+b9=g0.c.a.i(0,b8)
+b9.toString
+c2=b7.c
+c3=g0.c.a.i(0,c2)
+c3.toString
+e3=a1.i(0,b8).a
+e4=a1.i(0,c2).a
+b8=b7.f
+if(b7.d===B.e){e5=b4.i(0,b8)
+e6=g2.R(e5==null?b7.x:e5)
+e7=g2.ai(b7.y)
+e8=g0.aA(b7)
+c2=e2.a
+e9=Math.abs(c2)/(3.141592653589793*e8*e8/4)
+c6=b9.Q
+c7=c6==null
+c8=c7?b9.c-b9.e:c6
+c9=c3.Q
+d0=c9==null
+d1=d0?c3.c-c3.e:c9
+f0=e7==null
+f1=f0?g1:e7.a
+if(f1==null)f1=e6==null?g1:e6.a
+f2=f0?g1:e7.b
+if(f2==null)f2=e6==null?g1:e6.b
+if(f2==null)f2="?"
+f3=e2.c
+if(c7)c6=b9.c-b9.e
+c7=d0?c3.c-c3.e:c9
+c9=f0?g1:e7.ay
+if(c9==null)c9=e6==null?g1:e6.y
+if(c9==null)c9=0
+B.a.k(e0,new A.bl(b6,b8,b7.r,b7.cx,b7.cy,c8,d1,b7.w,e8,f1,f2,c2,e9,f3,e3-c6,e4-c7,c9,g7,e9>g0.aC(b7)+0.000001))
+if(e9>g0.aC(b7)+0.000001)B.a.k(g5,"velocity_exceeded:"+b8)
+b6=f0?g1:e7.ay
+if(b6==null)b6=e6==null?g1:e6.y
+if((b6==null?0:b6)>0){b6=b9.Q
+if(b6==null)b6=b9.c-b9.e
+b7=c3.Q
+if(b7==null)b7=c3.c-c3.e
+b7=Math.max(e3-b6,e4-b7)
+b6=f0?g1:e7.ay
+b6=b7>(b6==null?e6.y:b6)}else b6=!1
+if(b6)B.a.k(g5,"pressure_rating_exceeded:"+b8)}else{c2=e2.a
+c6=e2.c
+c7=e2.e
+c8=b9.Q
 c9=c8==null
-e5=c9?c4.c-c4.e:c8
-e6=e2==null
-e7=e6?f7:e2.a
-if(e7==null)e7=e1==null?f7:e1.a
-e8=e6?f7:e2.b
-if(e8==null)e8=e1==null?f7:e1.b
-if(e8==null)e8="?"
-e9=d7.c
-if(c6)c5=c0.c-c0.e
-c6=c9?c4.c-c4.e:c8
-c8=e6?f7:e2.ay
-if(c8==null)c8=e1==null?f7:e1.y
-if(c8==null)c8=0
-B.a.k(d5,new A.bl(b5,b7,b6.r,b6.cx,b6.cy,c7,e5,b6.w,e3,e7,e8,c1,e4,e9,d8-c5,d9-c6,c8,g3,e4>f6.aC(b6)+0.000001))
-if(e4>f6.aC(b6)+0.000001)B.a.k(g1,"velocity_exceeded:"+b7)
-b5=e6?f7:e2.ay
-if(b5==null)b5=e1==null?f7:e1.y
-if((b5==null?0:b5)>0){b5=c0.Q
-if(b5==null)b5=c0.c-c0.e
-b6=c4.Q
-if(b6==null)b6=c4.c-c4.e
-b6=Math.max(d8-b5,d9-b6)
-b5=e6?f7:e2.ay
-b5=b6>(b5==null?e1.y:b5)}else b5=!1
-if(b5)B.a.k(g1,"pressure_rating_exceeded:"+b7)}else{c1=d7.a
-c5=d7.c
-c6=d7.e
-c7=c0.Q
-c8=c7==null
-c9=c8?c0.c-c0.e:c7
-e5=c4.Q
-c4=e5==null?c4.c-c4.e:e5
-e5=d7.d
-if(c8)c7=c0.c-c0.e
-B.a.k(d6,new A.c2(b7,b5,c1,c5,c6,d8-c9,d9-c4,e5.b,c7))
-b5=c0.Q
-c1=b5==null
-c4=c1?c0.c-c0.e:b5
-if(c1)b5=c0.c-c0.e
-if(f6.cp(b6,d7,d8-c4,b5))B.a.k(g1,"pump_suction_lift:"+b7)}}for(g0=a.length,o=a5-0.000001,b1=a6+0.000001,b8=0;b8<g0;++b8){f0=a[b8]
-b2=f0.e
-if(!(b2>=o&&b2<=b1)){g0=f0.a
-B.a.k(g1,b2<a5?"outlet_under_pressure:"+g0:"outlet_over_pressure:"+g0)
-break}}f1=f8.a9(f9.e)
-g0=f1==null
-f2=g0?f7:f1.r.b7(a2)
-if(f2==null)f2=0
-if(!g0)o=a2>f1.x+1e-9||a2<f1.w-1e-9
+d0=c9?b9.c-b9.e:c8
+d1=c3.Q
+c3=d1==null?c3.c-c3.e:d1
+d1=e2.d
+if(c9)c8=b9.c-b9.e
+B.a.k(e1,new A.c2(b8,b6,c2,c6,c7,e3-d0,e4-c3,d1.b,c8))
+b6=b9.Q
+c2=b6==null
+c3=c2?b9.c-b9.e:b6
+if(c2)b6=b9.c-b9.e
+if(g0.cp(b7,e2,e3-c3,b6))B.a.k(g5,"pump_suction_lift:"+b8)}}for(g4=a.length,o=a6-0.000001,a1=a7+0.000001,c0=0;c0<g4;++c0){f4=a[c0]
+b3=f4.e
+if(!(b3>=o&&b3<=a1)){g4=f4.a
+B.a.k(g5,b3<a6?"outlet_under_pressure:"+g4:"outlet_over_pressure:"+g4)
+break}}f5=g2.aa(g3.e)
+g4=f5==null
+f6=g4?g1:f5.r.b7(a3)
+if(f6==null)f6=0
+if(!g4)o=a3>f5.x+1e-9||a3<f5.w-1e-9
 else o=!1
-if(o)B.a.k(g1,"valve_flow_out_of_range")
-o=f6.c.r.i(0,g3)
+if(o)B.a.k(g5,"valve_flow_out_of_range")
+o=g0.c.r.i(0,g7)
 if(o==null)o=A.K(t.N)
 o=A.as(o,o.r,A.k(o).c)
-b1=o.$ti.c
-f3=0
-while(o.l()){b2=o.d
-if(b2==null)b2=b1.a(b2)
-f4=f6.c.ao(b2)
-if(f4.d!==B.e)continue
-e2=f8.ai(f4.y)
-b2=e2==null?f7:e2.cx
-if(b2==null){e0=b4.i(0,f4.f)
-b2=f8.R(e0==null?f4.x:e0)
-b2=b2==null?f7:b2.Q}if(b2==null)b2=0
-f3+=b2*f4.w}f8=n+f2
-f5=A.nE(a1.Q,a2,f8,a1.ax,a1.as)
-a1=f6.c.a.i(0,r)
-a1.toString
-o=f9.f
-g2=g2.gaE()
-b1=a1.gaE()
-b2=A.cQ(g1,t.N)
-b2=A.p(b2,A.k(b2).c)
-a1=a1.gaE()
-g0=g0?f7:f1.b
-if(g0==null)g0=""
-b4=g4?f6.dn(g3,a):0
-return A.m0(a6,a5,f5,m.a,d6,n,b0,d3,a4,a3,d1,a,b4,f3,d5,f8+(g2-b1),a2,d4,a1,g3,f2,g0,b2,o)},
+a1=o.$ti.c
+f7=0
+while(o.l()){b3=o.d
+if(b3==null)b3=a1.a(b3)
+f8=g0.c.ao(b3)
+if(f8.d!==B.e)continue
+e7=g2.ai(f8.y)
+b3=e7==null?g1:e7.cx
+if(b3==null){e5=b4.i(0,f8.f)
+b3=g2.R(e5==null?f8.x:e5)
+b3=b3==null?g1:b3.Q}if(b3==null)b3=0
+f7+=b3*f8.w}g2=n+f6
+f9=A.nE(a2.Q,a3,g2,a2.ax,a2.as)
+a2=g0.c.a.i(0,r)
+a2.toString
+o=g3.f
+g6=g6.gaE()
+a1=a2.gaE()
+b3=A.cQ(g5,t.N)
+b3=A.p(b3,A.k(b3).c)
+a2=a2.gaE()
+g4=g4?g1:f5.b
+if(g4==null)g4=""
+b4=g8?g0.dn(g7,a):0
+return A.m0(a7,a6,f9,m.a,e1,n,b1,d7,a5,a4,d5,a,b4,f7,e0,g2+(g6-a1),a3,d9,a2,g7,f6,g4,b3,o)},
 aD(a){return this.am(a,!0)},
 de(a){var s,r,q,p,o,n,m,l,k,j
 t.ms.a(a)
@@ -7632,7 +7640,7 @@ r=new A.u(a8,s.j("c(1)").a(new A.i6()),s.j("u<1,c>")).aw(0)
 q=A.d([],t.h0)
 p=A.d([],t.iv)
 for(s=A.as(r,r.r,A.k(r).c),o=this.a,n=s.$ti.c;s.l();){m=s.d
-l=o.ad(m==null?n.a(m):m)
+l=o.ae(m==null?n.a(m):m)
 if(l instanceof A.am)B.a.k(q,l)
 if(l instanceof A.b7)B.a.k(p,l)}for(s=a8.length,k=0,j=0,i=0;i<s;++i){h=a8[i]
 n=h.w
@@ -7855,7 +7863,7 @@ a=0
 while(j.l()){g=j.d
 if(g==null)g=i.a(g)
 for(g=d0.c.a.i(0,g).f,f=g.length,a0=0;a0<g.length;g.length===f||(0,A.j)(g),++a0){h=g[a0]
-a+=h.c.af(h.e)*h.d}}j=d0.a.b
+a+=h.c.a8(h.e)*h.d}}j=d0.a.b
 i=j.ay
 a1=i?A.nE(j.Q,a,1,j.ax,j.as):0
 a2=d0.c.a.i(0,s).gaE()
@@ -7895,7 +7903,7 @@ B.a.k(a3,new A.dB(0,c0,c1,a9,isFinite(b4)?b4+c9:d1))}m=k.j("aa<1>")
 m=A.p(new A.aa(d3,m),m.j("h.E"))
 return A.nR(new A.eO(m,e,d,c,A.d([new A.dC(a1,d1,d1,"zone")],t.jv),a3,A.fK(j.y,j.z),i,d0.gcf()))},
 dm(a,b){return this.c9(a,b,B.FM)},
-cY(c4){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1=this,c2=c1.a,c3=t.cH.a(c2.ad(c4))
+cY(c4){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1=this,c2=c1.a,c3=t.cH.a(c2.ae(c4))
 if(c3==null||!c1.c.c.E(c4))return c1.aD(c4)
 s=c1.c.r.i(0,c4)
 if(s==null)s=A.K(t.N)
@@ -8021,7 +8029,7 @@ for(s=new A.J(a,A.k(a).j("J<1,2>")).gq(0),r=this.a,q=this.e;s.l();){p=s.d
 o=p.a
 n=q.i(0,o)
 if(n==null)continue
-m=r.ad(o)
+m=r.ae(o)
 if(m instanceof A.aM)m.f=n
 if(m instanceof A.am)m.e=n
 for(o=J.a0(p.b);o.l();)o.gp().x=n}},
@@ -8038,7 +8046,7 @@ for(q=b5.c.r,q=new A.M(q,q.r,q.e,A.k(q).j("M<2>"));q.l();){p=q.d
 for(p=p.gq(p);p.l();)s.k(0,A.D(p.gp()))}n=b5.aO(r,s).c
 m=b5.aO(o,b5.c.x).c
 for(s=new A.J(b6,A.k(b6).j("J<1,2>")).gq(0),r=b5.a,q=r.e,p=t.n,l=t.Q,k=t.bw,j=t.pa,i=j.j("w.E"),h=t.s,g=0;s.l();){f=s.d
-e=r.ad(f.a)
+e=r.ae(f.a)
 if(e!=null)d=!(e instanceof A.aM||e instanceof A.am||e instanceof A.aG)
 else d=!0
 if(d)continue
@@ -8092,7 +8100,7 @@ if(m==null)m=o.a(m)
 l=d.c.a.i(0,m)
 if(l.y){k=l.z
 k.toString
-j=a.i(0,n.a(c.ad(k)).a)
+j=a.i(0,n.a(c.ae(k)).a)
 if(j==null)j=0
 k=l.Q
 i=k==null
@@ -8586,7 +8594,7 @@ c7.y=c6*c9*c9/4}}q=d9.c
 try{c0=A.lU(b7).bA()
 d9.c=c0
 for(c0=c0.c,c0=new A.au(c0,c0.r,c0.e,A.k(c0).j("au<1>")),c4=c4.k1,c1=t.s,c6=t.cH;c0.l();){p=c0.d
-o=c6.a(b7.ad(p))
+o=c6.a(b7.ae(p))
 if(o==null)continue
 d0=d9.c.f.i(0,p)
 n=d0==null?A.K(b8):d0
@@ -8661,7 +8669,7 @@ d5=a6.a
 d6=a5
 d7=d6.Q
 d6=d7==null?d6.c-d6.e:d7
-d6=d4.af(Math.max(d5-(d6+a7.x),0))
+d6=d4.a8(Math.max(d5-(d6+a7.x),0))
 d5=a7.d
 if(typeof d3!=="number")return d3.ap()
 a3=d3+d6*d5}}a8=0
@@ -8681,7 +8689,7 @@ b1=b.d.i(0,a9)
 if(b1!=null){c7=a8
 d2=b1.a
 d3=d9.aA(b0)
-a8=Math.max(A.mb(c7),Math.abs(d2)/(3.141592653589793*d3*d3/4))}}b2=c2.a9(o.e)
+a8=Math.max(A.mb(c7),Math.abs(d2)/(3.141592653589793*d3*d3/4))}}b2=c2.aa(o.e)
 c7=b2
 d8=c7==null?null:c7.r.b7(a3)
 b3=d8==null?0:d8
@@ -8722,7 +8730,7 @@ b=c.a
 a=k.R(b.y)
 if(a==null)continue
 j=d.a
-a0=s.ad(j)
+a0=s.ae(j)
 a1=r.b(a0)?a0.gn(a0):b.w
 g=a.f
 a2=Math.max(a.z,0.5)
@@ -8772,11 +8780,11 @@ c=c==null?c0:c.b
 if(c==null)c=""
 c8.$8$code$supplier(c2,f+" \u2014 "+c,c3,d.gb8(),j.r,j.a,j.d,j.c)}break A}f=g instanceof A.ao
 b=f?g:c0
-if(f){d=p.a9(b.e)
+if(f){d=p.aa(b.e)
 if(d!=null)c8.$8$code$supplier("bom.valves",d.b,c3,1,d.y,d.a,d.d,d.c)
 break A}f=g instanceof A.b6
 a=f?g:c0
-if(f){d=p.a9(a.e)
+if(f){d=p.aa(a.e)
 if(d!=null)c8.$8$code$supplier("bom.devices",d.b,c3,1,d.y,d.a,d.d,d.c)
 break A}f=g instanceof A.bA
 a0=f?g:c0
@@ -8810,7 +8818,7 @@ b1=a4?c0:a8.d
 if(b1==null)b1=""
 a4=a4?c0:a8.c
 if(a4==null)a4=""
-c8.$8$code$supplier(c4,c+a5,c3,a7,a9,b0,b1,a4)}b2=p.a9(a0.f)
+c8.$8$code$supplier(c4,c+a5,c3,a7,a9,b0,b1,a4)}b2=p.aa(a0.f)
 if(b2!=null&&f)c8.$8$code$supplier(c4,c+b2.b,c3,a7,b2.y,b2.a,b2.d,b2.c)
 if(a0.cx>0)c8.$6(c4,c+A.z(o.$1("pivot.endGunItem")),c3,1,0,c0)
 break A}break A}}b3=i.z
@@ -9500,7 +9508,7 @@ $S:79}
 A.c4.prototype={
 H(){return"GLinkKind."+this.b}}
 A.bi.prototype={
-gei(){return this.c.af(this.e)*this.d}}
+gei(){return this.c.a8(this.e)*this.d}}
 A.b5.prototype={
 gaE(){var s=this.Q
 return s==null?this.c-this.e:s}}
@@ -9734,7 +9742,7 @@ a4.a=null
 a9=f instanceof A.b6
 if(a9){a4.a=f
 b0=f}else b0=f7
-if(a9){c8=r.a9(b0.e)
+if(a9){c8=r.aa(b0.e)
 if(c8==null){B.a.k(a5,"valve_spec_missing:"+f.a)
 continue}a9=c8.e
 f6.c5(f.a,b0.d,b0.f,new A.j3(a4,f,a9===B.S,c8))
@@ -10314,7 +10322,7 @@ A.hT.prototype={
 $1(a){return t.eu.a(a).m()},
 $S:101}
 A.c3.prototype={
-af(a){if(a<=0)return 0
+a8(a){if(a<=0)return 0
 return this.a*Math.pow(a,this.b)},
 cL(a){if(a<=0||this.c===0)return 0
 return this.c*Math.pow(a,this.d)},
@@ -10463,7 +10471,7 @@ c7.h(0,c3,(d1==null?0:d1)+1e-12)
 if(c3>>>0!==c3||c3>=b9)return A.b(a9,c3)
 B.a.h(a9,c3,a9[c3]+1e-12*c6)
 k.h(0,c2,0)}else{b5=Math.max(c8,0.000001)
-d2=c5.af(b5)*o.r
+d2=c5.a8(b5)*o.r
 d3=1/Math.max(c5.ar(b5)*o.r,1e-9)
 if(c3>>>0!==c3||c3>=c0.length)return A.b(c0,c3)
 c7=c0[c3]
@@ -10602,7 +10610,7 @@ r=o.a
 k=m.i(0,r)
 k.toString
 h=o.f
-if(h!=null&&o.r>0)h.af(Math.max(k-o.c-o.w,0))
+if(h!=null&&o.r>0)h.a8(Math.max(k-o.c-o.w,0))
 f4.h(0,r,new A.eY(k,k-o.c))}f5=A.l(g1,t.g_)
 for(a2=0;a2<l.length;++a2){i=l[a2]
 if(!(a2<j.length))return A.b(j,a2)
@@ -10816,7 +10824,7 @@ return A.X(["id",s.a,"name",s.b,"curve",s.c.m(),"arc",s.d,"minH",s.e,"maxH",s.f,
 A.a8.prototype={
 aF(a){var s=this.f
 if(s.length===0)return null
-return B.a.ae(s,new A.jf(a),new A.jg(this))},
+return B.a.af(s,new A.jf(a),new A.jg(this))},
 m(){var s,r,q,p=this,o=A.l(t.N,t.z)
 o.h(0,"id",p.a)
 o.h(0,"name",p.b)
@@ -10981,7 +10989,7 @@ return q}}
 A.fU.prototype={
 eu(a){var s=this.r
 s=new A.a9(s,A.t(s).j("a9<1,Z?>"))
-s=s.ae(s,new A.hE(a),new A.hF())
+s=s.af(s,new A.hE(a),new A.hF())
 return s},
 gdZ(){var s=this.r,r=A.t(s),q=r.j("A<1>")
 s=A.p(new A.A(s,r.j("q(1)").a(new A.h5()),q),q.j("h.E"))
@@ -11004,27 +11012,27 @@ R(a){var s
 if(a==null)s=null
 else{s=this.a
 s=new A.a9(s,A.t(s).j("a9<1,L?>"))
-s=s.ae(s,new A.hg(a),new A.hh())}return s},
+s=s.af(s,new A.hg(a),new A.hh())}return s},
 a1(a){var s
 if(a==null)s=null
 else{s=this.b
 s=new A.a9(s,A.t(s).j("a9<1,a8?>"))
-s=s.ae(s,new A.he(a),new A.hf())}return s},
+s=s.af(s,new A.he(a),new A.hf())}return s},
 ai(a){var s
 if(a==null)s=null
 else{s=this.c
 s=new A.a9(s,A.t(s).j("a9<1,aZ?>"))
-s=s.ae(s,new A.ht(a),new A.hu())}return s},
-a9(a){var s
+s=s.af(s,new A.ht(a),new A.hu())}return s},
+aa(a){var s
 if(a==null)s=null
 else{s=this.d
 s=new A.a9(s,A.t(s).j("a9<1,F?>"))
-s=s.ae(s,new A.hC(a),new A.hD())}return s},
+s=s.af(s,new A.hC(a),new A.hD())}return s},
 av(a){var s
 if(a==null)s=null
 else{s=this.e
 s=new A.a9(s,A.t(s).j("a9<1,aX?>"))
-s=s.ae(s,new A.hk(a),new A.hl())}return s},
+s=s.af(s,new A.hk(a),new A.hl())}return s},
 ah(a){var s=this.a,r=A.t(s),q=r.j("A<1>")
 s=A.p(new A.A(s,r.j("q(1)").a(new A.hi(a)),q),q.j("h.E"))
 B.a.ak(s,new A.hj())
@@ -11867,7 +11875,7 @@ s=r.x
 if(s!=null)q.h(0,"georef",s.m())
 return q}}
 A.jp.prototype={
-ad(a){var s,r,q,p
+ae(a){var s,r,q,p
 for(s=this.e,r=s.length,q=0;q<r;++q){p=s[q]
 if(p.a===a)return p}return null},
 dN(){var s,r,q,p=this.b,o=A.d([],t.pn),n=new A.f9(p.db,p.p2,o,A.l(t.S,t.L))
@@ -12737,12 +12745,12 @@ B.bv=new A.aT(B.fu,[4289773253,4293718001,4287669422,4287458915,4288776319,42864
 B.ft={BRL:0,USD:1,EUR:2,GBP:3,JPY:4,CNY:5,INR:6,IDR:7,NGN:8,KES:9,TZS:10,UGX:11,VND:12,TRY:13,RUB:14,EGP:15,SAR:16,AED:17,MAD:18,DZD:19,TND:20,IQD:21,JOD:22,QAR:23,KWD:24,OMR:25,BHD:26,LBP:27,PKR:28,BDT:29,MXN:30,ARS:31,COP:32,CLP:33,PEN:34,UYU:35,PYG:36,BOB:37,GTQ:38,CRC:39,DOP:40,CAD:41,AUD:42,NZD:43,ZAR:44,CHF:45,SEK:46,NOK:47,DKK:48,PLN:49,CZK:50,HUF:51,RON:52,UAH:53,KZT:54,BYN:55,ILS:56,KRW:57,TWD:58,HKD:59,SGD:60,MYR:61,THB:62,PHP:63,XOF:64,XAF:65,AOA:66,MZN:67,ETB:68,GHS:69,NPR:70,LKR:71,IRR:72,AFN:73,UZS:74,AZN:75,CVE:76}
 B.bw=new A.aT(B.ft,[1,0.194498,0.169492,0.14543,30.6062,1.3088,18.6598,3451.74,262.864,25.2459,516.716,745.134,5050.14,9.48874,16.495,10.1227,0.729374,0.7143,1.85499,26.0744,0.569235,254.226,0.1379,0.707979,0.060022,0.074785,0.073132,17407.7,54.0161,23.9342,3.34495,294.148,617.19,187.238,0.657038,7.83241,1160.73,2.19297,1.48678,87.1606,11.4422,0.272264,0.27313,0.34017,3.16636,0.1602,1.91301,1.83189,1.26869,0.739874,4.12219,61.7788,0.8934,8.7116,86.927,0.58924,0.589802,269.659,6.1751,1.52685,0.248332,0.793666,6.48381,12.216,111.137,111.137,183.852,12.4413,31.3447,2.22843,29.8503,64.2754,267526,12.6304,2299.29,0.331254,18.6819],A.S("aT<c,e>"))
 B.fw={"app.title":0,ok:1,cancel:2,apply:3,close:4,auto:5,clear:6,"menu.file":7,"menu.edit":8,"menu.view":9,"menu.draw":10,"menu.zone":11,"menu.mainline":12,"menu.design":13,"menu.reports":14,"menu.tools":15,"menu.help":16,"file.new":17,"file.open":18,"file.save":19,"file.exportDxf":20,"file.exportDrawing":21,"file.exportReport":22,"file.georef":23,"file.newTab":24,"file.closeTab":25,"tab.new":26,"tab.close":27,"edit.clipCopy":28,"edit.clipCut":29,"edit.paste":30,"msg.copied":31,"msg.cut":32,"msg.pipeCut":33,"msg.pasted":34,"msg.nothingSelected":35,"msg.clipboardEmpty":36,"msg.unknownCommand":37,"status.command":38,"help.shortcuts":39,"sc.title":40,"sc.intro":41,"sc.file":42,"sc.edit":43,"sc.view":44,"sc.commands":45,"sc.hydraulic":46,"sc.switchTab":47,"sc.cancel":48,"sc.finish":49,"sc.undoPoint":50,"sc.repeat":51,"sc.zoom":52,"sc.pan":53,"sc.panHold":54,"sc.reports":55,"sc.gridDisplay":56,"sc.angleLock":57,"sc.autoRun":58,"sc.toggles":59,"sc.designCmds":60,"exp.dxf":61,"exp.dwg":62,"exp.pdf":63,"exp.svg":64,"exp.kml":65,"exp.kmz":66,"exp.geojson":67,"exp.csv":68,"exp.txt":69,"exp.xlsx":70,"exp.reportPdf":71,"msg.exported":72,"msg.needResults":73,"msg.nothingToExport":74,"msg.georefSet":75,"geo.title":76,"geo.explain":77,"geo.modeLatLon":78,"geo.modeUtm":79,"geo.lat":80,"geo.lon":81,"geo.zone":82,"geo.north":83,"geo.easting":84,"geo.northing":85,"geo.current":86,"geo.none":87,"geo.remove":88,"geo.invalid":89,"plot.title":90,"plot.page":91,"plot.orientation":92,"plot.landscape":93,"plot.portrait":94,"plot.scale":95,"plot.scaleAuto":96,"plot.wetted":97,"plot.labels":98,"plot.legend":99,"plot.reports":100,"plot.export":101,"plot.fits":102,"pdf.date":103,"pdf.scale":104,"pdf.sheet":105,"pdf.origin":106,"pdf.summary":107,"pdf.crs":108,"pdf.local":109,"pdf.legend":110,"pdf.subtitle":111,"pdf.reportTitle":112,"pdf.generated":113,"pdf.page":114,"pdf.cont":115,"pdf.noResults":116,"pdf.params":117,"layer.DRAWING":118,"layer.TEXT":119,"layer.DIMENSIONS":120,"layer.CONTOURS":121,"layer.SPOT_HEIGHTS":122,"layer.DEM":123,"layer.ZONE_PIPES":124,"layer.MAINLINE_PIPES":125,"layer.SPRAYLINES":126,"layer.TAPES":127,"layer.OUTLETS":128,"layer.WETTED_RADII":129,"layer.CONTROL_VALVES":130,"layer.WATER_SUPPLY":131,"layer.PUMPS":132,"layer.MISC_HYDRAULIC":133,"layer.JUNCTIONS":134,"layer.AREAS":135,"layer.LABELS":136,"file.details":137,"edit.undo":138,"edit.redo":139,"edit.delete":140,"edit.selectAll":141,"edit.copy":142,"view.zoomAll":143,"view.zoomIn":144,"view.zoomOut":145,"view.grid":146,"view.labels":147,"view.wetted":148,"view.overlay.none":149,"view.overlay.velocity":150,"view.overlay.pressure":151,"view.overlay.sizes":152,"view.layers":153,"view.language":154,"lang.pt":155,"lang.en":156,"lang.es":157,"design.params":158,"design.management":159,"design.check":160,"design.zone":161,"design.analyze":162,"design.mainline":163,"design.all":164,"design.clear":165,"design.progress.title":166,"design.progress.start":167,"design.progress.zones":168,"design.progress.mainline":169,"design.progress.splits":170,"design.progress.flushing":171,"design.progress.surge":172,"design.progress.bom":173,"design.progress.bg":174,"design.progress.hint":175,"design.catalog":176,"design.block":177,"design.autohead":178,"reports.zone":179,"reports.pipes":180,"reports.outlets":181,"reports.mainline":182,"reports.devices":183,"reports.bom":184,"reports.water":185,"reports.hgl":186,"reports.messages":187,"tools.lateral":188,"tools.pump":189,"tools.hammer":190,"tools.units":191,"help.about":192,"help.tutorial":193,"tool.select":194,"tool.pan":195,"tool.line":196,"tool.polyline":197,"tool.rect":198,"tool.circle":199,"tool.text":200,"tool.dimension":201,"tool.contour":202,"tool.spot":203,"tool.area":204,"tool.zonePipe":205,"tool.mainPipe":206,"tool.sprayline":207,"tool.tape":208,"tool.outlet":209,"tool.valve":210,"tool.supply":211,"tool.pump":212,"tool.misc":213,"tool.junction":214,"tool.block":215,"tool.autohead":216,"tool.measure":217,"hint.select":218,"hint.pan":219,"hint.line":220,"hint.polyline":221,"hint.rect":222,"hint.circle":223,"hint.text":224,"hint.dimension":225,"hint.contour":226,"hint.spot":227,"hint.area":228,"hint.pipe":229,"hint.point":230,"hint.block":231,"hint.measure":232,"status.ready":233,"status.snap":234,"status.grid":235,"status.ortho":236,"status.keepLinks":237,"status.keepLinksTip":238,"status.entities":239,"props.title":240,"props.none":241,"props.multi":242,"props.layer":243,"props.name":244,"props.pipe":245,"props.auto":246,"props.depth":247,"props.outlet":248,"props.nozzle":249,"props.head":250,"props.spacing":251,"props.offset":252,"props.arc":253,"props.riser":254,"props.tape":255,"props.inlet":256,"props.regulated":257,"props.submainMin":258,"props.valve":259,"props.zone":260,"props.fixedHead":261,"props.calc":262,"props.designHead":263,"props.maxHead":264,"props.designFlow":265,"props.maxFlow":266,"props.waterLevel":267,"props.pump":268,"props.speed":269,"props.misc":270,"props.setting":271,"props.elevation":272,"props.elevationDem":273,"props.text":274,"props.textHeight":275,"props.radius":276,"props.closed":277,"props.netDepth":278,"props.efficiency":279,"props.crop":280,"props.length":281,"props.area":282,"props.outlets":283,"props.scope":284,"props.results":285,"props.orientation":286,"props.rotation":287,"props.dimOffset":288,"props.zoomTo":289,"props.halfSpacing":290,"props.downstream":291,"props.required":292,"props.valveLoss":293,"props.emitterMinMax":294,"props.allowed":295,"props.uniformity":296,"props.defaults":297,"scope.zone":298,"scope.mainline":299,"result.flow":300,"result.velocity":301,"result.loss":302,"result.pressure":303,"result.pStart":304,"result.pEnd":305,"result.min":306,"result.max":307,"msg.saved":308,"msg.loaded":309,"msg.designDone":310,"msg.unconnected":311,"msg.allConnected":312,"msg.designBusy":313,"msg.designStale":314,"msg.noValves":315,"msg.deleted":316,"msg.imported":317,"msg.error":318,"msg.unsavedConfirm":319,"msg.noResults":320,"msg.noAreas":321,"msg.selectForHgl":322,"msg.noMessages":323,"msg.unconnectedItem":324,"imp.dwg":325,"imp.skipped":326,"imp.kml":327,"imp.dxf":328,"dwg.notDwg":329,"dwg.corrupt":330,"kmz.noKml":331,"rep.zone":332,"rep.valve":333,"rep.emitters":334,"rep.flow":335,"rep.pDown":336,"rep.valveLoss":337,"rep.pRequired":338,"rep.pMin":339,"rep.pMax":340,"rep.allowMin":341,"rep.allowMax":342,"rep.varAllow":343,"rep.varActual":344,"rep.pipeCost":345,"rep.warnings":346,"rep.context":347,"rep.entity":348,"rep.segment":349,"rep.pipe":350,"rep.innerDiam":351,"rep.length":352,"rep.q":353,"rep.velocity":354,"rep.hf":355,"rep.pStart":356,"rep.pEnd":357,"rep.zStart":358,"rep.zEnd":359,"rep.pn":360,"rep.emitter":361,"rep.n":362,"rep.qTotal":363,"rep.qMean":364,"rep.flowName":365,"rep.item":366,"rep.pAvailable":367,"rep.status":368,"rep.energyYear":369,"rep.supply":370,"rep.pump":371,"rep.device":372,"rep.calculated":373,"rep.surplus":374,"rep.fixed":375,"rep.deficit":376,"rep.ok":377,"rep.pumpHead":378,"rep.pIn":379,"rep.pOut":380,"rep.loss":381,"rep.st.running":382,"rep.st.stopped":383,"rep.st.open":384,"rep.st.closed":385,"rep.st.active":386,"rep.suction":387,"rep.submersible":388,"rep.outOfRange":389,"rep.category":390,"rep.description":391,"rep.unit":392,"rep.quantity":393,"rep.unitCost":394,"rep.total":395,"rep.totalRow":396,"rep.annualCapital":397,"rep.annualEnergy":398,"rep.annualTotal":399,"rep.area":400,"rep.grossDepth":401,"rep.volume":402,"rep.rate":403,"rep.hoursDay":404,"hgl.legend":405,"csv.zones":406,"csv.flows":407,"csv.bom":408,"bom.pipes":409,"bom.tapes":410,"bom.outlets":411,"bom.valves":412,"bom.devices":413,"bom.pumps":414,"name.zone":415,"name.supply":416,"name.allZones":417,"name.submain":418,"name.stub":419,"name.lateral":420,"name.area":421,"name.newProject":422,"name.text":423,"name.flow":424,"name.report":425,"ex.name":426,"ex.client":427,"ex.site":428,"ex.boundary":429,"ex.title":430,"ex.zoneA":431,"ex.zoneB":432,"ex.blockA":433,"ex.blockB":434,"ex.citrus":435,"ex.grape":436,"ex.riser":437,"ex.branchA":438,"ex.branchB":439,"ex.well":440,"ex.flow1":441,"ex.flow2":442,"dlg.project":443,"dlg.client":444,"dlg.site":445,"dlg.designer":446,"dlg.notes":447,"dlg.hydraulics":448,"dlg.frictionFormula":449,"dlg.hw":450,"dlg.dw":451,"dlg.waterTemp":452,"dlg.vLateral":453,"dlg.vZone":454,"dlg.vMain":455,"dlg.minorPct":456,"dlg.connectTol":457,"dlg.applyMinor":458,"dlg.cScale":459,"dlg.cOffset":460,"dlg.sizing":461,"dlg.maxSubmainSizes":462,"dlg.densify":463,"dlg.economics":464,"dlg.tradeCapital":465,"dlg.interest":466,"dlg.term":467,"dlg.energyCost":468,"dlg.pumpEff":469,"dlg.hoursMain":470,"dlg.hoursZone":471,"dlg.currency":472,"dlg.currencySymbol":473,"dlg.currencyNote":474,"dlg.convertPricesTitle":475,"dlg.convertPricesBody":476,"dlg.rate":477,"dlg.rateSource":478,"dlg.rateUnknown":479,"dlg.onlyCurrency":480,"dlg.convert":481,"msg.pricesConverted":482,"hist.currency":483,"cat.packPriced":484,"cat.packUnpriced":485,"cat.packSources":486,"cat.packConverted":487,"cat.packNoCurrency":488,"warn.bom_unpriced":489,"adv.bom_unpriced.why":490,"adv.bom_unpriced.how":491,"dlg.metric":492,"dlg.us":493,"dlg.length":494,"dlg.flow":495,"dlg.pressure":496,"dlg.diameter":497,"dlg.allTogether":498,"dlg.oneAtATime":499,"dlg.addFlow":500,"dlg.name":501,"dlg.startHour":502,"dlg.durationHours":503,"dlg.noFlows":504,"dlg.sprayBlock":505,"dlg.dripBlock":506,"dlg.laterals":507,"dlg.emitterSpacing":508,"dlg.lateralPipe":509,"dlg.lateralSpacing":510,"dlg.lateralDirection":511,"dlg.submainValve":512,"dlg.submainPosition":513,"dlg.submainStart":514,"dlg.submainCentre":515,"dlg.submainEnd":516,"dlg.submainPipe":517,"dlg.valvePosition":518,"dlg.posStart":519,"dlg.posCentre":520,"dlg.posEnd":521,"dlg.stub":522,"dlg.spacingPct":523,"dlg.direction":524,"dlg.square":525,"dlg.triangular":526,"dlg.gridSummary":527,"dlg.tapeLateral":528,"dlg.emitterLateral":529,"dlg.slope":530,"dlg.tolBelow":531,"dlg.tolAbove":532,"dlg.results":533,"dlg.emittersCount":534,"dlg.inletFlow":535,"dlg.totalLoss":536,"dlg.endPressure":537,"dlg.pMinMax":538,"dlg.pVariation":539,"dlg.maxVelocity":540,"dlg.uniformity4":541,"dlg.qvar":542,"dlg.maxLength":543,"dlg.staticHead":544,"dlg.speed":545,"dlg.mainPipe":546,"dlg.hoursYear":547,"dlg.operatingPoint":548,"dlg.pumpCannot":549,"dlg.head":550,"dlg.velocityMain":551,"dlg.hydraulicPower":552,"dlg.shaftPower":553,"dlg.annualEnergy":554,"dlg.shutoffRunout":555,"dlg.velocity":556,"dlg.closureTime":557,"dlg.staticPressure":558,"dlg.resultJoukowsky":559,"dlg.celerity":560,"dlg.maxSurge":561,"dlg.criticalTime":562,"dlg.estSurge":563,"dlg.totalPressure":564,"dlg.pipeClass":565,"cat.pipes":566,"cat.outlets":567,"cat.tapes":568,"cat.valves":569,"cat.pumps":570,"cat.use":571,"cat.name":572,"cat.dn":573,"cat.idmm":574,"cat.c":575,"cat.pn":576,"cat.costM":577,"cat.outlet":578,"cat.nozzle":579,"cat.k":580,"cat.x":581,"cat.pMin":582,"cat.pMax":583,"cat.pDefault":584,"cat.cv":585,"cat.tol":586,"cat.cost":587,"cat.spacing":588,"cat.qNom":589,"cat.kd":590,"cat.type":591,"cat.kLoss":592,"cat.n":593,"cat.qMax":594,"cat.points":595,"cat.eff":596,"cat.submersible":597,"cat.hint":598,"mat.pvc":599,"mat.pehd":600,"mat.peld":601,"mat.steel":602,"mat.ductileIron":603,"mat.aluminium":604,"mat.concrete":605,"warn.not_converged":606,"warn.cannot_meet_pressure_window":607,"warn.mainline_cannot_meet_pressure":608,"warn.no_water_supply":609,"warn.outlet_over_pressure":610,"warn.outlet_under_pressure":611,"warn.pressure_rating_exceeded":612,"warn.pump_out_of_range":613,"warn.pump_suction_lift":614,"warn.supply_flow_exceeded":615,"warn.supply_head_exceeded":616,"warn.valve_flow_out_of_range":617,"warn.valve_missing":618,"warn.valve_pressure_deficit":619,"warn.valve_unreachable":620,"warn.velocity_exceeded":621,"warn.zone_empty":622,"warn.zone_overlap":623,"warn.valve_no_zone_pipes":624,"warn.outlet_spec_missing":625,"warn.tape_spec_missing":626,"warn.pump_spec_missing":627,"warn.valve_spec_missing":628,"warn.no_fixed_head_node":629,"warn.page_missing":630,"about.text":631,"about.version":632,"about.site":633,"tool.arc":634,"tool.spline":635,"tool.hatch":636,"tool.symbol":637,"tool.dimAngular":638,"tool.dimRadial":639,"tool.leader":640,"tool.rotate":641,"tool.mirror":642,"tool.scale":643,"tool.offset":644,"tool.trim":645,"tool.extend":646,"tool.cutPipe":647,"tool.profile":648,"hint.arc":649,"hint.spline":650,"hint.hatch":651,"hint.symbol":652,"hint.dimAngular":653,"hint.dimRadial":654,"hint.leader":655,"hint.rotate":656,"hint.mirror":657,"hint.scale":658,"hint.offset":659,"hint.trim":660,"hint.extend":661,"hint.cutPipe":662,"hint.profile":663,"edit.transform":664,"edit.array":665,"edit.feed":666,"arr.title":667,"arr.rect":668,"arr.polar":669,"arr.rows":670,"arr.cols":671,"arr.dx":672,"arr.dy":673,"arr.angle":674,"arr.count":675,"arr.center":676,"arr.total":677,"arr.rotateItems":678,"arr.selection":679,"msg.layerLocked":680,"msg.noIntersection":681,"msg.selectLateral":682,"msg.feedComputed":683,"msg.arrayDone":684,"view.overlay.minMax":685,"view.baseMap":686,"view.baseMap.none":687,"view.baseMap.streets":688,"view.baseMap.satellite":689,"view.baseMap.topo":690,"view.baseMap.carto":691,"view.baseMap.esriStreets":692,"view.baseMap.esriTopo":693,"view.baseMap.googleRoads":694,"view.baseMap.googleSatellite":695,"view.baseMap.googleHybrid":696,"view.baseMap.googleTerrain":697,"view.baseMap.custom":698,"view.baseMap.googleKey":699,"view.baseMap.customUrl":700,"basemap.googleKey.title":701,"basemap.googleKey.explain":702,"basemap.googleKey.steps":703,"basemap.googleKey.console":704,"basemap.googleKey.docs":705,"basemap.googleKey.field":706,"basemap.googleKey.privacy":707,"basemap.googleKey.remove":708,"basemap.googleKeyMissing":709,"basemap.googleError":710,"basemap.custom.title":711,"basemap.custom.explain":712,"basemap.custom.field":713,"basemap.custom.placeholders":714,"basemap.customInvalid":715,"view.baseMapNeedsGeo":716,"view.grips":717,"zone.feedEnvelope":718,"layer.current":719,"layer.lock":720,"layer.add":721,"layer.rename":722,"layer.delete":723,"layer.color":724,"layer.name":725,"layer.exists":726,"layer.hint":727,"props.batch":728,"props.mixed":729,"props.symbolKind":730,"props.symbolSize":731,"props.hatchAngle":732,"props.hatchSpacing":733,"props.hatchSolid":734,"props.opacity":735,"props.imageWidth":736,"props.imageHeight":737,"props.source":738,"props.emittersPerPlant":739,"props.waterBalance":740,"props.eto":741,"props.kc":742,"props.kcPreset":743,"props.awc":744,"props.rootDepth":745,"props.mad":746,"props.wettedFraction":747,"props.plantSpacing":748,"props.rowSpacing":749,"props.etc":750,"props.interval":751,"props.offsetDistance":752,"props.copyOnTransform":753,"props.mirrorKeep":754,"props.splitOnInsert":755,"props.splineClosed":756,"props.angle":757,"props.leaderText":758,"props.dimRadius":759,"props.locked":760,"props.flushingFlow":761,"props.envelope":762,"props.envelopeBest":763,"props.envelopeRange":764,"props.envelopeNone":765,"sym.northArrow":766,"sym.tree":767,"sym.building":768,"sym.tank":769,"sym.well":770,"sym.valveBox":771,"sym.pumpHouse":772,"sym.gate":773,"sym.filterStation":774,"crop.citrus":775,"crop.grape":776,"crop.coffee":777,"crop.banana":778,"crop.mango":779,"crop.apple":780,"crop.tomato":781,"crop.maize":782,"crop.sugarcane":783,"crop.vegetables":784,"crop.turf":785,"crop.pasture":786,"crop.custom":787,"reports.flushing":788,"reports.surge":789,"reports.crop":790,"reports.schedule":791,"reports.profile":792,"rep.code":793,"rep.tapes":794,"rep.vFlush":795,"rep.celerity":796,"rep.surge":797,"rep.pStatic":798,"rep.pTotal":799,"rep.tCritical":800,"rep.raw":801,"rep.interval":802,"rep.netEvent":803,"rep.grossEvent":804,"rep.hoursEvent":805,"rep.overlapCu":806,"sch.date":807,"sch.flow":808,"sch.zones":809,"sch.start":810,"sch.end":811,"sch.duration":812,"prof.distance":813,"prof.elevation":814,"prof.hint":815,"prof.slope":816,"fit.coupler":817,"fit.elbow90":818,"fit.elbow45":819,"fit.tee":820,"fit.cross":821,"fit.reducer":822,"fit.endCap":823,"fit.adapter":824,"fit.takeOff":825,"fit.tapeEnd":826,"fit.riser":827,"bom.fittings":828,"bom.takeoffs":829,"bom.risers":830,"cat.fittings":831,"cat.kind":832,"cat.size2":833,"cat.supplier":834,"cat.code":835,"cat.add":836,"cat.duplicate":837,"cat.remove":838,"cat.import":839,"cat.export":840,"cat.exportCsv":841,"cat.reset":842,"cat.setDefault":843,"cat.importHint":844,"cat.removeConfirm":845,"cat.inUse":846,"msg.catalogImported":847,"msg.catalogDefaultSaved":848,"msg.catalogReset":849,"msg.lateralNeedsCatalog":850,"warn.lp_infeasible":851,"warn.fitting_missing":852,"warn.surge_rating_exceeded":853,"warn.schedule_no_area":854,"warn.schedule_over_24h":855,"file.importDrawing":856,"imp.points":857,"imp.shp":858,"imp.image":859,"imp.imageGeo":860,"imp.err.dem_bad_response":861,"imp.err.dem_bad_tile":862,"imp.err.dem_count_mismatch":863,"imp.err.points_empty":864,"imp.err.points_no_columns":865,"imp.err.shp_bad_header":866,"imp.err.shp_zip_no_shp":867,"imp.err.image_zip_no_image":868,"imp.err.image_unreadable":869,"imp.err.file_corrupt":870,"imp.err.image_too_large":871,"file.georefImage":872,"gimg.title":873,"gimg.explain":874,"gimg.keepAspect":875,"dlg.sizingMethod":876,"dlg.lp":877,"dlg.greedy":878,"dlg.maxLateralSizes":879,"dlg.maxMainlineSizes":880,"dlg.epp":881,"dlg.maxNodes":882,"dlg.zoneVar":883,"dlg.flushing":884,"dlg.flushV":885,"dlg.flushH":886,"dlg.checkSurge":887,"dlg.closure":888,"dlg.bom":889,"dlg.fittings":890,"dlg.stick":891,"design.pumpSelect":892,"design.dem3d":893,"pump.title":894,"pump.duty":895,"pump.supply":896,"pump.candidates":897,"pump.hAtDuty":898,"pump.margin":899,"pump.opPoint":900,"pump.power":901,"pump.parallel":902,"pump.energy":903,"pump.insert":904,"pump.replace":905,"pump.noSupply":906,"pump.unsuitable":907,"pump.suction":908,"msg.pumpApplied":909,"dem.title":910,"dem.exaggeration":911,"dem.hint":912,"dem.noData":913,"dem.range":914,"file.recent":915,"file.noRecent":916,"file.versions":917,"file.autosave":918,"rec.title":919,"rec.text":920,"rec.restore":921,"rec.discard":922,"rec.later":923,"rec.item":924,"msg.recovered":925,"ver.title":926,"ver.none":927,"ver.restore":928,"ver.item":929,"msg.versionRestored":930,"mgmt.flows":931,"mgmt.schedule":932,"mgmt.apply":933,"mgmt.export":934,"mgmt.days":935,"mgmt.dayStart":936,"mgmt.keepStart":937,"mgmt.maxDaily":938,"mgmt.needResults":939,"mgmt.perFlow":940,"sc.editCmds":941,"sc.gripRemove":942,"sc.gripInsert":943,"sc.touch":944,"tool.pivot":945,"hint.pivot":946,"tool.alignImage":947,"hint.alignImage":948,"align.step1":949,"align.step2":950,"align.step3":951,"align.step4":952,"align.keepScale":953,"msg.alignDone":954,"msg.alignSelectFirst":955,"msg.profileCleared":956,"elev.title":957,"elev.contourTitle":958,"elev.spotTitle":959,"elev.value":960,"elev.interval":961,"elev.autoIncrement":962,"elev.ask":963,"elev.explainContour":964,"elev.explainSpot":965,"menu.terrain":966,"terrain.onlineDem":967,"terrain.generateContours":968,"terrain.method":969,"terrain.tin":970,"terrain.idw":971,"terrain.clearProfile":972,"terrain.stats":973,"terrain.none":974,"dlg.terrainMethod":975,"dem.online.title":976,"dem.online.explain":977,"dem.online.source":978,"dem.online.spacing":979,"dem.online.extent":980,"dem.online.replace":981,"dem.online.existing":982,"dem.online.replaceExisting":983,"dem.online.keepWarn":984,"dem.online.mismatchTitle":985,"dem.online.mismatch":986,"dem.online.mismatchRemove":987,"dem.online.mismatchKeep":988,"dem.online.wait":989,"dem.online.estimate":990,"dem.online.limitHint":991,"dem.online.cancelled":992,"dem.online.noData":993,"dem.online.layerHint":994,"dem.online.useView":995,"dem.online.run":996,"dem.online.progress":997,"dem.online.done":998,"dem.online.needGeo":999,"dem.online.error":1000,"dem.online.empty":1001,"cgen.title":1002,"cgen.explain":1003,"cgen.interval":1004,"cgen.replace":1005,"cgen.preview":1006,"cgen.done":1007,"cgen.run":1008,"prof.clear":1009,"prof.ground":1010,"prof.pipe":1011,"prof.hgl":1012,"prof.lowest":1013,"prof.highest":1014,"prof.howTo":1015,"prof.noTerrain":1016,"prof.station":1017,"prof.pressure":1018,"prof.pathLabel":1019,"reports.pivots":1020,"rep.pivot":1021,"rep.type":1022,"rep.towers":1023,"rep.pAvail":1024,"rep.rise":1025,"rep.depthCycle":1026,"rep.hoursCycle":1027,"rep.appRatePeak":1028,"pivot.kindPivot":1029,"pivot.kindLinear":1030,"pivot.towers":1031,"bom.pivots":1032,"warn.pivot_pressure_deficit":1033,"warn.pivot_app_rate":1034,"warn.pivot_no_flow":1035,"warn.pivot_no_end_pressure":1036,"props.pivotKind":1037,"props.pivotRadius":1038,"props.pivotSpan":1039,"props.pivotTravel":1040,"props.pivotPipe":1041,"props.pivotPipeId":1042,"props.pivotC":1043,"props.pivotHeight":1044,"props.pivotEndP":1045,"props.pivotGunQ":1046,"props.pivotGunP":1047,"props.pivotThrow":1048,"props.pivotDepth":1049,"props.pivotHours":1050,"props.pivotWidth":1051,"props.pivotLoss":1052,"props.pivotMaxRate":1053,"props.pivotSector":1054,"props.pivotCost":1055,"props.pivotAngle":1056,"props.pivotResults":1057,"props.pivotArea":1058,"props.pivotInlet":1059,"props.contourInterval":1060,"props.derived":1061,"check.title":1062,"check.explain":1063,"check.summary":1064,"check.ok":1065,"check.run":1066,"check.sev.error":1067,"check.sev.warning":1068,"check.sev.info":1069,"check.no_hydraulics":1070,"check.no_supply":1071,"check.no_valves":1072,"check.unconnected":1073,"check.zone_no_emitters":1074,"check.duplicate_zone_name":1075,"check.mainline_dead_end":1076,"check.zone_dead_end":1077,"check.zero_length":1078,"check.tiny_segment":1079,"check.duplicate_item":1080,"check.pipes_cross":1081,"check.spec_missing":1082,"check.supply_no_head":1083,"check.pivot_unconnected":1084,"check.no_terrain":1085,"check.looped_mainline":1086,"check.area_no_emitters":1087,"adv.why":1088,"adv.how":1089,"adv.locate":1090,"adv.fixAll":1091,"adv.fixAllHint":1092,"adv.optimize":1093,"adv.level.error":1094,"adv.level.warning":1095,"adv.level.info":1096,"adv.none":1097,"adv.noneYet":1098,"adv.runHint":1099,"adv.designing":1100,"adv.working":1101,"adv.fixed":1102,"adv.fixFailed":1103,"adv.summaryTitle":1104,"adv.summaryNone":1105,"adv.summaryApplied":1106,"adv.remaining":1107,"adv.allClear":1108,"adv.undoHint":1109,"adv.undoAll":1110,"adv.problemsAfterDesign":1111,"adv.use.lateral":1112,"adv.use.zone":1113,"adv.use.mainline":1114,"opt.title":1115,"opt.explain":1116,"opt.pumps":1117,"opt.valves":1118,"opt.resizeAll":1119,"opt.run":1120,"opt.working":1121,"opt.before":1122,"opt.after":1123,"opt.capital":1124,"opt.energy":1125,"opt.annual":1126,"opt.problems":1127,"opt.kept":1128,"opt.reverted":1129,"opt.undo":1130,"opt.note":1131,"hist.fix":1132,"hist.autofix":1133,"hist.optimize":1134,"check.set_velocity":1135,"check.set_hours":1136,"check.set_economy":1137,"check.set_tolerance":1138,"check.set_variation":1139,"check.set_temperature":1140,"check.no_pipes_for_usage":1141,"check.supply_limits":1142,"check.valve_not_in_flow":1143,"check.flow_empty":1144,"check.flow_duration":1145,"check.emitter_head_range":1146,"check.pump_speed":1147,"fix.connect":1148,"fix.deleteItem":1149,"fix.cleanSegments":1150,"fix.removeDuplicates":1151,"fix.renameZone":1152,"fix.calculateSupply":1153,"fix.choosePump":1154,"fix.submersiblePump":1155,"fix.autoSizePipes":1156,"fix.raisePipeClass":1157,"fix.resizeValve":1158,"fix.assignModel":1159,"fix.splitFlows":1160,"fix.addFittings":1161,"fix.joinCrossing":1162,"fix.addSupply":1163,"fix.resetSettings":1164,"fix.addMissingFlow":1165,"fix.removeEmptyFlows":1166,"fix.fixFlowDurations":1167,"fix.nominalEmitterHead":1168,"fix.resetPumpSpeed":1169,"fix.fixSupplyLimits":1170,"fix.enablePipes":1171,"fixed.connect":1172,"fixed.deleteItem":1173,"fixed.cleanSegments":1174,"fixed.removeDuplicates":1175,"fixed.renameZone":1176,"fixed.calculateSupply":1177,"fixed.choosePump":1178,"fixed.insertPump":1179,"fixed.autoSizePipes":1180,"fixed.raisePipeClass":1181,"fixed.resizeValve":1182,"fixed.assignModel":1183,"fixed.splitFlows":1184,"fixed.addFittings":1185,"fixed.joinCrossing":1186,"fixed.addSupply":1187,"fixed.resetSettings":1188,"fixed.enablePipes":1189,"fixed.fixSupplyLimits":1190,"fixed.addMissingFlow":1191,"fixed.removeEmptyFlows":1192,"fixed.fixFlowDurations":1193,"fixed.nominalEmitterHead":1194,"fixed.resetPumpSpeed":1195,"fixed.lpSizing":1196,"fixfail.notFound":1197,"fixfail.nothingNear":1198,"fixfail.needsResults":1199,"fixfail.noSupply":1200,"fixfail.noDuty":1201,"fixfail.noPump":1202,"fixfail.alreadyBest":1203,"fixfail.noPipeAtSupply":1204,"fixfail.noChange":1205,"fixfail.noOption":1206,"adv.no_supply.why":1207,"adv.no_supply.how":1208,"adv.no_valves.why":1209,"adv.no_valves.how":1210,"adv.no_hydraulics.why":1211,"adv.no_hydraulics.how":1212,"adv.unconnected.why":1213,"adv.unconnected.how":1214,"adv.zero_length.why":1215,"adv.zero_length.how":1216,"adv.tiny_segment.why":1217,"adv.tiny_segment.how":1218,"adv.duplicate_item.why":1219,"adv.duplicate_item.how":1220,"adv.duplicate_zone_name.why":1221,"adv.duplicate_zone_name.how":1222,"adv.pipes_cross.why":1223,"adv.pipes_cross.how":1224,"adv.mainline_dead_end.why":1225,"adv.mainline_dead_end.how":1226,"adv.zone_dead_end.why":1227,"adv.zone_dead_end.how":1228,"adv.zone_no_emitters.why":1229,"adv.zone_no_emitters.how":1230,"adv.area_no_emitters.why":1231,"adv.area_no_emitters.how":1232,"adv.spec_missing.why":1233,"adv.spec_missing.how":1234,"adv.supply_no_head.why":1235,"adv.supply_no_head.how":1236,"adv.looped_mainline.why":1237,"adv.looped_mainline.how":1238,"adv.no_terrain.why":1239,"adv.no_terrain.how":1240,"adv.not_converged.why":1241,"adv.not_converged.how":1242,"adv.cannot_meet_pressure_window.why":1243,"adv.cannot_meet_pressure_window.how":1244,"adv.outlet_over_pressure.why":1245,"adv.outlet_over_pressure.how":1246,"adv.velocity_exceeded.why":1247,"adv.velocity_exceeded.how":1248,"adv.pressure_rating_exceeded.why":1249,"adv.pressure_rating_exceeded.how":1250,"adv.surge_rating_exceeded.why":1251,"adv.surge_rating_exceeded.how":1252,"adv.valve_flow_out_of_range.why":1253,"adv.valve_flow_out_of_range.how":1254,"adv.valve_pressure_deficit.why":1255,"adv.valve_pressure_deficit.how":1256,"adv.pivot_pressure_deficit.why":1257,"adv.pivot_pressure_deficit.how":1258,"adv.supply_flow_exceeded.why":1259,"adv.supply_flow_exceeded.how":1260,"adv.supply_head_exceeded.why":1261,"adv.supply_head_exceeded.how":1262,"adv.pump_out_of_range.why":1263,"adv.pump_out_of_range.how":1264,"adv.pump_suction_lift.why":1265,"adv.pump_suction_lift.how":1266,"adv.zone_overlap.why":1267,"adv.zone_overlap.how":1268,"adv.lp_infeasible.why":1269,"adv.lp_infeasible.how":1270,"adv.fitting_missing.why":1271,"adv.fitting_missing.how":1272,"adv.pivot_no_flow.why":1273,"adv.pivot_no_flow.how":1274,"adv.pivot_no_end_pressure.why":1275,"adv.pivot_no_end_pressure.how":1276,"adv.pivot_app_rate.why":1277,"adv.pivot_app_rate.how":1278,"adv.valve_missing.why":1279,"adv.valve_missing.how":1280,"adv.set_velocity.why":1281,"adv.set_velocity.how":1282,"adv.set_hours.why":1283,"adv.set_hours.how":1284,"adv.set_economy.why":1285,"adv.set_economy.how":1286,"adv.set_tolerance.why":1287,"adv.set_tolerance.how":1288,"adv.set_variation.why":1289,"adv.set_variation.how":1290,"adv.set_temperature.why":1291,"adv.set_temperature.how":1292,"adv.no_pipes_for_usage.why":1293,"adv.no_pipes_for_usage.how":1294,"adv.supply_limits.why":1295,"adv.supply_limits.how":1296,"adv.valve_not_in_flow.why":1297,"adv.valve_not_in_flow.how":1298,"adv.flow_empty.why":1299,"adv.flow_empty.how":1300,"adv.flow_duration.why":1301,"adv.flow_duration.how":1302,"adv.emitter_head_range.why":1303,"adv.emitter_head_range.how":1304,"adv.pump_speed.why":1305,"adv.pump_speed.how":1306,"design.checkFull":1307,"cat.packs":1308,"cat.packsExplain":1309,"cat.packAdd":1310,"cat.packAdded":1311,"cat.packItems":1312,"cat.exportXlsx":1313,"cat.importAny":1314,"mob.menu":1315,"mob.done":1316,"mob.cancel":1317,"mob.props":1318,"mob.tools":1319,"mob.hint":1320,"mob.group.nav":1321,"mob.group.draw":1322,"mob.group.edit":1323,"mob.group.terrain":1324,"mob.group.zone":1325,"mob.group.main":1326,"mob.selection":1327,"mob.project":1328,"mob.file":1329,"mob.view":1330,"mob.help":1331,"sc.mobile":1332,"dlg.followGuide":1333,"hist.title":1334,"hist.hint":1335,"hist.start":1336,"hist.edit":1337,"hist.add":1338,"hist.addMany":1339,"hist.delete":1340,"hist.move":1341,"hist.rotate":1342,"hist.scale":1343,"hist.mirror":1344,"hist.transform":1345,"hist.copy":1346,"hist.array":1347,"hist.block":1348,"hist.grid":1349,"hist.props":1350,"hist.import":1351,"hist.design":1352,"hist.contours":1353,"hist.dem":1354,"hist.demClear":1355,"hist.paste":1356,"hist.elevation":1357,"hist.align":1358,"hist.layer":1359,"plot.bomOnSheet":1360,"pdf.bom":1361,"pdf.qty":1362,"pdf.bomMore":1363,"imp.demTiff":1364,"reports.pivotSpans":1365,"rep.span":1366,"rep.rFrom":1367,"rep.rTo":1368,"rep.sprinklers":1369,"rep.qSprinkler":1370,"rep.pMid":1371,"rep.nozzleSuggested":1372,"props.pivotSprSpacing":1373,"props.pivotSprinkler":1374,"props.pivotRegulator":1375,"props.pivotTowerCost":1376,"pivot.towersItem":1377,"pivot.sprinklersItem":1378,"pivot.endGunItem":1379,"props.contourSmooth":1380,"dem.online.maxPoints":1381,"pump.motor":1382,"warn.lp_loops_approx":1383,"cat.packsBundled":1384,"cat.packsLoaded":1385,"cat.packImport":1386,"cat.packUrl":1387,"cat.packLoad":1388,"cat.packLoading":1389,"cat.packLoaded":1390,"cat.packLoadError":1391,"cat.packExport":1392,"cat.packExportTitle":1393,"cat.packExportExplain":1394,"cat.packBrand":1395,"cat.packName":1396,"cat.packDescription":1397,"cat.packSource":1398,"cat.packExported":1399,"cat.packFormat":1400,"cat.packFrom":1401,"imp.err.catalog_json_unknown":1402,"imp.err.catalog_index_not_pack":1403,"imp.err.catalog_index_unknown":1404,"imp.err.catalog_pack_version":1405,"dem.online.coord":1406,"dem.online.coordHint":1407,"dem.online.coordExplain":1408,"dem.online.useCoord":1409,"dem.online.areaSize":1410,"dem.online.coordInvalid":1411,"dem.online.contours":1412,"dem.online.contourInterval":1413,"dem.online.doneContours":1414,"msg.georefAt":1415,"file.examples":1416,"help.welcome":1417,"welcome.title":1418,"welcome.body":1419,"welcome.examples":1420,"welcome.examplesHint":1421,"welcome.tutorial":1422,"welcome.skip":1423,"exg.orchard.title":1424,"exg.orchard.sub":1425,"exg.orchard.tags":1426,"exg.garden.title":1427,"exg.garden.sub":1428,"exg.garden.tags":1429,"exg.sportsField.title":1430,"exg.sportsField.sub":1431,"exg.sportsField.tags":1432,"exg.rowCrop.title":1433,"exg.rowCrop.sub":1434,"exg.rowCrop.tags":1435,"exg.pivot.title":1436,"exg.pivot.sub":1437,"exg.pivot.tags":1438,"ex.shift":1439,"ex.g.name":1440,"ex.g.client":1441,"ex.g.site":1442,"ex.g.title":1443,"ex.g.lot":1444,"ex.g.house":1445,"ex.g.front":1446,"ex.g.back":1447,"ex.g.bed":1448,"ex.g.zone1":1449,"ex.g.zone2":1450,"ex.g.zone3":1451,"ex.g.supply":1452,"ex.g.grass":1453,"ex.g.shrubs":1454,"ex.g.main":1455,"ex.g.street":1456,"ex.f.name":1457,"ex.f.client":1458,"ex.f.site":1459,"ex.f.title":1460,"ex.f.pitch":1461,"ex.f.row":1462,"ex.f.tank":1463,"ex.f.pumpHouse":1464,"ex.f.grass":1465,"ex.f.main":1466,"ex.c.name":1467,"ex.c.client":1468,"ex.c.site":1469,"ex.c.title":1470,"ex.c.block":1471,"ex.c.tomato":1472,"ex.c.reservoir":1473,"ex.c.trunk":1474,"ex.c.west":1475,"ex.c.east":1476,"ex.c.road":1477,"ex.c.field":1478,"ex.p.name":1479,"ex.p.client":1480,"ex.p.site":1481,"ex.p.title":1482,"ex.p.pivot":1483,"ex.p.well":1484,"ex.p.maize":1485,"ex.p.adductor":1486,"ex.p.field":1487,"ex.p.boundary":1488,"exg.greenhouse.title":1489,"exg.greenhouse.sub":1490,"exg.greenhouse.tags":1491,"exg.nursery.title":1492,"exg.nursery.sub":1493,"exg.nursery.tags":1494,"exg.coffee.title":1495,"exg.coffee.sub":1496,"exg.coffee.tags":1497,"exg.bananas.title":1498,"exg.bananas.sub":1499,"exg.bananas.tags":1500,"exg.sugarcane.title":1501,"exg.sugarcane.sub":1502,"exg.sugarcane.tags":1503,"exg.gravity.title":1504,"exg.gravity.sub":1505,"exg.gravity.tags":1506,"exg.pasture.title":1507,"exg.pasture.sub":1508,"exg.pasture.tags":1509,"exg.golf.title":1510,"exg.golf.sub":1511,"exg.golf.tags":1512,"exg.sectorPivot.title":1513,"exg.sectorPivot.sub":1514,"exg.sectorPivot.tags":1515,"exg.linear.title":1516,"exg.linear.sub":1517,"exg.linear.tags":1518,"ex.gh.name":1519,"ex.gh.client":1520,"ex.gh.site":1521,"ex.gh.title":1522,"ex.gh.lot":1523,"ex.gh.tunnel":1524,"ex.gh.crop":1525,"ex.gh.tank":1526,"ex.gh.main":1527,"ex.nu.name":1528,"ex.nu.client":1529,"ex.nu.site":1530,"ex.nu.title":1531,"ex.nu.lot":1532,"ex.nu.bed":1533,"ex.nu.crop":1534,"ex.nu.tank":1535,"ex.nu.main":1536,"ex.cf.name":1537,"ex.cf.client":1538,"ex.cf.site":1539,"ex.cf.title":1540,"ex.cf.block":1541,"ex.cf.coffee":1542,"ex.cf.well":1543,"ex.cf.main":1544,"ex.cf.boundary":1545,"ex.ba.name":1546,"ex.ba.client":1547,"ex.ba.site":1548,"ex.ba.title":1549,"ex.ba.block":1550,"ex.ba.banana":1551,"ex.ba.well":1552,"ex.ba.field":1553,"ex.ba.road":1554,"ex.ba.main":1555,"ex.sc.name":1556,"ex.sc.client":1557,"ex.sc.site":1558,"ex.sc.title":1559,"ex.sc.block":1560,"ex.sc.cane":1561,"ex.sc.field":1562,"ex.sc.road":1563,"ex.sc.reservoir":1564,"ex.sc.trunk":1565,"ex.sc.west":1566,"ex.sc.east":1567,"ex.gr.name":1568,"ex.gr.client":1569,"ex.gr.site":1570,"ex.gr.title":1571,"ex.gr.block":1572,"ex.gr.crop":1573,"ex.gr.reservoir":1574,"ex.gr.prv":1575,"ex.gr.field":1576,"ex.gr.main":1577,"ex.gr.west":1578,"ex.gr.east":1579,"ex.pa.name":1580,"ex.pa.client":1581,"ex.pa.site":1582,"ex.pa.title":1583,"ex.pa.paddock":1584,"ex.pa.grass":1585,"ex.pa.fence":1586,"ex.pa.road":1587,"ex.pa.reservoir":1588,"ex.pa.main":1589,"ex.go.name":1590,"ex.go.client":1591,"ex.go.site":1592,"ex.go.title":1593,"ex.go.tee":1594,"ex.go.fairway":1595,"ex.go.fairwayZone":1596,"ex.go.green":1597,"ex.go.bunker":1598,"ex.go.pond":1599,"ex.go.turf":1600,"ex.go.pumpHouse":1601,"ex.go.main":1602,"ex.sp.name":1603,"ex.sp.client":1604,"ex.sp.site":1605,"ex.sp.title":1606,"ex.sp.pivot":1607,"ex.sp.soy":1608,"ex.sp.pond":1609,"ex.sp.farm":1610,"ex.sp.field":1611,"ex.sp.boundary":1612,"ex.sp.road":1613,"ex.sp.adductor":1614,"ex.li.name":1615,"ex.li.client":1616,"ex.li.site":1617,"ex.li.title":1618,"ex.li.machine":1619,"ex.li.wheat":1620,"ex.li.canal":1621,"ex.li.intake":1622,"ex.li.field":1623,"ex.li.boundary":1624,"ex.li.main":1625,"view.overlay.densogram":1626,"dens.menu":1627,"dens.title":1628,"dens.hint":1629,"dens.profile":1630,"dens.profile.triangular":1631,"dens.profile.elliptical":1632,"dens.profile.uniform":1633,"dens.cell":1634,"dens.useResults":1635,"dens.noResults":1636,"dens.zones":1637,"dens.results":1638,"dens.none":1639,"dens.sources":1640,"dens.target":1641,"dens.targetAreas":1642,"dens.targetWetted":1643,"dens.area":1644,"dens.cellUsed":1645,"dens.basis":1646,"dens.fromResults":1647,"dens.nominal":1648,"dens.mean":1649,"dens.minMax":1650,"dens.lowQuarter":1651,"dens.sc":1652,"dens.dry":1653,"dens.scHint":1654,"dens.exportCsv":1655,"dens.show":1656,"dens.legend":1657,"tool.controller":1658,"tool.wire":1659,"tool.dimOrdinate":1660,"hint.controller":1661,"hint.wire":1662,"hint.dimOrdinate":1663,"name.controller":1664,"mob.group.elec":1665,"layer.CONTROLLERS":1666,"layer.WIRES":1667,"layer.IMAGES":1668,"layer.HATCHES":1669,"layer.SYMBOLS":1670,"layer.PIVOTS":1671,"bom.electrical":1672,"elec.stationsShort":1673,"elec.splice":1674,"elec.stationTag":1675,"elec.used":1676,"elec.common":1677,"elec.maxOpen":1678,"elec.peak":1679,"elec.station":1680,"elec.stationWire":1681,"elec.volts":1682,"elec.commonRow":1683,"reports.electrical":1684,"msg.noElectrical":1685,"rep.controller":1686,"rep.station":1687,"rep.route":1688,"rep.wireLength":1689,"rep.stationWire":1690,"rep.commonWire":1691,"rep.openTogether":1692,"rep.solenoidV":1693,"props.diameter":1694,"props.dimDiameter":1695,"props.ordinateX":1696,"props.ordinateOrigin":1697,"props.stations":1698,"props.outputVolts":1699,"props.maxSimultaneous":1700,"cat.wires":1701,"cat.wire":1702,"cat.mm2":1703,"cat.ohmKm":1704,"dlg.electrical":1705,"dlg.inrushA":1706,"dlg.holdingA":1707,"dlg.minVolts":1708,"dlg.wireSlack":1709,"warn.elec_no_controller":1710,"warn.elec_unwired":1711,"warn.elec_wire_orphan":1712,"warn.elec_ctrl_unwired":1713,"warn.elec_no_wires":1714,"warn.elec_stations":1715,"warn.elec_voltage":1716,"warn.elec_simultaneous":1717,"adv.elec_no_controller.why":1718,"adv.elec_no_controller.how":1719,"adv.elec_unwired.why":1720,"adv.elec_unwired.how":1721,"adv.elec_wire_orphan.why":1722,"adv.elec_wire_orphan.how":1723,"adv.elec_ctrl_unwired.why":1724,"adv.elec_ctrl_unwired.how":1725,"adv.elec_no_wires.why":1726,"adv.elec_no_wires.how":1727,"adv.elec_stations.why":1728,"adv.elec_stations.how":1729,"adv.elec_voltage.why":1730,"adv.elec_voltage.how":1731,"adv.elec_simultaneous.why":1732,"adv.elec_simultaneous.how":1733,"fix.enableWires":1734,"fix.controllerStations":1735,"fixed.enableWires":1736,"fixed.controllerStations":1737,"hist.settings":1738,"hist.details":1739,"hist.params":1740,"hist.units":1741,"hist.catalog":1742,"hist.flows":1743,"mgmt.auto":1744,"mgmt.autoHint":1745,"mgmt.autoMaxFlow":1746,"mgmt.autoMaxValves":1747,"mgmt.autoCap":1748,"mgmt.autoNoCap":1749,"mgmt.autoRun":1750,"mgmt.autoResult":1751,"mgmt.autoOversized":1752,"mgmt.demand":1753}
-B.oe=new A.a("OpenCADIrrigation","OpenCADIrrigation","OpenCADIrrigation")
+B.od=new A.a("OpenCADIrrigation","OpenCADIrrigation","OpenCADIrrigation")
 B.r9=new A.a("OK","OK","Aceptar")
 B.bW=new A.a("Cancelar","Cancel","Cancelar")
-B.lD=new A.a("Aplicar","Apply","Aplicar")
-B.nS=new A.a("Fechar","Close","Cerrar")
-B.Ez=new A.a("Autom\xe1tico","Automatic","Autom\xe1tico")
+B.lC=new A.a("Aplicar","Apply","Aplicar")
+B.nR=new A.a("Fechar","Close","Cerrar")
+B.EA=new A.a("Autom\xe1tico","Automatic","Autom\xe1tico")
 B.ci=new A.a("Limpar","Clear","Limpiar")
 B.ay=new A.a("Arquivo","File","Archivo")
 B.c2=new A.a("Editar","Edit","Editar")
@@ -12751,7 +12759,7 @@ B.c0=new A.a("Desenhar","Draw","Dibujar")
 B.F=new A.a("Zona","Zone","Zona")
 B.t=new A.a("Linha principal","Mainline","L\xednea principal")
 B.cV=new A.a("Projeto","Design","Dise\xf1o")
-B.oz=new A.a("Relat\xf3rios","Reports","Informes")
+B.oy=new A.a("Relat\xf3rios","Reports","Informes")
 B.c6=new A.a("Ferramentas","Tools","Herramientas")
 B.bP=new A.a("Ajuda","Help","Ayuda")
 B.bJ=new A.a("Novo projeto","New project","Nuevo proyecto")
@@ -12763,30 +12771,30 @@ B.jR=new A.a("Exportar relat\xf3rio","Export report","Exportar informe")
 B.xn=new A.a("Georrefer\xeancia\u2026","Georeference\u2026","Georreferencia\u2026")
 B.jO=new A.a("Nova aba de projeto","New project tab","Nueva pesta\xf1a de proyecto")
 B.iq=new A.a("Fechar aba","Close tab","Cerrar pesta\xf1a")
-B.CU=new A.a("Nova aba (Ctrl+Alt+N)","New tab (Ctrl+Alt+N)","Nueva pesta\xf1a (Ctrl+Alt+N)")
+B.CV=new A.a("Nova aba (Ctrl+Alt+N)","New tab (Ctrl+Alt+N)","Nueva pesta\xf1a (Ctrl+Alt+N)")
 B.xW=new A.a("Fechar aba (Ctrl+Alt+W)","Close tab (Ctrl+Alt+W)","Cerrar pesta\xf1a (Ctrl+Alt+W)")
-B.mu=new A.a("Copiar","Copy","Copiar")
+B.mt=new A.a("Copiar","Copy","Copiar")
 B.tC=new A.a("Recortar","Cut","Cortar")
 B.bX=new A.a("Colar","Paste","Pegar")
-B.Da=new A.a("{n} itens copiados","{n} items copied","{n} elementos copiados")
-B.Eb=new A.a("{n} itens recortados","{n} items cut","{n} elementos cortados")
+B.Db=new A.a("{n} itens copiados","{n} items copied","{n} elementos copiados")
+B.Ec=new A.a("{n} itens recortados","{n} items cut","{n} elementos cortados")
 B.xb=new A.a("Tubo cortado em 2 trechos","Pipe cut into 2 pieces","Tuber\xeda cortada en 2 tramos")
 B.rN=new A.a("{n} itens colados","{n} items pasted","{n} elementos pegados")
 B.c1=new A.a("Nada selecionado","Nothing selected","Nada seleccionado")
 B.ke=new A.a("\xc1rea de transfer\xeancia vazia","Clipboard is empty","Portapapeles vac\xedo")
-B.B9=new A.a("Comando desconhecido: {cmd} (veja Ajuda \u2192 Atalhos de teclado)","Unknown command: {cmd} (see Help \u2192 Keyboard shortcuts)","Comando desconocido: {cmd} (vea Ayuda \u2192 Atajos de teclado)")
-B.mr=new A.a("Comando","Command","Comando")
+B.Ba=new A.a("Comando desconhecido: {cmd} (veja Ajuda \u2192 Atalhos de teclado)","Unknown command: {cmd} (see Help \u2192 Keyboard shortcuts)","Comando desconocido: {cmd} (vea Ayuda \u2192 Atajos de teclado)")
+B.mq=new A.a("Comando","Command","Comando")
 B.jw=new A.a("Atalhos de teclado\u2026","Keyboard shortcuts\u2026","Atajos de teclado\u2026")
 B.j1=new A.a("Atalhos de teclado","Keyboard shortcuts","Atajos de teclado")
 B.pt=new A.a("Com o desenho em foco, digite o alias do comando e pressione Enter ou Espa\xe7o, como no AutoCAD (ex.: L \u23ce linha, PL \u23ce polilinha, ZE \u23ce enquadrar, E \u23ce apagar). Esc limpa o comando digitado. As combina\xe7\xf5es com Ctrl e as teclas F funcionam em qualquer parte da tela.","With the drawing focused, type the command alias and press Enter or Space, as in AutoCAD (e.g. L \u23ce line, PL \u23ce polyline, ZE \u23ce zoom extents, E \u23ce erase). Esc clears the typed command. Ctrl combinations and F keys work anywhere.","Con el dibujo enfocado, escriba el alias del comando y pulse Enter o Espacio, como en AutoCAD (p. ej. L \u23ce l\xednea, PL \u23ce polil\xednea, ZE \u23ce encuadrar, E \u23ce borrar). Esc limpia el comando. Las combinaciones con Ctrl y las teclas F funcionan en toda la pantalla.")
 B.ra=new A.a("Arquivo e abas","File and tabs","Archivo y pesta\xf1as")
-B.mH=new A.a("Edi\xe7\xe3o","Editing","Edici\xf3n")
+B.mG=new A.a("Edi\xe7\xe3o","Editing","Edici\xf3n")
 B.xU=new A.a("Vista e desenho","View and drawing","Vista y dibujo")
 B.k4=new A.a("Comandos (alias \u23ce)","Commands (alias \u23ce)","Comandos (alias \u23ce)")
-B.lx=new A.a("Ferramentas hidr\xe1ulicas (alias \u23ce)","Hydraulic tools (alias \u23ce)","Herramientas hidr\xe1ulicas (alias \u23ce)")
+B.lw=new A.a("Ferramentas hidr\xe1ulicas (alias \u23ce)","Hydraulic tools (alias \u23ce)","Herramientas hidr\xe1ulicas (alias \u23ce)")
 B.yw=new A.a("Alternar aba de projeto","Switch project tab","Cambiar pesta\xf1a de proyecto")
 B.qo=new A.a("Cancelar / voltar a selecionar","Cancel / back to select","Cancelar / volver a seleccionar")
-B.nI=new A.a("Concluir polilinha / executar comando","Finish polyline / run command","Terminar polil\xednea / ejecutar comando")
+B.nH=new A.a("Concluir polilinha / executar comando","Finish polyline / run command","Terminar polil\xednea / ejecutar comando")
 B.w1=new A.a("Remover \xfaltimo ponto / apagar letra do comando","Remove last point / delete command letter","Quitar \xfaltimo punto / borrar letra del comando")
 B.vY=new A.a("Repetir \xfaltima ferramenta (Enter ao selecionar)","Repeat last tool (Enter while selecting)","Repetir \xfaltima herramienta (Enter al seleccionar)")
 B.li=new A.a("Aproximar / afastar","Zoom in / out","Acercar / alejar")
@@ -12797,9 +12805,9 @@ B.vM=new A.a("Mostrar/ocultar grade","Show/hide grid","Mostrar/ocultar cuadr\xed
 B.vh=new A.a("Travar a linha em 0\xb0/45\xb0/90\xb0 enquanto desenha (segurar)","Lock the line to 0\xb0/45\xb0/90\xb0 while drawing (hold)","Bloquear la l\xednea en 0\xb0/45\xb0/90\xb0 mientras dibuja (mantener)")
 B.l2=new A.a("Alias digitado executa sozinho ap\xf3s uma pausa (ou Enter/Espa\xe7o)","A typed alias runs by itself after a pause (or Enter/Space)","El alias escrito se ejecuta solo tras una pausa (o Intro/Espacio)")
 B.yC=new A.a("Snap / orto / grade vis\xedvel / snap \xe0 grade","Snap / ortho / grid display / grid snap","Snap / orto / cuadr\xedcula visible / snap a cuadr\xedcula")
-B.n3=new A.a("Projetar tudo / verificar conex\xf5es / relat\xf3rios","Design all / check connectivity / reports","Dise\xf1ar todo / verificar conexiones / informes")
+B.n2=new A.a("Projetar tudo / verificar conex\xf5es / relat\xf3rios","Design all / check connectivity / reports","Dise\xf1ar todo / verificar conexiones / informes")
 B.j8=new A.a("DXF (AutoCAD, QGIS)","DXF (AutoCAD, QGIS)","DXF (AutoCAD, QGIS)")
-B.mX=new A.a("DWG (AutoCAD 2000, bin\xe1rio)","DWG (AutoCAD 2000, binary)","DWG (AutoCAD 2000, binario)")
+B.mW=new A.a("DWG (AutoCAD 2000, bin\xe1rio)","DWG (AutoCAD 2000, binary)","DWG (AutoCAD 2000, binario)")
 B.uE=new A.a("PDF (prancha para impress\xe3o)\u2026","PDF (plot sheet)\u2026","PDF (l\xe1mina para impresi\xf3n)\u2026")
 B.tS=new A.a("SVG (figura vetorial: web, Inkscape)","SVG (vector figure: web, Inkscape)","SVG (figura vectorial: web, Inkscape)")
 B.u4=new A.a("KML (Google Earth)","KML (Google Earth)","KML (Google Earth)")
@@ -12807,27 +12815,27 @@ B.t1=new A.a("KMZ (Google Earth, compactado)","KMZ (Google Earth, zipped)","KMZ 
 B.yA=new A.a("GeoJSON (QGIS, web GIS)","GeoJSON (QGIS, web GIS)","GeoJSON (QGIS, web GIS)")
 B.tj=new A.a("CSV (planilha)","CSV (spreadsheet)","CSV (hoja de c\xe1lculo)")
 B.iS=new A.a("TXT (texto)","TXT (plain text)","TXT (texto)")
-B.D6=new A.a("XLSX (Excel, LibreOffice)","XLSX (Excel, LibreOffice)","XLSX (Excel, LibreOffice)")
+B.D7=new A.a("XLSX (Excel, LibreOffice)","XLSX (Excel, LibreOffice)","XLSX (Excel, LibreOffice)")
 B.vW=new A.a("PDF (documento)","PDF (document)","PDF (documento)")
 B.An=new A.a("Exportado: {f}","Exported: {f}","Exportado: {f}")
-B.oV=new A.a("Execute o projeto (F5) antes de exportar o relat\xf3rio","Run the design (F5) before exporting the report","Ejecute el dise\xf1o (F5) antes de exportar el informe")
+B.oU=new A.a("Execute o projeto (F5) antes de exportar o relat\xf3rio","Run the design (F5) before exporting the report","Ejecute el dise\xf1o (F5) antes de exportar el informe")
 B.rg=new A.a("O desenho est\xe1 vazio","The drawing is empty","El dibujo est\xe1 vac\xedo")
 B.ru=new A.a("Georrefer\xeancia definida: {crs}","Georeference set: {crs}","Georreferencia definida: {crs}")
 B.z5=new A.a("Georrefer\xeancia do projeto","Project georeference","Georreferencia del proyecto")
 B.vc=new A.a("Para exportar em KML, KMZ ou GeoJSON o desenho precisa de uma posi\xe7\xe3o no mundo. Informe a coordenada da origem do desenho (x = 0, y = 0). Projetos importados de KML/KMZ j\xe1 v\xeam georreferenciados.","To export KML, KMZ or GeoJSON the drawing needs a position on Earth. Enter the coordinate of the drawing origin (x = 0, y = 0). Projects imported from KML/KMZ are already georeferenced.","Para exportar en KML, KMZ o GeoJSON el dibujo necesita una posici\xf3n en el mundo. Indique la coordenada del origen del dibujo (x = 0, y = 0). Los proyectos importados de KML/KMZ ya vienen georreferenciados.")
 B.x0=new A.a("Latitude / longitude (WGS84)","Latitude / longitude (WGS84)","Latitud / longitud (WGS84)")
-B.B3=new A.a("UTM (WGS84)","UTM (WGS84)","UTM (WGS84)")
+B.B4=new A.a("UTM (WGS84)","UTM (WGS84)","UTM (WGS84)")
 B.ql=new A.a("Latitude (\xb0)","Latitude (\xb0)","Latitud (\xb0)")
 B.zH=new A.a("Longitude (\xb0)","Longitude (\xb0)","Longitud (\xb0)")
 B.Am=new A.a("Fuso UTM (1\u201360)","UTM zone (1\u201360)","Huso UTM (1\u201360)")
-B.nO=new A.a("Hemisf\xe9rio norte","Northern hemisphere","Hemisferio norte")
+B.nN=new A.a("Hemisf\xe9rio norte","Northern hemisphere","Hemisferio norte")
 B.vm=new A.a("Este (m)","Easting (m)","Este (m)")
-B.nj=new A.a("Norte (m)","Northing (m)","Norte (m)")
-B.lz=new A.a("Atual: {crs} \xb7 origem E {e} m, N {n} m","Current: {crs} \xb7 origin E {e} m, N {n} m","Actual: {crs} \xb7 origen E {e} m, N {n} m")
+B.ni=new A.a("Norte (m)","Northing (m)","Norte (m)")
+B.ly=new A.a("Atual: {crs} \xb7 origem E {e} m, N {n} m","Current: {crs} \xb7 origin E {e} m, N {n} m","Actual: {crs} \xb7 origen E {e} m, N {n} m")
 B.l8=new A.a("Projeto ainda sem georrefer\xeancia","Project not georeferenced yet","Proyecto a\xfan sin georreferencia")
 B.aH=new A.a("Remover","Remove","Quitar")
 B.tJ=new A.a("Coordenadas inv\xe1lidas","Invalid coordinates","Coordenadas no v\xe1lidas")
-B.nY=new A.a("Exportar PDF (prancha)","Export PDF (plot sheet)","Exportar PDF (l\xe1mina)")
+B.nX=new A.a("Exportar PDF (prancha)","Export PDF (plot sheet)","Exportar PDF (l\xe1mina)")
 B.u_=new A.a("Formato do papel","Paper size","Tama\xf1o de papel")
 B.yW=new A.a("Orienta\xe7\xe3o","Orientation","Orientaci\xf3n")
 B.rI=new A.a("Paisagem","Landscape","Horizontal")
@@ -12835,38 +12843,38 @@ B.tI=new A.a("Retrato","Portrait","Vertical")
 B.xw=new A.a("Escala 1 :","Scale 1 :","Escala 1 :")
 B.iO=new A.a("Ajustar \xe0 folha","Fit to sheet","Ajustar a la hoja")
 B.aQ=new A.a("Raios molhados","Wetted radii","Radios mojados")
-B.Bi=new A.a("R\xf3tulos e resultados","Labels and results","Etiquetas y resultados")
+B.Bj=new A.a("R\xf3tulos e resultados","Labels and results","Etiquetas y resultados")
 B.zq=new A.a("Legenda de camadas","Layer legend","Leyenda de capas")
 B.rL=new A.a("Anexar p\xe1ginas de relat\xf3rio","Append report pages","Adjuntar p\xe1ginas de informe")
-B.nC=new A.a("Exportar","Export","Exportar")
+B.nB=new A.a("Exportar","Export","Exportar")
 B.FF=new A.a("Escala autom\xe1tica: 1:{n}","Automatic scale: 1:{n}","Escala autom\xe1tica: 1:{n}")
 B.c_=new A.a("Data","Date","Fecha")
-B.nw=new A.a("Escala","Scale","Escala")
-B.o_=new A.a("Folha","Sheet","Hoja")
+B.nv=new A.a("Escala","Scale","Escala")
+B.nZ=new A.a("Folha","Sheet","Hoja")
 B.cn=new A.a("Origem","Origin","Origen")
 B.rw=new A.a("Zonas / emissores","Zones / outlets","Zonas / emisores")
 B.ve=new A.a("Coordenadas","Coordinates","Coordenadas")
-B.DH=new A.a("Locais (m)","Local (m)","Locales (m)")
+B.DI=new A.a("Locais (m)","Local (m)","Locales (m)")
 B.q7=new A.a("Legenda","Legend","Leyenda")
 B.zw=new A.a("Projeto de irriga\xe7\xe3o pressurizada","Pressurised irrigation design","Dise\xf1o de riego presurizado")
 B.uX=new A.a("Relat\xf3rio de dimensionamento hidr\xe1ulico","Hydraulic design report","Informe de dise\xf1o hidr\xe1ulico")
 B.y3=new A.a("Gerado por OpenCADIrrigation em {d}","Generated by OpenCADIrrigation on {d}","Generado por OpenCADIrrigation el {d}")
-B.Fi=new A.a("P\xe1gina {i} de {n}","Page {i} of {n}","P\xe1gina {i} de {n}")
+B.Fj=new A.a("P\xe1gina {i} de {n}","Page {i} of {n}","P\xe1gina {i} de {n}")
 B.uu=new A.a("(continua\xe7\xe3o)","(continued)","(continuaci\xf3n)")
 B.i3=new A.a("Sem resultados de dimensionamento: execute o projeto para incluir as tabelas hidr\xe1ulicas.","No design results: run the design to include the hydraulic tables.","Sin resultados de dise\xf1o: ejecute el dise\xf1o para incluir las tablas hidr\xe1ulicas.")
 B.zr=new A.a("Par\xe2metros de projeto","Design parameters","Par\xe1metros de dise\xf1o")
-B.n1=new A.a("Desenho","Drawing","Dibujo")
+B.n0=new A.a("Desenho","Drawing","Dibujo")
 B.a4=new A.a("Texto","Text","Texto")
-B.mx=new A.a("Cotas","Dimensions","Cotas")
+B.mw=new A.a("Cotas","Dimensions","Cotas")
 B.yx=new A.a("Curvas de n\xedvel","Contours","Curvas de nivel")
 B.vQ=new A.a("Pontos cotados","Spot heights","Puntos acotados")
-B.BF=new A.a("MDT baixado","Downloaded DEM","MDT descargado")
-B.nd=new A.a("Tubos de zona","Zone pipes","Tuber\xedas de zona")
-B.m3=new A.a("Linha principal","Mainline pipes","L\xednea principal")
-B.ns=new A.a("Laterais com emissores","Spraylines","Laterales con emisores")
-B.Dq=new A.a("Fitas gotejadoras","Drip tapes","Cintas de goteo")
+B.BG=new A.a("MDT baixado","Downloaded DEM","MDT descargado")
+B.nc=new A.a("Tubos de zona","Zone pipes","Tuber\xedas de zona")
+B.m2=new A.a("Linha principal","Mainline pipes","L\xednea principal")
+B.nr=new A.a("Laterais com emissores","Spraylines","Laterales con emisores")
+B.Dr=new A.a("Fitas gotejadoras","Drip tapes","Cintas de goteo")
 B.A=new A.a("Emissores","Outlets","Emisores")
-B.Cq=new A.a("V\xe1lvulas de controle","Control valves","V\xe1lvulas de control")
+B.Cr=new A.a("V\xe1lvulas de controle","Control valves","V\xe1lvulas de control")
 B.zA=new A.a("Fontes de \xe1gua","Water supplies","Fuentes de agua")
 B.aA=new A.a("Bombas","Pumps","Bombas")
 B.cG=new A.a("Acess\xf3rios hidr\xe1ulicos","Hydraulic devices","Accesorios hidr\xe1ulicos")
@@ -12874,13 +12882,13 @@ B.jC=new A.a("N\xf3s","Junctions","Nudos")
 B.lm=new A.a("\xc1reas irrigadas","Irrigated areas","\xc1reas regadas")
 B.d8=new A.a("R\xf3tulos","Labels","Etiquetas")
 B.yD=new A.a("Detalhes do projeto\u2026","Project details\u2026","Detalles del proyecto\u2026")
-B.n2=new A.a("Desfazer","Undo","Deshacer")
+B.n1=new A.a("Desfazer","Undo","Deshacer")
 B.tE=new A.a("Refazer","Redo","Rehacer")
-B.oC=new A.a("Excluir sele\xe7\xe3o","Delete selection","Eliminar selecci\xf3n")
-B.CT=new A.a("Selecionar tudo","Select all","Seleccionar todo")
-B.ne=new A.a("Duplicar sele\xe7\xe3o","Duplicate selection","Duplicar selecci\xf3n")
-B.m5=new A.a("Enquadrar tudo","Zoom all","Encuadrar todo")
-B.BC=new A.a("Aproximar","Zoom in","Acercar")
+B.oB=new A.a("Excluir sele\xe7\xe3o","Delete selection","Eliminar selecci\xf3n")
+B.CU=new A.a("Selecionar tudo","Select all","Seleccionar todo")
+B.nd=new A.a("Duplicar sele\xe7\xe3o","Duplicate selection","Duplicar selecci\xf3n")
+B.m4=new A.a("Enquadrar tudo","Zoom all","Encuadrar todo")
+B.BD=new A.a("Aproximar","Zoom in","Acercar")
 B.r4=new A.a("Afastar","Zoom out","Alejar")
 B.cd=new A.a("Grade","Grid","Cuadr\xedcula")
 B.tM=new A.a("Sem resultados","No results overlay","Sin resultados")
@@ -12891,9 +12899,9 @@ B.bV=new A.a("Camadas","Layers","Capas")
 B.p1=new A.a("Idioma","Language","Idioma")
 B.wm=new A.a("Portugu\xeas","Portuguese","Portugu\xe9s")
 B.qR=new A.a("Ingl\xeas","English","Ingl\xe9s")
-B.EI=new A.a("Espanhol","Spanish","Espa\xf1ol")
+B.EJ=new A.a("Espanhol","Spanish","Espa\xf1ol")
 B.Fo=new A.a("Par\xe2metros de projeto\u2026","Design parameters\u2026","Par\xe1metros de dise\xf1o\u2026")
-B.Bg=new A.a("Turnos de opera\xe7\xe3o (management)\u2026","System flows (management)\u2026","Turnos de operaci\xf3n\u2026")
+B.Bh=new A.a("Turnos de opera\xe7\xe3o (management)\u2026","System flows (management)\u2026","Turnos de operaci\xf3n\u2026")
 B.xM=new A.a("Verifica\xe7\xe3o do projeto (Design Check)\u2026","Design check\u2026","Verificaci\xf3n del dise\xf1o (Design Check)\u2026")
 B.w4=new A.a("Dimensionar zonas (LP/velocidade)","Size zones (LP/velocity)","Dimensionar zonas (LP/velocidad)")
 B.ww=new A.a("Analisar (tamanhos atuais)","Analyse (existing sizes)","Analizar (tama\xf1os actuales)")
@@ -12901,16 +12909,16 @@ B.vr=new A.a("Dimensionar linha principal","Size mainline","Dimensionar l\xednea
 B.kH=new A.a("Projetar tudo","Design all","Dise\xf1ar todo")
 B.r7=new A.a("Limpar resultados","Clear results","Limpiar resultados")
 B.lh=new A.a("Calculando o projeto\u2026","Designing the system\u2026","Calculando el dise\xf1o\u2026")
-B.of=new A.a("Montando a rede hidr\xe1ulica","Building the hydraulic network","Armando la red hidr\xe1ulica")
-B.oR=new A.a("Zona {i} de {n}","Zone {i} of {n}","Zona {i} de {n}")
+B.oe=new A.a("Montando a rede hidr\xe1ulica","Building the hydraulic network","Armando la red hidr\xe1ulica")
+B.oQ=new A.a("Zona {i} de {n}","Zone {i} of {n}","Zona {i} de {n}")
 B.qe=new A.a("Linha principal e turnos de opera\xe7\xe3o","Mainline and system flows","L\xednea principal y turnos de operaci\xf3n")
-B.oB=new A.a("Reanalisando trechos telescopados","Re-analysing telescoped pipes","Reanalizando tramos telescopados")
+B.oA=new A.a("Reanalisando trechos telescopados","Re-analysing telescoped pipes","Reanalizando tramos telescopados")
 B.x2=new A.a("An\xe1lise de lavagem (flushing)","Flushing analysis","An\xe1lisis de lavado (flushing)")
 B.jK=new A.a("Verifica\xe7\xe3o de golpe de ar\xedete","Water hammer check","Verificaci\xf3n de golpe de ariete")
 B.a5=new A.a("Lista de materiais","Bill of materials","Lista de materiales")
-B.Dl=new A.a("Calculando em segundo plano: navegue \xe0 vontade; edi\xe7\xf5es esperam o fim.","Running in the background: navigate freely; edits wait until it finishes.","Calculando en segundo plano: navega libremente; las ediciones esperan al final.")
-B.CZ=new A.a("O navegador pode ficar lento enquanto o c\xe1lculo roda.","The browser may be slow while the calculation runs.","El navegador puede ir lento mientras corre el c\xe1lculo.")
-B.Eq=new A.a("Cat\xe1logo de componentes\u2026","Component catalog\u2026","Cat\xe1logo de componentes\u2026")
+B.Dm=new A.a("Calculando em segundo plano: navegue \xe0 vontade; edi\xe7\xf5es esperam o fim.","Running in the background: navigate freely; edits wait until it finishes.","Calculando en segundo plano: navega libremente; las ediciones esperan al final.")
+B.D_=new A.a("O navegador pode ficar lento enquanto o c\xe1lculo roda.","The browser may be slow while the calculation runs.","El navegador puede ir lento mientras corre el c\xe1lculo.")
+B.Er=new A.a("Cat\xe1logo de componentes\u2026","Component catalog\u2026","Cat\xe1logo de componentes\u2026")
 B.xf=new A.a("Bloco de laterais\u2026","Lateral block\u2026","Bloque de laterales\u2026")
 B.ua=new A.a("Aspersores autom\xe1ticos (grade)\u2026","Auto sprinklers (grid)\u2026","Aspersores autom\xe1ticos (malla)\u2026")
 B.iJ=new A.a("Resumo das zonas","Zone summary","Resumen de zonas")
@@ -12918,11 +12926,11 @@ B.aC=new A.a("Tubos","Pipes","Tuber\xedas")
 B.As=new A.a("Linha principal / duty","Mainline / duty","L\xednea principal / demanda")
 B.pM=new A.a("Bombas e acess\xf3rios","Pumps and devices","Bombas y accesorios")
 B.ij=new A.a("Requisitos h\xeddricos","Water requirements","Requerimientos h\xeddricos")
-B.EL=new A.a("Linha piezom\xe9trica","Hydraulic grade line","L\xednea piezom\xe9trica")
+B.EM=new A.a("Linha piezom\xe9trica","Hydraulic grade line","L\xednea piezom\xe9trica")
 B.qw=new A.a("Mensagens","Messages","Mensajes")
 B.pP=new A.a("Calculadora de lateral\u2026","Lateral calculator\u2026","Calculadora de lateral\u2026")
 B.AE=new A.a("Bomba e curva do sistema\u2026","Pump & system curve\u2026","Bomba y curva del sistema\u2026")
-B.Cs=new A.a("Golpe de ar\xedete\u2026","Water hammer\u2026","Golpe de ariete\u2026")
+B.Ct=new A.a("Golpe de ar\xedete\u2026","Water hammer\u2026","Golpe de ariete\u2026")
 B.j6=new A.a("Unidades\u2026","Units\u2026","Unidades\u2026")
 B.rB=new A.a("Sobre","About","Acerca de")
 B.A5=new A.a("Tutorial interativo","Interactive tutorial","Tutorial interactivo")
@@ -12931,20 +12939,20 @@ B.xs=new A.a("Mover vista","Pan","Mover vista")
 B.Ad=new A.a("Linha","Line","L\xednea")
 B.j7=new A.a("Polilinha","Polyline","Polil\xednea")
 B.wc=new A.a("Ret\xe2ngulo","Rectangle","Rect\xe1ngulo")
-B.nf=new A.a("C\xedrculo","Circle","C\xedrculo")
-B.mw=new A.a("Cota","Dimension","Cota")
+B.ne=new A.a("C\xedrculo","Circle","C\xedrculo")
+B.mv=new A.a("Cota","Dimension","Cota")
 B.uz=new A.a("Curva de n\xedvel","Contour","Curva de nivel")
 B.ws=new A.a("Cota de ponto","Spot height","Cota de punto")
 B.aN=new A.a("\xc1rea irrigada","Irrigated area","\xc1rea regada")
-B.m6=new A.a("Tubo de zona","Zone pipe","Tuber\xeda de zona")
-B.CV=new A.a("Tubo principal","Mainline pipe","Tuber\xeda principal")
+B.m5=new A.a("Tubo de zona","Zone pipe","Tuber\xeda de zona")
+B.CW=new A.a("Tubo principal","Mainline pipe","Tuber\xeda principal")
 B.jU=new A.a("Lateral (sprayline)","Sprayline (lateral)","Lateral (sprayline)")
 B.cf=new A.a("Fita/tubo gotejador","Drip tape / dripline","Cinta/tuber\xeda de goteo")
 B.a3=new A.a("Emissor","Outlet","Emisor")
-B.mT=new A.a("V\xe1lvula de controle","Control valve","V\xe1lvula de control")
+B.mS=new A.a("V\xe1lvula de controle","Control valve","V\xe1lvula de control")
 B.ps=new A.a("Fonte de \xe1gua","Water supply","Fuente de agua")
 B.az=new A.a("Bomba","Pump","Bomba")
-B.B_=new A.a("Acess\xf3rio hidr\xe1ulico","Misc. hydraulic","Accesorio hidr\xe1ulico")
+B.B0=new A.a("Acess\xf3rio hidr\xe1ulico","Misc. hydraulic","Accesorio hidr\xe1ulico")
 B.rt=new A.a("Jun\xe7\xe3o","Junction","Nudo")
 B.cR=new A.a("Bloco de laterais","Lateral block","Bloque de laterales")
 B.bI=new A.a("Grade de aspersores","Sprinkler grid","Malla de aspersores")
@@ -12953,15 +12961,15 @@ B.is=new A.a("Clique para selecionar, arraste para mover ou janela; Shift adicio
 B.z1=new A.a("Arraste para mover a vista; roda do mouse para zoom","Drag to pan; mouse wheel zooms","Arrastre para mover la vista; rueda del rat\xf3n para zoom")
 B.zW=new A.a("Clique no primeiro ponto, depois no segundo","Click first point, then second","Clic en el primer punto y luego en el segundo")
 B.pT=new A.a("Clique nos v\xe9rtices; Enter/duplo clique termina; Esc cancela","Click vertices; Enter/double-click ends; Esc cancels","Clic en los v\xe9rtices; Intro/doble clic termina; Esc cancela")
-B.BM=new A.a("Clique nos dois cantos opostos","Click two opposite corners","Clic en dos esquinas opuestas")
+B.BN=new A.a("Clique nos dois cantos opostos","Click two opposite corners","Clic en dos esquinas opuestas")
 B.j3=new A.a("Clique no centro, depois no raio","Click centre, then radius","Clic en el centro y luego en el radio")
 B.Ao=new A.a("Clique na posi\xe7\xe3o do texto","Click text position","Clic en la posici\xf3n del texto")
 B.A0=new A.a("Clique nos dois pontos e depois na posi\xe7\xe3o da linha de cota","Click two points, then the dimension line position","Clic en dos puntos y luego en la posici\xf3n de la l\xednea de cota")
 B.w5=new A.a("Clique os v\xe9rtices da curva de n\xedvel; Enter (ou Concluir) termina e pede a eleva\xe7\xe3o; Esc cancela","Click the contour vertices; Enter (or Done) finishes and asks for the elevation; Esc cancels","Clic en los v\xe9rtices de la curva de nivel; Intro (o Terminar) termina y pide la elevaci\xf3n; Esc cancela")
 B.pV=new A.a("Clique onde fica a cota; a eleva\xe7\xe3o \xe9 pedida a cada ponto","Click where the spot height goes; the elevation is asked for each point","Clic donde va la cota; la elevaci\xf3n se pide en cada punto")
-B.DI=new A.a("Clique nos v\xe9rtices do pol\xedgono; Enter fecha","Click polygon vertices; Enter closes","Clic en los v\xe9rtices del pol\xedgono; Intro cierra")
+B.DJ=new A.a("Clique nos v\xe9rtices do pol\xedgono; Enter fecha","Click polygon vertices; Enter closes","Clic en los v\xe9rtices del pol\xedgono; Intro cierra")
 B.qi=new A.a("Clique nos v\xe9rtices do tubo; Enter/duplo clique termina; conecta automaticamente","Click pipe vertices; Enter/double-click ends; connects automatically","Clic en los v\xe9rtices de la tuber\xeda; Intro/doble clic termina; conecta autom\xe1ticamente")
-B.Cg=new A.a("Clique sobre um tubo ou jun\xe7\xe3o para conectar","Click on a pipe or junction to connect","Clic sobre una tuber\xeda o nudo para conectar")
+B.Ch=new A.a("Clique sobre um tubo ou jun\xe7\xe3o para conectar","Click on a pipe or junction to connect","Clic sobre una tuber\xeda o nudo para conectar")
 B.iL=new A.a("Clique nos v\xe9rtices do bloco; Enter conclui e abre as op\xe7\xf5es","Click block vertices; Enter finishes and opens options","Clic en los v\xe9rtices del bloque; Intro termina y abre las opciones")
 B.qn=new A.a("Clique em dois pontos","Click two points","Clic en dos puntos")
 B.rU=new A.a("Pronto","Ready","Listo")
@@ -12972,15 +12980,15 @@ B.j0=new A.a("Ao arrastar o n\xf3 de um tubo, as pontas de tubos e os itens liga
 B.uV=new A.a("ent.","ent.","ent.")
 B.aO=new A.a("Propriedades","Properties","Propiedades")
 B.y1=new A.a("{n} itens selecionados","{n} items selected","{n} elementos seleccionados")
-B.me=new A.a("Camada","Layer","Capa")
+B.md=new A.a("Camada","Layer","Capa")
 B.aF=new A.a("Nome","Name","Nombre")
 B.cX=new A.a("Tubo","Pipe","Tuber\xeda")
 B.Aq=new A.a("Dimensionar automaticamente","Computer sized","Dimensionar autom\xe1ticamente")
 B.p8=new A.a("Profundidade (m)","Depth (m)","Profundidad (m)")
 B.bU=new A.a("Bocal","Nozzle","Boquilla")
-B.Df=new A.a("Press\xe3o nominal","Nominal pressure","Presi\xf3n nominal")
-B.B8=new A.a("Espa\xe7amento","Spacing","Espaciamiento")
-B.DF=new A.a("Deslocamento do 1\xba emissor","First outlet offset","Desplazamiento del 1.\xba emisor")
+B.Dg=new A.a("Press\xe3o nominal","Nominal pressure","Presi\xf3n nominal")
+B.B9=new A.a("Espa\xe7amento","Spacing","Espaciamiento")
+B.DG=new A.a("Deslocamento do 1\xba emissor","First outlet offset","Desplazamiento del 1.\xba emisor")
 B.AD=new A.a("Arco (\xb0)","Arc (\xb0)","Arco (\xb0)")
 B.yl=new A.a("Altura da haste (m)","Riser height (m)","Altura del tubo de subida (m)")
 B.ys=new A.a("Fita/tubo gotejador","Tape / dripline","Cinta/tuber\xeda de goteo")
@@ -12988,13 +12996,13 @@ B.ya=new A.a("Press\xe3o de entrada","Inlet pressure","Presi\xf3n de entrada")
 B.tF=new A.a("Regulada","Regulated","Regulada")
 B.xL=new A.a("Press\xe3o m\xedn. no submain","Submain min. pressure","Presi\xf3n m\xedn. en el submain")
 B.bK=new A.a("V\xe1lvula","Valve","V\xe1lvula")
-B.o7=new A.a("Press\xe3o a jusante fixa (vazio = calcular)","Fixed downstream pressure (blank = calculate)","Presi\xf3n aguas abajo fija (vac\xedo = calcular)")
-B.BX=new A.a("Calcular press\xe3o necess\xe1ria","Calculate required pressure","Calcular presi\xf3n necesaria")
+B.o6=new A.a("Press\xe3o a jusante fixa (vazio = calcular)","Fixed downstream pressure (blank = calculate)","Presi\xf3n aguas abajo fija (vac\xedo = calcular)")
+B.BY=new A.a("Calcular press\xe3o necess\xe1ria","Calculate required pressure","Calcular presi\xf3n necesaria")
 B.FB=new A.a("Press\xe3o de projeto","Design pressure","Presi\xf3n de dise\xf1o")
 B.FI=new A.a("Press\xe3o m\xe1xima","Maximum pressure","Presi\xf3n m\xe1xima")
 B.wP=new A.a("Vaz\xe3o de projeto","Design flow","Caudal de dise\xf1o")
-B.nZ=new A.a("Vaz\xe3o m\xe1xima","Maximum flow","Caudal m\xe1ximo")
-B.EG=new A.a("N\xedvel de \xe1gua relativo ao solo (m)","Water level relative to ground (m)","Nivel de agua respecto al suelo (m)")
+B.nY=new A.a("Vaz\xe3o m\xe1xima","Maximum flow","Caudal m\xe1ximo")
+B.EH=new A.a("N\xedvel de \xe1gua relativo ao solo (m)","Water level relative to ground (m)","Nivel de agua respecto al suelo (m)")
 B.co=new A.a("Rota\xe7\xe3o relativa","Relative speed","Velocidad relativa")
 B.d5=new A.a("Acess\xf3rio","Device","Accesorio")
 B.t2=new A.a("Press\xe3o regulada (PRV)","Regulated pressure (PRV)","Presi\xf3n regulada (PRV)")
@@ -13002,72 +13010,72 @@ B.aP=new A.a("Eleva\xe7\xe3o (m)","Elevation (m)","Elevaci\xf3n (m)")
 B.x6=new A.a("Eleva\xe7\xe3o (m; 0 = do terreno)","Elevation (m; 0 = from DEM)","Elevaci\xf3n (m; 0 = del terreno)")
 B.j_=new A.a("Altura do texto (m)","Text height (m)","Altura del texto (m)")
 B.jA=new A.a("Raio (m)","Radius (m)","Radio (m)")
-B.nR=new A.a("Fechado","Closed","Cerrado")
+B.nQ=new A.a("Fechado","Closed","Cerrado")
 B.jo=new A.a("L\xe2mina l\xedquida (mm/dia)","Net depth (mm/day)","L\xe1mina neta (mm/d\xeda)")
 B.kE=new A.a("Efici\xeancia","Efficiency","Eficiencia")
-B.mB=new A.a("Cultura","Crop","Cultivo")
+B.mA=new A.a("Cultura","Crop","Cultivo")
 B.bY=new A.a("Comprimento","Length","Longitud")
 B.aJ=new A.a("\xc1rea","Area","\xc1rea")
 B.pi=new A.a("Escopo","Scope","\xc1mbito")
 B.ct=new A.a("Resultados","Results","Resultados")
-B.Dt=new A.a("Orienta\xe7\xe3o (\xb0)","Orientation (\xb0)","Orientaci\xf3n (\xb0)")
+B.Du=new A.a("Orienta\xe7\xe3o (\xb0)","Orientation (\xb0)","Orientaci\xf3n (\xb0)")
 B.pN=new A.a("Rota\xe7\xe3o (\xb0)","Rotation (\xb0)","Rotaci\xf3n (\xb0)")
 B.t0=new A.a("Afastamento da cota","Dimension offset","Desplazamiento de la cota")
 B.Fs=new A.a("Enquadrar","Zoom to","Encuadrar")
-B.DV=new A.a("1\xba emissor a meio espa\xe7amento","First outlet at half spacing","1.\xba emisor a medio espaciamiento")
+B.DW=new A.a("1\xba emissor a meio espa\xe7amento","First outlet at half spacing","1.\xba emisor a medio espaciamiento")
 B.il=new A.a("P a jusante","Downstream P","P aguas abajo")
 B.d_=new A.a("P requerida","Required P","P requerida")
 B.Fq=new A.a("Perda na v\xe1lvula","Valve loss","P\xe9rdida en la v\xe1lvula")
 B.x5=new A.a("Emissor m\xedn/m\xe1x","Outlet min/max","Emisor m\xedn/m\xe1x")
 B.FA=new A.a("Admiss\xedvel","Allowable","Admisible")
-B.EC=new A.a("CU / DU / EU","CU / DU / EU","CU / DU / EU")
+B.ED=new A.a("CU / DU / EU","CU / DU / EU","CU / DU / EU")
 B.z7=new A.a("valores padr\xe3o","defaults","valores predeterminados")
 B.aD=new A.a("Vaz\xe3o","Flow","Caudal")
 B.vp=new A.a("Velocidade","Velocity","Velocidad")
-B.BY=new A.a("Perda de carga","Head loss","P\xe9rdida de carga")
+B.BZ=new A.a("Perda de carga","Head loss","P\xe9rdida de carga")
 B.aE=new A.a("Press\xe3o","Pressure","Presi\xf3n")
-B.lV=new A.a("Press\xe3o in\xedcio","Start pressure","Presi\xf3n inicio")
-B.F0=new A.a("Press\xe3o fim","End pressure","Presi\xf3n final")
+B.lU=new A.a("Press\xe3o in\xedcio","Start pressure","Presi\xf3n inicio")
+B.F1=new A.a("Press\xe3o fim","End pressure","Presi\xf3n final")
 B.xX=new A.a("M\xedn","Min","M\xedn")
-B.oF=new A.a("M\xe1x","Max","M\xe1x")
+B.oE=new A.a("M\xe1x","Max","M\xe1x")
 B.lr=new A.a("Projeto salvo","Project saved","Proyecto guardado")
 B.vo=new A.a("Projeto carregado","Project loaded","Proyecto cargado")
-B.lG=new A.a("Projeto conclu\xeddo: {z} zonas, {f} turnos","Design finished: {z} zones, {f} system flows","Dise\xf1o terminado: {z} zonas, {f} turnos")
+B.lF=new A.a("Projeto conclu\xeddo: {z} zonas, {f} turnos","Design finished: {z} zones, {f} system flows","Dise\xf1o terminado: {z} zonas, {f} turnos")
 B.zN=new A.a("{n} itens n\xe3o conectados (marcados em vermelho)","{n} unconnected items (marked in red)","{n} elementos sin conectar (marcados en rojo)")
-B.lM=new A.a("Todos os itens est\xe3o conectados","All items are connected","Todos los elementos est\xe1n conectados")
+B.lL=new A.a("Todos os itens est\xe3o conectados","All items are connected","Todos los elementos est\xe1n conectados")
 B.pS=new A.a("C\xe1lculo em andamento: aguarde para editar o projeto.","Design running: wait for it to finish before editing.","C\xe1lculo en curso: espera a que termine para editar.")
 B.zl=new A.a("O projeto mudou durante o c\xe1lculo; resultados descartados. Rode o c\xe1lculo de novo.","The project changed while the design ran; results discarded. Run the design again.","El proyecto cambi\xf3 durante el c\xe1lculo; resultados descartados. Ejecuta el c\xe1lculo de nuevo.")
 B.AJ=new A.a("Nenhuma v\xe1lvula de controle no projeto","No control valve in the design","No hay v\xe1lvulas de control en el dise\xf1o")
 B.zO=new A.a("{n} itens exclu\xeddos","{n} items deleted","{n} elementos eliminados")
 B.p4=new A.a("Importado","Imported","Importado")
 B.rn=new A.a("Erro: {e}","Error: {e}","Error: {e}")
-B.CM=new A.a("O projeto atual tem altera\xe7\xf5es n\xe3o salvas. Continuar?","The current project has unsaved changes. Continue?","El proyecto actual tiene cambios sin guardar. \xbfContinuar?")
-B.oS=new A.a("Execute Projeto \u25b6 para gerar resultados","Run Design \u25b6 to generate results","Ejecute Dise\xf1o \u25b6 para generar resultados")
+B.CN=new A.a("O projeto atual tem altera\xe7\xf5es n\xe3o salvas. Continuar?","The current project has unsaved changes. Continue?","El proyecto actual tiene cambios sin guardar. \xbfContinuar?")
+B.oR=new A.a("Execute Projeto \u25b6 para gerar resultados","Run Design \u25b6 to generate results","Ejecute Dise\xf1o \u25b6 para generar resultados")
 B.vT=new A.a("Desenhe \xe1reas irrigadas (ferramenta \xc1rea) para calcular tempos de irriga\xe7\xe3o","Draw irrigated areas (Area tool) to compute irrigation times","Dibuje \xe1reas regadas (herramienta \xc1rea) para calcular tiempos de riego")
-B.B6=new A.a("Selecione um tubo, lateral ou v\xe1lvula","Select a pipe, lateral or valve","Seleccione una tuber\xeda, lateral o v\xe1lvula")
+B.B7=new A.a("Selecione um tubo, lateral ou v\xe1lvula","Select a pipe, lateral or valve","Seleccione una tuber\xeda, lateral o v\xe1lvula")
 B.xj=new A.a("Sem mensagens","No messages","Sin mensajes")
 B.zf=new A.a("N\xe3o conectado","Not connected","Sin conectar")
 B.wM=new A.a("DWG {v}: {n} entidades, {l} camadas","DWG {v}: {n} entities, {l} layers","DWG {v}: {n} entidades, {l} capas")
-B.E9=new A.a(", {n} objetos ignorados",", {n} objects skipped",", {n} objetos omitidos")
-B.Cu=new A.a(u.n,"{k}: {p} placemarks, {n} entities ({crs})",u.n)
+B.Ea=new A.a(", {n} objetos ignorados",", {n} objects skipped",", {n} objetos omitidos")
+B.Cv=new A.a(u.n,"{k}: {p} placemarks, {n} entities ({crs})",u.n)
 B.xD=new A.a("DXF: {n} entidades","DXF: {n} entities","DXF: {n} entidades")
-B.F3=new A.a("N\xe3o \xe9 um arquivo DWG reconhecido","Not a recognised DWG file","No es un archivo DWG reconocido")
+B.F4=new A.a("N\xe3o \xe9 um arquivo DWG reconhecido","Not a recognised DWG file","No es un archivo DWG reconocido")
 B.xr=new A.a("Estrutura do DWG n\xe3o encontrada (arquivo danificado ou variante n\xe3o suportada)","DWG structure not found (damaged file or unsupported variant)","Estructura del DWG no encontrada (archivo da\xf1ado o variante no compatible)")
-B.nX=new A.a("KMZ sem arquivo .kml","KMZ without a .kml file","KMZ sin archivo .kml")
+B.nW=new A.a("KMZ sem arquivo .kml","KMZ without a .kml file","KMZ sin archivo .kml")
 B.k3=new A.a("P jusante","Downstream P","P aguas abajo")
 B.vd=new A.a("Perda v\xe1lv.","Valve loss","P\xe9rdida v\xe1lv.")
 B.d4=new A.a("P m\xedn","Min P","P m\xedn")
 B.cw=new A.a("P m\xe1x","Max P","P m\xe1x")
-B.EK=new A.a("Adm. m\xedn","Allow. min","Adm. m\xedn")
+B.EL=new A.a("Adm. m\xedn","Allow. min","Adm. m\xedn")
 B.zU=new A.a("Adm. m\xe1x","Allow. max","Adm. m\xe1x")
 B.AL=new A.a("Var. adm. %","Allow. var. %","Var. adm. %")
-B.F6=new A.a("Var. real %","Actual var. %","Var. real %")
-B.Bv=new A.a("Custo tubos","Pipe cost","Costo tuber\xedas")
-B.lJ=new A.a("Avisos","Warnings","Avisos")
-B.mt=new A.a("Contexto","Context","Contexto")
-B.nt=new A.a("Entidade","Entity","Entidad")
+B.F7=new A.a("Var. real %","Actual var. %","Var. real %")
+B.Bw=new A.a("Custo tubos","Pipe cost","Costo tuber\xedas")
+B.lI=new A.a("Avisos","Warnings","Avisos")
+B.ms=new A.a("Contexto","Context","Contexto")
+B.ns=new A.a("Entidade","Entity","Entidad")
 B.p2=new A.a("Seg.","Seg.","Seg.")
-B.mQ=new A.a("DI","ID","DI")
+B.mP=new A.a("DI","ID","DI")
 B.cg=new A.a("L","L","L")
 B.t6=new A.a("Q","Q","Q")
 B.q_=new A.a("V (m/s)","V (m/s)","V (m/s)")
@@ -13075,11 +13083,11 @@ B.zJ=new A.a("hf","hf","hf")
 B.iT=new A.a("P in\xedcio","Start P","P inicio")
 B.id=new A.a("P fim","End P","P fin")
 B.wU=new A.a("Z in\xedcio","Start Z","Z inicio")
-B.oq=new A.a("Z fim","End Z","Z fin")
+B.op=new A.a("Z fim","End Z","Z fin")
 B.rA=new A.a("PN","PN","PN")
 B.qQ=new A.a("N","N","N")
-B.Du=new A.a("Q total","Total Q","Q total")
-B.Fg=new A.a("Q m\xe9dio","Mean Q","Q medio")
+B.Dv=new A.a("Q total","Total Q","Q total")
+B.Fh=new A.a("Q m\xe9dio","Mean Q","Q medio")
 B.aG=new A.a("Turno","System flow","Turno")
 B.p7=new A.a("Item","Item","Elemento")
 B.kJ=new A.a("P dispon\xedvel","Available P","P disponible")
@@ -13087,50 +13095,50 @@ B.vR=new A.a("Situa\xe7\xe3o","Status","Estado")
 B.cK=new A.a("Energia/ano","Energy/year","Energ\xeda/a\xf1o")
 B.aB=new A.a("Fonte","Supply","Fuente")
 B.xE=new A.a("calculada","calculated","calculada")
-B.Dw=new A.a("sobra","surplus","sobra")
+B.Dx=new A.a("sobra","surplus","sobra")
 B.yR=new A.a("fixa","fixed","fija")
-B.Ee=new A.a("d\xe9ficit","deficit","d\xe9ficit")
-B.C3=new A.a("ok","ok","ok")
+B.Ef=new A.a("d\xe9ficit","deficit","d\xe9ficit")
+B.C4=new A.a("ok","ok","ok")
 B.kp=new A.a("H bomba","Pump H","H bomba")
 B.Ax=new A.a("P entrada","Inlet P","P entrada")
 B.l_=new A.a("P sa\xedda","Outlet P","P salida")
 B.wg=new A.a("Perda","Loss","P\xe9rdida")
 B.tz=new A.a("em opera\xe7\xe3o","running","en operaci\xf3n")
-B.Ci=new A.a("parada","stopped","detenida")
+B.Cj=new A.a("parada","stopped","detenida")
 B.x_=new A.a("aberto","open","abierto")
 B.yN=new A.a("fechado","closed","cerrado")
-B.D1=new A.a("regulando","regulating","regulando")
-B.mJ=new A.a("suc\xe7\xe3o","suction lift","succi\xf3n")
-B.Dy=new A.a("submersa","submersible","sumergible")
+B.D2=new A.a("regulando","regulating","regulando")
+B.mI=new A.a("suc\xe7\xe3o","suction lift","succi\xf3n")
+B.Dz=new A.a("submersa","submersible","sumergible")
 B.r8=new A.a("fora da faixa","out of range","fuera de rango")
 B.rz=new A.a("Categoria","Category","Categor\xeda")
-B.C5=new A.a("Descri\xe7\xe3o","Description","Descripci\xf3n")
+B.C6=new A.a("Descri\xe7\xe3o","Description","Descripci\xf3n")
 B.Ai=new A.a("Un.","Unit","Ud.")
 B.tl=new A.a("Quantidade","Quantity","Cantidad")
 B.yt=new A.a("Unit\xe1rio","Unit cost","Unitario")
 B.uP=new A.a("Total","Total","Total")
 B.uC=new A.a("TOTAL","TOTAL","TOTAL")
-B.D3=new A.a("Custo anualizado (capital)","Annualised cost (capital)","Costo anualizado (capital)")
+B.D4=new A.a("Custo anualizado (capital)","Annualised cost (capital)","Costo anualizado (capital)")
 B.z6=new A.a("Custo anual de energia","Annual energy cost","Costo anual de energ\xeda")
 B.d6=new A.a("Custo anual total","Total annual cost","Costo anual total")
 B.xR=new A.a("L\xe2mina bruta (mm/d)","Gross depth (mm/d)","L\xe1mina bruta (mm/d)")
 B.ie=new A.a("Volume (m\xb3/d)","Volume (m\xb3/d)","Volumen (m\xb3/d)")
 B.iB=new A.a("Taxa (mm/h)","Rate (mm/h)","Tasa (mm/h)")
-B.oj=new A.a("Horas/dia","Hours/day","Horas/d\xeda")
+B.oi=new A.a("Horas/dia","Hours/day","Horas/d\xeda")
 B.qP=new A.a("HGL (azul) \xb7 terreno (marrom) \xb7 faixa admiss\xedvel (verde)","HGL (blue) \xb7 ground (brown) \xb7 allowable band (green)","LP (azul) \xb7 terreno (marr\xf3n) \xb7 banda admisible (verde)")
 B.wx=new A.a("ZONAS","ZONES","ZONAS")
-B.Do=new A.a("TURNOS","SYSTEM FLOWS","TURNOS")
-B.Ej=new A.a("LISTA DE MATERIAIS","BILL OF MATERIALS","LISTA DE MATERIALES")
-B.oW=new A.a("Fitas/tubos gotejadores","Drip tapes/lines","Cintas/tuber\xedas de goteo")
+B.Dp=new A.a("TURNOS","SYSTEM FLOWS","TURNOS")
+B.Ek=new A.a("LISTA DE MATERIAIS","BILL OF MATERIALS","LISTA DE MATERIALES")
+B.oV=new A.a("Fitas/tubos gotejadores","Drip tapes/lines","Cintas/tuber\xedas de goteo")
 B.cU=new A.a("V\xe1lvulas","Valves","V\xe1lvulas")
 B.xO=new A.a("Todas as zonas","All zones","Todas las zonas")
 B.un=new A.a("Submain","Submain","Submain")
 B.uQ=new A.a("Trecho","Stub","Tramo")
-B.D2=new A.a("relatorio","report","informe")
+B.D3=new A.a("relatorio","report","informe")
 B.vy=new A.a("Exemplo pomar","Orchard example","Ejemplo huerto")
 B.z=new A.a("Fazenda Exemplo","Example Farm","Finca Ejemplo")
 B.ko=new A.a("Blocos A e B","Blocks A and B","Bloques A y B")
-B.n5=new A.a("Divisa","Boundary","Lindero")
+B.n4=new A.a("Divisa","Boundary","Lindero")
 B.zo=new A.a("Pomar \u2014 exemplo OpenCADIrrigation","Orchard \u2014 OpenCADIrrigation example","Huerto \u2014 ejemplo OpenCADIrrigation")
 B.qg=new A.a("Zona A","Zone A","Zona A")
 B.qh=new A.a("Zona B","Zone B","Zona B")
@@ -13138,27 +13146,27 @@ B.AB=new A.a("Bloco A","Block A","Bloque A")
 B.yV=new A.a("Bloco B","Block B","Bloque B")
 B.cu=new A.a("Citros","Citrus","C\xedtricos")
 B.cE=new A.a("Uva","Grapes","Uva")
-B.o3=new A.a("Recalque","Rising main","Impulsi\xf3n")
-B.AZ=new A.a("Ramal A","Branch A","Ramal A")
-B.Eo=new A.a("Ramal B","Branch B","Ramal B")
+B.o2=new A.a("Recalque","Rising main","Impulsi\xf3n")
+B.B_=new A.a("Ramal A","Branch A","Ramal A")
+B.Ep=new A.a("Ramal B","Branch B","Ramal B")
 B.Q=new A.a("Po\xe7o","Well","Pozo")
-B.EW=new A.a("Turno 1 \u2014 Zona A","Flow 1 \u2014 Zone A","Turno 1 \u2014 Zona A")
+B.EX=new A.a("Turno 1 \u2014 Zona A","Flow 1 \u2014 Zone A","Turno 1 \u2014 Zona A")
 B.uy=new A.a("Turno 2 \u2014 Zona B","Flow 2 \u2014 Zone B","Turno 2 \u2014 Zona B")
 B.rT=new A.a("Projeto","Project","Proyecto")
-B.mp=new A.a("Cliente","Client","Cliente")
+B.mo=new A.a("Cliente","Client","Cliente")
 B.qc=new A.a("Local","Site","Lugar")
 B.rS=new A.a("Projetista","Designer","Proyectista")
 B.r_=new A.a("Notas","Notes","Notas")
 B.wf=new A.a("Hidr\xe1ulica","Hydraulics","Hidr\xe1ulica")
-B.p_=new A.a("F\xf3rmula de perda de carga","Head-loss formula","F\xf3rmula de p\xe9rdida de carga")
+B.oZ=new A.a("F\xf3rmula de perda de carga","Head-loss formula","F\xf3rmula de p\xe9rdida de carga")
 B.ii=new A.a("Hazen-Williams","Hazen-Williams","Hazen-Williams")
 B.yT=new A.a("Darcy-Weisbach (Swamee-Jain)","Darcy-Weisbach (Swamee-Jain)","Darcy-Weisbach (Swamee-Jain)")
 B.i_=new A.a("Temperatura da \xe1gua (\xb0C)","Water temperature (\xb0C)","Temperatura del agua (\xb0C)")
 B.hZ=new A.a("Vel. m\xe1x. lateral (m/s)","Max. lateral velocity (m/s)","Vel. m\xe1x. lateral (m/s)")
 B.Au=new A.a("Vel. m\xe1x. zona (m/s)","Max. zone velocity (m/s)","Vel. m\xe1x. zona (m/s)")
-B.lN=new A.a("Vel. m\xe1x. linha principal (m/s)","Max. mainline velocity (m/s)","Vel. m\xe1x. l\xednea principal (m/s)")
-B.ol=new A.a("Perdas localizadas (% do comprimento)","Minor losses (% of length)","P\xe9rdidas localizadas (% de la longitud)")
-B.Db=new A.a("Toler\xe2ncia de conex\xe3o (m)","Connection tolerance (m)","Tolerancia de conexi\xf3n (m)")
+B.lM=new A.a("Vel. m\xe1x. linha principal (m/s)","Max. mainline velocity (m/s)","Vel. m\xe1x. l\xednea principal (m/s)")
+B.ok=new A.a("Perdas localizadas (% do comprimento)","Minor losses (% of length)","P\xe9rdidas localizadas (% de la longitud)")
+B.Dc=new A.a("Toler\xe2ncia de conex\xe3o (m)","Connection tolerance (m)","Tolerancia de conexi\xf3n (m)")
 B.pB=new A.a("Aplicar perdas localizadas","Apply minor losses","Aplicar p\xe9rdidas localizadas")
 B.zZ=new A.a("Fator C: escala","C factor: scale","Factor C: escala")
 B.q6=new A.a("Fator C: acr\xe9scimo","C factor: offset","Factor C: incremento")
@@ -13166,27 +13174,27 @@ B.v1=new A.a("Dimensionamento","Sizing","Dimensionamiento")
 B.rx=new A.a("N\xba m\xe1x. de di\xe2metros no submain","Max. submain sizes","N.\xba m\xe1x. de di\xe1metros en el submain")
 B.pH=new A.a("Densifica\xe7\xe3o do DEM (m)","DEM densification (m)","Densificaci\xf3n del MDT (m)")
 B.jE=new A.a("Economia","Economics","Econom\xeda")
-B.ly=new A.a("Balancear custo de capital vs. custo de energia","Trade capital cost vs. energy cost","Equilibrar costo de capital vs. costo de energ\xeda")
-B.Eh=new A.a("Juros (fra\xe7\xe3o/ano)","Interest (fraction/year)","Inter\xe9s (fracci\xf3n/a\xf1o)")
-B.Dh=new A.a("Prazo (anos)","Term (years)","Plazo (a\xf1os)")
+B.lx=new A.a("Balancear custo de capital vs. custo de energia","Trade capital cost vs. energy cost","Equilibrar costo de capital vs. costo de energ\xeda")
+B.Ei=new A.a("Juros (fra\xe7\xe3o/ano)","Interest (fraction/year)","Inter\xe9s (fracci\xf3n/a\xf1o)")
+B.Di=new A.a("Prazo (anos)","Term (years)","Plazo (a\xf1os)")
 B.w_=new A.a("Custo da energia ({c}/kWh)","Energy cost ({c}/kWh)","Costo de la energ\xeda ({c}/kWh)")
-B.nq=new A.a("Efici\xeancia da bomba (fra\xe7\xe3o)","Pump efficiency (fraction)","Eficiencia de la bomba (fracci\xf3n)")
-B.DJ=new A.a("Horas de opera\xe7\xe3o/ano (linha principal)","Operating hours/year (mainline)","Horas de operaci\xf3n/a\xf1o (l\xednea principal)")
-B.mY=new A.a("Horas/ano por zona","Hours/year per zone","Horas/a\xf1o por zona")
+B.np=new A.a("Efici\xeancia da bomba (fra\xe7\xe3o)","Pump efficiency (fraction)","Eficiencia de la bomba (fracci\xf3n)")
+B.DK=new A.a("Horas de opera\xe7\xe3o/ano (linha principal)","Operating hours/year (mainline)","Horas de operaci\xf3n/a\xf1o (l\xednea principal)")
+B.mX=new A.a("Horas/ano por zona","Hours/year per zone","Horas/a\xf1o por zona")
 B.ck=new A.a("Moeda","Currency","Moneda")
 B.wG=new A.a("S\xedmbolo da moeda","Currency symbol","S\xedmbolo de la moneda")
 B.q8=new A.a("Os pre\xe7os do cat\xe1logo padr\xe3o s\xe3o ilustrativos: uma tabela em reais convertida pelo c\xe2mbio de {d}. Substitua-os pela tabela de pre\xe7os local.","Built-in catalogue prices are illustrative: a price list in reais converted with the exchange rates of {d}. Replace them with your local price list.","Los precios del cat\xe1logo predeterminado son ilustrativos: una lista en reales convertida con el tipo de cambio del {d}. Sustit\xfayalos por la lista de precios local.")
-B.C6=new A.a("Converter os pre\xe7os?","Convert the prices?","\xbfConvertir los precios?")
+B.C7=new A.a("Converter os pre\xe7os?","Convert the prices?","\xbfConvertir los precios?")
 B.xk=new A.a('Converter todos os pre\xe7os do projeto (cat\xe1logo, custo da energia, piv\xf4s) de {from} para {to}? "S\xf3 trocar a moeda" mant\xe9m os n\xfameros como est\xe3o.','Convert every price of the project (catalogue, energy cost, pivots) from {from} to {to}? "Change the currency only" keeps the numbers as they are.','\xbfConvertir todos los precios del proyecto (cat\xe1logo, costo de la energ\xeda, pivotes) de {from} a {to}? "Solo cambiar la moneda" mantiene los n\xfameros como est\xe1n.')
 B.iP=new A.a("C\xe2mbio ({to} por 1 {from})","Exchange rate ({to} per 1 {from})","Tipo de cambio ({to} por 1 {from})")
 B.yY=new A.a("C\xe2mbio de refer\xeancia de {d} (Banco Central Europeu / exchangerate-api.com). Ajuste para a cota\xe7\xe3o do dia.","Reference rate of {d} (European Central Bank / exchangerate-api.com). Adjust it to the rate of the day.","Tipo de cambio de referencia del {d} (Banco Central Europeo / exchangerate-api.com). Aj\xfastelo a la cotizaci\xf3n del d\xeda.")
 B.ip=new A.a("Sem c\xe2mbio de refer\xeancia para esta moeda: informe a taxa.","No reference rate for this currency: enter the rate.","Sin tipo de cambio de referencia para esta moneda: indique la tasa.")
-B.lS=new A.a("S\xf3 trocar a moeda","Change the currency only","Solo cambiar la moneda")
+B.lR=new A.a("S\xf3 trocar a moeda","Change the currency only","Solo cambiar la moneda")
 B.rZ=new A.a("Converter pre\xe7os","Convert prices","Convertir precios")
 B.cO=new A.a("Pre\xe7os convertidos de {from} para {to} (\xd7 {r}).","Prices converted from {from} to {to} (\xd7 {r}).","Precios convertidos de {from} a {to} (\xd7 {r}).")
 B.iy=new A.a("Pre\xe7os em {c}","Prices in {c}","Precios en {c}")
 B.pW=new A.a("Sem pre\xe7os (preencha com a tabela local)","No prices (fill in your local price list)","Sin precios (complete con la lista local)")
-B.o1=new A.a("Fontes","Sources","Fuentes")
+B.o0=new A.a("Fontes","Sources","Fuentes")
 B.xK=new A.a("O pacote n\xe3o informa a moeda: pre\xe7os mantidos como est\xe3o.","The pack does not state its currency: prices kept as they are.","El paquete no indica la moneda: precios mantenidos como est\xe1n.")
 B.l6=new A.a("Itens do cat\xe1logo sem pre\xe7o","Catalogue items without a price","Elementos del cat\xe1logo sin precio")
 B.qb=new A.a("Alguns itens da lista de materiais est\xe3o com pre\xe7o zero, em geral produtos adicionados de um cat\xe1logo de fabricante (que v\xeam sem pre\xe7o). Os totais os deixam de fora e, para tubos sem pre\xe7o, o dimensionamento econ\xf4mico usa uma estimativa proporcional \xe0 parede do tubo.","Some items in the bill of materials have price zero, usually products added from a manufacturer catalogue (they come without prices). The totals leave them out, and for pipes without a price the economic sizing uses an estimate proportional to the pipe wall.","Algunos elementos de la lista de materiales tienen precio cero, en general productos a\xf1adidos desde un cat\xe1logo de fabricante (que vienen sin precio). Los totales los dejan fuera y, para las tuber\xedas sin precio, el dimensionamiento econ\xf3mico usa una estimaci\xf3n proporcional a la pared del tubo.")
@@ -13199,83 +13207,83 @@ B.wo=new A.a("Uma por vez","One at a time","Una a la vez")
 B.zy=new A.a("+ Turno","+ Flow","+ Turno")
 B.yr=new A.a("In\xedcio (h)","Start (h)","Inicio (h)")
 B.cZ=new A.a("Dura\xe7\xe3o (h)","Duration (h)","Duraci\xf3n (h)")
-B.Cl=new A.a("Sem turnos definidos: todas as zonas ser\xe3o consideradas operando juntas.","No system flows defined: all zones are assumed to run together.","Sin turnos definidos: se considera que todas las zonas funcionan juntas.")
-B.CF=new A.a("Aspers\xe3o / microaspers\xe3o","Sprinkler / micro-sprinkler","Aspersi\xf3n / microaspersi\xf3n")
-B.EZ=new A.a("Gotejamento (fita/tubo)","Drip (tape/line)","Goteo (cinta/tuber\xeda)")
+B.Cm=new A.a("Sem turnos definidos: todas as zonas ser\xe3o consideradas operando juntas.","No system flows defined: all zones are assumed to run together.","Sin turnos definidos: se considera que todas las zonas funcionan juntas.")
+B.CG=new A.a("Aspers\xe3o / microaspers\xe3o","Sprinkler / micro-sprinkler","Aspersi\xf3n / microaspersi\xf3n")
+B.F_=new A.a("Gotejamento (fita/tubo)","Drip (tape/line)","Goteo (cinta/tuber\xeda)")
 B.q4=new A.a("Laterais","Laterals","Laterales")
-B.mE=new A.a("Espa\xe7amento entre emissores","Outlet spacing","Espaciamiento entre emisores")
+B.mD=new A.a("Espa\xe7amento entre emissores","Outlet spacing","Espaciamiento entre emisores")
 B.AF=new A.a("Tubo da lateral","Lateral pipe","Tuber\xeda de la lateral")
-B.mC=new A.a("Espa\xe7amento entre laterais","Lateral spacing","Espaciamiento entre laterales")
-B.oZ=new A.a("Dire\xe7\xe3o das laterais (\xb0)","Lateral direction (\xb0)","Direcci\xf3n de las laterales (\xb0)")
+B.mB=new A.a("Espa\xe7amento entre laterais","Lateral spacing","Espaciamiento entre laterales")
+B.oY=new A.a("Dire\xe7\xe3o das laterais (\xb0)","Lateral direction (\xb0)","Direcci\xf3n de las laterales (\xb0)")
 B.uD=new A.a("Submain e v\xe1lvula","Submain and valve","Submain y v\xe1lvula")
-B.m1=new A.a("Posi\xe7\xe3o do submain","Submain position","Posici\xf3n del submain")
+B.m0=new A.a("Posi\xe7\xe3o do submain","Submain position","Posici\xf3n del submain")
 B.xt=new A.a("In\xedcio das laterais","Start of laterals","Inicio de las laterales")
 B.yL=new A.a("Centro (laterais pareadas)","Centre (paired laterals)","Centro (laterales pareadas)")
 B.yI=new A.a("Fim das laterais","End of laterals","Final de las laterales")
 B.i9=new A.a("Tubo do submain","Submain pipe","Tuber\xeda del submain")
 B.xZ=new A.a("Posi\xe7\xe3o da v\xe1lvula","Valve position","Posici\xf3n de la v\xe1lvula")
 B.c4=new A.a("In\xedcio","Start","Inicio")
-B.mm=new A.a("Centro","Centre","Centro")
-B.nV=new A.a("Fim","End","Final")
-B.lO=new A.a("Trecho at\xe9 a v\xe1lvula (stub)","Stub to the valve","Tramo hasta la v\xe1lvula")
-B.CP=new A.a("Espa\xe7amento (% do di\xe2metro molhado)","Spacing (% of wetted diameter)","Espaciamiento (% del di\xe1metro mojado)")
+B.ml=new A.a("Centro","Centre","Centro")
+B.nU=new A.a("Fim","End","Final")
+B.lN=new A.a("Trecho at\xe9 a v\xe1lvula (stub)","Stub to the valve","Tramo hasta la v\xe1lvula")
+B.CQ=new A.a("Espa\xe7amento (% do di\xe2metro molhado)","Spacing (% of wetted diameter)","Espaciamiento (% del di\xe1metro mojado)")
 B.rE=new A.a("Dire\xe7\xe3o (\xb0)","Direction (\xb0)","Direcci\xf3n (\xb0)")
 B.tk=new A.a("Quadrado","Square","Cuadrado")
 B.uR=new A.a("Triangular","Triangular","Triangular")
 B.xT=new A.a("Raio {r} m \u2192 espa\xe7amento {s} m; taxa \u2248 {pr} mm/h; CU te\xf3rico \u2248 {cu} %","Radius {r} m \u2192 spacing {s} m; rate \u2248 {pr} mm/h; theoretical CU \u2248 {cu} %","Radio {r} m \u2192 espaciamiento {s} m; tasa \u2248 {pr} mm/h; CU te\xf3rico \u2248 {cu} %")
 B.rY=new A.a("Lateral com emissores","Lateral with outlets","Lateral con emisores")
-B.oJ=new A.a("Declividade (%; + desce)","Slope (%; + downhill)","Pendiente (%; + baja)")
+B.oI=new A.a("Declividade (%; + desce)","Slope (%; + downhill)","Pendiente (%; + baja)")
 B.kG=new A.a("Toler\xe2ncia abaixo (%)","Tolerance below (%)","Tolerancia por debajo (%)")
 B.va=new A.a("Toler\xe2ncia acima (%)","Tolerance above (%)","Tolerancia por encima (%)")
-B.mG=new A.a("Vaz\xe3o de entrada","Inlet flow","Caudal de entrada")
-B.n7=new A.a("Perda de carga total","Total head loss","P\xe9rdida de carga total")
+B.mF=new A.a("Vaz\xe3o de entrada","Inlet flow","Caudal de entrada")
+B.n6=new A.a("Perda de carga total","Total head loss","P\xe9rdida de carga total")
 B.wi=new A.a("Press\xe3o no fim","End pressure","Presi\xf3n al final")
-B.np=new A.a("Press\xe3o m\xedn / m\xe1x","Min / max pressure","Presi\xf3n m\xedn / m\xe1x")
+B.no=new A.a("Press\xe3o m\xedn / m\xe1x","Min / max pressure","Presi\xf3n m\xedn / m\xe1x")
 B.zR=new A.a("Varia\xe7\xe3o de press\xe3o","Pressure variation","Variaci\xf3n de presi\xf3n")
 B.zE=new A.a("Velocidade m\xe1x.","Max. velocity","Velocidad m\xe1x.")
 B.rC=new A.a("CU / DU / EU / Us","CU / DU / EU / Us","CU / DU / EU / Us")
-B.CN=new A.a("qvar","qvar","qvar")
+B.CO=new A.a("qvar","qvar","qvar")
 B.kR=new A.a("Comprimento m\xe1ximo (janela \xb1)","Maximum length (\xb1 window)","Longitud m\xe1xima (ventana \xb1)")
 B.A4=new A.a("Altura est\xe1tica","Static head","Altura est\xe1tica")
-B.ot=new A.a("Adutora","Delivery main","Conducci\xf3n")
+B.os=new A.a("Adutora","Delivery main","Conducci\xf3n")
 B.kO=new A.a("Horas/ano","Hours/year","Horas/a\xf1o")
 B.cm=new A.a("Ponto de opera\xe7\xe3o","Operating point","Punto de operaci\xf3n")
-B.lX=new A.a("A bomba n\xe3o vence a altura est\xe1tica.","The pump cannot overcome the static head.","La bomba no supera la altura est\xe1tica.")
+B.lW=new A.a("A bomba n\xe3o vence a altura est\xe1tica.","The pump cannot overcome the static head.","La bomba no supera la altura est\xe1tica.")
 B.zh=new A.a("Altura manom\xe9trica","Total head","Altura manom\xe9trica")
 B.pf=new A.a("Velocidade na adutora","Velocity in the main","Velocidad en la conducci\xf3n")
-B.CI=new A.a("Pot\xeancia hidr\xe1ulica","Hydraulic power","Potencia hidr\xe1ulica")
+B.CJ=new A.a("Pot\xeancia hidr\xe1ulica","Hydraulic power","Potencia hidr\xe1ulica")
 B.zK=new A.a("Pot\xeancia no eixo (\u03b7 {e} %)","Shaft power (\u03b7 {e} %)","Potencia en el eje (\u03b7 {e} %)")
 B.k0=new A.a("Energia anual","Annual energy","Energ\xeda anual")
-B.BD=new A.a("Shutoff / runout","Shutoff / runout","Shutoff / runout")
+B.BE=new A.a("Shutoff / runout","Shutoff / runout","Shutoff / runout")
 B.te=new A.a("Velocidade (m/s)","Velocity (m/s)","Velocidad (m/s)")
-B.Bf=new A.a("Tempo de fechamento (s)","Closure time (s)","Tiempo de cierre (s)")
-B.DX=new A.a("Press\xe3o est\xe1tica","Static pressure","Presi\xf3n est\xe1tica")
+B.Bg=new A.a("Tempo de fechamento (s)","Closure time (s)","Tiempo de cierre (s)")
+B.DY=new A.a("Press\xe3o est\xe1tica","Static pressure","Presi\xf3n est\xe1tica")
 B.v2=new A.a("Resultado (Joukowsky)","Result (Joukowsky)","Resultado (Joukowsky)")
 B.xx=new A.a("Celeridade","Wave celerity","Celeridad")
 B.w2=new A.a("Sobrepress\xe3o m\xe1xima (fechamento instant\xe2neo)","Maximum surge (instantaneous closure)","Sobrepresi\xf3n m\xe1xima (cierre instant\xe1neo)")
 B.pZ=new A.a("Tempo cr\xedtico 2L/a","Critical time 2L/a","Tiempo cr\xedtico 2L/a")
 B.i2=new A.a("Sobrepress\xe3o estimada (fechamento {s} s)","Estimated surge (closure {s} s)","Sobrepresi\xf3n estimada (cierre {s} s)")
 B.wd=new A.a("Press\xe3o total","Total pressure","Presi\xf3n total")
-B.nm=new A.a("Classe do tubo","Pipe class","Clase de la tuber\xeda")
+B.nl=new A.a("Classe do tubo","Pipe class","Clase de la tuber\xeda")
 B.c8=new A.a("Fitas","Tapes","Cintas")
 B.vb=new A.a("Uso","Use","Uso")
-B.mS=new A.a("DN","DN","DN")
+B.mR=new A.a("DN","DN","DN")
 B.vH=new A.a("DI mm","ID mm","DI mm")
-B.md=new A.a("C","C","C")
-B.F_=new A.a("PN (m)","PN (m)","PN (m)")
+B.mc=new A.a("C","C","C")
+B.F0=new A.a("PN (m)","PN (m)","PN (m)")
 B.iz=new A.a("{c}/m","{c}/m","{c}/m")
 B.ir=new A.a("k (L/h\xb7m^-x)","k (L/h\xb7m^-x)","k (L/h\xb7m^-x)")
-B.EU=new A.a("x","x","x")
-B.CC=new A.a("P padr\xe3o","Default P","P predeterminada")
-B.mc=new A.a("CV","CV","CV")
+B.EV=new A.a("x","x","x")
+B.CD=new A.a("P padr\xe3o","Default P","P predeterminada")
+B.mb=new A.a("CV","CV","CV")
 B.zn=new A.a("Tol \xb1%","Tol \xb1%","Tol \xb1%")
 B.wX=new A.a("{c}","{c}","{c}")
-B.CG=new A.a("Esp. m","Spacing m","Esp. m")
-B.ER=new A.a("q nom L/h","q nom L/h","q nom L/h")
+B.CH=new A.a("Esp. m","Spacing m","Esp. m")
+B.ES=new A.a("q nom L/h","q nom L/h","q nom L/h")
 B.pK=new A.a("Kd","Kd","Kd")
 B.cz=new A.a("Tipo","Type","Tipo")
-B.mF=new A.a("K (h=K\xb7Q^n, Q m\xb3/s)","K (h=K\xb7Q^n, Q m\xb3/s)","K (h=K\xb7Q^n, Q m\xb3/s)")
-B.BG=new A.a("n","n","n")
+B.mE=new A.a("K (h=K\xb7Q^n, Q m\xb3/s)","K (h=K\xb7Q^n, Q m\xb3/s)","K (h=K\xb7Q^n, Q m\xb3/s)")
+B.BH=new A.a("n","n","n")
 B.k8=new A.a("Q m\xe1x m\xb3/h","Max Q m\xb3/h","Q m\xe1x m\xb3/h")
 B.us=new A.a("Pontos (Q m\xb3/h @ H m)","Points (Q m\xb3/h @ H m)","Puntos (Q m\xb3/h @ H m)")
 B.rq=new A.a("\u03b7","\u03b7","\u03b7")
@@ -13287,85 +13295,85 @@ B.ry=new A.a("PEBD","LDPE","PEBD")
 B.yv=new A.a("A\xe7o","Steel","Acero")
 B.ia=new A.a("Ferro d\xfactil","Ductile iron","Fundici\xf3n d\xfactil")
 B.ld=new A.a("Alum\xednio","Aluminium","Aluminio")
-B.Bo=new A.a("Concreto","Concrete","Hormig\xf3n")
-B.Cz=new A.a("C\xe1lculo n\xe3o convergiu","Calculation did not converge","El c\xe1lculo no convergi\xf3")
-B.Fe=new A.a("N\xe3o foi poss\xedvel atender a janela de press\xe3o com os tubos dispon\xedveis","Could not meet the pressure window with the available pipes","No se pudo cumplir la ventana de presi\xf3n con las tuber\xedas disponibles")
+B.Bp=new A.a("Concreto","Concrete","Hormig\xf3n")
+B.CA=new A.a("C\xe1lculo n\xe3o convergiu","Calculation did not converge","El c\xe1lculo no convergi\xf3")
+B.Ff=new A.a("N\xe3o foi poss\xedvel atender a janela de press\xe3o com os tubos dispon\xedveis","Could not meet the pressure window with the available pipes","No se pudo cumplir la ventana de presi\xf3n con las tuber\xedas disponibles")
 B.rs=new A.a("Linha principal n\xe3o consegue atender a press\xe3o das v\xe1lvulas","Mainline cannot meet the valve pressures","La l\xednea principal no puede cumplir la presi\xf3n de las v\xe1lvulas")
 B.ku=new A.a("Nenhuma fonte de \xe1gua conectada","No water supply connected","Ninguna fuente de agua conectada")
 B.wY=new A.a("Emissor acima da press\xe3o admiss\xedvel","Outlet above allowable pressure","Emisor por encima de la presi\xf3n admisible")
-B.EN=new A.a("Emissor abaixo da press\xe3o admiss\xedvel","Outlet below allowable pressure","Emisor por debajo de la presi\xf3n admisible")
+B.EO=new A.a("Emissor abaixo da press\xe3o admiss\xedvel","Outlet below allowable pressure","Emisor por debajo de la presi\xf3n admisible")
 B.xY=new A.a("Press\xe3o acima da classe do tubo","Pressure above the pipe rating","Presi\xf3n por encima de la clase de la tuber\xeda")
-B.CD=new A.a("Bomba fora da faixa de opera\xe7\xe3o","Pump outside its operating range","Bomba fuera del rango de operaci\xf3n")
+B.CE=new A.a("Bomba fora da faixa de opera\xe7\xe3o","Pump outside its operating range","Bomba fuera del rango de operaci\xf3n")
 B.tZ=new A.a("Suc\xe7\xe3o da bomba acima do limite pr\xe1tico: instale a bomba mais perto do n\xedvel da \xe1gua ou use uma bomba submersa","Pump suction lift above the practical limit: install the pump closer to the water level or use a submersible pump","Succi\xf3n de la bomba por encima del l\xedmite pr\xe1ctico: instale la bomba m\xe1s cerca del nivel del agua o use una bomba sumergible")
-B.AX=new A.a("Vaz\xe3o da fonte excedida","Supply flow exceeded","Caudal de la fuente excedido")
+B.AY=new A.a("Vaz\xe3o da fonte excedida","Supply flow exceeded","Caudal de la fuente excedido")
 B.kv=new A.a("Press\xe3o m\xe1xima da fonte excedida","Supply maximum pressure exceeded","Presi\xf3n m\xe1xima de la fuente excedida")
-B.nr=new A.a("Vaz\xe3o fora da faixa da v\xe1lvula","Flow outside the valve range","Caudal fuera del rango de la v\xe1lvula")
+B.nq=new A.a("Vaz\xe3o fora da faixa da v\xe1lvula","Flow outside the valve range","Caudal fuera del rango de la v\xe1lvula")
 B.qx=new A.a("V\xe1lvula n\xe3o encontrada","Valve not found","V\xe1lvula no encontrada")
-B.Bt=new A.a("Press\xe3o insuficiente na v\xe1lvula","Insufficient pressure at the valve","Presi\xf3n insuficiente en la v\xe1lvula")
+B.Bu=new A.a("Press\xe3o insuficiente na v\xe1lvula","Insufficient pressure at the valve","Presi\xf3n insuficiente en la v\xe1lvula")
 B.um=new A.a("V\xe1lvula n\xe3o alcan\xe7ada pela linha principal","Valve not reached by the mainline","V\xe1lvula no alcanzada por la l\xednea principal")
 B.xB=new A.a("Velocidade m\xe1xima excedida","Maximum velocity exceeded","Velocidad m\xe1xima excedida")
 B.zM=new A.a("Zona sem tubos ou emissores","Zone without pipes or outlets","Zona sin tuber\xedas ni emisores")
 B.z8=new A.a("Zonas conectadas entre si sem v\xe1lvula","Zones connected without a valve","Zonas conectadas entre s\xed sin v\xe1lvula")
 B.kb=new A.a("V\xe1lvula sem tubos de zona","Valve without zone pipes","V\xe1lvula sin tuber\xedas de zona")
-B.BO=new A.a("Emissor sem modelo no cat\xe1logo","Outlet without a catalog model","Emisor sin modelo en el cat\xe1logo")
+B.BP=new A.a("Emissor sem modelo no cat\xe1logo","Outlet without a catalog model","Emisor sin modelo en el cat\xe1logo")
 B.pe=new A.a("Fita sem modelo no cat\xe1logo","Tape without a catalog model","Cinta sin modelo en el cat\xe1logo")
-B.Ba=new A.a("Bomba sem modelo no cat\xe1logo","Pump without a catalog model","Bomba sin modelo en el cat\xe1logo")
+B.Bb=new A.a("Bomba sem modelo no cat\xe1logo","Pump without a catalog model","Bomba sin modelo en el cat\xe1logo")
 B.t7=new A.a("Acess\xf3rio sem modelo no cat\xe1logo","Device without a catalog model","Accesorio sin modelo en el cat\xe1logo")
 B.ze=new A.a("Rede sem fonte de carga fixa","Network without a fixed-head source","Red sin fuente de carga fija")
 B.iU=new A.a("P\xe1gina de dados ausente no DWG","Missing data page in DWG","P\xe1gina de datos ausente en el DWG")
 B.vZ=new A.a("OpenCADIrrigation \u2014 CAD para projeto de irriga\xe7\xe3o pressurizada.\nMotor hidr\xe1ulico: Hazen\u2011Williams / Darcy\u2011Weisbach, Global Gradient Algorithm (Todini\u2011Pilati), an\xe1lise de laterais passo a passo, dimensionamento por velocidade e por janela de press\xe3o com crit\xe9rio econ\xf4mico.\nRoda no navegador, sem instala\xe7\xe3o.","OpenCADIrrigation \u2014 CAD for pressurised irrigation design.\nHydraulic engine: Hazen\u2011Williams / Darcy\u2011Weisbach, Global Gradient Algorithm (Todini\u2011Pilati), step-by-step lateral analysis, velocity and pressure-window pipe sizing with economic trade-off.\nRuns in the browser, nothing to install.","OpenCADIrrigation \u2014 CAD para el dise\xf1o de riego presurizado.\nMotor hidr\xe1ulico: Hazen\u2011Williams / Darcy\u2011Weisbach, Global Gradient Algorithm (Todini\u2011Pilati), an\xe1lisis de laterales paso a paso, dimensionamiento por velocidad y por ventana de presi\xf3n con criterio econ\xf3mico.\nFunciona en el navegador, sin instalaci\xf3n.")
 B.vu=new A.a("Vers\xe3o {v}","Version {v}","Versi\xf3n {v}")
-B.D8=new A.a("Site do projeto","Project site","Sitio del proyecto")
-B.CY=new A.a("Arco (3 pontos)","Arc (3 points)","Arco (3 puntos)")
+B.D9=new A.a("Site do projeto","Project site","Sitio del proyecto")
+B.CZ=new A.a("Arco (3 pontos)","Arc (3 points)","Arco (3 puntos)")
 B.xN=new A.a("Spline (curva suave)","Spline (smooth curve)","Spline (curva suave)")
-B.oD=new A.a("Hachura","Hatch","Sombreado")
+B.oC=new A.a("Hachura","Hatch","Sombreado")
 B.cj=new A.a("S\xedmbolo","Symbol","S\xedmbolo")
-B.oI=new A.a("Cota angular","Angular dimension","Cota angular")
-B.EX=new A.a("Cota radial","Radial dimension","Cota radial")
+B.oH=new A.a("Cota angular","Angular dimension","Cota angular")
+B.EY=new A.a("Cota radial","Radial dimension","Cota radial")
 B.iG=new A.a("Chamada (leader)","Leader","Llamada (leader)")
 B.cv=new A.a("Rotacionar","Rotate","Rotar")
 B.y4=new A.a("Espelhar","Mirror","Simetr\xeda")
 B.c3=new A.a("Escalar","Scale","Escalar")
 B.vL=new A.a("Deslocar (offset)","Offset","Desfasar (offset)")
-B.lC=new A.a("Aparar","Trim","Recortar")
-B.ny=new A.a("Estender","Extend","Alargar")
-B.F2=new A.a("Cortar tubo","Cut pipe","Cortar tuber\xeda")
-B.DA=new A.a("Perfil de eleva\xe7\xe3o","Elevation profile","Perfil de elevaci\xf3n")
+B.lB=new A.a("Aparar","Trim","Recortar")
+B.nx=new A.a("Estender","Extend","Alargar")
+B.F3=new A.a("Cortar tubo","Cut pipe","Cortar tuber\xeda")
+B.DB=new A.a("Perfil de eleva\xe7\xe3o","Elevation profile","Perfil de elevaci\xf3n")
 B.yB=new A.a("Clique no in\xedcio, em um ponto do arco e no fim","Click start, a point on the arc, then end","Clic en el inicio, un punto del arco y el final")
 B.pv=new A.a("Clique nos pontos da curva; Enter termina","Click curve points; Enter ends","Clic en los puntos de la curva; Intro termina")
 B.js=new A.a("Clique nos v\xe9rtices da \xe1rea a hachurar; Enter fecha","Click the hatch boundary vertices; Enter closes","Clic en los v\xe9rtices del \xe1rea; Intro cierra")
 B.uv=new A.a("Clique para inserir o s\xedmbolo (tipo e tamanho no painel)","Click to insert the symbol (kind and size in the panel)","Clic para insertar el s\xedmbolo (tipo y tama\xf1o en el panel)")
 B.i8=new A.a("Clique no v\xe9rtice, nos dois lados e na posi\xe7\xe3o do arco","Click the vertex, both sides, then the arc position","Clic en el v\xe9rtice, los dos lados y la posici\xf3n del arco")
-B.oX=new A.a("Clique no c\xedrculo (ou centro) e depois no ponto da cota","Click the circle (or centre) then the dimension point","Clic en el c\xedrculo (o centro) y luego en el punto de la cota")
+B.oW=new A.a("Clique no c\xedrculo (ou centro) e depois no ponto da cota","Click the circle (or centre) then the dimension point","Clic en el c\xedrculo (o centro) y luego en el punto de la cota")
 B.iv=new A.a("Clique na ponta da seta e nos v\xe9rtices; Enter abre o texto","Click the arrow tip and the vertices; Enter opens the text","Clic en la punta de la flecha y los v\xe9rtices; Intro abre el texto")
-B.Ep=new A.a("Sele\xe7\xe3o: clique no ponto base, na refer\xeancia e no destino (Ctrl = copiar)","Selection: click base point, reference, then target (Ctrl = copy)","Selecci\xf3n: clic en el punto base, la referencia y el destino (Ctrl = copiar)")
+B.Eq=new A.a("Sele\xe7\xe3o: clique no ponto base, na refer\xeancia e no destino (Ctrl = copiar)","Selection: click base point, reference, then target (Ctrl = copy)","Selecci\xf3n: clic en el punto base, la referencia y el destino (Ctrl = copiar)")
 B.pF=new A.a("Sele\xe7\xe3o: clique nos dois pontos da linha de espelho","Selection: click the two points of the mirror line","Selecci\xf3n: clic en los dos puntos del eje de simetr\xeda")
-B.EH=new A.a("Sele\xe7\xe3o: clique no ponto base, na refer\xeancia e no destino (fator = raz\xe3o)","Selection: click base point, reference, then target (factor = ratio)","Selecci\xf3n: clic en el punto base, la referencia y el destino (factor = raz\xf3n)")
-B.DL=new A.a("Clique no objeto e depois no lado do deslocamento (dist\xe2ncia no painel)","Click the object then the offset side (distance in the panel)","Clic en el objeto y luego en el lado del desfase (distancia en el panel)")
+B.EI=new A.a("Sele\xe7\xe3o: clique no ponto base, na refer\xeancia e no destino (fator = raz\xe3o)","Selection: click base point, reference, then target (factor = ratio)","Selecci\xf3n: clic en el punto base, la referencia y el destino (factor = raz\xf3n)")
+B.DM=new A.a("Clique no objeto e depois no lado do deslocamento (dist\xe2ncia no painel)","Click the object then the offset side (distance in the panel)","Clic en el objeto y luego en el lado del desfase (distancia en el panel)")
 B.AN=new A.a("Clique na parte a remover; a sele\xe7\xe3o define as arestas de corte","Click the part to remove; the selection defines the cutting edges","Clic en la parte a quitar; la selecci\xf3n define las aristas de corte")
 B.vx=new A.a("Clique perto da extremidade a estender at\xe9 a pr\xf3xima aresta","Click near the end to extend to the next edge","Clic cerca del extremo a alargar hasta la siguiente arista")
 B.q0=new A.a("Clique no ponto do tubo/lateral onde cortar","Click the point of the pipe/lateral to cut","Clic en el punto de la tuber\xeda/lateral donde cortar")
 B.uF=new A.a("Clique os pontos do caminho; Enter (ou Concluir) mostra o perfil na aba Perfil; Esc limpa a linha roxa","Click the path points; Enter (or Done) shows the profile in the Profile tab; Esc clears the purple line","Clic en los puntos del camino; Intro (o Terminar) muestra el perfil en la pesta\xf1a Perfil; Esc borra la l\xednea morada")
 B.qC=new A.a("Modificar","Modify","Modificar")
-B.CW=new A.a("Matriz (array)\u2026","Array\u2026","Matriz (array)\u2026")
-B.Fb=new A.a("Envelope do submain (laterais selecionadas)","Submain envelope (selected laterals)","Envolvente del submain (laterales seleccionadas)")
-B.lL=new A.a("Matriz da sele\xe7\xe3o","Array of the selection","Matriz de la selecci\xf3n")
+B.CX=new A.a("Matriz (array)\u2026","Array\u2026","Matriz (array)\u2026")
+B.Fc=new A.a("Envelope do submain (laterais selecionadas)","Submain envelope (selected laterals)","Envolvente del submain (laterales seleccionadas)")
+B.lK=new A.a("Matriz da sele\xe7\xe3o","Array of the selection","Matriz de la selecci\xf3n")
 B.uB=new A.a("Retangular","Rectangular","Rectangular")
 B.rO=new A.a("Polar","Polar","Polar")
 B.qa=new A.a("Linhas","Rows","Filas")
-B.mq=new A.a("Colunas","Columns","Columnas")
+B.mp=new A.a("Colunas","Columns","Columnas")
 B.l5=new A.a("Espa\xe7amento em X","Column spacing","Espaciamiento en X")
-B.E7=new A.a("Espa\xe7amento em Y","Row spacing","Espaciamiento en Y")
+B.E8=new A.a("Espa\xe7amento em Y","Row spacing","Espaciamiento en Y")
 B.xV=new A.a("\xc2ngulo da matriz (\xb0)","Array angle (\xb0)","\xc1ngulo de la matriz (\xb0)")
 B.l0=new A.a("N\xfamero de itens","Number of items","N\xfamero de elementos")
 B.zi=new A.a("Centro (X, Y)","Centre (X, Y)","Centro (X, Y)")
 B.iV=new A.a("\xc2ngulo total (\xb0)","Total angle (\xb0)","\xc1ngulo total (\xb0)")
 B.x7=new A.a("Rotacionar itens","Rotate items","Rotar elementos")
-B.Cj=new A.a("{n} itens selecionados","{n} selected items","{n} elementos seleccionados")
+B.Ck=new A.a("{n} itens selecionados","{n} selected items","{n} elementos seleccionados")
 B.xu=new A.a("A camada est\xe1 bloqueada","The layer is locked","La capa est\xe1 bloqueada")
 B.ic=new A.a("Nenhuma interse\xe7\xe3o encontrada","No intersection found","No se encontr\xf3 intersecci\xf3n")
-B.EE=new A.a("Selecione uma ou mais laterais (sprayline ou fita)","Select one or more laterals (sprayline or tape)","Seleccione una o m\xe1s laterales (sprayline o cinta)")
-B.E3=new A.a("Envelope calculado para {n} laterais (verde = posi\xe7\xe3o admiss\xedvel)","Envelope computed for {n} laterals (green = allowable position)","Envolvente calculada para {n} laterales (verde = posici\xf3n admisible)")
+B.EF=new A.a("Selecione uma ou mais laterais (sprayline ou fita)","Select one or more laterals (sprayline or tape)","Seleccione una o m\xe1s laterales (sprayline o cinta)")
+B.E4=new A.a("Envelope calculado para {n} laterais (verde = posi\xe7\xe3o admiss\xedvel)","Envelope computed for {n} laterals (green = allowable position)","Envolvente calculada para {n} laterales (verde = posici\xf3n admisible)")
 B.yG=new A.a("{n} itens criados","{n} items created","{n} elementos creados")
 B.tu=new A.a("Marcar press\xe3o m\xedn/m\xe1x por zona","Mark min/max pressure per zone","Marcar presi\xf3n m\xedn/m\xe1x por zona")
 B.j2=new A.a("Mapa base","Base map","Mapa base")
@@ -13373,15 +13381,15 @@ B.qV=new A.a("Nenhum","None","Ninguno")
 B.k1=new A.a("Ruas (OpenStreetMap)","Streets (OpenStreetMap)","Calles (OpenStreetMap)")
 B.ye=new A.a("Sat\xe9lite (Esri World Imagery)","Satellite (Esri World Imagery)","Sat\xe9lite (Esri World Imagery)")
 B.pE=new A.a("Topogr\xe1fico (OpenTopoMap)","Topographic (OpenTopoMap)","Topogr\xe1fico (OpenTopoMap)")
-B.Bd=new A.a("Ruas claras (CARTO Voyager)","Light streets (CARTO Voyager)","Calles claras (CARTO Voyager)")
-B.BQ=new A.a("Ruas (Esri World Street Map)","Streets (Esri World Street Map)","Calles (Esri World Street Map)")
+B.Be=new A.a("Ruas claras (CARTO Voyager)","Light streets (CARTO Voyager)","Calles claras (CARTO Voyager)")
+B.BR=new A.a("Ruas (Esri World Street Map)","Streets (Esri World Street Map)","Calles (Esri World Street Map)")
 B.iE=new A.a("Topogr\xe1fico (Esri World Topo Map)","Topographic (Esri World Topo Map)","Topogr\xe1fico (Esri World Topo Map)")
 B.qJ=new A.a("Google Maps \u2013 mapa","Google Maps \u2013 roadmap","Google Maps \u2013 mapa")
 B.l7=new A.a("Google Maps \u2013 sat\xe9lite","Google Maps \u2013 satellite","Google Maps \u2013 sat\xe9lite")
 B.iR=new A.a("Google Maps \u2013 h\xedbrido (sat\xe9lite + vias)","Google Maps \u2013 hybrid (satellite + roads)","Google Maps \u2013 h\xedbrido (sat\xe9lite + v\xedas)")
 B.kM=new A.a("Google Maps \u2013 relevo","Google Maps \u2013 terrain","Google Maps \u2013 relieve")
-B.oi=new A.a("Personalizado (URL XYZ)","Custom (XYZ URL)","Personalizado (URL XYZ)")
-B.Ed=new A.a("Chave da API do Google Maps\u2026","Google Maps API key\u2026","Clave de la API de Google Maps\u2026")
+B.oh=new A.a("Personalizado (URL XYZ)","Custom (XYZ URL)","Personalizado (URL XYZ)")
+B.Ee=new A.a("Chave da API do Google Maps\u2026","Google Maps API key\u2026","Clave de la API de Google Maps\u2026")
 B.Fr=new A.a("URL do mapa personalizado\u2026","Custom map URL\u2026","URL del mapa personalizado\u2026")
 B.uN=new A.a("Chave da API do Google Maps","Google Maps API key","Clave de la API de Google Maps")
 B.j5=new A.a("Os mapas do Google s\xe3o servidos pela Map Tiles API da Google Maps Platform com a sua pr\xf3pria chave: o uso \xe9 contabilizado (e cobrado al\xe9m da cota gratuita) na sua conta Google Cloud.","Google maps come from the Map Tiles API of the Google Maps Platform with your own key: usage is counted (and billed beyond the free quota) on your Google Cloud account.","Los mapas de Google los sirve la Map Tiles API de Google Maps Platform con su propia clave: el uso se contabiliza (y se cobra m\xe1s all\xe1 de la cuota gratuita) en su cuenta de Google Cloud.")
@@ -13389,39 +13397,39 @@ B.Fu=new A.a('1. No Google Cloud Console, crie um projeto e ative a "Map Tiles A
 B.xa=new A.a("Abrir Google Cloud Console","Open Google Cloud Console","Abrir Google Cloud Console")
 B.vl=new A.a("Como obter a chave","How to get a key","C\xf3mo obtener la clave")
 B.r5=new A.a("Chave da API","API key","Clave de la API")
-B.lY=new A.a("A chave fica guardada s\xf3 neste navegador e \xe9 enviada apenas ao Google.","The key is kept in this browser only and sent to Google only.","La clave se guarda solo en este navegador y se env\xeda \xfanicamente a Google.")
+B.lX=new A.a("A chave fica guardada s\xf3 neste navegador e \xe9 enviada apenas ao Google.","The key is kept in this browser only and sent to Google only.","La clave se guarda solo en este navegador y se env\xeda \xfanicamente a Google.")
 B.wl=new A.a("Remover chave","Remove key","Quitar clave")
 B.u0=new A.a("Google Maps: informe a chave da API em Ver \u2192 Mapa base","Google Maps: enter the API key under View \u2192 Base map","Google Maps: indique la clave de la API en Ver \u2192 Mapa base")
-B.BV=new A.a("Google Maps: {e}","Google Maps: {e}","Google Maps: {e}")
+B.BW=new A.a("Google Maps: {e}","Google Maps: {e}","Google Maps: {e}")
 B.z9=new A.a("Mapa base personalizado","Custom base map","Mapa base personalizado")
-B.Cn=new A.a("Endere\xe7o dos tiles no padr\xe3o XYZ (Web Mercator): um servidor pr\xf3prio, um provedor com chave ou um WMTS.","Address of the tiles in the XYZ pattern (Web Mercator): your own server, a keyed provider or a WMTS.","Direcci\xf3n de los tiles en el patr\xf3n XYZ (Web Mercator): un servidor propio, un proveedor con clave o un WMTS.")
-B.Di=new A.a("Modelo de URL","URL template","Plantilla de URL")
+B.Co=new A.a("Endere\xe7o dos tiles no padr\xe3o XYZ (Web Mercator): um servidor pr\xf3prio, um provedor com chave ou um WMTS.","Address of the tiles in the XYZ pattern (Web Mercator): your own server, a keyed provider or a WMTS.","Direcci\xf3n de los tiles en el patr\xf3n XYZ (Web Mercator): un servidor propio, un proveedor con clave o un WMTS.")
+B.Dj=new A.a("Modelo de URL","URL template","Plantilla de URL")
 B.po=new A.a("Marcadores: {z} zoom, {x} coluna, {y} linha ({-y} para TMS), {s} subdom\xednio a/b/c. A chave do provedor, se houver, vai na pr\xf3pria URL.","Placeholders: {z} zoom, {x} column, {y} row ({-y} for TMS), {s} subdomain a/b/c. The provider key, if any, goes in the URL itself.","Marcadores: {z} zoom, {x} columna, {y} fila ({-y} para TMS), {s} subdominio a/b/c. La clave del proveedor, si la hay, va en la propia URL.")
 B.lu=new A.a("A URL precisa come\xe7ar com http(s):// e conter {z}, {x} e {y}","The URL must start with http(s):// and contain {z}, {x} and {y}","La URL debe empezar con http(s):// y contener {z}, {x} e {y}")
-B.oU=new A.a("Defina a georrefer\xeancia (Arquivo \u2192 Georrefer\xeancia) para mostrar o mapa base","Set the georeference (File \u2192 Georeference) to show the base map","Defina la georreferencia (Archivo \u2192 Georreferencia) para mostrar el mapa base")
+B.oT=new A.a("Defina a georrefer\xeancia (Arquivo \u2192 Georrefer\xeancia) para mostrar o mapa base","Set the georeference (File \u2192 Georeference) to show the base map","Defina la georreferencia (Archivo \u2192 Georreferencia) para mostrar el mapa base")
 B.tR=new A.a("Al\xe7as de edi\xe7\xe3o","Edit grips","Pinzamientos de edici\xf3n")
 B.yb=new A.a("Envelope de posi\xe7\xe3o do submain","Allowable submain position","Posici\xf3n admisible del submain")
-B.nA=new A.a("Camada atual","Current layer","Capa actual")
-B.m_=new A.a("Bloquear","Lock","Bloquear")
-B.Bx=new A.a("Nova camada","New layer","Nueva capa")
+B.nz=new A.a("Camada atual","Current layer","Capa actual")
+B.lZ=new A.a("Bloquear","Lock","Bloquear")
+B.By=new A.a("Nova camada","New layer","Nueva capa")
 B.tG=new A.a("Renomear","Rename","Renombrar")
 B.jq=new A.a("Excluir camada (itens v\xe3o para DRAWING)","Delete layer (items move to DRAWING)","Eliminar capa (los elementos van a DRAWING)")
-B.mv=new A.a("Cor","Colour","Color")
+B.mu=new A.a("Cor","Colour","Color")
 B.kT=new A.a("Nome da camada","Layer name","Nombre de la capa")
-B.Ck=new A.a("J\xe1 existe uma camada com esse nome","A layer with that name already exists","Ya existe una capa con ese nombre")
+B.Cl=new A.a("J\xe1 existe uma camada com esse nome","A layer with that name already exists","Ya existe una capa con ese nombre")
 B.pk=new A.a("Clique no olho para mostrar/ocultar, no cadeado para bloquear, na cor para alterar; duplo clique renomeia; o c\xedrculo marca a camada atual.","Click the eye to show/hide, the padlock to lock, the colour to change it; double-click renames; the dot marks the current layer.","Clic en el ojo para mostrar/ocultar, en el candado para bloquear, en el color para cambiarlo; doble clic renombra; el c\xedrculo marca la capa actual.")
-B.mP=new A.a("Edi\xe7\xe3o em lote ({n} {type})","Batch edit ({n} {type})","Edici\xf3n en lote ({n} {type})")
+B.mO=new A.a("Edi\xe7\xe3o em lote ({n} {type})","Batch edit ({n} {type})","Edici\xf3n en lote ({n} {type})")
 B.yh=new A.a("(valores diferentes)","(mixed values)","(valores distintos)")
 B.vO=new A.a("Tamanho (m)","Size (m)","Tama\xf1o (m)")
-B.lF=new A.a("\xc2ngulo da hachura (\xb0)","Hatch angle (\xb0)","\xc1ngulo del sombreado (\xb0)")
+B.lE=new A.a("\xc2ngulo da hachura (\xb0)","Hatch angle (\xb0)","\xc1ngulo del sombreado (\xb0)")
 B.kW=new A.a("Espa\xe7amento da hachura (m)","Hatch spacing (m)","Espaciamiento del sombreado (m)")
-B.oL=new A.a("Preenchimento s\xf3lido","Solid fill","Relleno s\xf3lido")
+B.oK=new A.a("Preenchimento s\xf3lido","Solid fill","Relleno s\xf3lido")
 B.rj=new A.a("Opacidade","Opacity","Opacidad")
 B.ph=new A.a("Largura (m)","Width (m)","Ancho (m)")
-B.nP=new A.a("Altura (m)","Height (m)","Alto (m)")
+B.nO=new A.a("Altura (m)","Height (m)","Alto (m)")
 B.kS=new A.a("Emissores por planta (0 = padr\xe3o do projeto)","Emitters per plant (0 = project default)","Emisores por planta (0 = valor del proyecto)")
 B.pc=new A.a("Balan\xe7o h\xeddrico (ETo \xd7 Kc, solo)","Water balance (ETo \xd7 Kc, soil)","Balance h\xeddrico (ETo \xd7 Kc, suelo)")
-B.mZ=new A.a("ETo (mm/dia)","ETo (mm/day)","ETo (mm/d\xeda)")
+B.mY=new A.a("ETo (mm/dia)","ETo (mm/day)","ETo (mm/d\xeda)")
 B.pJ=new A.a("Kc","Kc","Kc")
 B.wL=new A.a("Kc por cultura (FAO-56)","Kc by crop (FAO-56)","Kc por cultivo (FAO-56)")
 B.tA=new A.a("\xc1gua dispon\xedvel (mm/m)","Available water (mm/m)","Agua disponible (mm/m)")
@@ -13429,31 +13437,31 @@ B.zt=new A.a("Profundidade radicular (m)","Root depth (m)","Profundidad radicula
 B.ub=new A.a("Fra\xe7\xe3o de esgotamento (MAD)","Allowed depletion (MAD)","Fracci\xf3n de agotamiento (MAD)")
 B.vk=new A.a("Fra\xe7\xe3o molhada","Wetted fraction","Fracci\xf3n mojada")
 B.rh=new A.a("Espa\xe7amento entre plantas (m)","Plant spacing (m)","Espaciamiento entre plantas (m)")
-B.n_=new A.a("Espa\xe7amento entre linhas (m)","Row spacing (m)","Espaciamiento entre hileras (m)")
-B.Dj=new A.a("ETc (mm/dia)","ETc (mm/day)","ETc (mm/d\xeda)")
+B.mZ=new A.a("Espa\xe7amento entre linhas (m)","Row spacing (m)","Espaciamiento entre hileras (m)")
+B.Dk=new A.a("ETc (mm/dia)","ETc (mm/day)","ETc (mm/d\xeda)")
 B.i4=new A.a("Intervalo (dias)","Interval (days)","Intervalo (d\xedas)")
 B.zT=new A.a("Dist\xe2ncia do offset","Offset distance","Distancia del desfase")
-B.BP=new A.a("Manter original (copiar)","Keep original (copy)","Mantener original (copiar)")
-B.D9=new A.a("Manter original","Keep source","Mantener original")
-B.CJ=new A.a("Dividir tubo ao inserir sobre ele","Split pipe when inserted on it","Dividir tuber\xeda al insertar sobre ella")
-B.AV=new A.a("Curva fechada","Closed curve","Curva cerrada")
+B.BQ=new A.a("Manter original (copiar)","Keep original (copy)","Mantener original (copiar)")
+B.Da=new A.a("Manter original","Keep source","Mantener original")
+B.CK=new A.a("Dividir tubo ao inserir sobre ele","Split pipe when inserted on it","Dividir tuber\xeda al insertar sobre ella")
+B.AW=new A.a("Curva fechada","Closed curve","Curva cerrada")
 B.vf=new A.a("\xc2ngulo (\xb0)","Angle (\xb0)","\xc1ngulo (\xb0)")
 B.xz=new A.a("Texto da chamada","Leader text","Texto de la llamada")
 B.kd=new A.a("Raio do arco de cota (m)","Dimension arc radius (m)","Radio del arco de cota (m)")
 B.jt=new A.a("Camada bloqueada: edi\xe7\xe3o desativada","Locked layer: editing disabled","Capa bloqueada: edici\xf3n desactivada")
 B.wp=new A.a("Vaz\xe3o de lavagem no fim (0 = autom\xe1tica)","End flushing flow (0 = automatic)","Caudal de lavado al final (0 = autom\xe1tico)")
-B.Em=new A.a("Envelope do submain","Submain envelope","Envolvente del submain")
+B.En=new A.a("Envelope do submain","Submain envelope","Envolvente del submain")
 B.xA=new A.a("Melhor posi\xe7\xe3o: {f} % do in\xedcio (\u0394p {v})","Best position: {f} % from the start (\u0394p {v})","Mejor posici\xf3n: {f} % desde el inicio (\u0394p {v})")
-B.ni=new A.a("Admiss\xedvel: {a} % a {b} %","Allowable: {a} % to {b} %","Admisible: {a} % a {b} %")
+B.nh=new A.a("Admiss\xedvel: {a} % a {b} %","Allowable: {a} % to {b} %","Admisible: {a} % a {b} %")
 B.Ae=new A.a("Nenhuma posi\xe7\xe3o atende \xe0 janela de press\xe3o","No position meets the pressure window","Ninguna posici\xf3n cumple la ventana de presi\xf3n")
 B.tg=new A.a("Seta norte","North arrow","Flecha norte")
 B.kh=new A.a("\xc1rvore","Tree","\xc1rbol")
 B.uU=new A.a("Edifica\xe7\xe3o","Building","Edificaci\xf3n")
 B.cb=new A.a("Reservat\xf3rio","Tank","Dep\xf3sito")
 B.AG=new A.a("Caixa de v\xe1lvula","Valve box","Arqueta de v\xe1lvula")
-B.CL=new A.a("Casa de bombas","Pump house","Caseta de bombeo")
+B.CM=new A.a("Casa de bombas","Pump house","Caseta de bombeo")
 B.yg=new A.a("Port\xe3o","Gate","Port\xf3n")
-B.DU=new A.a("Esta\xe7\xe3o de filtragem","Filter station","Estaci\xf3n de filtrado")
+B.DV=new A.a("Esta\xe7\xe3o de filtragem","Filter station","Estaci\xf3n de filtrado")
 B.d3=new A.a("Caf\xe9","Coffee","Caf\xe9")
 B.bT=new A.a("Banana","Banana","Banano")
 B.qq=new A.a("Manga","Mango","Mango")
@@ -13464,65 +13472,65 @@ B.bS=new A.a("Cana-de-a\xe7\xfacar","Sugarcane","Ca\xf1a de az\xfacar")
 B.cc=new A.a("Hortali\xe7as","Vegetables","Hortalizas")
 B.bL=new A.a("Grama","Turf","C\xe9sped")
 B.rJ=new A.a("Pastagem","Pasture","Pasto")
-B.m4=new A.a("Personalizado","Custom","Personalizado")
-B.Bz=new A.a("Lavagem (flushing)","Flushing","Lavado (flushing)")
+B.m3=new A.a("Personalizado","Custom","Personalizado")
+B.BA=new A.a("Lavagem (flushing)","Flushing","Lavado (flushing)")
 B.wq=new A.a("Golpe de ar\xedete","Water hammer","Golpe de ariete")
-B.Ce=new A.a("Agronomia","Agronomy","Agronom\xeda")
+B.Cf=new A.a("Agronomia","Agronomy","Agronom\xeda")
 B.Fx=new A.a("Programa\xe7\xe3o","Schedule","Programaci\xf3n")
 B.cp=new A.a("Perfil","Profile","Perfil")
 B.cY=new A.a("C\xf3digo","Code","C\xf3digo")
 B.zX=new A.a("V alvo (m/s)","Target V (m/s)","V objetivo (m/s)")
-B.ml=new A.a("Celeridade","Celerity","Celeridad")
-B.DZ=new A.a("Sobrepress\xe3o","Surge","Sobrepresi\xf3n")
+B.mk=new A.a("Celeridade","Celerity","Celeridad")
+B.E_=new A.a("Sobrepress\xe3o","Surge","Sobrepresi\xf3n")
 B.pG=new A.a("P m\xe1x regime","Max steady P","P m\xe1x r\xe9gimen")
 B.r6=new A.a("P total","Total P","P total")
-B.BJ=new A.a("2L/a (s)","2L/a (s)","2L/a (s)")
+B.BK=new A.a("2L/a (s)","2L/a (s)","2L/a (s)")
 B.lo=new A.a("AFD","RAW","ARA")
-B.E2=new A.a("Intervalo (d)","Interval (d)","Intervalo (d)")
-B.Be=new A.a("L\xedquida/evento","Net/event","Neta/evento")
+B.E3=new A.a("Intervalo (d)","Interval (d)","Intervalo (d)")
+B.Bf=new A.a("L\xedquida/evento","Net/event","Neta/evento")
 B.yc=new A.a("Bruta/evento","Gross/event","Bruta/evento")
 B.qM=new A.a("Horas/evento","Hours/event","Horas/evento")
 B.vU=new A.a("CU sobrep. %","Overlap CU %","CU solap. %")
 B.cI=new A.a("Zonas","Zones","Zonas")
-B.nU=new A.a("Fim","End","Fin")
-B.Bp=new A.a("Dist\xe2ncia","Distance","Distancia")
+B.nT=new A.a("Fim","End","Fin")
+B.Bq=new A.a("Dist\xe2ncia","Distance","Distancia")
 B.it=new A.a("Use a ferramenta Perfil (PR) ou selecione um tubo/lateral para ver o perfil do terreno","Use the Profile tool (PR) or select a pipe/lateral to see the ground profile","Use la herramienta Perfil (PR) o seleccione una tuber\xeda/lateral para ver el perfil del terreno")
 B.z2=new A.a("Declividade m\xe9dia {s} %  \xb7  desn\xedvel {d} m  \xb7  comprimento {l}","Mean slope {s} %  \xb7  rise {d} m  \xb7  length {l}","Pendiente media {s} %  \xb7  desnivel {d} m  \xb7  longitud {l}")
 B.qf=new A.a("Luva","Coupler","Manguito")
-B.Ca=new A.a("Cotovelo 90\xb0","Elbow 90\xb0","Codo 90\xb0")
+B.Cb=new A.a("Cotovelo 90\xb0","Elbow 90\xb0","Codo 90\xb0")
 B.wK=new A.a("Cotovelo 45\xb0","Elbow 45\xb0","Codo 45\xb0")
 B.u9=new A.a("T\xea","Tee","Te")
-B.mA=new A.a("Cruzeta","Cross","Cruz")
-B.oy=new A.a("Redu\xe7\xe3o","Reducer","Reducci\xf3n")
-B.Cm=new A.a("Tamp\xe3o","End cap","Tap\xf3n")
+B.mz=new A.a("Cruzeta","Cross","Cruz")
+B.ox=new A.a("Redu\xe7\xe3o","Reducer","Reducci\xf3n")
+B.Cn=new A.a("Tamp\xe3o","End cap","Tap\xf3n")
 B.lv=new A.a("Adaptador","Adapter","Adaptador")
-B.CX=new A.a("Conector inicial de lateral","Lateral take-off","Conector inicial de lateral")
+B.CY=new A.a("Conector inicial de lateral","Lateral take-off","Conector inicial de lateral")
 B.jN=new A.a("Final de linha","Line end","Final de l\xednea")
 B.kq=new A.a("Haste / tubo de subida","Riser","Tubo de subida")
 B.bH=new A.a("Conex\xf5es","Fittings","Conexiones")
-B.mK=new A.a("Conectores de lateral","Lateral connectors","Conectores de lateral")
+B.mJ=new A.a("Conectores de lateral","Lateral connectors","Conectores de lateral")
 B.pq=new A.a("Hastes e tubos de subida","Risers","Tubos de subida")
 B.uO=new A.a("Tipo","Kind","Tipo")
-B.BH=new A.a("DN 2","Size 2","DN 2")
-B.o2=new A.a("Fornecedor","Supplier","Proveedor")
+B.BI=new A.a("DN 2","Size 2","DN 2")
+B.o1=new A.a("Fornecedor","Supplier","Proveedor")
 B.zu=new A.a("+ Adicionar","+ Add","+ A\xf1adir")
-B.n8=new A.a("Duplicar","Duplicate","Duplicar")
-B.EM=new A.a("Importar (JSON/CSV)\u2026","Import (JSON/CSV)\u2026","Importar (JSON/CSV)\u2026")
-B.DE=new A.a("Exportar JSON","Export JSON","Exportar JSON")
-B.lP=new A.a("Exportar CSV desta aba","Export CSV of this tab","Exportar CSV de esta pesta\xf1a")
+B.n7=new A.a("Duplicar","Duplicate","Duplicar")
+B.EN=new A.a("Importar (JSON/CSV)\u2026","Import (JSON/CSV)\u2026","Importar (JSON/CSV)\u2026")
+B.DF=new A.a("Exportar JSON","Export JSON","Exportar JSON")
+B.lO=new A.a("Exportar CSV desta aba","Export CSV of this tab","Exportar CSV de esta pesta\xf1a")
 B.iC=new A.a("Restaurar padr\xe3o","Restore default","Restaurar predeterminado")
 B.yk=new A.a("Usar como padr\xe3o para novos projetos","Use as default for new projects","Usar como predeterminado en proyectos nuevos")
-B.Bl=new A.a("JSON no formato do cat\xe1logo (exportado daqui) ou CSV com cabe\xe7alho; colunas reconhecidas: id, name, nominalMm, idMm, material, c, ratingM, wallMm, cost, usage, supplier, code (tubos); id, name, kind, sizeMm, size2Mm, cost (conex\xf5es); id, name, idMm, spacing, qLph, headM, x, cost (fitas); id, name, kind, sizeMm, k, n, maxQm3h, cost (v\xe1lvulas); id, name, points (Q@H;\u2026), eff, cost (bombas); id, name, kind, nozzle, qLph, headM, x, radiusM, cost (emissores).","JSON in the catalog format (exported from here) or CSV with a header; recognised columns: id, name, nominalMm, idMm, material, c, ratingM, wallMm, cost, usage, supplier, code (pipes); id, name, kind, sizeMm, size2Mm, cost (fittings); id, name, idMm, spacing, qLph, headM, x, cost (tapes); id, name, kind, sizeMm, k, n, maxQm3h, cost (valves); id, name, points (Q@H;\u2026), eff, cost (pumps); id, name, kind, nozzle, qLph, headM, x, radiusM, cost (outlets).","JSON en el formato del cat\xe1logo (exportado desde aqu\xed) o CSV con encabezado; columnas reconocidas: id, name, nominalMm, idMm, material, c, ratingM, wallMm, cost, usage, supplier, code (tuber\xedas); id, name, kind, sizeMm, size2Mm, cost (conexiones); id, name, idMm, spacing, qLph, headM, x, cost (cintas); id, name, kind, sizeMm, k, n, maxQm3h, cost (v\xe1lvulas); id, name, points (Q@H;\u2026), eff, cost (bombas); id, name, kind, nozzle, qLph, headM, x, radiusM, cost (emisores).")
-B.F4=new A.a('Remover "{n}" do cat\xe1logo? Itens do projeto que o usam ficar\xe3o sem modelo.','Remove "{n}" from the catalog? Project items using it will lose their model.','\xbfQuitar "{n}" del cat\xe1logo? Los elementos del proyecto que lo usan quedar\xe1n sin modelo.')
+B.Bm=new A.a("JSON no formato do cat\xe1logo (exportado daqui) ou CSV com cabe\xe7alho; colunas reconhecidas: id, name, nominalMm, idMm, material, c, ratingM, wallMm, cost, usage, supplier, code (tubos); id, name, kind, sizeMm, size2Mm, cost (conex\xf5es); id, name, idMm, spacing, qLph, headM, x, cost (fitas); id, name, kind, sizeMm, k, n, maxQm3h, cost (v\xe1lvulas); id, name, points (Q@H;\u2026), eff, cost (bombas); id, name, kind, nozzle, qLph, headM, x, radiusM, cost (emissores).","JSON in the catalog format (exported from here) or CSV with a header; recognised columns: id, name, nominalMm, idMm, material, c, ratingM, wallMm, cost, usage, supplier, code (pipes); id, name, kind, sizeMm, size2Mm, cost (fittings); id, name, idMm, spacing, qLph, headM, x, cost (tapes); id, name, kind, sizeMm, k, n, maxQm3h, cost (valves); id, name, points (Q@H;\u2026), eff, cost (pumps); id, name, kind, nozzle, qLph, headM, x, radiusM, cost (outlets).","JSON en el formato del cat\xe1logo (exportado desde aqu\xed) o CSV con encabezado; columnas reconocidas: id, name, nominalMm, idMm, material, c, ratingM, wallMm, cost, usage, supplier, code (tuber\xedas); id, name, kind, sizeMm, size2Mm, cost (conexiones); id, name, idMm, spacing, qLph, headM, x, cost (cintas); id, name, kind, sizeMm, k, n, maxQm3h, cost (v\xe1lvulas); id, name, points (Q@H;\u2026), eff, cost (bombas); id, name, kind, nozzle, qLph, headM, x, radiusM, cost (emisores).")
+B.F5=new A.a('Remover "{n}" do cat\xe1logo? Itens do projeto que o usam ficar\xe3o sem modelo.','Remove "{n}" from the catalog? Project items using it will lose their model.','\xbfQuitar "{n}" del cat\xe1logo? Los elementos del proyecto que lo usan quedar\xe1n sin modelo.')
 B.wJ=new A.a("em uso: {n}","in use: {n}","en uso: {n}")
 B.kQ=new A.a("Cat\xe1logo: {n} itens importados","Catalog: {n} items imported","Cat\xe1logo: {n} elementos importados")
 B.yU=new A.a("Cat\xe1logo salvo como padr\xe3o para novos projetos","Catalog saved as default for new projects","Cat\xe1logo guardado como predeterminado para proyectos nuevos")
 B.z4=new A.a("Cat\xe1logo padr\xe3o restaurado","Default catalog restored","Cat\xe1logo predeterminado restaurado")
-B.Cx=new A.a("O cat\xe1logo n\xe3o tem fita gotejadora nem emissor com tubo de linha lateral: inclua-os em Projeto \u2192 Cat\xe1logo de componentes","The catalogue has no drip tape and no emitter with a lateral pipe: add them in Design \u2192 Component catalog","El cat\xe1logo no tiene cinta de goteo ni emisor con tubo lateral: agr\xe9guelos en Dise\xf1o \u2192 Cat\xe1logo de componentes")
+B.Cy=new A.a("O cat\xe1logo n\xe3o tem fita gotejadora nem emissor com tubo de linha lateral: inclua-os em Projeto \u2192 Cat\xe1logo de componentes","The catalogue has no drip tape and no emitter with a lateral pipe: add them in Design \u2192 Component catalog","El cat\xe1logo no tiene cinta de goteo ni emisor con tubo lateral: agr\xe9guelos en Dise\xf1o \u2192 Cat\xe1logo de componentes")
 B.tT=new A.a("LP sem solu\xe7\xe3o com os tubos habilitados (m\xe9todo guloso usado)","LP infeasible with the enabled pipes (greedy method used)","LP sin soluci\xf3n con las tuber\xedas habilitadas (se us\xf3 el m\xe9todo voraz)")
-B.Cb=new A.a("Conex\xe3o sem item no cat\xe1logo","Fitting without a catalog item","Conexi\xf3n sin elemento en el cat\xe1logo")
-B.B4=new A.a("Golpe de ar\xedete acima da classe do tubo","Water hammer above the pipe class","Golpe de ariete por encima de la clase de la tuber\xeda")
-B.BS=new A.a("Turno sem \xe1rea irrigada: dura\xe7\xe3o mantida","System flow without an irrigated area: duration kept","Turno sin \xe1rea regada: duraci\xf3n mantenida")
+B.Cc=new A.a("Conex\xe3o sem item no cat\xe1logo","Fitting without a catalog item","Conexi\xf3n sin elemento en el cat\xe1logo")
+B.B5=new A.a("Golpe de ar\xedete acima da classe do tubo","Water hammer above the pipe class","Golpe de ariete por encima de la clase de la tuber\xeda")
+B.BT=new A.a("Turno sem \xe1rea irrigada: dura\xe7\xe3o mantida","System flow without an irrigated area: duration kept","Turno sin \xe1rea regada: duraci\xf3n mantenida")
 B.A2=new A.a("Programa\xe7\xe3o excede 24 h no dia","Schedule exceeds 24 h in a day","La programaci\xf3n supera 24 h en el d\xeda")
 B.v5=new A.a("Importar (DXF, DWG, KML/KMZ, SHP, CSV/XYZ, imagens)\u2026","Import (DXF, DWG, KML/KMZ, SHP, CSV/XYZ, images)\u2026","Importar (DXF, DWG, KML/KMZ, SHP, CSV/XYZ, im\xe1genes)\u2026")
 B.zV=new A.a("Pontos: {n} cotas importadas{geo}","Points: {n} spot heights imported{geo}","Puntos: {n} cotas importadas{geo}")
@@ -13530,8 +13538,8 @@ B.vz=new A.a(u.h,"SHP: {r} records, {n} entities ({crs})",u.h)
 B.Ah=new A.a("Imagem {w}\xd7{h} px inserida na vista (ajuste com as al\xe7as ou Georreferenciar imagem)","Image {w}\xd7{h} px placed in the view (adjust with grips or Georeference image)","Imagen {w}\xd7{h} px insertada en la vista (ajuste con las pinzas o Georreferenciar imagen)")
 B.AI=new A.a("Imagem georreferenciada {w}\xd7{h} px ({crs})","Georeferenced image {w}\xd7{h} px ({crs})","Imagen georreferenciada {w}\xd7{h} px ({crs})")
 B.kt=new A.a("resposta inv\xe1lida do servidor de eleva\xe7\xe3o","invalid answer from the elevation server","respuesta no v\xe1lida del servidor de elevaci\xf3n")
-B.F5=new A.a("bloco de eleva\xe7\xe3o inv\xe1lido recebido do servidor","invalid elevation tile received from the server","tesela de elevaci\xf3n no v\xe1lida recibida del servidor")
-B.Bc=new A.a("o servidor devolveu um n\xfamero de eleva\xe7\xf5es diferente do pedido","the server returned a different number of elevations than requested","el servidor devolvi\xf3 un n\xfamero de elevaciones distinto del pedido")
+B.F6=new A.a("bloco de eleva\xe7\xe3o inv\xe1lido recebido do servidor","invalid elevation tile received from the server","tesela de elevaci\xf3n no v\xe1lida recibida del servidor")
+B.Bd=new A.a("o servidor devolveu um n\xfamero de eleva\xe7\xf5es diferente do pedido","the server returned a different number of elevations than requested","el servidor devolvi\xf3 un n\xfamero de elevaciones distinto del pedido")
 B.km=new A.a("Arquivo de pontos vazio","Empty points file","Archivo de puntos vac\xedo")
 B.yM=new A.a("N\xe3o foi poss\xedvel identificar as colunas X, Y (e Z)","Could not identify the X, Y (and Z) columns","No se pudieron identificar las columnas X, Y (y Z)")
 B.ty=new A.a("Arquivo SHP inv\xe1lido","Invalid SHP file","Archivo SHP no v\xe1lido")
@@ -13541,38 +13549,38 @@ B.t5=new A.a("Imagem n\xe3o reconhecida","Image not recognised","Imagen no recon
 B.jf=new A.a("O arquivo est\xe1 danificado ou n\xe3o est\xe1 no formato esperado","The file is damaged or not in the expected format","El archivo est\xe1 da\xf1ado o no tiene el formato esperado")
 B.ja=new A.a("Imagem grande demais para abrir no navegador (mais de 100 milh\xf5es de pixels)","Image too large to open in the browser (more than 100 million pixels)","Imagen demasiado grande para abrir en el navegador (m\xe1s de 100 millones de p\xedxeles)")
 B.tO=new A.a("Georreferenciar imagem selecionada\u2026","Georeference selected image\u2026","Georreferenciar imagen seleccionada\u2026")
-B.Cc=new A.a("Georreferenciar imagem","Georeference image","Georreferenciar imagen")
-B.CB=new A.a("Informe as coordenadas locais (m) do canto inferior esquerdo, o tamanho real e a rota\xe7\xe3o da imagem.","Enter the local coordinates (m) of the bottom-left corner, the real size and the rotation of the image.","Indique las coordenadas locales (m) de la esquina inferior izquierda, el tama\xf1o real y la rotaci\xf3n de la imagen.")
+B.Cd=new A.a("Georreferenciar imagem","Georeference image","Georreferenciar imagen")
+B.CC=new A.a("Informe as coordenadas locais (m) do canto inferior esquerdo, o tamanho real e a rota\xe7\xe3o da imagem.","Enter the local coordinates (m) of the bottom-left corner, the real size and the rotation of the image.","Indique las coordenadas locales (m) de la esquina inferior izquierda, el tama\xf1o real y la rotaci\xf3n de la imagen.")
 B.jT=new A.a("Manter propor\xe7\xe3o","Keep aspect ratio","Mantener proporci\xf3n")
 B.ju=new A.a("M\xe9todo de dimensionamento","Sizing method","M\xe9todo de dimensionamiento")
 B.w9=new A.a("Programa\xe7\xe3o linear (LP: custo de tubo + energia + topografia)","Linear programming (LP: pipe cost + energy + topography)","Programaci\xf3n lineal (LP: costo de tuber\xeda + energ\xeda + topograf\xeda)")
-B.Bq=new A.a("Guloso (velocidade \u2192 janela de press\xe3o \u2192 economia)","Greedy (velocity \u2192 pressure window \u2192 economics)","Voraz (velocidad \u2192 ventana de presi\xf3n \u2192 econom\xeda)")
+B.Br=new A.a("Guloso (velocidade \u2192 janela de press\xe3o \u2192 economia)","Greedy (velocity \u2192 pressure window \u2192 economics)","Voraz (velocidad \u2192 ventana de presi\xf3n \u2192 econom\xeda)")
 B.yo=new A.a("N\xba m\xe1x. de di\xe2metros por lateral","Max. sizes per lateral","N.\xba m\xe1x. de di\xe1metros por lateral")
-B.oM=new A.a("N\xba m\xe1x. de di\xe2metros por tubo principal","Max. sizes per mainline pipe","N.\xba m\xe1x. de di\xe1metros por tuber\xeda principal")
+B.oL=new A.a("N\xba m\xe1x. de di\xe2metros por tubo principal","Max. sizes per mainline pipe","N.\xba m\xe1x. de di\xe1metros por tuber\xeda principal")
 B.y8=new A.a("Emissores por planta (EU)","Emitters per plant (EU)","Emisores por planta (EU)")
-B.m9=new A.a("N\xf3s de emissores por lateral (m\xe1x.)","Emitter nodes per lateral (max.)","Nudos de emisores por lateral (m\xe1x.)")
+B.m8=new A.a("N\xf3s de emissores por lateral (m\xe1x.)","Emitter nodes per lateral (max.)","Nudos de emisores por lateral (m\xe1x.)")
 B.z3=new A.a("Varia\xe7\xe3o m\xe1x. de press\xe3o na zona (%; 0 = s\xf3 toler\xe2ncia)","Max. zone pressure variation (%; 0 = tolerance only)","Variaci\xf3n m\xe1x. de presi\xf3n en la zona (%; 0 = solo tolerancia)")
 B.ki=new A.a("Lavagem e golpe de ar\xedete","Flushing and water hammer","Lavado y golpe de ariete")
-B.Bu=new A.a("Velocidade de lavagem (m/s)","Flushing velocity (m/s)","Velocidad de lavado (m/s)")
+B.Bv=new A.a("Velocidade de lavagem (m/s)","Flushing velocity (m/s)","Velocidad de lavado (m/s)")
 B.pQ=new A.a("Press\xe3o m\xedn. no fim da fita (m)","Min. pressure at the tape end (m)","Presi\xf3n m\xedn. al final de la cinta (m)")
-B.DS=new A.a("Verificar golpe de ar\xedete (classe do tubo)","Check water hammer (pipe class)","Verificar golpe de ariete (clase de tuber\xeda)")
+B.DT=new A.a("Verificar golpe de ar\xedete (classe do tubo)","Check water hammer (pipe class)","Verificar golpe de ariete (clase de tuber\xeda)")
 B.jp=new A.a("Tempo de fechamento de v\xe1lvula (s; 0 = instant\xe2neo)","Valve closure time (s; 0 = instantaneous)","Tiempo de cierre de v\xe1lvula (s; 0 = instant\xe1neo)")
 B.kZ=new A.a("Selecionar conex\xf5es automaticamente","Select fittings automatically","Seleccionar conexiones autom\xe1ticamente")
 B.r0=new A.a("Comprimento da barra de tubo (m; luvas por barra, 0 = nenhuma)","Pipe stick length (m; couplers per stick, 0 = none)","Longitud de la barra de tuber\xeda (m; manguitos por barra, 0 = ninguno)")
 B.xJ=new A.a("Selecionar bomba\u2026","Select pump\u2026","Seleccionar bomba\u2026")
 B.lb=new A.a("Vista 3D do terreno\u2026","3D terrain view\u2026","Vista 3D del terreno\u2026")
 B.uT=new A.a("Sele\xe7\xe3o autom\xe1tica de bomba","Automatic pump selection","Selecci\xf3n autom\xe1tica de bomba")
-B.on=new A.a("Ponto de trabalho: {q} a {h}  \xb7  altura est\xe1tica \u2248 {s}","Duty: {q} at {h}  \xb7  static lift \u2248 {s}","Punto de trabajo: {q} a {h}  \xb7  altura est\xe1tica \u2248 {s}")
+B.om=new A.a("Ponto de trabalho: {q} a {h}  \xb7  altura est\xe1tica \u2248 {s}","Duty: {q} at {h}  \xb7  static lift \u2248 {s}","Punto de trabajo: {q} a {h}  \xb7  altura est\xe1tica \u2248 {s}")
 B.jQ=new A.a("Bombas do cat\xe1logo ordenadas por adequa\xe7\xe3o e custo (compra + 5 anos de energia)","Catalog pumps ranked by suitability and cost (purchase + 5 years of energy)","Bombas del cat\xe1logo ordenadas por idoneidad y costo (compra + 5 a\xf1os de energ\xeda)")
 B.vE=new A.a("H na vaz\xe3o","H at duty","H al caudal")
 B.qs=new A.a("Margem","Margin","Margen")
 B.x3=new A.a("Pot\xeancia","Power","Potencia")
-B.lU=new A.a("Em paralelo","In parallel","En paralelo")
+B.lT=new A.a("Em paralelo","In parallel","En paralelo")
 B.wV=new A.a("Inserir na fonte","Insert at the supply","Insertar en la fuente")
-B.DG=new A.a("Aplicar \xe0 bomba existente","Apply to the existing pump","Aplicar a la bomba existente")
+B.DH=new A.a("Aplicar \xe0 bomba existente","Apply to the existing pump","Aplicar a la bomba existente")
 B.uJ=new A.a("Execute o projeto com uma fonte de \xe1gua de press\xe3o calculada para obter o ponto de trabalho.","Run the design with a calculated-pressure water supply to get the duty point.","Ejecute el dise\xf1o con una fuente de agua de presi\xf3n calculada para obtener el punto de trabajo.")
 B.jn=new A.a("insuficiente","insufficient","insuficiente")
-B.B1=new A.a("suc\xe7\xe3o excessiva","suction lift too high","succi\xf3n excesiva")
+B.B2=new A.a("suc\xe7\xe3o excessiva","suction lift too high","succi\xf3n excesiva")
 B.ig=new A.a("Bomba {n} aplicada; execute o projeto novamente","Pump {n} applied; run the design again","Bomba {n} aplicada; vuelva a ejecutar el dise\xf1o")
 B.yu=new A.a("Vista 3D do terreno (DEM)","3D terrain view (DEM)","Vista 3D del terreno (MDT)")
 B.u8=new A.a("Exagero vertical","Vertical exaggeration","Exageraci\xf3n vertical")
@@ -13580,68 +13588,68 @@ B.u1=new A.a("Arraste para girar; roda do mouse para aproximar. Tubos e laterais
 B.pa=new A.a("Sem dados de eleva\xe7\xe3o: desenhe curvas de n\xedvel ou cotas, ou importe topografia.","No elevation data: draw contours or spot heights, or import a survey.","Sin datos de elevaci\xf3n: dibuje curvas de nivel o cotas, o importe topograf\xeda.")
 B.xQ=new A.a("Eleva\xe7\xe3o {a} a {b} m","Elevation {a} to {b} m","Elevaci\xf3n {a} a {b} m")
 B.lq=new A.a("Projetos recentes","Recent projects","Proyectos recientes")
-B.Ch=new A.a("(nenhum)","(none)","(ninguno)")
+B.Ci=new A.a("(nenhum)","(none)","(ninguno)")
 B.yQ=new A.a("Hist\xf3rico de vers\xf5es\u2026","Version history\u2026","Historial de versiones\u2026")
 B.uc=new A.a("Salvar automaticamente no navegador","Autosave in the browser","Guardar autom\xe1ticamente en el navegador")
 B.pb=new A.a("Recuperar projeto","Recover project","Recuperar proyecto")
 B.yE=new A.a("Foram encontrados projetos salvos automaticamente que n\xe3o foram salvos em arquivo. Deseja recuper\xe1-los?","Autosaved projects that were never saved to a file were found. Recover them?","Se encontraron proyectos guardados autom\xe1ticamente que no se guardaron en archivo. \xbfDesea recuperarlos?")
 B.tD=new A.a("Recuperar","Recover","Recuperar")
-B.n0=new A.a("Descartar","Discard","Descartar")
+B.n_=new A.a("Descartar","Discard","Descartar")
 B.pg=new A.a("Depois","Later","Despu\xe9s")
 B.ti=new A.a("{name} \u2014 {when} ({kb} kB)","{name} \u2014 {when} ({kb} kB)","{name} \u2014 {when} ({kb} kB)")
-B.DC=new A.a("{n} projetos recuperados","{n} projects recovered","{n} proyectos recuperados")
-B.C2=new A.a('Vers\xf5es de "{name}"','Versions of "{name}"','Versiones de "{name}"')
-B.D7=new A.a("Nenhuma vers\xe3o guardada ainda: cada Salvar cria uma vers\xe3o (at\xe9 10, no navegador).","No versions kept yet: every Save records a version (up to 10, in the browser).","A\xfan no hay versiones: cada Guardar crea una versi\xf3n (hasta 10, en el navegador).")
+B.DD=new A.a("{n} projetos recuperados","{n} projects recovered","{n} proyectos recuperados")
+B.C3=new A.a('Vers\xf5es de "{name}"','Versions of "{name}"','Versiones de "{name}"')
+B.D8=new A.a("Nenhuma vers\xe3o guardada ainda: cada Salvar cria uma vers\xe3o (at\xe9 10, no navegador).","No versions kept yet: every Save records a version (up to 10, in the browser).","A\xfan no hay versiones: cada Guardar crea una versi\xf3n (hasta 10, en el navegador).")
 B.tH=new A.a("Restaurar","Restore","Restaurar")
 B.zp=new A.a("v{v} \u2014 {when}","v{v} \u2014 {when}","v{v} \u2014 {when}")
 B.r3=new A.a("Vers\xe3o {v} restaurada","Version {v} restored","Versi\xf3n {v} restaurada")
 B.d0=new A.a("Turnos","System flows","Turnos")
-B.BT=new A.a("Programa\xe7\xe3o do controlador","Controller programme","Programaci\xf3n del controlador")
+B.BU=new A.a("Programa\xe7\xe3o do controlador","Controller programme","Programaci\xf3n del controlador")
 B.tr=new A.a("Aplicar dura\xe7\xf5es calculadas aos turnos","Apply computed durations to the flows","Aplicar duraciones calculadas a los turnos")
-B.C_=new A.a("Exportar programa\xe7\xe3o (CSV)","Export programme (CSV)","Exportar programaci\xf3n (CSV)")
+B.C0=new A.a("Exportar programa\xe7\xe3o (CSV)","Export programme (CSV)","Exportar programaci\xf3n (CSV)")
 B.zj=new A.a("Dias","Days","D\xedas")
-B.Ey=new A.a("In\xedcio do dia (h)","Day start (h)","Inicio del d\xeda (h)")
+B.Ez=new A.a("In\xedcio do dia (h)","Day start (h)","Inicio del d\xeda (h)")
 B.qA=new A.a("Usar os hor\xe1rios de in\xedcio dos turnos","Use the flows' own start hours","Usar las horas de inicio de los turnos")
-B.Ei=new A.a("M\xe1ximo de horas em um dia: {h}","Maximum hours in one day: {h}","M\xe1ximo de horas en un d\xeda: {h}")
+B.Ej=new A.a("M\xe1ximo de horas em um dia: {h}","Maximum hours in one day: {h}","M\xe1ximo de horas en un d\xeda: {h}")
 B.jJ=new A.a("Execute o projeto para calcular as dura\xe7\xf5es a partir das \xe1reas irrigadas.","Run the design to compute durations from the irrigated areas.","Ejecute el dise\xf1o para calcular las duraciones a partir de las \xe1reas regadas.")
-B.F9=new A.a("{name}: {h} h por evento","{name}: {h} h per event","{name}: {h} h por evento")
+B.Fa=new A.a("{name}: {h} h por evento","{name}: {h} h per event","{name}: {h} h por evento")
 B.Aw=new A.a("Edi\xe7\xe3o (alias \u23ce)","Editing (alias \u23ce)","Edici\xf3n (alias \u23ce)")
 B.ib=new A.a("Remover v\xe9rtice (Ctrl + clique na al\xe7a)","Remove vertex (Ctrl + click on a grip)","Quitar v\xe9rtice (Ctrl + clic en la pinza)")
-B.CQ=new A.a("Inserir v\xe9rtice (arrastar a al\xe7a do meio do segmento)","Insert vertex (drag the segment midpoint grip)","Insertar v\xe9rtice (arrastrar la pinza del medio del segmento)")
+B.CR=new A.a("Inserir v\xe9rtice (arrastar a al\xe7a do meio do segmento)","Insert vertex (drag the segment midpoint grip)","Insertar v\xe9rtice (arrastrar la pinza del medio del segmento)")
 B.wH=new A.a("Toque: pin\xe7a para zoom, dois dedos para mover, um dedo para desenhar","Touch: pinch to zoom, two fingers to pan, one finger to draw","T\xe1ctil: pellizco para zoom, dos dedos para mover, un dedo para dibujar")
 B.FC=new A.a("Piv\xf4 central / lateral m\xf3vel","Centre pivot / linear move","Pivote central / lateral de avance")
 B.ji=new A.a("Clique o ponto do piv\xf4 (entrada de \xe1gua, sobre a linha principal) e depois o fim da lateral; Esc cancela","Click the pivot point (water inlet, on the mainline) and then the end of the span; Esc cancels","Clic en el punto del pivote (entrada de agua, sobre la l\xednea principal) y luego el fin de la lateral; Esc cancela")
-B.mO=new A.a("Alinhar por 2 pontos","Align by 2 points","Alinear por 2 puntos")
+B.mN=new A.a("Alinhar por 2 pontos","Align by 2 points","Alinear por 2 puntos")
 B.px=new A.a("Com a imagem/objetos selecionados: clique o ponto A na origem, onde A deve ficar, o ponto B na origem e onde B deve ficar","With the image/objects selected: click point A on the source, where A must go, point B on the source and where B must go","Con la imagen/objetos seleccionados: clic en el punto A de origen, d\xf3nde debe quedar A, el punto B de origen y d\xf3nde debe quedar B")
 B.Ac=new A.a("Ponto A na imagem/desenho a alinhar","Point A on the image/drawing to align","Punto A en la imagen/dibujo a alinear")
 B.la=new A.a("Onde o ponto A deve ficar (destino)","Where point A must go (target)","D\xf3nde debe quedar el punto A (destino)")
-B.E_=new A.a("Ponto B na imagem/desenho a alinhar","Point B on the image/drawing to align","Punto B en la imagen/dibujo a alinear")
+B.E0=new A.a("Ponto B na imagem/desenho a alinhar","Point B on the image/drawing to align","Punto B en la imagen/dibujo a alinear")
 B.FD=new A.a("Onde o ponto B deve ficar (define escala e rota\xe7\xe3o)","Where point B must go (sets scale and rotation)","D\xf3nde debe quedar el punto B (define escala y rotaci\xf3n)")
 B.jx=new A.a("Manter a escala (s\xf3 mover e girar)","Keep the scale (move and rotate only)","Mantener la escala (solo mover y girar)")
 B.pX=new A.a("Alinhado: escala \xd7{s}, rota\xe7\xe3o {r}\xb0","Aligned: scale \xd7{s}, rotation {r}\xb0","Alineado: escala \xd7{s}, rotaci\xf3n {r}\xb0")
-B.D_=new A.a("Selecione antes a imagem ou os objetos a alinhar","Select the image or the objects to align first","Seleccione antes la imagen o los objetos a alinear")
+B.D0=new A.a("Selecione antes a imagem ou os objetos a alinhar","Select the image or the objects to align first","Seleccione antes la imagen o los objetos a alinear")
 B.iW=new A.a("Caminho do perfil removido do desenho","Profile path removed from the drawing","Camino del perfil quitado del dibujo")
 B.ce=new A.a("Eleva\xe7\xe3o","Elevation","Elevaci\xf3n")
 B.jF=new A.a("Eleva\xe7\xe3o da curva de n\xedvel","Contour elevation","Elevaci\xf3n de la curva de nivel")
 B.kg=new A.a("Eleva\xe7\xe3o da cota","Spot height elevation","Elevaci\xf3n de la cota")
 B.cl=new A.a("Intervalo entre curvas (m)","Contour interval (m)","Intervalo entre curvas (m)")
-B.Bn=new A.a("Pr\xf3xima curva: somar o intervalo","Next contour: add the interval","Pr\xf3xima curva: sumar el intervalo")
-B.oa=new A.a("Perguntar a eleva\xe7\xe3o ao terminar cada curva/cota","Ask for the elevation after each contour/spot","Preguntar la elevaci\xf3n al terminar cada curva/cota")
+B.Bo=new A.a("Pr\xf3xima curva: somar o intervalo","Next contour: add the interval","Pr\xf3xima curva: sumar el intervalo")
+B.o9=new A.a("Perguntar a eleva\xe7\xe3o ao terminar cada curva/cota","Ask for the elevation after each contour/spot","Preguntar la elevaci\xf3n al terminar cada curva/cota")
 B.qW=new A.a('Uma curva de n\xedvel liga pontos de mesma altitude. Informe a altitude desta curva. Com "somar o intervalo", a pr\xf3xima curva j\xe1 vem com a eleva\xe7\xe3o seguinte.','A contour joins points of the same altitude. Enter the altitude of this line. With "add the interval", the next contour comes with the following elevation.','Una curva de nivel une puntos de la misma altitud. Indique la altitud de esta curva. Con "sumar el intervalo", la pr\xf3xima curva ya viene con la elevaci\xf3n siguiente.')
 B.qX=new A.a("Cota de ponto: altitude do terreno neste lugar (po\xe7o, casa de bombas, canto do talh\xe3o).","Spot height: ground altitude at this place (well, pump house, field corner).","Cota de punto: altitud del terreno en este lugar (pozo, casa de bombas, esquina de la parcela).")
 B.cy=new A.a("Terreno","Terrain","Terreno")
 B.yF=new A.a("Baixar eleva\xe7\xe3o da internet (MDT)\u2026","Download elevation from the internet (DEM)\u2026","Descargar elevaci\xf3n de internet (MDT)\u2026")
 B.wv=new A.a("Gerar curvas de n\xedvel do modelo\u2026","Generate contours from the model\u2026","Generar curvas de nivel del modelo\u2026")
 B.u7=new A.a("Interpola\xe7\xe3o do terreno","Terrain interpolation","Interpolaci\xf3n del terreno")
-B.Cw=new A.a("Triangula\xe7\xe3o (TIN / MDT)","Triangulation (TIN / DTM)","Triangulaci\xf3n (TIN / MDT)")
-B.EQ=new A.a("Inverso da dist\xe2ncia (IDW)","Inverse distance (IDW)","Inverso de la distancia (IDW)")
+B.Cx=new A.a("Triangula\xe7\xe3o (TIN / MDT)","Triangulation (TIN / DTM)","Triangulaci\xf3n (TIN / MDT)")
+B.ER=new A.a("Inverso da dist\xe2ncia (IDW)","Inverse distance (IDW)","Inverso de la distancia (IDW)")
 B.i1=new A.a("Limpar perfil do desenho","Clear profile from the drawing","Limpiar perfil del dibujo")
 B.Fl=new A.a("Modelo do terreno: {n} pontos, eleva\xe7\xe3o {a} a {b} m","Terrain model: {n} points, elevation {a} to {b} m","Modelo del terreno: {n} puntos, elevaci\xf3n {a} a {b} m")
 B.jb=new A.a("Sem dados de eleva\xe7\xe3o","No elevation data","Sin datos de elevaci\xf3n")
 B.q9=new A.a("Interpola\xe7\xe3o do terreno (MDT)","Terrain interpolation (DTM)","Interpolaci\xf3n del terreno (MDT)")
 B.tL=new A.a("Eleva\xe7\xe3o da internet (MDT online)","Elevation from the internet (online DEM)","Elevaci\xf3n de internet (MDT en l\xednea)")
 B.qz=new A.a("Baixa a altitude de uma grade de pontos sobre o projeto a partir de um modelo digital de eleva\xe7\xe3o p\xfablico e cria cotas de ponto. Precisa de georrefer\xeancia (Arquivo \u2192 Georrefer\xeancia). Resolu\xe7\xe3o de 30\u201390 m: bom para o relevo geral, n\xe3o substitui um levantamento.","Downloads the altitude of a grid of points over the project from a public digital elevation model and creates spot heights. Needs a georeference (File \u2192 Georeference). 30\u201390 m resolution: good for the general relief, not a replacement for a survey.","Descarga la altitud de una malla de puntos sobre el proyecto desde un modelo digital de elevaci\xf3n p\xfablico y crea cotas de punto. Necesita georreferencia (Archivo \u2192 Georreferencia). Resoluci\xf3n de 30\u201390 m: buena para el relieve general, no sustituye un levantamiento.")
-B.o0=new A.a("Fonte","Source","Fuente")
+B.o_=new A.a("Fonte","Source","Fuente")
 B.l3=new A.a("Espa\xe7amento da grade (m)","Grid spacing (m)","Espaciado de la malla (m)")
 B.iN=new A.a("\xc1rea {w} \xd7 {h} m \u2192 {n} pontos em {r} requisi\xe7\xf5es","Area {w} \xd7 {h} m \u2192 {n} points in {r} requests","\xc1rea {w} \xd7 {h} m \u2192 {n} puntos en {r} solicitudes")
 B.y9=new A.a("Substituir cotas baixadas anteriormente","Replace previously downloaded spot heights","Reemplazar cotas descargadas antes")
@@ -13655,78 +13663,78 @@ B.pL=new A.a("Limite do servidor: aguardando {s} s\u2026","Server limit: waiting
 B.zz=new A.a("Tempo estimado: {t}","Estimated time: {t}","Tiempo estimado: {t}")
 B.yj=new A.a("O Open-Meteo aceita cerca de 600 pontos por minuto; para \xe1reas grandes a fonte Terrain Tiles \xe9 muito mais r\xe1pida (poucas requisi\xe7\xf5es, sem limite).","Open-Meteo takes about 600 points per minute; for large areas the Terrain Tiles source is much faster (a few requests, no limit).","Open-Meteo acepta unos 600 puntos por minuto; para \xe1reas grandes la fuente Terrain Tiles es mucho m\xe1s r\xe1pida (pocas solicitudes, sin l\xedmite).")
 B.xe=new A.a("Download cancelado","Download cancelled","Descarga cancelada")
-B.Cr=new A.a("{n} pontos sem dados","{n} points without data","{n} puntos sin datos")
+B.Cs=new A.a("{n} pontos sem dados","{n} points without data","{n} puntos sin datos")
 B.qO=new A.a('As cotas v\xe3o para a camada "MDT baixado" (pode ser ocultada em Camadas).','The points go to the "Downloaded DEM" layer (it can be hidden in Layers).','Las cotas van a la capa "MDT descargado" (puede ocultarse en Capas).')
 B.ta=new A.a("Usar a \xe1rea vis\xedvel em vez dos limites do projeto","Use the visible area instead of the project extent","Usar el \xe1rea visible en lugar de los l\xedmites del proyecto")
-B.lR=new A.a("Baixar","Download","Descargar")
+B.lQ=new A.a("Baixar","Download","Descargar")
 B.w8=new A.a("Baixando {i} de {n}\u2026","Downloading {i} of {n}\u2026","Descargando {i} de {n}\u2026")
-B.Ev=new A.a("{n} cotas importadas ({s})","{n} spot heights imported ({s})","{n} cotas importadas ({s})")
+B.Ew=new A.a("{n} cotas importadas ({s})","{n} spot heights imported ({s})","{n} cotas importadas ({s})")
 B.jB=new A.a("Defina antes a georrefer\xeancia do projeto (Arquivo \u2192 Georrefer\xeancia): latitude/longitude de um ponto do desenho.","Set the project georeference first (File \u2192 Georeference): latitude/longitude of a drawing point.","Defina antes la georreferencia del proyecto (Archivo \u2192 Georreferencia): latitud/longitud de un punto del dibujo.")
 B.kA=new A.a("Falha ao baixar eleva\xe7\xf5es: {e}","Failed to download elevations: {e}","Error al descargar elevaciones: {e}")
 B.l1=new A.a("Desenhe algo (ou use a \xe1rea vis\xedvel) para definir a regi\xe3o.","Draw something (or use the visible area) to define the region.","Dibuje algo (o use el \xe1rea visible) para definir la regi\xf3n.")
 B.bN=new A.a("Gerar curvas de n\xedvel","Generate contours","Generar curvas de nivel")
-B.nh=new A.a("Cria curvas de n\xedvel a partir do modelo digital do terreno (triangula\xe7\xe3o das cotas e curvas existentes). \xdatil depois de importar pontos ou baixar eleva\xe7\xe3o da internet. As curvas geradas s\xe3o s\xf3 desenho: n\xe3o alteram o modelo.","Creates contours from the digital terrain model (triangulation of the existing spot heights and contours). Useful after importing points or downloading elevation. Generated contours are drawing only: they do not change the model.","Crea curvas de nivel a partir del modelo digital del terreno (triangulaci\xf3n de las cotas y curvas existentes). \xdatil despu\xe9s de importar puntos o descargar elevaci\xf3n. Las curvas generadas son solo dibujo: no cambian el modelo.")
+B.ng=new A.a("Cria curvas de n\xedvel a partir do modelo digital do terreno (triangula\xe7\xe3o das cotas e curvas existentes). \xdatil depois de importar pontos ou baixar eleva\xe7\xe3o da internet. As curvas geradas s\xe3o s\xf3 desenho: n\xe3o alteram o modelo.","Creates contours from the digital terrain model (triangulation of the existing spot heights and contours). Useful after importing points or downloading elevation. Generated contours are drawing only: they do not change the model.","Crea curvas de nivel a partir del modelo digital del terreno (triangulaci\xf3n de las cotas y curvas existentes). \xdatil despu\xe9s de importar puntos o descargar elevaci\xf3n. Las curvas generadas son solo dibujo: no cambian el modelo.")
 B.Fm=new A.a("Intervalo (m)","Interval (m)","Intervalo (m)")
 B.qu=new A.a("Remover curvas geradas anteriormente","Remove previously generated contours","Quitar curvas generadas antes")
 B.t_=new A.a("{n} curvas entre {a} e {b} m","{n} contours between {a} and {b} m","{n} curvas entre {a} y {b} m")
 B.kj=new A.a("{n} curvas de n\xedvel geradas","{n} contours generated","{n} curvas de nivel generadas")
-B.om=new A.a("Gerar","Generate","Generar")
+B.ol=new A.a("Gerar","Generate","Generar")
 B.uL=new A.a("Terreno","Ground","Terreno")
-B.Eu=new A.a("Tubo (com profundidade)","Pipe (with depth)","Tuber\xeda (con profundidad)")
-B.BZ=new A.a("Linha piezom\xe9trica (press\xe3o + cota)","Hydraulic grade line (pressure + elevation)","L\xednea piezom\xe9trica (presi\xf3n + cota)")
+B.Ev=new A.a("Tubo (com profundidade)","Pipe (with depth)","Tuber\xeda (con profundidad)")
+B.C_=new A.a("Linha piezom\xe9trica (press\xe3o + cota)","Hydraulic grade line (pressure + elevation)","L\xednea piezom\xe9trica (presi\xf3n + cota)")
 B.t3=new A.a("Ponto mais baixo","Lowest point","Punto m\xe1s bajo")
-B.De=new A.a("Ponto mais alto","Highest point","Punto m\xe1s alto")
-B.BE=new A.a("Como usar: Perfil (PR) \u2192 clique os pontos do caminho \u2192 Enter (ou Concluir). Ou selecione um tubo/lateral. A linha roxa no desenho \xe9 o caminho: Limpar (ou Esc com a ferramenta Perfil) a remove.","How to use: Profile (PR) \u2192 click the path points \u2192 Enter (or Done). Or select a pipe/lateral. The purple line on the drawing is the path: Clear (or Esc with the Profile tool) removes it.","C\xf3mo usar: Perfil (PR) \u2192 clic en los puntos del camino \u2192 Intro (o Terminar). O seleccione una tuber\xeda/lateral. La l\xednea morada en el dibujo es el camino: Limpiar (o Esc con la herramienta Perfil) la quita.")
-B.no=new A.a("Sem dados de eleva\xe7\xe3o: o perfil sai plano. Desenhe curvas de n\xedvel (CT) ou cotas (SP), importe topografia ou baixe eleva\xe7\xe3o da internet (Projeto \u2192 Terreno).","No elevation data: the profile is flat. Draw contours (CT) or spot heights (SP), import a survey or download elevation from the internet (Design \u2192 Terrain).","Sin datos de elevaci\xf3n: el perfil sale plano. Dibuje curvas de nivel (CT) o cotas (SP), importe topograf\xeda o descargue elevaci\xf3n de internet (Dise\xf1o \u2192 Terreno).")
+B.Df=new A.a("Ponto mais alto","Highest point","Punto m\xe1s alto")
+B.BF=new A.a("Como usar: Perfil (PR) \u2192 clique os pontos do caminho \u2192 Enter (ou Concluir). Ou selecione um tubo/lateral. A linha roxa no desenho \xe9 o caminho: Limpar (ou Esc com a ferramenta Perfil) a remove.","How to use: Profile (PR) \u2192 click the path points \u2192 Enter (or Done). Or select a pipe/lateral. The purple line on the drawing is the path: Clear (or Esc with the Profile tool) removes it.","C\xf3mo usar: Perfil (PR) \u2192 clic en los puntos del camino \u2192 Intro (o Terminar). O seleccione una tuber\xeda/lateral. La l\xednea morada en el dibujo es el camino: Limpiar (o Esc con la herramienta Perfil) la quita.")
+B.nn=new A.a("Sem dados de eleva\xe7\xe3o: o perfil sai plano. Desenhe curvas de n\xedvel (CT) ou cotas (SP), importe topografia ou baixe eleva\xe7\xe3o da internet (Projeto \u2192 Terreno).","No elevation data: the profile is flat. Draw contours (CT) or spot heights (SP), import a survey or download elevation from the internet (Design \u2192 Terrain).","Sin datos de elevaci\xf3n: el perfil sale plano. Dibuje curvas de nivel (CT) o cotas (SP), importe topograf\xeda o descargue elevaci\xf3n de internet (Dise\xf1o \u2192 Terreno).")
 B.cM=new A.a("Esta\xe7\xe3o","Station","Estaci\xf3n")
 B.cS=new A.a("Piv\xf4s","Pivots","Pivotes")
-B.n6=new A.a("Piv\xf4","Pivot","Pivote")
+B.n5=new A.a("Piv\xf4","Pivot","Pivote")
 B.cB=new A.a("Torres","Towers","Torres")
-B.DK=new A.a("P dispon\xedvel","P available","P disponible")
-B.nk=new A.a("Desn\xedvel","Rise","Desnivel")
-B.mR=new A.a("L\xe2mina/ciclo","Depth/cycle","L\xe1mina/ciclo")
-B.E8=new A.a("Horas/ciclo","Hours/cycle","Horas/ciclo")
+B.DL=new A.a("P dispon\xedvel","P available","P disponible")
+B.nj=new A.a("Desn\xedvel","Rise","Desnivel")
+B.mQ=new A.a("L\xe2mina/ciclo","Depth/cycle","L\xe1mina/ciclo")
+B.E9=new A.a("Horas/ciclo","Hours/cycle","Horas/ciclo")
 B.qF=new A.a("Taxa aplic. pico","Peak app. rate","Tasa aplic. pico")
 B.aI=new A.a("Piv\xf4 central","Centre pivot","Pivote central")
 B.u3=new A.a("Lateral m\xf3vel (linear)","Linear move","Lateral de avance (linear)")
-B.DM=new A.a("torres","towers","torres")
+B.DN=new A.a("torres","towers","torres")
 B.vG=new A.a("Piv\xf4s e laterais m\xf3veis","Pivots and linear moves","Pivotes y laterales de avance")
 B.uI=new A.a("Press\xe3o insuficiente na entrada do piv\xf4","Not enough pressure at the pivot inlet","Presi\xf3n insuficiente en la entrada del pivote")
 B.rX=new A.a("Taxa de aplica\xe7\xe3o na ponta acima do limite do solo","Application rate at the end above the soil limit","Tasa de aplicaci\xf3n en la punta por encima del l\xedmite del suelo")
-B.AW=new A.a("Piv\xf4 sem vaz\xe3o (l\xe2mina ou horas por ciclo zeradas)","Pivot without flow (depth or hours per cycle are zero)","Pivote sin caudal (l\xe1mina u horas por ciclo en cero)")
+B.AX=new A.a("Piv\xf4 sem vaz\xe3o (l\xe2mina ou horas por ciclo zeradas)","Pivot without flow (depth or hours per cycle are zero)","Pivote sin caudal (l\xe1mina u horas por ciclo en cero)")
 B.jS=new A.a("Piv\xf4 sem press\xe3o de ponta definida","Pivot without an end pressure","Pivote sin presi\xf3n de punta definida")
-B.og=new A.a("Tipo de m\xe1quina","Machine type","Tipo de m\xe1quina")
-B.mN=new A.a("Comprimento da lateral (m)","Span pipe length (m)","Longitud de la lateral (m)")
-B.oT=new A.a("V\xe3o entre torres (m)","Span between towers (m)","Vano entre torres (m)")
-B.nH=new A.a("Percurso da lateral m\xf3vel (m)","Linear travel length (m)","Recorrido de la lateral (m)")
-B.Cy=new A.a("Tubo dos v\xe3os (cat\xe1logo)","Span pipe (catalogue)","Tubo de los vanos (cat\xe1logo)")
+B.of=new A.a("Tipo de m\xe1quina","Machine type","Tipo de m\xe1quina")
+B.mM=new A.a("Comprimento da lateral (m)","Span pipe length (m)","Longitud de la lateral (m)")
+B.oS=new A.a("V\xe3o entre torres (m)","Span between towers (m)","Vano entre torres (m)")
+B.nG=new A.a("Percurso da lateral m\xf3vel (m)","Linear travel length (m)","Recorrido de la lateral (m)")
+B.Cz=new A.a("Tubo dos v\xe3os (cat\xe1logo)","Span pipe (catalogue)","Tubo de los vanos (cat\xe1logo)")
 B.vI=new A.a("Di\xe2metro interno do tubo (mm)","Pipe inner diameter (mm)","Di\xe1metro interior del tubo (mm)")
 B.pd=new A.a("C de Hazen-Williams","Hazen-Williams C","C de Hazen-Williams")
-B.F7=new A.a("Altura do tubo (m)","Pipe height (m)","Altura del tubo (m)")
+B.F8=new A.a("Altura do tubo (m)","Pipe height (m)","Altura del tubo (m)")
 B.lc=new A.a("Press\xe3o na ponta","End pressure","Presi\xf3n en la punta")
 B.p9=new A.a("Vaz\xe3o do canh\xe3o final","End gun flow","Caudal del ca\xf1\xf3n final")
 B.rp=new A.a("Press\xe3o do canh\xe3o final","End gun pressure","Presi\xf3n del ca\xf1\xf3n final")
 B.vX=new A.a("Alcance al\xe9m da ponta (m)","Throw beyond the end (m)","Alcance m\xe1s all\xe1 de la punta (m)")
 B.td=new A.a("L\xe2mina bruta por ciclo (mm)","Gross depth per cycle (mm)","L\xe1mina bruta por ciclo (mm)")
-B.E4=new A.a("Horas por ciclo (volta/passada)","Hours per cycle (revolution/pass)","Horas por ciclo (vuelta/pasada)")
+B.E5=new A.a("Horas por ciclo (volta/passada)","Hours per cycle (revolution/pass)","Horas por ciclo (vuelta/pasada)")
 B.xl=new A.a("Largura molhada na ponta (m)","Wetted width at the end (m)","Ancho mojado en la punta (m)")
 B.pu=new A.a("Perdas da m\xe1quina (m)","Machine losses (m)","P\xe9rdidas de la m\xe1quina (m)")
-B.mD=new A.a("Taxa m\xe1x. do solo (mm/h; 0 = n\xe3o verificar)","Soil max. rate (mm/h; 0 = no check)","Tasa m\xe1x. del suelo (mm/h; 0 = no verificar)")
+B.mC=new A.a("Taxa m\xe1x. do solo (mm/h; 0 = n\xe3o verificar)","Soil max. rate (mm/h; 0 = no check)","Tasa m\xe1x. del suelo (mm/h; 0 = no verificar)")
 B.iY=new A.a("Setor irrigado (\xb0)","Irrigated sector (\xb0)","Sector regado (\xb0)")
 B.wO=new A.a("Custo da m\xe1quina","Machine cost","Costo de la m\xe1quina")
 B.u6=new A.a("\xc2ngulo de desenho (\xb0)","Drawing angle (\xb0)","\xc1ngulo de dibujo (\xb0)")
 B.cs=new A.a("Resultado","Result","Resultado")
-B.ma=new A.a("Press\xe3o necess\xe1ria na entrada","Required inlet pressure","Presi\xf3n necesaria en la entrada")
+B.m9=new A.a("Press\xe3o necess\xe1ria na entrada","Required inlet pressure","Presi\xf3n necesaria en la entrada")
 B.zI=new A.a("Gerada do modelo (n\xe3o entra no MDT)","Generated from the model (not used by the DTM)","Generada del modelo (no entra al MDT)")
 B.kX=new A.a("Verifica\xe7\xe3o do projeto (Design Check)","Design check","Verificaci\xf3n del dise\xf1o (Design Check)")
 B.iw=new A.a("Varre o desenho procurando erros que impedem ou distorcem o c\xe1lculo hidr\xe1ulico: itens desconectados, tubos que se cruzam sem jun\xe7\xe3o, pontas soltas, zonas sem emissores, duplicados e dados de cat\xe1logo faltando. Clique num item para localiz\xe1-lo.","Sweeps the drawing for errors that stop or distort the hydraulic calculation: disconnected items, pipes crossing without a junction, dead ends, zones without emitters, duplicates and missing catalogue data. Click an item to locate it.","Recorre el dibujo buscando errores que impiden o distorsionan el c\xe1lculo hidr\xe1ulico: elementos desconectados, tuber\xedas que se cruzan sin nudo, extremos sueltos, zonas sin emisores, duplicados y datos de cat\xe1logo faltantes. Haga clic en un \xedtem para ubicarlo.")
-B.B5=new A.a("{e} erro(s), {w} aviso(s), {i} nota(s)","{e} error(s), {w} warning(s), {i} note(s)","{e} error(es), {w} aviso(s), {i} nota(s)")
+B.B6=new A.a("{e} erro(s), {w} aviso(s), {i} nota(s)","{e} error(s), {w} warning(s), {i} note(s)","{e} error(es), {w} aviso(s), {i} nota(s)")
 B.wz=new A.a("Nenhum erro encontrado: o projeto est\xe1 pronto para o c\xe1lculo (F5).","No errors found: the design is ready to run (F5).","No se encontraron errores: el dise\xf1o est\xe1 listo para calcular (F5).")
 B.A6=new A.a("Verificar novamente","Run again","Verificar de nuevo")
-B.nv=new A.a("Erro","Error","Error")
-B.lI=new A.a("Aviso","Warning","Aviso")
+B.nu=new A.a("Erro","Error","Error")
+B.lH=new A.a("Aviso","Warning","Aviso")
 B.qZ=new A.a("Nota","Note","Nota")
-B.ob=new A.a("Nenhum item hidr\xe1ulico no desenho","No hydraulic items in the drawing","Ning\xfan elemento hidr\xe1ulico en el dibujo")
+B.oa=new A.a("Nenhum item hidr\xe1ulico no desenho","No hydraulic items in the drawing","Ning\xfan elemento hidr\xe1ulico en el dibujo")
 B.pI=new A.a("Falta a fonte de \xe1gua (WS)","Water supply missing (WS)","Falta la fuente de agua (WS)")
 B.to=new A.a("H\xe1 laterais/emissores mas nenhuma v\xe1lvula de controle (V)","There are laterals/outlets but no control valve (V)","Hay laterales/emisores pero ninguna v\xe1lvula de control (V)")
 B.yq=new A.a("Item desconectado da rede","Item not connected to the network","Elemento desconectado de la red")
@@ -13734,25 +13742,25 @@ B.qU=new A.a("Zona sem emissores","Zone without emitters","Zona sin emisores")
 B.z_=new A.a("V\xe1lvulas com o mesmo nome de zona","Valves with the same zone name","V\xe1lvulas con el mismo nombre de zona")
 B.j4=new A.a("Ponta solta na linha principal (tubo sem sa\xedda)","Dead end on the mainline (pipe with no outlet)","Extremo suelto en la l\xednea principal (tuber\xeda sin salida)")
 B.p6=new A.a("Tubo de zona terminando sem lateral","Zone pipe ending without a lateral","Tuber\xeda de zona que termina sin lateral")
-B.ok=new A.a("Tubo de comprimento zero","Zero-length pipe","Tuber\xeda de longitud cero")
+B.oj=new A.a("Tubo de comprimento zero","Zero-length pipe","Tuber\xeda de longitud cero")
 B.k6=new A.a("Segmento menor que a toler\xe2ncia de conex\xe3o","Segment shorter than the connection tolerance","Segmento menor que la tolerancia de conexi\xf3n")
-B.BU=new A.a("Itens duplicados na mesma posi\xe7\xe3o","Duplicated items at the same position","Elementos duplicados en la misma posici\xf3n")
+B.BV=new A.a("Itens duplicados na mesma posi\xe7\xe3o","Duplicated items at the same position","Elementos duplicados en la misma posici\xf3n")
 B.jL=new A.a("Tubos se cruzam sem jun\xe7\xe3o (n\xe3o est\xe3o conectados)","Pipes cross without a junction (not connected)","Tuber\xedas se cruzan sin nudo (no est\xe1n conectadas)")
 B.rk=new A.a("Modelo do cat\xe1logo n\xe3o encontrado","Catalogue model not found","Modelo del cat\xe1logo no encontrado")
-B.F8=new A.a("Fonte com press\xe3o fixa igual a zero","Supply with a fixed pressure of zero","Fuente con presi\xf3n fija igual a cero")
+B.F9=new A.a("Fonte com press\xe3o fixa igual a zero","Supply with a fixed pressure of zero","Fuente con presi\xf3n fija igual a cero")
 B.xy=new A.a("Piv\xf4 fora da linha principal","Pivot not on the mainline","Pivote fuera de la l\xednea principal")
 B.zF=new A.a("Sem dados de eleva\xe7\xe3o: o terreno \xe9 considerado plano","No elevation data: the ground is taken as flat","Sin datos de elevaci\xf3n: el terreno se considera plano")
 B.jW=new A.a("Linha principal em anel (rede malhada) \u2014 resolvida pelo solver","Looped mainline (meshed network) \u2014 solved by the solver","L\xednea principal en anillo (red mallada) \u2014 resuelta por el solver")
 B.y_=new A.a("\xc1rea sem emissores dentro","Area with no emitters inside","\xc1rea sin emisores dentro")
-B.Dx=new A.a("Por qu\xea","Why","Por qu\xe9")
+B.Dy=new A.a("Por qu\xea","Why","Por qu\xe9")
 B.ug=new A.a("Como resolver","How to fix","C\xf3mo resolver")
 B.cL=new A.a("Mostrar no desenho","Show on the drawing","Mostrar en el dibujo")
 B.qB=new A.a("Corrigir automaticamente","Fix automatically","Corregir autom\xe1ticamente")
 B.zs=new A.a("Aplica as corre\xe7\xf5es seguras, recalcula e repete at\xe9 n\xe3o restar nada que ele consiga corrigir sozinho. Tudo vira um \xfanico passo: desfa\xe7a com Ctrl+Z.","Applies the safe corrections, runs the design again and repeats until nothing is left that it can fix on its own. It is all one step: undo with Ctrl+Z.","Aplica las correcciones seguras, recalcula y repite hasta que no quede nada que pueda corregir solo. Todo es un \xfanico paso: deshaga con Ctrl+Z.")
 B.c5=new A.a("Otimizar projeto","Optimise design","Optimizar dise\xf1o")
 B.iQ=new A.a("erro(s)","error(s)","error(es)")
-B.C7=new A.a("aviso(s)","warning(s)","aviso(s)")
-B.Bb=new A.a("nota(s)","note(s)","nota(s)")
+B.C8=new A.a("aviso(s)","warning(s)","aviso(s)")
+B.Bc=new A.a("nota(s)","note(s)","nota(s)")
 B.wW=new A.a("Nenhum problema: o projeto atende todos os requisitos.","No problems: the design meets every requirement.","Ning\xfan problema: el dise\xf1o cumple todos los requisitos.")
 B.kn=new A.a("Nenhum problema no desenho. Calcule o projeto (F5) para conferir press\xf5es e vaz\xf5es.","No problems in the drawing. Run the design (F5) to check pressures and flows.","Ning\xfan problema en el dibujo. Calcule el dise\xf1o (F5) para comprobar presiones y caudales.")
 B.kr=new A.a("Estes s\xe3o os problemas do desenho e das configura\xe7\xf5es. Depois de calcular (F5) aparecem tamb\xe9m os de press\xe3o, vaz\xe3o e bomba.","These are the problems of the drawing and the settings. After a design run (F5) the pressure, flow and pump ones show too.","Estos son los problemas del dibujo y de la configuraci\xf3n. Tras calcular (F5) aparecen tambi\xe9n los de presi\xf3n, caudal y bomba.")
@@ -13765,22 +13773,22 @@ B.wu=new A.a('Nada p\xf4de ser corrigido automaticamente. Siga o "Como resolver"
 B.Fw=new A.a("{n} corre\xe7\xe3o(\xf5es) aplicada(s):","{n} correction(s) applied:","{n} correcci\xf3n(es) aplicada(s):")
 B.vJ=new A.a('Restam {e} erro(s) e {w} aviso(s) que dependem de uma decis\xe3o sua: veja o "Como resolver" de cada um em Mensagens.','{e} error(s) and {w} warning(s) are left that need your decision: see the "How to fix" of each one in Messages.','Quedan {e} error(es) y {w} aviso(s) que dependen de una decisi\xf3n suya: vea el "C\xf3mo resolver" de cada uno en Mensajes.')
 B.i0=new A.a("Pronto: nenhum erro ou aviso restante.","Done: no errors or warnings left.","Listo: no quedan errores ni avisos.")
-B.oo=new A.a("Tudo foi feito num \xfanico passo do hist\xf3rico: Desfazer (Ctrl+Z) volta ao projeto anterior.","Everything was a single history step: Undo (Ctrl+Z) returns to the previous design.","Todo fue un \xfanico paso del historial: Deshacer (Ctrl+Z) vuelve al dise\xf1o anterior.")
-B.AY=new A.a("Desfazer tudo","Undo all","Deshacer todo")
+B.on=new A.a("Tudo foi feito num \xfanico passo do hist\xf3rico: Desfazer (Ctrl+Z) volta ao projeto anterior.","Everything was a single history step: Undo (Ctrl+Z) returns to the previous design.","Todo fue un \xfanico paso del historial: Deshacer (Ctrl+Z) vuelve al dise\xf1o anterior.")
+B.AZ=new A.a("Desfazer tudo","Undo all","Deshacer todo")
 B.rv=new A.a("C\xe1lculo conclu\xeddo com {n} erro(s). A aba Mensagens explica cada um e como resolver.","Design finished with {n} error(s). The Messages tab explains each one and how to fix it.","C\xe1lculo terminado con {n} error(es). La pesta\xf1a Mensajes explica cada uno y c\xf3mo resolverlo.")
-B.B0=new A.a("laterais","laterals","laterales")
+B.B1=new A.a("laterais","laterals","laterales")
 B.xd=new A.a("tubos de zona","zone pipes","tuber\xedas de zona")
 B.Fn=new A.a("linha principal","mainline","l\xednea principal")
-B.CO=new A.a("Procura o menor custo anual (investimento anualizado + energia) que ainda atende todas as press\xf5es e velocidades: dimensiona os tubos por programa\xe7\xe3o linear, escolhe a bomba de menor custo de ciclo de vida e a v\xe1lvula certa para cada zona. Se n\xe3o melhorar, nada \xe9 alterado.","Looks for the lowest annual cost (annualised investment + energy) that still meets every pressure and velocity: sizes the pipes by linear programming, picks the pump with the lowest life-cycle cost and the right valve for each zone. If nothing improves, nothing changes.","Busca el menor costo anual (inversi\xf3n anualizada + energ\xeda) que a\xfan cumple todas las presiones y velocidades: dimensiona las tuber\xedas por programaci\xf3n lineal, elige la bomba de menor costo de ciclo de vida y la v\xe1lvula correcta para cada zona. Si no mejora, no se cambia nada.")
-B.lW=new A.a("Escolher a bomba de menor custo total (compra + energia)","Choose the pump with the lowest total cost (purchase + energy)","Elegir la bomba de menor costo total (compra + energ\xeda)")
-B.D4=new A.a("Ajustar o tamanho de cada v\xe1lvula \xe0 vaz\xe3o da sua zona","Size each valve to the flow of its zone","Ajustar el tama\xf1o de cada v\xe1lvula al caudal de su zona")
+B.CP=new A.a("Procura o menor custo anual (investimento anualizado + energia) que ainda atende todas as press\xf5es e velocidades: dimensiona os tubos por programa\xe7\xe3o linear, escolhe a bomba de menor custo de ciclo de vida e a v\xe1lvula certa para cada zona. Se n\xe3o melhorar, nada \xe9 alterado.","Looks for the lowest annual cost (annualised investment + energy) that still meets every pressure and velocity: sizes the pipes by linear programming, picks the pump with the lowest life-cycle cost and the right valve for each zone. If nothing improves, nothing changes.","Busca el menor costo anual (inversi\xf3n anualizada + energ\xeda) que a\xfan cumple todas las presiones y velocidades: dimensiona las tuber\xedas por programaci\xf3n lineal, elige la bomba de menor costo de ciclo de vida y la v\xe1lvula correcta para cada zona. Si no mejora, no se cambia nada.")
+B.lV=new A.a("Escolher a bomba de menor custo total (compra + energia)","Choose the pump with the lowest total cost (purchase + energy)","Elegir la bomba de menor costo total (compra + energ\xeda)")
+B.D5=new A.a("Ajustar o tamanho de cada v\xe1lvula \xe0 vaz\xe3o da sua zona","Size each valve to the flow of its zone","Ajustar el tama\xf1o de cada v\xe1lvula al caudal de su zona")
 B.uW=new A.a("Redimensionar tamb\xe9m os tubos com di\xe2metro fixado por voc\xea","Also resize the pipes whose diameter you fixed","Redimensionar tambi\xe9n las tuber\xedas con di\xe1metro fijado por usted")
 B.ro=new A.a("Otimizar","Optimise","Optimizar")
 B.pU=new A.a("Otimizando: calculando alternativas\u2026","Optimising: designing alternatives\u2026","Optimizando: calculando alternativas\u2026")
-B.lB=new A.a("Antes","Before","Antes")
+B.lA=new A.a("Antes","Before","Antes")
 B.Ft=new A.a("Depois","After","Despu\xe9s")
 B.q3=new A.a("Investimento","Investment","Inversi\xf3n")
-B.oO=new A.a("Energia por ano","Energy per year","Energ\xeda por a\xf1o")
+B.oN=new A.a("Energia por ano","Energy per year","Energ\xeda por a\xf1o")
 B.vS=new A.a("Erros / avisos","Errors / warnings","Errores / avisos")
 B.q1=new A.a("Otimiza\xe7\xe3o aplicada: o projeto ficou mais barato ou com menos problemas.","Optimisation applied: the design is cheaper or has fewer problems.","Optimizaci\xf3n aplicada: el dise\xf1o es m\xe1s barato o tiene menos problemas.")
 B.tf=new A.a("O projeto j\xe1 estava otimizado: nenhuma alternativa melhor foi encontrada e nada foi alterado.","The design was already optimal: no better alternative was found and nothing changed.","El dise\xf1o ya estaba optimizado: no se encontr\xf3 una alternativa mejor y no se cambi\xf3 nada.")
@@ -13788,63 +13796,63 @@ B.jP=new A.a("Desfazer otimiza\xe7\xe3o","Undo optimisation","Deshacer optimizac
 B.rG=new A.a("Custos com os pre\xe7os do cat\xe1logo e os par\xe2metros econ\xf4micos (juros, prazo, tarifa de energia, horas por ano).","Costs use the catalogue prices and the economic parameters (interest, term, energy tariff, hours per year).","Costos con los precios del cat\xe1logo y los par\xe1metros econ\xf3micos (inter\xe9s, plazo, tarifa de energ\xeda, horas por a\xf1o).")
 B.up=new A.a("Corre\xe7\xe3o: {n}","Correction: {n}","Correcci\xf3n: {n}")
 B.qN=new A.a("Otimiza\xe7\xe3o","Optimisation","Optimizaci\xf3n")
-B.Ex=new A.a("Limites de velocidade imposs\xedveis","Impossible velocity limits","L\xedmites de velocidad imposibles")
+B.Ey=new A.a("Limites de velocidade imposs\xedveis","Impossible velocity limits","L\xedmites de velocidad imposibles")
 B.qm=new A.a("Horas de funcionamento por ano imposs\xedveis","Impossible operating hours per year","Horas de funcionamiento por a\xf1o imposibles")
 B.xo=new A.a("Par\xe2metros econ\xf4micos imposs\xedveis","Impossible economic parameters","Par\xe1metros econ\xf3micos imposibles")
 B.yy=new A.a("Toler\xe2ncia de conex\xe3o fora da faixa","Connection tolerance out of range","Tolerancia de conexi\xf3n fuera de rango")
-B.CK=new A.a("Varia\xe7\xe3o de press\xe3o na zona fora da faixa","Zone pressure variation out of range","Variaci\xf3n de presi\xf3n en la zona fuera de rango")
+B.CL=new A.a("Varia\xe7\xe3o de press\xe3o na zona fora da faixa","Zone pressure variation out of range","Variaci\xf3n de presi\xf3n en la zona fuera de rango")
 B.v8=new A.a("Temperatura da \xe1gua fora da faixa","Water temperature out of range","Temperatura del agua fuera de rango")
 B.yf=new A.a("Nenhum tubo habilitado para este uso","No pipe enabled for this use","Ninguna tuber\xeda habilitada para este uso")
 B.v0=new A.a("M\xe1ximo da fonte menor que o valor de projeto","Supply maximum below the design value","M\xe1ximo de la fuente menor que el valor de dise\xf1o")
 B.qS=new A.a("Zonas fora de todos os turnos","Zones in no system flow","Zonas fuera de todos los turnos")
-B.oQ=new A.a("Turnos vazios","Empty system flows","Turnos vac\xedos")
+B.oP=new A.a("Turnos vazios","Empty system flows","Turnos vac\xedos")
 B.lp=new A.a("Turno com dura\xe7\xe3o zero","System flow with zero duration","Turno con duraci\xf3n cero")
-B.nT=new A.a("Press\xe3o do emissor fora da faixa do bocal","Emitter pressure outside the nozzle range","Presi\xf3n del emisor fuera del rango de la boquilla")
-B.Dg=new A.a("Rota\xe7\xe3o da bomba fora da faixa","Pump speed out of range","Velocidad de la bomba fuera de rango")
+B.nS=new A.a("Press\xe3o do emissor fora da faixa do bocal","Emitter pressure outside the nozzle range","Presi\xf3n del emisor fuera del rango de la boquilla")
+B.Dh=new A.a("Rota\xe7\xe3o da bomba fora da faixa","Pump speed out of range","Velocidad de la bomba fuera de rango")
 B.iK=new A.a("Conectar ao mais pr\xf3ximo (at\xe9 {d} m)","Connect to the nearest (up to {d} m)","Conectar al m\xe1s cercano (hasta {d} m)")
 B.qk=new A.a("Excluir o tubo","Delete the pipe","Eliminar la tuber\xeda")
 B.wT=new A.a("Remover v\xe9rtices repetidos","Remove repeated vertices","Quitar v\xe9rtices repetidos")
-B.mU=new A.a("Manter s\xf3 um","Keep only one","Dejar solo uno")
-B.nD=new A.a("Renomear as zonas repetidas","Rename the repeated zones","Renombrar las zonas repetidas")
-B.Cf=new A.a("Calcular a press\xe3o necess\xe1ria na fonte","Calculate the pressure needed at the supply","Calcular la presi\xf3n necesaria en la fuente")
-B.mM=new A.a("Escolher a bomba adequada","Choose a suitable pump","Elegir la bomba adecuada")
-B.Ek=new A.a("Trocar por bomba submersa","Replace with a submersible pump","Cambiar por bomba sumergible")
+B.mT=new A.a("Manter s\xf3 um","Keep only one","Dejar solo uno")
+B.nC=new A.a("Renomear as zonas repetidas","Rename the repeated zones","Renombrar las zonas repetidas")
+B.Cg=new A.a("Calcular a press\xe3o necess\xe1ria na fonte","Calculate the pressure needed at the supply","Calcular la presi\xf3n necesaria en la fuente")
+B.mL=new A.a("Escolher a bomba adequada","Choose a suitable pump","Elegir la bomba adecuada")
+B.El=new A.a("Trocar por bomba submersa","Replace with a submersible pump","Cambiar por bomba sumergible")
 B.pn=new A.a("Deixar o c\xe1lculo escolher os di\xe2metros","Let the design choose the diameters","Dejar que el c\xe1lculo elija los di\xe1metros")
 B.uk=new A.a("Usar tubo de classe de press\xe3o maior","Use a pipe of a higher pressure class","Usar tuber\xeda de clase de presi\xf3n mayor")
-B.od=new A.a("Trocar a v\xe1lvula pelo tamanho certo","Change the valve to the right size","Cambiar la v\xe1lvula por el tama\xf1o correcto")
-B.DP=new A.a("Usar um modelo do cat\xe1logo","Use a catalogue model","Usar un modelo del cat\xe1logo")
+B.oc=new A.a("Trocar a v\xe1lvula pelo tamanho certo","Change the valve to the right size","Cambiar la v\xe1lvula por el tama\xf1o correcto")
+B.DQ=new A.a("Usar um modelo do cat\xe1logo","Use a catalogue model","Usar un modelo del cat\xe1logo")
 B.kc=new A.a("Dividir em mais turnos","Split into more system flows","Dividir en m\xe1s turnos")
-B.mk=new A.a("Adicionar as conex\xf5es ao cat\xe1logo","Add the fittings to the catalogue","A\xf1adir las conexiones al cat\xe1logo")
+B.mj=new A.a("Adicionar as conex\xf5es ao cat\xe1logo","Add the fittings to the catalogue","A\xf1adir las conexiones al cat\xe1logo")
 B.rd=new A.a("Conectar os tubos no cruzamento","Connect the pipes at the crossing","Conectar las tuber\xedas en el cruce")
-B.lH=new A.a("Colocar a fonte na ponta livre","Place the supply at the free end","Colocar la fuente en el extremo libre")
+B.lG=new A.a("Colocar a fonte na ponta livre","Place the supply at the free end","Colocar la fuente en el extremo libre")
 B.tV=new A.a("Voltar aos valores padr\xe3o","Restore the default values","Volver a los valores por defecto")
 B.zS=new A.a("Criar um turno para essas zonas","Create a system flow for these zones","Crear un turno para esas zonas")
 B.kL=new A.a("Limpar os turnos","Clean up the system flows","Limpiar los turnos")
-B.mW=new A.a("Definir 1 h de dura\xe7\xe3o","Set a 1 h duration","Definir 1 h de duraci\xf3n")
-B.m8=new A.a("Usar a press\xe3o nominal do emissor","Use the emitter nominal pressure","Usar la presi\xf3n nominal del emisor")
-B.op=new A.a("Voltar \xe0 rota\xe7\xe3o nominal","Back to the rated speed","Volver a la velocidad nominal")
+B.mV=new A.a("Definir 1 h de dura\xe7\xe3o","Set a 1 h duration","Definir 1 h de duraci\xf3n")
+B.m7=new A.a("Usar a press\xe3o nominal do emissor","Use the emitter nominal pressure","Usar la presi\xf3n nominal del emisor")
+B.oo=new A.a("Voltar \xe0 rota\xe7\xe3o nominal","Back to the rated speed","Volver a la velocidad nominal")
 B.x4=new A.a("Ajustar os limites da fonte","Adjust the supply limits","Ajustar los l\xedmites de la fuente")
 B.xi=new A.a("Habilitar tubos no cat\xe1logo","Enable pipes in the catalogue","Habilitar tuber\xedas en el cat\xe1logo")
-B.Bk=new A.a("item conectado (movido {d} m)","item connected (moved {d} m)","elemento conectado (movido {d} m)")
+B.Bl=new A.a("item conectado (movido {d} m)","item connected (moved {d} m)","elemento conectado (movido {d} m)")
 B.tv=new A.a("{n} tubo(s) de comprimento zero exclu\xeddo(s)","{n} zero-length pipe(s) deleted","{n} tuber\xeda(s) de longitud cero eliminada(s)")
-B.Dk=new A.a("{n} v\xe9rtice(s) repetido(s) removido(s)","{n} repeated vertex(es) removed","{n} v\xe9rtice(s) repetido(s) quitado(s)")
+B.Dl=new A.a("{n} v\xe9rtice(s) repetido(s) removido(s)","{n} repeated vertex(es) removed","{n} v\xe9rtice(s) repetido(s) quitado(s)")
 B.tx=new A.a("{n} item(ns) duplicado(s) removido(s)","{n} duplicated item(s) removed","{n} elemento(s) duplicado(s) quitado(s)")
 B.pA=new A.a("{n} zona(s) renomeada(s)","{n} zone(s) renamed","{n} zona(s) renombrada(s)")
 B.tn=new A.a("a press\xe3o da fonte agora \xe9 calculada ({n})","the supply pressure is now calculated ({n})","la presi\xf3n de la fuente ahora se calcula ({n})")
 B.ll=new A.a("bomba trocada por {n}","pump changed to {n}","bomba cambiada por {n}")
-B.AU=new A.a("bomba {n} inserida junto \xe0 fonte","pump {n} inserted next to the supply","bomba {n} insertada junto a la fuente")
+B.AV=new A.a("bomba {n} inserida junto \xe0 fonte","pump {n} inserted next to the supply","bomba {n} insertada junto a la fuente")
 B.q2=new A.a("{n} tubo(s) liberado(s) para o c\xe1lculo escolher o di\xe2metro","{n} pipe(s) freed for the design to choose the diameter","{n} tuber\xeda(s) liberada(s) para que el c\xe1lculo elija el di\xe1metro")
-B.o5=new A.a("tubo trocado por {n}","pipe changed to {n}","tuber\xeda cambiada por {n}")
+B.o4=new A.a("tubo trocado por {n}","pipe changed to {n}","tuber\xeda cambiada por {n}")
 B.k2=new A.a("v\xe1lvula trocada por {n}","valve changed to {n}","v\xe1lvula cambiada por {n}")
 B.wI=new A.a("modelo definido: {n}","model set: {n}","modelo definido: {n}")
 B.xh=new A.a("zonas reagrupadas em {n} turnos","zones regrouped into {n} system flows","zonas reagrupadas en {n} turnos")
-B.Dv=new A.a("{n} conex\xe3o(\xf5es) gen\xe9rica(s) adicionada(s) ao cat\xe1logo","{n} generic fitting(s) added to the catalogue","{n} conexi\xf3n(es) gen\xe9rica(s) a\xf1adida(s) al cat\xe1logo")
+B.Dw=new A.a("{n} conex\xe3o(\xf5es) gen\xe9rica(s) adicionada(s) ao cat\xe1logo","{n} generic fitting(s) added to the catalogue","{n} conexi\xf3n(es) gen\xe9rica(s) a\xf1adida(s) al cat\xe1logo")
 B.tc=new A.a("tubos conectados no cruzamento","pipes connected at the crossing","tuber\xedas conectadas en el cruce")
 B.yi=new A.a("fonte de \xe1gua colocada na ponta livre da linha principal","water supply placed at the free end of the mainline","fuente de agua colocada en el extremo libre de la l\xednea principal")
 B.Ak=new A.a("par\xe2metros de projeto restaurados aos valores padr\xe3o","design parameters restored to the defaults","par\xe1metros de dise\xf1o restaurados a los valores por defecto")
-B.BA=new A.a("{n} tubo(s) habilitado(s) no cat\xe1logo","{n} pipe(s) enabled in the catalogue","{n} tuber\xeda(s) habilitada(s) en el cat\xe1logo")
+B.BB=new A.a("{n} tubo(s) habilitado(s) no cat\xe1logo","{n} pipe(s) enabled in the catalogue","{n} tuber\xeda(s) habilitada(s) en el cat\xe1logo")
 B.pr=new A.a("limites da fonte ajustados aos valores de projeto","supply limits set to the design values","l\xedmites de la fuente ajustados a los valores de dise\xf1o")
-B.D0=new A.a("{n} zona(s) colocada(s) num novo turno","{n} zone(s) put in a new system flow","{n} zona(s) puesta(s) en un nuevo turno")
+B.D1=new A.a("{n} zona(s) colocada(s) num novo turno","{n} zone(s) put in a new system flow","{n} zona(s) puesta(s) en un nuevo turno")
 B.kP=new A.a("{n} refer\xeancia(s) a turnos vazios ou v\xe1lvulas apagadas removida(s)","{n} reference(s) to empty flows or deleted valves removed","{n} referencia(s) a turnos vac\xedos o v\xe1lvulas borradas quitada(s)")
 B.wF=new A.a("dura\xe7\xe3o de {n} turno(s) definida em 1 h","duration of {n} system flow(s) set to 1 h","duraci\xf3n de {n} turno(s) definida en 1 h")
 B.vB=new A.a("press\xe3o nominal aplicada a {n} emissor(es) ou linha(s)","nominal pressure applied to {n} emitter(s) or line(s)","presi\xf3n nominal aplicada a {n} emisor(es) o l\xednea(s)")
@@ -13860,23 +13868,23 @@ B.jD=new A.a("{n} j\xe1 \xe9 a melhor op\xe7\xe3o do cat\xe1logo","{n} already i
 B.t9=new A.a("nenhum tubo da linha principal sai da fonte","no mainline pipe leaves the supply","ninguna tuber\xeda de la l\xednea principal sale de la fuente")
 B.wA=new A.a("n\xe3o havia nada a mudar","there was nothing to change","no hab\xeda nada que cambiar")
 B.yZ=new A.a("o cat\xe1logo n\xe3o tem uma op\xe7\xe3o adequada","the catalogue has no suitable option","el cat\xe1logo no tiene una opci\xf3n adecuada")
-B.Ff=new A.a("O c\xe1lculo come\xe7a numa fonte de \xe1gua (po\xe7o, reservat\xf3rio, rede p\xfablica ou canal) com n\xedvel e press\xe3o conhecidos. Sem ela a \xe1gua n\xe3o tem de onde vir e nada pode ser calculado.","The design starts at a water supply (well, reservoir, public mains or canal) with a known level and pressure. Without one the water has nowhere to come from and nothing can be calculated.","El c\xe1lculo empieza en una fuente de agua (pozo, reservorio, red p\xfablica o canal) con nivel y presi\xf3n conocidos. Sin ella el agua no tiene de d\xf3nde venir y no se puede calcular nada.")
-B.EA=new A.a('Use a ferramenta Fonte de \xe1gua (WS) e clique na ponta da linha principal por onde a \xe1gua entra. Marque "Calcular press\xe3o necess\xe1ria" se ainda n\xe3o souber a press\xe3o dispon\xedvel: o programa diz quanto \xe9 preciso.','Use the Water supply tool (WS) and click the end of the mainline where the water comes in. Tick "Calculate required pressure" if you do not know the available pressure yet: the program tells you how much is needed.','Use la herramienta Fuente de agua (WS) y haga clic en el extremo de la l\xednea principal por donde entra el agua. Marque "Calcular presi\xf3n necesaria" si a\xfan no conoce la presi\xf3n disponible: el programa indica cu\xe1nta se necesita.')
-B.mz=new A.a("Cada zona (conjunto de laterais que irrigam juntas) precisa de uma v\xe1lvula de controle que a ligue \xe0 linha principal. \xc9 na v\xe1lvula que o programa separa as zonas e calcula a press\xe3o de cada uma.","Each zone (a set of laterals that irrigate together) needs a control valve that links it to the mainline. The valve is where the program separates the zones and works out the pressure of each one.","Cada zona (conjunto de laterales que riegan juntas) necesita una v\xe1lvula de control que la una a la l\xednea principal. En la v\xe1lvula el programa separa las zonas y calcula la presi\xf3n de cada una.")
+B.Fg=new A.a("O c\xe1lculo come\xe7a numa fonte de \xe1gua (po\xe7o, reservat\xf3rio, rede p\xfablica ou canal) com n\xedvel e press\xe3o conhecidos. Sem ela a \xe1gua n\xe3o tem de onde vir e nada pode ser calculado.","The design starts at a water supply (well, reservoir, public mains or canal) with a known level and pressure. Without one the water has nowhere to come from and nothing can be calculated.","El c\xe1lculo empieza en una fuente de agua (pozo, reservorio, red p\xfablica o canal) con nivel y presi\xf3n conocidos. Sin ella el agua no tiene de d\xf3nde venir y no se puede calcular nada.")
+B.EB=new A.a('Use a ferramenta Fonte de \xe1gua (WS) e clique na ponta da linha principal por onde a \xe1gua entra. Marque "Calcular press\xe3o necess\xe1ria" se ainda n\xe3o souber a press\xe3o dispon\xedvel: o programa diz quanto \xe9 preciso.','Use the Water supply tool (WS) and click the end of the mainline where the water comes in. Tick "Calculate required pressure" if you do not know the available pressure yet: the program tells you how much is needed.','Use la herramienta Fuente de agua (WS) y haga clic en el extremo de la l\xednea principal por donde entra el agua. Marque "Calcular presi\xf3n necesaria" si a\xfan no conoce la presi\xf3n disponible: el programa indica cu\xe1nta se necesita.')
+B.my=new A.a("Cada zona (conjunto de laterais que irrigam juntas) precisa de uma v\xe1lvula de controle que a ligue \xe0 linha principal. \xc9 na v\xe1lvula que o programa separa as zonas e calcula a press\xe3o de cada uma.","Each zone (a set of laterals that irrigate together) needs a control valve that links it to the mainline. The valve is where the program separates the zones and works out the pressure of each one.","Cada zona (conjunto de laterales que riegan juntas) necesita una v\xe1lvula de control que la una a la l\xednea principal. En la v\xe1lvula el programa separa las zonas y calcula la presi\xf3n de cada una.")
 B.kI=new A.a("Coloque uma V\xe1lvula de controle (V) onde a linha principal encontra o in\xedcio da zona. O Bloco de laterais (B) desenha laterais, linha de deriva\xe7\xe3o e v\xe1lvula de uma vez.","Place a Control valve (V) where the mainline meets the start of the zone. The Lateral block tool (B) draws laterals, submain and valve in one go.","Coloque una V\xe1lvula de control (V) donde la l\xednea principal se encuentra con el inicio de la zona. El Bloque de laterales (B) dibuja laterales, secundaria y v\xe1lvula de una vez.")
 B.jX=new A.a("O desenho ainda n\xe3o tem tubos, emissores nem v\xe1lvulas: s\xf3 h\xe1 o que calcular depois que a rede de irriga\xe7\xe3o \xe9 desenhada.","The drawing has no pipes, emitters or valves yet: there is only something to calculate once the irrigation network is drawn.","El dibujo todav\xeda no tiene tuber\xedas, emisores ni v\xe1lvulas: solo hay algo que calcular cuando la red de riego est\xe1 dibujada.")
 B.lk=new A.a("Comece por um exemplo (Arquivo \u2192 Exemplos) ou pelo Tutorial interativo (Ajuda). Num projeto novo: desenhe a \xe1rea, gere um Bloco de laterais (B), ligue as v\xe1lvulas com a linha principal e coloque a fonte de \xe1gua.","Start from an example (File \u2192 Examples) or the Interactive tutorial (Help). For a new design: draw the area, generate a Lateral block (B), link the valves with the mainline and place the water supply.","Empiece por un ejemplo (Archivo \u2192 Ejemplos) o por el Tutorial interactivo (Ayuda). En un dise\xf1o nuevo: dibuje el \xe1rea, genere un Bloque de laterales (B), una las v\xe1lvulas con la l\xednea principal y coloque la fuente de agua.")
-B.EP=new A.a("S\xf3 est\xe3o ligados itens que se tocam exatamente (dentro da toler\xe2ncia de conex\xe3o). Um item fora da rede n\xe3o recebe \xe1gua e fica fora do c\xe1lculo; geralmente ele foi solto a poucos cent\xedmetros do tubo.","Only items that touch exactly (within the connection tolerance) are joined. An item off the network gets no water and is left out of the calculation; usually it was dropped a few centimetres from the pipe.","Solo est\xe1n unidos los elementos que se tocan exactamente (dentro de la tolerancia de conexi\xf3n). Un elemento fuera de la red no recibe agua y queda fuera del c\xe1lculo; normalmente se solt\xf3 a pocos cent\xedmetros de la tuber\xeda.")
+B.EQ=new A.a("S\xf3 est\xe3o ligados itens que se tocam exatamente (dentro da toler\xe2ncia de conex\xe3o). Um item fora da rede n\xe3o recebe \xe1gua e fica fora do c\xe1lculo; geralmente ele foi solto a poucos cent\xedmetros do tubo.","Only items that touch exactly (within the connection tolerance) are joined. An item off the network gets no water and is left out of the calculation; usually it was dropped a few centimetres from the pipe.","Solo est\xe1n unidos los elementos que se tocan exactamente (dentro de la tolerancia de conexi\xf3n). Un elemento fuera de la red no recibe agua y queda fuera del c\xe1lculo; normalmente se solt\xf3 a pocos cent\xedmetros de la tuber\xeda.")
 B.rF=new A.a('Clique em "Mostrar no desenho" e arraste o item at\xe9 o tubo com o Snap ligado, ou use a corre\xe7\xe3o, que o leva ao tubo ou item compat\xedvel mais pr\xf3ximo.','Click "Show on the drawing" and drag the item onto the pipe with Snap on, or use the correction, which moves it to the nearest compatible pipe or item.','Haga clic en "Mostrar en el dibujo" y arrastre el elemento sobre la tuber\xeda con el Snap activado, o use la correcci\xf3n, que lo lleva a la tuber\xeda o elemento compatible m\xe1s cercano.')
 B.yz=new A.a("Um tubo sem comprimento (os dois pontos no mesmo lugar) n\xe3o conduz \xe1gua e atrapalha a montagem da rede. Costuma surgir de um clique duplo acidental.","A pipe without length (both points at the same place) carries no water and confuses the network. It usually comes from an accidental double click.","Una tuber\xeda sin longitud (los dos puntos en el mismo lugar) no conduce agua y entorpece el armado de la red. Suele surgir de un doble clic accidental.")
-B.lT=new A.a("Exclua o tubo; nada se perde.","Delete the pipe; nothing is lost.","Elimine la tuber\xeda; no se pierde nada.")
-B.C8=new A.a("Dois v\xe9rtices mais pr\xf3ximos que a toler\xe2ncia de conex\xe3o viram um s\xf3 n\xf3; o trecho min\xfasculo entre eles pode ligar coisas que n\xe3o deviam se tocar.","Two vertices closer than the connection tolerance become a single node; the tiny piece between them may join things that should not touch.","Dos v\xe9rtices m\xe1s cerca que la tolerancia de conexi\xf3n se vuelven un solo nudo; el tramo diminuto entre ellos puede unir cosas que no deber\xedan tocarse.")
+B.lS=new A.a("Exclua o tubo; nada se perde.","Delete the pipe; nothing is lost.","Elimine la tuber\xeda; no se pierde nada.")
+B.C9=new A.a("Dois v\xe9rtices mais pr\xf3ximos que a toler\xe2ncia de conex\xe3o viram um s\xf3 n\xf3; o trecho min\xfasculo entre eles pode ligar coisas que n\xe3o deviam se tocar.","Two vertices closer than the connection tolerance become a single node; the tiny piece between them may join things that should not touch.","Dos v\xe9rtices m\xe1s cerca que la tolerancia de conexi\xf3n se vuelven un solo nudo; el tramo diminuto entre ellos puede unir cosas que no deber\xedan tocarse.")
 B.yn=new A.a("Remova os v\xe9rtices repetidos (a corre\xe7\xe3o faz isso sem mudar o tra\xe7ado).","Remove the repeated vertices (the correction does it without changing the layout).","Quite los v\xe9rtices repetidos (la correcci\xf3n lo hace sin cambiar el trazado).")
-B.mV=new A.a("Dois itens iguais no mesmo ponto (colados duas vezes, por exemplo) dobram a vaz\xe3o e o custo na lista de materiais.","Two identical items at the same point (pasted twice, for instance) double the flow and the cost in the bill of materials.","Dos elementos iguales en el mismo punto (pegados dos veces, por ejemplo) duplican el caudal y el costo en la lista de materiales.")
+B.mU=new A.a("Dois itens iguais no mesmo ponto (colados duas vezes, por exemplo) dobram a vaz\xe3o e o custo na lista de materiais.","Two identical items at the same point (pasted twice, for instance) double the flow and the cost in the bill of materials.","Dos elementos iguales en el mismo punto (pegados dos veces, por ejemplo) duplican el caudal y el costo en la lista de materiales.")
 B.lf=new A.a("Mantenha s\xf3 um deles.","Keep only one of them.","Deje solo uno de ellos.")
 B.wD=new A.a("Relat\xf3rios, turnos e programa\xe7\xe3o identificam as zonas pelo nome; nomes repetidos deixam os resultados amb\xedguos.","Reports, system flows and the schedule identify the zones by name; repeated names make the results ambiguous.","Los informes, los turnos y la programaci\xf3n identifican las zonas por el nombre; los nombres repetidos hacen ambiguos los resultados.")
-B.DB=new A.a("D\xea um nome diferente a cada zona nas propriedades da v\xe1lvula, ou deixe a corre\xe7\xe3o numer\xe1-las.","Give each zone a different name in the valve properties, or let the correction number them.","D\xe9 un nombre distinto a cada zona en las propiedades de la v\xe1lvula, o deje que la correcci\xf3n las numere.")
-B.EY=new A.a("Tubos que se cruzam sem um v\xe9rtice comum n\xe3o est\xe3o ligados, como na obra, onde um passa por cima do outro. Se deviam se conectar, falta a jun\xe7\xe3o.","Pipes that cross without a shared vertex are not joined, as on site, where one passes over the other. If they should connect, the junction is missing.","Las tuber\xedas que se cruzan sin un v\xe9rtice com\xfan no est\xe1n unidas, como en obra, donde una pasa por encima de la otra. Si deb\xedan conectarse, falta el nudo.")
+B.DC=new A.a("D\xea um nome diferente a cada zona nas propriedades da v\xe1lvula, ou deixe a corre\xe7\xe3o numer\xe1-las.","Give each zone a different name in the valve properties, or let the correction number them.","D\xe9 un nombre distinto a cada zona en las propiedades de la v\xe1lvula, o deje que la correcci\xf3n las numere.")
+B.EZ=new A.a("Tubos que se cruzam sem um v\xe9rtice comum n\xe3o est\xe3o ligados, como na obra, onde um passa por cima do outro. Se deviam se conectar, falta a jun\xe7\xe3o.","Pipes that cross without a shared vertex are not joined, as on site, where one passes over the other. If they should connect, the junction is missing.","Las tuber\xedas que se cruzan sin un v\xe9rtice com\xfan no est\xe1n unidas, como en obra, donde una pasa por encima de la otra. Si deb\xedan conectarse, falta el nudo.")
 B.w3=new A.a('Se \xe9 uma conex\xe3o (t\xea ou cruzeta), use "Conectar os tubos no cruzamento". Se um s\xf3 passa sobre o outro, est\xe1 certo e o aviso pode ser ignorado.','If it is a connection (a tee or a cross), use "Connect the pipes at the crossing". If one only passes over the other, that is right and the warning can be ignored.','Si es una conexi\xf3n (te o cruz), use "Conectar las tuber\xedas en el cruce". Si una solo pasa sobre la otra, es correcto y el aviso se puede ignorar.')
 B.i6=new A.a("Uma ponta da linha principal n\xe3o chega a nenhuma v\xe1lvula, fonte ou emissor: o tubo termina no vazio. Ele n\xe3o leva \xe1gua a lugar nenhum, mas entra no custo.","An end of the mainline reaches no valve, supply or emitter: the pipe ends in the void. It takes water nowhere but adds to the cost.","Un extremo de la l\xednea principal no llega a ninguna v\xe1lvula, fuente ni emisor: la tuber\xeda termina en el vac\xedo. No lleva agua a ninguna parte, pero suma al costo.")
 B.vt=new A.a("Ligue a ponta \xe0 v\xe1lvula ou \xe0 fonte que ela devia alcan\xe7ar, ou apague o trecho que sobra. Se o projeto ainda n\xe3o tem fonte, essa ponta costuma ser o lugar dela.","Join the end to the valve or supply it should reach, or delete the leftover piece. If the design has no supply yet, that end is usually where it goes.","Una el extremo a la v\xe1lvula o a la fuente a la que deb\xeda llegar, o borre el tramo sobrante. Si el dise\xf1o a\xfan no tiene fuente, ese extremo suele ser su lugar.")
@@ -13884,40 +13892,40 @@ B.Ab=new A.a("Um tubo da zona termina sem lateral nem emissor na ponta. \xc0s ve
 B.Aa=new A.a("Se ele n\xe3o serve para nada, encurte ou apague o trecho para economizar tubo.","If it serves no purpose, shorten or delete it to save pipe.","Si no sirve para nada, ac\xf3rtela o b\xf3rrela para ahorrar tuber\xeda.")
 B.wR=new A.a("A v\xe1lvula n\xe3o alimenta nenhum emissor: sem vaz\xe3o n\xe3o h\xe1 o que dimensionar, e a zona fica vazia nos resultados.","The valve feeds no emitter: with no flow there is nothing to size, and the zone stays empty in the results.","La v\xe1lvula no alimenta ning\xfan emisor: sin caudal no hay nada que dimensionar y la zona queda vac\xeda en los resultados.")
 B.AP=new A.a('Confira se os tubos e laterais da zona tocam a v\xe1lvula (sa\xedda da v\xe1lvula = in\xedcio da linha de deriva\xe7\xe3o). Use "Mostrar no desenho" e ligue-os, ou apague a v\xe1lvula se a zona n\xe3o existe.','Check that the zone pipes and laterals touch the valve (valve outlet = start of the submain). Use "Show on the drawing" and join them, or delete the valve if the zone does not exist.','Compruebe que las tuber\xedas y laterales de la zona tocan la v\xe1lvula (salida de la v\xe1lvula = inicio de la secundaria). Use "Mostrar en el dibujo" y \xfanalos, o borre la v\xe1lvula si la zona no existe.')
-B.Ea=new A.a("Uma \xe1rea irrigada foi desenhada, mas n\xe3o tem emissores dentro; ela entra no balan\xe7o h\xeddrico sem ser irrigada.","An irrigated area was drawn but has no emitters inside; it enters the water balance without being irrigated.","Se dibuj\xf3 un \xe1rea regada pero no tiene emisores dentro; entra en el balance h\xeddrico sin ser regada.")
+B.Eb=new A.a("Uma \xe1rea irrigada foi desenhada, mas n\xe3o tem emissores dentro; ela entra no balan\xe7o h\xeddrico sem ser irrigada.","An irrigated area was drawn but has no emitters inside; it enters the water balance without being irrigated.","Se dibuj\xf3 un \xe1rea regada pero no tiene emisores dentro; entra en el balance h\xeddrico sin ser regada.")
 B.l4=new A.a("Gere um Bloco de laterais (B) ou uma Grade de aspersores dentro da \xe1rea, ou apague a \xe1rea se ela \xe9 s\xf3 refer\xeancia.","Generate a Lateral block (B) or a Sprinkler grid inside the area, or delete the area if it is only a reference.","Genere un Bloque de laterales (B) o una Malla de aspersores dentro del \xe1rea, o borre el \xe1rea si es solo referencia.")
 B.Az=new A.a("O item aponta para um modelo que n\xe3o est\xe1 no cat\xe1logo do projeto (apagado, ou vindo de outro arquivo). Sem as curvas do modelo n\xe3o \xe9 poss\xedvel calcular.","The item points to a model that is not in the project catalogue (deleted, or coming from another file). Without the model curves it cannot be calculated.","El elemento apunta a un modelo que no est\xe1 en el cat\xe1logo del proyecto (borrado o venido de otro archivo). Sin las curvas del modelo no se puede calcular.")
 B.rf=new A.a("Escolha um modelo nas propriedades do item, ou use a corre\xe7\xe3o, que aplica um modelo do cat\xe1logo (nos tubos, o di\xe2metro passa a ser escolhido pelo c\xe1lculo).","Pick a model in the item properties, or use the correction, which applies a catalogue model (for pipes, the design then chooses the diameter).","Elija un modelo en las propiedades del elemento, o use la correcci\xf3n, que aplica un modelo del cat\xe1logo (en las tuber\xedas, el di\xe1metro pasa a elegirlo el c\xe1lculo).")
 B.wk=new A.a("A fonte est\xe1 com press\xe3o fixa igual a zero: \xe9 como uma caixa d'\xe1gua no n\xedvel do ch\xe3o, sem bomba. Quase nunca \xe9 o que se quer, e todas as v\xe1lvulas ficar\xe3o sem press\xe3o.","The supply has a fixed pressure of zero: like a tank at ground level with no pump. It is hardly ever what you want, and every valve will lack pressure.","La fuente tiene presi\xf3n fija igual a cero: como un tanque a nivel del suelo, sin bomba. Casi nunca es lo que se quiere, y todas las v\xe1lvulas quedar\xe1n sin presi\xf3n.")
-B.Co=new A.a('Informe a press\xe3o real da fonte (rede p\xfablica, por exemplo 25 m.c.a.) ou marque "Calcular press\xe3o necess\xe1ria" para o programa dizer quanto \xe9 preciso.','Enter the real supply pressure (public mains, e.g. 25 m of head) or tick "Calculate required pressure" so the program tells you how much is needed.','Ingrese la presi\xf3n real de la fuente (red p\xfablica, por ejemplo 25 m.c.a.) o marque "Calcular presi\xf3n necesaria" para que el programa diga cu\xe1nta se necesita.')
+B.Cp=new A.a('Informe a press\xe3o real da fonte (rede p\xfablica, por exemplo 25 m.c.a.) ou marque "Calcular press\xe3o necess\xe1ria" para o programa dizer quanto \xe9 preciso.','Enter the real supply pressure (public mains, e.g. 25 m of head) or tick "Calculate required pressure" so the program tells you how much is needed.','Ingrese la presi\xf3n real de la fuente (red p\xfablica, por ejemplo 25 m.c.a.) o marque "Calcular presi\xf3n necesaria" para que el programa diga cu\xe1nta se necesita.')
 B.rb=new A.a("A linha principal forma um anel. O solver de rede calcula an\xe9is corretamente; s\xf3 o dimensionamento por programa\xe7\xe3o linear usa uma aproxima\xe7\xe3o em \xe1rvore, conferida depois pela an\xe1lise.","The mainline forms a loop. The network solver handles loops correctly; only the linear-programming sizing uses a tree approximation, checked afterwards by the analysis.","La l\xednea principal forma un anillo. El solver de red calcula anillos correctamente; solo el dimensionamiento por programaci\xf3n lineal usa una aproximaci\xf3n en \xe1rbol, verificada despu\xe9s por el an\xe1lisis.")
 B.ym=new A.a("Nada a fazer se o anel \xe9 intencional (ele distribui melhor a press\xe3o). Se n\xe3o \xe9, remova o trecho que fecha o anel.","Nothing to do if the loop is intended (it spreads the pressure better). If it is not, remove the piece that closes the loop.","Nada que hacer si el anillo es intencional (reparte mejor la presi\xf3n). Si no lo es, quite el tramo que cierra el anillo.")
 B.zL=new A.a("Sem curvas de n\xedvel nem cotas, o terreno \xe9 considerado plano. Em \xe1reas com desn\xedvel, subidas e descidas mudam muito a press\xe3o nos emissores.","Without contours or spot heights the ground is taken as flat. On sloping land, rises and falls change the emitter pressures a lot.","Sin curvas de nivel ni cotas, el terreno se considera plano. En terrenos con desnivel, las subidas y bajadas cambian mucho la presi\xf3n en los emisores.")
 B.zG=new A.a("Baixe a eleva\xe7\xe3o da internet (Projeto \u2192 Terreno), importe um GeoTIFF ou DXF com curvas, ou digite algumas cotas. Em terreno plano de verdade, pode ignorar.","Download the elevation from the internet (Design \u2192 Terrain), import a GeoTIFF or a DXF with contours, or type a few spot heights. On truly flat ground you can ignore it.","Descargue la elevaci\xf3n de internet (Dise\xf1o \u2192 Terreno), importe un GeoTIFF o un DXF con curvas, o escriba algunas cotas. En terreno realmente plano puede ignorarlo.")
 B.Al=new A.a("O c\xe1lculo hidr\xe1ulico n\xe3o chegou a uma solu\xe7\xe3o est\xe1vel, geralmente por dados extremos: tubo min\xfasculo com vaz\xe3o enorme, bomba muito fora da faixa ou valores zerados.","The hydraulic calculation did not reach a stable solution, usually because of extreme data: a tiny pipe with a huge flow, a pump far outside its range, or zero values.","El c\xe1lculo hidr\xe1ulico no lleg\xf3 a una soluci\xf3n estable, normalmente por datos extremos: tuber\xeda diminuta con caudal enorme, bomba muy fuera de rango o valores en cero.")
-B.nJ=new A.a("Resolva primeiro os outros erros da lista (principalmente itens desconectados e modelos faltando) e calcule de novo. Procure di\xe2metros e press\xf5es absurdos nas propriedades.","First solve the other errors in the list (mainly unconnected items and missing models) and run again. Look for absurd diameters and pressures in the properties.","Resuelva primero los otros errores de la lista (sobre todo elementos desconectados y modelos faltantes) y calcule de nuevo. Busque di\xe1metros y presiones absurdos en las propiedades.")
+B.nI=new A.a("Resolva primeiro os outros erros da lista (principalmente itens desconectados e modelos faltando) e calcule de novo. Procure di\xe2metros e press\xf5es absurdos nas propriedades.","First solve the other errors in the list (mainly unconnected items and missing models) and run again. Look for absurd diameters and pressures in the properties.","Resuelva primero los otros errores de la lista (sobre todo elementos desconectados y modelos faltantes) y calcule de nuevo. Busque di\xe1metros y presiones absurdos en las propiedades.")
 B.pm=new A.a("Os emissores da zona precisam trabalhar numa faixa de press\xe3o (a janela). Mesmo com os maiores tubos permitidos, a perda de carga ou o desn\xedvel deixam algum emissor fora dela: a zona \xe9 longa ou inclinada demais, ou a press\xe3o pedida est\xe1 fora da faixa do bocal.","The emitters of the zone must work within a pressure range (the window). Even with the largest pipes allowed, friction loss or the slope leave some emitter outside it: the zone is too long or too steep, or the pressure asked is outside the nozzle range.","Los emisores de la zona deben trabajar en un rango de presi\xf3n (la ventana). Incluso con las mayores tuber\xedas permitidas, la p\xe9rdida de carga o el desnivel dejan alg\xfan emisor fuera: la zona es demasiado larga o empinada, o la presi\xf3n pedida est\xe1 fuera del rango de la boquilla.")
-B.E6=new A.a("Tente, nesta ordem: deixar o c\xe1lculo escolher os di\xe2metros; dividir a zona em duas v\xe1lvulas; alimentar as laterais pelo meio; usar emissores autocompensantes; habilitar tubos maiores no cat\xe1logo.","Try, in this order: let the design choose the diameters; split the zone into two valves; feed the laterals from the middle; use pressure-compensating emitters; enable larger pipes in the catalogue.","Pruebe, en este orden: dejar que el c\xe1lculo elija los di\xe1metros; dividir la zona en dos v\xe1lvulas; alimentar los laterales por el centro; usar emisores autocompensantes; habilitar tuber\xedas mayores en el cat\xe1logo.")
+B.E7=new A.a("Tente, nesta ordem: deixar o c\xe1lculo escolher os di\xe2metros; dividir a zona em duas v\xe1lvulas; alimentar as laterais pelo meio; usar emissores autocompensantes; habilitar tubos maiores no cat\xe1logo.","Try, in this order: let the design choose the diameters; split the zone into two valves; feed the laterals from the middle; use pressure-compensating emitters; enable larger pipes in the catalogue.","Pruebe, en este orden: dejar que el c\xe1lculo elija los di\xe1metros; dividir la zona en dos v\xe1lvulas; alimentar los laterales por el centro; usar emisores autocompensantes; habilitar tuber\xedas mayores en el cat\xe1logo.")
 B.jY=new A.a("Algum emissor recebe mais press\xe3o do que o bocal suporta, o que \xe9 comum em zonas morro abaixo, onde cada metro de descida soma press\xe3o. Isso aumenta a vaz\xe3o, o tamanho das gotas e o desgaste.","Some emitter gets more pressure than the nozzle stands, which is common in downhill zones, where every metre of fall adds pressure. It raises the flow, the droplet size and the wear.","Alg\xfan emisor recibe m\xe1s presi\xf3n de la que soporta la boquilla, algo com\xfan en zonas cuesta abajo, donde cada metro de bajada suma presi\xf3n. Eso aumenta el caudal, el tama\xf1o de gota y el desgaste.")
 B.A7=new A.a("Divida a zona por faixas de altitude, use emissores autocompensantes ou reguladores de press\xe3o nas laterais, ou reduza a press\xe3o na v\xe1lvula.","Split the zone by elevation bands, use pressure-compensating emitters or pressure regulators on the laterals, or lower the pressure at the valve.","Divida la zona por franjas de altitud, use emisores autocompensantes o reguladores de presi\xf3n en los laterales, o reduzca la presi\xf3n en la v\xe1lvula.")
 B.zB=new A.a("A \xe1gua passa r\xe1pido demais neste tubo (acima do limite dos par\xe2metros, em geral 1,5 a 2 m/s). Velocidade alta gasta press\xe3o, aumenta o golpe de ar\xedete e desgasta o tubo.","Water runs too fast in this pipe (above the limit in the parameters, usually 1.5 to 2 m/s). High velocity wastes pressure, increases water hammer and wears the pipe.","El agua pasa demasiado r\xe1pido por esta tuber\xeda (por encima del l\xedmite de los par\xe1metros, en general 1,5 a 2 m/s). La velocidad alta gasta presi\xf3n, aumenta el golpe de ariete y desgasta la tuber\xeda.")
 B.wj=new A.a("Deixe o c\xe1lculo escolher o di\xe2metro (se voc\xea o fixou) ou use um tubo maior. Se j\xe1 \xe9 o maior do cat\xe1logo, divida a vaz\xe3o: mais turnos ou mais uma linha.","Let the design choose the diameter (if you fixed it) or use a bigger pipe. If it is already the largest in the catalogue, split the flow: more system flows or another line.","Deje que el c\xe1lculo elija el di\xe1metro (si usted lo fij\xf3) o use una tuber\xeda mayor. Si ya es la mayor del cat\xe1logo, divida el caudal: m\xe1s turnos u otra l\xednea.")
 B.rM=new A.a("A press\xe3o de trabalho passa da classe (PN) do tubo, que pode estourar. Acontece perto de bombas fortes ou no ponto mais baixo do terreno.","The working pressure exceeds the class (PN) of the pipe, which may burst. It happens near strong pumps or at the lowest point of the ground.","La presi\xf3n de trabajo supera la clase (PN) de la tuber\xeda, que puede reventar. Pasa cerca de bombas fuertes o en el punto m\xe1s bajo del terreno.")
-B.nL=new A.a("Use um tubo de classe maior no mesmo di\xe2metro (a corre\xe7\xe3o escolhe o mais barato que aguenta), ou reduza a press\xe3o: bomba menor ou v\xe1lvula redutora.","Use a higher-class pipe of the same diameter (the correction picks the cheapest that withstands it), or lower the pressure: a smaller pump or a pressure-reducing valve.","Use una tuber\xeda de clase mayor en el mismo di\xe1metro (la correcci\xf3n elige la m\xe1s barata que resiste), o reduzca la presi\xf3n: bomba menor o v\xe1lvula reductora.")
+B.nK=new A.a("Use um tubo de classe maior no mesmo di\xe2metro (a corre\xe7\xe3o escolhe o mais barato que aguenta), ou reduza a press\xe3o: bomba menor ou v\xe1lvula redutora.","Use a higher-class pipe of the same diameter (the correction picks the cheapest that withstands it), or lower the pressure: a smaller pump or a pressure-reducing valve.","Use una tuber\xeda de clase mayor en el mismo di\xe1metro (la correcci\xf3n elige la m\xe1s barata que resiste), o reduzca la presi\xf3n: bomba menor o v\xe1lvula reductora.")
 B.yK=new A.a("Ao fechar uma v\xe1lvula r\xe1pido, a \xe1gua em movimento para de repente e gera um pico de press\xe3o (golpe de ar\xedete). Somado \xe0 press\xe3o normal, ele passa da classe do tubo.","Closing a valve fast stops the moving water suddenly and causes a pressure spike (water hammer). Added to the normal pressure it exceeds the pipe class.","Al cerrar una v\xe1lvula r\xe1pido, el agua en movimiento se detiene de golpe y genera un pico de presi\xf3n (golpe de ariete). Sumado a la presi\xf3n normal, supera la clase de la tuber\xeda.")
-B.BI=new A.a("Use tubo de classe maior, feche as v\xe1lvulas mais devagar (tempo de fechamento nos par\xe2metros) ou reduza a velocidade com um tubo mais largo.","Use a higher-class pipe, close the valves more slowly (closure time in the parameters) or lower the velocity with a wider pipe.","Use tuber\xeda de clase mayor, cierre las v\xe1lvulas m\xe1s despacio (tiempo de cierre en los par\xe1metros) o reduzca la velocidad con una tuber\xeda m\xe1s ancha.")
-B.oP=new A.a("A vaz\xe3o da zona est\xe1 fora da faixa da v\xe1lvula escolhida: pequena demais, ela perde muita press\xe3o; grande demais, n\xe3o regula bem.","The zone flow is outside the range of the chosen valve: too small a valve loses a lot of pressure; too big a valve does not regulate well.","El caudal de la zona est\xe1 fuera del rango de la v\xe1lvula elegida: si es peque\xf1a pierde mucha presi\xf3n; si es grande no regula bien.")
+B.BJ=new A.a("Use tubo de classe maior, feche as v\xe1lvulas mais devagar (tempo de fechamento nos par\xe2metros) ou reduza a velocidade com um tubo mais largo.","Use a higher-class pipe, close the valves more slowly (closure time in the parameters) or lower the velocity with a wider pipe.","Use tuber\xeda de clase mayor, cierre las v\xe1lvulas m\xe1s despacio (tiempo de cierre en los par\xe1metros) o reduzca la velocidad con una tuber\xeda m\xe1s ancha.")
+B.oO=new A.a("A vaz\xe3o da zona est\xe1 fora da faixa da v\xe1lvula escolhida: pequena demais, ela perde muita press\xe3o; grande demais, n\xe3o regula bem.","The zone flow is outside the range of the chosen valve: too small a valve loses a lot of pressure; too big a valve does not regulate well.","El caudal de la zona est\xe1 fuera del rango de la v\xe1lvula elegida: si es peque\xf1a pierde mucha presi\xf3n; si es grande no regula bien.")
 B.k5=new A.a("Troque a v\xe1lvula por uma do tamanho certo (a corre\xe7\xe3o escolhe a menor que atende).","Change the valve to the right size (the correction picks the smallest that fits).","Cambie la v\xe1lvula por una del tama\xf1o correcto (la correcci\xf3n elige la menor que sirve).")
 B.vq=new A.a("A press\xe3o que chega \xe0 v\xe1lvula \xe9 menor que a que a zona precisa: a fonte n\xe3o tem press\xe3o para vencer a perda na linha principal e o desn\xedvel at\xe9 a zona.","The pressure reaching the valve is lower than the zone needs: the supply does not have the pressure to overcome the mainline loss and the rise to the zone.","La presi\xf3n que llega a la v\xe1lvula es menor que la que necesita la zona: la fuente no tiene presi\xf3n para vencer la p\xe9rdida en la l\xednea principal y el desnivel hasta la zona.")
-B.nz=new A.a("Coloque ou troque a bomba (a corre\xe7\xe3o escolhe uma para a vaz\xe3o e a press\xe3o), use tubos maiores na linha principal ou divida os turnos. Se a press\xe3o da fonte foi s\xf3 um palpite, deixe o programa calcul\xe1-la.","Add or change the pump (the correction picks one for the flow and the pressure), use larger mainline pipes or split the system flows. If the supply pressure was only a guess, let the program calculate it.","Coloque o cambie la bomba (la correcci\xf3n elige una para el caudal y la presi\xf3n), use tuber\xedas mayores en la l\xednea principal o divida los turnos. Si la presi\xf3n de la fuente era solo una estimaci\xf3n, deje que el programa la calcule.")
+B.ny=new A.a("Coloque ou troque a bomba (a corre\xe7\xe3o escolhe uma para a vaz\xe3o e a press\xe3o), use tubos maiores na linha principal ou divida os turnos. Se a press\xe3o da fonte foi s\xf3 um palpite, deixe o programa calcul\xe1-la.","Add or change the pump (the correction picks one for the flow and the pressure), use larger mainline pipes or split the system flows. If the supply pressure was only a guess, let the program calculate it.","Coloque o cambie la bomba (la correcci\xf3n elige una para el caudal y la presi\xf3n), use tuber\xedas mayores en la l\xednea principal o divida los turnos. Si la presi\xf3n de la fuente era solo una estimaci\xf3n, deje que el programa la calcule.")
 B.FH=new A.a("O piv\xf4 precisa de uma press\xe3o na entrada para que o \xfaltimo aspersor funcione; a linha principal entrega menos que isso.","The pivot needs an inlet pressure so that the last sprinkler works; the mainline delivers less than that.","El pivote necesita una presi\xf3n de entrada para que funcione el \xfaltimo aspersor; la l\xednea principal entrega menos.")
-B.lZ=new A.a("Escolha uma bomba adequada, aumente o di\xe2metro da adutora ou confira a press\xe3o de ponta pedida nas propriedades do piv\xf4.","Choose a suitable pump, increase the diameter of the supply main or check the end pressure asked in the pivot properties.","Elija una bomba adecuada, aumente el di\xe1metro de la aductora o revise la presi\xf3n de punta pedida en las propiedades del pivote.")
-B.EV=new A.a("O turno pede mais vaz\xe3o do que a fonte fornece (a vaz\xe3o de projeto da fonte). Na pr\xe1tica faltaria \xe1gua e as press\xf5es cairiam.","The system flow asks for more flow than the supply gives (its design flow). In practice the water would run short and the pressures would drop.","El turno pide m\xe1s caudal del que da la fuente (su caudal de dise\xf1o). En la pr\xe1ctica faltar\xeda agua y las presiones bajar\xedan.")
-B.Dd=new A.a("Divida as zonas em mais turnos (a corre\xe7\xe3o reagrupa para que nenhum passe da vaz\xe3o da fonte), ou aumente a vaz\xe3o da fonte se ela realmente comporta.","Split the zones into more system flows (the correction regroups them so that none exceeds the supply flow), or raise the supply flow if it really allows it.","Divida las zonas en m\xe1s turnos (la correcci\xf3n las reagrupa para que ninguno supere el caudal de la fuente), o aumente el caudal de la fuente si realmente lo permite.")
+B.lY=new A.a("Escolha uma bomba adequada, aumente o di\xe2metro da adutora ou confira a press\xe3o de ponta pedida nas propriedades do piv\xf4.","Choose a suitable pump, increase the diameter of the supply main or check the end pressure asked in the pivot properties.","Elija una bomba adecuada, aumente el di\xe1metro de la aductora o revise la presi\xf3n de punta pedida en las propiedades del pivote.")
+B.EW=new A.a("O turno pede mais vaz\xe3o do que a fonte fornece (a vaz\xe3o de projeto da fonte). Na pr\xe1tica faltaria \xe1gua e as press\xf5es cairiam.","The system flow asks for more flow than the supply gives (its design flow). In practice the water would run short and the pressures would drop.","El turno pide m\xe1s caudal del que da la fuente (su caudal de dise\xf1o). En la pr\xe1ctica faltar\xeda agua y las presiones bajar\xedan.")
+B.De=new A.a("Divida as zonas em mais turnos (a corre\xe7\xe3o reagrupa para que nenhum passe da vaz\xe3o da fonte), ou aumente a vaz\xe3o da fonte se ela realmente comporta.","Split the zones into more system flows (the correction regroups them so that none exceeds the supply flow), or raise the supply flow if it really allows it.","Divida las zonas en m\xe1s turnos (la correcci\xf3n las reagrupa para que ninguno supere el caudal de la fuente), o aumente el caudal de la fuente si realmente lo permite.")
 B.vP=new A.a("Para atender todas as v\xe1lvulas, a fonte precisaria de mais press\xe3o do que o m\xe1ximo informado para ela.","To serve every valve the supply would need more pressure than the maximum entered for it.","Para atender todas las v\xe1lvulas, la fuente necesitar\xeda m\xe1s presi\xf3n que el m\xe1ximo indicado para ella.")
 B.uq=new A.a("Coloque uma bomba (booster) depois da fonte, use tubos maiores ou divida os turnos para reduzir a perda de carga.","Add a booster pump after the supply, use larger pipes or split the system flows to reduce the friction loss.","Coloque una bomba (booster) despu\xe9s de la fuente, use tuber\xedas mayores o divida los turnos para reducir la p\xe9rdida de carga.")
-B.DD=new A.a("A bomba trabalha fora da faixa de vaz\xe3o da sua curva: pequena demais, n\xe3o entrega a vaz\xe3o; grande demais, trabalha perto do fechamento e desperdi\xe7a energia.","The pump works outside the flow range of its curve: too small, it cannot deliver the flow; too big, it runs near shut-off and wastes energy.","La bomba trabaja fuera del rango de caudal de su curva: si es peque\xf1a, no entrega el caudal; si es grande, trabaja cerca del cierre y desperdicia energ\xeda.")
-B.Er=new A.a("Escolha uma bomba adequada: a corre\xe7\xe3o compara as bombas do cat\xe1logo e fica com a de menor custo de compra + energia que atende todos os turnos.","Choose a suitable pump: the correction compares the catalogue pumps and keeps the one with the lowest purchase + energy cost that serves every system flow.","Elija una bomba adecuada: la correcci\xf3n compara las bombas del cat\xe1logo y se queda con la de menor costo de compra + energ\xeda que atiende todos los turnos.")
+B.DE=new A.a("A bomba trabalha fora da faixa de vaz\xe3o da sua curva: pequena demais, n\xe3o entrega a vaz\xe3o; grande demais, trabalha perto do fechamento e desperdi\xe7a energia.","The pump works outside the flow range of its curve: too small, it cannot deliver the flow; too big, it runs near shut-off and wastes energy.","La bomba trabaja fuera del rango de caudal de su curva: si es peque\xf1a, no entrega el caudal; si es grande, trabaja cerca del cierre y desperdicia energ\xeda.")
+B.Es=new A.a("Escolha uma bomba adequada: a corre\xe7\xe3o compara as bombas do cat\xe1logo e fica com a de menor custo de compra + energia que atende todos os turnos.","Choose a suitable pump: the correction compares the catalogue pumps and keeps the one with the lowest purchase + energy cost that serves every system flow.","Elija una bomba adecuada: la correcci\xf3n compara las bombas del cat\xe1logo y se queda con la de menor costo de compra + energ\xeda que atiende todos los turnos.")
 B.rW=new A.a("Uma bomba de superf\xedcie puxa a \xe1gua por v\xe1cuo, e a press\xe3o atmosf\xe9rica s\xf3 empurra a \xe1gua at\xe9 uns 10 m; na pr\xe1tica, com perdas e o NPSH, o limite \xe9 uns 7 m ao n\xedvel do mar (menos em altitude). Al\xe9m disso a bomba cavita ou perde a escorva.","A surface pump pulls the water through a vacuum, and the atmospheric pressure only pushes water up about 10 m; in practice, with losses and the NPSH, the limit is about 7 m at sea level (less at altitude). Beyond it the pump cavitates or loses its prime.","Una bomba de superficie succiona el agua por vac\xedo, y la presi\xf3n atmosf\xe9rica solo empuja el agua unos 10 m; en la pr\xe1ctica, con p\xe9rdidas y el NPSH, el l\xedmite es unos 7 m a nivel del mar (menos en altitud). M\xe1s all\xe1 la bomba cavita o pierde el cebado.")
 B.ut=new A.a("Use uma bomba submersa dentro do po\xe7o, ou instale a bomba de superf\xedcie mais perto do n\xedvel da \xe1gua. A press\xe3o negativa na entrada da bomba \xe9 essa altura de suc\xe7\xe3o.","Use a submersible pump inside the well, or install the surface pump closer to the water level. The negative pressure at the pump inlet is that suction lift.","Use una bomba sumergible dentro del pozo, o instale la bomba de superficie m\xe1s cerca del nivel del agua. La presi\xf3n negativa en la entrada de la bomba es esa altura de succi\xf3n.")
 B.kl=new A.a("Duas zonas est\xe3o ligadas por tubo sem v\xe1lvula entre elas: a \xe1gua de uma passa para a outra e o programa n\xe3o consegue separ\xe1-las.","Two zones are joined by pipe without a valve between them: the water of one flows into the other and the program cannot tell them apart.","Dos zonas est\xe1n unidas por tuber\xeda sin v\xe1lvula entre ellas: el agua de una pasa a la otra y el programa no puede separarlas.")
@@ -13925,177 +13933,177 @@ B.w7=new A.a("Corte o tubo que liga as zonas (ferramenta Cortar tubo). Se na ver
 B.ky=new A.a("Com os tubos habilitados no cat\xe1logo, nenhuma combina\xe7\xe3o atende todas as press\xf5es ao mesmo tempo; o programa usou o m\xe9todo guloso (aumenta os tubos passo a passo), que d\xe1 um bom resultado, mas talvez n\xe3o o mais barato.","With the pipes enabled in the catalogue, no combination meets every pressure at once; the program used the greedy method (upsizing step by step), which gives a good result but perhaps not the cheapest.","Con las tuber\xedas habilitadas en el cat\xe1logo, ninguna combinaci\xf3n cumple todas las presiones a la vez; el programa us\xf3 el m\xe9todo voraz (aumenta las tuber\xedas paso a paso), que da un buen resultado, pero quiz\xe1 no el m\xe1s barato.")
 B.wt=new A.a("Habilite di\xe2metros maiores no cat\xe1logo, aumente o n\xfamero de di\xe2metros por linha nos par\xe2metros ou reduza a exig\xeancia de press\xe3o (zonas menores).","Enable larger diameters in the catalogue, raise the number of diameters per line in the parameters or reduce the pressure demand (smaller zones).","Habilite di\xe1metros mayores en el cat\xe1logo, aumente el n\xfamero de di\xe1metros por l\xednea en los par\xe1metros o reduzca la exigencia de presi\xf3n (zonas menores).")
 B.xP=new A.a("A lista de materiais precisa de uma conex\xe3o (luva, joelho, t\xea\u2026) de um tamanho que o cat\xe1logo n\xe3o tem; ela fica sem pre\xe7o.","The bill of materials needs a fitting (coupler, elbow, tee\u2026) of a size the catalogue lacks; it stays without a price.","La lista de materiales necesita una conexi\xf3n (manguito, codo, te\u2026) de un tama\xf1o que el cat\xe1logo no tiene; queda sin precio.")
-B.o6=new A.a("Adicione as conex\xf5es gen\xe9ricas ao cat\xe1logo (corre\xe7\xe3o) ou cadastre as do seu fornecedor no Cat\xe1logo de componentes.","Add the generic fittings to the catalogue (correction) or enter those of your supplier in the Component catalog.","A\xf1ada las conexiones gen\xe9ricas al cat\xe1logo (correcci\xf3n) o registre las de su proveedor en el Cat\xe1logo de componentes.")
-B.my=new A.a("O piv\xf4 est\xe1 com l\xe2mina ou horas por ciclo iguais a zero, ent\xe3o a vaz\xe3o calculada \xe9 zero.","The pivot has a zero depth or zero hours per cycle, so its computed flow is zero.","El pivote tiene l\xe1mina u horas por ciclo en cero, as\xed que el caudal calculado es cero.")
+B.o5=new A.a("Adicione as conex\xf5es gen\xe9ricas ao cat\xe1logo (corre\xe7\xe3o) ou cadastre as do seu fornecedor no Cat\xe1logo de componentes.","Add the generic fittings to the catalogue (correction) or enter those of your supplier in the Component catalog.","A\xf1ada las conexiones gen\xe9ricas al cat\xe1logo (correcci\xf3n) o registre las de su proveedor en el Cat\xe1logo de componentes.")
+B.mx=new A.a("O piv\xf4 est\xe1 com l\xe2mina ou horas por ciclo iguais a zero, ent\xe3o a vaz\xe3o calculada \xe9 zero.","The pivot has a zero depth or zero hours per cycle, so its computed flow is zero.","El pivote tiene l\xe1mina u horas por ciclo en cero, as\xed que el caudal calculado es cero.")
 B.vV=new A.a("Informe a l\xe2mina por ciclo (mm) e as horas por volta nas propriedades do piv\xf4.","Enter the depth per cycle (mm) and the hours per turn in the pivot properties.","Ingrese la l\xe1mina por ciclo (mm) y las horas por vuelta en las propiedades del pivote.")
 B.xp=new A.a("Sem a press\xe3o na ponta (\xfaltimo aspersor) n\xe3o d\xe1 para calcular a press\xe3o de entrada do piv\xf4.","Without the end pressure (last sprinkler) the inlet pressure of the pivot cannot be calculated.","Sin la presi\xf3n de punta (\xfaltimo aspersor) no se puede calcular la presi\xf3n de entrada del pivote.")
-B.D5=new A.a("Informe a press\xe3o de ponta nas propriedades do piv\xf4 (t\xedpico: 10 a 20 m.c.a. com reguladores).","Enter the end pressure in the pivot properties (typical: 10 to 20 m of head with regulators).","Ingrese la presi\xf3n de punta en las propiedades del pivote (t\xedpico: 10 a 20 m.c.a. con reguladores).")
+B.D6=new A.a("Informe a press\xe3o de ponta nas propriedades do piv\xf4 (t\xedpico: 10 a 20 m.c.a. com reguladores).","Enter the end pressure in the pivot properties (typical: 10 to 20 m of head with regulators).","Ingrese la presi\xf3n de punta en las propiedades del pivote (t\xedpico: 10 a 20 m.c.a. con reguladores).")
 B.AO=new A.a("Na ponta, o piv\xf4 aplica \xe1gua mais r\xe1pido do que o solo consegue infiltrar: a \xe1gua escorre e causa eros\xe3o.","At the end the pivot applies water faster than the soil can take it in: the water runs off and causes erosion.","En la punta el pivote aplica agua m\xe1s r\xe1pido de lo que el suelo puede infiltrar: el agua escurre y causa erosi\xf3n.")
 B.Fp=new A.a("Use aspersores de maior raio molhado na ponta, aumente a velocidade de giro (menos l\xe2mina por volta) ou confira o limite do solo.","Use sprinklers with a larger wetted radius at the end, speed up the rotation (less depth per turn) or check the soil limit.","Use aspersores de mayor radio mojado en la punta, aumente la velocidad de giro (menos l\xe1mina por vuelta) o revise el l\xedmite del suelo.")
 B.l9=new A.a("Um turno faz refer\xeancia a uma v\xe1lvula que n\xe3o existe mais (foi apagada).","A system flow refers to a valve that no longer exists (it was deleted).","Un turno hace referencia a una v\xe1lvula que ya no existe (fue borrada).")
 B.vC=new A.a("Limpe os turnos (corre\xe7\xe3o) ou abra Projeto \u2192 Turnos de opera\xe7\xe3o e retire a v\xe1lvula do turno.","Clean up the system flows (correction) or open Design \u2192 System flows and take the valve out of the flow.","Limpie los turnos (correcci\xf3n) o abra Dise\xf1o \u2192 Turnos de operaci\xf3n y quite la v\xe1lvula del turno.")
-B.m0=new A.a("Os limites de velocidade nos par\xe2metros est\xe3o fora da faixa f\xedsica (0,3 a 5 m/s). Zero ou valores enormes tornam o dimensionamento imposs\xedvel ou sem sentido.","The velocity limits in the parameters are outside the physical range (0.3 to 5 m/s). Zero or huge values make the sizing impossible or meaningless.","Los l\xedmites de velocidad de los par\xe1metros est\xe1n fuera del rango f\xedsico (0,3 a 5 m/s). Cero o valores enormes hacen el dimensionamiento imposible o sin sentido.")
+B.m_=new A.a("Os limites de velocidade nos par\xe2metros est\xe3o fora da faixa f\xedsica (0,3 a 5 m/s). Zero ou valores enormes tornam o dimensionamento imposs\xedvel ou sem sentido.","The velocity limits in the parameters are outside the physical range (0.3 to 5 m/s). Zero or huge values make the sizing impossible or meaningless.","Los l\xedmites de velocidad de los par\xe1metros est\xe1n fuera del rango f\xedsico (0,3 a 5 m/s). Cero o valores enormes hacen el dimensionamiento imposible o sin sentido.")
 B.uf=new A.a("Volte aos valores padr\xe3o (1,5 m/s nas zonas, 2 m/s nas laterais e na linha principal) ou ajuste em Projeto \u2192 Par\xe2metros de projeto.","Restore the defaults (1.5 m/s in zones, 2 m/s in laterals and the mainline) or adjust them in Design \u2192 Design parameters.","Vuelva a los valores por defecto (1,5 m/s en las zonas, 2 m/s en los laterales y en la l\xednea principal) o aj\xfastelos en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
-B.Fh=new A.a("As horas de funcionamento por ano est\xe3o fora de 1 a 8760 (o ano tem 8760 h). O custo de energia e a escolha dos tubos pelo custo total dependem delas.","The operating hours per year are outside 1 to 8760 (a year has 8760 h). The energy cost and the choice of pipes by total cost depend on them.","Las horas de funcionamiento por a\xf1o est\xe1n fuera de 1 a 8760 (el a\xf1o tiene 8760 h). El costo de energ\xeda y la elecci\xf3n de tuber\xedas por costo total dependen de ellas.")
-B.CR=new A.a("Volte aos padr\xf5es (2000 h na linha principal, 500 h por zona) ou informe as horas reais em Projeto \u2192 Par\xe2metros de projeto.","Restore the defaults (2000 h for the mainline, 500 h per zone) or enter the real hours in Design \u2192 Design parameters.","Vuelva a los valores por defecto (2000 h en la l\xednea principal, 500 h por zona) o ingrese las horas reales en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
+B.Fi=new A.a("As horas de funcionamento por ano est\xe3o fora de 1 a 8760 (o ano tem 8760 h). O custo de energia e a escolha dos tubos pelo custo total dependem delas.","The operating hours per year are outside 1 to 8760 (a year has 8760 h). The energy cost and the choice of pipes by total cost depend on them.","Las horas de funcionamiento por a\xf1o est\xe1n fuera de 1 a 8760 (el a\xf1o tiene 8760 h). El costo de energ\xeda y la elecci\xf3n de tuber\xedas por costo total dependen de ellas.")
+B.CS=new A.a("Volte aos padr\xf5es (2000 h na linha principal, 500 h por zona) ou informe as horas reais em Projeto \u2192 Par\xe2metros de projeto.","Restore the defaults (2000 h for the mainline, 500 h per zone) or enter the real hours in Design \u2192 Design parameters.","Vuelva a los valores por defecto (2000 h en la l\xednea principal, 500 h por zona) o ingrese las horas reales en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
 B.v_=new A.a("Algum par\xe2metro econ\xf4mico \xe9 imposs\xedvel: juros negativos ou acima de 50 % ao ano, prazo fora de 1 a 100 anos, rendimento da bomba fora de 20 a 95 % ou tarifa de energia negativa.","Some economic parameter is impossible: interest negative or above 50 % a year, a term outside 1 to 100 years, a pump efficiency outside 20 to 95 % or a negative energy tariff.","Alg\xfan par\xe1metro econ\xf3mico es imposible: inter\xe9s negativo o mayor que 50 % al a\xf1o, plazo fuera de 1 a 100 a\xf1os, rendimiento de la bomba fuera de 20 a 95 % o tarifa de energ\xeda negativa.")
-B.EJ=new A.a("Volte aos valores padr\xe3o ou corrija em Projeto \u2192 Par\xe2metros de projeto.","Restore the defaults or correct them in Design \u2192 Design parameters.","Vuelva a los valores por defecto o corr\xedjalos en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
+B.EK=new A.a("Volte aos valores padr\xe3o ou corrija em Projeto \u2192 Par\xe2metros de projeto.","Restore the defaults or correct them in Design \u2192 Design parameters.","Vuelva a los valores por defecto o corr\xedjalos en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
 B.vw=new A.a("A toler\xe2ncia de conex\xe3o diz a que dist\xe2ncia dois pontos contam como ligados. Zero n\xe3o liga nada; valores grandes (mais de 1 m) ligam coisas que deviam estar separadas.","The connection tolerance says how close two points must be to count as joined. Zero joins nothing; large values (over 1 m) join things that should stay apart.","La tolerancia de conexi\xf3n dice a qu\xe9 distancia dos puntos cuentan como unidos. Cero no une nada; valores grandes (m\xe1s de 1 m) unen cosas que deber\xedan estar separadas.")
-B.DY=new A.a("Volte ao padr\xe3o (5 cm) em Projeto \u2192 Par\xe2metros de projeto.","Restore the default (5 cm) in Design \u2192 Design parameters.","Vuelva al valor por defecto (5 cm) en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
-B.oH=new A.a("A varia\xe7\xe3o m\xe1xima de press\xe3o na zona est\xe1 fora de 0 a 60 %. Os crit\xe9rios usuais ficam entre 10 e 20 % (cerca de \xb110 % na vaz\xe3o).","The maximum pressure variation in the zone is outside 0 to 60 %. The usual criteria are 10 to 20 % (about \xb110 % in flow).","La variaci\xf3n m\xe1xima de presi\xf3n en la zona est\xe1 fuera de 0 a 60 %. Los criterios usuales est\xe1n entre 10 y 20 % (cerca de \xb110 % en el caudal).")
+B.DZ=new A.a("Volte ao padr\xe3o (5 cm) em Projeto \u2192 Par\xe2metros de projeto.","Restore the default (5 cm) in Design \u2192 Design parameters.","Vuelva al valor por defecto (5 cm) en Dise\xf1o \u2192 Par\xe1metros de dise\xf1o.")
+B.oG=new A.a("A varia\xe7\xe3o m\xe1xima de press\xe3o na zona est\xe1 fora de 0 a 60 %. Os crit\xe9rios usuais ficam entre 10 e 20 % (cerca de \xb110 % na vaz\xe3o).","The maximum pressure variation in the zone is outside 0 to 60 %. The usual criteria are 10 to 20 % (about \xb110 % in flow).","La variaci\xf3n m\xe1xima de presi\xf3n en la zona est\xe1 fuera de 0 a 60 %. Los criterios usuales est\xe1n entre 10 y 20 % (cerca de \xb110 % en el caudal).")
 B.A1=new A.a("Volte ao padr\xe3o (0 = usa a faixa de press\xe3o do emissor) ou informe 20 %.","Restore the default (0 = use the pressure range of the emitter) or enter 20 %.","Vuelva al valor por defecto (0 = usa el rango de presi\xf3n del emisor) o ingrese 20 %.")
 B.v4=new A.a("A temperatura da \xe1gua est\xe1 fora de 0 a 60 \xb0C; ela muda a viscosidade usada na perda de carga (Darcy-Weisbach).","The water temperature is outside 0 to 60 \xb0C; it changes the viscosity used in the friction loss (Darcy-Weisbach).","La temperatura del agua est\xe1 fuera de 0 a 60 \xb0C; cambia la viscosidad usada en la p\xe9rdida de carga (Darcy-Weisbach).")
-B.Et=new A.a("Volte ao padr\xe3o (20 \xb0C).","Restore the default (20 \xb0C).","Vuelva al valor por defecto (20 \xb0C).")
-B.o4=new A.a("O cat\xe1logo n\xe3o tem nenhum tubo habilitado para este uso (laterais, zona ou linha principal), ent\xe3o o c\xe1lculo n\xe3o tem di\xe2metro para escolher.","The catalogue has no pipe enabled for this use (laterals, zone or mainline), so the design has no diameter to choose.","El cat\xe1logo no tiene ninguna tuber\xeda habilitada para este uso (laterales, zona o l\xednea principal), as\xed que el c\xe1lculo no tiene di\xe1metro que elegir.")
+B.Eu=new A.a("Volte ao padr\xe3o (20 \xb0C).","Restore the default (20 \xb0C).","Vuelva al valor por defecto (20 \xb0C).")
+B.o3=new A.a("O cat\xe1logo n\xe3o tem nenhum tubo habilitado para este uso (laterais, zona ou linha principal), ent\xe3o o c\xe1lculo n\xe3o tem di\xe2metro para escolher.","The catalogue has no pipe enabled for this use (laterals, zone or mainline), so the design has no diameter to choose.","El cat\xe1logo no tiene ninguna tuber\xeda habilitada para este uso (laterales, zona o l\xednea principal), as\xed que el c\xe1lculo no tiene di\xe1metro que elegir.")
 B.kw=new A.a("Habilite tubos no Cat\xe1logo de componentes ou use a corre\xe7\xe3o, que reativa os tubos padr\xe3o desse uso.","Enable pipes in the Component catalog or use the correction, which re-enables the default pipes of that use.","Habilite tuber\xedas en el Cat\xe1logo de componentes o use la correcci\xf3n, que reactiva las tuber\xedas por defecto de ese uso.")
-B.nc=new A.a("Na fonte, a press\xe3o ou a vaz\xe3o de projeto \xe9 maior que o m\xe1ximo informado: um dos valores est\xe1 trocado ou foi digitado errado.","At the supply, the design pressure or flow is higher than the maximum entered: one of the values is swapped or mistyped.","En la fuente, la presi\xf3n o el caudal de dise\xf1o es mayor que el m\xe1ximo indicado: uno de los valores est\xe1 cambiado o mal escrito.")
-B.nu=new A.a("Confira os valores nas propriedades da fonte; a corre\xe7\xe3o iguala o m\xe1ximo ao valor de projeto.","Check the values in the supply properties; the correction sets the maximum to the design value.","Revise los valores en las propiedades de la fuente; la correcci\xf3n iguala el m\xe1ximo al valor de dise\xf1o.")
+B.nb=new A.a("Na fonte, a press\xe3o ou a vaz\xe3o de projeto \xe9 maior que o m\xe1ximo informado: um dos valores est\xe1 trocado ou foi digitado errado.","At the supply, the design pressure or flow is higher than the maximum entered: one of the values is swapped or mistyped.","En la fuente, la presi\xf3n o el caudal de dise\xf1o es mayor que el m\xe1ximo indicado: uno de los valores est\xe1 cambiado o mal escrito.")
+B.nt=new A.a("Confira os valores nas propriedades da fonte; a corre\xe7\xe3o iguala o m\xe1ximo ao valor de projeto.","Check the values in the supply properties; the correction sets the maximum to the design value.","Revise los valores en las propiedades de la fuente; la correcci\xf3n iguala el m\xe1ximo al valor de dise\xf1o.")
 B.yS=new A.a("H\xe1 turnos definidos, mas estas zonas n\xe3o est\xe3o em nenhum: elas nunca abrem na simula\xe7\xe3o da linha principal e ficam fora da press\xe3o e da energia calculadas.","System flows are defined, but these zones are in none: they never open in the mainline simulation and are left out of the pressures and energy computed.","Hay turnos definidos, pero estas zonas no est\xe1n en ninguno: nunca abren en la simulaci\xf3n de la l\xednea principal y quedan fuera de la presi\xf3n y la energ\xeda calculadas.")
 B.jm=new A.a("Inclua as zonas num turno em Projeto \u2192 Turnos de opera\xe7\xe3o, ou use a corre\xe7\xe3o, que cria um turno novo para elas.","Put the zones in a flow in Design \u2192 System flows, or use the correction, which creates a new flow for them.","Incluya las zonas en un turno en Dise\xf1o \u2192 Turnos de operaci\xf3n, o use la correcci\xf3n, que crea un turno nuevo para ellas.")
 B.A3=new A.a("H\xe1 turnos sem nenhuma zona (vazios ou s\xf3 com v\xe1lvulas apagadas): eles n\xe3o fazem nada e confundem a programa\xe7\xe3o.","Some system flows have no zone (empty or with deleted valves only): they do nothing and confuse the schedule.","Hay turnos sin ninguna zona (vac\xedos o solo con v\xe1lvulas borradas): no hacen nada y confunden la programaci\xf3n.")
 B.iA=new A.a("Limpe os turnos (corre\xe7\xe3o) ou inclua zonas neles em Projeto \u2192 Turnos de opera\xe7\xe3o.","Clean up the system flows (correction) or put zones in them in Design \u2192 System flows.","Limpie los turnos (correcci\xf3n) o incluya zonas en ellos en Dise\xf1o \u2192 Turnos de operaci\xf3n.")
 B.zg=new A.a("Um turno com dura\xe7\xe3o zero ou negativa n\xe3o irriga e zera a energia daquele turno.","A system flow with a zero or negative duration irrigates nothing and zeroes its energy.","Un turno con duraci\xf3n cero o negativa no riega y deja en cero la energ\xeda de ese turno.")
-B.ov=new A.a("Informe a dura\xe7\xe3o de cada turno (horas) em Projeto \u2192 Turnos de opera\xe7\xe3o; a corre\xe7\xe3o define 1 h.","Enter the duration of each flow (hours) in Design \u2192 System flows; the correction sets 1 h.","Ingrese la duraci\xf3n de cada turno (horas) en Dise\xf1o \u2192 Turnos de operaci\xf3n; la correcci\xf3n define 1 h.")
+B.ou=new A.a("Informe a dura\xe7\xe3o de cada turno (horas) em Projeto \u2192 Turnos de opera\xe7\xe3o; a corre\xe7\xe3o define 1 h.","Enter the duration of each flow (hours) in Design \u2192 System flows; the correction sets 1 h.","Ingrese la duraci\xf3n de cada turno (horas) en Dise\xf1o \u2192 Turnos de operaci\xf3n; la correcci\xf3n define 1 h.")
 B.AH=new A.a("A press\xe3o de trabalho pedida para o emissor est\xe1 fora da faixa do bocal (m\xednima e m\xe1xima do cat\xe1logo). Assim nenhum tubo consegue deixar a zona dentro da janela de press\xe3o: a zona fica imposs\xedvel.","The working pressure asked for the emitter is outside the nozzle range (catalogue minimum and maximum). Then no pipe can keep the zone inside its pressure window: the zone becomes impossible.","La presi\xf3n de trabajo pedida para el emisor est\xe1 fuera del rango de la boquilla (m\xednima y m\xe1xima del cat\xe1logo). As\xed ninguna tuber\xeda puede dejar la zona dentro de la ventana de presi\xf3n: la zona se vuelve imposible.")
-B.Dn=new A.a("Use a press\xe3o nominal do bocal (corre\xe7\xe3o) ou escolha outro bocal ou emissor feito para a press\xe3o desejada.","Use the nominal pressure of the nozzle (correction) or choose another nozzle or emitter made for the pressure you want.","Use la presi\xf3n nominal de la boquilla (correcci\xf3n) o elija otra boquilla o emisor hecho para la presi\xf3n deseada.")
-B.ng=new A.a("A rota\xe7\xe3o relativa da bomba est\xe1 fora de 40 a 130 % da nominal; pelas leis de afinidade, a curva vira algo que a bomba real n\xe3o faz.","The relative pump speed is outside 40 to 130 % of the rated one; by the affinity laws the curve becomes something the real pump cannot do.","La velocidad relativa de la bomba est\xe1 fuera de 40 a 130 % de la nominal; por las leyes de afinidad, la curva se vuelve algo que la bomba real no hace.")
+B.Do=new A.a("Use a press\xe3o nominal do bocal (corre\xe7\xe3o) ou escolha outro bocal ou emissor feito para a press\xe3o desejada.","Use the nominal pressure of the nozzle (correction) or choose another nozzle or emitter made for the pressure you want.","Use la presi\xf3n nominal de la boquilla (correcci\xf3n) o elija otra boquilla o emisor hecho para la presi\xf3n deseada.")
+B.nf=new A.a("A rota\xe7\xe3o relativa da bomba est\xe1 fora de 40 a 130 % da nominal; pelas leis de afinidade, a curva vira algo que a bomba real n\xe3o faz.","The relative pump speed is outside 40 to 130 % of the rated one; by the affinity laws the curve becomes something the real pump cannot do.","La velocidad relativa de la bomba est\xe1 fuera de 40 a 130 % de la nominal; por las leyes de afinidad, la curva se vuelve algo que la bomba real no hace.")
 B.qy=new A.a("Volte \xe0 rota\xe7\xe3o nominal (1,0) ou use o inversor de frequ\xeancia s\xf3 dentro da faixa do fabricante.","Go back to the rated speed (1.0) or use a variable-speed drive only within the range of the manufacturer.","Vuelva a la velocidad nominal (1,0) o use el variador de frecuencia solo dentro del rango del fabricante.")
 B.pD=new A.a("Verifica\xe7\xe3o do projeto\u2026","Design check\u2026","Verificaci\xf3n del dise\xf1o\u2026")
-B.p0=new A.a("Cat\xe1logos de fabricantes\u2026","Manufacturer catalogues\u2026","Cat\xe1logos de fabricantes\u2026")
-B.BR=new A.a("Produtos com os dados das tabelas publicadas pelos fabricantes (vaz\xe3o, expoente, raio, faixa de press\xe3o, perda de carga) e os documentos de origem de cada pacote. Os pre\xe7os ficam em zero: exporte para Excel, preencha com a tabela local e importe de volta. Confirme sempre na folha de dados atual.","Products with the data of the manufacturers' published tables (flow, exponent, radius, pressure range, head loss) and the source documents of each pack. Prices are left at zero: export to Excel, fill in the local price list and import it back. Always confirm with the current data sheet.","Productos con los datos de las tablas publicadas por los fabricantes (caudal, exponente, radio, rango de presi\xf3n, p\xe9rdida de carga) y los documentos de origen de cada paquete. Los precios quedan en cero: exporte a Excel, complete con la lista local e importe de vuelta. Confirme siempre con la hoja de datos vigente.")
-B.Ef=new A.a("Adicionar","Add","A\xf1adir")
-B.Bm=new A.a("{n} itens adicionados de {b}","{n} items added from {b}","{n} \xedtems a\xf1adidos de {b}")
+B.p_=new A.a("Cat\xe1logos de fabricantes\u2026","Manufacturer catalogues\u2026","Cat\xe1logos de fabricantes\u2026")
+B.BS=new A.a("Produtos com os dados das tabelas publicadas pelos fabricantes (vaz\xe3o, expoente, raio, faixa de press\xe3o, perda de carga) e os documentos de origem de cada pacote. Os pre\xe7os ficam em zero: exporte para Excel, preencha com a tabela local e importe de volta. Confirme sempre na folha de dados atual.","Products with the data of the manufacturers' published tables (flow, exponent, radius, pressure range, head loss) and the source documents of each pack. Prices are left at zero: export to Excel, fill in the local price list and import it back. Always confirm with the current data sheet.","Productos con los datos de las tablas publicadas por los fabricantes (caudal, exponente, radio, rango de presi\xf3n, p\xe9rdida de carga) y los documentos de origen de cada paquete. Los precios quedan en cero: exporte a Excel, complete con la lista local e importe de vuelta. Confirme siempre con la hoja de datos vigente.")
+B.Eg=new A.a("Adicionar","Add","A\xf1adir")
+B.Bn=new A.a("{n} itens adicionados de {b}","{n} items added from {b}","{n} \xedtems a\xf1adidos de {b}")
 B.vF=new A.a("{n} itens","{n} items","{n} \xedtems")
 B.zc=new A.a("Exportar Excel","Export Excel","Exportar Excel")
 B.yP=new A.a("Importar (JSON, CSV, Excel)\u2026","Import (JSON, CSV, Excel)\u2026","Importar (JSON, CSV, Excel)\u2026")
 B.iu=new A.a("Menu","Menu","Men\xfa")
-B.ms=new A.a("Concluir","Done","Terminar")
-B.Dm=new A.a("Toque para desenhar \xb7 pin\xe7a para zoom \xb7 dois dedos para mover","Tap to draw \xb7 pinch to zoom \xb7 two fingers to pan","Toque para dibujar \xb7 pellizco para zoom \xb7 dos dedos para mover")
+B.mr=new A.a("Concluir","Done","Terminar")
+B.Dn=new A.a("Toque para desenhar \xb7 pin\xe7a para zoom \xb7 dois dedos para mover","Tap to draw \xb7 pinch to zoom \xb7 two fingers to pan","Toque para dibujar \xb7 pellizco para zoom \xb7 dos dedos para mover")
 B.qT=new A.a("Navegar","Navigate","Navegar")
 B.rR=new A.a("Principal","Mainline","Principal")
 B.lg=new A.a("{n} selecionado(s)","{n} selected","{n} seleccionado(s)")
 B.jI=new A.a("No celular: bot\xf5es Concluir/Cancelar substituem Enter/Esc; menu \u2630 re\xfane os menus","On a phone: Done/Cancel buttons replace Enter/Esc; the \u2630 menu gathers the menus","En el m\xf3vil: los botones Terminar/Cancelar reemplazan Intro/Esc; el men\xfa \u2630 re\xfane los men\xfas")
 B.xm=new A.a("Laterais seguem a linha selecionada ({n}): laterais curvas","Laterals follow the selected line ({n}): curved laterals","Laterales siguen la l\xednea seleccionada ({n}): laterales curvas")
 B.za=new A.a("Hist\xf3rico","History","Historial")
-B.AS=new A.a("Clique num passo para voltar (ou avan\xe7ar) no tempo; uma nova edi\xe7\xe3o descarta os passos \xe0 frente.","Click a step to go back (or forward) in time; a new edit discards the steps ahead.","Haga clic en un paso para volver (o avanzar) en el tiempo; una nueva edici\xf3n descarta los pasos siguientes.")
+B.AT=new A.a("Clique num passo para voltar (ou avan\xe7ar) no tempo; uma nova edi\xe7\xe3o descarta os passos \xe0 frente.","Click a step to go back (or forward) in time; a new edit discards the steps ahead.","Haga clic en un paso para volver (o avanzar) en el tiempo; una nueva edici\xf3n descarta los pasos siguientes.")
 B.jr=new A.a("Estado inicial","Initial state","Estado inicial")
-B.oc=new A.a("Edi\xe7\xe3o","Edit","Edici\xf3n")
-B.CH=new A.a("Adicionar {n}","Add {n}","A\xf1adir {n}")
+B.ob=new A.a("Edi\xe7\xe3o","Edit","Edici\xf3n")
+B.CI=new A.a("Adicionar {n}","Add {n}","A\xf1adir {n}")
 B.AQ=new A.a("Adicionar {n} itens","Add {n} items","A\xf1adir {n} elementos")
 B.uY=new A.a("Excluir {n} item(ns)","Delete {n} item(s)","Eliminar {n} elemento(s)")
 B.qE=new A.a("Mover","Move","Mover")
-B.nx=new A.a("Espelhar","Mirror","Reflejar")
+B.nw=new A.a("Espelhar","Mirror","Reflejar")
 B.Af=new A.a("Transformar {n} item(ns)","Transform {n} item(s)","Transformar {n} elemento(s)")
 B.uA=new A.a("Copiar {n} item(ns)","Copy {n} item(s)","Copiar {n} elemento(s)")
 B.qt=new A.a("Matriz","Array","Matriz")
 B.p5=new A.a("Importar","Import","Importar")
 B.ln=new A.a("Projetar (dimensionar)","Design (size pipes)","Dise\xf1ar (dimensionar)")
-B.Es=new A.a("Eleva\xe7\xe3o importada","Elevation imported","Elevaci\xf3n importada")
+B.Et=new A.a("Eleva\xe7\xe3o importada","Elevation imported","Elevaci\xf3n importada")
 B.Ag=new A.a("Remover cotas pr\xf3prias","Remove own heights","Quitar cotas propias")
-B.lA=new A.a("Alinhar","Align","Alinear")
+B.lz=new A.a("Alinhar","Align","Alinear")
 B.tt=new A.a("Lista de materiais na prancha","Bill of materials on the sheet","Lista de materiales en la l\xe1mina")
 B.tK=new A.a("Qtd.","Qty","Cant.")
 B.k_=new A.a("\u2026 mais {n} itens (ver relat\xf3rio)","\u2026 {n} more items (see report)","\u2026 {n} \xedtems m\xe1s (ver informe)")
 B.tY=new A.a("GeoTIFF de eleva\xe7\xe3o: {n} cotas de {w}\xd7{h} px ({crs})","Elevation GeoTIFF: {n} spot heights from {w}\xd7{h} px ({crs})","GeoTIFF de elevaci\xf3n: {n} cotas de {w}\xd7{h} px ({crs})")
-B.B2=new A.a("V\xe3os do piv\xf4","Pivot spans","Vanos del pivote")
-B.nN=new A.a("V\xe3o","Span","Vano")
+B.B3=new A.a("V\xe3os do piv\xf4","Pivot spans","Vanos del pivote")
+B.nM=new A.a("V\xe3o","Span","Vano")
 B.kD=new A.a("R inicial","R start","R inicial")
-B.ES=new A.a("R final","R end","R final")
+B.ET=new A.a("R final","R end","R final")
 B.bQ=new A.a("Aspersores","Sprinklers","Aspersores")
 B.vv=new A.a("q por aspersor","q per sprinkler","q por aspersor")
 B.im=new A.a("P no v\xe3o","P at span","P en el vano")
 B.jM=new A.a("Bocal sugerido","Suggested nozzle","Boquilla sugerida")
 B.jl=new A.a("Espa\xe7amento dos aspersores (m)","Sprinkler spacing (m)","Espaciado de los aspersores (m)")
 B.xS=new A.a("Aspersor do piv\xf4 (cat\xe1logo)","Pivot sprinkler (catalogue)","Aspersor del pivote (cat\xe1logo)")
-B.EB=new A.a("Regulador de press\xe3o (cat\xe1logo)","Pressure regulator (catalogue)","Regulador de presi\xf3n (cat\xe1logo)")
+B.EC=new A.a("Regulador de press\xe3o (cat\xe1logo)","Pressure regulator (catalogue)","Regulador de presi\xf3n (cat\xe1logo)")
 B.kk=new A.a("Custo por torre","Cost per tower","Costo por torre")
 B.x9=new A.a("Aspersores do piv\xf4","Pivot sprinklers","Aspersores del pivote")
 B.ts=new A.a("Canh\xe3o final","End gun","Ca\xf1\xf3n final")
-B.or=new A.a("Suavizar curva (spline pelos pontos)","Smooth contour (spline through the points)","Suavizar curva (spline por los puntos)")
-B.oG=new A.a("M\xe1x. de pontos","Max. points","M\xe1x. de puntos")
+B.oq=new A.a("Suavizar curva (spline pelos pontos)","Smooth contour (spline through the points)","Suavizar curva (spline por los puntos)")
+B.oF=new A.a("M\xe1x. de pontos","Max. points","M\xe1x. de puntos")
 B.qD=new A.a("Motor","Motor","Motor")
 B.wy=new A.a("Linha principal em anel: o dimensionamento LP usa caminhos em \xe1rvore (aproxima\xe7\xe3o); a an\xe1lise final confere as press\xf5es","Looped mainline: LP sizing uses tree paths (approximation); the final analysis checks the pressures","L\xednea principal en anillo: el dimensionamiento LP usa caminos en \xe1rbol (aproximaci\xf3n); el an\xe1lisis final verifica las presiones")
 B.tm=new A.a("Inclu\xeddos no app","Bundled with the app","Incluidos en la app")
-B.lQ=new A.a("Carregados agora","Loaded now","Cargados ahora")
-B.nE=new A.a("Importar pacote (.oci.cat)\u2026","Import pack (.oci.cat)\u2026","Importar paquete (.oci.cat)\u2026")
-B.Dz=new A.a("URL de um pacote ou de um \xedndice (index.json)","URL of a pack or of an index (index.json)","URL de un paquete o de un \xedndice (index.json)")
-B.ox=new A.a("Carregar da URL","Load from URL","Cargar de la URL")
-B.Cd=new A.a("Carregando\u2026","Loading\u2026","Cargando\u2026")
+B.lP=new A.a("Carregados agora","Loaded now","Cargados ahora")
+B.nD=new A.a("Importar pacote (.oci.cat)\u2026","Import pack (.oci.cat)\u2026","Importar paquete (.oci.cat)\u2026")
+B.DA=new A.a("URL de um pacote ou de um \xedndice (index.json)","URL of a pack or of an index (index.json)","URL de un paquete o de un \xedndice (index.json)")
+B.ow=new A.a("Carregar da URL","Load from URL","Cargar de la URL")
+B.Ce=new A.a("Carregando\u2026","Loading\u2026","Cargando\u2026")
 B.v6=new A.a("{n} pacote(s) carregado(s)","{n} pack(s) loaded","{n} paquete(s) cargado(s)")
-B.nG=new A.a("N\xe3o foi poss\xedvel carregar: {e}","Could not load: {e}","No se pudo cargar: {e}")
+B.nF=new A.a("N\xe3o foi poss\xedvel carregar: {e}","Could not load: {e}","No se pudo cargar: {e}")
 B.zC=new A.a("Exportar pacote .oci.cat\u2026","Export pack .oci.cat\u2026","Exportar paquete .oci.cat\u2026")
-B.Cp=new A.a("Exportar cat\xe1logo como pacote","Export catalogue as a pack","Exportar cat\xe1logo como paquete")
+B.Cq=new A.a("Exportar cat\xe1logo como pacote","Export catalogue as a pack","Exportar cat\xe1logo como paquete")
 B.iM=new A.a("Gera um arquivo .oci.cat com os itens deste cat\xe1logo, para compartilhar ou publicar num reposit\xf3rio da comunidade. O formato (JSON aberto) est\xe1 documentado em catalogs/README.md.","Writes an .oci.cat file with the items of this catalogue, to share or publish in a community repository. The format (open JSON) is documented in catalogs/README.md.","Genera un archivo .oci.cat con los \xedtems de este cat\xe1logo, para compartir o publicar en un repositorio de la comunidad. El formato (JSON abierto) est\xe1 documentado en catalogs/README.md.")
-B.nF=new A.a("Fabricante","Manufacturer","Fabricante")
-B.m2=new A.a("Nome do pacote","Pack name","Nombre del paquete")
+B.nE=new A.a("Fabricante","Manufacturer","Fabricante")
+B.m1=new A.a("Nome do pacote","Pack name","Nombre del paquete")
 B.FG=new A.a("Descri\xe7\xe3o (linhas de produto)","Description (product lines)","Descripci\xf3n (l\xedneas de producto)")
 B.ux=new A.a("Fonte (URL da folha de dados)","Source (data sheet URL)","Fuente (URL de la hoja de datos)")
 B.vn=new A.a("Pacote {f} exportado ({n} itens)","Pack {f} exported ({n} items)","Paquete {f} exportado ({n} \xedtems)")
-B.C0=new A.a("Pacotes s\xe3o arquivos JSON abertos (.oci.cat): fabricantes, revendas e a comunidade podem public\xe1-los num reposit\xf3rio e voc\xea os carrega por arquivo ou URL. Formato em catalogs/README.md.","Packs are open JSON files (.oci.cat): manufacturers, dealers and the community can publish them in a repository and you load them from a file or a URL. Format in catalogs/README.md.","Los paquetes son archivos JSON abiertos (.oci.cat): fabricantes, distribuidores y la comunidad pueden publicarlos en un repositorio y usted los carga desde un archivo o una URL. Formato en catalogs/README.md.")
+B.C1=new A.a("Pacotes s\xe3o arquivos JSON abertos (.oci.cat): fabricantes, revendas e a comunidade podem public\xe1-los num reposit\xf3rio e voc\xea os carrega por arquivo ou URL. Formato em catalogs/README.md.","Packs are open JSON files (.oci.cat): manufacturers, dealers and the community can publish them in a repository and you load them from a file or a URL. Format in catalogs/README.md.","Los paquetes son archivos JSON abiertos (.oci.cat): fabricantes, distribuidores y la comunidad pueden publicarlos en un repositorio y usted los carga desde un archivo o una URL. Formato en catalogs/README.md.")
 B.xC=new A.a("de {o}","from {o}","de {o}")
 B.y6=new A.a("O JSON n\xe3o \xe9 um cat\xe1logo nem um pacote .oci.cat","The JSON is neither a catalogue nor an .oci.cat pack","El JSON no es un cat\xe1logo ni un paquete .oci.cat")
-B.Bh=new A.a("Este arquivo \xe9 um \xedndice de pacotes, n\xe3o um pacote (carregue-o pela URL)","This file is a pack index, not a pack (load it by URL)","Este archivo es un \xedndice de paquetes, no un paquete (c\xe1rguelo por URL)")
-B.C4=new A.a("O JSON n\xe3o \xe9 um \xedndice de pacotes","The JSON is not a pack index","El JSON no es un \xedndice de paquetes")
-B.BW=new A.a("Pacote gravado por uma vers\xe3o mais nova do formato","Pack written by a newer format version","Paquete escrito por una versi\xf3n m\xe1s nueva del formato")
-B.Ds=new A.a("Coordenada do local (lat, lon)","Site coordinate (lat, lon)","Coordenada del sitio (lat, lon)")
+B.Bi=new A.a("Este arquivo \xe9 um \xedndice de pacotes, n\xe3o um pacote (carregue-o pela URL)","This file is a pack index, not a pack (load it by URL)","Este archivo es un \xedndice de paquetes, no un paquete (c\xe1rguelo por URL)")
+B.C5=new A.a("O JSON n\xe3o \xe9 um \xedndice de pacotes","The JSON is not a pack index","El JSON no es un \xedndice de paquetes")
+B.BX=new A.a("Pacote gravado por uma vers\xe3o mais nova do formato","Pack written by a newer format version","Paquete escrito por una versi\xf3n m\xe1s nueva del formato")
+B.Dt=new A.a("Coordenada do local (lat, lon)","Site coordinate (lat, lon)","Coordenada del sitio (lat, lon)")
 B.qj=new A.a("-22.9068, -43.1729 \xb7 link do Google Maps \xb7 22\xb054'24\"S 43\xb010'22\"W","-22.9068, -43.1729 \xb7 Google Maps link \xb7 22\xb054'24\"S 43\xb010'22\"W","-22.9068, -43.1729 \xb7 enlace de Google Maps \xb7 22\xb054'24\"S 43\xb010'22\"W")
 B.Fy=new A.a("Sem desenho ainda? Cole a coordenada do terreno: a origem do projeto vai para l\xe1 e a eleva\xe7\xe3o \xe9 baixada num quadrado ao redor.","No drawing yet? Paste the site coordinate: the project origin goes there and the elevation is downloaded over a square around it.","\xbfSin dibujo todav\xeda? Pegue la coordenada del terreno: el origen del proyecto va all\xed y la elevaci\xf3n se descarga en un cuadrado alrededor.")
-B.By=new A.a("Usar coordenada","Use coordinate","Usar coordenada")
+B.Bz=new A.a("Usar coordenada","Use coordinate","Usar coordenada")
 B.uH=new A.a("Lado da \xe1rea (m)","Area side (m)","Lado del \xe1rea (m)")
 B.ls=new A.a("Coordenada n\xe3o reconhecida","Coordinate not recognised","Coordenada no reconocida")
 B.ih=new A.a("Gerar curvas de n\xedvel ap\xf3s baixar","Generate contours after downloading","Generar curvas de nivel tras descargar")
 B.jg=new A.a("Intervalo (m; 0 = autom\xe1tico)","Interval (m; 0 = automatic)","Intervalo (m; 0 = autom\xe1tico)")
-B.F1=new A.a("{n} cotas importadas ({s}); {c} curvas de n\xedvel a cada {i} m","{n} spot heights imported ({s}); {c} contours every {i} m","{n} cotas importadas ({s}); {c} curvas de nivel cada {i} m")
-B.BK=new A.a("Georrefer\xeancia definida em {lat}, {lon} ({crs})","Georeference set at {lat}, {lon} ({crs})","Georreferencia definida en {lat}, {lon} ({crs})")
-B.nB=new A.a("Exemplos","Examples","Ejemplos")
-B.mb=new A.a("Boas-vindas e galeria de exemplos\u2026","Welcome and example gallery\u2026","Bienvenida y galer\xeda de ejemplos\u2026")
-B.Ec=new A.a("Bem-vindo ao OpenCADIrrigation","Welcome to OpenCADIrrigation","Bienvenido a OpenCADIrrigation")
-B.Fd=new A.a("CAD para projeto de irriga\xe7\xe3o pressurizada, direto no navegador. Comece por um exemplo pronto ou fa\xe7a o tutorial interativo: ele come\xe7a localizando a sua \xe1rea no mapa de sat\xe9lite e baixando o relevo da internet, e segue em cerca de 70 passos curtos em que voc\xea mesmo navega, desenha, monta a rede e projeta; cada passo reconhece quando voc\xea o completou e avan\xe7a sozinho. Leva uns 20 minutos e pode ser pulado a qualquer momento (Ajuda \u2192 Tutorial interativo reabre depois).","CAD for pressurised irrigation design, right in the browser. Start from a ready example or take the interactive tutorial: it begins by locating your site on the satellite map and downloading the terrain from the internet, then goes on in about 70 short steps in which you navigate, draw, build the network and design it yourself; each step recognises when you have completed it and moves on. It takes about 20 minutes and can be skipped at any time (Help \u2192 Interactive tutorial reopens it).","CAD para dise\xf1o de riego presurizado, directamente en el navegador. Empiece por un ejemplo listo o haga el tutorial interactivo: comienza ubicando su \xe1rea en el mapa satelital y descargando el relieve de internet, y sigue en unos 70 pasos cortos en los que usted mismo navega, dibuja, arma la red y dise\xf1a; cada paso reconoce cuando lo complet\xf3 y avanza solo. Tarda unos 20 minutos y puede omitirse en cualquier momento (Ayuda \u2192 Tutorial interactivo lo reabre).")
-B.Bs=new A.a("Comece por um exemplo","Start from an example","Empiece por un ejemplo")
-B.nM=new A.a("Cada projeto abre pronto para calcular: pressione F5 ou \u25b6 e veja zonas, press\xf5es, di\xe2metros e lista de materiais. Arquivo \u2192 Exemplos reabre qualquer um deles.","Each project opens ready to design: press F5 or \u25b6 and see zones, pressures, pipe sizes and the bill of materials. File \u2192 Examples reopens any of them.","Cada proyecto se abre listo para calcular: pulse F5 o \u25b6 y vea zonas, presiones, di\xe1metros y lista de materiales. Archivo \u2192 Ejemplos reabre cualquiera de ellos.")
+B.F2=new A.a("{n} cotas importadas ({s}); {c} curvas de n\xedvel a cada {i} m","{n} spot heights imported ({s}); {c} contours every {i} m","{n} cotas importadas ({s}); {c} curvas de nivel cada {i} m")
+B.BL=new A.a("Georrefer\xeancia definida em {lat}, {lon} ({crs})","Georeference set at {lat}, {lon} ({crs})","Georreferencia definida en {lat}, {lon} ({crs})")
+B.nA=new A.a("Exemplos","Examples","Ejemplos")
+B.ma=new A.a("Boas-vindas e galeria de exemplos\u2026","Welcome and example gallery\u2026","Bienvenida y galer\xeda de ejemplos\u2026")
+B.Ed=new A.a("Bem-vindo ao OpenCADIrrigation","Welcome to OpenCADIrrigation","Bienvenido a OpenCADIrrigation")
+B.Fe=new A.a("CAD para projeto de irriga\xe7\xe3o pressurizada, direto no navegador. Comece por um exemplo pronto ou fa\xe7a o tutorial interativo: ele come\xe7a localizando a sua \xe1rea no mapa de sat\xe9lite e baixando o relevo da internet, e segue em cerca de 70 passos curtos em que voc\xea mesmo navega, desenha, monta a rede e projeta; cada passo reconhece quando voc\xea o completou e avan\xe7a sozinho. Leva uns 20 minutos e pode ser pulado a qualquer momento (Ajuda \u2192 Tutorial interativo reabre depois).","CAD for pressurised irrigation design, right in the browser. Start from a ready example or take the interactive tutorial: it begins by locating your site on the satellite map and downloading the terrain from the internet, then goes on in about 70 short steps in which you navigate, draw, build the network and design it yourself; each step recognises when you have completed it and moves on. It takes about 20 minutes and can be skipped at any time (Help \u2192 Interactive tutorial reopens it).","CAD para dise\xf1o de riego presurizado, directamente en el navegador. Empiece por un ejemplo listo o haga el tutorial interactivo: comienza ubicando su \xe1rea en el mapa satelital y descargando el relieve de internet, y sigue en unos 70 pasos cortos en los que usted mismo navega, dibuja, arma la red y dise\xf1a; cada paso reconoce cuando lo complet\xf3 y avanza solo. Tarda unos 20 minutos y puede omitirse en cualquier momento (Ayuda \u2192 Tutorial interactivo lo reabre).")
+B.Bt=new A.a("Comece por um exemplo","Start from an example","Empiece por un ejemplo")
+B.nL=new A.a("Cada projeto abre pronto para calcular: pressione F5 ou \u25b6 e veja zonas, press\xf5es, di\xe2metros e lista de materiais. Arquivo \u2192 Exemplos reabre qualquer um deles.","Each project opens ready to design: press F5 or \u25b6 and see zones, pressures, pipe sizes and the bill of materials. File \u2192 Examples reopens any of them.","Cada proyecto se abre listo para calcular: pulse F5 o \u25b6 y vea zonas, presiones, di\xe1metros y lista de materiales. Archivo \u2192 Ejemplos reabre cualquiera de ellos.")
 B.tp=new A.a("Iniciar tutorial","Start tutorial","Iniciar tutorial")
-B.DT=new A.a("Come\xe7ar do zero","Start from scratch","Empezar de cero")
+B.DU=new A.a("Come\xe7ar do zero","Start from scratch","Empezar de cero")
 B.rP=new A.a("Pomar","Orchard","Huerto")
-B.m7=new A.a("Microaspers\xe3o em citros e gotejamento em uva, po\xe7o com bomba e filtro, terreno em declive.","Micro-sprinklers on citrus and drip on grapes, well with pump and filter, sloping ground.","Microaspersi\xf3n en c\xedtricos y goteo en uva, pozo con bomba y filtro, terreno en pendiente.")
-B.o9=new A.a("2 zonas \xb7 1,1 ha \xb7 po\xe7o + bomba","2 zones \xb7 1.1 ha \xb7 well + pump","2 zonas \xb7 1,1 ha \xb7 pozo + bomba")
+B.m6=new A.a("Microaspers\xe3o em citros e gotejamento em uva, po\xe7o com bomba e filtro, terreno em declive.","Micro-sprinklers on citrus and drip on grapes, well with pump and filter, sloping ground.","Microaspersi\xf3n en c\xedtricos y goteo en uva, pozo con bomba y filtro, terreno en pendiente.")
+B.o8=new A.a("2 zonas \xb7 1,1 ha \xb7 po\xe7o + bomba","2 zones \xb7 1.1 ha \xb7 well + pump","2 zonas \xb7 1,1 ha \xb7 pozo + bomba")
 B.bR=new A.a("Jardim residencial","Residential garden","Jard\xedn residencial")
-B.nK=new A.a("Sprays pop-up no gramado da frente, rotores nos fundos e gotejamento nos canteiros, ligados \xe0 rede p\xfablica com hidr\xf4metro e anti-refluxo.","Pop-up sprays on the front lawn, rotors at the back and drip in the beds, fed by the mains with a meter and a backflow preventer.","Difusores emergentes en el c\xe9sped frontal, rotores atr\xe1s y goteo en los canteros, conectados a la red p\xfablica con contador y antirretorno.")
+B.nJ=new A.a("Sprays pop-up no gramado da frente, rotores nos fundos e gotejamento nos canteiros, ligados \xe0 rede p\xfablica com hidr\xf4metro e anti-refluxo.","Pop-up sprays on the front lawn, rotors at the back and drip in the beds, fed by the mains with a meter and a backflow preventer.","Difusores emergentes en el c\xe9sped frontal, rotores atr\xe1s y goteo en los canteros, conectados a la red p\xfablica con contador y antirretorno.")
 B.wS=new A.a("3 zonas \xb7 640 m\xb2 \xb7 rede p\xfablica","3 zones \xb7 640 m\xb2 \xb7 mains supply","3 zonas \xb7 640 m\xb2 \xb7 red p\xfablica")
 B.cW=new A.a("Campo de futebol","Football pitch","Campo de f\xfatbol")
 B.lt=new A.a("Campo oficial 105 \xd7 68 m com aspersores de impacto em cinco linhas, reservat\xf3rio, bomba e turnos noturnos.","Full-size 105 \xd7 68 m pitch with impact sprinklers in five rows, reservoir, pump and night-time shifts.","Campo oficial de 105 \xd7 68 m con aspersores de impacto en cinco filas, dep\xf3sito, bomba y turnos nocturnos.")
-B.En=new A.a("5 zonas \xb7 40 aspersores \xb7 bomba","5 zones \xb7 40 sprinklers \xb7 pump","5 zonas \xb7 40 aspersores \xb7 bomba")
+B.Eo=new A.a("5 zonas \xb7 40 aspersores \xb7 bomba","5 zones \xb7 40 sprinklers \xb7 pump","5 zonas \xb7 40 aspersores \xb7 bomba")
 B.ix=new A.a("Lavoura gotejada","Drip row crop","Cultivo en hileras con goteo")
 B.tP=new A.a("Quatro talh\xf5es de tomate com fita gotejadora, submains com v\xe1lvulas, filtro de tela, bomba e terreno em declive.","Four tomato blocks on drip tape, submains with valves, screen filter, pump and sloping ground.","Cuatro parcelas de tomate con cinta de goteo, submains con v\xe1lvulas, filtro de malla, bomba y terreno en pendiente.")
 B.Fz=new A.a("4 zonas \xb7 2,9 ha \xb7 filtro + bomba","4 zones \xb7 2.9 ha \xb7 filter + pump","4 zonas \xb7 2,9 ha \xb7 filtro + bomba")
 B.Ar=new A.a("Piv\xf4 de 300 m em milho alimentado por adutora, po\xe7o e bomba; relat\xf3rio de torres, v\xe3os e bocais.","A 300 m pivot on maize fed by a mainline, well and pump; tower, span and sprinkler report.","Pivote de 300 m en ma\xedz alimentado por conducci\xf3n, pozo y bomba; informe de torres, tramos y boquillas.")
-B.lw=new A.a("1 piv\xf4 \xb7 28 ha \xb7 po\xe7o + bomba","1 pivot \xb7 28 ha \xb7 well + pump","1 pivote \xb7 28 ha \xb7 pozo + bomba")
+B.p0=new A.a("1 piv\xf4 \xb7 30 ha \xb7 po\xe7o + bomba","1 pivot \xb7 30 ha \xb7 well + pump","1 pivote \xb7 30 ha \xb7 pozo + bomba")
 B.kB=new A.a("Turno {n} \u2014 {z}","Shift {n} \u2014 {z}","Turno {n} \u2014 {z}")
 B.kV=new A.a("Resid\xeancia Exemplo","Example Residence","Residencia Ejemplo")
 B.ks=new A.a("Lote 16 \xd7 40 m","Lot 16 \xd7 40 m","Lote 16 \xd7 40 m")
 B.y5=new A.a("Jardim residencial \u2014 exemplo OpenCADIrrigation","Residential garden \u2014 OpenCADIrrigation example","Jard\xedn residencial \u2014 ejemplo OpenCADIrrigation")
 B.qd=new A.a("Lote","Lot","Lote")
-B.mi=new A.a("Casa","House","Casa")
-B.nb=new A.a("Gramado da frente","Front lawn","C\xe9sped frontal")
+B.mh=new A.a("Casa","House","Casa")
+B.na=new A.a("Gramado da frente","Front lawn","C\xe9sped frontal")
 B.Aj=new A.a("Gramado dos fundos","Back lawn","C\xe9sped trasero")
-B.mh=new A.a("Canteiro","Bed","Cantero")
+B.mg=new A.a("Canteiro","Bed","Cantero")
 B.i5=new A.a("Zona 1 \u2014 sprays","Zone 1 \u2014 sprays","Zona 1 \u2014 difusores")
 B.q5=new A.a("Zona 2 \u2014 rotores","Zone 2 \u2014 rotors","Zona 2 \u2014 rotores")
 B.pC=new A.a("Zona 3 \u2014 gotejamento","Zone 3 \u2014 drip","Zona 3 \u2014 goteo")
 B.vj=new A.a("Rede p\xfablica","Mains supply","Red p\xfablica")
-B.lE=new A.a("Arbustos","Shrubs","Arbustos")
+B.lD=new A.a("Arbustos","Shrubs","Arbustos")
 B.tQ=new A.a("Rua","Street","Calle")
 B.d9=new A.a("Clube Exemplo","Example Club","Club Ejemplo")
 B.jZ=new A.a("Campo oficial 105 \xd7 68 m","Full-size pitch 105 \xd7 68 m","Campo oficial 105 \xd7 68 m")
 B.kx=new A.a("Campo de futebol \u2014 exemplo OpenCADIrrigation","Football pitch \u2014 OpenCADIrrigation example","Campo de f\xfatbol \u2014 ejemplo OpenCADIrrigation")
-B.mf=new A.a("Campo","Pitch","Campo")
+B.me=new A.a("Campo","Pitch","Campo")
 B.wB=new A.a("Linha {n}","Row {n}","Fila {n}")
 B.a6=new A.a("Reservat\xf3rio","Reservoir","Dep\xf3sito")
 B.cq=new A.a("Casa de bombas","Pump house","Casa de bombas")
 B.c9=new A.a("Grama esportiva","Sports turf","C\xe9sped deportivo")
 B.yd=new A.a("Lavoura gotejada","Drip row crop","Cultivo con goteo")
 B.zx=new A.a("S\xedtio Exemplo","Example Farm","Finca Ejemplo")
-B.Dr=new A.a("Talh\xf5es 1 a 4","Blocks 1 to 4","Parcelas 1 a 4")
-B.Bj=new A.a("Lavoura de tomate gotejada \u2014 exemplo OpenCADIrrigation","Drip-irrigated tomato field \u2014 OpenCADIrrigation example","Cultivo de tomate con goteo \u2014 ejemplo OpenCADIrrigation")
+B.Ds=new A.a("Talh\xf5es 1 a 4","Blocks 1 to 4","Parcelas 1 a 4")
+B.Bk=new A.a("Lavoura de tomate gotejada \u2014 exemplo OpenCADIrrigation","Drip-irrigated tomato field \u2014 OpenCADIrrigation example","Cultivo de tomate con goteo \u2014 ejemplo OpenCADIrrigation")
 B.R=new A.a("Talh\xe3o {n}","Block {n}","Parcela {n}")
 B.cC=new A.a("Tronco","Trunk","Tronco")
 B.aL=new A.a("Ramal oeste","West branch","Ramal oeste")
@@ -14121,7 +14129,7 @@ B.xG=new A.a("Dois talh\xf5es de banana com microaspersores autocompensantes em 
 B.z0=new A.a("2 zonas \xb7 1,2 ha \xb7 bomba submersa","2 zones \xb7 1.2 ha \xb7 submersible pump","2 zonas \xb7 1,2 ha \xb7 bomba sumergible")
 B.cr=new A.a("Cana-de-a\xe7\xfacar subsuperficial","Subsurface drip sugarcane","Ca\xf1a de az\xfacar con goteo subterr\xe1neo")
 B.pR=new A.a("Dois talh\xf5es de cana com tubo gotejador PC de 20 mm enterrado a 0,3 m, laterais de 180 m, submains enterrados, reservat\xf3rio, bomba, filtro de tela e ventosa.","Two sugarcane blocks on 20 mm PC dripline buried 0.3 m deep, 180 m laterals, buried submains, reservoir, pump, screen filter and air valve.","Dos parcelas de ca\xf1a con tuber\xeda de goteo PC de 20 mm enterrada a 0,3 m, laterales de 180 m, submains enterrados, dep\xf3sito, bomba, filtro de malla y ventosa.")
-B.mo=new A.a("2 zonas \xb7 3,2 ha \xb7 filtro + bomba","2 zones \xb7 3.2 ha \xb7 filter + pump","2 zonas \xb7 3,2 ha \xb7 filtro + bomba")
+B.mn=new A.a("2 zonas \xb7 3,2 ha \xb7 filtro + bomba","2 zones \xb7 3.2 ha \xb7 filter + pump","2 zonas \xb7 3,2 ha \xb7 filtro + bomba")
 B.bG=new A.a("Gotejamento por gravidade","Gravity-fed drip","Goteo por gravedad")
 B.jk=new A.a("Reservat\xf3rio 40 m acima de dois talh\xf5es de hortali\xe7as gotejados, sem bomba: registro, v\xe1lvula reguladora de press\xe3o e filtro de discos na adutora; curvas de n\xedvel da encosta.","A reservoir 40 m above two drip-irrigated vegetable blocks, no pump: gate valve, pressure reducing valve and disc filter on the mainline; hillside contours.","Dep\xf3sito 40 m por encima de dos parcelas de hortalizas con goteo, sin bomba: v\xe1lvula de compuerta, reguladora de presi\xf3n y filtro de discos en la conducci\xf3n; curvas de nivel de la ladera.")
 B.iI=new A.a("2 zonas \xb7 1,2 ha \xb7 sem bomba","2 zones \xb7 1.2 ha \xb7 no pump","2 zonas \xb7 1,2 ha \xb7 sin bomba")
@@ -14129,71 +14137,71 @@ B.d2=new A.a("Pastagem em aspers\xe3o","Sprinkler-irrigated pasture","Pastura co
 B.ik=new A.a("Tr\xeas piquetes de 72 \xd7 72 m com linhas de aspersores de impacto em 12 \xd7 18 m, submains com v\xe1lvulas, reservat\xf3rio, bomba e v\xe1lvula de reten\xe7\xe3o.","Three 72 \xd7 72 m paddocks with impact-sprinkler spray lines at 12 \xd7 18 m, submains with valves, reservoir, pump and check valve.","Tres potreros de 72 \xd7 72 m con l\xedneas de aspersores de impacto a 12 \xd7 18 m, submains con v\xe1lvulas, dep\xf3sito, bomba y v\xe1lvula de retenci\xf3n.")
 B.jc=new A.a("3 zonas \xb7 1,6 ha \xb7 72 aspersores","3 zones \xb7 1.6 ha \xb7 72 sprinklers","3 zonas \xb7 1,6 ha \xb7 72 aspersores")
 B.bZ=new A.a("Buraco de golfe","Golf hole","Hoyo de golf")
-B.CE=new A.a("Tee com sprays, fairway com rotores em malha triangular (duas zonas) e green com rotores no per\xedmetro, lago com bomba e turnos noturnos.","Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts.","Tee con difusores, fairway con rotores en malla triangular (dos zonas) y green con rotores en el per\xedmetro, laguna con bomba y turnos nocturnos.")
+B.CF=new A.a("Tee com sprays, fairway com rotores em malha triangular (duas zonas) e green com rotores no per\xedmetro, lago com bomba e turnos noturnos.","Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts.","Tee con difusores, fairway con rotores en malla triangular (dos zonas) y green con rotores en el per\xedmetro, laguna con bomba y turnos nocturnos.")
 B.jh=new A.a("4 zonas \xb7 64 emissores \xb7 lago + bomba","4 zones \xb7 64 heads \xb7 pond + pump","4 zonas \xb7 64 emisores \xb7 laguna + bomba")
 B.uj=new A.a("Piv\xf4 setorial com canh\xe3o","Sector pivot with end gun","Pivote sectorial con ca\xf1\xf3n")
-B.Fk=new A.a("Piv\xf4 de 250 m em soja que gira 270\xb0, deixando livre o quadrante da sede, com canh\xe3o final de 12 m\xb3/h; lago, bomba de 30 cv e registro.","A 250 m pivot on soybean sweeping 270\xb0, leaving the farmstead quadrant free, with a 12 m\xb3/h end gun; pond, 30 hp pump and gate valve.","Pivote de 250 m en soja que gira 270\xb0, dejando libre el cuadrante del casco, con ca\xf1\xf3n final de 12 m\xb3/h; laguna, bomba de 30 CV y v\xe1lvula de compuerta.")
+B.AS=new A.a("Piv\xf4 de 250 m em soja que gira 270\xb0, deixando livre o quadrante da sede, com canh\xe3o final de 12 m\xb3/h; lago, bomba de 20 cv e registro.","A 250 m pivot on soybean sweeping 270\xb0, leaving the farmstead quadrant free, with a 12 m\xb3/h end gun; pond, 20 hp pump and gate valve.","Pivote de 250 m en soja que gira 270\xb0, dejando libre el cuadrante del casco, con ca\xf1\xf3n final de 12 m\xb3/h; laguna, bomba de 20 CV y v\xe1lvula de compuerta.")
 B.wZ=new A.a("1 piv\xf4 \xb7 15,7 ha \xb7 lago + bomba","1 pivot \xb7 15.7 ha \xb7 pond + pump","1 pivote \xb7 15,7 ha \xb7 laguna + bomba")
 B.cP=new A.a("Piv\xf4 linear","Linear move","Pivote lineal")
 B.x8=new A.a("Lateral m\xf3vel de 392 m em trigo percorrendo 800 m ao longo de um canal, capta\xe7\xe3o com bomba de 30 cv e v\xe1lvula de reten\xe7\xe3o; relat\xf3rio de torres e bocais.","A 392 m lateral-move machine on wheat travelling 800 m along a canal, intake with a 30 hp pump and check valve; tower and sprinkler report.","Lateral de avance frontal de 392 m en trigo que recorre 800 m a lo largo de un canal, toma con bomba de 30 CV y v\xe1lvula de retenci\xf3n; informe de torres y boquillas.")
 B.tw=new A.a("1 linear \xb7 32 ha \xb7 canal + bomba","1 linear \xb7 32 ha \xb7 canal + pump","1 lineal \xb7 32 ha \xb7 canal + bomba")
-B.DN=new A.a("Hortifruti Exemplo","Example Growers","Hortalizas Ejemplo")
-B.E0=new A.a("T\xfaneis 1 a 4","Tunnels 1 to 4","T\xfaneles 1 a 4")
+B.DO=new A.a("Hortifruti Exemplo","Example Growers","Hortalizas Ejemplo")
+B.E1=new A.a("T\xfaneis 1 a 4","Tunnels 1 to 4","T\xfaneles 1 a 4")
 B.vN=new A.a("Estufa de hortali\xe7as \u2014 exemplo OpenCADIrrigation","Vegetable greenhouse \u2014 OpenCADIrrigation example","Invernadero de hortalizas \u2014 ejemplo OpenCADIrrigation")
 B.cx=new A.a("Terreno","Site","Terreno")
 B.tU=new A.a("T\xfanel {n}","Tunnel {n}","T\xfanel {n}")
-B.E1=new A.a("Piment\xe3o","Bell pepper","Pimiento")
+B.E2=new A.a("Piment\xe3o","Bell pepper","Pimiento")
 B.wE=new A.a("Viveiro Exemplo","Example Nursery","Vivero Ejemplo")
 B.Ap=new A.a("Canteiros 1 a 3","Beds 1 to 3","Canteros 1 a 3")
 B.kY=new A.a("Viveiro de mudas \u2014 exemplo OpenCADIrrigation","Plant nursery \u2014 OpenCADIrrigation example","Vivero de plantas \u2014 ejemplo OpenCADIrrigation")
 B.vD=new A.a("Canteiro {n}","Bed {n}","Cantero {n}")
 B.qH=new A.a("Mudas","Seedlings","Plantines")
 B.tB=new A.a("Caixa d\u2019\xe1gua","Tank","Tanque")
-B.o8=new A.a("Encosta norte \u2014 talh\xf5es 1 a 3","North slope \u2014 blocks 1 to 3","Ladera norte \u2014 parcelas 1 a 3")
+B.o7=new A.a("Encosta norte \u2014 talh\xf5es 1 a 3","North slope \u2014 blocks 1 to 3","Ladera norte \u2014 parcelas 1 a 3")
 B.tq=new A.a("Cafezal em curvas de n\xedvel \u2014 exemplo OpenCADIrrigation","Coffee on contour lines \u2014 OpenCADIrrigation example","Cafetal en curvas de nivel \u2014 ejemplo OpenCADIrrigation")
 B.aK=new A.a("Talh\xf5es 1 e 2","Blocks 1 and 2","Parcelas 1 y 2")
-B.B7=new A.a("Bananal \u2014 exemplo OpenCADIrrigation","Banana plantation \u2014 OpenCADIrrigation example","Platanal \u2014 ejemplo OpenCADIrrigation")
+B.B8=new A.a("Bananal \u2014 exemplo OpenCADIrrigation","Banana plantation \u2014 OpenCADIrrigation example","Platanal \u2014 ejemplo OpenCADIrrigation")
 B.qG=new A.a("Usina Exemplo","Example Mill","Ingenio Ejemplo")
 B.vi=new A.a("Cana-de-a\xe7\xfacar em gotejamento subsuperficial \u2014 exemplo OpenCADIrrigation","Subsurface drip sugarcane \u2014 OpenCADIrrigation example","Ca\xf1a de az\xfacar con goteo subterr\xe1neo \u2014 ejemplo OpenCADIrrigation")
-B.Fc=new A.a("S\xedtio Exemplo","Example Smallholding","Finca Ejemplo")
-B.E5=new A.a("Gotejamento por gravidade \u2014 exemplo OpenCADIrrigation","Gravity-fed drip \u2014 OpenCADIrrigation example","Goteo por gravedad \u2014 ejemplo OpenCADIrrigation")
-B.Br=new A.a("Reservat\xf3rio no alto","Hilltop reservoir","Dep\xf3sito en lo alto")
-B.C9=new A.a("V\xe1lvula reguladora de press\xe3o","Pressure reducing valve","V\xe1lvula reguladora de presi\xf3n")
+B.Fd=new A.a("S\xedtio Exemplo","Example Smallholding","Finca Ejemplo")
+B.E6=new A.a("Gotejamento por gravidade \u2014 exemplo OpenCADIrrigation","Gravity-fed drip \u2014 OpenCADIrrigation example","Goteo por gravedad \u2014 ejemplo OpenCADIrrigation")
+B.Bs=new A.a("Reservat\xf3rio no alto","Hilltop reservoir","Dep\xf3sito en lo alto")
+B.Ca=new A.a("V\xe1lvula reguladora de press\xe3o","Pressure reducing valve","V\xe1lvula reguladora de presi\xf3n")
 B.iH=new A.a("Piquetes 1 a 3","Paddocks 1 to 3","Potreros 1 a 3")
 B.rm=new A.a("Pastagem em aspers\xe3o \u2014 exemplo OpenCADIrrigation","Sprinkler-irrigated pasture \u2014 OpenCADIrrigation example","Pastura con aspersi\xf3n \u2014 ejemplo OpenCADIrrigation")
 B.vg=new A.a("Piquete {n}","Paddock {n}","Potrero {n}")
 B.rK=new A.a("Pastagem","Pasture","Pastura")
-B.mn=new A.a("Cerca","Fence","Cerco")
+B.mm=new A.a("Cerca","Fence","Cerco")
 B.A9=new A.a("Buraco 1 \u2014 par 4","Hole 1 \u2014 par 4","Hoyo 1 \u2014 par 4")
 B.At=new A.a("Buraco de golfe \u2014 exemplo OpenCADIrrigation","Golf hole \u2014 OpenCADIrrigation example","Hoyo de golf \u2014 ejemplo OpenCADIrrigation")
 B.uK=new A.a("Tee","Tee","Tee")
-B.nQ=new A.a("Fairway","Fairway","Fairway")
+B.nP=new A.a("Fairway","Fairway","Fairway")
 B.py=new A.a("Fairway {n}","Fairway {n}","Fairway {n}")
-B.os=new A.a("Green","Green","Green")
-B.BB=new A.a("Bunker","Bunker","B\xfanker")
+B.or=new A.a("Green","Green","Green")
+B.BC=new A.a("Bunker","Bunker","B\xfanker")
 B.ch=new A.a("Lago","Pond","Laguna")
 B.pY=new A.a("Piv\xf4 setorial","Sector pivot","Pivote sectorial")
 B.wN=new A.a("Piv\xf4 2 \u2014 raio 250 m, setor de 270\xb0","Pivot 2 \u2014 250 m radius, 270\xb0 sector","Pivote 2 \u2014 radio 250 m, sector de 270\xb0")
-B.ow=new A.a("Piv\xf4 setorial com canh\xe3o final \u2014 exemplo OpenCADIrrigation","Sector pivot with end gun \u2014 OpenCADIrrigation example","Pivote sectorial con ca\xf1\xf3n final \u2014 ejemplo OpenCADIrrigation")
+B.ov=new A.a("Piv\xf4 setorial com canh\xe3o final \u2014 exemplo OpenCADIrrigation","Sector pivot with end gun \u2014 OpenCADIrrigation example","Pivote sectorial con ca\xf1\xf3n final \u2014 ejemplo OpenCADIrrigation")
 B.tb=new A.a("Piv\xf4 2","Pivot 2","Pivote 2")
 B.ui=new A.a("Soja","Soybean","Soja")
 B.ud=new A.a("Sede","Farmstead","Casco")
-B.oA=new A.a("Linear 1 \u2014 392 \xd7 800 m","Linear 1 \u2014 392 \xd7 800 m","Lineal 1 \u2014 392 \xd7 800 m")
+B.oz=new A.a("Linear 1 \u2014 392 \xd7 800 m","Linear 1 \u2014 392 \xd7 800 m","Lineal 1 \u2014 392 \xd7 800 m")
 B.Ay=new A.a("Piv\xf4 linear \u2014 exemplo OpenCADIrrigation","Linear move \u2014 OpenCADIrrigation example","Pivote lineal \u2014 ejemplo OpenCADIrrigation")
-B.Dp=new A.a("Linear 1","Linear 1","Lineal 1")
+B.Dq=new A.a("Linear 1","Linear 1","Lineal 1")
 B.uS=new A.a("Trigo","Wheat","Trigo")
-B.mg=new A.a("Canal","Canal","Canal")
+B.mf=new A.a("Canal","Canal","Canal")
 B.A8=new A.a("Capta\xe7\xe3o","Intake","Toma")
 B.rQ=new A.a("Densograma (l\xe2mina aplicada)","Densogram (water applied)","Densograma (l\xe1mina aplicada)")
 B.yJ=new A.a("Densograma\u2026","Densogram\u2026","Densograma\u2026")
 B.wC=new A.a("Densograma \u2014 \xe1gua aplicada pelos aspersores","Densogram \u2014 water applied by the sprinklers","Densograma \u2014 agua aplicada por los aspersores")
 B.A_=new A.a("Mapa da taxa de aplica\xe7\xe3o (mm/h) somando o c\xedrculo molhado de cada aspersor e microaspersor como est\xe1 no desenho: posi\xe7\xe3o, arco, orienta\xe7\xe3o e, depois do c\xe1lculo, a press\xe3o de cada um. A uniformidade \xe9 medida dentro das \xe1reas irrigadas (ou na \xe1rea molhada, sem \xe1reas).","Map of the application rate (mm/h) adding up the wetted circle of every sprinkler and micro-sprinkler as drawn: position, arc, orientation and, after the design, the pressure of each one. Uniformity is measured inside the irrigated areas (or over the wetted area when there are none).","Mapa de la tasa de aplicaci\xf3n (mm/h) sumando el c\xedrculo mojado de cada aspersor y microaspersor tal como est\xe1 en el dibujo: posici\xf3n, arco, orientaci\xf3n y, tras el c\xe1lculo, la presi\xf3n de cada uno. La uniformidad se mide dentro de las \xe1reas regadas (o en el \xe1rea mojada, si no hay \xe1reas).")
-B.oh=new A.a("Perfil de distribui\xe7\xe3o do aspersor","Sprinkler distribution profile","Perfil de distribuci\xf3n del aspersor")
-B.oN=new A.a("Triangular (aspersor de impacto de um bocal)","Triangular (single-nozzle impact sprinkler)","Triangular (aspersor de impacto de una boquilla)")
+B.og=new A.a("Perfil de distribui\xe7\xe3o do aspersor","Sprinkler distribution profile","Perfil de distribuci\xf3n del aspersor")
+B.oM=new A.a("Triangular (aspersor de impacto de um bocal)","Triangular (single-nozzle impact sprinkler)","Triangular (aspersor de impacto de una boquilla)")
 B.wn=new A.a("El\xedptico (rotor de v\xe1rios bocais, microaspersor)","Elliptical (multi-nozzle rotor, micro-sprinkler)","El\xedptico (rotor de varias boquillas, microaspersor)")
-B.mL=new A.a("Uniforme (spray, precipita\xe7\xe3o equilibrada)","Uniform (spray head, matched precipitation)","Uniforme (difusor, precipitaci\xf3n equilibrada)")
+B.mK=new A.a("Uniforme (spray, precipita\xe7\xe3o equilibrada)","Uniform (spray head, matched precipitation)","Uniforme (difusor, precipitaci\xf3n equilibrada)")
 B.wh=new A.a("Tamanho da c\xe9lula (m; 0 = autom\xe1tico)","Cell size (m; 0 = automatic)","Tama\xf1o de celda (m; 0 = autom\xe1tico)")
-B.DR=new A.a("Usar a press\xe3o calculada de cada emissor","Use the computed pressure of each emitter","Usar la presi\xf3n calculada de cada emisor")
+B.DS=new A.a("Usar a press\xe3o calculada de cada emissor","Use the computed pressure of each emitter","Usar la presi\xf3n calculada de cada emisor")
 B.iX=new A.a("Sem resultados: cada emissor na press\xe3o nominal.","No results: every emitter at its nominal pressure.","Sin resultados: cada emisor a su presi\xf3n nominal.")
 B.zb=new A.a("Nenhum aspersor com raio molhado no desenho.","No sprinkler with a wetted radius in the drawing.","Ning\xfan aspersor con radio mojado en el dibujo.")
 B.iZ=new A.a("\xc1rea avaliada","Area evaluated","\xc1rea evaluada")
@@ -14201,17 +14209,17 @@ B.vs=new A.a("\xe1reas irrigadas","irrigated areas","\xe1reas regadas")
 B.p3=new A.a("\xe1rea molhada","wetted area","\xe1rea mojada")
 B.Fv=new A.a("Superf\xedcie","Surface","Superficie")
 B.xF=new A.a("C\xe9lula","Cell","Celda")
-B.Eg=new A.a("Vaz\xf5es","Flows","Caudales")
-B.mj=new A.a("do c\xe1lculo","from the design","del c\xe1lculo")
-B.BL=new A.a("nominais","nominal","nominales")
-B.Fa=new A.a("Taxa m\xe9dia","Mean rate","Tasa media")
+B.Eh=new A.a("Vaz\xf5es","Flows","Caudales")
+B.mi=new A.a("do c\xe1lculo","from the design","del c\xe1lculo")
+B.BM=new A.a("nominais","nominal","nominales")
+B.Fb=new A.a("Taxa m\xe9dia","Mean rate","Tasa media")
 B.uZ=new A.a("M\xednima / m\xe1xima","Minimum / maximum","M\xednima / m\xe1xima")
-B.EO=new A.a("quarto inferior","low quarter","cuarto inferior")
-B.ou=new A.a("Coeficiente de programa\xe7\xe3o (5 %)","Scheduling coefficient (5 %)","Coeficiente de programaci\xf3n (5 %)")
+B.EP=new A.a("quarto inferior","low quarter","cuarto inferior")
+B.ot=new A.a("Coeficiente de programa\xe7\xe3o (5 %)","Scheduling coefficient (5 %)","Coeficiente de programaci\xf3n (5 %)")
 B.y7=new A.a("Pontos secos (< metade da m\xe9dia)","Dry spots (< half the mean)","Puntos secos (< mitad de la media)")
 B.lj=new A.a("Coeficiente de programa\xe7\xe3o: quantas vezes o tempo de rega precisa crescer para os 5 % mais secos receberem a l\xe2mina m\xe9dia (1 = perfeito; at\xe9 1,3 \xe9 bom). CU \u2265 84 % e DU \u2265 75 % indicam boa sobreposi\xe7\xe3o.","Scheduling coefficient: how many times longer the system must run so the driest 5 % receive the mean depth (1 = perfect; up to 1.3 is good). CU \u2265 84 % and DU \u2265 75 % mean a good overlap.","Coeficiente de programaci\xf3n: cu\xe1ntas veces debe aumentar el tiempo de riego para que el 5 % m\xe1s seco reciba la l\xe1mina media (1 = perfecto; hasta 1,3 es bueno). CU \u2265 84 % y DU \u2265 75 % indican buen solape.")
 B.xq=new A.a("Exportar CSV","Export CSV","Exportar CSV")
-B.ED=new A.a("Densograma  CU {cu} %  DU {du} %","Densogram  CU {cu} %  DU {du} %","Densograma  CU {cu} %  DU {du} %")
+B.EE=new A.a("Densograma  CU {cu} %  DU {du} %","Densogram  CU {cu} %  DU {du} %","Densograma  CU {cu} %  DU {du} %")
 B.aM=new A.a("Controlador","Controller","Controlador")
 B.AR=new A.a("Rota de fios","Wire route","Ruta de cables")
 B.yp=new A.a("Cota de ordenada","Ordinate dimension","Cota de ordenada")
@@ -14222,19 +14230,19 @@ B.cT=new A.a("El\xe9trica","Electrical","El\xe9ctrico")
 B.rc=new A.a("Controladores","Controllers","Controladores")
 B.zd=new A.a("Fios el\xe9tricos","Wires","Cables el\xe9ctricos")
 B.yX=new A.a("Imagens","Images","Im\xe1genes")
-B.oE=new A.a("Hachuras","Hatches","Sombreados")
+B.oD=new A.a("Hachuras","Hatches","Sombreados")
 B.r1=new A.a("S\xedmbolos","Symbols","S\xedmbolos")
 B.wa=new A.a("esta\xe7\xf5es","stations","estaciones")
-B.DW=new A.a("Conector de emenda \xe0 prova d'\xe1gua","Waterproof wire connector","Conector de empalme estanco")
-B.oY=new A.a("E{n}","S{n}","E{n}")
+B.DX=new A.a("Conector de emenda \xe0 prova d'\xe1gua","Waterproof wire connector","Conector de empalme estanco")
+B.oX=new A.a("E{n}","S{n}","E{n}")
 B.k7=new A.a("Esta\xe7\xf5es usadas","Stations used","Estaciones usadas")
 B.cD=new A.a("Fio comum","Common wire","Cable com\xfan")
 B.qY=new A.a("V\xe1lvulas abertas juntas","Valves open together","V\xe1lvulas abiertas juntas")
-B.ET=new A.a("Corrente de pico","Peak current","Corriente de pico")
-B.BN=new A.a("Controlador \xb7 esta\xe7\xe3o","Controller \xb7 station","Controlador \xb7 estaci\xf3n")
+B.EU=new A.a("Corrente de pico","Peak current","Corriente de pico")
+B.BO=new A.a("Controlador \xb7 esta\xe7\xe3o","Controller \xb7 station","Controlador \xb7 estaci\xf3n")
 B.cN=new A.a("Fio de esta\xe7\xe3o","Station wire","Cable de estaci\xf3n")
 B.bO=new A.a("Tens\xe3o no solenoide","Solenoid voltage","Tensi\xf3n en el solenoide")
-B.El=new A.a("Comum","Common","Com\xfan")
+B.Em=new A.a("Comum","Common","Com\xfan")
 B.yO=new A.a("El\xe9trico","Electrical","El\xe9ctrico")
 B.y2=new A.a("Sem projeto el\xe9trico: coloque um controlador (CTRL) e desenhe as rotas de fios (WR) at\xe9 as v\xe1lvulas.","No electrical design: place a controller (CTRL) and draw the wire routes (WR) to the valves.","Sin dise\xf1o el\xe9ctrico: coloque un controlador (CTRL) y dibuje las rutas de cables (WR) hasta las v\xe1lvulas.")
 B.tN=new A.a("Rota","Route","Ruta")
@@ -14242,61 +14250,61 @@ B.c7=new A.a("Fio","Wire","Cable")
 B.je=new A.a("Abertas juntas","Open together","Abiertas juntas")
 B.jd=new A.a("Cotar o di\xe2metro (\xd8)","Dimension the diameter (\xd8)","Acotar el di\xe1metro (\xd8)")
 B.v3=new A.a("Cota o X (desligado: o Y)","Dimensions X (off: Y)","Acota X (apagado: Y)")
-B.C1=new A.a("Esta\xe7\xf5es","Stations","Estaciones")
+B.C2=new A.a("Esta\xe7\xf5es","Stations","Estaciones")
 B.y0=new A.a("Tens\xe3o de sa\xedda (V CA)","Output voltage (V AC)","Tensi\xf3n de salida (V CA)")
 B.i7=new A.a("M\xe1ximo de esta\xe7\xf5es juntas (0 = pelos turnos)","Most stations at once (0 = from the system flows)","M\xe1ximo de estaciones juntas (0 = seg\xfan los turnos)")
-B.nW=new A.a("Fios","Wires","Cables")
+B.nV=new A.a("Fios","Wires","Cables")
 B.kK=new A.a("Se\xe7\xe3o (mm\xb2)","Section (mm\xb2)","Secci\xf3n (mm\xb2)")
 B.rV=new A.a("Resist\xeancia (\u03a9/km)","Resistance (\u03a9/km)","Resistencia (\u03a9/km)")
 B.AA=new A.a("El\xe9trica (solenoides 24 V CA)","Electrical (24 V AC solenoids)","El\xe9ctrico (solenoides 24 V CA)")
-B.mI=new A.a("Corrente de partida (A)","Inrush current (A)","Corriente de arranque (A)")
+B.mH=new A.a("Corrente de partida (A)","Inrush current (A)","Corriente de arranque (A)")
 B.u2=new A.a("Corrente de reten\xe7\xe3o (A)","Holding current (A)","Corriente de retenci\xf3n (A)")
 B.pp=new A.a("Tens\xe3o m\xednima no solenoide (V)","Minimum solenoid voltage (V)","Tensi\xf3n m\xednima en el solenoide (V)")
 B.iD=new A.a("Folga de fio (%)","Wire slack (%)","Holgura de cable (%)")
-B.Ct=new A.a("Rotas de fios sem controlador","Wire routes without a controller","Rutas de cables sin controlador")
-B.DO=new A.a("V\xe1lvula sem fio at\xe9 um controlador","Valve without a wire to a controller","V\xe1lvula sin cable hasta un controlador")
+B.Cu=new A.a("Rotas de fios sem controlador","Wire routes without a controller","Rutas de cables sin controlador")
+B.DP=new A.a("V\xe1lvula sem fio at\xe9 um controlador","Valve without a wire to a controller","V\xe1lvula sin cable hasta un controlador")
 B.yH=new A.a("Rota de fios que n\xe3o chega a nenhum controlador","Wire route that reaches no controller","Ruta de cables que no llega a ning\xfan controlador")
-B.nl=new A.a("Controlador fora das rotas de fios","Controller off the wire routes","Controlador fuera de las rutas de cables")
+B.nk=new A.a("Controlador fora das rotas de fios","Controller off the wire routes","Controlador fuera de las rutas de cables")
 B.pl=new A.a("Nenhum fio habilitado no cat\xe1logo","No wire enabled in the catalogue","Ning\xfan cable habilitado en el cat\xe1logo")
 B.rr=new A.a("Controlador com menos esta\xe7\xf5es que v\xe1lvulas","Controller with fewer stations than valves","Controlador con menos estaciones que v\xe1lvulas")
 B.re=new A.a("Tens\xe3o no solenoide abaixo da m\xednima","Solenoid voltage below the minimum","Tensi\xf3n en el solenoide por debajo de la m\xednima")
 B.AK=new A.a("O turno abre mais v\xe1lvulas do que o controlador aciona juntas","The system flow opens more valves than the controller drives at once","El turno abre m\xe1s v\xe1lvulas de las que el controlador acciona a la vez")
 B.qI=new A.a("H\xe1 rotas de fios, mas nenhum controlador: sem ele n\xe3o h\xe1 de onde partir a tens\xe3o das v\xe1lvulas nem como dimensionar os fios.","There are wire routes but no controller: without it there is nowhere for the valve voltage to come from and no way to size the wires.","Hay rutas de cables pero ning\xfan controlador: sin \xe9l no hay de d\xf3nde salga la tensi\xf3n de las v\xe1lvulas ni c\xf3mo dimensionar los cables.")
-B.Ew=new A.a("Coloque um controlador (CTRL) sobre o in\xedcio de uma rota de fios.","Place a controller (CTRL) on the start of a wire route.","Coloque un controlador (CTRL) sobre el inicio de una ruta de cables.")
-B.Fj=new A.a("A v\xe1lvula n\xe3o est\xe1 em nenhuma rota de fios ligada a um controlador, ent\xe3o n\xe3o ter\xe1 esta\xe7\xe3o nem fio no or\xe7amento e n\xe3o abrir\xe1 sozinha.","The valve is on no wire route connected to a controller, so it gets no station and no wire in the bill of materials and will not open by itself.","La v\xe1lvula no est\xe1 en ninguna ruta de cables conectada a un controlador, as\xed que no tendr\xe1 estaci\xf3n ni cable en el presupuesto y no se abrir\xe1 sola.")
+B.Ex=new A.a("Coloque um controlador (CTRL) sobre o in\xedcio de uma rota de fios.","Place a controller (CTRL) on the start of a wire route.","Coloque un controlador (CTRL) sobre el inicio de una ruta de cables.")
+B.Fk=new A.a("A v\xe1lvula n\xe3o est\xe1 em nenhuma rota de fios ligada a um controlador, ent\xe3o n\xe3o ter\xe1 esta\xe7\xe3o nem fio no or\xe7amento e n\xe3o abrir\xe1 sozinha.","The valve is on no wire route connected to a controller, so it gets no station and no wire in the bill of materials and will not open by itself.","La v\xe1lvula no est\xe1 en ninguna ruta de cables conectada a un controlador, as\xed que no tendr\xe1 estaci\xf3n ni cable en el presupuesto y no se abrir\xe1 sola.")
 B.jG=new A.a("Estenda uma rota de fios (WR) at\xe9 a v\xe1lvula, terminando exatamente sobre ela ou passando por ela.","Extend a wire route (WR) to the valve, ending exactly on it or passing through it.","Extienda una ruta de cables (WR) hasta la v\xe1lvula, terminando exactamente sobre ella o pasando por ella.")
-B.EF=new A.a("Esta rota de fios n\xe3o se liga a nenhum controlador (nem por outra rota); os fios dela n\xe3o entram no c\xe1lculo.","This wire route connects to no controller (not even through another route); its wires are left out of the design.","Esta ruta de cables no se conecta a ning\xfan controlador (ni por otra ruta); sus cables quedan fuera del c\xe1lculo.")
+B.EG=new A.a("Esta rota de fios n\xe3o se liga a nenhum controlador (nem por outra rota); os fios dela n\xe3o entram no c\xe1lculo.","This wire route connects to no controller (not even through another route); its wires are left out of the design.","Esta ruta de cables no se conecta a ning\xfan controlador (ni por otra ruta); sus cables quedan fuera del c\xe1lculo.")
 B.pw=new A.a("Ligue a rota a outra rota por um v\xe9rtice comum ou at\xe9 um controlador, ou apague-a se sobrou.","Join the route to another one at a shared vertex or to a controller, or delete it if it is left over.","Una la ruta a otra por un v\xe9rtice com\xfan o hasta un controlador, o b\xf3rrela si sobra.")
-B.lK=new A.a("O controlador n\xe3o est\xe1 sobre nenhuma rota de fios, ent\xe3o n\xe3o aciona nenhuma v\xe1lvula.","The controller is on no wire route, so it drives no valve.","El controlador no est\xe1 sobre ninguna ruta de cables, as\xed que no acciona ninguna v\xe1lvula.")
-B.Cv=new A.a("Mova o controlador para o in\xedcio de uma rota ou desenhe uma rota (WR) a partir dele.","Move the controller to the start of a route or draw a route (WR) from it.","Mueva el controlador al inicio de una ruta o dibuje una ruta (WR) desde \xe9l.")
+B.lJ=new A.a("O controlador n\xe3o est\xe1 sobre nenhuma rota de fios, ent\xe3o n\xe3o aciona nenhuma v\xe1lvula.","The controller is on no wire route, so it drives no valve.","El controlador no est\xe1 sobre ninguna ruta de cables, as\xed que no acciona ninguna v\xe1lvula.")
+B.Cw=new A.a("Mova o controlador para o in\xedcio de uma rota ou desenhe uma rota (WR) a partir dele.","Move the controller to the start of a route or draw a route (WR) from it.","Mueva el controlador al inicio de una ruta o dibuje una ruta (WR) desde \xe9l.")
 B.le=new A.a("O cat\xe1logo n\xe3o tem fios habilitados; o c\xe1lculo sup\xf4s um fio de cobre de 1,5 mm\xb2 e n\xe3o p\xf4s fios no or\xe7amento.","The catalogue has no wire enabled; the design assumed a 1.5 mm\xb2 copper wire and left the wires out of the bill of materials.","El cat\xe1logo no tiene cables habilitados; el c\xe1lculo supuso un cable de cobre de 1,5 mm\xb2 y dej\xf3 los cables fuera del presupuesto.")
-B.AT=new A.a("Habilite fios no cat\xe1logo (aba Fios) ou restaure os fios padr\xe3o.","Enable wires in the catalogue (Wires tab) or restore the default wires.","Habilite cables en el cat\xe1logo (pesta\xf1a Cables) o restaure los cables por defecto.")
+B.AU=new A.a("Habilite fios no cat\xe1logo (aba Fios) ou restaure os fios padr\xe3o.","Enable wires in the catalogue (Wires tab) or restore the default wires.","Habilite cables en el cat\xe1logo (pesta\xf1a Cables) o restaure los cables por defecto.")
 B.zk=new A.a("H\xe1 mais v\xe1lvulas ligadas ao controlador do que esta\xe7\xf5es: algumas zonas ficariam sem sa\xedda para abrir.","More valves are wired to the controller than it has stations: some zones would have no output to open them.","Hay m\xe1s v\xe1lvulas conectadas al controlador que estaciones: algunas zonas quedar\xedan sin salida para abrirlas.")
-B.Dc=new A.a("Use um controlador com mais esta\xe7\xf5es (ou um m\xf3dulo de expans\xe3o), ou divida as v\xe1lvulas entre dois controladores.","Use a controller with more stations (or an expansion module), or split the valves between two controllers.","Use un controlador con m\xe1s estaciones (o un m\xf3dulo de expansi\xf3n), o divida las v\xe1lvulas entre dos controladores.")
+B.Dd=new A.a("Use um controlador com mais esta\xe7\xf5es (ou um m\xf3dulo de expans\xe3o), ou divida as v\xe1lvulas entre dois controladores.","Use a controller with more stations (or an expansion module), or split the valves between two controllers.","Use un controlador con m\xe1s estaciones (o un m\xf3dulo de expansi\xf3n), o divida las v\xe1lvulas entre dos controladores.")
 B.io=new A.a("Mesmo com o fio mais grosso habilitado, a queda de tens\xe3o no fio de esta\xe7\xe3o e no comum deixa o solenoide abaixo da tens\xe3o m\xednima ao abrir: a v\xe1lvula pode n\xe3o abrir ou zumbir.","Even with the thickest enabled wire, the voltage drop in the station and common wires leaves the solenoid below the minimum voltage while opening: the valve may not open or may chatter.","Aun con el cable m\xe1s grueso habilitado, la ca\xedda de tensi\xf3n en el cable de estaci\xf3n y en el com\xfan deja el solenoide por debajo de la tensi\xf3n m\xednima al abrir: la v\xe1lvula puede no abrir o vibrar.")
 B.w0=new A.a("Habilite fios mais grossos no cat\xe1logo, aproxime o controlador das v\xe1lvulas, reduza as v\xe1lvulas abertas juntas no mesmo comum ou use um controlador de dois fios (decodificadores).","Enable thicker wires in the catalogue, bring the controller closer to the valves, open fewer valves together on the same common or use a two-wire (decoder) controller.","Habilite cables m\xe1s gruesos en el cat\xe1logo, acerque el controlador a las v\xe1lvulas, abra menos v\xe1lvulas juntas en el mismo com\xfan o use un controlador de dos hilos (decodificadores).")
-B.CS=new A.a("Um turno abre ao mesmo tempo mais v\xe1lvulas deste controlador do que ele consegue acionar juntas.","A system flow opens more valves of this controller at once than it can drive together.","Un turno abre a la vez m\xe1s v\xe1lvulas de este controlador de las que puede accionar juntas.")
-B.DQ=new A.a("Divida o turno (Projeto \u2192 Manejo) ou aumente o m\xe1ximo de esta\xe7\xf5es simult\xe2neas do controlador.","Split the system flow (Design \u2192 Management) or raise the controller's stations at once.","Divida el turno (Dise\xf1o \u2192 Manejo) o aumente el m\xe1ximo de estaciones simult\xe1neas del controlador.")
+B.CT=new A.a("Um turno abre ao mesmo tempo mais v\xe1lvulas deste controlador do que ele consegue acionar juntas.","A system flow opens more valves of this controller at once than it can drive together.","Un turno abre a la vez m\xe1s v\xe1lvulas de este controlador de las que puede accionar juntas.")
+B.DR=new A.a("Divida o turno (Projeto \u2192 Manejo) ou aumente o m\xe1ximo de esta\xe7\xf5es simult\xe2neas do controlador.","Split the system flow (Design \u2192 Management) or raise the controller's stations at once.","Divida el turno (Dise\xf1o \u2192 Manejo) o aumente el m\xe1ximo de estaciones simult\xe1neas del controlador.")
 B.pj=new A.a("Habilitar os fios do cat\xe1logo","Enable the catalogue wires","Habilitar los cables del cat\xe1logo")
 B.th=new A.a("Controlador com esta\xe7\xf5es suficientes","Controller with enough stations","Controlador con estaciones suficientes")
 B.xc=new A.a("{n} fio(s) habilitado(s) no cat\xe1logo","{n} wire(s) enabled in the catalogue","{n} cable(s) habilitado(s) en el cat\xe1logo")
 B.ri=new A.a("controlador passou a ter {n} esta\xe7\xf5es","controller now has {n} stations","el controlador ahora tiene {n} estaciones")
-B.oK=new A.a("Configura\xe7\xf5es","Settings","Configuraci\xf3n")
-B.Bw=new A.a("Detalhes do projeto","Project details","Detalles del proyecto")
+B.oJ=new A.a("Configura\xe7\xf5es","Settings","Configuraci\xf3n")
+B.Bx=new A.a("Detalhes do projeto","Project details","Detalles del proyecto")
 B.kC=new A.a("Par\xe2metros","Parameters","Par\xe1metros")
 B.v7=new A.a("Unidades","Units","Unidades")
-B.n9=new A.a("Cat\xe1logo","Catalogue","Cat\xe1logo")
+B.n8=new A.a("Cat\xe1logo","Catalogue","Cat\xe1logo")
 B.uw=new A.a("Autom\xe1tico\u2026","Automatic\u2026","Autom\xe1tico\u2026")
 B.kN=new A.a("Agrupa as zonas e os piv\xf4s no menor n\xfamero de turnos que cabe na vaz\xe3o m\xe1xima (as maiores demandas primeiro), um turno depois do outro.","Groups the zones and pivots into the fewest system flows that fit the maximum flow (largest demands first), one flow after the other.","Agrupa las zonas y los pivotes en el menor n\xfamero de turnos que cabe en el caudal m\xe1ximo (las mayores demandas primero), un turno tras otro.")
 B.tW=new A.a("Vaz\xe3o m\xe1xima por turno ({u}; 0 = da fonte)","Maximum flow per system flow ({u}; 0 = the supply's)","Caudal m\xe1ximo por turno ({u}; 0 = el de la fuente)")
 B.uG=new A.a("M\xe1ximo de zonas juntas (0 = sem limite)","Most zones open together (0 = no limit)","M\xe1ximo de zonas juntas (0 = sin l\xedmite)")
-B.nn=new A.a("Limite usado: {q}","Limit used: {q}","L\xedmite usado: {q}")
-B.na=new A.a("Sem limite de vaz\xe3o: informe a vaz\xe3o m\xe1xima ou a vaz\xe3o de projeto da fonte de \xe1gua.","No flow limit: enter the maximum flow or the design flow of the water supply.","Sin l\xedmite de caudal: indique el caudal m\xe1ximo o el caudal de dise\xf1o de la fuente de agua.")
-B.CA=new A.a("Gerar turnos","Generate system flows","Generar turnos")
+B.nm=new A.a("Limite usado: {q}","Limit used: {q}","L\xedmite usado: {q}")
+B.n9=new A.a("Sem limite de vaz\xe3o: informe a vaz\xe3o m\xe1xima ou a vaz\xe3o de projeto da fonte de \xe1gua.","No flow limit: enter the maximum flow or the design flow of the water supply.","Sin l\xedmite de caudal: indique el caudal m\xe1ximo o el caudal de dise\xf1o de la fuente de agua.")
+B.CB=new A.a("Gerar turnos","Generate system flows","Generar turnos")
 B.xg=new A.a("{n} turno(s); maior demanda {q}","{n} system flow(s); peak demand {q}","{n} turno(s); mayor demanda {q}")
-B.n4=new A.a("Sozinhas acima da vaz\xe3o m\xe1xima (cada uma ficou num turno pr\xf3prio): {z}","Above the maximum flow on their own (each got a flow of its own): {z}","Por s\xed solas superan el caudal m\xe1ximo (cada una qued\xf3 en un turno propio): {z}")
+B.n3=new A.a("Sozinhas acima da vaz\xe3o m\xe1xima (cada uma ficou num turno pr\xf3prio): {z}","Above the maximum flow on their own (each got a flow of its own): {z}","Por s\xed solas superan el caudal m\xe1ximo (cada una qued\xf3 en un turno propio): {z}")
 B.kF=new A.a("Demanda: {q}","Demand: {q}","Demanda: {q}")
-B.fs=new A.aT(B.fw,[B.oe,B.r9,B.bW,B.lD,B.nS,B.Ez,B.ci,B.ay,B.c2,B.cH,B.c0,B.F,B.t,B.cV,B.oz,B.c6,B.bP,B.bJ,B.iF,B.r2,B.jy,B.ka,B.jR,B.xn,B.jO,B.iq,B.CU,B.xW,B.mu,B.tC,B.bX,B.Da,B.Eb,B.xb,B.rN,B.c1,B.ke,B.B9,B.mr,B.jw,B.j1,B.pt,B.ra,B.mH,B.xU,B.k4,B.lx,B.yw,B.qo,B.nI,B.w1,B.vY,B.li,B.vA,B.pO,B.zv,B.vM,B.vh,B.l2,B.yC,B.n3,B.j8,B.mX,B.uE,B.tS,B.u4,B.t1,B.yA,B.tj,B.iS,B.D6,B.vW,B.An,B.oV,B.rg,B.ru,B.z5,B.vc,B.x0,B.B3,B.ql,B.zH,B.Am,B.nO,B.vm,B.nj,B.lz,B.l8,B.aH,B.tJ,B.nY,B.u_,B.yW,B.rI,B.tI,B.xw,B.iO,B.aQ,B.Bi,B.zq,B.rL,B.nC,B.FF,B.c_,B.nw,B.o_,B.cn,B.rw,B.ve,B.DH,B.q7,B.zw,B.uX,B.y3,B.Fi,B.uu,B.i3,B.zr,B.n1,B.a4,B.mx,B.yx,B.vQ,B.BF,B.nd,B.m3,B.ns,B.Dq,B.A,B.aQ,B.Cq,B.zA,B.aA,B.cG,B.jC,B.lm,B.d8,B.yD,B.n2,B.tE,B.oC,B.CT,B.ne,B.m5,B.BC,B.r4,B.cd,B.d8,B.aQ,B.tM,B.we,B.FE,B.jv,B.bV,B.p1,B.wm,B.qR,B.EI,B.Fo,B.Bg,B.xM,B.w4,B.ww,B.vr,B.kH,B.r7,B.lh,B.of,B.oR,B.qe,B.oB,B.x2,B.jK,B.a5,B.Dl,B.CZ,B.Eq,B.xf,B.ua,B.iJ,B.aC,B.A,B.As,B.pM,B.a5,B.ij,B.EL,B.qw,B.pP,B.AE,B.Cs,B.j6,B.rB,B.A5,B.ue,B.xs,B.Ad,B.j7,B.wc,B.nf,B.a4,B.mw,B.uz,B.ws,B.aN,B.m6,B.CV,B.jU,B.cf,B.a3,B.mT,B.ps,B.az,B.B_,B.rt,B.cR,B.bI,B.qv,B.is,B.z1,B.zW,B.pT,B.BM,B.j3,B.Ao,B.A0,B.w5,B.pV,B.DI,B.qi,B.Cg,B.iL,B.qn,B.rU,B.uh,B.cd,B.rl,B.zQ,B.j0,B.uV,B.aO,B.c1,B.y1,B.me,B.aF,B.cX,B.Aq,B.p8,B.a3,B.bU,B.Df,B.B8,B.DF,B.AD,B.yl,B.ys,B.ya,B.tF,B.xL,B.bK,B.F,B.o7,B.BX,B.FB,B.FI,B.wP,B.nZ,B.EG,B.az,B.co,B.d5,B.t2,B.aP,B.x6,B.a4,B.j_,B.jA,B.nR,B.jo,B.kE,B.mB,B.bY,B.aJ,B.A,B.pi,B.ct,B.Dt,B.pN,B.t0,B.Fs,B.DV,B.il,B.d_,B.Fq,B.x5,B.FA,B.EC,B.z7,B.F,B.t,B.aD,B.vp,B.BY,B.aE,B.lV,B.F0,B.xX,B.oF,B.lr,B.vo,B.lG,B.zN,B.lM,B.pS,B.zl,B.AJ,B.zO,B.p4,B.rn,B.CM,B.oS,B.vT,B.B6,B.xj,B.zf,B.wM,B.E9,B.Cu,B.xD,B.F3,B.xr,B.nX,B.F,B.bK,B.A,B.aD,B.k3,B.vd,B.d_,B.d4,B.cw,B.EK,B.zU,B.AL,B.F6,B.Bv,B.lJ,B.mt,B.nt,B.p2,B.cX,B.mQ,B.cg,B.t6,B.q_,B.zJ,B.iT,B.id,B.wU,B.oq,B.rA,B.a3,B.qQ,B.Du,B.Fg,B.aG,B.p7,B.kJ,B.vR,B.cK,B.aB,B.az,B.d5,B.xE,B.Dw,B.yR,B.Ee,B.C3,B.kp,B.Ax,B.l_,B.wg,B.tz,B.Ci,B.x_,B.yN,B.D1,B.mJ,B.Dy,B.r8,B.rz,B.C5,B.Ai,B.tl,B.yt,B.uP,B.uC,B.D3,B.z6,B.d6,B.aJ,B.xR,B.ie,B.iB,B.oj,B.qP,B.wx,B.Do,B.Ej,B.aC,B.oW,B.A,B.cU,B.cG,B.aA,B.F,B.aB,B.xO,B.un,B.uQ,B.cg,B.aJ,B.bJ,B.a4,B.aG,B.D2,B.vy,B.z,B.ko,B.n5,B.zo,B.qg,B.qh,B.AB,B.yV,B.cu,B.cE,B.o3,B.AZ,B.Eo,B.Q,B.EW,B.uy,B.rT,B.mp,B.qc,B.rS,B.r_,B.wf,B.p_,B.ii,B.yT,B.i_,B.hZ,B.Au,B.lN,B.ol,B.Db,B.pB,B.zZ,B.q6,B.v1,B.rx,B.pH,B.jE,B.ly,B.Eh,B.Dh,B.w_,B.nq,B.DJ,B.mY,B.ck,B.wG,B.q8,B.C6,B.xk,B.iP,B.yY,B.ip,B.lS,B.rZ,B.cO,B.ck,B.iy,B.pW,B.o1,B.cO,B.xK,B.l6,B.qb,B.AC,B.qp,B.rD,B.bY,B.aD,B.aE,B.cQ,B.jj,B.wo,B.zy,B.aF,B.yr,B.cZ,B.Cl,B.CF,B.EZ,B.q4,B.mE,B.AF,B.mC,B.oZ,B.uD,B.m1,B.xt,B.yL,B.yI,B.i9,B.xZ,B.c4,B.mm,B.nV,B.lO,B.CP,B.rE,B.tk,B.uR,B.xT,B.cf,B.rY,B.oJ,B.kG,B.va,B.ct,B.A,B.mG,B.n7,B.wi,B.np,B.zR,B.zE,B.rC,B.CN,B.kR,B.A4,B.co,B.ot,B.kO,B.cm,B.lX,B.zh,B.pf,B.CI,B.zK,B.k0,B.BD,B.te,B.Bf,B.DX,B.v2,B.xx,B.w2,B.pZ,B.i2,B.wd,B.nm,B.aC,B.A,B.c8,B.cU,B.aA,B.vb,B.aF,B.mS,B.vH,B.md,B.F_,B.iz,B.a3,B.bU,B.ir,B.EU,B.d4,B.cw,B.CC,B.mc,B.zn,B.wX,B.CG,B.ER,B.pK,B.cz,B.mF,B.BG,B.k8,B.us,B.rq,B.uo,B.ul,B.rH,B.t4,B.ry,B.yv,B.ia,B.ld,B.Bo,B.Cz,B.Fe,B.rs,B.ku,B.wY,B.EN,B.xY,B.CD,B.tZ,B.AX,B.kv,B.nr,B.qx,B.Bt,B.um,B.xB,B.zM,B.z8,B.kb,B.BO,B.pe,B.Ba,B.t7,B.ze,B.iU,B.vZ,B.vu,B.D8,B.CY,B.xN,B.oD,B.cj,B.oI,B.EX,B.iG,B.cv,B.y4,B.c3,B.vL,B.lC,B.ny,B.F2,B.DA,B.yB,B.pv,B.js,B.uv,B.i8,B.oX,B.iv,B.Ep,B.pF,B.EH,B.DL,B.AN,B.vx,B.q0,B.uF,B.qC,B.CW,B.Fb,B.lL,B.uB,B.rO,B.qa,B.mq,B.l5,B.E7,B.xV,B.l0,B.zi,B.iV,B.x7,B.Cj,B.xu,B.ic,B.EE,B.E3,B.yG,B.tu,B.j2,B.qV,B.k1,B.ye,B.pE,B.Bd,B.BQ,B.iE,B.qJ,B.l7,B.iR,B.kM,B.oi,B.Ed,B.Fr,B.uN,B.j5,B.Fu,B.xa,B.vl,B.r5,B.lY,B.wl,B.u0,B.BV,B.z9,B.Cn,B.Di,B.po,B.lu,B.oU,B.tR,B.yb,B.nA,B.m_,B.Bx,B.tG,B.jq,B.mv,B.kT,B.Ck,B.pk,B.mP,B.yh,B.cj,B.vO,B.lF,B.kW,B.oL,B.rj,B.ph,B.nP,B.ay,B.kS,B.pc,B.mZ,B.pJ,B.wL,B.tA,B.zt,B.ub,B.vk,B.rh,B.n_,B.Dj,B.i4,B.zT,B.BP,B.D9,B.CJ,B.AV,B.vf,B.xz,B.kd,B.jt,B.wp,B.Em,B.xA,B.ni,B.Ae,B.tg,B.kh,B.uU,B.cb,B.Q,B.AG,B.CL,B.yg,B.DU,B.cu,B.cE,B.d3,B.bT,B.qq,B.zD,B.cA,B.bF,B.bS,B.cc,B.bL,B.rJ,B.m4,B.Bz,B.wq,B.Ce,B.Fx,B.cp,B.cY,B.c8,B.zX,B.ml,B.DZ,B.pG,B.r6,B.BJ,B.lo,B.E2,B.Be,B.yc,B.qM,B.vU,B.c_,B.aG,B.cI,B.c4,B.nU,B.cZ,B.Bp,B.aP,B.it,B.z2,B.qf,B.Ca,B.wK,B.u9,B.mA,B.oy,B.Cm,B.lv,B.CX,B.jN,B.kq,B.bH,B.mK,B.pq,B.bH,B.uO,B.BH,B.o2,B.cY,B.zu,B.n8,B.aH,B.EM,B.DE,B.lP,B.iC,B.yk,B.Bl,B.F4,B.wJ,B.kQ,B.yU,B.z4,B.Cx,B.tT,B.Cb,B.B4,B.BS,B.A2,B.v5,B.zV,B.vz,B.Ah,B.AI,B.kt,B.F5,B.Bc,B.km,B.yM,B.ty,B.t8,B.xH,B.t5,B.jf,B.ja,B.tO,B.Cc,B.CB,B.jT,B.ju,B.w9,B.Bq,B.yo,B.oM,B.y8,B.m9,B.z3,B.ki,B.Bu,B.pQ,B.DS,B.jp,B.a5,B.kZ,B.r0,B.xJ,B.lb,B.uT,B.on,B.aB,B.jQ,B.vE,B.qs,B.cm,B.x3,B.lU,B.cK,B.wV,B.DG,B.uJ,B.jn,B.B1,B.ig,B.yu,B.u8,B.u1,B.pa,B.xQ,B.lq,B.Ch,B.yQ,B.uc,B.pb,B.yE,B.tD,B.n0,B.pg,B.ti,B.DC,B.C2,B.D7,B.tH,B.zp,B.r3,B.d0,B.BT,B.tr,B.C_,B.zj,B.Ey,B.qA,B.Ei,B.jJ,B.F9,B.Aw,B.ib,B.CQ,B.wH,B.FC,B.ji,B.mO,B.px,B.Ac,B.la,B.E_,B.FD,B.jx,B.pX,B.D_,B.iW,B.ce,B.jF,B.kg,B.aP,B.cl,B.Bn,B.oa,B.qW,B.qX,B.cy,B.yF,B.wv,B.u7,B.Cw,B.EQ,B.i1,B.Fl,B.jb,B.q9,B.tL,B.qz,B.o0,B.l3,B.iN,B.y9,B.ur,B.wQ,B.x1,B.uM,B.jV,B.aH,B.qr,B.pL,B.zz,B.yj,B.xe,B.Cr,B.qO,B.ta,B.lR,B.w8,B.Ev,B.jB,B.kA,B.l1,B.bN,B.nh,B.Fm,B.qu,B.t_,B.kj,B.om,B.ci,B.uL,B.Eu,B.BZ,B.t3,B.De,B.BE,B.no,B.cM,B.aE,B.cp,B.cS,B.n6,B.cz,B.cB,B.DK,B.nk,B.mR,B.E8,B.qF,B.aI,B.u3,B.DM,B.vG,B.uI,B.rX,B.AW,B.jS,B.og,B.mN,B.oT,B.nH,B.Cy,B.vI,B.pd,B.F7,B.lc,B.p9,B.rp,B.vX,B.td,B.E4,B.xl,B.pu,B.mD,B.iY,B.wO,B.u6,B.cs,B.aN,B.ma,B.cl,B.zI,B.kX,B.iw,B.B5,B.wz,B.A6,B.nv,B.lI,B.qZ,B.ob,B.pI,B.to,B.yq,B.qU,B.z_,B.j4,B.p6,B.ok,B.k6,B.BU,B.jL,B.rk,B.F8,B.xy,B.zF,B.jW,B.y_,B.Dx,B.ug,B.cL,B.qB,B.zs,B.c5,B.iQ,B.C7,B.Bb,B.wW,B.kn,B.kr,B.vK,B.kU,B.zP,B.qL,B.cF,B.wu,B.Fw,B.vJ,B.i0,B.oo,B.AY,B.rv,B.B0,B.xd,B.Fn,B.c5,B.CO,B.lW,B.D4,B.uW,B.ro,B.pU,B.lB,B.Ft,B.q3,B.oO,B.d6,B.vS,B.q1,B.tf,B.jP,B.rG,B.up,B.cF,B.qN,B.Ex,B.qm,B.xo,B.yy,B.CK,B.v8,B.yf,B.v0,B.qS,B.oQ,B.lp,B.nT,B.Dg,B.iK,B.qk,B.wT,B.mU,B.nD,B.Cf,B.mM,B.Ek,B.pn,B.uk,B.od,B.DP,B.kc,B.mk,B.rd,B.lH,B.tV,B.zS,B.kL,B.mW,B.m8,B.op,B.x4,B.xi,B.Bk,B.tv,B.Dk,B.tx,B.pA,B.tn,B.ll,B.AU,B.q2,B.o5,B.k2,B.wI,B.xh,B.Dv,B.tc,B.yi,B.Ak,B.BA,B.pr,B.D0,B.kP,B.wF,B.vB,B.xv,B.pz,B.jH,B.xI,B.w6,B.Av,B.jz,B.tX,B.jD,B.t9,B.wA,B.yZ,B.Ff,B.EA,B.mz,B.kI,B.jX,B.lk,B.EP,B.rF,B.yz,B.lT,B.C8,B.yn,B.mV,B.lf,B.wD,B.DB,B.EY,B.w3,B.i6,B.vt,B.Ab,B.Aa,B.wR,B.AP,B.Ea,B.l4,B.Az,B.rf,B.wk,B.Co,B.rb,B.ym,B.zL,B.zG,B.Al,B.nJ,B.pm,B.E6,B.jY,B.A7,B.zB,B.wj,B.rM,B.nL,B.yK,B.BI,B.oP,B.k5,B.vq,B.nz,B.FH,B.lZ,B.EV,B.Dd,B.vP,B.uq,B.DD,B.Er,B.rW,B.ut,B.kl,B.w7,B.ky,B.wt,B.xP,B.o6,B.my,B.vV,B.xp,B.D5,B.AO,B.Fp,B.l9,B.vC,B.m0,B.uf,B.Fh,B.CR,B.v_,B.EJ,B.vw,B.DY,B.oH,B.A1,B.v4,B.Et,B.o4,B.kw,B.nc,B.nu,B.yS,B.jm,B.A3,B.iA,B.zg,B.ov,B.AH,B.Dn,B.ng,B.qy,B.pD,B.p0,B.BR,B.Ef,B.Bm,B.vF,B.zc,B.yP,B.iu,B.ms,B.bW,B.aO,B.c6,B.Dm,B.qT,B.c0,B.c2,B.cy,B.F,B.rR,B.lg,B.cV,B.ay,B.cH,B.bP,B.jI,B.xm,B.za,B.AS,B.jr,B.oc,B.CH,B.AQ,B.uY,B.qE,B.cv,B.c3,B.nx,B.Af,B.uA,B.qt,B.cR,B.bI,B.aO,B.p5,B.ln,B.bN,B.Es,B.Ag,B.bX,B.ce,B.lA,B.bV,B.tt,B.a5,B.tK,B.k_,B.tY,B.B2,B.nN,B.kD,B.ES,B.bQ,B.vv,B.im,B.jM,B.jl,B.xS,B.EB,B.kk,B.cB,B.x9,B.ts,B.or,B.oG,B.qD,B.wy,B.tm,B.lQ,B.nE,B.Dz,B.ox,B.Cd,B.v6,B.nG,B.zC,B.Cp,B.iM,B.nF,B.m2,B.FG,B.ux,B.vn,B.C0,B.xC,B.y6,B.Bh,B.C4,B.BW,B.Ds,B.qj,B.Fy,B.By,B.uH,B.ls,B.ih,B.jg,B.F1,B.BK,B.nB,B.mb,B.Ec,B.Fd,B.Bs,B.nM,B.tp,B.DT,B.rP,B.m7,B.o9,B.bR,B.nK,B.wS,B.cW,B.lt,B.En,B.ix,B.tP,B.Fz,B.aI,B.Ar,B.lw,B.kB,B.bR,B.kV,B.ks,B.y5,B.qd,B.mi,B.nb,B.Aj,B.mh,B.i5,B.q5,B.pC,B.vj,B.bL,B.lE,B.t,B.tQ,B.cW,B.d9,B.jZ,B.kx,B.mf,B.wB,B.a6,B.cq,B.c9,B.t,B.yd,B.zx,B.Dr,B.Bj,B.R,B.cA,B.a6,B.cC,B.aL,B.ax,B.P,B.r,B.aI,B.z,B.v9,B.k9,B.zY,B.Q,B.bF,B.G,B.cJ,B.r,B.d1,B.wb,B.kf,B.bM,B.zm,B.kz,B.ca,B.wr,B.AM,B.d7,B.xG,B.z0,B.cr,B.pR,B.mo,B.bG,B.jk,B.iI,B.d2,B.ik,B.jc,B.bZ,B.CE,B.jh,B.uj,B.Fk,B.wZ,B.cP,B.x8,B.tw,B.d1,B.DN,B.E0,B.vN,B.cx,B.tU,B.E1,B.cb,B.t,B.bM,B.wE,B.Ap,B.kY,B.cx,B.vD,B.qH,B.tB,B.t,B.ca,B.z,B.o8,B.tq,B.R,B.d3,B.Q,B.G,B.r,B.d7,B.z,B.aK,B.B7,B.R,B.bT,B.Q,B.r,B.P,B.G,B.cr,B.qG,B.aK,B.vi,B.R,B.bS,B.r,B.P,B.a6,B.cC,B.aL,B.ax,B.bG,B.Fc,B.aK,B.E5,B.R,B.cc,B.Br,B.C9,B.r,B.G,B.aL,B.ax,B.d2,B.z,B.iH,B.rm,B.vg,B.rK,B.mn,B.P,B.a6,B.t,B.bZ,B.d9,B.A9,B.At,B.uK,B.nQ,B.py,B.os,B.BB,B.ch,B.c9,B.cq,B.t,B.pY,B.z,B.wN,B.ow,B.tb,B.ui,B.ch,B.ud,B.cJ,B.r,B.P,B.G,B.cP,B.z,B.oA,B.Ay,B.Dp,B.uS,B.mg,B.A8,B.aN,B.r,B.G,B.rQ,B.yJ,B.wC,B.A_,B.oh,B.oN,B.wn,B.mL,B.wh,B.DR,B.iX,B.cI,B.cs,B.zb,B.bQ,B.iZ,B.vs,B.p3,B.Fv,B.xF,B.Eg,B.mj,B.BL,B.Fa,B.uZ,B.EO,B.ou,B.y7,B.lj,B.xq,B.cL,B.ED,B.aM,B.AR,B.yp,B.u5,B.qK,B.j9,B.aM,B.cT,B.rc,B.zd,B.yX,B.oE,B.r1,B.cS,B.cT,B.wa,B.DW,B.oY,B.k7,B.cD,B.qY,B.ET,B.BN,B.cN,B.bO,B.El,B.yO,B.y2,B.aM,B.cM,B.tN,B.c7,B.cN,B.cD,B.je,B.bO,B.cQ,B.jd,B.v3,B.cn,B.C1,B.y0,B.i7,B.nW,B.c7,B.kK,B.rV,B.AA,B.mI,B.u2,B.pp,B.iD,B.Ct,B.DO,B.yH,B.nl,B.pl,B.rr,B.re,B.AK,B.qI,B.Ew,B.Fj,B.jG,B.EF,B.pw,B.lK,B.Cv,B.le,B.AT,B.zk,B.Dc,B.io,B.w0,B.CS,B.DQ,B.pj,B.th,B.xc,B.ri,B.oK,B.Bw,B.kC,B.v7,B.n9,B.d0,B.uw,B.kN,B.tW,B.uG,B.nn,B.na,B.CA,B.xg,B.n4,B.kF],A.S("aT<c,+(c,c,c)>"))
+B.fs=new A.aT(B.fw,[B.od,B.r9,B.bW,B.lC,B.nR,B.EA,B.ci,B.ay,B.c2,B.cH,B.c0,B.F,B.t,B.cV,B.oy,B.c6,B.bP,B.bJ,B.iF,B.r2,B.jy,B.ka,B.jR,B.xn,B.jO,B.iq,B.CV,B.xW,B.mt,B.tC,B.bX,B.Db,B.Ec,B.xb,B.rN,B.c1,B.ke,B.Ba,B.mq,B.jw,B.j1,B.pt,B.ra,B.mG,B.xU,B.k4,B.lw,B.yw,B.qo,B.nH,B.w1,B.vY,B.li,B.vA,B.pO,B.zv,B.vM,B.vh,B.l2,B.yC,B.n2,B.j8,B.mW,B.uE,B.tS,B.u4,B.t1,B.yA,B.tj,B.iS,B.D7,B.vW,B.An,B.oU,B.rg,B.ru,B.z5,B.vc,B.x0,B.B4,B.ql,B.zH,B.Am,B.nN,B.vm,B.ni,B.ly,B.l8,B.aH,B.tJ,B.nX,B.u_,B.yW,B.rI,B.tI,B.xw,B.iO,B.aQ,B.Bj,B.zq,B.rL,B.nB,B.FF,B.c_,B.nv,B.nZ,B.cn,B.rw,B.ve,B.DI,B.q7,B.zw,B.uX,B.y3,B.Fj,B.uu,B.i3,B.zr,B.n0,B.a4,B.mw,B.yx,B.vQ,B.BG,B.nc,B.m2,B.nr,B.Dr,B.A,B.aQ,B.Cr,B.zA,B.aA,B.cG,B.jC,B.lm,B.d8,B.yD,B.n1,B.tE,B.oB,B.CU,B.nd,B.m4,B.BD,B.r4,B.cd,B.d8,B.aQ,B.tM,B.we,B.FE,B.jv,B.bV,B.p1,B.wm,B.qR,B.EJ,B.Fo,B.Bh,B.xM,B.w4,B.ww,B.vr,B.kH,B.r7,B.lh,B.oe,B.oQ,B.qe,B.oA,B.x2,B.jK,B.a5,B.Dm,B.D_,B.Er,B.xf,B.ua,B.iJ,B.aC,B.A,B.As,B.pM,B.a5,B.ij,B.EM,B.qw,B.pP,B.AE,B.Ct,B.j6,B.rB,B.A5,B.ue,B.xs,B.Ad,B.j7,B.wc,B.ne,B.a4,B.mv,B.uz,B.ws,B.aN,B.m5,B.CW,B.jU,B.cf,B.a3,B.mS,B.ps,B.az,B.B0,B.rt,B.cR,B.bI,B.qv,B.is,B.z1,B.zW,B.pT,B.BN,B.j3,B.Ao,B.A0,B.w5,B.pV,B.DJ,B.qi,B.Ch,B.iL,B.qn,B.rU,B.uh,B.cd,B.rl,B.zQ,B.j0,B.uV,B.aO,B.c1,B.y1,B.md,B.aF,B.cX,B.Aq,B.p8,B.a3,B.bU,B.Dg,B.B9,B.DG,B.AD,B.yl,B.ys,B.ya,B.tF,B.xL,B.bK,B.F,B.o6,B.BY,B.FB,B.FI,B.wP,B.nY,B.EH,B.az,B.co,B.d5,B.t2,B.aP,B.x6,B.a4,B.j_,B.jA,B.nQ,B.jo,B.kE,B.mA,B.bY,B.aJ,B.A,B.pi,B.ct,B.Du,B.pN,B.t0,B.Fs,B.DW,B.il,B.d_,B.Fq,B.x5,B.FA,B.ED,B.z7,B.F,B.t,B.aD,B.vp,B.BZ,B.aE,B.lU,B.F1,B.xX,B.oE,B.lr,B.vo,B.lF,B.zN,B.lL,B.pS,B.zl,B.AJ,B.zO,B.p4,B.rn,B.CN,B.oR,B.vT,B.B7,B.xj,B.zf,B.wM,B.Ea,B.Cv,B.xD,B.F4,B.xr,B.nW,B.F,B.bK,B.A,B.aD,B.k3,B.vd,B.d_,B.d4,B.cw,B.EL,B.zU,B.AL,B.F7,B.Bw,B.lI,B.ms,B.ns,B.p2,B.cX,B.mP,B.cg,B.t6,B.q_,B.zJ,B.iT,B.id,B.wU,B.op,B.rA,B.a3,B.qQ,B.Dv,B.Fh,B.aG,B.p7,B.kJ,B.vR,B.cK,B.aB,B.az,B.d5,B.xE,B.Dx,B.yR,B.Ef,B.C4,B.kp,B.Ax,B.l_,B.wg,B.tz,B.Cj,B.x_,B.yN,B.D2,B.mI,B.Dz,B.r8,B.rz,B.C6,B.Ai,B.tl,B.yt,B.uP,B.uC,B.D4,B.z6,B.d6,B.aJ,B.xR,B.ie,B.iB,B.oi,B.qP,B.wx,B.Dp,B.Ek,B.aC,B.oV,B.A,B.cU,B.cG,B.aA,B.F,B.aB,B.xO,B.un,B.uQ,B.cg,B.aJ,B.bJ,B.a4,B.aG,B.D3,B.vy,B.z,B.ko,B.n4,B.zo,B.qg,B.qh,B.AB,B.yV,B.cu,B.cE,B.o2,B.B_,B.Ep,B.Q,B.EX,B.uy,B.rT,B.mo,B.qc,B.rS,B.r_,B.wf,B.oZ,B.ii,B.yT,B.i_,B.hZ,B.Au,B.lM,B.ok,B.Dc,B.pB,B.zZ,B.q6,B.v1,B.rx,B.pH,B.jE,B.lx,B.Ei,B.Di,B.w_,B.np,B.DK,B.mX,B.ck,B.wG,B.q8,B.C7,B.xk,B.iP,B.yY,B.ip,B.lR,B.rZ,B.cO,B.ck,B.iy,B.pW,B.o0,B.cO,B.xK,B.l6,B.qb,B.AC,B.qp,B.rD,B.bY,B.aD,B.aE,B.cQ,B.jj,B.wo,B.zy,B.aF,B.yr,B.cZ,B.Cm,B.CG,B.F_,B.q4,B.mD,B.AF,B.mB,B.oY,B.uD,B.m0,B.xt,B.yL,B.yI,B.i9,B.xZ,B.c4,B.ml,B.nU,B.lN,B.CQ,B.rE,B.tk,B.uR,B.xT,B.cf,B.rY,B.oI,B.kG,B.va,B.ct,B.A,B.mF,B.n6,B.wi,B.no,B.zR,B.zE,B.rC,B.CO,B.kR,B.A4,B.co,B.os,B.kO,B.cm,B.lW,B.zh,B.pf,B.CJ,B.zK,B.k0,B.BE,B.te,B.Bg,B.DY,B.v2,B.xx,B.w2,B.pZ,B.i2,B.wd,B.nl,B.aC,B.A,B.c8,B.cU,B.aA,B.vb,B.aF,B.mR,B.vH,B.mc,B.F0,B.iz,B.a3,B.bU,B.ir,B.EV,B.d4,B.cw,B.CD,B.mb,B.zn,B.wX,B.CH,B.ES,B.pK,B.cz,B.mE,B.BH,B.k8,B.us,B.rq,B.uo,B.ul,B.rH,B.t4,B.ry,B.yv,B.ia,B.ld,B.Bp,B.CA,B.Ff,B.rs,B.ku,B.wY,B.EO,B.xY,B.CE,B.tZ,B.AY,B.kv,B.nq,B.qx,B.Bu,B.um,B.xB,B.zM,B.z8,B.kb,B.BP,B.pe,B.Bb,B.t7,B.ze,B.iU,B.vZ,B.vu,B.D9,B.CZ,B.xN,B.oC,B.cj,B.oH,B.EY,B.iG,B.cv,B.y4,B.c3,B.vL,B.lB,B.nx,B.F3,B.DB,B.yB,B.pv,B.js,B.uv,B.i8,B.oW,B.iv,B.Eq,B.pF,B.EI,B.DM,B.AN,B.vx,B.q0,B.uF,B.qC,B.CX,B.Fc,B.lK,B.uB,B.rO,B.qa,B.mp,B.l5,B.E8,B.xV,B.l0,B.zi,B.iV,B.x7,B.Ck,B.xu,B.ic,B.EF,B.E4,B.yG,B.tu,B.j2,B.qV,B.k1,B.ye,B.pE,B.Be,B.BR,B.iE,B.qJ,B.l7,B.iR,B.kM,B.oh,B.Ee,B.Fr,B.uN,B.j5,B.Fu,B.xa,B.vl,B.r5,B.lX,B.wl,B.u0,B.BW,B.z9,B.Co,B.Dj,B.po,B.lu,B.oT,B.tR,B.yb,B.nz,B.lZ,B.By,B.tG,B.jq,B.mu,B.kT,B.Cl,B.pk,B.mO,B.yh,B.cj,B.vO,B.lE,B.kW,B.oK,B.rj,B.ph,B.nO,B.ay,B.kS,B.pc,B.mY,B.pJ,B.wL,B.tA,B.zt,B.ub,B.vk,B.rh,B.mZ,B.Dk,B.i4,B.zT,B.BQ,B.Da,B.CK,B.AW,B.vf,B.xz,B.kd,B.jt,B.wp,B.En,B.xA,B.nh,B.Ae,B.tg,B.kh,B.uU,B.cb,B.Q,B.AG,B.CM,B.yg,B.DV,B.cu,B.cE,B.d3,B.bT,B.qq,B.zD,B.cA,B.bF,B.bS,B.cc,B.bL,B.rJ,B.m3,B.BA,B.wq,B.Cf,B.Fx,B.cp,B.cY,B.c8,B.zX,B.mk,B.E_,B.pG,B.r6,B.BK,B.lo,B.E3,B.Bf,B.yc,B.qM,B.vU,B.c_,B.aG,B.cI,B.c4,B.nT,B.cZ,B.Bq,B.aP,B.it,B.z2,B.qf,B.Cb,B.wK,B.u9,B.mz,B.ox,B.Cn,B.lv,B.CY,B.jN,B.kq,B.bH,B.mJ,B.pq,B.bH,B.uO,B.BI,B.o1,B.cY,B.zu,B.n7,B.aH,B.EN,B.DF,B.lO,B.iC,B.yk,B.Bm,B.F5,B.wJ,B.kQ,B.yU,B.z4,B.Cy,B.tT,B.Cc,B.B5,B.BT,B.A2,B.v5,B.zV,B.vz,B.Ah,B.AI,B.kt,B.F6,B.Bd,B.km,B.yM,B.ty,B.t8,B.xH,B.t5,B.jf,B.ja,B.tO,B.Cd,B.CC,B.jT,B.ju,B.w9,B.Br,B.yo,B.oL,B.y8,B.m8,B.z3,B.ki,B.Bv,B.pQ,B.DT,B.jp,B.a5,B.kZ,B.r0,B.xJ,B.lb,B.uT,B.om,B.aB,B.jQ,B.vE,B.qs,B.cm,B.x3,B.lT,B.cK,B.wV,B.DH,B.uJ,B.jn,B.B2,B.ig,B.yu,B.u8,B.u1,B.pa,B.xQ,B.lq,B.Ci,B.yQ,B.uc,B.pb,B.yE,B.tD,B.n_,B.pg,B.ti,B.DD,B.C3,B.D8,B.tH,B.zp,B.r3,B.d0,B.BU,B.tr,B.C0,B.zj,B.Ez,B.qA,B.Ej,B.jJ,B.Fa,B.Aw,B.ib,B.CR,B.wH,B.FC,B.ji,B.mN,B.px,B.Ac,B.la,B.E0,B.FD,B.jx,B.pX,B.D0,B.iW,B.ce,B.jF,B.kg,B.aP,B.cl,B.Bo,B.o9,B.qW,B.qX,B.cy,B.yF,B.wv,B.u7,B.Cx,B.ER,B.i1,B.Fl,B.jb,B.q9,B.tL,B.qz,B.o_,B.l3,B.iN,B.y9,B.ur,B.wQ,B.x1,B.uM,B.jV,B.aH,B.qr,B.pL,B.zz,B.yj,B.xe,B.Cs,B.qO,B.ta,B.lQ,B.w8,B.Ew,B.jB,B.kA,B.l1,B.bN,B.ng,B.Fm,B.qu,B.t_,B.kj,B.ol,B.ci,B.uL,B.Ev,B.C_,B.t3,B.Df,B.BF,B.nn,B.cM,B.aE,B.cp,B.cS,B.n5,B.cz,B.cB,B.DL,B.nj,B.mQ,B.E9,B.qF,B.aI,B.u3,B.DN,B.vG,B.uI,B.rX,B.AX,B.jS,B.of,B.mM,B.oS,B.nG,B.Cz,B.vI,B.pd,B.F8,B.lc,B.p9,B.rp,B.vX,B.td,B.E5,B.xl,B.pu,B.mC,B.iY,B.wO,B.u6,B.cs,B.aN,B.m9,B.cl,B.zI,B.kX,B.iw,B.B6,B.wz,B.A6,B.nu,B.lH,B.qZ,B.oa,B.pI,B.to,B.yq,B.qU,B.z_,B.j4,B.p6,B.oj,B.k6,B.BV,B.jL,B.rk,B.F9,B.xy,B.zF,B.jW,B.y_,B.Dy,B.ug,B.cL,B.qB,B.zs,B.c5,B.iQ,B.C8,B.Bc,B.wW,B.kn,B.kr,B.vK,B.kU,B.zP,B.qL,B.cF,B.wu,B.Fw,B.vJ,B.i0,B.on,B.AZ,B.rv,B.B1,B.xd,B.Fn,B.c5,B.CP,B.lV,B.D5,B.uW,B.ro,B.pU,B.lA,B.Ft,B.q3,B.oN,B.d6,B.vS,B.q1,B.tf,B.jP,B.rG,B.up,B.cF,B.qN,B.Ey,B.qm,B.xo,B.yy,B.CL,B.v8,B.yf,B.v0,B.qS,B.oP,B.lp,B.nS,B.Dh,B.iK,B.qk,B.wT,B.mT,B.nC,B.Cg,B.mL,B.El,B.pn,B.uk,B.oc,B.DQ,B.kc,B.mj,B.rd,B.lG,B.tV,B.zS,B.kL,B.mV,B.m7,B.oo,B.x4,B.xi,B.Bl,B.tv,B.Dl,B.tx,B.pA,B.tn,B.ll,B.AV,B.q2,B.o4,B.k2,B.wI,B.xh,B.Dw,B.tc,B.yi,B.Ak,B.BB,B.pr,B.D1,B.kP,B.wF,B.vB,B.xv,B.pz,B.jH,B.xI,B.w6,B.Av,B.jz,B.tX,B.jD,B.t9,B.wA,B.yZ,B.Fg,B.EB,B.my,B.kI,B.jX,B.lk,B.EQ,B.rF,B.yz,B.lS,B.C9,B.yn,B.mU,B.lf,B.wD,B.DC,B.EZ,B.w3,B.i6,B.vt,B.Ab,B.Aa,B.wR,B.AP,B.Eb,B.l4,B.Az,B.rf,B.wk,B.Cp,B.rb,B.ym,B.zL,B.zG,B.Al,B.nI,B.pm,B.E7,B.jY,B.A7,B.zB,B.wj,B.rM,B.nK,B.yK,B.BJ,B.oO,B.k5,B.vq,B.ny,B.FH,B.lY,B.EW,B.De,B.vP,B.uq,B.DE,B.Es,B.rW,B.ut,B.kl,B.w7,B.ky,B.wt,B.xP,B.o5,B.mx,B.vV,B.xp,B.D6,B.AO,B.Fp,B.l9,B.vC,B.m_,B.uf,B.Fi,B.CS,B.v_,B.EK,B.vw,B.DZ,B.oG,B.A1,B.v4,B.Eu,B.o3,B.kw,B.nb,B.nt,B.yS,B.jm,B.A3,B.iA,B.zg,B.ou,B.AH,B.Do,B.nf,B.qy,B.pD,B.p_,B.BS,B.Eg,B.Bn,B.vF,B.zc,B.yP,B.iu,B.mr,B.bW,B.aO,B.c6,B.Dn,B.qT,B.c0,B.c2,B.cy,B.F,B.rR,B.lg,B.cV,B.ay,B.cH,B.bP,B.jI,B.xm,B.za,B.AT,B.jr,B.ob,B.CI,B.AQ,B.uY,B.qE,B.cv,B.c3,B.nw,B.Af,B.uA,B.qt,B.cR,B.bI,B.aO,B.p5,B.ln,B.bN,B.Et,B.Ag,B.bX,B.ce,B.lz,B.bV,B.tt,B.a5,B.tK,B.k_,B.tY,B.B3,B.nM,B.kD,B.ET,B.bQ,B.vv,B.im,B.jM,B.jl,B.xS,B.EC,B.kk,B.cB,B.x9,B.ts,B.oq,B.oF,B.qD,B.wy,B.tm,B.lP,B.nD,B.DA,B.ow,B.Ce,B.v6,B.nF,B.zC,B.Cq,B.iM,B.nE,B.m1,B.FG,B.ux,B.vn,B.C1,B.xC,B.y6,B.Bi,B.C5,B.BX,B.Dt,B.qj,B.Fy,B.Bz,B.uH,B.ls,B.ih,B.jg,B.F2,B.BL,B.nA,B.ma,B.Ed,B.Fe,B.Bt,B.nL,B.tp,B.DU,B.rP,B.m6,B.o8,B.bR,B.nJ,B.wS,B.cW,B.lt,B.Eo,B.ix,B.tP,B.Fz,B.aI,B.Ar,B.p0,B.kB,B.bR,B.kV,B.ks,B.y5,B.qd,B.mh,B.na,B.Aj,B.mg,B.i5,B.q5,B.pC,B.vj,B.bL,B.lD,B.t,B.tQ,B.cW,B.d9,B.jZ,B.kx,B.me,B.wB,B.a6,B.cq,B.c9,B.t,B.yd,B.zx,B.Ds,B.Bk,B.R,B.cA,B.a6,B.cC,B.aL,B.ax,B.P,B.r,B.aI,B.z,B.v9,B.k9,B.zY,B.Q,B.bF,B.G,B.cJ,B.r,B.d1,B.wb,B.kf,B.bM,B.zm,B.kz,B.ca,B.wr,B.AM,B.d7,B.xG,B.z0,B.cr,B.pR,B.mn,B.bG,B.jk,B.iI,B.d2,B.ik,B.jc,B.bZ,B.CF,B.jh,B.uj,B.AS,B.wZ,B.cP,B.x8,B.tw,B.d1,B.DO,B.E1,B.vN,B.cx,B.tU,B.E2,B.cb,B.t,B.bM,B.wE,B.Ap,B.kY,B.cx,B.vD,B.qH,B.tB,B.t,B.ca,B.z,B.o7,B.tq,B.R,B.d3,B.Q,B.G,B.r,B.d7,B.z,B.aK,B.B8,B.R,B.bT,B.Q,B.r,B.P,B.G,B.cr,B.qG,B.aK,B.vi,B.R,B.bS,B.r,B.P,B.a6,B.cC,B.aL,B.ax,B.bG,B.Fd,B.aK,B.E6,B.R,B.cc,B.Bs,B.Ca,B.r,B.G,B.aL,B.ax,B.d2,B.z,B.iH,B.rm,B.vg,B.rK,B.mm,B.P,B.a6,B.t,B.bZ,B.d9,B.A9,B.At,B.uK,B.nP,B.py,B.or,B.BC,B.ch,B.c9,B.cq,B.t,B.pY,B.z,B.wN,B.ov,B.tb,B.ui,B.ch,B.ud,B.cJ,B.r,B.P,B.G,B.cP,B.z,B.oz,B.Ay,B.Dq,B.uS,B.mf,B.A8,B.aN,B.r,B.G,B.rQ,B.yJ,B.wC,B.A_,B.og,B.oM,B.wn,B.mK,B.wh,B.DS,B.iX,B.cI,B.cs,B.zb,B.bQ,B.iZ,B.vs,B.p3,B.Fv,B.xF,B.Eh,B.mi,B.BM,B.Fb,B.uZ,B.EP,B.ot,B.y7,B.lj,B.xq,B.cL,B.EE,B.aM,B.AR,B.yp,B.u5,B.qK,B.j9,B.aM,B.cT,B.rc,B.zd,B.yX,B.oD,B.r1,B.cS,B.cT,B.wa,B.DX,B.oX,B.k7,B.cD,B.qY,B.EU,B.BO,B.cN,B.bO,B.Em,B.yO,B.y2,B.aM,B.cM,B.tN,B.c7,B.cN,B.cD,B.je,B.bO,B.cQ,B.jd,B.v3,B.cn,B.C2,B.y0,B.i7,B.nV,B.c7,B.kK,B.rV,B.AA,B.mH,B.u2,B.pp,B.iD,B.Cu,B.DP,B.yH,B.nk,B.pl,B.rr,B.re,B.AK,B.qI,B.Ex,B.Fk,B.jG,B.EG,B.pw,B.lJ,B.Cw,B.le,B.AU,B.zk,B.Dd,B.io,B.w0,B.CT,B.DR,B.pj,B.th,B.xc,B.ri,B.oJ,B.Bx,B.kC,B.v7,B.n8,B.d0,B.uw,B.kN,B.tW,B.uG,B.nm,B.n9,B.CB,B.xg,B.n3,B.kF],A.S("aT<c,+(c,c,c)>"))
 B.a1={}
 B.bx=new A.aT(B.a1,[],A.S("aT<c,r<+(L,e)>>"))
 B.as=new A.aT(B.a1,[],A.S("aT<c,c>"))

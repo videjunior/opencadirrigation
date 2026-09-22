@@ -5589,7 +5589,7 @@
         505.0,
         160.0
       ],
-      "spec": "pump_big",
+      "spec": "pump_c20",
       "speed": 1.0,
       "rot": 0.0,
       "scope": "mainline"
@@ -5635,7 +5635,8 @@
         ]
       ],
       "scope": "mainline",
-      "auto": true,
+      "spec": "pvc150",
+      "auto": false,
       "depth": 0.0
     }
   ],

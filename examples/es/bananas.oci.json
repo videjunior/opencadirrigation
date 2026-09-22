@@ -6221,6 +6221,42 @@
       "scope": "mainline",
       "auto": true,
       "depth": 0.0
+    },
+    {
+      "type": "controller",
+      "id": "e53",
+      "layer": "CONTROLLERS",
+      "name": "Controlador",
+      "p": [
+        -26.0,
+        -14.0
+      ],
+      "st": 4,
+      "v": 24.0,
+      "cost": 1839.7224999999999
+    },
+    {
+      "type": "wire",
+      "id": "e54",
+      "layer": "WIRES",
+      "pts": [
+        [
+          -26.0,
+          -14.0
+        ],
+        [
+          -2.0,
+          -14.0
+        ],
+        [
+          -2.0,
+          30.0
+        ],
+        [
+          -2.0,
+          94.0
+        ]
+      ]
     }
   ],
   "systemFlows": [
@@ -6243,5 +6279,5 @@
       "dur": 3.0
     }
   ],
-  "nextId": 53
+  "nextId": 55
 }

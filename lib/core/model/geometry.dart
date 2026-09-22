@@ -147,6 +147,30 @@ bool pointInPolygon(Pt p, List<Pt> poly) {
   return inside;
 }
 
+/// Whether [p] lies on the outline of [poly], within [tol].
+bool pointOnPolygonBoundary(Pt p, List<Pt> poly, {double tol = 1e-6}) {
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    if (distanceToSegment(p, poly[j], poly[i]) <= tol) return true;
+  }
+  return false;
+}
+
+/// Whether a sprinkler at [p] waters the area [poly]: inside it, or on its
+/// outline (edge and corner heads sit on the boundary) with its arc, swept
+/// counter-clockwise from [orientationDeg], opening into the area. A full
+/// circle on the outline counts as inside.
+bool watersArea(Pt p, List<Pt> poly, {double arcDeg = 360, double orientationDeg = 0}) {
+  if (!pointOnPolygonBoundary(p, poly, tol: 0.01)) return pointInPolygon(p, poly);
+  if (arcDeg >= 360) return true;
+  // probes across the arc: at a corner the bisector can run along the
+  // other side of the area
+  for (final f in const [0.5, 0.25, 0.75]) {
+    final q = p + Pt.polar(0.1, degToRad(orientationDeg + arcDeg * f));
+    if (!pointOnPolygonBoundary(q, poly, tol: 0.01) && pointInPolygon(q, poly)) return true;
+  }
+  return false;
+}
+
 /// Point along a polyline at a given distance from its start.
 Pt pointAlongPolyline(List<Pt> pts, double distance) {
   if (pts.isEmpty) return Pt.zero;

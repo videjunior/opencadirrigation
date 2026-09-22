@@ -43,7 +43,7 @@ const _tr = SiteText(
     SiteExample('gravity', 'Cazibeli damla sulama', 'Damla sulamalı iki sebze bloğunun 40 m üstünde depo, pompasız: ana hatta sürgülü vana, basınç düşürücü vana ve disk filtre; yamaç eş yükselti eğrileri.'),
     SiteExample('pasture', 'Yağmurlama sulamalı mera', '12 × 18 m’de çarpmalı yağmurlayıcı hatlarıyla 72 × 72 m üç padok, vanalı manifoldlar, depo, pompa ve çekvalf.'),
     SiteExample('golf', 'Golf çukuru', 'Spreyli tee, üçgen ızgarada rotorlu fairway (iki bölge) ve kenarında rotorlu green, pompalı gölet ve gece vardiyaları.'),
-    SiteExample('sectorPivot', 'Uç tabancalı sektör pivotu', 'Çiftlik evi çeyreğini boş bırakarak 270° dönen soyada 250 m pivot, 12 m³/h uç tabancalı; gölet, 30 hp pompa ve sürgülü vana.'),
+    SiteExample('sectorPivot', 'Uç tabancalı sektör pivotu', 'Çiftlik evi çeyreğini boş bırakarak 270° dönen soyada 250 m pivot, 12 m³/h uç tabancalı; gölet, 20 hp pompa ve sürgülü vana.'),
     SiteExample('linear', 'Lineer sistem', 'Bir kanal boyunca 800 m ilerleyen buğdayda 392 m lineer makine, 30 hp pompalı ve çekvalfli su alma; kule ve meme raporu.'),
   ],
   faqTitle: 'Sık sorulan sorular',

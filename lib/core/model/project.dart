@@ -297,7 +297,8 @@ class Project {
   int get nextIdValue => _nextId;
 
   /// Multiplies every price of the project by [factor]: catalogue costs, the
-  /// energy tariff and the pivot machine and tower costs.
+  /// energy tariff, the pivot machine and tower costs and the controller
+  /// prices.
   void scalePrices(double factor) {
     if (factor == 1) return;
     scaleCatalogPrices(catalog, factor);
@@ -306,6 +307,8 @@ class Project {
       if (e is PivotEntity) {
         e.machineCost *= factor;
         e.towerCost *= factor;
+      } else if (e is ControllerEntity) {
+        e.cost *= factor;
       }
     }
   }
@@ -379,6 +382,13 @@ class Project {
   }
 
   Iterable<T> ofType<T extends Entity>() => entities.whereType<T>();
+
+  /// Whether the head [o] waters the area [poly] ([watersArea] with the arc
+  /// its nozzle really covers).
+  bool outletWatersArea(OutletEntity o, List<Pt> poly) {
+    final nz = catalog.outlet(o.outletSpecId)?.nozzle(o.nozzleId);
+    return watersArea(o.position, poly, arcDeg: nz?.effectiveArcDeg(o.arcDeg) ?? o.arcDeg, orientationDeg: o.orientationDeg);
+  }
 
   Bounds get bounds {
     var b = Bounds.empty;

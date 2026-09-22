@@ -43,7 +43,7 @@ const _sw = SiteText(
     SiteExample('gravity', 'Matone kwa nguvu ya uvutano', 'Hifadhi m 40 juu ya vitalu viwili vya mboga vya matone, bila pampu: vali ya lango, vali ya kupunguza shinikizo na chujio la diski kwenye bomba kuu; kontua za mlima.'),
     SiteExample('pasture', 'Malisho ya vinyunyizio', 'Mazizi matatu ya m 72 × 72 yenye mistari ya vinyunyizio vya mgongano kwa m 12 × 18, manifold zenye vali, hifadhi, pampu na vali ya kuzuia.'),
     SiteExample('golf', 'Shimo la gofu', 'Tii yenye vinyunyizio, fairway yenye rota kwenye gridi ya pembetatu (kanda mbili) na green yenye rota kuzunguka ukingo, bwawa lenye pampu na zamu za usiku.'),
-    SiteExample('sectorPivot', 'Pivoti ya sekta yenye bunduki ya mwisho', 'Pivoti ya m 250 kwenye soya inayozunguka 270°, ikiacha robo ya makazi ya shamba wazi, yenye bunduki ya mwisho ya m³/h 12; bwawa, pampu ya hp 30 na vali ya lango.'),
+    SiteExample('sectorPivot', 'Pivoti ya sekta yenye bunduki ya mwisho', 'Pivoti ya m 250 kwenye soya inayozunguka 270°, ikiacha robo ya makazi ya shamba wazi, yenye bunduki ya mwisho ya m³/h 12; bwawa, pampu ya hp 20 na vali ya lango.'),
     SiteExample('linear', 'Mashine ya mstari', 'Mashine ya mstari ya m 392 kwenye ngano inayosafiri m 800 kando ya mfereji, kuchukua maji kwa pampu ya hp 30 na vali ya kuzuia; ripoti ya minara na nozeli.'),
   ],
   faqTitle: 'Maswali yanayoulizwa mara kwa mara',

@@ -43,7 +43,7 @@ const _de = SiteText(
     SiteExample('gravity', 'Tropfbewässerung im Schwerkraftbetrieb', 'Ein Speicher 40 m über zwei tropfbewässerten Gemüseblöcken, ohne Pumpe: Absperrschieber, Druckminderer und Scheibenfilter an der Hauptleitung; Höhenlinien des Hangs.'),
     SiteExample('pasture', 'Weideberegnung', 'Drei Koppeln 72 × 72 m mit Schwinghebelregner-Leitungen im 12 × 18-m-Raster, Verteilleitungen mit Ventilen, Speicher, Pumpe und Rückschlagventil.'),
     SiteExample('golf', 'Golfloch', 'Abschlag mit Sprühdüsen, Fairway mit Getrieberegnern im Dreiecksraster (zwei Zonen) und Grün mit Regnern am Rand, Teich mit Pumpe und Nachtbetrieb.'),
-    SiteExample('sectorPivot', 'Sektorpivot mit Endregner', 'Ein 250-m-Pivot auf Sojabohnen, der 270° überstreicht und den Hofquadranten frei lässt, mit 12-m³/h-Endregner; Teich, 30-PS-Pumpe und Absperrschieber.'),
+    SiteExample('sectorPivot', 'Sektorpivot mit Endregner', 'Ein 250-m-Pivot auf Sojabohnen, der 270° überstreicht und den Hofquadranten frei lässt, mit 12-m³/h-Endregner; Teich, 20-PS-Pumpe und Absperrschieber.'),
     SiteExample('linear', 'Linearberegnung', 'Eine 392-m-Linearanlage auf Weizen, die 800 m entlang eines Kanals fährt, Entnahme mit 30-PS-Pumpe und Rückschlagventil; Turm- und Düsenbericht.'),
   ],
   faqTitle: 'Häufige Fragen',

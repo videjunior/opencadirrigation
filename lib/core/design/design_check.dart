@@ -209,7 +209,17 @@ DesignCheckReport runDesignCheck(Project project) {
   // ---- areas without emitters
   for (final a in ents.whereType<AreaEntity>()) {
     if (a.points.length < 3) continue;
-    final any = ents.any((e) => (e is OutletEntity && pointInPolygon(e.position, a.points)) || ((e is SpraylineEntity || e is TapeEntity) && (e as PolyEntity).points.any((p) => pointInPolygon(p, a.points))) || (e is PivotEntity && pointInPolygon(e.center, a.points)));
+    // laterals are sampled along their length: their ends often sit on the
+    // outline or outside it (a tape fed from a header beside the bed)
+    bool lateralInside(List<Pt> pts) {
+      if (pts.any((p) => pointInPolygon(p, a.points))) return true;
+      final total = polylineLength(pts);
+      for (var i = 0; i < 20; i++) {
+        if (pointInPolygon(pointAlongPolyline(pts, total * (i + 0.5) / 20), a.points)) return true;
+      }
+      return false;
+    }
+    final any = ents.any((e) => (e is OutletEntity && project.outletWatersArea(e, a.points)) || ((e is SpraylineEntity || e is TapeEntity) && lateralInside((e as PolyEntity).points)) || (e is PivotEntity && watersArea(e.center, a.points)));
     if (!any) issues.add(CheckIssue('area_no_emitters', CheckSeverity.info, entityIds: [a.id], value: a.name));
   }
   // ---- valve wiring (routes, stations, solenoid voltage), when drawn

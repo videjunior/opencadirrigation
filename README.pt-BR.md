@@ -115,8 +115,14 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 | `gravity` | Gotejamento por gravidade | Reservatório 40 m acima dos talhões, sem bomba: registro, válvula reguladora de pressão e filtro na adutora | 2 |
 | `pasture` | Pastagem em aspersão | Três piquetes com linhas de aspersores de impacto em 12 × 18 m, reservatório, bomba e válvula de retenção | 3 |
 | `golf` | Buraco de golfe | Tee com sprays, fairway com rotores em malha triangular e green com rotores no perímetro, lago e bomba | 4 |
-| `sectorPivot` | Pivô setorial com canhão | Pivô de 250 m que gira 270° com canhão final de 12 m³/h, lago, bomba de 30 cv e registro | 1 pivô |
+| `sectorPivot` | Pivô setorial com canhão | Pivô de 250 m que gira 270° com canhão final de 12 m³/h, lago, bomba de 20 cv e registro | 1 pivô |
 | `linear` | Pivô linear | Lateral móvel de 392 m percorrendo 800 m ao longo de um canal, captação com bomba de 30 cv | 1 linear |
+
+Todo exemplo com válvulas tem também a parte elétrica: um controlador junto à bomba (ou ao
+cabeçal de controle) e as rotas de fios ao lado da linha principal até cada válvula. O cálculo dá
+a cada válvula uma estação e uma bitola, verifica a tensão no solenoide e põe fios, controlador e
+conectores na lista de materiais (aba Elétrico). Os exemplos de pivô e linear não têm válvulas
+solenoides para ligar.
 
 Os exemplos abrem pela tela de boas-vindas (Ajuda → Boas-vindas e galeria de exemplos…), pelo
 menu Arquivo → Exemplos e pela URL. Os mesmos projetos estão em [examples/](examples/) como

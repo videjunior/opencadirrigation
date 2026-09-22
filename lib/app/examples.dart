@@ -88,6 +88,20 @@ Project _newProject(Tr t, String lang, {required String name, required String cl
 
 List<Pt> _rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
+/// Valve wiring: a controller with [stations] stations at [at] (by the pump
+/// or the control head, where there is power) and the wire [routes] from it.
+/// Each route starts on the controller or on a vertex of an earlier route
+/// and passes exactly through its valves; they run in the mainline trench,
+/// 1 m beside the pipe so the dashed line stays visible.
+void _addWiring(Project p, Tr t, Pt at, int stations, List<List<Pt>> routes) {
+  // controller prices in [catalogPriceCurrency]
+  const cost = {4: 550.0, 6: 650.0, 8: 900.0};
+  p.entities.add(ControllerEntity(id: p.newId(), position: at, name: t('name.controller'), stations: stations, cost: cost[stations] ?? 0));
+  for (final r in routes) {
+    p.entities.add(WireEntity(id: p.newId(), points: r));
+  }
+}
+
 // ---------------------------------------------------------------- orchard
 
 /// An orchard with a micro-sprinkler block and a drip block fed by a well
@@ -150,6 +164,12 @@ Project buildOrchardExample(Tr t, String lang) {
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.well'), calculatePressure: true, waterLevelOffsetM: -5));
   p.entities.add(PumpEntity(id: p.newId(), position: Pt(well.x + 3, -8), pumpSpecId: 'pump_c5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: Pt(well.x + 8, -8), valveSpecId: 'filter_screen80'));
+  // valve wiring: controller by the pump, routes beside the mainline
+  final ctrl = Pt(well.x + 3, -12), junction = Pt(va.x - 1, -9);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, Pt(ctrl.x, -9), junction, Pt(va.x - 1, va.y), va],
+    [junction, Pt(vb.x - 1, -9), Pt(vb.x - 1, vb.y), vb],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.flow1'), valveIds: {a.valve!.id}, startHour: 6, durationHours: 3),
     SystemFlow(id: 'sf2', name: t('ex.flow2'), valveIds: {b.valve!.id}, startHour: 9, durationHours: 4),
@@ -262,9 +282,10 @@ Project buildGardenExample(Tr t, String lang) {
   }
   // valve wiring: a 6-station controller on the side wall, routes along the valves
   const ctrl = Pt(-1, 14);
-  p.entities.add(ControllerEntity(id: p.newId(), position: ctrl, name: t('name.controller'), stations: 6, cost: 650));
-  p.entities.add(WireEntity(id: p.newId(), points: [ctrl, v3.position, v1.position]));
-  p.entities.add(WireEntity(id: p.newId(), points: [ctrl, v2.position]));
+  _addWiring(p, t, ctrl, 6, [
+    [ctrl, v3.position, v1.position],
+    [ctrl, v2.position],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': z1}), valveIds: {v1.id}, startHour: 5, durationHours: 0.5),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': z2}), valveIds: {v2.id}, startHour: 5.5, durationHours: 0.75),
@@ -331,6 +352,11 @@ Project buildSportsFieldExample(Tr t, String lang) {
   p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c7_5'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: check, valveSpecId: 'check100'));
   p.entities.add(PipeEntity(id: p.newId(), points: [tank, pump, check, for (final y in rows) Pt(-6, y)], scope: HydraulicScope.mainline, name: t('ex.f.main')));
+  // valve wiring: controller in the pump house, one route through the valves
+  const ctrl = Pt(-10, -16);
+  _addWiring(p, t, ctrl, 6, [
+    [ctrl, Pt(valves.first.position.x, ctrl.y), for (final v in valves) v.position],
+  ]);
   for (var i = 0; i < valves.length; i++) {
     p.systemFlows.add(SystemFlow(id: 'sf${i + 1}', name: t('ex.shift', {'n': '${i + 1}', 'z': valves[i].zoneName}), valveIds: {valves[i].id}, startHour: (21 + i) % 24, durationHours: 1));
   }
@@ -408,6 +434,13 @@ Project buildRowCropExample(Tr t, String lang) {
   for (final v in east) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(v.x + 4, v.y), v], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: controller by the filter, routes 1 m north of the mainline
+  // and up the valve lines of both sides
+  const ctrl = Pt(128, -24), junction = Pt(128, -5);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, junction, Pt(west[0].x, junction.y), ...west],
+    [junction, Pt(east[0].x, junction.y), ...east],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': '${valves[0].zoneName} + ${valves[3].zoneName}'}), valveIds: {valves[0].id, valves[3].id}, startHour: 6, durationHours: 5),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': '${valves[1].zoneName} + ${valves[2].zoneName}'}), valveIds: {valves[1].id, valves[2].id}, startHour: 11, durationHours: 5),
@@ -418,11 +451,12 @@ Project buildRowCropExample(Tr t, String lang) {
 // ---------------------------------------------------------------- centre pivot
 
 /// A 300 m centre pivot on maize fed by a well, a pump and a 340 m mainline,
-/// on a 0.4 % slope.
+/// on a 0.4 % slope. The machine applies 8.5 mm a day, the peak demand of
+/// the maize (ETo 6 mm × Kc 1.15 at 85 % efficiency) in under 23 hours.
 Project buildPivotExample(Tr t, String lang) {
   final p = _newProject(t, lang, name: 'ex.p.name', client: 'ex.p.client', site: 'ex.p.site');
   const centre = Pt(400, 400);
-  const radius = 300.0;
+  const radius = 300.0, endThrow = 8.0;
   // terrain: 0.4 % rise northwards (straight contours) and spot heights at the corners
   for (var i = 0; i <= 4; i++) {
     final y = 200.0 * i;
@@ -435,7 +469,8 @@ Project buildPivotExample(Tr t, String lang) {
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(60, 430), kind: SymbolKind.pumpHouse, size: 8));
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(40, 400), kind: SymbolKind.well, size: 6));
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(20, 380), text: t('ex.p.well'), height: 6));
-  final circle = [for (var i = 0; i < 48; i++) centre + Pt.polar(radius, 2 * math.pi * i / 48)];
+  // the irrigated field reaches the throw of the end sprinklers
+  final circle = [for (var i = 0; i < 48; i++) centre + Pt.polar(radius + endThrow, 2 * math.pi * i / 48)];
   p.entities.add(AreaEntity(id: p.newId(), points: circle, name: t('ex.p.field'), crop: t('ex.p.maize'), netDepthMmPerDay: 6, efficiency: 0.85, useWaterBalance: true, etoMmDay: 6, kc: 1.15, awcMmPerM: 120, rootDepthM: 0.6, mad: 0.5));
 
   const well = Pt(60, 400), pump = Pt(66, 400), gate = Pt(72, 400);
@@ -443,7 +478,11 @@ Project buildPivotExample(Tr t, String lang) {
   // deep well (water 25 m down): submersible pump, a surface pump could not lift it
   p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_s30'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: gate, valveSpecId: 'gate100'));
-  p.entities.add(PipeEntity(id: p.newId(), points: [well, pump, gate, centre], scope: HydraulicScope.mainline, name: t('ex.p.adductor')));
+  // the column in the well (pump discharge, 60 m of pressure, a few metres
+  // long) is a pipe of its own: the surface mainline runs at about 30 m and
+  // is the one the water-hammer check must judge
+  p.entities.add(PipeEntity(id: p.newId(), points: [well, pump, gate], scope: HydraulicScope.mainline, name: t('ex.riser')));
+  p.entities.add(PipeEntity(id: p.newId(), points: [gate, centre], scope: HydraulicScope.mainline, name: t('ex.p.adductor')));
   final name = t('ex.p.pivot');
   p.entities.add(PivotEntity(
     id: p.newId(),
@@ -452,10 +491,10 @@ Project buildPivotExample(Tr t, String lang) {
     angleDeg: 30,
     kind: PivotKind.pivot,
     spanLengthM: 50,
-    grossDepthMm: 8,
+    grossDepthMm: 8.5,
     hoursPerCycle: 24,
     endPressureM: 14,
-    endThrowM: 8,
+    endThrowM: endThrow,
     name: name,
     zoneName: name,
     sprinklerSpacingM: 2.5,
@@ -517,6 +556,11 @@ Project buildGreenhouseExample(Tr t, String lang) {
   for (final v in valves) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(v.position.x, -6), v.position], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: controller by the pump, one route along the tunnel fronts
+  const ctrl = Pt(-5, -10);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, Pt(ctrl.x, valves.first.position.y), for (final v in valves) v.position],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': '${valves[0].zoneName} + ${valves[1].zoneName}'}), valveIds: {valves[0].id, valves[1].id}, startHour: 7, durationHours: 1),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': '${valves[2].zoneName} + ${valves[3].zoneName}'}), valveIds: {valves[2].id, valves[3].id}, startHour: 8, durationHours: 1),
@@ -589,6 +633,11 @@ Project buildCoffeeExample(Tr t, String lang) {
   for (final v in valves) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-8, v.position.y), v.position], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: controller in the pump house, one route up the valve line
+  const ctrl = Pt(-12, -14);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, Pt(valves.first.position.x, ctrl.y), for (final v in valves) v.position],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': '${valves[0].zoneName} + ${valves[1].zoneName}'}), valveIds: {valves[0].id, valves[1].id}, startHour: 6, durationHours: 4),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': valves[2].zoneName}), valveIds: {valves[2].id}, startHour: 10, durationHours: 4),
@@ -656,6 +705,13 @@ Project buildPastureExample(Tr t, String lang) {
   for (final v in valves) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(v.position.x, -12), v.position], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: controller by the pump, a route 1 m north of the mainline
+  // and a branch beside every stub, reaching its valve from the west
+  const ctrl = Pt(-20, -20);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, Pt(ctrl.x, -11), for (final v in valves) Pt(v.position.x - 1, -11)],
+    for (final v in valves) [Pt(v.position.x - 1, -11), Pt(v.position.x - 1, v.position.y), v.position],
+  ]);
   for (var i = 0; i < valves.length; i++) {
     p.systemFlows.add(SystemFlow(id: 'sf${i + 1}', name: t('ex.shift', {'n': '${i + 1}', 'z': valves[i].zoneName}), valveIds: {valves[i].id}, startHour: 20.0 + 2 * i, durationHours: 2));
   }
@@ -758,6 +814,15 @@ Project buildGolfExample(Tr t, String lang) {
   p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-6, mA), Pt(-4, mA)], scope: HydraulicScope.mainline, name: t('name.stub')));
   p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-6, mB), Pt(-4, mB)], scope: HydraulicScope.mainline, name: t('name.stub')));
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(145, -20), const Pt(145, 15)], scope: HydraulicScope.mainline, name: t('name.stub')));
+  // valve wiring: controller by the pump house, routes 1 m south of the
+  // header; up the fairway valve line, beside the tee and green stubs
+  const ctrl = Pt(50, -26), junction = Pt(50, -21);
+  final fw = fairwayValves.first.position;
+  _addWiring(p, t, ctrl, 6, [
+    [ctrl, junction, Pt(fw.x, junction.y), for (final v in fairwayValves) v.position],
+    [Pt(fw.x, junction.y), Pt(vt.position.x - 1, junction.y), Pt(vt.position.x - 1, vt.position.y), vt.position],
+    [junction, Pt(vg.position.x + 1, junction.y), Pt(vg.position.x + 1, vg.position.y), vg.position],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': '$zg + $zt'}), valveIds: {vg.id, vt.id}, startHour: 22, durationHours: 0.5),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': fairwayValves[0].zoneName}), valveIds: {fairwayValves[0].id}, startHour: 22.5, durationHours: 0.75),
@@ -820,8 +885,15 @@ Project buildNurseryExample(Tr t, String lang) {
   for (final v in valves) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(v.position.x, -6), v.position], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: controller by the pump, one route along the bed fronts
+  const ctrl = Pt(-6, -10);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, Pt(ctrl.x, valves.first.position.y), for (final v in valves) v.position],
+  ]);
   for (var i = 0; i < valves.length; i++) {
-    p.systemFlows.add(SystemFlow(id: 'sf${i + 1}', name: t('ex.shift', {'n': '${i + 1}', 'z': valves[i].zoneName}), valveIds: {valves[i].id}, startHour: 6 + 0.5 * i, durationHours: 0.5));
+    // 1.5 h a day per bed: the programme asks for 1.43 h (6.25 mm gross at
+    // 4.4 mm/h)
+    p.systemFlows.add(SystemFlow(id: 'sf${i + 1}', name: t('ex.shift', {'n': '${i + 1}', 'z': valves[i].zoneName}), valveIds: {valves[i].id}, startHour: 6 + 1.5 * i, durationHours: 1.5));
   }
   return p;
 }
@@ -890,6 +962,13 @@ Project buildSugarcaneExample(Tr t, String lang) {
   p.entities.add(PipeEntity(id: p.newId(), points: [Pt(vw.x - 4, vw.y), vw], scope: HydraulicScope.mainline, name: t('name.stub'), depth: 0.8));
   p.entities.add(PipeEntity(id: p.newId(), points: [tee, Pt(ve.x + 4, -6), Pt(ve.x + 4, ve.y)], scope: HydraulicScope.mainline, name: t('ex.sc.east'), depth: 0.8));
   p.entities.add(PipeEntity(id: p.newId(), points: [Pt(ve.x + 4, ve.y), ve], scope: HydraulicScope.mainline, name: t('name.stub'), depth: 0.8));
+  // valve wiring: controller at the control head, buried routes 1 m north
+  // of the mainline to both valves
+  const ctrl = Pt(188, -26), junction = Pt(188, -5);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, junction, Pt(vw.x, junction.y), vw],
+    [junction, Pt(ve.x, junction.y), ve],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': valves[0].zoneName}), valveIds: {valves[0].id}, startHour: 6, durationHours: 6),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': valves[1].zoneName}), valveIds: {valves[1].id}, startHour: 12, durationHours: 6),
@@ -959,6 +1038,13 @@ Project buildGravityExample(Tr t, String lang) {
   p.entities.add(PipeEntity(id: p.newId(), points: [Pt(vw.x - 4, vw.y), vw], scope: HydraulicScope.mainline, name: t('name.stub')));
   p.entities.add(PipeEntity(id: p.newId(), points: [tee, Pt(ve.x + 4, -6), Pt(ve.x + 4, ve.y)], scope: HydraulicScope.mainline, name: t('ex.gr.east')));
   p.entities.add(PipeEntity(id: p.newId(), points: [Pt(ve.x + 4, ve.y), ve], scope: HydraulicScope.mainline, name: t('name.stub')));
+  // valve wiring: controller by the filter at the foot of the slope, routes
+  // 1 m north of the mainline to both valves
+  const ctrl = Pt(106, -12), junction = Pt(106, -5);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, junction, Pt(vw.x, junction.y), vw],
+    [junction, Pt(ve.x, junction.y), ve],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': valves[0].zoneName}), valveIds: {valves[0].id}, startHour: 6, durationHours: 3),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': valves[1].zoneName}), valveIds: {valves[1].id}, startHour: 9, durationHours: 3),
@@ -1021,6 +1107,11 @@ Project buildBananaExample(Tr t, String lang) {
   for (final v in valves) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-6, v.position.y), v.position], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
+  // valve wiring: controller by the well head, one route up the valve line
+  const ctrl = Pt(-26, -14);
+  _addWiring(p, t, ctrl, 4, [
+    [ctrl, Pt(valves.first.position.x, ctrl.y), for (final v in valves) v.position],
+  ]);
   p.systemFlows.addAll([
     SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': valves[0].zoneName}), valveIds: {valves[0].id}, startHour: 6, durationHours: 3),
     SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': valves[1].zoneName}), valveIds: {valves[1].id}, startHour: 9, durationHours: 3),
@@ -1031,7 +1122,7 @@ Project buildBananaExample(Tr t, String lang) {
 // ---------------------------------------------------------------- sector pivot with end gun
 
 /// A 250 m pivot on soybean sweeping 270° so that the farmstead quadrant
-/// stays free, with a 12 m³/h end gun; a pond, a 30 hp pump and a gate valve.
+/// stays free, with a 12 m³/h end gun; a pond, a 20 hp pump and a gate valve.
 Project buildSectorPivotExample(Tr t, String lang) {
   final p = _newProject(t, lang, name: 'ex.sp.name', client: 'ex.sp.client', site: 'ex.sp.site');
   const centre = Pt(320, 320);
@@ -1073,9 +1164,13 @@ Project buildSectorPivotExample(Tr t, String lang) {
   ));
   const pond = Pt(480, 160), pump = Pt(505, 160), gate = Pt(515, 160);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: pond, name: t('ex.sp.pond'), calculatePressure: true, waterLevelOffsetM: -1.5));
-  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_big'));
+  // 64 m³/h at about 45 m: a 20 hp pump near its best efficiency (a 30 hp
+  // one would leave 19 m of surplus pressure on the mainline)
+  p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_c20'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: gate, valveSpecId: 'gate100'));
-  p.entities.add(PipeEntity(id: p.newId(), points: [pond, pump, gate, const Pt(430, 240), centre], scope: HydraulicScope.mainline, name: t('ex.sp.adductor')));
+  // DN 150 rather than the cheapest DN 125: at 1.1 m/s the water hammer of a
+  // stop stays within PN 80 with a margin
+  p.entities.add(PipeEntity(id: p.newId(), points: [pond, pump, gate, const Pt(430, 240), centre], scope: HydraulicScope.mainline, name: t('ex.sp.adductor'), pipeSpecId: 'pvc150', computerSized: false));
   return p;
 }
 

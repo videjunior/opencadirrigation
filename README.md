@@ -117,8 +117,13 @@ students. The interactive tutorial and the example gallery let you start without
 | `gravity` | Gravity-fed drip | Reservoir 40 m above the blocks, no pump: gate valve, pressure-reducing valve and filter on the mainline | 2 |
 | `pasture` | Sprinkler-irrigated pasture | Three paddocks with impact-sprinkler lines at 12 × 18 m, reservoir, pump and check valve | 3 |
 | `golf` | Golf hole | Tee with sprays, fairway with rotors on a triangular grid and green with rotors around the edge, pond and pump | 4 |
-| `sectorPivot` | Sector pivot with end gun | 250 m pivot sweeping 270° with a 12 m³/h end gun, pond, 30 hp pump and gate valve | 1 pivot |
+| `sectorPivot` | Sector pivot with end gun | 250 m pivot sweeping 270° with a 12 m³/h end gun, pond, 20 hp pump and gate valve | 1 pivot |
 | `linear` | Linear move | 392 m lateral-move machine travelling 800 m along a canal, intake with a 30 hp pump | 1 linear |
+
+Every example with valves also has its electrical part: a controller by the pump (or the control
+head) and the wire routes beside the mainline to every valve. The design gives each valve a station
+and a wire size, checks the solenoid voltage and adds wires, controller and connectors to the bill
+of materials (Electrical tab). The pivot and linear examples have no solenoid valves to wire.
 
 Examples open from the welcome screen (Help → Welcome and example gallery…), from the File →
 Examples menu and from the URL. The same projects are in [examples/](examples/) as `.oci.json`

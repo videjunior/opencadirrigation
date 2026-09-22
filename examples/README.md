@@ -19,7 +19,7 @@ names them in English (`en/`).
 | `garden` | Residential garden — 3 zones · 640 m² · mains supply | Pop-up sprays on the front lawn, rotors at the back and drip in the beds, fed by the mains with a meter and a backflow preventer. |
 | `sportsField` | Football pitch — 5 zones · 40 sprinklers · pump | Full-size 105 × 68 m pitch with impact sprinklers in five rows, reservoir, pump and night-time shifts. |
 | `rowCrop` | Drip row crop — 4 zones · 2.9 ha · filter + pump | Four tomato blocks on drip tape, submains with valves, screen filter, pump and sloping ground. |
-| `pivot` | Centre pivot — 1 pivot · 28 ha · well + pump | A 300 m pivot on maize fed by a mainline, well and pump; tower, span and sprinkler report. |
+| `pivot` | Centre pivot — 1 pivot · 30 ha · well + pump | A 300 m pivot on maize fed by a mainline, well and pump; tower, span and sprinkler report. |
 | `greenhouse` | Vegetable greenhouse — 4 zones · 1,800 m² · tank + pump | Four pepper tunnels on pressure-compensating dripline, one zone per tunnel, tank, small pump and disc filter. |
 | `nursery` | Plant nursery — 3 zones · 108 micro-sprinklers · pump | Three 12 × 48 m beds under overhead micro-sprinklers on a 4 × 4 m grid, one zone per bed, elevated tank, small pump and disc filter. |
 | `coffee` | Coffee on contour lines — 3 zones · 2.7 ha · well + pump | Three coffee blocks on a hillside with curved laterals following the contours (guided block), PC dripline, well and pump at the foot of the slope. |
@@ -28,5 +28,5 @@ names them in English (`en/`).
 | `gravity` | Gravity-fed drip — 2 zones · 1.2 ha · no pump | A reservoir 40 m above two drip-irrigated vegetable blocks, no pump: gate valve, pressure reducing valve and disc filter on the mainline; hillside contours. |
 | `pasture` | Sprinkler-irrigated pasture — 3 zones · 1.6 ha · 72 sprinklers | Three 72 × 72 m paddocks with impact-sprinkler spray lines at 12 × 18 m, submains with valves, reservoir, pump and check valve. |
 | `golf` | Golf hole — 4 zones · 64 heads · pond + pump | Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts. |
-| `sectorPivot` | Sector pivot with end gun — 1 pivot · 15.7 ha · pond + pump | A 250 m pivot on soybean sweeping 270°, leaving the farmstead quadrant free, with a 12 m³/h end gun; pond, 30 hp pump and gate valve. |
+| `sectorPivot` | Sector pivot with end gun — 1 pivot · 15.7 ha · pond + pump | A 250 m pivot on soybean sweeping 270°, leaving the farmstead quadrant free, with a 12 m³/h end gun; pond, 20 hp pump and gate valve. |
 | `linear` | Linear move — 1 linear · 32 ha · canal + pump | A 392 m lateral-move machine on wheat travelling 800 m along a canal, intake with a 30 hp pump and check valve; tower and sprinkler report. |

@@ -6,6 +6,7 @@ library;
 import 'dart:math' as math;
 
 import '../model/entities.dart';
+import '../model/geometry.dart';
 import '../model/project.dart';
 import 'designer.dart';
 import 'results.dart';
@@ -135,26 +136,33 @@ class ControllerProgram {
   }
 }
 
-/// Areas whose polygon contains the outlets/laterals of the zone of [valveId].
+/// Areas that hold at least a fifth of the emitters of the zone of [valveId]
+/// (by emitter count, so a zone shared by a few beds belongs to each of them
+/// and an area it only grazes is left out; heads on an area's outline count
+/// when their arc opens into it).
 List<AreaEntity> areasOfZone(Project project, DesignResults results, String valveId) {
   final z = results.zones[valveId];
   if (z == null || z.outlets.isEmpty) return const [];
+  final heads = {for (final e in project.entities) if (e is OutletEntity) e.id: e};
+  final total = z.outlets.fold(0, (s, o) => s + o.count);
   final out = <AreaEntity>[];
   for (final a in project.entities.whereType<AreaEntity>()) {
     if (a.points.length < 3) continue;
     var inside = 0;
     for (final o in z.outlets) {
-      if (pointInPolygonSafe(o.p, a.points)) inside++;
+      final head = heads[o.entityId];
+      if (head != null ? project.outletWatersArea(head, a.points) : watersArea(o.p, a.points)) inside += o.count;
     }
-    if (inside * 2 >= z.outlets.length) out.add(a);
+    if (inside * 5 >= total) out.add(a);
   }
   return out;
 }
 
 /// Builds the controller programme: each system flow runs for the longest
 /// event time of the areas its zones irrigate, every interval days, starting
-/// at [startDate] for [days] days. Flows run one after another from
-/// [dayStartHour], or at their own start hour when [keepStartHours].
+/// at [startDate] for [days] days (flows that run every few days start on
+/// staggered days so that they do not pile up). Flows run one after another
+/// from [dayStartHour], or at their own start hour when [keepStartHours].
 ControllerProgram buildControllerProgram(Project project, DesignResults? results, {DateTime? startDate, int days = 14, double dayStartHour = 6, bool keepStartHours = false}) {
   final warnings = <String>[];
   final crops = {for (final c in cropWaterRequirements(project, results)) c.areaId: c};
@@ -190,6 +198,31 @@ ControllerProgram buildControllerProgram(Project project, DesignResults? results
     intervalOf[f.id] = interval;
     zoneNames[f.id] = names;
   }
+  // A flow that runs every few days starts on the day that keeps the busiest
+  // of its days lightest: all of them on the first day would stack up (two
+  // 20-hour events on one day although the next days are free).
+  final load = List<double>.filled(math.max(days, 0), 0);
+  final offset = <String, int>{};
+  for (final f in flows) {
+    final interval = math.max(1, intervalOf[f.id]!.round());
+    final dur = math.max(perFlow[f.id]!, 0.0);
+    var best = 0;
+    var bestPeak = double.infinity;
+    for (var o = 0; o < math.min(interval, days); o++) {
+      var peak = 0.0;
+      for (var d = o; d < days; d += interval) {
+        peak = math.max(peak, load[d] + dur);
+      }
+      if (peak < bestPeak - 1e-9) {
+        bestPeak = peak;
+        best = o;
+      }
+    }
+    offset[f.id] = best;
+    for (var d = best; d < days; d += interval) {
+      load[d] += dur;
+    }
+  }
   final entries = <ScheduleEntry>[];
   final start = startDate ?? DateTime.now();
   final day0 = DateTime(start.year, start.month, start.day);
@@ -198,7 +231,7 @@ ControllerProgram buildControllerProgram(Project project, DesignResults? results
     var cursor = dayStartHour;
     for (final f in flows) {
       final interval = intervalOf[f.id]!.round();
-      if (interval > 1 && d % interval != 0) continue;
+      if (interval > 1 && (d - offset[f.id]!) % interval != 0) continue;
       final dur = perFlow[f.id]!;
       if (dur <= 0) continue;
       final startH = keepStartHours ? f.startHour : cursor;

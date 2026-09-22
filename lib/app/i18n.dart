@@ -1646,7 +1646,7 @@ const _table = <String, (String, String, String)>{
   'exg.rowCrop.tags': ('4 zonas · 2,9 ha · filtro + bomba', '4 zones · 2.9 ha · filter + pump', '4 zonas · 2,9 ha · filtro + bomba'),
   'exg.pivot.title': ('Pivô central', 'Centre pivot', 'Pivote central'),
   'exg.pivot.sub': ('Pivô de 300 m em milho alimentado por adutora, poço e bomba; relatório de torres, vãos e bocais.', 'A 300 m pivot on maize fed by a mainline, well and pump; tower, span and sprinkler report.', 'Pivote de 300 m en maíz alimentado por conducción, pozo y bomba; informe de torres, tramos y boquillas.'),
-  'exg.pivot.tags': ('1 pivô · 28 ha · poço + bomba', '1 pivot · 28 ha · well + pump', '1 pivote · 28 ha · pozo + bomba'),
+  'exg.pivot.tags': ('1 pivô · 30 ha · poço + bomba', '1 pivot · 30 ha · well + pump', '1 pivote · 30 ha · pozo + bomba'),
   'ex.shift': ('Turno {n} — {z}', 'Shift {n} — {z}', 'Turno {n} — {z}'),
   // residential garden
   'ex.g.name': ('Jardim residencial', 'Residential garden', 'Jardín residencial'),
@@ -1727,7 +1727,7 @@ const _table = <String, (String, String, String)>{
   'exg.golf.sub': ('Tee com sprays, fairway com rotores em malha triangular (duas zonas) e green com rotores no perímetro, lago com bomba e turnos noturnos.', 'Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts.', 'Tee con difusores, fairway con rotores en malla triangular (dos zonas) y green con rotores en el perímetro, laguna con bomba y turnos nocturnos.'),
   'exg.golf.tags': ('4 zonas · 64 emissores · lago + bomba', '4 zones · 64 heads · pond + pump', '4 zonas · 64 emisores · laguna + bomba'),
   'exg.sectorPivot.title': ('Pivô setorial com canhão', 'Sector pivot with end gun', 'Pivote sectorial con cañón'),
-  'exg.sectorPivot.sub': ('Pivô de 250 m em soja que gira 270°, deixando livre o quadrante da sede, com canhão final de 12 m³/h; lago, bomba de 30 cv e registro.', 'A 250 m pivot on soybean sweeping 270°, leaving the farmstead quadrant free, with a 12 m³/h end gun; pond, 30 hp pump and gate valve.', 'Pivote de 250 m en soja que gira 270°, dejando libre el cuadrante del casco, con cañón final de 12 m³/h; laguna, bomba de 30 CV y válvula de compuerta.'),
+  'exg.sectorPivot.sub': ('Pivô de 250 m em soja que gira 270°, deixando livre o quadrante da sede, com canhão final de 12 m³/h; lago, bomba de 20 cv e registro.', 'A 250 m pivot on soybean sweeping 270°, leaving the farmstead quadrant free, with a 12 m³/h end gun; pond, 20 hp pump and gate valve.', 'Pivote de 250 m en soja que gira 270°, dejando libre el cuadrante del casco, con cañón final de 12 m³/h; laguna, bomba de 20 CV y válvula de compuerta.'),
   'exg.sectorPivot.tags': ('1 pivô · 15,7 ha · lago + bomba', '1 pivot · 15.7 ha · pond + pump', '1 pivote · 15,7 ha · laguna + bomba'),
   'exg.linear.title': ('Pivô linear', 'Linear move', 'Pivote lineal'),
   'exg.linear.sub': ('Lateral móvel de 392 m em trigo percorrendo 800 m ao longo de um canal, captação com bomba de 30 cv e válvula de retenção; relatório de torres e bocais.', 'A 392 m lateral-move machine on wheat travelling 800 m along a canal, intake with a 30 hp pump and check valve; tower and sprinkler report.', 'Lateral de avance frontal de 392 m en trigo que recorre 800 m a lo largo de un canal, toma con bomba de 30 CV y válvula de retención; informe de torres y boquillas.'),
