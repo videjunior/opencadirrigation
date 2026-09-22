@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _vi = SiteText(
   title: 'OpenCADIrrigation: CAD thiết kế tưới ngay trên trình duyệt',
-  description: 'CAD miễn phí để thiết kế tưới có áp ngay trên trình duyệt: tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, tính toán thủy lực, bảng kê vật tư, DXF/DWG, PDF và Excel.',
+  description: 'CAD miễn phí thiết kế tưới trên trình duyệt: tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, tính toán thủy lực, bảng kê vật tư, DXF/DWG và PDF.',
   keywords: 'thiết kế tưới, phần mềm tưới, CAD tưới, tưới có áp, tưới nhỏ giọt, béc phun mini, tưới phun mưa, pivot trung tâm, tính toán thủy lực, chọn đường kính ống, độ đồng đều tưới, DXF, DWG, tưới sân vườn, tưới nông nghiệp, phần mềm tưới miễn phí',
   h1: 'CAD miễn phí để thiết kế hệ thống tưới có áp',
   tagline: 'Vẽ, tính toán kích thước và lập hồ sơ cho hệ thống tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm. Ngay trên trình duyệt, không cần cài đặt, dự án được lưu trên máy tính của bạn.',

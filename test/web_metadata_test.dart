@@ -70,8 +70,13 @@ void main() {
     // title and description lengths search engines display in full
     final title = RegExp(r'<title>(.*?)</title>').firstMatch(html)!.group(1)!;
     expect(title.length, inInclusiveRange(30, 65), reason: title);
-    final desc = RegExp(r'<meta name="description" content="(.*?)">').firstMatch(html)!.group(1)!;
-    expect(desc.length, inInclusiveRange(80, 230), reason: desc);
+    // search results cut the snippet at about 160 characters: every language fits
+    for (final l in siteLanguages) {
+      final page = File('web/${l.file}').readAsStringSync();
+      final desc = RegExp(r'<meta name="description" content="(.*?)">').firstMatch(page)!.group(1)!;
+      final text = desc.replaceAll('&amp;', '&').replaceAll('&quot;', '"');
+      expect(text.length, inInclusiveRange(50, 160), reason: '${l.code}: $text');
+    }
   });
 
   test('the page body is real, readable content for crawlers and non-JS visitors', () {

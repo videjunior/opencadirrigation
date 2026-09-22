@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _id = SiteText(
   title: 'OpenCADIrrigation: CAD desain irigasi di peramban',
-  description: 'CAD gratis untuk desain irigasi bertekanan di peramban: irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, perhitungan hidraulik, daftar material, DXF/DWG, PDF dan Excel.',
+  description: 'CAD gratis desain irigasi di peramban: irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, perhitungan hidraulik, daftar material dan DXF/DWG.',
   keywords: 'desain irigasi, perangkat lunak irigasi, CAD irigasi, irigasi bertekanan, irigasi tetes, mikro sprinkler, irigasi sprinkler, pivot tengah, perhitungan hidraulik, dimensi pipa, keseragaman irigasi, DXF, DWG, irigasi taman, irigasi pertanian, software irigasi gratis',
   h1: 'CAD gratis untuk desain irigasi bertekanan',
   tagline: 'Gambar, hitung ukuran dan dokumentasikan sistem irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah. Langsung di peramban, tanpa instalasi, dengan proyek tersimpan di komputer Anda sendiri.',

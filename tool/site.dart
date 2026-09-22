@@ -190,7 +190,7 @@ class SiteText {
 
 const _pt = SiteText(
   title: 'OpenCADIrrigation: CAD de projeto de irrigação no navegador',
-  description: 'CAD gratuito para projeto de irrigação pressurizada no navegador: gotejamento, microaspersão, aspersão e pivô central, dimensionamento hidráulico, lista de materiais, DXF/DWG, PDF e Excel.',
+  description: 'CAD gratuito de projeto de irrigação no navegador: gotejamento, microaspersão, aspersão e pivô central, cálculo hidráulico, lista de materiais e DXF/DWG.',
   keywords: 'projeto de irrigação, CAD irrigação, software de irrigação, irrigação pressurizada, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
   h1: 'CAD gratuito para projeto de irrigação pressurizada',
   tagline: 'Desenhe, dimensione e documente sistemas de gotejamento, microaspersão, aspersão e pivô central. Direto no navegador, sem instalar nada, com os projetos guardados no seu computador.',
@@ -259,7 +259,7 @@ const _pt = SiteText(
 
 const _en = SiteText(
   title: 'OpenCADIrrigation: browser-based irrigation design CAD',
-  description: 'Free CAD for pressurised irrigation design in the browser: drip, micro-sprinklers, sprinklers and centre pivots, hydraulic sizing, bill of materials, DXF/DWG, PDF and Excel.',
+  description: 'Free browser CAD for irrigation design: drip, micro-sprinklers, sprinklers and centre pivots, hydraulic pipe sizing, bill of materials, DXF/DWG and PDF.',
   keywords: 'irrigation design software, irrigation CAD, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
   h1: 'Free CAD for pressurised irrigation design',
   tagline: 'Draw, size and document drip, micro-sprinkler, sprinkler and centre-pivot systems. Right in the browser, nothing to install, with your projects kept on your own computer.',
@@ -328,7 +328,7 @@ const _en = SiteText(
 
 const _es = SiteText(
   title: 'OpenCADIrrigation: CAD de diseño de riego en el navegador',
-  description: 'CAD gratuito para diseño de riego presurizado en el navegador: goteo, microaspersión, aspersión y pivote central, dimensionamiento hidráulico, lista de materiales, DXF/DWG, PDF y Excel.',
+  description: 'CAD gratuito para diseño de riego en el navegador: goteo, microaspersión, aspersión y pivote central, cálculo hidráulico, lista de materiales y DXF/DWG.',
   keywords: 'diseño de riego, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
   h1: 'CAD gratuito para diseño de riego presurizado',
   tagline: 'Dibuje, dimensione y documente sistemas de goteo, microaspersión, aspersión y pivote central. Directamente en el navegador, sin instalar nada, con los proyectos guardados en su propio equipo.',

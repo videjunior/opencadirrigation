@@ -2,7 +2,7 @@ part of '../site.dart';
 
 const _sw = SiteText(
   title: 'OpenCADIrrigation: CAD ya usanifu wa umwagiliaji kivinjarini',
-  description: 'CAD ya bure kwa usanifu wa umwagiliaji wa shinikizo kwenye kivinjari: matone, vinyunyizio vidogo, vinyunyizio na pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa, DXF/DWG, PDF na Excel.',
+  description: 'CAD ya bure ya usanifu wa umwagiliaji kivinjarini: matone, vinyunyizio na pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa na DXF/DWG.',
   keywords: 'usanifu wa umwagiliaji, programu ya umwagiliaji, CAD umwagiliaji, umwagiliaji wa shinikizo, umwagiliaji wa matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, vipimo vya mabomba, usawa wa umwagiliaji, DXF, DWG, umwagiliaji wa bustani, umwagiliaji wa kilimo',
   h1: 'CAD ya bure kwa usanifu wa umwagiliaji wa shinikizo',
   tagline: 'Chora, pima ukubwa na uandike nyaraka za mifumo ya matone, vinyunyizio vidogo, vinyunyizio na pivoti ya kati. Moja kwa moja kwenye kivinjari, bila kusakinisha chochote, na miradi yako ikibaki kwenye kompyuta yako.',
