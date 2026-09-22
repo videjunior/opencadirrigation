@@ -70,9 +70,9 @@ Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson
 2. **Background**: import a DXF, DWG, KML/KMZ, shapefile, survey CSV, GeoTIFF or satellite image, or draw boundaries, buildings and roads. Images out of scale are fitted by aligning two points. A georeference (UTM zone and origin) enables base maps, online elevation and KML/GeoJSON export.
 3. **Terrain**: contour lines and spot heights drawn or imported, an elevation GeoTIFF, or elevation downloaded for a coordinate; contours generated from the model and a 3D view.
 4. **Hydraulic layout**: water supply, pump, mainline, zone valves and, downstream of each valve, submains, laterals, drip tapes, single emitters and devices (filters, pressure regulators, meters, backflow preventers, air and check valves). A lateral-block generator (also along a curved guide such as a contour line) and a sprinkler-grid generator (square or triangular) do the repetitive work. Irrigated areas carry the crop, efficiency and water balance.
-5. **Management**: system flows, i.e. which valves open together, with start time and duration.
+5. **Management**: system flows, i.e. which valves and pivots open together, with start time and duration; they can be grouped automatically within the supply flow and a maximum number of zones.
 6. **Check**: unconnected items, pipes crossing without a junction, dead ends, zones without emitters, missing catalogue items, missing terrain.
-7. **Design (F5)**: zones, mainline, telescoping, flushing, water hammer and materials; or only zones, only the mainline, or an analysis of the current diameters.
+7. **Design (F5)**: zones, mainline, telescoping, flushing, water hammer, valve wiring and materials; or only zones, only the mainline, or an analysis of the current diameters.
 8. **Reports and plotting**: reports panel, PDF sheet with title block, legend, north arrow, scale bar and bill of materials; exports to other CAD, GIS and spreadsheets.
 
 ## Hydraulic engine
@@ -83,7 +83,7 @@ Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson
 - Network solver: the Global Gradient Algorithm (Todini and Pilati), the method of EPANET, with pressure-dependent emitters, pumps, pressure-reducing valves and check valves, on a sparse LDLᵀ factorisation.
 - Laterals and tapes are lumped into at most 100 nodes each (adjustable), so lines with hundreds of emitters stay fast.
 - Terrain elevation at every node; emitter pressure accounts for ground level, riser height and burial depth.
-- Uniformity: Christiansen CU, low-quarter DU, Keller-Karmeli emission uniformity EU (with the manufacturing CV and emitters per plant), statistical uniformity and flow variation; overlap CU for sprinklers with a wetted radius.
+- Uniformity: Christiansen CU, low-quarter DU, Keller-Karmeli emission uniformity EU (with the manufacturing CV and emitters per plant), statistical uniformity and flow variation; overlap CU for sprinklers with a wetted radius; a densogram adds up the water every sprinkler applies as drawn (arc, orientation and design pressure) and gives the rate map with CU, DU and the scheduling coefficient per irrigated area.
 - Water hammer: wave celerity from pipe material and wall, Joukowsky surge, critical time 2L/a and comparison with the pipe pressure rating, including the valve closure time. It is an estimate, not a full transient simulation.
 - Flushing of drip tapes with open ends at the flushing velocity (0.3 m/s and 1 m end pressure by default).
 - The calculation runs in a Web Worker, off the interface thread.
@@ -104,6 +104,12 @@ Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson
 - Readily available water, irrigation interval, gross and net depths and hours per event.
 - Controller programme per system flow (days and start times), exportable as CSV.
 
+## Valve wiring
+
+- Controllers (stations, output voltage, cost) and wire routes drawn from the controller through the valves; every valve gets a station number by distance.
+- Station and common wire sizes chosen at the lowest cost that keeps every solenoid above its minimum voltage (20 V by default) while it opens with the other valves of its system flow already on (inrush and holding currents, route lengths plus slack).
+- Electrical report (route, wire lengths, sizes, solenoid voltage) and wires, controllers and connectors in the bill of materials; stations and simultaneous valves checked.
+
 ## Terrain
 
 - Sources: drawn contour lines and spot heights, survey points (CSV, TXT, XYZ, PNEZD, decimal comma accepted), DXF/DWG polylines with elevation, KML with altitude, shapefiles with Z or an elevation attribute, elevation GeoTIFF and online elevation.
@@ -117,14 +123,14 @@ Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson
 
 ## Component catalogue
 
-- Six groups: pipes, emitters with nozzles, tapes and driplines, valves and devices, pumps (Q-H curve) and fittings.
-- Default catalogue: 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel), 9 emitter families, 6 tapes and driplines, 30 valves and devices (1" to 6"), 18 pumps (centrifugal 1 to 100 hp, submersible 3 to 30 hp) and about 330 fittings, with illustrative prices.
+- Seven groups: pipes, emitters with nozzles, tapes and driplines, valves and devices, pumps (Q-H curve), fittings and wires.
+- Default catalogue: 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel), 9 emitter families, 6 tapes and driplines, 30 valves and devices (1" to 6"), 18 pumps (centrifugal 1 to 100 hp, submersible 3 to 30 hp), about 330 fittings and 12 copper wires (1 to 10 mm² and AWG 18 to 8), with illustrative prices.
 - 14 manufacturer packs (259 items) built from published data sheets: Hunter, Rain Bird, Toro, Netafim, Rivulis, NaanDanJain, Jain, Nelson and Senninger (sprinklers, micro-sprinklers, drippers, tapes and driplines, pivot sprinklers, big guns, valves and regulators), Irritec (driplines and drippers), Bermad (hydraulic valves), Schneider (centrifugal and submersible pumps), and Amanco Wavin and Multilit (PVC irrigation pipes). Nozzle curves are fitted to the manufacturers' tables; prices are left to the user.
 - The catalogue editor imports and exports JSON, CSV and Excel; packs in the `.oci.cat` JSON format load from a file or a URL, so dealers can publish their own.
 
 ## Reports and plotting
 
-- Reports: zone summary, pipes, emitters, mainline and supply duties, bill of materials with automatically selected fittings (couplers, elbows, tees, crosses, reducers, end caps, take-offs, risers), water requirements, agronomy, controller schedule, flushing, water hammer, pivots and spans, hydraulic grade line chart, terrain profile and messages.
+- Reports: zone summary, pipes, emitters, mainline and supply duties, bill of materials with automatically selected fittings (couplers, elbows, tees, crosses, reducers, end caps, take-offs, risers), water requirements, agronomy, controller schedule, flushing, water hammer, pivots and spans, valve wiring, hydraulic grade line chart, terrain profile, densogram and messages.
 - PDF sheet from A4 to A0, Letter and Tabloid, automatic or fixed scale, title block, legend, north arrow, scale bar, bill of materials on the sheet and attached report pages.
 - Every table exports to PDF, Excel (one sheet per table, numbers as numbers), CSV and TXT.
 
@@ -133,7 +139,7 @@ Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson
 | Format | Import | Export |
 |---|---|---|
 | `.oci.json` project | yes | yes |
-| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines, texts, points, layers, blocks and dimensions | R12, by layer |
+| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | R12, by layer |
 | DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015) |
 | KML / KMZ | placemarks, folders as layers, altitude as elevation | folders per layer, WGS84 |
 | Shapefile (zip with DBF, PRJ, CPG) | points, lines, polygons, Z variants, attributes in UTF-8 or Latin-1 | — |
@@ -155,8 +161,9 @@ Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson
 ## Known limitations
 
 - Looped mainlines are sized along tree paths (an approximation) and then checked by the full analysis.
-- DWG splines and hatches are not imported; the DWG writer produces version 2000 (AC1015) files with lines, polylines, circles, arcs, points and texts.
-- Steady-state hydraulics: water hammer is a Joukowsky estimate; there is no fertigation design or electrical design.
+- The DWG writer produces version 2000 (AC1015) files with lines, polylines, circles, arcs, points and texts (hatches and splines are written as outlines and polylines).
+- Steady-state hydraulics: water hammer is a Joukowsky estimate; there is no fertigation design.
+- Valve wiring is conventional (a station conductor per valve and a shared common, 24 V AC solenoids), with routes drawn by the user; two-wire decoder systems are not modelled.
 - Pivots are modelled as machines with span tables and a demand on the mainline, without nozzle-by-nozzle design.
 - No simultaneous editing; projects are shared as `.oci.json` files.
 

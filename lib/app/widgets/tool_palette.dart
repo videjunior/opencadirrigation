@@ -12,11 +12,12 @@ class ToolPalette extends StatelessWidget {
   /// Tool groups (also used by the mobile tool bar).
   static const groups = <(String, List<(ToolId, IconData)>)>[
     ('nav', [(ToolId.select, Icons.near_me_outlined), (ToolId.pan, Icons.pan_tool_alt_outlined), (ToolId.measure, Icons.straighten), (ToolId.profile, Icons.show_chart)]),
-    ('draw', [(ToolId.line, Icons.horizontal_rule), (ToolId.polyline, Icons.polyline_outlined), (ToolId.rect, Icons.crop_square), (ToolId.circle, Icons.circle_outlined), (ToolId.arc, Icons.architecture), (ToolId.spline, Icons.gesture), (ToolId.hatch, Icons.texture), (ToolId.symbol, Icons.park_outlined), (ToolId.text, Icons.text_fields), (ToolId.dimension, Icons.space_bar), (ToolId.dimAngular, Icons.square_foot), (ToolId.dimRadial, Icons.radio_button_unchecked), (ToolId.leader, Icons.call_made)]),
+    ('draw', [(ToolId.line, Icons.horizontal_rule), (ToolId.polyline, Icons.polyline_outlined), (ToolId.rect, Icons.crop_square), (ToolId.circle, Icons.circle_outlined), (ToolId.arc, Icons.architecture), (ToolId.spline, Icons.gesture), (ToolId.hatch, Icons.texture), (ToolId.symbol, Icons.park_outlined), (ToolId.text, Icons.text_fields), (ToolId.dimension, Icons.space_bar), (ToolId.dimAngular, Icons.square_foot), (ToolId.dimRadial, Icons.radio_button_unchecked), (ToolId.dimOrdinate, Icons.format_list_numbered), (ToolId.leader, Icons.call_made)]),
     ('edit', [(ToolId.rotate, Icons.rotate_right), (ToolId.mirror, Icons.flip), (ToolId.scale, Icons.open_in_full), (ToolId.offset, Icons.copy_all_outlined), (ToolId.trim, Icons.content_cut), (ToolId.extend, Icons.east), (ToolId.cutPipe, Icons.carpenter_outlined), (ToolId.alignImage, Icons.control_camera)]),
     ('terrain', [(ToolId.contour, Icons.landscape_outlined), (ToolId.spot, Icons.add_location_alt_outlined), (ToolId.area, Icons.grass)]),
     ('zone', [(ToolId.zonePipe, Icons.timeline), (ToolId.sprayline, Icons.linear_scale), (ToolId.tape, Icons.more_horiz), (ToolId.outlet, Icons.water_drop_outlined), (ToolId.valve, Icons.change_history), (ToolId.block, Icons.grid_on), (ToolId.autohead, Icons.apps)]),
     ('main', [(ToolId.supply, Icons.water), (ToolId.mainPipe, Icons.show_chart), (ToolId.pump, Icons.settings), (ToolId.misc, Icons.device_hub), (ToolId.junction, Icons.fiber_manual_record), (ToolId.pivot, Icons.radar)]),
+    ('elec', [(ToolId.controller, Icons.developer_board), (ToolId.wire, Icons.cable)]),
   ];
 
   @override

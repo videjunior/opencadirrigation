@@ -155,8 +155,12 @@ management, mainline, materials and plotting), adapted to a browser app.
    of each valve, zone pipes (ZP), laterals (SL), tapes (DT), emitters (OUT), devices (F). The
    **lateral block** (B) and **sprinkler grid** (AH) generators do the repetitive work. Irrigated
    areas (AR) carry crop, efficiency and water balance.
-5. **Management** (Project → Management): system flows (which valves open together, start time and
-   duration). Without defined flows, every valve is its own flow.
+5. **Management** (Project → Management): system flows (which valves and pivots open together,
+   start time and duration). Without defined flows, all valves are assumed to open together (the
+   worst case for the mainline and the supply). *Automatic…*
+   groups the zones into the fewest flows that fit the supply flow (or a flow and a number of
+   zones you choose), largest demands first.
+   **Wiring**: a controller (CTRL) and the wire routes (WR) to the valves, sized in the design.
 6. **Check** (Project → Check design): unconnected items, pipes crossing without a junction, dead
    ends, zones without emitters, missing catalogue items, missing terrain.
 7. **Design** (F5): zones, mainline, telescoping, flushing, water hammer and materials. You can
@@ -175,7 +179,8 @@ management, mainline, materials and plotting), adapted to a browser app.
 - **Project tabs** just below: several projects open at once (Ctrl+Alt+N new tab, Ctrl+Alt+W
   close, Ctrl+Alt+←/→ switch). Copy and paste (Ctrl+C/X/V) work across tabs and across browser
   windows, carrying layers and catalogue items missing at the destination.
-- **Tool palette** on the left, by group (navigation, drawing, terrain, zone, mainline, editing).
+- **Tool palette** on the left, by group (navigation, drawing, terrain, zone, mainline, editing,
+  electrical).
 - **Canvas** in the centre, with grid, snaps, overlays and the calculation progress card.
 - **Side panel** on the right with three tabs: **Properties** of the selected item (with hydraulic
   results after the calculation and the submain position envelope for laterals), **Layers**
@@ -197,11 +202,11 @@ zoom, two fingers to pan, one finger draws.
 |---|---|
 | File | New project, New tab, Close tab, Open project, Recent projects, Save, Versions, Autosave (on/off), Examples ▸, Import (DXF, DWG, KML/KMZ, SHP, CSV/XYZ, images, GeoTIFF), Georeference selected image, Align by 2 points, Export drawing ▸ (DXF, DWG, PDF, SVG, KML, KMZ, GeoJSON), Export report ▸ (CSV, TXT, XLSX, PDF, controller programme), Project details, Georeference |
 | Edit | Undo, Redo, Select all, Copy, Cut, Paste, Duplicate, Delete, Transform ▸ (rotate, mirror, scale, offset, trim, extend, cut pipe, align image, array) |
-| View | Zoom extents, Zoom +/−, Grid, Labels, Wetted radii, Grips, Overlay (none, velocity, pressure, diameters, pressure min/max), Base map ▸ (none, OpenStreetMap, OpenTopoMap, CARTO, Esri imagery/streets/topo, Google Maps roadmap/satellite/hybrid/terrain with your own API key, custom XYZ URL; needs a georeference), Google Maps API key…, Custom map URL…, Language ▸ |
-| Draw | Line, Polyline, Rectangle, Circle, Arc, Spline, Hatch, Symbol, Text, Linear dimension, Angular dimension, Radial dimension, Leader, Measure |
-| Zone | Zone pipe, Lateral (sprayline), Drip tape, Emitter, Zone valve, Device, Junction, Lateral block, Sprinkler grid, Submain position envelope |
+| View | Zoom extents, Zoom +/−, Grid, Labels, Wetted radii, Grips, Overlay (none, velocity, pressure, diameters, pressure min/max, densogram), Base map ▸ (none, OpenStreetMap, OpenTopoMap, CARTO, Esri imagery/streets/topo, Google Maps roadmap/satellite/hybrid/terrain with your own API key, custom XYZ URL; needs a georeference), Google Maps API key…, Custom map URL…, Language ▸ |
+| Draw | Line, Polyline, Rectangle, Circle, Arc, Spline, Hatch, Symbol, Text, Linear dimension, Angular dimension, Radial / diameter dimension, Ordinate dimension, Leader, Measure |
+| Zone | Zone pipe, Lateral (sprayline), Drip tape, Emitter, Zone valve, Device, Junction, Lateral block, Sprinkler grid, Submain position envelope, Densogram, Controller, Wire route |
 | Mainline | Water supply, Mainline pipe, Pump, Pump selection, Centre pivot / linear move |
-| Project | Design parameters, Component catalogue, Management (system flows), Terrain ▸ (contour line, spot height, profile, download elevation from the internet, generate contours from the model, 3D view, clear profile), Check design, Design zones, Design mainline, Design all, Analyse (no resizing), Clear results |
+| Project | Design parameters, Component catalogue, Management (system flows, with automatic grouping), Terrain ▸ (contour line, spot height, profile, download elevation from the internet, generate contours from the model, 3D view, clear profile), Check design, Design zones, Design mainline, Design all, Analyse (no resizing), Clear results |
 | Reports | Show/hide the panel and its tabs |
 | Tools | Lateral calculator, Pump and system curve, Water hammer, Units |
 | Help | Interactive tutorial, Welcome and example gallery, Keyboard shortcuts, About |
@@ -215,10 +220,11 @@ itself after a pause. Aliases accept Portuguese, English and Spanish names (for 
 | Group | Aliases |
 |---|---|
 | Navigation | `S` select · `P` pan · `Z` / `ZE` zoom extents · `ZI` / `ZO` zoom |
-| Drawing | `L` line · `PL` polyline · `REC` rectangle · `C` circle · `A` arc · `SPL` spline · `H` hatch · `SY` / `I` symbol · `T` / `MT` text · `D` dimension · `DAN` angular dimension · `DRA` radial dimension · `LE` leader · `ME` / `DI` measure |
+| Drawing | `L` line · `PL` polyline · `REC` rectangle · `C` circle · `A` arc · `SPL` spline · `H` hatch · `SY` / `I` symbol · `T` / `MT` text · `D` dimension · `DAN` angular dimension · `DRA` radial / diameter dimension · `DOR` ordinate dimension · `LE` leader · `ME` / `DI` measure |
 | Terrain | `CT` contour line · `SP` spot height · `PR` profile · `AR` irrigated area |
 | Editing | `RO` rotate · `MI` mirror · `SC` scale · `O` offset · `TR` trim · `EX` extend · `CUT` / `BR` cut pipe · `ARRAY` array · `E` erase · `CO` copy · `PA` paste · `U` undo · `REDO` · `ALL` select all · `DUP` duplicate · `AL` align by 2 points |
-| Zone | `ZP` zone pipe · `SL` lateral · `DT` tape · `OUT` / `EM` emitter · `V` valve · `F` device · `J` junction · `B` block · `AH` sprinkler grid · `FE` submain envelope |
+| Zone | `ZP` zone pipe · `SL` lateral · `DT` tape · `OUT` / `EM` emitter · `V` valve · `F` device · `J` junction · `B` block · `AH` sprinkler grid · `FE` submain envelope · `DENS` densogram |
+| Electrical | `CTRL` controller · `WR` wire route |
 | Mainline | `MP` mainline pipe · `WS` supply · `PU` pump · `PV` pivot |
 | Design and files | `RUN` design · `CHK` check · `REP` reports · `SAVE` · `OPEN` · `OS` snap · `OR` ortho · `GS` grid snap · `GR` grid |
 
@@ -252,8 +258,10 @@ desktop) and work whatever widget has the focus, except while a menu or a dialog
 
 Line, polyline (open or closed), rectangle, circle, arc, spline (smooth curve through the points),
 hatch (lines or solid), symbol (north arrow, tree, building, tank, well, valve box, pump house,
-gate, filter station), text, linear, angular and radial dimensions, leader, image (georeferenced
-raster or placed by hand), contour line, spot height and irrigated area.
+gate, filter station), text, linear, angular, radial and diameter (Ø) dimensions, ordinate
+dimension (the X or Y of a point from the drawing origin: a vertical leader writes X, a horizontal
+one Y), leader, image (georeferenced raster or placed by hand), contour line, spot height and
+irrigated area.
 
 ### Snaps
 
@@ -266,7 +274,8 @@ depend on the zoom. The marker changes shape with the snap type.
 Click selects; Shift+click toggles; a window dragged left to right selects what lies entirely
 inside it and right to left what it crosses (AutoCAD convention). Up to 12 selected entities show
 **grips**: drag a vertex to move it, drag the midpoint of a segment to insert a vertex, Ctrl+click a
-vertex to remove it.
+vertex to remove it. With *keep connections* (on by default) dragging a pipe node takes the
+valves, items and wire routes sharing it along; dragging a wire vertex moves only the wires.
 
 ### Transformations
 
@@ -280,13 +289,16 @@ junction, pump or device on a pipe splits the pipe at that point.
 Every entity type is born on its default layer (DRAWING, TEXT, DIMENSIONS, CONTOURS,
 SPOT_HEIGHTS, ZONE_PIPES, MAINLINE_PIPES, SPRAYLINES, TAPES, OUTLETS, WETTED_RADII,
 CONTROL_VALVES, WATER_SUPPLY, PUMPS, MISC_HYDRAULIC, JUNCTIONS, AREAS, LABELS, IMAGES, HATCHES,
-SYMBOLS, PIVOTS). Layers imported from DXF/DWG/KML are preserved. A layer can be hidden (leaves
+SYMBOLS, PIVOTS, WIRES, CONTROLLERS). Layers imported from DXF/DWG/KML are preserved. A layer can be hidden (leaves
 the drawing, the snap and the selection) or locked (visible but not editable).
 
 ### History
 
 Every action produces a named state (add line, move 3 items, design, import…). Undo and redo walk
-up to 50 states; the History panel jumps to any of them.
+up to 50 states; the History panel jumps to any of them. The dialogs that edit the project in place
+(details, parameters, units, catalogue, management) also make one undo step each, however they are
+closed (OK, Esc or a click outside): the edits are kept, the project is marked as modified and
+results computed with the old settings are discarded.
 
 ---
 
@@ -308,6 +320,8 @@ up to 50 states; the History panel jumps to any of them.
 | Junction | `J` | JUNCTIONS | Explicit node, with optional fixed elevation. |
 | Irrigated area | `AR` | AREAS | Polygon with crop, net depth or water balance (ETo, Kc, available water, root depth, allowable depletion), efficiency, wetted fraction, emitters per plant. |
 | Centre pivot / linear move | `PV` | PIVOTS | Machine with radius, spans, applied depth, cycle, end pressure, end gun, cost. A demand on the mainline. |
+| Controller | `CTRL` | CONTROLLERS | Irrigation controller: stations, output voltage (24 V AC), most stations at once, cost. Powers the valve solenoids through the wire routes. |
+| Wire route | `WR` | WIRES | Path of the wires from a controller through the valves (a trench or conduit). Routes sharing a vertex connect; a controller or valve on a vertex or on the route joins it. |
 
 ### Connection rules
 
@@ -324,6 +338,9 @@ up to 50 states; the History panel jumps to any of them.
 - **Laterals are lumped.** In the graph each lateral becomes a sequence of nodes with aggregated
   emitters (up to 100 nodes per lateral by default, adjustable), which keeps the calculation fast
   even with hundreds of emitters per line.
+- **Wires follow their own graph.** Wire routes do not touch the hydraulic network: each valve
+  reached from a controller along the routes gets a station (the nearest valve is station 1) and
+  a station conductor of its own; all of them share the common conductor along the routes.
 
 ### Generators
 
@@ -334,6 +351,13 @@ up to 50 states; the History panel jumps to any of them.
   boundary) and are clipped by the polygon.
 - **Sprinkler grid** (AH): polygon, sprinkler and nozzle, spacings, square or triangular pattern,
   direction and design pressure.
+- **Densogram** (Zone → Densogram, `DENS`): map of the water applied by the sprinklers and
+  micro-sprinklers as they are drawn (position, arc, orientation and, after a design, the
+  pressure of each one), with Christiansen CU, low-quarter DU, scheduling coefficient (mean over
+  the driest 5 %) and dry spots, measured inside every irrigated area against its own mean (a
+  lawn of sprays next to one of rotors is judged separately); triangular, elliptical or uniform
+  distribution profile, cell size, zones; the map is drawn on the canvas and the grid exports to
+  CSV.
 - **Submain position envelope** (FE): for every selected lateral, paints in green the stretch where
   the submain can feed it while keeping the pressure window, taking the terrain into account.
 
@@ -341,8 +365,8 @@ up to 50 states; the History panel jumps to any of them.
 
 ## 7. Component catalogue
 
-The project catalogue has six groups: **pipes**, **emitters** (with nozzles), **tapes**, **valves
-and devices**, **pumps** and **fittings**. All internal hydraulic values are in SI.
+The project catalogue has seven groups: **pipes**, **emitters** (with nozzles), **tapes**, **valves
+and devices**, **pumps**, **fittings** and **wires**. All internal hydraulic values are in SI.
 
 | Group | Main fields |
 |---|---|
@@ -352,13 +376,15 @@ and devices**, **pumps** and **fittings**. All internal hydraulic values are in 
 | Valves and devices | Kind (zone, PRV, gate, check, backflow, filter, meter, air valve, other), diameter, loss `h = K·Q^n + C`, minimum and maximum flow, default PRV setting, cost |
 | Pumps | (Q, H) points fitted to a parabola, efficiency, power, maximum flow, cost |
 | Fittings | Kind (coupler, 90° and 45° elbow, tee, cross, reducer, end cap, adapter, lateral take-off, tape end, riser), diameters, cost |
+| Wires | Conductor section (mm²), resistance (Ω/km), cost per metre, supplier, code; CSV columns `mm2` or `awg`, `ohmKm` (copper is assumed when only the section is given) |
 
 The **default catalogue** ships 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel),
 9 emitter families (PC and turbulent drippers, micro-sprinklers, impact sprinkler, gun, garden rotor
 and spray, demand point), 6 tapes and driplines, 30 valves and devices (1" to 6"), 18 pumps
 (centrifugal 1 to 100 hp, submersible 3 to 30 hp) and about 330 fittings generated for every
-nominal diameter (couplers, 90° and 45° elbows, tees, crosses, end caps, adapters and reducers, plus lateral take-offs, tape ends and risers), with translated names and
-illustrative prices.
+nominal diameter (couplers, 90° and 45° elbows, tees, crosses, end caps, adapters and reducers, plus lateral take-offs, tape ends and risers) and 12 copper wires
+(1 to 10 mm² enabled, AWG 18 to 8 disabled: enable them where AWG is the norm), with translated
+names and illustrative prices.
 
 The editor (Project → Component catalogue) edits, duplicates and removes items, imports and exports
 JSON, CSV per group and **Excel** (export, fill in prices in the spreadsheet and import it back), sets
@@ -445,6 +471,7 @@ is in [catalogs/README.md](catalogs/README.md); `dart run tool/gen_catalogs.dart
 | Flushing and safety | Tape flushing velocity 0.3 m/s with 1 m minimum pressure at the open end; water hammer check enabled with valve closure time (0 = instantaneous) |
 | Materials | Automatic fitting selection enabled; 6 m pipe sticks to count couplers |
 | Terrain | Triangulation (default) or inverse-distance interpolation; contour densification 5 m |
+| Electrical | 24 V AC solenoids: inrush current 0.37 A, holding current 0.22 A, minimum voltage at the solenoid 20 V; wire slack 10 % over the route length |
 
 ### Calculation steps
 
@@ -482,10 +509,21 @@ is in [catalogs/README.md](catalogs/README.md); `dart run tool/gen_catalogs.dart
 6. **Water hammer**: for the worst segment of every pipe, wave celerity from material and wall,
    Joukowsky surge for the operating velocity, critical time 2L/a and comparison of the maximum
    static pressure plus surge with the pipe rating, taking the closure time into account.
-7. **Materials**: pipes by diameter and rating, emitters, tapes, valves, devices, pumps (with
+7. **Valve wiring** (when the drawing has a controller or a wire route): shortest route from each
+   controller to every valve, stations in order of distance, and, for every controller, the common
+   wire and the station wire of every valve with the lowest cost such that each solenoid, while
+   opening (inrush current) with the other valves of its system flow already on (holding
+   current), gets at least the minimum voltage. The drop is `I·R·L` on the station conductor plus,
+   on every stretch of the common, the current of the valves beyond it; lengths include the slack.
+   Without system flows every valve is on at once, as in the hydraulic design. Reports stations,
+   route and wire lengths, wire sizes, solenoid voltages and the peak current of every controller;
+   warns about valves without wire, routes reaching no controller, controllers with too few
+   stations or opening more valves than they drive at once, and voltages below the minimum.
+8. **Materials**: pipes by diameter and rating, emitters, tapes, valves, devices, pumps (with
    automatic selection from the catalogue and a standard IEC motor), pivots with towers, sprinklers
-   and regulators, and **fittings selected automatically** from the geometry (couplers per stick,
-   elbows, tees, crosses, reducers, end caps, lateral take-offs, tape ends, risers), with costs,
+   and regulators, **fittings selected automatically** from the geometry (couplers per stick,
+   elbows, tees, crosses, reducers, end caps, lateral take-offs, tape ends, risers) and the
+   electrical items (wires by size, controllers, two waterproof connectors per valve), with costs,
    annualised cost (capital recovery factor) and energy.
 
 The calculation runs in a **Web Worker** in the browser (or in an isolate on desktop) and returns
@@ -509,6 +547,8 @@ no change is lost, but navigation, reports and other tabs stay free.
 | `tiny_segment` | warning | Segment shorter than the tolerance |
 | `supply_no_head` | warning | Fixed-pressure supply without a pressure |
 | `zone_dead_end`, `area_no_emitters`, `no_terrain`, `looped_mainline`, `no_hydraulics` | information | Situations worth a look that do not prevent the calculation |
+| `elec_stations`, `elec_voltage` | error | Controller with fewer stations than valves wired to it; solenoid voltage below the minimum even with the thickest enabled wire |
+| `elec_unwired`, `elec_wire_orphan`, `elec_ctrl_unwired`, `elec_no_controller`, `elec_no_wires`, `elec_simultaneous` | warning | Valve without a wire to a controller; route reaching no controller; controller off the routes; routes without a controller; no wire enabled in the catalogue; a system flow opening more valves than the controller drives at once |
 
 ### Calculation messages
 
@@ -533,7 +573,8 @@ nozzle range, pump speeds out of range.
   vertices and duplicates, rename repeated zones, choose (or insert) the pump with the lowest
   life-cycle cost, replace a surface pump that cannot lift the water with a submersible one, a pipe
   of a higher pressure class, a valve of the right size, split the zones into more system flows,
-  restore default parameters, add the zones left out to a flow, the nominal emitter pressure, and
+  restore default parameters, add the zones left out to a flow, the nominal emitter pressure, a
+  controller with enough stations (the next standard size), enable the catalogue wires, and
   more.
 - **Fix automatically** (Design menu, `FIX`): safe corrections and designs in rounds until nothing
   more can be fixed, all in one undo step, with a summary of what changed and what needs a decision.
@@ -558,7 +599,9 @@ Tabs: zone summary, pipes, emitters, mainline and duties, bill of materials, wat
 agronomy (ETc, readily available water, interval, depths, hours per event), schedule (controller
 calendar per system flow), flushing, water hammer, pivots and pivot spans, hydraulic grade line
 (chart of the selected pipe, lateral or valve, with the allowable pressure band), profile (terrain
-along a path, with pipe and grade line) and messages. Tables are virtualised, with columns measured
+along a path, with pipe and grade line), messages and electrical (station, route and wire length,
+station and common wire, valves open together and solenoid voltage of every valve; stations used,
+common length and peak current of every controller). Tables are virtualised, with columns measured
 from their content, and are the basis of every exporter, so PDF, Excel and CSV show the same numbers.
 
 ### PDF sheet
@@ -574,7 +617,7 @@ Flate compression), with no dependencies.
 
 | Format | Contents | Notes |
 |---|---|---|
-| DXF | Entities by layer, R12 | Opens in any CAD |
+| DXF | Entities by layer, R12 (wire routes and controllers on their own layers) | Opens in any CAD |
 | DWG | AutoCAD 2000 (AC1015) | Our own writer, validated with LibreDWG and re-read by the app's reader |
 | PDF | Sheet with title block, legend, north arrow, scale bar and, optionally, reports | |
 | SVG | Sheet in millimetres, one group per layer | Browsers, Inkscape |
@@ -610,8 +653,8 @@ calculation worker.
 
 | Format | What comes in | Details |
 |---|---|---|
-| DXF (ASCII) | LINE, LWPOLYLINE and POLYLINE (with bulge arcs), CIRCLE, ARC, ELLIPSE, SPLINE, TEXT, MTEXT, ATTRIB, POINT, layers and blocks (INSERT, MINSERT and the block of every DIMENSION, nested too) | R12 to 2018, Latin-1 or UTF-8; polylines with elevation (2D or 3D vertices) become contour lines; points with Z become spot heights; scale from the file units |
-| DWG | Same entities, layers, blocks (INSERT, MINSERT) and dimensions | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018, in pure Dart; reports skipped objects |
+| DXF (ASCII) | LINE, LWPOLYLINE and POLYLINE (with bulge arcs), CIRCLE, ARC, ELLIPSE, SPLINE (through its fit points, or the NURBS curve of its control points, knots and weights), HATCH (boundary paths of polylines, lines, arcs, ellipses and splines; pattern angle and spacing; islands as polylines), SOLID, TRACE, TEXT, MTEXT, ATTRIB, POINT, layers and blocks (INSERT, MINSERT and the block of every DIMENSION, nested too) | R12 to 2018, Latin-1 or UTF-8; polylines with elevation (2D or 3D vertices) become contour lines; points with Z become spot heights; scale from the file units |
+| DWG | Same entities (ELLIPSE, SPLINE, HATCH, SOLID and TRACE included), layers, blocks (INSERT, MINSERT) and dimensions | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018, in pure Dart; reports skipped objects |
 | KML / KMZ | Placemarks, folders as layers, altitude or ELEV attribute as elevation | WGS84 → UTM (automatic zone) with a local origin; georeferences the project |
 | SHP (+ DBF, PRJ, CPG in a zip) | Points, lines, polygons, multipoints, Z variants | Elevation from Z or from an ELEV/Z/COTA attribute; name from NAME/NOME/ID; attributes in UTF-8 or Latin-1 (.cpg); without .prj, degrees are recognised by range and precision |
 | CSV, TXT, XYZ, PNEZD | Survey points | Columns detected by header or position; decimal comma accepted; lat/lon recognised |
@@ -727,6 +770,9 @@ lib/
       fittings.dart           automatic fitting selection
       pump_selection.dart     pump and motor choice
       agronomy.dart           ETc, water balance, controller programme
+      management.dart         demands of zones and pivots, automatic system flows
+      densogram.dart          water applied by the sprinklers as drawn, uniformity per area
+      electrical.dart         valve wiring: routes, stations, wire sizes for the solenoid voltage
       design_check.dart       design check
       advisor.dart            problems explained, impossible settings, corrections that apply
       auto_fix.dart           corrections, fix automatically, optimisation
@@ -791,7 +837,7 @@ Requirements: a recent stable Flutter (developed with 3.47, Dart 3.13). No nativ
 ```bash
 flutter pub get
 flutter run -d chrome              # development in the browser
-flutter test                       # 350 tests: engine, model, formats, interface
+flutter test                       # 764 tests: engine, model, formats, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompiles web/design_worker.js after changing lib/core (the app falls
                                    # back to the interface thread when the file is missing)
@@ -827,7 +873,7 @@ isolate for the calculation.
 
 ## 16. Tests
 
-`flutter test` runs 350 tests in about a minute and a half. What each group guarantees:
+`flutter test` runs 764 tests in a little over two minutes. What each group guarantees:
 
 | File | Coverage |
 |---|---|
@@ -846,8 +892,13 @@ isolate for the calculation.
 | `core/spatial_index_test.dart` | Index against brute force, drawing order, degenerate cases, invalidation in the controller, selection and snap |
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Pasted coordinates (decimals, comma, hemispheres, DMS, links); contour interval; language choice from the system and the URL |
 | `core/i18n_packs_test.dart` | Every language pack covers every key of the table, the tutorial and the catalogue names with the same placeholders and is mostly not English; installed packs reach the strings, the tutorial and the catalogue; `setLanguage` loads a pack on demand with English meanwhile and retries a failed load |
-| `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Editing (grips, transformations, trim, extend, cut), entity JSON, tabs and clipboard, worker protocol, local HTTP, project storage, camera and snap |
-| `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout |
+| `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Editing (grips, transformations, trim, extend, cut), entity JSON, tabs and clipboard (pivot catalogue items and wiring included), worker protocol, local HTTP, project storage, camera and snap |
+| `core/densogram_test.dart` | Every spray profile returns the whole flow; part circles water their own sector (the nozzle's arc too); head-to-head spacing is uniform and wide spacing is not; areas of different rates judged against their own mean; statistics of known values; cell budget; lateral outlets; results give each emitter its pressure; zone filter; colours, pixels and CSV |
+| `core/electrical_test.dart`, `core/electrical_io_test.dart` | Routes, stations and a valve on a route; solenoid voltage checked by hand; separate flows load the common less; the chosen wires are the cheapest (checked against brute force); runs no wire can serve; unwired valves, orphan routes, too few stations, no controller; wire catalogue (defaults, AWG, CSV, XLSX, JSON); the design lists wiring in the BOM and the Electrical report; design check codes; assistant fixes; DXF, DWG, GeoJSON and plot output |
+| `core/management_test.dart` | Demands of zones and pivots (nominal or from the results); automatic system flows: largest first within the supply flow, zone limit, zones larger than the limit, ids that do not collide |
+| `core/import_curves_test.dart` | Rational and clamped NURBS; DXF SPLINE by control points or fit points, HATCH with polyline, line, arc (both senses), ellipse and spline edges and islands, SOLID/TRACE, hatches inside blocks; DWG R2000–R2018 splines, hatches, solids and the ellipse matching LibreDWG |
+| `core/controller_extra_test.dart` | Opening a file or an example drops the old marks, profile, check and history; dialog edits as one undo step (mutations folded in, units keep the results); undo with nothing to undo; grips drag wires with pipe nodes; painter for the new entities and the densogram |
+| `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout; management with pivots and automatic flows, dialogs closed outside, densogram, controller and wire tools with the Electrical tab, ordinate and diameter dimensions, the Wires tab of the catalogue, numeric fields that reject a value |
 | `web_metadata_test.dart`, `version_test.dart` | Generated site pages, SEO, JSON-LD, manifest, icons, robots, sitemap, 404, llms.txt; app version consistent with pubspec.yaml and the site |
 
 Known pitfalls when writing widget tests: the calculation is truly asynchronous and must run inside
@@ -861,18 +912,23 @@ loading (catalogues) uses `rootBundle` and works in `flutter test`.
 - **Looped networks**: the LP sizes loops through tree paths (an approximation) and the final
   analysis checks; the greedy method is the safe alternative.
 - **DWG**: the reader covers the typical entities of a plan (lines, polylines, circles, arcs,
-  points, texts, blocks and dimensions); DWG splines and hatches are not imported; the writer
-  produces AutoCAD 2000 only, with lines, polylines, circles, arcs, points and texts.
+  ellipses, splines, hatches, solids, points, texts, blocks and dimensions); the writer produces
+  AutoCAD 2000 only, with lines, polylines, circles, arcs, points and texts (hatches and splines
+  are written as their outlines and polylines).
 - **Steady-state calculation**: water hammer is a Joukowsky estimate, not a full transient; there
-  is no fertigation, electrical system or controllers beyond the irrigation programme.
+  is no fertigation.
+- **Electrical**: conventional wiring (a station conductor per valve and a shared common) with
+  24 V AC solenoids; two-wire decoder systems, master valves and pump start relays are not
+  modelled; the valve wiring is drawn by hand (no automatic routing).
 - **Pivots**: machine hydraulics and demand on the mainline, without nozzle design by position
   beyond the span table.
 - **Collaboration**: no simultaneous editing or sharing by link; sharing is by the `.oci.json` file.
 - **Performance**: projects with hundreds of tapes per zone take a few seconds per zone; the
   flushing step is the heaviest.
 
-Suggested roadmap: splines and hatches in DWG; export of pivot nozzle charts; additional community
-catalogues; automated browser tests for runtime language switching.
+Suggested roadmap: two-wire decoder systems and automatic wire routing along the pipes; export of
+pivot nozzle charts; additional community catalogues; automated browser tests for runtime language
+switching.
 
 ---
 

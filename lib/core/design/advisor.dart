@@ -95,6 +95,14 @@ enum FixKind {
 
   /// Re-enables the default catalogue pipes for a usage with none enabled.
   enablePipes,
+
+  /// Enables every wire of the catalogue (the thicker ones included), or
+  /// adds the default wires when the catalogue has none.
+  enableWires,
+
+  /// Gives a controller the next standard number of stations that holds
+  /// all the valves wired to it.
+  controllerStations,
 }
 
 /// Corrections the "fix automatically" command may apply on its own: they
@@ -123,6 +131,8 @@ const autoSafeFixes = {
   FixKind.resetPumpSpeed,
   FixKind.fixSupplyLimits,
   FixKind.enablePipes,
+  FixKind.enableWires,
+  FixKind.controllerStations,
 };
 
 /// Corrections that need design results (duties, pressures, flows).
@@ -185,13 +195,14 @@ const adviceCodes = [
   'fitting_missing', 'pivot_no_flow', 'pivot_no_end_pressure', 'pivot_app_rate', 'valve_missing',
   'set_velocity', 'set_hours', 'set_economy', 'set_tolerance', 'set_variation', 'set_temperature', 'no_pipes_for_usage', 'supply_limits',
   'valve_not_in_flow', 'flow_empty', 'flow_duration', 'emitter_head_range', 'pump_speed', 'bom_unpriced',
+  'elec_no_controller', 'elec_unwired', 'elec_wire_orphan', 'elec_ctrl_unwired', 'elec_no_wires', 'elec_stations', 'elec_voltage', 'elec_simultaneous',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
   'no_supply' || 'no_valves' || 'unconnected' || 'zero_length' || 'spec_missing' || 'not_converged' || 'cannot_meet_pressure_window' ||
   'pressure_rating_exceeded' || 'valve_pressure_deficit' || 'pivot_pressure_deficit' || 'supply_flow_exceeded' || 'supply_head_exceeded' ||
   'pump_out_of_range' || 'pump_suction_lift' || 'zone_no_emitters' || 'valve_missing' || 'pivot_no_flow' || 'pivot_no_end_pressure' ||
-  'no_pipes_for_usage' || 'emitter_head_range' || 'valve_not_in_flow' => AdviceLevel.error,
+  'no_pipes_for_usage' || 'emitter_head_range' || 'valve_not_in_flow' || 'elec_stations' || 'elec_voltage' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
@@ -416,6 +427,14 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
       return const [FixKind.nominalEmitterHead];
     case 'pump_speed':
       return const [FixKind.resetPumpSpeed];
+    case 'elec_no_wires':
+      return const [FixKind.enableWires];
+    case 'elec_voltage':
+      // thicker wires still disabled in the catalogue
+      final thickest = p.catalog.enabledWires.lastOrNull?.ohmPerKm ?? double.infinity;
+      return p.catalog.wires.any((w) => !w.enabled && w.ohmPerKm < thickest) ? const [FixKind.enableWires] : const [];
+    case 'elec_stations':
+      return const [FixKind.controllerStations];
     default:
       return const [];
   }

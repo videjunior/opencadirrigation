@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 /// Numeric text field that commits on submit / focus loss.
@@ -32,12 +34,24 @@ class _NumFieldState extends State<NumField> {
   @override
   void didUpdateWidget(covariant NumField old) {
     super.didUpdateWidget(old);
-    if (!_focus.hasFocus && old.value != widget.value) _c.text = _fmt(widget.value);
+    if (_focus.hasFocus) return;
+    final text = _fmt(widget.value);
+    if (_c.text == text) return;
+    // a new value, or the one typed was not taken (clamped, rejected): show
+    // what the model holds instead of the number typed
+    final shown = double.tryParse(_c.text.replaceAll(',', '.'));
+    final tolerance = 0.5 * math.pow(10, -widget.decimals) + 1e-12;
+    if (old.value != widget.value || shown == null || (shown - widget.value).abs() > tolerance) _c.text = text;
   }
 
   void _commit() {
     final v = double.tryParse(_c.text.replaceAll(',', '.'));
-    if (v != null && v != widget.value) widget.onChanged(v);
+    if (v == null) {
+      // not a number: back to the value in force
+      _c.text = _fmt(widget.value);
+      return;
+    }
+    if (v != widget.value) widget.onChanged(v);
   }
 
   @override

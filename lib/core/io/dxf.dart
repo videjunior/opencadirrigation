@@ -1,8 +1,10 @@
 /// Minimal DXF reader/writer (ASCII). Reads LINE, LWPOLYLINE and POLYLINE
-/// (with bulges), CIRCLE, ARC, ELLIPSE, SPLINE, TEXT, MTEXT, ATTRIB and POINT
-/// entities with their layers, and expands block references (INSERT,
-/// MINSERT, DIMENSION blocks); writes an R12-compatible file with a LAYER
-/// table.
+/// (with bulges), CIRCLE, ARC, ELLIPSE, SPLINE (fit points, or the NURBS
+/// evaluated from its control points), HATCH (boundary paths of polylines,
+/// lines, arcs, ellipses and splines; pattern angle and spacing), SOLID,
+/// TRACE, TEXT, MTEXT, ATTRIB and POINT entities with their layers, and
+/// expands block references (INSERT, MINSERT, DIMENSION blocks); writes an
+/// R12-compatible file with a LAYER table.
 library;
 
 import 'dart:math' as math;
@@ -10,8 +12,12 @@ import 'dart:math' as math;
 import '../model/geometry.dart';
 
 class DxfEntity {
-  DxfEntity({required this.type, required this.layer, this.points = const [], this.center, this.radius = 0, this.startAngle = 0, this.endAngle = 0, this.text = '', this.height = 1, this.rotation = 0, this.closed = false, this.color = 256, this.elevation, this.name = ''});
-  final String type; // LINE, POLYLINE, CIRCLE, ARC, TEXT, POINT
+  DxfEntity({required this.type, required this.layer, this.points = const [], this.center, this.radius = 0, this.startAngle = 0, this.endAngle = 0, this.text = '', this.height = 1, this.rotation = 0, this.closed = false, this.color = 256, this.elevation, this.name = '', this.solid = false});
+
+  /// LINE, POLYLINE, SPLINE (fit points), HATCH, CIRCLE, ARC, TEXT, POINT.
+  /// A HATCH carries its boundary in [points], the pattern line angle in
+  /// [rotation] (degrees), the line spacing in [height] and [solid] fills.
+  final String type;
   final String layer;
   final List<Pt> points;
   final Pt? center;
@@ -27,6 +33,9 @@ class DxfEntity {
   /// Elevation (Z) when meaningful (contours from KML/DWG, spot heights).
   final double? elevation;
   final String name;
+
+  /// Solid fill (HATCH).
+  final bool solid;
 }
 
 class DxfLayer {
@@ -317,13 +326,30 @@ class DxfReader {
         final pts = [for (var k = 0; k <= (full ? n - 1 : n); k++) c + major * math.cos(a0 + sweep * k / n) + minor * math.sin(a0 + sweep * k / n)];
         out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: full));
       case 'SPLINE':
-        // fit points when present, else the control polygon
-        final xs = props[11] ?? [], ys = props[21] ?? [];
-        final cx = props[10] ?? [], cy = props[20] ?? [];
-        final pts = xs.isNotEmpty && ys.length == xs.length
-            ? [for (var k = 0; k < xs.length; k++) Pt(double.tryParse(xs[k]) ?? 0, double.tryParse(ys[k]) ?? 0)]
-            : [for (var k = 0; k < math.min(cx.length, cy.length); k++) Pt(double.tryParse(cx[k]) ?? 0, double.tryParse(cy[k]) ?? 0)];
-        if (pts.length >= 2) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: flags(70) & 1 == 1));
+        // fit points: a smooth curve through them; else the NURBS curve of
+        // the control points (degree, knots and weights)
+        List<double> nums(int c) => [for (final v in props[c] ?? const <String>[]) double.tryParse(v) ?? 0];
+        final xs = nums(11), ys = nums(21);
+        final cx = nums(10), cy = nums(20);
+        final closed = flags(70) & 1 == 1;
+        if (xs.length >= 2 && ys.length == xs.length) {
+          out.add(DxfEntity(type: 'SPLINE', layer: layer, color: color, points: [for (var k = 0; k < xs.length; k++) Pt(xs[k], ys[k])], closed: closed));
+        } else {
+          final ctrl = [for (var k = 0; k < math.min(cx.length, cy.length); k++) Pt(cx[k], cy[k])];
+          final pts = nurbsCurve(flags(71) > 0 ? flags(71) : 3, ctrl, knots: nums(40), weights: nums(41));
+          if (pts.length >= 2) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: closed));
+        }
+      case 'HATCH':
+        _readHatch(pairs, i + 1, j, layer, color, out);
+      case 'SOLID' || 'TRACE':
+        // corners in 1-2-4-3 order ("bow-tie" numbering of the format)
+        final q = [Pt(num(10), num(20)), Pt(num(11), num(21)), Pt(num(13, 0, num(12)), num(23, 0, num(22))), Pt(num(12), num(22))];
+        final pts = <Pt>[];
+        for (final p in q) {
+          if (pts.isEmpty || pts.last.distanceTo(p) > 1e-12) pts.add(p);
+        }
+        if (pts.length > 2 && pts.first.distanceTo(pts.last) < 1e-12) pts.removeLast();
+        if (pts.length >= 3) out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: pts, closed: true, solid: true));
       case 'TEXT':
       case 'MTEXT':
       case 'ATTRIB':
@@ -346,6 +372,151 @@ class DxfReader {
         break;
     }
     return j;
+  }
+
+  /// Reads the HATCH whose group codes are `pairs[start..end)`: the boundary
+  /// paths become one hatch (the largest loop) plus closed polylines for
+  /// the other loops (islands); the first pattern line gives the angle and
+  /// spacing of the hatch lines.
+  static void _readHatch(List<(int, String)> pairs, int start, int end, String layer, int color, List<DxfEntity> out) {
+    var k = start;
+    bool at(int code) => k < end && pairs[k].$1 == code;
+    double rd(int code, [double def = 0]) {
+      if (!at(code)) return def;
+      return double.tryParse(pairs[k++].$2) ?? def;
+    }
+
+    int ri(int code) => rd(code).round();
+    var solid = false;
+    var paths = 0;
+    while (k < end) {
+      final (c, v) = pairs[k];
+      k++;
+      if (c == 70) solid = (int.tryParse(v) ?? 0) & 1 == 1;
+      if (c == 91) {
+        paths = int.tryParse(v) ?? 0;
+        break;
+      }
+    }
+    final loops = <List<Pt>>[];
+    for (var p = 0; p < paths && k < end; p++) {
+      while (k < end && !at(92)) {
+        k++;
+      }
+      if (k >= end) break;
+      final flags = ri(92);
+      final loop = <Pt>[];
+      if (flags & 2 != 0) {
+        final bulges = rd(72) != 0;
+        rd(73);
+        final n = ri(93);
+        final verts = <_Vertex>[];
+        for (var v = 0; v < n && k < end; v++) {
+          final x = rd(10), y = rd(20);
+          verts.add(_Vertex(x, y, bulges ? rd(42) : 0));
+        }
+        loop.addAll(_withBulges(verts, true));
+      } else {
+        final edges = ri(93);
+        for (var e = 0; e < edges && k < end; e++) {
+          final type = ri(72);
+          switch (type) {
+            case 1:
+              final a = Pt(rd(10), rd(20)), b = Pt(rd(11), rd(21));
+              if (loop.isEmpty || loop.last.distanceTo(a) > 1e-9) loop.add(a);
+              loop.add(b);
+            case 2:
+              final c = Pt(rd(10), rd(20));
+              final r = rd(40), s = rd(50), en = rd(51);
+              final ccw = rd(73, 1) != 0;
+              // clockwise arcs are stored with mirrored angles
+              final a0 = degToRad(ccw ? s : -s), a1 = degToRad(ccw ? en : -en);
+              var sweep = ccw ? a1 - a0 : a0 - a1;
+              if (sweep <= 1e-12) sweep += 2 * math.pi;
+              final segs = math.max(4, (sweep / (math.pi / 18)).ceil());
+              for (var q = 0; q <= segs; q++) {
+                loop.add(c + Pt.polar(r, ccw ? a0 + sweep * q / segs : a0 - sweep * q / segs));
+              }
+            case 3:
+              final c = Pt(rd(10), rd(20)), major = Pt(rd(11), rd(21));
+              final ratio = rd(40, 1), s = rd(50), en = rd(51);
+              final ccw = rd(73, 1) != 0;
+              final minor = major.perpendicular * ratio;
+              final a0 = degToRad(ccw ? s : -s), a1 = degToRad(ccw ? en : -en);
+              var sweep = ccw ? a1 - a0 : a0 - a1;
+              if (sweep <= 1e-12) sweep += 2 * math.pi;
+              final segs = math.max(8, (sweep / (math.pi / 18)).ceil());
+              for (var q = 0; q <= segs; q++) {
+                final t = ccw ? a0 + sweep * q / segs : a0 - sweep * q / segs;
+                loop.add(c + major * math.cos(t) + minor * math.sin(t));
+              }
+            case 4:
+              final degree = ri(94);
+              final rational = rd(73) != 0;
+              rd(74);
+              final nk = ri(95), nc = ri(96);
+              final knots = [for (var q = 0; q < nk; q++) rd(40)];
+              final ctrl = <Pt>[];
+              final weights = <double>[];
+              for (var q = 0; q < nc; q++) {
+                ctrl.add(Pt(rd(10), rd(20)));
+                if (rational) weights.add(rd(42, 1));
+              }
+              // R2010+: fit data (a count on code 97 followed by 11/21)
+              if (at(97) && k + 1 < end && pairs[k + 1].$1 == 11) {
+                final nf = ri(97);
+                for (var q = 0; q < nf; q++) {
+                  rd(11);
+                  rd(21);
+                }
+                rd(12);
+                rd(22);
+                rd(13);
+                rd(23);
+              }
+              loop.addAll(nurbsCurve(degree, ctrl, knots: knots, weights: weights));
+            default:
+              break;
+          }
+        }
+      }
+      // source boundary objects
+      if (at(97)) {
+        final n = ri(97);
+        for (var q = 0; q < n && at(330); q++) {
+          k++;
+        }
+      }
+      if (loop.length > 2 && loop.first.distanceTo(loop.last) < 1e-9) loop.removeLast();
+      if (loop.length >= 3) loops.add(loop);
+    }
+    // pattern: the first definition line (angle 53, offset 45/46)
+    var angle = 45.0, spacing = 0.0, scale = 1.0;
+    while (k < end) {
+      final (c, v) = pairs[k];
+      if (c == 52) angle = double.tryParse(v) ?? angle;
+      if (c == 41) scale = double.tryParse(v) ?? scale;
+      if (c == 53) {
+        final a = double.tryParse(v) ?? angle;
+        k++;
+        rd(43);
+        rd(44);
+        final dx = rd(45), dy = rd(46);
+        final r = degToRad(a);
+        final d = (-math.sin(r) * dx + math.cos(r) * dy).abs();
+        angle = a;
+        if (d > 1e-9) spacing = d;
+        break;
+      }
+      k++;
+    }
+    if (spacing <= 0) spacing = 3.175 * (scale > 0 ? scale : 1);
+    if (loops.isEmpty) return;
+    loops.sort((a, b) => polygonArea(b).abs().compareTo(polygonArea(a).abs()));
+    out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: loops.first, closed: true, rotation: angle, height: spacing, solid: solid));
+    for (final island in loops.skip(1)) {
+      out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: island, closed: true));
+    }
   }
 
   static List<Pt> _withBulges(List<_Vertex> v, bool closed) {
@@ -421,6 +592,8 @@ class DxfReader {
         }
       case 'TEXT':
         out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [t.apply(e.points[0])], text: e.text, height: e.height * t.scale, rotation: e.rotation + t.rotationDeg, elevation: e.elevation, name: e.name));
+      case 'HATCH':
+        out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: true, rotation: e.rotation + t.rotationDeg, height: e.height * t.scale, solid: e.solid, name: e.name));
       default:
         out.add(DxfEntity(type: e.type, layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: e.closed, elevation: e.elevation, name: e.name, text: e.text, height: e.height, rotation: e.rotation));
     }

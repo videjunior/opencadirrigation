@@ -106,8 +106,16 @@ class ProjectExporter {
           ents.add(DxfEntity(type: 'POLYLINE', layer: ad.layer, points: ad.arcPoints()));
           ents.add(DxfEntity(type: 'TEXT', layer: ad.layer, points: [ad.textPoint], text: '${fmt(ad.angleDeg, 1)}°', height: 0.5));
         case RadialDimensionEntity rd:
-          ents.add(DxfEntity(type: 'LINE', layer: rd.layer, points: [rd.center, rd.point]));
-          ents.add(DxfEntity(type: 'TEXT', layer: rd.layer, points: [Pt.lerp(rd.center, rd.point, 0.5)], text: 'R ${fmt(rd.radius)}', height: 0.5));
+          ents.add(DxfEntity(type: 'LINE', layer: rd.layer, points: [rd.start, rd.point]));
+          ents.add(DxfEntity(type: 'TEXT', layer: rd.layer, points: [rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5)], text: '${rd.diameter ? 'Ø' : 'R'} ${fmt(rd.value)}', height: 0.5));
+        case OrdinateDimensionEntity od:
+          ents.add(DxfEntity(type: 'POLYLINE', layer: od.layer, points: od.leader));
+          ents.add(DxfEntity(type: 'TEXT', layer: od.layer, points: [od.leaderEnd], text: '${od.xAxis ? 'X' : 'Y'} ${fmt(od.value)}', height: 0.5));
+        case WireEntity w:
+          ents.add(DxfEntity(type: 'POLYLINE', layer: w.layer, points: w.points));
+        case ControllerEntity k:
+          ents.add(DxfEntity(type: 'POLYLINE', layer: k.layer, points: [k.position + const Pt(-1, -1), k.position + const Pt(1, -1), k.position + const Pt(1, 1), k.position + const Pt(-1, 1)], closed: true));
+          ents.add(DxfEntity(type: 'TEXT', layer: Layers.labels, points: [k.position + const Pt(1.3, 0)], text: k.name, height: 0.8));
         case LeaderEntity le:
           ents.add(DxfEntity(type: 'POLYLINE', layer: le.layer, points: le.points));
           ents.add(DxfEntity(type: 'TEXT', layer: le.layer, points: [le.textPosition], text: le.text, height: le.height));
@@ -230,7 +238,14 @@ class ProjectExporter {
         case AngularDimensionEntity ad:
           add(e, 'LineString', [ll(ad.a), ll(ad.vertex), ll(ad.b)], name: '${fmt(ad.angleDeg, 1)}°');
         case RadialDimensionEntity rd:
-          add(e, 'LineString', [ll(rd.center), ll(rd.point)], name: 'R ${fmt(u.lengthFromSi(rd.radius))} ${u.lengthLabel}');
+          add(e, 'LineString', [ll(rd.start), ll(rd.point)], name: '${rd.diameter ? 'Ø' : 'R'} ${fmt(u.lengthFromSi(rd.value))} ${u.lengthLabel}');
+        case OrdinateDimensionEntity od:
+          add(e, 'LineString', od.leader.map(ll).toList(), name: '${od.xAxis ? 'X' : 'Y'} ${fmt(u.lengthFromSi(od.value))} ${u.lengthLabel}');
+        case WireEntity w:
+          add(e, 'LineString', w.points.map(ll).toList(), name: w.name.isEmpty ? t('tool.wire') : w.name, data: {'length_m': fmt(w.length, 2)});
+        case ControllerEntity k:
+          final duty = results?.electrical?.controllers.where((d) => d.controllerId == k.id).firstOrNull;
+          add(e, 'Point', [ll(k.position)], name: k.name.isEmpty ? t('tool.controller') : k.name, description: duty == null ? '${k.stations}' : '${duty.used}/${k.stations}', data: {'stations': '${k.stations}', if (duty != null) 'used': '${duty.used}'});
         case LeaderEntity le:
           add(e, 'LineString', le.points.map(ll).toList(), name: le.text);
         case ImageEntity im:

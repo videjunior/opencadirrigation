@@ -620,11 +620,44 @@ class RadialDimensionTool extends PolyTool {
   }
 
   @override
-  void commit(List<Pt> points) => c.addEntity(RadialDimensionEntity(id: c.project.newId(), center: points[0], point: points[1]));
+  void commit(List<Pt> points) => c.addEntity(RadialDimensionEntity(id: c.project.newId(), center: points[0], point: points[1], diameter: c.toolSettings.radialDiameter));
   @override
   void paint(Canvas canvas, Camera cam) {
+    if (c.toolSettings.radialDiameter && pts.length == 1 && cursor != null) {
+      drawPolyline(canvas, cam, [pts[0] * 2 - cursor!, cursor!], previewPaint);
+      host.setStatus('Ø = ${fmtLen(2 * pts[0].distanceTo(cursor!))}');
+      return;
+    }
     super.paint(canvas, cam);
     if (pts.length == 1 && cursor != null) host.setStatus('R = ${fmtLen(pts[0].distanceTo(cursor!))}');
+  }
+}
+
+/// Ordinate dimension: click the feature point, then where the text goes.
+/// A mostly vertical leader writes the X coordinate, a horizontal one the Y
+/// (measured from the drawing origin).
+class OrdinateDimensionTool extends PolyTool {
+  OrdinateDimensionTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.dimOrdinate;
+  @override
+  String get hintKey => 'hint.dimOrdinate';
+  @override
+  int get requiredPoints => 2;
+
+  static bool xAxisFor(Pt point, Pt end) => (end.y - point.y).abs() >= (end.x - point.x).abs();
+
+  @override
+  void commit(List<Pt> points) => c.addEntity(OrdinateDimensionEntity(id: c.project.newId(), point: points[0], leaderEnd: points[1], xAxis: xAxisFor(points[0], points[1])));
+  @override
+  void paint(Canvas canvas, Camera cam) {
+    if (pts.length == 1 && cursor != null) {
+      final d = OrdinateDimensionEntity(id: '', point: pts[0], leaderEnd: cursor!, xAxis: xAxisFor(pts[0], cursor!));
+      drawPolyline(canvas, cam, d.leader, previewPaint);
+      host.setStatus('${d.xAxis ? 'X' : 'Y'} = ${fmtLen(d.value)}');
+      return;
+    }
+    super.paint(canvas, cam);
   }
 }
 
@@ -1198,6 +1231,36 @@ class JunctionTool extends PointTool {
   Iterable<HydraulicScope>? splitScopes(Entity e) => [(e as JunctionEntity).scope];
 }
 
+/// Irrigation controller: one click places it (stations and output voltage
+/// from the tool settings).
+class ControllerTool extends PointTool {
+  ControllerTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.controller;
+  @override
+  String get hintKey => 'hint.controller';
+  @override
+  Entity create(Pt p) {
+    final n = c.project.entities.whereType<ControllerEntity>().length + 1;
+    return ControllerEntity(id: c.project.newId(), position: p, name: '${c.t('name.controller')} $n', stations: c.toolSettings.controllerStations, outputVolts: c.toolSettings.controllerVolts);
+  }
+
+  @override
+  double get symbolRadius => 1.0;
+}
+
+/// Wire route: a polyline from the controller through the valves (Enter or
+/// a double click ends it); snaps to valves and controllers.
+class WireTool extends PolyTool {
+  WireTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.wire;
+  @override
+  String get hintKey => 'hint.wire';
+  @override
+  void commit(List<Pt> points) => c.addEntity(WireEntity(id: c.project.newId(), points: points));
+}
+
 /// Centre pivot / linear move: click the inlet (pivot point) then the end
 /// of the span; the entity takes its defaults from the tool settings.
 class PivotTool extends PolyTool {
@@ -1334,6 +1397,9 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.profile => ProfileTool(c, host),
   ToolId.pivot => PivotTool(c, host),
   ToolId.alignImage => AlignTool(c, host),
+  ToolId.controller => ControllerTool(c, host),
+  ToolId.wire => WireTool(c, host),
+  ToolId.dimOrdinate => OrdinateDimensionTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1370,4 +1436,7 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.profile => 'profile',
   ToolId.pivot => 'pivot',
   ToolId.alignImage => 'alignImage',
+  ToolId.controller => 'controller',
+  ToolId.wire => 'wire',
+  ToolId.dimOrdinate => 'dimOrdinate',
 };

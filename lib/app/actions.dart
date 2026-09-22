@@ -202,13 +202,8 @@ void loadExampleAction(ProjectController c, [ExampleId id = ExampleId.orchard]) 
   final code = c.defaultCurrency();
   final rate = exchangeRate(p.params.currencyCode, code);
   if (rate != null && code != p.params.currencyCode) p.setCurrency(code, rate: rate);
-  c.project = p;
-  c.results = null;
-  c.selection.clear();
-  c.dirty = true;
+  c.openProject(p, dirty: true);
   c.track('example');
-  c.zoomAll();
-  c.notify(c.t('msg.loaded'));
 }
 
 /// The orchard example (kept for callers and tests; see `examples.dart`).

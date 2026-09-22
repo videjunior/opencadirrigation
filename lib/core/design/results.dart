@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import '../hydraulics/uniformity.dart';
 import '../model/geometry.dart';
+import 'electrical.dart';
 import 'pivot.dart';
 
 export 'pivot.dart' show PivotResult, PivotTowerRow, PivotKind;
@@ -335,6 +336,10 @@ class DesignResults {
   final List<FlushingResult> flushing = [];
   final List<SurgeResult> surge = [];
   final Set<String> unconnected = {};
+
+  /// Valve wiring (controllers, wire sizes, solenoid voltages); null when
+  /// the drawing has no controller and no wire route.
+  ElectricalResult? electrical;
   double capitalCost = 0;
   double annualCapitalCost = 0;
   double annualEnergyCost = 0;
@@ -395,6 +400,7 @@ class DesignResults {
     'flushing': flushing.map((f) => f.toJson()).toList(),
     'surge': surge.map((s) => s.toJson()).toList(),
     'unconnected': unconnected.toList(),
+    if (electrical != null) 'electrical': electrical!.toJson(),
     'capital': capitalCost,
     'annualCapital': annualCapitalCost,
     'annualEnergy': annualEnergyCost,
@@ -416,6 +422,8 @@ class DesignResults {
     r.flushing.addAll(((j['flushing'] as List?) ?? []).map((b) => FlushingResult.fromJson(b as Map<String, dynamic>)));
     r.surge.addAll(((j['surge'] as List?) ?? []).map((b) => SurgeResult.fromJson(b as Map<String, dynamic>)));
     r.unconnected.addAll(((j['unconnected'] as List?) ?? []).cast<String>());
+    final el = j['electrical'];
+    if (el is Map<String, dynamic>) r.electrical = ElectricalResult.fromJson(el);
     r.capitalCost = _d(j, 'capital');
     r.annualCapitalCost = _d(j, 'annualCapital');
     r.annualEnergyCost = _d(j, 'annualEnergy');

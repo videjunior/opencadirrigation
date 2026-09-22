@@ -226,8 +226,13 @@ PlotScene buildPlotScene(
         path(ad.layer, ad.arcPoints(), widthMm: 0.18);
         text(ad.layer, ad.textPoint, '${fmt(ad.angleDeg, 1)}°', heightMm: labelH, anchor: PlotAnchor.center);
       case RadialDimensionEntity rd:
-        path(rd.layer, [rd.center, rd.point], widthMm: 0.18);
-        text(rd.layer, Pt.lerp(rd.center, rd.point, 0.5), 'R ${fmt(units.lengthFromSi(rd.radius))} ${units.lengthLabel}', heightMm: labelH, anchor: PlotAnchor.bottomCenter);
+        path(rd.layer, [rd.start, rd.point], widthMm: 0.18);
+        text(rd.layer, rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5), '${rd.diameter ? 'Ø' : 'R'} ${fmt(units.lengthFromSi(rd.value))} ${units.lengthLabel}', heightMm: labelH, anchor: PlotAnchor.bottomCenter);
+      case OrdinateDimensionEntity od:
+        path(od.layer, od.leader, widthMm: 0.18);
+        text(od.layer, od.leaderEnd, '${od.xAxis ? 'X' : 'Y'} ${fmt(units.lengthFromSi(od.value))}', heightMm: labelH, anchor: od.xAxis ? PlotAnchor.bottomCenter : PlotAnchor.center);
+      case WireEntity w:
+        path(w.layer, w.points, widthMm: 0.25, dashed: true);
       case LeaderEntity le:
         path(le.layer, le.points, widthMm: 0.18);
         if (le.points.length >= 2) {
@@ -324,7 +329,8 @@ PlotScene buildPlotScene(
           if (arc >= 360) {
             circle(Layers.wettedRadii, p, radius, widthMm: 0.13, fill: blendOverWhite(colorOf(Layers.wettedRadii), 0.08));
           } else {
-            final start = degToRad(o.orientationDeg) - degToRad(arc);
+            // counter-clockwise from the orientation, as on the screen
+            final start = degToRad(o.orientationDeg);
             path(Layers.wettedRadii, [p, ...arcPoints(p, radius, start, degToRad(arc))], closed: true, widthMm: 0.13, fill: blendOverWhite(colorOf(Layers.wettedRadii), 0.08));
           }
         }
@@ -367,6 +373,11 @@ PlotScene buildPlotScene(
         if (options.labels) text(Layers.labels, p + Pt(r * 1.3, r * 1.1), project.catalog.valve(m.valveSpecId)?.name ?? '', heightMm: labelH * 0.9);
       case JunctionEntity j:
         circle(j.layer, p, 0.5 * mm, fill: colorOf(j.layer), stroke: false);
+      case ControllerEntity k:
+        final r = 1.6 * mm;
+        path(k.layer, [p + Pt(-r, -r), p + Pt(r, -r), p + Pt(r, r), p + Pt(-r, r)], closed: true, widthMm: 0.3, fill: colorOf(k.layer));
+        text(k.layer, p, 'C', heightMm: 2.0, bold: true, anchor: PlotAnchor.center, color: 0xFFFFFFFF);
+        if (options.labels) text(Layers.labels, p + Pt(r * 1.3, r * 0.4), k.name, heightMm: labelH, bold: true);
       default:
         break;
     }

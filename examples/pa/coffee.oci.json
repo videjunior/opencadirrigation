@@ -50,7 +50,11 @@
     "fittings": true,
     "stick": 6.0,
     "zoneVar": 0.0,
-    "terrain": "tin"
+    "terrain": "tin",
+    "inrushA": 0.37,
+    "holdA": 0.22,
+    "minV": 20.0,
+    "slack": 10.0
   },
   "catalog": {
     "pipes": [
@@ -4897,6 +4901,104 @@
         "cost": 335.8764,
         "enabled": true
       }
+    ],
+    "wires": [
+      {
+        "id": "w1",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ 1 mm²",
+        "mm2": 1.0,
+        "ohm": 18.1,
+        "cost": 24.257740000000002,
+        "enabled": true
+      },
+      {
+        "id": "w1.5",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ 1.5 mm²",
+        "mm2": 1.5,
+        "ohm": 12.066666666666668,
+        "cost": 31.72166,
+        "enabled": true
+      },
+      {
+        "id": "w2.5",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ 2.5 mm²",
+        "mm2": 2.5,
+        "ohm": 7.24,
+        "cost": 48.515480000000004,
+        "enabled": true
+      },
+      {
+        "id": "w4",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ 4 mm²",
+        "mm2": 4.0,
+        "ohm": 4.525,
+        "cost": 74.6392,
+        "enabled": true
+      },
+      {
+        "id": "w6",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ 6 mm²",
+        "mm2": 6.0,
+        "ohm": 3.016666666666667,
+        "cost": 110.09282,
+        "enabled": true
+      },
+      {
+        "id": "w10",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ 10 mm²",
+        "mm2": 10.0,
+        "ohm": 1.81,
+        "cost": 179.13408,
+        "enabled": true
+      },
+      {
+        "id": "awg18",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ AWG 18",
+        "mm2": 0.82,
+        "ohm": 21.99,
+        "cost": 22.39176,
+        "enabled": false
+      },
+      {
+        "id": "awg16",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ AWG 16",
+        "mm2": 1.31,
+        "ohm": 13.83,
+        "cost": 29.855680000000003,
+        "enabled": false
+      },
+      {
+        "id": "awg14",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ AWG 14",
+        "mm2": 2.08,
+        "ohm": 8.7,
+        "cost": 44.78352,
+        "enabled": false
+      },
+      {
+        "id": "awg12",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ AWG 12",
+        "mm2": 3.31,
+        "ohm": 5.47,
+        "cost": 69.04126000000001,
+        "enabled": false
+      },
+      {
+        "id": "awg10",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ AWG 10",
+        "mm2": 5.26,
+        "ohm": 3.44,
+        "cost": 106.36086,
+        "enabled": false
+      },
+      {
+        "id": "awg8",
+        "name": "ਤਾਂਬੇ ਦੀ ਤਾਰ AWG 8",
+        "mm2": 8.37,
+        "ohm": 2.16,
+        "cost": 166.07222000000002,
+        "enabled": false
+      }
     ]
   },
   "layers": [
@@ -5023,6 +5125,18 @@
     {
       "name": "PIVOTS",
       "color": 4283283116,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "WIRES",
+      "color": 4294962776,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "CONTROLLERS",
+      "color": 4294930499,
       "visible": true,
       "locked": false
     },

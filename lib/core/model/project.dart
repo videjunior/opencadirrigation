@@ -61,6 +61,10 @@ class DesignParameters {
     this.pipeStickLengthM = 6,
     this.maxZoneVariationPct = 0,
     this.terrainMethod = TerrainMethod.tin,
+    this.solenoidInrushA = 0.37,
+    this.solenoidHoldingA = 0.22,
+    this.solenoidMinVolts = 20,
+    this.wireSlackPct = 10,
   });
 
   Units units;
@@ -129,6 +133,15 @@ class DesignParameters {
   /// Terrain interpolation: Delaunay TIN (DTM) or inverse distance weighting.
   TerrainMethod terrainMethod;
 
+  /// Valve solenoids (24 V AC): current while opening (inrush) and once
+  /// open (holding), in amperes, and the least voltage that opens them.
+  double solenoidInrushA;
+  double solenoidHoldingA;
+  double solenoidMinVolts;
+
+  /// Wire length added to the routes for splices and loops (%).
+  double wireSlackPct;
+
   double get kinematicViscosity => waterKinematicViscosity(waterTempC);
   double adjustedC(double c) => c * hazenCScale + hazenCOffset;
 
@@ -140,6 +153,7 @@ class DesignParameters {
     'subSizes': maxSubmainSizes, 'cScale': hazenCScale, 'cOffset': hazenCOffset, 'densify': terrainDensify, 'currency': currency, 'currencyCode': currencyCode,
     'sizing': sizingMethod.name, 'mainSizes': maxMainlineSizes, 'epp': emittersPerPlant, 'maxNodes': maxNodesPerLateral, 'flushV': flushingVelocity, 'flushH': flushingMinEndHeadM,
     'surge': checkSurge, 'closure': valveClosureTimeS, 'fittings': selectFittings, 'stick': pipeStickLengthM, 'zoneVar': maxZoneVariationPct, 'terrain': terrainMethod.name,
+    'inrushA': solenoidInrushA, 'holdA': solenoidHoldingA, 'minV': solenoidMinVolts, 'slack': wireSlackPct,
   };
   static DesignParameters fromJson(Map<String, dynamic>? j) {
     if (j == null) return DesignParameters();
@@ -181,6 +195,10 @@ class DesignParameters {
       pipeStickLengthM: d('stick', 6),
       maxZoneVariationPct: d('zoneVar', 0),
       terrainMethod: TerrainMethod.values.byName(j['terrain'] as String? ?? 'idw'),
+      solenoidInrushA: d('inrushA', 0.37),
+      solenoidHoldingA: d('holdA', 0.22),
+      solenoidMinVolts: d('minV', 20),
+      wireSlackPct: d('slack', 10),
     );
   }
 }
@@ -344,7 +362,7 @@ class Project {
     for (final l in layers) {
       if (l.name == name) return l;
     }
-    final l = Layer(name: name, color: 0xFFB0BEC5);
+    final l = Layer(name: name, color: Layers.defaultColors[name] ?? 0xFFB0BEC5);
     layers.add(l);
     return l;
   }

@@ -153,8 +153,12 @@ zonas, gerenciamento, linha principal, materiais e plotagem), adaptada a um app 
    e, a jusante de cada válvula, tubos de zona (ZP), laterais (SL), fitas (DT), emissores (OUT),
    acessórios (F). Os geradores de **bloco de laterais** (B) e de **grade de aspersores** (AH)
    fazem o trabalho repetitivo. Áreas irrigadas (AR) trazem cultura, eficiência e balanço hídrico.
-5. **Gerenciamento** (Projeto → Gerenciamento): turnos de operação (quais válvulas abrem juntas,
-   horário e duração). Sem turnos definidos, cada válvula vira um turno.
+5. **Gerenciamento** (Projeto → Gerenciamento): turnos de operação (quais válvulas e pivôs abrem
+   juntos, horário e duração). Sem turnos definidos, considera-se que todas as válvulas abrem juntas
+   (o pior caso para a linha principal e a fonte). *Automático…* agrupa as zonas no menor número de
+   turnos que cabe na vazão da fonte (ou numa vazão e num número de zonas que você escolhe), as
+   maiores demandas primeiro.
+   **Fiação**: um controlador (CTRL) e as rotas de fios (WR) até as válvulas, dimensionadas no cálculo.
 6. **Verificação** (Projeto → Verificar projeto): itens desconectados, tubos que se cruzam sem
    junção, pontas soltas, zonas sem emissores, catálogo faltando, terreno ausente.
 7. **Projetar** (F5): zonas, linha principal, telescopagem, lavagem, golpe de aríete e materiais.
@@ -174,7 +178,7 @@ zonas, gerenciamento, linha principal, materiais e plotagem), adaptada a um app 
   Ctrl+Alt+W fecha, Ctrl+Alt+←/→ alterna). Copiar e colar (Ctrl+C/X/V) funciona entre abas e
   entre janelas do navegador, levando camadas e itens de catálogo que faltem no destino.
 - **Paleta de ferramentas** à esquerda, por grupos (navegação, desenho, terreno, zona, linha
-  principal, edição).
+  principal, edição, elétrica).
 - **Canvas** ao centro, com grade, snaps, sobreposições e cartão de progresso do cálculo.
 - **Painel lateral** à direita com três abas: **Propriedades** do item selecionado (com resultados
   hidráulicos após o cálculo e o envelope de posição do submain para laterais), **Camadas**
@@ -196,11 +200,11 @@ Pinça para zoom, dois dedos para mover, um dedo desenha.
 |---|---|
 | Arquivo | Novo projeto, Nova aba, Fechar aba, Abrir projeto, Projetos recentes, Salvar, Versões, Autosave (liga/desliga), Exemplos ▸, Importar (DXF, DWG, KML/KMZ, SHP, CSV/XYZ, imagens, GeoTIFF), Georreferenciar imagem selecionada, Alinhar por 2 pontos, Exportar desenho ▸ (DXF, DWG, PDF, SVG, KML, KMZ, GeoJSON), Exportar relatório ▸ (CSV, TXT, XLSX, PDF, programa do controlador), Detalhes do projeto, Georreferência |
 | Editar | Desfazer, Refazer, Selecionar tudo, Copiar, Recortar, Colar, Duplicar, Excluir, Transformar ▸ (rotacionar, espelhar, escalar, deslocar, aparar, estender, cortar tubo, alinhar imagem, matriz) |
-| Ver | Enquadrar, Zoom +/−, Grade, Rótulos, Raios molhados, Grips, Sobreposição (nenhuma, velocidade, pressão, diâmetros, mín/máx de pressão), Mapa base ▸ (nenhum, OpenStreetMap, OpenTopoMap, CARTO, Esri imagem/ruas/topográfico, Google Maps mapa/satélite/híbrido/relevo com a sua própria chave de API, URL XYZ personalizada; exige georreferência), Chave da API do Google Maps…, URL do mapa personalizado…, Idioma ▸ |
-| Desenhar | Linha, Polilinha, Retângulo, Círculo, Arco, Spline, Hachura, Símbolo, Texto, Cota linear, Cota angular, Cota radial, Chamada (leader), Medir |
-| Zona | Tubo de zona, Lateral (sprayline), Fita gotejadora, Emissor, Válvula de zona, Acessório, Junção, Bloco de laterais, Grade de aspersores, Envelope de posição do submain |
+| Ver | Enquadrar, Zoom +/−, Grade, Rótulos, Raios molhados, Grips, Sobreposição (nenhuma, velocidade, pressão, diâmetros, mín/máx de pressão, densograma), Mapa base ▸ (nenhum, OpenStreetMap, OpenTopoMap, CARTO, Esri imagem/ruas/topográfico, Google Maps mapa/satélite/híbrido/relevo com a sua própria chave de API, URL XYZ personalizada; exige georreferência), Chave da API do Google Maps…, URL do mapa personalizado…, Idioma ▸ |
+| Desenhar | Linha, Polilinha, Retângulo, Círculo, Arco, Spline, Hachura, Símbolo, Texto, Cota linear, Cota angular, Cota radial / de diâmetro, Cota de ordenada, Chamada (leader), Medir |
+| Zona | Tubo de zona, Lateral (sprayline), Fita gotejadora, Emissor, Válvula de zona, Acessório, Junção, Bloco de laterais, Grade de aspersores, Envelope de posição do submain, Densograma, Controlador, Rota de fios |
 | Linha principal | Fonte de água, Tubo principal, Bomba, Seleção de bomba, Pivô central / linear |
-| Projeto | Parâmetros de projeto, Catálogo de componentes, Gerenciamento (turnos), Terreno ▸ (curva de nível, cota de ponto, perfil, baixar elevação da internet, gerar curvas do modelo, vista 3D, limpar perfil), Verificar projeto, Projetar zonas, Projetar linha principal, Projetar tudo, Analisar (sem redimensionar), Limpar resultados |
+| Projeto | Parâmetros de projeto, Catálogo de componentes, Gerenciamento (turnos, com agrupamento automático), Terreno ▸ (curva de nível, cota de ponto, perfil, baixar elevação da internet, gerar curvas do modelo, vista 3D, limpar perfil), Verificar projeto, Projetar zonas, Projetar linha principal, Projetar tudo, Analisar (sem redimensionar), Limpar resultados |
 | Relatórios | Mostrar/ocultar painel e suas abas |
 | Ferramentas | Calculadora de lateral, Bomba e curva do sistema, Golpe de aríete, Unidades |
 | Ajuda | Tutorial interativo, Boas-vindas e galeria de exemplos, Atalhos de teclado, Sobre |
@@ -214,10 +218,11 @@ sozinho após uma pausa. Os aliases aceitam nomes em português, inglês e espan
 | Grupo | Aliases |
 |---|---|
 | Navegação | `S` seleção · `P` pan · `Z` / `ZE` enquadrar · `ZI` / `ZO` zoom |
-| Desenho | `L` linha · `PL` polilinha · `REC` retângulo · `C` círculo · `A` arco · `SPL` spline · `H` hachura · `SY` / `I` símbolo · `T` / `MT` texto · `D` cota · `DAN` cota angular · `DRA` cota radial · `LE` chamada · `ME` / `DI` medir |
+| Desenho | `L` linha · `PL` polilinha · `REC` retângulo · `C` círculo · `A` arco · `SPL` spline · `H` hachura · `SY` / `I` símbolo · `T` / `MT` texto · `D` cota · `DAN` cota angular · `DRA` cota radial / de diâmetro · `DOR` cota de ordenada · `LE` chamada · `ME` / `DI` medir |
 | Terreno | `CT` curva de nível · `SP` cota de ponto · `PR` perfil · `AR` área irrigada |
 | Edição | `RO` rotacionar · `MI` espelhar · `SC` escalar · `O` deslocar · `TR` aparar · `EX` estender · `CUT` / `BR` cortar tubo · `ARRAY` matriz · `E` apagar · `CO` copiar · `PA` colar · `U` desfazer · `REDO` · `ALL` selecionar tudo · `DUP` duplicar · `AL` alinhar por 2 pontos |
-| Zona | `ZP` tubo de zona · `SL` lateral · `DT` fita · `OUT` / `EM` emissor · `V` válvula · `F` acessório · `J` junção · `B` bloco · `AH` grade de aspersores · `FE` envelope do submain |
+| Zona | `ZP` tubo de zona · `SL` lateral · `DT` fita · `OUT` / `EM` emissor · `V` válvula · `F` acessório · `J` junção · `B` bloco · `AH` grade de aspersores · `FE` envelope do submain · `DENS` densograma |
+| Elétrica | `CTRL` controlador · `WR` rota de fios |
 | Linha principal | `MP` tubo principal · `WS` fonte · `PU` bomba · `PV` pivô |
 | Projeto e arquivos | `RUN` projetar · `CHK` verificar · `REP` relatórios · `SAVE` · `OPEN` · `OS` snap · `OR` orto · `GS` snap à grade · `GR` grade |
 
@@ -252,7 +257,8 @@ um diálogo está aberto.
 
 Linha, polilinha (aberta ou fechada), retângulo, círculo, arco, spline (curva suave pelos pontos),
 hachura (linhas ou sólida), símbolo (seta norte, árvore, edificação, tanque, poço, caixa de válvula,
-casa de bombas, portão, estação de filtragem), texto, cota linear, angular e radial, chamada (leader),
+casa de bombas, portão, estação de filtragem), texto, cota linear, angular, radial e de diâmetro (Ø), cota de ordenada (o X ou o Y de um ponto a partir da
+origem do desenho: chamada vertical cota o X, horizontal o Y), chamada (leader),
 imagem (raster georreferenciada ou colocada à mão), curva de nível, cota de ponto e área irrigada.
 
 ### Snaps
@@ -266,7 +272,9 @@ pixels, portanto independe do zoom. O marcador muda de forma conforme o tipo de 
 Clique seleciona; Shift+clique alterna; janela da esquerda para a direita seleciona o que está
 inteiro dentro dela e da direita para a esquerda o que ela cruza (convenção AutoCAD). Até 12
 entidades selecionadas mostram **grips**: arraste um vértice para movê-lo, arraste o ponto médio
-de um segmento para inserir um vértice, Ctrl+clique num vértice para removê-lo.
+de um segmento para inserir um vértice, Ctrl+clique num vértice para removê-lo. Com *manter
+conexões* (ligado por padrão), arrastar um nó de tubo leva junto as válvulas, os itens e as rotas de
+fios que o compartilham; arrastar um vértice de fio move só os fios.
 
 ### Transformações
 
@@ -280,13 +288,17 @@ vez). Inserir válvula, junção, bomba ou acessório sobre um tubo divide o tub
 Cada tipo de entidade nasce na sua camada padrão (DRAWING, TEXT, DIMENSIONS, CONTOURS,
 SPOT_HEIGHTS, ZONE_PIPES, MAINLINE_PIPES, SPRAYLINES, TAPES, OUTLETS, WETTED_RADII,
 CONTROL_VALVES, WATER_SUPPLY, PUMPS, MISC_HYDRAULIC, JUNCTIONS, AREAS, LABELS, IMAGES, HATCHES,
-SYMBOLS, PIVOTS). Camadas importadas de DXF/DWG/KML são preservadas. Uma camada pode ficar oculta
+SYMBOLS, PIVOTS, WIRES, CONTROLLERS). Camadas importadas de DXF/DWG/KML são preservadas. Uma camada pode ficar oculta
 (sai do desenho, do snap e da seleção) ou bloqueada (aparece, mas não se edita).
 
 ### Histórico
 
 Cada ação gera um estado nomeado (adicionar linha, mover 3 itens, projetar, importar…). Desfazer e
-refazer percorrem até 50 estados; o painel Histórico permite saltar para qualquer um deles.
+refazer percorrem até 50 estados; o painel Histórico permite saltar para qualquer um deles. Os
+diálogos que editam o projeto no lugar (detalhes, parâmetros, unidades, catálogo, gerenciamento)
+também geram um passo de desfazer cada, seja qual for a forma de fechar (OK, Esc ou um clique fora):
+as edições ficam, o projeto é marcado como alterado e os resultados calculados com as configurações
+antigas são descartados.
 
 ---
 
@@ -308,6 +320,8 @@ refazer percorrem até 50 estados; o painel Histórico permite saltar para qualq
 | Junção | `J` | JUNCTIONS | Nó explícito, com cota fixa opcional. |
 | Área irrigada | `AR` | AREAS | Polígono com cultura, lâmina líquida ou balanço hídrico (ETo, Kc, CAD, profundidade radicular, fração de esgotamento), eficiência, fração molhada, emissores por planta. |
 | Pivô central / linear | `PV` | PIVOTS | Máquina com raio, vãos, profundidade de lâmina, ciclo, pressão final, canhão final, custo. Demanda sobre a linha principal. |
+| Controlador | `CTRL` | CONTROLLERS | Programador de irrigação: estações, tensão de saída (24 V CA), máximo de estações juntas, custo. Alimenta os solenoides das válvulas pelas rotas de fios. |
+| Rota de fios | `WR` | WIRES | Caminho dos fios do controlador passando pelas válvulas (vala ou eletroduto). Rotas que compartilham um vértice se unem; um controlador ou válvula sobre um vértice ou sobre a rota entra nela. |
 
 ### Regras de conexão
 
@@ -324,6 +338,9 @@ refazer percorrem até 50 estados; o painel Histórico permite saltar para qualq
 - **Laterais são agrupadas.** Cada lateral vira, no grafo, uma sequência de nós com emissores
   agregados (até 100 nós por lateral por padrão, ajustável), o que mantém o cálculo rápido mesmo com
   centenas de emissores por linha.
+- **Fios têm grafo próprio.** Rotas de fios não tocam a rede hidráulica: cada válvula alcançada a
+  partir de um controlador pelas rotas recebe uma estação (a válvula mais próxima é a estação 1) e
+  um fio de estação próprio; todas compartilham o fio comum ao longo das rotas.
 
 ### Geradores
 
@@ -334,6 +351,13 @@ refazer percorrem até 50 estados; o painel Histórico permite saltar para qualq
   (paralelas a uma curva de nível ou a uma divisa curva) e são recortadas pelo polígono.
 - **Grade de aspersores** (AH): polígono, aspersor e bocal, espaçamentos, padrão quadrado ou
   triangular, direção e pressão de projeto.
+- **Densograma** (Zona → Densograma, `DENS`): mapa da água aplicada pelos aspersores e
+  microaspersores como estão desenhados (posição, arco, orientação e, depois do cálculo, a pressão
+  de cada um), com CU de Christiansen, DU do quarto inferior, coeficiente de programação (média
+  sobre os 5 % mais secos) e pontos secos, medidos dentro de cada área irrigada contra a sua própria
+  média (um gramado de sprays ao lado de um de rotores é julgado à parte); perfil de distribuição
+  triangular, elíptico ou uniforme, tamanho da célula, zonas; o mapa aparece no desenho e a grade é
+  exportada em CSV.
 - **Envelope de posição do submain** (FE): para cada lateral selecionada, pinta em verde o trecho
   onde o submain pode alimentá-la respeitando a janela de pressão, considerando o terreno.
 
@@ -341,8 +365,8 @@ refazer percorrem até 50 estados; o painel Histórico permite saltar para qualq
 
 ## 7. Catálogo de componentes
 
-O catálogo do projeto tem seis grupos: **tubos**, **emissores** (com bocais), **fitas**, **válvulas
-e acessórios**, **bombas** e **conexões**. Todos os valores hidráulicos internos estão em SI.
+O catálogo do projeto tem sete grupos: **tubos**, **emissores** (com bocais), **fitas**, **válvulas
+e acessórios**, **bombas**, **conexões** e **fios**. Todos os valores hidráulicos internos estão em SI.
 
 | Grupo | Campos principais |
 |---|---|
@@ -352,13 +376,15 @@ e acessórios**, **bombas** e **conexões**. Todos os valores hidráulicos inter
 | Válvulas e acessórios | Tipo (zona, PRV, registro, retenção, anti-refluxo, filtro, hidrômetro, ventosa, outro), diâmetro, perda `h = K·Q^n + C`, vazões mínima e máxima, ajuste padrão da PRV, custo |
 | Bombas | Pontos (Q, H) ajustados a uma parábola, eficiência, potência, vazão máxima, custo |
 | Conexões | Tipo (luva, cotovelo 90° e 45°, tê, cruzeta, redução, tampão, adaptador, derivação de lateral, final de fita, haste), diâmetros, custo |
+| Fios | Seção do condutor (mm²), resistência (Ω/km), custo por metro, fornecedor, código; colunas CSV `mm2` ou `awg`, `ohmKm` (supõe-se cobre quando só a seção é dada) |
 
 O **catálogo padrão** traz 17 tubos (PE 16–50 mm, PVC DN 35–250, PEAD 110 e 160, aço 6"), 9 famílias
 de emissores (gotejadores PC e turbulentos, microaspersores, aspersor de impacto, canhão, rotor e
 spray de jardim, ponto de demanda), 6 fitas e tubos gotejadores, 30 válvulas e acessórios (1" a 6"),
 18 bombas (centrífugas de 1 a 100 cv, submersas de 3 a 30 cv) e cerca de 330 conexões geradas para
-cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas, tampões, adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida), com
-nomes traduzidos e preços ilustrativos.
+cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas, tampões, adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida) e 12
+fios de cobre (1 a 10 mm² habilitados, AWG 18 a 8 desabilitados: habilite-os onde a bitola AWG é a
+norma), com nomes traduzidos e preços ilustrativos.
 
 O editor (Projeto → Catálogo de componentes) edita, duplica e remove itens, importa e exporta JSON,
 CSV por grupo e **Excel** (exporte, preencha preços na planilha e importe de volta), define o
@@ -445,6 +471,7 @@ com os campos de cada grupo e as regras de contribuição, está em [catalogs/RE
 | Lavagem e segurança | Velocidade de lavagem das fitas 0,3 m/s com pressão mínima de 1 m na ponta aberta; verificação de golpe de aríete ligada com tempo de fechamento de válvula (0 = instantâneo) |
 | Materiais | Seleção automática de conexões ligada; barra de tubo de 6 m para contar luvas |
 | Terreno | Interpolação por triangulação (padrão) ou inverso da distância; densificação das curvas 5 m |
+| Elétrica | Solenoides de 24 V CA: corrente de partida 0,37 A, de retenção 0,22 A, tensão mínima no solenoide 20 V; folga de fio de 10 % sobre o comprimento da rota |
 
 ### Etapas do cálculo
 
@@ -481,11 +508,22 @@ com os campos de cada grupo e as regras de contribuição, está em [catalogs/RE
 6. **Golpe de aríete**: para o pior trecho de cada tubo, celeridade da onda pelo material e parede,
    sobrepressão de Joukowsky para a velocidade de operação, tempo crítico 2L/a e comparação da
    pressão estática máxima mais sobrepressão com a classe do tubo, considerando o tempo de fechamento.
-7. **Materiais**: tubos por diâmetro e classe, emissores, fitas, válvulas, acessórios, bombas
+7. **Fiação das válvulas** (quando o desenho tem controlador ou rota de fios): menor caminho de cada
+   controlador até cada válvula, estações em ordem de distância e, para cada controlador, o fio
+   comum e o fio de estação de cada válvula de menor custo tal que cada solenoide, ao abrir
+   (corrente de partida) com as outras válvulas do seu turno já ligadas (corrente de retenção), tenha
+   pelo menos a tensão mínima. A queda é `I·R·L` no fio de estação mais, em cada trecho do comum, a
+   corrente das válvulas além dele; os comprimentos incluem a folga. Sem turnos, todas as válvulas
+   ficam ligadas juntas, como no cálculo hidráulico. Informa estações, comprimentos de rota e de fio,
+   bitolas, tensões nos solenoides e a corrente de pico de cada controlador; avisa sobre válvulas sem
+   fio, rotas que não chegam a um controlador, controladores com poucas estações ou abrindo mais
+   válvulas do que acionam juntas e tensões abaixo da mínima.
+8. **Materiais**: tubos por diâmetro e classe, emissores, fitas, válvulas, acessórios, bombas
    (com seleção automática a partir do catálogo e motor padrão IEC), pivôs com torres, aspersores e
-   reguladores, e **conexões selecionadas automaticamente** da geometria (luvas por barra, cotovelos,
-   tês, cruzetas, reduções, tampões, derivações de lateral, finais de fita, hastes), com custos e
-   custo anualizado (fator de recuperação de capital) mais energia.
+   reguladores, **conexões selecionadas automaticamente** da geometria (luvas por barra, cotovelos,
+   tês, cruzetas, reduções, tampões, derivações de lateral, finais de fita, hastes) e os itens
+   elétricos (fios por bitola, controladores, dois conectores à prova d'água por válvula), com custos
+   e custo anualizado (fator de recuperação de capital) mais energia.
 
 O cálculo roda num **Web Worker** no navegador (ou num isolate no desktop) e devolve à interface as
 entidades redimensionadas e os resultados; enquanto ele roda, a edição é bloqueada para não perder
@@ -508,6 +546,8 @@ alterações, mas navegação, relatórios e outras abas seguem livres.
 | `tiny_segment` | aviso | Segmento menor que a tolerância |
 | `supply_no_head` | aviso | Fonte de pressão fixa sem pressão informada |
 | `zone_dead_end`, `area_no_emitters`, `no_terrain`, `looped_mainline`, `no_hydraulics` | informação | Situações que merecem atenção mas não impedem o cálculo |
+| `elec_stations`, `elec_voltage` | erro | Controlador com menos estações que válvulas ligadas a ele; tensão no solenoide abaixo da mínima mesmo com o fio mais grosso habilitado |
+| `elec_unwired`, `elec_wire_orphan`, `elec_ctrl_unwired`, `elec_no_controller`, `elec_no_wires`, `elec_simultaneous` | aviso | Válvula sem fio até um controlador; rota que não chega a nenhum controlador; controlador fora das rotas; rotas sem controlador; nenhum fio habilitado no catálogo; turno que abre mais válvulas do que o controlador aciona juntas |
 
 ### Mensagens do cálculo
 
@@ -532,7 +572,8 @@ turnos, turnos vazios, pressão do emissor fora da faixa do bocal, rotação da 
   repetidos e duplicados, renomear zonas repetidas, escolher (ou inserir) a bomba de menor custo de
   ciclo de vida, trocar por submersa a bomba de superfície que não consegue succionar, tubo de
   classe de pressão maior, válvula do tamanho certo, dividir as zonas em mais turnos, voltar aos
-  parâmetros padrão, pôr num turno as zonas esquecidas, a pressão nominal do emissor, entre outras.
+  parâmetros padrão, pôr num turno as zonas esquecidas, a pressão nominal do emissor, controlador com
+  estações suficientes (o próximo tamanho padrão), habilitar os fios do catálogo, entre outras.
 - **Corrigir automaticamente** (menu Projeto, `FIX`): correções seguras e cálculos em rodadas até
   não haver mais o que corrigir, tudo num único passo de desfazer, com um resumo do que mudou e do
   que depende de uma decisão sua.
@@ -557,7 +598,10 @@ Abas: resumo das zonas, tubos, emissores, linha principal e duty, lista de mater
 hídricos, agronomia (ETc, água prontamente disponível, intervalo, lâminas, horas por evento),
 programação (calendário do controlador por turno), lavagem, golpe de aríete, pivôs e vãos do pivô,
 linha piezométrica (gráfico do tubo, lateral ou válvula selecionada, com a banda de pressão
-admissível), perfil (terreno ao longo de um caminho, com tubo e linha piezométrica) e mensagens.
+admissível), perfil (terreno ao longo de um caminho, com tubo e linha piezométrica), mensagens e
+elétrico (estação, comprimento de rota e de fio, fio de estação e comum, válvulas abertas juntas e
+tensão no solenoide de cada válvula; estações usadas, comprimento do comum e corrente de pico de
+cada controlador).
 As tabelas são virtualizadas, com colunas medidas pelo conteúdo, e servem de base para todos os
 exportadores, de modo que PDF, Excel e CSV mostram os mesmos números.
 
@@ -574,7 +618,7 @@ carimbo traz os detalhes do projeto, a seta norte e a escala gráfica. O escrito
 
 | Formato | Conteúdo | Observações |
 |---|---|---|
-| DXF | Entidades por camada, R12 | Abre em qualquer CAD |
+| DXF | Entidades por camada, R12 (rotas de fios e controladores em camadas próprias) | Abre em qualquer CAD |
 | DWG | AutoCAD 2000 (AC1015) | Escritor próprio, validado com LibreDWG e relido pelo leitor do app |
 | PDF | Prancha com carimbo, legenda, seta norte, escala e, opcionalmente, relatórios | |
 | SVG | Folha em milímetros, um grupo por camada | Navegadores, Inkscape |
@@ -610,8 +654,8 @@ worker de cálculo.
 
 | Formato | O que entra | Detalhes |
 |---|---|---|
-| DXF (ASCII) | LINE, LWPOLYLINE e POLYLINE (com arcos de bulge), CIRCLE, ARC, ELLIPSE, SPLINE, TEXT, MTEXT, ATTRIB, POINT, camadas e blocos (INSERT, MINSERT e o bloco das cotas DIMENSION, inclusive aninhados) | R12 a 2018, Latin-1 ou UTF-8; polilinhas com elevação (2D ou vértices 3D) viram curvas de nível; pontos com Z viram cotas; escala pelas unidades do arquivo |
-| DWG | Mesmas entidades, camadas, blocos (INSERT, MINSERT) e cotas | R13/R14 (parcial), 2000, 2004, 2007, 2010, 2013 e 2018, em Dart puro; avisa objetos ignorados |
+| DXF (ASCII) | LINE, LWPOLYLINE e POLYLINE (com arcos de bulge), CIRCLE, ARC, ELLIPSE, SPLINE (pelos pontos de ajuste, ou a curva NURBS dos pontos de controle, nós e pesos), HATCH (contornos de polilinhas, linhas, arcos, elipses e splines; ângulo e espaçamento do padrão; ilhas como polilinhas), SOLID, TRACE, TEXT, MTEXT, ATTRIB, POINT, camadas e blocos (INSERT, MINSERT e o bloco das cotas DIMENSION, inclusive aninhados) | R12 a 2018, Latin-1 ou UTF-8; polilinhas com elevação (2D ou vértices 3D) viram curvas de nível; pontos com Z viram cotas; escala pelas unidades do arquivo |
+| DWG | Mesmas entidades (inclusive ELLIPSE, SPLINE, HATCH, SOLID e TRACE), camadas, blocos (INSERT, MINSERT) e cotas | R13/R14 (parcial), 2000, 2004, 2007, 2010, 2013 e 2018, em Dart puro; avisa objetos ignorados |
 | KML / KMZ | Placemarks, pastas como camadas, altitude ou atributo ELEV como elevação | WGS84 → UTM (fuso automático) com origem local; georreferencia o projeto |
 | SHP (+ DBF, PRJ, CPG em zip) | Pontos, linhas, polígonos, multipontos, variantes Z | Elevação do Z ou de atributo ELEV/Z/COTA; nome de NAME/NOME/ID; atributos em UTF-8 ou Latin-1 (.cpg); sem .prj, graus são reconhecidos pela faixa e pela precisão |
 | CSV, TXT, XYZ, PNEZD | Pontos de levantamento | Colunas detectadas pelo cabeçalho ou posição; vírgula decimal aceita; lat/lon reconhecidos |
@@ -728,6 +772,9 @@ lib/
       fittings.dart           seleção automática de conexões
       pump_selection.dart     escolha de bomba e motor
       agronomy.dart           ETc, balanço hídrico, programa do controlador
+      management.dart         demandas das zonas e pivôs, turnos automáticos
+      densogram.dart          água aplicada pelos aspersores como desenhados, uniformidade por área
+      electrical.dart         fiação das válvulas: rotas, estações, bitolas pela tensão no solenoide
       design_check.dart       verificação de projeto
       advisor.dart            problemas explicados, configurações impossíveis, correções aplicáveis
       auto_fix.dart           correções, corrigir automaticamente, otimização
@@ -791,7 +838,7 @@ Requisitos: Flutter estável recente (desenvolvido com 3.47, Dart 3.13). Sem dep
 ```bash
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # 350 testes: motor, modelo, formatos, interface
+flutter test                       # 764 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
@@ -827,7 +874,7 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 
 ## 16. Testes
 
-`flutter test` roda 350 testes em cerca de um minuto e meio. O que cada grupo garante:
+`flutter test` roda 764 testes em pouco mais de dois minutos. O que cada grupo garante:
 
 | Arquivo | Cobertura |
 |---|---|
@@ -846,8 +893,13 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/spatial_index_test.dart` | Índice contra força bruta, ordem de desenho, casos degenerados, invalidação no controller, seleção e snap |
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Coordenadas coladas (decimais, vírgula, hemisférios, DMS, links); intervalo de curvas; escolha de idioma pelo sistema e pela URL |
 | `core/i18n_packs_test.dart` | Cada pacote de idioma cobre todas as chaves da tabela, do tutorial e dos nomes do catálogo com os mesmos marcadores e não é majoritariamente inglês; pacotes instalados chegam aos textos, ao tutorial e ao catálogo; `setLanguage` carrega o pacote sob demanda com inglês enquanto isso e repete um carregamento que falhou |
-| `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Edição (grips, transformações, aparar, estender, cortar), JSON das entidades, abas e área de transferência, protocolo do worker, HTTP local, armazenamento de projetos, câmera e snap |
-| `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto |
+| `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Edição (grips, transformações, aparar, estender, cortar), JSON das entidades, abas e área de transferência, protocolo do worker, HTTP local, armazenamento de projetos, câmera e snap (a área de transferência leva os itens de catálogo dos pivôs e a fiação) |
+| `core/densogram_test.dart` | Todo perfil de aspersão devolve a vazão inteira; arcos parciais molham o próprio setor (inclusive o arco do bocal); espaçamento cabeça a cabeça é uniforme e espaçamento largo não; áreas de taxas diferentes julgadas pela própria média; estatísticas de valores conhecidos; limite de células; saídas das laterais; resultados dão a pressão de cada emissor; filtro de zonas; cores, pixels e CSV |
+| `core/electrical_test.dart`, `core/electrical_io_test.dart` | Rotas, estações e válvula no meio da rota; tensão no solenoide conferida à mão; turnos separados carregam menos o comum; os fios escolhidos são os mais baratos (conferido por força bruta); trechos que nenhum fio atende; válvulas sem fio, rotas órfãs, estações insuficientes, sem controlador; catálogo de fios (padrão, AWG, CSV, XLSX, JSON); o cálculo põe a fiação na lista de materiais e no relatório Elétrico; códigos da verificação; correções do assistente; saída DXF, DWG, GeoJSON e prancha |
+| `core/management_test.dart` | Demandas de zonas e pivôs (nominais ou dos resultados); turnos automáticos: maiores primeiro dentro da vazão da fonte, limite de zonas, zonas maiores que o limite, ids que não colidem |
+| `core/import_curves_test.dart` | NURBS racional e fixada; SPLINE do DXF por pontos de controle ou de ajuste, HATCH com bordas de polilinha, linha, arco (nos dois sentidos), elipse e spline e ilhas, SOLID/TRACE, hachuras dentro de blocos; splines, hachuras, sólidos e a elipse do DWG R2000–R2018 iguais aos lidos pelo LibreDWG |
+| `core/controller_extra_test.dart` | Abrir arquivo ou exemplo descarta marcas, perfil, verificação e histórico antigos; edições de diálogo como um passo de desfazer (mutações incorporadas, unidades mantêm os resultados); desfazer sem nada a desfazer; grips arrastam fios com os nós de tubo; pintura das novas entidades e do densograma |
+| `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto; gerenciamento com pivôs e turnos automáticos, diálogos fechados por fora, densograma, ferramentas de controlador e fio com a aba Elétrico, cotas de ordenada e de diâmetro, a aba Fios do catálogo, campos numéricos que rejeitam um valor |
 | `web_metadata_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt |
 
 Armadilhas conhecidas ao escrever testes de widget: o cálculo é assíncrono de verdade e deve rodar
@@ -862,10 +914,14 @@ tamanho de janela definido; o carregamento de assets (catálogos) usa `rootBundl
 - **Redes malhadas**: o LP dimensiona malhas por caminhos em árvore (aproximação) e a análise final
   confere; o método guloso é a alternativa segura.
 - **DWG**: o leitor cobre as entidades típicas de uma planta (linhas, polilinhas, círculos, arcos,
-  pontos, textos, blocos e cotas); splines e hachuras do DWG não são importadas; o escritor grava
-  apenas AutoCAD 2000, com linhas, polilinhas, círculos, arcos, pontos e textos.
+  elipses, splines, hachuras, sólidos, pontos, textos, blocos e cotas); o escritor grava apenas
+  AutoCAD 2000, com linhas, polilinhas, círculos, arcos, pontos e textos (hachuras e splines saem
+  como contornos e polilinhas).
 - **Cálculo em regime permanente**: golpe de aríete é uma estimativa de Joukowsky, não um transiente
-  completo; não há fertirrigação, sistema elétrico nem controladores além do programa de irrigação.
+  completo; não há fertirrigação.
+- **Elétrica**: fiação convencional (um fio de estação por válvula e um comum compartilhado) com
+  solenoides de 24 V CA; sistemas de dois fios com decodificadores, válvula mestra e relé de partida
+  de bomba não são modelados; a fiação é desenhada à mão (sem roteamento automático).
 - **Pivôs**: hidráulica da máquina e demanda sobre a linha principal, sem projeto de bocais por
   posição além da tabela de vãos.
 - **Colaboração**: não há edição simultânea nem compartilhamento por link; o compartilhamento é pelo
@@ -873,7 +929,8 @@ tamanho de janela definido; o carregamento de assets (catálogos) usa `rootBundl
 - **Desempenho**: projetos com centenas de fitas por zona levam alguns segundos por zona; a etapa de
   lavagem é a mais pesada.
 
-Roteiro sugerido: splines e hachuras no DWG; exportação de planilhas de bocais de pivô; catálogos
+Roteiro sugerido: sistemas de dois fios com decodificadores e roteamento automático dos fios ao longo
+dos tubos; exportação de planilhas de bocais de pivô; catálogos
 adicionais da comunidade; testes de navegador automatizados para a troca de idioma em tempo de
 execução.
 

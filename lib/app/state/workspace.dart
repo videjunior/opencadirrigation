@@ -70,6 +70,10 @@ class ClipboardPayload {
           if (x.valveSpecId != null) valves.add(x.valveSpecId!);
         case PumpEntity x:
           if (x.pumpSpecId != null) pumps.add(x.pumpSpecId!);
+        case PivotEntity x:
+          if (x.pipeSpecId != null) pipes.add(x.pipeSpecId!);
+          if (x.sprinklerSpecId != null) outlets.add(x.sprinklerSpecId!);
+          if (x.regulatorSpecId != null) valves.add(x.regulatorSpecId!);
         default:
           break;
       }

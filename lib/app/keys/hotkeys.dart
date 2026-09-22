@@ -137,6 +137,9 @@ abstract class HotkeyActions {
 
   /// Opens the design optimisation (OPT command).
   void optimize();
+
+  /// Opens the densogram (DENS command).
+  void densogram();
   void clipboard(CadAction action);
 }
 
@@ -444,6 +447,8 @@ class Hotkeys {
         actions.autoFix();
       case CadAction.optimize:
         actions.optimize();
+      case CadAction.densogram:
+        actions.densogram();
       case CadAction.snap:
         c.snap.enabled = !c.snap.enabled;
         c.refresh();

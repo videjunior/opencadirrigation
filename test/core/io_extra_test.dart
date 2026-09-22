@@ -432,12 +432,19 @@ void main() {
       expect(half.points.first.distanceTo(const Pt(4, 0)), lessThan(1e-9));
       expect(half.points.last.distanceTo(const Pt(-4, 0)), lessThan(1e-9));
       expect(half.points.every((p) => p.y >= -1e-9), isTrue);
+      // fit points: a smooth spline through them
       final fit = on('SF').single;
+      expect(fit.type, 'SPLINE');
       expect(fit.points, [const Pt(0, 0), const Pt(5, 5), const Pt(10, 0)]);
       expect(fit.closed, isFalse);
+      // control points only: the curve they define (here a quadratic Bézier
+      // with its top at y = 2.5), not the control polygon through (5, 5)
       final ctrl = on('SC').single;
-      expect(ctrl.points.length, 3);
+      expect(ctrl.type, 'POLYLINE');
       expect(ctrl.closed, isTrue);
+      expect(ctrl.points.first, const Pt(0, 0));
+      expect(ctrl.points.last.distanceTo(const Pt(10, 0)), lessThan(1e-12));
+      expect(ctrl.points.map((p) => p.y).reduce(math.max), closeTo(2.5, 0.01));
       final bulge = on('BU').single;
       expect(bulge.points.first, const Pt(0, 0));
       expect(bulge.points.last, const Pt(10, 0));

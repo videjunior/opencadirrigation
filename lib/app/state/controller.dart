@@ -10,6 +10,7 @@ import 'package:flutter/scheduler.dart';
 import '../../core/design/advisor.dart';
 import '../../core/design/auto_fix.dart';
 import '../../core/design/block_generator.dart';
+import '../../core/design/densogram.dart';
 import '../../core/design/design_check.dart';
 import '../../core/design/network_builder.dart';
 import '../../core/design/report_tables.dart';
@@ -85,9 +86,12 @@ enum ToolId {
   profile,
   pivot,
   alignImage,
+  controller,
+  wire,
+  dimOrdinate,
 }
 
-enum OverlayMode { none, velocity, pressure, sizes, minMax }
+enum OverlayMode { none, velocity, pressure, sizes, minMax, densogram }
 
 /// Background map tiles (needs a georeference): free tile services, the
 /// Google Map Tiles API (with the user's own key) and a custom XYZ template.
@@ -181,6 +185,13 @@ class ToolSettings {
   bool splineClosed = false;
   String leaderText = 'Note';
   double angularDimRadius = 3;
+
+  /// Radial dimension tool writes the diameter (Ø) instead of the radius.
+  bool radialDiameter = false;
+
+  // electrical
+  int controllerStations = 12;
+  double controllerVolts = 24;
 }
 
 /// Rectangular / polar array options (Edit → Array).
@@ -532,6 +543,9 @@ class ProjectController extends ChangeNotifier {
     JunctionEntity _ => 'junction',
     PivotEntity _ => 'pivot',
     AreaEntity _ => 'area',
+    ControllerEntity _ => 'controller',
+    WireEntity _ => 'wire',
+    OrdinateDimensionEntity _ => 'dimOrdinate',
     _ => 'select',
   };
 
@@ -568,6 +582,52 @@ class ProjectController extends ChangeNotifier {
     notifyListeners();
     _autosaveMaybe();
     return r;
+  }
+
+  /// Starts an in-place edit of the project settings (details, parameters,
+  /// catalogue, layers, system flows) by a dialog; hand the returned token
+  /// to [commitSettingsEdit] when the dialog closes, however it is closed.
+  SettingsEdit beginSettingsEdit([String label = 'hist.settings']) => SettingsEdit._(_capture(label), project);
+
+  /// Ends an edit started with [beginSettingsEdit]: when anything changed,
+  /// the whole dialog session becomes one undo step (edits made through
+  /// [mutate] meanwhile are folded into it), the project is marked as
+  /// modified and, when the parameters, the catalogue or the system flows
+  /// changed, the results (computed with the old settings) are discarded.
+  /// Returns whether anything changed.
+  bool commitSettingsEdit(SettingsEdit edit) {
+    if (!identical(edit._project, project)) return false; // another project was opened meanwhile
+    final before = edit._state.rest, now = project.toJson(includeEntities: false);
+    String part(Map<String, dynamic> j, String k) => switch (k) {
+      // the display units do not change any result
+      'units' => jsonEncode((j['params'] as Map<String, dynamic>)['units']),
+      'params' => jsonEncode({...(j['params'] as Map<String, dynamic>)}..remove('units')),
+      'meta' => jsonEncode({...(j['meta'] as Map<String, dynamic>)}..remove('modified')),
+      _ => jsonEncode(j[k]),
+    };
+    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer'];
+    final changed = [for (final k in sections) if (part(before, k) != part(now, k)) k];
+    // undo steps recorded while the dialog was open (currency conversion…)
+    var mutated = 0;
+    while (_undo.isNotEmpty && !_undo.last.time.isBefore(edit._state.time)) {
+      _undo.removeLast();
+      mutated++;
+    }
+    if (changed.isEmpty && mutated == 0) return false;
+    _editSeq++;
+    _undo.add(edit._state);
+    if (_undo.length > maxUndo) _undo.removeAt(0);
+    _redo.clear();
+    historyTouched = DateTime.now();
+    dirty = true;
+    project.meta.modified = DateTime.now();
+    if (changed.any((k) => k == 'params' || k == 'catalog' || k == 'systemFlows')) {
+      results = null;
+      feedEnvelope.clear();
+    }
+    notifyListeners();
+    _autosaveMaybe();
+    return true;
   }
 
   bool get canUndo => _undo.isNotEmpty;
@@ -607,15 +667,14 @@ class ProjectController extends ChangeNotifier {
 
   void undo() {
     track('undo');
-    if (_undo.isEmpty || !editAllowed()) return;
-    _undoOnce();
+    if (_undo.isNotEmpty && editAllowed()) _undoOnce();
+    // listeners (the tutorial) see the tracked command even with nothing to undo
     notifyListeners();
   }
 
   void redo() {
     track('redo');
-    if (_redo.isEmpty || !editAllowed()) return;
-    _redoOnce();
+    if (_redo.isNotEmpty && editAllowed()) _redoOnce();
     notifyListeners();
   }
 
@@ -926,13 +985,17 @@ class ProjectController extends ChangeNotifier {
 
   double get _junctionTolerance => math.max(project.params.connectTolerance, 1e-6);
 
-  /// Hydraulic entities other than [exceptId] with a vertex / position on
-  /// [at]: the ones that share the junction and must go with it.
+  /// Entities other than [exceptId] with a vertex / position on [at]: the
+  /// ones that share the junction and must go with it. A pipe node takes the
+  /// hydraulic items and the wire routes ending there with it; a wire
+  /// vertex only the other wires (a valve does not follow its wire).
   List<Entity> _joinedAt(Pt at, String exceptId) {
     final tol = _junctionTolerance;
     final out = <Entity>[];
+    final wireOnly = project.byId(exceptId) is WireEntity;
     for (final e in entitiesIn(Bounds(at.x - tol, at.y - tol, at.x + tol, at.y + tol))) {
-      if (e.id == exceptId || !e.isHydraulic || _locked(e)) continue;
+      final joins = wireOnly ? e is WireEntity : (e.isHydraulic || e is WireEntity);
+      if (e.id == exceptId || !joins || _locked(e)) continue;
       if (e is PointEntity) {
         if (e.position.distanceTo(at) <= tol) out.add(e);
       } else if (e is PolyEntity) {
@@ -1648,6 +1711,60 @@ class ProjectController extends ChangeNotifier {
     return r;
   }
 
+  // ------------------------------------------------------------ densogram
+  /// Options of the densogram (Zone → Densogram).
+  final DensogramOptions densogramOptions = DensogramOptions();
+  Densogram? _densogram;
+  String _densogramSig = '';
+
+  /// Picture of the densogram grid (one pixel per cell), decoded after each
+  /// computation; null while decoding or when there is nothing to show.
+  ui.Image? densogramImage;
+  int _densogramImageGen = 0;
+
+  String get _densogramKey => '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.valveIds?.join(',')}';
+
+  /// Water applied by the sprinklers as laid out (recomputed when the
+  /// drawing, the results or the options changed).
+  Densogram get densogram {
+    final sig = _densogramKey;
+    final cached = _densogram;
+    if (cached != null && sig == _densogramSig) return cached;
+    final d = computeDensogram(project, results: results, options: densogramOptions);
+    _densogram = d;
+    _densogramSig = sig;
+    _buildDensogramImage(d);
+    return d;
+  }
+
+  /// Shows the densogram on the drawing (and computes it).
+  Densogram showDensogram() {
+    overlay = OverlayMode.densogram;
+    track('densogram');
+    final d = densogram;
+    notifyListeners();
+    return d;
+  }
+
+  void _buildDensogramImage(Densogram d) {
+    final gen = ++_densogramImageGen;
+    densogramImage = null;
+    if (d.isEmpty) return;
+    final px = densogramPixels(d);
+    try {
+      ui.decodeImageFromPixels(px, d.nx, d.ny, ui.PixelFormat.rgba8888, (img) {
+        if (gen != _densogramImageGen) {
+          img.dispose();
+          return;
+        }
+        densogramImage = img;
+        notifyListeners();
+      });
+    } catch (_) {
+      // no engine (pure Dart tests): the painter falls back to cells
+    }
+  }
+
   // ------------------------------------------------------------ images
   /// Decoded image for an image entity (starts decoding on first request).
   ui.Image? imageFor(ImageEntity e) {
@@ -1693,12 +1810,23 @@ class ProjectController extends ChangeNotifier {
     results = null;
     selection.clear();
     unconnected = {};
-    feedEnvelope.clear();
+    _forgetProjectViews();
     images.clear();
     _undo.clear();
     _redo.clear();
     dirty = false;
     zoomAll();
+  }
+
+  /// Drops what the screen shows about the previous project (profile line,
+  /// design check, grade-line pick, densogram, envelopes) when another one
+  /// is opened or created.
+  void _forgetProjectViews() {
+    feedEnvelope.clear();
+    profilePath = null;
+    checkReport = null;
+    hglEntityId = null;
+    hoverId = null;
   }
 
   /// Default catalog in currency [code] (ISO 4217): the user's saved one
@@ -1796,23 +1924,33 @@ class ProjectController extends ChangeNotifier {
 
   void loadJson(String s) {
     final j = jsonDecode(s) as Map<String, dynamic>;
-    project = Project.fromJson(j);
-    results = null;
+    final p = Project.fromJson(j);
+    DesignResults? r;
     final rj = j['results'];
     if (rj is Map<String, dynamic>) {
       try {
-        results = DesignResults.fromJson(rj);
+        r = DesignResults.fromJson(rj);
       } catch (e) {
         debugPrint('results: $e');
       }
     }
+    openProject(p, results: r);
+  }
+
+  /// Shows [p] in place of the current project (a file, a version, an
+  /// example): selection, marks, history and cached images of the previous
+  /// project are dropped. [dirty] marks it as not saved yet.
+  void openProject(Project p, {DesignResults? results, bool dirty = false}) {
+    project = p;
+    this.results = results;
     selection.clear();
     unconnected = results?.unconnected ?? {};
-    feedEnvelope.clear();
+    _forgetProjectViews();
+    _autoCurrency = false;
     images.clear();
     _undo.clear();
     _redo.clear();
-    dirty = false;
+    this.dirty = dirty;
     zoomAll();
     notify(t('msg.loaded'));
   }
@@ -1921,14 +2059,18 @@ class ProjectController extends ChangeNotifier {
             } else {
               list.add(PolylineEntity(id: project.newId(), layer: layer, name: e.name, points: pts, closed: e.closed));
             }
+          case 'SPLINE':
+            if (e.points.length >= 2) list.add(SplineEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map((p) => p * s).toList(), closed: e.closed));
+          case 'HATCH':
+            if (e.points.length >= 3) list.add(HatchEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map((p) => p * s).toList(), angleDeg: e.rotation, spacing: e.height > 0 ? e.height * s : 1, solid: e.solid));
           case 'CIRCLE':
-            list.add(CircleEntity(id: project.newId(), layer: layer, center: e.center! * s, radius: e.radius * s));
+            list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: e.center! * s, radius: e.radius * s));
           case 'ARC':
             var sweep = (e.endAngle - e.startAngle);
             if (sweep <= 0) sweep += 360;
-            list.add(ArcEntity(id: project.newId(), layer: layer, center: e.center! * s, radius: e.radius * s, startRad: degToRad(e.startAngle), sweepRad: degToRad(sweep)));
+            list.add(ArcEntity(id: project.newId(), layer: layer, name: e.name, center: e.center! * s, radius: e.radius * s, startRad: degToRad(e.startAngle), sweepRad: degToRad(sweep)));
           case 'TEXT':
-            list.add(TextEntity(id: project.newId(), layer: layer, position: e.points[0] * s, text: e.text, height: e.height * s, rotationDeg: e.rotation));
+            list.add(TextEntity(id: project.newId(), layer: layer, name: e.name, position: e.points[0] * s, text: e.text, height: e.height * s, rotationDeg: e.rotation));
           case 'POINT':
             list.add(SpotHeightEntity(id: project.newId(), layer: elev != null || asSpots ? Layers.spotHeights : layer, name: e.name, position: e.points[0] * s, elevation: (elev ?? 0) * s));
         }
@@ -1996,6 +2138,14 @@ class ProjectController extends ChangeNotifier {
 double mathMax(double a, double b) => a > b ? a : b;
 
 String prettyJson(Object o) => const JsonEncoder.withIndent('  ').convert(o);
+
+/// An in-place edit of the project settings by a dialog (see
+/// [ProjectController.beginSettingsEdit]).
+class SettingsEdit {
+  SettingsEdit._(this._state, this._project);
+  final _UndoState _state;
+  final Project _project;
+}
 
 /// Outcome of an online DEM download.
 class DemImportResult {

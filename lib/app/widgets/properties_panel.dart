@@ -6,6 +6,7 @@ import '../../core/design/agronomy.dart';
 import '../../core/design/pivot.dart' show PivotKind;
 import '../../core/model/catalog.dart';
 import '../../core/model/entities.dart';
+import '../../core/model/geometry.dart';
 import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
@@ -28,7 +29,7 @@ class PropertiesPanel extends StatelessWidget {
     final locked = c.project.isLocked(e.layer);
     final items = <Widget>[
       Row(children: [
-        Expanded(child: Text(t('tool.${_toolNameOf(e)}'), style: const TextStyle(fontWeight: FontWeight.bold))),
+        Expanded(child: Text(t('tool.${ProjectController.toolKeyOf(e)}'), style: const TextStyle(fontWeight: FontWeight.bold))),
         IconButton(icon: const Icon(Icons.center_focus_strong, size: 16), tooltip: t('props.zoomTo'), onPressed: () => c.zoomToEntity(e.id)),
         IconButton(icon: const Icon(Icons.delete_outline, size: 16), onPressed: c.deleteSelected),
       ]),
@@ -242,7 +243,37 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.dimRadius'), value: ad.radius, onChanged: (x) => set(() => ad.radius = x <= 0 ? 1 : x, inv: false)),
         ]);
       case RadialDimensionEntity rd:
-        items.add(KV(t('props.radius'), '${fmt(u.lengthFromSi(rd.radius))} ${u.lengthLabel}'));
+        items.addAll([
+          KV(rd.diameter ? t('props.diameter') : t('props.radius'), '${fmt(u.lengthFromSi(rd.value))} ${u.lengthLabel}'),
+          SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.dimDiameter'), style: const TextStyle(fontSize: 12)), value: rd.diameter, onChanged: (x) => set(() => rd.diameter = x, inv: false)),
+        ]);
+      case OrdinateDimensionEntity od:
+        items.addAll([
+          KV(od.xAxis ? 'X' : 'Y', '${fmt(u.lengthFromSi(od.value))} ${u.lengthLabel}'),
+          SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.ordinateX'), style: const TextStyle(fontSize: 12)), value: od.xAxis, onChanged: (x) => set(() => od.xAxis = x, inv: false)),
+          NumField(label: '${t('props.ordinateOrigin')} X', value: od.origin.x, onChanged: (x) => set(() => od.origin = Pt(x, od.origin.y), inv: false)),
+          NumField(label: '${t('props.ordinateOrigin')} Y', value: od.origin.y, onChanged: (x) => set(() => od.origin = Pt(od.origin.x, x), inv: false)),
+        ]);
+      case ControllerEntity k:
+        final duty = c.results?.electrical?.controllers.where((d) => d.controllerId == k.id).firstOrNull;
+        items.addAll([
+          NumField(label: t('props.stations'), value: k.stations.toDouble(), decimals: 0, onChanged: (x) => set(() => k.stations = x.round().clamp(1, 999))),
+          NumField(label: t('props.outputVolts'), value: k.outputVolts, onChanged: (x) => set(() => k.outputVolts = x <= 0 ? k.outputVolts : x)),
+          NumField(label: t('props.maxSimultaneous'), value: k.maxSimultaneous.toDouble(), decimals: 0, onChanged: (x) => set(() => k.maxSimultaneous = x.round().clamp(0, 99))),
+          NumField(label: '${t('props.pivotCost')} (${c.project.params.currency})', value: k.cost, onChanged: (x) => set(() => k.cost = x < 0 ? 0 : x)),
+          if (duty != null) ...[
+            SectionTitle(t('props.results')),
+            KV(t('elec.used'), '${duty.used} / ${duty.stations}', color: duty.overloaded ? CadColors.warning : null),
+            KV(t('elec.common'), '${cat.wire(duty.commonWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(duty.commonWireM), 0)} ${u.lengthLabel}'),
+            KV(t('elec.maxOpen'), '${duty.maxOpen}'),
+            KV(t('elec.peak'), '${fmt(duty.peakCurrentA, 2)} A'),
+          ],
+        ]);
+      case WireEntity w:
+        items.addAll([
+          KV(t('props.length'), '${fmt(u.lengthFromSi(w.length))} ${u.lengthLabel}'),
+          Text(t('hint.wire'), style: const TextStyle(color: Colors.white54, fontSize: 11)),
+        ]);
       case LeaderEntity le:
         items.addAll([
           TextFieldRow(label: t('props.text'), value: le.text, onChanged: (x) => set(() => le.text = x, inv: false)),
@@ -326,7 +357,7 @@ class PropertiesPanel extends StatelessWidget {
     final sel = c.project.entities.where((e) => c.selection.contains(e.id)).toList();
     final byType = <String, int>{};
     for (final e in sel) {
-      byType[_toolNameOf(e)] = (byType[_toolNameOf(e)] ?? 0) + 1;
+      byType[ProjectController.toolKeyOf(e)] = (byType[ProjectController.toolKeyOf(e)] ?? 0) + 1;
     }
     final dominant = byType.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
     final items = <Widget>[
@@ -467,36 +498,6 @@ class PropertiesPanel extends StatelessWidget {
     }, invalidateResults: false);
   });
 
-  String _toolNameOf(Entity e) => switch (e) {
-    LineEntity _ => 'line',
-    PolylineEntity _ => 'polyline',
-    CircleEntity _ => 'circle',
-    ArcEntity _ => 'arc',
-    SplineEntity _ => 'spline',
-    HatchEntity _ => 'hatch',
-    SymbolEntity _ => 'symbol',
-    TextEntity _ => 'text',
-    DimensionEntity _ => 'dimension',
-    AngularDimensionEntity _ => 'dimAngular',
-    RadialDimensionEntity _ => 'dimRadial',
-    LeaderEntity _ => 'leader',
-    ImageEntity _ => 'image',
-    ContourEntity _ => 'contour',
-    SpotHeightEntity _ => 'spot',
-    PipeEntity p => p.scope == HydraulicScope.zone ? 'zonePipe' : 'mainPipe',
-    SpraylineEntity _ => 'sprayline',
-    TapeEntity _ => 'tape',
-    OutletEntity _ => 'outlet',
-    ControlValveEntity _ => 'valve',
-    WaterSupplyEntity _ => 'supply',
-    PumpEntity _ => 'pump',
-    MiscHydraulicEntity _ => 'misc',
-    JunctionEntity _ => 'junction',
-    PivotEntity _ => 'pivot',
-    AreaEntity _ => 'area',
-    _ => 'select',
-  };
-
   List<Widget> _results(Entity e) {
     final r = c.results;
     if (r == null) return const [];
@@ -517,6 +518,12 @@ class PropertiesPanel extends StatelessWidget {
         if (z.overlapCu > 0) KV(t('rep.overlapCu'), fmt(z.overlapCu, 0)),
         for (final w in z.warnings) Text(c.t.warning(w, entityName: (id) => c.project.byId(id)?.name ?? id), style: const TextStyle(fontSize: 11, color: CadColors.warning)),
       ]);
+      final run = r.electrical?.runOf(e.id);
+      if (run != null) {
+        out.add(KV(t('elec.station'), '${c.project.byId(run.controllerId)?.name ?? run.controllerId} · ${run.station}'));
+        out.add(KV(t('elec.stationWire'), '${c.project.catalog.wire(run.stationWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(run.wireM), 0)} ${u.lengthLabel}'));
+        out.add(KV(t('elec.volts'), '${fmt(run.volts, 1)} V', color: run.ok ? CadColors.ok : CadColors.warning));
+      }
       final fl = r.flushing.where((f) => f.valveId == e.id).firstOrNull;
       if (fl != null) out.add(KV(t('reports.flushing'), '${fmt(u.flowFromSi(fl.flow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(fl.requiredUpstreamHead), 1)} ${u.pressureLabel}'));
       return out;
@@ -703,6 +710,17 @@ class PropertiesPanel extends StatelessWidget {
         items.add(SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.splineClosed'), style: const TextStyle(fontSize: 12)), value: s.splineClosed, onChanged: (v) => upd(() => s.splineClosed = v)));
       case ToolId.dimAngular:
         items.add(NumField(label: t('props.dimRadius'), value: s.angularDimRadius, onChanged: (v) => upd(() => s.angularDimRadius = v <= 0 ? 1 : v)));
+      case ToolId.dimRadial:
+        items.addAll([
+          SwitchListTile(key: const Key('tool_radial_diameter'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.dimDiameter'), style: const TextStyle(fontSize: 12)), value: s.radialDiameter, onChanged: (v) => upd(() => s.radialDiameter = v)),
+          Text(t('hint.dimRadial'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+        ]);
+      case ToolId.controller:
+        items.addAll([
+          NumField(label: t('props.stations'), value: s.controllerStations.toDouble(), decimals: 0, onChanged: (v) => upd(() => s.controllerStations = v.round().clamp(1, 999))),
+          NumField(label: t('props.outputVolts'), value: s.controllerVolts, onChanged: (v) => upd(() => s.controllerVolts = v <= 0 ? 24 : v)),
+          Text(t('hint.controller'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+        ]);
       case ToolId.offset:
         items.add(NumField(label: '${t('props.offsetDistance')} (${u.lengthLabel})', value: u.lengthFromSi(s.offsetDistance), onChanged: (v) => upd(() => s.offsetDistance = u.lengthToSi(v.abs()))));
       case ToolId.rotate:

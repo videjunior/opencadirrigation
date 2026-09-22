@@ -18,6 +18,7 @@ import 'app/tools/tools.dart';
 import 'app/tutorial/tutorial.dart';
 import 'app/version.dart';
 import 'app/widgets/advice_panel.dart';
+import 'app/widgets/dialogs/densogram_dialog.dart';
 import 'app/widgets/dialogs/dialogs.dart';
 import 'app/widgets/dialogs/more_dialogs.dart';
 import 'app/widgets/dialogs/terrain_dialogs.dart';
@@ -287,6 +288,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   @override
   void optimize() => showOptimizeDialog(context, c);
+
+  @override
+  void densogram() => showDensogramDialog(context, c);
 
   @override
   void clipboard(CadAction action) {

@@ -99,19 +99,22 @@ The OpenCADIrrigation model (`entities.dart`) separates three families of items:
   blocks with submain and valve, and sprinkler grids.
 - **Mainline items**: water supply, mainline pipe, pump, junction, device, control valve and centre
   pivot or linear move (a demand with its own required pressure).
+- **Electrical items**: controller (stations, output voltage, cost) and wire route (the path of the
+  station and common conductors from a controller through the valves).
 - **Drawing items**: point, line, polyline, rectangle, circle, arc, spline, hatch, dimensions
-  (linear, angular, radial and leader), symbols, text, image, contour line and spot height.
+  (linear, angular, radial or diameter, ordinate and leader), symbols, text, image, contour line
+  and spot height.
 
 Structural rules adopted: a control valve always separates zone from mainline; zone items do not
 connect to mainline items without a valve between them; coincident vertices (within the connection
 tolerance) form a node; a point item on a pipe splits the pipe; there is no limit to the number of
-connections at a junction, because the network solver accepts any degree. Diameter and ordinate
-dimensions were not implemented.
+connections at a junction, because the network solver accepts any degree. Wire routes form a graph
+of their own and never touch the hydraulic network.
 
 ### 2.3 Component database
 
-Six groups (pipes, emitters with nozzles, tapes, valves and devices, pumps, fittings), all in SI,
-with the fields the hydraulics require:
+Seven groups (pipes, emitters with nozzles, tapes, valves and devices, pumps, fittings, wires), all
+in SI, with the fields the hydraulics and the wiring require:
 
 - **Pipe**: nominal diameter, real inner diameter (the one used in the calculation), Hazen-Williams
   C, roughness, pressure rating, usage (lateral, zone, mainline), cost per metre.
@@ -125,6 +128,8 @@ with the fields the hydraulics require:
   regulator.
 - **Pump**: (Q, H) points fitted to a parabola, efficiency, power.
 - **Fitting**: kind, diameters, cost.
+- **Wire**: conductor section (mm², AWG sizes converted), resistance per kilometre (copper
+  ≈ 18.1 Ω·mm²/km when not given), cost per metre.
 
 Manufacturer catalogues are open JSON files (`catalogs/`), with typical public catalogue data and
 prices to be filled in locally.
@@ -151,7 +156,10 @@ Of what design practice requires, the engine implements:
 - **Water supply** with calculated pressure (well with a negative water level, reservoir with a
   positive height) or fixed (mains, with design and maximum flow and pressure).
 - **Management** by system flows, with the duty of every supply per flow and operating times from
-  the water requirements of the areas.
+  the water requirements of the areas; automatic grouping of the zones and pivots into flows.
+- **Valve wiring**: station and common conductor sizes by solenoid voltage drop, controller
+  stations and simultaneous valves.
+- **Densogram**: the water applied by the sprinklers as drawn, with its uniformity per area.
 - **Elevation** at every node of the graph from the terrain model.
 
 ### 2.5 Reports and graphical tools
@@ -161,8 +169,9 @@ downstream of the valve, valve loss), uniformity (CU, low-quarter DU, Keller-Kar
 emitter tables (elevations, pressures, flows, velocities, diameters), mainline and supply duties,
 water requirements, agronomy, controller programme, flushing, water hammer, pivots and spans, bill
 of materials with annualised costs; hydraulic grade line and profile charts, overlays of velocity,
-pressure, diameters and minimum/maximum pressure, submain position envelope and 3D view of the
-terrain.
+pressure, diameters and minimum/maximum pressure, submain position envelope, densogram (the
+water applied by the sprinklers as drawn) and 3D view of the terrain; valve wiring (stations, wire
+sizes, solenoid voltages).
 
 ### 2.6 Formats
 
@@ -355,6 +364,30 @@ Module `uniformity.dart`.
   (q_max − q_min)/q_max, desirable ≤ 10 %, acceptable ≤ 20 %.
 - Sprinkler lateral rule: pressure variation ≤ 20 % of the operating pressure, which gives ≈ 10 %
   of flow for x = 0.5.
+
+### 9.1 Densogram
+
+The overlap CU of section 7 idealises the layout as an infinite grid. The densogram (module
+`densogram.dart`) instead adds up the wetted sector of every sprinkler and micro-sprinkler **as
+drawn**: position, arc and orientation (counter-clockwise from the orientation, as drawn on the
+screen), and, after a design, the pressure and flow of each emitter (so the radius R = a·H^b and
+the flow follow the real pressure along the laterals). A sprinkler spreads its flow q over its
+sector of angle θ with a radial profile f(r/R) normalised so that the volume integrates back to q:
+
+- triangular f = 1 − r/R (single-nozzle impact sprinklers): i(r) = q·(1 − r/R) / (θR²/6);
+- elliptical f = √(1 − (r/R)²) (multi-nozzle rotors, micro-sprinklers): i(r) = q·f / (θR²/3);
+- uniform f = 1 (spray heads, matched precipitation): i = q / (θR²/2).
+
+The rates are summed on a grid (a quarter of the smallest radius by default, coarsened to at most
+60 000 cells) and evaluated inside every irrigated area that holds sprinklers (or over the wetted
+cells when there is none): mean, minimum and maximum rate, CU, low-quarter DU, **scheduling
+coefficient** SC = mean / mean of the driest 5 % of the cells (how much longer the system must run
+so the driest spots receive the mean depth; 1 is perfect, up to about 1.3 is good) and the share of
+cells below half the mean. Each area is judged — and painted — against its own mean: a lawn of spray
+heads (≈ 40 mm/h) next to one of rotors (≈ 13 mm/h) are both uniform even though their rates
+differ, which a single mixed statistic would hide. Tests check that every profile integrates to the
+flow, that a half circle waters its own half at twice the rate, that head-to-head spacing gives a
+high CU and wide spacing a much lower one.
 
 ---
 
@@ -554,7 +587,14 @@ zone variation" parameter) and the actual one is measured over the lumped emitte
 ## 15. Mainline, system flows and supplies
 
 - **System flows**: sets of valves operating together, with start time and duration. Without
-  defined flows, every valve (and every pivot) is its own flow.
+  defined flows, all valves and pivots are assumed to operate together (the worst case for the
+  mainline and the supply).
+- **Automatic system flows** (`management.dart`): the demand of every zone (the design flow, or the
+  nominal flow of its emitters at their nominal pressure) and of every pivot (the machine flow) is
+  packed first-fit decreasing into the fewest flows whose total stays within the maximum flow
+  (the design flow of the supplies by default) and, optionally, a maximum number of zones; a zone
+  larger than the limit gets a flow of its own and is reported. The flows run one after the
+  other.
 - **Demands**: for every valve, the zone flow and the required upstream pressure; for every pivot,
   the flow and the inlet pressure of the machine.
 - **Mainline LP**: the same fraction-per-diameter variables, with a required-pressure constraint at
@@ -588,8 +628,35 @@ zone variation" parameter) and the actual one is measured over the lumped emitte
   end caps at dead ends, lateral take-offs, tape ends and emitter risers; each one looks for the
   catalogue item of that kind and size (or a generic name when there is none).
 - **Bill of materials** (`buildBom`): pipes by diameter and rating, emitters, tapes, valves,
-  devices, selected pumps, pivots (machine, towers, sprinklers, regulators) and fittings, with unit
+  devices, selected pumps, pivots (machine, towers, sprinklers, regulators), fittings and the
+  electrical items (wires by size, controllers, two waterproof connectors per valve), with unit
   costs, total, annualised cost (CRF) and annual energy.
+
+### 16.1 Valve wiring
+
+Module `electrical.dart`, conventional wiring of 24 V AC solenoids: every valve has a station
+conductor from the controller and all valves share one common (return) conductor laid along the
+same routes. The wire routes form a graph (vertices within the connection tolerance merge; a
+controller or valve on a vertex or on a route becomes a node, splitting the route there); the
+shortest path (Dijkstra) from every controller reaches the valves, each valve goes to its nearest
+controller and the stations are numbered by distance.
+
+While valve *v* opens it draws the inrush current I_in; the other valves of its system flow are
+already on and draw the holding current I_h. The voltage at the solenoid is
+
+  U_v = U_c − I_in · r_s · L_v − Σ_{e ∈ path(v)} I_e · r_c · ℓ_e,
+
+where U_c is the controller output, r_s and r_c the resistance per metre of the station and common
+conductors, L_v the route length to *v* and, for every stretch *e* of the common on the way, ℓ_e its
+length and I_e the current of the valves of the flow beyond it (I_in for *v*, I_h for the others).
+Lengths include the slack allowance (10 % by default). The design picks, for every controller, the
+common size and the station size of every valve with the **lowest cost** such that U_v ≥ U_min
+(20 V by default) for every valve in every flow it belongs to: for each candidate common, each
+valve takes the cheapest station wire that keeps its voltage (the voltages do not depend on the
+other valves' station wires), and the cheapest feasible combination wins. When no wire can serve a
+valve, the thickest is kept and the valve is reported. Example (checked in the tests): routes of
+50, 150 and 200 m with 1 mm² copper (18.1 Ω/km), three valves of one flow, 0.37 A inrush and 0.22 A
+holding, 10 % slack: the farthest valve gets 24 − 1.47 − 2.13 ≈ 20.4 V.
 
 ---
 
@@ -697,11 +764,23 @@ AutoCAD's text format organised in "group code / value" pairs. The reader (`dxf.
 BLOCKS and ENTITIES sections and reads LINE (10/20 and 11/21), LWPOLYLINE (vertices 10/20 in
 order, bulge 42, closing flag 70, elevation 38), POLYLINE with VERTEX (elevation in code 30 or in
 the equal Z of the vertices; spline control vertices ignored), CIRCLE, ARC (50/51 in degrees),
-ELLIPSE and SPLINE (approximated by polylines: the ellipse from the axes 11/21 and ratio 40, the
-spline from the fit points 11/21 or the control polygon), TEXT, ATTRIB and MTEXT (code 3 chunks
-followed by 1, formatting codes stripped, alignment point 11/21 when 72/73 ask for it) and POINT,
-with the layer (8) and the colour (62); the LAYER table and the $INSUNITS variable define layers
-and scale. A bulge b describes an arc of angle 4·atan(b) between two vertices, sampled every 15°.
+ELLIPSE (a polyline from the axes 11/21, the ratio 40 and the parameters 41/42), SPLINE, HATCH,
+SOLID and TRACE, TEXT, ATTRIB and MTEXT (code 3 chunks followed by 1, formatting codes stripped,
+alignment point 11/21 when 72/73 ask for it) and POINT, with the layer (8) and the colour (62); the
+LAYER table and the $INSUNITS variable define layers and scale. A bulge b describes an arc of angle
+4·atan(b) between two vertices, sampled every 15°.
+
+- **SPLINE**: with fit points (11/21) it becomes an editable spline through them; otherwise the
+  NURBS curve itself is evaluated by de Boor's algorithm from the degree (71), the knots (40), the
+  control points (10/20) and the weights (41, rational curves), with a clamped uniform knot vector
+  when the file gives none, and imported as a polyline.
+- **HATCH**: the boundary paths (91/92) — polyline paths with bulges or edge paths made of lines,
+  circular arcs (clockwise arcs mirrored), elliptical arcs and splines — become a hatch whose first
+  path is the outline and whose other paths are islands (kept as closed polylines); the solid flag
+  (70) and the first pattern line (angle 53, spacing from the offsets 45/46, 3.175 mm times the
+  pattern scale otherwise) give the fill.
+- **SOLID and TRACE**: filled triangles and quadrilaterals, whose corners come in the order
+  1-2-4-3, become solid hatches.
 
 Blocks: every BLOCK keeps its base point (10/20) and its entities; INSERT (point 10/20, scales
 41/42, rotation 50, array 70/71 with spacings 44/45) and the anonymous block of every DIMENSION
@@ -747,6 +826,12 @@ writer (`dwg_writer.dart`, 1.3 thousand lines), both in pure Dart.
   codes 6, 8, A and C are offsets relative to the handle of the containing object; in R2007+ the
   table entries have no "xref referenced" and "xref dependent" bits (only the BS index); and in
   R13/R14 the bit size of objects comes after the handle and the extended data, not before.
+- **Curves and fills**: ELLIPSE (35), SOLID (31), TRACE (32), SPLINE (36) and HATCH (78) are
+  decoded with the same layout LibreDWG uses (spline scenario, degree, knots, control points with
+  optional weights, fit points; from R2013 the spline flags; hatch gradient fields from R2004, the
+  boundary paths with their edge types and, from R2010, the fit data of spline edges) and handed to
+  the same conversions as their DXF counterparts. The ten sample drawings from R13 to R2018 in the
+  test fixtures give exactly the entities that LibreDWG lists for them.
 
 ### 20.3 KML and KMZ
 
@@ -871,7 +956,9 @@ design check).
   smaller; the smallest control valve whose range covers the zone flow; a catalogue model for a
   missing one; system flows regrouped first-fit decreasing so none exceeds the supply design flow;
   generic fittings; default parameters; a new flow for the zones left out; the nominal emitter
-  pressure. Joining crossing pipes and placing a supply at the only free mainline end guess the
+  pressure; the thicker catalogue wires enabled (or the default wires added) when a solenoid gets
+  too little voltage; the next standard controller size (4, 6, 8, 9, 12, 16, 24, 32, 48 stations…)
+  when a controller has more valves than stations. Joining crossing pipes and placing a supply at the only free mainline end guess the
   intent and are offered, never applied on their own.
 - **Fix automatically**: rounds of safe corrections — drawing and settings first, then the ones
   that need results — each followed by a design, until a round changes nothing (at most six), all
@@ -885,7 +972,7 @@ design check).
 
 ## 23. Validation
 
-The suite has 350 tests (`flutter test`). Those validating the hydraulics against references:
+The suite has 764 tests (`flutter test`). Those validating the hydraulics against references:
 
 | Test | Reference |
 |---|---|
@@ -905,6 +992,9 @@ The suite has 350 tests (`flutter test`). Those validating the hydraulics agains
 | UTM inverse round trip; georeference from a lat/lon origin | Karney 2011 |
 | CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Real files and an independent tool |
 | LP design meets the pressure window and costs no more than greedy | Relative optimality of the LP |
+| every profile spreads the whole flow over the wetted circle; head-to-head spacing is uniform, wide spacing is not | Volume balance; Keller & Bliesner, chapter 5 |
+| solenoid voltage by hand (valve B opening, A and C holding); long runs get thicker wires and the choice is the cheapest one | Ohm's law along the station and common conductors |
+| example_\<version\>: splines, hatches, solids and the ellipse like LibreDWG reads them | Entities listed by LibreDWG |
 
 The gallery examples work as integration tests: the fifteen projects, in the 20 languages,
 build, pass the check, size with every zone inside the window and without supply deficit, print
@@ -923,13 +1013,16 @@ From the research point of view, what the literature and design practice suggest
    the Joukowsky estimate.
 3. Automatic **"unconnected" sprayline** and valve-in-head with its own zone per sprinkler as a
    dedicated entity.
-4. **Splines and hatches in DWG**: SPLINE and HATCH on import; more entities and newer versions on
-   export.
+4. **DWG export**: more entities (splines, hatches, dimensions) and newer versions than R2000.
 5. **Fertigation and water quality**: injection calculation and water travel times in the network.
-6. **Electrical system**: wires, controllers and solenoids in the bill of materials.
-7. **Collaboration**: sharing by link and simultaneous editing, keeping the principle of not
+6. **Electrical system, second stage**: two-wire decoder systems, automatic routing of the wires
+   along the pipes, and field wiring diagrams; today the routes are drawn by the user and every
+   valve has its own station conductor.
+7. **Densogram from measured data**: radial distribution curves per nozzle from catch-can tests
+   instead of the three idealised profiles, and wind distortion.
+8. **Collaboration**: sharing by link and simultaneous editing, keeping the principle of not
    depending on a server of our own (for instance, files in the user's services).
-8. **Browser tests** for runtime behaviour (system language, PWA).
+9. **Browser tests** for runtime behaviour (system language, PWA).
 
 ---
 

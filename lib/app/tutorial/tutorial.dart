@@ -936,7 +936,7 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       chapter: chDesign,
       title: t('Turnos de operação', 'System flows', 'Turnos de operación'),
       target: TutorialTargets.menuDesign,
-      body: t('Projeto → Turnos de operação define quais válvulas abrem juntas e por quanto tempo. Cada turno é um caso de carga da linha principal; a fonte é dimensionada para o pior deles. "Todas juntas" e "Uma por vez" preenchem a tabela.', 'Design → System flows defines which valves open together and for how long. Each flow is a load case for the mainline; the supply is sized for the worst one. "All together" and "One at a time" fill the table.', 'Diseño → Turnos de operación define qué válvulas abren juntas y durante cuánto tiempo. Cada turno es un caso de carga de la línea principal; la fuente se dimensiona para el peor. "Todas juntas" y "Una a la vez" rellenan la tabla.'),
+      body: t('Projeto → Turnos de operação define quais válvulas (e pivôs) abrem juntas e por quanto tempo. Cada turno é um caso de carga da linha principal; a fonte é dimensionada para o pior deles. "Todas juntas" e "Uma por vez" preenchem a tabela; "Automático…" agrupa as zonas no menor número de turnos que cabe na vazão da fonte (ou numa vazão e num número de zonas que você escolhe).', 'Design → System flows defines which valves (and pivots) open together and for how long. Each flow is a load case for the mainline; the supply is sized for the worst one. "All together" and "One at a time" fill the table; "Automatic…" groups the zones into the fewest flows that fit the supply flow (or a flow and a number of zones you choose).', 'Diseño → Turnos de operación define qué válvulas (y pivotes) abren juntas y durante cuánto tiempo. Cada turno es un caso de carga de la línea principal; la fuente se dimensiona para el peor. "Todas juntas" y "Una a la vez" rellenan la tabla; "Automático…" agrupa las zonas en el menor número de turnos que cabe en el caudal de la fuente (o en un caudal y un número de zonas que usted elige).'),
     ),
     ev(
       id: 'check',
@@ -1007,6 +1007,26 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         x.c.overlay = OverlayMode.minMax;
         x.c.refresh();
       },
+    ),
+    state<OverlayMode>(
+      id: 'densogram',
+      chapter: chDesign,
+      title: t('Densograma: a água que cada ponto recebe', 'Densogram: the water every spot receives', 'Densograma: el agua que recibe cada punto'),
+      target: TutorialTargets.menuZone,
+      body: t(
+        'Zona → Densograma (DENS) soma o círculo molhado de cada aspersor e microaspersor como estão no desenho — posição, arco, orientação e, depois do cálculo, a pressão de cada um — e pinta a taxa de aplicação: vermelho onde falta água, verde na média, azul e roxo onde sobra. O diálogo mostra CU, DU, coeficiente de programação e pontos secos dentro das áreas irrigadas, com o perfil de distribuição do aspersor e o tamanho da célula; exporta a grade em CSV.',
+        'Zone → Densogram (DENS) adds up the wetted circle of every sprinkler and micro-sprinkler as drawn — position, arc, orientation and, after the design, the pressure of each one — and paints the application rate: red where water is short, green at the mean, blue and purple where there is too much. The dialog shows CU, DU, scheduling coefficient and dry spots inside the irrigated areas, with the sprinkler distribution profile and the cell size; it exports the grid as CSV.',
+        'Zona → Densograma (DENS) suma el círculo mojado de cada aspersor y microaspersor tal como están en el dibujo — posición, arco, orientación y, tras el cálculo, la presión de cada uno — y pinta la tasa de aplicación: rojo donde falta agua, verde en la media, azul y morado donde sobra. El diálogo muestra CU, DU, coeficiente de programación y puntos secos dentro de las áreas regadas, con el perfil de distribución del aspersor y el tamaño de celda; exporta la malla en CSV.',
+      ),
+      action: t('Abra Zona → Densograma e clique em Mostrar no desenho', 'Open Zone → Densogram and click Show on the drawing', 'Abra Zona → Densograma y haga clic en Mostrar en el dibujo'),
+      prepare: (x) {
+        if (x.c.overlay == OverlayMode.densogram) {
+          x.c.overlay = OverlayMode.velocity;
+          x.c.refresh();
+        }
+      },
+      read: (x) => x.c.overlay,
+      demo: (x) => x.c.showDensogram(),
     ),
     TutorialStep(
       id: 'reports',
@@ -1179,6 +1199,27 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         'In the pivot properties choose the sprinkler and the pressure regulator from the catalogue, the sprinkler spacing and the cost per tower. The Pivots tab summarises each machine (towers, area, required and available pressure, depth and hours per cycle, peak application rate); the Pivot spans tab details every span: start and end radius, number of sprinklers, flow per sprinkler, pressure at the span and suggested nozzle. Towers, sprinklers and end gun go into the bill of materials.',
         'En las propiedades del pivote elija el aspersor y el regulador de presión del catálogo, el espaciamiento entre aspersores y el costo por torre. La pestaña Pivotes resume cada máquina (torres, área, presión exigida y disponible, lámina y horas por ciclo, tasa de aplicación pico); la pestaña Vanos del pivote detalla cada vano: radio inicial y final, número de aspersores, caudal por aspersor, presión en el vano y boquilla sugerida. Torres, aspersores y cañón final entran en la lista de materiales.',
       ),
+    ),
+    count(
+      id: 'wiring',
+      chapter: chDesign,
+      title: t('Controlador e fios das válvulas', 'Controller and valve wires', 'Controlador y cables de las válvulas'),
+      target: TutorialTargets.menuZone,
+      body: t(
+        'Zona → Controlador (CTRL) coloca o programador; Zona → Rota de fios (WR) desenha o caminho dos fios dele até as válvulas (passe exatamente por elas). No cálculo, cada válvula recebe uma estação e o seu fio, todas compartilham o fio comum, e a bitola mais barata é escolhida para que o solenoide tenha pelo menos a tensão mínima ao abrir, com as válvulas do mesmo turno ligadas. A aba Elétrico lista estações, comprimentos, bitolas e tensões; fios, controlador e conectores entram na lista de materiais.',
+        'Zone → Controller (CTRL) places the controller; Zone → Wire route (WR) draws the path of the wires from it to the valves (pass exactly through them). In the design every valve gets a station and its wire, all share the common wire, and the cheapest gauge is chosen so the solenoid gets at least the minimum voltage while opening, with the valves of the same system flow on. The Electrical tab lists stations, lengths, wire sizes and voltages; wires, controller and connectors go into the bill of materials.',
+        'Zona → Controlador (CTRL) coloca el programador; Zona → Ruta de cables (WR) dibuja el camino de los cables desde él hasta las válvulas (pase exactamente por ellas). En el cálculo cada válvula recibe una estación y su cable, todas comparten el cable común, y se elige el calibre más barato para que el solenoide tenga al menos la tensión mínima al abrir, con las válvulas del mismo turno encendidas. La pestaña Eléctrico lista estaciones, longitudes, calibres y tensiones; cables, controlador y conectores entran en la lista de materiales.',
+      ),
+      action: t('Digite CTRL e clique perto das válvulas', 'Type CTRL and click near the valves', 'Escriba CTRL y haga clic cerca de las válvulas'),
+      match: (e) => e is ControllerEntity,
+      tool: ToolId.controller,
+      demo: (x) {
+        final valves = x.c.project.entities.whereType<ControlValveEntity>().toList();
+        if (valves.isEmpty) return;
+        final at = valves.first.position + const Pt(-6, 0);
+        x.c.addEntity(ControllerEntity(id: nid(x), position: at, name: x.c.t('name.controller')));
+        x.c.addEntity(WireEntity(id: nid(x), points: [at, for (final v in valves) v.position]));
+      },
     ),
     TutorialStep(
       id: 'align',

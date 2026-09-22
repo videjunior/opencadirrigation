@@ -11,6 +11,7 @@ import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../tutorial/tutorial.dart';
 import 'dialogs/basemap_dialogs.dart';
+import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
@@ -165,7 +166,7 @@ class AppMenuBar extends StatelessWidget {
                   ], child: Text(t('view.language'))),
                 ], child: Text(t('menu.view'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuDraw, menuChildren: [
-                  for (final id in [ToolId.line, ToolId.polyline, ToolId.rect, ToolId.circle, ToolId.arc, ToolId.spline, ToolId.hatch, ToolId.symbol, ToolId.text, ToolId.dimension, ToolId.dimAngular, ToolId.dimRadial, ToolId.leader, ToolId.contour, ToolId.spot, ToolId.area, ToolId.measure, ToolId.profile])
+                  for (final id in [ToolId.line, ToolId.polyline, ToolId.rect, ToolId.circle, ToolId.arc, ToolId.spline, ToolId.hatch, ToolId.symbol, ToolId.text, ToolId.dimension, ToolId.dimAngular, ToolId.dimRadial, ToolId.dimOrdinate, ToolId.leader, ToolId.contour, ToolId.spot, ToolId.area, ToolId.measure, ToolId.profile])
                     tool(id),
                 ], child: Text(t('menu.draw'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuZone, menuChildren: [
@@ -173,6 +174,10 @@ class AppMenuBar extends StatelessWidget {
                     tool(id, scope: id == ToolId.misc || id == ToolId.junction || id == ToolId.outlet ? pointScopeZone : null),
                   const Divider(height: 1),
                   item(t('zone.feedEnvelope'), c.selection.isEmpty ? null : () => feedEnvelopeAction(c), icon: Icons.straighten, shortcut: 'FE ⏎', key: const Key('menu_feed')),
+                  item(t('dens.menu'), () => showDensogramDialog(context, c), icon: Icons.blur_on, shortcut: 'DENS ⏎', key: const Key('menu_densogram')),
+                  const Divider(height: 1),
+                  item(t('tool.controller'), () => c.setTool(ToolId.controller), icon: Icons.developer_board, shortcut: 'CTRL ⏎', key: const Key('menu_controller')),
+                  item(t('tool.wire'), () => c.setTool(ToolId.wire), icon: Icons.cable, shortcut: 'WR ⏎', key: const Key('menu_wire')),
                 ], child: Text(t('menu.zone'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuMain, menuChildren: [
                   item(t('tool.supply'), () => c.setTool(ToolId.supply), shortcut: 'WS ⏎'),
@@ -214,10 +219,9 @@ class AppMenuBar extends StatelessWidget {
                     const Divider(height: 1),
                     for (final m in TerrainMethod.values)
                       RadioMenuButton<TerrainMethod>(value: m, groupValue: c.project.params.terrainMethod, onChanged: (v) {
+                        final edit = c.beginSettingsEdit('hist.params');
                         c.project.params.terrainMethod = v ?? TerrainMethod.tin;
-                        c.results = null;
-                        c.dirty = true;
-                        c.refresh();
+                        c.commitSettingsEdit(edit);
                       }, child: Text(t(m == TerrainMethod.tin ? 'terrain.tin' : 'terrain.idw'))),
                   ], child: Text(t('menu.terrain'))),
                   const Divider(height: 1),

@@ -12,7 +12,7 @@ import 'i18n.dart';
 import 'state/controller.dart';
 
 /// Non-tool command identifiers.
-enum CadAction { select, zoomAll, zoomIn, zoomOut, erase, copy, cut, paste, undo, redo, selectAll, duplicate, array, feedEnvelope, run, check, autoFix, optimize, snap, ortho, gridSnap, gridDisplay, reports, save, open }
+enum CadAction { select, zoomAll, zoomIn, zoomOut, erase, copy, cut, paste, undo, redo, selectAll, duplicate, array, feedEnvelope, run, check, autoFix, optimize, snap, ortho, gridSnap, gridDisplay, reports, save, open, densogram }
 
 /// Command alias → [ToolId] or [CadAction].
 const commandAliases = <String, Object>{
@@ -42,6 +42,7 @@ const commandAliases = <String, Object>{
   'PR': ToolId.profile, 'PROFILE': ToolId.profile, 'PERFIL': ToolId.profile,
   'PV': ToolId.pivot, 'PIVOT': ToolId.pivot, 'PIVO': ToolId.pivot, 'PIVOTE': ToolId.pivot,
   'AL': ToolId.alignImage, 'ALIGN': ToolId.alignImage, 'ALINHAR': ToolId.alignImage, 'ALINEAR': ToolId.alignImage,
+  'DOR': ToolId.dimOrdinate, 'DIMORD': ToolId.dimOrdinate, 'ORD': ToolId.dimOrdinate, 'ORDINATE': ToolId.dimOrdinate, 'ORDENADA': ToolId.dimOrdinate,
   // editing
   'RO': ToolId.rotate, 'ROTATE': ToolId.rotate, 'GIRAR': ToolId.rotate, 'ROTACIONAR': ToolId.rotate,
   'MI': ToolId.mirror, 'MIRROR': ToolId.mirror, 'ESPELHAR': ToolId.mirror, 'SIMETRIA': ToolId.mirror,
@@ -72,7 +73,10 @@ const commandAliases = <String, Object>{
   'J': ToolId.junction, 'JUNCTION': ToolId.junction, 'NO': ToolId.junction,
   'B': ToolId.block, 'BL': ToolId.block, 'BLOCK': ToolId.block, 'BLOCO': ToolId.block, 'BLOQUE': ToolId.block,
   'AH': ToolId.autohead, 'AUTOHEAD': ToolId.autohead, 'GRADE': ToolId.autohead, 'ASPERSORES': ToolId.autohead,
+  'CTRL': ToolId.controller, 'CONTROLLER': ToolId.controller, 'CONTROLADOR': ToolId.controller, 'PROGRAMADOR': ToolId.controller, 'TIMER': ToolId.controller,
+  'WR': ToolId.wire, 'WIRE': ToolId.wire, 'FIO': ToolId.wire, 'CABO': ToolId.wire, 'CABLE': ToolId.wire,
   'FE': CadAction.feedEnvelope, 'FEED': CadAction.feedEnvelope, 'ENVELOPE': CadAction.feedEnvelope, 'SUBMAIN': CadAction.feedEnvelope,
+  'DENS': CadAction.densogram, 'DENSOGRAM': CadAction.densogram, 'DENSOGRAMA': CadAction.densogram,
   // design / toggles / files
   'RUN': CadAction.run, 'DESIGN': CadAction.run, 'PROJETAR': CadAction.run,
   'CHK': CadAction.check, 'CHECK': CadAction.check,
@@ -129,6 +133,7 @@ String actionLabelKey(CadAction a) => switch (a) {
   CadAction.reports => 'menu.reports',
   CadAction.save => 'file.save',
   CadAction.open => 'file.open',
+  CadAction.densogram => 'dens.menu',
 };
 
 /// " → Linha ⏎" for a typed alias that matches a command, else "".
@@ -202,6 +207,7 @@ const shortcutGroups = <ShortcutGroup>[
     ('D · DIM', 'tool.dimension'),
     ('DAN · DIMANG', 'tool.dimAngular'),
     ('DRA · DIMRAD', 'tool.dimRadial'),
+    ('DOR · DIMORD', 'tool.dimOrdinate'),
     ('LE · LEADER', 'tool.leader'),
     ('CT · CONTOUR', 'tool.contour'),
     ('SP · SPOT', 'tool.spot'),
@@ -245,6 +251,9 @@ const shortcutGroups = <ShortcutGroup>[
     ('J · JUNCTION', 'tool.junction'),
     ('B · BLOCK', 'tool.block'),
     ('AH · AUTOHEAD', 'tool.autohead'),
+    ('CTRL · CONTROLLER', 'tool.controller'),
+    ('WR · WIRE', 'tool.wire'),
     ('FE · FEED', 'zone.feedEnvelope'),
+    ('DENS · DENSOGRAM', 'dens.menu'),
   ]),
 ];
