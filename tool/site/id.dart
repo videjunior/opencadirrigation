@@ -19,7 +19,7 @@ const _id = SiteText(
     ('Medan dan relief', 'Kontur, titik tinggi, model medan digital dengan triangulasi, elevasi yang diunduh dari internet berdasarkan koordinat, profil memanjang dan garis tekanan hidraulik di atas permukaan tanah.'),
     ('Laporan dan material', 'Zona, pipa, emitter, keseragaman (CU, DU, EU), kebutuhan air tanaman, program pengendali dan daftar material dengan fitting; ekspor ke PDF, Excel, CSV dan TXT.'),
     ('Pertukaran berkas', 'Mengimpor DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF dan gambar bergeoreferensi; mengekspor DXF, DWG, lembar PDF, SVG, KML, KMZ dan GeoJSON.'),
-    ('Katalog produsen', 'Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.'),
+    ('Katalog produsen', 'Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.'),
   ],
   howTitle: 'Cara kerjanya',
   how: [
@@ -48,9 +48,12 @@ const _id = SiteText(
   ],
   faqTitle: 'Pertanyaan umum',
   faq: [
+    ('Apa itu OpenCADIrrigation?', 'OpenCADIrrigation adalah aplikasi web gratis untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah.'),
     ('Apakah OpenCADIrrigation gratis?', 'Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran.'),
+    ('Untuk siapa aplikasi ini?', 'Untuk perancang irigasi pertanian dan lanskap, agronom dan insinyur, dealer peralatan, pengajar dan mahasiswa. Tutorial interaktif dan 15 contoh siap pakai memungkinkan Anda mulai tanpa membaca manual.'),
     ('Apakah saya perlu memasang sesuatu?', 'Tidak. Aplikasi berjalan di Chrome, Edge, Firefox dan Safari, di komputer, tablet dan ponsel, dan dapat dipasang sebagai aplikasi (PWA) yang terbuka di jendelanya sendiri.'),
     ('Apakah proyek saya disimpan di cloud?', 'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja. Hanya elevasi online dan peta dasar yang mengakses internet, saat Anda memintanya.'),
+    ('Bagaimana perhitungan hidrauliknya?', 'Kehilangan tekanan akibat gesekan dengan Hazen-Williams atau Darcy-Weisbach, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Pipa diukur dengan pemrograman linear dalam rentang tekanan emitter, dan desain juga memeriksa keseragaman (CU, DU, EU), water hammer, dan pembilasan.'),
     ('Apakah bisa dipakai dengan AutoCAD dan CAD lain?', 'Ya. Aplikasi mengimpor dan mengekspor DXF dan DWG (AutoCAD 2000 hingga 2018), serta KML/KMZ Google Earth, shapefile, GeoJSON, SVG dan PDF.'),
     ('Tersedia dalam bahasa apa saja?', 'Dalam 20 bahasa, sama dengan situs ini (daftarnya ada di bagian bawah halaman). Aplikasi terbuka dalam bahasa komputer Anda dan Anda dapat menggantinya kapan saja di Tampilan → Bahasa.'),
   ],

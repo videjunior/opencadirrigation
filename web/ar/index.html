@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/ar/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/ar/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/ar/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ar/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/ar/",
+      "installUrl": "https://opencadirrigation.com/ar/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "تصميم ري محدد الأقطار مع النتائج لكل منطقة"
       },
       "description": "برنامج CAD مجاني لتصميم الري بالضغط في المتصفح: الري بالتنقيط والرشاشات الصغيرة والرش والمحور المركزي، والحساب الهيدروليكي، وقائمة المواد، وDXF/DWG وPDF وExcel.",
+      "abstract": "OpenCADIrrigation تطبيق ويب مجاني لتصميم أنظمة الري بالضغط: برنامج CAD مزوّد بمحرك هيدروليكي يرسم الشبكة ويحدد أقطار الأنابيب ويتحقق من الضغوط والانتظامية ويُعدّ قائمة المواد والتقارير، من الحديقة المنزلية إلى المحور المركزي.",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "برنامج CAD للري",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ar/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "تصميم الري، برنامج ري، CAD للري، الري بالضغط، الري بالتنقيط، الرشاشات الصغيرة، الري بالرش، المحور المركزي، الحساب الهيدروليكي، تحديد أقطار الأنابيب، انتظامية الري، DXF، DWG، ري الحدائق، الري الزراعي، برنامج ري مجاني",
       "featureList": [
-        "رسم CAD متكامل",
-        "الشبكة الهيدروليكية",
-        "محرك هيدروليكي موثوق",
-        "تحديد الأقطار تلقائيًا",
-        "التضاريس",
-        "التقارير والمواد",
-        "تبادل الملفات",
-        "كتالوجات المصنّعين"
+        "رسم CAD متكامل: خطوط وخطوط متعددة وأقواس ومنحنيات spline وتهشير وأبعاد ونصوص وطبقات، مع الالتقاط والتحديد بالنافذة ومقابض التحرير واختصارات على طريقة AutoCAD (L، PL، C، D، ZE…).",
+        "الشبكة الهيدروليكية: مصادر المياه والمضخات والخط الرئيسي وصمامات المناطق والخطوط الجانبية بالنقاطات، وأشرطة وأنابيب التنقيط، والمرشحات ومنظمات الضغط وعدادات المياه والعقد؛ مع مولّدات لكتل الخطوط الجانبية وشبكات الرشاشات.",
+        "محرك هيدروليكي موثوق: هازن-ويليامز ودارسي-فايسباخ، والفواقد الموضعية، والنقاطات q = k·Hˣ، وحل الشبكة بخوارزمية Global Gradient Algorithm (كما في EPANET)، ومنحنيات المضخات ونقطة التشغيل، والمطرقة المائية وتحليل الغسيل.",
+        "تحديد الأقطار تلقائيًا: البرمجة الخطية أو السرعة القصوى، مع احترام نطاق ضغط النقاطات ورتب ضغط الأنابيب، والموازنة بين كلفة الأنابيب والطاقة، مع أقطار متدرجة ونوبات تشغيل.",
+        "التضاريس: خطوط الكنتور ونقاط المناسيب ونموذج رقمي للأرض بالتثليث، وارتفاعات تُنزَّل من الإنترنت انطلاقًا من إحداثية، ومقاطع طولية وخط الضغط الهيدروليكي فوق سطح الأرض.",
+        "التقارير والمواد: المناطق والأنابيب والنقاطات والانتظامية (CU، DU، EU) والاحتياجات المائية للمحاصيل وبرنامج وحدة التحكم وقائمة المواد مع الوصلات؛ والتصدير إلى PDF وExcel وCSV وTXT.",
+        "تبادل الملفات: يستورد DXF وDWG وKML/KMZ وSHP وCSV/XYZ وGeoTIFF والصور المرجعة جغرافيًا؛ ويصدّر DXF وDWG ولوحات PDF وSVG وKML وKMZ وGeoJSON.",
+        "كتالوجات المصنّعين: كتالوجات مصنّعين بصيغة JSON (Netafim وRivulis وJain وToro وRain Bird وNelson وHunter وNaanDanJain وSenninger وIrritec وBermad وSchneider وAmanco Wavin وMultilit) جاهزة للاستخدام، إضافةً إلى حزمك الخاصة المحمّلة من ملف أو رابط."
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/ar/#faq",
+      "name": "الأسئلة الشائعة",
+      "inLanguage": "ar",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/ar/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "ما هو OpenCADIrrigation؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation تطبيق ويب مجاني لتصميم أنظمة الري بالضغط: برنامج CAD مزوّد بمحرك هيدروليكي يرسم الشبكة ويحدد أقطار الأنابيب ويتحقق من الضغوط والانتظامية ويُعدّ قائمة المواد والتقارير، من الحديقة المنزلية إلى المحور المركزي."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل OpenCADIrrigation مجاني؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم. إنه مجاني للاستخدام المهني والأكاديمي والشخصي، دون تسجيل."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "لمن هذا التطبيق؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "لمصممي الري الزراعي وري المسطحات الخضراء، والمهندسين الزراعيين والمهندسين، وموزعي المعدات، والمعلمين والطلاب. يتيح لك الدرس التفاعلي و15 مثالًا جاهزًا البدء دون قراءة دليل."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل أحتاج إلى تثبيت أي شيء؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "لا. يعمل في Chrome وEdge وFirefox وSafari على الحاسوب والجهاز اللوحي والهاتف، ويمكن تثبيته كتطبيق (PWA) يُفتح في نافذته الخاصة."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل تُحفظ مشاريعي في السحابة؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "لا. تُحفظ المشاريع في متصفحك وفي ملفات ‎.oci.json تحتفظ بها حيث تشاء. لا يتصل بالإنترنت إلا خدمة الارتفاعات عبر الإنترنت والخرائط الأساسية، وذلك عندما تطلبها."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "كيف تُجرى الحسابات الهيدروليكية؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "فواقد الاحتكاك بمعادلة هازن-ويليامز أو دارسي-فايسباخ، والنقاطات وفق q = k·Hˣ، وتُحل الشبكة كلها بخوارزمية Global Gradient Algorithm، وهي طريقة EPANET. تُحدَّد أقطار الأنابيب بالبرمجة الخطية ضمن نطاق ضغط النقاطات، ويتحقق التصميم أيضًا من الانتظامية (CU وDU وEU) والمطرقة المائية والغسيل."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل يعمل مع AutoCAD وبرامج CAD الأخرى؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم. يستورد ويصدّر DXF وDWG (من AutoCAD 2000 إلى 2018)، إضافةً إلى KML/KMZ من Google Earth وshapefile وGeoJSON وSVG وPDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ما اللغات المتوفرة؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "عشرون لغة، هي نفسها لغات هذا الموقع (القائمة في أسفل الصفحة). يُفتح التطبيق بلغة حاسوبك، ويمكنك تغييرها في أي وقت من عرض ← اللغة."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/ar/#how",
+      "name": "كيف يعمل",
+      "description": "يجمع OpenCADIrrigation الرسم الهندسي والشبكة الهيدروليكية والحساب في مكان واحد: ارسم حدود المساحة، ومُدّ الخطوط الجانبية والصمامات والخط الرئيسي، ثم اضغط F5 لتحصل على أقطار الأنابيب والضغوط والانتظامية ونوبات التشغيل وقائمة المواد وتقارير جاهزة للطباعة. متوفر بعشرين لغة، ويتبع لغة حاسوبك.",
+      "inLanguage": "ar",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "ارسم المساحة أو استوردها",
+          "text": "أحضر ملف DXF أو DWG أو KML أو صورة قمر صناعي، أو ارسم الحقل أو الحديقة أو الملعب مباشرة. أضف خطوط كنتور أو نزّل الارتفاعات انطلاقًا من إحداثية."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "ابنِ الشبكة",
+          "text": "أنشئ كتل الخطوط الجانبية أو شبكات الرشاشات بنقرة واحدة، وضع الصمامات والمضخة ومصدر المياه، ثم اربط كل شيء بالخط الرئيسي."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "صمّم ووثّق",
+          "text": "اضغط F5: يحدد التطبيق أقطار المناطق والخط الرئيسي، ويتحقق من الضغوط والسرعات، ويُخرج التقارير وقائمة المواد ولوحة PDF."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/ar/#examples",
+      "name": "أمثلة جاهزة للفتح",
+      "description": "يُفتح كل مشروع كاملًا ويُصمَّم بالضغط على F5. استخدمها للتعرّف على التطبيق أو نقطةَ انطلاق لمشروعك.",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "بستان",
+            "description": "رشاشات دقيقة على الحمضيات وتنقيط على العنب، بئر بمضخة ومرشح، أرض منحدرة.",
+            "url": "https://opencadirrigation.com/ar/?example=orchard",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "حديقة منزلية",
+            "description": "رشاشات منبثقة على العشب الأمامي، دوّارات في الخلف وتنقيط في الأحواض، تغذية من الشبكة العامة بعداد ومانع ارتداد.",
+            "url": "https://opencadirrigation.com/ar/?example=garden",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "ملعب كرة قدم",
+            "description": "ملعب بالحجم الكامل 105 × 68 م برشاشات صدمية في خمسة صفوف، خزان، مضخة وورديات ليلية.",
+            "url": "https://opencadirrigation.com/ar/?example=sportsField",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "محصول خطي بالتنقيط",
+            "description": "أربعة قطاعات طماطم على شريط تنقيط، خطوط فرعية بصمامات، مرشح شبكي، مضخة وأرض منحدرة.",
+            "url": "https://opencadirrigation.com/ar/?example=rowCrop",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "محور مركزي",
+            "description": "محور 300 م على الذرة يغذيه خط رئيسي وبئر ومضخة؛ تقرير الأبراج والامتدادات والفوهات.",
+            "url": "https://opencadirrigation.com/ar/?example=pivot",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "بيت محمي للخضروات",
+            "description": "أربعة أنفاق فلفل على أنبوب تنقيط معوّض للضغط، منطقة لكل نفق، خزان، مضخة صغيرة ومرشح أقراص.",
+            "url": "https://opencadirrigation.com/ar/?example=greenhouse",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "مشتل نباتات",
+            "description": "ثلاثة أحواض 12 × 48 م تحت رشاشات دقيقة معلقة على شبكة 4 × 4 م، منطقة لكل حوض، خزان مرتفع، مضخة صغيرة ومرشح أقراص.",
+            "url": "https://opencadirrigation.com/ar/?example=nursery",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "بن على خطوط الكنتور",
+            "description": "ثلاثة قطاعات بن على منحدر بخطوط جانبية منحنية تتبع الكنتور (كتلة موجهة)، أنبوب تنقيط معوّض، بئر ومضخة عند سفح المنحدر.",
+            "url": "https://opencadirrigation.com/ar/?example=coffee",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "مزرعة موز",
+            "description": "قطاعا موز تحت رشاشات دقيقة معوّضة للضغط بتباعد 5 × 5 م، بئر بمضخة غاطسة، مرشح أقراص وأرض منحدرة.",
+            "url": "https://opencadirrigation.com/ar/?example=bananas",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "قصب سكر بالتنقيط تحت السطحي",
+            "description": "قطاعا قصب على أنبوب تنقيط معوّض 20 مم مدفون بعمق 0.3 م، خطوط جانبية 180 م، خطوط فرعية مدفونة، خزان، مضخة، مرشح شبكي وصمام هواء.",
+            "url": "https://opencadirrigation.com/ar/?example=sugarcane",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "تنقيط بالجاذبية",
+            "description": "خزان يعلو بـ 40 م قطاعي خضروات بالتنقيط، بدون مضخة: صمام بوابة، صمام تخفيض ضغط ومرشح أقراص على الخط الرئيسي؛ كنتورات المنحدر.",
+            "url": "https://opencadirrigation.com/ar/?example=gravity",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "مرعى بالرش",
+            "description": "ثلاث حظائر 72 × 72 م بخطوط رشاشات صدمية بتباعد 12 × 18 م، خطوط فرعية بصمامات، خزان، مضخة وصمام عدم رجوع.",
+            "url": "https://opencadirrigation.com/ar/?example=pasture",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "حفرة غولف",
+            "description": "منصة انطلاق برشاشات، ممر بدوّارات على شبكة مثلثية (منطقتان) ومنطقة الحفرة بدوّارات حول الحافة، بركة بمضخة وورديات ليلية.",
+            "url": "https://opencadirrigation.com/ar/?example=golf",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "محور قطاعي بمدفع طرفي",
+            "description": "محور 250 م على فول الصويا يدور 270°، تاركاً ربع مقر المزرعة حراً، بمدفع طرفي 12 م³/س؛ بركة، مضخة 30 حصاناً وصمام بوابة.",
+            "url": "https://opencadirrigation.com/ar/?example=sectorPivot",
+            "inLanguage": "ar"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "آلة خطية",
+            "description": "آلة خطية 392 م على القمح تقطع 800 م بمحاذاة قناة، مأخذ بمضخة 30 حصاناً وصمام عدم رجوع؛ تقرير الأبراج والفوهات.",
+            "url": "https://opencadirrigation.com/ar/?example=linear",
+            "inLanguage": "ar"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>التضاريس</h3><p>خطوط الكنتور ونقاط المناسيب ونموذج رقمي للأرض بالتثليث، وارتفاعات تُنزَّل من الإنترنت انطلاقًا من إحداثية، ومقاطع طولية وخط الضغط الهيدروليكي فوق سطح الأرض.</p></li>
           <li><h3>التقارير والمواد</h3><p>المناطق والأنابيب والنقاطات والانتظامية (CU، DU، EU) والاحتياجات المائية للمحاصيل وبرنامج وحدة التحكم وقائمة المواد مع الوصلات؛ والتصدير إلى PDF وExcel وCSV وTXT.</p></li>
           <li><h3>تبادل الملفات</h3><p>يستورد DXF وDWG وKML/KMZ وSHP وCSV/XYZ وGeoTIFF والصور المرجعة جغرافيًا؛ ويصدّر DXF وDWG ولوحات PDF وSVG وKML وKMZ وGeoJSON.</p></li>
-          <li><h3>كتالوجات المصنّعين</h3><p>كتالوجات مصنّعين بصيغة JSON (Netafim وRivulis وJain وToro وRain Bird وNelson وHunter وNaanDanJain وSenninger) جاهزة للاستخدام، إضافةً إلى حزمك الخاصة المحمّلة من ملف أو رابط.</p></li>
+          <li><h3>كتالوجات المصنّعين</h3><p>كتالوجات مصنّعين بصيغة JSON (Netafim وRivulis وJain وToro وRain Bird وNelson وHunter وNaanDanJain وSenninger وIrritec وBermad وSchneider وAmanco Wavin وMultilit) جاهزة للاستخدام، إضافةً إلى حزمك الخاصة المحمّلة من ملف أو رابط.</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">الأسئلة الشائعة</h2>
         <dl>
+          <dt>ما هو OpenCADIrrigation؟</dt>
+          <dd>OpenCADIrrigation تطبيق ويب مجاني لتصميم أنظمة الري بالضغط: برنامج CAD مزوّد بمحرك هيدروليكي يرسم الشبكة ويحدد أقطار الأنابيب ويتحقق من الضغوط والانتظامية ويُعدّ قائمة المواد والتقارير، من الحديقة المنزلية إلى المحور المركزي.</dd>
           <dt>هل OpenCADIrrigation مجاني؟</dt>
           <dd>نعم. إنه مجاني للاستخدام المهني والأكاديمي والشخصي، دون تسجيل.</dd>
+          <dt>لمن هذا التطبيق؟</dt>
+          <dd>لمصممي الري الزراعي وري المسطحات الخضراء، والمهندسين الزراعيين والمهندسين، وموزعي المعدات، والمعلمين والطلاب. يتيح لك الدرس التفاعلي و15 مثالًا جاهزًا البدء دون قراءة دليل.</dd>
           <dt>هل أحتاج إلى تثبيت أي شيء؟</dt>
           <dd>لا. يعمل في Chrome وEdge وFirefox وSafari على الحاسوب والجهاز اللوحي والهاتف، ويمكن تثبيته كتطبيق (PWA) يُفتح في نافذته الخاصة.</dd>
           <dt>هل تُحفظ مشاريعي في السحابة؟</dt>
           <dd>لا. تُحفظ المشاريع في متصفحك وفي ملفات ‎.oci.json تحتفظ بها حيث تشاء. لا يتصل بالإنترنت إلا خدمة الارتفاعات عبر الإنترنت والخرائط الأساسية، وذلك عندما تطلبها.</dd>
+          <dt>كيف تُجرى الحسابات الهيدروليكية؟</dt>
+          <dd>فواقد الاحتكاك بمعادلة هازن-ويليامز أو دارسي-فايسباخ، والنقاطات وفق q = k·Hˣ، وتُحل الشبكة كلها بخوارزمية Global Gradient Algorithm، وهي طريقة EPANET. تُحدَّد أقطار الأنابيب بالبرمجة الخطية ضمن نطاق ضغط النقاطات، ويتحقق التصميم أيضًا من الانتظامية (CU وDU وEU) والمطرقة المائية والغسيل.</dd>
           <dt>هل يعمل مع AutoCAD وبرامج CAD الأخرى؟</dt>
           <dd>نعم. يستورد ويصدّر DXF وDWG (من AutoCAD 2000 إلى 2018)، إضافةً إلى KML/KMZ من Google Earth وshapefile وGeoJSON وSVG وPDF.</dd>
           <dt>ما اللغات المتوفرة؟</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="اللغات">اللغات: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <strong lang="ar" dir="rtl">العربية</strong> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>يمكن إرسال كتالوجات المصنّعين ومشاريع الأمثلة بصيغة JSON لإدراجها في OpenCADIrrigation.</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

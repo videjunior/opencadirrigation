@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/zh/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/zh/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/zh/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/zh/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/zh/",
+      "installUrl": "https://opencadirrigation.com/zh/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "已完成管径计算的灌溉设计及各分区结果"
       },
       "description": "在浏览器中进行压力灌溉设计的免费 CAD：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。",
+      "abstract": "OpenCADIrrigation 是一款用于压力灌溉系统设计的免费网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "灌溉设计 CAD",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/zh/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "灌溉设计, 灌溉软件, 灌溉 CAD, 压力灌溉, 滴灌设计, 微喷灌, 喷灌设计, 中心支轴式喷灌机, 水力计算, 管径计算, 灌水均匀度, DXF, DWG, 园林灌溉, 农业灌溉, 免费灌溉设计软件",
       "featureList": [
-        "完整的 CAD 绘图",
-        "水力管网",
-        "经过验证的水力引擎",
-        "自动管径选择",
-        "地形",
-        "报告与材料",
-        "文件交换",
-        "厂商产品目录"
+        "完整的 CAD 绘图: 直线、多段线、圆弧、样条曲线、填充、标注、文字和图层，支持对象捕捉、窗口选择、夹点编辑和 AutoCAD 风格的快捷命令（L、PL、C、D、ZE…）。",
+        "水力管网: 水源、水泵、干管、分区阀门、带灌水器的毛管、滴灌带和滴灌管、过滤器、调压阀、水表和节点；毛管组和喷头网格生成器。",
+        "经过验证的水力引擎: Hazen-Williams 和 Darcy-Weisbach 公式、局部损失、灌水器 q = k·Hˣ、采用 Global Gradient Algorithm 求解管网（与 EPANET 相同）、水泵特性曲线与工况点、水锤和冲洗分析。",
+        "自动管径选择: 线性规划或最大流速法，满足灌水器压力范围和管材压力等级，在管道造价与能耗之间权衡，支持变径管段和轮灌组。",
+        "地形: 等高线、高程点、三角网数字地形模型、按坐标从互联网下载高程、纵断面以及地面上方的测压管水头线。",
+        "报告与材料: 分区、管道、灌水器、均匀度（CU、DU、EU）、作物需水量、控制器程序以及含管件的材料清单；可导出 PDF、Excel、CSV 和 TXT。",
+        "文件交换: 导入 DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF 和带地理参考的影像；导出 DXF、DWG、PDF 图纸、SVG、KML、KMZ 和 GeoJSON。",
+        "厂商产品目录: 即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit），也可从文件或 URL 加载您自己的目录包。"
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/zh/#faq",
+      "name": "常见问题",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/zh/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation 是什么？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation 是一款用于压力灌溉系统设计的免费网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation 免费吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "是的。可免费用于专业、学术和个人用途，无需注册。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "适合哪些人使用？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "农业与园林灌溉设计师、农艺师和工程师、设备经销商、教师和学生。借助交互式教程和 15 个现成示例，无需阅读手册即可上手。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "需要安装什么吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不需要。它可在电脑、平板和手机上的 Chrome、Edge、Firefox 和 Safari 中运行，也可以安装为在独立窗口中打开的应用（PWA）。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "我的项目会存储在云端吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中。只有在线高程和底图会在您请求时访问互联网。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "水力计算是如何进行的？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "沿程损失采用 Hazen-Williams 或 Darcy-Weisbach 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围内确定，设计还会校核均匀度（CU、DU、EU）、水锤和冲洗。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "能与 AutoCAD 等 CAD 软件配合使用吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "可以。支持导入和导出 DXF 与 DWG（AutoCAD 2000 至 2018），以及 Google Earth 的 KML/KMZ、Shapefile、GeoJSON、SVG 和 PDF。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "支持哪些语言？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "支持 20 种语言，与本网站相同（列表见页面底部）。应用会以您电脑的语言打开，您也可以随时在“视图 → 语言”中切换。"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/zh/#how",
+      "name": "使用方法",
+      "description": "OpenCADIrrigation 将 CAD 绘图、水力管网和计算集于一处：绘制灌区边界，布置毛管、阀门和干管，按 F5 即可得到管径、压力、均匀度、轮灌组、材料清单和可直接打印的报告。提供 20 种语言，自动跟随您电脑的语言。",
+      "inLanguage": "zh-CN",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "绘制或导入地块",
+          "text": "导入 DXF、DWG、KML 或卫星影像，或直接绘制田块、花园或球场。添加等高线，或按坐标下载高程。"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "搭建管网",
+          "text": "一键生成毛管组或喷头网格，放置阀门、水泵和水源，再用干管把它们连接起来。"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "设计并出图",
+          "text": "按 F5：应用会计算各分区和干管的管径，校核压力和流速，并生成报告、材料清单和 PDF 图纸。"
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/zh/#examples",
+      "name": "可直接打开的示例",
+      "description": "每个项目打开即完整，按 F5 即可计算。可用来熟悉应用，或作为设计的起点。",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "果园",
+            "description": "柑橘采用微喷头、葡萄采用滴灌,水井配水泵和过滤器,坡地。",
+            "url": "https://opencadirrigation.com/zh/?example=orchard",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "住宅花园",
+            "description": "前院草坪用升降喷头,后院用旋转喷头,花坛用滴灌,由自来水管网供水,配水表和防回流装置。",
+            "url": "https://opencadirrigation.com/zh/?example=garden",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "足球场",
+            "description": "105 × 68 m 标准球场,五排摇臂喷头,蓄水池、水泵和夜间轮灌。",
+            "url": "https://opencadirrigation.com/zh/?example=sportsField",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "滴灌大田作物",
+            "description": "四个番茄地块采用滴灌带,带阀门的支管、网式过滤器、水泵和坡地。",
+            "url": "https://opencadirrigation.com/zh/?example=rowCrop",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "中心支轴式喷灌机",
+            "description": "玉米地上 300 m 的中心支轴式喷灌机,由干管、水井和水泵供水;塔架、跨段和喷头报告。",
+            "url": "https://opencadirrigation.com/zh/?example=pivot",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "蔬菜温室",
+            "description": "四座辣椒大棚采用压力补偿滴灌管,每棚一个区域,水箱、小型水泵和叠片过滤器。",
+            "url": "https://opencadirrigation.com/zh/?example=greenhouse",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "苗圃",
+            "description": "三个 12 × 48 m 苗床,4 × 4 m 网格的悬挂式微喷头,每床一个区域,高位水箱、小型水泵和叠片过滤器。",
+            "url": "https://opencadirrigation.com/zh/?example=nursery",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "沿等高线种植的咖啡",
+            "description": "山坡上的三个咖啡地块,弯曲毛管沿等高线布置(引导式毛管组),PC 滴灌管,坡脚处有水井和水泵。",
+            "url": "https://opencadirrigation.com/zh/?example=coffee",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "香蕉园",
+            "description": "两个香蕉地块采用 5 × 5 m 压力补偿微喷头,水井配潜水泵,叠片过滤器,坡地。",
+            "url": "https://opencadirrigation.com/zh/?example=bananas",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "地下滴灌甘蔗",
+            "description": "两个甘蔗地块采用埋深 0.3 m 的 20 mm PC 滴灌管,180 m 毛管,埋地支管,蓄水池、水泵、网式过滤器和排气阀。",
+            "url": "https://opencadirrigation.com/zh/?example=sugarcane",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "重力滴灌",
+            "description": "蓄水池高出两个滴灌蔬菜地块 40 m,无水泵:干管上设闸阀、减压阀和叠片过滤器;山坡等高线。",
+            "url": "https://opencadirrigation.com/zh/?example=gravity",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "喷灌牧场",
+            "description": "三个 72 × 72 m 围场,摇臂喷头喷灌管线按 12 × 18 m 布置,带阀门的支管、蓄水池、水泵和止回阀。",
+            "url": "https://opencadirrigation.com/zh/?example=pasture",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "高尔夫球洞",
+            "description": "发球台用喷洒喷头,球道用三角形网格布置的旋转喷头(两个区域),果岭四周用旋转喷头,池塘配水泵和夜间轮灌。",
+            "url": "https://opencadirrigation.com/zh/?example=golf",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "带尾枪的扇形喷灌机",
+            "description": "大豆地上 250 m 的喷灌机旋转 270°,留出农庄所在象限,配 12 m³/h 尾枪;池塘、30 hp 水泵和闸阀。",
+            "url": "https://opencadirrigation.com/zh/?example=sectorPivot",
+            "inLanguage": "zh-CN"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "平移式喷灌机",
+            "description": "小麦地上 392 m 的平移式喷灌机沿渠道行进 800 m,取水口配 30 hp 水泵和止回阀;塔架和喷头报告。",
+            "url": "https://opencadirrigation.com/zh/?example=linear",
+            "inLanguage": "zh-CN"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>地形</h3><p>等高线、高程点、三角网数字地形模型、按坐标从互联网下载高程、纵断面以及地面上方的测压管水头线。</p></li>
           <li><h3>报告与材料</h3><p>分区、管道、灌水器、均匀度（CU、DU、EU）、作物需水量、控制器程序以及含管件的材料清单；可导出 PDF、Excel、CSV 和 TXT。</p></li>
           <li><h3>文件交换</h3><p>导入 DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF 和带地理参考的影像；导出 DXF、DWG、PDF 图纸、SVG、KML、KMZ 和 GeoJSON。</p></li>
-          <li><h3>厂商产品目录</h3><p>即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger），也可从文件或 URL 加载您自己的目录包。</p></li>
+          <li><h3>厂商产品目录</h3><p>即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit），也可从文件或 URL 加载您自己的目录包。</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">常见问题</h2>
         <dl>
+          <dt>OpenCADIrrigation 是什么？</dt>
+          <dd>OpenCADIrrigation 是一款用于压力灌溉系统设计的免费网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。</dd>
           <dt>OpenCADIrrigation 免费吗？</dt>
           <dd>是的。可免费用于专业、学术和个人用途，无需注册。</dd>
+          <dt>适合哪些人使用？</dt>
+          <dd>农业与园林灌溉设计师、农艺师和工程师、设备经销商、教师和学生。借助交互式教程和 15 个现成示例，无需阅读手册即可上手。</dd>
           <dt>需要安装什么吗？</dt>
           <dd>不需要。它可在电脑、平板和手机上的 Chrome、Edge、Firefox 和 Safari 中运行，也可以安装为在独立窗口中打开的应用（PWA）。</dd>
           <dt>我的项目会存储在云端吗？</dt>
           <dd>不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中。只有在线高程和底图会在您请求时访问互联网。</dd>
+          <dt>水力计算是如何进行的？</dt>
+          <dd>沿程损失采用 Hazen-Williams 或 Darcy-Weisbach 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围内确定，设计还会校核均匀度（CU、DU、EU）、水锤和冲洗。</dd>
           <dt>能与 AutoCAD 等 CAD 软件配合使用吗？</dt>
           <dd>可以。支持导入和导出 DXF 与 DWG（AutoCAD 2000 至 2018），以及 Google Earth 的 KML/KMZ、Shapefile、GeoJSON、SVG 和 PDF。</dd>
           <dt>支持哪些语言？</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="语言">语言: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <strong lang="zh-CN" dir="ltr">中文</strong> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>欢迎以 JSON 格式提交厂商产品目录和示例项目，以便收录到 OpenCADIrrigation 中。</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

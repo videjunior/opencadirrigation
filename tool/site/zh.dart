@@ -19,7 +19,7 @@ const _zh = SiteText(
     ('地形', '等高线、高程点、三角网数字地形模型、按坐标从互联网下载高程、纵断面以及地面上方的测压管水头线。'),
     ('报告与材料', '分区、管道、灌水器、均匀度（CU、DU、EU）、作物需水量、控制器程序以及含管件的材料清单；可导出 PDF、Excel、CSV 和 TXT。'),
     ('文件交换', '导入 DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF 和带地理参考的影像；导出 DXF、DWG、PDF 图纸、SVG、KML、KMZ 和 GeoJSON。'),
-    ('厂商产品目录', '即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger），也可从文件或 URL 加载您自己的目录包。'),
+    ('厂商产品目录', '即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit），也可从文件或 URL 加载您自己的目录包。'),
   ],
   howTitle: '使用方法',
   how: [
@@ -48,9 +48,12 @@ const _zh = SiteText(
   ],
   faqTitle: '常见问题',
   faq: [
+    ('OpenCADIrrigation 是什么？', 'OpenCADIrrigation 是一款用于压力灌溉系统设计的免费网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。'),
     ('OpenCADIrrigation 免费吗？', '是的。可免费用于专业、学术和个人用途，无需注册。'),
+    ('适合哪些人使用？', '农业与园林灌溉设计师、农艺师和工程师、设备经销商、教师和学生。借助交互式教程和 15 个现成示例，无需阅读手册即可上手。'),
     ('需要安装什么吗？', '不需要。它可在电脑、平板和手机上的 Chrome、Edge、Firefox 和 Safari 中运行，也可以安装为在独立窗口中打开的应用（PWA）。'),
     ('我的项目会存储在云端吗？', '不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中。只有在线高程和底图会在您请求时访问互联网。'),
+    ('水力计算是如何进行的？', '沿程损失采用 Hazen-Williams 或 Darcy-Weisbach 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围内确定，设计还会校核均匀度（CU、DU、EU）、水锤和冲洗。'),
     ('能与 AutoCAD 等 CAD 软件配合使用吗？', '可以。支持导入和导出 DXF 与 DWG（AutoCAD 2000 至 2018），以及 Google Earth 的 KML/KMZ、Shapefile、GeoJSON、SVG 和 PDF。'),
     ('支持哪些语言？', '支持 20 种语言，与本网站相同（列表见页面底部）。应用会以您电脑的语言打开，您也可以随时在“视图 → 语言”中切换。'),
   ],

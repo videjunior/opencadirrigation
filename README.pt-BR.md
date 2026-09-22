@@ -676,8 +676,21 @@ dos outros 19 idiomas da interface (`web/pt/`, `web/es/`, `web/de/`, `web/zh/`, 
 tirada dos pacotes de idioma); as páginas em árabe e urdu são da direita para a esquerda. Como o
 Flutter desenha em canvas, cada página traz o conteúdo em HTML real (título, recursos, exemplos,
 perguntas frequentes), visível enquanto o app carrega e mantido na página depois, com canônica
-própria, `hreflang` entre todas as versões, Open Graph e JSON-LD. O teste `test/web_metadata_test.dart`
-falha quando os arquivos gerados divergem do template.
+própria, `hreflang` entre todas as versões, Open Graph e JSON-LD (aplicativo, perguntas frequentes,
+como funciona e galeria de exemplos, no idioma da página, com o assunto ligado à Wikipédia/Wikidata).
+O teste `test/web_metadata_test.dart` falha quando os arquivos gerados divergem do template.
+
+O gerador também escreve o que buscadores e assistentes de IA leem além das páginas:
+`web/robots.txt` (tudo liberado, com os robôs de busca e de IA nomeados: GPTBot, OAI-SearchBot,
+ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, CCBot, bingbot e outros),
+`web/llms.txt` (o resumo do [llmstxt.org](https://llmstxt.org): o que é o app, fatos principais e
+links para a página de cada idioma e cada exemplo) e `web/llms-full.txt` (a referência completa em
+Markdown: recursos, fluxo de projeto, métodos hidráulicos, dimensionamento, catálogos, formatos,
+links diretos, limitações, perguntas frequentes; as seções técnicas ficam em `tool/site/llms.dart` e
+seguem o README em inglês), `web/humans.txt` e a chave IndexNow `web/<chave>.txt`. Depois de publicar,
+`dart run tool/indexnow.dart` pede ao Bing, ao Yandex e aos outros buscadores do IndexNow que
+rastreiem as páginas de novo (o índice do Bing também responde ao Copilot e à busca do ChatGPT);
+`--dry-run` mostra a requisição sem enviá-la.
 
 ---
 
@@ -786,7 +799,8 @@ tool/build_web.sh                  # build de publicação: worker + flutter bui
                                    # gravados na versão (boas-vindas, barra de status, Ajuda → Sobre, console)
 flutter build web --release        # o mesmo sem commit/data (build/web, pronto para hospedagem estática; web/CNAME guarda o domínio)
 dart run tool/gen_version.dart     # regenera lib/app/version.dart após mudar `version:` no pubspec.yaml
-dart run tool/gen_site.dart        # páginas do site (index em inglês, /pt/, /es/, /de/, … sitemap, 404)
+dart run tool/gen_site.dart        # páginas do site (index em inglês, /pt/, /es/, /de/, … sitemap, 404, robots, llms.txt)
+dart run tool/indexnow.dart        # depois de publicar: pede aos buscadores do IndexNow (Bing…) novo rastreio
 dart run tool/gen_catalogs.dart    # valida e normaliza catalogs/*.oci.cat e refaz index.json
 dart run tool/gen_examples.dart    # regenera examples/<lang>/*.oci.json a partir de lib/app/examples.dart
 dart run tool/gen_brand.dart       # ícones e ativos de marca a partir de web/brand
@@ -834,7 +848,7 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/i18n_packs_test.dart` | Cada pacote de idioma cobre todas as chaves da tabela, do tutorial e dos nomes do catálogo com os mesmos marcadores e não é majoritariamente inglês; pacotes instalados chegam aos textos, ao tutorial e ao catálogo; `setLanguage` carrega o pacote sob demanda com inglês enquanto isso e repete um carregamento que falhou |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Edição (grips, transformações, aparar, estender, cortar), JSON das entidades, abas e área de transferência, protocolo do worker, HTTP local, armazenamento de projetos, câmera e snap |
 | `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto |
-| `web_metadata_test.dart` | Páginas do site geradas, SEO, manifest, ícones, robots, sitemap, 404 |
+| `web_metadata_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt |
 
 Armadilhas conhecidas ao escrever testes de widget: o cálculo é assíncrono de verdade e deve rodar
 dentro de `tester.runAsync`; títulos de diálogo podem estar em maiúsculas; o canvas precisa de um

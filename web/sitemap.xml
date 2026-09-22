@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://opencadirrigation.com/id/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -26,10 +26,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/de/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -53,10 +56,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -80,10 +86,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/es/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -107,10 +116,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/fr/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -134,10 +146,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/ha/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -161,10 +176,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/sw/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -188,10 +206,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/pt/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -215,10 +236,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/vi/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -242,10 +266,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/tr/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -269,10 +296,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/ru/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -296,10 +326,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/ar/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -323,10 +356,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/ur/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -350,10 +386,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/hi/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -377,10 +416,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/mr/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -404,10 +446,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/bn/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -431,10 +476,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/pa/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -458,10 +506,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/te/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -485,10 +536,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/zh/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -512,10 +566,13 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://opencadirrigation.com/ja/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/"/>
@@ -539,5 +596,8 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/"/>
+    <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/og-image.png</image:loc></image:image>
+    <image:image><image:loc>https://opencadirrigation.com/brand/logo-horizontal-1000.png</image:loc></image:image>
   </url>
 </urlset>

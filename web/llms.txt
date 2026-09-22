@@ -1,0 +1,74 @@
+# OpenCADIrrigation
+
+> OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+
+OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation together: trace the area, lay out laterals, valves and the mainline, press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. Available in 20 languages, following your computer's language.
+
+- What: Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, centre pivot and linear move) with a hydraulic engine, automatic pipe sizing, bill of materials and reports
+- Price: Free for professional, academic and personal use; no account or sign-up
+- Runs in: Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; nothing to download
+- Privacy: Projects stay on the user's computer (browser storage and `.oci.json` files); nothing is uploaded to a server
+- Languages: 20: Indonesian, German, English, Spanish, French, Hausa, Swahili, Portuguese, Vietnamese, Turkish, Russian, Arabic, Urdu, Hindi, Marathi, Bengali, Punjabi, Telugu, Chinese, Japanese
+- Project file: `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results
+- CAD and GIS exchange: DXF, DWG, KML/KMZ, shapefile, GeoJSON, CSV/XYZ survey points, GeoTIFF, georeferenced images, SVG and PDF
+- Reports: PDF, Excel (XLSX), CSV and TXT
+- Version: 1.0.0, updated 2026-09-22
+- Site: https://opencadirrigation.com/
+
+## Application
+
+- [OpenCADIrrigation](https://opencadirrigation.com/): the app and its page in English; the app opens in the visitor's language when it speaks it
+- [Interactive tutorial](https://opencadirrigation.com/?tutorial=1): a guided tour of every function on a sample project
+- [Sized example](https://opencadirrigation.com/?design=1): the sample orchard, designed as soon as it opens
+
+## Reference
+
+- [Complete reference](https://opencadirrigation.com/llms-full.txt): features, design workflow, hydraulic methods, sizing, catalogues, file formats, examples, deep links, limitations and FAQ in one Markdown file
+
+## Ready examples to open
+
+Every project opens complete and designs with F5. Use them to get to know the app or as a starting point.
+
+- [Orchard](https://opencadirrigation.com/?example=orchard): Micro-sprinklers on citrus and drip on grapes, well with pump and filter, sloping ground.
+- [Residential garden](https://opencadirrigation.com/?example=garden): Pop-up sprays, rotors and drip in the beds, fed by the mains through a meter and a backflow preventer.
+- [Football pitch](https://opencadirrigation.com/?example=sportsField): Full-size pitch with impact sprinklers in five rows, reservoir, pump and night-time shifts.
+- [Drip row crop](https://opencadirrigation.com/?example=rowCrop): Four tomato blocks on drip tape, screen filter, pump and a 1 % slope.
+- [Centre pivot](https://opencadirrigation.com/?example=pivot): A 300 m pivot on maize fed by a well and a pump, with a tower, span and sprinkler report.
+- [Vegetable greenhouse](https://opencadirrigation.com/?example=greenhouse): Four tunnels on pressure-compensating dripline, tank, small pump and disc filter.
+- [Plant nursery](https://opencadirrigation.com/?example=nursery): Beds under overhead micro-sprinklers on a 4 × 4 m grid, elevated tank and small pump.
+- [Coffee on contour lines](https://opencadirrigation.com/?example=coffee): Curved laterals following the hillside contours, PC dripline, well and pump.
+- [Banana plantation](https://opencadirrigation.com/?example=bananas): Pressure-compensating micro-sprinklers at 5 × 5 m, well with submersible pump and disc filter.
+- [Subsurface drip sugarcane](https://opencadirrigation.com/?example=sugarcane): PC dripline buried 0.3 m deep in 180 m laterals, screen filter and air valve.
+- [Gravity-fed drip](https://opencadirrigation.com/?example=gravity): A reservoir 40 m above the blocks, no pump, with a pressure reducing valve on the mainline.
+- [Sprinkler-irrigated pasture](https://opencadirrigation.com/?example=pasture): Three paddocks with impact-sprinkler spray lines at 12 × 18 m, reservoir and pump.
+- [Golf hole](https://opencadirrigation.com/?example=golf): Tee with sprays, fairway with rotors on a triangular grid and green with rotors around the edge.
+- [Sector pivot with end gun](https://opencadirrigation.com/?example=sectorPivot): A 250 m pivot sweeping 270° with an end gun, pond, 30 hp pump and gate valve.
+- [Linear move](https://opencadirrigation.com/?example=linear): A 392 m lateral-move machine travelling 800 m along a canal, with intake and pump.
+
+## Other languages
+
+The same page, written in each language of the app:
+
+- [Bahasa Indonesia (Indonesian)](https://opencadirrigation.com/id/): OpenCADIrrigation: CAD desain irigasi di peramban
+- [Deutsch (German)](https://opencadirrigation.com/de/): OpenCADIrrigation: CAD für Bewässerungsplanung im Browser
+- [Español (Spanish)](https://opencadirrigation.com/es/): OpenCADIrrigation: CAD de diseño de riego en el navegador
+- [Français (French)](https://opencadirrigation.com/fr/): OpenCADIrrigation : CAO d’irrigation dans le navigateur
+- [Hausa](https://opencadirrigation.com/ha/): OpenCADIrrigation: CAD na ƙirar ban ruwa a mai binciken gizo
+- [Kiswahili (Swahili)](https://opencadirrigation.com/sw/): OpenCADIrrigation: CAD ya usanifu wa umwagiliaji kivinjarini
+- [Português (Portuguese)](https://opencadirrigation.com/pt/): OpenCADIrrigation: CAD de projeto de irrigação no navegador
+- [Tiếng Việt (Vietnamese)](https://opencadirrigation.com/vi/): OpenCADIrrigation: CAD thiết kế tưới ngay trên trình duyệt
+- [Türkçe (Turkish)](https://opencadirrigation.com/tr/): OpenCADIrrigation: tarayıcıda sulama projelendirme CAD
+- [Русский (Russian)](https://opencadirrigation.com/ru/): OpenCADIrrigation: САПР для проектирования орошения в браузере
+- [العربية (Arabic)](https://opencadirrigation.com/ar/): OpenCADIrrigation: برنامج CAD لتصميم الري في المتصفح
+- [اردو (Urdu)](https://opencadirrigation.com/ur/): OpenCADIrrigation: براؤزر میں آبپاشی ڈیزائن کا CAD
+- [हिन्दी (Hindi)](https://opencadirrigation.com/hi/): OpenCADIrrigation: ब्राउज़र में सिंचाई डिज़ाइन CAD
+- [मराठी (Marathi)](https://opencadirrigation.com/mr/): OpenCADIrrigation: ब्राउझरमध्ये सिंचन डिझाइन CAD
+- [বাংলা (Bengali)](https://opencadirrigation.com/bn/): OpenCADIrrigation: ব্রাউজারে সেচ ডিজাইনের CAD
+- [ਪੰਜਾਬੀ (Punjabi)](https://opencadirrigation.com/pa/): OpenCADIrrigation: ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ CAD
+- [తెలుగు (Telugu)](https://opencadirrigation.com/te/): OpenCADIrrigation: బ్రౌజర్‌లో నీటిపారుదల డిజైన్ CAD
+- [中文 (Chinese)](https://opencadirrigation.com/zh/): OpenCADIrrigation：浏览器中的灌溉设计 CAD
+- [日本語 (Japanese)](https://opencadirrigation.com/ja/): OpenCADIrrigation：ブラウザで使える灌漑設計CAD
+
+## Optional
+
+- [Sitemap](https://opencadirrigation.com/sitemap.xml): every language page with its hreflang alternates

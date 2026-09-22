@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/tr/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/tr/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/tr/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/tr/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/tr/",
+      "installUrl": "https://opencadirrigation.com/tr/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "Bölge bazında sonuçlarıyla boyutlandırılmış sulama projesi"
       },
       "description": "Tarayıcıda basınçlı sulama projelendirmesi için ücretsiz CAD: damla sulama, mini yağmurlayıcılar, yağmurlama ve center pivot, hidrolik boyutlandırma, malzeme listesi, DXF/DWG, PDF ve Excel.",
+      "abstract": "OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar.",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "Sulama CAD",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/tr/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "sulama projesi, sulama yazılımı, sulama CAD, basınçlı sulama, damla sulama, mini yağmurlayıcı, yağmurlama sulama, center pivot, hidrolik hesap, boru çapı hesabı, sulama üniformitesi, DXF, DWG, bahçe sulama, tarımsal sulama, ücretsiz sulama programı",
       "featureList": [
-        "Tam CAD çizimi",
-        "Hidrolik şebeke",
-        "Doğrulanmış hidrolik motor",
-        "Otomatik boyutlandırma",
-        "Arazi ve topoğrafya",
-        "Raporlar ve malzemeler",
-        "Dosya alışverişi",
-        "Üretici katalogları"
+        "Tam CAD çizimi: Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler ve katmanlar; nesne kenetleme, pencereyle seçim, tutamaçlar ve AutoCAD tarzı kısayollar (L, PL, C, D, ZE…).",
+        "Hidrolik şebeke: Su kaynakları, pompalar, ana hat, bölge vanaları, damlatıcılı lateraller, damla bantları ve damla boruları, filtreler, basınç regülatörleri, su sayaçları ve düğümler; lateral bloğu ve yağmurlayıcı ızgarası oluşturucuları.",
+        "Doğrulanmış hidrolik motor: Hazen-Williams ve Darcy-Weisbach, yerel kayıplar, damlatıcılar q = k·Hˣ, Global Gradient Algorithm ile şebeke çözümü (EPANET’teki gibi), pompa eğrileri ve çalışma noktası, su darbesi ve yıkama analizi.",
+        "Otomatik boyutlandırma: Doğrusal programlama veya azami hız; damlatıcı basınç aralığına ve boru basınç sınıflarına uyarak, boru maliyeti ile enerjiyi dengeleyerek, kademeli çaplar ve sulama vardiyalarıyla.",
+        "Arazi ve topoğrafya: Eş yükselti eğrileri, kot noktaları, üçgenlemeyle sayısal arazi modeli, bir koordinattan internetten indirilen yükseklik, boy kesitler ve arazi üzerinde hidrolik eğim çizgisi.",
+        "Raporlar ve malzemeler: Bölgeler, borular, damlatıcılar, üniformite (CU, DU, EU), bitki su ihtiyacı, kontrol ünitesi programı ve bağlantı parçalarıyla malzeme listesi; PDF, Excel, CSV ve TXT olarak dışa aktarma.",
+        "Dosya alışverişi: DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF ve coğrafi referanslı görüntüleri içe aktarır; DXF, DWG, PDF paftalar, SVG, KML, KMZ ve GeoJSON dışa aktarır.",
+        "Üretici katalogları: JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ve dosyadan ya da URL’den yüklenen kendi paketleriniz."
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/tr/#faq",
+      "name": "Sık sorulan sorular",
+      "inLanguage": "tr",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/tr/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation nedir?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation ücretsiz mi?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Kimler için?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tarımsal ve peyzaj sulama projecileri, ziraat mühendisleri ve mühendisler, ekipman bayileri, öğretmenler ve öğrenciler için. Etkileşimli eğitim ve 15 hazır örnek sayesinde kılavuz okumadan başlayabilirsiniz."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bir şey kurmam gerekiyor mu?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Projelerim bulutta mı saklanıyor?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır. Yalnızca çevrimiçi yükseklik verisi ve altlık haritalar, siz istediğinizde internete erişir."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Hidrolik hesap nasıl yapılır?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sürtünme kayıpları Hazen-Williams veya Darcy-Weisbach ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı içinde doğrusal programlama ile boyutlandırılır; ayrıca üniformite (CU, DU, EU), su darbesi ve yıkama kontrol edilir."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "AutoCAD ve diğer CAD programlarıyla çalışır mı?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Evet. DXF ve DWG (AutoCAD 2000–2018) içe ve dışa aktarır; ayrıca Google Earth KML/KMZ, shapefile, GeoJSON, SVG ve PDF desteği vardır."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Hangi dillerde kullanılabilir?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Bu siteyle aynı 20 dilde (liste sayfanın altındadır). Uygulama bilgisayarınızın dilinde açılır ve Görünüm → Dil menüsünden istediğiniz zaman değiştirebilirsiniz."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/tr/#how",
+      "name": "Nasıl çalışır",
+      "description": "OpenCADIrrigation, CAD çizimini, hidrolik şebekeyi ve hesabı tek bir yerde toplar: alanı çizin, lateralleri, vanaları ve ana hattı yerleştirin, F5 tuşuna basın; boru çapları, basınçlar, üniformite, sulama vardiyaları, malzeme listesi ve yazdırmaya hazır raporlar elde edin. 20 dilde kullanılabilir ve bilgisayarınızın dilini izler.",
+      "inLanguage": "tr",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Alanı çizin veya içe aktarın",
+          "text": "Bir DXF, DWG, KML ya da uydu görüntüsü getirin veya tarlayı, bahçeyi ya da sahayı doğrudan çizin. Eş yükselti eğrileri ekleyin ya da yüksekliği bir koordinattan indirin."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Şebekeyi kurun",
+          "text": "Tek tıkla lateral blokları veya yağmurlayıcı ızgaraları oluşturun, vanaları, pompayı ve su kaynağını yerleştirin ve hepsini ana hatla bağlayın."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Projelendirin ve belgeleyin",
+          "text": "F5 tuşuna basın: uygulama bölgeleri ve ana hattı boyutlandırır, basınçları ve hızları denetler; raporları, malzeme listesini ve PDF paftayı üretir."
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/tr/#examples",
+      "name": "Açmaya hazır örnekler",
+      "description": "Her proje eksiksiz açılır ve F5 ile projelendirilir. Uygulamayı tanımak için ya da bir başlangıç noktası olarak kullanın.",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Meyve bahçesi",
+            "description": "Turunçgilde mikro yağmurlama ve üzümde damla, pompalı ve filtreli kuyu, eğimli arazi.",
+            "url": "https://opencadirrigation.com/tr/?example=orchard",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Ev bahçesi",
+            "description": "Ön çimde pop-up spreyler, arkada rotorlar ve yastıklarda damla; sayaç ve geri akış önleyicili şebeke suyu.",
+            "url": "https://opencadirrigation.com/tr/?example=garden",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Futbol sahası",
+            "description": "Beş sıra çarpmalı yağmurlayıcılı tam boy 105 × 68 m saha, depo, pompa ve gece vardiyaları.",
+            "url": "https://opencadirrigation.com/tr/?example=sportsField",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Damla sulamalı sıra bitkisi",
+            "description": "Damla bantlı dört domates bloğu, vanalı manifoldlar, elek filtre, pompa ve eğimli arazi.",
+            "url": "https://opencadirrigation.com/tr/?example=rowCrop",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Center pivot",
+            "description": "Ana hat, kuyu ve pompayla beslenen mısırda 300 m pivot; kule, açıklık ve meme raporu.",
+            "url": "https://opencadirrigation.com/tr/?example=pivot",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Sebze serası",
+            "description": "Basınç dengeleyici damla borulu dört biber tüneli, tünel başına bir bölge, depo, küçük pompa ve disk filtre.",
+            "url": "https://opencadirrigation.com/tr/?example=greenhouse",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Fidanlık",
+            "description": "4 × 4 m ızgarada asılı mikro yağmurlayıcılarla 12 × 48 m üç tava, tava başına bir bölge, yüksek depo, küçük pompa ve disk filtre.",
+            "url": "https://opencadirrigation.com/tr/?example=nursery",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Eş yükselti eğrilerinde kahve",
+            "description": "Yamaçta eş yükselti eğrilerini izleyen eğri laterallerle (kılavuzlu blok) üç kahve bloğu, PC damla borusu, yamaç dibinde kuyu ve pompa.",
+            "url": "https://opencadirrigation.com/tr/?example=coffee",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Muz plantasyonu",
+            "description": "5 × 5 m’de basınç dengeleyici mikro yağmurlayıcılarla iki muz bloğu, dalgıç pompalı kuyu, disk filtre ve eğimli arazi.",
+            "url": "https://opencadirrigation.com/tr/?example=bananas",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Yüzey altı damla sulamalı şeker kamışı",
+            "description": "0,3 m derine gömülü 20 mm PC damla borulu iki şeker kamışı bloğu, 180 m lateraller, gömülü manifoldlar, depo, pompa, elek filtre ve hava vanası.",
+            "url": "https://opencadirrigation.com/tr/?example=sugarcane",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Cazibeli damla sulama",
+            "description": "Damla sulamalı iki sebze bloğunun 40 m üstünde depo, pompasız: ana hatta sürgülü vana, basınç düşürücü vana ve disk filtre; yamaç eş yükselti eğrileri.",
+            "url": "https://opencadirrigation.com/tr/?example=gravity",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Yağmurlama sulamalı mera",
+            "description": "12 × 18 m’de çarpmalı yağmurlayıcı hatlarıyla 72 × 72 m üç padok, vanalı manifoldlar, depo, pompa ve çekvalf.",
+            "url": "https://opencadirrigation.com/tr/?example=pasture",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Golf çukuru",
+            "description": "Spreyli tee, üçgen ızgarada rotorlu fairway (iki bölge) ve kenarında rotorlu green, pompalı gölet ve gece vardiyaları.",
+            "url": "https://opencadirrigation.com/tr/?example=golf",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Uç tabancalı sektör pivotu",
+            "description": "Çiftlik evi çeyreğini boş bırakarak 270° dönen soyada 250 m pivot, 12 m³/h uç tabancalı; gölet, 30 hp pompa ve sürgülü vana.",
+            "url": "https://opencadirrigation.com/tr/?example=sectorPivot",
+            "inLanguage": "tr"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "Lineer sistem",
+            "description": "Bir kanal boyunca 800 m ilerleyen buğdayda 392 m lineer makine, 30 hp pompalı ve çekvalfli su alma; kule ve meme raporu.",
+            "url": "https://opencadirrigation.com/tr/?example=linear",
+            "inLanguage": "tr"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>Arazi ve topoğrafya</h3><p>Eş yükselti eğrileri, kot noktaları, üçgenlemeyle sayısal arazi modeli, bir koordinattan internetten indirilen yükseklik, boy kesitler ve arazi üzerinde hidrolik eğim çizgisi.</p></li>
           <li><h3>Raporlar ve malzemeler</h3><p>Bölgeler, borular, damlatıcılar, üniformite (CU, DU, EU), bitki su ihtiyacı, kontrol ünitesi programı ve bağlantı parçalarıyla malzeme listesi; PDF, Excel, CSV ve TXT olarak dışa aktarma.</p></li>
           <li><h3>Dosya alışverişi</h3><p>DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF ve coğrafi referanslı görüntüleri içe aktarır; DXF, DWG, PDF paftalar, SVG, KML, KMZ ve GeoJSON dışa aktarır.</p></li>
-          <li><h3>Üretici katalogları</h3><p>JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.</p></li>
+          <li><h3>Üretici katalogları</h3><p>JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">Sık sorulan sorular</h2>
         <dl>
+          <dt>OpenCADIrrigation nedir?</dt>
+          <dd>OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar.</dd>
           <dt>OpenCADIrrigation ücretsiz mi?</dt>
           <dd>Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez.</dd>
+          <dt>Kimler için?</dt>
+          <dd>Tarımsal ve peyzaj sulama projecileri, ziraat mühendisleri ve mühendisler, ekipman bayileri, öğretmenler ve öğrenciler için. Etkileşimli eğitim ve 15 hazır örnek sayesinde kılavuz okumadan başlayabilirsiniz.</dd>
           <dt>Bir şey kurmam gerekiyor mu?</dt>
           <dd>Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.</dd>
           <dt>Projelerim bulutta mı saklanıyor?</dt>
           <dd>Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır. Yalnızca çevrimiçi yükseklik verisi ve altlık haritalar, siz istediğinizde internete erişir.</dd>
+          <dt>Hidrolik hesap nasıl yapılır?</dt>
+          <dd>Sürtünme kayıpları Hazen-Williams veya Darcy-Weisbach ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı içinde doğrusal programlama ile boyutlandırılır; ayrıca üniformite (CU, DU, EU), su darbesi ve yıkama kontrol edilir.</dd>
           <dt>AutoCAD ve diğer CAD programlarıyla çalışır mı?</dt>
           <dd>Evet. DXF ve DWG (AutoCAD 2000–2018) içe ve dışa aktarır; ayrıca Google Earth KML/KMZ, shapefile, GeoJSON, SVG ve PDF desteği vardır.</dd>
           <dt>Hangi dillerde kullanılabilir?</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="Diller">Diller: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <strong lang="tr" dir="ltr">Türkçe</strong> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Üretici katalogları ve örnek projeler, OpenCADIrrigation’a eklenmek üzere JSON biçiminde gönderilebilir.</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>

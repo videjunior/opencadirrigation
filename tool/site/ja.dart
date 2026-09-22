@@ -19,7 +19,7 @@ const _ja = SiteText(
     ('地形', '等高線、標高点、三角網によるデジタル地形モデル、座標指定でインターネットから取得する標高、縦断面図、地表面上の動水勾配線。'),
     ('レポートと部材', '区画、管路、エミッター、均一性（CU、DU、EU）、作物の必要水量、コントローラーのプログラム、継手を含む部材リスト。PDF、Excel、CSV、TXT に出力。'),
     ('ファイル交換', 'DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF、ジオリファレンス画像を読み込み、DXF、DWG、PDF 図面、SVG、KML、KMZ、GeoJSON を書き出し。'),
-    ('メーカーカタログ', 'すぐに使える JSON 形式のメーカーカタログ（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger）に加え、ファイルや URL から独自パックも読み込めます。'),
+    ('メーカーカタログ', 'すぐに使える JSON 形式のメーカーカタログ（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit）に加え、ファイルや URL から独自パックも読み込めます。'),
   ],
   howTitle: '使い方',
   how: [
@@ -48,9 +48,12 @@ const _ja = SiteText(
   ],
   faqTitle: 'よくある質問',
   faq: [
+    ('OpenCADIrrigation とは？', 'OpenCADIrrigation は、加圧灌漑システムを設計するための無料 Web アプリです。水理エンジンを備えた CAD で、ネットワークを配置し、管径を決め、圧力と均一性を確認し、部材リストとレポートを作成します。住宅の庭からセンターピボットまで対応します。'),
     ('OpenCADIrrigation は無料ですか？', 'はい。業務・学術・個人のいずれの用途でも無料で、登録も不要です。'),
+    ('どんな人向けですか？', '農業用・造園用灌漑の設計者、農学者やエンジニア、機材販売店、教員や学生の方々です。インタラクティブチュートリアルと 15 の完成例があるので、マニュアルを読まずに始められます。'),
     ('何かをインストールする必要がありますか？', 'いいえ。パソコン、タブレット、スマートフォンの Chrome、Edge、Firefox、Safari で動作し、専用ウィンドウで開くアプリ（PWA）としてインストールすることもできます。'),
     ('プロジェクトはクラウドに保存されますか？', 'いいえ。プロジェクトはブラウザ内と、お好きな場所に保管できる .oci.json ファイルに保存されます。インターネットにアクセスするのは、ご要求時のオンライン標高と背景地図だけです。'),
+    ('水理計算はどのように行われますか？', '摩擦損失は Hazen-Williams 式または Darcy-Weisbach 式、エミッターは q = k·Hˣ で求め、管網全体を EPANET と同じ Global Gradient Algorithm で解きます。管径はエミッターの圧力範囲内で線形計画法により決定し、均一性（CU、DU、EU）、ウォーターハンマー、フラッシングも確認します。'),
     ('AutoCAD などの CAD と連携できますか？', 'はい。DXF と DWG（AutoCAD 2000〜2018）の読み込み・書き出しに加え、Google Earth の KML/KMZ、シェープファイル、GeoJSON、SVG、PDF に対応しています。'),
     ('対応言語は？', 'このサイトと同じ 20 言語です（一覧はページ下部）。アプリはコンピューターの言語で開き、「表示 → 言語」からいつでも切り替えられます。'),
   ],

@@ -676,8 +676,20 @@ the browser's language when the site speaks it). The page texts live in `tool/si
 taken from the language packs); Arabic and Urdu pages read right to left. Since
 Flutter paints on a canvas, every page carries the content as real HTML (heading, features,
 examples, FAQ), visible while the app loads and kept on the page afterwards, with its own canonical,
-`hreflang` between all the versions, Open Graph and JSON-LD. The test `test/web_metadata_test.dart`
-fails when the generated files drift from the template.
+`hreflang` between all the versions, Open Graph and JSON-LD (application, FAQ, how it works and the
+example gallery, in the page's language, with the subject linked to Wikipedia/Wikidata). The test
+`test/web_metadata_test.dart` fails when the generated files drift from the template.
+
+The generator also writes what search engines and AI assistants read besides the pages:
+`web/robots.txt` (everything allowed, with the search and AI crawlers named: GPTBot, OAI-SearchBot,
+ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, CCBot, bingbot and others),
+`web/llms.txt` (the [llmstxt.org](https://llmstxt.org) summary: what the app is, key facts and links
+to every language page and example) and `web/llms-full.txt` (the whole reference in Markdown:
+features, workflow, hydraulic methods, sizing, catalogues, formats, deep links, limitations, FAQ;
+its technical sections live in `tool/site/llms.dart` and follow this README), `web/humans.txt` and
+the IndexNow key `web/<key>.txt`. After a deploy, `dart run tool/indexnow.dart` asks Bing, Yandex and
+the other IndexNow engines to crawl the pages again (Bing's index also answers Copilot and ChatGPT
+search); `--dry-run` prints the request without sending it.
 
 ---
 
@@ -787,7 +799,8 @@ tool/build_web.sh                  # release build: worker + flutter build web w
                                    # baked into the version (welcome, status bar, Help → About, console)
 flutter build web --release        # the same without commit/date (build/web, ready for static hosting; web/CNAME holds the domain)
 dart run tool/gen_version.dart     # regenerates lib/app/version.dart after changing `version:` in pubspec.yaml
-dart run tool/gen_site.dart        # site pages (English index, /pt/, /es/, /de/, … sitemap, 404)
+dart run tool/gen_site.dart        # site pages (English index, /pt/, /es/, /de/, … sitemap, 404, robots, llms.txt)
+dart run tool/indexnow.dart        # after a deploy: ask IndexNow engines (Bing…) to crawl the pages again
 dart run tool/gen_catalogs.dart    # validates and normalises catalogs/*.oci.cat and rebuilds index.json
 dart run tool/gen_examples.dart    # regenerates examples/<lang>/*.oci.json from lib/app/examples.dart
 dart run tool/gen_brand.dart       # icons and brand assets from web/brand
@@ -835,7 +848,7 @@ isolate for the calculation.
 | `core/i18n_packs_test.dart` | Every language pack covers every key of the table, the tutorial and the catalogue names with the same placeholders and is mostly not English; installed packs reach the strings, the tutorial and the catalogue; `setLanguage` loads a pack on demand with English meanwhile and retries a failed load |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Editing (grips, transformations, trim, extend, cut), entity JSON, tabs and clipboard, worker protocol, local HTTP, project storage, camera and snap |
 | `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout |
-| `web_metadata_test.dart`, `version_test.dart` | Generated site pages, SEO, manifest, icons, robots, sitemap, 404; app version consistent with pubspec.yaml and the site |
+| `web_metadata_test.dart`, `version_test.dart` | Generated site pages, SEO, JSON-LD, manifest, icons, robots, sitemap, 404, llms.txt; app version consistent with pubspec.yaml and the site |
 
 Known pitfalls when writing widget tests: the calculation is truly asynchronous and must run inside
 `tester.runAsync`; dialog titles may be upper-case; the canvas needs a defined window size; asset

@@ -39,6 +39,7 @@
   <link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/">
   <link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/">
   <link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/">
+  <link rel="alternate" type="text/markdown" href="https://opencadirrigation.com/llms.txt" title="OpenCADIrrigation for language models (llms.txt)">
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -159,13 +160,27 @@
       "about": {
         "@id": "https://opencadirrigation.com/#app"
       },
+      "mainEntity": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "hasPart": [
+        {
+          "@id": "https://opencadirrigation.com/ur/#faq"
+        },
+        {
+          "@id": "https://opencadirrigation.com/ur/#how"
+        },
+        {
+          "@id": "https://opencadirrigation.com/ur/#examples"
+        }
+      ],
       "primaryImageOfPage": {
         "@type": "ImageObject",
         "url": "https://opencadirrigation.com/og-image.png",
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-21",
+      "dateModified": "2026-09-22",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ur/#breadcrumb"
       }
@@ -183,11 +198,12 @@
       ]
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebApplication",
       "@id": "https://opencadirrigation.com/#app",
       "name": "OpenCADIrrigation",
       "alternateName": "OpenCAD Irrigation",
       "url": "https://opencadirrigation.com/ur/",
+      "installUrl": "https://opencadirrigation.com/ur/",
       "image": "https://opencadirrigation.com/og-image.png",
       "screenshot": {
         "@type": "ImageObject",
@@ -197,11 +213,14 @@
         "caption": "زون وار نتائج کے ساتھ سائز شدہ آبپاشی ڈیزائن"
       },
       "description": "براؤزر میں دباؤ والی آبپاشی کے ڈیزائن کے لیے مفت CAD: ڈرپ، مائیکرو اسپرنکلر، اسپرنکلر اور سینٹر پیوٹ، ہائیڈرولک سائزنگ، سامان کی فہرست، DXF/DWG، PDF اور Excel۔",
+      "abstract": "OpenCADIrrigation دباؤ والی آبپاشی کے نظام ڈیزائن کرنے کے لیے ایک مفت ویب ایپ ہے: ہائیڈرولک انجن والا CAD جو نیٹ ورک بچھاتا ہے، پائپوں کا سائز طے کرتا ہے، دباؤ اور یکسانیت جانچتا ہے اور سامان کی فہرست اور رپورٹیں تیار کرتا ہے، گھریلو باغیچے سے سینٹر پیوٹ تک۔",
       "applicationCategory": "DesignApplication",
       "applicationSubCategory": "آبپاشی کے لیے CAD",
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
-      "browserRequirements": "Requires JavaScript",
+      "browserRequirements": "Requires JavaScript and WebAssembly",
+      "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
+      "dateModified": "2026-09-22",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ur/?tutorial=1",
@@ -238,18 +257,350 @@
       ],
       "keywords": "آبپاشی ڈیزائن، آبپاشی سافٹ ویئر، آبپاشی CAD، دباؤ والی آبپاشی، ڈرپ آبپاشی، مائیکرو اسپرنکلر، اسپرنکلر آبپاشی، سینٹر پیوٹ، ہائیڈرولک حساب، پائپ سائزنگ، آبپاشی کی یکسانیت، DXF، DWG، باغ کی آبپاشی، زرعی آبپاشی، مفت آبپاشی سافٹ ویئر",
       "featureList": [
-        "مکمل CAD ڈرائنگ",
-        "ہائیڈرولک نیٹ ورک",
-        "تصدیق شدہ ہائیڈرولک انجن",
-        "خودکار سائزنگ",
-        "زمین اور نشیب و فراز",
-        "رپورٹیں اور سامان",
-        "فائلوں کا تبادلہ",
-        "مینوفیکچررز کے کیٹلاگ"
+        "مکمل CAD ڈرائنگ: لائنیں، پولی لائنیں، قوسیں، اسپلائن، ہیچ، ڈائمینشن، متن اور لیئرز، اسنیپ، ونڈو سلیکشن، گرِپس اور AutoCAD طرز کے شارٹ کٹس (L، PL، C، D، ZE…) کے ساتھ۔",
+        "ہائیڈرولک نیٹ ورک: پانی کے ذرائع، پمپ، مرکزی لائن، زون والو، ایمیٹرز والے لیٹرل، ڈرپ ٹیپ اور ڈرپ لائن، فلٹر، پریشر ریگولیٹر، واٹر میٹر اور جنکشن؛ لیٹرل بلاک اور اسپرنکلر گرڈ بنانے والے ٹولز۔",
+        "تصدیق شدہ ہائیڈرولک انجن: ہیزن-ولیمز اور ڈارسی-وائسباخ، مقامی نقصانات، ایمیٹرز q = k·Hˣ، Global Gradient Algorithm سے نیٹ ورک کا حل (جیسے EPANET میں)، پمپ کے خم اور آپریٹنگ پوائنٹ، واٹر ہیمر اور فلشنگ کا تجزیہ۔",
+        "خودکار سائزنگ: لکیری پروگرامنگ یا زیادہ سے زیادہ رفتار، ایمیٹرز کی دباؤ کی حد اور پائپوں کی دباؤ کلاس کا لحاظ رکھتے ہوئے، پائپ کی لاگت اور توانائی میں توازن، مرحلہ وار قطر اور آپریشن کی باریاں۔",
+        "زمین اور نشیب و فراز: کنٹور لائنیں، بلندی کے نقاط، مثلث بندی سے زمین کا ڈیجیٹل ماڈل، کسی کوآرڈینیٹ سے انٹرنیٹ سے ڈاؤن لوڈ کی گئی بلندی، طولی پروفائل اور زمین کے اوپر ہائیڈرولک گریڈ لائن۔",
+        "رپورٹیں اور سامان: زون، پائپ، ایمیٹرز، یکسانیت (CU، DU، EU)، فصلوں کی پانی کی ضرورت، کنٹرولر پروگرام اور فٹنگز سمیت سامان کی فہرست؛ PDF، Excel، CSV اور TXT میں ایکسپورٹ۔",
+        "فائلوں کا تبادلہ: DXF، DWG، KML/KMZ، SHP، CSV/XYZ، GeoTIFF اور جغرافیائی حوالے والی تصاویر امپورٹ کرتا ہے؛ DXF، DWG، PDF شیٹس، SVG، KML، KMZ اور GeoJSON ایکسپورٹ کرتا ہے۔",
+        "مینوفیکچررز کے کیٹلاگ: JSON میں مینوفیکچررز کے کیٹلاگ (Netafim، Rivulis، Jain، Toro، Rain Bird، Nelson، Hunter، NaanDanJain، Senninger، Irritec، Bermad، Schneider، Amanco Wavin، Multilit) استعمال کے لیے تیار، اور فائل یا URL سے لوڈ ہونے والے آپ کے اپنے پیک۔"
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation",
+            "https://www.wikidata.org/wiki/Q11453"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Drip irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Drip_irrigation",
+            "https://www.wikidata.org/wiki/Q746694"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Micro-irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Micro-irrigation",
+            "https://www.wikidata.org/wiki/Q6692750"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Irrigation sprinkler",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Irrigation_sprinkler",
+            "https://www.wikidata.org/wiki/Q998539"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Center-pivot irrigation",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Center-pivot_irrigation",
+            "https://www.wikidata.org/wiki/Q2744831"
+          ]
+        },
+        {
+          "@type": "Thing",
+          "name": "Computer-aided design",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Computer-aided_design",
+            "https://www.wikidata.org/wiki/Q184793"
+          ]
+        }
       ],
       "author": {
         "@id": "https://opencadirrigation.com/#org"
+      },
+      "publisher": {
+        "@id": "https://opencadirrigation.com/#org"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://opencadirrigation.com/ur/#faq",
+      "name": "اکثر پوچھے جانے والے سوالات",
+      "inLanguage": "ur",
+      "isPartOf": {
+        "@id": "https://opencadirrigation.com/ur/#page"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "OpenCADIrrigation کیا ہے؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OpenCADIrrigation دباؤ والی آبپاشی کے نظام ڈیزائن کرنے کے لیے ایک مفت ویب ایپ ہے: ہائیڈرولک انجن والا CAD جو نیٹ ورک بچھاتا ہے، پائپوں کا سائز طے کرتا ہے، دباؤ اور یکسانیت جانچتا ہے اور سامان کی فہرست اور رپورٹیں تیار کرتا ہے، گھریلو باغیچے سے سینٹر پیوٹ تک۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "کیا OpenCADIrrigation مفت ہے؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "جی ہاں۔ یہ پیشہ ورانہ، تعلیمی اور ذاتی استعمال کے لیے مفت ہے، بغیر رجسٹریشن کے۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "یہ کس کے لیے ہے؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "زرعی اور لینڈ اسکیپ آبپاشی کے ڈیزائنرز، ماہرینِ زراعت اور انجینئرز، آلات کے ڈیلرز، اساتذہ اور طلبہ کے لیے۔ انٹرایکٹو ٹیوٹوریل اور 15 تیار مثالوں کی مدد سے آپ مینوئل پڑھے بغیر شروع کر سکتے ہیں۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "کیا مجھے کچھ انسٹال کرنا ہوگا؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نہیں۔ یہ Chrome، Edge، Firefox اور Safari میں کمپیوٹر، ٹیبلٹ اور فون پر چلتا ہے، اور اسے ایپ (PWA) کے طور پر انسٹال کیا جا سکتا ہے جو اپنی الگ ونڈو میں کھلتی ہے۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "کیا میرے پروجیکٹ کلاؤڈ میں محفوظ ہوتے ہیں؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نہیں۔ پروجیکٹ آپ کے براؤزر میں اور ‎.oci.json فائلوں میں محفوظ ہوتے ہیں جنہیں آپ جہاں چاہیں رکھیں۔ صرف آن لائن بلندی اور بیس میپس انٹرنیٹ استعمال کرتے ہیں، جب آپ انہیں طلب کریں۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ہائیڈرولک حساب کیسے ہوتا ہے؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "رگڑ کے نقصانات ہیزن-ولیمز یا ڈارسی-وائسباخ سے، ایمیٹرز q = k·Hˣ سے، اور پورا نیٹ ورک Global Gradient Algorithm سے حل ہوتا ہے، جو EPANET کا طریقہ ہے۔ پائپوں کا سائز ایمیٹرز کی دباؤ کی حد کے اندر لکیری پروگرامنگ سے طے ہوتا ہے، اور ڈیزائن یکسانیت (CU، DU، EU)، واٹر ہیمر اور فلشنگ بھی جانچتا ہے۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "کیا یہ AutoCAD اور دوسرے CAD کے ساتھ کام کرتا ہے؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "جی ہاں۔ یہ DXF اور DWG (AutoCAD 2000 سے 2018 تک) امپورٹ اور ایکسپورٹ کرتا ہے، نیز Google Earth کی KML/KMZ، شیپ فائل، GeoJSON، SVG اور PDF بھی۔"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "یہ کن زبانوں میں دستیاب ہے؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "20 زبانوں میں، وہی جو اس ویب سائٹ کی ہیں (فہرست صفحے کے آخر میں ہے)۔ ایپ آپ کے کمپیوٹر کی زبان میں کھلتی ہے اور آپ منظر ← زبان سے کسی بھی وقت زبان بدل سکتے ہیں۔"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://opencadirrigation.com/ur/#how",
+      "name": "یہ کیسے کام کرتا ہے",
+      "description": "OpenCADIrrigation CAD ڈرائنگ، ہائیڈرولک نیٹ ورک اور حساب کو ایک جگہ جمع کرتا ہے: رقبے کی حد بنائیں، لیٹرل، والو اور مرکزی لائن بچھائیں، F5 دبائیں اور پائپوں کے قطر، دباؤ، یکسانیت، آپریشن کی باریاں، سامان کی فہرست اور پرنٹ کے لیے تیار رپورٹیں حاصل کریں۔ 20 زبانوں میں دستیاب ہے اور آپ کے کمپیوٹر کی زبان اپناتا ہے۔",
+      "inLanguage": "ur",
+      "tool": {
+        "@id": "https://opencadirrigation.com/#app"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "رقبہ بنائیں یا امپورٹ کریں",
+          "text": "DXF، DWG، KML یا سیٹلائٹ تصویر لائیں، یا کھیت، باغ یا میدان براہِ راست بنائیں۔ کنٹور شامل کریں یا کوآرڈینیٹ سے بلندی ڈاؤن لوڈ کریں۔"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "نیٹ ورک بنائیں",
+          "text": "ایک کلک میں لیٹرل بلاک یا اسپرنکلر گرڈ بنائیں، والو، پمپ اور پانی کا ذریعہ رکھیں اور سب کو مرکزی لائن سے جوڑ دیں۔"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "ڈیزائن کریں اور دستاویز بنائیں",
+          "text": "F5 دبائیں: ایپ زونوں اور مرکزی لائن کا سائز طے کرتی ہے، دباؤ اور رفتار جانچتی ہے، اور رپورٹیں، سامان کی فہرست اور PDF شیٹ تیار کرتی ہے۔"
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://opencadirrigation.com/ur/#examples",
+      "name": "کھولنے کے لیے تیار مثالیں",
+      "description": "ہر پروجیکٹ مکمل کھلتا ہے اور F5 سے ڈیزائن ہوتا ہے۔ انہیں ایپ سے واقفیت کے لیے یا نقطۂ آغاز کے طور پر استعمال کریں۔",
+      "numberOfItems": 15,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "باغ",
+            "description": "ترشاوہ پھلوں پر مائیکرو اسپرنکلر اور انگور پر ڈرپ، پمپ اور فلٹر والا کنواں، ڈھلوان زمین۔",
+            "url": "https://opencadirrigation.com/ur/?example=orchard",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "گھریلو باغیچہ",
+            "description": "سامنے کے لان پر پاپ اپ اسپرے، پیچھے روٹر اور کیاریوں میں ڈرپ، میٹر اور بیک فلو پریوینٹر کے ساتھ عوامی سپلائی سے۔",
+            "url": "https://opencadirrigation.com/ur/?example=garden",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "فٹ بال گراؤنڈ",
+            "description": "پانچ قطاروں میں امپیکٹ اسپرنکلرز والا مکمل سائز 105 × 68 m گراؤنڈ، ذخیرہ، پمپ اور رات کی شفٹیں۔",
+            "url": "https://opencadirrigation.com/ur/?example=sportsField",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "قطاری فصل ڈرپ",
+            "description": "ڈرپ ٹیپ پر ٹماٹر کے چار بلاک، والو والے سب مین، اسکرین فلٹر، پمپ اور ڈھلوان زمین۔",
+            "url": "https://opencadirrigation.com/ur/?example=rowCrop",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "سینٹر پیوٹ",
+            "description": "مکئی پر 300 m پیوٹ جسے مرکزی لائن، کنواں اور پمپ سپلائی کرتے ہیں؛ ٹاور، اسپین اور نوزل رپورٹ۔",
+            "url": "https://opencadirrigation.com/ur/?example=pivot",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "سبزیوں کا گرین ہاؤس",
+            "description": "پریشر کمپنسیٹنگ ڈرپ لائن پر شملہ مرچ کی چار سرنگیں، فی سرنگ ایک زون، ٹینک، چھوٹا پمپ اور ڈسک فلٹر۔",
+            "url": "https://opencadirrigation.com/ur/?example=greenhouse",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "پودوں کی نرسری",
+            "description": "4 × 4 m گرڈ پر لٹکے مائیکرو اسپرنکلرز تلے 12 × 48 m کی تین کیاریاں، فی کیاری ایک زون، اونچا ٹینک، چھوٹا پمپ اور ڈسک فلٹر۔",
+            "url": "https://opencadirrigation.com/ur/?example=nursery",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "کنٹور لائنوں پر کافی",
+            "description": "ڈھلوان پر کافی کے تین بلاک جن کے خمدار لیٹرلز کنٹور کے پیچھے چلتے ہیں (گائیڈڈ بلاک)، PC ڈرپ لائن، ڈھلوان کے دامن میں کنواں اور پمپ۔",
+            "url": "https://opencadirrigation.com/ur/?example=coffee",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "کیلے کا باغ",
+            "description": "5 × 5 m پر پریشر کمپنسیٹنگ مائیکرو اسپرنکلرز تلے کیلے کے دو بلاک، سبمرسیبل پمپ والا کنواں، ڈسک فلٹر اور ڈھلوان زمین۔",
+            "url": "https://opencadirrigation.com/ur/?example=bananas",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "زیرِ زمین ڈرپ گنا",
+            "description": "0.3 m گہرائی میں دفن 20 mm PC ڈرپ لائن پر گنے کے دو بلاک، 180 m لیٹرلز، دفن سب مین، ذخیرہ، پمپ، اسکرین فلٹر اور ایئر والو۔",
+            "url": "https://opencadirrigation.com/ur/?example=sugarcane",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "کششِ ثقل سے ڈرپ",
+            "description": "ڈرپ آبپاشی والے سبزیوں کے دو بلاکوں سے 40 m اوپر ذخیرہ، بغیر پمپ: مرکزی لائن پر گیٹ والو، پریشر ریڈیوسنگ والو اور ڈسک فلٹر؛ ڈھلوان کے کنٹور۔",
+            "url": "https://opencadirrigation.com/ur/?example=gravity",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "اسپرنکلر آبپاشی والی چراگاہ",
+            "description": "12 × 18 m پر امپیکٹ اسپرنکلر لائنوں والے 72 × 72 m کے تین باڑے، والو والے سب مین، ذخیرہ، پمپ اور چیک والو۔",
+            "url": "https://opencadirrigation.com/ur/?example=pasture",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "گولف ہول",
+            "description": "اسپرے والی ٹی، مثلثی گرڈ پر روٹرز والا فیئر وے (دو زون) اور کنارے پر روٹرز والا گرین، پمپ والا تالاب اور رات کی شفٹیں۔",
+            "url": "https://opencadirrigation.com/ur/?example=golf",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "اینڈ گن والا سیکٹر پیوٹ",
+            "description": "سویابین پر 250 m پیوٹ جو 270° گھومتا ہے، فارم ہاؤس کا چوتھائی حصہ خالی چھوڑتے ہوئے، 12 m³/h اینڈ گن کے ساتھ؛ تالاب، 30 hp پمپ اور گیٹ والو۔",
+            "url": "https://opencadirrigation.com/ur/?example=sectorPivot",
+            "inLanguage": "ur"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "CreativeWork",
+            "name": "لینیئر مشین",
+            "description": "گندم پر 392 m لینیئر مشین جو نہر کے ساتھ 800 m چلتی ہے، 30 hp پمپ اور چیک والو والا انٹیک؛ ٹاور اور نوزل رپورٹ۔",
+            "url": "https://opencadirrigation.com/ur/?example=linear",
+            "inLanguage": "ur"
+          }
+        }
+      ]
     }
   ]
 }
@@ -291,6 +642,7 @@
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
+    #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   </style>
 </head>
@@ -323,7 +675,7 @@
           <li><h3>زمین اور نشیب و فراز</h3><p>کنٹور لائنیں، بلندی کے نقاط، مثلث بندی سے زمین کا ڈیجیٹل ماڈل، کسی کوآرڈینیٹ سے انٹرنیٹ سے ڈاؤن لوڈ کی گئی بلندی، طولی پروفائل اور زمین کے اوپر ہائیڈرولک گریڈ لائن۔</p></li>
           <li><h3>رپورٹیں اور سامان</h3><p>زون، پائپ، ایمیٹرز، یکسانیت (CU، DU، EU)، فصلوں کی پانی کی ضرورت، کنٹرولر پروگرام اور فٹنگز سمیت سامان کی فہرست؛ PDF، Excel، CSV اور TXT میں ایکسپورٹ۔</p></li>
           <li><h3>فائلوں کا تبادلہ</h3><p>DXF، DWG، KML/KMZ، SHP، CSV/XYZ، GeoTIFF اور جغرافیائی حوالے والی تصاویر امپورٹ کرتا ہے؛ DXF، DWG، PDF شیٹس، SVG، KML، KMZ اور GeoJSON ایکسپورٹ کرتا ہے۔</p></li>
-          <li><h3>مینوفیکچررز کے کیٹلاگ</h3><p>JSON میں مینوفیکچررز کے کیٹلاگ (Netafim، Rivulis، Jain، Toro، Rain Bird، Nelson، Hunter، NaanDanJain، Senninger) استعمال کے لیے تیار، اور فائل یا URL سے لوڈ ہونے والے آپ کے اپنے پیک۔</p></li>
+          <li><h3>مینوفیکچررز کے کیٹلاگ</h3><p>JSON میں مینوفیکچررز کے کیٹلاگ (Netafim، Rivulis، Jain، Toro، Rain Bird، Nelson، Hunter، NaanDanJain، Senninger، Irritec، Bermad، Schneider، Amanco Wavin، Multilit) استعمال کے لیے تیار، اور فائل یا URL سے لوڈ ہونے والے آپ کے اپنے پیک۔</p></li>
         </ul>
       </section>
 
@@ -361,12 +713,18 @@
       <section aria-labelledby="oci-faq">
         <h2 id="oci-faq">اکثر پوچھے جانے والے سوالات</h2>
         <dl>
+          <dt>OpenCADIrrigation کیا ہے؟</dt>
+          <dd>OpenCADIrrigation دباؤ والی آبپاشی کے نظام ڈیزائن کرنے کے لیے ایک مفت ویب ایپ ہے: ہائیڈرولک انجن والا CAD جو نیٹ ورک بچھاتا ہے، پائپوں کا سائز طے کرتا ہے، دباؤ اور یکسانیت جانچتا ہے اور سامان کی فہرست اور رپورٹیں تیار کرتا ہے، گھریلو باغیچے سے سینٹر پیوٹ تک۔</dd>
           <dt>کیا OpenCADIrrigation مفت ہے؟</dt>
           <dd>جی ہاں۔ یہ پیشہ ورانہ، تعلیمی اور ذاتی استعمال کے لیے مفت ہے، بغیر رجسٹریشن کے۔</dd>
+          <dt>یہ کس کے لیے ہے؟</dt>
+          <dd>زرعی اور لینڈ اسکیپ آبپاشی کے ڈیزائنرز، ماہرینِ زراعت اور انجینئرز، آلات کے ڈیلرز، اساتذہ اور طلبہ کے لیے۔ انٹرایکٹو ٹیوٹوریل اور 15 تیار مثالوں کی مدد سے آپ مینوئل پڑھے بغیر شروع کر سکتے ہیں۔</dd>
           <dt>کیا مجھے کچھ انسٹال کرنا ہوگا؟</dt>
           <dd>نہیں۔ یہ Chrome، Edge، Firefox اور Safari میں کمپیوٹر، ٹیبلٹ اور فون پر چلتا ہے، اور اسے ایپ (PWA) کے طور پر انسٹال کیا جا سکتا ہے جو اپنی الگ ونڈو میں کھلتی ہے۔</dd>
           <dt>کیا میرے پروجیکٹ کلاؤڈ میں محفوظ ہوتے ہیں؟</dt>
           <dd>نہیں۔ پروجیکٹ آپ کے براؤزر میں اور ‎.oci.json فائلوں میں محفوظ ہوتے ہیں جنہیں آپ جہاں چاہیں رکھیں۔ صرف آن لائن بلندی اور بیس میپس انٹرنیٹ استعمال کرتے ہیں، جب آپ انہیں طلب کریں۔</dd>
+          <dt>ہائیڈرولک حساب کیسے ہوتا ہے؟</dt>
+          <dd>رگڑ کے نقصانات ہیزن-ولیمز یا ڈارسی-وائسباخ سے، ایمیٹرز q = k·Hˣ سے، اور پورا نیٹ ورک Global Gradient Algorithm سے حل ہوتا ہے، جو EPANET کا طریقہ ہے۔ پائپوں کا سائز ایمیٹرز کی دباؤ کی حد کے اندر لکیری پروگرامنگ سے طے ہوتا ہے، اور ڈیزائن یکسانیت (CU، DU، EU)، واٹر ہیمر اور فلشنگ بھی جانچتا ہے۔</dd>
           <dt>کیا یہ AutoCAD اور دوسرے CAD کے ساتھ کام کرتا ہے؟</dt>
           <dd>جی ہاں۔ یہ DXF اور DWG (AutoCAD 2000 سے 2018 تک) امپورٹ اور ایکسپورٹ کرتا ہے، نیز Google Earth کی KML/KMZ، شیپ فائل، GeoJSON، SVG اور PDF بھی۔</dd>
           <dt>یہ کن زبانوں میں دستیاب ہے؟</dt>
@@ -377,6 +735,7 @@
       <footer>
         <nav aria-label="زبانیں">زبانیں: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <strong lang="ur" dir="rtl">اردو</strong> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>مینوفیکچررز کے کیٹلاگ اور مثالی پروجیکٹ JSON فارمیٹ میں بھیجے جا سکتے ہیں تاکہ انہیں OpenCADIrrigation میں شامل کیا جائے۔</p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
       </footer>
     </div>
   </main>
