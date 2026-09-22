@@ -71,12 +71,124 @@ class BlockOptions {
 }
 
 class BlockResult {
-  BlockResult({required this.laterals, required this.submain, required this.valve, required this.stub});
+  BlockResult({required this.laterals, required this.submain, required this.valve, required this.stub, this.branches = const []});
   final List<Entity> laterals;
   final PipeEntity? submain;
   final ControlValveEntity? valve;
   final PipeEntity? stub;
-  List<Entity> get all => [...laterals, ?submain, ?stub, ?valve];
+
+  /// Submain branches feeding the laterals of rows the polygon cuts in
+  /// several pieces (a U-shaped block, a curved row clipped in two), joined
+  /// to [submain].
+  final List<PipeEntity> branches;
+  List<Entity> get all => [...laterals, ?submain, ...branches, ?stub, ?valve];
+}
+
+/// The feed point of one lateral: world point and coordinates along the
+/// laterals (u) and across them (v).
+typedef _Feed = ({Pt p, double u, double v});
+
+/// Submain lines through the feed points of a block's rows (rows sorted by
+/// v, each with its feeds). The main line takes, row by row, the feed
+/// nearest [uRef] (the submain side); where it jumps between two rows it
+/// steps across the gap between them when a straight run would leave the
+/// polygon. The other feeds (rows cut in several pieces) form branches,
+/// each joined to the main line across the gap next to it. [at] maps (u, v)
+/// to world coordinates.
+(List<Pt>, List<List<Pt>>) _submainLines(List<List<_Feed>> rows, List<Pt> poly, {required double uRef, required double spacing, required Pt Function(double u, double v) at}) {
+  bool inside(Pt a, Pt b) {
+    for (var k = 1; k < 8; k++) {
+      final q = Pt.lerp(a, b, k / 8);
+      if (!pointInPolygon(q, poly) && !_onBoundary(q, poly, 1e-6)) return false;
+    }
+    return true;
+  }
+
+  /// From feed [a] to feed [b] of the next row: straight, or stepping at
+  /// the middle of the gap between the rows.
+  List<Pt> link(_Feed a, _Feed b) {
+    if (inside(a.p, b.p)) return [b.p];
+    final vm = (a.v + b.v) / 2;
+    final c1 = at(a.u, vm), c2 = at(b.u, vm);
+    if (inside(a.p, c1) && inside(c1, c2) && inside(c2, b.p)) return [c1, c2, b.p];
+    return [b.p];
+  }
+
+  List<Pt> simplify(List<Pt> pts) {
+    final out = <Pt>[];
+    for (final q in pts) {
+      if (out.isNotEmpty && out.last.distanceTo(q) < 1e-9) continue;
+      // drop the middle one of three collinear points
+      if (out.length >= 2 && ((out.last - out[out.length - 2]).cross(q - out.last)).abs() < 1e-9 && (out.last - out[out.length - 2]).dot(q - out.last) > 0) out.removeLast();
+      out.add(q);
+    }
+    return out;
+  }
+
+  final primary = <_Feed>[];
+  final secondary = <List<_Feed>>[];
+  for (final r in rows) {
+    final sorted = List.of(r)..sort((a, b) => (a.u - uRef).abs().compareTo((b.u - uRef).abs()));
+    primary.add(sorted.first);
+    secondary.add(sorted.sublist(1));
+  }
+  final main = <Pt>[primary.first.p];
+  for (var i = 1; i < primary.length; i++) {
+    main.addAll(link(primary[i - 1], primary[i]));
+  }
+  // chains of feeds of the extra pieces, row after row
+  final chains = <(int, List<_Feed>)>[];
+  for (var i = 0; i < rows.length; i++) {
+    for (final f in secondary[i]) {
+      (int, List<_Feed>)? best;
+      var bd = double.infinity;
+      for (final ch in chains) {
+        if (ch.$1 + ch.$2.length != i) continue;
+        final d = (ch.$2.last.u - f.u).abs();
+        if (d < bd && d <= 3 * spacing) {
+          bd = d;
+          best = ch;
+        }
+      }
+      if (best != null) {
+        best.$2.add(f);
+      } else {
+        chains.add((i, [f]));
+      }
+    }
+  }
+  final branches = <List<Pt>>[];
+  for (final (first, chain) in chains) {
+    final pts = <Pt>[chain.first.p];
+    for (var k = 1; k < chain.length; k++) {
+      pts.addAll(link(chain[k - 1], chain[k]));
+    }
+    // join the main line at the row before the chain, else the one after
+    final last = first + chain.length - 1;
+    if (first > 0) {
+      final join = link(primary[first - 1], chain.first); // ends at the chain's first feed
+      pts.insertAll(0, [primary[first - 1].p, ...join.take(join.length - 1)]);
+    } else if (last + 1 < primary.length) {
+      pts.addAll(link(chain.last, primary[last + 1]));
+    }
+    // a join that runs along the main line starts where it leaves it
+    bool onMain(Pt q) {
+      for (var k = 1; k < main.length; k++) {
+        if (distanceToSegment(q, main[k - 1], main[k]) < 1e-6) return true;
+      }
+      return false;
+    }
+
+    final line = simplify(pts);
+    while (line.length > 2 && onMain(line[0]) && onMain(line[1]) && onMain(Pt.lerp(line[0], line[1], 0.5))) {
+      line.removeAt(0);
+    }
+    while (line.length > 2 && onMain(line.last) && onMain(line[line.length - 2]) && onMain(Pt.lerp(line.last, line[line.length - 2], 0.5))) {
+      line.removeLast();
+    }
+    if (line.length >= 2) branches.add(line);
+  }
+  return (simplify(main), branches);
 }
 
 /// Clips the infinite line through [origin] with direction [dir] against the
@@ -105,7 +217,12 @@ List<(double, double)> _clipLine(List<Pt> poly, Pt origin, Pt dir) {
   return out;
 }
 
+/// Most rows of laterals a block gets (a spacing typed far too small would
+/// otherwise stall the page).
+const maxBlockRows = 5000;
+
 BlockResult generateBlock(Project project, BlockOptions o) {
+  if (!(o.lateralSpacing > 0) || !o.lateralSpacing.isFinite) return BlockResult(laterals: const [], submain: null, valve: null, stub: null);
   if (o.guide != null && o.guide!.length >= 2) return _generateGuidedBlock(project, o);
   final dir = o.direction.normalized;
   final perp = dir.perpendicular;
@@ -120,6 +237,7 @@ BlockResult generateBlock(Project project, BlockOptions o) {
     uMin = math.min(uMin, u);
     uMax = math.max(uMax, u);
   }
+  if ((vMax - vMin) / o.lateralSpacing > maxBlockRows) return BlockResult(laterals: const [], submain: null, valve: null, stub: null);
   final first = o.firstLateralOffset ?? o.lateralSpacing / 2;
   final uSub = switch (o.submainPosition) {
     SubmainPosition.start => uMin,
@@ -127,12 +245,13 @@ BlockResult generateBlock(Project project, BlockOptions o) {
     SubmainPosition.end => uMax,
   };
   final laterals = <Entity>[];
-  final submainPts = <Pt>[];
+  final rows = <List<_Feed>>[];
   final zone = o.zoneName ?? project.uniqueZoneName();
   var idx = 0;
   for (var v = vMin + first; v <= vMax - first / 2 + 1e-9; v += o.lateralSpacing) {
     final origin = perp * v;
     final intervals = _clipLine(poly, origin, dir);
+    final row = <_Feed>[];
     for (final (t0, t1) in intervals) {
       final a = origin + dir * t0;
       final b = origin + dir * t1;
@@ -148,7 +267,7 @@ BlockResult generateBlock(Project project, BlockOptions o) {
       } else {
         segs.add((b, a));
       }
-      submainPts.add(feed);
+      row.add((p: feed, u: uSub.clamp(t0, t1), v: v));
       for (final (s, e) in segs) {
         if (s.distanceTo(e) < 1e-6) continue;
         idx++;
@@ -159,31 +278,34 @@ BlockResult generateBlock(Project project, BlockOptions o) {
         }
       }
     }
+    if (row.isNotEmpty) rows.add(row);
   }
-  if (submainPts.isEmpty) return BlockResult(laterals: laterals, submain: null, valve: null, stub: null);
-  // submain along perp axis at u = uSub, from first to last feed point
-  submainPts.sort((p, q) => p.dot(perp).compareTo(q.dot(perp)));
-  final subStart = submainPts.first;
-  final subEnd = submainPts.last;
-  PipeEntity? submain;
-  if (subStart.distanceTo(subEnd) > 1e-6) {
-    submain = PipeEntity(id: project.newId(), name: '${o.submainLabel} $zone', points: [subStart, subEnd], scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
-  }
-  final valveAnchor = switch (o.valvePosition) {
-    ValvePosition.start => subStart,
-    ValvePosition.centre => Pt.lerp(subStart, subEnd, 0.5),
-    ValvePosition.end => subEnd,
+  if (rows.isEmpty) return BlockResult(laterals: laterals, submain: null, valve: null, stub: null);
+  // the submain runs across the rows at u = uSub, following the polygon
+  // where a row does not reach that line (an L-shaped block)
+  final (main, branchLines) = _submainLines(rows, poly, uRef: uSub, spacing: o.lateralSpacing, at: (u, v) => dir * u + perp * v);
+  return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir);
+}
+
+/// Submain, branches, valve and stub of a block whose submain runs through
+/// [main]; the stub leaves the block along [outward].
+BlockResult _finishBlock(Project project, BlockOptions o, String zone, List<Entity> laterals, List<Pt> main, List<List<Pt>> branchLines, Pt outward) {
+  PipeEntity pipe(String name, List<Pt> pts) => PipeEntity(id: project.newId(), name: name, points: pts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
+  final submain = main.length >= 2 && polylineLength(main) > 1e-6 ? pipe('${o.submainLabel} $zone', main) : null;
+  final branches = [for (var k = 0; k < branchLines.length; k++) pipe('${o.submainLabel} $zone (${k + 2})', branchLines[k])];
+  final anchor = switch (o.valvePosition) {
+    ValvePosition.start => main.first,
+    ValvePosition.centre => pointAlongPolyline(main, polylineLength(main) / 2),
+    ValvePosition.end => main.last,
   };
-  // stub goes away from the block (towards -dir if submain at start, +dir if at end, else -dir)
-  final outward = o.submainPosition == SubmainPosition.end ? dir : -dir;
   PipeEntity? stub;
-  Pt valvePos = valveAnchor;
+  var valvePos = anchor;
   if (o.submainStub > 0) {
-    valvePos = valveAnchor + outward * o.submainStub;
-    stub = PipeEntity(id: project.newId(), name: '${o.stubLabel} $zone', points: [valvePos, valveAnchor], scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
+    valvePos = anchor + outward * o.submainStub;
+    stub = pipe('${o.stubLabel} $zone', [valvePos, anchor]);
   }
   final valve = ControlValveEntity(id: project.newId(), name: zone, position: valvePos, valveSpecId: o.valveSpecId, zoneName: zone);
-  return BlockResult(laterals: laterals, submain: submain, valve: valve, stub: stub);
+  return BlockResult(laterals: laterals, submain: submain, valve: valve, stub: stub, branches: branches);
 }
 
 enum GridPattern { square, triangular }
@@ -206,7 +328,7 @@ List<OutletEntity> generateSprinklerGrid(Project project, SprinklerGridOptions o
   final dir = o.direction.normalized;
   final perp = dir.perpendicular;
   final poly = o.polygon;
-  if (poly.length < 3) return const [];
+  if (poly.length < 3 || !(o.spacingAlong > 0) || !(o.spacingBetween > 0)) return const [];
   var vMin = double.infinity, vMax = -double.infinity, uMin = double.infinity, uMax = -double.infinity;
   for (final p in poly) {
     final v = p.dot(perp), u = p.dot(dir);
@@ -215,6 +337,8 @@ List<OutletEntity> generateSprinklerGrid(Project project, SprinklerGridOptions o
     uMin = math.min(uMin, u);
     uMax = math.max(uMax, u);
   }
+  // a spacing typed far too small would place millions of heads
+  if ((vMax - vMin) / o.spacingBetween * ((uMax - uMin) / o.spacingAlong) > 1e6) return const [];
   final out = <OutletEntity>[];
   var row = 0;
   for (var v = vMin; v <= vMax + 1e-9; v += o.spacingBetween, row++) {
@@ -249,13 +373,16 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
     vMin = math.min(vMin, v);
     vMax = math.max(vMax, v);
   }
+  if ((vMax - vMin) / o.lateralSpacing > maxBlockRows) return BlockResult(laterals: const [], submain: null, valve: null, stub: null);
   final first = o.firstLateralOffset ?? o.lateralSpacing / 2;
   final zone = o.zoneName ?? project.uniqueZoneName();
   final laterals = <Entity>[];
-  final feeds = <(double, Pt)>[];
+  final rows = <List<_Feed>>[];
   var idx = 0;
+  final g0 = guide.first;
   for (var v = vMin + first; v <= vMax - first / 2 + 1e-9; v += o.lateralSpacing) {
     final line = offsetPolyline(guide, v);
+    final row = <_Feed>[];
     for (final piece in clipPolylineToPolygon(line, poly, minLength: o.lateralSpacing / 4)) {
       final len = polylineLength(piece);
       // feed end (start / end / split at the middle)
@@ -273,7 +400,7 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
           feed = pointAlongPolyline(piece, len / 2);
           parts = halves.length == 2 ? [halves[0].reversed.toList(), halves[1]] : [piece];
       }
-      feeds.add((v, feed));
+      row.add((p: feed, u: (feed - g0).dot(dir), v: v));
       for (final pts in parts) {
         if (polylineLength(pts) < 1e-6) continue;
         idx++;
@@ -284,26 +411,21 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
         }
       }
     }
+    if (row.isNotEmpty) rows.add(row);
   }
-  if (feeds.isEmpty) return BlockResult(laterals: laterals, submain: null, valve: null, stub: null);
-  feeds.sort((a, b) => a.$1.compareTo(b.$1));
-  final subPts = feeds.map((f) => f.$2).toList();
-  PipeEntity? submain;
-  if (subPts.length >= 2 && polylineLength(subPts) > 1e-6) {
-    submain = PipeEntity(id: project.newId(), name: '${o.submainLabel} $zone', points: subPts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
+  if (rows.isEmpty) return BlockResult(laterals: laterals, submain: null, valve: null, stub: null);
+  // the submain side along the guide: its start, its end or the middle
+  var uMin = double.infinity, uMax = -double.infinity;
+  for (final p in poly) {
+    final u = (p - g0).dot(dir);
+    uMin = math.min(uMin, u);
+    uMax = math.max(uMax, u);
   }
-  final anchor = switch (o.valvePosition) {
-    ValvePosition.start => subPts.first,
-    ValvePosition.centre => pointAlongPolyline(subPts, polylineLength(subPts) / 2),
-    ValvePosition.end => subPts.last,
+  final uRef = switch (o.submainPosition) {
+    SubmainPosition.start => uMin,
+    SubmainPosition.centre => (uMin + uMax) / 2,
+    SubmainPosition.end => uMax,
   };
-  final outward = o.submainPosition == SubmainPosition.end ? dir : -dir;
-  PipeEntity? stub;
-  var valvePos = anchor;
-  if (o.submainStub > 0) {
-    valvePos = anchor + outward * o.submainStub;
-    stub = PipeEntity(id: project.newId(), name: '${o.stubLabel} $zone', points: [valvePos, anchor], scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
-  }
-  final valve = ControlValveEntity(id: project.newId(), name: zone, position: valvePos, valveSpecId: o.valveSpecId, zoneName: zone);
-  return BlockResult(laterals: laterals, submain: submain, valve: valve, stub: stub);
+  final (main, branchLines) = _submainLines(rows, poly, uRef: uRef, spacing: o.lateralSpacing, at: (u, v) => g0 + dir * u + perp * v);
+  return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir);
 }

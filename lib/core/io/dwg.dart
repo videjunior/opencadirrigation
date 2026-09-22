@@ -179,18 +179,17 @@ class _BitReader {
     return readB() == 1 ? 0.0 : readBD();
   }
 
-  void readBE(DwgVersion v) {
-    if (v.index < DwgVersion.r2000.index) {
-      readBD();
-      readBD();
-      readBD();
-      return;
-    }
-    if (readB() == 0) {
-      readBD();
-      readBD();
-      readBD();
-    }
+  /// Extrusion direction: whether it is the world −Z (the object
+  /// coordinates are mirrored, see [ocsIsMirrored]).
+  bool readBE(DwgVersion v) {
+    if (v.index >= DwgVersion.r2000.index && readB() == 1) return false; // (0, 0, 1)
+    return readExtrusion();
+  }
+
+  /// Three BD of an extrusion direction; true when it is the world −Z.
+  bool readExtrusion() {
+    final x = readBD(), y = readBD(), z = readBD();
+    return ocsIsMirrored(x, y, z);
   }
 
   /// Modular char (signed).
@@ -306,6 +305,10 @@ class _Entity {
   /// SPLINE with fit points (the curve passes through [points]).
   bool fitSpline = false;
 
+  /// Planar entity whose extrusion is (0, 0, −1): its object coordinates
+  /// are mirrored (see [DxfReader.mirrorOcs]).
+  bool ocsMirror = false;
+
   /// HATCH / SOLID: solid fill, and the island loops of a hatch.
   bool solidFill = false;
   List<List<Pt>> islands = const [];
@@ -342,6 +345,10 @@ class DwgReader {
   final Map<int, _Layer> _layers = {};
   final Map<int, Pt> _vertices = {};
   final Map<int, double> _vertexZ = {};
+
+  /// Bulge of the segment that starts at a VERTEX_2D (arc segments of a
+  /// 2D polyline), by vertex handle; absent when straight.
+  final Map<int, double> _vertexBulge = {};
   final Map<int, _Block> _blocks = {};
   final List<_Entity> _entities = [];
   final List<String> warnings = [];
@@ -1372,7 +1379,7 @@ class DwgReader {
         e.center = Pt(cx, cy);
         e.radius = br.readBD();
         br.readBT(ver);
-        br.readBE(ver);
+        e.ocsMirror = br.readBE(ver);
         if (type == 17) {
           e.startAngle = br.readBD() * 180 / math.pi;
           e.endAngle = br.readBD() * 180 / math.pi;
@@ -1387,7 +1394,7 @@ class DwgReader {
         br.readBT(ver);
         final elev = br.readBD();
         final c = [for (var k = 0; k < 4; k++) Pt(br.readRD(), br.readRD())];
-        br.readBE(ver);
+        e.ocsMirror = br.readBE(ver);
         // corners in 1-2-4-3 order
         final pts = <Pt>[];
         for (final p in [c[0], c[1], c[3], c[2]]) {
@@ -1403,16 +1410,16 @@ class DwgReader {
         br.readBD();
         final major = Pt(br.readBD(), br.readBD());
         br.readBD();
-        br.readBD();
-        br.readBD();
-        br.readBD(); // extrusion
+        // centre and major axis are world coordinates; the minor axis is
+        // extrusion × major, the other side for an extrusion (0, 0, −1)
+        final flip = br.readExtrusion();
         final ratio = br.readBD();
         final a0 = br.readBD(), a1 = br.readBD();
         var sweep = a1 - a0;
         if (sweep <= 1e-9) sweep += 2 * math.pi;
         final full = sweep >= 2 * math.pi - 1e-9;
         final n = math.max(8, (sweep / (math.pi / 18)).ceil());
-        final minor = major.perpendicular * ratio;
+        final minor = major.perpendicular * ratio * (flip ? -1 : 1);
         e.points = [for (var k = 0; k <= (full ? n - 1 : n); k++) c + major * math.cos(a0 + sweep * k / n) + minor * math.sin(a0 + sweep * k / n)];
         e.closed = full;
       case 36: // SPLINE
@@ -1475,9 +1482,7 @@ class DwgReader {
           if (ver.index < DwgVersion.r2007.index) br.readTV(); // gradient name
         }
         final elev = br.readBD();
-        br.readBD();
-        br.readBD();
-        br.readBD(); // extrusion
+        e.ocsMirror = br.readExtrusion();
         if (ver.index < DwgVersion.r2007.index) br.readTV(); // pattern name
         e.solidFill = br.readB() == 1;
         br.readB(); // associative
@@ -1603,10 +1608,18 @@ class DwgReader {
         if (elev != 0) e.elevation = elev;
       case 10: // VERTEX_2D
       case 11: // VERTEX_3D
-        br.readRC(); // flags
+        final vflags = br.readRC();
         final x = br.readBD(), y = br.readBD();
         _vertexZ[handle] = br.readBD();
+        // spline frame control points (flag 16) are not on the curve
+        if (vflags & 16 != 0) return;
         _vertices[handle] = Pt(x, y);
+        if (type == 10) {
+          // start width (a negative one stands for both), end width, bulge
+          if (br.readBD() >= 0) br.readBD();
+          final bulge = br.readBD();
+          if (bulge != 0) _vertexBulge[handle] = bulge;
+        }
         return;
       case 16: // POLYLINE_3D
         br.readRC(); // curve flags
@@ -1633,7 +1646,7 @@ class DwgReader {
         br.readBD(); // end width
         br.readBT(ver);
         final elev = br.readBD();
-        br.readBE(ver);
+        e.ocsMirror = br.readBE(ver);
         e.closed = flags & 1 != 0;
         if (elev != 0) e.elevation = elev;
         var numOwned = 0;
@@ -1656,11 +1669,7 @@ class DwgReader {
         double? elev;
         if (flag & 8 != 0) elev = br.readBD();
         if (flag & 2 != 0) br.readBD();
-        if (flag & 1 != 0) {
-          br.readBD();
-          br.readBD();
-          br.readBD();
-        }
+        if (flag & 1 != 0) e.ocsMirror = br.readExtrusion();
         final numPoints = br.readBL();
         var numBulges = 0, numWidths = 0;
         if (flag & 16 != 0) numBulges = br.readBL();
@@ -1697,36 +1706,42 @@ class DwgReader {
         if (ver.index < DwgVersion.r2000.index) {
           final elev = br.readBD();
           final ix = br.readRD(), iy = br.readRD();
-          br.readRD();
-          br.readRD();
-          br.readBD();
-          br.readBD();
-          br.readBD();
+          final align = Pt(br.readRD(), br.readRD());
+          e.ocsMirror = br.readExtrusion();
           br.readBD(); // thickness
           br.readBD(); // oblique
           e.rotation = br.readBD() * 180 / math.pi;
           e.height = br.readBD();
           br.readBD(); // width factor
           e.text = br.readTV();
-          e.points = [Pt(ix, iy)];
+          br.readBS(); // generation
+          final h = br.readBS(), v = br.readBS();
+          // aligned text is positioned by its alignment point (as in DXF)
+          e.points = [h != 0 || v != 0 ? align : Pt(ix, iy)];
           if (elev != 0) e.elevation = elev;
         } else {
           final f = br.readRC();
           double elev = 0;
           if (f & 1 == 0) elev = br.readRD();
           final ix = br.readRD(), iy = br.readRD();
+          Pt? align;
           if (f & 2 == 0) {
-            br.readDD(ix);
-            br.readDD(iy);
+            final ax = br.readDD(ix);
+            align = Pt(ax, br.readDD(iy));
           }
-          br.readBE(ver);
+          e.ocsMirror = br.readBE(ver);
           br.readBT(ver);
           if (f & 4 == 0) br.readRD();
           if (f & 8 == 0) e.rotation = br.readRD() * 180 / math.pi;
           e.height = br.readRD();
           if (f & 16 == 0) br.readRD();
           e.text = strings != null ? strings.readTU() : br.readTV();
-          e.points = [Pt(ix, iy)];
+          var h = 0, v = 0;
+          if (f & 0x20 == 0) br.readBS(); // generation
+          if (f & 0x40 == 0) h = br.readBS();
+          if (f & 0x80 == 0) v = br.readBS();
+          // aligned text is positioned by its alignment point (as in DXF)
+          e.points = [(h != 0 || v != 0) && align != null ? align : Pt(ix, iy)];
           if (elev != 0) e.elevation = elev;
         }
       case 44: // MTEXT
@@ -1787,9 +1802,7 @@ class DwgReader {
           }
         }
         e.rotation = br.readBD() * 180 / math.pi;
-        br.readBD();
-        br.readBD();
-        br.readBD(); // extrusion
+        e.ocsMirror = br.readExtrusion();
         final hasAttribs = br.readB() == 1;
         if (ver.index >= DwgVersion.r2004.index && hasAttribs) br.readBL(); // owned attribs
         if (type == 8) {
@@ -1838,6 +1851,7 @@ class DwgReader {
       ..lastVertex = e.lastVertex
       ..ownedVertices = e.ownedVertices
       ..fitSpline = e.fitSpline
+      ..ocsMirror = e.ocsMirror
       ..solidFill = e.solidFill
       ..islands = e.islands
       ..scaleX = e.scaleX
@@ -1927,7 +1941,9 @@ class DwgReader {
         case 15:
         case 16:
           final handles = e.ownedVertices.isNotEmpty ? e.ownedVertices.where((h) => _vertices[h] != null).toList() : (_vertices.keys.where((h) => h >= e.firstVertex && h <= e.lastVertex).toList()..sort());
-          final pts = [for (final h in handles) _vertices[h]!];
+          var pts = [for (final h in handles) _vertices[h]!];
+          final bulges = [for (final h in handles) _vertexBulge[h] ?? 0.0];
+          if (e.type == 15 && bulges.any((b) => b != 0)) pts = _tessellateBulges(pts, bulges, e.closed);
           var elev = e.elevation;
           if (e.type == 16 && elev == null && handles.isNotEmpty) {
             // a 3D polyline at one height is a contour
@@ -1940,7 +1956,7 @@ class DwgReader {
       }
     }
 
-    DxfInsert toInsert(_Entity e) => DxfInsert(name: _blocks[e.blockHandle]?.name ?? '', layer: layerOf(e), color: colorOf(e), position: e.points.first, scaleX: e.scaleX, scaleY: e.scaleY, rotation: e.rotation, cols: math.max(1, e.cols), rows: math.max(1, e.rows), colSpacing: e.colSpacing, rowSpacing: e.rowSpacing);
+    DxfInsert toInsert(_Entity e) => DxfInsert(name: _blocks[e.blockHandle]?.name ?? '', layer: layerOf(e), color: colorOf(e), position: e.points.first, scaleX: e.scaleX, scaleY: e.scaleY, rotation: e.rotation, cols: math.max(1, e.cols), rows: math.max(1, e.rows), colSpacing: e.colSpacing, rowSpacing: e.rowSpacing, ocsMirror: e.ocsMirror);
     // block membership: owned lists (R2004+), owner handle, or the handle range (R13–R2000)
     final blockOfHandle = <int, _Block>{};
     for (final b in _blocks.values) {
@@ -1973,11 +1989,12 @@ class DwgReader {
       final isInsert = e.type == 7 || e.type == 8 || (e.type >= 20 && e.type <= 26);
       // hatch islands become closed polylines next to the hatch
       Iterable<DxfEntity> converted() sync* {
+        DxfEntity world(DxfEntity x) => e.ocsMirror ? DxfReader.mirrorOcs(x) : x;
         final d = toDxf(e);
         if (d == null) return;
-        yield d;
+        yield world(d);
         for (final island in e.islands) {
-          yield DxfEntity(type: 'POLYLINE', layer: d.layer, color: d.color, points: island, closed: true);
+          yield world(DxfEntity(type: 'POLYLINE', layer: d.layer, color: d.color, points: island, closed: true));
         }
       }
 

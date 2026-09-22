@@ -781,13 +781,21 @@ LAYER table and the $INSUNITS variable define layers and scale. A bulge b descri
   pattern scale otherwise) give the fill.
 - **SOLID and TRACE**: filled triangles and quadrilaterals, whose corners come in the order
   1-2-4-3, become solid hatches.
+- **Extrusion (0, 0, −1)**: the planar entities (CIRCLE, ARC, LWPOLYLINE, 2D POLYLINE, HATCH,
+  SOLID, TRACE, TEXT, ATTRIB) are written in object coordinates, and mirroring in a CAD program
+  often leaves an extrusion (210/220/230) of (0, 0, −1), whose object X axis is the world −X by the
+  arbitrary axis algorithm. Those entities, the INSERT and DIMENSION references and the minor axis
+  of an ELLIPSE are mirrored back into world coordinates (an arc from a to b becomes the arc from
+  180° − b to 180° − a); LINE, POINT, SPLINE, MTEXT and 3D polylines are in world coordinates
+  already. Other extrusions (3D entities) are projected as they are.
 
 Blocks: every BLOCK keeps its base point (10/20) and its entities; INSERT (point 10/20, scales
 41/42, rotation 50, array 70/71 with spacings 44/45) and the anonymous block of every DIMENSION
 (code 2, already in drawing coordinates) are expanded by an affine transformation, with nested
 references composed up to eight levels. Entities on layer 0 take the layer of the reference and
-BYBLOCK colour takes its colour; circles and arcs stay circles and arcs when the transformation is
-a similarity and become polylines under anisotropic scaling or mirroring; dimension definition
+BYBLOCK colour takes its colour; circles and arcs stay circles and arcs when the transformation
+keeps shapes (rotation, uniform scale, mirroring — a mirrored arc turns the other way and texts and
+hatch angles follow the mirrored directions) and become polylines under anisotropic scaling; dimension definition
 points (Defpoints layer) are left out. Text is decoded as UTF-8 (R2007+) or Latin-1 (cp1252 of the
 older files). The writer produces an R12 file with a layer table, the common denominator of all
 CADs.
@@ -832,6 +840,11 @@ writer (`dwg_writer.dart`, 1.3 thousand lines), both in pure Dart.
   boundary paths with their edge types and, from R2010, the fit data of spline edges) and handed to
   the same conversions as their DXF counterparts. The ten sample drawings from R13 to R2018 in the
   test fixtures give exactly the entities that LibreDWG lists for them.
+- **Details that match the DXF reader**: 2D polylines keep the arcs of their vertices (VERTEX_2D
+  carries the start and end widths and the bulge; spline frame vertices are skipped), aligned
+  texts are placed by their alignment point, and the extrusion of circles, arcs, polylines, texts,
+  solids, hatches, ellipses and block references is read and applied as in DXF. A drawing written
+  by LibreDWG from an ezdxf file (test fixture `curves_r2000`) reads back like the DXF itself.
 
 ### 20.3 KML and KMZ
 
@@ -972,7 +985,7 @@ design check).
 
 ## 23. Validation
 
-The suite has 764 tests (`flutter test`). Those validating the hydraulics against references:
+The suite has 834 tests (`flutter test`). Those validating the hydraulics against references:
 
 | Test | Reference |
 |---|---|

@@ -217,13 +217,13 @@ List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? 
         final flow = r?.flow ?? nz.curve.flow(head);
         if (radius <= 0 || flow <= 0) continue;
         // a part-circle nozzle left on a full-circle head still waters its own arc
-        final arc = (nz.arcDeg < 360 && o.arcDeg >= 360 ? nz.arcDeg : o.arcDeg).clamp(1.0, 360.0);
+        final arc = nz.effectiveArcDeg(o.arcDeg);
         out.add(SpraySource(entityId: o.id, p: o.position, flow: flow, radius: radius, startRad: degToRad(o.orientationDeg), sweepRad: degToRad(arc)));
       case SpraylineEntity s:
         final nz = cat.outlet(s.outletSpecId)?.nozzle(s.nozzleId);
         if (nz == null || s.points.length < 2) continue;
         final res = byEntity?[s.id] ?? const <OutletResult>[];
-        final arc = degToRad((nz.arcDeg < 360 && s.arcDeg >= 360 ? nz.arcDeg : s.arcDeg).clamp(1.0, 360.0));
+        final arc = degToRad(nz.effectiveArcDeg(s.arcDeg));
         var d = s.firstOutletDistance;
         for (final pos in s.outletPositions()) {
           // the lumped result nearest to this outlet gives its pressure

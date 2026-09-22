@@ -5,6 +5,7 @@
 library;
 
 import '../model/geometry.dart';
+import '../units.dart';
 import 'dxf.dart';
 import 'geo.dart';
 
@@ -34,10 +35,14 @@ class PointsCsvReader {
     final dots = '.'.allMatches(l).length;
     if (commas >= 2 && (dots > 0 || !RegExp(r'\d,\d').hasMatch(l))) return l.split(',').map((s) => s.trim()).toList();
     if (commas >= 1 && dots > 0) return l.split(',').map((s) => s.trim()).toList();
+    // whitespace-separated columns with decimal commas ("10,5 20,5 100,2"):
+    // every column holds at most one comma, its decimal separator
+    final words = l.split(RegExp(r'\s+'));
+    if (words.length >= 2 && words.every((w) => ','.allMatches(w).length <= 1 && !w.startsWith(',') && !w.endsWith(','))) return words;
     return l.split(_sep).where((s) => s.isNotEmpty).toList();
   }
 
-  static double? _num(String s) => double.tryParse(s.replaceAll('"', '').replaceAll(',', '.').trim());
+  static double? _num(String s) => parseNumber(s.replaceAll('"', ''));
 
   /// Parses the text. [georef] places geographic points relative to an
   /// existing origin; [layer] names the layer of the spot heights.
@@ -80,6 +85,8 @@ class PointsCsvReader {
         xi = nums[0];
         yi = nums[1];
         zi = nums.length > 2 ? nums[2] : null;
+        // a text column ("P1 500 600 10") names the point
+        ni ??= [for (var i = 0; i < sample.length; i++) if (!nums.contains(i)) i].firstOrNull;
       } else {
         throw const FormatException('points_no_columns');
       }

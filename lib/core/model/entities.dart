@@ -257,6 +257,7 @@ List<List<double>> _ptsJson(List<Pt> pts) => pts.map((p) => p.toList()).toList()
 List<Pt> _map(List<Pt> pts, Affine t) => pts.map(t.apply).toList();
 double _rotDeg(Affine t, double deg) => radToDeg(t.transformAngle(degToRad(deg)));
 
+
 // ---------------------------------------------------------------- drawing
 
 class LineEntity extends Entity {
@@ -902,8 +903,11 @@ class SpraylineEntity extends Entity with PolyEntity {
   double get firstOutletDistance => offset > 0 ? offset : spacing;
   int get outletCount {
     final l = length;
-    if (l < firstOutletDistance - 1e-9) return 0;
-    return ((l - firstOutletDistance) / spacing + 1e-9).floor() + 1;
+    final first = firstOutletDistance;
+    if (!first.isFinite || first < 0 || l < first - 1e-9) return 0;
+    // no spacing (a value typed as 0, a damaged file): the first outlet only
+    if (!(spacing > 0) || !spacing.isFinite) return 1;
+    return ((l - first) / spacing + 1e-9).floor() + 1;
   }
 
   List<Pt> outletPositions() => [for (var i = 0; i < outletCount; i++) pointAlongPolyline(points, firstOutletDistance + i * spacing)];
@@ -967,10 +971,14 @@ class OutletEntity extends Entity with PointEntity {
   OutletEntity clone({String? newId}) => OutletEntity(id: newId ?? id, layer: layer, name: name, position: position, scope: scope, outletSpecId: outletSpecId, nozzleId: nozzleId, headM: headM, arcDeg: arcDeg, orientationDeg: orientationDeg, riserHeight: riserHeight, zoneName: zoneName);
   @override
   OutletEntity translated(Pt d) => clone()..position = position + d;
+
+  /// The wetted sector runs counter-clockwise from [orientationDeg] over
+  /// [arcDeg]; a mirror turns it clockwise, so the mirrored sector starts at
+  /// the image of its far edge.
   @override
   OutletEntity transformed(Affine t) => clone()
     ..position = t.apply(position)
-    ..orientationDeg = _rotDeg(t, orientationDeg);
+    ..orientationDeg = _rotDeg(t, t.isMirror && arcDeg < 360 ? orientationDeg + arcDeg : orientationDeg);
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'scope': scope.name, 'outlet': outletSpecId, if (nozzleId != null) 'nozzle': nozzleId, 'head': headM, 'arc': arcDeg, 'rot': orientationDeg, 'riser': riserHeight, if (zoneName.isNotEmpty) 'zone': zoneName};
 }

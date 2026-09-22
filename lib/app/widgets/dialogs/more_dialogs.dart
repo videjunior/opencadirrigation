@@ -452,7 +452,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           Checkbox(value: tp.enabled, onChanged: (v) => setState(() => tp.enabled = v ?? true)),
           _cell(tp.name, (v) => tp.name = v),
           _num(tp.innerDiameterMm, (v) => tp.innerDiameterMm = v),
-          _num(tp.emitterSpacingM, (v) => tp.emitterSpacingM = v),
+          _num(tp.emitterSpacingM, (v) => tp.emitterSpacingM = v > 0 ? v : tp.emitterSpacingM),
           _num(tp.emitter.flow(tp.defaultInletHeadM) / m3sPerLph, (v) => tp.emitter = EmitterCurve.fromNominal(flow: v * m3sPerLph, head: tp.defaultInletHeadM, x: tp.emitter.x)),
           _num(tp.emitter.x, (v) => tp.emitter = EmitterCurve(k: tp.emitter.k, x: v), decimals: 3),
           _num(tp.barbK, (v) => tp.barbK = v),
@@ -489,14 +489,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           Checkbox(value: p.enabled, onChanged: (x) => setState(() => p.enabled = x ?? true)),
           _cell(p.name, (x) => p.name = x),
           _cell(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2, 1)}').join(', '), (x) {
-            final pts = <(double, double)>[];
-            for (final s in x.split(',')) {
-              final parts = s.trim().split('@');
-              if (parts.length == 2) {
-                final q = double.tryParse(parts[0].trim()), h = double.tryParse(parts[1].trim());
-                if (q != null && h != null) pts.add((q * m3sPerM3h, h));
-              }
-            }
+            final pts = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
             if (pts.length >= 2) {
               p.points = pts;
               p.refit();

@@ -66,6 +66,7 @@ class GeoTiffDemReader {
   static GeoTiffDem? read(Uint8List bytes, {GeoReference? georef, int maxPoints = 4000}) {
     if (!looksLikeDem(bytes)) return null;
     final tags = GeoImageReader.readTiffTags(bytes);
+    GeoImageReader.checkTiffSize(tags);
     final decoded = img.decodeTiff(bytes);
     if (decoded == null || decoded.numChannels < 1) return null;
     final w = decoded.width, h = decoded.height;

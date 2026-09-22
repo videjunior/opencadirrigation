@@ -79,7 +79,7 @@ class DxfBlock {
 
 /// A block reference (INSERT / MINSERT / the anonymous block of a DIMENSION).
 class DxfInsert {
-  DxfInsert({required this.name, required this.layer, this.color = 256, required this.position, this.scaleX = 1, this.scaleY = 1, this.rotation = 0, this.cols = 1, this.rows = 1, this.colSpacing = 0, this.rowSpacing = 0});
+  DxfInsert({required this.name, required this.layer, this.color = 256, required this.position, this.scaleX = 1, this.scaleY = 1, this.rotation = 0, this.cols = 1, this.rows = 1, this.colSpacing = 0, this.rowSpacing = 0, this.ocsMirror = false});
   final String name;
   final String layer;
   final int color;
@@ -94,6 +94,10 @@ class DxfInsert {
   final double colSpacing;
   final double rowSpacing;
 
+  /// Extrusion (0, 0, −1): position, rotation and block are in an object
+  /// coordinate system whose X axis is the world −X (see [Affine2.ocsMirror]).
+  final bool ocsMirror;
+
   /// Block → world transform of the array cell ([col], [row]).
   Affine2 affine(Pt base, [int col = 0, int row = 0]) {
     final r = degToRad(rotation);
@@ -101,7 +105,8 @@ class DxfInsert {
     final m = Affine2(scaleX * cs, -scaleY * sn, scaleX * sn, scaleY * cs, 0, 0);
     final offset = Pt.polar(col * colSpacing, r) + Pt.polar(row * rowSpacing, r + math.pi / 2);
     final mb = m.apply(base);
-    return Affine2(m.a, m.b, m.c, m.d, position.x + offset.x - mb.x, position.y + offset.y - mb.y);
+    final local = Affine2(m.a, m.b, m.c, m.d, position.x + offset.x - mb.x, position.y + offset.y - mb.y);
+    return ocsMirror ? Affine2.ocsMirror.then(local) : local;
   }
 }
 
@@ -114,15 +119,41 @@ class Affine2 {
   /// This transform applied after [inner].
   Affine2 then(Affine2 inner) => Affine2(a * inner.a + b * inner.c, a * inner.b + b * inner.d, c * inner.a + d * inner.c, c * inner.b + d * inner.d, a * inner.tx + b * inner.ty + tx, c * inner.tx + d * inner.ty + ty);
 
+  /// Object coordinates of an entity whose extrusion is (0, 0, −1), the
+  /// usual result of mirroring in CAD programs, to world coordinates: by
+  /// the arbitrary axis algorithm its X axis is the world −X.
+  static const ocsMirror = Affine2(-1, 0, 0, 1, 0, 0);
+
   /// Uniform scale and rotation only (circles stay circles).
   bool get isSimilarity {
     final eps = 1e-9 * (a.abs() + b.abs() + c.abs() + d.abs() + 1);
     return (a - d).abs() < eps && (b + c).abs() < eps;
   }
 
+  /// Uniform scale, rotation and possibly a reflection: circles stay
+  /// circles, arcs turn the other way when [mirrored].
+  bool get isConformal {
+    final eps = 1e-9 * (a.abs() + b.abs() + c.abs() + d.abs() + 1);
+    return isSimilarity || ((a + d).abs() < eps && (b - c).abs() < eps);
+  }
+
+  bool get mirrored => a * d - b * c < 0;
+
   double get scale => math.sqrt((a * d - b * c).abs());
   double get rotationDeg => radToDeg(math.atan2(c, a));
+
+  /// Angle (degrees) of the direction at [deg] once transformed.
+  double dirDeg(double deg) {
+    final r = degToRad(deg);
+    final x = math.cos(r), y = math.sin(r);
+    return radToDeg(math.atan2(c * x + d * y, a * x + b * y));
+  }
 }
+
+/// Whether the extrusion direction ([x], [y], [z]) is the world −Z (the
+/// object coordinates are mirrored, see [Affine2.ocsMirror]). Other
+/// directions (3D entities) are drawn as projected.
+bool ocsIsMirrored(double x, double y, double z) => z < 0 && x.abs() < 1 / 64 && y.abs() < 1 / 64;
 
 class _Vertex {
   _Vertex(this.x, this.y, [this.bulge = 0]);
@@ -248,6 +279,11 @@ class DxfReader {
     int flags(int c) => int.tryParse(props[c]?.first ?? '0') ?? 0;
     final layer = props[8]?.first ?? '0';
     final color = int.tryParse(props[62]?.first ?? '') ?? 256;
+    // extrusion (0, 0, −1): the object coordinates of the planar entities
+    // (not the world coordinates of lines, points, splines, MTEXT, 3D
+    // polylines) are mirrored
+    final mirrored = ocsIsMirrored(num(210), num(220), num(230, 0, 1));
+    final first = out.length;
     switch (type) {
       case 'LINE':
         out.add(DxfEntity(type: 'LINE', layer: layer, color: color, points: [Pt(num(10), num(20)), Pt(num(11), num(21))], elevation: props.containsKey(30) ? num(30) : null));
@@ -316,8 +352,10 @@ class DxfReader {
       case 'ARC':
         out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: Pt(num(10), num(20)), radius: num(40), startAngle: num(50), endAngle: num(51)));
       case 'ELLIPSE':
+        // centre and major axis in world coordinates; the minor axis is
+        // extrusion × major, the other side for an extrusion (0, 0, −1)
         final c = Pt(num(10), num(20)), major = Pt(num(11), num(21));
-        final minor = major.perpendicular * num(40, 0, 1);
+        final minor = major.perpendicular * num(40, 0, 1) * (mirrored ? -1 : 1);
         final a0 = num(41), a1 = num(42, 0, 2 * math.pi);
         var sweep = a1 - a0;
         if (sweep <= 1e-9) sweep += 2 * math.pi;
@@ -363,15 +401,35 @@ class DxfReader {
       case 'POINT':
         out.add(DxfEntity(type: 'POINT', layer: layer, color: color, points: [Pt(num(10), num(20))], elevation: props.containsKey(30) ? num(30) : null));
       case 'INSERT':
-        inserts.add(DxfInsert(name: props[2]?.first ?? '', layer: layer, color: color, position: Pt(num(10), num(20)), scaleX: num(41, 0, 1), scaleY: num(42, 0, 1), rotation: num(50), cols: math.max(1, flags(70)), rows: math.max(1, flags(71)), colSpacing: num(44), rowSpacing: num(45)));
+        inserts.add(DxfInsert(name: props[2]?.first ?? '', layer: layer, color: color, position: Pt(num(10), num(20)), scaleX: num(41, 0, 1), scaleY: num(42, 0, 1), rotation: num(50), cols: math.max(1, flags(70)), rows: math.max(1, flags(71)), colSpacing: num(44), rowSpacing: num(45), ocsMirror: mirrored));
       case 'DIMENSION':
-        // the dimension's geometry lives in an anonymous block in world coordinates
+        // the dimension's geometry lives in an anonymous block, inserted at
+        // the origin of the dimension's object coordinates
         final block = props[2]?.first ?? '';
-        if (block.isNotEmpty) inserts.add(DxfInsert(name: block, layer: layer, color: color, position: Pt.zero));
+        if (block.isNotEmpty) inserts.add(DxfInsert(name: block, layer: layer, color: color, position: Pt.zero, ocsMirror: mirrored));
       default:
         break;
     }
+    final planar = switch (type) {
+      'CIRCLE' || 'ARC' || 'LWPOLYLINE' || 'HATCH' || 'SOLID' || 'TRACE' || 'TEXT' || 'ATTRIB' => true,
+      // 2D polylines (not 3D polylines or meshes, flags 8/16/64)
+      'POLYLINE' => flags(70) & (8 | 16 | 64) == 0,
+      _ => false,
+    };
+    if (mirrored && planar) {
+      for (var k = first; k < out.length; k++) {
+        out[k] = mirrorOcs(out[k]);
+      }
+    }
     return j;
+  }
+
+  /// [e] read in the mirrored object coordinates of an extrusion
+  /// (0, 0, −1), in world coordinates.
+  static DxfEntity mirrorOcs(DxfEntity e) {
+    final out = <DxfEntity>[];
+    _transformed(e, Affine2.ocsMirror, e.layer, e.color, out);
+    return out.single;
   }
 
   /// Reads the HATCH whose group codes are `pairs[start..end)`: the boundary
@@ -576,7 +634,7 @@ class DxfReader {
     final color = e.color == 0 ? insColor : e.color;
     switch (e.type) {
       case 'CIRCLE':
-        if (t.isSimilarity) {
+        if (t.isConformal) {
           out.add(DxfEntity(type: 'CIRCLE', layer: layer, color: color, center: t.apply(e.center!), radius: e.radius * t.scale, elevation: e.elevation));
         } else {
           out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: [for (var k = 0; k < 36; k++) t.apply(e.center! + Pt.polar(e.radius, 2 * math.pi * k / 36))], closed: true, elevation: e.elevation));
@@ -584,16 +642,18 @@ class DxfReader {
       case 'ARC':
         var sweep = e.endAngle - e.startAngle;
         if (sweep <= 0) sweep += 360;
-        if (t.isSimilarity) {
-          out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: t.apply(e.center!), radius: e.radius * t.scale, startAngle: e.startAngle + t.rotationDeg, endAngle: e.startAngle + sweep + t.rotationDeg, elevation: e.elevation));
+        if (t.isConformal) {
+          // a mirror turns the arc clockwise: it now starts at the image of its end
+          final start = t.mirrored ? t.dirDeg(e.startAngle + sweep) : t.dirDeg(e.startAngle);
+          out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: t.apply(e.center!), radius: e.radius * t.scale, startAngle: start, endAngle: start + sweep, elevation: e.elevation));
         } else {
           final n = math.max(4, (sweep / 10).ceil());
           out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: [for (var k = 0; k <= n; k++) t.apply(e.center! + Pt.polar(e.radius, degToRad(e.startAngle + sweep * k / n)))], elevation: e.elevation));
         }
       case 'TEXT':
-        out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [t.apply(e.points[0])], text: e.text, height: e.height * t.scale, rotation: e.rotation + t.rotationDeg, elevation: e.elevation, name: e.name));
+        out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [t.apply(e.points[0])], text: e.text, height: e.height * t.scale, rotation: t.dirDeg(e.rotation), elevation: e.elevation, name: e.name));
       case 'HATCH':
-        out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: true, rotation: e.rotation + t.rotationDeg, height: e.height * t.scale, solid: e.solid, name: e.name));
+        out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: true, rotation: t.dirDeg(e.rotation), height: e.height * t.scale, solid: e.solid, name: e.name, elevation: e.elevation));
       default:
         out.add(DxfEntity(type: e.type, layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: e.closed, elevation: e.elevation, name: e.name, text: e.text, height: e.height, rotation: e.rotation));
     }

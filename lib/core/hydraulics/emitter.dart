@@ -126,15 +126,18 @@ double gridOverlapCU({
   bool triangular = false,
   int samples = 24,
 }) {
-  if (radius <= 0 || spacingAlong <= 0 || spacingBetween <= 0) return 0;
+  if (radius <= 0 || spacingAlong <= 0 || spacingBetween <= 0 || samples <= 0) return 0;
+  // every head that reaches the cell: up to radius/spacing rows away
+  // (bounded for absurd layouts, where the overlap is uniform anyway)
+  final na = math.min(40, (radius / spacingAlong).ceil()), nb = math.min(40, (radius / spacingBetween).ceil());
   final depths = <double>[];
   for (var i = 0; i < samples; i++) {
     for (var j = 0; j < samples; j++) {
       final px = (i + 0.5) / samples * spacingAlong;
       final py = (j + 0.5) / samples * spacingBetween;
       var depth = 0.0;
-      for (var a = -2; a <= 3; a++) {
-        for (var b = -2; b <= 3; b++) {
+      for (var a = -na; a <= na + 1; a++) {
+        for (var b = -nb; b <= nb + 1; b++) {
           var sx = a * spacingAlong;
           final sy = b * spacingBetween;
           if (triangular && b.isOdd) sx += spacingAlong / 2;

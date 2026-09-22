@@ -650,7 +650,7 @@ class CadPainter extends CustomPainter {
     final radius = nozzle?.curve.radius(o.headM) ?? 0;
     if (c.showWettedRadii && radius > 0 && c.project.layerNamed(Layers.wettedRadii).visible) {
       final wr = Color(c.project.layerNamed(Layers.wettedRadii).color);
-      final arc = o.arcDeg.clamp(1, 360).toDouble();
+      final arc = nozzle!.effectiveArcDeg(o.arcDeg);
       final start = -degToRad(o.orientationDeg);
       final rect = Rect.fromCircle(center: s, radius: radius * cam.scale);
       if (arc >= 360) {

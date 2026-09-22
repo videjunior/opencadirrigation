@@ -3,6 +3,8 @@
 /// point items in the middle of a pipe and by telescoped LP sizing.
 library;
 
+import 'dart:math' as math;
+
 import 'entities.dart';
 import 'geometry.dart';
 
@@ -31,9 +33,17 @@ List<Entity> splitLinearEntity(Entity e, List<double> distances, String Function
       case PolylineEntity p:
         out.add(PolylineEntity(id: id, layer: p.layer, name: name, points: piece, closed: false));
       case ContourEntity c:
-        out.add(ContourEntity(id: id, layer: c.layer, name: name, points: piece, elevation: c.elevation));
+        out.add(ContourEntity(id: id, layer: c.layer, name: name, points: piece, elevation: c.elevation, derived: c.derived));
       case PipeEntity p:
         out.add(PipeEntity(id: id, layer: p.layer, name: name, points: piece, scope: p.scope, pipeSpecId: p.pipeSpecId, computerSized: p.computerSized, depth: p.depth));
+      case SpraylineEntity s when !(s.spacing > 0):
+        // no spacing: the one outlet goes with the piece that holds it
+        final at = s.firstOutletDistance - start;
+        final holds = i == 0 ? at >= 0 && at <= pieceLen + 1e-9 : at > 1e-9 && at <= pieceLen + 1e-9;
+        out.add(s.clone(newId: id)
+          ..name = name
+          ..points = piece
+          ..offset = holds ? math.max(at, 1e-9) : pieceLen + 1);
       case SpraylineEntity s:
         // first outlet of this piece: next outlet station at or after `start`
         final first = s.firstOutletDistance;
@@ -41,6 +51,9 @@ List<Entity> splitLinearEntity(Entity e, List<double> distances, String Function
         if (k < 0) k = 0;
         var station = first + k * s.spacing;
         if (station < start - 1e-9) station += s.spacing;
+        // an outlet right on the cut is the last one of the previous piece
+        // (which counts its outlets up to its end with the same tolerance)
+        if (i > 0 && station <= start + 1e-9 * s.spacing) station += s.spacing;
         final off = station - start;
         out.add(SpraylineEntity(id: id, layer: s.layer, name: name, points: piece, pipeSpecId: s.pipeSpecId, computerSized: s.computerSized, outletSpecId: s.outletSpecId, nozzleId: s.nozzleId, headM: s.headM, spacing: s.spacing, offset: off <= 1e-9 ? 1e-9 : off, arcDeg: s.arcDeg, riserHeight: s.riserHeight, depth: s.depth));
       case TapeEntity t:

@@ -1043,6 +1043,7 @@ const _table = <String, (String, String, String)>{
   'msg.catalogImported': ('Catálogo: {n} itens importados', 'Catalog: {n} items imported', 'Catálogo: {n} elementos importados'),
   'msg.catalogDefaultSaved': ('Catálogo salvo como padrão para novos projetos', 'Catalog saved as default for new projects', 'Catálogo guardado como predeterminado para proyectos nuevos'),
   'msg.catalogReset': ('Catálogo padrão restaurado', 'Default catalog restored', 'Catálogo predeterminado restaurado'),
+  'msg.lateralNeedsCatalog': ('O catálogo não tem fita gotejadora nem emissor com tubo de linha lateral: inclua-os em Projeto → Catálogo de componentes', 'The catalogue has no drip tape and no emitter with a lateral pipe: add them in Design → Component catalog', 'El catálogo no tiene cinta de goteo ni emisor con tubo lateral: agréguelos en Diseño → Catálogo de componentes'),
   // ---- warnings
   'warn.lp_infeasible': ('LP sem solução com os tubos habilitados (método guloso usado)', 'LP infeasible with the enabled pipes (greedy method used)', 'LP sin solución con las tuberías habilitadas (se usó el método voraz)'),
   'warn.fitting_missing': ('Conexão sem item no catálogo', 'Fitting without a catalog item', 'Conexión sin elemento en el catálogo'),
@@ -1064,6 +1065,8 @@ const _table = <String, (String, String, String)>{
   'imp.err.shp_zip_no_shp': ('O ZIP não contém um arquivo .shp', 'The ZIP has no .shp file', 'El ZIP no contiene un archivo .shp'),
   'imp.err.image_zip_no_image': ('O ZIP não contém imagem', 'The ZIP has no image', 'El ZIP no contiene imagen'),
   'imp.err.image_unreadable': ('Imagem não reconhecida', 'Image not recognised', 'Imagen no reconocida'),
+  'imp.err.file_corrupt': ('O arquivo está danificado ou não está no formato esperado', 'The file is damaged or not in the expected format', 'El archivo está dañado o no tiene el formato esperado'),
+  'imp.err.image_too_large': ('Imagem grande demais para abrir no navegador (mais de 100 milhões de pixels)', 'Image too large to open in the browser (more than 100 million pixels)', 'Imagen demasiado grande para abrir en el navegador (más de 100 millones de píxeles)'),
   'file.georefImage': ('Georreferenciar imagem selecionada…', 'Georeference selected image…', 'Georreferenciar imagen seleccionada…'),
   'gimg.title': ('Georreferenciar imagem', 'Georeference image', 'Georreferenciar imagen'),
   'gimg.explain': ('Informe as coordenadas locais (m) do canto inferior esquerdo, o tamanho real e a rotação da imagem.', 'Enter the local coordinates (m) of the bottom-left corner, the real size and the rotation of the image.', 'Indique las coordenadas locales (m) de la esquina inferior izquierda, el tamaño real y la rotación de la imagen.'),

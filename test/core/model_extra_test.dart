@@ -371,4 +371,47 @@ void main() {
       expect(offsetEntity(TextEntity(id: 't', position: Pt.zero, text: 'x'), 1, 'o'), isNull);
     });
   });
+
+  group('ordinate dimension and controller', () {
+    test('ordinate dimension: JSON, value, leader, grips and edits', () {
+      final od = OrdinateDimensionEntity(id: 'od', point: const Pt(12, 5), leaderEnd: const Pt(12, 15), origin: const Pt(2, 1));
+      final back = Entity.fromJson(od.toJson()) as OrdinateDimensionEntity;
+      expect((back.point, back.leaderEnd, back.origin, back.xAxis), (od.point, od.leaderEnd, od.origin, true));
+      expect(back.value, 10);
+      // measuring Y and from the default origin
+      final y = Entity.fromJson(OrdinateDimensionEntity(id: 'y', point: const Pt(3, 4), leaderEnd: const Pt(9, 4), xAxis: false).toJson()) as OrdinateDimensionEntity;
+      expect((y.origin, y.xAxis, y.value), (Pt.zero, false, 4.0));
+      expect(y.toJson().containsKey('o'), isFalse);
+      // the leader leaves the point along the normal of the measured axis
+      expect(od.leader.first, od.point);
+      expect(od.leader.last, od.leaderEnd);
+      expect(od.distanceTo(const Pt(12, 10)), closeTo(0, 1e-9));
+      expect(od.distanceTo(const Pt(20, 10)), closeTo(8, 1e-9));
+      expect(od.bounds.maxY, 15);
+      // grips move the point and the text
+      od.setGrip(0, const Pt(22, 5));
+      expect(od.value, 20);
+      od.setGrip(1, const Pt(30, 20));
+      expect(od.leaderEnd, const Pt(30, 20));
+      // moving the dimension keeps the datum: it measures the new position
+      final moved = od.translated(const Pt(5, 0));
+      expect((moved.point, moved.leaderEnd, moved.origin), (const Pt(27, 5), const Pt(35, 20), const Pt(2, 1)));
+      expect(moved.value, 25);
+      final turned = od.transformed(Affine.rotation(math.pi / 2));
+      expect(turned.point.distanceTo(const Pt(-5, 22)), lessThan(1e-9));
+      expect(turned.origin, od.origin);
+      expect(od.clone(newId: 'c').id, 'c');
+    });
+
+    test('controller moves, turns and keeps its stations', () {
+      final k = ControllerEntity(id: 'k', position: const Pt(1, 2), stations: 24, outputVolts: 26, cost: 300, maxSimultaneous: 2);
+      final t = k.transformed(Affine.rotation(math.pi, Pt.zero));
+      expect(t.position.distanceTo(const Pt(-1, -2)), lessThan(1e-9));
+      expect((t.stations, t.outputVolts, t.cost, t.maxSimultaneous), (24, 26.0, 300.0, 2));
+      final back = Entity.fromJson(k.toJson()) as ControllerEntity;
+      expect((back.stations, back.outputVolts, back.cost, back.maxSimultaneous), (24, 26.0, 300.0, 2));
+      final plain = Entity.fromJson(ControllerEntity(id: 'p', position: Pt.zero).toJson()) as ControllerEntity;
+      expect((plain.cost, plain.maxSimultaneous), (0.0, 0));
+    });
+  });
 }

@@ -40,9 +40,9 @@ Future<void> showElevationDialog(BuildContext context, ProjectController c, Enti
   var autoInc = s.contourAutoIncrement;
   var ask = s.askElevation;
   void apply(BuildContext ctx) {
-    final z = double.tryParse(ctl.text.replaceAll(',', '.'));
+    final z = parseNumber(ctl.text);
     if (z == null) return;
-    final interval = double.tryParse(intervalCtl.text.replaceAll(',', '.')) ?? s.contourInterval;
+    final interval = parseNumber(intervalCtl.text) ?? s.contourInterval;
     c.mutate(() {
       if (e is ContourEntity) e.elevation = z;
       if (e is SpotHeightEntity) e.elevation = z;

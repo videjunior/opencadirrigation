@@ -67,6 +67,8 @@ class GeoImageReader {
       return GeoImage(bytes: base.bytes, mime: base.mime, widthPx: base.widthPx, heightPx: base.heightPx, worldTopLeft: Pt(c - a / 2 - b / 2, f - d / 2 - e / 2), pixelSizeX: math.sqrt(a * a + d * d), pixelSizeY: -math.sqrt(b * b + e * e), rotationDeg: radToDeg(atan2Safe(d, a)), geographic: geo, utmZone: zone != null ? int.parse(zone.group(1)!) : null, utmNorth: zone != null ? zone.group(2)!.toUpperCase() == 'N' : null, source: image.name);
     }
     if (lower.endsWith('.tif') || lower.endsWith('.tiff')) return _readTiff(name, bytes);
+    final info = img.findDecoderForData(bytes)?.startDecode(bytes);
+    if (info != null) checkPixels(info.width, info.height);
     final decoded = img.decodeImage(bytes);
     if (decoded == null) throw const FormatException('image_unreadable');
     final mime = lower.endsWith('.png') ? 'image/png' : (lower.endsWith('.jpg') || lower.endsWith('.jpeg') ? 'image/jpeg' : 'image/png');
@@ -82,8 +84,25 @@ class GeoImageReader {
     return (v[0]!, v[1]!, v[2]!, v[3]!, v[4]!, v[5]!);
   }
 
+  /// Largest raster decoded (pixels): more would exhaust the browser's
+  /// memory, and a damaged size field can claim billions of pixels.
+  static const maxPixels = 100000000;
+
+  /// Throws `image_too_large` when a raster of [width] × [height] pixels
+  /// exceeds [maxPixels].
+  static void checkPixels(int width, int height) {
+    if (width < 0 || height < 0 || width.toDouble() * height > maxPixels) throw const FormatException('image_too_large');
+  }
+
+  /// [checkPixels] for the size declared in the first IFD of a TIFF.
+  static void checkTiffSize(TiffTags tags) {
+    int dim(int tag) => tags.shorts[tag]?.firstOrNull ?? tags.longs[tag]?.firstOrNull ?? 0;
+    checkPixels(dim(256), dim(257));
+  }
+
   static GeoImage _readTiff(String name, Uint8List bytes) {
     final tags = readTiffTags(bytes);
+    checkTiffSize(tags);
     final decoded = img.decodeTiff(bytes);
     if (decoded == null) throw const FormatException('image_unreadable');
     final png = Uint8List.fromList(img.encodePng(decoded));

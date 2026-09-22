@@ -420,8 +420,8 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
         if (!isTape) ...[
           SpecDropdown<OutletSpec>(label: t('props.outlet'), value: outletSpec, items: cat.outlets.where((o) => o.enabled && o.kind != OutletKind.demandPoint).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() {
             outletSpec = v ?? outletSpec;
-            nozzle = cat.outlet(outletSpec)?.nozzles.first.id;
-            headM = cat.outlet(outletSpec)?.nozzles.first.defaultHeadM ?? headM;
+            nozzle = cat.outlet(outletSpec)?.nozzles.firstOrNull?.id;
+            headM = cat.outlet(outletSpec)?.nozzles.firstOrNull?.defaultHeadM ?? headM;
           })),
           if (outlet != null) SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: nozzle, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() {
             nozzle = v;
@@ -429,7 +429,7 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
           })),
           _row([
             NumField(label: '${t('props.head')} (${u.pressureLabel})', value: u.pressureFromHead(headM), onChanged: (v) => headM = u.pressureToHead(v)),
-            NumField(label: '${t('dlg.emitterSpacing')} (${u.lengthLabel})', value: u.lengthFromSi(outletSpacing), onChanged: (v) => outletSpacing = u.lengthToSi(v)),
+            NumField(label: '${t('dlg.emitterSpacing')} (${u.lengthLabel})', value: u.lengthFromSi(outletSpacing), onChanged: (v) => setState(() => outletSpacing = v > 0 ? u.lengthToSi(v) : outletSpacing)),
           ]),
           SpecDropdown<PipeSpec>(label: t('dlg.lateralPipe'), value: lateralPipe, items: cat.pipesFor(PipeUsage.lateral), labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: true, nullLabel: t('auto'), onChanged: (v) => setState(() => lateralPipe = v)),
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.halfSpacing'), style: const TextStyle(fontSize: 12)), value: halfOffset, onChanged: (v) => setState(() => halfOffset = v)),
@@ -441,7 +441,7 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
           NumField(label: '${t('props.inlet')} (${u.pressureLabel})', value: u.pressureFromHead(tapeInlet), onChanged: (v) => tapeInlet = u.pressureToHead(v)),
         ],
         _row([
-          NumField(label: '${t('dlg.lateralSpacing')} (${u.lengthLabel})', value: u.lengthFromSi(lateralSpacing), onChanged: (v) => lateralSpacing = u.lengthToSi(v)),
+          NumField(label: '${t('dlg.lateralSpacing')} (${u.lengthLabel})', value: u.lengthFromSi(lateralSpacing), onChanged: (v) => setState(() => lateralSpacing = v > 0 ? u.lengthToSi(v) : lateralSpacing)),
           NumField(label: t('dlg.lateralDirection'), value: direction, decimals: 1, onChanged: (v) => direction = v, enabled: !useGuide),
         ]),
         if (guidePts != null && guidePts.length >= 2)
@@ -512,13 +512,13 @@ Future<void> showAutoheadDialog(BuildContext context, ProjectController c, List<
     return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
       SpecDropdown<OutletSpec>(label: t('props.outlet'), value: outletSpec, items: cat.outlets.where((o) => o.enabled && (o.kind == OutletKind.sprinkler || o.kind == OutletKind.microSprinkler)).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() {
         outletSpec = v ?? outletSpec;
-        nozzle = cat.outlet(outletSpec)?.nozzles.first.id;
-        headM = cat.outlet(outletSpec)?.nozzles.first.defaultHeadM ?? headM;
+        nozzle = cat.outlet(outletSpec)?.nozzles.firstOrNull?.id;
+        headM = cat.outlet(outletSpec)?.nozzles.firstOrNull?.defaultHeadM ?? headM;
       })),
       if (outlet != null) SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: nozzle, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => nozzle = v)),
       NumField(label: '${t('props.head')} (${u.pressureLabel})', value: u.pressureFromHead(headM), onChanged: (v) => setState(() => headM = u.pressureToHead(v))),
       _row([
-        NumField(label: t('dlg.spacingPct'), value: pct, onChanged: (v) => setState(() => pct = v)),
+        NumField(label: t('dlg.spacingPct'), value: pct, onChanged: (v) => setState(() => pct = v > 0 ? v : pct)),
         NumField(label: t('dlg.direction'), value: direction, onChanged: (v) => direction = v),
       ]),
       SegmentedButton<GridPattern>(segments: [ButtonSegment(value: GridPattern.square, label: Text(t('dlg.square'))), ButtonSegment(value: GridPattern.triangular, label: Text(t('dlg.triangular')))], selected: {pattern}, onSelectionChanged: (v) => setState(() => pattern = v.first)),
@@ -591,11 +591,20 @@ Future<void> showLateralCalculator(BuildContext context, ProjectController c) {
   final t = c.t;
   final cat = c.project.catalog;
   final u = c.units;
-  var useTape = true;
-  var tapeId = cat.tapes.first.id;
-  var outletId = cat.outlets.first.id;
-  String? nozzleId = cat.outlets.first.nozzles.first.id;
-  var pipeId = cat.pipesFor(PipeUsage.lateral).first.id;
+  // a catalogue without tapes, emitters or lateral pipes offers what it has
+  final tapes = cat.tapes;
+  final outlets = cat.outlets.where((o) => o.nozzles.isNotEmpty).toList();
+  final pipes = cat.pipesFor(PipeUsage.lateral);
+  final canTape = tapes.isNotEmpty, canEmitter = outlets.isNotEmpty && pipes.isNotEmpty;
+  if (!canTape && !canEmitter) {
+    c.notify(t('msg.lateralNeedsCatalog'));
+    return Future.value();
+  }
+  var useTape = canTape;
+  var tapeId = canTape ? tapes.first.id : '';
+  var outletId = canEmitter ? outlets.first.id : '';
+  String? nozzleId = canEmitter ? outlets.first.nozzles.first.id : null;
+  var pipeId = canEmitter ? pipes.first.id : '';
   var length = 100.0;
   var spacing = 4.0;
   var inlet = 10.0;
@@ -623,17 +632,17 @@ Future<void> showLateralCalculator(BuildContext context, ProjectController c) {
     final maxLen = maxLateralLength(spec, nominalPressure: nominal, minPressure: lo, maxPressure: hi, elevationAt: z, maxLength: 600);
     return ScrollBody(
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SegmentedButton<bool>(segments: [ButtonSegment(value: true, label: Text(t('dlg.tapeLateral'))), ButtonSegment(value: false, label: Text(t('dlg.emitterLateral')))], selected: {useTape}, onSelectionChanged: (v) => setState(() => useTape = v.first)),
+        SegmentedButton<bool>(segments: [ButtonSegment(value: true, label: Text(t('dlg.tapeLateral')), enabled: canTape), ButtonSegment(value: false, label: Text(t('dlg.emitterLateral')), enabled: canEmitter)], selected: {useTape}, onSelectionChanged: (v) => setState(() => useTape = v.first)),
         if (useTape)
-          SpecDropdown<TapeSpec>(label: t('props.tape'), value: tapeId, items: cat.tapes, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => tapeId = v!))
+          SpecDropdown<TapeSpec>(label: t('props.tape'), value: tapeId, items: tapes, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => tapeId = v!))
         else ...[
-          SpecDropdown<OutletSpec>(label: t('props.outlet'), value: outletId, items: cat.outlets, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() {
+          SpecDropdown<OutletSpec>(label: t('props.outlet'), value: outletId, items: outlets, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() {
             outletId = v!;
             nozzleId = cat.outlet(v)!.nozzles.first.id;
           })),
           SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: nozzleId, items: cat.outlet(outletId)!.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => nozzleId = v)),
-          SpecDropdown<PipeSpec>(label: t('props.pipe'), value: pipeId, items: cat.pipesFor(PipeUsage.lateral), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => pipeId = v!)),
-          NumField(label: '${t('props.spacing')} (${u.lengthLabel})', value: u.lengthFromSi(spacing), onChanged: (v) => setState(() => spacing = u.lengthToSi(v))),
+          SpecDropdown<PipeSpec>(label: t('props.pipe'), value: pipeId, items: pipes, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => pipeId = v!)),
+          NumField(label: '${t('props.spacing')} (${u.lengthLabel})', value: u.lengthFromSi(spacing), onChanged: (v) => setState(() => spacing = v > 0 ? u.lengthToSi(v) : spacing)),
         ],
         _row([
           NumField(label: '${t('props.length')} (${u.lengthLabel})', value: u.lengthFromSi(length), onChanged: (v) => setState(() => length = u.lengthToSi(v))),

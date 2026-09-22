@@ -100,6 +100,11 @@ class NozzleSpec {
   double flowTolBelow;
   double flowTolAbove;
 
+  /// Sector (degrees, 1–360) a head with this nozzle waters when the arc
+  /// set on the head is [headArcDeg]: a part-circle nozzle on a head left at
+  /// a full circle still waters only its own arc.
+  double effectiveArcDeg(double headArcDeg) => (arcDeg < 360 && headArcDeg >= 360 ? arcDeg : headArcDeg).clamp(1.0, 360.0).toDouble();
+
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'curve': curve.toJson(), 'arc': arcDeg, 'minH': minHeadM,
     'maxH': maxHeadM, 'defH': defaultHeadM, 'cv': cv, 'tolB': flowTolBelow, 'tolA': flowTolAbove,

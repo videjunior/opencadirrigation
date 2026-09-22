@@ -66,12 +66,12 @@ class PropertiesPanel extends StatelessWidget {
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.auto'), style: const TextStyle(fontSize: 12)), value: s.computerSized, onChanged: (v) => set(() => s.computerSized = v)),
           SpecDropdown<OutletSpec>(label: t('props.outlet'), value: s.outletSpecId, items: cat.outlets.where((o) => o.enabled).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => set(() {
             s.outletSpecId = v ?? s.outletSpecId;
-            s.nozzleId = cat.outlet(v)?.nozzles.first.id;
+            s.nozzleId = cat.outlet(v)?.nozzles.firstOrNull?.id;
           })),
           if (outlet != null)
             SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: s.nozzleId, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => set(() => s.nozzleId = v)),
           NumField(label: pLabel('props.head'), value: u.pressureFromHead(s.headM), onChanged: (v) => set(() => s.headM = u.pressureToHead(v))),
-          NumField(label: lLabel('props.spacing'), value: u.lengthFromSi(s.spacing), onChanged: (v) => set(() => s.spacing = u.lengthToSi(v))),
+          NumField(label: lLabel('props.spacing'), value: u.lengthFromSi(s.spacing), onChanged: (v) => set(() => s.spacing = v > 0 ? u.lengthToSi(v) : s.spacing)),
           NumField(label: lLabel('props.offset'), value: u.lengthFromSi(s.offset), onChanged: (v) => set(() => s.offset = u.lengthToSi(v))),
           NumField(label: t('props.arc'), value: s.arcDeg, onChanged: (v) => set(() => s.arcDeg = v)),
           NumField(label: t('props.riser'), value: s.riserHeight, onChanged: (v) => set(() => s.riserHeight = v)),
@@ -96,7 +96,7 @@ class PropertiesPanel extends StatelessWidget {
           KV(t('props.scope'), t('scope.${o.scope.name}')),
           SpecDropdown<OutletSpec>(label: t('props.outlet'), value: o.outletSpecId, items: cat.outlets.where((x) => x.enabled).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => set(() {
             o.outletSpecId = v ?? o.outletSpecId;
-            o.nozzleId = cat.outlet(v)?.nozzles.first.id;
+            o.nozzleId = cat.outlet(v)?.nozzles.firstOrNull?.id;
           })),
           if (outlet != null)
             SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: o.nozzleId, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => set(() => o.nozzleId = v)),
@@ -395,13 +395,15 @@ class PropertiesPanel extends StatelessWidget {
             if (v == null) return;
             c.mutateSelected<SpraylineEntity>((e) {
               e.outletSpecId = v;
-              e.nozzleId = cat.outlet(v)?.nozzles.first.id;
+              e.nozzleId = cat.outlet(v)?.nozzles.firstOrNull?.id;
             });
           }),
           if (outletSpec != null) SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: nozzle, items: outletSpec.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: nozzle == null, nullLabel: t('props.mixed'), onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) => e.nozzleId = v)),
           NumField(label: pLabel('props.head'), value: head == null ? 0 : u.pressureFromHead(head), onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) => e.headM = u.pressureToHead(v))),
           if (head == null) mixedNote(),
-          NumField(label: lLabel('props.spacing'), value: spacing == null ? 0 : u.lengthFromSi(spacing), onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) => e.spacing = u.lengthToSi(v))),
+          NumField(label: lLabel('props.spacing'), value: spacing == null ? 0 : u.lengthFromSi(spacing), onChanged: (v) {
+            if (v > 0) c.mutateSelected<SpraylineEntity>((e) => e.spacing = u.lengthToSi(v));
+          }),
           if (spacing == null) mixedNote(),
         ]);
       case 'tape':
@@ -442,7 +444,7 @@ class PropertiesPanel extends StatelessWidget {
             if (v == null) return;
             c.mutateSelected<OutletEntity>((e) {
               e.outletSpecId = v;
-              e.nozzleId = cat.outlet(v)?.nozzles.first.id;
+              e.nozzleId = cat.outlet(v)?.nozzles.firstOrNull?.id;
             });
           }),
           if (outletSpec != null) SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: nozzle, items: outletSpec.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: nozzle == null, nullLabel: t('props.mixed'), onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.nozzleId = v)),
@@ -609,15 +611,15 @@ class PropertiesPanel extends StatelessWidget {
           SpecDropdown<OutletSpec>(label: t('props.outlet'), value: s.outletSpecId, items: cat.outlets.where((o) => o.enabled).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => upd(() {
             s.outletSpecId = v ?? s.outletSpecId;
             final o = cat.outlet(s.outletSpecId);
-            s.nozzleId = o?.nozzles.first.id;
-            s.headM = o?.nozzles.first.defaultHeadM ?? s.headM;
+            s.nozzleId = o?.nozzles.firstOrNull?.id;
+            s.headM = o?.nozzles.firstOrNull?.defaultHeadM ?? s.headM;
           })),
           if (outlet != null) SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: s.nozzleId, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => upd(() {
             s.nozzleId = v;
             s.headM = outlet.nozzle(v)?.defaultHeadM ?? s.headM;
           })),
           NumField(label: '${t('props.head')} (${u.pressureLabel})', value: u.pressureFromHead(s.headM), onChanged: (v) => upd(() => s.headM = u.pressureToHead(v))),
-          if (tool == ToolId.sprayline) NumField(label: '${t('props.spacing')} (${u.lengthLabel})', value: u.lengthFromSi(s.spacing), onChanged: (v) => upd(() => s.spacing = u.lengthToSi(v))),
+          if (tool == ToolId.sprayline) NumField(label: '${t('props.spacing')} (${u.lengthLabel})', value: u.lengthFromSi(s.spacing), onChanged: (v) => upd(() => s.spacing = v > 0 ? u.lengthToSi(v) : s.spacing)),
           if (tool == ToolId.sprayline) SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.halfSpacing'), style: const TextStyle(fontSize: 12)), value: s.outletOffsetHalf, onChanged: (v) => upd(() => s.outletOffsetHalf = v)),
           if (tool == ToolId.outlet) NumField(label: t('props.arc'), value: s.arcDeg, onChanged: (v) => upd(() => s.arcDeg = v)),
           if (tool == ToolId.outlet) _scopeSwitch(),

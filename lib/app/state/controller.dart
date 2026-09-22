@@ -707,7 +707,7 @@ class ProjectController extends ChangeNotifier {
       for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
         e.remove('data');
       }
-      s = jsonEncode(j);
+      s = encodeJson(j);
     }
     return s;
   }
@@ -762,7 +762,7 @@ class ProjectController extends ChangeNotifier {
     mutate(() {
       if (copy) {
         for (final e in targets) {
-          final c = e.clone(newId: project.newId()).transformed(t);
+          final c = _transformed(e.clone(newId: project.newId()), t);
           project.entities.add(c);
           newIds.add(c.id);
         }
@@ -770,12 +770,23 @@ class ProjectController extends ChangeNotifier {
         final ids = targets.map((e) => e.id).toSet();
         for (var i = 0; i < project.entities.length; i++) {
           final e = project.entities[i];
-          if (ids.contains(e.id)) project.entities[i] = e.transformed(t);
+          if (ids.contains(e.id)) project.entities[i] = _transformed(e, t);
         }
       }
     }, invalidateResults: !copy || targets.any((e) => e.isHydraulic), label: label ?? (copy ? 'hist.copy|${targets.length}' : 'hist.transform|${targets.length}'));
     if (copy) select(newIds);
     return targets.length;
+  }
+
+  /// [e] through [t]. A head left at a full circle with a part-circle
+  /// nozzle waters the nozzle's arc: a mirror needs that arc to turn the
+  /// sector to the mirrored side.
+  Entity _transformed(Entity e, Affine t) {
+    if (t.isMirror && e is OutletEntity && e.arcDeg >= 360) {
+      final nz = project.catalog.outlet(e.outletSpecId)?.nozzle(e.nozzleId);
+      if (nz != null && nz.arcDeg < 360) return (e.clone()..arcDeg = nz.arcDeg).transformed(t);
+    }
+    return e.transformed(t);
   }
 
   int rotateSelected(Pt center, double rad, {bool copy = false}) => transformSelected(Affine.rotation(rad, center), copy: copy, label: copy ? null : 'hist.rotate');
@@ -1044,7 +1055,9 @@ class ProjectController extends ChangeNotifier {
         copies.add(e.clone(newId: project.newId()).translated(const Pt(2, -2)));
       }
       project.entities.addAll(copies);
-    }, label: 'hist.copy|${copies.length}');
+    }, label: 'hist.copy|${editableSelection.length}');
+    // refused (a design is running) or nothing editable: keep the selection
+    if (copies.isEmpty) return;
     selection
       ..clear()
       ..addAll(copies.map((e) => e.id));
@@ -1912,11 +1925,11 @@ class ProjectController extends ChangeNotifier {
     final j = project.toJson();
     final r = results;
     if (r != null) j['results'] = r.toJson();
-    final s = pretty ? const JsonEncoder.withIndent('  ').convert(j) : jsonEncode(j);
+    final s = encodeJson(j, pretty: pretty);
     if (markClean) {
       dirty = false;
       try {
-        store.save(project.meta.uid, project.meta.name, pretty ? jsonEncode(j) : s, kind: 'saved');
+        store.save(project.meta.uid, project.meta.name, pretty ? encodeJson(j) : s, kind: 'saved');
       } catch (_) {}
     }
     return s;
@@ -1960,6 +1973,17 @@ class ProjectController extends ChangeNotifier {
   /// Imports any supported drawing/GIS/raster file by extension.
   /// Returns a short description of what was imported.
   String importFile(String name, Uint8List bytes) {
+    try {
+      return _importFile(name, bytes);
+    } on Error catch (e, st) {
+      // a damaged file trips the readers' bounds (index, type, state
+      // errors): tell the user so instead of the raw error
+      debugPrint('$e\n$st');
+      throw const FormatException('file_corrupt');
+    }
+  }
+
+  String _importFile(String name, Uint8List bytes) {
     final lower = name.toLowerCase();
     if (lower.endsWith('.dwg')) {
       final r = DwgReader.parse(bytes);
@@ -2044,8 +2068,11 @@ class ProjectController extends ChangeNotifier {
         }
       }
       for (final e in doc.entities) {
+        // a damaged file may hold "nan" or huge exponents: such geometry is
+        // left out (it could neither be drawn nor saved)
+        if (!_finiteGeometry(e)) continue;
         final layer = e.layer;
-        final elev = e.elevation;
+        final elev = e.elevation != null && e.elevation!.isFinite ? e.elevation : null;
         switch (e.type) {
           case 'LINE':
             list.add(LineEntity(id: project.newId(), layer: layer, name: e.name, a: e.points[0] * s, b: e.points[1] * s));
@@ -2079,6 +2106,11 @@ class ProjectController extends ChangeNotifier {
     }, label: 'hist.import');
     zoomAll();
     return list.length;
+  }
+
+  static bool _finiteGeometry(DxfEntity e) {
+    bool ok(Pt p) => p.x.isFinite && p.y.isFinite;
+    return e.points.every(ok) && (e.center == null || ok(e.center!)) && e.radius.isFinite && e.startAngle.isFinite && e.endAngle.isFinite && e.rotation.isFinite && e.height.isFinite;
   }
 
   static bool _looksLikeContourLayer(String layer) {
