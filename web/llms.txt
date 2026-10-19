@@ -12,7 +12,7 @@ OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation 
 - Project file: `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results
 - CAD and GIS exchange: DXF, DWG, KML/KMZ, shapefile, GeoJSON, CSV/XYZ survey points, GeoTIFF, georeferenced images, SVG and PDF
 - Reports: PDF, Excel (XLSX), CSV and TXT
-- Version: 1.0.0, updated 2026-10-17
+- Version: 1.0.1, updated 2026-10-19
 - Site: https://opencadirrigation.com/
 
 ## Application
