@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/zh/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/zh/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">OpenCADIrrigation 需要 JavaScript 才能运行。请在浏览器中启用 JavaScript 并刷新页面。</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>免费的压力灌溉设计 CAD</h1>
         <p class="tagline">绘制、计算并出图：滴灌、微喷、喷灌和中心支轴式系统。直接在浏览器中运行，无需安装，项目保存在您自己的电脑上。</p>
         <nav class="cta" aria-label="打开应用">
-          <a class="primary" href="https://opencadirrigation.com/zh/">打开应用</a>
-          <a href="https://opencadirrigation.com/zh/?tutorial=1">交互式教程</a>
+          <a class="primary" href="https://opencadirrigation.com/zh/" data-app>打开应用</a>
+          <a href="https://opencadirrigation.com/zh/?tutorial=1" data-app>交互式教程</a>
           <a href="#exemplos">查看现成示例</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">正在加载灌溉设计 CAD…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>OpenCADIrrigation 将 CAD 绘图、水力管网和计算集于一处：绘制灌区边界，布置毛管、阀门和干管，按 F5 即可得到管径、压力、均匀度、轮灌组、材料清单和可直接打印的报告。提供 20 种语言，自动跟随您电脑的语言。</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">可直接打开的示例</h2>
         <p>每个项目打开即完整，按 F5 即可计算。可用来熟悉应用，或作为设计的起点。</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=orchard">果园</a></h3><p>柑橘采用微喷头、葡萄采用滴灌,水井配水泵和过滤器,坡地。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=garden">住宅花园</a></h3><p>前院草坪用升降喷头,后院用旋转喷头,花坛用滴灌,由自来水管网供水,配水表和防回流装置。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=sportsField">足球场</a></h3><p>105 × 68 m 标准球场,五排摇臂喷头,蓄水池、水泵和夜间轮灌。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=rowCrop">滴灌大田作物</a></h3><p>四个番茄地块采用滴灌带,带阀门的支管、网式过滤器、水泵和坡地。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=pivot">中心支轴式喷灌机</a></h3><p>玉米地上 300 m 的中心支轴式喷灌机,由干管、水井和水泵供水;塔架、跨段和喷头报告。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=greenhouse">蔬菜温室</a></h3><p>四座辣椒大棚采用压力补偿滴灌管,每棚一个区域,水箱、小型水泵和叠片过滤器。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=nursery">苗圃</a></h3><p>三个 12 × 48 m 苗床,4 × 4 m 网格的悬挂式微喷头,每床一个区域,高位水箱、小型水泵和叠片过滤器。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=coffee">沿等高线种植的咖啡</a></h3><p>山坡上的三个咖啡地块,弯曲毛管沿等高线布置(引导式毛管组),PC 滴灌管,坡脚处有水井和水泵。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=bananas">香蕉园</a></h3><p>两个香蕉地块采用 5 × 5 m 压力补偿微喷头,水井配潜水泵,叠片过滤器,坡地。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=sugarcane">地下滴灌甘蔗</a></h3><p>两个甘蔗地块采用埋深 0.3 m 的 20 mm PC 滴灌管,180 m 毛管,埋地支管,蓄水池、水泵、网式过滤器和排气阀。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=gravity">重力滴灌</a></h3><p>蓄水池高出两个滴灌蔬菜地块 40 m,无水泵:干管上设闸阀、减压阀和叠片过滤器;山坡等高线。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=pasture">喷灌牧场</a></h3><p>三个 72 × 72 m 围场,摇臂喷头喷灌管线按 12 × 18 m 布置,带阀门的支管、蓄水池、水泵和止回阀。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=golf">高尔夫球洞</a></h3><p>发球台用喷洒喷头,球道用三角形网格布置的旋转喷头(两个区域),果岭四周用旋转喷头,池塘配水泵和夜间轮灌。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=sectorPivot">带尾枪的扇形喷灌机</a></h3><p>大豆地上 250 m 的喷灌机旋转 270°,留出农庄所在象限,配 12 m³/h 尾枪;池塘、20 hp 水泵和闸阀。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/zh/?example=linear">平移式喷灌机</a></h3><p>小麦地上 392 m 的平移式喷灌机沿渠道行进 800 m,取水口配 30 hp 水泵和止回阀;塔架和喷头报告。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=orchard" data-app>果园</a></h3><p>柑橘采用微喷头、葡萄采用滴灌,水井配水泵和过滤器,坡地。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=garden" data-app>住宅花园</a></h3><p>前院草坪用升降喷头,后院用旋转喷头,花坛用滴灌,由自来水管网供水,配水表和防回流装置。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=sportsField" data-app>足球场</a></h3><p>105 × 68 m 标准球场,五排摇臂喷头,蓄水池、水泵和夜间轮灌。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=rowCrop" data-app>滴灌大田作物</a></h3><p>四个番茄地块采用滴灌带,带阀门的支管、网式过滤器、水泵和坡地。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=pivot" data-app>中心支轴式喷灌机</a></h3><p>玉米地上 300 m 的中心支轴式喷灌机,由干管、水井和水泵供水;塔架、跨段和喷头报告。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=greenhouse" data-app>蔬菜温室</a></h3><p>四座辣椒大棚采用压力补偿滴灌管,每棚一个区域,水箱、小型水泵和叠片过滤器。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=nursery" data-app>苗圃</a></h3><p>三个 12 × 48 m 苗床,4 × 4 m 网格的悬挂式微喷头,每床一个区域,高位水箱、小型水泵和叠片过滤器。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=coffee" data-app>沿等高线种植的咖啡</a></h3><p>山坡上的三个咖啡地块,弯曲毛管沿等高线布置(引导式毛管组),PC 滴灌管,坡脚处有水井和水泵。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=bananas" data-app>香蕉园</a></h3><p>两个香蕉地块采用 5 × 5 m 压力补偿微喷头,水井配潜水泵,叠片过滤器,坡地。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=sugarcane" data-app>地下滴灌甘蔗</a></h3><p>两个甘蔗地块采用埋深 0.3 m 的 20 mm PC 滴灌管,180 m 毛管,埋地支管,蓄水池、水泵、网式过滤器和排气阀。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=gravity" data-app>重力滴灌</a></h3><p>蓄水池高出两个滴灌蔬菜地块 40 m,无水泵:干管上设闸阀、减压阀和叠片过滤器;山坡等高线。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=pasture" data-app>喷灌牧场</a></h3><p>三个 72 × 72 m 围场,摇臂喷头喷灌管线按 12 × 18 m 布置,带阀门的支管、蓄水池、水泵和止回阀。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=golf" data-app>高尔夫球洞</a></h3><p>发球台用喷洒喷头,球道用三角形网格布置的旋转喷头(两个区域),果岭四周用旋转喷头,池塘配水泵和夜间轮灌。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=sectorPivot" data-app>带尾枪的扇形喷灌机</a></h3><p>大豆地上 250 m 的喷灌机旋转 270°,留出农庄所在象限,配 12 m³/h 尾枪;池塘、20 hp 水泵和闸阀。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/zh/?example=linear" data-app>平移式喷灌机</a></h3><p>小麦地上 392 m 的平移式喷灌机沿渠道行进 800 m,取水口配 30 hp 水泵和止回阀;塔架和喷头报告。</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="语言">语言: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <strong lang="zh-CN" dir="ltr">中文</strong> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>欢迎以 JSON 格式提交厂商产品目录和示例项目，以便收录到 OpenCADIrrigation 中。</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "加载时间较长。请检查网络连接或刷新页面；上方内容现在即可阅读。";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "正在加载灌溉设计 CAD…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "加载时间较长。请检查网络连接或刷新页面；上方内容现在即可阅读。";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

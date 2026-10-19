@@ -266,10 +266,11 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
   if (sources.isEmpty) {
     return Densogram(origin: Pt.zero, cell: 1, nx: 0, ny: 0, rate: Float64List(0), inside: Uint8List(0), sources: const [], stats: DensogramStats.empty, masked: false, fromResults: false);
   }
-  // target: the irrigated areas that hold sprinklers
+  // target: the irrigated areas the sprinklers water, also those watered
+  // only from their outline (corner and edge heads of a small lawn)
   final areaEntities = [
     for (final a in p.entities.whereType<AreaEntity>())
-      if (a.points.length >= 3 && sources.any((s) => pointInPolygon(s.p, a.points))) a,
+      if (a.points.length >= 3 && sources.any((s) => watersArea(s.p, a.points, arcDeg: radToDeg(s.sweepRad), orientationDeg: radToDeg(s.startRad)))) a,
   ];
   final areas = [for (final a in areaEntities) a.points];
   var b = Bounds.empty;

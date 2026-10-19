@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/pa/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/pa/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">OpenCADIrrigation ਨੂੰ ਚੱਲਣ ਲਈ JavaScript ਦੀ ਲੋੜ ਹੈ। ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ JavaScript ਚਾਲੂ ਕਰੋ ਅਤੇ ਸਫ਼ਾ ਮੁੜ ਲੋਡ ਕਰੋ।</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>ਦਬਾਅ ਵਾਲੀ ਸਿੰਚਾਈ ਦੇ ਡਿਜ਼ਾਈਨ ਲਈ ਮੁਫ਼ਤ CAD</h1>
         <p class="tagline">ਡ੍ਰਿਪ, ਮਾਈਕ੍ਰੋ ਸਪ੍ਰਿੰਕਲਰ, ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਸੈਂਟਰ ਪਿਵਟ ਪ੍ਰਣਾਲੀਆਂ ਬਣਾਓ, ਉਨ੍ਹਾਂ ਦਾ ਆਕਾਰ ਤੈਅ ਕਰੋ ਅਤੇ ਦਸਤਾਵੇਜ਼ ਤਿਆਰ ਕਰੋ। ਸਿੱਧਾ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ, ਕੁਝ ਵੀ ਇੰਸਟਾਲ ਕੀਤੇ ਬਿਨਾਂ, ਅਤੇ ਤੁਹਾਡੇ ਪ੍ਰੋਜੈਕਟ ਤੁਹਾਡੇ ਆਪਣੇ ਕੰਪਿਊਟਰ ਵਿੱਚ ਰਹਿੰਦੇ ਹਨ।</p>
         <nav class="cta" aria-label="ਐਪ ਖੋਲ੍ਹੋ">
-          <a class="primary" href="https://opencadirrigation.com/pa/">ਐਪ ਖੋਲ੍ਹੋ</a>
-          <a href="https://opencadirrigation.com/pa/?tutorial=1">ਇੰਟਰਐਕਟਿਵ ਟਿਊਟੋਰਿਅਲ</a>
+          <a class="primary" href="https://opencadirrigation.com/pa/" data-app>ਐਪ ਖੋਲ੍ਹੋ</a>
+          <a href="https://opencadirrigation.com/pa/?tutorial=1" data-app>ਇੰਟਰਐਕਟਿਵ ਟਿਊਟੋਰਿਅਲ</a>
           <a href="#exemplos">ਤਿਆਰ ਉਦਾਹਰਨਾਂ ਵੇਖੋ</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">ਸਿੰਚਾਈ CAD ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>OpenCADIrrigation CAD ਡਰਾਇੰਗ, ਹਾਈਡ੍ਰੌਲਿਕ ਨੈੱਟਵਰਕ ਅਤੇ ਗਣਨਾ ਨੂੰ ਇੱਕ ਥਾਂ ਲਿਆਉਂਦਾ ਹੈ: ਖੇਤਰ ਦੀ ਹੱਦ ਬਣਾਓ, ਲੇਟਰਲ, ਵਾਲਵ ਅਤੇ ਮੁੱਖ ਲਾਈਨ ਵਿਛਾਓ, F5 ਦਬਾਓ ਅਤੇ ਪਾਈਪਾਂ ਦੇ ਵਿਆਸ, ਦਬਾਅ, ਇਕਸਾਰਤਾ, ਚਲਾਉਣ ਦੀਆਂ ਵਾਰੀਆਂ, ਸਮੱਗਰੀ ਸੂਚੀ ਅਤੇ ਛਪਾਈ ਲਈ ਤਿਆਰ ਰਿਪੋਰਟਾਂ ਪ੍ਰਾਪਤ ਕਰੋ। 20 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਉਪਲਬਧ, ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਦੀ ਭਾਸ਼ਾ ਅਨੁਸਾਰ।</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">ਖੋਲ੍ਹਣ ਲਈ ਤਿਆਰ ਉਦਾਹਰਨਾਂ</h2>
         <p>ਹਰ ਪ੍ਰੋਜੈਕਟ ਪੂਰਾ ਖੁੱਲ੍ਹਦਾ ਹੈ ਅਤੇ F5 ਨਾਲ ਡਿਜ਼ਾਈਨ ਹੁੰਦਾ ਹੈ। ਐਪ ਨੂੰ ਜਾਣਨ ਲਈ ਜਾਂ ਸ਼ੁਰੂਆਤੀ ਬਿੰਦੂ ਵਜੋਂ ਇਨ੍ਹਾਂ ਦੀ ਵਰਤੋਂ ਕਰੋ।</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=orchard">ਬਾਗ਼</a></h3><p>ਨਿੰਬੂ ਜਾਤੀ 'ਤੇ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਅੰਗੂਰ 'ਤੇ ਡ੍ਰਿਪ, ਪੰਪ ਅਤੇ ਫਿਲਟਰ ਵਾਲਾ ਖੂਹ, ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=garden">ਘਰੇਲੂ ਬਗ਼ੀਚਾ</a></h3><p>ਅਗਲੇ ਲਾਅਨ 'ਤੇ ਪੌਪ-ਅੱਪ ਸਪਰੇਅ, ਪਿੱਛੇ ਰੋਟਰ ਅਤੇ ਕਿਆਰੀਆਂ ਵਿੱਚ ਡ੍ਰਿਪ, ਮੀਟਰ ਅਤੇ ਬੈਕਫਲੋ ਪ੍ਰੀਵੈਂਟਰ ਨਾਲ ਜਨਤਕ ਸਪਲਾਈ ਤੋਂ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=sportsField">ਫੁੱਟਬਾਲ ਮੈਦਾਨ</a></h3><p>ਪੰਜ ਕਤਾਰਾਂ ਵਿੱਚ ਇੰਪੈਕਟ ਸਪ੍ਰਿੰਕਲਰਾਂ ਵਾਲਾ ਪੂਰੇ ਆਕਾਰ ਦਾ 105 × 68 m ਮੈਦਾਨ, ਜਲ ਭੰਡਾਰ, ਪੰਪ ਅਤੇ ਰਾਤ ਦੀਆਂ ਵਾਰੀਆਂ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=rowCrop">ਡ੍ਰਿਪ ਕਤਾਰ ਫ਼ਸਲ</a></h3><p>ਡ੍ਰਿਪ ਟੇਪ 'ਤੇ ਟਮਾਟਰ ਦੇ ਚਾਰ ਬਲਾਕ, ਵਾਲਵ ਵਾਲੇ ਸਬਮੇਨ, ਸਕਰੀਨ ਫਿਲਟਰ, ਪੰਪ ਅਤੇ ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=pivot">ਸੈਂਟਰ ਪਿਵਟ</a></h3><p>ਮੱਕੀ 'ਤੇ 300 m ਪਿਵਟ ਜਿਸਨੂੰ ਮੁੱਖ ਲਾਈਨ, ਖੂਹ ਅਤੇ ਪੰਪ ਸਪਲਾਈ ਕਰਦੇ ਹਨ; ਟਾਵਰ, ਸਪੈਨ ਅਤੇ ਨੋਜ਼ਲ ਰਿਪੋਰਟ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=greenhouse">ਸਬਜ਼ੀ ਗਰੀਨਹਾਊਸ</a></h3><p>ਦਬਾਅ-ਪੂਰਕ ਡ੍ਰਿਪਲਾਈਨ 'ਤੇ ਸ਼ਿਮਲਾ ਮਿਰਚ ਦੀਆਂ ਚਾਰ ਸੁਰੰਗਾਂ, ਪ੍ਰਤੀ ਸੁਰੰਗ ਇੱਕ ਜ਼ੋਨ, ਟੈਂਕ, ਛੋਟਾ ਪੰਪ ਅਤੇ ਡਿਸਕ ਫਿਲਟਰ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=nursery">ਪੌਦ ਨਰਸਰੀ</a></h3><p>4 × 4 m ਗਰਿੱਡ 'ਤੇ ਉੱਪਰ ਲਟਕਦੇ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰਾਂ ਹੇਠ 12 × 48 m ਦੀਆਂ ਤਿੰਨ ਕਿਆਰੀਆਂ, ਪ੍ਰਤੀ ਕਿਆਰੀ ਇੱਕ ਜ਼ੋਨ, ਉੱਚਾ ਟੈਂਕ, ਛੋਟਾ ਪੰਪ ਅਤੇ ਡਿਸਕ ਫਿਲਟਰ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=coffee">ਕੰਟੂਰ ਲਾਈਨਾਂ 'ਤੇ ਕੌਫ਼ੀ</a></h3><p>ਢਲਾਣ 'ਤੇ ਕੌਫ਼ੀ ਦੇ ਤਿੰਨ ਬਲਾਕ ਜਿਨ੍ਹਾਂ ਦੇ ਵਕਰ ਲੇਟਰਲ ਕੰਟੂਰਾਂ ਦੇ ਪਿੱਛੇ ਚੱਲਦੇ ਹਨ (ਗਾਈਡਡ ਬਲਾਕ), PC ਡ੍ਰਿਪਲਾਈਨ, ਢਲਾਣ ਦੇ ਪੈਰਾਂ ਵਿੱਚ ਖੂਹ ਅਤੇ ਪੰਪ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=bananas">ਕੇਲੇ ਦਾ ਬਾਗ਼</a></h3><p>5 × 5 m 'ਤੇ ਦਬਾਅ-ਪੂਰਕ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰਾਂ ਹੇਠ ਕੇਲੇ ਦੇ ਦੋ ਬਲਾਕ, ਸਬਮਰਸੀਬਲ ਪੰਪ ਵਾਲਾ ਖੂਹ, ਡਿਸਕ ਫਿਲਟਰ ਅਤੇ ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=sugarcane">ਭੂਮੀਗਤ ਡ੍ਰਿਪ ਗੰਨਾ</a></h3><p>0.3 m ਡੂੰਘੀ ਦੱਬੀ 20 mm PC ਡ੍ਰਿਪਲਾਈਨ 'ਤੇ ਗੰਨੇ ਦੇ ਦੋ ਬਲਾਕ, 180 m ਲੇਟਰਲ, ਦੱਬੇ ਸਬਮੇਨ, ਜਲ ਭੰਡਾਰ, ਪੰਪ, ਸਕਰੀਨ ਫਿਲਟਰ ਅਤੇ ਏਅਰ ਵਾਲਵ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=gravity">ਗੁਰੂਤਾ-ਚਾਲਿਤ ਡ੍ਰਿਪ</a></h3><p>ਡ੍ਰਿਪ-ਸਿੰਚਿਤ ਸਬਜ਼ੀਆਂ ਦੇ ਦੋ ਬਲਾਕਾਂ ਤੋਂ 40 m ਉੱਪਰ ਜਲ ਭੰਡਾਰ, ਬਿਨਾਂ ਪੰਪ: ਮੁੱਖ ਲਾਈਨ 'ਤੇ ਗੇਟ ਵਾਲਵ, ਦਬਾਅ ਘਟਾਉਣ ਵਾਲਾ ਵਾਲਵ ਅਤੇ ਡਿਸਕ ਫਿਲਟਰ; ਢਲਾਣ ਦੇ ਕੰਟੂਰ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=pasture">ਸਪ੍ਰਿੰਕਲਰ-ਸਿੰਚਿਤ ਚਰਾਗਾਹ</a></h3><p>12 × 18 m 'ਤੇ ਇੰਪੈਕਟ ਸਪ੍ਰਿੰਕਲਰ ਲਾਈਨਾਂ ਵਾਲੇ 72 × 72 m ਦੇ ਤਿੰਨ ਵਾੜੇ, ਵਾਲਵ ਵਾਲੇ ਸਬਮੇਨ, ਜਲ ਭੰਡਾਰ, ਪੰਪ ਅਤੇ ਚੈੱਕ ਵਾਲਵ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=golf">ਗੋਲਫ ਹੋਲ</a></h3><p>ਸਪਰੇਅ ਵਾਲਾ ਟੀ, ਤਿਕੋਣੇ ਗਰਿੱਡ 'ਤੇ ਰੋਟਰਾਂ ਵਾਲਾ ਫੇਅਰਵੇ (ਦੋ ਜ਼ੋਨ) ਅਤੇ ਕਿਨਾਰੇ 'ਤੇ ਰੋਟਰਾਂ ਵਾਲਾ ਗਰੀਨ, ਪੰਪ ਵਾਲਾ ਤਲਾਅ ਅਤੇ ਰਾਤ ਦੀਆਂ ਵਾਰੀਆਂ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=sectorPivot">ਐਂਡ ਗਨ ਵਾਲਾ ਸੈਕਟਰ ਪਿਵਟ</a></h3><p>ਸੋਇਆਬੀਨ 'ਤੇ 250 m ਪਿਵਟ ਜੋ 270° ਘੁੰਮਦਾ ਹੈ, ਫਾਰਮਹਾਊਸ ਦਾ ਚੌਥਾਈ ਹਿੱਸਾ ਖਾਲੀ ਛੱਡਦੇ ਹੋਏ, 12 m³/h ਐਂਡ ਗਨ ਨਾਲ; ਤਲਾਅ, 20 hp ਪੰਪ ਅਤੇ ਗੇਟ ਵਾਲਵ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pa/?example=linear">ਲੀਨੀਅਰ ਮੂਵ</a></h3><p>ਕਣਕ 'ਤੇ 392 m ਲੀਨੀਅਰ ਮਸ਼ੀਨ ਜੋ ਨਹਿਰ ਦੇ ਨਾਲ 800 m ਚੱਲਦੀ ਹੈ, 30 hp ਪੰਪ ਅਤੇ ਚੈੱਕ ਵਾਲਵ ਵਾਲਾ ਇਨਟੇਕ; ਟਾਵਰ ਅਤੇ ਨੋਜ਼ਲ ਰਿਪੋਰਟ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=orchard" data-app>ਬਾਗ਼</a></h3><p>ਨਿੰਬੂ ਜਾਤੀ 'ਤੇ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਅੰਗੂਰ 'ਤੇ ਡ੍ਰਿਪ, ਪੰਪ ਅਤੇ ਫਿਲਟਰ ਵਾਲਾ ਖੂਹ, ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=garden" data-app>ਘਰੇਲੂ ਬਗ਼ੀਚਾ</a></h3><p>ਅਗਲੇ ਲਾਅਨ 'ਤੇ ਪੌਪ-ਅੱਪ ਸਪਰੇਅ, ਪਿੱਛੇ ਰੋਟਰ ਅਤੇ ਕਿਆਰੀਆਂ ਵਿੱਚ ਡ੍ਰਿਪ, ਮੀਟਰ ਅਤੇ ਬੈਕਫਲੋ ਪ੍ਰੀਵੈਂਟਰ ਨਾਲ ਜਨਤਕ ਸਪਲਾਈ ਤੋਂ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=sportsField" data-app>ਫੁੱਟਬਾਲ ਮੈਦਾਨ</a></h3><p>ਪੰਜ ਕਤਾਰਾਂ ਵਿੱਚ ਇੰਪੈਕਟ ਸਪ੍ਰਿੰਕਲਰਾਂ ਵਾਲਾ ਪੂਰੇ ਆਕਾਰ ਦਾ 105 × 68 m ਮੈਦਾਨ, ਜਲ ਭੰਡਾਰ, ਪੰਪ ਅਤੇ ਰਾਤ ਦੀਆਂ ਵਾਰੀਆਂ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=rowCrop" data-app>ਡ੍ਰਿਪ ਕਤਾਰ ਫ਼ਸਲ</a></h3><p>ਡ੍ਰਿਪ ਟੇਪ 'ਤੇ ਟਮਾਟਰ ਦੇ ਚਾਰ ਬਲਾਕ, ਵਾਲਵ ਵਾਲੇ ਸਬਮੇਨ, ਸਕਰੀਨ ਫਿਲਟਰ, ਪੰਪ ਅਤੇ ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=pivot" data-app>ਸੈਂਟਰ ਪਿਵਟ</a></h3><p>ਮੱਕੀ 'ਤੇ 300 m ਪਿਵਟ ਜਿਸਨੂੰ ਮੁੱਖ ਲਾਈਨ, ਖੂਹ ਅਤੇ ਪੰਪ ਸਪਲਾਈ ਕਰਦੇ ਹਨ; ਟਾਵਰ, ਸਪੈਨ ਅਤੇ ਨੋਜ਼ਲ ਰਿਪੋਰਟ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=greenhouse" data-app>ਸਬਜ਼ੀ ਗਰੀਨਹਾਊਸ</a></h3><p>ਦਬਾਅ-ਪੂਰਕ ਡ੍ਰਿਪਲਾਈਨ 'ਤੇ ਸ਼ਿਮਲਾ ਮਿਰਚ ਦੀਆਂ ਚਾਰ ਸੁਰੰਗਾਂ, ਪ੍ਰਤੀ ਸੁਰੰਗ ਇੱਕ ਜ਼ੋਨ, ਟੈਂਕ, ਛੋਟਾ ਪੰਪ ਅਤੇ ਡਿਸਕ ਫਿਲਟਰ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=nursery" data-app>ਪੌਦ ਨਰਸਰੀ</a></h3><p>4 × 4 m ਗਰਿੱਡ 'ਤੇ ਉੱਪਰ ਲਟਕਦੇ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰਾਂ ਹੇਠ 12 × 48 m ਦੀਆਂ ਤਿੰਨ ਕਿਆਰੀਆਂ, ਪ੍ਰਤੀ ਕਿਆਰੀ ਇੱਕ ਜ਼ੋਨ, ਉੱਚਾ ਟੈਂਕ, ਛੋਟਾ ਪੰਪ ਅਤੇ ਡਿਸਕ ਫਿਲਟਰ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=coffee" data-app>ਕੰਟੂਰ ਲਾਈਨਾਂ 'ਤੇ ਕੌਫ਼ੀ</a></h3><p>ਢਲਾਣ 'ਤੇ ਕੌਫ਼ੀ ਦੇ ਤਿੰਨ ਬਲਾਕ ਜਿਨ੍ਹਾਂ ਦੇ ਵਕਰ ਲੇਟਰਲ ਕੰਟੂਰਾਂ ਦੇ ਪਿੱਛੇ ਚੱਲਦੇ ਹਨ (ਗਾਈਡਡ ਬਲਾਕ), PC ਡ੍ਰਿਪਲਾਈਨ, ਢਲਾਣ ਦੇ ਪੈਰਾਂ ਵਿੱਚ ਖੂਹ ਅਤੇ ਪੰਪ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=bananas" data-app>ਕੇਲੇ ਦਾ ਬਾਗ਼</a></h3><p>5 × 5 m 'ਤੇ ਦਬਾਅ-ਪੂਰਕ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰਾਂ ਹੇਠ ਕੇਲੇ ਦੇ ਦੋ ਬਲਾਕ, ਸਬਮਰਸੀਬਲ ਪੰਪ ਵਾਲਾ ਖੂਹ, ਡਿਸਕ ਫਿਲਟਰ ਅਤੇ ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=sugarcane" data-app>ਭੂਮੀਗਤ ਡ੍ਰਿਪ ਗੰਨਾ</a></h3><p>0.3 m ਡੂੰਘੀ ਦੱਬੀ 20 mm PC ਡ੍ਰਿਪਲਾਈਨ 'ਤੇ ਗੰਨੇ ਦੇ ਦੋ ਬਲਾਕ, 180 m ਲੇਟਰਲ, ਦੱਬੇ ਸਬਮੇਨ, ਜਲ ਭੰਡਾਰ, ਪੰਪ, ਸਕਰੀਨ ਫਿਲਟਰ ਅਤੇ ਏਅਰ ਵਾਲਵ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=gravity" data-app>ਗੁਰੂਤਾ-ਚਾਲਿਤ ਡ੍ਰਿਪ</a></h3><p>ਡ੍ਰਿਪ-ਸਿੰਚਿਤ ਸਬਜ਼ੀਆਂ ਦੇ ਦੋ ਬਲਾਕਾਂ ਤੋਂ 40 m ਉੱਪਰ ਜਲ ਭੰਡਾਰ, ਬਿਨਾਂ ਪੰਪ: ਮੁੱਖ ਲਾਈਨ 'ਤੇ ਗੇਟ ਵਾਲਵ, ਦਬਾਅ ਘਟਾਉਣ ਵਾਲਾ ਵਾਲਵ ਅਤੇ ਡਿਸਕ ਫਿਲਟਰ; ਢਲਾਣ ਦੇ ਕੰਟੂਰ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=pasture" data-app>ਸਪ੍ਰਿੰਕਲਰ-ਸਿੰਚਿਤ ਚਰਾਗਾਹ</a></h3><p>12 × 18 m 'ਤੇ ਇੰਪੈਕਟ ਸਪ੍ਰਿੰਕਲਰ ਲਾਈਨਾਂ ਵਾਲੇ 72 × 72 m ਦੇ ਤਿੰਨ ਵਾੜੇ, ਵਾਲਵ ਵਾਲੇ ਸਬਮੇਨ, ਜਲ ਭੰਡਾਰ, ਪੰਪ ਅਤੇ ਚੈੱਕ ਵਾਲਵ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=golf" data-app>ਗੋਲਫ ਹੋਲ</a></h3><p>ਸਪਰੇਅ ਵਾਲਾ ਟੀ, ਤਿਕੋਣੇ ਗਰਿੱਡ 'ਤੇ ਰੋਟਰਾਂ ਵਾਲਾ ਫੇਅਰਵੇ (ਦੋ ਜ਼ੋਨ) ਅਤੇ ਕਿਨਾਰੇ 'ਤੇ ਰੋਟਰਾਂ ਵਾਲਾ ਗਰੀਨ, ਪੰਪ ਵਾਲਾ ਤਲਾਅ ਅਤੇ ਰਾਤ ਦੀਆਂ ਵਾਰੀਆਂ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=sectorPivot" data-app>ਐਂਡ ਗਨ ਵਾਲਾ ਸੈਕਟਰ ਪਿਵਟ</a></h3><p>ਸੋਇਆਬੀਨ 'ਤੇ 250 m ਪਿਵਟ ਜੋ 270° ਘੁੰਮਦਾ ਹੈ, ਫਾਰਮਹਾਊਸ ਦਾ ਚੌਥਾਈ ਹਿੱਸਾ ਖਾਲੀ ਛੱਡਦੇ ਹੋਏ, 12 m³/h ਐਂਡ ਗਨ ਨਾਲ; ਤਲਾਅ, 20 hp ਪੰਪ ਅਤੇ ਗੇਟ ਵਾਲਵ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pa/?example=linear" data-app>ਲੀਨੀਅਰ ਮੂਵ</a></h3><p>ਕਣਕ 'ਤੇ 392 m ਲੀਨੀਅਰ ਮਸ਼ੀਨ ਜੋ ਨਹਿਰ ਦੇ ਨਾਲ 800 m ਚੱਲਦੀ ਹੈ, 30 hp ਪੰਪ ਅਤੇ ਚੈੱਕ ਵਾਲਵ ਵਾਲਾ ਇਨਟੇਕ; ਟਾਵਰ ਅਤੇ ਨੋਜ਼ਲ ਰਿਪੋਰਟ।</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="ਭਾਸ਼ਾਵਾਂ">ਭਾਸ਼ਾਵਾਂ: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <strong lang="pa" dir="ltr">ਪੰਜਾਬੀ</strong> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>ਨਿਰਮਾਤਾਵਾਂ ਦੇ ਕੈਟਾਲਾਗ ਅਤੇ ਉਦਾਹਰਨ ਪ੍ਰੋਜੈਕਟ JSON ਫਾਰਮੈਟ ਵਿੱਚ ਭੇਜੇ ਜਾ ਸਕਦੇ ਹਨ, ਤਾਂ ਜੋ ਉਨ੍ਹਾਂ ਨੂੰ OpenCADIrrigation ਵਿੱਚ ਸ਼ਾਮਲ ਕੀਤਾ ਜਾ ਸਕੇ।</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "ਲੋਡ ਹੋਣ ਵਿੱਚ ਸਮਾਂ ਲੱਗ ਰਿਹਾ ਹੈ। ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਜਾਂ ਸਫ਼ਾ ਮੁੜ ਲੋਡ ਕਰੋ; ਉੱਪਰਲੀ ਸਮੱਗਰੀ ਹੁਣੇ ਪੜ੍ਹੀ ਜਾ ਸਕਦੀ ਹੈ।";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "ਸਿੰਚਾਈ CAD ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "ਲੋਡ ਹੋਣ ਵਿੱਚ ਸਮਾਂ ਲੱਗ ਰਿਹਾ ਹੈ। ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਜਾਂ ਸਫ਼ਾ ਮੁੜ ਲੋਡ ਕਰੋ; ਉੱਪਰਲੀ ਸਮੱਗਰੀ ਹੁਣੇ ਪੜ੍ਹੀ ਜਾ ਸਕਦੀ ਹੈ।";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

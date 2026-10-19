@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/version.dart';
 
+import '../tool/gen_version.dart' show renderVersionDart;
 import '../tool/site.dart';
 
 /// lib/app/version.dart is generated from pubspec.yaml by
@@ -28,6 +29,11 @@ void main() {
       expect(appVersionLabel, endsWith(' · git $appCommit'));
     }
     expect(appSiteUrl, 'https://opencadirrigation.com');
+    expect(appRepositoryUrl, 'https://github.com/videjunior/opencadirrigation');
+  });
+
+  test('version.dart is exactly what the generator writes (no hand edits drift)', () {
+    expect(File('lib/app/version.dart').readAsStringSync(), renderVersionDart(version: appVersion, build: appBuild, releaseDate: appReleaseDate));
   });
 
   test('the public pages declare the same software version', () {

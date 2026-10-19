@@ -1,19 +1,22 @@
 <p align="center"><img src="web/brand/logo-horizontal.png" width="560" alt="OpenCADIrrigation"></p>
 
-<p align="center"><a href="https://opencadirrigation.com">opencadirrigation.com</a> · <a href="https://opencadirrigation.com/pt/">Português</a> · <a href="https://opencadirrigation.com/es/">Español</a></p>
+<p align="center"><a href="https://opencadirrigation.com">opencadirrigation.com</a> · <a href="https://opencadirrigation.com/pt/">Português</a> · <a href="https://opencadirrigation.com/es/">Español</a> · <a href="LICENSE.md">Licença MIT</a></p>
 
 <p align="center"><a href="README.md">English (canonical)</a> · <strong>Português</strong></p>
 
 # OpenCADIrrigation
 
-CAD aberto, escrito em Flutter/Dart, para projeto de sistemas de irrigação pressurizada:
-desenho, rede hidráulica, dimensionamento, relatórios e plotagem, direto no navegador, sem
-instalação, sem servidor e sem cadastro. Os projetos ficam no seu computador.
+CAD de código aberto, escrito em Flutter/Dart, para projeto de sistemas de irrigação
+pressurizada: desenho, rede hidráulica, dimensionamento, relatórios e plotagem, direto no
+navegador, sem instalação, sem servidor e sem cadastro. Os projetos ficam no seu computador.
+Distribuído sob a [licença MIT](LICENSE.md).
+
+<p align="center"><img src="web/screenshots/design-1440x900.png" width="900" alt="Um projeto de irrigação dimensionado, com diâmetros, pressões e resultados por zona"></p>
 
 > Esta é a tradução em português do README. A versão canônica, mantida em inglês, é
 > [README.md](README.md). O estudo técnico está em [docs/TECHNICAL_STUDY.md](docs/TECHNICAL_STUDY.md)
 > (inglês) e [docs/PESQUISA.pt-BR.md](docs/PESQUISA.pt-BR.md) (português). O código, seus comentários e a
-> documentação do motor são em inglês.
+> documentação do motor são em inglês. A interface existe em 20 idiomas ([seção 13](#13-idiomas-e-site)).
 
 ---
 
@@ -38,6 +41,7 @@ instalação, sem servidor e sem cadastro. Os projetos ficam no seu computador.
 17. [Limitações conhecidas e roteiro](#17-limitações-conhecidas-e-roteiro)
 18. [Contribuindo](#18-contribuindo)
 19. [Referências](#19-referências)
+20. [Licença, componentes e dados de terceiros](#20-licença-componentes-e-dados-de-terceiros)
 
 ---
 
@@ -83,8 +87,9 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 
 ## 2. Começando em cinco minutos
 
-1. Abra [opencadirrigation.com](https://opencadirrigation.com). Na primeira visita aparece a tela
-   de boas-vindas com a **galeria de exemplos** e o botão do **tutorial interativo**.
+1. Abra [opencadirrigation.com](https://opencadirrigation.com) e clique em **Abrir o app** (ou abra
+   um exemplo ou o tutorial direto da página). Nas visitas seguintes o app abre sozinho. A tela de
+   boas-vindas mostra a **galeria de exemplos** e o botão do **tutorial interativo**.
 2. Escolha um exemplo (o pomar é o padrão) ou comece do zero.
 3. Pressione **F5** (ou o botão ▶ no canto superior direito). O cálculo roda fora da thread da
    interface; um cartão de progresso mostra a etapa atual (zona a zona, linha principal, lavagem,
@@ -712,8 +717,8 @@ que ele fala, e em inglês quando nenhum deles é falado; a troca em Ver → Idi
 próprio nome) fica salva. As páginas de idioma (`/pt/`, `/de/`, …) e o parâmetro `?lang=` valem só para a visita.
 O atributo `lang` do documento acompanha o idioma do app (`pt-BR`, `zh-CN`, senão o código). Os
 textos em árabe e urdu são escritos da direita para a esquerda; o layout da interface continua da
-esquerda para a direita. Os projetos de exemplo distribuídos mantêm os rótulos em português, inglês
-e espanhol.
+esquerda para a direita. Os projetos de exemplo distribuídos existem nos 20 idiomas
+(`examples/<código>/`).
 
 Um pacote é um JSON simples com três seções: `strings` (chave → texto), `tutorial` e `catalog`
 (texto de origem em inglês → texto). Tradutores podem revisá-lo sem tocar no código;
@@ -729,10 +734,26 @@ dos outros 19 idiomas da interface (`web/pt/`, `web/es/`, `web/de/`, `web/zh/`, 
 (português, inglês, espanhol) e em `tool/site/<código>.dart` (os demais, com a galeria de exemplos
 tirada dos pacotes de idioma); as páginas em árabe e urdu são da direita para a esquerda. Como o
 Flutter desenha em canvas, cada página traz o conteúdo em HTML real (título, recursos, exemplos,
-perguntas frequentes), visível enquanto o app carrega e mantido na página depois, com canônica
-própria, `hreflang` entre todas as versões, Open Graph e JSON-LD (aplicativo, perguntas frequentes,
-como funciona e galeria de exemplos, no idioma da página, com o assunto ligado à Wikipédia/Wikidata).
-O teste `test/web_metadata_test.dart` falha quando os arquivos gerados divergem do template.
+perguntas frequentes), com canônica própria, `hreflang` entre todas as versões, Open Graph e JSON-LD
+(aplicativo, perguntas frequentes, como funciona e galeria de exemplos, no idioma da página, com o
+assunto ligado à Wikipédia/Wikidata). O teste `test/web_metadata_test.dart` falha quando os arquivos
+gerados divergem do template.
+
+Esse HTML é tudo o que uma primeira visita baixa (e o que buscadores e o PageSpeed medem): o app,
+de vários megabytes, só é baixado quando o visitante o abre (os botões e os links de exemplo da
+página o iniciam ali mesmo), chega por um endereço do app (`?example=`, `?tutorial=`, `?design=`,
+`?lang=`, o `?source=pwa` do app instalado) ou já o usou naquele navegador (qualquer chave
+`opencadirrigation.` no `localStorage`); a página fica então escondida sob o app.
+`web/flutter_bootstrap.js` é o carregador do Flutter sem o service worker obsoleto, e
+`tool/build_web.sh` tira a referência ao `flutter.js.map` que o build não gera. O logo do topo é
+WebP em três larguras (`web/brand/logo-horizontal-{520,780,1040}.webp`, feitos de
+`logo-horizontal.png`), com o endereço versionado por um hash do arquivo. O site é servido pelo
+Firebase Hosting a partir de uma pasta de publicação fora deste repositório (`firebase.json` +
+`public/`, cópia de `build/web`). O `firebase.json` não tem rewrite genérico, então um endereço
+inexistente recebe o `404.html` com status 404 em vez da página do app (o que fazia o PageSpeed ver
+`/.well-known/ai-catalog.json` como um catálogo de IA quebrado); as páginas, `flutter_bootstrap.js`,
+`manifest.json` e `version.json` vão com `no-cache`, e as imagens de `brand/`, `icons/`,
+`screenshots/` e da raiz ficam 30 dias em cache.
 
 O gerador também escreve o que buscadores e assistentes de IA leem além das páginas:
 `web/robots.txt` (tudo liberado, com os robôs de busca e de IA nomeados: GPTBot, OAI-SearchBot,
@@ -836,8 +857,11 @@ web/                        páginas, manifest, ícones, robots, sitemap, worker
   com dezenas de milhares de entidades).
 - **Formatos próprios em Dart puro.** Leitores e escritores de DWG, PDF, XLSX, SHP, GeoTIFF etc. não
   dependem de bibliotecas nativas, o que mantém o app 100 % web.
-- **Textos centralizados.** Todas as strings da interface estão em `i18n.dart` como tuplas
-  (pt, en, es); o motor devolve códigos (`velocity_exceeded:e12`) que a interface traduz.
+- **Textos centralizados.** Todas as strings da interface são chaves de `i18n.dart`, com os textos
+  em português, inglês e espanhol compilados e os outros 17 idiomas nos pacotes de `assets/i18n`; o
+  motor devolve códigos (`velocity_exceeded:e12`) que a interface traduz. Todo arquivo de teste
+  falha quando a interface pede uma chave que a tabela não tem (`test/flutter_test_config.dart`),
+  que de outro modo apareceria crua na tela.
 
 ---
 
@@ -846,9 +870,11 @@ web/                        páginas, manifest, ícones, robots, sitemap, worker
 Requisitos: Flutter estável recente (desenvolvido com 3.47, Dart 3.13). Sem dependências nativas.
 
 ```bash
+git clone https://github.com/videjunior/opencadirrigation.git
+cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # 834 testes: motor, modelo, formatos, interface
+flutter test                       # 862 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
@@ -884,12 +910,15 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 
 ## 16. Testes
 
-`flutter test` roda 834 testes em pouco mais de dois minutos. O que cada grupo garante:
+`flutter test` roda 862 testes em alguns minutos. O que cada grupo garante:
 
 | Arquivo | Cobertura |
 |---|---|
-| `core/hydraulics_test.dart` | Hazen-Williams contra valor de livro-texto; Darcy-Weisbach ≈ Hazen-Williams em PVC liso; fator laminar; Swamee-Jain ≈ Colebrook; continuidade na transição; tabela do fator F de Christiansen e ajuste de Scaloppi; diâmetro equivalente; lei do emissor e ajuste; taxa de aplicação; CU de sobreposição; CU/DU/EU; ajuste de curva de bomba, ponto de operação, CRF; K → forma de vazão; celeridade em PVC |
+| `core/hydraulics_test.dart` | Hazen-Williams contra valor de livro-texto; Darcy-Weisbach ≈ Hazen-Williams em PVC liso; fator laminar; Swamee-Jain ≈ Colebrook; continuidade na transição; tabela do fator F de Christiansen e ajuste de Scaloppi; diâmetro equivalente; lei do emissor e ajuste; taxa de aplicação; CU de sobreposição; CU/DU e a EU de Keller-Karmeli (o exemplo resolvido do estudo técnico); ajuste de curva de bomba, ponto de operação, CRF; K → forma de vazão; celeridade em PVC |
 | `core/network_test.dart` | Solver esparso; tubo simples; anéis; conservação de massa; emissores dependentes da pressão; bomba; PRV; curva de acessório; convergência em Darcy-Weisbach; rede ramificada grande rápida; comparação com Christiansen; laterais em declive; comprimento máximo; posições de alimentação |
+| `core/network_robustness_test.dart` | Bomba perto do shutoff alimentando cem emissores perto de pressão zero (contra uma bisseção independente); bomba que um passo ruim travava fechada; emissores autocompensantes num morro, secos acima da linha piezométrica e famintos abaixo dela; válvula redutora logo acima do ajuste continua aberta; retenção instalada como acessório impede fluxo reverso; 300 redes em árvore aleatórias (bombas, retenções, demandas, todo expoente de emissor) convergem para soluções que satisfazem continuidade e leis de perda de carga |
+| `core/invariance_test.dart` | Mover o projeto (inclusive para coordenadas UTM), desenhar os tubos no sentido contrário, salvar e reabrir ou trocar o idioma deixam o projeto igual; o terreno por inverso da distância conta cada cota uma vez |
+| `core/regressions_1017_test.dart` | Defeitos corrigidos na varredura de 2026-10-17: curvas de bomba e de acessório digitadas com vazões repetidas, bomba só com carga de shutoff, posições de alimentação de laterais que pedem mais de três vezes a pressão nominal |
 | `core/lp_test.dart` | Simplex: ≤/≥, igualdades, inviável, ilimitado, problema com a forma do dimensionamento |
 | `core/design_test.dart`, `core/sizing_features_test.dart`, `core/gaps_test.dart` | Gerador de blocos; grafo conectado; análise e dimensionamento completos; LP não pior que o guloso; telescopagem; conexões; lavagem; golpe de aríete; CU de sobreposição e emissores por planta; agronomia e programa do controlador; seleção de bomba e motor; DEM GeoTIFF; pivô (vãos, custos); linha principal em anel |
 | `core/terrain_pivot_test.dart` | TIN de Delaunay exato em planos; TIN vs IDW; geração de curvas; encadeamento de segmentos; geometria de alinhamento e recorte; blocos guiados; hidráulica de pivô; verificação de projeto; catálogo Excel e pacotes |
@@ -904,7 +933,7 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Coordenadas coladas (decimais, vírgula, hemisférios, DMS, links); intervalo de curvas; escolha de idioma pelo sistema e pela URL |
 | `core/i18n_packs_test.dart` | Cada pacote de idioma cobre todas as chaves da tabela, do tutorial e dos nomes do catálogo com os mesmos marcadores e não é majoritariamente inglês; pacotes instalados chegam aos textos, ao tutorial e ao catálogo; `setLanguage` carrega o pacote sob demanda com inglês enquanto isso e repete um carregamento que falhou |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Edição (grips, transformações, aparar, estender, cortar), JSON das entidades, abas e área de transferência, protocolo do worker, HTTP local, armazenamento de projetos, câmera e snap (a área de transferência leva os itens de catálogo dos pivôs e a fiação) |
-| `core/densogram_test.dart` | Todo perfil de aspersão devolve a vazão inteira; arcos parciais molham o próprio setor (inclusive o arco do bocal); espaçamento cabeça a cabeça é uniforme e espaçamento largo não; áreas de taxas diferentes julgadas pela própria média; estatísticas de valores conhecidos; limite de células; saídas das laterais; resultados dão a pressão de cada emissor; filtro de zonas; cores, pixels e CSV |
+| `core/densogram_test.dart` | Todo perfil de aspersão devolve a vazão inteira; arcos parciais molham o próprio setor (inclusive o arco do bocal); área molhada só pelo contorno é avaliada; espaçamento cabeça a cabeça é uniforme e espaçamento largo não; áreas de taxas diferentes julgadas pela própria média; estatísticas de valores conhecidos; limite de células; saídas das laterais; resultados dão a pressão de cada emissor; filtro de zonas; cores, pixels e CSV |
 | `core/electrical_test.dart`, `core/electrical_io_test.dart` | Rotas, estações e válvula no meio da rota; tensão no solenoide conferida à mão; turnos separados carregam menos o comum; os fios escolhidos são os mais baratos (conferido por força bruta); trechos que nenhum fio atende; válvulas sem fio, rotas órfãs, estações insuficientes, sem controlador; catálogo de fios (padrão, AWG, CSV, XLSX, JSON); o cálculo põe a fiação na lista de materiais e no relatório Elétrico; códigos da verificação; correções do assistente; saída DXF, DWG, GeoJSON e prancha |
 | `core/management_test.dart` | Demandas de zonas e pivôs (nominais ou dos resultados); turnos automáticos: maiores primeiro dentro da vazão da fonte, limite de zonas, zonas maiores que o limite, ids que não colidem |
 | `core/import_curves_test.dart` | NURBS racional e fixada; SPLINE do DXF por pontos de controle ou de ajuste, HATCH com bordas de polilinha, linha, arco (nos dois sentidos), elipse e spline e ilhas, SOLID/TRACE, hachuras dentro de blocos; splines, hachuras, sólidos e a elipse do DWG R2000–R2018 iguais aos lidos pelo LibreDWG |
@@ -912,7 +941,8 @@ correspondente falha com a instrução de qual comando rodar. Builds para deskto
 | `core/regressions_test.dart` | Cada defeito corrigido na varredura de 2026-09-22, cada um falhando sem a sua correção: lateral cortada sobre um emissor o mantém uma vez só; curvas geradas continuam geradas; arquivos sem o contador de ids; aspersores de setor espelhados e cabeças de 360° com bocal de setor (também no PDF e na tela); arquivos de levantamento com espaço e vírgula decimal; imagens grandes demais para decodificar; arquivos danificados informados como tal; psi, kPa e bar; CU da grade com aspersores próximos; blocos em talhões em L e em U e fileiras guiadas recortadas em dois; telescopagem desenhada nos dois sentidos; números com separador de milhar, preços e curvas de bomba; espaçamentos 0 e valores NaN que travavam ou impediam salvar; trilhas de GPS no KML |
 | `core/hotkeys_dispatch_test.dart` | O despachante de teclado isolado: teclas do aplicativo, de edição e do canvas, o que diálogos e menus bloqueiam, cada alias de comando digitado |
 | `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto; gerenciamento com pivôs e turnos automáticos, diálogos fechados por fora, densograma, ferramentas de controlador e fio com a aba Elétrico, cotas de ordenada e de diâmetro, a aba Fios do catálogo, campos numéricos que rejeitam um valor; as propriedades de cada tipo de entidade, edição em lote e os resultados da seleção; a leitura do gráfico de perfil; navegação por roda, trackpad, botão do meio e dois dedos; diálogos de georreferência e de plotagem; menus da linha principal e do celular; o diálogo de turnos |
-| `web_metadata_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt |
+| `web_metadata_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt; as páginas de entrada carregam o app sob demanda |
+| `flutter_test_config.dart` | Roda em volta de cada arquivo de teste: o arquivo falha quando a interface pediu uma chave de texto que a tabela não tem |
 
 Armadilhas conhecidas ao escrever testes de widget: o cálculo é assíncrono de verdade e deve rodar
 dentro de `tester.runAsync`; títulos de diálogo podem estar em maiúsculas; o canvas precisa de um
@@ -940,6 +970,11 @@ tamanho de janela definido; o carregamento de assets (catálogos) usa `rootBundl
   arquivo `.oci.json`.
 - **Desempenho**: projetos com centenas de fitas por zona levam alguns segundos por zona; a etapa de
   lavagem é a mais pesada.
+- **Solver de rede**: emissores autocompensantes em redes grosseiramente subdimensionadas (vazões
+  muitas vezes maiores do que os tubos comportam) ainda podem não convergir; o projeto então
+  informa `not_converged` em vez de números.
+- **Densograma**: um único perfil de aspersão para todas as cabeças do mapa (escolhido no diálogo);
+  sprays ficam mais perto do uniforme, aspersores de impacto de bocal único do triangular.
 
 Roteiro sugerido: sistemas de dois fios com decodificadores e roteamento automático dos fios ao longo
 dos tubos; exportação de planilhas de bocais de pivô; catálogos
@@ -950,12 +985,18 @@ execução.
 
 ## 18. Contribuindo
 
+- **Issues e pull requests** são bem-vindos no
+  [GitHub](https://github.com/videjunior/opencadirrigation). Antes de um pull request rode
+  `flutter analyze` e `flutter test`; recompile `web/design_worker.js` com `tool/build_worker.sh`
+  depois de mudar `lib/core` ou `i18n.dart`, e rode o gerador que um teste de guarda apontar.
+  As contribuições são aceitas sob a licença MIT do projeto.
 - **Catálogos**: siga [catalogs/README.md](catalogs/README.md), rode `dart run tool/gen_catalogs.dart`
   e abra um pull request; os testes garantem ids únicos e curvas plausíveis.
 - **Exemplos**: adicione um construtor em `lib/app/examples.dart`, textos em `i18n.dart` e rode
   `dart run tool/gen_examples.dart`; o teste projeta o exemplo e exige zonas dentro da janela.
-- **Traduções**: cada chave de `i18n.dart` é uma tupla (pt, en, es); as páginas do site ficam em
-  `tool/site.dart`. A documentação é mantida em inglês (`README.md`, `docs/TECHNICAL_STUDY.md`) e
+- **Traduções**: cada chave de `i18n.dart` é uma tupla (pt, en, es), e cada outro idioma é um pacote
+  em `assets/i18n/<código>.json` (strings, tutorial e nomes do catálogo; os testes falham com chave ou
+  placeholder faltando); as páginas do site ficam em `tool/site.dart` e `tool/site/<código>.dart`. A documentação é mantida em inglês (`README.md`, `docs/TECHNICAL_STUDY.md`) e
   traduzida para o português (`README.pt-BR.md`, `docs/PESQUISA.pt-BR.md`): altere primeiro a versão em inglês.
 - **Motor**: toda fórmula nova vem com um teste contra um valor de referência publicado.
 - **Regra editorial**: este repositório não cita empresas nem produtos de software de terceiros, nem
@@ -969,3 +1010,32 @@ execução.
 O estudo que orientou o projeto, com o que um projetista espera de um CAD de irrigação, as fórmulas
 do motor, as formulações de dimensionamento, agronomia, pivôs, terreno, os formatos de arquivo e a
 bibliografia, está em [docs/PESQUISA.pt-BR.md](docs/PESQUISA.pt-BR.md).
+
+---
+
+## 20. Licença, componentes e dados de terceiros
+
+O OpenCADIrrigation é distribuído sob a [licença MIT](LICENSE.md). É uma ferramenta de apoio à
+engenharia: os resultados dependem dos dados informados e dos valores do catálogo, e um projetista
+qualificado deve conferir o projeto antes da execução (a licença não dá garantia).
+
+| Componente | Usado para | Licença |
+|---|---|---|
+| Flutter e o SDK do Dart | framework e linguagem | BSD-3-Clause |
+| [`web`](https://pub.dev/packages/web) | APIs do navegador (arquivos, armazenamento, workers) | BSD-3-Clause |
+| [`xml`](https://pub.dev/packages/xml) | KML, SVG e XLSX | MIT |
+| [`archive`](https://pub.dev/packages/archive) | KMZ, XLSX e shapefiles compactados | MIT |
+| [`image`](https://pub.dev/packages/image) | imagens raster e os arquivos da marca | MIT |
+| [`cupertino_icons`](https://pub.dev/packages/cupertino_icons) | fonte de ícones | MIT |
+| CanvasKit (Skia) | renderização, baixada da CDN do Google quando o app inicia | BSD-3-Clause |
+| Material Icons, Roboto, Noto | fontes da interface (Noto baixada sob demanda para outras escritas) | Apache-2.0, SIL OFL 1.1 |
+
+Os serviços online, acessados só quando você pede, têm seus próprios termos, e o app mostra os
+créditos: mapas base (© colaboradores do OpenStreetMap sob a ODbL, OpenTopoMap sob CC-BY-SA, CARTO,
+Esri, Google Maps com a sua chave) e elevação (Terrain Tiles no AWS Open Data: SRTM/NASA, GMTED,
+ETOPO1; Open-Meteo sob CC BY 4.0 com o Copernicus DEM GLO-90; OpenTopoData: NASA SRTM, ASTER GDEM).
+
+Os catálogos de fabricantes em [catalogs/](catalogs/) foram compilados das fichas técnicas públicas
+dos fabricantes, e cada pacote cita sua fonte. Nomes de produtos e marcas pertencem aos seus donos;
+o projeto não tem vínculo com nenhum deles, e os preços são valores de referência a confirmar com
+um revendedor.

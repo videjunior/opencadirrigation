@@ -2,7 +2,7 @@
 
 > OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
 
-This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.0.0, updated 2026-09-22.
+This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.0.0, updated 2026-10-17.
 
 ## At a glance
 
@@ -17,7 +17,7 @@ This file describes OpenCADIrrigation for language models and other automated re
 | Project file | `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results |
 | CAD and GIS exchange | DXF, DWG, KML/KMZ, shapefile, GeoJSON, CSV/XYZ survey points, GeoTIFF, georeferenced images, SVG and PDF |
 | Reports | PDF, Excel (XLSX), CSV and TXT |
-| Version | 1.0.0, updated 2026-09-22 |
+| Version | 1.0.0, updated 2026-10-17 |
 | Site | https://opencadirrigation.com/ |
 
 ## Who it is for

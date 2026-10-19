@@ -62,10 +62,14 @@ class Tin {
     var minY = ys.reduce(math.min), maxY = ys.reduce(math.max);
     final span = math.max(math.max(maxX - minX, maxY - minY), 1e-6);
     if (span < 1e-9) return Tin._(xs, ys, zs, []);
-    // super triangle
-    final mx = (minX + maxX) / 2, my = (minY + maxY) / 2;
-    final px = [...xs, mx - 20 * span, mx, mx + 20 * span];
-    final py = [...ys, my - span * 20, my + 20 * span, my - 20 * span];
+    // The triangulation works relative to the lower-left corner, so its
+    // in-circle tests round the same wherever the drawing lies (moving or
+    // georeferencing a project must not change its terrain), and four
+    // co-circular points (a cell of a regular grid, spot heights at the
+    // corners of a rectangle) keep the diagonal their insertion order gives.
+    final mx = (maxX - minX) / 2, my = (maxY - minY) / 2;
+    final px = [for (final x in xs) x - minX, mx - 20 * span, mx, mx + 20 * span];
+    final py = [for (final y in ys) y - minY, my - span * 20, my + 20 * span, my - 20 * span];
     final s0 = n, s1 = n + 1, s2 = n + 2;
     final tris = <TinTriangle>[];
     void circum(TinTriangle t) {
@@ -91,8 +95,8 @@ class Tin {
     final order = List<int>.generate(n, (i) => i);
     final cells = (math.sqrt(n) / 2).ceil().clamp(1, 512);
     int cellOf(int i) {
-      final gx = ((px[i] - minX) / span * cells).floor().clamp(0, cells - 1);
-      final gy = ((py[i] - minY) / span * cells).floor().clamp(0, cells - 1);
+      final gx = (px[i] / span * cells).floor().clamp(0, cells - 1);
+      final gy = (py[i] / span * cells).floor().clamp(0, cells - 1);
       return gy.isEven ? gy * cells + gx : gy * cells + (cells - 1 - gx);
     }
 
@@ -105,7 +109,9 @@ class Tin {
       final keep = <TinTriangle>[];
       for (final t in alive) {
         final dx = x - t.cx, dy = y - t.cy;
-        if (dx * dx + dy * dy <= t.r2 * (1 + 1e-12)) {
+        // strictly inside: a point on the circle (a tie, within rounding)
+        // leaves the triangle alone, whichever way the rounding went
+        if (dx * dx + dy * dy < t.r2 * (1 - 1e-9)) {
           bad.add(t);
         } else {
           keep.add(t);

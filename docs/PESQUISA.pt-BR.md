@@ -418,10 +418,19 @@ Para cada trecho ij com perda h_ij(Q):
 - tubo: h = r·|Q|^n·sgn(Q) + m·Q·|Q|;
 - bomba: h = −ω²·(h₀ − r·(Q/ω)^n), ou a parábola ajustada do catálogo;
 - emissor: tubo fictício até um reservatório na cota do emissor, com n = 1/x e r = (1/k)^n, que é a
-  forma como o EPANET trata emissores q = C·p^γ. O emissor é unidirecional: quando a carga do nó
-  fica abaixo da cota do emissor ele fecha (sem vazão de saída e, ao contrário de um reservatório,
-  sem retorno para a rede) e reabre assim que a pressão volta a ser positiva; a mudança de estado
-  conta como mudança de status na convergência (testes "emitters under negative pressure").
+  forma como o EPANET trata emissores q = C·p^γ. Sua vazão é uma variável de estado, atualizada pelo
+  mesmo passo de Newton de um tubo: nessa forma em vazão a lei p = (q/k)^(1/x) é convexa. Linearizar
+  q(p) (como o motor fazia até outubro de 2026) passa do ponto, porque dq/dp é infinito em p = 0, e
+  emissores trabalhando perto de pressão zero abriam e fechavam sem fim: 55 % de um conjunto de
+  redes aleatórias bem dimensionadas nunca convergiam, 72 % com emissores autocompensantes.
+  Gradientes abaixo de 10⁻⁶ usam uma lei linear, como o EPANET faz com o RQtol: um emissor faminto
+  segura seu nó em pressão perto de zero e deixa passar o que chega. O passo nunca leva um emissor
+  a mais de 10 % acima do que sua lei dá na pressão atual (o Newton passa do ponto numa lei íngreme
+  vindo de baixo: x = 0,02 é p ∝ q⁵⁰), expoentes abaixo de 0,01 são tomados como 0,01 pela mesma
+  vazão a 10 m, e a forma em vazão é avaliada até 1000 m. O emissor é unidirecional: quando sua
+  vazão ficaria negativa ele fecha (sem vazão de saída e, ao contrário de um reservatório, sem
+  retorno para a rede) e reabre numa verificação de estado quando a pressão é positiva (testes
+  "emitters under negative pressure", `network_robustness_test`).
 
 Define-se g_ij = ∂h/∂Q = n·r·|Q|^{n−1} + 2·m·|Q| (em Darcy-Weisbach acrescenta-se ∂r/∂Q·|Q|^n) e o
 fator de correção y_ij = h_ij(Q)·sgn(Q). Em cada iteração resolve-se o sistema linear simétrico
@@ -434,9 +443,17 @@ Q_ij ← Q_ij − (1/g_ij)·(y_ij − (H_i − H_j)).
 
 ### 11.2 Válvulas e casos especiais
 
-- PRV ativa força H_j = H_ajuste (A_jj += 10⁸, F_j += 10⁸·H_ajuste); fechada, h = 10⁸·Q; a lógica de
-  estado decide entre ativa, aberta e fechada a cada iteração (teste "PRV holds downstream pressure").
-- Válvula de retenção: fecha quando o escoamento inverte.
+- PRV ativa força H_j = H_ajuste (A_jj += 10⁸, F_j += 10⁸·H_ajuste); fechada, h = 10⁸·Q. O estado
+  segue a lógica do EPANET: ativa → aberta quando a carga de montante menos a perda da válvula
+  totalmente aberta fica abaixo do ajuste, aberta → ativa quando a carga de jusante (não a de
+  montante) passa do ajuste (testes "PRV holds downstream pressure", "an open pressure reducing
+  valve whose inlet is just above the setting stays open").
+- Válvula de retenção, num tubo ou como acessório próprio: fecha quando o escoamento inverte ou a
+  carga fica contra ela e reabre quando a queda de carga volta a ser positiva (teste "a check valve
+  fitted as a device stops reverse flow"; a retenção como acessório deixava a água voltar).
+- Bomba: linearizada em |Q| enquanto aberta, como no EPANET; fecha só quando o ganho de carga pedido
+  passa da carga de shutoff e reabre abaixo dela, na vazão que sua curva dá para essa carga (um passo
+  com vazão invertida a travava fechada para sempre).
 - Acessórios: curva h = K·Q^n + C do catálogo.
 - Demanda dependente da pressão nos emissores (Wagner): é a análise detalhada do projeto, com a
   vazão real de cada emissor.
@@ -445,7 +462,11 @@ Q_ij ← Q_ij − (1/g_ij)·(y_ij − (H_i − H_j)).
 
 Critério: Σ|ΔQ|/Σ|Q| < 10⁻⁵, ou Σ|ΔQ| < 10⁻⁹ m³/s em redes (quase) sem vazão, onde a medida
 relativa é ruído, com até 200 iterações (`NetworkOptions`); mais apertado que os 10⁻³ do EPANET
-porque as zonas de gotejamento têm vazões minúsculas por nó. A matriz A é montada como esparsa e fatorada por LDLᵀ com ordenação por grau
+porque as zonas de gotejamento têm vazões minúsculas por nó. Como no EPANET, os estados (retenções,
+bombas, emissores que reabrem e PRVs) só mudam quando as vazões convergiram, e nas dez primeiras
+iterações a cada duas: mudá-los a cada iteração deixava dispositivos unidirecionais perto do ponto
+de troca em ciclo. Um conjunto fixo de redes em árvore aleatórias precisa convergir para soluções que
+satisfazem a continuidade e as leis de perda de carga (`network_robustness_test`). A matriz A é montada como esparsa e fatorada por LDLᵀ com ordenação por grau
 mínimo; para redes ramificadas (quase árvores) a fatoração não gera preenchimento e o custo é
 próximo de linear, o que permite zonas com milhares de nós (teste "large branched network is fast").
 
@@ -705,9 +726,16 @@ Módulos `terrain.dart` e `tin.dart`.
 - **TIN de Delaunay** pelo algoritmo de Bowyer-Watson (inserção incremental com remoção dos
   triângulos cujo circuncírculo contém o ponto novo), com localização de triângulo por grade
   uniforme e interpolação linear por coordenadas baricêntricas. Exato em rampas planas (teste
-  "Delaunay of a plane reproduces the plane exactly") e igual ao modelo que os CADs chamam de DTM.
+  "Delaunay of a plane reproduces the plane exactly") e igual ao modelo que os CADs chamam de DTM. A
+  triangulação trabalha em coordenadas relativas ao canto inferior esquerdo das amostras e trata um
+  ponto sobre um circuncírculo (quatro pontos co-circulares: uma célula de malha regular, cotas nos
+  cantos de um retângulo) como fora dele, de modo que a diagonal segue a ordem de inserção e mover
+  ou georreferenciar um projeto (inclusive em coordenadas UTM) não muda seu terreno.
 - **IDW** (inverso da distância sobre os vizinhos mais próximos, com anéis de busca no hash) como
-  método alternativo e como complemento fora do casco convexo do TIN.
+  método alternativo e como complemento fora do casco convexo do TIN. Cada amostra conta uma vez: as
+  células compartilham chaves de hash, e uma célula distante trazendo de volta uma lista já lida
+  pesava algumas cotas em dobro, numa quantidade que dependia de onde o desenho estava
+  (`invariance_test`).
 - Levantamentos com mais de 12 000 pontos são decimados uniformemente para a triangulação, mas o
   IDW mantém todos (teste "very large surveys are decimated for the TIN but kept for IDW").
 - **Curvas de nível geradas**: marching sobre os triângulos (interseção do plano de cada nível com

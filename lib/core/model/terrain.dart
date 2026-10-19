@@ -121,8 +121,11 @@ class Terrain {
   double idwAt(Pt p, {double fallback = 0, int neighbours = 8}) {
     if (_samples.isEmpty) return fallback;
     if (_dirty) _rebuild();
-    // gather candidates from expanding rings
+    // gather candidates from expanding rings; cells share a hashed key, so a
+    // far cell can bring back a list already taken: each sample counts once
+    // (counting it twice weighted the average by where the drawing lies)
     final best = <(double, int)>[];
+    final seen = <int>{};
     final ix = (p.x / _cell).floor();
     final iy = (p.y / _cell).floor();
     var ring = 0;
@@ -135,12 +138,12 @@ class Terrain {
           final list = _grid[key];
           if (list == null) continue;
           for (final i in list) {
-            final d2 = _samples[i].p.distanceTo(p);
-            best.add((d2, i));
+            if (!seen.add(i)) continue;
+            best.add((_samples[i].p.distanceTo(p), i));
           }
         }
       }
-      if (best.length >= neighbours && ring >= 1) break;
+      if ((best.length >= neighbours && ring >= 1) || seen.length == _samples.length) break;
       ring++;
     }
     if (best.isEmpty) {

@@ -104,6 +104,21 @@ void main() {
       expect(d.stats.mean, closeTo(700 / 1000 / 100 * 1000, 1.5));
     });
 
+    test('a strip watered only from its outline is a target too', () {
+      // a 24 × 6 m strip along a wall, half circles on its top edge facing
+      // down: no head inside it (strict point-in-polygon counted those on a
+      // top or right edge as outside, so the strip was not evaluated)
+      final p = Project();
+      for (final x in [0.0, 8.0, 16.0, 24.0]) {
+        p.entities.add(_rotor(p, Pt(x, 6), arc: 180, rot: 180, nozzle: 'r3_180'));
+      }
+      p.entities.add(AreaEntity(id: p.newId(), name: 'Strip', points: const [Pt(0, 0), Pt(24, 0), Pt(24, 6), Pt(0, 6)]));
+      final d = computeDensogram(p, options: DensogramOptions(cellSize: 0.25));
+      expect(d.masked, isTrue);
+      expect(d.areas.map((a) => a.name), ['Strip']);
+      expect(d.stats.areaM2, closeTo(24 * 6, 3));
+    });
+
     test('areas of different rates are judged and coloured against their own mean', () {
       // sprays (fast) on one lawn, rotors (slow) on the other
       final p = Project();

@@ -98,6 +98,15 @@ void main() {
       expect(s.qvar, closeTo(18.18, 0.1));
       expect(s.eu, lessThan(s.du));
     });
+    test('Keller-Karmeli EU takes the minimum flow (the worked example of the technical study)', () {
+      // CV 0.03, q_min/q_mean 0.90 → 86.6 % with one emitter per plant, 88.3 % with four
+      final flows = [0.90, 1.00, 1.00, 1.05, 1.05];
+      final one = UniformityStats.compute(flows, manufacturerCv: 0.03, emittersPerPlant: 1);
+      final four = UniformityStats.compute(flows, manufacturerCv: 0.03, emittersPerPlant: 4);
+      expect(one.min / one.mean, closeTo(0.90, 1e-9));
+      expect(one.eu, closeTo(86.6, 0.05));
+      expect(four.eu, closeTo(88.3, 0.05));
+    });
   });
 
   group('pump', () {

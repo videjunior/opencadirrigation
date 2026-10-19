@@ -292,7 +292,7 @@ void main() {
         case CadAction.array:
           expect(a.calls, ['array']);
         case CadAction.feedEnvelope:
-          expect(c.lastMessage, c.t('msg.feedNone'));
+          expect(c.lastMessage, c.t('msg.selectLateral'), reason: 'same message as Zone → Allowable submain position');
         case CadAction.run:
           expect(a.calls, ['run']);
         case CadAction.check:

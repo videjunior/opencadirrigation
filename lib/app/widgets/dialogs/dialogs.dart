@@ -772,6 +772,7 @@ Future<void> showAboutDialogApp(BuildContext context, ProjectController c) => _s
     Text(c.t('about.text'), style: const TextStyle(fontSize: 13, height: 1.4)),
     const SizedBox(height: 12),
     _ExternalLink(key: const Key('about_site'), icon: Icons.public, label: c.t('about.site'), url: appSiteUrl),
+    _ExternalLink(key: const Key('about_repo'), icon: Icons.code, label: c.t('about.repo'), url: appRepositoryUrl),
   ]),
 );
 

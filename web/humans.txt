@@ -3,7 +3,7 @@ Project: OpenCADIrrigation
 Site: https://opencadirrigation.com/
 
 /* SITE */
-Last update: 2026-09-22
+Last update: 2026-10-17
 Version: 1.0.0
 Standards: HTML5, CSS3, JavaScript, WebAssembly (Flutter web)
 Languages: Bahasa Indonesia (/id/), Deutsch (/de/), English (/), Español (/es/), Français (/fr/), Hausa (/ha/), Kiswahili (/sw/), Português (/pt/), Tiếng Việt (/vi/), Türkçe (/tr/), Русский (/ru/), العربية (/ar/), اردو (/ur/), हिन्दी (/hi/), मराठी (/mr/), বাংলা (/bn/), ਪੰਜਾਬੀ (/pa/), తెలుగు (/te/), 中文 (/zh/), 日本語 (/ja/)

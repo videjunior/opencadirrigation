@@ -7,8 +7,12 @@
 ///
 /// Search engines cannot read what Flutter paints on its canvas, so every
 /// entry page carries the same content as real HTML: heading, description,
-/// feature list, ready examples and FAQ. It is shown while the app loads and
-/// hidden (kept in the DOM) on Flutter's first frame. Each page declares its
+/// feature list, ready examples and FAQ. The app (several megabytes) is only
+/// fetched when the visitor asks for it — the page's buttons and example
+/// links, an app address such as `?example=` or `?tutorial=1`, the installed
+/// PWA — or has already used it in this browser; a first visit (and a
+/// crawler, and PageSpeed) gets the light page alone. The page is hidden
+/// (kept in the DOM) on Flutter's first frame. Each page declares its
 /// language, a self canonical, the hreflang cluster and JSON-LD.
 ///
 /// Language models read the site too: robots.txt welcomes the AI crawlers by
@@ -22,6 +26,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:opencadirrigation/app/i18n.dart' show languageNames, languageTag, rtlLanguages, supportedLanguages;
 import 'package:opencadirrigation/app/version.dart' show appVersion;
@@ -49,7 +54,7 @@ const siteUrl = 'https://opencadirrigation.com/';
 
 /// Google Analytics measurement id of the site.
 const analyticsId = 'G-3M0P4T8V2T';
-const siteLastMod = '2026-09-22';
+const siteLastMod = '2026-10-17';
 
 /// IndexNow key (Bing, Yandex, Seznam, Naver…): published as `/<key>.txt` so
 /// `dart run tool/indexnow.dart` can announce changed pages after a deploy.
@@ -422,6 +427,24 @@ SiteText siteText(String code) => _siteTexts[code]!;
 
 String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
+/// Widths of the logo at the top of the entry pages
+/// (`web/brand/logo-horizontal-<width>.webp`, encoded from
+/// `logo-horizontal.png`): it is shown 520 px wide, 78 % of the width on a
+/// phone, at 1× to 2× pixel density.
+const landingLogoWidths = [520, 780, 1040];
+
+/// Address of the landing logo [width] wide, versioned by its content:
+/// firebase.json lets browsers keep images for a month, and a new logo gets a
+/// new address.
+String landingLogo(int width) {
+  final path = 'brand/logo-horizontal-$width.webp';
+  var hash = 0x811c9dc5; // 32-bit FNV-1a
+  for (final byte in File('web/$path').readAsBytesSync()) {
+    hash = ((hash ^ byte) * 0x01000193) & 0xffffffff;
+  }
+  return '$path?v=${hash.toRadixString(16).padLeft(8, '0')}';
+}
+
 String _hreflangLinks() => [
   for (final l in siteLanguages) '  <link rel="alternate" hreflang="${l.tag}" href="${l.url}">',
   '  <link rel="alternate" hreflang="x-default" href="${siteLang('en').url}">',
@@ -578,10 +601,12 @@ const _style = '''
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -665,11 +690,6 @@ ${_hreflangLinks()}
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 ${jsonLd(lang)}
   </script>
@@ -680,20 +700,20 @@ $_analytics
 </head>
 <body>
   <noscript><div id="oci-noscript"${lang.dirAttr}>${_esc(t.noScript)}</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing"${lang.dirAttr}>
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="${landingLogo(landingLogoWidths.first)}" srcset="${[for (final w in landingLogoWidths) '${landingLogo(w)} ${w}w'].join(', ')}" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>${_esc(t.h1)}</h1>
         <p class="tagline">${_esc(t.tagline)}</p>
         <nav class="cta" aria-label="${_esc(t.openApp)}">
-          <a class="primary" href="${lang.url}">${_esc(t.openApp)}</a>
-          <a href="${lang.url}?tutorial=1">${_esc(t.tutorial)}</a>
+          <a class="primary" href="${lang.url}" data-app>${_esc(t.openApp)}</a>
+          <a href="${lang.url}?tutorial=1" data-app>${_esc(t.tutorial)}</a>
           <a href="#exemplos">${_esc(t.seeExamples)}</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">${_esc(t.loading)}</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>${_esc(t.intro)}</p>
 
@@ -720,7 +740,7 @@ $_analytics
         <p>${_esc(t.examplesIntro)}</p>
         <ul class="grid">''');
   for (final ex in t.examples) {
-    b.writeln('          <li><h3><a href="${lang.url}?example=${ex.id}">${_esc(ex.title)}</a></h3><p>${_esc(ex.text)}</p></li>');
+    b.writeln('          <li><h3><a href="${lang.url}?example=${ex.id}" data-app>${_esc(ex.title)}</a></h3><p>${_esc(ex.text)}</p></li>');
   }
   b.writeln('''        </ul>
       </section>
@@ -746,14 +766,66 @@ $_analytics
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = ${jsonEncode(t.slow)};
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = ${jsonEncode(t.loading)};
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = ${jsonEncode(t.slow)};
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>''');
   return b.toString();
@@ -843,7 +915,8 @@ For language models: ${siteUrl}llms.txt, ${siteUrl}llms-full.txt
 ''';
 }
 
-/// 404 page (GitHub Pages serves it for unknown paths): not indexed. It
+/// 404 page (Firebase Hosting serves it, with status 404, for every path
+/// that is not a file: firebase.json has no catch-all rewrite): not indexed. It
 /// shows the message in English, or in the first browser language the site
 /// speaks, and links to every entry page.
 String render404() {

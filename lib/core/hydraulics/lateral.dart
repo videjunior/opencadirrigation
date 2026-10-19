@@ -355,7 +355,14 @@ List<FeedPositionResult> allowableFeedPositions(
       return cnt == 0 ? inlet : sum / cnt;
     }
 
+    // a long or thin lateral may need far more than 3× the nominal pressure
+    // at its inlet: widen the bracket (it used to stop at 3×, leaving the
+    // mean pressure below nominal without saying so)
     var lo = 0.0, hi = nominalPressure * 3;
+    for (var k = 0; k < 30 && meanFor(hi) < nominalPressure; k++) {
+      lo = hi;
+      hi *= 2;
+    }
     for (var i = 0; i < 40; i++) {
       final mid = (lo + hi) / 2;
       if (meanFor(mid) > nominalPressure) {

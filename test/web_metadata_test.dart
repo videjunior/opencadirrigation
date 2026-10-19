@@ -48,7 +48,7 @@ void main() {
     expect(html, contains('<base href="\$FLUTTER_BASE_HREF">'));
     expect(html, contains('<html lang="en">'), reason: 'English is the default: the root page is the English one');
     expect(html, contains('<link rel="canonical" href="$site">'));
-    for (final needle in ['og:title', 'og:description', 'og:url', 'og:type', 'twitter:card', 'name="description"', 'name="viewport"', 'rel="manifest"', 'rel="apple-touch-icon"', 'hreflang="en"', 'hreflang="es"', 'hreflang="pt-BR"', 'hreflang="zh-CN"', 'hreflang="x-default"', 'theme-color', 'name="robots"', 'rel="preconnect"']) {
+    for (final needle in ['og:title', 'og:description', 'og:url', 'og:type', 'twitter:card', 'name="description"', 'name="viewport"', 'rel="manifest"', 'rel="apple-touch-icon"', 'hreflang="en"', 'hreflang="es"', 'hreflang="pt-BR"', 'hreflang="zh-CN"', 'hreflang="x-default"', 'theme-color', 'name="robots"']) {
       expect(html, contains(needle), reason: needle);
     }
     for (final l in siteLanguages) {
@@ -101,6 +101,49 @@ void main() {
         if (o.code != l.code) expect(html, contains('<a href="${o.url}" hreflang="${o.tag}"'), reason: '${l.code} → ${o.code}');
       }
     }
+  });
+
+  test('the app loads when asked for: a first visit gets the light page alone', () {
+    final manifest = jsonDecode(File('web/manifest.json').readAsStringSync()) as Map<String, dynamic>;
+    final appAddresses = [manifest['start_url'] as String, for (final s in manifest['shortcuts'] as List) (s as Map)['url'] as String];
+    for (final l in siteLanguages) {
+      final html = File('web/${l.file}').readAsStringSync();
+      expect(html, isNot(contains('<script src="flutter_bootstrap.js"')), reason: '${l.code}: the page does not fetch the app by itself');
+      expect(html, contains("boot.src = 'flutter_bootstrap.js'"), reason: l.code);
+      expect(html, isNot(contains('rel="preload"')), reason: '${l.code}: the logo is found in the page with fetchpriority=high');
+      expect(html, isNot(contains('<link rel="preconnect"')), reason: '${l.code}: no connection to the engine CDN until the app starts');
+      // buttons and example links open the app in place
+      expect(html, contains('<a class="primary" href="${l.url}" data-app>'), reason: l.code);
+      expect(html, contains('<a href="${l.url}?tutorial=1" data-app>'), reason: l.code);
+      for (final ex in siteText(l.code).examples) {
+        expect(html, contains('<a href="${l.url}?example=${ex.id}" data-app>'), reason: '${l.code} ${ex.id}');
+      }
+      // addresses of the app (installed app, its shortcuts, deep links) start it without a click
+      final params = RegExp(r'\[\?&\]\(([a-z|]+)\)=').firstMatch(html)!.group(1)!.split('|');
+      for (final address in [...appAddresses, '${l.url}?example=garden', '${l.url}?tutorial=1', '${l.url}?lang=es']) {
+        expect(Uri.parse(address.replaceFirst('./', site)).queryParameters.keys.any(params.contains), isTrue, reason: '${l.code}: $address');
+      }
+      expect(html, contains("var prefix = 'opencadirrigation.';"), reason: 'returning users: the prefix of the app storage');
+      // the logo: WebP in three widths, versioned by content
+      for (final w in landingLogoWidths) {
+        expect(html, contains('${landingLogo(w)} ${w}w'), reason: '${l.code} $w');
+      }
+    }
+    expect(File('lib/app/io/prefs_web.dart').readAsStringSync(), contains("'opencadirrigation.\$key'"));
+    for (final w in landingLogoWidths) {
+      final logo = img.decodeWebP(File('web/brand/logo-horizontal-$w.webp').readAsBytesSync());
+      expect(logo, isNotNull, reason: '$w');
+      expect(logo!.width, w);
+      expect(logo.width / logo.height, closeTo(1040 / 349, 0.01), reason: 'same shape as the width/height of the img');
+      expect(logo.numChannels, 4, reason: 'transparent, like the PNG');
+    }
+    expect(landingLogo(520), matches(RegExp(r'^brand/logo-horizontal-520\.webp\?v=[0-9a-f]{8}$')));
+    // our bootstrap: Flutter's loader without the deprecated service worker
+    final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
+    expect(bootstrap, contains('{{flutter_js}}'));
+    expect(bootstrap, contains('{{flutter_build_config}}'));
+    expect(bootstrap, contains('_flutter.loader.load();'));
+    expect(bootstrap, isNot(contains('serviceWorker')));
   });
 
   test('every page describes the app, its FAQ, steps and examples as JSON-LD in its own language', () {

@@ -426,10 +426,19 @@ For every link ij with head loss h_ij(Q):
 - pipe: h = r·|Q|^n·sgn(Q) + m·Q·|Q|;
 - pump: h = −ω²·(h₀ − r·(Q/ω)^n), or the parabola fitted from the catalogue;
 - emitter: a fictitious pipe to a reservoir at the emitter elevation, with n = 1/x and
-  r = (1/k)^n, which is how EPANET treats emitters q = C·p^γ. The emitter is one-way: when the node
-  head falls below the emitter elevation it is closed (no outflow and, unlike a reservoir link, no
-  backflow into the network) and it reopens as soon as the pressure turns positive; an open/closed
-  change counts as a status change for convergence (tests "emitters under negative pressure").
+  r = (1/k)^n, which is how EPANET treats emitters q = C·p^γ. Its flow is a state variable
+  updated by the same Newton step as a pipe's: in this flow form the law p = (q/k)^(1/x) is
+  convex. Linearising q(p) instead (as the engine did until October 2026) overshoots, because
+  dq/dp is infinite at p = 0, and emitters working near zero pressure flipped open and closed
+  without end: 55 % of a set of random, sensibly sized networks never converged, 72 % with
+  pressure-compensating emitters. Gradients below 10⁻⁶ use a linear law, as EPANET does with
+  RQtol: a starved emitter then holds its node at about zero pressure and passes what arrives.
+  The step never takes an emitter more than 10 % above what its law gives at the current
+  pressure (Newton overshoots a steep law from below: x = 0.02 is p ∝ q⁵⁰), exponents below 0.01
+  are taken as 0.01 through the same flow at 10 m, and the flow form is evaluated up to 1000 m.
+  The emitter is one-way: when its flow would turn negative it closes (no outflow and, unlike a
+  reservoir link, no backflow into the network) and it reopens at a status check once the
+  pressure is positive (tests "emitters under negative pressure", `network_robustness_test`).
 
 Define g_ij = ∂h/∂Q = n·r·|Q|^{n−1} + 2·m·|Q| (in Darcy-Weisbach add ∂r/∂Q·|Q|^n) and the
 correction term y_ij = h_ij(Q)·sgn(Q). Every iteration solves the symmetric positive-definite
@@ -442,10 +451,17 @@ Q_ij ← Q_ij − (1/g_ij)·(y_ij − (H_i − H_j)).
 
 ### 11.2 Valves and special cases
 
-- An active PRV forces H_j = H_setting (A_jj += 10⁸, F_j += 10⁸·H_setting); closed, h = 10⁸·Q; the
-  status logic decides between active, open and closed at every iteration (test "PRV holds
-  downstream pressure").
-- Check valve: closes when the flow reverses.
+- An active PRV forces H_j = H_setting (A_jj += 10⁸, F_j += 10⁸·H_setting); closed, h = 10⁸·Q. Its
+  status follows EPANET's logic: active → open when the inlet head less the loss of the fully
+  open valve falls below the setting, open → active when the outlet head (not the inlet) rises
+  above it (test "PRV holds downstream pressure", "an open pressure reducing valve whose inlet
+  is just above the setting stays open").
+- Check valve, on a pipe or as a device of its own: closes when the flow reverses or the head
+  turns against it, reopens when the head drop is positive again (test "a check valve fitted as a
+  device stops reverse flow"; device check valves used to let water run backwards).
+- Pump: linearised at |Q| while open, as EPANET does; it closes only when the head gain asked
+  for exceeds its shutoff head and reopens below it, at the flow its curve gives for that head
+  (one step with a reversed flow used to lock it closed for good).
 - Devices: the catalogue curve h = K·Q^n + C.
 - Pressure-dependent demand at the emitters (Wagner): that is the detailed design analysis, with
   the real flow of every emitter.
@@ -454,7 +470,11 @@ Q_ij ← Q_ij − (1/g_ij)·(y_ij − (H_i − H_j)).
 
 Criterion: Σ|ΔQ|/Σ|Q| < 10⁻⁵, or Σ|ΔQ| < 10⁻⁹ m³/s for networks carrying (almost) no flow, where
 the relative measure is noise, with up to 200 iterations (`NetworkOptions`); tighter than EPANET's
-10⁻³ because drip zones have minute flows per node. The matrix A is assembled as sparse and
+10⁻³ because drip zones have minute flows per node. As in EPANET, statuses (check valves, pumps,
+reopening emitters, and PRVs) change only when the flows have converged, and in the first ten
+iterations every other one: changing them at every iteration let one-way devices near their
+switching point cycle. A fixed set of random tree networks must converge to solutions that
+satisfy continuity and the head-loss laws (`network_robustness_test`). The matrix A is assembled as sparse and
 factorised by LDLᵀ with minimum-degree ordering; for branched networks (nearly trees) the
 factorisation creates no fill-in and the cost is close to linear, which allows zones with thousands
 of nodes (test "large branched network is fast").
@@ -718,9 +738,16 @@ Modules `terrain.dart` and `tin.dart`.
 - **Delaunay TIN** by the Bowyer-Watson algorithm (incremental insertion removing the triangles
   whose circumcircle contains the new point), with triangle location by a uniform grid and linear
   interpolation by barycentric coordinates. Exact on planar slopes (test "Delaunay of a plane
-  reproduces the plane exactly") and the same as the model CADs call a DTM.
+  reproduces the plane exactly") and the same as the model CADs call a DTM. The triangulation works
+  in coordinates relative to the lower-left corner of the samples and treats a point on a
+  circumcircle (four co-circular points: a cell of a regular grid, spot heights at the corners of
+  a rectangle) as outside it, so the diagonal follows the insertion order and moving or
+  georeferencing a project (UTM coordinates included) does not change its terrain.
 - **IDW** (inverse distance over the nearest neighbours, with search rings in the hash) as an
-  alternative method and as a complement outside the convex hull of the TIN.
+  alternative method and as a complement outside the convex hull of the TIN. Every sample counts
+  once: cells share hashed keys, and a far cell bringing back a list already taken used to weight
+  some spot heights twice, by an amount that depended on where the drawing lay
+  (`invariance_test`).
 - Surveys with more than 12 000 points are decimated uniformly for the triangulation, but the IDW
   keeps them all (test "very large surveys are decimated for the TIN but kept for IDW").
 - **Generated contour lines**: marching over the triangles (intersection of every level plane with

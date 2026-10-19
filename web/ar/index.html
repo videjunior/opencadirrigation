@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ar/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ar/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript" dir="rtl">يحتاج OpenCADIrrigation إلى JavaScript ليعمل. فعّل JavaScript في المتصفح ثم أعد تحميل الصفحة.</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing" dir="rtl">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>برنامج CAD مجاني لتصميم أنظمة الري بالضغط</h1>
         <p class="tagline">ارسم وصمّم ووثّق أنظمة الري بالتنقيط والرشاشات الصغيرة والرش والمحور المركزي. مباشرةً في المتصفح، دون تثبيت أي شيء، ومشاريعك محفوظة على حاسوبك.</p>
         <nav class="cta" aria-label="افتح التطبيق">
-          <a class="primary" href="https://opencadirrigation.com/ar/">افتح التطبيق</a>
-          <a href="https://opencadirrigation.com/ar/?tutorial=1">الدرس التفاعلي</a>
+          <a class="primary" href="https://opencadirrigation.com/ar/" data-app>افتح التطبيق</a>
+          <a href="https://opencadirrigation.com/ar/?tutorial=1" data-app>الدرس التفاعلي</a>
           <a href="#exemplos">شاهد الأمثلة الجاهزة</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">جارٍ تحميل برنامج تصميم الري…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>يجمع OpenCADIrrigation الرسم الهندسي والشبكة الهيدروليكية والحساب في مكان واحد: ارسم حدود المساحة، ومُدّ الخطوط الجانبية والصمامات والخط الرئيسي، ثم اضغط F5 لتحصل على أقطار الأنابيب والضغوط والانتظامية ونوبات التشغيل وقائمة المواد وتقارير جاهزة للطباعة. متوفر بعشرين لغة، ويتبع لغة حاسوبك.</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">أمثلة جاهزة للفتح</h2>
         <p>يُفتح كل مشروع كاملًا ويُصمَّم بالضغط على F5. استخدمها للتعرّف على التطبيق أو نقطةَ انطلاق لمشروعك.</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=orchard">بستان</a></h3><p>رشاشات دقيقة على الحمضيات وتنقيط على العنب، بئر بمضخة ومرشح، أرض منحدرة.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=garden">حديقة منزلية</a></h3><p>رشاشات منبثقة على العشب الأمامي، دوّارات في الخلف وتنقيط في الأحواض، تغذية من الشبكة العامة بعداد ومانع ارتداد.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=sportsField">ملعب كرة قدم</a></h3><p>ملعب بالحجم الكامل 105 × 68 م برشاشات صدمية في خمسة صفوف، خزان، مضخة وورديات ليلية.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=rowCrop">محصول خطي بالتنقيط</a></h3><p>أربعة قطاعات طماطم على شريط تنقيط، خطوط فرعية بصمامات، مرشح شبكي، مضخة وأرض منحدرة.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=pivot">محور مركزي</a></h3><p>محور 300 م على الذرة يغذيه خط رئيسي وبئر ومضخة؛ تقرير الأبراج والامتدادات والفوهات.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=greenhouse">بيت محمي للخضروات</a></h3><p>أربعة أنفاق فلفل على أنبوب تنقيط معوّض للضغط، منطقة لكل نفق، خزان، مضخة صغيرة ومرشح أقراص.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=nursery">مشتل نباتات</a></h3><p>ثلاثة أحواض 12 × 48 م تحت رشاشات دقيقة معلقة على شبكة 4 × 4 م، منطقة لكل حوض، خزان مرتفع، مضخة صغيرة ومرشح أقراص.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=coffee">بن على خطوط الكنتور</a></h3><p>ثلاثة قطاعات بن على منحدر بخطوط جانبية منحنية تتبع الكنتور (كتلة موجهة)، أنبوب تنقيط معوّض، بئر ومضخة عند سفح المنحدر.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=bananas">مزرعة موز</a></h3><p>قطاعا موز تحت رشاشات دقيقة معوّضة للضغط بتباعد 5 × 5 م، بئر بمضخة غاطسة، مرشح أقراص وأرض منحدرة.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=sugarcane">قصب سكر بالتنقيط تحت السطحي</a></h3><p>قطاعا قصب على أنبوب تنقيط معوّض 20 مم مدفون بعمق 0.3 م، خطوط جانبية 180 م، خطوط فرعية مدفونة، خزان، مضخة، مرشح شبكي وصمام هواء.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=gravity">تنقيط بالجاذبية</a></h3><p>خزان يعلو بـ 40 م قطاعي خضروات بالتنقيط، بدون مضخة: صمام بوابة، صمام تخفيض ضغط ومرشح أقراص على الخط الرئيسي؛ كنتورات المنحدر.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=pasture">مرعى بالرش</a></h3><p>ثلاث حظائر 72 × 72 م بخطوط رشاشات صدمية بتباعد 12 × 18 م، خطوط فرعية بصمامات، خزان، مضخة وصمام عدم رجوع.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=golf">حفرة غولف</a></h3><p>منصة انطلاق برشاشات، ممر بدوّارات على شبكة مثلثية (منطقتان) ومنطقة الحفرة بدوّارات حول الحافة، بركة بمضخة وورديات ليلية.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=sectorPivot">محور قطاعي بمدفع طرفي</a></h3><p>محور 250 م على فول الصويا يدور 270°، تاركاً ربع مقر المزرعة حراً، بمدفع طرفي 12 م³/س؛ بركة، مضخة 20 حصاناً وصمام بوابة.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ar/?example=linear">آلة خطية</a></h3><p>آلة خطية 392 م على القمح تقطع 800 م بمحاذاة قناة، مأخذ بمضخة 30 حصاناً وصمام عدم رجوع؛ تقرير الأبراج والفوهات.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=orchard" data-app>بستان</a></h3><p>رشاشات دقيقة على الحمضيات وتنقيط على العنب، بئر بمضخة ومرشح، أرض منحدرة.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=garden" data-app>حديقة منزلية</a></h3><p>رشاشات منبثقة على العشب الأمامي، دوّارات في الخلف وتنقيط في الأحواض، تغذية من الشبكة العامة بعداد ومانع ارتداد.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=sportsField" data-app>ملعب كرة قدم</a></h3><p>ملعب بالحجم الكامل 105 × 68 م برشاشات صدمية في خمسة صفوف، خزان، مضخة وورديات ليلية.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=rowCrop" data-app>محصول خطي بالتنقيط</a></h3><p>أربعة قطاعات طماطم على شريط تنقيط، خطوط فرعية بصمامات، مرشح شبكي، مضخة وأرض منحدرة.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=pivot" data-app>محور مركزي</a></h3><p>محور 300 م على الذرة يغذيه خط رئيسي وبئر ومضخة؛ تقرير الأبراج والامتدادات والفوهات.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=greenhouse" data-app>بيت محمي للخضروات</a></h3><p>أربعة أنفاق فلفل على أنبوب تنقيط معوّض للضغط، منطقة لكل نفق، خزان، مضخة صغيرة ومرشح أقراص.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=nursery" data-app>مشتل نباتات</a></h3><p>ثلاثة أحواض 12 × 48 م تحت رشاشات دقيقة معلقة على شبكة 4 × 4 م، منطقة لكل حوض، خزان مرتفع، مضخة صغيرة ومرشح أقراص.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=coffee" data-app>بن على خطوط الكنتور</a></h3><p>ثلاثة قطاعات بن على منحدر بخطوط جانبية منحنية تتبع الكنتور (كتلة موجهة)، أنبوب تنقيط معوّض، بئر ومضخة عند سفح المنحدر.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=bananas" data-app>مزرعة موز</a></h3><p>قطاعا موز تحت رشاشات دقيقة معوّضة للضغط بتباعد 5 × 5 م، بئر بمضخة غاطسة، مرشح أقراص وأرض منحدرة.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=sugarcane" data-app>قصب سكر بالتنقيط تحت السطحي</a></h3><p>قطاعا قصب على أنبوب تنقيط معوّض 20 مم مدفون بعمق 0.3 م، خطوط جانبية 180 م، خطوط فرعية مدفونة، خزان، مضخة، مرشح شبكي وصمام هواء.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=gravity" data-app>تنقيط بالجاذبية</a></h3><p>خزان يعلو بـ 40 م قطاعي خضروات بالتنقيط، بدون مضخة: صمام بوابة، صمام تخفيض ضغط ومرشح أقراص على الخط الرئيسي؛ كنتورات المنحدر.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=pasture" data-app>مرعى بالرش</a></h3><p>ثلاث حظائر 72 × 72 م بخطوط رشاشات صدمية بتباعد 12 × 18 م، خطوط فرعية بصمامات، خزان، مضخة وصمام عدم رجوع.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=golf" data-app>حفرة غولف</a></h3><p>منصة انطلاق برشاشات، ممر بدوّارات على شبكة مثلثية (منطقتان) ومنطقة الحفرة بدوّارات حول الحافة، بركة بمضخة وورديات ليلية.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=sectorPivot" data-app>محور قطاعي بمدفع طرفي</a></h3><p>محور 250 م على فول الصويا يدور 270°، تاركاً ربع مقر المزرعة حراً، بمدفع طرفي 12 م³/س؛ بركة، مضخة 20 حصاناً وصمام بوابة.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ar/?example=linear" data-app>آلة خطية</a></h3><p>آلة خطية 392 م على القمح تقطع 800 م بمحاذاة قناة، مأخذ بمضخة 30 حصاناً وصمام عدم رجوع؛ تقرير الأبراج والفوهات.</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="اللغات">اللغات: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <strong lang="ar" dir="rtl">العربية</strong> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>يمكن إرسال كتالوجات المصنّعين ومشاريع الأمثلة بصيغة JSON لإدراجها في OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "يستغرق التحميل وقتًا طويلًا. تحقّق من الاتصال أو أعد تحميل الصفحة؛ يمكنك قراءة المحتوى أعلاه الآن.";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "جارٍ تحميل برنامج تصميم الري…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "يستغرق التحميل وقتًا طويلًا. تحقّق من الاتصال أو أعد تحميل الصفحة؛ يمكنك قراءة المحتوى أعلاه الآن.";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -99,6 +99,10 @@ Future<Map<String, dynamic>> Function(String code)? languageLoader;
 
 final Map<String, Future<void>> _loading = {};
 
+/// Called with each key [I18n.call] does not know; the interface then shows
+/// the key itself. The tests fail on any (test/flutter_test_config.dart).
+void Function(String key)? onMissingI18nKey;
+
 /// Whether the strings of [lang] are available right now.
 bool isLanguageLoaded(String lang) => baseLanguages.contains(lang) || isLanguagePackInstalled(lang);
 
@@ -134,6 +138,7 @@ class I18n {
     final e = _table[key];
     String s;
     if (e == null) {
+      onMissingI18nKey?.call(key);
       s = key;
     } else {
       s = switch (_i) { 0 => e.$1, 2 => e.$3, 1 => e.$2, _ => packString(lang, key) ?? e.$2 };
@@ -383,6 +388,7 @@ const _table = <String, (String, String, String)>{
   'tool.block': ('Bloco de laterais', 'Lateral block', 'Bloque de laterales'),
   'tool.autohead': ('Grade de aspersores', 'Sprinkler grid', 'Malla de aspersores'),
   'tool.measure': ('Medir', 'Measure', 'Medir'),
+  'tool.image': ('Imagem', 'Image', 'Imagen'),
   'hint.select': ('Clique para selecionar, arraste para mover ou janela; Shift adiciona; Del exclui', 'Click to select, drag to move or window; Shift adds; Del deletes', 'Clic para seleccionar, arrastre para mover o ventana; Shift añade; Supr elimina'),
   'hint.pan': ('Arraste para mover a vista; roda do mouse para zoom', 'Drag to pan; mouse wheel zooms', 'Arrastre para mover la vista; rueda del ratón para zoom'),
   'hint.line': ('Clique no primeiro ponto, depois no segundo', 'Click first point, then second', 'Clic en el primer punto y luego en el segundo'),
@@ -819,6 +825,7 @@ const _table = <String, (String, String, String)>{
   ),
   'about.version': ('Versão {v}', 'Version {v}', 'Versión {v}'),
   'about.site': ('Site do projeto', 'Project site', 'Sitio del proyecto'),
+  'about.repo': ('Código-fonte (licença MIT)', 'Source code (MIT licence)', 'Código fuente (licencia MIT)'),
 
   // ---- new tools
   'tool.arc': ('Arco (3 pontos)', 'Arc (3 points)', 'Arco (3 puntos)'),
@@ -1632,6 +1639,7 @@ const _table = <String, (String, String, String)>{
   'welcome.examplesHint': ('Cada projeto abre pronto para calcular: pressione F5 ou ▶ e veja zonas, pressões, diâmetros e lista de materiais. Arquivo → Exemplos reabre qualquer um deles.', 'Each project opens ready to design: press F5 or ▶ and see zones, pressures, pipe sizes and the bill of materials. File → Examples reopens any of them.', 'Cada proyecto se abre listo para calcular: pulse F5 o ▶ y vea zonas, presiones, diámetros y lista de materiales. Archivo → Ejemplos reabre cualquiera de ellos.'),
   'welcome.tutorial': ('Iniciar tutorial', 'Start tutorial', 'Iniciar tutorial'),
   'welcome.skip': ('Começar do zero', 'Start from scratch', 'Empezar de cero'),
+  'welcome.open': ('Abrir', 'Open', 'Abrir'),
   'exg.orchard.title': ('Pomar', 'Orchard', 'Huerto'),
   'exg.orchard.sub': ('Microaspersão em citros e gotejamento em uva, poço com bomba e filtro, terreno em declive.', 'Micro-sprinklers on citrus and drip on grapes, well with pump and filter, sloping ground.', 'Microaspersión en cítricos y goteo en uva, pozo con bomba y filtro, terreno en pendiente.'),
   'exg.orchard.tags': ('2 zonas · 1,1 ha · poço + bomba', '2 zones · 1.1 ha · well + pump', '2 zonas · 1,1 ha · pozo + bomba'),

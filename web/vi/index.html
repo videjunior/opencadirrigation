@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/vi/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/vi/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">OpenCADIrrigation cần JavaScript để hoạt động. Hãy bật JavaScript trong trình duyệt và tải lại trang.</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>CAD miễn phí để thiết kế hệ thống tưới có áp</h1>
         <p class="tagline">Vẽ, tính toán kích thước và lập hồ sơ cho hệ thống tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm. Ngay trên trình duyệt, không cần cài đặt, dự án được lưu trên máy tính của bạn.</p>
         <nav class="cta" aria-label="Mở ứng dụng">
-          <a class="primary" href="https://opencadirrigation.com/vi/">Mở ứng dụng</a>
-          <a href="https://opencadirrigation.com/vi/?tutorial=1">Hướng dẫn tương tác</a>
+          <a class="primary" href="https://opencadirrigation.com/vi/" data-app>Mở ứng dụng</a>
+          <a href="https://opencadirrigation.com/vi/?tutorial=1" data-app>Hướng dẫn tương tác</a>
           <a href="#exemplos">Xem các ví dụ có sẵn</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">Đang tải CAD thiết kế tưới…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>OpenCADIrrigation kết hợp bản vẽ CAD, mạng thủy lực và tính toán trong cùng một nơi: vẽ khu tưới, bố trí ống nhánh (lateral), van và đường ống chính, nhấn F5 và nhận đường kính ống, áp suất, độ đồng đều, ca vận hành, bảng kê vật tư và báo cáo sẵn sàng để in. Có 20 ngôn ngữ, tự theo ngôn ngữ máy tính của bạn.</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">Ví dụ có sẵn để mở</h2>
         <p>Mỗi dự án mở ra đầy đủ và được thiết kế bằng F5. Dùng chúng để làm quen với ứng dụng hoặc làm điểm xuất phát.</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=orchard">Vườn cây ăn quả</a></h3><p>Phun mưa cục bộ trên cam quýt và nhỏ giọt trên nho, giếng có bơm và bộ lọc, đất dốc.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=garden">Sân vườn nhà ở</a></h3><p>Béc pop-up ở bãi cỏ trước, rotor phía sau và nhỏ giọt ở bồn hoa, cấp từ nước máy với đồng hồ và van chống chảy ngược.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=sportsField">Sân bóng đá</a></h3><p>Sân tiêu chuẩn 105 × 68 m với béc phun va đập bố trí năm hàng, bể chứa, máy bơm và ca tưới ban đêm.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=rowCrop">Cây trồng hàng tưới nhỏ giọt</a></h3><p>Bốn lô cà chua dùng dây tưới nhỏ giọt, ống nhánh có van, lọc lưới, máy bơm và đất dốc.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=pivot">Pivot trung tâm</a></h3><p>Pivot 300 m trên ngô cấp nước từ ống chính, giếng và máy bơm; báo cáo tháp, nhịp và vòi phun.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=greenhouse">Nhà kính trồng rau</a></h3><p>Bốn nhà vòm ớt chuông dùng ống nhỏ giọt bù áp, một khu vực mỗi nhà vòm, bể chứa, máy bơm nhỏ và lọc đĩa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=nursery">Vườn ươm</a></h3><p>Ba luống 12 × 48 m dưới béc phun mưa cục bộ treo theo lưới 4 × 4 m, một khu vực mỗi luống, bể trên cao, máy bơm nhỏ và lọc đĩa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=coffee">Cà phê theo đường đồng mức</a></h3><p>Ba lô cà phê trên sườn đồi với lateral cong chạy theo đường đồng mức (khối dẫn hướng), ống nhỏ giọt bù áp, giếng và máy bơm ở chân dốc.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=bananas">Vườn chuối</a></h3><p>Hai lô chuối dưới béc phun cục bộ bù áp bố trí 5 × 5 m, giếng có bơm chìm, lọc đĩa và đất dốc.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=sugarcane">Mía tưới nhỏ giọt ngầm</a></h3><p>Hai lô mía dùng ống nhỏ giọt bù áp 20 mm chôn sâu 0,3 m, lateral 180 m, ống nhánh chôn ngầm, bể chứa, máy bơm, lọc lưới và van xả khí.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=gravity">Nhỏ giọt tự chảy</a></h3><p>Bể chứa cao hơn 40 m so với hai lô rau tưới nhỏ giọt, không bơm: van cổng, van giảm áp và lọc đĩa trên ống chính; đường đồng mức sườn đồi.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=pasture">Đồng cỏ tưới phun mưa</a></h3><p>Ba bãi chăn 72 × 72 m với các hàng béc phun va đập bố trí 12 × 18 m, ống nhánh có van, bể chứa, máy bơm và van một chiều.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=golf">Lỗ golf</a></h3><p>Điểm phát bóng dùng béc phun, fairway dùng rotor theo lưới tam giác (hai khu vực) và green có rotor quanh mép, ao có máy bơm và ca tưới ban đêm.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=sectorPivot">Pivot hình quạt có súng phun cuối</a></h3><p>Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 20 hp và van cổng.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/vi/?example=linear">Máy tưới thẳng</a></h3><p>Máy tưới thẳng 392 m trên lúa mì di chuyển 800 m dọc kênh, cửa lấy nước có bơm 30 hp và van một chiều; báo cáo tháp và vòi phun.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=orchard" data-app>Vườn cây ăn quả</a></h3><p>Phun mưa cục bộ trên cam quýt và nhỏ giọt trên nho, giếng có bơm và bộ lọc, đất dốc.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=garden" data-app>Sân vườn nhà ở</a></h3><p>Béc pop-up ở bãi cỏ trước, rotor phía sau và nhỏ giọt ở bồn hoa, cấp từ nước máy với đồng hồ và van chống chảy ngược.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=sportsField" data-app>Sân bóng đá</a></h3><p>Sân tiêu chuẩn 105 × 68 m với béc phun va đập bố trí năm hàng, bể chứa, máy bơm và ca tưới ban đêm.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=rowCrop" data-app>Cây trồng hàng tưới nhỏ giọt</a></h3><p>Bốn lô cà chua dùng dây tưới nhỏ giọt, ống nhánh có van, lọc lưới, máy bơm và đất dốc.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=pivot" data-app>Pivot trung tâm</a></h3><p>Pivot 300 m trên ngô cấp nước từ ống chính, giếng và máy bơm; báo cáo tháp, nhịp và vòi phun.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=greenhouse" data-app>Nhà kính trồng rau</a></h3><p>Bốn nhà vòm ớt chuông dùng ống nhỏ giọt bù áp, một khu vực mỗi nhà vòm, bể chứa, máy bơm nhỏ và lọc đĩa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=nursery" data-app>Vườn ươm</a></h3><p>Ba luống 12 × 48 m dưới béc phun mưa cục bộ treo theo lưới 4 × 4 m, một khu vực mỗi luống, bể trên cao, máy bơm nhỏ và lọc đĩa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=coffee" data-app>Cà phê theo đường đồng mức</a></h3><p>Ba lô cà phê trên sườn đồi với lateral cong chạy theo đường đồng mức (khối dẫn hướng), ống nhỏ giọt bù áp, giếng và máy bơm ở chân dốc.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=bananas" data-app>Vườn chuối</a></h3><p>Hai lô chuối dưới béc phun cục bộ bù áp bố trí 5 × 5 m, giếng có bơm chìm, lọc đĩa và đất dốc.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=sugarcane" data-app>Mía tưới nhỏ giọt ngầm</a></h3><p>Hai lô mía dùng ống nhỏ giọt bù áp 20 mm chôn sâu 0,3 m, lateral 180 m, ống nhánh chôn ngầm, bể chứa, máy bơm, lọc lưới và van xả khí.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=gravity" data-app>Nhỏ giọt tự chảy</a></h3><p>Bể chứa cao hơn 40 m so với hai lô rau tưới nhỏ giọt, không bơm: van cổng, van giảm áp và lọc đĩa trên ống chính; đường đồng mức sườn đồi.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=pasture" data-app>Đồng cỏ tưới phun mưa</a></h3><p>Ba bãi chăn 72 × 72 m với các hàng béc phun va đập bố trí 12 × 18 m, ống nhánh có van, bể chứa, máy bơm và van một chiều.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=golf" data-app>Lỗ golf</a></h3><p>Điểm phát bóng dùng béc phun, fairway dùng rotor theo lưới tam giác (hai khu vực) và green có rotor quanh mép, ao có máy bơm và ca tưới ban đêm.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=sectorPivot" data-app>Pivot hình quạt có súng phun cuối</a></h3><p>Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 20 hp và van cổng.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/vi/?example=linear" data-app>Máy tưới thẳng</a></h3><p>Máy tưới thẳng 392 m trên lúa mì di chuyển 800 m dọc kênh, cửa lấy nước có bơm 30 hp và van một chiều; báo cáo tháp và vòi phun.</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="Ngôn ngữ">Ngôn ngữ: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <strong lang="vi" dir="ltr">Tiếng Việt</strong> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Danh mục của nhà sản xuất và dự án mẫu có thể được gửi ở định dạng JSON để đưa vào OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "Quá trình tải đang lâu. Hãy kiểm tra kết nối hoặc tải lại trang; nội dung phía trên đã có thể đọc được.";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "Đang tải CAD thiết kế tưới…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "Quá trình tải đang lâu. Hãy kiểm tra kết nối hoặc tải lại trang; nội dung phía trên đã có thể đọc được.";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

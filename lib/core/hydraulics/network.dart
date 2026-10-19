@@ -211,10 +211,23 @@ class HydraulicNetwork {
       if (l.kind != HLinkKind.closed && l.kind != HLinkKind.prv) l.status = LinkStatus.open;
     }
 
+    // Emitters are fictitious links to a reservoir at the emitter elevation
+    // whose flow is a state variable, as in EPANET: in flow form the law
+    // p = (q/k)^(1/x) is convex, so the Newton step behaves like a pipe's;
+    // linearising q(p) instead overshoots (dq/dp is infinite at p = 0) and
+    // made emitters near zero pressure flip open/closed without end.
+    // They are one-way: closed below their elevation, no backflow.
     final emitterFlow = <String, double>{for (final n in nodeList) n.id: 0};
-    // Emitters are one-way: below their elevation they are closed. Tracked so
-    // that an open/closed change counts as a status change for convergence.
     final emitterOpen = <String, bool>{};
+    for (final n in nodeList) {
+      final em = n.emitter;
+      if (em == null || n.emitterCount <= 0 || n.kind != HNodeKind.junction) continue;
+      final p0 = heads[n.id]! - n.elevation - n.emitterOffset;
+      emitterOpen[n.id] = p0 > 0;
+      emitterFlow[n.id] = p0 > 0 ? _emitterLaw(em, n.emitterCount, p0) : 0;
+    }
+    final eGrad = <String, double>{};
+    final eLoss = <String, double>{};
 
     var converged = false;
     var iter = 0;
@@ -282,19 +295,18 @@ class HydraulicNetwork {
             if (p == null || l.status == LinkStatus.closed) {
               gk = _closedResistance;
               yk = _closedResistance * qk;
-            } else if (qk <= 0) {
-              // reverse flow: close the pump (check valve behaviour)
-              gk = _closedResistance;
-              yk = _closedResistance * qk;
             } else {
+              // open: the curve at |Q| (EPANET); a pump that cannot deliver
+              // the head is closed by the status check below
+              final qa = math.max(qk.abs(), _qMin);
               final runout = p.runoutFlow;
-              if (runout.isFinite && qk > runout) {
+              if (runout.isFinite && qa > runout) {
                 final gr = math.max(-p.gradient(runout), 1e-6);
                 gk = gr;
-                yk = -p.head(runout) + (qk - runout) * gr;
+                yk = -p.head(runout) + (qa - runout) * gr;
               } else {
-                gk = math.max(-p.gradient(qk), 1e-6);
-                yk = -p.head(qk);
+                gk = math.max(-p.gradient(qa), 1e-6);
+                yk = -p.head(qa);
               }
             }
         }
@@ -304,38 +316,27 @@ class HydraulicNetwork {
 
       // --- assemble ---
       final sys = SparseSymmetricSystem(unknownCount);
-      var emitterStatusChanged = false;
       for (final n in nodeList) {
         final i = index[n.id];
         if (i == null) continue;
         var demand = n.demand;
         final em = n.emitter;
         if (em != null && n.emitterCount > 0) {
-          // emitter as fictitious link to a reservoir at the emitter elevation
           final zEm = n.elevation + n.emitterOffset;
-          final pRaw = heads[n.id]! - zEm;
-          final open = pRaw > 0;
-          final was = emitterOpen[n.id];
-          if (was != null && was != open) emitterStatusChanged = true;
-          emitterOpen[n.id] = open;
-          if (!open) {
-            // Closed: no outflow and, unlike a reservoir link, no backflow
-            // into the node. A negligible conductance keeps the equation
-            // regular; the emitter reopens once the pressure turns positive.
+          if (emitterOpen[n.id] != true) {
+            // Closed: no outflow and no backflow into the node. A negligible
+            // conductance keeps the equation regular; the emitter reopens
+            // once the pressure turns positive.
             const ge = 1e-12;
             sys.addDiagonal(i, ge);
             sys.rhs[i] += ge * zEm;
-            emitterFlow[n.id] = 0;
           } else {
-            final p = math.max(pRaw, 1e-6);
-            final qe = em.flow(p) * n.emitterCount;
-            final ge = math.max(em.gradient(p) * n.emitterCount, 1e-9);
-            // link i -> fictitious (H_f = zEm): h = p, dh/dq = 1/ge
-            final gLink = 1 / ge; // dh/dQ
-            final yLink = p; // h(Q) for the current Q = qe
-            sys.addDiagonal(i, 1 / gLink);
-            sys.rhs[i] += (-qe) + yLink / gLink + zEm / gLink;
-            emitterFlow[n.id] = qe;
+            final qe = emitterFlow[n.id]!;
+            final (h, dh) = _emitterLoss(em, n.emitterCount, qe);
+            eLoss[n.id] = h;
+            eGrad[n.id] = dh;
+            sys.addDiagonal(i, 1 / dh);
+            sys.rhs[i] += -qe + (h + zEm) / dh;
           }
         }
         sys.rhs[i] -= demand;
@@ -407,56 +408,59 @@ class HydraulicNetwork {
         sumQ += qNew.abs();
         q[k] = qNew;
       }
+      var emitterStatusChanged = false;
+      for (final n in nodeList) {
+        final em = n.emitter;
+        if (em == null || n.emitterCount <= 0 || index[n.id] == null) continue;
+        final zEm = n.elevation + n.emitterOffset;
+        final p = heads[n.id]! - zEm;
+        if (emitterOpen[n.id] == true) {
+          final qe = emitterFlow[n.id]!;
+          var qNew = qe - damping * (eLoss[n.id]! - p) / eGrad[n.id]!;
+          if (!qNew.isFinite) qNew = 0;
+          // Newton overshoots a steep law from below (pressure compensating
+          // x = 0.02 is h ∝ q^50): never far above what the law gives at the
+          // current pressure. Near the solution the plain step goes on (a
+          // tight cap there alternated with it and stalled the convergence).
+          if (p > 0) {
+            final law = _emitterLaw(em, n.emitterCount, p);
+            if (qNew > 1.1 * law) qNew = law;
+          }
+          if (qNew <= 0) {
+            // would draw water back in: one-way, so it closes
+            qNew = 0;
+            emitterOpen[n.id] = false;
+            emitterStatusChanged = true;
+          }
+          sumDq += (qNew - qe).abs();
+          sumQ += qNew.abs();
+          emitterFlow[n.id] = qNew;
+        }
+      }
       relErr = sumQ > 0 ? sumDq / sumQ : 0;
       if (sumDq < options.absoluteFlowTolerance) relErr = 0;
 
-      // --- status checks (PRV, check valves) ---
+      // --- status checks ---
+      // As in EPANET: statuses change when the flows have converged, and in
+      // the first iterations every other one; checking them at every
+      // iteration let one-way devices near their switching point flip
+      // open/closed without end.
+      final flowsConverged = relErr < options.flowTolerance && iter > 1;
       var statusChanged = emitterStatusChanged;
-      for (var k = 0; k < links.length; k++) {
-        final l = links[k];
-        if (l.kind == HLinkKind.pipe && l.checkValve) {
-          final dh = heads[l.from]! - heads[l.to]!;
-          final wasClosed = l.status == LinkStatus.closed;
-          if (!wasClosed && (q[k] < -1e-6 || dh < -1e-4)) {
-            l.status = LinkStatus.closed;
-            statusChanged = true;
-          } else if (wasClosed && dh > 1e-4) {
-            l.status = LinkStatus.open;
-            q[k] = _qMin;
+      if (flowsConverged || (iter <= _maxStatusCheck && iter % _statusCheckFrequency == 0)) {
+        for (final n in nodeList) {
+          final em = n.emitter;
+          if (em == null || n.emitterCount <= 0 || index[n.id] == null || emitterOpen[n.id] == true) continue;
+          final p = heads[n.id]! - n.elevation - n.emitterOffset;
+          if (p > 1e-4) {
+            emitterOpen[n.id] = true;
+            emitterFlow[n.id] = _emitterLaw(em, n.emitterCount, p);
             statusChanged = true;
           }
         }
-        if (l.kind == HLinkKind.prv) {
-          final toNode = nodes[l.to]!;
-          final hSet = toNode.elevation + l.prvSetting;
-          final hi = heads[l.from]!, hj = heads[l.to]!;
-          final old = l.status;
-          switch (old) {
-            case LinkStatus.active:
-              if (q[k] < -1e-6) {
-                l.status = LinkStatus.closed;
-              } else if (hi < hSet - 1e-4) {
-                l.status = LinkStatus.open;
-              }
-            case LinkStatus.open:
-              if (q[k] < -1e-6) {
-                l.status = LinkStatus.closed;
-              } else if (hi > hSet + 1e-4) {
-                l.status = LinkStatus.active;
-              }
-            case LinkStatus.closed:
-              if (hi > hj + 1e-4 && hi < hSet - 1e-4) {
-                l.status = LinkStatus.open;
-              } else if (hi > hj + 1e-4 && hj < hSet - 1e-4) {
-                l.status = LinkStatus.active;
-              }
-          }
-          if (l.status != old) statusChanged = true;
-          if (l.status == LinkStatus.closed) q[k] = 0;
-        }
+        statusChanged = _checkLinkStatus(heads, q, prvs: flowsConverged) || statusChanged;
       }
-
-      if (relErr < options.flowTolerance && !statusChanged && iter > 1) {
+      if (flowsConverged && !statusChanged) {
         converged = true;
         break;
       }
@@ -469,15 +473,90 @@ class HydraulicNetwork {
       lastErr = relErr;
     }
     if (!converged) warnings.add('not_converged');
+    return _results(nodeList, heads, q, emitterFlow, emitterOpen, converged, iter, warnings, relErr);
+  }
 
-    // --- results ---
+  static const _statusCheckFrequency = 2;
+  static const _maxStatusCheck = 10;
+
+  /// Status changes of check valves, pumps and (with [prvs]) pressure
+  /// reducing valves for the current heads; true when any changed.
+  bool _checkLinkStatus(Map<String, double> heads, List<double> q, {required bool prvs}) {
+    var statusChanged = false;
+    for (var k = 0; k < links.length; k++) {
+      final l = links[k];
+      // check valves: on a pipe, or a device of its own (a check valve
+      // placed on the mainline), which used to let water run backwards
+      if ((l.kind == HLinkKind.pipe || l.kind == HLinkKind.device) && l.checkValve) {
+        final dh = heads[l.from]! - heads[l.to]!;
+        final wasClosed = l.status == LinkStatus.closed;
+        if (!wasClosed && (q[k] < -1e-6 || dh < -1e-4)) {
+          l.status = LinkStatus.closed;
+          statusChanged = true;
+        } else if (wasClosed && dh > 1e-4) {
+          l.status = LinkStatus.open;
+          q[k] = _qMin;
+          statusChanged = true;
+        }
+      }
+      if (l.kind == HLinkKind.pump && l.pump != null) {
+        // built-in check valve: closed while the head gain asked for is
+        // above the shutoff head, reopened below it
+        final gain = heads[l.to]! - heads[l.from]!;
+        final shutoff = l.pump!.shutoffHead;
+        if (l.status == LinkStatus.closed) {
+          if (gain < shutoff - 1e-4) {
+            l.status = LinkStatus.open;
+            q[k] = _pumpFlowAtHead(l.pump!, gain);
+            statusChanged = true;
+          }
+        } else if (gain > shutoff + 1e-4) {
+          l.status = LinkStatus.closed;
+          q[k] = 0;
+          statusChanged = true;
+        }
+      }
+      if (prvs && l.kind == HLinkKind.prv) {
+        final toNode = nodes[l.to]!;
+        final hSet = toNode.elevation + l.prvSetting;
+        final hi = heads[l.from]!, hj = heads[l.to]!;
+        final old = l.status;
+        switch (old) {
+          case LinkStatus.active:
+            // opens when even fully open it cannot hold the setting: the
+            // inlet less the open valve's own loss (EPANET), not the inlet
+            final openLoss = l.device?.loss(q[k]) ?? 1e-2 * q[k];
+            if (q[k] < -1e-6) {
+              l.status = LinkStatus.closed;
+            } else if (hi - openLoss < hSet - 1e-4) {
+              l.status = LinkStatus.open;
+            }
+          case LinkStatus.open:
+            if (q[k] < -1e-6) {
+              l.status = LinkStatus.closed;
+            } else if (hj > hSet + 1e-4) {
+              l.status = LinkStatus.active;
+            }
+          case LinkStatus.closed:
+            if (hi > hj + 1e-4 && hi < hSet - 1e-4) {
+              l.status = LinkStatus.open;
+            } else if (hi > hj + 1e-4 && hj < hSet - 1e-4) {
+              l.status = LinkStatus.active;
+            }
+        }
+        if (l.status != old) statusChanged = true;
+        if (l.status == LinkStatus.closed) q[k] = 0;
+      }
+    }
+    return statusChanged;
+  }
+
+  NetworkResult _results(List<HNode> nodeList, Map<String, double> heads, List<double> q, Map<String, double> emitterFlow, Map<String, bool> emitterOpen, bool converged, int iter, List<String> warnings, double relErr) {
     final nodeResults = <String, NodeResult>{};
     for (final n in nodeList) {
       final h = heads[n.id]!;
-      double qe = 0;
-      if (n.emitter != null && n.emitterCount > 0) {
-        qe = n.emitter!.flow(math.max(h - n.elevation - n.emitterOffset, 0)) * n.emitterCount;
-      }
+      // the converged state of the emitter flow (it closes the balance)
+      final qe = n.emitter != null && n.emitterCount > 0 && emitterOpen[n.id] == true ? emitterFlow[n.id]! : 0.0;
       nodeResults[n.id] = NodeResult(head: h, pressure: h - n.elevation, demand: n.demand, emitterFlow: qe);
     }
     final linkResults = <String, LinkResult>{};
@@ -497,6 +576,52 @@ class HydraulicNetwork {
       warnings: warnings,
       relativeFlowError: relErr,
     );
+  }
+
+  /// Flow on the curve of [pump] where it gives [head] (a trickle when it
+  /// cannot).
+  static double _pumpFlowAtHead(PumpCurve pump, double head) {
+    var lo = 0.0, hi = pump.runoutFlow.isFinite ? pump.runoutFlow : 1.0;
+    if (!(pump.head(lo) > head)) return _qMin;
+    for (var i = 0; i < 60; i++) {
+      final mid = (lo + hi) / 2;
+      if (pump.head(mid) > head) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return math.max((lo + hi) / 2, _qMin);
+  }
+
+  /// Pressure head an emitter node needs to pass [flow] through its
+  /// [count] emitters, and its derivative, in the flow form h = (q/(c·k))^(1/x)
+  /// of the law. Very small gradients (an emitter starved of water, or
+  /// pressure compensating below its flow) use a linear law, as EPANET does.
+  static (double, double) _emitterLoss(EmitterCurve em, int count, double flow) {
+    final x = math.max(em.x, 0.01);
+    final kk = em.k * count * (em.x < 0.01 ? math.pow(10.0, em.x - x).toDouble() : 1.0);
+    if (!(kk > 0)) return (0.0, _emitterMinGradient);
+    final q = math.min(math.max(flow, 0.0), kk * math.pow(_emitterMaxHead, x).toDouble());
+    final h = math.pow(q / kk, 1 / x).toDouble();
+    final grad = q > 0 ? h / (x * q) : 0.0;
+    if (!h.isFinite || !grad.isFinite) return (_emitterMaxHead, 1e12);
+    if (grad < _emitterMinGradient) return (_emitterMinGradient * q, _emitterMinGradient);
+    return (h, grad);
+  }
+
+  static const double _emitterMinGradient = 1e-6;
+
+  /// Highest pressure head the flow form is evaluated at (m): above it a
+  /// steep law overflows; no emitter works there anyway.
+  static const double _emitterMaxHead = 1000;
+
+  /// Flow of [count] emitters at pressure head [p], in the law the solver
+  /// uses (x below 0.01 taken as 0.01 through the same flow at 10 m).
+  static double _emitterLaw(EmitterCurve em, int count, double p) {
+    final x = math.max(em.x, 0.01);
+    final kk = em.k * count * (em.x < 0.01 ? math.pow(10.0, em.x - x).toDouble() : 1.0);
+    return kk * math.pow(math.min(math.max(p, 0.0), _emitterMaxHead), x).toDouble();
   }
 
   double _pipeResistance(HLink l, double flow) {
