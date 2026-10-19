@@ -37,3 +37,6 @@ String get appVersionLabel => [
 
 /// Public site.
 const appSiteUrl = 'https://opencadirrigation.com';
+
+/// Source code repository (MIT licence), linked from Help → About.
+const appRepositoryUrl = 'https://github.com/videjunior/opencadirrigation';

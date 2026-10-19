@@ -64,7 +64,10 @@ class UniformityStats {
     final du = 100 * lqMean / mean;
     final variance = q.fold<double>(0, (s, v) => s + (v - mean) * (v - mean)) / (n > 1 ? n - 1 : 1);
     final cv = math.sqrt(variance) / mean;
-    final eu = 100 * (1 - 1.27 * manufacturerCv / math.sqrt(math.max(1, emittersPerPlant))) * (lqMean / mean);
+    // Keller & Karmeli (1974) design emission uniformity, as ASAE EP405 and
+    // the technical study state it: the minimum emitter flow over the mean
+    // (the low-quarter mean belongs to the field DU, and overstated it)
+    final eu = 100 * (1 - 1.27 * manufacturerCv / math.sqrt(math.max(1, emittersPerPlant))) * (min / mean);
     final totalCv = math.sqrt(cv * cv + manufacturerCv * manufacturerCv);
     final us = 100 * (1 - totalCv);
     final qvar = max > 0 ? 100 * (max - min) / max : 0.0;

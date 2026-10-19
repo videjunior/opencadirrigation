@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ja/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ja/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">OpenCADIrrigation の実行には JavaScript が必要です。ブラウザで JavaScript を有効にして、ページを再読み込みしてください。</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>加圧灌漑設計のための無料CAD</h1>
         <p class="tagline">点滴、マイクロスプリンクラー、スプリンクラー、センターピボットの各システムを作図し、管径を決め、図書を作成。ブラウザだけで動き、インストール不要。プロジェクトはご自身のコンピューターに保存されます。</p>
         <nav class="cta" aria-label="アプリを開く">
-          <a class="primary" href="https://opencadirrigation.com/ja/">アプリを開く</a>
-          <a href="https://opencadirrigation.com/ja/?tutorial=1">インタラクティブチュートリアル</a>
+          <a class="primary" href="https://opencadirrigation.com/ja/" data-app>アプリを開く</a>
+          <a href="https://opencadirrigation.com/ja/?tutorial=1" data-app>インタラクティブチュートリアル</a>
           <a href="#exemplos">サンプルを見る</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">灌漑設計 CAD を読み込み中…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>OpenCADIrrigation は CAD 作図、水理ネットワーク、計算をひとつにまとめています。区域を描き、ラテラル・バルブ・主管を配置して F5 を押せば、管径、圧力、均一性、ローテーション、部材リスト、印刷用レポートが得られます。20 言語に対応し、コンピューターの言語で表示されます。</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">すぐに開けるサンプル</h2>
         <p>どのプロジェクトも完成した状態で開き、F5 で設計できます。アプリに慣れるため、あるいは設計の出発点としてご利用ください。</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=orchard">果樹園</a></h3><p>柑橘にマイクロスプリンクラー、ブドウに点滴、ポンプとフィルター付きの井戸、傾斜地。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=garden">住宅の庭</a></h3><p>前庭の芝生にポップアップスプレー、裏庭にロータリー、花壇に点滴。水道からメーターと逆流防止器を経て給水。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=sportsField">サッカー場</a></h3><p>正規サイズ 105 × 68 m のピッチにインパクトスプリンクラーを 5 列、貯水槽、ポンプ、夜間の輪番。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=rowCrop">点滴の畝作物</a></h3><p>点滴テープによるトマト 4 ブロック、バルブ付き副管、スクリーンフィルター、ポンプ、傾斜地。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=pivot">センターピボット</a></h3><p>トウモロコシ畑の 300 m ピボットに主管、井戸、ポンプから給水。タワー、スパン、スプリンクラーのレポート。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=greenhouse">野菜温室</a></h3><p>圧力補正点滴チューブによるピーマンのトンネル 4 棟、トンネルごとに 1 ゾーン、タンク、小型ポンプ、ディスクフィルター。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=nursery">育苗場</a></h3><p>4 × 4 m 格子の頭上マイクロスプリンクラー下の 12 × 48 m ベッド 3 面、ベッドごとに 1 ゾーン、高架タンク、小型ポンプ、ディスクフィルター。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=coffee">等高線に沿ったコーヒー</a></h3><p>斜面のコーヒー 3 ブロック、等高線に沿う曲線ラテラル(ガイド付きブロック)、PC 点滴チューブ、斜面下部の井戸とポンプ。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=bananas">バナナ園</a></h3><p>5 × 5 m の圧力補正マイクロスプリンクラー下のバナナ 2 ブロック、水中ポンプ付き井戸、ディスクフィルター、傾斜地。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=sugarcane">地中点滴のサトウキビ</a></h3><p>深さ 0.3 m に埋設した 20 mm PC 点滴チューブによるサトウキビ 2 ブロック、180 m ラテラル、埋設副管、貯水池、ポンプ、スクリーンフィルター、空気弁。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=gravity">重力式点滴</a></h3><p>点滴かんがいの野菜 2 ブロックより 40 m 高い貯水池、ポンプなし: 主管に仕切弁、減圧弁、ディスクフィルター。斜面の等高線。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=pasture">スプリンクラーかんがいの牧草地</a></h3><p>12 × 18 m 配置のインパクトスプリンクラー散水ラインによる 72 × 72 m の放牧区 3 面、バルブ付き副管、貯水池、ポンプ、逆止弁。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=golf">ゴルフホール</a></h3><p>スプレー付きティー、三角格子のロータリーによるフェアウェイ(2 ゾーン)、縁にロータリーを配したグリーン、ポンプ付き池、夜間の輪番。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=sectorPivot">エンドガン付き扇形ピボット</a></h3><p>大豆畑で 270° 回転する 250 m ピボット。農家の区画を空け、12 m³/h のエンドガン付き。池、20 hp ポンプ、仕切弁。</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ja/?example=linear">リニアムーブ</a></h3><p>小麦畑で用水路に沿って 800 m 走行する 392 m のリニアムーブ、30 hp ポンプと逆止弁付き取水口。タワーとスプリンクラーのレポート。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=orchard" data-app>果樹園</a></h3><p>柑橘にマイクロスプリンクラー、ブドウに点滴、ポンプとフィルター付きの井戸、傾斜地。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=garden" data-app>住宅の庭</a></h3><p>前庭の芝生にポップアップスプレー、裏庭にロータリー、花壇に点滴。水道からメーターと逆流防止器を経て給水。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=sportsField" data-app>サッカー場</a></h3><p>正規サイズ 105 × 68 m のピッチにインパクトスプリンクラーを 5 列、貯水槽、ポンプ、夜間の輪番。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=rowCrop" data-app>点滴の畝作物</a></h3><p>点滴テープによるトマト 4 ブロック、バルブ付き副管、スクリーンフィルター、ポンプ、傾斜地。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=pivot" data-app>センターピボット</a></h3><p>トウモロコシ畑の 300 m ピボットに主管、井戸、ポンプから給水。タワー、スパン、スプリンクラーのレポート。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=greenhouse" data-app>野菜温室</a></h3><p>圧力補正点滴チューブによるピーマンのトンネル 4 棟、トンネルごとに 1 ゾーン、タンク、小型ポンプ、ディスクフィルター。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=nursery" data-app>育苗場</a></h3><p>4 × 4 m 格子の頭上マイクロスプリンクラー下の 12 × 48 m ベッド 3 面、ベッドごとに 1 ゾーン、高架タンク、小型ポンプ、ディスクフィルター。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=coffee" data-app>等高線に沿ったコーヒー</a></h3><p>斜面のコーヒー 3 ブロック、等高線に沿う曲線ラテラル(ガイド付きブロック)、PC 点滴チューブ、斜面下部の井戸とポンプ。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=bananas" data-app>バナナ園</a></h3><p>5 × 5 m の圧力補正マイクロスプリンクラー下のバナナ 2 ブロック、水中ポンプ付き井戸、ディスクフィルター、傾斜地。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=sugarcane" data-app>地中点滴のサトウキビ</a></h3><p>深さ 0.3 m に埋設した 20 mm PC 点滴チューブによるサトウキビ 2 ブロック、180 m ラテラル、埋設副管、貯水池、ポンプ、スクリーンフィルター、空気弁。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=gravity" data-app>重力式点滴</a></h3><p>点滴かんがいの野菜 2 ブロックより 40 m 高い貯水池、ポンプなし: 主管に仕切弁、減圧弁、ディスクフィルター。斜面の等高線。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=pasture" data-app>スプリンクラーかんがいの牧草地</a></h3><p>12 × 18 m 配置のインパクトスプリンクラー散水ラインによる 72 × 72 m の放牧区 3 面、バルブ付き副管、貯水池、ポンプ、逆止弁。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=golf" data-app>ゴルフホール</a></h3><p>スプレー付きティー、三角格子のロータリーによるフェアウェイ(2 ゾーン)、縁にロータリーを配したグリーン、ポンプ付き池、夜間の輪番。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=sectorPivot" data-app>エンドガン付き扇形ピボット</a></h3><p>大豆畑で 270° 回転する 250 m ピボット。農家の区画を空け、12 m³/h のエンドガン付き。池、20 hp ポンプ、仕切弁。</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ja/?example=linear" data-app>リニアムーブ</a></h3><p>小麦畑で用水路に沿って 800 m 走行する 392 m のリニアムーブ、30 hp ポンプと逆止弁付き取水口。タワーとスプリンクラーのレポート。</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="言語">言語: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <strong lang="ja" dir="ltr">日本語</strong></nav>
         <p>メーカーカタログやサンプルプロジェクトは、JSON 形式でお送りいただければ OpenCADIrrigation に収録できます。</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "読み込みに時間がかかっています。接続を確認するか、ページを再読み込みしてください。上の内容はすでにお読みいただけます。";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "灌漑設計 CAD を読み込み中…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "読み込みに時間がかかっています。接続を確認するか、ページを再読み込みしてください。上の内容はすでにお読みいただけます。";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/core/i18n/language_packs.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 
+import '../flutter_test_config.dart' show missingKeys;
 import '../support/language_packs.dart';
 
 final _placeholder = RegExp(r'\{[^}]+\}');
@@ -136,6 +137,7 @@ void main() {
         expect(t('menu.file'), languagePack(l)!.strings['menu.file'], reason: l);
         expect(t('menu.file'), isNot('File'), reason: l);
         expect(t('no.such.key'), 'no.such.key');
+        expect(missingKeys.remove('no.such.key'), isTrue, reason: 'reported as missing');
         expect(t('design.progress.zones', {'i': '2', 'n': '5'}), isNot(contains('{i}')), reason: l);
       }
     });

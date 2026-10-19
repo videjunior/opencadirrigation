@@ -46,11 +46,19 @@ class PumpCurve {
   /// Least-squares quadratic fit of (Q, H) points (≥ 3 points; 2 points give a
   /// linear curve; 1 point gives EPANET-style 3-point synthetic curve).
   static PumpCurve fit(List<(double, double)> points) {
-    final pts = points.where((p) => p.$1 >= 0 && p.$2 >= 0).toList();
+    // points at the same flow (typed twice, or two readings) become one at
+    // their mean head: two of them made the 2-point slope infinite (NaN curve)
+    final byFlow = <double, List<double>>{};
+    for (final (q, h) in points) {
+      if (q.isFinite && h.isFinite && q >= 0 && h >= 0) (byFlow[q] ??= []).add(h);
+    }
+    final pts = [for (final e in byFlow.entries) (e.key, e.value.reduce((a, b) => a + b) / e.value.length)]..sort((a, b) => a.$1.compareTo(b.$1));
     if (pts.isEmpty) return const PumpCurve(a: 0, b: 0, c: 0);
     if (pts.length == 1) {
       // EPANET convention: shutoff 1.33·H at 0, runout 2·Q at 0 head.
       final (q, h) = pts.first;
+      // a shutoff head alone gives no flow to build on: a flat curve
+      if (q <= 0) return PumpCurve(a: 0, b: 0, c: h);
       return fit([(0, 1.33 * h), (q, h), (2 * q, 0)]);
     }
     if (pts.length == 2) {

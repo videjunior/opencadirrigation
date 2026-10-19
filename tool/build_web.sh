@@ -13,3 +13,9 @@ flutter build web --release \
   --dart-define=OCI_COMMIT="$COMMIT" \
   --dart-define=OCI_BUILD_DATE="$DATE" \
   "$@"
+# flutter.js (also inlined in flutter_bootstrap.js) ends by pointing at a
+# source map the build does not write: browsers and PageSpeed then fetch a
+# file that is not there.
+for f in build/web/flutter_bootstrap.js build/web/flutter.js; do
+  perl -i -ne 'print unless m{^//# sourceMappingURL=flutter\.js\.map\s*$}' "$f"
+done

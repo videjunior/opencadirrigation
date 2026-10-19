@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/bn/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/bn/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">OpenCADIrrigation চালাতে JavaScript প্রয়োজন। ব্রাউজারে JavaScript চালু করে পৃষ্ঠাটি আবার লোড করুন।</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>চাপযুক্ত সেচ ডিজাইনের জন্য বিনামূল্যের CAD</h1>
         <p class="tagline">ড্রিপ, মাইক্রো স্প্রিংকলার, স্প্রিংকলার ও সেন্টার পিভট ব্যবস্থা আঁকুন, আকার নির্ধারণ করুন এবং নথি তৈরি করুন। সরাসরি ব্রাউজারে, কিছু ইনস্টল না করেই, আর আপনার প্রকল্প থাকে আপনার নিজের কম্পিউটারে।</p>
         <nav class="cta" aria-label="অ্যাপ খুলুন">
-          <a class="primary" href="https://opencadirrigation.com/bn/">অ্যাপ খুলুন</a>
-          <a href="https://opencadirrigation.com/bn/?tutorial=1">ইন্টারঅ্যাক্টিভ টিউটোরিয়াল</a>
+          <a class="primary" href="https://opencadirrigation.com/bn/" data-app>অ্যাপ খুলুন</a>
+          <a href="https://opencadirrigation.com/bn/?tutorial=1" data-app>ইন্টারঅ্যাক্টিভ টিউটোরিয়াল</a>
           <a href="#exemplos">তৈরি উদাহরণ দেখুন</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">সেচ CAD লোড হচ্ছে…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>OpenCADIrrigation CAD অঙ্কন, হাইড্রোলিক নেটওয়ার্ক ও হিসাবকে এক জায়গায় আনে: এলাকার সীমা আঁকুন, ল্যাটারাল, ভালভ ও মূল লাইন বসান, F5 চাপুন এবং পাইপের ব্যাস, চাপ, সমরূপতা, পরিচালনার পালা, উপকরণ তালিকা ও ছাপার উপযোগী প্রতিবেদন পান। 20টি ভাষায় পাওয়া যায়, আপনার কম্পিউটারের ভাষা অনুসারে।</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">খোলার জন্য তৈরি উদাহরণ</h2>
         <p>প্রতিটি প্রকল্প সম্পূর্ণ অবস্থায় খোলে এবং F5 দিয়ে ডিজাইন হয়। অ্যাপটি চিনতে বা শুরুর বিন্দু হিসেবে এগুলো ব্যবহার করুন।</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=orchard">বাগান</a></h3><p>লেবুজাতীয়তে মাইক্রো-স্প্রিংকলার ও আঙুরে ড্রিপ, পাম্প ও ফিল্টারসহ কূপ, ঢালু জমি।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=garden">বাসার বাগান</a></h3><p>সামনের লনে পপ-আপ স্প্রে, পেছনে রোটর ও বেডে ড্রিপ, মিটার ও ব্যাকফ্লো প্রিভেন্টারসহ পৌর সরবরাহ থেকে।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=sportsField">ফুটবল মাঠ</a></h3><p>পাঁচ সারিতে ইমপ্যাক্ট স্প্রিংকলারসহ পূর্ণ আকারের 105 × 68 m মাঠ, জলাধার, পাম্প ও রাতের শিফট।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=rowCrop">ড্রিপ সারি ফসল</a></h3><p>ড্রিপ টেপে টমেটোর চারটি ব্লক, ভালভসহ সাবমেইন, স্ক্রিন ফিল্টার, পাম্প ও ঢালু জমি।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=pivot">সেন্টার পিভট</a></h3><p>ভুট্টায় 300 m পিভট, মূল লাইন, কূপ ও পাম্প থেকে সরবরাহ; টাওয়ার, স্প্যান ও নজল প্রতিবেদন।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=greenhouse">সবজি গ্রিনহাউস</a></h3><p>চাপ-ক্ষতিপূরক ড্রিপলাইনে ক্যাপসিকামের চারটি টানেল, প্রতি টানেলে এক জোন, ট্যাংক, ছোট পাম্প ও ডিস্ক ফিল্টার।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=nursery">চারা নার্সারি</a></h3><p>4 × 4 m গ্রিডে ঝুলন্ত মাইক্রো-স্প্রিংকলারের নিচে 12 × 48 m-এর তিনটি বেড, প্রতি বেডে এক জোন, উঁচু ট্যাংক, ছোট পাম্প ও ডিস্ক ফিল্টার।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=coffee">কনট্যুর রেখায় কফি</a></h3><p>পাহাড়ের ঢালে কফির তিনটি ব্লক, বাঁকা ল্যাটারাল কনট্যুর অনুসরণ করে (গাইডেড ব্লক), PC ড্রিপলাইন, ঢালের পাদদেশে কূপ ও পাম্প।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=bananas">কলা বাগান</a></h3><p>5 × 5 m-এ চাপ-ক্ষতিপূরক মাইক্রো-স্প্রিংকলারের নিচে কলার দুটি ব্লক, সাবমার্সিবল পাম্পসহ কূপ, ডিস্ক ফিল্টার ও ঢালু জমি।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=sugarcane">ভূগর্ভস্থ ড্রিপ আখ</a></h3><p>0.3 m গভীরে পোঁতা 20 mm PC ড্রিপলাইনে আখের দুটি ব্লক, 180 m ল্যাটারাল, পোঁতা সাবমেইন, জলাধার, পাম্প, স্ক্রিন ফিল্টার ও এয়ার ভালভ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=gravity">মাধ্যাকর্ষণ-চালিত ড্রিপ</a></h3><p>ড্রিপ-সেচকৃত দুটি সবজি ব্লকের 40 m উপরে জলাধার, পাম্প ছাড়া: মূল লাইনে গেট ভালভ, চাপ হ্রাসকারী ভালভ ও ডিস্ক ফিল্টার; ঢালের কনট্যুর।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=pasture">স্প্রিংকলার-সেচকৃত চারণভূমি</a></h3><p>12 × 18 m-এ ইমপ্যাক্ট স্প্রিংকলার লাইনসহ 72 × 72 m-এর তিনটি প্যাডক, ভালভসহ সাবমেইন, জলাধার, পাম্প ও চেক ভালভ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=golf">গলফ হোল</a></h3><p>স্প্রেসহ টি, ত্রিভুজাকার গ্রিডে রোটরসহ ফেয়ারওয়ে (দুই জোন) ও কিনারে রোটরসহ গ্রিন, পাম্পসহ পুকুর ও রাতের শিফট।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=sectorPivot">এন্ড গানসহ সেক্টর পিভট</a></h3><p>সয়াবিনে 250 m পিভট যা 270° ঘোরে, খামারবাড়ির চতুর্থাংশ খালি রেখে, 12 m³/h এন্ড গানসহ; পুকুর, 20 hp পাম্প ও গেট ভালভ।</p></li>
-          <li><h3><a href="https://opencadirrigation.com/bn/?example=linear">লিনিয়ার মুভ</a></h3><p>গমে 392 m লিনিয়ার মেশিন যা খালের পাশ দিয়ে 800 m চলে, 30 hp পাম্প ও চেক ভালভসহ ইনটেক; টাওয়ার ও নজল প্রতিবেদন।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=orchard" data-app>বাগান</a></h3><p>লেবুজাতীয়তে মাইক্রো-স্প্রিংকলার ও আঙুরে ড্রিপ, পাম্প ও ফিল্টারসহ কূপ, ঢালু জমি।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=garden" data-app>বাসার বাগান</a></h3><p>সামনের লনে পপ-আপ স্প্রে, পেছনে রোটর ও বেডে ড্রিপ, মিটার ও ব্যাকফ্লো প্রিভেন্টারসহ পৌর সরবরাহ থেকে।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=sportsField" data-app>ফুটবল মাঠ</a></h3><p>পাঁচ সারিতে ইমপ্যাক্ট স্প্রিংকলারসহ পূর্ণ আকারের 105 × 68 m মাঠ, জলাধার, পাম্প ও রাতের শিফট।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=rowCrop" data-app>ড্রিপ সারি ফসল</a></h3><p>ড্রিপ টেপে টমেটোর চারটি ব্লক, ভালভসহ সাবমেইন, স্ক্রিন ফিল্টার, পাম্প ও ঢালু জমি।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=pivot" data-app>সেন্টার পিভট</a></h3><p>ভুট্টায় 300 m পিভট, মূল লাইন, কূপ ও পাম্প থেকে সরবরাহ; টাওয়ার, স্প্যান ও নজল প্রতিবেদন।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=greenhouse" data-app>সবজি গ্রিনহাউস</a></h3><p>চাপ-ক্ষতিপূরক ড্রিপলাইনে ক্যাপসিকামের চারটি টানেল, প্রতি টানেলে এক জোন, ট্যাংক, ছোট পাম্প ও ডিস্ক ফিল্টার।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=nursery" data-app>চারা নার্সারি</a></h3><p>4 × 4 m গ্রিডে ঝুলন্ত মাইক্রো-স্প্রিংকলারের নিচে 12 × 48 m-এর তিনটি বেড, প্রতি বেডে এক জোন, উঁচু ট্যাংক, ছোট পাম্প ও ডিস্ক ফিল্টার।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=coffee" data-app>কনট্যুর রেখায় কফি</a></h3><p>পাহাড়ের ঢালে কফির তিনটি ব্লক, বাঁকা ল্যাটারাল কনট্যুর অনুসরণ করে (গাইডেড ব্লক), PC ড্রিপলাইন, ঢালের পাদদেশে কূপ ও পাম্প।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=bananas" data-app>কলা বাগান</a></h3><p>5 × 5 m-এ চাপ-ক্ষতিপূরক মাইক্রো-স্প্রিংকলারের নিচে কলার দুটি ব্লক, সাবমার্সিবল পাম্পসহ কূপ, ডিস্ক ফিল্টার ও ঢালু জমি।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=sugarcane" data-app>ভূগর্ভস্থ ড্রিপ আখ</a></h3><p>0.3 m গভীরে পোঁতা 20 mm PC ড্রিপলাইনে আখের দুটি ব্লক, 180 m ল্যাটারাল, পোঁতা সাবমেইন, জলাধার, পাম্প, স্ক্রিন ফিল্টার ও এয়ার ভালভ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=gravity" data-app>মাধ্যাকর্ষণ-চালিত ড্রিপ</a></h3><p>ড্রিপ-সেচকৃত দুটি সবজি ব্লকের 40 m উপরে জলাধার, পাম্প ছাড়া: মূল লাইনে গেট ভালভ, চাপ হ্রাসকারী ভালভ ও ডিস্ক ফিল্টার; ঢালের কনট্যুর।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=pasture" data-app>স্প্রিংকলার-সেচকৃত চারণভূমি</a></h3><p>12 × 18 m-এ ইমপ্যাক্ট স্প্রিংকলার লাইনসহ 72 × 72 m-এর তিনটি প্যাডক, ভালভসহ সাবমেইন, জলাধার, পাম্প ও চেক ভালভ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=golf" data-app>গলফ হোল</a></h3><p>স্প্রেসহ টি, ত্রিভুজাকার গ্রিডে রোটরসহ ফেয়ারওয়ে (দুই জোন) ও কিনারে রোটরসহ গ্রিন, পাম্পসহ পুকুর ও রাতের শিফট।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=sectorPivot" data-app>এন্ড গানসহ সেক্টর পিভট</a></h3><p>সয়াবিনে 250 m পিভট যা 270° ঘোরে, খামারবাড়ির চতুর্থাংশ খালি রেখে, 12 m³/h এন্ড গানসহ; পুকুর, 20 hp পাম্প ও গেট ভালভ।</p></li>
+          <li><h3><a href="https://opencadirrigation.com/bn/?example=linear" data-app>লিনিয়ার মুভ</a></h3><p>গমে 392 m লিনিয়ার মেশিন যা খালের পাশ দিয়ে 800 m চলে, 30 hp পাম্প ও চেক ভালভসহ ইনটেক; টাওয়ার ও নজল প্রতিবেদন।</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="ভাষা">ভাষা: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <strong lang="bn" dir="ltr">বাংলা</strong> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>নির্মাতাদের ক্যাটালগ ও উদাহরণ প্রকল্প JSON ফরম্যাটে পাঠানো যায়, যাতে সেগুলো OpenCADIrrigation-এ যুক্ত করা হয়।</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "লোড হতে সময় লাগছে। সংযোগ পরীক্ষা করুন বা পৃষ্ঠাটি আবার লোড করুন; ওপরের লেখা এখনই পড়া যাবে।";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "সেচ CAD লোড হচ্ছে…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "লোড হতে সময় লাগছে। সংযোগ পরীক্ষা করুন বা পৃষ্ঠাটি আবার লোড করুন; ওপরের লেখা এখনই পড়া যাবে।";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

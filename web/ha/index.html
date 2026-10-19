@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ha/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ha/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">OpenCADIrrigation yana buƙatar JavaScript don aiki. Kunna JavaScript a mai binciken gizonka sannan ka sake loda shafin.</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>CAD kyauta don ƙirar ban ruwa ta matsi</h1>
         <p class="tagline">Zana, auna girma kuma ka rubuta bayanan tsarin ban ruwa ta ɗigo, ƙananan masu fesa ruwa, masu fesa ruwa da pivot na tsakiya. Kai tsaye a mai binciken gizo, ba tare da girka komai ba, kuma ayyukanka suna zama a kwamfutarka.</p>
         <nav class="cta" aria-label="Buɗe manhajar">
-          <a class="primary" href="https://opencadirrigation.com/ha/">Buɗe manhajar</a>
-          <a href="https://opencadirrigation.com/ha/?tutorial=1">Koyarwa mai mu'amala</a>
+          <a class="primary" href="https://opencadirrigation.com/ha/" data-app>Buɗe manhajar</a>
+          <a href="https://opencadirrigation.com/ha/?tutorial=1" data-app>Koyarwa mai mu'amala</a>
           <a href="#exemplos">Duba misalai da aka shirya</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">Ana loda CAD na ban ruwa…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>OpenCADIrrigation yana haɗa zanen CAD, hanyar sadarwar ruwa da lissafi wuri ɗaya: zana iyakar wurin, shimfiɗa layukan lateral, bawuloli da babban bututu, danna F5 ka samu girman bututu, matsi, daidaito, jadawalin aiki, jerin kayan aiki da rahotanni a shirye don bugawa. Akwai shi a harsuna 20, yana bin harshen kwamfutarka.</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">Misalai a shirye don buɗewa</h2>
         <p>Kowane aiki yana buɗewa cikakke kuma ana ƙira shi da F5. Yi amfani da su don sanin manhajar ko a matsayin mafari.</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=orchard">Gonar 'ya'yan itace</a></h3><p>Ƙananan masu fesa ruwa a lemu da ɗigo a inabi, rijiya da famfo da tace, ƙasa mai gangara.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=garden">Lambun gida</a></h3><p>Fesa na pop-up a ciyawar gaba, rotors a baya da ɗigo a lambu, daga ruwan famfo na gari da mita da mai hana komawar ruwa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=sportsField">Filin ƙwallon ƙafa</a></h3><p>Cikakken fili na m 105 × 68 mai masu fesa ruwa na bugu a layuka biyar, tafki, famfo da zangunan dare.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=rowCrop">Amfanin gona na layi da ɗigo</a></h3><p>Rukunin tumatir huɗu a kan tef ɗin ɗigo, manifolds da bawuloli, tace mai raga, famfo da ƙasa mai gangara.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=pivot">Pivot na tsakiya</a></h3><p>Pivot na m 300 a masara da babban bututu, rijiya da famfo ke ciyarwa; rahoton hasumiya, tsawo da bakin fesawa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=greenhouse">Gidan ganye na kayan lambu</a></h3><p>Ramuka huɗu na barkono a kan bututun ɗigo mai daidaita matsi, yanki ɗaya ga kowane rami, tanki, ƙaramin famfo da tace mai faifai.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=nursery">Gandun shuke-shuke</a></h3><p>Lambuna uku na m 12 × 48 ƙarƙashin ƙananan masu fesa ruwa na sama a grid na m 4 × 4, yanki ɗaya ga kowane lambu, tanki mai tsayi, ƙaramin famfo da tace mai faifai.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=coffee">Kofi a layukan tsayi</a></h3><p>Rukunin kofi uku a gangaren tudu masu laterals masu lanƙwasa da ke bin layukan tsayi (rukunin jagora), bututun ɗigo na PC, rijiya da famfo a gindin gangara.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=bananas">Gonar ayaba</a></h3><p>Rukunin ayaba biyu ƙarƙashin ƙananan masu fesa ruwa masu daidaita matsi a m 5 × 5, rijiya da famfon nutsewa, tace mai faifai da ƙasa mai gangara.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=sugarcane">Rake da ɗigo na ƙarƙashin ƙasa</a></h3><p>Rukunin rake biyu a kan bututun ɗigo na PC na mm 20 da aka binne m 0.3, laterals na m 180, manifolds da aka binne, tafki, famfo, tace mai raga da bawul na iska.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=gravity">Ɗigo ta nauyi</a></h3><p>Tafki m 40 sama da rukunin kayan lambu biyu masu ɗigo, ba tare da famfo ba: bawul na ƙofa, bawul na rage matsi da tace mai faifai a babban bututu; layukan tsayi na gangara.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=pasture">Makiyaya da fesa ruwa</a></h3><p>Filaye uku na m 72 × 72 masu layukan masu fesa ruwa na bugu a m 12 × 18, manifolds da bawuloli, tafki, famfo da bawul na hana komawa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=golf">Ramin golf</a></h3><p>Tee da fesa, fairway da rotors a grid na triangular (yankuna biyu) da green da rotors kewaye da gefe, tafki da famfo da zangunan dare.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=sectorPivot">Pivot na sashe da bindigar ƙarshe</a></h3><p>Pivot na m 250 a waken soya da ke juyawa 270°, yana barin kwata na gidan gona a buɗe, da bindigar ƙarshe ta m³/h 12; tafki, famfo na hp 20 da bawul na ƙofa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/ha/?example=linear">Injin layi</a></h3><p>Injin layi na m 392 a alkama da ke tafiya m 800 tare da magudanar ruwa, ɗaukar ruwa da famfo na hp 30 da bawul na hana komawa; rahoton hasumiya da bakin fesawa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=orchard" data-app>Gonar 'ya'yan itace</a></h3><p>Ƙananan masu fesa ruwa a lemu da ɗigo a inabi, rijiya da famfo da tace, ƙasa mai gangara.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=garden" data-app>Lambun gida</a></h3><p>Fesa na pop-up a ciyawar gaba, rotors a baya da ɗigo a lambu, daga ruwan famfo na gari da mita da mai hana komawar ruwa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=sportsField" data-app>Filin ƙwallon ƙafa</a></h3><p>Cikakken fili na m 105 × 68 mai masu fesa ruwa na bugu a layuka biyar, tafki, famfo da zangunan dare.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=rowCrop" data-app>Amfanin gona na layi da ɗigo</a></h3><p>Rukunin tumatir huɗu a kan tef ɗin ɗigo, manifolds da bawuloli, tace mai raga, famfo da ƙasa mai gangara.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=pivot" data-app>Pivot na tsakiya</a></h3><p>Pivot na m 300 a masara da babban bututu, rijiya da famfo ke ciyarwa; rahoton hasumiya, tsawo da bakin fesawa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=greenhouse" data-app>Gidan ganye na kayan lambu</a></h3><p>Ramuka huɗu na barkono a kan bututun ɗigo mai daidaita matsi, yanki ɗaya ga kowane rami, tanki, ƙaramin famfo da tace mai faifai.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=nursery" data-app>Gandun shuke-shuke</a></h3><p>Lambuna uku na m 12 × 48 ƙarƙashin ƙananan masu fesa ruwa na sama a grid na m 4 × 4, yanki ɗaya ga kowane lambu, tanki mai tsayi, ƙaramin famfo da tace mai faifai.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=coffee" data-app>Kofi a layukan tsayi</a></h3><p>Rukunin kofi uku a gangaren tudu masu laterals masu lanƙwasa da ke bin layukan tsayi (rukunin jagora), bututun ɗigo na PC, rijiya da famfo a gindin gangara.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=bananas" data-app>Gonar ayaba</a></h3><p>Rukunin ayaba biyu ƙarƙashin ƙananan masu fesa ruwa masu daidaita matsi a m 5 × 5, rijiya da famfon nutsewa, tace mai faifai da ƙasa mai gangara.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=sugarcane" data-app>Rake da ɗigo na ƙarƙashin ƙasa</a></h3><p>Rukunin rake biyu a kan bututun ɗigo na PC na mm 20 da aka binne m 0.3, laterals na m 180, manifolds da aka binne, tafki, famfo, tace mai raga da bawul na iska.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=gravity" data-app>Ɗigo ta nauyi</a></h3><p>Tafki m 40 sama da rukunin kayan lambu biyu masu ɗigo, ba tare da famfo ba: bawul na ƙofa, bawul na rage matsi da tace mai faifai a babban bututu; layukan tsayi na gangara.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=pasture" data-app>Makiyaya da fesa ruwa</a></h3><p>Filaye uku na m 72 × 72 masu layukan masu fesa ruwa na bugu a m 12 × 18, manifolds da bawuloli, tafki, famfo da bawul na hana komawa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=golf" data-app>Ramin golf</a></h3><p>Tee da fesa, fairway da rotors a grid na triangular (yankuna biyu) da green da rotors kewaye da gefe, tafki da famfo da zangunan dare.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=sectorPivot" data-app>Pivot na sashe da bindigar ƙarshe</a></h3><p>Pivot na m 250 a waken soya da ke juyawa 270°, yana barin kwata na gidan gona a buɗe, da bindigar ƙarshe ta m³/h 12; tafki, famfo na hp 20 da bawul na ƙofa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/ha/?example=linear" data-app>Injin layi</a></h3><p>Injin layi na m 392 a alkama da ke tafiya m 800 tare da magudanar ruwa, ɗaukar ruwa da famfo na hp 30 da bawul na hana komawa; rahoton hasumiya da bakin fesawa.</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="Harsuna">Harsuna: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <strong lang="ha" dir="ltr">Hausa</strong> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Ana iya aiko da kundin masana'antun da misalan ayyuka a tsarin JSON don a saka su a OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "Lodawa na ɗaukar lokaci. Duba haɗin intanet ko sake loda shafin; ana iya karanta abin da ke sama tuni.";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "Ana loda CAD na ban ruwa…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "Lodawa na ɗaukar lokaci. Duba haɗin intanet ko sake loda shafin; ana iya karanta abin da ke sama tuni.";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

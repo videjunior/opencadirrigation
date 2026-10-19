@@ -82,7 +82,14 @@ class DeviceLossCurve {
       sxy += x * y;
     }
     final n = pts.length;
-    final slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    final denom = n * sxx - sx * sx;
+    if (denom.abs() < 1e-12) {
+      // every sample at the same flow: no exponent to fit, h = K·Q² through
+      // their mean (the slope was 0/0, a NaN curve)
+      final q = math.exp(sx / n), h = math.exp(sy / n);
+      return DeviceLossCurve(k: h / (q * q));
+    }
+    final slope = (n * sxy - sx * sy) / denom;
     final intercept = (sy - slope * sx) / n;
     return DeviceLossCurve(k: math.exp(intercept), n: slope);
   }

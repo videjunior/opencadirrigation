@@ -1,20 +1,23 @@
 <p align="center"><img src="web/brand/logo-horizontal.png" width="560" alt="OpenCADIrrigation"></p>
 
-<p align="center"><a href="https://opencadirrigation.com">opencadirrigation.com</a> · <a href="https://opencadirrigation.com/pt/">Português</a> · <a href="https://opencadirrigation.com/es/">Español</a></p>
+<p align="center"><a href="https://opencadirrigation.com">opencadirrigation.com</a> · <a href="https://opencadirrigation.com/pt/">Português</a> · <a href="https://opencadirrigation.com/es/">Español</a> · <a href="LICENSE.md">MIT licence</a></p>
 
 <p align="center"><strong>English</strong> · <a href="README.pt-BR.md">Português</a></p>
 
 # OpenCADIrrigation
 
-Open CAD, written in Flutter/Dart, for the design of pressurised irrigation systems: drawing,
-hydraulic network, pipe sizing, reports and plotting, right in the browser, with no installation,
-no server and no sign-up. Projects stay on your computer.
+Open-source CAD, written in Flutter/Dart, for the design of pressurised irrigation systems:
+drawing, hydraulic network, pipe sizing, reports and plotting, right in the browser, with no
+installation, no server and no sign-up. Projects stay on your computer. Released under the
+[MIT licence](LICENSE.md).
+
+<p align="center"><img src="web/screenshots/design-1440x900.png" width="900" alt="A designed irrigation project with pipe sizes, pressures and results per zone"></p>
 
 > This README is the canonical documentation, maintained in English; a Portuguese translation is
 > in [README.pt-BR.md](README.pt-BR.md). The technical study behind the engine is in
 > [docs/TECHNICAL_STUDY.md](docs/TECHNICAL_STUDY.md) (English) and
 > [docs/PESQUISA.pt-BR.md](docs/PESQUISA.pt-BR.md) (Portuguese). The interface is available in
-> Portuguese, English and Spanish.
+> 20 languages ([section 13](#13-languages-and-site)).
 
 ---
 
@@ -39,6 +42,7 @@ no server and no sign-up. Projects stay on your computer.
 17. [Known limitations and roadmap](#17-known-limitations-and-roadmap)
 18. [Contributing](#18-contributing)
 19. [References](#19-references)
+20. [Licence, third-party components and data](#20-licence-third-party-components-and-data)
 
 ---
 
@@ -85,8 +89,9 @@ students. The interactive tutorial and the example gallery let you start without
 
 ## 2. Five-minute start
 
-1. Open [opencadirrigation.com](https://opencadirrigation.com). On the first visit the welcome
-   screen shows the **example gallery** and the **interactive tutorial** button.
+1. Open [opencadirrigation.com](https://opencadirrigation.com) and press **Open the app** (or open
+   an example or the tutorial straight from the page). The app opens by itself on later visits.
+   The welcome screen shows the **example gallery** and the **interactive tutorial** button.
 2. Pick an example (the orchard is the default) or start from scratch.
 3. Press **F5** (or the ▶ button at the top right). The calculation runs off the interface thread;
    a progress card shows the current step (zone by zone, mainline, flushing, water hammer,
@@ -710,8 +715,8 @@ browser or the operating system) that it speaks, and in English when none of the
 choice in View → Language (each language under its own name) is saved. The language pages (`/pt/`,
 `/de/`, …) and the `?lang=` parameter apply to the visit only. The document `lang` attribute follows the app
 language (`pt-BR`, `zh-CN`, otherwise the code). Arabic and Urdu texts are right-to-left; the layout
-of the interface stays left-to-right. The shipped example projects keep their labels in Portuguese,
-English and Spanish.
+of the interface stays left-to-right. The shipped example projects exist in all 20 languages
+(`examples/<code>/`).
 
 A pack is a plain JSON file with three sections: `strings` (key → text), `tutorial` and `catalog`
 (English source text → text). Translators can revise it without touching the code;
@@ -726,10 +731,25 @@ the browser's language when the site speaks it). The page texts live in `tool/si
 (Portuguese, English, Spanish) and `tool/site/<code>.dart` (the others, with the example gallery
 taken from the language packs); Arabic and Urdu pages read right to left. Since
 Flutter paints on a canvas, every page carries the content as real HTML (heading, features,
-examples, FAQ), visible while the app loads and kept on the page afterwards, with its own canonical,
-`hreflang` between all the versions, Open Graph and JSON-LD (application, FAQ, how it works and the
-example gallery, in the page's language, with the subject linked to Wikipedia/Wikidata). The test
-`test/web_metadata_test.dart` fails when the generated files drift from the template.
+examples, FAQ), with its own canonical, `hreflang` between all the versions, Open Graph and JSON-LD
+(application, FAQ, how it works and the example gallery, in the page's language, with the subject
+linked to Wikipedia/Wikidata). The test `test/web_metadata_test.dart` fails when the generated files
+drift from the template.
+
+That HTML is all a first visit downloads (and what crawlers and PageSpeed measure): the app, several
+megabytes, is fetched only when the visitor opens it (the page's buttons and example links start it
+in place), arrives at an app address (`?example=`, `?tutorial=`, `?design=`, `?lang=`, the installed
+app's `?source=pwa`) or has used it in that browser before (any `opencadirrigation.` key in
+`localStorage`); the page then stays, hidden, under the app. `web/flutter_bootstrap.js` is Flutter's
+loader without its deprecated service worker, and `tool/build_web.sh` drops the pointer to the
+`flutter.js.map` the build does not write. The logo at the top is WebP in three widths
+(`web/brand/logo-horizontal-{520,780,1040}.webp`, made from `logo-horizontal.png`), its address
+versioned by a hash of the file. The site is served by Firebase Hosting from a deploy folder kept
+outside this repository (`firebase.json` + `public/`, a copy of `build/web`). Its `firebase.json`
+has no catch-all rewrite, so an unknown address gets `404.html` with status 404 instead of the app
+page (which made `/.well-known/ai-catalog.json` look like a broken AI catalogue to PageSpeed); the
+pages, `flutter_bootstrap.js`, `manifest.json` and `version.json` are `no-cache`, and the images
+under `brand/`, `icons/`, `screenshots/` and at the root keep for 30 days.
 
 The generator also writes what search engines and AI assistants read besides the pages:
 `web/robots.txt` (everything allowed, with the search and AI crawlers named: GPTBot, OAI-SearchBot,
@@ -833,8 +853,11 @@ web/                        pages, manifest, icons, robots, sitemap, compiled wo
   of thousands of entities).
 - **Own formats in pure Dart.** Readers and writers of DWG, PDF, XLSX, SHP, GeoTIFF etc. do not
   depend on native libraries, which keeps the app 100 % web.
-- **Centralised texts.** All interface strings are in `i18n.dart` as (pt, en, es) tuples; the engine
-  returns codes (`velocity_exceeded:e12`) that the interface translates.
+- **Centralised texts.** All interface strings are keys of `i18n.dart`, with the Portuguese, English
+  and Spanish texts compiled in and the other 17 languages in the packs of `assets/i18n`; the engine
+  returns codes (`velocity_exceeded:e12`) that the interface translates. Every test file fails when
+  the interface asks for a key the table does not have (`test/flutter_test_config.dart`), which
+  would otherwise show the key itself on screen.
 
 ---
 
@@ -843,9 +866,11 @@ web/                        pages, manifest, icons, robots, sitemap, compiled wo
 Requirements: a recent stable Flutter (developed with 3.47, Dart 3.13). No native dependencies.
 
 ```bash
+git clone https://github.com/videjunior/opencadirrigation.git
+cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # development in the browser
-flutter test                       # 834 tests: engine, model, formats, interface
+flutter test                       # 862 tests: engine, model, formats, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompiles web/design_worker.js after changing lib/core (the app falls
                                    # back to the interface thread when the file is missing)
@@ -881,12 +906,15 @@ isolate for the calculation.
 
 ## 16. Tests
 
-`flutter test` runs 834 tests in a little over two minutes. What each group guarantees:
+`flutter test` runs 862 tests in a few minutes. What each group guarantees:
 
 | File | Coverage |
 |---|---|
-| `core/hydraulics_test.dart` | Hazen-Williams against a textbook value; Darcy-Weisbach ≈ Hazen-Williams on smooth PVC; laminar factor; Swamee-Jain ≈ Colebrook; continuity and slope match at the transition; Christiansen F table and Scaloppi adjustment; equivalent diameter; emitter law and fit; application rate; overlap CU; CU/DU/EU; pump curve fit, operating point, CRF; K → flow form; PVC celerity; number formatting without scientific notation |
+| `core/hydraulics_test.dart` | Hazen-Williams against a textbook value; Darcy-Weisbach ≈ Hazen-Williams on smooth PVC; laminar factor; Swamee-Jain ≈ Colebrook; continuity and slope match at the transition; Christiansen F table and Scaloppi adjustment; equivalent diameter; emitter law and fit; application rate; overlap CU; CU/DU and the Keller-Karmeli EU (the worked example of the technical study); pump curve fit, operating point, CRF; K → flow form; PVC celerity; number formatting without scientific notation |
 | `core/network_test.dart` | Sparse solver; single pipe; loops; mass conservation; pressure-dependent emitters; pump; PRV; device curve; Darcy-Weisbach convergence; large branched network is fast; comparison with Christiansen; laterals on slopes; maximum length; feed positions; emitters above the available head stay closed (no backflow) |
+| `core/network_robustness_test.dart` | A pump near its shutoff head feeding a hundred emitters near zero pressure (against an independent bisection); a pump that one bad step used to lock closed; pressure-compensating emitters on a hill, dry above the grade line and starved below it; a pressure-reducing valve just above its setting stays open; a check valve fitted as a device stops reverse flow; 300 random tree networks (pumps, check valves, demands, every emitter exponent) converge to solutions that satisfy continuity and the head-loss laws |
+| `core/invariance_test.dart` | Moving a project (also to UTM coordinates), drawing its pipes the other way round, saving and reopening it or changing the language leave the design as it was; inverse-distance terrain counts every spot height once |
+| `core/regressions_1017_test.dart` | Defects fixed in the 2026-10-17 sweep: pump and device curves typed with repeated flows, a pump with a shutoff head only, feed positions of laterals that need more than three times the nominal pressure |
 | `core/lp_test.dart` | Simplex: ≤/≥, equalities, infeasible, unbounded, a problem shaped like the sizing one |
 | `core/design_test.dart`, `core/sizing_features_test.dart`, `core/gaps_test.dart` | Block generator; connected graph; full analysis and sizing; LP no worse than greedy; telescoping; fittings; flushing; water hammer; overlap CU and emitters per plant; agronomy and controller programme; pump and motor selection; GeoTIFF DEM; pivot (spans, costs); looped mainline |
 | `core/terrain_pivot_test.dart` | Delaunay TIN exact on planes; TIN vs IDW; contour generation; segment chaining; alignment and clipping geometry; guided blocks; pivot hydraulics (including sector pivots); design check; Excel catalogue and packs |
@@ -901,7 +929,7 @@ isolate for the calculation.
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Pasted coordinates (decimals, comma, hemispheres, DMS, links); contour interval; language choice from the system and the URL |
 | `core/i18n_packs_test.dart` | Every language pack covers every key of the table, the tutorial and the catalogue names with the same placeholders and is mostly not English; installed packs reach the strings, the tutorial and the catalogue; `setLanguage` loads a pack on demand with English meanwhile and retries a failed load |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Editing (grips, transformations, trim, extend, cut), entity JSON, tabs and clipboard (pivot catalogue items and wiring included), worker protocol, local HTTP, project storage, camera and snap |
-| `core/densogram_test.dart` | Every spray profile returns the whole flow; part circles water their own sector (the nozzle's arc too); head-to-head spacing is uniform and wide spacing is not; areas of different rates judged against their own mean; statistics of known values; cell budget; lateral outlets; results give each emitter its pressure; zone filter; colours, pixels and CSV |
+| `core/densogram_test.dart` | Every spray profile returns the whole flow; part circles water their own sector (the nozzle's arc too); an area watered only from its outline is evaluated; head-to-head spacing is uniform and wide spacing is not; areas of different rates judged against their own mean; statistics of known values; cell budget; lateral outlets; results give each emitter its pressure; zone filter; colours, pixels and CSV |
 | `core/electrical_test.dart`, `core/electrical_io_test.dart` | Routes, stations and a valve on a route; solenoid voltage checked by hand; separate flows load the common less; the chosen wires are the cheapest (checked against brute force); runs no wire can serve; unwired valves, orphan routes, too few stations, no controller; wire catalogue (defaults, AWG, CSV, XLSX, JSON); the design lists wiring in the BOM and the Electrical report; design check codes; assistant fixes; DXF, DWG, GeoJSON and plot output |
 | `core/management_test.dart` | Demands of zones and pivots (nominal or from the results); automatic system flows: largest first within the supply flow, zone limit, zones larger than the limit, ids that do not collide |
 | `core/import_curves_test.dart` | Rational and clamped NURBS; DXF SPLINE by control points or fit points, HATCH with polyline, line, arc (both senses), ellipse and spline edges and islands, SOLID/TRACE, hatches inside blocks; DWG R2000–R2018 splines, hatches, solids and the ellipse matching LibreDWG |
@@ -909,7 +937,8 @@ isolate for the calculation.
 | `core/regressions_test.dart` | Every defect fixed in the 2026-09-22 sweep, each failing without its fix: a lateral cut on an outlet keeps it once; generated contours stay generated; files without the id counter; mirrored part-circle sprinklers and full-circle heads with a part-circle nozzle (plot and canvas too); survey files with spaces and decimal commas; rasters too large to decode; damaged files reported as such; psi, kPa and bar; grid CU with close heads; blocks on L and U fields and guided rows clipped in two; telescoping drawn either way; numbers with thousands separators, prices and pump curves; spacings of 0 and NaN values that used to hang or break the saving; GPS tracks in KML |
 | `core/hotkeys_dispatch_test.dart` | The keyboard dispatcher on its own: application, editing and canvas keys, what dialogs and menus block, every typed command alias |
 | `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout; management with pivots and automatic flows, dialogs closed outside, densogram, controller and wire tools with the Electrical tab, ordinate and diameter dimensions, the Wires tab of the catalogue, numeric fields that reject a value; the properties of every entity type, batch editing and the results of the selection; the profile chart readout; wheel, trackpad, middle-button and two-finger navigation; georeference and plot dialogs; mainline and phone menus; the system flows dialog |
-| `web_metadata_test.dart`, `version_test.dart` | Generated site pages, SEO, JSON-LD, manifest, icons, robots, sitemap, 404, llms.txt; app version consistent with pubspec.yaml and the site |
+| `web_metadata_test.dart`, `version_test.dart` | Generated site pages, SEO, JSON-LD, manifest, icons, robots, sitemap, 404, llms.txt; the entry pages load the app on demand; app version consistent with pubspec.yaml, the generator and the site |
+| `flutter_test_config.dart` | Runs around every test file: the file fails when the interface asked for a string key the table does not have |
 
 Known pitfalls when writing widget tests: the calculation is truly asynchronous and must run inside
 `tester.runAsync`; dialog titles may be upper-case; the canvas needs a defined window size; asset
@@ -935,6 +964,11 @@ loading (catalogues) uses `rootBundle` and works in `flutter test`.
 - **Collaboration**: no simultaneous editing or sharing by link; sharing is by the `.oci.json` file.
 - **Performance**: projects with hundreds of tapes per zone take a few seconds per zone; the
   flushing step is the heaviest.
+- **Network solver**: pressure-compensating emitters in grossly undersized networks (flows many
+  times what the pipes can carry) may still fail to converge; the design then reports
+  `not_converged` instead of figures.
+- **Densogram**: one spray profile for every head of the map (chosen in the dialog); spray heads
+  are closer to uniform, single-nozzle impact sprinklers to triangular.
 
 Suggested roadmap: two-wire decoder systems and automatic wire routing along the pipes; export of
 pivot nozzle charts; additional community catalogues; automated browser tests for runtime language
@@ -944,13 +978,19 @@ switching.
 
 ## 18. Contributing
 
+- **Issues and pull requests** are welcome on
+  [GitHub](https://github.com/videjunior/opencadirrigation). Before a pull request run
+  `flutter analyze` and `flutter test`; rebuild `web/design_worker.js` with `tool/build_worker.sh`
+  after changing `lib/core` or `i18n.dart`, and run the generator a failing guard test names.
+  Contributions are accepted under the MIT licence of the project.
 - **Catalogues**: follow [catalogs/README.md](catalogs/README.md), run
   `dart run tool/gen_catalogs.dart` and open a pull request; the tests guarantee unique ids and
   plausible curves.
 - **Examples**: add a builder in `lib/app/examples.dart`, texts in `i18n.dart` and run
   `dart run tool/gen_examples.dart`; the test designs the example and requires zones inside the window.
-- **Translations**: every key of `i18n.dart` is a (pt, en, es) tuple; the site pages are in
-  `tool/site.dart`. Documentation is maintained in English (`README.md`, `docs/TECHNICAL_STUDY.md`)
+- **Translations**: every key of `i18n.dart` is a (pt, en, es) tuple and every other language is a
+  pack in `assets/i18n/<code>.json` (strings, tutorial and catalogue names; the tests fail on a
+  missing key or placeholder); the site pages are in `tool/site.dart` and `tool/site/<code>.dart`. Documentation is maintained in English (`README.md`, `docs/TECHNICAL_STUDY.md`)
   and translated to Portuguese (`README.pt-BR.md`, `docs/PESQUISA.pt-BR.md`): change the English
   version first.
 - **Engine**: every new formula comes with a test against a published reference value.
@@ -966,3 +1006,33 @@ The study that guided the project, with what a designer expects from an irrigati
 formulas, the sizing formulations, agronomy, pivots, terrain, the file formats and the bibliography,
 is in [docs/TECHNICAL_STUDY.md](docs/TECHNICAL_STUDY.md) (Portuguese translation in
 [docs/PESQUISA.pt-BR.md](docs/PESQUISA.pt-BR.md)).
+
+---
+
+## 20. Licence, third-party components and data
+
+OpenCADIrrigation is released under the [MIT licence](LICENSE.md). It is an engineering aid: its
+results depend on the data entered and on the catalogue values, and a qualified designer should
+check a design before it is built (the licence carries no warranty).
+
+| Component | Used for | Licence |
+|---|---|---|
+| Flutter and the Dart SDK | framework and language | BSD-3-Clause |
+| [`web`](https://pub.dev/packages/web) | browser APIs (files, storage, workers) | BSD-3-Clause |
+| [`xml`](https://pub.dev/packages/xml) | KML, SVG and XLSX | MIT |
+| [`archive`](https://pub.dev/packages/archive) | KMZ, XLSX and zipped shapefiles | MIT |
+| [`image`](https://pub.dev/packages/image) | raster images and the brand assets | MIT |
+| [`cupertino_icons`](https://pub.dev/packages/cupertino_icons) | icon font | MIT |
+| CanvasKit (Skia) | rendering, fetched from Google's CDN when the app starts | BSD-3-Clause |
+| Material Icons, Roboto, Noto | interface fonts (Noto fetched on demand for other scripts) | Apache-2.0, SIL OFL 1.1 |
+
+Online services, reached only when you ask for them, have their own terms; the app shows their
+credits: base maps (© OpenStreetMap contributors under the ODbL, OpenTopoMap under CC-BY-SA, CARTO,
+Esri, Google Maps with your own key) and elevation (Terrain Tiles on AWS Open Data: SRTM/NASA,
+GMTED, ETOPO1; Open-Meteo under CC BY 4.0 with the Copernicus DEM GLO-90; OpenTopoData: NASA SRTM,
+ASTER GDEM).
+
+The manufacturer catalogues in [catalogs/](catalogs/) were compiled from the manufacturers' public
+data sheets, and every pack names its source. Product names and trademarks belong to their owners;
+the project is not affiliated with any of them, and prices are reference values to confirm with a
+dealer.

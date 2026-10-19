@@ -568,7 +568,9 @@ class Designer {
       if (a.emittersPerPlant <= 0 || a.points.length < 3) continue;
       var inside = 0;
       for (final o in outlets) {
-        if (pointInPolygon(o.p, a.points)) inside++;
+        // outlets on the outline count (strict point-in-polygon takes those
+        // on a top or right edge for outside)
+        if (pointInPolygon(o.p, a.points) || pointOnPolygonBoundary(o.p, a.points, tol: 0.01)) inside++;
       }
       if (inside * 2 >= outlets.length) return a.emittersPerPlant;
     }
@@ -1014,8 +1016,10 @@ class Designer {
         unitOf[l.id] = e.key;
       }
     }
-    // BFS from root tracking parent link
+    // BFS from root tracking parent link (and the node each link leads to,
+    // which a search of `parent` per link made quadratic on big zones)
     final parent = <String, GLink?>{root: null};
+    final downNode = <GLink, String>{};
     final queue = [root];
     var head = 0;
     final order = <GLink>[];
@@ -1026,6 +1030,7 @@ class Designer {
         final o = l.other(id);
         if (!parent.containsKey(o)) {
           parent[o] = l;
+          downNode[l] = o;
           order.add(l);
           queue.add(o);
         }
@@ -1037,7 +1042,7 @@ class Designer {
       for (final l in order.reversed) {
         final u = unitOf[l.id];
         if (u == null) continue;
-        final upNode = parent.entries.firstWhere((e) => e.value == l).key;
+        final upNode = downNode[l]!;
         final upFrom = l.other(upNode);
         final pl = parent[upFrom];
         if (pl == null) continue;

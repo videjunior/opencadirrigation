@@ -148,9 +148,11 @@ void main() {
     // exact build identification and the project links
     expect(find.text('Versão $appVersionLabel'), findsOneWidget);
     expect(find.textContaining('$appVersion (build $appBuild) · '), findsOneWidget);
-    expect(find.byKey(const Key('about_github')), findsNothing, reason: 'no repository link');
-    expect(find.textContaining('github.com'), findsNothing);
     expect(find.byKey(const Key('about_site')), findsOneWidget);
+    // the source code, published under the MIT licence
+    expect(find.byKey(const Key('about_repo')), findsOneWidget);
+    expect(find.text('Código-fonte (licença MIT)'), findsOneWidget);
+    expect(find.text('https://github.com/videjunior/opencadirrigation'), findsOneWidget);
     await tapText(tester, 'Fechar');
     // the status bar carries it too
     expect(find.text('v$appVersionFull'), findsOneWidget);

@@ -94,11 +94,6 @@
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Faster first paint: the engine comes from gstatic, the logo is the first image -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="preload" as="image" href="brand/logo-horizontal-1000.png">
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -180,7 +175,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/pt/#breadcrumb"
       }
@@ -220,7 +215,7 @@
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
       "softwareVersion": "1.0.0",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-17",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/pt/?tutorial=1",
@@ -630,10 +625,12 @@
     #oci-landing .cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 6px; }
     #oci-landing .cta a { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; background: #1E2A38; color: #E3F2FD; border: 1px solid #2E4053; }
     #oci-landing .cta a.primary { background: linear-gradient(90deg, #0D47A1, #1976D2); border-color: #1976D2; color: #fff; }
-    #oci-landing .bar { width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
-    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; animation: oci-slide 1.2s ease-in-out infinite; }
+    #oci-landing .bar { visibility: hidden; width: min(280px, 60vw); height: 3px; margin: 18px auto 6px; background: #263238; border-radius: 2px; overflow: hidden; }
+    #oci-landing .bar span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #0D47A1, #29B6F6); border-radius: 2px; }
+    #oci-landing.oci-starting .bar { visibility: visible; }
+    #oci-landing.oci-starting .bar span { animation: oci-slide 1.2s ease-in-out infinite; }
     @keyframes oci-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
-    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; margin: 0; }
+    #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
@@ -648,20 +645,20 @@
 </head>
 <body>
   <noscript><div id="oci-noscript">O OpenCADIrrigation precisa de JavaScript para funcionar. Ative o JavaScript no navegador e recarregue a página.</div></noscript>
-  <!-- Readable content: shown while the app loads, hidden (kept in the page) on Flutter's first frame. -->
+  <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
   <main id="oci-landing">
     <div class="wrap">
       <header>
-        <img src="brand/logo-horizontal-1000.png" alt="OpenCADIrrigation" width="1000" height="336" fetchpriority="high">
+        <img src="brand/logo-horizontal-520.webp?v=8f4cc56c" srcset="brand/logo-horizontal-520.webp?v=8f4cc56c 520w, brand/logo-horizontal-780.webp?v=659e1361 780w, brand/logo-horizontal-1040.webp?v=fd352b1f 1040w" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
         <h1>CAD gratuito para projeto de irrigação pressurizada</h1>
         <p class="tagline">Desenhe, dimensione e documente sistemas de gotejamento, microaspersão, aspersão e pivô central. Direto no navegador, sem instalar nada, com os projetos guardados no seu computador.</p>
         <nav class="cta" aria-label="Abrir o app">
-          <a class="primary" href="https://opencadirrigation.com/pt/">Abrir o app</a>
-          <a href="https://opencadirrigation.com/pt/?tutorial=1">Tutorial interativo</a>
+          <a class="primary" href="https://opencadirrigation.com/pt/" data-app>Abrir o app</a>
+          <a href="https://opencadirrigation.com/pt/?tutorial=1" data-app>Tutorial interativo</a>
           <a href="#exemplos">Ver exemplos prontos</a>
         </nav>
         <div class="bar" aria-hidden="true"><span></span></div>
-        <p class="status" id="oci-status" role="status" aria-live="polite">Carregando o CAD de irrigação…</p>
+        <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica e o cálculo: você traça a área, lança laterais, válvulas e linha principal, aperta F5 e recebe diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. Funciona em 20 idiomas e segue o idioma do seu computador.</p>
 
@@ -692,21 +689,21 @@
         <h2 id="oci-examples">Exemplos prontos para abrir</h2>
         <p>Cada projeto abre completo e calcula com F5. Use-os para conhecer o app ou como ponto de partida.</p>
         <ul class="grid">
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=orchard">Pomar</a></h3><p>Microaspersão em citros e gotejamento em uva, poço com bomba e filtro, terreno em declive.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=garden">Jardim residencial</a></h3><p>Sprays pop-up, rotores e gotejamento nos canteiros, ligados à rede pública com hidrômetro e anti-refluxo.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=sportsField">Campo de futebol</a></h3><p>Campo oficial com aspersores de impacto em cinco linhas, reservatório, bomba e turnos noturnos.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=rowCrop">Lavoura gotejada</a></h3><p>Quatro talhões de tomate com fita gotejadora, filtro de tela, bomba e declive de 1 %.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=pivot">Pivô central</a></h3><p>Pivô de 300 m em milho alimentado por poço e bomba, com relatório de torres, vãos e bocais.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=greenhouse">Estufa de hortaliças</a></h3><p>Quatro túneis com tubo gotejador autocompensante, reservatório, bomba pequena e filtro de discos.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=nursery">Viveiro de mudas</a></h3><p>Canteiros com microaspersores suspensos em malha 4 × 4 m, caixa d’água elevada e bomba pequena.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=coffee">Cafezal em curvas de nível</a></h3><p>Laterais curvas que seguem as curvas de nível da encosta, tubo gotejador PC, poço e bomba.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=bananas">Bananal</a></h3><p>Microaspersores autocompensantes em 5 × 5 m, poço com bomba submersa e filtro de discos.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=sugarcane">Cana-de-açúcar subsuperficial</a></h3><p>Tubo gotejador PC enterrado a 0,3 m em laterais de 180 m, filtro de tela e ventosa.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=gravity">Gotejamento por gravidade</a></h3><p>Reservatório 40 m acima dos talhões, sem bomba, com válvula reguladora de pressão na adutora.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=pasture">Pastagem em aspersão</a></h3><p>Três piquetes com linhas de aspersores de impacto em 12 × 18 m, reservatório e bomba.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=golf">Buraco de golfe</a></h3><p>Tee com sprays, fairway com rotores em malha triangular e green com rotores no perímetro.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=sectorPivot">Pivô setorial com canhão</a></h3><p>Pivô de 250 m que gira 270° com canhão final, lago, bomba de 20 cv e registro.</p></li>
-          <li><h3><a href="https://opencadirrigation.com/pt/?example=linear">Pivô linear</a></h3><p>Lateral móvel de 392 m percorrendo 800 m ao longo de um canal, com captação e bomba.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=orchard" data-app>Pomar</a></h3><p>Microaspersão em citros e gotejamento em uva, poço com bomba e filtro, terreno em declive.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=garden" data-app>Jardim residencial</a></h3><p>Sprays pop-up, rotores e gotejamento nos canteiros, ligados à rede pública com hidrômetro e anti-refluxo.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=sportsField" data-app>Campo de futebol</a></h3><p>Campo oficial com aspersores de impacto em cinco linhas, reservatório, bomba e turnos noturnos.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=rowCrop" data-app>Lavoura gotejada</a></h3><p>Quatro talhões de tomate com fita gotejadora, filtro de tela, bomba e declive de 1 %.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=pivot" data-app>Pivô central</a></h3><p>Pivô de 300 m em milho alimentado por poço e bomba, com relatório de torres, vãos e bocais.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=greenhouse" data-app>Estufa de hortaliças</a></h3><p>Quatro túneis com tubo gotejador autocompensante, reservatório, bomba pequena e filtro de discos.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=nursery" data-app>Viveiro de mudas</a></h3><p>Canteiros com microaspersores suspensos em malha 4 × 4 m, caixa d’água elevada e bomba pequena.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=coffee" data-app>Cafezal em curvas de nível</a></h3><p>Laterais curvas que seguem as curvas de nível da encosta, tubo gotejador PC, poço e bomba.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=bananas" data-app>Bananal</a></h3><p>Microaspersores autocompensantes em 5 × 5 m, poço com bomba submersa e filtro de discos.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=sugarcane" data-app>Cana-de-açúcar subsuperficial</a></h3><p>Tubo gotejador PC enterrado a 0,3 m em laterais de 180 m, filtro de tela e ventosa.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=gravity" data-app>Gotejamento por gravidade</a></h3><p>Reservatório 40 m acima dos talhões, sem bomba, com válvula reguladora de pressão na adutora.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=pasture" data-app>Pastagem em aspersão</a></h3><p>Três piquetes com linhas de aspersores de impacto em 12 × 18 m, reservatório e bomba.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=golf" data-app>Buraco de golfe</a></h3><p>Tee com sprays, fairway com rotores em malha triangular e green com rotores no perímetro.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=sectorPivot" data-app>Pivô setorial com canhão</a></h3><p>Pivô de 250 m que gira 270° com canhão final, lago, bomba de 20 cv e registro.</p></li>
+          <li><h3><a href="https://opencadirrigation.com/pt/?example=linear" data-app>Pivô linear</a></h3><p>Lateral móvel de 392 m percorrendo 800 m ao longo de um canal, com captação e bomba.</p></li>
         </ul>
       </section>
 
@@ -735,7 +732,7 @@
       <footer>
         <nav aria-label="Idiomas">Idiomas: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <strong lang="pt-BR" dir="ltr">Português</strong> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Catálogos de fabricantes e exemplos de projeto podem ser enviados em formato JSON para inclusão no OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-09-22">2026-09-22</time></p>
+        <p class="meta">OpenCADIrrigation 1.0.0 · <time datetime="2026-10-17">2026-10-17</time></p>
       </footer>
     </div>
   </main>
@@ -743,13 +740,65 @@
     (function () {
       var landing = document.getElementById('oci-landing');
       var status = document.getElementById('oci-status');
-      function hide() { if (landing) landing.setAttribute('hidden', ''); }
-      window.addEventListener('flutter-first-frame', hide);
-      setTimeout(function () {
-        if (landing && !landing.hasAttribute('hidden') && status) status.textContent = "O carregamento está demorando. Verifique a conexão ou recarregue a página; o conteúdo acima já pode ser lido.";
-      }, 30000);
+      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+      var prefix = 'opencadirrigation.';
+      var started = false;
+      function remember() {
+        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+      }
+      // The app starts by itself for an app address, the installed app and whoever has used it here before.
+      function wanted() {
+        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+      function start() {
+        if (started) return;
+        started = true;
+        remember();
+        landing.className += ' oci-starting';
+        status.textContent = "Carregando o CAD de irrigação…";
+        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        var engine = document.createElement('link');
+        engine.rel = 'preconnect';
+        engine.href = 'https://www.gstatic.com';
+        engine.crossOrigin = '';
+        document.head.appendChild(engine);
+        var code = document.createElement('link');
+        code.rel = 'preload';
+        code.as = 'script';
+        code.href = 'main.dart.js';
+        document.head.appendChild(code);
+        var boot = document.createElement('script');
+        boot.src = 'flutter_bootstrap.js';
+        boot.async = true;
+        document.body.appendChild(boot);
+        setTimeout(function () {
+          if (!landing.hasAttribute('hidden')) status.textContent = "O carregamento está demorando. Verifique a conexão ou recarregue a página; o conteúdo acima já pode ser lido.";
+        }, 30000);
+      }
+      // The app buttons and example links open the app in this page (the app reads the query of the address);
+      // opened in a new tab, the app starts there by itself.
+      function onAppLink(e) {
+        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+        if (!a) return;
+        remember();
+        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        history.replaceState(null, '', location.pathname + a.search);
+        window.scrollTo(0, 0);
+        start();
+      }
+      document.addEventListener('click', onAppLink);
+      document.addEventListener('auxclick', onAppLink);
+      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+      if (wanted()) start();
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../core/model/entities.dart';
+import '../actions.dart' show feedEnvelopeAction;
 import '../shortcuts.dart';
 import '../state/controller.dart';
 
@@ -437,8 +438,7 @@ class Hotkeys {
       case CadAction.array:
         actions.array();
       case CadAction.feedEnvelope:
-        final n = c.computeFeedEnvelope();
-        c.notify(n == 0 ? c.t('msg.feedNone') : c.t('msg.feedDone', {'n': '$n'}));
+        feedEnvelopeAction(c);
       case CadAction.run:
         actions.runDesign();
       case CadAction.check:

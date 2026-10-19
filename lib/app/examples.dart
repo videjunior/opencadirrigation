@@ -229,7 +229,7 @@ Project buildGardenExample(Tr t, String lang) {
   final v1 = ControlValveEntity(id: p.newId(), position: const Pt(-1, 4), valveSpecId: 'ev25', zoneName: z1, name: z1);
   p.entities.add(v1);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-1, 4), const Pt(0, 4)], scope: HydraulicScope.zone));
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 0, 16, 10), name: t('ex.g.front'), crop: t('ex.g.grass'), netDepthMmPerDay: 5, efficiency: 0.75, useWaterBalance: true, etoMmDay: 5, kc: 0.85, awcMmPerM: 100, rootDepthM: 0.3, mad: 0.5));
+  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 0, 16, 8), name: t('ex.g.front'), crop: t('ex.g.grass'), netDepthMmPerDay: 5, efficiency: 0.75, useWaterBalance: true, etoMmDay: 5, kc: 0.85, awcMmPerM: 100, rootDepthM: 0.3, mad: 0.5));
 
   // zone 2: back lawn 16 × 14 m, rotors 8 × 7 m
   final z2 = t('ex.g.zone2');
