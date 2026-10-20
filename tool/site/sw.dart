@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _sw = SiteText(
-  title: 'OpenCADIrrigation: CAD ya usanifu wa umwagiliaji kivinjarini',
-  description: 'CAD ya bure ya usanifu wa umwagiliaji kivinjarini: matone, vinyunyizio na pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa na DXF/DWG.',
-  keywords: 'usanifu wa umwagiliaji, programu ya umwagiliaji, CAD umwagiliaji, umwagiliaji wa shinikizo, umwagiliaji wa matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, vipimo vya mabomba, usawa wa umwagiliaji, DXF, DWG, umwagiliaji wa bustani, umwagiliaji wa kilimo',
-  h1: 'CAD ya bure kwa usanifu wa umwagiliaji wa shinikizo',
+  title: 'OpenCADIrrigation: programu ya bure ya usanifu wa umwagiliaji',
+  description: 'Programu huria ya bure ya usanifu wa umwagiliaji kivinjarini: matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa na DXF/DWG.',
+  keywords: 'usanifu wa umwagiliaji, programu ya usanifu wa umwagiliaji, programu huria ya umwagiliaji, programu ya umwagiliaji, CAD umwagiliaji, umwagiliaji wa shinikizo, umwagiliaji wa matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, vipimo vya mabomba, usawa wa umwagiliaji, DXF, DWG, umwagiliaji wa bustani, umwagiliaji wa kilimo',
+  h1: 'Programu ya CAD ya bure na huria kwa usanifu wa umwagiliaji',
   tagline: 'Chora, pima ukubwa na uandike nyaraka za mifumo ya matone, vinyunyizio vidogo, vinyunyizio na pivoti ya kati. Moja kwa moja kwenye kivinjari, bila kusakinisha chochote, na miradi yako ikibaki kwenye kompyuta yako.',
   intro: 'OpenCADIrrigation huunganisha mchoro wa CAD, mtandao wa haidroliki na ukokotoaji mahali pamoja: chora eneo, weka laterali, vali na bomba kuu, bonyeza F5 na upate vipimo vya mabomba, shinikizo, usawa, zamu za uendeshaji, orodha ya vifaa na ripoti tayari kuchapishwa. Inapatikana kwa lugha 20, ikifuata lugha ya kompyuta yako.',
   openApp: 'Fungua programu',
@@ -48,8 +48,8 @@ const _sw = SiteText(
   ],
   faqTitle: 'Maswali yanayoulizwa mara kwa mara',
   faq: [
-    ('OpenCADIrrigation ni nini?', 'OpenCADIrrigation ni programu ya wavuti ya bure ya kusanifu mifumo ya umwagiliaji wa shinikizo: CAD yenye injini ya haidroliki inayopanga mtandao, kupima ukubwa wa mabomba, kukagua shinikizo na usawa, na kutoa orodha ya vifaa na ripoti, kuanzia bustani ya nyumbani hadi pivoti ya kati.'),
-    ('Je, OpenCADIrrigation ni bure?', 'Ndiyo. Ni bure kwa kazi za kitaalamu, masomo na matumizi binafsi, bila kujisajili.'),
+    ('OpenCADIrrigation ni nini?', 'OpenCADIrrigation ni programu ya wavuti ya bure na huria ya kusanifu mifumo ya umwagiliaji wa shinikizo: CAD yenye injini ya haidroliki inayopanga mtandao, kupima ukubwa wa mabomba, kukagua shinikizo na usawa, na kutoa orodha ya vifaa na ripoti, kuanzia bustani ya nyumbani hadi pivoti ya kati.'),
+    ('Je, OpenCADIrrigation ni bure?', 'Ndiyo. Ni bure kwa kazi za kitaalamu, masomo na matumizi binafsi, bila kujisajili. Pia ni programu huria chini ya leseni ya MIT, na msimbo chanzo wake umechapishwa kwenye GitHub.'),
     ('Ni kwa ajili ya nani?', 'Kwa wasanifu wa umwagiliaji wa kilimo na wa mandhari, wataalamu wa kilimo na wahandisi, wauzaji wa vifaa, walimu na wanafunzi. Mafunzo shirikishi na mifano 15 iliyo tayari hukuwezesha kuanza bila kusoma mwongozo.'),
     ('Je, ninahitaji kusakinisha chochote?', 'Hapana. Inafanya kazi kwenye Chrome, Edge, Firefox na Safari, kwenye kompyuta, kishikwambi na simu, na inaweza kusakinishwa kama programu (PWA) inayofunguka katika dirisha lake.'),
     ('Je, miradi yangu huhifadhiwa kwenye wingu?', 'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na katika faili za .oci.json unazoweka popote upendapo. Ni mwinuko wa mtandaoni na ramani za msingi tu zinazotumia intaneti, unapoziomba.'),
@@ -62,6 +62,7 @@ const _sw = SiteText(
   noScript: 'OpenCADIrrigation inahitaji JavaScript ili kufanya kazi. Washa JavaScript kwenye kivinjari chako na upakie upya ukurasa.',
   otherLanguages: 'Lugha',
   footer: 'Katalogi za watengenezaji na miradi ya mfano zinaweza kutumwa kwa muundo wa JSON ili kujumuishwa katika OpenCADIrrigation.',
+  sourceCode: 'Msimbo chanzo (leseni ya MIT)',
   subCategory: 'CAD ya umwagiliaji',
   screenshotLabel: 'Usanifu wa umwagiliaji uliopimwa pamoja na matokeo kwa kila kanda',
   notFoundTitle: 'Ukurasa haukupatikana',

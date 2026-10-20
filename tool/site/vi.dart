@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _vi = SiteText(
-  title: 'OpenCADIrrigation: CAD thiết kế tưới ngay trên trình duyệt',
-  description: 'CAD miễn phí thiết kế tưới trên trình duyệt: tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, tính toán thủy lực, bảng kê vật tư, DXF/DWG và PDF.',
-  keywords: 'thiết kế tưới, phần mềm tưới, CAD tưới, tưới có áp, tưới nhỏ giọt, béc phun mini, tưới phun mưa, pivot trung tâm, tính toán thủy lực, chọn đường kính ống, độ đồng đều tưới, DXF, DWG, tưới sân vườn, tưới nông nghiệp, phần mềm tưới miễn phí',
-  h1: 'CAD miễn phí để thiết kế hệ thống tưới có áp',
+  title: 'OpenCADIrrigation: phần mềm thiết kế tưới miễn phí',
+  description: 'Phần mềm thiết kế tưới miễn phí, mã nguồn mở, chạy trên trình duyệt: tưới nhỏ giọt, phun mưa, pivot trung tâm, tính thủy lực, bảng kê vật tư, DXF/DWG.',
+  keywords: 'thiết kế tưới, phần mềm thiết kế tưới, phần mềm tưới mã nguồn mở, phần mềm tưới, CAD tưới, tưới có áp, tưới nhỏ giọt, béc phun mini, tưới phun mưa, pivot trung tâm, tính toán thủy lực, chọn đường kính ống, độ đồng đều tưới, DXF, DWG, tưới sân vườn, tưới nông nghiệp, phần mềm tưới miễn phí',
+  h1: 'Phần mềm CAD thiết kế tưới miễn phí, mã nguồn mở',
   tagline: 'Vẽ, tính toán kích thước và lập hồ sơ cho hệ thống tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm. Ngay trên trình duyệt, không cần cài đặt, dự án được lưu trên máy tính của bạn.',
   intro: 'OpenCADIrrigation kết hợp bản vẽ CAD, mạng thủy lực và tính toán trong cùng một nơi: vẽ khu tưới, bố trí ống nhánh (lateral), van và đường ống chính, nhấn F5 và nhận đường kính ống, áp suất, độ đồng đều, ca vận hành, bảng kê vật tư và báo cáo sẵn sàng để in. Có 20 ngôn ngữ, tự theo ngôn ngữ máy tính của bạn.',
   openApp: 'Mở ứng dụng',
@@ -48,8 +48,8 @@ const _vi = SiteText(
   ],
   faqTitle: 'Câu hỏi thường gặp',
   faq: [
-    ('OpenCADIrrigation là gì?', 'OpenCADIrrigation là ứng dụng web miễn phí để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm.'),
-    ('OpenCADIrrigation có miễn phí không?', 'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký.'),
+    ('OpenCADIrrigation là gì?', 'OpenCADIrrigation là ứng dụng web miễn phí, mã nguồn mở để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm.'),
+    ('OpenCADIrrigation có miễn phí không?', 'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký. Phần mềm cũng là mã nguồn mở theo giấy phép MIT, với mã nguồn được công bố trên GitHub.'),
     ('Ứng dụng dành cho ai?', 'Cho người thiết kế tưới nông nghiệp và tưới cảnh quan, kỹ sư nông học và kỹ sư, đại lý thiết bị, giảng viên và sinh viên. Hướng dẫn tương tác và 15 ví dụ sẵn có giúp bạn bắt đầu mà không cần đọc tài liệu.'),
     ('Tôi có cần cài đặt gì không?', 'Không. Ứng dụng chạy trên Chrome, Edge, Firefox và Safari, trên máy tính, máy tính bảng và điện thoại, và có thể cài như ứng dụng (PWA) để mở trong cửa sổ riêng.'),
     ('Dự án của tôi có được lưu trên đám mây không?', 'Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu. Chỉ cao độ trực tuyến và bản đồ nền mới truy cập internet, khi bạn yêu cầu.'),
@@ -62,6 +62,7 @@ const _vi = SiteText(
   noScript: 'OpenCADIrrigation cần JavaScript để hoạt động. Hãy bật JavaScript trong trình duyệt và tải lại trang.',
   otherLanguages: 'Ngôn ngữ',
   footer: 'Danh mục của nhà sản xuất và dự án mẫu có thể được gửi ở định dạng JSON để đưa vào OpenCADIrrigation.',
+  sourceCode: 'Mã nguồn (giấy phép MIT)',
   subCategory: 'CAD thiết kế tưới',
   screenshotLabel: 'Thiết kế tưới đã tính kích thước với kết quả theo từng khu',
   notFoundTitle: 'Không tìm thấy trang',

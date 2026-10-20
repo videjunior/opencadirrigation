@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
 import 'package:opencadirrigation/app/i18n.dart' show rtlLanguages, supportedLanguages;
-import 'package:opencadirrigation/app/version.dart' show appVersion;
+import 'package:opencadirrigation/app/version.dart' show appRepositoryUrl, appVersion;
 
 import '../tool/site.dart';
 
@@ -60,11 +60,18 @@ void main() {
     expect(html, contains('gtag/js?id=$analyticsId'), reason: 'analytics live in tool/site.dart, not in the generated file');
 
     final graph = jsonLdOf(html)['@graph'] as List;
-    expect(graph.map((e) => (e as Map)['@type']), containsAll(['Organization', 'WebSite', 'WebPage', 'WebApplication', 'BreadcrumbList', 'FAQPage', 'HowTo', 'ItemList']));
+    expect(graph.map((e) => (e as Map)['@type']), containsAll(['Organization', 'WebSite', 'WebPage', 'WebApplication', 'SoftwareSourceCode', 'BreadcrumbList', 'FAQPage', 'HowTo', 'ItemList']));
     final app = graph.firstWhere((e) => (e as Map)['@type'] == 'WebApplication') as Map;
     expect(app['url'], site);
     expect(app['name'], 'OpenCADIrrigation');
     expect(app['isAccessibleForFree'], isTrue);
+    // open source: the licence, the repository and what it builds
+    expect(app['license'], 'https://opensource.org/license/mit');
+    final code = graph.firstWhere((e) => (e as Map)['@type'] == 'SoftwareSourceCode') as Map;
+    expect(code['codeRepository'], appRepositoryUrl);
+    expect(code['license'], app['license']);
+    expect(code['targetProduct'], {'@id': '$site#app'});
+    expect((graph.firstWhere((e) => (e as Map)['@type'] == 'Organization') as Map)['sameAs'], [appRepositoryUrl]);
     expect(html, contains('<link rel="alternate" type="text/markdown" href="${site}llms.txt"'), reason: 'points language models to llms.txt');
     expect(html, isNot(contains('OpenCadIrrigation')));
     // title and description lengths search engines display in full
@@ -128,6 +135,17 @@ void main() {
       for (final w in landingLogoWidths) {
         expect(html, contains('${landingLogo(w)} ${w}w'), reason: '${l.code} $w');
       }
+      // the screenshot further down: lazy, sized (no layout shift), described in the page language
+      final shot = RegExp(r'<img src="screenshots/[^>]*>').firstMatch(html)!.group(0)!;
+      for (final w in landingShotWidths) {
+        expect(shot, contains('${landingShot(w)} ${w}w'), reason: '${l.code} $w');
+      }
+      for (final attribute in ['loading="lazy"', 'decoding="async"', 'width="1440" height="900"', 'alt="${siteText(l.code).screenshotLabel}"']) {
+        expect(shot, contains(attribute), reason: '${l.code}: $attribute');
+      }
+      expect(html.indexOf(shot), greaterThan(html.indexOf('id="oci-how"')), reason: '${l.code}: below the fold, not competing with the logo');
+      // the source code, from every page
+      expect(html, contains('<a href="$appRepositoryUrl">${siteText(l.code).sourceCode}</a>'), reason: l.code);
     }
     expect(File('lib/app/io/prefs_web.dart').readAsStringSync(), contains("'opencadirrigation.\$key'"));
     for (final w in landingLogoWidths) {
@@ -138,6 +156,11 @@ void main() {
       expect(logo.numChannels, 4, reason: 'transparent, like the PNG');
     }
     expect(landingLogo(520), matches(RegExp(r'^brand/logo-horizontal-520\.webp\?v=[0-9a-f]{8}$')));
+    for (final w in landingShotWidths) {
+      final shot = img.decodeWebP(File('web/screenshots/design-$w.webp').readAsBytesSync());
+      expect(shot, isNotNull, reason: '$w');
+      expect((shot!.width, shot.height), (w, w * 900 ~/ 1440), reason: 'same shape as design-1440x900.png');
+    }
     // our bootstrap: Flutter's loader without the deprecated service worker
     final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
     expect(bootstrap, contains('{{flutter_js}}'));
@@ -200,10 +223,10 @@ void main() {
     for (final text in [llms, full]) {
       expect(text, contains('$appVersion, updated $siteLastMod'), reason: 'version and date stated');
       expect(text, isNot(contains('\$')), reason: 'no unexpanded interpolation');
-      for (final banned in ['github', 'open source', 'open-source', 'irricad', 'repository']) {
-        expect(text.toLowerCase(), isNot(contains(banned)), reason: banned);
-      }
+      expect(text, contains('Open source under the MIT licence; source code (Dart and Flutter) at $appRepositoryUrl'));
+      expect(text.toLowerCase(), isNot(contains('irricad')), reason: 'no competing products');
     }
+    expect(llms, contains('- [Source code]($appRepositoryUrl)'));
     // the reference covers what the page cannot hold
     for (final heading in ['## At a glance', '## Hydraulic engine', '## Pipe sizing and optimisation', '## File formats', '## Known limitations', '## Deep links']) {
       expect(full, contains(heading));
@@ -216,7 +239,7 @@ void main() {
     final humans = File('web/humans.txt').readAsStringSync();
     expect(humans, contains('Last update: $siteLastMod'));
     expect(humans, contains('${site}llms.txt'));
-    expect(humans.toLowerCase(), isNot(contains('repository')), reason: 'the source is private');
+    expect(humans, contains('Source code: $appRepositoryUrl (MIT licence)'));
     for (final l in siteLanguages) {
       expect(humans, contains('(/${l.path})'), reason: l.code);
     }

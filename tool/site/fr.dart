@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _fr = SiteText(
-  title: 'OpenCADIrrigation : CAO d’irrigation dans le navigateur',
-  description: 'CAO gratuite d’irrigation dans le navigateur : goutte-à-goutte, micro-aspersion, aspersion et pivots, calcul hydraulique, nomenclature, DXF/DWG et PDF.',
-  keywords: 'conception d’irrigation, logiciel d’irrigation, CAO irrigation, irrigation sous pression, goutte-à-goutte, micro-aspersion, aspersion, pivot central, dimensionnement hydraulique, dimensionnement des conduites, uniformité d’arrosage, DXF, DWG, arrosage des jardins, irrigation agricole, logiciel d’irrigation gratuit',
-  h1: 'CAO gratuite pour la conception de l’irrigation sous pression',
+  title: 'OpenCADIrrigation : logiciel gratuit de conception d’irrigation',
+  description: 'Logiciel gratuit et open source de conception d’irrigation dans le navigateur : goutte-à-goutte, aspersion, pivots, calcul hydraulique, nomenclature, DXF/DWG.',
+  keywords: 'conception d’irrigation, logiciel de conception d’irrigation, logiciel d’irrigation open source, logiciel d’irrigation, CAO irrigation, irrigation sous pression, goutte-à-goutte, micro-aspersion, aspersion, pivot central, dimensionnement hydraulique, dimensionnement des conduites, uniformité d’arrosage, DXF, DWG, arrosage des jardins, irrigation agricole, logiciel d’irrigation gratuit',
+  h1: 'Logiciel de CAO gratuit et open source pour la conception de l’irrigation',
   tagline: 'Dessinez, dimensionnez et documentez des réseaux en goutte-à-goutte, micro-aspersion, aspersion et pivot central. Directement dans le navigateur, sans rien installer, avec vos projets conservés sur votre ordinateur.',
   intro: 'OpenCADIrrigation réunit le dessin CAO, le réseau hydraulique et le calcul : tracez la surface, posez les rampes, les vannes et la conduite principale, appuyez sur F5 et obtenez diamètres, pressions, uniformité, tours d’arrosage, nomenclature et rapports prêts à imprimer. Disponible en 20 langues, selon la langue de votre ordinateur.',
   openApp: 'Ouvrir l’application',
@@ -48,8 +48,8 @@ const _fr = SiteText(
   ],
   faqTitle: 'Questions fréquentes',
   faq: [
-    ('Qu’est-ce qu’OpenCADIrrigation ?', 'OpenCADIrrigation est une application web gratuite pour concevoir des systèmes d’irrigation sous pression : une CAO dotée d’un moteur hydraulique qui trace le réseau, dimensionne les conduites, vérifie les pressions et l’uniformité et produit la nomenclature et les rapports, du jardin résidentiel au pivot central.'),
-    ('OpenCADIrrigation est-il gratuit ?', 'Oui. Il est gratuit pour un usage professionnel, universitaire et personnel, sans inscription.'),
+    ('Qu’est-ce qu’OpenCADIrrigation ?', 'OpenCADIrrigation est une application web gratuite et open source pour concevoir des systèmes d’irrigation sous pression : une CAO dotée d’un moteur hydraulique qui trace le réseau, dimensionne les conduites, vérifie les pressions et l’uniformité et produit la nomenclature et les rapports, du jardin résidentiel au pivot central.'),
+    ('OpenCADIrrigation est-il gratuit ?', 'Oui. Il est gratuit pour un usage professionnel, universitaire et personnel, sans inscription. Il est aussi open source, sous licence MIT, et son code source est publié sur GitHub.'),
     ('À qui s’adresse-t-il ?', 'Aux concepteurs d’irrigation agricole et paysagère, aux agronomes et ingénieurs, aux distributeurs de matériel, aux enseignants et aux étudiants. Le tutoriel interactif et 15 exemples prêts à l’emploi permettent de commencer sans lire de manuel.'),
     ('Faut-il installer quelque chose ?', 'Non. Il fonctionne dans Chrome, Edge, Firefox et Safari, sur ordinateur, tablette et téléphone, et peut s’installer comme application (PWA) qui s’ouvre dans sa propre fenêtre.'),
     ('Mes projets sont-ils stockés dans le cloud ?', 'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous rangez où vous voulez. Seules l’altitude en ligne et les fonds de carte accèdent à Internet, quand vous les demandez.'),
@@ -62,6 +62,7 @@ const _fr = SiteText(
   noScript: 'OpenCADIrrigation a besoin de JavaScript pour fonctionner. Activez JavaScript dans votre navigateur et rechargez la page.',
   otherLanguages: 'Langues',
   footer: 'Les catalogues de fabricants et les projets d’exemple peuvent être envoyés au format JSON pour être intégrés à OpenCADIrrigation.',
+  sourceCode: 'Code source (licence MIT)',
   subCategory: 'CAO pour l’irrigation',
   screenshotLabel: 'Projet d’irrigation dimensionné avec résultats par zone',
   notFoundTitle: 'Page introuvable',

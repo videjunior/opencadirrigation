@@ -1,6 +1,6 @@
 # OpenCADIrrigation: complete reference
 
-> OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+> OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
 
 This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.0.1, updated 2026-10-19.
 
@@ -11,6 +11,7 @@ This file describes OpenCADIrrigation for language models and other automated re
 | Name | OpenCADIrrigation (one word, "CAD" in capitals) |
 | What | Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, centre pivot and linear move) with a hydraulic engine, automatic pipe sizing, bill of materials and reports |
 | Price | Free for professional, academic and personal use; no account or sign-up |
+| Licence | Open source under the MIT licence; source code (Dart and Flutter) at https://github.com/videjunior/opencadirrigation |
 | Runs in | Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; nothing to download |
 | Privacy | Projects stay on the user's computer (browser storage and `.oci.json` files); nothing is uploaded to a server |
 | Languages | 20: Indonesian, German, English, Spanish, French, Hausa, Swahili, Portuguese, Vietnamese, Turkish, Russian, Arabic, Urdu, Hindi, Marathi, Bengali, Punjabi, Telugu, Chinese, Japanese |
@@ -202,11 +203,11 @@ Every page of the site accepts these parameters, for example https://opencadirri
 
 ### What is OpenCADIrrigation?
 
-OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
 
 ### Is OpenCADIrrigation free?
 
-Yes. It is free for professional, academic and personal use, with no sign-up.
+Yes. It is free for professional, academic and personal use, with no sign-up. It is also open source under the MIT licence, with the source code published on GitHub.
 
 ### Who is it for?
 
@@ -238,27 +239,27 @@ The interface, the reports, the tutorial and the example projects are available 
 
 | Language | Code | Page | Description on that page |
 |---|---|---|---|
-| Bahasa Indonesia (Indonesian) | `id` | https://opencadirrigation.com/id/ | CAD gratis desain irigasi di peramban: irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, perhitungan hidraulik, daftar material dan DXF/DWG. |
-| Deutsch (German) | `de` | https://opencadirrigation.com/de/ | Kostenloses CAD für Bewässerungsplanung im Browser: Tropfbewässerung, Mikroregner, Regner und Center-Pivots, Hydraulikberechnung, Stückliste, DXF/DWG. |
-| English | `en` | https://opencadirrigation.com/ | Free browser CAD for irrigation design: drip, micro-sprinklers, sprinklers and centre pivots, hydraulic pipe sizing, bill of materials, DXF/DWG and PDF. |
-| Español (Spanish) | `es` | https://opencadirrigation.com/es/ | CAD gratuito para diseño de riego en el navegador: goteo, microaspersión, aspersión y pivote central, cálculo hidráulico, lista de materiales y DXF/DWG. |
-| Français (French) | `fr` | https://opencadirrigation.com/fr/ | CAO gratuite d’irrigation dans le navigateur : goutte-à-goutte, micro-aspersion, aspersion et pivots, calcul hydraulique, nomenclature, DXF/DWG et PDF. |
-| Hausa | `ha` | https://opencadirrigation.com/ha/ | CAD kyauta don ƙirar ban ruwa a mai binciken gizo: ban ruwa ta ɗigo, masu fesa ruwa da pivot na tsakiya, lissafin bututu, jerin kayan aiki da DXF/DWG. |
-| Kiswahili (Swahili) | `sw` | https://opencadirrigation.com/sw/ | CAD ya bure ya usanifu wa umwagiliaji kivinjarini: matone, vinyunyizio na pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa na DXF/DWG. |
-| Português (Portuguese) | `pt` | https://opencadirrigation.com/pt/ | CAD gratuito de projeto de irrigação no navegador: gotejamento, microaspersão, aspersão e pivô central, cálculo hidráulico, lista de materiais e DXF/DWG. |
-| Tiếng Việt (Vietnamese) | `vi` | https://opencadirrigation.com/vi/ | CAD miễn phí thiết kế tưới trên trình duyệt: tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, tính toán thủy lực, bảng kê vật tư, DXF/DWG và PDF. |
-| Türkçe (Turkish) | `tr` | https://opencadirrigation.com/tr/ | Tarayıcıda sulama projelendirmesi için ücretsiz CAD: damla sulama, yağmurlama ve center pivot, hidrolik boyutlandırma, malzeme listesi, DXF/DWG. |
-| Русский (Russian) | `ru` | https://opencadirrigation.com/ru/ | Бесплатная САПР для проектирования орошения в браузере: капельный полив, микродождеватели, дождевание и круговые машины, гидравлический расчёт и DXF/DWG. |
-| العربية (Arabic) | `ar` | https://opencadirrigation.com/ar/ | برنامج CAD مجاني لتصميم الري بالضغط في المتصفح: الري بالتنقيط والرشاشات الصغيرة والرش والمحور المركزي، والحساب الهيدروليكي، وقائمة المواد، وDXF/DWG وPDF. |
-| اردو (Urdu) | `ur` | https://opencadirrigation.com/ur/ | براؤزر میں دباؤ والی آبپاشی کے ڈیزائن کے لیے مفت CAD: ڈرپ، مائیکرو اسپرنکلر، اسپرنکلر اور سینٹر پیوٹ، ہائیڈرولک سائزنگ، سامان کی فہرست، DXF/DWG اور PDF۔ |
-| हिन्दी (Hindi) | `hi` | https://opencadirrigation.com/hi/ | ब्राउज़र में सिंचाई डिज़ाइन के लिए मुफ़्त CAD: ड्रिप, माइक्रो स्प्रिंकलर, स्प्रिंकलर और सेंटर पिवट, हाइड्रोलिक साइज़िंग, सामग्री सूची, DXF/DWG और PDF। |
-| मराठी (Marathi) | `mr` | https://opencadirrigation.com/mr/ | ब्राउझरमध्ये सिंचन डिझाइनसाठी मोफत CAD: ठिबक, मायक्रो स्प्रिंकलर, तुषार आणि सेंटर पिव्हट, हायड्रॉलिक आकारनिश्चिती, साहित्य यादी, DXF/DWG आणि PDF. |
-| বাংলা (Bengali) | `bn` | https://opencadirrigation.com/bn/ | ব্রাউজারে সেচ ডিজাইনের জন্য বিনামূল্যের CAD: ড্রিপ, মাইক্রো স্প্রিংকলার, স্প্রিংকলার ও সেন্টার পিভট, হাইড্রোলিক সাইজিং, উপকরণ তালিকা, DXF/DWG ও PDF। |
-| ਪੰਜਾਬੀ (Punjabi) | `pa` | https://opencadirrigation.com/pa/ | ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ ਲਈ ਮੁਫ਼ਤ CAD: ਡ੍ਰਿਪ, ਮਾਈਕ੍ਰੋ ਸਪ੍ਰਿੰਕਲਰ, ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਸੈਂਟਰ ਪਿਵਟ, ਹਾਈਡ੍ਰੌਲਿਕ ਸਾਈਜ਼ਿੰਗ, ਸਮੱਗਰੀ ਸੂਚੀ, DXF/DWG ਅਤੇ PDF। |
-| తెలుగు (Telugu) | `te` | https://opencadirrigation.com/te/ | బ్రౌజర్‌లో నీటిపారుదల డిజైన్ కోసం ఉచిత CAD: బిందు సేద్యం, స్ప్రింక్లర్లు, సెంటర్ పివట్, హైడ్రాలిక్ సైజింగ్, సామగ్రి జాబితా, DXF/DWG, PDF. |
-| 中文 (Chinese) | `zh` | https://opencadirrigation.com/zh/ | 在浏览器中进行压力灌溉设计的免费 CAD：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。 |
-| 日本語 (Japanese) | `ja` | https://opencadirrigation.com/ja/ | ブラウザで使える加圧灌漑設計用の無料CAD。点滴灌漑、マイクロスプリンクラー、スプリンクラー、センターピボット、水理計算と管径設計、部材リスト、DXF/DWG、PDF、Excelに対応。 |
+| Bahasa Indonesia (Indonesian) | `id` | https://opencadirrigation.com/id/ | Software desain irigasi gratis dan sumber terbuka di peramban: irigasi tetes, sprinkler, pivot tengah, perhitungan hidraulik, daftar material, DXF/DWG. |
+| Deutsch (German) | `de` | https://opencadirrigation.com/de/ | Kostenlose Open-Source-Software für Bewässerungsplanung im Browser: Tropfbewässerung, Regner, Center-Pivots, Rohrdimensionierung, Stückliste, DXF/DWG. |
+| English | `en` | https://opencadirrigation.com/ | Free, open-source irrigation design software in your browser: drip, micro-sprinklers, sprinklers and centre pivots, pipe sizing, bill of materials, DXF/DWG. |
+| Español (Spanish) | `es` | https://opencadirrigation.com/es/ | Software gratuito y de código abierto para diseño de riego en el navegador: goteo, aspersión, pivote central, cálculo hidráulico, materiales y DXF/DWG. |
+| Français (French) | `fr` | https://opencadirrigation.com/fr/ | Logiciel gratuit et open source de conception d’irrigation dans le navigateur : goutte-à-goutte, aspersion, pivots, calcul hydraulique, nomenclature, DXF/DWG. |
+| Hausa | `ha` | https://opencadirrigation.com/ha/ | Manhajar ƙirar ban ruwa kyauta, mai buɗaɗɗen lambar tushe, a mai binciken gizo: ban ruwa ta ɗigo, masu fesa ruwa, pivot, girman bututu da DXF/DWG. |
+| Kiswahili (Swahili) | `sw` | https://opencadirrigation.com/sw/ | Programu huria ya bure ya usanifu wa umwagiliaji kivinjarini: matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa na DXF/DWG. |
+| Português (Portuguese) | `pt` | https://opencadirrigation.com/pt/ | Software gratuito e de código aberto para projeto de irrigação no navegador: gotejamento, aspersão, pivô central, cálculo hidráulico, materiais e DXF/DWG. |
+| Tiếng Việt (Vietnamese) | `vi` | https://opencadirrigation.com/vi/ | Phần mềm thiết kế tưới miễn phí, mã nguồn mở, chạy trên trình duyệt: tưới nhỏ giọt, phun mưa, pivot trung tâm, tính thủy lực, bảng kê vật tư, DXF/DWG. |
+| Türkçe (Turkish) | `tr` | https://opencadirrigation.com/tr/ | Ücretsiz ve açık kaynaklı sulama projelendirme yazılımı, tarayıcıda: damla sulama, yağmurlama, center pivot, hidrolik hesap, malzeme listesi, DXF/DWG. |
+| Русский (Russian) | `ru` | https://opencadirrigation.com/ru/ | Бесплатная программа с открытым кодом для проектирования орошения в браузере: капельный полив, дождевание, круговые машины, гидравлика, спецификация, DXF/DWG. |
+| العربية (Arabic) | `ar` | https://opencadirrigation.com/ar/ | برنامج مجاني ومفتوح المصدر لتصميم الري في المتصفح: الري بالتنقيط والرش والمحور المركزي، والحساب الهيدروليكي، وقائمة المواد، وDXF/DWG وPDF. |
+| اردو (Urdu) | `ur` | https://opencadirrigation.com/ur/ | آبپاشی ڈیزائن کا مفت اور اوپن سورس سافٹ ویئر، براؤزر میں: ڈرپ، اسپرنکلر اور سینٹر پیوٹ، ہائیڈرولک سائزنگ، سامان کی فہرست، DXF/DWG اور PDF۔ |
+| हिन्दी (Hindi) | `hi` | https://opencadirrigation.com/hi/ | ब्राउज़र में मुफ़्त और ओपन सोर्स सिंचाई डिज़ाइन सॉफ़्टवेयर: ड्रिप, स्प्रिंकलर और सेंटर पिवट, हाइड्रोलिक साइज़िंग, सामग्री सूची, DXF/DWG और PDF। |
+| मराठी (Marathi) | `mr` | https://opencadirrigation.com/mr/ | ब्राउझरमध्ये मोफत आणि ओपन सोर्स सिंचन डिझाइन सॉफ्टवेअर: ठिबक, तुषार आणि सेंटर पिव्हट, हायड्रॉलिक आकारनिश्चिती, साहित्य यादी, DXF/DWG आणि PDF. |
+| বাংলা (Bengali) | `bn` | https://opencadirrigation.com/bn/ | ব্রাউজারে বিনামূল্যের ও ওপেন সোর্স সেচ ডিজাইন সফটওয়্যার: ড্রিপ, স্প্রিংকলার ও সেন্টার পিভট, হাইড্রোলিক সাইজিং, উপকরণ তালিকা, DXF/DWG ও PDF। |
+| ਪੰਜਾਬੀ (Punjabi) | `pa` | https://opencadirrigation.com/pa/ | ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਮੁਫ਼ਤ ਅਤੇ ਓਪਨ ਸੋਰਸ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ ਸਾਫ਼ਟਵੇਅਰ: ਡ੍ਰਿਪ, ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਸੈਂਟਰ ਪਿਵਟ, ਹਾਈਡ੍ਰੌਲਿਕ ਸਾਈਜ਼ਿੰਗ, ਸਮੱਗਰੀ ਸੂਚੀ, DXF/DWG ਅਤੇ PDF। |
+| తెలుగు (Telugu) | `te` | https://opencadirrigation.com/te/ | బ్రౌజర్‌లో ఉచిత, ఓపెన్ సోర్స్ నీటిపారుదల డిజైన్ సాఫ్ట్‌వేర్: బిందు సేద్యం, స్ప్రింక్లర్లు, సెంటర్ పివట్, హైడ్రాలిక్ సైజింగ్, సామగ్రి జాబితా, DXF/DWG, PDF. |
+| 中文 (Chinese) | `zh` | https://opencadirrigation.com/zh/ | 免费开源的灌溉设计软件，直接在浏览器中使用：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。 |
+| 日本語 (Japanese) | `ja` | https://opencadirrigation.com/ja/ | ブラウザで使える無料・オープンソースの灌漑設計ソフト。点滴灌漑、スプリンクラー、センターピボット、水理計算と管径設計、部材リスト、DXF/DWG、PDF、Excelに対応。 |
 
 ## Citing
 
-OpenCADIrrigation, version 1.0.1. https://opencadirrigation.com/
+OpenCADIrrigation, version 1.0.1. https://opencadirrigation.com/ (source code: https://github.com/videjunior/opencadirrigation, MIT licence)

@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _zh = SiteText(
-  title: 'OpenCADIrrigation：浏览器中的灌溉设计 CAD',
-  description: '在浏览器中进行压力灌溉设计的免费 CAD：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。',
-  keywords: '灌溉设计, 灌溉软件, 灌溉 CAD, 压力灌溉, 滴灌设计, 微喷灌, 喷灌设计, 中心支轴式喷灌机, 水力计算, 管径计算, 灌水均匀度, DXF, DWG, 园林灌溉, 农业灌溉, 免费灌溉设计软件',
-  h1: '免费的压力灌溉设计 CAD',
+  title: 'OpenCADIrrigation：免费开源的灌溉设计软件',
+  description: '免费开源的灌溉设计软件，直接在浏览器中使用：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。',
+  keywords: '灌溉设计, 灌溉设计软件, 开源灌溉软件, 灌溉软件, 灌溉 CAD, 压力灌溉, 滴灌设计, 微喷灌, 喷灌设计, 中心支轴式喷灌机, 水力计算, 管径计算, 灌水均匀度, DXF, DWG, 园林灌溉, 农业灌溉, 免费灌溉设计软件',
+  h1: '免费开源的灌溉设计 CAD 软件',
   tagline: '绘制、计算并出图：滴灌、微喷、喷灌和中心支轴式系统。直接在浏览器中运行，无需安装，项目保存在您自己的电脑上。',
   intro: 'OpenCADIrrigation 将 CAD 绘图、水力管网和计算集于一处：绘制灌区边界，布置毛管、阀门和干管，按 F5 即可得到管径、压力、均匀度、轮灌组、材料清单和可直接打印的报告。提供 20 种语言，自动跟随您电脑的语言。',
   openApp: '打开应用',
@@ -48,8 +48,8 @@ const _zh = SiteText(
   ],
   faqTitle: '常见问题',
   faq: [
-    ('OpenCADIrrigation 是什么？', 'OpenCADIrrigation 是一款用于压力灌溉系统设计的免费网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。'),
-    ('OpenCADIrrigation 免费吗？', '是的。可免费用于专业、学术和个人用途，无需注册。'),
+    ('OpenCADIrrigation 是什么？', 'OpenCADIrrigation 是一款用于压力灌溉系统设计的免费开源网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。'),
+    ('OpenCADIrrigation 免费吗？', '是的。可免费用于专业、学术和个人用途，无需注册。它还以 MIT 许可证开源，源代码发布在 GitHub 上。'),
     ('适合哪些人使用？', '农业与园林灌溉设计师、农艺师和工程师、设备经销商、教师和学生。借助交互式教程和 15 个现成示例，无需阅读手册即可上手。'),
     ('需要安装什么吗？', '不需要。它可在电脑、平板和手机上的 Chrome、Edge、Firefox 和 Safari 中运行，也可以安装为在独立窗口中打开的应用（PWA）。'),
     ('我的项目会存储在云端吗？', '不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中。只有在线高程和底图会在您请求时访问互联网。'),
@@ -62,6 +62,7 @@ const _zh = SiteText(
   noScript: 'OpenCADIrrigation 需要 JavaScript 才能运行。请在浏览器中启用 JavaScript 并刷新页面。',
   otherLanguages: '语言',
   footer: '欢迎以 JSON 格式提交厂商产品目录和示例项目，以便收录到 OpenCADIrrigation 中。',
+  sourceCode: '源代码（MIT 许可证）',
   subCategory: '灌溉设计 CAD',
   screenshotLabel: '已完成管径计算的灌溉设计及各分区结果',
   notFoundTitle: '页面未找到',
