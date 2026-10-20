@@ -1,6 +1,7 @@
 /* TEAM */
 Project: OpenCADIrrigation
 Site: https://opencadirrigation.com/
+Source code: https://github.com/videjunior/opencadirrigation (MIT licence)
 
 /* SITE */
 Last update: 2026-10-19

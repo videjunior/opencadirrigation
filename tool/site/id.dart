@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _id = SiteText(
-  title: 'OpenCADIrrigation: CAD desain irigasi di peramban',
-  description: 'CAD gratis desain irigasi di peramban: irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, perhitungan hidraulik, daftar material dan DXF/DWG.',
-  keywords: 'desain irigasi, perangkat lunak irigasi, CAD irigasi, irigasi bertekanan, irigasi tetes, mikro sprinkler, irigasi sprinkler, pivot tengah, perhitungan hidraulik, dimensi pipa, keseragaman irigasi, DXF, DWG, irigasi taman, irigasi pertanian, software irigasi gratis',
-  h1: 'CAD gratis untuk desain irigasi bertekanan',
+  title: 'OpenCADIrrigation: software desain irigasi gratis',
+  description: 'Software desain irigasi gratis dan sumber terbuka di peramban: irigasi tetes, sprinkler, pivot tengah, perhitungan hidraulik, daftar material, DXF/DWG.',
+  keywords: 'desain irigasi, software desain irigasi, software irigasi open source, perangkat lunak irigasi, CAD irigasi, irigasi bertekanan, irigasi tetes, mikro sprinkler, irigasi sprinkler, pivot tengah, perhitungan hidraulik, dimensi pipa, keseragaman irigasi, DXF, DWG, irigasi taman, irigasi pertanian, software irigasi gratis',
+  h1: 'Software CAD gratis dan sumber terbuka untuk desain irigasi',
   tagline: 'Gambar, hitung ukuran dan dokumentasikan sistem irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah. Langsung di peramban, tanpa instalasi, dengan proyek tersimpan di komputer Anda sendiri.',
   intro: 'OpenCADIrrigation menyatukan gambar CAD, jaringan hidraulik dan perhitungan: gambar batas lahan, pasang lateral, katup dan pipa utama, tekan F5 dan dapatkan diameter pipa, tekanan, keseragaman, giliran operasi, daftar material serta laporan siap cetak. Tersedia dalam 20 bahasa, mengikuti bahasa komputer Anda.',
   openApp: 'Buka aplikasi',
@@ -48,8 +48,8 @@ const _id = SiteText(
   ],
   faqTitle: 'Pertanyaan umum',
   faq: [
-    ('Apa itu OpenCADIrrigation?', 'OpenCADIrrigation adalah aplikasi web gratis untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah.'),
-    ('Apakah OpenCADIrrigation gratis?', 'Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran.'),
+    ('Apa itu OpenCADIrrigation?', 'OpenCADIrrigation adalah aplikasi web gratis dan sumber terbuka untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah.'),
+    ('Apakah OpenCADIrrigation gratis?', 'Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub.'),
     ('Untuk siapa aplikasi ini?', 'Untuk perancang irigasi pertanian dan lanskap, agronom dan insinyur, dealer peralatan, pengajar dan mahasiswa. Tutorial interaktif dan 15 contoh siap pakai memungkinkan Anda mulai tanpa membaca manual.'),
     ('Apakah saya perlu memasang sesuatu?', 'Tidak. Aplikasi berjalan di Chrome, Edge, Firefox dan Safari, di komputer, tablet dan ponsel, dan dapat dipasang sebagai aplikasi (PWA) yang terbuka di jendelanya sendiri.'),
     ('Apakah proyek saya disimpan di cloud?', 'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja. Hanya elevasi online dan peta dasar yang mengakses internet, saat Anda memintanya.'),
@@ -62,6 +62,7 @@ const _id = SiteText(
   noScript: 'OpenCADIrrigation memerlukan JavaScript. Aktifkan JavaScript di peramban Anda lalu muat ulang halaman.',
   otherLanguages: 'Bahasa',
   footer: 'Katalog produsen dan proyek contoh dapat dikirim dalam format JSON untuk dimasukkan ke OpenCADIrrigation.',
+  sourceCode: 'Kode sumber (lisensi MIT)',
   subCategory: 'CAD irigasi',
   screenshotLabel: 'Desain irigasi yang sudah dihitung dengan hasil per zona',
   notFoundTitle: 'Halaman tidak ditemukan',

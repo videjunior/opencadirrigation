@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _de = SiteText(
-  title: 'OpenCADIrrigation: CAD für Bewässerungsplanung im Browser',
-  description: 'Kostenloses CAD für Bewässerungsplanung im Browser: Tropfbewässerung, Mikroregner, Regner und Center-Pivots, Hydraulikberechnung, Stückliste, DXF/DWG.',
-  keywords: 'Bewässerungsplanung, Bewässerungssoftware, CAD Bewässerung, Tropfbewässerung, Mikroberegnung, Beregnung, Center-Pivot, hydraulische Berechnung, Rohrdimensionierung, Gleichmäßigkeit der Bewässerung, DXF, DWG, Gartenbewässerung, landwirtschaftliche Bewässerung, kostenlose Bewässerungssoftware',
-  h1: 'Kostenloses CAD für die Planung von Druckbewässerung',
+  title: 'OpenCADIrrigation: kostenlose Software für Bewässerungsplanung',
+  description: 'Kostenlose Open-Source-Software für Bewässerungsplanung im Browser: Tropfbewässerung, Regner, Center-Pivots, Rohrdimensionierung, Stückliste, DXF/DWG.',
+  keywords: 'Bewässerungsplanung, Software für Bewässerungsplanung, Open-Source-Bewässerungssoftware, Bewässerungssoftware, CAD Bewässerung, Tropfbewässerung, Mikroberegnung, Beregnung, Center-Pivot, hydraulische Berechnung, Rohrdimensionierung, Gleichmäßigkeit der Bewässerung, DXF, DWG, Gartenbewässerung, landwirtschaftliche Bewässerung, kostenlose Bewässerungssoftware',
+  h1: 'Kostenlose Open-Source-CAD-Software für die Bewässerungsplanung',
   tagline: 'Zeichnen, dimensionieren und dokumentieren Sie Tropf-, Mikroregner-, Regner- und Center-Pivot-Anlagen. Direkt im Browser, ohne Installation, mit den Projekten auf Ihrem eigenen Computer.',
   intro: 'OpenCADIrrigation vereint CAD-Zeichnung, hydraulisches Netz und Berechnung: Fläche umreißen, Laterale, Ventile und Hauptleitung verlegen, F5 drücken und Rohrdurchmesser, Drücke, Gleichmäßigkeit, Betriebsschichten, Stückliste und druckfertige Berichte erhalten. In 20 Sprachen verfügbar, passend zur Sprache Ihres Computers.',
   openApp: 'App öffnen',
@@ -48,8 +48,8 @@ const _de = SiteText(
   ],
   faqTitle: 'Häufige Fragen',
   faq: [
-    ('Was ist OpenCADIrrigation?', 'OpenCADIrrigation ist eine kostenlose Webanwendung für die Planung von Druckbewässerungsanlagen: ein CAD mit Hydraulik-Rechenkern, der das Netz anlegt, die Rohre dimensioniert, Drücke und Gleichmäßigkeit prüft und Stückliste und Berichte erstellt – vom Hausgarten bis zum Center-Pivot.'),
-    ('Ist OpenCADIrrigation kostenlos?', 'Ja. Es ist kostenlos für berufliche, akademische und private Nutzung, ohne Registrierung.'),
+    ('Was ist OpenCADIrrigation?', 'OpenCADIrrigation ist eine kostenlose Open-Source-Webanwendung für die Planung von Druckbewässerungsanlagen: ein CAD mit Hydraulik-Rechenkern, der das Netz anlegt, die Rohre dimensioniert, Drücke und Gleichmäßigkeit prüft und Stückliste und Berichte erstellt – vom Hausgarten bis zum Center-Pivot.'),
+    ('Ist OpenCADIrrigation kostenlos?', 'Ja. Es ist kostenlos für berufliche, akademische und private Nutzung, ohne Registrierung. Außerdem ist es Open Source unter der MIT-Lizenz; der Quellcode ist auf GitHub veröffentlicht.'),
     ('Für wen ist es gedacht?', 'Für Planer landwirtschaftlicher und landschaftsgärtnerischer Bewässerung, Agronomen und Ingenieure, Fachhändler, Lehrende und Studierende. Mit dem interaktiven Tutorial und 15 fertigen Beispielen geht es ohne Handbuch los.'),
     ('Muss ich etwas installieren?', 'Nein. Es läuft in Chrome, Edge, Firefox und Safari auf Computer, Tablet und Smartphone und lässt sich als App (PWA) installieren, die sich in einem eigenen Fenster öffnet.'),
     ('Werden meine Projekte in der Cloud gespeichert?', 'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie ablegen, wo Sie möchten. Nur die Online-Geländehöhen und die Hintergrundkarten greifen auf das Internet zu, und nur wenn Sie sie anfordern.'),
@@ -62,6 +62,7 @@ const _de = SiteText(
   noScript: 'OpenCADIrrigation benötigt JavaScript. Aktivieren Sie JavaScript im Browser und laden Sie die Seite neu.',
   otherLanguages: 'Sprachen',
   footer: 'Herstellerkataloge und Beispielprojekte können im JSON-Format zur Aufnahme in OpenCADIrrigation eingereicht werden.',
+  sourceCode: 'Quellcode (MIT-Lizenz)',
   subCategory: 'CAD für Bewässerung',
   screenshotLabel: 'Dimensionierte Bewässerungsanlage mit Ergebnissen je Zone',
   notFoundTitle: 'Seite nicht gefunden',

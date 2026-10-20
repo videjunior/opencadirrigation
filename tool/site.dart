@@ -29,7 +29,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:opencadirrigation/app/i18n.dart' show languageNames, languageTag, rtlLanguages, supportedLanguages;
-import 'package:opencadirrigation/app/version.dart' show appVersion;
+import 'package:opencadirrigation/app/version.dart' show appRepositoryUrl, appVersion;
 
 part 'site/ar.dart';
 part 'site/bn.dart';
@@ -157,6 +157,7 @@ class SiteText {
     required this.noScript,
     required this.otherLanguages,
     required this.footer,
+    required this.sourceCode,
     required this.subCategory,
     required this.screenshotLabel,
     required this.notFoundTitle,
@@ -186,6 +187,10 @@ class SiteText {
   final String noScript;
   final String otherLanguages;
   final String footer;
+
+  /// Label of the footer link to the source code on GitHub (the app's
+  /// `about.repo`).
+  final String sourceCode;
   final String subCategory;
   final String screenshotLabel;
   final String notFoundTitle;
@@ -194,10 +199,10 @@ class SiteText {
 }
 
 const _pt = SiteText(
-  title: 'OpenCADIrrigation: CAD de projeto de irrigação no navegador',
-  description: 'CAD gratuito de projeto de irrigação no navegador: gotejamento, microaspersão, aspersão e pivô central, cálculo hidráulico, lista de materiais e DXF/DWG.',
-  keywords: 'projeto de irrigação, CAD irrigação, software de irrigação, irrigação pressurizada, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
-  h1: 'CAD gratuito para projeto de irrigação pressurizada',
+  title: 'OpenCADIrrigation: software grátis de projeto de irrigação',
+  description: 'Software gratuito e de código aberto para projeto de irrigação no navegador: gotejamento, aspersão, pivô central, cálculo hidráulico, materiais e DXF/DWG.',
+  keywords: 'projeto de irrigação, software de projeto de irrigação, software de irrigação grátis, software de irrigação de código aberto, CAD irrigação, software de irrigação, irrigação pressurizada, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
+  h1: 'Software CAD gratuito e de código aberto para projeto de irrigação',
   tagline: 'Desenhe, dimensione e documente sistemas de gotejamento, microaspersão, aspersão e pivô central. Direto no navegador, sem instalar nada, com os projetos guardados no seu computador.',
   intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica e o cálculo: você traça a área, lança laterais, válvulas e linha principal, aperta F5 e recebe diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. Funciona em 20 idiomas e segue o idioma do seu computador.',
   openApp: 'Abrir o app',
@@ -241,8 +246,8 @@ const _pt = SiteText(
   ],
   faqTitle: 'Perguntas frequentes',
   faq: [
-    ('O que é o OpenCADIrrigation?', 'O OpenCADIrrigation é um aplicativo web gratuito para projetar sistemas de irrigação pressurizada: um CAD com motor hidráulico que desenha a rede, dimensiona as tubulações, verifica pressões e uniformidade e produz a lista de materiais e os relatórios, do jardim residencial ao pivô central.'),
-    ('O OpenCADIrrigation é gratuito?', 'Sim. É gratuito para uso profissional, acadêmico e pessoal, sem cadastro.'),
+    ('O que é o OpenCADIrrigation?', 'O OpenCADIrrigation é um aplicativo web gratuito e de código aberto para projetar sistemas de irrigação pressurizada: um CAD com motor hidráulico que desenha a rede, dimensiona as tubulações, verifica pressões e uniformidade e produz a lista de materiais e os relatórios, do jardim residencial ao pivô central.'),
+    ('O OpenCADIrrigation é gratuito?', 'Sim. É gratuito para uso profissional, acadêmico e pessoal, sem cadastro. Também é de código aberto, sob a licença MIT, com o código-fonte publicado no GitHub.'),
     ('Para quem ele é?', 'Para projetistas de irrigação agrícola e paisagística, agrônomos e engenheiros, revendas de equipamentos, professores e estudantes. O tutorial interativo e 15 exemplos prontos permitem começar sem ler manual.'),
     ('Preciso instalar alguma coisa?', 'Não. Ele roda em Chrome, Edge, Firefox e Safari, no computador, no tablet e no celular, e pode ser instalado como aplicativo (PWA) para abrir em janela própria.'),
     ('Meus projetos ficam na nuvem?', 'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser. Só a elevação online e os mapas base acessam a internet, quando você pede.'),
@@ -255,6 +260,7 @@ const _pt = SiteText(
   noScript: 'O OpenCADIrrigation precisa de JavaScript para funcionar. Ative o JavaScript no navegador e recarregue a página.',
   otherLanguages: 'Idiomas',
   footer: 'Catálogos de fabricantes e exemplos de projeto podem ser enviados em formato JSON para inclusão no OpenCADIrrigation.',
+  sourceCode: 'Código-fonte (licença MIT)',
   subCategory: 'CAD para irrigação',
   screenshotLabel: 'Projeto de irrigação dimensionado com resultados por zona',
   notFoundTitle: 'Página não encontrada',
@@ -263,10 +269,10 @@ const _pt = SiteText(
 );
 
 const _en = SiteText(
-  title: 'OpenCADIrrigation: browser-based irrigation design CAD',
-  description: 'Free browser CAD for irrigation design: drip, micro-sprinklers, sprinklers and centre pivots, hydraulic pipe sizing, bill of materials, DXF/DWG and PDF.',
-  keywords: 'irrigation design software, irrigation CAD, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
-  h1: 'Free CAD for pressurised irrigation design',
+  title: 'OpenCADIrrigation: free, open-source irrigation CAD software',
+  description: 'Free, open-source irrigation design software in your browser: drip, micro-sprinklers, sprinklers and centre pivots, pipe sizing, bill of materials, DXF/DWG.',
+  keywords: 'irrigation design software, free irrigation design software, open-source irrigation software, irrigation CAD, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
+  h1: 'Free, open-source CAD software for irrigation design',
   tagline: 'Draw, size and document drip, micro-sprinkler, sprinkler and centre-pivot systems. Right in the browser, nothing to install, with your projects kept on your own computer.',
   intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation together: trace the area, lay out laterals, valves and the mainline, press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. Available in 20 languages, following your computer\'s language.',
   openApp: 'Open the app',
@@ -310,8 +316,8 @@ const _en = SiteText(
   ],
   faqTitle: 'Frequently asked questions',
   faq: [
-    ('What is OpenCADIrrigation?', 'OpenCADIrrigation is a free web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.'),
-    ('Is OpenCADIrrigation free?', 'Yes. It is free for professional, academic and personal use, with no sign-up.'),
+    ('What is OpenCADIrrigation?', 'OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.'),
+    ('Is OpenCADIrrigation free?', 'Yes. It is free for professional, academic and personal use, with no sign-up. It is also open source under the MIT licence, with the source code published on GitHub.'),
     ('Who is it for?', 'Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.'),
     ('Do I need to install anything?', 'No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.'),
     ('Are my projects stored in the cloud?', 'No. Projects are saved in your browser and as .oci.json files you keep wherever you like. Only the online elevation and the base maps reach the internet, when you ask for them.'),
@@ -324,6 +330,7 @@ const _en = SiteText(
   noScript: 'OpenCADIrrigation needs JavaScript to run. Enable JavaScript in your browser and reload the page.',
   otherLanguages: 'Languages',
   footer: 'Manufacturer catalogues and example projects can be sent as JSON for inclusion in OpenCADIrrigation.',
+  sourceCode: 'Source code (MIT licence)',
   subCategory: 'Irrigation CAD',
   screenshotLabel: 'Sized irrigation design with results per zone',
   notFoundTitle: 'Page not found',
@@ -332,10 +339,10 @@ const _en = SiteText(
 );
 
 const _es = SiteText(
-  title: 'OpenCADIrrigation: CAD de diseño de riego en el navegador',
-  description: 'CAD gratuito para diseño de riego en el navegador: goteo, microaspersión, aspersión y pivote central, cálculo hidráulico, lista de materiales y DXF/DWG.',
-  keywords: 'diseño de riego, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
-  h1: 'CAD gratuito para diseño de riego presurizado',
+  title: 'OpenCADIrrigation: software gratuito de diseño de riego',
+  description: 'Software gratuito y de código abierto para diseño de riego en el navegador: goteo, aspersión, pivote central, cálculo hidráulico, materiales y DXF/DWG.',
+  keywords: 'diseño de riego, software de diseño de riego, software de riego gratis, software de riego de código abierto, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
+  h1: 'Software CAD gratuito y de código abierto para diseño de riego',
   tagline: 'Dibuje, dimensione y documente sistemas de goteo, microaspersión, aspersión y pivote central. Directamente en el navegador, sin instalar nada, con los proyectos guardados en su propio equipo.',
   intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica y el cálculo: trace el área, coloque laterales, válvulas y línea principal, pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. Disponible en 20 idiomas, según el idioma de su equipo.',
   openApp: 'Abrir la aplicación',
@@ -379,8 +386,8 @@ const _es = SiteText(
   ],
   faqTitle: 'Preguntas frecuentes',
   faq: [
-    ('¿Qué es OpenCADIrrigation?', 'OpenCADIrrigation es una aplicación web gratuita para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.'),
-    ('¿OpenCADIrrigation es gratuito?', 'Sí. Es gratuito para uso profesional, académico y personal, sin registro.'),
+    ('¿Qué es OpenCADIrrigation?', 'OpenCADIrrigation es una aplicación web gratuita y de código abierto para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.'),
+    ('¿OpenCADIrrigation es gratuito?', 'Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub.'),
     ('¿Para quién es?', 'Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo y 15 ejemplos listos permiten empezar sin leer un manual.'),
     ('¿Necesito instalar algo?', 'No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.'),
     ('¿Mis proyectos se guardan en la nube?', 'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide.'),
@@ -393,6 +400,7 @@ const _es = SiteText(
   noScript: 'OpenCADIrrigation necesita JavaScript para funcionar. Active JavaScript en el navegador y recargue la página.',
   otherLanguages: 'Idiomas',
   footer: 'Los catálogos de fabricantes y los proyectos de ejemplo pueden enviarse en formato JSON para incluirse en OpenCADIrrigation.',
+  sourceCode: 'Código fuente (licencia MIT)',
   subCategory: 'CAD para riego',
   screenshotLabel: 'Diseño de riego dimensionado con resultados por zona',
   notFoundTitle: 'Página no encontrada',
@@ -433,11 +441,21 @@ String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').repl
 /// phone, at 1× to 2× pixel density.
 const landingLogoWidths = [520, 780, 1040];
 
-/// Address of the landing logo [width] wide, versioned by its content:
-/// firebase.json lets browsers keep images for a month, and a new logo gets a
-/// new address.
-String landingLogo(int width) {
-  final path = 'brand/logo-horizontal-$width.webp';
+/// Address of the landing logo [width] wide.
+String landingLogo(int width) => versioned('brand/logo-horizontal-$width.webp');
+
+/// Widths of the app screenshot under "How it works"
+/// (`web/screenshots/design-<width>.webp`, encoded from
+/// `design-1440x900.png`): up to 940 px wide on the page, at 1× to 1.5×.
+const landingShotWidths = [720, 1080, 1440];
+
+/// Address of the landing screenshot [width] wide.
+String landingShot(int width) => versioned('screenshots/design-$width.webp');
+
+/// Address of the file at [path] inside `web/`, versioned by its content:
+/// firebase.json lets browsers keep images for a month, and a new image gets
+/// a new address.
+String versioned(String path) {
   var hash = 0x811c9dc5; // 32-bit FNV-1a
   for (final byte in File('web/$path').readAsBytesSync()) {
     hash = ((hash ^ byte) * 0x01000193) & 0xffffffff;
@@ -461,9 +479,12 @@ const _subjects = [
   ('Computer-aided design', 'Computer-aided_design', 'Q184793'),
 ];
 
+/// Licence of the application and its source code.
+const licenseUrl = 'https://opensource.org/license/mit';
+
 /// JSON-LD graph of a page: organisation, web site, this web page, a
-/// one-level breadcrumb, the application, its FAQ, how it works and the
-/// example gallery, all in the language of the page.
+/// one-level breadcrumb, the application, its source code, its FAQ, how it
+/// works and the example gallery, all in the language of the page.
 String jsonLd(SiteLang lang) {
   final t = siteText(lang.code);
   final graph = [
@@ -473,6 +494,7 @@ String jsonLd(SiteLang lang) {
       'name': 'OpenCADIrrigation',
       'url': siteUrl,
       'logo': {'@type': 'ImageObject', 'url': '${siteUrl}brand/logo-square.png', 'width': 1254, 'height': 1254},
+      'sameAs': [appRepositoryUrl],
     },
     {
       '@type': 'WebSite',
@@ -529,6 +551,7 @@ String jsonLd(SiteLang lang) {
       'dateModified': siteLastMod,
       'softwareHelp': {'@type': 'CreativeWork', 'url': '${lang.url}?tutorial=1', 'name': t.tutorial},
       'isAccessibleForFree': true,
+      'license': licenseUrl,
       'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD', 'availability': 'https://schema.org/InStock'},
       'inLanguage': [for (final l in siteLanguages) l.tag],
       'keywords': t.keywords,
@@ -539,6 +562,20 @@ String jsonLd(SiteLang lang) {
       ],
       'author': {'@id': '$siteUrl#org'},
       'publisher': {'@id': '$siteUrl#org'},
+    },
+    {
+      '@type': 'SoftwareSourceCode',
+      '@id': '$siteUrl#code',
+      'name': 'OpenCADIrrigation',
+      'description': t.description,
+      'url': appRepositoryUrl,
+      'codeRepository': appRepositoryUrl,
+      'license': licenseUrl,
+      'programmingLanguage': 'Dart',
+      'runtimePlatform': 'Flutter (web)',
+      'version': appVersion,
+      'targetProduct': {'@id': '$siteUrl#app'},
+      'author': {'@id': '$siteUrl#org'},
     },
     {
       '@type': 'FAQPage',
@@ -611,11 +648,15 @@ const _style = '''
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
     #oci-landing ol.steps li { margin: 8px 0; }
+    #oci-landing figure { margin: 22px 0 0; }
+    #oci-landing figure img { display: block; width: 100%; height: auto; border: 1px solid #263238; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    #oci-landing figcaption { margin-top: 8px; text-align: center; color: #90A4AE; font-size: .92rem; }
     #oci-landing dl dt { font-weight: 600; color: #ECEFF1; margin-top: 14px; }
     #oci-landing dl dd { margin: 4px 0 0; }
     #oci-landing footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid #263238; color: #90A4AE; font-size: .92rem; }
     #oci-landing footer nav { line-height: 1.9; }
     #oci-landing footer .meta { font-size: .85rem; color: #78909C; }
+    #oci-landing footer time { white-space: nowrap; }
     #oci-noscript { background: #B71C1C; color: #fff; padding: 12px 20px; text-align: center; font: 15px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 ''';
 
@@ -733,6 +774,10 @@ $_analytics
     b.writeln('          <li><strong>${_esc(name)}.</strong> ${_esc(text)}</li>');
   }
   b.writeln('''        </ol>
+        <figure>
+          <img src="${landingShot(landingShotWidths.first)}" srcset="${[for (final w in landingShotWidths) '${landingShot(w)} ${w}w'].join(', ')}" sizes="(max-width: 980px) calc(100vw - 40px), 940px" alt="${_esc(t.screenshotLabel)}" width="1440" height="900" loading="lazy" decoding="async">
+          <figcaption>${_esc(t.screenshotLabel)}</figcaption>
+        </figure>
       </section>
 
       <section id="exemplos" aria-labelledby="oci-examples">
@@ -758,7 +803,7 @@ $_analytics
       <footer>
         <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>
         <p>${_esc(t.footer)}</p>
-        <p class="meta">OpenCADIrrigation $appVersion · <time datetime="$siteLastMod">$siteLastMod</time></p>
+        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · <time datetime="$siteLastMod">$siteLastMod</time></p>
       </footer>
     </div>
   </main>
@@ -831,8 +876,9 @@ $_analytics
   return b.toString();
 }
 
-/// sitemap.xml with the entry pages, their hreflang alternates and the
-/// images they show (for image search).
+/// sitemap.xml with the entry pages, their hreflang alternates and their
+/// images (for image search): the screenshot and logo on the page, the
+/// sharing image and the screenshot of the app manifest.
 String renderSitemap() {
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
@@ -847,7 +893,7 @@ String renderSitemap() {
       b.writeln('    <xhtml:link rel="alternate" hreflang="${a.tag}" href="${a.url}"/>');
     }
     b.writeln('    <xhtml:link rel="alternate" hreflang="x-default" href="${siteLang('en').url}"/>');
-    for (final image in ['screenshots/design-1440x900.png', 'og-image.png', 'brand/logo-horizontal-1000.png']) {
+    for (final image in [landingShot(landingShotWidths.last), landingLogo(landingLogoWidths.last), 'og-image.png', 'screenshots/design-1440x900.png']) {
       b.writeln('    <image:image><image:loc>$siteUrl$image</image:loc></image:image>');
     }
     b.writeln('  </url>');
@@ -904,6 +950,7 @@ String renderHumans() {
   return '''/* TEAM */
 Project: OpenCADIrrigation
 Site: $siteUrl
+Source code: $appRepositoryUrl (MIT licence)
 
 /* SITE */
 Last update: $siteLastMod

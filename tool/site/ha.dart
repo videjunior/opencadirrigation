@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _ha = SiteText(
-  title: 'OpenCADIrrigation: CAD na ƙirar ban ruwa a mai binciken gizo',
-  description: 'CAD kyauta don ƙirar ban ruwa a mai binciken gizo: ban ruwa ta ɗigo, masu fesa ruwa da pivot na tsakiya, lissafin bututu, jerin kayan aiki da DXF/DWG.',
-  keywords: 'ƙirar ban ruwa, manhajar ban ruwa, CAD ban ruwa, ban ruwa ta matsi, ban ruwa ta ɗigo, masu fesa ruwa, pivot na tsakiya, lissafin ruwa, girman bututu, daidaiton ban ruwa, DXF, DWG, ban ruwan lambu, ban ruwan gona',
-  h1: 'CAD kyauta don ƙirar ban ruwa ta matsi',
+  title: 'OpenCADIrrigation: manhajar ƙirar ban ruwa kyauta',
+  description: 'Manhajar ƙirar ban ruwa kyauta, mai buɗaɗɗen lambar tushe, a mai binciken gizo: ban ruwa ta ɗigo, masu fesa ruwa, pivot, girman bututu da DXF/DWG.',
+  keywords: 'ƙirar ban ruwa, manhajar ƙirar ban ruwa, manhajar ban ruwa mai buɗaɗɗen tushe, manhajar ban ruwa, CAD ban ruwa, ban ruwa ta matsi, ban ruwa ta ɗigo, masu fesa ruwa, pivot na tsakiya, lissafin ruwa, girman bututu, daidaiton ban ruwa, DXF, DWG, ban ruwan lambu, ban ruwan gona',
+  h1: 'Manhajar CAD kyauta mai buɗaɗɗen lambar tushe don ƙirar ban ruwa',
   tagline: 'Zana, auna girma kuma ka rubuta bayanan tsarin ban ruwa ta ɗigo, ƙananan masu fesa ruwa, masu fesa ruwa da pivot na tsakiya. Kai tsaye a mai binciken gizo, ba tare da girka komai ba, kuma ayyukanka suna zama a kwamfutarka.',
   intro: 'OpenCADIrrigation yana haɗa zanen CAD, hanyar sadarwar ruwa da lissafi wuri ɗaya: zana iyakar wurin, shimfiɗa layukan lateral, bawuloli da babban bututu, danna F5 ka samu girman bututu, matsi, daidaito, jadawalin aiki, jerin kayan aiki da rahotanni a shirye don bugawa. Akwai shi a harsuna 20, yana bin harshen kwamfutarka.',
   openApp: 'Buɗe manhajar',
@@ -48,8 +48,8 @@ const _ha = SiteText(
   ],
   faqTitle: 'Tambayoyin da ake yawan yi',
   faq: [
-    ('Mene ne OpenCADIrrigation?', 'OpenCADIrrigation manhajar yanar gizo ce kyauta don ƙirar tsarin ban ruwa ta matsi: CAD mai injin lissafin ruwa wanda ke shimfiɗa hanyar sadarwa, yake auna girman bututu, yake duba matsi da daidaito, sannan yake samar da jerin kayan aiki da rahotanni, daga lambun gida har zuwa pivot na tsakiya.'),
-    ('Shin OpenCADIrrigation kyauta ne?', 'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba.'),
+    ('Mene ne OpenCADIrrigation?', 'OpenCADIrrigation manhajar yanar gizo ce kyauta, mai buɗaɗɗen lambar tushe, don ƙirar tsarin ban ruwa ta matsi: CAD mai injin lissafin ruwa wanda ke shimfiɗa hanyar sadarwa, yake auna girman bututu, yake duba matsi da daidaito, sannan yake samar da jerin kayan aiki da rahotanni, daga lambun gida har zuwa pivot na tsakiya.'),
+    ('Shin OpenCADIrrigation kyauta ne?', 'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba. Haka kuma lambar tushensa a buɗe take ƙarƙashin lasisin MIT, kuma an wallafa ta a GitHub.'),
     ('Wa aka yi shi dominsa?', 'Ga masu ƙirar ban ruwa na gona da na lambuna, masana aikin gona da injiniyoyi, dillalan kayan aiki, malamai da ɗalibai. Koyarwa mai mu\'amala da misalai 15 da aka shirya suna ba ka damar farawa ba tare da karanta littafin jagora ba.'),
     ('Shin sai na girka wani abu?', 'A\'a. Yana aiki a Chrome, Edge, Firefox da Safari, a kwamfuta, tablet da waya, kuma ana iya girka shi a matsayin manhaja (PWA) mai buɗewa a tagarta.'),
     ('Shin ana ajiye ayyukana a gajimare (cloud)?', 'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a fayilolin .oci.json da kake ajiyewa inda kake so. Tsayin ƙasa na intanet da taswirorin bango ne kaɗai ke amfani da intanet, idan ka nema.'),
@@ -62,6 +62,7 @@ const _ha = SiteText(
   noScript: 'OpenCADIrrigation yana buƙatar JavaScript don aiki. Kunna JavaScript a mai binciken gizonka sannan ka sake loda shafin.',
   otherLanguages: 'Harsuna',
   footer: 'Ana iya aiko da kundin masana\'antun da misalan ayyuka a tsarin JSON don a saka su a OpenCADIrrigation.',
+  sourceCode: 'Lambar tushe (lasisin MIT)',
   subCategory: 'CAD na ban ruwa',
   screenshotLabel: 'Ƙirar ban ruwa da aka auna girma tare da sakamako na kowane yanki',
   notFoundTitle: 'Ba a sami shafin ba',

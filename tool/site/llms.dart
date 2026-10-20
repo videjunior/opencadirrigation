@@ -6,12 +6,13 @@ part of '../site.dart';
 // project, with links to the page of every other language. The page texts
 // come from `_en`; the technical facts below follow README.md, so update both
 // when the app changes (and keep to the editorial rules: no competing
-// products, no repository links or open-source claims).
+// products).
 
 /// Short facts, as `(label, value)`, shared by both files.
 List<(String, String)> _facts() => [
   ('What', 'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, centre pivot and linear move) with a hydraulic engine, automatic pipe sizing, bill of materials and reports'),
   ('Price', 'Free for professional, academic and personal use; no account or sign-up'),
+  ('Licence', 'Open source under the MIT licence; source code (Dart and Flutter) at $appRepositoryUrl'),
   ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; nothing to download'),
   ('Privacy', 'Projects stay on the user\'s computer (browser storage and `.oci.json` files); nothing is uploaded to a server'),
   ('Languages', '${siteLanguages.length}: ${[for (final l in siteLanguages) _englishNames[l.code]].join(', ')}'),
@@ -194,6 +195,7 @@ String renderLlmsTxt() {
     ..writeln('- [OpenCADIrrigation]($siteUrl): the app and its page in English; the app opens in the visitor\'s language when it speaks it')
     ..writeln('- [${en.tutorial}]($siteUrl?tutorial=1): a guided tour of every function on a sample project')
     ..writeln('- [Sized example]($siteUrl?design=1): the sample orchard, designed as soon as it opens')
+    ..writeln('- [Source code]($appRepositoryUrl): the whole application in Dart and Flutter, MIT licence')
     ..writeln()
     ..writeln('## Reference')
     ..writeln()
@@ -309,6 +311,6 @@ String renderLlmsFullTxt() {
     ..writeln()
     ..writeln('## Citing')
     ..writeln()
-    ..writeln('OpenCADIrrigation, version $appVersion. $siteUrl');
+    ..writeln('OpenCADIrrigation, version $appVersion. $siteUrl (source code: $appRepositoryUrl, MIT licence)');
   return b.toString();
 }

@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 const _tr = SiteText(
-  title: 'OpenCADIrrigation: tarayıcıda sulama projelendirme CAD',
-  description: 'Tarayıcıda sulama projelendirmesi için ücretsiz CAD: damla sulama, yağmurlama ve center pivot, hidrolik boyutlandırma, malzeme listesi, DXF/DWG.',
-  keywords: 'sulama projesi, sulama yazılımı, sulama CAD, basınçlı sulama, damla sulama, mini yağmurlayıcı, yağmurlama sulama, center pivot, hidrolik hesap, boru çapı hesabı, sulama üniformitesi, DXF, DWG, bahçe sulama, tarımsal sulama, ücretsiz sulama programı',
-  h1: 'Basınçlı sulama projelendirmesi için ücretsiz CAD',
+  title: 'OpenCADIrrigation: ücretsiz sulama projelendirme yazılımı',
+  description: 'Ücretsiz ve açık kaynaklı sulama projelendirme yazılımı, tarayıcıda: damla sulama, yağmurlama, center pivot, hidrolik hesap, malzeme listesi, DXF/DWG.',
+  keywords: 'sulama projesi, sulama projelendirme yazılımı, açık kaynak sulama yazılımı, sulama yazılımı, sulama CAD, basınçlı sulama, damla sulama, mini yağmurlayıcı, yağmurlama sulama, center pivot, hidrolik hesap, boru çapı hesabı, sulama üniformitesi, DXF, DWG, bahçe sulama, tarımsal sulama, ücretsiz sulama programı',
+  h1: 'Sulama projelendirmesi için ücretsiz, açık kaynaklı CAD yazılımı',
   tagline: 'Damla, mini yağmurlayıcı, yağmurlama ve center pivot sistemlerini çizin, boyutlandırın ve belgeleyin. Doğrudan tarayıcıda, hiçbir şey kurmadan, projeleriniz kendi bilgisayarınızda kalarak.',
   intro: 'OpenCADIrrigation, CAD çizimini, hidrolik şebekeyi ve hesabı tek bir yerde toplar: alanı çizin, lateralleri, vanaları ve ana hattı yerleştirin, F5 tuşuna basın; boru çapları, basınçlar, üniformite, sulama vardiyaları, malzeme listesi ve yazdırmaya hazır raporlar elde edin. 20 dilde kullanılabilir ve bilgisayarınızın dilini izler.',
   openApp: 'Uygulamayı aç',
@@ -48,8 +48,8 @@ const _tr = SiteText(
   ],
   faqTitle: 'Sık sorulan sorular',
   faq: [
-    ('OpenCADIrrigation nedir?', 'OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar.'),
-    ('OpenCADIrrigation ücretsiz mi?', 'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez.'),
+    ('OpenCADIrrigation nedir?', 'OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz ve açık kaynaklı bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar.'),
+    ('OpenCADIrrigation ücretsiz mi?', 'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez. Ayrıca MIT lisansıyla açık kaynaklıdır; kaynak kodu GitHub’da yayımlanmıştır.'),
     ('Kimler için?', 'Tarımsal ve peyzaj sulama projecileri, ziraat mühendisleri ve mühendisler, ekipman bayileri, öğretmenler ve öğrenciler için. Etkileşimli eğitim ve 15 hazır örnek sayesinde kılavuz okumadan başlayabilirsiniz.'),
     ('Bir şey kurmam gerekiyor mu?', 'Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.'),
     ('Projelerim bulutta mı saklanıyor?', 'Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır. Yalnızca çevrimiçi yükseklik verisi ve altlık haritalar, siz istediğinizde internete erişir.'),
@@ -62,6 +62,7 @@ const _tr = SiteText(
   noScript: 'OpenCADIrrigation’ın çalışması için JavaScript gerekir. Tarayıcınızda JavaScript’i etkinleştirip sayfayı yeniden yükleyin.',
   otherLanguages: 'Diller',
   footer: 'Üretici katalogları ve örnek projeler, OpenCADIrrigation’a eklenmek üzere JSON biçiminde gönderilebilir.',
+  sourceCode: 'Kaynak kodu (MIT lisansı)',
   subCategory: 'Sulama CAD',
   screenshotLabel: 'Bölge bazında sonuçlarıyla boyutlandırılmış sulama projesi',
   notFoundTitle: 'Sayfa bulunamadı',
