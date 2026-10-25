@@ -123,7 +123,10 @@ m³/s; `setting` the default outlet pressure of a PRV (m).
 `H = a·Q² + b·Q + c` through them (three or more points; two give a straight line; one gives the
 EPANET-style three-point curve). `eff` (0–1), `kw` (motor power), `minQ`/`maxQ` (m³/s), `cost`,
 `sub` (`true` for a submersible pump, installed at the water level; `false` or absent for a
-surface pump, whose suction lift is checked).
+surface pump, whose suction lift is checked), `hz` (the mains frequency the curve was measured at;
+on a project whose mains frequency differs — Design parameters — a fixed-speed pump turns in
+proportion, so a 60 Hz curve on 50 Hz mains gives 5/6 of the flow and 69 % of the head; absent =
+not stated, read as it is), `effPts` and `npsh` (lists of `[Q, efficiency]` and `[Q, NPSH required]`).
 
 ### Pipes (`pipes`) and fittings (`fittings`)
 

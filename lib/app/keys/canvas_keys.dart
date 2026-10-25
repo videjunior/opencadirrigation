@@ -2,6 +2,8 @@
 /// controller while the canvas is mounted).
 library;
 
+import '../../core/model/geometry.dart';
+
 abstract class CanvasKeyTarget {
   /// 'Escape', 'Enter' or 'Backspace' to the active tool, then repaint.
   void toolKey(String key);
@@ -15,4 +17,12 @@ abstract class CanvasKeyTarget {
   /// Shift changed: recompute the rubber band (angle lock).
   void modifiersChanged();
   void redraw();
+
+  /// The previous point of the active tool and the cursor (world), for
+  /// coordinates typed relative to them.
+  Pt? get referencePoint;
+  Pt? get cursorPoint;
+
+  /// Gives the active tool [p] as if it had been clicked there.
+  void feedPoint(Pt p);
 }

@@ -32,8 +32,63 @@ class Terrain {
   bool _dirty = false;
   Tin? _tin;
 
-  bool get isEmpty => _samples.isEmpty;
+  bool get isEmpty => _samples.isEmpty && _breaklines.isEmpty;
   int get sampleCount => _samples.length;
+
+  /// Breaklines as given: vertices and their elevations (NaN = unknown).
+  final List<(List<Pt>, List<double>)> _breaklines = [];
+  List<List<(double, double, double)>>? _resolved;
+  bool _resolving = false;
+
+  int get breaklineCount => _breaklines.length;
+
+  /// Adds a breakline: the polyline [pts] with the elevation of every vertex
+  /// in [zs] (NaN where unknown: taken from the other data there), sampled
+  /// every [densify] metres with the elevation varying linearly along each
+  /// segment. Its segments become edges of the TIN, so the surface folds
+  /// along it; its samples also feed the IDW interpolation.
+  void addBreakline(List<Pt> pts, List<double> zs) {
+    if (pts.length < 2) return;
+    _breaklines.add((List.of(pts), [for (var i = 0; i < pts.length; i++) i < zs.length ? zs[i] : double.nan]));
+    _resolved = null;
+    _dirty = true;
+  }
+
+  /// The breaklines densified, with every elevation known; their samples
+  /// join the model the first time (unknown vertex elevations interpolated
+  /// from the other samples first).
+  List<List<(double, double, double)>> _breaklinePolylines() {
+    final done = _resolved;
+    if (done != null || _resolving) return done ?? const [];
+    _resolving = true;
+    final out = <List<(double, double, double)>>[];
+    final adds = <TerrainSample>[];
+    for (final (pts, zs) in _breaklines) {
+      final z = [for (var i = 0; i < pts.length; i++) zs[i].isFinite ? zs[i] : (_samples.isEmpty ? double.nan : idwAt(pts[i], fallback: double.nan))];
+      final line = <(double, double, double)>[];
+      for (var i = 0; i < pts.length; i++) {
+        if (i > 0) {
+          final a = pts[i - 1], b = pts[i];
+          final n = math.max(1, (a.distanceTo(b) / densify).ceil());
+          for (var k = 1; k < n; k++) {
+            final f = k / n;
+            final q = Pt.lerp(a, b, f);
+            line.add((q.x, q.y, z[i - 1] + (z[i] - z[i - 1]) * f));
+          }
+        }
+        line.add((pts[i].x, pts[i].y, z[i]));
+      }
+      out.add(line);
+      for (final (x, y, zz) in line) {
+        if (zz.isFinite) adds.add(TerrainSample(Pt(x, y), zz));
+      }
+    }
+    _resolved = out;
+    _samples.addAll(adds);
+    _dirty = true;
+    _resolving = false;
+    return out;
+  }
   List<TerrainSample> get samples => List.unmodifiable(_samples);
 
   /// Largest sample count triangulated as is; bigger surveys are decimated
@@ -44,9 +99,10 @@ class Terrain {
   Tin get tin {
     var t = _tin;
     if (t == null || _dirty) {
+      final lines = _breaklinePolylines();
       final n = _samples.length;
       final step = n > maxTinPoints ? (n / maxTinPoints).ceil() : 1;
-      t = Tin.build([for (var i = 0; i < n; i += step) (_samples[i].p.x, _samples[i].p.y, _samples[i].z)]);
+      t = Tin.build([for (var i = 0; i < n; i += step) (_samples[i].p.x, _samples[i].p.y, _samples[i].z)], breaklines: lines);
       _tin = t;
       if (_dirty) _rebuild();
     }
@@ -55,6 +111,8 @@ class Terrain {
 
   void clear() {
     _samples.clear();
+    _breaklines.clear();
+    _resolved = null;
     _grid.clear();
     _tin = null;
     _dirty = false;
@@ -109,6 +167,7 @@ class Terrain {
   /// Elevation at [p]. Returns [fallback] when no data. With the TIN method
   /// points outside the triangulated hull fall back to IDW.
   double elevationAt(Pt p, {double fallback = 0, int neighbours = 8}) {
+    if (_breaklines.isNotEmpty && _resolved == null) _breaklinePolylines();
     if (_samples.isEmpty) return fallback;
     if (method == TerrainMethod.tin) {
       final z = tin.elevationAt(p);
@@ -119,6 +178,7 @@ class Terrain {
 
   /// Inverse-distance interpolation over the nearest samples.
   double idwAt(Pt p, {double fallback = 0, int neighbours = 8}) {
+    if (_breaklines.isNotEmpty && _resolved == null) _breaklinePolylines();
     if (_samples.isEmpty) return fallback;
     if (_dirty) _rebuild();
     // gather candidates from expanding rings; cells share a hashed key, so a
@@ -175,6 +235,21 @@ class Terrain {
     final dzdx = (elevationAt(p + const Pt(h, 0)) - elevationAt(p - const Pt(h, 0))) / (2 * h);
     final dzdy = (elevationAt(p + const Pt(0, h)) - elevationAt(p - const Pt(0, h))) / (2 * h);
     return math.sqrt(dzdx * dzdx + dzdy * dzdy);
+  }
+
+  /// Slope (m/m) and aspect (radians, mathematical angle of the direction of
+  /// steepest descent) at [p], from the TIN or by central differences;
+  /// null when the terrain is empty.
+  (double, double)? slopeAspectAt(Pt p) {
+    if (_samples.isEmpty) return null;
+    if (method == TerrainMethod.tin) {
+      final s = tin.slopeAt(p);
+      if (s != null && s.$1.isFinite) return s;
+    }
+    const h = 1.0;
+    final dzdx = (elevationAt(p + const Pt(h, 0)) - elevationAt(p - const Pt(h, 0))) / (2 * h);
+    final dzdy = (elevationAt(p + const Pt(0, h)) - elevationAt(p - const Pt(0, h))) / (2 * h);
+    return (math.sqrt(dzdx * dzdx + dzdy * dzdy), math.atan2(-dzdy, -dzdx));
   }
 
   /// Contour polylines every [interval] metres generated from the TIN.

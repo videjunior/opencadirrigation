@@ -289,7 +289,7 @@ class CatalogIo {
     final c = Catalog();
     final idC = col(['id']), nameC = col(['name', 'nome', 'nombre', 'description', 'descricao']);
     final costC = col(['cost', 'custo', 'costo', 'price', 'preco']);
-    final supC = col(['supplier', 'fornecedor', 'proveedor']), codeC = col(['code', 'codigo', 'sku']);
+    final supC = col(['supplier', 'fornecedor', 'proveedor']), codeC = col(['code', 'codigo', 'sku']), finameC = col(['finame', 'bndes']);
     // "1.234,56", "R$ 12,50", "35 m"…
     double num(List<String> r, int i, [double def = 0]) => i >= 0 && i < r.length ? (parseNumber(r[i], lenient: true) ?? def) : def;
     String str(List<String> r, int i, [String def = '']) => i >= 0 && i < r.length ? r[i] : def;
@@ -306,6 +306,8 @@ class CatalogIo {
       if (id.isEmpty) id = c.newId('${g.name.substring(0, 2)}_${li}_');
       final cost = num(r, costC);
       final sup = str(r, supC), code = str(r, codeC);
+      final finame = str(r, finameC).trim();
+      if (finame.isNotEmpty) c.finame[id] = finame;
       switch (g) {
         case CatalogGroup.pipes:
           final usageS = str(r, col(['usage', 'uso']), 'zone,mainline').toLowerCase();
@@ -344,7 +346,7 @@ class CatalogIo {
             if (q > 0 && h > 0) pts.add((q * m3sPerM3h, h));
           }
           if (pts.isEmpty) continue;
-          c.pumps.add(PumpSpec(id: id, name: name, points: pts, efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65), maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2, cost: cost, powerKw: num(r, col(['kw', 'power'])), submersible: isSubmersible(str(r, col(['type', 'tipo', 'install']))), supplier: sup, code: code));
+          c.pumps.add(PumpSpec(id: id, name: name, points: pts, efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65), maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2, cost: cost, powerKw: num(r, col(['kw', 'power'])), submersible: isSubmersible(str(r, col(['type', 'tipo', 'install']))), ratedHz: num(r, col(['hz', 'frequency', 'frequencia', 'frecuencia'])), supplier: sup, code: code));
         case CatalogGroup.wires:
           var mm2 = num(r, col(['mm2', 'section', 'secao', 'seccion', 'area']));
           final awg = num(r, col(['awg', 'gauge']));
@@ -451,6 +453,7 @@ class CatalogIo {
       merged.pumps.addAll(part.catalog.pumps);
       merged.fittings.addAll(part.catalog.fittings);
       merged.wires.addAll(part.catalog.wires);
+      merged.finame.addAll(part.catalog.finame);
       n += part.count;
       last = part.group;
     }
@@ -484,9 +487,9 @@ class CatalogIo {
           b.writeln([v.id, q(v.name), v.kind.name, v.sizeMm, v.loss.k, v.loss.n, v.minFlow / m3sPerM3h, v.maxFlow / m3sPerM3h, v.defaultSettingM, v.cost, q(v.supplier), q(v.code)].join(';'));
         }
       case CatalogGroup.pumps:
-        b.writeln('id;name;points;eff;kw;type;cost;supplier;code');
+        b.writeln('id;name;points;eff;kw;type;hz;cost;supplier;code');
         for (final p in c.pumps) {
-          b.writeln([p.id, q(p.name), q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')), p.efficiency, p.powerKw, p.submersible ? 'submersible' : 'surface', p.cost, q(p.supplier), q(p.code)].join(';'));
+          b.writeln([p.id, q(p.name), q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')), p.efficiency, p.powerKw, p.submersible ? 'submersible' : 'surface', p.ratedHz > 0 ? p.ratedHz : '', p.cost, q(p.supplier), q(p.code)].join(';'));
         }
       case CatalogGroup.wires:
         b.writeln('id;name;mm2;ohmKm;cost;supplier;code');
@@ -501,6 +504,12 @@ class CatalogIo {
           }
         }
     }
-    return b.toString();
+    if (c.finame.isEmpty) return b.toString();
+    // the BNDES FINAME codes as a last column, by the id of each row
+    final lines = b.toString().split('\n');
+    return [
+      for (var i = 0; i < lines.length; i++)
+        if (lines[i].isEmpty) lines[i] else if (i == 0) '${lines[i]};finame' else '${lines[i]};${q(c.finame[lines[i].split(';').first] ?? '')}',
+    ].join('\n');
   }
 }

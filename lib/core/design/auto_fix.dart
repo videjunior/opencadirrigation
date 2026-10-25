@@ -16,6 +16,7 @@ import 'electrical.dart';
 import 'network_builder.dart';
 import 'pump_selection.dart';
 import 'results.dart';
+import 'valve_in_head.dart';
 
 /// Outcome of a correction: a message key (`fixed.<kind>` on success,
 /// `fixfail.<reason>` otherwise) with its arguments.
@@ -299,7 +300,9 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
       return FixResult.done('fixed.addMissingFlow', {'n': '${ids.length}'});
 
     case FixKind.removeEmptyFlows:
-      final ids = {for (final e in p.entities) e.id};
+      // the valve-in-head stations of several heads are listed by their
+      // station id (`vih:<name>`), not by an entity id
+      final ids = {for (final e in p.entities) e.id, ...VihStations.of(p).heads.keys};
       var n = 0;
       for (final f in p.systemFlows) {
         final gone = f.valveIds.where((id) => !ids.contains(id)).toList();
@@ -444,6 +447,7 @@ FixResult choosePumpFor(Project p, DesignResults r, WaterSupplyEntity supply, {P
     staticHead: supply.calculatePressure ? staticLift(p, r, supply, worst.$3) : null,
     hoursPerYear: p.params.hoursPerYear,
     costPerKwh: p.params.powerCostPerKwh,
+    mainsHz: p.params.mainsHz,
     otherDuties: [for (final d in duties.skip(1)) (d.$1, d.$2)],
     requireSubmersible: wantSub,
   );

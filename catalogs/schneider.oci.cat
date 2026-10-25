@@ -60,7 +60,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/4 1.5 cv",
         "kw": 1.1,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_4_2cv",
@@ -99,7 +100,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/4 2 cv",
         "kw": 1.47,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_4_3cv",
@@ -146,7 +148,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/4 3 cv",
         "kw": 2.21,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_4_4cv",
@@ -201,7 +204,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/4 4 cv",
         "kw": 2.94,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_2_2cv",
@@ -248,7 +252,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/2 2 cv",
         "kw": 1.47,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_2_3cv",
@@ -283,7 +288,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/2 3 cv",
         "kw": 2.21,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_2_4cv",
@@ -322,7 +328,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/2 4 cv",
         "kw": 2.94,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_2_5cv",
@@ -365,7 +372,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/2 5 cv",
         "kw": 3.68,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_1_1_2_7_5cv",
@@ -408,7 +416,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R 1 1/2 7.5 cv",
         "kw": 5.52,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_4cv",
@@ -471,7 +480,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 4 cv",
         "kw": 2.94,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_5cv",
@@ -526,7 +536,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 5 cv",
         "kw": 3.68,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_7_5cv",
@@ -569,7 +580,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 7.5 cv",
         "kw": 5.52,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_10cv",
@@ -616,7 +628,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 10 cv",
         "kw": 7.36,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_12_5cv",
@@ -663,7 +676,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 12.5 cv",
         "kw": 9.19,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_1_2_5cv",
@@ -730,7 +744,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 1/2 5 cv",
         "kw": 3.68,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_1_2_7_5cv",
@@ -781,7 +796,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 1/2 7.5 cv",
         "kw": 5.52,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_1_2_10cv",
@@ -824,7 +840,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 1/2 10 cv",
         "kw": 7.36,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_1_2_12_5cv",
@@ -891,7 +908,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 1/2 12.5 cv",
         "kw": 9.19,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_21_r_f_2_1_2_15cv",
@@ -950,7 +968,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-21 R/F 2 1/2 15 cv",
         "kw": 11.03,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_a_3cv",
@@ -1005,7 +1024,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 A 3 cv",
         "kw": 2.21,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_a_4cv",
@@ -1072,7 +1092,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 A 4 cv",
         "kw": 2.94,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_a_5cv",
@@ -1147,7 +1168,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 A 5 cv",
         "kw": 3.68,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_b_3cv",
@@ -1190,7 +1212,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 B 3 cv",
         "kw": 2.21,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_b_4cv",
@@ -1245,7 +1268,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 B 4 cv",
         "kw": 2.94,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_b_5cv",
@@ -1316,7 +1340,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 B 5 cv",
         "kw": 3.68,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_b_7_5cv",
@@ -1395,7 +1420,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 B 7.5 cv",
         "kw": 5.52,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_4_5cv",
@@ -1442,7 +1468,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/4 5 cv",
         "kw": 3.68,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_4_7_5cv",
@@ -1501,7 +1528,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/4 7.5 cv",
         "kw": 5.52,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_4_10cv",
@@ -1552,7 +1580,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/4 10 cv",
         "kw": 7.36,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_2_7_5cv",
@@ -1591,7 +1620,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/2 7.5 cv",
         "kw": 5.52,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_2_10cv",
@@ -1630,7 +1660,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/2 10 cv",
         "kw": 7.36,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_2_12_5cv",
@@ -1665,7 +1696,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/2 12.5 cv",
         "kw": 9.19,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_2_15cv",
@@ -1696,7 +1728,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/2 15 cv",
         "kw": 11.03,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_1_1_2_20cv",
@@ -1731,7 +1764,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R 1 1/2 20 cv",
         "kw": 14.71,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_f_2_10cv",
@@ -1766,7 +1800,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R/F 2 10 cv",
         "kw": 7.36,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_f_2_12_5cv",
@@ -1809,7 +1844,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R/F 2 12.5 cv",
         "kw": 9.19,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_f_2_15cv",
@@ -1856,7 +1892,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R/F 2 15 cv",
         "kw": 11.03,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_f_2_20cv",
@@ -1899,7 +1936,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R/F 2 20 cv",
         "kw": 14.71,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_22_r_f_2_25cv",
@@ -1938,7 +1976,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-22 R/F 2 25 cv",
         "kw": 18.39,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_4_12_5cv",
@@ -2005,7 +2044,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/4 12.5 cv",
         "kw": 9.19,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_4_15cv",
@@ -2064,7 +2104,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/4 15 cv",
         "kw": 11.03,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_4_20cv",
@@ -2115,7 +2156,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/4 20 cv",
         "kw": 14.71,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_4_25cv",
@@ -2170,7 +2212,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/4 25 cv",
         "kw": 18.39,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_4_30cv",
@@ -2229,7 +2272,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/4 30 cv",
         "kw": 22.07,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_2_15cv",
@@ -2288,7 +2332,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/2 15 cv",
         "kw": 11.03,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_2_20cv",
@@ -2363,7 +2408,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/2 20 cv",
         "kw": 14.71,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_2_25cv",
@@ -2434,7 +2480,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/2 25 cv",
         "kw": 18.39,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_1_1_2_30cv",
@@ -2505,7 +2552,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R 1 1/2 30 cv",
         "kw": 22.07,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_f_2_15cv",
@@ -2588,7 +2636,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R/F 2 15 cv",
         "kw": 11.03,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_f_2_20cv",
@@ -2663,7 +2712,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R/F 2 20 cv",
         "kw": 14.71,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_f_2_25cv",
@@ -2726,7 +2776,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R/F 2 25 cv",
         "kw": 18.39,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_bc_23_r_f_2_30cv",
@@ -2777,7 +2828,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "BC-23 R/F 2 30 cv",
         "kw": 22.07,
-        "sub": false
+        "sub": false,
+        "hz": 60.0
       },
       {
         "id": "sch_sub15_10s4e8",
@@ -2864,7 +2916,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB15-10S4E8",
         "kw": 0.74,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub15_15s4e11",
@@ -2951,7 +3004,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB15-15S4E11",
         "kw": 1.1,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub15_20s4e14",
@@ -3038,7 +3092,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB15-20S4E14",
         "kw": 1.47,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub15_30s4e19",
@@ -3125,7 +3180,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB15-30S4E19",
         "kw": 2.21,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub15_50s4e31",
@@ -3212,7 +3268,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB15-50S4E31",
         "kw": 3.68,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub20_10s4e7",
@@ -3299,7 +3356,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB20-10S4E7",
         "kw": 0.74,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub20_15s4e10",
@@ -3386,7 +3444,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB20-15S4E10",
         "kw": 1.1,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub20_20s4e12",
@@ -3473,7 +3532,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB20-20S4E12",
         "kw": 1.47,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub20_30s4e16",
@@ -3560,7 +3620,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB20-30S4E16",
         "kw": 2.21,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub20_50s4e26",
@@ -3647,7 +3708,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB20-50S4E26",
         "kw": 3.68,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub25_10s4e6",
@@ -3734,7 +3796,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB25-10S4E6",
         "kw": 0.74,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub25_15s4e8",
@@ -3821,7 +3884,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB25-15S4E8",
         "kw": 1.1,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub25_20s4e10",
@@ -3908,7 +3972,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB25-20S4E10",
         "kw": 1.47,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub25_30s4e14",
@@ -3995,7 +4060,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB25-30S4E14",
         "kw": 2.21,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub25_50s4e23",
@@ -4082,7 +4148,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB25-50S4E23",
         "kw": 3.68,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub40_15s4e6",
@@ -4169,7 +4236,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB40-15S4E6",
         "kw": 1.1,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub40_20s4e8",
@@ -4256,7 +4324,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB40-20S4E8",
         "kw": 1.47,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub40_30s4e11",
@@ -4343,7 +4412,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB40-30S4E11",
         "kw": 2.21,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub40_50s4e18",
@@ -4430,7 +4500,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB40-50S4E18",
         "kw": 3.68,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub40_75s4e27",
@@ -4517,7 +4588,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB40-75S4E27",
         "kw": 5.52,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub40_100s4e36",
@@ -4604,7 +4676,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB40-100S4E36",
         "kw": 7.36,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub50_15s4e4",
@@ -4691,7 +4764,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB50-15S4E4",
         "kw": 1.1,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub50_20s4e5",
@@ -4778,7 +4852,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB50-20S4E5",
         "kw": 1.47,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub50_30s4e7",
@@ -4865,7 +4940,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB50-30S4E7",
         "kw": 2.21,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub50_50s4e12",
@@ -4952,7 +5028,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB50-50S4E12",
         "kw": 3.68,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub50_75s4e18",
@@ -5039,7 +5116,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB50-75S4E18",
         "kw": 5.52,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub50_100s4e24",
@@ -5126,7 +5204,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB50-100S4E24",
         "kw": 7.36,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub95_30s4e5",
@@ -5213,7 +5292,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB95-30S4E5",
         "kw": 2.21,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub95_50s4e8",
@@ -5300,7 +5380,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB95-50S4E8",
         "kw": 3.68,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub95_75s4e12",
@@ -5387,7 +5468,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB95-75S4E12",
         "kw": 5.52,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       },
       {
         "id": "sch_sub95_100s4e16",
@@ -5474,7 +5556,8 @@
         "sup": "Schneider (Franklin Electric)",
         "code": "SUB95-100S4E16",
         "kw": 7.36,
-        "sub": true
+        "sub": true,
+        "hz": 60.0
       }
     ],
     "fittings": []

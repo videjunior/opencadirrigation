@@ -165,6 +165,18 @@ class Units {
   };
 
   String get velocityLabel => length == LengthUnit.ft ? 'ft/s' : 'm/s';
+
+  // ---- areas, depths and volumes of water (US customary with feet) ----
+  bool get _us => length == LengthUnit.ft;
+  double areaFromSi(double m2) => _us ? m2 / 4046.8564224 : m2 / 10000;
+  String get areaLabel => _us ? 'ac' : 'ha';
+  double depthFromMm(double mm) => _us ? mm / 25.4 : mm;
+  double depthToMm(double v) => _us ? v * 25.4 : v;
+  String get depthLabel => _us ? 'in' : 'mm';
+  String get depthPerDayLabel => _us ? 'in/d' : 'mm/d';
+  String get depthRateLabel => _us ? 'in/h' : 'mm/h';
+  double volumeFromM3(double m3) => _us ? m3 * 264.1720524 : m3;
+  String get volumeLabel => _us ? 'gal' : 'm³';
   double velocityFromSi(double v) =>
       length == LengthUnit.ft ? v / metersPerFoot : v;
   double velocityToSi(double v) =>
@@ -210,6 +222,24 @@ double? parseNumber(String text, {bool lenient = false}) {
     t = t.replaceAll('.', '');
   }
   return double.tryParse(t);
+}
+
+/// Rows of numbers pasted or typed as a table (one row per line): fields
+/// split by tabs, else by semicolons, else by spaces, else by commas (when
+/// the numbers use decimal points), each read by [parseNumber] so decimal
+/// commas and thousands separators work; unreadable fields and empty lines
+/// are skipped.
+List<List<double>> parseNumberRows(String text) {
+  final rows = <List<double>>[];
+  for (final raw in text.split(RegExp(r'\r?\n'))) {
+    final line = raw.trim();
+    if (line.isEmpty) continue;
+    final sep = line.contains('\t') ? RegExp('\t') : (line.contains(';') ? RegExp(';') : (line.contains(RegExp(r'\s')) ? RegExp(r'\s+') : RegExp(',')));
+    final fields = line.split(sep);
+    final row = [for (final f in fields) ?parseNumber(f.trim())];
+    if (row.isNotEmpty) rows.add(row);
+  }
+  return rows;
 }
 
 final _numberPattern = RegExp(r'[-+]?(?:\d[\d.,]*|[.,]\d+)(?:[eE][-+]?\d+)?');

@@ -552,3 +552,27 @@ List<Pt> nurbsCurve(int degree, List<Pt> control, {List<double> knots = const []
   }
   return out;
 }
+
+/// Convex hull of [points], counter-clockwise without repeated end (Andrew's
+/// monotone chain); fewer than three distinct points come back as they are.
+List<Pt> convexHull(Iterable<Pt> points) {
+  final pts = points.toSet().toList()..sort((a, b) => a.x != b.x ? a.x.compareTo(b.x) : a.y.compareTo(b.y));
+  if (pts.length < 3) return pts;
+  double turn(Pt o, Pt a, Pt b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  final lower = <Pt>[], upper = <Pt>[];
+  for (final p in pts) {
+    while (lower.length >= 2 && turn(lower[lower.length - 2], lower.last, p) <= 0) {
+      lower.removeLast();
+    }
+    lower.add(p);
+  }
+  for (final p in pts.reversed) {
+    while (upper.length >= 2 && turn(upper[upper.length - 2], upper.last, p) <= 0) {
+      upper.removeLast();
+    }
+    upper.add(p);
+  }
+  lower.removeLast();
+  upper.removeLast();
+  return [...lower, ...upper];
+}

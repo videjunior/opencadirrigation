@@ -10,6 +10,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import 'designer.dart';
 import 'results.dart';
+import 'valve_in_head.dart';
 
 /// Typical single crop coefficients (FAO-56 mid-season values) offered in
 /// the area properties. Keys are i18n keys (`crop.*`).
@@ -158,17 +159,33 @@ List<AreaEntity> areasOfZone(Project project, DesignResults results, String valv
   return out;
 }
 
+/// Areas that hold at least a fifth of the heads of the valve-in-head
+/// station [stationId] (`valve_in_head.dart`), as [areasOfZone] counts the
+/// emitters of a zone.
+List<AreaEntity> areasOfStation(Project project, String stationId, {VihStations? stations}) {
+  final ids = (stations ?? VihStations.of(project)).heads[stationId];
+  if (ids == null || ids.isEmpty) return const [];
+  final heads = [for (final e in project.entities) if (e is OutletEntity && ids.contains(e.id)) e];
+  return [
+    for (final a in project.entities.whereType<AreaEntity>())
+      if (a.points.length >= 3 && heads.where((h) => project.outletWatersArea(h, a.points)).length * 5 >= heads.length) a,
+  ];
+}
+
 /// Builds the controller programme: each system flow runs for the longest
-/// event time of the areas its zones irrigate, every interval days, starting
-/// at [startDate] for [days] days (flows that run every few days start on
-/// staggered days so that they do not pile up). Flows run one after another
-/// from [dayStartHour], or at their own start hour when [keepStartHours].
+/// event time of the areas its zones (and valve-in-head stations) irrigate,
+/// every interval days, starting at [startDate] for [days] days (flows that
+/// run every few days start on staggered days so that they do not pile up).
+/// Flows run one after another from [dayStartHour], or at their own start
+/// hour when [keepStartHours]. Without system flows every zone and station
+/// runs together.
 ControllerProgram buildControllerProgram(Project project, DesignResults? results, {DateTime? startDate, int days = 14, double dayStartHour = 6, bool keepStartHours = false}) {
   final warnings = <String>[];
   final crops = {for (final c in cropWaterRequirements(project, results)) c.areaId: c};
+  final vih = VihStations.of(project);
   // flows without any zone have nothing to water (an empty project gets no
   // automatic flow either)
-  final all = project.systemFlows.isNotEmpty ? project.systemFlows : [SystemFlow(id: 'auto', name: 'all', valveIds: project.entities.whereType<ControlValveEntity>().map((v) => v.id).toSet())];
+  final all = project.systemFlows.isNotEmpty ? project.systemFlows : [SystemFlow(id: 'auto', name: 'all', valveIds: {...project.entities.whereType<ControlValveEntity>().map((v) => v.id), ...vih.heads.keys})];
   final flows = [for (final f in all) if (f.valveIds.isNotEmpty) f];
   final perFlow = <String, double>{};
   final intervalOf = <String, double>{};
@@ -179,10 +196,12 @@ ControllerProgram buildControllerProgram(Project project, DesignResults? results
     var any = false;
     final names = <String>[];
     for (final vid in f.valveIds) {
-      final v = project.byId(vid);
+      final station = vih.isStation(vid);
+      final v = station ? null : project.byId(vid);
       if (v is ControlValveEntity) names.add(v.zoneName);
+      if (station) names.add(vih.nameOf(vid));
       if (results == null) continue;
-      for (final a in areasOfZone(project, results, vid)) {
+      for (final a in station ? areasOfStation(project, vid, stations: vih) : areasOfZone(project, results, vid)) {
         final c = crops[a.id];
         if (c == null) continue;
         any = true;

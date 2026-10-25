@@ -78,25 +78,30 @@ List<PumpDuty> pumpDuties(DesignResults r, String supplyId) {
 /// flows): the margin reported is the smallest over all points. With
 /// [requireSubmersible] (water deeper than the suction lift of a surface
 /// pump, see [suctionLiftTooDeep]) only submersible pumps are suitable.
-List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required double head, double? staticHead, required double hoursPerYear, required double costPerKwh, int maxParallel = 3, List<(double, double)> otherDuties = const [], bool requireSubmersible = false}) {
+/// Curves measured at another frequency than the [mainsHz] mains are read
+/// at the speed the motor turns there.
+List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required double head, double? staticHead, required double hoursPerYear, required double costPerKwh, int maxParallel = 3, List<(double, double)> otherDuties = const [], bool requireSubmersible = false, double mainsHz = 60}) {
   final out = <PumpCandidate>[];
   if (!(flow > 0) || !(head > 0)) return out; // no meaningful duty
   final sys = systemCurveFromDuty(flow: flow, head: head, staticHead: staticHead ?? 0.6 * head);
   for (final p in cat.pumps) {
     if (!p.enabled) continue;
+    // the allowed range scales with the speed too (Q ∝ n)
+    final speed = p.mainsSpeedRatio(mainsHz);
+    final curve = p.curve.withSpeed(speed), qMin = p.minFlow * speed, qMax = p.maxFlow * speed;
     for (var n = 1; n <= maxParallel; n++) {
       final qEach = flow / n;
-      final hAt = p.curve.head(qEach);
+      final hAt = curve.head(qEach);
       var margin = hAt - head;
-      var inRange = qEach >= p.minFlow - 1e-9 && qEach <= p.maxFlow + 1e-9;
+      var inRange = qEach >= qMin - 1e-9 && qEach <= qMax + 1e-9;
       for (final (q2, h2) in otherDuties) {
         if (!(q2 > 0) || !(h2 > 0)) continue;
         final e = q2 / n;
-        margin = math.min(margin, p.curve.head(e) - h2);
-        inRange = inRange && e >= p.minFlow - 1e-9 && e <= p.maxFlow + 1e-9;
+        margin = math.min(margin, curve.head(e) - h2);
+        inRange = inRange && e >= qMin - 1e-9 && e <= qMax + 1e-9;
       }
       // operating point: n pumps in parallel → curve Q = n·q
-      final parallel = _ParallelCurve(p.curve, n);
+      final parallel = _ParallelCurve(curve, n);
       final op = _operatingPoint(parallel, sys, qMax: math.max(flow * 3, 0.01));
       final oq = op?.$1 ?? 0, oh = op?.$2 ?? 0;
       final power = oq > 0 ? shaftPower(flow: oq, head: oh, efficiency: p.efficiency) / 1000 : 0.0;
@@ -179,13 +184,19 @@ SupplyDuty? worstDuty(DesignResults r, String supplyId) {
 
 /// Static lift for a supply: highest (valve elevation + required pressure)
 /// minus supply water level ([SupplyDuty.elevation], the supply node lies at
-/// the water surface).
+/// the water surface). The worst head of every scheduled valve-in-head
+/// station running in a flow counts as a valve (node elevation plus the
+/// pressure it needs there); an unscheduled one, which never sets the supply
+/// pressure, does not.
 double staticLift(Project project, DesignResults r, WaterSupplyEntity s, SupplyDuty duty) {
   var top = -double.infinity;
   for (final f in r.systemFlows) {
     for (final v in f.valves) {
       final z = r.zones[v.valveId]?.valveElevation ?? duty.elevation;
       top = math.max(top, z + v.requiredHead);
+    }
+    for (final h in f.heads) {
+      if (h.scheduled) top = math.max(top, h.elevation + h.requiredHead);
     }
   }
   if (!top.isFinite) return 0;

@@ -24,6 +24,7 @@
     "vLat": 2.0,
     "minorPct": 5.0,
     "minor": true,
+    "minorMethod": "percent",
     "tol": 0.05,
     "interest": 0.1,
     "term": 10,
@@ -587,10 +588,106 @@
         "enabled": true
       },
       {
+        "id": "bubbler_pc",
+        "name": "PC बबलर",
+        "kind": "bubbler",
+        "nozzles": [
+          {
+            "id": "b57",
+            "name": "57 L/h",
+            "curve": {
+              "k": 0.000013630784606085799,
+              "x": 0.05,
+              "ra": 0.1401843372772174,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 14.0,
+            "maxH": 60.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "b114",
+            "name": "114 L/h",
+            "curve": {
+              "k": 0.000027261569212171598,
+              "x": 0.05,
+              "ra": 0.17523042159652177,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 14.0,
+            "maxH": 60.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "b227",
+            "name": "227 L/h",
+            "curve": {
+              "k": 0.0000542840018523066,
+              "x": 0.05,
+              "ra": 0.2102765059158261,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 14.0,
+            "maxH": 60.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
+          {
+            "id": "b454",
+            "name": "454 L/h",
+            "curve": {
+              "k": 0.0001085680037046132,
+              "x": 0.05,
+              "ra": 0.2803686745544348,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 14.0,
+            "maxH": 60.0,
+            "defH": 20.0,
+            "cv": 0.05,
+            "tolB": 0.05,
+            "tolA": 0.05
+          }
+        ],
+        "cost": 35.45362,
+        "inletMm": 15.0,
+        "riser": 0.15,
+        "enabled": true
+      },
+      {
         "id": "impact34",
         "name": "इम्पैक्ट स्प्रिंकलर 3/4\"",
         "kind": "sprinkler",
         "nozzles": [
+          {
+            "id": "i2.5",
+            "name": "नोज़ल 2.5 mm (0.46 m³/h, R 10.5 m)",
+            "curve": {
+              "k": 0.000023328923745590407,
+              "x": 0.5,
+              "ra": 3.192984864733979,
+              "rb": 0.35
+            },
+            "arc": 360.0,
+            "minH": 20.0,
+            "maxH": 45.0,
+            "defH": 30.0,
+            "cv": 0.03,
+            "tolB": 0.05,
+            "tolA": 0.05
+          },
           {
             "id": "i3.5",
             "name": "नोज़ल 3.5 mm (0.9 m³/h, R 12 m)",
@@ -717,7 +814,7 @@
         "nozzles": [
           {
             "id": "r1.5",
-            "name": "#1.5 (0,35 m³/h, R 8 m)",
+            "name": "#1.5 (0.35 m³/h, R 8 m)",
             "curve": {
               "k": 0.000019444444444444442,
               "x": 0.5,
@@ -734,7 +831,7 @@
           },
           {
             "id": "r3",
-            "name": "#3 (0,70 m³/h, R 10 m)",
+            "name": "#3 (0.70 m³/h, R 10 m)",
             "curve": {
               "k": 0.000038888888888888884,
               "x": 0.5,
@@ -751,7 +848,7 @@
           },
           {
             "id": "r3_180",
-            "name": "#3 180° (0,35 m³/h, R 10 m)",
+            "name": "#3 180° (0.35 m³/h, R 10 m)",
             "curve": {
               "k": 0.000019444444444444442,
               "x": 0.5,
@@ -768,7 +865,7 @@
           },
           {
             "id": "r3_90",
-            "name": "#3 90° (0,18 m³/h, R 10 m)",
+            "name": "#3 90° (0.18 m³/h, R 10 m)",
             "curve": {
               "k": 0.000009999999999999999,
               "x": 0.5,
@@ -796,7 +893,7 @@
         "nozzles": [
           {
             "id": "s12",
-            "name": "12F (0,60 m³/h, R 3,7 m)",
+            "name": "12F (0.60 m³/h, R 3.7 m)",
             "curve": {
               "k": 0.000037267799624996494,
               "x": 0.5,
@@ -813,7 +910,7 @@
           },
           {
             "id": "s12h",
-            "name": "12H (0,30 m³/h, R 3,7 m)",
+            "name": "12H (0.30 m³/h, R 3.7 m)",
             "curve": {
               "k": 0.000018633899812498247,
               "x": 0.5,
@@ -830,7 +927,7 @@
           },
           {
             "id": "s12q",
-            "name": "12Q (0,15 m³/h, R 3,7 m)",
+            "name": "12Q (0.15 m³/h, R 3.7 m)",
             "curve": {
               "k": 0.000009316949906249123,
               "x": 0.5,
@@ -847,7 +944,7 @@
           },
           {
             "id": "s15",
-            "name": "15F (0,84 m³/h, R 4,6 m)",
+            "name": "15F (0.84 m³/h, R 4.6 m)",
             "curve": {
               "k": 0.00005217491947499509,
               "x": 0.5,
@@ -1181,6 +1278,38 @@
         "enabled": true
       },
       {
+        "id": "mv25",
+        "name": "मास्टर वाल्व 1\"",
+        "kind": "master",
+        "sizeMm": 25.0,
+        "loss": {
+          "k": 1269582.073997794,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.00005555555555555556,
+        "maxQ": 0.0016666666666666666,
+        "cost": 2239.176,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "mv50",
+        "name": "मास्टर वाल्व 2\"",
+        "kind": "master",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 66124.06635405176,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0005555555555555556,
+        "maxQ": 0.008333333333333333,
+        "cost": 7090.724,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
         "id": "prv50",
         "name": "दाब-घटाने वाला वाल्व 2\"",
         "kind": "prv",
@@ -1226,6 +1355,70 @@
         "maxQ": 0.03888888888888889,
         "cost": 39185.58,
         "setting": 30.0,
+        "enabled": true
+      },
+      {
+        "id": "psv50",
+        "name": "दाब बनाए रखने वाला वाल्व 2\"",
+        "kind": "psv",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 39674.43981243106,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.008333333333333333,
+        "cost": 12128.87,
+        "setting": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "psv80",
+        "name": "दाब बनाए रखने वाला वाल्व 3\"",
+        "kind": "psv",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 6053.839082707375,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 22391.760000000002,
+        "setting": 20.0,
+        "enabled": true
+      },
+      {
+        "id": "fcv50",
+        "name": "प्रवाह सीमक सहित हाइड्रेंट 2\"",
+        "kind": "fcv",
+        "sizeMm": 50.0,
+        "loss": {
+          "k": 46286.84644783624,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.008333333333333333,
+        "cost": 13061.86,
+        "setting": 0.0,
+        "enabled": true
+      },
+      {
+        "id": "fcv80",
+        "name": "प्रवाह सीमक सहित हाइड्रेंट 3\"",
+        "kind": "fcv",
+        "sizeMm": 80.0,
+        "loss": {
+          "k": 7062.812263158604,
+          "n": 2.0,
+          "c": 0.0
+        },
+        "minQ": 0.0,
+        "maxQ": 0.022222222222222223,
+        "cost": 24257.74,
+        "setting": 0.0,
         "enabled": true
       },
       {
@@ -5045,6 +5238,12 @@
       "locked": false
     },
     {
+      "name": "BREAKLINES",
+      "color": 4294937189,
+      "visible": true,
+      "locked": false
+    },
+    {
       "name": "SPOT_HEIGHTS",
       "color": 4288776319,
       "visible": true,
@@ -5149,6 +5348,18 @@
     {
       "name": "LABELS",
       "color": 4291811548,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "REVISIONS",
+      "color": 4293212469,
+      "visible": true,
+      "locked": false
+    },
+    {
+      "name": "COMMENTS",
+      "color": 4294947584,
       "visible": true,
       "locked": false
     }
@@ -5499,7 +5710,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i2.5",
       "head": 35.0,
       "arc": 90.0,
       "rot": 0.0,
@@ -5516,7 +5727,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 0.0,
@@ -5533,7 +5744,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 0.0,
@@ -5550,7 +5761,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 0.0,
@@ -5567,7 +5778,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 0.0,
@@ -5584,7 +5795,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 0.0,
@@ -5601,7 +5812,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 0.0,
@@ -5618,7 +5829,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i2.5",
       "head": 35.0,
       "arc": 90.0,
       "rot": 90.0,
@@ -5715,7 +5926,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 270.0,
@@ -5834,7 +6045,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 90.0,
@@ -5931,7 +6142,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 270.0,
@@ -6050,7 +6261,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 90.0,
@@ -6147,7 +6358,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 270.0,
@@ -6266,7 +6477,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 90.0,
@@ -6363,7 +6574,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i2.5",
       "head": 35.0,
       "arc": 90.0,
       "rot": 270.0,
@@ -6380,7 +6591,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 180.0,
@@ -6397,7 +6608,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 180.0,
@@ -6414,7 +6625,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 180.0,
@@ -6431,7 +6642,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 180.0,
@@ -6448,7 +6659,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 180.0,
@@ -6465,7 +6676,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i3.5",
       "head": 35.0,
       "arc": 180.0,
       "rot": 180.0,
@@ -6482,7 +6693,7 @@
       ],
       "scope": "zone",
       "outlet": "impact34",
-      "nozzle": "i5.0",
+      "nozzle": "i2.5",
       "head": 35.0,
       "arc": 90.0,
       "rot": 180.0,

@@ -338,7 +338,10 @@ Project buildSportsFieldExample(Tr t, String lang) {
       } else if (edge) {
         orient = x == 0 ? 270 : (x == 105 ? 90 : (y == 0 ? 0 : 180));
       }
-      p.entities.add(OutletEntity(id: p.newId(), position: Pt(x, y), outletSpecId: 'impact34', nozzleId: 'i5.0', headM: 35, arcDeg: arc, orientationDeg: orient, riserHeight: 0, zoneName: zone));
+      // matched precipitation: half and quarter circles carry about a half
+      // and a quarter of the full circle's flow
+      final nozzle = corner ? 'i2.5' : (edge ? 'i3.5' : 'i5.0');
+      p.entities.add(OutletEntity(id: p.newId(), position: Pt(x, y), outletSpecId: 'impact34', nozzleId: nozzle, headM: 35, arcDeg: arc, orientationDeg: orient, riserHeight: 0, zoneName: zone));
     }
     final valve = ControlValveEntity(id: p.newId(), position: Pt(-3, y), valveSpecId: 'ev50', zoneName: zone, name: zone);
     valves.add(valve);

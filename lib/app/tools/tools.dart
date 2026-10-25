@@ -10,6 +10,7 @@ import '../../core/model/geometry.dart';
 import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import 'insert_block_tool.dart';
 
 /// Dialog requests raised by tools and fulfilled by the widget layer.
 abstract class ToolHost {
@@ -17,6 +18,12 @@ abstract class ToolHost {
   void showAutoheadDialog(List<Pt> polygon);
   void showTextDialog(Pt position);
   void showLeaderDialog(List<Pt> points);
+
+  /// Asks the text of a review comment placed at [position].
+  void showCommentDialog(Pt position);
+
+  /// Asks the revision tag and description of a cloud around [polygon].
+  void showRevisionDialog(List<Pt> polygon);
   void setStatus(String text);
 
   /// Asks the elevation of a contour / spot height that was just drawn.
@@ -53,7 +60,7 @@ abstract class Tool {
   void cancel() {}
 
   Paint get previewPaint => Paint()
-    ..color = CadColors.preview
+    ..color = Cad.preview
     ..strokeWidth = 1.2
     ..style = PaintingStyle.stroke;
 
@@ -71,7 +78,7 @@ abstract class Tool {
   /// Ghost of the selected entities under the transform [t].
   void paintTransformed(Canvas canvas, Camera cam, Affine t) {
     final paint = Paint()
-      ..color = CadColors.selection.withValues(alpha: 0.8)
+      ..color = Cad.selection.withValues(alpha: 0.8)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
     var n = 0;
@@ -144,7 +151,7 @@ class SelectTool extends Tool {
   Pt? _grabOffset;
   Pt? _moveAnchor;
 
-  static const maxGripEntities = 12;
+  static const maxGripEntities = 60;
 
   /// Grips of the current selection (world coordinates).
   List<GripHandle> grips() {
@@ -290,9 +297,9 @@ class SelectTool extends Tool {
       final a = cam.toScreen(_downRaw!), b = cam.toScreen(_dragCurrent!);
       final r = Rect.fromPoints(a, b);
       final crossing = _dragCurrent!.x < _downRaw!.x;
-      canvas.drawRect(r, Paint()..color = (crossing ? CadColors.ok : CadColors.selection).withValues(alpha: 0.12));
+      canvas.drawRect(r, Paint()..color = (crossing ? Cad.ok : Cad.selection).withValues(alpha: 0.12));
       canvas.drawRect(r, Paint()
-        ..color = crossing ? CadColors.ok : CadColors.selection
+        ..color = crossing ? Cad.ok : Cad.selection
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1);
     }
@@ -303,9 +310,9 @@ class SelectTool extends Tool {
     // grips
     final gs = grips();
     if (gs.isNotEmpty) {
-      final fill = Paint()..color = CadColors.selection;
+      final fill = Paint()..color = Cad.selection;
       final mid = Paint()
-        ..color = CadColors.selection.withValues(alpha: 0.7)
+        ..color = Cad.selection.withValues(alpha: 0.7)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1;
       for (final g in gs) {
@@ -322,7 +329,7 @@ class SelectTool extends Tool {
       final e = c.project.byId(g.entityId);
       final o = cam.toScreen(_gripPos!);
       final p = Paint()
-        ..color = CadColors.hover
+        ..color = Cad.hover
         ..strokeWidth = 1.2
         ..style = PaintingStyle.stroke;
       if (e is PolyEntity) {
@@ -672,6 +679,19 @@ class LeaderTool extends PolyTool {
   void commit(List<Pt> points) => host.showLeaderDialog(points);
 }
 
+/// Breakline of the terrain: a polyline the triangulation keeps as edges;
+/// the vertex elevations come from the terrain until typed in the
+/// properties.
+class BreaklineTool extends PolyTool {
+  BreaklineTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.breakline;
+  @override
+  String get hintKey => 'hint.breakline';
+  @override
+  void commit(List<Pt> points) => c.addEntity(BreaklineEntity(id: c.project.newId(), points: points));
+}
+
 class ContourTool extends PolyTool {
   ContourTool(super.c, super.host);
   @override
@@ -696,7 +716,7 @@ class ContourTool extends PolyTool {
     super.paint(canvas, cam);
     if (pts.isNotEmpty) {
       final o = cam.toScreen(pts.first);
-      final tp = TextPainter(text: TextSpan(text: '${c.toolSettings.contourElevation.toStringAsFixed(1)} m', style: const TextStyle(fontSize: 11, color: CadColors.preview)), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(text: TextSpan(text: '${c.toolSettings.contourElevation.toStringAsFixed(1)} m', style: TextStyle(fontSize: 11, color: Cad.preview)), textDirection: TextDirection.ltr)..layout();
       tp.paint(canvas, o + const Offset(6, -16));
     }
   }
@@ -1132,6 +1152,34 @@ class TextTool extends PointTool {
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) => host.showTextDialog(p);
 }
 
+/// Review comment: click where it goes, then type it.
+class CommentTool extends PointTool {
+  CommentTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.comment;
+  @override
+  String get hintKey => 'hint.comment';
+  @override
+  Entity create(Pt p) => CommentEntity(id: c.project.newId(), position: p);
+  @override
+  void onDown(Pt p, {bool shift = false, bool ctrl = false}) => host.showCommentDialog(p);
+}
+
+/// Revision cloud: click the outline around what changed (Enter closes it).
+class RevisionCloudTool extends PolyTool {
+  RevisionCloudTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.revisionCloud;
+  @override
+  String get hintKey => 'hint.revisionCloud';
+  @override
+  bool get closes => true;
+  @override
+  int get minPoints => 3;
+  @override
+  void commit(List<Pt> points) => host.showRevisionDialog(points);
+}
+
 class SymbolTool extends PointTool {
   SymbolTool(super.c, super.host);
   @override
@@ -1346,7 +1394,7 @@ class AlignTool extends Tool {
     for (var i = 0; i < pts.length; i++) {
       final o = cam.toScreen(pts[i]);
       canvas.drawCircle(o, 5, p);
-      final tp = TextPainter(text: TextSpan(text: i.isEven ? (i == 0 ? 'A' : 'B') : (i == 1 ? "A'" : "B'"), style: const TextStyle(fontSize: 11, color: CadColors.preview)), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(text: TextSpan(text: i.isEven ? (i == 0 ? 'A' : 'B') : (i == 1 ? "A'" : "B'"), style: TextStyle(fontSize: 11, color: Cad.preview)), textDirection: TextDirection.ltr)..layout();
       tp.paint(canvas, o + const Offset(7, -14));
       if (i.isOdd) canvas.drawLine(cam.toScreen(pts[i - 1]), o, p);
     }
@@ -1372,6 +1420,7 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.dimRadial => RadialDimensionTool(c, host),
   ToolId.leader => LeaderTool(c, host),
   ToolId.contour => ContourTool(c, host),
+  ToolId.breakline => BreaklineTool(c, host),
   ToolId.spot => SpotTool(c, host),
   ToolId.area => AreaTool(c, host),
   ToolId.zonePipe => PipeTool(c, host, HydraulicScope.zone),
@@ -1400,6 +1449,9 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.controller => ControllerTool(c, host),
   ToolId.wire => WireTool(c, host),
   ToolId.dimOrdinate => OrdinateDimensionTool(c, host),
+  ToolId.comment => CommentTool(c, host),
+  ToolId.revisionCloud => RevisionCloudTool(c, host),
+  ToolId.insertBlock => InsertBlockTool(c, host, ToolId.insertBlock),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1420,6 +1472,7 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.dimRadial => 'dimRadial',
   ToolId.leader => 'leader',
   ToolId.contour => 'contour',
+  ToolId.breakline => 'breakline',
   ToolId.spot => 'spot',
   ToolId.area => 'area',
   ToolId.zonePipe || ToolId.mainPipe || ToolId.sprayline || ToolId.tape => 'pipe',
@@ -1439,4 +1492,7 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.controller => 'controller',
   ToolId.wire => 'wire',
   ToolId.dimOrdinate => 'dimOrdinate',
+  ToolId.comment => 'comment',
+  ToolId.revisionCloud => 'revisionCloud',
+  ToolId.insertBlock => 'insertBlock',
 };

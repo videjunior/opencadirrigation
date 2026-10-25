@@ -2,9 +2,11 @@
 /// (with bulges), CIRCLE, ARC, ELLIPSE, SPLINE (fit points, or the NURBS
 /// evaluated from its control points), HATCH (boundary paths of polylines,
 /// lines, arcs, ellipses and splines; pattern angle and spacing), SOLID,
-/// TRACE, TEXT, MTEXT, ATTRIB and POINT entities with their layers, and
-/// expands block references (INSERT, MINSERT, DIMENSION blocks); writes an
-/// R12-compatible file with a LAYER table.
+/// TRACE, TEXT, MTEXT (formatting codes dropped), visible ATTRIBs, LEADER
+/// (its line) and POINT entities with their layers, `\U+XXXX` characters
+/// and `%%` symbols decoded, and expands block references (INSERT, MINSERT,
+/// DIMENSION blocks); writes an R12-compatible file with a LAYER table (the
+/// AutoCAD 2000 export with native entities is in `dxf_r2000.dart`).
 library;
 
 import 'dart:math' as math;
@@ -391,13 +393,22 @@ class DxfReader {
       case 'TEXT':
       case 'MTEXT':
       case 'ATTRIB':
+        // invisible attributes are data, not drawing
+        if (type == 'ATTRIB' && flags(70) & 1 == 1) break;
         // long MTEXT comes in code-3 chunks followed by the final code 1
         final raw = [...?props[3], ...?props[1]].join();
-        final txt = raw.replaceAll(RegExp(r'\\P'), ' ').replaceAll(RegExp(r'\{|\}|\\[A-Za-z][^;]*;'), '');
+        final txt = type == 'MTEXT' ? plainMText(raw) : plainText(raw);
         // aligned TEXT/ATTRIB is positioned by its second point
         final aligned = type != 'MTEXT' && (flags(72) != 0 || flags(73) != 0) && props.containsKey(11);
         final pos = aligned ? Pt(num(11), num(21)) : Pt(num(10), num(20));
-        out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [pos], text: txt, height: num(40, 0, 1), rotation: num(50)));
+        // MTEXT may give its direction as a vector instead of an angle
+        final rotation = type == 'MTEXT' && !props.containsKey(50) && props.containsKey(11) ? radToDeg(math.atan2(num(21), num(11))) : num(50);
+        out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [pos], text: txt, height: num(40, 0, 1), rotation: rotation));
+      case 'LEADER':
+        // the leader line (its arrowhead and note are drawn by the program)
+        final xs = props[10] ?? const <String>[], ys = props[20] ?? const <String>[];
+        final pts = [for (var k = 0; k < math.min(xs.length, ys.length); k++) Pt(double.tryParse(xs[k]) ?? 0, double.tryParse(ys[k]) ?? 0)];
+        if (pts.length >= 2) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts));
       case 'POINT':
         out.add(DxfEntity(type: 'POINT', layer: layer, color: color, points: [Pt(num(10), num(20))], elevation: props.containsKey(30) ? num(30) : null));
       case 'INSERT':
@@ -422,6 +433,63 @@ class DxfReader {
       }
     }
     return j;
+  }
+
+  /// TEXT and ATTRIB content as plain text: `\U+XXXX` characters (files in a
+  /// code page), the `%%c` `%%d` `%%p` symbols, `%%%`, the underline and
+  /// overline toggles and the caret notation of control characters.
+  static String plainText(String s) {
+    if (!s.contains('\\U+') && !s.contains('%%') && !s.contains('^')) return s;
+    var t = s.replaceAllMapped(RegExp(r'\\U\+([0-9A-Fa-f]{4})'), (m) => String.fromCharCode(int.parse(m[1]!, radix: 16)));
+    t = t.replaceAllMapped(RegExp(r'%%([cCdDpPuUoO%])'), (m) => switch (m[1]!.toLowerCase()) { 'c' => 'Ø', 'd' => '°', 'p' => '±', '%' => '%', _ => '' });
+    return t.replaceAll('^ ', '^').replaceAll(RegExp(r'\^[@-_]'), ' ');
+  }
+
+  /// MTEXT content as plain text: escaped characters (`\\` `\{` `\}`), line
+  /// breaks and non-breaking spaces as spaces, stacked fractions as `a/b`,
+  /// formatting codes and grouping braces dropped; then as [plainText].
+  static String plainMText(String s) {
+    final out = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      final ch = s[i];
+      if (ch == '{' || ch == '}') continue;
+      if (ch != '\\' || i + 1 >= s.length) {
+        out.write(ch);
+        continue;
+      }
+      final code = s[i + 1];
+      switch (code) {
+        case '\\' || '{' || '}':
+          out.write(code);
+          i++;
+        case 'P' || '~':
+          // paragraph break, non-breaking space
+          out.write(' ');
+          i++;
+        case 'U' || 'M':
+          // \U+XXXX is decoded below; \M+cXXXX (multibyte) is left as it is
+          out.write('\\');
+        case 'S':
+          // stacked text up to ';': numerator, separator (/ # ^) and denominator
+          final end = s.indexOf(';', i + 2);
+          if (end < 0) {
+            i++;
+            continue;
+          }
+          out.write(s.substring(i + 2, end).replaceAll('#', '/').replaceAll('^', '/'));
+          i = end;
+        case 'A' || 'C' || 'c' || 'F' || 'f' || 'H' || 'h' || 'Q' || 'q' || 'T' || 't' || 'W' || 'w' || 'p':
+          // formatting with an argument up to ';'
+          final end = s.indexOf(';', i + 2);
+          i = end < 0 ? i + 1 : end;
+        case 'L' || 'l' || 'O' || 'o' || 'K' || 'k' || 'N' || 'X':
+          i++;
+        default:
+          out.write(code);
+          i++;
+      }
+    }
+    return plainText(out.toString()).trim();
   }
 
   /// [e] read in the mirrored object coordinates of an extrusion
@@ -660,14 +728,18 @@ class DxfReader {
   }
 }
 
+/// R12 writer (AC1009) of a [DxfDocument]: LINE, POLYLINE, CIRCLE, ARC,
+/// TEXT and POINT (with its elevation) on layers with a colour index. The
+/// AutoCAD 2000 export with native entities is in `dxf_r2000.dart`.
 class DxfWriter {
-  static String _n(double v) => v.toStringAsFixed(4);
+  static String _n(double v) => v.isFinite ? v.toStringAsFixed(4) : '0.0000';
 
   static String write(DxfDocument doc, {int insunits = 6}) {
     final b = StringBuffer();
     void pair(int code, Object value) {
       b.writeln(code);
-      b.writeln(value);
+      // a line break inside a value would end the pair: texts stay on one line
+      b.writeln(value is String ? value.replaceAll(RegExp(r'[\r\n\t]+'), ' ').replaceAll(RegExp(r'[\x00-\x1F]'), '') : value);
     }
 
     pair(0, 'SECTION');
@@ -677,9 +749,20 @@ class DxfWriter {
     pair(9, r'$INSUNITS');
     pair(70, insunits);
     pair(0, 'ENDSEC');
-    // layers
+    // the linetype the layers use, then the layers
     pair(0, 'SECTION');
     pair(2, 'TABLES');
+    pair(0, 'TABLE');
+    pair(2, 'LTYPE');
+    pair(70, 1);
+    pair(0, 'LTYPE');
+    pair(2, 'CONTINUOUS');
+    pair(70, 0);
+    pair(3, 'Solid line');
+    pair(72, 65);
+    pair(73, 0);
+    pair(40, '0.0');
+    pair(0, 'ENDTAB');
     pair(0, 'TABLE');
     pair(2, 'LAYER');
     pair(70, doc.layers.length);
@@ -755,7 +838,7 @@ class DxfWriter {
           if (e.color != 256) pair(62, e.color);
           pair(10, _n(e.points[0].x));
           pair(20, _n(e.points[0].y));
-          pair(30, 0);
+          pair(30, _n(e.elevation ?? 0));
       }
     }
     pair(0, 'ENDSEC');

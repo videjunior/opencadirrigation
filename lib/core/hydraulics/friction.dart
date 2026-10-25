@@ -8,7 +8,9 @@ import 'dart:math' as math;
 
 import '../units.dart';
 
-enum FrictionMethod { hazenWilliams, darcyWeisbach }
+/// Pipe friction laws: Hazen-Williams, Darcy-Weisbach (Colebrook-White),
+/// Scobey (sprinkler laterals of steel and aluminium) and Manning.
+enum FrictionMethod { hazenWilliams, darcyWeisbach, scobey, manning }
 
 /// Hazen-Williams head loss (SI form): hf = 10.67·L·Q^1.852 / (C^1.852·D^4.871).
 double hazenWilliamsLoss({
@@ -41,6 +43,36 @@ double hazenWilliamsGradient({
   required double c,
 }) =>
     hazenWilliamsLoss(flow: flow, diameter: diameter, length: 1, c: c);
+
+/// Scobey (1930) head loss of sprinkler laterals (SI form of Keller &
+/// Bliesner 1990): hf = 4.1·10⁻³·Ks·L·Q^1.9 / D^4.9 with Q in m³/s and D in
+/// m, that is 2.59·10⁻³·Ks·L·V^1.9 / D^1.1 with V in m/s (the 4.1 belongs
+/// to the flow form: put in the velocity form it overstated the loss by
+/// 58 %); Ks ≈ 0.32 for plastic, 0.40 for aluminium and 0.42 for
+/// galvanised steel with couplers, about Hazen-Williams C 120–130 for
+/// aluminium.
+double scobeyLoss({required double flow, required double diameter, required double length, required double ks}) {
+  if (flow == 0 || length == 0) return 0;
+  final hf = scobeyResistance(diameter: diameter, length: length, ks: ks) * math.pow(flow.abs(), 1.9);
+  return flow < 0 ? -hf : hf;
+}
+
+/// Scobey resistance r so that hf = r·Q^1.9.
+double scobeyResistance({required double diameter, required double length, required double ks}) {
+  return 4.1e-3 * ks * length / math.pow(diameter, 4.9);
+}
+
+/// Manning head loss of a full circular pipe (SI): hf = 10.29·n²·L·Q² / D^(16/3)
+/// (Chow 1959; n ≈ 0.009 for PVC and PE, 0.012 for steel, 0.013 for cast
+/// iron and concrete).
+double manningLoss({required double flow, required double diameter, required double length, required double n}) {
+  if (flow == 0 || length == 0) return 0;
+  final hf = manningResistance(diameter: diameter, length: length, n: n) * flow * flow;
+  return flow < 0 ? -hf : hf;
+}
+
+/// Manning resistance r so that hf = r·Q².
+double manningResistance({required double diameter, required double length, required double n}) => 10.29 * n * n * length / math.pow(diameter, 16 / 3);
 
 /// Reynolds number for a full circular pipe.
 double reynolds({
@@ -144,6 +176,8 @@ double frictionLoss({
   double c = 150,
   double roughness = 1.5e-6,
   double kinematicViscosity = 1.004e-6,
+  double scobeyKs = 0.40,
+  double manningN = 0.010,
 }) {
   switch (method) {
     case FrictionMethod.hazenWilliams:
@@ -161,6 +195,10 @@ double frictionLoss({
         roughness: roughness,
         kinematicViscosity: kinematicViscosity,
       );
+    case FrictionMethod.scobey:
+      return scobeyLoss(flow: flow, diameter: diameter, length: length, ks: scobeyKs);
+    case FrictionMethod.manning:
+      return manningLoss(flow: flow, diameter: diameter, length: length, n: manningN);
   }
 }
 
@@ -168,6 +206,8 @@ double frictionLoss({
 double flowExponent(FrictionMethod method) => switch (method) {
   FrictionMethod.hazenWilliams => 1.852,
   FrictionMethod.darcyWeisbach => 1.85, // ≈ Blasius 1.75 .. fully rough 2.0
+  FrictionMethod.scobey => 1.9,
+  FrictionMethod.manning => 2.0,
 };
 
 /// Christiansen (1942) multiple-outlet factor.

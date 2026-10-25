@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/units.dart';
+import '../theme.dart';
 
 /// Ground elevation profile along a path: (station, elevation) samples,
 /// optionally with the pipe line (below the ground by its depth) and the
@@ -63,11 +64,11 @@ class _ProfilePainter extends CustomPainter {
   final ProfileChart w;
   final Offset? hover;
 
-  static const groundColor = Color(0xFF8D6E63);
-  static const pipeColor = Color(0xFF42A5F5);
-  static const hglColor = Color(0xFF66BB6A);
-  static const lowColor = Color(0xFF29B6F6);
-  static const highColor = Color(0xFFFFA726);
+  static Color get groundColor => Cad.chartGround;
+  static Color get pipeColor => Cad.chartPipe;
+  static Color get hglColor => Cad.chartHgl;
+  static Color get lowColor => Cad.chartLow;
+  static Color get highColor => Cad.chartHigh;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -101,9 +102,9 @@ class _ProfilePainter extends CustomPainter {
     }
     Offset pt(double x, double y) => Offset(left + x / xMax * width, top + (1 - (y - yMin) / (yMax - yMin)) * h);
     final gridPaint = Paint()
-      ..color = const Color(0xFF2B333C)
+      ..color = Cad.chartGrid
       ..strokeWidth = 1;
-    const txt = TextStyle(color: Colors.white60, fontSize: 10);
+    final txt = TextStyle(color: Cad.fg60, fontSize: 10);
     for (var i = 0; i <= 5; i++) {
       final y = yMin + (yMax - yMin) * i / 5;
       final o = pt(0, y);
@@ -161,7 +162,7 @@ class _ProfilePainter extends CustomPainter {
       final tp = TextPainter(text: TextSpan(text: fmt(p.$2, 2), style: TextStyle(color: col, fontSize: 10)), textDirection: TextDirection.ltr)..layout();
       tp.paint(canvas, o + Offset(5, identical(p, hi) ? -13 : 3));
     }
-    final tp = TextPainter(text: TextSpan(text: '${w.title}   ${w.yLabel}', style: const TextStyle(color: Colors.white70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
+    final tp = TextPainter(text: TextSpan(text: '${w.title}   ${w.yLabel}', style: TextStyle(color: Cad.fg70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
     tp.paint(canvas, const Offset(left, 4));
     // legend (bottom row)
     var lx = left;
@@ -175,7 +176,7 @@ class _ProfilePainter extends CustomPainter {
           ..color = col
           ..strokeWidth = 2.5);
       }
-      final t = TextPainter(text: TextSpan(text: label, style: const TextStyle(color: Colors.white60, fontSize: 10)), textDirection: TextDirection.ltr)..layout();
+      final t = TextPainter(text: TextSpan(text: label, style: TextStyle(color: Cad.fg60, fontSize: 10)), textDirection: TextDirection.ltr)..layout();
       t.paint(canvas, Offset(lx + 18, ly - t.height / 2));
       lx += 18 + t.width + 14;
     }
@@ -192,9 +193,9 @@ class _ProfilePainter extends CustomPainter {
       final z = _interp(s, x);
       final o = pt(x, z);
       canvas.drawLine(Offset(o.dx, top), Offset(o.dx, top + h), Paint()
-        ..color = Colors.white30
+        ..color = Cad.fg30
         ..strokeWidth = 1);
-      canvas.drawCircle(o, 4, Paint()..color = Colors.white);
+      canvas.drawCircle(o, 4, Paint()..color = Cad.fg);
       var text = '${w.stationLabel} ${fmt(u.lengthFromSi(x), 1)} ${u.lengthLabel}   ${fmt(z, 2)} m';
       final hg = w.hgl;
       if (hg != null && hg.length >= 2 && x <= hg.last.$1 + 1e-9) {
@@ -202,11 +203,11 @@ class _ProfilePainter extends CustomPainter {
         final pz = w.pipe != null && w.pipe!.length >= 2 ? _interp(w.pipe!, x) : z;
         text += '   ${w.pressureLabel} ${fmt(u.pressureFromHead(head - pz), 1)} ${u.pressureLabel}';
       }
-      final t = TextPainter(text: TextSpan(text: text, style: const TextStyle(color: Colors.white, fontSize: 10.5)), textDirection: TextDirection.ltr)..layout();
+      final t = TextPainter(text: TextSpan(text: text, style: TextStyle(color: Cad.fg, fontSize: 10.5)), textDirection: TextDirection.ltr)..layout();
       var tx = o.dx + 8;
       if (tx + t.width > size.width - 4) tx = o.dx - t.width - 8;
       final ty = (o.dy - 24).clamp(top, top + h - t.height);
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(tx - 3, ty - 2, t.width + 6, t.height + 4), const Radius.circular(3)), Paint()..color = const Color(0xDD1B1F24));
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(tx - 3, ty - 2, t.width + 6, t.height + 4), const Radius.circular(3)), Paint()..color = Cad.overlayStrong);
       t.paint(canvas, Offset(tx, ty));
     }
   }

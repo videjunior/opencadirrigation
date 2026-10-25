@@ -12,6 +12,7 @@ import '../tools/tools.dart';
 import 'basemap.dart';
 import 'painter.dart';
 import 'snapping.dart';
+import '../theme.dart';
 
 class CadCanvas extends StatefulWidget {
   const CadCanvas({
@@ -75,10 +76,23 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     _tool = createTool(c.activeTool, c, widget.host);
     c.addListener(_onController);
     basemap.addListener(_redraw);
+    c.baseMapSnapshot = _baseMapSnapshot;
+    c.baseMapAttribution = _baseMapAttribution;
   }
+
+  /// The base map of the view as the sheet's background (see [BaseMapLayer.snapshot]).
+  Future<(Uint8List, List<Pt>)?> _baseMapSnapshot() {
+    final g = c.project.meta.georef;
+    if (g == null || c.baseMap == BaseMap.none) return Future.value();
+    return basemap.snapshot(c.camera, g, BaseMapOptions(c.baseMap, opacity: c.baseMapOpacity, googleKey: c.googleMapsKey, customUrl: c.customTileUrl, lang: c.lang, epoch: c.baseMapEpoch));
+  }
+
+  String _baseMapAttribution() => basemap.attributionText(c.baseMap);
 
   @override
   void dispose() {
+    if (c.baseMapSnapshot == _baseMapSnapshot) c.baseMapSnapshot = null;
+    if (c.baseMapAttribution == _baseMapAttribution) c.baseMapAttribution = null;
     if (identical(c.keyTarget, this)) c.keyTarget = null;
     c.removeListener(_onController);
     basemap.removeListener(_redraw);
@@ -264,8 +278,11 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   void _updateStatus(Pt p) {
     final u = c.units;
+    // distance and angle from the previous point, as typed input expects them
+    final ref = _tool.referencePoint;
+    final rel = ref == null || ref == p ? '' : '   Δ ${u.lengthFromSi(ref.distanceTo(p)).toStringAsFixed(2)}  ∠ ${((p - ref).angle * 180 / math.pi % 360 + 360).remainder(360).toStringAsFixed(1)}°';
     widget.host.setStatus(
-      'X ${u.lengthFromSi(p.x).toStringAsFixed(2)}  Y ${u.lengthFromSi(p.y).toStringAsFixed(2)} ${u.lengthLabel}${_snap != null && _snap!.isSnapped ? '   [${_snap!.kind}]' : ''}',
+      'X ${u.lengthFromSi(p.x).toStringAsFixed(2)}  Y ${u.lengthFromSi(p.y).toStringAsFixed(2)} ${u.lengthLabel}$rel${_snap != null && _snap!.isSnapped ? '   [${c.t(snapKindKey(_snap!.kind))}]' : ''}',
     );
   }
 
@@ -333,6 +350,21 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   @override
   bool get toolIdle => _tool is! PolyTool || (_tool as PolyTool).pts.isEmpty;
+
+  @override
+  Pt? get referencePoint => _tool.referencePoint;
+
+  @override
+  Pt? get cursorPoint => _tool.cursor;
+
+  @override
+  void feedPoint(Pt p) {
+    _tool.onDown(p);
+    _tool.onUp(p);
+    _tool.onMove(p);
+    _updateStatus(p);
+    _redraw();
+  }
 
   @override
   void setSpaceHeld(bool held) => _spaceDown = held;
@@ -422,12 +454,12 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   }
 
   Widget _roundButton(IconData icon, VoidCallback onTap) => Material(
-    color: const Color(0xAA1B1F24),
+    color: Cad.overlay,
     shape: const CircleBorder(),
     child: InkWell(
       customBorder: const CircleBorder(),
       onTap: onTap,
-      child: SizedBox(width: math.max(28, 32), height: 32, child: Icon(icon, size: 16, color: Colors.white70)),
+      child: SizedBox(width: math.max(28, 32), height: 32, child: Icon(icon, size: 16, color: Cad.fg70)),
     ),
   );
 }

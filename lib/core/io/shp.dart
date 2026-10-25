@@ -11,16 +11,20 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 
 import '../model/geometry.dart';
+import 'datum.dart';
 import 'dxf.dart';
 import 'geo.dart';
 
 class ShpImportResult {
-  ShpImportResult({required this.document, required this.recordCount, required this.georef, required this.geographic, this.crs = ''});
+  ShpImportResult({required this.document, required this.recordCount, required this.georef, required this.geographic, this.crs = '', this.warnings = const []});
   final DxfDocument document;
   final int recordCount;
   final GeoReference? georef;
   final bool geographic;
   final String crs;
+
+  /// Placement codes (`crs_missing`, `crs_assumed_wgs84`, `crs_datum_shift:…`, CRS problems).
+  final List<String> warnings;
 }
 
 class ShpReader {
@@ -32,7 +36,6 @@ class ShpReader {
     final attrs = dbf != null ? _readDbf(dbf, cpg: cpg) : const <Map<String, String>>[];
     final elevField = attrs.isEmpty ? null : _elevationField(attrs.first.keys);
     final nameField = attrs.isEmpty ? null : _nameField(attrs.first.keys);
-    final geographic = prj != null ? (prj.contains('GEOGCS') && !prj.contains('PROJCS')) : null;
     // records
     final raw = <_Shape>[];
     var off = 100;
@@ -46,45 +49,13 @@ class ShpReader {
       rec++;
       off = start + len;
     }
-    // without a .prj, degrees are recognised by their range and precision
+    // the .prj (any datum, any UTM zone) or, without one, degrees recognised
+    // by their range and precision; see GeoPlacement
     final allPts = raw.expand((s) => s.parts.expand((p) => p)).toList();
-    final isGeo = geographic ?? looksLikeDegrees(allPts);
-    GeoReference? ref;
-    Pt Function(Pt) project;
-    if (isGeo) {
-      if (georef != null) {
-        ref = georef;
-      } else if (allPts.isNotEmpty) {
-        var sLat = 0.0, sLon = 0.0;
-        for (final p in allPts) {
-          sLat += p.y;
-          sLon += p.x;
-        }
-        final u = latLonToUtm(sLat / allPts.length, sLon / allPts.length);
-        ref = GeoReference(zone: u.zone, north: u.north, originEasting: (u.easting / 100).round() * 100.0, originNorthing: (u.northing / 100).round() * 100.0);
-      } else {
-        ref = const GeoReference(zone: 23, north: false, originEasting: 0, originNorthing: 0);
-      }
-      final g = ref;
-      project = (p) {
-        final u = latLonToUtm(p.y, p.x, zone: g.zone);
-        var northing = u.northing;
-        if (g.north && p.y < 0) northing -= 10000000;
-        if (!g.north && p.y >= 0) northing += 10000000;
-        return Pt(u.easting - g.originEasting, northing - g.originNorthing);
-      };
-    } else {
-      // projected: shift large coordinates to the project origin
-      final big = allPts.isNotEmpty && allPts.first.x.abs() > 100000;
-      if (big && georef == null && allPts.isNotEmpty) {
-        final zone = _utmZoneFromPrj(prj);
-        ref = GeoReference(zone: zone?.$1 ?? 23, north: zone?.$2 ?? false, originEasting: (allPts.first.x / 100).round() * 100.0, originNorthing: (allPts.first.y / 100).round() * 100.0);
-      } else if (big) {
-        ref = georef;
-      }
-      final g = ref;
-      project = (p) => g != null && big ? Pt(p.x - g.originEasting, p.y - g.originNorthing) : p;
-    }
+    final placement = GeoPlacement.plan(prj != null ? parseCrs(prj) : null, [for (final p in allPts) (p.x, p.y)], georef: georef);
+    final isGeo = placement.crs.kind == CrsKind.geographic;
+    final ref = placement.georef;
+    Pt project(Pt p) => placement.place(p.x, p.y);
     final doc = DxfDocument(layers: [DxfLayer(layer, color: 3)]);
     for (var i = 0; i < raw.length; i++) {
       final s = raw[i];
@@ -107,7 +78,7 @@ class ShpReader {
         }
       }
     }
-    return ShpImportResult(document: doc, recordCount: rec, georef: ref, geographic: isGeo, crs: prj != null ? _crsName(prj) : '');
+    return ShpImportResult(document: doc, recordCount: rec, georef: ref, geographic: isGeo, crs: prj != null ? _crsName(prj) : '', warnings: placement.warnings);
   }
 
   /// True when every point fits the lat/lon range and at least half of them
@@ -257,13 +228,6 @@ class ShpReader {
       if (keys.contains(n.toUpperCase())) return n;
     }
     return null;
-  }
-
-  static (int, bool)? _utmZoneFromPrj(String? prj) {
-    if (prj == null) return null;
-    final m = RegExp(r'UTM[_ ]zone[_ ](\d+)([NS])', caseSensitive: false).firstMatch(prj);
-    if (m == null) return null;
-    return (int.parse(m.group(1)!), m.group(2)!.toUpperCase() == 'N');
   }
 
   static String _crsName(String prj) {

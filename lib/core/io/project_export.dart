@@ -11,12 +11,21 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../translate.dart';
 import '../units.dart';
+import 'cad_drawing.dart';
+import 'cad_export.dart';
 import 'dwg_writer.dart';
 import 'dxf.dart';
+import 'dxf_r2000.dart';
+import 'epanet_inp.dart';
 import 'geo.dart';
 import 'geo_export.dart';
+import 'gpx.dart';
+import 'ifc.dart';
+import 'landxml.dart';
+import 'pdf.dart';
 import 'pdf_sheet.dart';
 import 'plot.dart';
+import 'shp_writer.dart';
 import 'svg.dart';
 import 'xlsx.dart';
 
@@ -29,18 +38,25 @@ class GeoReferenceMissing implements Exception {
 
 enum DrawingFormat {
   dxf('dxf', 'application/dxf'),
+  // the plain R12 file for older programs that do not read AutoCAD 2000
+  dxfR12('dxf', 'application/dxf'),
   dwg('dwg', 'image/vnd.dwg'),
   pdf('pdf', 'application/pdf'),
   svg('svg', 'image/svg+xml'),
   kml('kml', 'application/vnd.google-earth.kml+xml'),
   kmz('kmz', 'application/vnd.google-earth.kmz'),
-  geojson('geojson', 'application/geo+json');
+  geojson('geojson', 'application/geo+json'),
+  shp('zip', 'application/zip'),
+  gpx('gpx', 'application/gpx+xml'),
+  landxml('xml', 'application/xml'),
+  ifc('ifc', 'application/x-step'),
+  inp('inp', 'text/plain');
 
   const DrawingFormat(this.extension, this.mime);
   final String extension;
   final String mime;
-  bool get needsGeoref => this == kml || this == kmz || this == geojson;
-  bool get isBinary => this == pdf || this == kmz || this == dwg;
+  bool get needsGeoref => this == kml || this == kmz || this == geojson || this == gpx;
+  bool get isBinary => this == pdf || this == kmz || this == dwg || this == shp;
 }
 
 enum ReportFormat {
@@ -56,11 +72,14 @@ enum ReportFormat {
 }
 
 class ProjectExporter {
-  ProjectExporter({required this.project, this.results, required this.labels, this.unconnected = const {}, Map<String, String>? layerNames}) : layerNames = layerNames ?? const {};
+  ProjectExporter({required this.project, this.results, required this.labels, this.unconnected = const {}, Map<String, String>? layerNames, this.fonts}) : layerNames = layerNames ?? const {};
   final Project project;
   final DesignResults? results;
   final ReportLabels labels;
   final Set<String> unconnected;
+
+  /// Fonts for the PDF text Helvetica cannot show (null: [PdfFonts.shared]).
+  final PdfFonts? fonts;
 
   /// Translated layer names (legend, KML folders).
   final Map<String, String> layerNames;
@@ -71,12 +90,26 @@ class ProjectExporter {
 
   // ------------------------------------------------------------------ DXF / DWG
 
-  String dxf() => DxfWriter.write(dxfDocument());
+  /// AutoCAD 2000 DXF (AC1015) with native entities: polylines with arcs,
+  /// splines, hatches, dimensions with their blocks, leaders, multiline text
+  /// and blocks with attributes for symbols and hydraulic items (see
+  /// [cadDrawing]).
+  String dxf() => DxfR2000Writer.write(cadDrawing());
 
-  /// AutoCAD 2000 DWG with the same content as the DXF export.
-  Uint8List dwg() => DwgWriter.write(dxfDocument());
+  /// R12 DXF (AC1009) for older programs: the primitives of [dxfDocument]
+  /// (splines and symbols as polylines, hatches as outline and lines,
+  /// dimensions as lines and text).
+  String dxfR12() => DxfWriter.write(dxfDocument());
 
-  /// The drawing as a plain CAD document (layers + primitive entities).
+  /// AutoCAD 2000 DWG with the same native drawing as the DXF export.
+  Uint8List dwg() => DwgWriter.writeDrawing(cadDrawing());
+
+  /// The project as a native CAD drawing (layers with true colours and
+  /// linetypes, blocks, dimension styles) for the AutoCAD 2000 exports.
+  CadDrawing cadDrawing() => CadExport(project, units: units).build();
+
+  /// The drawing as a plain CAD document (layers + primitive entities), the
+  /// content of the R12 export.
   DxfDocument dxfDocument() {
     final layers = project.layers.map((l) => DxfLayer(l.name, color: argbToAci(l.color))).toList();
     final ents = <DxfEntity>[];
@@ -89,7 +122,9 @@ class ProjectExporter {
         case CircleEntity c:
           ents.add(DxfEntity(type: 'CIRCLE', layer: c.layer, center: c.center, radius: c.radius));
         case ArcEntity a:
-          ents.add(DxfEntity(type: 'ARC', layer: a.layer, center: a.center, radius: a.radius, startAngle: radToDeg(a.startRad), endAngle: radToDeg(a.startRad + a.sweepRad)));
+          // the format's arcs run counter-clockwise: a clockwise arc (a mirrored one) from its end
+          final (start, end) = arcDegrees(a.startRad, a.sweepRad);
+          ents.add(DxfEntity(type: 'ARC', layer: a.layer, center: a.center, radius: a.radius, startAngle: start, endAngle: end));
         case SplineEntity sp:
           ents.add(DxfEntity(type: 'POLYLINE', layer: sp.layer, points: sp.curve(), closed: sp.closed));
         case HatchEntity h:
@@ -130,8 +165,19 @@ class ProjectExporter {
         case ContourEntity c:
           ents.add(DxfEntity(type: 'POLYLINE', layer: c.layer, points: c.points));
           if (c.points.isNotEmpty) ents.add(DxfEntity(type: 'TEXT', layer: c.layer, points: [c.points.first], text: fmt(c.elevation, 1), height: 0.5));
+        case BreaklineEntity b:
+          ents.add(DxfEntity(type: 'POLYLINE', layer: b.layer, points: b.points, name: b.name));
+          for (var i = 0; i < b.points.length; i++) {
+            if (b.elevationOf(i).isFinite) ents.add(DxfEntity(type: 'POINT', layer: b.layer, points: [b.points[i]], elevation: b.elevationOf(i)));
+          }
+        case CommentEntity n:
+          ents.add(DxfEntity(type: 'CIRCLE', layer: n.layer, center: n.position, radius: 0.6));
+          ents.add(DxfEntity(type: 'TEXT', layer: n.layer, points: [n.position + const Pt(0.9, 0)], text: [if (n.author.isNotEmpty) '${n.author}:', n.text].join(' '), height: 0.6));
+        case RevisionCloudEntity r:
+          ents.add(DxfEntity(type: 'POLYLINE', layer: r.layer, points: r.scallops(), closed: true));
+          if (r.points.isNotEmpty) ents.add(DxfEntity(type: 'TEXT', layer: r.layer, points: [Pt(r.bounds.maxX, r.bounds.maxY)], text: [if (r.revision.isNotEmpty) r.revision, r.description].where((x) => x.isNotEmpty).join(' — '), height: 0.8));
         case SpotHeightEntity s:
-          ents.add(DxfEntity(type: 'POINT', layer: s.layer, points: [s.position]));
+          ents.add(DxfEntity(type: 'POINT', layer: s.layer, points: [s.position], elevation: s.elevation));
           ents.add(DxfEntity(type: 'TEXT', layer: s.layer, points: [s.position], text: fmt(s.elevation, 1), height: 0.5));
         case PipeEntity p:
           ents.add(DxfEntity(type: 'POLYLINE', layer: p.layer, points: p.points));
@@ -302,10 +348,19 @@ class ProjectExporter {
 
   // ------------------------------------------------------------------ plot
 
-  PdfSheetBuilder sheetBuilder() => PdfSheetBuilder(project: project, results: results, t: t, layerNames: layerNames, units: units);
+  PdfSheetBuilder sheetBuilder() => PdfSheetBuilder(project: project, results: results, t: t, layerNames: layerNames, units: units, fonts: fonts);
 
-  /// Plot scene at the sheet's scale.
-  PlotScene scene(SheetOptions o) => buildPlotScene(project, results: results, unitsPerMm: sheetBuilder().sheetScale(o) / 1000, options: PlotOptions(wettedRadii: o.wettedRadii, labels: o.labels, results: o.labels), units: units, t: t);
+  /// Plot scene at the sheet's scale (with the sheet's background rasters).
+  PlotScene scene(SheetOptions o) => buildPlotScene(
+    project,
+    results: results,
+    unitsPerMm: sheetBuilder().sheetScale(o) / 1000,
+    options: PlotOptions(wettedRadii: o.wettedRadii, labels: o.labels, results: o.labels),
+    units: units,
+    t: t,
+    rasters: o.rasters,
+    attribution: o.attribution,
+  );
 
   String svg([SheetOptions o = const SheetOptions()]) => SvgWriter.write(scene(o), marginMm: o.marginMm, title: project.meta.name, layerNames: layerNames);
 
@@ -343,12 +398,18 @@ class ProjectExporter {
   /// Drawing export by format; text formats return [String], binary [Uint8List].
   Object exportDrawing(DrawingFormat f, {SheetOptions sheet = const SheetOptions()}) => switch (f) {
     DrawingFormat.dxf => dxf(),
+    DrawingFormat.dxfR12 => dxfR12(),
     DrawingFormat.dwg => dwg(),
     DrawingFormat.pdf => pdfSheet(sheet),
     DrawingFormat.svg => svg(sheet),
     DrawingFormat.kml => kml(),
     DrawingFormat.kmz => kmz(),
     DrawingFormat.geojson => geoJson(),
+    DrawingFormat.shp => ShapefileWriter(project: project, results: results, layerNames: layerNames).zip(),
+    DrawingFormat.gpx => GpxWriter.write(project, results: results, layerNames: layerNames),
+    DrawingFormat.landxml => LandXmlWriter.write(project, results: results),
+    DrawingFormat.ifc => IfcWriter.write(project, results: results, fileName: '${project.meta.name}.ifc').text,
+    DrawingFormat.inp => EpanetWriter.write(project, results: results).text,
   };
 
   Object exportReport(ReportFormat f) => switch (f) {

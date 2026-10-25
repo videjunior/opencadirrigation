@@ -148,6 +148,21 @@ void main() {
       expect(BaseMapLayer.isValidTemplate(''), isFalse);
     });
 
+    test('WMS GetMap templates take the extent of the tile', () {
+      const wms = 'https://wms.example/ows?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=a&STYLES=&CRS=EPSG:3857&BBOX={bbox}&WIDTH=256&HEIGHT=256&FORMAT=image/png';
+      expect(BaseMapLayer.isValidTemplate(wms), isTrue);
+      // zoom 1: four tiles of 20037508.343 m; tile (1, 0) is the north-east one
+      expect(BaseMapLayer.customUrl(wms, 1, 1, 0), contains('BBOX=0.000,0.000,20037508.343,20037508.343&'));
+      expect(BaseMapLayer.customUrl(wms, 1, 0, 1), contains('BBOX=-20037508.343,-20037508.343,0.000,0.000&'));
+      const geo = 'https://wms.example/ows?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG:4326&BBOX={bbox4326}&WIDTH=256&HEIGHT=256';
+      final u = BaseMapLayer.customUrl(geo, 1, 1, 0);
+      final bbox = RegExp(r'BBOX=([^&]+)').firstMatch(u)!.group(1)!.split(',').map(double.parse).toList();
+      expect(bbox[0], closeTo(0, 1e-6));
+      expect(bbox[1], closeTo(0, 1e-6));
+      expect(bbox[2], closeTo(180, 1e-6));
+      expect(bbox[3], closeTo(85.0511287, 1e-6));
+    });
+
     test('arcgis tilemap blocks say which tiles exist', () {
       expect(BaseMapLayer.esriTilemapUrl(BaseMap.satellite, 19, 192672, 285136), 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/19/192672/285136/32/32');
       expect(BaseMapLayer.esriTilemapUrl(BaseMap.esriTopo, 5, 0, 0), contains('World_Topo_Map/MapServer/tilemap/5/0/0/32/32'));
@@ -253,8 +268,11 @@ void main() {
       expect(on.point.y, closeTo(-5, 1e-9));
       expect(on.entityId, 'p1');
       c.addEntity(CircleEntity(id: 'c1', center: const Pt(20, 0), radius: 2));
-      expect(snapper.snap(const Pt(20.2, 0.1)).kind, 'node');
-      expect(snapper.snap(const Pt(22.3, 0)).kind, 'on');
+      expect(snapper.snap(const Pt(20.2, 0.1)).kind, 'center');
+      expect(snapper.snap(const Pt(22.3, 0)).kind, 'quadrant');
+      // the nearest point of the circle when no other snap is in reach
+      final onCircle = snapper.snap(const Pt(20 + 2.2 * 0.7071, 2.2 * 0.7071));
+      expect(onCircle.kind, snapper.tolerance < 1.5 ? 'on' : isNotNull);
       expect(snapper.snap(const Pt(50, 50)).kind, 'none');
       c.snap.ortho = true;
       final o = snapper.snap(const Pt(50, 51), reference: const Pt(40, 50));

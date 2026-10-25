@@ -3,7 +3,8 @@
 /// their setting: cases that used to cycle (emitters flipping open/closed at
 /// every iteration, a pump locked closed after one bad step) and a fixed set
 /// of random tree networks whose solutions must satisfy continuity and the
-/// head-loss laws, not only report convergence.
+/// head-loss laws, not only report convergence; and lines at rest behind
+/// closed links, which used to be singular to rounding.
 library;
 
 import 'dart:math' as math;
@@ -247,5 +248,58 @@ void main() {
       expect(energy, lessThan(1e-2), reason: 'seed $seed head loss');
     }
     expect(iterations / 300, lessThan(25), reason: 'a handful of Newton steps, not hundreds');
+  });
+
+  group('lines at rest behind closed links', () {
+    /// An idle pump (a closed link) between a tank and a branched line of
+    /// [n] pipes in which every seventh link is a device with no loss (an
+    /// air valve), closed to a supplied part of the network by a closed
+    /// check valve: nothing is drawn from the line.
+    HydraulicNetwork idleLine(int n, {bool emitter = false}) {
+      final rnd = math.Random(n);
+      final net = HydraulicNetwork()
+        ..addNode(HNode(id: 'R', kind: HNodeKind.reservoir, elevation: 100, fixedHead: 100))
+        ..addNode(HNode(id: 'N0', elevation: 95))
+        ..addLink(HLink(id: 'pump', from: 'R', to: 'N0', kind: HLinkKind.closed));
+      for (var i = 1; i <= n; i++) {
+        final parent = 'N${rnd.nextInt(i)}';
+        net.addNode(HNode(id: 'N$i', elevation: 90 + rnd.nextDouble() * 10));
+        net.addLink(i % 7 == 0
+            ? HLink(id: 'L$i', from: parent, to: 'N$i', kind: HLinkKind.device, diameter: 0.1, device: const DeviceLossCurve(k: 0))
+            : HLink(id: 'L$i', from: parent, to: 'N$i', diameter: 0.05 + rnd.nextDouble() * 0.2, length: 0.5 + rnd.nextDouble() * 200, hazenC: 140));
+      }
+      if (emitter) net.nodes['N$n']!.emitter = const EmitterCurve(k: 1e-4, x: 0.5);
+      return net
+        ..addNode(HNode(id: 'R2', kind: HNodeKind.reservoir, elevation: 80, fixedHead: 130))
+        ..addNode(HNode(id: 'M', elevation: 80, demand: 0.01))
+        ..addLink(HLink(id: 'main', from: 'R2', to: 'M', diameter: 0.1, length: 100, hazenC: 140))
+        ..addLink(HLink(id: 'cv', from: 'M', to: 'N0', kind: HLinkKind.closed));
+    }
+
+    test('converge level at the mean head across the closed links, whatever their size', () {
+      for (final n in [10, 50, 200, 800]) {
+        final net = idleLine(n);
+        final r = net.solve();
+        expect(r.converged, isTrue, reason: '$n links');
+        final mHead = r.nodes['M']!.head;
+        for (var i = 0; i <= n; i++) {
+          expect(r.nodes['N$i']!.head, closeTo((100 + mHead) / 2, 1e-6), reason: '$n links, node $i');
+        }
+        for (var i = 1; i <= n; i++) {
+          expect(r.links['L$i']!.flow, 0, reason: '$n links, link $i');
+        }
+        // (plus the trickle of 1/10⁸ per metre of head the closed check valve lets by)
+        expect(r.links['main']!.flow, closeTo(0.01, 1e-6), reason: 'the supplied part is solved as before');
+      }
+    });
+
+    test('drain down to their lowest emitter', () {
+      final net = idleLine(30, emitter: true);
+      final r = net.solve();
+      expect(r.converged, isTrue);
+      final z = net.nodes['N30']!.elevation;
+      expect(r.nodes['N0']!.head, closeTo(z, 1e-3));
+      expect(r.nodes['N30']!.emitterFlow, lessThan(1e-6), reason: 'only the trickle of the closed links');
+    });
   });
 }

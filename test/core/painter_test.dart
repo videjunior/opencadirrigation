@@ -93,8 +93,8 @@ void main() {
     final r = paint();
     final zones = c.results!.zones.length;
     int count(List<int> argb) => r.paths.where((col) => argb.contains(col.toARGB32())).length;
-    expect(count([0xFF29B6F6, CadColors.unconnected.toARGB32()]), zones, reason: 'one low marker per zone');
-    expect(count([0xFFAB47BC, CadColors.warning.toARGB32()]), zones, reason: 'one high marker per zone');
+    expect(count([0xFF29B6F6, Cad.unconnected.toARGB32()]), zones, reason: 'one low marker per zone');
+    expect(count([0xFFAB47BC, Cad.warning.toARGB32()]), zones, reason: 'one high marker per zone');
     c.overlay = OverlayMode.sizes;
     c.showLabels = true;
     final sizes = paint();
@@ -161,6 +161,10 @@ void main() {
 }
 
 class _NoHost implements ToolHost {
+  @override
+  void showCommentDialog(Pt position) {}
+  @override
+  void showRevisionDialog(List<Pt> polygon) {}
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 }

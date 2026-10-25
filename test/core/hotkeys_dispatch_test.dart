@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/keys/hotkeys.dart';
 import 'package:opencadirrigation/app/shortcuts.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
+import 'package:opencadirrigation/app/tools/typed_point.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 
@@ -53,7 +54,19 @@ class _Actions implements HotkeyActions {
   @override
   void optimize() => calls.add('optimize');
   @override
+  void assistant() => calls.add('assistant');
+  @override
   void densogram() => calls.add('densogram');
+  @override
+  void autoDesign(CadAction action) => calls.add(action.name);
+  @override
+  void networkTool(CadAction action) => calls.add('net:${action.name}');
+  @override
+  void mainlineAnalysis(CadAction action) => calls.add('main:${action.name}');
+  @override
+  void insertBlock() => calls.add('insertBlock');
+  @override
+  void saveBlock() => calls.add('saveBlock');
   @override
   void clipboard(CadAction action) => calls.add('clip:${action.name}');
 }
@@ -70,6 +83,12 @@ class _Canvas implements CanvasKeyTarget {
   void modifiersChanged() => calls.add('modifiers');
   @override
   void redraw() => calls.add('redraw');
+  @override
+  Pt? referencePoint;
+  @override
+  Pt? cursorPoint;
+  @override
+  void feedPoint(Pt p) => calls.add('point:${p.x},${p.y}');
 }
 
 void main() {
@@ -89,6 +108,43 @@ void main() {
     keys = Hotkeys(a);
   });
   tearDown(() => keys.dispose());
+  group('typed points', typedPointTests);
+
+  test('coordinates typed while a tool waits for a point are fed to it; minus is typed, not a zoom', () {
+    c.setTool(ToolId.polyline);
+    canvas.referencePoint = const Pt(10, 10);
+    for (final ch in '@5,0'.split('')) {
+      keys.handle(HotkeyEvent(ch));
+    }
+    expect(c.command, '@5,0');
+    keys.handle(const HotkeyEvent('Enter'));
+    expect(canvas.calls, contains('point:15.0,10.0'));
+    expect(c.command, '');
+    final scale = c.camera.scale;
+    keys.handle(const HotkeyEvent('-'));
+    keys.handle(const HotkeyEvent('3'));
+    keys.handle(const HotkeyEvent(','));
+    keys.handle(const HotkeyEvent('4'));
+    expect(c.command, '-3,4');
+    expect(c.camera.scale, scale);
+    keys.handle(const HotkeyEvent(' '));
+    expect(canvas.calls, contains('point:-3.0,4.0'));
+    // with the selection tool the minus key still zooms out and aliases still run
+    c.setTool(ToolId.select);
+    keys.handle(const HotkeyEvent('-'));
+    expect(c.camera.scale, lessThan(scale));
+    expect(c.command, '');
+  });
+
+  test('F10 cycles the polar tracking step', () {
+    expect(c.snap.polarStepDeg, 0);
+    keys.handle(const HotkeyEvent('F10'));
+    expect(c.snap.polarStepDeg, 15);
+    for (var i = 0; i < 4; i++) {
+      keys.handle(const HotkeyEvent('F10'));
+    }
+    expect(c.snap.polarStepDeg, 0);
+  });
 
   bool press(String key, {bool ctrl = false, bool shift = false, bool alt = false, bool meta = false, bool repeat = false, String code = ''}) =>
       keys.handle(HotkeyEvent(key, code: code, ctrl: ctrl, shift: shift, alt: alt, meta: meta, repeat: repeat));
@@ -301,8 +357,18 @@ void main() {
           expect(a.calls, ['fix']);
         case CadAction.optimize:
           expect(a.calls, ['optimize']);
+        case CadAction.assistant:
+          expect(a.calls, ['assistant']);
         case CadAction.densogram:
           expect(a.calls, ['densogram']);
+        case CadAction.autoLayout || CadAction.template || CadAction.fieldBlocks || CadAction.treeRings || CadAction.pivotFit || CadAction.vegetation:
+          expect(a.calls, [target.name], reason: e.key);
+        case CadAction.onDemand || CadAction.tariff || CadAction.energyGroups || CadAction.wireRoutes || CadAction.criticality || CadAction.calibration || CadAction.fertigation:
+          expect(a.calls, ['net:${target.name}'], reason: e.key);
+        case CadAction.transients || CadAction.airValves || CadAction.eps:
+          expect(a.calls, ['main:${target.name}'], reason: e.key);
+        case CadAction.insertBlock || CadAction.saveBlock:
+          expect(a.calls, [target.name], reason: e.key);
         case CadAction.snap:
           expect(c.snap.enabled, !snap, reason: e.key);
         case CadAction.ortho:
@@ -333,5 +399,25 @@ void main() {
     expect(const HotkeyEvent('Meta').isModifier, isTrue);
     expect(const HotkeyEvent('F1').char, isNull);
     expect(const HotkeyEvent('a', meta: true).toString(), contains('meta'));
+  });
+}
+
+void typedPointTests() {
+  test('typed points: absolute, relative, polar and direct distance in display units', () {
+    expect(parseTypedPoint('10,20'), const Pt(10, 20));
+    expect(parseTypedPoint('-2.5,4'), const Pt(-2.5, 4));
+    expect(parseTypedPoint('1,5;2,5'), const Pt(1.5, 2.5)); // semicolon: decimal commas
+    expect(parseTypedPoint('@3,4', reference: const Pt(1, 1)), const Pt(4, 5));
+    final polar = parseTypedPoint('@10<90', reference: const Pt(1, 1))!;
+    expect(polar.x, closeTo(1, 1e-9));
+    expect(polar.y, closeTo(11, 1e-9));
+    final direct = parseTypedPoint('5', reference: Pt.zero, cursor: const Pt(3, 4))!;
+    expect(direct.x, closeTo(3, 1e-9));
+    expect(direct.y, closeTo(4, 1e-9));
+    // feet: 10 ft is 3.048 m
+    expect(parseTypedPoint('10,0', toSi: (v) => v * 0.3048)!.x, closeTo(3.048, 1e-12));
+    for (final bad in ['', '@1,2', '5', '@5<', 'abc', '1,2,3', '@x<1']) {
+      expect(parseTypedPoint(bad), isNull, reason: bad);
+    }
   });
 }

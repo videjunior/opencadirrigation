@@ -7,6 +7,7 @@
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import '../design/results.dart';
 import '../model/entities.dart';
@@ -61,9 +62,48 @@ class PlotText extends PlotItem {
   final PlotAnchor anchor;
 }
 
+/// An image placed on four world corners (an [ImageEntity] with data).
+class PlotImage extends PlotItem {
+  PlotImage({required super.layer, required this.bytes, this.mime = '', required this.corners, this.opacity = 1}) : super(color: 0xFF000000);
+
+  /// Encoded image (PNG, JPEG...).
+  final Uint8List bytes;
+  final String mime;
+
+  /// World corners of the image as displayed: bottom-left, bottom-right,
+  /// top-right, top-left (the top-left corner holds the first pixel row's start).
+  final List<Pt> corners;
+  final double opacity;
+}
+
+/// A raster drawn under every layer of a sheet without being an entity of
+/// the project, such as the base-map tiles shown behind the drawing.
+class PlotRaster {
+  const PlotRaster({required this.bytes, this.mime = '', required this.corners, this.opacity = 1});
+
+  /// Encoded image (PNG, JPEG...).
+  final Uint8List bytes;
+  final String mime;
+
+  /// World corners: bottom-left, bottom-right, top-right, top-left.
+  final List<Pt> corners;
+  final double opacity;
+
+  /// Raster covering the axis-aligned world rectangle [b] (north up).
+  factory PlotRaster.bounds(Uint8List bytes, Bounds b, {String mime = '', double opacity = 1}) =>
+      PlotRaster(bytes: bytes, mime: mime, corners: [Pt(b.minX, b.minY), Pt(b.maxX, b.minY), Pt(b.maxX, b.maxY), Pt(b.minX, b.maxY)], opacity: opacity);
+}
+
 class PlotScene {
-  PlotScene({required this.items, required this.bounds, required this.unitsPerMm, required this.layers});
+  PlotScene({required this.items, required this.bounds, required this.unitsPerMm, required this.layers, this.rasters = const [], this.attribution = ''});
   final List<PlotItem> items;
+
+  /// Rasters drawn under every layer (not part of [bounds]).
+  final List<PlotRaster> rasters;
+
+  /// Credit line of the rasters (e.g. "© OpenStreetMap contributors"),
+  /// printed small on the sheet; empty for none.
+  final String attribution;
 
   /// World extent of the plotted geometry.
   final Bounds bounds;
@@ -78,7 +118,7 @@ class PlotScene {
 }
 
 class PlotOptions {
-  const PlotOptions({this.wettedRadii = true, this.labels = true, this.results = true, this.textHeightMm = 2.5, this.labelHeightMm = 1.8});
+  const PlotOptions({this.wettedRadii = true, this.labels = true, this.results = true, this.textHeightMm = 2.5, this.labelHeightMm = 1.8, this.muted = const {}, this.hideMuted = false, this.window});
   final bool wettedRadii;
   final bool labels;
 
@@ -86,6 +126,25 @@ class PlotOptions {
   final bool results;
   final double textHeightMm;
   final double labelHeightMm;
+
+  /// Entities drawn only for context, in a faded grey and without labels
+  /// (the other zones on the sheet of one zone), or left out with [hideMuted].
+  final Set<String> muted;
+  final bool hideMuted;
+
+  /// World region a sheet shows: entities whose extent does not meet it are
+  /// left out, as the sheet would clip them anyway (a set of zone sheets
+  /// would otherwise carry the whole drawing on every page). Pass the
+  /// visible region inflated by the largest wetted radius; null = everything.
+  final Bounds? window;
+}
+
+/// Colour of an item drawn for context only ([PlotOptions.muted]): its grey
+/// shade faded towards white, so the sheet's subject stands out.
+int mutedColor(int argb) {
+  final r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = argb & 0xFF;
+  final y = (0.299 * r + 0.587 * g + 0.114 * b).round().clamp(0, 255);
+  return blendOverWhite(0xFF000000 | (y << 16) | (y << 8) | y, 0.4);
 }
 
 /// Converts a screen (dark theme) layer colour to a colour that prints well
@@ -141,6 +200,8 @@ PlotScene buildPlotScene(
   PlotOptions options = const PlotOptions(),
   Units units = Units.metric,
   Translate? t,
+  List<PlotRaster> rasters = const [],
+  String attribution = '',
 }) {
   final items = <PlotItem>[];
   final layersUsed = <String, int>{};
@@ -151,6 +212,18 @@ PlotScene buildPlotScene(
   bool shown(String layer) => visible[layer] ?? true;
   int colorOf(String layer) => printColor(project.layerNamed(layer).color);
   String tr(String key, [Map<String, String>? args]) => t?.call(key, args) ?? key;
+  final window = options.window;
+  // the entity being drawn is context only (another zone): faded, no labels
+  var dim = false;
+  var labels = options.labels;
+
+  /// Whether [e] is left off the sheet; sets [dim] and [labels] for it.
+  bool skip(Entity e) {
+    if (!shown(e.layer) || (window != null && !e.bounds.intersects(window))) return true;
+    dim = options.muted.contains(e.id);
+    labels = options.labels && !dim;
+    return dim && options.hideMuted;
+  }
 
   void use(String layer) {
     if (!layersUsed.containsKey(layer)) layersUsed[layer] = colorOf(layer);
@@ -159,18 +232,21 @@ PlotScene buildPlotScene(
   void path(String layer, List<Pt> pts, {bool closed = false, double widthMm = 0.25, bool dashed = false, int? fill, int? color}) {
     if (pts.isEmpty) return;
     use(layer);
-    items.add(PlotPath(layer: layer, color: color ?? colorOf(layer), points: pts, closed: closed, widthMm: widthMm, dashed: dashed, fillColor: fill));
+    final c = color ?? colorOf(layer);
+    items.add(PlotPath(layer: layer, color: dim ? mutedColor(c) : c, points: pts, closed: closed, widthMm: widthMm, dashed: dashed, fillColor: fill == null || !dim ? fill : mutedColor(fill)));
   }
 
   void circle(String layer, Pt c, double r, {double widthMm = 0.25, int? fill, bool stroke = true, int? color}) {
     use(layer);
-    items.add(PlotCircle(layer: layer, color: color ?? colorOf(layer), center: c, radius: r, widthMm: widthMm, fillColor: fill, stroke: stroke));
+    final k = color ?? colorOf(layer);
+    items.add(PlotCircle(layer: layer, color: dim ? mutedColor(k) : k, center: c, radius: r, widthMm: widthMm, fillColor: fill == null || !dim ? fill : mutedColor(fill), stroke: stroke));
   }
 
   void text(String layer, Pt p, String s, {double? heightMm, double rotation = 0, bool bold = false, PlotAnchor anchor = PlotAnchor.bottomLeft, int? color}) {
     if (s.isEmpty) return;
     use(layer);
-    items.add(PlotText(layer: layer, color: color ?? colorOf(layer), position: p, text: s, heightMm: heightMm ?? labelH, rotationDeg: rotation, bold: bold, anchor: anchor));
+    final c = color ?? colorOf(layer);
+    items.add(PlotText(layer: layer, color: dim ? mutedColor(c) : c, position: p, text: s, heightMm: heightMm ?? labelH, rotationDeg: rotation, bold: bold, anchor: anchor));
   }
 
   /// Regular polygon / sector helper (world coordinates).
@@ -179,12 +255,19 @@ PlotScene buildPlotScene(
     return [for (var i = 0; i <= n; i++) c + Pt.polar(r, startRad + sweepRad * i / n)];
   }
 
+  // pass 0: images (backgrounds, as on the screen)
+  for (final e in project.entities.whereType<ImageEntity>()) {
+    final data = e.data;
+    if (data == null || data.isEmpty || skip(e)) continue;
+    use(e.layer);
+    items.add(PlotImage(layer: e.layer, bytes: data, mime: e.mime, corners: e.corners, opacity: e.opacity.clamp(0.0, 1.0).toDouble()));
+  }
   // pass 1: areas (fills under everything else)
   for (final e in project.entities.whereType<AreaEntity>()) {
-    if (!shown(e.layer) || e.points.length < 3) continue;
+    if (e.points.length < 3 || skip(e)) continue;
     final base = project.layerNamed(e.layer).color;
     path(e.layer, e.points, closed: true, widthMm: 0.25, fill: blendOverWhite(printColor(base), 0.18));
-    if (options.labels) {
+    if (labels) {
       // top-left corner inside the polygon, clear of the valve/laterals
       final b = Bounds.ofPoints(e.points);
       text(e.layer, Pt(b.minX + 1.5 * mm, b.maxY - (1.5 + labelH) * mm), '${e.name}  ${fmt(e.area / 10000, 2)} ha', heightMm: labelH, bold: true);
@@ -192,7 +275,7 @@ PlotScene buildPlotScene(
   }
   // pass 2: drawing, terrain, linear hydraulics
   for (final e in project.entities) {
-    if (e is AreaEntity || !shown(e.layer)) continue;
+    if (e is AreaEntity || skip(e)) continue;
     switch (e) {
       case LineEntity l:
         path(l.layer, [l.a, l.b]);
@@ -243,7 +326,8 @@ PlotScene buildPlotScene(
         }
         text(le.layer, le.textPosition + Pt(0.3 * le.height, 0), le.text, heightMm: le.height / mm);
       case ImageEntity im:
-        path(im.layer, im.corners, closed: true, widthMm: 0.13);
+        // drawn in pass 0 when the raster is embedded, otherwise its frame
+        if (im.data == null || im.data!.isEmpty) path(im.layer, im.corners, closed: true, widthMm: 0.13);
       case TextEntity tx:
         text(tx.layer, tx.position, tx.text, heightMm: tx.height / mm, rotation: tx.rotationDeg);
       case DimensionEntity d:
@@ -255,16 +339,16 @@ PlotScene buildPlotScene(
         text(d.layer, mid, '${fmt(units.lengthFromSi(d.length))} ${units.lengthLabel}', heightMm: labelH, rotation: radToDeg((d.b - d.a).angle), anchor: PlotAnchor.bottomCenter);
       case ContourEntity ct:
         path(ct.layer, ct.points, widthMm: 0.2);
-        if (options.labels && ct.points.isNotEmpty) text(ct.layer, ct.points.first, fmt(ct.elevation, 1), heightMm: labelH * 0.9);
+        if (labels && ct.points.isNotEmpty) text(ct.layer, ct.points.first, fmt(ct.elevation, 1), heightMm: labelH * 0.9);
       case SpotHeightEntity s:
         final a = 0.75 * mm;
         path(s.layer, [s.position + Pt(-a, 0), s.position + Pt(a, 0)], widthMm: 0.18);
         path(s.layer, [s.position + Pt(0, -a), s.position + Pt(0, a)], widthMm: 0.18);
-        if (options.labels) text(s.layer, s.position + Pt(a * 1.2, a * 0.3), fmt(s.elevation, 1), heightMm: labelH * 0.9);
+        if (labels) text(s.layer, s.position + Pt(a * 1.2, a * 0.3), fmt(s.elevation, 1), heightMm: labelH * 0.9);
       case PipeEntity p:
         path(p.layer, p.points, widthMm: p.scope == HydraulicScope.mainline ? 0.7 : 0.5);
         final res = pipeRes[p.id];
-        if (options.labels && p.points.length >= 2) {
+        if (labels && p.points.length >= 2) {
           final spec = project.catalog.pipe(p.pipeSpecId);
           var label = spec?.name ?? '';
           if (res != null && res.isNotEmpty) {
@@ -306,11 +390,34 @@ PlotScene buildPlotScene(
           path(pv.layer, [tw + Pt(-a, -a), tw + Pt(a, -a), tw + Pt(a, a), tw + Pt(-a, a)], closed: true, widthMm: 0.2, fill: colorOf(pv.layer));
         }
         circle(pv.layer, pv.center, 1.2 * mm, widthMm: 0.3, fill: colorOf(pv.layer));
-        if (options.labels) {
+        if (labels) {
           var s = pv.name;
           final r = options.results ? results?.pivots[pv.id] : null;
           if (r != null) s += '  ${fmt(units.flowFromSi(r.flow), 1)} ${units.flowLabel} / ${fmt(units.pressureFromHead(r.inletHead), 1)} ${units.pressureLabel}';
           text(Layers.labels, pv.center + Pt(1.6 * mm, 1.2 * mm), s, heightMm: labelH, bold: true);
+        }
+      case BreaklineEntity bl:
+        // dashed, with the elevations typed at the vertices (the others come
+        // from the terrain and are not printed)
+        path(bl.layer, bl.points, widthMm: 0.25, dashed: true);
+        if (labels) {
+          for (var i = 0; i < bl.points.length; i++) {
+            final z = bl.elevationOf(i);
+            if (z.isFinite) text(bl.layer, bl.points[i] + Pt(0.6 * mm, 0.5 * mm), fmt(z, 2), heightMm: labelH * 0.9);
+          }
+        }
+      case RevisionCloudEntity rc:
+        if (rc.points.length < 3) {
+          path(rc.layer, rc.points, widthMm: 0.3);
+        } else {
+          path(rc.layer, rc.scallops(), closed: true, widthMm: 0.35);
+          if (rc.revision.isNotEmpty) {
+            // the tag: a triangle above-left of the top vertex, as on the screen
+            final top = rc.points.reduce((a, b) => (b.y > a.y || (b.y == a.y && b.x < a.x)) ? b : a);
+            final c = top + Pt(-2.6 * mm, 4.2 * mm), s = 2.6 * mm;
+            path(rc.layer, [c + Pt(0, s), c + Pt(s * 0.95, -s * 0.75), c + Pt(-s * 0.95, -s * 0.75)], closed: true, widthMm: 0.3, fill: 0xFFFFFFFF);
+            text(rc.layer, c + Pt(0, -s * 0.62), rc.revision, heightMm: 1.6, bold: true, anchor: PlotAnchor.bottomCenter);
+          }
         }
       default:
         break;
@@ -318,7 +425,7 @@ PlotScene buildPlotScene(
   }
   // pass 3: point hydraulics (symbols sized in paper mm)
   for (final e in project.entities) {
-    if (e is! PointEntity || !shown(e.layer)) continue;
+    if (e is! PointEntity || skip(e)) continue;
     final p = e.position;
     switch (e) {
       case OutletEntity o:
@@ -338,7 +445,7 @@ PlotScene buildPlotScene(
       case ControlValveEntity v:
         final r = 1.5 * mm;
         path(v.layer, [p + Pt(-r, -r * 0.7), p + Pt(r, r * 0.7), p + Pt(r, -r * 0.7), p + Pt(-r, r * 0.7)], closed: true, widthMm: 0.3, fill: colorOf(v.layer));
-        if (options.labels) {
+        if (labels) {
           var s = v.zoneName;
           final z = options.results ? results?.zones[v.id] : null;
           if (z != null) s += '  ${fmt(units.flowFromSi(z.totalFlow), 1)} ${units.flowLabel} / ${fmt(units.pressureFromHead(z.requiredUpstreamHead), 1)} ${units.pressureLabel}';
@@ -348,7 +455,7 @@ PlotScene buildPlotScene(
         final r = 2.0 * mm;
         path(w.layer, [p + Pt(-r, -r), p + Pt(r, -r), p + Pt(r, r), p + Pt(-r, r)], closed: true, widthMm: 0.3, fill: colorOf(w.layer));
         text(w.layer, p, 'W', heightMm: 2.4, bold: true, anchor: PlotAnchor.center, color: 0xFFFFFFFF);
-        if (options.labels) {
+        if (labels) {
           var s = w.name;
           if (options.results && results != null) {
             SupplyDuty? worst;
@@ -366,18 +473,27 @@ PlotScene buildPlotScene(
         final r = 1.5 * mm;
         circle(pu.layer, p, r, widthMm: 0.3, fill: colorOf(pu.layer));
         text(pu.layer, p, 'P', heightMm: 2.0, bold: true, anchor: PlotAnchor.center, color: 0xFFFFFFFF);
-        if (options.labels) text(Layers.labels, p + Pt(r * 1.3, -r * 1.6), project.catalog.pump(pu.pumpSpecId)?.name ?? tr('tool.pump'), heightMm: labelH * 0.9);
+        if (labels) text(Layers.labels, p + Pt(r * 1.3, -r * 1.6), project.catalog.pump(pu.pumpSpecId)?.name ?? tr('tool.pump'), heightMm: labelH * 0.9);
       case MiscHydraulicEntity m:
         final r = 1.2 * mm;
         path(m.layer, [p + Pt(0, r), p + Pt(r, 0), p + Pt(0, -r), p + Pt(-r, 0)], closed: true, widthMm: 0.3, fill: colorOf(m.layer));
-        if (options.labels) text(Layers.labels, p + Pt(r * 1.3, r * 1.1), project.catalog.valve(m.valveSpecId)?.name ?? '', heightMm: labelH * 0.9);
+        if (labels) text(Layers.labels, p + Pt(r * 1.3, r * 1.1), project.catalog.valve(m.valveSpecId)?.name ?? '', heightMm: labelH * 0.9);
       case JunctionEntity j:
         circle(j.layer, p, 0.5 * mm, fill: colorOf(j.layer), stroke: false);
       case ControllerEntity k:
         final r = 1.6 * mm;
         path(k.layer, [p + Pt(-r, -r), p + Pt(r, -r), p + Pt(r, r), p + Pt(-r, r)], closed: true, widthMm: 0.3, fill: colorOf(k.layer));
         text(k.layer, p, 'C', heightMm: 2.0, bold: true, anchor: PlotAnchor.center, color: 0xFFFFFFFF);
-        if (options.labels) text(Layers.labels, p + Pt(r * 1.3, r * 0.4), k.name, heightMm: labelH, bold: true);
+        if (labels) text(Layers.labels, p + Pt(r * 1.3, r * 0.4), k.name, heightMm: labelH, bold: true);
+      case CommentEntity cm:
+        // review notes: an open one prints as a balloon pin with its text;
+        // resolved ones are left off the sheet (they are settled)
+        if (cm.resolved) break;
+        final a = mm;
+        path(cm.layer, [p, p + Pt(a, 1.5 * a), p + Pt(4.5 * a, 1.5 * a), p + Pt(4.5 * a, 5 * a), p + Pt(-1.5 * a, 5 * a), p + Pt(-1.5 * a, 1.5 * a), p + Pt(0.4 * a, 1.5 * a)], closed: true, widthMm: 0.2, fill: blendOverWhite(colorOf(cm.layer), 0.55));
+        var note = cm.text.replaceAll(RegExp(r'\s+'), ' ').trim();
+        if (note.length > 90) note = '${note.substring(0, 89)}…';
+        text(cm.layer, p + Pt(5.3 * a, 2.4 * a), cm.author.isEmpty ? note : '${cm.author}: $note', heightMm: labelH);
       default:
         break;
     }
@@ -389,9 +505,11 @@ PlotScene buildPlotScene(
         bounds = bounds.union(Bounds.ofPoints(p.points));
       case PlotCircle c:
         bounds = bounds.union(Bounds(c.center.x - c.radius, c.center.y - c.radius, c.center.x + c.radius, c.center.y + c.radius));
+      case PlotImage im:
+        bounds = bounds.union(Bounds.ofPoints(im.corners));
       case PlotText tx:
         // approximate extent of the text so auto-fit keeps labels on the sheet
-        final w = tx.text.length * tx.heightMm * 0.62 * unitsPerMm;
+        final w = _characterWidths(tx.text) * tx.heightMm * 0.62 * unitsPerMm;
         final h = tx.heightMm * unitsPerMm;
         final (dx0, dx1) = switch (tx.anchor) {
           PlotAnchor.bottomRight => (-w, 0.0),
@@ -405,7 +523,19 @@ PlotScene buildPlotScene(
         }
     }
   }
-  return PlotScene(items: items, bounds: bounds, unitsPerMm: unitsPerMm, layers: layersUsed);
+  return PlotScene(items: items, bounds: bounds, unitsPerMm: unitsPerMm, layers: layersUsed, rasters: rasters, attribution: attribution);
+}
+
+/// Width of [s] in average characters: East Asian wide characters (Han,
+/// kana, Hangul, full-width forms) count as an em, 1.6 average characters.
+double _characterWidths(String s) {
+  var n = 0.0;
+  for (final r in s.runes) {
+    final wide = (r >= 0x1100 && r <= 0x115F) || (r >= 0x2E80 && r <= 0xA4CF) || (r >= 0xAC00 && r <= 0xD7A3) || (r >= 0xF900 && r <= 0xFAFF) || (r >= 0xFE30 && r <= 0xFE4F) ||
+        (r >= 0xFF00 && r <= 0xFF60) || (r >= 0xFFE0 && r <= 0xFFE6) || (r >= 0x20000 && r <= 0x3FFFD);
+    n += wide ? 1.6 : 1;
+  }
+  return n;
 }
 
 /// Segment of a polyline containing the given distance from its start.

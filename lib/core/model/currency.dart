@@ -65,6 +65,9 @@ const currencies = <Currency>[
   Currency('ARS', r'AR$'),
   Currency('COP', r'CO$', decimals: 0),
   Currency('CLP', r'CL$', decimals: 0),
+  // Unidad de Fomento: the inflation-indexed unit Chilean public subsidy
+  // contests ask budgets in
+  Currency('CLF', 'UF'),
   Currency('PEN', 'S/'),
   Currency('UYU', r'$U'),
   Currency('PYG', '₲', decimals: 0),
@@ -128,7 +131,9 @@ const unitsPerBrl = <String, double>{
   'NGN': 262.864, 'KES': 25.2459, 'TZS': 516.716, 'UGX': 745.134, 'VND': 5050.14, 'TRY': 9.48874, 'RUB': 16.495, 'EGP': 10.1227,
   'SAR': 0.729374, 'AED': 0.7143, 'MAD': 1.85499, 'DZD': 26.0744, 'TND': 0.569235, 'IQD': 254.226, 'JOD': 0.1379, 'QAR': 0.707979,
   'KWD': 0.060022, 'OMR': 0.074785, 'BHD': 0.073132, 'LBP': 17407.7, 'PKR': 54.0161, 'BDT': 23.9342, 'MXN': 3.34495, 'ARS': 294.148,
-  'COP': 617.19, 'CLP': 187.238, 'PEN': 0.657038, 'UYU': 7.83241, 'PYG': 1160.73, 'BOB': 2.19297, 'GTQ': 1.48678, 'CRC': 87.1606,
+  // CLF: one UF taken as CLP 40 000 (the UF follows inflation every day; type
+  // the day's value when converting)
+  'COP': 617.19, 'CLP': 187.238, 'CLF': 187.238 / 40000, 'PEN': 0.657038, 'UYU': 7.83241, 'PYG': 1160.73, 'BOB': 2.19297, 'GTQ': 1.48678, 'CRC': 87.1606,
   'DOP': 11.4422, 'CAD': 0.272264, 'AUD': 0.27313, 'NZD': 0.34017, 'ZAR': 3.16636, 'CHF': 0.1602, 'SEK': 1.91301, 'NOK': 1.83189,
   'DKK': 1.26869, 'PLN': 0.739874, 'CZK': 4.12219, 'HUF': 61.7788, 'RON': 0.8934, 'UAH': 8.7116, 'KZT': 86.927, 'BYN': 0.58924,
   'ILS': 0.589802, 'KRW': 269.659, 'TWD': 6.1751, 'HKD': 1.52685, 'SGD': 0.248332, 'MYR': 0.793666, 'THB': 6.48381, 'PHP': 12.216,

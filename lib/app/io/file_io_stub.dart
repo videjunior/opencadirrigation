@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import 'app_keys.dart';
 import 'prefs.dart';
+import '../theme.dart';
 
 Future<void> saveTextFile(String filename, String content, {String mime = 'application/json'}) async {
   final path = await _pickPath(filename, save: true);
@@ -115,7 +116,7 @@ class _FileDialogState extends State<_FileDialog> {
       ]),
       body: Column(children: [
         Padding(padding: const EdgeInsets.all(8), child: TextField(controller: _path, decoration: const InputDecoration(labelText: 'Folder', isDense: true), onSubmitted: _go)),
-        if (_error != null) Padding(padding: const EdgeInsets.all(8), child: Text(_error!, style: const TextStyle(color: Colors.orange))),
+        if (_error != null) Padding(padding: const EdgeInsets.all(8), child: Text(_error!, style: TextStyle(color: Cad.caution))),
         Expanded(
           child: ListView.builder(
             itemCount: _items.length,

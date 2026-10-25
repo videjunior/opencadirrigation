@@ -7,6 +7,9 @@ import 'dart:typed_data';
 
 import '../design/pivot.dart' show PivotKind;
 import 'geometry.dart';
+import 'pivot_machine.dart';
+
+export 'pivot_machine.dart';
 
 enum HydraulicScope { zone, mainline }
 
@@ -40,6 +43,9 @@ enum EntityType {
   controller,
   wire,
   ordinateDimension,
+  comment,
+  revisionCloud,
+  breakline,
 }
 
 /// Default layer names.
@@ -48,6 +54,7 @@ class Layers {
   static const text = 'TEXT';
   static const dimensions = 'DIMENSIONS';
   static const contours = 'CONTOURS';
+  static const breaklines = 'BREAKLINES';
   static const spotHeights = 'SPOT_HEIGHTS';
   static const dem = 'DEM';
   static const zonePipes = 'ZONE_PIPES';
@@ -69,10 +76,12 @@ class Layers {
   static const pivots = 'PIVOTS';
   static const controllers = 'CONTROLLERS';
   static const wires = 'WIRES';
+  static const comments = 'COMMENTS';
+  static const revisions = 'REVISIONS';
 
   static const all = [
-    images, drawing, hatches, symbols, text, dimensions, contours, spotHeights, dem, zonePipes, mainlinePipes, spraylines, tapes,
-    outlets, wettedRadii, controlValves, waterSupply, pumps, misc, junctions, pivots, wires, controllers, areas, labels,
+    images, drawing, hatches, symbols, text, dimensions, contours, breaklines, spotHeights, dem, zonePipes, mainlinePipes, spraylines, tapes,
+    outlets, wettedRadii, controlValves, waterSupply, pumps, misc, junctions, pivots, wires, controllers, areas, labels, revisions, comments,
   ];
 
   static const defaultColors = <String, int>{
@@ -80,6 +89,7 @@ class Layers {
     text: 0xFFECEFF1,
     dimensions: 0xFF90A4AE,
     contours: 0xFF8D6E63,
+    breaklines: 0xFFFF8A65,
     spotHeights: 0xFFA1887F,
     dem: 0xFF7E8A97,
     zonePipes: 0xFF42A5F5,
@@ -101,6 +111,8 @@ class Layers {
     pivots: 0xFF4DB6AC,
     controllers: 0xFFFF7043,
     wires: 0xFFFFEE58,
+    comments: 0xFFFFB300,
+    revisions: 0xFFE53935,
   };
 }
 
@@ -168,6 +180,8 @@ sealed class Entity {
         return ImageEntity(id: id, layer: layer, name: name, origin: pos(), width: d('w', 1), height: d('h', 1), rotationDeg: d('rot'), opacity: d('op', 1), mime: j['mime'] as String? ?? 'image/png', data: j['data'] != null ? base64Decode(j['data'] as String) : null, source: j['src'] as String? ?? '');
       case EntityType.contour:
         return ContourEntity(id: id, layer: layer, name: name, points: pts(), elevation: d('z'), derived: j['gen'] as bool? ?? false);
+      case EntityType.breakline:
+        return BreaklineEntity(id: id, layer: layer, name: name, points: pts(), elevations: [for (final z in (j['zs'] as List?) ?? const []) z is num ? z.toDouble() : double.nan]);
       case EntityType.spotHeight:
         return SpotHeightEntity(id: id, layer: layer, name: name, position: pos(), elevation: d('z'));
       case EntityType.pipe:
@@ -183,9 +197,9 @@ sealed class Entity {
       case EntityType.waterSupply:
         return WaterSupplyEntity(id: id, layer: layer, name: name, position: pos(), calculatePressure: j['calc'] as bool? ?? true, designHeadM: d('dh'), maxHeadM: d('mh'), designFlow: d('dq'), maxFlow: d('mq'), waterLevelOffsetM: d('wl'));
       case EntityType.pump:
-        return PumpEntity(id: id, layer: layer, name: name, position: pos(), pumpSpecId: j['spec'] as String?, speedRatio: d('speed', 1), orientationDeg: d('rot'), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'));
+        return PumpEntity(id: id, layer: layer, name: name, position: pos(), pumpSpecId: j['spec'] as String?, speedRatio: d('speed', 1), orientationDeg: d('rot'), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'), hourMeter: j['hm'] != null, hourMeterCost: d('hm'), targetPressureM: d('vfd'), minSpeedRatio: d('vmin', 0.5));
       case EntityType.misc:
-        return MiscHydraulicEntity(id: id, layer: layer, name: name, position: pos(), valveSpecId: j['spec'] as String?, scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'), settingM: d('set'), orientationDeg: d('rot'));
+        return MiscHydraulicEntity(id: id, layer: layer, name: name, position: pos(), valveSpecId: j['spec'] as String?, scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'), settingM: d('set'), orientationDeg: d('rot'), settingFlow: d('setq'));
       case EntityType.junction:
         return JunctionEntity(id: id, layer: layer, name: name, position: pos(), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'zone'), fixedElevation: (j['z'] as num?)?.toDouble());
       case EntityType.area:
@@ -193,6 +207,8 @@ sealed class Entity {
           id: id, layer: layer, name: name, points: pts(), netDepthMmPerDay: d('depth', 5), efficiency: d('eff', 0.9), crop: j['crop'] as String? ?? '',
           emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 0, useWaterBalance: j['wb'] as bool? ?? false, etoMmDay: d('eto', 5), kc: d('kc', 1), awcMmPerM: d('awc', 120), rootDepthM: d('root', 0.6), mad: d('mad', 0.5),
           plantSpacingM: d('psp'), rowSpacingM: d('rsp'), wettedFraction: d('wf', 1),
+          cropKey: j['ck'] as String? ?? '', plantingMonthDay: j['pd'] as String? ?? '', soilKey: j['soil'] as String? ?? '', slopePct: d('slope'), irrigationMethod: j['im'] as String? ?? 'sprinkler',
+          groundCover: d('gc', 1), ecwDsM: d('ecw'), rainMethod: j['erm'] as String? ?? 'usdaScs', useDependableRain: j['dep'] as bool? ?? false, plantWaterUse: j['pwu'] as String? ?? '',
         );
       case EntityType.pivot:
         return PivotEntity(
@@ -201,11 +217,17 @@ sealed class Entity {
           endGunFlow: d('qg'), endGunPressureM: d('hg'), endThrowM: d('throw', 5), grossDepthMm: d('depth', 8), hoursPerCycle: d('hours', 24), wettedWidthM: d('ww', 18),
           machineLossM: d('hm', 2), maxAppRateMmH: d('imax'), sectorDeg: d('sector', 360), machineCost: d('cost'), zoneName: j['zone'] as String? ?? '',
           sprinklerSpacingM: d('ssp', 2.5), sprinklerSpecId: j['sspec'] as String?, regulatorSpecId: j['rspec'] as String?, towerCost: d('tcost'),
+          machine: PivotMachine.fromJson(j['mach'] as Map<String, dynamic>?),
         );
       case EntityType.controller:
-        return ControllerEntity(id: id, layer: layer, name: name, position: pos(), stations: (j['st'] as num?)?.toInt() ?? 12, outputVolts: d('v', 24), cost: d('cost'), maxSimultaneous: (j['sim'] as num?)?.toInt() ?? 0);
+        return ControllerEntity(id: id, layer: layer, name: name, position: pos(), stations: (j['st'] as num?)?.toInt() ?? 12, outputVolts: d('v', 24), cost: d('cost'), maxSimultaneous: (j['sim'] as num?)?.toInt() ?? 0,
+            accessories: {for (final e in ((j['acc'] as Map?) ?? const {}).entries) if (e.value is num) e.key as String: (e.value as num).toDouble()});
       case EntityType.wire:
         return WireEntity(id: id, layer: layer, name: name, points: pts());
+      case EntityType.comment:
+        return CommentEntity(id: id, layer: layer, name: name, position: pos(), text: j['text'] as String? ?? '', author: j['author'] as String? ?? '', date: j['date'] as String? ?? '', resolved: j['done'] as bool? ?? false);
+      case EntityType.revisionCloud:
+        return RevisionCloudEntity(id: id, layer: layer, name: name, points: pts(), revision: j['rev'] as String? ?? '', date: j['date'] as String? ?? '', description: j['desc'] as String? ?? '', arcLength: d('arc', 0));
       case EntityType.ordinateDimension:
         return OrdinateDimensionEntity(id: id, layer: layer, name: name, point: pos(), leaderEnd: Pt.fromList(j['e'] as List), origin: j['o'] == null ? Pt.zero : Pt.fromList(j['o'] as List), xAxis: j['x'] as bool? ?? true);
     }
@@ -821,6 +843,30 @@ class ContourEntity extends Entity with PolyEntity {
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'z': elevation, if (derived) 'gen': true};
 }
 
+/// Breakline of the terrain model: a ridge, a channel bottom, the edge of a
+/// terrace, road or embankment that the triangulation must not cut across.
+/// Every vertex may carry its surveyed elevation; NaN takes it from the
+/// other terrain data at that point.
+class BreaklineEntity extends Entity with PolyEntity {
+  BreaklineEntity({required super.id, super.layer = Layers.breaklines, super.name, required this.points, List<double>? elevations}) : elevations = elevations ?? List.filled(points.length, double.nan);
+  @override
+  List<Pt> points;
+  List<double> elevations;
+
+  /// Elevation of vertex [i] (NaN = from the terrain).
+  double elevationOf(int i) => i < elevations.length ? elevations[i] : double.nan;
+  @override
+  EntityType get type => EntityType.breakline;
+  @override
+  BreaklineEntity clone({String? newId}) => BreaklineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), elevations: List.of(elevations));
+  @override
+  BreaklineEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  @override
+  BreaklineEntity transformed(Affine t) => clone()..points = _map(points, t);
+  @override
+  Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), if (elevations.any((z) => z.isFinite)) 'zs': [for (var i = 0; i < points.length; i++) elevationOf(i).isFinite ? elevationOf(i) : null]};
+}
+
 class SpotHeightEntity extends Entity with PointEntity {
   SpotHeightEntity({required super.id, super.layer = Layers.spotHeights, super.name, required this.position, required this.elevation});
   @override
@@ -963,7 +1009,9 @@ class OutletEntity extends Entity with PointEntity {
   double orientationDeg;
   double riserHeight;
 
-  /// For mainline outlets (valve-in-head), each outlet is its own zone.
+  /// For mainline outlets (valve-in-head heads), the station: heads sharing
+  /// a non-empty name open together on one controller station, an empty one
+  /// is a station of its own (`design/valve_in_head.dart`).
   String zoneName;
   @override
   EntityType get type => EntityType.outlet;
@@ -1033,17 +1081,28 @@ class WaterSupplyEntity extends Entity with PointEntity {
 }
 
 class PumpEntity extends Entity with PointEntity {
-  PumpEntity({required super.id, super.layer = Layers.pumps, super.name, required this.position, this.pumpSpecId, this.speedRatio = 1, this.orientationDeg = 0, this.scope = HydraulicScope.mainline});
+  PumpEntity({required super.id, super.layer = Layers.pumps, super.name, required this.position, this.pumpSpecId, this.speedRatio = 1, this.orientationDeg = 0, this.scope = HydraulicScope.mainline, this.hourMeter = false, this.hourMeterCost = 0, this.targetPressureM = 0, this.minSpeedRatio = 0.5});
   @override
   Pt position;
   String? pumpSpecId;
   double speedRatio;
   double orientationDeg;
   HydraulicScope scope;
+
+  /// An hour meter on the pump panel (operating hours, asked by water-use
+  /// permits), with its price for the bill of materials.
+  bool hourMeter;
+  double hourMeterCost;
+
+  /// Variable-speed drive keeping this pressure (m) at the pump outlet in
+  /// every system flow, between [minSpeedRatio] and [speedRatio]; 0 = fixed
+  /// speed.
+  double targetPressureM;
+  double minSpeedRatio;
   @override
   EntityType get type => EntityType.pump;
   @override
-  PumpEntity clone({String? newId}) => PumpEntity(id: newId ?? id, layer: layer, name: name, position: position, pumpSpecId: pumpSpecId, speedRatio: speedRatio, orientationDeg: orientationDeg, scope: scope);
+  PumpEntity clone({String? newId}) => PumpEntity(id: newId ?? id, layer: layer, name: name, position: position, pumpSpecId: pumpSpecId, speedRatio: speedRatio, orientationDeg: orientationDeg, scope: scope, hourMeter: hourMeter, hourMeterCost: hourMeterCost, targetPressureM: targetPressureM, minSpeedRatio: minSpeedRatio);
   @override
   PumpEntity translated(Pt d) => clone()..position = position + d;
   @override
@@ -1051,23 +1110,27 @@ class PumpEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..orientationDeg = _rotDeg(t, orientationDeg);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (pumpSpecId != null) 'spec': pumpSpecId, 'speed': speedRatio, 'rot': orientationDeg, 'scope': scope.name};
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (pumpSpecId != null) 'spec': pumpSpecId, 'speed': speedRatio, 'rot': orientationDeg, 'scope': scope.name, if (hourMeter) 'hm': hourMeterCost, if (targetPressureM > 0) 'vfd': targetPressureM, if (targetPressureM > 0) 'vmin': minSpeedRatio};
 }
 
 class MiscHydraulicEntity extends Entity with PointEntity {
-  MiscHydraulicEntity({required super.id, super.layer = Layers.misc, super.name, required this.position, this.valveSpecId, this.scope = HydraulicScope.mainline, this.settingM = 0, this.orientationDeg = 0});
+  MiscHydraulicEntity({required super.id, super.layer = Layers.misc, super.name, required this.position, this.valveSpecId, this.scope = HydraulicScope.mainline, this.settingM = 0, this.orientationDeg = 0, this.settingFlow = 0});
   @override
   Pt position;
   String? valveSpecId;
   HydraulicScope scope;
 
-  /// PRV downstream pressure setting (m).
+  /// Pressure setting (m): downstream of a PRV, upstream of a PSV.
   double settingM;
   double orientationDeg;
+
+  /// Flow an FCV (hydrant flow limiter) lets through (m³/s; 0 = the valve's
+  /// maximum flow).
+  double settingFlow;
   @override
   EntityType get type => EntityType.misc;
   @override
-  MiscHydraulicEntity clone({String? newId}) => MiscHydraulicEntity(id: newId ?? id, layer: layer, name: name, position: position, valveSpecId: valveSpecId, scope: scope, settingM: settingM, orientationDeg: orientationDeg);
+  MiscHydraulicEntity clone({String? newId}) => MiscHydraulicEntity(id: newId ?? id, layer: layer, name: name, position: position, valveSpecId: valveSpecId, scope: scope, settingM: settingM, orientationDeg: orientationDeg, settingFlow: settingFlow);
   @override
   MiscHydraulicEntity translated(Pt d) => clone()..position = position + d;
   @override
@@ -1075,7 +1138,7 @@ class MiscHydraulicEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..orientationDeg = _rotDeg(t, orientationDeg);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (valveSpecId != null) 'spec': valveSpecId, 'scope': scope.name, 'set': settingM, 'rot': orientationDeg};
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (valveSpecId != null) 'spec': valveSpecId, 'scope': scope.name, 'set': settingM, 'rot': orientationDeg, if (settingFlow > 0) 'setq': settingFlow};
 }
 
 class JunctionEntity extends Entity with PointEntity {
@@ -1131,7 +1194,11 @@ class PivotEntity extends Entity {
     this.sprinklerSpecId,
     this.regulatorSpecId,
     this.towerCost = 0,
-  });
+    PivotMachine? machine,
+  }) : machine = machine ?? PivotMachine();
+
+  /// Package, drive, corner arm, variable rate and electrical data.
+  PivotMachine machine;
 
   /// Sprinkler package: spacing along the span, catalogue sprinkler and
   /// pressure regulator (bill of materials and sprinkler chart).
@@ -1244,7 +1311,7 @@ class PivotEntity extends Entity {
     id: newId ?? id, layer: layer, name: name, center: center, radiusM: radiusM, angleDeg: angleDeg, kind: kind, travelM: travelM, spanLengthM: spanLengthM, pipeSpecId: pipeSpecId, pipeInnerMm: pipeInnerMm,
     hazenC: hazenC, pipeHeightM: pipeHeightM, endPressureM: endPressureM, endGunFlow: endGunFlow, endGunPressureM: endGunPressureM, endThrowM: endThrowM, grossDepthMm: grossDepthMm, hoursPerCycle: hoursPerCycle,
     wettedWidthM: wettedWidthM, machineLossM: machineLossM, maxAppRateMmH: maxAppRateMmH, sectorDeg: sectorDeg, machineCost: machineCost, zoneName: zoneName,
-    sprinklerSpacingM: sprinklerSpacingM, sprinklerSpecId: sprinklerSpecId, regulatorSpecId: regulatorSpecId, towerCost: towerCost,
+    sprinklerSpacingM: sprinklerSpacingM, sprinklerSpecId: sprinklerSpecId, regulatorSpecId: regulatorSpecId, towerCost: towerCost, machine: machine.clone(),
   );
   @override
   PivotEntity translated(Pt d) => clone()..center = center + d;
@@ -1260,6 +1327,7 @@ class PivotEntity extends Entity {
     'hp': pipeHeightM, 'hend': endPressureM, if (endGunFlow > 0) 'qg': endGunFlow, if (endGunPressureM > 0) 'hg': endGunPressureM, 'throw': endThrowM, 'depth': grossDepthMm, 'hours': hoursPerCycle, 'ww': wettedWidthM,
     'hm': machineLossM, if (maxAppRateMmH > 0) 'imax': maxAppRateMmH, if (sectorDeg != 360) 'sector': sectorDeg, if (machineCost > 0) 'cost': machineCost, if (zoneName.isNotEmpty) 'zone': zoneName,
     'ssp': sprinklerSpacingM, if (sprinklerSpecId != null) 'sspec': sprinklerSpecId, if (regulatorSpecId != null) 'rspec': regulatorSpecId, if (towerCost > 0) 'tcost': towerCost,
+    if (!machine.isDefault) 'mach': machine.toJson(),
   };
 }
 
@@ -1282,10 +1350,49 @@ class AreaEntity extends Entity with PolyEntity {
     this.plantSpacingM = 0,
     this.rowSpacingM = 0,
     this.wettedFraction = 1,
+    this.cropKey = '',
+    this.plantingMonthDay = '',
+    this.soilKey = '',
+    this.slopePct = 0,
+    this.irrigationMethod = 'sprinkler',
+    this.groundCover = 1,
+    this.ecwDsM = 0,
+    this.rainMethod = 'usdaScs',
+    this.useDependableRain = false,
+    this.plantWaterUse = '',
   });
   @override
   List<Pt> points;
   double netDepthMmPerDay;
+
+  /// Crop of the FAO-56 table (`crop.*`; '' = the free-text [crop] with a
+  /// single Kc) and its planting or green-up date (`MM-DD`; '' = the table's
+  /// planting month), for the requirement by month and growth stage.
+  String cropKey;
+  String plantingMonthDay;
+
+  /// Soil texture class (`soil.*`; '' = typed values) and ground slope (%).
+  String soilKey;
+  double slopePct;
+
+  /// `sprinkler`, `localized` or `surface`: the leaching formula and, for
+  /// localized irrigation, the ground-cover reduction of Kc.
+  String irrigationMethod;
+
+  /// Fraction of the ground shaded by the crop (localized irrigation Kr).
+  double groundCover;
+
+  /// Salinity of the irrigation water (dS/m; 0 = no leaching).
+  double ecwDsM;
+
+  /// Effective rain method (`EffectiveRainMethod` name) and whether the
+  /// dependable rain replaces the mean.
+  String rainMethod;
+  bool useDependableRain;
+
+  /// Water use of the plants of a landscape hydrozone (`veryLow`, `low`,
+  /// `moderate`, `high`; '' = not a hydrozone), for the water budget.
+  String plantWaterUse;
   double efficiency;
   String crop;
 
@@ -1321,7 +1428,7 @@ class AreaEntity extends Entity with PolyEntity {
   @override
   double distanceTo(Pt p) => pointInPolygon(p, points) ? 0 : math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
   @override
-  AreaEntity clone({String? newId}) => AreaEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), netDepthMmPerDay: netDepthMmPerDay, efficiency: efficiency, crop: crop, emittersPerPlant: emittersPerPlant, useWaterBalance: useWaterBalance, etoMmDay: etoMmDay, kc: kc, awcMmPerM: awcMmPerM, rootDepthM: rootDepthM, mad: mad, plantSpacingM: plantSpacingM, rowSpacingM: rowSpacingM, wettedFraction: wettedFraction);
+  AreaEntity clone({String? newId}) => AreaEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), netDepthMmPerDay: netDepthMmPerDay, efficiency: efficiency, crop: crop, emittersPerPlant: emittersPerPlant, useWaterBalance: useWaterBalance, etoMmDay: etoMmDay, kc: kc, awcMmPerM: awcMmPerM, rootDepthM: rootDepthM, mad: mad, plantSpacingM: plantSpacingM, rowSpacingM: rowSpacingM, wettedFraction: wettedFraction, cropKey: cropKey, plantingMonthDay: plantingMonthDay, soilKey: soilKey, slopePct: slopePct, irrigationMethod: irrigationMethod, groundCover: groundCover, ecwDsM: ecwDsM, rainMethod: rainMethod, useDependableRain: useDependableRain, plantWaterUse: plantWaterUse);
   @override
   AreaEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
   @override
@@ -1331,6 +1438,9 @@ class AreaEntity extends Entity with PolyEntity {
     ..._base(), 'pts': _ptsJson(points), 'depth': netDepthMmPerDay, 'eff': efficiency, 'crop': crop,
     if (emittersPerPlant > 0) 'epp': emittersPerPlant, if (useWaterBalance) 'wb': true, 'eto': etoMmDay, 'kc': kc, 'awc': awcMmPerM, 'root': rootDepthM, 'mad': mad,
     if (plantSpacingM > 0) 'psp': plantSpacingM, if (rowSpacingM > 0) 'rsp': rowSpacingM, if (wettedFraction != 1) 'wf': wettedFraction,
+    if (cropKey.isNotEmpty) 'ck': cropKey, if (plantingMonthDay.isNotEmpty) 'pd': plantingMonthDay, if (soilKey.isNotEmpty) 'soil': soilKey, if (slopePct != 0) 'slope': slopePct,
+    if (irrigationMethod != 'sprinkler') 'im': irrigationMethod, if (groundCover != 1) 'gc': groundCover, if (ecwDsM > 0) 'ecw': ecwDsM, if (rainMethod != 'usdaScs') 'erm': rainMethod,
+    if (useDependableRain) 'dep': true, if (plantWaterUse.isNotEmpty) 'pwu': plantWaterUse,
   };
 }
 
@@ -1338,8 +1448,12 @@ class AreaEntity extends Entity with PolyEntity {
 
 /// Irrigation controller (timer): powers the valve solenoids through the
 /// wire routes drawn from it; every valve reached gets a station.
+/// Sensors and accessories a controller can have (keys of
+/// [ControllerEntity.accessories], translated as `acc.<kind>`).
+const controllerAccessoryKinds = ['rain', 'soil', 'flow', 'freeze', 'wind', 'pumpRelay', 'surge'];
+
 class ControllerEntity extends Entity with PointEntity {
-  ControllerEntity({required super.id, super.layer = Layers.controllers, super.name, required this.position, this.stations = 12, this.outputVolts = 24, this.cost = 0, this.maxSimultaneous = 0});
+  ControllerEntity({required super.id, super.layer = Layers.controllers, super.name, required this.position, this.stations = 12, this.outputVolts = 24, this.cost = 0, this.maxSimultaneous = 0, Map<String, double>? accessories}) : accessories = accessories ?? {};
   @override
   Pt position;
 
@@ -1355,16 +1469,21 @@ class ControllerEntity extends Entity with PointEntity {
   /// Most stations the controller opens at once (0 = as the system flows
   /// say): the common wire carries their currents together.
   int maxSimultaneous;
+
+  /// Sensors and accessories fitted (rain, soil moisture, flow, freeze and
+  /// wind sensors, pump start relay, surge protection; see
+  /// [controllerAccessoryKinds]) with their prices for the bill of materials.
+  final Map<String, double> accessories;
   @override
   EntityType get type => EntityType.controller;
   @override
-  ControllerEntity clone({String? newId}) => ControllerEntity(id: newId ?? id, layer: layer, name: name, position: position, stations: stations, outputVolts: outputVolts, cost: cost, maxSimultaneous: maxSimultaneous);
+  ControllerEntity clone({String? newId}) => ControllerEntity(id: newId ?? id, layer: layer, name: name, position: position, stations: stations, outputVolts: outputVolts, cost: cost, maxSimultaneous: maxSimultaneous, accessories: Map.of(accessories));
   @override
   ControllerEntity translated(Pt d) => clone()..position = position + d;
   @override
   ControllerEntity transformed(Affine t) => clone()..position = t.apply(position);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'st': stations, 'v': outputVolts, if (cost > 0) 'cost': cost, if (maxSimultaneous > 0) 'sim': maxSimultaneous};
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'st': stations, 'v': outputVolts, if (cost > 0) 'cost': cost, if (maxSimultaneous > 0) 'sim': maxSimultaneous, if (accessories.isNotEmpty) 'acc': accessories};
 }
 
 /// Wire route (trench or conduit) from a controller towards the valves:
@@ -1442,6 +1561,102 @@ class OrdinateDimensionEntity extends Entity {
   Map<String, dynamic> toJson() => {..._base(), 'p': point.toList(), 'e': leaderEnd.toList(), if (origin != Pt.zero) 'o': origin.toList(), 'x': xAxis};
 }
 
+// ---------------------------------------------------------------- review
+
+/// A note pinned to the drawing for the people reviewing it (client,
+/// designer, installer): text, author, date and whether it was resolved.
+/// It stays out of the hydraulics and the bill of materials.
+class CommentEntity extends Entity with PointEntity {
+  CommentEntity({required super.id, super.layer = Layers.comments, super.name, required this.position, this.text = '', this.author = '', this.date = '', this.resolved = false});
+  @override
+  Pt position;
+  String text;
+  String author;
+
+  /// When it was written (`YYYY-MM-DD`).
+  String date;
+  bool resolved;
+  @override
+  EntityType get type => EntityType.comment;
+  @override
+  CommentEntity clone({String? newId}) => CommentEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, author: author, date: date, resolved: resolved);
+  @override
+  CommentEntity translated(Pt d) => clone()..position = position + d;
+  @override
+  CommentEntity transformed(Affine t) => clone()..position = t.apply(position);
+  @override
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'text': text, if (author.isNotEmpty) 'author': author, if (date.isNotEmpty) 'date': date, if (resolved) 'done': true};
+}
+
+/// Revision cloud: a closed outline drawn as a chain of arcs around what
+/// changed in a revision, tagged with the revision [revision], its date and
+/// a description (the revision table of the sheet lists them).
+class RevisionCloudEntity extends Entity with PolyEntity {
+  RevisionCloudEntity({required super.id, super.layer = Layers.revisions, super.name, required this.points, this.revision = '', this.date = '', this.description = '', this.arcLength = 0});
+  @override
+  List<Pt> points;
+  String revision;
+  String date;
+  String description;
+
+  /// Chord of each arc (m); 0 = from the size of the outline.
+  double arcLength;
+  @override
+  EntityType get type => EntityType.revisionCloud;
+
+  /// The arc chord used: [arcLength] or a twelfth of the outline's mean
+  /// side, kept between 0.2 m and 50 m.
+  double get effectiveArc {
+    if (arcLength > 0) return arcLength;
+    final b = bounds;
+    return ((b.width + b.height) / 24).clamp(0.2, 50.0).toDouble();
+  }
+
+  /// The scalloped outline: every side cut into chords of about
+  /// [effectiveArc], each bulging outwards as a half-circle-ish arc
+  /// (sampled as polylines, closed).
+  List<Pt> scallops({int segmentsPerArc = 6}) {
+    if (points.length < 3) return List.of(points);
+    final ring = [...points, points.first];
+    // outwards = to the right of a counter-clockwise ring
+    final ccw = polygonArea(points) > 0;
+    final out = <Pt>[];
+    final step = effectiveArc;
+    for (var i = 1; i < ring.length; i++) {
+      final a = ring[i - 1], b = ring[i];
+      final len = a.distanceTo(b);
+      if (len < 1e-9) continue;
+      final n = math.max(1, (len / step).round());
+      final dir = (b - a) / len;
+      final normal = ccw ? Pt(dir.y, -dir.x) : Pt(-dir.y, dir.x);
+      for (var k = 0; k < n; k++) {
+        final p0 = a + dir * (len * k / n), p1 = a + dir * (len * (k + 1) / n);
+        final chord = len / n;
+        for (var j = 0; j < segmentsPerArc; j++) {
+          final t = j / segmentsPerArc;
+          final bulge = math.sin(math.pi * t) * chord * 0.35;
+          out.add(Pt.lerp(p0, p1, t) + normal * bulge);
+        }
+      }
+    }
+    if (out.isNotEmpty) out.add(out.first);
+    return out;
+  }
+
+  @override
+  double distanceTo(Pt p) => math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
+  @override
+  RevisionCloudEntity clone({String? newId}) => RevisionCloudEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), revision: revision, date: date, description: description, arcLength: arcLength);
+  @override
+  RevisionCloudEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  @override
+  RevisionCloudEntity transformed(Affine t) => clone()
+    ..points = _map(points, t)
+    ..arcLength = arcLength * t.scale;
+  @override
+  Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), if (revision.isNotEmpty) 'rev': revision, if (date.isNotEmpty) 'date': date, if (description.isNotEmpty) 'desc': description, if (arcLength > 0) 'arc': arcLength};
+}
+
 extension EntityKindX on Entity {
   bool get isHydraulic => switch (type) {
     EntityType.pipe || EntityType.sprayline || EntityType.tape || EntityType.outlet || EntityType.controlValve ||
@@ -1476,7 +1691,7 @@ extension EntityKindX on Entity {
 
   bool get isClosedShape => switch (this) {
     PolylineEntity p => p.closed,
-    AreaEntity _ || HatchEntity _ => true,
+    AreaEntity _ || HatchEntity _ || RevisionCloudEntity _ => true,
     SplineEntity s => s.closed,
     _ => false,
   };

@@ -1,18 +1,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/design/agronomy.dart';
 import '../core/io/pdf_sheet.dart';
 import '../core/io/project_export.dart';
+import '../core/io/share_link.dart';
 import '../core/model/currency.dart';
 import '../core/model/entities.dart';
 import '../core/model/project.dart';
 import 'examples.dart';
 import 'io/file_io.dart';
+import 'io/pdf_font_loader.dart';
 import 'io/project_store.dart';
 import 'state/controller.dart';
 import 'state/workspace.dart';
 import 'widgets/dialogs/export_dialogs.dart';
+import 'widgets/dialogs/pdf_import_dialog.dart';
+import 'theme.dart';
 
 const pointScopeZone = HydraulicScope.zone;
 const pointScopeMain = HydraulicScope.mainline;
@@ -21,7 +26,7 @@ const pointScopeMain = HydraulicScope.mainline;
 const projectExtension = '.oci.json';
 
 /// Every importable format (drawings, GIS, surveys, rasters).
-const importAccept = '.dxf,.dwg,.kml,.kmz,.shp,.zip,.csv,.txt,.xyz,.pts,.pnezd,.jpg,.jpeg,.png,.tif,.tiff';
+const importAccept = '.dxf,.dwg,.dgn,.pdf,.kml,.kmz,.shp,.zip,.geojson,.json,.gpx,.xml,.landxml,.inp,.las,.laz,.csv,.txt,.xyz,.pts,.pnezd,.jpg,.jpeg,.png,.tif,.tiff';
 
 Future<void> confirmNew(BuildContext context, ProjectController c) async {
   if (c.dirty) {
@@ -118,6 +123,11 @@ Future<void> importDxfAction(BuildContext context, ProjectController c) => impor
 Future<void> importDrawingAction(BuildContext context, ProjectController c) async {
   final f = await openBinaryFile(accept: importAccept);
   if (f == null) return;
+  // a PDF plan: page, scale and contents are asked in a dialog
+  if (f.$1.toLowerCase().endsWith('.pdf')) {
+    if (context.mounted) await importPdfAction(context, c, f.$1, f.$2);
+    return;
+  }
   try {
     final summary = c.importFile(f.$1, f.$2);
     c.notify('${c.t('msg.imported')}: $summary');
@@ -148,8 +158,55 @@ Future<void> exportDrawingAction(BuildContext context, ProjectController c, Draw
     final o = await showPlotDialog(context, c);
     if (o == null) return;
     sheet = o;
+    await preparePdfFonts(pdfTexts(c, reports: sheet.includeReports || sheet.bomOnSheet || sheet.details.isNotEmpty || sheet.charts), language: c.lang);
   }
   await deliverExport(c, '${_safeName(c)}.${f.extension}', f.mime, () => c.exporter().exportDrawing(f, sheet: sheet));
+}
+
+/// Texts a PDF of the project may show: the title block, names and notes
+/// typed in the drawing, layer names, a sample of the interface language
+/// and, with [reports], every report cell.
+Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
+  final m = c.project.meta;
+  yield* [m.name, m.client, m.site, m.designer, m.notes];
+  for (final l in c.project.layers) {
+    yield l.name;
+  }
+  // (the flow names title the charts)
+  for (final f in c.project.systemFlows) {
+    yield f.name;
+  }
+  for (final e in c.project.entities) {
+    yield e.name;
+    switch (e) {
+      case TextEntity t:
+        yield t.text;
+      case LeaderEntity l:
+        yield l.text;
+      case CommentEntity n:
+        yield* [n.text, n.author];
+      case RevisionCloudEntity r:
+        yield* [r.revision, r.description];
+      case ControlValveEntity v:
+        yield v.zoneName;
+      default:
+        break;
+    }
+  }
+  for (final k in const ['plot.title', 'reports.zone', 'reports.bom', 'rep.zone', 'rep.description', 'menu.mainline', 'name.report']) {
+    yield c.t(k);
+  }
+  if (reports && c.results != null) {
+    for (final tb in c.reportTables()) {
+      yield tb.title;
+      yield* tb.headers;
+      for (final row in tb.rows) {
+        for (final cell in row) {
+          if (cell is String) yield cell;
+        }
+      }
+    }
+  }
 }
 
 /// Exports the design report (needs results).
@@ -158,6 +215,7 @@ Future<void> exportReportAction(BuildContext context, ProjectController c, Repor
     c.notify(c.t('msg.needResults'));
     return;
   }
+  if (f == ReportFormat.pdf) await preparePdfFonts(pdfTexts(c, reports: true), language: c.lang);
   await deliverExport(c, '${_safeName(c)}_${c.t('name.report')}.${f.extension}', f.mime, () => c.exporter().exportReport(f));
 }
 
@@ -208,3 +266,59 @@ void loadExampleAction(ProjectController c, [ExampleId id = ExampleId.orchard]) 
 
 /// The orchard example (kept for callers and tests; see `examples.dart`).
 Project buildExampleProject(String Function(String key, [Map<String, String>? args]) t, {String lang = 'en'}) => buildExample(ExampleId.orchard, t, lang: lang);
+
+/// Turns the selected laterals and tapes into plain pipes and says how many.
+void convertToPipeAction(ProjectController c) {
+  if (!c.editAllowed()) return;
+  final n = c.convertSelectedToPipe();
+  c.notify(c.t(n == 0 ? 'msg.toPipeNone' : 'msg.toPipeDone', {'n': '$n'}));
+}
+
+/// File → Share by link: the project (without pictures and results) inside
+/// an address that opens it in OpenCADIrrigation; nothing is uploaded.
+Future<void> shareLinkAction(BuildContext context, ProjectController c) {
+  final t = c.t;
+  final base = (Uri.base.scheme == 'http' || Uri.base.scheme == 'https') ? '${Uri.base.origin}/' : shareLinkBase;
+  final link = shareLinkFor(shareableProjectJson(c.project.toJson()), base: base);
+  final tooLong = link.length > shareLinkMaxLength;
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(t('share.title'), style: const TextStyle(fontSize: 15)),
+      scrollable: true,
+      content: SizedBox(
+        width: 520,
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(t('share.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+          const SizedBox(height: 10),
+          if (tooLong)
+            Text(t('share.tooLong'), style: TextStyle(fontSize: 12, color: Cad.attention))
+          else ...[
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(border: Border.all(color: Cad.fg24), borderRadius: BorderRadius.circular(4)),
+              child: SelectableText(link.length > 600 ? '${link.substring(0, 600)}…' : link, key: const Key('share_link_text'), style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+            ),
+            const SizedBox(height: 6),
+            Text(t('share.size', {'n': '${(link.length / 1024).toStringAsFixed(1)} KB'}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            if (link.length > shareLinkWarnLength) Text(t('share.long'), style: TextStyle(fontSize: 11, color: Cad.attention)),
+          ],
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
+        if (!tooLong)
+          FilledButton.icon(
+            key: const Key('share_copy'),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: link));
+              if (ctx.mounted) Navigator.pop(ctx);
+              c.notify(t('share.copied'));
+            },
+            icon: const Icon(Icons.copy, size: 16),
+            label: Text(t('share.copy')),
+          ),
+      ],
+    ),
+  );
+}

@@ -7,10 +7,15 @@ import 'dart:math' as math;
 import '../hydraulics/friction.dart';
 import '../io/geo.dart';
 import '../units.dart';
+import 'blocks.dart';
 import 'catalog.dart';
 import 'currency.dart';
 import 'entities.dart';
 import 'geometry.dart';
+import 'label_rules.dart';
+import 'proposal_settings.dart';
+import 'scenario.dart';
+import 'site_climate.dart';
 import 'terrain.dart';
 
 class Layer {
@@ -28,6 +33,11 @@ class Layer {
 
 enum SizingMethod { lp, greedy }
 
+/// How local losses enter the calculation: a percentage of the pipe length
+/// (equivalent-length method) or the coefficients K of the bends and tees
+/// found in the drawing.
+enum MinorLossMethod { percent, fittings }
+
 class DesignParameters {
   DesignParameters({
     this.units = Units.metric,
@@ -38,6 +48,7 @@ class DesignParameters {
     this.maxLateralVelocity = 2.0,
     this.minorLossPct = 5,
     this.applyMinorLosses = true,
+    this.minorLossMethod = MinorLossMethod.percent,
     this.connectTolerance = 0.05,
     this.interestRate = 0.10,
     this.termYears = 10,
@@ -69,6 +80,7 @@ class DesignParameters {
     this.solenoidHoldingA = 0.22,
     this.solenoidMinVolts = 20,
     this.wireSlackPct = 10,
+    this.mainsHz = 60,
   });
 
   Units units;
@@ -81,6 +93,9 @@ class DesignParameters {
   /// Minor losses as a percentage of pipe length (equivalent length method).
   double minorLossPct;
   bool applyMinorLosses;
+
+  /// Percentage of the length ([minorLossPct]) or K of the drawn fittings.
+  MinorLossMethod minorLossMethod;
   double connectTolerance;
   double interestRate;
   int termYears;
@@ -146,18 +161,23 @@ class DesignParameters {
   /// Wire length added to the routes for splices and loops (%).
   double wireSlackPct;
 
+  /// Frequency of the electricity mains (Hz): fixed-speed pumps whose curves
+  /// were measured at another frequency turn proportionally slower or
+  /// faster (PumpSpec.mainsSpeedRatio).
+  double mainsHz;
+
   double get kinematicViscosity => waterKinematicViscosity(waterTempC);
   double adjustedC(double c) => c * hazenCScale + hazenCOffset;
 
   Map<String, dynamic> toJson() => {
     'units': units.toJson(), 'method': frictionMethod.name, 'temp': waterTempC, 'vZone': maxZoneVelocity,
-    'vMain': maxMainlineVelocity, 'vLat': maxLateralVelocity, 'minorPct': minorLossPct, 'minor': applyMinorLosses,
+    'vMain': maxMainlineVelocity, 'vLat': maxLateralVelocity, 'minorPct': minorLossPct, 'minor': applyMinorLosses, 'minorMethod': minorLossMethod.name,
     'tol': connectTolerance, 'interest': interestRate, 'term': termYears, 'kwh': powerCostPerKwh, 'eff': pumpEfficiency,
     'hours': hoursPerYear, 'zoneHours': zoneHoursPerYear, 'trade': tradeCapitalVsRunning, 'latSizes': maxLateralSizes,
     'subSizes': maxSubmainSizes, 'cScale': hazenCScale, 'cOffset': hazenCOffset, 'densify': terrainDensify, 'currency': currency, 'currencyCode': currencyCode,
     'sizing': sizingMethod.name, 'mainSizes': maxMainlineSizes, 'epp': emittersPerPlant, 'maxNodes': maxNodesPerLateral, 'flushV': flushingVelocity, 'flushH': flushingMinEndHeadM,
     'surge': checkSurge, 'closure': valveClosureTimeS, 'fittings': selectFittings, 'stick': pipeStickLengthM, 'zoneVar': maxZoneVariationPct, 'terrain': terrainMethod.name,
-    'inrushA': solenoidInrushA, 'holdA': solenoidHoldingA, 'minV': solenoidMinVolts, 'slack': wireSlackPct,
+    'inrushA': solenoidInrushA, 'holdA': solenoidHoldingA, 'minV': solenoidMinVolts, 'slack': wireSlackPct, if (mainsHz != 60) 'hz': mainsHz,
   };
   static DesignParameters fromJson(Map<String, dynamic>? j) {
     if (j == null) return DesignParameters();
@@ -171,6 +191,7 @@ class DesignParameters {
       maxLateralVelocity: d('vLat', 2.0),
       minorLossPct: d('minorPct', 5),
       applyMinorLosses: j['minor'] as bool? ?? true,
+      minorLossMethod: MinorLossMethod.values.asNameMap()[j['minorMethod'] as String? ?? ''] ?? MinorLossMethod.percent,
       connectTolerance: d('tol', 0.05),
       interestRate: d('interest', 0.1),
       termYears: (j['term'] as num?)?.toInt() ?? 10,
@@ -203,6 +224,7 @@ class DesignParameters {
       solenoidHoldingA: d('holdA', 0.22),
       solenoidMinVolts: d('minV', 20),
       wireSlackPct: d('slack', 10),
+      mainsHz: d('hz', 60),
     );
   }
 }
@@ -212,6 +234,10 @@ class SystemFlow {
   SystemFlow({required this.id, required this.name, Set<String>? valveIds, this.startHour = 0, this.durationHours = 1}) : valveIds = valveIds ?? <String>{};
   final String id;
   String name;
+
+  /// What runs: zone valves and pivots (entity ids) and valve-in-head
+  /// stations (the outlet id of a head of its own, `vih:<station name>` for
+  /// heads sharing one; see `design/valve_in_head.dart`).
   final Set<String> valveIds;
   double startHour;
   double durationHours;
@@ -269,8 +295,12 @@ class ProjectMeta {
 }
 
 class Project {
-  Project({ProjectMeta? meta, DesignParameters? params, Catalog? catalog, List<Layer>? layers, List<Entity>? entities, List<SystemFlow>? systemFlows, int nextId = 1})
+  Project({ProjectMeta? meta, DesignParameters? params, Catalog? catalog, List<Layer>? layers, List<Entity>? entities, List<SystemFlow>? systemFlows, ProposalSettings? proposal, List<Scenario>? scenarios, this.climate, List<LabelRule>? labelRules, BlockLibrary? blocks, this.aiNotes = '', int nextId = 1})
       : meta = meta ?? ProjectMeta(),
+        proposal = proposal ?? ProposalSettings(),
+        scenarios = scenarios ?? [],
+        labelRules = labelRules ?? [],
+        blocks = blocks ?? BlockLibrary(),
         params = params ?? DesignParameters(),
         catalog = catalog ?? Catalog.defaultCatalog(),
         layers = layers ?? defaultLayers(),
@@ -289,6 +319,26 @@ class Project {
   List<Layer> layers;
   final List<Entity> entities;
   final List<SystemFlow> systemFlows;
+
+  /// Commercial settings of the quote (Design → Quote).
+  ProposalSettings proposal;
+
+  /// Design alternatives saved for comparison (Design → Alternatives).
+  final List<Scenario> scenarios;
+
+  /// Conditional labels of the drawing (View → Conditional labels).
+  final List<LabelRule> labelRules;
+
+  /// User blocks (Edit → Save selection as block, Insert block).
+  final BlockLibrary blocks;
+
+  /// Notes the AI assistant keeps about this project (requirements,
+  /// decisions, the designer's preferences); read at the start of a task.
+  String aiNotes;
+
+  /// Monthly climate normals of the site (Design → Site climate), for the
+  /// crop water requirement and solar pumping.
+  SiteClimate? climate;
   int _nextId;
 
   static List<Layer> defaultLayers() => [for (final n in Layers.all) Layer(name: n, color: Layers.defaultColors[n] ?? 0xFFFFFFFF)];
@@ -303,6 +353,7 @@ class Project {
     if (factor == 1) return;
     scaleCatalogPrices(catalog, factor);
     params.powerCostPerKwh *= factor;
+    proposal.scalePrices(factor);
     for (final e in entities) {
       if (e is PivotEntity) {
         e.machineCost *= factor;
@@ -404,6 +455,7 @@ class Project {
     for (final e in entities) {
       if (e is ContourEntity && !e.derived) t.addContour(e.points, e.elevation);
       if (e is SpotHeightEntity) t.addSpot(e.position, e.elevation);
+      if (e is BreaklineEntity) t.addBreakline(e.points, [for (var i = 0; i < e.points.length; i++) e.elevationOf(i)]);
     }
     return t;
   }
@@ -426,6 +478,12 @@ class Project {
     'layers': layers.map((l) => l.toJson()).toList(),
     'entities': includeEntities ? entities.map((e) => e.toJson()).toList() : const [],
     'systemFlows': systemFlows.map((s) => s.toJson()).toList(),
+    if (!proposal.isDefault) 'proposal': proposal.toJson(),
+    if (scenarios.isNotEmpty) 'scenarios': [for (final x in scenarios) x.toJson()],
+    if (climate != null) 'climate': climate!.toJson(),
+    if (labelRules.isNotEmpty) 'labelRules': [for (final r in labelRules) r.toJson()],
+    if (blocks.isNotEmpty) 'blocks': blocks.toJson(),
+    if (aiNotes.isNotEmpty) 'aiNotes': aiNotes,
     'nextId': _nextId,
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
   };
@@ -442,6 +500,12 @@ class Project {
       layers: ((j['layers'] as List?) ?? []).map((l) => Layer.fromJson(l as Map<String, dynamic>)).toList().let((l) => l.isEmpty ? defaultLayers() : l),
       entities: entities,
       systemFlows: ((j['systemFlows'] as List?) ?? []).map((s) => SystemFlow.fromJson(s as Map<String, dynamic>)).toList(),
+      proposal: ProposalSettings.fromJson(j['proposal'] as Map<String, dynamic>?),
+      scenarios: [for (final x in (j['scenarios'] as List?) ?? const []) Scenario.fromJson(x as Map<String, dynamic>)],
+      climate: SiteClimate.fromJson(j['climate'] as Map<String, dynamic>?),
+      labelRules: [for (final x in (j['labelRules'] as List?) ?? const []) LabelRule.fromJson(x as Map<String, dynamic>)],
+      blocks: BlockLibrary.fromJson(j['blocks'] as List?),
+      aiNotes: j['aiNotes'] as String? ?? '',
       // a file without the counter (written by hand or by another program)
       // or with a stale one must not hand out ids that are already taken
       nextId: math.max((j['nextId'] as num?)?.toInt() ?? 1, nextIdAfter(entities)),

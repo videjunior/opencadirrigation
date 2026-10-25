@@ -4,16 +4,18 @@
 
 OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation together: trace the area, lay out laterals, valves and the mainline, press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. Available in 20 languages, following your computer's language.
 
-- What: Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, centre pivot and linear move) with a hydraulic engine, automatic pipe sizing, bill of materials and reports
-- Price: Free for professional, academic and personal use; no account or sign-up
+- What: Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports
+- Price: Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user's own Anthropic or OpenAI account, which that provider bills
 - Licence: Open source under the MIT licence; source code (Dart and Flutter) at https://github.com/videjunior/opencadirrigation
-- Runs in: Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; nothing to download
-- Privacy: Projects stay on the user's computer (browser storage and `.oci.json` files); nothing is uploaded to a server
+- Runs in: Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download
+- Privacy: Projects stay on the user's computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user's own key
 - Languages: 20: Indonesian, German, English, Spanish, French, Hausa, Swahili, Portuguese, Vietnamese, Turkish, Russian, Arabic, Urdu, Hindi, Marathi, Bengali, Punjabi, Telugu, Chinese, Japanese
 - Project file: `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results
-- CAD and GIS exchange: DXF, DWG, KML/KMZ, shapefile, GeoJSON, CSV/XYZ survey points, GeoTIFF, georeferenced images, SVG and PDF
-- Reports: PDF, Excel (XLSX), CSV and TXT
-- Version: 1.0.1, updated 2026-10-19
+- CAD, GIS and survey exchange: Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4
+- Reports: PDF in any of the 20 languages, Excel (XLSX), CSV and TXT
+- AI assistant: Optional chat with an Anthropic or OpenAI model, with the user's own API key, called from the browser with no server in between; it reads the project with the program's own tools and, with the user's approval, changes it and runs the design; every change can be undone
+- Command line and API: `bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md](https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md))
+- Version: 1.1.0, updated 2026-10-25
 - Site: https://opencadirrigation.com/
 
 ## Application
@@ -22,10 +24,11 @@ OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation 
 - [Interactive tutorial](https://opencadirrigation.com/?tutorial=1): a guided tour of every function on a sample project
 - [Sized example](https://opencadirrigation.com/?design=1): the sample orchard, designed as soon as it opens
 - [Source code](https://github.com/videjunior/opencadirrigation): the whole application in Dart and Flutter, MIT licence
+- [Engine API](https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md): the calculation engine as a Dart library, and the command line `bin/oci.dart`
 
 ## Reference
 
-- [Complete reference](https://opencadirrigation.com/llms-full.txt): features, design workflow, hydraulic methods, sizing, catalogues, file formats, examples, deep links, limitations and FAQ in one Markdown file
+- [Complete reference](https://opencadirrigation.com/llms-full.txt): features, design workflow, hydraulic methods, transients, sizing, automatic design, agronomy, catalogues, file formats, the AI assistant, offline and field use, examples, deep links, limitations and FAQ in one Markdown file
 
 ## Ready examples to open
 

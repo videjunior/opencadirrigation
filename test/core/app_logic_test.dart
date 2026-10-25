@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' show PageRouteBuilder, SizedBox;
@@ -65,7 +66,9 @@ void main() {
         expect(v is ToolId || v is CadAction, isTrue);
       }
       expect(commandAliases.keys.every((k) => k == k.toUpperCase() && k.isNotEmpty), isTrue, reason: 'aliases are typed in upper case');
-      final drawing = ToolId.values.where((t) => t != ToolId.select);
+      // (the insert block tool is started by its dialog, which INSERT opens)
+      expect(commandAliases['INSERT'], CadAction.insertBlock);
+      final drawing = ToolId.values.where((t) => t != ToolId.select && t != ToolId.insertBlock);
       for (final t in drawing) {
         expect(aliasOf(t), isNotNull, reason: '${t.name} has no alias');
       }
@@ -357,7 +360,11 @@ void main() {
     });
 
     test('big embedded images are left out of the browser copy; report CSV and debug state', () async {
-      ImageEntity photo() => ImageEntity(id: 'img', origin: Pt.zero, width: 10, height: 10, data: Uint8List.fromList(List.filled(300000, 9)), source: 'foto.png');
+      // a photo does not compress: random bytes, so the gzip of the browser
+      // store cannot make it fit either
+      final rnd = math.Random(7);
+      final pixels = Uint8List.fromList(List.generate(300000, (_) => rnd.nextInt(256)));
+      ImageEntity photo() => ImageEntity(id: 'img', origin: Pt.zero, width: 10, height: 10, data: pixels, source: 'foto.png');
       final probe = fresh()..addEntity(photo());
       final full = probe.saveJson(pretty: false, markClean: false).length;
       // room for the project, not for its 400 kB of image text
@@ -370,6 +377,23 @@ void main() {
       final entity = ((jsonDecode(saved) as Map)['entities'] as List).single as Map;
       expect(entity.containsKey('data'), isFalse);
       expect(entity['src'] ?? entity['source'], 'foto.png');
+      // the user is told once that the copy leaves the pictures out
+      await Future<void>.delayed(Duration.zero);
+      expect(c.lastMessage, startsWith(c.t('msg.autosaveNoImages', {'mb': ''}).split('(').first));
+      final seq = c.messageSeq;
+      c.autosaveNow();
+      await Future<void>.delayed(Duration.zero);
+      expect(c.messageSeq, seq, reason: 'once per project');
+      // a project that does not fit even without its pictures is not kept,
+      // and the user is told to save it to a file
+      final tiny = LocalProjectStore(maxBytes: 200)..clearAll();
+      final big = fresh(store: tiny)..autosaveEnabled = true;
+      big.addEntity(LineEntity(id: big.project.newId(), a: Pt.zero, b: const Pt(1, 1)));
+      big.autosaveNow();
+      await Future<void>.delayed(Duration.zero);
+      expect(tiny.load(big.project.meta.uid), isNull);
+      expect(big.lastMessage, startsWith(big.t('msg.autosaveTooLarge', {'mb': ''}).split('(').first));
+      tiny.clearAll();
       store.clearAll();
       final d = fresh();
       loadExampleAction(d);

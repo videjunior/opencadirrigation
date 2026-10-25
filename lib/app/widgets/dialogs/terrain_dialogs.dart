@@ -68,7 +68,7 @@ Future<void> showElevationDialog(BuildContext context, ProjectController c, Enti
         content: SizedBox(
           width: dialogWidth(ctx, 380),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t(isContour ? 'elev.explainContour' : 'elev.explainSpot'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            Text(t(isContour ? 'elev.explainContour' : 'elev.explainSpot'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
             const SizedBox(height: 10),
             TextField(
               key: const Key('elev_value'),
@@ -160,10 +160,10 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
         content: SizedBox(
           width: dialogWidth(ctx, 460),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('dem.online.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            Text(t('dem.online.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
             const SizedBox(height: 8),
             if (geo == null) ...[
-              Text(t('dem.online.coordExplain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+              Text(t('dem.online.coordExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
               const SizedBox(height: 4),
               TextField(
                 key: const Key('dem_coord'),
@@ -187,7 +187,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
                 ),
               ]),
             ] else ...[
-              Text(geo.crsName, style: const TextStyle(fontSize: 11, color: Colors.white54)),
+              Text(geo.crsName, style: TextStyle(fontSize: 11, color: Cad.fg54)),
               SpecDropdown<DemSource>(label: t('dem.online.source'), value: source.name, items: sources, labelOf: (x) => x.label, idOf: (x) => x.name, onChanged: (v) => setState(() => source = DemSource.values.byName(v!))),
               _row([
                 NumField(label: t('dem.online.spacing'), value: spacing, onChanged: (v) => setState(() => spacing = v <= 1 ? 1 : v)),
@@ -196,13 +196,13 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
               SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.useView'), style: const TextStyle(fontSize: 12)), value: useView, onChanged: (v) => setState(() => useView = v)),
               SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.replace'), style: const TextStyle(fontSize: 12)), value: replace, onChanged: (v) => setState(() => replace = v)),
               if (own.isNotEmpty) ...[
-                Text(t('dem.online.existing', {'n': '${own.spots}', 'm': '${own.contours}', 'a': fmt(own.lo, 1), 'b': fmt(own.hi, 1)}), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+                Text(t('dem.online.existing', {'n': '${own.spots}', 'm': '${own.contours}', 'a': fmt(own.lo, 1), 'b': fmt(own.hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
                 SwitchListTile(key: const Key('dem_replace_existing'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.replaceExisting'), style: const TextStyle(fontSize: 12)), value: replaceExisting, onChanged: (v) => setState(() => replaceExisting = v)),
-                if (!replaceExisting) Text(t('dem.online.keepWarn'), style: const TextStyle(fontSize: 11, color: CadColors.warning)),
+                if (!replaceExisting) Text(t('dem.online.keepWarn'), style: TextStyle(fontSize: 11, color: Cad.warning)),
               ],
-              Text(b.isEmpty ? t('dem.online.empty') : t('dem.online.extent', {'w': fmt(b.width, 0), 'h': fmt(b.height, 0), 'n': '$n', 'r': '$requests'}) + (eta.inSeconds >= 10 ? ' · ${t('dem.online.estimate', {'t': etaText()})}' : ''), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
-              if (source.pointsPerMinute != null && n > source.pointsPerMinute!) Text(t('dem.online.limitHint'), style: const TextStyle(fontSize: 11, color: CadColors.warning)),
-              Text('${source.attribution} · ${t('dem.online.layerHint')}', style: const TextStyle(fontSize: 10, color: Colors.white38)),
+              Text(b.isEmpty ? t('dem.online.empty') : t('dem.online.extent', {'w': fmt(b.width, 0), 'h': fmt(b.height, 0), 'n': '$n', 'r': '$requests'}) + (eta.inSeconds >= 10 ? ' · ${t('dem.online.estimate', {'t': etaText()})}' : ''), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+              if (source.pointsPerMinute != null && n > source.pointsPerMinute!) Text(t('dem.online.limitHint'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+              Text('${source.attribution} · ${t('dem.online.layerHint')}', style: TextStyle(fontSize: 10, color: Cad.fg38)),
               SwitchListTile(key: const Key('dem_contours'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('dem.online.contours'), style: const TextStyle(fontSize: 12)), value: contours, onChanged: (v) => setState(() => contours = v)),
               if (contours) NumField(label: t('dem.online.contourInterval'), value: contourInterval, onChanged: (v) => setState(() => contourInterval = v < 0 ? 0 : v)),
             ],
@@ -211,7 +211,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
               LinearProgressIndicator(value: total == 0 ? null : done / total),
               Text(t('dem.online.progress', {'i': '$done', 'n': '$total'}) + (waiting != null ? ' · ${t('dem.online.wait', {'s': '${waiting!.inSeconds}'})}' : ''), key: const Key('dem_progress'), style: const TextStyle(fontSize: 11)),
             ],
-            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(t('dem.online.error', {'e': error!}), style: const TextStyle(fontSize: 11.5, color: CadColors.unconnected))),
+            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(t('dem.online.error', {'e': error!}), style: TextStyle(fontSize: 11.5, color: Cad.unconnected))),
           ]),
         ),
         actions: [
@@ -314,12 +314,12 @@ Future<void> showGenerateContoursDialog(BuildContext context, ProjectController 
         content: SizedBox(
           width: dialogWidth(ctx, 420),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('cgen.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            Text(t('cgen.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
             const SizedBox(height: 8),
             Text(t('terrain.stats', {'n': '${terrain.sampleCount}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: const TextStyle(fontSize: 11.5)),
             NumField(label: t('cgen.interval'), value: interval, onChanged: (v) => setState(() => interval = v <= 0 ? interval : v)),
             SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('cgen.replace'), style: const TextStyle(fontSize: 12)), value: replace, onChanged: (v) => setState(() => replace = v)),
-            Text(t('cgen.preview', {'n': '${preview.length}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            Text(t('cgen.preview', {'n': '${preview.length}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
           ]),
         ),
         actions: [
@@ -352,7 +352,7 @@ Future<void> showDesignCheckDialog(BuildContext context, ProjectController c) {
         width: dialogWidth(ctx, 620),
         height: 460,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t('check.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+          Text(t('check.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
           const SizedBox(height: 4),
           // the same assistant as the Messages tab: why, how to fix, corrections
           Expanded(child: AdvicePanel(c: c, listKey: const Key('check_list'))),

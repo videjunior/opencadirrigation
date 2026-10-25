@@ -76,7 +76,8 @@ void main() {
     final r = DwgReader.parse(bytes);
     expect(errors(r), isEmpty, reason: r.warnings.take(10).join(','));
     expect(r.document.entities.length, greaterThan(20));
-    expect(r.document.entities.length, doc.entities.where((e) => e.type == 'TEXT' ? e.text.isNotEmpty : (e.type == 'CIRCLE' || e.type == 'ARC' ? e.radius > 0 : e.points.length >= (e.type == 'POINT' ? 1 : 2))).length);
+    // the same native drawing as the DXF export (no splines or leaders here, which the DWG reader reads differently)
+    expect(r.document.entities.length, DxfReader.parse(c.exporter().dxf()).entities.length);
     expect(r.document.layers.map((l) => l.name), containsAll(doc.layers.map((l) => l.name)));
   });
 
@@ -108,7 +109,9 @@ void main() {
     final readBig = await Process.run('dwgread', ['-v2', big.path]);
     expect(readBig.exitCode, 0, reason: readBig.stderr.toString());
     final logBig = '${readBig.stdout}${readBig.stderr}';
-    expect(logBig.contains('ERROR') || logBig.contains('Warning') || logBig.contains('mismatch'), isFalse, reason: logBig.split('\n').where((l) => l.contains('ERROR') || l.contains('Warning') || l.contains('mismatch')).take(5).join('\n'));
+    // LibreDWG 0.14 warns on every R2000 hatch ("Skip HATCH common handles"), AutoCAD's own files included
+    final bad = logBig.split('\n').where((l) => (l.contains('ERROR') || l.contains('Warning') || l.contains('mismatch')) && !l.contains('Skip HATCH common handles')).toList();
+    expect(bad, isEmpty, reason: bad.take(5).join('\n'));
     dir.deleteSync(recursive: true);
   });
 }

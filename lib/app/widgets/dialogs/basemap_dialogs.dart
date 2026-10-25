@@ -9,6 +9,7 @@ import '../../canvas/basemap.dart';
 import '../../io/links.dart';
 import '../../state/controller.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
+import '../../theme.dart';
 
 const googleMapsConsoleUrl = 'https://console.cloud.google.com/google/maps-apis/api-list';
 const googleMapsKeyDocsUrl = 'https://developers.google.com/maps/documentation/tile/get-api-key';
@@ -38,9 +39,9 @@ Future<bool> showGoogleMapsKeyDialog(BuildContext context, ProjectController c) 
       content: SizedBox(
         width: dialogWidth(ctx, 560),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t('basemap.googleKey.explain'), style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          Text(t('basemap.googleKey.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
           const SizedBox(height: 6),
-          Text(t('basemap.googleKey.steps'), style: const TextStyle(fontSize: 11.5, color: Colors.white60)),
+          Text(t('basemap.googleKey.steps'), style: TextStyle(fontSize: 11.5, color: Cad.fg60)),
           const SizedBox(height: 6),
           Wrap(spacing: 8, children: [
             TextButton.icon(onPressed: () => openExternalLink(googleMapsConsoleUrl), icon: const Icon(Icons.open_in_new, size: 14), label: Text(t('basemap.googleKey.console'))),
@@ -56,7 +57,7 @@ Future<bool> showGoogleMapsKeyDialog(BuildContext context, ProjectController c) 
             onSubmitted: (_) => Navigator.pop(ctx, true),
           ),
           const SizedBox(height: 6),
-          Text(t('basemap.googleKey.privacy'), style: const TextStyle(fontSize: 10.5, color: Colors.white38)),
+          Text(t('basemap.googleKey.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
         ]),
       ),
       actions: [
@@ -106,7 +107,7 @@ Future<bool> showCustomTilesDialog(BuildContext context, ProjectController c) as
         content: SizedBox(
           width: dialogWidth(ctx, 560),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('basemap.custom.explain'), style: const TextStyle(fontSize: 12, color: Colors.white70)),
+            Text(t('basemap.custom.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
             const SizedBox(height: 6),
             TextField(
               key: const Key('custom_tiles_field'),
@@ -117,7 +118,7 @@ Future<bool> showCustomTilesDialog(BuildContext context, ProjectController c) as
               onSubmitted: (_) => submit(),
             ),
             const SizedBox(height: 6),
-            Text(t('basemap.custom.placeholders'), style: const TextStyle(fontSize: 10.5, color: Colors.white38)),
+            Text(t('basemap.custom.placeholders'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
           ]),
         ),
         actions: [

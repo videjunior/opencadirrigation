@@ -11,21 +11,34 @@ import '../../core/design/advisor.dart';
 import '../../core/design/auto_fix.dart';
 import '../../core/design/block_generator.dart';
 import '../../core/design/densogram.dart';
+import '../../core/model/scenario.dart';
+import '../../core/model/site_climate.dart';
+import '../../core/model/slope_map.dart';
 import '../../core/design/design_check.dart';
 import '../../core/design/network_builder.dart';
 import '../../core/design/report_tables.dart';
 import '../../core/design/results.dart';
 import '../../core/hydraulics/lateral.dart';
+import '../../core/io/climate_online.dart';
 import '../../core/io/dem_online.dart';
 import '../../core/io/dem_tiff.dart';
+import '../../core/io/dgn.dart';
 import '../../core/io/dwg.dart';
 import '../../core/io/dxf.dart';
+import '../../core/io/epanet_inp.dart';
 import '../../core/io/geo.dart';
 import '../../core/io/geoimage.dart';
+import '../../core/io/geojson_reader.dart';
+import '../../core/io/gpx.dart';
 import '../../core/io/kml.dart';
+import '../../core/io/landxml.dart';
+import '../../core/io/las.dart';
 import '../../core/io/points_csv.dart';
 import '../../core/io/project_export.dart';
 import '../../core/io/shp.dart';
+import '../../core/io/pdf_import.dart';
+import '../../core/io/pdf_reader.dart';
+import '../../core/io/shp_writer.dart' show ShapefileParts;
 import '../../core/model/catalog.dart';
 import '../../core/model/currency.dart';
 import '../../core/model/entities.dart';
@@ -38,11 +51,16 @@ import '../../core/units.dart';
 import '../canvas/camera.dart';
 import '../i18n.dart';
 import '../io/document.dart';
+import '../io/gps.dart';
 import '../io/http.dart';
 import '../io/prefs.dart';
 import '../io/project_store.dart';
 import '../keys/canvas_keys.dart';
 import 'design_runner.dart';
+
+/// Language of the interface: the app lays itself out right to left for
+/// the languages written that way (see [rtlLanguages]).
+final ValueNotifier<String> uiLanguage = ValueNotifier<String>('en');
 
 enum ToolId {
   select,
@@ -61,6 +79,7 @@ enum ToolId {
   dimRadial,
   leader,
   contour,
+  breakline,
   spot,
   area,
   zonePipe,
@@ -89,9 +108,12 @@ enum ToolId {
   controller,
   wire,
   dimOrdinate,
+  comment,
+  revisionCloud,
+  insertBlock,
 }
 
-enum OverlayMode { none, velocity, pressure, sizes, minMax, densogram }
+enum OverlayMode { none, velocity, pressure, sizes, minMax, densogram, slope, aspect }
 
 /// Background map tiles (needs a georeference): free tile services, the
 /// Google Map Tiles API (with the user's own key) and a custom XYZ template.
@@ -119,10 +141,25 @@ class SnapSettings {
   double gridSize = 1;
   bool ortho = false;
   double tolerancePx = 10;
+
+  /// Polar tracking step (degrees; 0 = off): from the previous point the
+  /// cursor locks onto multiples of it when close (F10 cycles the steps).
+  double polarStepDeg = 0;
+
+  /// The steps F10 and the status bar cycle through (0 = off).
+  static const polarSteps = [0.0, 15.0, 30.0, 45.0, 90.0];
+
+  void nextPolarStep() {
+    final i = polarSteps.indexOf(polarStepDeg);
+    polarStepDeg = polarSteps[(i + 1) % polarSteps.length];
+  }
 }
 
 /// Current defaults used by the creation tools.
 class ToolSettings {
+  /// Author written on new review comments (the last one typed).
+  String commentAuthor = '';
+
   String? zonePipeSpecId;
   String? mainPipeSpecId;
   String? lateralPipeSpecId;
@@ -290,6 +327,14 @@ class ProjectController extends ChangeNotifier {
   BaseMap baseMap = BaseMap.none;
   double baseMapOpacity = 0.8;
 
+  /// The base map of the current view for the plot sheet, set by the
+  /// canvas that draws it: PNG bytes and world corners (bottom-left first);
+  /// completes with null without a map on screen.
+  Future<(Uint8List, List<Pt>)?> Function()? baseMapSnapshot;
+
+  /// Credit line of the base map on screen (set by the canvas).
+  String Function()? baseMapAttribution;
+
   /// The user's Google Maps Platform API key (Map Tiles API), kept in the
   /// browser only; null until the user enters one.
   String? googleMapsKey = _savedPref('basemap.googleKey');
@@ -361,7 +406,20 @@ class ProjectController extends ChangeNotifier {
 
   final List<_UndoState> _undo = [];
   final List<_UndoState> _redo = [];
-  static const maxUndo = 50;
+  /// Undo depth: up to [maxUndo] steps while the copies kept stay below
+  /// [undoEntityBudget] entities in all (a large drawing keeps fewer steps).
+  static const maxUndo = 150;
+  static const undoEntityBudget = 400000;
+
+  void _trimUndo() {
+    var total = 0;
+    for (final u in _undo) {
+      total += u.entities.length;
+    }
+    while (_undo.length > 1 && (_undo.length > maxUndo || total > undoEntityBudget)) {
+      total -= _undo.removeAt(0).entities.length;
+    }
+  }
   String? lastMessage;
   int messageSeq = 0;
   bool busy = false;
@@ -430,6 +488,9 @@ class ProjectController extends ChangeNotifier {
     camera.center = const Pt(60, 30);
     camera.scale = 5;
     setDocumentLanguage(lang);
+    // a controller is made while the shell builds: tell the app afterwards
+    final l = lang;
+    scheduleMicrotask(() => uiLanguage.value = l);
   }
 
   // ------------------------------------------------------------ notifications
@@ -448,6 +509,7 @@ class ProjectController extends ChangeNotifier {
   Future<void> setLanguage(String l, {bool persist = true}) async {
     if (!supportedLanguages.contains(l)) return;
     lang = l;
+    uiLanguage.value = l;
     t = I18n(l);
     _followLanguageCurrency();
     if (persist) setPref('lang', l);
@@ -466,10 +528,18 @@ class ProjectController extends ChangeNotifier {
     if (e is DwgUnsupportedException) return t.has('dwg.${e.code}') ? t('dwg.${e.code}') : e.message;
     if (e is FormatException) {
       if (e.message == 'kmz_no_kml') return t('kmz.noKml');
+      if (e.message.startsWith('pdf_') && t.has('pdfimp.err.${e.message.substring(4)}')) return t('pdfimp.err.${e.message.substring(4)}');
       if (t.has('imp.err.${e.message}')) return t('imp.err.${e.message}');
+      // a code with a detail: `las_format_unsupported:7`
+      final i = e.message.indexOf(':');
+      if (i > 0 && t.has('imp.err.${e.message.substring(0, i)}')) return t('imp.err.${e.message.substring(0, i)}', {'v': e.message.substring(i + 1)});
       return e.message;
     }
     if (e is GeoReferenceMissing) return t('geo.none');
+    if (e is ClimateException) {
+      final base = t.has('msg.${e.code}') ? t('msg.${e.code}') : e.code;
+      return (e.detail ?? '').isEmpty ? base : '$base (${e.detail})';
+    }
     return '$e';
   }
 
@@ -558,7 +628,7 @@ class ProjectController extends ChangeNotifier {
   void _snapshot([String label = 'hist.edit']) {
     _editSeq++;
     _undo.add(_capture(label));
-    if (_undo.length > maxUndo) _undo.removeAt(0);
+    _trimUndo();
     _redo.clear();
     historyTouched = DateTime.now();
   }
@@ -578,6 +648,7 @@ class ProjectController extends ChangeNotifier {
     if (invalidateResults) {
       results = null;
       feedEnvelope.clear();
+      _scheduleAutoAnalysis();
     }
     notifyListeners();
     _autosaveMaybe();
@@ -605,7 +676,7 @@ class ProjectController extends ChangeNotifier {
       'meta' => jsonEncode({...(j['meta'] as Map<String, dynamic>)}..remove('modified')),
       _ => jsonEncode(j[k]),
     };
-    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer'];
+    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules'];
     final changed = [for (final k in sections) if (part(before, k) != part(now, k)) k];
     // undo steps recorded while the dialog was open (currency conversion…)
     var mutated = 0;
@@ -616,7 +687,7 @@ class ProjectController extends ChangeNotifier {
     if (changed.isEmpty && mutated == 0) return false;
     _editSeq++;
     _undo.add(edit._state);
-    if (_undo.length > maxUndo) _undo.removeAt(0);
+    _trimUndo();
     _redo.clear();
     historyTouched = DateTime.now();
     dirty = true;
@@ -624,6 +695,7 @@ class ProjectController extends ChangeNotifier {
     if (changed.any((k) => k == 'params' || k == 'catalog' || k == 'systemFlows')) {
       results = null;
       feedEnvelope.clear();
+      _scheduleAutoAnalysis();
     }
     notifyListeners();
     _autosaveMaybe();
@@ -667,14 +739,20 @@ class ProjectController extends ChangeNotifier {
 
   void undo() {
     track('undo');
-    if (_undo.isNotEmpty && editAllowed()) _undoOnce();
+    if (_undo.isNotEmpty && editAllowed()) {
+      _undoOnce();
+      _scheduleAutoAnalysis();
+    }
     // listeners (the tutorial) see the tracked command even with nothing to undo
     notifyListeners();
   }
 
   void redo() {
     track('redo');
-    if (_redo.isNotEmpty && editAllowed()) _redoOnce();
+    if (_redo.isNotEmpty && editAllowed()) {
+      _redoOnce();
+      _scheduleAutoAnalysis();
+    }
     notifyListeners();
   }
 
@@ -692,24 +770,55 @@ class ProjectController extends ChangeNotifier {
     if (!autosaveEnabled || project.entities.isEmpty) return;
     _lastAutosave = DateTime.now();
     try {
-      store.save(project.meta.uid, project.meta.name, _storeJson(), kind: 'autosave');
+      final (json, limit) = _storeJson();
+      store.save(project.meta.uid, project.meta.name, json, kind: 'autosave');
+      // the copy in the browser is what recovers the work after a crash:
+      // say once per project when it is incomplete or impossible
+      if (limit != null && _autosaveWarned != project.meta.uid) {
+        _autosaveWarned = project.meta.uid;
+        final mb = fmt(json.length / 1e6, 1);
+        scheduleMicrotask(() => notify(t(limit, {'mb': mb})));
+      }
     } catch (_) {
       // storage unavailable: ignore
     }
   }
 
+  String? _autosaveWarned;
+
+  /// Once per project, a note (with a leading space) when the terrain has
+  /// more samples than the TIN triangulates ([Terrain.maxTinPoints]): the
+  /// surface is then built from a uniform subset, which the user should know
+  /// before trusting a profile; '' otherwise.
+  String _tinNote() {
+    if (_tinWarned == project.meta.uid || project.params.terrainMethod != TerrainMethod.tin) return '';
+    final n = project.buildTerrain().samples.length;
+    if (n <= Terrain.maxTinPoints) return '';
+    _tinWarned = project.meta.uid;
+    final k = (n / Terrain.maxTinPoints).ceil();
+    return ' ${t('msg.tinThinned', {'n': '$n', 'k': '$k', 'm': '${(n / k).round()}'})}';
+  }
+
+  String? _tinWarned;
+
   /// Project JSON for the browser store (results included; embedded images
-  /// dropped when the file would exceed the store limit).
-  String _storeJson() {
+  /// dropped when the file would exceed the store limit), with the message
+  /// key of what the copy leaves out (null = complete).
+  (String, String?) _storeJson() {
     var s = saveJson(pretty: false, markClean: false);
-    if (s.length > store.maxBytes) {
+    // large projects are stored compressed; drop the embedded pictures only
+    // when even that does not fit
+    if (s.length > store.maxBytes && LocalProjectStore.encode(s).length > store.maxBytes) {
       final j = jsonDecode(s) as Map<String, dynamic>;
+      var dropped = false;
       for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
-        e.remove('data');
+        dropped = e.remove('data') != null || dropped;
       }
       s = encodeJson(j);
+      if (s.length > store.maxBytes && LocalProjectStore.encode(s).length > store.maxBytes) return (s, 'msg.autosaveTooLarge');
+      return (s, dropped ? 'msg.autosaveNoImages' : null);
     }
-    return s;
+    return (s, null);
   }
 
   // ------------------------------------------------------------ entities
@@ -1064,6 +1173,155 @@ class ProjectController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Turns the selected laterals and tapes into plain zone pipes (blank
+  /// tubing without emitters, e.g. the head of a line before the crop
+  /// starts), keeping their geometry, name and depth; a tape becomes the
+  /// smallest enabled lateral pipe whose bore holds it. Returns how many
+  /// were converted.
+  int convertSelectedToPipe() {
+    track('toPipe');
+    final targets = editableSelection.where((e) => e is SpraylineEntity || e is TapeEntity).toList();
+    if (targets.isEmpty) return 0;
+    final cat = project.catalog;
+    final made = <String>[];
+    mutate(() {
+      for (final e in targets) {
+        String? spec;
+        if (e is SpraylineEntity) spec = e.pipeSpecId;
+        if (e is TapeEntity) {
+          final bore = cat.tape(e.tapeSpecId)?.innerDiameterMm ?? 0;
+          final pipes = cat.pipesFor(PipeUsage.lateral);
+          spec = (pipes.where((p) => p.innerDiameterMm >= bore - 0.5).firstOrNull ?? pipes.lastOrNull)?.id;
+        }
+        final pipe = PipeEntity(id: project.newId(), layer: Layers.zonePipes, name: e.name, points: List.of((e as PolyEntity).points), scope: HydraulicScope.zone, pipeSpecId: spec, computerSized: spec == null || (e is SpraylineEntity && e.computerSized), depth: e is SpraylineEntity ? e.depth : (e as TapeEntity).depth);
+        final i = project.entities.indexOf(e);
+        project.entities[i] = pipe;
+        made.add(pipe.id);
+      }
+    }, label: 'hist.toPipe|${targets.length}');
+    selection
+      ..clear()
+      ..addAll(made);
+    notifyListeners();
+    return made.length;
+  }
+
+  /// Puts a device of catalogue item [valveSpecId] (pressure regulator,
+  /// on/off valve…) on every selected lateral and tape, [distanceM] from
+  /// its inlet (the end that touches another pipe; the first vertex when
+  /// neither or both do); the network splits the line there. Returns how
+  /// many were placed.
+  int insertDeviceOnSelectedLaterals(String valveSpecId, {double distanceM = 0.3}) {
+    track('deviceOnLaterals');
+    final lines = editableSelection.where((e) => e is SpraylineEntity || e is TapeEntity).cast<PolyEntity>().toList();
+    if (lines.isEmpty || project.catalog.valve(valveSpecId) == null) return 0;
+    final others = project.entities.whereType<PipeEntity>().where((p) => p.scope == HydraulicScope.zone).toList();
+    final tol = math.max(project.params.connectTolerance, 1e-3);
+    bool touches(Pt q) => others.any((p) => p.distanceTo(q) <= tol);
+    final added = <Entity>[];
+    mutate(() {
+      for (final e in lines) {
+        final pts = e.points;
+        if (pts.length < 2) continue;
+        final total = polylineLength(pts);
+        final fromEnd = touches(pts.last) && !touches(pts.first);
+        final d = math.min(math.max(distanceM, 0.05), total / 2);
+        final at = pointAlongPolyline(pts, fromEnd ? total - d : d);
+        added.add(MiscHydraulicEntity(id: project.newId(), position: at, valveSpecId: valveSpecId, scope: HydraulicScope.zone));
+      }
+      project.entities.addAll(added);
+    }, label: 'hist.deviceOnLaterals|${lines.length}');
+    return added.length;
+  }
+
+  /// Saves the designed project as alternative [name] (with its results) for
+  /// comparison; null when there are no results to compare.
+  Scenario? saveScenario(String name) {
+    final r = results;
+    if (r == null) return null;
+    final snap = project.toJson()..remove('scenarios');
+    snap['results'] = r.toJson();
+    final sc = Scenario(id: 'scn${DateTime.now().microsecondsSinceEpoch}', name: name.trim().isEmpty ? t('scn.default', {'n': '${project.scenarios.length + 1}'}) : name.trim(), created: DateTime.now(), metrics: scenarioMetrics(project, r), snapshot: snap);
+    mutate(() => project.scenarios.add(sc), invalidateResults: false, label: 'hist.scenarioSave');
+    return sc;
+  }
+
+  /// Brings alternative [id] back (one undo step): its drawing, settings and
+  /// results; the list of alternatives stays as it is.
+  bool restoreScenario(String id) {
+    final sc = project.scenarios.where((x) => x.id == id).firstOrNull;
+    if (sc == null) return false;
+    final Project restored;
+    try {
+      restored = Project.fromJson(Map<String, dynamic>.of(sc.snapshot)..remove('results'));
+    } catch (_) {
+      return false;
+    }
+    final res = sc.snapshot['results'] is Map ? DesignResults.fromJson((sc.snapshot['results'] as Map).cast<String, dynamic>()) : null;
+    final done = mutate(() {
+      project
+        ..meta = restored.meta
+        ..params = restored.params
+        ..catalog = restored.catalog
+        ..layers = restored.layers
+        ..proposal = restored.proposal
+        ..currentLayer = restored.currentLayer;
+      project.entities
+        ..clear()
+        ..addAll(restored.entities);
+      project.systemFlows
+        ..clear()
+        ..addAll(restored.systemFlows);
+      project.ensureNextId(restored.nextIdValue);
+      return true;
+    }, label: 'hist.scenarioRestore');
+    if (done != true) return false;
+    selection.clear();
+    results = res;
+    notifyListeners();
+    return true;
+  }
+
+  void deleteScenario(String id) => mutate(() => project.scenarios.removeWhere((x) => x.id == id), invalidateResults: false, label: 'hist.scenarioDelete');
+
+  /// Loads climate requests (tests swap it for canned answers).
+  static Future<String> Function(String url) climateUrlLoader = (url) => httpRequest('GET', url);
+
+  /// Where the site is (latitude, longitude): the centre of the drawing on
+  /// the georeference; null without a georeference.
+  (double, double)? get siteLatLon {
+    final g = project.meta.georef;
+    if (g == null) return null;
+    final b = project.bounds;
+    final cx = b.isEmpty ? 0.0 : (b.minX + b.maxX) / 2, cy = b.isEmpty ? 0.0 : (b.minY + b.maxY) / 2;
+    return g.toLatLon(cx, cy);
+  }
+
+  /// Downloads [years] whole years of daily climate at the site from
+  /// [source] and stores their monthly normals in the project (one undo
+  /// step). Throws [ClimateException] (codes `climate_*`); `climate_no_site`
+  /// without a georeference.
+  Future<SiteClimate> downloadClimate(ClimateSource source, {int years = 10, void Function(int done, int total)? onProgress, void Function(Duration wait)? onWait, bool Function()? cancelled}) async {
+    final ll = siteLatLon;
+    if (ll == null) throw const ClimateException('climate_no_site', '');
+    final now = DateTime.now().toUtc();
+    final series = await climateDownload(source, latitudeDeg: ll.$1, longitudeDeg: ll.$2, firstYear: now.year - years, lastYear: now.year - 1, fetch: climateUrlLoader, onProgress: onProgress, onWait: onWait, cancelled: cancelled);
+    final normals = climateMonthlyNormals(series);
+    final req = climateNormalsForRequirement(normals);
+    if (req == null) throw const ClimateException('climate_no_data', '');
+    final rs = [for (final n in normals) n.solarKWhM2Day];
+    String two(int v) => v.toString().padLeft(2, '0');
+    final sc = SiteClimate(
+      etoMmDay: req.etoMmDay, rainMm: req.rainMm, dependableRainMm: req.dependableRainMm, solarKWhM2Day: rs.every((x) => x != null) ? [for (final x in rs) x!] : null,
+      source: source.name, firstYear: now.year - years, lastYear: now.year - 1, latitudeDeg: ll.$1, longitudeDeg: ll.$2, retrieved: '${now.year}-${two(now.month)}-${two(now.day)}', attribution: source.attribution,
+    );
+    mutate(() => project.climate = sc, invalidateResults: false, label: 'hist.climate');
+    return sc;
+  }
+
+  /// Sets the climate typed or edited by hand (null removes it).
+  void setClimate(SiteClimate? sc) => mutate(() => project.climate = sc, invalidateResults: false, label: 'hist.climate');
+
   void selectAll() {
     track('selectAll');
     selection
@@ -1208,6 +1466,73 @@ class ProjectController extends ChangeNotifier {
   /// Layer for a new drawing entity: the current layer, unless it is locked.
   String get drawingLayer => project.isLocked(project.currentLayer) ? Layers.drawing : project.currentLayer;
 
+  // ------------------------------------------------------------ automatic analysis
+
+  /// Analyses the design again a moment after every edit (analysis only:
+  /// nothing is sized and the drawing does not change, so editing goes on
+  /// meanwhile), so pressures, flows and messages follow the drawing. Kept
+  /// in this browser.
+  bool get autoAnalyze => _autoAnalyze;
+  bool _autoAnalyze = getPref('design.auto') == '1';
+  set autoAnalyze(bool v) {
+    _autoAnalyze = v;
+    v ? setPref('design.auto', '1') : removePref('design.auto');
+    if (v) {
+      _scheduleAutoAnalysis();
+    } else {
+      _autoTimer?.cancel();
+    }
+    notifyListeners();
+  }
+
+  /// Quiet time after the last edit before the analysis starts.
+  static Duration autoAnalysisDelay = const Duration(milliseconds: 1200);
+  Timer? _autoTimer;
+
+  /// Whether an automatic analysis is running (editing stays allowed).
+  bool autoRunning = false;
+  Future<void>? _autoJob;
+
+  @override
+  void dispose() {
+    _autoTimer?.cancel();
+    _gpsStop?.call();
+    _gpsStop = null;
+    super.dispose();
+  }
+
+  void _scheduleAutoAnalysis() {
+    if (!_autoAnalyze) return;
+    _autoTimer?.cancel();
+    _autoTimer = Timer(autoAnalysisDelay, () => _autoJob = _autoAnalysis());
+  }
+
+  Future<void> _autoAnalysis() async {
+    if (!_autoAnalyze || !_canDesign) return;
+    if (busy || autoRunning) {
+      _scheduleAutoAnalysis();
+      return;
+    }
+    autoRunning = true;
+    notifyListeners();
+    final gen = _editSeq;
+    try {
+      final response = await designRunner.run(DesignRequest.of(project, lang: lang, sizeZones: false, sizeMain: false), yieldControl: _yieldFrame);
+      if (gen == _editSeq && _autoAnalyze) {
+        results = response.results;
+        unconnected = response.results.unconnected;
+      } else if (gen != _editSeq) {
+        // edited while it ran: the next quiet moment analyses again
+        _scheduleAutoAnalysis();
+      }
+    } catch (e, st) {
+      debugPrint('$e\n$st');
+    } finally {
+      autoRunning = false;
+      notifyListeners();
+    }
+  }
+
   // ------------------------------------------------------------ design
   Future<void> runDesign({bool sizeZones = true, bool sizeMain = true}) async {
     if (!_canDesign) {
@@ -1227,6 +1552,10 @@ class ProjectController extends ChangeNotifier {
   /// run, fails or goes stale.
   Future<DesignResults?> _design({bool sizeZones = true, bool sizeMain = true}) async {
     if (!_canDesign || busy) return null;
+    _autoTimer?.cancel();
+    // one job at a time in the worker: let an automatic analysis finish
+    final pending = _autoJob;
+    if (autoRunning && pending != null) await pending;
     busy = true;
     progress = null;
     track('design');
@@ -1545,7 +1874,7 @@ class ProjectController extends ChangeNotifier {
   }
 
   /// True when no contour / spot height gives the terrain an elevation.
-  bool get terrainIsEmpty => !project.entities.any((e) => (e is ContourEntity && !e.derived) || e is SpotHeightEntity);
+  bool get terrainIsEmpty => !project.entities.any((e) => (e is ContourEntity && !e.derived) || e is SpotHeightEntity || (e is BreaklineEntity && e.elevations.any((z) => z.isFinite)));
 
   // ------------------------------------------------------------ terrain tools
   /// Generates contours every [interval] metres from the terrain model as
@@ -1659,6 +1988,8 @@ class ProjectController extends ChangeNotifier {
       }
     }, label: 'hist.dem');
     track('dem');
+    final note = _tinNote();
+    if (note.isNotEmpty) scheduleMicrotask(() => notify(note.trim()));
     final own = ownTerrainData();
     final demRange = n == 0 ? (0.0, 0.0) : (lo, hi);
     return DemImportResult(n, noData, demRange, own.range, datumMismatch: own.isNotEmpty && n > 0 && demDatumMismatch(own.range, demRange));
@@ -1678,6 +2009,113 @@ class ProjectController extends ChangeNotifier {
     track('georef');
     notify(t('msg.georefAt', {'lat': lat.toStringAsFixed(5), 'lon': lon.toStringAsFixed(5), 'crs': ref.crsName}));
   }
+
+  // ------------------------------------------------------------ device GPS
+
+  /// Watches the device position (tests swap it for canned fixes).
+  static void Function() Function(void Function(GpsFix fix), void Function(String code)) gpsWatcher = watchGps;
+
+  /// Last position of the device while the GPS is on.
+  GpsFix? gpsFix;
+  void Function()? _gpsStop;
+  bool get gpsActive => _gpsStop != null;
+
+  /// Points walked so far (drawing coordinates) while a walk is recorded.
+  List<Pt>? gpsTrack;
+
+  /// Fixes less precise than this (m) are not recorded in a walk, and a
+  /// walked point is kept every [gpsStepM] metres.
+  double gpsMaxAccuracyM = 10;
+  double gpsStepM = 2;
+
+  /// The device's position in drawing coordinates (needs a georeference;
+  /// the first fix of a project without one creates it there).
+  Pt? get gpsPoint {
+    final f = gpsFix, g = project.meta.georef;
+    if (f == null || g == null) return null;
+    final (x, y) = g.fromLatLon(f.lat, f.lon);
+    return Pt(x, y);
+  }
+
+  void startGps() {
+    if (gpsActive) return;
+    _gpsStop = gpsWatcher(_onGpsFix, (code) {
+      notify(t('gps.err.$code'));
+      stopGps();
+    });
+    track('gps');
+    notifyListeners();
+  }
+
+  void stopGps() {
+    _gpsStop?.call();
+    _gpsStop = null;
+    gpsFix = null;
+    gpsTrack = null;
+    notifyListeners();
+  }
+
+  void _onGpsFix(GpsFix f) {
+    final first = gpsFix == null;
+    gpsFix = f;
+    if (project.meta.georef == null) setGeoreferenceAt(f.lat, f.lon);
+    final p = gpsPoint;
+    if (p == null) return;
+    // the first fix brings the view to the device
+    if (first && !camera.visible.contains(p)) camera.center = p;
+    final walk = gpsTrack;
+    if (walk != null && f.accuracyM <= gpsMaxAccuracyM && (walk.isEmpty || walk.last.distanceTo(p) >= gpsStepM)) walk.add(p);
+    notifyListeners();
+  }
+
+  /// Starts recording a walk (the outline of a field, a lawn, a pipe route).
+  void startGpsTrack() {
+    if (!gpsActive) startGps();
+    gpsTrack = [if (gpsPoint case final p? when (gpsFix?.accuracyM ?? 1e9) <= gpsMaxAccuracyM) p];
+    notifyListeners();
+  }
+
+  /// Ends the walk as one undo step: an irrigated area ([asArea]), a closed
+  /// outline or an open polyline; null (and nothing added) with too few
+  /// points.
+  Entity? finishGpsTrack({bool closed = true, bool asArea = false}) {
+    final pts = gpsTrack;
+    gpsTrack = null;
+    if (pts == null || pts.length < (closed || asArea ? 3 : 2)) {
+      notify(t('gps.trackShort'));
+      notifyListeners();
+      return null;
+    }
+    final name = t('gps.trackName', {'t': _hhmm(DateTime.now())});
+    final Entity e = asArea ? AreaEntity(id: project.newId(), points: List.of(pts), name: name) : PolylineEntity(id: project.newId(), points: List.of(pts), closed: closed, name: name);
+    mutate(() => project.entities.add(e), label: 'hist.gpsTrack');
+    notify(t('gps.trackDone', {'n': '${pts.length}', 'l': fmt(polylineLength([...pts, if (closed || asArea) pts.first]), 0)}));
+    return e;
+  }
+
+  /// A marker at the device's position (the satellite height is not an
+  /// elevation of the terrain model: it is left out).
+  Entity? markGpsPoint() {
+    final p = gpsPoint;
+    if (p == null) return null;
+    final e = CircleEntity(id: project.newId(), center: p, radius: math.max(0.3, math.min(gpsFix!.accuracyM, 2)), name: t('gps.pointName', {'t': _hhmm(DateTime.now())}));
+    mutate(() => project.entities.add(e), label: 'hist.gpsPoint');
+    return e;
+  }
+
+  /// Distance (m) and bearing (degrees clockwise from grid north) from the
+  /// device to [target]: staking out what was designed.
+  (double, double)? gpsTo(Pt target) {
+    final p = gpsPoint;
+    if (p == null) return null;
+    final d = target - p;
+    var bearing = 90 - radToDeg(math.atan2(d.y, d.x));
+    bearing %= 360;
+    if (bearing < 0) bearing += 360;
+    return (d.length, bearing);
+  }
+
+  static String _hhmm(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
   /// A round contour interval for the current terrain model (about 20
   /// contours at most).
@@ -1735,7 +2173,7 @@ class ProjectController extends ChangeNotifier {
   ui.Image? densogramImage;
   int _densogramImageGen = 0;
 
-  String get _densogramKey => '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.valveIds?.join(',')}';
+  String get _densogramKey => '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.useMeasured}|${densogramOptions.windSpeed}|${densogramOptions.windTowardsDeg}|${densogramOptions.windDrift}|${densogramOptions.valveIds?.join(',')}';
 
   /// Water applied by the sprinklers as laid out (recomputed when the
   /// drawing, the results or the options changed).
@@ -1776,6 +2214,66 @@ class ProjectController extends ChangeNotifier {
     } catch (_) {
       // no engine (pure Dart tests): the painter falls back to cells
     }
+  }
+
+  // ------------------------------------------------------------ slope map
+  SlopeMap? _slopeMap;
+  String _slopeSig = '';
+  final Map<bool, ui.Image> _slopeImages = {};
+  final Set<bool> _slopeDecoding = {};
+  int _slopeImageGen = 0;
+
+  /// Slope and aspect of the terrain over the extent of its samples (View →
+  /// Overlay → slope / aspect map), recomputed when the drawing changes.
+  SlopeMap get slopeMap {
+    final sig = '$_editSeq|${identityHashCode(project)}|${project.params.terrainMethod.name}|${project.params.terrainDensify}';
+    final cached = _slopeMap;
+    if (cached != null && sig == _slopeSig) return cached;
+    final terrain = project.buildTerrain();
+    var m = SlopeMap.empty;
+    if (!terrain.isEmpty) {
+      var minX = double.infinity, minY = double.infinity, maxX = -double.infinity, maxY = -double.infinity;
+      for (final s in terrain.samples) {
+        minX = math.min(minX, s.p.x);
+        minY = math.min(minY, s.p.y);
+        maxX = math.max(maxX, s.p.x);
+        maxY = math.max(maxY, s.p.y);
+      }
+      m = SlopeMap.compute(terrain, Bounds(minX, minY, maxX, maxY));
+    }
+    _slopeMap = m;
+    _slopeSig = sig;
+    _slopeImageGen++;
+    for (final img in _slopeImages.values) {
+      img.dispose();
+    }
+    _slopeImages.clear();
+    _slopeDecoding.clear();
+    return m;
+  }
+
+  /// Picture of [slopeMap] coloured by slope class or by [aspect] (one pixel
+  /// per cell), decoded on first request; null while decoding.
+  ui.Image? slopeImage({required bool aspect}) {
+    final m = slopeMap;
+    final img = _slopeImages[aspect];
+    if (img != null || m.isEmpty || _slopeDecoding.contains(aspect)) return img;
+    _slopeDecoding.add(aspect);
+    final gen = _slopeImageGen;
+    try {
+      ui.decodeImageFromPixels(slopeMapPixels(m, aspect: aspect), m.nx, m.ny, ui.PixelFormat.rgba8888, (decoded) {
+        if (gen != _slopeImageGen) {
+          decoded.dispose();
+          return;
+        }
+        _slopeImages[aspect] = decoded;
+        _slopeDecoding.remove(aspect);
+        notifyListeners();
+      });
+    } catch (_) {
+      // no engine (pure Dart tests): the painter draws nothing
+    }
+    return null;
   }
 
   // ------------------------------------------------------------ images
@@ -1974,7 +2472,7 @@ class ProjectController extends ChangeNotifier {
   /// Returns a short description of what was imported.
   String importFile(String name, Uint8List bytes) {
     try {
-      return _importFile(name, bytes);
+      return _importFile(name, bytes) + _tinNote();
     } on Error catch (e, st) {
       // a damaged file trips the readers' bounds (index, type, state
       // errors): tell the user so instead of the raw error
@@ -1985,6 +2483,13 @@ class ProjectController extends ChangeNotifier {
 
   String _importFile(String name, Uint8List bytes) {
     final lower = name.toLowerCase();
+    if (lower.endsWith('.pdf')) {
+      // without the dialog (drag and drop, scripts): page 1 at 1:100
+      final page = PdfReader.open(bytes).readPage(0);
+      final r = mutate(() => addPdfPage(project, page, PdfImportOptions(layer: pdfLayerName(name), source: name)), invalidateResults: false, label: 'hist.importPdf');
+      zoomAll();
+      return t('pdfimp.done', {'n': '${r?.entities.length ?? 0}', 'l': '${r?.layers.length ?? 0}'}) + _importWarnings([...page.warnings, ...?r?.warnings]);
+    }
     if (lower.endsWith('.dwg')) {
       final r = DwgReader.parse(bytes);
       final n = importDrawing(r.document);
@@ -2009,11 +2514,74 @@ class ProjectController extends ChangeNotifier {
       final n = importDrawing(r.document, asSpots: true);
       return t('imp.points', {'n': '$n', 'geo': r.geographic ? ' (${project.meta.georef?.crsName ?? 'WGS84'})' : ''});
     }
+    if (lower.endsWith('.zip') && _zipHas(bytes, '.shp')) {
+      // every shapefile of the zip, each on the layer of its name
+      final parts = ShapefileParts.unzip(bytes);
+      if (parts.length > 1) {
+        var records = 0, n = 0;
+        final warnings = <String>{};
+        var crs = '';
+        for (final f in parts) {
+          final r = ShpReader.parse(f.shp, dbf: f.dbf, prj: f.prj, cpg: f.cpg, georef: project.meta.georef, layer: f.name);
+          if (r.georef != null) project.meta.georef ??= r.georef;
+          n += importDrawing(r.document, markers: true);
+          records += r.recordCount;
+          warnings.addAll(r.warnings);
+          if (crs.isEmpty) crs = r.crs;
+        }
+        return t('imp.shp', {'r': '$records', 'n': '$n', 'crs': crs.isEmpty ? (project.meta.georef?.crsName ?? '-') : crs}) + _importWarnings(warnings);
+      }
+    }
     if (lower.endsWith('.shp') || (lower.endsWith('.zip') && _zipHas(bytes, '.shp'))) {
       final r = ShpReader.parseAny(name, bytes, georef: project.meta.georef);
       if (r.georef != null) project.meta.georef ??= r.georef;
       final n = importDrawing(r.document);
-      return t('imp.shp', {'r': '${r.recordCount}', 'n': '$n', 'crs': r.crs.isEmpty ? (project.meta.georef?.crsName ?? '-') : r.crs});
+      return t('imp.shp', {'r': '${r.recordCount}', 'n': '$n', 'crs': r.crs.isEmpty ? (project.meta.georef?.crsName ?? '-') : r.crs}) + _importWarnings(r.warnings);
+    }
+    if (lower.endsWith('.geojson') || lower.endsWith('.json')) {
+      final r = GeoJsonReader.parse(_decodeText(bytes), georef: project.meta.georef);
+      if (r.georef != null) project.meta.georef ??= r.georef;
+      final n = importDrawing(r.document, markers: true);
+      return t('imp.geojson', {'f': '${r.featureCount}', 'n': '$n', 'crs': r.crs.recognised ? r.crs.name : (project.meta.georef?.crsName ?? '-')}) + _importWarnings(r.warnings);
+    }
+    if (lower.endsWith('.gpx')) {
+      final r = GpxReader.parse(_decodeText(bytes), georef: project.meta.georef);
+      if (r.georef != null) project.meta.georef ??= r.georef;
+      final n = importDrawing(r.document, markers: true);
+      return t('imp.gpx', {'w': '${r.waypointCount}', 'r': '${r.routeCount}', 't': '${r.trackCount}', 'n': '$n'}) + _importWarnings(r.warnings);
+    }
+    if (lower.endsWith('.xml') || lower.endsWith('.landxml')) {
+      final r = LandXmlReader.parse(_decodeText(bytes), georef: project.meta.georef);
+      if (r.georef != null) project.meta.georef ??= r.georef;
+      final n = importDrawing(r.document, markers: true);
+      return t('imp.landxml', {'s': '${r.surfaces.length}', 'p': '${r.cgPointCount}', 'n': '$n'}) + _importWarnings(r.warnings);
+    }
+    if (lower.endsWith('.las') || lower.endsWith('.laz')) {
+      // a point cloud: its ground points, thinned to a grid, become terrain
+      final r = LasReader.read(bytes, georef: project.meta.georef);
+      if (r.georef != null) project.meta.georef ??= r.georef;
+      final label = 'DEM $name';
+      mutate(() {
+        project.entities.removeWhere((e) => e is SpotHeightEntity && e.name == label);
+        for (final sp in r.samples) {
+          project.entities.add(SpotHeightEntity(id: project.newId(), position: sp.p, elevation: sp.z, name: label));
+        }
+      }, label: 'hist.dem');
+      track('dem');
+      zoomAll();
+      return t('imp.las', {'n': '${r.samples.length}', 'p': '${r.pointsRead}', 'c': fmt(r.cellSize, 1)}) + _importWarnings(r.warnings);
+    }
+    if (lower.endsWith('.dgn')) {
+      final r = DgnReader.parse(bytes);
+      final n = importDrawing(r.document);
+      return t('imp.dgn', {'n': '$n', 'u': r.masterUnit}) + _importWarnings(r.warnings);
+    }
+    if (lower.endsWith('.inp')) {
+      final m = EpanetInpReader.parse(_decodeText(bytes));
+      final (doc, placement) = m.toDocument(georef: project.meta.georef);
+      if (placement.georef != null) project.meta.georef ??= placement.georef;
+      final n = importDrawing(doc, markers: true);
+      return t('imp.inp', {'j': '${m.junctions.length}', 'l': '${m.pipes.length + m.pumps.length + m.valves.length}', 'n': '$n'}) + _importWarnings({...m.warnings, ...placement.warnings});
     }
     if (lower.endsWith('.tif') || lower.endsWith('.tiff')) {
       // an elevation raster (one band of heights) becomes terrain, not a picture
@@ -2042,6 +2610,12 @@ class ProjectController extends ChangeNotifier {
     return t('imp.dxf', {'n': '$n'});
   }
 
+  /// The import's notes (coordinate system, unsupported parts) after its summary.
+  String _importWarnings(Iterable<String> codes) {
+    final list = {for (final w in codes) t.warning(w)}.toList();
+    return list.isEmpty ? '' : ' — ${list.join('; ')}';
+  }
+
   static bool _zipHas(Uint8List bytes, String ext) {
     // cheap check of the central directory names
     final s = latin1.decode(bytes.length > 200000 ? bytes.sublist(bytes.length - 200000) : bytes, allowInvalid: true).toLowerCase();
@@ -2058,7 +2632,11 @@ class ProjectController extends ChangeNotifier {
 
   /// Converts an imported drawing into project entities (contours and spot
   /// heights when elevations are present).
-  int importDrawing(DxfDocument doc, {bool asSpots = false}) {
+  ///
+  /// With [markers], points without an elevation (GPS waypoints, features of
+  /// a GeoJSON file) become small circles instead of spot heights at zero,
+  /// which would pull the terrain down.
+  int importDrawing(DxfDocument doc, {bool asSpots = false, bool markers = false}) {
     final s = doc.unitScale;
     final list = <Entity>[];
     mutate(() {
@@ -2079,7 +2657,9 @@ class ProjectController extends ChangeNotifier {
           case 'POLYLINE':
             if (e.points.length < 2) break;
             final pts = e.points.map((p) => p * s).toList();
-            if (elev != null && elev != 0 && !e.closed && _looksLikeContourLayer(layer)) {
+            if (!e.closed && _looksLikeBreaklineLayer(layer)) {
+              list.add(BreaklineEntity(id: project.newId(), layer: Layers.breaklines, name: e.name, points: pts, elevations: elev == null ? null : List.filled(pts.length, elev * s)));
+            } else if (elev != null && elev != 0 && !e.closed && _looksLikeContourLayer(layer)) {
               list.add(ContourEntity(id: project.newId(), layer: Layers.contours, name: e.name, points: pts, elevation: elev * s));
             } else if (elev != null && elev != 0 && !e.closed && pts.length >= 3) {
               list.add(ContourEntity(id: project.newId(), layer: Layers.contours, name: e.name, points: pts, elevation: elev * s));
@@ -2099,7 +2679,11 @@ class ProjectController extends ChangeNotifier {
           case 'TEXT':
             list.add(TextEntity(id: project.newId(), layer: layer, name: e.name, position: e.points[0] * s, text: e.text, height: e.height * s, rotationDeg: e.rotation));
           case 'POINT':
-            list.add(SpotHeightEntity(id: project.newId(), layer: elev != null || asSpots ? Layers.spotHeights : layer, name: e.name, position: e.points[0] * s, elevation: (elev ?? 0) * s));
+            if (markers && elev == null && !asSpots) {
+              list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: e.points[0] * s, radius: 0.5));
+            } else {
+              list.add(SpotHeightEntity(id: project.newId(), layer: elev != null || asSpots ? Layers.spotHeights : layer, name: e.name, position: e.points[0] * s, elevation: (elev ?? 0) * s));
+            }
         }
       }
       project.entities.addAll(list);
@@ -2111,6 +2695,13 @@ class ProjectController extends ChangeNotifier {
   static bool _finiteGeometry(DxfEntity e) {
     bool ok(Pt p) => p.x.isFinite && p.y.isFinite;
     return e.points.every(ok) && (e.center == null || ok(e.center!)) && e.radius.isFinite && e.startAngle.isFinite && e.endAngle.isFinite && e.rotation.isFinite && e.height.isFinite;
+  }
+
+  /// Layers of breaklines in survey drawings ("BREAKLINES", "linha de
+  /// quebra", "quiebre", "ruptura").
+  static bool _looksLikeBreaklineLayer(String layer) {
+    final l = layer.toLowerCase();
+    return l.contains('break') || l.contains('quebra') || l.contains('quiebre') || l.contains('ruptura');
   }
 
   static bool _looksLikeContourLayer(String layer) {
@@ -2142,17 +2733,20 @@ class ProjectController extends ChangeNotifier {
   DesignResults? _tablesFor;
   String _tablesLang = '';
   int _tablesUnconnected = -1;
+  int _tablesSeq = -1;
 
   /// Report tables for the current results (cached while results and
   /// language are unchanged; cheap to rebuild without results).
   List<ReportTable> reportTables() {
     final r = results;
     if (r == null) return exporter().reportTables();
-    if (_tablesCache == null || !identical(_tablesFor, r) || _tablesLang != lang || _tablesUnconnected != unconnected.length) {
+    if (_tablesCache == null || !identical(_tablesFor, r) || _tablesLang != lang || _tablesUnconnected != unconnected.length || _tablesSeq != _editSeq) {
       _tablesCache = exporter().reportTables();
       _tablesFor = r;
       _tablesLang = lang;
       _tablesUnconnected = unconnected.length;
+      // settings that keep the results (units, quote) still change the tables
+      _tablesSeq = _editSeq;
     }
     return _tablesCache!;
   }

@@ -5,6 +5,7 @@ import '../../core/design/auto_fix.dart';
 import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import 'dialogs/ai_assistant_dialog.dart' show askAiAboutAdvice;
 import 'dialogs/terrain_dialogs.dart' show dialogWidth;
 import 'reports_panel.dart' show toolNameOfEntity;
 
@@ -65,14 +66,14 @@ class AdvicePanel extends StatelessWidget {
                 Row(mainAxisSize: MainAxisSize.min, children: [
                   const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
                   const SizedBox(width: 6),
-                  Text(c.assistantProgress.isNotEmpty ? c.assistantProgress : t('adv.designing'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+                  Text(c.assistantProgress.isNotEmpty ? c.assistantProgress : t('adv.designing'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
                 ]),
             ]),
           ),
           if (c.results == null && advice.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              child: Text(t('adv.runHint'), style: const TextStyle(fontSize: 11, color: Colors.white54)),
+              child: Text(t('adv.runHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             ),
           Expanded(
             child: ListView.builder(
@@ -84,9 +85,9 @@ class AdvicePanel extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      const Icon(Icons.check_circle_outline, color: CadColors.ok, size: 18),
+                      Icon(Icons.check_circle_outline, color: Cad.ok, size: 18),
                       const SizedBox(width: 6),
-                      Flexible(child: Text(c.results == null ? t('adv.noneYet') : t('adv.none'), style: const TextStyle(color: Colors.white70, fontSize: 12))),
+                      Flexible(child: Text(c.results == null ? t('adv.noneYet') : t('adv.none'), style: TextStyle(color: Cad.fg70, fontSize: 12))),
                     ]),
                   );
                 }
@@ -104,7 +105,7 @@ class AdvicePanel extends StatelessWidget {
 }
 
 IconData adviceIcon(AdviceLevel l) => switch (l) { AdviceLevel.error => Icons.error_outline, AdviceLevel.warning => Icons.warning_amber_outlined, AdviceLevel.info => Icons.info_outline };
-Color adviceColor(AdviceLevel l) => switch (l) { AdviceLevel.error => CadColors.unconnected, AdviceLevel.warning => CadColors.warning, AdviceLevel.info => Colors.white60 };
+Color adviceColor(AdviceLevel l) => switch (l) { AdviceLevel.error => Cad.unconnected, AdviceLevel.warning => Cad.warning, AdviceLevel.info => Cad.fg60 };
 
 /// Title of a problem: its message, the zone / flow it belongs to and the
 /// items involved.
@@ -176,7 +177,7 @@ class _AdviceCardState extends State<AdviceCard> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1F24),
+        color: Cad.panel,
         borderRadius: BorderRadius.circular(4),
         border: Border(left: BorderSide(color: color, width: 3)),
       ),
@@ -191,7 +192,7 @@ class _AdviceCardState extends State<AdviceCard> {
               Expanded(child: Text(adviceTitle(c, a), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
               InkWell(
                 onTap: () => setState(() => open = !open),
-                child: Padding(padding: const EdgeInsets.all(2), child: Icon(open ? Icons.expand_less : Icons.expand_more, size: 18, color: Colors.white54)),
+                child: Padding(padding: const EdgeInsets.all(2), child: Icon(open ? Icons.expand_less : Icons.expand_more, size: 18, color: Cad.fg54)),
               ),
             ]),
           ),
@@ -206,6 +207,13 @@ class _AdviceCardState extends State<AdviceCard> {
                 icon: const Icon(Icons.center_focus_strong, size: 15),
                 label: Text(t('adv.locate')),
               ),
+            TextButton.icon(
+              key: Key('advice_ask_ai_${a.key.hashCode}'),
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact, textStyle: const TextStyle(fontSize: 11.5)),
+              onPressed: () => askAiAboutAdvice(context, c, a),
+              icon: const Icon(Icons.smart_toy_outlined, size: 15),
+              label: Text(t('ai.ask')),
+            ),
             for (final k in a.fixes)
               FilledButton.tonalIcon(
                 key: Key('fix_${k.name}_${a.key.hashCode}'),
@@ -217,8 +225,8 @@ class _AdviceCardState extends State<AdviceCard> {
           ]),
         ),
         if (open) ...[
-          if (t.has('adv.${a.code}.why')) _para(t('adv.why'), t('adv.${a.code}.why'), Colors.white70),
-          if (t.has('adv.${a.code}.how')) _para(t('adv.how'), t('adv.${a.code}.how'), Colors.white),
+          if (t.has('adv.${a.code}.why')) _para(t('adv.why'), t('adv.${a.code}.why'), Cad.fg70),
+          if (t.has('adv.${a.code}.how')) _para(t('adv.how'), t('adv.${a.code}.how'), Cad.fg),
         ],
         const SizedBox(height: 2),
       ]),
@@ -228,7 +236,7 @@ class _AdviceCardState extends State<AdviceCard> {
   Widget _para(String label, String text, Color color) => Padding(
     padding: const EdgeInsets.fromLTRB(30, 0, 10, 4),
     child: Text.rich(TextSpan(children: [
-      TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white60)),
+      TextSpan(text: '$label: ', style: TextStyle(fontWeight: FontWeight.w600, color: Cad.fg60)),
       TextSpan(text: text),
     ]), style: TextStyle(fontSize: 11.5, color: color, height: 1.3)),
   );
@@ -282,15 +290,15 @@ Future<void> showAutoFixDialog(BuildContext context, ProjectController c) async 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Icon(Icons.check, size: 15, color: CadColors.ok),
+                  Icon(Icons.check, size: 15, color: Cad.ok),
                   const SizedBox(width: 6),
                   Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
                 ]),
               ),
             const SizedBox(height: 10),
-            Text(r.errors + r.warnings == 0 ? t('adv.allClear') : t('adv.remaining', {'e': '${r.errors}', 'w': '${r.warnings}'}), style: TextStyle(fontSize: 12.5, color: r.errors == 0 ? CadColors.ok : CadColors.warning)),
+            Text(r.errors + r.warnings == 0 ? t('adv.allClear') : t('adv.remaining', {'e': '${r.errors}', 'w': '${r.warnings}'}), style: TextStyle(fontSize: 12.5, color: r.errors == 0 ? Cad.ok : Cad.warning)),
             const SizedBox(height: 6),
-            Text(t('adv.undoHint'), style: const TextStyle(fontSize: 11, color: Colors.white54)),
+            Text(t('adv.undoHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
           ]),
         ),
       ),
@@ -317,7 +325,7 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
       content: SizedBox(
         width: dialogWidth(ctx, 520),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text(t('opt.explain'), style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          Text(t('opt.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
           const SizedBox(height: 8),
           CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: pumps, onChanged: (v) => setState(() => pumps = v ?? true), title: Text(t('opt.pumps'), style: const TextStyle(fontSize: 12))),
           CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: valves, onChanged: (v) => setState(() => valves = v ?? true), title: Text(t('opt.valves'), style: const TextStyle(fontSize: 12))),
@@ -347,7 +355,7 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
   TableRow row(String label, String before, String after, {bool better = false}) => TableRow(children: [
     Padding(padding: const EdgeInsets.symmetric(vertical: 3), child: Text(label, style: const TextStyle(fontSize: 12))),
     Padding(padding: const EdgeInsets.symmetric(vertical: 3), child: Text(before, textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, fontFamily: 'monospace'))),
-    Padding(padding: const EdgeInsets.symmetric(vertical: 3), child: Text(after, textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: better ? CadColors.ok : null))),
+    Padding(padding: const EdgeInsets.symmetric(vertical: 3), child: Text(after, textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: better ? Cad.ok : null))),
   ]);
   await showDialog<void>(
     context: context,
@@ -358,10 +366,10 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
         child: SingleChildScrollView(
           key: const Key('optimize_summary'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-            Text(r.improved ? t('opt.kept') : t('opt.reverted'), style: TextStyle(fontSize: 12.5, color: r.improved ? CadColors.ok : Colors.white70)),
+            Text(r.improved ? t('opt.kept') : t('opt.reverted'), style: TextStyle(fontSize: 12.5, color: r.improved ? Cad.ok : Cad.fg70)),
             const SizedBox(height: 8),
             Table(columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)}, children: [
-              TableRow(children: [const SizedBox(), Text(t('opt.before'), textAlign: TextAlign.right, style: const TextStyle(fontSize: 11.5, color: Colors.white54)), Text(t('opt.after'), textAlign: TextAlign.right, style: const TextStyle(fontSize: 11.5, color: Colors.white54))]),
+              TableRow(children: [const SizedBox(), Text(t('opt.before'), textAlign: TextAlign.right, style: TextStyle(fontSize: 11.5, color: Cad.fg54)), Text(t('opt.after'), textAlign: TextAlign.right, style: TextStyle(fontSize: 11.5, color: Cad.fg54))]),
               row(t('opt.capital'), money(r.before.capital), money(r.after.capital), better: r.after.capital < r.before.capital - 0.5),
               row(t('opt.energy'), money(r.before.energy), money(r.after.energy), better: r.after.energy < r.before.energy - 0.5),
               row(t('opt.annual'), money(r.before.annualTotal), money(r.after.annualTotal), better: r.after.annualTotal < r.before.annualTotal - 0.5),
@@ -373,14 +381,14 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Icon(Icons.check, size: 15, color: CadColors.ok),
+                    Icon(Icons.check, size: 15, color: Cad.ok),
                     const SizedBox(width: 6),
                     Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
                   ]),
                 ),
             ],
             const SizedBox(height: 8),
-            Text(t('opt.note'), style: const TextStyle(fontSize: 11, color: Colors.white54)),
+            Text(t('opt.note'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
           ]),
         ),
       ),

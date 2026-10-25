@@ -166,8 +166,9 @@ void main() {
       await settle(tester);
       expect(find.byKey(const Key('check_list')), findsOneWidget);
       expect(find.textContaining('Falta a fonte de água'), findsOneWidget);
-      expect(find.textContaining('Tubos se cruzam sem junção'), findsOneWidget);
-      await tester.ensureVisible(find.textContaining('Tubos se cruzam sem junção'));
+      // the second card may be built below the visible part of the list
+      expect(find.textContaining('Tubos se cruzam sem junção', skipOffstage: false), findsOneWidget);
+      await tester.ensureVisible(find.textContaining('Tubos se cruzam sem junção', skipOffstage: false));
       await settle(tester);
       await tester.tap(find.textContaining('Tubos se cruzam sem junção'));
       await settle(tester);

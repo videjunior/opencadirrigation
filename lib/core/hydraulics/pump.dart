@@ -160,6 +160,18 @@ const vapourHead20C = 0.24;
 /// Allowance for the NPSH a surface pump requires plus a safety margin (m).
 const suctionNpshAllowance = 3.0;
 
+/// Margin (m) the NPSH available must keep above the required one
+/// (ANSI/HI 9.6.1 recommends 0.5–1.5 m or a ratio for most services).
+const npshMargin = 0.6;
+
+/// Vapour pressure of water as a head (m) at [tempC] (Tetens' formula).
+double vapourHead(double tempC) => 0.61078 * math.exp(17.27 * tempC / (tempC + 237.3)) * 1000 / (waterDensity * gravity);
+
+/// Net positive suction head available (m) at a pump inlet of gauge
+/// pressure head [inletPressure] at [elevation], water at [tempC]: the
+/// atmospheric head plus the inlet pressure minus the vapour pressure.
+double npshAvailable({required double inletPressure, required double elevation, double tempC = 20}) => atmosphericHead(elevation) + inletPressure - vapourHead(tempC);
+
 /// Practical suction lift limit (m) of a surface pump at [elevation]: the
 /// atmospheric head minus the vapour pressure and the NPSH allowance
 /// (about 7.1 m at sea level). The suction lift is the negative pressure

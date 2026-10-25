@@ -9,14 +9,24 @@ import '../i18n.dart';
 import '../shortcuts.dart';
 import '../state/controller.dart';
 import '../state/workspace.dart';
+import '../theme.dart';
 import '../tutorial/tutorial.dart';
+import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
+import 'dialogs/blocks_dialogs.dart';
+import 'dialogs/agronomy_dialogs.dart';
+import 'dialogs/ai_assistant_dialog.dart';
+import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/densogram_dialog.dart';
+import 'dialogs/field_calculators.dart';
+import 'dialogs/network_ops_dialogs.dart';
+import 'dialogs/vegetation_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
+import 'dialogs/transient_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'advice_panel.dart';
 import 'reports_panel.dart';
@@ -49,7 +59,7 @@ class AppMenuBar extends StatelessWidget {
               c.focusCanvas?.call();
             },
       leadingIcon: icon != null ? Icon(icon, size: 16) : null,
-      trailingIcon: shortcut != null ? Text(shortcut, style: const TextStyle(fontSize: 10, color: Colors.white38)) : null,
+      trailingIcon: shortcut != null ? Text(shortcut, style: TextStyle(fontSize: 10, color: Cad.fg38)) : null,
       child: Text(label),
     );
     MenuItemButton tool(ToolId id, {HydraulicScope? scope}) => item(t('tool.${id.name}'), () {
@@ -58,7 +68,7 @@ class AppMenuBar extends StatelessWidget {
     }, shortcut: '${aliasOf(id)} ⏎');
     final recent = c.store.list();
     return Container(
-      color: const Color(0xFF1B1F24),
+      color: Cad.menu,
       child: Row(
         children: [
           const SizedBox(width: 8),
@@ -68,7 +78,7 @@ class AppMenuBar extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: MenuBar(
-              style: const MenuStyle(backgroundColor: WidgetStatePropertyAll(Color(0xFF1B1F24)), elevation: WidgetStatePropertyAll(0)),
+              style: MenuStyle(backgroundColor: WidgetStatePropertyAll(Cad.menu), elevation: const WidgetStatePropertyAll(0)),
               children: [
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuFile, menuChildren: [
                   item(t('file.new'), () => confirmNew(context, c), icon: Icons.note_add_outlined),
@@ -94,6 +104,7 @@ class AppMenuBar extends StatelessWidget {
                   item(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera, shortcut: 'AL ⏎', key: const Key('menu_align')),
                   SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuExportDrawing, leadingIcon: const Icon(Icons.download, size: 16), menuChildren: [
                     for (final f in DrawingFormat.values) item(t('exp.${f.name}'), () => exportDrawingAction(context, c, f)),
+                    item(t('exp.png'), () => exportSheetPngAction(context, c), key: const Key('menu_export_png')),
                   ], child: Text(t('file.exportDrawing'))),
                   SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, leadingIcon: const Icon(Icons.table_view, size: 16), menuChildren: [
                     for (final f in ReportFormat.values) item(t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}'), c.results == null ? null : () => exportReportAction(context, c, f)),
@@ -101,6 +112,7 @@ class AppMenuBar extends StatelessWidget {
                     item(t('mgmt.export'), () => exportScheduleAction(context, c)),
                   ], child: Text(t('file.exportReport'))),
                   const Divider(height: 1),
+                  item(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined, key: const Key('menu_share_link')),
                   item(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
                   item(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
                 ], child: Text(t('menu.file'))),
@@ -114,6 +126,9 @@ class AppMenuBar extends StatelessWidget {
                   item(t('edit.paste'), ws == null ? null : () => pasteAction(ws!), icon: Icons.content_paste, shortcut: 'Ctrl+V'),
                   item(t('edit.copy'), c.selection.isEmpty ? null : c.duplicateSelected, shortcut: 'Ctrl+D'),
                   item(t('edit.delete'), c.selection.isEmpty ? null : c.deleteSelected, icon: Icons.delete_outline, shortcut: 'Del'),
+                  item(t('bomSel.menu'), c.selection.isEmpty ? null : () => showSelectionBomDialog(context, c), icon: Icons.receipt_long_outlined, key: const Key('menu_selection_bom')),
+                  item(t('blk.save'), c.selection.isEmpty ? null : () => saveBlockAction(context, c, c.project.blocks), icon: Icons.widgets_outlined, shortcut: 'WBLOCK ⏎', key: const Key('menu_block_save')),
+                  item(t('blk.insert'), () => insertBlockAction(context, c, c.project.blocks, pickTool: ToolId.insertBlock), icon: Icons.input, shortcut: 'INSERT ⏎', key: const Key('menu_block_insert')),
                   const Divider(height: 1),
                   SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, leadingIcon: const Icon(Icons.transform, size: 16), menuChildren: [
                     for (final id in [ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe, ToolId.alignImage]) tool(id),
@@ -142,6 +157,8 @@ class AppMenuBar extends StatelessWidget {
                     c.showGrips = v ?? true;
                     c.refresh();
                   }, child: Text(t('view.grips'))),
+                  item(t('lbl.menu'), () => showLabelRulesDialog(context, c), icon: Icons.label_important_outline, key: const Key('menu_label_rules')),
+                  CheckboxMenuButton(key: const Key('menu_gps'), value: c.gpsActive, onChanged: (v) => (v ?? false) ? c.startGps() : c.stopGps(), child: Text(t('gps.menu'))),
                   const Divider(height: 1),
                   for (final m in OverlayMode.values)
                     RadioMenuButton<OverlayMode>(value: m, groupValue: c.overlay, onChanged: (v) {
@@ -164,10 +181,25 @@ class AppMenuBar extends StatelessWidget {
                     for (final l in supportedLanguages)
                       RadioMenuButton<String>(value: l, groupValue: c.lang, onChanged: (v) => c.setLanguage(v ?? 'en'), child: Text(languageNames[l] ?? l)),
                   ], child: Text(t('view.language'))),
+                  SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: const Key('menu_theme'), leadingIcon: const Icon(Icons.contrast, size: 16), menuChildren: [
+                    for (final m in CadThemeMode.values)
+                      RadioMenuButton<CadThemeMode>(key: Key('menu_theme_${m.name}'), value: m, groupValue: uiThemeMode.value, onChanged: (v) {
+                        setThemeMode(v ?? CadThemeMode.dark);
+                        c.refresh();
+                      }, child: Text(t('view.theme.${m.name}'))),
+                  ], child: Text(t('view.theme'))),
                 ], child: Text(t('menu.view'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuDraw, menuChildren: [
-                  for (final id in [ToolId.line, ToolId.polyline, ToolId.rect, ToolId.circle, ToolId.arc, ToolId.spline, ToolId.hatch, ToolId.symbol, ToolId.text, ToolId.dimension, ToolId.dimAngular, ToolId.dimRadial, ToolId.dimOrdinate, ToolId.leader, ToolId.contour, ToolId.spot, ToolId.area, ToolId.measure, ToolId.profile])
+                  for (final id in [ToolId.line, ToolId.polyline, ToolId.rect, ToolId.circle, ToolId.arc, ToolId.spline, ToolId.hatch, ToolId.symbol, ToolId.text, ToolId.dimension, ToolId.dimAngular, ToolId.dimRadial, ToolId.dimOrdinate, ToolId.leader, ToolId.contour, ToolId.spot, ToolId.area, ToolId.measure, ToolId.profile, ToolId.comment, ToolId.revisionCloud])
                     tool(id),
+                  const Divider(height: 1),
+                  SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, leadingIcon: const Icon(Icons.my_location, size: 16), menuChildren: [
+                    item(t('gps.walkStart'), c.gpsTrack != null ? null : c.startGpsTrack, icon: Icons.directions_walk, key: const Key('menu_gps_walk')),
+                    item(t('gps.walkArea'), c.gpsTrack == null ? null : () => c.finishGpsTrack(asArea: true), icon: Icons.crop_square),
+                    item(t('gps.walkOutline'), c.gpsTrack == null ? null : () => c.finishGpsTrack(), icon: Icons.pentagon_outlined),
+                    item(t('gps.walkLine'), c.gpsTrack == null ? null : () => c.finishGpsTrack(closed: false), icon: Icons.timeline),
+                    item(t('gps.mark'), c.gpsPoint == null ? null : c.markGpsPoint, icon: Icons.add_location_alt_outlined, key: const Key('menu_gps_mark')),
+                  ], child: Text(t('gps.submenu'))),
                 ], child: Text(t('menu.draw'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuZone, menuChildren: [
                   for (final id in [ToolId.zonePipe, ToolId.sprayline, ToolId.tape, ToolId.outlet, ToolId.valve, ToolId.misc, ToolId.junction, ToolId.block, ToolId.autohead])
@@ -175,9 +207,12 @@ class AppMenuBar extends StatelessWidget {
                   const Divider(height: 1),
                   item(t('zone.feedEnvelope'), c.selection.isEmpty ? null : () => feedEnvelopeAction(c), icon: Icons.straighten, shortcut: 'FE ⏎', key: const Key('menu_feed')),
                   item(t('dens.menu'), () => showDensogramDialog(context, c), icon: Icons.blur_on, shortcut: 'DENS ⏎', key: const Key('menu_densogram')),
+                  item(t('zone.deviceOnLaterals'), c.selection.isEmpty ? null : () => showDeviceOnLateralsDialog(context, c), icon: Icons.settings_input_component_outlined, key: const Key('menu_device_laterals')),
+                  item(t('zone.toPipe'), c.selection.isEmpty ? null : () => convertToPipeAction(c), icon: Icons.linear_scale, key: const Key('menu_to_pipe')),
                   const Divider(height: 1),
                   item(t('tool.controller'), () => c.setTool(ToolId.controller), icon: Icons.developer_board, shortcut: 'CTRL ⏎', key: const Key('menu_controller')),
                   item(t('tool.wire'), () => c.setTool(ToolId.wire), icon: Icons.cable, shortcut: 'WR ⏎', key: const Key('menu_wire')),
+                  item(t('wr.menu'), () => showWireRoutingDialog(context, c), icon: Icons.alt_route, shortcut: 'WROUTE ⏎', key: const Key('menu_wire_routes')),
                 ], child: Text(t('menu.zone'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuMain, menuChildren: [
                   item(t('tool.supply'), () => c.setTool(ToolId.supply), shortcut: 'WS ⏎'),
@@ -200,6 +235,14 @@ class AppMenuBar extends StatelessWidget {
                   }),
                   const Divider(height: 1),
                   item(t('design.pumpSelect'), c.results == null ? null : () => showPumpSelectionDialog(context, c), icon: Icons.settings_suggest_outlined, key: const Key('menu_pump_select')),
+                  item(t('tr.menu'), () => showTransientDialog(context, c), icon: Icons.waves, shortcut: 'SURGE ⏎', key: const Key('menu_transients')),
+                  item(t('av.menu'), () => showAirValveDialog(context, c), icon: Icons.air, shortcut: 'AV ⏎', key: const Key('menu_air_valves')),
+                  item(t('eps.menu'), () => showEpsDialog(context, c), icon: Icons.schedule_outlined, shortcut: 'EPS ⏎', key: const Key('menu_eps')),
+                  const Divider(height: 1),
+                  item(t('od.menu'), () => showOnDemandDialog(context, c), icon: Icons.groups_outlined, shortcut: 'DEMAND ⏎', key: const Key('menu_on_demand')),
+                  item(t('crit.menu'), () => showCriticalityDialog(context, c), icon: Icons.call_split, shortcut: 'CRIT ⏎', key: const Key('menu_criticality')),
+                  item(t('cal.menu'), () => showCalibrationDialog(context, c), icon: Icons.tune, shortcut: 'CALIB ⏎', key: const Key('menu_calibration')),
+                  item(t('fert.menu'), () => showFertigationDialog(context, c), icon: Icons.science_outlined, shortcut: 'FERT ⏎', key: const Key('menu_fertigation')),
                   const Divider(height: 1),
                   item(t('tool.pivot'), () => c.setTool(ToolId.pivot), icon: Icons.radar, shortcut: 'PV ⏎', key: const Key('menu_pivot')),
                 ], child: Text(t('menu.mainline'))),
@@ -207,8 +250,14 @@ class AppMenuBar extends StatelessWidget {
                   item(t('design.params'), () => showDesignParamsDialog(context, c), icon: Icons.tune),
                   item(t('design.catalog'), () => showCatalogEditorDialog(context, c), icon: Icons.inventory_2_outlined, key: const Key('menu_catalog')),
                   item(t('design.management'), () => showManagementDialog(context, c), icon: Icons.schedule),
+                  item(t('tar.menu'), () => showTariffDialog(context, c), icon: Icons.price_change_outlined, shortcut: 'TARIFF ⏎', key: const Key('menu_tariff')),
+                  item(t('eg.menu'), () => showEnergyGroupingDialog(context, c), icon: Icons.bolt, shortcut: 'EGROUP ⏎', key: const Key('menu_energy_groups')),
+                  item(t('design.proposal'), () => showProposalDialog(context, c), icon: Icons.request_quote_outlined, key: const Key('menu_proposal')),
+                  item(t('design.scenarios'), () => showScenariosDialog(context, c), icon: Icons.compare_outlined, key: const Key('menu_scenarios')),
+                  item(t('clim.menu'), () => showSiteClimateDialog(context, c), icon: Icons.wb_sunny_outlined, key: const Key('menu_climate')),
                   SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuTerrain, leadingIcon: const Icon(Icons.terrain, size: 16), menuChildren: [
                     tool(ToolId.contour),
+                    tool(ToolId.breakline),
                     tool(ToolId.spot),
                     tool(ToolId.profile),
                     const Divider(height: 1),
@@ -224,14 +273,24 @@ class AppMenuBar extends StatelessWidget {
                         c.commitSettingsEdit(edit);
                       }, child: Text(t(m == TerrainMethod.tin ? 'terrain.tin' : 'terrain.idw'))),
                   ], child: Text(t('menu.terrain'))),
+                  SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: const Key('menu_auto_design'), leadingIcon: const Icon(Icons.auto_awesome, size: 16), menuChildren: [
+                    item(t('autolay.menu'), () => showAutoLayoutDialog(context, c), icon: Icons.auto_awesome_mosaic_outlined, shortcut: 'LAYOUT ⏎', key: const Key('menu_auto_layout')),
+                    item(t('tpl.menu'), () => showTemplateDialog(context, c), icon: Icons.sports_soccer_outlined, shortcut: 'TPL ⏎', key: const Key('menu_templates')),
+                    item(t('subdiv.menu'), () => showFieldSubdivisionDialog(context, c), icon: Icons.grid_view_outlined, shortcut: 'SUBDIV ⏎', key: const Key('menu_subdivide')),
+                    item(t('rings.menu'), () => showTreeRingsDialog(context, c), icon: Icons.park_outlined, shortcut: 'RINGS ⏎', key: const Key('menu_tree_rings')),
+                    item(t('pfit.menu'), () => showPivotFitDialog(context, c), icon: Icons.track_changes, shortcut: 'PFIT ⏎', key: const Key('menu_pivot_fit')),
+                    item(t('veg.menu'), () => showVegetationDialog(context, c), icon: Icons.image_search, shortcut: 'VEG ⏎', key: const Key('menu_vegetation')),
+                  ], child: Text(t('auto.menu'))),
                   const Divider(height: 1),
                   item(t('design.check'), () => showDesignCheckDialog(context, c), icon: Icons.fact_check_outlined, shortcut: 'CHK ⏎', key: const Key('menu_check')),
                   item(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, shortcut: 'FIX ⏎', key: const Key('menu_autofix')),
                   item('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, shortcut: 'OPT ⏎', key: const Key('menu_optimize')),
+                  item(t('ai.menu'), () => showAiAssistantDialog(context, c), icon: Icons.smart_toy_outlined, shortcut: 'AI ⏎', key: const Key('menu_ai')),
                   item(t('design.zone'), c.busy ? null : () => c.runDesign(sizeZones: true, sizeMain: false), icon: Icons.account_tree_outlined),
                   item(t('design.mainline'), c.busy ? null : () => c.runDesign(sizeZones: false, sizeMain: true), icon: Icons.timeline),
                   item(t('design.all'), c.busy ? null : () => c.runDesign(), icon: Icons.play_arrow, shortcut: 'F5'),
                   item(t('design.analyze'), c.busy ? null : () => c.runDesign(sizeZones: false, sizeMain: false), icon: Icons.analytics_outlined),
+                  CheckboxMenuButton(key: const Key('menu_auto_analyze'), value: c.autoAnalyze, onChanged: (v) => c.autoAnalyze = v ?? false, child: Text(t('design.autoAnalyze'))),
                   const Divider(height: 1),
                   item(t('design.dem3d'), () => showDemDialog(context, c), icon: Icons.terrain, key: const Key('menu_dem3d_top')),
                   item(t('design.clear'), c.results == null ? null : c.clearResults, icon: Icons.clear_all),
@@ -248,6 +307,15 @@ class AppMenuBar extends StatelessWidget {
                   item(t('tools.lateral'), () => showLateralCalculator(context, c), icon: Icons.calculate_outlined),
                   item(t('tools.pump'), () => showPumpCalculator(context, c), icon: Icons.settings_input_component),
                   item(t('tools.hammer'), () => showHammerCalculator(context, c), icon: Icons.bolt),
+                  const Divider(height: 1),
+                  item(t('solar.menu'), () => showSolarPumpingDialog(context, c), icon: Icons.solar_power_outlined, key: const Key('menu_solar')),
+                  item(t('bulb.menu'), () => showWettedBulbDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_bulb')),
+                  item(t('wb.menu'), () => showWaterBudgetDialog(context, c), icon: Icons.local_florist_outlined, key: const Key('menu_water_budget')),
+                  const Divider(height: 1),
+                  item(t('trav.menu'), () => showTravellerCalculator(context, c), icon: Icons.agriculture_outlined, key: const Key('menu_traveller')),
+                  item(t('surf.menu'), () => showSurfaceIrrigationCalculator(context, c), icon: Icons.water_outlined, key: const Key('menu_surface')),
+                  item(t('gate.menu'), () => showGatedPipeCalculator(context, c), icon: Icons.view_week_outlined, key: const Key('menu_gated_pipe')),
+                  const Divider(height: 1),
                   item(t('tools.units'), () => showUnitsDialog(context, c), icon: Icons.straighten),
                 ], child: Text(t('menu.tools'))),
                 SubmenuButton(onOpen: _menuOpened, onClose: _menuClosed, key: TutorialTargets.menuHelp, menuChildren: [
@@ -260,8 +328,8 @@ class AppMenuBar extends StatelessWidget {
             ),
           ),
           if (c.busy) const Padding(padding: EdgeInsets.only(right: 12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
-          IconButton(key: TutorialTargets.runButton, tooltip: t('design.all'), icon: const Icon(Icons.play_arrow, color: Color(0xFF66BB6A)), onPressed: c.busy ? null : () => c.runDesign()),
-          IconButton(key: TutorialTargets.saveButton, tooltip: t('file.save'), icon: Icon(Icons.save_outlined, color: c.dirty ? Colors.amber : null), onPressed: () => saveProjectAction(context, c)),
+          IconButton(key: TutorialTargets.runButton, tooltip: t('design.all'), icon: Icon(Icons.play_arrow, color: Cad.ok), onPressed: c.busy ? null : () => c.runDesign()),
+          IconButton(key: TutorialTargets.saveButton, tooltip: t('file.save'), icon: Icon(Icons.save_outlined, color: c.dirty ? Cad.amber : null), onPressed: () => saveProjectAction(context, c)),
           const SizedBox(width: 6),
         ],
       ),

@@ -56,7 +56,7 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
         return ListTile(
           dense: true,
           title: Text('${pack.brand}  ·  ${t('cat.packItems', {'n': '${pack.itemCount}'})}$origin', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-          subtitle: Text([if (pack.description.isNotEmpty) pack.description, '$prices$dated', if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}'].join('\n'), style: const TextStyle(fontSize: 11, color: Colors.white60)),
+          subtitle: Text([if (pack.description.isNotEmpty) pack.description, '$prices$dated', if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}'].join('\n'), style: TextStyle(fontSize: 11, color: Cad.fg60)),
           isThreeLine: true,
           trailing: FilledButton.tonal(
             key: Key('pack_${pack.id}'),
@@ -83,9 +83,9 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
           width: dialogWidth(ctx, 640),
           height: 500,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('cat.packsExplain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            Text(t('cat.packsExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
             const SizedBox(height: 4),
-            Text(t('cat.packFormat'), style: const TextStyle(fontSize: 10.5, color: Colors.white38)),
+            Text(t('cat.packFormat'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
             const SizedBox(height: 8),
             Row(children: [
               OutlinedButton.icon(
@@ -117,7 +117,7 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
                 child: Text(busy ? t('cat.packLoading') : t('cat.packLoad'), style: const TextStyle(fontSize: 12)),
               ),
             ]),
-            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(error!, key: const Key('pack_error'), style: const TextStyle(fontSize: 11.5, color: CadColors.warning))),
+            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(error!, key: const Key('pack_error'), style: TextStyle(fontSize: 11.5, color: Cad.warning))),
             const SizedBox(height: 6),
             Expanded(
               child: ListView(
@@ -130,7 +130,7 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
                   FutureBuilder<List<CatalogPack>>(
                     future: loadBundledCatalogPacks(),
                     builder: (ctx, snap) {
-                      if (snap.hasError) return Padding(padding: const EdgeInsets.all(8), child: Text(t('cat.packLoadError', {'e': '${snap.error}'}), style: const TextStyle(fontSize: 11.5, color: CadColors.warning)));
+                      if (snap.hasError) return Padding(padding: const EdgeInsets.all(8), child: Text(t('cat.packLoadError', {'e': '${snap.error}'}), style: TextStyle(fontSize: 11.5, color: Cad.warning)));
                       final packs = snap.data;
                       if (packs == null) return const Padding(padding: EdgeInsets.all(12), child: LinearProgressIndicator());
                       return Column(children: [for (final p in packs) tile(p)]);
@@ -162,14 +162,14 @@ Future<void> showExportCatalogPackDialog(BuildContext context, ProjectController
         content: SizedBox(
           width: dialogWidth(ctx, 460),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('cat.packExportExplain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+            Text(t('cat.packExportExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
             const SizedBox(height: 8),
             TextFieldRow(label: t('cat.packBrand'), value: brand, onChanged: (v) => setState(() => brand = v)),
             TextFieldRow(label: t('cat.packName'), value: name, onChanged: (v) => setState(() => name = v)),
             TextFieldRow(label: t('cat.packDescription'), value: description, onChanged: (v) => description = v),
             TextFieldRow(label: t('cat.packSource'), value: source, onChanged: (v) => source = v),
             const SizedBox(height: 6),
-            Text('$id$catalogPackExtension  ·  ${t('cat.packItems', {'n': '${cat.itemCount}'})}', style: const TextStyle(fontSize: 11, color: Colors.white54)),
+            Text('$id$catalogPackExtension  ·  ${t('cat.packItems', {'n': '${cat.itemCount}'})}', style: TextStyle(fontSize: 11, color: Cad.fg54)),
           ]),
         ),
         actions: [

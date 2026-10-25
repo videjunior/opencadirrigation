@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+6
+version: 1.1.0+7
 
 environment:
   sdk: ^3.13.3
@@ -67,6 +67,9 @@ flutter:
     - catalogs/
     # string tables of the languages not compiled in (see lib/app/i18n.dart)
     - assets/i18n/
+    # Noto font subsets the PDF writer embeds for text beyond WinAnsi
+    # (tool/fonts/build_fonts.py, SIL Open Font License, see OFL.txt)
+    - assets/fonts/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

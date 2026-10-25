@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/model/entities.dart';
 import '../state/controller.dart';
+import '../theme.dart';
 
 /// Layer list: visibility, lock, colour, current layer, add / rename / delete.
 class LayersPanel extends StatelessWidget {
@@ -24,7 +25,7 @@ class LayersPanel extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
           child: Row(children: [
-            Expanded(child: Text(t('layer.hint'), style: const TextStyle(fontSize: 10, color: Colors.white38))),
+            Expanded(child: Text(t('layer.hint'), style: TextStyle(fontSize: 10, color: Cad.fg38))),
             IconButton(key: const Key('layer_add'), tooltip: t('layer.add'), icon: const Icon(Icons.add, size: 16), onPressed: () => _addLayer(context)),
           ]),
         ),
@@ -41,33 +42,33 @@ class LayersPanel extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
                     child: Row(
                       children: [
-                        Icon(c.project.currentLayer == l.name ? Icons.radio_button_checked : Icons.radio_button_off, size: 12, color: c.project.currentLayer == l.name ? const Color(0xFF42A5F5) : Colors.white24),
+                        Icon(c.project.currentLayer == l.name ? Icons.radio_button_checked : Icons.radio_button_off, size: 12, color: c.project.currentLayer == l.name ? Cad.accent : Cad.fg24),
                         const SizedBox(width: 4),
                         InkWell(
                           key: Key('layer_vis_${l.name}'),
                           onTap: () => c.toggleLayer(l.name),
-                          child: Icon(l.visible ? Icons.visibility : Icons.visibility_off, size: 14, color: l.visible ? Colors.white70 : Colors.white24),
+                          child: Icon(l.visible ? Icons.visibility : Icons.visibility_off, size: 14, color: l.visible ? Cad.fg70 : Cad.fg24),
                         ),
                         const SizedBox(width: 4),
                         InkWell(
                           key: Key('layer_lock_${l.name}'),
                           onTap: () => c.setLayerLocked(l.name, !l.locked),
-                          child: Icon(l.locked ? Icons.lock : Icons.lock_open, size: 13, color: l.locked ? Colors.amber : Colors.white24),
+                          child: Icon(l.locked ? Icons.lock : Icons.lock_open, size: 13, color: l.locked ? Cad.amber : Cad.fg24),
                         ),
                         const SizedBox(width: 6),
                         InkWell(
                           key: Key('layer_color_${l.name}'),
                           onTap: () => _pickColor(context, l.name, l.color),
-                          child: Container(width: 12, height: 12, decoration: BoxDecoration(color: Color(l.color), borderRadius: BorderRadius.circular(2), border: Border.all(color: Colors.white24))),
+                          child: Container(width: 12, height: 12, decoration: BoxDecoration(color: Color(l.color), borderRadius: BorderRadius.circular(2), border: Border.all(color: Cad.fg24))),
                         ),
                         const SizedBox(width: 6),
-                        Expanded(child: Text(t.has('layer.${l.name}') ? '${t('layer.${l.name}')} · ${l.name}' : l.name, style: TextStyle(fontSize: 11, color: l.visible ? Colors.white : Colors.white38), overflow: TextOverflow.ellipsis)),
-                        Text('${counts[l.name] ?? 0}', style: const TextStyle(fontSize: 10, color: Colors.white38)),
+                        Expanded(child: Text(t.has('layer.${l.name}') ? '${t('layer.${l.name}')} · ${l.name}' : l.name, style: TextStyle(fontSize: 11, color: l.visible ? Cad.fg : Cad.fg38), overflow: TextOverflow.ellipsis)),
+                        Text('${counts[l.name] ?? 0}', style: TextStyle(fontSize: 10, color: Cad.fg38)),
                         if (!Layers.all.contains(l.name))
                           InkWell(
                             key: Key('layer_del_${l.name}'),
                             onTap: () => c.removeLayer(l.name),
-                            child: const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.close, size: 12, color: Colors.white38)),
+                            child: Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.close, size: 12, color: Cad.fg38)),
                           ),
                       ],
                     ),
@@ -120,7 +121,7 @@ class LayersPanel extends StatelessWidget {
               InkWell(
                 key: Key('color_${col.toRadixString(16)}'),
                 onTap: () => Navigator.pop(ctx, col),
-                child: Container(width: 26, height: 26, decoration: BoxDecoration(color: Color(col), borderRadius: BorderRadius.circular(4), border: Border.all(color: col == current ? Colors.white : Colors.white24, width: col == current ? 2 : 1))),
+                child: Container(width: 26, height: 26, decoration: BoxDecoration(color: Color(col), borderRadius: BorderRadius.circular(4), border: Border.all(color: col == current ? Cad.fg : Cad.fg24, width: col == current ? 2 : 1))),
               ),
           ]),
         ),

@@ -204,6 +204,14 @@ class PivotResult {
   /// Pressure available at the inlet from the mainline analysis (m), when known.
   double? availableHead;
 
+  /// The same machine with the inlet flow and pressure of its detailed
+  /// sprinkler package (regulators, drops, nozzles, end gun).
+  PivotResult withInlet({required double flow, required double inletHead, List<String> extraWarnings = const []}) => PivotResult(
+    pivotId: pivotId, name: name, kind: kind, flow: flow, endGunFlow: endGunFlow, inletHead: inletHead, frictionLoss: frictionLoss, elevationRise: elevationRise, endPressure: endPressure,
+    pipeHeight: pipeHeight, machineLoss: machineLoss, towerCount: towerCount, towers: towers, areaM2: areaM2, depthPerCycleMm: depthPerCycleMm, hoursPerCycle: hoursPerCycle,
+    appRateEndAvg: appRateEndAvg, appRateEndPeak: appRateEndPeak, inletVelocity: inletVelocity, warnings: [...warnings, ...extraWarnings], availableHead: availableHead, spans: spans,
+  );
+
   double get deficit => availableHead == null ? 0 : inletHead - availableHead!;
 
   Map<String, dynamic> toJson() => {
@@ -232,6 +240,11 @@ double _gradient(PivotSpec s, double flow) {
       return hazenWilliamsLoss(flow: flow, diameter: d, length: 1, c: s.hazenC);
     case FrictionMethod.darcyWeisbach:
       return darcyWeisbachLoss(flow: flow, diameter: d, length: 1, roughness: s.roughnessMm / 1000, kinematicViscosity: s.kinematicViscosity);
+    // galvanised steel span pipe (Scobey Ks 0.42, Manning n 0.012)
+    case FrictionMethod.scobey:
+      return scobeyLoss(flow: flow, diameter: d, length: 1, ks: 0.42);
+    case FrictionMethod.manning:
+      return manningLoss(flow: flow, diameter: d, length: 1, n: 0.012);
   }
 }
 

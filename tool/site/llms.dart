@@ -10,15 +10,17 @@ part of '../site.dart';
 
 /// Short facts, as `(label, value)`, shared by both files.
 List<(String, String)> _facts() => [
-  ('What', 'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, centre pivot and linear move) with a hydraulic engine, automatic pipe sizing, bill of materials and reports'),
-  ('Price', 'Free for professional, academic and personal use; no account or sign-up'),
+  ('What', 'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports'),
+  ('Price', 'Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user\'s own Anthropic or OpenAI account, which that provider bills'),
   ('Licence', 'Open source under the MIT licence; source code (Dart and Flutter) at $appRepositoryUrl'),
-  ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; nothing to download'),
-  ('Privacy', 'Projects stay on the user\'s computer (browser storage and `.oci.json` files); nothing is uploaded to a server'),
+  ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download'),
+  ('Privacy', 'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key'),
   ('Languages', '${siteLanguages.length}: ${[for (final l in siteLanguages) _englishNames[l.code]].join(', ')}'),
   ('Project file', '`.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results'),
-  ('CAD and GIS exchange', 'DXF, DWG, KML/KMZ, shapefile, GeoJSON, CSV/XYZ survey points, GeoTIFF, georeferenced images, SVG and PDF'),
-  ('Reports', 'PDF, Excel (XLSX), CSV and TXT'),
+  ('CAD, GIS and survey exchange', 'Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4'),
+  ('Reports', 'PDF in any of the 20 languages, Excel (XLSX), CSV and TXT'),
+  ('AI assistant', 'Optional chat with an Anthropic or OpenAI model, with the user\'s own API key, called from the browser with no server in between; it reads the project with the program\'s own tools and, with the user\'s approval, changes it and runs the design; every change can be undone'),
+  ('Command line and API', '`bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md]($appRepositoryUrl/blob/main/docs/API.md))'),
   ('Version', '$appVersion, updated $siteLastMod'),
   ('Site', siteUrl),
 ];
@@ -55,106 +57,173 @@ String _bothNames(String code) => languageNames[code] == _englishNames[code] ? _
 const _reference = [
   (
     'Design workflow',
-    '''1. **Project details**: name, client, site, designer and notes, printed in the sheet title block and the reports; metric or US units.
-2. **Background**: import a DXF, DWG, KML/KMZ, shapefile, survey CSV, GeoTIFF or satellite image, or draw boundaries, buildings and roads. Images out of scale are fitted by aligning two points. A georeference (UTM zone and origin) enables base maps, online elevation and KML/GeoJSON export.
-3. **Terrain**: contour lines and spot heights drawn or imported, an elevation GeoTIFF, or elevation downloaded for a coordinate; contours generated from the model and a 3D view.
-4. **Hydraulic layout**: water supply, pump, mainline, zone valves and, downstream of each valve, submains, laterals, drip tapes, single emitters and devices (filters, pressure regulators, meters, backflow preventers, air and check valves). A lateral-block generator (also along a curved guide such as a contour line) and a sprinkler-grid generator (square or triangular) do the repetitive work. Irrigated areas carry the crop, efficiency and water balance.
-5. **Management**: system flows, i.e. which valves and pivots open together, with start time and duration; they can be grouped automatically within the supply flow and a maximum number of zones.
-6. **Check**: unconnected items, pipes crossing without a junction, dead ends, zones without emitters, missing catalogue items, missing terrain.
-7. **Design (F5)**: zones, mainline, telescoping, flushing, water hammer, valve wiring and materials; or only zones, only the mainline, or an analysis of the current diameters.
-8. **Reports and plotting**: reports panel, PDF sheet with title block, legend, north arrow, scale bar and bill of materials; exports to other CAD, GIS and spreadsheets.'''
+    '''1. **Project details and parameters**: name, client, site, designer and notes (printed in the sheet title block and the reports), metric or US units, and the design parameters: friction formula, water temperature, mains frequency (50 or 60 Hz), pressure windows, velocities and economics.
+2. **Background**: import a DXF, DWG, DGN or PDF plan, KML/KMZ, shapefile, GeoJSON, GPX, survey CSV, GeoTIFF or aerial image, draw boundaries, buildings and roads, or walk them with the device GPS. Images and plans out of scale are fitted by aligning two points. A georeference (UTM zone and origin; datum shifts for SIRGAS 2000, SAD 69 and Córrego Alegre) enables base maps, online elevation and climate and the georeferenced exports.
+3. **Terrain**: contour lines, spot heights and breaklines drawn or imported, LAS point clouds, LandXML surfaces, an elevation GeoTIFF, or elevation downloaded for the area; contours, slope and aspect maps generated from the model and a 3D view.
+4. **Hydraulic layout**: by hand, with the lateral-block and sprinkler-grid generators, or with the automatic design tools: water supply, pumps, mainline, zone valves and, downstream of each valve, submains, laterals, drip tapes, single emitters and devices (filters, pressure-reducing, pressure-sustaining and flow-control valves, meters, backflow preventers, air and check valves); valve-in-head sprinklers on the mainline; centre pivots, linear moves, travellers and surface irrigation. Irrigated areas carry the crop, the soil, the efficiency and the water balance.
+5. **Management**: system flows, i.e. which valves, valve-in-head stations and pivots open together, with start time and duration; grouped automatically within the supply flow, for the least pumping energy or around a time-of-use tariff.
+6. **Check**: unconnected items, pipes crossing without a junction, dead ends, zones without emitters or mixing emitter families, missing catalogue items, missing terrain.
+7. **Design (F5)**: zones, mainline, telescoping, flushing, water hammer, valve wiring and materials; or only zones, only the mainline, or an analysis of the current diameters (also automatically while editing). Further studies on demand: hydraulic transients, the 24-hour simulation, air valves, fertigation, on-demand operation, pipe criticality, roughness calibration, pump selection and design alternatives compared side by side.
+8. **Reports and plotting**: reports panel, PDF sheet sets with title block, legend, north arrow, scale bar, bill of materials, construction details, charts and revision table, a commercial quote, and exports to other CAD, GIS, survey and BIM programs, to EPANET and to spreadsheets.'''
   ),
   (
     'Hydraulic engine',
-    '''- Friction: Hazen-Williams (default) or Darcy-Weisbach (Swamee-Jain, Colebrook, laminar and transition), with the water viscosity from its temperature (20 °C by default).
-- Minor losses as a share of the length (5 % by default) or from fitting coefficients; valves and devices by `h = K·Q^n + C`.
+    '''- Friction: Hazen-Williams (default), Darcy-Weisbach (Swamee-Jain, Colebrook, laminar and transition), Scobey (sprinkler laterals of steel and aluminium) or Manning, with the water viscosity from its temperature (20 °C by default).
+- Minor losses as a share of the length (5 % by default) or from the fittings actually used (bends, tees, reducers) with their coefficients; valves and devices by `h = K·Q^n + C`.
 - Emitters by `q = k·H^x`, wetted radius by `R = a·H^b`; pressure-compensating and turbulent drippers, micro-sprinklers, sprinklers, bubblers, guns and demand points.
-- Network solver: the Global Gradient Algorithm (Todini and Pilati), the method of EPANET, with pressure-dependent emitters, pumps, pressure-reducing valves and check valves, on a sparse LDLᵀ factorisation.
+- Network solver: the Global Gradient Algorithm (Todini and Pilati), the method of EPANET, with pressure-dependent emitters, fixed and variable-speed pumps (a variable-speed pump holds a target outlet pressure), pressure-reducing, pressure-sustaining and flow-control valves (hydrant flow limiters) and check valves, on a sparse LDLᵀ factorisation; parts of the network cut off by closed links are levelled instead of being solved with near-singular conductances.
+- Pumps: Q-H curves with efficiency and NPSH required (NPSH and suction-lift checks), submersible pumps at the water level; a fixed-speed pump on mains of another frequency than its curve turns in proportion (a 60 Hz curve on 50 Hz mains: 5/6 of the speed, 69 % of the head).
 - Laterals and tapes are lumped into at most 100 nodes each (adjustable), so lines with hundreds of emitters stay fast.
 - Terrain elevation at every node; emitter pressure accounts for ground level, riser height and burial depth.
 - Uniformity: Christiansen CU, low-quarter DU, Keller-Karmeli emission uniformity EU (with the manufacturing CV and emitters per plant), statistical uniformity and flow variation; overlap CU for sprinklers with a wetted radius; a densogram adds up the water every sprinkler applies as drawn (arc, orientation and design pressure) and gives the rate map with CU, DU and the scheduling coefficient per irrigated area.
-- Water hammer: wave celerity from pipe material and wall, Joukowsky surge, critical time 2L/a and comparison with the pipe pressure rating, including the valve closure time. It is an estimate, not a full transient simulation.
+- Water hammer in the design step: wave celerity from pipe material and wall, Joukowsky surge, critical time 2L/a and comparison with the pipe pressure class, including the valve closure time. The full transient analysis is described below.
 - Flushing of drip tapes with open ends at the flushing velocity (0.3 m/s and 1 m end pressure by default).
 - The calculation runs in a Web Worker, off the interface thread.'''
+  ),
+  (
+    'Transients and extended-period simulation',
+    '''- Hydraulic transients by the method of characteristics (Wylie and Streeter; Chaudhry) on the mainline of every system flow: the zone valves closing in the closure time of the parameters, a power failure tripping the pumps (pump and motor inertia estimated by Thorley and Faithfull from the rated power and speed, or given) and an isolation valve closing.
+- Every pipe takes its wave celerity from its wall and material (Korteweg) and its pressure class at the water temperature; vapour cavities by the discrete vapour cavity model; the air valves drawn on the mainline act as combination air valves; surge vessels; the barometric head follows the site elevation.
+- Results: head and pressure envelopes per pipe against the class and against vacuum, the profile along the critical path, the pressure in time at the pump and at the worst point, and findings explained by the design assistant.
+- Air valves placed and sized along the mainline profile after AWWA Manual M51: high points, changes of slope, long runs, pump discharges and the points where the grade line or the transient minimum comes close to the pipe.
+- A 24-hour extended-period simulation with time steps as in EPANET: tanks, the system flows at their start hours, pumps on while their flows run, pressures in time, and the energy and its cost at a time-of-use tariff.'''
   ),
   (
     'Pipe sizing and optimisation',
     '''- **Linear programming** (default): every pipe may be built from fractions of the candidate diameters; the programme minimises the annualised pipe cost plus the energy cost of the inlet pressure, subject to the pressure window of the critical emitters (end, highest and lowest point of every lateral), and repeats with the emitters found at the limits (up to four rounds).
 - **Maximum velocity** method as the classic alternative (defaults 2.0 m/s in laterals, 1.5 m/s in submains, 2.0 m/s in the mainline).
 - Greedy repair along the critical path, non-increasing diameters downstream and **telescoping** (up to 3 diameters per submain or mainline pipe by default).
-- Pipe pressure classes respected in operation and under water hammer.
+- **Pressure class**: the linear programme and the greedy method only offer pipes whose class, derated for the water temperature (PVC and PE), holds the operating pressure found; the sizing repeats (up to three passes) until it does. The water hammer estimate and the transient envelopes are compared with the class too.
+- **Looped mainlines**: the linear programme is repeated with the redistributed flows until they settle; the final analysis checks the result.
 - The mainline is sized over all system flows with the energy weighted by the operating hours of each, with pump operating points and supply duties (flow, available and required pressure, deficit, annual energy).
-- Economics: interest rate, term, energy tariff, pump efficiency and operating hours; costs in the currency of the user's region.
+- Economics: interest rate, term, energy tariff (also by time of use), pump efficiency and operating hours; costs in the currency of the user's region.
+- **Pump selection**: the catalogue pumps ranked for the duty of each water supply, suitable ones first, then by life-cycle cost.
 - **Design assistant**: every problem explained (what happened, why it matters, how to fix it), impossible settings detected, one-click corrections, *Fix automatically* and *Optimise design* (lowest annual cost that meets every requirement, kept only when it improves).'''
   ),
   (
-    'Agronomy and scheduling',
-    '''- Crop water requirement from ETo and Kc, water balance with available water, root depth and allowable depletion, application efficiency and wetted fraction.
-- Readily available water, irrigation interval, gross and net depths and hours per event.
-- Controller programme per system flow (days and start times), exportable as CSV.'''
+    'Automatic design',
+    '''- **Sprinkler layout** for lawns and beds: heads in the corners, along every edge and on a grid inside (convex or concave areas, buildings and beds left out), every arc opening into the area, matched-precipitation nozzles and a preview of CU, DU and the scheduling coefficient.
+- **Zoning by flow**: heads or drip areas grouped into compact valve zones within the valve and supply limits, never mixing emitters that apply water at different rates.
+- **Routing**: a valve for every zone and zone pipes joining its heads as a tree, around buildings and the other zones, then a mainline tree from the water supply or pump to every valve.
+- **Field subdivision**: an agricultural field cut into blocks of equal net area, by area or by flow, as strips or a grid, with service roads; every block is ready for the lateral-block generator.
+- **Orchard drip rings** around every tree, and **sports and golf templates** (football pitch, running-track infield, green, tee and fairway).
+- **Pivot fit**: the largest full-circle pivot, or the part-circle pivot that irrigates the most, that fits a field and its obstacles, from standard span lengths.
+- **Vegetation detection** in aerial imagery (the satellite base map in view or an aerial photo in the drawing), on the device with no online service: lawns and trees or shrubs found by an excess-green index with an automatic threshold, outlined and simplified into irrigated areas with agronomic presets, plus exclusion outlines.'''
+  ),
+  (
+    'Agronomy, operation and energy',
+    '''- Site climate: monthly normals downloaded for the site (Open-Meteo historical weather from the ERA5 reanalysis, or NASA POWER) or typed in; reference evapotranspiration by FAO Penman-Monteith (Hargreaves-Samani as the alternative).
+- Crops: FAO-56 single crop coefficient curves by stage (initial, development, mid-season, late), reduced for localized irrigation; soils of the 12 USDA texture classes.
+- Effective rain (USDA-SCS TR-21, its simplified form, FAO dependable rain, the FAO empirical formula or a fixed percentage) and the leaching requirement for salinity.
+- Requirement tables per irrigated area, crop cycle and month or stage: ETo, Kc, ETc, effective rain, net and gross depths, readily available water, interval, hours per event and volumes.
+- Soil water balance, irrigation interval and run times; controller programme per system flow (days and start times), exportable as CSV.
+- Landscape water budget (MAWA and ETWU after the California Model Water Efficient Landscape Ordinance) with cycle-and-soak scheduling; wetted bulb of drip emitters and the wetted percentage.
+- Fertigation: travel times from the injection point to every outlet, the injection plan that delivers the dose and flushes it out before the irrigation ends, and the check of a venturi injector.
+- Energy and operation: zones grouped into system flows for the least pumping energy; flows scheduled around a time-of-use tariff and an irrigation discount window (such as the Brazilian rural irrigation discount); on-demand networks of hydrants (Clément flows and a random-demand check, after FAO Irrigation and Drainage Paper 59); pipe criticality (N−1); roughness calibration from field readings; solar (photovoltaic) pumping sized and compared with grid energy.'''
   ),
   (
     'Valve wiring',
-    '''- Controllers (stations, output voltage, cost) and wire routes drawn from the controller through the valves; every valve gets a station number by distance.
-- Station and common wire sizes chosen at the lowest cost that keeps every solenoid above its minimum voltage (20 V by default) while it opens with the other valves of its system flow already on (inrush and holding currents, route lengths plus slack).
-- Electrical report (route, wire lengths, sizes, solenoid voltage) and wires, controllers and connectors in the bill of materials; stations and simultaneous valves checked.'''
+    '''- Controllers (stations, output voltage, cost, sensors) and wire routes, drawn by hand or routed automatically along the pipe trenches; every valve gets a station number by distance; a master valve opens with every zone and a pump start relay with the pump.
+- Conventional wiring: station and common wire sizes chosen at the lowest cost that keeps every solenoid above its minimum voltage (20 V by default) while it opens with the other valves of its system flow already on (inrush and holding currents, route lengths plus slack).
+- Two-wire (decoder) systems: one pair along the routes with decoders of 1, 2, 4 or 6 stations at the valves, sized for the idle and running currents.
+- Valve-in-head stations are wired like valves (their solenoids in parallel, or a decoder at the heads).
+- Electrical report (route, wire lengths, sizes, solenoid voltage) and wires, controllers, decoders and connectors in the bill of materials; stations and simultaneous valves checked.'''
   ),
   (
     'Terrain',
-    '''- Sources: drawn contour lines and spot heights, survey points (CSV, TXT, XYZ, PNEZD, decimal comma accepted), DXF/DWG polylines with elevation, KML with altitude, shapefiles with Z or an elevation attribute, elevation GeoTIFF and online elevation.
-- Online elevation for a pasted coordinate (decimal, map link or degrees/minutes/seconds): free keyless services (Terrain Tiles on AWS Open Data from SRTM, and Open-Meteo with the Copernicus DEM).
-- Digital terrain model by Delaunay triangulation (TIN) or inverse-distance interpolation; contours generated from the model; 3D view with the pipes draped on the ground; longitudinal profiles with the pipe and the hydraulic grade line.'''
+    '''- Sources: drawn contour lines, spot heights and breaklines, survey points (CSV, TXT, XYZ, PNEZD, decimal comma accepted), DXF, DWG and DGN polylines with elevation, KML with altitude, shapefiles with Z or an elevation attribute, GPX waypoints, LandXML surfaces, LAS point clouds (ground class by default, decimated on a grid), elevation GeoTIFF and online elevation.
+- Online elevation for the project area or a pasted coordinate (decimal, map link or degrees/minutes/seconds), from free keyless services: Terrain Tiles on AWS Open Data (SRTM and other models, the default) and Open-Meteo (Copernicus DEM); OpenTopoData in the desktop builds.
+- Digital terrain model by Delaunay triangulation (TIN) with breaklines as constrained edges, or inverse-distance interpolation; contours generated from the model; slope and aspect maps with the share of the area in each slope class; 3D view with the pipes draped on the ground; longitudinal profiles with the pipe and the hydraulic grade line.'''
   ),
   (
-    'Centre pivots and linear moves',
-    '''- Machines with radius, spans and towers, applied depth, cycle time, end pressure, sector angle and end gun, fed from the mainline as a demand.
-- Report of towers, spans and sprinklers, and a check of the application rate against the soil intake limit.'''
+    'Centre pivots and mechanised irrigation',
+    '''- Centre pivots and linear moves with radius, spans and towers, applied depth, cycle time, end pressure, sector angle and end gun, fed from the mainline as a demand; report of towers, spans and sprinklers, and a check of the application rate against the soil intake limit.
+- Sprinkler package (nozzle chart): outlets span by span, the flow of every outlet for a uniform depth, pressure regulators, drops, numbered nozzles, end gun and booster pump, checked against the pressure along the machine; the timer chart (depth against the percent timer) from the drive train.
+- Corner arm with its guide path (warning where the tip would jump), variable-rate prescriptions by zones or sectors (CSV), and the electrical design of the machine (span cable voltage drop, generator).
+- Hose-reel travellers (lane spacing by wind, travel speed, hose friction, inlet pressure and power), surface irrigation (furrows, borders and level basins by the volume-balance model of FAO Irrigation and Drainage Paper 45) and gated pipe (gate openings or hole sizes for the furrow flow).'''
   ),
   (
     'Component catalogue',
-    '''- Seven groups: pipes, emitters with nozzles, tapes and driplines, valves and devices, pumps (Q-H curve), fittings and wires.
-- Default catalogue: 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel), 9 emitter families, 6 tapes and driplines, 30 valves and devices (1" to 6"), 18 pumps (centrifugal 1 to 100 hp, submersible 3 to 30 hp), about 330 fittings and 12 copper wires (1 to 10 mm² and AWG 18 to 8), with illustrative prices.
-- 14 manufacturer packs (259 items) built from published data sheets: Hunter, Rain Bird, Toro, Netafim, Rivulis, NaanDanJain, Jain, Nelson and Senninger (sprinklers, micro-sprinklers, drippers, tapes and driplines, pivot sprinklers, big guns, valves and regulators), Irritec (driplines and drippers), Bermad (hydraulic valves), Schneider (centrifugal and submersible pumps), and Amanco Wavin and Multilit (PVC irrigation pipes). Nozzle curves are fitted to the manufacturers' tables; prices are left to the user.
+    '''- Seven groups: pipes, emitters with nozzles, tapes and driplines, valves and devices, pumps (Q-H curve, efficiency and NPSH curves, the frequency the curve was measured at), fittings and wires.
+- Default catalogue: 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel), 9 emitter families and a demand point, 6 tapes and driplines, 36 valves and devices from 1" to 6" (solenoid, hydraulic and master valves, pressure-reducing and pressure-sustaining valves, hydrants with flow limiters, gate and check valves, filters, meters, backflow preventers, air release valves), 18 pumps (centrifugal 1 to 100 hp, submersible 3 to 30 hp), about 330 fittings and 12 copper wires (1 to 10 mm² and AWG 18 to 8), with illustrative prices.
+- 14 manufacturer packs (259 items) built from published data sheets: Hunter, Rain Bird, Toro, Netafim, Rivulis, NaanDanJain, Jain, Nelson and Senninger (sprinklers, micro-sprinklers, drippers, tapes and driplines, pivot sprinklers, big guns, valves and regulators), Irritec (driplines and drippers), Bermad (hydraulic valves), Schneider (centrifugal and submersible pumps, curves at 60 Hz), and Amanco Wavin and Multilit (PVC irrigation pipes). Nozzle curves are fitted to the manufacturers' tables; prices are left to the user.
 - The catalogue editor imports and exports JSON, CSV and Excel; packs in the `.oci.cat` JSON format load from a file or a URL, so dealers can publish their own.'''
   ),
   (
     'Reports and plotting',
-    '''- Reports: zone summary, pipes, emitters, mainline and supply duties, bill of materials with automatically selected fittings (couplers, elbows, tees, crosses, reducers, end caps, take-offs, risers), water requirements, agronomy, controller schedule, flushing, water hammer, pivots and spans, valve wiring, hydraulic grade line chart, terrain profile, densogram and messages.
-- PDF sheet from A4 to A0, Letter and Tabloid, automatic or fixed scale, title block, legend, north arrow, scale bar, bill of materials on the sheet and attached report pages.
-- Every table exports to PDF, Excel (one sheet per table, numbers as numbers), CSV and TXT.'''
+    '''- Reports: zone summary, pipes, emitters, mainline and supply duties, devices, bill of materials with automatically selected fittings (couplers, elbows, tees, crosses, reducers, end caps, take-offs, risers) for the whole design, per sector or for the current selection, water requirements, agronomy, controller schedule, flushing, water hammer, pivots and spans, pivot sprinkler packages, valve-in-head stations, valve wiring, hydraulic grade line chart, terrain profile, densogram and messages; conditional labels show results on the drawing.
+- Commercial quote from the bill of materials: margin, labour, trenches, extra lines, discount, taxes, freight, validity, payback (NPV and IRR) and a construction schedule; for Brazil, BNDES FINAME codes and the CONAMA 284 licensing category (informative).
+- PDF sheets from A4 to A0, Letter and Tabloid, automatic or fixed scale, title block, legend, north arrow, scale bar, images and the base map, bill of materials on the sheet and attached report pages; sheet sets (an overview plus one sheet per zone or irrigated area, the others greyed or hidden, and extra windows at their own scale); construction detail sheets drawn with the design's values (trench, thrust block, valve box, sprinkler riser or swing joint, drip line start, air valve, filter station, pump suction); charts (mainline grade line per system flow, profile, pump curves with duty points); a revision table from the revision clouds. Text in every script of the 20 languages (embedded Noto fonts, Arabic and Indic shaping, right-to-left text).
+- PNG image of the sheet (96 to 300 dpi); every table to PDF, Excel (one sheet per table, numbers as numbers), CSV and TXT.'''
   ),
   (
     'File formats',
     '''| Format | Import | Export |
 |---|---|---|
 | `.oci.json` project | yes | yes |
-| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | R12, by layer |
-| DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015) |
-| KML / KMZ | placemarks, folders as layers, altitude as elevation | folders per layer, WGS84 |
-| Shapefile (zip with DBF, PRJ, CPG) | points, lines, polygons, Z variants, attributes in UTF-8 or Latin-1 | — |
-| GeoJSON | — | FeatureCollection with attributes |
+| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | AutoCAD 2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
+| DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015): the same native drawing, with colour indices |
+| DGN | V7: elements, cells, levels as layers, 2D and 3D | — |
+| PDF | plans as an underlay: vectors, texts, images and PDF layers, scale 1:N read from the sheet | sheets, sheet sets, detail sheets and reports |
+| KML / KMZ | placemarks, folders as layers, GPS tracks, altitude as elevation | folders per layer, WGS84 |
+| Shapefile (zip with DBF, PRJ, CPG; several per zip) | points, lines, polygons, Z variants, attributes in UTF-8 or Latin-1, datum of the .prj | one shapefile per layer and geometry with typed attributes (diameters, flows, pressures), zipped |
+| GeoJSON | every geometry type, the `crs` member honoured | FeatureCollection with attributes |
+| GPX | waypoints as spot heights, tracks and routes as lines | items as waypoints, pipes and outlines as tracks, for staking out |
+| LandXML 1.2 | terrain surfaces (TIN) and survey points | terrain surface, point items for stake-out and pipe networks |
+| LAS 1.0–1.4 | point clouds as terrain | — |
+| EPANET .inp | the network as drawing items | one network per system flow |
+| IFC 4 | — | the site, its terrain and the irrigation system for BIM, georeferenced |
 | CSV, TXT | survey points | report tables, controller programme |
 | XYZ, PNEZD | survey points | — |
 | GeoTIFF | elevation grid or background image | — |
-| JPG, PNG, world file | background image, georeferenced or aligned by 2 points | — |
+| JPG, PNG, world file | background image, georeferenced or aligned by 2 points | PNG of the sheet (96 to 300 dpi) |
 | SVG | — | sheet in millimetres, one group per layer |
-| PDF | — | sheet and reports |
 | XLSX | catalogue prices | reports and catalogue |'''
   ),
   (
+    'AI assistant',
+    '''- Optional (Design → AI assistant, or the command AI): a chat with a model from Anthropic or OpenAI, chosen in its settings, through the user's own API key. Requests go straight from the browser (or the desktop build) to that provider's API, with no server in between; each key is sent only to its own provider.
+- It answers questions about the open project and works with the program's own tools: it lists and reads items, reports, design messages and elevations, looks at pictures of the drawing and the base map, creates, changes, moves and deletes items, sets parameters, the catalogue, the system flows and the quote, runs the design, the analyses, the design assistant's fixes and the optimisation, lays out sprinklers, generates blocks, divides fields, fits pivots, maps vegetation, chooses pumps, places air valves, routes wires and exports files.
+- Control: read only, ask before each change (with Apply and Skip), or apply changes automatically (files and large deletions are always confirmed); the changes of each answer can be undone in one click, and a running answer can be stopped.
+- What is sent, and when: nothing before the user presses Send; then the message, any attached files (images, PDF data sheets, text), the project data the user ticks, the earlier messages of the conversation and the program's instructions; while answering, the results of the tools it uses, pictures included.
+- The provider bills the use to the user's account; the dialog shows the tokens used and a cost estimate at list prices. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.'''
+  ),
+  (
     'Storage, privacy and network access',
-    '''- Autosave in the browser, recent projects, the last 10 versions of every project and recovery on start-up.
-- Save and Open work with `.oci.json` files on the user's disk; nothing is sent to a server and there is no account.
-- The internet is reached only when the user asks: online elevation, base maps (OpenStreetMap and other tile services, or Google Maps with the user's own key) and catalogues loaded by URL.'''
+    '''- Autosave in the browser, recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
+- Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
+- Share by link: the whole project, compressed, travels in the fragment of the address (`#p=…`), which browsers never send to a server; embedded images and results stay out of the link, and the receiver designs again.
+- Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 24 MB, once per version), so the installed app and the site start without a network; a new version downloads in the background and is used from the next start.
+- The internet is reached only when the user asks: base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose). Keys typed by the user go only to their own service.'''
+  ),
+  (
+    'Phone, tablet and field work',
+    '''- A compact layout for phones and tablets.
+- Device GPS (the browser's geolocation): record a walk and finish it as an irrigated area, a closed outline or a line; mark a point at the current position; the distance and bearing to the selected item for staking out.
+- GPX export of every designed item for a GPS receiver, and LandXML points for survey instruments.
+- After the first visit the app starts without a network in the field; maps, online elevation and climate and the AI assistant need one.'''
+  ),
+  (
+    'Command line and engine API',
+    '''- `dart run bin/oci.dart --help`: the commands design, analyze, check, export and bom work on `.oci.json` projects in the Dart VM, without Flutter or a browser, with the same engine as the app.
+- `package:opencadirrigation/core/api.dart` exports the whole public surface of the engine (`lib/core`, plain Dart): projects, the design, reports, exporters, the hydraulic solver, transients, the extended-period simulation, air valves, the layout automation, agronomy, mechanised machines and the file formats.
+- Documented in [docs/API.md]($appRepositoryUrl/blob/main/docs/API.md) (Portuguese: [docs/API.pt-BR.md]($appRepositoryUrl/blob/main/docs/API.pt-BR.md)); every snippet there is run by the tests.'''
   ),
   (
     'Known limitations',
-    '''- Looped mainlines are sized along tree paths (an approximation) and then checked by the full analysis.
-- The DWG writer produces version 2000 (AC1015) files with lines, polylines, circles, arcs, points and texts (hatches and splines are written as outlines and polylines).
-- Steady-state hydraulics: water hammer is a Joukowsky estimate; there is no fertigation design.
-- Valve wiring is conventional (a station conductor per valve and a shared common, 24 V AC solenoids), with routes drawn by the user; two-wire decoder systems are not modelled.
-- Pivots are modelled as machines with span tables and a demand on the mainline, without nozzle-by-nozzle design.
-- No simultaneous editing; projects are shared as `.oci.json` files.'''
+    '''- The transient analysis and the 24-hour simulation work on the mainline of each system flow, with every zone seen as an orifice or a demand at its valve; laterals and drip tapes are not part of the transient model. The water hammer figure of the design step is a Joukowsky estimate.
+- Looped mainlines are sized by repeating the linear programme with the redistributed flows; the final analysis checks the result.
+- Pressure-compensating emitters in grossly undersized networks (flows many times what the pipes can carry) may still keep the solver from converging; the design then reports `not_converged` instead of figures.
+- The terrain triangulation takes at most 12 000 samples: a larger terrain uses a uniform subset (announced once), while inverse-distance interpolation uses every sample.
+- Refused on import: DGN V8, LAZ (compressed LAS), BigTIFF, rasters above 100 million pixels and encrypted PDFs; JPEG 2000 and JBIG2 images inside PDFs are skipped, and scanned plans come in as images, not lines. DWG R13/R14 is read only in part.
+- The DWG export uses colour indices; the DXF 2000 export also carries true colours.
+- The densogram uses one spray profile for every head of the map.
+- Vegetation detection is plain image processing: it needs clear colour imagery, its outlines should be checked, and the imagery's terms of use apply.
+- The AI assistant needs the user's own API key and a network; a model can be wrong, so its answers and changes should be checked (every change can be undone).
+- The automatic copy in the browser keeps projects up to about 3.5 MB compressed; larger projects should be saved as files.
+- No simultaneous editing; projects are shared as `.oci.json` files or by link.
+- Native Android and iOS builds are not built or tested; the web app works on phones and tablets.
+- Projects with hundreds of tapes per zone take a few seconds per zone; flushing is the heaviest step.'''
   ),
 ];
 
@@ -164,6 +233,7 @@ const _deepLinks = [
   ('?tutorial=1', 'opens the interactive tutorial (any step number works)'),
   ('?design=1', 'designs the project on load'),
   ('?lang=<code>', 'interface language for this visit (codes in the language list)'),
+  ('#p=<data>', 'a project shared by link (File → Share by link): it travels compressed inside the address and opens in a new tab; nothing is uploaded'),
 ];
 
 String _examplesTable(String Function(SiteExample) url) {
@@ -196,10 +266,11 @@ String renderLlmsTxt() {
     ..writeln('- [${en.tutorial}]($siteUrl?tutorial=1): a guided tour of every function on a sample project')
     ..writeln('- [Sized example]($siteUrl?design=1): the sample orchard, designed as soon as it opens')
     ..writeln('- [Source code]($appRepositoryUrl): the whole application in Dart and Flutter, MIT licence')
+    ..writeln('- [Engine API]($appRepositoryUrl/blob/main/docs/API.md): the calculation engine as a Dart library, and the command line `bin/oci.dart`')
     ..writeln()
     ..writeln('## Reference')
     ..writeln()
-    ..writeln('- [Complete reference](${siteUrl}llms-full.txt): features, design workflow, hydraulic methods, sizing, catalogues, file formats, examples, deep links, limitations and FAQ in one Markdown file')
+    ..writeln('- [Complete reference](${siteUrl}llms-full.txt): features, design workflow, hydraulic methods, transients, sizing, automatic design, agronomy, catalogues, file formats, the AI assistant, offline and field use, examples, deep links, limitations and FAQ in one Markdown file')
     ..writeln()
     ..writeln('## ${en.examplesTitle}')
     ..writeln()

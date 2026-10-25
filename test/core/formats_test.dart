@@ -563,7 +563,7 @@ void main() {
       final ex = c.exporter();
       const sheet = SheetOptions(page: PageSize.a3, includeReports: true);
       for (final f in DrawingFormat.values) {
-        save('orchard.${f.extension}', ex.exportDrawing(f, sheet: sheet));
+        save(f == DrawingFormat.dxfR12 ? 'orchard_r12.dxf' : 'orchard.${f.extension}', ex.exportDrawing(f, sheet: sheet));
       }
       for (final f in ReportFormat.values) {
         save('orchard_report.${f.extension}', ex.exportReport(f));
@@ -574,9 +574,9 @@ void main() {
       save('catalog_pipes.csv', CatalogIo.exportCsv(c.project.catalog, CatalogGroup.pipes));
       save('catalog.oci.cat', CatalogIo.encodePack(const CatalogPackMeta(id: 'exemplo', brand: 'Exemplo'), c.project.catalog));
 
-      // DXF: every entity the exporter emits reads back with its layer
+      // DXF R12: every primitive the exporter emits reads back with its layer
       final doc = ex.dxfDocument();
-      final dxf = DxfReader.parse(ex.dxf());
+      final dxf = DxfReader.parse(ex.dxfR12());
       expect(dxf.entities.length, doc.entities.length);
       expect(dxf.layers.map((l) => l.name).toSet(), doc.layers.map((l) => l.name).toSet());
       expect(dxf.unitScale, 1);
@@ -589,6 +589,10 @@ void main() {
         }
         if (doc.entities[i].type == 'TEXT') expect(dxf.entities[i].text, doc.entities[i].text);
       }
+      // DXF AutoCAD 2000 (native entities and blocks): in metres, drawing on the same layers
+      final native = DxfReader.parse(ex.dxf());
+      expect(native.unitScale, 1);
+      expect(native.entities.map((e) => e.layer).toSet(), containsAll(doc.entities.map((e) => e.layer).toSet()));
       // DWG: reads back without errors
       final dwg = DwgReader.parse(ex.dwg());
       expect(dwg.warnings.where((w) => w.startsWith('object_error') || w.startsWith('eof') || w.startsWith('handle_mismatch')), isEmpty);
@@ -670,7 +674,8 @@ void main() {
         final doc = ex.dxfDocument();
         final dxfText = ex.dxf();
         File('${dir.path}/${id.name}.dxf').writeAsStringSync(dxfText);
-        expect(DxfReader.parse(dxfText).entities.length, doc.entities.length, reason: id.name);
+        expect(DxfReader.parse(dxfText).entities, isNotEmpty, reason: id.name);
+        expect(DxfReader.parse(ex.dxfR12()).entities.length, doc.entities.length, reason: id.name);
         final dwgBytes = ex.dwg();
         File('${dir.path}/${id.name}.dwg').writeAsBytesSync(dwgBytes);
         final r = DwgReader.parse(dwgBytes);
@@ -689,7 +694,7 @@ void main() {
     });
 
     test('the import filter lists only the supported formats', () {
-      expect(importAccept.split(','), unorderedEquals(['.dxf', '.dwg', '.kml', '.kmz', '.shp', '.zip', '.csv', '.txt', '.xyz', '.pts', '.pnezd', '.jpg', '.jpeg', '.png', '.tif', '.tiff']));
+      expect(importAccept.split(','), unorderedEquals(['.dxf', '.dwg', '.dgn', '.pdf', '.kml', '.kmz', '.shp', '.zip', '.geojson', '.json', '.gpx', '.xml', '.landxml', '.inp', '.las', '.laz', '.csv', '.txt', '.xyz', '.pts', '.pnezd', '.jpg', '.jpeg', '.png', '.tif', '.tiff']));
       final z = ZipDecoder().decodeBytes(fixture('earth_farm.kmz'));
       expect(z.files.map((f) => f.name), contains('doc.kml'));
     });

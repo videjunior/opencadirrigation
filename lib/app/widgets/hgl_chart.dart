@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/results.dart';
 import '../../core/units.dart';
+import '../theme.dart';
 
 /// Hydraulic grade line chart for an ordered list of pipe segments.
 class HglChart extends StatelessWidget {
@@ -65,9 +66,9 @@ class _HglPainter extends CustomPainter {
     Offset pt(double x, double y) => Offset(left + x / xMax * w, top + (1 - (y - yMin) / (yMax - yMin)) * h);
     // axes/grid
     final gridPaint = Paint()
-      ..color = const Color(0xFF2B333C)
+      ..color = Cad.chartGrid
       ..strokeWidth = 1;
-    final txt = TextStyle(color: Colors.white60, fontSize: 10);
+    final txt = TextStyle(color: Cad.fg60, fontSize: 10);
     for (var i = 0; i <= 5; i++) {
       final y = yMin + (yMax - yMin) * i / 5;
       final o = pt(0, y);
@@ -94,7 +95,7 @@ class _HglPainter extends CustomPainter {
         band.lineTo(o.dx, o.dy);
       }
       band.close();
-      canvas.drawPath(band, Paint()..color = const Color(0xFF66BB6A).withValues(alpha: 0.15));
+      canvas.drawPath(band, Paint()..color = Cad.chartHgl.withValues(alpha: 0.15));
     }
     // ground
     final ground = Path()..moveTo(pt(0, elev[0]).dx, pt(0, elev[0]).dy);
@@ -103,7 +104,7 @@ class _HglPainter extends CustomPainter {
       ground.lineTo(o.dx, o.dy);
     }
     canvas.drawPath(ground, Paint()
-      ..color = const Color(0xFF8D6E63)
+      ..color = Cad.chartGround
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke);
     // hgl
@@ -113,7 +114,7 @@ class _HglPainter extends CustomPainter {
       hgl.lineTo(o.dx, o.dy);
     }
     canvas.drawPath(hgl, Paint()
-      ..color = const Color(0xFF42A5F5)
+      ..color = Cad.chartPipe
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke);
     // pressure fill between
@@ -123,8 +124,8 @@ class _HglPainter extends CustomPainter {
       fill.lineTo(o.dx, o.dy);
     }
     fill.close();
-    canvas.drawPath(fill, Paint()..color = const Color(0xFF42A5F5).withValues(alpha: 0.08));
-    final tp = TextPainter(text: TextSpan(text: '$title   $legend   ${u.pressureLabel}', style: const TextStyle(color: Colors.white70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
+    canvas.drawPath(fill, Paint()..color = Cad.chartPipe.withValues(alpha: 0.08));
+    final tp = TextPainter(text: TextSpan(text: '$title   $legend   ${u.pressureLabel}', style: TextStyle(color: Cad.fg70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
     tp.paint(canvas, const Offset(left, 4));
   }
 

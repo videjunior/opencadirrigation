@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-19",
+      "dateModified": "2026-10-25",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ja/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.0.1",
-      "dateModified": "2026-10-19",
+      "softwareVersion": "1.1.0",
+      "dateModified": "2026-10-25",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ja/?tutorial=1",
@@ -256,14 +256,16 @@
       ],
       "keywords": "灌漑設計, 灌漑設計ソフト, オープンソース灌漑ソフト, 灌漑ソフト, 灌漑 CAD, 加圧灌漑, 点滴灌漑, ドリップ灌漑, マイクロスプリンクラー, スプリンクラー設計, センターピボット, 水理計算, 管径計算, 散水均一性, DXF, DWG, 庭園散水, 農業用灌漑, 無料灌漑ソフト",
       "featureList": [
-        "本格的な CAD 作図: 線分、ポリライン、円弧、スプライン、ハッチング、寸法、文字、レイヤー。オブジェクトスナップ、窓選択、グリップ、AutoCAD 風のコマンド（L、PL、C、D、ZE…）に対応。",
-        "水理ネットワーク: 水源、ポンプ、主管、区画バルブ、エミッター付きラテラル、点滴テープと点滴チューブ、フィルター、減圧弁、水道メーター、接続点。ラテラルブロックとスプリンクラーグリッドの自動生成。",
-        "検証済みの水理エンジン: Hazen-Williams 式と Darcy-Weisbach 式、局部損失、エミッター q = k·Hˣ、Global Gradient Algorithm による管網計算（EPANET と同じ手法）、ポンプ特性曲線と運転点、ウォーターハンマーとフラッシング解析。",
-        "自動管径設計: 線形計画法または最大流速法。エミッターの圧力範囲と管の耐圧クラスを守り、管材費とエネルギー費のバランスを取り、テレスコープ管径とローテーションにも対応。",
-        "地形: 等高線、標高点、三角網によるデジタル地形モデル、座標指定でインターネットから取得する標高、縦断面図、地表面上の動水勾配線。",
-        "レポートと部材: 区画、管路、エミッター、均一性（CU、DU、EU）、作物の必要水量、コントローラーのプログラム、継手を含む部材リスト。PDF、Excel、CSV、TXT に出力。",
-        "ファイル交換: DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF、ジオリファレンス画像を読み込み、DXF、DWG、PDF 図面、SVG、KML、KMZ、GeoJSON を書き出し。",
-        "メーカーカタログ: すぐに使える JSON 形式のメーカーカタログ（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit）に加え、ファイルや URL から独自パックも読み込めます。"
+        "本格的な CAD 作図: 線分、ポリライン、円弧、スプライン、ハッチング、寸法、文字、レイヤー、ブロック。座標入力、オブジェクトスナップ、極トラッキング、グリップ、改訂雲マーク、AutoCAD 風のコマンド（L、PL、C、D、ZE…）に対応。",
+        "水理ネットワーク: 水源、定速・可変速ポンプ、主管、区画バルブ、減圧弁、圧力保持弁、流量制御弁、バルブ内蔵型スプリンクラー、エミッター付きラテラル、点滴テープ、フィルター、水道メーター。さらに、スプリンクラーパッケージを備えたセンターピボットとリニアムーブ、ホースリール式自走散水機、地表灌漑。",
+        "検証済みの水理エンジン: Hazen-Williams 式、Darcy-Weisbach 式、Scobey 式、Manning 式、使用した継手から求める局部損失、エミッター q = k·Hˣ、Global Gradient Algorithm による管網計算（EPANET と同じ手法）、NPSH を含むポンプ特性曲線、空気弁を考慮した特性曲線法による過渡解析（ウォーターハンマー）、電力料金を反映した 24 時間シミュレーション。",
+        "自動設計と管径選定: ワンクリックでのラテラルブロックとスプリンクラーグリッドの生成、散水強度をそろえたヘッド配置、流量による区画分け、配管とバルブのルート作成、圃場のブロック分割、圃場に合わせたピボット配置、航空写真からの植生検出。管径は線形計画法により、エミッターの圧力範囲と管の耐圧クラスを守りつつ、管材費とエネルギー費のバランスを取って決定。",
+        "地形・気候・農学: 等高線、標高点、ブレークラインを含む三角網地形モデル、オンライン標高、LAS 点群、勾配図、縦断面図。現地の気候はダウンロードまたは手入力でき、生育段階別の FAO-56 作物、土壌、有効雨量、リーチングから必要水量を算出し、造園の水予算にも対応。",
+        "レポート・図面・部材: 区画、管路、エミッター、均一性（CU、DU、EU）、コントローラーのプログラム、バルブの配線、継手を含む部材リスト、施工費・税・投資回収期間を含む見積書。施工詳細図とグラフ付きの PDF 図面セットを 20 言語のいずれでも作成でき、すべての表を Excel、CSV、TXT に出力。",
+        "ファイル交換: DXF、DWG、PDF 図面、KML/KMZ、シェープファイル、GeoJSON、GPX、LandXML、LAS、DGN、EPANET .inp、CSV/XYZ、GeoTIFF、画像を読み込み、ネイティブの図形要素による DXF 2000（または R12）、DWG、PDF、PNG、SVG、KML/KMZ、GeoJSON、シェープファイル、GPX、LandXML、EPANET .inp、IFC を書き出し。",
+        "メーカーカタログ: すぐに使える JSON 形式のメーカーカタログ（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit）に加え、ファイルや URL から独自パックも読み込めます。",
+        "AI アシスタント: オプション機能で、プロジェクトについて AI に質問したり、プログラム自体のツールを使ってヘッドの配置、図面の変更、設計の実行を任せたりできます。ご自身の Anthropic または OpenAI の API キーを使い、サーバーを介さずブラウザから直接通信します。「送信」を押すまで何も送られず、変更はすべて承認を待って適用され（自動適用も選べます）、元に戻すこともできます。",
+        "オフラインと現地での利用: 初回アクセス後は、パソコン、タブレット、スマートフォンのいずれでもネットワークなしで起動し、ライトテーマとダークテーマを選べます。現地では端末の GPS で歩きながら輪郭や線を記録し、地点をマークし、選択した対象までの距離と方位角を表示して測設に役立てられます。"
       ],
       "about": [
         {
@@ -332,7 +334,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -362,7 +364,7 @@
           "name": "OpenCADIrrigation は無料ですか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "はい。業務・学術・個人のいずれの用途でも無料で、登録も不要です。MIT ライセンスのオープンソースで、ソースコードは GitHub で公開されています。"
+            "text": "はい。業務・学術・個人のいずれの用途でも無料で、登録も不要です。MIT ライセンスのオープンソースで、ソースコードは GitHub で公開されています。オプションの AI アシスタントはご自身の Anthropic または OpenAI のアカウントを使用し、その利用料金はプロバイダーから同アカウントに請求されます。"
           }
         },
         {
@@ -383,10 +385,18 @@
         },
         {
           "@type": "Question",
+          "name": "オフラインでも使えますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "はい、初回アクセス後は使えます。アプリは自身のコピーをブラウザ内に保存するため（約 24 MB、バージョンごとに 1 回）、次回からはインストールしたアプリでもサイトでも、事務所でも現地でも、ネットワークなしで起動します。背景地図、オンラインの標高と気候、URL から読み込むカタログ、AI アシスタントには引き続き接続が必要です。新しいバージョンはバックグラウンドでダウンロードされ、次回の起動から使われます。"
+          }
+        },
+        {
+          "@type": "Question",
           "name": "プロジェクトはクラウドに保存されますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "いいえ。プロジェクトはブラウザ内と、お好きな場所に保管できる .oci.json ファイルに保存されます。インターネットにアクセスするのは、ご要求時のオンライン標高と背景地図だけです。"
+            "text": "いいえ。プロジェクトはブラウザ内と、お好きな場所に保管できる .oci.json ファイルに保存されます。共有リンクはプロジェクトをアドレス自体に格納するため、何もアップロードされません。インターネットにアクセスするのは、ご要求時の背景地図、オンラインの標高と気候、URL から読み込むカタログ、そしてご利用の場合の AI アシスタント（通信先は選択したプロバイダー、Anthropic または OpenAI のみ）だけです。"
           }
         },
         {
@@ -394,7 +404,15 @@
           "name": "水理計算はどのように行われますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "摩擦損失は Hazen-Williams 式または Darcy-Weisbach 式、エミッターは q = k·Hˣ で求め、管網全体を EPANET と同じ Global Gradient Algorithm で解きます。管径はエミッターの圧力範囲内で線形計画法により決定し、均一性（CU、DU、EU）、ウォーターハンマー、フラッシングも確認します。"
+            "text": "摩擦損失は Hazen-Williams 式、Darcy-Weisbach 式、Scobey 式または Manning 式、エミッターは q = k·Hˣ で求め、管網全体を EPANET と同じ Global Gradient Algorithm で解きます。管径はエミッターの圧力範囲と管の耐圧クラスを守るよう線形計画法で決定し、均一性（CU、DU、EU）とフラッシングを確認するほか、特性曲線法による過渡解析（バルブ閉鎖、ポンプ停止、空気弁）と、圧力・エネルギー費の 24 時間シミュレーションも行います。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "AI にプロジェクトの設計を任せられますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "はい、ご希望であれば可能です。オプションの AI アシスタントは、ご自身の API キーで Anthropic または OpenAI のモデルを利用し、サーバーを介さずブラウザから直接呼び出します。プロジェクトに関する質問に答えるほか、スプリンクラーの配置、圃場の分割、図面の変更、設計や自動ツールの実行もでき、変更のたびに確認を求めます（選べば自動で適用）。変更はすべて元に戻せます。「送信」を押すまでは何も送られず、押すとメッセージ、添付したファイル、チェックを入れたプロジェクトデータがそのプロバイダーの API に送られます。利用料金はプロバイダーからご自身のアカウントに請求され、キーは、記憶するよう選ばない限り、そのセッションの間だけメモリに保持されます。"
           }
         },
         {
@@ -402,7 +420,7 @@
           "name": "AutoCAD などの CAD と連携できますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "はい。DXF と DWG（AutoCAD 2000〜2018）の読み込み・書き出しに加え、Google Earth の KML/KMZ、シェープファイル、GeoJSON、SVG、PDF に対応しています。"
+            "text": "はい。AutoCAD 2018 までの DXF と DWG、DGN V7、PDF 図面を読み込み、ネイティブの図形要素（円弧を含むポリライン、ハッチング、スプライン、寸法、属性付きブロック）による DXF 2000、古いソフト向けの DXF R12、DWG 2000 を書き出せます。GIS・測量・BIM 向けには、KML/KMZ、シェープファイル、GeoJSON、GPX、LandXML、EPANET .inp の読み書き、LAS 点群の読み込み、IFC 4 の書き出しにも対応しています。"
           }
         },
         {
@@ -691,14 +709,16 @@
       <section aria-labelledby="oci-features">
         <h2 id="oci-features">OpenCADIrrigation でできること</h2>
         <ul class="grid">
-          <li><h3>本格的な CAD 作図</h3><p>線分、ポリライン、円弧、スプライン、ハッチング、寸法、文字、レイヤー。オブジェクトスナップ、窓選択、グリップ、AutoCAD 風のコマンド（L、PL、C、D、ZE…）に対応。</p></li>
-          <li><h3>水理ネットワーク</h3><p>水源、ポンプ、主管、区画バルブ、エミッター付きラテラル、点滴テープと点滴チューブ、フィルター、減圧弁、水道メーター、接続点。ラテラルブロックとスプリンクラーグリッドの自動生成。</p></li>
-          <li><h3>検証済みの水理エンジン</h3><p>Hazen-Williams 式と Darcy-Weisbach 式、局部損失、エミッター q = k·Hˣ、Global Gradient Algorithm による管網計算（EPANET と同じ手法）、ポンプ特性曲線と運転点、ウォーターハンマーとフラッシング解析。</p></li>
-          <li><h3>自動管径設計</h3><p>線形計画法または最大流速法。エミッターの圧力範囲と管の耐圧クラスを守り、管材費とエネルギー費のバランスを取り、テレスコープ管径とローテーションにも対応。</p></li>
-          <li><h3>地形</h3><p>等高線、標高点、三角網によるデジタル地形モデル、座標指定でインターネットから取得する標高、縦断面図、地表面上の動水勾配線。</p></li>
-          <li><h3>レポートと部材</h3><p>区画、管路、エミッター、均一性（CU、DU、EU）、作物の必要水量、コントローラーのプログラム、継手を含む部材リスト。PDF、Excel、CSV、TXT に出力。</p></li>
-          <li><h3>ファイル交換</h3><p>DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF、ジオリファレンス画像を読み込み、DXF、DWG、PDF 図面、SVG、KML、KMZ、GeoJSON を書き出し。</p></li>
+          <li><h3>本格的な CAD 作図</h3><p>線分、ポリライン、円弧、スプライン、ハッチング、寸法、文字、レイヤー、ブロック。座標入力、オブジェクトスナップ、極トラッキング、グリップ、改訂雲マーク、AutoCAD 風のコマンド（L、PL、C、D、ZE…）に対応。</p></li>
+          <li><h3>水理ネットワーク</h3><p>水源、定速・可変速ポンプ、主管、区画バルブ、減圧弁、圧力保持弁、流量制御弁、バルブ内蔵型スプリンクラー、エミッター付きラテラル、点滴テープ、フィルター、水道メーター。さらに、スプリンクラーパッケージを備えたセンターピボットとリニアムーブ、ホースリール式自走散水機、地表灌漑。</p></li>
+          <li><h3>検証済みの水理エンジン</h3><p>Hazen-Williams 式、Darcy-Weisbach 式、Scobey 式、Manning 式、使用した継手から求める局部損失、エミッター q = k·Hˣ、Global Gradient Algorithm による管網計算（EPANET と同じ手法）、NPSH を含むポンプ特性曲線、空気弁を考慮した特性曲線法による過渡解析（ウォーターハンマー）、電力料金を反映した 24 時間シミュレーション。</p></li>
+          <li><h3>自動設計と管径選定</h3><p>ワンクリックでのラテラルブロックとスプリンクラーグリッドの生成、散水強度をそろえたヘッド配置、流量による区画分け、配管とバルブのルート作成、圃場のブロック分割、圃場に合わせたピボット配置、航空写真からの植生検出。管径は線形計画法により、エミッターの圧力範囲と管の耐圧クラスを守りつつ、管材費とエネルギー費のバランスを取って決定。</p></li>
+          <li><h3>地形・気候・農学</h3><p>等高線、標高点、ブレークラインを含む三角網地形モデル、オンライン標高、LAS 点群、勾配図、縦断面図。現地の気候はダウンロードまたは手入力でき、生育段階別の FAO-56 作物、土壌、有効雨量、リーチングから必要水量を算出し、造園の水予算にも対応。</p></li>
+          <li><h3>レポート・図面・部材</h3><p>区画、管路、エミッター、均一性（CU、DU、EU）、コントローラーのプログラム、バルブの配線、継手を含む部材リスト、施工費・税・投資回収期間を含む見積書。施工詳細図とグラフ付きの PDF 図面セットを 20 言語のいずれでも作成でき、すべての表を Excel、CSV、TXT に出力。</p></li>
+          <li><h3>ファイル交換</h3><p>DXF、DWG、PDF 図面、KML/KMZ、シェープファイル、GeoJSON、GPX、LandXML、LAS、DGN、EPANET .inp、CSV/XYZ、GeoTIFF、画像を読み込み、ネイティブの図形要素による DXF 2000（または R12）、DWG、PDF、PNG、SVG、KML/KMZ、GeoJSON、シェープファイル、GPX、LandXML、EPANET .inp、IFC を書き出し。</p></li>
           <li><h3>メーカーカタログ</h3><p>すぐに使える JSON 形式のメーカーカタログ（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit）に加え、ファイルや URL から独自パックも読み込めます。</p></li>
+          <li><h3>AI アシスタント</h3><p>オプション機能で、プロジェクトについて AI に質問したり、プログラム自体のツールを使ってヘッドの配置、図面の変更、設計の実行を任せたりできます。ご自身の Anthropic または OpenAI の API キーを使い、サーバーを介さずブラウザから直接通信します。「送信」を押すまで何も送られず、変更はすべて承認を待って適用され（自動適用も選べます）、元に戻すこともできます。</p></li>
+          <li><h3>オフラインと現地での利用</h3><p>初回アクセス後は、パソコン、タブレット、スマートフォンのいずれでもネットワークなしで起動し、ライトテーマとダークテーマを選べます。現地では端末の GPS で歩きながら輪郭や線を記録し、地点をマークし、選択した対象までの距離と方位角を表示して測設に役立てられます。</p></li>
         </ul>
       </section>
 
@@ -743,17 +763,21 @@
           <dt>OpenCADIrrigation とは？</dt>
           <dd>OpenCADIrrigation は、加圧灌漑システムを設計するための無料・オープンソースの Web アプリです。水理エンジンを備えた CAD で、ネットワークを配置し、管径を決め、圧力と均一性を確認し、部材リストとレポートを作成します。住宅の庭からセンターピボットまで対応します。</dd>
           <dt>OpenCADIrrigation は無料ですか？</dt>
-          <dd>はい。業務・学術・個人のいずれの用途でも無料で、登録も不要です。MIT ライセンスのオープンソースで、ソースコードは GitHub で公開されています。</dd>
+          <dd>はい。業務・学術・個人のいずれの用途でも無料で、登録も不要です。MIT ライセンスのオープンソースで、ソースコードは GitHub で公開されています。オプションの AI アシスタントはご自身の Anthropic または OpenAI のアカウントを使用し、その利用料金はプロバイダーから同アカウントに請求されます。</dd>
           <dt>どんな人向けですか？</dt>
           <dd>農業用・造園用灌漑の設計者、農学者やエンジニア、機材販売店、教員や学生の方々です。インタラクティブチュートリアルと 15 の完成例があるので、マニュアルを読まずに始められます。</dd>
           <dt>何かをインストールする必要がありますか？</dt>
           <dd>いいえ。パソコン、タブレット、スマートフォンの Chrome、Edge、Firefox、Safari で動作し、専用ウィンドウで開くアプリ（PWA）としてインストールすることもできます。</dd>
+          <dt>オフラインでも使えますか？</dt>
+          <dd>はい、初回アクセス後は使えます。アプリは自身のコピーをブラウザ内に保存するため（約 24 MB、バージョンごとに 1 回）、次回からはインストールしたアプリでもサイトでも、事務所でも現地でも、ネットワークなしで起動します。背景地図、オンラインの標高と気候、URL から読み込むカタログ、AI アシスタントには引き続き接続が必要です。新しいバージョンはバックグラウンドでダウンロードされ、次回の起動から使われます。</dd>
           <dt>プロジェクトはクラウドに保存されますか？</dt>
-          <dd>いいえ。プロジェクトはブラウザ内と、お好きな場所に保管できる .oci.json ファイルに保存されます。インターネットにアクセスするのは、ご要求時のオンライン標高と背景地図だけです。</dd>
+          <dd>いいえ。プロジェクトはブラウザ内と、お好きな場所に保管できる .oci.json ファイルに保存されます。共有リンクはプロジェクトをアドレス自体に格納するため、何もアップロードされません。インターネットにアクセスするのは、ご要求時の背景地図、オンラインの標高と気候、URL から読み込むカタログ、そしてご利用の場合の AI アシスタント（通信先は選択したプロバイダー、Anthropic または OpenAI のみ）だけです。</dd>
           <dt>水理計算はどのように行われますか？</dt>
-          <dd>摩擦損失は Hazen-Williams 式または Darcy-Weisbach 式、エミッターは q = k·Hˣ で求め、管網全体を EPANET と同じ Global Gradient Algorithm で解きます。管径はエミッターの圧力範囲内で線形計画法により決定し、均一性（CU、DU、EU）、ウォーターハンマー、フラッシングも確認します。</dd>
+          <dd>摩擦損失は Hazen-Williams 式、Darcy-Weisbach 式、Scobey 式または Manning 式、エミッターは q = k·Hˣ で求め、管網全体を EPANET と同じ Global Gradient Algorithm で解きます。管径はエミッターの圧力範囲と管の耐圧クラスを守るよう線形計画法で決定し、均一性（CU、DU、EU）とフラッシングを確認するほか、特性曲線法による過渡解析（バルブ閉鎖、ポンプ停止、空気弁）と、圧力・エネルギー費の 24 時間シミュレーションも行います。</dd>
+          <dt>AI にプロジェクトの設計を任せられますか？</dt>
+          <dd>はい、ご希望であれば可能です。オプションの AI アシスタントは、ご自身の API キーで Anthropic または OpenAI のモデルを利用し、サーバーを介さずブラウザから直接呼び出します。プロジェクトに関する質問に答えるほか、スプリンクラーの配置、圃場の分割、図面の変更、設計や自動ツールの実行もでき、変更のたびに確認を求めます（選べば自動で適用）。変更はすべて元に戻せます。「送信」を押すまでは何も送られず、押すとメッセージ、添付したファイル、チェックを入れたプロジェクトデータがそのプロバイダーの API に送られます。利用料金はプロバイダーからご自身のアカウントに請求され、キーは、記憶するよう選ばない限り、そのセッションの間だけメモリに保持されます。</dd>
           <dt>AutoCAD などの CAD と連携できますか？</dt>
-          <dd>はい。DXF と DWG（AutoCAD 2000〜2018）の読み込み・書き出しに加え、Google Earth の KML/KMZ、シェープファイル、GeoJSON、SVG、PDF に対応しています。</dd>
+          <dd>はい。AutoCAD 2018 までの DXF と DWG、DGN V7、PDF 図面を読み込み、ネイティブの図形要素（円弧を含むポリライン、ハッチング、スプライン、寸法、属性付きブロック）による DXF 2000、古いソフト向けの DXF R12、DWG 2000 を書き出せます。GIS・測量・BIM 向けには、KML/KMZ、シェープファイル、GeoJSON、GPX、LandXML、EPANET .inp の読み書き、LAS 点群の読み込み、IFC 4 の書き出しにも対応しています。</dd>
           <dt>対応言語は？</dt>
           <dd>このサイトと同じ 20 言語です（一覧はページ下部）。アプリはコンピューターの言語で開き、「表示 → 言語」からいつでも切り替えられます。</dd>
         </dl>
@@ -762,7 +786,7 @@
       <footer>
         <nav aria-label="言語">言語: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <strong lang="ja" dir="ltr">日本語</strong></nav>
         <p>メーカーカタログやサンプルプロジェクトは、JSON 形式でお送りいただければ OpenCADIrrigation に収録できます。</p>
-        <p class="meta">OpenCADIrrigation 1.0.1 · <a href="https://github.com/videjunior/opencadirrigation">ソースコード（MIT ライセンス）</a> · <time datetime="2026-10-19">2026-10-19</time></p>
+        <p class="meta">OpenCADIrrigation 1.1.0 · <a href="https://github.com/videjunior/opencadirrigation">ソースコード（MIT ライセンス）</a> · <time datetime="2026-10-25">2026-10-25</time></p>
       </footer>
     </div>
   </main>
@@ -793,10 +817,11 @@
         remember();
         landing.className += ' oci-starting';
         status.textContent = "灌漑設計 CAD を読み込み中…";
-        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        // The engine and the app code come from this site and are fetched while the loader runs;
+        // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
         var engine = document.createElement('link');
         engine.rel = 'preconnect';
-        engine.href = 'https://www.gstatic.com';
+        engine.href = 'https://fonts.gstatic.com';
         engine.crossOrigin = '';
         document.head.appendChild(engine);
         var code = document.createElement('link');

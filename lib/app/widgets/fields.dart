@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/units.dart';
+import '../theme.dart';
 
 /// Numeric text field that commits on submit / focus loss.
 class NumField extends StatefulWidget {
@@ -149,7 +150,7 @@ class SpecDropdown<T> extends StatelessWidget {
         isExpanded: true,
         initialValue: v,
         decoration: InputDecoration(labelText: label, isDense: true),
-        style: const TextStyle(fontSize: 12, color: Colors.white),
+        style: TextStyle(fontSize: 12, color: Cad.fg),
         items: [
           if (allowNull) DropdownMenuItem<String?>(value: null, child: Text(nullLabel, style: const TextStyle(fontSize: 12))),
           for (final i in items) DropdownMenuItem<String?>(value: idOf(i), child: Text(labelOf(i), style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
@@ -166,7 +167,7 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 10, bottom: 2),
-    child: Text(text.toUpperCase(), style: const TextStyle(fontSize: 10.5, letterSpacing: 1, color: Colors.white54, fontWeight: FontWeight.bold)),
+    child: Text(text.toUpperCase(), style: TextStyle(fontSize: 10.5, letterSpacing: 1, color: Cad.fg54, fontWeight: FontWeight.bold)),
   );
 }
 
@@ -180,13 +181,13 @@ class KV extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 1.5),
     child: LayoutBuilder(
       builder: (context, box) => Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(child: Text(k, style: const TextStyle(fontSize: 11.5, color: Colors.white60))),
+        Expanded(child: Text(k, style: TextStyle(fontSize: 11.5, color: Cad.fg60))),
         const SizedBox(width: 6),
         // a long value ("15.2 m³/h @ 31.4 m.c.a. (surplus 2.0)") wraps
         // instead of running off a narrow panel
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: box.maxWidth * 0.62),
-          child: Text(v, textAlign: TextAlign.end, style: TextStyle(fontSize: 11.5, color: color ?? Colors.white, fontFamily: 'monospace')),
+          child: Text(v, textAlign: TextAlign.end, style: TextStyle(fontSize: 11.5, color: color ?? Cad.fg, fontFamily: 'monospace')),
         ),
       ]),
     ),

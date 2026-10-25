@@ -194,7 +194,10 @@ class BaseMapLayer extends ChangeNotifier {
 
   /// Fills an XYZ template: `{z}` `{x}` `{y}`, `{-y}` (TMS row, counted
   /// from the south) and `{s}` (subdomain a/b/c, or the letters given as
-  /// `{s:abcd}`).
+  /// `{s:abcd}`); or a WMS GetMap request through the extent of the tile:
+  /// `{bbox}` (or `{bbox-epsg-3857}`) in Web Mercator metres for
+  /// `CRS=EPSG:3857`, `{bbox4326}` in degrees, longitude first, for
+  /// `SRS=EPSG:4326` of WMS 1.1.1 or `CRS=CRS:84`; WIDTH and HEIGHT 256.
   static String customUrl(String template, int z, int x, int y) {
     var u = template.trim();
     final sub = RegExp(r'\{s(?::([a-z0-9]+))?\}').firstMatch(u);
@@ -202,13 +205,29 @@ class BaseMapLayer extends ChangeNotifier {
       final letters = sub.group(1) ?? 'abc';
       u = u.replaceAll(sub.group(0)!, letters[(x + y) % letters.length]);
     }
+    if (u.contains('{bbox')) {
+      const half = 20037508.342789244;
+      final size = 2 * half / (1 << z);
+      final minX = -half + x * size, maxY = half - y * size;
+      String n(double v) => v.toStringAsFixed(3);
+      u = u.replaceAll('{bbox}', '${n(minX)},${n(maxY - size)},${n(minX + size)},${n(maxY)}').replaceAll('{bbox-epsg-3857}', '${n(minX)},${n(maxY - size)},${n(minX + size)},${n(maxY)}');
+      if (u.contains('{bbox4326}')) {
+        final (lat0, lon0) = _latLonOf(x.toDouble(), y + 1.0, z);
+        final (lat1, lon1) = _latLonOf(x + 1.0, y.toDouble(), z);
+        String d(double v) => v.toStringAsFixed(8);
+        u = u.replaceAll('{bbox4326}', '${d(lon0)},${d(lat0)},${d(lon1)},${d(lat1)}');
+      }
+    }
     return u.replaceAll('{z}', '$z').replaceAll('{x}', '$x').replaceAll('{-y}', '${(1 << z) - 1 - y}').replaceAll('{y}', '$y');
   }
 
-  /// A usable template: http(s) with the three tile placeholders.
+  /// A usable template: http(s) with the three tile placeholders, or a WMS
+  /// request with one of the extent placeholders.
   static bool isValidTemplate(String t) {
     final s = t.trim();
-    return s.startsWith(RegExp(r'https?://')) && s.contains('{z}') && s.contains('{x}') && (s.contains('{y}') || s.contains('{-y}'));
+    if (!s.startsWith(RegExp(r'https?://'))) return false;
+    if (s.contains('{bbox}') || s.contains('{bbox-epsg-3857}') || s.contains('{bbox4326}')) return true;
+    return s.contains('{z}') && s.contains('{x}') && (s.contains('{y}') || s.contains('{-y}'));
   }
 
   /// Fixed attribution of each source; the Google maps show the copyright
@@ -689,6 +708,30 @@ class BaseMapLayer extends ChangeNotifier {
     _queue.sort((a, b) => a.priority.compareTo(b.priority));
     _pump();
     return drawn;
+  }
+
+  /// The map of the view of [cam] as a PNG, drawn opaque from the tiles in
+  /// the cache, and the world corners of the image (bottom-left,
+  /// bottom-right, top-right, top-left): what the screen shows, for the plot
+  /// sheet. Null when no tile was drawn.
+  Future<(Uint8List, List<Pt>)?> snapshot(Camera cam, GeoReference g, BaseMapOptions o) async {
+    final w = cam.size.width.round(), h = cam.size.height.round();
+    if (w <= 0 || h <= 0 || o.map == BaseMap.none) return null;
+    final rec = ui.PictureRecorder();
+    final canvas = ui.Canvas(rec);
+    final drawn = paint(canvas, cam, g, BaseMapOptions(o.map, opacity: 1, googleKey: o.googleKey, customUrl: o.customUrl, lang: o.lang, epoch: o.epoch));
+    final pic = rec.endRecording();
+    if (drawn == 0) {
+      pic.dispose();
+      return null;
+    }
+    final img = await pic.toImage(w, h);
+    pic.dispose();
+    final data = await img.toByteData(format: ui.ImageByteFormat.png);
+    img.dispose();
+    if (data == null) return null;
+    final v = cam.visible;
+    return (data.buffer.asUint8List(), [Pt(v.minX, v.minY), Pt(v.maxX, v.minY), Pt(v.maxX, v.maxY), Pt(v.minX, v.maxY)]);
   }
 
   @override

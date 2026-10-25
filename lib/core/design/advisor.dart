@@ -16,6 +16,7 @@ import '../model/project.dart';
 import 'design_check.dart';
 import 'network_builder.dart';
 import 'results.dart';
+import 'valve_in_head.dart';
 
 enum AdviceLevel { error, warning, info }
 
@@ -182,28 +183,36 @@ String adviceCode(String raw) => switch (raw) {
   'lp_loops_approx' => 'looped_mainline',
   'outlet_under_pressure' => 'cannot_meet_pressure_window',
   'mainline_cannot_meet_pressure' => 'valve_pressure_deficit',
+  'pivot_pkg_pressure_deficit' || 'pivot_pkg_regulator_starved' || 'pivot_pkg_low_pressure' || 'pivot_pkg_no_pressure' => 'pivot_pkg_pressure',
+  'pivot_pkg_nozzle_range' || 'pivot_pkg_nozzle_max' || 'pivot_pkg_flow_dev' => 'pivot_pkg_nozzles',
+  'pivot_pkg_no_outlets' || 'pivot_pkg_no_flow' || 'pivot_pkg_gun_undefined' => 'pivot_pkg_setup',
+  'corner_arm_no_path' || 'corner_arm_no_rate' || 'corner_arm_overrun' || 'corner_arm_short' || 'corner_arm_jump' => 'corner_arm',
+  'vri_above_maximum' || 'vri_below_minimum' || 'vri_no_depth' => 'vri_limits',
+  'pivot_elec_drop' || 'pivot_elec_no_towers' || 'pivot_elec_start_drop' => 'pivot_elec_drop',
   _ => raw,
 };
 
 /// Every explanation code (each has `adv.<code>.why` and `adv.<code>.how`).
 const adviceCodes = [
   'no_supply', 'no_valves', 'no_hydraulics', 'unconnected', 'zero_length', 'tiny_segment', 'duplicate_item', 'duplicate_zone_name',
-  'pipes_cross', 'mainline_dead_end', 'zone_dead_end', 'zone_no_emitters', 'area_no_emitters', 'spec_missing', 'supply_no_head',
+  'pipes_cross', 'mainline_dead_end', 'zone_dead_end', 'zone_no_emitters', 'zone_mixed_emitters', 'area_no_emitters', 'spec_missing', 'supply_no_head',
   'looped_mainline', 'no_terrain', 'not_converged', 'cannot_meet_pressure_window', 'outlet_over_pressure', 'velocity_exceeded',
   'pressure_rating_exceeded', 'surge_rating_exceeded', 'valve_flow_out_of_range', 'valve_pressure_deficit', 'pivot_pressure_deficit',
-  'supply_flow_exceeded', 'supply_head_exceeded', 'pump_out_of_range', 'pump_suction_lift', 'zone_overlap', 'lp_infeasible',
+  'supply_flow_exceeded', 'supply_head_exceeded', 'pump_out_of_range', 'pump_suction_lift', 'pump_npsh', 'vfd_target_unreachable', 'vfd_below_min_speed', 'vfd_target_low', 'zone_overlap', 'lp_infeasible',
   'fitting_missing', 'pivot_no_flow', 'pivot_no_end_pressure', 'pivot_app_rate', 'valve_missing',
+  'pivot_pkg_pressure', 'pivot_pkg_nozzles', 'pivot_pkg_setup', 'pivot_pkg_no_drive', 'corner_arm', 'vri_limits', 'pivot_elec_drop',
   'set_velocity', 'set_hours', 'set_economy', 'set_tolerance', 'set_variation', 'set_temperature', 'no_pipes_for_usage', 'supply_limits',
   'valve_not_in_flow', 'flow_empty', 'flow_duration', 'emitter_head_range', 'pump_speed', 'bom_unpriced',
   'elec_no_controller', 'elec_unwired', 'elec_wire_orphan', 'elec_ctrl_unwired', 'elec_no_wires', 'elec_stations', 'elec_voltage', 'elec_simultaneous',
+  'vih_not_in_flow', 'vih_pressure_deficit', 'vih_pressure_high',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
   'no_supply' || 'no_valves' || 'unconnected' || 'zero_length' || 'spec_missing' || 'not_converged' || 'cannot_meet_pressure_window' ||
   'pressure_rating_exceeded' || 'valve_pressure_deficit' || 'pivot_pressure_deficit' || 'supply_flow_exceeded' || 'supply_head_exceeded' ||
-  'pump_out_of_range' || 'pump_suction_lift' || 'zone_no_emitters' || 'valve_missing' || 'pivot_no_flow' || 'pivot_no_end_pressure' ||
-  'no_pipes_for_usage' || 'emitter_head_range' || 'valve_not_in_flow' || 'elec_stations' || 'elec_voltage' => AdviceLevel.error,
-  'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' => AdviceLevel.info,
+  'pump_out_of_range' || 'pump_suction_lift' || 'pump_npsh' || 'zone_no_emitters' || 'valve_missing' || 'pivot_no_flow' || 'pivot_no_end_pressure' ||
+  'no_pipes_for_usage' || 'emitter_head_range' || 'valve_not_in_flow' || 'elec_stations' || 'elec_voltage' || 'vih_pressure_deficit' => AdviceLevel.error,
+  'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 
@@ -248,10 +257,14 @@ List<CheckIssue> checkSettings(Project p) {
   final valves = ents.whereType<ControlValveEntity>().toList();
   final pivots = ents.whereType<PivotEntity>().toList();
   if (p.systemFlows.isNotEmpty) {
-    final ids = {for (final e in ents) e.id};
+    final vih = VihStations.of(p);
+    final ids = {for (final e in ents) e.id, ...vih.heads.keys};
     final inFlow = {for (final f in p.systemFlows) ...f.valveIds};
     final missing = [for (final v in valves) if (!inFlow.contains(v.id)) v.id, for (final v in pivots) if (!inFlow.contains(v.id)) v.id];
     if (missing.isNotEmpty) out.add(CheckIssue('valve_not_in_flow', CheckSeverity.error, entityIds: missing, value: '${missing.length}'));
+    // valve-in-head stations no flow lists run in every flow
+    final loose = vih.unscheduled(p.systemFlows);
+    if (loose.isNotEmpty) out.add(CheckIssue('vih_not_in_flow', CheckSeverity.warning, entityIds: [for (final s in loose) ...vih.heads[s]!], value: '${loose.length}'));
     final empty = [for (final f in p.systemFlows) if (!f.valveIds.any(ids.contains)) f.name];
     if (empty.isNotEmpty) out.add(CheckIssue('flow_empty', CheckSeverity.warning, value: empty.join(', ')));
     final zero = [for (final f in p.systemFlows) if (!(f.durationHours > 0)) f.name];
@@ -399,6 +412,7 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
       return contextId != null && r != null && fittingValve(p, r, contextId) != null ? const [FixKind.resizeValve] : const [];
     case 'valve_pressure_deficit':
     case 'pivot_pressure_deficit':
+    case 'vih_pressure_deficit':
     case 'supply_head_exceeded':
       final fixed = p.entities.whereType<WaterSupplyEntity>().any((s) => !s.calculatePressure);
       return [if (r != null) FixKind.choosePump, if (fixed && code != 'supply_head_exceeded') FixKind.calculateSupply];
@@ -605,8 +619,9 @@ ConnectPlan? connectTarget(Project p, Entity e) {
 bool canConnect(Project p, Entity e) => connectTarget(p, e) != null;
 
 /// Cheapest enabled pipe of the same use that withstands the pressure of
-/// [pipe] (steady, or steady plus water hammer with [surge]) with a bore not
-/// smaller than the current one; null when the catalogue has none.
+/// [pipe] (steady, or steady plus water hammer with [surge]; class derated
+/// for the water temperature) with a bore not smaller than the current one;
+/// null when the catalogue has none.
 PipeSpec? higherClassPipe(Project p, DesignResults r, PipeEntity pipe, {bool surge = false}) {
   final segs = r.pipesByEntity[pipe.id] ?? const <PipeSegmentResult>[];
   var need = 0.0;
@@ -625,7 +640,7 @@ PipeSpec? higherClassPipe(Project p, DesignResults r, PipeEntity pipe, {bool sur
   final usage = pipe.scope == HydraulicScope.zone ? PipeUsage.zone : PipeUsage.mainline;
   PipeSpec? best;
   for (final s in cat.pipesFor(usage)) {
-    if (s.pressureRatingM < need - 1e-6 || s.innerDiameterMm < bore * 0.98 - 1e-9) continue;
+    if (s.ratingAt(p.params.waterTempC) < need - 1e-6 || s.innerDiameterMm < bore * 0.98 - 1e-9) continue;
     if (current != null && s.id == current.id) continue;
     if (best == null || s.costPerM < best.costPerM || (s.costPerM == best.costPerM && s.innerDiameterMm < best.innerDiameterMm)) best = s;
   }
@@ -663,8 +678,10 @@ List<SystemFlow>? splitFlowsPlan(Project p, DesignResults r, WaterSupplyEntity s
       ? [for (final f in flows) ...f.valveIds]
       : [...p.entities.whereType<ControlValveEntity>().map((v) => v.id), ...p.entities.whereType<PivotEntity>().map((v) => v.id)];
   final demand = <String, double>{};
+  // the valve-in-head stations the flows schedule move with them
+  final heads = {for (final e in r.vihStations.entries) if (e.value.scheduled) e.key: e.value.flow};
   for (final id in valveIds.toSet()) {
-    final q = r.zones[id]?.totalFlow ?? r.pivots[id]?.flow;
+    final q = r.zones[id]?.totalFlow ?? r.pivots[id]?.flow ?? heads[id];
     if (q == null) continue;
     if (q > cap + 1e-12) return null;
     demand[id] = q;

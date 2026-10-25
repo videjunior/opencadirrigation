@@ -126,6 +126,16 @@ class GeoReference {
 
   /// UTM coordinates (in this reference's zone/hemisphere) of a local point.
   (double easting, double northing) toUtm(double x, double y) => (x + originEasting, y + originNorthing);
+
+  /// Local drawing coordinates (x, y in metres) of a WGS84 position, in this
+  /// reference's zone and hemisphere convention.
+  (double x, double y) fromLatLon(double lat, double lon) {
+    final u = latLonToUtm(lat, lon, zone: zone);
+    var northing = u.northing;
+    if (north && lat < 0) northing -= 10000000;
+    if (!north && lat >= 0) northing += 10000000;
+    return (u.easting - originEasting, northing - originNorthing);
+  }
   Map<String, dynamic> toJson() => {'zone': zone, 'north': north, 'e0': originEasting, 'n0': originNorthing};
   static GeoReference fromJson(Map<String, dynamic> j) => GeoReference(zone: (j['zone'] as num).toInt(), north: j['north'] as bool? ?? true, originEasting: (j['e0'] as num).toDouble(), originNorthing: (j['n0'] as num).toDouble());
 }

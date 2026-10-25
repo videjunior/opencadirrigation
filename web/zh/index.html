@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-19",
+      "dateModified": "2026-10-25",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/zh/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.0.1",
-      "dateModified": "2026-10-19",
+      "softwareVersion": "1.1.0",
+      "dateModified": "2026-10-25",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/zh/?tutorial=1",
@@ -256,14 +256,16 @@
       ],
       "keywords": "灌溉设计, 灌溉设计软件, 开源灌溉软件, 灌溉软件, 灌溉 CAD, 压力灌溉, 滴灌设计, 微喷灌, 喷灌设计, 中心支轴式喷灌机, 水力计算, 管径计算, 灌水均匀度, DXF, DWG, 园林灌溉, 农业灌溉, 免费灌溉设计软件",
       "featureList": [
-        "完整的 CAD 绘图: 直线、多段线、圆弧、样条曲线、填充、标注、文字和图层，支持对象捕捉、窗口选择、夹点编辑和 AutoCAD 风格的快捷命令（L、PL、C、D、ZE…）。",
-        "水力管网: 水源、水泵、干管、分区阀门、带灌水器的毛管、滴灌带和滴灌管、过滤器、调压阀、水表和节点；毛管组和喷头网格生成器。",
-        "经过验证的水力引擎: Hazen-Williams 和 Darcy-Weisbach 公式、局部损失、灌水器 q = k·Hˣ、采用 Global Gradient Algorithm 求解管网（与 EPANET 相同）、水泵特性曲线与工况点、水锤和冲洗分析。",
-        "自动管径选择: 线性规划或最大流速法，满足灌水器压力范围和管材压力等级，在管道造价与能耗之间权衡，支持变径管段和轮灌组。",
-        "地形: 等高线、高程点、三角网数字地形模型、按坐标从互联网下载高程、纵断面以及地面上方的测压管水头线。",
-        "报告与材料: 分区、管道、灌水器、均匀度（CU、DU、EU）、作物需水量、控制器程序以及含管件的材料清单；可导出 PDF、Excel、CSV 和 TXT。",
-        "文件交换: 导入 DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF 和带地理参考的影像；导出 DXF、DWG、PDF 图纸、SVG、KML、KMZ 和 GeoJSON。",
-        "厂商产品目录: 即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit），也可从文件或 URL 加载您自己的目录包。"
+        "完整的 CAD 绘图: 直线、多段线、圆弧、样条曲线、填充、标注、文字、图层和图块，支持坐标输入、对象捕捉、极轴追踪、夹点编辑、修订云线和 AutoCAD 风格的快捷命令（L、PL、C、D、ZE…）。",
+        "水力管网: 水源、定速和变频水泵、干管、分区阀门、减压阀、持压阀、流量控制阀、阀门内置式喷头、带灌水器的毛管、滴灌带、过滤器和水表，以及中心支轴式和平移式喷灌机（含喷头配置）、卷盘式喷灌机和地面灌溉。",
+        "经过验证的水力引擎: Hazen-Williams、Darcy-Weisbach、Scobey 和 Manning 公式，按所用管件计算的局部损失，灌水器 q = k·Hˣ，采用 Global Gradient Algorithm 求解管网（与 EPANET 相同），含 NPSH 的水泵特性曲线，用特征线法分析水力瞬变（计入排气阀），以及结合电价的 24 小时模拟。",
+        "自动设计与管径选择: 一键生成毛管组和喷头网格，按匹配降水率布置喷头，按流量分区，布设管道和阀门，将田块划分为灌水小区，使喷灌机适配田块，识别航空影像中的植被；管径通过线性规划确定，满足灌水器压力范围和管材压力等级，并在管道造价与能耗之间权衡。",
+        "地形、气候与农艺: 等高线、高程点、含断裂线的三角网数字地形模型、在线高程、LAS 点云、坡度图和纵断面；场地气候可在线下载或手动输入，结合 FAO-56 作物（分生育阶段）、土壤、有效降雨和淋洗计算需水量，另有园林用水预算。",
+        "报告、图纸与材料: 分区、管道、灌水器、均匀度（CU、DU、EU）、控制器程序和阀门布线；含管件的材料清单，以及计入人工、税费和投资回收期的报价；附施工详图和图表的成套 PDF 图纸，可使用 20 种语言中的任意一种；所有表格均可导出为 Excel、CSV 和 TXT。",
+        "文件交换: 导入 DXF、DWG、PDF 图纸、KML/KMZ、Shapefile、GeoJSON、GPX、LandXML、LAS、DGN、EPANET .inp、CSV/XYZ、GeoTIFF 和图像；导出采用原生实体的 DXF 2000（或 R12）、DWG、PDF、PNG、SVG、KML/KMZ、GeoJSON、Shapefile、GPX、LandXML、EPANET .inp 和 IFC。",
+        "厂商产品目录: 即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit），也可从文件或 URL 加载您自己的目录包。",
+        "AI 助手: 可选功能：就项目向 AI 提问，或让它使用程序自身的工具布置喷头、修改图纸并运行设计计算。它使用您自己的 Anthropic 或 OpenAI API 密钥，直接从浏览器连接，中间不经过任何服务器；在您点击“发送”之前不会发送任何内容，每项更改都要经您批准才会应用（如您选择，也可自动应用），并且都可以撤销。",
+        "离线与现场使用: 首次访问后，无论在电脑、平板还是手机上，应用都能在没有网络的情况下启动，并提供浅色和深色主题。在现场，设备 GPS 可边走边记录轮廓和线、标记点位，并显示到所选对象的距离和方位角，便于施工放样。"
       ],
       "about": [
         {
@@ -332,7 +334,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -362,7 +364,7 @@
           "name": "OpenCADIrrigation 免费吗？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "是的。可免费用于专业、学术和个人用途，无需注册。它还以 MIT 许可证开源，源代码发布在 GitHub 上。"
+            "text": "是的。可免费用于专业、学术和个人用途，无需注册。它还以 MIT 许可证开源，源代码发布在 GitHub 上。可选的 AI 助手使用您自己的 Anthropic 或 OpenAI 账户，其使用费用由相应服务商向该账户收取。"
           }
         },
         {
@@ -383,10 +385,18 @@
         },
         {
           "@type": "Question",
+          "name": "可以离线使用吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "可以，只需先访问一次：应用会在浏览器中保存自身的副本（约 24 MB，每个版本只需下载一次），之后无论是启动已安装的应用还是打开网站，都无需网络即可运行，在办公室和现场均可使用。底图、在线高程和气候数据、通过 URL 加载的目录以及 AI 助手仍需联网；新版本会在后台下载，并在下次启动时启用。"
+          }
+        },
+        {
+          "@type": "Question",
           "name": "我的项目会存储在云端吗？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中。只有在线高程和底图会在您请求时访问互联网。"
+            "text": "不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中；分享链接将项目直接包含在网址中，因此不会上传任何内容。只有在您请求时才会访问互联网：底图、在线高程和气候数据、通过 URL 加载的目录，以及（如果您使用的话）AI 助手，它只与您选择的服务商（Anthropic 或 OpenAI）通信。"
           }
         },
         {
@@ -394,7 +404,15 @@
           "name": "水力计算是如何进行的？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "沿程损失采用 Hazen-Williams 或 Darcy-Weisbach 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围内确定，设计还会校核均匀度（CU、DU、EU）、水锤和冲洗。"
+            "text": "沿程损失采用 Hazen-Williams、Darcy-Weisbach、Scobey 或 Manning 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围和管材压力等级内确定，设计还会校核均匀度（CU、DU、EU）和冲洗，用特征线法分析水力瞬变（阀门关闭、停泵、排气阀），并对压力和能耗费用进行 24 小时模拟。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "AI 能替我完成项目设计吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "可以，只要您愿意。可选的 AI 助手通过您自己的 API 密钥使用 Anthropic 或 OpenAI 的模型，直接从您的浏览器调用，中间不经过任何服务器。它能回答有关项目的问题，还能布置喷头、划分田块、修改图纸，并运行设计计算和各项自动工具，每次更改前都会征求您的同意（如您选择，也可自动应用）；所有更改都可以撤销。在您点击“发送”之前不会发送任何内容；点击后，您的消息、附加的文件以及您勾选的项目数据会发送到该服务商的 API。使用费用由该服务商向您的账户收取；除非您选择记住密钥，否则密钥只在本次会话期间保存在内存中。"
           }
         },
         {
@@ -402,7 +420,7 @@
           "name": "能与 AutoCAD 等 CAD 软件配合使用吗？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "可以。支持导入和导出 DXF 与 DWG（AutoCAD 2000 至 2018），以及 Google Earth 的 KML/KMZ、Shapefile、GeoJSON、SVG 和 PDF。"
+            "text": "可以。可导入 AutoCAD 2018 及以下版本的 DXF 和 DWG、DGN V7 以及 PDF 图纸，并可导出采用原生实体（含圆弧的多段线、填充、样条曲线、标注、带属性的图块）的 DXF 2000、适用于旧版程序的 DXF R12 以及 DWG 2000。针对 GIS、测量和 BIM，还可读写 KML/KMZ、Shapefile、GeoJSON、GPX、LandXML 和 EPANET .inp，读取 LAS 点云，并导出 IFC 4。"
           }
         },
         {
@@ -691,14 +709,16 @@
       <section aria-labelledby="oci-features">
         <h2 id="oci-features">OpenCADIrrigation 能做什么</h2>
         <ul class="grid">
-          <li><h3>完整的 CAD 绘图</h3><p>直线、多段线、圆弧、样条曲线、填充、标注、文字和图层，支持对象捕捉、窗口选择、夹点编辑和 AutoCAD 风格的快捷命令（L、PL、C、D、ZE…）。</p></li>
-          <li><h3>水力管网</h3><p>水源、水泵、干管、分区阀门、带灌水器的毛管、滴灌带和滴灌管、过滤器、调压阀、水表和节点；毛管组和喷头网格生成器。</p></li>
-          <li><h3>经过验证的水力引擎</h3><p>Hazen-Williams 和 Darcy-Weisbach 公式、局部损失、灌水器 q = k·Hˣ、采用 Global Gradient Algorithm 求解管网（与 EPANET 相同）、水泵特性曲线与工况点、水锤和冲洗分析。</p></li>
-          <li><h3>自动管径选择</h3><p>线性规划或最大流速法，满足灌水器压力范围和管材压力等级，在管道造价与能耗之间权衡，支持变径管段和轮灌组。</p></li>
-          <li><h3>地形</h3><p>等高线、高程点、三角网数字地形模型、按坐标从互联网下载高程、纵断面以及地面上方的测压管水头线。</p></li>
-          <li><h3>报告与材料</h3><p>分区、管道、灌水器、均匀度（CU、DU、EU）、作物需水量、控制器程序以及含管件的材料清单；可导出 PDF、Excel、CSV 和 TXT。</p></li>
-          <li><h3>文件交换</h3><p>导入 DXF、DWG、KML/KMZ、SHP、CSV/XYZ、GeoTIFF 和带地理参考的影像；导出 DXF、DWG、PDF 图纸、SVG、KML、KMZ 和 GeoJSON。</p></li>
+          <li><h3>完整的 CAD 绘图</h3><p>直线、多段线、圆弧、样条曲线、填充、标注、文字、图层和图块，支持坐标输入、对象捕捉、极轴追踪、夹点编辑、修订云线和 AutoCAD 风格的快捷命令（L、PL、C、D、ZE…）。</p></li>
+          <li><h3>水力管网</h3><p>水源、定速和变频水泵、干管、分区阀门、减压阀、持压阀、流量控制阀、阀门内置式喷头、带灌水器的毛管、滴灌带、过滤器和水表，以及中心支轴式和平移式喷灌机（含喷头配置）、卷盘式喷灌机和地面灌溉。</p></li>
+          <li><h3>经过验证的水力引擎</h3><p>Hazen-Williams、Darcy-Weisbach、Scobey 和 Manning 公式，按所用管件计算的局部损失，灌水器 q = k·Hˣ，采用 Global Gradient Algorithm 求解管网（与 EPANET 相同），含 NPSH 的水泵特性曲线，用特征线法分析水力瞬变（计入排气阀），以及结合电价的 24 小时模拟。</p></li>
+          <li><h3>自动设计与管径选择</h3><p>一键生成毛管组和喷头网格，按匹配降水率布置喷头，按流量分区，布设管道和阀门，将田块划分为灌水小区，使喷灌机适配田块，识别航空影像中的植被；管径通过线性规划确定，满足灌水器压力范围和管材压力等级，并在管道造价与能耗之间权衡。</p></li>
+          <li><h3>地形、气候与农艺</h3><p>等高线、高程点、含断裂线的三角网数字地形模型、在线高程、LAS 点云、坡度图和纵断面；场地气候可在线下载或手动输入，结合 FAO-56 作物（分生育阶段）、土壤、有效降雨和淋洗计算需水量，另有园林用水预算。</p></li>
+          <li><h3>报告、图纸与材料</h3><p>分区、管道、灌水器、均匀度（CU、DU、EU）、控制器程序和阀门布线；含管件的材料清单，以及计入人工、税费和投资回收期的报价；附施工详图和图表的成套 PDF 图纸，可使用 20 种语言中的任意一种；所有表格均可导出为 Excel、CSV 和 TXT。</p></li>
+          <li><h3>文件交换</h3><p>导入 DXF、DWG、PDF 图纸、KML/KMZ、Shapefile、GeoJSON、GPX、LandXML、LAS、DGN、EPANET .inp、CSV/XYZ、GeoTIFF 和图像；导出采用原生实体的 DXF 2000（或 R12）、DWG、PDF、PNG、SVG、KML/KMZ、GeoJSON、Shapefile、GPX、LandXML、EPANET .inp 和 IFC。</p></li>
           <li><h3>厂商产品目录</h3><p>即用的 JSON 厂商目录（Netafim、Rivulis、Jain、Toro、Rain Bird、Nelson、Hunter、NaanDanJain、Senninger、Irritec、Bermad、Schneider、Amanco Wavin、Multilit），也可从文件或 URL 加载您自己的目录包。</p></li>
+          <li><h3>AI 助手</h3><p>可选功能：就项目向 AI 提问，或让它使用程序自身的工具布置喷头、修改图纸并运行设计计算。它使用您自己的 Anthropic 或 OpenAI API 密钥，直接从浏览器连接，中间不经过任何服务器；在您点击“发送”之前不会发送任何内容，每项更改都要经您批准才会应用（如您选择，也可自动应用），并且都可以撤销。</p></li>
+          <li><h3>离线与现场使用</h3><p>首次访问后，无论在电脑、平板还是手机上，应用都能在没有网络的情况下启动，并提供浅色和深色主题。在现场，设备 GPS 可边走边记录轮廓和线、标记点位，并显示到所选对象的距离和方位角，便于施工放样。</p></li>
         </ul>
       </section>
 
@@ -743,17 +763,21 @@
           <dt>OpenCADIrrigation 是什么？</dt>
           <dd>OpenCADIrrigation 是一款用于压力灌溉系统设计的免费开源网页应用：一个带水力引擎的 CAD，可布置管网、选择管径、校核压力和均匀度，并生成材料清单和报告，适用于从住宅花园到中心支轴式喷灌机的各类项目。</dd>
           <dt>OpenCADIrrigation 免费吗？</dt>
-          <dd>是的。可免费用于专业、学术和个人用途，无需注册。它还以 MIT 许可证开源，源代码发布在 GitHub 上。</dd>
+          <dd>是的。可免费用于专业、学术和个人用途，无需注册。它还以 MIT 许可证开源，源代码发布在 GitHub 上。可选的 AI 助手使用您自己的 Anthropic 或 OpenAI 账户，其使用费用由相应服务商向该账户收取。</dd>
           <dt>适合哪些人使用？</dt>
           <dd>农业与园林灌溉设计师、农艺师和工程师、设备经销商、教师和学生。借助交互式教程和 15 个现成示例，无需阅读手册即可上手。</dd>
           <dt>需要安装什么吗？</dt>
           <dd>不需要。它可在电脑、平板和手机上的 Chrome、Edge、Firefox 和 Safari 中运行，也可以安装为在独立窗口中打开的应用（PWA）。</dd>
+          <dt>可以离线使用吗？</dt>
+          <dd>可以，只需先访问一次：应用会在浏览器中保存自身的副本（约 24 MB，每个版本只需下载一次），之后无论是启动已安装的应用还是打开网站，都无需网络即可运行，在办公室和现场均可使用。底图、在线高程和气候数据、通过 URL 加载的目录以及 AI 助手仍需联网；新版本会在后台下载，并在下次启动时启用。</dd>
           <dt>我的项目会存储在云端吗？</dt>
-          <dd>不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中。只有在线高程和底图会在您请求时访问互联网。</dd>
+          <dd>不会。项目保存在您的浏览器中，以及您可以随意存放的 .oci.json 文件中；分享链接将项目直接包含在网址中，因此不会上传任何内容。只有在您请求时才会访问互联网：底图、在线高程和气候数据、通过 URL 加载的目录，以及（如果您使用的话）AI 助手，它只与您选择的服务商（Anthropic 或 OpenAI）通信。</dd>
           <dt>水力计算是如何进行的？</dt>
-          <dd>沿程损失采用 Hazen-Williams 或 Darcy-Weisbach 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围内确定，设计还会校核均匀度（CU、DU、EU）、水锤和冲洗。</dd>
+          <dd>沿程损失采用 Hazen-Williams、Darcy-Weisbach、Scobey 或 Manning 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围和管材压力等级内确定，设计还会校核均匀度（CU、DU、EU）和冲洗，用特征线法分析水力瞬变（阀门关闭、停泵、排气阀），并对压力和能耗费用进行 24 小时模拟。</dd>
+          <dt>AI 能替我完成项目设计吗？</dt>
+          <dd>可以，只要您愿意。可选的 AI 助手通过您自己的 API 密钥使用 Anthropic 或 OpenAI 的模型，直接从您的浏览器调用，中间不经过任何服务器。它能回答有关项目的问题，还能布置喷头、划分田块、修改图纸，并运行设计计算和各项自动工具，每次更改前都会征求您的同意（如您选择，也可自动应用）；所有更改都可以撤销。在您点击“发送”之前不会发送任何内容；点击后，您的消息、附加的文件以及您勾选的项目数据会发送到该服务商的 API。使用费用由该服务商向您的账户收取；除非您选择记住密钥，否则密钥只在本次会话期间保存在内存中。</dd>
           <dt>能与 AutoCAD 等 CAD 软件配合使用吗？</dt>
-          <dd>可以。支持导入和导出 DXF 与 DWG（AutoCAD 2000 至 2018），以及 Google Earth 的 KML/KMZ、Shapefile、GeoJSON、SVG 和 PDF。</dd>
+          <dd>可以。可导入 AutoCAD 2018 及以下版本的 DXF 和 DWG、DGN V7 以及 PDF 图纸，并可导出采用原生实体（含圆弧的多段线、填充、样条曲线、标注、带属性的图块）的 DXF 2000、适用于旧版程序的 DXF R12 以及 DWG 2000。针对 GIS、测量和 BIM，还可读写 KML/KMZ、Shapefile、GeoJSON、GPX、LandXML 和 EPANET .inp，读取 LAS 点云，并导出 IFC 4。</dd>
           <dt>支持哪些语言？</dt>
           <dd>支持 20 种语言，与本网站相同（列表见页面底部）。应用会以您电脑的语言打开，您也可以随时在“视图 → 语言”中切换。</dd>
         </dl>
@@ -762,7 +786,7 @@
       <footer>
         <nav aria-label="语言">语言: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <strong lang="zh-CN" dir="ltr">中文</strong> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>欢迎以 JSON 格式提交厂商产品目录和示例项目，以便收录到 OpenCADIrrigation 中。</p>
-        <p class="meta">OpenCADIrrigation 1.0.1 · <a href="https://github.com/videjunior/opencadirrigation">源代码（MIT 许可证）</a> · <time datetime="2026-10-19">2026-10-19</time></p>
+        <p class="meta">OpenCADIrrigation 1.1.0 · <a href="https://github.com/videjunior/opencadirrigation">源代码（MIT 许可证）</a> · <time datetime="2026-10-25">2026-10-25</time></p>
       </footer>
     </div>
   </main>
@@ -793,10 +817,11 @@
         remember();
         landing.className += ' oci-starting';
         status.textContent = "正在加载灌溉设计 CAD…";
-        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        // The engine and the app code come from this site and are fetched while the loader runs;
+        // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
         var engine = document.createElement('link');
         engine.rel = 'preconnect';
-        engine.href = 'https://www.gstatic.com';
+        engine.href = 'https://fonts.gstatic.com';
         engine.crossOrigin = '';
         document.head.appendChild(engine);
         var code = document.createElement('link');

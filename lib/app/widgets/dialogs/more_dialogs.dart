@@ -22,15 +22,16 @@ import '../../state/workspace.dart';
 import '../dem_view.dart';
 import '../fields.dart';
 import 'catalog_packs_dialog.dart';
+import '../../theme.dart';
 
 Future<void> _show(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<void>(
   context: context,
   builder: (ctx) {
     final compact = MediaQuery.sizeOf(ctx).width < 700;
+    // the content scrolls by itself (see the dialogs.dart helper)
     return AlertDialog(
       title: Text(title, style: const TextStyle(fontSize: 15)),
-      scrollable: compact,
-      content: SizedBox(width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width, child: body),
+      content: SizedBox(width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width, child: compact && body is! ScrollBody ? ScrollBody(child: body) : body),
       actions: actions ?? [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
     );
   },
@@ -56,7 +57,7 @@ Future<void> showArrayDialog(BuildContext context, ProjectController c) {
   final o = ArrayOptions(center: b.isEmpty ? Pt.zero : b.center, dx: b.isEmpty ? 5 : b.width + 2, dy: b.isEmpty ? 5 : b.height + 2);
   return _show(context, c, t('arr.title'), StatefulBuilder(builder: (ctx, setState) {
     return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(t('arr.selection', {'n': '${c.selection.length}'}), style: const TextStyle(fontSize: 11.5, color: Colors.white54)),
+      Text(t('arr.selection', {'n': '${c.selection.length}'}), style: TextStyle(fontSize: 11.5, color: Cad.fg54)),
       SegmentedButton<bool>(segments: [ButtonSegment(value: false, label: Text(t('arr.rect'))), ButtonSegment(value: true, label: Text(t('arr.polar')))], selected: {o.polar}, onSelectionChanged: (v) => setState(() => o.polar = v.first)),
       if (!o.polar) ...[
         _row([
@@ -109,14 +110,14 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
     final dutyHead = pd.head;
     final stat = staticLift(c.project, r, s, duty);
     final others = [for (final d in pumpDuties(r, s.id)) if (d.flowName != pd.flowName) (d.supply.flow, d.head)];
-    final cands = rankPumps(cat, flow: duty.flow, head: dutyHead, staticHead: stat, hoursPerYear: p.hoursPerYear, costPerKwh: p.powerCostPerKwh, otherDuties: others, requireSubmersible: suctionLiftTooDeep(s, duty));
+    final cands = rankPumps(cat, flow: duty.flow, head: dutyHead, staticHead: stat, hoursPerYear: p.hoursPerYear, costPerKwh: p.powerCostPerKwh, otherDuties: others, requireSubmersible: suctionLiftTooDeep(s, duty), mainsHz: p.mainsHz);
     final existing = c.project.entities.whereType<PumpEntity>().toList();
     return SizedBox(
       height: 420,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (supplies.length > 1) SpecDropdown<WaterSupplyEntity>(label: t('pump.supply'), value: supplyId, items: supplies, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => setState(() => supplyId = v ?? supplyId)),
         Text(t('pump.duty', {'q': '${fmt(u.flowFromSi(duty.flow), 1)} ${u.flowLabel}', 'h': '${fmt(u.pressureFromHead(dutyHead), 1)} ${u.pressureLabel}', 's': '${fmt(u.pressureFromHead(stat), 1)} ${u.pressureLabel}'}), style: const TextStyle(fontSize: 12)),
-        Text(t('pump.candidates'), style: const TextStyle(fontSize: 11, color: Colors.white54)),
+        Text(t('pump.candidates'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
         const SizedBox(height: 6),
         Expanded(
           child: SingleChildScrollView(
@@ -129,7 +130,7 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
                 rows: [
                   for (final k in cands)
                     DataRow(
-                      color: k.suitable ? null : WidgetStatePropertyAll(Colors.orange.withValues(alpha: 0.12)),
+                      color: k.suitable ? null : WidgetStatePropertyAll(Cad.caution.withValues(alpha: 0.12)),
                       cells: [
                         DataCell(Text(k.spec.name)),
                         DataCell(Text('${k.parallelCount}')),
@@ -266,7 +267,7 @@ Future<void> showVersionsDialog(BuildContext context, ProjectController c) {
   return _show(context, c, t('ver.title', {'name': c.project.meta.name}), SizedBox(
     height: 300,
     child: versions.isEmpty
-        ? Text(t('ver.none'), style: const TextStyle(fontSize: 12, color: Colors.white70))
+        ? Text(t('ver.none'), style: TextStyle(fontSize: 12, color: Cad.fg70))
         : ListView(children: [
             for (final v in versions)
               ListTile(
@@ -301,7 +302,7 @@ Future<void> showImageGeorefDialog(BuildContext context, ProjectController c) {
   final aspect = e.height / e.width;
   return _show(context, c, t('gimg.title'), StatefulBuilder(builder: (ctx, setState) {
     return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(t('gimg.explain'), style: const TextStyle(fontSize: 11.5, color: Colors.white70)),
+      Text(t('gimg.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
       _row([
         NumField(label: 'X (${u.lengthLabel})', value: u.lengthFromSi(x), onChanged: (v) => x = u.lengthToSi(v)),
         NumField(label: 'Y (${u.lengthLabel})', value: u.lengthFromSi(y), onChanged: (v) => y = u.lengthToSi(v)),
@@ -399,13 +400,16 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
       });
     }
 
-    Widget meta(String sup, String code, void Function(String) onSup, void Function(String) onCode) => Row(mainAxisSize: MainAxisSize.min, children: [
+    // supplier, manufacturer code and the BNDES FINAME code of the item
+    Widget meta(String id, String sup, String code, void Function(String) onSup, void Function(String) onCode) => Row(mainAxisSize: MainAxisSize.min, children: [
       SizedBox(width: 110, child: TextFieldRow(label: '', value: sup, onChanged: onSup)),
       const SizedBox(width: 4),
       SizedBox(width: 90, child: TextFieldRow(label: '', value: code, onChanged: onCode)),
+      const SizedBox(width: 4),
+      SizedBox(width: 90, child: Tooltip(message: t('cat.finameTip'), child: TextFieldRow(key: Key('cat_finame_$id'), label: '', value: cat.finame[id] ?? '', onChanged: (v) => v.trim().isEmpty ? cat.finame.remove(id) : cat.finame[id] = v.trim()))),
     ]);
 
-    Widget pipes() => _catTable([t('cat.use'), t('cat.name'), t('cat.dn'), t('cat.idmm'), t('cat.c'), t('cat.pn'), t('cat.costM', {'c': cur}), '${t('cat.supplier')} / ${t('cat.code')}', ''], [
+    Widget pipes() => _catTable([t('cat.use'), t('cat.name'), t('cat.dn'), t('cat.idmm'), t('cat.c'), t('cat.pn'), t('cat.costM', {'c': cur}), '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''], [
       for (final p in cat.pipes)
         [
           Checkbox(value: p.enabled, onChanged: (v) => setState(() => p.enabled = v ?? true)),
@@ -415,7 +419,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           _num(p.hazenC, (v) => p.hazenC = v),
           _num(p.pressureRatingM, (v) => p.pressureRatingM = v),
           _num(p.costPerM, (v) => p.costPerM = v),
-          meta(p.supplier, p.code, (v) => p.supplier = v, (v) => p.code = v),
+          meta(p.id, p.supplier, p.code, (v) => p.supplier = v, (v) => p.code = v),
           Row(mainAxisSize: MainAxisSize.min, children: [
             dupBtn(() => cat.pipes.add(PipeSpec.fromJson(p.toJson()..['id'] = cat.newId('pipe'))..name = '${p.name} *')),
             removeBtn(p.id, p.name, () => cat.pipes.remove(p)),
@@ -427,7 +431,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
         for (final n in o.nozzles)
           [
             Checkbox(value: o.enabled, onChanged: (v) => setState(() => o.enabled = v ?? true)),
-            identical(n, o.nozzles.first) ? _cell(o.name, (v) => o.name = v) : Text(o.name, style: const TextStyle(fontSize: 11, color: Colors.white38)),
+            identical(n, o.nozzles.first) ? _cell(o.name, (v) => o.name = v) : Text(o.name, style: TextStyle(fontSize: 11, color: Cad.fg38)),
             _cell(n.name, (v) => n.name = v),
             _num(n.curve.k / m3sPerLph, (v) => n.curve = EmitterCurve(k: v * m3sPerLph, x: n.curve.x, radiusA: n.curve.radiusA, radiusB: n.curve.radiusB), decimals: 3),
             _num(n.curve.x, (v) => n.curve = EmitterCurve(k: n.curve.k, x: v, radiusA: n.curve.radiusA, radiusB: n.curve.radiusB), decimals: 3),
@@ -441,6 +445,14 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
             }),
             _num(o.cost, (v) => o.cost = v),
             Row(mainAxisSize: MainAxisSize.min, children: [
+              IconButton(icon: const Icon(Icons.table_chart_outlined, size: 15), tooltip: t('cat.fitTable'), onPressed: () async {
+                final curve = await showNozzleFitDialog(context, c, n);
+                if (curve != null) setState(() => n.curve = curve);
+              }),
+              IconButton(icon: Icon(Icons.blur_circular, size: 15, color: n.profile.isEmpty ? null : Cad.positive), tooltip: t('cat.profile'), onPressed: () async {
+                final prof = await showNozzleProfileDialog(context, c, n);
+                if (prof != null) setState(() => n.profile = prof);
+              }),
               IconButton(icon: const Icon(Icons.add, size: 15), tooltip: t('cat.nozzle'), onPressed: () => setState(() => o.nozzles.add(NozzleSpec(id: '${o.id}_n${o.nozzles.length + 1}', name: '${n.name} *', curve: n.curve, minHeadM: n.minHeadM, maxHeadM: n.maxHeadM, defaultHeadM: n.defaultHeadM, cv: n.cv, arcDeg: n.arcDeg)))),
               if (identical(n, o.nozzles.first)) removeBtn(o.id, o.name, () => cat.outlets.remove(o)) else IconButton(icon: const Icon(Icons.remove, size: 15), onPressed: () => setState(() => o.nozzles.remove(n))),
             ]),
@@ -483,7 +495,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ]),
         ],
     ]);
-    Widget pumps() => _catTable([t('cat.use'), t('cat.name'), t('cat.points'), t('cat.eff'), 'kW', t('cat.submersible'), cur, ''], [
+    Widget pumps() => _catTable([t('cat.use'), t('cat.name'), t('cat.points'), t('cat.eff'), t('cat.effPoints'), t('cat.npshPoints'), 'kW', t('cat.ratedHz'), t('cat.submersible'), cur, ''], [
       for (final p in cat.pumps)
         [
           Checkbox(value: p.enabled, onChanged: (x) => setState(() => p.enabled = x ?? true)),
@@ -496,7 +508,14 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
             }
           }),
           _num(p.efficiency, (x) => p.efficiency = x),
+          _cell(p.efficiencyPoints.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2 * 100, 0)}').join(', '), (x) {
+            p.efficiencyPoints = [for (final (q, e) in CatalogIo.parseCurvePoints(x)) if (e > 0) (q * m3sPerM3h, e > 1 ? e / 100 : e)];
+          }),
+          _cell(p.npshPoints.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2, 1)}').join(', '), (x) {
+            p.npshPoints = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
+          }),
           _num(p.powerKw, (x) => p.powerKw = x),
+          _num(p.ratedHz, (x) => p.ratedHz = x < 0 ? 0 : x),
           Checkbox(value: p.submersible, onChanged: (x) => setState(() => p.submersible = x ?? false)),
           _num(p.cost, (x) => p.cost = x),
           Row(mainAxisSize: MainAxisSize.min, children: [
@@ -505,7 +524,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ]),
         ],
     ]);
-    Widget fittings() => _catTable([t('cat.use'), t('cat.name'), t('cat.kind'), t('cat.dn'), t('cat.size2'), cur, '${t('cat.supplier')} / ${t('cat.code')}', ''], [
+    Widget fittings() => _catTable([t('cat.use'), t('cat.name'), t('cat.kind'), t('cat.dn'), t('cat.size2'), cur, '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''], [
       for (final f in cat.fittings)
         [
           Checkbox(value: f.enabled, onChanged: (x) => setState(() => f.enabled = x ?? true)),
@@ -514,14 +533,14 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           _num(f.sizeMm, (x) => f.sizeMm = x),
           _num(f.size2Mm, (x) => f.size2Mm = x),
           _num(f.cost, (x) => f.cost = x),
-          meta(f.supplier, f.code, (v) => f.supplier = v, (v) => f.code = v),
+          meta(f.id, f.supplier, f.code, (v) => f.supplier = v, (v) => f.code = v),
           Row(mainAxisSize: MainAxisSize.min, children: [
             dupBtn(() => cat.fittings.add(FittingSpec.fromJson(f.toJson()..['id'] = cat.newId('fit'))..name = '${f.name} *')),
             removeBtn(f.id, f.name, () => cat.fittings.remove(f)),
           ]),
         ],
     ]);
-    Widget wires() => _catTable([t('cat.use'), t('cat.name'), t('cat.mm2'), t('cat.ohmKm'), t('cat.costM', {'c': cur}), '${t('cat.supplier')} / ${t('cat.code')}', ''], [
+    Widget wires() => _catTable([t('cat.use'), t('cat.name'), t('cat.mm2'), t('cat.ohmKm'), t('cat.costM', {'c': cur}), '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''], [
       for (final w in cat.wires)
         [
           Checkbox(value: w.enabled, onChanged: (x) => setState(() => w.enabled = x ?? true)),
@@ -534,7 +553,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           }),
           _num(w.ohmPerKm, (x) => w.ohmPerKm = x, decimals: 3),
           _num(w.costPerM, (x) => w.costPerM = x),
-          meta(w.supplier, w.code, (v) => w.supplier = v, (v) => w.code = v),
+          meta(w.id, w.supplier, w.code, (v) => w.supplier = v, (v) => w.code = v),
           Row(mainAxisSize: MainAxisSize.min, children: [
             dupBtn(() => cat.wires.add(WireSpec.fromJson(w.toJson()..['id'] = cat.newId('wire'))..name = '${w.name} *')),
             removeBtn(w.id, w.name, () => cat.wires.remove(w)),
@@ -611,7 +630,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
         ]),
         const SizedBox(height: 6),
         Expanded(child: switch (tab) { CatalogGroup.pipes => pipes(), CatalogGroup.outlets => outlets(), CatalogGroup.tapes => tapes(), CatalogGroup.valves => valves(), CatalogGroup.pumps => pumps(), CatalogGroup.fittings => fittings(), CatalogGroup.wires => wires() }),
-        Text(t('cat.importHint'), style: const TextStyle(fontSize: 10, color: Colors.white38), maxLines: 3, overflow: TextOverflow.ellipsis),
+        Text(t('cat.importHint'), style: TextStyle(fontSize: 10, color: Cad.fg38), maxLines: 3, overflow: TextOverflow.ellipsis),
       ]),
     );
   }), actions: [FilledButton(onPressed: () {
@@ -635,6 +654,146 @@ Widget _catTable(List<String> headers, List<List<Widget>> rows) => SingleChildSc
     ),
   ),
 );
+
+/// Fits the curve of [nozzle] to the rows of its data sheet (pressure, flow
+/// and, optionally, wetted radius per line, pasted from a table or typed);
+/// returns the new curve, or null when cancelled.
+Future<EmitterCurve?> showNozzleFitDialog(BuildContext context, ProjectController c, NozzleSpec nozzle) {
+  final t = c.t;
+  final u = c.project.params.units;
+  var flowUnit = nozzle.curve.flow(nozzle.defaultHeadM) < 0.05 / 3600 ? FlowUnit.lph : u.flow;
+  var text = '';
+  return showDialog<EmitterCurve>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      final fu = Units(flow: flowUnit);
+      final rows = parseNumberRows(text);
+      final fit = EmitterCurve.fitTable([for (final r in rows) if (r.length >= 2) (u.pressureToHead(r[0]), fu.flowToSi(r[1]), r.length >= 3 ? u.lengthToSi(r[2]) : null)]);
+      final ok = fit.isUsable && fit.flowRows >= 2;
+      final compact = MediaQuery.sizeOf(ctx).width < 700;
+      return AlertDialog(
+        title: Text('${t('cat.fitTable')}: ${nozzle.name}', style: const TextStyle(fontSize: 15)),
+                content: SizedBox(
+          width: compact ? MediaQuery.sizeOf(ctx).width - 48 : 480,
+          child: ScrollBody(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('cat.fitHint', {'p': u.pressureLabel, 'q': fu.flowLabel, 'r': u.lengthLabel}), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+            const SizedBox(height: 8),
+            SpecDropdown<FlowUnit>(label: t('cat.fitFlowUnit'), value: flowUnit.name, items: FlowUnit.values, labelOf: (f) => Units(flow: f).flowLabel, idOf: (f) => f.name, onChanged: (v) => setState(() => flowUnit = FlowUnit.values.byName(v!))),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('nozzle_fit_rows'),
+              minLines: 5,
+              maxLines: 10,
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              decoration: InputDecoration(border: const OutlineInputBorder(), isDense: true, hintText: '1,5   32   2,1\n2,0   37   2,3\n2,5   41   2,5'),
+              onChanged: (v) => setState(() => text = v),
+            ),
+            const SizedBox(height: 10),
+            if (!ok)
+              Text(t('cat.fitNeedRows'), style: TextStyle(fontSize: 12, color: Cad.attention))
+            else ...[
+              KV('q = k·Hˣ', 'k ${fmt(fit.curve.k / m3sPerLph, 4)} L/h·m⁻ˣ   x ${fmt(fit.curve.x, 3)}'),
+              KV(t('cat.fitAtDefault', {'p': '${fmt(u.pressureFromHead(nozzle.defaultHeadM), 2)} ${u.pressureLabel}'}), '${fmt(fu.flowFromSi(fit.curve.flow(nozzle.defaultHeadM)), 2)} ${fu.flowLabel}'),
+              KV(t('cat.fitFlowError'), '${fmt(fit.maxFlowError * 100, 1)} %', color: fit.maxFlowError > 0.05 ? Cad.caution : null),
+              if (fit.radiusRows > 0) ...[
+                KV('R = a·Hᵇ', 'a ${fmt(fit.curve.radiusA, 3)}   b ${fmt(fit.curve.radiusB, 3)}'),
+                KV(t('cat.fitRadiusError'), '${fmt(fit.maxRadiusError * 100, 1)} %', color: fit.maxRadiusError > 0.08 ? Cad.caution : null),
+              ] else
+                Text(t('cat.fitKeepRadius'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ],
+          ])),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+          FilledButton(
+            key: const Key('nozzle_fit_apply'),
+            onPressed: !ok ? null : () => Navigator.pop(ctx, fit.radiusRows > 0 ? fit.curve : EmitterCurve(k: fit.curve.k, x: fit.curve.x, radiusA: nozzle.curve.radiusA, radiusB: nozzle.curve.radiusB)),
+            child: Text(t('apply')),
+          ),
+        ],
+      );
+    }),
+  );
+}
+
+/// Puts one device (pressure regulator, on/off valve…) on every selected
+/// lateral and tape, near its inlet.
+Future<void> showDeviceOnLateralsDialog(BuildContext context, ProjectController c) {
+  final t = c.t;
+  final u = c.project.params.units;
+  final specs = c.project.catalog.valves.where((v) => v.enabled && v.kind != ValveKind.control && v.kind != ValveKind.master).toList();
+  final lines = c.editableSelection.where((e) => e is SpraylineEntity || e is TapeEntity).length;
+  var specId = specs.where((v) => v.kind == ValveKind.prv).firstOrNull?.id ?? specs.firstOrNull?.id;
+  var distance = 0.3;
+  return _show(context, c, t('zone.deviceOnLaterals'), StatefulBuilder(builder: (ctx, setState) {
+    return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(t('zone.deviceOnLateralsHint', {'n': '$lines'}), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+      const SizedBox(height: 8),
+      SpecDropdown<ValveSpec>(label: t('props.misc'), value: specId, items: specs, labelOf: (v) => v.name, idOf: (v) => v.id, onChanged: (v) => setState(() => specId = v)),
+      NumField(label: '${t('zone.deviceDistance')} (${u.lengthLabel})', value: u.lengthFromSi(distance), onChanged: (v) => distance = u.lengthToSi(v)),
+    ]);
+  }), actions: [
+    TextButton(onPressed: () => Navigator.pop(context), child: Text(t('cancel'))),
+    FilledButton(
+      key: const Key('device_laterals_ok'),
+      onPressed: lines == 0 ? null : () {
+        Navigator.pop(context);
+        final id = specId;
+        if (id == null || !c.editAllowed()) return;
+        final n = c.insertDeviceOnSelectedLaterals(id, distanceM: distance);
+        c.notify(t('msg.deviceOnLateralsDone', {'n': '$n'}));
+      },
+      child: Text(t('ok')),
+    ),
+  ]);
+}
+
+/// Measured radial profile of [nozzle] from a catch-can test: rows of
+/// distance from the head and depth (or rate); returns the profile scaled
+/// to the wetted radius and the largest depth, an empty list to remove it,
+/// or null when cancelled.
+Future<List<(double, double)>?> showNozzleProfileDialog(BuildContext context, ProjectController c, NozzleSpec nozzle) {
+  final t = c.t;
+  final u = c.project.params.units;
+  var text = nozzle.profile.isEmpty ? '' : [for (final (x, y) in nozzle.profile) '${fmt(u.lengthFromSi(x * nozzle.curve.radius(nozzle.defaultHeadM)), 2)}\t${fmt(y, 3)}'].join('\n');
+  final field = TextEditingController(text: text);
+  return showDialog<List<(double, double)>>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      final rows = [for (final r in parseNumberRows(text)) if (r.length >= 2) (u.lengthToSi(r[0]), r[1])];
+      final prof = profileFromTable(rows);
+      return AlertDialog(
+        title: Text('${t('cat.profile')}: ${nozzle.name}', style: const TextStyle(fontSize: 15)),
+                content: SizedBox(
+          width: 460,
+          child: ScrollBody(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('cat.profileHint', {'r': u.lengthLabel}), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('nozzle_profile_rows'),
+              controller: field,
+              minLines: 6,
+              maxLines: 14,
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true, hintText: '0   4,1\n2   4,4\n4   4,0\n6   3,1\n8   1,8\n10  0,6\n11  0'),
+              onChanged: (v) => setState(() => text = v),
+            ),
+            const SizedBox(height: 8),
+            if (prof == null)
+              Text(t('cat.profileNeed'), style: TextStyle(fontSize: 12, color: Cad.attention))
+            else
+              KV(t('cat.profileStations'), '${prof.length}'),
+          ])),
+        ),
+        actions: [
+          if (nozzle.profile.isNotEmpty) TextButton(onPressed: () => Navigator.pop(ctx, const <(double, double)>[]), child: Text(t('cat.profileRemove'))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+          FilledButton(key: const Key('nozzle_profile_apply'), onPressed: prof == null ? null : () => Navigator.pop(ctx, prof), child: Text(t('apply'))),
+        ],
+      );
+    }),
+  ).whenComplete(field.dispose);
+}
 
 Widget _cell(String v, ValueChanged<String> onChanged) => SizedBox(width: 200, child: TextFieldRow(label: '', value: v, onChanged: onChanged));
 Widget _num(double v, ValueChanged<double> onChanged, {int decimals = 2}) => SizedBox(width: 80, child: NumField(label: '', value: v, decimals: decimals, onChanged: onChanged));

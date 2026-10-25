@@ -7,8 +7,10 @@ import 'dart:math' as math;
 import '../hydraulics/uniformity.dart';
 import '../model/geometry.dart';
 import 'electrical.dart';
+import 'mechanised.dart';
 import 'pivot.dart';
 
+export 'mechanised.dart' show MechanisedResult;
 export 'pivot.dart' show PivotResult, PivotTowerRow, PivotKind;
 
 double _d(Map<String, dynamic> j, String k, [double def = 0]) => (j[k] as num?)?.toDouble() ?? def;
@@ -95,7 +97,7 @@ class OutletResult {
 }
 
 class DeviceResult {
-  DeviceResult({required this.entityId, required this.linkId, required this.flow, required this.headLoss, required this.pumpHead, required this.upstreamPressure, required this.downstreamPressure, this.status = '', this.elevation = 0});
+  DeviceResult({required this.entityId, required this.linkId, required this.flow, required this.headLoss, required this.pumpHead, required this.upstreamPressure, required this.downstreamPressure, this.status = '', this.elevation = 0, this.speedRatio = 1});
   final String entityId;
   final String linkId;
   final double flow;
@@ -109,8 +111,11 @@ class DeviceResult {
   /// pump, the pipe level otherwise.
   final double elevation;
 
-  Map<String, dynamic> toJson() => {'ent': entityId, 'link': linkId, 'q': flow, 'hf': headLoss, 'hp': pumpHead, 'pu': upstreamPressure, 'pd': downstreamPressure, 'st': status, 'z': elevation};
-  static DeviceResult fromJson(Map<String, dynamic> j) => DeviceResult(entityId: j['ent'] as String, linkId: j['link'] as String? ?? '', flow: _d(j, 'q'), headLoss: _d(j, 'hf'), pumpHead: _d(j, 'hp'), upstreamPressure: _d(j, 'pu'), downstreamPressure: _d(j, 'pd'), status: j['st'] as String? ?? '', elevation: _d(j, 'z'));
+  /// Speed ratio of a pump in this flow (a variable-speed drive sets it).
+  final double speedRatio;
+
+  Map<String, dynamic> toJson() => {'ent': entityId, 'link': linkId, 'q': flow, 'hf': headLoss, 'hp': pumpHead, 'pu': upstreamPressure, 'pd': downstreamPressure, 'st': status, 'z': elevation, if (speedRatio != 1) 'n': speedRatio};
+  static DeviceResult fromJson(Map<String, dynamic> j) => DeviceResult(entityId: j['ent'] as String, linkId: j['link'] as String? ?? '', flow: _d(j, 'q'), headLoss: _d(j, 'hf'), pumpHead: _d(j, 'hp'), upstreamPressure: _d(j, 'pu'), downstreamPressure: _d(j, 'pd'), status: j['st'] as String? ?? '', elevation: _d(j, 'z'), speedRatio: (j['n'] as num?)?.toDouble() ?? 1);
 }
 
 class ZoneResult {
@@ -239,8 +244,60 @@ class ValveDuty {
   static ValveDuty fromJson(Map<String, dynamic> j) => ValveDuty(valveId: j['id'] as String, zoneName: j['name'] as String? ?? '', flow: _d(j, 'q'), availableHead: _d(j, 'h'), requiredHead: _d(j, 'hreq'), p: _p(j['p']));
 }
 
+/// A number that may not be finite as JSON (null), as [encodeJson] writes
+/// it anyway.
+double? _jn(double v) => v.isFinite ? v : null;
+
+/// A valve-in-head station (see `valve_in_head.dart`) running in a system
+/// flow: its heads on the mainline, their flow and pressures.
+class VihDuty {
+  VihDuty({required this.stationId, required this.name, required this.heads, required this.flow, required this.minPressure, required this.maxPressure, required this.allowedMin, required this.allowedMax, required this.criticalId, required this.availableHead, required this.requiredHead, required this.elevation, required this.p, this.scheduled = true});
+  final String stationId;
+  final String name;
+
+  /// Heads of the station on the mainline (all of them run together).
+  final int heads;
+
+  /// Flow of the heads at their pressures (m³/s).
+  final double flow;
+
+  /// Lowest and highest pressure at the nozzles (m) and the window every
+  /// head of the station allows (m).
+  final double minPressure;
+  final double maxPressure;
+  final double allowedMin;
+  final double allowedMax;
+
+  /// The head furthest below its nominal pressure: its outlet id, the
+  /// pressure head at its mainline node, the head it needs there (nominal
+  /// pressure plus riser) and the node's elevation (m) and position.
+  final String criticalId;
+  final double availableHead;
+  final double requiredHead;
+  final double elevation;
+  final Pt p;
+
+  /// Whether a system flow lists the station: only then does its need set
+  /// the supply pressure (a station no flow lists runs in every flow, as
+  /// mainline outlets always did).
+  final bool scheduled;
+
+  double get deficit => requiredHead - availableHead;
+  bool get withinWindow => minPressure >= allowedMin - 1e-6 && maxPressure <= allowedMax + 1e-6;
+
+  Map<String, dynamic> toJson() => {
+    'id': stationId, 'name': name, 'n': heads, 'q': flow, 'pmin': _jn(minPressure), 'pmax': _jn(maxPressure), 'lo': _jn(allowedMin), 'hi': _jn(allowedMax),
+    'crit': criticalId, 'h': _jn(availableHead), 'hreq': _jn(requiredHead), 'z': elevation, 'p': _pt(p), if (!scheduled) 'sch': false,
+  };
+  static VihDuty fromJson(Map<String, dynamic> j) => VihDuty(
+    stationId: j['id'] as String, name: j['name'] as String? ?? '', heads: (j['n'] as num?)?.toInt() ?? 0, flow: _d(j, 'q'), minPressure: _d(j, 'pmin', double.nan), maxPressure: _d(j, 'pmax', double.nan),
+    allowedMin: _d(j, 'lo', double.nan), allowedMax: _d(j, 'hi', double.infinity), criticalId: j['crit'] as String? ?? '', availableHead: _d(j, 'h', double.nan), requiredHead: _d(j, 'hreq', double.nan),
+    elevation: _d(j, 'z'), p: _p(j['p']), scheduled: j['sch'] as bool? ?? true,
+  );
+}
+
 class SystemFlowResult {
-  SystemFlowResult({required this.flowId, required this.name, required this.converged, required this.supplies, required this.valves, required this.pipes, required this.devices, required this.warnings, required this.totalFlow, required this.durationHours, this.annualEnergyCost = 0});
+  SystemFlowResult({required this.flowId, required this.name, required this.converged, required this.supplies, required this.valves, required this.pipes, required this.devices, required this.warnings, required this.totalFlow, required this.durationHours, this.annualEnergyCost = 0, this.heads = const []});
   final String flowId;
   final String name;
   final bool converged;
@@ -252,22 +309,49 @@ class SystemFlowResult {
   final double totalFlow;
   final double durationHours;
   final double annualEnergyCost;
+
+  /// Valve-in-head stations running in this flow.
+  final List<VihDuty> heads;
   double get maxDeficit => valves.isEmpty ? 0 : valves.map((v) => v.deficit).reduce((a, b) => a > b ? a : b);
 
   Map<String, dynamic> toJson() => {
     'id': flowId, 'name': name, 'conv': converged, 'supplies': supplies.map((s) => s.toJson()).toList(), 'valves': valves.map((v) => v.toJson()).toList(), 'pipes': pipes.map((p) => p.toJson()).toList(),
-    'devices': devices.map((d) => d.toJson()).toList(), 'warn': warnings, 'q': totalFlow, 'dur': durationHours, 'energy': annualEnergyCost,
+    'devices': devices.map((d) => d.toJson()).toList(), 'warn': warnings, 'q': totalFlow, 'dur': durationHours, 'energy': annualEnergyCost, if (heads.isNotEmpty) 'vih': heads.map((h) => h.toJson()).toList(),
   };
   static SystemFlowResult fromJson(Map<String, dynamic> j) => SystemFlowResult(
     flowId: j['id'] as String, name: j['name'] as String? ?? '', converged: j['conv'] as bool? ?? false,
     supplies: ((j['supplies'] as List?) ?? []).map((s) => SupplyDuty.fromJson(s as Map<String, dynamic>)).toList(), valves: ((j['valves'] as List?) ?? []).map((s) => ValveDuty.fromJson(s as Map<String, dynamic>)).toList(),
     pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSegmentResult.fromJson(p as Map<String, dynamic>)).toList(), devices: ((j['devices'] as List?) ?? []).map((p) => DeviceResult.fromJson(p as Map<String, dynamic>)).toList(),
     warnings: ((j['warn'] as List?) ?? []).cast<String>(), totalFlow: _d(j, 'q'), durationHours: _d(j, 'dur', 1), annualEnergyCost: _d(j, 'energy'),
+    heads: [for (final h in (j['vih'] as List?) ?? const []) VihDuty.fromJson(h as Map<String, dynamic>)],
   );
 }
 
+/// A valve-in-head station over the system flows it runs in
+/// ([DesignResults.vihStations]).
+class VihStationResult {
+  VihStationResult({required this.stationId, required this.name, required this.flowIds, required this.heads, required this.flow, required this.minPressure, required this.maxPressure, required this.allowedMin, required this.allowedMax, required this.worstDeficit, required this.scheduled});
+  final String stationId;
+  final String name;
+
+  /// The flows it runs in, in operating order.
+  final List<String> flowIds;
+
+  /// Heads, the largest flow (m³/s) and the lowest and highest nozzle
+  /// pressure of those flows (m), the window of the heads (m) and the worst
+  /// shortfall below the nominal pressure (m; negative = a margin).
+  final int heads;
+  final double flow;
+  final double minPressure;
+  final double maxPressure;
+  final double allowedMin;
+  final double allowedMax;
+  final double worstDeficit;
+  final bool scheduled;
+}
+
 class BomLine {
-  BomLine({required this.category, required this.description, required this.unit, required this.quantity, required this.unitCost, this.specId, this.code = '', this.supplier = ''});
+  BomLine({required this.category, required this.description, required this.unit, required this.quantity, required this.unitCost, this.specId, this.code = '', this.supplier = '', this.finame = ''});
   final String category;
   final String description;
   final String unit;
@@ -276,10 +360,13 @@ class BomLine {
   final String? specId;
   final String code;
   final String supplier;
+
+  /// BNDES FINAME code of the item ('' = not credentialed).
+  final String finame;
   double get total => quantity * unitCost;
 
-  Map<String, dynamic> toJson() => {'cat': category, 'desc': description, 'unit': unit, 'qty': quantity, 'cost': unitCost, if (specId != null) 'spec': specId, if (code.isNotEmpty) 'code': code, if (supplier.isNotEmpty) 'sup': supplier};
-  static BomLine fromJson(Map<String, dynamic> j) => BomLine(category: j['cat'] as String, description: j['desc'] as String? ?? '', unit: j['unit'] as String? ?? '', quantity: _d(j, 'qty'), unitCost: _d(j, 'cost'), specId: j['spec'] as String?, code: j['code'] as String? ?? '', supplier: j['sup'] as String? ?? '');
+  Map<String, dynamic> toJson() => {'cat': category, 'desc': description, 'unit': unit, 'qty': quantity, 'cost': unitCost, if (specId != null) 'spec': specId, if (code.isNotEmpty) 'code': code, if (supplier.isNotEmpty) 'sup': supplier, if (finame.isNotEmpty) 'finame': finame};
+  static BomLine fromJson(Map<String, dynamic> j) => BomLine(category: j['cat'] as String, description: j['desc'] as String? ?? '', unit: j['unit'] as String? ?? '', quantity: _d(j, 'qty'), unitCost: _d(j, 'cost'), specId: j['spec'] as String?, code: j['code'] as String? ?? '', supplier: j['sup'] as String? ?? '', finame: j['finame'] as String? ?? '');
 }
 
 /// Flushing analysis of a zone: tapes flushed with open ends.
@@ -330,9 +417,18 @@ class DesignResults {
 
   /// Centre pivots / linear moves by entity id.
   final Map<String, PivotResult> pivots = {};
+
+  /// Sprinkler package, timer chart and, when configured, corner arm,
+  /// variable-rate prescription and electrical design of every machine, by
+  /// pivot id.
+  final Map<String, MechanisedResult> mechanised = {};
   final List<SystemFlowResult> systemFlows = [];
   final List<String> messages = [];
   final List<BomLine> bom = [];
+
+  /// The bill of materials split by where it goes: a zone (valve id), the
+  /// mainline (''), a pivot (its id) or the electrical part ('elec').
+  final Map<String, List<BomLine>> bomByZone = {};
   final List<FlushingResult> flushing = [];
   final List<SurgeResult> surge = [];
   final Set<String> unconnected = {};
@@ -383,6 +479,33 @@ class DesignResults {
     return _outletsCache = m;
   }
 
+  /// Valve-in-head stations over the system flows they run in, in the order
+  /// they first run.
+  Map<String, VihStationResult> get vihStations {
+    final by = <String, List<(String, VihDuty)>>{};
+    for (final f in systemFlows) {
+      for (final h in f.heads) {
+        by.putIfAbsent(h.stationId, () => []).add((f.flowId, h));
+      }
+    }
+    return {
+      for (final e in by.entries)
+        e.key: VihStationResult(
+          stationId: e.key,
+          name: e.value.first.$2.name,
+          flowIds: [for (final (f, _) in e.value) f],
+          heads: e.value.fold(0, (m, x) => math.max(m, x.$2.heads)),
+          flow: e.value.fold(0.0, (m, x) => math.max(m, x.$2.flow)),
+          minPressure: e.value.fold(double.infinity, (m, x) => math.min(m, x.$2.minPressure)),
+          maxPressure: e.value.fold(-double.infinity, (m, x) => math.max(m, x.$2.maxPressure)),
+          allowedMin: e.value.first.$2.allowedMin,
+          allowedMax: e.value.first.$2.allowedMax,
+          worstDeficit: e.value.fold(-double.infinity, (m, x) => math.max(m, x.$2.deficit)),
+          scheduled: e.value.first.$2.scheduled,
+        ),
+    };
+  }
+
   /// Drops the by-entity caches after zones/flows were modified.
   void invalidateCaches() {
     _pipesCache = null;
@@ -394,9 +517,11 @@ class DesignResults {
     'method': method,
     'zones': zones.values.map((z) => z.toJson()).toList(),
     if (pivots.isNotEmpty) 'pivots': pivots.values.map((p) => p.toJson()).toList(),
+    if (mechanised.isNotEmpty) 'mech': mechanised.values.map((m) => m.toJson()).toList(),
     'systemFlows': systemFlows.map((f) => f.toJson()).toList(),
     'messages': messages,
     'bom': bom.map((b) => b.toJson()).toList(),
+    if (bomByZone.isNotEmpty) 'bomZones': {for (final e in bomByZone.entries) e.key: e.value.map((b) => b.toJson()).toList()},
     'flushing': flushing.map((f) => f.toJson()).toList(),
     'surge': surge.map((s) => s.toJson()).toList(),
     'unconnected': unconnected.toList(),
@@ -416,9 +541,16 @@ class DesignResults {
       final pr = PivotResult.fromJson(p as Map<String, dynamic>);
       r.pivots[pr.pivotId] = pr;
     }
+    for (final m in (j['mech'] as List?) ?? []) {
+      final mr = MechanisedResult.fromJson(m as Map<String, dynamic>);
+      r.mechanised[mr.pivotId] = mr;
+    }
     r.systemFlows.addAll(((j['systemFlows'] as List?) ?? []).map((f) => SystemFlowResult.fromJson(f as Map<String, dynamic>)));
     r.messages.addAll(((j['messages'] as List?) ?? []).cast<String>());
     r.bom.addAll(((j['bom'] as List?) ?? []).map((b) => BomLine.fromJson(b as Map<String, dynamic>)));
+    for (final e in ((j['bomZones'] as Map?) ?? const {}).entries) {
+      r.bomByZone[e.key as String] = [for (final b in (e.value as List)) BomLine.fromJson(b as Map<String, dynamic>)];
+    }
     r.flushing.addAll(((j['flushing'] as List?) ?? []).map((b) => FlushingResult.fromJson(b as Map<String, dynamic>)));
     r.surge.addAll(((j['surge'] as List?) ?? []).map((b) => SurgeResult.fromJson(b as Map<String, dynamic>)));
     r.unconnected.addAll(((j['unconnected'] as List?) ?? []).cast<String>());

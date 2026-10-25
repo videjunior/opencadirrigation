@@ -14,6 +14,29 @@ import '../units.dart';
 
 enum PipeUsage { lateral, zone, mainline }
 
+/// Share of the nominal pressure rating a thermoplastic pipe keeps at the
+/// water temperature [tempC] (°C): PVC 1.0 up to 25 °C, 0.9 at 30, 0.8 at 35,
+/// 0.7 at 40 and 0.6 at 45 °C (ISO 1452-2 Annex A and the NBR 14312 data
+/// sheets); PE 1.0 up to 20 °C, 0.87 at 30 and 0.74 at 40 °C (ISO 4427-1
+/// Annex A, 50 years); linear in between, held at the last value above the
+/// table. Metals and concrete keep their rating.
+double pipeTemperatureDerating(PipeMaterial material, double tempC) {
+  const pvc = [(25.0, 1.0), (30.0, 0.9), (35.0, 0.8), (40.0, 0.7), (45.0, 0.6)];
+  const pe = [(20.0, 1.0), (30.0, 0.87), (40.0, 0.74)];
+  final table = switch (material) {
+    PipeMaterial.pvc => pvc,
+    PipeMaterial.pehd || PipeMaterial.peld => pe,
+    _ => null,
+  };
+  if (table == null || !tempC.isFinite || tempC <= table.first.$1) return 1.0;
+  for (var i = 1; i < table.length; i++) {
+    final (t0, f0) = table[i - 1];
+    final (t1, f1) = table[i];
+    if (tempC <= t1) return f0 + (f1 - f0) * (tempC - t0) / (t1 - t0);
+  }
+  return table.last.$2;
+}
+
 class PipeSpec {
   PipeSpec({
     required this.id,
@@ -49,6 +72,27 @@ class PipeSpec {
 
   double get innerDiameter => innerDiameterMm / 1000;
   double get roughness => roughnessMm / 1000;
+
+  /// Pressure rating (m) at the water temperature [tempC], after the
+  /// thermoplastic derating ([pipeTemperatureDerating]).
+  double ratingAt(double tempC) => pressureRatingM * pipeTemperatureDerating(material, tempC);
+
+  /// Scobey coefficient Ks of the material (Keller & Bliesner 1990: plastic
+  /// 0.32, aluminium with couplers 0.40, galvanised steel 0.42).
+  double get scobeyKs => switch (material) {
+    PipeMaterial.pvc || PipeMaterial.pehd || PipeMaterial.peld => 0.32,
+    PipeMaterial.aluminium || PipeMaterial.concrete => 0.40,
+    PipeMaterial.steel || PipeMaterial.ductileIron => 0.42,
+  };
+
+  /// Manning n of the material (Chow 1959: plastic 0.009, aluminium 0.011,
+  /// steel 0.012, ductile iron and concrete 0.013).
+  double get manningN => switch (material) {
+    PipeMaterial.pvc || PipeMaterial.pehd || PipeMaterial.peld => 0.009,
+    PipeMaterial.aluminium => 0.011,
+    PipeMaterial.steel => 0.012,
+    PipeMaterial.ductileIron || PipeMaterial.concrete => 0.013,
+  };
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'nominalMm': nominalMm, 'idMm': innerDiameterMm,
@@ -88,11 +132,17 @@ class NozzleSpec {
     this.cv = 0.03,
     this.flowTolBelow = 0.05,
     this.flowTolAbove = 0.05,
-  });
+    List<(double, double)>? profile,
+  }) : profile = profile ?? const [];
   final String id;
   String name;
   EmitterCurve curve;
   double arcDeg;
+
+  /// Measured radial distribution of the water (catch-can test): pairs of
+  /// distance as a fraction of the wetted radius (0–1) and the relative
+  /// depth there; empty = the profile chosen in the densogram.
+  List<(double, double)> profile;
   double minHeadM;
   double maxHeadM;
   double defaultHeadM;
@@ -108,6 +158,7 @@ class NozzleSpec {
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'curve': curve.toJson(), 'arc': arcDeg, 'minH': minHeadM,
     'maxH': maxHeadM, 'defH': defaultHeadM, 'cv': cv, 'tolB': flowTolBelow, 'tolA': flowTolAbove,
+    if (profile.isNotEmpty) 'prof': [for (final (x, y) in profile) [x, y]],
   };
   static NozzleSpec fromJson(Map<String, dynamic> j) => NozzleSpec(
     id: j['id'] as String,
@@ -120,7 +171,22 @@ class NozzleSpec {
     cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
     flowTolBelow: (j['tolB'] as num?)?.toDouble() ?? 0.05,
     flowTolAbove: (j['tolA'] as num?)?.toDouble() ?? 0.05,
+    profile: [for (final e in (j['prof'] as List?) ?? const []) (((e as List)[0] as num).toDouble(), (e[1] as num).toDouble())],
   );
+}
+
+/// Radial profile of a nozzle from a catch-can table: [rows] of (distance
+/// from the head in m, depth or rate in any unit), sorted, scaled to the
+/// largest distance with water (that is the wetted radius) and to the
+/// largest depth; null when fewer than two rows carry water.
+List<(double, double)>? profileFromTable(List<(double, double)> rows) {
+  final pts = [for (final r in rows) if (r.$1 >= 0 && r.$2 >= 0 && r.$1.isFinite && r.$2.isFinite) r]..sort((a, b) => a.$1.compareTo(b.$1));
+  final wet = pts.where((r) => r.$2 > 0).toList();
+  if (wet.length < 2) return null;
+  final radius = pts.where((r) => r.$2 > 0).map((r) => r.$1).reduce(math.max);
+  final top = wet.map((r) => r.$2).reduce(math.max);
+  if (radius <= 0 || top <= 0) return null;
+  return [for (final (d, v) in pts) if (d <= radius) (d / radius, v / top)];
 }
 
 class OutletSpec {
@@ -249,7 +315,11 @@ class TapeSpec {
   );
 }
 
-enum ValveKind { control, prv, isolation, check, backflow, filter, meter, airRelease, other }
+/// Kinds of valves and devices; [master] is the master valve on the
+/// mainline that the controller opens with every zone, [psv] sustains the
+/// pressure upstream of it and [fcv] limits the flow through it (the flow
+/// limiter of a hydrant).
+enum ValveKind { control, prv, isolation, check, backflow, filter, meter, airRelease, other, master, psv, fcv }
 
 class ValveSpec {
   ValveSpec({
@@ -320,7 +390,12 @@ class PumpSpec {
     this.code = '',
     this.powerKw = 0,
     this.submersible = false,
-  }) : curve = PumpCurve.fit(points);
+    this.ratedHz = 0,
+    List<(double, double)>? efficiencyPoints,
+    List<(double, double)>? npshPoints,
+  })  : curve = PumpCurve.fit(points),
+        efficiencyPoints = efficiencyPoints ?? const [],
+        npshPoints = npshPoints ?? const [];
   final String id;
   String name;
   String supplier;
@@ -333,6 +408,15 @@ class PumpSpec {
   /// surface pump draws water up its suction pipe, limited by the NPSH.
   bool submersible;
 
+  /// Mains frequency (Hz) the curve was measured at; 0 = not stated. On
+  /// other mains a fixed-speed motor turns that much slower or faster
+  /// ([mainsSpeedRatio]).
+  double ratedHz;
+
+  /// Speed ratio of a fixed-speed motor of this pump on [mainsHz] mains
+  /// (affinity laws: 60 Hz curves on 50 Hz mains run at 5/6 of the speed).
+  double mainsSpeedRatio(double mainsHz) => ratedHz > 0 && mainsHz > 0 ? mainsHz / ratedHz : 1;
+
   /// (Q m³/s, H m) samples of the manufacturer's curve.
   List<(double, double)> points;
   PumpCurve curve;
@@ -342,11 +426,54 @@ class PumpSpec {
   double cost;
   bool enabled;
 
+  /// (Q m³/s, efficiency 0–1) of the manufacturer's efficiency curve at
+  /// full speed; empty = the single [efficiency].
+  List<(double, double)> efficiencyPoints;
+
+  /// (Q m³/s, NPSH required m) at full speed; empty = no NPSH check beyond
+  /// the practical suction lift.
+  List<(double, double)> npshPoints;
+
   void refit() => curve = PumpCurve.fit(points);
+
+  /// Efficiency at flow [q] and [speed] ratio: the full-speed curve read at
+  /// the homologous flow q/speed (affinity laws keep the efficiency of
+  /// homologous points), else the single value.
+  double efficiencyAt(double q, {double speed = 1}) {
+    if (efficiencyPoints.length < 2) return efficiency;
+    return math.max(0.05, _interp(efficiencyPoints, q / math.max(speed, 0.05)));
+  }
+
+  /// NPSH required (m) at flow [q] and [speed] ratio (NPSHr ∝ n²), or null
+  /// when the curve is unknown.
+  double? npshrAt(double q, {double speed = 1}) {
+    if (npshPoints.isEmpty) return null;
+    final s = math.max(speed, 0.05);
+    return _interp(npshPoints, q / s) * s * s;
+  }
+
+  static double _interp(List<(double, double)> pts, double x) {
+    final p = [...pts]..sort((a, b) => a.$1.compareTo(b.$1));
+    if (p.length == 1 || x <= p.first.$1) return p.first.$2;
+    for (var i = 1; i < p.length; i++) {
+      if (x <= p[i].$1) {
+        final (x0, y0) = p[i - 1];
+        final (x1, y1) = p[i];
+        return x1 > x0 ? y0 + (y1 - y0) * (x - x0) / (x1 - x0) : y1;
+      }
+    }
+    // beyond the last point: extend the last segment (the required NPSH
+    // keeps rising towards run-out)
+    final (x0, y0) = p[p.length - 2];
+    final (x1, y1) = p.last;
+    return x1 > x0 ? y1 + (y1 - y0) * (x - x1) / (x1 - x0) : y1;
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'points': points.map((p) => [p.$1, p.$2]).toList(), 'eff': efficiency,
-    'minQ': minFlow, 'maxQ': maxFlow, 'cost': cost, 'enabled': enabled, if (supplier.isNotEmpty) 'sup': supplier, if (code.isNotEmpty) 'code': code, if (powerKw > 0) 'kw': powerKw, 'sub': submersible,
+    'minQ': minFlow, 'maxQ': maxFlow, 'cost': cost, 'enabled': enabled, if (supplier.isNotEmpty) 'sup': supplier, if (code.isNotEmpty) 'code': code, if (powerKw > 0) 'kw': powerKw, 'sub': submersible, if (ratedHz > 0) 'hz': ratedHz,
+    if (efficiencyPoints.isNotEmpty) 'effPts': [for (final (q, e) in efficiencyPoints) [q, e]],
+    if (npshPoints.isNotEmpty) 'npsh': [for (final (q, n) in npshPoints) [q, n]],
   };
   static PumpSpec fromJson(Map<String, dynamic> j) => PumpSpec(
     id: j['id'] as String,
@@ -356,12 +483,15 @@ class PumpSpec {
     supplier: j['sup'] as String? ?? '',
     code: j['code'] as String? ?? '',
     powerKw: (j['kw'] as num?)?.toDouble() ?? 0,
+    ratedHz: (j['hz'] as num?)?.toDouble() ?? 0,
     points: (j['points'] as List).map((p) => ((p[0] as num).toDouble(), (p[1] as num).toDouble())).toList(),
     efficiency: (j['eff'] as num?)?.toDouble() ?? 0.7,
     minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
     maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
     cost: (j['cost'] as num?)?.toDouble() ?? 0,
     enabled: j['enabled'] as bool? ?? true,
+    efficiencyPoints: [for (final p in (j['effPts'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
+    npshPoints: [for (final p in (j['npsh'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
   );
 }
 
@@ -456,14 +586,20 @@ double copperOhmPerKm(double mm2) => mm2 > 0 ? 18.1 / mm2 : double.infinity;
 double awgMm2(int awg) => math.pi / 4 * math.pow(0.127 * math.pow(92, (36 - awg) / 39), 2);
 
 class Catalog {
-  Catalog({List<PipeSpec>? pipes, List<OutletSpec>? outlets, List<TapeSpec>? tapes, List<ValveSpec>? valves, List<PumpSpec>? pumps, List<FittingSpec>? fittings, List<WireSpec>? wires})
+  Catalog({List<PipeSpec>? pipes, List<OutletSpec>? outlets, List<TapeSpec>? tapes, List<ValveSpec>? valves, List<PumpSpec>? pumps, List<FittingSpec>? fittings, List<WireSpec>? wires, Map<String, String>? finame})
       : pipes = pipes ?? [],
         outlets = outlets ?? [],
         tapes = tapes ?? [],
         valves = valves ?? [],
         pumps = pumps ?? [],
         fittings = fittings ?? [],
-        wires = wires ?? [];
+        wires = wires ?? [],
+        finame = finame ?? {};
+
+  /// Code under which an item is credentialed for financing by the
+  /// Brazilian development bank (BNDES FINAME), by item id; the bill of
+  /// materials and the quote show which part of the purchase it covers.
+  final Map<String, String> finame;
 
   final List<PipeSpec> pipes;
   final List<OutletSpec> outlets;
@@ -540,6 +676,9 @@ class Catalog {
     go(pumps, other.pumps, (p) => p.id);
     go(fittings, other.fittings, (p) => p.id);
     go(wires, other.wires, (p) => p.id);
+    for (final e in other.finame.entries) {
+      if (replace || !finame.containsKey(e.key)) finame[e.key] = e.value;
+    }
     return n;
   }
 
@@ -564,8 +703,10 @@ class Catalog {
     'pumps': pumps.map((p) => p.toJson()).toList(),
     'fittings': fittings.map((p) => p.toJson()).toList(),
     if (wires.isNotEmpty) 'wires': wires.map((p) => p.toJson()).toList(),
+    if (finame.isNotEmpty) 'finame': finame,
   };
   static Catalog fromJson(Map<String, dynamic> j) => Catalog(
+    finame: {for (final e in ((j['finame'] as Map?) ?? const {}).entries) if (e.key is String && e.value is String && (e.value as String).trim().isNotEmpty) e.key as String: (e.value as String).trim()},
     pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSpec.fromJson(p as Map<String, dynamic>)).toList(),
     outlets: ((j['outlets'] as List?) ?? []).map((p) => OutletSpec.fromJson(p as Map<String, dynamic>)).toList(),
     tapes: ((j['tapes'] as List?) ?? []).map((p) => TapeSpec.fromJson(p as Map<String, dynamic>)).toList(),
@@ -666,7 +807,16 @@ class Catalog {
         NozzleSpec(id: 'mpc40', name: n('40 L/h PC (raio 3,5 m)', '40 L/h PC (radius 3.5 m)', '40 L/h PC (radio 3,5 m)'), curve: q(40, 15, 0.05, radiusM: 3.5), minHeadM: 12, maxHeadM: 40, defaultHeadM: 20, cv: 0.05),
         NozzleSpec(id: 'mpc70', name: n('70 L/h PC (raio 4,5 m)', '70 L/h PC (radius 4.5 m)', '70 L/h PC (radio 4,5 m)'), curve: q(70, 15, 0.05, radiusM: 4.5), minHeadM: 12, maxHeadM: 40, defaultHeadM: 20, cv: 0.05),
       ], cost: 3.9),
+      // bubblers flood a tree basin or a planter: pressure compensating, a
+      // short stream, the flows of the usual 0.25 to 2 gpm series
+      OutletSpec(id: 'bubbler_pc', name: n('Borbulhador PC', 'PC bubbler', 'Burbujeador PC'), kind: OutletKind.bubbler, inletMm: 15, riserHeightM: 0.15, nozzles: [
+        NozzleSpec(id: 'b57', name: '57 L/h', curve: q(57, 20, 0.05, radiusM: 0.4), minHeadM: 14, maxHeadM: 60, defaultHeadM: 20, cv: 0.05),
+        NozzleSpec(id: 'b114', name: '114 L/h', curve: q(114, 20, 0.05, radiusM: 0.5), minHeadM: 14, maxHeadM: 60, defaultHeadM: 20, cv: 0.05),
+        NozzleSpec(id: 'b227', name: '227 L/h', curve: q(227, 20, 0.05, radiusM: 0.6), minHeadM: 14, maxHeadM: 60, defaultHeadM: 20, cv: 0.05),
+        NozzleSpec(id: 'b454', name: '454 L/h', curve: q(454, 20, 0.05, radiusM: 0.8), minHeadM: 14, maxHeadM: 60, defaultHeadM: 20, cv: 0.05),
+      ], cost: 1.9),
       OutletSpec(id: 'impact34', name: n('Aspersor de impacto 3/4"', 'Impact sprinkler 3/4"', 'Aspersor de impacto 3/4"'), kind: OutletKind.sprinkler, inletMm: 20, riserHeightM: 1.0, nozzles: [
+        NozzleSpec(id: 'i2.5', name: n('Bocal 2,5 mm (0,46 m³/h, R 10,5 m)', 'Nozzle 2.5 mm (0.46 m³/h, R 10.5 m)', 'Boquilla 2,5 mm (0,46 m³/h, R 10,5 m)'), curve: q(460, 30, 0.5, radiusM: 10.5), minHeadM: 20, maxHeadM: 45, defaultHeadM: 30, cv: 0.03, arcDeg: 360),
         NozzleSpec(id: 'i3.5', name: n('Bocal 3,5 mm (0,9 m³/h, R 12 m)', 'Nozzle 3.5 mm (0.9 m³/h, R 12 m)', 'Boquilla 3,5 mm (0,9 m³/h, R 12 m)'), curve: q(900, 30, 0.5, radiusM: 12), minHeadM: 20, maxHeadM: 45, defaultHeadM: 30, cv: 0.03, arcDeg: 360),
         NozzleSpec(id: 'i4.0', name: n('Bocal 4,0 mm (1,2 m³/h, R 13 m)', 'Nozzle 4.0 mm (1.2 m³/h, R 13 m)', 'Boquilla 4,0 mm (1,2 m³/h, R 13 m)'), curve: q(1200, 30, 0.5, radiusM: 13), minHeadM: 20, maxHeadM: 45, defaultHeadM: 30, cv: 0.03, arcDeg: 360),
         NozzleSpec(id: 'i4.5', name: n('Bocal 4,5 mm (1,5 m³/h, R 14 m)', 'Nozzle 4.5 mm (1.5 m³/h, R 14 m)', 'Boquilla 4,5 mm (1,5 m³/h, R 14 m)'), curve: q(1500, 30, 0.5, radiusM: 14), minHeadM: 20, maxHeadM: 45, defaultHeadM: 30, cv: 0.03, arcDeg: 360),
@@ -677,16 +827,16 @@ class Catalog {
         NozzleSpec(id: 'g18', name: n('Bocal 18 mm (25 m³/h, R 40 m)', 'Nozzle 18 mm (25 m³/h, R 40 m)', 'Boquilla 18 mm (25 m³/h, R 40 m)'), curve: q(25000, 45, 0.5, radiusM: 40), minHeadM: 35, maxHeadM: 80, defaultHeadM: 45, cv: 0.03),
       ], cost: 420.0),
       OutletSpec(id: 'rotor', name: n('Rotor de jardim 1/2"', 'Turf rotor 1/2"', 'Rotor de jardín 1/2"'), kind: OutletKind.sprinkler, inletMm: 15, riserHeightM: 0.1, nozzles: [
-        NozzleSpec(id: 'r1.5', name: '#1.5 (0,35 m³/h, R 8 m)', curve: q(350, 25, 0.5, radiusM: 8), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 360),
-        NozzleSpec(id: 'r3', name: '#3 (0,70 m³/h, R 10 m)', curve: q(700, 25, 0.5, radiusM: 10), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 360),
-        NozzleSpec(id: 'r3_180', name: '#3 180° (0,35 m³/h, R 10 m)', curve: q(350, 25, 0.5, radiusM: 10), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 180),
-        NozzleSpec(id: 'r3_90', name: '#3 90° (0,18 m³/h, R 10 m)', curve: q(180, 25, 0.5, radiusM: 10), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 90),
+        NozzleSpec(id: 'r1.5', name: n('#1.5 (0,35 m³/h, R 8 m)', '#1.5 (0.35 m³/h, R 8 m)', '#1.5 (0,35 m³/h, R 8 m)'), curve: q(350, 25, 0.5, radiusM: 8), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 360),
+        NozzleSpec(id: 'r3', name: n('#3 (0,70 m³/h, R 10 m)', '#3 (0.70 m³/h, R 10 m)', '#3 (0,70 m³/h, R 10 m)'), curve: q(700, 25, 0.5, radiusM: 10), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 360),
+        NozzleSpec(id: 'r3_180', name: n('#3 180° (0,35 m³/h, R 10 m)', '#3 180° (0.35 m³/h, R 10 m)', '#3 180° (0,35 m³/h, R 10 m)'), curve: q(350, 25, 0.5, radiusM: 10), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 180),
+        NozzleSpec(id: 'r3_90', name: n('#3 90° (0,18 m³/h, R 10 m)', '#3 90° (0.18 m³/h, R 10 m)', '#3 90° (0,18 m³/h, R 10 m)'), curve: q(180, 25, 0.5, radiusM: 10), minHeadM: 17, maxHeadM: 45, defaultHeadM: 25, cv: 0.03, arcDeg: 90),
       ], cost: 45.0),
       OutletSpec(id: 'spray', name: n('Spray pop-up 4"', 'Pop-up spray 4"', 'Difusor emergente 4"'), kind: OutletKind.sprinkler, inletMm: 15, nozzles: [
-        NozzleSpec(id: 's12', name: '12F (0,60 m³/h, R 3,7 m)', curve: q(600, 20, 0.5, radiusM: 3.7), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 360),
-        NozzleSpec(id: 's12h', name: '12H (0,30 m³/h, R 3,7 m)', curve: q(300, 20, 0.5, radiusM: 3.7), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 180),
-        NozzleSpec(id: 's12q', name: '12Q (0,15 m³/h, R 3,7 m)', curve: q(150, 20, 0.5, radiusM: 3.7), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 90),
-        NozzleSpec(id: 's15', name: '15F (0,84 m³/h, R 4,6 m)', curve: q(840, 20, 0.5, radiusM: 4.6), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 360),
+        NozzleSpec(id: 's12', name: n('12F (0,60 m³/h, R 3,7 m)', '12F (0.60 m³/h, R 3.7 m)', '12F (0,60 m³/h, R 3,7 m)'), curve: q(600, 20, 0.5, radiusM: 3.7), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 360),
+        NozzleSpec(id: 's12h', name: n('12H (0,30 m³/h, R 3,7 m)', '12H (0.30 m³/h, R 3.7 m)', '12H (0,30 m³/h, R 3,7 m)'), curve: q(300, 20, 0.5, radiusM: 3.7), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 180),
+        NozzleSpec(id: 's12q', name: n('12Q (0,15 m³/h, R 3,7 m)', '12Q (0.15 m³/h, R 3.7 m)', '12Q (0,15 m³/h, R 3,7 m)'), curve: q(150, 20, 0.5, radiusM: 3.7), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 90),
+        NozzleSpec(id: 's15', name: n('15F (0,84 m³/h, R 4,6 m)', '15F (0.84 m³/h, R 4.6 m)', '15F (0,84 m³/h, R 4,6 m)'), curve: q(840, 20, 0.5, radiusM: 4.6), minHeadM: 10, maxHeadM: 30, defaultHeadM: 20, cv: 0.04, arcDeg: 360),
       ], cost: 12.0),
       OutletSpec(id: 'demand', name: n('Ponto de demanda', 'Demand point', 'Punto de demanda'), kind: OutletKind.demandPoint, inletMm: 50, nozzles: [
         NozzleSpec(id: 'd5', name: '5 m³/h @ 20 m', curve: q(5000, 20, 0.0), minHeadM: 20, maxHeadM: 80, defaultHeadM: 20, cv: 0, flowTolAbove: 0.5, flowTolBelow: 0.5),
@@ -712,9 +862,15 @@ class Catalog {
       ValveSpec(id: 'ev80', name: n('Válvula hidráulica 3"', 'Hydraulic valve 3"', 'Válvula hidráulica 3"'), kind: ValveKind.control, sizeMm: 80, loss: kv(4.5, 80), minFlow: 5 * m3sPerM3h, maxFlow: 80 * m3sPerM3h, cost: 900),
       ValveSpec(id: 'ev100', name: n('Válvula hidráulica 4"', 'Hydraulic valve 4"', 'Válvula hidráulica 4"'), kind: ValveKind.control, sizeMm: 100, loss: kv(4.0, 100), minFlow: 10 * m3sPerM3h, maxFlow: 140 * m3sPerM3h, cost: 1500),
       ValveSpec(id: 'ev150', name: n('Válvula hidráulica 6"', 'Hydraulic valve 6"', 'Válvula hidráulica 6"'), kind: ValveKind.control, sizeMm: 150, loss: kv(3.5, 150), minFlow: 25 * m3sPerM3h, maxFlow: 300 * m3sPerM3h, cost: 2800),
+      ValveSpec(id: 'mv25', name: n('Válvula mestra 1"', 'Master valve 1"', 'Válvula maestra 1"'), kind: ValveKind.master, sizeMm: 25, loss: kv(6.0, 25), minFlow: 0.2 * m3sPerM3h, maxFlow: 6 * m3sPerM3h, cost: 120),
+      ValveSpec(id: 'mv50', name: n('Válvula mestra 2"', 'Master valve 2"', 'Válvula maestra 2"'), kind: ValveKind.master, sizeMm: 50, loss: kv(5.0, 50), minFlow: 2 * m3sPerM3h, maxFlow: 30 * m3sPerM3h, cost: 380),
       ValveSpec(id: 'prv50', name: n('Válvula reguladora de pressão 2"', 'Pressure reducing valve 2"', 'Válvula reguladora de presión 2"'), kind: ValveKind.prv, sizeMm: 50, loss: kv(3.0, 50), maxFlow: 30 * m3sPerM3h, cost: 650, defaultSettingM: 25),
       ValveSpec(id: 'prv80', name: n('Válvula reguladora de pressão 3"', 'Pressure reducing valve 3"', 'Válvula reguladora de presión 3"'), kind: ValveKind.prv, sizeMm: 80, loss: kv(3.0, 80), maxFlow: 80 * m3sPerM3h, cost: 1200, defaultSettingM: 30),
       ValveSpec(id: 'prv100', name: n('Válvula reguladora de pressão 4"', 'Pressure reducing valve 4"', 'Válvula reguladora de presión 4"'), kind: ValveKind.prv, sizeMm: 100, loss: kv(3.0, 100), maxFlow: 140 * m3sPerM3h, cost: 2100, defaultSettingM: 30),
+      ValveSpec(id: 'psv50', name: n('Válvula sustentadora de pressão 2"', 'Pressure sustaining valve 2"', 'Válvula sostenedora de presión 2"'), kind: ValveKind.psv, sizeMm: 50, loss: kv(3.0, 50), maxFlow: 30 * m3sPerM3h, cost: 650, defaultSettingM: 20),
+      ValveSpec(id: 'psv80', name: n('Válvula sustentadora de pressão 3"', 'Pressure sustaining valve 3"', 'Válvula sostenedora de presión 3"'), kind: ValveKind.psv, sizeMm: 80, loss: kv(3.0, 80), maxFlow: 80 * m3sPerM3h, cost: 1200, defaultSettingM: 20),
+      ValveSpec(id: 'fcv50', name: n('Hidrante com limitador de vazão 2"', 'Hydrant with flow limiter 2"', 'Hidrante con limitador de caudal 2"'), kind: ValveKind.fcv, sizeMm: 50, loss: kv(3.5, 50), maxFlow: 30 * m3sPerM3h, cost: 700),
+      ValveSpec(id: 'fcv80', name: n('Hidrante com limitador de vazão 3"', 'Hydrant with flow limiter 3"', 'Hidrante con limitador de caudal 3"'), kind: ValveKind.fcv, sizeMm: 80, loss: kv(3.5, 80), maxFlow: 80 * m3sPerM3h, cost: 1300),
       ValveSpec(id: 'gate50', name: n('Registro gaveta 2"', 'Gate valve 2"', 'Válvula de compuerta 2"'), kind: ValveKind.isolation, sizeMm: 50, loss: kv(0.2, 50), maxFlow: 40 * m3sPerM3h, cost: 90),
       ValveSpec(id: 'gate80', name: n('Registro gaveta 3"', 'Gate valve 3"', 'Válvula de compuerta 3"'), kind: ValveKind.isolation, sizeMm: 80, loss: kv(0.2, 80), maxFlow: 90 * m3sPerM3h, cost: 220),
       ValveSpec(id: 'gate100', name: n('Registro gaveta 4"', 'Gate valve 4"', 'Válvula de compuerta 4"'), kind: ValveKind.isolation, sizeMm: 100, loss: kv(0.2, 100), maxFlow: 150 * m3sPerM3h, cost: 420),

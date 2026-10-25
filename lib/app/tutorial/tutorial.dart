@@ -17,6 +17,7 @@ import '../../core/units.dart';
 import '../io/prefs.dart';
 import '../state/controller.dart';
 import '../widgets/reports_panel.dart';
+import '../theme.dart';
 
 /// Global anchors for the widgets highlighted by the tutorial.
 class TutorialTargets {
@@ -1444,7 +1445,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     final cardH = math.min(compact ? 300.0 : 440.0, size.height - 24);
     final card = Material(
       elevation: 12,
-      color: const Color(0xFF232A31),
+      color: Cad.raised,
       borderRadius: BorderRadius.circular(10),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: cardW, maxHeight: cardH),
@@ -1455,10 +1456,10 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Expanded(child: Text('${step.chapter.isEmpty ? '' : '${step.chapter} · '}${tutorialText('step', lang).replaceAll('{i}', '${t.index + 1}').replaceAll('{n}', '${t.steps.length}')}', style: const TextStyle(fontSize: 10.5, color: Colors.white54, letterSpacing: 1), overflow: TextOverflow.ellipsis)),
+                Expanded(child: Text('${step.chapter.isEmpty ? '' : '${step.chapter} · '}${tutorialText('step', lang).replaceAll('{i}', '${t.index + 1}').replaceAll('{n}', '${t.steps.length}')}', style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1), overflow: TextOverflow.ellipsis)),
                 Tooltip(
                   message: tutorialText(t.autoAdvance ? 'autoOn' : 'autoOff', lang),
-                  child: InkWell(key: const Key('tut_auto'), onTap: () => t.setAutoAdvance(!t.autoAdvance), borderRadius: BorderRadius.circular(12), child: Padding(padding: const EdgeInsets.all(4), child: Icon(t.autoAdvance ? Icons.fast_forward : Icons.pause_circle_outline, size: 16, color: t.autoAdvance ? const Color(0xFF66BB6A) : Colors.white54))),
+                  child: InkWell(key: const Key('tut_auto'), onTap: () => t.setAutoAdvance(!t.autoAdvance), borderRadius: BorderRadius.circular(12), child: Padding(padding: const EdgeInsets.all(4), child: Icon(t.autoAdvance ? Icons.fast_forward : Icons.pause_circle_outline, size: 16, color: t.autoAdvance ? Cad.ok : Cad.fg54))),
                 ),
                 Tooltip(
                   message: tutorialText('skipAll', lang),
@@ -1468,21 +1469,21 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
               const SizedBox(height: 2),
               Text(step.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
-              Flexible(child: SingleChildScrollView(child: Text(step.body, style: const TextStyle(fontSize: 12.5, height: 1.45, color: Color(0xFFDDE3E8))))),
+              Flexible(child: SingleChildScrollView(child: Text(step.body, style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText)))),
               if (step.action != null) ...[
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: (done ? const Color(0xFF66BB6A) : const Color(0xFF42A5F5)).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: (done ? const Color(0xFF66BB6A) : const Color(0xFF42A5F5)).withValues(alpha: 0.5))),
+                  decoration: BoxDecoration(color: (done ? Cad.ok : Cad.accent).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: (done ? Cad.ok : Cad.accent).withValues(alpha: 0.5))),
                   child: Row(children: [
-                    Icon(done ? Icons.check_circle : Icons.touch_app_outlined, size: 16, color: done ? const Color(0xFF66BB6A) : const Color(0xFF42A5F5)),
+                    Icon(done ? Icons.check_circle : Icons.touch_app_outlined, size: 16, color: done ? Cad.ok : Cad.accent),
                     const SizedBox(width: 6),
                     Expanded(child: Text(done ? tutorialText(t.autoAdvance && !t.isLast ? 'doneNext' : 'done', lang) : '${tutorialText('action', lang)}: ${step.action}', style: const TextStyle(fontSize: 12))),
                   ]),
                 ),
               ],
               const SizedBox(height: 8),
-              LinearProgressIndicator(value: (t.index + 1) / t.steps.length, minHeight: 3, backgroundColor: Colors.white12),
+              LinearProgressIndicator(value: (t.index + 1) / t.steps.length, minHeight: 3, backgroundColor: Cad.fg12),
               const SizedBox(height: 8),
               OverflowBar(
                 alignment: MainAxisAlignment.end,
@@ -1490,7 +1491,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                 spacing: 2,
                 overflowSpacing: 4,
                 children: [
-                  TextButton(key: const Key('tut_skip_all'), onPressed: t.skip, style: TextButton.styleFrom(foregroundColor: Colors.white60, visualDensity: VisualDensity.compact), child: Text(tutorialText('skipAll', lang), style: const TextStyle(fontSize: 12))),
+                  TextButton(key: const Key('tut_skip_all'), onPressed: t.skip, style: TextButton.styleFrom(foregroundColor: Cad.fg60, visualDensity: VisualDensity.compact), child: Text(tutorialText('skipAll', lang), style: const TextStyle(fontSize: 12))),
                   if (step.demo != null)
                     TextButton.icon(key: const Key('tut_demo'), onPressed: () => step.demo!(_ctx), style: TextButton.styleFrom(visualDensity: VisualDensity.compact), icon: const Icon(Icons.play_circle_outline, size: 16), label: Text(tutorialText('demo', lang), style: const TextStyle(fontSize: 12))),
                   TextButton(key: const Key('tut_prev'), onPressed: t.index > 0 ? t.prev : null, style: TextButton.styleFrom(visualDensity: VisualDensity.compact), child: Text(tutorialText('prev', lang), style: const TextStyle(fontSize: 12))),
@@ -1536,7 +1537,7 @@ class _SpotlightPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final full = Path()..addRect(Offset.zero & size);
-    final backdrop = Paint()..color = Colors.black.withValues(alpha: 0.5);
+    final backdrop = Paint()..color = Cad.scrim;
     if (target == null) {
       canvas.drawPath(full, backdrop);
       return;
@@ -1545,11 +1546,11 @@ class _SpotlightPainter extends CustomPainter {
     final holePath = Path()..addRRect(hole);
     canvas.drawPath(Path.combine(PathOperation.difference, full, holePath), backdrop);
     canvas.drawRRect(hole, Paint()
-      ..color = const Color(0xFF42A5F5)
+      ..color = Cad.accent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2);
     canvas.drawRRect(hole.inflate(4), Paint()
-      ..color = const Color(0xFF42A5F5).withValues(alpha: 0.35)
+      ..color = Cad.accent.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));

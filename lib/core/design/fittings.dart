@@ -37,7 +37,10 @@ String genericFittingName(FittingKind k, double sizeMm, double size2Mm, String F
 
 /// Selects the fittings of a built network. [specOf] gives the pipe spec of
 /// a link (after sizing). Returns BOM lines grouped by catalog item.
-FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? Function(GLink) specOf, {required String Function(String key) t}) {
+///
+/// With [zone] only the fittings of that zone (a valve id; '' for the
+/// mainline) are selected, for the materials of each sector.
+FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? Function(GLink) specOf, {required String Function(String key) t, String? zone}) {
   final cat = project.catalog;
   final params = project.params;
   final needs = <String, (FittingNeed, double)>{};
@@ -62,6 +65,7 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
   final lateralEntities = <String>{for (final e in project.entities) if (e is SpraylineEntity || e is TapeEntity) e.id};
 
   for (final n in model.nodes.values) {
+    if (zone != null && (n.zoneId ?? '') != zone) continue;
     final pipes = n.links.where((l) => l.kind == GLinkKind.pipe && sizeOf(l) > 0).toList();
     final mains = pipes.where((l) => !lateralEntities.contains(l.entityId)).toList();
     final laterals = pipes.where((l) => lateralEntities.contains(l.entityId)).toList();
@@ -171,8 +175,10 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
   }
   GNode? nodeAt(Pt p, HydraulicScope s) => nodeOfPt['${p.x.toStringAsFixed(3)}|${p.y.toStringAsFixed(3)}|${s.name}'];
   bool connectsToMain(GNode? n, String self) => n != null && n.links.any((l) => l.kind == GLinkKind.pipe && l.entityId != self && !lateralEntities.contains(l.entityId));
+  final zoneOfEntity = <String, String>{for (final l in model.links) l.entityId: l.zoneId ?? ''};
   for (final e in project.entities) {
     if (model.unconnectedEntities.contains(e.id)) continue;
+    if (zone != null && (zoneOfEntity[e.id] ?? '') != zone) continue;
     switch (e) {
       case SpraylineEntity s:
         final links = model.links.where((l) => l.entityId == s.id);
@@ -234,7 +240,7 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
     if (cur != null) {
       cur.quantity += qty;
     } else {
-      byItem[f.id] = BomLine(category: category(n.kind), description: f.name, unit: 'un', quantity: qty, unitCost: f.cost, specId: f.id, code: f.code, supplier: f.supplier);
+      byItem[f.id] = BomLine(category: category(n.kind), description: f.name, unit: 'un', quantity: qty, unitCost: f.cost, specId: f.id, code: f.code, supplier: f.supplier, finame: cat.finame[f.id] ?? '');
     }
   }
   for (final l in byItem.values) {

@@ -1,18 +1,25 @@
 /// Pure-Dart writer for AutoCAD DWG files in the R2000 (AC1015) format.
 ///
-/// Produces a minimal but complete drawing database: the standard control
-/// tables (layers, linetypes, text style, viewport, appid, dimension style),
-/// the named-object dictionaries with layouts, model and paper space, and the
-/// entities of a [DxfDocument] (LINE, LWPOLYLINE, CIRCLE, ARC, POINT, TEXT).
-/// The byte layout follows the Open Design Alliance specification; field
-/// order and default values were checked against files written by AutoCAD and
-/// verified with LibreDWG (`dwgread`, `dwg2dxf`) and with [DwgReader].
+/// Produces a complete drawing database: the standard control tables
+/// (layers with their colour, state and linetype, linetypes with dashes,
+/// text style, viewport, appid, dimension styles), the named-object
+/// dictionaries with layouts, model and paper space, block definitions with
+/// their attribute definitions, and the native entities of a [CadDrawing]:
+/// LINE, LWPOLYLINE (with arcs), CIRCLE, ARC, POINT, TEXT, MTEXT, SPLINE,
+/// HATCH, SOLID, INSERT with ATTRIBs, DIMENSION (aligned, angular, radius,
+/// diameter, ordinate) with its anonymous block, and LEADER. R2000 colours
+/// are colour indices only (true colours came with AutoCAD 2004).
+/// The byte layout follows the Open Design Alliance specification as
+/// LibreDWG implements it; field order and default values were checked
+/// against files written by AutoCAD and verified with LibreDWG (`dwgread`,
+/// `dwg2dxf`) and with [DwgReader].
 library;
 
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../model/geometry.dart';
+import 'cad_drawing.dart';
 import 'dxf.dart';
 
 // --------------------------------------------------------------------- bits
@@ -260,8 +267,13 @@ List<int> _cp1252Encode(String s) {
   for (final r in s.runes) {
     if (r < 0x80 || (r >= 0xA0 && r <= 0xFF)) {
       out.add(r);
+    } else if (special[r] != null) {
+      out.add(special[r]!);
+    } else if (r <= 0xFFFF) {
+      // outside the code page: the \U+XXXX notation CAD programs read in R2000 files
+      out.addAll('\\U+${r.toRadixString(16).toUpperCase().padLeft(4, '0')}'.codeUnits);
     } else {
-      out.add(special[r] ?? 0x3F);
+      out.add(0x3F);
     }
   }
   return out;
@@ -326,18 +338,79 @@ class _Obj {
 
 // -------------------------------------------------------------------- writer
 
-/// Writes a [DxfDocument] as an AutoCAD 2000 DWG.
+/// An entity placed in model space or in a block: its handle, and for a
+/// block reference the handles of its attributes and of their SEQEND.
+class _Placed {
+  _Placed(this.e, this.handle);
+  final CadEntity e;
+  final int handle;
+  final List<int> attribs = [];
+  int seqend = 0;
+}
+
+/// Where an entity sits: owner (null in model space, where entmode says
+/// it) and its neighbours in the owner's entity chain.
+class _Link {
+  const _Link({this.owner, this.prev = 0, this.next = 0});
+  final int? owner;
+  final int prev, next;
+  int get entmode => owner == null ? 2 : 0;
+}
+
+/// Writes a [CadDrawing] (or the primitives of a [DxfDocument]) as an
+/// AutoCAD 2000 DWG.
 class DwgWriter {
-  DwgWriter._(this.doc, this.now);
-  final DxfDocument doc;
+  DwgWriter._(this.d, this.now);
+  final CadDrawing d;
   final DateTime now;
 
   final List<_Obj> _objects = [];
   final Map<String, int> _layerHandles = {};
+  final Map<String, int> _ltypeHandles = {};
+  final Map<String, int> _dimstyleHandles = {};
+  final Map<String, int> _blockHandles = {};
   int _nextHandle = _H.firstFree;
   late Bounds _bounds;
 
-  static Uint8List write(DxfDocument doc, {DateTime? now}) => DwgWriter._(doc, now ?? DateTime.now())._build();
+  /// The native drawing of the AutoCAD 2000 export (see `cad_export.dart`).
+  static Uint8List writeDrawing(CadDrawing d, {DateTime? now}) => DwgWriter._(d, now ?? DateTime.now())._build();
+
+  /// A plain document: its lines, polylines, circles, arcs, points and
+  /// texts (what else it holds is left out).
+  static Uint8List write(DxfDocument doc, {DateTime? now}) => writeDrawing(drawingOf(doc), now: now);
+
+  /// The primitives of [doc] as a native drawing.
+  static CadDrawing drawingOf(DxfDocument doc) {
+    final layers = <CadLayer>[const CadLayer('0')];
+    final seen = {'0'};
+    for (final l in doc.layers) {
+      final n = l.name.trim();
+      if (n.isEmpty || !seen.add(n)) continue;
+      layers.add(CadLayer(n, aci: l.color >= 1 && l.color <= 255 ? l.color : 7));
+    }
+    final ents = <CadEntity>[];
+    for (final e in doc.entities) {
+      final layer = e.layer.trim().isEmpty ? '0' : e.layer;
+      if (seen.add(layer)) layers.add(CadLayer(layer));
+      final color = e.color >= 1 && e.color <= 255 ? e.color : 256;
+      final z = e.elevation ?? 0.0;
+      switch (e.type) {
+        case 'LINE' when e.points.length >= 2:
+          ents.add(CadLine(layer, e.points[0], e.points[1], color: color, z: z));
+        case 'POLYLINE' when e.points.length >= 2:
+          ents.add(CadPolyline(layer, e.points, closed: e.closed, elevation: z, color: color));
+        case 'CIRCLE' when e.center != null && e.radius > 0:
+          ents.add(CadCircle(layer, e.center!, e.radius, color: color));
+        case 'ARC' when e.center != null && e.radius > 0:
+          ents.add(CadArc(layer, e.center!, e.radius, e.startAngle, e.endAngle, color: color));
+        case 'POINT' when e.points.isNotEmpty:
+          ents.add(CadPoint(layer, e.points.first, z: z, color: color));
+        case 'TEXT' when e.points.isNotEmpty && e.text.isNotEmpty:
+          ents.add(CadText(layer, e.points.first, e.text, e.height > 0 ? e.height : 1, rotationDeg: e.rotation, z: z, color: color));
+      }
+    }
+    return CadDrawing(layers: layers, entities: ents);
+  }
 
   // ---- object framing
 
@@ -408,118 +481,439 @@ class DwgWriter {
     w.writeRC(29); // lineweight ByLayer
   }
 
-  static void _entityHandles(_BitWriter w, {required int prev, required int next, required int layer}) {
+  /// Common entity handles: the owner when not in model or paper space,
+  /// xdictionary, previous and next entity of the owner's chain, layer.
+  static void _entityHandles(_BitWriter w, {int? owner, required int prev, required int next, required int layer}) {
+    if (owner != null) w.writeH(4, owner);
     w.writeH(3, 0); // xdicobjhandle
     w.writeH(4, prev);
     w.writeH(4, next);
     w.writeH(5, layer);
   }
 
-  /// Writes the entity [e]; returns false when it cannot be represented.
-  bool _entity(int handle, DxfEntity e, int prev, int next) {
+  /// Writes entity [e] (type [type]) with its [data] and the [extra]
+  /// handles that follow the common ones.
+  void _ent(int handle, int type, CadEntity e, _Link link, void Function(_BitWriter w) data, [void Function(_BitWriter w)? extra]) {
     final layer = _layerHandles[e.layer] ?? _H.layer0;
-    final color = e.color >= 1 && e.color <= 255 ? e.color : 256;
-    final z = e.elevation ?? 0.0;
-    void handles(_BitWriter w) => _entityHandles(w, prev: prev, next: next, layer: layer);
-    switch (e.type) {
-      case 'LINE':
-        if (e.points.length < 2) return false;
-        final a = e.points[0], b = e.points[1];
-        _add(handle, 19, (w) {
-          _entityCommon(w, color: color);
-          final zZero = z == 0.0;
+    _add(handle, type, (w) {
+      _entityCommon(w, entmode: link.entmode, color: _color(e.color));
+      data(w);
+    }, (w) {
+      _entityHandles(w, owner: link.owner, prev: link.prev, next: link.next, layer: layer);
+      extra?.call(w);
+    });
+  }
+
+  static int _color(int c) => c == 0 || (c >= 1 && c <= 255) ? c : 256;
+
+  /// Text body shared by TEXT, ATTRIB and ATTDEF (R2000 data flags: a set
+  /// bit leaves the field out at its default).
+  static void _textData(_BitWriter w, Pt p, String text, double height, {double rotationDeg = 0, int hAlign = 0, int vAlign = 0, double z = 0}) {
+    final rot = degToRad(rotationDeg);
+    final aligned = hAlign != 0 || vAlign != 0;
+    var flags = 0xFF;
+    if (z != 0.0) flags &= ~0x01;
+    if (aligned) flags &= ~0x02;
+    if (rot != 0.0) flags &= ~0x08;
+    if (hAlign != 0) flags &= ~0x40;
+    if (vAlign != 0) flags &= ~0x80;
+    w.writeRC(flags);
+    if (z != 0.0) w.writeRD(z);
+    w.write2RD(p);
+    if (aligned) {
+      // the alignment point places aligned text; the insertion point is recomputed from it
+      w.writeDD(p.x, p.x);
+      w.writeDD(p.y, p.y);
+    }
+    w.writeBE();
+    w.writeBT(0);
+    if (rot != 0.0) w.writeRD(rot);
+    w.writeRD(height > 0 ? height : 1.0);
+    w.writeTV(text);
+    if (hAlign != 0) w.writeBS(hAlign);
+    if (vAlign != 0) w.writeBS(vAlign);
+  }
+
+  /// MTEXT content: backslashes and braces escaped, line breaks as `\P`.
+  static String _mtext(String s) => s.replaceAll('\r\n', '\n').replaceAll('\\', '\\\\').replaceAll('{', '\\{').replaceAll('}', '\\}').replaceAll('\n', '\\P');
+
+  /// Writes the entity placed at [p] with its links; block references are
+  /// followed by their attributes and SEQEND.
+  void _entity(_Placed p, _Link link) {
+    final e = p.e, h = p.handle;
+    switch (e) {
+      case CadLine l:
+        _ent(h, 19, e, link, (w) {
+          final zZero = l.z == 0.0;
           w.writeB(zZero ? 1 : 0);
-          w.writeRD(a.x);
-          w.writeDD(b.x, a.x);
-          w.writeRD(a.y);
-          w.writeDD(b.y, a.y);
+          w.writeRD(l.a.x);
+          w.writeDD(l.b.x, l.a.x);
+          w.writeRD(l.a.y);
+          w.writeDD(l.b.y, l.a.y);
           if (!zZero) {
-            w.writeRD(z);
-            w.writeDD(z, z);
+            w.writeRD(l.z);
+            w.writeDD(l.z, l.z);
           }
           w.writeBT(0);
           w.writeBE();
-        }, handles);
-        return true;
-      case 'POLYLINE':
-        if (e.points.length < 2) return false;
-        _add(handle, 77, (w) {
-          _entityCommon(w, color: color);
-          var flag = e.closed ? 512 : 0;
-          if (z != 0.0) flag |= 8;
+        });
+      case CadPolyline pl:
+        _ent(h, 77, e, link, (w) {
+          final bulges = pl.hasBulges;
+          // 512 closed, 256 continuous linetype pattern, 16 bulges, 8 elevation, 4 constant width
+          final flag = (pl.closed ? 512 : 0) | 256 | (bulges ? 16 : 0) | (pl.elevation != 0 ? 8 : 0) | (pl.width != 0 ? 4 : 0);
           w.writeBS(flag);
-          if (z != 0.0) w.writeBD(z);
-          w.writeBL(e.points.length);
-          w.write2RD(e.points.first);
-          var prevPt = e.points.first;
-          for (var i = 1; i < e.points.length; i++) {
-            w.writeDD(e.points[i].x, prevPt.x);
-            w.writeDD(e.points[i].y, prevPt.y);
-            prevPt = e.points[i];
+          if (flag & 4 != 0) w.writeBD(pl.width);
+          if (flag & 8 != 0) w.writeBD(pl.elevation);
+          w.writeBL(pl.points.length);
+          if (bulges) w.writeBL(pl.points.length);
+          w.write2RD(pl.points.first);
+          var prev = pl.points.first;
+          for (var i = 1; i < pl.points.length; i++) {
+            w.writeDD(pl.points[i].x, prev.x);
+            w.writeDD(pl.points[i].y, prev.y);
+            prev = pl.points[i];
           }
-        }, handles);
-        return true;
-      case 'CIRCLE':
-      case 'ARC':
-        final c = e.center;
-        if (c == null || e.radius <= 0) return false;
-        _add(handle, e.type == 'ARC' ? 17 : 18, (w) {
-          _entityCommon(w, color: color);
-          w.write3BD(c.x, c.y, z);
-          w.writeBD(e.radius);
+          if (bulges) {
+            for (var i = 0; i < pl.points.length; i++) {
+              w.writeBD(pl.bulgeAt(i));
+            }
+          }
+        });
+      case CadCircle c:
+        _ent(h, 18, e, link, (w) {
+          w.write3BD(c.center.x, c.center.y, 0);
+          w.writeBD(c.radius);
           w.writeBT(0);
           w.writeBE();
-          if (e.type == 'ARC') {
-            w.writeBD(degToRad(e.startAngle));
-            w.writeBD(degToRad(e.endAngle));
-          }
-        }, handles);
-        return true;
-      case 'POINT':
-        if (e.points.isEmpty) return false;
-        final p = e.points.first;
-        _add(handle, 27, (w) {
-          _entityCommon(w, color: color);
-          w.write3BD(p.x, p.y, z);
+        });
+      case CadArc a:
+        _ent(h, 17, e, link, (w) {
+          w.write3BD(a.center.x, a.center.y, 0);
+          w.writeBD(a.radius);
+          w.writeBT(0);
+          w.writeBE();
+          w.writeBD(degToRad(a.startDeg));
+          w.writeBD(degToRad(a.endDeg));
+        });
+      case CadPoint pt:
+        _ent(h, 27, e, link, (w) {
+          w.write3BD(pt.position.x, pt.position.y, pt.z);
           w.writeBT(0);
           w.writeBE();
           w.writeBD(0); // x_ang
-        }, handles);
-        return true;
-      case 'TEXT':
-        if (e.points.isEmpty || e.text.isEmpty) return false;
-        final p = e.points.first;
-        final rot = degToRad(e.rotation);
-        _add(handle, 1, (w) {
-          _entityCommon(w, color: color);
-          var flags = 0xFF; // bit set = field absent (default)
-          if (z != 0.0) flags &= ~0x01;
-          if (rot != 0.0) flags &= ~0x08;
-          w.writeRC(flags);
-          if (z != 0.0) w.writeRD(z);
-          w.write2RD(p);
-          w.writeBE();
-          w.writeBT(0);
-          if (rot != 0.0) w.writeRD(rot);
-          w.writeRD(e.height > 0 ? e.height : 1.0);
-          w.writeTV(e.text);
-        }, (w) {
-          handles(w);
-          w.writeH(5, _H.styleStandard);
         });
-        return true;
-      default:
-        return false;
+      case CadText t:
+        _ent(h, 1, e, link, (w) => _textData(w, t.position, t.text.length > 250 ? t.text.substring(0, 250) : t.text, t.height, rotationDeg: t.rotationDeg, hAlign: t.hAlign, vAlign: t.vAlign, z: t.z), (w) => w.writeH(5, _H.styleStandard));
+      case CadMText m:
+        _ent(h, 44, e, link, (w) {
+          final r = degToRad(m.rotationDeg);
+          final lines = m.text.split('\n');
+          w.write3BD(m.position.x, m.position.y, 0);
+          w.write3BD(0, 0, 1); // extrusion
+          w.write3BD(math.cos(r), math.sin(r), 0); // x axis direction
+          w.writeBD(m.width); // reference rectangle width
+          w.writeBD(m.height);
+          w.writeBS(m.attachment);
+          w.writeBS(1); // left to right
+          w.writeBD(m.height * (lines.length * 1.667 - 0.667)); // extents (recomputed by CAD programs)
+          w.writeBD(m.height * 0.7 * lines.fold(0, (n, l) => math.max(n, l.length)));
+          w.writeTV(_mtext(m.text));
+          w.writeBS(1); // line spacing: at least
+          w.writeBD(1);
+          w.writeB(0);
+        }, (w) => w.writeH(5, _H.styleStandard));
+      case CadSpline s:
+        _ent(h, 36, e, link, (w) {
+          w.writeBL(1); // scenario: control points and knots
+          w.writeBL(s.degree);
+          w.writeB(0); // rational
+          w.writeB(s.closed ? 1 : 0);
+          w.writeB(0); // periodic
+          w.writeBD(1e-10); // knot tolerance
+          w.writeBD(1e-10); // control point tolerance
+          w.writeBL(s.knots.length);
+          w.writeBL(s.control.length);
+          w.writeB(0); // weighted
+          for (final k in s.knots) {
+            w.writeBD(k);
+          }
+          for (final c in s.control) {
+            w.write3BD(c.x, c.y, 0);
+          }
+        });
+      case CadHatch hatch:
+        final loops = hatch.loops.where((l) => l.points.length >= 2).toList();
+        _ent(h, 78, e, link, (w) {
+          w.writeBD(0); // elevation
+          w.write3BD(0, 0, 1); // extrusion
+          w.writeTV(hatch.solid ? 'SOLID' : hatch.pattern);
+          w.writeB(hatch.solid ? 1 : 0);
+          w.writeB(0); // not associative
+          w.writeBL(loops.length);
+          for (var i = 0; i < loops.length; i++) {
+            final l = loops[i];
+            w.writeBL(i == 0 ? 3 : 2); // polyline path, the first one external
+            w.writeB(l.hasBulges ? 1 : 0);
+            w.writeB(1); // closed
+            w.writeBL(l.points.length);
+            for (var k = 0; k < l.points.length; k++) {
+              w.write2RD(l.points[k]);
+              if (l.hasBulges) w.writeBD(l.bulgeAt(k));
+            }
+            w.writeBL(0); // boundary objects
+          }
+          w.writeBS(0); // style: normal
+          w.writeBS(1); // predefined pattern
+          if (!hatch.solid) {
+            w.writeBD(degToRad(hatch.patternAngleDeg));
+            w.writeBD(hatch.patternScale);
+            w.writeB(0); // not double
+            w.writeBS(hatch.lines.length);
+            for (final pl in hatch.lines) {
+              w.writeBD(degToRad(pl.angleDeg));
+              w.writeBD(pl.base.x);
+              w.writeBD(pl.base.y);
+              w.writeBD(pl.offset.x);
+              w.writeBD(pl.offset.y);
+              w.writeBS(pl.dashes.length);
+              for (final dash in pl.dashes) {
+                w.writeBD(dash);
+              }
+            }
+          }
+          w.writeBL(0); // seed points
+        });
+      case CadSolid s:
+        _ent(h, 31, e, link, (w) {
+          w.writeBT(0);
+          w.writeBD(0); // elevation
+          for (final c in [s.p1, s.p2, s.p3, s.p4]) {
+            w.write2RD(c);
+          }
+          w.writeBE();
+        });
+      case CadInsert ins:
+        final has = p.attribs.isNotEmpty;
+        _ent(h, 7, e, link, (w) {
+          w.write3BD(ins.position.x, ins.position.y, 0);
+          if (ins.scale == 1.0) {
+            w.writeBB(3); // 1, 1, 1
+          } else {
+            w.writeBB(2); // one value for the three axes
+            w.writeRD(ins.scale);
+          }
+          w.writeBD(degToRad(ins.rotationDeg));
+          w.write3BD(0, 0, 1); // extrusion
+          w.writeB(has ? 1 : 0);
+        }, (w) {
+          w.writeH(5, _blockHandles[ins.block] ?? 0);
+          if (has) {
+            w.writeH(4, p.attribs.first);
+            w.writeH(4, p.attribs.last);
+            w.writeH(3, p.seqend);
+          }
+        });
+        if (!has) return;
+        final layer = _layerHandles[e.layer] ?? _H.layer0;
+        for (var i = 0; i < p.attribs.length; i++) {
+          final a = ins.attribs[i];
+          final ah = p.attribs[i];
+          _add(ah, 2, (w) {
+            _entityCommon(w, entmode: 0, color: _color(e.color));
+            _textData(w, a.position, a.value, a.height, rotationDeg: a.rotationDeg);
+            w.writeTV(a.tag);
+            w.writeBS(0); // field length
+            w.writeRC(a.invisible ? 1 : 0);
+          }, (w) {
+            _entityHandles(w, owner: h, prev: i > 0 ? p.attribs[i - 1] : 0, next: i + 1 < p.attribs.length ? p.attribs[i + 1] : 0, layer: layer);
+            w.writeH(5, _H.styleStandard);
+          });
+        }
+        _add(p.seqend, 6, (w) => _entityCommon(w, entmode: 0, color: _color(e.color)), (w) => _entityHandles(w, owner: h, prev: 0, next: 0, layer: layer));
+      case CadDimension dm:
+        final type = switch (dm.kind) { CadDimKind.ordinate => 20, CadDimKind.aligned => 22, CadDimKind.angular => 23, CadDimKind.radius => 25, CadDimKind.diameter => 26 };
+        _ent(h, type, e, link, (w) {
+          w.write3BD(0, 0, 1); // extrusion
+          w.write2RD(dm.textMid);
+          w.writeBD(0); // elevation
+          // bit 0: text at its default place (the inverse of DXF 128); bit 1: drawn by its block
+          w.writeRC((dm.userTextPosition ? 0 : 1) | 2);
+          w.writeTV(dm.text);
+          w.writeBD(0); // text rotation
+          w.writeBD(0); // horizontal direction
+          w.write3BD(1, 1, 1); // block insertion scale
+          w.writeBD(0); // block insertion rotation
+          w.writeBS(5); // attachment: middle centre
+          w.writeBS(1); // line spacing: at least
+          w.writeBD(1);
+          w.writeBD(dm.measurement);
+          w.write2RD(Pt.zero); // clone insertion point
+          void pt(Pt q) => w.write3BD(q.x, q.y, 0);
+          switch (dm.kind) {
+            case CadDimKind.ordinate:
+              pt(dm.defPoint);
+              pt(dm.p13);
+              pt(dm.p14);
+              w.writeRC(dm.xOrdinate ? 1 : 0);
+            case CadDimKind.aligned:
+              pt(dm.p13);
+              pt(dm.p14);
+              pt(dm.defPoint);
+              w.writeBD(0); // oblique angle
+            case CadDimKind.angular:
+              pt(dm.defPoint);
+              pt(dm.p13);
+              pt(dm.p14);
+              pt(dm.p15);
+            case CadDimKind.radius:
+              pt(dm.defPoint);
+              pt(dm.p15);
+              w.writeBD(0); // leader length
+            case CadDimKind.diameter:
+              pt(dm.p15);
+              pt(dm.defPoint);
+              w.writeBD(0);
+          }
+        }, (w) {
+          w.writeH(5, _dimstyleHandles[dm.style] ?? _H.dimstyle);
+          w.writeH(5, _blockHandles[dm.block] ?? 0);
+        });
+      case CadLeader l:
+        _ent(h, 45, e, link, (w) {
+          w.writeB(0); // unknown
+          w.writeBS(3); // annotation: none (the note is a separate text)
+          w.writeBS(0); // straight segments
+          w.writeBL(l.points.length);
+          for (final q in l.points) {
+            w.write3BD(q.x, q.y, 0);
+          }
+          w.write3BD(l.points.first.x, l.points.first.y, 0); // plane origin
+          w.write3BD(0, 0, 1); // extrusion
+          w.write3BD(1, 0, 0); // horizontal direction
+          w.write3BD(0, 0, 0); // offset to the block insertion point
+          w.write3BD(0, 0, 0); // end point projection
+          w.writeBD(0); // annotation height
+          w.writeBD(0); // annotation width
+          w.writeB(0); // hook line on the x direction
+          w.writeB(l.arrow ? 1 : 0);
+          w.writeBS(0); // arrowhead type
+          w.writeB(0);
+          w.writeB(0);
+        }, (w) {
+          w.writeH(2, 0); // associated annotation
+          w.writeH(5, _dimstyleHandles[l.style] ?? _H.dimstyle);
+        });
     }
+  }
+
+  /// ATTDEF of a block: the definition [a] with its default value and prompt.
+  void _attdef(CadAttrib a, int handle, _Link link) {
+    _add(handle, 3, (w) {
+      _entityCommon(w, entmode: link.entmode);
+      _textData(w, a.position, a.value, a.height, rotationDeg: a.rotationDeg);
+      w.writeTV(a.tag);
+      w.writeBS(0); // field length
+      w.writeRC(a.invisible ? 1 : 0);
+      w.writeTV(a.prompt);
+    }, (w) {
+      _entityHandles(w, owner: link.owner, prev: link.prev, next: link.next, layer: _H.layer0);
+      w.writeH(5, _H.styleStandard);
+    });
+  }
+
+  static bool _representable(CadEntity e) => switch (e) {
+    CadPolyline p => p.points.length >= 2,
+    CadCircle c => c.radius > 0,
+    CadArc a => a.radius > 0,
+    CadText t => t.text.trim().isNotEmpty,
+    CadMText m => m.text.trim().isNotEmpty,
+    CadSpline s => s.control.length > s.degree && s.knots.length == s.control.length + s.degree + 1,
+    CadHatch h => h.loops.any((l) => l.points.length >= 2),
+    CadLeader l => l.points.length >= 2,
+    _ => true,
+  };
+
+  /// Gives each representable entity of [ents] a handle (and its attributes
+  /// and their SEQEND after it).
+  List<_Placed> _place(List<CadEntity> ents) {
+    final out = <_Placed>[];
+    for (final e in ents.where(_representable)) {
+      if (e is CadInsert && !_blockHandles.containsKey(e.block)) continue;
+      final p = _Placed(e, _nextHandle++);
+      if (e is CadInsert && e.attribs.isNotEmpty) {
+        for (var i = 0; i < e.attribs.length; i++) {
+          p.attribs.add(_nextHandle++);
+        }
+        p.seqend = _nextHandle++;
+      }
+      out.add(p);
+    }
+    return out;
   }
 
   // ---- tables and dictionaries
 
-  void _skeleton(List<String> layerNames, List<int> layerColors, int firstEntity, int lastEntity, int handseed) {
-    final layerHandles = layerNames.map((n) => _layerHandles[n]!).toList();
+  /// Dimension style record: the variables of [s] in the order of the format.
+  void _dimstyle(int handle, CadDimStyle s) {
+    _add(handle, 69, (w) {
+      w.writeBL(0);
+      _tableFlags(w, s.name);
+      w.writeTV(s.suffix); // DIMPOST
+      w.writeTV(''); // DIMAPOST
+      for (final v in [s.scale, s.arrowSize, s.extOffset, 3.75, s.extBeyond, 0.0, 0.0, 0.0, 0.0]) {
+        w.writeBD(v); // DIMSCALE ASZ EXO DLI EXE RND DLE TP TM
+      }
+      for (final b in [0, 0, s.horizontalText ? 1 : 0, s.horizontalText ? 1 : 0, 0, 0]) {
+        w.writeB(b); // DIMTOL LIM TIH TOH SE1 SE2
+      }
+      w.writeBS(1); // DIMTAD
+      w.writeBS(s.suppressZeros); // DIMZIN
+      w.writeBS(0); // DIMAZIN
+      for (final v in [s.textHeight, s.centerMark, 0.0, 0.0393700787, s.lengthFactor, 0.0, 1.0, s.gap, 0.0]) {
+        w.writeBD(v); // DIMTXT CEN TSZ ALTF LFAC TVP TFAC GAP ALTRND
+      }
+      w.writeB(0); // DIMALT
+      w.writeBS(3); // DIMALTD
+      w.writeB(1); // DIMTOFL
+      w.writeB(0); // DIMSAH
+      w.writeB(0); // DIMTIX
+      w.writeB(0); // DIMSOXD
+      w.writeBS(0); // DIMCLRD
+      w.writeBS(0); // DIMCLRE
+      w.writeBS(0); // DIMCLRT
+      for (final v in [s.angleDecimals, s.decimals, s.decimals, 2, 3, 0, 0, 2, 46, 0, 0]) {
+        w.writeBS(v); // ADEC DEC TDEC ALTU ALTTD AUNIT FRAC LUNIT DSEP TMOVE JUST
+      }
+      w.writeB(0); // DIMSD1
+      w.writeB(0); // DIMSD2
+      w.writeBS(0); // DIMTOLJ
+      w.writeBS(8); // DIMTZIN
+      w.writeBS(0); // DIMALTZ
+      w.writeBS(0); // DIMALTTZ
+      w.writeB(0); // DIMUPT
+      w.writeBS(3); // DIMATFIT
+      w.writeBS(-2); // DIMLWD
+      w.writeBS(-2); // DIMLWE
+      w.writeB(0); // flag0
+    }, (w) {
+      _objHandles(w, _H.dimstyleControl, xrefNull: true);
+      w.writeH(5, _H.styleStandard); // DIMTXSTY
+      for (var i = 0; i < 4; i++) {
+        w.writeH(5, 0); // DIMLDRBLK DIMBLK DIMBLK1 DIMBLK2: closed filled arrows
+      }
+    });
+  }
+
+  void _skeleton(List<CadLayer> layers, List<int> blockHeaders, int firstEntity, int lastEntity) {
+    final layerHandles = [for (final l in layers) _layerHandles[l.name]!];
+    final dimstyles = [CadDimStyle.standard, for (final s in d.dimStyles) if (s.name != 'Standard') s];
     // control objects
-    _add(_H.blockControl, 48, (w) => _control(w, 0), (w) {
+    _add(_H.blockControl, 48, (w) => _control(w, blockHeaders.length), (w) {
       _objHandles(w, 0);
+      for (final h in blockHeaders) {
+        w.writeH(2, h);
+      }
       w.writeH(3, _H.modelSpace);
       w.writeH(3, _H.paperSpace);
     });
@@ -533,9 +927,12 @@ class DwgWriter {
       _objHandles(w, 0);
       w.writeH(2, _H.styleStandard);
     });
-    _add(_H.ltypeControl, 56, (w) => _control(w, 1, short: true), (w) {
+    _add(_H.ltypeControl, 56, (w) => _control(w, 1 + d.linetypes.length, short: true), (w) {
       _objHandles(w, 0);
       w.writeH(2, _H.ltContinuous);
+      for (final lt in d.linetypes) {
+        w.writeH(2, _ltypeHandles[lt.name]!);
+      }
       w.writeH(3, _H.ltByBlock);
       w.writeH(3, _H.ltByLayer);
     });
@@ -550,11 +947,13 @@ class DwgWriter {
       w.writeH(2, _H.appidAcad);
     });
     _add(_H.dimstyleControl, 68, (w) {
-      _control(w, 1, short: true);
+      _control(w, dimstyles.length, short: true);
       w.writeRC(1); // num_morehandles
     }, (w) {
       _objHandles(w, 0);
-      w.writeH(2, _H.dimstyle);
+      for (final s in dimstyles) {
+        w.writeH(2, _dimstyleHandles[s.name]!);
+      }
       w.writeH(5, _H.dimstyle);
     });
     _add(_H.vxControl, 70, (w) => _control(w, 1, short: true), (w) {
@@ -587,17 +986,19 @@ class DwgWriter {
     dict(_H.mlineDict, _H.namedDict, [('Standard', _H.mlineStandard)]);
     dict(_H.plotSettingsDict, _H.namedDict, const []);
     dict(_H.layoutDict, _H.namedDict, [('Layout1', _H.paperLayout), ('Model', _H.modelLayout)]);
-    // layers
-    for (var i = 0; i < layerNames.length; i++) {
+    // layers: colour index (negative when off), off/locked/plot flags, linetype
+    for (var i = 0; i < layers.length; i++) {
+      final l = layers[i];
       _add(layerHandles[i], 51, (w) {
         w.writeBL(0);
-        _tableFlags(w, layerNames[i]);
-        w.writeBS(0x3F0); // plottable, lineweight default
-        w.writeBS(layerColors[i]);
+        _tableFlags(w, l.name);
+        // frozen 1, off 2, frozen in new viewports 4, locked 8, plotted 16, lineweight (bits 5-9) default
+        w.writeBS((l.off ? 2 : 0) | (l.locked ? 8 : 0) | (l.plot ? 16 : 0) | 0x3E0);
+        w.writeBS(l.off ? -l.aci : l.aci);
       }, (w) {
         _objHandles(w, _H.layerControl, xrefNull: true);
         w.writeH(5, _H.placeholder); // plotstyle
-        w.writeH(5, _H.ltContinuous);
+        w.writeH(5, _ltypeHandles[l.linetype] ?? _H.ltContinuous);
       });
     }
     // text style
@@ -611,7 +1012,7 @@ class DwgWriter {
       w.writeBD(0); // oblique
       w.writeRC(0); // generation
       w.writeBD(2.5); // last_height
-      w.writeTV('txt');
+      w.writeTV(d.textFont);
       w.writeTV('');
     }, (w) => _objHandles(w, _H.styleControl, xrefNull: true));
     // appid
@@ -620,19 +1021,34 @@ class DwgWriter {
       _tableFlags(w, 'ACAD');
       w.writeRC(0);
     }, (w) => _objHandles(w, _H.appidControl, xrefNull: true));
-    // linetypes
-    for (final (h, name, desc) in [(_H.ltByBlock, 'ByBlock', ''), (_H.ltByLayer, 'ByLayer', ''), (_H.ltContinuous, 'Continuous', 'Solid line')]) {
+    // linetypes: dash lengths with their (unused) shape fields and the strings area
+    const none = <double>[];
+    for (final (h, name, desc, dashes) in [(_H.ltByBlock, 'ByBlock', '', none), (_H.ltByLayer, 'ByLayer', '', none), (_H.ltContinuous, 'Continuous', 'Solid line', none), for (final lt in d.linetypes) (_ltypeHandles[lt.name]!, lt.name, lt.description, lt.dashes)]) {
       _add(h, 57, (w) {
         w.writeBL(0);
         _tableFlags(w, name);
         w.writeTV(desc);
-        w.writeBD(0); // pattern_len
+        w.writeBD(dashes.fold(0.0, (s, x) => s + x.abs())); // pattern_len
         w.writeRC(0x41); // alignment 'A'
-        w.writeRC(0); // numdashes
+        w.writeRC(dashes.length);
+        for (final x in dashes) {
+          w.writeBD(x);
+          w.writeBS(0); // complex shape code
+          w.writeRD(0); // x offset
+          w.writeRD(0); // y offset
+          w.writeBD(1); // scale
+          w.writeBD(0); // rotation
+          w.writeBS(0); // shape flag
+        }
         for (var i = 0; i < 256; i++) {
           w.writeRC(0); // strings_area
         }
-      }, (w) => _objHandles(w, _H.ltypeControl, xrefNull: true));
+      }, (w) {
+        _objHandles(w, _H.ltypeControl, xrefNull: true);
+        for (var i = 0; i < dashes.length; i++) {
+          w.writeH(5, 0); // shape style of the dash
+        }
+      });
     }
     // multiline style
     _add(_H.mlineStandard, 73, (w) {
@@ -650,54 +1066,9 @@ class DwgWriter {
         w.writeBS(32767); // linetype index ByLayer
       }
     }, (w) => _objHandles(w, _H.mlineDict, reactors: [_H.mlineDict]));
-    // dimension style ISO-25
-    _add(_H.dimstyle, 69, (w) {
-      w.writeBL(0);
-      _tableFlags(w, 'ISO-25');
-      w.writeTV(''); // DIMPOST
-      w.writeTV(''); // DIMAPOST
-      for (final v in [1.0, 2.5, 0.625, 3.75, 1.25, 0.0, 0.0, 0.0, 0.0]) {
-        w.writeBD(v); // DIMSCALE ASZ EXO DLI EXE RND DLE TP TM
-      }
-      for (var i = 0; i < 6; i++) {
-        w.writeB(0); // DIMTOL LIM TIH TOH SE1 SE2
-      }
-      w.writeBS(1); // DIMTAD
-      w.writeBS(8); // DIMZIN
-      w.writeBS(0); // DIMAZIN
-      for (final v in [2.5, 2.5, 0.0, 0.0393701, 1.0, 0.0, 1.0, 0.625, 0.0]) {
-        w.writeBD(v); // DIMTXT CEN TSZ ALTF LFAC TVP TFAC GAP ALTRND
-      }
-      w.writeB(0); // DIMALT
-      w.writeBS(3); // DIMALTD
-      w.writeB(1); // DIMTOFL
-      w.writeB(0); // DIMSAH
-      w.writeB(0); // DIMTIX
-      w.writeB(0); // DIMSOXD
-      w.writeBS(0); // DIMCLRD
-      w.writeBS(0); // DIMCLRE
-      w.writeBS(0); // DIMCLRT
-      for (final v in [0, 2, 2, 2, 3, 0, 0, 2, 44, 0, 0]) {
-        w.writeBS(v); // ADEC DEC TDEC ALTU ALTTD AUNIT FRAC LUNIT DSEP TMOVE JUST
-      }
-      w.writeB(0); // DIMSD1
-      w.writeB(0); // DIMSD2
-      w.writeBS(0); // DIMTOLJ
-      w.writeBS(8); // DIMTZIN
-      w.writeBS(0); // DIMALTZ
-      w.writeBS(0); // DIMALTTZ
-      w.writeB(0); // DIMUPT
-      w.writeBS(3); // DIMATFIT
-      w.writeBS(-2); // DIMLWD
-      w.writeBS(-2); // DIMLWE
-      w.writeB(0); // flag0
-    }, (w) {
-      _objHandles(w, _H.dimstyleControl, xrefNull: true);
-      w.writeH(5, _H.styleStandard); // DIMTXSTY
-      for (var i = 0; i < 4; i++) {
-        w.writeH(5, 0); // DIMLDRBLK DIMBLK DIMBLK1 DIMBLK2
-      }
-    });
+    for (final s in dimstyles) {
+      _dimstyle(_dimstyleHandles[s.name]!, s);
+    }
     // viewport table record *Active
     final c = _bounds.center;
     final h = math.max(_bounds.height, 1.0) * 1.1;
@@ -751,33 +1122,9 @@ class DwgWriter {
       w.writeH(4, 0); // viewport
       w.writeH(5, 0); // prev_entry
     });
-    // block headers, BLOCK/ENDBLK and layouts for model and paper space
-    void blockHeader(int handle, String name, int block, int endblk, int first, int last, int layout) {
-      _add(handle, 49, (w) {
-        w.writeBL(0);
-        _tableFlags(w, name);
-        w.writeB(0); // anonymous
-        w.writeB(0); // hasattrs
-        w.writeB(0); // blkisxref
-        w.writeB(0); // xrefoverlaid
-        w.writeB(0); // loaded_bit
-        w.write3BD(0, 0, 0); // base_pt
-        w.writeTV(''); // xref_pname
-        w.writeRC(0); // num_inserts terminator
-        w.writeTV(''); // description
-        w.writeBL(0); // preview_size
-      }, (w) {
-        _objHandles(w, _H.blockControl, xrefNull: true);
-        w.writeH(3, block);
-        w.writeH(4, first);
-        w.writeH(4, last);
-        w.writeH(3, endblk);
-        w.writeH(5, layout);
-      });
-    }
-
-    blockHeader(_H.modelSpace, '*Model_Space', _H.modelBlock, _H.modelEndblk, firstEntity, lastEntity, _H.modelLayout);
-    blockHeader(_H.paperSpace, '*Paper_Space', _H.paperBlock, _H.paperEndblk, 0, 0, _H.paperLayout);
+    // model and paper space: block headers, BLOCK/ENDBLK and layouts
+    _blockHeader(_H.modelSpace, '*Model_Space', block: _H.modelBlock, endblk: _H.modelEndblk, first: firstEntity, last: lastEntity, layout: _H.modelLayout);
+    _blockHeader(_H.paperSpace, '*Paper_Space', block: _H.paperBlock, endblk: _H.paperEndblk, first: 0, last: 0, layout: _H.paperLayout);
     for (final (block, endblk, name, mode) in [(_H.modelBlock, _H.modelEndblk, '*Model_Space', 2), (_H.paperBlock, _H.paperEndblk, '*Paper_Space', 1)]) {
       _add(block, 4, (w) {
         _entityCommon(w, entmode: mode);
@@ -846,6 +1193,39 @@ class DwgWriter {
     layout(_H.paperLayout, 'Layout1', 1, _H.paperSpace, 0, model: false);
   }
 
+  /// Block header (table record of a block): flags, base point, the
+  /// BLOCK/ENDBLK entities and the first and last entity of its chain, the
+  /// references inserting it and its layout.
+  void _blockHeader(int handle, String name, {required int block, required int endblk, required int first, required int last, int layout = 0, bool anonymous = false, bool hasAttdefs = false, Pt base = Pt.zero, List<int> inserts = const []}) {
+    _add(handle, 49, (w) {
+      w.writeBL(0);
+      _tableFlags(w, name);
+      w.writeB(anonymous ? 1 : 0);
+      w.writeB(hasAttdefs ? 1 : 0);
+      w.writeB(0); // blkisxref
+      w.writeB(0); // xrefoverlaid
+      w.writeB(0); // loaded_bit
+      w.write3BD(base.x, base.y, 0); // base_pt
+      w.writeTV(''); // xref_pname
+      for (var i = 0; i < inserts.length; i++) {
+        w.writeRC(1); // one non-zero byte per inserting reference
+      }
+      w.writeRC(0); // num_inserts terminator
+      w.writeTV(''); // description
+      w.writeBL(0); // preview_size
+    }, (w) {
+      _objHandles(w, _H.blockControl, xrefNull: true);
+      w.writeH(3, block);
+      w.writeH(4, first);
+      w.writeH(4, last);
+      w.writeH(3, endblk);
+      for (final h in inserts) {
+        w.writeH(4, h);
+      }
+      w.writeH(5, layout);
+    });
+  }
+
   // ---- sections
 
   (int, int) _julian(DateTime t) {
@@ -877,7 +1257,7 @@ class DwgWriter {
     }
     w.writeBS(1); // PROXYGRAPHICS
     w.writeBS(3020); // TREEDEPTH
-    for (final v in [2, 4, 0, 0, 1, 0]) {
+    for (final v in [2, 4, 0, 0, 1, d.pointMode]) {
       w.writeBS(v); // LUNITS LUPREC AUNITS AUPREC ATTMODE PDMODE
     }
     for (var i = 0; i < 5; i++) {
@@ -886,7 +1266,7 @@ class DwgWriter {
     for (final v in [8, 6, 6, 6, 6, 6, 6, 3, 70, 0, 64, 4, 0, 50]) {
       w.writeBS(v); // SPLINESEGS SURFU SURFV SURFTYPE SURFTAB1 SURFTAB2 SPLINETYPE SHADEDGE SHADEDIF UNITMODE MAXACTVP ISOLINES CMLJUST TEXTQLTY
     }
-    for (final v in [1.0, 2.5, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]) {
+    for (final v in [1.0, 2.5, 1.0, 1.0, 0.0, 0.0, 0.0, d.pointSize, 0.0]) {
       w.writeBD(v); // LTSCALE TEXTSIZE TRACEWID SKETCHINC FILLETRAD THICKNESS ANGBASE PDSIZE PLINEWID
     }
     for (var i = 0; i < 9; i++) {
@@ -1123,12 +1503,18 @@ class DwgWriter {
       lastOffset = 0;
     }
 
+    // Each section restarts the deltas from zero (as AutoCAD writes them).
+    // The first section is kept short when more follow, so a reader that
+    // guesses the convention from the first few dozen entries sees entries of
+    // the second section too.
+    var count = 0;
     for (final o in sorted) {
       chunk.writeUMC(o.handle - lastHandle);
       chunk.writeMC(o.address - lastOffset);
       lastHandle = o.handle;
       lastOffset = o.address;
-      if (chunk.byteLength > 2030) flush();
+      count++;
+      if (chunk.byteLength > 2030 || (count == 8 && sorted.length > 200)) flush();
     }
     if (chunk.byteLength > 0) flush();
     final tail = _BitWriter();
@@ -1182,40 +1568,75 @@ class DwgWriter {
     return w.bytes();
   }
 
+
   // ---- assembly
 
   Uint8List _build() {
-    // layers: '0' first, then the document's (unique, valid names)
-    final names = <String>['0'];
-    final colors = <int>[7];
-    for (final l in doc.layers) {
-      final n = l.name.trim();
-      if (n.isEmpty || names.contains(n)) continue;
-      names.add(n);
-      colors.add(l.color >= 1 && l.color <= 255 ? l.color : 7);
-    }
-    for (final e in doc.entities) {
-      if (!names.contains(e.layer) && e.layer.trim().isNotEmpty) {
-        names.add(e.layer);
-        colors.add(7);
-      }
+    _bounds = d.extents;
+    // layers: '0' first, then the drawing's (unique names)
+    final layers = <CadLayer>[d.layers.firstWhere((l) => l.name == '0', orElse: () => const CadLayer('0'))];
+    for (final l in d.layers) {
+      if (l.name.trim().isEmpty || layers.any((x) => x.name == l.name)) continue;
+      layers.add(l);
     }
     _layerHandles['0'] = _H.layer0;
-    for (final n in names.skip(1)) {
-      _layerHandles[n] = _nextHandle++;
+    for (final l in layers.skip(1)) {
+      _layerHandles[l.name] = _nextHandle++;
     }
-    var b = doc.bounds;
-    if (b.isEmpty) b = const Bounds(0, 0, 1, 1);
-    _bounds = b;
-    // entities: allocate handles first so prev/next links are known
-    final writable = doc.entities.where(_representable).toList();
-    final handles = [for (var i = 0; i < writable.length; i++) _nextHandle + i];
-    _nextHandle += writable.length;
-    for (var i = 0; i < writable.length; i++) {
-      _entity(handles[i], writable[i], i > 0 ? handles[i - 1] : 0, i + 1 < writable.length ? handles[i + 1] : 0);
+    for (final lt in d.linetypes) {
+      _ltypeHandles[lt.name] = _nextHandle++;
+    }
+    _dimstyleHandles['Standard'] = _H.dimstyle;
+    for (final s in d.dimStyles) {
+      if (s.name != 'Standard') _dimstyleHandles[s.name] = _nextHandle++;
+    }
+    // blocks: header, BLOCK, ENDBLK, then their entities and attribute definitions
+    final blocks = d.blocks.where((b) => b.name.trim().isNotEmpty).toList();
+    final blockEnds = <String, (int, int)>{};
+    for (final b in blocks) {
+      _blockHandles[b.name] = _nextHandle++;
+      blockEnds[b.name] = (_nextHandle++, _nextHandle++);
+    }
+    final blockItems = <String, List<_Placed>>{};
+    final blockAttdefs = <String, List<int>>{};
+    for (final b in blocks) {
+      blockItems[b.name] = _place(b.entities);
+      blockAttdefs[b.name] = [for (final _ in b.attdefs) _nextHandle++];
+    }
+    final model = _place(d.entities);
+    // references to each block (blocks can be nested)
+    final insertsOf = <String, List<int>>{};
+    for (final p in [...model, for (final items in blockItems.values) ...items]) {
+      final e = p.e;
+      if (e is CadInsert) insertsOf.putIfAbsent(e.block, () => []).add(p.handle);
+    }
+    // model space chain
+    for (var i = 0; i < model.length; i++) {
+      _entity(model[i], _Link(prev: i > 0 ? model[i - 1].handle : 0, next: i + 1 < model.length ? model[i + 1].handle : 0));
+    }
+    // block contents, chained in the order they are written
+    for (final b in blocks) {
+      final owner = _blockHandles[b.name]!;
+      final items = blockItems[b.name]!;
+      final attdefs = blockAttdefs[b.name]!;
+      final chain = [for (final p in items) p.handle, ...attdefs];
+      _Link link(int i) => _Link(owner: owner, prev: i > 0 ? chain[i - 1] : 0, next: i + 1 < chain.length ? chain[i + 1] : 0);
+      for (var i = 0; i < items.length; i++) {
+        _entity(items[i], link(i));
+      }
+      for (var i = 0; i < attdefs.length; i++) {
+        _attdef(b.attdefs[i], attdefs[i], link(items.length + i));
+      }
+      final (blockEntity, endblk) = blockEnds[b.name]!;
+      _add(blockEntity, 4, (w) {
+        _entityCommon(w, entmode: 0);
+        w.writeTV(b.name);
+      }, (w) => _entityHandles(w, owner: owner, prev: 0, next: 0, layer: _H.layer0));
+      _add(endblk, 5, (w) => _entityCommon(w, entmode: 0), (w) => _entityHandles(w, owner: owner, prev: 0, next: 0, layer: _H.layer0));
+      _blockHeader(owner, b.name, block: blockEntity, endblk: endblk, first: chain.isEmpty ? 0 : chain.first, last: chain.isEmpty ? 0 : chain.last, anonymous: b.anonymous, hasAttdefs: b.attdefs.isNotEmpty, base: b.base, inserts: b.anonymous ? const [] : insertsOf[b.name] ?? const []);
     }
     final handseed = _nextHandle + 1;
-    _skeleton(names, colors, handles.isEmpty ? 0 : handles.first, handles.isEmpty ? 0 : handles.last, handseed);
+    _skeleton(layers, [for (final b in blocks) _blockHandles[b.name]!], model.isEmpty ? 0 : model.first.handle, model.isEmpty ? 0 : model.last.handle);
 
     // sections in file order
     final fileHeaderSize = 0x19 + 6 * 9 + 2 + 16;
@@ -1283,13 +1704,4 @@ class DwgWriter {
     w.writeRS(1); // MEASUREMENT metric
     return w.bytes();
   }
-
-  static bool _representable(DxfEntity e) => switch (e.type) {
-    'LINE' => e.points.length >= 2,
-    'POLYLINE' => e.points.length >= 2,
-    'CIRCLE' || 'ARC' => e.center != null && e.radius > 0,
-    'POINT' => e.points.isNotEmpty,
-    'TEXT' => e.points.isNotEmpty && e.text.isNotEmpty,
-    _ => false,
-  };
 }

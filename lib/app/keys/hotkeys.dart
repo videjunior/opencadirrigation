@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 import '../../core/model/entities.dart';
 import '../actions.dart' show feedEnvelopeAction;
 import '../shortcuts.dart';
+import '../tools/typed_point.dart';
 import '../state/controller.dart';
 
 export 'canvas_keys.dart';
@@ -139,8 +140,28 @@ abstract class HotkeyActions {
   /// Opens the design optimisation (OPT command).
   void optimize();
 
+  /// Opens the AI assistant (AI command).
+  void assistant();
+
   /// Opens the densogram (DENS command).
   void densogram();
+
+  /// Opens an automatic design dialog (LAYOUT, TPL, SUBDIV, RINGS, PFIT and
+  /// VEG commands).
+  void autoDesign(CadAction action);
+
+  /// Opens a network operation dialog (DEMAND, TARIFF, EGROUP, WROUTE,
+  /// CRIT, CALIB and FERT commands).
+  void networkTool(CadAction action);
+
+  /// Opens a mainline analysis: transients, air valves or the 24-hour
+  /// simulation (SURGE, AV and EPS commands).
+  void mainlineAnalysis(CadAction action);
+
+  /// Inserts a user block or keeps the selection as one (INSERT and WBLOCK
+  /// commands).
+  void insertBlock();
+  void saveBlock();
   void clipboard(CadAction action);
 }
 
@@ -332,6 +353,11 @@ class Hotkeys {
         c.snap.grid = !c.snap.grid;
         c.refresh();
         return true;
+      case 'F10':
+        c.snap.nextPolarStep();
+        c.track('polar');
+        c.refresh();
+        return true;
       case 'F3':
         c.snap.enabled = !c.snap.enabled;
         c.track('snap');
@@ -369,8 +395,21 @@ class Hotkeys {
         c.zoomBy(1.25);
         return true;
       case '-':
+        // a minus sign starts or continues typed coordinates while a tool
+        // waits for a point; otherwise it zooms out
+        if (c.command.isNotEmpty || _wantsPoint) {
+          setCommand('${c.command}-');
+          return true;
+        }
         c.zoomBy(0.8);
         return true;
+    }
+    // the punctuation of typed coordinates (x,y  @dx,dy  @d<a), while a tool
+    // waits for a point or a command is being typed
+    if (e.key.length == 1 && '@,.;<'.contains(e.key) && !e.primary && !e.alt && (_wantsPoint || c.command.isNotEmpty)) {
+      if (e.repeat) return true;
+      setCommand(c.command + e.key);
+      return true;
     }
     final ch = e.char;
     if (ch != null) {
@@ -398,10 +437,24 @@ class Hotkeys {
     });
   }
 
-  /// Executes the typed command alias (see [commandAliases]).
+  /// A drawing or editing tool is active (it may be waiting for a point).
+  bool get _wantsPoint => c.activeTool != ToolId.select && c.activeTool != ToolId.pan;
+
+  /// Executes the typed command: a point for the active tool (`x,y`,
+  /// `@dx,dy`, `@d<a` or a distance, see [parseTypedPoint]) or a command
+  /// alias (see [commandAliases]).
   void runCommand() {
     final cmd = c.command;
     setCommand('');
+    final k = c.keyTarget;
+    if (_wantsPoint && k != null && !commandAliases.containsKey(cmd)) {
+      final p = parseTypedPoint(cmd, reference: k.referencePoint, cursor: k.cursorPoint, toSi: c.units.lengthToSi);
+      if (p != null) {
+        c.track('typedPoint');
+        k.feedPoint(p);
+        return;
+      }
+    }
     final target = commandAliases[cmd];
     if (target == null) {
       c.notify(c.t('msg.unknownCommand', {'cmd': cmd}));
@@ -447,8 +500,20 @@ class Hotkeys {
         actions.autoFix();
       case CadAction.optimize:
         actions.optimize();
+      case CadAction.assistant:
+        actions.assistant();
       case CadAction.densogram:
         actions.densogram();
+      case CadAction.autoLayout || CadAction.template || CadAction.fieldBlocks || CadAction.treeRings || CadAction.pivotFit || CadAction.vegetation:
+        actions.autoDesign(target);
+      case CadAction.onDemand || CadAction.tariff || CadAction.energyGroups || CadAction.wireRoutes || CadAction.criticality || CadAction.calibration || CadAction.fertigation:
+        actions.networkTool(target);
+      case CadAction.transients || CadAction.airValves || CadAction.eps:
+        actions.mainlineAnalysis(target);
+      case CadAction.insertBlock:
+        actions.insertBlock();
+      case CadAction.saveBlock:
+        actions.saveBlock();
       case CadAction.snap:
         c.snap.enabled = !c.snap.enabled;
         c.refresh();

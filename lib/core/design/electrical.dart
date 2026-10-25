@@ -5,6 +5,14 @@
 /// every controller, the common wire and the station wire of every valve
 /// with the lowest cost that keeps the solenoid voltage, while the valve
 /// opens, at or above the minimum.
+///
+/// A valve-in-head station (`valve_in_head.dart`) is a station like a zone
+/// valve, after the zone valves of its controller, with the solenoids of
+/// its heads in parallel: its station conductor follows the routes from the
+/// controller to every head (the union of their paths), and on every stretch
+/// it carries the current of the heads beyond it, as the common conductor
+/// does. A head that no route reaches is reported unwired, the station's
+/// other heads still wired.
 library;
 
 import 'dart:collection';
@@ -14,10 +22,13 @@ import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
+import 'valve_in_head.dart';
 
 /// One valve circuit: station conductor from the controller to the valve.
 class WireRun {
-  WireRun({required this.valveId, required this.zoneName, required this.controllerId, required this.station, required this.routeM, required this.wireM, this.stationWireId, this.commonWireId, required this.volts, required this.ok, this.openTogether = 1});
+  WireRun({required this.valveId, required this.zoneName, required this.controllerId, required this.station, required this.routeM, required this.wireM, this.stationWireId, this.commonWireId, required this.volts, required this.ok, this.openTogether = 1, this.solenoids = 1});
+
+  /// The valve, master valve or valve-in-head station (station id).
   final String valveId;
   final String zoneName;
   final String controllerId;
@@ -33,21 +44,25 @@ class WireRun {
   final String? commonWireId;
 
   /// Solenoid voltage while the valve opens, with the valves of its system
-  /// flow already on (V).
+  /// flow already on (V); the lowest head of a valve-in-head station.
   final double volts;
   final bool ok;
 
   /// Valves of the same controller open together (worst system flow).
   final int openTogether;
 
+  /// Solenoids on the station conductor: the wired heads of a valve-in-head
+  /// station, else 1.
+  final int solenoids;
+
   Map<String, dynamic> toJson() => {
     'valve': valveId, 'zone': zoneName, 'ctrl': controllerId, 'st': station, 'route': routeM, 'wire': wireM, if (stationWireId != null) 'sw': stationWireId, if (commonWireId != null) 'cw': commonWireId,
-    'v': volts, 'ok': ok, 'n': openTogether,
+    'v': volts, 'ok': ok, 'n': openTogether, if (solenoids != 1) 'sol': solenoids,
   };
   static WireRun fromJson(Map<String, dynamic> j) => WireRun(
     valveId: j['valve'] as String, zoneName: j['zone'] as String? ?? '', controllerId: j['ctrl'] as String? ?? '', station: (j['st'] as num?)?.toInt() ?? 0,
     routeM: (j['route'] as num?)?.toDouble() ?? 0, wireM: (j['wire'] as num?)?.toDouble() ?? 0, stationWireId: j['sw'] as String?, commonWireId: j['cw'] as String?,
-    volts: (j['v'] as num?)?.toDouble() ?? 0, ok: j['ok'] as bool? ?? true, openTogether: (j['n'] as num?)?.toInt() ?? 1,
+    volts: (j['v'] as num?)?.toDouble() ?? 0, ok: j['ok'] as bool? ?? true, openTogether: (j['n'] as num?)?.toInt() ?? 1, solenoids: (j['sol'] as num?)?.toInt() ?? 1,
   );
 }
 
@@ -236,7 +251,8 @@ class SolenoidSpec {
 
 /// Designs the valve wiring of [p]: returns null when the drawing has no
 /// controller and no wire route. [flows] are the valve sets that operate
-/// together (the system flows; valves in no flow open alone).
+/// together (the system flows with the valve-in-head stations they run;
+/// valves in no flow open alone).
 ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const []}) {
   final controllers = p.entities.whereType<ControllerEntity>().toList();
   final wires = p.entities.whereType<WireEntity>().where((w) => w.points.length >= 2).toList();
@@ -246,6 +262,12 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
   final slack = 1 + math.max(0.0, params.wireSlackPct) / 100;
   final result = ElectricalResult();
   final valves = p.entities.whereType<ControlValveEntity>().toList();
+  // master valves on the mainline: open whenever a zone of their controller
+  // is (its master-valve output, not a station)
+  final masters = [for (final e in p.entities.whereType<MiscHydraulicEntity>()) if (p.catalog.valve(e.valveSpecId)?.kind == ValveKind.master) e];
+  final circuits = <String, Pt>{for (final v in valves) v.id: v.position, for (final m in masters) m.id: m.position};
+  final vih = VihStations.of(p);
+  final headAt = <String, Pt>{for (final e in p.entities) if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position};
   if (controllers.isEmpty) {
     result.warnings.add('elec_no_controller');
     return result;
@@ -262,9 +284,14 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
     if (n != null) ctrlNode[c.id] = n;
   }
   final valveNode = <String, int>{};
-  for (final v in valves) {
-    final n = g.attach(v.position);
-    if (n != null) valveNode[v.id] = n;
+  for (final e in circuits.entries) {
+    final n = g.attach(e.value);
+    if (n != null) valveNode[e.key] = n;
+  }
+  final headNode = <String, int>{};
+  for (final e in headAt.entries) {
+    final n = g.attach(e.value);
+    if (n != null) headNode[e.key] = n;
   }
   final adj = g.adjacency();
   final paths = <String, (Map<int, double>, Map<int, int>)>{for (final e in ctrlNode.entries) e.key: g.shortest(e.value, adj)};
@@ -272,19 +299,52 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
   // every valve to the nearest controller it is wired to
   final owner = <String, String>{};
   final distance = <String, double>{};
-  for (final v in valves) {
-    final n = valveNode[v.id];
+  for (final id in circuits.keys) {
+    final n = valveNode[id];
     if (n == null) continue;
     for (final c in controllers) {
       final d = paths[c.id]?.$1[n];
-      if (d != null && d < (distance[v.id] ?? double.infinity)) {
-        distance[v.id] = d;
-        owner[v.id] = c.id;
+      if (d != null && d < (distance[id] ?? double.infinity)) {
+        distance[id] = d;
+        owner[id] = c.id;
       }
     }
   }
-  for (final v in valves) {
-    if (!owner.containsKey(v.id)) result.warnings.add('elec_unwired:${v.id}');
+  for (final id in circuits.keys) {
+    if (!owner.containsKey(id)) result.warnings.add('elec_unwired:$id');
+  }
+  // a valve-in-head station on the controller that reaches most of its
+  // heads (the shorter routes on a tie): the heads it does not reach are
+  // reported together, the others wired
+  final stationHeads = <String, List<String>>{};
+  for (final s in vih.heads.entries) {
+    String? best;
+    var reach = 0;
+    var total = double.infinity;
+    for (final c in controllers) {
+      final dist = paths[c.id]?.$1;
+      if (dist == null) continue;
+      var k = 0;
+      var sum = 0.0;
+      for (final h in s.value) {
+        final d = dist[headNode[h] ?? -1];
+        if (d == null) continue;
+        k++;
+        sum += d;
+      }
+      if (k > reach || (k == reach && k > 0 && sum < total)) {
+        best = c.id;
+        reach = k;
+        total = sum;
+      }
+    }
+    final dist = best == null ? const <int, double>{} : paths[best]!.$1;
+    final wired = [for (final h in s.value) if (dist.containsKey(headNode[h] ?? -1)) h];
+    if (wired.length < s.value.length) result.warnings.add('elec_unwired:${[for (final h in s.value) if (!wired.contains(h)) h].join(':')}');
+    if (best == null || wired.isEmpty) continue;
+    owner[s.key] = best;
+    distance[s.key] = wired.map((h) => dist[headNode[h]!]!).reduce(math.min);
+    stationHeads[s.key] = wired;
   }
   // routes that reach no controller
   final reached = <int>{for (final pth in paths.values) ...pth.$1.keys};
@@ -303,58 +363,112 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
 
   for (final c in controllers) {
     final mine = [for (final v in valves) if (owner[v.id] == c.id) v]..sort((a, b) => distance[a.id]!.compareTo(distance[b.id]!));
-    if (mine.isEmpty) {
+    // valve-in-head stations after the zone valves, by their nearest head
+    final myHeads = [for (final s in stationHeads.keys) if (owner[s] == c.id) s]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
+    if (mine.isEmpty && myHeads.isEmpty) {
       result.controllers.add(ControllerDuty(controllerId: c.id, name: c.name, stations: c.stations, used: 0, commonRouteM: 0, commonWireM: 0, maxOpen: 0, peakCurrentA: 0));
       continue;
     }
-    if (mine.length > c.stations) result.warnings.add('elec_stations:${c.id}');
+    if (mine.length + myHeads.length > c.stations) result.warnings.add('elec_stations:${c.id}');
+    final myMasters = [for (final m in masters) if (owner[m.id] == c.id) m.id]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
+    final circuitIds = [for (final v in mine) v.id, ...myHeads, ...myMasters];
     final via = paths[c.id]!.$2;
-    // edges from the controller to each valve
-    final pathOf = <String, List<int>>{};
-    for (final v in mine) {
+    List<int> walk(int from) {
       final edges = <int>[];
-      var n = valveNode[v.id]!;
+      var n = from;
       var guard = 0;
       while (n != ctrlNode[c.id] && guard++ < 100000) {
         final ei = via[n]!;
         edges.add(ei);
         n = g.edge(ei).other(n);
       }
-      pathOf[v.id] = edges;
+      return edges;
+    }
+
+    // edges from the controller to each valve (and master valve); for a
+    // valve-in-head station to each head, and the heads beyond every edge
+    final pathOf = <String, List<int>>{};
+    final headPaths = <String, Map<String, List<int>>>{};
+    final beyond = <String, Map<int, int>>{};
+    for (final id in circuitIds) {
+      final hs = stationHeads[id];
+      if (hs == null) {
+        pathOf[id] = walk(valveNode[id]!);
+        continue;
+      }
+      final per = {for (final h in hs) h: walk(headNode[h]!)};
+      final k = <int, int>{};
+      for (final e in per.values) {
+        for (final ei in e) {
+          k[ei] = (k[ei] ?? 0) + 1;
+        }
+      }
+      headPaths[id] = per;
+      beyond[id] = k;
+      pathOf[id] = k.keys.toList();
     }
     final treeEdges = {for (final e in pathOf.values) ...e};
     final commonRoute = treeEdges.fold(0.0, (s, ei) => s + g.edge(ei).length);
     // groups of this controller's valves that open together
-    final ids = {for (final v in mine) v.id};
+    final ids = {for (final v in mine) v.id, ...myHeads};
     final groups = <Set<String>>[];
     for (final f in flows) {
       final gset = f.intersection(ids);
       if (gset.isNotEmpty) groups.add(gset);
     }
-    for (final v in mine) {
-      if (!groups.any((gs) => gs.contains(v.id))) groups.add({v.id});
+    for (final id in [for (final v in mine) v.id, ...myHeads]) {
+      if (!groups.any((gs) => gs.contains(id))) groups.add({id});
     }
     final maxOpen = groups.fold(0, (m, gs) => math.max(m, gs.length));
     if (c.maxSimultaneous > 0 && maxOpen > c.maxSimultaneous) result.warnings.add('elec_simultaneous:${c.id}');
+    // the master valves are on with every group of zones
+    for (final gs in groups) {
+      gs.addAll(myMasters);
+    }
 
-    /// Common-conductor voltage drop per ohm/km of wire for valve [v]
-    /// opening with the other valves of [group] holding.
-    double commonDropPerOhmKm(String v, Set<String> group) {
+    /// Solenoids of circuit [u] fed through edge [ei].
+    int solenoidsOn(String u, int ei) => beyond[u]?[ei] ?? (pathOf[u]!.contains(ei) ? 1 : 0);
+
+    /// Common-conductor voltage drop per ohm/km of wire along [path] (to a
+    /// valve or a head) while circuit [v] opens with the other circuits of
+    /// [group] holding.
+    double commonDropPerOhmKm(List<int> path, String v, Set<String> group) {
       var drop = 0.0;
-      for (final ei in pathOf[v]!) {
+      for (final ei in path) {
         var amps = 0.0;
         for (final u in group) {
-          if (pathOf[u]!.contains(ei)) amps += u == v ? sol.inrushA : sol.holdingA;
+          final k = solenoidsOn(u, ei);
+          if (k > 0) amps += k * (u == v ? sol.inrushA : sol.holdingA);
         }
         drop += amps * g.edge(ei).length * slack / 1000;
       }
       return drop;
     }
 
-    final worstCommon = {for (final v in mine) v.id: groups.where((gs) => gs.contains(v.id)).map((gs) => commonDropPerOhmKm(v.id, gs)).fold(0.0, math.max)};
-    final openWith = {for (final v in mine) v.id: groups.where((gs) => gs.contains(v.id)).map((gs) => gs.length).fold(1, math.max)};
-    double volts(String v, WireSpec station, WireSpec common) =>
-        c.outputVolts - sol.inrushA * station.ohmPerKm * distance[v]! * slack / 1000 - worstCommon[v]! * common.ohmPerKm;
+    final worstCommon = {for (final id in circuitIds) if (!headPaths.containsKey(id)) id: groups.where((gs) => gs.contains(id)).map((gs) => commonDropPerOhmKm(pathOf[id]!, id, gs)).fold(0.0, math.max)};
+    final openWith = {for (final id in circuitIds) id: groups.where((gs) => gs.contains(id)).map((gs) => gs.length).fold(1, math.max)};
+    // every head of a valve-in-head station: the station and common
+    // conductor drops per ohm/km (all its heads opening together)
+    final headDrops = {
+      for (final e in headPaths.entries)
+        e.key: [
+          for (final h in e.value.entries)
+            (
+              h.key,
+              h.value.fold(0.0, (s, ei) => s + beyond[e.key]![ei]! * sol.inrushA * g.edge(ei).length * slack / 1000),
+              groups.where((gs) => gs.contains(e.key)).map((gs) => commonDropPerOhmKm(h.value, e.key, gs)).fold(0.0, math.max),
+            ),
+        ],
+    };
+    double headVolts((String, double, double) d, WireSpec station, WireSpec common) => c.outputVolts - d.$2 * station.ohmPerKm - d.$3 * common.ohmPerKm;
+    double volts(String v, WireSpec station, WireSpec common) {
+      final drops = headDrops[v];
+      if (drops != null) return drops.fold(double.infinity, (m, d) => math.min(m, headVolts(d, station, common)));
+      return c.outputVolts - sol.inrushA * station.ohmPerKm * distance[v]! * slack / 1000 - worstCommon[v]! * common.ohmPerKm;
+    }
+
+    // conductor route: to the valve, or along the union of a station's paths
+    double routeOf(String id) => headPaths.containsKey(id) ? pathOf[id]!.fold(0.0, (s, ei) => s + g.edge(ei).length) : distance[id]!;
 
     WireSpec? commonBest;
     Map<String, WireSpec>? stationBest;
@@ -363,18 +477,18 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
       final chosen = <String, WireSpec>{};
       var cost = commonRoute * slack * cw.costPerM;
       var feasible = true;
-      for (final v in mine) {
+      for (final id in circuitIds) {
         // the cheapest station wire that keeps the voltage (thinnest on a tie)
         WireSpec? sw;
         for (final s in candidates) {
-          if (volts(v.id, s, cw) >= sol.minVolts - 1e-9 && (sw == null || s.costPerM < sw.costPerM - 1e-12)) sw = s;
+          if (volts(id, s, cw) >= sol.minVolts - 1e-9 && (sw == null || s.costPerM < sw.costPerM - 1e-12)) sw = s;
         }
         if (sw == null) {
           feasible = false;
           break;
         }
-        chosen[v.id] = sw;
-        cost += distance[v.id]! * slack * sw.costPerM;
+        chosen[id] = sw;
+        cost += routeOf(id) * slack * sw.costPerM;
       }
       if (feasible && cost < bestCost - 1e-9) {
         bestCost = cost;
@@ -383,27 +497,39 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
       }
     }
     final common = commonBest ?? candidates.last;
-    final stationOf = stationBest ?? {for (final v in mine) v.id: candidates.last};
+    final stationOf = stationBest ?? {for (final id in circuitIds) id: candidates.last};
     var station = 0;
     var peak = 0.0;
+    // one circuit opening (all the solenoids of a station at once), the
+    // others of its group holding
+    int solenoids(String id) => stationHeads[id]?.length ?? 1;
     for (final gs in groups) {
-      peak = math.max(peak, sol.inrushA + (gs.length - 1) * sol.holdingA);
+      final top = gs.fold(1, (m, u) => math.max(m, solenoids(u)));
+      final all = gs.fold(0, (s, u) => s + solenoids(u));
+      peak = math.max(peak, top * sol.inrushA + (all - top) * sol.holdingA);
     }
-    for (final v in mine) {
-      final sw = stationOf[v.id]!;
-      final u = volts(v.id, sw, common);
+    final byId = {for (final v in mine) v.id: v};
+    for (final id in circuitIds) {
+      final v = byId[id];
+      final drops = headDrops[id];
+      final sw = stationOf[id]!;
+      final u = volts(id, sw, common);
       final ok = u >= sol.minVolts - 1e-9;
-      if (!ok) result.warnings.add('elec_voltage:${v.id}');
-      final len = distance[v.id]! * slack;
+      // a station's message points at its lowest head
+      if (!ok) result.warnings.add('elec_voltage:${drops == null ? id : drops.reduce((a, b) => headVolts(a, sw, common) <= headVolts(b, sw, common) ? a : b).$1}');
+      final route = routeOf(id);
+      final len = route * slack;
+      final name = drops != null ? vih.nameOf(id) : (v == null ? (p.byId(id)?.name ?? '') : (v.zoneName.isNotEmpty ? v.zoneName : v.name));
       result.runs.add(WireRun(
-        valveId: v.id, zoneName: v.zoneName.isNotEmpty ? v.zoneName : v.name, controllerId: c.id, station: ++station, routeM: distance[v.id]!, wireM: len,
-        stationWireId: sw.id.isEmpty ? null : sw.id, commonWireId: common.id.isEmpty ? null : common.id, volts: u, ok: ok, openTogether: openWith[v.id]!,
+        // station 0: the master-valve output
+        valveId: id, zoneName: name, controllerId: c.id, station: v == null && drops == null ? 0 : ++station, routeM: route, wireM: len,
+        stationWireId: sw.id.isEmpty ? null : sw.id, commonWireId: common.id.isEmpty ? null : common.id, volts: u, ok: ok, openTogether: openWith[id]!, solenoids: solenoids(id),
       ));
       if (sw.id.isNotEmpty) result.wireMeters[sw.id] = (result.wireMeters[sw.id] ?? 0) + len;
     }
     if (common.id.isNotEmpty) result.wireMeters[common.id] = (result.wireMeters[common.id] ?? 0) + commonRoute * slack;
     result.controllers.add(ControllerDuty(
-      controllerId: c.id, name: c.name, stations: c.stations, used: mine.length, commonWireId: common.id.isEmpty ? null : common.id, commonRouteM: commonRoute, commonWireM: commonRoute * slack, maxOpen: maxOpen, peakCurrentA: peak,
+      controllerId: c.id, name: c.name, stations: c.stations, used: mine.length + myHeads.length, commonWireId: common.id.isEmpty ? null : common.id, commonRouteM: commonRoute, commonWireM: commonRoute * slack, maxOpen: maxOpen, peakCurrentA: peak,
     ));
   }
   return result;

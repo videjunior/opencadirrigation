@@ -5,6 +5,7 @@ import 'package:opencadirrigation/core/design/densogram.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/results.dart';
 import 'package:opencadirrigation/core/hydraulics/uniformity.dart';
+import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
@@ -35,6 +36,7 @@ Project _grid(double s, {int n = 5, bool area = false}) {
 }
 
 void main() {
+  group('measured profiles and wind', measuredAndWindTests);
   group('spray source', () {
     test('every profile spreads the whole flow over the wetted circle', () {
       for (final profile in SprayProfile.values) {
@@ -278,5 +280,69 @@ void main() {
       expect(lines.length - 1, d.rate.where((v) => v > 0).length);
       expect(sprayProfileKey(SprayProfile.uniform), 'dens.profile.uniform');
     });
+  });
+}
+
+void measuredAndWindTests() {
+  test('a measured profile reproduces the built-in ones and conserves the flow', () {
+    const src = SpraySource(entityId: 'a', p: Pt.zero, flow: 1e-3, radius: 10);
+    const flat = SpraySource(entityId: 'a', p: Pt.zero, flow: 1e-3, radius: 10, measured: [(0, 1), (1, 1)]);
+    const tri = SpraySource(entityId: 'a', p: Pt.zero, flow: 1e-3, radius: 10, measured: [(0, 1), (1, 0)]);
+    for (final d in [0.0, 2.5, 5.0, 9.0]) {
+      expect(flat.rateAt(d, SprayProfile.triangular), closeTo(src.rateAt(d, SprayProfile.uniform), 1e-9 * src.rateAt(d, SprayProfile.uniform) + 1e-15));
+      expect(tri.rateAt(d, SprayProfile.uniform), closeTo(src.rateAt(d, SprayProfile.triangular), src.rateAt(0, SprayProfile.triangular) * 1e-3));
+    }
+    // any shape integrates back to the flow
+    const odd = SpraySource(entityId: 'a', p: Pt.zero, flow: 1e-3, radius: 10, measured: [(0, 0.6), (0.3, 1), (0.7, 0.8), (0.9, 0.2)]);
+    var q = 0.0;
+    const n = 4000;
+    for (var k = 0; k < n; k++) {
+      final r = (k + 0.5) * 10 / n;
+      q += odd.rateAt(r, SprayProfile.uniform) * 2 * math.pi * r * 10 / n;
+    }
+    expect(q, closeTo(1e-3, 1e-6));
+  });
+
+  test('catch-can rows become a profile scaled to the radius and the peak', () {
+    final prof = profileFromTable([(0, 4.1), (2, 4.4), (4, 4.0), (6, 3.1), (8, 1.8), (10, 0.6), (11, 0)])!;
+    expect(prof.first, (0.0, 4.1 / 4.4));
+    expect(prof.last.$1, closeTo(1, 1e-12)); // 10 m is the last with water
+    expect(prof.map((p) => p.$2).reduce(math.max), 1);
+    expect(profileFromTable([(0, 1)]), isNull);
+  });
+
+  test('wind moves the water downwind and keeps its volume', () {
+    // the inverse of the drift lands back where it came from
+    final dir = Pt.polar(1, 0.3);
+    for (final v in [const Pt(3, 4), const Pt(-5, 1), const Pt(0.2, -7)]) {
+      final c = windDisplace(v, 0.2, dir);
+      final (back, _) = windSource(c, 0.2, dir);
+      expect(back.distanceTo(v), lessThan(1e-9));
+    }
+    final p = Project();
+    p.entities.add(OutletEntity(id: 'h', position: const Pt(50, 50), outletSpecId: 'impact34', nozzleId: 'i4.0', headM: 30));
+    (double, Pt) massAndCentroid(DensogramOptions o) {
+      final d = computeDensogram(p, options: o);
+      var m = 0.0;
+      var cx = 0.0, cy = 0.0;
+      for (var j = 0; j < d.ny; j++) {
+        for (var i = 0; i < d.nx; i++) {
+          final w = d.rate[j * d.nx + i];
+          m += w;
+          cx += w * (d.origin.x + (i + 0.5) * d.cell);
+          cy += w * (d.origin.y + (j + 0.5) * d.cell);
+        }
+      }
+      return (m * d.cell * d.cell, Pt(cx / m, cy / m));
+    }
+
+    final (calm, c0) = massAndCentroid(DensogramOptions(profile: SprayProfile.uniform, cellSize: 0.25));
+    final (windy, c1) = massAndCentroid(DensogramOptions(profile: SprayProfile.uniform, cellSize: 0.25, windSpeed: 3, windTowardsDeg: 0));
+    expect(windy, closeTo(calm, calm * 0.02));
+    expect(c0.distanceTo(const Pt(50, 50)), lessThan(0.1));
+    // uniform profile: the mean throw is 2R/3, shifted by a = k·u
+    final r = Project().catalog.outlet('impact34')!.nozzle('i4.0')!.curve.radius(30);
+    expect(c1.x - 50, closeTo(defaultWindDrift * 3 * 2 * r / 3, 0.15));
+    expect((c1.y - 50).abs(), lessThan(0.1));
   });
 }

@@ -189,10 +189,14 @@ void main() {
       final towers = r.bom.firstWhere((b) => b.category == 'bom.pivots' && b.description.contains('pivot.towersItem'));
       expect(towers.quantity, 4);
       expect(towers.unitCost, 15000);
+      // the package plugs the outlets near the pivot point that would need
+      // less than half the smallest nozzle: their rings go to the next ones
+      final installed = r.mechanised[pivot.id]!.package.sprinklerCount;
+      expect(installed, inInclusiveRange(60, 79));
       final spr = r.bom.firstWhere((b) => b.category == 'bom.pivots' && b.specId == 'impact34');
-      expect(spr.quantity, 80);
+      expect(spr.quantity, installed);
       final reg = r.bom.firstWhere((b) => b.category == 'bom.pivots' && b.specId == 'prv50');
-      expect(reg.quantity, 80);
+      expect(reg.quantity, installed);
       final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
       final spans = tables.firstWhere((tb) => tb.key == 'pivotSpans');
       expect(spans.rows.length, 4);

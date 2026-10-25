@@ -1,5 +1,6 @@
-/// Management helpers: demand of every zone and pivot, and the automatic
-/// grouping of the zones into system flows (shifts) that fit the supply.
+/// Management helpers: demand of every zone, pivot and valve-in-head
+/// station, and the automatic grouping of them into system flows (shifts)
+/// that fit the supply.
 library;
 
 import 'dart:math' as math;
@@ -9,17 +10,26 @@ import '../model/project.dart';
 import 'designer.dart';
 import 'network_builder.dart';
 import 'results.dart';
+import 'valve_in_head.dart';
 
-/// Ids of the demands a system flow can hold: zone valves and pivots, in
-/// drawing order.
-List<String> demandIds(Project p) => [
-  for (final e in p.entities)
-    if (e is ControlValveEntity || e is PivotEntity) e.id,
-];
+/// Ids of the demands a system flow can hold, in drawing order: zone valves,
+/// pivots and valve-in-head stations (`valve_in_head.dart`; a station where
+/// its first head is).
+List<String> demandIds(Project p) {
+  final stations = <String>{};
+  return [
+    for (final e in p.entities)
+      if (e is ControlValveEntity || e is PivotEntity)
+        e.id
+      else if (e is OutletEntity && e.scope == HydraulicScope.mainline && stations.add(vihStationId(e)))
+        vihStationId(e),
+  ];
+}
 
-/// Display name of a demand: the zone name of a valve or pivot, else its
-/// name, else its id.
+/// Display name of a demand: the zone name of a valve or pivot, the name of
+/// a valve-in-head station, else its name, else its id.
 String demandName(Project p, String id) {
+  if (id.startsWith(vihPrefix)) return id.substring(vihPrefix.length);
   final e = p.byId(id);
   final zone = switch (e) {
     ControlValveEntity v => v.zoneName,
@@ -31,18 +41,32 @@ String demandName(Project p, String id) {
   return n.isNotEmpty ? n : id;
 }
 
-/// Flow (m³/s) each zone valve and pivot draws: the design flows when
-/// [results] hold them, else the nominal flow of the emitters downstream of
-/// the valve (every emitter at its nominal pressure) and the machine flow of
-/// the pivots.
+/// Flow (m³/s) each zone valve, pivot and valve-in-head station draws: the
+/// design flows when [results] hold them (a station: the largest of the
+/// flows it runs in), else the nominal flow of the emitters downstream of
+/// the valve or of the station's heads (every emitter at its nominal
+/// pressure) and the machine flow of the pivots.
 Map<String, double> nominalDemands(Project p, {DesignResults? results}) {
   final out = <String, double>{};
   NetworkModel? model;
   Designer? designer;
+  final vih = VihStations.of(p);
+  final vihResults = vih.isEmpty ? null : results?.vihStations;
+  Map<String, double>? headFlow;
   for (final id in demandIds(p)) {
-    final fromResults = results?.zones[id]?.totalFlow ?? results?.pivots[id]?.flow;
+    final fromResults = results?.zones[id]?.totalFlow ?? results?.pivots[id]?.flow ?? vihResults?[id]?.flow;
     if (fromResults != null && fromResults > 0) {
       out[id] = fromResults;
+      continue;
+    }
+    if (vih.isStation(id)) {
+      model ??= designer?.model ?? NetworkBuilder(p).build();
+      final m = model;
+      headFlow ??= {
+        for (final nid in m.mainlineNodes)
+          for (final em in m.nodes[nid]!.emitters) em.entityId: em.nominalFlow,
+      };
+      out[id] = vih.heads[id]!.fold(0.0, (s, h) => s + (headFlow![h] ?? 0));
       continue;
     }
     final e = p.byId(id);
@@ -66,7 +90,7 @@ Map<String, double> nominalDemands(Project p, {DesignResults? results}) {
 
 /// Options of [autoSystemFlows].
 class AutoFlowOptions {
-  AutoFlowOptions({this.maxFlow = 0, this.maxValves = 0, this.durationHours = 1, this.firstStartHour = 6});
+  AutoFlowOptions({this.maxFlow = 0, this.maxValves = 0, this.durationHours = 1, this.firstStartHour = 6, this.valveInHead = true});
 
   /// Largest flow of a system flow (m³/s); 0 = the design flow of the water
   /// supplies (their sum), or no limit when no supply states one.
@@ -74,6 +98,11 @@ class AutoFlowOptions {
 
   /// Most zones open together (0 = no limit).
   int maxValves;
+
+  /// Packs the valve-in-head stations with the zones, each a demand like a
+  /// zone valve; false leaves them out of the flows (then they run in every
+  /// flow).
+  bool valveInHead;
 
   /// Duration of each system flow (h) and start of the first one (h).
   double durationHours;
@@ -106,17 +135,23 @@ double suppliesDesignFlow(Project p) {
   return supplies.fold(0.0, (s, e) => s + e.designFlow);
 }
 
-/// Groups the zones and pivots into as few system flows as the flow limit
-/// and the number of valves allow (first-fit decreasing: the largest
-/// demands are placed first). The flows run one after the other from
-/// [AutoFlowOptions.firstStartHour]. [label] translates `name.flow`.
+/// Groups the zones, pivots and valve-in-head stations into as few system
+/// flows as the flow limit and the number of valves allow (first-fit
+/// decreasing: the largest demands are placed first). The flows run one
+/// after the other from [AutoFlowOptions.firstStartHour]. [label]
+/// translates `name.flow`.
 AutoFlowPlan autoSystemFlows(Project p, AutoFlowOptions o, {DesignResults? results, String Function(String key) label = _id}) {
   final demands = nominalDemands(p, results: results);
+  if (!o.valveInHead) {
+    final vih = VihStations.of(p);
+    demands.removeWhere((id, _) => vih.isStation(id));
+  }
   final cap = o.maxFlow > 0 ? o.maxFlow : suppliesDesignFlow(p);
+  final rank = {for (final (i, id) in demandIds(p).indexed) id: i};
   final order = demands.keys.toList()
     ..sort((a, b) {
       final c = demands[b]!.compareTo(demands[a]!);
-      return c != 0 ? c : demandIds(p).indexOf(a).compareTo(demandIds(p).indexOf(b));
+      return c != 0 ? c : rank[a]!.compareTo(rank[b]!);
     });
   final bins = <List<String>>[];
   final loads = <double>[];

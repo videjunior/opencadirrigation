@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-19",
+      "dateModified": "2026-10-25",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/id/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.0.1",
-      "dateModified": "2026-10-19",
+      "softwareVersion": "1.1.0",
+      "dateModified": "2026-10-25",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/id/?tutorial=1",
@@ -256,14 +256,16 @@
       ],
       "keywords": "desain irigasi, software desain irigasi, software irigasi open source, perangkat lunak irigasi, CAD irigasi, irigasi bertekanan, irigasi tetes, mikro sprinkler, irigasi sprinkler, pivot tengah, perhitungan hidraulik, dimensi pipa, keseragaman irigasi, DXF, DWG, irigasi taman, irigasi pertanian, software irigasi gratis",
       "featureList": [
-        "Gambar CAD lengkap: Garis, polyline, busur, spline, arsiran, dimensi, teks dan layer, dengan snap, seleksi jendela, grip dan pintasan ala AutoCAD (L, PL, C, D, ZE…).",
-        "Jaringan hidraulik: Sumber air, pompa, pipa utama, katup zona, lateral dengan emitter, pita tetes dan selang tetes, filter, regulator tekanan, meteran air dan simpul; generator blok lateral dan grid sprinkler.",
-        "Mesin hidraulik tervalidasi: Hazen-Williams dan Darcy-Weisbach, kehilangan minor, emitter q = k·Hˣ, penyelesaian jaringan dengan Global Gradient Algorithm (seperti EPANET), kurva pompa dan titik operasi, water hammer serta analisis pembilasan.",
-        "Penentuan ukuran otomatis: Pemrograman linear atau kecepatan maksimum, sesuai rentang tekanan emitter dan kelas tekanan pipa, menimbang biaya pipa terhadap energi, dengan diameter bertingkat dan giliran operasi.",
-        "Medan dan relief: Kontur, titik tinggi, model medan digital dengan triangulasi, elevasi yang diunduh dari internet berdasarkan koordinat, profil memanjang dan garis tekanan hidraulik di atas permukaan tanah.",
-        "Laporan dan material: Zona, pipa, emitter, keseragaman (CU, DU, EU), kebutuhan air tanaman, program pengendali dan daftar material dengan fitting; ekspor ke PDF, Excel, CSV dan TXT.",
-        "Pertukaran berkas: Mengimpor DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF dan gambar bergeoreferensi; mengekspor DXF, DWG, lembar PDF, SVG, KML, KMZ dan GeoJSON.",
-        "Katalog produsen: Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL."
+        "Gambar CAD lengkap: Garis, polyline, busur, spline, arsiran, dimensi, teks, layer dan blok, dengan koordinat yang diketik, snap, pelacakan polar, grip, awan revisi dan pintasan ala AutoCAD (L, PL, C, D, ZE…).",
+        "Jaringan hidraulik: Sumber air, pompa berkecepatan tetap dan variabel, pipa utama, katup zona, katup pengurang dan penahan tekanan, katup pengatur debit, sprinkler dengan katup terintegrasi, lateral dengan emitter, pita tetes, filter dan meteran air, ditambah pivot tengah dan mesin linear beserta paket sprinkler masing-masing, traveller gulungan selang dan irigasi permukaan.",
+        "Mesin hidraulik tervalidasi: Hazen-Williams, Darcy-Weisbach, Scobey dan Manning, kehilangan minor dari fitting yang dipakai, emitter q = k·Hˣ, penyelesaian jaringan dengan Global Gradient Algorithm (seperti EPANET), kurva pompa dengan NPSH, analisis transien (water hammer) dengan metode karakteristik beserta katup udara, serta simulasi 24 jam dengan tarif energi.",
+        "Desain dan penentuan ukuran otomatis: Blok lateral dan grid sprinkler dengan satu klik, tata letak sprinkler dengan presipitasi seimbang, pembagian zona menurut debit, penarikan jalur pipa dan katup, pembagian lahan menjadi blok, penyesuaian pivot dengan lahan dan deteksi vegetasi pada citra udara; ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dengan menimbang biaya pipa terhadap energi.",
+        "Medan, iklim dan agronomi: Kontur, titik tinggi, model medan hasil triangulasi dengan garis patah, elevasi online, awan titik LAS, peta kemiringan dan profil; iklim lokasi yang diunduh atau diketik, kebutuhan air berdasarkan tanaman FAO-56 per fase pertumbuhan, jenis tanah, hujan efektif dan pencucian garam, ditambah anggaran air lanskap.",
+        "Laporan, lembar gambar dan material: Zona, pipa, emitter, keseragaman (CU, DU, EU), program pengendali dan pengabelan katup; daftar material dengan fitting dan penawaran harga yang mencakup upah kerja, pajak dan periode pengembalian modal; set lembar PDF dengan detail konstruksi dan grafik dalam salah satu dari 20 bahasa, serta setiap tabel dalam format Excel, CSV dan TXT.",
+        "Pertukaran berkas: Mengimpor DXF, DWG, denah PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF dan gambar; mengekspor DXF 2000 dengan entitas CAD asli (atau R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp dan IFC.",
+        "Katalog produsen: Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.",
+        "Asisten AI: Opsional: ajukan pertanyaan tentang proyek kepada AI, atau biarkan AI menempatkan sprinkler, mengubah gambar dan menjalankan perhitungan desain dengan alat bawaan program. Asisten memakai kunci API Anthropic atau OpenAI Anda sendiri, langsung dari peramban tanpa server perantara; tidak ada yang dikirim sebelum Anda menekan Kirim, dan setiap perubahan menunggu persetujuan Anda (atau diterapkan otomatis, jika Anda memilihnya) serta dapat dibatalkan.",
+        "Offline dan di lapangan: Setelah kunjungan pertama, aplikasi dapat dibuka tanpa jaringan di komputer, tablet atau ponsel, dengan tema terang atau gelap. Di lapangan, GPS perangkat merekam garis batas dan garis yang Anda telusuri sambil berjalan kaki, menandai titik, serta menunjukkan jarak dan arah ke objek terpilih untuk pematokan."
       ],
       "about": [
         {
@@ -332,7 +334,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -362,7 +364,7 @@
           "name": "Apakah OpenCADIrrigation gratis?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub."
+            "text": "Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub. Asisten AI yang opsional memakai akun Anthropic atau OpenAI Anda sendiri, dan penyedia layanan menagih penggunaannya ke akun tersebut."
           }
         },
         {
@@ -383,10 +385,18 @@
         },
         {
           "@type": "Question",
+          "name": "Apakah bisa dipakai secara offline?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 24 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Apakah proyek saya disimpan di cloud?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja. Hanya elevasi online dan peta dasar yang mengakses internet, saat Anda memintanya."
+            "text": "Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja; tautan berbagi membawa proyek di dalam alamatnya sendiri, sehingga tidak ada yang diunggah. Internet hanya diakses saat Anda memintanya: peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL dan, jika Anda memakainya, asisten AI, yang hanya berkomunikasi dengan penyedia layanan pilihan Anda (Anthropic atau OpenAI)."
           }
         },
         {
@@ -394,7 +404,15 @@
           "name": "Bagaimana perhitungan hidrauliknya?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kehilangan tekanan akibat gesekan dengan Hazen-Williams atau Darcy-Weisbach, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Pipa diukur dengan pemrograman linear dalam rentang tekanan emitter, dan desain juga memeriksa keseragaman (CU, DU, EU), water hammer, dan pembilasan."
+            "text": "Kehilangan tekanan akibat gesekan dengan Hazen-Williams, Darcy-Weisbach, Scobey atau Manning, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dan desain juga memeriksa keseragaman (CU, DU, EU), pembilasan, serta transien dengan metode karakteristik (penutupan katup, pompa berhenti mendadak, katup udara), disertai simulasi 24 jam untuk tekanan dan biaya energi."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah AI bisa mendesain proyek untuk saya?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ya, jika Anda mau. Asisten AI yang opsional memakai model dari Anthropic atau OpenAI dengan kunci API Anda sendiri; model itu dipanggil langsung dari peramban Anda tanpa server perantara. Asisten menjawab pertanyaan tentang proyek dan dapat menempatkan sprinkler, membagi lahan menjadi blok, mengubah gambar, serta menjalankan perhitungan desain dan alat-alat otomatis, dengan meminta persetujuan sebelum setiap perubahan (atau menerapkannya secara otomatis, jika Anda memilihnya); setiap perubahan dapat dibatalkan. Tidak ada yang dikirim sampai Anda menekan Kirim: saat itu pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim ke API penyedia layanan tersebut. Penyedia layanan menagih penggunaannya ke akun Anda, dan kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya."
           }
         },
         {
@@ -402,7 +420,7 @@
           "name": "Apakah bisa dipakai dengan AutoCAD dan CAD lain?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Ya. Aplikasi mengimpor dan mengekspor DXF dan DWG (AutoCAD 2000 hingga 2018), serta KML/KMZ Google Earth, shapefile, GeoJSON, SVG dan PDF."
+            "text": "Ya. Aplikasi mengimpor DXF dan DWG hingga AutoCAD 2018, DGN V7 dan denah PDF, serta mengekspor DXF 2000 dengan entitas CAD asli (polyline dengan busur, arsiran, spline, dimensi, blok dengan atribut), DXF R12 untuk program lama dan DWG 2000. Untuk SIG, survei dan BIM, aplikasi juga membaca dan menulis KML/KMZ, shapefile, GeoJSON, GPX, LandXML dan EPANET .inp, membaca awan titik LAS, dan mengekspor IFC 4."
           }
         },
         {
@@ -691,14 +709,16 @@
       <section aria-labelledby="oci-features">
         <h2 id="oci-features">Apa yang dilakukan OpenCADIrrigation</h2>
         <ul class="grid">
-          <li><h3>Gambar CAD lengkap</h3><p>Garis, polyline, busur, spline, arsiran, dimensi, teks dan layer, dengan snap, seleksi jendela, grip dan pintasan ala AutoCAD (L, PL, C, D, ZE…).</p></li>
-          <li><h3>Jaringan hidraulik</h3><p>Sumber air, pompa, pipa utama, katup zona, lateral dengan emitter, pita tetes dan selang tetes, filter, regulator tekanan, meteran air dan simpul; generator blok lateral dan grid sprinkler.</p></li>
-          <li><h3>Mesin hidraulik tervalidasi</h3><p>Hazen-Williams dan Darcy-Weisbach, kehilangan minor, emitter q = k·Hˣ, penyelesaian jaringan dengan Global Gradient Algorithm (seperti EPANET), kurva pompa dan titik operasi, water hammer serta analisis pembilasan.</p></li>
-          <li><h3>Penentuan ukuran otomatis</h3><p>Pemrograman linear atau kecepatan maksimum, sesuai rentang tekanan emitter dan kelas tekanan pipa, menimbang biaya pipa terhadap energi, dengan diameter bertingkat dan giliran operasi.</p></li>
-          <li><h3>Medan dan relief</h3><p>Kontur, titik tinggi, model medan digital dengan triangulasi, elevasi yang diunduh dari internet berdasarkan koordinat, profil memanjang dan garis tekanan hidraulik di atas permukaan tanah.</p></li>
-          <li><h3>Laporan dan material</h3><p>Zona, pipa, emitter, keseragaman (CU, DU, EU), kebutuhan air tanaman, program pengendali dan daftar material dengan fitting; ekspor ke PDF, Excel, CSV dan TXT.</p></li>
-          <li><h3>Pertukaran berkas</h3><p>Mengimpor DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF dan gambar bergeoreferensi; mengekspor DXF, DWG, lembar PDF, SVG, KML, KMZ dan GeoJSON.</p></li>
+          <li><h3>Gambar CAD lengkap</h3><p>Garis, polyline, busur, spline, arsiran, dimensi, teks, layer dan blok, dengan koordinat yang diketik, snap, pelacakan polar, grip, awan revisi dan pintasan ala AutoCAD (L, PL, C, D, ZE…).</p></li>
+          <li><h3>Jaringan hidraulik</h3><p>Sumber air, pompa berkecepatan tetap dan variabel, pipa utama, katup zona, katup pengurang dan penahan tekanan, katup pengatur debit, sprinkler dengan katup terintegrasi, lateral dengan emitter, pita tetes, filter dan meteran air, ditambah pivot tengah dan mesin linear beserta paket sprinkler masing-masing, traveller gulungan selang dan irigasi permukaan.</p></li>
+          <li><h3>Mesin hidraulik tervalidasi</h3><p>Hazen-Williams, Darcy-Weisbach, Scobey dan Manning, kehilangan minor dari fitting yang dipakai, emitter q = k·Hˣ, penyelesaian jaringan dengan Global Gradient Algorithm (seperti EPANET), kurva pompa dengan NPSH, analisis transien (water hammer) dengan metode karakteristik beserta katup udara, serta simulasi 24 jam dengan tarif energi.</p></li>
+          <li><h3>Desain dan penentuan ukuran otomatis</h3><p>Blok lateral dan grid sprinkler dengan satu klik, tata letak sprinkler dengan presipitasi seimbang, pembagian zona menurut debit, penarikan jalur pipa dan katup, pembagian lahan menjadi blok, penyesuaian pivot dengan lahan dan deteksi vegetasi pada citra udara; ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dengan menimbang biaya pipa terhadap energi.</p></li>
+          <li><h3>Medan, iklim dan agronomi</h3><p>Kontur, titik tinggi, model medan hasil triangulasi dengan garis patah, elevasi online, awan titik LAS, peta kemiringan dan profil; iklim lokasi yang diunduh atau diketik, kebutuhan air berdasarkan tanaman FAO-56 per fase pertumbuhan, jenis tanah, hujan efektif dan pencucian garam, ditambah anggaran air lanskap.</p></li>
+          <li><h3>Laporan, lembar gambar dan material</h3><p>Zona, pipa, emitter, keseragaman (CU, DU, EU), program pengendali dan pengabelan katup; daftar material dengan fitting dan penawaran harga yang mencakup upah kerja, pajak dan periode pengembalian modal; set lembar PDF dengan detail konstruksi dan grafik dalam salah satu dari 20 bahasa, serta setiap tabel dalam format Excel, CSV dan TXT.</p></li>
+          <li><h3>Pertukaran berkas</h3><p>Mengimpor DXF, DWG, denah PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF dan gambar; mengekspor DXF 2000 dengan entitas CAD asli (atau R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp dan IFC.</p></li>
           <li><h3>Katalog produsen</h3><p>Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.</p></li>
+          <li><h3>Asisten AI</h3><p>Opsional: ajukan pertanyaan tentang proyek kepada AI, atau biarkan AI menempatkan sprinkler, mengubah gambar dan menjalankan perhitungan desain dengan alat bawaan program. Asisten memakai kunci API Anthropic atau OpenAI Anda sendiri, langsung dari peramban tanpa server perantara; tidak ada yang dikirim sebelum Anda menekan Kirim, dan setiap perubahan menunggu persetujuan Anda (atau diterapkan otomatis, jika Anda memilihnya) serta dapat dibatalkan.</p></li>
+          <li><h3>Offline dan di lapangan</h3><p>Setelah kunjungan pertama, aplikasi dapat dibuka tanpa jaringan di komputer, tablet atau ponsel, dengan tema terang atau gelap. Di lapangan, GPS perangkat merekam garis batas dan garis yang Anda telusuri sambil berjalan kaki, menandai titik, serta menunjukkan jarak dan arah ke objek terpilih untuk pematokan.</p></li>
         </ul>
       </section>
 
@@ -743,17 +763,21 @@
           <dt>Apa itu OpenCADIrrigation?</dt>
           <dd>OpenCADIrrigation adalah aplikasi web gratis dan sumber terbuka untuk merancang sistem irigasi bertekanan: CAD dengan mesin hidraulik yang menata jaringan, menentukan ukuran pipa, memeriksa tekanan dan keseragaman, serta menghasilkan daftar material dan laporan, dari taman rumah hingga pivot tengah.</dd>
           <dt>Apakah OpenCADIrrigation gratis?</dt>
-          <dd>Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub.</dd>
+          <dd>Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub. Asisten AI yang opsional memakai akun Anthropic atau OpenAI Anda sendiri, dan penyedia layanan menagih penggunaannya ke akun tersebut.</dd>
           <dt>Untuk siapa aplikasi ini?</dt>
           <dd>Untuk perancang irigasi pertanian dan lanskap, agronom dan insinyur, dealer peralatan, pengajar dan mahasiswa. Tutorial interaktif dan 15 contoh siap pakai memungkinkan Anda mulai tanpa membaca manual.</dd>
           <dt>Apakah saya perlu memasang sesuatu?</dt>
           <dd>Tidak. Aplikasi berjalan di Chrome, Edge, Firefox dan Safari, di komputer, tablet dan ponsel, dan dapat dipasang sebagai aplikasi (PWA) yang terbuka di jendelanya sendiri.</dd>
+          <dt>Apakah bisa dipakai secara offline?</dt>
+          <dd>Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 24 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.</dd>
           <dt>Apakah proyek saya disimpan di cloud?</dt>
-          <dd>Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja. Hanya elevasi online dan peta dasar yang mengakses internet, saat Anda memintanya.</dd>
+          <dd>Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja; tautan berbagi membawa proyek di dalam alamatnya sendiri, sehingga tidak ada yang diunggah. Internet hanya diakses saat Anda memintanya: peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL dan, jika Anda memakainya, asisten AI, yang hanya berkomunikasi dengan penyedia layanan pilihan Anda (Anthropic atau OpenAI).</dd>
           <dt>Bagaimana perhitungan hidrauliknya?</dt>
-          <dd>Kehilangan tekanan akibat gesekan dengan Hazen-Williams atau Darcy-Weisbach, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Pipa diukur dengan pemrograman linear dalam rentang tekanan emitter, dan desain juga memeriksa keseragaman (CU, DU, EU), water hammer, dan pembilasan.</dd>
+          <dd>Kehilangan tekanan akibat gesekan dengan Hazen-Williams, Darcy-Weisbach, Scobey atau Manning, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dan desain juga memeriksa keseragaman (CU, DU, EU), pembilasan, serta transien dengan metode karakteristik (penutupan katup, pompa berhenti mendadak, katup udara), disertai simulasi 24 jam untuk tekanan dan biaya energi.</dd>
+          <dt>Apakah AI bisa mendesain proyek untuk saya?</dt>
+          <dd>Ya, jika Anda mau. Asisten AI yang opsional memakai model dari Anthropic atau OpenAI dengan kunci API Anda sendiri; model itu dipanggil langsung dari peramban Anda tanpa server perantara. Asisten menjawab pertanyaan tentang proyek dan dapat menempatkan sprinkler, membagi lahan menjadi blok, mengubah gambar, serta menjalankan perhitungan desain dan alat-alat otomatis, dengan meminta persetujuan sebelum setiap perubahan (atau menerapkannya secara otomatis, jika Anda memilihnya); setiap perubahan dapat dibatalkan. Tidak ada yang dikirim sampai Anda menekan Kirim: saat itu pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim ke API penyedia layanan tersebut. Penyedia layanan menagih penggunaannya ke akun Anda, dan kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya.</dd>
           <dt>Apakah bisa dipakai dengan AutoCAD dan CAD lain?</dt>
-          <dd>Ya. Aplikasi mengimpor dan mengekspor DXF dan DWG (AutoCAD 2000 hingga 2018), serta KML/KMZ Google Earth, shapefile, GeoJSON, SVG dan PDF.</dd>
+          <dd>Ya. Aplikasi mengimpor DXF dan DWG hingga AutoCAD 2018, DGN V7 dan denah PDF, serta mengekspor DXF 2000 dengan entitas CAD asli (polyline dengan busur, arsiran, spline, dimensi, blok dengan atribut), DXF R12 untuk program lama dan DWG 2000. Untuk SIG, survei dan BIM, aplikasi juga membaca dan menulis KML/KMZ, shapefile, GeoJSON, GPX, LandXML dan EPANET .inp, membaca awan titik LAS, dan mengekspor IFC 4.</dd>
           <dt>Tersedia dalam bahasa apa saja?</dt>
           <dd>Dalam 20 bahasa, sama dengan situs ini (daftarnya ada di bagian bawah halaman). Aplikasi terbuka dalam bahasa komputer Anda dan Anda dapat menggantinya kapan saja di Tampilan → Bahasa.</dd>
         </dl>
@@ -762,7 +786,7 @@
       <footer>
         <nav aria-label="Bahasa">Bahasa: <strong lang="id" dir="ltr">Bahasa Indonesia</strong> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Katalog produsen dan proyek contoh dapat dikirim dalam format JSON untuk dimasukkan ke OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.0.1 · <a href="https://github.com/videjunior/opencadirrigation">Kode sumber (lisensi MIT)</a> · <time datetime="2026-10-19">2026-10-19</time></p>
+        <p class="meta">OpenCADIrrigation 1.1.0 · <a href="https://github.com/videjunior/opencadirrigation">Kode sumber (lisensi MIT)</a> · <time datetime="2026-10-25">2026-10-25</time></p>
       </footer>
     </div>
   </main>
@@ -793,10 +817,11 @@
         remember();
         landing.className += ' oci-starting';
         status.textContent = "Memuat CAD irigasi…";
-        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        // The engine and the app code come from this site and are fetched while the loader runs;
+        // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
         var engine = document.createElement('link');
         engine.rel = 'preconnect';
-        engine.href = 'https://www.gstatic.com';
+        engine.href = 'https://fonts.gstatic.com';
         engine.crossOrigin = '';
         document.head.appendChild(engine);
         var code = document.createElement('link');

@@ -12,6 +12,10 @@ import 'package:opencadirrigation/core/model/geometry.dart';
 
 /// Records what the tools ask of the widget layer.
 class FakeHost implements ToolHost {
+  @override
+  void showCommentDialog(Pt position) {}
+  @override
+  void showRevisionDialog(List<Pt> polygon) {}
   final calls = <String>[];
   List<Pt>? polygon;
   List<Pt>? leader;

@@ -5,3 +5,7 @@ library;
 import 'links_stub.dart' if (dart.library.js_interop) 'links_web.dart' as impl;
 
 void openExternalLink(String url) => impl.openExternalLink(url);
+
+/// Removes the fragment (`#…`) from the address bar without reloading, so a
+/// shared project opened from a link is not opened again on reload.
+void clearAddressFragment() => impl.clearAddressFragment();

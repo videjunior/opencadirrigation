@@ -29,6 +29,16 @@ const reportTabKeys = [
   'reports.pivots',
   'reports.pivotSpans',
   'reports.electrical',
+  'reports.proposal',
+  'reports.trench',
+  'reports.bomZones',
+  'reports.comments',
+  'reports.revisions',
+  'reports.scenarios',
+  'reports.requirement',
+  'reports.pivotPackage',
+  'reports.machines',
+  'reports.vih',
 ];
 
 /// Report tab indices used in code.
@@ -37,7 +47,7 @@ abstract final class ControllerTabs {
 }
 
 /// Tabs that do not need design results.
-const _noResultTabs = {5, 7, 8, 11, 12};
+const _noResultTabs = {5, 7, 8, 11, 12, 17, 19, 20, 21, 22};
 
 class ReportsPanel extends StatelessWidget {
   const ReportsPanel({super.key, required this.c});
@@ -48,11 +58,11 @@ class ReportsPanel extends StatelessWidget {
     final t = c.t;
     final r = c.results;
     return ColoredBox(
-      color: CadColors.background,
+      color: Cad.background,
       child: Column(
         children: [
           Container(
-            color: const Color(0xFF1B1F24),
+            color: Cad.panel,
             height: 30,
             child: Row(
               children: [
@@ -72,9 +82,9 @@ class ReportsPanel extends StatelessWidget {
                             height: 30,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              border: Border(bottom: BorderSide(color: c.reportTab == i ? const Color(0xFF42A5F5) : Colors.transparent, width: 2)),
+                              border: Border(bottom: BorderSide(color: c.reportTab == i ? Cad.accent : Colors.transparent, width: 2)),
                             ),
-                            child: Text(i == ControllerTabs.messages ? _messagesLabel() : t(reportTabKeys[i]), style: TextStyle(fontSize: 11.5, color: c.reportTab == i ? Colors.white : (i == ControllerTabs.messages && _errorCount() > 0 ? CadColors.unconnected : Colors.white60))),
+                            child: Text(i == ControllerTabs.messages ? _messagesLabel() : t(reportTabKeys[i]), style: TextStyle(fontSize: 11.5, color: c.reportTab == i ? Cad.fg : (i == ControllerTabs.messages && _errorCount() > 0 ? Cad.unconnected : Cad.fg60))),
                           ),
                         ),
                     ]),
@@ -93,7 +103,7 @@ class ReportsPanel extends StatelessWidget {
           ),
           Expanded(
             child: r == null && !_noResultTabs.contains(c.reportTab)
-                ? Center(child: Text(t('msg.noResults'), style: const TextStyle(color: Colors.white54)))
+                ? Center(child: Text(t('msg.noResults'), style: TextStyle(color: Cad.fg54)))
                 : _tab(context, r),
           ),
         ],
@@ -133,9 +143,44 @@ class ReportsPanel extends StatelessWidget {
         return _fromTable('pivots');
       case 14:
         return _fromTable('pivotSpans');
-      default:
+      case 15:
         return _fromTable('electrical', emptyKey: 'msg.noElectrical');
+      case 16:
+        return _fromTable('proposal');
+      case 17:
+        return _stack(const [('trench', 1), ('works', 1)], emptyKey: 'msg.noTrench');
+      case 18:
+        return _fromTable('bomZones');
+      case 19:
+        return _fromTable('comments', emptyKey: 'msg.noComments');
+      case 20:
+        return _fromTable('revisions', emptyKey: 'msg.noRevisions');
+      case 21:
+        return _fromTable('scenarios', emptyKey: 'msg.noScenarios');
+      case 22:
+        return _stack(const [('requirement', 3), ('requirementTotals', 1), ('licensing', 1)], emptyKey: 'msg.noRequirement');
+      case 23:
+        return _stack(const [('pivotPackageSummary', 1), ('pivotPackage', 3), ('pivotTimer', 1)], emptyKey: 'msg.noPivotPackage');
+      case 25:
+        return _fromTable('vih', emptyKey: 'msg.noVih');
+      default:
+        return _stack(const [('cornerArm', 1), ('vri', 1), ('pivotElectrical', 1)], emptyKey: 'msg.noMachineExtras');
     }
+  }
+
+  /// The shared tables of [keys] that have rows, one above the other with
+  /// the given flex.
+  Widget _stack(List<(String, int)> keys, {String? emptyKey}) {
+    final tables = c.reportTables();
+    final present = [for (final (k, f) in keys) if (tables.where((x) => x.key == k).firstOrNull case final tb? when !tb.isEmpty) (k, f)];
+    if (present.isEmpty) return Center(child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)));
+    if (present.length == 1) return _fromTable(present.single.$1);
+    return Column(children: [
+      for (var i = 0; i < present.length; i++) ...[
+        if (i > 0) Container(height: 1, color: Cad.fg12),
+        Expanded(flex: present[i].$2, child: _fromTable(present[i].$1)),
+      ],
+    ]);
   }
 
   int _errorCount() => c.advice.where((a) => a.level == AdviceLevel.error).length;
@@ -157,10 +202,10 @@ class ReportsPanel extends StatelessWidget {
   Widget _fromTable(String key, {String? emptyKey}) {
     final tb = c.reportTables().where((x) => x.key == key).firstOrNull;
     if (tb == null || tb.isEmpty) {
-      return Center(child: Text(c.t(emptyKey ?? 'msg.noResults'), style: const TextStyle(color: Colors.white54)));
+      return Center(child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)));
     }
     // keyed per table so switching tabs starts from a fresh scroll position
-    return _table(tb.headers, tb.rows, rowColors: [for (final w in tb.warn) w ? CadColors.warning : null], key: ValueKey('report_table_$key'));
+    return _table(tb.headers, tb.rows, rowColors: [for (final w in tb.warn) w ? Cad.warning : null], key: ValueKey('report_table_$key'));
   }
 
   /// Mainline duties on top, the pumps and devices of the mainline below
@@ -174,9 +219,9 @@ class ReportsPanel extends StatelessWidget {
       if (main != null && !main.isEmpty) Expanded(flex: main.rows.length + 1, child: _fromTable('mainline')),
       Container(
         width: double.infinity,
-        color: const Color(0xFF1B1F24),
+        color: Cad.panel,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(dev.title, style: const TextStyle(fontSize: 11.5, color: Colors.white70, fontWeight: FontWeight.w600)),
+        child: Text(dev.title, style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600)),
       ),
       Expanded(flex: dev.rows.length + 1, child: _fromTable('devices')),
     ]);
@@ -200,16 +245,16 @@ class ReportsPanel extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(12),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t('prof.hint'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          Text(t('prof.hint'), style: TextStyle(color: Cad.fg70, fontSize: 12)),
           const SizedBox(height: 6),
-          Text(t('prof.howTo'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+          Text(t('prof.howTo'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
           const SizedBox(height: 8),
           FilledButton.tonalIcon(key: const Key('profile_tool'), onPressed: () => c.setTool(ToolId.profile), icon: const Icon(Icons.show_chart, size: 16), label: Text(t('tool.profile'))),
         ]),
       );
     }
     final samples = c.profileAlong(path);
-    if (samples.length < 2) return Center(child: Text(t('dem.noData'), style: const TextStyle(color: Colors.white54)));
+    if (samples.length < 2) return Center(child: Text(t('dem.noData'), style: TextStyle(color: Cad.fg54)));
     // pipe and hydraulic grade line of a designed pipe / lateral
     List<(double, double)>? pipe, hgl;
     final segs = entityId == null ? null : c.results?.pipesByEntity[entityId];
@@ -232,7 +277,7 @@ class ReportsPanel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(children: [
-        if (noTerrain) Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(t('prof.noTerrain'), style: const TextStyle(fontSize: 11, color: CadColors.warning))),
+        if (noTerrain) Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(t('prof.noTerrain'), style: TextStyle(fontSize: 11, color: Cad.warning))),
         Expanded(
           child: ProfileChart(
             samples: samples,
@@ -251,7 +296,7 @@ class ReportsPanel extends StatelessWidget {
           ),
         ),
         Row(children: [
-          Expanded(child: Text(info, style: const TextStyle(fontSize: 11, color: Colors.white60))),
+          Expanded(child: Text(info, style: TextStyle(fontSize: 11, color: Cad.fg60))),
           if (c.profilePath != null)
             TextButton.icon(key: const Key('profile_clear'), onPressed: c.clearProfile, icon: const Icon(Icons.close, size: 14), label: Text(t('prof.clear'), style: const TextStyle(fontSize: 11))),
           TextButton.icon(onPressed: () => c.setTool(ToolId.profile), icon: const Icon(Icons.show_chart, size: 14), label: Text('PR', style: const TextStyle(fontSize: 11))),
@@ -301,7 +346,7 @@ class ReportsPanel extends StatelessWidget {
       }
     }
     if (segs == null || segs.isEmpty) {
-      return Center(child: Text(c.t('msg.selectForHgl'), style: const TextStyle(color: Colors.white54)));
+      return Center(child: Text(c.t('msg.selectForHgl'), style: TextStyle(color: Cad.fg54)));
     }
     final ordered = List<PipeSegmentResult>.from(segs)..sort((a, b) => a.segmentIndex.compareTo(b.segmentIndex));
     return Padding(
@@ -342,7 +387,7 @@ class ReportTableView extends StatefulWidget {
   static const slack = 4.0;
   static const minColumnWidth = 40.0;
   static const maxColumnWidth = 420.0;
-  static const headingStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70);
+  static TextStyle get headingStyle => TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Cad.fg70);
   static const cellStyle = TextStyle(fontSize: 11, fontFamily: 'monospace');
 
   @override
@@ -432,7 +477,7 @@ class _ReportTableViewState extends State<ReportTableView> {
     final total = _widths.fold(0.0, (a, b) => a + b);
     final header = Container(
       height: ReportTableView.headerHeight,
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.white24))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Cad.fg24))),
       child: Row(children: [for (var i = 0; i < _widths.length; i++) _cell(i, widget.headers[i], ReportTableView.headingStyle)]),
     );
     final colors = widget.rowColors;
@@ -463,7 +508,7 @@ class _ReportTableViewState extends State<ReportTableView> {
                       itemCount: _cells.length,
                       itemBuilder: (context, r) {
                         final warn = colors != null && r < colors.length ? colors[r] : null;
-                        final bg = warn != null ? warn.withValues(alpha: 0.15) : (r.isOdd ? const Color(0x0AFFFFFF) : null);
+                        final bg = warn != null ? warn.withValues(alpha: 0.15) : (r.isOdd ? Cad.stripe : null);
                         return Container(
                           key: ValueKey('report_row_$r'),
                           color: bg,

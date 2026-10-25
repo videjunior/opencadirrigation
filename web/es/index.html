@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-19",
+      "dateModified": "2026-10-25",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/es/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.0.1",
-      "dateModified": "2026-10-19",
+      "softwareVersion": "1.1.0",
+      "dateModified": "2026-10-25",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/es/?tutorial=1",
@@ -256,14 +256,16 @@
       ],
       "keywords": "diseño de riego, software de diseño de riego, software de riego gratis, software de riego de código abierto, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola",
       "featureList": [
-        "Dibujo CAD completo: Líneas, polilíneas, arcos, splines, sombreados, cotas, textos y capas, con referencias a objetos, selección por ventana, pinzamientos y atajos al estilo AutoCAD (L, PL, C, D, ZE…).",
-        "Red hidráulica: Fuentes de agua, bombas, línea principal, válvulas de zona, laterales con emisores, cintas y tuberías de goteo, filtros, reguladores de presión, contadores y nudos; generadores de bloques de laterales y de mallas de aspersores.",
-        "Motor hidráulico validado: Hazen-Williams y Darcy-Weisbach, pérdidas localizadas, emisores q = k·Hˣ, resolución de redes por el Global Gradient Algorithm (como EPANET), curvas de bomba y punto de operación, golpe de ariete y análisis de lavado.",
-        "Dimensionamiento automático: Programación lineal o velocidad máxima, respetando la ventana de presión de los emisores y la clase de las tuberías, equilibrando coste de tubería y energía, con diámetros telescópicos y turnos de operación.",
-        "Terreno y relieve: Curvas de nivel, cotas, modelo digital del terreno por triangulación, elevación descargada de internet a partir de una coordenada, perfiles longitudinales y línea piezométrica sobre el terreno.",
-        "Informes y materiales: Zonas, tuberías, emisores, uniformidad (CU, DU, EU), necesidades de agua por cultivo, programa del controlador y lista de materiales con accesorios; exportación a PDF, Excel, CSV y TXT.",
-        "Intercambio de archivos: Importa DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF e imágenes georreferenciadas; exporta DXF, DWG, PDF con plano, SVG, KML, KMZ y GeoJSON.",
-        "Catálogos de fabricantes: Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL."
+        "Dibujo CAD completo: Líneas, polilíneas, arcos, splines, sombreados, cotas, textos, capas y bloques, con entrada de coordenadas, referencias a objetos, rastreo polar, pinzamientos, nubes de revisión y atajos al estilo AutoCAD (L, PL, C, D, ZE…).",
+        "Red hidráulica: Fuentes de agua, bombas de velocidad fija o variable, línea principal, válvulas de zona, reductoras y sostenedoras de presión y limitadoras de caudal, aspersores con válvula incorporada, laterales con emisores, cintas de goteo, filtros y contadores, además de pivotes centrales y lineales con su paquete de aspersores, cañones viajeros y riego por superficie.",
+        "Motor hidráulico validado: Hazen-Williams, Darcy-Weisbach, Scobey y Manning, pérdidas localizadas de los accesorios usados, emisores q = k·Hˣ, resolución de redes por el Global Gradient Algorithm (como EPANET), curvas de bomba con NPSH, transitorios por el método de las características con ventosas y simulación de 24 horas con tarifas de energía.",
+        "Diseño y dimensionamiento automáticos: Bloques de laterales y mallas de aspersores con un clic, distribución de aspersores con precipitación equilibrada, zonificación por caudal, trazado de tuberías y válvulas, división de parcelas en bloques, ajuste de pivotes y detección de vegetación en imágenes aéreas; tuberías dimensionadas por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, equilibrando coste de tubería y energía.",
+        "Terreno, clima y agronomía: Curvas de nivel, cotas, modelo del terreno por triangulación con líneas de quiebre, elevación descargada de internet, nubes de puntos LAS, mapas de pendientes y perfiles; clima del sitio descargado o introducido a mano, cultivos de la FAO-56 por etapa, suelos, lluvia efectiva y lavado de sales para las necesidades de agua, además del presupuesto hídrico del paisajismo.",
+        "Informes, planos y materiales: Zonas, tuberías, emisores, uniformidad (CU, DU, EU), programa del controlador y cableado de válvulas; lista de materiales con accesorios y presupuesto con mano de obra, impuestos y retorno de la inversión; juegos de planos en PDF con detalles constructivos y gráficos, en cualquiera de los 20 idiomas, y todas las tablas en Excel, CSV y TXT.",
+        "Intercambio de archivos: Importa DXF, DWG, planos en PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF e imágenes; exporta DXF 2000 con entidades nativas (o R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp e IFC.",
+        "Catálogos de fabricantes: Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL.",
+        "Asistente de IA: Opcional: pregunte a la IA sobre el proyecto o deje que distribuya aspersores, cambie el dibujo y ejecute el dimensionamiento con las herramientas del propio programa, con su propia clave de la API de Anthropic o de OpenAI, directamente desde el navegador y sin servidor intermedio. No se envía nada antes de pulsar Enviar, y cada cambio espera su aprobación (o se aplica automáticamente, si así lo elige) y se puede deshacer.",
+        "Sin conexión y en campo: Tras la primera visita la aplicación se abre sin conexión, en ordenador, tableta o móvil, con tema claro u oscuro. En campo, el GPS del dispositivo graba contornos y líneas recorridos a pie, marca puntos e indica la distancia y el rumbo hasta el elemento seleccionado para el replanteo."
       ],
       "about": [
         {
@@ -332,7 +334,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -362,7 +364,7 @@
           "name": "¿OpenCADIrrigation es gratuito?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub."
+            "text": "Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub. El asistente de IA, que es opcional, usa su propia cuenta de Anthropic o de OpenAI, y el proveedor factura el uso en esa cuenta."
           }
         },
         {
@@ -383,10 +385,18 @@
         },
         {
           "@type": "Question",
+          "name": "¿Funciona sin conexión?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 24 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano y se usa a partir del siguiente inicio."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "¿Mis proyectos se guardan en la nube?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide."
+            "text": "No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada a ningún servidor. Solo se accede a internet cuando usted lo pide: mapas base, elevación y clima en línea, catálogos cargados por URL y, si lo usa, el asistente de IA, que solo se comunica con el proveedor que usted eligió (Anthropic u OpenAI)."
           }
         },
         {
@@ -394,7 +404,15 @@
           "name": "¿Cómo se hace el cálculo hidráulico?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Pérdidas de carga por Hazen-Williams o Darcy-Weisbach, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores, y el diseño verifica también la uniformidad (CU, DU, EU), el golpe de ariete y el lavado."
+            "text": "Pérdidas de carga por Hazen-Williams, Darcy-Weisbach, Scobey o Manning, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, y el diseño verifica también la uniformidad (CU, DU, EU), el lavado y los transitorios por el método de las características (cierre de válvulas, parada de bombas, ventosas), con una simulación de 24 horas de las presiones y el coste de la energía."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Puede una IA hacer el proyecto por mí?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí, si usted quiere. El asistente de IA, que es opcional, usa un modelo de Anthropic o de OpenAI con su propia clave de API, llamado directamente desde el navegador, sin servidor intermedio. Responde preguntas sobre el proyecto y puede distribuir aspersores, dividir parcelas, cambiar el dibujo y ejecutar el dimensionamiento y las herramientas automáticas, pidiendo aprobación antes de cada cambio (o aplicándolos automáticamente, si usted lo elige); todo cambio se puede deshacer. No se envía nada hasta que pulse Enviar: entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van a la API de ese proveedor. El proveedor factura el uso en su cuenta, y la clave queda solo en la memoria durante la sesión, a menos que elija recordarla."
           }
         },
         {
@@ -402,7 +420,7 @@
           "name": "¿Funciona con AutoCAD y otros CAD?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sí. Importa y exporta DXF y DWG (AutoCAD 2000 a 2018), además de KML/KMZ de Google Earth, shapefile, GeoJSON, SVG y PDF."
+            "text": "Sí. Importa DXF y DWG hasta AutoCAD 2018, DGN V7 y planos en PDF, y exporta DXF 2000 con entidades nativas (polilíneas con arcos, sombreados, splines, cotas, bloques con atributos), DXF R12 para programas antiguos y DWG 2000. Para SIG, topografía y BIM también lee y escribe KML/KMZ, shapefile, GeoJSON, GPX, LandXML y EPANET .inp, lee nubes de puntos LAS y exporta IFC 4."
           }
         },
         {
@@ -691,14 +709,16 @@
       <section aria-labelledby="oci-features">
         <h2 id="oci-features">Qué hace OpenCADIrrigation</h2>
         <ul class="grid">
-          <li><h3>Dibujo CAD completo</h3><p>Líneas, polilíneas, arcos, splines, sombreados, cotas, textos y capas, con referencias a objetos, selección por ventana, pinzamientos y atajos al estilo AutoCAD (L, PL, C, D, ZE…).</p></li>
-          <li><h3>Red hidráulica</h3><p>Fuentes de agua, bombas, línea principal, válvulas de zona, laterales con emisores, cintas y tuberías de goteo, filtros, reguladores de presión, contadores y nudos; generadores de bloques de laterales y de mallas de aspersores.</p></li>
-          <li><h3>Motor hidráulico validado</h3><p>Hazen-Williams y Darcy-Weisbach, pérdidas localizadas, emisores q = k·Hˣ, resolución de redes por el Global Gradient Algorithm (como EPANET), curvas de bomba y punto de operación, golpe de ariete y análisis de lavado.</p></li>
-          <li><h3>Dimensionamiento automático</h3><p>Programación lineal o velocidad máxima, respetando la ventana de presión de los emisores y la clase de las tuberías, equilibrando coste de tubería y energía, con diámetros telescópicos y turnos de operación.</p></li>
-          <li><h3>Terreno y relieve</h3><p>Curvas de nivel, cotas, modelo digital del terreno por triangulación, elevación descargada de internet a partir de una coordenada, perfiles longitudinales y línea piezométrica sobre el terreno.</p></li>
-          <li><h3>Informes y materiales</h3><p>Zonas, tuberías, emisores, uniformidad (CU, DU, EU), necesidades de agua por cultivo, programa del controlador y lista de materiales con accesorios; exportación a PDF, Excel, CSV y TXT.</p></li>
-          <li><h3>Intercambio de archivos</h3><p>Importa DXF, DWG, KML/KMZ, SHP, CSV/XYZ, GeoTIFF e imágenes georreferenciadas; exporta DXF, DWG, PDF con plano, SVG, KML, KMZ y GeoJSON.</p></li>
+          <li><h3>Dibujo CAD completo</h3><p>Líneas, polilíneas, arcos, splines, sombreados, cotas, textos, capas y bloques, con entrada de coordenadas, referencias a objetos, rastreo polar, pinzamientos, nubes de revisión y atajos al estilo AutoCAD (L, PL, C, D, ZE…).</p></li>
+          <li><h3>Red hidráulica</h3><p>Fuentes de agua, bombas de velocidad fija o variable, línea principal, válvulas de zona, reductoras y sostenedoras de presión y limitadoras de caudal, aspersores con válvula incorporada, laterales con emisores, cintas de goteo, filtros y contadores, además de pivotes centrales y lineales con su paquete de aspersores, cañones viajeros y riego por superficie.</p></li>
+          <li><h3>Motor hidráulico validado</h3><p>Hazen-Williams, Darcy-Weisbach, Scobey y Manning, pérdidas localizadas de los accesorios usados, emisores q = k·Hˣ, resolución de redes por el Global Gradient Algorithm (como EPANET), curvas de bomba con NPSH, transitorios por el método de las características con ventosas y simulación de 24 horas con tarifas de energía.</p></li>
+          <li><h3>Diseño y dimensionamiento automáticos</h3><p>Bloques de laterales y mallas de aspersores con un clic, distribución de aspersores con precipitación equilibrada, zonificación por caudal, trazado de tuberías y válvulas, división de parcelas en bloques, ajuste de pivotes y detección de vegetación en imágenes aéreas; tuberías dimensionadas por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, equilibrando coste de tubería y energía.</p></li>
+          <li><h3>Terreno, clima y agronomía</h3><p>Curvas de nivel, cotas, modelo del terreno por triangulación con líneas de quiebre, elevación descargada de internet, nubes de puntos LAS, mapas de pendientes y perfiles; clima del sitio descargado o introducido a mano, cultivos de la FAO-56 por etapa, suelos, lluvia efectiva y lavado de sales para las necesidades de agua, además del presupuesto hídrico del paisajismo.</p></li>
+          <li><h3>Informes, planos y materiales</h3><p>Zonas, tuberías, emisores, uniformidad (CU, DU, EU), programa del controlador y cableado de válvulas; lista de materiales con accesorios y presupuesto con mano de obra, impuestos y retorno de la inversión; juegos de planos en PDF con detalles constructivos y gráficos, en cualquiera de los 20 idiomas, y todas las tablas en Excel, CSV y TXT.</p></li>
+          <li><h3>Intercambio de archivos</h3><p>Importa DXF, DWG, planos en PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF e imágenes; exporta DXF 2000 con entidades nativas (o R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp e IFC.</p></li>
           <li><h3>Catálogos de fabricantes</h3><p>Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL.</p></li>
+          <li><h3>Asistente de IA</h3><p>Opcional: pregunte a la IA sobre el proyecto o deje que distribuya aspersores, cambie el dibujo y ejecute el dimensionamiento con las herramientas del propio programa, con su propia clave de la API de Anthropic o de OpenAI, directamente desde el navegador y sin servidor intermedio. No se envía nada antes de pulsar Enviar, y cada cambio espera su aprobación (o se aplica automáticamente, si así lo elige) y se puede deshacer.</p></li>
+          <li><h3>Sin conexión y en campo</h3><p>Tras la primera visita la aplicación se abre sin conexión, en ordenador, tableta o móvil, con tema claro u oscuro. En campo, el GPS del dispositivo graba contornos y líneas recorridos a pie, marca puntos e indica la distancia y el rumbo hasta el elemento seleccionado para el replanteo.</p></li>
         </ul>
       </section>
 
@@ -743,17 +763,21 @@
           <dt>¿Qué es OpenCADIrrigation?</dt>
           <dd>OpenCADIrrigation es una aplicación web gratuita y de código abierto para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.</dd>
           <dt>¿OpenCADIrrigation es gratuito?</dt>
-          <dd>Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub.</dd>
+          <dd>Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub. El asistente de IA, que es opcional, usa su propia cuenta de Anthropic o de OpenAI, y el proveedor factura el uso en esa cuenta.</dd>
           <dt>¿Para quién es?</dt>
           <dd>Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo y 15 ejemplos listos permiten empezar sin leer un manual.</dd>
           <dt>¿Necesito instalar algo?</dt>
           <dd>No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.</dd>
+          <dt>¿Funciona sin conexión?</dt>
+          <dd>Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 24 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano y se usa a partir del siguiente inicio.</dd>
           <dt>¿Mis proyectos se guardan en la nube?</dt>
-          <dd>No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera. Solo la elevación en línea y los mapas base acceden a internet, cuando usted lo pide.</dd>
+          <dd>No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada a ningún servidor. Solo se accede a internet cuando usted lo pide: mapas base, elevación y clima en línea, catálogos cargados por URL y, si lo usa, el asistente de IA, que solo se comunica con el proveedor que usted eligió (Anthropic u OpenAI).</dd>
           <dt>¿Cómo se hace el cálculo hidráulico?</dt>
-          <dd>Pérdidas de carga por Hazen-Williams o Darcy-Weisbach, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores, y el diseño verifica también la uniformidad (CU, DU, EU), el golpe de ariete y el lavado.</dd>
+          <dd>Pérdidas de carga por Hazen-Williams, Darcy-Weisbach, Scobey o Manning, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, y el diseño verifica también la uniformidad (CU, DU, EU), el lavado y los transitorios por el método de las características (cierre de válvulas, parada de bombas, ventosas), con una simulación de 24 horas de las presiones y el coste de la energía.</dd>
+          <dt>¿Puede una IA hacer el proyecto por mí?</dt>
+          <dd>Sí, si usted quiere. El asistente de IA, que es opcional, usa un modelo de Anthropic o de OpenAI con su propia clave de API, llamado directamente desde el navegador, sin servidor intermedio. Responde preguntas sobre el proyecto y puede distribuir aspersores, dividir parcelas, cambiar el dibujo y ejecutar el dimensionamiento y las herramientas automáticas, pidiendo aprobación antes de cada cambio (o aplicándolos automáticamente, si usted lo elige); todo cambio se puede deshacer. No se envía nada hasta que pulse Enviar: entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van a la API de ese proveedor. El proveedor factura el uso en su cuenta, y la clave queda solo en la memoria durante la sesión, a menos que elija recordarla.</dd>
           <dt>¿Funciona con AutoCAD y otros CAD?</dt>
-          <dd>Sí. Importa y exporta DXF y DWG (AutoCAD 2000 a 2018), además de KML/KMZ de Google Earth, shapefile, GeoJSON, SVG y PDF.</dd>
+          <dd>Sí. Importa DXF y DWG hasta AutoCAD 2018, DGN V7 y planos en PDF, y exporta DXF 2000 con entidades nativas (polilíneas con arcos, sombreados, splines, cotas, bloques con atributos), DXF R12 para programas antiguos y DWG 2000. Para SIG, topografía y BIM también lee y escribe KML/KMZ, shapefile, GeoJSON, GPX, LandXML y EPANET .inp, lee nubes de puntos LAS y exporta IFC 4.</dd>
           <dt>¿En qué idiomas está disponible?</dt>
           <dd>En 20 idiomas, los mismos de este sitio (la lista está al pie de la página). La aplicación se abre en el idioma de su equipo y puede cambiarlo en cualquier momento en Ver → Idioma.</dd>
         </dl>
@@ -762,7 +786,7 @@
       <footer>
         <nav aria-label="Idiomas">Idiomas: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <strong lang="es" dir="ltr">Español</strong> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Los catálogos de fabricantes y los proyectos de ejemplo pueden enviarse en formato JSON para incluirse en OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.0.1 · <a href="https://github.com/videjunior/opencadirrigation">Código fuente (licencia MIT)</a> · <time datetime="2026-10-19">2026-10-19</time></p>
+        <p class="meta">OpenCADIrrigation 1.1.0 · <a href="https://github.com/videjunior/opencadirrigation">Código fuente (licencia MIT)</a> · <time datetime="2026-10-25">2026-10-25</time></p>
       </footer>
     </div>
   </main>
@@ -793,10 +817,11 @@
         remember();
         landing.className += ' oci-starting';
         status.textContent = "Cargando el CAD de riego…";
-        // The engine comes from gstatic and the app code is fetched while the loader runs.
+        // The engine and the app code come from this site and are fetched while the loader runs;
+        // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
         var engine = document.createElement('link');
         engine.rel = 'preconnect';
-        engine.href = 'https://www.gstatic.com';
+        engine.href = 'https://fonts.gstatic.com';
         engine.crossOrigin = '';
         document.head.appendChild(engine);
         var code = document.createElement('link');

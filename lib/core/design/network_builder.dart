@@ -4,13 +4,14 @@ library;
 import 'dart:math' as math;
 
 import '../hydraulics/emitter.dart';
+import '../hydraulics/minor_losses.dart';
 import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/terrain.dart';
 
-enum GLinkKind { pipe, controlValve, pump, device, prv }
+enum GLinkKind { pipe, controlValve, pump, device, prv, psv, fcv }
 
 class EmitterRef {
   EmitterRef({
@@ -78,6 +79,7 @@ class GLink {
     this.minorK = 0,
     this.depth = 0,
     this.settingM = 0,
+    this.settingFlow = 0,
     this.valveSpecId,
     this.pumpSpecId,
     this.speedRatio = 1,
@@ -100,6 +102,9 @@ class GLink {
   double minorK;
   final double depth;
   final double settingM;
+
+  /// Flow setting of an FCV link (m³/s).
+  final double settingFlow;
   final String? valveSpecId;
   final String? pumpSpecId;
   final double speedRatio;
@@ -375,15 +380,20 @@ class NetworkBuilder {
             model.warnings.add('pump_spec_missing:${e.id}');
             continue;
           }
-          _insertInline(e.id, p.position, p.scope, (up, down) => GLink(id: 'pump_${e.id}', from: up, to: down, kind: GLinkKind.pump, scope: p.scope, entityId: e.id, pumpSpecId: spec.id, speedRatio: p.speedRatio, a: p.position, b: p.position));
+          // a fixed-speed motor turns with the mains frequency; a variable
+          // speed drive makes its own (its speeds are set by the designer)
+          final speed = p.speedRatio * (p.targetPressureM > 0 ? 1 : spec.mainsSpeedRatio(project.params.mainsHz));
+          _insertInline(e.id, p.position, p.scope, (up, down) => GLink(id: 'pump_${e.id}', from: up, to: down, kind: GLinkKind.pump, scope: p.scope, entityId: e.id, pumpSpecId: spec.id, speedRatio: speed, a: p.position, b: p.position));
         case MiscHydraulicEntity m:
           final spec = catalog.valve(m.valveSpecId);
           if (spec == null) {
             model.warnings.add('valve_spec_missing:${e.id}');
             continue;
           }
-          final isPrv = spec.kind == ValveKind.prv;
-          _insertInline(e.id, m.position, m.scope, (up, down) => GLink(id: 'dev_${e.id}', from: up, to: down, kind: isPrv ? GLinkKind.prv : GLinkKind.device, scope: m.scope, entityId: e.id, valveSpecId: spec.id, settingM: isPrv ? (m.settingM > 0 ? m.settingM : spec.defaultSettingM) : 0, a: m.position, b: m.position));
+          final kind = switch (spec.kind) { ValveKind.prv => GLinkKind.prv, ValveKind.psv => GLinkKind.psv, ValveKind.fcv => GLinkKind.fcv, _ => GLinkKind.device };
+          final pressureSet = kind == GLinkKind.prv || kind == GLinkKind.psv ? (m.settingM > 0 ? m.settingM : spec.defaultSettingM) : 0.0;
+          final flowSet = kind == GLinkKind.fcv ? (m.settingFlow > 0 ? m.settingFlow : spec.maxFlow) : 0.0;
+          _insertInline(e.id, m.position, m.scope, (up, down) => GLink(id: 'dev_${e.id}', from: up, to: down, kind: kind, scope: m.scope, entityId: e.id, valveSpecId: spec.id, settingM: pressureSet, settingFlow: flowSet, a: m.position, b: m.position));
         default:
           break;
       }
@@ -472,7 +482,43 @@ class NetworkBuilder {
           break;
       }
     }
+    if (project.params.applyMinorLosses && project.params.minorLossMethod == MinorLossMethod.fittings) _assignFittingLosses();
     return model;
+  }
+
+  /// Local losses of the bends and tees the drawing implies (method of the
+  /// fitting coefficients, Crane TP-410), added to the K of the zone and
+  /// mainline pipe links next to them; laterals and tapes keep only their
+  /// emitter barb losses. A vertex turning by 67.5° or more is a 90° elbow,
+  /// from 22.5° a 45° elbow; at a node of three or more pipes the straightest
+  /// pair is the run (half the run K on each) and the others are branches.
+  void _assignFittingLosses() {
+    final laterals = {for (final e in project.entities) if (e is SpraylineEntity || e is TapeEntity) e.id};
+    Pt away(GLink l, String nodeId) => l.from == nodeId ? (l.b - l.a).normalized : (l.a - l.b).normalized;
+    for (final n in model.nodes.values) {
+      final pipes = n.links.where((l) => l.kind == GLinkKind.pipe && !laterals.contains(l.entityId) && l.length > 0).toList();
+      if (pipes.length < 2) continue;
+      if (pipes.length == 2) {
+        final turn = 180 - math.acos(away(pipes[0], n.id).dot(away(pipes[1], n.id)).clamp(-1.0, 1.0)) * 180 / math.pi;
+        final k = turn >= 67.5 ? FittingK.elbow90Standard : (turn >= 22.5 ? FittingK.elbow45 : 0.0);
+        if (k > 0) (pipes[0].from == n.id ? pipes[0] : pipes[1]).minorK += k;
+        continue;
+      }
+      var run = (0, 1);
+      var straightest = 2.0;
+      for (var i = 0; i < pipes.length; i++) {
+        for (var j = i + 1; j < pipes.length; j++) {
+          final c = away(pipes[i], n.id).dot(away(pipes[j], n.id));
+          if (c < straightest) {
+            straightest = c;
+            run = (i, j);
+          }
+        }
+      }
+      for (var i = 0; i < pipes.length; i++) {
+        pipes[i].minorK += i == run.$1 || i == run.$2 ? FittingK.teeRun / 2 : FittingK.teeBranch;
+      }
+    }
   }
 
   Iterable<GLink> links(String entityId) => model.links.where((l) => l.entityId == entityId);

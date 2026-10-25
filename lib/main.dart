@@ -7,6 +7,7 @@ import 'app/examples.dart';
 import 'app/i18n.dart';
 import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
+import 'app/io/links.dart';
 import 'app/io/unload.dart';
 import 'app/keys/hotkeys.dart';
 import 'app/keys/native_keys.dart';
@@ -18,10 +19,18 @@ import 'app/tools/tools.dart';
 import 'app/tutorial/tutorial.dart';
 import 'app/version.dart';
 import 'app/widgets/advice_panel.dart';
+import 'app/ai/ai_assistant.dart';
+import 'app/widgets/ai/ai_panel.dart';
+import 'app/widgets/dialogs/ai_assistant_dialog.dart';
+import 'app/widgets/dialogs/auto_design_dialogs.dart';
 import 'app/widgets/dialogs/densogram_dialog.dart';
+import 'app/widgets/dialogs/network_ops_dialogs.dart';
+import 'app/widgets/dialogs/vegetation_dialog.dart';
 import 'app/widgets/dialogs/dialogs.dart';
 import 'app/widgets/dialogs/more_dialogs.dart';
 import 'app/widgets/dialogs/terrain_dialogs.dart';
+import 'app/widgets/dialogs/transient_dialogs.dart';
+import 'app/widgets/dialogs/blocks_dialogs.dart';
 import 'app/widgets/dialogs/welcome_dialog.dart';
 import 'app/widgets/mobile_shell.dart';
 import 'app/widgets/design_progress.dart';
@@ -34,6 +43,7 @@ import 'app/widgets/reports_panel.dart';
 import 'app/widgets/status_bar.dart';
 import 'app/widgets/tool_palette.dart';
 import 'core/io/project_export.dart';
+import 'core/io/share_link.dart';
 import 'core/model/entities.dart';
 import 'core/model/geometry.dart';
 
@@ -76,13 +86,25 @@ class IrrigationCadApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'OpenCADIrrigation',
-      navigatorKey: appNavigatorKey,
-      navigatorObservers: [appRouteObserver],
-      debugShowCheckedModeBanner: false,
-      theme: buildCadTheme(),
-      home: AppShell(autoTutorial: autoTutorial, offerRecovery: offerRecovery),
+    // View → Theme: dark, light or the system's; switched in place (see
+    // CadThemeHost), with no theme animation so the material parts and the
+    // palette read by the widgets change together
+    return CadThemeHost(
+      builder: (context, brightness) => MaterialApp(
+        title: 'OpenCADIrrigation',
+        navigatorKey: appNavigatorKey,
+        navigatorObservers: [appRouteObserver],
+        debugShowCheckedModeBanner: false,
+        theme: buildCadTheme(brightness),
+        themeAnimationStyle: AnimationStyle.noAnimation,
+        // Arabic and Urdu read right to left: menus, panels and dialogs mirror
+        // (the drawing itself keeps its coordinates)
+        builder: (context, child) => ValueListenableBuilder<String>(
+          valueListenable: uiLanguage,
+          builder: (context, lang, _) => Directionality(textDirection: rtlLanguages.contains(lang) ? TextDirection.rtl : TextDirection.ltr, child: child ?? const SizedBox()),
+        ),
+        home: AppShell(autoTutorial: autoTutorial, offerRecovery: offerRecovery),
+      ),
     );
   }
 }
@@ -118,6 +140,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   @override
   void initState() {
     super.initState();
+    // the AI assistant works on these tabs and opens in the docked panel
+    AiAssistant.workspace = ws;
+    AiAssistant.dockable = true;
     ws.addListener(_onWorkspace);
     _syncSubscriptions();
     tutorial.addListener(_onTutorial);
@@ -131,15 +156,21 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       var recovered = 0;
       if (widget.offerRecovery && mounted) recovered = await showRecoveryDialog(context, ws);
       if (!mounted) return;
+      // a project shared by link (#p=…) opens in a tab of its own
+      final shared = Uri.base.fragment.startsWith('p=') ? projectJsonFromLink('#${Uri.base.fragment}') : null;
+      if (shared != null) {
+        clearAddressFragment();
+        if (openJsonInTab(ws, shared) == null) c.notify(c.t('share.damaged'));
+      }
       final example = exampleIdFromName(Uri.base.queryParameters['example']);
-      if (recovered == 0 || example != null) loadExampleAction(c, example ?? ExampleId.orchard);
+      if ((recovered == 0 && shared == null) || example != null) loadExampleAction(c, example ?? ExampleId.orchard);
       if (Uri.base.queryParameters['design'] == '1') c.runDesign();
       final tut = int.tryParse(Uri.base.queryParameters['tutorial'] ?? '');
       if (tut != null && tut > 0 && mounted) {
         startTutorial(startAt: tut - 1);
         return;
       }
-      if (widget.autoTutorial && !TutorialController.isDone && mounted && example == null) {
+      if (widget.autoTutorial && !TutorialController.isDone && mounted && example == null && shared == null) {
         final choice = await showWelcomeDialog(context, c, firstRun: true);
         if (!mounted) return;
         if (choice == WelcomeChoice.tutorial) {
@@ -290,7 +321,53 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   void optimize() => showOptimizeDialog(context, c);
 
   @override
+  void assistant() => showAiAssistantDialog(context, c);
+
+  @override
   void densogram() => showDensogramDialog(context, c);
+
+  @override
+  void autoDesign(CadAction action) => action == CadAction.vegetation ? showVegetationDialog(context, c) : showAutoDesignDialog(context, c, action.name);
+
+  @override
+  void networkTool(CadAction action) {
+    switch (action) {
+      case CadAction.onDemand:
+        showOnDemandDialog(context, c);
+      case CadAction.tariff:
+        showTariffDialog(context, c);
+      case CadAction.energyGroups:
+        showEnergyGroupingDialog(context, c);
+      case CadAction.wireRoutes:
+        showWireRoutingDialog(context, c);
+      case CadAction.criticality:
+        showCriticalityDialog(context, c);
+      case CadAction.calibration:
+        showCalibrationDialog(context, c);
+      case CadAction.fertigation:
+        showFertigationDialog(context, c);
+      default:
+        break;
+    }
+  }
+
+  @override
+  void insertBlock() => insertBlockAction(context, c, c.project.blocks, pickTool: ToolId.insertBlock);
+
+  @override
+  void saveBlock() => saveBlockAction(context, c, c.project.blocks);
+
+  @override
+  void mainlineAnalysis(CadAction action) {
+    switch (action) {
+      case CadAction.airValves:
+        showAirValveDialog(context, c);
+      case CadAction.eps:
+        showEpsDialog(context, c);
+      default:
+        showTransientDialog(context, c);
+    }
+  }
 
   @override
   void clipboard(CadAction action) {
@@ -353,6 +430,12 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   @override
   void showLeaderDialog(List<Pt> points) => showLeaderDialogFn(context, c, points);
+
+  @override
+  void showCommentDialog(Pt position) => showCommentDialogFn(context, c, position);
+
+  @override
+  void showRevisionDialog(List<Pt> polygon) => showRevisionDialogFn(context, c, polygon);
 
   @override
   void promptElevation(Entity e) => showElevationDialog(context, c, e);
@@ -447,7 +530,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                             GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onVerticalDragUpdate: (d) => setState(() => _reportsHeight = (_reportsHeight - d.delta.dy).clamp(120, 600)),
-                              child: const MouseRegion(cursor: SystemMouseCursors.resizeRow, child: SizedBox(height: 5, child: ColoredBox(color: Color(0xFF2B3138)))),
+                              child: MouseRegion(cursor: SystemMouseCursors.resizeRow, child: SizedBox(height: 5, child: ColoredBox(color: Cad.divider))),
                             ),
                             SizedBox(key: TutorialTargets.reportsBar, height: _reportsHeight, child: ReportsPanel(c: c)),
                           ] else
@@ -457,10 +540,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                               child: InkWell(
                                 onTap: () => setState(() => c.showReports = true),
                                 child: Container(
-                                  color: const Color(0xFF1B1F24),
+                                  color: Cad.panel,
                                   alignment: Alignment.centerLeft,
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                                  child: Text('▲ ${t('menu.reports')}', style: const TextStyle(fontSize: 11, color: Colors.white60)),
+                                  child: Text('▲ ${t('menu.reports')}', style: TextStyle(fontSize: 11, color: Cad.fg60)),
                                 ),
                               ),
                             ),
@@ -476,7 +559,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                           Container(
                             key: TutorialTargets.sideTabs,
                             height: 30,
-                            color: const Color(0xFF1B1F24),
+                            color: Cad.panel,
                             child: Row(
                               children: [
                                 _sideTab(t('props.title'), _sideTabIndex == 0, () => showSideTab(0)),
@@ -488,6 +571,16 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                           Expanded(child: switch (_sideTabIndex) { 1 => LayersPanel(c: c), 2 => HistoryPanel(c: c), _ => PropertiesPanel(c: c) }),
                         ],
                       ),
+                    ),
+                    // the AI assistant, docked so the drawing stays in view while it works
+                    ValueListenableBuilder<bool>(
+                      valueListenable: AiAssistant.panelOpen,
+                      builder: (_, open, _) => open
+                          ? Row(mainAxisSize: MainAxisSize.min, children: [
+                              const VerticalDivider(width: 1),
+                              SizedBox(width: aiPanelWidth, child: AiAgentPanel(key: ValueKey('ai_panel_${c.tabId}'), c: c, onClose: AiAssistant.togglePanel)),
+                            ])
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
@@ -508,8 +601,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       onTap: onTap,
       child: Container(
         alignment: Alignment.center,
-        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: on ? const Color(0xFF42A5F5) : Colors.transparent, width: 2))),
-        child: Text(label, style: TextStyle(fontSize: 11.5, color: on ? Colors.white : Colors.white60)),
+        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: on ? Cad.accent : Colors.transparent, width: 2))),
+        child: Text(label, style: TextStyle(fontSize: 11.5, color: on ? Cad.fg : Cad.fg60)),
       ),
     ),
   );
@@ -531,4 +624,6 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 Future<void> showBlockDialogFn(BuildContext context, ProjectController c, List<Pt> polygon) => showBlockDialog(context, c, polygon);
 Future<void> showAutoheadDialogFn(BuildContext context, ProjectController c, List<Pt> polygon) => showAutoheadDialog(context, c, polygon);
 Future<void> showTextDialogFn(BuildContext context, ProjectController c, Pt position) => showTextDialog(context, c, position);
+Future<void> showCommentDialogFn(BuildContext context, ProjectController c, Pt position) => showCommentDialog(context, c, position);
+Future<void> showRevisionDialogFn(BuildContext context, ProjectController c, List<Pt> polygon) => showRevisionDialog(context, c, polygon);
 Future<void> showLeaderDialogFn(BuildContext context, ProjectController c, List<Pt> points) => showLeaderDialog(context, c, points);

@@ -1,0 +1,151 @@
+/// The OpenCADIrrigation engine in one import: projects and their entities,
+/// the catalogue, the designer and its results, the hydraulic solvers
+/// (steady state, extended period, transients), the design modules (layout,
+/// agronomy, mechanised machines, electrical…), the report tables and every
+/// file reader and writer. Pure Dart: it runs in the Dart VM, in a Web Worker
+/// and in Flutter alike. See docs/API.md.
+///
+/// ```dart
+/// import 'package:opencadirrigation/core/api.dart';
+///
+/// final project = Project.fromJsonString(text);
+/// final results = Designer(project).designAll();
+/// ```
+///
+/// Importing the individual libraries (`core/model/project.dart`,
+/// `core/design/designer.dart`, …) works as well and is what the app does.
+/// Left out here: the internals of the PDF text shaping (`io/fonts/*` except
+/// pdf_fonts.dart) and the sparse matrix solver behind the network solver.
+library;
+
+export 'ai/agent_loop.dart';
+export 'ai/claude_api.dart';
+export 'ai/llm.dart';
+export 'ai/llm_formats.dart';
+export 'ai/openai_api.dart';
+export 'ai/project_context.dart';
+export 'design/advisor.dart';
+export 'design/agronomy.dart';
+export 'design/air_valves.dart';
+export 'design/area_requirement.dart';
+export 'design/auto_fix.dart';
+export 'design/auto_layout.dart';
+export 'design/block_generator.dart';
+export 'design/calibration.dart';
+export 'design/climate.dart';
+export 'design/corner_arm.dart';
+export 'design/criticality.dart';
+export 'design/crops.dart';
+export 'design/densogram.dart';
+export 'design/design_check.dart';
+export 'design/designer.dart';
+export 'design/effective_rain.dart';
+export 'design/electrical.dart';
+export 'design/energy_grouping.dart';
+export 'design/fertigation.dart';
+export 'design/field_subdivision.dart';
+export 'design/fittings.dart';
+export 'design/gated_pipe.dart';
+export 'design/irrigation_requirement.dart';
+export 'design/lp.dart';
+export 'design/lp_sizing.dart';
+export 'design/management.dart';
+export 'design/mechanised.dart';
+export 'design/network_builder.dart';
+export 'design/network_ops.dart';
+export 'design/on_demand.dart';
+export 'design/pivot.dart';
+export 'design/pivot_electrical.dart';
+export 'design/pivot_fit.dart';
+export 'design/pivot_package.dart';
+export 'design/proposal.dart';
+export 'design/pump_selection.dart';
+export 'design/report_tables.dart';
+export 'design/results.dart';
+export 'design/routing.dart';
+export 'design/soils.dart';
+export 'design/solar_pumping.dart';
+export 'design/surface_irrigation.dart';
+export 'design/tariff.dart';
+export 'design/templates.dart';
+export 'design/transient_analysis.dart';
+export 'design/traveller.dart';
+export 'design/tree_rings.dart';
+export 'design/two_wire.dart';
+export 'design/valve_in_head.dart';
+export 'design/vegetation.dart';
+export 'design/vri.dart';
+export 'design/water_budget.dart';
+export 'design/wetted_bulb.dart';
+export 'design/wire_routing.dart';
+export 'design/zoning.dart';
+export 'hydraulics/emitter.dart';
+export 'hydraulics/eps.dart';
+export 'hydraulics/friction.dart';
+export 'hydraulics/lateral.dart';
+export 'hydraulics/minor_losses.dart';
+export 'hydraulics/network.dart';
+export 'hydraulics/pump.dart';
+export 'hydraulics/transient.dart';
+export 'hydraulics/uniformity.dart';
+export 'hydraulics/water_hammer.dart';
+export 'i18n/language_packs.dart';
+export 'io/cad_drawing.dart';
+export 'io/cad_export.dart';
+export 'io/catalog_io.dart';
+export 'io/climate_online.dart';
+export 'io/datum.dart';
+export 'io/dem_online.dart';
+export 'io/dem_tiff.dart';
+export 'io/details.dart';
+export 'io/dgn.dart';
+export 'io/dwg.dart';
+export 'io/dwg_writer.dart';
+export 'io/dxf.dart';
+export 'io/dxf_r2000.dart';
+export 'io/epanet_inp.dart';
+export 'io/fonts/pdf_fonts.dart';
+export 'io/geo.dart';
+export 'io/geo_export.dart';
+export 'io/geoimage.dart';
+export 'io/geojson_reader.dart';
+export 'io/gpx.dart';
+export 'io/ifc.dart';
+export 'io/kml.dart';
+export 'io/landxml.dart';
+export 'io/las.dart';
+export 'io/pdf.dart';
+export 'io/pdf_import.dart';
+export 'io/pdf_reader.dart';
+export 'io/pdf_sheet.dart';
+export 'io/plot.dart';
+export 'io/plot_charts.dart';
+export 'io/point_grid.dart';
+export 'io/points_csv.dart';
+export 'io/project_export.dart';
+export 'io/share_link.dart';
+export 'io/sheet_canvas.dart';
+export 'io/sheet_set.dart';
+export 'io/shp.dart';
+export 'io/shp_writer.dart';
+export 'io/svg.dart';
+export 'io/xlsx.dart';
+export 'model/blocks.dart';
+export 'model/catalog.dart';
+export 'model/catalog_packs.dart';
+export 'model/currency.dart';
+export 'model/entities.dart';
+export 'model/geometry.dart';
+export 'model/label_rules.dart';
+export 'model/pivot_machine.dart';
+export 'model/project.dart';
+export 'model/proposal_settings.dart';
+export 'model/scenario.dart';
+export 'model/site_climate.dart';
+export 'model/slope_map.dart';
+export 'model/spatial_index.dart';
+export 'model/split.dart';
+export 'model/terrain.dart';
+export 'model/tin.dart';
+export 'translate.dart';
+export 'units.dart';

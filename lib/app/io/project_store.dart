@@ -5,6 +5,8 @@ library;
 
 import 'dart:convert';
 
+import 'package:archive/archive.dart';
+
 import 'prefs.dart';
 
 class StoredProject {
@@ -37,9 +39,34 @@ class LocalProjectStore implements ProjectRepository {
   final int maxProjects;
   final int maxVersions;
 
-  /// Approximate cap on the bytes kept for one project (localStorage is
-  /// usually limited to ~5 MB per origin).
+  /// Approximate cap on the characters kept for one project, after the
+  /// compression of large projects (localStorage is usually limited to
+  /// ~5 MB per origin).
   final int maxBytes;
+
+  /// Projects larger than this (characters of JSON) are stored gzipped and
+  /// base64-encoded, which keeps projects of tens of megabytes of JSON
+  /// within the browser quota (their text compresses about tenfold).
+  static const compressAbove = 256 * 1024;
+  static const _gzip = 'gz:';
+
+  /// The stored form of [json].
+  static String encode(String json) {
+    if (json.length <= compressAbove) return json;
+    final packed = _gzip + base64Encode(const GZipEncoder().encodeBytes(utf8.encode(json)));
+    // embedded pictures are compressed already and may not shrink
+    return packed.length < json.length ? packed : json;
+  }
+
+  /// The JSON of a stored value (compressed or not); null when damaged.
+  static String? decode(String? stored) {
+    if (stored == null || !stored.startsWith(_gzip)) return stored;
+    try {
+      return utf8.decode(const GZipDecoder().decodeBytes(base64Decode(stored.substring(_gzip.length))));
+    } catch (_) {
+      return null;
+    }
+  }
 
   static const _index = 'store.index';
 
@@ -65,12 +92,14 @@ class LocalProjectStore implements ProjectRepository {
   List<StoredProject> versions(String uid) => _readIndex().where((e) => e.uid == uid && e.kind == 'version').toList()..sort((a, b) => b.version.compareTo(a.version));
 
   @override
-  String? load(String uid, {int? version}) => getPref(version == null ? 'store.$uid' : 'store.$uid.v$version');
+  String? load(String uid, {int? version}) => decode(getPref(version == null ? 'store.$uid' : 'store.$uid.v$version'));
 
   /// Saves the project. `autosave` overwrites the previous autosave of the
   /// same uid; `saved` also records a version (version history).
   @override
   void save(String uid, String name, String json, {String kind = 'saved', String label = ''}) {
+    final raw = json;
+    json = encode(json);
     if (json.length > maxBytes) return; // too large for the browser store
     var idx = _readIndex();
     idx.removeWhere((e) => e.uid == uid && e.kind != 'version');
@@ -79,7 +108,7 @@ class LocalProjectStore implements ProjectRepository {
       final vs = versions(uid);
       version = (vs.isEmpty ? 0 : vs.first.version) + 1;
       _put('store.$uid.v$version', json);
-      idx.add(StoredProject(uid: uid, name: name, savedAt: DateTime.now(), kind: 'version', bytes: json.length, version: version, label: label));
+      idx.add(StoredProject(uid: uid, name: name, savedAt: DateTime.now(), kind: 'version', bytes: raw.length, version: version, label: label));
       // keep only the last versions
       final all = idx.where((e) => e.uid == uid && e.kind == 'version').toList()..sort((a, b) => b.version.compareTo(a.version));
       for (final old in all.skip(maxVersions)) {
@@ -95,7 +124,7 @@ class LocalProjectStore implements ProjectRepository {
       }
       _put('store.$uid', json);
     }
-    idx.add(StoredProject(uid: uid, name: name, savedAt: DateTime.now(), kind: kind, bytes: json.length, version: version));
+    idx.add(StoredProject(uid: uid, name: name, savedAt: DateTime.now(), kind: kind, bytes: raw.length, version: version));
     // cap the number of projects
     final projects = idx.where((e) => e.kind != 'version').toList()..sort((a, b) => b.savedAt.compareTo(a.savedAt));
     for (final old in projects.skip(maxProjects)) {

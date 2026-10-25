@@ -49,7 +49,10 @@ class HNode {
   Object? tag;
 }
 
-enum HLinkKind { pipe, pump, prv, device, closed }
+/// Link kinds: [prv] reduces the downstream pressure to its setting, [psv]
+/// sustains the upstream pressure at its setting, [fcv] limits the flow to
+/// [HLink.fcvFlow] (EPANET's valve models).
+enum HLinkKind { pipe, pump, prv, device, closed, psv, fcv }
 
 enum LinkStatus { open, closed, active }
 
@@ -70,6 +73,9 @@ class HLink {
     this.prvSetting = 0,
     this.label = '',
     this.tag,
+    this.scobeyKs = 0.40,
+    this.manningN = 0.010,
+    this.fcvFlow = 0,
   });
 
   final String id;
@@ -80,13 +86,21 @@ class HLink {
   double length;
   double hazenC;
   double roughness;
+
+  /// Coefficients of the Scobey and Manning laws.
+  double scobeyKs;
+  double manningN;
   double minorK;
   bool checkValve;
   PumpCurve? pump;
   DeviceLossCurve? device;
 
-  /// PRV downstream pressure-head setting (m above the downstream node).
+  /// Pressure-head setting (m) of a PRV (above the downstream node) or of a
+  /// PSV (above the upstream node).
   double prvSetting;
+
+  /// Flow setting of an FCV (m³/s).
+  double fcvFlow;
   String label;
   Object? tag;
 
@@ -171,6 +185,12 @@ class HydraulicNetwork {
   static const double _closedResistance = 1e8;
   static const double _qMin = 1e-7;
 
+  /// Smallest head loss gradient of a device or an open valve (EPANET's
+  /// RQtol): with nearly no loss at nearly no flow (an air valve on a line
+  /// at rest) a smaller one made the system too ill-conditioned to solve
+  /// next to the 1/10⁸ conductance of a closed pump.
+  static const double _minGradient = 1e-7;
+
   NetworkResult solve({Map<String, double>? initialFlows}) {
     final warnings = <String>[];
     final nodeList = nodes.values.toList();
@@ -199,16 +219,19 @@ class HydraulicNetwork {
           case HLinkKind.pipe:
           case HLinkKind.device:
           case HLinkKind.prv:
+          case HLinkKind.psv:
             q.add(flowForVelocity(velocity: 1.0, diameter: l.diameter));
+          case HLinkKind.fcv:
+            q.add(l.fcvFlow);
           case HLinkKind.pump:
             q.add(l.pump != null ? math.max(l.pump!.runoutFlow.isFinite ? l.pump!.runoutFlow / 2 : 0.01, 1e-4) : 0.01);
           case HLinkKind.closed:
             q.add(0);
         }
       }
-      if (l.kind == HLinkKind.prv) l.status = LinkStatus.active;
+      if (_isValve(l)) l.status = LinkStatus.active;
       if (l.kind == HLinkKind.closed) l.status = LinkStatus.closed;
-      if (l.kind != HLinkKind.closed && l.kind != HLinkKind.prv) l.status = LinkStatus.open;
+      if (l.kind != HLinkKind.closed && !_isValve(l)) l.status = LinkStatus.open;
     }
 
     // Emitters are fictitious links to a reservoir at the emitter elevation
@@ -255,7 +278,11 @@ class HydraulicNetwork {
               yk = _closedResistance * qk;
             } else {
               final r = _pipeResistance(l, qk);
-              final n = options.method == FrictionMethod.hazenWilliams ? 1.852 : 2.0;
+              final n = switch (options.method) {
+                FrictionMethod.hazenWilliams => 1.852,
+                FrictionMethod.scobey => 1.9,
+                FrictionMethod.darcyWeisbach || FrictionMethod.manning => 2.0,
+              };
               final qa = math.max(qk.abs(), _qMin);
               final m = l.minorK > 0 ? minorLossFlowCoefficient(k: l.minorK, diameter: l.diameter) : 0.0;
               var gg = n * r * math.pow(qa, n - 1) + 2 * m * qa;
@@ -275,16 +302,18 @@ class HydraulicNetwork {
               gk = _closedResistance;
               yk = _closedResistance * qk;
             } else {
-              gk = math.max(d.gradient(qk), 1e-9);
+              gk = math.max(d.gradient(qk), _minGradient);
               yk = d.loss(qk);
             }
           case HLinkKind.prv:
+          case HLinkKind.psv:
+          case HLinkKind.fcv:
             final d = l.device;
             if (l.status == LinkStatus.closed) {
               gk = _closedResistance;
               yk = _closedResistance * qk;
             } else if (l.status == LinkStatus.open) {
-              gk = d != null ? math.max(d.gradient(qk), 1e-9) : 1e-2;
+              gk = d != null ? math.max(d.gradient(qk), _minGradient) : 1e-2;
               yk = d != null ? d.loss(qk) : 1e-2 * qk;
             } else {
               gk = double.infinity; // active: handled specially
@@ -314,11 +343,21 @@ class HydraulicNetwork {
         y[k] = yk;
       }
 
+      // parts at rest behind closed links take their level as known heads
+      final resting = _restingParts(nodeList, heads, emitterOpen);
+      heads.addAll(resting);
+
       // --- assemble ---
       final sys = SparseSymmetricSystem(unknownCount);
       for (final n in nodeList) {
         final i = index[n.id];
         if (i == null) continue;
+        final rest = resting[n.id];
+        if (rest != null) {
+          sys.addDiagonal(i, 1);
+          sys.rhs[i] += rest;
+          continue;
+        }
         var demand = n.demand;
         final em = n.emitter;
         if (em != null && n.emitterCount > 0) {
@@ -343,8 +382,8 @@ class HydraulicNetwork {
       }
       for (var k = 0; k < links.length; k++) {
         final l = links[k];
-        final iFrom = index[l.from];
-        final iTo = index[l.to];
+        final iFrom = resting.containsKey(l.from) ? null : index[l.from];
+        final iTo = resting.containsKey(l.to) ? null : index[l.to];
         if (l.kind == HLinkKind.prv && l.status == LinkStatus.active) {
           // downstream node fixed to setting; flow appears as demand upstream
           final toNode = nodes[l.to]!;
@@ -356,6 +395,34 @@ class HydraulicNetwork {
             sys.rhs[iTo] += q[k];
           }
           if (iFrom != null) sys.rhs[iFrom] += -q[k];
+          continue;
+        }
+        if (l.kind == HLinkKind.psv && l.status == LinkStatus.active) {
+          // upstream node fixed to setting; flow leaves it towards `to`
+          final hSet = nodes[l.from]!.elevation + l.prvSetting;
+          if (iFrom != null) {
+            sys.addDiagonal(iFrom, 1e8);
+            sys.rhs[iFrom] += 1e8 * hSet;
+            sys.rhs[iFrom] += -q[k];
+          }
+          if (iTo != null) sys.rhs[iTo] += q[k];
+          continue;
+        }
+        if (l.kind == HLinkKind.fcv && l.status == LinkStatus.active) {
+          // fixed flow from `from` to `to`, with a vanishing conductance
+          // between them so neither side is left without a head (EPANET)
+          const tiny = 1e-8;
+          if (iFrom != null) {
+            sys.addDiagonal(iFrom, tiny);
+            sys.rhs[iFrom] += -l.fcvFlow;
+            if (iTo == null) sys.rhs[iFrom] += heads[l.to]! * tiny;
+          }
+          if (iTo != null) {
+            sys.addDiagonal(iTo, tiny);
+            sys.rhs[iTo] += l.fcvFlow;
+            if (iFrom == null) sys.rhs[iTo] += heads[l.from]! * tiny;
+          }
+          if (iFrom != null && iTo != null) sys.add(iFrom, iTo, -tiny);
           continue;
         }
         final inv = 1 / g[k];
@@ -400,6 +467,21 @@ class HydraulicNetwork {
             if (o.to == l.to) net -= q[j];
           }
           qNew = net;
+        } else if (l.kind == HLinkKind.psv && l.status == LinkStatus.active) {
+          // continuity at the upstream node
+          final fromNode = nodes[l.from]!;
+          var net = -fromNode.demand - emitterFlow[l.from]!;
+          for (var j = 0; j < links.length; j++) {
+            if (j == k) continue;
+            final o = links[j];
+            if (o.to == l.from) net += q[j];
+            if (o.from == l.from) net -= q[j];
+          }
+          qNew = net;
+        } else if (l.kind == HLinkKind.fcv && l.status == LinkStatus.active) {
+          qNew = l.fcvFlow;
+        } else if (resting.containsKey(l.from) && resting.containsKey(l.to)) {
+          qNew = 0;
         } else {
           qNew = q[k] - damping * (y[k] - dh) / g[k];
         }
@@ -479,6 +561,79 @@ class HydraulicNetwork {
   static const _statusCheckFrequency = 2;
   static const _maxStatusCheck = 10;
 
+  static bool _isClosedLink(HLink l) => l.kind == HLinkKind.closed || l.status == LinkStatus.closed || (l.kind == HLinkKind.pump && l.pump == null);
+
+  /// Parts of the network that closed links cut off from every fixed head
+  /// while nothing is drawn from them (a line at rest behind an idle pump),
+  /// with the level each one rests at: the mean head across its closed
+  /// links, which their equal 1/10⁸ conductances give, or its lowest
+  /// emitter when that is lower, since the water drains out there. Solved
+  /// with the rest, such a part left the system singular to rounding, its
+  /// level held only by those conductances next to ones of 10⁷ inside it.
+  Map<String, double> _restingParts(List<HNode> nodeList, Map<String, double> heads, Map<String, bool> emitterOpen) {
+    if (!links.any(_isClosedLink)) return const {};
+    final at = <String, int>{for (var i = 0; i < nodeList.length; i++) nodeList[i].id: i};
+    final parent = List<int>.generate(nodeList.length, (i) => i);
+    int find(int i) {
+      while (parent[i] != i) {
+        parent[i] = parent[parent[i]];
+        i = parent[i];
+      }
+      return i;
+    }
+
+    for (final l in links) {
+      if (_isClosedLink(l)) continue;
+      final a = at[l.from], b = at[l.to];
+      if (a == null || b == null) continue;
+      final ra = find(a), rb = find(b);
+      if (ra != rb) parent[ra] = rb;
+    }
+    // parts that hold a fixed head, draw water or may move it themselves
+    final busy = <int>{};
+    for (var i = 0; i < nodeList.length; i++) {
+      final n = nodeList[i];
+      if (n.kind != HNodeKind.junction || n.demand != 0 || emitterOpen[n.id] == true) busy.add(find(i));
+    }
+    for (final l in links) {
+      if (_isClosedLink(l)) continue;
+      if (l.kind == HLinkKind.pump || l.kind == HLinkKind.fcv || ((l.kind == HLinkKind.prv || l.kind == HLinkKind.psv) && l.status == LinkStatus.active)) {
+        if (at[l.from] case final a?) busy.add(find(a));
+      }
+    }
+    final top = <int, double>{}, lowestEmitter = <int, double>{};
+    for (var i = 0; i < nodeList.length; i++) {
+      final r = find(i);
+      if (busy.contains(r)) continue;
+      final n = nodeList[i];
+      top[r] = math.max(top[r] ?? double.negativeInfinity, n.elevation);
+      if (n.emitter != null && n.emitterCount > 0) lowestEmitter[r] = math.min(lowestEmitter[r] ?? double.infinity, n.elevation + n.emitterOffset);
+    }
+    if (top.isEmpty) return const {};
+    final sum = <int, double>{}, count = <int, int>{};
+    for (final l in links) {
+      if (!_isClosedLink(l)) continue;
+      final a = at[l.from], b = at[l.to];
+      if (a == null || b == null) continue;
+      final ra = find(a), rb = find(b);
+      if (ra == rb) continue;
+      if (top.containsKey(ra)) {
+        sum[ra] = (sum[ra] ?? 0) + heads[l.to]!;
+        count[ra] = (count[ra] ?? 0) + 1;
+      }
+      if (top.containsKey(rb)) {
+        sum[rb] = (sum[rb] ?? 0) + heads[l.from]!;
+        count[rb] = (count[rb] ?? 0) + 1;
+      }
+    }
+    final level = <int, double>{
+      for (final r in top.keys) r: math.min(count[r] != null ? sum[r]! / count[r]! : top[r]!, lowestEmitter[r] ?? double.infinity),
+    };
+    return {
+      for (var i = 0; i < nodeList.length; i++) nodeList[i].id: ?level[find(i)],
+    };
+  }
+
   /// Status changes of check valves, pumps and (with [prvs]) pressure
   /// reducing valves for the current heads; true when any changed.
   bool _checkLinkStatus(Map<String, double> heads, List<double> q, {required bool prvs}) {
@@ -547,9 +702,55 @@ class HydraulicNetwork {
         if (l.status != old) statusChanged = true;
         if (l.status == LinkStatus.closed) q[k] = 0;
       }
+      if (prvs && l.kind == HLinkKind.psv) {
+        // EPANET psvstatus: the setting is the upstream pressure
+        final hSet = nodes[l.from]!.elevation + l.prvSetting;
+        final hi = heads[l.from]!, hj = heads[l.to]!;
+        final old = l.status;
+        switch (old) {
+          case LinkStatus.active:
+            // opens when, fully open, it would leave the upstream above the
+            // setting anyway: the outlet plus the open valve's own loss
+            final openLoss = l.device?.loss(q[k]) ?? 1e-2 * q[k];
+            if (q[k] < -1e-6) {
+              l.status = LinkStatus.closed;
+            } else if (hj + openLoss > hSet + 1e-4) {
+              l.status = LinkStatus.open;
+            }
+          case LinkStatus.open:
+            if (q[k] < -1e-6) {
+              l.status = LinkStatus.closed;
+            } else if (hi < hSet - 1e-4) {
+              l.status = LinkStatus.active;
+            }
+          case LinkStatus.closed:
+            if (hj > hSet + 1e-4 && hi > hj + 1e-4) {
+              l.status = LinkStatus.open;
+            } else if (hi > hSet + 1e-4 && hi > hj + 1e-4) {
+              l.status = LinkStatus.active;
+            }
+        }
+        if (l.status != old) statusChanged = true;
+        if (l.status == LinkStatus.closed) q[k] = 0;
+      }
+      if (prvs && l.kind == HLinkKind.fcv) {
+        // EPANET fcvstatus: active while there is head to push the setting;
+        // open (less than the setting) when the head across turns negative
+        final hi = heads[l.from]!, hj = heads[l.to]!;
+        final old = l.status;
+        if (old == LinkStatus.active && hi < hj - 1e-4) {
+          l.status = LinkStatus.open;
+        } else if (old == LinkStatus.open && q[k] >= l.fcvFlow) {
+          l.status = LinkStatus.active;
+          q[k] = l.fcvFlow;
+        }
+        if (l.status != old) statusChanged = true;
+      }
     }
     return statusChanged;
   }
+
+  static bool _isValve(HLink l) => l.kind == HLinkKind.prv || l.kind == HLinkKind.psv || l.kind == HLinkKind.fcv;
 
   NetworkResult _results(List<HNode> nodeList, Map<String, double> heads, List<double> q, Map<String, double> emitterFlow, Map<String, bool> emitterOpen, bool converged, int iter, List<String> warnings, double relErr) {
     final nodeResults = <String, NodeResult>{};
@@ -635,6 +836,10 @@ class HydraulicNetwork {
         final f = darcyFrictionFactor(reynolds: re, relRoughness: l.roughness / l.diameter);
         final a = math.pi * l.diameter * l.diameter / 4;
         return f * l.length / (l.diameter * 2 * 9.80665 * a * a);
+      case FrictionMethod.scobey:
+        return scobeyResistance(diameter: l.diameter, length: l.length, ks: l.scobeyKs);
+      case FrictionMethod.manning:
+        return manningResistance(diameter: l.diameter, length: l.length, n: l.manningN);
     }
   }
 }

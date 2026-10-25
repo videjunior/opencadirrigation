@@ -9,6 +9,7 @@ import '../../actions.dart';
 import '../../examples.dart';
 import '../../state/controller.dart';
 import '../../version.dart';
+import '../../theme.dart';
 
 enum WelcomeChoice { tutorial, example, skip }
 
@@ -50,7 +51,7 @@ Future<WelcomeChoice> showWelcomeDialog(BuildContext context, ProjectController 
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
               Text(t('welcome.title')),
               // exact build shown at start-up: version, build number, date, commit
-              Text(t('about.version', {'v': appVersionLabel}), key: const Key('welcome_version'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.normal, fontFamily: 'monospace', color: Colors.white54)),
+              Text(t('about.version', {'v': appVersionLabel}), key: const Key('welcome_version'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, fontFamily: 'monospace', color: Cad.fg54)),
             ]),
           ),
         ]),
@@ -62,7 +63,7 @@ Future<WelcomeChoice> showWelcomeDialog(BuildContext context, ProjectController 
               const SizedBox(height: 14),
               Text(t('welcome.examples'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
               const SizedBox(height: 2),
-              Text(t('welcome.examplesHint'), style: const TextStyle(fontSize: 11.5, color: Colors.white60, height: 1.35)),
+              Text(t('welcome.examplesHint'), style: TextStyle(fontSize: 11.5, color: Cad.fg60, height: 1.35)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -112,7 +113,7 @@ class _ExampleCard extends StatelessWidget {
     return SizedBox(
       width: width,
       child: Material(
-        color: const Color(0xFF232830),
+        color: Cad.card,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
@@ -121,16 +122,16 @@ class _ExampleCard extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Icon(icon, size: 22, color: const Color(0xFF64B5F6)),
+                Icon(icon, size: 22, color: Cad.accentIcon),
                 const SizedBox(width: 8),
                 Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
               ]),
               const SizedBox(height: 6),
-              Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.white70, height: 1.3), maxLines: 4, overflow: TextOverflow.ellipsis),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: Cad.fg70, height: 1.3), maxLines: 4, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 6),
               Row(children: [
-                Expanded(child: Text(tags, style: const TextStyle(fontSize: 10.5, color: Colors.white38))),
-                Text(open, style: const TextStyle(fontSize: 11, color: Color(0xFF64B5F6), fontWeight: FontWeight.bold)),
+                Expanded(child: Text(tags, style: TextStyle(fontSize: 10.5, color: Cad.fg38))),
+                Text(open, style: TextStyle(fontSize: 11, color: Cad.accentIcon, fontWeight: FontWeight.bold)),
               ]),
             ]),
           ),

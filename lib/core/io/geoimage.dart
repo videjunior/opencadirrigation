@@ -167,7 +167,11 @@ class GeoImageReader {
     final bd = ByteData.sublistView(bytes);
     final little = bytes[0] == 0x49 && bytes[1] == 0x49;
     final endian = little ? Endian.little : Endian.big;
-    if (bd.getUint16(2, endian) != 42) return out; // BigTIFF (43) not supported
+    final version = bd.getUint16(2, endian);
+    // BigTIFF (64-bit offsets) is not read: say so rather than fail later
+    // with an unreadable image
+    if (version == 43 && (little || (bytes[0] == 0x4D && bytes[1] == 0x4D))) throw const FormatException('tiff_bigtiff');
+    if (version != 42) return out;
     final ifd = bd.getUint32(4, endian);
     if (ifd + 2 > bytes.length) return out;
     final count = bd.getUint16(ifd, endian);

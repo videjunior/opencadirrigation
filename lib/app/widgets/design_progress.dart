@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/design/designer.dart';
 import '../../core/model/entities.dart';
 import '../state/controller.dart';
+import '../theme.dart';
 
 /// Compact progress card shown in a corner of the canvas while a design
 /// runs. It blocks nothing: the user keeps panning, zooming, selecting and
@@ -56,7 +57,7 @@ class DesignProgressOverlay extends StatelessWidget {
       key: const Key('design_progress'),
       elevation: 8,
       borderRadius: BorderRadius.circular(8),
-      color: const Color(0xF2262B32),
+      color: Cad.raisedTranslucent,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: compact ? double.infinity : 320),
         child: Padding(
@@ -68,12 +69,12 @@ class DesignProgressOverlay extends StatelessWidget {
               Row(
                 children: [
                   // determinate: an indeterminate spinner freezes mid-arc while a step runs
-                  SizedBox(width: 16, height: 16, child: CircularProgressIndicator(value: fraction, strokeWidth: 2.5, backgroundColor: Colors.white12)),
+                  SizedBox(width: 16, height: 16, child: CircularProgressIndicator(value: fraction, strokeWidth: 2.5, backgroundColor: Cad.fg12)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       t('design.progress.title'),
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Cad.fg),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -81,7 +82,7 @@ class DesignProgressOverlay extends StatelessWidget {
                   Text(
                     '${(fraction * 100).round()}%',
                     key: const Key('design_progress_pct'),
-                    style: const TextStyle(fontSize: 11, color: Colors.white54),
+                    style: TextStyle(fontSize: 11, color: Cad.fg54),
                   ),
                 ],
               ),
@@ -91,7 +92,7 @@ class DesignProgressOverlay extends StatelessWidget {
                 child: Text(
                   _stageLabel(),
                   key: const Key('design_progress_stage'),
-                  style: const TextStyle(fontSize: 11, color: Colors.white70),
+                  style: TextStyle(fontSize: 11, color: Cad.fg70),
                   maxLines: compact ? 1 : 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -102,7 +103,7 @@ class DesignProgressOverlay extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: p?.fraction,
                   minHeight: 4,
-                  backgroundColor: Colors.white12,
+                  backgroundColor: Cad.fg12,
                 ),
               ),
               if (!compact) ...[
@@ -110,7 +111,7 @@ class DesignProgressOverlay extends StatelessWidget {
                 Text(
                   key: const Key('design_progress_hint'),
                   t(c.designMode == 'thread' ? 'design.progress.hint' : 'design.progress.bg'),
-                  style: const TextStyle(fontSize: 10.5, color: Colors.white38),
+                  style: TextStyle(fontSize: 10.5, color: Cad.fg38),
                 ),
               ],
             ],

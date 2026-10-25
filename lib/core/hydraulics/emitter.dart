@@ -77,6 +77,37 @@ class EmitterCurve {
     return EmitterCurve(k: math.exp(intercept), x: slope, radiusA: radiusA, radiusB: radiusB);
   }
 
+  /// Curve of a nozzle from the rows of its data sheet: (head m, flow m³/s)
+  /// with an optional wetted radius (m) per row. Flow q = k·H^x and radius
+  /// R = a·H^b are both least-squares power laws in log-log space; with a
+  /// single radius the exponent [defaultRadiusB] is assumed (0.5 when the
+  /// throw grows like the jet velocity). [EmitterFit.maxFlowError] and
+  /// [EmitterFit.maxRadiusError] give the worst relative deviation of the
+  /// rows from the fitted laws.
+  static EmitterFit fitTable(List<(double, double, double?)> rows, {double defaultRadiusB = 0.5}) {
+    final flows = [for (final r in rows) if (r.$1 > 0 && r.$2 > 0) (r.$1, r.$2)];
+    final radii = [for (final r in rows) if (r.$1 > 0 && (r.$3 ?? 0) > 0) (r.$1, r.$3!)];
+    final c = fit(flows);
+    var a = 0.0, b = 0.0;
+    if (radii.length == 1) {
+      b = defaultRadiusB;
+      a = radii.first.$2 / math.pow(radii.first.$1, b);
+    } else if (radii.length > 1) {
+      final r = fit(radii);
+      a = r.k;
+      b = r.x;
+    }
+    final curve = EmitterCurve(k: c.k, x: c.x, radiusA: a, radiusB: b);
+    var qErr = 0.0, rErr = 0.0;
+    for (final (h, q) in flows) {
+      qErr = math.max(qErr, (curve.flow(h) - q).abs() / q);
+    }
+    for (final (h, r) in radii) {
+      rErr = math.max(rErr, (curve.radius(h) - r).abs() / r);
+    }
+    return EmitterFit(curve: curve, flowRows: flows.length, radiusRows: radii.length, maxFlowError: qErr, maxRadiusError: rErr);
+  }
+
   /// Allowable head window for a flow tolerance (fractions, e.g. 0.05 = 5 %).
   /// Returns (hMin, hMax) around [nominalHead].
   (double, double) headWindow(double nominalHead, {double below = 0.05, double above = 0.05}) {
@@ -93,6 +124,20 @@ class EmitterCurve {
     radiusA: (j['ra'] as num?)?.toDouble() ?? 0,
     radiusB: (j['rb'] as num?)?.toDouble() ?? 0,
   );
+}
+
+/// Result of [EmitterCurve.fitTable].
+class EmitterFit {
+  const EmitterFit({required this.curve, required this.flowRows, required this.radiusRows, required this.maxFlowError, required this.maxRadiusError});
+  final EmitterCurve curve;
+  final int flowRows;
+  final int radiusRows;
+
+  /// Worst relative deviation (fraction) of the rows from the fitted laws.
+  final double maxFlowError;
+  final double maxRadiusError;
+
+  bool get isUsable => flowRows > 0 && curve.k > 0 && curve.x.isFinite;
 }
 
 /// Precipitation (application) rate in m/s for a sprinkler grid.

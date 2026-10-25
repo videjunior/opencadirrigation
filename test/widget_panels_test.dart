@@ -44,7 +44,7 @@ void main() {
     return c;
   }
 
-  Future<void> openMenu(WidgetTester tester, String top, String item) async {
+  Future<void> openMenu(WidgetTester tester, String top, Pattern item) async {
     await tester.tap(find.text(top).first);
     await settle(tester, 2);
     await tester.tap(find.textContaining(item).last);
@@ -358,7 +358,7 @@ void main() {
     final c = await pumpShell(tester);
     await openMenu(tester, 'Ver', '(F7)');
     expect(c.showGrid, isFalse);
-    await openMenu(tester, 'Ver', 'Rótulos');
+    await openMenu(tester, 'Ver', RegExp(r'^Rótulos$'));
     expect(c.showLabels, isFalse);
     await openMenu(tester, 'Ver', 'Raios molhados');
     expect(c.showWettedRadii, isFalse);

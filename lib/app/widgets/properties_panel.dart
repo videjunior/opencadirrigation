@@ -3,7 +3,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/design/agronomy.dart';
+import '../../core/design/crops.dart';
+import '../../core/design/effective_rain.dart';
 import '../../core/design/pivot.dart' show PivotKind;
+import '../../core/design/soils.dart';
+import '../../core/design/valve_in_head.dart';
 import '../../core/model/catalog.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
@@ -11,6 +15,7 @@ import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/tools.dart';
+import 'dialogs/mechanised_dialogs.dart';
 import 'fields.dart';
 
 class PropertiesPanel extends StatelessWidget {
@@ -33,7 +38,7 @@ class PropertiesPanel extends StatelessWidget {
         IconButton(icon: const Icon(Icons.center_focus_strong, size: 16), tooltip: t('props.zoomTo'), onPressed: () => c.zoomToEntity(e.id)),
         IconButton(icon: const Icon(Icons.delete_outline, size: 16), onPressed: c.deleteSelected),
       ]),
-      if (locked) Text(t('props.locked'), style: const TextStyle(fontSize: 11, color: Colors.amber)),
+      if (locked) Text(t('props.locked'), style: TextStyle(fontSize: 11, color: Cad.amber)),
       TextFieldRow(label: t('props.name'), value: e.name, onChanged: (v) => c.mutate(() => e.name = v, invalidateResults: false)),
       _layerField(e),
     ];
@@ -106,6 +111,12 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.arc'), value: o.arcDeg, onChanged: (v) => set(() => o.arcDeg = v)),
           NumField(label: t('props.orientation'), value: o.orientationDeg, onChanged: (v) => set(() => o.orientationDeg = v, inv: false)),
           NumField(label: t('props.riser'), value: o.riserHeight, onChanged: (v) => set(() => o.riserHeight = v)),
+          // valve-in-head: its station and the system flows that run it
+          if (o.scope == HydraulicScope.mainline) ...[
+            TextFieldRow(key: const Key('vih_station'), label: t('props.vihStation'), value: o.zoneName, onChanged: (x) => set(() => o.zoneName = x)),
+            KV(t('props.vihFlows'), _vihFlows(o)),
+            Text(t('props.vihHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+          ],
         ]);
       case ControlValveEntity v:
         items.addAll([
@@ -129,6 +140,10 @@ class PropertiesPanel extends StatelessWidget {
           SpecDropdown<PumpSpec>(label: t('props.pump'), value: p.pumpSpecId, items: cat.pumps.where((x) => x.enabled).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (x) => set(() => p.pumpSpecId = x)),
           NumField(label: t('props.speed'), value: p.speedRatio, onChanged: (x) => set(() => p.speedRatio = x)),
           if (spec != null) KV('H0', '${fmt(u.pressureFromHead(spec.curve.withSpeed(p.speedRatio).shutoffHead), 1)} ${u.pressureLabel}'),
+          NumField(label: pLabel('props.vfdTarget'), value: u.pressureFromHead(p.targetPressureM), onChanged: (x) => set(() => p.targetPressureM = x <= 0 ? 0 : u.pressureToHead(x))),
+          if (p.targetPressureM > 0) NumField(label: t('props.vfdMin'), value: p.minSpeedRatio, onChanged: (x) => set(() => p.minSpeedRatio = x.clamp(0.1, 1.0).toDouble())),
+          SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('acc.hourMeter'), style: const TextStyle(fontSize: 12)), value: p.hourMeter, onChanged: (x) => set(() => p.hourMeter = x)),
+          if (p.hourMeter) NumField(label: '${t('props.pivotCost')} (${c.project.params.currency})', value: p.hourMeterCost, onChanged: (x) => set(() => p.hourMeterCost = x < 0 ? 0 : x)),
         ]);
       case MiscHydraulicEntity m:
         final spec = cat.valve(m.valveSpecId);
@@ -136,17 +151,33 @@ class PropertiesPanel extends StatelessWidget {
           KV(t('props.scope'), t('scope.${m.scope.name}')),
           SpecDropdown<ValveSpec>(label: t('props.misc'), value: m.valveSpecId, items: cat.valves.where((x) => x.enabled && x.kind != ValveKind.control).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (x) => set(() => m.valveSpecId = x)),
           if (spec?.kind == ValveKind.prv) NumField(label: pLabel('props.setting'), value: u.pressureFromHead(m.settingM), onChanged: (x) => set(() => m.settingM = u.pressureToHead(x))),
+          if (spec?.kind == ValveKind.psv) NumField(label: pLabel('props.sustain'), value: u.pressureFromHead(m.settingM > 0 ? m.settingM : spec!.defaultSettingM), onChanged: (x) => set(() => m.settingM = u.pressureToHead(x))),
+          if (spec?.kind == ValveKind.fcv) NumField(label: qLabel('props.flowLimit'), value: u.flowFromSi(m.settingFlow > 0 ? m.settingFlow : spec!.maxFlow), onChanged: (x) => set(() => m.settingFlow = x <= 0 ? 0 : u.flowToSi(x))),
         ]);
       case JunctionEntity j:
         items.addAll([
           KV(t('props.scope'), t('scope.${j.scope.name}')),
           NumField(label: t('props.elevationDem'), value: j.fixedElevation ?? 0, onChanged: (x) => set(() => j.fixedElevation = x == 0 ? null : x)),
         ]);
+      case BreaklineEntity bl:
+        String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmt(bl.elevationOf(i), 2) : '-'].join('; ');
+        items.addAll([
+          KV(t('props.vertices'), '${bl.points.length}'),
+          KV(t('props.length'), '${fmt(u.lengthFromSi(bl.length))} ${u.lengthLabel}'),
+          TextFieldRow(key: const Key('breakline_zs'), label: t('props.breaklineZs'), value: zText(), onChanged: (x) => set(() {
+            final parts = x.split(';');
+            bl.elevations = [for (var i = 0; i < bl.points.length; i++) i < parts.length ? (parseNumber(parts[i].trim()) ?? double.nan) : double.nan];
+          })),
+          Text(t('props.breaklineHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+        ]);
       case ContourEntity ct:
         items.addAll([
           NumField(label: t('props.elevation'), value: ct.elevation, onChanged: (x) => set(() => ct.elevation = x)),
           KV(t('props.length'), '${fmt(u.lengthFromSi(ct.length))} ${u.lengthLabel}'),
-          if (ct.derived) Text(t('props.derived'), style: const TextStyle(fontSize: 11, color: Colors.white54)),
+          if (ct.derived) ...[
+            Text(t('props.derived'), style: TextStyle(fontSize: 11, color: Cad.attention)),
+            TextButton.icon(key: const Key('contour_make_source'), onPressed: () => set(() => ct.derived = false), icon: const Icon(Icons.terrain, size: 16), label: Text(t('props.derivedToSource'), style: const TextStyle(fontSize: 12))),
+          ],
         ]);
       case PivotEntity pv:
         final r = c.results?.pivots[pv.id];
@@ -179,6 +210,7 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.pivotSprSpacing'), value: pv.sprinklerSpacingM, onChanged: (x) => set(() => pv.sprinklerSpacingM = x <= 0 ? pv.sprinklerSpacingM : x)),
           SpecDropdown<OutletSpec>(label: t('props.pivotSprinkler'), value: pv.sprinklerSpecId, items: cat.outlets.where((o) => o.enabled && o.kind != OutletKind.demandPoint).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: true, onChanged: (v) => set(() => pv.sprinklerSpecId = v)),
           SpecDropdown<ValveSpec>(label: t('props.pivotRegulator'), value: pv.regulatorSpecId, items: cat.valves.where((x) => x.enabled && x.kind == ValveKind.prv).toList(), labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: true, onChanged: (v) => set(() => pv.regulatorSpecId = v)),
+          OutlinedButton.icon(key: const Key('pivot_machine'), onPressed: locked ? null : () => showPivotMachineDialog(context, c, pv), icon: const Icon(Icons.tune, size: 16), label: Text(t('mech.open'), style: const TextStyle(fontSize: 12))),
           KV(t('props.pivotArea'), '${fmt((pv.kind == PivotKind.pivot ? 3.141592653589793 * pv.irrigatedRadius * pv.irrigatedRadius * pv.sectorDeg / 360 : pv.irrigatedRadius * pv.travelM) / 10000, 2)} ha'),
           if (r != null) ...[
             SectionTitle(t('props.pivotResults')),
@@ -189,8 +221,8 @@ class PropertiesPanel extends StatelessWidget {
             KV(t('rep.rise'), '${fmt(r.elevationRise, 2)} m'),
             KV(t('rep.towers'), '${r.towerCount}'),
             KV(t('rep.sprinklers'), '${r.sprinklerCount}'),
-            KV(t('rep.appRatePeak'), '${fmt(r.appRateEndPeak, 1)} mm/h'),
-            for (final w in r.warnings) Text(c.t.warning(w), style: const TextStyle(fontSize: 11, color: CadColors.warning)),
+            KV(t('rep.appRatePeak'), '${fmt(u.depthFromMm(r.appRateEndPeak), 2)} ${u.depthRateLabel}'),
+            for (final w in r.warnings) Text(c.t.warning(w), style: TextStyle(fontSize: 11, color: Cad.warning)),
           ],
         ]);
       case SpotHeightEntity sp:
@@ -216,7 +248,7 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case HatchEntity h:
         items.addAll([
-          KV(t('props.area'), '${fmt(h.area)} m² (${fmt(h.area / 10000, 3)} ha)'),
+          KV(t('props.area'), '${fmt(u.areaFromSi(h.area), 3)} ${u.areaLabel}'),
           NumField(label: t('props.hatchAngle'), value: h.angleDeg, onChanged: (x) => set(() => h.angleDeg = x, inv: false)),
           NumField(label: t('props.hatchSpacing'), value: h.spacing, onChanged: (x) => set(() => h.spacing = x <= 0 ? 1 : x, inv: false)),
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.hatchSolid'), style: const TextStyle(fontSize: 12)), value: h.solid, onChanged: (x) => set(() => h.solid = x, inv: false)),
@@ -230,7 +262,7 @@ class PropertiesPanel extends StatelessWidget {
       case PolylineEntity pl:
         items.addAll([
           KV(t('props.length'), '${fmt(u.lengthFromSi(pl.length))} ${u.lengthLabel}'),
-          if (pl.closed) KV(t('props.area'), '${fmt(pl.area)} m² (${fmt(pl.area / 10000, 3)} ha)'),
+          if (pl.closed) KV(t('props.area'), '${fmt(u.areaFromSi(pl.area), 3)} ${u.areaLabel}'),
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.closed'), style: const TextStyle(fontSize: 12)), value: pl.closed, onChanged: (x) => set(() => pl.closed = x, inv: false)),
         ]);
       case LineEntity l:
@@ -261,9 +293,14 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.outputVolts'), value: k.outputVolts, onChanged: (x) => set(() => k.outputVolts = x <= 0 ? k.outputVolts : x)),
           NumField(label: t('props.maxSimultaneous'), value: k.maxSimultaneous.toDouble(), decimals: 0, onChanged: (x) => set(() => k.maxSimultaneous = x.round().clamp(0, 99))),
           NumField(label: '${t('props.pivotCost')} (${c.project.params.currency})', value: k.cost, onChanged: (x) => set(() => k.cost = x < 0 ? 0 : x)),
+          SectionTitle(t('acc.title')),
+          for (final kind in controllerAccessoryKinds) ...[
+            SwitchListTile(key: Key('acc_$kind'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('acc.$kind'), style: const TextStyle(fontSize: 12)), value: k.accessories.containsKey(kind), onChanged: (x) => set(() => x ? k.accessories[kind] = 0 : k.accessories.remove(kind))),
+            if (k.accessories.containsKey(kind)) NumField(label: '${t('props.pivotCost')} (${c.project.params.currency})', value: k.accessories[kind]!, onChanged: (x) => set(() => k.accessories[kind] = x < 0 ? 0 : x)),
+          ],
           if (duty != null) ...[
             SectionTitle(t('props.results')),
-            KV(t('elec.used'), '${duty.used} / ${duty.stations}', color: duty.overloaded ? CadColors.warning : null),
+            KV(t('elec.used'), '${duty.used} / ${duty.stations}', color: duty.overloaded ? Cad.warning : null),
             KV(t('elec.common'), '${cat.wire(duty.commonWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(duty.commonWireM), 0)} ${u.lengthLabel}'),
             KV(t('elec.maxOpen'), '${duty.maxOpen}'),
             KV(t('elec.peak'), '${fmt(duty.peakCurrentA, 2)} A'),
@@ -272,7 +309,7 @@ class PropertiesPanel extends StatelessWidget {
       case WireEntity w:
         items.addAll([
           KV(t('props.length'), '${fmt(u.lengthFromSi(w.length))} ${u.lengthLabel}'),
-          Text(t('hint.wire'), style: const TextStyle(color: Colors.white54, fontSize: 11)),
+          Text(t('hint.wire'), style: TextStyle(color: Cad.fg54, fontSize: 11)),
         ]);
       case LeaderEntity le:
         items.addAll([
@@ -287,6 +324,20 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.rotation'), value: im.rotationDeg, onChanged: (x) => set(() => im.rotationDeg = x, inv: false)),
           NumField(label: t('props.opacity'), value: im.opacity, onChanged: (x) => set(() => im.opacity = x.clamp(0.05, 1.0), inv: false)),
         ]);
+      case CommentEntity cm:
+        items.addAll([
+          TextFieldRow(label: t('props.text'), value: cm.text, maxLines: 4, onChanged: (x) => set(() => cm.text = x, inv: false)),
+          TextFieldRow(label: t('props.author'), value: cm.author, onChanged: (x) => set(() => cm.author = x, inv: false)),
+          TextFieldRow(label: t('props.date'), value: cm.date, onChanged: (x) => set(() => cm.date = x, inv: false)),
+          SwitchListTile(key: const Key('comment_resolved'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.resolved'), style: const TextStyle(fontSize: 12)), value: cm.resolved, onChanged: (x) => set(() => cm.resolved = x, inv: false)),
+        ]);
+      case RevisionCloudEntity rc:
+        items.addAll([
+          TextFieldRow(label: t('props.revision'), value: rc.revision, onChanged: (x) => set(() => rc.revision = x, inv: false)),
+          TextFieldRow(label: t('props.date'), value: rc.date, onChanged: (x) => set(() => rc.date = x, inv: false)),
+          TextFieldRow(label: t('props.description'), value: rc.description, maxLines: 3, onChanged: (x) => set(() => rc.description = x, inv: false)),
+          NumField(label: '${t('props.arcLength')} (${u.lengthLabel})', value: u.lengthFromSi(rc.arcLength), onChanged: (x) => set(() => rc.arcLength = x <= 0 ? 0 : u.lengthToSi(x), inv: false)),
+        ]);
       case AreaEntity a:
         items.addAll(_areaFields(a, set));
       default:
@@ -298,9 +349,10 @@ class PropertiesPanel extends StatelessWidget {
 
   List<Widget> _areaFields(AreaEntity a, void Function(void Function() fn, {bool inv}) set) {
     final t = c.t;
+    final u = c.units;
     final crop = cropWaterRequirements(c.project, c.results).where((x) => x.areaId == a.id).firstOrNull;
     return [
-      KV(t('props.area'), '${fmt(a.area)} m² (${fmt(a.area / 10000, 3)} ha)'),
+      KV(t('props.area'), '${fmt(u.areaFromSi(a.area), 3)} ${u.areaLabel}'),
       TextFieldRow(label: t('props.crop'), value: a.crop, onChanged: (x) => set(() => a.crop = x, inv: false)),
       SpecDropdown<String>(label: t('props.kcPreset'), value: 'crop.custom', items: ['crop.custom', ...cropKcTable.keys], labelOf: (k) => k == 'crop.custom' ? t(k) : '${t(k)} (Kc ${cropKcTable[k]!.$2})', idOf: (k) => k, onChanged: (k) {
         if (k == null || k == 'crop.custom') return;
@@ -325,9 +377,37 @@ class PropertiesPanel extends StatelessWidget {
       ],
       if (crop != null) ...[
         KV(t('props.interval'), fmt(crop.intervalDays, 0)),
-        KV(t('rep.grossEvent'), '${fmt(crop.grossDepthMm, 1)} mm'),
+        KV(t('rep.grossEvent'), '${fmt(u.depthFromMm(crop.grossDepthMm), 2)} ${u.depthLabel}'),
         KV(t('rep.hoursEvent'), '${fmt(crop.hoursPerEvent, 2)} h'),
       ],
+      // requirement by month and growth stage (FAO-56 crop table)
+      SectionTitle(t('req.title')),
+      SpecDropdown<String>(key: const Key('area_crop_key'), label: t('req.crop'), value: a.cropKey.isEmpty ? '' : a.cropKey, items: ['', ...fao56Crops.keys], labelOf: (k) => k.isEmpty ? t('req.noCrop') : t(k), idOf: (k) => k, onChanged: (k) => set(() {
+        a.cropKey = k ?? '';
+        final data = fao56Crops[a.cropKey];
+        if (data != null) {
+          if (a.crop.isEmpty) a.crop = t(a.cropKey);
+          a.kc = data.kcMid;
+          if (data.schedulingRootDepthM != null) a.rootDepthM = data.schedulingRootDepthM!;
+          if (data.depletionFraction != null) a.mad = data.depletionFraction!;
+        }
+      }, inv: false)),
+      if (a.cropKey.isNotEmpty) ...[
+        TextFieldRow(label: t('req.planting'), value: a.plantingMonthDay, onChanged: (x) => set(() => a.plantingMonthDay = x.trim(), inv: false)),
+        SpecDropdown<String>(label: t('req.method'), value: a.irrigationMethod, items: const ['sprinkler', 'localized', 'surface'], labelOf: (k) => t('req.method.$k'), idOf: (k) => k, onChanged: (k) => set(() => a.irrigationMethod = k ?? 'sprinkler', inv: false)),
+        if (a.irrigationMethod == 'localized') NumField(label: t('req.groundCover'), value: a.groundCover, onChanged: (x) => set(() => a.groundCover = x.clamp(0.0, 1.0).toDouble(), inv: false)),
+        SpecDropdown<String>(label: t('req.rainMethod'), value: a.rainMethod, items: [for (final m in EffectiveRainMethod.values) m.name], labelOf: (k) => t('req.rain.$k'), idOf: (k) => k, onChanged: (k) => set(() => a.rainMethod = k ?? 'usdaScs', inv: false)),
+        SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('req.dependable'), style: const TextStyle(fontSize: 12)), value: a.useDependableRain, onChanged: (x) => set(() => a.useDependableRain = x, inv: false)),
+        NumField(label: t('req.ecw'), value: a.ecwDsM, onChanged: (x) => set(() => a.ecwDsM = x < 0 ? 0 : x, inv: false)),
+        if (c.project.climate == null) Text(t('req.noClimate'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+      ],
+      SpecDropdown<String>(key: const Key('area_soil'), label: t('req.soil'), value: a.soilKey, items: ['', ...soilTable.keys], labelOf: (k) => k.isEmpty ? t('req.soilTyped') : t(k), idOf: (k) => k, onChanged: (k) => set(() {
+        a.soilKey = k ?? '';
+        final soil = soilTable[a.soilKey];
+        if (soil != null) a.awcMmPerM = soil.awcMmPerM;
+      }, inv: false)),
+      NumField(label: t('req.slope'), value: a.slopePct, onChanged: (x) => set(() => a.slopePct = x < 0 ? 0 : x, inv: false)),
+      SpecDropdown<String>(label: t('wb.plantWaterUse'), value: a.plantWaterUse, items: const ['', 'veryLow', 'low', 'moderate', 'high'], labelOf: (k) => t(k.isEmpty ? 'wb.notHydrozone' : 'wb.use.$k'), idOf: (k) => k, onChanged: (k) => set(() => a.plantWaterUse = k ?? '', inv: false)),
     ];
   }
 
@@ -345,7 +425,7 @@ class PropertiesPanel extends StatelessWidget {
     return [
       SectionTitle(t('props.envelope')),
       Text(t('props.envelopeBest', {'f': (best.fraction * 100).round().toString(), 'v': '${fmt(u.pressureFromHead(best.variation), 1)} ${u.pressureLabel}'}), style: const TextStyle(fontSize: 11.5)),
-      Text(ok.isEmpty ? t('props.envelopeNone') : t('props.envelopeRange', {'a': (ok.first.fraction * 100).round().toString(), 'b': (ok.last.fraction * 100).round().toString()}), style: TextStyle(fontSize: 11.5, color: ok.isEmpty ? CadColors.warning : CadColors.ok)),
+      Text(ok.isEmpty ? t('props.envelopeNone') : t('props.envelopeRange', {'a': (ok.first.fraction * 100).round().toString(), 'b': (ok.last.fraction * 100).round().toString()}), style: TextStyle(fontSize: 11.5, color: ok.isEmpty ? Cad.warning : Cad.ok)),
     ];
   }
 
@@ -362,7 +442,7 @@ class PropertiesPanel extends StatelessWidget {
     final dominant = byType.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
     final items = <Widget>[
       Text(t('props.multi', {'n': '${sel.length}'}), style: const TextStyle(fontWeight: FontWeight.bold)),
-      Text(byType.entries.map((e) => '${e.value} × ${t('tool.${e.key}')}').join(', '), style: const TextStyle(fontSize: 11, color: Colors.white54)),
+      Text(byType.entries.map((e) => '${e.value} × ${t('tool.${e.key}')}').join(', '), style: TextStyle(fontSize: 11, color: Cad.fg54)),
       const SizedBox(height: 4),
       _layerField(sel.first),
     ];
@@ -375,7 +455,7 @@ class PropertiesPanel extends StatelessWidget {
       return list.every((v) => v == first) ? first : null;
     }
 
-    Widget mixedNote() => Text(t('props.mixed'), style: const TextStyle(fontSize: 10.5, color: Colors.white38));
+    Widget mixedNote() => Text(t('props.mixed'), style: TextStyle(fontSize: 10.5, color: Cad.fg38));
     items.add(SectionTitle(t('props.batch', {'n': '${byType[dominant]}', 'type': t('tool.$dominant')})));
     switch (dominant) {
       case 'sprayline':
@@ -451,6 +531,9 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: pLabel('props.head'), value: head == null ? 0 : u.pressureFromHead(head), onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.headM = u.pressureToHead(v))),
           if (head == null) mixedNote(),
           NumField(label: t('props.arc'), value: arc ?? 0, onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.arcDeg = v)),
+          // valve-in-head heads: one station for all of them
+          if (s.every((e) => e.scope == HydraulicScope.mainline))
+            TextFieldRow(key: const Key('vih_station_batch'), label: t('props.vihStation'), value: common(s.map((e) => e.zoneName)) ?? '', onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.zoneName = v)),
         ]);
       case 'valve':
         final s = sel.whereType<ControlValveEntity>().toList();
@@ -491,6 +574,15 @@ class PropertiesPanel extends StatelessWidget {
     return ListView(padding: const EdgeInsets.all(8), children: items);
   }
 
+  /// The system flows the station of the valve-in-head head [o] runs in.
+  String _vihFlows(OutletEntity o) {
+    final p = c.project;
+    final vih = VihStations.of(p);
+    final s = vihStationId(o);
+    if (!vih.scheduled.contains(s)) return c.t('props.vihEveryFlow');
+    return vih.flowsOf(s, p.systemFlows).map((f) => f.name).join(', ');
+  }
+
   Widget _layerField(Entity e) => SpecDropdown<String>(label: c.t('props.layer'), value: e.layer, items: c.project.layers.map((l) => l.name).toList(), labelOf: (s) => s, idOf: (s) => s, onChanged: (v) {
     if (v == null) return;
     c.mutate(() {
@@ -514,17 +606,17 @@ class PropertiesPanel extends StatelessWidget {
         KV(t('props.downstream'), '${fmt(u.pressureFromHead(z.downstreamHead), 1)} ${u.pressureLabel}'),
         KV(t('props.valveLoss'), '${fmt(u.pressureFromHead(z.valveLoss), 2)} ${u.pressureLabel}'),
         KV(t('props.required'), '${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}'),
-        KV(t('props.emitterMinMax'), '${fmt(u.pressureFromHead(z.minOutletPressure), 1)} / ${fmt(u.pressureFromHead(z.maxOutletPressure), 1)}', color: z.withinWindow ? CadColors.ok : CadColors.warning),
+        KV(t('props.emitterMinMax'), '${fmt(u.pressureFromHead(z.minOutletPressure), 1)} / ${fmt(u.pressureFromHead(z.maxOutletPressure), 1)}', color: z.withinWindow ? Cad.ok : Cad.warning),
         KV(t('props.allowed'), '${fmt(u.pressureFromHead(z.allowedMin), 1)} / ${fmt(u.pressureFromHead(z.allowedMax), 1)}'),
         KV(t('props.uniformity'), '${fmt(z.uniformity.cu, 1)} / ${fmt(z.uniformity.du, 1)} / ${fmt(z.uniformity.eu, 1)} %'),
         if (z.overlapCu > 0) KV(t('rep.overlapCu'), fmt(z.overlapCu, 0)),
-        for (final w in z.warnings) Text(c.t.warning(w, entityName: (id) => c.project.byId(id)?.name ?? id), style: const TextStyle(fontSize: 11, color: CadColors.warning)),
+        for (final w in z.warnings) Text(c.t.warning(w, entityName: (id) => c.project.byId(id)?.name ?? id), style: TextStyle(fontSize: 11, color: Cad.warning)),
       ]);
       final run = r.electrical?.runOf(e.id);
       if (run != null) {
         out.add(KV(t('elec.station'), '${c.project.byId(run.controllerId)?.name ?? run.controllerId} · ${run.station}'));
         out.add(KV(t('elec.stationWire'), '${c.project.catalog.wire(run.stationWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(run.wireM), 0)} ${u.lengthLabel}'));
-        out.add(KV(t('elec.volts'), '${fmt(run.volts, 1)} V', color: run.ok ? CadColors.ok : CadColors.warning));
+        out.add(KV(t('elec.volts'), '${fmt(run.volts, 1)} V', color: run.ok ? Cad.ok : Cad.warning));
       }
       final fl = r.flushing.where((f) => f.valveId == e.id).firstOrNull;
       if (fl != null) out.add(KV(t('reports.flushing'), '${fmt(u.flowFromSi(fl.flow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(fl.requiredUpstreamHead), 1)} ${u.pressureLabel}'));
@@ -539,13 +631,13 @@ class PropertiesPanel extends StatelessWidget {
       out.addAll([
         KV(t('props.pipe'), pipes.first.pipeName),
         KV(t('result.flow'), '${fmt(u.flowFromSi(qmax))} ${u.flowLabel}'),
-        KV(t('result.velocity'), '${fmt(vmax)} m/s', color: pipes.any((p) => p.overVelocity) ? CadColors.warning : null),
+        KV(t('result.velocity'), '${fmt(vmax)} m/s', color: pipes.any((p) => p.overVelocity) ? Cad.warning : null),
         KV(t('result.loss'), '${fmt(u.pressureFromHead(loss), 2)} ${u.pressureLabel}'),
         KV(t('result.pStart'), '${fmt(u.pressureFromHead(pStart), 1)} ${u.pressureLabel}'),
         KV(t('result.pEnd'), '${fmt(u.pressureFromHead(pEnd), 1)} ${u.pressureLabel}'),
       ]);
       final sr = r.surge.where((s) => s.entityId == e.id).firstOrNull;
-      if (sr != null) out.add(KV(t('reports.surge'), '+${fmt(u.pressureFromHead(sr.surgeHead), 1)} → ${fmt(u.pressureFromHead(sr.totalHead), 1)} ${u.pressureLabel}', color: sr.exceeds ? CadColors.warning : null));
+      if (sr != null) out.add(KV(t('reports.surge'), '+${fmt(u.pressureFromHead(sr.surgeHead), 1)} → ${fmt(u.pressureFromHead(sr.totalHead), 1)} ${u.pressureLabel}', color: sr.exceeds ? Cad.warning : null));
     }
     final outs = r.outletsByEntity[e.id];
     if (outs != null && outs.isNotEmpty) {
@@ -553,7 +645,7 @@ class PropertiesPanel extends StatelessWidget {
       final pmax = outs.map((o) => o.pressure).reduce((a, b) => a > b ? a : b);
       final q = outs.fold<double>(0, (s, o) => s + o.flow * o.count);
       out.addAll([
-        KV('${t('result.pressure')} ${t('result.min')}/${t('result.max')}', '${fmt(u.pressureFromHead(pmin), 1)} / ${fmt(u.pressureFromHead(pmax), 1)} ${u.pressureLabel}', color: outs.every((o) => o.inWindow) ? CadColors.ok : CadColors.warning),
+        KV('${t('result.pressure')} ${t('result.min')}/${t('result.max')}', '${fmt(u.pressureFromHead(pmin), 1)} / ${fmt(u.pressureFromHead(pmax), 1)} ${u.pressureLabel}', color: outs.every((o) => o.inWindow) ? Cad.ok : Cad.warning),
         KV(t('result.flow'), '${fmt(u.flowFromSi(q))} ${u.flowLabel}'),
       ]);
     }
@@ -561,7 +653,7 @@ class PropertiesPanel extends StatelessWidget {
       for (final f in r.systemFlows) {
         for (final d in f.supplies.where((d) => d.supplyId == e.id)) {
           final surplus = d.surplusHead > 0.05 ? ' (${t('rep.surplus')} ${fmt(u.pressureFromHead(d.surplusHead), 1)})' : '';
-          out.add(KV(f.name, '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} @ ${fmt(u.pressureFromHead(math.max(0, d.requiredHead)), 1)} ${u.pressureLabel}$surplus', color: d.headExceedsMax || d.flowExceedsDesign ? CadColors.warning : null));
+          out.add(KV(f.name, '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} @ ${fmt(u.pressureFromHead(math.max(0, d.requiredHead)), 1)} ${u.pressureLabel}$surplus', color: d.headExceedsMax || d.flowExceedsDesign ? Cad.warning : null));
         }
       }
     }
@@ -570,8 +662,8 @@ class PropertiesPanel extends StatelessWidget {
         for (final d in f.devices.where((d) => d.entityId == e.id)) {
           final suction = f.warnings.contains('pump_suction_lift:${e.id}');
           out.add(KV(f.name, e is PumpEntity ? '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} / H ${fmt(u.pressureFromHead(d.pumpHead), 1)}' : 'Δh ${fmt(u.pressureFromHead(d.headLoss), 2)} ${u.pressureLabel}'));
-          out.add(KV('  ${t('rep.pIn')} → ${t('rep.pOut')}', '${fmt(u.pressureFromHead(d.upstreamPressure), 1)} → ${fmt(u.pressureFromHead(d.downstreamPressure), 1)} ${u.pressureLabel}', color: suction ? CadColors.warning : null));
-          if (suction) out.add(Text(c.t.warning('pump_suction_lift'), style: const TextStyle(fontSize: 11, color: CadColors.warning)));
+          out.add(KV('  ${t('rep.pIn')} → ${t('rep.pOut')}', '${fmt(u.pressureFromHead(d.upstreamPressure), 1)} → ${fmt(u.pressureFromHead(d.downstreamPressure), 1)} ${u.pressureLabel}', color: suction ? Cad.warning : null));
+          if (suction) out.add(Text(c.t.warning('pump_suction_lift'), style: TextStyle(fontSize: 11, color: Cad.warning)));
         }
       }
       for (final z in r.zones.values) {
@@ -580,7 +672,7 @@ class PropertiesPanel extends StatelessWidget {
         }
       }
     }
-    if (out.length == 1) out.add(const Text('—', style: TextStyle(color: Colors.white38)));
+    if (out.length == 1) out.add(Text('—', style: TextStyle(color: Cad.fg38)));
     return out;
   }
 
@@ -663,13 +755,13 @@ class PropertiesPanel extends StatelessWidget {
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.contourSmooth'), style: const TextStyle(fontSize: 12)), value: s.contourSmooth, onChanged: (v) => upd(() => s.contourSmooth = v)),
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('elev.autoIncrement'), style: const TextStyle(fontSize: 12)), value: s.contourAutoIncrement, onChanged: (v) => upd(() => s.contourAutoIncrement = v)),
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('elev.ask'), style: const TextStyle(fontSize: 12)), value: s.askElevation, onChanged: (v) => upd(() => s.askElevation = v)),
-          Text(t('elev.explainContour'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+          Text(t('elev.explainContour'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
         ]);
       case ToolId.spot:
         items.addAll([
           NumField(label: t('props.elevation'), value: s.spotElevation, onChanged: (v) => upd(() => s.spotElevation = v)),
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('elev.ask'), style: const TextStyle(fontSize: 12)), value: s.askElevation, onChanged: (v) => upd(() => s.askElevation = v)),
-          Text(t('elev.explainSpot'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+          Text(t('elev.explainSpot'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
         ]);
       case ToolId.pivot:
         items.addAll([
@@ -679,13 +771,13 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.pivotDepth'), value: s.pivotDepthMm, onChanged: (v) => upd(() => s.pivotDepthMm = v)),
           NumField(label: t('props.pivotHours'), value: s.pivotHours, onChanged: (v) => upd(() => s.pivotHours = v)),
           NumField(label: '${t('props.pivotEndP')} (${u.pressureLabel})', value: u.pressureFromHead(s.pivotEndPressureM), onChanged: (v) => upd(() => s.pivotEndPressureM = u.pressureToHead(v))),
-          Text(t('hint.pivot'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+          Text(t('hint.pivot'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
         ]);
       case ToolId.alignImage:
         items.addAll([
           SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('align.keepScale'), style: const TextStyle(fontSize: 12)), value: s.alignKeepScale, onChanged: (v) => upd(() => s.alignKeepScale = v)),
-          Text(t('hint.alignImage'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
-          Text(c.selection.isEmpty ? t('msg.alignSelectFirst') : t('mob.selection', {'n': '${c.selection.length}'}), style: TextStyle(color: c.selection.isEmpty ? CadColors.warning : Colors.white70, fontSize: 11.5)),
+          Text(t('hint.alignImage'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
+          Text(c.selection.isEmpty ? t('msg.alignSelectFirst') : t('mob.selection', {'n': '${c.selection.length}'}), style: TextStyle(color: c.selection.isEmpty ? Cad.warning : Cad.fg70, fontSize: 11.5)),
         ]);
       case ToolId.text:
         items.addAll([
@@ -715,24 +807,24 @@ class PropertiesPanel extends StatelessWidget {
       case ToolId.dimRadial:
         items.addAll([
           SwitchListTile(key: const Key('tool_radial_diameter'), dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.dimDiameter'), style: const TextStyle(fontSize: 12)), value: s.radialDiameter, onChanged: (v) => upd(() => s.radialDiameter = v)),
-          Text(t('hint.dimRadial'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+          Text(t('hint.dimRadial'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
         ]);
       case ToolId.controller:
         items.addAll([
           NumField(label: t('props.stations'), value: s.controllerStations.toDouble(), decimals: 0, onChanged: (v) => upd(() => s.controllerStations = v.round().clamp(1, 999))),
           NumField(label: t('props.outputVolts'), value: s.controllerVolts, onChanged: (v) => upd(() => s.controllerVolts = v <= 0 ? 24 : v)),
-          Text(t('hint.controller'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+          Text(t('hint.controller'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
         ]);
       case ToolId.offset:
         items.add(NumField(label: '${t('props.offsetDistance')} (${u.lengthLabel})', value: u.lengthFromSi(s.offsetDistance), onChanged: (v) => upd(() => s.offsetDistance = u.lengthToSi(v.abs()))));
       case ToolId.rotate:
       case ToolId.scale:
         items.add(SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.copyOnTransform'), style: const TextStyle(fontSize: 12)), value: s.copyOnTransform, onChanged: (v) => upd(() => s.copyOnTransform = v)));
-        items.add(Text(t('hint.${hintKeyOf(tool)}'), style: const TextStyle(color: Colors.white54, fontSize: 11.5)));
+        items.add(Text(t('hint.${hintKeyOf(tool)}'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)));
       case ToolId.mirror:
         items.add(SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('props.mirrorKeep'), style: const TextStyle(fontSize: 12)), value: s.mirrorKeepSource, onChanged: (v) => upd(() => s.mirrorKeepSource = v)));
       default:
-        items.add(Padding(padding: const EdgeInsets.only(top: 8), child: Text(t('hint.${hintKeyOf(tool)}'), style: const TextStyle(color: Colors.white54, fontSize: 11.5))));
+        items.add(Padding(padding: const EdgeInsets.only(top: 8), child: Text(t('hint.${hintKeyOf(tool)}'), style: TextStyle(color: Cad.fg54, fontSize: 11.5))));
     }
     return ListView(padding: const EdgeInsets.all(8), children: items);
   }

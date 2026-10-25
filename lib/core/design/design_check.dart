@@ -7,13 +7,21 @@ library;
 
 import 'dart:math' as math;
 
+import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import 'electrical.dart';
 import 'network_builder.dart';
+import 'valve_in_head.dart';
 
 enum CheckSeverity { error, warning, info }
+
+/// Heads of one zone whose water per wetted area (flow over the sector they
+/// wet, at the nominal pressure) differs by more than this factor do not
+/// share a run time (sprays with rotors, part circles without matched
+/// nozzles: precipitation classes of irrigation-association zoning practice).
+const mixedRateRatio = 1.8;
 
 class CheckIssue {
   const CheckIssue(this.code, this.severity, {this.entityIds = const [], this.at, this.value = ''});
@@ -80,6 +88,49 @@ DesignCheckReport runDesignCheck(Project project) {
     final nodes = model.zoneNodes[v.id] ?? const <String>{};
     final emitters = nodes.fold<int>(0, (s, id) => s + (model.nodes[id]?.emitters.length ?? 0));
     if (nodes.length > 1 && emitters == 0) issues.add(CheckIssue('zone_no_emitters', CheckSeverity.error, entityIds: [v.id], value: v.zoneName));
+  }
+  // ---- zones mixing drip with overhead emitters, or heads that apply
+  // water at very different rates (sprays with rotors, or part circles with
+  // the nozzle of a full circle): one valve cannot water them all right
+  for (final v in valves) {
+    final families = <bool>{}; // true = drip and bubblers, false = overhead
+    final heads = <(String, double, double, double)>[]; // family, flow, radius, arc
+    for (final id in model.zoneNodes[v.id] ?? const <String>{}) {
+      for (final em in model.nodes[id]?.emitters ?? const <EmitterRef>[]) {
+        if (em.index == -2) continue; // open tape end of the flushing model
+        final e = project.byId(em.entityId);
+        final (specId, nozzleId, arc) = switch (e) {
+          OutletEntity o => (o.outletSpecId, o.nozzleId, o.arcDeg),
+          SpraylineEntity sl => (sl.outletSpecId, sl.nozzleId, sl.arcDeg),
+          _ => (null, null, 360.0),
+        };
+        final spec = cat.outlet(specId);
+        final kind = e is TapeEntity ? OutletKind.dripper : spec?.kind;
+        if (kind == null || kind == OutletKind.demandPoint) continue;
+        final drip = kind == OutletKind.dripper || kind == OutletKind.bubbler;
+        families.add(drip);
+        final r = em.curve.radius(em.nominalHead);
+        if (drip || r <= 0) continue;
+        heads.add((specId ?? '', em.curve.flow(em.nominalHead), r, (spec?.nozzle(nozzleId)?.effectiveArcDeg(arc) ?? arc).clamp(1.0, 360.0).toDouble()));
+      }
+    }
+    // the spacing of a family is set by its longest throw: the rate of each
+    // head is its flow over its sector of that circle (matched part circles
+    // with smaller nozzles keep the rate of the full circles)
+    final familyRadius = <String, double>{};
+    for (final (f, _, r, _) in heads) {
+      familyRadius[f] = math.max(familyRadius[f] ?? 0, r);
+    }
+    var rateMin = double.infinity, rateMax = 0.0;
+    for (final (f, q, _, arc) in heads) {
+      final r = familyRadius[f]!;
+      final rate = q / (math.pi * r * r * arc / 360);
+      rateMin = math.min(rateMin, rate);
+      rateMax = math.max(rateMax, rate);
+    }
+    if (families.length > 1 || (rateMax > 0 && rateMax > mixedRateRatio * rateMin)) {
+      issues.add(CheckIssue('zone_mixed_emitters', CheckSeverity.warning, entityIds: [v.id], value: v.zoneName));
+    }
   }
   // ---- duplicated zone names
   final byName = <String, List<String>>{};
@@ -223,12 +274,15 @@ DesignCheckReport runDesignCheck(Project project) {
     if (!any) issues.add(CheckIssue('area_no_emitters', CheckSeverity.info, entityIds: [a.id], value: a.name));
   }
   // ---- valve wiring (routes, stations, solenoid voltage), when drawn
-  // as in the design: without system flows every zone runs at once
-  final wiring = designElectrical(project, flows: project.systemFlows.isEmpty ? [{for (final v in valves) v.id}] : [for (final f in project.systemFlows) f.valveIds.toSet()]);
+  // as in the design: without system flows every zone runs at once, and
+  // every flow runs the valve-in-head stations it schedules or no flow does
+  final vih = VihStations.of(project);
+  final wiring = designElectrical(project, flows: project.systemFlows.isEmpty ? [{for (final v in valves) v.id, ...vih.heads.keys}] : [for (final f in project.systemFlows) {...f.valveIds, ...vih.runningIn(f.valveIds)}]);
   for (final w in wiring?.warnings ?? const <String>[]) {
     final idx = w.indexOf(':');
     final code = idx > 0 ? w.substring(0, idx) : w;
-    final ids = idx > 0 ? [w.substring(idx + 1)] : const <String>[];
+    // the unwired heads of a valve-in-head station come in one message
+    final ids = idx > 0 ? w.substring(idx + 1).split(':') : const <String>[];
     issues.add(CheckIssue(code, code == 'elec_stations' || code == 'elec_voltage' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
   // errors first

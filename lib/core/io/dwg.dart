@@ -1,8 +1,10 @@
 /// Pure-Dart reader for AutoCAD DWG files (R13/R14/R2000 uncompressed
 /// containers, the R2004/R2010–R2018 compressed container and the R2007
 /// Reed–Solomon interleaved container). Extracts layers and the entities
-/// relevant to an irrigation plan: LINE, CIRCLE, ARC, POINT, TEXT, MTEXT,
-/// LWPOLYLINE and 2D POLYLINE, producing a [DxfDocument].
+/// relevant to an irrigation plan, producing a [DxfDocument]: LINE, CIRCLE,
+/// ARC, ELLIPSE, POINT, TEXT, MTEXT, LWPOLYLINE, 2D and 3D POLYLINE, SPLINE,
+/// HATCH, SOLID/TRACE, LEADER (as a polyline), INSERT/MINSERT with their
+/// blocks and the DIMENSION blocks.
 ///
 /// Based on the Open Design Alliance specification of the DWG format.
 library;
@@ -418,9 +420,16 @@ class DwgReader {
     _parseHandleMap(file, handlesSeeker);
   }
 
+  /// The handle map: (handle, offset) pairs delta-coded in sections. The
+  /// specification restarts the deltas at every section; some writers keep
+  /// them running. Both readings agree on the first section, so they are
+  /// told apart by checking objects spread over the whole map (a check of
+  /// the first entries only misread 64 of 750 objects of an AutoCAD file).
   void _parseHandleMap(Uint8List data, int start) {
-    for (final resetPerSection in [false, true]) {
-      handleMap.clear();
+    List<(int, int)>? best;
+    var bestGood = -1;
+    for (final resetPerSection in [true, false]) {
+      final map = <(int, int)>[];
       var pos = start;
       var lastHandle = 0, lastOffset = 0;
       var ok = true;
@@ -439,47 +448,53 @@ class DwgReader {
           while (r.bytePos < endPos) {
             lastHandle += r.readUMC();
             lastOffset += r.readMC();
-            handleMap.add((lastHandle, lastOffset));
+            map.add((lastHandle, lastOffset));
           }
         } on _Eof {
           ok = false;
         }
         pos = endPos + 2;
       }
-      // validate a few entries: object's own handle must match
-      var good = 0, bad = 0;
-      for (final (h, off) in handleMap.take(40)) {
-        if (off < 0 || off >= objData.length - 4) {
-          bad++;
-          continue;
-        }
-        try {
-          final r = _BitReader(objData, off, objData.length);
-          final size = r.readMS();
-          if (ver.index >= DwgVersion.r2010.index) r.readUMC();
-          final st = r.bytePos;
-          final br = _BitReader(objData, st, math.min(st + size + 1, objData.length));
-          if (ver.index >= DwgVersion.r2010.index) {
-            br.readBOT();
-          } else {
-            br.readBS();
-          }
-          if (ver.index >= DwgVersion.r2000.index && ver.index < DwgVersion.r2010.index) br.readRL();
-          if (ver.index < DwgVersion.r2000.index) {
-            // R13/R14: objects have RL here, entities later; skip validation strictly
-          }
-          final (_, hv) = br.readH();
-          if (hv == h) {
-            good++;
-          } else {
-            bad++;
-          }
-        } catch (_) {
-          bad++;
-        }
+      final good = _handleMatches(map);
+      if (ok && good > bestGood) {
+        best = map;
+        bestGood = good;
       }
-      if (ok && good >= bad) return;
+      best ??= map;
     }
+    handleMap
+      ..clear()
+      ..addAll(best ?? const []);
+  }
+
+  /// Objects among up to 60 entries spread over [map] whose own handle is
+  /// the one the map gives them.
+  int _handleMatches(List<(int, int)> map) {
+    if (map.isEmpty) return 0;
+    final n = math.min(60, map.length);
+    var good = 0;
+    for (var k = 0; k < n; k++) {
+      final (h, off) = map[(k * map.length) ~/ n];
+      if (off < 0 || off >= objData.length - 4) continue;
+      try {
+        final r = _BitReader(objData, off, objData.length);
+        final size = r.readMS();
+        if (ver.index >= DwgVersion.r2010.index) r.readUMC();
+        final st = r.bytePos;
+        final br = _BitReader(objData, st, math.min(st + size + 1, objData.length));
+        if (ver.index >= DwgVersion.r2010.index) {
+          br.readBOT();
+        } else {
+          br.readBS();
+        }
+        if (ver.index >= DwgVersion.r2000.index && ver.index < DwgVersion.r2010.index) br.readRL();
+        final (_, hv) = br.readH();
+        if (hv == h) good++;
+      } catch (_) {
+        // not an object at that offset
+      }
+    }
+    return good;
   }
 
   // ---- R2004+ compressed container
@@ -1713,7 +1728,7 @@ class DwgReader {
           e.rotation = br.readBD() * 180 / math.pi;
           e.height = br.readBD();
           br.readBD(); // width factor
-          e.text = br.readTV();
+          e.text = DxfReader.plainText(br.readTV());
           br.readBS(); // generation
           final h = br.readBS(), v = br.readBS();
           // aligned text is positioned by its alignment point (as in DXF)
@@ -1735,7 +1750,7 @@ class DwgReader {
           if (f & 8 == 0) e.rotation = br.readRD() * 180 / math.pi;
           e.height = br.readRD();
           if (f & 16 == 0) br.readRD();
-          e.text = strings != null ? strings.readTU() : br.readTV();
+          e.text = DxfReader.plainText(strings != null ? strings.readTU() : br.readTV());
           var h = 0, v = 0;
           if (f & 0x20 == 0) br.readBS(); // generation
           if (f & 0x40 == 0) h = br.readBS();
@@ -1760,7 +1775,7 @@ class DwgReader {
         br.readBD();
         br.readBD(); // extents
         final raw = strings != null ? strings.readTU() : br.readTV();
-        e.text = _stripMtext(raw);
+        e.text = DxfReader.plainMText(raw).trim();
         e.rotation = math.atan2(ay, ax) * 180 / math.pi;
         e.points = [Pt(ix, iy)];
       case 20: // DIMENSION_ORDINATE … DIMENSION_DIAMETER: geometry lives in an
@@ -1818,6 +1833,18 @@ class DwgReader {
         e.blockHandle = _absHandle(hr.readH(), handle);
         _entities.add(_withLayer(e, layerHandle, owner));
         return;
+      case 45: // LEADER: its vertices only (a polyline, as the DXF reader takes it)
+        br.readB(); // unknown
+        br.readBS(); // annotation type
+        br.readBS(); // path type
+        final n = br.readBL();
+        final pts = <Pt>[];
+        for (var i = 0; i < n && i < 100000; i++) {
+          final x = br.readBD(), y = br.readBD();
+          br.readBD();
+          pts.add(Pt(x, y));
+        }
+        e.points = pts;
       default:
         return;
     }
@@ -1862,14 +1889,6 @@ class DwgReader {
       ..colSpacing = e.colSpacing
       ..rowSpacing = e.rowSpacing;
     return n;
-  }
-
-  static String _stripMtext(String s) {
-    var t = s.replaceAll(r'\P', ' ').replaceAll(r'\~', ' ');
-    t = t.replaceAll(RegExp(r'\\[ACFHQTWfhpc][^;]*;'), '');
-    t = t.replaceAll(RegExp(r'\\[LlOoKk]'), '');
-    t = t.replaceAll('{', '').replaceAll('}', '');
-    return t.trim();
   }
 
   static List<Pt> _tessellateBulges(List<Pt> pts, List<double> bulges, bool closed) {
@@ -1929,6 +1948,7 @@ class DwgReader {
         case 44:
           return e.text.isNotEmpty ? DxfEntity(type: 'TEXT', layer: layer, color: color, points: e.points, text: e.text, height: e.height, rotation: e.rotation, elevation: e.elevation) : null;
         case 77:
+        case 45:
           return e.points.length >= 2 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;
         case 35:
           return e.points.length >= 2 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;

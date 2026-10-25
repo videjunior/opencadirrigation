@@ -30,7 +30,7 @@ enum SprayProfile {
 
 /// One wetted circle (or sector) of the map.
 class SpraySource {
-  const SpraySource({required this.entityId, required this.p, required this.flow, required this.radius, this.startRad = 0, this.sweepRad = 2 * math.pi});
+  const SpraySource({required this.entityId, required this.p, required this.flow, required this.radius, this.startRad = 0, this.sweepRad = 2 * math.pi, this.measured = const []});
   final String entityId;
   final Pt p;
 
@@ -44,19 +44,57 @@ class SpraySource {
   final double startRad;
   final double sweepRad;
 
+  /// Measured radial profile of the nozzle ([NozzleSpec.profile]); empty =
+  /// the profile of the options.
+  final List<(double, double)> measured;
+
   bool get fullCircle => sweepRad >= 2 * math.pi - 1e-9;
 
-  /// Application rate (m/s) at [d] metres from the head for [profile]; the
-  /// flow spread over the sector integrates back to [flow].
+  /// Application rate (m/s) at [d] metres from the head for [profile] (or
+  /// the [measured] one); the flow spread over the sector integrates back
+  /// to [flow].
   double rateAt(double d, SprayProfile profile) {
     if (d >= radius || radius <= 0 || flow <= 0) return 0;
     final x = d / radius;
     final r2 = radius * radius * sweepRad;
+    if (measured.length >= 2) {
+      final norm = _measuredMoment(measured);
+      return norm > 0 ? flow * _interpolate(measured, x) / (r2 * norm) : 0;
+    }
     return switch (profile) {
       SprayProfile.triangular => flow * (1 - x) / (r2 / 6),
       SprayProfile.elliptical => flow * math.sqrt(1 - x * x) / (r2 / 3),
       SprayProfile.uniform => flow / (r2 / 2),
     };
+  }
+
+  /// ∫₀¹ f(x)·x dx of a measured profile (trapezoids in x·f), so the
+  /// rate f(x)·Q / (R²·sweep·∫) integrates to the flow over the sector.
+  static double _measuredMoment(List<(double, double)> prof) {
+    var m = 0.0;
+    var px = 0.0, py = _interpolate(prof, 0);
+    for (var k = 1; k <= 64; k++) {
+      final x = k / 64, y = _interpolate(prof, x);
+      m += (px * py + x * y) / 2 * (x - px);
+      px = x;
+      py = y;
+    }
+    return m;
+  }
+
+  /// Relative depth at x (fraction of the radius), linear between the
+  /// stations, flat before the first and down to zero after the last.
+  static double _interpolate(List<(double, double)> prof, double x) {
+    if (x <= prof.first.$1) return prof.first.$2;
+    for (var i = 1; i < prof.length; i++) {
+      final (x1, y1) = prof[i];
+      if (x <= x1) {
+        final (x0, y0) = prof[i - 1];
+        return x1 > x0 ? y0 + (y1 - y0) * (x - x0) / (x1 - x0) : y1;
+      }
+    }
+    final (xl, yl) = prof.last;
+    return xl >= 1 ? 0 : math.max(0, yl * (1 - (x - xl) / (1 - xl)));
   }
 
   /// Whether the direction [angle] (radians) is inside the sector.
@@ -69,7 +107,7 @@ class SpraySource {
 }
 
 class DensogramOptions {
-  DensogramOptions({this.cellSize = 0, this.profile = SprayProfile.triangular, this.useResults = true, this.valveIds, this.maxCells = 60000});
+  DensogramOptions({this.cellSize = 0, this.profile = SprayProfile.triangular, this.useResults = true, this.valveIds, this.maxCells = 60000, this.useMeasured = true, this.windSpeed = 0, this.windTowardsDeg = 0, this.windDrift = defaultWindDrift});
 
   /// Grid spacing (m); 0 = automatic (a quarter of the smallest wetted
   /// radius, coarser when the grid would exceed [maxCells]).
@@ -83,6 +121,42 @@ class DensogramOptions {
   /// Zones to include (valve ids); null = every sprinkler of the drawing.
   Set<String>? valveIds;
   int maxCells;
+
+  /// Nozzles with a measured profile ([NozzleSpec.profile]) use it.
+  bool useMeasured;
+
+  /// Wind (m/s at sprinkler height) and the direction it blows towards
+  /// (degrees counter-clockwise from +x), with the drift coefficient k of
+  /// [windDisplace] (s/m).
+  double windSpeed;
+  double windTowardsDeg;
+  double windDrift;
+}
+
+/// Drift coefficient of [windDisplace] (s/m): a drop thrown r metres in calm
+/// air lands k·u·r further downwind in a wind of u m/s. A first-order
+/// kinematic distortion (patterns shift and stretch downwind as the studies
+/// of single sprinklers in wind report, e.g. Seginer, Kantz and Nir 1991);
+/// not a substitute for measured windy-day patterns.
+const defaultWindDrift = 0.07;
+
+/// Where the water of a calm-air offset [v] (from the head) lands in wind:
+/// v + a·|v|·ŵ with a = k·u (< 1).
+Pt windDisplace(Pt v, double a, Pt dir) => v + dir * (a * v.length);
+
+/// The calm-air offset whose water lands at offset [c] in wind (inverse of
+/// [windDisplace]), and the local area stretch J (rates divide by it).
+(Pt, double) windSource(Pt c, double a, Pt dir) {
+  final par = c.dot(dir);
+  final perp = c - dir * par;
+  final p2 = perp.dot(perp);
+  final one = 1 - a * a;
+  // v∥ + a·√(v∥² + p²) = c∥ (the root that leaves the drift positive)
+  final vPar = (par - a * math.sqrt(par * par + p2 * one)) / one;
+  final v = perp + dir * vPar;
+  final len = v.length;
+  final j = len < 1e-12 ? 1.0 : 1 + a * vPar / len;
+  return (v, j);
 }
 
 /// Uniformity statistics of the application rate over the target cells.
@@ -191,7 +265,7 @@ double _mmh(double si) => si * 1000 * 3600;
 /// The sprinklers of [p] as wetted sectors: single outlets and the outlets
 /// of every lateral whose nozzle has a wetted radius. With [results] each
 /// one takes the pressure and flow of the latest design.
-List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? valveIds}) {
+List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? valveIds, bool measured = true}) {
   final cat = p.catalog;
   final out = <SpraySource>[];
   Set<String>? allowed;
@@ -218,7 +292,7 @@ List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? 
         if (radius <= 0 || flow <= 0) continue;
         // a part-circle nozzle left on a full-circle head still waters its own arc
         final arc = nz.effectiveArcDeg(o.arcDeg);
-        out.add(SpraySource(entityId: o.id, p: o.position, flow: flow, radius: radius, startRad: degToRad(o.orientationDeg), sweepRad: degToRad(arc)));
+        out.add(SpraySource(entityId: o.id, p: o.position, flow: flow, radius: radius, startRad: degToRad(o.orientationDeg), sweepRad: degToRad(arc), measured: measured ? nz.profile : const []));
       case SpraylineEntity s:
         final nz = cat.outlet(s.outletSpecId)?.nozzle(s.nozzleId);
         if (nz == null || s.points.length < 2) continue;
@@ -246,7 +320,7 @@ List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? 
               final a = pointAlongPolyline(s.points, math.max(0, d - 0.01)), b = pointAlongPolyline(s.points, d + 0.01);
               start = (b - a).perpendicular.angle - arc / 2;
             }
-            out.add(SpraySource(entityId: s.id, p: pos, flow: flow, radius: radius, startRad: start, sweepRad: arc));
+            out.add(SpraySource(entityId: s.id, p: pos, flow: flow, radius: radius, startRad: start, sweepRad: arc, measured: measured ? nz.profile : const []));
           }
           d += s.spacing;
         }
@@ -261,7 +335,7 @@ List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? 
 Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions? options}) {
   final o = options ?? DensogramOptions();
   final res = o.useResults ? results : null;
-  final sources = spraySources(p, results: res, valveIds: o.valveIds);
+  final sources = spraySources(p, results: res, valveIds: o.valveIds, measured: o.useMeasured);
   final fromResults = res != null && sources.isNotEmpty;
   if (sources.isEmpty) {
     return Densogram(origin: Pt.zero, cell: 1, nx: 0, ny: 0, rate: Float64List(0), inside: Uint8List(0), sources: const [], stats: DensogramStats.empty, masked: false, fromResults: false);
@@ -273,10 +347,14 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
       if (a.points.length >= 3 && sources.any((s) => watersArea(s.p, a.points, arcDeg: radToDeg(s.sweepRad), orientationDeg: radToDeg(s.startRad)))) a,
   ];
   final areas = [for (final a in areaEntities) a.points];
+  // wind: every drop lands a·r downwind of where it would in calm air
+  final a = (o.windSpeed * o.windDrift).clamp(0.0, 0.9).toDouble();
+  final wind = Pt.polar(1, degToRad(o.windTowardsDeg));
   var b = Bounds.empty;
   var minR = double.infinity;
   for (final s in sources) {
-    b = b.union(Bounds(s.p.x - s.radius, s.p.y - s.radius, s.p.x + s.radius, s.p.y + s.radius));
+    final reach = s.radius * (1 + a);
+    b = b.union(Bounds(s.p.x - reach, s.p.y - reach, s.p.x + reach, s.p.y + reach));
     minR = math.min(minR, s.radius);
   }
   for (final a in areas) {
@@ -291,16 +369,25 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
   final origin = Pt(b.minX, b.minY);
   final rate = Float64List(nx * ny);
   for (final s in sources) {
-    final i0 = math.max(0, ((s.p.x - s.radius - origin.x) / cell).floor()), i1 = math.min(nx - 1, ((s.p.x + s.radius - origin.x) / cell).floor());
-    final j0 = math.max(0, ((s.p.y - s.radius - origin.y) / cell).floor()), j1 = math.min(ny - 1, ((s.p.y + s.radius - origin.y) / cell).floor());
+    final reach = s.radius * (1 + a);
+    final i0 = math.max(0, ((s.p.x - reach - origin.x) / cell).floor()), i1 = math.min(nx - 1, ((s.p.x + reach - origin.x) / cell).floor());
+    final j0 = math.max(0, ((s.p.y - reach - origin.y) / cell).floor()), j1 = math.min(ny - 1, ((s.p.y + reach - origin.y) / cell).floor());
     for (var j = j0; j <= j1; j++) {
       final cy = origin.y + (j + 0.5) * cell - s.p.y;
       for (var i = i0; i <= i1; i++) {
         final cx = origin.x + (i + 0.5) * cell - s.p.x;
-        final d = math.sqrt(cx * cx + cy * cy);
+        var vx = cx, vy = cy, stretch = 1.0;
+        if (a > 0) {
+          // the calm-air point whose water lands here, and the area change
+          final (v, jac) = windSource(Pt(cx, cy), a, wind);
+          vx = v.x;
+          vy = v.y;
+          stretch = jac;
+        }
+        final d = math.sqrt(vx * vx + vy * vy);
         if (d >= s.radius) continue;
-        if (!s.fullCircle && d > 1e-9 && !s.covers(math.atan2(cy, cx))) continue;
-        rate[j * nx + i] += _mmh(s.rateAt(d, o.profile));
+        if (!s.fullCircle && d > 1e-9 && !s.covers(math.atan2(vy, vx))) continue;
+        rate[j * nx + i] += _mmh(s.rateAt(d, o.profile)) / stretch;
       }
     }
   }

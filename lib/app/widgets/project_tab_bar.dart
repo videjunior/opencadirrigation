@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../state/workspace.dart';
+import '../theme.dart';
 
 /// Row of open project tabs under the menu bar.
 class ProjectTabBar extends StatelessWidget {
@@ -14,7 +15,7 @@ class ProjectTabBar extends StatelessWidget {
     final t = ws.current.t;
     return Container(
       height: 28,
-      color: const Color(0xFF15181C),
+      color: Cad.panelAlt,
       child: Row(
         children: [
           Expanded(
@@ -32,7 +33,7 @@ class ProjectTabBar extends StatelessWidget {
             child: InkWell(
               key: const Key('tab_add'),
               onTap: onAdd,
-              child: const SizedBox(width: 30, height: 28, child: Icon(Icons.add, size: 16, color: Colors.white70)),
+              child: SizedBox(width: 30, height: 28, child: Icon(Icons.add, size: 16, color: Cad.fg70)),
             ),
           ),
         ],
@@ -51,20 +52,20 @@ class ProjectTabBar extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 220),
         padding: const EdgeInsets.only(left: 12, right: 4),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF1B1F24) : Colors.transparent,
-          border: Border(bottom: BorderSide(color: active ? const Color(0xFF42A5F5) : Colors.transparent, width: 2), right: const BorderSide(color: Color(0xFF2B3138))),
+          color: active ? Cad.panel : Colors.transparent,
+          border: Border(bottom: BorderSide(color: active ? Cad.accent : Colors.transparent, width: 2), right: BorderSide(color: Cad.divider)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(child: Text('${c.dirty ? '• ' : ''}$name', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11.5, color: active ? Colors.white : Colors.white60))),
+            Flexible(child: Text('${c.dirty ? '• ' : ''}$name', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11.5, color: active ? Cad.fg : Cad.fg60))),
             const SizedBox(width: 4),
             Tooltip(
               message: c.t('tab.close'),
               child: InkWell(
                 key: Key('tab_close_$i'),
                 onTap: () => onClose(i),
-                child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, size: 12, color: Colors.white54)),
+                child: Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, size: 12, color: Cad.fg54)),
               ),
             ),
           ],

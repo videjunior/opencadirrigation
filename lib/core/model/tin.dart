@@ -38,23 +38,45 @@ class Tin {
   Pt vertex(int i) => Pt(xs[i], ys[i]);
 
   /// Builds the triangulation. Returns an empty TIN for fewer than three
-  /// non-collinear points.
-  static Tin build(Iterable<(double, double, double)> points) {
+  /// non-collinear points. [breaklines] are polylines of (x, y, z) whose
+  /// segments become edges of the triangulation (a constrained Delaunay
+  /// triangulation): the surface folds along a ridge, a channel or the edge
+  /// of a terrace instead of being interpolated across it.
+  static Tin build(Iterable<(double, double, double)> points, {List<List<(double, double, double)>> breaklines = const []}) {
     // merge duplicates (grid-snapped to 1 mm)
     final seen = <String, int>{};
     final xs = <double>[], ys = <double>[], zs = <double>[];
-    for (final (x, y, z) in points) {
-      if (!x.isFinite || !y.isFinite || !z.isFinite) continue;
+    int add(double x, double y, double z) {
       final k = '${(x * 1000).round()}|${(y * 1000).round()}';
       final i = seen[k];
       if (i != null) {
         zs[i] = z;
-        continue;
+        return i;
       }
       seen[k] = xs.length;
       xs.add(x);
       ys.add(y);
       zs.add(z);
+      return xs.length - 1;
+    }
+
+    for (final (x, y, z) in points) {
+      if (!x.isFinite || !y.isFinite || !z.isFinite) continue;
+      add(x, y, z);
+    }
+    // breakline vertices are points too; their segments are constraints
+    final constraints = <(int, int)>[];
+    for (final line in breaklines) {
+      int? prev;
+      for (final (x, y, z) in line) {
+        if (!x.isFinite || !y.isFinite || !z.isFinite) {
+          prev = null;
+          continue;
+        }
+        final i = add(x, y, z);
+        if (prev != null && prev != i) constraints.add((prev, i));
+        prev = i;
+      }
     }
     final n = xs.length;
     if (n < 3) return Tin._(xs, ys, zs, []);
@@ -150,6 +172,7 @@ class Tin {
       }
       alive = keep;
     }
+    if (constraints.isNotEmpty) alive = _constrain(alive, px, py, constraints);
     // drop triangles touching the super triangle; orient counter-clockwise
     final out = <TinTriangle>[];
     for (final t in alive) {
@@ -159,6 +182,98 @@ class Tin {
       out.add(area > 0 ? t : TinTriangle(t.a, t.c, t.b));
     }
     return Tin._(xs, ys, zs, out);
+  }
+
+  /// Makes every constraint segment an edge of the triangulation [tris] by
+  /// flipping the diagonals it crosses (Sloan 1993, *Computers & Structures*
+  /// 47(3): 441–450): an edge crossing the segment is flipped when its
+  /// two triangles form a convex quadrilateral, else it waits for its
+  /// neighbours to be flipped first. A segment passing through another vertex
+  /// is split there.
+  static List<TinTriangle> _constrain(List<TinTriangle> input, List<double> px, List<double> py, List<(int, int)> constraints) {
+    double orient(int a, int b, int c) => (px[b] - px[a]) * (py[c] - py[a]) - (py[b] - py[a]) * (px[c] - px[a]);
+    TinTriangle ccw(int a, int b, int c) => orient(a, b, c) >= 0 ? TinTriangle(a, b, c) : TinTriangle(a, c, b);
+    final tris = [for (final t in input) ccw(t.a, t.b, t.c)];
+    int key(int u, int v) => u < v ? u * 4194304 + v : v * 4194304 + u;
+    final edges = <int, List<int>>{};
+    void link(int k) {
+      final t = tris[k];
+      for (final (u, v) in [(t.a, t.b), (t.b, t.c), (t.c, t.a)]) {
+        (edges[key(u, v)] ??= <int>[]).add(k);
+      }
+    }
+
+    void unlink(int k) {
+      final t = tris[k];
+      for (final (u, v) in [(t.a, t.b), (t.b, t.c), (t.c, t.a)]) {
+        final l = edges[key(u, v)];
+        l?.remove(k);
+        if (l != null && l.isEmpty) edges.remove(key(u, v));
+      }
+    }
+
+    for (var k = 0; k < tris.length; k++) {
+      link(k);
+    }
+    final scale = [for (var i = 0; i < px.length; i++) math.max(px[i].abs(), py[i].abs())].fold(1.0, math.max);
+    final eps = scale * scale * 1e-12;
+    // segments that properly cross (no shared end, not touching)
+    bool crosses(int a, int b, int c, int d) {
+      if (a == c || a == d || b == c || b == d) return false;
+      final o1 = orient(a, b, c), o2 = orient(a, b, d), o3 = orient(c, d, a), o4 = orient(c, d, b);
+      return ((o1 > eps && o2 < -eps) || (o1 < -eps && o2 > eps)) && ((o3 > eps && o4 < -eps) || (o3 < -eps && o4 > eps));
+    }
+
+    int third(TinTriangle t, int u, int v) => t.a != u && t.a != v ? t.a : (t.b != u && t.b != v ? t.b : t.c);
+    // split the constraints at the vertices lying on them
+    final pending = <(int, int)>[];
+    for (final (a, b) in constraints) {
+      final dx = px[b] - px[a], dy = py[b] - py[a];
+      final len2 = dx * dx + dy * dy;
+      if (len2 <= 0) continue;
+      final on = <(double, int)>[];
+      for (var i = 0; i < px.length - 3; i++) {
+        if (i == a || i == b) continue;
+        final t = ((px[i] - px[a]) * dx + (py[i] - py[a]) * dy) / len2;
+        if (t <= 1e-9 || t >= 1 - 1e-9) continue;
+        if (orient(a, b, i).abs() <= 1e-9 * len2) on.add((t, i));
+      }
+      on.sort((x, y) => x.$1.compareTo(y.$1));
+      var prev = a;
+      for (final (_, i) in on) {
+        pending.add((prev, i));
+        prev = i;
+      }
+      pending.add((prev, b));
+    }
+    for (final (a, b) in pending) {
+      if (edges.containsKey(key(a, b))) continue;
+      final queue = <(int, int)>[
+        for (final k in edges.keys)
+          if ((k ~/ 4194304, k % 4194304) case (final u, final v) when crosses(a, b, u, v)) (u, v),
+      ];
+      var guard = 0;
+      while (queue.isNotEmpty && guard++ < 200000) {
+        final (u, v) = queue.removeAt(0);
+        final ts = edges[key(u, v)];
+        if (ts == null || ts.length != 2) continue;
+        final k1 = ts[0], k2 = ts[1];
+        final p = third(tris[k1], u, v), q = third(tris[k2], u, v);
+        // flippable when the quadrilateral u-q-v-p is convex
+        if (!crosses(u, v, p, q)) {
+          queue.add((u, v));
+          continue;
+        }
+        unlink(k1);
+        unlink(k2);
+        tris[k1] = ccw(p, u, q);
+        tris[k2] = ccw(p, q, v);
+        link(k1);
+        link(k2);
+        if (crosses(a, b, p, q)) queue.add((p, q));
+      }
+    }
+    return tris;
   }
 
   void _index() {
