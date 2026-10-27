@@ -943,10 +943,11 @@ List<AgentTool> editTools(AgentToolbox b) {
     FnTool(
       name: 'transform_entities',
       effect: ToolEffect.write,
-      description: 'Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. move/copy: dx, dy. rotate: angle_deg (counter-clockwise) about center. scale: factor about center. mirror: the line axis_from → axis_to. keep_original makes rotate, scale and mirror work on a copy. array: a grid of rows × cols cells col_spacing and row_spacing apart (the original is the first cell; rows run along angle_deg), or with polar true, count items (the original included) spread over total_angle_deg about center. center defaults to the centre of the items. Only the given items move, so a pipe end that was joined to an item left in place is no longer joined; items on locked layers stay. The items (or the new copies) become the selection. The design results are discarded.',
+      description: 'Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled and the ids of new copies. move/copy: dx, dy. rotate: angle_deg (counter-clockwise) about center. scale: factor about center. mirror: the line axis_from → axis_to. keep_original makes rotate, scale and mirror work on a copy. array: a grid of rows × cols cells col_spacing and row_spacing apart (the original is the first cell; rows run along angle_deg), or with polar true, count items (the original included) spread over total_angle_deg about center. center defaults to the centre of the items. Only the given items move, so a pipe end that was joined to an item left in place is no longer joined; items on locked layers stay. The items (or the new copies) become the selection. The design results are discarded.',
       inputSchema: obj(
         {
           'ids': arr(str(), 'Ids or names of the items.'),
+          'selected': bool_('Work on the current selection instead of "ids" (e.g. the items of an import, which come in selected).'),
           'operation': str(null, ['move', 'copy', 'rotate', 'scale', 'mirror', 'array']),
           'dx': num_('move/copy: offset east (m), default 0.'),
           'dy': num_('move/copy: offset north (m), default 0.'),
@@ -964,12 +965,15 @@ List<AgentTool> editTools(AgentToolbox b) {
           'count': int_('polar array: items including the original, 2–720 (default 6).'),
           'total_angle_deg': num_('polar array: angle covered (default 360).'),
         },
-        required: ['ids', 'operation'],
+        required: ['operation'],
       ),
-      summary: (i) => t('ai.do.transform', {'op': '${i['operation']}', 'n': '${(i['ids'] as List?)?.length ?? 0}'}),
+      summary: (i) => t('ai.do.transform', {'op': '${i['operation']}', 'n': '${i['selected'] == true ? c.selection.length : ((i['ids'] as List?)?.length ?? 0)}'}),
       handler: (i) async {
         final a = ToolArgs(i);
-        final es = b.findAll(a.strings('ids', required: true));
+        final selected = a.flag('selected') ?? false;
+        if (selected && c.selection.isEmpty) throw ToolInputError('Nothing is selected: give "ids".');
+        if (!selected && !a.has('ids')) throw ToolInputError('Give "ids" (or "selected": true for the current selection).');
+        final es = selected ? b.findAll([...c.selection]) : b.findAll(a.strings('ids', required: true));
         if (c.busy) throw ToolInputError('A design is running; wait until it finishes.');
         final before = {for (final e in b.p.entities) e.id};
         c.select(es.map((e) => e.id));

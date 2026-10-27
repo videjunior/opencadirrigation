@@ -673,7 +673,7 @@ pergunta, as respostas do modelo exatamente como vieram — blocos de raciocíni
 cifrados da OpenAI — e um resultado para cada chamada de ferramenta); `turn.stop` diz por que a vez terminou (`done`,
 `maxTokens`, `stepLimit` depois de `maxSteps` requisições, `budget` passado o `costCap`, `cancelled` por um `AiCancel`,
 `error` com um `AiError`). `AiClient.send` sozinho faz uma requisição em fluxo, com novas tentativas em sobrecarga, limite
-de taxa, erro de servidor e erro de rede. Os nomes da primeira versão, só da Anthropic (`ClaudeApi`, `ClaudeModel`, `ClaudeCancel`…),
+de taxa, erro de servidor, erro de rede, tempo esgotado e fluxo interrompido (enquanto nada da resposta foi mostrado). Os nomes da primeira versão, só da Anthropic (`ClaudeApi`, `ClaudeModel`, `ClaudeCancel`…),
 continuam como apelidos.
 
 ## 6. Convenções

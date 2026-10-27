@@ -15,6 +15,7 @@ import 'dart:math' as math;
 import '../../core/ai/agent_loop.dart';
 import '../../core/ai/project_context.dart';
 import '../../core/design/advisor.dart';
+import '../../core/design/auto_fix.dart' show addsBoosterToMains;
 import '../../core/design/report_tables.dart';
 import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
@@ -403,11 +404,7 @@ List<AgentTool> readTools(AgentToolbox b) {
       handler: (i) async {
         final pts = ToolArgs(i).points('points', max: 500, required: true)!;
         final tr = b.terrain;
-        if (tr.isEmpty) {
-          return const ToolOutput(
-            'The drawing has no terrain data (no contours, spot heights or elevation download): every elevation is taken as 0 m. Ask the user for terrain data or to download a DEM (it needs a georeference).',
-          );
-        }
+        if (tr.isEmpty) return ToolOutput(noTerrainText(b));
         return ToolOutput([for (final q in pts) '${AgentToolbox.pt(q)} → ${AgentToolbox.n(tr.elevationAt(q), 2)} m'].join('\n'));
       },
     ),
@@ -439,6 +436,17 @@ List<AgentTool> readTools(AgentToolbox b) {
     ),
   ];
 }
+
+/// What get_elevations answers without terrain data, with the next step.
+String noTerrainText(AgentToolbox b) =>
+    'The drawing has no terrain data (no contours, spot heights, breaklines or downloaded elevations): every elevation is taken as 0 m. Next: ${b.p.meta.georef == null ? 'set_site (the project has no georeference yet), then download_terrain' : 'download_terrain'} adds online elevations; import_attachment takes the user\'s survey; or create spot heights the user gives (create_entities type "spot").';
+
+/// The next step when the catalogue has no usable item of [kind] (a
+/// search_catalog kind; null: the kind of the item in question): a
+/// disabled one, a manufacturer's pack, a data sheet or the program's own
+/// catalogue.
+String catalogNextStep([String? kind]) =>
+    'Next: search_catalog {${kind == null ? 'kind' : 'kind "$kind"'}, include_disabled true} shows disabled items (edit_catalog action "enable" brings one back); run_operation list_catalog_packs, then add_catalog_pack, adds a manufacturer\'s models; edit_catalog action "add" adds one from a data sheet; run_operation catalog_default {action "reset"} restores the program\'s catalogue.';
 
 /// Stored properties of [e] without its id, type and image data.
 Map<String, Object?> entityJson(Entity e) {
@@ -520,7 +528,10 @@ String messagesText(AgentToolbox b) {
       if (t.has('adv.${a.code}.why')) out.writeln('   why: ${t('adv.${a.code}.why')}');
       if (t.has('adv.${a.code}.how')) out.writeln('   how: ${t('adv.${a.code}.how')}');
     }
-    if (a.fixes.isNotEmpty) out.writeln('   corrections: ${a.fixes.map((k) => k.name).join(', ')}');
+    if (a.fixes.isNotEmpty) {
+      final booster = a.fixes.contains(FixKind.choosePump) && addsBoosterToMains(b.p, a, FixKind.choosePump, c.results);
+      out.writeln('   corrections: ${a.fixes.map((k) => k.name).join(', ')}${booster ? ' (choosePump adds a booster pump to the mains connection: ask the user first)' : ''}');
+    }
   }
   if (adv.length > 80) out.writeln('(${adv.length - 80} more)');
   return out.toString();

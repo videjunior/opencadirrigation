@@ -13,12 +13,15 @@
 /// and back.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../core/ai/image_prep.dart';
+import '../../core/ai/llm.dart' show ToolImage;
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/units.dart';
@@ -30,9 +33,20 @@ import 'vision_palette.dart';
 import 'vision_tiles.dart';
 
 class SnapshotImage {
-  SnapshotImage({required this.png, required this.width, required this.height, required this.world, this.notes = const [], this.map, this.zoom, this.attribution = ''});
+  SnapshotImage({required this.png, required this.width, required this.height, required this.world, this.notes = const [], this.map, this.zoom, this.attribution = '', this.jpeg});
   final Uint8List png;
   final int width, height;
+
+  /// The same picture as a JPEG when it is a large opaque one (an aerial
+  /// map, the relief under the drawing), a fraction of the PNG; null when
+  /// the PNG is small (a drawing) or the picture has transparency.
+  final Uint8List? jpeg;
+
+  /// What goes to the model: the JPEG when there is one (every request of
+  /// a conversation carries its earlier pictures again), else the PNG.
+  Uint8List get bytes => jpeg ?? png;
+  String get mediaType => jpeg == null ? 'image/png' : 'image/jpeg';
+  ToolImage get forModel => ToolImage(mediaType, base64Encode(bytes));
 
   /// World rectangle the image covers exactly (left = minX, top = maxY).
   final Bounds world;
@@ -248,8 +262,8 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
       if (legendRows != null && legendBox != null) _paintLegend(canvas, legendRows, legendBox);
       final corner = [?spec.caption, if (credit.isNotEmpty) credit].join(' · ');
       if (corner.isNotEmpty) _boxText(canvas, corner, Offset(4, f.height - 19), 10, Colors.white, const Color(0xB3000000));
-      final png = await _png(rec.endRecording(), f.width, f.height);
-      return SnapshotImage(png: png, width: f.width, height: f.height, world: f.world, notes: notes, map: used, zoom: mosaic?.zoom, attribution: credit);
+      final (png, jpeg) = await _encode(rec.endRecording(), f.width, f.height, opaque: spec.background);
+      return SnapshotImage(png: png, width: f.width, height: f.height, world: f.world, notes: notes, map: used, zoom: mosaic?.zoom, attribution: credit, jpeg: jpeg);
     } finally {
       mosaic?.dispose();
       screen?.dispose();
@@ -320,13 +334,30 @@ Future<ui.Image> _decode(Uint8List bytes) async {
   }
 }
 
-Future<Uint8List> _png(ui.Picture pic, int w, int h) async {
+/// PNGs above this size of an opaque picture get a JPEG twin.
+const _jpegAbove = 256 * 1024;
+
+/// The PNG of [pic] and, when it is [opaque] and its PNG is over
+/// [_jpegAbove], a JPEG of it if that is clearly smaller (photos are: an
+/// aerial picture of a megapixel is 2–4 MB as a PNG, a few hundred KB as a
+/// JPEG at quality 85; drawings on the plain background stay PNG). The PNG
+/// stays lossless for what reads its pixels (image analysis, the tests).
+Future<(Uint8List, Uint8List?)> _encode(ui.Picture pic, int w, int h, {required bool opaque}) async {
   final img = await pic.toImage(w, h);
   pic.dispose();
   try {
     final data = await img.toByteData(format: ui.ImageByteFormat.png);
     if (data == null) throw StateError('png');
-    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    final png = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    if (!opaque || png.length <= _jpegAbove) return (png, null);
+    final raw = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+    if (raw == null) return (png, null);
+    try {
+      final jpeg = encodeJpegRgba(raw.buffer.asUint8List(raw.offsetInBytes, raw.lengthInBytes), w, h);
+      return (png, jpeg.length < 0.8 * png.length ? jpeg : null);
+    } catch (_) {
+      return (png, null);
+    }
   } finally {
     img.dispose();
   }

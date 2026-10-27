@@ -8,8 +8,9 @@
 
 Open-source CAD, written in Flutter/Dart, for the design of pressurised irrigation systems:
 drawing, hydraulic network, pipe sizing, reports and plotting, right in the browser, with no
-installation, no server and no sign-up. Projects stay on your computer. Released under the
-[MIT licence](LICENSE.md).
+installation, no server and no sign-up, plus an optional AI assistant (Claude or GPT, with your
+own key) that draws and designs the project with you. Projects stay on your computer. Released
+under the [MIT licence](LICENSE.md).
 
 <p align="center"><img src="web/screenshots/design-1440x900.png" width="900" alt="A designed irrigation project with pipe sizes, pressures and results per zone"></p>
 
@@ -53,6 +54,10 @@ installation, no server and no sign-up. Projects stay on your computer. Released
 
 A single application covering the whole cycle of a pressurised irrigation design:
 
+- **Optional AI agent**: Claude (Anthropic) or GPT (OpenAI), with your own API key, works on the
+  open project with the program's own tools: it answers questions, asks what is missing, plans,
+  draws, designs, checks and reports, with your approval and an undo for every answer
+  ([section 9](#ai-assistant-optional)); nothing is sent until you press Send.
 - **2D CAD drawing** with layers, snaps, typed coordinates, dimensions, hatches, symbols, user
   blocks, review comments and revision clouds, and AutoCAD-style command aliases.
 - **Hydraulic network** drawn on top of the CAD: water supplies, pumps (fixed or variable speed),
@@ -84,10 +89,6 @@ A single application covering the whole cycle of a pressurised irrigation design
 - **Open manufacturer catalogues** in JSON, loadable by file or URL.
 - **Command line and engine API**: `bin/oci.dart` designs, checks and exports projects without a
   browser; `lib/core/api.dart` gives the whole engine in one import ([docs/API.md](docs/API.md)).
-- **Optional AI agent**: Claude (Anthropic) or GPT (OpenAI), with your own API key, works on the
-  open project with the program's own tools: it answers questions, asks what is missing, plans,
-  draws, designs, checks and reports, with your approval and an undo for every answer
-  ([section 9](#ai-assistant-optional)); nothing is sent until you press Send.
 
 ### Who it is for
 
@@ -109,10 +110,12 @@ students. The interactive tutorial and the example gallery let you start without
 ## 2. Five-minute start
 
 1. Open [opencadirrigation.com](https://opencadirrigation.com) and press **Open the app** (or open
-   an example or the tutorial straight from the page). The app opens by itself on later visits.
-   The welcome screen shows the **example gallery** and the **interactive tutorial** button (76
-   steps, starting with your site on the satellite map and its terrain).
-2. Pick an example (the orchard is the default) or start from scratch.
+   an example or the tutorial straight from the page). The app opens by itself on later visits, on
+   an empty project, with a start screen that asks two things: **where the area is** (an address
+   found on OpenStreetMap, or coordinates; the project is georeferenced there, on the satellite map)
+   and **whether to design with the AI assistant**.
+2. Draw the area, let the assistant design it, or open a ready example: Help → Welcome and example
+   gallery (with the **interactive tutorial**, 76 steps) or File → Examples.
 3. Press **F5** (or the ▶ button at the top right). The calculation runs off the interface thread;
    a progress card shows the current step (zone by zone, mainline, flushing, water hammer,
    materials). The screen stays usable while it runs.
@@ -162,6 +165,7 @@ drawing everywhere, with the names, crops and catalogue items in that language.
 |---|---|
 | `?example=garden` | Opens the given example (`orchard`, `garden`, `sportsField`, `rowCrop`, `pivot`, `greenhouse`, `nursery`, `coffee`, `bananas`, `sugarcane`, `gravity`, `pasture`, `golf`, `sectorPivot`, `linear`). |
 | `?design=1` | Designs on load. |
+| `?ai=1` | Opens the AI assistant beside the drawing (the site's "Open the AI assistant" button and the app shortcut). |
 | `?tutorial=N` | Opens the interactive tutorial at step N (1 to 76). |
 | `?lang=pt` (any code of section 13) | Language for this visit (does not change the saved preference). |
 | `/pt/`, `/es/`, `/de/`, … | Entry page of each language under its code (all 20), with the same effect as `?lang` (the root page is the English one). |
@@ -809,6 +813,18 @@ safety classifier declines is answered by another model on Anthropic's side, pri
 that answered. Switching to the other company's model, or between OpenAI models, starts a new
 conversation; between Claude models the conversation goes on.
 
+**Starting with the AI.** The app opens on an empty project with a start screen that asks where
+the area to irrigate is and whether you want to design with the assistant (not when the address
+already says what to open, an example, the tutorial or a shared project, nor after recovered work;
+"Don't show this screen at start-up" and a switch in the assistant's settings turn it off). The place
+is an address or place name searched on OpenStreetMap (you pick among the matches) or coordinates
+in any usual form; the project is georeferenced there and the satellite map shows. **Design with AI**
+opens the assistant beside the drawing with the place and your description, or a request to start a
+new design, waiting in its box; nothing is sent before you press Send. **Start without AI** leaves you
+on the empty, georeferenced project. On phones the assistant has a button in the top bar that spins while it works
+and shows a dot when it waits for an approval, an answer or a plan decision (the docked panel's
+button does the same).
+
 **How it works.** The agent keeps a to-do list of the task, asks you questions as cards with
 options when something is missing (the task waits for the answers), presents its plan, and works
 through the program's own tools: 70 tools sent with every request, 101 more operations it finds and
@@ -842,7 +858,10 @@ positions the model reads on it; the model can zoom into a part, label the items
 shapes with `preview_geometry` before creating anything, and read the ground with
 `terrain_picture` (hillshade, colours by elevation, contours, slope, aspect), `terrain_profile`
 and `terrain_info`. Pictures are at most 1568 pixels on the longest side and about 1.15
-megapixels. The panel has a button that attaches a picture of your view, and a setting (off by
+megapixels; aerial and relief pictures go as JPEG, which keeps long conversations within the
+request size, and attached photos are turned upright and scaled to at most 2000 pixels a side.
+On Claude Opus 5.5, Sonnet 5.5 and Fable 5.1 the status line shows the model's short progress notes
+between steps. The panel has a button that attaches a picture of your view, and a setting (off by
 default) sends a picture of the drawing after each round of changes.
 
 **Control.** What it may do is set in the settings: **read only**; **plan first** (it explores with
@@ -850,12 +869,16 @@ reads only and presents a plan; changes start once you approve it); **ask before
 default: a card with Apply, Skip and Stop, also for each request to another service); or **apply
 changes automatically** (saving a file, setting the georeference and deleting more than 20 items
 are still confirmed). You can type while it works (the message reaches it at its next step) and
-stop it at any time. Every answer that changed the project is one history entry with **Undo these
+stop it at any time. Approving a plan with "apply automatically" runs that task without asking; the
+mode chosen in the settings stays for the next tasks. After an error or a stop the answer offers
+**Try again** (the same message, when nothing of it reached the model) or **Continue**, and the
+settings when the fix is there (a key refused, a model the key cannot use). Every answer that changed the project is one history entry with **Undo these
 changes**, and every message has **Rewind to here**, which takes the project (through the undo
 history) and the conversation back to before it. A task ends at its step limit (50 by default, up
 to 200) or at its spending cap (US$ 2 by default at list prices, with a warning at 80 % and a
-**Continue** button for another cap); on the Claude models that take one, the cap also goes to the
-model as a task budget, so it paces itself. Long conversations are summarised on the company's
+**Continue** button for another cap). The cap is the app's own: the model is shown no token
+countdown (a task budget made it stop early and suggest a new conversation), and its instructions
+say there is ample context. Long conversations are summarised on the company's
 server (Anthropic from 150 000 input tokens, after clearing old tool results from 80 000 while
 keeping the notes, the plan and the to-do list; OpenAI from 200 000, with older pictures dropped
 from the request); a setting turns this off. Quick commands: `/new`, `/design`, `/check`,
@@ -1085,7 +1108,7 @@ drift from the template.
 
 That HTML is all a first visit downloads (and what crawlers and PageSpeed measure): the app, several
 megabytes, is fetched only when the visitor opens it (the page's buttons and example links start it
-in place), arrives at an app address (`?example=`, `?tutorial=`, `?design=`, `?lang=`, the installed
+in place), arrives at an app address (`?example=`, `?tutorial=`, `?design=`, `?ai=`, `?lang=`, the installed
 app's `?source=pwa`) or has used it in that browser before (any `opencadirrigation.` key in
 `localStorage`); the page then stays, hidden, under the app. `web/flutter_bootstrap.js` is Flutter's
 loader without Flutter's deprecated service worker, and `tool/build_web.sh` drops the pointer to the

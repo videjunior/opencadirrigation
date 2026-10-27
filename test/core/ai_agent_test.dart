@@ -51,7 +51,7 @@ void main() {
     AiHttpClient.declined.clear();
   });
 
-  test('the request follows the API: endpoint, headers, streaming, adaptive thinking, effort, caching, refusal fallback', () async {
+  test('the request follows the API: endpoint, headers, streaming, adaptive thinking with the notes between tool calls, effort, the full output limit, caching, refusal fallback', () async {
     final f = FakeClaude([(_) => FakeReply.text('Hello')]);
     final r = await api(f, browser: true).send(
       AiRequest(model: AiModel.opus55, system: 'sys', history: [user('hi')], tools: [tool('a').spec], effort: AiEffort.high),
@@ -64,13 +64,13 @@ void main() {
     expect(req.headers['x-api-key'], key);
     expect(req.headers['anthropic-version'], '2026-10-21');
     expect(req.headers['anthropic-dangerous-direct-browser-access'], 'true');
-    expect(req.headers['anthropic-beta'], 'server-side-fallback-2026-07-01');
+    expect(req.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,thinking-display-updates-2026-08-18');
     expect(req.headers['content-type'], 'application/json');
     final b = f.bodies.single;
     expect(b['model'], 'claude-opus-5-5');
     expect(b['stream'], isTrue);
-    expect(b['max_tokens'], 64000);
-    expect(b['thinking'], {'type': 'adaptive'});
+    expect(b['max_tokens'], 128000, reason: 'the most the model takes when streaming');
+    expect(b['thinking'], {'type': 'adaptive', 'display': 'updates'});
     expect(b['output_config'], {'effort': 'high'});
     expect(b['cache_control'], {'type': 'ephemeral'});
     expect((b['system'] as List).single, {
@@ -91,7 +91,7 @@ void main() {
     expect(r.usage.output, 50);
   });
 
-  test('Claude Fable 5.1: no thinking setting (always on), every effort level, the refusal fallback, no task budget', () async {
+  test('Claude Fable 5.1: adaptive thinking only (always on) with its notes as text, every effort level, the refusal fallback, no task budget', () async {
     for (final e in AiEffort.values) {
       final f = FakeClaude([(_) => FakeReply.text('ok', model: 'claude-fable-5-1')]);
       await api(f).send(
@@ -100,11 +100,12 @@ void main() {
       );
       final b = f.bodies.single;
       expect(b['model'], 'claude-fable-5-1');
-      expect(b.containsKey('thinking'), isFalse, reason: 'anything but adaptive or nothing is a 400 on Claude Fable 5.1');
+      expect(b['thinking'], {'type': 'adaptive', 'display': 'updates'}, reason: 'adaptive (or nothing) is all Claude Fable 5.1 takes; display "updates" returns its notes');
+      expect(b['max_tokens'], 128000);
       expect(b['output_config'], {'effort': e.name});
       expect(b['fallbacks'], 'default');
       expect(b.containsKey('tool_choice'), isFalse);
-      expect(f.requests.single.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,context-management-2025-06-27,compact-2026-01-12');
+      expect(f.requests.single.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18');
     }
     expect(AiModel.fable51.input, 10);
     expect(AiModel.fable51.output, 50);
@@ -139,7 +140,7 @@ void main() {
         },
       ],
     });
-    expect(f.requests.first.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,task-budgets-2026-03-13,context-management-2025-06-27,compact-2026-01-12');
+    expect(f.requests.first.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,task-budgets-2026-03-13,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18');
     await api(f).send(
       AiRequest(model: AiModel.haiku55, system: 's', history: [user('q')]),
       cancel: AiCancel(),
@@ -147,6 +148,7 @@ void main() {
     expect(f.requests.last.headers.containsKey('anthropic-dangerous-direct-browser-access'), isFalse);
     expect(f.requests.last.headers.containsKey('anthropic-beta'), isFalse);
     expect(f.bodies.last.containsKey('fallbacks'), isFalse);
+    expect(f.bodies.last['thinking'], {'type': 'adaptive'}, reason: 'Claude Haiku 5.5 writes no notes between tool calls');
     expect(f.bodies.last['model'], 'claude-haiku-5-5');
   });
 
@@ -160,7 +162,7 @@ void main() {
     expect(f.calls, 2);
     expect((f.bodies[0]['output_config'] as Map).containsKey('task_budget'), isTrue);
     expect((f.bodies[1]['output_config'] as Map).containsKey('task_budget'), isFalse);
-    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01');
+    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,thinking-display-updates-2026-08-18');
   });
 
   test('old tool results are cleared on the server, never the notes or the answers; a rejected combination drops the clearing first', () async {
@@ -176,7 +178,7 @@ void main() {
     expect(first.first['exclude_tools'], ['get_notes', 'ask_user'], reason: 'only the tools of the request, never a picture tool');
     final second = ((f.bodies[1]['context_management'] as Map)['edits'] as List).cast<Map>();
     expect(second.map((e) => e['type']), ['compact_20260112'], reason: 'compaction stays');
-    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,compact-2026-01-12');
+    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,compact-2026-01-12,thinking-display-updates-2026-08-18');
   });
 
   test('a turn runs the tools the model asks for and keeps a history the API accepts', () async {

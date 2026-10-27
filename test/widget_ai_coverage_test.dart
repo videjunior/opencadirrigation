@@ -73,7 +73,7 @@ bool _engineeringFileItem(String key, String submenu) =>
     key == 'file.exportDrawing';
 
 /// Dialogs the CAD side owns: whole files, or `stem.dialog`.
-const _cadDialogFiles = {'basemap_dialogs', 'blocks_dialogs', 'vegetation_dialog', 'pdf_import_dialog', 'welcome_dialog', 'shortcuts_dialog', 'ai_assistant_dialog'};
+const _cadDialogFiles = {'basemap_dialogs', 'blocks_dialogs', 'vegetation_dialog', 'pdf_import_dialog', 'welcome_dialog', 'shortcuts_dialog', 'ai_assistant_dialog', 'ai_start_dialog'};
 const _cadDialogs = {
   'dialogs.projectDetails',
   'dialogs.units',
@@ -324,7 +324,7 @@ void main() {
     }
     final keys = {for (final s in aiSettings(box)) s.key};
     expect(keys.length, aiSettings(box).length, reason: 'settings keys are unique');
-    for (final k in ['params.maxZoneVelocity', 'params.terrainMethod', 'units.system', 'view.overlay', 'snap.ortho', 'tool.outlet_spec', 'app.autosave', 'quote.markup_pct']) {
+    for (final k in ['params.maxZoneVelocity', 'params.terrainMethod', 'units.system', 'view.overlay', 'view.language', 'snap.ortho', 'tool.outlet_spec', 'app.autosave', 'quote.markup_pct']) {
       expect(keys, contains(k));
     }
   });

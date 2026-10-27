@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/actions.dart';
 import 'package:opencadirrigation/app/canvas/cad_canvas.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
@@ -28,9 +29,16 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(IrrigationCadApp(autoTutorial: autoTutorial));
+    await tester.pumpWidget(IrrigationCadApp(autoTutorial: autoTutorial, askAi: false, startExample: ExampleId.orchard));
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
+  }
+
+  Future<void> openHelp(WidgetTester tester, String item) async {
+    await tester.tap(find.text('Ajuda'));
+    await settle(tester);
+    await tester.tap(find.text(item).last);
+    await settle(tester);
   }
 
   testWidgets('app shell renders menu, palette and canvas', (tester) async {
@@ -42,23 +50,24 @@ void main() {
     expect(find.text('Projeto'), findsOneWidget);
   });
 
-  testWidgets('first run offers the tutorial and skip remembers it', (tester) async {
+  testWidgets('the welcome never opens by itself; Help → Welcome offers the tutorial and closes on skip', (tester) async {
     TutorialController.reset();
     setPref('lang', 'pt');
     await pumpApp(tester);
+    expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsNothing, reason: 'the app opens on the start-up screen (site and AI), not on the welcome');
+    await openHelp(tester, 'Boas-vindas e galeria de exemplos…');
     expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsOneWidget);
+    expect(find.byKey(const Key('tut_start')), findsOneWidget);
     await tester.tap(find.byKey(const Key('tut_skip')));
     await settle(tester);
     expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsNothing);
-    expect(TutorialController.isDone, isTrue);
   });
 
   testWidgets('tutorial walks through all steps with next, back, demo and skip', (tester) async {
     TutorialController.reset();
     setPref('lang', 'pt');
     await pumpApp(tester);
-    await tester.tap(find.byKey(const Key('tut_start')));
-    await settle(tester);
+    await openHelp(tester, 'Tutorial interativo');
     final shell = tester.state(find.byType(AppShell)) as dynamic;
     shell.tutorial.setAutoAdvance(false);
     await settle(tester);
@@ -97,8 +106,7 @@ void main() {
     TutorialController.reset();
     setPref('lang', 'pt');
     await pumpApp(tester);
-    await tester.tap(find.byKey(const Key('tut_start')));
-    await settle(tester);
+    await openHelp(tester, 'Tutorial interativo');
     final steps = buildTutorialSteps('pt');
     await tester.tap(find.byKey(const Key('tut_next')));
     await settle(tester);
@@ -168,8 +176,7 @@ void main() {
     TutorialController.reset();
     setPref('lang', 'pt');
     await pumpApp(tester);
-    await tester.tap(find.byKey(const Key('tut_start')));
-    await settle(tester);
+    await openHelp(tester, 'Tutorial interativo');
     await tester.tap(find.byKey(const Key('tut_skip_all')));
     await settle(tester);
     expect(find.byKey(const Key('tut_next')), findsNothing);
@@ -269,7 +276,7 @@ void tabsAndShortcutsTests() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false));
+    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, startExample: ExampleId.orchard));
     await settle(tester);
     return tester.state(find.byType(AppShell)) as dynamic;
   }

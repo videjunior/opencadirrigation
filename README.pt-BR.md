@@ -8,8 +8,9 @@
 
 CAD de código aberto, escrito em Flutter/Dart, para projeto de sistemas de irrigação
 pressurizada: desenho, rede hidráulica, dimensionamento, relatórios e plotagem, direto no
-navegador, sem instalação, sem servidor e sem cadastro. Os projetos ficam no seu computador.
-Distribuído sob a [licença MIT](LICENSE.md).
+navegador, sem instalação, sem servidor e sem cadastro, mais um assistente de IA opcional (Claude
+ou GPT, com a sua própria chave) que desenha e projeta com você. Os projetos ficam no seu
+computador. Distribuído sob a [licença MIT](LICENSE.md).
 
 <p align="center"><img src="web/screenshots/design-1440x900.png" width="900" alt="Um projeto de irrigação dimensionado, com diâmetros, pressões e resultados por zona"></p>
 
@@ -52,6 +53,11 @@ Distribuído sob a [licença MIT](LICENSE.md).
 
 Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pressurizada:
 
+- **Agente de IA opcional**: o Claude (Anthropic) ou o GPT (OpenAI), com a sua própria chave de
+  API, trabalha no projeto aberto com as ferramentas do próprio programa: responde perguntas,
+  pergunta o que falta, planeja, desenha, projeta, verifica e escreve o memorial, com a sua
+  aprovação e um desfazer para cada resposta ([seção 9](#assistente-de-ia-opcional)); nada é
+  enviado antes de você clicar em Enviar.
 - **Desenho CAD 2D** com camadas, snaps, coordenadas digitadas, cotas, hachuras, símbolos, blocos
   do usuário, comentários de revisão e nuvens de revisão, e atalhos no estilo AutoCAD.
 - **Rede hidráulica** desenhada sobre o CAD: fontes de água, bombas (de rotação fixa ou com
@@ -85,11 +91,6 @@ Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pre
 - **Linha de comando e API do motor**: `bin/oci.dart` projeta, verifica e exporta projetos sem
   navegador; `lib/core/api.dart` traz o motor inteiro numa importação
   ([docs/API.pt-BR.md](docs/API.pt-BR.md)).
-- **Agente de IA opcional**: o Claude (Anthropic) ou o GPT (OpenAI), com a sua própria chave de
-  API, trabalha no projeto aberto com as ferramentas do próprio programa: responde perguntas,
-  pergunta o que falta, planeja, desenha, projeta, verifica e escreve o memorial, com a sua
-  aprovação e um desfazer para cada resposta ([seção 9](#assistente-de-ia-opcional)); nada é
-  enviado antes de você clicar em Enviar.
 
 ### Para quem
 
@@ -111,10 +112,12 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 ## 2. Começando em cinco minutos
 
 1. Abra [opencadirrigation.com](https://opencadirrigation.com) e clique em **Abrir o app** (ou abra
-   um exemplo ou o tutorial direto da página). Nas visitas seguintes o app abre sozinho. A tela de
-   boas-vindas mostra a **galeria de exemplos** e o botão do **tutorial interativo** (76 passos,
-   começando pelo seu local no mapa de satélite e pelo relevo).
-2. Escolha um exemplo (o pomar é o padrão) ou comece do zero.
+   um exemplo ou o tutorial direto da página). Nas visitas seguintes o app abre sozinho, num projeto
+   vazio, com uma tela de início que pergunta duas coisas: **onde fica a área** (um endereço buscado
+   no OpenStreetMap, ou coordenadas; o projeto é georreferenciado ali, no mapa de satélite) e **se
+   você quer projetar com o assistente de IA**.
+2. Desenhe a área, deixe o assistente projetar ou abra um exemplo pronto: Ajuda → Boas-vindas e
+   galeria de exemplos (com o **tutorial interativo**, 76 passos) ou Arquivo → Exemplos.
 3. Pressione **F5** (ou o botão ▶ no canto superior direito). O cálculo roda fora da thread da
    interface; um cartão de progresso mostra a etapa atual (zona a zona, linha principal, lavagem,
    golpe de aríete, materiais). A tela continua utilizável durante o cálculo.
@@ -165,6 +168,7 @@ mesmo desenho em todas, com nomes, culturas e itens de catálogo no idioma da pa
 |---|---|
 | `?example=garden` | Abre o exemplo indicado (`orchard`, `garden`, `sportsField`, `rowCrop`, `pivot`, `greenhouse`, `nursery`, `coffee`, `bananas`, `sugarcane`, `gravity`, `pasture`, `golf`, `sectorPivot`, `linear`). |
 | `?design=1` | Projeta ao carregar. |
+| `?ai=1` | Abre o assistente de IA ao lado do desenho (o botão "Abrir o assistente de IA" do site e o atalho do app). |
 | `?tutorial=N` | Abre o tutorial interativo no passo N (de 1 a 76). |
 | `?lang=pt` (qualquer código da seção 13) | Idioma desta visita (não altera a preferência salva). |
 | `/pt/`, `/es/`, `/de/`, … | Página de entrada de cada idioma sob o seu código (os 20), com o mesmo efeito de `?lang` (a página raiz é a inglesa). |
@@ -840,6 +844,18 @@ respondido por outro modelo do lado da Anthropic, cobrado pelo modelo que respon
 modelo da outra empresa, ou entre modelos da OpenAI, começa uma conversa nova; entre modelos Claude
 a conversa continua.
 
+**Começar com a IA.** O app abre num projeto vazio, com uma tela de início que pergunta onde fica a
+área a irrigar e se você quer projetar com o assistente (não quando o endereço já diz o que abrir, um
+exemplo, o tutorial ou um projeto compartilhado, nem depois de recuperar trabalho; "Não mostrar esta
+tela ao iniciar" e uma chave nas configurações do assistente a desligam). O local é um endereço ou
+nome de lugar buscado no OpenStreetMap (você escolhe entre os resultados) ou coordenadas em qualquer
+formato usual; o projeto é georreferenciado ali e o mapa de satélite aparece. **Projetar com a IA**
+abre o assistente ao lado do desenho com o local e a sua descrição, ou um pedido para começar um
+projeto novo, esperando na caixa; nada é enviado antes de você clicar em Enviar. **Começar sem IA**
+deixa você no projeto vazio, já georreferenciado. No celular o assistente tem um botão na barra superior, que gira enquanto ele trabalha e mostra
+um ponto quando ele espera uma aprovação, uma resposta ou uma decisão sobre o plano (o botão do painel
+encaixado faz o mesmo).
+
 **Como funciona.** O agente mantém uma lista de tarefas, faz perguntas em cartões com opções quando
 falta algo (a tarefa espera as respostas), apresenta o seu plano e trabalha pelas ferramentas do
 próprio programa: 70 ferramentas enviadas em todo pedido, mais 101 operações que ele encontra e
@@ -875,7 +891,10 @@ posições que o modelo lê nela; o modelo pode ampliar uma parte, rotular os it
 propostas com `preview_geometry` antes de criar qualquer coisa e ler o terreno com
 `terrain_picture` (sombreamento, cores por elevação, curvas de nível, declividade, exposição),
 `terrain_profile` e `terrain_info`. As imagens têm no máximo 1568 pixels no lado maior e cerca de
-1,15 megapixel. O painel tem um botão que anexa uma imagem da sua vista, e uma configuração
+1,15 megapixel; imagens aéreas e de relevo vão em JPEG, o que mantém conversas longas dentro do
+tamanho de uma solicitação, e fotos anexadas são endireitadas e reduzidas a no máximo 2000 pixels de
+lado. No Claude Opus 5.5, Sonnet 5.5 e Fable 5.1 a linha de status mostra as notas curtas de
+progresso do modelo entre as etapas. O painel tem um botão que anexa uma imagem da sua vista, e uma configuração
 (desligada por padrão) envia uma imagem do desenho depois de cada rodada de alterações.
 
 **Controle.** O que ele pode fazer é definido nas configurações: **somente leitura**; **planejar
@@ -884,12 +903,17 @@ o aprovar); **perguntar antes de cada alteração** (o padrão: um cartão com A
 também para cada consulta a outro serviço); ou **aplicar alterações automaticamente** (salvar um
 arquivo, definir a georreferência e excluir mais de 20 itens continuam pedindo confirmação). Você
 pode escrever enquanto ele trabalha (a mensagem chega a ele na próxima etapa) e pará-lo a qualquer
-momento. Cada resposta que alterou o projeto é uma entrada do histórico com **Desfazer estas
+momento. Aprovar um plano com "aplicar automaticamente" roda aquela tarefa sem perguntar; o modo
+escolhido nas configurações continua valendo para as próximas. Depois de um erro ou de uma parada, a
+resposta oferece **Tentar de novo** (a mesma mensagem, quando nada dela chegou ao modelo) ou
+**Continuar**, e as configurações quando a correção está lá (uma chave recusada, um modelo que a chave
+não pode usar). Cada resposta que alterou o projeto é uma entrada do histórico com **Desfazer estas
 alterações**, e cada mensagem tem **Voltar a este ponto**, que leva o projeto (pelo histórico de
 desfazer) e a conversa de volta a antes dela. Uma tarefa termina no limite de etapas (50 por padrão,
 até 200) ou no teto de gasto (US$ 2 por padrão a preços de lista, com aviso em 80 % e um botão
-**Continuar** para mais um teto); nos modelos Claude que o aceitam, o teto também vai ao modelo como
-orçamento da tarefa, para ele dosar o trabalho. Conversas longas são resumidas no servidor da
+**Continuar** para mais um teto). O teto é do próprio app: o modelo não vê nenhuma contagem de
+tokens (um orçamento de tarefa fazia ele parar cedo e sugerir uma conversa nova), e as instruções
+dele dizem que há contexto de sobra. Conversas longas são resumidas no servidor da
 empresa (na Anthropic a partir de 150 000 tokens de entrada, depois de limpar resultados antigos de
 ferramentas a partir de 80 000, guardando as notas, o plano e a lista de tarefas; na OpenAI a partir
 de 200 000, tirando do pedido as imagens mais antigas); uma configuração desliga isso. Comandos
@@ -1127,7 +1151,7 @@ gerados divergem do template.
 
 Esse HTML é tudo o que uma primeira visita baixa (e o que buscadores e o PageSpeed medem): o app,
 de vários megabytes, só é baixado quando o visitante o abre (os botões e os links de exemplo da
-página o iniciam ali mesmo), chega por um endereço do app (`?example=`, `?tutorial=`, `?design=`,
+página o iniciam ali mesmo), chega por um endereço do app (`?example=`, `?tutorial=`, `?design=`, `?ai=`,
 `?lang=`, o `?source=pwa` do app instalado) ou já o usou naquele navegador (qualquer chave
 `opencadirrigation.` no `localStorage`); a página fica então escondida sob o app.
 `web/flutter_bootstrap.js` é o carregador do Flutter sem o service worker obsoleto do Flutter, e

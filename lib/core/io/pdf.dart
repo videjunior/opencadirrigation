@@ -132,13 +132,18 @@ class PdfDocument {
   /// Image XObject for encoded image [bytes] (JPEG, PNG or anything the
   /// image package decodes), downsampled to at most [maxWidthPx] ×
   /// [maxHeightPx] pixels when given. Returns null when the data cannot be
-  /// decoded. The same bytes and limits give the same XObject.
+  /// decoded. The same bytes and limits give the same XObject, and so do
+  /// the same bytes under any limits they already fit (a base map drawn on
+  /// every sheet of a set at different scales is stored once).
   PdfImage? image(Uint8List bytes, {String mime = '', int? maxWidthPx, int? maxHeightPx}) {
-    final key = (bytes, maxWidthPx, maxHeightPx); // lists compare by identity
+    final size = pixelSize(bytes);
+    final fits = size != null && _downscale(size.$1, size.$2, maxWidthPx, maxHeightPx) >= 1;
+    final maxW = fits ? null : maxWidthPx, maxH = fits ? null : maxHeightPx;
+    final key = (bytes, maxW, maxH); // lists compare by identity
     if (_imageCache.containsKey(key)) return _imageCache[key];
     PdfImage? out;
     try {
-      out = _makeImage(bytes, mime, maxWidthPx, maxHeightPx);
+      out = _makeImage(bytes, mime, maxW, maxH);
     } on Object {
       out = null;
     }
@@ -187,6 +192,21 @@ class PdfDocument {
     if (maxW != null && maxW > 0 && w > maxW) s = math.min(s, maxW / w);
     if (maxH != null && maxH > 0 && h > maxH) s = math.min(s, maxH / h);
     return s;
+  }
+
+  /// Width and height of a JPEG or PNG read from its header, or null for
+  /// other data.
+  static (int, int)? pixelSize(Uint8List b) {
+    final jpeg = jpegInfo(b);
+    if (jpeg != null) return (jpeg.$1, jpeg.$2);
+    const png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+    if (b.length < 24) return null;
+    for (var i = 0; i < 8; i++) {
+      if (b[i] != png[i]) return null;
+    }
+    // the IHDR chunk comes first: length, type, width, height (big endian)
+    int u32(int p) => (b[p] << 24) | (b[p + 1] << 16) | (b[p + 2] << 8) | b[p + 3];
+    return (u32(16), u32(20));
   }
 
   /// Width, height and components of a baseline or progressive (Huffman) JPEG, or null.

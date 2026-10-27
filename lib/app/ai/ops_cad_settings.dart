@@ -2,7 +2,8 @@
 /// every option of the program by a dotted key, typed and range-checked —
 /// the design parameters (`params.*`, the names of get_parameters), the
 /// display units, the project details and the quote (project settings: one
-/// undo step), the view, snapping and theme (`view.*`, `snap.*`), the
+/// undo step), the view, snapping, theme and interface language (`view.*`,
+/// `snap.*`), the
 /// defaults of the drawing tools (`tool.*`) and the program options
 /// (`app.*`). View, tool and program settings are not project changes.
 library;
@@ -15,6 +16,7 @@ import '../../core/model/catalog.dart';
 import '../../core/model/entities.dart';
 import '../../core/units.dart';
 import '../canvas/basemap.dart' show BaseMapLayer;
+import '../i18n.dart' show languageNames, supportedLanguages;
 import '../state/controller.dart';
 import '../theme.dart';
 import '../widgets/reports_panel.dart' show reportTabKeys;
@@ -333,6 +335,14 @@ List<AiSetting> aiSettings(AgentToolbox b, {Map<String, Object?> pending = const
       () => uiThemeMode.value.name,
       (v) => setThemeMode(CadThemeMode.values.byName('$v')),
       options: [for (final x in CadThemeMode.values) x.name],
+    ),
+    view(
+      'view.language',
+      'enum',
+      'Language of the interface (View → Language), for every open tab, kept in this browser: ${[for (final l in supportedLanguages) '$l ${languageNames[l] ?? l}'].join(', ')}. The user\'s choice: change it when the user asks. Your answers follow the language the user writes in.',
+      () => c.lang,
+      (v) => c.setLanguage('$v'),
+      options: supportedLanguages,
     ),
     view('view.reports_panel', 'boolean', 'Show the reports panel under the drawing (F2).', () => c.showReports, (v) => c.showReports = v as bool),
     view(

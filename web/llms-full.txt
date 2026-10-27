@@ -1,15 +1,15 @@
 # OpenCADIrrigation: complete reference
 
-> OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+> OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot, plus an optional AI assistant that draws and designs the project with you from a description of the site.
 
-This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.1.0, updated 2026-10-25.
+This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.2.0, updated 2026-10-26.
 
 ## At a glance
 
 | | |
 |---|---|
 | Name | OpenCADIrrigation (one word, "CAD" in capitals) |
-| What | Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports |
+| What | Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports, and an optional AI assistant (Claude or GPT, with the user's own key) that draws and designs the project with the program's own tools |
 | Price | Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user's own Anthropic or OpenAI account, which that provider bills |
 | Licence | Open source under the MIT licence; source code (Dart and Flutter) at https://github.com/videjunior/opencadirrigation |
 | Runs in | Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download |
@@ -18,16 +18,24 @@ This file describes OpenCADIrrigation for language models and other automated re
 | Project file | `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results |
 | CAD, GIS and survey exchange | Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4 |
 | Reports | PDF in any of the 20 languages, Excel (XLSX), CSV and TXT |
-| AI assistant | Optional chat with an Anthropic or OpenAI model, with the user's own API key, called from the browser with no server in between; it reads the project with the program's own tools and, with the user's approval, changes it and runs the design; every change can be undone |
+| AI assistant | Optional: a Claude (Anthropic) or GPT (OpenAI) model with the user's own API key, called from the browser with no server in between; it reads the project, looks at the satellite image and the terrain and, with the program's own tools, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the design, fixes warnings, optimises and writes the report; every change waits for the user's approval (or applies automatically) and can be undone; open it at https://opencadirrigation.com/?ai=1 |
 | Command line and API | `bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md](https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md)) |
-| Version | 1.1.0, updated 2026-10-25 |
+| Version | 1.2.0, updated 2026-10-26 |
 | Site | https://opencadirrigation.com/ |
 
 ## Who it is for
 
-Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.
+Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial, 15 ready examples and the AI assistant let you start without reading a manual.
 
 ## What OpenCADIrrigation does
+
+### AI assistant
+
+Optional: ask the AI about the project, or let it draw and design for you. It lays out heads and drip, divides fields, routes pipes, runs the sizing and the automatic tools, looking at the satellite image and the terrain, with Claude (Anthropic) or GPT (OpenAI) models and your own API key, straight from the browser with no server in between. Nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.
+
+### Automatic design and sizing
+
+Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.
 
 ### Full CAD drawing
 
@@ -40,10 +48,6 @@ Water supplies, fixed and variable-speed pumps, mainline, zone, pressure-reducin
 ### Validated hydraulic engine
 
 Hazen-Williams, Darcy-Weisbach, Scobey and Manning, minor losses from the fittings used, emitters q = k·Hˣ, network solver by the Global Gradient Algorithm (as in EPANET), pump curves with NPSH, transients by the method of characteristics with air valves, and a 24-hour simulation with energy tariffs.
-
-### Automatic design and sizing
-
-Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.
 
 ### Terrain, climate and agronomy
 
@@ -61,19 +65,26 @@ Imports DXF, DWG, PDF plans, KML/KMZ, shapefiles, GeoJSON, GPX, LandXML, LAS, DG
 
 Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ready to use, plus your own packs loaded from a file or a URL.
 
-### AI assistant
-
-Optional: ask the AI about the project, or let it lay out heads, change the drawing and run the design with the program's own tools. It uses your own Anthropic or OpenAI API key, straight from your browser with no server in between; nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.
-
 ### Offline and in the field
 
 After the first visit the app starts without a network, on desktop, tablet or phone, in a light or dark theme. In the field the device GPS records walked outlines and lines, marks points and gives the distance and bearing to the selected item for staking out.
 
 ## How it works
 
-1. **Draw or import the area.** Bring a DXF, DWG, KML or a satellite image, or draw the field, garden or pitch directly. Add contours or download the elevation from a coordinate.
-2. **Build the network.** Generate lateral blocks or sprinkler grids in one click, place valves, pump and water supply and connect everything with the mainline.
-3. **Design and document.** Press F5: the app sizes zones and mainline, checks pressures and velocities and produces reports, the bill of materials and the PDF sheet.
+1. **Draw or import the area.** Bring a DXF, DWG, KML or a satellite image, draw the field, garden or pitch directly, or tell the AI assistant the address and it finds the site on the map. Add contours or download the elevation from a coordinate.
+2. **Build the network, by hand or with the AI.** Generate lateral blocks or sprinkler grids in one click, or ask the AI assistant to lay out the heads, divide the field, route the pipes and place valves, pump and water supply; then connect everything with the mainline.
+3. **Design and document.** Press F5, or ask the AI: the app sizes zones and mainline, checks pressures and velocities and produces reports, the bill of materials and the PDF sheet.
+
+## AI assistant
+
+- Optional (Design → AI assistant, the command AI, the status-bar button, or the address `https://opencadirrigation.com/?ai=1`): an AI agent in a panel docked beside the drawing (a bottom sheet on phones) that works on the open project with a model from Anthropic or OpenAI, chosen in its settings, through the user's own API key. Requests go straight from the browser (or the desktop build) to that provider's API, with no server in between; each key is sent only to its own provider.
+- Starting with the AI: the app opens on an empty project with a start screen that asks where the area to irrigate is (an address or place searched on OpenStreetMap, the user picking among the matches, or coordinates in any usual form; the project is georeferenced there and the satellite map shows) and whether to design with the assistant. "Design with AI" opens the assistant beside the drawing with the place and the user's description (or a request to start a new design) waiting in its box, nothing sent before Send; "Start without AI" leaves the user on the empty, georeferenced project. The screen can be turned off, and it is not shown when the address already says what to open (an example, the tutorial or a shared project) or after recovered work. Examples and the tutorial stay under Help → Welcome and example gallery and File → Examples.
+- Models: Claude Fable 5.1, Claude Opus 5.5 (the default), Claude Sonnet 5.5 and Claude Haiku 5.5 from Anthropic; GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna from OpenAI, plus the earlier GPT-6 Sol and GPT-5.6 Terra: a top, an intermediate and a fast tier of each company, each with five depths of reasoning. The panel shows the tokens of every answer and a cost estimate at list prices.
+- What it does: it answers questions about the open project and works with the program's own tools (70 tools, 101 more operations, every menu command and 133 settings): it lists and reads items, reports, design messages and elevations; creates, changes, moves and deletes items; sets the parameters, the catalogue, the system flows and the quote; runs the design, the analyses, the design assistant's fixes and the optimisation; lays out sprinklers, generates lateral blocks, divides fields, fits pivots, maps vegetation, chooses pumps, places air valves, routes wires, writes the technical report and exports files. It keeps a to-do list, asks the user when something is missing, presents its plan, keeps AI notes in the project and reads the design playbooks and the manual when it needs them.
+- Vision: it takes pictures of the drawing over the satellite image (the default whenever the project is georeferenced) or the map, with an exact pixel-to-world mapping, zooms into parts, previews proposed geometry before drawing it, and reads the terrain as hillshade, contours, slope, aspect and profiles; it finds a site from an address (OpenStreetMap Nominatim), sets the georeference and the base map, downloads the terrain and the climate, imports the drawings and GIS files the user attaches and adds catalogue items from an attached data sheet (PDF, image or text), checked before they go in.
+- Control: read only; plan first; ask before each change (the default, with Apply and Skip); or apply changes automatically (saving files, the georeference and large deletions are always confirmed). The user can type while it works and stop it at any time; the changes of each answer can be undone in one click, and every message has "Rewind to here". After an error or a stop the answer offers Try again (the same message, when nothing of it reached the model) or Continue; approving a plan to run automatically applies to that task only. A task ends at its step limit (50 by default) or at its spending cap (2 US dollars by default, with Continue). Long conversations are summarised on the provider's side.
+- What is sent, and when: nothing before the user presses Send; then the message, any attached files, the project data the user ticks, the earlier messages of the conversation and the program's instructions; while answering, the results of the tools it uses, pictures included. Conversations are not saved with the project, so shared files and links never carry them.
+- The provider bills the use to the user's account. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.
 
 ## Design workflow
 
@@ -200,14 +211,6 @@ After the first visit the app starts without a network, on desktop, tablet or ph
 | SVG | — | sheet in millimetres, one group per layer |
 | XLSX | catalogue prices | reports and catalogue |
 
-## AI assistant
-
-- Optional (Design → AI assistant, or the command AI): a chat with a model from Anthropic or OpenAI, chosen in its settings, through the user's own API key. Requests go straight from the browser (or the desktop build) to that provider's API, with no server in between; each key is sent only to its own provider.
-- It answers questions about the open project and works with the program's own tools: it lists and reads items, reports, design messages and elevations, looks at pictures of the drawing and the base map, creates, changes, moves and deletes items, sets parameters, the catalogue, the system flows and the quote, runs the design, the analyses, the design assistant's fixes and the optimisation, lays out sprinklers, generates blocks, divides fields, fits pivots, maps vegetation, chooses pumps, places air valves, routes wires and exports files.
-- Control: read only, ask before each change (with Apply and Skip), or apply changes automatically (files and large deletions are always confirmed); the changes of each answer can be undone in one click, and a running answer can be stopped.
-- What is sent, and when: nothing before the user presses Send; then the message, any attached files (images, PDF data sheets, text), the project data the user ticks, the earlier messages of the conversation and the program's instructions; while answering, the results of the tools it uses, pictures included.
-- The provider bills the use to the user's account; the dialog shows the tokens used and a cost estimate at list prices. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.
-
 ## Storage, privacy and network access
 
 - Autosave in the browser, recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
@@ -274,6 +277,7 @@ Every page of the site accepts these parameters, for example https://opencadirri
 - `?example=<id>`: opens a ready example (ids in the table above)
 - `?tutorial=1`: opens the interactive tutorial (any step number works)
 - `?design=1`: designs the project on load
+- `?ai=1`: opens the AI assistant beside the drawing
 - `?lang=<code>`: interface language for this visit (codes in the language list)
 - `#p=<data>`: a project shared by link (File → Share by link): it travels compressed inside the address and opens in a new tab; nothing is uploaded
 
@@ -281,7 +285,19 @@ Every page of the site accepts these parameters, for example https://opencadirri
 
 ### What is OpenCADIrrigation?
 
-OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.
+OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot, plus an optional AI assistant that draws and designs the project with you from a description of the site.
+
+### Can an AI design the project for me?
+
+Yes, if you want it to. The optional AI assistant works on the open project with the same tools as the menus: describe the site, or let it look at the satellite image and the terrain of a georeferenced project, and it lays out sprinklers and drip, divides fields into blocks, routes pipes and valves, places the pump and the water supply, runs the design and the automatic tools, fixes the warnings, optimises the cost and writes the report. It asks before each change, or applies the changes automatically if you choose, and every answer can be undone in one click. A model can be wrong, so check its work as you would a colleague's.
+
+### Which AI models does it use?
+
+Claude models from Anthropic (Claude Opus 5.5 by default, Claude Fable 5.1, Claude Sonnet 5.5 and Claude Haiku 5.5) and GPT models from OpenAI (GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna): a top, an intermediate and a fast tier of each company, each with five depths of reasoning. You choose the model in the assistant's settings and paste your own API key; the panel shows the tokens and the estimated cost of every answer, and a step limit and a spending cap end a task that runs long.
+
+### What does the AI assistant send, and where?
+
+Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports.
 
 ### Is OpenCADIrrigation free?
 
@@ -289,7 +305,7 @@ Yes. It is free for professional, academic and personal use, with no sign-up. It
 
 ### Who is it for?
 
-Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.
+Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial, 15 ready examples and the AI assistant let you start without reading a manual.
 
 ### Do I need to install anything?
 
@@ -307,10 +323,6 @@ No. Projects are saved in your browser and as .oci.json files you keep wherever 
 
 Friction losses by Hazen-Williams, Darcy-Weisbach, Scobey or Manning, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window and the pipe pressure class, and the design also checks uniformity (CU, DU, EU), flushing and transients by the method of characteristics (valve closure, pump trip, air valves), with a 24-hour simulation of pressures and energy cost.
 
-### Can an AI design the project for me?
-
-Yes, if you want it to. The optional AI assistant uses a model from Anthropic or OpenAI with your own API key, called straight from your browser with no server in between. It answers questions about the project and can lay out sprinklers, divide fields, change the drawing and run the design and the automatic tools, asking before each change (or applying them automatically, if you choose); every change can be undone. Nothing is sent until you press Send: then your message, the files you attach and the project data you tick go to that provider's API. The provider bills the use to your account, and the key stays in memory for the session unless you choose to remember it.
-
 ### Does it work with AutoCAD and other CADs?
 
 Yes. It imports DXF and DWG up to AutoCAD 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.
@@ -325,27 +337,27 @@ The interface, the reports, the tutorial and the example projects are available 
 
 | Language | Code | Page | Description on that page |
 |---|---|---|---|
-| Bahasa Indonesia (Indonesian) | `id` | https://opencadirrigation.com/id/ | Software desain irigasi gratis dan sumber terbuka di peramban: irigasi tetes, sprinkler, pivot tengah, perhitungan hidraulik, daftar material, DXF/DWG. |
-| Deutsch (German) | `de` | https://opencadirrigation.com/de/ | Kostenlose Open-Source-Software für Bewässerungsplanung im Browser: Tropfbewässerung, Regner, Center-Pivots, Rohrdimensionierung, Stückliste, DXF/DWG. |
-| English | `en` | https://opencadirrigation.com/ | Free, open-source irrigation design software in your browser: drip, micro-sprinklers, sprinklers and centre pivots, pipe sizing, bill of materials, DXF/DWG. |
-| Español (Spanish) | `es` | https://opencadirrigation.com/es/ | Software gratuito y de código abierto para diseño de riego en el navegador: goteo, aspersión, pivote central, cálculo hidráulico, materiales y DXF/DWG. |
-| Français (French) | `fr` | https://opencadirrigation.com/fr/ | Logiciel gratuit et open source de conception d’irrigation dans le navigateur : goutte-à-goutte, aspersion, pivots, calcul hydraulique, nomenclature, DXF/DWG. |
-| Hausa | `ha` | https://opencadirrigation.com/ha/ | Manhajar ƙirar ban ruwa kyauta, mai buɗaɗɗen lambar tushe, a mai binciken gizo: ban ruwa ta ɗigo, masu fesa ruwa, pivot, girman bututu da DXF/DWG. |
-| Kiswahili (Swahili) | `sw` | https://opencadirrigation.com/sw/ | Programu huria ya bure ya usanifu wa umwagiliaji kivinjarini: matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, orodha ya vifaa na DXF/DWG. |
-| Português (Portuguese) | `pt` | https://opencadirrigation.com/pt/ | Software gratuito e de código aberto para projeto de irrigação no navegador: gotejamento, aspersão, pivô central, cálculo hidráulico, materiais e DXF/DWG. |
-| Tiếng Việt (Vietnamese) | `vi` | https://opencadirrigation.com/vi/ | Phần mềm thiết kế tưới miễn phí, mã nguồn mở, chạy trên trình duyệt: tưới nhỏ giọt, phun mưa, pivot trung tâm, tính thủy lực, bảng kê vật tư, DXF/DWG. |
-| Türkçe (Turkish) | `tr` | https://opencadirrigation.com/tr/ | Ücretsiz ve açık kaynaklı sulama projelendirme yazılımı, tarayıcıda: damla sulama, yağmurlama, center pivot, hidrolik hesap, malzeme listesi, DXF/DWG. |
-| Русский (Russian) | `ru` | https://opencadirrigation.com/ru/ | Бесплатная программа с открытым кодом для проектирования орошения в браузере: капельный полив, дождевание, круговые машины, гидравлика, спецификация, DXF/DWG. |
-| العربية (Arabic) | `ar` | https://opencadirrigation.com/ar/ | برنامج مجاني ومفتوح المصدر لتصميم الري في المتصفح: الري بالتنقيط والرش والمحور المركزي، والحساب الهيدروليكي، وقائمة المواد، وDXF/DWG وPDF. |
-| اردو (Urdu) | `ur` | https://opencadirrigation.com/ur/ | آبپاشی ڈیزائن کا مفت اور اوپن سورس سافٹ ویئر، براؤزر میں: ڈرپ، اسپرنکلر اور سینٹر پیوٹ، ہائیڈرولک سائزنگ، سامان کی فہرست، DXF/DWG اور PDF۔ |
-| हिन्दी (Hindi) | `hi` | https://opencadirrigation.com/hi/ | ब्राउज़र में मुफ़्त और ओपन सोर्स सिंचाई डिज़ाइन सॉफ़्टवेयर: ड्रिप, स्प्रिंकलर और सेंटर पिवट, हाइड्रोलिक साइज़िंग, सामग्री सूची, DXF/DWG और PDF। |
-| मराठी (Marathi) | `mr` | https://opencadirrigation.com/mr/ | ब्राउझरमध्ये मोफत आणि ओपन सोर्स सिंचन डिझाइन सॉफ्टवेअर: ठिबक, तुषार आणि सेंटर पिव्हट, हायड्रॉलिक आकारनिश्चिती, साहित्य यादी, DXF/DWG आणि PDF. |
-| বাংলা (Bengali) | `bn` | https://opencadirrigation.com/bn/ | ব্রাউজারে বিনামূল্যের ও ওপেন সোর্স সেচ ডিজাইন সফটওয়্যার: ড্রিপ, স্প্রিংকলার ও সেন্টার পিভট, হাইড্রোলিক সাইজিং, উপকরণ তালিকা, DXF/DWG ও PDF। |
-| ਪੰਜਾਬੀ (Punjabi) | `pa` | https://opencadirrigation.com/pa/ | ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਮੁਫ਼ਤ ਅਤੇ ਓਪਨ ਸੋਰਸ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ ਸਾਫ਼ਟਵੇਅਰ: ਡ੍ਰਿਪ, ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਸੈਂਟਰ ਪਿਵਟ, ਹਾਈਡ੍ਰੌਲਿਕ ਸਾਈਜ਼ਿੰਗ, ਸਮੱਗਰੀ ਸੂਚੀ, DXF/DWG ਅਤੇ PDF। |
-| తెలుగు (Telugu) | `te` | https://opencadirrigation.com/te/ | బ్రౌజర్‌లో ఉచిత, ఓపెన్ సోర్స్ నీటిపారుదల డిజైన్ సాఫ్ట్‌వేర్: బిందు సేద్యం, స్ప్రింక్లర్లు, సెంటర్ పివట్, హైడ్రాలిక్ సైజింగ్, సామగ్రి జాబితా, DXF/DWG, PDF. |
-| 中文 (Chinese) | `zh` | https://opencadirrigation.com/zh/ | 免费开源的灌溉设计软件，直接在浏览器中使用：滴灌、微喷、喷灌和中心支轴式喷灌机，水力计算与管径选择，材料清单，DXF/DWG、PDF 和 Excel。 |
-| 日本語 (Japanese) | `ja` | https://opencadirrigation.com/ja/ | ブラウザで使える無料・オープンソースの灌漑設計ソフト。点滴灌漑、スプリンクラー、センターピボット、水理計算と管径設計、部材リスト、DXF/DWG、PDF、Excelに対応。 |
+| Bahasa Indonesia (Indonesian) | `id` | https://opencadirrigation.com/id/ | Software desain irigasi gratis dan sumber terbuka dengan asisten AI: menata sprinkler dan tetes, menarik jalur pipa dan menghitung ukuran sistem di peramban. |
+| Deutsch (German) | `de` | https://opencadirrigation.com/de/ | Kostenlose Open-Source-Software für Bewässerungsplanung: Ein KI-Assistent setzt Regner und Tropfer, verlegt Rohre und dimensioniert die Anlage im Browser. |
+| English | `en` | https://opencadirrigation.com/ | Free, open-source irrigation design software with an AI assistant that lays out sprinklers and drip, routes pipes and sizes the system in your browser. |
+| Español (Spanish) | `es` | https://opencadirrigation.com/es/ | Software gratuito y de código abierto para diseño de riego con asistente de IA que distribuye aspersores y goteo, traza tuberías y dimensiona el sistema. |
+| Français (French) | `fr` | https://opencadirrigation.com/fr/ | Logiciel gratuit et open source de conception d’irrigation en ligne : un assistant IA implante asperseurs et goutte-à-goutte, trace et dimensionne le réseau. |
+| Hausa | `ha` | https://opencadirrigation.com/ha/ | Manhajar ƙirar ban ruwa kyauta mai buɗaɗɗen tushe, da mataimakin AI mai tsara masu fesa ruwa da ɗigo, shimfiɗa bututu da auna girma, a mai binciken gizo. |
+| Kiswahili (Swahili) | `sw` | https://opencadirrigation.com/sw/ | Programu ya bure na huria ya usanifu wa umwagiliaji: msaidizi wa AI hupanga vinyunyizio na matone, hutandaza mabomba na hupima ukubwa wa mfumo kivinjarini. |
+| Português (Portuguese) | `pt` | https://opencadirrigation.com/pt/ | Software grátis e de código aberto para projeto de irrigação com assistente de IA que distribui aspersores e gotejamento, traça tubos e dimensiona o sistema. |
+| Tiếng Việt (Vietnamese) | `vi` | https://opencadirrigation.com/vi/ | Phần mềm thiết kế tưới miễn phí, mã nguồn mở, có trợ lý AI bố trí béc phun và ống nhỏ giọt, vạch tuyến ống và tính kích thước hệ thống trên trình duyệt. |
+| Türkçe (Turkish) | `tr` | https://opencadirrigation.com/tr/ | Ücretsiz ve açık kaynaklı sulama projelendirme yazılımı: yapay zekâ asistanı tarayıcıda yağmurlayıcı, damla ve boru yerleşimini yapıp sistemi boyutlandırır. |
+| Русский (Russian) | `ru` | https://opencadirrigation.com/ru/ | Бесплатная программа проектирования полива с открытым кодом: ИИ-ассистент в браузере расставит дождеватели и капельницы, проложит трубы и рассчитает систему. |
+| العربية (Arabic) | `ar` | https://opencadirrigation.com/ar/ | برنامج مجاني ومفتوح المصدر لتصميم الري مع مساعد ذكاء اصطناعي يوزّع الرشاشات والتنقيط ويخطط مسارات الأنابيب ويحدد أقطارها، مباشرةً في متصفحك. |
+| اردو (Urdu) | `ur` | https://opencadirrigation.com/ur/ | آبپاشی ڈیزائن کا مفت اور اوپن سورس سافٹ ویئر، جس کا AI اسسٹنٹ آپ کے براؤزر میں اسپرنکلر اور ڈرپ لگاتا، پائپ بچھاتا اور نظام کا سائز طے کرتا ہے۔ |
+| हिन्दी (Hindi) | `hi` | https://opencadirrigation.com/hi/ | मुफ़्त और ओपन सोर्स सिंचाई डिज़ाइन सॉफ़्टवेयर, जिसका AI सहायक आपके ब्राउज़र में स्प्रिंकलर और ड्रिप लगाता है, पाइप बिछाता है और प्रणाली की साइज़िंग करता है। |
+| मराठी (Marathi) | `mr` | https://opencadirrigation.com/mr/ | मोफत आणि ओपन सोर्स सिंचन डिझाइन सॉफ्टवेअर: त्याचा AI सहाय्यक तुमच्या ब्राउझरमध्येच स्प्रिंकलर व ठिबक मांडतो, पाईपचे मार्ग आखतो आणि प्रणालीचा आकार ठरवतो. |
+| বাংলা (Bengali) | `bn` | https://opencadirrigation.com/bn/ | বিনামূল্যের ও ওপেন সোর্স সেচ ডিজাইন সফটওয়্যার, যার AI সহকারী ব্রাউজারেই স্প্রিংকলার ও ড্রিপ বসায়, পাইপের পথ তৈরি করে ও সেচব্যবস্থার আকার নির্ধারণ করে। |
+| ਪੰਜਾਬੀ (Punjabi) | `pa` | https://opencadirrigation.com/pa/ | ਮੁਫ਼ਤ ਅਤੇ ਓਪਨ ਸੋਰਸ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ ਸਾਫ਼ਟਵੇਅਰ, ਜਿਸਦਾ AI ਸਹਾਇਕ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਹੀ ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਡ੍ਰਿਪ ਲਗਾਉਂਦਾ, ਪਾਈਪਾਂ ਵਿਛਾਉਂਦਾ ਅਤੇ ਸਿਸਟਮ ਦਾ ਆਕਾਰ ਤੈਅ ਕਰਦਾ ਹੈ। |
+| తెలుగు (Telugu) | `te` | https://opencadirrigation.com/te/ | ఉచిత, ఓపెన్ సోర్స్ నీటిపారుదల డిజైన్ సాఫ్ట్‌వేర్: దీని AI అసిస్టెంట్ బ్రౌజర్‌లోనే స్ప్రింక్లర్లు, డ్రిప్ అమర్చి, పైపులు వేసి, వ్యవస్థ పరిమాణం నిర్ణయిస్తుంది. |
+| 中文 (Chinese) | `zh` | https://opencadirrigation.com/zh/ | 免费开源的灌溉设计软件，内置 AI 助手，直接在浏览器中自动布置喷头和滴灌、布设管道，并完成系统的水力计算与管径选择。 |
+| 日本語 (Japanese) | `ja` | https://opencadirrigation.com/ja/ | ブラウザで使える無料・オープンソースの灌漑設計ソフト。AI アシスタントがスプリンクラーや点滴の配置、配管ルートの作成から管径設計までを自動で行います。 |
 
 ## Citing
 
-OpenCADIrrigation, version 1.1.0. https://opencadirrigation.com/ (source code: https://github.com/videjunior/opencadirrigation, MIT licence)
+OpenCADIrrigation, version 1.2.0. https://opencadirrigation.com/ (source code: https://github.com/videjunior/opencadirrigation, MIT licence)

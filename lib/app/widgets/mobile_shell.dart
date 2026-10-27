@@ -18,6 +18,7 @@ import '../examples.dart';
 import '../theme.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
+import 'ai/ai_panel.dart';
 import 'dialogs/agronomy_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
@@ -353,6 +354,7 @@ class _MobileShellState extends State<MobileShell> {
                 const SizedBox(width: 6),
                 Expanded(child: Text(c.project.meta.name.isEmpty ? t('app.title') : c.project.meta.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
                 if (c.busy) const Padding(padding: EdgeInsets.only(right: 8), child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))),
+                AiPanelButton(key: const Key('mobile_ai'), c: c, size: 22, onPressed: () => showAiAssistantDialog(context, c)),
                 IconButton(key: TutorialTargets.runButton, tooltip: t('design.all'), icon: Icon(Icons.play_arrow, color: Cad.ok), onPressed: c.busy ? null : () => c.runDesign()),
                 IconButton(key: TutorialTargets.saveButton, tooltip: t('file.save'), icon: Icon(Icons.save_outlined, color: c.dirty ? Cad.amber : null), onPressed: () => saveProjectAction(context, c)),
               ]),

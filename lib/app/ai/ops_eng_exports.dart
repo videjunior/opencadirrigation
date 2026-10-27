@@ -14,9 +14,12 @@ import '../../core/api.dart';
 import '../actions.dart' show pdfTexts;
 import '../io/pdf_font_loader.dart';
 import '../io/png_export.dart' show pngDpiFor, sheetPng;
+import '../io/sheet_basemap.dart';
 import '../state/controller.dart' show BaseMap;
 import 'agent_tools.dart';
 import 'ops_eng_common.dart';
+import 'vision_render.dart' show CanvasSnapshots;
+import 'vision_tiles.dart' show HttpTileFetcher;
 
 /// Sheet options common to the PDF and the PNG of a sheet.
 Map<String, Object?> _sheetProps() => {
@@ -27,14 +30,14 @@ Map<String, Object?> _sheetProps() => {
   'wetted_radii': bool_('Wetted circles of the sprinklers (default true).'),
   'legend': bool_('Legend (default true).'),
   'bom_on_sheet': bool_('Bill of materials beside the drawing (needs results; default true).'),
-  'base_map': bool_('The base map on screen under the drawing (needs a georeference and a base map shown; default true when available).'),
+  'base_map': bool_('The base map shown on screen under the drawing, downloaded for everything the sheets show (needs a georeference and a base map shown; default true when available).'),
 };
 
-/// The sheet options of [a] (shared fields).
-Future<SheetOptions> _sheetOf(AgentToolbox b, ToolArgs a) async {
+/// The sheet options of [a] (shared fields but the base map).
+SheetOptions _sheetOf(AgentToolbox b, ToolArgs a) {
   final c = b.c;
   final scale = a.number('scale', min: 1, max: 1e6);
-  var o = SheetOptions(
+  return SheetOptions(
     page: PageSize.values.byName(a.str('page') ?? 'a3'),
     landscape: a.flag('landscape') ?? true,
     scale: scale,
@@ -43,17 +46,16 @@ Future<SheetOptions> _sheetOf(AgentToolbox b, ToolArgs a) async {
     legend: a.flag('legend') ?? true,
     bomOnSheet: (a.flag('bom_on_sheet') ?? true) && c.results != null,
   );
+}
+
+/// [o] (its sheets all set) with the base map under the drawing when [a]
+/// asks for it, the default, and the project can show one.
+Future<SheetOptions> _withBaseMap(AgentToolbox b, ToolArgs a, SheetOptions o, {double dpi = sheetMapDpi}) async {
+  final c = b.c;
   final mapAvailable = b.p.meta.georef != null && c.baseMap != BaseMap.none && c.baseMapSnapshot != null;
-  if ((a.flag('base_map') ?? true) && mapAvailable) {
-    final snap = await c.baseMapSnapshot!();
-    if (snap != null) {
-      o = o.copyWith(
-        rasters: [PlotRaster(bytes: snap.$1, mime: 'image/png', corners: snap.$2, opacity: c.baseMapOpacity)],
-        attribution: c.baseMapAttribution?.call() ?? '',
-      );
-    }
-  }
-  return o;
+  if (!(a.flag('base_map') ?? true) || !mapAvailable) return o;
+  final snaps = b.snapshots;
+  return withSheetBaseMap(c, o, dpi: dpi, fetcher: snaps is CanvasSnapshots ? snaps.tiles : const HttpTileFetcher());
 }
 
 List<AgentTool> exportOperations(AgentToolbox b) {
@@ -78,7 +80,7 @@ List<AgentTool> exportOperations(AgentToolbox b) {
       summary: (i) => engSummary(b, 'ai.op.export_sheet_pdf.${i['split'] ?? 'single'}', 'ai.op.export_sheet_pdf.single'),
       run: (a, i) async {
         if (b.p.entities.isEmpty) throw ToolInputError(t('msg.nothingToExport'));
-        var o = await _sheetOf(b, a);
+        var o = _sheetOf(b, a);
         final windows = <SheetWindow>[];
         for (final w in (i['windows'] as List?) ?? const []) {
           final m = Map<String, dynamic>.from(w as Map);
@@ -110,6 +112,7 @@ List<AgentTool> exportOperations(AgentToolbox b) {
           profilePath: charts ? c.profilePath : null,
           clearProfilePath: !charts || c.profilePath == null,
         );
+        o = await _withBaseMap(b, a, o);
         await preparePdfFonts(pdfTexts(c, reports: o.includeReports || o.bomOnSheet || o.details.isNotEmpty || o.charts), language: c.lang);
         final builder = c.exporter().sheetBuilder();
         final Object data;
@@ -134,7 +137,8 @@ List<AgentTool> exportOperations(AgentToolbox b) {
       schema: obj({..._sheetProps(), 'dpi': num_('Resolution, 50–600 dots per inch; default 200.')}),
       run: (a, _) async {
         if (b.p.entities.isEmpty) throw ToolInputError(t('msg.nothingToExport'));
-        final o = (await _sheetOf(b, a)).copyWith(dpi: a.number('dpi', min: 50, max: 600) ?? 200);
+        final asked = a.number('dpi', min: 50, max: 600) ?? 200;
+        final o = await _withBaseMap(b, a, _sheetOf(b, a).copyWith(dpi: asked), dpi: asked);
         final Uint8List png;
         try {
           png = await sheetPng(c, o);

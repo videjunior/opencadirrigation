@@ -15,10 +15,10 @@ import 'dart:math' as math;
 /// The companies whose models the assistant can use, each called directly
 /// with the user's own key.
 enum AiProvider {
-  anthropic('Anthropic', 'api.anthropic.com', 'https://console.anthropic.com/settings/keys', 'sk-ant-'),
-  openai('OpenAI', 'api.openai.com', 'https://platform.openai.com/api-keys', 'sk-');
+  anthropic('Anthropic', 'api.anthropic.com', 'https://console.anthropic.com/settings/keys', 'sk-ant-', 'https://platform.claude.com/settings/billing'),
+  openai('OpenAI', 'api.openai.com', 'https://platform.openai.com/api-keys', 'sk-', 'https://platform.openai.com/settings/organization/billing/overview');
 
-  const AiProvider(this.company, this.host, this.keysUrl, this.keyPrefix);
+  const AiProvider(this.company, this.host, this.keysUrl, this.keyPrefix, this.billingUrl);
   final String company;
 
   /// The only host this provider's key is ever sent to.
@@ -29,14 +29,17 @@ enum AiProvider {
 
   /// How the provider's keys usually start (a hint, never enforced).
   final String keyPrefix;
+
+  /// Where the account's credit and spending limits are managed.
+  final String billingUrl;
 }
 
 /// Place of a model in its provider's range.
 enum AiTier { top, intermediate, fast }
 
 /// How much the model reasons before answering (Anthropic
-/// `output_config.effort`, OpenAI `reasoning.effort`; every model offered
-/// takes all five).
+/// `output_config.effort`, every Claude model taking all five; OpenAI
+/// `reasoning.effort`, whose top value is `xhigh`, so [max] goes as that).
 enum AiEffort { low, medium, high, xhigh, max }
 
 /// A model the user can choose. Prices are list prices in US$ per million
@@ -62,6 +65,8 @@ class AiModel {
     this.taskBudget = false,
     this.compaction = true,
     this.listed = true,
+    this.maxOutput = 64000,
+    this.progressUpdates = false,
   });
 
   final AiProvider provider;
@@ -103,6 +108,15 @@ class AiModel {
   /// Offered in the settings (false: only priced, e.g. a fallback model).
   final bool listed;
 
+  /// Output tokens one answer may take (`max_tokens`; thinking counts in
+  /// it). Requests stream, which answers this long need.
+  final int maxOutput;
+
+  /// Anthropic: between tool calls the model writes short notes on its
+  /// progress as thinking blocks, which come back as text with
+  /// `thinking.display: "updates"` (beta) instead of empty.
+  final bool progressUpdates;
+
   // Anthropic (Claude API list prices; cache writes 1.25 × input for the
   // five-minute cache). Task budgets are left off Claude Fable 5.1 until
   // Anthropic confirms them for it.
@@ -119,8 +133,23 @@ class AiModel {
     alwaysThinks: true,
     longTurns: true,
     needsRetention: true,
+    maxOutput: 128000,
+    progressUpdates: true,
   );
-  static const opus55 = AiModel(AiProvider.anthropic, 'claude-opus-5-5', 'Claude Opus 5.5', AiTier.top, input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5, serverFallback: true, taskBudget: true);
+  static const opus55 = AiModel(
+    AiProvider.anthropic,
+    'claude-opus-5-5',
+    'Claude Opus 5.5',
+    AiTier.top,
+    input: 4,
+    output: 20,
+    cacheRead: 0.2,
+    cacheWrite: 5,
+    serverFallback: true,
+    taskBudget: true,
+    maxOutput: 128000,
+    progressUpdates: true,
+  );
   static const sonnet55 = AiModel(
     AiProvider.anthropic,
     'claude-sonnet-5-5',
@@ -132,6 +161,8 @@ class AiModel {
     cacheWrite: 2.5,
     serverFallback: true,
     taskBudget: true,
+    maxOutput: 128000,
+    progressUpdates: true,
   );
   static const haiku55 = AiModel(
     AiProvider.anthropic,
@@ -146,6 +177,7 @@ class AiModel {
     longInput: 5,
     longOutput: 5,
     taskBudget: true,
+    maxOutput: 128000,
   );
 
   // Models a refused request may fall back to on the server (priced only).
@@ -234,6 +266,18 @@ class AiModel {
   /// The model a reply says served it (a fallback may), else [requested].
   static AiModel served(String replyModel, AiModel requested) => [...all, _opus5, _opus48].where((m) => replyModel == m.id || replyModel.startsWith('${m.id}-')).firstOrNull ?? requested;
 
+  /// The task budget (tokens) for a spending cap of [usd] US\$. The model
+  /// paces what it writes against the budget (thinking, tool calls, text:
+  /// output tokens), while the cap also pays for the input of every step
+  /// (the conversation read again from the cache, tool results and
+  /// pictures written to it), about half of what an agentic task here
+  /// spends ([outputShare]). At the output price alone the model would plan
+  /// for about twice what the cap allows and be stopped mid-task. Constant
+  /// for a given cap, so it does not change the conversation's cached
+  /// prefix from one task to the next. The client raises it to the API's
+  /// minimum (20 000).
+  int taskBudgetFor(double usd, {double outputShare = 0.5}) => (usd * outputShare / output * 1e6).round();
+
   /// Price per million tokens of input and output, for the settings.
   String get priceText => '${_usd(input)} / ${_usd(output)}';
   static String _usd(double v) => v < 1 ? v.toStringAsFixed(v < 0.1 ? 3 : 2).replaceFirst(RegExp(r'0$'), '') : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2));
@@ -264,32 +308,108 @@ class AiUsage {
   }
 }
 
-enum AiErrorKind { noKey, auth, permission, billing, notFound, invalidRequest, tooLarge, rateLimit, overloaded, server, network, timeout, interrupted, cancelled, refusal, truncated, retention, http }
+enum AiErrorKind {
+  noKey,
+  auth,
+  permission,
+  billing,
+
+  /// The account has no credit left (or reached its quota).
+  credit,
+
+  /// The organisation or workspace reached a spending limit (the tier's
+  /// monthly cap or one set in the console): retrying fails until it resets.
+  spendLimit,
+  notFound,
+  invalidRequest,
+
+  /// The request is larger than the API takes (a 413, or found before
+  /// sending: [AiError.size]).
+  tooLarge,
+
+  /// The conversation no longer fits in the model's context window.
+  contextWindow,
+  rateLimit,
+  overloaded,
+  server,
+  network,
+  timeout,
+  interrupted,
+  cancelled,
+  refusal,
+  truncated,
+  retention,
+  http,
+
+  /// Something failed in this program while it talked to the API.
+  unexpected,
+}
 
 /// A failed request. [message] is the provider's own text when it gave one
 /// (never the key).
 class AiError implements Exception {
-  AiError(this.kind, {this.status, this.message = '', this.retryAfter, this.requestId, this.category, this.partial = false});
+  AiError(this.kind, {this.status, this.message = '', this.retryAfter, this.requestId, this.category, this.recommendedModel, this.size, this.limit, this.partial = false});
   final AiErrorKind kind;
   final int? status;
   final String message;
 
   /// Wait the provider asked for (`retry-after`).
   final Duration? retryAfter;
+
+  /// The provider's id of the request (what its support asks for).
   final String? requestId;
 
   /// Category of a refusal, when given.
   final String? category;
 
+  /// A refusal whose fallback could not run: the model the API suggests
+  /// trying instead (`stop_details.recommended_model`).
+  final String? recommendedModel;
+
+  /// [AiErrorKind.tooLarge] found before sending: the bytes of the request
+  /// and the most this client sends.
+  final int? size, limit;
+
   /// Part of the answer had already arrived.
   final bool partial;
 
+  /// Worth sending again after a wait (when no part of the answer has been
+  /// shown yet): a busy or failing service, a lost connection, a timeout.
   bool get retryable => switch (kind) {
-    AiErrorKind.rateLimit || AiErrorKind.overloaded || AiErrorKind.server || AiErrorKind.network => true,
+    AiErrorKind.rateLimit || AiErrorKind.overloaded || AiErrorKind.server || AiErrorKind.network || AiErrorKind.timeout || AiErrorKind.interrupted => true,
     _ => false,
   };
 
-  AiError withPartial() => AiError(kind, status: status, message: message, retryAfter: retryAfter, requestId: requestId, category: category, partial: true);
+  /// The API refused what the request carried (an invalid or oversized
+  /// request, or one the size check stopped before it left), not the
+  /// account or the service: what was added to the conversation since the
+  /// last request it accepted has to leave it again.
+  bool get refusedContent {
+    final s = status;
+    return switch (kind) {
+      AiErrorKind.invalidRequest || AiErrorKind.tooLarge || AiErrorKind.contextWindow => s == null || (s >= 400 && s < 500),
+      AiErrorKind.http => s != null && s >= 400 && s < 500,
+      _ => false,
+    };
+  }
+
+  AiError _copy({bool? partial, String? requestId}) => AiError(
+    kind,
+    status: status,
+    message: message,
+    retryAfter: retryAfter,
+    requestId: requestId ?? this.requestId,
+    category: category,
+    recommendedModel: recommendedModel,
+    size: size,
+    limit: limit,
+    partial: partial ?? this.partial,
+  );
+
+  AiError withPartial() => _copy(partial: true);
+
+  /// This error with the request's id when it had none.
+  AiError withRequestId(String? id) => id == null || requestId != null ? this : _copy(requestId: id);
 
   @override
   String toString() => 'AiError(${kind.name}${status == null ? '' : ', $status'}${message.isEmpty ? '' : ': $message'})';
@@ -299,15 +419,33 @@ class AiError implements Exception {
 class AiCancel {
   bool _cancelled = false;
   final List<void Function()> _hooks = [];
+  void Function()? _unlink;
   bool get cancelled => _cancelled;
 
-  /// Runs [f] on cancellation (at once when already cancelled).
-  void onCancel(void Function() f) {
+  /// Runs [f] on cancellation (at once when already cancelled); the
+  /// function returned forgets [f].
+  void Function() onCancel(void Function() f) {
     if (_cancelled) {
       f();
-    } else {
-      _hooks.add(f);
+      return () {};
     }
+    _hooks.add(f);
+    return () => _hooks.remove(f);
+  }
+
+  /// A token cancelled with this one or on its own: one attempt of a
+  /// request, which a timeout stops (with its HTTP exchange) while the task
+  /// goes on. [release] unlinks it once the attempt is over.
+  AiCancel child() {
+    final c = AiCancel();
+    c._unlink = onCancel(c.cancel);
+    return c;
+  }
+
+  /// Unlinks a [child] from the token it came from.
+  void release() {
+    _unlink?.call();
+    _unlink = null;
   }
 
   void cancel() {
@@ -324,10 +462,14 @@ class AiCancel {
 }
 
 class AiHttpRequest {
-  const AiHttpRequest(this.url, this.headers, this.body);
+  const AiHttpRequest(this.url, this.headers, this.body, {this.onSent});
   final Uri url;
   final Map<String, String> headers;
   final String body;
+
+  /// Called by a transport that can tell when the whole body has gone out
+  /// (the wait for the answer starts then); others never call it.
+  final void Function()? onSent;
 }
 
 /// A response whose body may still be arriving. [headers] have lower-case
@@ -340,13 +482,14 @@ class AiHttpResponse {
 }
 
 /// Sends one POST and completes once the status and headers arrived. It
-/// should stop the exchange when [cancel] fires and throw an [AiError]
-/// (`network`) when the server cannot be reached.
+/// should stop the exchange when [cancel] fires (also while the body is
+/// still being read) and throw an [AiError] (`network`) when the server
+/// cannot be reached.
 typedef AiTransport = Future<AiHttpResponse> Function(AiHttpRequest request, AiCancel cancel);
 
 /// Progress of a streamed answer.
 class AiStreamListener {
-  const AiStreamListener({this.onText, this.onToolStart, this.onActivity});
+  const AiStreamListener({this.onText, this.onToolStart, this.onActivity, this.onThinking});
   final void Function(String text)? onText;
 
   /// The model started a tool call ([name]).
@@ -354,6 +497,11 @@ class AiStreamListener {
 
   /// Anything arrived: the request is alive.
   final void Function()? onActivity;
+
+  /// A note the model writes on its progress between tool calls, the whole
+  /// note so far as it grows (Anthropic progress updates; never its
+  /// reasoning).
+  final void Function(String note)? onThinking;
 }
 
 /// A piece of a user message.
@@ -425,7 +573,11 @@ class AiToolResult {
   final ToolOutput output;
 }
 
-enum AiStop { end, tool, maxTokens, refusal }
+/// Why an answer ended: its turn ([end]), tool calls ([tool]), the output
+/// limit ([maxTokens]), the context window filled ([contextWindow]), a
+/// refusal, or the server paused a long turn of its own ([pause]: the same
+/// conversation goes again, without a new message).
+enum AiStop { end, tool, maxTokens, contextWindow, refusal, pause }
 
 /// The model's answer to one request.
 class AiReply {
@@ -436,9 +588,12 @@ class AiReply {
     required this.stop,
     required this.model,
     required this.usage,
+    this.billed = const [],
     this.category,
     this.explanation = '',
+    this.recommendedModel,
     this.compacted = false,
+    this.history,
   });
 
   /// What goes back into the history, in the provider's format, unchanged
@@ -452,7 +607,15 @@ class AiReply {
 
   /// The model that served the answer.
   final String model;
+
+  /// Tokens of the request, every attempt the server ran included.
   final AiUsage usage;
+
+  /// The attempts the server ran, each with the model that ran it (id) and
+  /// its tokens, when they were not all the answer's: a compaction, or an
+  /// attempt declined before a fallback model answered. Empty: all of
+  /// [usage] is [model]'s.
+  final List<(String, AiUsage)> billed;
 
   /// Category of a refusal.
   final String? category;
@@ -460,20 +623,57 @@ class AiReply {
   /// Why the model declined, when it said.
   final String explanation;
 
+  /// A refusal whose fallback could not run: the model to try instead.
+  final String? recommendedModel;
+
   /// The server summarised the earlier conversation in this answer.
   final bool compacted;
+
+  /// The history of the request as the client rewrote it to have it
+  /// accepted (thinking blocks taken out after a signature error), as many
+  /// entries as it had; null when it went as it was.
+  final List<Map<String, dynamic>>? history;
+
+  /// Estimated cost (US$) at list prices, each attempt at the prices of
+  /// the model that ran it ([requested]'s when it is not one offered).
+  double cost(AiModel requested) {
+    if (billed.isEmpty) return usage.cost(AiModel.served(model, requested));
+    var c = 0.0;
+    for (final (id, u) in billed) {
+      c += u.cost(AiModel.served(id, requested));
+    }
+    return c;
+  }
+
+  AiReply withHistory(List<Map<String, dynamic>> h) => AiReply(
+    items: items,
+    text: text,
+    calls: calls,
+    stop: stop,
+    model: model,
+    usage: usage,
+    billed: billed,
+    category: category,
+    explanation: explanation,
+    recommendedModel: recommendedModel,
+    compacted: compacted,
+    history: h,
+  );
 }
 
 /// One request. [history] is in the provider's own format and only ever
 /// grows (earlier entries are sent byte for byte as they were).
 class AiRequest {
-  const AiRequest({required this.model, required this.system, required this.history, this.tools = const [], this.effort = AiEffort.medium, this.maxTokens = 64000, this.taskBudget, this.compactAt});
+  const AiRequest({required this.model, required this.system, required this.history, this.tools = const [], this.effort = AiEffort.medium, this.maxTokens, this.taskBudget, this.compactAt});
   final AiModel model;
   final String system;
   final List<Map<String, dynamic>> history;
   final List<AiToolSpec> tools;
   final AiEffort effort;
-  final int maxTokens;
+
+  /// Output tokens one answer may take; null: the model's
+  /// [AiModel.maxOutput].
+  final int? maxTokens;
 
   /// Tokens the whole task may use (Anthropic task budget, on the models
   /// that take it; at least 20 000); null: none.
@@ -482,6 +682,12 @@ class AiRequest {
   /// Input tokens above which the server summarises the older turns
   /// (where the model supports it); null: never.
   final int? compactAt;
+
+  /// The output limit sent.
+  int get outputTokens => maxTokens ?? model.maxOutput;
+
+  /// The same request over [h].
+  AiRequest withHistory(List<Map<String, dynamic>> h) => AiRequest(model: model, system: system, history: h, tools: tools, effort: effort, maxTokens: maxTokens, taskBudget: taskBudget, compactAt: compactAt);
 }
 
 /// One provider's API.
@@ -497,13 +703,15 @@ abstract class AiClient {
   List<Map<String, dynamic>> toolResults(List<AiToolResult> results, {List<AiPart> user = const [], String? note});
 
   /// Sends [r] and gathers the streamed answer; transient failures are
-  /// retried unless part of the answer arrived.
-  Future<AiReply> send(AiRequest r, {required AiCancel cancel, AiStreamListener listener = const AiStreamListener(), void Function(Duration wait, int attempt)? onRetry});
+  /// retried unless part of the answer arrived ([onRetry] says when, and
+  /// after what).
+  Future<AiReply> send(AiRequest r, {required AiCancel cancel, AiStreamListener listener = const AiStreamListener(), void Function(Duration wait, int attempt, AiError error)? onRetry});
 }
 
 /// The HTTP side every client shares: one key and transport, timeouts,
 /// retries with backoff (honouring `retry-after`), line-by-line reading of
-/// a streamed body, and messages cleaned of the key.
+/// a streamed body, the size check before sending, and messages cleaned of
+/// the key.
 abstract class AiHttpClient implements AiClient {
   AiHttpClient({required this.apiKey, required this.transport, this.sleep, this.maxRetries = 2});
   final String apiKey;
@@ -514,11 +722,26 @@ abstract class AiHttpClient implements AiClient {
   /// when null.
   final Future<void> Function(Duration d)? sleep;
 
-  /// No status line after this long: a timeout.
+  /// No status line this long after the body went out: a timeout.
   Duration headerTimeout(AiModel m) => Duration(seconds: m.longTurns ? 300 : 90);
 
-  /// No data at all for this long: a timeout.
-  Duration idleTimeout(AiModel m) => Duration(seconds: m.longTurns ? 600 : 180);
+  /// What the body may take to go up on a slow connection (128 KB/s),
+  /// added to [headerTimeout] until the transport says it went out.
+  static Duration uploadAllowance(int bytes) => Duration(milliseconds: bytes ~/ 128);
+
+  /// No data at all for this long: a timeout (twice as long at the two
+  /// highest efforts, where the model may think for many minutes).
+  Duration idleTimeout(AiModel m, [AiEffort effort = AiEffort.medium]) => Duration(seconds: (m.longTurns ? 600 : 180) * (effort.index >= AiEffort.xhigh.index ? 2 : 1));
+
+  /// Largest request body sent, in UTF-8 bytes. The Messages API takes
+  /// 32 MB and answers a larger one only after the upload, with a 413 (in
+  /// the browser even without CORS headers, so it shows as a network
+  /// failure); a larger request fails here instead, before it leaves.
+  static const maxRequestBytes = 30000000;
+
+  /// Longest wait asked by `retry-after` that is waited for (a longer one
+  /// is the error, with the wait in it).
+  static const maxWait = Duration(seconds: 30);
 
   /// One attempt.
   Future<AiReply> attempt(AiRequest r, AiCancel cancel, AiStreamListener listener);
@@ -537,39 +760,68 @@ abstract class AiHttpClient implements AiClient {
   /// The optional field a rejection with [message] is about, if any.
   String? declinedField(AiRequest r, String message) => optionalFields(r).where(message.contains).firstOrNull;
 
+  /// A request to send instead of [r], which the API rejected with [e]
+  /// (its history repaired, say); null when nothing can be done. [tries]:
+  /// recoveries already made for this request.
+  AiRequest? recover(AiRequest r, AiError e, int tries) => null;
+
   @override
-  Future<AiReply> send(AiRequest r, {required AiCancel cancel, AiStreamListener listener = const AiStreamListener(), void Function(Duration wait, int attempt)? onRetry}) async {
+  Future<AiReply> send(AiRequest r, {required AiCancel cancel, AiStreamListener listener = const AiStreamListener(), void Function(Duration wait, int attempt, AiError error)? onRetry}) async {
     if (apiKey.trim().isEmpty) throw AiError(AiErrorKind.noKey);
+    var req = r;
+    var recoveries = 0;
     for (var n = 0; ; n++) {
       if (cancel.cancelled) throw AiError(AiErrorKind.cancelled);
+      // each attempt has a token of its own: a timeout stops that attempt
+      // and its HTTP exchange, while the task (and the retry) goes on
+      final one = cancel.child();
+      AiError e;
       try {
-        return await attempt(r, cancel, listener);
-      } on AiError catch (e) {
+        final reply = await attempt(req, one, listener);
+        return identical(req, r) ? reply : reply.withHistory(req.history);
+      } on AiError catch (x) {
+        e = x;
+      } catch (x) {
+        e = AiError(AiErrorKind.unexpected, message: clean('${x.runtimeType}'));
+      } finally {
+        one.release();
+      }
+      // whatever still runs of the failed attempt stops: a stream left
+      // after an idle timeout, an upload, an answer nobody reads
+      one.cancel();
+      if (cancel.cancelled) throw AiError(AiErrorKind.cancelled);
+      if (e.kind == AiErrorKind.invalidRequest && !e.partial) {
         // an optional field this model does not take: the same request
         // without it, at once
-        if (e.kind == AiErrorKind.invalidRequest && !e.partial) {
-          final field = declinedField(r, e.message);
-          if (field != null) {
-            declined.add('${r.model.id}:$field');
-            n--;
-            continue;
-          }
+        final field = declinedField(req, e.message);
+        if (field != null) {
+          declined.add('${req.model.id}:$field');
+          n--;
+          continue;
         }
-        final wait = backoff(e, n);
-        if (cancel.cancelled || !e.retryable || e.partial || n >= maxRetries || wait == null) rethrow;
-        onRetry?.call(wait, n + 1);
-        await _wait(wait, cancel);
+        final again = recover(req, e, recoveries);
+        if (again != null) {
+          recoveries++;
+          req = again;
+          n--;
+          continue;
+        }
       }
+      final wait = backoff(e, n);
+      if (!e.retryable || e.partial || n >= maxRetries || wait == null) throw e;
+      onRetry?.call(wait, n + 1, e);
+      await _wait(wait, cancel);
     }
   }
 
   /// Wait before retry [attempt] (0-based) after [e]; null: do not retry.
   static Duration? backoff(AiError e, int attempt) {
     final asked = e.retryAfter;
-    if (asked != null) return asked > const Duration(seconds: 30) ? null : asked;
+    if (asked != null) return asked > maxWait ? null : asked;
     final base = switch (e.kind) {
       AiErrorKind.rateLimit => 4000,
-      AiErrorKind.network => 1500,
+      AiErrorKind.network || AiErrorKind.interrupted => 1500,
+      AiErrorKind.timeout => 1000,
       _ => 2000,
     };
     return Duration(milliseconds: base * math.pow(2, attempt).toInt());
@@ -586,11 +838,15 @@ abstract class AiHttpClient implements AiClient {
     final timer = Timer(d, () {
       if (!done.isCompleted) done.complete();
     });
-    cancel.onCancel(() {
+    final forget = cancel.onCancel(() {
       timer.cancel();
       if (!done.isCompleted) done.completeError(AiError(AiErrorKind.cancelled));
     });
-    return done.future;
+    try {
+      await done.future;
+    } finally {
+      forget();
+    }
   }
 
   /// [s] on one line, without the key or a masked copy of it, at most 400
@@ -603,31 +859,76 @@ abstract class AiHttpClient implements AiClient {
     return out.length <= 400 ? out : '${out.substring(0, 399)}…';
   }
 
-  /// Sends [req]: the response once its status arrived, or a timeout.
+  /// Bytes of [s] in UTF-8, without encoding it.
+  static int utf8Length(String s) {
+    var n = s.length;
+    for (var i = 0; i < s.length; i++) {
+      final c = s.codeUnitAt(i);
+      if (c < 0x80) continue;
+      if (c < 0x800) {
+        n += 1;
+      } else if (c >= 0xD800 && c <= 0xDBFF && i + 1 < s.length) {
+        // a surrogate pair: 4 bytes for its 2 code units
+        n += 2;
+        i++;
+      } else {
+        n += 2;
+      }
+    }
+    return n;
+  }
+
+  /// Fails with [AiErrorKind.tooLarge] when [body] is over [limit] bytes.
+  static void checkSize(String body, {int limit = maxRequestBytes}) {
+    // each code unit is 1 to 3 bytes: count only when it can matter
+    if (body.length * 3 <= limit) return;
+    final bytes = body.length > limit ? body.length : utf8Length(body);
+    if (bytes > limit) throw AiError(AiErrorKind.tooLarge, size: bytes, limit: limit);
+  }
+
+  /// Sends [req]: the response once its status arrived, or a timeout,
+  /// which stops the exchange through [cancel] (the attempt's token).
   Future<AiHttpResponse> open(AiHttpRequest req, AiModel model, AiCancel cancel) async {
+    if (cancel.cancelled) throw AiError(AiErrorKind.cancelled);
     final done = Completer<AiHttpResponse>();
-    final timer = Timer(headerTimeout(model), () {
-      if (done.isCompleted) return;
-      done.completeError(AiError(AiErrorKind.timeout));
-      cancel.cancel();
-    });
+    Timer? timer;
+    void arm(Duration d) {
+      timer?.cancel();
+      timer = Timer(d, () {
+        if (done.isCompleted) return;
+        done.completeError(AiError(AiErrorKind.timeout));
+        cancel.cancel();
+      });
+    }
+
+    // until the transport says the body went out, the upload's own time on top
+    arm(headerTimeout(model) + uploadAllowance(req.body.length));
     cancel.onCancel(() {
-      timer.cancel();
+      timer?.cancel();
       if (!done.isCompleted) done.completeError(AiError(AiErrorKind.cancelled));
     });
+    final sent = AiHttpRequest(
+      req.url,
+      req.headers,
+      req.body,
+      onSent: () {
+        if (!done.isCompleted) arm(headerTimeout(model));
+        req.onSent?.call();
+      },
+    );
     Future<AiHttpResponse> f;
     try {
-      f = transport(req, cancel);
+      f = transport(sent, cancel);
     } catch (e) {
       f = Future.error(e);
     }
     f.then(
       (r) {
-        timer.cancel();
+        timer?.cancel();
         if (!done.isCompleted) done.complete(r);
       },
       onError: (Object e) {
-        timer.cancel();
+        timer?.cancel();
         if (!done.isCompleted) done.completeError(e is AiError ? e : (cancel.cancelled ? AiError(AiErrorKind.cancelled) : AiError(AiErrorKind.network, message: clean('$e'))));
       },
     );
@@ -635,12 +936,12 @@ abstract class AiHttpClient implements AiClient {
   }
 
   /// The whole body as text (at most 64 KB kept).
-  Future<String> readAll(Stream<List<int>> body, AiModel model, AiCancel cancel) async {
+  Future<String> readAll(Stream<List<int>> body, AiModel model, AiCancel cancel, {Duration? idle}) async {
     final out = StringBuffer();
     try {
       await readLines(body, model, (l) {
         if (out.length < 65536) out.writeln(l);
-      }, cancel);
+      }, cancel, idle: idle);
     } on AiError catch (e) {
       if (e.kind == AiErrorKind.cancelled) rethrow;
     }
@@ -648,8 +949,11 @@ abstract class AiHttpClient implements AiClient {
   }
 
   /// Feeds [body] line by line to [onLine]; fails on cancellation, on a
-  /// network error and after the idle timeout without data.
-  Future<void> readLines(Stream<List<int>> body, AiModel model, void Function(String line) onLine, AiCancel cancel) {
+  /// network error and after [idle] (by default [idleTimeout]) without
+  /// data, when it also stops the exchange through [cancel]. A failure of
+  /// [onLine] that is not an [AiError] fails as [AiErrorKind.unexpected].
+  Future<void> readLines(Stream<List<int>> body, AiModel model, void Function(String line) onLine, AiCancel cancel, {Duration? idle}) {
+    final wait = idle ?? idleTimeout(model);
     final done = Completer<void>();
     StreamSubscription<String>? sub;
     Timer? timer;
@@ -662,7 +966,10 @@ abstract class AiHttpClient implements AiClient {
 
     void arm() {
       timer?.cancel();
-      timer = Timer(idleTimeout(model), () => fail(AiError(AiErrorKind.timeout)));
+      timer = Timer(wait, () {
+        fail(AiError(AiErrorKind.timeout));
+        cancel.cancel();
+      });
     }
 
     cancel.onCancel(() => fail(AiError(AiErrorKind.cancelled)));
@@ -676,8 +983,10 @@ abstract class AiHttpClient implements AiClient {
             arm();
             try {
               onLine(line);
-            } catch (e) {
+            } on AiError catch (e) {
               fail(e);
+            } catch (e) {
+              fail(AiError(AiErrorKind.unexpected, message: clean('${e.runtimeType}')));
             }
           },
           onError: (Object e) => fail(e is AiError ? e : (cancel.cancelled ? AiError(AiErrorKind.cancelled) : AiError(AiErrorKind.network, message: clean('$e')))),

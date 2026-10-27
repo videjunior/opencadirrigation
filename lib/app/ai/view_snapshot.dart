@@ -6,7 +6,6 @@
 /// pictures themselves are drawn by vision_render.dart.
 library;
 
-import 'dart:convert';
 import 'dart:math' as math;
 
 import '../../core/ai/agent_loop.dart';
@@ -155,7 +154,7 @@ Future<ToolOutput> pictureOutput(
   final img = await r.render(b.c, spec(id));
   final m = session.add(id, img.frame, what(img));
   final text = [m.describe(), ...?lead?.call(img), ...img.notes, ...?tail?.call(img, m)];
-  return ToolOutput(text.join('\n'), images: [ToolImage('image/png', base64Encode(img.png))]);
+  return ToolOutput(text.join('\n'), images: [img.forModel]);
 }
 
 /// "the drawing over Esri World Imagery (tile zoom 18)" and the like.
@@ -223,13 +222,13 @@ Future<ToolOutput> _plainSnapshot(AgentToolbox b, ViewSnapshots s, Bounds world,
       );
     } else {
       world = m.world;
-      images.add(ToolImage('image/png', base64Encode(m.png)));
+      images.add(m.forModel);
       text.add(session.add(session.nextId('s'), m.frame, 'the base map').describe());
     }
   }
   if (wantDrawing) {
     final d = await s.drawing(c, world, size);
-    images.add(ToolImage('image/png', base64Encode(d.png)));
+    images.add(d.forModel);
     text.add(session.add(session.nextId('s'), d.frame, 'the drawing').describe());
   }
   if (images.isEmpty) return ToolOutput(text.join('\n'), isError: true);

@@ -40,7 +40,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false));
+    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false, startExample: ExampleId.orchard));
     await settle(tester);
     shell = tester.state(find.byType(AppShell)) as dynamic;
     final ProjectController c = shell.c as ProjectController;

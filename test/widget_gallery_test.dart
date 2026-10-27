@@ -31,7 +31,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(IrrigationCadApp(autoTutorial: autoTutorial, offerRecovery: false));
+    await tester.pumpWidget(IrrigationCadApp(autoTutorial: autoTutorial, offerRecovery: false, askAi: false, startExample: ExampleId.orchard));
     await settle(tester);
     final shell = tester.state(find.byType(AppShell)) as dynamic;
     final ProjectController c = shell.c as ProjectController;
@@ -47,9 +47,11 @@ void main() {
   }
 
   group('welcome and example gallery', () {
-    testWidgets('first run shows the gallery; opening an example loads it and remembers the choice', (tester) async {
+    testWidgets('the gallery opens from Help, never by itself; opening an example loads it', (tester) async {
       TutorialController.reset();
       final c = await pumpShell(tester, autoTutorial: true);
+      expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsNothing, reason: 'the app opens on the start-up screen (site and AI), not on the welcome');
+      await openMenu(tester, 'Ajuda', 'Boas-vindas e galeria de exemplos…');
       expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsOneWidget);
       expect(find.byKey(const Key('welcome_version')), findsOneWidget);
       expect(find.text('Versão $appVersionLabel'), findsOneWidget);
@@ -62,7 +64,6 @@ void main() {
       expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsNothing);
       expect(c.project.meta.name, 'Jardim residencial');
       expect(c.project.entities.whereType<OutletEntity>().length, 24);
-      expect(TutorialController.isDone, isTrue, reason: 'not asked again next time');
       expect(c.eventCount('example'), greaterThanOrEqualTo(1));
     });
 

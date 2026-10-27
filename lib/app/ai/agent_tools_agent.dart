@@ -86,7 +86,8 @@ abstract class AgentHost {
   /// The files attached in this conversation, by name.
   Map<String, Uint8List> get files;
 
-  /// Opens [p] in a new tab; false where tabs are not available.
+  /// Opens [p] in a new tab, in the background: the tab on screen and the
+  /// assistant's own project stay; false where tabs are not available.
   bool openTab(Project p);
 }
 
@@ -274,7 +275,7 @@ List<AgentTool> agentTools(AgentToolbox b, AgentHost host) {
     ),
     FnTool(
       name: 'open_example',
-      description: 'Opens an example project in a new tab for the user to look at (the open project stays as it is).',
+      description: 'Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its contents).',
       inputSchema: obj({'id': str(null, exampleIds)}, required: ['id']),
       summary: (i) => t('ai.tool.openExample', {'n': '${i['id']}'}),
       handler: (i) async {
@@ -282,7 +283,9 @@ List<AgentTool> agentTools(AgentToolbox b, AgentHost host) {
         if (!host.openTab(buildExample(id, t.call, lang: c.lang))) {
           return ToolOutput.error('Tabs cannot be opened from here; tell the user to open it from File → Examples, or use read_example.');
         }
-        return ToolOutput('Opened "${t('exg.${id.name}.title')}" in a new tab.');
+        return ToolOutput(
+          'Opened "${t('exg.${id.name}.title')}" in a new tab in the background: the screen and you stay on your own project. The user switches to that tab to look at it (tell them so); read_example gives you its contents.',
+        );
       },
     ),
   ];

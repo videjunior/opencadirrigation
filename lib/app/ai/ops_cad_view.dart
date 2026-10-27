@@ -5,7 +5,8 @@
 /// list. The open tabs live in the app's workspace, which the controller
 /// does not know: the assistant's host provides them through
 /// [AiWorkspaceHost] (without it only new tabs open, through
-/// [AgentHost.openTab]).
+/// [AgentHost.openTab]). Tabs the assistant opens open in the background:
+/// the screen and the assistant stay on the assistant's own project.
 library;
 
 import 'dart:convert';
@@ -47,7 +48,8 @@ abstract class AiWorkspaceHost {
   /// there is none or it is the assistant's own.
   bool closeTab(int index);
 
-  /// Opens a blank project in a new tab (as File → New project tab).
+  /// Opens a blank project in a new tab (as File → New project tab), in the
+  /// background: the tab on screen stays.
   bool newTab();
 
   /// Copies (or cuts) the selection of the assistant's project to the
@@ -60,6 +62,10 @@ abstract class AiWorkspaceHost {
 }
 
 final I18n _en = I18n('en');
+
+/// What a tab opened for the user means for the assistant.
+const _background =
+    'in the background: the screen and you stay on your own project, which you keep working on. To work on the new tab, the user switches to it and opens the assistant there (tell the user so if they want it).';
 
 /// The history label `hist.*|argument` in English (as the history panel
 /// words it).
@@ -243,7 +249,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
       name: 'new_project',
       effectFor: (i) => i['in_new_tab'] == false ? ToolEffect.write : ToolEffect.read,
       confirm: (i) => i['in_new_tab'] == false,
-      description: 'File → New project tab (Ctrl+Alt+N): a blank project with the user\'s default catalogue and currency opens in a new tab for the user (your project stays as it is). With in_new_tab false it replaces your project instead (File → New): the drawing and its undo history are lost unless saved, so the user always confirms, and unsaved changes need discard_changes.',
+      description: 'File → New project tab (Ctrl+Alt+N): a blank project with the user\'s default catalogue and currency opens in a new tab in the background: the screen and you stay on your own project (to design the new one, the user switches to its tab and opens the assistant there). Your own project is where you design: when it is empty (a new project the user started with you), design in it; no new tab is needed. With in_new_tab false it replaces your project instead (File → New): the drawing and its undo history are lost unless saved, so the user always confirms, and unsaved changes need discard_changes.',
       schema: obj({'name': str('Name of the new project.'), 'in_new_tab': bool_('Default true.'), 'discard_changes': bool_('Replace a project with unsaved changes (in_new_tab false).')}),
       args: (i) => {'n': '${i['name'] ?? ''}'},
       run: (a, i) async {
@@ -252,10 +258,10 @@ List<AgentTool> viewOperations(AgentToolbox b) {
           final w = ws();
           if (w != null && (name ?? '').isEmpty) {
             if (!w.newTab()) throw ToolInputError('No tab could be opened.');
-            return const ToolOutput('A blank project opened in a new tab for the user; you keep working on your own project.');
+            return const ToolOutput('A blank project opened in a new tab $_background');
           }
           if (!opened(blankProject(c, name: name))) throw ToolInputError('Tabs cannot be opened from here; tell the user to use File → New project tab.');
-          return ToolOutput('A blank project${name == null ? '' : ' "$name"'} opened in a new tab for the user; you keep working on your own project.');
+          return ToolOutput('A blank project${name == null ? '' : ' "$name"'} opened in a new tab $_background');
         }
         cadNotBusy(b);
         if (c.dirty && !(a.flag('discard_changes') ?? false)) throw ToolInputError('The project has unsaved changes: save it (export_file "project") or pass discard_changes after the user agrees.');
@@ -268,7 +274,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
       b,
       group: 'file',
       name: 'open_attached_project',
-      description: 'File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab for the user (your project stays as it is). Drawings and GIS files go through import_attachment instead.',
+      description: 'File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab in the background (the screen and you stay on your own project; to work on it, the user switches to its tab and opens the assistant there). Drawings and GIS files go through import_attachment instead.',
       schema: obj({'name': str('File name as attached.')}, required: ['name']),
       args: (i) => {'n': '${i['name']}'},
       run: (a, i) async {
@@ -283,7 +289,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
           throw ToolInputError('"$name" is not a project file (OpenCADIrrigation .oci.json). Drawings and GIS files go through import_attachment.');
         }
         if (!opened(p)) throw ToolInputError('Tabs cannot be opened from here; tell the user to open it with File → Open.');
-        return ToolOutput('Opened "${p.meta.name}" (${p.entities.length} items) in a new tab for the user.');
+        return ToolOutput('Opened "${p.meta.name}" (${p.entities.length} items) in a new tab $_background');
       },
     ),
     cadOp(
@@ -304,7 +310,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
       b,
       group: 'file',
       name: 'open_recent_project',
-      description: 'Opens a project kept in this browser (list_recent_projects) in a new tab for the user, as File → Recent projects does; your project stays as it is.',
+      description: 'Opens a project kept in this browser (list_recent_projects) in a new tab in the background, as File → Recent projects does: the screen and you stay on your own project (to work on it, the user switches to its tab and opens the assistant there).',
       schema: obj({'id': str('Project id (uid) or name from list_recent_projects.')}, required: ['id']),
       args: (i) => {'n': '${i['id']}'},
       run: (a, i) async {
@@ -317,7 +323,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
         final p = Project.fromJson(jsonDecode(json) as Map<String, dynamic>);
         if (!opened(p)) throw ToolInputError('Tabs cannot be opened from here; tell the user to use File → Recent projects.');
         if (hit.kind == 'autosave') c.store.acknowledge(hit.uid);
-        return ToolOutput('Opened "${p.meta.name}" in a new tab for the user.');
+        return ToolOutput('Opened "${p.meta.name}" in a new tab $_background');
       },
     ),
     cadOp(
@@ -340,7 +346,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
       name: 'restore_version',
       effectFor: (i) => i['in_new_tab'] == false ? ToolEffect.write : ToolEffect.read,
       confirm: (i) => i['in_new_tab'] == false,
-      description: 'Opens a saved version (list_versions) in a new tab for the user (default), or with in_new_tab false replaces your project with it as File → Versions → Restore does (its undo history starts again, so the user always confirms).',
+      description: 'Opens a saved version (list_versions) in a new tab in the background (default; the screen and you stay on your own project), or with in_new_tab false replaces your project with it as File → Versions → Restore does (its undo history starts again, so the user always confirms).',
       schema: obj({'version': int_('Version number from list_versions.'), 'in_new_tab': bool_('Default true.')}, required: ['version']),
       args: (i) => {'n': '${i['version']}'},
       run: (a, i) async {
@@ -350,7 +356,7 @@ List<AgentTool> viewOperations(AgentToolbox b) {
         if (a.flag('in_new_tab') ?? true) {
           final p = Project.fromJson(jsonDecode(json) as Map<String, dynamic>);
           if (!opened(p)) throw ToolInputError('Tabs cannot be opened from here; pass in_new_tab false (after the user agrees) or tell the user to use File → Versions.');
-          return ToolOutput('Version $v of "${p.meta.name}" opened in a new tab for the user.');
+          return ToolOutput('Version $v of "${p.meta.name}" opened in a new tab $_background');
         }
         cadNotBusy(b);
         c.loadJson(json);

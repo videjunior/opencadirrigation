@@ -245,7 +245,10 @@ void main() {
     expect(claude.lastUserText(1), contains('Where does the water come from? → Well'));
     expect(claude.lastUserText(2), contains('plan mode'), reason: 'the change before the approval was refused');
     expect(claude.lastUserText(2), contains('approved the plan'));
-    expect(ai().permission, AgentPermission.auto);
+    // "approve, apply automatically" ran the rest of this task without asking;
+    // the mode chosen in the settings stays for the next tasks
+    expect(ai().permission, AgentPermission.plan);
+    expect(ai().taskPermission, AgentPermission.plan);
     final p = c.project;
     expect(p.entities.whereType<WaterSupplyEntity>(), hasLength(1));
     expect(p.entities.whereType<PipeEntity>().where((e) => e.scope.name == 'mainline'), isNotEmpty);
@@ -346,7 +349,9 @@ void main() {
     await drive(tester, () => !ai().busy);
     expect(claude.calls, 2, reason: 'about US\$ 0.006 a request at Claude Opus 5.5 list prices');
     expect(find.textContaining('spending cap'), findsOneWidget);
-    expect(((claude.bodies.first['output_config'] as Map)['task_budget'] as Map)['total'], 20000, reason: 'the cap as a task budget (at least 20 000 tokens)');
+    // the cap is the app's own: no task budget (a token countdown made the model give up early)
+    expect((claude.bodies.first['output_config'] as Map?)?['task_budget'], isNull);
+    expect(claude.requests.first.headers['anthropic-beta'] ?? '', isNot(contains('task-budgets')));
     await tester.tap(find.byKey(const Key('ai_continue')));
     await tester.pump();
     await drive(tester, () => !ai().busy && claude.calls >= 3);

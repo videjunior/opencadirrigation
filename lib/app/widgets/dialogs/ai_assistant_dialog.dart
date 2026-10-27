@@ -25,6 +25,7 @@ Future<void> showAiAssistantDialog(BuildContext context, ProjectController c, {S
   if (AiAssistant.dockable) {
     if (MediaQuery.of(context).size.width < 700) return showAiAgentSheet(context, c, prompt: prompt);
     if (prompt != null) ai.rewound = prompt;
+    ai.focusInput = true;
     AiAssistant.panelOpen.value = true;
     ai.refresh();
     return Future.value();

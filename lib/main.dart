@@ -22,6 +22,7 @@ import 'app/widgets/advice_panel.dart';
 import 'app/ai/ai_assistant.dart';
 import 'app/widgets/ai/ai_panel.dart';
 import 'app/widgets/dialogs/ai_assistant_dialog.dart';
+import 'app/widgets/dialogs/ai_start_dialog.dart';
 import 'app/widgets/dialogs/auto_design_dialogs.dart';
 import 'app/widgets/dialogs/densogram_dialog.dart';
 import 'app/widgets/dialogs/network_ops_dialogs.dart';
@@ -76,10 +77,19 @@ String startLanguage() {
 }
 
 class IrrigationCadApp extends StatelessWidget {
-  const IrrigationCadApp({super.key, this.autoTutorial = true, this.offerRecovery = true});
+  const IrrigationCadApp({super.key, this.autoTutorial = true, this.offerRecovery = true, this.askAi = true, this.startExample});
 
-  /// Whether to offer the tutorial on first run.
+  /// Whether to offer the tutorial on first run (and, with [askAi], the
+  /// start-up question about the AI assistant).
   final bool autoTutorial;
+
+  /// Whether to ask at start-up if the user wants to design with the AI
+  /// assistant (only when [autoTutorial] is on as well).
+  final bool askAi;
+
+  /// An example to open at start instead of the empty project (the
+  /// address's `?example=` still wins); then nothing is asked at start.
+  final ExampleId? startExample;
 
   /// Whether to offer recovery of autosaved projects on start-up.
   final bool offerRecovery;
@@ -103,15 +113,21 @@ class IrrigationCadApp extends StatelessWidget {
           valueListenable: uiLanguage,
           builder: (context, lang, _) => Directionality(textDirection: rtlLanguages.contains(lang) ? TextDirection.rtl : TextDirection.ltr, child: child ?? const SizedBox()),
         ),
-        home: AppShell(autoTutorial: autoTutorial, offerRecovery: offerRecovery),
+        home: AppShell(autoTutorial: autoTutorial, offerRecovery: offerRecovery, askAi: askAi, startExample: startExample),
       ),
     );
   }
 }
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key, this.autoTutorial = true, this.offerRecovery = true});
+  const AppShell({super.key, this.autoTutorial = true, this.offerRecovery = true, this.askAi = true, this.startExample});
   final bool autoTutorial;
+
+  /// Ask at start-up whether to design with the AI assistant.
+  final bool askAi;
+
+  /// An example to open at start instead of the empty project.
+  final ExampleId? startExample;
 
   /// Offer to recover autosaved projects on start-up.
   final bool offerRecovery;
@@ -146,7 +162,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     ws.addListener(_onWorkspace);
     _syncSubscriptions();
     tutorial.addListener(_onTutorial);
-    setUnloadGuard(() => ws.tabs.any((t) => t.dirty));
+    // unsaved projects, and conversations with the assistant (they live only in this page)
+    setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.items.any((it) => it.kind == AiItemKind.assistant && it.text.isNotEmpty)));
     _nativeKeys.install();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // ?lang=es or an entry page such as /pt/ or /de/ picks the language for this
@@ -162,24 +179,51 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         clearAddressFragment();
         if (openJsonInTab(ws, shared) == null) c.notify(c.t('share.damaged'));
       }
-      final example = exampleIdFromName(Uri.base.queryParameters['example']);
-      if ((recovered == 0 && shared == null) || example != null) loadExampleAction(c, example ?? ExampleId.orchard);
-      if (Uri.base.queryParameters['design'] == '1') c.runDesign();
-      final tut = int.tryParse(Uri.base.queryParameters['tutorial'] ?? '');
-      if (tut != null && tut > 0 && mounted) {
+      final q = Uri.base.queryParameters;
+      final example = exampleIdFromName(q['example']) ?? widget.startExample;
+      final designLink = q['design'] == '1';
+      final tut = int.tryParse(q['tutorial'] ?? '');
+      final tutorialLink = tut != null && tut > 0;
+      // ?ai=1 (the site's "Open the AI assistant" button, the app shortcut)
+      final aiLink = q['ai'] == '1';
+      // an example only when the address asks for one (the tutorial and the
+      // designed sample work on the orchard); otherwise the app starts empty
+      if (example != null || designLink || tutorialLink) loadExampleAction(c, example ?? ExampleId.orchard);
+      if (designLink) c.runDesign();
+      if (tutorialLink && mounted) {
         startTutorial(startAt: tut - 1);
         return;
       }
-      if (widget.autoTutorial && !TutorialController.isDone && mounted && example == null && shared == null) {
-        final choice = await showWelcomeDialog(context, c, firstRun: true);
-        if (!mounted) return;
-        if (choice == WelcomeChoice.tutorial) {
-          startTutorial();
-        } else {
-          TutorialController.markDone();
-        }
+      // a project the address chose, or recovered work: nothing to ask
+      if (example != null || designLink || shared != null || recovered > 0) {
+        if (aiLink && mounted) showAiAssistantDialog(context, c);
+        return;
+      }
+      // a fresh start: the start-up screen asks where the area is and whether
+      // to design with the AI assistant
+      if (widget.autoTutorial && widget.askAi && AiAssistant.askAtStart && mounted) {
+        final choice = await showAiStartDialog(context, c);
+        if (mounted) _applyStart(choice);
+      } else if (aiLink && mounted) {
+        showAiAssistantDialog(context, c);
       }
     });
+  }
+
+  /// Puts the new project where the start-up screen said (georeferenced
+  /// there, on the satellite map) and opens the assistant when the user
+  /// chose to design with it, the place named in the request.
+  void _applyStart(StartChoice choice) {
+    final p = choice.place;
+    if (p != null) {
+      c.setGeoreferenceAt(p.$1, p.$2, viewSizeM: 400);
+      c.baseMap = BaseMap.satellite;
+      c.refresh();
+    }
+    final prompt = choice.aiPrompt;
+    if (prompt == null) return;
+    final where = choice.placeName;
+    showAiAssistantDialog(context, c, prompt: where == null ? prompt : '${c.t('ai.start.place', {'p': where})}\n\n$prompt');
   }
 
   @override
@@ -229,6 +273,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   void _onWorkspace() {
     _syncSubscriptions();
+    // an assistant whose tab was closed stops (it would work and spend out of sight)
+    AiAssistant.stopRemoved(ws.tabs);
     if (mounted) setState(() {});
   }
 
@@ -576,10 +622,29 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                     ValueListenableBuilder<bool>(
                       valueListenable: AiAssistant.panelOpen,
                       builder: (_, open, _) => open
-                          ? Row(mainAxisSize: MainAxisSize.min, children: [
-                              const VerticalDivider(width: 1),
-                              SizedBox(width: aiPanelWidth, child: AiAgentPanel(key: ValueKey('ai_panel_${c.tabId}'), c: c, onClose: AiAssistant.togglePanel)),
-                            ])
+                          ? ValueListenableBuilder<int>(
+                              valueListenable: AiAssistant.activity,
+                              builder: (_, _, _) {
+                                // the panel stays with an assistant that works or waits in another tab
+                                final own = AiAssistant.peek(c);
+                                final away = own != null && (own.busy || own.waiting)
+                                    ? null
+                                    : AiAssistant.live.where((a) => !identical(a.c, c) && ws.tabs.contains(a.c) && (a.busy || a.waiting)).firstOrNull;
+                                final pc = away?.c ?? c;
+                                return Row(mainAxisSize: MainAxisSize.min, children: [
+                                  const VerticalDivider(width: 1),
+                                  SizedBox(
+                                    width: aiPanelWidth,
+                                    child: AiAgentPanel(
+                                      key: ValueKey('ai_panel_${pc.tabId}'),
+                                      c: pc,
+                                      onClose: AiAssistant.togglePanel,
+                                      onShowTab: away == null ? null : () => ws.select(ws.tabs.indexOf(pc)),
+                                    ),
+                                  ),
+                                ]);
+                              },
+                            )
                           : const SizedBox.shrink(),
                     ),
                   ],

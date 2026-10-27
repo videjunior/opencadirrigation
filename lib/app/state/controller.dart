@@ -1665,8 +1665,10 @@ class ProjectController extends ChangeNotifier {
   String assistantProgress = '';
 
   /// "Fix automatically": safe corrections and designs in rounds until
-  /// nothing more can be fixed. One undo step.
-  Future<AutoFixReport?> autoFixAll() async {
+  /// nothing more can be fixed. One undo step. [skip] leaves corrections
+  /// out (the AI assistant keeps a booster pump on a mains connection for
+  /// the user to decide).
+  Future<AutoFixReport?> autoFixAll({FixFilter? skip}) async {
     if (!editAllowed()) return null;
     track('autofix');
     _snapshot('hist.autofix');
@@ -1676,7 +1678,7 @@ class ProjectController extends ChangeNotifier {
       final report = await runAutoFix(project, () async {
         _editSeq++;
         return _design();
-      }, label: t.call, lang: lang, onRound: (n) {
+      }, label: t.call, lang: lang, skip: skip, onRound: (n) {
         assistantProgress = t('adv.working', {'n': '$n'});
         notifyListeners();
       });

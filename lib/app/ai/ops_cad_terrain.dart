@@ -21,6 +21,7 @@ import '../../core/io/project_export.dart' show GeoReferenceMissing;
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import 'agent_tools.dart';
+import 'agent_tools_design.dart' show aerialMapOf, noAerialText, tilesOf;
 import 'ops_cad_common.dart';
 import 'view_snapshot.dart' show fetchBaseMap;
 
@@ -47,7 +48,11 @@ List<AgentTool> terrainOperations(AgentToolbox b) {
       run: (a, i) async {
         cadNotBusy(b);
         final terrain = b.p.buildTerrain();
-        if (terrain.isEmpty) throw ToolInputError('The drawing has no terrain data (contours, spot heights, breaklines or downloaded elevations): add some first, e.g. download_terrain.');
+        if (terrain.isEmpty) {
+          throw ToolInputError(
+            'The drawing has no terrain data (contours, spot heights, breaklines or downloaded elevations). Next: ${b.p.meta.georef == null ? 'set_site, then download_terrain' : 'download_terrain'}, or import_attachment of the user\'s survey.',
+          );
+        }
         final (lo, hi) = terrain.elevationRange;
         final interval = a.number('interval_m', min: 0.01, max: 1000) ?? ((hi - lo) > 20 ? 5.0 : ((hi - lo) > 5 ? 1.0 : 0.5));
         if ((hi - lo) / interval > 2000) throw ToolInputError('That interval makes ${((hi - lo) / interval).round()} contours: choose a larger one.');
@@ -71,7 +76,7 @@ List<AgentTool> terrainOperations(AgentToolbox b) {
           pts = e.isClosedShape ? [...line, line.first] : line;
         }
         if (pts == null) throw ToolInputError('Give "pts" (2–500 points, m) or the "id" of a line item.');
-        if (b.p.buildTerrain().isEmpty) throw ToolInputError('The drawing has no terrain data: every elevation is 0 m (download_terrain, or the user\'s survey).');
+        if (b.p.buildTerrain().isEmpty) throw ToolInputError('The drawing has no terrain data: every elevation is 0 m. Next: ${b.p.meta.georef == null ? 'set_site, then download_terrain' : 'download_terrain'}, or import_attachment of the user\'s survey.');
         final samples = c.profileAlong(pts);
         if (samples.isEmpty) throw ToolInputError('The path has no length.');
         c.setProfilePath(pts);
@@ -277,9 +282,9 @@ List<AgentTool> terrainOperations(AgentToolbox b) {
       group: 'site',
       name: 'detect_vegetation',
       effectFor: (i) => i['preview_only'] == true ? ToolEffect.read : ToolEffect.write,
-      description: 'Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bbox), or on an aerial image item of the drawing, by image analysis on this device (no service), and adds them as irrigated areas with crop presets plus outlines of the holes to keep dry (buildings, pools, paving). preview_only answers what would be found without adding anything. One undo step. Check the result with view_snapshot. create_vegetation_areas is the short form.',
+      description: 'Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbox) — the user\'s aerial base map when one is on screen, else the satellite imagery, without changing the user\'s base map — or on an aerial image item of the drawing, by image analysis on this device, and adds them as irrigated areas with crop presets plus outlines of the holes to keep dry (buildings, pools, paving). preview_only answers what would be found without adding anything. One undo step. Check the result with view_snapshot. create_vegetation_areas is the short form.',
       schema: obj({
-        'image': str('Id of an image item to analyse (default: the base map on screen, which needs a georeference and an aerial map).'),
+        'image': str('Id of an image item to analyse (default: the aerial imagery of the site, which needs a georeference).'),
         'bbox': bbox,
         'threshold_offset': num_('−0.2 … 0.2 on the automatic vegetation threshold: below 0 takes in paler, drier or shaded green, above 0 only lush green (default 0).'),
         'split': bool_('Tell trees and shrubs from turf (default true).'),
@@ -306,8 +311,11 @@ List<AgentTool> terrainOperations(AgentToolbox b) {
           got = (e.data!, e.corners);
           georeferenced = b.p.meta.georef != null;
         } else {
-          got = await fetchBaseMap(c, a.has('bbox') ? bboxOf(i['bbox']) : null);
-          if (got == null) throw ToolInputError('No aerial image: the project needs a georeference and an aerial base map on screen (setting view.base_map "satellite"), or give "image".');
+          // the satellite imagery even when the screen shows another map or none
+          final map = aerialMapOf(c);
+          if (map != null && !a.has('bbox') && c.camera.size.isEmpty) throw ToolInputError('Give "bbox" [minX, minY, maxX, maxY] in metres: there is no view to analyse.');
+          got = map == null ? null : await fetchBaseMap(c, a.has('bbox') ? bboxOf(i['bbox']) : null, map: map, tiles: tilesOf(b));
+          if (got == null) throw ToolInputError('${noAerialText(c)} Or give "image" (an aerial image item).');
         }
         final o = VegetationOptions(
           thresholdOffset: a.number('threshold_offset', min: -0.2, max: 0.2) ?? 0,

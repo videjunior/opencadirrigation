@@ -21,6 +21,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/ai/agent_loop.dart';
 import '../../core/ai/claude_api.dart';
+import '../../core/ai/image_prep.dart';
 import '../../core/ai/openai_api.dart';
 import '../../core/ai/project_context.dart';
 import '../../core/io/pdf_reader.dart';
@@ -57,9 +58,23 @@ class AiAttachment {
 
   /// Media type of the drawing and GIS files that are imported, not read.
   static const importMime = 'application/x-import';
-  static const importable = {'dxf', 'dwg', 'dgn', 'kml', 'kmz', 'shp', 'zip', 'geojson', 'gpx', 'xml', 'landxml', 'ifc', 'inp', 'las', 'tif', 'tiff'};
+  static const importable = {'dxf', 'dwg', 'dgn', 'kml', 'kmz', 'shp', 'zip', 'geojson', 'gpx', 'xml', 'landxml', 'inp', 'las', 'tif', 'tiff'};
 
   bool get isImage => mime.startsWith('image/');
+
+  ModelImage? _modelImage;
+  bool _prepared = false;
+
+  /// The picture as the models take it (the real type read from the bytes,
+  /// upright, within the size limits); prepared once, when it is attached,
+  /// since a large photo takes a moment to decode. Null: not a picture.
+  ModelImage? get modelImage {
+    if (!_prepared) {
+      _prepared = true;
+      _modelImage = prepareModelImage(bytes);
+    }
+    return _modelImage;
+  }
   bool get isPdf => mime == 'application/pdf';
 
   /// Not sent to the model: it learns the file is there and imports it with
@@ -106,7 +121,11 @@ class AiAttachment {
         ),
       ];
     }
-    if (isImage) return [AiImagePart(mime, base64Encode(bytes)), if (note.isNotEmpty) AiTextPart(note)];
+    if (isImage) {
+      final p = modelImage;
+      if (p == null) return [AiTextPart('<attachment name="$name">This file could not be read as a picture.</attachment>')];
+      return [AiImagePart(p.mediaType, base64Encode(p.bytes)), if (note.isNotEmpty) AiTextPart(note)];
+    }
     if (isPdf && asText && pdfText != null) return [AiTextPart('<attachment name="$name" content="text extracted from the PDF">\n$pdfText\n</attachment>')];
     if (isPdf) return [AiPdfPart(name, base64Encode(bytes))];
     return [AiTextPart('<attachment name="$name">\n${utf8.decode(bytes, allowMalformed: true)}\n</attachment>')];
@@ -209,6 +228,14 @@ class AiItem {
   /// The turn stopped at the step limit or the spending cap: it can go on.
   bool canContinue = false;
   bool stopped = false;
+
+  /// What the answer can do again after an error or a stop: send the same
+  /// message (nothing of it reached the model's history) or go on.
+  AiRetry? retry;
+
+  /// The fix is in the settings (no key, a key refused, a model the key
+  /// cannot use): the answer offers to open them.
+  bool toSettings = false;
   AiUsage usage = AiUsage.zero;
   double cost = 0;
 
@@ -216,6 +243,15 @@ class AiItem {
   int pictures = 0;
   String model = '';
   AiTurnChanges? changes;
+}
+
+/// How a failed or stopped answer goes on: [text] is the message that
+/// started it; [kept] says whether part of the task reached the model's
+/// history (then it continues, otherwise the message is sent again).
+class AiRetry {
+  const AiRetry(this.text, {required this.kept});
+  final String text;
+  final bool kept;
 }
 
 /// A change awaiting the user's approval.
@@ -313,8 +349,34 @@ class _Tracked extends AgentTool {
 }
 
 class AiAssistant extends ChangeNotifier {
-  AiAssistant(this.c);
+  AiAssistant(this.c) {
+    _live.add(this);
+  }
   final ProjectController c;
+
+  static final Set<AiAssistant> _live = {};
+
+  /// The assistants of the open tabs (created on first use).
+  static Iterable<AiAssistant> get live => _live;
+
+  /// The assistant of [c] if it has one already.
+  static AiAssistant? peek(ProjectController c) => _of[c];
+
+  /// Bumped when an assistant starts or ends a task or starts or stops
+  /// waiting for the user: the shell keeps the panel on the assistant that
+  /// works and badges its buttons.
+  static final activity = ValueNotifier<int>(0);
+  static void _mark() => activity.value++;
+
+  /// The task waits for the user (an approval, questions or a plan).
+  bool get waiting => pending != null || question != null || planReview != null;
+
+  /// Stops the assistants whose tabs were closed.
+  static void stopRemoved(Iterable<ProjectController> tabs) {
+    for (final a in [..._live]) {
+      if (!tabs.contains(a.c) && (a.busy || a.waiting)) a.stop();
+    }
+  }
 
   static final Expando<AiAssistant> _of = Expando<AiAssistant>('ai');
 
@@ -472,6 +534,12 @@ class AiAssistant extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The app asks at start-up whether the user wants to design with the
+  /// assistant (on by default; the question itself and the settings turn it
+  /// off). One choice for the whole app, not per tab.
+  static bool get askAtStart => getPref('ai.askAtStart') != 'off';
+  static set askAtStart(bool on) => setPref('ai.askAtStart', on ? 'on' : 'off');
+
   /// The user's standing instructions ("always PVC PN 80"), read at the
   /// start of each conversation.
   String get instructions => getPref('ai.instructions') ?? '';
@@ -541,6 +609,9 @@ class AiAssistant extends ChangeNotifier {
   /// the input box).
   String? rewound;
 
+  /// The panel should put the cursor in its box (it was opened to type).
+  bool focusInput = false;
+
   /// Tokens and cost (US$, list prices) of the conversation so far.
   AiUsage usage = AiUsage.zero;
   double cost = 0;
@@ -576,6 +647,7 @@ class AiAssistant extends ChangeNotifier {
   }
 
   void addAttachment(AiAttachment a) {
+    if (a.isImage) a.modelImage;
     attachments.add(a);
     notifyListeners();
   }
@@ -591,7 +663,7 @@ class AiAssistant extends ChangeNotifier {
   Future<bool> attachView() async {
     final v = await captureUserView(c, snapshots: debugSnapshots);
     if (v == null) return false;
-    addAttachment(AiAttachment(v.name, 'image/png', v.png, note: v.mapping));
+    addAttachment(AiAttachment(v.name, v.mime, v.bytes, note: v.mapping));
     return true;
   }
 
@@ -612,6 +684,7 @@ class AiAssistant extends ChangeNotifier {
     cost = 0;
     pictures = 0;
     notifyListeners();
+    _mark();
   }
 
   /// Stops the running turn: the request in flight, a pending approval,
@@ -626,7 +699,13 @@ class AiAssistant extends ChangeNotifier {
     if (q != null && !q.done.isCompleted) q.done.complete(null);
     if (r != null && !r.done.isCompleted) r.done.complete(null);
     _cancel?.cancel();
+    // what the user wrote for the next step goes back to the box
+    if (queued.isNotEmpty) {
+      rewound = [if ((rewound ?? '').trim().isNotEmpty) rewound!, ...queued].join('\n\n');
+      queued.clear();
+    }
     notifyListeners();
+    _mark();
   }
 
   void answer(Approval a) {
@@ -634,6 +713,7 @@ class AiAssistant extends ChangeNotifier {
     pending = null;
     if (p != null && !p.done.isCompleted) p.done.complete(a);
     notifyListeners();
+    _mark();
   }
 
   /// The user's answers to the pending questions (empty texts: skipped).
@@ -642,17 +722,27 @@ class AiAssistant extends ChangeNotifier {
     question = null;
     if (q != null && !q.done.isCompleted) q.done.complete(answers);
     notifyListeners();
+    _mark();
   }
 
   /// The user's decision on the pending plan; an approval also sets the
-  /// mode the changes run in.
+  /// mode the rest of this task runs in (the mode chosen in the settings
+  /// stays for the next tasks).
   void decidePlan(PlanDecision d) {
     final r = planReview;
     planReview = null;
-    if (d.approved) permission = d.mode!;
+    if (d.approved) _taskMode = d.mode;
     if (r != null && !r.done.isCompleted) r.done.complete(d);
     notifyListeners();
+    _mark();
   }
+
+  /// The mode of the running task when it differs from the settings (a
+  /// plan approved to run automatically, or /plan before a task).
+  AgentPermission? _taskMode;
+
+  /// The mode the running task works in.
+  AgentPermission get taskPermission => _taskMode ?? permission;
 
   /// Adds a message typed while the assistant works.
   void queue(String text) {
@@ -822,33 +912,73 @@ class AiAssistant extends ChangeNotifier {
   // ---------------------------------------------------------------- texts
 
   String _errorText(AiError e, AiModel m) {
-    final args = {'p': m.provider.company, 'h': m.provider.host, 'm': m.label};
-    return switch (e.kind) {
+    final args = {'p': m.provider.company, 'h': m.provider.host, 'm': m.label, 'u': m.provider.billingUrl};
+    // a wait the provider asked for, in s, min or h
+    String wait(Duration d) {
+      final s = (d.inMilliseconds / 1000).ceil();
+      if (s < 90) return '$s s';
+      final min = (s / 60).ceil();
+      if (min < 90) return '$min min';
+      return min % 60 == 0 ? '${min ~/ 60} h' : '${min ~/ 60} h ${min % 60} min';
+    }
+
+    String mb(int bytes) => '${(bytes / 1e6).ceil()}';
+    String refusal() {
+      final c = e.category ?? '';
+      final name = switch (c) {
+        '' || 'reasoning_extraction' => null,
+        'cyber' => t('ai.err.cat.cyber'),
+        'bio' || 'bio_policy' => t('ai.err.cat.bio'),
+        'frontier_llm' => t('ai.err.cat.frontier'),
+        'content_filter' || 'image_content_policy_violation' => t('ai.err.cat.filter'),
+        _ => t('ai.err.cat.policy'),
+      };
+      final r = e.recommendedModel ?? '';
+      final other = AiModel.served(r, m);
+      return [
+        name == null ? t('ai.err.refusal', args) : t('ai.err.refusalCat', {...args, 'c': name}),
+        if (e.message.isNotEmpty) '(${e.message})',
+        t(c == 'reasoning_extraction' ? 'ai.err.refusalReasoning' : 'ai.err.refusalHint'),
+        if (r.isNotEmpty) t('ai.err.refusalBusy', {'r': identical(other, m) && r != m.id ? r : other.label}),
+      ].join(' ');
+    }
+
+    final text = switch (e.kind) {
       AiErrorKind.noKey => t('ai.err.noKey', args),
       AiErrorKind.auth => t('ai.err.auth', args),
       AiErrorKind.permission => t('ai.err.permission', args),
       AiErrorKind.billing => t('ai.err.billing', args),
+      AiErrorKind.credit => t('ai.err.credit', args),
+      AiErrorKind.spendLimit => [t('ai.err.spendLimit', args), if (e.message.isNotEmpty) '(${e.message})'].join(' '),
       AiErrorKind.notFound => t(m.needsRetention ? 'ai.err.retention' : 'ai.err.model', args),
       AiErrorKind.retention => t('ai.err.retention', args),
       AiErrorKind.invalidRequest => t('ai.err.invalid', {'m': e.message}),
-      AiErrorKind.tooLarge => t('ai.err.tooLarge'),
-      AiErrorKind.rateLimit => t('ai.err.rateLimit', args),
+      AiErrorKind.tooLarge => e.size == null ? t('ai.err.tooLarge') : t('ai.err.tooLargeConv', {'s': mb(e.size!), 'l': mb(e.limit ?? AiHttpClient.maxRequestBytes)}),
+      AiErrorKind.contextWindow => t('ai.err.context', args),
+      AiErrorKind.rateLimit => e.retryAfter == null ? t('ai.err.rateLimit', args) : t('ai.err.rateLimitWait', {...args, 'w': wait(e.retryAfter!)}),
       AiErrorKind.overloaded => t('ai.err.overloaded', args),
       AiErrorKind.server => t('ai.err.server', args),
       AiErrorKind.network => t(m.provider == AiProvider.openai && _browser ? 'ai.err.networkKey' : 'ai.err.network', args),
       AiErrorKind.timeout => t('ai.err.timeout', args),
       AiErrorKind.interrupted => t('ai.err.interrupted'),
       AiErrorKind.cancelled => t('ai.stopped'),
-      AiErrorKind.refusal => e.message.isEmpty ? t('ai.err.refusal', args) : '${t('ai.err.refusal', args)} (${e.message})',
+      AiErrorKind.refusal => refusal(),
       AiErrorKind.truncated => t('ai.err.truncated'),
       AiErrorKind.http => t('ai.err.http', {'s': '${e.status ?? '?'}', 'm': e.message, 'p': m.provider.company}),
+      AiErrorKind.unexpected => t('ai.err.unexpected', {'e': e.message.isEmpty ? '?' : e.message}),
     };
+    // the id the provider's support asks for, where it may have to look
+    const withId = {AiErrorKind.invalidRequest, AiErrorKind.server, AiErrorKind.overloaded, AiErrorKind.timeout, AiErrorKind.interrupted, AiErrorKind.http, AiErrorKind.permission, AiErrorKind.unexpected};
+    final id = e.requestId ?? '';
+    return id.isNotEmpty && withId.contains(e.kind) ? '$text ${t('ai.err.requestId', {'r': id})}' : text;
   }
 
   String _statusText(AgentStatus s, AiModel m) => switch (s.kind) {
-    'tool' => t('ai.st.tool', {'n': s.tool}),
+    // the model's own note on what it does, when it wrote one
+    'tool' => s.note.isEmpty ? t('ai.st.tool', {'n': s.tool}) : t('ai.status.note', {'m': m.label, 'x': s.note}),
+    'update' => t('ai.status.note', {'m': m.label, 'x': s.note}),
     'approval' => t('ai.st.approval'),
-    'retry' => t('ai.st.retry', {'s': '${(s.wait.inMilliseconds / 1000).ceil()}'}),
+    'retry' => t(const {AiErrorKind.network, AiErrorKind.timeout, AiErrorKind.interrupted}.contains(s.reason) ? 'ai.status.retryNet' : 'ai.st.retry', {'s': '${(s.wait.inMilliseconds / 1000).ceil()}'}),
     _ => t('ai.st.thinking', {'m': m.label}),
   };
 
@@ -889,12 +1019,14 @@ class AiAssistant extends ChangeNotifier {
         notifyListeners();
         return null;
       case 'plan':
-        permission = AgentPermission.plan;
         if (rest.isEmpty) {
+          permission = AgentPermission.plan;
           items.add(AiItem.notice(t('ai.cmd.planOn')));
           notifyListeners();
           return null;
         }
+        // a plan first for this task; the mode in the settings stays
+        _taskMode = AgentPermission.plan;
         return rest;
     }
     final prompt = t('ai.cmd.${cmd.name}.prompt', {'x': rest});
@@ -918,9 +1050,18 @@ class AiAssistant extends ChangeNotifier {
   Future<void> send(String text) async {
     var q = text.trim();
     if (busy) {
+      // commands act now (the cost) or wait for the task to end; text goes
+      // to the model's next step
+      if (q.startsWith('/')) {
+        final name = RegExp(r'^/(\S+)').firstMatch(q)?.group(1)?.toLowerCase();
+        items.add(AiItem.notice(name == 'cost' ? costText() : t('ai.cmd.busy', {'c': '/${name ?? ''}'})));
+        notifyListeners();
+        return;
+      }
       queue(q);
       return;
     }
+    _taskMode = null;
     if (q.startsWith('/')) {
       final r = _command(q);
       if (r == null) return;
@@ -938,7 +1079,10 @@ class AiAssistant extends ChangeNotifier {
       ..add(userItem)
       ..add(answer);
     if (key == null) {
-      answer.error = t('ai.err.noKey', {'p': m.provider.company});
+      answer
+        ..error = t('ai.err.noKey', {'p': m.provider.company})
+        ..retry = AiRetry(q, kept: false)
+        ..toSettings = true;
       notifyListeners();
       return;
     }
@@ -956,6 +1100,7 @@ class AiAssistant extends ChangeNotifier {
     attachments.clear();
     final cancel = AiCancel();
     _cancel = cancel;
+    _mark();
     answer
       ..running = true
       ..started = DateTime.now()
@@ -974,11 +1119,16 @@ class AiAssistant extends ChangeNotifier {
         system: _system!,
         history: _history,
         user: message,
-        permission: permission,
-        permissionNow: () => permission,
+        permission: taskPermission,
+        permissionNow: () => taskPermission,
         maxSteps: maxSteps,
         costCap: cap > 0 ? cap : null,
-        taskBudget: cap > 0 && m.taskBudget ? (cap / m.output * 1e6).round() : null,
+        // No task budget in the chat: a token countdown shown to the model made
+        // it stop early and tell the user the conversation had reached its
+        // limit (Anthropic advises against task budgets in interactive
+        // sessions). The app's own spending cap and step limit end a task,
+        // with Continue.
+        taskBudget: null,
         compactAt: compaction ? (m.provider == AiProvider.anthropic ? 150000 : 200000) : null,
         cancel: cancel,
         events: AgentEvents(
@@ -998,6 +1148,7 @@ class AiAssistant extends ChangeNotifier {
             final p = AiApproval(call);
             pending = p;
             notifyListeners();
+            _mark();
             return p.done.future;
           },
           onUsage: (u, x) {
@@ -1041,12 +1192,18 @@ class AiAssistant extends ChangeNotifier {
         ),
       );
     } catch (e) {
-      answer.error = t('ai.err.unexpected', {'e': '${e.runtimeType}'});
+      answer
+        ..error = t('ai.err.unexpected', {'e': '${e.runtimeType}'})
+        ..retry = AiRetry(q, kept: false);
+      // nothing kept: the question can be sent again with its attachments
+      if (files.isNotEmpty && attachments.isEmpty) attachments.addAll(files);
     } finally {
       _cancel = null;
+      _taskMode = null;
       pending = null;
       question = null;
       planReview = null;
+      _mark();
       answer.changes = _closeTurn();
       answer
         ..running = false
@@ -1056,13 +1213,23 @@ class AiAssistant extends ChangeNotifier {
       }
     }
     if (turn != null) {
+      // a recovery may have stripped thinking blocks from the earlier
+      // history (same length: the checkpoints stay valid)
+      if (turn.history != null) {
+        _history
+          ..clear()
+          ..addAll(turn.history!);
+      }
       _history.addAll(turn.messages);
       if (turn.messages.isNotEmpty && !ctx.isEmpty) attachContext = false;
       answer.pictures += _picturesIn(turn);
       pictures += answer.pictures;
+      final kept = turn.messages.isNotEmpty;
       switch (turn.stop) {
         case AgentStop.cancelled:
-          answer.stopped = true;
+          answer
+            ..stopped = true
+            ..retry = AiRetry(q, kept: kept);
         case AgentStop.stepLimit:
           answer
             ..error = t('ai.err.steps', {'n': '$maxSteps'})
@@ -1072,9 +1239,14 @@ class AiAssistant extends ChangeNotifier {
             ..error = t('ai.err.budget', {'c': cap.toStringAsFixed(2)})
             ..canContinue = true;
         case AgentStop.maxTokens:
-          answer.error = t('ai.err.length');
+          answer
+            ..error = t('ai.err.length')
+            ..retry = AiRetry(q, kept: kept);
         case AgentStop.error:
-          answer.error = turn.error == null ? t('ai.err.server', {'p': m.provider.company}) : _errorText(turn.error!, m);
+          answer
+            ..error = turn.error == null ? t('ai.err.server', {'p': m.provider.company}) : _errorText(turn.error!, m)
+            ..retry = AiRetry(q, kept: kept)
+            ..toSettings = const {AiErrorKind.noKey, AiErrorKind.auth, AiErrorKind.permission, AiErrorKind.notFound, AiErrorKind.retention}.contains(turn.error?.kind);
         case AgentStop.done:
           break;
       }
@@ -1102,6 +1274,23 @@ class AiAssistant extends ChangeNotifier {
 
   /// Goes on with a task that stopped at the step limit or the cap.
   Future<void> continueTask() => send(t('ai.continue.prompt'));
+
+  /// Tries a failed or stopped answer again: the task goes on from what
+  /// reached the model, or, when nothing did, the same message (with its
+  /// attachments, which came back to the box) is sent again in its place.
+  Future<void> resume(AiItem answer) async {
+    final r = answer.retry;
+    if (r == null || busy) return;
+    answer.retry = null;
+    if (r.kept) return continueTask();
+    final i = items.indexOf(answer);
+    if (i > 0 && items[i - 1].kind == AiItemKind.user && !items[i - 1].steered) {
+      items.removeRange(i - 1, i + 1);
+    } else {
+      items.remove(answer);
+    }
+    await send(r.text);
+  }
 
   // ---------------------------------------------------------------- transcript
 
@@ -1159,6 +1348,7 @@ class AiAssistant extends ChangeNotifier {
   void dispose() {
     stop();
     _tick?.cancel();
+    _live.remove(this);
     super.dispose();
   }
 }
@@ -1171,7 +1361,7 @@ class _Host implements AgentHost, AiWorkspaceHost {
   Workspace? get ws => AiAssistant.workspace;
 
   @override
-  AgentPermission get permission => ai.permission;
+  AgentPermission get permission => ai.taskPermission;
 
   @override
   bool get stopped => ai._cancel?.cancelled ?? false;
@@ -1187,6 +1377,7 @@ class _Host implements AgentHost, AiWorkspaceHost {
     final q = AiAsk(questions);
     ai.question = q;
     ai.refresh();
+    AiAssistant._mark();
     return q.done.future;
   }
 
@@ -1195,6 +1386,7 @@ class _Host implements AgentHost, AiWorkspaceHost {
     final r = AiPlanReview(plan);
     ai.planReview = r;
     ai.refresh();
+    AiAssistant._mark();
     return r.done.future;
   }
 
@@ -1214,7 +1406,8 @@ class _Host implements AgentHost, AiWorkspaceHost {
   bool openTab(Project p) {
     final w = ws;
     if (w == null) return false;
-    w.addTab().openProject(p, dirty: true);
+    // in the background: the user keeps watching the task, which goes on in this tab
+    w.addTab(select: false).openProject(p, dirty: true);
     return true;
   }
 
@@ -1246,7 +1439,7 @@ class _Host implements AgentHost, AiWorkspaceHost {
   bool newTab() {
     final w = ws;
     if (w == null) return false;
-    w.addTab();
+    w.addTab(select: false);
     return true;
   }
 

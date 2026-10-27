@@ -14,7 +14,8 @@
 /// Values: `tool:<name>` (sent with every request), `op:<name>` (through
 /// find_operations / run_operation), `command:<alias>` (run_command),
 /// `setting:<key>` (get_setting / set_setting), or `n/a:<reason>` for what
-/// has no meaning for the AI (the About box, the interface language…).
+/// has no meaning for the AI or needs the user's hands (the About box,
+/// the tutorial, the device's GPS…).
 ///
 /// [coreCoverage] holds what the tools sent with every request cover;
 /// `cadCoverage` (agent_ops_cad.dart) the drawing side's operations,

@@ -15,7 +15,7 @@ import '../io/pdf_font_loader.dart';
 import '../state/controller.dart';
 import '../widgets/advice_panel.dart' show adviceTitle;
 import 'agent_tools.dart';
-import 'view_snapshot.dart' show fetchBaseMap;
+import 'view_snapshot.dart' show CanvasSnapshots, HttpTileFetcher, TileFetcher, fetchBaseMap;
 
 // ---------------------------------------------------------------- helpers
 
@@ -35,6 +35,100 @@ List<Pt> _outline(AgentToolbox b, String ref) {
   final o = outlineOf(e);
   if (o == null) throw ToolInputError('"$ref" is not a closed shape (use an area, a closed polyline, a circle or a pivot).');
   return o;
+}
+
+/// The closed shapes a pivot fitted in [field] (the outline of item
+/// [selfId]) keeps clear of: every other closed shape inside or across the
+/// field, but none that holds the whole field — a property line, or a
+/// second outline or a hatch of the same field (every vertex of the field
+/// inside it or on its outline, within [tolerance] m).
+List<(Entity, List<Pt>)> pivotObstacleShapes(Project p, String selfId, List<Pt> field, {double tolerance = 0.05}) {
+  final fb = Bounds.ofPoints(field);
+  bool holdsField(List<Pt> o) => field.every((q) => pointInPolygon(q, o) || pointOnPolygonBoundary(q, o, tol: tolerance));
+  return [
+    for (final e in p.entities)
+      if (e.id != selfId && e.bounds.intersects(fb))
+        if (outlineOf(e) case final o? when !holdsField(o)) (e, o),
+  ];
+}
+
+/// The share of [field] that [shape] covers, from a grid of sample points.
+double coveredShare(List<Pt> field, List<Pt> shape, {int n = 24}) {
+  final b = Bounds.ofPoints(field);
+  var inField = 0, covered = 0;
+  for (var i = 0; i < n; i++) {
+    for (var j = 0; j < n; j++) {
+      final q = Pt(b.minX + (i + 0.5) * b.width / n, b.minY + (j + 0.5) * b.height / n);
+      if (!pointInPolygon(q, field)) continue;
+      inField++;
+      if (pointInPolygon(q, shape)) covered++;
+    }
+  }
+  return inField == 0 ? 0 : covered / inField;
+}
+
+/// Why no pivot fitted [field] and what to do, for the model: the shapes
+/// kept clear of (the largest share of the field first), or a field too
+/// small for the shortest machine.
+String pivotFitHelp(AgentToolbox b, List<Pt> field, List<(Entity, List<Pt>)> obstacles, List<String> messages) {
+  if (obstacles.isEmpty) {
+    return messages.contains('pivot_no_room')
+        ? '\nThe field is too small for the shortest machine: create_entities type "pivot" with a shorter r, or run_operation fit_pivot_advanced with shorter spans_m.'
+        : '';
+  }
+  final scored = [for (final (e, o) in obstacles) (e, coveredShare(field, o))]..sort((x, y) => y.$2.compareTo(x.$2));
+  final names = [for (final (e, share) in scored.take(8)) '${e.id} (${b.kindOf(e)}${e.name.isEmpty ? '' : ' "${e.name}"'}, ${fmt(share * 100, 0)} % of the field)'];
+  return '\nShapes kept clear of: ${names.join(', ')}${scored.length > 8 ? ' and ${scored.length - 8} more' : ''}. If one is no real obstacle (a hatch, a crop area or another outline of the field), delete or move it, or run_operation fit_pivot_advanced {area, obstacles []} (or with only the real obstacles).';
+}
+
+/// The error for a tape or emitter [id] the catalogue lacks: an unknown id
+/// the model [given], else the default, with the next step when the
+/// catalogue has none of that kind enabled.
+String _missingItem(Catalog cat, String kind, String? id, {required bool given}) {
+  final any = kind == 'tape' ? cat.tapes.any((x) => x.enabled) : cat.outlets.any((x) => x.enabled && x.nozzles.isNotEmpty);
+  final what = kind == 'tape' ? 'drip tape or dripline' : 'emitter';
+  if (!any) return 'The catalogue has no enabled $what. ${catalogNextStep(kind)}';
+  return given || (id ?? '').isNotEmpty
+      ? 'Unknown $kind "${id ?? ''}"${given ? '' : ' (the one last used)'}: give "${kind == 'tape' ? 'tape' : 'outlet'}" from search_catalog kind "$kind".'
+      : 'Give "${kind == 'tape' ? 'tape' : 'outlet'}" from search_catalog kind "$kind".';
+}
+
+/// What to do after correction [kind] failed for want of something, for
+/// the model ('' when the reason says it all).
+String fixFailureHelp(FixResult res, FixKind kind) {
+  if (res.ok) return '';
+  final catalogKind = switch (kind) {
+    FixKind.raisePipeClass || FixKind.enablePipes => 'pipe',
+    FixKind.resizeValve => 'valve',
+    _ => null,
+  };
+  return switch (res.key) {
+    'fixfail.noPump' => ' No catalogue pump meets this duty alone: rank_pumps shows the closest ones. ${catalogNextStep('pump')} Then apply_pump.',
+    'fixfail.noOption' when catalogKind != null || kind == FixKind.assignModel => ' The catalogue has no suitable model. ${catalogNextStep(catalogKind)}',
+    'fixfail.noPipeAtSupply' => ' Draw a mainline pipe that starts exactly at the water supply, then try again.',
+    'fixfail.needsResults' => ' Call run_design first.',
+    _ => '',
+  };
+}
+
+/// The aerial imagery the vegetation detection analyses: the user's aerial
+/// base map when one is on screen, else the satellite imagery (the user's
+/// choice of base map is not changed); null without a georeference.
+BaseMap? aerialMapOf(ProjectController c) {
+  if (c.project.meta.georef == null) return null;
+  final m = c.baseMap;
+  return m == BaseMap.satellite || m == BaseMap.googleSatellite || m == BaseMap.googleHybrid ? m : BaseMap.satellite;
+}
+
+/// Why no aerial image came, with the next step.
+String noAerialText(ProjectController c) => c.project.meta.georef == null
+    ? 'No aerial image: the project has no georeference. Next: find_site and set_site at the site (or set_georeference), then try again.'
+    : 'No aerial image: the satellite imagery did not load (offline, or no imagery there). Try again later, give a smaller bbox, or trace the areas from view_snapshot instead.';
+
+/// How [b]'s pictures fetch the map tiles (tests serve fake ones).
+TileFetcher tilesOf(AgentToolbox b) {
+  final s = b.snapshots;
+  return s is CanvasSnapshots ? s.tiles : const HttpTileFetcher();
 }
 
 /// The first [n] names `prefix i` no zone uses yet.
@@ -71,7 +165,7 @@ OutletSpec _family(AgentToolbox b, String? id) {
     if (f == null) throw ToolInputError('"$id" is not an enabled sprinkler or micro-sprinkler. Choose one of: ${fams.map((o) => o.id).join(', ')}.');
     return f;
   }
-  if (fams.isEmpty) throw ToolInputError('The catalogue has no enabled sprinkler.');
+  if (fams.isEmpty) throw ToolInputError('The catalogue has no enabled sprinkler or micro-sprinkler. ${catalogNextStep('emitter')}');
   final last = cat.outlet(b.c.toolSettings.outletSpecId);
   if (last != null && last.kind == OutletKind.sprinkler && fams.contains(last)) return last;
   return fams.where((f) => f.id == 'rotor').firstOrNull ?? fams.first;
@@ -264,21 +358,32 @@ List<AgentTool> designTools(AgentToolbox b) {
         if (!adv[k].fixes.contains(fix)) throw ToolInputError('"${fix.name}" is not offered for message #$k; offered: ${adv[k].fixes.map((f) => f.name).join(', ')}.');
         final res = await c.applyAdviceFix(adv[k], fix);
         if (res == null) throw ToolInputError('Refused: a design is running.');
-        return ToolOutput('${res.ok ? 'Applied' : 'Not applied'}: ${t(res.key, res.args)}${c.results == null ? '' : '\n${designSummary(b)}'}', isError: !res.ok);
+        return ToolOutput('${res.ok ? 'Applied' : 'Not applied'}: ${t(res.key, res.args)}.${fixFailureHelp(res, fix)}${c.results == null ? '' : '\n${designSummary(b)}'}', isError: !res.ok);
       },
     ),
     FnTool(
       name: 'auto_fix',
       effect: ToolEffect.write,
-      description: 'Runs "Fix automatically" (the Messages panel button): applies the safe correction of every message and designs again, in rounds, until nothing more can be fixed. The safe corrections restore consistency or pick catalogue items for a known duty (connect, delete zero-length pipes, rename duplicate zones, calculate the supply pressure, choose a pump, a valve or a pipe class, split the system flows, reset out-of-range settings…); joining crossing pipes and placing a supply stay with apply_fix. One undo step. Returns the corrections applied, the number of messages left and the design summary.',
+      description: 'Runs "Fix automatically" (the Messages panel button): designs, applies the safe correction of every message and designs again, in rounds, until nothing more can be fixed (no run_design is needed after it). The safe corrections restore consistency or pick catalogue items for a known duty (connect, delete zero-length pipes, rename duplicate zones, calculate the supply pressure, choose a pump, a valve or a pipe class, split the system flows, reset out-of-range settings…); joining crossing pipes, placing a supply and adding a booster pump to a mains connection (a supply with calc false and no pump) stay with apply_fix, after you ask the user. One undo step. Returns the corrections applied, the messages left (those waiting for the user\'s decision named) and the design summary.',
       inputSchema: obj({}),
       summary: (_) => t('adv.fixAll'),
       handler: (_) async {
         _notBusy(c);
-        final r = await c.autoFixAll();
+        final r = await c.autoFixAll(skip: (a, kind, results) => addsBoosterToMains(b.p, a, kind, results));
         if (r == null) throw ToolInputError('Refused: a design is running.');
+        final adv = c.advice;
+        final boosters = [
+          for (var k = 0; k < adv.length && k < 80; k++)
+            if (adv[k].fixes.isNotEmpty && addsBoosterToMains(b.p, adv[k], adv[k].fixes.first, c.results)) k,
+        ];
+        final booster = boosters.isEmpty
+            ? ''
+            : '\nLeft for the user to decide: a booster pump on the mains connection would fix ${boosters.map((k) => '#$k [${adv[k].code}]').join(', ')}. Ask the user first (a pump costs money, needs power, and the water company may not allow one); if they agree, apply_fix {index, code, fix "choosePump"}. Otherwise: check the pressure the connection really gives (dh: a gauge on a tap), fewer heads per zone (more zones), or larger pipes.';
+        final pumpLeft = adv.any((a) => a.fixes.isNotEmpty && a.fixes.first == FixKind.choosePump && !addsBoosterToMains(b.p, a, a.fixes.first, c.results))
+            ? '\nA pump correction was left (no catalogue pump meets the duty alone?): rank_pumps shows the candidates. ${catalogNextStep('pump')}'
+            : '';
         return ToolOutput(
-          '${r.applied.isEmpty ? 'Nothing could be fixed automatically.' : 'Applied ${r.applied.length}: ${r.applied.map((f) => t(f.key, f.args)).join('; ')}'}\nLeft: ${r.remaining.length} messages.\n${designSummary(b)}',
+          '${r.applied.isEmpty ? 'Nothing could be fixed automatically.' : 'Applied ${r.applied.length}: ${r.applied.map((f) => t(f.key, f.args)).join('; ')}'}\nLeft: ${r.remaining.length} messages.$booster$pumpLeft\n${designSummary(b)}',
         );
       },
     ),
@@ -400,7 +505,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           'lateral_spacing_m': num_('Distance between laterals (the row spacing), 0.2–100 m.'),
           'direction_deg': num_('Lateral direction, degrees counter-clockwise from east; default along the longest edge. Ignored with a guide.'),
           'guide': str('Id or name of a line, polyline, contour or spline whose shape the laterals follow.'),
-          'tape': str('Tape id (tape laterals); default the tape last used, else the first.'),
+          'tape': str('Tape id (tape laterals); default the tape last used, else the first enabled.'),
           'inlet_head_m': num_('Tape inlet pressure, 0.5–60 m; default the tape\'s nominal inlet pressure.'),
           'outlet': str('Emitter id (spray laterals); default the emitter last used.'),
           'nozzle': str('Nozzle id of that emitter; default its first nozzle.'),
@@ -433,11 +538,11 @@ List<AgentTool> designTools(AgentToolbox b) {
         final tape = a.str('lateral', required: true) == 'tape';
         final cat = b.p.catalog;
         final s = c.toolSettings;
-        final tapeId = a.str('tape') ?? (cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : cat.tapes.firstOrNull?.id);
+        final tapeId = a.str('tape') ?? (cat.tape(s.tapeSpecId)?.enabled ?? false ? s.tapeSpecId : cat.tapes.where((x) => x.enabled).firstOrNull?.id);
         final outlet = a.str('outlet') ?? s.outletSpecId;
-        if (tape && cat.tape(tapeId) == null) throw ToolInputError('Unknown tape "$tapeId" (search_catalog kind "tape").');
+        if (tape && cat.tape(tapeId) == null) throw ToolInputError(_missingItem(cat, 'tape', tapeId, given: a.has('tape')));
         final family = tape ? null : cat.outlet(outlet);
-        if (!tape && family == null) throw ToolInputError('Unknown emitter "$outlet" (search_catalog kind "emitter").');
+        if (!tape && family == null) throw ToolInputError(_missingItem(cat, 'emitter', outlet, given: a.has('outlet')));
         final nozzle = tape ? null : _nozzleOf(family!, a.str('nozzle'), fallback: a.has('outlet') ? null : s.nozzleId);
         final valve = a.str('valve');
         if (valve != null && cat.valve(valve) == null) throw ToolInputError('Unknown valve "$valve" (search_catalog kind "valve").');
@@ -510,7 +615,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           'max_block_flow_m3h': num_('Limit the blocks by flow (m³/h) instead of area.'),
           'lateral': str('Default tape.', ['tape', 'sprayline']),
           'lateral_spacing_m': num_('0.2–100 m; default 1.5 (tape) or 12 (spray).'),
-          'tape': str('Tape id; default the last used, else the first.'),
+          'tape': str('Tape id; default the last used, else the first enabled.'),
           'inlet_head_m': num_('Tape inlet pressure, 0.5–60 m; default the tape\'s nominal.'),
           'outlet': str('Emitter id of spray laterals; default the last used.'),
           'nozzle': str('Nozzle id of that emitter; default its first.'),
@@ -530,13 +635,13 @@ List<AgentTool> designTools(AgentToolbox b) {
         final field = _outline(b, a.str('area', required: true)!);
         final s = c.toolSettings, cat = b.p.catalog;
         final isTape = (a.str('lateral') ?? 'tape') == 'tape';
-        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? ''));
+        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId)?.enabled ?? false ? s.tapeSpecId : (cat.tapes.where((x) => x.enabled).firstOrNull?.id ?? ''));
         final tapeInlet = a.number('inlet_head_m', min: 0.5, max: 60) ?? cat.tape(tapeSpec)?.defaultInletHeadM ?? s.tapeInletHeadM;
         final outletSpec = a.str('outlet') ?? s.outletSpecId;
         final outletSpacing = a.number('emitter_spacing_m', min: 0.1, max: 50) ?? s.spacing;
-        if (isTape && cat.tape(tapeSpec) == null) throw ToolInputError('Unknown tape "$tapeSpec" (search_catalog kind "tape").');
+        if (isTape && cat.tape(tapeSpec) == null) throw ToolInputError(_missingItem(cat, 'tape', tapeSpec, given: a.has('tape')));
         final family = isTape ? null : cat.outlet(outletSpec);
-        if (!isTape && family == null) throw ToolInputError('Unknown emitter "$outletSpec" (search_catalog kind "emitter").');
+        if (!isTape && family == null) throw ToolInputError(_missingItem(cat, 'emitter', outletSpec, given: a.has('outlet')));
         final nz0 = isTape ? null : _nozzleOf(family!, a.str('nozzle'), fallback: a.has('outlet') ? null : s.nozzleId);
         final nozzle = nz0?.id ?? s.nozzleId;
         final headM = a.number('head_m', min: 0.5, max: 120) ?? nz0?.defaultHeadM ?? s.headM;
@@ -619,7 +724,7 @@ List<AgentTool> designTools(AgentToolbox b) {
     FnTool(
       name: 'tree_rings',
       effect: ToolEffect.write,
-      description: 'Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row_spacing_m between them, rows along direction_deg), or around the tree symbols inside it, with a lateral along each row, a submain and a zone valve chosen for the flow, as one zone. One undo step; the items become the selection. Returns the tree count, the zone flow and the items added. More than 20000 trees: subdivide the field first.',
+      description: 'Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plant_spacing_m along the rows, row_spacing_m between them, rows along direction_deg), or around the tree symbols inside it, with a lateral pipe along each row, a submain and a zone valve chosen for the flow, as one zone. One undo step; the items become the selection. Returns the tree count, the zone flow and the items added. Without an enabled dripline (or dripper) in the catalogue it says what to do. More than 20000 trees: subdivide the field first. tree_rings_advanced also sets the inlet head, the nozzle and head of the drippers, the submain side and the pipes.',
       inputSchema: obj(
         {
           'area': str('Id or name of the orchard area.'),
@@ -630,8 +735,8 @@ List<AgentTool> designTools(AgentToolbox b) {
           'drippers_per_tree': int_('drippers: 1–24 (default 4).'),
           'direction_deg': num_('Row direction, degrees counter-clockwise from east; default along the longest edge.'),
           'use_tree_symbols': bool_('Ring the tree symbols inside the area instead of a grid.'),
-          'tape': str('Dripline id for the rings and laterals; default the tape last used, else the first.'),
-          'outlet': str('drippers: dripper or bubbler id; default the catalogue\'s first.'),
+          'tape': str('dripline: the dripline (tape id) of the rings; default the tape last used, else the first enabled.'),
+          'outlet': str('drippers: dripper or bubbler id; default the first enabled one of the catalogue.'),
           'zone_name': str('Zone name; default "Zone n".'),
         },
         required: ['area'],
@@ -665,13 +770,23 @@ List<AgentTool> designTools(AgentToolbox b) {
           ),
         );
         if (r.trees.isEmpty) throw ToolInputError('No tree.${_warn(b, r.messages)}');
-        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? ''));
+        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId)?.enabled ?? false ? s.tapeSpecId : (cat.tapes.where((x) => x.enabled).firstOrNull?.id ?? ''));
         if (a.has('tape') && cat.tape(tapeSpec) == null) throw ToolInputError('Unknown tape "$tapeSpec" (search_catalog kind "tape").');
+        if (kind == RingKind.dripline && cat.tape(tapeSpec) == null) {
+          throw ToolInputError('The catalogue has no enabled dripline for the rings. ${catalogNextStep('tape')} Then call tree_rings with "tape", or use kind "drippers".');
+        }
         final tapeInlet = cat.tape(tapeSpec)?.defaultInletHeadM ?? s.tapeInletHeadM;
         final dripper = a.has('outlet')
             ? (cat.outlet(a.str('outlet')) ?? (throw ToolInputError('Unknown emitter "${a.str('outlet')}" (search_catalog kind "emitter").')))
             : cat.outlets.where((o) => o.enabled && o.nozzles.isNotEmpty && (o.kind == OutletKind.dripper || o.kind == OutletKind.bubbler)).firstOrNull;
-        final nz = dripper?.nozzles.first;
+        final nz = dripper?.nozzles.firstOrNull;
+        if (kind == RingKind.drippers && nz == null) {
+          throw ToolInputError(
+            dripper == null
+                ? 'The catalogue has no enabled dripper or bubbler for the rings. ${catalogNextStep('emitter')} Then call tree_rings with "outlet", or use kind "dripline".'
+                : 'Emitter "${dripper.id}" has no nozzle: choose another "outlet" (search_catalog kind "emitter").',
+          );
+        }
         final headM = nz?.defaultHeadM ?? 10;
         double flow() {
           if (kind == RingKind.dripline) {
@@ -766,7 +881,7 @@ List<AgentTool> designTools(AgentToolbox b) {
     FnTool(
       name: 'fit_pivot',
       effect: ToolEffect.write,
-      description: 'Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping clear of the other closed shapes inside or across the field and 10 m from the symbols (trees, posts) inside it; terrain points are no obstacle. The machine takes the depth, hours per cycle and end pressure of the pivot tool settings (change them with update_entities). Join its centre to the mainline (a mainline pipe ending at the centre) before run_design. One undo step. Returns the pivot id, centre, machine length, irrigated radius, sweep, area and the share of the field covered.',
+      description: 'Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping clear of the other closed shapes inside or across the field (not of one that holds the whole field: a property line, a second outline or a hatch of the field) and 10 m from the symbols (trees, posts) inside it; terrain points are no obstacle. When nothing fits it names the shapes in the way (fit_pivot_advanced chooses the obstacles). The machine takes the depth, hours per cycle and end pressure of the pivot tool settings (change them with update_entities). Join its centre to the mainline (a mainline pipe ending at the centre) before run_design. One undo step. Returns the pivot id, centre, machine length, irrigated radius, sweep, area and the share of the field covered.',
       inputSchema: obj(
         {
           'area': str('Id or name of the field (a closed shape).'),
@@ -782,24 +897,20 @@ List<AgentTool> designTools(AgentToolbox b) {
         final field = _outline(b, ref);
         final self = b.find(ref).id;
         // shapes that hold the whole field (a property line, a second outline
-        // of it) are no obstacles, nor are elevation points
-        final others = [
-          for (final e in b.p.entities)
-            if (e.id != self && e.bounds.intersects(Bounds.ofPoints(field)))
-              if (outlineOf(e) case final o? when !field.every((q) => pointInPolygon(q, o))) o,
-        ];
+        // or a hatch of it) are no obstacles, nor are elevation points
+        final others = pivotObstacleShapes(b.p, self, field);
         final pts = [
           for (final e in b.p.entities)
             if (e is SymbolEntity && pointInPolygon(e.position, field)) e.position,
         ];
         final o = PivotFitOptions(
-          obstacles: others.where((x) => !identical(x, field)).toList(),
+          obstacles: [for (final (_, x) in others) x],
           pointObstacles: [for (final q in pts) PointObstacle(q, 10)],
           endThrowM: a.number('end_throw_m', min: 0, max: 80) ?? 5,
           minSweepDeg: 30,
         );
         final fit = await _soon(() => (a.flag('sector') ?? false) ? fitSectorPivot(field, o) : fitFullCirclePivot(field, o));
-        if (fit.spans == null) throw ToolInputError('No pivot fits.${_warn(b, fit.messages)}');
+        if (fit.spans == null) throw ToolInputError('No pivot fits.${_warn(b, fit.messages)}${pivotFitHelp(b, field, others, fit.messages)}');
         final s = c.toolSettings;
         final made = b.change('fit_pivot', () {
           final p = b.p;
@@ -833,9 +944,10 @@ List<AgentTool> designTools(AgentToolbox b) {
       handler: (i) async {
         final a = ToolArgs(i);
         // the satellite imagery even when the screen shows another map or none
-        final aerial = c.baseMap == BaseMap.satellite || c.baseMap.name == 'googleSatellite' || c.baseMap.name == 'googleHybrid';
-        final got = await fetchBaseMap(c, a.has('bbox') ? bboxOf(i['bbox']) : null, map: aerial ? null : (c.project.meta.georef != null ? BaseMap.satellite : null));
-        if (got == null) throw ToolInputError('No aerial image: the satellite or aerial base map needs a georeference (set_site), and its imagery must load (offline?).');
+        final map = aerialMapOf(c);
+        if (map != null && !a.has('bbox') && c.camera.size.isEmpty) throw ToolInputError('Give "bbox" [minX, minY, maxX, maxY] in metres: there is no view to analyse.');
+        final got = map == null ? null : await fetchBaseMap(c, a.has('bbox') ? bboxOf(i['bbox']) : null, map: map, tiles: tilesOf(b));
+        if (got == null) throw ToolInputError(noAerialText(c));
         final o = VegetationOptions(
           minAreaM2: a.number('min_area_m2', min: 0.5, max: 1e6) ?? 5,
           keepTurf: a.flag('turf') ?? true,
@@ -887,7 +999,11 @@ List<AgentTool> designTools(AgentToolbox b) {
           requireSubmersible: suctionLiftTooDeep(s, pd.supply),
           mainsHz: p.mainsHz,
         );
-        if (cands.isEmpty) return const ToolOutput('No catalogue pump fits this duty.');
+        if (cands.isEmpty) {
+          return ToolOutput(
+            'No catalogue pump fits this duty (${m3h(pd.supply.flow)} at ${fmt(pd.head, 1)} m${suctionLiftTooDeep(s, pd.supply) ? ', submersible only: the water is too deep for a surface pump' : ''}). ${catalogNextStep('pump')} Then rank_pumps again.',
+          );
+        }
         return ToolOutput(
           'Duty: ${m3h(pd.supply.flow)} at ${fmt(pd.head, 1)} m (${pd.flowName}).\nid | name | head at duty m | margin m | shaft kW | energy/year | in range | suction ok | parallel\n${[for (final x in cands.take(10)) '${x.spec.id} | ${x.spec.name} | ${fmt(x.headAtDuty, 1)} | ${fmt(x.margin, 1)} | ${fmt(x.shaftPowerKw, 2)} | ${fmt(x.annualEnergy, 0)} | ${x.inRange} | ${x.suctionOk} | ${x.parallelCount}'].join('\n')}',
         );
@@ -896,7 +1012,7 @@ List<AgentTool> designTools(AgentToolbox b) {
     FnTool(
       name: 'apply_pump',
       effect: ToolEffect.write,
-      description: 'Installs a pump for a water supply: the catalogue pump given, or the one with the lowest life-cycle cost that meets every system flow\'s duty. The pump nearest the supply within 50 m gets the new model; without one, a pump is added on the mainline pipe leaving the supply (1.5 m along it), or 2 m east of the supply when no mainline starts there (then join it). Needs design results; one undo step; run the design again to see its operating point.',
+      description: 'Installs a pump for a water supply: the catalogue pump given, or the one with the lowest life-cycle cost that meets every system flow\'s duty. The pump nearest the supply within 50 m gets the new model; without one, a pump is added on the mainline pipe leaving the supply (1.5 m along it), or 2 m east of the supply when no mainline starts there (then join it). On a mains connection (a supply with calc false) that is a booster pump: ask the user first. Needs design results; one undo step; run the design again to see its operating point.',
       inputSchema: obj({'supply': str('Id or name of the water supply; default the first.'), 'pump': str('Pump id (search_catalog kind "pump"); default: the best for the duty.')}),
       summary: (i) => t('ai.do.pump', {'n': '${i['pump'] ?? '★'}'}),
       handler: (i) async {
@@ -906,7 +1022,7 @@ List<AgentTool> designTools(AgentToolbox b) {
         final id = a.str('pump');
         if (id == null) {
           final res = b.change('apply_pump', () => choosePumpFor(b.p, c.results!, s));
-          return ToolOutput('${res.ok ? 'Done' : 'Not done'}: ${t(res.key, res.args)}. Run the design again.', isError: !res.ok);
+          return ToolOutput('${res.ok ? 'Done' : 'Not done'}: ${t(res.key, res.args)}.${res.ok ? ' Run the design again.' : fixFailureHelp(res, FixKind.choosePump)}', isError: !res.ok);
         }
         final spec = b.p.catalog.pump(id);
         if (spec == null) throw ToolInputError('Unknown pump "$id".');
@@ -964,7 +1080,13 @@ List<AgentTool> designTools(AgentToolbox b) {
           for (final v in st.missing)
             if (v.specId != null) v,
         ];
-        if (missing.isEmpty) return const ToolOutput('No air valve to insert.');
+        if (missing.isEmpty) {
+          return ToolOutput(
+            st.missing.isEmpty
+                ? 'No air valve to insert: every position suggest_air_valves finds has one.'
+                : 'No air valve inserted: the ${st.missing.length} positions that need one have no model in the catalogue (air valves are valves of kind airRelease). ${catalogNextStep('valve')}',
+          );
+        }
         final made = b.change('insert_air_valves', () {
           final list = airValveEntities(missing, b.p.newId);
           b.p.entities.addAll(list);
@@ -1062,7 +1184,7 @@ List<AgentTool> designTools(AgentToolbox b) {
       name: 'export_file',
       effect: ToolEffect.export,
       description:
-          'Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (${DrawingFormat.values.map((f) => f.name).join(', ')}: pdf is the plot sheet, shp a zipped shapefile, inp EPANET, landxml the terrain and pipes, dxfR12 for older CAD; ${DrawingFormat.values.where((f) => f.needsGeoref).map((f) => f.name).join(', ')} need a georeference), the reports (${ReportFormat.values.map((f) => 'report_${f.name}').join(', ')}: every report table; they need design results) or the project file (project, .oci.json). Export only when the user asks; it is always confirmed by the user. Changes nothing in the project.',
+          'Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (${DrawingFormat.values.map((f) => f.name).join(', ')}: pdf is the plot sheet, shp a zipped shapefile, inp EPANET, landxml the terrain and pipes, dxfR12 for older CAD; ${DrawingFormat.values.where((f) => f.needsGeoref).map((f) => f.name).join(', ')} need a georeference), the reports (${ReportFormat.values.map((f) => 'report_${f.name}').join(', ')}: every report table; they need design results) or the project file (project, .oci.json). pdf here is one plain sheet: a sheet set (an overview plus a sheet per zone or per irrigated area, chosen windows, construction details, report and chart pages, the base map under the drawing) is run_operation export_sheet_pdf. Export only when the user asks; it is always confirmed by the user. Changes nothing in the project.',
       inputSchema: obj(
         {
           'format': str(null, [for (final f in DrawingFormat.values) f.name, for (final f in ReportFormat.values) 'report_${f.name}', 'project']),

@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import '../../../core/io/details.dart' show DetailContext, detailTitleKey;
 import '../../../core/io/geo.dart';
 import '../../../core/io/pdf_sheet.dart';
-import '../../../core/io/plot.dart' show PlotRaster;
 import '../../../core/io/sheet_set.dart' show areaZones, zoneMembers;
 import '../../../core/model/entities.dart' show PumpEntity;
 import '../../../core/units.dart';
+import '../../io/sheet_basemap.dart';
 import '../../state/controller.dart';
 import '../fields.dart' show ScrollBody;
 import 'terrain_dialogs.dart' show dialogWidth;
@@ -285,12 +285,11 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                     var res = result();
                     if (withMap && mapAvailable) {
                       setState(() => busy = true);
-                      final snap = await c.baseMapSnapshot!();
-                      if (snap != null) res = res.copyWith(rasters: [PlotRaster(bytes: snap.$1, mime: 'image/png', corners: snap.$2, opacity: c.baseMapOpacity)], attribution: c.baseMapAttribution?.call() ?? '');
+                      res = await withSheetBaseMap(c, res, dpi: raster ? res.dpi : sheetMapDpi);
                     }
                     if (ctx.mounted) Navigator.pop(ctx, res);
                   },
-            child: Text(t('plot.export')),
+            child: busy ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Text(t('plot.export')),
           ),
         ],
       );

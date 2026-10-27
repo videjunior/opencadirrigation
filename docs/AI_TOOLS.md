@@ -19,15 +19,15 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | Command actions | 45 | 44 | 1 | 0 |
 | Drawing tools | 48 | 48 | 0 | 0 |
 | Command aliases | 311 | 305 | 6 | 0 |
-| Menu items (desktop and phone) | 286 | 273 | 13 | 0 |
-| Dialogs | 70 | 66 | 4 | 0 |
+| Menu items (desktop and phone) | 286 | 274 | 12 | 0 |
+| Dialogs | 71 | 66 | 5 | 0 |
 | Panel fields | 246 | 244 | 2 | 0 |
 | Status bar | 12 | 9 | 3 | 0 |
-| View options | 23 | 22 | 1 | 0 |
+| View options | 23 | 23 | 0 | 0 |
 | Dialog options | 624 | 622 | 2 | 0 |
-| **All** | **1665** | **1633** | **32** | **0** |
+| **All** | **1666** | **1635** | **31** | **0** |
 
-70 tools, 101 operations, 133 settings.
+70 tools, 101 operations, 134 settings.
 
 ## Tools sent with every request
 
@@ -45,7 +45,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `create_entities` | write | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
 | `update_entities` | write | Changes properties of existing items in one undo step and returns their new details. |
 | `delete_entities` | write | Deletes items in one undo step; deleted valves and pivots also leave the system flows. |
-| `transform_entities` | write | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
+| `transform_entities` | write | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled and the ids of new copies. |
 | `set_parameters` | write | Changes design parameters in one undo step and returns each old → new value. |
 | `edit_catalog` | write | Adds, updates, enables, disables or removes catalogue items in one undo step, e.g. the models of a manufacturer data sheet the user attached. |
 | `set_system_flows` | write | Sets the system flows (shifts): which zones, pivots and valve-in-head stations run together, from what hour and for how long. |
@@ -56,14 +56,14 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `run_design` | write | Runs the program's design: sizes every pipe and lateral the design may size (no spec, or auto true) for the least annual cost within the emitters' pressure windows and the velocity limits, then analyses the whole system… |
 | `analyse_design` | read | Analyses the system as drawn, resizing nothing, and returns the same summary as run_design. |
 | `apply_fix` | write | Applies one automatic correction offered by a message of get_design_messages: its number, its code (checked, so a changed list is caught) and one of the corrections listed for it. |
-| `auto_fix` | write | Runs "Fix automatically" (the Messages panel button): applies the safe correction of every message and designs again, in rounds, until nothing more can be fixed. |
+| `auto_fix` | write | Runs "Fix automatically" (the Messages panel button): designs, applies the safe correction of every message and designs again, in rounds, until nothing more can be fixed (no run_design is needed after it). |
 | `optimize_design` | write | Looks for the design with the lowest annual cost (capital annuity plus energy) without more errors: switches to LP sizing that trades pipe cost against energy, optionally frees the pipes sized by hand, gives each zone t… |
 | `layout_sprinklers` | write | Automatic sprinkler layout over a closed area (lawn, sports turf, field): heads of one sprinkler or micro-sprinkler family on a square or triangular grid, with matched part-circle heads along the edges and in the corner… |
 | `generate_block` | write | Fills a closed area with one irrigation block (one zone): parallel laterals every lateral_spacing_m (drip tape, or spraylines with emitters), the submain that feeds them, a zone stub and the zone valve outside the subma… |
 | `subdivide_field` | write | Cuts a field into irrigation blocks and fills each one as generate_block does (laterals, submain, stub and a zone valve chosen for the block's flow; zones named "Block n"): "strips" across the lateral direction, or "gri… |
-| `tree_rings` | write | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row_spacing_m between them, rows along direction_deg), or aroun… |
+| `tree_rings` | write | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plant_spacing_m along the rows, row_spacing_m between them, rows… |
 | `sports_template` | write | Sprinkler templates for sports turf and golf, centred on center and turned by rotation_deg: a football pitch (3 to 5 rows of heads along the touchlines, as few as the family's largest nozzle reaches across), a running-t… |
-| `fit_pivot` | write | Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping clear of the other closed shapes inside or across the field and… |
+| `fit_pivot` | write | Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping clear of the other closed shapes inside or across the field (no… |
 | `create_vegetation_areas` | write | Detects the vegetated areas (turf, trees and shrubs) in the aerial base map of the view or of a bbox and adds them as irrigated areas with crop presets, plus closed outlines of the holes to keep dry (buildings, pools, p… |
 | `rank_pumps` | read | Ranks the catalogue pumps for the duty the design found at a water supply: the flow and pressure of its worst system flow, with the other flows' duties and the static lift. |
 | `apply_pump` | write | Installs a pump for a water supply: the catalogue pump given, or the one with the lowest life-cycle cost that meets every system flow's duty. |
@@ -76,7 +76,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `select_entities` | read | Selects items on the user's drawing, to point them out or to prepare the user's next action (the properties panel shows the selection; layout_sprinklers routes to a selected mainline pipe). |
 | `zoom_to` | read | Moves the user's view to items, to a bbox or to the whole drawing (a view change; the project is untouched). |
 | `show_message` | read | Shows a short message (up to 200 characters) in the program's status bar, for a note the user should see outside the chat. |
-| `view_snapshot` | read | A picture (PNG) of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled metre grid, its id (e.g. "s3") and the exact pixel ↔ w… |
+| `view_snapshot` | read | A picture of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled metre grid, its id (e.g. "s3") and the exact pixel ↔ world m… |
 | `image_to_world` | read | Converts positions exactly between a picture and the project, so you never do the arithmetic: pixels [[px, py], …] you picked on picture `snapshot` (from its top-left corner, px right, py down; fractions allowed) → proj… |
 | `preview_geometry` | read | Draws geometry you propose (points, polylines, polygons) in magenta over a fresh picture of the project without changing it, to check a traced field, an obstacle, a route or positions against the satellite image and the… |
 | `terrain_picture` | read | A picture of the ground relief from the terrain model of the project (contours, spot heights, breaklines, downloaded elevations): a hillshade with colours by elevation (legend with the range in m), or the app's slope cl… |
@@ -87,7 +87,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `set_base_map` | read | Changes the base map under the drawing on the user's screen (a view setting, not part of the project): "satellite" for aerial imagery to trace fields, "streets"/"topo"/"carto"/"esri_streets"/"esri_topo", or "none". |
 | `download_terrain` | write | Downloads ground elevations for the drawing (or the view when the drawing is empty) from an online elevation model through the app's own download, and adds them as spot heights on the DEM layer (one undo step; it sends … |
 | `download_climate` | write | Downloads daily weather at the site for the last years from an online archive through the app's own download and stores its monthly normals (reference evapotranspiration ETo, rain, dependable rain, solar radiation) in t… |
-| `import_attachment` | write | Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX, LandXML, IFC, EPANET .inp, LAS point clouds, GeoTIFF elevat… |
+| `import_attachment` | write | Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX, LandXML, EPANET .inp, LAS point clouds, GeoTIFF elevations,… |
 | `update_todo` | read | Replaces your to-do list for the task; the user sees it above the conversation. |
 | `ask_user` | read | Asks the user one to four questions at once and waits for the answers. |
 | `present_plan` | read | Shows your plan to the user for approval: what you will draw and change, the main choices and values, your assumptions, what you will check. |
@@ -96,12 +96,12 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `get_playbook` | read | Reads the step-by-step workflow for one kind of project, written from how the program's examples are built: what to ask, the tools to use in order, typical values and checks. |
 | `list_examples` | read | Lists the example projects that come with the program (ids, titles, the playbook each follows). |
 | `read_example` | read | Reads how an example project is built, without opening it: its items by kind (with ids, names and layers), system flows, design parameters and the catalogue items it uses. |
-| `open_example` | read | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
+| `open_example` | read | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its contents). |
 | `read_manual` | read | Reads a topic of the program's reference manual: the exact rules, every item key, design parameter, message, tool and operation, the values the engine uses, and a worked example. |
 | `find_operations` | read | Finds the program's operations that are not sent as tools — drawing edits (offset, trim, extend, split, array, align, vertices), dimensions and revision clouds, blocks, layers, the view, undo/redo and the history, proje… |
 | `run_operation` | varies | Runs one of the operations found with find_operations, by name, with its input (an object checked against the operation's schema before anything changes). |
 | `run_command` | varies | Runs a command of the program by its typed alias (the command line of the canvas: "Z", "E", "U", "REDO", "OS", "ARRAY", "FE", "DENS", "CHK", "SURGE", "INSERT"…; Portuguese and Spanish spellings too) or by its action or … |
-| `get_setting` | read | Reads settings of the program by key or prefix: params.* (the design parameters of get_parameters), units.* (display units), project.* (details), quote.* (the quote), view.* (grid, labels, overlays, base map, theme, rep… |
+| `get_setting` | read | Reads settings of the program by key or prefix: params.* (the design parameters of get_parameters), units.* (display units), project.* (details), quote.* (the quote), view.* (grid, labels, overlays, base map, theme, int… |
 | `set_setting` | varies | Changes settings by key (see get_setting), every value checked against its type and range before anything changes. |
 
 ## Operations (find_operations / run_operation)
@@ -139,12 +139,12 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `list_tabs` | tabs | read | The open project tabs: number, name, unsaved changes, which one is on screen and which one is yours (you always work on your own project; the others are the user's). |
 | `switch_tab` | tabs | read | Shows another project tab to the user (Ctrl+Alt+→ / ←, a click on the tab). |
 | `close_tab` | tabs | write | File → Close tab (Ctrl+Alt+W) for another tab of the user (never your own): its unsaved changes stay only in this browser's autosave, so the user always confirms. |
-| `new_project` | file | varies | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab for the user (your project stays as it is). |
-| `open_attached_project` | file | read | File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab for the user (your project stays as it is). |
+| `new_project` | file | varies | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab in the background: the screen and you stay on your own project (to design the new one, the user swit… |
+| `open_attached_project` | file | read | File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab in the background (the screen and you stay on your own project; to work on it, the user switches to its tab and ope… |
 | `list_recent_projects` | file | read | File → Recent projects: the projects kept in this browser (saved or autosaved), newest first, with their ids for open_recent_project. |
-| `open_recent_project` | file | read | Opens a project kept in this browser (list_recent_projects) in a new tab for the user, as File → Recent projects does; your project stays as it is. |
+| `open_recent_project` | file | read | Opens a project kept in this browser (list_recent_projects) in a new tab in the background, as File → Recent projects does: the screen and you stay on your own project (to work on it, the user switches to its tab and op… |
 | `list_versions` | file | read | File → Versions: the saved versions of this project kept in this browser (every save keeps one), newest first. |
-| `restore_version` | file | varies | Opens a saved version (list_versions) in a new tab for the user (default), or with in_new_tab false replaces your project with it as File → Versions → Restore does (its undo history starts again, so the user always conf… |
+| `restore_version` | file | varies | Opens a saved version (list_versions) in a new tab in the background (default; the screen and you stay on your own project), or with in_new_tab false replaces your project with it as File → Versions → Restore does (its … |
 | `list_commands` | help | read | Help → Keyboard shortcuts: every command of the command line with its aliases (Portuguese and Spanish spellings included) and what you call for it. |
 | `generate_contours` | terrain | write | Design → Terrain → Generate contours: draws contour lines every interval_m from the terrain model (contours, spot heights, breaklines, downloaded elevations) as generated contours ("DTM"), which are drawn and exported b… |
 | `show_profile` | terrain | read | Shows the user the elevation profile of a path, as the Profile tool (PR) does: the path is drawn on the drawing and the Profile report tab opens with its chart (a view change; clear_profile removes it). |
@@ -154,7 +154,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `get_georeference` | site | read | File → Georeference as it stands: the coordinate system (WGS84 / UTM zone), the UTM easting and northing of the drawing origin [0, 0], its latitude and longitude and those of the centre of the drawing. |
 | `set_georeference` | site | write | File → Georeference: places the drawing on the Earth. |
 | `place_image` | site | write | File → Georeference image for a raster image item (an aerial photo, a scanned plan): its bottom-left corner, size in metres (keep_aspect keeps the proportions when only one is given), rotation (degrees counter-clockwise… |
-| `detect_vegetation` | site | varies | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bbox), or on an aerial image item of the drawing, by image ana… |
+| `detect_vegetation` | site | varies | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbox) — the user's aerial base map when one is on screen, else … |
 | `import_pdf_attachment` | import | write | File → Import of a PDF plan the user attached, with every option of the PDF import dialog: the page, the scale (1:N of the paper — the scale written on the sheet when found, else 1:100 — or metres per PDF unit), where t… |
 | `lateral_calculator` | engineering | read | Tools → Lateral calculator: hydraulics of ONE lateral from its inlet head — drip tape or a pipe with emitters (sprinklers, micro-sprinklers, drippers) every few metres — on a uniform slope: emitter count, inlet flow, fr… |
 | `pump_operating_point` | engineering | read | Tools → Pump calculator: where a catalogue pump meets a simple system curve (a static lift plus the friction of one pipe, Hazen-Williams): flow, head, pipe velocity, hydraulic and shaft power, annual energy and its cost… |
@@ -284,6 +284,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `view.base_map_opacity` | number 0.05 … 1 | view | Opacity of the base map. |
 | `view.custom_tile_url` | string | view | XYZ tile template of the custom base map, e.g. https://example.com/tiles/{z}/{x}/{y}.png ({z}, {x}, {y}, optional {s} and {-y}); "" removes it. Kept in this browser. |
 | `view.theme` | one of dark, light, system | view | Colour theme of the program (View → Theme), kept in this browser. |
+| `view.language` | one of id, de, en, es, fr, ha, sw, pt, vi, tr, ru, ar, ur, hi, mr, bn, pa, te, zh, ja | view | Language of the interface (View → Language), for every open tab, kept in this browser: id Bahasa Indonesia, de Deutsch, en English, es Español, fr Français, ha Hausa, sw Kiswahili, pt Português, vi Tiếng Việt, tr Türkçe, ru Русский, ar العربية, ur اردو, hi हिन्दी, mr मराठी, bn বাংলা, pa ਪੰਜਾਬੀ, te తెలుగు, zh 中文, ja 日本語. The user's choice: change it when the user asks. Your answers follow the language the user writes in. |
 | `view.reports_panel` | boolean | view | Show the reports panel under the drawing (F2). |
 | `view.report_tab` | one of reports.zone, reports.pipes, reports.outlets, reports.mainline, reports.bom, reports.water, reports.hgl, reports.messages, reports.profile, reports.flushing, reports.surge, reports.crop, reports.schedule, reports.pivots, reports.pivotSpans, reports.electrical, reports.proposal, reports.trench, reports.bomZones, reports.comments, reports.revisions, reports.scenarios, reports.requirement, reports.pivotPackage, reports.machines, reports.vih | view | Tab of the reports panel (shown when the panel opens). |
 | `view.active_tool` | one of select, pan, line, polyline, rect, circle, arc, spline, hatch, symbol, text, dimension, dimAngular, dimRadial, leader, contour, breakline, spot, area, zonePipe, mainPipe, sprayline, tape, outlet, valve, supply, pump, misc, junction, block, autohead, measure, rotate, mirror, scale, offset, trim, extend, cutPipe, profile, pivot, alignImage, controller, wire, dimOrdinate, comment, revisionCloud, insertBlock | view | The user's active drawing tool (it waits for the user's clicks; the assistant draws with create_entities and the operations instead). |
@@ -365,12 +366,12 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `undo` Undo | U, UNDO | `op:undo` | Edit → Undo (Ctrl+Z, U): takes back the last action, or "steps" actions, of the project (the user's or yours). |
 | `redo` Redo | REDO | `op:redo` | Edit → Redo (Ctrl+Y, REDO): brings back the last undone action, or "steps" of them. |
 | `selectAll` Select all | ALL, SA | `command:ALL` | run_command "ALL" (command:ALL) |
-| `duplicate` Duplicate selection | DUP | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
+| `duplicate` Duplicate selection | DUP | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
 | `array` Array… | ARRAY, ARR, MATRIZ | `op:array_entities` | Copies items in a rectangular or polar array, as Edit → Array (ARRAY): rows × columns at the spacings along the row direction, or "count" copies around "center… |
 | `feedEnvelope` Allowable submain position | FE, FEED, ENVELOPE, SUBMAIN | `op:feed_envelope` | Zone → Feed envelope (FE): for each spray lateral or tape, the positions along it where a submain may feed it so every emitter stays in its pressure window (wi… |
 | `run` Design all | RUN, DESIGN, PROJETAR | `tool:run_design` | Runs the program's design: sizes every pipe and lateral the design may size (no spec, or auto true) for the least annual cost within the emitters' pressure win… |
 | `check` Design check… | CHK, CHECK | `op:design_check` | Design → Design check: runs the check of the drawing and the settings (unconnected items, missing catalogue references, zones without a valve, settings out of … |
-| `autoFix` Fix automatically | FIX, AUTOFIX, CORRIGIR, CORREGIR | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): applies the safe correction of every message and designs again, in rounds, until nothing more can be fixe… |
+| `autoFix` Fix automatically | FIX, AUTOFIX, CORRIGIR, CORREGIR | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): designs, applies the safe correction of every message and designs again, in rounds, until nothing more ca… |
 | `optimize` Optimise design | OPT, OPTIMIZE, OTIMIZAR, OPTIMIZAR | `tool:optimize_design` | Looks for the design with the lowest annual cost (capital annuity plus energy) without more errors: switches to LP sizing that trades pipe cost against energy,… |
 | `snap` Snap | OS, OSNAP, SNAP | `setting:snap.enabled` | Object snap of the drawing tools (F3). |
 | `ortho` Ortho | OR, ORTHO, ORTO | `setting:snap.ortho` | Orthogonal mode: segments horizontal or vertical (F8). |
@@ -378,14 +379,14 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `gridDisplay` Show/hide grid | GR, GRID | `setting:view.grid` | Show the background grid (View → Grid, F7). |
 | `reports` Reports | REP, REPORTS, RELATORIOS | `setting:view.reports_panel` | Show the reports panel under the drawing (F2). |
 | `save` Save project | SAVE, QSAVE, SALVAR | `tool:export_file` | Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (dxf, dxfR12, dwg, pdf, svg, kml, kmz, geojs… |
-| `open` Open project… | OPEN, ABRIR | `op:open_attached_project` | File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab for the user (your project stays as it is). |
+| `open` Open project… | OPEN, ABRIR | `op:open_attached_project` | File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab in the background (the screen and you stay on your own … |
 | `densogram` Densogram… | DENS, DENSOGRAM, DENSOGRAMA | `op:densogram` | Zone → Densogram, with its options: the water the sprinklers apply over a grid (mm/h), its uniformity — Christiansen CU, low-quarter DU, scheduling coefficient… |
 | `autoLayout` Automatic sprinkler layout… | LAYOUT, LAY, AUTOLAYOUT | `tool:layout_sprinklers` | Automatic sprinkler layout over a closed area (lawn, sports turf, field): heads of one sprinkler or micro-sprinkler family on a square or triangular grid, with… |
 | `template` Sports turf and golf templates… | TPL, TEMPLATE, MODELO | `tool:sports_template` | Sprinkler templates for sports turf and golf, centred on center and turned by rotation_deg: a football pitch (3 to 5 rows of heads along the touchlines, as few… |
 | `fieldBlocks` Subdivide a field into blocks… | SUBDIV, TALHAO | `tool:subdivide_field` | Cuts a field into irrigation blocks and fills each one as generate_block does (laterals, submain, stub and a zone valve chosen for the block's flow; zones name… |
-| `treeRings` Orchard drip rings… | RINGS, ANEIS, ANILLOS | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `treeRings` Orchard drip rings… | RINGS, ANEIS, ANILLOS | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `pivotFit` Fit a pivot to the field… | PFIT | `tool:fit_pivot` | Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping cle… |
-| `vegetation` Detect vegetation in the image… | VEG, VEGETATION, VEGETACAO, VEGETACION | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
+| `vegetation` Detect vegetation in the image… | VEG, VEGETATION, VEGETACAO, VEGETACION | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
 | `onDemand` On-demand operation (Clément)… | DEMAND, DEMANDA, CLEMENT | `op:on_demand_study` | Mainline → On-demand operation (FAO 59): every zone valve and pivot taken as a hydrant its user opens whenever needed, open with the probability of its hours o… |
 | `tariff` Time-of-use tariff and flow schedule… | TARIFF, TARIFA, TOU | `op:tariff_schedule` | Design → Tariff schedule: a time-of-use energy tariff (price bands of the day, demand charges, an irrigation discount in a window of the day such as the Brazil… |
 | `energyGroups` Group zones for energy… | EGROUP, ENERGY, ENERGIA | `op:energy_grouping_study` | Design → Energy grouping, with every option: system flows (groups of zones opened together) that need the least pumping energy — zones of similar required head… |
@@ -436,9 +437,9 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `block` Lateral block | B, BL, BLOCK, BLOCO, BLOQUE | `op:fill_block` | Fills a polygon with one irrigation block exactly as the Block tool and its dialog (B): parallel laterals (spray laterals with emitters, or drip tape), a subma… |
 | `autohead` Sprinkler grid | AH, AUTOHEAD, GRADE, ASPERSORES | `op:sprinkler_grid` | Fills a polygon with sprinklers on a square or triangular grid, exactly as the Autohead tool and its dialog (AH): the spacing is a percentage of the wetted dia… |
 | `measure` Measure | ME, MEASURE, DI, DIST, MEDIR | `tool:measure` | Length and bounds of a polyline given as points in metres and, when closed, its perimeter, area (m² and ha) and centroid. |
-| `rotate` Rotate | RO, ROTATE, GIRAR, ROTACIONAR | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
-| `mirror` Mirror | MI, MIRROR, ESPELHAR, SIMETRIA | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
-| `scale` Scale | SC, SCALE, ESCALA | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
+| `rotate` Rotate | RO, ROTATE, GIRAR, ROTACIONAR | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
+| `mirror` Mirror | MI, MIRROR, ESPELHAR, SIMETRIA | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
+| `scale` Scale | SC, SCALE, ESCALA | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
 | `offset` Offset | O, OFFSET, DESLOCAR, DESFASE | `op:offset_entities` | Offsets items like the Offset tool (O): a parallel copy at a distance — lines, polylines, splines, contours, pipes, laterals, tapes and areas side by side, cir… |
 | `trim` Trim | TR, TRIM, APARAR, RECORTA | `op:trim_entity` | Trims a line, polyline, pipe, lateral, tape, contour or spline like the Trim tool (TR): the part around "at" between the nearest crossings with the boundary it… |
 | `extend` Extend | EX, EXTEND, ESTENDER, ALARGAR | `op:extend_entity` | Extends the end of a line, polyline, pipe, lateral, tape or contour nearest to "at" until it meets a boundary item, like the Extend tool (EX). |
@@ -457,29 +458,29 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 
 | Function | Route | Notes |
 |---|---|---|
-| `file.new` New project | `op:new_project` | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab for the user (your project stays as it i… |
-| `file.newTab` New project tab | `op:new_project` | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab for the user (your project stays as it i… |
+| `file.new` New project | `op:new_project` | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab in the background: the screen and you st… |
+| `file.newTab` New project tab | `op:new_project` | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab in the background: the screen and you st… |
 | `file.closeTab` Close tab | `op:close_tab` | File → Close tab (Ctrl+Alt+W) for another tab of the user (never your own): its unsaved changes stay only in this browser's autosave, so the user always confir… |
-| `file.open` Open project | `op:open_attached_project` | File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab for the user (your project stays as it is). |
+| `file.open` Open project | `op:open_attached_project` | File → Open for a project file (.oci.json) the user attached to the conversation: it opens in a new tab in the background (the screen and you stay on your own … |
 | `file.noRecent` (none) | `op:list_recent_projects` | File → Recent projects: the projects kept in this browser (saved or autosaved), newest first, with their ids for open_recent_project. |
 | `file.save` Save project | `tool:export_file` | Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (dxf, dxfR12, dwg, pdf, svg, kml, kmz, geojs… |
 | `file.versions` Version history | `op:list_versions` | File → Versions: the saved versions of this project kept in this browser (every save keeps one), newest first. |
 | `file.autosave` Autosave in the browser | `setting:app.autosave` | Autosave to this browser every few seconds of work (File → Autosave). |
-| `exg.orchard.title` Orchard | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.garden.title` Residential garden | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.sportsField.title` Football pitch | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.rowCrop.title` Drip row crop | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.pivot.title` Centre pivot | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.greenhouse.title` Vegetable greenhouse | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.nursery.title` Plant nursery | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.coffee.title` Coffee on contour lines | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.bananas.title` Banana plantation | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.sugarcane.title` Subsurface drip sugarcane | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.gravity.title` Gravity-fed drip | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.pasture.title` Sprinkler-irrigated pasture | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.golf.title` Golf hole | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.sectorPivot.title` Sector pivot with end gun | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `exg.linear.title` Linear move | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
+| `exg.orchard.title` Orchard | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.garden.title` Residential garden | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.sportsField.title` Football pitch | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.rowCrop.title` Drip row crop | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.pivot.title` Centre pivot | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.greenhouse.title` Vegetable greenhouse | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.nursery.title` Plant nursery | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.coffee.title` Coffee on contour lines | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.bananas.title` Banana plantation | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.sugarcane.title` Subsurface drip sugarcane | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.gravity.title` Gravity-fed drip | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.pasture.title` Sprinkler-irrigated pasture | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.golf.title` Golf hole | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.sectorPivot.title` Sector pivot with end gun | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `exg.linear.title` Linear move | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
 | `file.importDrawing` Import (DXF, DWG, PDF, KML/KMZ, SHP, CSV/XYZ, images) | `tool:import_attachment` | Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX,… |
 | `file.georefImage` Georeference selected image | `op:place_image` | File → Georeference image for a raster image item (an aerial photo, a scanned plan): its bottom-left corner, size in metres (keep_aspect keeps the proportions … |
 | `tool.alignImage` Align by 2 points | `op:align_entities` | Aligns items by two point pairs, like the two-point Align tool (AL, File → Align image): the similarity transform (move, turn and scale; scale kept with keep_s… |
@@ -511,14 +512,14 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `edit.clipCopy` Copy | `op:clipboard` | Edit → Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) for items: "copy" puts items (with their layers and catalogue items) on the clipboard the program shares bet… |
 | `edit.clipCut` Cut | `op:clipboard` | Edit → Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) for items: "copy" puts items (with their layers and catalogue items) on the clipboard the program shares bet… |
 | `edit.paste` Paste | `op:clipboard` | Edit → Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) for items: "copy" puts items (with their layers and catalogue items) on the clipboard the program shares bet… |
-| `edit.copy` Duplicate selection | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
+| `edit.copy` Duplicate selection | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
 | `edit.delete` Delete selection | `tool:delete_entities` | Deletes items in one undo step; deleted valves and pivots also leave the system flows. |
 | `bomSel.menu` Materials of the selection | `op:selection_bom` | Edit → Materials of the selection: the bill of materials of some items (a stretch of the works, a supplier's order) — category, description, code, unit, quanti… |
 | `blk.save` Save selection as block | `op:save_block` | Edit → Save selection as block (WBLOCK): keeps copies of the items as a named block of the project (a valve box, a manifold, a standard detail) with its base p… |
 | `blk.insert` Insert block | `op:insert_block` | Edit → Insert block (INSERT, IB) at a typed point: copies of block "name" with its base point at "at" (or at each of "points"), turned rotation_deg counter-clo… |
-| `tool.rotate` Rotate | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
-| `tool.mirror` Mirror | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
-| `tool.scale` Scale | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
+| `tool.rotate` Rotate | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
+| `tool.mirror` Mirror | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
+| `tool.scale` Scale | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
 | `tool.offset` Offset | `op:offset_entities` | Offsets items like the Offset tool (O): a parallel copy at a distance — lines, polylines, splines, contours, pipes, laterals, tapes and areas side by side, cir… |
 | `tool.trim` Trim | `op:trim_entity` | Trims a line, polyline, pipe, lateral, tape, contour or spline like the Trim tool (TR): the part around "at" between the nearest crossings with the boundary it… |
 | `tool.extend` Extend | `op:extend_entity` | Extends the end of a line, polyline, pipe, lateral, tape or contour nearest to "at" until it meets a boundary item, like the Extend tool (EX). |
@@ -532,7 +533,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `view.wetted` Wetted radii | `setting:view.wetted_radii` | Show the wetted circles of sprinklers (View → Wetted radii). |
 | `view.grips` Edit grips | `setting:view.grips` | Show the editing grips of selected items (View → Grips). |
 | `lbl.menu` Conditional labels | `tool:set_label_rules` | Replaces all the label rules (View → Conditional labels): each shows a design result next to the pipes, outlets or valves where it meets a condition, in its co… |
-| `gps.menu` Device GPS | n/a | the device's GPS follows the user walking the site; the user starts it |
+| `gps.menu` Device GPS | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
 | `view.overlay.none` No results overlay | `setting:view.overlay` | Colouring of the drawing (View → Overlay): velocity, pressure, sizes, minMax (zone pressure range), densogram (water applied), slope / aspect maps of the terra… |
 | `view.overlay.velocity` Colour by velocity | `setting:view.overlay` | Colouring of the drawing (View → Overlay): velocity, pressure, sizes, minMax (zone pressure range), densogram (water applied), slope / aspect maps of the terra… |
 | `view.overlay.pressure` Colour by pressure | `setting:view.overlay` | Colouring of the drawing (View → Overlay): velocity, pressure, sizes, minMax (zone pressure range), densogram (water applied), slope / aspect maps of the terra… |
@@ -555,7 +556,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `view.baseMap.googleKey` Google Maps API key | n/a | the user's own Map Tiles API key, kept in this browser; the assistant never handles keys |
 | `view.baseMap.custom` Custom (XYZ URL) | `setting:view.base_map` | Base map under the drawing (needs a georeference). |
 | `view.baseMap.customUrl` Custom map URL | `setting:view.custom_tile_url` | XYZ tile template of the custom base map, e.g. https://example.com/tiles/{z}/{x}/{y}.png ({z}, {x}, {y}, optional {s} and {-y}); "" removes it. |
-| `view.language` Language | n/a | the language of the interface is the user's choice (the assistant answers in it) |
+| `view.language` Language | `setting:view.language` | Language of the interface (View → Language), for every open tab, kept in this browser: id Bahasa Indonesia, de Deutsch, en English, es Español, fr Français, ha… |
 | `view.theme.dark` Dark | `setting:view.theme` | Colour theme of the program (View → Theme), kept in this browser. |
 | `view.theme.light` Light | `setting:view.theme` | Colour theme of the program (View → Theme), kept in this browser. |
 | `view.theme.system` Follow the system | `setting:view.theme` | Colour theme of the program (View → Theme), kept in this browser. |
@@ -580,11 +581,11 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `tool.profile` Elevation profile | `tool:terrain_profile` | The ground along a line from the terrain model: length, start and end elevations, total rise and total fall, steepest uphill and downhill slopes, the highest a… |
 | `tool.comment` Comment | `tool:create_entities` | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
 | `tool.revisionCloud` Revision cloud | `op:add_revision_cloud` | Draws a revision cloud around what changed, as the Revision cloud tool (RC) and its dialog: a closed outline drawn as a chain of arcs, tagged with the revision… |
-| `gps.walkStart` Record a walk | n/a | the device's GPS follows the user walking the site; the user starts it |
-| `gps.walkArea` Finish the walk as an irrigated area | n/a | the device's GPS follows the user walking the site; the user starts it |
-| `gps.walkOutline` Finish the walk as a closed outline | n/a | the device's GPS follows the user walking the site; the user starts it |
-| `gps.walkLine` Finish the walk as a line | n/a | the device's GPS follows the user walking the site; the user starts it |
-| `gps.mark` Mark a point at the current position | n/a | the device's GPS follows the user walking the site; the user starts it |
+| `gps.walkStart` Record a walk | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
+| `gps.walkArea` Finish the walk as an irrigated area | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
+| `gps.walkOutline` Finish the walk as a closed outline | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
+| `gps.walkLine` Finish the walk as a line | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
+| `gps.mark` Mark a point at the current position | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
 | `tool.zonePipe` Zone pipe | `tool:create_entities` | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
 | `tool.sprayline` Sprayline (lateral) | `tool:create_entities` | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
 | `tool.tape` Drip tape / dripline | `tool:create_entities` | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
@@ -634,11 +635,11 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `autolay.menu` Automatic sprinkler layout | `tool:layout_sprinklers` | Automatic sprinkler layout over a closed area (lawn, sports turf, field): heads of one sprinkler or micro-sprinkler family on a square or triangular grid, with… |
 | `tpl.menu` Sports turf and golf templates | `tool:sports_template` | Sprinkler templates for sports turf and golf, centred on center and turned by rotation_deg: a football pitch (3 to 5 rows of heads along the touchlines, as few… |
 | `subdiv.menu` Subdivide a field into blocks | `tool:subdivide_field` | Cuts a field into irrigation blocks and fills each one as generate_block does (laterals, submain, stub and a zone valve chosen for the block's flow; zones name… |
-| `rings.menu` Orchard drip rings | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `rings.menu` Orchard drip rings | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `pfit.menu` Fit a pivot to the field | `tool:fit_pivot` | Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping cle… |
-| `veg.menu` Detect vegetation in the image | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
+| `veg.menu` Detect vegetation in the image | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
 | `design.check` Design check | `op:design_check` | Design → Design check: runs the check of the drawing and the settings (unconnected items, missing catalogue references, zones without a valve, settings out of … |
-| `adv.fixAll` Fix automatically | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): applies the safe correction of every message and designs again, in rounds, until nothing more can be fixe… |
+| `adv.fixAll` Fix automatically | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): designs, applies the safe correction of every message and designs again, in rounds, until nothing more ca… |
 | `adv.optimize` Optimise design | `tool:optimize_design` | Looks for the design with the lowest annual cost (capital annuity plus energy) without more errors: switches to LP sizing that trades pipe cost against energy,… |
 | `ai.menu` AI assistant | n/a | it opens this assistant |
 | `design.zone` Size zones (LP/velocity) | `tool:run_design` | Runs the program's design: sizes every pipe and lateral the design may size (no spec, or auto true) for the least annual cost within the emitters' pressure win… |
@@ -683,7 +684,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `surf.menu` Surface irrigation (furrows, borders, basins) | `op:surface_irrigation` | Tools → Surface irrigation (FAO 45 volume balance): furrows, open-end borders or level basins. |
 | `gate.menu` Gated pipe | `op:gated_pipe` | Tools → Gated pipe: the opening of every gate of a gated pipe feeding furrows (or the standard hole), so each furrow gets its flow with the friction and the sl… |
 | `tools.units` Units | `setting:units.system` | Display units at once: "metric" (m, L/h, m of water, mm) or "us" (ft, gpm, psi, in); "custom" when mixed. |
-| `help.tutorial` Interactive tutorial | n/a | the interactive tutorial teaches the user the interface |
+| `help.tutorial` Interactive tutorial | n/a | the interactive tutorial teaches the user the interface; the assistant points the user to Help → Interactive tutorial (read_manual "interface") |
 | `help.welcome` Welcome and example gallery | `tool:list_examples` | Lists the example projects that come with the program (ids, titles, the playbook each follows). |
 | `help.shortcuts` Keyboard shortcuts | `op:list_commands` | Help → Keyboard shortcuts: every command of the command line with its aliases (Portuguese and Spanish spellings included) and what you call for it. |
 | `help.about` About | n/a | version and links of the program |
@@ -692,21 +693,21 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `hist.title` History | `op:get_history` | The history panel: every action since the project was opened (#0 is the opening state), the current state marked, the undone actions that redo brings back. |
 | `mob.props` Properties | `tool:get_entity` | One item by id or name (a zone name finds its valve): the report rows that mention it (after a design: flows, pressures, sizes), its stored keys as JSON in SI … |
 | `menu.reports` Reports | `setting:view.reports_panel` | Show the reports panel under the drawing (F2). |
-| `file.examples+exg.orchard.title` Examples · Orchard | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.garden.title` Examples · Residential garden | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.sportsField.title` Examples · Football pitch | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.rowCrop.title` Examples · Drip row crop | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.pivot.title` Examples · Centre pivot | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.greenhouse.title` Examples · Vegetable greenhouse | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.nursery.title` Examples · Plant nursery | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.coffee.title` Examples · Coffee on contour lines | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.bananas.title` Examples · Banana plantation | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.sugarcane.title` Examples · Subsurface drip sugarcane | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.gravity.title` Examples · Gravity-fed drip | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.pasture.title` Examples · Sprinkler-irrigated pasture | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.golf.title` Examples · Golf hole | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.sectorPivot.title` Examples · Sector pivot with end gun | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `file.examples+exg.linear.title` Examples · Linear move | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
+| `file.examples+exg.orchard.title` Examples · Orchard | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.garden.title` Examples · Residential garden | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.sportsField.title` Examples · Football pitch | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.rowCrop.title` Examples · Drip row crop | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.pivot.title` Examples · Centre pivot | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.greenhouse.title` Examples · Vegetable greenhouse | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.nursery.title` Examples · Plant nursery | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.coffee.title` Examples · Coffee on contour lines | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.bananas.title` Examples · Banana plantation | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.sugarcane.title` Examples · Subsurface drip sugarcane | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.gravity.title` Examples · Gravity-fed drip | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.pasture.title` Examples · Sprinkler-irrigated pasture | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.golf.title` Examples · Golf hole | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.sectorPivot.title` Examples · Sector pivot with end gun | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `file.examples+exg.linear.title` Examples · Linear move | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
 | `file.exportDrawing+exp.dxf` Export drawing · DXF (AutoCAD, QGIS) | `tool:export_file` | Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (dxf, dxfR12, dwg, pdf, svg, kml, kmz, geojs… |
 | `file.exportDrawing+exp.dxfR12` Export drawing · DXF R12 (older programs) | `op:export_more_formats` | File → Export: the formats export_file does not list — "dxf_r12" (the plain DXF R12 for older CAD programs that do not read AutoCAD 2000 files), "gpx" (waypoin… |
 | `file.exportDrawing+exp.dwg` Export drawing · DWG (AutoCAD 2000, binary) | `tool:export_file` | Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (dxf, dxfR12, dwg, pdf, svg, kml, kmz, geojs… |
@@ -775,6 +776,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `agronomy_dialogs.wettedBulb.soil` | `op:wetted_bulb` | Tools → Wetted bulb (Schwartzman–Zur): width and depth of the soil a dripper wets with one irrigation, and the wetted share of the ground for an emitter and la… |
 | `agronomy_dialogs.wettedBulb.volume` | `op:wetted_bulb` | Tools → Wetted bulb (Schwartzman–Zur): width and depth of the soil a dripper wets with one irrigation, and the wetted share of the ground for an emitter and la… |
 | `ai_assistant_dialog.aiAssistant` | n/a | it is this assistant |
+| `ai_start_dialog.aiStart` | n/a | the start-up question that opens the assistant itself; the user answers it before any conversation exists |
 | `auto_design_dialogs.autoDesign` | n/a | opens one of the automatic design dialogs by name for the command aliases; each dialog is covered |
 | `auto_design_dialogs.autoLayout` | `tool:layout_sprinklers` | Automatic sprinkler layout over a closed area (lawn, sports turf, field): heads of one sprinkler or micro-sprinkler family on a square or triangular grid, with… |
 | `auto_design_dialogs.autoLayout.connection` | `op:layout_sprinklers_advanced` | Design → Auto design → Automatic layout with every option of the dialog (layout_sprinklers is the short version): sprinkler heads over a closed area on a squar… |
@@ -852,24 +854,24 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `auto_design_dialogs.template.useLine` | `op:sports_template_advanced` | Design → Auto design → Templates with every option of the dialog (sports_template is the short version): a football pitch (rows of heads across, 0 = automatic)… |
 | `auto_design_dialogs.template.useShape` | `tool:sports_template` | Sprinkler templates for sports turf and golf, centred on center and turned by rotation_deg: a football pitch (3 to 5 rows of heads along the touchlines, as few… |
 | `auto_design_dialogs.template.width` | `tool:sports_template` | Sprinkler templates for sports turf and golf, centred on center and turned by rotation_deg: a football pitch (3 to 5 rows of heads along the touchlines, as few… |
-| `auto_design_dialogs.treeRings` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
-| `auto_design_dialogs.treeRings.direction` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `auto_design_dialogs.treeRings` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
+| `auto_design_dialogs.treeRings.direction` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `auto_design_dialogs.treeRings.dripper` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
-| `auto_design_dialogs.treeRings.drippers` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `auto_design_dialogs.treeRings.drippers` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `auto_design_dialogs.treeRings.head` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
-| `auto_design_dialogs.treeRings.kind` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `auto_design_dialogs.treeRings.kind` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `auto_design_dialogs.treeRings.lateralPipe` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `auto_design_dialogs.treeRings.nozzle` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `auto_design_dialogs.treeRings.plantOffset` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
-| `auto_design_dialogs.treeRings.plantSpacing` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
-| `auto_design_dialogs.treeRings.radius` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `auto_design_dialogs.treeRings.plantSpacing` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
+| `auto_design_dialogs.treeRings.radius` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `auto_design_dialogs.treeRings.rowOffset` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
-| `auto_design_dialogs.treeRings.rowSpacing` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `auto_design_dialogs.treeRings.rowSpacing` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `auto_design_dialogs.treeRings.stub` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `auto_design_dialogs.treeRings.submainPosition` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `auto_design_dialogs.treeRings.tape` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `auto_design_dialogs.treeRings.tapeInlet` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
-| `auto_design_dialogs.treeRings.useSymbols` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline, or a few drippers, around each tree of a planting grid over the area (plant_spacing_m along the rows, row… |
+| `auto_design_dialogs.treeRings.useSymbols` | `tool:tree_rings` | Orchard drip rings (young trees): a ring of dripline (tape), or a few drippers (outlet) on a ring pipe, around each tree of a planting grid over the area (plan… |
 | `auto_design_dialogs.treeRings.valve` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `auto_design_dialogs.treeRings.zone` | `op:tree_rings_advanced` | Design → Auto design → Tree rings with every option of the dialog (tree_rings is the short version): drip rings round the trees of a planting grid inside an ar… |
 | `basemap_dialogs.customTiles` | `setting:view.custom_tile_url` | XYZ tile template of the custom base map, e.g. https://example.com/tiles/{z}/{x}/{y}.png ({z}, {x}, {y}, optional {s} and {-y}); "" removes it. |
@@ -1268,11 +1270,11 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `more_dialogs.pumpSelection.apply` | `tool:apply_pump` | Installs a pump for a water supply: the catalogue pump given, or the one with the lowest life-cycle cost that meets every system flow's duty. |
 | `more_dialogs.pumpSelection.candidates` | `tool:rank_pumps` | Ranks the catalogue pumps for the duty the design found at a water supply: the flow and pressure of its worst system flow, with the other flows' duties and the… |
 | `more_dialogs.pumpSelection.supply` | `tool:rank_pumps` | Ranks the catalogue pumps for the duty the design found at a water supply: the flow and pressure of its worst system flow, with the other flows' duties and the… |
-| `more_dialogs.recovery` | `op:open_recent_project` | Opens a project kept in this browser (list_recent_projects) in a new tab for the user, as File → Recent projects does; your project stays as it is. |
+| `more_dialogs.recovery` | `op:open_recent_project` | Opens a project kept in this browser (list_recent_projects) in a new tab in the background, as File → Recent projects does: the screen and you stay on your own… |
 | `more_dialogs.recovery.discard` | n/a | discarding the user's autosaved copies is left to the user |
-| `more_dialogs.recovery.restore` | `op:open_recent_project` | Opens a project kept in this browser (list_recent_projects) in a new tab for the user, as File → Recent projects does; your project stays as it is. |
+| `more_dialogs.recovery.restore` | `op:open_recent_project` | Opens a project kept in this browser (list_recent_projects) in a new tab in the background, as File → Recent projects does: the screen and you stay on your own… |
 | `more_dialogs.versions` | `op:list_versions` | File → Versions: the saved versions of this project kept in this browser (every save keeps one), newest first. |
-| `more_dialogs.versions.restore` | `op:restore_version` | Opens a saved version (list_versions) in a new tab for the user (default), or with in_new_tab false replaces your project with it as File → Versions → Restore … |
+| `more_dialogs.versions.restore` | `op:restore_version` | Opens a saved version (list_versions) in a new tab in the background (default; the screen and you stay on your own project), or with in_new_tab false replaces … |
 | `network_ops_dialogs.calibration` | `op:calibrate_roughness` | Mainline → Calibration: fits the Hazen-Williams C scale of the design parameters to pressures read in the field at points of the mainline (valves, supplies, ju… |
 | `network_ops_dialogs.calibration.apply` | `op:calibrate_roughness` | Mainline → Calibration: fits the Hazen-Williams C scale of the design parameters to pressures read in the field at points of the mainline (valves, supplies, ju… |
 | `network_ops_dialogs.calibration.flow` | `op:calibrate_roughness` | Mainline → Calibration: fits the Hazen-Williams C scale of the design parameters to pressures read in the field at points of the mainline (valves, supplies, ju… |
@@ -1425,23 +1427,23 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `transient_dialogs.transient.run` | `op:transient_study` | Mainline → Transients, with every option: hydraulic transients (water hammer, method of characteristics) of the system flows for the scenarios chosen — the zon… |
 | `transient_dialogs.transient.scenarios` | `op:transient_study` | Mainline → Transients, with every option: hydraulic transients (water hammer, method of characteristics) of the system flows for the scenarios chosen — the zon… |
 | `transient_dialogs.transient.series` | `op:transient_study` | Mainline → Transients, with every option: hydraulic transients (water hammer, method of characteristics) of the system flows for the scenarios chosen — the zon… |
-| `vegetation_dialog.vegetation` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.canopyClean` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.clean` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.generate` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.minArea` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.minHole` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.simplify` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.smoothing` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.source` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.split` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.threshold` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.treeLimit` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.trees` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
-| `vegetation_dialog.vegetation.turf` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial base map of the view (or of a bb… |
+| `vegetation_dialog.vegetation` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.canopyClean` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.clean` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.generate` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.minArea` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.minHole` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.simplify` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.smoothing` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.source` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.split` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.threshold` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.treeLimit` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.trees` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `vegetation_dialog.vegetation.turf` | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
 | `welcome_dialog.welcome` | `tool:list_examples` | Lists the example projects that come with the program (ids, titles, the playbook each follows). |
-| `welcome_dialog.welcome.example` | `tool:open_example` | Opens an example project in a new tab for the user to look at (the open project stays as it is). |
-| `welcome_dialog.welcome.tutorial` | n/a | the interactive tutorial teaches the user the interface |
+| `welcome_dialog.welcome.example` | `tool:open_example` | Opens an example project in a new tab in the background for the user to look at: the screen and you stay on your own project (read_example gives you its conten… |
+| `welcome_dialog.welcome.tutorial` | n/a | the interactive tutorial teaches the user the interface; the assistant points the user to Help → Interactive tutorial (read_manual "interface") |
 
 ### Panels
 
@@ -1581,7 +1583,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `layers.delete` | `tool:edit_layers` | Adds, renames (its items move with it), recolours, locks or unlocks (a locked layer refuses every change to its items), shows or hides (a hidden layer is still… |
 | `canvas.pick` | `tool:select_entities` | Selects items on the user's drawing, to point them out or to prepare the user's next action (the properties panel shows the selection; layout_sprinklers routes… |
 | `canvas.window` | `tool:select_entities` | Selects items on the user's drawing, to point them out or to prepare the user's next action (the properties panel shows the selection; layout_sprinklers routes… |
-| `canvas.drag` | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items in one undo step; returns how many items it handled and the ids of new copies. |
+| `canvas.drag` | `tool:transform_entities` | Moves, copies, rotates, scales, mirrors or arrays items (ids, or selected true for the current selection) in one undo step; returns how many items it handled a… |
 | `canvas.commandLine` | `tool:run_command` | Runs a command of the program by its typed alias (the command line of the canvas: "Z", "E", "U", "REDO", "OS", "ARRAY", "FE", "DENS", "CHK", "SURGE", "INSERT"…… |
 | `canvas.typedPoint` | `tool:create_entities` | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
 | `canvas.pan` | `tool:zoom_to` | Moves the user's view to items, to a bbox or to the whole drawing (a view change; the project is untouched). |
@@ -1656,7 +1658,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `tabs.list` | `op:list_tabs` | The open project tabs: number, name, unsaved changes, which one is on screen and which one is yours (you always work on your own project; the others are the us… |
 | `tabs.select` | `op:switch_tab` | Shows another project tab to the user (Ctrl+Alt+→ / ←, a click on the tab). |
 | `tabs.close` | `op:close_tab` | File → Close tab (Ctrl+Alt+W) for another tab of the user (never your own): its unsaved changes stay only in this browser's autosave, so the user always confir… |
-| `tabs.new` | `op:new_project` | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab for the user (your project stays as it i… |
+| `tabs.new` | `op:new_project` | File → New project tab (Ctrl+Alt+N): a blank project with the user's default catalogue and currency opens in a new tab in the background: the screen and you st… |
 | `canvas.grips` | `op:edit_vertices` | Edits the grips of an item as the selection tool does: "move" a grip (vertex of a line or polyline, position of a point item, corner of an image, dimension poi… |
 | `canvas.wheel` | `op:zoom_view` | Zooms the user's view like View → Zoom in / Zoom out (ZI, ZO, + and −): "factor" above 1 zooms in, below 1 out (1.25 is one step in), about the centre of the s… |
 | `reports.zone` | `tool:get_report_table` | Reads one report table exactly as the reports panel shows it, in the project's display units; ⚠ marks the rows the program highlights (out of window, over the … |
@@ -1686,7 +1688,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `reports.machines` | `tool:get_report_table` | Reads one report table exactly as the reports panel shows it, in the project's display units; ⚠ marks the rows the program highlights (out of window, over the … |
 | `reports.vih` | `tool:get_report_table` | Reads one report table exactly as the reports panel shows it, in the project's display units; ⚠ marks the rows the program highlights (out of window, over the … |
 | `messages.correction` | `tool:apply_fix` | Applies one automatic correction offered by a message of get_design_messages: its number, its code (checked, so a changed list is caught) and one of the correc… |
-| `messages.fixAll` | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): applies the safe correction of every message and designs again, in rounds, until nothing more can be fixe… |
+| `messages.fixAll` | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): designs, applies the safe correction of every message and designs again, in rounds, until nothing more ca… |
 | `messages.undoFixes` | n/a | the AI turn is one undo step the user undoes from the chat |
 | `messages.optimize` | `tool:optimize_design` | Looks for the design with the lowest annual cost (capital annuity plus energy) without more errors: switches to LP sizing that trades pipe cost against energy,… |
 | `messages.optimize.pumps` | `tool:optimize_design` | Looks for the design with the lowest annual cost (capital annuity plus energy) without more errors: switches to LP sizing that trades pipe cost against energy,… |
@@ -1706,7 +1708,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `polar` | `setting:snap.polar_step_deg` | Polar tracking step (0 = off; the status bar cycles 0, 15, 30, 45, 90). |
 | `keepLinks` | `setting:tool.keep_connections` | Dragging a pipe node drags the items joined there (status bar "keep links"). |
 | `autoAnalyze` | `setting:app.auto_analyze` | Analyse the design again a moment after every edit (Design → Auto analyse), kept in this browser. |
-| `gps` | n/a | the device's GPS follows the user walking the site; the user starts it |
+| `gps` | n/a | the device's GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths) |
 | `angleLock` | n/a | Shift locks the user's pointer to 45° steps while drawing |
 | `scale` | `setting:view.scale` | Screen pixels per metre of the view (read-only; zoom_view changes it). |
 | `version` | n/a | version of the program |
@@ -1716,7 +1718,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | Function | Route | Notes |
 |---|---|---|
 | `camera` | `tool:zoom_to` | Moves the user's view to items, to a bbox or to the whole drawing (a view change; the project is untouched). |
-| `snapshot` | `tool:view_snapshot` | A picture (PNG) of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a lab… |
+| `snapshot` | `tool:view_snapshot` | A picture of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled … |
 | `selection` | `tool:select_entities` | Selects items on the user's drawing, to point them out or to prepare the user's next action (the properties panel shows the selection; layout_sprinklers routes… |
 | `unconnected` | `tool:get_design_messages` | The design check and design-assistant messages, errors first: number (#), severity, code, title, the items involved, why it matters and how to solve it (once p… |
 | `grid` | `setting:view.grid` | Show the background grid (View → Grid, F7). |
@@ -1731,7 +1733,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `baseMapOpacity` | `setting:view.base_map_opacity` | Opacity of the base map. |
 | `customTiles` | `setting:view.custom_tile_url` | XYZ tile template of the custom base map, e.g. https://example.com/tiles/{z}/{x}/{y}.png ({z}, {x}, {y}, optional {s} and {-y}); "" removes it. |
 | `theme` | `setting:view.theme` | Colour theme of the program (View → Theme), kept in this browser. |
-| `language` | n/a | the language of the interface is the user's choice (the assistant answers in it) |
+| `language` | `setting:view.language` | Language of the interface (View → Language), for every open tab, kept in this browser: id Bahasa Indonesia, de Deutsch, en English, es Español, fr Français, ha… |
 | `reportsPanel` | `setting:view.reports_panel` | Show the reports panel under the drawing (F2). |
 | `reportTab` | `setting:view.report_tab` | Tab of the reports panel (shown when the panel opens). |
 | `activeTool` | `setting:view.active_tool` | The user's active drawing tool (it waits for the user's clicks; the assistant draws with create_entities and the operations instead). |

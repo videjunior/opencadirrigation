@@ -7,9 +7,10 @@
 ///
 /// Search engines cannot read what Flutter paints on its canvas, so every
 /// entry page carries the same content as real HTML: heading, description,
-/// feature list, ready examples and FAQ. The app (several megabytes) is only
+/// the AI assistant section, feature list, ready examples and FAQ. The app
+/// (several megabytes) is only
 /// fetched when the visitor asks for it — the page's buttons and example
-/// links, an app address such as `?example=` or `?tutorial=1`, the installed
+/// links, an app address such as `?example=`, `?tutorial=1` or `?ai=1`, the installed
 /// PWA — or has already used it in this browser; a first visit (and a
 /// crawler, and PageSpeed) gets the light page alone. The page is hidden
 /// (kept in the DOM) on Flutter's first frame. Each page declares its
@@ -54,7 +55,7 @@ const siteUrl = 'https://opencadirrigation.com/';
 
 /// Google Analytics measurement id of the site.
 const analyticsId = 'G-3M0P4T8V2T';
-const siteLastMod = '2026-10-25';
+const siteLastMod = '2026-10-26';
 
 /// IndexNow key (Bing, Yandex, Seznam, Naver…): published as `/<key>.txt` so
 /// `dart run tool/indexnow.dart` can announce changed pages after a deploy.
@@ -143,6 +144,10 @@ class SiteText {
     required this.openApp,
     required this.tutorial,
     required this.seeExamples,
+    required this.aiTitle,
+    required this.aiIntro,
+    required this.aiPoints,
+    required this.aiCta,
     required this.featuresTitle,
     required this.features,
     required this.howTitle,
@@ -173,6 +178,14 @@ class SiteText {
   final String openApp;
   final String tutorial;
   final String seeExamples;
+
+  /// The AI assistant section, first on the page: heading, paragraph, what
+  /// it does as `(title, text)` cards, and the button that opens the app
+  /// with the assistant beside the drawing (`?ai=1`).
+  final String aiTitle;
+  final String aiIntro;
+  final List<(String, String)> aiPoints;
+  final String aiCta;
   final String featuresTitle;
   final List<(String, String)> features;
   final String howTitle;
@@ -199,33 +212,42 @@ class SiteText {
 }
 
 const _pt = SiteText(
-  title: 'OpenCADIrrigation: software grátis de projeto de irrigação',
-  description: 'Software gratuito e de código aberto para projeto de irrigação no navegador: gotejamento, aspersão, pivô central, cálculo hidráulico, materiais e DXF/DWG.',
-  keywords: 'projeto de irrigação, software de projeto de irrigação, software de irrigação grátis, software de irrigação de código aberto, CAD irrigação, software de irrigação, irrigação pressurizada, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
-  h1: 'Software CAD gratuito e de código aberto para projeto de irrigação',
-  tagline: 'Desenhe, dimensione e documente sistemas de gotejamento, microaspersão, aspersão e pivô central. Direto no navegador, sem instalar nada, com os projetos guardados no seu computador.',
-  intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica e o cálculo: você traça a área, lança laterais, válvulas e linha principal, aperta F5 e recebe diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. Funciona em 20 idiomas e segue o idioma do seu computador.',
+  title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
+  description: 'Software grátis e de código aberto para projeto de irrigação com assistente de IA que distribui aspersores e gotejamento, traça tubos e dimensiona o sistema.',
+  keywords: 'projeto de irrigação com IA, inteligência artificial projeto de irrigação, software de projeto de irrigação, projeto de irrigação, software de irrigação grátis, software de irrigação de código aberto, projeto automático de irrigação, distribuição automática de aspersores, CAD irrigação, software de irrigação, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
+  h1: 'Software gratuito e de código aberto para projeto de irrigação com assistente de IA',
+  tagline: 'Descreva o talhão, o jardim ou o campo e deixe o assistente de IA distribuir os aspersores e o gotejamento, traçar os tubos e dimensionar o sistema; ou desenhe você mesmo com as ferramentas automáticas. Gotejamento, microaspersão, aspersão e pivô central, direto no navegador, sem instalar nada, com os projetos guardados no seu computador.',
+  intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica, o cálculo e um assistente de IA. Trace a área, ou deixe a IA localizar o terreno na imagem de satélite; lance laterais, válvulas e linha principal à mão, com os geradores de um clique ou pedindo à IA; aperte F5 e receba diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. O assistente usa modelos Claude (Anthropic) ou GPT (OpenAI) com a sua própria chave de API, direto do navegador. Funciona em 20 idiomas e segue o idioma do seu computador.',
   openApp: 'Abrir o app',
   tutorial: 'Tutorial interativo',
   seeExamples: 'Ver exemplos prontos',
+  aiTitle: 'Um assistente de IA que desenha e projeta com você',
+  aiIntro: 'Abra o painel de IA ao lado do desenho e peça com as suas palavras. O assistente lê o projeto, olha a imagem de satélite e o terreno e trabalha com as mesmas ferramentas dos menus, de modo que o que ele desenha é um projeto de verdade: itens, tubos, válvulas, zonas e resultados, não uma figura. Cada alteração espera a sua aprovação, ou é aplicada automaticamente se você preferir, e pode ser desfeita com um clique.',
+  aiPoints: [
+    ('Desenha e projeta automaticamente', 'Distribui aspersores e linhas de gotejamento, divide talhões em blocos, ajusta pivôs, traça tubos e válvulas, posiciona a bomba e a fonte de água, roda o dimensionamento, corrige os avisos e otimiza o custo, e depois escreve o memorial técnico e o orçamento.'),
+    ('Enxerga o terreno', 'Localiza o terreno por um endereço, olha a imagem de satélite de um projeto georreferenciado e o relevo (sombreado, curvas de nível, declividade, perfis), lê os desenhos e arquivos SIG que você anexar e inclui itens de catálogo a partir de uma folha de dados em PDF.'),
+    ('Explica e verifica', 'Responde perguntas sobre o projeto e os resultados, explica cada mensagem do dimensionamento e como corrigi-la, roda as análises e mantém no projeto uma lista de tarefas e notas das suas decisões.'),
+    ('Sua chave, seu controle', 'Modelos Claude (Anthropic) ou GPT (OpenAI) nos níveis topo, intermediário e rápido, com a sua própria chave de API, chamados direto do navegador, sem servidor no meio. Modos somente leitura, planejar antes, perguntar antes de cada alteração ou automático, limite de passos e de gasto por tarefa, desfazer para cada resposta e nada enviado antes de você clicar em Enviar.'),
+  ],
+  aiCta: 'Abrir o assistente de IA',
   featuresTitle: 'O que o OpenCADIrrigation faz',
   features: [
+    ('Assistente de IA', 'Opcional: pergunte à IA sobre o projeto ou deixe que ela desenhe e projete por você. Ela distribui aspersores e gotejamento, divide talhões, traça tubos, roda o dimensionamento e as ferramentas automáticas, olhando a imagem de satélite e o terreno, com modelos Claude (Anthropic) ou GPT (OpenAI) e a sua própria chave de API, direto do navegador, sem servidor no meio. Nada é enviado antes de você clicar em Enviar, e cada alteração espera a sua aprovação (ou é aplicada automaticamente, se você preferir) e pode ser desfeita.'),
+    ('Projeto e dimensionamento automáticos', 'Blocos de laterais e grades de aspersores com um clique, distribuição de aspersores com precipitação equilibrada, divisão em zonas pela vazão, traçado de tubos e válvulas, divisão de talhões em blocos, ajuste de pivô e detecção de vegetação em imagens aéreas; tubos dimensionados por programação linear dentro da janela de pressão dos emissores e da classe de pressão dos tubos, com balanço entre custo de tubulação e energia.'),
     ('Desenho CAD completo', 'Linhas, polilinhas, arcos, splines, hachuras, cotas, textos, camadas e blocos, com coordenadas digitadas, snaps, rastreamento polar, grips, nuvens de revisão e atalhos no estilo AutoCAD (L, PL, C, D, ZE…).'),
     ('Rede hidráulica', 'Fontes de água, bombas de rotação fixa ou variável, linha principal, válvulas de zona, redutoras e sustentadoras de pressão e limitadoras de vazão, aspersores com válvula incorporada, laterais com emissores, fitas gotejadoras, filtros e hidrômetros, além de pivôs centrais e lineares com seu pacote de aspersores, autopropelidos e irrigação por superfície.'),
     ('Motor hidráulico validado', 'Hazen-Williams, Darcy-Weisbach, Scobey e Manning, perdas localizadas pelas conexões usadas, emissores q = k·Hˣ, solver de rede pelo Global Gradient Algorithm (como o EPANET), curvas de bomba com NPSH, transientes pelo método das características com ventosas e simulação de 24 horas com tarifas de energia.'),
-    ('Projeto e dimensionamento automáticos', 'Blocos de laterais e grades de aspersores com um clique, distribuição de aspersores com precipitação equilibrada, divisão em zonas pela vazão, traçado de tubos e válvulas, divisão de talhões em blocos, ajuste de pivô e detecção de vegetação em imagens aéreas; tubos dimensionados por programação linear dentro da janela de pressão dos emissores e da classe de pressão dos tubos, com balanço entre custo de tubulação e energia.'),
     ('Terreno, clima e agronomia', 'Curvas de nível, cotas de ponto, modelo do terreno por triangulação com linhas de quebra, elevação baixada da internet, nuvens de pontos LAS, mapas de declividade e perfis; clima do local baixado ou digitado, culturas da FAO-56 por fase, solos, chuva efetiva e lixiviação para a necessidade hídrica, além do orçamento hídrico do paisagismo.'),
     ('Relatórios, pranchas e materiais', 'Zonas, tubos, emissores, uniformidade (CU, DU, EU), programa do controlador e fiação das válvulas; lista de materiais com conexões e orçamento com mão de obra, impostos e retorno do investimento; conjuntos de pranchas em PDF com detalhes construtivos e gráficos, em qualquer um dos 20 idiomas, e todas as tabelas em Excel, CSV e TXT.'),
     ('Troca de arquivos', 'Importa DXF, DWG, plantas em PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF e imagens; exporta DXF 2000 com entidades nativas (ou R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp e IFC.'),
     ('Catálogos de fabricantes', 'Catálogos de fabricantes em JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prontos para usar, além de pacotes próprios carregados por arquivo ou URL.'),
-    ('Assistente de IA', 'Opcional: pergunte à IA sobre o projeto ou deixe que ela distribua aspersores, altere o desenho e rode o dimensionamento com as ferramentas do próprio programa, usando a sua própria chave da API da Anthropic ou da OpenAI, direto do navegador, sem servidor no meio. Nada é enviado antes de você clicar em Enviar, e cada alteração espera a sua aprovação (ou é aplicada automaticamente, se você preferir) e pode ser desfeita.'),
     ('Sem internet e no campo', 'Depois da primeira visita o app abre sem internet, no computador, no tablet ou no celular, com tema claro ou escuro. No campo, o GPS do aparelho grava contornos e linhas percorridos a pé, marca pontos e mostra a distância e o rumo até o item selecionado para a marcação.'),
   ],
   howTitle: 'Como funciona',
   how: [
-    ('Desenhe ou importe a área', 'Traga um DXF, DWG, KML ou uma imagem de satélite, ou desenhe o talhão, o jardim ou o campo diretamente. Adicione curvas de nível ou baixe a elevação pela coordenada.'),
-    ('Monte a rede', 'Gere blocos de laterais ou grades de aspersores com um clique, posicione válvulas, bomba e fonte de água e ligue tudo pela linha principal.'),
-    ('Projete e documente', 'Pressione F5: o app dimensiona zonas e linha principal, verifica pressões e velocidades e produz relatórios, lista de materiais e a prancha em PDF.'),
+    ('Desenhe ou importe a área', 'Traga um DXF, DWG, KML ou uma imagem de satélite, desenhe o talhão, o jardim ou o campo diretamente, ou diga o endereço ao assistente de IA, que localiza o terreno no mapa. Adicione curvas de nível ou baixe a elevação pela coordenada.'),
+    ('Monte a rede, à mão ou com a IA', 'Gere blocos de laterais ou grades de aspersores com um clique, ou peça ao assistente de IA que distribua os aspersores, divida o talhão, trace os tubos e posicione válvulas, bomba e fonte de água; depois ligue tudo pela linha principal.'),
+    ('Projete e documente', 'Pressione F5, ou peça à IA: o app dimensiona zonas e linha principal, verifica pressões e velocidades e produz relatórios, lista de materiais e a prancha em PDF.'),
   ],
   examplesTitle: 'Exemplos prontos para abrir',
   examplesIntro: 'Cada projeto abre completo e calcula com F5. Use-os para conhecer o app ou como ponto de partida.',
@@ -248,14 +270,16 @@ const _pt = SiteText(
   ],
   faqTitle: 'Perguntas frequentes',
   faq: [
-    ('O que é o OpenCADIrrigation?', 'O OpenCADIrrigation é um aplicativo web gratuito e de código aberto para projetar sistemas de irrigação pressurizada: um CAD com motor hidráulico que desenha a rede, dimensiona as tubulações, verifica pressões e uniformidade e produz a lista de materiais e os relatórios, do jardim residencial ao pivô central.'),
+    ('O que é o OpenCADIrrigation?', 'O OpenCADIrrigation é um aplicativo web gratuito e de código aberto para projetar sistemas de irrigação pressurizada: um CAD com motor hidráulico que desenha a rede, dimensiona as tubulações, verifica pressões e uniformidade e produz a lista de materiais e os relatórios, do jardim residencial ao pivô central, mais um assistente de IA opcional que desenha e projeta com você a partir de uma descrição do terreno.'),
+    ('Uma IA pode fazer o projeto por mim?', 'Sim, se você quiser. O assistente de IA, que é opcional, trabalha no projeto aberto com as mesmas ferramentas dos menus: descreva o terreno, ou deixe que ele olhe a imagem de satélite e o relevo de um projeto georreferenciado, e ele distribui aspersores e gotejamento, divide talhões em blocos, traça tubos e válvulas, posiciona a bomba e a fonte de água, roda o dimensionamento e as ferramentas automáticas, corrige os avisos, otimiza o custo e escreve o memorial. Ele pergunta antes de cada alteração, ou aplica as alterações automaticamente se você escolher, e cada resposta pode ser desfeita com um clique. Um modelo pode errar: confira o trabalho dele como conferiria o de um colega.'),
+    ('Quais modelos de IA ele usa?', 'Modelos Claude da Anthropic (Claude Opus 5.5 por padrão, Claude Fable 5.1, Claude Sonnet 5.5 e Claude Haiku 5.5) e modelos GPT da OpenAI (GPT-6 Astra, GPT-6.1 Sol e GPT-6 Luna): um nível topo, um intermediário e um rápido de cada empresa, cada um com cinco profundidades de raciocínio. Você escolhe o modelo nas configurações do assistente e cola a sua própria chave de API; o painel mostra os tokens e o custo estimado de cada resposta, e um limite de passos e um teto de gasto encerram uma tarefa que se alonga.'),
+    ('O que o assistente de IA envia, e para onde?', 'Nada até você clicar em Enviar. Então a sua mensagem, os arquivos anexados e os dados do projeto que você marcar vão direto do seu navegador para a API do provedor escolhido, Anthropic ou OpenAI, sem nenhum servidor do OpenCADIrrigation no meio, junto com os resultados das ferramentas que ele usa enquanto responde, inclusive imagens do desenho. O provedor cobra o uso na sua conta. A chave fica só na memória durante a sessão, a menos que você escolha lembrá-la no aparelho, e nunca vai para arquivos de projeto, links de compartilhamento ou exportações.'),
     ('O OpenCADIrrigation é gratuito?', 'Sim. É gratuito para uso profissional, acadêmico e pessoal, sem cadastro. Também é de código aberto, sob a licença MIT, com o código-fonte publicado no GitHub. O assistente de IA, que é opcional, usa a sua própria conta da Anthropic ou da OpenAI, e o provedor cobra o uso nessa conta.'),
-    ('Para quem ele é?', 'Para projetistas de irrigação agrícola e paisagística, agrônomos e engenheiros, revendas de equipamentos, professores e estudantes. O tutorial interativo e 15 exemplos prontos permitem começar sem ler manual.'),
+    ('Para quem ele é?', 'Para projetistas de irrigação agrícola e paisagística, agrônomos e engenheiros, revendas de equipamentos, professores e estudantes. O tutorial interativo, 15 exemplos prontos e o assistente de IA permitem começar sem ler manual.'),
     ('Preciso instalar alguma coisa?', 'Não. Ele roda em Chrome, Edge, Firefox e Safari, no computador, no tablet e no celular, e pode ser instalado como aplicativo (PWA) para abrir em janela própria.'),
     ('Funciona sem internet?', 'Sim, depois da primeira visita: o app guarda uma cópia de si mesmo no navegador (cerca de 24 MB, uma vez por versão), e a próxima abertura, do app instalado ou do site, funciona sem rede, no escritório ou no campo. Mapas base, elevação e clima online, catálogos carregados por URL e o assistente de IA continuam precisando de conexão; uma versão nova é baixada em segundo plano e usada a partir da abertura seguinte.'),
     ('Meus projetos ficam na nuvem?', 'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada a nenhum servidor. A internet só é acessada quando você pede: mapas base, elevação e clima online, catálogos carregados por URL e, se você usar, o assistente de IA, que fala apenas com o provedor que você escolheu (Anthropic ou OpenAI).'),
     ('Como é feito o cálculo hidráulico?', 'Perda de carga por Hazen-Williams, Darcy-Weisbach, Scobey ou Manning, emissores por q = k·Hˣ e a rede inteira resolvida pelo Global Gradient Algorithm, o método do EPANET. As tubulações são dimensionadas por programação linear dentro da janela de pressão dos emissores e da classe de pressão dos tubos, e o projeto verifica também uniformidade (CU, DU, EU), lavagem e transientes pelo método das características (fechamento de válvulas, parada de bomba, ventosas), com simulação de 24 horas das pressões e do custo de energia.'),
-    ('Uma IA pode fazer o projeto por mim?', 'Sim, se você quiser. O assistente de IA, que é opcional, usa um modelo da Anthropic ou da OpenAI com a sua própria chave de API, chamado direto do navegador, sem servidor no meio. Ele responde perguntas sobre o projeto e pode distribuir aspersores, dividir talhões, alterar o desenho e rodar o dimensionamento e as ferramentas automáticas, pedindo aprovação antes de cada alteração (ou aplicando-as automaticamente, se você escolher); toda alteração pode ser desfeita. Nada é enviado antes de você clicar em Enviar: então a sua mensagem, os arquivos anexados e os dados do projeto que você marcar vão para a API desse provedor. O provedor cobra o uso na sua conta, e a chave fica só na memória durante a sessão, a menos que você escolha lembrá-la.'),
     ('Funciona com AutoCAD e outros CADs?', 'Sim. Importa DXF e DWG até o AutoCAD 2018, DGN V7 e plantas em PDF, e exporta DXF 2000 com entidades nativas (polilinhas com arcos, hachuras, splines, cotas, blocos com atributos), DXF R12 para programas antigos e DWG 2000. Para SIG, topografia e BIM, também lê e grava KML/KMZ, shapefile, GeoJSON, GPX, LandXML e EPANET .inp, lê nuvens de pontos LAS e exporta IFC 4.'),
     ('Em que idiomas está disponível?', 'Em 20 idiomas, os mesmos deste site (a lista está no rodapé da página). O app abre no idioma do seu computador e você pode trocar a qualquer momento em Ver → Idioma.'),
   ],
@@ -273,33 +297,42 @@ const _pt = SiteText(
 );
 
 const _en = SiteText(
-  title: 'OpenCADIrrigation: free, open-source irrigation CAD software',
-  description: 'Free, open-source irrigation design software in your browser: drip, micro-sprinklers, sprinklers and centre pivots, pipe sizing, bill of materials, DXF/DWG.',
-  keywords: 'irrigation design software, free irrigation design software, open-source irrigation software, irrigation CAD, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
-  h1: 'Free, open-source CAD software for irrigation design',
-  tagline: 'Draw, size and document drip, micro-sprinkler, sprinkler and centre-pivot systems. Right in the browser, nothing to install, with your projects kept on your own computer.',
-  intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network and the calculation together: trace the area, lay out laterals, valves and the mainline, press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. Available in 20 languages, following your computer\'s language.',
+  title: 'OpenCADIrrigation: free irrigation design software with AI',
+  description: 'Free, open-source irrigation design software with an AI assistant that lays out sprinklers and drip, routes pipes and sizes the system in your browser.',
+  keywords: 'AI irrigation design, AI irrigation design software, irrigation design software, free irrigation design software, open-source irrigation software, irrigation CAD, automatic irrigation design, automatic sprinkler layout, irrigation AI assistant, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
+  h1: 'Free, open-source irrigation design software with an AI assistant',
+  tagline: 'Describe the field, the garden or the pitch and let the AI assistant lay out the heads and the drip, route the pipes and size the system; or draw it yourself with the automatic tools. Drip, micro-sprinkler, sprinkler and centre-pivot systems, right in the browser, nothing to install, with your projects kept on your own computer.',
+  intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network, the calculation and an AI assistant together. Trace the area, or let the AI find the site on the satellite image; lay out laterals, valves and the mainline by hand, with the one-click generators or by asking the AI; press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. The assistant runs Claude (Anthropic) or GPT (OpenAI) models with your own API key, straight from the browser. Available in 20 languages, following your computer\'s language.',
   openApp: 'Open the app',
   tutorial: 'Interactive tutorial',
   seeExamples: 'See ready examples',
+  aiTitle: 'An AI assistant that draws and designs with you',
+  aiIntro: 'Open the AI panel beside the drawing and ask in your own words. The assistant reads the project, looks at the satellite image and the terrain and works with the same tools as the menus, so what it draws is a real design: items, pipes, valves, zones and results, not a picture. Every change waits for your approval, or applies automatically if you prefer, and can be undone in one click.',
+  aiPoints: [
+    ('Draws and designs automatically', 'Lays out sprinklers and drip lines, divides fields into blocks, fits pivots, routes pipes and valves, places the pump and the water supply, runs the design, fixes the warnings and optimises the cost, then writes the technical report and the quote.'),
+    ('Sees the site', 'Finds the site from an address, looks at the satellite image of a georeferenced project and at the terrain (hillshade, contours, slope, profiles), reads the drawings and GIS files you attach and adds catalogue items from a data sheet in PDF.'),
+    ('Explains and checks', 'Answers questions about the project and its results, explains every design message and how to fix it, runs the analyses and keeps a to-do list and notes of your decisions in the project.'),
+    ('Your key, your control', 'Claude (Anthropic) or GPT (OpenAI) models in top, intermediate and fast tiers, with your own API key, called straight from the browser with no server in between. Read-only, plan-first, ask-before-each-change or automatic modes, a step limit and a spending cap per task, undo for every answer, and nothing sent before you press Send.'),
+  ],
+  aiCta: 'Open the AI assistant',
   featuresTitle: 'What OpenCADIrrigation does',
   features: [
+    ('AI assistant', 'Optional: ask the AI about the project, or let it draw and design for you. It lays out heads and drip, divides fields, routes pipes, runs the sizing and the automatic tools, looking at the satellite image and the terrain, with Claude (Anthropic) or GPT (OpenAI) models and your own API key, straight from the browser with no server in between. Nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.'),
+    ('Automatic design and sizing', 'Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.'),
     ('Full CAD drawing', 'Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and AutoCAD-style shortcuts (L, PL, C, D, ZE…).'),
     ('Hydraulic network', 'Water supplies, fixed and variable-speed pumps, mainline, zone, pressure-reducing, pressure-sustaining and flow-control valves, valve-in-head sprinklers, laterals with emitters, drip tapes, filters and meters, plus centre pivots and linear moves with their sprinkler package, hose-reel travellers and surface irrigation.'),
     ('Validated hydraulic engine', 'Hazen-Williams, Darcy-Weisbach, Scobey and Manning, minor losses from the fittings used, emitters q = k·Hˣ, network solver by the Global Gradient Algorithm (as in EPANET), pump curves with NPSH, transients by the method of characteristics with air valves, and a 24-hour simulation with energy tariffs.'),
-    ('Automatic design and sizing', 'Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.'),
     ('Terrain, climate and agronomy', 'Contours, spot heights, a triangulated terrain model with breaklines, online elevation, LAS point clouds, slope maps and profiles; site climate downloaded or typed in, FAO-56 crops by stage, soils, effective rain and leaching for the water requirement, plus landscape water budgets.'),
     ('Reports, plans and materials', 'Zones, pipes, emitters, uniformity (CU, DU, EU), controller programme and valve wiring; a bill of materials with fittings and a quote with labour, taxes and payback; PDF sheet sets with construction details and charts, in any of the 20 languages, and every table in Excel, CSV and TXT.'),
     ('File exchange', 'Imports DXF, DWG, PDF plans, KML/KMZ, shapefiles, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF and images; exports DXF 2000 with native entities (or R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefiles, GPX, LandXML, EPANET .inp and IFC.'),
     ('Manufacturer catalogues', 'Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ready to use, plus your own packs loaded from a file or a URL.'),
-    ('AI assistant', 'Optional: ask the AI about the project, or let it lay out heads, change the drawing and run the design with the program\'s own tools. It uses your own Anthropic or OpenAI API key, straight from your browser with no server in between; nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.'),
     ('Offline and in the field', 'After the first visit the app starts without a network, on desktop, tablet or phone, in a light or dark theme. In the field the device GPS records walked outlines and lines, marks points and gives the distance and bearing to the selected item for staking out.'),
   ],
   howTitle: 'How it works',
   how: [
-    ('Draw or import the area', 'Bring a DXF, DWG, KML or a satellite image, or draw the field, garden or pitch directly. Add contours or download the elevation from a coordinate.'),
-    ('Build the network', 'Generate lateral blocks or sprinkler grids in one click, place valves, pump and water supply and connect everything with the mainline.'),
-    ('Design and document', 'Press F5: the app sizes zones and mainline, checks pressures and velocities and produces reports, the bill of materials and the PDF sheet.'),
+    ('Draw or import the area', 'Bring a DXF, DWG, KML or a satellite image, draw the field, garden or pitch directly, or tell the AI assistant the address and it finds the site on the map. Add contours or download the elevation from a coordinate.'),
+    ('Build the network, by hand or with the AI', 'Generate lateral blocks or sprinkler grids in one click, or ask the AI assistant to lay out the heads, divide the field, route the pipes and place valves, pump and water supply; then connect everything with the mainline.'),
+    ('Design and document', 'Press F5, or ask the AI: the app sizes zones and mainline, checks pressures and velocities and produces reports, the bill of materials and the PDF sheet.'),
   ],
   examplesTitle: 'Ready examples to open',
   examplesIntro: 'Every project opens complete and designs with F5. Use them to get to know the app or as a starting point.',
@@ -322,14 +355,16 @@ const _en = SiteText(
   ],
   faqTitle: 'Frequently asked questions',
   faq: [
-    ('What is OpenCADIrrigation?', 'OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot.'),
+    ('What is OpenCADIrrigation?', 'OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot, plus an optional AI assistant that draws and designs the project with you from a description of the site.'),
+    ('Can an AI design the project for me?', 'Yes, if you want it to. The optional AI assistant works on the open project with the same tools as the menus: describe the site, or let it look at the satellite image and the terrain of a georeferenced project, and it lays out sprinklers and drip, divides fields into blocks, routes pipes and valves, places the pump and the water supply, runs the design and the automatic tools, fixes the warnings, optimises the cost and writes the report. It asks before each change, or applies the changes automatically if you choose, and every answer can be undone in one click. A model can be wrong, so check its work as you would a colleague\'s.'),
+    ('Which AI models does it use?', 'Claude models from Anthropic (Claude Opus 5.5 by default, Claude Fable 5.1, Claude Sonnet 5.5 and Claude Haiku 5.5) and GPT models from OpenAI (GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna): a top, an intermediate and a fast tier of each company, each with five depths of reasoning. You choose the model in the assistant\'s settings and paste your own API key; the panel shows the tokens and the estimated cost of every answer, and a step limit and a spending cap end a task that runs long.'),
+    ('What does the AI assistant send, and where?', 'Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports.'),
     ('Is OpenCADIrrigation free?', 'Yes. It is free for professional, academic and personal use, with no sign-up. It is also open source under the MIT licence, with the source code published on GitHub. The optional AI assistant uses your own Anthropic or OpenAI account, and the provider bills its use to that account.'),
-    ('Who is it for?', 'Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial and 15 ready examples let you start without reading a manual.'),
+    ('Who is it for?', 'Agricultural and landscape irrigation designers, agronomists and engineers, equipment dealers, teachers and students. The interactive tutorial, 15 ready examples and the AI assistant let you start without reading a manual.'),
     ('Do I need to install anything?', 'No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.'),
     ('Does it work offline?', 'Yes, after the first visit: the app keeps a copy of itself in the browser (about 24 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background and is used from the next start.'),
     ('Are my projects stored in the cloud?', 'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded. The internet is reached only when you ask for it: base maps, online elevation and climate, catalogues loaded by URL and, if you use it, the AI assistant, which talks only to the provider you chose (Anthropic or OpenAI).'),
     ('How does it calculate the hydraulics?', 'Friction losses by Hazen-Williams, Darcy-Weisbach, Scobey or Manning, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window and the pipe pressure class, and the design also checks uniformity (CU, DU, EU), flushing and transients by the method of characteristics (valve closure, pump trip, air valves), with a 24-hour simulation of pressures and energy cost.'),
-    ('Can an AI design the project for me?', 'Yes, if you want it to. The optional AI assistant uses a model from Anthropic or OpenAI with your own API key, called straight from your browser with no server in between. It answers questions about the project and can lay out sprinklers, divide fields, change the drawing and run the design and the automatic tools, asking before each change (or applying them automatically, if you choose); every change can be undone. Nothing is sent until you press Send: then your message, the files you attach and the project data you tick go to that provider\'s API. The provider bills the use to your account, and the key stays in memory for the session unless you choose to remember it.'),
     ('Does it work with AutoCAD and other CADs?', 'Yes. It imports DXF and DWG up to AutoCAD 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.'),
     ('Which languages are available?', 'Twenty, the same as this site (the list is at the foot of the page). The app opens in your computer\'s language and you can switch at any time under View → Language.'),
   ],
@@ -347,33 +382,42 @@ const _en = SiteText(
 );
 
 const _es = SiteText(
-  title: 'OpenCADIrrigation: software gratuito de diseño de riego',
-  description: 'Software gratuito y de código abierto para diseño de riego en el navegador: goteo, aspersión, pivote central, cálculo hidráulico, materiales y DXF/DWG.',
-  keywords: 'diseño de riego, software de diseño de riego, software de riego gratis, software de riego de código abierto, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
-  h1: 'Software CAD gratuito y de código abierto para diseño de riego',
-  tagline: 'Dibuje, dimensione y documente sistemas de goteo, microaspersión, aspersión y pivote central. Directamente en el navegador, sin instalar nada, con los proyectos guardados en su propio equipo.',
-  intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica y el cálculo: trace el área, coloque laterales, válvulas y línea principal, pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. Disponible en 20 idiomas, según el idioma de su equipo.',
+  title: 'OpenCADIrrigation: software gratuito de diseño de riego con IA',
+  description: 'Software gratuito y de código abierto para diseño de riego con asistente de IA que distribuye aspersores y goteo, traza tuberías y dimensiona el sistema.',
+  keywords: 'diseño de riego con IA, inteligencia artificial diseño de riego, software de diseño de riego, diseño de riego, software de riego gratis, software de riego de código abierto, diseño automático de riego, distribución automática de aspersores, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
+  h1: 'Software gratuito y de código abierto para diseño de riego con asistente de IA',
+  tagline: 'Describa la parcela, el jardín o el campo y deje que el asistente de IA distribuya los aspersores y el goteo, trace las tuberías y dimensione el sistema; o dibújelo usted mismo con las herramientas automáticas. Goteo, microaspersión, aspersión y pivote central, directamente en el navegador, sin instalar nada, con los proyectos guardados en su propio equipo.',
+  intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica, el cálculo y un asistente de IA. Trace el área, o deje que la IA localice el terreno en la imagen satelital; coloque laterales, válvulas y línea principal a mano, con los generadores de un clic o pidiéndoselo a la IA; pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. El asistente usa modelos Claude (Anthropic) o GPT (OpenAI) con su propia clave de API, directamente desde el navegador. Disponible en 20 idiomas, según el idioma de su equipo.',
   openApp: 'Abrir la aplicación',
   tutorial: 'Tutorial interactivo',
   seeExamples: 'Ver ejemplos listos',
+  aiTitle: 'Un asistente de IA que dibuja y diseña con usted',
+  aiIntro: 'Abra el panel de IA junto al dibujo y pida lo que necesita con sus propias palabras. El asistente lee el proyecto, mira la imagen satelital y el terreno y trabaja con las mismas herramientas que los menús, de modo que lo que dibuja es un diseño real: elementos, tuberías, válvulas, zonas y resultados, no una imagen. Cada cambio espera su aprobación, o se aplica automáticamente si lo prefiere, y se puede deshacer con un clic.',
+  aiPoints: [
+    ('Dibuja y diseña automáticamente', 'Distribuye aspersores y líneas de goteo, divide parcelas en bloques, ajusta pivotes, traza tuberías y válvulas, coloca la bomba y la fuente de agua, ejecuta el dimensionamiento, corrige los avisos y optimiza el coste, y después redacta la memoria técnica y el presupuesto.'),
+    ('Ve el terreno', 'Localiza el terreno a partir de una dirección, mira la imagen satelital de un proyecto georreferenciado y el relieve (sombreado, curvas de nivel, pendiente, perfiles), lee los dibujos y archivos SIG que usted adjunte y añade elementos al catálogo a partir de una ficha técnica en PDF.'),
+    ('Explica y verifica', 'Responde preguntas sobre el proyecto y sus resultados, explica cada mensaje del dimensionamiento y cómo corregirlo, ejecuta los análisis y mantiene en el proyecto una lista de tareas y notas con sus decisiones.'),
+    ('Su clave, su control', 'Modelos Claude (Anthropic) o GPT (OpenAI) en niveles superior, intermedio y rápido, con su propia clave de API, llamados directamente desde el navegador, sin servidor intermedio. Modos de solo lectura, planificar primero, preguntar antes de cada cambio o automático, límite de pasos y de gasto por tarea, deshacer para cada respuesta y nada enviado antes de pulsar Enviar.'),
+  ],
+  aiCta: 'Abrir el asistente de IA',
   featuresTitle: 'Qué hace OpenCADIrrigation',
   features: [
+    ('Asistente de IA', 'Opcional: pregunte a la IA sobre el proyecto o deje que dibuje y diseñe por usted. Distribuye aspersores y goteo, divide parcelas, traza tuberías, ejecuta el dimensionamiento y las herramientas automáticas, mirando la imagen satelital y el terreno, con modelos Claude (Anthropic) o GPT (OpenAI) y su propia clave de API, directamente desde el navegador y sin servidor intermedio. No se envía nada antes de pulsar Enviar, y cada cambio espera su aprobación (o se aplica automáticamente, si así lo elige) y se puede deshacer.'),
+    ('Diseño y dimensionamiento automáticos', 'Bloques de laterales y mallas de aspersores con un clic, distribución de aspersores con precipitación equilibrada, zonificación por caudal, trazado de tuberías y válvulas, división de parcelas en bloques, ajuste de pivotes y detección de vegetación en imágenes aéreas; tuberías dimensionadas por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, equilibrando coste de tubería y energía.'),
     ('Dibujo CAD completo', 'Líneas, polilíneas, arcos, splines, sombreados, cotas, textos, capas y bloques, con entrada de coordenadas, referencias a objetos, rastreo polar, pinzamientos, nubes de revisión y atajos al estilo AutoCAD (L, PL, C, D, ZE…).'),
     ('Red hidráulica', 'Fuentes de agua, bombas de velocidad fija o variable, línea principal, válvulas de zona, reductoras y sostenedoras de presión y limitadoras de caudal, aspersores con válvula incorporada, laterales con emisores, cintas de goteo, filtros y contadores, además de pivotes centrales y lineales con su paquete de aspersores, cañones viajeros y riego por superficie.'),
     ('Motor hidráulico validado', 'Hazen-Williams, Darcy-Weisbach, Scobey y Manning, pérdidas localizadas de los accesorios usados, emisores q = k·Hˣ, resolución de redes por el Global Gradient Algorithm (como EPANET), curvas de bomba con NPSH, transitorios por el método de las características con ventosas y simulación de 24 horas con tarifas de energía.'),
-    ('Diseño y dimensionamiento automáticos', 'Bloques de laterales y mallas de aspersores con un clic, distribución de aspersores con precipitación equilibrada, zonificación por caudal, trazado de tuberías y válvulas, división de parcelas en bloques, ajuste de pivotes y detección de vegetación en imágenes aéreas; tuberías dimensionadas por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, equilibrando coste de tubería y energía.'),
     ('Terreno, clima y agronomía', 'Curvas de nivel, cotas, modelo del terreno por triangulación con líneas de quiebre, elevación descargada de internet, nubes de puntos LAS, mapas de pendientes y perfiles; clima del sitio descargado o introducido a mano, cultivos de la FAO-56 por etapa, suelos, lluvia efectiva y lavado de sales para las necesidades de agua, además del presupuesto hídrico del paisajismo.'),
     ('Informes, planos y materiales', 'Zonas, tuberías, emisores, uniformidad (CU, DU, EU), programa del controlador y cableado de válvulas; lista de materiales con accesorios y presupuesto con mano de obra, impuestos y retorno de la inversión; juegos de planos en PDF con detalles constructivos y gráficos, en cualquiera de los 20 idiomas, y todas las tablas en Excel, CSV y TXT.'),
     ('Intercambio de archivos', 'Importa DXF, DWG, planos en PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF e imágenes; exporta DXF 2000 con entidades nativas (o R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp e IFC.'),
     ('Catálogos de fabricantes', 'Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL.'),
-    ('Asistente de IA', 'Opcional: pregunte a la IA sobre el proyecto o deje que distribuya aspersores, cambie el dibujo y ejecute el dimensionamiento con las herramientas del propio programa, con su propia clave de la API de Anthropic o de OpenAI, directamente desde el navegador y sin servidor intermedio. No se envía nada antes de pulsar Enviar, y cada cambio espera su aprobación (o se aplica automáticamente, si así lo elige) y se puede deshacer.'),
     ('Sin conexión y en campo', 'Tras la primera visita la aplicación se abre sin conexión, en ordenador, tableta o móvil, con tema claro u oscuro. En campo, el GPS del dispositivo graba contornos y líneas recorridos a pie, marca puntos e indica la distancia y el rumbo hasta el elemento seleccionado para el replanteo.'),
   ],
   howTitle: 'Cómo funciona',
   how: [
-    ('Dibuje o importe el área', 'Traiga un DXF, DWG, KML o una imagen satelital, o dibuje la parcela, el jardín o el campo directamente. Añada curvas de nivel o descargue la elevación por coordenada.'),
-    ('Arme la red', 'Genere bloques de laterales o mallas de aspersores con un clic, coloque válvulas, bomba y fuente de agua y conéctelo todo con la línea principal.'),
-    ('Diseñe y documente', 'Pulse F5: la aplicación dimensiona zonas y línea principal, verifica presiones y velocidades y produce informes, lista de materiales y el plano en PDF.'),
+    ('Dibuje o importe el área', 'Traiga un DXF, DWG, KML o una imagen satelital, dibuje la parcela, el jardín o el campo directamente, o dígale la dirección al asistente de IA, que localiza el terreno en el mapa. Añada curvas de nivel o descargue la elevación por coordenada.'),
+    ('Arme la red, a mano o con la IA', 'Genere bloques de laterales o mallas de aspersores con un clic, o pida al asistente de IA que distribuya los aspersores, divida la parcela, trace las tuberías y coloque válvulas, bomba y fuente de agua; después conéctelo todo con la línea principal.'),
+    ('Diseñe y documente', 'Pulse F5, o pídaselo a la IA: la aplicación dimensiona zonas y línea principal, verifica presiones y velocidades y produce informes, lista de materiales y el plano en PDF.'),
   ],
   examplesTitle: 'Ejemplos listos para abrir',
   examplesIntro: 'Cada proyecto se abre completo y calcula con F5. Úselos para conocer la aplicación o como punto de partida.',
@@ -396,14 +440,16 @@ const _es = SiteText(
   ],
   faqTitle: 'Preguntas frecuentes',
   faq: [
-    ('¿Qué es OpenCADIrrigation?', 'OpenCADIrrigation es una aplicación web gratuita y de código abierto para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central.'),
+    ('¿Qué es OpenCADIrrigation?', 'OpenCADIrrigation es una aplicación web gratuita y de código abierto para diseñar sistemas de riego presurizado: un CAD con motor hidráulico que traza la red, dimensiona las tuberías, verifica presiones y uniformidad y produce la lista de materiales y los informes, desde un jardín residencial hasta un pivote central, más un asistente de IA opcional que dibuja y diseña el proyecto con usted a partir de una descripción del terreno.'),
+    ('¿Puede una IA hacer el proyecto por mí?', 'Sí, si usted quiere. El asistente de IA, que es opcional, trabaja en el proyecto abierto con las mismas herramientas que los menús: describa el terreno, o deje que mire la imagen satelital y el relieve de un proyecto georreferenciado, y distribuye aspersores y goteo, divide parcelas en bloques, traza tuberías y válvulas, coloca la bomba y la fuente de agua, ejecuta el dimensionamiento y las herramientas automáticas, corrige los avisos, optimiza el coste y redacta la memoria. Pregunta antes de cada cambio, o aplica los cambios automáticamente si usted lo elige, y cada respuesta se puede deshacer con un clic. Un modelo puede equivocarse: revise su trabajo como revisaría el de un colega.'),
+    ('¿Qué modelos de IA utiliza?', 'Modelos Claude de Anthropic (Claude Opus 5.5 por defecto, Claude Fable 5.1, Claude Sonnet 5.5 y Claude Haiku 5.5) y modelos GPT de OpenAI (GPT-6 Astra, GPT-6.1 Sol y GPT-6 Luna): un nivel superior, uno intermedio y uno rápido de cada empresa, cada uno con cinco profundidades de razonamiento. Usted elige el modelo en los ajustes del asistente y pega su propia clave de API; el panel muestra los tokens y el coste estimado de cada respuesta, y un límite de pasos y un tope de gasto terminan una tarea que se alarga.'),
+    ('¿Qué envía el asistente de IA, y adónde?', 'Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API del proveedor elegido, Anthropic u OpenAI, sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones.'),
     ('¿OpenCADIrrigation es gratuito?', 'Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub. El asistente de IA, que es opcional, usa su propia cuenta de Anthropic o de OpenAI, y el proveedor factura el uso en esa cuenta.'),
-    ('¿Para quién es?', 'Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo y 15 ejemplos listos permiten empezar sin leer un manual.'),
+    ('¿Para quién es?', 'Para proyectistas de riego agrícola y paisajístico, agrónomos e ingenieros, distribuidores de equipos, profesores y estudiantes. El tutorial interactivo, 15 ejemplos listos y el asistente de IA permiten empezar sin leer un manual.'),
     ('¿Necesito instalar algo?', 'No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.'),
     ('¿Funciona sin conexión?', 'Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 24 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano y se usa a partir del siguiente inicio.'),
     ('¿Mis proyectos se guardan en la nube?', 'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada a ningún servidor. Solo se accede a internet cuando usted lo pide: mapas base, elevación y clima en línea, catálogos cargados por URL y, si lo usa, el asistente de IA, que solo se comunica con el proveedor que usted eligió (Anthropic u OpenAI).'),
     ('¿Cómo se hace el cálculo hidráulico?', 'Pérdidas de carga por Hazen-Williams, Darcy-Weisbach, Scobey o Manning, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, y el diseño verifica también la uniformidad (CU, DU, EU), el lavado y los transitorios por el método de las características (cierre de válvulas, parada de bombas, ventosas), con una simulación de 24 horas de las presiones y el coste de la energía.'),
-    ('¿Puede una IA hacer el proyecto por mí?', 'Sí, si usted quiere. El asistente de IA, que es opcional, usa un modelo de Anthropic o de OpenAI con su propia clave de API, llamado directamente desde el navegador, sin servidor intermedio. Responde preguntas sobre el proyecto y puede distribuir aspersores, dividir parcelas, cambiar el dibujo y ejecutar el dimensionamiento y las herramientas automáticas, pidiendo aprobación antes de cada cambio (o aplicándolos automáticamente, si usted lo elige); todo cambio se puede deshacer. No se envía nada hasta que pulse Enviar: entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van a la API de ese proveedor. El proveedor factura el uso en su cuenta, y la clave queda solo en la memoria durante la sesión, a menos que elija recordarla.'),
     ('¿Funciona con AutoCAD y otros CAD?', 'Sí. Importa DXF y DWG hasta AutoCAD 2018, DGN V7 y planos en PDF, y exporta DXF 2000 con entidades nativas (polilíneas con arcos, sombreados, splines, cotas, bloques con atributos), DXF R12 para programas antiguos y DWG 2000. Para SIG, topografía y BIM también lee y escribe KML/KMZ, shapefile, GeoJSON, GPX, LandXML y EPANET .inp, lee nubes de puntos LAS y exporta IFC 4.'),
     ('¿En qué idiomas está disponible?', 'En 20 idiomas, los mismos de este sitio (la lista está al pie de la página). La aplicación se abre en el idioma de su equipo y puede cambiarlo en cualquier momento en Ver → Idioma.'),
   ],
@@ -489,6 +535,8 @@ const _subjects = [
   ('Irrigation sprinkler', 'Irrigation_sprinkler', 'Q998539'),
   ('Center-pivot irrigation', 'Center-pivot_irrigation', 'Q2744831'),
   ('Computer-aided design', 'Computer-aided_design', 'Q184793'),
+  ('Artificial intelligence', 'Artificial_intelligence', 'Q11660'),
+  ('Large language model', 'Large_language_model', 'Q115305900'),
 ];
 
 /// Licence of the application and its source code.
@@ -658,6 +706,8 @@ const _style = '''
     #oci-landing .status { text-align: center; color: #90A4AE; font-size: .95rem; min-height: 1.55em; margin: 0; }
     #oci-landing .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
     #oci-landing .grid li { background: #1B1F24; border: 1px solid #263238; border-radius: 10px; padding: 14px 16px; }
+    #oci-landing .grid.pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (max-width: 640px) { #oci-landing .grid.pair { grid-template-columns: 1fr; } }
     #oci-landing ol.steps { padding-inline-start: 1.3em; }
     #oci-landing ol.steps li { margin: 8px 0; }
     #oci-landing figure { margin: 22px 0 0; }
@@ -762,6 +812,7 @@ $_analytics
         <p class="tagline">${_esc(t.tagline)}</p>
         <nav class="cta" aria-label="${_esc(t.openApp)}">
           <a class="primary" href="${lang.url}" data-app>${_esc(t.openApp)}</a>
+          <a href="${lang.url}?ai=1" data-app>${_esc(t.aiCta)}</a>
           <a href="${lang.url}?tutorial=1" data-app>${_esc(t.tutorial)}</a>
           <a href="#exemplos">${_esc(t.seeExamples)}</a>
         </nav>
@@ -769,6 +820,17 @@ $_analytics
         <p class="status" id="oci-status" role="status" aria-live="polite"></p>
       </header>
       <p>${_esc(t.intro)}</p>
+
+      <section aria-labelledby="oci-ai">
+        <h2 id="oci-ai">${_esc(t.aiTitle)}</h2>
+        <p>${_esc(t.aiIntro)}</p>
+        <ul class="grid pair">''');
+  for (final (name, text) in t.aiPoints) {
+    b.writeln('          <li><h3>${_esc(name)}</h3><p>${_esc(text)}</p></li>');
+  }
+  b.writeln('''        </ul>
+        <p class="cta"><a class="primary" href="${lang.url}?ai=1" data-app>${_esc(t.aiCta)}</a></p>
+      </section>
 
       <section aria-labelledby="oci-features">
         <h2 id="oci-features">${_esc(t.featuresTitle)}</h2>
@@ -831,7 +893,7 @@ $_analytics
       }
       // The app starts by itself for an app address, the installed app and whoever has used it here before.
       function wanted() {
-        if (/[?&](example|tutorial|design|lang|source|app)=/.test(location.search)) return true;
+        if (/[?&](example|tutorial|design|ai|lang|source|app)=/.test(location.search)) return true;
         if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
         try {
           for (var i = 0; i < localStorage.length; i++) {

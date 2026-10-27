@@ -11,7 +11,7 @@ import 'dart:math' as math;
 
 import '../../core/api.dart';
 import 'agent_tools.dart';
-import 'agent_tools_design.dart' show outlineOf, zoneFlowDefault, zoneNames;
+import 'agent_tools_design.dart' show outlineOf, pivotFitHelp, pivotObstacleShapes, zoneFlowDefault, zoneNames;
 import 'ops_eng_common.dart';
 
 List<Pt> _outline(AgentToolbox b, String ref) {
@@ -36,7 +36,7 @@ OutletSpec _family(AgentToolbox b, String? id) {
     for (final o in b.p.catalog.outlets)
       if (o.enabled && o.nozzles.isNotEmpty && (o.kind == OutletKind.sprinkler || o.kind == OutletKind.microSprinkler)) o,
   ];
-  if (fams.isEmpty) throw ToolInputError('The catalogue has no enabled sprinkler.');
+  if (fams.isEmpty) throw ToolInputError('The catalogue has no enabled sprinkler or micro-sprinkler. ${catalogNextStep('emitter')}');
   if (id != null) return fams.where((o) => o.id == id).firstOrNull ?? (throw ToolInputError('"$id" is not an enabled sprinkler. Choose one of: ${fams.map((o) => o.id).join(', ')}.'));
   final last = b.p.catalog.outlet(b.c.toolSettings.outletSpecId);
   if (last != null && last.kind == OutletKind.sprinkler && fams.contains(last)) return last;
@@ -328,14 +328,16 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final field = _outline(b, a.str('area', required: true)!);
         final s = c.toolSettings, cat = b.p.catalog;
         final isTape = (a.str('lateral') ?? 'tape') == 'tape';
-        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? ''));
+        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId)?.enabled ?? false ? s.tapeSpecId : (cat.tapes.where((x) => x.enabled).firstOrNull?.id ?? ''));
         final tapeInlet = a.number('inlet_head_m', min: 0.5, max: 60) ?? cat.tape(tapeSpec)?.defaultInletHeadM ?? s.tapeInletHeadM;
         final outletSpec = a.str('outlet') ?? s.outletSpecId;
         final nozzle = a.str('nozzle') ?? (a.has('outlet') ? cat.outlet(outletSpec)?.nozzles.firstOrNull?.id : s.nozzleId);
         final headM = a.number('head_m', min: 0.5, max: 120) ?? (a.has('outlet') ? cat.outlet(outletSpec)?.nozzle(nozzle)?.defaultHeadM : null) ?? s.headM;
         final outletSpacing = a.number('emitter_spacing_m', min: 0.05, max: 50) ?? s.spacing;
-        if (isTape && cat.tape(tapeSpec) == null) throw ToolInputError('Unknown tape "$tapeSpec".');
-        if (!isTape && cat.outlet(outletSpec)?.nozzle(nozzle) == null) throw ToolInputError('Unknown emitter or nozzle "$outletSpec/$nozzle".');
+        if (isTape && cat.tape(tapeSpec) == null) {
+          throw ToolInputError(cat.tapes.any((x) => x.enabled) ? 'Unknown tape "$tapeSpec" (search_catalog kind "tape").' : 'The catalogue has no enabled drip tape or dripline. ${catalogNextStep('tape')}');
+        }
+        if (!isTape && cat.outlet(outletSpec)?.nozzle(nozzle) == null) throw ToolInputError('Unknown emitter or nozzle "$outletSpec/$nozzle" (search_catalog kind "emitter").');
         for (final (k, usage) in [('lateral_pipe', PipeUsage.lateral), ('submain_pipe', PipeUsage.zone)]) {
           final id = a.str(k);
           if (id != null && !cat.pipesFor(usage).any((x) => x.id == id)) throw ToolInputError('"$id" is not a ${usage.name} pipe of the catalogue.');
@@ -461,7 +463,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final plant = a.number('plant_spacing_m', min: 0.3, max: 50) ?? 6, row = a.number('row_spacing_m', min: 0.3, max: 50) ?? 7;
         if (trees.isEmpty && polygonArea(area!).abs() / (plant * row) > 20000) throw ToolInputError('More than 20000 trees: subdivide the field first.');
         final kind = (a.str('kind') ?? 'dripline') == 'drippers' ? RingKind.drippers : RingKind.dripline;
-        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? ''));
+        final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId)?.enabled ?? false ? s.tapeSpecId : (cat.tapes.where((x) => x.enabled).firstOrNull?.id ?? ''));
         final tapeInlet = a.number('inlet_head_m', min: 0.5, max: 60) ?? cat.tape(tapeSpec)?.defaultInletHeadM ?? s.tapeInletHeadM;
         final drippers = [
           for (final o in cat.outlets)
@@ -472,8 +474,12 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
             : drippers.firstOrNull;
         final nz = a.has('nozzle') ? (dripper?.nozzle(a.str('nozzle')) ?? (throw ToolInputError('No nozzle "${a.str('nozzle')}" on ${dripper?.id}.'))) : dripper?.nozzles.first;
         final headM = a.number('head_m', min: 0.5, max: 120) ?? nz?.defaultHeadM ?? 10;
-        if (kind == RingKind.dripline && cat.tape(tapeSpec) == null) throw ToolInputError('Unknown tape "$tapeSpec".');
-        if (kind == RingKind.drippers && nz == null) throw ToolInputError('The catalogue has no dripper for ring drippers.');
+        if (kind == RingKind.dripline && cat.tape(tapeSpec) == null) {
+          throw ToolInputError(
+            a.has('tape') ? 'Unknown tape "$tapeSpec" (search_catalog kind "tape").' : 'The catalogue has no enabled dripline for the rings. ${catalogNextStep('tape')} Then give "tape", or use kind "drippers".',
+          );
+        }
+        if (kind == RingKind.drippers && nz == null) throw ToolInputError('The catalogue has no enabled dripper or bubbler for the rings. ${catalogNextStep('emitter')} Then give "dripper", or use kind "dripline".');
         final lateralPipe = a.str('lateral_pipe') ?? s.lateralPipeSpecId;
         if (a.has('lateral_pipe') && !cat.pipesFor(PipeUsage.lateral).any((x) => x.id == lateralPipe)) throw ToolInputError('"$lateralPipe" is not a lateral pipe of the catalogue.');
         final valve = a.str('valve');
@@ -534,7 +540,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
       b,
       name: 'fit_pivot_advanced',
       effect: ToolEffect.write,
-      description: 'Design → Auto design → Pivot fit with every option of the dialog (fit_pivot is the short version): the largest centre pivot — full circle or the sector that irrigates the most — that a field holds, avoiding obstacle shapes and point obstacles (trees, posts, spot heights) with a clearance, built from the span lengths and overhangs given within a span count. Adds the pivot (one undo step). Inputs: area (field id), sector (allow a sector), obstacles (closed shape ids; default every closed shape crossing the field that does not hold it), point_obstacles (point item ids; default the symbols inside the field), clearance_m 0–100 (10), spans_m (default 34.4, 41.8, 48.8, 54.9, 62.2), overhangs_m (default 0, 6.4, 12.8, 19.2, 25.9), min_spans 1–60 (1), max_spans 1–60 (20), end_throw_m 0–80 (5), min_sweep_deg 1–360 (30, sector). Output: the centre, the machine (spans + overhang), the irrigated radius, the area and coverage, the new id and the messages.',
+      description: 'Design → Auto design → Pivot fit with every option of the dialog (fit_pivot is the short version): the largest centre pivot — full circle or the sector that irrigates the most — that a field holds, avoiding obstacle shapes and point obstacles (trees, posts, spot heights) with a clearance, built from the span lengths and overhangs given within a span count. Adds the pivot (one undo step). Inputs: area (field id), sector (allow a sector), obstacles (closed shape ids, [] for none; default every closed shape inside or across the field that does not hold it — a property line, a second outline or a hatch of the field holds it), point_obstacles (point item ids; default the symbols inside the field), clearance_m 0–100 (10), spans_m (default 34.4, 41.8, 48.8, 54.9, 62.2), overhangs_m (default 0, 6.4, 12.8, 19.2, 25.9), min_spans 1–60 (1), max_spans 1–60 (20), end_throw_m 0–80 (5), min_sweep_deg 1–360 (30, sector). Output: the centre, the machine (spans + overhang), the irrigated radius, the area and coverage, the new id and the messages.',
       schema: obj(
         {
           'area': str('Field id.'),
@@ -557,13 +563,8 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final ref = a.str('area', required: true)!;
         final field = _outline(b, ref);
         final self = b.find(ref).id;
-        final obstacles = i.containsKey('obstacles')
-            ? [for (final id in a.strings('obstacles')) _outline(b, id)]
-            : [
-                for (final e in b.p.entities)
-                  if (e.id != self && e.bounds.intersects(Bounds.ofPoints(field)))
-                    if (outlineOf(e) case final o? when !field.every((q) => pointInPolygon(q, o))) o,
-              ];
+        final shapes = i.containsKey('obstacles') ? [for (final id in a.strings('obstacles')) (b.find(id), _outline(b, id))] : pivotObstacleShapes(b.p, self, field);
+        final obstacles = [for (final (_, o) in shapes) o];
         final pts = i.containsKey('point_obstacles')
             ? [
                 for (final e in b.findAll(a.strings('point_obstacles')))
@@ -590,7 +591,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
           minSweepDeg: a.number('min_sweep_deg', min: 1, max: 360) ?? 30,
         );
         final fit = await engSoon(() => (a.flag('sector') ?? false) ? fitSectorPivot(field, o) : fitFullCirclePivot(field, o));
-        if (fit.spans == null) throw ToolInputError('No pivot fits (available radius ${engN(fit.availableRadius, 1)} m).${_codes(b, fit.messages)}');
+        if (fit.spans == null) throw ToolInputError('No pivot fits (available radius ${engN(fit.availableRadius, 1)} m).${_codes(b, fit.messages)}${pivotFitHelp(b, field, shapes, fit.messages)}');
         final s = c.toolSettings;
         final made = b.change('fit_pivot_advanced', () {
           final p = b.p;

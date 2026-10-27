@@ -189,6 +189,77 @@ void main() {
       expect(o.copyWith().attribution, credit);
     });
 
+    test('the views the sheets report are where they draw: a raster over them fills every drawing area, stored once', () {
+      final p = withImage();
+      final b = exporter(p).sheetBuilder();
+      const single = SheetOptions(page: PageSize.a4);
+      final (view, scale) = b.sheetViews(single).single;
+      expect(scale, b.sheetScale(single));
+      // drawing clip ('x y w h re W n', the area inset by half a point) and
+      // image placement ('w 0 0 h x y cm') of every page
+      List<(List<double>, List<double>)> placements(SheetOptions o) {
+        final doc = PdfDocument();
+        b.addSheetPages(doc, o);
+        final objects = pdfObjects(latin1.decode(doc.build(compress: false)));
+        return [
+          for (var i = 0; i < doc.pages.length; i++)
+            () {
+              final content = latin1.decode(streamBytes(objects[7 + 2 * i]!));
+              List<double> nums(RegExpMatch m) => [for (var k = 1; k <= m.groupCount; k++) double.parse(m.group(k)!)];
+              final clip = RegExp(r'([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) re W n').firstMatch(content)!;
+              final cm = RegExp(r'([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) cm /Im1 Do').firstMatch(content)!;
+              return (nums(clip), nums(cm));
+            }(),
+        ];
+      }
+
+      final (clip, cm) = placements(single.copyWith(rasters: [PlotRaster.bounds(jpeg(16, 16), view)])).single;
+      expect([cm[1], cm[2]], [0, 0], reason: 'north up');
+      for (final (got, want) in [(cm[4], clip[0] - 0.5), (cm[5], clip[1] - 0.5), (cm[0], clip[2] + 1), (cm[3], clip[3] + 1)]) {
+        expect(got, closeTo(want, 0.02));
+      }
+      // a window sheet at another scale: the union of the views covers both drawing areas
+      final set = single.copyWith(windows: [SheetWindow(bounds: Bounds(p.bounds.maxX + 200, 0, p.bounds.maxX + 230, 20), title: 'W')]);
+      final views = b.sheetViews(set);
+      expect(views, hasLength(2));
+      expect(views[1].$2, isNot(views[0].$2));
+      expect(views[1].$1.center.x, closeTo(p.bounds.maxX + 215, 1e-9));
+      final all = views.fold(Bounds.empty, (u, v) => u.union(v.$1));
+      final raster = PlotRaster.bounds(jpeg(16, 16), all);
+      for (final (clip, cm) in placements(set.copyWith(rasters: [raster]))) {
+        expect(cm[4], lessThanOrEqualTo(clip[0]));
+        expect(cm[5], lessThanOrEqualTo(clip[1]));
+        expect(cm[4] + cm[0], greaterThanOrEqualTo(clip[0] + clip[2]));
+        expect(cm[5] + cm[3], greaterThanOrEqualTo(clip[1] + clip[3]));
+      }
+      final text = latin1.decode(b.buildSheet(set.copyWith(rasters: [raster])));
+      expect(RegExp(r'/Subtype /Image').allMatches(text).length, 1, reason: 'the same JPEG on both sheets');
+    });
+
+    test('tints over a picture stay translucent, over white paper they are opaque colours', () {
+      final p = Project();
+      p.entities.addAll([
+        AreaEntity(id: 'a', name: 'Field', points: const [Pt(0, 0), Pt(80, 0), Pt(80, 50), Pt(0, 50)]),
+        LineEntity(id: 'l', a: const Pt(0, 0), b: const Pt(80, 50)),
+      ]);
+      final base = printColor(p.layerNamed(Layers.areas).color);
+      PlotPath area(PlotScene s) => s.items.whereType<PlotPath>().firstWhere((x) => x.layer == Layers.areas && x.fillColor != null);
+      final plain = area(buildPlotScene(p, unitsPerMm: 0.5));
+      expect((plain.fillColor, plain.fillOpacity), (blendOverWhite(base, 0.18), 1.0));
+      final raster = PlotRaster.bounds(jpeg(16, 16), p.bounds.inflate(20));
+      final over = area(buildPlotScene(p, unitsPerMm: 0.5, rasters: [raster]));
+      expect((over.fillColor, over.fillOpacity), (base, 0.18));
+      // in the PDF: the fill alone at 18 %, the outline opaque
+      final doc = PdfDocument();
+      exporter(p).sheetBuilder().addSheetPages(doc, SheetOptions(page: PageSize.a4, legend: false, rasters: [raster]));
+      final text = latin1.decode(doc.build(compress: false));
+      expect(text, contains('/ca 0.18'));
+      expect(RegExp(r'q\n/GS\d+ gs\n[^\n]+ rg\n[-\d. ]+ m (?:[-\d. ]+ l )+h f\nQ').hasMatch(text), isTrue);
+      // and in the SVG
+      expect(exporter(p).svg(SheetOptions(rasters: [raster])), contains('fill-opacity="0.18"'));
+      expect(exporter(p).svg(), isNot(contains('fill-opacity')));
+    });
+
     test('SVG: images as data URIs with a transform, rasters underneath, attribution', () {
       final p = withImage(data: png(20, 10));
       final raster = PlotRaster.bounds(png(8, 8, alpha: false), p.bounds.inflate(10));

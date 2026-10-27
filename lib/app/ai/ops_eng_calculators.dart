@@ -52,7 +52,7 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
         double cv;
         String what;
         if (kind == 'tape') {
-          if (tapes.isEmpty) throw ToolInputError('The catalogue has no drip tape: use kind "emitter" or add a tape (edit_catalog).');
+          if (tapes.isEmpty) throw ToolInputError('The catalogue has no drip tape: use kind "emitter", or add one. ${catalogNextStep('tape')}');
           final id = a.str('tape') ?? tapes.first.id;
           final tp = cat.tape(id) ?? (throw ToolInputError('Unknown tape "$id". Tapes: ${tapes.map((x) => x.id).join(', ')}.'));
           spec = LateralSpec(
@@ -125,9 +125,9 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
       }),
       run: (a, _) async {
         final cat = b.p.catalog;
-        if (cat.pumps.isEmpty) throw ToolInputError('The catalogue has no pump (edit_catalog adds one).');
+        if (cat.pumps.isEmpty) throw ToolInputError('The catalogue has no pump. ${catalogNextStep('pump')}');
         final mains = cat.pipesFor(PipeUsage.mainline);
-        if (mains.isEmpty) throw ToolInputError('The catalogue has no mainline pipe.');
+        if (mains.isEmpty) throw ToolInputError('The catalogue has no mainline pipe. ${catalogNextStep('pipe')}');
         final pid = a.str('pump') ?? cat.pumps.first.id;
         final pump = cat.pump(pid) ?? (throw ToolInputError('Unknown pump "$pid" (search_catalog kind "pump").'));
         final lid = a.str('pipe') ?? mains[math.min(2, mains.length - 1)].id;
@@ -172,7 +172,7 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
       run: (a, _) async {
         final cat = b.p.catalog;
         final mains = cat.pipesFor(PipeUsage.mainline);
-        if (cat.pipes.isEmpty) throw ToolInputError('The catalogue has no pipe.');
+        if (cat.pipes.isEmpty) throw ToolInputError('The catalogue has no pipe. ${catalogNextStep('pipe')}');
         final id = a.str('pipe') ?? (mains.isNotEmpty ? mains.first.id : cat.pipes.first.id);
         final pipe = cat.pipe(id) ?? (throw ToolInputError('Unknown pipe "$id" (search_catalog kind "pipe").'));
         final vel = a.number('velocity_change_mps', min: 0, max: 10) ?? 1.5;

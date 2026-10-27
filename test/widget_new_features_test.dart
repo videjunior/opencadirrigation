@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/canvas/cad_canvas.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
@@ -36,7 +37,7 @@ void main() {
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false));
+    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false, startExample: ExampleId.orchard));
     await settle(tester);
     final shell = tester.state(find.byType(AppShell)) as dynamic;
     final ProjectController c = shell.c as ProjectController;

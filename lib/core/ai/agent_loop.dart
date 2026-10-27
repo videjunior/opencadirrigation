@@ -262,13 +262,21 @@ enum AgentStop { done, maxTokens, stepLimit, budget, cancelled, error }
 
 /// What a turn produced.
 class AgentTurn {
-  AgentTurn({required this.messages, required this.text, required this.usage, required this.cost, required this.steps, required this.stop, required this.calls, this.error, this.compactions = 0});
+  AgentTurn({required this.messages, required this.text, required this.usage, required this.cost, required this.steps, required this.stop, required this.calls, this.error, this.compactions = 0, this.history});
 
   /// Entries to append to the conversation, in the provider's format: the
   /// question and everything the model and the tools added, ending in a
-  /// valid state (every tool call answered). Empty when nothing came back,
-  /// so the question can be asked again.
+  /// valid state (every tool call answered) that the API accepted (when it
+  /// refused a request, what that request added is left out). Empty when
+  /// nothing came back, so the question can be asked again.
   final List<Map<String, dynamic>> messages;
+
+  /// The conversation before the turn as the client rewrote it so that the
+  /// API would take it (thinking blocks it no longer accepted taken out,
+  /// once); null when unchanged. It has the entries the history had, in
+  /// the same places: the caller replaces its copy with it, then appends
+  /// [messages].
+  final List<Map<String, dynamic>>? history;
   final String text;
   final AiUsage usage;
 
@@ -285,13 +293,24 @@ class AgentTurn {
 
 /// What the loop is doing, for the status line.
 class AgentStatus {
-  const AgentStatus.thinking() : kind = 'thinking', tool = '', wait = Duration.zero;
-  const AgentStatus.tool(this.tool) : kind = 'tool', wait = Duration.zero;
-  const AgentStatus.approval(this.tool) : kind = 'approval', wait = Duration.zero;
-  const AgentStatus.retry(this.wait) : kind = 'retry', tool = '';
+  const AgentStatus.thinking() : kind = 'thinking', tool = '', wait = Duration.zero, note = '', reason = null;
+
+  /// Running [tool]; [note]: what the model wrote on its progress before
+  /// the calls of this step, if anything.
+  const AgentStatus.tool(this.tool, {this.note = ''}) : kind = 'tool', wait = Duration.zero, reason = null;
+  const AgentStatus.approval(this.tool) : kind = 'approval', wait = Duration.zero, note = '', reason = null;
+
+  /// Trying again in [wait] after [reason].
+  const AgentStatus.retry(this.wait, {this.reason}) : kind = 'retry', tool = '', note = '';
+
+  /// A note the model writes on its progress between tool calls ([note],
+  /// one line), as it arrives.
+  const AgentStatus.update(this.note) : kind = 'update', tool = '', wait = Duration.zero, reason = null;
   final String kind;
   final String tool;
   final Duration wait;
+  final String note;
+  final AiErrorKind? reason;
 }
 
 class AgentEvents {
@@ -354,195 +373,275 @@ class AgentLoop {
   }) async {
     final defs = specs;
     final byName = {for (final t in tools) t.name: t};
+    // the conversation before the turn, rewritten at most by a client's
+    // recovery (AgentTurn.history)
+    var past = history;
+    var rewrote = false;
     final kept = <Map<String, dynamic>>[user];
+    // entries of [kept] in the input of the last request the API accepted:
+    // a request it refuses takes back what came after them
+    var accepted = 0;
+    // the calls of the last answer kept, until their results go in, and
+    // the results made so far
+    var open = const <AiToolCall>[];
+    var results = <AiToolResult>[];
     final calls = <AgentToolCall>[];
     final text = StringBuffer();
     var usage = AiUsage.zero;
     var cost = 0.0;
     var steps = 0;
     var compactions = 0;
-    var answered = false;
     var warnedBudget = false;
     final stopped = Completer<Approval>();
     cancel.onCancel(() {
       if (!stopped.isCompleted) stopped.complete(Approval.stop);
     });
 
-    AgentTurn end(AgentStop stop, [AiError? e]) =>
-        AgentTurn(messages: answered ? kept : const [], text: text.toString(), usage: usage, cost: cost, steps: steps, stop: stop, calls: calls, error: e, compactions: compactions);
-
-    while (true) {
-      if (cancel.cancelled) return end(AgentStop.cancelled);
-      if (costCap != null && steps > 0 && cost >= costCap) return end(AgentStop.budget);
-      steps++;
-      events.onStatus?.call(const AgentStatus.thinking());
-      var fresh = true;
-      final AiReply reply;
-      try {
-        reply = await api.send(
-          AiRequest(model: model, system: system, history: [...history, ...kept], tools: defs, effort: effort, taskBudget: taskBudget, compactAt: compactAt),
-          cancel: cancel,
-          listener: AiStreamListener(
-            onText: (s) {
-              // a paragraph between what the model wrote before and after tools
-              final d = fresh && text.isNotEmpty ? '\n\n$s' : s;
-              fresh = false;
-              text.write(d);
-              events.onText?.call(d);
-            },
-          ),
-          onRetry: (wait, _) => events.onStatus?.call(AgentStatus.retry(wait)),
-        );
-      } on AiError catch (e) {
-        return end(e.kind == AiErrorKind.cancelled ? AgentStop.cancelled : AgentStop.error, e);
+    AgentTurn end(AgentStop stop, [AiError? e]) {
+      if (open.isNotEmpty) {
+        // a round the turn did not finish: every call still gets an answer,
+        // so the conversation stays one the API takes
+        final done = {for (final r in results) r.id};
+        final why = switch (stop) {
+          AgentStop.cancelled => 'Not run: the user stopped the assistant.',
+          AgentStop.done => 'Not run: your answer ended before this call could run. Call it again if it is still needed.',
+          _ => 'Not run: the request ended early${e == null ? '' : ' (${e.kind.name})'}. Call it again if it is still needed.',
+        };
+        kept.addAll(api.toolResults([
+          ...results,
+          for (final u in open)
+            if (!done.contains(u.id)) _error(u.id, why),
+        ]));
+        open = const [];
       }
-      usage += reply.usage;
-      cost += reply.usage.cost(AiModel.served(reply.model, model));
-      events.onUsage?.call(usage, cost);
-      // a declined answer is discarded, as is a tool call cut by the length limit
-      if (reply.stop == AiStop.refusal) return end(AgentStop.error, AiError(AiErrorKind.refusal, category: reply.category, message: reply.explanation));
-      final uses = reply.calls;
-      if (reply.stop == AiStop.maxTokens && uses.isNotEmpty) return end(AgentStop.error, AiError(AiErrorKind.truncated));
-      if (reply.items.isNotEmpty) {
-        kept.addAll(reply.items);
-        answered = true;
-      }
-      if (reply.compacted) {
-        compactions++;
-        events.onCompacted?.call();
-      }
-      if (uses.isEmpty || reply.stop != AiStop.tool) return end(reply.stop == AiStop.maxTokens ? AgentStop.maxTokens : AgentStop.done);
-
-      final results = <AiToolResult>[];
-      final round = <AgentToolCall>[];
-      var lastChange = -1;
-      var stop = false;
-      final last = steps >= maxSteps;
-      for (final u in uses) {
-        final id = u.id;
-        final name = u.name;
-        final input = u.input;
-        if (stop || cancel.cancelled) {
-          results.add(_error(id, 'Not run: the user stopped the assistant.'));
-          continue;
-        }
-        if (last) {
-          results.add(_error(id, 'Not run: the step limit of this request was reached. Tell the user what is left; they can ask you to continue.'));
-          continue;
-        }
-        final tool = byName[name];
-        if (tool == null) {
-          results.add(_error(id, 'Unknown tool "$name".'));
-          continue;
-        }
-        final raw = u.invalidRaw;
-        final problem = raw != null ? null : schemaProblem(tool.inputSchema, input);
-        String summary;
-        try {
-          summary = problem == null && raw == null ? tool.describe(input) : name;
-        } catch (_) {
-          summary = name;
-        }
-        var effect = ToolEffect.read;
-        try {
-          effect = problem == null && raw == null ? tool.effectOf(input) : tool.effect;
-        } catch (_) {
-          effect = tool.effect;
-        }
-        final call = AgentToolCall(id: id, name: name, input: input, summary: summary, effect: effect);
-        calls.add(call);
-        round.add(call);
-        void finish(ToolCallState s, String r) {
-          call.state = s;
-          call.result = r.split('\n').first;
-          events.onCall?.call(call);
-        }
-
-        if (raw != null) {
-          finish(ToolCallState.failed, 'INVALID_JSON');
-          results.add(_error(id, jsonEncode({'INVALID_JSON': raw})));
-          continue;
-        }
-        if (problem != null) {
-          finish(ToolCallState.failed, problem);
-          results.add(_error(id, problem));
-          continue;
-        }
-        if (effect != ToolEffect.read) {
-          final mode = permissionNow?.call() ?? permission;
-          // a request to another service changes nothing: allowed in every
-          // mode, with the user's approval unless changes apply automatically
-          final lookup = effect == ToolEffect.network;
-          if (mode == AgentPermission.readOnly && !lookup) {
-            finish(ToolCallState.refused, 'read-only');
-            results.add(
-              _error(id, 'Refused: the user set the assistant to read-only, so it may not change the project or export files. Describe the change instead; the user can make it or allow changes.'),
-            );
-            continue;
-          }
-          if (mode == AgentPermission.plan && !lookup) {
-            finish(ToolCallState.refused, 'plan');
-            results.add(_error(id, 'Refused: plan mode. Explore with the read tools, then present your plan with present_plan; changes are allowed once the user approves it.'));
-            continue;
-          }
-          if (mode != AgentPermission.auto || tool.mustConfirm(input)) {
-            call.state = ToolCallState.waiting;
-            events.onCall?.call(call);
-            events.onStatus?.call(AgentStatus.approval(name));
-            final approve = events.approve;
-            final a = approve == null ? Approval.skip : await Future.any([approve(call), stopped.future]);
-            if (a == Approval.stop || cancel.cancelled) {
-              stop = true;
-              finish(ToolCallState.skipped, 'stopped');
-              results.add(_error(id, 'Not run: the user stopped the assistant.'));
-              continue;
-            }
-            if (a == Approval.skip) {
-              finish(ToolCallState.skipped, 'skipped');
-              results.add(_error(id, 'The user declined this change. Do not repeat it unless they ask; go on with the rest or explain the alternatives.'));
-              continue;
-            }
-          }
-        }
-        call.state = ToolCallState.running;
-        events.onCall?.call(call);
-        events.onStatus?.call(AgentStatus.tool(name));
-        try {
-          final out = await tool.run(input);
-          finish(out.isError ? ToolCallState.failed : ToolCallState.done, out.text);
-          if (effect == ToolEffect.write && !out.isError) lastChange = results.length;
-          results.add(AiToolResult(id, out.clip(maxResultChars)));
-        } on ToolInputError catch (e) {
-          finish(ToolCallState.failed, e.message);
-          results.add(_error(id, e.message));
-        } catch (e) {
-          finish(ToolCallState.failed, '$e');
-          results.add(_error(id, 'The tool failed: $e'));
-        }
-        if (cancel.cancelled) stop = true;
-      }
-      final going = !stop && !cancel.cancelled && !last;
-      if (going && lastChange >= 0 && events.afterRound != null) {
-        try {
-          final extra = await events.afterRound!(round);
-          if (extra != null) {
-            final r = results[lastChange];
-            results[lastChange] = AiToolResult(r.id, ToolOutput('${r.output.text}\n${extra.text}'.trim(), images: [...r.output.images, ...extra.images], isError: r.output.isError));
-          }
-        } catch (_) {
-          // a picture that cannot be made is no reason to stop
-        }
-      }
-      final notes = <String>[
-        if (going && steps == maxSteps - 1) 'Step limit: the next answer is the last step of this request. Do not call more tools; tell the user what you did and what is left.',
-        if (going && costCap != null && !warnedBudget && cost >= 0.8 * costCap)
-          'Spending cap: about ${(100 * cost / costCap).round()} % of the cap for this task (US\$ ${costCap.toStringAsFixed(2)}) is spent. Finish the step you are on, then stop and tell the user what is done and what is left; they can raise the cap or ask you to continue.',
-      ];
-      if (notes.length > 1 || notes.any((n) => n.startsWith('Spending'))) warnedBudget = true;
-      final steering = going ? (events.steer?.call() ?? const <AiPart>[]) : const <AiPart>[];
-      kept.addAll(api.toolResults(results, user: [for (final p in steering) p is AiTextPart ? AiTextPart('$steeringPrefix${p.text}') : p], note: notes.isEmpty ? null : notes.join('\n')));
-      if (stop || cancel.cancelled) return end(AgentStop.cancelled);
-      if (last) return end(AgentStop.stepLimit);
+      return AgentTurn(
+        messages: kept.length > 1 ? kept : const [],
+        text: text.toString(),
+        usage: usage,
+        cost: cost,
+        steps: steps,
+        stop: stop,
+        calls: calls,
+        error: e,
+        compactions: compactions,
+        history: rewrote ? past : null,
+      );
     }
+
+    try {
+      while (true) {
+        if (cancel.cancelled) return end(AgentStop.cancelled);
+        if (costCap != null && steps > 0 && cost >= costCap) return end(AgentStop.budget);
+        steps++;
+        events.onStatus?.call(const AgentStatus.thinking());
+        var fresh = true;
+        var note = '';
+        final AiReply reply;
+        try {
+          reply = await api.send(
+            AiRequest(model: model, system: system, history: [...past, ...kept], tools: defs, effort: effort, taskBudget: taskBudget, compactAt: compactAt),
+            cancel: cancel,
+            listener: AiStreamListener(
+              onText: (s) {
+                // a paragraph between what the model wrote before and after tools
+                final d = fresh && text.isNotEmpty ? '\n\n$s' : s;
+                fresh = false;
+                text.write(d);
+                events.onText?.call(d);
+              },
+              onThinking: (s) {
+                final n = _oneLine(s);
+                if (n.isEmpty || n == note) return;
+                note = n;
+                events.onStatus?.call(AgentStatus.update(n));
+              },
+            ),
+            onRetry: (wait, _, e) => events.onStatus?.call(AgentStatus.retry(wait, reason: e.kind)),
+          );
+        } on AiError catch (e) {
+          // the API refused what this request added: back to what it last accepted
+          if (e.refusedContent && kept.length > accepted) {
+            kept.removeRange(accepted, kept.length);
+            open = const [];
+            results = [];
+          }
+          return end(e.kind == AiErrorKind.cancelled ? AgentStop.cancelled : AgentStop.error, e);
+        }
+        accepted = kept.length;
+        final rewritten = reply.history;
+        if (rewritten != null && rewritten.length == past.length + kept.length) {
+          final n = past.length;
+          kept.setAll(0, rewritten.sublist(n));
+          past = rewritten.sublist(0, n);
+          rewrote = true;
+        }
+        usage += reply.usage;
+        cost += reply.cost(model);
+        events.onUsage?.call(usage, cost);
+        // a declined answer is discarded, as is a tool call cut by the length limit
+        if (reply.stop == AiStop.refusal) {
+          return end(AgentStop.error, AiError(AiErrorKind.refusal, category: reply.category, message: reply.explanation, recommendedModel: reply.recommendedModel));
+        }
+        final uses = reply.calls;
+        if (uses.isNotEmpty && reply.stop == AiStop.maxTokens) return end(AgentStop.error, AiError(AiErrorKind.truncated));
+        if (uses.isNotEmpty && reply.stop == AiStop.contextWindow) return end(AgentStop.error, AiError(AiErrorKind.contextWindow));
+        if (reply.items.isNotEmpty) {
+          kept.addAll(reply.items);
+          open = uses;
+          results = [];
+        }
+        if (reply.compacted) {
+          compactions++;
+          events.onCompacted?.call();
+        }
+        // the context window is full: what the model wrote stays, the conversation cannot go on
+        if (reply.stop == AiStop.contextWindow) return end(AgentStop.error, AiError(AiErrorKind.contextWindow));
+        // the server paused a long turn of its own: the same conversation again, no new message
+        if (reply.stop == AiStop.pause && uses.isEmpty) continue;
+        if (uses.isEmpty || (reply.stop != AiStop.tool && reply.stop != AiStop.pause)) return end(reply.stop == AiStop.maxTokens ? AgentStop.maxTokens : AgentStop.done);
+
+        final round = <AgentToolCall>[];
+        var lastChange = -1;
+        var stop = false;
+        final last = steps >= maxSteps;
+        for (final u in uses) {
+          final id = u.id;
+          final name = u.name;
+          final input = u.input;
+          if (stop || cancel.cancelled) {
+            results.add(_error(id, 'Not run: the user stopped the assistant.'));
+            continue;
+          }
+          if (last) {
+            results.add(_error(id, 'Not run: the step limit of this request was reached. Tell the user what is left; they can ask you to continue.'));
+            continue;
+          }
+          final tool = byName[name];
+          if (tool == null) {
+            results.add(_error(id, 'Unknown tool "$name".'));
+            continue;
+          }
+          final raw = u.invalidRaw;
+          final problem = raw != null ? null : schemaProblem(tool.inputSchema, input);
+          String summary;
+          try {
+            summary = problem == null && raw == null ? tool.describe(input) : name;
+          } catch (_) {
+            summary = name;
+          }
+          var effect = ToolEffect.read;
+          try {
+            effect = problem == null && raw == null ? tool.effectOf(input) : tool.effect;
+          } catch (_) {
+            effect = tool.effect;
+          }
+          final call = AgentToolCall(id: id, name: name, input: input, summary: summary, effect: effect);
+          calls.add(call);
+          round.add(call);
+          void finish(ToolCallState s, String r) {
+            call.state = s;
+            call.result = r.split('\n').first;
+            events.onCall?.call(call);
+          }
+
+          if (raw != null) {
+            finish(ToolCallState.failed, 'INVALID_JSON');
+            results.add(_error(id, jsonEncode({'INVALID_JSON': raw})));
+            continue;
+          }
+          if (problem != null) {
+            finish(ToolCallState.failed, problem);
+            results.add(_error(id, problem));
+            continue;
+          }
+          if (effect != ToolEffect.read) {
+            final mode = permissionNow?.call() ?? permission;
+            // a request to another service changes nothing: allowed in every
+            // mode, with the user's approval unless changes apply automatically
+            final lookup = effect == ToolEffect.network;
+            if (mode == AgentPermission.readOnly && !lookup) {
+              finish(ToolCallState.refused, 'read-only');
+              results.add(
+                _error(id, 'Refused: the user set the assistant to read-only, so it may not change the project or export files. Describe the change instead; the user can make it or allow changes.'),
+              );
+              continue;
+            }
+            if (mode == AgentPermission.plan && !lookup) {
+              finish(ToolCallState.refused, 'plan');
+              results.add(_error(id, 'Refused: plan mode. Explore with the read tools, then present your plan with present_plan; changes are allowed once the user approves it.'));
+              continue;
+            }
+            if (mode != AgentPermission.auto || tool.mustConfirm(input)) {
+              call.state = ToolCallState.waiting;
+              events.onCall?.call(call);
+              events.onStatus?.call(AgentStatus.approval(name));
+              final approve = events.approve;
+              final a = approve == null ? Approval.skip : await Future.any([approve(call), stopped.future]);
+              if (a == Approval.stop || cancel.cancelled) {
+                stop = true;
+                finish(ToolCallState.skipped, 'stopped');
+                results.add(_error(id, 'Not run: the user stopped the assistant.'));
+                continue;
+              }
+              if (a == Approval.skip) {
+                finish(ToolCallState.skipped, 'skipped');
+                results.add(_error(id, 'The user declined this change. Do not repeat it unless they ask; go on with the rest or explain the alternatives.'));
+                continue;
+              }
+            }
+          }
+          call.state = ToolCallState.running;
+          events.onCall?.call(call);
+          events.onStatus?.call(AgentStatus.tool(name, note: note));
+          try {
+            final out = await tool.run(input);
+            finish(out.isError ? ToolCallState.failed : ToolCallState.done, out.text);
+            if (effect == ToolEffect.write && !out.isError) lastChange = results.length;
+            results.add(AiToolResult(id, out.clip(maxResultChars)));
+          } on ToolInputError catch (e) {
+            finish(ToolCallState.failed, e.message);
+            results.add(_error(id, e.message));
+          } catch (e) {
+            finish(ToolCallState.failed, '$e');
+            results.add(_error(id, 'The tool failed: $e'));
+          }
+          if (cancel.cancelled) stop = true;
+        }
+        final going = !stop && !cancel.cancelled && !last;
+        if (going && lastChange >= 0 && events.afterRound != null) {
+          try {
+            final extra = await events.afterRound!(round);
+            if (extra != null) {
+              final r = results[lastChange];
+              results[lastChange] = AiToolResult(r.id, ToolOutput('${r.output.text}\n${extra.text}'.trim(), images: [...r.output.images, ...extra.images], isError: r.output.isError));
+            }
+          } catch (_) {
+            // a picture that cannot be made is no reason to stop
+          }
+        }
+        final notes = <String>[
+          if (going && steps == maxSteps - 1) 'Step limit: the next answer is the last step of this request. Do not call more tools; tell the user what you did and what is left.',
+          if (going && costCap != null && !warnedBudget && cost >= 0.8 * costCap)
+            'Spending cap: about ${(100 * cost / costCap).round()} % of the cap for this task (US\$ ${costCap.toStringAsFixed(2)}) is spent. Finish the step you are on, then stop and tell the user what is done and what is left; they can raise the cap or ask you to continue.',
+        ];
+        if (notes.length > 1 || notes.any((n) => n.startsWith('Spending'))) warnedBudget = true;
+        final steering = going ? (events.steer?.call() ?? const <AiPart>[]) : const <AiPart>[];
+        kept.addAll(api.toolResults(results, user: [for (final p in steering) p is AiTextPart ? AiTextPart('$steeringPrefix${p.text}') : p], note: notes.isEmpty ? null : notes.join('\n')));
+        open = const [];
+        results = [];
+        if (stop || cancel.cancelled) return end(AgentStop.cancelled);
+        if (last) return end(AgentStop.stepLimit);
+      }
+    } catch (e) {
+      // a failure of this program (a malformed answer, a callback that
+      // threw) ends the turn as an error and keeps what is valid of it
+      return end(AgentStop.error, AiError(AiErrorKind.unexpected, message: '${e.runtimeType}'));
+    }
+  }
+
+  /// [s] on one line, at most 300 characters.
+  static String _oneLine(String s) {
+    final t = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return t.length <= 300 ? t : '${t.substring(0, 299)}…';
   }
 }

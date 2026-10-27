@@ -91,7 +91,13 @@ void main() {
       final html = File('web/${l.file}').readAsStringSync();
       final t = siteText(l.code);
       expect(html, contains('<h1>${t.h1}</h1>'), reason: l.code);
-      expect(RegExp(r'<h2 ').allMatches(html).length, 4, reason: '${l.code}: features, how, examples, faq');
+      expect(RegExp(r'<h2 ').allMatches(html).length, 5, reason: '${l.code}: ai, features, how, examples, faq');
+      // the AI assistant first: its own section, before the feature list
+      expect(html, contains('<h2 id="oci-ai">${t.aiTitle}</h2>'), reason: l.code);
+      expect(html.indexOf('id="oci-ai"'), lessThan(html.indexOf('id="oci-features"')), reason: l.code);
+      for (final (name, _) in t.aiPoints) {
+        expect(html, contains('<h3>$name</h3>'), reason: '${l.code} $name');
+      }
       for (final (name, _) in t.features) {
         expect(html, contains('<h3>$name</h3>'), reason: '${l.code} $name');
       }
@@ -122,12 +128,13 @@ void main() {
       // buttons and example links open the app in place
       expect(html, contains('<a class="primary" href="${l.url}" data-app>'), reason: l.code);
       expect(html, contains('<a href="${l.url}?tutorial=1" data-app>'), reason: l.code);
+      expect(html, contains('<a href="${l.url}?ai=1" data-app>'), reason: '${l.code}: the AI assistant opens in place');
       for (final ex in siteText(l.code).examples) {
         expect(html, contains('<a href="${l.url}?example=${ex.id}" data-app>'), reason: '${l.code} ${ex.id}');
       }
       // addresses of the app (installed app, its shortcuts, deep links) start it without a click
       final params = RegExp(r'\[\?&\]\(([a-z|]+)\)=').firstMatch(html)!.group(1)!.split('|');
-      for (final address in [...appAddresses, '${l.url}?example=garden', '${l.url}?tutorial=1', '${l.url}?lang=es']) {
+      for (final address in [...appAddresses, '${l.url}?example=garden', '${l.url}?tutorial=1', '${l.url}?ai=1', '${l.url}?lang=es']) {
         expect(Uri.parse(address.replaceFirst('./', site)).queryParameters.keys.any(params.contains), isTrue, reason: '${l.code}: $address');
       }
       expect(html, contains("var prefix = 'opencadirrigation.';"), reason: 'returning users: the prefix of the app storage');
@@ -227,9 +234,13 @@ void main() {
     }
     expect(llms, contains('- [Source code]($appRepositoryUrl)'));
     // the reference covers what the page cannot hold
-    for (final heading in ['## At a glance', '## Hydraulic engine', '## Pipe sizing and optimisation', '## File formats', '## Known limitations', '## Deep links']) {
+    for (final heading in ['## At a glance', '## AI assistant', '## Hydraulic engine', '## Pipe sizing and optimisation', '## File formats', '## Known limitations', '## Deep links']) {
       expect(full, contains(heading));
     }
+    // the AI assistant is stated up front, for the assistants that answer "does it have AI?"
+    expect(llms, contains('## AI assistant'));
+    expect(llms, contains('($site?ai=1)'));
+    expect(full.indexOf('## AI assistant'), lessThan(full.indexOf('## Hydraulic engine')));
   });
 
   test('IndexNow key file and humans.txt', () {
@@ -252,6 +263,7 @@ void main() {
       final t = siteText(l.code);
       expect(l.path, l.isRoot ? '' : '${l.code}/');
       expect(t.features.length, en.features.length, reason: l.code);
+      expect(t.aiPoints.length, en.aiPoints.length, reason: l.code);
       expect(t.how.length, en.how.length, reason: l.code);
       expect(t.faq.length, en.faq.length, reason: l.code);
       expect([for (final e in t.examples) e.id], [for (final e in en.examples) e.id], reason: '${l.code}: same gallery, same order');
@@ -260,7 +272,7 @@ void main() {
         expect(e.text, isNotEmpty, reason: '${l.code} ${e.id}');
       }
       if (l.code == 'en') continue;
-      for (final (field, value, english) in [('title', t.title, en.title), ('description', t.description, en.description), ('h1', t.h1, en.h1), ('intro', t.intro, en.intro), ('faq', t.faq.last.$2, en.faq.last.$2), ('notFoundText', t.notFoundText, en.notFoundText)]) {
+      for (final (field, value, english) in [('title', t.title, en.title), ('description', t.description, en.description), ('h1', t.h1, en.h1), ('intro', t.intro, en.intro), ('aiTitle', t.aiTitle, en.aiTitle), ('aiIntro', t.aiIntro, en.aiIntro), ('faq', t.faq.last.$2, en.faq.last.$2), ('notFoundText', t.notFoundText, en.notFoundText)]) {
         expect(value, isNot(english), reason: '${l.code}.$field is still the English text');
       }
       expect(t.title, startsWith('OpenCADIrrigation'), reason: l.code);
@@ -323,9 +335,10 @@ void main() {
     }
     final urls = (m['shortcuts'] as List).map((s) => (s as Map)['url'] as String).toList();
     expect(urls, contains('./?tutorial=1'));
+    expect(urls, contains('./?ai=1'), reason: 'the AI assistant as an app shortcut');
     expect(urls.where((u) => u.contains('example=')), isNotEmpty, reason: 'gallery shortcuts');
     for (final s in m['shortcuts'] as List) {
-      expect((s as Map)['url'], anyOf(contains('tutorial=1'), contains('design=1'), contains('example=')));
+      expect((s as Map)['url'], anyOf(contains('tutorial=1'), contains('design=1'), contains('ai=1'), contains('example=')));
     }
   });
 

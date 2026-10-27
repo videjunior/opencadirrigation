@@ -398,6 +398,6 @@ void main() {
     expect(out.text, contains('No base map'));
     expect(out.text, contains('m per pixel'));
     expect((cam.center, cam.scale, cam.size), before);
-    expect(await refused(tester, 'create_vegetation_areas', {}), contains('aerial base map'));
+    expect(await refused(tester, 'create_vegetation_areas', {}), allOf(contains('no georeference'), contains('set_site')));
   });
 }

@@ -10,7 +10,7 @@ part of '../site.dart';
 
 /// Short facts, as `(label, value)`, shared by both files.
 List<(String, String)> _facts() => [
-  ('What', 'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports'),
+  ('What', 'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports, and an optional AI assistant (Claude or GPT, with the user\'s own key) that draws and designs the project with the program\'s own tools'),
   ('Price', 'Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user\'s own Anthropic or OpenAI account, which that provider bills'),
   ('Licence', 'Open source under the MIT licence; source code (Dart and Flutter) at $appRepositoryUrl'),
   ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download'),
@@ -19,7 +19,7 @@ List<(String, String)> _facts() => [
   ('Project file', '`.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results'),
   ('CAD, GIS and survey exchange', 'Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4'),
   ('Reports', 'PDF in any of the 20 languages, Excel (XLSX), CSV and TXT'),
-  ('AI assistant', 'Optional chat with an Anthropic or OpenAI model, with the user\'s own API key, called from the browser with no server in between; it reads the project with the program\'s own tools and, with the user\'s approval, changes it and runs the design; every change can be undone'),
+  ('AI assistant', 'Optional: a Claude (Anthropic) or GPT (OpenAI) model with the user\'s own API key, called from the browser with no server in between; it reads the project, looks at the satellite image and the terrain and, with the program\'s own tools, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the design, fixes warnings, optimises and writes the report; every change waits for the user\'s approval (or applies automatically) and can be undone; open it at $siteUrl?ai=1'),
   ('Command line and API', '`bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md]($appRepositoryUrl/blob/main/docs/API.md))'),
   ('Version', '$appVersion, updated $siteLastMod'),
   ('Site', siteUrl),
@@ -55,6 +55,17 @@ String _bothNames(String code) => languageNames[code] == _englishNames[code] ? _
 /// Sections of the reference that go beyond the web page, as
 /// `(heading, Markdown body)`.
 const _reference = [
+  (
+    'AI assistant',
+    '''- Optional (Design → AI assistant, the command AI, the status-bar button, or the address `$siteUrl?ai=1`): an AI agent in a panel docked beside the drawing (a bottom sheet on phones) that works on the open project with a model from Anthropic or OpenAI, chosen in its settings, through the user's own API key. Requests go straight from the browser (or the desktop build) to that provider's API, with no server in between; each key is sent only to its own provider.
+- Starting with the AI: the app opens on an empty project with a start screen that asks where the area to irrigate is (an address or place searched on OpenStreetMap, the user picking among the matches, or coordinates in any usual form; the project is georeferenced there and the satellite map shows) and whether to design with the assistant. "Design with AI" opens the assistant beside the drawing with the place and the user's description (or a request to start a new design) waiting in its box, nothing sent before Send; "Start without AI" leaves the user on the empty, georeferenced project. The screen can be turned off, and it is not shown when the address already says what to open (an example, the tutorial or a shared project) or after recovered work. Examples and the tutorial stay under Help → Welcome and example gallery and File → Examples.
+- Models: Claude Fable 5.1, Claude Opus 5.5 (the default), Claude Sonnet 5.5 and Claude Haiku 5.5 from Anthropic; GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna from OpenAI, plus the earlier GPT-6 Sol and GPT-5.6 Terra: a top, an intermediate and a fast tier of each company, each with five depths of reasoning. The panel shows the tokens of every answer and a cost estimate at list prices.
+- What it does: it answers questions about the open project and works with the program's own tools (70 tools, 101 more operations, every menu command and 133 settings): it lists and reads items, reports, design messages and elevations; creates, changes, moves and deletes items; sets the parameters, the catalogue, the system flows and the quote; runs the design, the analyses, the design assistant's fixes and the optimisation; lays out sprinklers, generates lateral blocks, divides fields, fits pivots, maps vegetation, chooses pumps, places air valves, routes wires, writes the technical report and exports files. It keeps a to-do list, asks the user when something is missing, presents its plan, keeps AI notes in the project and reads the design playbooks and the manual when it needs them.
+- Vision: it takes pictures of the drawing over the satellite image (the default whenever the project is georeferenced) or the map, with an exact pixel-to-world mapping, zooms into parts, previews proposed geometry before drawing it, and reads the terrain as hillshade, contours, slope, aspect and profiles; it finds a site from an address (OpenStreetMap Nominatim), sets the georeference and the base map, downloads the terrain and the climate, imports the drawings and GIS files the user attaches and adds catalogue items from an attached data sheet (PDF, image or text), checked before they go in.
+- Control: read only; plan first; ask before each change (the default, with Apply and Skip); or apply changes automatically (saving files, the georeference and large deletions are always confirmed). The user can type while it works and stop it at any time; the changes of each answer can be undone in one click, and every message has "Rewind to here". After an error or a stop the answer offers Try again (the same message, when nothing of it reached the model) or Continue; approving a plan to run automatically applies to that task only. A task ends at its step limit (50 by default) or at its spending cap (2 US dollars by default, with Continue). Long conversations are summarised on the provider's side.
+- What is sent, and when: nothing before the user presses Send; then the message, any attached files, the project data the user ticks, the earlier messages of the conversation and the program's instructions; while answering, the results of the tools it uses, pictures included. Conversations are not saved with the project, so shared files and links never carry them.
+- The provider bills the use to the user's account. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.'''
+  ),
   (
     'Design workflow',
     '''1. **Project details and parameters**: name, client, site, designer and notes (printed in the sheet title block and the reports), metric or US units, and the design parameters: friction formula, water temperature, mains frequency (50 or 60 Hz), pressure windows, velocities and economics.
@@ -181,14 +192,6 @@ const _reference = [
 | XLSX | catalogue prices | reports and catalogue |'''
   ),
   (
-    'AI assistant',
-    '''- Optional (Design → AI assistant, or the command AI): a chat with a model from Anthropic or OpenAI, chosen in its settings, through the user's own API key. Requests go straight from the browser (or the desktop build) to that provider's API, with no server in between; each key is sent only to its own provider.
-- It answers questions about the open project and works with the program's own tools: it lists and reads items, reports, design messages and elevations, looks at pictures of the drawing and the base map, creates, changes, moves and deletes items, sets parameters, the catalogue, the system flows and the quote, runs the design, the analyses, the design assistant's fixes and the optimisation, lays out sprinklers, generates blocks, divides fields, fits pivots, maps vegetation, chooses pumps, places air valves, routes wires and exports files.
-- Control: read only, ask before each change (with Apply and Skip), or apply changes automatically (files and large deletions are always confirmed); the changes of each answer can be undone in one click, and a running answer can be stopped.
-- What is sent, and when: nothing before the user presses Send; then the message, any attached files (images, PDF data sheets, text), the project data the user ticks, the earlier messages of the conversation and the program's instructions; while answering, the results of the tools it uses, pictures included.
-- The provider bills the use to the user's account; the dialog shows the tokens used and a cost estimate at list prices. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.'''
-  ),
-  (
     'Storage, privacy and network access',
     '''- Autosave in the browser, recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
 - Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
@@ -232,6 +235,7 @@ const _deepLinks = [
   ('?example=<id>', 'opens a ready example (ids in the table above)'),
   ('?tutorial=1', 'opens the interactive tutorial (any step number works)'),
   ('?design=1', 'designs the project on load'),
+  ('?ai=1', 'opens the AI assistant beside the drawing'),
   ('?lang=<code>', 'interface language for this visit (codes in the language list)'),
   ('#p=<data>', 'a project shared by link (File → Share by link): it travels compressed inside the address and opens in a new tab; nothing is uploaded'),
 ];
@@ -265,8 +269,15 @@ String renderLlmsTxt() {
     ..writeln('- [OpenCADIrrigation]($siteUrl): the app and its page in English; the app opens in the visitor\'s language when it speaks it')
     ..writeln('- [${en.tutorial}]($siteUrl?tutorial=1): a guided tour of every function on a sample project')
     ..writeln('- [Sized example]($siteUrl?design=1): the sample orchard, designed as soon as it opens')
+    ..writeln('- [AI assistant]($siteUrl?ai=1): the app with the AI assistant open beside the drawing')
     ..writeln('- [Source code]($appRepositoryUrl): the whole application in Dart and Flutter, MIT licence')
     ..writeln('- [Engine API]($appRepositoryUrl/blob/main/docs/API.md): the calculation engine as a Dart library, and the command line `bin/oci.dart`')
+    ..writeln()
+    ..writeln('## AI assistant')
+    ..writeln()
+    ..writeln('- Optional: Claude (Anthropic) or GPT (OpenAI) models with the user\'s own API key, called straight from the browser with no server in between; the provider bills that account, and nothing is sent before the user presses Send')
+    ..writeln('- It draws and designs with the program\'s own tools: finds the site, looks at the satellite image and the terrain, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the sizing, fixes warnings, optimises and writes the report; every change waits for approval (or applies automatically) and can be undone')
+    ..writeln('- [Open the AI assistant]($siteUrl?ai=1) (Design → AI assistant in the app); details under "AI assistant" in the complete reference')
     ..writeln()
     ..writeln('## Reference')
     ..writeln()

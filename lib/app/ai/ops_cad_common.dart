@@ -61,6 +61,17 @@ List<Entity> cadEditable(AgentToolbox b, Iterable<String> refs) {
   return es;
 }
 
+/// The items of input "ids", or with "selected" true the current selection
+/// (an import selects what it adds), refusing those on locked layers.
+List<Entity> cadEditableOrSelection(AgentToolbox b, ToolArgs a) {
+  if (a.flag('selected') ?? false) {
+    if (b.c.selection.isEmpty) throw ToolInputError('Nothing is selected: give "ids".');
+    return cadEditable(b, [...b.c.selection]);
+  }
+  if (!a.has('ids')) throw ToolInputError('Give "ids" (or "selected": true for the current selection).');
+  return cadEditable(b, a.strings('ids', required: true));
+}
+
 /// Ids of the entities added to the project since [before] (the ids it
 /// held then).
 List<String> cadAdded(AgentToolbox b, Set<String> before) => [

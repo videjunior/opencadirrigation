@@ -239,14 +239,14 @@ void main() {
     final plain = await failure((_) => OpenAiReply.error(401, '', 'Unauthorized', mime: 'text/plain'));
     expect(plain.kind, AiErrorKind.auth);
     final quota = await failure((_) => OpenAiReply.error(429, 'insufficient_quota', 'You exceeded your current quota, please check your plan and billing details.', type: 'insufficient_quota'));
-    expect(quota.kind, AiErrorKind.billing);
+    expect(quota.kind, AiErrorKind.credit, reason: 'no credit left: a page to add it, not a retry');
     expect(quota.retryable, isFalse);
     final model = await failure((_) => OpenAiReply.error(404, 'model_not_found', 'The model `gpt-6-astra` does not exist or you do not have access to it.'));
     expect(model.kind, AiErrorKind.notFound);
     final access = await failure((_) => OpenAiReply.error(403, '', 'Project `proj_x` does not have access to model `gpt-6-astra`', type: 'invalid_request_error'));
     expect(access.kind, AiErrorKind.notFound);
     final bad = await failure((_) => OpenAiReply.error(400, 'context_length_exceeded', 'Your input exceeds the context window of this model.'));
-    expect(bad.kind, AiErrorKind.tooLarge);
+    expect(bad.kind, AiErrorKind.contextWindow);
 
     // rate limits and failures in the stream are retried
     final waits = <Duration>[];

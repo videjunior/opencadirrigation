@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/canvas/painter.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
@@ -59,7 +60,7 @@ void main() {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false));
+    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false, startExample: ExampleId.orchard));
     await settle(tester);
     final c = (tester.state(find.byType(AppShell)) as dynamic).c as ProjectController;
     c.autosaveEnabled = false;
@@ -306,7 +307,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     uiThemeMode.value = CadThemeMode.dark;
     Cad.use(Brightness.dark);
-    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false));
+    await tester.pumpWidget(const IrrigationCadApp(autoTutorial: false, offerRecovery: false, startExample: ExampleId.orchard));
     await settle(tester);
     expect(uiThemeMode.value, CadThemeMode.light);
     expect(Cad.isLight, isTrue);

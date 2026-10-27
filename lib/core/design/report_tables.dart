@@ -28,6 +28,22 @@ class RNum {
   String toString() => fmt(value, decimals);
 }
 
+/// Timeline cell of a schedule: days [start] (from 0) to [end] (the day
+/// after the last) of [total]. Text outputs show it as a bar of characters
+/// [width] long; the PDF draws a bar (the bundled fonts have no block
+/// characters).
+class RBar {
+  const RBar(this.start, this.end, this.total, {this.width = 30});
+  final int start, end, total;
+  final int width;
+  @override
+  String toString() {
+    if (total <= 0) return '';
+    final a = (start * width / total).round(), b = math.max(a + 1, (end * width / total).round());
+    return '${'·' * a}${'█' * (b - a)}';
+  }
+}
+
 class ReportTable {
   ReportTable({required this.key, required this.title, required this.headers, required this.rows, List<bool>? warn}) : warn = warn ?? List.filled(rows.length, false);
 
@@ -36,7 +52,7 @@ class ReportTable {
   final String title;
   final List<String> headers;
 
-  /// Cells are [String], [RNum] or [int].
+  /// Cells are [String], [RNum], [RBar] or [int].
   final List<List<Object>> rows;
 
   /// Rows that should be highlighted as warnings.
@@ -461,18 +477,12 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
   final works = scheduleTasks(project, project.proposal);
   if (works.isNotEmpty) {
     final total = works.fold(0, (m, w) => math.max(m, w.end));
-    String bar(ScheduleTask w) {
-      const width = 30;
-      final a = (w.start * width / total).round(), b = math.max(a + 1, (w.end * width / total).round());
-      return '${'·' * a}${'█' * (b - a)}';
-    }
-
     out.add(ReportTable(
       key: 'works',
       title: t('reports.works'),
       headers: [t('works.task'), t('rep.quantity'), t('rep.unit'), t('works.perDay'), t('works.days'), t('works.start'), t('works.end'), t('works.bar')],
       rows: [
-        for (final w in works) [t('works.${w.key}'), RNum(w.quantity, w.unit == 'un' ? 0 : 1), w.unit, RNum(w.perDay, 0), w.days, w.start + 1, w.end, bar(w)],
+        for (final w in works) [t('works.${w.key}'), RNum(w.quantity, w.unit == 'un' ? 0 : 1), w.unit, RNum(w.perDay, 0), w.days, w.start + 1, w.end, RBar(w.start, w.end, total)],
         [t('works.total', {'n': '${project.proposal.crews}'}), '', '', '', total, 1, total, ''],
       ],
     ));

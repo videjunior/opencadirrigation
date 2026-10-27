@@ -403,6 +403,22 @@ List<WaterSupplyEntity> _suppliesOf(Project p, Advice a, DesignResults? r) {
   return p.entities.whereType<WaterSupplyEntity>().toList();
 }
 
+/// Whether correction [kind] of [a] would add a booster pump to a mains
+/// connection: [FixKind.choosePump] for a supply whose pressure is given
+/// (calc false: a public network or a pressurised connection) without a
+/// mainline pump within 50 m, where [choosePumpFor] inserts a new pump.
+/// The AI assistant asks the user before such a pump (it costs, needs
+/// power, and the water company may not allow one).
+bool addsBoosterToMains(Project p, Advice a, FixKind kind, DesignResults? results) {
+  if (kind != FixKind.choosePump) return false;
+  final first = a.entityIds.isEmpty ? null : p.byId(a.entityIds.first);
+  if (first is PumpEntity) return false;
+  final supplies = _suppliesOf(p, a, results);
+  if (supplies.isEmpty || supplies.first.calculatePressure) return false;
+  final at = supplies.first.position;
+  return !p.entities.any((e) => e is PumpEntity && e.scope == HydraulicScope.mainline && e.position.distanceTo(at) < 50);
+}
+
 /// Selects the single catalogue pump with the lowest life-cycle cost that
 /// meets every duty of [supply] (all system flows) and puts it in [target]
 /// (by default the pump nearest to the supply) or, without a pump, inserts
@@ -537,13 +553,17 @@ String? _assignModel(Project p, Entity e, DesignResults? r, String Function(Stri
 
 // ---------------------------------------------------------------- fix automatically
 
+/// A correction the caller leaves out of [runAutoFix] (true: not applied).
+typedef FixFilter = bool Function(Advice a, FixKind kind, DesignResults? results);
+
 /// One round of the automatic correction. Settings and drawing corrections
 /// go first, because they change what the design sees; the corrections that
 /// need design results run only in a round without them (and with fresh
 /// [results]). [attempted] collects the problems already tried, so a
-/// correction that did not help is not repeated.
-List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? results, required Set<String> attempted, String Function(String key)? label, String lang = 'en'}) {
-  final candidates = [for (final a in advice) if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}')) a];
+/// correction that did not help is not repeated; [skip] leaves out the
+/// corrections the caller keeps for later (none by default).
+List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? results, required Set<String> attempted, String Function(String key)? label, String lang = 'en', FixFilter? skip}) {
+  final candidates = [for (final a in advice) if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}') && !(skip?.call(a, a.fixes.first, results) ?? false)) a];
   final drawing = [for (final a in candidates) if (!resultFixes.contains(a.fixes.first)) a];
   final round = drawing.isNotEmpty ? drawing : [if (results != null) ...candidates];
   final out = <FixResult>[];
@@ -577,8 +597,8 @@ class AutoFixReport {
 /// Fixes what can be fixed safely: designs ([design] runs the design and
 /// returns its results, null when it cannot run), applies a round of
 /// corrections, designs again, and repeats until a round changes nothing
-/// (at most [maxRounds]).
-Future<AutoFixReport> runAutoFix(Project p, Future<DesignResults?> Function() design, {String Function(String key)? label, String lang = 'en', int maxRounds = 6, void Function(int round)? onRound}) async {
+/// (at most [maxRounds]). [skip] leaves corrections out (see [autoFixRound]).
+Future<AutoFixReport> runAutoFix(Project p, Future<DesignResults?> Function() design, {String Function(String key)? label, String lang = 'en', int maxRounds = 6, void Function(int round)? onRound, FixFilter? skip}) async {
   final applied = <FixResult>[];
   final attempted = <String>{};
   var results = await design();
@@ -586,7 +606,7 @@ Future<AutoFixReport> runAutoFix(Project p, Future<DesignResults?> Function() de
   for (; rounds < maxRounds; rounds++) {
     onRound?.call(rounds + 1);
     final advice = buildAdvice(p, results: results);
-    final done = autoFixRound(p, advice, results: results, attempted: attempted, label: label, lang: lang);
+    final done = autoFixRound(p, advice, results: results, attempted: attempted, label: label, lang: lang, skip: skip);
     if (done.isEmpty) break;
     applied.addAll(done);
     results = await design();

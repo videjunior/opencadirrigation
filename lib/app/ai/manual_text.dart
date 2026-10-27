@@ -9,6 +9,7 @@ library;
 import '../../core/design/advisor.dart' show connectReach;
 import '../../core/model/entities.dart';
 import '../../core/model/project.dart';
+import '../i18n.dart' show languageNames, supportedLanguages;
 import 'agent_tools.dart';
 import 'agent_tools_edit.dart' show defaultLayerOf, entityKeys;
 import 'manual_entities.dart' show numText, sampleEntity;
@@ -94,7 +95,7 @@ The mainline is solved once for every system flow (read_manual "flows"); without
 - Fittings (selectFittings) and couplers every pipeStickLengthM go into the bill of materials; fitting_missing when the catalogue lacks a fitting.
 
 ## Improving a design
-auto_fix applies the safe corrections; optimize_design looks for a cheaper design without new errors; rank_pumps / apply_pump choose the pump; set_parameters changes the limits; the drawing (lateral lengths, submain position, zone split, emitter choice, a PRV) is the lasting fix for pressure problems.''';
+auto_fix designs and applies the safe corrections (a booster pump on a mains connection waits for the user: apply_fix choosePump once they agree); optimize_design looks for a cheaper design without new errors; rank_pumps / apply_pump choose the pump; set_parameters changes the limits; the drawing (lateral lengths, submain position, zone split, emitter choice, a PRV) is the lasting fix for pressure problems.''';
 
 /// The "flows" topic.
 String flowsTopic(AgentToolbox b) => '''# System flows (shifts)
@@ -137,7 +138,33 @@ String terrainTopic(AgentToolbox b) {
 - Base map (set_base_map): imagery or maps under the drawing, a view setting that needs the georeference. view_snapshot pictures the drawing over it with a metre grid, to trace fields, buildings and roads.
 - download_terrain: terrainTiles (30 m SRTM, default) or openMeteo (90 m Copernicus) every 10–200 m (default 25), over the drawing (or the view). It replaces earlier downloads and keeps the user's own data unless replace_own; it reports when the user's own heights sit on another datum (ask before mixing them).
 - download_climate: daily weather of the last years (openMeteo default, or nasaPower) turned into monthly normals (ETo, rain, dependable rain, radiation) stored in the project for the agronomy reports.
-- Imported surveys (import_attachment: DXF/DWG contours and points, LandXML surfaces, GeoTIFF elevations, CSV points, LAS clouds) become terrain items too.''';
+- Imported surveys (import_attachment: DXF/DWG contours and points, LandXML surfaces, GeoTIFF elevations, CSV points, LAS clouds) become terrain items too.
+
+## Imported drawings on the map
+GIS files (KML/KMZ, GeoJSON, GPX, a shapefile with its .prj) carry their coordinate system: they land in place, and georeference a project that has none. A CAD drawing (DXF, DWG, DGN, PDF) keeps its own coordinates and carries no georeference. import_attachment returns the extent of what came in (the items are selected) and the next step when it is not on the map yet:
+- UTM coordinates (eastings 100–900 km, northings up to 10 000 km) in a project without a georeference: set_georeference {mode "utm", zone, north, easting_m 0, northing_m 0} reads them as they are; zone and hemisphere from the drawing's title block, the user, or the site (zone = floor((longitude + 180) / 6) + 1). In a project already georeferenced in that zone: transform_entities {selected true, operation "move", dx = −origin easting, dy = −origin northing}.
+- Local coordinates: set_site at the address (the origin [0, 0] goes there; nothing moves), then two points recognised both in the drawing and on a satellite picture of the site (view_snapshot with base_map "satellite", image_to_world) and align_entities {selected true, from_a, to_a, from_b, to_b}.
+- Check with view_snapshot {region "drawing", base_map "satellite"} before tracing or designing on it.''';
+}
+
+/// The "interface" topic: what the user does in the program's menus — the
+/// functions only the user can run, with their menu paths in the user's
+/// language — and the interface language.
+String interfaceTopic(AgentToolbox b) {
+  final t = b.t;
+  String m(List<String> keys) => [for (final k in keys) t(k).replaceFirst(RegExp(r'…$'), '')].join(' → ');
+  final langs = [for (final l in supportedLanguages) '$l (${languageNames[l] ?? l})'].join(', ');
+  return '''# The interface: what the user does there
+Name the menus as the user's screen shows them (the paths below are in the interface language). These functions need the user's hands, device or keys, so no tool runs them: point the user to them.
+- The interactive tutorial, a guided tour of the program for a new user: ${m(['menu.help', 'help.tutorial'])} (the welcome screen offers "${t('welcome.tutorial')}" too).
+- Walking the field with the device's GPS (a phone or tablet on site): ${m(['menu.draw', 'gps.submenu', 'gps.walkStart'])}, walk round the field, then ${t('gps.walkArea')}, ${t('gps.walkOutline')} or ${t('gps.walkLine')}; "${t('gps.mark')}" adds a point; ${m(['menu.view', 'gps.menu'])} shows where the device is. A project without a georeference takes one from the first position. The walked outline is then an item of the drawing (list_entities finds it) that the tools use, e.g. as the area of generate_block.
+- The Google base maps need the user's own Map Tiles API key: ${m(['menu.view', 'view.baseMap', 'view.baseMap.googleKey'])}. You never handle keys.
+- Files on the user's computer: ${m(['menu.file', 'file.open'])} and ${m(['menu.file', 'file.importDrawing'])}; or the user attaches them to the conversation for you (open_attached_project, import_attachment).
+- The version and the links of the program: ${m(['menu.help', 'help.about'])}; the keyboard shortcuts: ${m(['menu.help', 'help.shortcuts'])} (list_commands lists them for you).
+
+What you change for the user when asked:
+- The interface language, ${m(['menu.view', 'view.language'])}: set_setting {"values": {"view.language": code}}, one of $langs. It applies to every open tab and stays in this browser.
+- The theme (view.theme), the reports panel (view.reports_panel), the base map (set_base_map), autosave (app.autosave): get_setting lists every setting.''';
 }
 
 /// The "machines" topic.

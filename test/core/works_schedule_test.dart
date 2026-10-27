@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/actions.dart';
 import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/core/design/proposal.dart';
+import 'package:opencadirrigation/core/design/report_tables.dart';
+import 'package:opencadirrigation/core/io/pdf.dart';
 import 'package:opencadirrigation/core/model/proposal_settings.dart';
 
 /// The construction schedule of the quote: tasks from the quantities of
@@ -31,6 +34,32 @@ void main() {
     final table = c.reportTables().firstWhere((t) => t.key == 'works');
     expect(table.rows.length, tasks.length + 1);
     expect(table.rows.first.first, c.t('works.staking'));
+  });
+
+  test('the timeline: characters in the text reports, bars in the PDF (no glyph the PDF fonts lack)', () {
+    final c = ProjectController()..setLanguage('pt');
+    loadExampleAction(c, ExampleId.orchard);
+    final table = c.reportTables().firstWhere((t) => t.key == 'works');
+    final bars = [for (final r in table.rows) if (r.last is RBar) r.last as RBar];
+    expect(bars, hasLength(table.rows.length - 1), reason: 'every task but the total');
+    expect(const RBar(0, 3, 6).toString(), '█' * 15);
+    expect(const RBar(2, 3, 6).toString(), '${'·' * 10}${'█' * 5}');
+    expect(c.exporter().reportCsv(), contains('█'));
+    final doc = PdfDocument();
+    c.exporter().sheetBuilder().addReportPages(doc, [table]);
+    final pdf = latin1.decode(doc.build(compress: false));
+    final shown = [for (final m in RegExp(r'\(((?:[^()\\]|\\.)*)\) Tj').allMatches(pdf)) m.group(1)!];
+    expect(shown, contains('Locação da obra'.replaceAll('ç', r'\347').replaceAll('ã', r'\343')));
+    expect(shown.where((s) => s.contains('?')), isEmpty);
+    // one bar per task, as long as its days on a common scale
+    final drawn = [for (final m in RegExp(r'0\.12 0\.53 0\.9 rg\n([-\d.]+) [-\d.]+ ([-\d.]+) [-\d.]+ re f').allMatches(pdf)) (double.parse(m.group(1)!), double.parse(m.group(2)!))];
+    expect(drawn, hasLength(bars.length));
+    final perDay = drawn.first.$2 / (bars.first.end - bars.first.start);
+    for (var i = 0; i < bars.length; i++) {
+      // (the PDF keeps two decimals)
+      expect(drawn[i].$2, closeTo(math.max(1.5, perDay * (bars[i].end - bars[i].start)), 0.06));
+      expect(drawn[i].$1 - drawn.first.$1, closeTo(perDay * bars[i].start, 0.06));
+    }
   });
 
   test('crews and productivities are kept in the project', () {

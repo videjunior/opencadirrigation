@@ -320,22 +320,23 @@ List<AgentTool> editOperations(AgentToolbox b) {
       group: 'edit',
       name: 'align_entities',
       effect: ToolEffect.write,
-      description: 'Aligns items by two point pairs, like the two-point Align tool (AL, File → Align image): the similarity transform (move, turn and scale; scale kept with keep_scale) that takes from_a to to_a and from_b to to_b — e.g. an imported plan or image onto surveyed points or the base map. One undo step; returns the scale and rotation applied.',
+      description: 'Aligns items by two point pairs, like the two-point Align tool (AL, File → Align image): the similarity transform (move, turn and scale; scale kept with keep_scale) that takes from_a to to_a and from_b to to_b — e.g. an imported plan or image onto surveyed points or the base map (selected true takes the items import_attachment just added, which it selects). One undo step; returns the scale and rotation applied.',
       schema: obj(
         {
           'ids': idsWith('Items to align (an image, an imported plan…).', maxItems: 20000),
+          'selected': bool_('Align the current selection instead of "ids" (e.g. the items of an import, which come in selected).'),
           'from_a': pointWith('First reference point on the items (m).'),
           'to_a': pointWith('Where it goes (m).'),
           'from_b': pointWith('Second reference point on the items (m), away from the first.'),
           'to_b': pointWith('Where it goes (m).'),
           'keep_scale': bool_('Move and turn only (default: tool.align_keep_scale).'),
         },
-        required: ['ids', 'from_a', 'to_a', 'from_b', 'to_b'],
+        required: ['from_a', 'to_a', 'from_b', 'to_b'],
       ),
-      args: count,
+      args: (i) => {'n': '${i['selected'] == true ? b.c.selection.length : ((i['ids'] as List?)?.length ?? 0)}'},
       run: (a, i) async {
         cadNotBusy(b);
-        final es = cadEditable(b, a.strings('ids', required: true));
+        final es = cadEditableOrSelection(b, a);
         final fa = a.point('from_a', required: true)!, ta = a.point('to_a', required: true)!, fb = a.point('from_b', required: true)!, tb = a.point('to_b', required: true)!;
         if (fa.distanceTo(fb) < 1e-6 || ta.distanceTo(tb) < 1e-6) throw ToolInputError('The two points of each pair must differ.');
         final tr = similarityFromPairs(fa, fb, ta, tb, keepScale: a.flag('keep_scale') ?? c.toolSettings.alignKeepScale);
@@ -700,8 +701,12 @@ List<AgentTool> editOperations(AgentToolbox b) {
         final tape = a.str('lateral') == 'tape';
         final tapeId = a.str('tape') ?? s.tapeSpecId;
         final outlet = a.str('outlet') ?? s.outletSpecId;
-        if (tape && cat.tape(tapeId) == null) throw ToolInputError('Unknown tape "$tapeId" (search_catalog kind "tape").');
-        if (!tape && cat.outlet(outlet) == null) throw ToolInputError('Unknown emitter "$outlet" (search_catalog kind "emitter").');
+        if (tape && cat.tape(tapeId) == null) {
+          throw ToolInputError(cat.tapes.any((x) => x.enabled) ? 'Unknown tape "$tapeId" (search_catalog kind "tape").' : 'The catalogue has no enabled drip tape or dripline. ${catalogNextStep('tape')}');
+        }
+        if (!tape && cat.outlet(outlet) == null) {
+          throw ToolInputError(cat.outlets.any((x) => x.enabled) ? 'Unknown emitter "$outlet" (search_catalog kind "emitter").' : 'The catalogue has no enabled emitter. ${catalogNextStep('emitter')}');
+        }
         final nozzle = a.str('nozzle') ?? (a.has('outlet') ? cat.outlet(outlet)?.nozzles.firstOrNull?.id : s.nozzleId);
         if (!tape && nozzle != null && exactNozzle(cat.outlet(outlet), nozzle) == null) throw ToolInputError('Emitter "$outlet" has no nozzle "$nozzle".');
         String? pipeOf(String key, String? def) {
@@ -778,7 +783,10 @@ List<AgentTool> editOperations(AgentToolbox b) {
         final outletId = a.str('outlet') ?? s.outletSpecId;
         final outlet = cat.outlet(outletId);
         if (outlet == null || !(outlet.kind == OutletKind.sprinkler || outlet.kind == OutletKind.microSprinkler)) {
-          throw ToolInputError('"$outletId" is not a sprinkler or micro-sprinkler (search_catalog kind "emitter").');
+          final any = cat.outlets.any((o) => o.enabled && (o.kind == OutletKind.sprinkler || o.kind == OutletKind.microSprinkler));
+          throw ToolInputError(
+            any ? '"$outletId" is not a sprinkler or micro-sprinkler (search_catalog kind "emitter").' : 'The catalogue has no enabled sprinkler or micro-sprinkler. ${catalogNextStep('emitter')}',
+          );
         }
         final nozzleId = a.str('nozzle') ?? (a.has('outlet') ? outlet.nozzles.firstOrNull?.id : (exactNozzle(outlet, s.nozzleId) != null ? s.nozzleId : outlet.nozzles.firstOrNull?.id));
         final nz = exactNozzle(outlet, nozzleId);

@@ -84,7 +84,7 @@ List<AgentTool> visionTools(AgentToolbox b) {
     FnTool(
       name: 'view_snapshot',
       description:
-          'A picture (PNG) of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled metre grid, its id (e.g. "s3") and the exact pixel ↔ world mapping. '
+          'A picture of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled metre grid, its id (e.g. "s3") and the exact pixel ↔ world mapping. '
           'Use it to look at the layout, to check what you changed, to read the site on the satellite image (fields, buildings, roads, trees, water, the well) and trace it, and to zoom into details (a smaller bbox, or snapshot + pixel_bbox, at full resolution). '
           'Not for numbers (get_entity, list_entities, get_report_table) nor heights (terrain_picture, terrain_profile). '
           'base_map "satellite" works whenever the project is georeferenced, even when the screen shows another map or none (Esri World Imagery, or Google satellite when the user set a Google key); the user\'s view and base map stay as they are. '
@@ -112,7 +112,7 @@ List<AgentTool> visionTools(AgentToolbox b) {
     FnTool(
       name: 'image_to_world',
       description:
-          'Converts positions exactly between a picture and the project, so you never do the arithmetic: pixels [[px, py], …] you picked on picture `snapshot` (from its top-left corner, px right, py down; fractions allowed) → project coordinates [x, y] in metres (x east, y north), ready for create_entities or preview_geometry; and back, pts [[x, y], …] in metres → their pixel positions on that picture (world_to_image), e.g. to see where an item falls on the satellite image. '
+          'Converts positions exactly between a picture and the project, so you never do the arithmetic: pixels [[px, py], …] you picked on picture `snapshot` (from its top-left corner, px right, py down; fractions allowed) → project coordinates [x, y] in metres (x east, y north), ready for create_entities or preview_geometry; and the other way, pts [[x, y], …] in metres → their pixel positions on that picture, e.g. to see where an item falls on the satellite image (give pixels, pts or both in one call). '
           'closed true takes the pixels as a polygon and adds its area and perimeter. Pick vertices on clear corners and edges; one pixel is s metres, so zoom in (view_snapshot with snapshot + pixel_bbox) where precision matters. '
           'Up to 500 positions each way. No side effects. Errors: an unknown picture id (pictures live for this conversation only: take a new one).',
       inputSchema: obj(
@@ -543,8 +543,16 @@ Future<ToolOutput> _terrainPictureTool(AgentToolbox b, ToolArgs a) async {
 /// A picture for the user to attach to a message: what they see, with the
 /// pixel ↔ world mapping written out.
 class ViewPicture {
-  const ViewPicture(this.png, this.mapping, {this.name = 'view.png'});
+  const ViewPicture(this.png, this.mapping, {this.name = 'view.png', this.jpeg});
   final Uint8List png;
+
+  /// The same picture as a JPEG when it is a photo (the aerial map), much
+  /// smaller; null otherwise ([SnapshotImage.jpeg]).
+  final Uint8List? jpeg;
+
+  /// What to send: the JPEG when there is one, else the PNG, and its type.
+  Uint8List get bytes => jpeg ?? png;
+  String get mime => jpeg == null ? 'image/png' : 'image/jpeg';
 
   /// The picture id, world rectangle, metres per pixel and the formula, for
   /// the model (image_to_world takes the id).
@@ -574,7 +582,7 @@ Future<ViewPicture?> captureUserView(ProjectController c, {ViewSnapshots? snapsh
       img = await s.drawing(c, world, side);
     }
     final m = session.add(id, img.frame, pictureWhat(img, drawing: true, subject: 'the user\'s view of the drawing'));
-    return ViewPicture(img.png, [m.describe(), ...img.notes].join('\n'), name: 'view-$id.png');
+    return ViewPicture(img.png, [m.describe(), ...img.notes].join('\n'), name: 'view-$id.${img.jpeg == null ? 'png' : 'jpg'}', jpeg: img.jpeg);
   } catch (_) {
     return null;
   }
@@ -604,7 +612,7 @@ Future<ToolImage?> feedbackPicture(AgentToolbox b) async {
     }
     final m = session.add(id, img.frame, pictureWhat(img, drawing: true, subject: 'the drawing after the change'));
     session.lastFeedback = m.describe();
-    return ToolImage('image/png', base64Encode(img.png));
+    return img.forModel;
   } catch (_) {
     return null;
   }

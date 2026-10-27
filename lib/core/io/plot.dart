@@ -29,24 +29,32 @@ sealed class PlotItem {
 }
 
 class PlotPath extends PlotItem {
-  PlotPath({required super.layer, required super.color, required this.points, this.closed = false, this.widthMm = 0.25, this.dashed = false, this.fillColor});
+  PlotPath({required super.layer, required super.color, required this.points, this.closed = false, this.widthMm = 0.25, this.dashed = false, this.fillColor, this.fillOpacity = 1});
   final List<Pt> points;
   final bool closed;
   final double widthMm;
   final bool dashed;
 
-  /// Opaque fill colour (already blended over white) or null.
+  /// Fill colour, opaque (already blended over white) unless [fillOpacity]
+  /// is below 1; or null.
   final int? fillColor;
+
+  /// Opacity of [fillColor]: below 1 for a tint over a picture under the
+  /// drawing, which shows through as on the screen.
+  final double fillOpacity;
 }
 
 class PlotCircle extends PlotItem {
-  PlotCircle({required super.layer, required super.color, required this.center, required this.radius, this.widthMm = 0.25, this.fillColor, this.stroke = true});
+  PlotCircle({required super.layer, required super.color, required this.center, required this.radius, this.widthMm = 0.25, this.fillColor, this.fillOpacity = 1, this.stroke = true});
   final Pt center;
 
   /// Radius in world metres.
   final double radius;
   final double widthMm;
   final int? fillColor;
+
+  /// Opacity of [fillColor] (see [PlotPath.fillOpacity]).
+  final double fillOpacity;
   final bool stroke;
 }
 
@@ -229,17 +237,17 @@ PlotScene buildPlotScene(
     if (!layersUsed.containsKey(layer)) layersUsed[layer] = colorOf(layer);
   }
 
-  void path(String layer, List<Pt> pts, {bool closed = false, double widthMm = 0.25, bool dashed = false, int? fill, int? color}) {
+  void path(String layer, List<Pt> pts, {bool closed = false, double widthMm = 0.25, bool dashed = false, int? fill, double fillOpacity = 1, int? color}) {
     if (pts.isEmpty) return;
     use(layer);
     final c = color ?? colorOf(layer);
-    items.add(PlotPath(layer: layer, color: dim ? mutedColor(c) : c, points: pts, closed: closed, widthMm: widthMm, dashed: dashed, fillColor: fill == null || !dim ? fill : mutedColor(fill)));
+    items.add(PlotPath(layer: layer, color: dim ? mutedColor(c) : c, points: pts, closed: closed, widthMm: widthMm, dashed: dashed, fillColor: fill == null || !dim ? fill : mutedColor(fill), fillOpacity: fillOpacity));
   }
 
-  void circle(String layer, Pt c, double r, {double widthMm = 0.25, int? fill, bool stroke = true, int? color}) {
+  void circle(String layer, Pt c, double r, {double widthMm = 0.25, int? fill, double fillOpacity = 1, bool stroke = true, int? color}) {
     use(layer);
     final k = color ?? colorOf(layer);
-    items.add(PlotCircle(layer: layer, color: dim ? mutedColor(k) : k, center: c, radius: r, widthMm: widthMm, fillColor: fill == null || !dim ? fill : mutedColor(fill), stroke: stroke));
+    items.add(PlotCircle(layer: layer, color: dim ? mutedColor(k) : k, center: c, radius: r, widthMm: widthMm, fillColor: fill == null || !dim ? fill : mutedColor(fill), fillOpacity: fillOpacity, stroke: stroke));
   }
 
   void text(String layer, Pt p, String s, {double? heightMm, double rotation = 0, bool bold = false, PlotAnchor anchor = PlotAnchor.bottomLeft, int? color}) {
@@ -262,11 +270,20 @@ PlotScene buildPlotScene(
     use(e.layer);
     items.add(PlotImage(layer: e.layer, bytes: data, mime: e.mime, corners: e.corners, opacity: e.opacity.clamp(0.0, 1.0).toDouble()));
   }
+  // a tint (areas, wetted radii...) over white paper is an opaque colour;
+  // over a picture under the drawing it stays translucent, as on the screen
+  final underlay = rasters.isNotEmpty || items.isNotEmpty;
+  (int, double) tint(int c, double alpha) => underlay ? (c, alpha) : (blendOverWhite(c, alpha), 1.0);
+  void tintedPath(String layer, List<Pt> pts, int c, double alpha, double widthMm) {
+    final (fill, a) = tint(c, alpha);
+    path(layer, pts, closed: true, widthMm: widthMm, fill: fill, fillOpacity: a);
+  }
+
   // pass 1: areas (fills under everything else)
   for (final e in project.entities.whereType<AreaEntity>()) {
     if (e.points.length < 3 || skip(e)) continue;
     final base = project.layerNamed(e.layer).color;
-    path(e.layer, e.points, closed: true, widthMm: 0.25, fill: blendOverWhite(printColor(base), 0.18));
+    tintedPath(e.layer, e.points, printColor(base), 0.18, 0.25);
     if (labels) {
       // top-left corner inside the polygon, clear of the valve/laterals
       final b = Bounds.ofPoints(e.points);
@@ -289,7 +306,7 @@ PlotScene buildPlotScene(
         path(sp.layer, sp.curve(), closed: sp.closed);
       case HatchEntity h:
         if (h.solid) {
-          path(h.layer, h.points, closed: true, widthMm: 0.18, fill: blendOverWhite(colorOf(h.layer), 0.35));
+          tintedPath(h.layer, h.points, colorOf(h.layer), 0.35, 0.18);
         } else {
           path(h.layer, h.points, closed: true, widthMm: 0.18);
           if (h.spacing / mm >= 0.6) {
@@ -297,7 +314,7 @@ PlotScene buildPlotScene(
               path(h.layer, l, widthMm: 0.13);
             }
           } else {
-            path(h.layer, h.points, closed: true, widthMm: 0.18, fill: blendOverWhite(colorOf(h.layer), 0.2));
+            tintedPath(h.layer, h.points, colorOf(h.layer), 0.2, 0.18);
           }
         }
       case SymbolEntity sy:
@@ -383,7 +400,7 @@ PlotScene buildPlotScene(
       case TapeEntity tp:
         path(tp.layer, tp.points, widthMm: 0.35, dashed: true);
       case PivotEntity pv:
-        path(pv.layer, pv.outline(), closed: true, widthMm: 0.25, fill: blendOverWhite(colorOf(pv.layer), 0.08));
+        tintedPath(pv.layer, pv.outline(), colorOf(pv.layer), 0.08, 0.25);
         path(pv.layer, [pv.center, pv.endPoint], widthMm: 0.6);
         for (final tw in pv.towerPositions()) {
           final a = 0.8 * mm;
@@ -434,11 +451,12 @@ PlotScene buildPlotScene(
         if (options.wettedRadii && radius > 0 && shown(Layers.wettedRadii)) {
           final arc = nozzle!.effectiveArcDeg(o.arcDeg);
           if (arc >= 360) {
-            circle(Layers.wettedRadii, p, radius, widthMm: 0.13, fill: blendOverWhite(colorOf(Layers.wettedRadii), 0.08));
+            final (fill, a) = tint(colorOf(Layers.wettedRadii), 0.08);
+            circle(Layers.wettedRadii, p, radius, widthMm: 0.13, fill: fill, fillOpacity: a);
           } else {
             // counter-clockwise from the orientation, as on the screen
             final start = degToRad(o.orientationDeg);
-            path(Layers.wettedRadii, [p, ...arcPoints(p, radius, start, degToRad(arc))], closed: true, widthMm: 0.13, fill: blendOverWhite(colorOf(Layers.wettedRadii), 0.08));
+            tintedPath(Layers.wettedRadii, [p, ...arcPoints(p, radius, start, degToRad(arc))], colorOf(Layers.wettedRadii), 0.08, 0.13);
           }
         }
         circle(o.layer, p, 0.6 * mm, fill: colorOf(o.layer), stroke: false);

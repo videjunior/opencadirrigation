@@ -31,6 +31,7 @@ class SvgWriter {
     }
 
     String hex(int argb) => '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+    String fillOpacity(double alpha) => alpha < 1 ? ' fill-opacity="${n(alpha)}"' : '';
     final hasImages = scene.rasters.isNotEmpty || scene.items.any((it) => it is PlotImage);
     final out = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
@@ -83,11 +84,11 @@ class SvgWriter {
             if (p.closed) d.write('Z');
             final fill = p.fillColor != null ? hex(p.fillColor!) : 'none';
             final dash = p.dashed ? ' stroke-dasharray="${n(p.widthMm * 6)} ${n(p.widthMm * 4)}"' : '';
-            out.writeln('<path d="$d" fill="$fill" stroke="${hex(p.color)}" stroke-width="${n(p.widthMm)}"$dash/>');
+            out.writeln('<path d="$d" fill="$fill"${fillOpacity(p.fillOpacity)} stroke="${hex(p.color)}" stroke-width="${n(p.widthMm)}"$dash/>');
           case PlotCircle c:
             final fill = c.fillColor != null ? hex(c.fillColor!) : 'none';
             final stroke = c.stroke ? ' stroke="${hex(c.color)}" stroke-width="${n(c.widthMm)}"' : '';
-            out.writeln('<circle cx="${n(sx(c.center.x))}" cy="${n(sy(c.center.y))}" r="${n(c.radius / mm)}" fill="$fill"$stroke/>');
+            out.writeln('<circle cx="${n(sx(c.center.x))}" cy="${n(sy(c.center.y))}" r="${n(c.radius / mm)}" fill="$fill"${fillOpacity(c.fillOpacity)}$stroke/>');
           case PlotText t:
             final size = t.heightMm * 1.35; // font size so that cap height ≈ heightMm
             final anchor = switch (t.anchor) { PlotAnchor.bottomCenter || PlotAnchor.center => 'middle', PlotAnchor.bottomRight => 'end', _ => 'start' };

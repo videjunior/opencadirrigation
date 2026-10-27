@@ -72,13 +72,17 @@ class OpenAiClient extends AiHttpClient {
 
   Map<String, String> headers() => {'content-type': 'application/json', 'authorization': 'Bearer ${apiKey.trim()}'};
 
+  /// The `reasoning.effort` of [e]: the Responses API's levels end at
+  /// `xhigh`, which "maximum" asks for.
+  static String effortOf(AiEffort e) => e == AiEffort.max ? 'xhigh' : e.name;
+
   Map<String, Object?> body(AiRequest r) => {
     'model': r.model.id,
     'instructions': r.system,
     'input': pruneToolPictures(sinceCompactionItem(r.history)),
     if (r.tools.isNotEmpty) 'tools': [for (final s in r.tools) OpenAiFormat.tool(s)],
-    'reasoning': {'effort': r.effort.name},
-    'max_output_tokens': r.maxTokens,
+    'reasoning': {'effort': effortOf(r.effort)},
+    'max_output_tokens': r.outputTokens,
     'stream': true,
     'store': false,
     'include': ['reasoning.encrypted_content'],
@@ -96,42 +100,51 @@ class OpenAiClient extends AiHttpClient {
 
   @override
   Future<AiReply> attempt(AiRequest r, AiCancel cancel, AiStreamListener listener) async {
-    final req = AiHttpRequest(endpoint, headers(), jsonEncode(body(r)));
+    final json = jsonEncode(body(r));
+    AiHttpClient.checkSize(json);
+    final req = AiHttpRequest(endpoint, headers(), json);
     final res = await open(req, r.model, cancel);
+    final id = res.headers['x-request-id'];
+    final idle = idleTimeout(r.model, r.effort);
     if (res.status < 200 || res.status >= 300) {
-      final text = await readAll(res.body, r.model, cancel);
+      final text = await readAll(res.body, r.model, cancel, idle: idle);
       throw httpError(res.status, text, res.headers);
     }
     if (!(res.headers['content-type'] ?? '').contains('event-stream')) {
-      final text = await readAll(res.body, r.model, cancel);
+      final text = await readAll(res.body, r.model, cancel, idle: idle);
       final Object? j;
       try {
         j = jsonDecode(text);
       } catch (_) {
-        throw AiError(AiErrorKind.http, status: res.status, message: clean(text));
+        throw AiError(AiErrorKind.http, status: res.status, message: clean(text), requestId: id);
       }
-      if (j is! Map<String, dynamic>) throw AiError(AiErrorKind.http, status: res.status);
-      final acc = _Stream(listener, clean)..terminal(j);
-      return acc.finish();
+      if (j is! Map<String, dynamic>) throw AiError(AiErrorKind.http, status: res.status, requestId: id);
+      try {
+        final acc = _Stream(listener, clean)..terminal(j);
+        return acc.finish();
+      } on AiError catch (e) {
+        throw e.withRequestId(id);
+      }
     }
     final acc = _Stream(listener, clean);
     final sse = SseReader(acc.event);
     try {
-      await readLines(res.body, r.model, sse.line, cancel);
+      await readLines(res.body, r.model, sse.line, cancel, idle: idle);
       sse.close();
+      return acc.finish();
     } on AiError catch (e) {
-      throw acc.sawText ? e.withPartial() : e;
+      final x = e.withRequestId(id);
+      throw acc.sawText ? x.withPartial() : x;
     }
-    return acc.finish();
   }
 
   static final _noAccess = RegExp(r'does not have access to (the )?model|model .* does not exist|not available for (your|this) (account|organi[sz]ation|project)', caseSensitive: false);
 
   /// The kind of an error from its HTTP status, `type` and `code`.
   static AiErrorKind kindOf(int? status, String type, String code, String message) {
-    if (code == 'insufficient_quota' || type == 'insufficient_quota') return AiErrorKind.billing;
+    if (code == 'insufficient_quota' || type == 'insufficient_quota') return AiErrorKind.credit;
     if (code == 'model_not_found' || ((status == 403 || status == 404) && _noAccess.hasMatch(message))) return AiErrorKind.notFound;
-    if (code == 'context_length_exceeded') return AiErrorKind.tooLarge;
+    if (code == 'context_length_exceeded') return AiErrorKind.contextWindow;
     if (code == 'rate_limit_exceeded') return AiErrorKind.rateLimit;
     if (code == 'server_error') return AiErrorKind.server;
     if (code == 'invalid_api_key' || type == 'authentication_error') return AiErrorKind.auth;
@@ -198,26 +211,28 @@ class _Stream {
     return AiError(kind == AiErrorKind.http ? AiErrorKind.invalidRequest : kind, message: message);
   }
 
+  static String? _str(Object? o) => o is String ? o : null;
+
   /// A finished response (`response.completed`, `.incomplete`, `.failed`).
   void terminal(Map<String, dynamic> resp) {
-    _model = resp['model'] as String? ?? _model;
-    _status = resp['status'] as String? ?? _status;
+    _model = _str(resp['model']) ?? _model;
+    _status = _str(resp['status']) ?? _status;
     final out = _maps(resp['output']);
     if (out.isNotEmpty) _output = out;
     final u = resp['usage'];
     if (u is Map) _usage = Map<String, dynamic>.from(u);
     final d = resp['incomplete_details'];
-    if (d is Map) _reason = d['reason'] as String?;
+    if (d is Map) _reason = _str(d['reason']);
     if (_status == 'failed') throw _error(resp['error']);
   }
 
   void event(Map<String, dynamic> e) {
     listener.onActivity?.call();
-    final i = (e['output_index'] as num?)?.toInt() ?? -1;
+    final i = e['output_index'] is num ? (e['output_index'] as num).toInt() : -1;
     switch (e['type']) {
       case 'response.created' || 'response.in_progress' || 'response.queued':
         final r = e['response'];
-        if (r is Map) _model = r['model'] as String? ?? _model;
+        if (r is Map) _model = _str(r['model']) ?? _model;
       case 'response.output_item.added':
         final it = e['item'];
         if (it is Map) {
@@ -260,7 +275,7 @@ class _Stream {
         {
           ..._items[k]!,
           if (_items[k]!['type'] == 'function_call' && (_items[k]!['arguments'] ?? '') == '' && _args[k] != null) 'arguments': _args[k].toString(),
-          if (_items[k]!['type'] == 'message' && (_items[k]!['content'] as List? ?? const []).isEmpty && _text[k] != null)
+          if (_items[k]!['type'] == 'message' && (_items[k]!['content'] is! List || (_items[k]!['content'] as List).isEmpty) && _text[k] != null)
             'content': [
               {'type': 'output_text', 'text': _text[k].toString(), 'annotations': <Object?>[]},
             ],

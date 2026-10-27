@@ -656,7 +656,7 @@ print('${turn.text} (${turn.steps} requests, ${turn.calls.length} tool call, US\
 question, the model's answers exactly as they came — Anthropic thinking blocks, OpenAI encrypted reasoning items — and a
 result for every tool call); `turn.stop` says why the turn ended (`done`, `maxTokens`, `stepLimit` after `maxSteps`
 requests, `budget` past `costCap`, `cancelled` through `AiCancel`, `error` with an `AiError`). `AiClient.send` alone runs
-one streamed request with retries on overloads, rate limits, server and network errors. The names of the first, Anthropic-only
+one streamed request with retries on overloads, rate limits, server and network errors, timeouts and dropped streams (while nothing of the answer was shown). The names of the first, Anthropic-only
 version (`ClaudeApi`, `ClaudeModel`, `ClaudeCancel`…) remain as aliases.
 
 ## 6. Conventions

@@ -18,11 +18,15 @@ enum AiPanelView { chat, data, settings }
 const aiPanelWidth = 400.0;
 
 class AiAgentPanel extends StatefulWidget {
-  const AiAgentPanel({super.key, required this.c, this.onClose, this.prompt});
+  const AiAgentPanel({super.key, required this.c, this.onClose, this.prompt, this.onShowTab});
   final ProjectController c;
 
   /// Closes the panel (null: no close button).
   final VoidCallback? onClose;
+
+  /// The assistant shown works (or waits) in another tab than the visible
+  /// one: a bar says so, and this shows that tab.
+  final VoidCallback? onShowTab;
 
   /// Fills the input box (nothing is sent before the user sends it).
   final String? prompt;
@@ -50,6 +54,10 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
     super.dispose();
   }
 
+  Future<void> _newConversation() async {
+    if (await aiConfirmNew(context, c, ai)) ai.clear();
+  }
+
   @override
   Widget build(BuildContext context) => Material(
     key: const Key('ai_panel'),
@@ -58,11 +66,36 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
       animation: Listenable.merge([ai, c]),
       builder: (context, _) {
         final compact = MediaQuery.of(context).size.width < 700;
+        // a request arrived (Ask the AI, the start-up question): show the conversation
+        if (ai.rewound != null && view != AiPanelView.chat && ai.hasKey) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => view = AiPanelView.chat);
+          });
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _header(),
             const Divider(height: 1),
+            if (widget.onShowTab != null)
+              Container(
+                key: const Key('ai_other_tab'),
+                color: Cad.tintInfo,
+                padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+                child: Row(
+                  children: [
+                    Icon(ai.waiting ? Icons.pan_tool_outlined : Icons.sync, size: 15, color: ai.waiting ? Cad.warning : Cad.accentText),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        c.t(ai.waiting ? 'ai.tab.waiting' : 'ai.tab.working', {'n': c.project.meta.name}),
+                        style: const TextStyle(fontSize: 11.5),
+                      ),
+                    ),
+                    TextButton(key: const Key('ai_other_tab_show'), onPressed: widget.onShowTab, child: Text(c.t('ai.tab.show'))),
+                  ],
+                ),
+              ),
             Expanded(
               child: switch (view) {
                 AiPanelView.chat => AiChatView(c: c, ai: ai, input: input, compact: true, onSettings: () => setState(() => view = AiPanelView.settings)),
@@ -121,7 +154,7 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
             tooltip: t('ai.new'),
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_comment_outlined, size: 18),
-            onPressed: ai.items.isEmpty ? null : ai.clear,
+            onPressed: ai.items.isEmpty ? null : _newConversation,
           ),
           if (widget.onClose != null)
             IconButton(key: const Key('ai_panel_close'), tooltip: t('close'), visualDensity: VisualDensity.compact, icon: const Icon(Icons.close, size: 18), onPressed: widget.onClose),
@@ -150,9 +183,12 @@ Future<void> showAiAgentSheet(BuildContext context, ProjectController c, {String
 /// A button that shows or hides the docked panel (for the status bar or a
 /// toolbar); it spins while the assistant of [c] works.
 class AiPanelButton extends StatelessWidget {
-  const AiPanelButton({super.key, required this.c, this.size = 18});
+  const AiPanelButton({super.key, required this.c, this.size = 18, this.onPressed});
   final ProjectController c;
   final double size;
+
+  /// What a tap does (null: show or hide the docked panel).
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
@@ -160,20 +196,27 @@ class AiPanelButton extends StatelessWidget {
     builder: (context, open, _) => AnimatedBuilder(
       animation: AiAssistant.of(c),
       builder: (context, _) {
-        final busy = AiAssistant.of(c).busy;
+        final ai = AiAssistant.of(c);
+        final busy = ai.busy;
         return IconButton(
           key: const Key('ai_panel_button'),
-          tooltip: c.t(open ? 'ai.panel.hide' : 'ai.panel.show'),
+          tooltip: ai.waiting ? c.t('ai.panel.waiting') : c.t(open ? 'ai.panel.hide' : 'ai.panel.show'),
           visualDensity: VisualDensity.compact,
-          isSelected: open,
-          color: open ? Cad.accentText : Cad.fg60,
-          onPressed: AiAssistant.togglePanel,
-          icon: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(Icons.smart_toy_outlined, size: size),
-              if (busy) SizedBox(width: size + 8, height: size + 8, child: const CircularProgressIndicator(strokeWidth: 1.5)),
-            ],
+          isSelected: onPressed == null && open,
+          color: onPressed == null && open ? Cad.accentText : Cad.fg60,
+          onPressed: onPressed ?? AiAssistant.togglePanel,
+          icon: Badge(
+            // the task waits for an approval, an answer or a plan decision
+            isLabelVisible: ai.waiting,
+            smallSize: 8,
+            backgroundColor: Cad.warning,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(Icons.smart_toy_outlined, size: size),
+                if (busy) SizedBox(width: size + 8, height: size + 8, child: const CircularProgressIndicator(strokeWidth: 1.5)),
+              ],
+            ),
           ),
         );
       },

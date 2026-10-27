@@ -188,6 +188,7 @@ const _grey = 0xFF8A8F94;
 const _lightGrey = 0xFFE3E8EE;
 const _warnFill = 0xFFFFE0B2;
 const _cellLine = 0xFFB8C0C8;
+const _brand = 0xFF1E88E5;
 
 /// Smallest cell of a construction detail on a detail sheet (mm).
 const _detailCellW = 90.0, _detailCellH = 78.0;
@@ -373,13 +374,36 @@ class PdfSheetBuilder {
     return rec.sheet;
   }
 
-  /// Draws drawing sheet [spec] of a set of [count] sheets on [page].
-  void drawSheet(SheetCanvas page, SheetOptions o, SheetSpec spec, {int number = 1, int count = 1}) {
-    final scale = spec.scale ?? sheetScale(o);
-    final unitsPerMm = scale / 1000;
-    final bom = _bomFor(spec);
-    final showBom = o.bomOnSheet && bom.isNotEmpty;
-    final revs = revisions;
+  /// The world rectangle (m) the drawing area of each drawing sheet of [o]
+  /// shows, with the sheet's scale denominator: where a base map under the
+  /// sheets ([SheetOptions.rasters]) is needed, and how fine.
+  List<(Bounds, double)> sheetViews(SheetOptions o) {
+    final out = <(Bounds, double)>[];
+    for (final s in sheetPlan(o)) {
+      final scale = s.scale!;
+      final upm = scale / 1000;
+      final Pt centre;
+      final SheetLayout lay;
+      if (s.window != null) {
+        // centred on the window; the widest drawing area (no side column)
+        // covers the sheet whatever goes beside it
+        centre = s.window!.center;
+        lay = SheetLayout(o, hasLegend: false);
+      } else {
+        final showBom = o.bomOnSheet && _bomFor(s).isNotEmpty;
+        final scene = _sheetScene(o, s, upm, showBom);
+        centre = _sheetCentre(s, scene);
+        lay = _sheetLayout(o, scene, showBom);
+      }
+      final hw = lay.areaW / 2 * upm, hh = lay.areaH / 2 * upm;
+      out.add((Bounds(centre.x - hw, centre.y - hh, centre.x + hw, centre.y + hh), scale));
+    }
+    return out;
+  }
+
+  /// Plot scene of drawing sheet [spec] (a window sheet holds only what may
+  /// show on it).
+  PlotScene _sheetScene(SheetOptions o, SheetSpec spec, double unitsPerMm, bool showBom) {
     Bounds? cull;
     final w = spec.window;
     if (w != null) {
@@ -389,7 +413,7 @@ class PdfSheetBuilder {
       final hw = (lay0.areaW + 2 * SheetLayout.legendMm) / 2 * unitsPerMm, hh = lay0.areaH / 2 * unitsPerMm;
       cull = Bounds(w.center.x - hw, w.center.y - hh, w.center.x + hw, w.center.y + hh).inflate(_reach + 30 * unitsPerMm);
     }
-    final scene = buildPlotScene(
+    return buildPlotScene(
       project,
       results: results,
       unitsPerMm: unitsPerMm,
@@ -399,12 +423,33 @@ class PdfSheetBuilder {
       rasters: o.rasters,
       attribution: o.attribution,
     );
-    final lay = SheetLayout(o, hasLegend: (o.legend && scene.layers.isNotEmpty) || showBom || revs.isNotEmpty, legendWidthMm: showBom ? SheetLayout.legendWithBomMm : null);
+  }
+
+  SheetLayout _sheetLayout(SheetOptions o, PlotScene scene, bool showBom) =>
+      SheetLayout(o, hasLegend: (o.legend && scene.layers.isNotEmpty) || showBom || revisions.isNotEmpty, legendWidthMm: showBom ? SheetLayout.legendWithBomMm : null);
+
+  /// World point at the centre of the drawing area of sheet [spec]: the
+  /// window's centre, else the centre of what is plotted.
+  Pt _sheetCentre(SheetSpec spec, PlotScene scene) {
+    final w = spec.window;
+    if (w != null) return w.center;
+    final b = scene.bounds.isEmpty ? project.bounds : scene.bounds;
+    return b.isEmpty ? Pt.zero : b.center;
+  }
+
+  /// Draws drawing sheet [spec] of a set of [count] sheets on [page].
+  void drawSheet(SheetCanvas page, SheetOptions o, SheetSpec spec, {int number = 1, int count = 1}) {
+    final scale = spec.scale ?? sheetScale(o);
+    final unitsPerMm = scale / 1000;
+    final bom = _bomFor(spec);
+    final showBom = o.bomOnSheet && bom.isNotEmpty;
+    final revs = revisions;
+    final scene = _sheetScene(o, spec, unitsPerMm, showBom);
+    final lay = _sheetLayout(o, scene, showBom);
     double px(double mm) => mm * ptPerMm;
     _frame(page, lay, px);
     // drawing (clipped)
-    final b = scene.bounds.isEmpty ? project.bounds : scene.bounds;
-    final centre = w?.center ?? (b.isEmpty ? Pt.zero : b.center);
+    final centre = _sheetCentre(spec, scene);
     final cx = centre.x, cy = centre.y;
     final ox = lay.areaX + lay.areaW / 2, oy = lay.areaY + lay.areaH / 2; // paper centre (mm)
     (double, double) map(Pt p) => (px(ox + (p.x - cx) / unitsPerMm), px(oy + (p.y - cy) / unitsPerMm));
@@ -499,6 +544,16 @@ class PdfSheetBuilder {
     page.text(x, y, s, size: size, bold: true);
   }
 
+  /// A translucent fill: [fill] (a path drawn without its outline) in
+  /// [argb] at [alpha].
+  static void _tint(SheetCanvas page, int argb, double alpha, void Function() fill) {
+    page.save();
+    page.opacity(alpha);
+    page.fillColor(argb);
+    fill();
+    page.restore();
+  }
+
   void drawScene(SheetCanvas page, PlotScene scene, (double, double) Function(Pt) map, double unitsPerMm) {
     for (final r in scene.rasters) {
       _drawImage(page, r.bytes, r.mime, r.corners, r.opacity, map);
@@ -508,20 +563,28 @@ class PdfSheetBuilder {
         case PlotImage im:
           _drawImage(page, im.bytes, im.mime, im.corners, im.opacity, map);
         case PlotPath p:
+          final pts = p.points.map(map).toList();
+          final tinted = p.fillColor != null && p.fillOpacity < 1;
+          if (tinted) _tint(page, p.fillColor!, p.fillOpacity, () => page.path(pts, close: p.closed, stroke: false, fill: true));
           page.strokeColor(p.color);
           page.lineWidth(p.widthMm * ptPerMm);
           page.dash(p.dashed, p.widthMm * ptPerMm * 6, p.widthMm * ptPerMm * 4);
-          if (p.fillColor != null) page.fillColor(p.fillColor!);
-          page.path(p.points.map(map).toList(), close: p.closed, fill: p.fillColor != null);
+          final opaque = p.fillColor != null && !tinted;
+          if (opaque) page.fillColor(p.fillColor!);
+          page.path(pts, close: p.closed, fill: opaque);
         case PlotCircle c:
           final (x, y) = map(c.center);
+          final r = c.radius / unitsPerMm * ptPerMm;
+          final tinted = c.fillColor != null && c.fillOpacity < 1;
+          if (tinted) _tint(page, c.fillColor!, c.fillOpacity, () => page.circle(x, y, r, stroke: false, fill: true));
           if (c.stroke) {
             page.strokeColor(c.color);
             page.lineWidth(c.widthMm * ptPerMm);
             page.dash(false);
           }
-          if (c.fillColor != null) page.fillColor(c.fillColor!);
-          page.circle(x, y, c.radius / unitsPerMm * ptPerMm, stroke: c.stroke, fill: c.fillColor != null);
+          final opaque = c.fillColor != null && !tinted;
+          if (opaque) page.fillColor(c.fillColor!);
+          if (c.stroke || opaque) page.circle(x, y, r, stroke: c.stroke, fill: opaque);
         case PlotText tx:
           final (x, y) = map(tx.position);
           final size = tx.heightMm * ptPerMm / 0.72;
@@ -691,7 +754,7 @@ class PdfSheetBuilder {
     // column C: branding
     final xc = x0 + colA + colB;
     final wc = w - colA - colB;
-    page.fillColor(0xFF1E88E5);
+    page.fillColor(_brand);
     page.text(px(xc + wc / 2), px(y0 + h - 10), 'OpenCADIrrigation', size: 11, bold: true, align: PdfAlign.center);
     page.fillColor(_grey);
     page.text(px(xc + wc / 2), px(y0 + h - 15), fonts.fit(t('pdf.subtitle'), px(wc - 4), 6.5), size: 6.5, align: PdfAlign.center);
@@ -917,7 +980,7 @@ class _ReportPages {
     final numeric = List<bool>.generate(n, (i) => tb.rows.isNotEmpty && tb.rows.every((r) => i >= r.length || r[i] is num || r[i] is RNum || '${r[i]}'.isEmpty));
     for (final r in tb.rows) {
       for (var i = 0; i < n && i < r.length; i++) {
-        final w = fonts.textWidth('${r[i]}', size) + 2 * pad;
+        final w = (r[i] is RBar ? barW : fonts.textWidth('${r[i]}', size)) + 2 * pad;
         widths[i] = math.max(widths[i], w);
         if (numeric[i]) minW[i] = math.max(minW[i], w);
       }
@@ -949,7 +1012,7 @@ class _ReportPages {
     }
     List<List<String>> cellLines(List<Object> r) => [
       for (var i = 0; i < n; i++)
-        i < r.length ? (wrapCol.contains(i) ? _wrap(fonts, '${r[i]}', widths[i] - 2 * pad, size) : [fonts.fit('${r[i]}', widths[i] - 2 * pad, size)]) : [''],
+        i < r.length && r[i] is! RBar ? (wrapCol.contains(i) ? _wrap(fonts, '${r[i]}', widths[i] - 2 * pad, size) : [fonts.fit('${r[i]}', widths[i] - 2 * pad, size)]) : [''],
     ];
     final headerLines = [for (var i = 0; i < n; i++) _wrap(fonts, tb.headers[i], widths[i] - 2 * pad, size, bold: true)];
     final headerRows = headerLines.fold(1, (m, l) => math.max(m, l.length));
@@ -1000,6 +1063,8 @@ class _ReportPages {
       page.fillColor(_ink);
       var x = left;
       for (var i = 0; i < n; i++) {
+        final cell = i < tb.rows[r].length ? tb.rows[r][i] : null;
+        if (cell is RBar) _bar(cell, x + pad, y, widths[i] - 2 * pad);
         for (var k = 0; k < lines[i].length; k++) {
           page.text(numeric[i] ? x + widths[i] - pad : x + pad, y - k * lineH, lines[i][k], size: size, align: numeric[i] ? PdfAlign.right : PdfAlign.left);
         }
@@ -1011,6 +1076,21 @@ class _ReportPages {
     page.lineWidth(0.5);
     page.line(left, y - 3, left + total, y - 3);
     y -= 14;
+  }
+
+  /// Natural width (pt) of a timeline column.
+  static const barW = 110.0;
+
+  /// A timeline cell [w] wide from [x] on the text line at [baseline]: the
+  /// whole schedule as a thin track, the task's days as a bar over it.
+  void _bar(RBar c, double x, double baseline, double w) {
+    if (c.total <= 0 || w <= 0) return;
+    final a = x + w * c.start / c.total, b = math.max(a + 1.5, x + w * c.end / c.total);
+    page.fillColor(_lightGrey);
+    page.rect(x, baseline + 1.5, w, 2, fill: true, stroke: false);
+    page.fillColor(_brand);
+    page.rect(a, baseline - 0.25, b - a, 5.5, fill: true, stroke: false);
+    page.fillColor(_ink);
   }
 }
 

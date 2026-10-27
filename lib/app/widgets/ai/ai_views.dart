@@ -25,46 +25,28 @@ import '../../io/links.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
+import 'ai_markdown.dart';
 
-/// Light Markdown: headings, bullets, **bold** and `code`.
-Widget aiRichText(String text, {double size = 12.5}) {
-  final base = TextStyle(fontSize: size, height: 1.35);
-  final spans = <InlineSpan>[];
-  final inline = RegExp(r'\*\*(.+?)\*\*|`([^`]+)`');
-  void line(String s, TextStyle style) {
-    var i = 0;
-    for (final m in inline.allMatches(s)) {
-      if (m.start > i) spans.add(TextSpan(text: s.substring(i, m.start), style: style));
-      spans.add(
-        m.group(1) != null
-            ? TextSpan(
-                text: m.group(1),
-                style: style.copyWith(fontWeight: FontWeight.bold),
-              )
-            : TextSpan(
-                text: m.group(2),
-                style: style.copyWith(fontFamily: 'monospace', color: Cad.codeText),
-              ),
-      );
-      i = m.end;
-    }
-    if (i < s.length) spans.add(TextSpan(text: s.substring(i), style: style));
-  }
+/// The assistant's text, rendered from its Markdown (see ai_markdown.dart).
+Widget aiRichText(String text, {double size = 12.5}) => AiMarkdown(text, size: size);
 
-  final lines = text.split('\n');
-  for (var k = 0; k < lines.length; k++) {
-    final l = lines[k];
-    final h = RegExp(r'^#{1,6}\s+').firstMatch(l);
-    if (h != null) {
-      line(l.substring(h.end), base.copyWith(fontWeight: FontWeight.bold, fontSize: size + 1));
-    } else if (RegExp(r'^\s*[-*]\s+').hasMatch(l)) {
-      line(l.replaceFirst(RegExp(r'^(\s*)[-*]\s+'), r'$1• '), base);
-    } else {
-      line(l, base);
-    }
-    if (k < lines.length - 1) spans.add(const TextSpan(text: '\n'));
-  }
-  return SelectableText.rich(TextSpan(children: spans), style: base);
+/// Asks before a conversation with content, or a running task, is wiped;
+/// true when it may go.
+Future<bool> aiConfirmNew(BuildContext context, ProjectController c, AiAssistant ai) async {
+  if (!ai.busy && !ai.items.any((it) => it.kind != AiItemKind.notice)) return true;
+  final t = c.t;
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(t('ai.new')),
+      content: Text(t(ai.busy ? 'ai.new.confirmBusy' : 'ai.new.confirm')),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t('cancel'))),
+        FilledButton(key: const Key('ai_new_ok'), onPressed: () => Navigator.of(ctx).pop(true), child: Text(t('ai.new'))),
+      ],
+    ),
+  );
+  return ok == true;
 }
 
 String aiTokens(int n) => n < 1000 ? '$n' : '${(n / 1000).toStringAsFixed(n < 10000 ? 1 : 0)}k';
@@ -77,7 +59,7 @@ String aiMeterText(ProjectController c, AiAssistant ai) => ai.usage.totalInput =
     : c.t('ai.meter', {'i': aiTokens(ai.usage.totalInput), 'o': aiTokens(ai.usage.output), 'c': _usd(ai.cost)}) + (ai.pictures > 0 ? ' · ${c.t('ai.pictures', {'n': '${ai.pictures}'})}' : '');
 
 /// Files a message can carry (images, PDFs, text) and drawings to import.
-const aiAttachAccept = '.pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.csv,.tsv,.json,.md,.dxf,.dwg,.dgn,.kml,.kmz,.shp,.zip,.geojson,.gpx,.xml,.landxml,.ifc,.inp,.las,.tif,.tiff';
+const aiAttachAccept = '.pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.csv,.tsv,.json,.md,.dxf,.dwg,.dgn,.kml,.kmz,.shp,.zip,.geojson,.gpx,.xml,.landxml,.inp,.las,.tif,.tiff';
 
 // ---------------------------------------------------------------- conversation
 
@@ -101,6 +83,9 @@ class _AiChatViewState extends State<AiChatView> {
   int _seen = 0;
   Timer? _clock;
 
+  /// Scrolled up, away from the newest text (shows the way back down).
+  bool _away = false;
+
   ProjectController get c => widget.c;
   AiAssistant get ai => widget.ai;
   TextEditingController get input => widget.input;
@@ -110,8 +95,20 @@ class _AiChatViewState extends State<AiChatView> {
     super.initState();
     ai.addListener(_follow);
     input.addListener(_typed);
+    scroll.addListener(_onScroll);
     _follow();
   }
+
+  void _onScroll() {
+    final away = scroll.hasClients && scroll.position.maxScrollExtent - scroll.position.pixels > 300;
+    if (away != _away) setState(() => _away = away);
+  }
+
+  /// Puts the cursor in the box (after the frame, when the box exists):
+  /// Enter then sends instead of reaching the drawing's shortcuts.
+  void _focusSoon() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) focus.requestFocus();
+  });
 
   @override
   void didUpdateWidget(AiChatView old) {
@@ -131,6 +128,7 @@ class _AiChatViewState extends State<AiChatView> {
     ai.removeListener(_follow);
     input.removeListener(_typed);
     _clock?.cancel();
+    scroll.removeListener(_onScroll);
     scroll.dispose();
     focus.dispose();
     super.dispose();
@@ -142,10 +140,20 @@ class _AiChatViewState extends State<AiChatView> {
   /// message back in the box; ticks the clock of long answers.
   void _follow() {
     final back = ai.rewound;
+    var focusNow = false;
     if (back != null) {
       ai.rewound = null;
-      input.text = back;
+      // a request from elsewhere (Ask the AI, the start-up question, a rewind) never discards a draft
+      final draft = input.text.trim();
+      input.text = draft.isEmpty || draft == back.trim() ? back : '$draft\n\n$back';
+      input.selection = TextSelection.collapsed(offset: input.text.length);
+      focusNow = true;
     }
+    if (ai.focusInput) {
+      ai.focusInput = false;
+      focusNow = true;
+    }
+    if (focusNow) _focusSoon();
     if (ai.busy && _clock == null) {
       _clock = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() {});
@@ -166,10 +174,25 @@ class _AiChatViewState extends State<AiChatView> {
     }
   }
 
+  /// Enter in the box: sends, unless an input method is still composing.
+  void _enter() {
+    if (input.value.composing.isValid) return;
+    _send();
+  }
+
+  void _useStarter(String q) {
+    setState(() {
+      input.text = q;
+      input.selection = TextSelection.collapsed(offset: q.length);
+    });
+    _focusSoon();
+  }
+
   void _send() {
     final q = input.text;
     if (q.trim().isEmpty && (ai.busy || ai.attachments.isEmpty)) return;
     input.clear();
+    _focusSoon();
     ai.send(q);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (scroll.hasClients) scroll.jumpTo(scroll.position.maxScrollExtent);
@@ -220,6 +243,10 @@ class _AiChatViewState extends State<AiChatView> {
 
   List<String> _starters() {
     final t = c.t;
+    // a new, empty project: start a design, find the site, trace the fields
+    if (c.project.entities.isEmpty) {
+      return [t('ai.start.prompt'), t('ai.q.site'), t('ai.q.trace'), if (ai.attachments.isNotEmpty) t('ai.q.datasheet')];
+    }
     final failing = c.results?.zones.values.where((z) => !z.withinWindow).firstOrNull;
     return [
       if (failing != null) t('ai.q.zoneWindow', {'z': failing.zoneName}) else t('ai.q.windowAny'),
@@ -234,7 +261,9 @@ class _AiChatViewState extends State<AiChatView> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(builder: (context, box) => _build(context, box.maxHeight.isFinite ? box.maxHeight * 0.5 : 420));
+
+  Widget _build(BuildContext context, double cardMax) {
     final t = c.t;
     final items = ai.items;
     final m = ai.model;
@@ -268,39 +297,67 @@ class _AiChatViewState extends State<AiChatView> {
                         const SizedBox(height: 10),
                         Text(t('ai.starters'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
                         const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            for (final (k, q) in _starters().indexed)
-                              ActionChip(
-                                key: Key('ai_starter_$k'),
-                                label: Text(q, style: const TextStyle(fontSize: 11.5)),
-                                onPressed: () => setState(() => input.text = q),
+                        for (final (k, q) in _starters().indexed)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6, right: 8),
+                            child: Material(
+                              key: Key('ai_starter_$k'),
+                              color: Cad.card,
+                              borderRadius: BorderRadius.circular(6),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(6),
+                                onTap: () => _useStarter(q),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(padding: const EdgeInsets.only(top: 1), child: Icon(Icons.lightbulb_outline, size: 15, color: Cad.accentIcon)),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(q, style: const TextStyle(fontSize: 12, height: 1.3))),
+                                    ],
+                                  ),
+                                ),
                               ),
-                          ],
-                        ),
+                            ),
+                          ),
                         const SizedBox(height: 10),
                         Text(t('ai.cmd.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
                       ],
                     ),
                   ),
                 )
-              : ListView.builder(
-                  key: const Key('ai_list'),
-                  controller: scroll,
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                  itemCount: items.length,
-                  itemBuilder: (context, i) => switch (items[i].kind) {
-                    AiItemKind.user => _userBubble(items[i], i),
-                    AiItemKind.assistant => _answer(items[i]),
-                    AiItemKind.notice => _notice(items[i]),
-                  },
+              : Stack(
+                  children: [
+                    ListView.builder(
+                      key: const Key('ai_list'),
+                      controller: scroll,
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                      itemCount: items.length,
+                      itemBuilder: (context, i) => switch (items[i].kind) {
+                        AiItemKind.user => _userBubble(items[i], i),
+                        AiItemKind.assistant => _answer(items[i]),
+                        AiItemKind.notice => _notice(items[i]),
+                      },
+                    ),
+                    if (_away)
+                      PositionedDirectional(
+                        end: 10,
+                        bottom: 8,
+                        child: IconButton.filledTonal(
+                          key: const Key('ai_to_bottom'),
+                          tooltip: t('ai.toBottom'),
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.arrow_downward, size: 18),
+                          onPressed: () => scroll.animateTo(scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut),
+                        ),
+                      ),
+                  ],
                 ),
         ),
         if (ai.pending != null) _approval(ai.pending!),
-        if (ai.question != null) _QuestionCard(key: ValueKey(ai.question), c: c, ai: ai, ask: ai.question!),
-        if (ai.planReview != null) _PlanCard(key: ValueKey(ai.planReview), c: c, ai: ai, review: ai.planReview!),
+        if (ai.question != null) _QuestionCard(key: ValueKey(ai.question), c: c, ai: ai, ask: ai.question!, maxHeight: cardMax),
+        if (ai.planReview != null) _PlanCard(key: ValueKey(ai.planReview), c: c, ai: ai, review: ai.planReview!, maxHeight: cardMax),
         if (ai.queued.isNotEmpty) _queued(),
         if (ai.attachments.isNotEmpty) _attachments(),
         if (ai.commandsFor(input.text).isNotEmpty) _commands(),
@@ -309,7 +366,7 @@ class _AiChatViewState extends State<AiChatView> {
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
           child: Text(
             t('ai.footer', {'m': m.label, 'p': m.provider.company, 'h': m.provider.host}),
-            style: TextStyle(fontSize: 10, color: Cad.fg38),
+            style: TextStyle(fontSize: 10, color: Cad.fg54),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -488,7 +545,7 @@ class _AiChatViewState extends State<AiChatView> {
           ),
           Expanded(
             child: CallbackShortcuts(
-              bindings: {const SingleActivator(LogicalKeyboardKey.enter): _send},
+              bindings: {const SingleActivator(LogicalKeyboardKey.enter): _enter, const SingleActivator(LogicalKeyboardKey.numpadEnter): _enter},
               child: TextField(
                 key: const Key('ai_input'),
                 controller: input,
@@ -532,9 +589,9 @@ class _AiChatViewState extends State<AiChatView> {
     final t = c.t;
     final canRewind = it.checkpoint != null && !ai.busy;
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: AlignmentDirectional.centerEnd,
       child: Container(
-        margin: EdgeInsets.only(left: widget.compact ? 24 : 64, bottom: 6, top: 2),
+        margin: EdgeInsetsDirectional.only(start: widget.compact ? 24 : 64, bottom: 6, top: 2),
         padding: const EdgeInsets.fromLTRB(8, 6, 4, 4),
         decoration: BoxDecoration(
           color: it.steered ? Cad.panel : Cad.bubble,
@@ -548,11 +605,11 @@ class _AiChatViewState extends State<AiChatView> {
             if (it.steered) Text(t('ai.steered'), style: TextStyle(fontSize: 10, color: Cad.fg54)),
             if (it.text.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(right: 4),
+                padding: const EdgeInsetsDirectional.only(end: 4),
                 child: SelectableText(it.text, style: const TextStyle(fontSize: 12.5)),
               ),
             for (final a in it.attachments) Text('📎 $a', style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
-            if (it.contextTokens != null) Text(t('ai.sentData', {'n': '${it.contextTokens}'}), style: TextStyle(fontSize: 10, color: Cad.fg38)),
+            if (it.contextTokens != null) Text(t('ai.sentData', {'n': '${it.contextTokens}'}), style: TextStyle(fontSize: 10, color: Cad.fg54)),
             if (canRewind)
               SizedBox(
                 height: 22,
@@ -574,7 +631,7 @@ class _AiChatViewState extends State<AiChatView> {
     final t = c.t;
     final secs = it.running && it.started != null ? DateTime.now().difference(it.started!).inSeconds : 0;
     return Container(
-      margin: EdgeInsets.only(right: widget.compact ? 8 : 40, bottom: 10, top: 2),
+      margin: EdgeInsetsDirectional.only(end: widget.compact ? 8 : 40, bottom: 10, top: 2),
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
       decoration: BoxDecoration(
         color: Cad.panel,
@@ -595,10 +652,13 @@ class _AiChatViewState extends State<AiChatView> {
                   const SizedBox(width: 13, height: 13, child: CircularProgressIndicator(strokeWidth: 2)),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(
-                      secs >= 10 ? '${it.status} · ${t('ai.elapsed', {'s': '$secs'})}' : it.status,
-                      key: const Key('ai_status'),
-                      style: TextStyle(fontSize: 11.5, color: Cad.fg60),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        secs >= 10 ? '${it.status} · ${t('ai.elapsed', {'s': '$secs'})}' : it.status,
+                        key: const Key('ai_status'),
+                        style: TextStyle(fontSize: 11.5, color: Cad.fg60),
+                      ),
                     ),
                   ),
                 ],
@@ -612,16 +672,34 @@ class _AiChatViewState extends State<AiChatView> {
           if (it.error != null)
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                it.error!,
-                key: const Key('ai_error'),
-                style: TextStyle(fontSize: 12, color: Cad.unconnected),
+              child: Semantics(
+                liveRegion: true,
+                child: Text(
+                  it.error!,
+                  key: const Key('ai_error'),
+                  style: TextStyle(fontSize: 12, color: Cad.unconnected),
+                ),
               ),
             ),
           if (it.canContinue && !ai.busy && identical(it, ai.items.lastWhere((x) => x.kind == AiItemKind.assistant)))
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: TextButton.icon(key: const Key('ai_continue'), onPressed: ai.continueTask, icon: const Icon(Icons.play_arrow, size: 16), label: Text(t('ai.continue'))),
+            ),
+          // after an error or a stop: try again (or go on), and open the settings when the fix is there
+          if (it.retry != null && !it.canContinue && !ai.busy && identical(it, ai.items.lastWhere((x) => x.kind == AiItemKind.assistant)))
+            Wrap(
+              spacing: 4,
+              children: [
+                TextButton.icon(
+                  key: const Key('ai_retry'),
+                  onPressed: () => ai.resume(it),
+                  icon: Icon(it.retry!.kept ? Icons.play_arrow : Icons.refresh, size: 16),
+                  label: Text(t(it.retry!.kept ? 'ai.continue' : 'ai.retry')),
+                ),
+                if (it.toSettings && widget.onSettings != null)
+                  TextButton.icon(key: const Key('ai_err_settings'), onPressed: widget.onSettings, icon: const Icon(Icons.settings_outlined, size: 16), label: Text(t('ai.view.settings'))),
+              ],
             ),
           if (it.changes != null && !it.changes!.isEmpty) _changes(it.changes!),
           if (!it.running && (it.text.isNotEmpty || it.usage.totalInput > 0))
@@ -633,7 +711,7 @@ class _AiChatViewState extends State<AiChatView> {
                   Text(
                     t('ai.usage', {'i': aiTokens(it.usage.totalInput), 'o': aiTokens(it.usage.output), 'c': _usd(it.cost)}) +
                         (it.pictures > 0 ? ' · ${t('ai.pictures', {'n': '${it.pictures}'})}' : ''),
-                    style: TextStyle(fontSize: 10, color: Cad.fg38),
+                    style: TextStyle(fontSize: 10, color: Cad.fg54),
                   ),
                 if (it.text.isNotEmpty) ...[
                   IconButton(
@@ -641,14 +719,17 @@ class _AiChatViewState extends State<AiChatView> {
                     tooltip: t('ai.copy'),
                     visualDensity: VisualDensity.compact,
                     icon: const Icon(Icons.copy, size: 15),
-                    onPressed: () => Clipboard.setData(ClipboardData(text: it.text)),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: it.text));
+                      c.notify(t('ai.copied'));
+                    },
                   ),
                   IconButton(
                     key: const Key('ai_insert_text'),
                     tooltip: t('ai.insert'),
                     visualDensity: VisualDensity.compact,
                     icon: const Icon(Icons.text_fields, size: 16),
-                    onPressed: () => _insertText(it.text),
+                    onPressed: () => _insertText(aiPlainText(it.text)),
                   ),
                 ],
               ],
@@ -659,6 +740,7 @@ class _AiChatViewState extends State<AiChatView> {
   }
 
   Widget _callRow(AgentToolCall call) {
+    final failed = call.state == ToolCallState.failed;
     final (icon, color) = switch (call.state) {
       ToolCallState.running => (Icons.more_horiz, Cad.fg54),
       ToolCallState.waiting => (Icons.pan_tool_outlined, Cad.warning),
@@ -678,11 +760,14 @@ class _AiChatViewState extends State<AiChatView> {
           ),
           const SizedBox(width: 5),
           Expanded(
-            child: Text(
-              call.state == ToolCallState.failed ? '${call.summary} — ${call.result}' : call.summary,
-              style: TextStyle(fontSize: 11, color: call.state == ToolCallState.failed ? Cad.unconnected : Cad.fg60),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Tooltip(
+              message: failed ? call.result : '',
+              child: Text(
+                failed ? '${call.summary} — ${c.t('ai.call.failed')}' : call.summary,
+                style: TextStyle(fontSize: 11, color: failed ? Cad.unconnected : Cad.fg60),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ],
@@ -707,7 +792,7 @@ class _AiChatViewState extends State<AiChatView> {
           if (ch.removed.isNotEmpty) Text('− ${list(ch.removed)}', style: TextStyle(fontSize: 11, color: Cad.warning)),
           if (ch.settings.isNotEmpty) Text('${t('ai.chg.settings')}: ${ch.settings.join(', ')}', style: TextStyle(fontSize: 11, color: Cad.fg70)),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: ch.undone
                 ? Text(t('ai.chg.undone'), style: TextStyle(fontSize: 11, color: Cad.fg54))
                 : TextButton.icon(
@@ -765,7 +850,10 @@ class _AiChatViewState extends State<AiChatView> {
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 160),
                       child: SingleChildScrollView(
-                        child: SelectableText(details.length > 6000 ? '${details.substring(0, 6000)}…' : details, style: const TextStyle(fontSize: 10.5, fontFamily: 'monospace')),
+                        child: Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: SelectableText(details.length > 6000 ? '${details.substring(0, 6000)}…' : details, style: const TextStyle(fontSize: 10.5, fontFamily: 'monospace')),
+                        ),
                       ),
                     ),
                   ],
@@ -791,8 +879,11 @@ class _AiChatViewState extends State<AiChatView> {
 
 /// The questions of ask_user: options to tap, a free answer, Send or Skip.
 class _QuestionCard extends StatefulWidget {
-  const _QuestionCard({super.key, required this.c, required this.ai, required this.ask});
+  const _QuestionCard({super.key, required this.c, required this.ai, required this.ask, this.maxHeight = 420});
   final ProjectController c;
+
+  /// Height the card may take (half of the conversation area).
+  final double maxHeight;
   final AiAssistant ai;
   final AiAsk ask;
 
@@ -831,7 +922,7 @@ class _QuestionCardState extends State<_QuestionCard> {
           side: BorderSide(color: Cad.divider),
         ),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.5),
+          constraints: BoxConstraints(maxHeight: widget.maxHeight),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
             child: Column(
@@ -896,8 +987,11 @@ class _QuestionCardState extends State<_QuestionCard> {
 /// The plan of plan mode: approve it (and how changes then apply), or ask
 /// for changes.
 class _PlanCard extends StatefulWidget {
-  const _PlanCard({super.key, required this.c, required this.ai, required this.review});
+  const _PlanCard({super.key, required this.c, required this.ai, required this.review, this.maxHeight = 420});
   final ProjectController c;
+
+  /// Height the card may take (half of the conversation area).
+  final double maxHeight;
   final AiAssistant ai;
   final AiPlanReview review;
 
@@ -927,7 +1021,7 @@ class _PlanCardState extends State<_PlanCard> {
           side: BorderSide(color: Cad.accent.withValues(alpha: 0.6)),
         ),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.55),
+          constraints: BoxConstraints(maxHeight: widget.maxHeight),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
             child: Column(
@@ -990,10 +1084,13 @@ class AiDataView extends StatelessWidget {
       borderRadius: BorderRadius.circular(4),
       border: Border.all(color: Cad.divider),
     ),
-    child: SelectableText(
-      text,
-      key: key,
-      style: TextStyle(fontSize: 10.5, fontFamily: 'monospace', color: Cad.fg70),
+    child: Directionality(
+      textDirection: TextDirection.ltr,
+      child: SelectableText(
+        text,
+        key: key,
+        style: TextStyle(fontSize: 10.5, fontFamily: 'monospace', color: Cad.fg70),
+      ),
     ),
   );
 
@@ -1096,11 +1193,17 @@ class _AiSettingsViewState extends State<AiSettingsView> {
   late final instructions = TextEditingController(text: widget.ai.instructions);
   late final notes = TextEditingController(text: widget.ai.notes);
 
+  /// The project's AI notes are saved after a pause in typing (each save is
+  /// an undo step of the project), and when the view closes.
+  Timer? _notesTimer;
+
   ProjectController get c => widget.c;
   AiAssistant get ai => widget.ai;
 
   @override
   void dispose() {
+    if (_notesTimer?.isActive ?? false) _saveNotes();
+    _notesTimer?.cancel();
     for (final k in keys.values) {
       k.dispose();
     }
@@ -1109,14 +1212,38 @@ class _AiSettingsViewState extends State<AiSettingsView> {
     super.dispose();
   }
 
+  void _saveNotes() {
+    _notesTimer?.cancel();
+    if (notes.text != ai.notes) ai.notes = notes.text;
+  }
+
+  /// The model a key of [p] starts with: the app's default for its company,
+  /// otherwise that company's intermediate tier (never the dearest by chance).
+  static AiModel _defaultFor(AiProvider p) => AiModel.standard.provider == p
+      ? AiModel.standard
+      : AiModel.all.where((m) => m.provider == p && m.tier == AiTier.intermediate && m.listed && !m.earlier).firstOrNull ?? AiModel.all.firstWhere((m) => m.provider == p);
+
   void _saveKey(AiProvider p) {
     final k = keys[p]!.text.trim();
     if (k.isEmpty) return;
+    // a key of the other company in this field
+    final other = switch (p) {
+      AiProvider.openai when k.startsWith('sk-ant-') => AiProvider.anthropic,
+      AiProvider.anthropic when k.startsWith('sk-') && !k.startsWith('sk-ant-') => AiProvider.openai,
+      _ => null,
+    };
+    if (other != null) {
+      c.notify(c.t('ai.key.wrongCompany', {'p': other.company}));
+      return;
+    }
     ai.saveKey(k, provider: p, remember: remember[p]!);
     keys[p]!.clear();
     show.remove(p);
     // with a key, the model goes to that company if the chosen one cannot run
-    if (!ai.hasKey && ai.model.provider != p) ai.model = AiModel.all.firstWhere((m) => m.provider == p);
+    if (!ai.hasKey && ai.model.provider != p) {
+      ai.model = _defaultFor(p);
+      c.notify(c.t('ai.key.modelSet', {'m': ai.model.label}));
+    }
     setState(() {});
     widget.onSaved?.call();
     if (!k.startsWith(p.keyPrefix)) c.notify(c.t('ai.key.odd', {'p': p.company, 'x': p.keyPrefix}));
@@ -1157,6 +1284,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
                   hintText: '${p.keyPrefix}…',
                   isDense: true,
                   suffixIcon: IconButton(
+                    tooltip: t(show.contains(p) ? 'ai.key.hide' : 'ai.key.show'),
                     icon: Icon(show.contains(p) ? Icons.visibility_off : Icons.visibility, size: 16),
                     onPressed: () => setState(() => show.contains(p) ? show.remove(p) : show.add(p)),
                   ),
@@ -1175,7 +1303,12 @@ class _AiSettingsViewState extends State<AiSettingsView> {
           controlAffinity: ListTileControlAffinity.leading,
           title: Text(t('ai.key.remember'), style: const TextStyle(fontSize: 12)),
           value: remember[p],
-          onChanged: (v) => setState(() => remember[p] = v ?? false),
+          // a key already saved moves at once (into this device's storage, or out of it)
+          onChanged: (v) => setState(() {
+            remember[p] = v ?? false;
+            final k = ai.keyOf(p);
+            if (k != null) ai.saveKey(k, provider: p, remember: remember[p]!);
+          }),
         ),
       ],
     );
@@ -1236,12 +1369,19 @@ class _AiSettingsViewState extends State<AiSettingsView> {
     final t = c.t;
     final m = ai.model;
     final other = AiProvider.values.where((p) => p != m.provider);
+    final noKey = !AiProvider.values.any(ai.hasKeyFor);
     return ScrollBody(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 10, 4, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // without any key, the keys come first: one is enough
+            if (noKey) ...[
+              Text(t('ai.key.oneEnough'), key: const Key('ai_key_one'), style: const TextStyle(fontSize: 12.5)),
+              _keySection(m.provider),
+              for (final p in other) _keySection(p),
+            ],
             SectionTitle(t('ai.model')),
             _modelPicker(),
             Text(
@@ -1249,11 +1389,13 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               key: const Key('ai_model_hint'),
               style: TextStyle(fontSize: 10.5, color: Cad.fg54),
             ),
-            Text(t('ai.model.switch'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+            Text(t('ai.model.switch'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
             // the key of the chosen model's company first
-            _keySection(m.provider),
-            for (final p in other) _keySection(p),
-            Text(t('ai.key.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+            if (!noKey) ...[
+              _keySection(m.provider),
+              for (final p in other) _keySection(p),
+            ],
+            Text(t('ai.key.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
             SectionTitle(t('ai.effort')),
             DropdownButton<AiEffort>(
               key: const Key('ai_effort'),
@@ -1330,7 +1472,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
                 ),
               ],
             ),
-            Text(t('ai.limits.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+            Text(t('ai.limits.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
             SwitchListTile(
               key: const Key('ai_compact'),
               dense: true,
@@ -1348,6 +1490,15 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               onChanged: (v) => setState(() => ai.showChanges = v),
               title: Text(t('ai.showChanges'), style: const TextStyle(fontSize: 12.5)),
               subtitle: Text(t('ai.showChanges.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ),
+            SwitchListTile(
+              key: const Key('ai_ask_start'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              value: AiAssistant.askAtStart,
+              onChanged: (v) => setState(() => AiAssistant.askAtStart = v),
+              title: Text(t('ai.askStart'), style: const TextStyle(fontSize: 12.5)),
+              subtitle: Text(t('ai.askStart.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             ),
             SectionTitle(t('ai.instructions')),
             Text(t('ai.instructions.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
@@ -1369,7 +1520,12 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               maxLines: 8,
               style: const TextStyle(fontSize: 12),
               decoration: const InputDecoration(isDense: true),
-              onChanged: (v) => ai.notes = v,
+              onChanged: (_) {
+                _notesTimer?.cancel();
+                _notesTimer = Timer(const Duration(milliseconds: 1200), _saveNotes);
+              },
+              onEditingComplete: _saveNotes,
+              onTapOutside: (_) => _saveNotes(),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -1384,7 +1540,11 @@ class _AiSettingsViewState extends State<AiSettingsView> {
                 ),
                 OutlinedButton.icon(
                   key: const Key('ai_clear'),
-                  onPressed: ai.items.isEmpty ? null : () => setState(ai.clear),
+                  onPressed: ai.items.isEmpty
+                      ? null
+                      : () async {
+                          if (await aiConfirmNew(context, c, ai) && mounted) setState(ai.clear);
+                        },
                   icon: const Icon(Icons.delete_sweep_outlined, size: 16),
                   label: Text(t('ai.clear')),
                 ),
@@ -1393,7 +1553,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
             const SizedBox(height: 8),
             Text(t('ai.privacy', {'p': m.provider.company, 'h': m.provider.host, 'm': m.label}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             const SizedBox(height: 4),
-            Text(t('ai.vis.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+            Text(t('ai.vis.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
           ],
         ),
       ),

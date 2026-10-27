@@ -160,7 +160,7 @@ List<AgentTool> operationTools(AgentToolbox b) {
         if (hits.isEmpty) {
           final groups = {for (final o in ops) opGroup(o)}.toList();
           return ToolOutput(
-            'No operation matches${query.isEmpty ? '' : ' "$query"'}${group == null ? '' : ' in group "$group"'}. Groups: ${groups.join(', ')}. Try other words, or no input for the whole list.',
+            'No operation matches${query.isEmpty ? '' : ' "$query"'}${group == null ? '' : ' in group "$group"'}. Groups: ${groups.join(', ')}. Try other words, or no input for the whole list. What only the user can do (the tutorial, walking the field with the device\'s GPS, map keys) is in read_manual "interface", with the menu paths.',
           );
         }
         final out = StringBuffer('${hits.length} operation${hits.length == 1 ? '' : 's'} match${hits.length == 1 ? 'es' : ''}; run one with run_operation {name, input}.\n');
@@ -246,7 +246,7 @@ List<AgentTool> operationTools(AgentToolbox b) {
     ),
     FnTool(
       name: 'get_setting',
-      description: 'Reads settings of the program by key or prefix: params.* (the design parameters of get_parameters), units.* (display units), project.* (details), quote.* (the quote), view.* (grid, labels, overlays, base map, theme, reports panel, active tool, visible area), snap.* (snap, grid snap, ortho, polar tracking), tool.* (defaults of the drawing tools: pipes, emitters, heads, text heights…) and app.* (autosave, automatic analysis). Each line: key = value (type, range, unit) — what it does. Without input it lists every key with its value only.',
+      description: 'Reads settings of the program by key or prefix: params.* (the design parameters of get_parameters), units.* (display units), project.* (details), quote.* (the quote), view.* (grid, labels, overlays, base map, theme, interface language, reports panel, active tool, visible area), snap.* (snap, grid snap, ortho, polar tracking), tool.* (defaults of the drawing tools: pipes, emitters, heads, text heights…) and app.* (autosave, automatic analysis). Each line: key = value (type, range, unit) — what it does. Without input it lists every key with its value only.',
       inputSchema: obj({'keys': arr(str(), 'Exact keys, e.g. ["snap.ortho", "units.flow"].', 100), 'prefix': str('Keys starting with this, e.g. "view." or "tool.pivot".')}),
       summary: (i) => t('ai.op.get_setting', {'n': '${i['prefix'] ?? (i['keys'] as List?)?.join(', ') ?? ''}'}),
       handler: (i) async {
