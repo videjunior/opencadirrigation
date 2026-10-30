@@ -20,6 +20,7 @@ import 'app/tutorial/tutorial.dart';
 import 'app/version.dart';
 import 'app/widgets/advice_panel.dart';
 import 'app/ai/ai_assistant.dart';
+import 'app/widgets/ai/ai_drop.dart';
 import 'app/widgets/ai/ai_panel.dart';
 import 'app/widgets/dialogs/ai_assistant_dialog.dart';
 import 'app/widgets/dialogs/ai_start_dialog.dart';
@@ -162,9 +163,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     ws.addListener(_onWorkspace);
     _syncSubscriptions();
     tutorial.addListener(_onTutorial);
-    // unsaved projects, and conversations with the assistant (they live only in this page)
-    setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.items.any((it) => it.kind == AiItemKind.assistant && it.text.isNotEmpty)));
+    // unsaved projects, and conversations with the assistant that are not kept
+    // in this browser as they are now (keeping off, a turn running, a save not done)
+    setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
     _nativeKeys.install();
+    // a file dropped on the window never replaces the app: it goes to the AI
+    // panel (pasted pictures to its chat box)
+    AiFileDrop.instance.install(() => c);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // ?lang=es or an entry page such as /pt/ or /de/ picks the language for this
       // visit; otherwise the saved choice or the machine language applies.
@@ -199,8 +204,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         if (aiLink && mounted) showAiAssistantDialog(context, c);
         return;
       }
-      // a fresh start: the start-up screen asks where the area is and whether
-      // to design with the AI assistant
+      // a fresh start: the conversation held by a project never changed comes
+      // back with its uid; the start-up screen asks where the area is and
+      // whether to design with the AI assistant
+      AiAssistant.resumePristine(c);
       if (widget.autoTutorial && widget.askAi && AiAssistant.askAtStart && mounted) {
         final choice = await showAiStartDialog(context, c);
         if (mounted) _applyStart(choice);
@@ -234,6 +241,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     ws.removeListener(_onWorkspace);
     tutorial.removeListener(_onTutorial);
     _nativeKeys.dispose();
+    AiFileDrop.instance.uninstall();
     hotkeys.dispose();
     for (final t in ws.tabs) {
       if (t.focusCanvas == _focusCanvas) t.focusCanvas = null;

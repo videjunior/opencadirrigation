@@ -2,7 +2,8 @@
 /// bottom sheet on phones, it stays open while the agent works so the user
 /// watches the drawing change, types more instructions (they reach the
 /// agent at its next step) and stops it at any time. It shows the active
-/// tab's assistant; the conversation of each tab is its own.
+/// tab's assistant; the conversation of each tab is its own. Files dropped
+/// on it are attached to the conversation (ai_drop.dart).
 library;
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../../ai/ai_assistant.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
+import 'ai_drop.dart';
 import 'ai_views.dart';
 
 enum AiPanelView { chat, data, settings }
@@ -59,7 +61,15 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => Material(
+  Widget build(BuildContext context) => AiDropZone(
+    c: c,
+    ai: ai,
+    // dropped files show in the conversation
+    onAttached: () => setState(() => view = AiPanelView.chat),
+    child: _panel(),
+  );
+
+  Widget _panel() => Material(
     key: const Key('ai_panel'),
     color: Cad.dialog,
     child: AnimatedBuilder(

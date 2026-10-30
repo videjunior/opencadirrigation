@@ -10,6 +10,7 @@ import '../../core/model/geometry.dart';
 import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import 'ai_mark_tool.dart';
 import 'insert_block_tool.dart';
 
 /// Dialog requests raised by tools and fulfilled by the widget layer.
@@ -39,6 +40,10 @@ abstract class Tool {
   Pt? cursor;
   bool get usesSnap => true;
   Pt? get referencePoint => null;
+
+  /// Nothing in progress, so Esc leaves the tool (asked right after the tool
+  /// had the Esc, see CanvasKeyTarget.toolIdle).
+  bool get idle => true;
 
   /// Vector from the geometry being dragged to the pointer, measured when it
   /// was grabbed. When it is set the canvas snaps the dragged point itself
@@ -365,6 +370,9 @@ abstract class PolyTool extends Tool {
 
   @override
   Pt? get referencePoint => pts.isEmpty ? null : pts.last;
+
+  @override
+  bool get idle => pts.isEmpty;
 
   @override
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
@@ -1452,6 +1460,7 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.comment => CommentTool(c, host),
   ToolId.revisionCloud => RevisionCloudTool(c, host),
   ToolId.insertBlock => InsertBlockTool(c, host, ToolId.insertBlock),
+  ToolId.aiMarkPoint || ToolId.aiMarkLine => AiMarkTool(c, host, id),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1495,4 +1504,6 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.comment => 'comment',
   ToolId.revisionCloud => 'revisionCloud',
   ToolId.insertBlock => 'insertBlock',
+  ToolId.aiMarkPoint => 'aiMarkPoint',
+  ToolId.aiMarkLine => 'aiMarkLine',
 };

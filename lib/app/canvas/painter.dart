@@ -13,18 +13,23 @@ import '../../core/model/label_rules.dart';
 import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import '../tools/ai_mark_tool.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'camera.dart';
 import 'snapping.dart';
 
 class CadPainter extends CustomPainter {
-  CadPainter({required this.c, required this.tool, required this.snapResult, required this.repaint, this.basemap}) : super(repaint: repaint);
+  CadPainter({required this.c, required this.tool, required this.snapResult, required this.repaint, this.basemap, this.tint}) : super(repaint: repaint);
   final ProjectController c;
   final Tool? tool;
   final SnapResult? snapResult;
   final Listenable repaint;
   final BaseMapLayer? basemap;
+
+  /// A colour that replaces the layer colour of an item (null: its own),
+  /// e.g. one per zone in the AI assistant's pictures.
+  final Color? Function(Entity e)? tint;
 
   Camera get cam => c.camera;
 
@@ -299,6 +304,9 @@ class CadPainter extends CustomPainter {
         _label(canvas, Offset.lerp(o, t, 0.5)!, '${fmt(c.project.params.units.lengthFromSi(to.$1), to.$1 < 10 ? 2 : 1)} ${c.project.params.units.lengthLabel} · ${to.$2.round().toString().padLeft(3, '0')}°', color: Cad.stakeOut, size: 11, bg: true);
       }
     }
+    // the user's marks for the AI assistant over everything drawn (its
+    // pictures show them alike), and the mark being placed
+    _aiMarks(canvas);
     // tool preview
     tool?.paint(canvas, cam);
     // snap marker
@@ -473,6 +481,8 @@ class CadPainter extends CustomPainter {
   Color _color(Entity e, bool selected, bool hovered) {
     if (selected) return Cad.selection;
     if (hovered) return Cad.hover;
+    final x = tint?.call(e);
+    if (x != null) return x;
     return Cad.ink(Color(c.project.layerNamed(e.layer).color));
   }
 
@@ -1068,6 +1078,153 @@ class CadPainter extends CustomPainter {
     canvas.rotate(-degToRad(rotationDeg));
     tp.paint(canvas, Offset(0, -tp.height));
     canvas.restore();
+  }
+
+  // ---------------------------------------------------------------- marks for the AI
+
+  /// The dark edge and text of the marks for the AI; a pin's head rises
+  /// [_pinRise] px above its tip, [_pinHead] px in radius.
+  static const _markDark = Color(0xFF101010);
+  static const _pinRise = 19.0, _pinHead = 7.5;
+
+  /// The user's marks for the AI assistant (ai_marks.dart) in orange with a
+  /// dark edge, so they read on the dark and the light canvas and over
+  /// aerial imagery: a pin at a point, a thick line with its vertices, each
+  /// with a tag of its label and note. Then the mark the mark tool is
+  /// placing: the pin under the cursor, or the line so far.
+  void _aiMarks(Canvas canvas) {
+    for (final m in c.aiMarks.marks) {
+      final pts = [for (final p in m.points) cam.toScreen(p)];
+      if (m.isPoint) {
+        _markPin(canvas, pts.first);
+        _markTag(canvas, m.label, m.note, pts.first.translate(0, -_pinRise), _pinTagWays, gap: _pinHead + 3);
+      } else {
+        _markLine(canvas, pts);
+        _markTag(canvas, m.label, m.note, pts.first, _lineTagWays(pts));
+      }
+    }
+    final t = tool;
+    if (t is! AiMarkTool) return;
+    final next = c.aiMarks.nextLabel();
+    final cur = t.cursor == null ? null : cam.toScreen(t.cursor!);
+    if (!t.line) {
+      // not over the pin just placed (a tap leaves the cursor on it)
+      final last = c.aiMarks.marks.lastOrNull;
+      if (cur == null || (last != null && last.isPoint && (cam.toScreen(last.points.first) - cur).distance < 4)) return;
+      _markPin(canvas, cur, alpha: 0.55);
+      _markTag(canvas, next, '', cur.translate(0, -_pinRise), _pinTagWays, gap: _pinHead + 3, alpha: 0.55);
+      return;
+    }
+    final pts = [for (final p in t.pts) cam.toScreen(p)];
+    if (pts.isEmpty) {
+      if (cur != null) _markDot(canvas, cur, alpha: 0.55);
+      return;
+    }
+    if (cur != null) _markBand(canvas, pts.last, cur);
+    _markLine(canvas, pts, alpha: 0.85);
+    _markTag(canvas, next, '', pts.first, _lineTagWays([...pts, ?cur]), alpha: 0.85);
+  }
+
+  /// A map pin with its tip at [p].
+  void _markPin(Canvas canvas, Offset p, {double alpha = 1}) {
+    final head = p.translate(0, -_pinRise);
+    // the sides are tangent to the head
+    final b = math.acos(_pinHead / _pinRise), a0 = math.pi / 2 + b;
+    final path = Path()
+      ..moveTo(p.dx, p.dy)
+      ..lineTo(head.dx + _pinHead * math.cos(a0), head.dy + _pinHead * math.sin(a0))
+      ..arcTo(Rect.fromCircle(center: head, radius: _pinHead), a0, 2 * math.pi - 2 * b, false)
+      ..close();
+    canvas.drawPath(path, Paint()..color = aiMarkColor.withValues(alpha: alpha));
+    canvas.drawPath(path, _stroke(_markDark.withValues(alpha: alpha), 1.5));
+    canvas.drawCircle(head, 2.6, Paint()..color = _markDark.withValues(alpha: alpha));
+  }
+
+  /// A line mark: orange over a dark casing, a dot at each vertex.
+  void _markLine(Canvas canvas, List<Offset> pts, {double alpha = 1}) {
+    if (pts.length >= 2) {
+      final path = Path()..addPolygon(pts, false);
+      canvas.drawPath(path, _stroke(_markDark.withValues(alpha: 0.85 * alpha), 7.5));
+      canvas.drawPath(path, _stroke(aiMarkColor.withValues(alpha: alpha), 4));
+    }
+    for (final o in pts) {
+      _markDot(canvas, o, alpha: alpha);
+    }
+  }
+
+  void _markDot(Canvas canvas, Offset o, {double alpha = 1}) {
+    canvas.drawCircle(o, 5, Paint()..color = _markDark.withValues(alpha: alpha));
+    canvas.drawCircle(o, 3.4, Paint()..color = aiMarkColor.withValues(alpha: alpha));
+  }
+
+  /// The segment from the last vertex of the line being marked to the
+  /// cursor, dashed.
+  void _markBand(Canvas canvas, Offset a, Offset b) {
+    final d = b - a, len = d.distance;
+    if (len < 1) return;
+    final edge = _stroke(_markDark.withValues(alpha: 0.5), 5.5), ink = _stroke(aiMarkColor.withValues(alpha: 0.8), 3);
+    for (var s = 0.0; s < len; s += 12) {
+      final p = a + d * (s / len), q = a + d * (math.min(s + 7, len) / len);
+      canvas.drawLine(p, q, edge);
+      canvas.drawLine(p, q, ink);
+    }
+  }
+
+  /// Where the tag of a pin goes, by preference: right of its head, left,
+  /// above.
+  static const _pinTagWays = [Offset(1, 0), Offset(-1, 0), Offset(0, -1)];
+
+  /// Where the tag of a line goes, by preference: out of the line at its
+  /// first vertex, across it (above first), back along it.
+  static List<Offset> _lineTagWays(List<Offset> pts) {
+    var away = const Offset(0.7071, -0.7071);
+    for (final o in pts.skip(1)) {
+      final d = pts.first - o;
+      if (d.distance > 1) {
+        away = d / d.distance;
+        break;
+      }
+    }
+    final across = [Offset(away.dy, -away.dx), Offset(-away.dy, away.dx)]..sort((a, b) => a.dy.compareTo(b.dy));
+    return [away, ...across, -away];
+  }
+
+  /// The tag of a mark, its label in bold and its note (shortened), dark on
+  /// orange, [gap] px from [anchor] the first of [ways] that keeps it whole
+  /// in the view (or the picture) when the mark is in it.
+  void _markTag(Canvas canvas, String label, String note, Offset anchor, List<Offset> ways, {double gap = 7, double alpha = 1}) {
+    final n = note.trim().characters;
+    final short = n.length > 20 ? '${n.take(19)}…' : n.toString();
+    final tp = _textCache.putIfAbsent('mark|$label|$short|$alpha', () {
+      final ink = _markDark.withValues(alpha: alpha);
+      return TextPainter(
+        text: TextSpan(
+          style: TextStyle(fontSize: 11, color: ink),
+          children: [
+            TextSpan(text: label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            if (short.isNotEmpty) TextSpan(text: ' $short'),
+          ],
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+      )..layout();
+    });
+    final w = tp.width + 8, h = tp.height + 2;
+    Rect boxTowards(Offset dir) {
+      // along the larger of the two directions, so the tag clears the anchor
+      final k = math.max(dir.dx.abs(), dir.dy.abs());
+      final d = k < 1e-9 ? const Offset(1, 0) : dir / k;
+      return Rect.fromCenter(center: anchor + Offset(d.dx * (w / 2 + gap), d.dy * (h / 2 + gap)), width: w, height: h);
+    }
+
+    final view = Offset.zero & cam.size;
+    bool whole(Rect b) => b.left >= view.left && b.top >= view.top && b.right <= view.right && b.bottom <= view.bottom;
+    var box = boxTowards(ways.first);
+    if (!whole(box) && view.contains(anchor)) box = ways.skip(1).map(boxTowards).where(whole).firstOrNull ?? box;
+    final r = RRect.fromRectAndRadius(box, const Radius.circular(4));
+    canvas.drawRRect(r, Paint()..color = aiMarkColor.withValues(alpha: alpha));
+    canvas.drawRRect(r, _stroke(_markDark.withValues(alpha: alpha), 1.2));
+    tp.paint(canvas, box.topLeft + const Offset(4, 1));
   }
 
   @override

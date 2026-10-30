@@ -130,7 +130,7 @@ void main() {
     expect(outs.first['output'], 'look ok {"x":1}');
     expect(outs.last['output'], [
       {'type': 'input_text', 'text': 'a view'},
-      {'type': 'input_image', 'image_url': 'data:image/png;base64,iVBORw0K', 'detail': 'auto'},
+      {'type': 'input_image', 'image_url': 'data:image/png;base64,iVBORw0K', 'detail': 'high'},
     ]);
     // byte for byte as received
     expect(jsonEncode(input.sublist(0, 5)), jsonEncode(turn.messages.sublist(0, 5)));
@@ -140,7 +140,7 @@ void main() {
   test('the user\'s pictures and PDFs, notes from the program and messages written meanwhile', () async {
     final msg = OpenAiFormat.user([const AiImagePart('image/jpeg', 'AAAA'), const AiPdfPart('sheet.pdf', 'JVBERi0'), const AiTextPart('Read these.')]);
     expect(msg['content'], [
-      {'type': 'input_image', 'image_url': 'data:image/jpeg;base64,AAAA', 'detail': 'auto'},
+      {'type': 'input_image', 'image_url': 'data:image/jpeg;base64,AAAA', 'detail': 'high'},
       {'type': 'input_file', 'filename': 'sheet.pdf', 'file_data': 'data:application/pdf;base64,JVBERi0'},
       {'type': 'input_text', 'text': 'Read these.'},
     ]);

@@ -858,9 +858,9 @@ encaixado faz o mesmo).
 
 **Como funciona.** O agente mantém uma lista de tarefas, faz perguntas em cartões com opções quando
 falta algo (a tarefa espera as respostas), apresenta o seu plano e trabalha pelas ferramentas do
-próprio programa: 70 ferramentas enviadas em todo pedido, mais 101 operações que ele encontra e
+próprio programa: 73 ferramentas enviadas em todo pedido, mais 102 operações que ele encontra e
 executa (`find_operations`, `run_operation`), qualquer comando dos menus (`run_command`, com os
-diálogos executados sem abrir) e 133 configurações (`get_setting`, `set_setting`). Ele lê os mesmos
+diálogos executados sem abrir) e 134 configurações (`get_setting`, `set_setting`). Ele lê os mesmos
 números dos relatórios, altera o projeto pelas mesmas funções dos menus e diálogos (desenho, rede,
 catálogo, turnos, o cálculo, as suas correções, os layouts automáticos, as análises, o orçamento,
 exportações), mantém as **notas de IA** do projeto (requisitos, as suas respostas e decisões,
@@ -872,9 +872,9 @@ base, baixa o terreno e o clima pelos downloads do próprio app e importa os des
 GIS que você anexar. Ele também lê uma ficha técnica anexada (PDF, imagem ou texto, até 20 MB) e põe
 os itens dela no catálogo, conferidos antes de entrar, e escreve o memorial descritivo do projeto,
 que pode ser copiado ou posto no desenho como texto. [docs/AI_TOOLS.md](docs/AI_TOOLS.md), gerado a
-partir do mapa de cobertura, lista o que ele alcança: das 1665 funções que um usuário alcança (ações
+partir do mapa de cobertura, lista o que ele alcança: das 1677 funções que um usuário alcança (ações
 de comando, ferramentas de desenho, aliases, itens de menu, diálogos e suas opções, campos dos
-painéis, barra de status, opções de vista), 1633 estão cobertas, 32 não fazem sentido para a IA
+painéis, barra de status, opções de vista), 1637 estão cobertas, 40 não fazem sentido para a IA
 (cada uma com o motivo) e nenhuma falta; um teste falha quando um comando, ferramenta, item de menu
 ou diálogo novo não tem rota. O prompt de sistema traz as regras da rede, o cálculo e as permissões
 e indexa um manual de referência que o modelo lê quando precisa (`read_manual`, 20 tópicos gerados a
@@ -885,17 +885,61 @@ as definições das ferramentas ficam em cache entre os pedidos.
 **Visão.** `view_snapshot` tira uma imagem do desenho sobre um mapa base: por padrão a imagem de
 satélite sempre que o projeto está georreferenciado (Esri World Imagery, ou o Google com a sua chave),
 para o modelo desenhar sobre o que existe de fato no terreno, e, sem georreferência, o mapa da tela; o
-modelo também pode pedir o mapa da tela, um mapa de ruas ou nenhum. Os tiles são baixados fora da tela, então a sua vista e o seu mapa base nunca mudam.
-Cada imagem informa a correspondência exata entre pixel e mundo, e `image_to_world` converte as
-posições que o modelo lê nela; o modelo pode ampliar uma parte, rotular os itens, desenhar formas
-propostas com `preview_geometry` antes de criar qualquer coisa e ler o terreno com
-`terrain_picture` (sombreamento, cores por elevação, curvas de nível, declividade, exposição),
-`terrain_profile` e `terrain_info`. As imagens têm no máximo 1568 pixels no lado maior e cerca de
-1,15 megapixel; imagens aéreas e de relevo vão em JPEG, o que mantém conversas longas dentro do
-tamanho de uma solicitação, e fotos anexadas são endireitadas e reduzidas a no máximo 2000 pixels de
-lado. No Claude Opus 5.5, Sonnet 5.5 e Fable 5.1 a linha de status mostra as notas curtas de
-progresso do modelo entre as etapas. O painel tem um botão que anexa uma imagem da sua vista, e uma configuração
-(desligada por padrão) envia uma imagem do desenho depois de cada rodada de alterações.
+modelo também pode pedir o mapa da tela, um mapa de ruas ou nenhum. Os tiles são baixados fora da
+tela, então a sua vista e o seu mapa base nunca mudam. O modelo também escolhe pelo que o desenho é
+colorido na imagem dele (cores das camadas, pressões, velocidades, diâmetros, a menor e a maior
+pressão de cada zona, ou cada zona na sua cor com o nome na válvula) e o que fica marcado nela: as
+mensagens do projeto nos seus itens, numeradas como na lista de Mensagens, e as próprias alterações
+da tarefa (acréscimos em ciano, mudanças em âmbar, remoções em contorno tracejado vermelho), para
+conferir o que fez; a sua tela continua como está. Cada imagem informa a correspondência exata entre
+pixel e mundo, e `image_to_world` converte as posições que o modelo lê nela, podendo imantá-las nas
+pontas e linhas de itens existentes para que os tubos novos encontrem os antigos; uma imagem feita
+antes de a georreferência mudar é recusada. `trace_region` contorna um talhão, gramado, lago ou
+telhado a partir de um ponto dentro dele por análise da imagem aérea (a região cresce sobre cores e
+textura semelhantes até a tolerância em que a área para de crescer, antes de vazar para o talhão
+vizinho), com muito mais exatidão do que cantos escolhidos a olho, e `trace_fields` contorna todos os
+talhões de uma área de uma vez (estradas, cercas vivas, manchas pequenas e regiões cortadas pela borda
+da área ficam de fora). O modelo pode ampliar uma parte,
+rotular os itens, desenhar formas propostas com `preview_geometry` antes de criar qualquer coisa e ler
+o terreno com `terrain_picture` (sombreamento, cores por elevação, curvas de nível, declividade,
+exposição), `terrain_profile` e `terrain_info`. As imagens têm o tamanho que o modelo lê pixel a
+pixel: até 2000 pixels e cerca de 3,6 megapixels no Claude Opus 5.5, Sonnet 5.5 e Fable 5.1, senão
+1568 pixels e cerca de 1,15 megapixel, com o lado menor de no máximo 768 pixels nos modelos da
+OpenAI; imagens aéreas e de relevo vão em JPEG, o que mantém conversas longas dentro do tamanho de
+uma solicitação, e fotos anexadas são endireitadas e reduzidas a no máximo 2000 pixels de lado. No
+Claude Opus 5.5, Sonnet 5.5 e Fable 5.1 a linha de status mostra as notas curtas de progresso do
+modelo entre as etapas. O painel tem um botão que anexa uma imagem da sua vista; imagens e arquivos
+também podem ser colados na caixa de mensagem (Ctrl+V) ou soltos sobre o painel. Uma configuração
+(ligada por padrão) envia, depois de cada rodada de alterações, uma imagem enquadrada no que mudou,
+com as alterações marcadas. Uma foto anexada que traz a posição do GPS (como os celulares gravam)
+chega com o lugar onde foi tirada no projeto e o item mais próximo, e o modelo pode fixá-la no desenho
+com `add_photo_comment`: um comentário de revisão naquele ponto, com uma cópia pequena da foto e o que
+o modelo leu nela (a placa de uma bomba, o estado de uma caixa de válvula), mostrado nas propriedades.
+Antes de exportar uma prancha de desenho, o modelo a olha com `preview_sheet`: a prancha como vai ser
+impressa, com uma verificação de textos sobrepostos, pequenos demais ou cortados, de um desenho que
+ocupa pouco da área de desenho ou sai dela, dos campos vazios do carimbo e do norte, da escala gráfica
+e da legenda, cada achado com o lugar onde está, para corrigi-los antes.
+
+**Apontar.** "Marcar ponto" e "Marcar linha", acima da caixa de mensagem, mostram ao assistente onde:
+cada clique no desenho acrescenta uma marca laranja com rótulo A, B, C… (uma linha termina com duplo
+clique ou Enter; Esc a descarta), cada uma com uma nota opcional ("bomba", "adutora até aqui"). As
+marcas vão com a sua próxima mensagem, com as coordenadas, e aparecem nas imagens do assistente,
+então "a bomba em A, a adutora por B" é entendido com exatidão; o assistente também pode pedir que
+você marque um lugar. Elas não fazem parte do projeto (nenhum passo de desfazer, nada salvo) e somem
+quando você as limpa ou abre outro projeto; no celular, a janela do assistente fecha enquanto você
+marca e volta quando você termina. Os comandos `MK` e `MKL` também as iniciam.
+
+**Voz.** Um botão de microfone ao lado da caixa de mensagem dita a mensagem pelo serviço de voz do
+navegador, no idioma da interface (Chrome, Edge e Safari; não há no Firefox nem no app de desktop): as
+palavras sendo reconhecidas aparecem num pequeno balão acima do botão e cada frase confirmada entra
+na caixa no lugar do cursor, para ser lida e enviada como se fosse digitada. No primeiro uso, o app
+diz para onde vai a voz.
+
+**Conversas guardadas.** Recarregar a página, ou abrir o projeto de novo mais tarde no mesmo
+navegador, traz a conversa dele de volta como estava, e o modelo continua com o histórico exato de
+antes; uma resposta que o fechamento da página interrompeu aparece como parada, com **Tentar de
+novo**. Voltar no tempo numa conversa restaurada desfaz só a conversa (o histórico de desfazer do
+projeto não sobrevive a uma recarga).
 
 **Controle.** O que ele pode fazer é definido nas configurações: **somente leitura**; **planejar
 primeiro** (ele explora só com leituras e apresenta um plano; as alterações começam depois que você
@@ -917,7 +961,11 @@ dele dizem que há contexto de sobra. Conversas longas são resumidas no servido
 empresa (na Anthropic a partir de 150 000 tokens de entrada, depois de limpar resultados antigos de
 ferramentas a partir de 80 000, guardando as notas, o plano e a lista de tarefas; na OpenAI a partir
 de 200 000, tirando do pedido as imagens mais antigas); uma configuração desliga isso. Comandos
-rápidos: `/new`, `/design`, `/check`, `/report`, `/quote`, `/export`, `/plan`, `/clear` e `/cost`.
+rápidos: `/new`, `/design`, `/check`, `/review`, `/report`, `/quote`, `/export`, `/plan`, `/clear` e
+`/cost`. `/review` roda em modo somente leitura qualquer que seja o modo: o modelo olha as zonas, as
+mensagens marcadas nos itens e as pressões e velocidades sobre o desenho, lê as mensagens e as tabelas
+de relatório e responde com uma lista de verificação (OK, atenção ou problema, com os números e onde
+corrigir cada ponto), sem alterar nada.
 Instruções permanentes nas configurações valem para todas as conversas ("sempre PVC PN 80 na
 adutora"), e a conversa pode ser salva em Markdown. As conversas não são salvas com o projeto, de
 modo que arquivos e links compartilhados nunca levam a conversa nem as suas imagens. O que é
@@ -1068,7 +1116,7 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
 - **Arquivos**: Salvar gera `.oci.json` para download; Abrir lê do disco. Nada é enviado a servidores.
 - **Compartilhar por link** (Arquivo → Compartilhar por link…): o projeto inteiro, comprimido, vai
   dentro do endereço, depois do `#`, parte que o navegador não envia a nenhum servidor; quem abre o
-  link recebe uma cópia numa aba nova. Imagens e resultados ficam de fora (quem recebe calcula de
+  link recebe uma cópia numa aba nova. Imagens, fotos de comentários e resultados ficam de fora (quem recebe calcula de
   novo); um link com mais de cerca de 60 000 caracteres pode ser cortado por aplicativos de e-mail e
   de mensagem, e um projeto grande demais para um link vai como arquivo.
 - **Sem rede**: depois que o app rodou num navegador, o service worker dele guarda uma cópia do app
@@ -1101,9 +1149,16 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
   *Lembrar a chave neste dispositivo* ela é guardada no armazenamento do navegador, onde scripts que
   rodam na página (como o de estatística de visitas do site) poderiam lê-la. As chaves nunca entram
   no arquivo do projeto, no autosave, nos links de compartilhamento nem nas exportações, e cada uma
-  só vai para a sua própria empresa. As notas de IA fazem parte do arquivo do projeto, então vão
-  com ele e com os links de compartilhamento; as conversas ficam na memória, por aba, e não são
-  salvas. O que cada empresa faz com os pedidos é regido pelo seu acordo com ela.
+  só vai para a sua própria empresa. O ditado por voz envia o som da sua voz ao serviço de voz do
+  navegador (o Chrome usa os servidores do Google, o Edge os da Microsoft e o Safari os da Apple),
+  que devolve o texto; o app não grava nem guarda o áudio, e o texto só chega à IA quando você o
+  envia. Uma foto fixada com `add_photo_comment` guarda uma cópia pequena (cerca de 480 pixels) no
+  arquivo do projeto, fora dos links de compartilhamento; o modelo lê só o tamanho dela. As notas de IA fazem parte do arquivo do projeto, então vão
+  com ele e com os links de compartilhamento. As conversas ficam no armazenamento deste navegador
+  (IndexedDB), por projeto, com as imagens e os arquivos pequenos anexados, mas nunca as chaves, de
+  modo que recarregar a página ou abrir o projeto de novo as traz de volta; as 12 mais recentes são
+  guardadas, e *Guardar as conversas neste navegador*, nas configurações do assistente, desliga isso
+  e as apaga. O que cada empresa faz com os pedidos é regido pelo seu acordo com ela.
 - **Estatística de visitas**: as páginas de opencadirrigation.com carregam o Google Analytics
   (gtag.js), que conta as visitas; o app não envia a ele nada dos projetos.
 - **Idioma e preferências** (idioma escolhido, tema, catálogo padrão, tutorial concluído, as
@@ -1322,7 +1377,7 @@ lib/
     widgets/                menus, paleta, painéis, relatórios, gráficos, diálogos, layout compacto, e
                             ai/: o painel encaixado da IA e as suas vistas (conversa, dados enviados,
                             configurações)
-    ai/                     o agente de uma aba: 70 ferramentas e 101 operações sobre o controller e o
+    ai/                     o agente de uma aba: 73 ferramentas e 102 operações sobre o controller e o
                             motor (agent_tools*, agent_ops*, ops_*), o mapa de cobertura
                             (ai_coverage.dart), o prompt de sistema, o manual e os procedimentos,
                             visão (imagens, tiles, terreno), transportes (fetch, HttpClient),

@@ -1112,14 +1112,23 @@ int _exit(int code, int entry, bool eight) {
 /// World outline of the raster boundary [raw]: smoothed, simplified (the
 /// tolerance halved until the polygon does not cross itself; the raw walk
 /// never does) and counter-clockwise.
-List<Pt> _ring(VegetationImage im, Float64List raw, VegetationOptions o) {
-  final pts = <Pt>[for (var k = 0; k + 1 < raw.length; k += 2) im.toWorld(raw[k], raw[k + 1])];
+List<Pt> _ring(VegetationImage im, Float64List raw, VegetationOptions o) => rasterOutlineRing(raw, im.toWorld, pixelM: im.pixelSizeM, smoothing: o.smoothing, simplifyM: o.simplifyM);
+
+/// The world outline of a raster boundary [raw] (the pixel-corner walk of
+/// [rasterRegionOutline], x and y in turn) mapped by [toWorld]: smoothed
+/// without shrinkage by [smoothing] Taubin passes, simplified by
+/// Douglas–Peucker within [simplifyM] metres (the tolerance halved until the
+/// polygon does not cross itself, down to a quarter of the pixel size
+/// [pixelM]; the raw walk never crosses), its area given back, and
+/// counter-clockwise. Empty when the walk has fewer than three points.
+List<Pt> rasterOutlineRing(Float64List raw, Pt Function(double x, double y) toWorld, {required double pixelM, int smoothing = 2, double simplifyM = 0.25}) {
+  final pts = <Pt>[for (var k = 0; k + 1 < raw.length; k += 2) toWorld(raw[k], raw[k + 1])];
   if (pts.length < 3) return const [];
-  final smooth = _taubin(pts, o.smoothing);
+  final smooth = _taubin(pts, smoothing);
   final target = polygonArea(smooth).abs();
   List<Pt>? best;
-  final floor = 0.25 * im.pixelSizeM;
-  for (var tol = o.simplifyM; tol > floor; tol /= 2) {
+  final floor = 0.25 * pixelM;
+  for (var tol = simplifyM; tol > floor; tol /= 2) {
     final s = _keepArea(_simplifyRing(smooth, tol), target);
     if (s.length >= 3 && _simple(s)) {
       best = s;

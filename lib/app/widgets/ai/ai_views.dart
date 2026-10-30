@@ -20,12 +20,16 @@ import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../ai/agent_tools_agent.dart';
 import '../../ai/ai_assistant.dart';
+import '../../io/file_drop.dart';
 import '../../io/file_io.dart';
 import '../../io/links.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
+import 'ai_drop.dart';
 import 'ai_markdown.dart';
+import 'ai_marks_bar.dart';
+import 'ai_voice.dart';
 
 /// The assistant's text, rendered from its Markdown (see ai_markdown.dart).
 Widget aiRichText(String text, {double size = 12.5}) => AiMarkdown(text, size: size);
@@ -77,7 +81,7 @@ class AiChatView extends StatefulWidget {
   State<AiChatView> createState() => _AiChatViewState();
 }
 
-class _AiChatViewState extends State<AiChatView> {
+class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
   final scroll = ScrollController();
   final focus = FocusNode();
   int _seen = 0;
@@ -96,8 +100,17 @@ class _AiChatViewState extends State<AiChatView> {
     ai.addListener(_follow);
     input.addListener(_typed);
     scroll.addListener(_onScroll);
+    AiFileDrop.instance.addBox(this);
     _follow();
   }
+
+  /// Files pasted while the box has the cursor are attached (a screenshot,
+  /// files copied in the file manager).
+  @override
+  bool get focused => focus.hasFocus;
+
+  @override
+  Future<void> take(List<DroppedFile> files) => aiAttachFiles(AiFileDrop.instance.noticesFor(c), ai, files);
 
   void _onScroll() {
     final away = scroll.hasClients && scroll.position.maxScrollExtent - scroll.position.pixels > 300;
@@ -125,6 +138,7 @@ class _AiChatViewState extends State<AiChatView> {
 
   @override
   void dispose() {
+    AiFileDrop.instance.removeBox(this);
     ai.removeListener(_follow);
     input.removeListener(_typed);
     _clock?.cancel();
@@ -199,16 +213,11 @@ class _AiChatViewState extends State<AiChatView> {
     });
   }
 
+  /// The paperclip; drops and pastes go through the same checks
+  /// ([aiAttachFiles]).
   Future<void> _attach() async {
     final f = await openBinaryFile(accept: aiAttachAccept);
-    if (f == null) return;
-    final mime = AiAttachment.mimeOf(f.$1);
-    final a = mime == null ? null : AiAttachment(f.$1, mime, f.$2);
-    if (a == null || f.$2.length > a.limit) {
-      c.notify(c.t('ai.attach.bad'));
-      return;
-    }
-    ai.addAttachment(a);
+    if (f != null) await aiAttachFiles(AiFileDrop.instance.noticesFor(c), ai, [DroppedFile.bytes(f.$1, f.$2)]);
   }
 
   Future<void> _attachView() async {
@@ -297,6 +306,31 @@ class _AiChatViewState extends State<AiChatView> {
                         const SizedBox(height: 10),
                         Text(t('ai.starters'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
                         const SizedBox(height: 4),
+                        // a review of what is drawn: read-only whatever the mode (/review)
+                        if (c.project.entities.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6, right: 8),
+                            child: Material(
+                              key: const Key('ai_review'),
+                              color: Cad.card,
+                              borderRadius: BorderRadius.circular(6),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(6),
+                                onTap: ai.busy ? null : () => ai.send('/review'),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(padding: const EdgeInsets.only(top: 1), child: Icon(Icons.fact_check_outlined, size: 15, color: Cad.accentIcon)),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(t('ai.review'), style: const TextStyle(fontSize: 12, height: 1.3, fontWeight: FontWeight.w600))),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         for (final (k, q) in _starters().indexed)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 6, right: 8),
@@ -361,6 +395,8 @@ class _AiChatViewState extends State<AiChatView> {
         if (ai.queued.isNotEmpty) _queued(),
         if (ai.attachments.isNotEmpty) _attachments(),
         if (ai.commandsFor(input.text).isNotEmpty) _commands(),
+        // points and lines the user marks on the drawing for the assistant
+        AiMarksBar(c: c, input: input),
         _inputBar(),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
@@ -543,6 +579,8 @@ class _AiChatViewState extends State<AiChatView> {
             icon: const Icon(Icons.add_photo_alternate_outlined, size: 19),
             onPressed: ai.busy ? null : _attachView,
           ),
+          // speaking instead of typing (hidden where the browser has no dictation)
+          AiVoiceButton(c: c, input: input, focus: focus),
           Expanded(
             child: CallbackShortcuts(
               bindings: {const SingleActivator(LogicalKeyboardKey.enter): _enter, const SingleActivator(LogicalKeyboardKey.numpadEnter): _enter},
@@ -1499,6 +1537,40 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               onChanged: (v) => setState(() => AiAssistant.askAtStart = v),
               title: Text(t('ai.askStart'), style: const TextStyle(fontSize: 12.5)),
               subtitle: Text(t('ai.askStart.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ),
+            // conversations kept in this browser (IndexedDB), by project
+            SwitchListTile(
+              key: const Key('ai_keep'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              value: AiAssistant.keepConversations,
+              onChanged: (v) => setState(() => AiAssistant.keepConversations = v),
+              title: Text(t('ai.keep'), style: const TextStyle(fontSize: 12.5)),
+              subtitle: Text(t('ai.keep.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: const Key('ai_keep_delete'),
+                onPressed: () async {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(t('ai.keep.delete')),
+                      content: Text(t('ai.keep.deleteConfirm')),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t('cancel'))),
+                        FilledButton(key: const Key('ai_keep_delete_ok'), onPressed: () => Navigator.of(ctx).pop(true), child: Text(t('ai.keep.delete'))),
+                      ],
+                    ),
+                  );
+                  if (ok != true) return;
+                  await AiAssistant.deleteSavedConversations();
+                  c.notify(t('ai.keep.deleted'));
+                },
+                icon: const Icon(Icons.delete_outline, size: 16),
+                label: Text(t('ai.keep.delete'), style: const TextStyle(fontSize: 12)),
+              ),
             ),
             SectionTitle(t('ai.instructions')),
             Text(t('ai.instructions.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),

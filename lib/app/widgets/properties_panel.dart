@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -326,6 +328,7 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case CommentEntity cm:
         items.addAll([
+          if (cm.photo.isNotEmpty) _photo(cm),
           TextFieldRow(label: t('props.text'), value: cm.text, maxLines: 4, onChanged: (x) => set(() => cm.text = x, inv: false)),
           TextFieldRow(label: t('props.author'), value: cm.author, onChanged: (x) => set(() => cm.author = x, inv: false)),
           TextFieldRow(label: t('props.date'), value: cm.date, onChanged: (x) => set(() => cm.date = x, inv: false)),
@@ -345,6 +348,37 @@ class PropertiesPanel extends StatelessWidget {
     }
     items.addAll(_results(e));
     return ListView(padding: const EdgeInsets.all(8), children: items);
+  }
+
+  /// The photo kept with a comment, and a button to remove it.
+  Widget _photo(CommentEntity cm) {
+    Uint8List? bytes;
+    try {
+      bytes = base64Decode(cm.photo);
+    } catch (_) {
+      bytes = null;
+    }
+    return Padding(
+      key: const Key('comment_photo'),
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (bytes != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.memory(bytes, fit: BoxFit.contain, height: 180, gaplessPlayback: true, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+            ),
+          TextButton.icon(
+            key: const Key('comment_photo_remove'),
+            style: TextButton.styleFrom(visualDensity: VisualDensity.compact, padding: EdgeInsets.zero),
+            icon: const Icon(Icons.hide_image_outlined, size: 16),
+            label: Text(c.t('props.removePhoto'), style: const TextStyle(fontSize: 12)),
+            onPressed: () => c.mutate(() => cm.photo = '', invalidateResults: false, label: 'hist.edit'),
+          ),
+        ],
+      ),
+    );
   }
 
   List<Widget> _areaFields(AreaEntity a, void Function(void Function() fn, {bool inv}) set) {

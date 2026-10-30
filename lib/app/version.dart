@@ -9,13 +9,13 @@ library;
 const appName = 'OpenCADIrrigation';
 
 /// Semantic version: the pubspec `version` before the `+`.
-const appVersion = '1.2.0';
+const appVersion = '1.3.0';
 
 /// Build number: the pubspec `version` after the `+`.
-const appBuild = 8;
+const appBuild = 9;
 
 /// Date this version was generated (release date of [appVersion]).
-const appReleaseDate = '2026-10-26';
+const appReleaseDate = '2026-10-30';
 
 /// Short git commit of the build (`--dart-define=OCI_COMMIT=…`), else empty.
 const appCommit = String.fromEnvironment('OCI_COMMIT');

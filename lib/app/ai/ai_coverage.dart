@@ -82,6 +82,8 @@ const coreCoverage = <String, String>{
   'tool:controller': 'tool:create_entities',
   'tool:wire': 'tool:create_entities',
   'tool:comment': 'tool:create_entities',
+  'tool:aiMarkPoint': 'n/a:the user\'s marks for the AI: the assistant reads them with the message and in its pictures',
+  'tool:aiMarkLine': 'n/a:the user\'s marks for the AI: the assistant reads them with the message and in its pictures',
   // ---- File menu
   'menu:file.save': 'tool:export_file',
   'menu:exg.orchard.title': 'tool:open_example',

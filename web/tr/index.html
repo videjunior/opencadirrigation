@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-26",
+      "dateModified": "2026-10-30",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/tr/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.2.0",
-      "dateModified": "2026-10-26",
+      "softwareVersion": "1.3.0",
+      "dateModified": "2026-10-30",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/tr/?tutorial=1",
@@ -350,7 +350,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -396,7 +396,7 @@
           "name": "Yapay zekâ asistanı neyi, nereye gönderir?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez."
+            "text": "Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez. Sesle dikteyi kullanırsanız bu işi tarayıcının kendi konuşma tanıma özelliği yapar ve sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple). Kaydedilen sohbetler tarayıcınızda kalır, hiçbir zaman proje dosyalarına veya bağlantılara girmez."
           }
         },
         {
@@ -746,8 +746,8 @@
         <p>Çizimin yanındaki yapay zekâ panelini açın ve ne istediğinizi kendi cümlelerinizle yazın. Asistan projeyi okur, uydu görüntüsüne ve araziye bakar ve menülerdeki araçların aynısıyla çalışır; bu yüzden çizdiği şey bir resim değil, gerçek bir projedir: öğeler, borular, vanalar, bölgeler ve sonuçlar. Her değişiklik onayınızı bekler ya da isterseniz otomatik uygulanır ve tek tıkla geri alınabilir.</p>
         <ul class="grid pair">
           <li><h3>Otomatik çizer ve projelendirir</h3><p>Yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, pivotları tarlaya uydurur, boru ve vana güzergâhlarını çizer, pompayı ve su kaynağını konumlandırır, projeyi hesaplar, uyarıları giderir ve maliyeti optimize eder; ardından teknik açıklama raporunu yazar ve fiyat teklifini hazırlar.</p></li>
-          <li><h3>Araziyi görür</h3><p>Araziyi adresinden bulur; coğrafi referanslı bir projenin uydu görüntüsüne ve topoğrafyasına (gölgeli rölyef, eş yükselti eğrileri, eğim, boy kesitler) bakar; eklediğiniz çizimleri ve CBS dosyalarını okur ve PDF biçimindeki bir veri sayfasından kataloğa öğe ekler.</p></li>
-          <li><h3>Açıklar ve denetler</h3><p>Proje ve sonuçları hakkındaki soruları yanıtlar, her tasarım iletisini ve nasıl düzeltileceğini açıklar, analizleri çalıştırır ve projede bir yapılacaklar listesiyle kararlarınıza dair notlar tutar.</p></li>
+          <li><h3>Araziyi görür</h3><p>Araziyi adresinden bulur; coğrafi referanslı bir projenin uydu görüntüsüne ve topoğrafyasına (gölgeli rölyef, eş yükselti eğrileri, eğim, boy kesitler) bakar; eklediğiniz çizimleri ve CBS dosyalarını okur ve PDF biçimindeki bir veri sayfasından kataloğa öğe ekler. Görüntüdeki tarlaların sınırını kendiliğinden çizer, haritada işaretlediğiniz nokta ve çizgileri izler ve GPS’li arazi fotoğraflarını çekildikleri yere, çizimin üzerine iliştirir.</p></li>
+          <li><h3>Açıklar ve denetler</h3><p>Proje ve sonuçları hakkındaki soruları yanıtlar, her tasarım iletisini ve nasıl düzeltileceğini açıklar, analizleri çalıştırır ve projede bir yapılacaklar listesiyle kararlarınıza dair notlar tutar. İstendiğinde hiçbir şeyi değiştirmeden tüm tasarımı gözden geçirir ve dışa aktarmadan önce paftaya bakar.</p></li>
           <li><h3>Anahtar sizin, kontrol sizde</h3><p>En üst, orta ve hızlı sınıflardaki Claude (Anthropic) veya GPT (OpenAI) modelleri, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan çağrılır. Salt okunur, önce plan, her değişiklikten önce sorma ya da otomatik uygulama modları, görev başına adım sınırı ve harcama sınırı vardır; her yanıt geri alınabilir ve Gönder’e basmadan hiçbir şey gönderilmez.</p></li>
         </ul>
         <p class="cta"><a class="primary" href="https://opencadirrigation.com/tr/?ai=1" data-app>Yapay zekâ asistanını aç</a></p>
@@ -814,7 +814,7 @@
           <dt>Hangi yapay zekâ modellerini kullanır?</dt>
           <dd>Anthropic’in Claude modelleri (varsayılan olarak Claude Opus 5.5, ayrıca Claude Fable 5.1, Claude Sonnet 5.5 ve Claude Haiku 5.5) ve OpenAI’ın GPT modelleri (GPT-6 Astra, GPT-6.1 Sol ve GPT-6 Luna): her iki şirketten de en üst, orta ve hızlı sınıfta modeller; her biri beş akıl yürütme derinliği sunar. Modeli asistanın ayarlarından seçer ve kendi API anahtarınızı yapıştırırsınız; panel her yanıtın token sayısını ve tahmini maliyetini gösterir, adım sınırı ve harcama sınırı da uzayan bir görevi durdurur.</dd>
           <dt>Yapay zekâ asistanı neyi, nereye gönderir?</dt>
-          <dd>Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez.</dd>
+          <dd>Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez. Sesle dikteyi kullanırsanız bu işi tarayıcının kendi konuşma tanıma özelliği yapar ve sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple). Kaydedilen sohbetler tarayıcınızda kalır, hiçbir zaman proje dosyalarına veya bağlantılara girmez.</dd>
           <dt>OpenCADIrrigation ücretsiz mi?</dt>
           <dd>Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez. Ayrıca MIT lisansıyla açık kaynaklıdır; kaynak kodu GitHub’da yayımlanmıştır. İsteğe bağlı yapay zekâ asistanı kendi Anthropic veya OpenAI hesabınızı kullanır ve hizmet sağlayıcı bu kullanımı o hesaba faturalandırır.</dd>
           <dt>Kimler için?</dt>
@@ -837,7 +837,7 @@
       <footer>
         <nav aria-label="Diller">Diller: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <strong lang="tr" dir="ltr">Türkçe</strong> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Üretici katalogları ve örnek projeler, OpenCADIrrigation’a eklenmek üzere JSON biçiminde gönderilebilir.</p>
-        <p class="meta">OpenCADIrrigation 1.2.0 · <a href="https://github.com/videjunior/opencadirrigation">Kaynak kodu (MIT lisansı)</a> · <time datetime="2026-10-26">2026-10-26</time></p>
+        <p class="meta">OpenCADIrrigation 1.3.0 · <a href="https://github.com/videjunior/opencadirrigation">Kaynak kodu (MIT lisansı)</a> · <time datetime="2026-10-30">2026-10-30</time></p>
       </footer>
     </div>
   </main>

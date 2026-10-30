@@ -5,10 +5,14 @@
 /// import of drawings and GIS files the user attached.
 library;
 
+import 'dart:convert';
+
 import '../../core/ai/agent_loop.dart';
+import '../../core/ai/image_prep.dart' show photoPlace, photoThumbnail;
 import '../../core/io/climate_online.dart';
 import '../../core/io/dem_online.dart';
 import '../../core/io/project_export.dart' show GeoReferenceMissing;
+import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/units.dart';
 import '../io/place_search.dart';
@@ -204,6 +208,52 @@ List<AgentTool> siteTools(AgentToolbox b) {
         return ToolOutput(
           'Imported $name: $what\n${added.length} item${added.length == 1 ? '' : 's'}${select ? ', now selected' : ''}; extent ${AgentToolbox.box(box)} (${fmt(box.width, 0)} × ${fmt(box.height, 0)} m).${placement.isEmpty ? '' : '\n$placement'}',
         );
+      },
+    ),
+    FnTool(
+      name: 'add_photo_comment',
+      description:
+          'Pins a field photo the user attached (the pump and its nameplate, the well, a valve box, a leak, the field) to the drawing as a review comment that keeps a small copy of the photo and your text: at the place its GPS gives (the attachment says where), or at `at`. '
+          'Read the photo first and write in text what matters for the design, e.g. a nameplate\'s make, model, power, flow and head, or the condition of what it shows. One undo step; the comment shows on the drawing and in its properties with the photo. '
+          'Errors: no such attachment, not a picture, no position (no GPS in the photo and no `at`), or a GPS position without a georeference (set_site first).',
+      inputSchema: obj(
+        {
+          'name': str('File name of the attached photo, as the attachment gives it.'),
+          'text': str('What the photo shows, in the user\'s language (up to 2000 characters).'),
+          'at': {...point, 'description': 'Where to pin it, [x, y] in metres (default: the photo\'s GPS position).'},
+          'author': str('Author shown with the comment (default "AI").'),
+        },
+        required: ['name', 'text'],
+      ),
+      effect: ToolEffect.write,
+      summary: (i) => t('ai.tool.photoComment', {'n': '${i['name'] ?? ''}'}),
+      handler: (i) async {
+        final a = ToolArgs(i);
+        final name = a.str('name', required: true)!.trim();
+        final files = b.host?.files ?? const {};
+        final bytes = files[name] ?? files.entries.where((e) => e.key.toLowerCase() == name.toLowerCase()).firstOrNull?.value;
+        if (bytes == null) throw ToolInputError(files.isEmpty ? 'No file was attached in this conversation.' : 'No attached file "$name". Attached: ${files.keys.join(', ')}.');
+        final thumb = photoThumbnail(bytes);
+        if (thumb == null) throw ToolInputError('"$name" is not a picture this program reads (JPEG, PNG, GIF, WebP…).');
+        var at = a.point('at');
+        if (at == null) {
+          final place = photoPlace(bytes);
+          if (place == null) throw ToolInputError('"$name" carries no GPS position: give `at` [x, y] in metres (ask the user where it was taken, or use the device position the attachment mentions).');
+          final g = c.project.meta.georef;
+          if (g == null) throw ToolInputError('The photo\'s GPS gives latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}, but the project has no georeference: set_site first, or give `at`.');
+          final (x, y) = g.fromLatLon(place.lat, place.lon);
+          at = Pt(x, y);
+        }
+        final text = AgentToolbox.short(a.str('text', required: true)!, 2000);
+        final author = a.str('author')?.trim();
+        final now = DateTime.now();
+        final day = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+        final cm = b.change('add_photo_comment', () {
+          final e = CommentEntity(id: c.project.newId(), position: at!, text: text, author: author == null || author.isEmpty ? 'AI' : author, date: day, photo: base64Encode(thumb));
+          c.project.entities.add(e);
+          return e;
+        }, invalidate: false);
+        return ToolOutput('Pinned comment ${cm.id} with the photo $name (${(thumb.length / 1024).ceil()} KB kept) at ${AgentToolbox.pt(cm.position)} on layer ${cm.layer}.');
       },
     ),
   ];

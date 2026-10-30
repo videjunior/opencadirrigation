@@ -53,6 +53,8 @@ void main() {
     ]) {
       removePref(k);
     }
+    // the picture after each round renders in real time only: on where a test asks for it
+    setPref('ai.showChanges', 'off');
     AiAssistant.clearSessionKey();
     AiHttpClient.declined.clear();
     c = ProjectController()

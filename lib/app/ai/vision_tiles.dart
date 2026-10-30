@@ -126,13 +126,19 @@ class PlacedTile {
 
 /// The tiles of one picture, ready to draw.
 class TileMosaic {
-  TileMosaic._(this.map, this.zoom, this.wantedZoom, this.tiles, this._images, this.attribution, this.total, this.missing, this.groundMpp);
+  TileMosaic._(this.map, this.zoom, this.wantedZoom, this.cappedZoom, this.tiles, this._images, this.attribution, this.total, this.missing, this.groundMpp, {this.timedOut = false});
 
   final BaseMap map;
 
-  /// Zoom of the tiles drawn, and the one the scale of the picture asked
-  /// for (higher when the service has no tiles that close here).
-  final int zoom, wantedZoom;
+  /// Zoom of the tiles drawn, the one the scale of the picture asked for,
+  /// and the one the tile limit allowed: [zoom] is below [cappedZoom] when
+  /// the service has no tiles that close here, [cappedZoom] below
+  /// [wantedZoom] when the picture would need more tiles than the limit.
+  final int zoom, wantedZoom, cappedZoom;
+
+  /// Some tiles were not downloaded in time (they are dark, or an ancestor
+  /// stands in for them).
+  final bool timedOut;
   final List<PlacedTile> tiles;
   final List<ui.Image> _images;
 
@@ -334,6 +340,14 @@ Future<TileMosaic> fetchMosaic({
   while (count(z) > maxTiles && z > 1) {
     z--;
   }
+  final capped = z;
+  // every request within its timeout and the time left
+  Duration left() {
+    final rest = deadline.difference(DateTime.now());
+    return rest < timeout ? (rest < const Duration(seconds: 1) ? const Duration(seconds: 1) : rest) : timeout;
+  }
+
+  var timedOut = false;
   var attribution = BaseMapLayer.attribution(map);
   if (map.isGoogle) {
     final lats = [for (final c in corners) c.$1], lons = [for (final c in corners) c.$2];
@@ -351,7 +365,11 @@ Future<TileMosaic> fetchMosaic({
     var bytes = cache?[k];
     if (bytes == null) {
       try {
-        bytes = await fetcher.bytes(BaseMapLayer.url(map, tz, tx, ty, session: session, key: key, custom: customUrl)).timeout(timeout);
+        bytes = await fetcher.bytes(BaseMapLayer.url(map, tz, tx, ty, session: session, key: key, custom: customUrl)).timeout(left());
+      } on TimeoutException catch (e) {
+        timedOut = true;
+        lastError = e;
+        return null;
       } on HttpStatusException catch (e) {
         if (map.isGoogle && (e.status == 400 || e.status == 401 || e.status == 403)) {
           throw MapUnavailable('Google refused the map tiles (${e.message}): the user\'s key may lack the Map Tiles API.');
@@ -378,13 +396,15 @@ Future<TileMosaic> fetchMosaic({
   });
 
   try {
-    // the level the service has under the centre
+    // the level the service has under the centre: only a tile it does not
+    // have (a 404; on the web also an error without CORS) means a coarser
+    // level, a timeout does not
     final floor = math.max(1, z - 6);
     ui.Image? probe;
     while (true) {
       final (px, py) = _tileXY(latC, lonC, z);
       probe = await tile(z, px.floor(), py.floor());
-      if (probe != null || z <= floor) break;
+      if (probe != null || z <= floor || lastError is TimeoutException || DateTime.now().isAfter(deadline)) break;
       z--;
     }
     if (probe == null) throw MapUnavailable('No ${mapSourceName(map)} tile could be downloaded here (${_reason(lastError)}).', downloadFailed: true);
@@ -414,7 +434,7 @@ Future<TileMosaic> fetchMosaic({
         placed.add(PlacedTile(img, tl, tr, bl));
         return;
       }
-      for (var k = 1; k <= 4 && z - k >= 1; k++) {
+      for (var k = 1; k <= 4 && z - k >= 1 && !DateTime.now().isAfter(deadline); k++) {
         final a = await tile(z - k, x >> k, y >> k);
         if (a != null) {
           placed.add(PlacedTile(a, tl, tr, bl, BaseMapLayer.ancestorSource(x, y, k, a.width, a.height)));
@@ -424,7 +444,7 @@ Future<TileMosaic> fetchMosaic({
       missing++;
     });
     final ground = 156543.03392 * math.cos(latC * math.pi / 180) / math.pow(2, z);
-    return TileMosaic._(map, z, wanted, placed, decoded, attribution, cells.length, missing, ground);
+    return TileMosaic._(map, z, wanted, capped, placed, decoded, attribution, cells.length, missing, ground, timedOut: timedOut);
   } catch (_) {
     for (final i in decoded) {
       i.dispose();

@@ -173,6 +173,10 @@ Map<String, dynamic> _normalised(Map<String, dynamic> raw, String where) {
     } else if (_pointKeys.contains(k)) {
       final q = ToolArgs.pointOf(raw[k], '$where.$k');
       j[k] = [q.x, q.y];
+    } else if (k == 'photo' && raw[k] != '') {
+      // the model reads a note in place of the photo: writing it back would
+      // lose the photo
+      throw ToolInputError('$where.photo: only "" (removes the photo); add_photo_comment pins a photo the user attached.');
     }
   }
   return j;

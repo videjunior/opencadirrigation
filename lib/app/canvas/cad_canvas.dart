@@ -349,7 +349,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   }
 
   @override
-  bool get toolIdle => _tool is! PolyTool || (_tool as PolyTool).pts.isEmpty;
+  bool get toolIdle => _tool.idle;
 
   @override
   Pt? get referencePoint => _tool.referencePoint;
@@ -424,7 +424,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
                           tool: _tool,
                           snapResult: _snap,
                           basemap: basemap,
-                          repaint: Listenable.merge([_repaint, c]),
+                          // the marks for the AI change without an edit of the project
+                          repaint: Listenable.merge([_repaint, c, c.aiMarks]),
                         ),
                         size: Size.infinite,
                       ),

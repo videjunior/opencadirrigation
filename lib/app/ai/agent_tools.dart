@@ -36,6 +36,7 @@ import 'agent_tools_ops.dart';
 import 'agent_tools_site.dart';
 import 'agent_tools_vision.dart';
 import 'view_snapshot.dart';
+import 'vision_marks.dart' show ChangeTracker;
 
 /// Deletions of more items than this are confirmed even when changes apply
 /// automatically (the default of [AgentToolbox.largeDelete]).
@@ -43,7 +44,7 @@ const defaultLargeDelete = 20;
 
 /// Shared state and helpers of the tools of one conversation.
 class AgentToolbox {
-  AgentToolbox(this.c, {this.snapshots, this.largeDelete = defaultLargeDelete, this.host});
+  AgentToolbox(this.c, {this.snapshots, this.largeDelete = defaultLargeDelete, this.host, this.pictures = PictureLimits.standard});
   final ProjectController c;
 
   /// Pictures of the drawing and the base map (null where nothing can be
@@ -57,6 +58,14 @@ class AgentToolbox {
   /// The assistant around the tools (the to-do list, questions, the plan,
   /// notes, attached files); the agent tools need it.
   final AgentHost? host;
+
+  /// The largest picture the model in use reads as it is (set for each
+  /// request by the assistant).
+  PictureLimits pictures;
+
+  /// The drawing before this task's changes and this round's, for the
+  /// pictures that mark them.
+  late final ChangeTracker changes = ChangeTracker(c);
 
   I18n get t => c.t;
   Project get p => c.project;
@@ -137,6 +146,7 @@ class AgentToolbox {
   /// assistant); refused while a design runs.
   R change<R extends Object>(String tool, R Function() fn, {bool invalidate = true}) {
     if (c.busy) throw ToolInputError('A design is running; wait until it finishes.');
+    changes.beforeWrite();
     final r = c.mutate(fn, label: 'hist.aiTool|$tool', invalidateResults: invalidate);
     if (r == null) throw ToolInputError('The change was refused: a design is running.');
     return r;
@@ -448,9 +458,10 @@ String noTerrainText(AgentToolbox b) =>
 String catalogNextStep([String? kind]) =>
     'Next: search_catalog {${kind == null ? 'kind' : 'kind "$kind"'}, include_disabled true} shows disabled items (edit_catalog action "enable" brings one back); run_operation list_catalog_packs, then add_catalog_pack, adds a manufacturer\'s models; edit_catalog action "add" adds one from a data sheet; run_operation catalog_default {action "reset"} restores the program\'s catalogue.';
 
-/// Stored properties of [e] without its id, type and image data.
+/// Stored properties of [e] without its id, type, image data and photo.
 Map<String, Object?> entityJson(Entity e) {
   final j = Map<String, Object?>.of(e.toJson())..remove('data');
+  if (j['photo'] is String) j['photo'] = photoNote(j['photo'] as String);
   if (j['pts'] is List && (j['pts'] as List).length > 400) j['pts'] = '${(j['pts'] as List).length} vertices (see Vertices)';
   return j;
 }

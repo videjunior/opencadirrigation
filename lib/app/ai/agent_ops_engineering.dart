@@ -529,6 +529,8 @@ const engineeringCoverage = <String, String>{
   'dialog:export_dialogs.plot.details': 'op:export_sheet_pdf',
   'dialog:export_dialogs.plot.charts': 'op:export_sheet_pdf',
   'dialog:export_dialogs.plot.dpi': 'op:export_sheet_png',
+  'dialog:export_dialogs.plot.fits': 'op:preview_sheet',
+  'dialog:export_dialogs.plot.sheetCount': 'op:preview_sheet',
   // ---------------------------------------------------------------- network_ops_dialogs: onDemand
   'dialog:network_ops_dialogs.onDemand': 'op:on_demand_study',
   'dialog:network_ops_dialogs.onDemand.quality': 'op:on_demand_study',

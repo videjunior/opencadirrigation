@@ -17,17 +17,17 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | Source | Functions | Covered | Not applicable | Missing |
 |---|---:|---:|---:|---:|
 | Command actions | 45 | 44 | 1 | 0 |
-| Drawing tools | 48 | 48 | 0 | 0 |
-| Command aliases | 311 | 305 | 6 | 0 |
+| Drawing tools | 50 | 48 | 2 | 0 |
+| Command aliases | 318 | 305 | 13 | 0 |
 | Menu items (desktop and phone) | 286 | 274 | 12 | 0 |
 | Dialogs | 71 | 66 | 5 | 0 |
 | Panel fields | 246 | 244 | 2 | 0 |
 | Status bar | 12 | 9 | 3 | 0 |
 | View options | 23 | 23 | 0 | 0 |
-| Dialog options | 624 | 622 | 2 | 0 |
-| **All** | **1666** | **1635** | **31** | **0** |
+| Dialog options | 626 | 624 | 2 | 0 |
+| **All** | **1677** | **1637** | **40** | **0** |
 
-70 tools, 101 operations, 134 settings.
+73 tools, 102 operations, 134 settings.
 
 ## Tools sent with every request
 
@@ -79,6 +79,8 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `view_snapshot` | read | A picture of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled metre grid, its id (e.g. "s3") and the exact pixel ↔ world m… |
 | `image_to_world` | read | Converts positions exactly between a picture and the project, so you never do the arithmetic: pixels [[px, py], …] you picked on picture `snapshot` (from its top-left corner, px right, py down; fractions allowed) → proj… |
 | `preview_geometry` | read | Draws geometry you propose (points, polylines, polygons) in magenta over a fresh picture of the project without changing it, to check a traced field, an obstacle, a route or positions against the satellite image and the… |
+| `trace_region` | read | Outlines one region of the aerial image from a point inside it — a field, a lawn, a pond, a paved yard, a roof — by image processing on the satellite map, not by eye: the region grows from the point over the pixels of s… |
+| `trace_fields` | read | Outlines EVERY field, lawn or other uniform region of an area of the aerial image at once, by the same image analysis as trace_region from seeds all over it: each region grows over similar colours to where its area stop… |
 | `terrain_picture` | read | A picture of the ground relief from the terrain model of the project (contours, spot heights, breaklines, downloaded elevations): a hillshade with colours by elevation (legend with the range in m), or the app's slope cl… |
 | `terrain_profile` | read | The ground along a line from the terrain model: length, start and end elevations, total rise and total fall, steepest uphill and downhill slopes, the highest and lowest points, local high points (air gathers there in a … |
 | `terrain_info` | read | What the terrain model of the project is made of and how far its heights can be trusted: the interpolation (TIN or inverse distance), the number of height samples and their sources (contour lines, own spot heights, down… |
@@ -88,6 +90,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `download_terrain` | write | Downloads ground elevations for the drawing (or the view when the drawing is empty) from an online elevation model through the app's own download, and adds them as spot heights on the DEM layer (one undo step; it sends … |
 | `download_climate` | write | Downloads daily weather at the site for the last years from an online archive through the app's own download and stores its monthly normals (reference evapotranspiration ETo, rain, dependable rain, solar radiation) in t… |
 | `import_attachment` | write | Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX, LandXML, EPANET .inp, LAS point clouds, GeoTIFF elevations,… |
+| `add_photo_comment` | write | Pins a field photo the user attached (the pump and its nameplate, the well, a valve box, a leak, the field) to the drawing as a review comment that keeps a small copy of the photo and your text: at the place its GPS giv… |
 | `update_todo` | read | Replaces your to-do list for the task; the user sees it above the conversation. |
 | `ask_user` | read | Asks the user one to four questions at once and waits for the answers. |
 | `present_plan` | read | Shows your plan to the user for approval: what you will draw and change, the main choices and values, your assumptions, what you will check. |
@@ -201,6 +204,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `add_catalog_pack` | engineering | write | Design → Catalogue → Manufacturer packs → Add: merges a pack into the project catalogue — the items it does not have yet (by id), prices converted from the pack currency to the project currency with the reference rate. |
 | `catalog_default` | engineering | write | Design → Catalogue → Default catalogue: "save" keeps the project catalogue as the catalogue of new projects on this browser (a preference, not an undo step; always confirmed); "forget" drops the saved one (new projects … |
 | `export_sheet_pdf` | engineering | export | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials beside the drawing, the reports after the sheets, the base map un… |
+| `preview_sheet` | engineering | read | Looks at one sheet of the plot as it will print, with a check of its layout, before it is exported. |
 | `export_sheet_png` | engineering | export | File → Export drawing → PNG: the drawing sheet (frame, drawing, legend, bill of materials, title block — the overview of the PDF) as a PNG image at a resolution, for a message or a presentation. |
 | `export_more_formats` | engineering | export | File → Export: the formats export_file does not list — "dxf_r12" (the plain DXF R12 for older CAD programs that do not read AutoCAD 2000 files), "gpx" (waypoints and tracks for a GPS receiver; needs a georeference) and … |
 | `share_link` | engineering | export | File → Share by link: the whole project (without pictures and results) packed into an address that opens it in OpenCADIrrigation in any browser — nothing is uploaded; the data travel inside the link. |
@@ -287,7 +291,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `view.language` | one of id, de, en, es, fr, ha, sw, pt, vi, tr, ru, ar, ur, hi, mr, bn, pa, te, zh, ja | view | Language of the interface (View → Language), for every open tab, kept in this browser: id Bahasa Indonesia, de Deutsch, en English, es Español, fr Français, ha Hausa, sw Kiswahili, pt Português, vi Tiếng Việt, tr Türkçe, ru Русский, ar العربية, ur اردو, hi हिन्दी, mr मराठी, bn বাংলা, pa ਪੰਜਾਬੀ, te తెలుగు, zh 中文, ja 日本語. The user's choice: change it when the user asks. Your answers follow the language the user writes in. |
 | `view.reports_panel` | boolean | view | Show the reports panel under the drawing (F2). |
 | `view.report_tab` | one of reports.zone, reports.pipes, reports.outlets, reports.mainline, reports.bom, reports.water, reports.hgl, reports.messages, reports.profile, reports.flushing, reports.surge, reports.crop, reports.schedule, reports.pivots, reports.pivotSpans, reports.electrical, reports.proposal, reports.trench, reports.bomZones, reports.comments, reports.revisions, reports.scenarios, reports.requirement, reports.pivotPackage, reports.machines, reports.vih | view | Tab of the reports panel (shown when the panel opens). |
-| `view.active_tool` | one of select, pan, line, polyline, rect, circle, arc, spline, hatch, symbol, text, dimension, dimAngular, dimRadial, leader, contour, breakline, spot, area, zonePipe, mainPipe, sprayline, tape, outlet, valve, supply, pump, misc, junction, block, autohead, measure, rotate, mirror, scale, offset, trim, extend, cutPipe, profile, pivot, alignImage, controller, wire, dimOrdinate, comment, revisionCloud, insertBlock | view | The user's active drawing tool (it waits for the user's clicks; the assistant draws with create_entities and the operations instead). |
+| `view.active_tool` | one of select, pan, line, polyline, rect, circle, arc, spline, hatch, symbol, text, dimension, dimAngular, dimRadial, leader, contour, breakline, spot, area, zonePipe, mainPipe, sprayline, tape, outlet, valve, supply, pump, misc, junction, block, autohead, measure, rotate, mirror, scale, offset, trim, extend, cutPipe, profile, pivot, alignImage, controller, wire, dimOrdinate, comment, revisionCloud, insertBlock, aiMarkPoint, aiMarkLine | view | The user's active drawing tool (it waits for the user's clicks; the assistant draws with create_entities and the operations instead). |
 | `view.visible_bbox` | array, read-only | view | Part of the drawing on screen [minX, minY, maxX, maxY] in metres (move it with zoom_to or zoom_view). |
 | `view.scale` | number, px/m, read-only | view | Screen pixels per metre of the view (read-only; zoom_view changes it). |
 | `snap.enabled` | boolean | view | Object snap of the drawing tools (F3). |
@@ -453,6 +457,8 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `comment` Comment | NOTE, NOTA, COMMENT, COMENTARIO | `tool:create_entities` | Adds items to the drawing in one undo step and returns one line per new item: id \| type \| name \| details. |
 | `revisionCloud` Revision cloud | REVCLOUD, RC, NUVEM, NUBE | `op:add_revision_cloud` | Draws a revision cloud around what changed, as the Revision cloud tool (RC) and its dialog: a closed outline drawn as a chain of arcs, tagged with the revision… |
 | `insertBlock` Insert block |  | `op:insert_block` | Edit → Insert block (INSERT, IB) at a typed point: copies of block "name" with its base point at "at" (or at each of "points"), turned rotation_deg counter-clo… |
+| `aiMarkPoint` Mark a point for the AI | MK, MARK, MARCAR | n/a | the user's marks for the AI: the assistant reads them with the message and in its pictures |
+| `aiMarkLine` Mark a line for the AI | MKL, MARKLINE, MARCARLINHA, MARCARLINEA | n/a | the user's marks for the AI: the assistant reads them with the message and in its pictures |
 
 ### Menu items
 
@@ -1096,6 +1102,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `export_dialogs.plot.details` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.dimOthers` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.dpi` | `op:export_sheet_png` | File → Export drawing → PNG: the drawing sheet (frame, drawing, legend, bill of materials, title block — the overview of the PDF) as a PNG image at a resolutio… |
+| `export_dialogs.plot.fits` | `op:preview_sheet` | Looks at one sheet of the plot as it will print, with a check of its layout, before it is exported. |
 | `export_dialogs.plot.labels` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.legend` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.orientation` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
@@ -1103,6 +1110,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `export_dialogs.plot.reports` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.scale` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.scaleAuto` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
+| `export_dialogs.plot.sheetCount` | `op:preview_sheet` | Looks at one sheet of the plot as it will print, with a check of its layout, before it is exported. |
 | `export_dialogs.plot.sheets` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `export_dialogs.plot.wetted` | `op:export_sheet_pdf` | File → Export drawing → PDF with every option of the plot dialog: page size and orientation, scale, labels, wetted circles, legend, the bill of materials besid… |
 | `field_calculators.gatedPipeCalculator` | `op:gated_pipe` | Tools → Gated pipe: the opening of every gate of a gated pipe feeding furrows (or the standard hole), so each furrow gets its flow with the friction and the sl… |

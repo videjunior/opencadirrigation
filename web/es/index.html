@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-26",
+      "dateModified": "2026-10-30",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/es/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.2.0",
-      "dateModified": "2026-10-26",
+      "softwareVersion": "1.3.0",
+      "dateModified": "2026-10-30",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/es/?tutorial=1",
@@ -350,7 +350,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -396,7 +396,7 @@
           "name": "¿Qué envía el asistente de IA, y adónde?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API del proveedor elegido, Anthropic u OpenAI, sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones."
+            "text": "Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API del proveedor elegido, Anthropic u OpenAI, sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones. El dictado por voz, si lo usa, lo hace el reconocimiento de voz del propio navegador, que envía el audio a la empresa del navegador (Google en Chrome, Microsoft en Edge, Apple en Safari). Las conversaciones guardadas quedan en su navegador, nunca en archivos de proyecto ni enlaces."
           }
         },
         {
@@ -746,8 +746,8 @@
         <p>Abra el panel de IA junto al dibujo y pida lo que necesita con sus propias palabras. El asistente lee el proyecto, mira la imagen satelital y el terreno y trabaja con las mismas herramientas que los menús, de modo que lo que dibuja es un diseño real: elementos, tuberías, válvulas, zonas y resultados, no una imagen. Cada cambio espera su aprobación, o se aplica automáticamente si lo prefiere, y se puede deshacer con un clic.</p>
         <ul class="grid pair">
           <li><h3>Dibuja y diseña automáticamente</h3><p>Distribuye aspersores y líneas de goteo, divide parcelas en bloques, ajusta pivotes, traza tuberías y válvulas, coloca la bomba y la fuente de agua, ejecuta el dimensionamiento, corrige los avisos y optimiza el coste, y después redacta la memoria técnica y el presupuesto.</p></li>
-          <li><h3>Ve el terreno</h3><p>Localiza el terreno a partir de una dirección, mira la imagen satelital de un proyecto georreferenciado y el relieve (sombreado, curvas de nivel, pendiente, perfiles), lee los dibujos y archivos SIG que usted adjunte y añade elementos al catálogo a partir de una ficha técnica en PDF.</p></li>
-          <li><h3>Explica y verifica</h3><p>Responde preguntas sobre el proyecto y sus resultados, explica cada mensaje del dimensionamiento y cómo corregirlo, ejecuta los análisis y mantiene en el proyecto una lista de tareas y notas con sus decisiones.</p></li>
+          <li><h3>Ve el terreno</h3><p>Localiza el terreno a partir de una dirección, mira la imagen satelital de un proyecto georreferenciado y el relieve (sombreado, curvas de nivel, pendiente, perfiles), lee los dibujos y archivos SIG que usted adjunte y añade elementos al catálogo a partir de una ficha técnica en PDF. Contornea por sí solo las parcelas en la imagen, sigue los puntos y las líneas que usted marque en el mapa y fija en el dibujo las fotos de campo con GPS, en el lugar donde se tomaron.</p></li>
+          <li><h3>Explica y verifica</h3><p>Responde preguntas sobre el proyecto y sus resultados, explica cada mensaje del dimensionamiento y cómo corregirlo, ejecuta los análisis y mantiene en el proyecto una lista de tareas y notas con sus decisiones. Cuando se lo pide, revisa todo el diseño sin cambiar nada y mira la lámina antes de que usted la exporte.</p></li>
           <li><h3>Su clave, su control</h3><p>Modelos Claude (Anthropic) o GPT (OpenAI) en niveles superior, intermedio y rápido, con su propia clave de API, llamados directamente desde el navegador, sin servidor intermedio. Modos de solo lectura, planificar primero, preguntar antes de cada cambio o automático, límite de pasos y de gasto por tarea, deshacer para cada respuesta y nada enviado antes de pulsar Enviar.</p></li>
         </ul>
         <p class="cta"><a class="primary" href="https://opencadirrigation.com/es/?ai=1" data-app>Abrir el asistente de IA</a></p>
@@ -814,7 +814,7 @@
           <dt>¿Qué modelos de IA utiliza?</dt>
           <dd>Modelos Claude de Anthropic (Claude Opus 5.5 por defecto, Claude Fable 5.1, Claude Sonnet 5.5 y Claude Haiku 5.5) y modelos GPT de OpenAI (GPT-6 Astra, GPT-6.1 Sol y GPT-6 Luna): un nivel superior, uno intermedio y uno rápido de cada empresa, cada uno con cinco profundidades de razonamiento. Usted elige el modelo en los ajustes del asistente y pega su propia clave de API; el panel muestra los tokens y el coste estimado de cada respuesta, y un límite de pasos y un tope de gasto terminan una tarea que se alarga.</dd>
           <dt>¿Qué envía el asistente de IA, y adónde?</dt>
-          <dd>Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API del proveedor elegido, Anthropic u OpenAI, sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones.</dd>
+          <dd>Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API del proveedor elegido, Anthropic u OpenAI, sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones. El dictado por voz, si lo usa, lo hace el reconocimiento de voz del propio navegador, que envía el audio a la empresa del navegador (Google en Chrome, Microsoft en Edge, Apple en Safari). Las conversaciones guardadas quedan en su navegador, nunca en archivos de proyecto ni enlaces.</dd>
           <dt>¿OpenCADIrrigation es gratuito?</dt>
           <dd>Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub. El asistente de IA, que es opcional, usa su propia cuenta de Anthropic o de OpenAI, y el proveedor factura el uso en esa cuenta.</dd>
           <dt>¿Para quién es?</dt>
@@ -837,7 +837,7 @@
       <footer>
         <nav aria-label="Idiomas">Idiomas: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <strong lang="es" dir="ltr">Español</strong> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Los catálogos de fabricantes y los proyectos de ejemplo pueden enviarse en formato JSON para incluirse en OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.2.0 · <a href="https://github.com/videjunior/opencadirrigation">Código fuente (licencia MIT)</a> · <time datetime="2026-10-26">2026-10-26</time></p>
+        <p class="meta">OpenCADIrrigation 1.3.0 · <a href="https://github.com/videjunior/opencadirrigation">Código fuente (licencia MIT)</a> · <time datetime="2026-10-30">2026-10-30</time></p>
       </footer>
     </div>
   </main>

@@ -116,6 +116,8 @@ const toolInstead = <ToolId, String>{
   ToolId.comment: 'create_entities {type: "comment", p, text, author}',
   ToolId.revisionCloud: 'run_operation add_revision_cloud {pts, revision, description}',
   ToolId.insertBlock: 'run_operation insert_block {name, at}',
+  ToolId.aiMarkPoint: 'nothing to call: these are the user\'s marks for the AI, read in the user\'s message and seen in your pictures (orange, labelled A, B…)',
+  ToolId.aiMarkLine: 'nothing to call: these are the user\'s marks for the AI, read in the user\'s message and seen in your pictures (orange, labelled A, B…)',
 };
 
 /// English names for the model.

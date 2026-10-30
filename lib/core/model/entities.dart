@@ -225,7 +225,7 @@ sealed class Entity {
       case EntityType.wire:
         return WireEntity(id: id, layer: layer, name: name, points: pts());
       case EntityType.comment:
-        return CommentEntity(id: id, layer: layer, name: name, position: pos(), text: j['text'] as String? ?? '', author: j['author'] as String? ?? '', date: j['date'] as String? ?? '', resolved: j['done'] as bool? ?? false);
+        return CommentEntity(id: id, layer: layer, name: name, position: pos(), text: j['text'] as String? ?? '', author: j['author'] as String? ?? '', date: j['date'] as String? ?? '', resolved: j['done'] as bool? ?? false, photo: j['photo'] as String? ?? '');
       case EntityType.revisionCloud:
         return RevisionCloudEntity(id: id, layer: layer, name: name, points: pts(), revision: j['rev'] as String? ?? '', date: j['date'] as String? ?? '', description: j['desc'] as String? ?? '', arcLength: d('arc', 0));
       case EntityType.ordinateDimension:
@@ -1567,7 +1567,7 @@ class OrdinateDimensionEntity extends Entity {
 /// designer, installer): text, author, date and whether it was resolved.
 /// It stays out of the hydraulics and the bill of materials.
 class CommentEntity extends Entity with PointEntity {
-  CommentEntity({required super.id, super.layer = Layers.comments, super.name, required this.position, this.text = '', this.author = '', this.date = '', this.resolved = false});
+  CommentEntity({required super.id, super.layer = Layers.comments, super.name, required this.position, this.text = '', this.author = '', this.date = '', this.resolved = false, this.photo = ''});
   @override
   Pt position;
   String text;
@@ -1576,16 +1576,20 @@ class CommentEntity extends Entity with PointEntity {
   /// When it was written (`YYYY-MM-DD`).
   String date;
   bool resolved;
+
+  /// A small JPEG of a photo taken at the place (a field photo of the pump,
+  /// the well, a valve box), base64; '' without one.
+  String photo;
   @override
   EntityType get type => EntityType.comment;
   @override
-  CommentEntity clone({String? newId}) => CommentEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, author: author, date: date, resolved: resolved);
+  CommentEntity clone({String? newId}) => CommentEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, author: author, date: date, resolved: resolved, photo: photo);
   @override
   CommentEntity translated(Pt d) => clone()..position = position + d;
   @override
   CommentEntity transformed(Affine t) => clone()..position = t.apply(position);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'text': text, if (author.isNotEmpty) 'author': author, if (date.isNotEmpty) 'date': date, if (resolved) 'done': true};
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'text': text, if (author.isNotEmpty) 'author': author, if (date.isNotEmpty) 'date': date, if (resolved) 'done': true, if (photo.isNotEmpty) 'photo': photo};
 }
 
 /// Revision cloud: a closed outline drawn as a chain of arcs around what

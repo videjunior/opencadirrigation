@@ -508,6 +508,11 @@ final Map<String, TypeDoc> entityDocs = {
     'author': const FieldDoc('who wrote it', panel: 'props.author', def: ''),
     'date': const FieldDoc('when, "YYYY-MM-DD"', panel: 'props.date', def: ''),
     'done': const FieldDoc('resolved', panel: 'props.resolved', def: false),
+    'photo': const FieldDoc(
+      'a small JPEG of a field photo taken there (add_photo_comment sets it from a photo the user attached); the model reads only its size, and "" removes it',
+      panel: 'props.removePhoto',
+      def: '',
+    ),
   }),
   'dimension': TypeDoc('Linear dimension', 'A dimension between two points (made with the drawing tools; update_entities cannot change it).', {
     'a': const FieldDoc('first point [x, y]', unit: 'm'),

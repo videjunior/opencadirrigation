@@ -827,9 +827,9 @@ button does the same).
 
 **How it works.** The agent keeps a to-do list of the task, asks you questions as cards with
 options when something is missing (the task waits for the answers), presents its plan, and works
-through the program's own tools: 70 tools sent with every request, 101 more operations it finds and
+through the program's own tools: 73 tools sent with every request, 102 more operations it finds and
 runs (`find_operations`, `run_operation`), any menu command (`run_command`, the dialogs run without
-opening) and 133 settings (`get_setting`, `set_setting`). It reads the same numbers as the reports,
+opening) and 134 settings (`get_setting`, `set_setting`). It reads the same numbers as the reports,
 changes the project through the same functions as the menus and dialogs (drawing, network,
 catalogue, system flows, the design, its corrections, the automatic layouts, the analyses, the
 quote, exports), keeps the project's **AI notes** (requirements, your answers and decisions, saved
@@ -841,9 +841,9 @@ through the app's own downloads, and imports the drawings and GIS files you atta
 read a data sheet you attach (PDF, image or text, up to 20 MB) and add its items to the catalogue,
 checked before they go in, and write the project's technical report, which can be copied or put on
 the drawing as text. [docs/AI_TOOLS.md](docs/AI_TOOLS.md), generated from the coverage map, lists
-what it reaches: of the 1665 functions a user can reach (command actions, drawing tools, aliases,
-menu items, dialogs and their options, panel fields, status bar, view options), 1633 are covered,
-32 have no meaning for the AI (each with its reason) and none is missing; a test fails when a new
+what it reaches: of the 1677 functions a user can reach (command actions, drawing tools, aliases,
+menu items, dialogs and their options, panel fields, status bar, view options), 1637 are covered,
+40 have no meaning for the AI (each with its reason) and none is missing; a test fails when a new
 command, tool, menu item or dialog has no route. The system prompt states the network rules, the
 design run and the permissions and indexes a reference manual the model reads when it needs it
 (`read_manual`, 20 topics generated from the code: items and their fields, design parameters,
@@ -853,16 +853,58 @@ real tools); the prompt and the tool definitions are cached between requests.
 **Vision.** `view_snapshot` takes one picture of the drawing over a base map: by default the
 satellite image whenever the project is georeferenced (Esri World Imagery, or Google with your
 key), so the model draws over what is really on the ground, and otherwise the map on screen; the
-model can also ask for the map on screen, a street map or none. The tiles are fetched off screen, so your view and base map never change. Every picture states its exact pixel-to-world mapping, and `image_to_world` converts the
-positions the model reads on it; the model can zoom into a part, label the items, draw proposed
-shapes with `preview_geometry` before creating anything, and read the ground with
-`terrain_picture` (hillshade, colours by elevation, contours, slope, aspect), `terrain_profile`
-and `terrain_info`. Pictures are at most 1568 pixels on the longest side and about 1.15
-megapixels; aerial and relief pictures go as JPEG, which keeps long conversations within the
-request size, and attached photos are turned upright and scaled to at most 2000 pixels a side.
-On Claude Opus 5.5, Sonnet 5.5 and Fable 5.1 the status line shows the model's short progress notes
-between steps. The panel has a button that attaches a picture of your view, and a setting (off by
-default) sends a picture of the drawing after each round of changes.
+model can also ask for the map on screen, a street map or none. The tiles are fetched off screen, so
+your view and base map never change. The model also chooses what the drawing is coloured by in its
+picture (layer colours, pressures, velocities, pipe sizes, the lowest and highest pressure of each
+zone, or every zone in its own colour with its name at its valve) and what is marked on it: the
+design messages at their items, numbered as in the Messages list, and its own changes of the task
+(added in cyan, changed in amber, removed as a dashed red outline), so it checks its work; your
+screen stays as it is. Every picture states its exact pixel-to-world mapping, and `image_to_world`
+converts the positions the model reads on it, optionally snapping them onto the ends and lines of
+existing items so that new pipes meet the old ones; a picture drawn before the georeference changed
+is refused. `trace_region` outlines a field, lawn, pond or roof from one point inside it by image
+analysis on the imagery (the region grows over similar colours and texture up to the tolerance at
+which its area stops growing, before it leaks into the next field), far more exactly than corners
+picked by eye, and `trace_fields` outlines every field of an area at once (roads, hedges, specks and
+regions cut by the edge of the area left out). The model can zoom into a part, label the items, draw proposed shapes with
+`preview_geometry` before creating anything, and read the ground with `terrain_picture` (hillshade,
+colours by elevation, contours, slope, aspect), `terrain_profile` and `terrain_info`. Pictures are as
+large as the model reads them pixel for pixel: up to 2000 pixels and about 3.6 megapixels on Claude
+Opus 5.5, Sonnet 5.5 and Fable 5.1, otherwise 1568 pixels and about 1.15 megapixels, with the shorter
+side at most 768 pixels on OpenAI's models; aerial and relief pictures go as JPEG, which keeps long
+conversations within the request size, and attached photos are turned upright and scaled to at most
+2000 pixels a side. On Claude Opus 5.5, Sonnet 5.5 and Fable 5.1 the status line shows the model's
+short progress notes between steps. The panel has a button that attaches a picture of your view;
+pictures and files can also be pasted into the message box (Ctrl+V) or dropped on the panel. A
+setting (on by default) sends, after each round of changes, a picture framed on what changed, with
+the changes marked. A photo you attach that carries its GPS position (as phones write it) comes with
+where it was taken in the project and the nearest item, and the model can pin it to the drawing with
+`add_photo_comment`: a review comment at that place keeping a small copy of the photo and what the
+model read in it (a pump's nameplate, the state of a valve box), shown in its properties. Before it
+exports a drawing sheet, the model looks at it with `preview_sheet`: the sheet as it will print, with
+a check of overlapping, tiny or cut texts, a drawing that fills too little of its viewport or runs out
+of it, empty title-block fields and the north arrow, scale bar and legend, each finding with where it
+is, so it fixes them first.
+
+**Pointing.** "Mark a point" and "Mark a line" above the message box show the assistant where:
+every click on the drawing adds an orange mark labelled A, B, C… (a line ends with a double click or
+Enter; Esc drops it), each with an optional note ("pump", "mainline up to here"). The marks go with
+your next message with their coordinates and show in the assistant's pictures, so "the pump at A, the
+mainline along B" is read exactly; the assistant may also ask you to mark a place. They are not part
+of the project (no undo step, not saved) and go when you clear them or open another project; on a
+phone the assistant's sheet closes while you mark and comes back when you finish. The commands `MK`
+and `MKL` start them too.
+
+**Voice.** A microphone button beside the message box dictates the message through the browser's
+speech service, in the interface language (Chrome, Edge and Safari; there is none in Firefox nor in
+the desktop app): the words being recognised show in a small bubble above the button and each
+confirmed phrase goes into the box at the cursor, to be read and sent as if typed. The first use
+says where the voice goes.
+
+**Saved conversations.** A reload of the page, or the project opened again later in the same browser,
+brings its conversation back as it was, and the model goes on with the exact earlier history; an
+answer the closing page cut short shows as stopped, with **Try again**. Rewinding a restored
+conversation takes back only the conversation (the project's undo history does not survive a reload).
 
 **Control.** What it may do is set in the settings: **read only**; **plan first** (it explores with
 reads only and presents a plan; changes start once you approve it); **ask before each change** (the
@@ -882,7 +924,10 @@ say there is ample context. Long conversations are summarised on the company's
 server (Anthropic from 150 000 input tokens, after clearing old tool results from 80 000 while
 keeping the notes, the plan and the to-do list; OpenAI from 200 000, with older pictures dropped
 from the request); a setting turns this off. Quick commands: `/new`, `/design`, `/check`,
-`/report`, `/quote`, `/export`, `/plan`, `/clear` and `/cost`. Standing instructions in the
+`/review`, `/report`, `/quote`, `/export`, `/plan`, `/clear` and `/cost`. `/review` runs read-only
+whatever the mode: the model looks at the zones, the messages marked at their items and the
+pressures and velocities over the drawing, reads the messages and the report tables, and answers with
+a checklist (OK, attention or problem, with the figures and where to fix each point), changing nothing. Standing instructions in the
 settings apply to every conversation ("always PVC PN 80 on the mainline"), and the conversation
 saves as Markdown. Conversations are not saved with the project, so shared files and links never
 carry the chat or its pictures. What is sent, when, and how the keys are kept: [section
@@ -1029,7 +1074,7 @@ example projects in [examples/](examples/), regenerated by tools and guarded by 
   server.
 - **Share by link** (File → Share by link…): the whole project, compressed, travels inside the
   address after the `#`, which browsers send to no server; whoever opens the link gets a copy in a
-  new tab. Images and results are left out (the receiver designs again); a link longer than about
+  new tab. Images, the photos of comments and results are left out (the receiver designs again); a link longer than about
   60 000 characters may be cut by mail and chat apps, and a project too large for a link is sent as
   a file.
 - **Offline**: once the app has run in a browser, its service worker keeps a copy of the app (about
@@ -1059,9 +1104,15 @@ example projects in [examples/](examples/), regenerated by tools and guarded by 
   Each key stays in memory while the page is open; with *Remember the key on this device* it is
   kept in the browser storage, where scripts running on the page (such as the site's visit
   statistics) could read it. The keys never enter the project file, the autosave, share links or
-  exports, and each goes only to its own company. The AI notes are part of the project file, so
-  they travel with it and with share links; conversations are kept in memory per tab and are not
-  saved. What each company does with the requests is governed by your agreement with it.
+  exports, and each goes only to its own company. Voice dictation sends the sound of your voice to
+  the browser's speech service (Chrome uses Google's servers, Edge Microsoft's and Safari Apple's),
+  which returns the text; the app neither records nor keeps the audio, and the text reaches the AI
+  only when you send it. A photo pinned with `add_photo_comment` keeps a small copy (about 480
+  pixels) in the project file, left out of share links; the model reads only its size. The AI notes are part of the project file, so
+  they travel with it and with share links. Conversations are kept in this browser's storage
+  (IndexedDB) by project, with their pictures and small attached files but never the keys, so a
+  reload or the project opened again brings them back; the 12 most recent are kept, and *Keep
+  conversations in this browser* in the assistant's settings turns this off and deletes them. What each company does with the requests is governed by your agreement with it.
 - **Visit statistics**: the pages of opencadirrigation.com load Google Analytics (gtag.js), which
   counts visits; the app sends it nothing about projects.
 - **Language and preferences** (chosen language, theme, default catalogue, tutorial done, the
@@ -1266,7 +1317,7 @@ lib/
     keys/                   shortcut dispatcher and native listener
     widgets/                menus, palette, panels, reports, charts, dialogs, compact layout, and
                             ai/: the docked AI panel and its views (conversation, data sent, settings)
-    ai/                     the agent of a tab: 70 tools and 101 operations over the controller and
+    ai/                     the agent of a tab: 73 tools and 102 operations over the controller and
                             the engine (agent_tools*, agent_ops*, ops_*), the coverage map
                             (ai_coverage.dart), the system prompt, the manual and the playbooks,
                             vision (pictures, tiles, terrain), transports (fetch, HttpClient),

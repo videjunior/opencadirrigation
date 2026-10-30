@@ -67,6 +67,7 @@ class AiModel {
     this.listed = true,
     this.maxOutput = 64000,
     this.progressUpdates = false,
+    this.highResVision = false,
   });
 
   final AiProvider provider;
@@ -117,6 +118,12 @@ class AiModel {
   /// `thinking.display: "updates"` (beta) instead of empty.
   final bool progressUpdates;
 
+  /// Anthropic: reads a picture of up to 2576 px on its long edge and 4784
+  /// visual tokens (about 3.75 megapixels) as it is, its coordinates one to
+  /// one with the pixels; the others get pictures that fit the older limit
+  /// (1568 px, about 1.15 megapixels), which every provider reads unscaled.
+  final bool highResVision;
+
   // Anthropic (Claude API list prices; cache writes 1.25 × input for the
   // five-minute cache). Task budgets are left off Claude Fable 5.1 until
   // Anthropic confirms them for it.
@@ -135,6 +142,7 @@ class AiModel {
     needsRetention: true,
     maxOutput: 128000,
     progressUpdates: true,
+    highResVision: true,
   );
   static const opus55 = AiModel(
     AiProvider.anthropic,
@@ -149,6 +157,7 @@ class AiModel {
     taskBudget: true,
     maxOutput: 128000,
     progressUpdates: true,
+    highResVision: true,
   );
   static const sonnet55 = AiModel(
     AiProvider.anthropic,
@@ -163,6 +172,7 @@ class AiModel {
     taskBudget: true,
     maxOutput: 128000,
     progressUpdates: true,
+    highResVision: true,
   );
   static const haiku55 = AiModel(
     AiProvider.anthropic,

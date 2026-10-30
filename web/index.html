@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-26",
+      "dateModified": "2026-10-30",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.2.0",
-      "dateModified": "2026-10-26",
+      "softwareVersion": "1.3.0",
+      "dateModified": "2026-10-30",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/?tutorial=1",
@@ -350,7 +350,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -396,7 +396,7 @@
           "name": "What does the AI assistant send, and where?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports."
+            "text": "Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports. Voice dictation, if you use it, is done by the browser's own speech recognition, which sends the audio to the browser maker (Google in Chrome, Microsoft in Edge, Apple in Safari). Saved conversations stay in your browser, never in project files or links."
           }
         },
         {
@@ -746,8 +746,8 @@
         <p>Open the AI panel beside the drawing and ask in your own words. The assistant reads the project, looks at the satellite image and the terrain and works with the same tools as the menus, so what it draws is a real design: items, pipes, valves, zones and results, not a picture. Every change waits for your approval, or applies automatically if you prefer, and can be undone in one click.</p>
         <ul class="grid pair">
           <li><h3>Draws and designs automatically</h3><p>Lays out sprinklers and drip lines, divides fields into blocks, fits pivots, routes pipes and valves, places the pump and the water supply, runs the design, fixes the warnings and optimises the cost, then writes the technical report and the quote.</p></li>
-          <li><h3>Sees the site</h3><p>Finds the site from an address, looks at the satellite image of a georeferenced project and at the terrain (hillshade, contours, slope, profiles), reads the drawings and GIS files you attach and adds catalogue items from a data sheet in PDF.</p></li>
-          <li><h3>Explains and checks</h3><p>Answers questions about the project and its results, explains every design message and how to fix it, runs the analyses and keeps a to-do list and notes of your decisions in the project.</p></li>
+          <li><h3>Sees the site</h3><p>Finds the site from an address, looks at the satellite image of a georeferenced project and at the terrain (hillshade, contours, slope, profiles), reads the drawings and GIS files you attach and adds catalogue items from a data sheet in PDF. Outlines the fields on the image by itself, follows the points and lines you mark on the map and pins field photos with GPS where they were taken.</p></li>
+          <li><h3>Explains and checks</h3><p>Answers questions about the project and its results, explains every design message and how to fix it, runs the analyses and keeps a to-do list and notes of your decisions in the project. On request, reviews the whole design without changing anything, and looks at the drawing sheet before you export it.</p></li>
           <li><h3>Your key, your control</h3><p>Claude (Anthropic) or GPT (OpenAI) models in top, intermediate and fast tiers, with your own API key, called straight from the browser with no server in between. Read-only, plan-first, ask-before-each-change or automatic modes, a step limit and a spending cap per task, undo for every answer, and nothing sent before you press Send.</p></li>
         </ul>
         <p class="cta"><a class="primary" href="https://opencadirrigation.com/?ai=1" data-app>Open the AI assistant</a></p>
@@ -814,7 +814,7 @@
           <dt>Which AI models does it use?</dt>
           <dd>Claude models from Anthropic (Claude Opus 5.5 by default, Claude Fable 5.1, Claude Sonnet 5.5 and Claude Haiku 5.5) and GPT models from OpenAI (GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna): a top, an intermediate and a fast tier of each company, each with five depths of reasoning. You choose the model in the assistant's settings and paste your own API key; the panel shows the tokens and the estimated cost of every answer, and a step limit and a spending cap end a task that runs long.</dd>
           <dt>What does the AI assistant send, and where?</dt>
-          <dd>Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports.</dd>
+          <dd>Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports. Voice dictation, if you use it, is done by the browser's own speech recognition, which sends the audio to the browser maker (Google in Chrome, Microsoft in Edge, Apple in Safari). Saved conversations stay in your browser, never in project files or links.</dd>
           <dt>Is OpenCADIrrigation free?</dt>
           <dd>Yes. It is free for professional, academic and personal use, with no sign-up. It is also open source under the MIT licence, with the source code published on GitHub. The optional AI assistant uses your own Anthropic or OpenAI account, and the provider bills its use to that account.</dd>
           <dt>Who is it for?</dt>
@@ -837,7 +837,7 @@
       <footer>
         <nav aria-label="Languages">Languages: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <strong lang="en" dir="ltr">English</strong> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Manufacturer catalogues and example projects can be sent as JSON for inclusion in OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.2.0 · <a href="https://github.com/videjunior/opencadirrigation">Source code (MIT licence)</a> · <time datetime="2026-10-26">2026-10-26</time></p>
+        <p class="meta">OpenCADIrrigation 1.3.0 · <a href="https://github.com/videjunior/opencadirrigation">Source code (MIT licence)</a> · <time datetime="2026-10-30">2026-10-30</time></p>
       </footer>
     </div>
   </main>

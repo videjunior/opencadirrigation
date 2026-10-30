@@ -567,10 +567,15 @@ Object? _round(Object? v) => switch (v) {
   _ => v,
 };
 
+/// What the model reads for the photo of a comment instead of the base64
+/// JPEG itself (tens of thousands of tokens of nothing).
+String photoNote(String base64) => 'a JPEG photo of ${(base64.length * 3 / 4 / 1024).ceil()} kB, kept with the comment and shown in its properties (not sent)';
+
 /// Properties of [e] as stored in the project file (SI units), without the
 /// geometry: point lists become a count and a length.
 Map<String, Object?> _props(Entity e) {
   final j = Map<String, Object?>.of(e.toJson())..removeWhere((k, _) => const {'type', 'id', 'layer', 'name', 'data'}.contains(k));
+  if (j['photo'] is String) j['photo'] = photoNote(j['photo'] as String);
   final pts = e.linearPoints;
   if (j['pts'] is List && pts != null) {
     var len = 0.0;

@@ -12,6 +12,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' show Offset;
 
+import '../../core/ai/llm.dart' show AiModel, AiProvider;
 import '../../core/model/geometry.dart';
 import '../../core/units.dart';
 import 'vision_tiles.dart';
@@ -24,6 +25,42 @@ const maxPicturePixels = 1150000;
 /// Longest side of a picture (the providers' limit) and its default.
 const maxPictureSide = 1568;
 const defaultPictureSide = 1024;
+
+/// The largest picture the model of a request reads as it is, pixel for
+/// pixel: what the picture tools may draw for it.
+class PictureLimits {
+  const PictureLimits(this.maxSide, this.maxPixels, {this.maxShortSide});
+  final int maxSide, maxPixels;
+
+  /// The shorter side at most (null: no limit of its own).
+  final int? maxShortSide;
+
+  /// What Claude reads unscaled.
+  static const standard = PictureLimits(maxPictureSide, maxPicturePixels);
+
+  /// OpenAI's models at high detail scale a picture so that its shorter
+  /// side is at most 768 px (and read tiles of it): a picture within that
+  /// is read pixel for pixel.
+  static const openai = PictureLimits(maxPictureSide, maxPicturePixels, maxShortSide: 768);
+
+  /// Claude's high-resolution models: 2576 px and 4784 visual tokens of
+  /// 28 × 28 pixels a picture; 2000 px a side keeps a request with more
+  /// than 20 pictures acceptable (a conversation sends every earlier
+  /// picture again), and 3.6 megapixels stays within the tokens whatever
+  /// the proportions.
+  static const high = PictureLimits(2000, 3600000);
+
+  static PictureLimits of(AiModel? m) => switch (m) {
+    null => standard,
+    AiModel(highResVision: true) => high,
+    AiModel(provider: AiProvider.openai) => openai,
+    _ => standard,
+  };
+
+  /// Visual tokens of a picture of the largest size, about (for the
+  /// descriptions): w·h / 784.
+  int get maxTokens => (maxPixels / 784).round();
+}
 
 /// A world rectangle drawn on [width] × [height] square pixels, north up.
 class PictureFrame {
@@ -41,14 +78,20 @@ class PictureFrame {
   Offset toPx(Pt p) => Offset((p.x - world.minX) / mpp, (world.maxY - p.y) / mpp);
   bool contains(double px, double py) => px >= 0 && py >= 0 && px <= width && py <= height;
 
-  /// The frame for [world] with its longest side at most [maxSide] pixels
-  /// and at most [maxPixels] in all: the size in pixels and the rectangle
-  /// grown around the same centre to square pixels.
-  static PictureFrame fit(Bounds world, int maxSide, {int maxPixels = maxPicturePixels}) {
+  /// The frame for [world] with its longest side at most [maxSide] pixels,
+  /// its shorter one at most [maxShort] and at most [maxPixels] in all: the
+  /// size in pixels and the rectangle grown around the same centre to
+  /// square pixels.
+  static PictureFrame fit(Bounds world, int maxSide, {int maxPixels = maxPicturePixels, int? maxShort}) {
     final ww = math.max(world.width, 1e-3), wh = math.max(world.height, 1e-3);
     final ar = ww / wh;
     var w = ar >= 1 ? maxSide.toDouble() : maxSide * ar;
     var h = ar >= 1 ? maxSide / ar : maxSide.toDouble();
+    if (maxShort != null && math.min(w, h) > maxShort) {
+      final f = maxShort / math.min(w, h);
+      w *= f;
+      h *= f;
+    }
     if (w * h > maxPixels) {
       final f = math.sqrt(maxPixels / (w * h));
       w *= f;
@@ -63,11 +106,15 @@ class PictureFrame {
 
 /// A picture the model was shown, by its id.
 class SnapshotMapping extends PictureFrame {
-  const SnapshotMapping(this.id, super.world, super.width, super.height, {this.what = 'the drawing'});
+  const SnapshotMapping(this.id, super.world, super.width, super.height, {this.what = 'the drawing', this.geo = ''});
   final String id;
 
   /// What it shows ("the drawing over Esri World Imagery").
   final String what;
+
+  /// The georeference the picture was drawn in (its plane coordinates are
+  /// the project's only while it is the same).
+  final String geo;
 
   /// Decimals that keep the metres per pixel exact to well under a pixel
   /// across the image.
@@ -77,8 +124,8 @@ class SnapshotMapping extends PictureFrame {
   String describe() {
     String m(double v) => fmt(v, 2);
     final s = fmt(mpp, _decimals);
-    return 'Picture $id: $what; $width×$height px PNG, north up, square pixels. World bbox [minX, minY, maxX, maxY] = [${m(world.minX)}, ${m(world.minY)}, ${m(world.maxX)}, ${m(world.maxY)}] m; '
-        's = $s m per pixel. Pixel (px, py) counted from the top-left corner (px right, py down) ↔ world x = minX + px·s = ${m(world.minX)} + px·$s, y = maxY − py·s = ${m(world.maxY)} − py·$s. '
+    return 'Picture $id: $what; $width×$height px, north up (the y axis of the project grid), square pixels. World bbox [minX, minY, maxX, maxY] = [${m(world.minX)}, ${m(world.minY)}, ${m(world.maxX)}, ${m(world.maxY)}] m; '
+        's = $s m per pixel. Pixel (px, py) counted from the top-left corner of the image (px right, py down; the top-left pixel spans 0–1, its centre is (0.5, 0.5)) ↔ world x = minX + px·s = ${m(world.minX)} + px·$s, y = maxY − py·s = ${m(world.maxY)} − py·$s. '
         'Use image_to_world {snapshot "$id", pixels [[px, py], …]} rather than computing.';
   }
 }
@@ -101,8 +148,8 @@ class VisionSession {
   /// A new picture id with [prefix] ("s" for the tools, "u" for the user's).
   String nextId(String prefix) => '$prefix${++_seq}';
 
-  SnapshotMapping add(String id, PictureFrame f, String what) {
-    final m = SnapshotMapping(id, f.world, f.width, f.height, what: what);
+  SnapshotMapping add(String id, PictureFrame f, String what, {String geo = ''}) {
+    final m = SnapshotMapping(id, f.world, f.width, f.height, what: what, geo: geo);
     _pictures[id] = m;
     while (_pictures.length > keep) {
       _pictures.remove(_pictures.keys.first);
@@ -113,6 +160,41 @@ class VisionSession {
   SnapshotMapping? operator [](String id) => _pictures[id.trim().toLowerCase()];
 
   Iterable<String> get ids => _pictures.keys;
+
+  /// The mappings of the pictures and the id counter as JSON, to keep a
+  /// conversation in the browser (the tiles are not kept).
+  Map<String, Object?> toJson() => {
+    'seq': _seq,
+    'pictures': [
+      for (final m in _pictures.values)
+        {
+          'id': m.id,
+          'bbox': [m.world.minX, m.world.minY, m.world.maxX, m.world.maxY],
+          'w': m.width,
+          'h': m.height,
+          'what': m.what,
+          if (m.geo.isNotEmpty) 'geo': m.geo,
+        },
+    ],
+  };
+
+  /// Takes back the pictures of [toJson] (a conversation kept in the
+  /// browser): an id already here is replaced, and new ids go on after the
+  /// ones it used.
+  void restore(Object? j) {
+    if (j is! Map) return;
+    final pictures = j['pictures'];
+    for (final p in pictures is List ? pictures : const []) {
+      final b = p is Map ? p['bbox'] : null;
+      if (p is! Map || b is! List || b.length != 4 || !b.every((x) => x is num) || p['id'] is! String || p['w'] is! num || p['h'] is! num) continue;
+      final id = p['id'] as String;
+      final world = Bounds((b[0] as num).toDouble(), (b[1] as num).toDouble(), (b[2] as num).toDouble(), (b[3] as num).toDouble());
+      _pictures.remove(id);
+      add(id, PictureFrame(world, (p['w'] as num).toInt(), (p['h'] as num).toInt()), '${p['what'] ?? 'the drawing'}', geo: '${p['geo'] ?? ''}');
+    }
+    final seq = j['seq'];
+    if (seq is num && seq > _seq) _seq = seq.toInt();
+  }
 
   static final Expando<VisionSession> _of = Expando<VisionSession>('vision');
 

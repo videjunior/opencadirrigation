@@ -29,7 +29,7 @@ class TerrainPictureOptions {
   final TerrainColour colour;
   final bool hillshade, contours;
 
-  /// Contour interval (m); null: a round one giving 10–15 lines.
+  /// Contour interval (m); null: a round one giving about 6–14 lines.
   final double? interval;
 
   /// Opacity of the colours and the hillshade (over a base map).
@@ -154,9 +154,13 @@ const _sectors = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 /// The relief of a terrain picture, prepared for its frame: the images,
 /// the contour lines, the figures for the text and the legend.
 class TerrainLayer {
-  TerrainLayer._(this.o, this.frame);
+  TerrainLayer._(this.o, this.frame, {this.idw = false});
   final TerrainPictureOptions o;
   final PictureFrame frame;
+
+  /// The heights are interpolated by inverse distance (the contours still
+  /// come from the triangulation).
+  final bool idw;
 
   ui.Image? _colour, _slope, _shade;
   Rect _slopeRect = Rect.zero, _gridRect = Rect.zero;
@@ -374,7 +378,7 @@ class TerrainLayer {
       out.add(
         lines == 0
             ? 'No contour line in this picture (fewer than three samples, or the ground varies less than the interval of ${fmt(interval, 2)} m).'
-            : 'Contours: every ${fmt(interval, interval < 1 ? 2 : 1)} m (white; every ${fmt(5 * interval, interval < 1 ? 2 : 1)} m bolder), $lines lines, labelled with their elevation in m.',
+            : 'Contours: every ${fmt(interval, interval < 1 ? 2 : 1)} m (white; every ${fmt(5 * interval, interval < 1 ? 2 : 1)} m bolder), $lines lines, labelled with their elevation in m${idw ? '; traced on the triangulation (TIN) of the samples, while the colours, terrain_profile and get_elevations use inverse-distance heights: where samples are sparse the two can differ by a fraction of the interval' : ''}.',
       );
     }
     if (farShare > 0.001) {
@@ -395,7 +399,7 @@ class TerrainLayer {
 
 /// Prepares the relief of [t] for the frame [f] of a picture.
 Future<TerrainLayer> prepareTerrainLayer(Terrain t, PictureFrame f, TerrainPictureOptions o) async {
-  final layer = TerrainLayer._(o, f);
+  final layer = TerrainLayer._(o, f, idw: t.method == TerrainMethod.idw);
   final cov = TerrainCoverage.of(t);
   layer.samples = cov.samples.length;
   layer.farM = cov.farM;
@@ -444,10 +448,11 @@ Future<TerrainLayer> prepareTerrainLayer(Terrain t, PictureFrame f, TerrainPictu
     .._gridRect = Rect.fromLTWH(0, 0, nx * cellPx.toDouble(), ny * cellPx.toDouble());
   layer.farShare = layer.farShare.clamp(0.0, 1.0);
 
-  // gradients (Horn, 3 × 3 cells; y north)
-  double at(int i, int j) {
+  // gradients (Horn, 3 × 3 cells; y north; one-sided at the edges, a cell
+  // without a height taking the centre's)
+  double at(int i, int j, int k) {
     final v = z[j.clamp(0, ny - 1) * nx + i.clamp(0, nx - 1)];
-    return v.isFinite ? v : z[j * nx + i];
+    return v.isFinite ? v : z[k];
   }
 
   final gx = Float64List(n), gy = Float64List(n);
@@ -457,8 +462,10 @@ Future<TerrainLayer> prepareTerrainLayer(Terrain t, PictureFrame f, TerrainPictu
     for (var i = 0; i < nx; i++) {
       final k = j * nx + i;
       if (!z[k].isFinite) continue;
-      final dzdx = ((at(i + 1, j - 1) + 2 * at(i + 1, j) + at(i + 1, j + 1)) - (at(i - 1, j - 1) + 2 * at(i - 1, j) + at(i - 1, j + 1))) / (8 * cell);
-      final dzdy = ((at(i - 1, j - 1) + 2 * at(i, j - 1) + at(i + 1, j - 1)) - (at(i - 1, j + 1) + 2 * at(i, j + 1) + at(i + 1, j + 1))) / (8 * cell);
+      final sx = math.min(i + 1, nx - 1) - math.max(i - 1, 0), sy = math.min(j + 1, ny - 1) - math.max(j - 1, 0);
+      if (sx == 0 || sy == 0) continue;
+      final dzdx = ((at(i + 1, j - 1, k) + 2 * at(i + 1, j, k) + at(i + 1, j + 1, k)) - (at(i - 1, j - 1, k) + 2 * at(i - 1, j, k) + at(i - 1, j + 1, k))) / (4 * sx * cell);
+      final dzdy = ((at(i - 1, j - 1, k) + 2 * at(i, j - 1, k) + at(i + 1, j - 1, k)) - (at(i - 1, j + 1, k) + 2 * at(i, j + 1, k) + at(i + 1, j + 1, k))) / (4 * sy * cell);
       if (!dzdx.isFinite || !dzdy.isFinite) continue;
       gx[k] = dzdx;
       gy[k] = dzdy;
@@ -626,16 +633,19 @@ String terrainProfileText(Terrain t, List<Pt> pts, {double? step, int rows = 40,
   final highs = <int>[], lows = <int>[];
   final w = math.max(1, n ~/ 40);
   const prominence = 0.3;
-  // lowest and highest before and after each sample
-  final minL = Float64List(n), maxL = Float64List(n), minR = Float64List(n), maxR = Float64List(n);
-  for (var i = 0; i < n; i++) {
-    minL[i] = i == 0 ? z[0] : math.min(minL[i - 1], z[i]);
-    maxL[i] = i == 0 ? z[0] : math.max(maxL[i - 1], z[i]);
+  // The drop from a high point on each side: down to the lowest ground
+  // before the line climbs above it again (or ends): a bump on the flank
+  // of a hill drops little before the hill rises past it. Likewise the
+  // rise from a low point.
+  double drop(int i, int dir, {required bool high}) {
+    var extreme = z[i];
+    for (var k = i + dir; k >= 0 && k < n; k += dir) {
+      if (high ? z[k] > z[i] : z[k] < z[i]) break;
+      extreme = high ? math.min(extreme, z[k]) : math.max(extreme, z[k]);
+    }
+    return (z[i] - extreme).abs();
   }
-  for (var i = n - 1; i >= 0; i--) {
-    minR[i] = i == n - 1 ? z[i] : math.min(minR[i + 1], z[i]);
-    maxR[i] = i == n - 1 ? z[i] : math.max(maxR[i + 1], z[i]);
-  }
+
   for (var i = 1; i < n - 1; i++) {
     final a = math.max(0, i - w), b = math.min(n - 1, i + w);
     var isMax = true, isMin = true;
@@ -643,8 +653,8 @@ String terrainProfileText(Terrain t, List<Pt> pts, {double? step, int rows = 40,
       if (z[k] > z[i] || (z[k] == z[i] && k < i)) isMax = false;
       if (z[k] < z[i] || (z[k] == z[i] && k < i)) isMin = false;
     }
-    if (isMax && z[i] - minL[i - 1] >= prominence && z[i] - minR[i + 1] >= prominence) highs.add(i);
-    if (isMin && maxL[i - 1] - z[i] >= prominence && maxR[i + 1] - z[i] >= prominence) lows.add(i);
+    if (isMax && drop(i, -1, high: true) >= prominence && drop(i, 1, high: true) >= prominence) highs.add(i);
+    if (isMin && drop(i, -1, high: false) >= prominence && drop(i, 1, high: false) >= prominence) lows.add(i);
   }
   if (highs.isNotEmpty) out.add('Local high points (air gathers there in a pipe: an air valve, or another route): ${highs.take(10).map((i) => 'z ${fmt(z[i], 2)} m at ${at(i)}').join('; ')}.');
   if (lows.isNotEmpty) out.add('Local low points (the line drains there): ${lows.take(10).map((i) => 'z ${fmt(z[i], 2)} m at ${at(i)}').join('; ')}.');

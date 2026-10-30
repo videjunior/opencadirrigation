@@ -33,6 +33,8 @@ void main() {
     for (final k in ['ai.model', 'ai.effort', 'ai.mode', 'ai.steps', 'ai.parts', 'ai.cap', 'ai.compact', 'ai.showChanges', 'ai.instructions']) {
       removePref(k);
     }
+    // the picture after each round renders in real time only: on where a test asks for it
+    setPref('ai.showChanges', 'off');
     AiHttpClient.declined.clear();
     c = ProjectController()
       ..autosaveEnabled = false

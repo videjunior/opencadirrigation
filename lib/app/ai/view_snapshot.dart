@@ -6,17 +6,23 @@
 /// pictures themselves are drawn by vision_render.dart.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:flutter/painting.dart' show Color;
+
 import '../../core/ai/agent_loop.dart';
+import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
+import '../../core/units.dart';
 import '../state/controller.dart';
 import 'agent_tools.dart';
 import 'vision_mapping.dart';
+import 'vision_marks.dart';
 import 'vision_render.dart';
 import 'vision_tiles.dart';
 
-export 'vision_mapping.dart' show PictureFrame, SnapshotMapping, VisionSession, maxPictureSide, defaultPictureSide, maxPicturePixels;
+export 'vision_mapping.dart' show PictureFrame, PictureLimits, SnapshotMapping, VisionSession, maxPictureSide, defaultPictureSide, maxPicturePixels;
 export 'vision_render.dart';
 export 'vision_tiles.dart' show TileFetcher, HttpTileFetcher, TileCache, MapUnavailable, mapSourceName;
 
@@ -50,6 +56,138 @@ List<BaseMap> pictureMapsFor(ProjectController c, Object? choice) {
   };
 }
 
+/// Schema of `size`, with the limit of the model in use.
+Map<String, Object?> pictureSizeInput(AgentToolbox b) {
+  final l = b.pictures;
+  return int_(
+    'Longest side in pixels, 256–${l.maxSide} (default $defaultPictureSide); the picture also stays under about ${fmt(l.maxPixels / 1e6, 2)} megapixels${l.maxShortSide == null ? '' : ' with its shorter side at most ${l.maxShortSide} px'}, the most the model in use reads pixel for pixel. '
+    'A picture costs about width × height / 784 input tokens (a $defaultPictureSide px square about ${(defaultPictureSide * defaultPictureSide / 784).round()}, the largest about ${l.maxTokens}): ask for more pixels where detail matters (tracing on the satellite image), or zoom into a part.',
+  );
+}
+
+/// The longest side asked for, within the limit of the model in use (a
+/// larger one is reduced, with a note in [notes]).
+int pictureSideOf(AgentToolbox b, ToolArgs a, List<String> notes) {
+  final asked = a.integer('size', min: 256, max: 8192);
+  if (asked == null) return defaultPictureSide;
+  final max = b.pictures.maxSide;
+  if (asked <= max) return asked;
+  notes.add('size $asked was reduced to $max px, the most the model in use reads pixel for pixel.');
+  return max;
+}
+
+/// Schema of `colour_by`.
+Map<String, Object?> colourByInput() => str(
+  'What the drawing is coloured by in this picture, whatever the user\'s screen shows (the screen does not change): "screen" (as the user sees it; default), "layers" (the layer colours, no results), "pressure" or "velocity" (pipes and laterals by their design results), '
+  '"sizes" (pipes labelled with their catalogue pipe), "min_max" (the lowest and highest emitter pressure of every zone), "zones" (every zone in its own colour with its name at its valve, the mainline white: to check the zoning and what each valve feeds).',
+  ['screen', 'layers', 'pressure', 'velocity', 'sizes', 'min_max', 'zones'],
+);
+
+/// Schema of `marks`.
+Map<String, Object?> marksInput() => arr(
+  str(null, ['changes', 'issues']),
+  'Marks over the drawing: "changes" (what you added (cyan halo), changed (amber halo) and removed (dashed red outline) since your first change of this task: check your own work), '
+  '"issues" (every design message at its items, numbered as get_design_messages numbers them, red errors, amber warnings, blue notes: see where the problems are).',
+);
+
+/// How a picture colours and marks the drawing (`colour_by`, `marks`).
+class PictureLook {
+  PictureLook._(this.overlay, this.showLabels, this.zones, this.issues, this.changes, this.notes);
+
+  static PictureLook of(AgentToolbox b, ToolArgs a) {
+    final c = b.c;
+    final notes = <String>[];
+    OverlayMode? overlay;
+    bool? labels;
+    ZoneColours? zones;
+    final results = c.results != null;
+    String noResults(String what) => '$what: there are no design results now, so the pipes keep their layer colours (run_design or analyse_design first).';
+    switch (a.str('colour_by')) {
+      case null || 'screen':
+        notes.add('Colours as on the user\'s screen: ${_overlayText(c, c.overlay)}');
+      case 'layers':
+        overlay = OverlayMode.none;
+        notes.add('Colours: the layer colours, no results.');
+      case 'pressure':
+        overlay = OverlayMode.pressure;
+        notes.add(results ? 'Colours: ${_overlayText(c, OverlayMode.pressure)}' : noResults('Colours by pressure'));
+      case 'velocity':
+        overlay = OverlayMode.velocity;
+        notes.add(results ? 'Colours: ${_overlayText(c, OverlayMode.velocity)}' : noResults('Colours by velocity'));
+      case 'sizes':
+        overlay = OverlayMode.sizes;
+        labels = true;
+        notes.add('Labels: every pipe, lateral and tape with the name of its catalogue pipe at its middle, where the picture has at least 0.8 px per metre (layer colours).');
+      case 'min_max':
+        overlay = OverlayMode.minMax;
+        notes.add(
+          results
+              ? 'Marks of the design: in every zone a downward triangle at the emitter with the lowest pressure (blue, or red outside its window) and an upward one at the highest (purple, or orange outside), each with its pressure.'
+              : noResults('Lowest and highest pressures'),
+        );
+      case 'zones':
+        overlay = OverlayMode.none;
+        zones = ZoneColours.of(c);
+      case final s:
+        throw ToolInputError('"colour_by" must be "screen", "layers", "pressure", "velocity", "sizes", "min_max" or "zones" (got "$s").');
+    }
+    final marks = a.strings('marks');
+    for (final m in marks) {
+      if (m != 'changes' && m != 'issues') throw ToolInputError('"marks" takes "changes" and "issues" (got "$m").');
+    }
+    ChangeMarks? changes;
+    if (marks.contains('changes')) {
+      final d = b.changes.task;
+      if (d == null) {
+        notes.add('Changes: you have changed nothing in this task yet.');
+      } else {
+        changes = ChangeMarks(d, since: b.changes.taskEnded ? 'since the start of your last task that changed the drawing' : 'since your first change of this task');
+      }
+    }
+    return PictureLook._(overlay, labels, zones, marks.contains('issues') ? IssueMarks(c) : null, changes, notes);
+  }
+
+  final OverlayMode? overlay;
+  final bool? showLabels;
+  final ZoneColours? zones;
+  final IssueMarks? issues;
+  final ChangeMarks? changes;
+
+  /// What the colours are (written before the picture is made).
+  final List<String> notes;
+
+  Color? Function(Entity e)? get tint => zones?.tint;
+
+  /// The marks over the drawing, for [VisionSpec.over].
+  List<PictureLayer> over(ProjectController c) => [
+    if (zones != null)
+      (f) async =>
+          (canvas, frame) => zones!.paintLabels(c, canvas, frame),
+    if (changes != null) (f) async => changes!.paint,
+    if (issues != null) (f) async => issues!.prepare(f),
+  ];
+
+  /// The text about the colours and marks of the picture [f].
+  List<String> describe(ProjectController c, PictureFrame f) => [...notes, if (zones != null) zones!.describe(c, f), if (changes != null) changes!.describe(f), ...?issues?.lines];
+}
+
+/// The colours an overlay gives the drawing, for the model.
+String _overlayText(ProjectController c, OverlayMode ov) {
+  final p = c.project.params;
+  final results = c.results != null;
+  return switch (ov) {
+    OverlayMode.velocity when results =>
+      'pipes and laterals with design results are coloured by flow velocity against the limit of their scope (zone ${fmt(p.maxZoneVelocity, 2)} m/s, mainline ${fmt(p.maxMainlineVelocity, 2)} m/s): blue when still, green at half the limit, orange at the limit, red at 1.5 times it and above; the rest in layer colours.',
+    OverlayMode.pressure when results => 'pipes and laterals with design results are coloured by their mean pressure: red below 0 m, light blue at 0 m turning to green at 60 m (or at the pipe\'s rating when higher), purple above; emitters likewise against their pressure window; the rest in layer colours.',
+    OverlayMode.minMax when results => 'layer colours, the lowest and highest emitter pressure of every zone marked.',
+    OverlayMode.velocity || OverlayMode.pressure || OverlayMode.minMax => 'layer colours (the result overlay has no design results to show).',
+    OverlayMode.sizes => 'layer colours, pipes labelled with their catalogue pipe.',
+    OverlayMode.densogram => 'layer colours over the densogram (water applied by the sprinklers, mm/h).',
+    OverlayMode.slope || OverlayMode.aspect => 'layer colours over the ${ov.name} map of the terrain.',
+    OverlayMode.none => 'layer colours, no results.',
+  };
+}
+
 GridDensity pictureGridOf(ToolArgs a, {GridDensity fallback = GridDensity.normal}) => switch (a.str('grid')) {
   null => fallback,
   'none' => GridDensity.none,
@@ -65,13 +203,26 @@ ItemLabels pictureLabelsOf(ToolArgs a) => switch (a.str('labels')) {
   final s => throw ToolInputError('"labels" must be "none", "ids" or "names" (got "$s").'),
 };
 
-/// The picture [id] of this conversation (or one the user attached).
+/// The georeference of [c] as the pictures record it: the plane
+/// coordinates of a picture are the project's while it is the same.
+String pictureGeoKey(ProjectController c) {
+  final g = c.project.meta.georef;
+  return g == null ? '' : jsonEncode(g.toJson());
+}
+
+/// The picture [id] of this conversation (or one the user attached); refused
+/// once the georeference has changed since it was drawn.
 SnapshotMapping pictureMappingOf(AgentToolbox b, String? id) {
   if (id == null || id.isEmpty) throw ToolInputError('Missing "snapshot": the id of an earlier picture, e.g. "s3".');
   final m = VisionSession.of(b)[id] ?? VisionSession.of(b.c)[id];
   if (m == null) {
     final known = [...VisionSession.of(b).ids, ...VisionSession.of(b.c).ids];
     throw ToolInputError('No picture "$id" in this conversation${known.isEmpty ? '' : ' (known: ${known.reversed.take(12).join(', ')})'}: take a new one with view_snapshot.');
+  }
+  if (m.geo != pictureGeoKey(b.c)) {
+    throw ToolInputError(
+      'Picture ${m.id} was drawn before the georeference changed (set_site, set_georeference or an undo moved the origin): its pixels no longer match the project coordinates. Take a new picture.',
+    );
   }
   return m;
 }
@@ -126,6 +277,12 @@ Bounds pictureWorld(AgentToolbox b, ToolArgs a, {String fallback = 'view', Bound
   }
   if (world.isEmpty) throw ToolInputError('Nothing to show: the drawing is empty. Give a bbox [minX, minY, maxX, maxY] in metres.');
   if (pad) world = world.inflate(math.max(2.0, 0.05 * math.max(world.width, world.height)));
+  return pictureMinimumFrame(world);
+}
+
+/// [world] grown to what a picture can show: 20 m around a point or a
+/// tiny box, and each side at least 2 m and 2 % of the other.
+Bounds pictureMinimumFrame(Bounds world) {
   final cen = world.center;
   if (world.width < 2 && world.height < 2) return Bounds(cen.x - 10, cen.y - 10, cen.x + 10, cen.y + 10);
   final side = math.max(2.0, 0.02 * math.max(world.width, world.height));
@@ -152,7 +309,7 @@ Future<ToolOutput> pictureOutput(
   final session = VisionSession.of(b);
   final id = session.nextId('s');
   final img = await r.render(b.c, spec(id));
-  final m = session.add(id, img.frame, what(img));
+  final m = session.add(id, img.frame, what(img), geo: pictureGeoKey(b.c));
   final text = [m.describe(), ...?lead?.call(img), ...img.notes, ...?tail?.call(img, m)];
   return ToolOutput(text.join('\n'), images: [img.forModel]);
 }
@@ -173,12 +330,12 @@ Future<ToolOutput> snapshotTool(AgentToolbox b, ToolArgs a) async {
   if (s == null) throw ToolInputError('Pictures of the drawing cannot be made here.');
   final c = b.c;
   final world = pictureWorld(b, a);
-  final size = a.integer('size', min: 256, max: maxPictureSide) ?? defaultPictureSide;
+  final lead = <String>[];
+  final size = pictureSideOf(b, a, lead);
   final asked = a.input['base_map'];
   final wantsMap = asked == true || (asked is String && asked.trim().toLowerCase() != 'none');
   var maps = pictureMapsFor(c, asked);
   final drawing = a.flag('drawing') ?? true;
-  final lead = <String>[];
   if (c.project.meta.georef == null) {
     if (wantsMap || maps.isNotEmpty) lead.add('No base map: the project has no georeference (set_site with its latitude and longitude, or ask the user).');
     maps = const [];
@@ -196,12 +353,33 @@ Future<ToolOutput> snapshotTool(AgentToolbox b, ToolArgs a) async {
   final grid = pictureGridOf(a);
   final labels = pictureLabelsOf(a);
   final legend = a.flag('legend') ?? false;
+  final look = drawing ? PictureLook.of(b, a) : null;
   return pictureOutput(
     b,
-    (id) => VisionSpec(world: world, maxSide: size, maps: maps, drawing: drawing, grid: grid, labels: labels, legend: legend, caption: id, tiles: VisionSession.of(b).tiles, nameOf: b.nameOf),
+    (id) => VisionSpec(
+      world: world,
+      maxSide: size,
+      maxPixels: b.pictures.maxPixels,
+      maxShort: b.pictures.maxShortSide,
+      maps: maps,
+      drawing: drawing,
+      grid: grid,
+      labels: labels,
+      legend: legend,
+      caption: id,
+      tiles: VisionSession.of(b).tiles,
+      nameOf: b.nameOf,
+      overlay: look?.overlay,
+      showLabels: look?.showLabels,
+      tint: look?.tint,
+      over: look?.over(c) ?? const [],
+    ),
     what: (img) => pictureWhat(img, drawing: drawing),
     lead: (_) => lead,
-    tail: (img, _) => [if (img.map != null && img.map != c.baseMap) 'The user\'s screen keeps its own base map (${c.baseMap == BaseMap.none ? 'none' : mapSourceName(c.baseMap)}).'],
+    tail: (img, _) => [
+      ...?look?.describe(c, img.frame),
+      if (img.map != null && img.map != c.baseMap) 'The user\'s screen keeps its own base map (${c.baseMap == BaseMap.none ? 'none' : mapSourceName(c.baseMap)}).',
+    ],
   );
 }
 
@@ -223,13 +401,13 @@ Future<ToolOutput> _plainSnapshot(AgentToolbox b, ViewSnapshots s, Bounds world,
     } else {
       world = m.world;
       images.add(m.forModel);
-      text.add(session.add(session.nextId('s'), m.frame, 'the base map').describe());
+      text.add(session.add(session.nextId('s'), m.frame, 'the base map', geo: pictureGeoKey(c)).describe());
     }
   }
   if (wantDrawing) {
     final d = await s.drawing(c, world, size);
     images.add(d.forModel);
-    text.add(session.add(session.nextId('s'), d.frame, 'the drawing').describe());
+    text.add(session.add(session.nextId('s'), d.frame, 'the drawing', geo: pictureGeoKey(c)).describe());
   }
   if (images.isEmpty) return ToolOutput(text.join('\n'), isError: true);
   return ToolOutput(text.join('\n'), images: images);

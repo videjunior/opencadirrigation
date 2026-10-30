@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-26",
+      "dateModified": "2026-10-30",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/ja/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.2.0",
-      "dateModified": "2026-10-26",
+      "softwareVersion": "1.3.0",
+      "dateModified": "2026-10-30",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/ja/?tutorial=1",
@@ -350,7 +350,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -396,7 +396,7 @@
           "name": "AI アシスタントは何を、どこへ送信しますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "「送信」を押すまでは何も送られません。押すと、メッセージ、添付したファイル、チェックを入れたプロジェクトデータが、回答中に使うツールの結果（図面の画像を含む）とともに、ブラウザから直接、選んだプロバイダー（Anthropic または OpenAI）の API に送られ、間に OpenCADIrrigation のサーバーは入りません。利用料金はプロバイダーからご自身のアカウントに請求されます。キーは、端末に記憶するよう選ばない限り、そのセッションの間だけメモリに保持され、プロジェクトファイル、共有リンク、書き出したファイルに含まれることはありません。"
+            "text": "「送信」を押すまでは何も送られません。押すと、メッセージ、添付したファイル、チェックを入れたプロジェクトデータが、回答中に使うツールの結果（図面の画像を含む）とともに、ブラウザから直接、選んだプロバイダー（Anthropic または OpenAI）の API に送られ、間に OpenCADIrrigation のサーバーは入りません。利用料金はプロバイダーからご自身のアカウントに請求されます。キーは、端末に記憶するよう選ばない限り、そのセッションの間だけメモリに保持され、プロジェクトファイル、共有リンク、書き出したファイルに含まれることはありません。音声入力を使う場合は、ブラウザー自体の音声認識が処理し、音声はブラウザーの提供元（Chrome では Google、Edge では Microsoft、Safari では Apple）に送られます。保存した会話はブラウザー内にのみ残り、プロジェクトファイルやリンクに含まれることはありません。"
           }
         },
         {
@@ -746,8 +746,8 @@
         <p>図面の横に AI パネルを開き、ふだんの言葉で依頼するだけです。アシスタントはプロジェクトを読み取り、衛星画像と地形を確認し、メニューと同じツールで作業します。そのため、描くのは絵ではなく、機器、管路、バルブ、ゾーン、計算結果からなる本物の設計です。変更はすべてあなたの承認を待って適用され（お好みで自動適用も可能）、ワンクリックで元に戻せます。</p>
         <ul class="grid pair">
           <li><h3>自動で作図・設計</h3><p>スプリンクラーと点滴チューブの配置、圃場のブロック分割、圃場に合わせたピボット配置、配管とバルブのルート作成、ポンプと水源の設置、設計の実行、警告の修正、コストの最適化までを行い、最後に技術報告書と見積書を作成します。</p></li>
-          <li><h3>現場を見て把握</h3><p>住所から現場を探し、ジオリファレンス済みプロジェクトの衛星画像と地形（陰影起伏図、等高線、勾配、断面）を確認します。添付した図面や GIS ファイルを読み取り、PDF のデータシートから品目をカタログに追加することもできます。</p></li>
-          <li><h3>説明とチェック</h3><p>プロジェクトとその結果についての質問に答え、設計メッセージの一つひとつについて意味と直し方を説明し、各種解析を実行します。ToDo リストと、あなたの決定事項のメモもプロジェクト内に残します。</p></li>
+          <li><h3>現場を見て把握</h3><p>住所から現場を探し、ジオリファレンス済みプロジェクトの衛星画像と地形（陰影起伏図、等高線、勾配、断面）を確認します。添付した図面や GIS ファイルを読み取り、PDF のデータシートから品目をカタログに追加することもできます。画像上の圃場の輪郭を自動でとり、地図上であなたが印を付けた点や線をたどり、GPS 付きの現場写真を撮影地点に合わせて図面に貼ります。</p></li>
+          <li><h3>説明とチェック</h3><p>プロジェクトとその結果についての質問に答え、設計メッセージの一つひとつについて意味と直し方を説明し、各種解析を実行します。ToDo リストと、あなたの決定事項のメモもプロジェクト内に残します。求めに応じて、何も変更せずに設計全体をレビューし、書き出す前にシートを確認します。</p></li>
           <li><h3>キーも主導権もあなたの手に</h3><p>Claude（Anthropic）または GPT（OpenAI）の最上位・中位・高速の各モデルを、ご自身の API キーで、サーバーを介さずブラウザから直接呼び出します。「読み取り専用」「まず計画」「変更ごとに確認」「変更を自動で適用」の各モード、タスクごとのステップ数上限と支出上限を備え、どの回答も元に戻せます。「送信」を押すまで何も送られません。</p></li>
         </ul>
         <p class="cta"><a class="primary" href="https://opencadirrigation.com/ja/?ai=1" data-app>AI アシスタントを開く</a></p>
@@ -814,7 +814,7 @@
           <dt>どの AI モデルを使いますか？</dt>
           <dd>Anthropic の Claude モデル（既定の Claude Opus 5.5、Claude Fable 5.1、Claude Sonnet 5.5、Claude Haiku 5.5）と、OpenAI の GPT モデル（GPT-6 Astra、GPT-6.1 Sol、GPT-6 Luna）です。各社とも最上位・中位・高速のランクがそろい、いずれも 5 段階の推論の深さを選べます。モデルはアシスタントの設定で選び、ご自身の API キーを貼り付けます。パネルには回答ごとのトークン数と推定コストが表示され、長引くタスクはステップ数の上限と支出上限で止まります。</dd>
           <dt>AI アシスタントは何を、どこへ送信しますか？</dt>
-          <dd>「送信」を押すまでは何も送られません。押すと、メッセージ、添付したファイル、チェックを入れたプロジェクトデータが、回答中に使うツールの結果（図面の画像を含む）とともに、ブラウザから直接、選んだプロバイダー（Anthropic または OpenAI）の API に送られ、間に OpenCADIrrigation のサーバーは入りません。利用料金はプロバイダーからご自身のアカウントに請求されます。キーは、端末に記憶するよう選ばない限り、そのセッションの間だけメモリに保持され、プロジェクトファイル、共有リンク、書き出したファイルに含まれることはありません。</dd>
+          <dd>「送信」を押すまでは何も送られません。押すと、メッセージ、添付したファイル、チェックを入れたプロジェクトデータが、回答中に使うツールの結果（図面の画像を含む）とともに、ブラウザから直接、選んだプロバイダー（Anthropic または OpenAI）の API に送られ、間に OpenCADIrrigation のサーバーは入りません。利用料金はプロバイダーからご自身のアカウントに請求されます。キーは、端末に記憶するよう選ばない限り、そのセッションの間だけメモリに保持され、プロジェクトファイル、共有リンク、書き出したファイルに含まれることはありません。音声入力を使う場合は、ブラウザー自体の音声認識が処理し、音声はブラウザーの提供元（Chrome では Google、Edge では Microsoft、Safari では Apple）に送られます。保存した会話はブラウザー内にのみ残り、プロジェクトファイルやリンクに含まれることはありません。</dd>
           <dt>OpenCADIrrigation は無料ですか？</dt>
           <dd>はい。業務・学術・個人のいずれの用途でも無料で、登録も不要です。MIT ライセンスのオープンソースで、ソースコードは GitHub で公開されています。オプションの AI アシスタントはご自身の Anthropic または OpenAI のアカウントを使用し、その利用料金はプロバイダーから同アカウントに請求されます。</dd>
           <dt>どんな人向けですか？</dt>
@@ -837,7 +837,7 @@
       <footer>
         <nav aria-label="言語">言語: <a href="https://opencadirrigation.com/id/" hreflang="id" lang="id" dir="ltr">Bahasa Indonesia</a> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <strong lang="ja" dir="ltr">日本語</strong></nav>
         <p>メーカーカタログやサンプルプロジェクトは、JSON 形式でお送りいただければ OpenCADIrrigation に収録できます。</p>
-        <p class="meta">OpenCADIrrigation 1.2.0 · <a href="https://github.com/videjunior/opencadirrigation">ソースコード（MIT ライセンス）</a> · <time datetime="2026-10-26">2026-10-26</time></p>
+        <p class="meta">OpenCADIrrigation 1.3.0 · <a href="https://github.com/videjunior/opencadirrigation">ソースコード（MIT ライセンス）</a> · <time datetime="2026-10-30">2026-10-30</time></p>
       </footer>
     </div>
   </main>

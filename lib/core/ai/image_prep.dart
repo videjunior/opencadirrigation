@@ -34,6 +34,68 @@ const maxModelImageBytes = 3750000;
 /// JPEG quality of the pictures this program encodes.
 const modelJpegQuality = 85;
 
+/// Where and when a photo was taken, from its EXIF data (phones write the
+/// position of the GPS; a browser may strip it on upload).
+class PhotoPlace {
+  const PhotoPlace(this.lat, this.lon, {this.altitude, this.direction, this.taken});
+  final double lat, lon;
+
+  /// Height above sea level (m) and the direction the camera faced
+  /// (degrees clockwise from north), when written.
+  final double? altitude, direction;
+
+  /// When it was taken, in the camera's local time.
+  final DateTime? taken;
+}
+
+/// The place of the JPEG photo [bytes] from its EXIF GPS tags (degrees,
+/// minutes and seconds, or decimal degrees), null when it has none.
+PhotoPlace? photoPlace(Uint8List bytes) {
+  if (sniffImageType(bytes) != 'image/jpeg') return null;
+  try {
+    final exif = img.decodeJpgExif(bytes);
+    if (exif == null) return null;
+    final gps = exif.gpsIfd;
+    double? degrees(int tag) {
+      final v = gps[tag];
+      if (v == null || v.length == 0) return null;
+      var x = v.toDouble(0);
+      if (v.length > 1) x += v.toDouble(1) / 60;
+      if (v.length > 2) x += v.toDouble(2) / 3600;
+      return x.isFinite ? x : null;
+    }
+
+    bool ref(int tag, String negative) => (gps[tag]?.toString() ?? '').trim().toUpperCase().startsWith(negative);
+    final la = degrees(0x0002), lo = degrees(0x0004);
+    if (la == null || lo == null) return null;
+    final lat = ref(0x0001, 'S') ? -la : la, lon = ref(0x0003, 'W') ? -lo : lo;
+    if (lat.abs() > 90 || lon.abs() > 180 || (lat == 0 && lon == 0)) return null;
+    final alt = gps[0x0006]?.toDouble();
+    final below = gps[0x0005]?.toInt() == 1;
+    final dir = gps[0x0011]?.toDouble();
+    DateTime? taken;
+    final t = RegExp(r'(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})').firstMatch(exif.exifIfd[0x9003]?.toString() ?? '');
+    if (t != null) {
+      final f = [for (var k = 1; k <= 6; k++) int.parse(t.group(k)!)];
+      taken = DateTime(f[0], f[1], f[2], f[3], f[4], f[5]);
+    }
+    return PhotoPlace(lat, lon, altitude: alt == null || !alt.isFinite ? null : (below ? -alt : alt), direction: dir == null || !dir.isFinite ? null : dir % 360, taken: taken);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// A small JPEG of the picture [bytes] (upright, at most [maxSide] pixels
+/// a side) to keep in a project, e.g. with a comment; null when unreadable.
+Uint8List? photoThumbnail(Uint8List bytes, {int maxSide = 480, int quality = 72}) {
+  var im = _decode(bytes);
+  if (im == null) return null;
+  im = _flat(im);
+  final s = math.min(1.0, maxSide / math.max(im.width, im.height));
+  if (s < 1) im = img.copyResize(im, width: math.max(1, (im.width * s).round()), height: math.max(1, (im.height * s).round()), interpolation: img.Interpolation.average);
+  return img.encodeJpg(im, quality: quality);
+}
+
 /// The media types every provider reads.
 const modelImageTypes = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'};
 

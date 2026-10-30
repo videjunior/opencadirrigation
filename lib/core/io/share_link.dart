@@ -19,13 +19,13 @@ const shareLinkWarnLength = 60000;
 /// two million characters).
 const shareLinkMaxLength = 1800000;
 
-/// Project JSON made fit for a link: embedded pictures and design results
-/// left out (the receiver designs again).
+/// Project JSON made fit for a link: embedded pictures, the photos of
+/// comments and design results left out (the receiver designs again).
 String shareableProjectJson(Map<String, dynamic> project) {
   final j = Map<String, dynamic>.of(project)..remove('results');
   j['entities'] = [
     for (final e in (j['entities'] as List? ?? const []).cast<Map<String, dynamic>>())
-      if (e['type'] == 'image') (Map<String, dynamic>.of(e)..remove('data')) else e,
+      if (e['type'] == 'image') (Map<String, dynamic>.of(e)..remove('data')) else if (e['type'] == 'comment' && e.containsKey('photo')) (Map<String, dynamic>.of(e)..remove('photo')) else e,
   ];
   return jsonEncode(j);
 }

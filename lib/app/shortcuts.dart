@@ -77,6 +77,8 @@ const commandAliases = <String, Object>{
   'CTRL': ToolId.controller, 'CONTROLLER': ToolId.controller, 'CONTROLADOR': ToolId.controller, 'PROGRAMADOR': ToolId.controller, 'TIMER': ToolId.controller,
   'WR': ToolId.wire, 'WIRE': ToolId.wire, 'FIO': ToolId.wire, 'CABO': ToolId.wire, 'CABLE': ToolId.wire,
   'NOTE': ToolId.comment, 'NOTA': ToolId.comment, 'COMMENT': ToolId.comment, 'COMENTARIO': ToolId.comment,
+  // marks for the AI assistant (not project items)
+  'MK': ToolId.aiMarkPoint, 'MARK': ToolId.aiMarkPoint, 'MARCAR': ToolId.aiMarkPoint, 'MKL': ToolId.aiMarkLine, 'MARKLINE': ToolId.aiMarkLine, 'MARCARLINHA': ToolId.aiMarkLine, 'MARCARLINEA': ToolId.aiMarkLine,
   'REVCLOUD': ToolId.revisionCloud, 'RC': ToolId.revisionCloud, 'NUVEM': ToolId.revisionCloud, 'NUBE': ToolId.revisionCloud,
   'FE': CadAction.feedEnvelope, 'FEED': CadAction.feedEnvelope, 'ENVELOPE': CadAction.feedEnvelope, 'SUBMAIN': CadAction.feedEnvelope,
   'DENS': CadAction.densogram, 'DENSOGRAM': CadAction.densogram, 'DENSOGRAMA': CadAction.densogram,

@@ -33,8 +33,12 @@ import 'vision_palette.dart';
 import 'vision_tiles.dart';
 
 class SnapshotImage {
-  SnapshotImage({required this.png, required this.width, required this.height, required this.world, this.notes = const [], this.map, this.zoom, this.attribution = '', this.jpeg});
+  SnapshotImage({required this.png, required this.width, required this.height, required this.world, this.notes = const [], this.map, this.zoom, this.attribution = '', this.jpeg, this.rgba});
   final Uint8List png;
+
+  /// The pixels themselves (RGBA, straight alpha, row by row from the top)
+  /// when the spec asked to keep them, for image analysis.
+  final Uint8List? rgba;
   final int width, height;
 
   /// The same picture as a JPEG when it is a large opaque one (an aerial
@@ -92,6 +96,7 @@ class VisionSpec {
     required this.world,
     this.maxSide = defaultPictureSide,
     this.maxPixels = maxPicturePixels,
+    this.maxShort,
     this.maps = const [],
     this.drawing = true,
     this.grid = GridDensity.normal,
@@ -105,11 +110,18 @@ class VisionSpec {
     this.mapOpacity,
     this.nameOf,
     this.onScreenFallback = true,
+    this.overlay,
+    this.showLabels,
+    this.tint,
+    this.keepPixels = false,
   });
 
   /// The area to show; the picture grows it to square pixels.
   final Bounds world;
   final int maxSide, maxPixels;
+
+  /// The shorter side at most (null: no limit of its own).
+  final int? maxShort;
 
   /// Base maps to try in order: the first that loads is drawn (empty: none).
   final List<BaseMap> maps;
@@ -136,8 +148,8 @@ class VisionSpec {
   /// map tile lies, for image analysis).
   final bool background;
 
-  /// Opacity of the map (default: the user's base-map opacity under the
-  /// drawing, full without it).
+  /// Opacity of the map (default full: the pictures are for reading the
+  /// site; the user's own view passes the user's base-map opacity).
   final double? mapOpacity;
 
   /// Name written for an item with [ItemLabels.names].
@@ -146,6 +158,20 @@ class VisionSpec {
   /// When no tile comes off screen, take the map the screen shows (the view
   /// moves there and back).
   final bool onScreenFallback;
+
+  /// What the drawing is coloured by in this picture instead of the overlay
+  /// on screen (null: as on screen); only the overlays painted at once
+  /// (none, velocity, pressure, sizes, minMax).
+  final OverlayMode? overlay;
+
+  /// Labels of the drawing on or off in this picture (null: as on screen).
+  final bool? showLabels;
+
+  /// Colour of an item instead of its layer's (null: its own).
+  final Color? Function(Entity e)? tint;
+
+  /// Keep the pixels ([SnapshotImage.rgba]) for image analysis.
+  final bool keepPixels;
 }
 
 /// Renders composite pictures ([CanvasSnapshots]).
@@ -172,7 +198,7 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
 
   @override
   Future<SnapshotImage> render(ProjectController c, VisionSpec spec) async {
-    final f = PictureFrame.fit(spec.world, spec.maxSide, maxPixels: spec.maxPixels);
+    final f = PictureFrame.fit(spec.world, spec.maxSide, maxPixels: spec.maxPixels, maxShort: spec.maxShort);
     final size = Size(f.width.toDouble(), f.height.toDouble());
     final notes = <String>[];
     final g = c.project.meta.georef;
@@ -190,7 +216,19 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
           var screenFailed = false;
           for (final m in spec.maps) {
             try {
-              mosaic = await fetchMosaic(g: g, world: f.world, mpp: f.mpp, map: m, fetcher: tiles, googleKey: c.googleMapsKey, customUrl: c.customTileUrl, lang: c.lang, cache: spec.tiles);
+              mosaic = await fetchMosaic(
+                g: g,
+                world: f.world,
+                mpp: f.mpp,
+                map: m,
+                fetcher: tiles,
+                googleKey: c.googleMapsKey,
+                customUrl: c.customTileUrl,
+                lang: c.lang,
+                cache: spec.tiles,
+                // the tiles a picture of this many pixels needs at its own resolution
+                maxTiles: math.max(100, (2.2 * f.width * f.height / 65536).ceil() + 30),
+              );
               used = m;
               credit = mosaic.attribution;
               notes.add(_mapNote(mosaic, f));
@@ -220,7 +258,7 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
       final rec = ui.PictureRecorder();
       final canvas = Canvas(rec, Offset.zero & size);
       if (spec.background) canvas.drawRect(Offset.zero & size, Paint()..color = CadPalette.dark.canvas);
-      final opacity = spec.mapOpacity ?? (spec.drawing ? c.baseMapOpacity : 1.0);
+      final opacity = spec.mapOpacity ?? 1.0;
       mosaic?.paint(canvas, f.toPx, opacity: opacity);
       if (screen != null && screenWorld != null) {
         final dst = Rect.fromPoints(f.toPx(Pt(screenWorld.minX, screenWorld.maxY)), f.toPx(Pt(screenWorld.maxX, screenWorld.minY)));
@@ -236,11 +274,12 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
       for (final p in under) {
         p?.call(canvas, f);
       }
-      if (spec.drawing) paintDrawing(c, canvas, f, hideGrid: spec.grid != GridDensity.none);
+      // the canvas grid stays out: the picture draws its own labelled one
+      if (spec.drawing) paintDrawing(c, canvas, f, overlay: spec.overlay, labels: spec.showLabels, tint: spec.tint);
       final photo = used != null || spec.under.isNotEmpty;
       if (spec.grid != GridDensity.none) {
         final step = _grid(canvas, f, dense: spec.grid == GridDensity.dense, onPhoto: photo);
-        notes.add('Grid: labelled lines every ${fmt(step, step >= 1 ? 0 : 2)} m (${photo ? 'yellow' : 'white'}).');
+        notes.add('Grid: labelled lines every ${fmt(step, step >= 1 ? 0 : math.min(6, -(math.log(step) / math.ln10).floor()))} m (${photo ? 'yellow' : 'white'}).');
       }
       // proposed geometry and legends over everything but the labels
       for (final p in over) {
@@ -250,7 +289,7 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
       Rect? legendBox;
       List<(String, Color, int)>? legendRows;
       if (spec.drawing && spec.legend) {
-        final (rows, note) = _legendRows(c, f);
+        final (rows, note) = _legendRows(c, f, spec.overlay ?? c.overlay, tinted: spec.tint != null);
         notes.add(note);
         if (rows.isNotEmpty) {
           legendRows = rows;
@@ -262,8 +301,8 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
       if (legendRows != null && legendBox != null) _paintLegend(canvas, legendRows, legendBox);
       final corner = [?spec.caption, if (credit.isNotEmpty) credit].join(' · ');
       if (corner.isNotEmpty) _boxText(canvas, corner, Offset(4, f.height - 19), 10, Colors.white, const Color(0xB3000000));
-      final (png, jpeg) = await _encode(rec.endRecording(), f.width, f.height, opaque: spec.background);
-      return SnapshotImage(png: png, width: f.width, height: f.height, world: f.world, notes: notes, map: used, zoom: mosaic?.zoom, attribution: credit, jpeg: jpeg);
+      final (png, jpeg, rgba) = await _encode(rec.endRecording(), f.width, f.height, opaque: spec.background, keep: spec.keepPixels);
+      return SnapshotImage(png: png, width: f.width, height: f.height, world: f.world, notes: notes, map: used, zoom: mosaic?.zoom, attribution: credit, jpeg: jpeg, rgba: rgba);
     } finally {
       mosaic?.dispose();
       screen?.dispose();
@@ -274,11 +313,13 @@ class CanvasSnapshots implements ViewSnapshots, VisionRenderer {
 /// Paints the drawing of [c] over [f] as the canvas does (selection,
 /// result overlay, labels…), with a see-through background, through the
 /// controller's camera set for this one synchronous paint and given back.
-/// [hideGrid] leaves out the canvas grid (the picture draws its own).
-void paintDrawing(ProjectController c, Canvas canvas, PictureFrame f, {bool hideGrid = true}) {
+/// [hideGrid] leaves out the canvas grid (the picture draws its own);
+/// [overlay], [labels] and [tint] colour and label this paint otherwise
+/// than the screen (set for the paint and given back too).
+void paintDrawing(ProjectController c, Canvas canvas, PictureFrame f, {bool hideGrid = true, OverlayMode? overlay, bool? labels, Color? Function(Entity e)? tint}) {
   final cam = c.camera;
   final saved = (cam.center, cam.scale, cam.size);
-  final grid = c.showGrid;
+  final grid = c.showGrid, shown = c.overlay, labelled = c.showLabels;
   final size = Size(f.width.toDouble(), f.height.toDouble());
   try {
     cam
@@ -286,11 +327,15 @@ void paintDrawing(ProjectController c, Canvas canvas, PictureFrame f, {bool hide
       ..center = f.world.center
       ..scale = 1 / f.mpp;
     if (hideGrid) c.showGrid = false;
+    if (overlay != null) c.overlay = overlay;
+    if (labels != null) c.showLabels = labels;
     // always the dark canvas: the picture is for the model (the colours the
     // results describe), whatever theme the user chose
-    Cad.paintWith(seeThroughDark, () => CadPainter(c: c, tool: null, snapResult: null, repaint: c).paint(canvas, size));
+    Cad.paintWith(seeThroughDark, () => CadPainter(c: c, tool: null, snapResult: null, repaint: c, tint: tint).paint(canvas, size));
   } finally {
     c.showGrid = grid;
+    c.overlay = shown;
+    c.showLabels = labelled;
     cam
       ..center = saved.$1
       ..scale = saved.$2
@@ -319,8 +364,14 @@ Future<void> _warm(ProjectController c, Bounds world) async {
 
 String _mapNote(TileMosaic m, PictureFrame f) {
   final b = StringBuffer('Base map: ${m.name}, tile zoom ${m.zoom} (${fmt(m.groundMpp, m.groundMpp < 1 ? 2 : 1)} m per tile pixel)');
-  if (m.zoom < m.wantedZoom) b.write('; the service has nothing closer than zoom ${m.zoom} here, so the picture enlarges it ${fmt(m.groundMpp / f.mpp, 1)}× (no finer detail exists)');
-  if (m.missing > 0) b.write('; ${m.missing} of ${m.total} tiles missing (dark)');
+  if (m.zoom < m.cappedZoom) {
+    b.write('; the service has nothing closer than zoom ${m.zoom} here, so the picture enlarges it ${fmt(m.groundMpp / f.mpp, 1)}× (no finer detail exists)');
+  } else if (m.cappedZoom < m.wantedZoom) {
+    b.write(
+      '; ${m.wantedZoom - m.cappedZoom} level${m.wantedZoom - m.cappedZoom == 1 ? '' : 's'} coarser than the picture\'s own resolution to keep the download within its tile limit (a smaller area gives finer detail)',
+    );
+  }
+  if (m.missing > 0) b.write('; ${m.missing} of ${m.total} tiles missing (dark)${m.timedOut ? ', some not downloaded in time (try again)' : ''}');
   b.write('. Imagery credit: ${m.attribution.isEmpty ? 'the tile provider set under View → Base map' : m.attribution}.');
   return b.toString();
 }
@@ -341,22 +392,28 @@ const _jpegAbove = 256 * 1024;
 /// [_jpegAbove], a JPEG of it if that is clearly smaller (photos are: an
 /// aerial picture of a megapixel is 2–4 MB as a PNG, a few hundred KB as a
 /// JPEG at quality 85; drawings on the plain background stay PNG). The PNG
-/// stays lossless for what reads its pixels (image analysis, the tests).
-Future<(Uint8List, Uint8List?)> _encode(ui.Picture pic, int w, int h, {required bool opaque}) async {
+/// stays lossless for what reads its pixels (image analysis, the tests);
+/// with [keep] the pixels come too (straight RGBA).
+Future<(Uint8List, Uint8List?, Uint8List?)> _encode(ui.Picture pic, int w, int h, {required bool opaque, bool keep = false}) async {
   final img = await pic.toImage(w, h);
   pic.dispose();
   try {
     final data = await img.toByteData(format: ui.ImageByteFormat.png);
     if (data == null) throw StateError('png');
     final png = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    if (!opaque || png.length <= _jpegAbove) return (png, null);
+    Uint8List? pixels;
+    if (keep) {
+      final raw = await img.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+      if (raw != null) pixels = raw.buffer.asUint8List(raw.offsetInBytes, raw.lengthInBytes);
+    }
+    if (!opaque || png.length <= _jpegAbove) return (png, null, pixels);
     final raw = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
-    if (raw == null) return (png, null);
+    if (raw == null) return (png, null, pixels);
     try {
       final jpeg = encodeJpegRgba(raw.buffer.asUint8List(raw.offsetInBytes, raw.lengthInBytes), w, h);
-      return (png, jpeg.length < 0.8 * png.length ? jpeg : null);
+      return (png, jpeg.length < 0.8 * png.length ? jpeg : null, pixels);
     } catch (_) {
-      return (png, null);
+      return (png, null, pixels);
     }
   } finally {
     img.dispose();
@@ -442,14 +499,15 @@ double pictureGridStep(double span, int lines) {
 /// step in metres.
 double _grid(Canvas canvas, PictureFrame f, {required bool dense, required bool onPhoto}) {
   final w = f.world;
-  final step = pictureGridStep(math.max(w.width, w.height), dense ? 16 : 8);
+  // about 8 (16) lines along the long side, and at least 3 across the short one
+  final step = math.min(pictureGridStep(math.max(w.width, w.height), dense ? 16 : 8), pictureGridStep(math.min(w.width, w.height), 3));
   final line = Paint()
     ..color = onPhoto ? const Color(0xB3FFEB3B) : const Color(0x59FFFFFF)
     ..strokeWidth = dense ? 0.8 : 1;
   final ink = onPhoto ? Colors.black : Colors.white;
   final back = onPhoto ? const Color(0xD9FFEB3B) : const Color(0xB3000000);
   final size = dense ? 9.5 : 11.0;
-  final d = step >= 1 ? 0 : (step >= 0.1 ? 1 : 2);
+  final d = step >= 1 ? 0 : math.min(6, -(math.log(step) / math.ln10).floor());
   final width = f.width.toDouble(), height = f.height.toDouble();
   for (var k = (w.minX / step).ceil(); k * step <= w.maxX + 1e-9; k++) {
     final x = k * step;
@@ -497,8 +555,10 @@ Pt? _alongInside(List<Pt> pts, Bounds frame) {
   return null;
 }
 
-/// Where the label of [e] points.
-Pt? _anchor(Entity e, Bounds frame) {
+/// Where a label or mark of [e] points: a point of the item inside
+/// [frame] (its position, centre, a point inside its outline or along its
+/// line, as near the middle as can be), or null when none lies there.
+Pt? pictureAnchor(Entity e, Bounds frame) {
   Pt? at(Pt p) => frame.contains(p) ? p : null;
   return switch (e) {
     PointEntity x => at(x.position),
@@ -535,7 +595,7 @@ String _itemLabels(ProjectController c, Canvas canvas, PictureFrame f, ItemLabel
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1;
   for (final (_, _, e) in cands) {
-    final at = shown < 300 ? _anchor(e, f.world) : null;
+    final at = shown < 300 ? pictureAnchor(e, f.world) : null;
     if (at == null) {
       left++;
       continue;
@@ -573,7 +633,7 @@ String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(
 
 /// The layers with items in [f] (name, colour, count), most items first,
 /// and the legend in words.
-(List<(String, Color, int)>, String) _legendRows(ProjectController c, PictureFrame f) {
+(List<(String, Color, int)>, String) _legendRows(ProjectController c, PictureFrame f, OverlayMode ov, {bool tinted = false}) {
   final p = c.project;
   final counts = <String, int>{};
   for (final e in p.entities) {
@@ -586,8 +646,7 @@ String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(
   // at most 14 rows, and no more than about 40 % of the picture's height
   final fit = math.max(3, math.min(14, (0.4 * f.height - 6) ~/ 15));
   final rows = [for (final e in all.take(fit)) (e.key, colourOf(e.key), e.value)];
-  final ov = c.overlay;
-  final colouredByResults = c.results != null && (ov == OverlayMode.velocity || ov == OverlayMode.pressure);
+  final colouredByResults = !tinted && c.results != null && (ov == OverlayMode.velocity || ov == OverlayMode.pressure);
   final listed = [for (final e in all.take(24)) '${e.key} ${_hex(colourOf(e.key))} ×${e.value}'];
   final note = StringBuffer('Legend (layer colours of the items shown; the box at the top right lists the first ${rows.length}): ${listed.join(', ')}${all.length > listed.length ? ', …' : ''}.');
   if (colouredByResults) {
@@ -597,6 +656,7 @@ String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(
           : ' Pipes with design results are coloured by pressure instead (red below 0, blue → green, purple over the rating).',
     );
   }
+  if (tinted) note.write(' The items of the zones are drawn in their zone colours instead (see Colours).');
   if (c.selection.isNotEmpty) note.write(' Selected items are drawn in yellow.');
   return (rows, note.toString());
 }

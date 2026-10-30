@@ -176,7 +176,8 @@ abstract final class OpenAiFormat {
 
   static Map<String, dynamic> part(AiPart p) => switch (p) {
     AiTextPart(:final text) => {'type': 'input_text', 'text': text},
-    AiImagePart(:final mediaType, :final base64) => {'type': 'input_image', 'image_url': dataUrl(mediaType, base64), 'detail': 'auto'},
+    // high: never the 512-pixel low-detail reading (pictures are measured)
+    AiImagePart(:final mediaType, :final base64) => {'type': 'input_image', 'image_url': dataUrl(mediaType, base64), 'detail': 'high'},
     AiPdfPart(:final name, :final base64) => {'type': 'input_file', 'filename': name, 'file_data': dataUrl('application/pdf', base64)},
   };
 

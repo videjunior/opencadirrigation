@@ -178,7 +178,7 @@
         "width": 1200,
         "height": 630
       },
-      "dateModified": "2026-10-26",
+      "dateModified": "2026-10-30",
       "breadcrumb": {
         "@id": "https://opencadirrigation.com/id/#breadcrumb"
       }
@@ -217,8 +217,8 @@
       "operatingSystem": "Web browser (Chrome, Edge, Firefox, Safari)",
       "browserRequirements": "Requires JavaScript and WebAssembly",
       "availableOnDevice": "Desktop, tablet, phone",
-      "softwareVersion": "1.2.0",
-      "dateModified": "2026-10-26",
+      "softwareVersion": "1.3.0",
+      "dateModified": "2026-10-30",
       "softwareHelp": {
         "@type": "CreativeWork",
         "url": "https://opencadirrigation.com/id/?tutorial=1",
@@ -350,7 +350,7 @@
       "license": "https://opensource.org/license/mit",
       "programmingLanguage": "Dart",
       "runtimePlatform": "Flutter (web)",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "targetProduct": {
         "@id": "https://opencadirrigation.com/#app"
       },
@@ -396,7 +396,7 @@
           "name": "Apa yang dikirim asisten AI, dan ke mana?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Tidak ada, sampai Anda menekan Kirim. Saat itu, pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim langsung dari peramban Anda ke API penyedia layanan yang Anda pilih, Anthropic atau OpenAI, tanpa melalui server OpenCADIrrigation mana pun, bersama hasil alat-alat yang dipakai asisten selama menjawab, termasuk tangkapan gambar proyek. Penyedia layanan menagih penggunaannya ke akun Anda. Kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya di perangkat, dan tidak pernah masuk ke berkas proyek, tautan berbagi, atau ekspor."
+            "text": "Tidak ada, sampai Anda menekan Kirim. Saat itu, pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim langsung dari peramban Anda ke API penyedia layanan yang Anda pilih, Anthropic atau OpenAI, tanpa melalui server OpenCADIrrigation mana pun, bersama hasil alat-alat yang dipakai asisten selama menjawab, termasuk tangkapan gambar proyek. Penyedia layanan menagih penggunaannya ke akun Anda. Kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya di perangkat, dan tidak pernah masuk ke berkas proyek, tautan berbagi, atau ekspor. Dikte suara, jika Anda memakainya, dikerjakan oleh pengenalan suara milik peramban itu sendiri, yang mengirim audionya ke pembuat peramban (Google di Chrome, Microsoft di Edge, Apple di Safari). Percakapan yang disimpan tetap berada di peramban Anda, tidak pernah masuk ke berkas proyek atau tautan."
           }
         },
         {
@@ -746,8 +746,8 @@
         <p>Buka panel AI di samping gambar, lalu sampaikan permintaan Anda dengan kata-kata sendiri. Asisten membaca proyek, melihat citra satelit dan medan, serta bekerja dengan alat yang sama seperti pada menu, sehingga yang digambarnya adalah desain sungguhan, yaitu item, pipa, katup, zona dan hasil perhitungan, bukan sekadar ilustrasi. Setiap perubahan menunggu persetujuan Anda, atau diterapkan otomatis jika Anda lebih suka, dan dapat diurungkan dengan satu klik.</p>
         <ul class="grid pair">
           <li><h3>Menggambar dan mendesain otomatis</h3><p>Menata letak sprinkler dan selang tetes, membagi lahan menjadi blok, menyesuaikan pivot dengan lahan, menarik jalur pipa dan katup, menempatkan pompa dan sumber air, menjalankan perhitungan desain, memperbaiki peringatan dan mengoptimalkan biaya, lalu menulis laporan teknis dan penawaran harga.</p></li>
-          <li><h3>Melihat lokasi</h3><p>Menemukan lokasi dari sebuah alamat, melihat citra satelit proyek yang bergeoreferensi beserta medannya (relief, kontur, kemiringan, profil), membaca gambar dan berkas SIG yang Anda lampirkan, serta menambahkan item katalog dari lembar data PDF.</p></li>
-          <li><h3>Menjelaskan dan memeriksa</h3><p>Menjawab pertanyaan tentang proyek dan hasilnya, menjelaskan setiap pesan desain beserta cara memperbaikinya, menjalankan analisis, serta menyimpan daftar tugas dan catatan keputusan Anda di dalam proyek.</p></li>
+          <li><h3>Melihat lokasi</h3><p>Menemukan lokasi dari sebuah alamat, melihat citra satelit proyek yang bergeoreferensi beserta medannya (relief, kontur, kemiringan, profil), membaca gambar dan berkas SIG yang Anda lampirkan, serta menambahkan item katalog dari lembar data PDF. Membuat garis batas lahan pada citra dengan sendirinya, mengikuti titik dan garis yang Anda tandai di peta, serta menyematkan foto lapangan ber-GPS pada gambar di tempat foto itu diambil.</p></li>
+          <li><h3>Menjelaskan dan memeriksa</h3><p>Menjawab pertanyaan tentang proyek dan hasilnya, menjelaskan setiap pesan desain beserta cara memperbaikinya, menjalankan analisis, serta menyimpan daftar tugas dan catatan keputusan Anda di dalam proyek. Jika diminta, meninjau seluruh desain tanpa mengubah apa pun, dan melihat lembar gambar sebelum Anda mengekspornya.</p></li>
           <li><h3>Kunci Anda, kendali Anda</h3><p>Model Claude (Anthropic) atau GPT (OpenAI) pada tingkat teratas, menengah dan cepat, dengan kunci API Anda sendiri, dipanggil langsung dari peramban tanpa server perantara. Mode hanya baca, rencanakan dulu, tanya sebelum setiap perubahan, atau otomatis; batas langkah dan batas pengeluaran per tugas; setiap jawaban dapat diurungkan; dan tidak ada yang dikirim sebelum Anda menekan Kirim.</p></li>
         </ul>
         <p class="cta"><a class="primary" href="https://opencadirrigation.com/id/?ai=1" data-app>Buka asisten AI</a></p>
@@ -814,7 +814,7 @@
           <dt>Model AI apa saja yang dipakai?</dt>
           <dd>Model Claude dari Anthropic (Claude Opus 5.5 sebagai bawaan, Claude Fable 5.1, Claude Sonnet 5.5 dan Claude Haiku 5.5) dan model GPT dari OpenAI (GPT-6 Astra, GPT-6.1 Sol dan GPT-6 Luna): tingkat teratas, menengah dan cepat dari tiap perusahaan, masing-masing dengan lima pilihan kedalaman penalaran. Anda memilih model di pengaturan asisten dan menempelkan kunci API Anda sendiri; panel menampilkan token dan perkiraan biaya setiap jawaban, dan batas langkah serta batas pengeluaran menghentikan tugas yang berlarut-larut.</dd>
           <dt>Apa yang dikirim asisten AI, dan ke mana?</dt>
-          <dd>Tidak ada, sampai Anda menekan Kirim. Saat itu, pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim langsung dari peramban Anda ke API penyedia layanan yang Anda pilih, Anthropic atau OpenAI, tanpa melalui server OpenCADIrrigation mana pun, bersama hasil alat-alat yang dipakai asisten selama menjawab, termasuk tangkapan gambar proyek. Penyedia layanan menagih penggunaannya ke akun Anda. Kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya di perangkat, dan tidak pernah masuk ke berkas proyek, tautan berbagi, atau ekspor.</dd>
+          <dd>Tidak ada, sampai Anda menekan Kirim. Saat itu, pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim langsung dari peramban Anda ke API penyedia layanan yang Anda pilih, Anthropic atau OpenAI, tanpa melalui server OpenCADIrrigation mana pun, bersama hasil alat-alat yang dipakai asisten selama menjawab, termasuk tangkapan gambar proyek. Penyedia layanan menagih penggunaannya ke akun Anda. Kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya di perangkat, dan tidak pernah masuk ke berkas proyek, tautan berbagi, atau ekspor. Dikte suara, jika Anda memakainya, dikerjakan oleh pengenalan suara milik peramban itu sendiri, yang mengirim audionya ke pembuat peramban (Google di Chrome, Microsoft di Edge, Apple di Safari). Percakapan yang disimpan tetap berada di peramban Anda, tidak pernah masuk ke berkas proyek atau tautan.</dd>
           <dt>Apakah OpenCADIrrigation gratis?</dt>
           <dd>Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub. Asisten AI yang opsional memakai akun Anthropic atau OpenAI Anda sendiri, dan penyedia layanan menagih penggunaannya ke akun tersebut.</dd>
           <dt>Untuk siapa aplikasi ini?</dt>
@@ -837,7 +837,7 @@
       <footer>
         <nav aria-label="Bahasa">Bahasa: <strong lang="id" dir="ltr">Bahasa Indonesia</strong> · <a href="https://opencadirrigation.com/de/" hreflang="de" lang="de" dir="ltr">Deutsch</a> · <a href="https://opencadirrigation.com/" hreflang="en" lang="en" dir="ltr">English</a> · <a href="https://opencadirrigation.com/es/" hreflang="es" lang="es" dir="ltr">Español</a> · <a href="https://opencadirrigation.com/fr/" hreflang="fr" lang="fr" dir="ltr">Français</a> · <a href="https://opencadirrigation.com/ha/" hreflang="ha" lang="ha" dir="ltr">Hausa</a> · <a href="https://opencadirrigation.com/sw/" hreflang="sw" lang="sw" dir="ltr">Kiswahili</a> · <a href="https://opencadirrigation.com/pt/" hreflang="pt-BR" lang="pt-BR" dir="ltr">Português</a> · <a href="https://opencadirrigation.com/vi/" hreflang="vi" lang="vi" dir="ltr">Tiếng Việt</a> · <a href="https://opencadirrigation.com/tr/" hreflang="tr" lang="tr" dir="ltr">Türkçe</a> · <a href="https://opencadirrigation.com/ru/" hreflang="ru" lang="ru" dir="ltr">Русский</a> · <a href="https://opencadirrigation.com/ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a> · <a href="https://opencadirrigation.com/ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a> · <a href="https://opencadirrigation.com/hi/" hreflang="hi" lang="hi" dir="ltr">हिन्दी</a> · <a href="https://opencadirrigation.com/mr/" hreflang="mr" lang="mr" dir="ltr">मराठी</a> · <a href="https://opencadirrigation.com/bn/" hreflang="bn" lang="bn" dir="ltr">বাংলা</a> · <a href="https://opencadirrigation.com/pa/" hreflang="pa" lang="pa" dir="ltr">ਪੰਜਾਬੀ</a> · <a href="https://opencadirrigation.com/te/" hreflang="te" lang="te" dir="ltr">తెలుగు</a> · <a href="https://opencadirrigation.com/zh/" hreflang="zh-CN" lang="zh-CN" dir="ltr">中文</a> · <a href="https://opencadirrigation.com/ja/" hreflang="ja" lang="ja" dir="ltr">日本語</a></nav>
         <p>Katalog produsen dan proyek contoh dapat dikirim dalam format JSON untuk dimasukkan ke OpenCADIrrigation.</p>
-        <p class="meta">OpenCADIrrigation 1.2.0 · <a href="https://github.com/videjunior/opencadirrigation">Kode sumber (lisensi MIT)</a> · <time datetime="2026-10-26">2026-10-26</time></p>
+        <p class="meta">OpenCADIrrigation 1.3.0 · <a href="https://github.com/videjunior/opencadirrigation">Kode sumber (lisensi MIT)</a> · <time datetime="2026-10-30">2026-10-30</time></p>
       </footer>
     </div>
   </main>

@@ -1015,25 +1015,28 @@ Future<void> showAboutDialogApp(BuildContext context, ProjectController c) => _s
   context,
   c,
   c.t('help.about'),
-  Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Center(child: Padding(padding: const EdgeInsets.only(bottom: 10), child: Image.asset('assets/brand/logo-horizontal.png', width: 380, filterQuality: FilterQuality.medium, semanticLabel: 'OpenCADIrrigation'))),
-    // full build identification: version, build number, date and git commit
-    Center(
-      child: Container(
-        key: const Key('about_version'),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: Cad.card, borderRadius: BorderRadius.circular(4)),
-        child: SelectableText(c.t('about.version', {'v': appVersionLabel}), style: TextStyle(fontSize: 12.5, fontFamily: 'monospace', color: Cad.accentText)),
+  // scrolls on short windows: the text grows with every release
+  ScrollBody(
+    child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Center(child: Padding(padding: const EdgeInsets.only(bottom: 10), child: Image.asset('assets/brand/logo-horizontal.png', width: 380, filterQuality: FilterQuality.medium, semanticLabel: 'OpenCADIrrigation'))),
+      // full build identification: version, build number, date and git commit
+      Center(
+        child: Container(
+          key: const Key('about_version'),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(color: Cad.card, borderRadius: BorderRadius.circular(4)),
+          child: SelectableText(c.t('about.version', {'v': appVersionLabel}), style: TextStyle(fontSize: 12.5, fontFamily: 'monospace', color: Cad.accentText)),
+        ),
       ),
-    ),
-    const SizedBox(height: 12),
-    Text(c.t('about.text'), style: const TextStyle(fontSize: 13, height: 1.4)),
-    const SizedBox(height: 8),
-    Text(c.t('about.credits'), key: const Key('about_credits'), style: TextStyle(fontSize: 11, height: 1.35, color: Cad.fg60)),
-    const SizedBox(height: 12),
-    _ExternalLink(key: const Key('about_site'), icon: Icons.public, label: c.t('about.site'), url: appSiteUrl),
-    _ExternalLink(key: const Key('about_repo'), icon: Icons.code, label: c.t('about.repo'), url: appRepositoryUrl),
-  ]),
+      const SizedBox(height: 12),
+      Text(c.t('about.text'), style: const TextStyle(fontSize: 13, height: 1.4)),
+      const SizedBox(height: 8),
+      Text(c.t('about.credits'), key: const Key('about_credits'), style: TextStyle(fontSize: 11, height: 1.35, color: Cad.fg60)),
+      const SizedBox(height: 12),
+      _ExternalLink(key: const Key('about_site'), icon: Icons.public, label: c.t('about.site'), url: appSiteUrl),
+      _ExternalLink(key: const Key('about_repo'), icon: Icons.code, label: c.t('about.repo'), url: appRepositoryUrl),
+    ]),
+  ),
 );
 
 /// A label with its URL underneath; the whole row opens the page in a new tab.

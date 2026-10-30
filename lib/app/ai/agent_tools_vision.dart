@@ -15,6 +15,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../core/ai/agent_loop.dart';
+import '../../core/design/region_trace.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/terrain.dart';
@@ -22,6 +23,7 @@ import '../../core/units.dart';
 import '../state/controller.dart';
 import 'agent_tools.dart';
 import 'view_snapshot.dart';
+import 'vision_marks.dart';
 import 'vision_terrain.dart';
 
 /// Schema of a list of pixel positions.
@@ -42,7 +44,6 @@ final Map<String, Object?> _pixelBox = {
 };
 
 Map<String, Object?> _grid() => str('Labelled coordinate grid: "normal" (about 8 lines; default), "dense" (about 16, labels on all four edges), "none".', ['none', 'normal', 'dense']);
-Map<String, Object?> _size() => int_('Longest side in pixels, 256–1568 (default 1024); the picture also stays under about 1.15 megapixels so no provider rescales it.');
 
 /// Positions `[[px, py], …]` in pixels.
 List<(double, double)> _pixelsOf(Object? v, String what, {int max = 500}) {
@@ -70,6 +71,15 @@ String _snapshotSummary(AgentToolbox b, Map<String, dynamic> i) {
   final t = b.t;
   if (i['pixel_bbox'] != null) return t('ai.vis.zoom', {'n': '${i['snapshot'] ?? ''}'});
   if (i['drawing'] == false) return t('ai.vis.mapOnly');
+  final marks = i['marks'] is List ? i['marks'] as List : const [];
+  if (marks.contains('changes')) return t('ai.vis.changes');
+  if (marks.contains('issues')) return t('ai.vis.issues');
+  switch (i['colour_by']) {
+    case 'zones':
+      return t('ai.vis.zones');
+    case 'pressure' || 'velocity' || 'min_max' || 'sizes':
+      return t('ai.vis.results');
+  }
   return switch (i['base_map']) {
     'satellite' => t('ai.vis.snapshotSatellite'),
     'street' => t('ai.vis.snapshotStreet'),
@@ -85,10 +95,10 @@ List<AgentTool> visionTools(AgentToolbox b) {
       name: 'view_snapshot',
       description:
           'A picture of the project as the user sees it: the drawing with its layer colours and result overlay over the base map, composed into ONE image with a labelled metre grid, its id (e.g. "s3") and the exact pixel ↔ world mapping. '
-          'Use it to look at the layout, to check what you changed, to read the site on the satellite image (fields, buildings, roads, trees, water, the well) and trace it, and to zoom into details (a smaller bbox, or snapshot + pixel_bbox, at full resolution). '
+          'Use it to look at the layout, to check what you changed (marks ["changes"]), to see where the design problems are (marks ["issues"]), to check the zoning (colour_by "zones") or the results (colour_by "pressure" or "velocity"), to read the site on the satellite image (fields, buildings, roads, trees, water, the well) and trace it (trace_region outlines a field, lawn or pond from one point inside it), and to zoom into details (a smaller bbox, or snapshot + pixel_bbox, at full resolution). '
           'Not for numbers (get_entity, list_entities, get_report_table) nor heights (terrain_picture, terrain_profile). '
           'base_map "satellite" works whenever the project is georeferenced, even when the screen shows another map or none (Esri World Imagery, or Google satellite when the user set a Google key); the user\'s view and base map stay as they are. '
-          'Output: the image and its text: picture id, world bbox [minX, minY, maxX, maxY] in m, s = metres per pixel and x = minX + px·s, y = maxY − py·s (pixels from the top-left corner, py down, north up), the map source with its tile zoom and imagery credit, the grid step, and the labels or legend asked for. Convert positions you pick with image_to_world instead of computing them. '
+          'Output: the image and its text: picture id, world bbox [minX, minY, maxX, maxY] in m, s = metres per pixel and x = minX + px·s, y = maxY − py·s (pixels from the top-left corner, py down, north up), the map source with its tile zoom and imagery credit, the grid step, what the colours mean, and the labels, legend and marks asked for (each mark with its pixel position). Convert positions you pick with image_to_world instead of computing them. '
           'No side effects (only when the tiles of the map on screen cannot be fetched off screen does the view move there for a moment and back; the result says so). Without a georeference there is no map (set_site); when the tiles fail (offline) the picture shows the drawing alone and says why.',
       inputSchema: obj({
         'region': str(
@@ -101,10 +111,12 @@ List<AgentTool> visionTools(AgentToolbox b) {
         'pixel_bbox': _pixelBox,
         'base_map': baseMapInput,
         'drawing': bool_('Draw the project over the map (default true; false shows the map alone).'),
-        'size': _size(),
+        'size': pictureSizeInput(b),
         'grid': _grid(),
         'labels': str('Short labels next to the items: "ids", "names" or "none" (default). Hydraulic items first; labels that would overlap are left out.', ['none', 'ids', 'names']),
         'legend': bool_('A legend of the layer colours of the items shown, top right (default false).'),
+        'colour_by': colourByInput(),
+        'marks': marksInput(),
       }),
       summary: (i) => _snapshotSummary(b, i),
       handler: (i) async => snapshotTool(b, ToolArgs(i)),
@@ -121,6 +133,9 @@ List<AgentTool> visionTools(AgentToolbox b) {
           'pixels': _pixels('[[px, py], …] on that image, pixels from its top-left corner (px right, py down).'),
           'pts': {...points, 'maxItems': 500, 'description': '[[x, y], …] in metres: project points to place on that image.'},
           'closed': bool_('The pixels outline a polygon: also give its area and perimeter.'),
+          'snap': bool_(
+            'Snap every point converted from pixels to the nearest vertex of an item within about 6 pixels (a pipe or lateral end, a valve, a corner of an area), else onto the nearest line (a pipe, lateral, outline): new items then meet the existing ones exactly, as the network joins only coincident points. Each snapped point says to what (default false).',
+          ),
         },
         required: ['snapshot'],
       ),
@@ -133,7 +148,20 @@ List<AgentTool> visionTools(AgentToolbox b) {
         if (a.has('pixels')) {
           final px = _pixelsOf(i['pixels'], '"pixels"');
           final world = [for (final (x, y) in px) m.toWorld(x, y)];
+          String? snapped;
+          if (a.flag('snap') ?? false) {
+            final r = math.max(0.5, 6 * m.mpp);
+            final hits = <String>[];
+            for (var k = 0; k < world.length; k++) {
+              final s = snapPoint(b, world[k], r);
+              if (s == null) continue;
+              world[k] = s.$1;
+              hits.add('#${k + 1} ${s.$2}');
+            }
+            snapped = hits.isEmpty ? 'Snap: no item within ${fmt(r, 2)} m of these points; they stay as picked.' : 'Snapped within ${fmt(r, 2)} m: ${hits.join('; ')}.';
+          }
           out.add('World points [x, y] in m: ${_json(world)}');
+          if (snapped != null) out.add(snapped);
           final outside = [
             for (var k = 0; k < px.length; k++)
               if (!m.contains(px[k].$1, px[k].$2)) '#${k + 1}',
@@ -186,13 +214,59 @@ List<AgentTool> visionTools(AgentToolbox b) {
           'bbox': bbox,
           'base_map': baseMapInput,
           'drawing': bool_('Draw the project under the shapes (default true).'),
-          'size': _size(),
+          'size': pictureSizeInput(b),
           'grid': _grid(),
         },
         required: ['shapes'],
       ),
       summary: (i) => t('ai.vis.preview', {'n': '${(i['shapes'] as List?)?.length ?? 0}'}),
       handler: (i) async => _previewTool(b, ToolArgs(i)),
+    ),
+    FnTool(
+      name: 'trace_region',
+      description:
+          'Outlines one region of the aerial image from a point inside it — a field, a lawn, a pond, a paved yard, a roof — by image processing on the satellite map, not by eye: the region grows from the point over the pixels of similar colour and texture, at the tolerance where its area stops growing (before it leaks into the next field), and its edge is traced to a fraction of a pixel, smoothed and simplified. '
+          'Far more exact than picking vertices on a picture: use it for field limits and obstacles, look at its picture, then create the area (create_entities type "area" with the points) or an exclusion. '
+          'The point: at [x, y] in metres, or pixel [px, py] on picture snapshot. The search starts on that picture\'s area (or bbox, or 300 m around the point) and grows by itself while the region reaches its edge (up to 3 km). '
+          'Output: a picture with the outline in magenta (R1; holes H1… when asked), the outline [[x, y], …] in metres rounded to 0.01 m (counter-clockwise), its area, perimeter and vertex count, the tolerance used and where the region would leak, the holes it filled (trees, buildings, water inside), and warnings (no clear boundary, the point on an edge, imagery missing). '
+          'No side effects. Needs a georeference and the online imagery. Errors: no georeference (set_site); the point where the imagery has no data. It cannot split two fields of the same crop with no visible boundary between them: then draw the limit yourself.',
+      inputSchema: obj({
+        'at': {...point, 'description': 'A point inside the region, [x, y] in metres.'},
+        'pixel': {...point, 'description': '[px, py]: a point inside the region on picture snapshot (pixels from its top-left corner).'},
+        'snapshot': str('Id of the picture the pixel is on ("s3"); the search starts on its area.'),
+        'bbox': {...bbox, 'description': 'Area to search, [minX, minY, maxX, maxY] in metres (default: the picture\'s area, or 300 m around the point); it grows while the region reaches its edge.'},
+        'tolerance': num_(
+          'Colour tolerance in ΔE, 1–80 (default: automatic, where the area stops growing). Raise it when the outline stops short inside a varied field, lower it when it leaks into the next one.',
+        ),
+        'blur_m': num_('Side of the box the colours are averaged over, 0.2–10 m (default 1): raise it for wide rows and orchards (3–6 m) so that rows, gaps and crowns read as one field.'),
+        'detail_m': num_('Simplification of the outline, 0.05–20 m (default about one pixel of the imagery, at least 0.25 m).'),
+        'holes': bool_('Also give the outlines of the largest holes found inside (up to 8: trees, buildings, ponds), e.g. to keep them dry (default false: only their count and area).'),
+        'base_map': {...baseMapInput, 'description': 'Imagery to trace on: "satellite" (default), "current" (the map on screen) or "street".'},
+      }),
+      summary: (_) => t('ai.vis.trace'),
+      handler: (i) async => _traceTool(b, ToolArgs(i)),
+    ),
+    FnTool(
+      name: 'trace_fields',
+      description:
+          'Outlines EVERY field, lawn or other uniform region of an area of the aerial image at once, by the same image analysis as trace_region from seeds all over it: each region grows over similar colours to where its area stops growing, earlier regions are walls for the next ones, and roads, tracks, hedges (narrower than min_width_m on average), specks (smaller than min_area_ha) and regions the edge of the area cuts are left out. '
+          'Use it to map a farm\'s fields in one call, then check its picture and create the areas you want (create_entities type "area"); trace_region outlines one more from a point, with its own tolerance. '
+          'Area: region "view" (default), "drawing", "bbox" or "snapshot" (an earlier picture\'s area), up to 3 km a side. Output: a picture with every outline in magenta, labelled F1, F2… (largest first), and per field its area, perimeter, mean width, centroid and outline [[x, y], …] in metres (counter-clockwise; when the text would grow too long the last outlines are left out and their centroids given for trace_region), with what was left out and why. '
+          'No side effects. Needs a georeference and the online imagery. It cannot split two fields of one crop with no visible limit, and soil, water or paving between fields come out as regions of their own: keep only the ones you need.',
+      inputSchema: obj({
+        'region': str('What to analyse: "view" (the user\'s screen; default), "drawing", "bbox", "snapshot".', ['view', 'drawing', 'bbox', 'snapshot']),
+        'bbox': bbox,
+        'snapshot': str('Id of an earlier picture whose area to analyse ("s3").'),
+        'min_area_ha': num_('Smallest region kept, 0.01–100 ha (default 0.2).'),
+        'min_width_m': num_('Narrowest mean width kept, 1–200 m (default 10): roads, tracks and hedges fall below it.'),
+        'blur_m': num_('Side of the box the colours are averaged over, 0.2–10 m (default 1.5): raise it for orchards and wide rows.'),
+        'detail_m': num_('Simplification of the outlines, 0.1–20 m (default about one pixel, at least 0.75 m).'),
+        'max_fields': int_('Most regions listed, 1–60 (default 30), largest first.'),
+        'include_edge': bool_('Also keep the regions the edge of the area cuts (default false: pan or give a larger bbox to have them whole).'),
+        'base_map': {...baseMapInput, 'description': 'Imagery to analyse: "satellite" (default), "current" or "street".'},
+      }),
+      summary: (_) => t('ai.vis.traceAll'),
+      handler: (i) async => _traceFieldsTool(b, ToolArgs(i)),
     ),
     FnTool(
       name: 'terrain_picture',
@@ -223,11 +297,11 @@ List<AgentTool> visionTools(AgentToolbox b) {
         ]),
         'hillshade': bool_('Shade the relief, lit from the north-west (default true).'),
         'contours': bool_('Labelled contour lines (default true).'),
-        'interval_m': num_('Contour interval in m, 0.1–500 (default: a round value giving 10–15 lines).'),
+        'interval_m': num_('Contour interval in m, 0.1–500 (default: a round value giving about 6–14 lines over the relief shown).'),
         'base_map': {...baseMapInput, 'description': 'Map under the terrain colours: "none" (default), "satellite", "current" or "street".'},
         'opacity': num_('Opacity of the terrain colours, 0.2–1 (default 1, or 0.55 over a base map).'),
         'drawing': bool_('Draw the project over the terrain (default false).'),
-        'size': _size(),
+        'size': pictureSizeInput(b),
         'grid': _grid(),
       }),
       summary: (i) => i['colour'] == 'slope' || i['colour'] == 'aspect' ? t('ai.vis.terrainSlope') : t('ai.vis.terrain'),
@@ -294,6 +368,60 @@ extension<T> on T {
   R let<R>(R Function(T) f) => f(this);
 }
 
+/// [p] snapped to the nearest vertex within [r] of an item a new one may
+/// meet (hydraulic items, areas, lines and polylines, circle centres), else
+/// to the nearest point on one of their lines; with what it met. Null when
+/// nothing lies within [r].
+(Pt, String)? snapPoint(AgentToolbox b, Pt p, double r) {
+  final idx = b.c.index;
+  final cand = [
+    for (final i in idx.query(Bounds(p.x - r, p.y - r, p.x + r, p.y + r)))
+      if (_snappable(idx.entities[i])) idx.entities[i],
+  ];
+  Pt? best;
+  String? what;
+  var bd = r;
+  void consider(Pt q, Entity e, String role) {
+    final d = q.distanceTo(p);
+    if (d < bd) {
+      bd = d;
+      best = q;
+      what = '${e.type.name} ${e.id} $role';
+    }
+  }
+
+  for (final e in cand) {
+    switch (e) {
+      case PivotEntity x:
+        consider(x.center, e, 'centre');
+      case CircleEntity x:
+        consider(x.center, e, 'centre');
+      case PointEntity x:
+        consider(x.position, e, 'position');
+      default:
+        final pts = e.linearPoints;
+        if (pts == null) continue;
+        for (var k = 0; k < pts.length; k++) {
+          consider(pts[k], e, k == 0 ? 'start' : (k == pts.length - 1 && !e.isClosedShape ? 'end' : 'vertex ${k + 1}'));
+        }
+    }
+  }
+  if (best != null) return (best!, 'to the ${what!} ${AgentToolbox.pt(best!)} (${fmt(bd, 2)} m away)');
+  for (final e in cand) {
+    final pts = e.linearPoints;
+    if (pts == null || pts.length < 2) continue;
+    final n = e.isClosedShape ? pts.length : pts.length - 1;
+    for (var k = 0; k < n; k++) {
+      final (q, _) = closestPointOnSegment(p, pts[k], pts[(k + 1) % pts.length]);
+      consider(q, e, 'line (segment ${k + 1})');
+    }
+  }
+  if (best == null) return null;
+  return (best!, 'onto the ${what!} at ${AgentToolbox.pt(best!)} (${fmt(bd, 2)} m away)');
+}
+
+bool _snappable(Entity e) => e.isHydraulic || e is AreaEntity || e is LineEntity || e is PolylineEntity || e is CircleEntity || e is ControllerEntity || e is WireEntity;
+
 // ---------------------------------------------------------------- preview_geometry
 
 /// Magenta: no layer of the program uses it.
@@ -340,14 +468,15 @@ Future<ToolOutput> _previewTool(AgentToolbox b, ToolArgs a) async {
   final all = Bounds.ofPoints([for (final s in shapes) ...s.pts]);
   Bounds world;
   if (a.has('bbox')) {
-    world = bboxOf(a.input['bbox']);
+    world = pictureMinimumFrame(bboxOf(a.input['bbox']));
   } else if (m != null && !all.isEmpty && m.world.contains(Pt(all.minX, all.minY)) && m.world.contains(Pt(all.maxX, all.maxY))) {
     world = m.world;
   } else {
     final span = math.max(all.width, all.height);
     world = all.inflate(math.max(10.0, 0.15 * span));
   }
-  final size = a.integer('size', min: 256, max: maxPictureSide) ?? defaultPictureSide;
+  final sized = <String>[];
+  final size = pictureSideOf(b, a, sized);
   final maps = pictureMapsFor(b.c, a.input['base_map']);
   final drawing = a.flag('drawing') ?? true;
   final grid = pictureGridOf(a);
@@ -375,6 +504,8 @@ Future<ToolOutput> _previewTool(AgentToolbox b, ToolArgs a) async {
     (id) => VisionSpec(
       world: world,
       maxSide: size,
+      maxPixels: b.pictures.maxPixels,
+      maxShort: b.pictures.maxShortSide,
       maps: maps,
       drawing: drawing,
       grid: grid,
@@ -386,6 +517,7 @@ Future<ToolOutput> _previewTool(AgentToolbox b, ToolArgs a) async {
       ],
     ),
     what: (img) => '${pictureWhat(img, drawing: drawing)} with ${shapes.length} proposed shape${shapes.length == 1 ? '' : 's'} in magenta',
+    lead: (_) => sized,
     tail: (img, pic) => [
       ...lines,
       if (warnings.isNotEmpty) 'Warnings: ${warnings.join(' ')}',
@@ -473,6 +605,241 @@ void _paintShapes(Canvas canvas, PictureFrame f, List<_Shape> shapes) {
   }
 }
 
+// ---------------------------------------------------------------- trace_region
+
+/// Largest side of the area trace_region searches (m), and its pixels.
+const _traceMaxSpan = 3000.0;
+const _tracePixels = 1000000;
+
+Future<ToolOutput> _traceTool(AgentToolbox b, ToolArgs a) async {
+  final c = b.c;
+  final r = switch (b.snapshots) {
+    final VisionRenderer v => v,
+    _ => throw ToolInputError('Pictures cannot be made here.'),
+  };
+  if (c.project.meta.georef == null) {
+    throw ToolInputError('trace_region reads the aerial image of the site, and the project has no georeference: set_site first (find_site gives the coordinates of an address).');
+  }
+  Pt seed;
+  SnapshotMapping? pic;
+  if (a.has('at')) {
+    seed = a.point('at')!;
+  } else if (a.has('pixel')) {
+    pic = pictureMappingOf(b, a.str('snapshot'));
+    final q = a.point('pixel')!;
+    seed = pic.toWorld(q.x, q.y);
+  } else {
+    throw ToolInputError('Give a point inside the region: at [x, y] in metres, or pixel [px, py] with snapshot.');
+  }
+  Bounds around(Pt q, double side) => Bounds(q.x - side / 2, q.y - side / 2, q.x + side / 2, q.y + side / 2);
+  Bounds frame;
+  if (a.has('bbox')) {
+    frame = bboxOf(a.input['bbox']);
+    if (!frame.contains(seed)) throw ToolInputError('The point ${AgentToolbox.pt(seed)} lies outside bbox ${AgentToolbox.box(frame)}.');
+  } else {
+    if (pic == null && a.has('snapshot')) pic = pictureMappingOf(b, a.str('snapshot'));
+    final w = pic?.world;
+    frame = w != null && w.contains(seed) && math.max(w.width, w.height) <= 800 ? w : around(seed, 300);
+  }
+  if (math.max(frame.width, frame.height) > _traceMaxSpan) frame = around(seed, _traceMaxSpan);
+  final maps = pictureMapsFor(c, a.input['base_map'] ?? 'satellite');
+  if (maps.isEmpty) throw ToolInputError('trace_region needs an aerial or street map ("satellite", "current" or "street").');
+  final o = RegionTraceOptions(tolerance: a.number('tolerance', min: 1, max: 80), blurM: a.number('blur_m', min: 0.2, max: 10) ?? 1.0, simplifyM: a.number('detail_m', min: 0.05, max: 20));
+  final wantHoles = a.flag('holes') ?? false;
+  RegionTrace res;
+  SnapshotImage img;
+  var grown = 0;
+  while (true) {
+    img = await r.render(
+      c,
+      VisionSpec(
+        world: frame,
+        maxSide: 1100,
+        maxPixels: _tracePixels,
+        maps: maps,
+        drawing: false,
+        grid: GridDensity.none,
+        background: false,
+        tiles: VisionSession.of(b).tiles,
+        onScreenFallback: false,
+        keepPixels: true,
+      ),
+    );
+    final px = img.rgba;
+    if (img.map == null || px == null) {
+      throw ToolInputError('The imagery could not be loaded here, so nothing can be traced (${img.notes.join(' ')}). Try again, or trace by eye on a view_snapshot picture.');
+    }
+    final f = img.frame;
+    final (sx, sy) = f.toPixel(seed);
+    // the screen paints its progress before the work
+    await Future<void>.delayed(Duration.zero);
+    try {
+      res = traceRegion(px, img.width, img.height, seedX: sx, seedY: sy, pixelM: f.mpp, toWorld: f.toWorld, o: o);
+    } on RegionTraceError catch (e) {
+      throw ToolInputError('${e.message} Pick a point well inside the region, on the imagery.');
+    }
+    if (!res.touchesEdge || grown >= 3 || math.max(frame.width, frame.height) >= _traceMaxSpan - 1) break;
+    // the region reaches the edge of the area searched: a larger one around it
+    final rb = res.outline.isEmpty ? Bounds.ofPoints([seed]) : Bounds.ofPoints(res.outline);
+    final double side = math.min(_traceMaxSpan, 2.0 * math.max(math.max(frame.width, frame.height), math.max(rb.width, rb.height)));
+    frame = around(rb.center, side);
+    if (!frame.contains(seed)) frame = around(seed, side);
+    grown++;
+  }
+  final ring = res.outline;
+  if (ring.length < 3) throw ToolInputError('Nothing could be traced around ${AgentToolbox.pt(seed)}: the region is only a few pixels. Pick a point well inside it, or give a larger tolerance.');
+  final mpp = img.frame.mpp;
+  final area = polygonArea(ring).abs();
+  final lines = <String>[
+    'Traced on ${mapSourceName(img.map!)}${img.zoom == null ? '' : ' (tile zoom ${img.zoom})'} at ${fmt(mpp, mpp < 1 ? 2 : 1)} m per pixel, from ${AgentToolbox.pt(seed)}; area searched ${AgentToolbox.box(frame)} m${grown > 0 ? ' (grown $grown× while the region reached its edge)' : ''}.',
+    'R1 outline: ${ring.length} vertices, area ${fmt(area, 1)} m² (${fmt(area / 1e4, 4)} ha), perimeter ${fmt(polylineLength([...ring, ring.first]), 2)} m, centroid ${AgentToolbox.pt(polygonCentroid(ring))}; pts ${_json(ring)} (counter-clockwise, metres).',
+    if (!res.automatic)
+      'Tolerance ${fmt(res.tolerance, 1)} ΔE, as given${res.leakTolerance == null ? '' : '; at ${fmt(res.leakTolerance!, 1)} ΔE the region would grow to ${fmt(res.leakAreaM2! / 1e4, 3)} ha'}.'
+    else if (res.clearBoundary)
+      'Tolerance ${fmt(res.tolerance, 1)} ΔE, found where the region stopped growing at its boundary${res.leakTolerance == null ? '' : '; at ${fmt(res.leakTolerance!, 1)} ΔE it would spread across it to ${fmt(res.leakAreaM2! / 1e4, 3)} ha'}.'
+    else
+      'Tolerance ${fmt(res.tolerance, 1)} ΔE, the flattest point found: no clear boundary (the colours change gradually here). Check the picture; give tolerance or blur_m when the outline is wrong.',
+    if (res.holeCount > 0)
+      'Holes inside, filled: ${res.holeCount} of at least ${fmt(o.minHoleM2, 0)} m² (${fmt(res.holeAreaM2, 1)} m² in all): trees, buildings or water to keep dry, perhaps${wantHoles ? '' : ' (holes true gives their outlines)'}.',
+    if (wantHoles)
+      for (var k = 0; k < res.holes.length; k++) 'H${k + 1}: area ${fmt(polygonArea(res.holes[k]).abs(), 1)} m², pts ${_json(res.holes[k])}',
+    if (res.seedSpread > 6)
+      'The point seems to lie on an edge or on a small object (its colours vary by ${fmt(res.seedSpread, 1)} ΔE): when the outline is wrong, pick a point well inside the region.',
+    if (2 * area / polylineLength([...ring, ring.first]) < 6)
+      'R1 is narrow (${fmt(2 * area / polylineLength([...ring, ring.first]), 1)} m wide on average): a row, a strip or a path. When it should be a whole field of rows (an orchard, a vineyard, a wide-row crop), ask again with blur_m about the row spacing or more (3–6 m).',
+    if (res.touchesEdge) 'The region still reaches the edge of the area searched: it may go on beyond ${AgentToolbox.box(frame)} m.',
+    if (res.touchesNoData) 'Part of the imagery around the region did not load: the outline may stop where the tiles are missing.',
+    ...img.notes.where((n) => n.contains('enlarges') || n.contains('missing')),
+    'The project was not changed: create the area from these points when the picture shows the right outline.',
+  ];
+  final shapes = [
+    _Shape('polygon', ring, 'R1'),
+    if (wantHoles)
+      for (var k = 0; k < res.holes.length; k++) _Shape('polygon', res.holes[k], 'H${k + 1}'),
+  ];
+  final rb = Bounds.ofPoints(ring);
+  final view = rb.inflate(math.max(10.0, 0.12 * math.max(rb.width, rb.height)));
+  return pictureOutput(
+    b,
+    (id) => VisionSpec(
+      world: view,
+      maxSide: defaultPictureSide,
+      maxPixels: b.pictures.maxPixels,
+      maxShort: b.pictures.maxShortSide,
+      maps: maps,
+      caption: id,
+      tiles: VisionSession.of(b).tiles,
+      over: [
+        (f) async =>
+            (canvas, frame) => _paintShapes(canvas, frame, shapes),
+      ],
+    ),
+    what: (img) => '${pictureWhat(img, drawing: true)} with the traced outline in magenta',
+    tail: (_, _) => lines,
+  );
+}
+
+// ---------------------------------------------------------------- trace_fields
+
+/// Characters of outlines trace_fields lists at most (a tool result is cut
+/// at 16 000).
+const _fieldsTextBudget = 11000;
+
+Future<ToolOutput> _traceFieldsTool(AgentToolbox b, ToolArgs a) async {
+  final c = b.c;
+  final r = switch (b.snapshots) {
+    final VisionRenderer v => v,
+    _ => throw ToolInputError('Pictures cannot be made here.'),
+  };
+  if (c.project.meta.georef == null) {
+    throw ToolInputError('trace_fields reads the aerial image of the site, and the project has no georeference: set_site first (find_site gives the coordinates of an address).');
+  }
+  var world = pictureWorld(b, a);
+  if (math.max(world.width, world.height) > _traceMaxSpan) {
+    throw ToolInputError(
+      'The area is ${fmt(math.max(world.width, world.height), 0)} m across: trace_fields takes at most ${fmt(_traceMaxSpan, 0)} m. Give a smaller bbox (or zoom the view in), or analyse the farm in parts.',
+    );
+  }
+  final maps = pictureMapsFor(c, a.input['base_map'] ?? 'satellite');
+  if (maps.isEmpty) throw ToolInputError('trace_fields needs an aerial or street map ("satellite", "current" or "street").');
+  final o = RegionsOptions(
+    minAreaM2: (a.number('min_area_ha', min: 0.01, max: 100) ?? 0.2) * 1e4,
+    minWidthM: a.number('min_width_m', min: 1, max: 200) ?? 10,
+    blurM: a.number('blur_m', min: 0.2, max: 10) ?? 1.5,
+    simplifyM: a.number('detail_m', min: 0.1, max: 20),
+    maxRegions: a.integer('max_fields', min: 1, max: 60) ?? 30,
+    includeEdge: a.flag('include_edge') ?? false,
+  );
+  final img = await r.render(
+    c,
+    VisionSpec(
+      world: world,
+      maxSide: 1400,
+      maxPixels: 1400000,
+      maps: maps,
+      drawing: false,
+      grid: GridDensity.none,
+      background: false,
+      tiles: VisionSession.of(b).tiles,
+      onScreenFallback: false,
+      keepPixels: true,
+    ),
+  );
+  final px = img.rgba;
+  if (img.map == null || px == null) {
+    throw ToolInputError('The imagery could not be loaded here, so nothing can be traced (${img.notes.join(' ')}). Try again, or trace by eye on a view_snapshot picture.');
+  }
+  world = img.world;
+  final f = img.frame;
+  // the screen paints its progress before the work
+  await Future<void>.delayed(Duration.zero);
+  final res = await traceRegions(px, img.width, img.height, pixelM: f.mpp, toWorld: f.toWorld, o: o, cancelled: () => b.host?.stopped ?? false);
+  final fields = res.regions;
+  final lines = <String>[
+    'Analysed ${AgentToolbox.box(world)} m on ${mapSourceName(img.map!)}${img.zoom == null ? '' : ' (tile zoom ${img.zoom})'} at ${fmt(f.mpp, f.mpp < 1 ? 2 : 1)} m per pixel: ${fields.length} region${fields.length == 1 ? '' : 's'} kept${res.truncated ? ' (the first ${o.maxRegions}, largest first: max_fields lists more)' : ''}.',
+    'Left out: ${res.small} smaller than ${fmt(o.minAreaM2 / 1e4, 2)} ha, ${res.thin} narrower than ${fmt(o.minWidthM, 0)} m on average (roads, tracks, hedges), ${res.unclear} without a clear boundary, ${res.edge} cut by the edge of the area${o.includeEdge ? '' : ' (include_edge true keeps them)'}.',
+  ];
+  var used = 0;
+  final skipped = <String>[];
+  for (var k = 0; k < fields.length; k++) {
+    final g = fields[k];
+    final cen = polygonCentroid(g.outline);
+    final head =
+        'F${k + 1}: ${fmt(g.areaM2, 0)} m² (${fmt(g.areaM2 / 1e4, 3)} ha), perimeter ${fmt(g.perimeterM, 1)} m, mean width ${fmt(g.meanWidthM, 0)} m, centroid ${AgentToolbox.pt(cen)}, tolerance ${fmt(g.tolerance, 1)} ΔE${g.touchesEdge ? ', cut by the edge' : ''}${g.holeCount > 0 ? ', ${g.holeCount} hole${g.holeCount == 1 ? '' : 's'} filled (${fmt(g.holeAreaM2, 0)} m²)' : ''}';
+    final pts = _json(g.outline);
+    if (used + pts.length <= _fieldsTextBudget) {
+      used += pts.length;
+      lines.add('$head; pts $pts');
+    } else {
+      lines.add(head);
+      skipped.add('F${k + 1}');
+    }
+  }
+  if (skipped.isNotEmpty) {
+    lines.add('Outlines not listed to keep this result short: ${skipped.join(', ')} — trace_region {at: its centroid} gives each, or ask again with a smaller area or a larger detail_m.');
+  }
+  lines.add('The project was not changed: create the areas you want from these points after checking the picture.');
+  final shapes = [for (var k = 0; k < fields.length; k++) _Shape('polygon', fields[k].outline, 'F${k + 1}')];
+  return pictureOutput(
+    b,
+    (id) => VisionSpec(
+      world: world,
+      maxSide: defaultPictureSide,
+      maxPixels: b.pictures.maxPixels,
+      maxShort: b.pictures.maxShortSide,
+      maps: maps,
+      caption: id,
+      tiles: VisionSession.of(b).tiles,
+      over: [
+        (f) async =>
+            (canvas, frame) => _paintShapes(canvas, frame, shapes),
+      ],
+    ),
+    what: (img) => '${pictureWhat(img, drawing: true)} with the ${fields.length} traced outlines in magenta',
+    tail: (_, _) => lines,
+  );
+}
+
 // ---------------------------------------------------------------- terrain_picture
 
 Future<ToolOutput> _terrainPictureTool(AgentToolbox b, ToolArgs a) async {
@@ -495,7 +862,8 @@ Future<ToolOutput> _terrainPictureTool(AgentToolbox b, ToolArgs a) async {
     opacity: a.number('opacity', min: 0.2, max: 1) ?? (maps.isEmpty ? 1 : 0.55),
   );
   final drawing = a.flag('drawing') ?? false;
-  final size = a.integer('size', min: 256, max: maxPictureSide) ?? defaultPictureSide;
+  final sized = <String>[];
+  final size = pictureSideOf(b, a, sized);
   TerrainLayer? layer;
   try {
     return await pictureOutput(
@@ -503,6 +871,8 @@ Future<ToolOutput> _terrainPictureTool(AgentToolbox b, ToolArgs a) async {
       (id) => VisionSpec(
         world: world,
         maxSide: size,
+        maxPixels: b.pictures.maxPixels,
+        maxShort: b.pictures.maxShortSide,
         maps: maps,
         drawing: drawing,
         grid: pictureGridOf(a),
@@ -531,7 +901,11 @@ Future<ToolOutput> _terrainPictureTool(AgentToolbox b, ToolArgs a) async {
         final map = img.map == null ? '' : ' over ${mapSourceName(img.map!)}${img.zoom == null ? '' : ' (tile zoom ${img.zoom})'}';
         return 'terrain relief (${parts.join(', ')})$map${drawing ? ', the drawing on top' : ''}';
       },
-      lead: (_) => ['Terrain: ${b.p.params.terrainMethod == TerrainMethod.tin ? 'TIN' : 'inverse-distance'} model from ${TerrainCoverage.of(tr).samples.length} height samples.', ?layer?.describe()],
+      lead: (_) => [
+        ...sized,
+        'Terrain: ${b.p.params.terrainMethod == TerrainMethod.tin ? 'TIN' : 'inverse-distance'} model from ${TerrainCoverage.of(tr).samples.length} height samples.',
+        ?layer?.describe(),
+      ],
     );
   } finally {
     layer?.dispose();
@@ -577,41 +951,74 @@ Future<ViewPicture?> captureUserView(ProjectController c, {ViewSnapshots? snapsh
     final SnapshotImage img;
     if (s is VisionRenderer) {
       final r = s as VisionRenderer;
-      img = await r.render(c, VisionSpec(world: world, maxSide: side, maps: c.baseMap == BaseMap.none ? const [] : [c.baseMap], caption: id, onScreenFallback: false));
+      img = await r.render(c, VisionSpec(world: world, maxSide: side, maps: c.baseMap == BaseMap.none ? const [] : [c.baseMap], caption: id, onScreenFallback: false, mapOpacity: c.baseMapOpacity));
     } else {
       img = await s.drawing(c, world, side);
     }
-    final m = session.add(id, img.frame, pictureWhat(img, drawing: true, subject: 'the user\'s view of the drawing'));
+    final m = session.add(id, img.frame, pictureWhat(img, drawing: true, subject: 'the user\'s view of the drawing'), geo: pictureGeoKey(c));
     return ViewPicture(img.png, [m.describe(), ...img.notes].join('\n'), name: 'view-$id.${img.jpeg == null ? 'png' : 'jpg'}', jpeg: img.jpeg);
   } catch (_) {
     return null;
   }
 }
 
-/// A small picture (768 px) of the whole drawing over the base map on
-/// screen after a change, for the setting "show the AI the drawing after
-/// its changes". Registered like the tools' pictures: its id is written in
-/// its corner and [lastFeedbackMapping] gives its mapping. Null where it
-/// cannot be drawn.
+/// A small picture (768 px) of the drawing over the base map on screen
+/// after a round of changes, for the setting "show the AI the drawing after
+/// its changes": framed on what the round changed when that is a small part
+/// of the drawing (else the whole drawing), the changes marked (cyan added,
+/// amber changed, dashed red removed). Registered like the tools' pictures:
+/// its id is written in its corner and [lastFeedbackMapping] gives its
+/// mapping and what it marks. Null where it cannot be drawn, and when the
+/// round changed no item (only settings: nothing new to see).
 Future<ToolImage?> feedbackPicture(AgentToolbox b) async {
   final s = b.snapshots;
   if (s == null) return null;
   final c = b.c;
-  var world = b.p.bounds;
-  if (world.isEmpty) return null;
-  world = world.inflate(math.max(2.0, 0.05 * math.max(world.width, world.height)));
+  final all = b.p.bounds;
+  if (all.isEmpty) return null;
+  final diff = b.changes.round;
+  if (diff == null || diff.isEmpty) return null;
+  var world = all;
+  var framed = false;
+  final ch = diff.bounds;
+  if (!ch.isEmpty) {
+    final around = ch.inflate(math.max(15.0, 0.35 * math.max(ch.width, ch.height)));
+    if (around.width * around.height < 0.5 * all.width * all.height) {
+      world = around;
+      framed = true;
+    }
+  }
+  if (!framed) world = all.inflate(math.max(2.0, 0.05 * math.max(all.width, all.height)));
+  final marks = ChangeMarks(diff, since: 'in this round of tools');
   try {
     final session = VisionSession.of(b);
     final id = session.nextId('s');
     final SnapshotImage img;
     if (s is VisionRenderer) {
       final r = s as VisionRenderer;
-      img = await r.render(c, VisionSpec(world: world, maxSide: 768, maps: c.baseMap == BaseMap.none ? const [] : [c.baseMap], caption: id, tiles: session.tiles, onScreenFallback: false));
+      img = await r.render(
+        c,
+        VisionSpec(
+          world: world,
+          maxSide: 768,
+          maxPixels: b.pictures.maxPixels,
+          maxShort: b.pictures.maxShortSide,
+          maps: c.baseMap == BaseMap.none ? const [] : [c.baseMap],
+          caption: id,
+          tiles: session.tiles,
+          onScreenFallback: false,
+          over: [(f) async => marks.paint],
+        ),
+      );
     } else {
       img = await s.drawing(c, world, 768);
     }
-    final m = session.add(id, img.frame, pictureWhat(img, drawing: true, subject: 'the drawing after the change'));
-    session.lastFeedback = m.describe();
+    final m = session.add(id, img.frame, pictureWhat(img, drawing: true, subject: 'the drawing after the change'), geo: pictureGeoKey(c));
+    session.lastFeedback = [
+      m.describe(),
+      framed ? 'Framed on what this round changed; the whole drawing spans ${AgentToolbox.box(all)} m.' : 'The whole drawing.',
+      marks.describe(img.frame),
+    ].join(' ');
     return img.forModel;
   } catch (_) {
     return null;

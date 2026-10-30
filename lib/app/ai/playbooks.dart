@@ -142,9 +142,11 @@ References: read_example orchard (a micro-sprinkler block and a drip block on a 
    - download_terrain (the examples slope 0.5–1 %), terrain_info (how dense the data are, where they are thin), then terrain_picture
      {region "bbox", bbox, base_map "satellite"} for the relief and its contours over the image (colour "slope" shows the steep parts);
      download_climate for ETo and rain.
-   - Trace what you see: pick the corners on the picture, image_to_world {snapshot, pixels, closed true} gives the coordinates in metres,
-     preview_geometry {shapes [{kind "polygon", pts, label}], base_map "satellite"} checks them over the image (nothing is created);
-     then create them in the next step.
+   - Trace what you see: trace_region {snapshot, pixel [px, py] well inside a field, lawn or pond} outlines it by image analysis, far
+     more exactly than by eye (check its picture; blur_m 3–6 for wide rows and orchards, tolerance when it leaks or stops short; it
+     cannot split two fields of one crop with no visible limit). For the rest pick the corners on the picture: image_to_world
+     {snapshot, pixels, closed true} gives the coordinates in metres, preview_geometry {shapes [{kind "polygon", pts, label}],
+     base_map "satellite"} checks them over the image (nothing is created); then create them in the next step.
    If the user attached a survey or plan, import_attachment it instead of tracing: a DXF or DWG keeps its own coordinates, so follow the
    placement its result gives (set_georeference "utm" for UTM coordinates, else align_entities onto two points of the satellite picture),
    then check it with view_snapshot {region "drawing", base_map "satellite"}.
@@ -168,7 +170,7 @@ References: read_example orchard (a micro-sprinkler block and a drip block on a 
    - submain "start" (the end the direction points away from: the west end for 0°, the south end for 90°), "end", or "centre" (laterals
      both ways, half as long); on a slope put it on the high side. Pass zone_name; without valve generate_block picks the smallest
      control valve whose flow range holds the block flow (ev80 3" in the orchard, ev50 2" for bananas); give valve only to force a model.
-   - view_snapshot {region "drawing"} to check the blocks.
+   - view_snapshot {region "drawing", colour_by "zones"} to check the blocks and what each valve feeds.
 5. Network (list_entities types ["controlValve"] gives the valve positions).
    - waterSupply at the source: calc true, wl = the water level from the ground (−5 shallow well, −30 deep well, +1.5 reservoir); place it
      where the satellite picture shows the well or the reservoir.
@@ -220,9 +222,11 @@ References: read_example rowCrop (four tomato blocks on thin-wall tape, two bloc
    - download_terrain (the slope decides the lateral direction and length), terrain_info, then terrain_picture {region "bbox", bbox,
      base_map "satellite"}: the contours give the direction of level laterals, colour "slope" the parts above 1–2 %; terrain_profile
      {pts} along and across the rows gives the fall each way. download_climate (ETo and rain by month).
-   - Trace what you see: pick the corners on the picture, image_to_world {snapshot, pixels, closed true} gives the coordinates in metres,
-     preview_geometry {shapes [{kind "polygon", pts, label}], base_map "satellite"} checks them over the image (nothing is created);
-     then create them in the next step.
+   - Trace what you see: trace_region {snapshot, pixel [px, py] well inside a field, lawn or pond} outlines it by image analysis, far
+     more exactly than by eye (check its picture; blur_m 3–6 for wide rows and orchards, tolerance when it leaks or stops short; it
+     cannot split two fields of one crop with no visible limit). For the rest pick the corners on the picture: image_to_world
+     {snapshot, pixels, closed true} gives the coordinates in metres, preview_geometry {shapes [{kind "polygon", pts, label}],
+     base_map "satellite"} checks them over the image (nothing is created); then create them in the next step.
    If the user attached a survey or plan, import_attachment it instead and place it as its result says (a DXF or DWG keeps its own
    coordinates: set_georeference "utm" for UTM coordinates, else align_entities onto two points of the satellite picture).
 3. Field and blocks.
@@ -246,7 +250,7 @@ References: read_example rowCrop (four tomato blocks on thin-wall tape, two bloc
      for these 13–35 m³/h blocks): give valve only to force a model.
    - On slopes above 1–2 % run the laterals level along the contours, or downhill from a submain on the high side.
    - Buried drip: update_entities depth 0.3 on the tapes, 0.6 on the submains and stubs, 0.8 on the mainline (as sugarcane; ≤ 300 per call).
-   - view_snapshot {region "drawing"} to check the blocks.
+   - view_snapshot {region "drawing", colour_by "zones"} to check the blocks and what each valve feeds.
 5. Network (list_entities types ["controlValve"] gives the valve positions).
    - waterSupply at the reservoir (calc true, wl +1.5; a well: wl negative, the water level below the ground).
    - Trunk (scope "mainline", no spec) from the supply to a tee between the blocks, west and east branches 4 m outside the valve lines and
@@ -443,9 +447,11 @@ Reference: read_example golf (one hole: tee sprays, two fairway rotor zones on a
      path; view_snapshot {snapshot, pixel_bbox} for the green and the bunker edges at full resolution.
    - download_terrain (fairways roll: elevations matter), terrain_info, then terrain_picture {region "bbox", bbox, base_map "satellite"}:
      the hollows where water collects and the high ground; download_climate.
-   - Trace what you see: pick the corners on the picture, image_to_world {snapshot, pixels, closed true} gives the coordinates in metres,
-     preview_geometry {shapes [{kind "polygon", pts, label}], base_map "satellite"} checks them over the image (nothing is created);
-     then create them in the next step.
+   - Trace what you see: trace_region {snapshot, pixel [px, py] well inside a field, lawn or pond} outlines it by image analysis, far
+     more exactly than by eye (check its picture; blur_m 3–6 for wide rows and orchards, tolerance when it leaks or stops short; it
+     cannot split two fields of one crop with no visible limit). For the rest pick the corners on the picture: image_to_world
+     {snapshot, pixels, closed true} gives the coordinates in metres, preview_geometry {shapes [{kind "polygon", pts, label}],
+     base_map "satellite"} checks them over the image (nothing is created); then create them in the next step.
    Or import_attachment for the course plan (placed on the site as its result says).
 3. Areas. In one create_entities call, one area each for the green, the tee and the fairway: type "area" {pts, crop, ck "crop.turf"
    or "crop.turfCool", wb true, eto 6, kc 0.9 green and tee / 0.85 fairway, awc 100, root 0.15 green / 0.2 tee / 0.25 fairway,
@@ -588,9 +594,11 @@ Reference: read_example gravity (a hilltop reservoir 45 m above two vegetable bl
    (is the slope between the reservoir and the field covered by data?), terrain_picture {region "bbox", bbox, base_map "satellite"} for
    the relief, and terrain_profile {pts from the reservoir to the field} for the fall (the example falls 45 m over 225 m, then 0.5 %
    across the field). download_climate for the requirement. Or import_attachment for a survey (placed on the site as its result says).
-   - Trace what you see: pick the corners on the picture, image_to_world {snapshot, pixels, closed true} gives the coordinates in metres,
-     preview_geometry {shapes [{kind "polygon", pts, label}], base_map "satellite"} checks them over the image (nothing is created);
-     then create them in the next step.
+   - Trace what you see: trace_region {snapshot, pixel [px, py] well inside a field, lawn or pond} outlines it by image analysis, far
+     more exactly than by eye (check its picture; blur_m 3–6 for wide rows and orchards, tolerance when it leaks or stops short; it
+     cannot split two fields of one crop with no visible limit). For the rest pick the corners on the picture: image_to_world
+     {snapshot, pixels, closed true} gives the coordinates in metres, preview_geometry {shapes [{kind "polygon", pts, label}],
+     base_map "satellite"} checks them over the image (nothing is created); then create them in the next step.
 3. Blocks. One area per block, in one create_entities call: type "area" {pts, crop, ck "crop.vegetables", im "localized", wb true,
    eto 5, kc 1.05, awc 120, root 0.4, mad 0.45, eff 0.9, psp 0.3, rsp 1.5, wf 0.5, epp 2}; the example has two 100 × 60 m blocks with a
    4 m road between.
@@ -676,9 +684,11 @@ Reference: read_example pasture (three 72 × 72 m paddocks, impact sprinklers on
 2. Site. find_site, set_site; then look before drawing (pictures for you; the user's screen keeps its base map):
    - view_snapshot {region "bbox", bbox = the paddocks with a margin, base_map "satellite"}: fences, lanes, the gate and the source.
    - download_terrain, terrain_info, then terrain_picture {region "bbox", bbox, base_map "satellite"}; download_climate.
-   - Trace what you see: pick the corners on the picture, image_to_world {snapshot, pixels, closed true} gives the coordinates in metres,
-     preview_geometry {shapes [{kind "polygon", pts, label}], base_map "satellite"} checks them over the image (nothing is created);
-     then create them in the next step.
+   - Trace what you see: trace_region {snapshot, pixel [px, py] well inside a field, lawn or pond} outlines it by image analysis, far
+     more exactly than by eye (check its picture; blur_m 3–6 for wide rows and orchards, tolerance when it leaks or stops short; it
+     cannot split two fields of one crop with no visible limit). For the rest pick the corners on the picture: image_to_world
+     {snapshot, pixels, closed true} gives the coordinates in metres, preview_geometry {shapes [{kind "polygon", pts, label}],
+     base_map "satellite"} checks them over the image (nothing is created); then create them in the next step.
    Or import_attachment for the farm plan (placed on the site as its result says).
 3. Paddocks. One area each, in one create_entities call: type "area" {pts, crop, ck "crop.pasture" or "crop.alfalfa", wb true, eto 5,
    kc 0.85, awc 110, root 0.5, mad 0.55, eff 0.75}.
@@ -722,9 +732,11 @@ Reference: read_example coffee (three blocks on a 7 % hillside whose laterals fo
    thin); terrain_picture {region "bbox", bbox, base_map "satellite", interval_m 2} shows the contours over the image (colour "slope"
    for the slope classes); terrain_profile {pts up the slope} measures it; list_entities types ["contour"] gives the contour polylines
    (their vertices give the row direction). download_climate for the requirement.
-   - Trace what you see: pick the corners on the picture, image_to_world {snapshot, pixels, closed true} gives the coordinates in metres,
-     preview_geometry {shapes [{kind "polygon", pts, label}], base_map "satellite"} checks them over the image (nothing is created);
-     then create them in the next step.
+   - Trace what you see: trace_region {snapshot, pixel [px, py] well inside a field, lawn or pond} outlines it by image analysis, far
+     more exactly than by eye (check its picture; blur_m 3–6 for wide rows and orchards, tolerance when it leaks or stops short; it
+     cannot split two fields of one crop with no visible limit). For the rest pick the corners on the picture: image_to_world
+     {snapshot, pixels, closed true} gives the coordinates in metres, preview_geometry {shapes [{kind "polygon", pts, label}],
+     base_map "satellite"} checks them over the image (nothing is created); then create them in the next step.
 3. Blocks. Bands along the slope, each between two contour lines (the example: three bands 150 m long and 60 m wide with 4 m roads
    between them), one area each, in one create_entities call: type "area" {pts, crop, ck "crop.coffee", im "localized", wb true,
    eto 4.5, kc 0.95, awc 120, root 0.8, mad 0.5, eff 0.92, psp 0.7, rsp 3.5, wf 0.4, epp 1}. Narrow bands keep each block's elevation

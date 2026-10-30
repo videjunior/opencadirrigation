@@ -56,6 +56,7 @@ import '../io/http.dart';
 import '../io/prefs.dart';
 import '../io/project_store.dart';
 import '../keys/canvas_keys.dart';
+import 'ai_marks.dart';
 import 'design_runner.dart';
 
 /// Language of the interface: the app lays itself out right to left for
@@ -111,6 +112,12 @@ enum ToolId {
   comment,
   revisionCloud,
   insertBlock,
+  // the user's marks for the AI assistant (ai_marks.dart): no project items
+  aiMarkPoint,
+  aiMarkLine;
+
+  /// One of the tools that mark the drawing for the AI assistant.
+  bool get isAiMark => this == aiMarkPoint || this == aiMarkLine;
 }
 
 enum OverlayMode { none, velocity, pressure, sizes, minMax, densogram, slope, aspect }
@@ -1391,7 +1398,8 @@ class ProjectController extends ChangeNotifier {
 
   // ------------------------------------------------------------ view
   void setTool(ToolId id) {
-    if (id != ToolId.select && id != ToolId.pan) lastTool = id;
+    // marking for the AI draws nothing: Enter keeps repeating the drawing tool
+    if (id != ToolId.select && id != ToolId.pan && !id.isAiMark) lastTool = id;
     activeTool = id;
     track('tool');
     focusCanvas?.call();
@@ -2019,6 +2027,10 @@ class ProjectController extends ChangeNotifier {
 
   /// Last position of the device while the GPS is on.
   GpsFix? gpsFix;
+
+  /// Points and lines the user marked on the drawing for the AI assistant
+  /// (of this tab, not saved with the project).
+  final AiMarks aiMarks = AiMarks();
   void Function()? _gpsStop;
   bool get gpsActive => _gpsStop != null;
 
@@ -2340,6 +2352,8 @@ class ProjectController extends ChangeNotifier {
     checkReport = null;
     hglEntityId = null;
     hoverId = null;
+    // the marks for the AI point at places of the drawing that was here
+    aiMarks.clear();
   }
 
   /// Default catalog in currency [code] (ISO 4217): the user's saved one
