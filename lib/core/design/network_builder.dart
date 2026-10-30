@@ -139,11 +139,31 @@ class NetworkModel {
   final Set<String> unconnectedEntities = {};
   Terrain? terrain;
 
+  /// Position of the first link of every id, checked against [links] at each
+  /// lookup: a scan per lookup made every zone network quadratic in the
+  /// size of the model.
+  Map<String, int>? _linkAt;
+
   GLink? linkById(String id) {
-    for (final l in links) {
-      if (l.id == id) return l;
+    final at = _linkAt ??= _indexLinks();
+    final i = at[id];
+    if (i != null && i < links.length && links[i].id == id) return links[i];
+    // added or moved since the index was made: as before, and index again
+    for (var k = 0; k < links.length; k++) {
+      if (links[k].id == id) {
+        _linkAt = null;
+        return links[k];
+      }
     }
     return null;
+  }
+
+  Map<String, int> _indexLinks() {
+    final at = <String, int>{};
+    for (var k = 0; k < links.length; k++) {
+      at.putIfAbsent(links[k].id, () => k);
+    }
+    return at;
   }
 }
 
@@ -189,6 +209,18 @@ class NetworkBuilder {
 
   static final _dummy = GNode(id: '', p: Pt.zero, ground: 0, scope: HydraulicScope.zone);
 
+  /// (min x, min y, max x, max y) of [pts].
+  static (double, double, double, double) _bounds(List<Pt> pts) {
+    var x0 = double.infinity, y0 = double.infinity, x1 = double.negativeInfinity, y1 = double.negativeInfinity;
+    for (final p in pts) {
+      x0 = math.min(x0, p.x);
+      y0 = math.min(y0, p.y);
+      x1 = math.max(x1, p.x);
+      y1 = math.max(y1, p.y);
+    }
+    return (x0, y0, x1, y1);
+  }
+
   NetworkModel build() {
     model.terrain = terrain;
     final catalog = project.catalog;
@@ -199,11 +231,18 @@ class NetworkBuilder {
     List<Pt> ptsOf(Entity e) => (e as PolyEntity).points;
     HydraulicScope scopeOf(Entity e) => e.hydraulicScope ?? HydraulicScope.zone;
 
-    // 1. split requests from point items and T-junctions
+    // 1. split requests from point items and T-junctions; a point beyond
+    // twice the tolerance of an entity's bounding box is not tried against
+    // its segments (a scan of every segment made the build quadratic)
+    final boxes = [for (final e in linear) _bounds(ptsOf(e))];
+    final margin = 2 * tol + 1e-6;
     void requestSplit(Pt p, Iterable<HydraulicScope> scopes, {String? exclude}) {
-      for (final e in linear) {
+      for (var k = 0; k < linear.length; k++) {
+        final e = linear[k];
         if (e.id == exclude) continue;
         if (!scopes.contains(scopeOf(e))) continue;
+        final (x0, y0, x1, y1) = boxes[k];
+        if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > y1 + margin) continue;
         final pts = ptsOf(e);
         for (var i = 1; i < pts.length; i++) {
           final (cp, t) = closestPointOnSegment(p, pts[i - 1], pts[i]);

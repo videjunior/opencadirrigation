@@ -15,7 +15,7 @@ OpenCADIrrigation brings CAD drawing, the hydraulic network, the calculation and
 - Reports: PDF in any of the 20 languages, Excel (XLSX), CSV and TXT
 - AI assistant: Optional: a Claude (Anthropic) or GPT (OpenAI) model with the user's own API key, called from the browser with no server in between; it reads the project, looks at the satellite image and the terrain, outlines fields on the imagery, follows the points the user marks on the map and, with the program's own tools, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the design, fixes warnings, optimises, reviews the design, checks drawing sheets before export and writes the report; every change waits for the user's approval (or applies automatically) and can be undone; open it at https://opencadirrigation.com/?ai=1
 - Command line and API: `bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md](https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md))
-- Version: 1.3.0, updated 2026-10-30
+- Version: 1.4.0, updated 2026-10-30
 - Site: https://opencadirrigation.com/
 
 ## Application

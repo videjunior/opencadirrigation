@@ -4025,7 +4025,7 @@
   "ai.do.climate": "現地の気候をダウンロード ({n})",
   "ai.do.import": "{n} を読み込む",
   "hist.aiNotes": "AI メモ",
-  "about.text": "OpenCADIrrigation — 加圧かんがい設計のための無料・オープンソースの CAD: 点滴かんがい、マイクロスプリンクラー、スプリンクラー、造園、競技場、センターピボット、リニアムーブ。\n独自の水理計算エンジン: Hazen‑Williams、Darcy‑Weisbach、Scobey、Manning の各式、Global Gradient Algorithm (Todini‑Pilati) による管網計算、圧力クラスの範囲内での線形計画法による口径設計、特性曲線法による過渡解析、24 時間シミュレーション。\n自動設計、農学、機械、見積、図面シート。DXF/DWG、PDF、KML、SHP、GeoJSON、EPANET に対応。\n現場を見つけ、作図し、管径を決め、あなたと一緒に設計を説明するオプションの AI アシスタント（Anthropic または OpenAI、ご自身のキーで利用）。どの変更も承認・取り消しができます。\nアシスタントは衛星画像に重ねた図面を見て、圃場の輪郭を自分でとり、設計をレビューし、印刷前にシートを確認します。地図上に場所の印を付けて伝えたり、音声入力をしたり、GPS 付きの現場写真を送ったりでき、ページを再読み込みしても会話は残ります。\n起動時に、区画の場所（住所または座標）と、AI で設計するかどうかを確認します。\nブラウザーで動作し、オフラインでも使え、登録もサーバーも不要、20 言語に対応。",
+  "about.text": "OpenCADIrrigation — 加圧かんがい設計のための無料・オープンソースの CAD: 点滴かんがい、マイクロスプリンクラー、スプリンクラー、造園、競技場、センターピボット、リニアムーブ。\n独自の水理計算エンジン: Hazen‑Williams、Darcy‑Weisbach、Scobey、Manning の各式、Global Gradient Algorithm (Todini‑Pilati) による管網計算、圧力クラスの範囲内での線形計画法による口径設計、特性曲線法による過渡解析、24 時間シミュレーション。大規模な設計も数秒で計算します。\n自動設計、農学、機械、見積、図面シート。DXF/DWG、PDF、KML、SHP、GeoJSON、EPANET に対応。\n現場を見つけ、作図し、管径を決め、あなたと一緒に設計を説明するオプションの AI アシスタント（Anthropic または OpenAI、ご自身のキーで利用）。どの変更も承認・取り消しができます。\nアシスタントは衛星画像に重ねた図面を見て、圃場の輪郭を自分でとり、設計をレビューし、印刷前にシートを確認します。地図上に場所の印を付けて伝えたり、音声入力をしたり、GPS 付きの現場写真を送ったりでき、ページを再読み込みしても会話は残ります。\n起動時に、区画の場所（住所または座標）と、AI で設計するかどうかを確認します。\nブラウザーで動作し、オフラインでも使え、登録もサーバーも不要、20 言語に対応。",
   "about.credits": "第三者のデータ: 地図 © OpenStreetMap 貢献者 (ODbL)、衛星画像 Esri World Imagery、地形 Terrain Tiles (AWS Open Data)、気候 Open-Meteo と NASA POWER、Noto フォント (SIL Open Font License 1.1)。メーカーカタログは、各メーカーが公表している表に基づいています。住所検索：Nominatim、データ © OpenStreetMap 貢献者。"
  },
  "tutorial": {

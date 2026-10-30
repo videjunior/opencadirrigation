@@ -6,6 +6,7 @@
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'emitter.dart';
 import 'friction.dart';
@@ -194,39 +195,49 @@ class HydraulicNetwork {
   NetworkResult solve({Map<String, double>? initialFlows}) {
     final warnings = <String>[];
     final nodeList = nodes.values.toList();
-    final index = <String, int>{};
+    final nodeCount = nodeList.length;
+    // Nodes and links by position: the iterations run on typed arrays
+    final at = <String, int>{for (var i = 0; i < nodeCount; i++) nodeList[i].id: i};
+    final unknown = Int32List(nodeCount);
     var unknownCount = 0;
-    for (final n in nodeList) {
-      if (n.kind == HNodeKind.junction) {
-        index[n.id] = unknownCount++;
-      }
+    for (var i = 0; i < nodeCount; i++) {
+      unknown[i] = nodeList[i].kind == HNodeKind.junction ? unknownCount++ : -1;
     }
     if (nodeList.where((n) => n.kind == HNodeKind.reservoir).isEmpty) {
       warnings.add('no_fixed_head_node');
     }
-    final heads = <String, double>{
-      for (final n in nodeList) n.id: n.kind == HNodeKind.reservoir ? (n.fixedHead ?? n.elevation) : n.elevation + 10,
-    };
+    final heads = Float64List(nodeCount);
+    for (var i = 0; i < nodeCount; i++) {
+      final n = nodeList[i];
+      heads[i] = n.kind == HNodeKind.reservoir ? (n.fixedHead ?? n.elevation) : n.elevation + 10;
+    }
+    final linkCount = links.length;
+    final fromNode = Int32List(linkCount), toNode = Int32List(linkCount);
+    for (var k = 0; k < linkCount; k++) {
+      fromNode[k] = at[links[k].from]!;
+      toNode[k] = at[links[k].to]!;
+    }
 
     // Initial flows: 1 m/s-equivalent in pipes, positive for pumps.
-    final q = <double>[];
-    for (final l in links) {
+    final q = Float64List(linkCount);
+    for (var k = 0; k < linkCount; k++) {
+      final l = links[k];
       final init = initialFlows?[l.id];
       if (init != null) {
-        q.add(init);
+        q[k] = init;
       } else {
         switch (l.kind) {
           case HLinkKind.pipe:
           case HLinkKind.device:
           case HLinkKind.prv:
           case HLinkKind.psv:
-            q.add(flowForVelocity(velocity: 1.0, diameter: l.diameter));
+            q[k] = flowForVelocity(velocity: 1.0, diameter: l.diameter);
           case HLinkKind.fcv:
-            q.add(l.fcvFlow);
+            q[k] = l.fcvFlow;
           case HLinkKind.pump:
-            q.add(l.pump != null ? math.max(l.pump!.runoutFlow.isFinite ? l.pump!.runoutFlow / 2 : 0.01, 1e-4) : 0.01);
+            q[k] = l.pump != null ? math.max(l.pump!.runoutFlow.isFinite ? l.pump!.runoutFlow / 2 : 0.01, 1e-4) : 0.01;
           case HLinkKind.closed:
-            q.add(0);
+            q[k] = 0;
         }
       }
       if (_isValve(l)) l.status = LinkStatus.active;
@@ -240,17 +251,36 @@ class HydraulicNetwork {
     // linearising q(p) instead overshoots (dq/dp is infinite at p = 0) and
     // made emitters near zero pressure flip open/closed without end.
     // They are one-way: closed below their elevation, no backflow.
-    final emitterFlow = <String, double>{for (final n in nodeList) n.id: 0};
-    final emitterOpen = <String, bool>{};
-    for (final n in nodeList) {
+    final emitterFlow = Float64List(nodeCount);
+    final emitterOpen = Uint8List(nodeCount);
+    for (var i = 0; i < nodeCount; i++) {
+      final n = nodeList[i];
       final em = n.emitter;
       if (em == null || n.emitterCount <= 0 || n.kind != HNodeKind.junction) continue;
-      final p0 = heads[n.id]! - n.elevation - n.emitterOffset;
-      emitterOpen[n.id] = p0 > 0;
-      emitterFlow[n.id] = p0 > 0 ? _emitterLaw(em, n.emitterCount, p0) : 0;
+      final p0 = heads[i] - n.elevation - n.emitterOffset;
+      emitterOpen[i] = p0 > 0 ? 1 : 0;
+      emitterFlow[i] = p0 > 0 ? _emitterLaw(em, n.emitterCount, p0) : 0;
     }
-    final eGrad = <String, double>{};
-    final eLoss = <String, double>{};
+    final eGrad = Float64List(nodeCount);
+    final eLoss = Float64List(nodeCount);
+
+    // What the iterations do not change: the friction exponent, and the
+    // resistance (unless Darcy–Weisbach) and minor loss coefficient of each pipe.
+    final exponent = switch (options.method) {
+      FrictionMethod.hazenWilliams => 1.852,
+      FrictionMethod.scobey => 1.9,
+      FrictionMethod.darcyWeisbach || FrictionMethod.manning => 2.0,
+    };
+    final darcy = options.method == FrictionMethod.darcyWeisbach;
+    final resistance = Float64List(linkCount), minor = Float64List(linkCount);
+    for (var k = 0; k < linkCount; k++) {
+      final l = links[k];
+      if (l.kind != HLinkKind.pipe) continue;
+      if (!darcy) resistance[k] = _pipeResistance(l, 0);
+      minor[k] = l.minorK > 0 ? minorLossFlowCoefficient(k: l.minorK, diameter: l.diameter) : 0.0;
+    }
+    // Links meeting at each node, for the continuity of active PRVs and PSVs.
+    final incident = links.any((l) => l.kind == HLinkKind.prv || l.kind == HLinkKind.psv) ? _incidence(nodeCount, fromNode, toNode) : null;
 
     var converged = false;
     var iter = 0;
@@ -259,12 +289,22 @@ class HydraulicNetwork {
     var damping = 1.0;
 
     // Working arrays per link.
-    final g = List<double>.filled(links.length, 1);
-    final y = List<double>.filled(links.length, 0);
+    final g = Float64List(linkCount)..fillRange(0, linkCount, 1);
+    final y = Float64List(linkCount);
+
+    // Nodes at rest behind closed links and their level.
+    final resting = Uint8List(nodeCount);
+    final restLevel = Float64List(nodeCount);
+
+    // The elimination of the system, made again only when the links that
+    // tie two unknowns change (a part comes to rest, a valve turns active).
+    EliminationPlan? plan;
+    final tied = Uint8List(linkCount);
+    final pairOf = Int32List(linkCount);
 
     for (iter = 1; iter <= options.maxIterations; iter++) {
       // --- link coefficients ---
-      for (var k = 0; k < links.length; k++) {
+      for (var k = 0; k < linkCount; k++) {
         final l = links[k];
         final qk = q[k];
         double gk, yk;
@@ -277,16 +317,12 @@ class HydraulicNetwork {
               gk = _closedResistance;
               yk = _closedResistance * qk;
             } else {
-              final r = _pipeResistance(l, qk);
-              final n = switch (options.method) {
-                FrictionMethod.hazenWilliams => 1.852,
-                FrictionMethod.scobey => 1.9,
-                FrictionMethod.darcyWeisbach || FrictionMethod.manning => 2.0,
-              };
+              final r = darcy ? _pipeResistance(l, qk) : resistance[k];
+              final n = exponent;
               final qa = math.max(qk.abs(), _qMin);
-              final m = l.minorK > 0 ? minorLossFlowCoefficient(k: l.minorK, diameter: l.diameter) : 0.0;
+              final m = minor[k];
               var gg = n * r * math.pow(qa, n - 1) + 2 * m * qa;
-              if (options.method == FrictionMethod.darcyWeisbach && qa > _qMin * 10) {
+              if (darcy && qa > _qMin * 10) {
                 // add ∂r/∂Q·|Q|^n numerically
                 final r2 = _pipeResistance(l, qa * 1.01);
                 final dr = (r2 - r) / (qa * 0.01);
@@ -344,143 +380,180 @@ class HydraulicNetwork {
       }
 
       // parts at rest behind closed links take their level as known heads
-      final resting = _restingParts(nodeList, heads, emitterOpen);
-      heads.addAll(resting);
+      if (_restingParts(nodeList, fromNode, toNode, heads, emitterOpen, resting, restLevel)) {
+        for (var i = 0; i < nodeCount; i++) {
+          if (resting[i] == 1) heads[i] = restLevel[i];
+        }
+      }
+
+      // --- sparsity pattern ---
+      var samePattern = plan != null;
+      for (var k = 0; k < linkCount; k++) {
+        final l = links[k];
+        final iFrom = resting[fromNode[k]] == 1 ? -1 : unknown[fromNode[k]];
+        final iTo = resting[toNode[k]] == 1 ? -1 : unknown[toNode[k]];
+        final fixesHead = (l.kind == HLinkKind.prv || l.kind == HLinkKind.psv) && l.status == LinkStatus.active;
+        final t = iFrom >= 0 && iTo >= 0 && iFrom != iTo && !fixesHead ? 1 : 0;
+        if (t != tied[k]) {
+          tied[k] = t;
+          samePattern = false;
+        }
+      }
+      if (!samePattern) {
+        final from = <int>[], to = <int>[];
+        for (var k = 0; k < linkCount; k++) {
+          if (tied[k] == 0) continue;
+          pairOf[k] = from.length;
+          from.add(unknown[fromNode[k]]);
+          to.add(unknown[toNode[k]]);
+        }
+        plan = _planFor(unknownCount, from, to);
+      }
+      final sys = plan!;
 
       // --- assemble ---
-      final sys = SparseSymmetricSystem(unknownCount);
-      for (final n in nodeList) {
-        final i = index[n.id];
-        if (i == null) continue;
-        final rest = resting[n.id];
-        if (rest != null) {
-          sys.addDiagonal(i, 1);
-          sys.rhs[i] += rest;
+      final a = Float64List(sys.slotCount);
+      final rhs = Float64List(unknownCount);
+      void addOff(int k, int iFrom, int iTo, double v) {
+        if (iFrom == iTo) {
+          a[iFrom] += v;
+        } else {
+          a[sys.pairSlotFT[pairOf[k]]] += v;
+          a[sys.pairSlotTF[pairOf[k]]] += v;
+        }
+      }
+
+      for (var ni = 0; ni < nodeCount; ni++) {
+        final i = unknown[ni];
+        if (i < 0) continue;
+        if (resting[ni] == 1) {
+          a[i] += 1;
+          rhs[i] += restLevel[ni];
           continue;
         }
+        final n = nodeList[ni];
         var demand = n.demand;
         final em = n.emitter;
         if (em != null && n.emitterCount > 0) {
           final zEm = n.elevation + n.emitterOffset;
-          if (emitterOpen[n.id] != true) {
+          if (emitterOpen[ni] != 1) {
             // Closed: no outflow and no backflow into the node. A negligible
             // conductance keeps the equation regular; the emitter reopens
             // once the pressure turns positive.
             const ge = 1e-12;
-            sys.addDiagonal(i, ge);
-            sys.rhs[i] += ge * zEm;
+            a[i] += ge;
+            rhs[i] += ge * zEm;
           } else {
-            final qe = emitterFlow[n.id]!;
+            final qe = emitterFlow[ni];
             final (h, dh) = _emitterLoss(em, n.emitterCount, qe);
-            eLoss[n.id] = h;
-            eGrad[n.id] = dh;
-            sys.addDiagonal(i, 1 / dh);
-            sys.rhs[i] += -qe + (h + zEm) / dh;
+            eLoss[ni] = h;
+            eGrad[ni] = dh;
+            a[i] += 1 / dh;
+            rhs[i] += -qe + (h + zEm) / dh;
           }
         }
-        sys.rhs[i] -= demand;
+        rhs[i] -= demand;
       }
-      for (var k = 0; k < links.length; k++) {
+      for (var k = 0; k < linkCount; k++) {
         final l = links[k];
-        final iFrom = resting.containsKey(l.from) ? null : index[l.from];
-        final iTo = resting.containsKey(l.to) ? null : index[l.to];
+        final iFrom = resting[fromNode[k]] == 1 ? -1 : unknown[fromNode[k]];
+        final iTo = resting[toNode[k]] == 1 ? -1 : unknown[toNode[k]];
         if (l.kind == HLinkKind.prv && l.status == LinkStatus.active) {
           // downstream node fixed to setting; flow appears as demand upstream
-          final toNode = nodes[l.to]!;
-          final hSet = toNode.elevation + l.prvSetting;
-          if (iTo != null) {
-            sys.addDiagonal(iTo, 1e8);
-            sys.rhs[iTo] += 1e8 * hSet;
+          final hSet = nodes[l.to]!.elevation + l.prvSetting;
+          if (iTo >= 0) {
+            a[iTo] += 1e8;
+            rhs[iTo] += 1e8 * hSet;
             // the valve flow enters node `to` as an inflow: include current q
-            sys.rhs[iTo] += q[k];
+            rhs[iTo] += q[k];
           }
-          if (iFrom != null) sys.rhs[iFrom] += -q[k];
+          if (iFrom >= 0) rhs[iFrom] += -q[k];
           continue;
         }
         if (l.kind == HLinkKind.psv && l.status == LinkStatus.active) {
           // upstream node fixed to setting; flow leaves it towards `to`
           final hSet = nodes[l.from]!.elevation + l.prvSetting;
-          if (iFrom != null) {
-            sys.addDiagonal(iFrom, 1e8);
-            sys.rhs[iFrom] += 1e8 * hSet;
-            sys.rhs[iFrom] += -q[k];
+          if (iFrom >= 0) {
+            a[iFrom] += 1e8;
+            rhs[iFrom] += 1e8 * hSet;
+            rhs[iFrom] += -q[k];
           }
-          if (iTo != null) sys.rhs[iTo] += q[k];
+          if (iTo >= 0) rhs[iTo] += q[k];
           continue;
         }
         if (l.kind == HLinkKind.fcv && l.status == LinkStatus.active) {
           // fixed flow from `from` to `to`, with a vanishing conductance
           // between them so neither side is left without a head (EPANET)
           const tiny = 1e-8;
-          if (iFrom != null) {
-            sys.addDiagonal(iFrom, tiny);
-            sys.rhs[iFrom] += -l.fcvFlow;
-            if (iTo == null) sys.rhs[iFrom] += heads[l.to]! * tiny;
+          if (iFrom >= 0) {
+            a[iFrom] += tiny;
+            rhs[iFrom] += -l.fcvFlow;
+            if (iTo < 0) rhs[iFrom] += heads[toNode[k]] * tiny;
           }
-          if (iTo != null) {
-            sys.addDiagonal(iTo, tiny);
-            sys.rhs[iTo] += l.fcvFlow;
-            if (iFrom == null) sys.rhs[iTo] += heads[l.from]! * tiny;
+          if (iTo >= 0) {
+            a[iTo] += tiny;
+            rhs[iTo] += l.fcvFlow;
+            if (iFrom < 0) rhs[iTo] += heads[fromNode[k]] * tiny;
           }
-          if (iFrom != null && iTo != null) sys.add(iFrom, iTo, -tiny);
+          if (iFrom >= 0 && iTo >= 0) addOff(k, iFrom, iTo, -tiny);
           continue;
         }
         final inv = 1 / g[k];
         final qk = q[k];
         final yk = y[k];
-        if (iFrom != null) {
-          sys.addDiagonal(iFrom, inv);
-          sys.rhs[iFrom] += -qk + yk * inv;
-          if (iTo == null) sys.rhs[iFrom] += heads[l.to]! * inv;
+        if (iFrom >= 0) {
+          a[iFrom] += inv;
+          rhs[iFrom] += -qk + yk * inv;
+          if (iTo < 0) rhs[iFrom] += heads[toNode[k]] * inv;
         }
-        if (iTo != null) {
-          sys.addDiagonal(iTo, inv);
-          sys.rhs[iTo] += qk - yk * inv;
-          if (iFrom == null) sys.rhs[iTo] += heads[l.from]! * inv;
+        if (iTo >= 0) {
+          a[iTo] += inv;
+          rhs[iTo] += qk - yk * inv;
+          if (iFrom < 0) rhs[iTo] += heads[fromNode[k]] * inv;
         }
-        if (iFrom != null && iTo != null) sys.add(iFrom, iTo, -inv);
+        if (iFrom >= 0 && iTo >= 0) addOff(k, iFrom, iTo, -inv);
       }
 
-      final x = sys.solve();
-      for (final n in nodeList) {
-        final i = index[n.id];
-        if (i != null) {
+      final x = sys.solve(a, rhs);
+      for (var ni = 0; ni < nodeCount; ni++) {
+        final i = unknown[ni];
+        if (i >= 0) {
           final hNew = x[i];
-          if (hNew.isFinite) heads[n.id] = hNew;
+          if (hNew.isFinite) heads[ni] = hNew;
         }
       }
 
       // --- update flows ---
       var sumDq = 0.0, sumQ = 0.0;
-      for (var k = 0; k < links.length; k++) {
+      for (var k = 0; k < linkCount; k++) {
         final l = links[k];
-        final dh = heads[l.from]! - heads[l.to]!;
+        final dh = heads[fromNode[k]] - heads[toNode[k]];
         double qNew;
         if (l.kind == HLinkKind.prv && l.status == LinkStatus.active) {
           // continuity at downstream node
-          final toNode = nodes[l.to]!;
-          var net = toNode.demand + emitterFlow[l.to]!;
-          for (var j = 0; j < links.length; j++) {
+          final down = toNode[k];
+          var net = nodes[l.to]!.demand + emitterFlow[down];
+          for (var t = incident![down]; t < incident[down + 1]; t++) {
+            final j = incident[t];
             if (j == k) continue;
-            final o = links[j];
-            if (o.from == l.to) net += q[j];
-            if (o.to == l.to) net -= q[j];
+            if (fromNode[j] == down) net += q[j];
+            if (toNode[j] == down) net -= q[j];
           }
           qNew = net;
         } else if (l.kind == HLinkKind.psv && l.status == LinkStatus.active) {
           // continuity at the upstream node
-          final fromNode = nodes[l.from]!;
-          var net = -fromNode.demand - emitterFlow[l.from]!;
-          for (var j = 0; j < links.length; j++) {
+          final up = fromNode[k];
+          var net = -nodes[l.from]!.demand - emitterFlow[up];
+          for (var t = incident![up]; t < incident[up + 1]; t++) {
+            final j = incident[t];
             if (j == k) continue;
-            final o = links[j];
-            if (o.to == l.from) net += q[j];
-            if (o.from == l.from) net -= q[j];
+            if (toNode[j] == up) net += q[j];
+            if (fromNode[j] == up) net -= q[j];
           }
           qNew = net;
         } else if (l.kind == HLinkKind.fcv && l.status == LinkStatus.active) {
           qNew = l.fcvFlow;
-        } else if (resting.containsKey(l.from) && resting.containsKey(l.to)) {
+        } else if (resting[fromNode[k]] == 1 && resting[toNode[k]] == 1) {
           qNew = 0;
         } else {
           qNew = q[k] - damping * (y[k] - dh) / g[k];
@@ -491,14 +564,15 @@ class HydraulicNetwork {
         q[k] = qNew;
       }
       var emitterStatusChanged = false;
-      for (final n in nodeList) {
+      for (var ni = 0; ni < nodeCount; ni++) {
+        final n = nodeList[ni];
         final em = n.emitter;
-        if (em == null || n.emitterCount <= 0 || index[n.id] == null) continue;
+        if (em == null || n.emitterCount <= 0 || unknown[ni] < 0) continue;
         final zEm = n.elevation + n.emitterOffset;
-        final p = heads[n.id]! - zEm;
-        if (emitterOpen[n.id] == true) {
-          final qe = emitterFlow[n.id]!;
-          var qNew = qe - damping * (eLoss[n.id]! - p) / eGrad[n.id]!;
+        final p = heads[ni] - zEm;
+        if (emitterOpen[ni] == 1) {
+          final qe = emitterFlow[ni];
+          var qNew = qe - damping * (eLoss[ni] - p) / eGrad[ni];
           if (!qNew.isFinite) qNew = 0;
           // Newton overshoots a steep law from below (pressure compensating
           // x = 0.02 is h ∝ q^50): never far above what the law gives at the
@@ -511,12 +585,12 @@ class HydraulicNetwork {
           if (qNew <= 0) {
             // would draw water back in: one-way, so it closes
             qNew = 0;
-            emitterOpen[n.id] = false;
+            emitterOpen[ni] = 0;
             emitterStatusChanged = true;
           }
           sumDq += (qNew - qe).abs();
           sumQ += qNew.abs();
-          emitterFlow[n.id] = qNew;
+          emitterFlow[ni] = qNew;
         }
       }
       relErr = sumQ > 0 ? sumDq / sumQ : 0;
@@ -530,17 +604,18 @@ class HydraulicNetwork {
       final flowsConverged = relErr < options.flowTolerance && iter > 1;
       var statusChanged = emitterStatusChanged;
       if (flowsConverged || (iter <= _maxStatusCheck && iter % _statusCheckFrequency == 0)) {
-        for (final n in nodeList) {
+        for (var ni = 0; ni < nodeCount; ni++) {
+          final n = nodeList[ni];
           final em = n.emitter;
-          if (em == null || n.emitterCount <= 0 || index[n.id] == null || emitterOpen[n.id] == true) continue;
-          final p = heads[n.id]! - n.elevation - n.emitterOffset;
+          if (em == null || n.emitterCount <= 0 || unknown[ni] < 0 || emitterOpen[ni] == 1) continue;
+          final p = heads[ni] - n.elevation - n.emitterOffset;
           if (p > 1e-4) {
-            emitterOpen[n.id] = true;
-            emitterFlow[n.id] = _emitterLaw(em, n.emitterCount, p);
+            emitterOpen[ni] = 1;
+            emitterFlow[ni] = _emitterLaw(em, n.emitterCount, p);
             statusChanged = true;
           }
         }
-        statusChanged = _checkLinkStatus(heads, q, prvs: flowsConverged) || statusChanged;
+        statusChanged = _checkLinkStatus(heads, fromNode, toNode, q, prvs: flowsConverged) || statusChanged;
       }
       if (flowsConverged && !statusChanged) {
         converged = true;
@@ -555,13 +630,52 @@ class HydraulicNetwork {
       lastErr = relErr;
     }
     if (!converged) warnings.add('not_converged');
-    return _results(nodeList, heads, q, emitterFlow, emitterOpen, converged, iter, warnings, relErr);
+    return _results(nodeList, heads, fromNode, toNode, q, emitterFlow, emitterOpen, converged, iter, warnings, relErr);
+  }
+
+  /// Plans of the last patterns solved, most recent first: the designer
+  /// solves the networks of a zone again and again (bisections on the valve
+  /// pressure), and making the plan was a good part of each solve.
+  static final List<EliminationPlan> _plans = [];
+
+  static EliminationPlan _planFor(int n, List<int> from, List<int> to) {
+    for (var i = 0; i < _plans.length; i++) {
+      final p = _plans[i];
+      if (!p.matches(n, from, to)) continue;
+      if (i > 0) _plans.insert(0, _plans.removeAt(i));
+      return p;
+    }
+    final p = EliminationPlan(n, from, to);
+    _plans.insert(0, p);
+    if (_plans.length > 8) _plans.removeLast();
+    return p;
   }
 
   static const _statusCheckFrequency = 2;
   static const _maxStatusCheck = 10;
 
   static bool _isClosedLink(HLink l) => l.kind == HLinkKind.closed || l.status == LinkStatus.closed || (l.kind == HLinkKind.pump && l.pump == null);
+
+  /// Links meeting at every node, each once and in link order, in CSR form:
+  /// those of node i are at [start[i], start[i + 1]) after the n + 1 starts.
+  static Int32List _incidence(int nodeCount, Int32List fromNode, Int32List toNode) {
+    final count = Int32List(nodeCount + 1);
+    for (var k = 0; k < fromNode.length; k++) {
+      count[fromNode[k]]++;
+      if (toNode[k] != fromNode[k]) count[toNode[k]]++;
+    }
+    final out = Int32List(nodeCount + 1 + count.fold(0, (s, c) => s + c));
+    out[0] = nodeCount + 1;
+    for (var i = 0; i < nodeCount; i++) {
+      out[i + 1] = out[i] + count[i];
+    }
+    final fill = Int32List.fromList(out.sublist(0, nodeCount));
+    for (var k = 0; k < fromNode.length; k++) {
+      out[fill[fromNode[k]]++] = k;
+      if (toNode[k] != fromNode[k]) out[fill[toNode[k]]++] = k;
+    }
+    return out;
+  }
 
   /// Parts of the network that closed links cut off from every fixed head
   /// while nothing is drawn from them (a line at rest behind an idle pump),
@@ -570,10 +684,20 @@ class HydraulicNetwork {
   /// emitter when that is lower, since the water drains out there. Solved
   /// with the rest, such a part left the system singular to rounding, its
   /// level held only by those conductances next to ones of 10⁷ inside it.
-  Map<String, double> _restingParts(List<HNode> nodeList, Map<String, double> heads, Map<String, bool> emitterOpen) {
-    if (!links.any(_isClosedLink)) return const {};
-    final at = <String, int>{for (var i = 0; i < nodeList.length; i++) nodeList[i].id: i};
-    final parent = List<int>.generate(nodeList.length, (i) => i);
+  /// Marks those nodes in [resting] with their level in [level]; false when
+  /// no part rests.
+  bool _restingParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Float64List heads, Uint8List emitterOpen, Uint8List resting, Float64List level) {
+    resting.fillRange(0, resting.length, 0);
+    var anyClosed = false;
+    for (final l in links) {
+      if (_isClosedLink(l)) {
+        anyClosed = true;
+        break;
+      }
+    }
+    if (!anyClosed) return false;
+    final count = nodeList.length;
+    final parent = Int32List.fromList(List<int>.generate(count, (i) => i));
     int find(int i) {
       while (parent[i] != i) {
         parent[i] = parent[parent[i]];
@@ -582,68 +706,72 @@ class HydraulicNetwork {
       return i;
     }
 
-    for (final l in links) {
-      if (_isClosedLink(l)) continue;
-      final a = at[l.from], b = at[l.to];
-      if (a == null || b == null) continue;
-      final ra = find(a), rb = find(b);
+    for (var k = 0; k < links.length; k++) {
+      if (_isClosedLink(links[k])) continue;
+      final ra = find(fromNode[k]), rb = find(toNode[k]);
       if (ra != rb) parent[ra] = rb;
     }
     // parts that hold a fixed head, draw water or may move it themselves
-    final busy = <int>{};
-    for (var i = 0; i < nodeList.length; i++) {
+    final busy = Uint8List(count);
+    for (var i = 0; i < count; i++) {
       final n = nodeList[i];
-      if (n.kind != HNodeKind.junction || n.demand != 0 || emitterOpen[n.id] == true) busy.add(find(i));
+      if (n.kind != HNodeKind.junction || n.demand != 0 || emitterOpen[i] == 1) busy[find(i)] = 1;
     }
-    for (final l in links) {
+    for (var k = 0; k < links.length; k++) {
+      final l = links[k];
       if (_isClosedLink(l)) continue;
       if (l.kind == HLinkKind.pump || l.kind == HLinkKind.fcv || ((l.kind == HLinkKind.prv || l.kind == HLinkKind.psv) && l.status == LinkStatus.active)) {
-        if (at[l.from] case final a?) busy.add(find(a));
+        busy[find(fromNode[k])] = 1;
       }
     }
-    final top = <int, double>{}, lowestEmitter = <int, double>{};
-    for (var i = 0; i < nodeList.length; i++) {
+    final top = Float64List(count)..fillRange(0, count, double.negativeInfinity);
+    final lowestEmitter = Float64List(count)..fillRange(0, count, double.infinity);
+    final rests = Uint8List(count);
+    var any = false;
+    for (var i = 0; i < count; i++) {
       final r = find(i);
-      if (busy.contains(r)) continue;
+      if (busy[r] == 1) continue;
       final n = nodeList[i];
-      top[r] = math.max(top[r] ?? double.negativeInfinity, n.elevation);
-      if (n.emitter != null && n.emitterCount > 0) lowestEmitter[r] = math.min(lowestEmitter[r] ?? double.infinity, n.elevation + n.emitterOffset);
+      rests[r] = 1;
+      any = true;
+      top[r] = math.max(top[r], n.elevation);
+      if (n.emitter != null && n.emitterCount > 0) lowestEmitter[r] = math.min(lowestEmitter[r], n.elevation + n.emitterOffset);
     }
-    if (top.isEmpty) return const {};
-    final sum = <int, double>{}, count = <int, int>{};
-    for (final l in links) {
-      if (!_isClosedLink(l)) continue;
-      final a = at[l.from], b = at[l.to];
-      if (a == null || b == null) continue;
-      final ra = find(a), rb = find(b);
+    if (!any) return false;
+    final sum = Float64List(count);
+    final across = Int32List(count);
+    for (var k = 0; k < links.length; k++) {
+      if (!_isClosedLink(links[k])) continue;
+      final ra = find(fromNode[k]), rb = find(toNode[k]);
       if (ra == rb) continue;
-      if (top.containsKey(ra)) {
-        sum[ra] = (sum[ra] ?? 0) + heads[l.to]!;
-        count[ra] = (count[ra] ?? 0) + 1;
+      if (rests[ra] == 1) {
+        sum[ra] += heads[toNode[k]];
+        across[ra]++;
       }
-      if (top.containsKey(rb)) {
-        sum[rb] = (sum[rb] ?? 0) + heads[l.from]!;
-        count[rb] = (count[rb] ?? 0) + 1;
+      if (rests[rb] == 1) {
+        sum[rb] += heads[fromNode[k]];
+        across[rb]++;
       }
     }
-    final level = <int, double>{
-      for (final r in top.keys) r: math.min(count[r] != null ? sum[r]! / count[r]! : top[r]!, lowestEmitter[r] ?? double.infinity),
-    };
-    return {
-      for (var i = 0; i < nodeList.length; i++) nodeList[i].id: ?level[find(i)],
-    };
+    for (var i = 0; i < count; i++) {
+      final r = find(i);
+      if (rests[r] == 0) continue;
+      resting[i] = 1;
+      level[i] = math.min(across[r] > 0 ? sum[r] / across[r] : top[r], lowestEmitter[r]);
+    }
+    return true;
   }
 
   /// Status changes of check valves, pumps and (with [prvs]) pressure
   /// reducing valves for the current heads; true when any changed.
-  bool _checkLinkStatus(Map<String, double> heads, List<double> q, {required bool prvs}) {
+  bool _checkLinkStatus(Float64List heads, Int32List fromNode, Int32List toNode, Float64List q, {required bool prvs}) {
     var statusChanged = false;
     for (var k = 0; k < links.length; k++) {
       final l = links[k];
       // check valves: on a pipe, or a device of its own (a check valve
       // placed on the mainline), which used to let water run backwards
       if ((l.kind == HLinkKind.pipe || l.kind == HLinkKind.device) && l.checkValve) {
-        final dh = heads[l.from]! - heads[l.to]!;
+        final dh = heads[fromNode[k]] - heads[toNode[k]];
         final wasClosed = l.status == LinkStatus.closed;
         if (!wasClosed && (q[k] < -1e-6 || dh < -1e-4)) {
           l.status = LinkStatus.closed;
@@ -657,7 +785,7 @@ class HydraulicNetwork {
       if (l.kind == HLinkKind.pump && l.pump != null) {
         // built-in check valve: closed while the head gain asked for is
         // above the shutoff head, reopened below it
-        final gain = heads[l.to]! - heads[l.from]!;
+        final gain = heads[toNode[k]] - heads[fromNode[k]];
         final shutoff = l.pump!.shutoffHead;
         if (l.status == LinkStatus.closed) {
           if (gain < shutoff - 1e-4) {
@@ -672,9 +800,8 @@ class HydraulicNetwork {
         }
       }
       if (prvs && l.kind == HLinkKind.prv) {
-        final toNode = nodes[l.to]!;
-        final hSet = toNode.elevation + l.prvSetting;
-        final hi = heads[l.from]!, hj = heads[l.to]!;
+        final hSet = nodes[l.to]!.elevation + l.prvSetting;
+        final hi = heads[fromNode[k]], hj = heads[toNode[k]];
         final old = l.status;
         switch (old) {
           case LinkStatus.active:
@@ -705,7 +832,7 @@ class HydraulicNetwork {
       if (prvs && l.kind == HLinkKind.psv) {
         // EPANET psvstatus: the setting is the upstream pressure
         final hSet = nodes[l.from]!.elevation + l.prvSetting;
-        final hi = heads[l.from]!, hj = heads[l.to]!;
+        final hi = heads[fromNode[k]], hj = heads[toNode[k]];
         final old = l.status;
         switch (old) {
           case LinkStatus.active:
@@ -736,7 +863,7 @@ class HydraulicNetwork {
       if (prvs && l.kind == HLinkKind.fcv) {
         // EPANET fcvstatus: active while there is head to push the setting;
         // open (less than the setting) when the head across turns negative
-        final hi = heads[l.from]!, hj = heads[l.to]!;
+        final hi = heads[fromNode[k]], hj = heads[toNode[k]];
         final old = l.status;
         if (old == LinkStatus.active && hi < hj - 1e-4) {
           l.status = LinkStatus.open;
@@ -752,12 +879,13 @@ class HydraulicNetwork {
 
   static bool _isValve(HLink l) => l.kind == HLinkKind.prv || l.kind == HLinkKind.psv || l.kind == HLinkKind.fcv;
 
-  NetworkResult _results(List<HNode> nodeList, Map<String, double> heads, List<double> q, Map<String, double> emitterFlow, Map<String, bool> emitterOpen, bool converged, int iter, List<String> warnings, double relErr) {
+  NetworkResult _results(List<HNode> nodeList, Float64List heads, Int32List fromNode, Int32List toNode, Float64List q, Float64List emitterFlow, Uint8List emitterOpen, bool converged, int iter, List<String> warnings, double relErr) {
     final nodeResults = <String, NodeResult>{};
-    for (final n in nodeList) {
-      final h = heads[n.id]!;
+    for (var i = 0; i < nodeList.length; i++) {
+      final n = nodeList[i];
+      final h = heads[i];
       // the converged state of the emitter flow (it closes the balance)
-      final qe = n.emitter != null && n.emitterCount > 0 && emitterOpen[n.id] == true ? emitterFlow[n.id]! : 0.0;
+      final qe = n.emitter != null && n.emitterCount > 0 && emitterOpen[i] == 1 ? emitterFlow[i] : 0.0;
       nodeResults[n.id] = NodeResult(head: h, pressure: h - n.elevation, demand: n.demand, emitterFlow: qe);
     }
     final linkResults = <String, LinkResult>{};
@@ -765,7 +893,7 @@ class HydraulicNetwork {
       final l = links[k];
       final flow = q[k];
       final v = l.kind == HLinkKind.pipe ? velocity(flow: flow.abs(), diameter: l.diameter) : 0.0;
-      final hl = heads[l.from]! - heads[l.to]!;
+      final hl = heads[fromNode[k]] - heads[toNode[k]];
       final pumpHead = l.kind == HLinkKind.pump && l.pump != null && flow > 0 ? l.pump!.head(flow) : 0.0;
       linkResults[l.id] = LinkResult(flow: flow, velocity: v, headLoss: hl, status: l.status, pumpHead: pumpHead);
     }

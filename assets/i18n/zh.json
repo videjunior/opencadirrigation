@@ -4025,7 +4025,7 @@
   "ai.do.climate": "下载场地气候({n})",
   "ai.do.import": "导入 {n}",
   "hist.aiNotes": "AI 笔记",
-  "about.text": "OpenCADIrrigation — 免费开源的压力灌溉设计 CAD:滴灌、微喷、喷灌、园林、运动场、中心支轴式和平移式喷灌机。\n自有水力计算引擎:Hazen‑Williams、Darcy‑Weisbach、Scobey 和 Manning 公式;采用 Global Gradient Algorithm (Todini‑Pilati) 求解管网;在压力等级范围内用线性规划确定管径;用特征线法分析水力瞬变;24 小时模拟。\n自动设计、农艺、喷灌机、报价和出图图纸;DXF/DWG、PDF、KML、SHP、GeoJSON 和 EPANET。\n可选的 AI 助手（Anthropic 或 OpenAI，使用您自己的密钥），能找到地块、绘图、计算管径并与您一起解释设计；每项修改都可批准和撤销。\n助手能看到卫星图像上的图纸，自动勾勒各地块的轮廓，审查设计，并在打印前检查出图效果；您可以在地图上为它标记位置、用语音口述输入，或发送带 GPS 的现场照片，页面重新加载后对话仍会保留。\n打开时会询问地块在哪里（地址或坐标），以及是否要用 AI 设计。\n在浏览器中运行,也可离线使用,无需注册,无需服务器,支持 20 种语言。",
+  "about.text": "OpenCADIrrigation — 免费开源的压力灌溉设计 CAD:滴灌、微喷、喷灌、园林、运动场、中心支轴式和平移式喷灌机。\n自有水力计算引擎:Hazen‑Williams、Darcy‑Weisbach、Scobey 和 Manning 公式;采用 Global Gradient Algorithm (Todini‑Pilati) 求解管网;在压力等级范围内用线性规划确定管径;用特征线法分析水力瞬变;24 小时模拟。大型设计也能在几秒钟内算完。\n自动设计、农艺、喷灌机、报价和出图图纸;DXF/DWG、PDF、KML、SHP、GeoJSON 和 EPANET。\n可选的 AI 助手（Anthropic 或 OpenAI，使用您自己的密钥），能找到地块、绘图、计算管径并与您一起解释设计；每项修改都可批准和撤销。\n助手能看到卫星图像上的图纸，自动勾勒各地块的轮廓，审查设计，并在打印前检查出图效果；您可以在地图上为它标记位置、用语音口述输入，或发送带 GPS 的现场照片，页面重新加载后对话仍会保留。\n打开时会询问地块在哪里（地址或坐标），以及是否要用 AI 设计。\n在浏览器中运行,也可离线使用,无需注册,无需服务器,支持 20 种语言。",
   "about.credits": "第三方数据:地图 © OpenStreetMap 贡献者 (ODbL);卫星影像 Esri World Imagery;地形 Terrain Tiles (AWS Open Data);气候 Open-Meteo 和 NASA POWER;Noto 字体 (SIL Open Font License 1.1)。厂家目录来自厂家公布的表格。地址搜索：Nominatim，数据 © OpenStreetMap 贡献者。"
  },
  "tutorial": {

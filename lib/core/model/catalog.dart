@@ -609,12 +609,12 @@ class Catalog {
   final List<FittingSpec> fittings;
   final List<WireSpec> wires;
 
-  WireSpec? wire(String? id) => id == null ? null : wires.cast<WireSpec?>().firstWhere((w) => w!.id == id, orElse: () => null);
+  WireSpec? wire(String? id) => _wireAt.find(wires, id);
 
   /// Enabled wires, thinnest (highest resistance) first.
   List<WireSpec> get enabledWires => wires.where((w) => w.enabled && w.ohmPerKm > 0).toList()..sort((a, b) => b.ohmPerKm.compareTo(a.ohmPerKm));
 
-  FittingSpec? fitting(String? id) => id == null ? null : fittings.cast<FittingSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
+  FittingSpec? fitting(String? id) => _fittingAt.find(fittings, id);
 
   /// Enabled fitting of [kind] with the closest size at or above [sizeMm]
   /// (and [size2Mm] when given), or null when the catalog has none.
@@ -686,11 +686,19 @@ class Catalog {
 
   Catalog copy() => Catalog.fromJson(toJson());
 
-  PipeSpec? pipe(String? id) => id == null ? null : pipes.cast<PipeSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
-  OutletSpec? outlet(String? id) => id == null ? null : outlets.cast<OutletSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
-  TapeSpec? tape(String? id) => id == null ? null : tapes.cast<TapeSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
-  ValveSpec? valve(String? id) => id == null ? null : valves.cast<ValveSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
-  PumpSpec? pump(String? id) => id == null ? null : pumps.cast<PumpSpec?>().firstWhere((p) => p!.id == id, orElse: () => null);
+  PipeSpec? pipe(String? id) => _pipeAt.find(pipes, id);
+  OutletSpec? outlet(String? id) => _outletAt.find(outlets, id);
+  TapeSpec? tape(String? id) => _tapeAt.find(tapes, id);
+  ValveSpec? valve(String? id) => _valveAt.find(valves, id);
+  PumpSpec? pump(String? id) => _pumpAt.find(pumps, id);
+
+  final _pipeAt = _IdLookup<PipeSpec>((p) => p.id);
+  final _outletAt = _IdLookup<OutletSpec>((p) => p.id);
+  final _tapeAt = _IdLookup<TapeSpec>((p) => p.id);
+  final _valveAt = _IdLookup<ValveSpec>((p) => p.id);
+  final _pumpAt = _IdLookup<PumpSpec>((p) => p.id);
+  final _fittingAt = _IdLookup<FittingSpec>((p) => p.id);
+  final _wireAt = _IdLookup<WireSpec>((p) => p.id);
 
   List<PipeSpec> pipesFor(PipeUsage usage) =>
       pipes.where((p) => p.enabled && p.usage.contains(usage)).toList()..sort((a, b) => a.innerDiameterMm.compareTo(b.innerDiameterMm));
@@ -992,5 +1000,42 @@ class Catalog {
     out.add(FittingSpec(id: 'riser25', name: '${n('Tubo de subida', 'Riser', 'Tubo de subida')} 25 mm', kind: FittingKind.riser, sizeMm: 25, cost: 8));
     out.add(FittingSpec(id: 'riser40', name: '${n('Tubo de subida', 'Riser', 'Tubo de subida')} 40 mm', kind: FittingKind.riser, sizeMm: 40, cost: 18));
     return out;
+  }
+}
+
+/// The first item of a catalog list with an id, found through the position
+/// of every id, which each lookup checks against the list since the lists
+/// are edited in place: a scan per lookup, casting every item, was a good
+/// part of each network the designer builds.
+class _IdLookup<T> {
+  _IdLookup(this._idOf);
+
+  final String Function(T item) _idOf;
+  Map<String, int>? _at;
+
+  T? find(List<T> list, String? id) {
+    if (id == null) return null;
+    final at = _at ??= _index(list);
+    final i = at[id];
+    if (i != null && i < list.length) {
+      final item = list[i];
+      if (_idOf(item) == id) return item;
+    }
+    // added or moved since the index was made: as before, and index again
+    for (var k = 0; k < list.length; k++) {
+      if (_idOf(list[k]) == id) {
+        _at = null;
+        return list[k];
+      }
+    }
+    return null;
+  }
+
+  Map<String, int> _index(List<T> list) {
+    final at = <String, int>{};
+    for (var k = 0; k < list.length; k++) {
+      at.putIfAbsent(_idOf(list[k]), () => k);
+    }
+    return at;
   }
 }

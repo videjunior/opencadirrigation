@@ -35,6 +35,10 @@ String genericFittingName(FittingKind k, double sizeMm, double size2Mm, String F
   return '${t('fit.${k.name}')} $size'.trim();
 }
 
+/// The nodes of a model by rounded position and scope, made once per model:
+/// the bill of materials selects the fittings of every zone in turn.
+final _nodesByPoint = Expando<Map<String, GNode>>();
+
 /// Selects the fittings of a built network. [specOf] gives the pipe spec of
 /// a link (after sizing). Returns BOM lines grouped by catalog item.
 ///
@@ -169,19 +173,22 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
   }
 
   // lateral take-offs, line ends and risers per lateral entity
-  final nodeOfPt = <String, GNode>{};
-  for (final n in model.nodes.values) {
-    nodeOfPt['${n.p.x.toStringAsFixed(3)}|${n.p.y.toStringAsFixed(3)}|${n.scope.name}'] = n;
-  }
+  final nodeOfPt = _nodesByPoint[model] ??= {for (final n in model.nodes.values) '${n.p.x.toStringAsFixed(3)}|${n.p.y.toStringAsFixed(3)}|${n.scope.name}': n};
   GNode? nodeAt(Pt p, HydraulicScope s) => nodeOfPt['${p.x.toStringAsFixed(3)}|${p.y.toStringAsFixed(3)}|${s.name}'];
   bool connectsToMain(GNode? n, String self) => n != null && n.links.any((l) => l.kind == GLinkKind.pipe && l.entityId != self && !lateralEntities.contains(l.entityId));
   final zoneOfEntity = <String, String>{for (final l in model.links) l.entityId: l.zoneId ?? ''};
+  // the links of every entity, in model order (a scan of all links per
+  // entity made the bill of materials quadratic)
+  final linksOf = <String, List<GLink>>{};
+  for (final l in model.links) {
+    linksOf.putIfAbsent(l.entityId, () => []).add(l);
+  }
   for (final e in project.entities) {
     if (model.unconnectedEntities.contains(e.id)) continue;
     if (zone != null && (zoneOfEntity[e.id] ?? '') != zone) continue;
     switch (e) {
       case SpraylineEntity s:
-        final links = model.links.where((l) => l.entityId == s.id);
+        final links = linksOf[s.id] ?? const <GLink>[];
         if (links.isEmpty) break;
         final size = cat.pipe(links.first.pipeSpecId ?? s.pipeSpecId)?.nominalMm ?? 16;
         final startMain = connectsToMain(nodeAt(s.points.first, HydraulicScope.zone), s.id);
@@ -203,7 +210,7 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
         if (!endMain) need(FittingKind.tapeEnd, size);
       case PipeEntity p:
         if (params.pipeStickLengthM > 0) {
-          final links = model.links.where((l) => l.entityId == p.id).toList();
+          final links = linksOf[p.id] ?? const <GLink>[];
           if (links.isEmpty) break;
           final size = specOf(links.first)?.nominalMm ?? 0;
           final n = (p.length / params.pipeStickLengthM).floor();

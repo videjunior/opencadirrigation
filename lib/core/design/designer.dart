@@ -328,6 +328,7 @@ class Designer {
       final need = math.max(p.pressureStart, p.pressureEnd);
       if (need <= _rating(spec) + 1e-6 || need <= (_requiredRating[p.entityId] ?? 0) + 1e-6) continue;
       _requiredRating[p.entityId] = need;
+      _networkInputs++;
       changed = true;
     }
     return changed;
@@ -488,9 +489,54 @@ class Designer {
 
   static const double _hwExp = 4.871;
 
-  /// Builds the hydraulic network of a zone. [emitterMode] true = pressure
-  /// dependent, false = nominal fixed demands.
+  /// Zone networks by valve and detail, reused while the model and
+  /// [_networkInputs] stay the same: the bisections on the valve pressure
+  /// solve the same network with another head again and again.
+  final Map<(String, bool), _ZoneNetwork> _zoneNetworks = {};
+
+  /// Counts the changes the zone networks are built from: pipe assignments
+  /// and pressure rating requirements.
+  int _networkInputs = 0;
+
+  /// The hydraulic network of a zone. [detailed] true = pressure dependent
+  /// emitters, false = nominal fixed demands.
   HydraulicNetwork _zoneNetwork(String valveId, double downstreamHead, bool detailed) {
+    final kept = _zoneNetworks[(valveId, detailed)];
+    if (kept != null && identical(kept.model, model) && kept.inputs == _networkInputs) {
+      final inlet = kept.inlet;
+      if (inlet != null) inlet.fixedHead = inlet.elevation + downstreamHead;
+      assert(_sameNetwork(kept.net, _buildZoneNetwork(valveId, downstreamHead, detailed)), 'zone network of $valveId reused after a change');
+      return kept.net;
+    }
+    final net = _buildZoneNetwork(valveId, downstreamHead, detailed);
+    // a pump's curve depends on the speed a variable-speed drive was given
+    if (net.links.any((l) => l.kind == HLinkKind.pump)) {
+      _zoneNetworks.remove((valveId, detailed));
+    } else {
+      final (_, zoneNode) = model.valveNodes[valveId]!;
+      _zoneNetworks[(valveId, detailed)] = (model: model, inputs: _networkInputs, net: net, inlet: net.nodes[zoneNode]);
+    }
+    return net;
+  }
+
+  /// Whether two networks have the same nodes and links (debug check of the
+  /// reused zone networks).
+  static bool _sameNetwork(HydraulicNetwork a, HydraulicNetwork b) {
+    if (a.nodes.length != b.nodes.length || a.links.length != b.links.length) return false;
+    final na = a.nodes.values.toList(), nb = b.nodes.values.toList();
+    for (var i = 0; i < na.length; i++) {
+      final x = na[i], y = nb[i];
+      if (x.id != y.id || x.kind != y.kind || x.elevation != y.elevation || x.demand != y.demand || x.fixedHead != y.fixedHead || !identical(x.emitter, y.emitter) || x.emitterCount != y.emitterCount || x.emitterOffset != y.emitterOffset) return false;
+    }
+    for (var i = 0; i < a.links.length; i++) {
+      final x = a.links[i], y = b.links[i];
+      if (x.id != y.id || x.from != y.from || x.to != y.to || x.kind != y.kind || x.diameter != y.diameter || x.length != y.length || x.hazenC != y.hazenC || x.roughness != y.roughness) return false;
+      if (x.minorK != y.minorK || x.checkValve != y.checkValve || !identical(x.device, y.device) || x.prvSetting != y.prvSetting || x.fcvFlow != y.fcvFlow || x.scobeyKs != y.scobeyKs || x.manningN != y.manningN || !identical(x.tag, y.tag)) return false;
+    }
+    return true;
+  }
+
+  HydraulicNetwork _buildZoneNetwork(String valveId, double downstreamHead, bool detailed) {
     final net = HydraulicNetwork(options: _options);
     final (_, zoneNode) = model.valveNodes[valveId]!;
     final nodeIds = model.zoneNodes[valveId] ?? {};
@@ -547,6 +593,19 @@ class Designer {
   }
 
   /// Mean reference pressure of the emitters of a zone from a solved network.
+  /// Whether [id] is a tape, for the entities of [_tapeModel]: a scan of the
+  /// entities for every emitter of each analysis was quadratic.
+  final Map<String, bool> _tapeOf = {};
+  NetworkModel? _tapeModel;
+
+  bool _isTape(String id) {
+    if (!identical(_tapeModel, model)) {
+      _tapeModel = model;
+      _tapeOf.clear();
+    }
+    return id.isNotEmpty && (_tapeOf[id] ??= project.byId(id) is TapeEntity);
+  }
+
   (double, double) _meanPressures(String valveId, NetworkResult r) {
     var sumActual = 0.0, sumNominal = 0.0, w = 0.0;
     for (final id in model.zoneNodes[valveId] ?? <String>{}) {
@@ -555,8 +614,7 @@ class Designer {
       if (head == null) continue;
       for (final e in n.emitters) {
         if (e.index == -2) continue; // flushing
-        final isTapeInlet = e.entityId.isNotEmpty && project.byId(e.entityId) is TapeEntity;
-        if (isTapeInlet && e.index != 0) continue;
+        if (e.index != 0 && _isTape(e.entityId)) continue;
         final p = head - (n.elevation + e.offset);
         sumActual += p * e.count;
         sumNominal += e.nominalHead * e.count;
@@ -673,7 +731,7 @@ class Designer {
       allowMax = math.min(allowMax, nominal * (1 + params.maxZoneVariationPct / 200));
     }
     final cv = nominalW > 0 ? cvSum / nominalW : 0.0;
-    final epp = _emittersPerPlantFor(outlets);
+    final epp = _zoneEmittersPerPlant(valveId, outlets);
     // back to flows at the zone's mean nominal flow (the same numbers as
     // before when every emitter has the same nozzle)
     final qnMean = flows.isEmpty ? 0.0 : nominalFlowSum / flows.length;
@@ -748,14 +806,40 @@ class Designer {
     );
   }
 
+  /// [_emittersPerPlantFor] of each zone of [_eppModel], whose outlets stay
+  /// where they are while the zone is sized and analysed again and again.
+  final Map<String, int> _eppOfZone = {};
+  NetworkModel? _eppModel;
+
+  int _zoneEmittersPerPlant(String valveId, List<OutletResult> outlets) {
+    if (!identical(_eppModel, model)) {
+      _eppModel = model;
+      _eppOfZone.clear();
+    }
+    final kept = _eppOfZone[valveId];
+    assert(kept == null || kept == _emittersPerPlantFor(outlets), 'emitters per plant of $valveId kept after a change');
+    return kept ?? (_eppOfZone[valveId] = _emittersPerPlantFor(outlets));
+  }
+
   /// Emitters per plant for the EU: from an irrigated area containing most
   /// of the zone's outlets, else the project default.
   int _emittersPerPlantFor(List<OutletResult> outlets) {
     if (outlets.isEmpty) return math.max(1, params.emittersPerPlant);
     for (final a in project.entities.whereType<AreaEntity>()) {
       if (a.emittersPerPlant <= 0 || a.points.length < 3) continue;
+      // an outlet beyond the outline's tolerance of the area's bounding box
+      // is neither inside nor on it
+      var x0 = double.infinity, y0 = double.infinity, x1 = double.negativeInfinity, y1 = double.negativeInfinity;
+      for (final q in a.points) {
+        x0 = math.min(x0, q.x);
+        y0 = math.min(y0, q.y);
+        x1 = math.max(x1, q.x);
+        y1 = math.max(y1, q.y);
+      }
+      const margin = 0.02;
       var inside = 0;
       for (final o in outlets) {
+        if (o.p.x < x0 - margin || o.p.x > x1 + margin || o.p.y < y0 - margin || o.p.y > y1 + margin) continue;
         // outlets on the outline count (strict point-in-polygon takes those
         // on a top or right edge for outside)
         if (pointInPolygon(o.p, a.points) || pointOnPolygonBoundary(o.p, a.points, tol: 0.01)) inside++;
@@ -868,6 +952,7 @@ class Designer {
 
   void _assign(String entityId, PipeSpec spec) {
     _assigned[entityId] = spec.id;
+    _networkInputs++;
   }
 
   double _crf() => capitalRecoveryFactor(params.interestRate, params.termYears);
@@ -1274,6 +1359,7 @@ class Designer {
   }
 
   void _writeBack(Map<String, List<GLink>> units) {
+    _networkInputs++;
     for (final e in units.entries) {
       final spec = _assigned[e.key];
       if (spec == null) continue;
@@ -1339,6 +1425,7 @@ class Designer {
     }
     _pendingSplits.clear();
     _assigned.clear();
+    _networkInputs++;
     model = NetworkBuilder(project).build();
     return count;
   }
@@ -2494,3 +2581,6 @@ bool pointInPolygonSafe(dynamic p, List<dynamic> poly) {
 
 /// Convenience for lateral tools: builds an [EmitterCurve] description string.
 String describeEmitter(EmitterCurve c, Units u) => 'q = ${fmt(u.flowFromSi(c.k), 3)}·H^${fmt(c.x, 2)}';
+
+/// A zone network kept for reuse, with what it was built from.
+typedef _ZoneNetwork = ({NetworkModel model, int inputs, HydraulicNetwork net, HNode? inlet});
