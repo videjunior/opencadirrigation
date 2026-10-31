@@ -383,8 +383,9 @@ class CadPainter extends CustomPainter {
         _spraylineOutlets(canvas, s, c.results?.outletsByEntity[e.id], color);
         _feed(canvas, s.id, s.points);
       case TapeEntity t:
-        _pipe(canvas, t.points, e, c.results?.pipesByEntity[e.id], 1.5, color, selected, dashed: true);
-        _tapeResults(canvas, t, c.results?.outletsByEntity[e.id]);
+        final segs = c.results?.pipesByEntity[e.id];
+        _pipe(canvas, t.points, e, segs, 1.5, color, selected);
+        _emitters(canvas, t, segs, c.results?.outletsByEntity[e.id], color, selected);
         _feed(canvas, t.id, t.points);
       case RevisionCloudEntity rc:
         _unbatched(() => _revisionCloud(canvas, rc, color, selected));
@@ -1067,7 +1068,7 @@ class CadPainter extends CustomPainter {
     return Color.lerp(Cad.ink(const Color(0xFF29B6F6)), green, t)!;
   }
 
-  void _pipe(Canvas canvas, List<Pt> pts, Entity e, List<PipeSegmentResult>? res, double width, Color color, bool selected, {bool dashed = false}) {
+  void _pipe(Canvas canvas, List<Pt> pts, Entity e, List<PipeSegmentResult>? res, double width, Color color, bool selected) {
     if (pts.length < 2) return;
     final overlay = c.overlay;
     if (res != null && res.isNotEmpty && (overlay == OverlayMode.velocity || overlay == OverlayMode.pressure) && !selected) {
@@ -1100,22 +1101,6 @@ class CadPainter extends CustomPainter {
       endRun();
     } else {
       _poly(canvas, pts, _stroke(color, selected ? width + 1.5 : width));
-    }
-    if (dashed && cam.scale > 0.5) {
-      // tick marks to distinguish tapes, every stepM along one walk
-      final stepM = math.max(2.0, 20 / cam.scale);
-      final view = (Offset.zero & cam.size).inflate(2);
-      var next = stepM, acc = 0.0;
-      for (var i = 1; i < pts.length; i++) {
-        final a = pts[i - 1], b = pts[i];
-        final seg = a.distanceTo(b);
-        while (next <= acc + seg) {
-          final o = cam.toScreen(Pt.lerp(a, b, seg == 0 ? 0 : (next - acc) / seg));
-          if (view.contains(o)) _dot(canvas, o, 1.2, color);
-          next += stepM;
-        }
-        acc += seg;
-      }
     }
     if (c.showLabels && c.overlay == OverlayMode.sizes && cam.scale > 0.8) {
       String? name;
@@ -1180,31 +1165,146 @@ class CadPainter extends CustomPainter {
     });
   }
 
+  /// The outlets of a sprayline, alike in every view: the pressure overlay
+  /// only gives each one the colour of its pressure.
   void _spraylineOutlets(Canvas canvas, SpraylineEntity s, List<OutletResult>? res, Color color) {
     if (cam.scale < 0.6) return;
     final nozzle = c.project.catalog.outlet(s.outletSpecId)?.nozzle(s.nozzleId);
     final radius = nozzle?.curve.radius(s.headM) ?? 0;
     final positions = s.outletPositions();
-    final pOut = _fill(_inkOf(Layers.outlets));
+    final ink = _inkOf(Layers.outlets);
     final pR = _stroke(_inkOf(Layers.wettedRadii), 0.7);
     final showR = c.showWettedRadii && radius > 0 && _layer(Layers.wettedRadii).visible && positions.length < 3000 && cam.scale > 1.2;
-    for (final p in positions) {
-      final o = cam.toScreen(p);
-      _dot(canvas, o, math.max(1.5, 0.25 * cam.scale), pOut.color);
-      if (showR) _ring(canvas, o, radius * cam.scale, pR);
-    }
-    if (c.overlay == OverlayMode.pressure && res != null && cam.scale > 0.6) {
-      for (final r in res) {
-        _dot(canvas, cam.toScreen(r.p), math.max(2.5, 0.35 * cam.scale), _pressureColor(r.pressure, r.allowedMin, r.allowedMax));
+    final groups = c.overlay == OverlayMode.pressure && res != null && res.isNotEmpty ? _inOrder(res, (x) => x.index) : null;
+    final r = math.max(2.0, math.min(0.25, 0.35 * s.spacing) * cam.scale);
+    var g = 0, gFill = -1;
+    var fill = ink;
+    for (var i = 0; i < positions.length; i++) {
+      final o = cam.toScreen(positions[i]);
+      if (groups != null) {
+        while (g < groups.length - 1 && groups[g].index + groups[g].count <= i) {
+          g++;
+        }
+        if (g != gFill) fill = _pressureColor(groups[gFill = g].pressure, groups[g].allowedMin, groups[g].allowedMax);
       }
+      _dot(canvas, o, r, fill);
+      if (showR) _ring(canvas, o, radius * cam.scale, pR);
     }
   }
 
-  void _tapeResults(Canvas canvas, TapeEntity t, List<OutletResult>? res) {
-    if (res == null || c.overlay != OverlayMode.pressure || cam.scale < 0.6) return;
-    for (final r in res) {
-      _dot(canvas, cam.toScreen(r.p), math.max(2, 0.3 * cam.scale), _pressureColor(r.pressure, r.allowedMin, r.allowedMax));
+  /// The dots of the emitters of a drip line stand at least this far apart
+  /// on the screen (pixels).
+  static const _emitterGapPx = 8.0;
+
+  /// [list] ordered by [key] (as it comes from the design, mostly). The
+  /// outlet results of a line go by [OutletResult.index]: the design
+  /// computes the outlets of a long line in groups, from that one on,
+  /// [OutletResult.count] of them.
+  static List<T> _inOrder<T>(List<T> list, int Function(T) key) {
+    for (var i = 1; i < list.length; i++) {
+      if (key(list[i]) < key(list[i - 1])) return [...list]..sort((a, b) => key(a).compareTo(key(b)));
     }
+    return list;
+  }
+
+  /// The emitters of a drip line, where the design places them (every
+  /// emitter spacing from its start), as dots a few pixels across on the
+  /// line, alike in every view: in the colour of the line where they sit
+  /// (by velocity, the layer's...) or, with the pressure overlay, in the
+  /// colour of their pressure within the allowed range. Too close together
+  /// on the screen, one in a few is drawn (counted from the start, so they
+  /// stay put while the view moves).
+  void _emitters(Canvas canvas, TapeEntity t, List<PipeSegmentResult>? segs, List<OutletResult>? res, Color color, bool selected) {
+    final spacing = c.project.catalog.tape(t.tapeSpecId)?.emitterSpacingM ?? 0;
+    if (!(spacing > 0) || cam.scale < 0.5) return;
+    final n = (t.length / spacing).floor();
+    final step = math.max(1, (_emitterGapPx / (spacing * cam.scale)).ceil());
+    // dot k (from 1) is emitter k × step − 1 (from 0), k × every from the start
+    final every = step * spacing, dots = n ~/ step;
+    final groups = c.overlay == OverlayMode.pressure && res != null && res.isNotEmpty ? _inOrder(res, (x) => x.index) : null;
+    // the result segments along the line, for the velocity colours
+    final speeds = groups == null && !selected && c.overlay == OverlayMode.velocity && segs != null && segs.isNotEmpty ? _inOrder(segs, (x) => x.segmentIndex) : null;
+    final vmax = c.project.params.maxZoneVelocity;
+    final r = (0.25 * every * cam.scale).clamp(2.0, 4.0);
+    final view = (Offset.zero & cam.size).inflate(r);
+    // the dots go straight into the batch, by colour (a line has few)
+    final batch = _batch;
+    var fill = color;
+    List<double>? into;
+    var current = false; // [into] gathers the dots of [fill]
+    void colour(Color col) {
+      fill = col;
+      current = false;
+    }
+
+    final pts = t.points;
+    var k = 1, g = 0, s = 0, gFill = -1, sFill = -1;
+    var acc = 0.0, segEnd = speeds?.first.length ?? 0.0;
+    for (var i = 1; i < pts.length && k <= dots; i++) {
+      final a = pts[i - 1], b = pts[i];
+      final len = a.distanceTo(b);
+      final end = acc + len;
+      // only the stretch of this piece in view
+      final sa = cam.toScreen(a), sb = cam.toScreen(b);
+      final cut = len > 0 ? _clip(sa, sb, view) : null;
+      if (cut != null) {
+        k = math.max(k, ((acc + cut.$1 * len) / every).ceil());
+        final last = math.min(dots, ((acc + cut.$2 * len) / every + 1e-9).floor());
+        for (; k <= last; k++) {
+          final d = k * every;
+          if (groups != null) {
+            final j = k * step - 1;
+            while (g < groups.length - 1 && groups[g].index + groups[g].count <= j) {
+              g++;
+            }
+            if (g != gFill) colour(_pressureColor(groups[gFill = g].pressure, groups[g].allowedMin, groups[g].allowedMax));
+          } else if (speeds != null) {
+            while (s < speeds.length - 1 && segEnd < d) {
+              segEnd += speeds[++s].length;
+            }
+            if (s != sFill) colour(_velocityColor(speeds[sFill = s].velocity, vmax));
+          }
+          final f = ((d - acc) / len).clamp(0.0, 1.0);
+          final x = sa.dx + (sb.dx - sa.dx) * f, y = sa.dy + (sb.dy - sa.dy) * f;
+          if (!current) {
+            into = batch == null || fill.a < 1 ? null : (batch.dots[(fill, r)] ??= []);
+            current = true;
+          }
+          final list = into;
+          if (list == null) {
+            canvas.drawCircle(Offset(x, y), r, _fill(fill));
+          } else {
+            list
+              ..add(x)
+              ..add(y);
+          }
+        }
+      }
+      k = math.max(k, (end / every + 1e-9).floor() + 1);
+      acc = end;
+    }
+  }
+
+  /// The part of the segment [a]–[b] inside [rect], as the fractions of the
+  /// segment where it starts and ends (null when it misses the rectangle).
+  static (double, double)? _clip(Offset a, Offset b, Rect rect) {
+    var t0 = 0.0, t1 = 1.0;
+    final dx = b.dx - a.dx, dy = b.dy - a.dy;
+    for (final (p, q) in [(-dx, a.dx - rect.left), (dx, rect.right - a.dx), (-dy, a.dy - rect.top), (dy, rect.bottom - a.dy)]) {
+      if (p == 0) {
+        if (q < 0) return null;
+      } else {
+        final t = q / p;
+        if (p < 0) {
+          if (t > t1) return null;
+          if (t > t0) t0 = t;
+        } else {
+          if (t < t0) return null;
+          if (t < t1) t1 = t;
+        }
+      }
+    }
+    return (t0, t1);
   }
 
   void _minMax(Canvas canvas, DesignResults r) {

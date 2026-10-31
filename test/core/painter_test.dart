@@ -29,6 +29,9 @@ class RecordingCanvas implements Canvas {
   final pathWidths = <double>[];
   final segmentPaints = <Paint>[];
 
+  /// The segments drawn as points, with their colour.
+  final segments = <(Offset, Offset, Color)>[];
+
   /// The kinds of call in order: line, path, points, text.
   final ops = <String>[];
 
@@ -71,6 +74,7 @@ class RecordingCanvas implements Canvas {
     } else if (mode == ui.PointMode.lines) {
       for (var i = 0; i + 3 < points.length; i += 4) {
         lines.add((Offset(points[i], points[i + 1]), Offset(points[i + 2], points[i + 3])));
+        segments.add((Offset(points[i], points[i + 1]), Offset(points[i + 2], points[i + 3]), paint.color));
       }
       segmentPaints.add(paint);
     }
@@ -118,13 +122,73 @@ void main() {
     final plain = paint();
     c.overlay = OverlayMode.pressure;
     final coloured = paint();
-    final extra = coloured.circles.length - plain.circles.length;
-    final outlets = c.results!.zones.values.fold<int>(0, (n, z) => n + z.outlets.length);
-    expect(extra, greaterThan(0));
-    expect(extra, lessThanOrEqualTo(outlets));
-    final added = coloured.circles.where((x) => !plain.circles.any((y) => y.$1 == x.$1 && y.$3 == x.$3)).map((x) => x.$3).toList();
-    expect(added.every(pressureColour), isTrue);
-    expect(added.where((x) => x.toARGB32() == 0xFFE53935), isEmpty, reason: 'the example stays inside its pressure window');
+    // the same dots as in the velocity view, where and as big as there
+    int byPlace((Offset, double, Color) a, (Offset, double, Color) b) => a.$1.dx != b.$1.dx ? a.$1.dx.compareTo(b.$1.dx) : a.$1.dy != b.$1.dy ? a.$1.dy.compareTo(b.$1.dy) : a.$2.compareTo(b.$2);
+    final before = [...plain.circles]..sort(byPlace), after = [...coloured.circles]..sort(byPlace);
+    expect([for (final x in after) (x.$1, x.$2)], [for (final x in before) (x.$1, x.$2)]);
+    final recoloured = [for (var i = 0; i < after.length; i++) if (after[i].$3.toARGB32() != before[i].$3.toARGB32()) after[i].$3];
+    expect(recoloured, isNotEmpty);
+    expect(recoloured.every(pressureColour), isTrue);
+    expect(recoloured.where((x) => x.toARGB32() == 0xFFE53935), isEmpty, reason: 'the example stays inside its pressure window');
+  });
+
+  test('drip line emitters are the same dots in every overlay; the pressure overlay recolours them', () async {
+    await c.runDesign();
+    final res = c.results!;
+    final tape = c.project.entities.whereType<TapeEntity>().firstWhere((t) => (res.outletsByEntity[t.id] ?? const []).isNotEmpty);
+    final spacing = c.project.catalog.tape(tape.tapeSpecId)!.emitterSpacingM;
+    final emitters = (tape.length / spacing).floor();
+    List<(Offset, double, Color)> dots(RecordingCanvas r) => [for (final x in r.circles) if (tape.distanceTo(c.camera.toWorld(x.$1)) < 0.02) x];
+    List<Offset> at(List<(Offset, double, Color)> d) => [for (final x in d) x.$1]..sort((a, b) => a.dx != b.dx ? a.dx.compareTo(b.dx) : a.dy.compareTo(b.dy));
+    // the colours of the lines drawn through [o]
+    Set<int> lineColoursAt(RecordingCanvas r, Offset o) => {
+      for (final (a, b, col) in r.segments)
+        if (distanceToSegment(Pt(o.dx, o.dy), Pt(a.dx, a.dy), Pt(b.dx, b.dy)) < 0.75) col.toARGB32(),
+    };
+
+    c.camera.center = pointAlongPolyline(tape.points, tape.length / 2);
+    // close in on the middle of the line (every emitter, 25 px apart), then
+    // out to the whole line (1.5 px apart: one emitter in 6, 9 px apart)
+    for (final (scale, expected) in [(50.0, 1200 / (spacing * 50) - 3), (3.0, emitters ~/ (8 / (spacing * 3)).ceil() - 0.5)]) {
+      c.camera.scale = scale;
+      final shots = <OverlayMode, RecordingCanvas>{};
+      for (final mode in [OverlayMode.velocity, OverlayMode.pressure, OverlayMode.none]) {
+        c.overlay = mode;
+        shots[mode] = paint();
+      }
+      final speed = dots(shots[OverlayMode.velocity]!), pressure = dots(shots[OverlayMode.pressure]!), none = dots(shots[OverlayMode.none]!);
+      expect(speed.length, greaterThan(expected), reason: 'at $scale px/m: the emitters, not one dot per group of the design');
+      expect(at(pressure), at(speed));
+      expect(at(none), at(speed));
+      for (final d in [...speed, ...pressure, ...none]) {
+        expect(d.$2, inInclusiveRange(2, 4), reason: 'a marker, not a disc over the line');
+      }
+      final xs = at(speed);
+      for (var i = 1; i < xs.length; i++) {
+        expect((xs[i] - xs[i - 1]).distance, greaterThan(7.99));
+      }
+      expect(pressure.every((d) => pressureColour(d.$3)), isTrue);
+      for (final mode in [OverlayMode.velocity, OverlayMode.none]) {
+        for (final d in dots(shots[mode]!)) {
+          expect(lineColoursAt(shots[mode]!, d.$1), contains(d.$3.toARGB32()), reason: '$mode: the colour of the line where it sits');
+        }
+      }
+    }
+  });
+
+  test('the outlets of a sprayline are the same dots in every overlay', () async {
+    await c.runDesign();
+    final line = c.project.entities.whereType<SpraylineEntity>().firstWhere((s) => (c.results!.outletsByEntity[s.id] ?? const []).isNotEmpty);
+    c.camera.center = pointAlongPolyline(line.points, line.length / 2);
+    c.camera.scale = 12;
+    List<(Offset, double, Color)> dots(RecordingCanvas r) => [for (final x in r.circles) if (line.distanceTo(c.camera.toWorld(x.$1)) < 0.02) x];
+    c.overlay = OverlayMode.velocity;
+    final plain = dots(paint());
+    c.overlay = OverlayMode.pressure;
+    final coloured = dots(paint());
+    expect(plain, isNotEmpty);
+    expect([for (final d in coloured) (d.$1, d.$2)], [for (final d in plain) (d.$1, d.$2)]);
+    expect(coloured.every((d) => pressureColour(d.$3)), isTrue);
   });
 
   test('min/max overlay marks the extreme emitter of every zone with a label', () async {

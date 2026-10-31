@@ -124,7 +124,10 @@ students. The interactive tutorial and the example gallery let you start without
    hydraulic grade line, messages.
 5. Hover a pipe to see diameter, flow, velocity and head loss; select a lateral and open the
    **Hydraulic grade line** tab; switch the drawing overlay in View (velocity, pressure, diameters,
-   minimum and maximum pressure, densogram, terrain slope and aspect).
+   minimum and maximum pressure, densogram, terrain slope and aspect). Every overlay draws the same
+   items and changes only their colours: the emitters of drip lines are small dots on the line (one
+   in a few when zoomed out), in the colour of the line or, with the pressure overlay, of their own
+   pressure.
 6. Export: File → Export drawing (PDF sheets, DXF, DWG, PNG…) or Export report (PDF, Excel, CSV,
    TXT). Save the project with **Ctrl+S** (`.oci.json`), or send it as a link (File → Share by
    link…).
@@ -1490,7 +1493,7 @@ app (installable as a PWA).
 | `core/catalog_packs_test.dart` | Every pack in `catalogs/` loads, unique ids not colliding with the default catalogue, normalised files and consistent index; pack format; loaders (assets and URL) |
 | `core/examples_test.dart` | Every example, in the 20 languages, builds, is connected, passes the check, designs with zones inside the window and no deficit, prints every report cell as a plain number, and matches the files in `examples/` |
 | `core/spatial_index_test.dart` | Index against brute force, drawing order, degenerate cases, invalidation in the controller, selection and snap, entities by id and counts per layer |
-| `core/painter_test.dart`, `core/scene_cache_test.dart` | Result overlays, drawing entities, texts over the linework, the hover colour, hairlines in a view packed with linework on a 2× screen; one recording per scene, a heavy scene moved with the view and drawn sharp once it rests |
+| `core/painter_test.dart`, `core/scene_cache_test.dart` | Result overlays (the same emitter dots in every overlay, recoloured by pressure), drawing entities, texts over the linework, the hover colour, hairlines in a view packed with linework on a 2× screen; one recording per scene, a heavy scene moved with the view and drawn sharp once it rests |
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Pasted coordinates (decimals, comma, hemispheres, DMS, links); contour interval; language choice from the system and the URL |
 | `core/i18n_packs_test.dart` | Every language pack covers every key of the table, the tutorial and the catalogue names with the same placeholders and is mostly not English; installed packs reach the strings, the tutorial and the catalogue; `setLanguage` loads a pack on demand with English meanwhile and retries a failed load |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Editing (grips, transformations, trim, extend, cut), entity JSON, tabs and clipboard (pivot catalogue items and wiring included), worker protocol, local HTTP, project storage, camera and snap |

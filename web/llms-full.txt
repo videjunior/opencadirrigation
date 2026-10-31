@@ -2,7 +2,7 @@
 
 > OpenCADIrrigation is a free, open-source web application for designing pressurised irrigation systems: a CAD with a hydraulic engine that lays out the network, sizes the pipes, checks pressures and uniformity and produces the bill of materials and reports, from a home garden to a centre pivot, plus an optional AI assistant that draws and designs the project with you from a description of the site.
 
-This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.5.1, updated 2026-10-31.
+This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at https://opencadirrigation.com/; a summary is at https://opencadirrigation.com/llms.txt. Version 1.5.2, updated 2026-10-31.
 
 ## At a glance
 
@@ -20,7 +20,7 @@ This file describes OpenCADIrrigation for language models and other automated re
 | Reports | PDF in any of the 20 languages, Excel (XLSX), CSV and TXT |
 | AI assistant | Optional: a Claude (Anthropic) or GPT (OpenAI) model with the user's own API key, called from the browser with no server in between; it reads the project, looks at the satellite image and the terrain, outlines fields on the imagery, follows the points the user marks on the map and, with the program's own tools, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the design, fixes warnings, optimises, reviews the design, checks drawing sheets before export and writes the report; every change waits for the user's approval (or applies automatically) and can be undone; open it at https://opencadirrigation.com/?ai=1 |
 | Command line and API | `bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md](https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md)) |
-| Version | 1.5.1, updated 2026-10-31 |
+| Version | 1.5.2, updated 2026-10-31 |
 | Site | https://opencadirrigation.com/ |
 
 ## Who it is for
@@ -363,4 +363,4 @@ The interface, the reports, the tutorial and the example projects are available 
 
 ## Citing
 
-OpenCADIrrigation, version 1.5.1. https://opencadirrigation.com/ (source code: https://github.com/videjunior/opencadirrigation, MIT licence)
+OpenCADIrrigation, version 1.5.2. https://opencadirrigation.com/ (source code: https://github.com/videjunior/opencadirrigation, MIT licence)

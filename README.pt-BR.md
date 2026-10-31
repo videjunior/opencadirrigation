@@ -126,7 +126,10 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
    linha piezométrica, mensagens.
 5. Passe o mouse sobre um tubo para ver diâmetro, vazão, velocidade e perda; selecione uma lateral
    e abra a aba **Linha piezométrica**; troque a sobreposição do desenho em Ver (velocidade,
-   pressão, diâmetros, mínimos e máximos, densograma, declividade e exposição do terreno).
+   pressão, diâmetros, mínimos e máximos, densograma, declividade e exposição do terreno). Toda
+   sobreposição desenha os mesmos itens e muda só as cores: os emissores das fitas e tubos
+   gotejadores são pontinhos sobre a linha (um a cada poucos com o zoom afastado), na cor da linha
+   ou, na sobreposição de pressão, na cor da própria pressão.
 6. Exporte: Arquivo → Exportar desenho (pranchas em PDF, DXF, DWG, PNG…) ou Exportar relatório
    (PDF, Excel, CSV, TXT). Salve o projeto com **Ctrl+S** (`.oci.json`) ou envie-o como link
    (Arquivo → Compartilhar por link…).
@@ -1551,7 +1554,7 @@ nem testados, e celulares e tablets usam o app web (instalável como PWA).
 | `core/catalog_packs_test.dart` | Todos os pacotes em `catalogs/` carregam, ids únicos sem colidir com o catálogo padrão, arquivos normalizados e índice coerente; formato do pacote; carregadores (assets e URL) |
 | `core/examples_test.dart` | Cada exemplo, nos 20 idiomas, constrói, é conectado, passa na verificação, projeta com zonas dentro da janela e sem déficit, imprime cada célula de relatório como número simples e bate com os arquivos em `examples/` |
 | `core/spatial_index_test.dart` | Índice contra força bruta, ordem de desenho, casos degenerados, invalidação no controller, seleção e snap, entidades por id e contagem por camada |
-| `core/painter_test.dart`, `core/scene_cache_test.dart` | Sobreposições de resultados, entidades de desenho, textos sobre as linhas, a cor do item sob o cursor, hairlines numa vista lotada de linhas em tela 2×; uma gravação por cena, cena pesada deslocada com a vista e redesenhada nítida quando ela para |
+| `core/painter_test.dart`, `core/scene_cache_test.dart` | Sobreposições de resultados (os mesmos pontos dos emissores em toda sobreposição, recoloridos pela pressão), entidades de desenho, textos sobre as linhas, a cor do item sob o cursor, hairlines numa vista lotada de linhas em tela 2×; uma gravação por cena, cena pesada deslocada com a vista e redesenhada nítida quando ela para |
 | `core/geo_parse_test.dart`, `core/i18n_lang_test.dart` | Coordenadas coladas (decimais, vírgula, hemisférios, DMS, links); intervalo de curvas; escolha de idioma pelo sistema e pela URL |
 | `core/i18n_packs_test.dart` | Cada pacote de idioma cobre todas as chaves da tabela, do tutorial e dos nomes do catálogo com os mesmos marcadores e não é majoritariamente inglês; pacotes instalados chegam aos textos, ao tutorial e ao catálogo; `setLanguage` carrega o pacote sob demanda com inglês enquanto isso e repete um carregamento que falhou |
 | `core/editing_test.dart`, `core/model_test.dart`, `core/workspace_test.dart`, `core/design_job_test.dart`, `core/app_io_test.dart`, `core/entities_roundtrip_test.dart` | Edição (grips, transformações, aparar, estender, cortar), JSON das entidades, abas e área de transferência, protocolo do worker, HTTP local, armazenamento de projetos, câmera e snap (a área de transferência leva os itens de catálogo dos pivôs e a fiação) |

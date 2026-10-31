@@ -652,8 +652,8 @@ String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(
   if (colouredByResults) {
     note.write(
       ov == OverlayMode.velocity
-          ? ' Pipes with design results are coloured by flow velocity instead (blue slow → green → orange at the limit → red over it).'
-          : ' Pipes with design results are coloured by pressure instead (red below 0, blue → green, purple over the rating).',
+          ? ' Pipes with design results are coloured by flow velocity instead (blue slow → green → orange at the limit → red over it); the emitter dots of drip lines take the colour of their line.'
+          : ' Pipes with design results are coloured by pressure instead (red below 0, blue → green, purple over the rating); emitters (sprinklers, the dots of drip lines) by their own pressure within their allowed range (blue at its minimum → green at its maximum, red below it, purple above it).',
     );
   }
   if (tinted) note.write(' The items of the zones are drawn in their zone colours instead (see Colours).');
