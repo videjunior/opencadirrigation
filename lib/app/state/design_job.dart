@@ -6,6 +6,7 @@
 /// [DesignProgress]), `done` (a [DesignResponse]) or `error`.
 library;
 
+import '../../core/design/advisor.dart';
 import '../../core/design/designer.dart';
 import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
@@ -58,21 +59,32 @@ class DesignRequest {
 bool isDesignPassive(Entity e) => e is ImageEntity;
 
 /// What comes back: the results plus the project's entities after the run
-/// (pipe sizes assigned, telescoped pipes split into pieces) and the id
-/// counter the job reached.
+/// (pipe sizes assigned, telescoped pipes split into pieces), the id
+/// counter the job reached and the design assistant's messages on the
+/// designed project (built here, beside the interface: the check behind
+/// them triangulates the terrain, which held the app after large designs).
 class DesignResponse {
-  DesignResponse({required this.results, required this.entities, required this.nextId});
+  DesignResponse({required this.results, required this.entities, required this.nextId, this.advice});
 
   final DesignResults results;
   final List<Entity> entities;
   final int nextId;
 
-  Map<String, dynamic> toJson() => {'results': results.toJson(), 'entities': entities.map((e) => e.toJson()).toList(), 'nextId': nextId};
+  /// Null when the job could not build them (the interface then does).
+  final List<Advice>? advice;
+
+  Map<String, dynamic> toJson() => {
+    'results': results.toJson(),
+    'entities': entities.map((e) => e.toJson()).toList(),
+    'nextId': nextId,
+    if (advice != null) 'advice': [for (final a in advice!) a.toJson()],
+  };
 
   static DesignResponse fromJson(Map<String, dynamic> j) => DesignResponse(
     results: DesignResults.fromJson(j['results'] as Map<String, dynamic>),
     entities: ((j['entities'] as List?) ?? []).map((e) => Entity.fromJson(e as Map<String, dynamic>)).toList(),
     nextId: (j['nextId'] as num?)?.toInt() ?? 1,
+    advice: j['advice'] is List ? [for (final a in j['advice'] as List) Advice.fromJson(a as Map<String, dynamic>)] : null,
   );
 }
 
@@ -104,7 +116,13 @@ Future<void> runDesignJob(Map<String, dynamic> request, void Function(Map<String
       onProgress: (p) => post({'type': 'progress', ...p.toJson()}),
       yieldControl: yieldControl ?? _noYield,
     );
-    post({'type': 'done', ...DesignResponse(results: r, entities: project.entities, nextId: project.nextIdValue).toJson()});
+    List<Advice>? advice;
+    try {
+      advice = buildAdvice(project, results: r);
+    } catch (_) {
+      // the interface builds them when asked
+    }
+    post({'type': 'done', ...DesignResponse(results: r, entities: project.entities, nextId: project.nextIdValue, advice: advice).toJson()});
   } catch (e, st) {
     post({'type': 'error', 'message': '$e', 'stack': '$st'});
   }

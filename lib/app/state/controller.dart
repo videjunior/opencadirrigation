@@ -387,6 +387,10 @@ class ProjectController extends ChangeNotifier {
     _notifySeq++;
     super.notifyListeners();
   }
+
+  /// Tells the listeners about a change the drawing does not show (the
+  /// progress of a design): the canvas keeps its scene.
+  void _notifyQuiet() => super.notifyListeners();
   DesignResults? results;
   final Set<String> selection = {};
   String? hoverId;
@@ -829,20 +833,27 @@ class ProjectController extends ChangeNotifier {
 
   // ------------------------------------------------------------ autosave
   /// Autosaves at most every few seconds of activity (no timers, so it is
-  /// deterministic and test friendly); also called when a tab is closed.
-  void _autosaveMaybe({bool force = false}) {
+  /// deterministic and test friendly), in the background (see
+  /// [_autosaveInBackground]); [autosaveNow] saves at once.
+  void _autosaveMaybe() {
     if (!autosaveEnabled) return;
     final now = DateTime.now();
-    if (!force && now.difference(_lastAutosave).inMilliseconds < 3000) return;
-    autosaveNow();
+    if (now.difference(_lastAutosave).inMilliseconds < 3000) return;
+    _autosaveInBackground();
   }
 
+  /// Bumped by every copy started and every save: a copy still compressing
+  /// in the background is stored only if nothing newer came meanwhile.
+  int _autosaveRun = 0;
+
+  /// The copy in the browser, at once (a tab being closed).
   void autosaveNow() {
     if (!autosaveEnabled || project.entities.isEmpty) return;
     _lastAutosave = DateTime.now();
+    _autosaveRun++;
     try {
-      final (json, limit) = _storeJson();
-      store.save(project.meta.uid, project.meta.name, json, kind: 'autosave');
+      final (json, stored, limit) = _storeJson();
+      store.save(project.meta.uid, project.meta.name, json, kind: 'autosave', stored: stored);
       // the copy in the browser is what recovers the work after a crash:
       // say once per project when it is incomplete or impossible
       if (limit != null && _autosaveWarned != project.meta.uid) {
@@ -854,6 +865,59 @@ class ProjectController extends ChangeNotifier {
       // storage unavailable: ignore
     }
   }
+
+  /// The copy in the browser without holding the interface: the text of
+  /// the project is taken now, the browser compresses it beside the app
+  /// (compressing a large project in Dart held everything for seconds after
+  /// each design) and the copy is stored when that is done; when it does
+  /// not fit, again without the embedded pictures, as [autosaveNow] does.
+  void _autosaveInBackground() {
+    if (!autosaveEnabled || project.entities.isEmpty) return;
+    // a project already found too large is not compressed again on every
+    // edit, only once it has fewer entities
+    final big = _tooLarge;
+    if (big != null && big.$1 == project.meta.uid && project.entities.length >= big.$2) return;
+    _lastAutosave = DateTime.now();
+    final run = ++_autosaveRun;
+    final uid = project.meta.uid, name = project.meta.name, count = project.entities.length;
+    unawaited(() async {
+      try {
+        final j = _saveMap();
+        var json = encodeJson(j, pretty: false);
+        var stored = await LocalProjectStore.encodeAsync(json);
+        String? limit;
+        if (stored.length > store.maxBytes) {
+          if (run != _autosaveRun) return;
+          // as autosaveNow: the embedded pictures are left out of the copy
+          var dropped = false;
+          for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
+            dropped = e.remove('data') != null || dropped;
+          }
+          if (dropped) {
+            json = encodeJson(j);
+            stored = await LocalProjectStore.encodeAsync(json);
+          }
+          limit = stored.length > store.maxBytes ? 'msg.autosaveTooLarge' : (dropped ? 'msg.autosaveNoImages' : null);
+        }
+        if (run != _autosaveRun) return;
+        if (limit == 'msg.autosaveTooLarge') {
+          _tooLarge = (uid, count);
+        } else {
+          store.save(uid, name, json, kind: 'autosave', stored: stored);
+        }
+        if (limit != null && _autosaveWarned != uid && uid == project.meta.uid) {
+          _autosaveWarned = uid;
+          notify(t(limit, {'mb': fmt(json.length / 1e6, 1)}));
+        }
+      } catch (_) {
+        // storage unavailable: ignore
+      }
+    }());
+  }
+
+  /// The project (uid, entity count) whose copy did not fit the store even
+  /// compressed and without its pictures.
+  (String, int)? _tooLarge;
 
   String? _autosaveWarned;
 
@@ -873,23 +937,26 @@ class ProjectController extends ChangeNotifier {
   String? _tinWarned;
 
   /// Project JSON for the browser store (results included; embedded images
-  /// dropped when the file would exceed the store limit), with the message
-  /// key of what the copy leaves out (null = complete).
-  (String, String?) _storeJson() {
+  /// dropped when the file would exceed the store limit), its stored form
+  /// (compressed once, see [LocalProjectStore.encode]) and the message key
+  /// of what the copy leaves out (null = complete).
+  (String, String, String?) _storeJson() {
     var s = saveJson(pretty: false, markClean: false);
+    var stored = LocalProjectStore.encode(s);
     // large projects are stored compressed; drop the embedded pictures only
     // when even that does not fit
-    if (s.length > store.maxBytes && LocalProjectStore.encode(s).length > store.maxBytes) {
+    if (stored.length > store.maxBytes) {
       final j = jsonDecode(s) as Map<String, dynamic>;
       var dropped = false;
       for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
         dropped = e.remove('data') != null || dropped;
       }
       s = encodeJson(j);
-      if (s.length > store.maxBytes && LocalProjectStore.encode(s).length > store.maxBytes) return (s, 'msg.autosaveTooLarge');
-      return (s, dropped ? 'msg.autosaveNoImages' : null);
+      stored = LocalProjectStore.encode(s);
+      if (stored.length > store.maxBytes) return (s, stored, 'msg.autosaveTooLarge');
+      return (s, stored, dropped ? 'msg.autosaveNoImages' : null);
     }
-    return (s, null);
+    return (s, stored, null);
   }
 
   // ------------------------------------------------------------ entities
@@ -1586,13 +1653,18 @@ class ProjectController extends ChangeNotifier {
       return;
     }
     autoRunning = true;
-    notifyListeners();
+    _notifyQuiet();
     final gen = _editSeq;
     try {
       final response = await designRunner.run(DesignRequest.of(project, lang: lang, sizeZones: false, sizeMain: false), yieldControl: _yieldFrame);
       if (gen == _editSeq && _autoAnalyze) {
         results = response.results;
         unconnected = response.results.unconnected;
+        final adv = response.advice;
+        if (adv != null) {
+          _advice = adv;
+          _adviceSig = _adviceSignature();
+        }
       } else if (gen != _editSeq) {
         // edited while it ran: the next quiet moment analyses again
         _scheduleAutoAnalysis();
@@ -1641,11 +1713,11 @@ class ProjectController extends ChangeNotifier {
         yieldControl: _yieldFrame,
         onMode: (m) {
           designMode = m;
-          notifyListeners();
+          _notifyQuiet();
         },
         onProgress: (p) {
           progress = p;
-          notifyListeners();
+          _notifyQuiet();
         },
       );
       if (gen != _editSeq) {
@@ -1659,10 +1731,17 @@ class ProjectController extends ChangeNotifier {
       final r = response.results;
       results = r;
       unconnected = r.unconnected;
+      // the messages came built with the design (see DesignResponse.advice)
+      final adv = response.advice;
+      if (adv != null) {
+        _advice = adv;
+        _adviceSig = _adviceSignature();
+      }
       dirty = true;
       showReports = true;
       feedEnvelope.clear();
-      _autosaveMaybe(force: true);
+      // the copy in the browser once the results are on screen
+      if (autosaveEnabled) unawaited(_yieldFrame().then((_) => _autosaveInBackground()));
       return r;
     } catch (e, st) {
       debugPrint('$e\n$st');
@@ -1696,13 +1775,15 @@ class ProjectController extends ChangeNotifier {
   /// design check, the settings and the latest results. Recomputed when the
   /// drawing, the settings, the system flows or the results change.
   List<Advice> get advice {
-    final sig = '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${jsonEncode(project.params.toJson())}|${jsonEncode([for (final f in project.systemFlows) f.toJson()])}';
+    final sig = _adviceSignature();
     if (_advice == null || sig != _adviceSig) {
       _advice = buildAdvice(project, results: results);
       _adviceSig = sig;
     }
     return _advice!;
   }
+
+  String _adviceSignature() => '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${jsonEncode(project.params.toJson())}|${jsonEncode([for (final f in project.systemFlows) f.toJson()])}';
 
   /// Applies one correction (one undo step). With results on screen the
   /// design runs again, so the message list shows what is left.
@@ -2500,17 +2581,24 @@ class ProjectController extends ChangeNotifier {
   /// Project JSON including the design results (so a reopened project keeps
   /// its report). Marks the project clean and records a version.
   String saveJson({bool pretty = true, bool markClean = true}) {
-    final j = project.toJson();
-    final r = results;
-    if (r != null) j['results'] = r.toJson();
+    final j = _saveMap();
     final s = encodeJson(j, pretty: pretty);
     if (markClean) {
       dirty = false;
+      _autosaveRun++;
       try {
         store.save(project.meta.uid, project.meta.name, pretty ? encodeJson(j) : s, kind: 'saved');
       } catch (_) {}
     }
     return s;
+  }
+
+  /// The project as a file holds it: the drawing and the last results.
+  Map<String, dynamic> _saveMap() {
+    final j = project.toJson();
+    final r = results;
+    if (r != null) j['results'] = r.toJson();
+    return j;
   }
 
   void loadJson(String s) {

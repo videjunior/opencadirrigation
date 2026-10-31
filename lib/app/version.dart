@@ -9,10 +9,10 @@ library;
 const appName = 'OpenCADIrrigation';
 
 /// Semantic version: the pubspec `version` before the `+`.
-const appVersion = '1.5.0';
+const appVersion = '1.5.1';
 
 /// Build number: the pubspec `version` after the `+`.
-const appBuild = 11;
+const appBuild = 12;
 
 /// Date this version was generated (release date of [appVersion]).
 const appReleaseDate = '2026-10-31';

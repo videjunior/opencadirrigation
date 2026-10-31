@@ -9,6 +9,7 @@ import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/state/design_job.dart';
 import 'package:opencadirrigation/app/state/design_runner.dart' show createDesignRunner;
 import 'package:opencadirrigation/app/state/design_runner_io.dart' show IsolateDesignRunner;
+import 'package:opencadirrigation/core/design/advisor.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
@@ -56,6 +57,33 @@ void main() {
     expect(sizes(p), sizes(reference));
     expect(p.entities.length, reference.entities.length);
     expect(p.nextIdValue, reference.nextIdValue);
+  });
+
+  test('the job sends the design assistant\'s messages, the same the interface builds', () async {
+    final p = example();
+    // a loose pipe (a message with its entity) and two zones of one name
+    // (a message with a correction)
+    p.entities.add(PipeEntity(id: 'loose', points: const [Pt(500, 500), Pt(520, 500)], scope: HydraulicScope.zone));
+    final valves = p.entities.whereType<ControlValveEntity>().toList();
+    valves[1].zoneName = valves[0].zoneName;
+    final messages = <Map<String, dynamic>>[];
+    await runDesignJob(DesignRequest.of(p, lang: 'pt').toJson(), messages.add);
+    final response = DesignResponse.fromJson(jsonDecode(jsonEncode(messages.last)) as Map<String, dynamic>);
+    final sent = response.advice!;
+    expect(sent.where((a) => a.entityIds.contains('loose')), isNotEmpty);
+    expect(sent.firstWhere((a) => a.code == 'duplicate_zone_name').fixes, [FixKind.renameZone]);
+    applyDesignResponse(p, response);
+    List<Map<String, dynamic>> plain(List<Advice> l) => [for (final a in l) a.toJson()];
+    expect(plain(sent), plain(buildAdvice(p, results: response.results)));
+    // the controller shows them as they came, without building them again
+    setPref('lang', 'pt');
+    final c = ProjectController()
+      ..autosaveEnabled = false
+      ..designRunner = InThreadDesignRunner();
+    loadExampleAction(c);
+    c.addEntity(PipeEntity(id: 'loose', points: const [Pt(500, 500), Pt(520, 500)], scope: HydraulicScope.zone));
+    await c.runDesign();
+    expect(plain(c.advice), plain(buildAdvice(c.project, results: c.results)));
   });
 
   test('images stay on the UI side and keep their place after the job', () async {

@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import 'package:archive/archive.dart';
 
+import 'gzip_text.dart';
 import 'prefs.dart';
 
 class StoredProject {
@@ -29,7 +30,7 @@ class StoredProject {
 abstract class ProjectRepository {
   List<StoredProject> list();
   String? load(String uid, {int? version});
-  void save(String uid, String name, String json, {String kind = 'saved', String label = ''});
+  void save(String uid, String name, String json, {String kind = 'saved', String label = '', String? stored});
   void remove(String uid);
   List<StoredProject> versions(String uid);
 }
@@ -55,6 +56,17 @@ class LocalProjectStore implements ProjectRepository {
     if (json.length <= compressAbove) return json;
     final packed = _gzip + base64Encode(const GZipEncoder().encodeBytes(utf8.encode(json)));
     // embedded pictures are compressed already and may not shrink
+    return packed.length < json.length ? packed : json;
+  }
+
+  /// [encode] done by the platform where it can (the browser compresses
+  /// beside the app's code, while [encode] holds the interface for as long
+  /// as a large project takes): the same stored form, read by [decode].
+  static Future<String> encodeAsync(String json) async {
+    if (json.length <= compressAbove) return json;
+    final b64 = await gzipBase64(json);
+    if (b64 == null) return encode(json);
+    final packed = _gzip + b64;
     return packed.length < json.length ? packed : json;
   }
 
@@ -95,11 +107,12 @@ class LocalProjectStore implements ProjectRepository {
   String? load(String uid, {int? version}) => decode(getPref(version == null ? 'store.$uid' : 'store.$uid.v$version'));
 
   /// Saves the project. `autosave` overwrites the previous autosave of the
-  /// same uid; `saved` also records a version (version history).
+  /// same uid; `saved` also records a version (version history). [stored]
+  /// is [json] already encoded (see [encode]), when the caller has it.
   @override
-  void save(String uid, String name, String json, {String kind = 'saved', String label = ''}) {
+  void save(String uid, String name, String json, {String kind = 'saved', String label = '', String? stored}) {
     final raw = json;
-    json = encode(json);
+    json = stored ?? encode(json);
     if (json.length > maxBytes) return; // too large for the browser store
     var idx = _readIndex();
     idx.removeWhere((e) => e.uid == uid && e.kind != 'version');

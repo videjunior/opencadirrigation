@@ -195,7 +195,7 @@ const _reference = [
   ),
   (
     'Storage, privacy and network access',
-    '''- Autosave in the browser, recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
+    '''- Autosave in the browser (made in the background: the browser compresses the copy beside the app, so a large project does not hold the window after a design), recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
 - Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
 - Share by link: the whole project, compressed, travels in the fragment of the address (`#p=…`), which browsers never send to a server; embedded images, the photos of comments and results stay out of the link, and the receiver designs again.
 - Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 24 MB, once per version), so the installed app and the site start without a network; a new version downloads in the background and is used from the next start.

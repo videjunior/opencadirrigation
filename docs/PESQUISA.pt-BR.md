@@ -2706,7 +2706,13 @@ exportações DXF e DWG a gravam como definições de bloco.
   do limite de cerca de 5 MB por origem (3,5 MB por projeto). Um projeto com mais de 256 kB de JSON é
   guardado comprimido com gzip e codificado em base64, o que mantém projetos de dezenas de megabytes
   de JSON dentro da cota (o texto deles comprime cerca de dez vezes); a cópia automática avisa uma vez
-  quando deixa de fora imagens embutidas ou não consegue guardar um projeto.
+  quando deixa de fora imagens embutidas ou não consegue guardar um projeto. A cópia feita depois de
+  edições e cálculos é comprimida pelo navegador (`CompressionStream`, base64 pelo `FileReader`) em
+  segundo plano e guardada quando termina; comprimi-la em Dart na thread da interface travava o app
+  por cerca de um segundo depois do cálculo do exemplo de cultura em linhas e por oito segundos num
+  projeto de 34 mil entidades. As mensagens do assistente de projeto vêm prontas do worker junto com
+  o cálculo (a verificação por trás delas triangula o terreno), e as mensagens de progresso do
+  cálculo não invalidam o desenho guardado.
 - **Link de compartilhamento** (`share_link.dart`): um projeto viaja dentro do próprio endereço,
   comprimido com gzip e codificado em base64url no fragmento (`#p=…`), a parte de um endereço que os
   navegadores nunca enviam a servidor algum; imagens embutidas e resultados do projeto ficam de fora

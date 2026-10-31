@@ -169,6 +169,33 @@ class Advice {
 
   /// Identity used to merge the same problem reported by several sources.
   String get key => '$code|${entityIds.isEmpty ? '$contextId|$value' : entityIds.join(',')}';
+
+  Map<String, dynamic> toJson() => {
+    'code': code,
+    'raw': raw,
+    'level': level.name,
+    if (entityIds.isNotEmpty) 'ids': entityIds,
+    if (context.isNotEmpty) 'ctx': context,
+    'ctxId': ?contextId,
+    if (at != null) 'at': [at!.x, at!.y],
+    if (fixes.isNotEmpty) 'fixes': [for (final f in fixes) f.name],
+    if (value.isNotEmpty) 'value': value,
+  };
+
+  static Advice fromJson(Map<String, dynamic> j) {
+    final at = j['at'] as List?;
+    return Advice(
+      code: j['code'] as String,
+      raw: j['raw'] as String? ?? '',
+      level: AdviceLevel.values.byName(j['level'] as String? ?? 'info'),
+      entityIds: [for (final id in (j['ids'] as List?) ?? const []) '$id'],
+      context: j['ctx'] as String? ?? '',
+      contextId: j['ctxId'] as String?,
+      at: at == null ? null : Pt((at[0] as num).toDouble(), (at[1] as num).toDouble()),
+      fixes: [for (final f in (j['fixes'] as List?) ?? const []) FixKind.values.byName('$f')],
+      value: j['value'] as String? ?? '',
+    );
+  }
 }
 
 /// How far (m) [FixKind.connect] looks for a pipe or item to join.

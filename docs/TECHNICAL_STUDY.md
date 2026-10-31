@@ -2639,7 +2639,12 @@ travels in the project too, and the DXF and DWG exports write it as block defini
   about 5 MB per origin (3.5 MB per project). A project larger than 256 kB of JSON is stored gzipped
   and base64-encoded, which keeps projects of tens of megabytes of JSON within the quota (their text
   compresses about tenfold); the automatic copy says once when it leaves out embedded images or
-  cannot keep a project.
+  cannot keep a project. The copy made after edits and designs is compressed by the browser
+  (`CompressionStream`, base64 by `FileReader`) in the background and stored when done; compressing
+  it in Dart on the interface thread held the app for about a second after a design of the row-crop
+  example and for eight seconds on a project of 34 thousand entities. The design assistant's
+  messages come built with the design from the worker (their check triangulates the terrain), and
+  the design's progress messages do not invalidate the cached drawing.
 - **Share link** (`share_link.dart`): a project travels inside the address itself, gzipped and
   base64url-encoded in the fragment (`#p=…`), the part of an address browsers never send to any
   server; embedded pictures and design results are left out (the receiver designs again), a link

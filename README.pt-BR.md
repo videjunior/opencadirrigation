@@ -1111,8 +1111,9 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
   app quando há autosaves não salvos. Projetos acima de 256 KB de JSON são guardados comprimidos; o
   limite por projeto é de cerca de 3,5 MB depois da compressão. Quando nem assim cabe, as imagens
   embutidas ficam de fora da cópia automática, e o app avisa uma vez por projeto (ou avisa que o
-  projeto não cabe ali: salve-o num arquivo). Um aviso do navegador aparece ao fechar a aba com
-  alterações.
+  projeto não cabe ali: salve-o num arquivo). A cópia automática é feita em segundo plano: o
+  navegador a comprime ao lado do app, então um projeto grande não trava a janela depois de um
+  cálculo nem durante a edição. Um aviso do navegador aparece ao fechar a aba com alterações.
 - **Arquivos**: Salvar gera `.oci.json` para download; Abrir lê do disco. Nada é enviado a servidores.
 - **Compartilhar por link** (Arquivo → Compartilhar por link…): o projeto inteiro, comprimido, vai
   dentro do endereço, depois do `#`, parte que o navegador não envia a nenhum servidor; quem abre o
