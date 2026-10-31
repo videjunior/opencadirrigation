@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -10,6 +11,7 @@ import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/label_rules.dart';
+import '../../core/model/project.dart' show Layer;
 import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
@@ -17,13 +19,17 @@ import '../tools/ai_mark_tool.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'camera.dart';
+import 'scene_cache.dart';
 import 'snapping.dart';
 
 class CadPainter extends CustomPainter {
-  CadPainter({required this.c, required this.tool, required this.snapResult, required this.repaint, this.basemap, this.tint}) : super(repaint: repaint);
+  CadPainter({required this.c, required this.tool, required this.snapResult, required this.repaint, this.basemap, this.tint, this.scene, this.devicePixelRatio = 1}) : super(repaint: repaint);
   final ProjectController c;
-  final Tool? tool;
-  final SnapResult? snapResult;
+
+  /// The active tool and the last snap (the canvas updates both in place
+  /// as the cursor moves).
+  Tool? tool;
+  SnapResult? snapResult;
   final Listenable repaint;
   final BaseMapLayer? basemap;
 
@@ -31,14 +37,57 @@ class CadPainter extends CustomPainter {
   /// e.g. one per zone in the AI assistant's pictures.
   final Color? Function(Entity e)? tint;
 
+  /// Keeps the drawing between frames (the canvas passes one); without it
+  /// everything is drawn every time (pictures for exports and the AI).
+  final SceneCache? scene;
+
+  /// Device pixels per logical pixel of the canvas (the cached scene is
+  /// rasterised at this resolution).
+  double devicePixelRatio;
+
   Camera get cam => c.camera;
 
-  final _textCache = <String, TextPainter>{};
+  /// Laid-out labels shared by every painter, dropped all at once when
+  /// they grow past [_maxTexts] or when fonts arrive (a script whose font
+  /// is fetched on demand is laid out again with it).
+  static final _textCache = <String, TextPainter>{};
+  static const _maxTexts = 6000;
+
+  /// Bumped when the fonts change (the scene is then recorded again).
+  static int fontEpoch = 0;
+  static bool _watchingFonts = false;
+
+  static void _watchFonts() {
+    if (_watchingFonts) return;
+    _watchingFonts = true;
+    try {
+      PaintingBinding.instance.systemFonts.addListener(() {
+        fontEpoch++;
+        for (final tp in _textCache.values) {
+          tp.dispose();
+        }
+        _textCache.clear();
+      });
+    } catch (_) {
+      // no binding (a plain Dart host): nothing to follow
+    }
+  }
+
+  static TextPainter _cachedText(String key, TextPainter Function() make) {
+    final hit = _textCache[key];
+    if (hit != null) return hit;
+    if (_textCache.length >= _maxTexts) {
+      for (final tp in _textCache.values) {
+        tp.dispose();
+      }
+      _textCache.clear();
+    }
+    return _textCache[key] = make();
+  }
 
   TextPainter _text(String s, {double size = 11, Color? color, FontWeight weight = FontWeight.normal}) {
     final ink = color ?? Cad.canvasText;
-    final key = '$s|$size|${ink.toARGB32()}|$weight';
-    return _textCache.putIfAbsent(key, () {
+    return _cachedText('$s|$size|${ink.toARGB32()}|$weight', () {
       final tp = TextPainter(text: TextSpan(text: s, style: TextStyle(fontSize: size, color: ink, fontWeight: weight)), textDirection: TextDirection.ltr);
       tp.layout();
       return tp;
@@ -46,13 +95,35 @@ class CadPainter extends CustomPainter {
   }
 
   void _label(Canvas canvas, Offset at, String s, {double size = 11, Color? color, bool bg = true, Offset shift = const Offset(4, -14)}) {
+    final b = _batch;
+    if (b != null && !b.labelsInPlace) {
+      b.over.add((cv) => _label(cv, at, s, size: size, color: color, bg: bg, shift: shift));
+      return;
+    }
     final tp = _text(s, size: size, color: color);
     final o = at + shift;
     if (bg) {
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(o.dx - 2, o.dy - 1, tp.width + 4, tp.height + 2), const Radius.circular(2)), Paint()..color = Cad.canvas.withValues(alpha: 0.7));
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(o.dx - 2, o.dy - 1, tp.width + 4, tp.height + 2), const Radius.circular(2)), _fill(Cad.canvas.withValues(alpha: 0.7)));
     }
     tp.paint(canvas, o);
   }
+
+  /// The project's layers by name, and their ink on the canvas, for the
+  /// paint under way (looked up once per layer, not once per item).
+  Map<String, Layer> _layers = {};
+  final Map<String, Color> _inks = {};
+
+  void _indexLayers() {
+    _layers = {for (final l in c.project.layers) l.name: l};
+    _inks.clear();
+    _ruleCache.clear();
+    _batch = null;
+  }
+
+  // an item on a layer the project does not list gets one, as before
+  Layer _layer(String name) => _layers[name] ??= c.project.layerNamed(name);
+
+  Color _inkOf(String layer) => _inks[layer] ??= Cad.ink(Color(_layer(layer).color));
 
   /// The point to walk to for staking out [e]: its position, the nearest
   /// vertex of a line, the centre of a circle or pivot.
@@ -76,7 +147,41 @@ class CadPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     cam.size = size;
-    canvas.drawRect(Offset.zero & size, Paint()..color = Cad.canvas);
+    _watchFonts();
+    final scene = this.scene;
+    if (scene == null) {
+      paintScene(canvas, size);
+    } else {
+      scene.paint(canvas, size, devicePixelRatio, _sceneKey(size), cam.center, cam.scale, Cad.canvas, paintScene);
+    }
+    paintOverlay(canvas, size);
+  }
+
+  /// Everything the drawing shows besides the view, the cursor and the
+  /// tool: while it stays the same, the cached scene is drawn again as it
+  /// is. The controller's notification counter stands for every change
+  /// made through it (edits, selection, layers, results, settings, decoded
+  /// images); the rest are read directly.
+  Object _sceneKey(Size size) => (
+    size,
+    c.notifySeq,
+    c.editSeq,
+    identityHashCode(c.project),
+    c.project.entities.length,
+    c.selection.length,
+    identityHashCode(c.results),
+    c.overlay,
+    (c.showGrid, c.showLabels, c.showWettedRadii, c.lang, Cad.isLight, fontEpoch),
+    (c.baseMap, c.baseMapOpacity, c.baseMapEpoch, basemap?.revision),
+    (identityHashCode(c.unconnected), c.unconnected.length, identityHashCode(c.feedEnvelope), c.feedEnvelope.length),
+  );
+
+  /// The drawing: background, base map, grid, the items with their
+  /// results and labels, the scale bar and the overlay legends.
+  void paintScene(Canvas canvas, Size size) {
+    cam.size = size;
+    _indexLayers();
+    canvas.drawRect(Offset.zero & size, _fill(Cad.canvas));
     // base map under everything
     final g = c.project.meta.georef;
     if (c.baseMap != BaseMap.none && g != null && basemap != null) {
@@ -95,9 +200,7 @@ class CadPainter extends CustomPainter {
     if (c.showGrid) _grid(canvas, size);
     final vis = cam.visible;
     final results = c.results;
-    final pipeRes = results?.pipesByEntity ?? const {};
     final outletRes = results?.outletsByEntity ?? const {};
-    final layersVisible = {for (final l in c.project.layers) l.name: l.visible};
     // Viewport culling through the spatial index: only the entities whose
     // (cached) bounds touch the visible area, widened by the largest margin
     // any pass uses, are considered; the indices come in drawing order.
@@ -105,149 +208,75 @@ class CadPainter extends CustomPainter {
     final ents = index.entities;
     final vis2 = vis.inflate(2), vis3 = vis.inflate(3);
     final cand = index.query(vis3);
+    bool shown(Entity e) => _layer(e.layer).visible;
     // pass 0: images and hatches (backgrounds)
     for (final i in cand) {
       final e = ents[i];
-      if (!(layersVisible[e.layer] ?? true)) continue;
-      if (e is ImageEntity && index.boundsAt(i).intersects(vis)) _image(canvas, e);
+      if (e is ImageEntity && shown(e) && index.boundsAt(i).intersects(vis)) _image(canvas, e);
     }
+    _batch = _Batch();
     for (final i in cand) {
       final e = ents[i];
-      if (!(layersVisible[e.layer] ?? true)) continue;
-      if (e is HatchEntity && index.boundsAt(i).intersects(vis)) _hatch(canvas, e);
+      if (e is HatchEntity && shown(e) && index.boundsAt(i).intersects(vis)) _hatch(canvas, e);
     }
+    _flush(canvas);
     // pass 1: areas
     for (final i in cand) {
       final e = ents[i];
-      if (e is AreaEntity && (layersVisible[e.layer] ?? true) && index.boundsAt(i).intersects(vis)) _area(canvas, e);
+      if (e is AreaEntity && shown(e) && index.boundsAt(i).intersects(vis)) _area(canvas, e);
     }
     // densogram (water applied by the sprinklers) over the areas
     if (c.overlay == OverlayMode.densogram) _densogram(canvas);
     // slope or aspect of the terrain
     if (c.overlay == OverlayMode.slope || c.overlay == OverlayMode.aspect) _slopeMap(canvas, aspect: c.overlay == OverlayMode.aspect);
-    // pass 2: drawing / terrain / linear hydraulics
-    for (final i in cand) {
-      final e = ents[i];
-      if (!(layersVisible[e.layer] ?? true)) continue;
-      if (!index.boundsAt(i).intersects(vis2)) continue;
-      final selected = c.selection.contains(e.id);
-      final hovered = c.hoverId == e.id;
-      final color = _color(e, selected, hovered);
-      switch (e) {
-        case LineEntity l:
-          canvas.drawLine(cam.toScreen(l.a), cam.toScreen(l.b), _stroke(color, selected ? 2 : 1));
-        case PolylineEntity p:
-          _poly(canvas, p.points, _stroke(color, selected ? 2 : 1), close: p.closed);
-        case SplineEntity s:
-          _poly(canvas, s.curve(cam.scale > 5 ? 12 : 6), _stroke(color, selected ? 2 : 1), close: s.closed);
-          if (selected) {
-            final pp = Paint()..color = color.withValues(alpha: 0.5);
-            for (final p in s.points) {
-              canvas.drawCircle(cam.toScreen(p), 2, pp);
-            }
-          }
-        case CircleEntity ci:
-          canvas.drawCircle(cam.toScreen(ci.center), ci.radius * cam.scale, _stroke(color, selected ? 2 : 1));
-        case ArcEntity a:
-          _poly(canvas, a.polyline(math.max(16, (a.radius * cam.scale / 4).clamp(16, 180).toInt())), _stroke(color, selected ? 2 : 1));
-        case SymbolEntity s:
-          final p = _stroke(color, selected ? 1.8 : 1.1);
-          for (final stroke in s.strokes()) {
-            _poly(canvas, stroke, p);
-          }
-          if (s.kind == SymbolKind.northArrow && cam.scale * s.size > 8) _label(canvas, cam.toScreen(s.position + Pt.polar(s.size * 1.15, degToRad(s.rotationDeg) + math.pi / 2)), 'N', color: color, size: 11, bg: false, shift: const Offset(-4, -14));
-        case TextEntity t:
-          _worldText(canvas, t.position, t.text, t.height, color, t.rotationDeg);
-        case DimensionEntity d:
-          _dimension(canvas, d, color);
-        case AngularDimensionEntity d:
-          _angular(canvas, d, color);
-        case RadialDimensionEntity d:
-          _radial(canvas, d, color);
-        case OrdinateDimensionEntity d:
-          _ordinate(canvas, d, color);
-        case WireEntity w:
-          _wire(canvas, w, color, selected);
-        case LeaderEntity l:
-          _leader(canvas, l, color);
-        case BreaklineEntity bl:
-          // dashed, with the elevations typed at their vertices
-          final st = _stroke(color, selected ? 2.4 : 1.4);
-          for (var i = 1; i < bl.points.length; i++) {
-            final a = cam.toScreen(bl.points[i - 1]), b = cam.toScreen(bl.points[i]);
-            final d = b - a, len = d.distance;
-            if (len < 1e-6) continue;
-            for (var s0 = 0.0; s0 < len; s0 += 12) {
-              canvas.drawLine(a + d * (s0 / len), a + d * (math.min(s0 + 7, len) / len), st);
-            }
-          }
-          if (c.showLabels) {
-            for (var i = 0; i < bl.points.length; i++) {
-              final z = bl.elevationOf(i);
-              if (z.isFinite) _label(canvas, cam.toScreen(bl.points[i]), fmt(z, 2), color: color, size: 9.5, shift: const Offset(4, -12));
-            }
-          }
-        case ContourEntity ct:
-          _poly(canvas, ct.points, ct.derived ? (_stroke(color.withValues(alpha: 0.7), selected ? 2 : 0.8)) : _stroke(color, selected ? 2 : 1));
-          if (c.showLabels && ct.points.isNotEmpty) {
-            final lenPx = ct.length * cam.scale;
-            // generated contours all start on the model's edge, so their
-            // labels sit along the line instead of piling up at the ends
-            if (lenPx > 40) _label(canvas, cam.toScreen(ct.derived ? pointAlongPolyline(ct.points, ct.length * 0.3) : ct.points.first), fmt(ct.elevation, 1), color: color, size: 10);
-            if (lenPx > 400) _label(canvas, cam.toScreen(pointAlongPolyline(ct.points, ct.length * (ct.derived ? 0.7 : 0.5))), fmt(ct.elevation, 1), color: color, size: 10);
-          }
-        case PivotEntity pv:
-          _pivot(canvas, pv, color, selected);
-        case SpotHeightEntity s:
-          final o = cam.toScreen(s.position);
-          canvas.drawLine(o + const Offset(-4, 0), o + const Offset(4, 0), _stroke(color, 1));
-          canvas.drawLine(o + const Offset(0, -4), o + const Offset(0, 4), _stroke(color, 1));
-          if (c.showLabels && cam.scale > 1) _label(canvas, o, fmt(s.elevation, 1), color: color, size: 10, shift: const Offset(5, -6));
-        case PipeEntity p:
-          _pipe(canvas, p.points, e, pipeRes[e.id], p.scope == HydraulicScope.mainline ? 3 : 2, color, selected);
-        case SpraylineEntity s:
-          _pipe(canvas, s.points, e, pipeRes[e.id], 1.5, color, selected);
-          _spraylineOutlets(canvas, s, outletRes[e.id], color);
-          _feed(canvas, s.id, s.points);
-        case TapeEntity t:
-          _pipe(canvas, t.points, e, pipeRes[e.id], 1.5, color, selected, dashed: true);
-          _tapeResults(canvas, t, outletRes[e.id]);
-          _feed(canvas, t.id, t.points);
-        case RevisionCloudEntity rc:
-          _revisionCloud(canvas, rc, color, selected);
-        default:
-          break;
+    // a view packed with linework on a high-density screen draws its 1 px
+    // lines as single device pixels (see [_thin])
+    _dense = false;
+    if (devicePixelRatio > 1) {
+      var segments = 0;
+      for (final i in cand) {
+        final pts = ents[i].linearPoints;
+        segments += pts == null ? 1 : pts.length;
       }
+      _dense = segments > denseSegments;
     }
-    // pass 3: point hydraulic items
+    // pass 2: drawing / terrain / linear hydraulics, gathered by paint;
+    // the selection goes over them (and the item under the cursor over the
+    // whole scene, see [paintOverlay])
+    final chosen = <Entity>[];
+    final anySelected = c.selection.isNotEmpty;
+    _batch = _Batch();
     for (final i in cand) {
       final e = ents[i];
-      if (!(layersVisible[e.layer] ?? true)) continue;
-      if (e is! PointEntity) continue;
-      if (!index.boundsAt(i).intersects(vis3)) continue;
-      final selected = c.selection.contains(e.id);
-      final hovered = c.hoverId == e.id;
-      final color = _color(e, selected, hovered);
-      switch (e) {
-        case OutletEntity o:
-          _outlet(canvas, o, outletRes[e.id], color, selected);
-        case ControlValveEntity v:
-          _valve(canvas, v, color, selected);
-        case WaterSupplyEntity s:
-          _supply(canvas, s, color, selected);
-        case PumpEntity p:
-          _pump(canvas, p, color, selected);
-        case MiscHydraulicEntity m:
-          _misc(canvas, m, color, selected);
-        case JunctionEntity j:
-          canvas.drawCircle(cam.toScreen(j.position), 3, Paint()..color = color);
-        case ControllerEntity k:
-          _controller(canvas, k, color, selected);
-        case CommentEntity cm:
-          _comment(canvas, cm, color, selected, hovered);
-        default:
-          break;
+      if (!shown(e) || !index.boundsAt(i).intersects(vis2)) continue;
+      if (anySelected && c.selection.contains(e.id)) {
+        chosen.add(e);
+        continue;
       }
+      _drawLinear(canvas, e, _color(e, false, false), false);
+    }
+    _flush(canvas);
+    for (final e in chosen) {
+      _drawLinear(canvas, e, _color(e, true, false), true);
+    }
+    // pass 3: point hydraulic items; only the dots are gathered (drawn
+    // over the pass): the labels of the outlets stay in place, under the
+    // dots of the next ones, those of valves, pumps... go over the dots
+    chosen.clear();
+    final points = _batch = _Batch();
+    for (final i in cand) {
+      final e = ents[i];
+      if (e is! PointEntity || !shown(e) || !index.boundsAt(i).intersects(vis3)) continue;
+      if (anySelected && c.selection.contains(e.id)) {
+        chosen.add(e);
+        continue;
+      }
+      points.labelsInPlace = e is OutletEntity;
+      _drawPoint(canvas, e, outletRes, _color(e, false, false), false, false);
+    }
+    _flush(canvas);
+    for (final e in chosen) {
+      _drawPoint(canvas, e, outletRes, _color(e, true, false), true, false);
     }
     // min/max pressure markers per zone
     if (c.overlay == OverlayMode.minMax && results != null) _minMax(canvas, results);
@@ -269,14 +298,148 @@ class CadPainter extends CustomPainter {
         canvas.drawLine(o + const Offset(-6, 6), o + const Offset(6, -6), paint);
       }
     }
+    _scaleBar(canvas, size);
+    if (c.overlay == OverlayMode.densogram) _densogramLegend(canvas, size);
+    if (c.overlay == OverlayMode.slope || c.overlay == OverlayMode.aspect) _slopeLegend(canvas, aspect: c.overlay == OverlayMode.aspect);
+  }
+
+  /// A drawing, terrain or linear hydraulic item (pass 2 of the scene).
+  void _drawLinear(Canvas canvas, Entity e, Color color, bool selected) {
+    switch (e) {
+      case LineEntity l:
+        _seg(canvas, cam.toScreen(l.a), cam.toScreen(l.b), _stroke(color, selected ? 2 : 1));
+      case PolylineEntity p:
+        _poly(canvas, p.points, _stroke(color, selected ? 2 : 1), close: p.closed);
+      case SplineEntity s:
+        _poly(canvas, s.curve(cam.scale > 5 ? 12 : 6), _stroke(color, selected ? 2 : 1), close: s.closed);
+        if (selected) {
+          final pp = _fill(color.withValues(alpha: 0.5));
+          for (final p in s.points) {
+            canvas.drawCircle(cam.toScreen(p), 2, pp);
+          }
+        }
+      case CircleEntity ci:
+        _ring(canvas, cam.toScreen(ci.center), ci.radius * cam.scale, _stroke(color, selected ? 2 : 1));
+      case ArcEntity a:
+        _poly(canvas, a.polyline(math.max(16, (a.radius * cam.scale / 4).clamp(16, 180).toInt())), _stroke(color, selected ? 2 : 1));
+      case SymbolEntity s:
+        final p = _stroke(color, selected ? 1.8 : 1.1);
+        for (final stroke in s.strokes()) {
+          _poly(canvas, stroke, p);
+        }
+        if (s.kind == SymbolKind.northArrow && cam.scale * s.size > 8) _label(canvas, cam.toScreen(s.position + Pt.polar(s.size * 1.15, degToRad(s.rotationDeg) + math.pi / 2)), 'N', color: color, size: 11, bg: false, shift: const Offset(-4, -14));
+      case TextEntity t:
+        _worldText(canvas, t.position, t.text, t.height, color, t.rotationDeg);
+      case DimensionEntity d:
+        _dimension(canvas, d, color);
+      case AngularDimensionEntity d:
+        _angular(canvas, d, color);
+      case RadialDimensionEntity d:
+        _radial(canvas, d, color);
+      case OrdinateDimensionEntity d:
+        _ordinate(canvas, d, color);
+      case WireEntity w:
+        _wire(canvas, w, color, selected);
+      case LeaderEntity l:
+        _leader(canvas, l, color);
+      case BreaklineEntity bl:
+        // dashed, with the elevations typed at their vertices
+        final st = _stroke(color, selected ? 2.4 : 1.4);
+        for (var i = 1; i < bl.points.length; i++) {
+          final a = cam.toScreen(bl.points[i - 1]), b = cam.toScreen(bl.points[i]);
+          final d = b - a, len = d.distance;
+          if (len < 1e-6) continue;
+          for (var s0 = 0.0; s0 < len; s0 += 12) {
+            _seg(canvas, a + d * (s0 / len), a + d * (math.min(s0 + 7, len) / len), st);
+          }
+        }
+        if (c.showLabels) {
+          for (var i = 0; i < bl.points.length; i++) {
+            final z = bl.elevationOf(i);
+            if (z.isFinite) _label(canvas, cam.toScreen(bl.points[i]), fmt(z, 2), color: color, size: 9.5, shift: const Offset(4, -12));
+          }
+        }
+      case ContourEntity ct:
+        _poly(canvas, ct.points, ct.derived ? (_stroke(color.withValues(alpha: 0.7), selected ? 2 : 0.8)) : _stroke(color, selected ? 2 : 1));
+        if (c.showLabels && ct.points.isNotEmpty) {
+          final lenPx = ct.length * cam.scale;
+          // generated contours all start on the model's edge, so their
+          // labels sit along the line instead of piling up at the ends
+          if (lenPx > 40) _label(canvas, cam.toScreen(ct.derived ? pointAlongPolyline(ct.points, ct.length * 0.3) : ct.points.first), fmt(ct.elevation, 1), color: color, size: 10);
+          if (lenPx > 400) _label(canvas, cam.toScreen(pointAlongPolyline(ct.points, ct.length * (ct.derived ? 0.7 : 0.5))), fmt(ct.elevation, 1), color: color, size: 10);
+        }
+      case PivotEntity pv:
+        // drawn in place: its fill, outline, span and centre in this order
+        _unbatched(() => _pivot(canvas, pv, color, selected));
+      case SpotHeightEntity s:
+        final o = cam.toScreen(s.position);
+        _seg(canvas, o + const Offset(-4, 0), o + const Offset(4, 0), _stroke(color, 1));
+        _seg(canvas, o + const Offset(0, -4), o + const Offset(0, 4), _stroke(color, 1));
+        if (c.showLabels && cam.scale > 1) _label(canvas, o, fmt(s.elevation, 1), color: color, size: 10, shift: const Offset(5, -6));
+      case PipeEntity p:
+        _pipe(canvas, p.points, e, c.results?.pipesByEntity[e.id], p.scope == HydraulicScope.mainline ? 3 : 2, color, selected);
+      case SpraylineEntity s:
+        _pipe(canvas, s.points, e, c.results?.pipesByEntity[e.id], 1.5, color, selected);
+        _spraylineOutlets(canvas, s, c.results?.outletsByEntity[e.id], color);
+        _feed(canvas, s.id, s.points);
+      case TapeEntity t:
+        _pipe(canvas, t.points, e, c.results?.pipesByEntity[e.id], 1.5, color, selected, dashed: true);
+        _tapeResults(canvas, t, c.results?.outletsByEntity[e.id]);
+        _feed(canvas, t.id, t.points);
+      case RevisionCloudEntity rc:
+        _unbatched(() => _revisionCloud(canvas, rc, color, selected));
+      default:
+        break;
+    }
+  }
+
+  /// A point hydraulic item, controller or comment (pass 3 of the scene).
+  void _drawPoint(Canvas canvas, Entity e, Map<String, List<OutletResult>> outletRes, Color color, bool selected, bool hovered) {
+    switch (e) {
+      case OutletEntity o:
+        _outlet(canvas, o, outletRes[e.id], color, selected);
+      case ControlValveEntity v:
+        _valve(canvas, v, color, selected);
+      case WaterSupplyEntity s:
+        _supply(canvas, s, color, selected);
+      case PumpEntity p:
+        _pump(canvas, p, color, selected);
+      case MiscHydraulicEntity m:
+        _misc(canvas, m, color, selected);
+      case JunctionEntity j:
+        _dot(canvas, cam.toScreen(j.position), 3, color);
+      case ControllerEntity k:
+        _controller(canvas, k, color, selected);
+      case CommentEntity cm:
+        _comment(canvas, cm, color, selected, hovered);
+      default:
+        break;
+    }
+  }
+
+  /// What moves with the cursor, over the scene: the item under the
+  /// cursor, the profile path, the device position, the marks for the AI,
+  /// the tool preview, the snap marker and the crosshair.
+  void paintOverlay(Canvas canvas, Size size) {
+    _indexLayers();
+    _dense = false;
+    // the item under the cursor, again in the hover colour (areas, hatches
+    // and images keep their look, as in the scene)
+    final hid = c.hoverId;
+    final hov = hid == null || c.selection.contains(hid) ? null : c.entityById(hid);
+    if (hov != null && _layer(hov.layer).visible && hov is! AreaEntity && hov is! HatchEntity && hov is! ImageEntity) {
+      final color = _color(hov, false, true);
+      _drawLinear(canvas, hov, color, false);
+      if (hov is PointEntity) _drawPoint(canvas, hov, c.results?.outletsByEntity ?? const {}, color, false, true);
+    }
     // profile path (purple, with its vertices and a label; cleared from the
     // Profile tab or with Esc in the Profile tool)
     final pp = c.profilePath;
     if (pp != null && pp.length >= 2) {
       final purple = Cad.profilePath;
-      _poly(canvas, pp, _stroke(purple, 1.8)..strokeCap = StrokeCap.round);
+      _poly(canvas, pp, _stroke(purple, 1.8));
       for (final p in pp) {
-        canvas.drawCircle(cam.toScreen(p), 3, Paint()..color = purple);
+        canvas.drawCircle(cam.toScreen(p), 3, _fill(purple));
       }
       _label(canvas, cam.toScreen(pp.first), '${c.t('prof.pathLabel')} ▸', color: purple, size: 10, shift: const Offset(6, -16));
     }
@@ -290,12 +453,12 @@ class CadPainter extends CustomPainter {
       final o = cam.toScreen(gp);
       final acc = (c.gpsFix?.accuracyM ?? 0) * cam.scale;
       if (acc > 6) {
-        canvas.drawCircle(o, acc, Paint()..color = blue.withValues(alpha: 0.12));
+        canvas.drawCircle(o, acc, _fill(blue.withValues(alpha: 0.12)));
         canvas.drawCircle(o, acc, _stroke(blue.withValues(alpha: 0.5), 1));
       }
-      canvas.drawCircle(o, 7, Paint()..color = Colors.white);
-      canvas.drawCircle(o, 5, Paint()..color = blue);
-      final sel = c.selection.length == 1 ? c.project.byId(c.selection.first) : null;
+      canvas.drawCircle(o, 7, _fill(Colors.white));
+      canvas.drawCircle(o, 5, _fill(blue));
+      final sel = c.selection.length == 1 ? c.entityById(c.selection.first) : null;
       final target = sel == null ? null : _stakeTarget(sel);
       final to = target == null ? null : c.gpsTo(target);
       if (target != null && to != null) {
@@ -369,9 +532,6 @@ class CadPainter extends CustomPainter {
       canvas.drawLine(Offset(0, o.dy), Offset(size.width, o.dy), p);
       canvas.drawLine(Offset(o.dx, 0), Offset(o.dx, size.height), p);
     }
-    _scaleBar(canvas, size);
-    if (c.overlay == OverlayMode.densogram) _densogramLegend(canvas, size);
-    if (c.overlay == OverlayMode.slope || c.overlay == OverlayMode.aspect) _slopeLegend(canvas, aspect: c.overlay == OverlayMode.aspect);
   }
 
   /// The densogram grid, as a picture (one pixel per cell) or, while the
@@ -426,7 +586,7 @@ class CadPainter extends CustomPainter {
       const sectors = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
       for (var k = 0; k < sectors.length; k++) {
         final x = o.dx + k * 34.0;
-        canvas.drawRect(Rect.fromLTWH(x, o.dy + 16, box, box), Paint()..color = Color(aspectColor(k * 45.0, 10)));
+        canvas.drawRect(Rect.fromLTWH(x, o.dy + 16, box, box), _fill(Color(aspectColor(k * 45.0, 10))));
         _label(canvas, Offset(x + box + 2, o.dy + 17), t('compass.${sectors[k]}'), size: 9, bg: false, shift: Offset.zero, color: Cad.fg70);
       }
       return;
@@ -437,7 +597,7 @@ class CadPainter extends CustomPainter {
     for (var k = 0; k < slopeClasses.length; k++) {
       final (hi, color) = slopeClasses[k];
       final y = o.dy + 16 + k * (box + 2);
-      canvas.drawRect(Rect.fromLTWH(o.dx, y, box, box), Paint()..color = Color(color));
+      canvas.drawRect(Rect.fromLTWH(o.dx, y, box, box), _fill(Color(color)));
       final range = hi.isInfinite ? '> ${fmt(lo, 0)} %' : '${fmt(lo, 0)}–${fmt(hi, 0)} %';
       _label(canvas, Offset(o.dx + box + 4, y + 1), range, size: 9, bg: false, shift: Offset.zero, color: Cad.fg70);
       lo = hi;
@@ -459,7 +619,7 @@ class CadPainter extends CustomPainter {
     final maxR = densogramStops.last.$1;
     for (var k = 0; k < 60; k++) {
       final r = maxR * k / 60;
-      canvas.drawRect(Rect.fromLTWH(o.dx + w * k / 60, o.dy + 16, w / 60 + 0.5, h), Paint()..color = Color(densogramColor(r, 1)));
+      canvas.drawRect(Rect.fromLTWH(o.dx + w * k / 60, o.dy + 16, w / 60 + 0.5, h), _fill(Color(densogramColor(r, 1))));
     }
     canvas.drawRect(Rect.fromLTWH(o.dx, o.dy + 16, w, h), _stroke(Cad.fg54, 0.6));
     // with several areas the worst one tells how uniform the design is
@@ -471,19 +631,50 @@ class CadPainter extends CustomPainter {
     }
   }
 
-  Paint _stroke(Color color, double w) => Paint()
-    ..color = color
-    ..strokeWidth = w
-    ..style = PaintingStyle.stroke
-    ..strokeCap = StrokeCap.round
-    ..strokeJoin = StrokeJoin.round;
+  /// Paints by colour and width, shared by every painter (callers never
+  /// change them).
+  static final _strokes = <(Color, double), Paint>{};
+  static final _fills = <Color, Paint>{};
+
+  /// The same colour object asks again for the same widths (the ink of a
+  /// layer is one object per paint): looked up by identity first.
+  static final _strokesSeen = HashMap<Color, Map<double, Paint>>.identity();
+
+  Paint _stroke(Color color, double w) {
+    final seen = _strokesSeen[color];
+    final fast = seen?[w];
+    if (fast != null) return fast;
+    if (_strokesSeen.length > 2000) _strokesSeen.clear();
+    return (_strokesSeen[color] ??= {})[w] = _strokeOf(color, w);
+  }
+
+  Paint _strokeOf(Color color, double w) {
+    final key = (color, w);
+    final hit = _strokes[key];
+    if (hit != null) return hit;
+    if (_strokes.length > 4000) _strokes.clear();
+    return _strokes[key] = Paint()
+      ..color = color
+      ..strokeWidth = w
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+  }
+
+  Paint _fill(Color color) {
+    final key = color;
+    final hit = _fills[key];
+    if (hit != null) return hit;
+    if (_fills.length > 4000) _fills.clear();
+    return _fills[key] = Paint()..color = color;
+  }
 
   Color _color(Entity e, bool selected, bool hovered) {
     if (selected) return Cad.selection;
     if (hovered) return Cad.hover;
     final x = tint?.call(e);
     if (x != null) return x;
-    return Cad.ink(Color(c.project.layerNamed(e.layer).color));
+    return _inkOf(e.layer);
   }
 
   void _grid(Canvas canvas, Size size) {
@@ -527,26 +718,221 @@ class CadPainter extends CustomPainter {
     canvas.drawLine(o, o + Offset(px, 0), Paint()
       ..color = Cad.fg70
       ..strokeWidth = 2);
-    canvas.drawLine(o, o + const Offset(0, -5), Paint()..color = Cad.fg70);
-    canvas.drawLine(o + Offset(px, 0), o + Offset(px, -5), Paint()..color = Cad.fg70);
+    canvas.drawLine(o, o + const Offset(0, -5), _fill(Cad.fg70));
+    canvas.drawLine(o + Offset(px, 0), o + Offset(px, -5), _fill(Cad.fg70));
     _label(canvas, o, '${fmt(c.units.lengthFromSi(step), step < 1 ? 2 : 0)} ${c.units.lengthLabel}', size: 10, bg: false, shift: Offset(px / 2 - 12, -16), color: Cad.fg70);
   }
 
+  /// A polyline. Strokes no wider than a device pixel are hairlines, which
+  /// the GPU draws a whole path of at once; wider ones go segment by
+  /// segment with square ends, which the GPU draws as quads (a wide stroked
+  /// path is rasterised on the CPU over its whole bounds, pixel by pixel:
+  /// on a high-density screen even 1 px lines are 2 device pixels wide).
   void _poly(Canvas canvas, List<Pt> pts, Paint paint, {bool close = false}) {
     if (pts.isEmpty) return;
     if (pts.length == 1) {
-      canvas.drawCircle(cam.toScreen(pts.first), 2, paint);
+      _ring(canvas, cam.toScreen(pts.first), 2, paint);
       return;
     }
-    final path = Path();
-    final f = cam.toScreen(pts.first);
-    path.moveTo(f.dx, f.dy);
-    for (final p in pts.skip(1)) {
-      final s = cam.toScreen(p);
-      path.lineTo(s.dx, s.dy);
+    final b = _batch;
+    // vertices closer than a fraction of a pixel to the last one kept add
+    // nothing to the picture (long lines seen from afar)
+    final scr = _screen(pts, b == null ? 0 : _lodPx);
+    if (_thin(paint)) {
+      final hair = _hair(paint);
+      if (b == null) {
+        canvas.drawPath(Path()..addPolygon(scr, close), hair);
+      } else {
+        (b.paths[hair] ??= Path()).addPolygon(scr, close);
+      }
+      return;
     }
-    if (close) path.close();
-    canvas.drawPath(path, paint);
+    final sq = _squared(paint);
+    final out = b == null ? <double>[] : (b.lines[sq] ??= []);
+    for (var i = 1; i < scr.length; i++) {
+      out
+        ..add(scr[i - 1].dx)
+        ..add(scr[i - 1].dy)
+        ..add(scr[i].dx)
+        ..add(scr[i].dy);
+    }
+    if (close && scr.length > 2) {
+      out
+        ..add(scr.last.dx)
+        ..add(scr.last.dy)
+        ..add(scr.first.dx)
+        ..add(scr.first.dy);
+    }
+    if (b == null) canvas.drawRawPoints(ui.PointMode.lines, Float32List.fromList(out), sq);
+  }
+
+  /// True when [paint] strokes no wider than one device pixel (a hairline),
+  /// or no wider than a logical pixel in a view packed with linework: on a
+  /// high-density screen those are 2 device pixels wide, a width the GPU
+  /// has no fast way to draw, and the picture took seconds; seen from
+  /// afar they are drawn one device pixel wide instead (a normal project
+  /// never gets there and keeps its look).
+  bool _thin(Paint paint) => paint.strokeWidth * devicePixelRatio <= 1 || (_dense && paint.strokeWidth <= 1);
+
+  /// The view has more than [denseSegments] vertices of linework.
+  bool _dense = false;
+
+  /// Vertices of linework in view past which 1 px lines become hairlines
+  /// on a high-density screen.
+  static const denseSegments = 40000;
+
+  static final _hairPaints = HashMap<Paint, Paint>.identity();
+
+  /// [paint] as drawn when [_thin]: as it is, or a hairline when it is
+  /// wider than a device pixel.
+  Paint _hair(Paint paint) {
+    if (paint.strokeWidth * devicePixelRatio <= 1) return paint;
+    final hit = _hairPaints[paint];
+    if (hit != null) return hit;
+    if (_hairPaints.length > 4000) _hairPaints.clear();
+    return _hairPaints[paint] = Paint()
+      ..color = paint.color
+      ..strokeWidth = 0
+      ..style = PaintingStyle.stroke;
+  }
+
+  static final _squaredPaints = HashMap<Paint, Paint>.identity();
+
+  /// [paint] for strokes drawn segment by segment: square ends, so the
+  /// segments of a polyline close their corners as the round joins did
+  /// (butt ends for translucent ink, so they do not overlap and darken).
+  static Paint _squared(Paint paint) {
+    final hit = _squaredPaints[paint];
+    if (hit != null) return hit;
+    if (_squaredPaints.length > 4000) _squaredPaints.clear();
+    return _squaredPaints[paint] = Paint()
+      ..color = paint.color
+      ..strokeWidth = paint.strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = paint.color.a < 1 ? StrokeCap.butt : StrokeCap.square;
+  }
+
+  /// Vertices within this distance (pixels) of the previous one drawn are
+  /// left out of the gathered polylines.
+  static const _lodPx = 0.6;
+
+  /// [pts] on the screen, without the vertices that lie within [minPx]
+  /// pixels of the previous one kept (the first and last always stay).
+  List<Offset> _screen(List<Pt> pts, double minPx) {
+    final out = <Offset>[];
+    final k = cam.scale, cx = cam.center.x, cy = cam.center.y, w2 = cam.size.width / 2, h2 = cam.size.height / 2;
+    final min2 = minPx * minPx;
+    var lx = 0.0, ly = 0.0;
+    final last = pts.length - 1;
+    for (var i = 0; i <= last; i++) {
+      final p = pts[i];
+      final x = (p.x - cx) * k + w2, y = -(p.y - cy) * k + h2;
+      if (i > 0 && i < last && min2 > 0) {
+        final dx = x - lx, dy = y - ly;
+        if (dx * dx + dy * dy < min2) continue;
+      }
+      out.add(Offset(x, y));
+      lx = x;
+      ly = y;
+    }
+    return out;
+  }
+
+  /// A straight segment (gathered by paint while a batch is open); a wide
+  /// one with square ends (see [_poly]).
+  void _seg(Canvas canvas, Offset a, Offset b, Paint paint) {
+    final p = _thin(paint) ? _hair(paint) : _squared(paint);
+    final batch = _batch;
+    if (batch == null) {
+      canvas.drawLine(a, b, p);
+    } else {
+      (batch.lines[p] ??= [])
+        ..add(a.dx)
+        ..add(a.dy)
+        ..add(b.dx)
+        ..add(b.dy);
+    }
+  }
+
+  /// A circle outline: hairline circles gathered in one path, wider ones
+  /// one by one (the GPU draws a single stroked circle itself).
+  void _ring(Canvas canvas, Offset o, double r, Paint paint) {
+    final batch = _batch;
+    if (batch == null || paint.color.a < 1 || !_thin(paint)) {
+      canvas.drawCircle(o, r, paint);
+    } else {
+      (batch.paths[_hair(paint)] ??= Path()).addOval(Rect.fromCircle(center: o, radius: r));
+    }
+  }
+
+  /// A filled dot.
+  void _dot(Canvas canvas, Offset o, double r, Color color) {
+    final batch = _batch;
+    if (batch == null || color.a < 1) {
+      canvas.drawCircle(o, r, _fill(color));
+    } else {
+      (batch.dots[(color, r)] ??= [])
+        ..add(o.dx)
+        ..add(o.dy);
+    }
+  }
+
+  /// The batch the current pass gathers into (null: draw at once).
+  _Batch? _batch;
+
+  /// Runs [draw] with nothing gathered (what it draws keeps its order).
+  void _unbatched(void Function() draw) {
+    final b = _batch;
+    _batch = null;
+    try {
+      draw();
+    } finally {
+      _batch = b;
+    }
+  }
+
+  /// Runs [draw] over what the pass gathers (at once when nothing is).
+  void _over(Canvas canvas, void Function(Canvas canvas) draw) {
+    final b = _batch;
+    if (b == null) {
+      draw(canvas);
+    } else {
+      b.over.add(draw);
+    }
+  }
+
+  /// Draws what the batch gathered: outlines, segments and dots, one call
+  /// per paint, then the texts over them.
+  void _flush(Canvas canvas) {
+    final b = _batch;
+    _batch = null;
+    if (b == null) return;
+    for (final e in b.paths.entries) {
+      canvas.drawPath(e.value, e.key);
+    }
+    for (final e in b.lines.entries) {
+      canvas.drawRawPoints(ui.PointMode.lines, Float32List.fromList(e.value), e.key);
+    }
+    for (final e in b.dots.entries) {
+      canvas.drawRawPoints(ui.PointMode.points, Float32List.fromList(e.value), _dotPaint(e.key.$1, e.key.$2));
+    }
+    for (final f in b.over) {
+      f(canvas);
+    }
+  }
+
+  static final _dotPaints = <(Color, double), Paint>{};
+
+  /// Round points [r] in radius: a batch of dots is one call.
+  static Paint _dotPaint(Color color, double r) {
+    final key = (color, r);
+    final hit = _dotPaints[key];
+    if (hit != null) return hit;
+    if (_dotPaints.length > 2000) _dotPaints.clear();
+    return _dotPaints[key] = Paint()
+      ..color = color
+      ..strokeWidth = 2 * r
+      ..strokeCap = StrokeCap.round;
   }
 
   /// Centre pivot / linear move: irrigated outline, span pipe, towers and
@@ -561,17 +947,17 @@ class CadPainter extends CustomPainter {
       path.lineTo(o.dx, o.dy);
     }
     path.close();
-    canvas.drawPath(path, Paint()..color = color.withValues(alpha: selected ? 0.14 : 0.07));
-    canvas.drawPath(path, _stroke(color.withValues(alpha: 0.9), selected ? 1.5 : 1));
-    canvas.drawLine(cam.toScreen(p.center), cam.toScreen(p.endPoint), _stroke(color, selected ? 3.5 : 2.5));
+    canvas.drawPath(path, _fill(color.withValues(alpha: selected ? 0.14 : 0.07)));
+    _poly(canvas, outline, _stroke(color.withValues(alpha: 0.9), selected ? 1.5 : 1), close: true);
+    _seg(canvas, cam.toScreen(p.center), cam.toScreen(p.endPoint), _stroke(color, selected ? 3.5 : 2.5));
     if (cam.scale * p.spanLengthM > 6) {
-      final tower = Paint()..color = color;
+      final tower = _fill(color);
       for (final t in p.towerPositions()) {
         canvas.drawRect(Rect.fromCenter(center: cam.toScreen(t), width: 6, height: 6), tower);
       }
     }
     final o = cam.toScreen(p.center);
-    canvas.drawCircle(o, 6, Paint()..color = color);
+    canvas.drawCircle(o, 6, _fill(color));
     canvas.drawCircle(o, 6, _stroke(Colors.black, 1));
     if (c.showLabels) {
       var s = p.name;
@@ -599,13 +985,13 @@ class CadPainter extends CustomPainter {
     final cc = (bl.dx - tl.dx) / h, d = (bl.dy - tl.dy) / h;
     canvas.save();
     canvas.transform(Float64List.fromList([a, b, 0, 0, cc, d, 0, 0, 0, 0, 1, 0, tl.dx, tl.dy, 0, 1]));
-    canvas.drawImage(img, Offset.zero, Paint()..color = Colors.white.withValues(alpha: e.opacity.clamp(0.05, 1.0)));
+    canvas.drawImage(img, Offset.zero, _fill(Colors.white.withValues(alpha: e.opacity.clamp(0.05, 1.0))));
     canvas.restore();
   }
 
   void _hatch(Canvas canvas, HatchEntity h) {
     final selected = c.selection.contains(h.id);
-    final color = selected ? Cad.selection : Cad.ink(Color(c.project.layerNamed(h.layer).color));
+    final color = selected ? Cad.selection : _inkOf(h.layer);
     if (h.points.length < 3) return;
     if (h.solid) {
       final path = Path();
@@ -616,14 +1002,14 @@ class CadPainter extends CustomPainter {
         path.lineTo(s.dx, s.dy);
       }
       path.close();
-      canvas.drawPath(path, Paint()..color = color.withValues(alpha: 0.45));
+      canvas.drawPath(path, _fill(color.withValues(alpha: 0.45)));
     } else {
       final paint = _stroke(color.withValues(alpha: 0.8), 0.8);
       // avoid drawing thousands of lines when zoomed out
       final spacingPx = h.spacing * cam.scale;
       if (spacingPx >= 2.5) {
         for (final l in h.patternLines()) {
-          canvas.drawLine(cam.toScreen(l[0]), cam.toScreen(l[1]), paint);
+          _seg(canvas, cam.toScreen(l[0]), cam.toScreen(l[1]), paint);
         }
       } else {
         final path = Path();
@@ -634,7 +1020,7 @@ class CadPainter extends CustomPainter {
           path.lineTo(s.dx, s.dy);
         }
         path.close();
-        canvas.drawPath(path, Paint()..color = color.withValues(alpha: 0.25));
+        canvas.drawPath(path, _fill(color.withValues(alpha: 0.25)));
       }
     }
     _poly(canvas, h.points, _stroke(color, selected ? 1.5 : 0.8), close: true);
@@ -642,7 +1028,7 @@ class CadPainter extends CustomPainter {
 
   void _area(Canvas canvas, AreaEntity a) {
     final selected = c.selection.contains(a.id);
-    final color = Cad.ink(Color(c.project.layerNamed(a.layer).color));
+    final color = _inkOf(a.layer);
     final path = Path();
     final f = cam.toScreen(a.points.first);
     path.moveTo(f.dx, f.dy);
@@ -651,8 +1037,8 @@ class CadPainter extends CustomPainter {
       path.lineTo(s.dx, s.dy);
     }
     path.close();
-    canvas.drawPath(path, Paint()..color = color.withValues(alpha: selected ? 0.35 : 0.18));
-    canvas.drawPath(path, _stroke(selected ? Cad.selection : color.withValues(alpha: 0.9), 1));
+    canvas.drawPath(path, _fill(color.withValues(alpha: selected ? 0.35 : 0.18)));
+    _poly(canvas, a.points, _stroke(selected ? Cad.selection : color.withValues(alpha: 0.9), 1), close: true);
     if (c.showLabels) {
       final cen = cam.toScreen(polygonCentroid(a.points));
       _label(canvas, cen, '${a.name}  ${fmt(a.area / 10000, 2)} ha', size: 11, shift: const Offset(-20, -6));
@@ -660,7 +1046,7 @@ class CadPainter extends CustomPainter {
   }
 
   Color _velocityColor(double v, double vmax) {
-    final t = (v / math.max(vmax, 1e-6)).clamp(0.0, 1.5);
+    final t = _ramp((v / math.max(vmax, 1e-6)).clamp(0.0, 1.5));
     // on the light canvas the ramps take the darker inks (see Cad.ink)
     final blue = Cad.ink(const Color(0xFF42A5F5)), green = Cad.ink(const Color(0xFF66BB6A)), orange = Cad.ink(const Color(0xFFFFA726));
     if (t <= 0.5) return Color.lerp(blue, green, t / 0.5)!;
@@ -668,12 +1054,16 @@ class CadPainter extends CustomPainter {
     return Color.lerp(orange, const Color(0xFFE53935), (t - 1.0) / 0.5)!;
   }
 
+  /// [t] on the colour ramps in steps of 1/64 (beyond what the eye tells
+  /// apart), so the results take a few dozen paints.
+  static double _ramp(double t) => (t * 64).roundToDouble() / 64;
+
   Color _pressureColor(double p, double lo, double hi) {
     final green = Cad.ink(const Color(0xFF66BB6A));
     if (hi <= lo) return green;
     if (p < lo) return const Color(0xFFE53935);
     if (p > hi) return const Color(0xFFAB47BC);
-    final t = (p - lo) / (hi - lo);
+    final t = _ramp((p - lo) / (hi - lo));
     return Color.lerp(Cad.ink(const Color(0xFF29B6F6)), green, t)!;
   }
 
@@ -682,20 +1072,49 @@ class CadPainter extends CustomPainter {
     final overlay = c.overlay;
     if (res != null && res.isNotEmpty && (overlay == OverlayMode.velocity || overlay == OverlayMode.pressure) && !selected) {
       final vmax = e is PipeEntity && e.scope == HydraulicScope.mainline ? c.project.params.maxMainlineVelocity : c.project.params.maxZoneVelocity;
+      // consecutive segments of one colour go as one line
+      Paint? runPaint;
+      final run = <Pt>[];
+      void endRun() {
+        final p = runPaint;
+        if (p != null && run.length >= 2) {
+          if (run.length == 2) {
+            _seg(canvas, cam.toScreen(run[0]), cam.toScreen(run[1]), p);
+          } else {
+            _poly(canvas, run, p);
+          }
+        }
+        run.clear();
+      }
+
       for (final r in res) {
         final col = overlay == OverlayMode.velocity ? _velocityColor(r.velocity, vmax) : _pressureColor((r.pressureStart + r.pressureEnd) / 2, 0, math.max(60, r.pressureRating));
-        canvas.drawLine(cam.toScreen(r.a), cam.toScreen(r.b), _stroke(col, width + 1));
+        final paint = _stroke(col, width + 1);
+        if (!identical(paint, runPaint) || run.isEmpty || run.last != r.a) {
+          endRun();
+          runPaint = paint;
+          run.add(r.a);
+        }
+        run.add(r.b);
       }
+      endRun();
     } else {
       _poly(canvas, pts, _stroke(color, selected ? width + 1.5 : width));
     }
     if (dashed && cam.scale > 0.5) {
-      // tick marks to distinguish tapes
-      final total = polylineLength(pts);
+      // tick marks to distinguish tapes, every stepM along one walk
       final stepM = math.max(2.0, 20 / cam.scale);
-      for (var d = stepM; d < total; d += stepM) {
-        final p = cam.toScreen(pointAlongPolyline(pts, d));
-        canvas.drawCircle(p, 1.2, Paint()..color = color);
+      final view = (Offset.zero & cam.size).inflate(2);
+      var next = stepM, acc = 0.0;
+      for (var i = 1; i < pts.length; i++) {
+        final a = pts[i - 1], b = pts[i];
+        final seg = a.distanceTo(b);
+        while (next <= acc + seg) {
+          final o = cam.toScreen(Pt.lerp(a, b, seg == 0 ? 0 : (next - acc) / seg));
+          if (view.contains(o)) _dot(canvas, o, 1.2, color);
+          next += stepM;
+        }
+        acc += seg;
       }
     }
     if (c.showLabels && c.overlay == OverlayMode.sizes && cam.scale > 0.8) {
@@ -718,8 +1137,9 @@ class CadPainter extends CustomPainter {
     }
   }
 
-  /// The enabled conditional label rules of [target].
-  List<LabelRule> _rules(String target) => [for (final r in c.project.labelRules) if (r.enabled && r.target == target) r];
+  /// The enabled conditional label rules of [target] (once per paint).
+  List<LabelRule> _rules(String target) => _ruleCache[target] ??= [for (final r in c.project.labelRules) if (r.enabled && r.target == target) r];
+  final Map<String, List<LabelRule>> _ruleCache = {};
 
   /// The labels of the rules of [target] that hold for the values [valueOf]
   /// gives, stacked from [at].
@@ -745,16 +1165,19 @@ class CadPainter extends CustomPainter {
     final bad = _stroke(Cad.unconnected.withValues(alpha: 0.6), 5);
     for (var i = 1; i < res.length; i++) {
       final a = pointAlongPolyline(pts, res[i - 1].fraction * total), b = pointAlongPolyline(pts, res[i].fraction * total);
-      canvas.drawLine(cam.toScreen(a), cam.toScreen(b), res[i - 1].ok && res[i].ok ? ok : bad);
+      _seg(canvas, cam.toScreen(a), cam.toScreen(b), res[i - 1].ok && res[i].ok ? ok : bad);
     }
     var best = res.first;
     for (final r in res) {
       if (r.variation < best.variation) best = r;
     }
     final o = cam.toScreen(pointAlongPolyline(pts, best.fraction * total));
-    canvas.drawCircle(o, 5, Paint()..color = Cad.ok);
-    canvas.drawCircle(o, 5, _stroke(Colors.black, 1));
-    if (cam.scale > 1.5) _label(canvas, o, '${(best.fraction * 100).round()} %  Δ${fmt(c.units.pressureFromHead(best.variation), 1)}', size: 9, shift: const Offset(6, -16));
+    // the marker over the envelope
+    _over(canvas, (cv) {
+      cv.drawCircle(o, 5, _fill(Cad.ok));
+      cv.drawCircle(o, 5, _stroke(Colors.black, 1));
+      if (cam.scale > 1.5) _label(cv, o, '${(best.fraction * 100).round()} %  Δ${fmt(c.units.pressureFromHead(best.variation), 1)}', size: 9, shift: const Offset(6, -16));
+    });
   }
 
   void _spraylineOutlets(Canvas canvas, SpraylineEntity s, List<OutletResult>? res, Color color) {
@@ -762,18 +1185,17 @@ class CadPainter extends CustomPainter {
     final nozzle = c.project.catalog.outlet(s.outletSpecId)?.nozzle(s.nozzleId);
     final radius = nozzle?.curve.radius(s.headM) ?? 0;
     final positions = s.outletPositions();
-    final pOut = Paint()..color = Cad.ink(Color(c.project.layerNamed(Layers.outlets).color));
-    final pR = _stroke(Cad.ink(Color(c.project.layerNamed(Layers.wettedRadii).color)), 0.7);
-    final showR = c.showWettedRadii && radius > 0 && c.project.layerNamed(Layers.wettedRadii).visible && positions.length < 3000 && cam.scale > 1.2;
+    final pOut = _fill(_inkOf(Layers.outlets));
+    final pR = _stroke(_inkOf(Layers.wettedRadii), 0.7);
+    final showR = c.showWettedRadii && radius > 0 && _layer(Layers.wettedRadii).visible && positions.length < 3000 && cam.scale > 1.2;
     for (final p in positions) {
       final o = cam.toScreen(p);
-      canvas.drawCircle(o, math.max(1.5, 0.25 * cam.scale), pOut);
-      if (showR) canvas.drawCircle(o, radius * cam.scale, pR);
+      _dot(canvas, o, math.max(1.5, 0.25 * cam.scale), pOut.color);
+      if (showR) _ring(canvas, o, radius * cam.scale, pR);
     }
     if (c.overlay == OverlayMode.pressure && res != null && cam.scale > 0.6) {
       for (final r in res) {
-        final o = cam.toScreen(r.p);
-        canvas.drawCircle(o, math.max(2.5, 0.35 * cam.scale), Paint()..color = _pressureColor(r.pressure, r.allowedMin, r.allowedMax));
+        _dot(canvas, cam.toScreen(r.p), math.max(2.5, 0.35 * cam.scale), _pressureColor(r.pressure, r.allowedMin, r.allowedMax));
       }
     }
   }
@@ -781,8 +1203,7 @@ class CadPainter extends CustomPainter {
   void _tapeResults(Canvas canvas, TapeEntity t, List<OutletResult>? res) {
     if (res == null || c.overlay != OverlayMode.pressure || cam.scale < 0.6) return;
     for (final r in res) {
-      final o = cam.toScreen(r.p);
-      canvas.drawCircle(o, math.max(2, 0.3 * cam.scale), Paint()..color = _pressureColor(r.pressure, r.allowedMin, r.allowedMax));
+      _dot(canvas, cam.toScreen(r.p), math.max(2, 0.3 * cam.scale), _pressureColor(r.pressure, r.allowedMin, r.allowedMax));
     }
   }
 
@@ -807,7 +1228,7 @@ class CadPainter extends CustomPainter {
             ..lineTo(s.dx - 7, s.dy)
             ..close();
         }
-        canvas.drawPath(path, Paint()..color = col);
+        canvas.drawPath(path, _fill(col));
         canvas.drawPath(path, _stroke(Colors.black, 1));
         _label(canvas, s, '${up ? '▲' : '▼'} ${fmt(u.pressureFromHead(o.pressure), 1)} ${u.pressureLabel}', size: 10, color: col, shift: Offset(9, up ? -20 : 4));
       }
@@ -822,22 +1243,22 @@ class CadPainter extends CustomPainter {
     final nozzle = c.project.catalog.outlet(o.outletSpecId)?.nozzle(o.nozzleId);
     final r = math.max(3.0, 0.4 * cam.scale);
     final radius = nozzle?.curve.radius(o.headM) ?? 0;
-    if (c.showWettedRadii && radius > 0 && c.project.layerNamed(Layers.wettedRadii).visible) {
-      final wr = Cad.ink(Color(c.project.layerNamed(Layers.wettedRadii).color));
+    if (c.showWettedRadii && radius > 0 && _layer(Layers.wettedRadii).visible) {
+      final wr = _inkOf(Layers.wettedRadii);
       final arc = nozzle!.effectiveArcDeg(o.arcDeg);
       final start = -degToRad(o.orientationDeg);
       final rect = Rect.fromCircle(center: s, radius: radius * cam.scale);
       if (arc >= 360) {
-        canvas.drawCircle(s, radius * cam.scale, Paint()..color = wr.withValues(alpha: 0.12));
-        canvas.drawCircle(s, radius * cam.scale, _stroke(wr, 0.8));
+        canvas.drawCircle(s, radius * cam.scale, _fill(wr.withValues(alpha: 0.12)));
+        _ring(canvas, s, radius * cam.scale, _stroke(wr, 0.8));
       } else {
-        canvas.drawArc(rect, start - degToRad(arc), degToRad(arc), true, Paint()..color = wr.withValues(alpha: 0.15));
+        canvas.drawArc(rect, start - degToRad(arc), degToRad(arc), true, _fill(wr.withValues(alpha: 0.15)));
         canvas.drawArc(rect, start - degToRad(arc), degToRad(arc), true, _stroke(wr, 0.8));
       }
     }
     var fill = color;
     if (c.overlay == OverlayMode.pressure && res != null && res.isNotEmpty) fill = _pressureColor(res.first.pressure, res.first.allowedMin, res.first.allowedMax);
-    canvas.drawCircle(s, r, Paint()..color = fill);
+    _dot(canvas, s, r, fill);
     if (selected) canvas.drawCircle(s, r + 3, _stroke(Cad.selection, 1.5));
     if (c.showLabels && res != null && res.isNotEmpty && _rules('outlets').isNotEmpty) {
       _ruleLabels(canvas, s + Offset(r - 2, 0), 'outlets', (f) => LabelRule.ofOutlet(f, res));
@@ -856,7 +1277,7 @@ class CadPainter extends CustomPainter {
       ..lineTo(s.dx + r, s.dy - r * 0.7)
       ..lineTo(s.dx - r, s.dy + r * 0.7)
       ..close();
-    canvas.drawPath(path, Paint()..color = color.withValues(alpha: 0.9));
+    canvas.drawPath(path, _fill(color.withValues(alpha: 0.9)));
     if (selected) canvas.drawCircle(s, r + 3, _stroke(Cad.selection, 1.5));
     if (c.showLabels && _rules('valves').isNotEmpty) _ruleLabels(canvas, s + Offset(r + 2, 14), 'valves', (f) => LabelRule.ofValve(f, c.results?.zones[v.id]));
     if (c.showLabels) {
@@ -880,7 +1301,7 @@ class CadPainter extends CustomPainter {
   void _supply(Canvas canvas, WaterSupplyEntity w, Color color, bool selected) {
     final s = cam.toScreen(w.position);
     final r = math.max(8.0, 1.3 * cam.scale);
-    canvas.drawRect(Rect.fromCenter(center: s, width: 2 * r, height: 2 * r), Paint()..color = color.withValues(alpha: 0.9));
+    canvas.drawRect(Rect.fromCenter(center: s, width: 2 * r, height: 2 * r), _fill(color.withValues(alpha: 0.9)));
     final tp = _text('W', size: math.max(9, r), color: Colors.black, weight: FontWeight.bold);
     tp.paint(canvas, s - Offset(tp.width / 2, tp.height / 2));
     if (selected) canvas.drawCircle(s, r + 4, _stroke(Cad.selection, 1.5));
@@ -907,7 +1328,7 @@ class CadPainter extends CustomPainter {
   void _pump(Canvas canvas, PumpEntity p, Color color, bool selected) {
     final s = cam.toScreen(p.position);
     final r = math.max(7.0, 1.0 * cam.scale);
-    canvas.drawCircle(s, r, Paint()..color = color.withValues(alpha: 0.9));
+    canvas.drawCircle(s, r, _fill(color.withValues(alpha: 0.9)));
     final tp = _text('P', size: math.max(9, r), color: Colors.black, weight: FontWeight.bold);
     tp.paint(canvas, s - Offset(tp.width / 2, tp.height / 2));
     if (selected) canvas.drawCircle(s, r + 4, _stroke(Cad.selection, 1.5));
@@ -923,7 +1344,7 @@ class CadPainter extends CustomPainter {
       ..lineTo(s.dx, s.dy + r)
       ..lineTo(s.dx - r, s.dy)
       ..close();
-    canvas.drawPath(path, Paint()..color = color.withValues(alpha: 0.9));
+    canvas.drawPath(path, _fill(color.withValues(alpha: 0.9)));
     if (selected) canvas.drawCircle(s, r + 4, _stroke(Cad.selection, 1.5));
     if (c.showLabels && cam.scale > 1.5) _label(canvas, s, c.project.catalog.valve(m.valveSpecId)?.name ?? '', size: 9, color: color, shift: Offset(r + 3, -22));
   }
@@ -932,17 +1353,17 @@ class CadPainter extends CustomPainter {
     final n = d.normal * d.offset;
     final a = cam.toScreen(d.a), b = cam.toScreen(d.b), a2 = cam.toScreen(d.a + n), b2 = cam.toScreen(d.b + n);
     final p = _stroke(color, 1);
-    canvas.drawLine(a, a2, p);
-    canvas.drawLine(b, b2, p);
-    canvas.drawLine(a2, b2, p);
+    _seg(canvas, a, a2, p);
+    _seg(canvas, b, b2, p);
+    _seg(canvas, a2, b2, p);
     final mid = Offset((a2.dx + b2.dx) / 2, (a2.dy + b2.dy) / 2);
     _label(canvas, mid, '${fmt(c.units.lengthFromSi(d.length))} ${c.units.lengthLabel}', size: 10, color: color, shift: const Offset(-14, -14));
   }
 
   void _angular(Canvas canvas, AngularDimensionEntity d, Color color) {
     final p = _stroke(color, 1);
-    canvas.drawLine(cam.toScreen(d.vertex), cam.toScreen(d.a), p);
-    canvas.drawLine(cam.toScreen(d.vertex), cam.toScreen(d.b), p);
+    _seg(canvas, cam.toScreen(d.vertex), cam.toScreen(d.a), p);
+    _seg(canvas, cam.toScreen(d.vertex), cam.toScreen(d.b), p);
     _poly(canvas, d.arcPoints(48), p);
     _label(canvas, cam.toScreen(d.textPoint), '${fmt(d.angleDeg, 1)}°', size: 10, color: color, shift: const Offset(-10, -7));
   }
@@ -953,14 +1374,14 @@ class CadPainter extends CustomPainter {
     canvas.drawLine(a, b, p);
     _arrowHead(canvas, a, b, color);
     if (d.diameter) _arrowHead(canvas, b, a, color);
-    canvas.drawCircle(cam.toScreen(d.center), 2, Paint()..color = color);
+    canvas.drawCircle(cam.toScreen(d.center), 2, _fill(color));
     final m = cam.toScreen(d.diameter ? d.center : Pt.lerp(d.center, d.point, 0.5));
     _label(canvas, m, '${d.diameter ? 'Ø' : 'R'} ${fmt(c.units.lengthFromSi(d.value))} ${c.units.lengthLabel}', size: 10, color: color, shift: const Offset(4, -14));
   }
 
   void _ordinate(Canvas canvas, OrdinateDimensionEntity d, Color color) {
     _poly(canvas, d.leader, _stroke(color, 1));
-    canvas.drawCircle(cam.toScreen(d.point), 2, Paint()..color = color);
+    canvas.drawCircle(cam.toScreen(d.point), 2, _fill(color));
     final e = cam.toScreen(d.leaderEnd);
     _label(canvas, e, '${d.xAxis ? 'X' : 'Y'} ${fmt(c.units.lengthFromSi(d.value))}', size: 10, color: color, shift: d.xAxis ? const Offset(-12, -16) : const Offset(4, -7));
   }
@@ -982,7 +1403,7 @@ class CadPainter extends CustomPainter {
       ..lineTo(o.dx + 9, o.dy + 7)
       ..lineTo(o.dx - 9, o.dy + 7)
       ..close();
-    canvas.drawPath(tri, Paint()..color = Cad.canvas.withValues(alpha: 0.85));
+    canvas.drawPath(tri, _fill(Cad.canvas.withValues(alpha: 0.85)));
     canvas.drawPath(tri, _stroke(color, 1.4));
     _label(canvas, o, rc.revision, color: color, size: 9, bg: false, shift: const Offset(-3, -3));
   }
@@ -1004,7 +1425,7 @@ class CadPainter extends CustomPainter {
       ..lineTo(o.dx - 6, o.dy - 10)
       ..quadraticBezierTo(o.dx - 6, o.dy - 6, o.dx - 2, o.dy - 6)
       ..close();
-    canvas.drawPath(balloon, Paint()..color = c0.withValues(alpha: cm.resolved ? 0.25 : 0.85));
+    canvas.drawPath(balloon, _fill(c0.withValues(alpha: cm.resolved ? 0.25 : 0.85)));
     canvas.drawPath(balloon, _stroke(selected ? Cad.selection : c0, selected ? 1.8 : 1));
     if (selected || hovered) {
       final head = cm.author.isEmpty ? '' : '${cm.author}${cm.date.isEmpty ? '' : ' · ${cm.date}'}\n';
@@ -1022,7 +1443,7 @@ class CadPainter extends CustomPainter {
       if (len < 1e-6) continue;
       final u = (b - a) / len;
       for (var t = 0.0; t < len; t += dash + gap) {
-        canvas.drawLine(a + u * t, a + u * math.min(len, t + dash), paint);
+        _seg(canvas, a + u * t, a + u * math.min(len, t + dash), paint);
       }
     }
   }
@@ -1033,7 +1454,7 @@ class CadPainter extends CustomPainter {
     final s = cam.toScreen(k.position);
     final r = math.max(8.0, 1.0 * cam.scale);
     final rect = Rect.fromCenter(center: s, width: 2 * r, height: 2 * r);
-    canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(r * 0.25)), Paint()..color = color.withValues(alpha: 0.9));
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(r * 0.25)), _fill(color.withValues(alpha: 0.9)));
     canvas.drawCircle(s, r * 0.55, _stroke(Colors.black, 1.2));
     canvas.drawLine(s, s + Offset(0, -r * 0.4), _stroke(Colors.black, 1.2));
     canvas.drawLine(s, s + Offset(r * 0.3, 0), _stroke(Colors.black, 1.2));
@@ -1062,23 +1483,34 @@ class CadPainter extends CustomPainter {
       ..lineTo(tip.dx - u.dx * 9 + n.dx * 3.5, tip.dy - u.dy * 9 + n.dy * 3.5)
       ..lineTo(tip.dx - u.dx * 9 - n.dx * 3.5, tip.dy - u.dy * 9 - n.dy * 3.5)
       ..close();
-    canvas.drawPath(path, Paint()..color = color);
+    canvas.drawPath(path, _fill(color));
   }
 
   void _worldText(Canvas canvas, Pt pos, String text, double height, Color color, double rotationDeg) {
     final px = height * cam.scale;
     if (px < 3) {
-      canvas.drawCircle(cam.toScreen(pos), 1.5, Paint()..color = color);
+      _dot(canvas, cam.toScreen(pos), 1.5, color);
       return;
     }
-    final tp = TextPainter(text: TextSpan(text: text, style: TextStyle(fontSize: px.clamp(3, 400), color: color)), textDirection: TextDirection.ltr)..layout();
+    final b = _batch;
+    if (b != null) {
+      // over the linework, with the labels
+      b.over.add((cv) => _worldText(cv, pos, text, height, color, rotationDeg));
+      return;
+    }
+    // laid out once at a reference size and scaled to the zoom
+    final tp = _cachedText('world|$text|${color.toARGB32()}', () => TextPainter(text: TextSpan(text: text, style: TextStyle(fontSize: _worldTextSize, color: color)), textDirection: TextDirection.ltr)..layout());
     final o = cam.toScreen(pos);
     canvas.save();
     canvas.translate(o.dx, o.dy);
     canvas.rotate(-degToRad(rotationDeg));
+    canvas.scale(px.clamp(3, 400) / _worldTextSize);
     tp.paint(canvas, Offset(0, -tp.height));
     canvas.restore();
   }
+
+  /// Font size drawing texts are laid out at before scaling.
+  static const _worldTextSize = 64.0;
 
   // ---------------------------------------------------------------- marks for the AI
 
@@ -1135,9 +1567,9 @@ class CadPainter extends CustomPainter {
       ..lineTo(head.dx + _pinHead * math.cos(a0), head.dy + _pinHead * math.sin(a0))
       ..arcTo(Rect.fromCircle(center: head, radius: _pinHead), a0, 2 * math.pi - 2 * b, false)
       ..close();
-    canvas.drawPath(path, Paint()..color = aiMarkColor.withValues(alpha: alpha));
+    canvas.drawPath(path, _fill(aiMarkColor.withValues(alpha: alpha)));
     canvas.drawPath(path, _stroke(_markDark.withValues(alpha: alpha), 1.5));
-    canvas.drawCircle(head, 2.6, Paint()..color = _markDark.withValues(alpha: alpha));
+    canvas.drawCircle(head, 2.6, _fill(_markDark.withValues(alpha: alpha)));
   }
 
   /// A line mark: orange over a dark casing, a dot at each vertex.
@@ -1153,8 +1585,8 @@ class CadPainter extends CustomPainter {
   }
 
   void _markDot(Canvas canvas, Offset o, {double alpha = 1}) {
-    canvas.drawCircle(o, 5, Paint()..color = _markDark.withValues(alpha: alpha));
-    canvas.drawCircle(o, 3.4, Paint()..color = aiMarkColor.withValues(alpha: alpha));
+    canvas.drawCircle(o, 5, _fill(_markDark.withValues(alpha: alpha)));
+    canvas.drawCircle(o, 3.4, _fill(aiMarkColor.withValues(alpha: alpha)));
   }
 
   /// The segment from the last vertex of the line being marked to the
@@ -1195,7 +1627,7 @@ class CadPainter extends CustomPainter {
   void _markTag(Canvas canvas, String label, String note, Offset anchor, List<Offset> ways, {double gap = 7, double alpha = 1}) {
     final n = note.trim().characters;
     final short = n.length > 20 ? '${n.take(19)}…' : n.toString();
-    final tp = _textCache.putIfAbsent('mark|$label|$short|$alpha', () {
+    final tp = _cachedText('mark|$label|$short|$alpha', () {
       final ink = _markDark.withValues(alpha: alpha);
       return TextPainter(
         text: TextSpan(
@@ -1222,13 +1654,35 @@ class CadPainter extends CustomPainter {
     var box = boxTowards(ways.first);
     if (!whole(box) && view.contains(anchor)) box = ways.skip(1).map(boxTowards).where(whole).firstOrNull ?? box;
     final r = RRect.fromRectAndRadius(box, const Radius.circular(4));
-    canvas.drawRRect(r, Paint()..color = aiMarkColor.withValues(alpha: alpha));
+    canvas.drawRRect(r, _fill(aiMarkColor.withValues(alpha: alpha)));
     canvas.drawRRect(r, _stroke(_markDark.withValues(alpha: alpha), 1.2));
     tp.paint(canvas, box.topLeft + const Offset(4, 1));
   }
 
   @override
   bool shouldRepaint(covariant CadPainter old) => true;
+}
+
+/// Drawing calls gathered by paint during a pass of the scene and issued
+/// once per paint (see [CadPainter._flush]): a project with tens of
+/// thousands of items draws them with a few hundred paints, and every call
+/// into the renderer has a fixed cost (in the browser, a crossing into its
+/// WebAssembly).
+class _Batch {
+  /// Polylines and circle outlines, one path per stroke paint.
+  final paths = <Paint, Path>{};
+
+  /// Opaque straight segments: x0, y0, x1, y1 each.
+  final lines = <Paint, List<double>>{};
+
+  /// Opaque filled dots by colour and radius: x, y each.
+  final dots = <(Color, double), List<double>>{};
+
+  /// Texts and labels, drawn over the rest of the pass.
+  final over = <void Function(Canvas canvas)>[];
+
+  /// Labels are drawn as they come instead of over the pass.
+  bool labelsInPlace = false;
 }
 
 /// Small helper to draw a picture into an image (used by export preview).

@@ -2612,6 +2612,20 @@ travels in the project too, and the DXF and DWG exports write it as block defini
   edit, O(log n + k) query with the indices returned in drawing order. Measured with 40 thousand
   entities: construction in about 30 ms, visible-window query in 9 µs against 700 µs for a linear
   scan. The painter, the selection, the window selection and the snap query the index.
+- **Canvas**: the scene (base map, entities, results, labels) is recorded once per change of what
+  it shows and drawn from a picture of it while only the cursor moves; the snap marker, the tool
+  preview and the item under the cursor are painted over it. Drawing calls are gathered by paint and
+  vertices closer than a pixel are left out. In CanvasKit an anti-aliased stroke wider than one
+  device pixel is rasterised on the CPU over the bounds of its path, so 1 px lines are hairlines on a
+  standard screen and wider strokes go as separate segments with square ends (quads on the GPU); a
+  view with more than 40 thousand vertices of linework on a high-density screen draws its 1 px lines
+  as hairlines. A scene that takes more than 20 ms follows a pan or a zoom as a moved picture and is
+  drawn sharp 120 ms after the view rests (or every few hundred milliseconds while it keeps moving).
+  The snap tests only the segments within reach of the cursor (pairing every segment of two long
+  contours for their crossing took seconds). Measured in Chrome on a project of 34 thousand
+  entities on 178 layers, on a standard and on a 2× screen: a mouse move from 600 and 880 ms to under
+  two frames, a pan step from 320 and 465 ms to under two frames, a zoom step from 0.8 and 1.6 s to
+  about 85 ms, a selection from 630 and 935 ms to about 180 ms.
 - **Emitter lumping**: every lateral becomes up to 100 nodes with grouped emitters
   (`maxNodesPerLateral`); a block of 44 tapes of 120 m has 4400 nodes and sizes in about 2 s. Tapes
   of neighbouring zones with coincident ends are merged by the graph builder, which doubles the zone

@@ -87,8 +87,10 @@ abstract class Tool {
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
     var n = 0;
-    for (final e in c.project.entities) {
-      if (!c.selection.contains(e.id)) continue;
+    // the selected entities by id, not a scan of the project on every frame
+    for (final id in c.selection) {
+      final e = c.entityById(id);
+      if (e == null) continue;
       if (++n > 400) break;
       final pts = e.linearPoints;
       if (pts != null && pts.length >= 2) {
@@ -162,8 +164,12 @@ class SelectTool extends Tool {
   List<GripHandle> grips() {
     if (!c.showGrips || c.selection.isEmpty || c.selection.length > maxGripEntities) return const [];
     final out = <GripHandle>[];
-    for (final e in c.project.entities) {
-      if (!c.selection.contains(e.id) || c.project.isLocked(e.layer)) continue;
+    // the selected entities in drawing order, found by id (not by a scan
+    // of the whole project on every frame)
+    final order = [for (final id in c.selection) ?c.entityIndex(id)]..sort();
+    for (final i in order) {
+      final e = c.project.entities[i];
+      if (c.project.isLocked(e.layer)) continue;
       final g = e.grips;
       for (var i = 0; i < g.length; i++) {
         out.add(GripHandle(e.id, i, g[i]));

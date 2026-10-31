@@ -16,10 +16,7 @@ class LayersPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = c.t;
-    final counts = <String, int>{};
-    for (final e in c.project.entities) {
-      counts[e.layer] = (counts[e.layer] ?? 0) + 1;
-    }
+    final counts = c.layerCounts;
     return Column(
       children: [
         Padding(

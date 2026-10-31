@@ -11,6 +11,7 @@ import '../state/workspace.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'painter.dart';
+import 'scene_cache.dart';
 import 'snapping.dart';
 import '../theme.dart';
 
@@ -59,6 +60,19 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   final _repaint = ValueNotifier<int>(0);
   final BaseMapLayer basemap = BaseMapLayer();
 
+  /// The drawing kept between frames, and the one painter that uses it
+  /// (the tool and the snap are updated in it as the cursor moves).
+  late final SceneCache _scene = SceneCache(onSettle: _redraw);
+  late final CadPainter _painter = CadPainter(
+    c: c,
+    tool: _tool,
+    snapResult: _snap,
+    basemap: basemap,
+    scene: _scene,
+    // the marks for the AI change without an edit of the project
+    repaint: Listenable.merge([_repaint, c, c.aiMarks]),
+  );
+
   /// Active touch pointers (id → position) for pinch zoom / two-finger pan.
   final Map<int, Offset> _touches = {};
   double? _pinchDistance;
@@ -76,6 +90,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     _tool = createTool(c.activeTool, c, widget.host);
     c.addListener(_onController);
     basemap.addListener(_redraw);
+    // fonts fetched on demand: the labels are laid out again with them
+    PaintingBinding.instance.systemFonts.addListener(_redraw);
     c.baseMapSnapshot = _baseMapSnapshot;
     c.baseMapAttribution = _baseMapAttribution;
   }
@@ -96,7 +112,9 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     if (identical(c.keyTarget, this)) c.keyTarget = null;
     c.removeListener(_onController);
     basemap.removeListener(_redraw);
+    PaintingBinding.instance.systemFonts.removeListener(_redraw);
     basemap.dispose();
+    _scene.dispose();
     super.dispose();
   }
 
@@ -106,10 +124,15 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       _tool = createTool(c.activeTool, c, widget.host);
       _snap = null;
     }
-    _repaint.value++;
+    _redraw();
   }
 
-  void _redraw() => _repaint.value++;
+  void _redraw() {
+    _painter
+      ..tool = _tool
+      ..snapResult = _snap;
+    _repaint.value++;
+  }
 
   Pt _world(Offset local) => c.camera.toWorld(local);
 
@@ -332,10 +355,12 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       final factor = e.scrollDelta.dy > 0 ? 1 / 1.15 : 1.15;
       c.camera.zoomAt(e.localPosition, factor);
       c.track('zoom');
+      _updateStatus(_world(e.localPosition));
       _redraw();
     } else if (e is PointerScaleEvent) {
       // trackpad pinch
       c.camera.zoomAt(e.localPosition, e.scale.clamp(0.5, 2.0));
+      _updateStatus(_world(e.localPosition));
       _redraw();
     }
   }
@@ -419,14 +444,10 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
                   children: [
                     RepaintBoundary(
                       child: CustomPaint(
-                        painter: CadPainter(
-                          c: c,
-                          tool: _tool,
-                          snapResult: _snap,
-                          basemap: basemap,
-                          // the marks for the AI change without an edit of the project
-                          repaint: Listenable.merge([_repaint, c, c.aiMarks]),
-                        ),
+                        painter: _painter
+                          ..tool = _tool
+                          ..snapResult = _snap
+                          ..devicePixelRatio = MediaQuery.devicePixelRatioOf(context),
                         size: Size.infinite,
                       ),
                     ),

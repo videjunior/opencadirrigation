@@ -1,4 +1,6 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -28,6 +30,13 @@ class _Recorder implements Canvas {
   void drawRect(Rect rect, Paint paint) => rects.add(paint.color.toARGB32());
   @override
   void drawLine(Offset p1, Offset p2, Paint paint) => lines.add(paint.color.toARGB32());
+
+  /// Segments the painter gathers by paint.
+  @override
+  void drawRawPoints(ui.PointMode mode, Float32List points, Paint paint) {
+    if (mode == ui.PointMode.lines) lines.add(paint.color.toARGB32());
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 }
@@ -187,9 +196,10 @@ void main() {
     final light = paintCanvas(c);
     expect(light.rects.first, 0xFFFFFFFF);
     expect(light.lines, contains(CadPalette.light.selection.toARGB32()));
-    final canvasPainter = tester.widget<CustomPaint>(find.byWidgetPredicate((w) => w is CustomPaint && w.painter is CadPainter)).painter!;
+    final canvasPainter = tester.widget<CustomPaint>(find.byWidgetPredicate((w) => w is CustomPaint && w.painter is CadPainter)).painter! as CadPainter;
     final shown = _Recorder();
-    canvasPainter.paint(shown, const Size(400, 300));
+    // (the canvas keeps its scene in a picture: ask for the scene itself)
+    canvasPainter.paintScene(shown, const Size(400, 300));
     expect(shown.rects.first, CadPalette.light.canvas.toARGB32());
 
     // a dialog: light surface, dark text

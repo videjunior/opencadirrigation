@@ -55,7 +55,7 @@ const siteUrl = 'https://opencadirrigation.com/';
 
 /// Google Analytics measurement id of the site.
 const analyticsId = 'G-3M0P4T8V2T';
-const siteLastMod = '2026-10-30';
+const siteLastMod = '2026-10-31';
 
 /// IndexNow key (Bing, Yandex, Seznam, Naver…): published as `/<key>.txt` so
 /// `dart run tool/indexnow.dart` can announce changed pages after a deploy.

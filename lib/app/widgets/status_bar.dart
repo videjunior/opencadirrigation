@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../state/controller.dart';
@@ -10,7 +11,10 @@ import 'ai/ai_panel.dart';
 class StatusBar extends StatelessWidget {
   const StatusBar({super.key, required this.c, required this.status, required this.hint});
   final ProjectController c;
-  final String status;
+
+  /// Cursor coordinates and the view scale (rebuilt on their own as the
+  /// cursor moves).
+  final ValueListenable<(String, double)> status;
   final String hint;
 
   @override
@@ -41,7 +45,7 @@ class StatusBar extends StatelessWidget {
             ),
             const SizedBox(width: 12),
           ],
-          Text(status, style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+          ValueListenableBuilder(valueListenable: status, builder: (_, s, _) => Text(s.$1, style: const TextStyle(fontSize: 11, fontFamily: 'monospace'))),
           const SizedBox(width: 12),
           if (c.autoAnalyze) ...[
             Tooltip(
@@ -105,7 +109,7 @@ class StatusBar extends StatelessWidget {
           ),
           ]),
           const SizedBox(width: 8),
-          Text('${c.project.entities.length} ent.  1:${(1 / c.camera.scale * 100).toStringAsFixed(0)}', style: TextStyle(fontSize: 11, color: Cad.fg54)),
+          ValueListenableBuilder(valueListenable: status, builder: (_, _, _) => Text('${c.project.entities.length} ent.  1:${(1 / c.camera.scale * 100).toStringAsFixed(0)}', style: TextStyle(fontSize: 11, color: Cad.fg54))),
           const SizedBox(width: 12),
           Tooltip(
             message: '$appName ${t('about.version', {'v': appVersionLabel})}',

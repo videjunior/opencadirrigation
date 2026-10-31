@@ -72,4 +72,31 @@ void main() {
     expect(snapKindKey('45°'), 'snapk.lock45');
     expect(snapKindKey('intersection'), 'snapk.intersection');
   });
+
+  test('long contours crossing by the cursor: their crossing, midpoints and vertices as on short lines, at once', () {
+    // two 20 km contours of 20 001 vertices that cross at (50, 50), between
+    // their vertices; every pair of their segments was once tested for a
+    // crossing on each move of the cursor
+    final across = [for (var i = 0; i <= 20000; i++) Pt(-9950.5 + i, 50)];
+    final up = [for (var i = 0; i <= 20000; i++) Pt(50, -9950.5 + i)];
+    final c = controller([
+      ContourEntity(id: 'w', points: across, elevation: 1),
+      ContourEntity(id: 's', points: up, elevation: 2),
+      PolylineEntity(id: 'p', points: const [Pt(60, 60), Pt(70, 60), Pt(70, 70)]),
+    ]);
+    final sw = Stopwatch()..start();
+    final x = Snapper(c).snap(const Pt(50.1, 50.1));
+    expect(sw.elapsedMilliseconds, lessThan(500));
+    near(x, 'intersection', const Pt(50, 50));
+    near(Snapper(c).snap(const Pt(51.4, 50.2)), 'endpoint', const Pt(51.5, 50));
+    // a short polyline as before: vertex, midpoint
+    near(Snapper(c).snap(const Pt(70.4, 60.3)), 'endpoint', const Pt(70, 60));
+    near(Snapper(c).snap(const Pt(65.2, 60.5)), 'midpoint', const Pt(65, 60));
+    // the closing side of a closed outline still crosses
+    final box = controller([
+      PolylineEntity(id: 'b', points: const [Pt(0, 0), Pt(20, 0), Pt(20, 20), Pt(0, 20)], closed: true),
+      LineEntity(id: 'l', a: const Pt(-10, 10), b: const Pt(10, 10)),
+    ]);
+    near(Snapper(box).snap(const Pt(0.5, 10.4)), 'intersection', const Pt(0, 10));
+  });
 }

@@ -25,18 +25,58 @@ class RecordingCanvas implements Canvas {
   final paragraphs = <Offset>[];
   var images = 0;
 
+  /// Stroke widths of the paths, and of the segments drawn as points.
+  final pathWidths = <double>[];
+  final segmentPaints = <Paint>[];
+
+  /// The kinds of call in order: line, path, points, text.
+  final ops = <String>[];
+
   @override
   void drawCircle(Offset c, double radius, Paint paint) => circles.add((c, radius, paint.color));
   @override
   void drawRect(Rect rect, Paint paint) => rects.add((rect, paint.color));
   @override
-  void drawPath(Path path, Paint paint) => paths.add(paint.color);
+  void drawPath(Path path, Paint paint) {
+    paths.add(paint.color);
+    pathWidths.add(paint.strokeWidth);
+    ops.add('path');
+  }
+
   @override
-  void drawLine(Offset p1, Offset p2, Paint paint) => lines.add((p1, p2));
+  void drawLine(Offset p1, Offset p2, Paint paint) {
+    lines.add((p1, p2));
+    lineColors.add(paint.color);
+    ops.add('line');
+  }
+
+  final lineColors = <Color>[];
+
   @override
-  void drawParagraph(ui.Paragraph paragraph, Offset offset) => paragraphs.add(offset);
+  void drawParagraph(ui.Paragraph paragraph, Offset offset) {
+    paragraphs.add(offset);
+    ops.add('text');
+  }
   @override
   void drawImage(ui.Image image, Offset offset, Paint paint) => images++;
+
+  /// Dots and segments the painter gathers by paint: one circle (radius =
+  /// half the point size) or line each.
+  @override
+  void drawRawPoints(ui.PointMode mode, Float32List points, Paint paint) {
+    if (mode == ui.PointMode.points) {
+      for (var i = 0; i + 1 < points.length; i += 2) {
+        circles.add((Offset(points[i], points[i + 1]), paint.strokeWidth / 2, paint.color));
+      }
+    } else if (mode == ui.PointMode.lines) {
+      for (var i = 0; i + 3 < points.length; i += 4) {
+        lines.add((Offset(points[i], points[i + 1]), Offset(points[i + 2], points[i + 3])));
+      }
+      segmentPaints.add(paint);
+    }
+    ops.add(mode == ui.PointMode.lines ? 'line' : 'points');
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 }
@@ -134,6 +174,75 @@ void main() {
     }
     final none = paint(tool: createTool(ToolId.pan, c, _NoHost()), snap: const SnapResult(Pt(1, 1), 'endpoint'));
     expect(none.rects.where((x) => x.$1.width == 10), isEmpty, reason: 'tools without snap show no marker');
+  });
+
+  test('texts, symbols and spot heights are drawn, the texts over the linework', () {
+    c.newProject();
+    c.camera.center = Pt.zero;
+    c.camera.scale = 10;
+    c.showLabels = true;
+    c.addEntities([
+      TextEntity(id: 't', position: const Pt(-10, 0), text: 'Casa', height: 2),
+      SymbolEntity(id: 's', position: const Pt(10, 0), size: 2),
+      SpotHeightEntity(id: 'h', position: const Pt(0, 10), elevation: 101.5),
+      LineEntity(id: 'l', a: const Pt(-20, 10), b: const Pt(20, 10)),
+    ]);
+    final r = paint();
+    expect(r.paragraphs.length, greaterThanOrEqualTo(2), reason: 'the text and the spot height label');
+    // the line, the cross of the spot height and the strokes of the tree
+    expect(r.lines.length, greaterThan(10));
+    expect(r.ops.lastIndexOf('text'), greaterThan(r.ops.lastIndexOf('line')), reason: 'labels are not crossed by lines drawn later');
+  });
+
+  test('the item under the cursor is drawn again in the hover colour, over the scene', () {
+    c.newProject();
+    c.camera.center = Pt.zero;
+    c.camera.scale = 10;
+    c.addEntities([
+      LineEntity(id: 'l', a: const Pt(-10, 0), b: const Pt(10, 0)),
+      TextEntity(id: 't', position: const Pt(0, 5), text: 'Casa', height: 2),
+    ]);
+    // (as ARGB: a paint gives its colour back in single precision)
+    final hover = Cad.hover.toARGB32();
+    List<int> argb(RecordingCanvas r) => [for (final x in r.lineColors) x.toARGB32()];
+    final plain = paint();
+    expect(argb(plain), isNot(contains(hover)));
+    c.hoverId = 'l';
+    expect(argb(paint()).last, hover, reason: 'drawn last, over the scene');
+    c.hoverId = 't';
+    expect(paint().paragraphs.length, plain.paragraphs.length + 1, reason: 'a text too');
+    // the selection wins over the hover
+    c.select(['l']);
+    c.hoverId = 'l';
+    expect(argb(paint()), isNot(contains(hover)));
+  });
+
+  test('a view packed with linework on a high-density screen draws its 1 px lines one device pixel wide', () {
+    c.newProject();
+    c.camera.center = const Pt(500, 450);
+    c.camera.scale = 1.2;
+    c.addEntities([for (var i = 0; i < 300; i++) PolylineEntity(id: 'p$i', points: [for (var k = 0; k <= 200; k++) Pt(k * 5.0, i * 3.0 + (k.isEven ? 0 : 1))])]);
+    RecordingCanvas at(double dpr) {
+      final canvas = RecordingCanvas();
+      CadPainter(c: c, tool: null, snapResult: null, repaint: c, devicePixelRatio: dpr).paint(canvas, const Size(1200, 800));
+      return canvas;
+    }
+
+    final dense = at(2);
+    expect(dense.pathWidths, contains(0.0), reason: 'hairlines, which the GPU draws fast');
+    expect(dense.segmentPaints.where((p) => p.strokeWidth == 1), isEmpty);
+    // a standard screen: 1 px is one device pixel anyway
+    expect(at(1).pathWidths, contains(1.0));
+    // a few lines keep their 2 device pixels, segment by segment with square ends
+    c.newProject();
+    c.addEntities([PolylineEntity(id: 'q', points: const [Pt(400, 400), Pt(500, 420), Pt(600, 400)])]);
+    c.camera.center = const Pt(500, 450);
+    c.camera.scale = 1.2;
+    final sparse = at(2);
+    expect(sparse.pathWidths, isNot(contains(0.0)));
+    final wide = sparse.segmentPaints.where((p) => p.strokeWidth == 1);
+    expect(wide, isNotEmpty);
+    expect(wide.every((p) => p.strokeCap == StrokeCap.square), isTrue);
   });
 
   test('base map notes: missing Google key, invalid custom template', () {

@@ -47,6 +47,10 @@ void main() {
         final q = Bounds(x, y, x + w, y + h);
         expect(idx.query(q), brute(ents, q), reason: 'query $k');
       }
+      // large windows (read back from a mark per entity, not sorted)
+      for (final q in const [Bounds(0, 0, 2500, 5000), Bounds(1000, 1000, 4000, 4000), Bounds(-10, 2400, 5010, 2600)]) {
+        expect(idx.query(q), brute(ents, q), reason: '$q');
+      }
       // whole extent and nothing
       expect(idx.query(idx.bounds), List.generate(3000, (i) => i));
       expect(idx.query(const Bounds(-100, -100, -50, -50)), isEmpty);
@@ -166,6 +170,30 @@ void main() {
       expect(s.entityId, 'a');
       final far = Snapper(c).snap(const Pt(15, 15));
       expect(far.isSnapped, isFalse);
+    });
+
+    test('entities by id and counts per layer follow the edits', () {
+      final c = controller();
+      c.addEntities([
+        LineEntity(id: 'a', a: const Pt(0, 0), b: const Pt(10, 0)),
+        LineEntity(id: 'b', layer: 'ROADS', a: const Pt(20, 0), b: const Pt(40, 0)),
+        SpotHeightEntity(id: 'c', position: const Pt(30, 30), elevation: 1),
+      ]);
+      expect(c.entityById('b')?.layer, 'ROADS');
+      expect(c.entityIndex('c'), 2);
+      expect(c.entityById('nope'), isNull);
+      expect(c.layerCounts, {Layers.drawing: 1, 'ROADS': 1, Layers.spotHeights: 1});
+      c.select(['a']);
+      c.deleteSelected();
+      expect(c.entityById('a'), isNull);
+      expect(c.entityIndex('c'), 1, reason: 'positions follow the list');
+      expect(c.layerCounts[Layers.drawing], isNull);
+      c.undo();
+      expect(c.entityById('a')?.id, 'a');
+      expect(c.layerCounts[Layers.drawing], 1);
+      // an entity swapped in place without an edit is still found
+      c.project.entities[0] = LineEntity(id: 'z', a: const Pt(0, 0), b: const Pt(1, 1));
+      expect(c.entityById('z')?.id, 'z');
     });
   });
 }

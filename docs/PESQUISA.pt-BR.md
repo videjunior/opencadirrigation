@@ -2678,6 +2678,21 @@ exportações DXF e DWG a gravam como definições de bloco.
   edição, consulta O(log n + k) com os índices devolvidos em ordem de desenho. Medido com 40 mil
   entidades: construção em cerca de 30 ms, consulta da janela visível em 9 µs contra 700 µs da
   varredura linear. O painter, a seleção, a janela de seleção e o snap consultam o índice.
+- **Prancheta**: a cena (mapa base, entidades, resultados, rótulos) é gravada uma vez por mudança do
+  que ela mostra e desenhada a partir de uma imagem enquanto só o cursor se move; o marcador de snap,
+  a prévia da ferramenta e o item sob o cursor são pintados por cima. As chamadas de desenho são
+  agrupadas por estilo e os vértices a menos de um pixel são omitidos. No CanvasKit um traço
+  suavizado com mais de um pixel físico é rasterizado na CPU sobre os limites do seu caminho, por
+  isso as linhas de 1 px são hairlines numa tela comum e os traços mais largos vão em segmentos
+  separados com pontas quadradas (quadriláteros na GPU); uma vista com mais de 40 mil vértices de
+  linhas numa tela de alta densidade desenha as linhas de 1 px como hairlines. Uma cena que leva mais
+  de 20 ms acompanha o arrasto e o zoom como imagem deslocada e é redesenhada nítida 120 ms depois que
+  a vista para (ou a cada algumas centenas de milissegundos enquanto ela continua se movendo). O snap
+  testa só os segmentos ao alcance do cursor (cruzar todos os segmentos de duas curvas de nível
+  longas levava segundos). Medido no Chrome num projeto de 34 mil entidades em 178 camadas, em tela
+  comum e em tela 2×: mover o mouse de 600 e 880 ms para menos de dois quadros, um passo de arrasto
+  de 320 e 465 ms para menos de dois quadros, um passo de zoom de 0,8 e 1,6 s para cerca de 85 ms,
+  uma seleção de 630 e 935 ms para cerca de 180 ms.
 - **Agregação de emissores**: cada lateral vira até 100 nós com emissores agrupados
   (`maxNodesPerLateral`); um talhão de 44 fitas de 120 m tem 4400 nós e dimensiona em cerca de 2 s.
   Fitas de zonas vizinhas com pontas coincidentes são fundidas pelo construtor do grafo, o que dobra

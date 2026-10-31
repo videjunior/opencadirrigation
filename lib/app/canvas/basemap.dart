@@ -161,6 +161,17 @@ class BaseMapLayer extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
+  /// Bumped whenever the layer has something new to show (a tile, a
+  /// session, an error): the canvas then records its drawing again.
+  int get revision => _revision;
+  int _revision = 0;
+
+  @override
+  void notifyListeners() {
+    _revision++;
+    super.notifyListeners();
+  }
+
   /// Tile URL. Google maps need the [session] token of the map type and the
   /// user's [key]; the custom map its [custom] template.
   static String url(BaseMap m, int z, int x, int y, {String session = '', String key = '', String custom = ''}) => switch (m) {

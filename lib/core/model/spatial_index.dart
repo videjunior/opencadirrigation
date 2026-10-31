@@ -15,6 +15,7 @@
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'entities.dart';
 import 'geometry.dart';
@@ -160,6 +161,19 @@ class SpatialIndex {
   List<int> query(Bounds q) {
     final out = <int>[];
     visit(q, out.add);
+    if (out.length > 64 && out.length * 8 > entities.length) {
+      // a good part of the project (a zoomed-out view): marking the hits
+      // and reading them back in order is cheaper than sorting them
+      final hit = Uint8List(entities.length);
+      for (final i in out) {
+        hit[i] = 1;
+      }
+      var k = 0;
+      for (var i = 0; i < hit.length; i++) {
+        if (hit[i] == 1) out[k++] = i;
+      }
+      return out;
+    }
     out.sort();
     return out;
   }

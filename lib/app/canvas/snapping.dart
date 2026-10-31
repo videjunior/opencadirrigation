@@ -77,8 +77,14 @@ class Snapper {
     // for the intersection, perpendicular and tangent snaps
     final segs = <(Pt, Pt, String)>[];
     final rings = <(Pt, double, double, double, String)>[]; // centre, radius, start, sweep (2π for circles)
-    // only the entities within reach of the cursor (spatial index)
-    for (final e in c.entitiesIn(Bounds(p.x - tol, p.y - tol, p.x + tol, p.y + tol))) {
+    // only the entities within reach of the cursor (spatial index), and of
+    // a long polyline only the vertices and segments within reach: every
+    // snap point lies within the tolerance, so a segment that does not come
+    // near the cursor gives none (and pairing all the segments of long
+    // contours for their crossings took seconds)
+    final win = Bounds(p.x - tol, p.y - tol, p.x + tol, p.y + tol);
+    bool near(Pt a, Pt b) => !(math.max(a.x, b.x) < win.minX || math.min(a.x, b.x) > win.maxX || math.max(a.y, b.y) < win.minY || math.min(a.y, b.y) > win.maxY);
+    for (final e in c.entitiesIn(win)) {
       if (ignoreSelection && c.selection.contains(e.id)) continue;
       switch (e) {
         case PointEntity pe when e is! TextEntity:
@@ -91,12 +97,13 @@ class Snapper {
         case PolyEntity pl:
           final pts = pl.points;
           final straight = e is! SplineEntity;
+          final hydraulic = e is PipeEntity || e is SpraylineEntity || e is TapeEntity;
           for (var i = 0; i < pts.length; i++) {
-            consider(pts[i], 'endpoint', 0.5, e.id);
-            if (i > 0) {
+            if (win.contains(pts[i])) consider(pts[i], 'endpoint', 0.5, e.id);
+            if (i > 0 && near(pts[i - 1], pts[i])) {
               consider(Pt.lerp(pts[i - 1], pts[i], 0.5), 'midpoint', 0.8, e.id);
               if (straight) segs.add((pts[i - 1], pts[i], e.id));
-              if (e is PipeEntity || e is SpraylineEntity || e is TapeEntity) {
+              if (hydraulic) {
                 final (cp, _) = closestPointOnSegment(p, pts[i - 1], pts[i]);
                 consider(cp, 'on', 1.0, e.id);
               }
@@ -106,7 +113,7 @@ class Snapper {
             final (cp, _) = closestPointOnSegment(p, pts.last, pts.first);
             considerNearest(cp, e.id);
           }
-          if (((e is PolylineEntity && e.closed) || e is AreaEntity || e is HatchEntity) && pts.length > 2) segs.add((pts.last, pts.first, e.id));
+          if (((e is PolylineEntity && e.closed) || e is AreaEntity || e is HatchEntity) && pts.length > 2 && near(pts.last, pts.first)) segs.add((pts.last, pts.first, e.id));
         case CircleEntity ci:
           consider(ci.center, 'center', 0.6, e.id);
           for (var q = 0; q < 4; q++) {

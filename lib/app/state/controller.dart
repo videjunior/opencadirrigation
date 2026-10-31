@@ -320,9 +320,73 @@ class ProjectController extends ChangeNotifier {
     return built;
   }
 
+  Map<String, int>? _byId;
+  SpatialIndex? _byIdIndex;
+  final Set<String> _notById = {};
+
+  /// Position of the entity with [id] in the project's list (drawing
+  /// order), through a map kept with the spatial index (the project's own
+  /// lookup scans every entity).
+  int? entityIndex(String id) {
+    final idx = index;
+    if (!identical(idx, _byIdIndex)) {
+      final ents = idx.entities;
+      _byId = {for (var i = 0; i < ents.length; i++) ents[i].id: i};
+      _byIdIndex = idx;
+      _notById.clear();
+    }
+    final i = _byId![id];
+    if (i != null && i < idx.entities.length && idx.entities[i].id == id) return i;
+    // an entity replaced in place without an edit: look it up the slow way
+    // (once: an id that is not there is remembered until the next edit)
+    if (_notById.contains(id)) return null;
+    final j = idx.entities.indexWhere((e) => e.id == id);
+    if (j < 0) {
+      _notById.add(id);
+      return null;
+    }
+    _byId![id] = j;
+    return j;
+  }
+
+  /// The entity with [id] (see [entityIndex]).
+  Entity? entityById(String id) {
+    final i = entityIndex(id);
+    return i == null ? null : index.entities[i];
+  }
+
   /// Marks the entity geometry as changed outside [mutate] (the spatial
   /// index is rebuilt on the next query).
   void entitiesChanged() => _editSeq++;
+
+  Map<String, int>? _layerCounts;
+  SpatialIndex? _layerCountsIndex;
+
+  /// Number of entities on each layer (kept with the spatial index, so the
+  /// layer list does not count the whole project on every rebuild).
+  Map<String, int> get layerCounts {
+    final idx = index;
+    if (_layerCounts == null || !identical(idx, _layerCountsIndex)) {
+      final counts = <String, int>{};
+      for (final e in idx.entities) {
+        counts[e.layer] = (counts[e.layer] ?? 0) + 1;
+      }
+      _layerCounts = counts;
+      _layerCountsIndex = idx;
+    }
+    return _layerCounts!;
+  }
+
+  /// Bumped by every [notifyListeners]: the canvas records its drawing again
+  /// when it changed (see SceneCache).
+  int get notifySeq => _notifySeq;
+  int _notifySeq = 0;
+
+  @override
+  void notifyListeners() {
+    _notifySeq++;
+    super.notifyListeners();
+  }
   DesignResults? results;
   final Set<String> selection = {};
   String? hoverId;

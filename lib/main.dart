@@ -149,7 +149,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   /// Keyboard shortcuts, fed by the platform (native listener on the web).
   late final Hotkeys hotkeys = Hotkeys(this);
   late final NativeHotkeys _nativeKeys = NativeHotkeys(hotkeys.handle);
-  String _status = '';
+  /// Cursor coordinates for the status bar, with the view scale they were
+  /// read at: they change on every pointer move, so only the status bar
+  /// listens (the rest of the window is not rebuilt for them).
+  final _status = ValueNotifier<(String, double)>(('', 0));
   /// Side panel tab: 0 properties, 1 layers, 2 history.
   int _sideTabIndex = 0;
   double _reportsHeight = 220;
@@ -247,6 +250,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       if (t.focusCanvas == _focusCanvas) t.focusCanvas = null;
     }
     canvasFocus.dispose();
+    _status.dispose();
     super.dispose();
   }
 
@@ -467,9 +471,11 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   // ---- ToolHost
   @override
   void setStatus(String text) {
-    if (text == _status) return;
+    final next = (text, c.camera.scale);
+    if (next == _status.value) return;
+    // tools also report while painting: the text changes after the frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _status = text);
+      if (mounted) _status.value = next;
     });
   }
 
