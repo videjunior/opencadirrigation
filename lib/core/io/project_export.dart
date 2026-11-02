@@ -415,9 +415,12 @@ class ProjectExporter {
     return out;
   }
 
-  String kml() => KmlWriter.write(geoFeatures(), documentName: project.meta.name, description: _docDescription());
+  /// The project name, or "New project" when it has none (1.6.0 UI).
+  String get _title => project.meta.name.trim().isEmpty ? t('name.newProject') : project.meta.name;
+
+  String kml() => KmlWriter.write(geoFeatures(), documentName: _title, description: _docDescription());
   Uint8List kmz() => KmlWriter.writeKmz(kml());
-  String geoJson() => GeoJsonWriter.write(geoFeatures(), name: project.meta.name);
+  String geoJson() => GeoJsonWriter.write(geoFeatures(), name: _title);
 
   String _docDescription() {
     final m = project.meta;
@@ -440,7 +443,7 @@ class ProjectExporter {
     attribution: o.attribution,
   );
 
-  String svg([SheetOptions o = const SheetOptions()]) => SvgWriter.write(scene(o), marginMm: o.marginMm, title: project.meta.name, layerNames: layerNames);
+  String svg([SheetOptions o = const SheetOptions()]) => SvgWriter.write(scene(o), marginMm: o.marginMm, title: _title, layerNames: layerNames);
 
   Uint8List pdfSheet([SheetOptions o = const SheetOptions()]) => sheetBuilder().buildSheet(o, reports: o.includeReports ? reportTables() : const []);
 
@@ -493,7 +496,7 @@ class ProjectExporter {
     DrawingFormat.shp => ShapefileWriter(project: project, results: results, layerNames: layerNames).zip(),
     DrawingFormat.gpx => GpxWriter.write(project, results: results, layerNames: layerNames),
     DrawingFormat.landxml => LandXmlWriter.write(project, results: results),
-    DrawingFormat.ifc => IfcWriter.write(project, results: results, fileName: '${project.meta.name}.ifc').text,
+    DrawingFormat.ifc => IfcWriter.write(project, results: results, fileName: '$_title.ifc').text,
     DrawingFormat.inp => EpanetWriter.write(project, results: results).text,
   };
 

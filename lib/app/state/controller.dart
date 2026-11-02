@@ -3355,7 +3355,8 @@ class ProjectController extends ChangeNotifier {
     project.params
       ..mainsHz = defaultMainsHz()
       ..units = defaultUnits();
-    project.meta.name = t('name.newProject');
+    // 1.6.0 UI: no name of its own (the tab says "New project" in the language of the moment)
+    project.meta.name = '';
     results = null;
     selection.clear();
     unconnected = {};

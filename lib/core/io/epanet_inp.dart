@@ -808,7 +808,9 @@ class _InpBuilder {
     }
 
     b.writeln('[TITLE]');
-    final title = options.title.isNotEmpty ? options.title : [project.meta.name, if (project.meta.site.isNotEmpty) project.meta.site, 'OpenCADIrrigation $scopeLabel'];
+    final title = options.title.isNotEmpty
+        ? options.title
+        : [if (project.meta.name.trim().isNotEmpty) project.meta.name, if (project.meta.site.isNotEmpty) project.meta.site, 'OpenCADIrrigation $scopeLabel'];
     for (final t in title) {
       b.writeln(t.replaceAll(RegExp(r'[\r\n]'), ' '));
     }

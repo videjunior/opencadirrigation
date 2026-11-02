@@ -19,6 +19,7 @@ import '../../state/controller.dart';
 import '../../theme.dart';
 import '../../actions.dart' show saveProjectAction;
 import '../fields.dart';
+import '../../project_name.dart'; // 1.6.0 UI
 
 String _mb(int bytes) => (bytes / 1e6).toStringAsFixed(bytes < 1e7 ? 1 : 0);
 
@@ -141,7 +142,7 @@ Future<void> showStorageDialog(BuildContext context, ProjectController c) async 
                     Padding(
                       padding: const EdgeInsets.only(top: 3),
                       child: Text(
-                        '• ${p.name.isEmpty ? p.uid : p.name} — ${p.kind == 'autosave' ? t('storage.kindAutosave') : t('storage.kindSaved')} · ${_when(p.savedAt)} · ${_mb(p.stored + store.versions(p.uid).fold(0, (s, v) => s + v.stored))} MB · ${t('storage.versions', {'n': '${store.versions(p.uid).length}'})}${p.uid == c.project.meta.uid ? ' · ${t('storage.thisTab')}' : ''}',
+                        '• ${projectTitle(t, p.name)} — ${p.kind == 'autosave' ? t('storage.kindAutosave') : t('storage.kindSaved')} · ${_when(p.savedAt)} · ${_mb(p.stored + store.versions(p.uid).fold(0, (s, v) => s + v.stored))} MB · ${t('storage.versions', {'n': '${store.versions(p.uid).length}'})}${p.uid == c.project.meta.uid ? ' · ${t('storage.thisTab')}' : ''}',
                         style: const TextStyle(fontSize: 11),
                       ),
                     ),

@@ -11,6 +11,7 @@ import '../../core/api.dart';
 import '../actions.dart' show deliverExport;
 import '../state/controller.dart';
 import 'agent_tools.dart';
+import '../project_name.dart'; // 1.6.0 UI
 
 /// Where the engineering operations hand their files: the app's own
 /// download helper (a browser download, the save dialog on the desktop),
@@ -48,10 +49,7 @@ FnTool engOp(
 String engSummary(AgentToolbox b, String key, String fallback, [Map<String, String>? args]) => b.t.has(key) ? b.t(key, args) : b.t(fallback, args);
 
 /// The file name stem of the project ("Orchard_2026"), as the menus name files.
-String engStem(ProjectController c) {
-  final n = c.project.meta.name.trim();
-  return (n.isEmpty ? c.t('name.newProject') : n).replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_');
-}
+String engStem(ProjectController c) => projectFileStem(c.t, c.project.meta.name);
 
 /// Refuses when the project has no design results.
 void engNeedResults(ProjectController c) {

@@ -64,7 +64,9 @@ void main() {
     expect(find.text('Projetar com o assistente de IA?'), findsOneWidget);
     expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsNothing, reason: 'no welcome, even on a first run');
     expect(c.project.entities, isEmpty, reason: 'no example at start');
-    expect(c.project.meta.name, 'Novo projeto');
+    // 1.6.0 UI: no name of its own; the tab says "Novo projeto" in the language of the moment
+    expect(c.project.meta.name, '');
+    expect(find.text('Novo projeto'), findsWidgets);
     // left blank, without the AI: the empty project, no georeference, no assistant
     await tester.tap(find.byKey(const Key('ai_start_no')));
     await settle(tester);

@@ -1014,7 +1014,7 @@ List<AgentTool> networkOperations(AgentToolbox b) {
       run: (a, _) async {
         final d = await engSoon(() => c.densogram);
         if (d.isEmpty) throw ToolInputError(t('dens.none'));
-        final file = '${b.p.meta.name}_densogram.csv';
+        final file = '${engStem(c)}_densogram.csv';
         await engFileSink(c, file, 'text/csv', d.toCsv());
         return ToolOutput('Saved $file (${d.nx} × ${d.ny} cells of ${engN(d.cell, 2)} m).');
       },

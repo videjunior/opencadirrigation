@@ -287,12 +287,15 @@ class PdfSheetBuilder {
     return (math.max(1, (lay.areaW / _detailCellW).floor()), math.max(1, (lay.areaH / _detailCellH).floor()));
   }
 
+  /// The project name, or "New project" when it has none (1.6.0 UI).
+  String get _title => project.meta.name.trim().isEmpty ? t('name.newProject') : project.meta.name;
+
   /// Number of sheets (drawing and detail sheets) of [o].
   int sheetCount(SheetOptions o) => sheetPlan(o).length + detailSheets(o).length;
 
   /// Drawing sheets, detail sheets, then report pages and charts as [o] asks.
   Uint8List buildSheet(SheetOptions o, {List<ReportTable> reports = const []}) {
-    final doc = PdfDocument(title: project.meta.name, author: project.meta.designer, subject: t('pdf.subtitle'), fonts: fonts);
+    final doc = PdfDocument(title: _title, author: project.meta.designer, subject: t('pdf.subtitle'), fonts: fonts);
     addSheetPages(doc, o);
     final charts = o.charts ? designCharts(project, results, t: t, u: units, profilePath: o.profilePath) : const <PlotChart>[];
     if (o.includeReports) {
@@ -305,7 +308,7 @@ class PdfSheetBuilder {
 
   /// Report document only.
   Uint8List buildReport(List<ReportTable> tables) {
-    final doc = PdfDocument(title: '${project.meta.name} - ${t('pdf.reportTitle')}', author: project.meta.designer, subject: t('pdf.reportTitle'), fonts: fonts);
+    final doc = PdfDocument(title: '$_title - ${t('pdf.reportTitle')}', author: project.meta.designer, subject: t('pdf.reportTitle'), fonts: fonts);
     addReportPages(doc, tables);
     return doc.build();
   }

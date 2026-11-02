@@ -370,7 +370,7 @@ List<AgentTool> machineOperations(AgentToolbox b) {
         final v = r.vri;
         if (v == null || v.rows.isEmpty) throw ToolInputError('${p.id} has no variable-rate prescription: set vri_zones or vri_sectors with set_pivot_machine first.');
         String safe(String s) => s.trim().replaceAll(RegExp(r'[\\/:*?"<>|\s]+'), '_');
-        final file = '${safe(b.p.meta.name)}_${safe(_pivotName(b, p))}_vri.csv';
+        final file = '${safe(engStem(b.c))}_${safe(_pivotName(b, p))}_vri.csv';
         await engFileSink(c, file, 'text/csv', v.toCsv(compass: a.flag('compass') ?? false));
         return ToolOutput('Saved $file (${v.rows.length} sectors).');
       },

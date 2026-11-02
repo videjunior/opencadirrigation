@@ -327,7 +327,7 @@ class SystemFlow {
 }
 
 class ProjectMeta {
-  ProjectMeta({this.name = 'New project', this.client = '', this.site = '', this.designer = '', this.notes = '', this.georef, String? uid, DateTime? created, this.modified})
+  ProjectMeta({this.name = '', this.client = '', this.site = '', this.designer = '', this.notes = '', this.georef, String? uid, DateTime? created, this.modified})
     : uid = uid ?? newUid(),
       created = created ?? DateTime.now();
 
