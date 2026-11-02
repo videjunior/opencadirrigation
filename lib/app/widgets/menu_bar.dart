@@ -31,6 +31,8 @@ import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
+import 'dialogs/document_package_dialog.dart'; // 1.6.0 PRD
+import 'dialogs/title_block_dialog.dart'; // 1.6.0 PRD
 import 'advice_panel.dart';
 import 'message_log.dart';
 import 'reports_panel.dart';
@@ -159,9 +161,13 @@ class AppMenuBar extends StatelessWidget {
                       ],
                       child: Text(t('file.exportReport')),
                     ),
+                    // 1.6.0 PRD
+                    item(t('prd.menu.package'), () => showDocumentPackageDialog(context, c), icon: Icons.picture_as_pdf_outlined, key: const Key('menu_document_package')),
                     const Divider(height: 1),
                     item(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined, key: const Key('menu_share_link')),
                     item(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
+                    // 1.6.0 PRD
+                    item(t('prd.menu.titleBlock'), () => showTitleBlockDialog(context, c), icon: Icons.badge_outlined, key: const Key('menu_title_block')),
                     item(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
                     // 1.6.0 CAD
                     const Divider(height: 1),

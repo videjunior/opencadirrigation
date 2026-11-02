@@ -3,6 +3,8 @@ library;
 
 import 'dart:math' as math;
 
+import 'datum.dart' show GeodeticDatum, defaultProjectDatum, projectDatumLabel, projectDatums;
+
 class UtmPoint {
   const UtmPoint(this.easting, this.northing, this.zone, this.north);
   final double easting;
@@ -96,12 +98,37 @@ double _atanh(double x) => 0.5 * math.log((1 + x) / (1 - x));
 
 /// Georeference of a project: world (x, y) = (easting − originE, northing − originN).
 class GeoReference {
-  const GeoReference({required this.zone, required this.north, required this.originEasting, required this.originNorthing});
+  const GeoReference({required this.zone, required this.north, required this.originEasting, required this.originNorthing, this.datum});
   final int zone;
   final bool north;
   final double originEasting;
   final double originNorthing;
-  String get crsName => 'WGS84 / UTM $zone${north ? 'N' : 'S'}';
+
+  /// 1.6.0 PRD: the datum the coordinates are given on, as the user chose
+  /// it; null = by the site ([effectiveDatum]). Only datums that agree with
+  /// WGS 84 at the accuracy of a project map ([projectDatums]): the
+  /// coordinates are the same numbers, the datum names them.
+  final GeodeticDatum? datum;
+
+  /// The datum named on the sheets and in the exported files: [datum], else
+  /// the official one of the site (SIRGAS 2000 in Latin America, ETRS89 in
+  /// Europe, WGS 84 elsewhere; see [defaultProjectDatum]).
+  GeodeticDatum get effectiveDatum {
+    final d = datum;
+    if (d != null) return d;
+    final (lat, lon) = toLatLon(0, 0);
+    return defaultProjectDatum(lat, lon);
+  }
+
+  /// "SIRGAS 2000 / UTM 23S", "WGS84 / UTM 32N"…
+  String get crsName => '${projectDatumLabel(effectiveDatum)} / UTM $zone${north ? 'N' : 'S'}';
+
+  /// EPSG code of the projected CRS (31983 for SIRGAS 2000 / UTM 23S), or
+  /// null when the EPSG dataset has none for this zone on the datum.
+  int? get epsg => effectiveDatum.utmEpsg(zone, north);
+
+  /// This georeference on [d] (null: by the site); the same coordinates.
+  GeoReference withDatum(GeodeticDatum? d) => GeoReference(zone: zone, north: north, originEasting: originEasting, originNorthing: originNorthing, datum: d);
 
   /// Georeference whose local origin (0, 0) sits at the given WGS84 position.
   static GeoReference fromLatLonOrigin(double lat, double lon) {
@@ -125,9 +152,15 @@ class GeoReference {
     return (u.easting - originEasting, northing - originNorthing);
   }
 
-  Map<String, dynamic> toJson() => {'zone': zone, 'north': north, 'e0': originEasting, 'n0': originNorthing};
-  static GeoReference fromJson(Map<String, dynamic> j) =>
-      GeoReference(zone: (j['zone'] as num).toInt(), north: j['north'] as bool? ?? true, originEasting: (j['e0'] as num).toDouble(), originNorthing: (j['n0'] as num).toDouble());
+  Map<String, dynamic> toJson() => {'zone': zone, 'north': north, 'e0': originEasting, 'n0': originNorthing, if (datum != null) 'datum': datum!.name};
+  static GeoReference fromJson(Map<String, dynamic> j) => GeoReference(
+    zone: (j['zone'] as num).toInt(),
+    north: j['north'] as bool? ?? true,
+    originEasting: (j['e0'] as num).toDouble(),
+    originNorthing: (j['n0'] as num).toDouble(),
+    // a datum this version does not offer for projects: by the site
+    datum: projectDatums.where((d) => d.name == j['datum']).firstOrNull,
+  );
 }
 
 /// Reads a coordinate typed or pasted by the user and returns (lat, lon) in

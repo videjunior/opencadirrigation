@@ -17,7 +17,9 @@ import 'area_requirement.dart';
 import 'area_water.dart';
 import 'designer.dart';
 import 'proposal.dart';
+import 'report_standards.dart'; // 1.6.0 PRD
 import 'results.dart';
+import 'slope_report.dart'; // 1.6.0 PRD
 
 /// Formatted number cell: keeps the raw value for spreadsheets and the number
 /// of decimals for text outputs.
@@ -62,6 +64,11 @@ class ReportTable {
   /// The entity each row is about (null or missing: none), so the screen can
   /// select and frame it from its row.
   final List<String?> ids;
+
+  /// 1.6.0 PRD: the criteria of the table and the standards they follow
+  /// ("Criteria and standards: …", see report_standards.dart); empty when
+  /// it follows none. Set by [buildReportTables].
+  String standards = '';
 
   bool get isEmpty => rows.isEmpty;
 }
@@ -980,6 +987,9 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
       ),
     );
   }
+  // 1.6.0 PRD: slope of the terrain by irrigated area (available without results)
+  final slope = slopeClassesTable(project, t);
+  if (slope != null) out.add(slope);
   // ---- alternatives saved for comparison
   if (project.scenarios.isNotEmpty) {
     out.add(
@@ -1051,6 +1061,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     }
     if (rows.isNotEmpty) out.add(ReportTable(key: 'messages', title: t('reports.messages'), headers: [t('rep.context'), t('reports.messages')], rows: rows, warn: warn));
   }
+  // 1.6.0 PRD: the standards of the criteria of each table
+  attachStandards(out, t);
   return out;
 }
 
@@ -1083,6 +1095,8 @@ String reportTablesToCsv(List<ReportTable> tables) {
     for (final r in tb.rows) {
       b.writeln(r.map((c) => _csvCell('$c')).join(';'));
     }
+    // 1.6.0 PRD: the standards of the table, as a footnote
+    if (tb.standards.isNotEmpty) b.writeln(_csvCell(tb.standards));
     b.writeln();
   }
   return b.toString();
@@ -1114,6 +1128,8 @@ String reportTablesToText(List<ReportTable> tables, {List<String> header = const
     for (var i = 0; i < tb.rows.length; i++) {
       b.writeln(line(cells[i + 1]));
     }
+    // 1.6.0 PRD: the standards of the table, as a footnote
+    if (tb.standards.isNotEmpty) b.writeln(tb.standards);
     b.writeln();
   }
   return b.toString();
