@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/i18n.dart';
 
@@ -21,7 +22,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // interface, everything else fails the file. testWidgets files swap this
   // for flutter_test's own client, which answers 400 to everything.
   // OCI_TEST_NETWORK=1 lifts the guard for a deliberate live check.
-  if (Platform.environment['OCI_TEST_NETWORK'] != '1') HttpOverrides.global = LoopbackOnlyHttpOverrides();
+  // (In the browser suite, test/web, dart:io has no network to guard.)
+  if (!kIsWeb && Platform.environment['OCI_TEST_NETWORK'] != '1') HttpOverrides.global = LoopbackOnlyHttpOverrides();
   tearDownAll(() {
     expect(missingKeys, isEmpty, reason: 'keys used by the app but missing from lib/app/i18n.dart');
     expect(

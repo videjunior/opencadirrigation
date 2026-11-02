@@ -49,3 +49,6 @@ app.*.map.json
 
 # Local scratch work (probe scripts, experiments): never committed
 /tool/scratch/
+
+# npm packages of the end-to-end smoke test (npm ci --prefix tool/e2e)
+/tool/e2e/node_modules/
