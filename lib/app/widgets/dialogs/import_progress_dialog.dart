@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/io/codepages.dart' show loadCjkCodepages, needsCjkCodepages;
 import '../../../core/io/work_slicer.dart';
 import '../../state/controller.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
@@ -23,6 +24,9 @@ const _sliceAbove = 2 << 20, _sliceDwgAbove = 512 << 10;
 /// cancelled it (nothing changed then); errors are thrown as by
 /// [ProjectController.importFile].
 Future<String?> showImportProgressDialog(BuildContext context, ProjectController c, String name, Uint8List bytes) async {
+  // a drawing or table in an East Asian code page: its tables first (loaded once)
+  if (needsCjkCodepages(name, bytes)) await loadCjkCodepages();
+  if (!context.mounted) return c.importFile(name, bytes);
   // a small file reads in a moment: at once, without slices
   final dwg = name.toLowerCase().endsWith('.dwg');
   if (bytes.length < (dwg ? _sliceDwgAbove : _sliceAbove)) return c.importFile(name, bytes);

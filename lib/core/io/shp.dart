@@ -16,6 +16,7 @@ import 'datum.dart';
 import 'dxf.dart';
 import 'geo.dart';
 import 'safe_archive.dart';
+import 'work_slicer.dart';
 
 class ShpImportResult {
   ShpImportResult({required this.document, required this.recordCount, required this.georef, required this.geographic, this.crs = '', this.warnings = const []});
@@ -35,57 +36,30 @@ class ShpReader {
   /// note `shp_truncated` (the index, when given, finds the records that
   /// follow it).
   static ShpImportResult parse(Uint8List shp, {Uint8List? dbf, String? prj, String? cpg, Uint8List? shx, GeoReference? georef, String layer = 'SHP'}) {
-    final bd = ByteData.sublistView(shp);
-    if (shp.length < 100 || bd.getInt32(0, Endian.big) != 9994) throw const FormatException('shp_bad_header');
-    final fileLength = math.min(bd.getInt32(24, Endian.big) * 2, shp.length);
+    final r = _ShpRecords(shp, shx);
+    while (!r.step(1 << 30)) {}
+    return _finish(r, dbf: dbf, prj: prj, cpg: cpg, georef: georef, layer: layer);
+  }
+
+  /// [parse] with the records read in slices of [slicer] (a large
+  /// shapefile: the interface stays responsive and the user can cancel).
+  static Future<ShpImportResult> parseAsync(Uint8List shp, WorkSlicer slicer, {Uint8List? dbf, String? prj, String? cpg, Uint8List? shx, GeoReference? georef, String layer = 'SHP'}) async {
+    final r = _ShpRecords(shp, shx);
+    while (!r.step(2000)) {
+      if (slicer.due) await slicer.pause(0.8 * r.fraction);
+    }
+    await slicer.pause(0.85);
+    return _finish(r, dbf: dbf, prj: prj, cpg: cpg, georef: georef, layer: layer);
+  }
+
+  static ShpImportResult _finish(_ShpRecords r, {Uint8List? dbf, String? prj, String? cpg, GeoReference? georef, required String layer}) {
     final attrs = dbf != null ? _readDbf(dbf, cpg: cpg) : const <Map<String, String>>[];
     final elevField = attrs.isEmpty ? null : _elevationField(attrs.first.keys);
     final nameField = attrs.isEmpty ? null : _nameField(attrs.first.keys);
     final notes = <String>[];
-    // records: from the index when there is one, else one after the other
-    final raw = <_Shape>[];
-    var rec = 0;
-    var damaged = false;
-    void record(int start, int len) {
-      if (len < 4 || start + len > shp.length) {
-        damaged = true;
-        return;
-      }
-      final type = bd.getInt32(start, Endian.little);
-      try {
-        raw.add(_parseShape(ByteData.sublistView(shp, start, start + len), 0, type));
-        rec++;
-      } on RangeError {
-        // a record whose counts run past its length
-        damaged = true;
-      }
-    }
-
-    final index = shx != null && shx.length >= 100 && ByteData.sublistView(shx).getInt32(0, Endian.big) == 9994 ? ByteData.sublistView(shx) : null;
-    if (index != null) {
-      for (var at = 100; at + 8 <= shx!.length; at += 8) {
-        final offset = index.getInt32(at, Endian.big) * 2, len = index.getInt32(at + 4, Endian.big) * 2;
-        if (offset < 100 || offset + 8 > shp.length) {
-          damaged = true;
-          continue;
-        }
-        record(offset + 8, len);
-      }
-    } else {
-      var off = 100;
-      while (off + 8 <= fileLength) {
-        final len = bd.getInt32(off + 4, Endian.big) * 2;
-        final start = off + 8;
-        // a length of zero or less would never move on: the file is damaged
-        if (len <= 0 || start + len > shp.length) {
-          damaged = true;
-          break;
-        }
-        record(start, len);
-        off = start + len;
-      }
-    }
-    if (damaged) notes.add('shp_truncated');
+    final raw = r.raw;
+    final rec = r.count;
+    if (r.damaged) notes.add('shp_truncated');
     // the .prj (any datum, any UTM zone) or, without one, degrees recognised
     // by their range and precision; see GeoPlacement
     final allPts = raw.expand((s) => s.parts.expand((p) => p)).toList();
@@ -136,6 +110,37 @@ class ShpReader {
       if ((s - s.roundToDouble()).abs() < 1e-6) return d;
     }
     return 7;
+  }
+
+  /// [parseAny] with the records read in slices of [slicer].
+  static Future<ShpImportResult> parseAnyAsync(String name, Uint8List bytes, WorkSlicer slicer, {GeoReference? georef}) async {
+    if (!name.toLowerCase().endsWith('.zip')) {
+      final layer = name.split('/').last.replaceAll(RegExp(r'\.shp$', caseSensitive: false), '');
+      return parseAsync(bytes, slicer, georef: georef, layer: layer.isEmpty ? 'SHP' : layer);
+    }
+    final arc = openZip(bytes);
+    ArchiveFile? shp, dbf, prj, cpg, shx;
+    for (final f in arc) {
+      final l = f.name.toLowerCase();
+      if (l.endsWith('.shp')) shp ??= f;
+      if (l.endsWith('.dbf')) dbf ??= f;
+      if (l.endsWith('.prj')) prj ??= f;
+      if (l.endsWith('.cpg')) cpg ??= f;
+      if (l.endsWith('.shx')) shx ??= f;
+    }
+    if (shp == null) throw const FormatException('shp_zip_no_shp');
+    final layer = shp.name.split('/').last.replaceAll(RegExp(r'\.shp$', caseSensitive: false), '');
+    await slicer.pause(0.02);
+    return parseAsync(
+      zipEntryBytes(shp),
+      slicer,
+      dbf: dbf != null ? zipEntryBytes(dbf) : null,
+      prj: prj != null ? latin1.decode(zipEntryBytes(prj, maxBytes: 1 << 20)) : null,
+      cpg: cpg != null ? latin1.decode(zipEntryBytes(cpg, maxBytes: 1 << 16)).trim() : null,
+      shx: shx != null ? zipEntryBytes(shx) : null,
+      georef: georef,
+      layer: layer.isEmpty ? 'SHP' : layer,
+    );
   }
 
   /// Parses a .zip holding .shp (+ .dbf, .prj, .cpg) or a raw .shp.
@@ -218,9 +223,9 @@ class ShpReader {
     if (dbf.length < 32) return const [];
     final c = (cpg ?? '').toUpperCase().trim();
     final forceUtf8 = c.contains('UTF') || c.contains('65001');
-    // the code page the .cpg names ("1252", "CP1251", "ANSI 1250", "ISO-8859-1")
-    final named = RegExp(r'^(?:CP|ANSI|WINDOWS)?[ _-]?(\d{3,4})$').firstMatch(c)?.group(1);
-    final page = c.contains('8859') || c.contains('LATIN') ? 28591 : (named != null ? int.parse(named) : null);
+    // the code page the .cpg names ("1252", "CP1251", "ANSI 1250", "ISO-8859-1",
+    // "GBK", "BIG5"), else the East Asian language driver of the header
+    final page = codepageFromCpg(c) ?? codepageFromDbfLanguage(dbf[29]);
     final forced = page != null && supportedCodepages.contains(page) ? page : null;
     String decode(List<int> b) {
       if (forceUtf8) return utf8.decode(b, allowMalformed: true);
@@ -288,6 +293,79 @@ class ShpReader {
   static String _crsName(String prj) {
     final m = RegExp(r'^(PROJCS|GEOGCS)\["([^"]+)"').firstMatch(prj.trim());
     return m?.group(2) ?? '';
+  }
+}
+
+/// The records of a .shp read a number at a time: from the .shx index when
+/// there is one, else one after the other (a length of zero or less, or one
+/// past the end, stops the reading as damaged).
+class _ShpRecords {
+  _ShpRecords(this.shp, Uint8List? shx) : bd = ByteData.sublistView(shp) {
+    if (shp.length < 100 || bd.getInt32(0, Endian.big) != 9994) throw const FormatException('shp_bad_header');
+    fileLength = math.min(bd.getInt32(24, Endian.big) * 2, shp.length);
+    index = shx != null && shx.length >= 100 && ByteData.sublistView(shx).getInt32(0, Endian.big) == 9994 ? ByteData.sublistView(shx) : null;
+    indexLength = shx?.length ?? 0;
+  }
+  final Uint8List shp;
+  final ByteData bd;
+  late final int fileLength, indexLength;
+  late final ByteData? index;
+  final raw = <_Shape>[];
+  var count = 0;
+  var damaged = false;
+  var _at = 100, _done = false;
+
+  double get fraction => _done ? 1 : _at / math.max(1, index != null ? indexLength : fileLength);
+
+  void _record(int start, int len) {
+    if (len < 4 || start + len > shp.length) {
+      damaged = true;
+      return;
+    }
+    final type = bd.getInt32(start, Endian.little);
+    try {
+      raw.add(ShpReader._parseShape(ByteData.sublistView(shp, start, start + len), 0, type));
+      count++;
+    } on RangeError {
+      // a record whose counts run past its length
+      damaged = true;
+    }
+  }
+
+  /// Reads up to [budget] records; true when the file is done.
+  bool step(int budget) {
+    final ix = index;
+    for (var n = 0; n < budget && !_done; n++) {
+      if (ix != null) {
+        if (_at + 8 > indexLength) {
+          _done = true;
+          break;
+        }
+        final offset = ix.getInt32(_at, Endian.big) * 2, len = ix.getInt32(_at + 4, Endian.big) * 2;
+        _at += 8;
+        if (offset < 100 || offset + 8 > shp.length) {
+          damaged = true;
+          continue;
+        }
+        _record(offset + 8, len);
+      } else {
+        if (_at + 8 > fileLength) {
+          _done = true;
+          break;
+        }
+        final len = bd.getInt32(_at + 4, Endian.big) * 2;
+        final start = _at + 8;
+        // a length of zero or less would never move on: the file is damaged
+        if (len <= 0 || start + len > shp.length) {
+          damaged = true;
+          _done = true;
+          break;
+        }
+        _record(start, len);
+        _at = start + len;
+      }
+    }
+    return _done;
   }
 }
 
