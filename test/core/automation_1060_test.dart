@@ -1194,4 +1194,92 @@ void main() {
       }
     });
   });
+
+  group('AUT-30 invariants of every generator', () {
+    /// A supply and a mainline to [valve], then the checks every generated
+    /// network passes: nothing on top of anything, no zones joined, nothing
+    /// left unconnected.
+    void sound(Project p, Pt valve, String what) {
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: valve + const Pt(-6, -6), calculatePressure: true));
+      p.entities.add(PipeEntity(id: p.newId(), points: [valve + const Pt(-6, -6), valve + const Pt(-6, 0), valve], scope: HydraulicScope.mainline));
+      final codes = runDesignCheck(p).issues.map((i) => '${i.code} ${i.entityIds}').toList();
+      expect(codes.where((c) => c.startsWith('pipes_overlap') || c.startsWith('zone_overlap') || c.startsWith('unconnected')), isEmpty, reason: what);
+    }
+
+    final shapes = <String, List<Pt>>{
+      'rectangle': rect(0, 0, 60, 30),
+      'diamond': const [Pt(30, 0), Pt(60, 20), Pt(30, 40), Pt(0, 20)],
+      'L': const [Pt(0, 0), Pt(60, 0), Pt(60, 20), Pt(25, 20), Pt(25, 45), Pt(0, 45)],
+    };
+    for (final MapEntry(key: name, value: poly) in shapes.entries) {
+      for (final pos in SubmainPosition.values) {
+        for (final vp in ValvePosition.values) {
+          test('block of tape, $name, submain ${pos.name}, valve ${vp.name}', () {
+            final p = Project();
+            final b = generateBlock(
+              p,
+              BlockOptions(
+                polygon: poly,
+                direction: const Pt(1, 0),
+                lateralSpacing: 2,
+                firstLateralOffset: 2,
+                isTape: true,
+                tapeSpecId: 'tape16_10_30',
+                submainPosition: pos,
+                valvePosition: vp,
+                valveSpecId: 'ev50',
+              ),
+            );
+            p.entities.addAll(b.all);
+            sound(p, b.valve!.position, '$name ${pos.name} ${vp.name}');
+            // every point of the polygon within one spacing of a lateral
+            final lines = [for (final e in b.laterals) (e as TapeEntity).points];
+            final bb = Bounds.ofPoints(poly);
+            for (var x = bb.minX + 0.5; x < bb.maxX; x += 3) {
+              for (var y = bb.minY + 0.5; y < bb.maxY; y += 3) {
+                final q = Pt(x, y);
+                if (!pointInPolygon(q, poly)) continue;
+                var best = double.infinity;
+                for (final l in lines) {
+                  for (var i = 1; i < l.length; i++) {
+                    best = math.min(best, distanceToSegment(q, l[i - 1], l[i]));
+                  }
+                }
+                expect(best, lessThanOrEqualTo(2 + 1e-6), reason: '$name: $q');
+              }
+            }
+          });
+        }
+      }
+    }
+
+    for (final w in [30.0, 36.0, 42.0]) {
+      test('tree rings fed from the centre, $w m wide', () {
+        final p = Project();
+        final l = layoutTreeRings(
+          area: rect(0, 0, w, 21),
+          options: TreeRingOptions(plantSpacing: 6, rowSpacing: 7, submainPosition: SubmainPosition.centre),
+        );
+        p.entities.addAll(l.toEntities(p, tapeSpecId: 'tape16_10_30', valveSpecId: 'ev25', zoneName: 'A'));
+        sound(p, l.valve!, 'rings $w');
+      });
+    }
+
+    test('zones routed round a house share no vertex and none is left unconnected', () {
+      final family = Catalog.defaultCatalog().outlet('spray')!;
+      final lot = rect(0, 0, 40, 30), house = rect(12, 10, 26, 20);
+      final layout = layoutLandscape(outline: lot, exclusions: [house], family: family);
+      final z = zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: 3 / 3600));
+      final r = routeZones([
+        for (final g in z.zones) [for (final i in g.items) layout.heads[i].position],
+      ], RouteOptions(exclusions: [house], pointOfConnection: const Pt(-6, -6), boundary: lot));
+      final p = Project();
+      final names = [for (var k = 0; k < z.zones.length; k++) 'Z$k'];
+      p.entities.addAll(layout.toOutlets(p, zoneName: (i) => names[z.zoneOf[i]]));
+      p.entities.addAll(r.toEntities(p, zoneNames: names));
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-6, -6), calculatePressure: true));
+      final codes = runDesignCheck(p).issues.map((i) => i.code).toSet();
+      expect(codes.intersection({'pipes_overlap', 'zone_overlap', 'unconnected'}), isEmpty);
+    });
+  });
 }
