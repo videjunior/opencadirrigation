@@ -577,7 +577,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       effectFor: (i) => i['apply'] == false ? ToolEffect.read : ToolEffect.write,
       args: (i) => {'n': '${i['field'] ?? ''}'},
       description:
-          'Arranges several centre pivots of standard spans in a property outline (Design → Automatic → Several pivots): the arrangement that irrigates the most area (the largest first, and lattices of equal machines grown where they stand), with a clearance between wetted circles and from the boundary, avoiding the obstacles and the pivots drawn, within the flow allowed, and the common mainline from the first water supply (minimum spanning tree). Inputs: field (closed shape id or name; default the selection), obstacles (closed shape ids), end_throw_m, clearance_m, min_radius_m, max_pivots, min_spans, max_spans, max_flow_m3h (0 = no limit), depth_mm and hours (gross depth per revolution for each flow), corners (part-circle pivots in the corners left), mainline (draw the pipes, default true), apply (default true; false only reports). Output: the machines (centre, radius, towers, area, flow), coverage, total flow, mainline length.',
+          'Arranges several centre pivots of standard spans in a property outline (Design → Automatic → Several pivots): the arrangement that irrigates the most area (the largest first, and lattices of equal machines grown where they stand), with a clearance between wetted circles and from the boundary, avoiding the obstacles and the pivots drawn, within the flow allowed, and the common mainline from the first water supply (minimum spanning tree). Inputs: field (closed shape id or name; default the selection), obstacles (closed shape ids), end_throw_m, clearance_m, min_radius_m, max_pivots, min_spans, max_spans, max_flow_m3h (0 = no limit; default the largest flow of the water supply), depth_mm and hours (gross depth per revolution for each flow), corners (part-circle pivots in the corners left), mainline (draw the pipes, default true), apply (default true; false only reports). Output: the machines (centre, radius, towers, area, flow), coverage, total flow, mainline length.',
       schema: obj({
         'field': str('Closed shape of the property.'),
         'obstacles': arr(str(), 'Closed shapes to keep clear of.'),
@@ -612,7 +612,8 @@ List<AgentTool> opsAgb(AgentToolbox b) {
           maxPivots: a.integer('max_pivots', min: 1, max: 60) ?? 12,
           minSpans: minSpans,
           maxSpans: [a.integer('max_spans', min: 1, max: 30) ?? 12, minSpans].reduce((x, y) => x > y ? x : y),
-          maxTotalFlow: (a.number('max_flow_m3h', min: 0) ?? 0) / 3600,
+          // default: the largest flow of the water supply, when given
+          maxTotalFlow: a.has('max_flow_m3h') ? a.number('max_flow_m3h', min: 0)! / 3600 : (b.p.entities.whereType<WaterSupplyEntity>().firstOrNull?.maxFlow ?? 0),
           grossDepthMm: depth,
           hoursPerCycle: hours,
           corners: a.flag('corners') ?? false,

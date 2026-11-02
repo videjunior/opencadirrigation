@@ -97,8 +97,10 @@ Future<void> showMultiPivotDialog(BuildContext context, ProjectController c) {
     for (final s in shapes.skip(1)) s.$2,
     for (final p in c.project.entities.whereType<PivotEntity>()) p.outline(),
   ];
-  final supply = c.project.entities.whereType<WaterSupplyEntity>().firstOrNull?.position;
-  var endThrow = 5.0, clearance = 5.0, minRadius = 100.0, maxFlowM3h = 0.0, depth = 8.0, hours = 21.0;
+  final source = c.project.entities.whereType<WaterSupplyEntity>().firstOrNull;
+  final supply = source?.position;
+  // the flow the water right allows: the largest flow of the supply when given
+  var endThrow = 5.0, clearance = 5.0, minRadius = 100.0, maxFlowM3h = (source?.maxFlow ?? 0) * 3600, depth = 8.0, hours = 21.0;
   var maxPivots = 12, minSpans = 2, maxSpans = 12;
   var corners = false, mainline = true;
   MultiPivotLayout? layout;
