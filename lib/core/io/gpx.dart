@@ -76,7 +76,11 @@ class GpxReader {
           }
       }
     }
-    final sample = [for (final p in wpts) (p.lon, p.lat), for (final (_, l) in lines) for (final p in l) (p.lon, p.lat)];
+    final sample = [
+      for (final p in wpts) (p.lon, p.lat),
+      for (final (_, l) in lines)
+        for (final p in l) (p.lon, p.lat),
+    ];
     final placement = GeoPlacement.plan(CrsInfo.geographic(), sample, georef: georef);
     final out = DxfDocument(layers: [DxfLayer(layer, color: 3)]);
     for (final w in wpts) {
@@ -127,7 +131,15 @@ class GpxWriter {
   /// GPX 1.1 of [project] (throws [GeoReferenceMissing] without a
   /// georeference). [lateralOutlets] adds the outlets along the laterals as
   /// waypoints (for staking them out); [time] stamps the metadata.
-  static String write(Project project, {DesignResults? results, GpxLineKind lines = GpxLineKind.track, bool lateralOutlets = true, Map<String, String> layerNames = const {}, DateTime? time, String creator = 'OpenCADIrrigation'}) {
+  static String write(
+    Project project, {
+    DesignResults? results,
+    GpxLineKind lines = GpxLineKind.track,
+    bool lateralOutlets = true,
+    Map<String, String> layerNames = const {},
+    DateTime? time,
+    String creator = 'OpenCADIrrigation',
+  }) {
     final g = project.meta.georef ?? (throw const GeoReferenceMissing());
     final terrain = project.buildTerrain();
     final cat = project.catalog;
@@ -143,20 +155,38 @@ class GpxWriter {
       switch (e) {
         case OutletEntity o:
           final spec = cat.outlet(o.outletSpecId);
-          wpts.add((p: o.position, name: nameOr(e, ''), type: spec?.kind.name ?? 'outlet', desc: [?spec?.name, ?spec?.nozzle(o.nozzleId)?.name].join(' · '), cmt: pressureNote(outletRes[o.id]?.firstOrNull)));
+          wpts.add((
+            p: o.position,
+            name: nameOr(e, ''),
+            type: spec?.kind.name ?? 'outlet',
+            desc: [?spec?.name, ?spec?.nozzle(o.nozzleId)?.name].join(' · '),
+            cmt: pressureNote(outletRes[o.id]?.firstOrNull),
+          ));
         case SpraylineEntity s:
           final spec = cat.outlet(s.outletSpecId);
           if (lateralOutlets) {
             final pos = s.outletPositions();
             final res = outletRes[s.id];
             for (var i = 0; i < pos.length; i++) {
-              wpts.add((p: pos[i], name: '${nameOr(e, '')}-${i + 1}', type: spec?.kind.name ?? 'outlet', desc: [?spec?.name, ?spec?.nozzle(s.nozzleId)?.name].join(' · '), cmt: pressureNote(res?.where((r) => i >= r.index && i < r.index + r.count).firstOrNull)));
+              wpts.add((
+                p: pos[i],
+                name: '${nameOr(e, '')}-${i + 1}',
+                type: spec?.kind.name ?? 'outlet',
+                desc: [?spec?.name, ?spec?.nozzle(s.nozzleId)?.name].join(' · '),
+                cmt: pressureNote(res?.where((r) => i >= r.index && i < r.index + r.count).firstOrNull),
+              ));
             }
           }
           paths.add((pts: s.points, name: nameOr(e, ''), type: e.type.name, desc: cat.pipe(s.pipeSpecId)?.name ?? ''));
         case ControlValveEntity v:
           final z = results?.zones[v.id];
-          wpts.add((p: v.position, name: v.zoneName.isNotEmpty ? v.zoneName : nameOr(e, ''), type: 'valve', desc: cat.valve(v.valveSpecId)?.name ?? '', cmt: z == null ? '' : '${fmt(u.flowFromSi(z.totalFlow), 1)} ${u.flowLabel} · ${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}'));
+          wpts.add((
+            p: v.position,
+            name: v.zoneName.isNotEmpty ? v.zoneName : nameOr(e, ''),
+            type: 'valve',
+            desc: cat.valve(v.valveSpecId)?.name ?? '',
+            cmt: z == null ? '' : '${fmt(u.flowFromSi(z.totalFlow), 1)} ${u.flowLabel} · ${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}',
+          ));
         case JunctionEntity j:
           wpts.add((p: j.position, name: nameOr(e, ''), type: 'junction', desc: '', cmt: ''));
         case PumpEntity pu:
@@ -196,9 +226,13 @@ class GpxWriter {
     String el(String tag, String v) => v.isEmpty ? '' : '<$tag>${_esc(v)}</$tag>';
     final b = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-      ..writeln('<gpx version="1.1" creator="${_esc(creator)}" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">');
+      ..writeln(
+        '<gpx version="1.1" creator="${_esc(creator)}" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">',
+      );
     final all = [for (final w in wpts) w.p, for (final p in paths) ...p.pts];
-    b.write('<metadata>${el('name', project.meta.name)}${el('desc', [project.meta.client, project.meta.site].where((s) => s.isNotEmpty).join(' · '))}<time>${(time ?? DateTime.now()).toUtc().toIso8601String().split('.').first}Z</time>');
+    b.write(
+      '<metadata>${el('name', project.meta.name)}${el('desc', [project.meta.client, project.meta.site].where((s) => s.isNotEmpty).join(' · '))}<time>${(time ?? DateTime.now()).toUtc().toIso8601String().split('.').first}Z</time>',
+    );
     if (all.isNotEmpty) {
       var minLat = 90.0, maxLat = -90.0, minLon = 180.0, maxLon = -180.0;
       for (final p in all) {

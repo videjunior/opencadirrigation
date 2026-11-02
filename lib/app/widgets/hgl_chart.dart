@@ -73,14 +73,20 @@ class _HglPainter extends CustomPainter {
       final y = yMin + (yMax - yMin) * i / 5;
       final o = pt(0, y);
       canvas.drawLine(Offset(left, o.dy), Offset(left + w, o.dy), gridPaint);
-      final tp = TextPainter(text: TextSpan(text: fmt(y, 1), style: txt), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(text: fmt(y, 1), style: txt),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, Offset(left - tp.width - 4, o.dy - tp.height / 2));
     }
     for (var i = 0; i <= 5; i++) {
       final x = xMax * i / 5;
       final o = pt(x, yMin);
       canvas.drawLine(Offset(o.dx, top), Offset(o.dx, top + h), gridPaint);
-      final tp = TextPainter(text: TextSpan(text: '${fmt(u.lengthFromSi(x), 0)} ${u.lengthLabel}', style: txt), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(text: '${fmt(u.lengthFromSi(x), 0)} ${u.lengthLabel}', style: txt),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, Offset(o.dx - tp.width / 2, top + h + 4));
     }
     // limits band
@@ -103,20 +109,26 @@ class _HglPainter extends CustomPainter {
       final o = pt(xs[i], elev[i]);
       ground.lineTo(o.dx, o.dy);
     }
-    canvas.drawPath(ground, Paint()
-      ..color = Cad.chartGround
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke);
+    canvas.drawPath(
+      ground,
+      Paint()
+        ..color = Cad.chartGround
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
     // hgl
     final hgl = Path()..moveTo(pt(0, head[0]).dx, pt(0, head[0]).dy);
     for (var i = 1; i < xs.length; i++) {
       final o = pt(xs[i], head[i]);
       hgl.lineTo(o.dx, o.dy);
     }
-    canvas.drawPath(hgl, Paint()
-      ..color = Cad.chartPipe
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke);
+    canvas.drawPath(
+      hgl,
+      Paint()
+        ..color = Cad.chartPipe
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
     // pressure fill between
     final fill = Path()..addPath(hgl, Offset.zero);
     for (var i = xs.length - 1; i >= 0; i--) {
@@ -125,7 +137,13 @@ class _HglPainter extends CustomPainter {
     }
     fill.close();
     canvas.drawPath(fill, Paint()..color = Cad.chartPipe.withValues(alpha: 0.08));
-    final tp = TextPainter(text: TextSpan(text: '$title   $legend   ${u.pressureLabel}', style: TextStyle(color: Cad.fg70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
+    final tp = TextPainter(
+      text: TextSpan(
+        text: '$title   $legend   ${u.pressureLabel}',
+        style: TextStyle(color: Cad.fg70, fontSize: 11),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
     tp.paint(canvas, const Offset(left, 4));
   }
 

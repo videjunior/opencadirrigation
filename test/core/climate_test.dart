@@ -110,17 +110,19 @@ void main() {
   group('FAO-56 chapter 4: ETo', () {
     test('Example 17: monthly ETo in Bangkok in April', () {
       expect(midMonthDayOfYear(4), 105);
-      final r = fao56Eto(Fao56Input(
-        latitudeDeg: 13 + 44 / 60,
-        elevationM: 2,
-        dayOfYear: 105,
-        tMaxC: 34.8,
-        tMinC: 25.6,
-        actualVapourPressureKPa: 2.85,
-        windSpeedMs: 2,
-        sunshineHours: 8.5,
-        soilHeatFluxMJ: monthlySoilHeatFluxMJ(tMeanC: 30.2, tPrevMonthC: 29.2),
-      ));
+      final r = fao56Eto(
+        Fao56Input(
+          latitudeDeg: 13 + 44 / 60,
+          elevationM: 2,
+          dayOfYear: 105,
+          tMaxC: 34.8,
+          tMinC: 25.6,
+          actualVapourPressureKPa: 2.85,
+          windSpeedMs: 2,
+          sunshineHours: 8.5,
+          soilHeatFluxMJ: monthlySoilHeatFluxMJ(tMeanC: 30.2, tPrevMonthC: 29.2),
+        ),
+      );
       expect(r.deltaKPaPerC, closeTo(0.246, 0.0005));
       expect(r.pressureKPa, closeTo(101.3, 0.05));
       expect(r.gammaKPaPerC, closeTo(0.0674, 0.0001));
@@ -141,18 +143,20 @@ void main() {
     });
 
     test('Example 18: daily ETo at Uccle (Brussels) on 6 July', () {
-      final r = fao56Eto(Fao56Input(
-        latitudeDeg: 50 + 48 / 60,
-        elevationM: 100,
-        dayOfYear: dayOfYear(DateTime(2001, 7, 6)),
-        tMaxC: 21.5,
-        tMinC: 12.3,
-        rhMaxPct: 84,
-        rhMinPct: 63,
-        windSpeedMs: 10 / 3.6,
-        windHeightM: 10,
-        sunshineHours: 9.25,
-      ));
+      final r = fao56Eto(
+        Fao56Input(
+          latitudeDeg: 50 + 48 / 60,
+          elevationM: 100,
+          dayOfYear: dayOfYear(DateTime(2001, 7, 6)),
+          tMaxC: 21.5,
+          tMinC: 12.3,
+          rhMaxPct: 84,
+          rhMinPct: 63,
+          windSpeedMs: 10 / 3.6,
+          windHeightM: 10,
+          sunshineHours: 9.25,
+        ),
+      );
       expect(r.u2Ms, closeTo(2.078, 0.001));
       expect(r.pressureKPa, closeTo(100.1, 0.05));
       expect(r.deltaKPaPerC, closeTo(0.122, 0.0005));
@@ -207,7 +211,9 @@ void main() {
     });
 
     test('a monthly series takes the soil heat flux from both neighbours (eq. 43)', () {
-      final months = [for (var m = 1; m <= 12; m++) MonthlyClimate(month: m, tMaxC: 25 + 5 * math.cos((m - 1) / 12 * 2 * math.pi), tMinC: 15 + 5 * math.cos((m - 1) / 12 * 2 * math.pi), windSpeed2mMs: 2)];
+      final months = [
+        for (var m = 1; m <= 12; m++) MonthlyClimate(month: m, tMaxC: 25 + 5 * math.cos((m - 1) / 12 * 2 * math.pi), tMinC: 15 + 5 * math.cos((m - 1) / 12 * 2 * math.pi), windSpeed2mMs: 2),
+      ];
       final s = fao56MonthlySeries(months, latitudeDeg: 45, elevationM: 100);
       expect(s, hasLength(12));
       // warmest in January (southern-hemisphere-like): April cools (G < 0),

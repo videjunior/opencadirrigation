@@ -98,7 +98,9 @@ class _AiStartDialogState extends State<AiStartDialog> {
     final ll = parseLatLon(text);
     if (ll != null) {
       setState(() {
-        hits = [PlaceHit(t('start.coords', {'lat': ll.$1.toStringAsFixed(5), 'lon': ll.$2.toStringAsFixed(5)}), ll.$1, ll.$2)];
+        hits = [
+          PlaceHit(t('start.coords', {'lat': ll.$1.toStringAsFixed(5), 'lon': ll.$2.toStringAsFixed(5)}), ll.$1, ll.$2),
+        ];
         picked = 0;
         _searched = text;
         fromOsm = false;
@@ -140,13 +142,7 @@ class _AiStartDialogState extends State<AiStartDialog> {
     if (never) AiAssistant.askAtStart = false;
     final h = picked == null || picked! >= hits.length ? null : hits[picked!];
     final request = describe.text.trim();
-    Navigator.of(context).pop(
-      StartChoice(
-        place: h == null ? null : (h.lat, h.lon),
-        placeName: h?.name,
-        aiPrompt: ai ? (request.isEmpty ? c.t('ai.start.prompt') : request) : null,
-      ),
-    );
+    Navigator.of(context).pop(StartChoice(place: h == null ? null : (h.lat, h.lon), placeName: h?.name, aiPrompt: ai ? (request.isEmpty ? c.t('ai.start.prompt') : request) : null));
   }
 
   Widget _hit(int i, PlaceHit h) => InkWell(
@@ -160,7 +156,9 @@ class _AiStartDialogState extends State<AiStartDialog> {
         children: [
           Icon(picked == i ? Icons.radio_button_checked : Icons.radio_button_unchecked, size: 18, color: picked == i ? Cad.accentText : Cad.fg54),
           const SizedBox(width: 8),
-          Expanded(child: Text(h.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5))),
+          Expanded(
+            child: Text(h.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5)),
+          ),
         ],
       ),
     ),
@@ -204,12 +202,7 @@ class _AiStartDialogState extends State<AiStartDialog> {
                       textInputAction: TextInputAction.search,
                       onChanged: _whereChanged,
                       onSubmitted: (_) => _search(),
-                      decoration: InputDecoration(
-                        hintText: t('start.whereHint'),
-                        prefixIcon: const Icon(Icons.place_outlined, size: 20),
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
+                      decoration: InputDecoration(hintText: t('start.whereHint'), prefixIcon: const Icon(Icons.place_outlined, size: 20), border: const OutlineInputBorder(), isDense: true),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -223,10 +216,22 @@ class _AiStartDialogState extends State<AiStartDialog> {
               if (whereError != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(whereError!, key: const Key('start_where_error'), style: TextStyle(fontSize: 12, color: Cad.unconnected)),
+                  child: Text(
+                    whereError!,
+                    key: const Key('start_where_error'),
+                    style: TextStyle(fontSize: 12, color: Cad.unconnected),
+                  ),
                 ),
-              if (hits.length > 1) Padding(padding: const EdgeInsets.only(top: 8, bottom: 2), child: Text(t('start.pick'), style: TextStyle(fontSize: 12, color: Cad.fg70))),
-              if (hits.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: Column(children: [for (final (i, h) in hits.indexed) _hit(i, h)])),
+              if (hits.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 2),
+                  child: Text(t('start.pick'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+                ),
+              if (hits.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Column(children: [for (final (i, h) in hits.indexed) _hit(i, h)]),
+                ),
               if (hits.isNotEmpty && fromOsm) Text(t('start.osm'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
               const SizedBox(height: 6),
               Text(t('start.whereNote', {'f': t('menu.file'), 'g': t('file.georef').replaceAll('…', '')}), style: TextStyle(fontSize: 11.5, color: Cad.fg60, height: 1.35)),
@@ -248,13 +253,7 @@ class _AiStartDialogState extends State<AiStartDialog> {
                 minLines: 2,
                 maxLines: 5,
                 style: const TextStyle(fontSize: 13),
-                decoration: InputDecoration(
-                  labelText: t('ai.start.describe'),
-                  hintText: t('ai.start.example'),
-                  hintMaxLines: 3,
-                  alignLabelWithHint: true,
-                  border: const OutlineInputBorder(),
-                ),
+                decoration: InputDecoration(labelText: t('ai.start.describe'), hintText: t('ai.start.example'), hintMaxLines: 3, alignLabelWithHint: true, border: const OutlineInputBorder()),
               ),
               const SizedBox(height: 8),
               Text(
@@ -277,12 +276,7 @@ class _AiStartDialogState extends State<AiStartDialog> {
       ),
       actions: [
         TextButton(key: const Key('ai_start_no'), onPressed: searching ? null : () => _finish(false), child: Text(t('start.noAi'))),
-        FilledButton.icon(
-          key: const Key('ai_start_yes'),
-          onPressed: searching ? null : () => _finish(true),
-          icon: const Icon(Icons.smart_toy_outlined, size: 18),
-          label: Text(t('ai.start.yes')),
-        ),
+        FilledButton.icon(key: const Key('ai_start_yes'), onPressed: searching ? null : () => _finish(true), icon: const Icon(Icons.smart_toy_outlined, size: 18), label: Text(t('ai.start.yes'))),
       ],
     );
   }

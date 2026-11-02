@@ -221,24 +221,108 @@ String adviceCode(String raw) => switch (raw) {
 
 /// Every explanation code (each has `adv.<code>.why` and `adv.<code>.how`).
 const adviceCodes = [
-  'no_supply', 'no_valves', 'no_hydraulics', 'unconnected', 'zero_length', 'tiny_segment', 'duplicate_item', 'duplicate_zone_name',
-  'pipes_cross', 'mainline_dead_end', 'zone_dead_end', 'zone_no_emitters', 'zone_mixed_emitters', 'area_no_emitters', 'spec_missing', 'supply_no_head',
-  'looped_mainline', 'no_terrain', 'not_converged', 'cannot_meet_pressure_window', 'outlet_over_pressure', 'velocity_exceeded',
-  'pressure_rating_exceeded', 'surge_rating_exceeded', 'valve_flow_out_of_range', 'valve_pressure_deficit', 'pivot_pressure_deficit',
-  'supply_flow_exceeded', 'supply_head_exceeded', 'pump_out_of_range', 'pump_suction_lift', 'pump_npsh', 'vfd_target_unreachable', 'vfd_below_min_speed', 'vfd_target_low', 'zone_overlap', 'lp_infeasible',
-  'fitting_missing', 'pivot_no_flow', 'pivot_no_end_pressure', 'pivot_app_rate', 'valve_missing',
-  'pivot_pkg_pressure', 'pivot_pkg_nozzles', 'pivot_pkg_setup', 'pivot_pkg_no_drive', 'corner_arm', 'vri_limits', 'pivot_elec_drop',
-  'set_velocity', 'set_hours', 'set_economy', 'set_tolerance', 'set_variation', 'set_temperature', 'no_pipes_for_usage', 'supply_limits',
-  'valve_not_in_flow', 'flow_empty', 'flow_duration', 'emitter_head_range', 'pump_speed', 'bom_unpriced',
-  'elec_no_controller', 'elec_unwired', 'elec_wire_orphan', 'elec_ctrl_unwired', 'elec_no_wires', 'elec_stations', 'elec_voltage', 'elec_simultaneous',
-  'vih_not_in_flow', 'vih_pressure_deficit', 'vih_pressure_high',
+  'no_supply',
+  'no_valves',
+  'no_hydraulics',
+  'unconnected',
+  'zero_length',
+  'tiny_segment',
+  'duplicate_item',
+  'duplicate_zone_name',
+  'pipes_cross',
+  'mainline_dead_end',
+  'zone_dead_end',
+  'zone_no_emitters',
+  'zone_mixed_emitters',
+  'area_no_emitters',
+  'spec_missing',
+  'supply_no_head',
+  'looped_mainline',
+  'no_terrain',
+  'not_converged',
+  'cannot_meet_pressure_window',
+  'outlet_over_pressure',
+  'velocity_exceeded',
+  'pressure_rating_exceeded',
+  'surge_rating_exceeded',
+  'valve_flow_out_of_range',
+  'valve_pressure_deficit',
+  'pivot_pressure_deficit',
+  'supply_flow_exceeded',
+  'supply_head_exceeded',
+  'pump_out_of_range',
+  'pump_suction_lift',
+  'pump_npsh',
+  'vfd_target_unreachable',
+  'vfd_below_min_speed',
+  'vfd_target_low',
+  'zone_overlap',
+  'lp_infeasible',
+  'fitting_missing',
+  'pivot_no_flow',
+  'pivot_no_end_pressure',
+  'pivot_app_rate',
+  'valve_missing',
+  'pivot_pkg_pressure',
+  'pivot_pkg_nozzles',
+  'pivot_pkg_setup',
+  'pivot_pkg_no_drive',
+  'corner_arm',
+  'vri_limits',
+  'pivot_elec_drop',
+  'set_velocity',
+  'set_hours',
+  'set_economy',
+  'set_tolerance',
+  'set_variation',
+  'set_temperature',
+  'no_pipes_for_usage',
+  'supply_limits',
+  'valve_not_in_flow',
+  'flow_empty',
+  'flow_duration',
+  'emitter_head_range',
+  'pump_speed',
+  'bom_unpriced',
+  'elec_no_controller',
+  'elec_unwired',
+  'elec_wire_orphan',
+  'elec_ctrl_unwired',
+  'elec_no_wires',
+  'elec_stations',
+  'elec_voltage',
+  'elec_simultaneous',
+  'vih_not_in_flow',
+  'vih_pressure_deficit',
+  'vih_pressure_high',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
-  'no_supply' || 'no_valves' || 'unconnected' || 'zero_length' || 'spec_missing' || 'not_converged' || 'cannot_meet_pressure_window' ||
-  'pressure_rating_exceeded' || 'valve_pressure_deficit' || 'pivot_pressure_deficit' || 'supply_flow_exceeded' || 'supply_head_exceeded' ||
-  'pump_out_of_range' || 'pump_suction_lift' || 'pump_npsh' || 'zone_no_emitters' || 'valve_missing' || 'pivot_no_flow' || 'pivot_no_end_pressure' ||
-  'no_pipes_for_usage' || 'emitter_head_range' || 'valve_not_in_flow' || 'elec_stations' || 'elec_voltage' || 'vih_pressure_deficit' => AdviceLevel.error,
+  'no_supply' ||
+  'no_valves' ||
+  'unconnected' ||
+  'zero_length' ||
+  'spec_missing' ||
+  'not_converged' ||
+  'cannot_meet_pressure_window' ||
+  'pressure_rating_exceeded' ||
+  'valve_pressure_deficit' ||
+  'pivot_pressure_deficit' ||
+  'supply_flow_exceeded' ||
+  'supply_head_exceeded' ||
+  'pump_out_of_range' ||
+  'pump_suction_lift' ||
+  'pump_npsh' ||
+  'zone_no_emitters' ||
+  'valve_missing' ||
+  'pivot_no_flow' ||
+  'pivot_no_end_pressure' ||
+  'no_pipes_for_usage' ||
+  'emitter_head_range' ||
+  'valve_not_in_flow' ||
+  'elec_stations' ||
+  'elec_voltage' ||
+  'vih_pressure_deficit' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
@@ -269,8 +353,10 @@ List<CheckIssue> checkSettings(Project p) {
   // pipes the design would have to size without any catalogue option
   final needs = <PipeUsage>{
     for (final e in ents)
-      if (e is PipeEntity && (e.computerSized || cat.pipe(e.pipeSpecId) == null)) e.scope == HydraulicScope.zone ? PipeUsage.zone : PipeUsage.mainline
-      else if (e is SpraylineEntity && (e.computerSized || cat.pipe(e.pipeSpecId) == null)) PipeUsage.lateral,
+      if (e is PipeEntity && (e.computerSized || cat.pipe(e.pipeSpecId) == null))
+        e.scope == HydraulicScope.zone ? PipeUsage.zone : PipeUsage.mainline
+      else if (e is SpraylineEntity && (e.computerSized || cat.pipe(e.pipeSpecId) == null))
+        PipeUsage.lateral,
   };
   for (final u in PipeUsage.values) {
     if (needs.contains(u) && cat.pipesFor(u).isEmpty) out.add(CheckIssue('no_pipes_for_usage', CheckSeverity.error, value: u.name));
@@ -287,14 +373,25 @@ List<CheckIssue> checkSettings(Project p) {
     final vih = VihStations.of(p);
     final ids = {for (final e in ents) e.id, ...vih.heads.keys};
     final inFlow = {for (final f in p.systemFlows) ...f.valveIds};
-    final missing = [for (final v in valves) if (!inFlow.contains(v.id)) v.id, for (final v in pivots) if (!inFlow.contains(v.id)) v.id];
+    final missing = [
+      for (final v in valves)
+        if (!inFlow.contains(v.id)) v.id,
+      for (final v in pivots)
+        if (!inFlow.contains(v.id)) v.id,
+    ];
     if (missing.isNotEmpty) out.add(CheckIssue('valve_not_in_flow', CheckSeverity.error, entityIds: missing, value: '${missing.length}'));
     // valve-in-head stations no flow lists run in every flow
     final loose = vih.unscheduled(p.systemFlows);
     if (loose.isNotEmpty) out.add(CheckIssue('vih_not_in_flow', CheckSeverity.warning, entityIds: [for (final s in loose) ...vih.heads[s]!], value: '${loose.length}'));
-    final empty = [for (final f in p.systemFlows) if (!f.valveIds.any(ids.contains)) f.name];
+    final empty = [
+      for (final f in p.systemFlows)
+        if (!f.valveIds.any(ids.contains)) f.name,
+    ];
     if (empty.isNotEmpty) out.add(CheckIssue('flow_empty', CheckSeverity.warning, value: empty.join(', ')));
-    final zero = [for (final f in p.systemFlows) if (!(f.durationHours > 0)) f.name];
+    final zero = [
+      for (final f in p.systemFlows)
+        if (!(f.durationHours > 0)) f.name,
+    ];
     if (zero.isNotEmpty) out.add(CheckIssue('flow_duration', CheckSeverity.warning, value: zero.join(', ')));
   }
   // emitter pressure outside the range of the nozzle / tape
@@ -315,7 +412,10 @@ List<CheckIssue> checkSettings(Project p) {
     }
   }
   if (badHead.isNotEmpty) out.add(CheckIssue('emitter_head_range', CheckSeverity.error, entityIds: badHead, value: '${badHead.length}'));
-  final speeds = [for (final e in ents.whereType<PumpEntity>()) if (bad(e.speedRatio, 0.4, 1.3)) e.id];
+  final speeds = [
+    for (final e in ents.whereType<PumpEntity>())
+      if (bad(e.speedRatio, 0.4, 1.3)) e.id,
+  ];
   if (speeds.isNotEmpty) out.add(CheckIssue('pump_speed', CheckSeverity.warning, entityIds: speeds));
   return out;
 }
@@ -337,7 +437,10 @@ List<Advice> buildAdvice(Project p, {DesignResults? results, DesignCheckReport? 
 
   void add(String raw, {List<String> ids = const [], String context = '', String? contextId, Pt? at, String value = ''}) {
     final code = adviceCode(raw);
-    final ents = [for (final id in ids) if (p.byId(id) != null) id];
+    final ents = [
+      for (final id in ids)
+        if (p.byId(id) != null) id,
+    ];
     final a = Advice(code: code, raw: raw, level: _level(code), entityIds: ents, context: context, contextId: contextId, at: at, value: value, fixes: _fixesFor(p, r, code, raw, ents, contextId, net));
     final k = a.key;
     final prev = seen[k];
@@ -345,7 +448,17 @@ List<Advice> buildAdvice(Project p, {DesignResults? results, DesignCheckReport? 
       // same problem from several flows: keep the first, note the contexts
       final old = out[prev];
       if (context.isNotEmpty && !old.context.split(', ').contains(context)) {
-        out[prev] = Advice(code: old.code, raw: old.raw, level: old.level, entityIds: old.entityIds, context: old.context.isEmpty ? context : '${old.context}, $context', contextId: old.contextId, at: old.at, value: old.value, fixes: old.fixes);
+        out[prev] = Advice(
+          code: old.code,
+          raw: old.raw,
+          level: old.level,
+          entityIds: old.entityIds,
+          context: old.context.isEmpty ? context : '${old.context}, $context',
+          contextId: old.contextId,
+          at: old.at,
+          value: old.value,
+          fixes: old.fixes,
+        );
       }
       return;
     }
@@ -358,8 +471,14 @@ List<Advice> buildAdvice(Project p, {DesignResults? results, DesignCheckReport? 
     final parts = w.split(':');
     final raw = parts.first;
     final args = parts.skip(1).toList();
-    final ids = [for (final a in args) if (p.byId(a) != null) a];
-    final text = [for (final a in args) if (p.byId(a) == null) a].join(', ');
+    final ids = [
+      for (final a in args)
+        if (p.byId(a) != null) a,
+    ];
+    final text = [
+      for (final a in args)
+        if (p.byId(a) == null) a,
+    ].join(', ');
     add(raw, ids: ids, context: context, contextId: contextId, value: text);
   }
 
@@ -487,7 +606,10 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
 List<Entity> zoneEntities(Project p, String valveId, NetworkModel model) {
   final links = model.zoneLinks[valveId] ?? const <String>{};
   final ids = <String>{for (final lid in links) model.linkById(lid)?.entityId ?? ''};
-  return [for (final e in p.entities) if (ids.contains(e.id)) e];
+  return [
+    for (final e in p.entities)
+      if (ids.contains(e.id)) e,
+  ];
 }
 
 /// Ends of mainline pipes that touch nothing (no other pipe, no item).
@@ -496,12 +618,18 @@ List<Pt> mainlineFreeEnds(Project p) {
   final pipes = p.entities.whereType<PipeEntity>().where((e) => e.scope == HydraulicScope.mainline && e.points.length >= 2).toList();
   final items = [
     for (final e in p.entities)
-      if (e is ControlValveEntity) e.position
-      else if (e is PumpEntity && e.scope == HydraulicScope.mainline) e.position
-      else if (e is MiscHydraulicEntity && e.scope == HydraulicScope.mainline) e.position
-      else if (e is WaterSupplyEntity) e.position
-      else if (e is OutletEntity && e.scope == HydraulicScope.mainline) e.position
-      else if (e is PivotEntity) e.center,
+      if (e is ControlValveEntity)
+        e.position
+      else if (e is PumpEntity && e.scope == HydraulicScope.mainline)
+        e.position
+      else if (e is MiscHydraulicEntity && e.scope == HydraulicScope.mainline)
+        e.position
+      else if (e is WaterSupplyEntity)
+        e.position
+      else if (e is OutletEntity && e.scope == HydraulicScope.mainline)
+        e.position
+      else if (e is PivotEntity)
+        e.center,
   ];
   final out = <Pt>[];
   for (final pipe in pipes) {
@@ -706,7 +834,10 @@ List<SystemFlow>? splitFlowsPlan(Project p, DesignResults r, WaterSupplyEntity s
       : [...p.entities.whereType<ControlValveEntity>().map((v) => v.id), ...p.entities.whereType<PivotEntity>().map((v) => v.id)];
   final demand = <String, double>{};
   // the valve-in-head stations the flows schedule move with them
-  final heads = {for (final e in r.vihStations.entries) if (e.value.scheduled) e.key: e.value.flow};
+  final heads = {
+    for (final e in r.vihStations.entries)
+      if (e.value.scheduled) e.key: e.value.flow,
+  };
   for (final id in valveIds.toSet()) {
     final q = r.zones[id]?.totalFlow ?? r.pivots[id]?.flow ?? heads[id];
     if (q == null) continue;

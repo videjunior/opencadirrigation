@@ -29,7 +29,9 @@ void main() {
     expect(order.lastIndexOf('wpt'), lessThan(order.indexOf('trk')));
     expect(root.getElement('metadata')!.getElement('time')!.innerText, '2026-10-25T12:00:00Z');
     final wpts = root.findElements('wpt').toList();
-    final points = p.entities.where((e) => e is OutletEntity || e is ControlValveEntity || e is WaterSupplyEntity || e is PumpEntity || e is MiscHydraulicEntity || e is JunctionEntity || e is ControllerEntity).length;
+    final points = p.entities
+        .where((e) => e is OutletEntity || e is ControlValveEntity || e is WaterSupplyEntity || e is PumpEntity || e is MiscHydraulicEntity || e is JunctionEntity || e is ControllerEntity)
+        .length;
     expect(wpts.length, points);
     const wptOrder = ['ele', 'time', 'magvar', 'geoidheight', 'name', 'cmt', 'desc', 'src', 'link', 'sym', 'type'];
     for (final w in wpts) {

@@ -21,7 +21,9 @@ Project _line(List<double> xs, {double length = 1000, int stations = 12, bool ro
 
 void main() {
   const xs = [200.0, 400.0, 600.0, 800.0, 1000.0];
-  const all = [{'v1', 'v2', 'v3', 'v4', 'v5'}];
+  const all = [
+    {'v1', 'v2', 'v3', 'v4', 'v5'},
+  ];
   // drop per Ω/m of conductor at the farthest decoder while its station
   // opens and the other four hold: I = idle 1 mA per decoder + 0.37 / 0.22 A
   // on each 200 m stretch, both conductors, 10 % slack
@@ -76,7 +78,15 @@ void main() {
   });
 
   test('valves within the solenoid cable share a decoder of the next size', () {
-    final r = designTwoWire(_line([1000, 1010, 1020, 1100], length: 1200), flows: const [{'v1'}, {'v2'}, {'v3'}, {'v4'}])!;
+    final r = designTwoWire(
+      _line([1000, 1010, 1020, 1100], length: 1200),
+      flows: const [
+        {'v1'},
+        {'v2'},
+        {'v3'},
+        {'v4'},
+      ],
+    )!;
     expect(r.decoders.length, 2);
     expect(r.decoders.first.valveIds, ['v1', 'v2', 'v3']);
     expect(r.decoders.first.capacity, 4);
@@ -99,7 +109,13 @@ void main() {
   });
 
   test('routes passed in, codes', () {
-    final r = designTwoWire(_line(xs, route: false), flows: all, routes: const [[Pt.zero, Pt(1000, 0)]])!;
+    final r = designTwoWire(
+      _line(xs, route: false),
+      flows: all,
+      routes: const [
+        [Pt.zero, Pt(1000, 0)],
+      ],
+    )!;
     expect(r.warnings, isEmpty);
     expect(r.paths.single.wireId, 'w4');
     final few = designTwoWire(_line(xs, stations: 4), flows: all)!;

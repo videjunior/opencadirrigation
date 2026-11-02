@@ -65,7 +65,9 @@ void main() {
       final r = read(f);
       final errors = r.warnings.where((w) => w.startsWith('object_error') || w.startsWith('eof')).length;
       // ignore: avoid_print
-      print('$f: objects=${r.objectCount} entities=${r.document.entities.length} layers=${r.document.layers.length} counts=${r.typeCounts} errors=$errors mismatches=${r.warnings.where((w) => w.startsWith('handle_mismatch')).length}');
+      print(
+        '$f: objects=${r.objectCount} entities=${r.document.entities.length} layers=${r.document.layers.length} counts=${r.typeCounts} errors=$errors mismatches=${r.warnings.where((w) => w.startsWith('handle_mismatch')).length}',
+      );
       expect(r.document.layers.length, greaterThan(0), reason: f);
       expect(r.document.entities.length, greaterThan(0), reason: '$f ${r.warnings.take(5)}');
     }

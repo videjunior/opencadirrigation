@@ -35,7 +35,9 @@ class SvgWriter {
     final hasImages = scene.rasters.isNotEmpty || scene.items.any((it) => it is PlotImage);
     final out = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-      ..writeln('<svg xmlns="http://www.w3.org/2000/svg"${hasImages ? ' xmlns:xlink="http://www.w3.org/1999/xlink"' : ''} width="${n(w)}mm" height="${n(h)}mm" viewBox="0 0 ${n(w)} ${n(h)}" font-family="Helvetica, Arial, sans-serif">');
+      ..writeln(
+        '<svg xmlns="http://www.w3.org/2000/svg"${hasImages ? ' xmlns:xlink="http://www.w3.org/1999/xlink"' : ''} width="${n(w)}mm" height="${n(h)}mm" viewBox="0 0 ${n(w)} ${n(h)}" font-family="Helvetica, Arial, sans-serif">',
+      );
     if (title.isNotEmpty) out.writeln('<title>${_esc(title)}</title>');
     out.writeln('<desc>OpenCADIrrigation · 1:${scene.scaleDenominator.round()} · mm</desc>');
     out.writeln('<rect width="100%" height="100%" fill="#ffffff"/>');
@@ -47,7 +49,9 @@ class SvgWriter {
       final data = _dataUri(bytes, mime, (wMm / 25.4 * imageDpi).ceil(), (hMm / 25.4 * imageDpi).ceil());
       if (data == null) return;
       final op = opacity < 1 ? ' opacity="${n(opacity)}"' : '';
-      out.writeln('<image x="0" y="0" width="1" height="1" preserveAspectRatio="none" transform="matrix(${n(tr.$1 - tl.$1)} ${n(tr.$2 - tl.$2)} ${n(bl.$1 - tl.$1)} ${n(bl.$2 - tl.$2)} ${n(tl.$1)} ${n(tl.$2)})"$op xlink:href="$data"/>');
+      out.writeln(
+        '<image x="0" y="0" width="1" height="1" preserveAspectRatio="none" transform="matrix(${n(tr.$1 - tl.$1)} ${n(tr.$2 - tl.$2)} ${n(bl.$1 - tl.$1)} ${n(bl.$2 - tl.$2)} ${n(tl.$1)} ${n(tl.$2)})"$op xlink:href="$data"/>',
+      );
     }
 
     if (scene.rasters.isNotEmpty) {
@@ -66,7 +70,11 @@ class SvgWriter {
     }
     final images = order.where((l) => scene.items.any((it) => it.layer == l && it is PlotImage)).toList();
     final filled = order
-        .where((l) => !images.contains(l) && scene.items.any((it) => it.layer == l && ((it is PlotPath && it.fillColor != null && it.points.length > 2) || (it is PlotCircle && it.fillColor != null && it.radius / mm > 3))))
+        .where(
+          (l) =>
+              !images.contains(l) &&
+              scene.items.any((it) => it.layer == l && ((it is PlotPath && it.fillColor != null && it.points.length > 2) || (it is PlotCircle && it.fillColor != null && it.radius / mm > 3))),
+        )
         .toList();
     final ordered = [...images, ...filled, ...order.where((l) => !filled.contains(l) && !images.contains(l))];
     for (final layer in ordered) {
@@ -91,8 +99,15 @@ class SvgWriter {
             out.writeln('<circle cx="${n(sx(c.center.x))}" cy="${n(sy(c.center.y))}" r="${n(c.radius / mm)}" fill="$fill"${fillOpacity(c.fillOpacity)}$stroke/>');
           case PlotText t:
             final size = t.heightMm * 1.35; // font size so that cap height ≈ heightMm
-            final anchor = switch (t.anchor) { PlotAnchor.bottomCenter || PlotAnchor.center => 'middle', PlotAnchor.bottomRight => 'end', _ => 'start' };
-            final baseline = switch (t.anchor) { PlotAnchor.center || PlotAnchor.centerLeft => ' dominant-baseline="middle"', _ => '' };
+            final anchor = switch (t.anchor) {
+              PlotAnchor.bottomCenter || PlotAnchor.center => 'middle',
+              PlotAnchor.bottomRight => 'end',
+              _ => 'start',
+            };
+            final baseline = switch (t.anchor) {
+              PlotAnchor.center || PlotAnchor.centerLeft => ' dominant-baseline="middle"',
+              _ => '',
+            };
             final x = sx(t.position.x), y = sy(t.position.y);
             final rot = t.rotationDeg != 0 ? ' transform="rotate(${n(-t.rotationDeg)} ${n(x)} ${n(y)})"' : '';
             final weight = t.bold ? ' font-weight="bold"' : '';

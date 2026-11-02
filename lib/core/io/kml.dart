@@ -83,7 +83,11 @@ class KmlReader {
         }
       }
     }
-    return KmlImportResult(document: DxfDocument(entities: entities, layers: layers.values.toList()), georef: ref, placemarkCount: raw.length);
+    return KmlImportResult(
+      document: DxfDocument(entities: entities, layers: layers.values.toList()),
+      georef: ref,
+      placemarkCount: raw.length,
+    );
   }
 
   /// Parses a KMZ archive (first .kml inside).

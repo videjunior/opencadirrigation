@@ -44,8 +44,15 @@ int combiningClass(int cp) => cp <= 0xFFFF ? rangeValue(combiningClassRanges, cp
 int shapingCombiningClass(int cp) {
   final c = combiningClass(cp);
   return switch (c) {
-    27 => 28, 28 => 29, 29 => 30, 30 => 31, 31 => 32, 32 => 33, 33 => 27, // fathatan..sukun: shadda first
-    84 => 4, 91 => 5, // Telugu length marks
+    27 => 28,
+    28 => 29,
+    29 => 30,
+    30 => 31,
+    31 => 32,
+    32 => 33,
+    33 => 27, // fathatan..sukun: shadda first
+    84 => 4,
+    91 => 5, // Telugu length marks
     _ => c,
   };
 }

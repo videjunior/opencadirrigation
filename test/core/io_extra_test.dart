@@ -179,7 +179,8 @@ void main() {
       return Uint8List.fromList(ZipEncoder().encode(a));
     }
 
-    const sheetXml = '<worksheet><sheetData>'
+    const sheetXml =
+        '<worksheet><sheetData>'
         '<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c><c r="AA1" t="inlineStr"><is><t>far</t></is></c></row>'
         '<row r="2"><c r="B2" t="str"><v>x</v></c><c r="A2"><v>3.5</v></c></row>'
         '<row r="3"><c t="s"><v>2</v></c><c><v>7</v></c><c t="b"><v>1</v></c></row>'
@@ -214,12 +215,48 @@ void main() {
     test('sheet names are cleaned, cut to 31 characters and made unique', () {
       final long = 'A' * 40;
       final bytes = XlsxWriter.write([
-        XlsxSheet(name: 'Tubos', headers: ['a'], rows: [[1]]),
-        XlsxSheet(name: 'Tubos', headers: ['a'], rows: [[2]]),
-        XlsxSheet(name: long, headers: ['a'], rows: [[3]]),
-        XlsxSheet(name: long, headers: ['a'], rows: [[4]]),
-        XlsxSheet(name: 'a/b[c]', headers: ['a'], rows: [[5]]),
-        XlsxSheet(name: '  ', headers: ['a'], rows: [[6]]),
+        XlsxSheet(
+          name: 'Tubos',
+          headers: ['a'],
+          rows: [
+            [1],
+          ],
+        ),
+        XlsxSheet(
+          name: 'Tubos',
+          headers: ['a'],
+          rows: [
+            [2],
+          ],
+        ),
+        XlsxSheet(
+          name: long,
+          headers: ['a'],
+          rows: [
+            [3],
+          ],
+        ),
+        XlsxSheet(
+          name: long,
+          headers: ['a'],
+          rows: [
+            [4],
+          ],
+        ),
+        XlsxSheet(
+          name: 'a/b[c]',
+          headers: ['a'],
+          rows: [
+            [5],
+          ],
+        ),
+        XlsxSheet(
+          name: '  ',
+          headers: ['a'],
+          rows: [
+            [6],
+          ],
+        ),
       ]);
       final names = XlsxReader.read(Uint8List.fromList(bytes)).map((s) => s.name).toList();
       expect(names, ['Tubos', 'Tubos (2)', 'A' * 31, '${'A' * 27} (2)', 'a b c', 'Sheet6']);
@@ -228,7 +265,8 @@ void main() {
   });
 
   group('KML / KMZ', () {
-    const kml = '<kml><Document>'
+    const kml =
+        '<kml><Document>'
         '<Placemark><name>Lote</name><MultiGeometry>'
         '<Polygon><outerBoundaryIs><LinearRing><coordinates>-47.93,-15.78,0 -47.92,-15.78,0 -47.92,-15.77,0 -47.93,-15.78,0</coordinates></LinearRing></outerBoundaryIs>'
         '<innerBoundaryIs><LinearRing><coordinates>-47.927,-15.777,0 -47.925,-15.777,0 -47.925,-15.776,0 -47.927,-15.777,0</coordinates></LinearRing></innerBoundaryIs></Polygon>'
@@ -286,17 +324,21 @@ void main() {
         ..setInt32(28, 1000, Endian.little)
         ..setInt32(32, 13, Endian.little);
       b.add(header.buffer.asUint8List());
-      b.add((ByteData(8)
-            ..setInt32(0, 1, Endian.big)
-            ..setInt32(4, rec.lengthInBytes ~/ 2, Endian.big))
-          .buffer
-          .asUint8List());
+      b.add(
+        (ByteData(8)
+              ..setInt32(0, 1, Endian.big)
+              ..setInt32(4, rec.lengthInBytes ~/ 2, Endian.big))
+            .buffer
+            .asUint8List(),
+      );
       b.add(rec.buffer.asUint8List());
-      b.add((ByteData(8)
-            ..setInt32(0, 2, Endian.big)
-            ..setInt32(4, 2, Endian.big))
-          .buffer
-          .asUint8List());
+      b.add(
+        (ByteData(8)
+              ..setInt32(0, 2, Endian.big)
+              ..setInt32(4, 2, Endian.big))
+            .buffer
+            .asUint8List(),
+      );
       b.add(nullRec.buffer.asUint8List());
       return b.toBytes();
     }
@@ -359,30 +401,246 @@ void main() {
   group('DXF reader: blocks, curves and dimensions', () {
     String dxf(List<Object> codes) => '${codes.join('\n')}\n';
     final text = dxf([
-      0, 'SECTION', 2, 'BLOCKS',
-      0, 'BLOCK', 8, '0', 2, 'INNER', 10, 0, 20, 0,
-      0, 'LINE', 8, '0', 10, 0, 20, 0, 11, 1, 21, 0,
-      0, 'CIRCLE', 8, '0', 10, 0, 20, 0, 40, 1,
-      0, 'ARC', 8, '0', 10, 0, 20, 0, 40, 1, 50, 0, 51, 90,
-      0, 'ENDBLK',
-      0, 'BLOCK', 8, '0', 2, 'OUTER', 10, 0, 20, 0,
-      0, 'INSERT', 8, '0', 2, 'INNER', 10, 10, 20, 0,
-      0, 'ENDBLK',
-      0, 'BLOCK', 8, '0', 2, '*D1', 10, 0, 20, 0,
-      0, 'LINE', 8, 'DIM', 10, 0, 20, 0, 11, 5, 21, 0,
-      0, 'POINT', 8, 'DIM', 10, 0, 20, 0,
-      0, 'ENDBLK',
-      0, 'ENDSEC',
-      0, 'SECTION', 2, 'ENTITIES',
-      0, 'INSERT', 8, 'BLK', 2, 'OUTER', 10, 100, 20, 100, 41, 2, 42, 2,
-      0, 'INSERT', 8, 'SQ', 2, 'INNER', 10, 0, 20, 50, 41, 2, 42, 1,
-      0, 'DIMENSION', 8, 'DIM', 2, '*D1',
-      0, 'ELLIPSE', 8, 'EF', 10, 0, 20, 0, 11, 4, 21, 0, 40, 0.5, 41, 0, 42, 2 * math.pi,
-      0, 'ELLIPSE', 8, 'EH', 10, 0, 20, 0, 11, 4, 21, 0, 40, 0.5, 41, 0, 42, math.pi,
-      0, 'SPLINE', 8, 'SF', 70, 0, 11, 0, 21, 0, 11, 5, 21, 5, 11, 10, 21, 0,
-      0, 'SPLINE', 8, 'SC', 70, 1, 10, 0, 20, 0, 10, 5, 20, 5, 10, 10, 20, 0,
-      0, 'LWPOLYLINE', 8, 'BU', 90, 2, 70, 0, 10, 0, 20, 0, 42, 1, 10, 10, 20, 0,
-      0, 'ENDSEC', 0, 'EOF',
+      0,
+      'SECTION',
+      2,
+      'BLOCKS',
+      0,
+      'BLOCK',
+      8,
+      '0',
+      2,
+      'INNER',
+      10,
+      0,
+      20,
+      0,
+      0,
+      'LINE',
+      8,
+      '0',
+      10,
+      0,
+      20,
+      0,
+      11,
+      1,
+      21,
+      0,
+      0,
+      'CIRCLE',
+      8,
+      '0',
+      10,
+      0,
+      20,
+      0,
+      40,
+      1,
+      0,
+      'ARC',
+      8,
+      '0',
+      10,
+      0,
+      20,
+      0,
+      40,
+      1,
+      50,
+      0,
+      51,
+      90,
+      0,
+      'ENDBLK',
+      0,
+      'BLOCK',
+      8,
+      '0',
+      2,
+      'OUTER',
+      10,
+      0,
+      20,
+      0,
+      0,
+      'INSERT',
+      8,
+      '0',
+      2,
+      'INNER',
+      10,
+      10,
+      20,
+      0,
+      0,
+      'ENDBLK',
+      0,
+      'BLOCK',
+      8,
+      '0',
+      2,
+      '*D1',
+      10,
+      0,
+      20,
+      0,
+      0,
+      'LINE',
+      8,
+      'DIM',
+      10,
+      0,
+      20,
+      0,
+      11,
+      5,
+      21,
+      0,
+      0,
+      'POINT',
+      8,
+      'DIM',
+      10,
+      0,
+      20,
+      0,
+      0,
+      'ENDBLK',
+      0,
+      'ENDSEC',
+      0,
+      'SECTION',
+      2,
+      'ENTITIES',
+      0,
+      'INSERT',
+      8,
+      'BLK',
+      2,
+      'OUTER',
+      10,
+      100,
+      20,
+      100,
+      41,
+      2,
+      42,
+      2,
+      0,
+      'INSERT',
+      8,
+      'SQ',
+      2,
+      'INNER',
+      10,
+      0,
+      20,
+      50,
+      41,
+      2,
+      42,
+      1,
+      0,
+      'DIMENSION',
+      8,
+      'DIM',
+      2,
+      '*D1',
+      0,
+      'ELLIPSE',
+      8,
+      'EF',
+      10,
+      0,
+      20,
+      0,
+      11,
+      4,
+      21,
+      0,
+      40,
+      0.5,
+      41,
+      0,
+      42,
+      2 * math.pi,
+      0,
+      'ELLIPSE',
+      8,
+      'EH',
+      10,
+      0,
+      20,
+      0,
+      11,
+      4,
+      21,
+      0,
+      40,
+      0.5,
+      41,
+      0,
+      42,
+      math.pi,
+      0,
+      'SPLINE',
+      8,
+      'SF',
+      70,
+      0,
+      11,
+      0,
+      21,
+      0,
+      11,
+      5,
+      21,
+      5,
+      11,
+      10,
+      21,
+      0,
+      0,
+      'SPLINE',
+      8,
+      'SC',
+      70,
+      1,
+      10,
+      0,
+      20,
+      0,
+      10,
+      5,
+      20,
+      5,
+      10,
+      10,
+      20,
+      0,
+      0,
+      'LWPOLYLINE',
+      8,
+      'BU',
+      90,
+      2,
+      70,
+      0,
+      10,
+      0,
+      20,
+      0,
+      42,
+      1,
+      10,
+      10,
+      20,
+      0,
+      0,
+      'ENDSEC',
+      0,
+      'EOF',
     ]);
     final doc = DxfReader.parse(text);
     List<DxfEntity> on(String layer) => doc.entities.where((e) => e.layer == layer).toList();
@@ -477,17 +735,30 @@ void main() {
 
     test('report pages: the no-results note, an empty table and a table wider than the page', () {
       final seen = <String>[];
-      final ex = ProjectExporter(project: Project(), results: null, labels: ReportLabels(t: (k, [a]) {
-        seen.add(k);
-        return k;
-      }, has: (_) => false, warning: (w) => w));
+      final ex = ProjectExporter(
+        project: Project(),
+        results: null,
+        labels: ReportLabels(
+          t: (k, [a]) {
+            seen.add(k);
+            return k;
+          },
+          has: (_) => false,
+          warning: (w) => w,
+        ),
+      );
       final none = ex.sheetBuilder().buildReport(const []);
       expect(latin1.decode(none), startsWith('%PDF-1.4'));
       expect(seen, contains('pdf.noResults'));
       seen.clear();
-      final wide = ReportTable(key: 'wide', title: 'Wide', headers: [for (var i = 0; i < 14; i++) 'Column header number $i'], rows: [
-        for (var r = 0; r < 3; r++) [for (var i = 0; i < 14; i++) 'a rather long text cell $r/$i that must wrap'],
-      ]);
+      final wide = ReportTable(
+        key: 'wide',
+        title: 'Wide',
+        headers: [for (var i = 0; i < 14; i++) 'Column header number $i'],
+        rows: [
+          for (var r = 0; r < 3; r++) [for (var i = 0; i < 14; i++) 'a rather long text cell $r/$i that must wrap'],
+        ],
+      );
       final empty = ReportTable(key: 'empty', title: 'Empty', headers: ['a', 'b'], rows: const []);
       final pdf = ex.sheetBuilder().buildReport([empty, wide]);
       expect(seen, isNot(contains('pdf.noResults')));
@@ -526,7 +797,11 @@ void main() {
       return p;
     }
 
-    ProjectExporter exporter(Project p) => ProjectExporter(project: p, results: null, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+    ProjectExporter exporter(Project p) => ProjectExporter(
+      project: p,
+      results: null,
+      labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+    );
 
     test('the plot scene draws every entity type with its annotation', () {
       final scene = buildPlotScene(drawing(), unitsPerMm: 1, t: (k, [a]) => k);
@@ -602,10 +877,16 @@ void main() {
     test('the tile zoom drops until the area fits in the tile budget', () async {
       final pts = demGrid(const Bounds(0, 0, 20000, 20000), 500, geo);
       final zooms = <int>{};
-      final zs = await demDownloadTiles(pts, 500, (url) async {
-        zooms.add(int.parse(RegExp(r'/(\d+)/\d+/\d+\.png$').firstMatch(url)![1]!));
-        return demEncodeTerrarium(Float32List(demTileSize * demTileSize)..fillRange(0, demTileSize * demTileSize, 640));
-      }, zoom: 16, maxTiles: 4);
+      final zs = await demDownloadTiles(
+        pts,
+        500,
+        (url) async {
+          zooms.add(int.parse(RegExp(r'/(\d+)/\d+/\d+\.png$').firstMatch(url)![1]!));
+          return demEncodeTerrarium(Float32List(demTileSize * demTileSize)..fillRange(0, demTileSize * demTileSize, 640));
+        },
+        zoom: 16,
+        maxTiles: 4,
+      );
       expect(zooms.single, lessThan(16));
       expect(demTilesFor(pts, zooms.single).length, lessThanOrEqualTo(4));
       expect(demTilesFor(pts, zooms.single + 1).length, greaterThan(4), reason: 'the highest zoom that fits');
@@ -621,6 +902,13 @@ void main() {
     expect(back.catalog, isEmpty);
     expect(back.isEmpty, isFalse);
     expect(const LanguagePack().isEmpty, isTrue);
-    expect(LanguagePack.fromJson({'strings': 'not a map', 'catalog': {'Coupler': 3}}).isEmpty, isTrue, reason: 'wrong types are dropped');
+    expect(
+      LanguagePack.fromJson({
+        'strings': 'not a map',
+        'catalog': {'Coupler': 3},
+      }).isEmpty,
+      isTrue,
+      reason: 'wrong types are dropped',
+    );
   });
 }

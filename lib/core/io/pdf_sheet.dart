@@ -40,7 +40,11 @@ enum PageSize {
   const PageSize(this.shortMm, this.longMm);
   final double shortMm;
   final double longMm;
-  String get label => switch (this) { PageSize.letter => 'Letter', PageSize.tabloid => 'Tabloid', _ => name.toUpperCase() };
+  String get label => switch (this) {
+    PageSize.letter => 'Letter',
+    PageSize.tabloid => 'Tabloid',
+    _ => name.toUpperCase(),
+  };
 }
 
 class SheetOptions {
@@ -227,7 +231,11 @@ class PdfSheetBuilder {
   late final double _reach = () {
     var r = 0.0;
     for (final e in project.entities) {
-      final (spec, nozzle, head) = switch (e) { OutletEntity o => (o.outletSpecId, o.nozzleId, o.headM), SpraylineEntity s => (s.outletSpecId, s.nozzleId, s.headM), _ => ('', null, 0.0) };
+      final (spec, nozzle, head) = switch (e) {
+        OutletEntity o => (o.outletSpecId, o.nozzleId, o.headM),
+        SpraylineEntity s => (s.outletSpecId, s.nozzleId, s.headM),
+        _ => ('', null, 0.0),
+      };
       if (spec.isNotEmpty) r = math.max(r, project.catalog.outlet(spec)?.nozzle(nozzle)?.curve.radius(head) ?? 0);
     }
     return r;
@@ -264,7 +272,10 @@ class PdfSheetBuilder {
   /// Construction details of [o] by detail sheet (in the order of
   /// [DetailKind], as many per sheet as fit).
   List<List<DetailKind>> detailSheets(SheetOptions o) {
-    final kinds = [for (final k in DetailKind.values) if (o.details.contains(k)) k];
+    final kinds = [
+      for (final k in DetailKind.values)
+        if (o.details.contains(k)) k,
+    ];
     if (kinds.isEmpty) return const [];
     final (cols, rows) = _detailCapacity(o);
     final per = cols * rows;
@@ -317,7 +328,16 @@ class PdfSheetBuilder {
           for (final l in r.bomByZone[z] ?? const <BomLine>[]) {
             final k = '${l.category}|${l.description}|${l.unit}|${l.specId}|${l.code}';
             final m = merged[k];
-            merged[k] = BomLine(category: l.category, description: l.description, unit: l.unit, quantity: (m?.quantity ?? 0) + l.quantity, unitCost: l.unitCost, specId: l.specId, code: l.code, supplier: l.supplier);
+            merged[k] = BomLine(
+              category: l.category,
+              description: l.description,
+              unit: l.unit,
+              quantity: (m?.quantity ?? 0) + l.quantity,
+              unitCost: l.unitCost,
+              specId: l.specId,
+              code: l.code,
+              supplier: l.supplier,
+            );
           }
         }
         return merged.values.toList();
@@ -589,7 +609,11 @@ class PdfSheetBuilder {
           final (x, y) = map(tx.position);
           final size = tx.heightMm * ptPerMm / 0.72;
           page.fillColor(tx.color);
-          final align = switch (tx.anchor) { PlotAnchor.bottomCenter || PlotAnchor.center => PdfAlign.center, PlotAnchor.bottomRight => PdfAlign.right, _ => PdfAlign.left };
+          final align = switch (tx.anchor) {
+            PlotAnchor.bottomCenter || PlotAnchor.center => PdfAlign.center,
+            PlotAnchor.bottomRight => PdfAlign.right,
+            _ => PdfAlign.left,
+          };
           final dy = tx.anchor == PlotAnchor.center || tx.anchor == PlotAnchor.centerLeft ? -tx.heightMm * ptPerMm / 2 : 0.0;
           if (tx.rotationDeg != 0) {
             final a = tx.rotationDeg * math.pi / 180;
@@ -1011,8 +1035,7 @@ class _ReportPages {
       total = widths.fold(0.0, (s, w) => s + w);
     }
     List<List<String>> cellLines(List<Object> r) => [
-      for (var i = 0; i < n; i++)
-        i < r.length && r[i] is! RBar ? (wrapCol.contains(i) ? _wrap(fonts, '${r[i]}', widths[i] - 2 * pad, size) : [fonts.fit('${r[i]}', widths[i] - 2 * pad, size)]) : [''],
+      for (var i = 0; i < n; i++) i < r.length && r[i] is! RBar ? (wrapCol.contains(i) ? _wrap(fonts, '${r[i]}', widths[i] - 2 * pad, size) : [fonts.fit('${r[i]}', widths[i] - 2 * pad, size)]) : [''],
     ];
     final headerLines = [for (var i = 0; i < n; i++) _wrap(fonts, tb.headers[i], widths[i] - 2 * pad, size, bold: true)];
     final headerRows = headerLines.fold(1, (m, l) => math.max(m, l.length));

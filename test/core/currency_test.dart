@@ -68,7 +68,9 @@ void main() {
 
   group('project prices', () {
     test('the currency code survives JSON; older files get it from the symbol', () {
-      final p = DesignParameters()..currencyCode = 'EUR'..currency = '€';
+      final p = DesignParameters()
+        ..currencyCode = 'EUR'
+        ..currency = '€';
       expect(DesignParameters.fromJson(p.toJson()).currencyCode, 'EUR');
       final old = DesignParameters().toJson()..remove('currencyCode');
       expect(DesignParameters.fromJson(old).currencyCode, 'BRL');
@@ -135,11 +137,16 @@ void main() {
   });
 
   group('packs and unpriced items', () {
-    Catalog priced() => Catalog(pipes: [PipeSpec(id: 'x_pvc50', name: 'X 50', nominalMm: 50, innerDiameterMm: 46, costPerM: 10)]);
+    Catalog priced() => Catalog(
+      pipes: [PipeSpec(id: 'x_pvc50', name: 'X 50', nominalMm: 50, innerDiameterMm: 46, costPerM: 10)],
+    );
 
     test('a pack priced in another currency is converted; the pack itself is untouched', () {
       final target = Catalog.defaultCatalog();
-      final pack = CatalogPack(meta: const CatalogPackMeta(id: 'x', brand: 'X', currency: 'USD'), catalog: priced());
+      final pack = CatalogPack(
+        meta: const CatalogPackMeta(id: 'x', brand: 'X', currency: 'USD'),
+        catalog: priced(),
+      );
       final r = addCatalogPack(target, pack, projectCurrency: 'BRL');
       expect(r.added, 1);
       expect(r.converted, isTrue);
@@ -150,11 +157,25 @@ void main() {
 
     test('a pack without currency keeps its prices and says so; an unpriced pack needs no rate', () {
       final a = Catalog.defaultCatalog();
-      final r = addCatalogPack(a, CatalogPack(meta: const CatalogPackMeta(id: 'x', brand: 'X'), catalog: priced()), projectCurrency: 'EUR');
+      final r = addCatalogPack(
+        a,
+        CatalogPack(
+          meta: const CatalogPackMeta(id: 'x', brand: 'X'),
+          catalog: priced(),
+        ),
+        projectCurrency: 'EUR',
+      );
       expect(r.unknownCurrency, isTrue);
       expect(a.pipe('x_pvc50')!.costPerM, 10);
       final free = priced()..pipes.first.costPerM = 0;
-      final r2 = addCatalogPack(Catalog.defaultCatalog(), CatalogPack(meta: const CatalogPackMeta(id: 'x', brand: 'X'), catalog: free), projectCurrency: 'EUR');
+      final r2 = addCatalogPack(
+        Catalog.defaultCatalog(),
+        CatalogPack(
+          meta: const CatalogPackMeta(id: 'x', brand: 'X'),
+          catalog: free,
+        ),
+        projectCurrency: 'EUR',
+      );
       expect(r2.unknownCurrency, isFalse);
       expect(r2.converted, isFalse);
       // the pack format carries the currency and the source documents
@@ -177,7 +198,12 @@ void main() {
       // same wall as a priced PVC pipe: the estimate is of the same order
       expect(costs['u100']! / ref.costPerM, inInclusiveRange(0.3, 3));
       // nothing priced: still ordered by size
-      final bare = Catalog(pipes: [PipeSpec(id: 'a', name: 'a', nominalMm: 50, innerDiameterMm: 46), PipeSpec(id: 'b', name: 'b', nominalMm: 75, innerDiameterMm: 70)]);
+      final bare = Catalog(
+        pipes: [
+          PipeSpec(id: 'a', name: 'a', nominalMm: 50, innerDiameterMm: 46),
+          PipeSpec(id: 'b', name: 'b', nominalMm: 75, innerDiameterMm: 70),
+        ],
+      );
       final bc = bare.sizingPipeCosts();
       expect(bc['b']!, greaterThan(bc['a']!));
     });

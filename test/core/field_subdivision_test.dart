@@ -121,7 +121,10 @@ void main() {
 
     test('the blocks feed the block generator: valve and submain where suggested', () {
       final p = Project();
-      final s = subdivideField(_trapezoid, FieldSubdivisionOptions(direction: const Pt(0, 1), mode: SubdivisionMode.grid, maxBlockArea: 3e4, maxLateralLength: 140, roadWidth: 4, pointOfConnection: const Pt(500, 100)));
+      final s = subdivideField(
+        _trapezoid,
+        FieldSubdivisionOptions(direction: const Pt(0, 1), mode: SubdivisionMode.grid, maxBlockArea: 3e4, maxLateralLength: 140, roadWidth: 4, pointOfConnection: const Pt(500, 100)),
+      );
       for (final b in s.blocks) {
         final o = blockOptionsFor(b, s.direction, lateralSpacing: 1.8, isTape: true, tapeSpecId: 'tape16_10_30', valveSpecId: 'ev80', submainStub: 2);
         expect(o.submainPosition, b.submain);

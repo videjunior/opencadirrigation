@@ -19,10 +19,7 @@ List<String> demandIds(Project p) {
   final stations = <String>{};
   return [
     for (final e in p.entities)
-      if (e is ControlValveEntity || e is PivotEntity)
-        e.id
-      else if (e is OutletEntity && e.scope == HydraulicScope.mainline && stations.add(vihStationId(e)))
-        vihStationId(e),
+      if (e is ControlValveEntity || e is PivotEntity) e.id else if (e is OutletEntity && e.scope == HydraulicScope.mainline && stations.add(vihStationId(e))) vihStationId(e),
   ];
 }
 
@@ -208,5 +205,4 @@ bool _sameSet(Set<String> a, List<String> b) => a.length == b.length && a.contai
 String _id(String k) => k;
 
 /// Largest total demand among [flows] (m³/s).
-double peakFlowDemand(List<SystemFlow> flows, Map<String, double> demands) =>
-    flows.fold(0.0, (m, f) => math.max(m, f.valveIds.fold(0.0, (s, id) => s + (demands[id] ?? 0))));
+double peakFlowDemand(List<SystemFlow> flows, Map<String, double> demands) => flows.fold(0.0, (m, f) => math.max(m, f.valveIds.fold(0.0, (s, id) => s + (demands[id] ?? 0))));

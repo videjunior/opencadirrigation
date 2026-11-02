@@ -316,11 +316,7 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
       KV('U(Pq)', fmt(cl.u, 3)),
       KV(t('od.sourceFlow'), '${_q(u, source)} ${u.flowLabel} (${t('od.designPeak')} ${_q(u, peak)})', color: source > peak + 1e-9 ? Cad.warning : null),
       for (final e in need.entries)
-        KV(
-          t('od.supplyNeed', {'s': name(e.key)}),
-          '${_pr(u, e.value)} / ${_pr(u, pressure[e.key] ?? 0)} ${u.pressureLabel}',
-          color: e.value > (pressure[e.key] ?? 0) + 0.01 ? Cad.warning : Cad.ok,
-        ),
+        KV(t('od.supplyNeed', {'s': name(e.key)}), '${_pr(u, e.value)} / ${_pr(u, pressure[e.key] ?? 0)} ${u.pressureLabel}', color: e.value > (pressure[e.key] ?? 0) + 0.01 ? Cad.warning : Cad.ok),
       if (cl.criticalHydrant != null) KV(t('od.critical'), name(cl.criticalHydrant!)),
       _codes(c, cl.codes, name),
       SectionTitle(t('od.random')),
@@ -697,11 +693,7 @@ Future<void> showEnergyGroupingDialog(BuildContext context, ProjectController c)
           KV(t('eg.baselineEnergy'), '${fmt(g.baselineEnergyKwh, 1)} kWh'),
           KV(t('eg.proposedEnergy'), '${fmt(g.energyKwh, 1)} kWh · $cur ${fmt(g.energyKwh * price, 2)} · ${fmt(g.hours, 1)} h', color: Cad.ok),
           if (currentKwh > 0)
-            KV(
-              t('eg.saving'),
-              '${fmt(currentKwh - g.energyKwh, 1)} kWh (${_pct((currentKwh - g.energyKwh) / currentKwh, 1)})',
-              color: g.energyKwh <= currentKwh + 1e-9 ? Cad.ok : Cad.warning,
-            ),
+            KV(t('eg.saving'), '${fmt(currentKwh - g.energyKwh, 1)} kWh (${_pct((currentKwh - g.energyKwh) / currentKwh, 1)})', color: g.energyKwh <= currentKwh + 1e-9 ? Cad.ok : Cad.warning),
           _codes(c, g.codes, name),
         ],
       ]);

@@ -119,7 +119,13 @@ class PivotTowerRow {
   final double groundRise;
 
   Map<String, dynamic> toJson() => {'i': index, 'd': distance, 'q': flowPast, 'h': pressure, 'dz': groundRise};
-  static PivotTowerRow fromJson(Map<String, dynamic> j) => PivotTowerRow(index: (j['i'] as num).toInt(), distance: (j['d'] as num).toDouble(), flowPast: (j['q'] as num).toDouble(), pressure: (j['h'] as num).toDouble(), groundRise: (j['dz'] as num?)?.toDouble() ?? 0);
+  static PivotTowerRow fromJson(Map<String, dynamic> j) => PivotTowerRow(
+    index: (j['i'] as num).toInt(),
+    distance: (j['d'] as num).toDouble(),
+    flowPast: (j['q'] as num).toDouble(),
+    pressure: (j['h'] as num).toDouble(),
+    groundRise: (j['dz'] as num?)?.toDouble() ?? 0,
+  );
 }
 
 /// One span of the machine in the sprinkler chart: sprinklers, flow each
@@ -139,7 +145,15 @@ class PivotSpanRow {
   final String nozzle;
 
   Map<String, dynamic> toJson() => {'i': index, 'r0': rStart, 'r1': rEnd, 'n': sprinklers, 'q': flowPerSprinkler, 'h': pressure, if (nozzle.isNotEmpty) 'noz': nozzle};
-  static PivotSpanRow fromJson(Map<String, dynamic> j) => PivotSpanRow(index: (j['i'] as num).toInt(), rStart: (j['r0'] as num).toDouble(), rEnd: (j['r1'] as num).toDouble(), sprinklers: (j['n'] as num).toInt(), flowPerSprinkler: (j['q'] as num).toDouble(), pressure: (j['h'] as num).toDouble(), nozzle: j['noz'] as String? ?? '');
+  static PivotSpanRow fromJson(Map<String, dynamic> j) => PivotSpanRow(
+    index: (j['i'] as num).toInt(),
+    rStart: (j['r0'] as num).toDouble(),
+    rEnd: (j['r1'] as num).toDouble(),
+    sprinklers: (j['n'] as num).toInt(),
+    flowPerSprinkler: (j['q'] as num).toDouble(),
+    pressure: (j['h'] as num).toDouble(),
+    nozzle: j['noz'] as String? ?? '',
+  );
 }
 
 class PivotResult {
@@ -207,24 +221,79 @@ class PivotResult {
   /// The same machine with the inlet flow and pressure of its detailed
   /// sprinkler package (regulators, drops, nozzles, end gun).
   PivotResult withInlet({required double flow, required double inletHead, List<String> extraWarnings = const []}) => PivotResult(
-    pivotId: pivotId, name: name, kind: kind, flow: flow, endGunFlow: endGunFlow, inletHead: inletHead, frictionLoss: frictionLoss, elevationRise: elevationRise, endPressure: endPressure,
-    pipeHeight: pipeHeight, machineLoss: machineLoss, towerCount: towerCount, towers: towers, areaM2: areaM2, depthPerCycleMm: depthPerCycleMm, hoursPerCycle: hoursPerCycle,
-    appRateEndAvg: appRateEndAvg, appRateEndPeak: appRateEndPeak, inletVelocity: inletVelocity, warnings: [...warnings, ...extraWarnings], availableHead: availableHead, spans: spans,
+    pivotId: pivotId,
+    name: name,
+    kind: kind,
+    flow: flow,
+    endGunFlow: endGunFlow,
+    inletHead: inletHead,
+    frictionLoss: frictionLoss,
+    elevationRise: elevationRise,
+    endPressure: endPressure,
+    pipeHeight: pipeHeight,
+    machineLoss: machineLoss,
+    towerCount: towerCount,
+    towers: towers,
+    areaM2: areaM2,
+    depthPerCycleMm: depthPerCycleMm,
+    hoursPerCycle: hoursPerCycle,
+    appRateEndAvg: appRateEndAvg,
+    appRateEndPeak: appRateEndPeak,
+    inletVelocity: inletVelocity,
+    warnings: [...warnings, ...extraWarnings],
+    availableHead: availableHead,
+    spans: spans,
   );
 
   double get deficit => availableHead == null ? 0 : inletHead - availableHead!;
 
   Map<String, dynamic> toJson() => {
-    'id': pivotId, 'name': name, 'kind': kind.name, 'q': flow, 'qg': endGunFlow, 'hin': inletHead, 'hf': frictionLoss, 'dz': elevationRise, 'hend': endPressure, 'hp': pipeHeight, 'hm': machineLoss,
-    'n': towerCount, 'towers': towers.map((t) => t.toJson()).toList(), 'area': areaM2, 'depth': depthPerCycleMm, 'hours': hoursPerCycle, 'iavg': appRateEndAvg, 'ipeak': appRateEndPeak, 'v': inletVelocity,
-    'warn': warnings, if (availableHead != null) 'havail': availableHead, if (spans.isNotEmpty) 'spans': spans.map((s) => s.toJson()).toList(),
+    'id': pivotId,
+    'name': name,
+    'kind': kind.name,
+    'q': flow,
+    'qg': endGunFlow,
+    'hin': inletHead,
+    'hf': frictionLoss,
+    'dz': elevationRise,
+    'hend': endPressure,
+    'hp': pipeHeight,
+    'hm': machineLoss,
+    'n': towerCount,
+    'towers': towers.map((t) => t.toJson()).toList(),
+    'area': areaM2,
+    'depth': depthPerCycleMm,
+    'hours': hoursPerCycle,
+    'iavg': appRateEndAvg,
+    'ipeak': appRateEndPeak,
+    'v': inletVelocity,
+    'warn': warnings,
+    if (availableHead != null) 'havail': availableHead,
+    if (spans.isNotEmpty) 'spans': spans.map((s) => s.toJson()).toList(),
   };
   static PivotResult fromJson(Map<String, dynamic> j) {
     double d(String k, [double def = 0]) => (j[k] as num?)?.toDouble() ?? def;
     return PivotResult(
-      pivotId: j['id'] as String, name: j['name'] as String? ?? '', kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'), flow: d('q'), endGunFlow: d('qg'), inletHead: d('hin'), frictionLoss: d('hf'), elevationRise: d('dz'),
-      endPressure: d('hend'), pipeHeight: d('hp'), machineLoss: d('hm'), towerCount: (j['n'] as num?)?.toInt() ?? 0, towers: ((j['towers'] as List?) ?? []).map((t) => PivotTowerRow.fromJson(t as Map<String, dynamic>)).toList(),
-      areaM2: d('area'), depthPerCycleMm: d('depth'), hoursPerCycle: d('hours'), appRateEndAvg: d('iavg'), appRateEndPeak: d('ipeak'), inletVelocity: d('v'), warnings: ((j['warn'] as List?) ?? []).cast<String>(),
+      pivotId: j['id'] as String,
+      name: j['name'] as String? ?? '',
+      kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'),
+      flow: d('q'),
+      endGunFlow: d('qg'),
+      inletHead: d('hin'),
+      frictionLoss: d('hf'),
+      elevationRise: d('dz'),
+      endPressure: d('hend'),
+      pipeHeight: d('hp'),
+      machineLoss: d('hm'),
+      towerCount: (j['n'] as num?)?.toInt() ?? 0,
+      towers: ((j['towers'] as List?) ?? []).map((t) => PivotTowerRow.fromJson(t as Map<String, dynamic>)).toList(),
+      areaM2: d('area'),
+      depthPerCycleMm: d('depth'),
+      hoursPerCycle: d('hours'),
+      appRateEndAvg: d('iavg'),
+      appRateEndPeak: d('ipeak'),
+      inletVelocity: d('v'),
+      warnings: ((j['warn'] as List?) ?? []).cast<String>(),
       availableHead: (j['havail'] as num?)?.toDouble(),
       spans: ((j['spans'] as List?) ?? []).map((s) => PivotSpanRow.fromJson(s as Map<String, dynamic>)).toList(),
     );
@@ -275,13 +344,7 @@ double frictionTo(PivotSpec s, double r, {int steps = 200}) {
 
 /// Ground rise profile: [groundRiseAt] gives the rise of the ground at a
 /// distance from the inlet, for the worst azimuth (highest end position).
-PivotResult analyzePivot(
-  PivotSpec s, {
-  required String id,
-  required String name,
-  double Function(double distance)? groundRiseAt,
-  List<(String, EmitterCurve)> nozzles = const [],
-}) {
+PivotResult analyzePivot(PivotSpec s, {required String id, required String name, double Function(double distance)? groundRiseAt, List<(String, EmitterCurve)> nozzles = const []}) {
   final warnings = <String>[];
   final rise = groundRiseAt ?? (_) => 0.0;
   final q = s.sprinklerFlow;

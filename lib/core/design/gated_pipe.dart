@@ -79,7 +79,18 @@ class GatedPipeSpec {
 
 /// One gate of the gated pipe.
 class GateRow {
-  const GateRow({required this.index, required this.distanceM, required this.pipeFlow, required this.headM, required this.targetFlow, required this.areaMm2, required this.diameterMm, required this.holeMm, required this.openingPct, required this.fullFlow});
+  const GateRow({
+    required this.index,
+    required this.distanceM,
+    required this.pipeFlow,
+    required this.headM,
+    required this.targetFlow,
+    required this.areaMm2,
+    required this.diameterMm,
+    required this.holeMm,
+    required this.openingPct,
+    required this.fullFlow,
+  });
 
   /// 1-based gate number from the inlet and its distance (m).
   final int index;
@@ -103,13 +114,33 @@ class GateRow {
   Map<String, dynamic> toJson() => {'i': index, 'x': distanceM, 'qp': pipeFlow, 'h': headM, 'q': targetFlow, 'a': areaMm2, 'd': diameterMm, 'hole': holeMm, 'open': openingPct, 'qf': fullFlow};
   static GateRow fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
-    return GateRow(index: (j['i'] as num?)?.toInt() ?? 0, distanceM: d('x'), pipeFlow: d('qp'), headM: d('h'), targetFlow: d('q'), areaMm2: d('a'), diameterMm: d('d'), holeMm: d('hole'), openingPct: d('open'), fullFlow: d('qf'));
+    return GateRow(
+      index: (j['i'] as num?)?.toInt() ?? 0,
+      distanceM: d('x'),
+      pipeFlow: d('qp'),
+      headM: d('h'),
+      targetFlow: d('q'),
+      areaMm2: d('a'),
+      diameterMm: d('d'),
+      holeMm: d('hole'),
+      openingPct: d('open'),
+      fullFlow: d('qf'),
+    );
   }
 }
 
 /// Gates, heads and inlet check of a gated pipe.
 class GatedPipeResult {
-  const GatedPipeResult({required this.gates, required this.inletHeadM, required this.minInletHeadM, required this.totalFlow, required this.frictionLossM, required this.elevationGainM, required this.inletVelocity, required this.warnings});
+  const GatedPipeResult({
+    required this.gates,
+    required this.inletHeadM,
+    required this.minInletHeadM,
+    required this.totalFlow,
+    required this.frictionLossM,
+    required this.elevationGainM,
+    required this.inletVelocity,
+    required this.warnings,
+  });
   final List<GateRow> gates;
 
   /// Inlet head used (m) and the smallest that delivers every target with the largest hole (m).
@@ -127,12 +158,27 @@ class GatedPipeResult {
 
   bool get inletHeadOk => inletHeadM >= minInletHeadM - 1e-9;
 
-  Map<String, dynamic> toJson() => {'gates': gates.map((g) => g.toJson()).toList(), 'hin': inletHeadM, 'hmin': minInletHeadM, 'q': totalFlow, 'hf': frictionLossM, 'dz': elevationGainM, 'v': inletVelocity, 'warn': warnings};
+  Map<String, dynamic> toJson() => {
+    'gates': gates.map((g) => g.toJson()).toList(),
+    'hin': inletHeadM,
+    'hmin': minInletHeadM,
+    'q': totalFlow,
+    'hf': frictionLossM,
+    'dz': elevationGainM,
+    'v': inletVelocity,
+    'warn': warnings,
+  };
   static GatedPipeResult fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     return GatedPipeResult(
-      gates: ((j['gates'] as List?) ?? const []).map((g) => GateRow.fromJson(g as Map<String, dynamic>)).toList(), inletHeadM: d('hin'), minInletHeadM: d('hmin'), totalFlow: d('q'), frictionLossM: d('hf'),
-      elevationGainM: d('dz'), inletVelocity: d('v'), warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+      gates: ((j['gates'] as List?) ?? const []).map((g) => GateRow.fromJson(g as Map<String, dynamic>)).toList(),
+      inletHeadM: d('hin'),
+      minInletHeadM: d('hmin'),
+      totalFlow: d('q'),
+      frictionLossM: d('hf'),
+      elevationGainM: d('dz'),
+      inletVelocity: d('v'),
+      warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
     );
   }
 }
@@ -208,9 +254,29 @@ GatedPipeResult designGatedPipe(GatedPipeSpec s, {String id = ''}) {
       }
       if (hole == 0) warn('gated_pipe_hole_too_small');
     }
-    gates.add(GateRow(index: i + 1, distanceM: xs[i], pipeFlow: pipeFlow[i], headM: h, targetFlow: qs[i], areaMm2: area * 1e6, diameterMm: math.sqrt(4 * area / math.pi) * 1000, holeMm: hole, openingPct: opening, fullFlow: full));
+    gates.add(
+      GateRow(
+        index: i + 1,
+        distanceM: xs[i],
+        pipeFlow: pipeFlow[i],
+        headM: h,
+        targetFlow: qs[i],
+        areaMm2: area * 1e6,
+        diameterMm: math.sqrt(4 * area / math.pi) * 1000,
+        holeMm: hole,
+        openingPct: opening,
+        fullFlow: full,
+      ),
+    );
   }
   return GatedPipeResult(
-    gates: gates, inletHeadM: inlet, minInletHeadM: hMin, totalFlow: total, frictionLossM: hfTotal, elevationGainM: n > 0 ? s.slope * xs.last : 0, inletVelocity: d > 0 ? velocity(flow: total, diameter: d) : 0, warnings: warnings,
+    gates: gates,
+    inletHeadM: inlet,
+    minInletHeadM: hMin,
+    totalFlow: total,
+    frictionLossM: hfTotal,
+    elevationGainM: n > 0 ? s.slope * xs.last : 0,
+    inletVelocity: d > 0 ? velocity(flow: total, diameter: d) : 0,
+    warnings: warnings,
   );
 }

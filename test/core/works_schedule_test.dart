@@ -40,7 +40,10 @@ void main() {
     final c = ProjectController()..setLanguage('pt');
     loadExampleAction(c, ExampleId.orchard);
     final table = c.reportTables().firstWhere((t) => t.key == 'works');
-    final bars = [for (final r in table.rows) if (r.last is RBar) r.last as RBar];
+    final bars = [
+      for (final r in table.rows)
+        if (r.last is RBar) r.last as RBar,
+    ];
     expect(bars, hasLength(table.rows.length - 1), reason: 'every task but the total');
     expect(const RBar(0, 3, 6).toString(), '█' * 15);
     expect(const RBar(2, 3, 6).toString(), '${'·' * 10}${'█' * 5}');

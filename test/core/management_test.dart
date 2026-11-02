@@ -45,8 +45,24 @@ void main() {
     expect(q['pv'], closeTo(Designer(p).analyzePivotEntity(p.byId('pv') as PivotEntity).flow, 1e-12));
     final r = DesignResults(timestamp: DateTime(2026));
     r.zones['vA'] = ZoneResult(
-      valveId: 'vA', zoneName: 'A', converged: true, totalFlow: 0.123, downstreamHead: 0, valveLoss: 0, requiredUpstreamHead: 0, minOutletPressure: 0, maxOutletPressure: 0,
-      allowedMin: 0, allowedMax: 0, nominalPressure: 0, uniformity: UniformityStats.empty, pipes: const [], outlets: const [], devices: const [], warnings: const [], valveElevation: 0,
+      valveId: 'vA',
+      zoneName: 'A',
+      converged: true,
+      totalFlow: 0.123,
+      downstreamHead: 0,
+      valveLoss: 0,
+      requiredUpstreamHead: 0,
+      minOutletPressure: 0,
+      maxOutletPressure: 0,
+      allowedMin: 0,
+      allowedMax: 0,
+      nominalPressure: 0,
+      uniformity: UniformityStats.empty,
+      pipes: const [],
+      outlets: const [],
+      devices: const [],
+      warnings: const [],
+      valveElevation: 0,
     );
     expect(nominalDemands(p, results: r)['vA'], 0.123);
   });
@@ -59,7 +75,13 @@ void main() {
     expect(plan.oversized, isEmpty);
     // first fit decreasing: {300+200}, {250+150+100}
     final sets = plan.flows.map((f) => f.valveIds.toSet()).toList();
-    expect(sets, containsAll([{'vA', 'vC'}, {'vB', 'vD', 'vE'}]));
+    expect(
+      sets,
+      containsAll([
+        {'vA', 'vC'},
+        {'vB', 'vD', 'vE'},
+      ]),
+    );
     expect(plan.flows.length, 2);
     for (final f in plan.flows) {
       expect(f.valveIds.fold(0.0, (s, id) => s + plan.demands[id]!), lessThanOrEqualTo(plan.capacity + 1e-12));

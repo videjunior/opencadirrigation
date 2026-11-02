@@ -553,10 +553,7 @@ void main() {
 
   group('select tool', () {
     test('Shift toggles, a drag on empty ground selects by window or crossing, Esc clears', () {
-      c.addEntities([
-        LineEntity(id: 'a', a: Pt.zero, b: const Pt(10, 0)),
-        LineEntity(id: 'b', a: const Pt(20, 0), b: const Pt(40, 0)),
-      ]);
+      c.addEntities([LineEntity(id: 'a', a: Pt.zero, b: const Pt(10, 0)), LineEntity(id: 'b', a: const Pt(20, 0), b: const Pt(40, 0))]);
       final s = tool(ToolId.select);
       s.onDown(const Pt(5, 0.1));
       s.onUp(const Pt(5, 0.1));

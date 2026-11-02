@@ -54,7 +54,9 @@ void main() {
     final u = Uri.parse(url);
     final lats = u.queryParameters['latitude']!.split(',').map(double.parse).toList();
     final lons = u.queryParameters['longitude']!.split(',').map(double.parse).toList();
-    return jsonEncode({'elevation': [for (var i = 0; i < lats.length; i++) (800 + (lats[i] + 21.8) * 4000 + (lons[i] + 46.6) * 2000).roundToDouble()]});
+    return jsonEncode({
+      'elevation': [for (var i = 0; i < lats.length; i++) (800 + (lats[i] + 21.8) * 4000 + (lons[i] + 46.6) * 2000).roundToDouble()],
+    });
   }
 
   /// Cancels the snack bar timer (a notification raised inside runAsync

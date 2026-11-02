@@ -40,10 +40,12 @@ List<Entity> splitLinearEntity(Entity e, List<double> distances, String Function
         // no spacing: the one outlet goes with the piece that holds it
         final at = s.firstOutletDistance - start;
         final holds = i == 0 ? at >= 0 && at <= pieceLen + 1e-9 : at > 1e-9 && at <= pieceLen + 1e-9;
-        out.add(s.clone(newId: id)
-          ..name = name
-          ..points = piece
-          ..offset = holds ? math.max(at, 1e-9) : pieceLen + 1);
+        out.add(
+          s.clone(newId: id)
+            ..name = name
+            ..points = piece
+            ..offset = holds ? math.max(at, 1e-9) : pieceLen + 1,
+        );
       case SpraylineEntity s:
         // first outlet of this piece: next outlet station at or after `start`
         final first = s.firstOutletDistance;
@@ -55,9 +57,39 @@ List<Entity> splitLinearEntity(Entity e, List<double> distances, String Function
         // (which counts its outlets up to its end with the same tolerance)
         if (i > 0 && station <= start + 1e-9 * s.spacing) station += s.spacing;
         final off = station - start;
-        out.add(SpraylineEntity(id: id, layer: s.layer, name: name, points: piece, pipeSpecId: s.pipeSpecId, computerSized: s.computerSized, outletSpecId: s.outletSpecId, nozzleId: s.nozzleId, headM: s.headM, spacing: s.spacing, offset: off <= 1e-9 ? 1e-9 : off, arcDeg: s.arcDeg, riserHeight: s.riserHeight, depth: s.depth));
+        out.add(
+          SpraylineEntity(
+            id: id,
+            layer: s.layer,
+            name: name,
+            points: piece,
+            pipeSpecId: s.pipeSpecId,
+            computerSized: s.computerSized,
+            outletSpecId: s.outletSpecId,
+            nozzleId: s.nozzleId,
+            headM: s.headM,
+            spacing: s.spacing,
+            offset: off <= 1e-9 ? 1e-9 : off,
+            arcDeg: s.arcDeg,
+            riserHeight: s.riserHeight,
+            depth: s.depth,
+          ),
+        );
       case TapeEntity t:
-        out.add(TapeEntity(id: id, layer: t.layer, name: name, points: piece, tapeSpecId: t.tapeSpecId, inletHeadM: t.inletHeadM, regulated: t.regulated, submainMinHeadM: t.submainMinHeadM, depth: t.depth, flushingFlow: i == pieces.length - 1 ? t.flushingFlow : 0));
+        out.add(
+          TapeEntity(
+            id: id,
+            layer: t.layer,
+            name: name,
+            points: piece,
+            tapeSpecId: t.tapeSpecId,
+            inletHeadM: t.inletHeadM,
+            regulated: t.regulated,
+            submainMinHeadM: t.submainMinHeadM,
+            depth: t.depth,
+            flushingFlow: i == pieces.length - 1 ? t.flushingFlow : 0,
+          ),
+        );
       case SplineEntity s:
         out.add(SplineEntity(id: id, layer: s.layer, name: name, points: piece));
       case LeaderEntity l:

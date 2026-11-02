@@ -191,7 +191,10 @@ void main() {
     });
 
     test('curved rows clipped in two feed from a branch, not a zigzag', () {
-      final r = generateBlock(Project(), BlockOptions(polygon: uShape, direction: const Pt(1, 0), lateralSpacing: 4, outletSpecId: 'micro', nozzleId: 'm50', guide: const [Pt(0, 0), Pt(50, 5), Pt(100, 0)]));
+      final r = generateBlock(
+        Project(),
+        BlockOptions(polygon: uShape, direction: const Pt(1, 0), lateralSpacing: 4, outletSpecId: 'micro', nozzleId: 'm50', guide: const [Pt(0, 0), Pt(50, 5), Pt(100, 0)]),
+      );
       final sub = r.submain!.points;
       for (var k = 1; k < sub.length; k++) {
         expect(sub[k].y, greaterThanOrEqualTo(sub[k - 1].y - 1e-9), reason: 'the main line crosses the rows once');
@@ -212,7 +215,8 @@ void main() {
         WaterSupplyEntity(id: 'w', position: Pt.zero, calculatePressure: false, designHeadM: 40),
         ControlValveEntity(id: 'v', position: valvePos, zoneName: 'Z', valveSpecId: 'ev50'),
         PipeEntity(id: 'sub', points: [valvePos, valvePos + const Pt(0, 30)], scope: HydraulicScope.zone),
-        for (var i = 0; i < 8; i++) SpraylineEntity(id: 's$i', points: [valvePos + Pt(0, 2 + i * 4.0), valvePos + Pt(40, 2 + i * 4.0)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15, spacing: 4, offset: 2),
+        for (var i = 0; i < 8; i++)
+          SpraylineEntity(id: 's$i', points: [valvePos + Pt(0, 2 + i * 4.0), valvePos + Pt(40, 2 + i * 4.0)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15, spacing: 4, offset: 2),
       ]);
       p.params.maxMainlineSizes = 3;
       final r = Designer(p).designAll();
@@ -450,8 +454,21 @@ void main() {
   group('numbers typed or read in local notation', () {
     test('decimal comma or point, thousands separators, currency around it', () {
       final cases = <String, double?>{
-        '12.5': 12.5, '12,5': 12.5, '-3,25': -3.25, '1.234,56': 1234.56, '1,234.56': 1234.56, '1.234.567': 1234567, '1,234,567': 1234567,
-        '1 234,5': 1234.5, '1\u00A0234,5': 1234.5, '1e-3': 0.001, ' 7 ': 7, '': null, 'abc': null, 'P1': null, '12 m': null,
+        '12.5': 12.5,
+        '12,5': 12.5,
+        '-3,25': -3.25,
+        '1.234,56': 1234.56,
+        '1,234.56': 1234.56,
+        '1.234.567': 1234567,
+        '1,234,567': 1234567,
+        '1 234,5': 1234.5,
+        '1\u00A0234,5': 1234.5,
+        '1e-3': 0.001,
+        ' 7 ': 7,
+        '': null,
+        'abc': null,
+        'P1': null,
+        '12 m': null,
       };
       cases.forEach((text, v) => expect(parseNumber(text), v == null ? isNull : closeTo(v, 1e-12), reason: text));
       expect(parseNumber('R\$ 1.234,56', lenient: true), closeTo(1234.56, 1e-12));
@@ -497,7 +514,11 @@ void main() {
       final p = zone(lat)..meta.georef = GeoReference.fromLatLonOrigin(-22.9, -47.06);
       final r = Designer(p).designAll();
       expect(r.zones['v']!.outlets.fold(0, (n, o) => n + o.count), 1);
-      final ex = ProjectExporter(project: p, results: r, labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w));
+      final ex = ProjectExporter(
+        project: p,
+        results: r,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w),
+      );
       for (final f in DrawingFormat.values) {
         expect(() => ex.exportDrawing(f), returnsNormally, reason: f.name);
       }
@@ -525,7 +546,11 @@ void main() {
         final r = generateBlock(Project(), BlockOptions(polygon: square, direction: const Pt(1, 0), lateralSpacing: sp, outletSpecId: 'micro'));
         expect(r.laterals, isEmpty, reason: '$sp');
         expect(r.valve, isNull);
-        expect(generateSprinklerGrid(Project(), SprinklerGridOptions(polygon: square, outletSpecId: 'rotor', spacingAlong: sp, spacingBetween: 10)), isEmpty, reason: '$sp');
+        expect(
+          generateSprinklerGrid(Project(), SprinklerGridOptions(polygon: square, outletSpecId: 'rotor', spacingAlong: sp, spacingBetween: 10)),
+          isEmpty,
+          reason: '$sp',
+        );
       }
       final guided = generateBlock(Project(), BlockOptions(polygon: square, direction: const Pt(1, 0), lateralSpacing: 1e-6, outletSpecId: 'micro', guide: const [Pt(0, 0), Pt(100, 5)]));
       expect(guided.laterals, isEmpty);
@@ -533,7 +558,50 @@ void main() {
 
     test('a drawing with NaN coordinates imports without them; a NaN still saves', () {
       final c = _fresh();
-      final dxf = ['0', 'SECTION', '2', 'ENTITIES', '0', 'LINE', '8', 'A', '10', 'NaN', '20', '0', '11', '5', '21', '5', '0', 'LINE', '8', 'A', '10', '0', '20', '0', '11', '5', '21', '5', '0', 'POINT', '8', 'CURVAS', '10', '1', '20', '1', '30', 'NaN', '0', 'ENDSEC', '0', 'EOF'].join('\n');
+      final dxf = [
+        '0',
+        'SECTION',
+        '2',
+        'ENTITIES',
+        '0',
+        'LINE',
+        '8',
+        'A',
+        '10',
+        'NaN',
+        '20',
+        '0',
+        '11',
+        '5',
+        '21',
+        '5',
+        '0',
+        'LINE',
+        '8',
+        'A',
+        '10',
+        '0',
+        '20',
+        '0',
+        '11',
+        '5',
+        '21',
+        '5',
+        '0',
+        'POINT',
+        '8',
+        'CURVAS',
+        '10',
+        '1',
+        '20',
+        '1',
+        '30',
+        'NaN',
+        '0',
+        'ENDSEC',
+        '0',
+        'EOF',
+      ].join('\n');
       expect(c.importDxf(dxf), 2);
       final spot = c.project.entities.whereType<SpotHeightEntity>().single;
       expect(spot.elevation, 0);
@@ -581,7 +649,11 @@ void main() {
 
     test('heads more than two spacings away count (micro-sprinklers set close)', () {
       for (final (r, sa, sb, tri) in [(3.5, 1.0, 1.0, false), (3.5, 1.0, 3.0, false), (10.0, 2.5, 4.0, true), (12.0, 12.0, 12.0, false), (10.0, 18.0, 18.0, false)]) {
-        expect(gridOverlapCU(radius: r, spacingAlong: sa, spacingBetween: sb, triangular: tri), closeTo(reference(r, sa, sb, tri: tri), 1e-9), reason: 'R $r, $sa × $sb');
+        expect(
+          gridOverlapCU(radius: r, spacingAlong: sa, spacingBetween: sb, triangular: tri),
+          closeTo(reference(r, sa, sb, tri: tri), 1e-9),
+          reason: 'R $r, $sa × $sb',
+        );
       }
       // close spacing is very uniform
       expect(gridOverlapCU(radius: 3.5, spacingAlong: 1, spacingBetween: 1), greaterThan(97));

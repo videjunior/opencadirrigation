@@ -44,53 +44,72 @@ Future<WelcomeChoice> showWelcomeDialog(BuildContext context, ProjectController 
       final compact = width < 720;
       final cardWidth = compact ? (width - 96).clamp(200.0, 320.0) : 200.0;
       return AlertDialog(
-        title: Row(children: [
-          Image.asset('assets/brand/logo-mark.png', height: 34, filterQuality: FilterQuality.medium),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-              Text(t('welcome.title')),
-              // exact build shown at start-up: version, build number, date, commit
-              Text(t('about.version', {'v': appVersionLabel}), key: const Key('welcome_version'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, fontFamily: 'monospace', color: Cad.fg54)),
-            ]),
-          ),
-        ]),
+        title: Row(
+          children: [
+            Image.asset('assets/brand/logo-mark.png', height: 34, filterQuality: FilterQuality.medium),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(t('welcome.title')),
+                  // exact build shown at start-up: version, build number, date, commit
+                  Text(
+                    t('about.version', {'v': appVersionLabel}),
+                    key: const Key('welcome_version'),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, fontFamily: 'monospace', color: Cad.fg54),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         content: SizedBox(
           width: compact ? double.maxFinite : 680,
           child: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(t('welcome.body'), style: const TextStyle(height: 1.4, fontSize: 13)),
-              const SizedBox(height: 14),
-              Text(t('welcome.examples'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-              const SizedBox(height: 2),
-              Text(t('welcome.examplesHint'), style: TextStyle(fontSize: 11.5, color: Cad.fg60, height: 1.35)),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final ex in exampleGallery)
-                    _ExampleCard(
-                      key: Key('example_${ex.id.name}'),
-                      icon: exampleIcon(ex.id),
-                      title: t(ex.titleKey),
-                      subtitle: t(ex.subtitleKey),
-                      tags: t(ex.tagsKey),
-                      width: cardWidth,
-                      open: t('welcome.open'),
-                      onTap: () {
-                        loadExampleAction(c, ex.id);
-                        Navigator.pop(ctx, WelcomeChoice.example);
-                      },
-                    ),
-                ],
-              ),
-            ]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('welcome.body'), style: const TextStyle(height: 1.4, fontSize: 13)),
+                const SizedBox(height: 14),
+                Text(t('welcome.examples'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                const SizedBox(height: 2),
+                Text(t('welcome.examplesHint'), style: TextStyle(fontSize: 11.5, color: Cad.fg60, height: 1.35)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final ex in exampleGallery)
+                      _ExampleCard(
+                        key: Key('example_${ex.id.name}'),
+                        icon: exampleIcon(ex.id),
+                        title: t(ex.titleKey),
+                        subtitle: t(ex.subtitleKey),
+                        tags: t(ex.tagsKey),
+                        width: cardWidth,
+                        open: t('welcome.open'),
+                        onTap: () {
+                          loadExampleAction(c, ex.id);
+                          Navigator.pop(ctx, WelcomeChoice.example);
+                        },
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
           TextButton(key: const Key('tut_skip'), onPressed: () => Navigator.pop(ctx, WelcomeChoice.skip), child: Text(t('welcome.skip'))),
-          FilledButton.icon(key: const Key('tut_start'), onPressed: () => Navigator.pop(ctx, WelcomeChoice.tutorial), icon: const Icon(Icons.school_outlined, size: 18), label: Text(t('welcome.tutorial'))),
+          FilledButton.icon(
+            key: const Key('tut_start'),
+            onPressed: () => Navigator.pop(ctx, WelcomeChoice.tutorial),
+            icon: const Icon(Icons.school_outlined, size: 18),
+            label: Text(t('welcome.tutorial')),
+          ),
         ],
       );
     },
@@ -120,20 +139,39 @@ class _ExampleCard extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Icon(icon, size: 22, color: Cad.accentIcon),
-                const SizedBox(width: 8),
-                Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
-              ]),
-              const SizedBox(height: 6),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: Cad.fg70, height: 1.3), maxLines: 4, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 6),
-              Row(children: [
-                Expanded(child: Text(tags, style: TextStyle(fontSize: 10.5, color: Cad.fg38))),
-                Text(open, style: TextStyle(fontSize: 11, color: Cad.accentIcon, fontWeight: FontWeight.bold)),
-              ]),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon, size: 22, color: Cad.accentIcon),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: Cad.fg70, height: 1.3),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(tags, style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+                    ),
+                    Text(
+                      open,
+                      style: TextStyle(fontSize: 11, color: Cad.accentIcon, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

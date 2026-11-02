@@ -129,7 +129,12 @@ void main() {
     );
     expect(
       declined,
-      [t('ai.err.refusalCat', {...args, 'c': t('ai.err.cat.cyber')}), '(Declined by a classifier.)', t('ai.err.refusalHint'), t('ai.err.refusalBusy', {'r': 'Claude Opus 4.8'})].join(' '),
+      [
+        t('ai.err.refusalCat', {...args, 'c': t('ai.err.cat.cyber')}),
+        '(Declined by a classifier.)',
+        t('ai.err.refusalHint'),
+        t('ai.err.refusalBusy', {'r': 'Claude Opus 4.8'}),
+      ].join(' '),
     );
     final reasoning = await errorFor(tester, FakeClaude([(_) => FakeReply.refusal('reasoning_extraction')]).call);
     expect(reasoning, '${t('ai.err.refusal', args)} ${t('ai.err.refusalReasoning')}');

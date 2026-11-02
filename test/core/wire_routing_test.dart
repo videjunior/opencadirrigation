@@ -46,13 +46,20 @@ void main() {
     // polylines between branch points, sharing their end vertices
     expect(r.routes.length, 3);
     expect(r.routes.first.points.first, const Pt(-20, -10));
-    final ends = [for (final w in r.routes) ...[w.points.first, w.points.last]];
+    final ends = [
+      for (final w in r.routes) ...[w.points.first, w.points.last],
+    ];
     expect(ends.where((e) => e == const Pt(50, 0)).length, 3);
     // the valve wiring connects them: every valve reached at those lengths
     for (var i = 0; i < r.routes.length; i++) {
       p.entities.add(WireEntity(id: 'wr$i', points: r.routes[i].points));
     }
-    final e = designElectrical(p, flows: const [{'vA', 'vB', 'vC'}])!;
+    final e = designElectrical(
+      p,
+      flows: const [
+        {'vA', 'vB', 'vC'},
+      ],
+    )!;
     expect(e.warnings.where((w) => w.startsWith('elec_unwired') || w.startsWith('elec_wire_orphan') || w.startsWith('elec_ctrl_unwired')), isEmpty);
     final runs = {for (final x in e.runs) x.valveId: x};
     expect(runs['vC']!.routeM, closeTo(_stub + 70, 1e-6));
@@ -65,22 +72,26 @@ void main() {
 
   test('a Steiner-like tree for a two-wire path is shorter than the shortest paths', () {
     const pipes = [
-      [Pt(0, 0), Pt(100, 0)], [Pt(100, 0), Pt(100, 10)], [Pt(100, 0), Pt(100, -10)],
-      [Pt(0, 0), Pt(100, 10)], [Pt(0, 0), Pt(100, -10)],
+      [Pt(0, 0), Pt(100, 0)],
+      [Pt(100, 0), Pt(100, 10)],
+      [Pt(100, 0), Pt(100, -10)],
+      [Pt(0, 0), Pt(100, 10)],
+      [Pt(0, 0), Pt(100, -10)],
     ];
     const valves = {'vA': Pt(100, 10), 'vB': Pt(100, -10)};
     final spt = routeWires(controllers: const {'c': Pt.zero}, valves: valves, pipes: pipes);
     final diag = math.sqrt(100 * 100 + 10 * 10);
     expect(spt.totalRouteM, closeTo(2 * diag, 1e-9));
-    final steiner = routeWires(controllers: const {'c': Pt.zero}, valves: valves, pipes: pipes, options: const WireRoutingOptions(mode: RoutingMode.steiner));
+    final steiner = routeWires(
+      controllers: const {'c': Pt.zero},
+      valves: valves,
+      pipes: pipes,
+      options: const WireRoutingOptions(mode: RoutingMode.steiner),
+    );
     expect(steiner.totalRouteM, closeTo(diag + 20, 1e-9));
     expect(steiner.stations.firstWhere((s) => s.entityId == 'vB').routeM, closeTo(diag + 20, 1e-9));
     // the two-wire design runs on those routes
-    final p = Project()
-      ..entities.addAll([
-        ControllerEntity(id: 'c', position: Pt.zero),
-        for (final v in valves.entries) ControlValveEntity(id: v.key, position: v.value),
-      ]);
+    final p = Project()..entities.addAll([ControllerEntity(id: 'c', position: Pt.zero), for (final v in valves.entries) ControlValveEntity(id: v.key, position: v.value)]);
     final tw = designTwoWire(p, routes: [for (final w in steiner.routes) w.points])!;
     expect(tw.warnings, isEmpty);
     expect(tw.paths.single.routeM, closeTo(diag + 20, 1e-9));
@@ -89,10 +100,7 @@ void main() {
   test('master valve and pump-start relay after the zone valves', () {
     final p = _site(stations: 4);
     final control = p.catalog.valves.firstWhere((v) => v.kind == ValveKind.control);
-    p.entities.addAll([
-      MiscHydraulicEntity(id: 'mv', position: const Pt(30, 0), valveSpecId: control.id),
-      PumpEntity(id: 'pump', position: const Pt(5, 0)),
-    ]);
+    p.entities.addAll([MiscHydraulicEntity(id: 'mv', position: const Pt(30, 0), valveSpecId: control.id), PumpEntity(id: 'pump', position: const Pt(5, 0))]);
     final r = autoRouteWires(p);
     final st = {for (final s in r.stations) s.entityId: s};
     expect(st['mv']!.kind, StationKind.masterValve);
@@ -107,20 +115,35 @@ void main() {
   });
 
   test('crossing trenches join; codes', () {
-    const pipes = [[Pt(0, 50), Pt(100, 50)], [Pt(50, 0), Pt(50, 100)]];
+    const pipes = [
+      [Pt(0, 50), Pt(100, 50)],
+      [Pt(50, 0), Pt(50, 100)],
+    ];
     final joined = routeWires(controllers: const {'c': Pt(0, 50)}, valves: const {'v': Pt(50, 100)}, pipes: pipes);
     expect(joined.warnings, isEmpty);
     expect(joined.stations.single.routeM, closeTo(100, 1e-9));
     final apart = routeWires(controllers: const {'c': Pt(0, 50)}, valves: const {'v': Pt(50, 100)}, pipes: pipes, options: const WireRoutingOptions(connectCrossings: false));
     expect(apart.warnings, ['wire_route_unreachable:v']);
-    final stub = routeWires(controllers: const {'c': Pt.zero}, valves: const {'v': Pt(50, 80)}, pipes: const [[Pt.zero, Pt(100, 0)]]);
+    final stub = routeWires(
+      controllers: const {'c': Pt.zero},
+      valves: const {'v': Pt(50, 80)},
+      pipes: const [
+        [Pt.zero, Pt(100, 0)],
+      ],
+    );
     expect(stub.warnings, ['wire_route_long_stub:v']);
     expect(stub.stations.single.routeM, closeTo(130, 1e-9));
     expect(routeWires(controllers: const {}, valves: const {'v': Pt.zero}, pipes: const []).warnings, ['wire_route_no_controller']);
     final bare = routeWires(controllers: const {'c': Pt.zero}, valves: const {'v': Pt(5, 5)}, pipes: const []);
     expect(bare.warnings, containsAll(['wire_route_no_pipes', 'wire_route_unreachable:v']));
     // two controllers: each valve to the nearest along the trenches
-    final two = routeWires(controllers: const {'a': Pt.zero, 'b': Pt(100, 0)}, valves: const {'v1': Pt(20, 0), 'v2': Pt(90, 0)}, pipes: const [[Pt.zero, Pt(100, 0)]]);
+    final two = routeWires(
+      controllers: const {'a': Pt.zero, 'b': Pt(100, 0)},
+      valves: const {'v1': Pt(20, 0), 'v2': Pt(90, 0)},
+      pipes: const [
+        [Pt.zero, Pt(100, 0)],
+      ],
+    );
     expect({for (final s in two.stations) s.entityId: s.controllerId}, {'v1': 'a', 'v2': 'b'});
   });
 }

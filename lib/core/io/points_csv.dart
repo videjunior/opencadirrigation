@@ -86,7 +86,10 @@ class PointsCsvReader {
         yi = nums[1];
         zi = nums.length > 2 ? nums[2] : null;
         // a text column ("P1 500 600 10") names the point
-        ni ??= [for (var i = 0; i < sample.length; i++) if (!nums.contains(i)) i].firstOrNull;
+        ni ??= [
+          for (var i = 0; i < sample.length; i++)
+            if (!nums.contains(i)) i,
+        ].firstOrNull;
       } else {
         throw const FormatException('points_no_columns');
       }

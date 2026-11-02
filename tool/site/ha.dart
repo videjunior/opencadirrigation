@@ -13,30 +13,81 @@ const _ha = SiteText(
   aiTitle: 'Mataimakin AI da ke zane da ƙira tare da kai',
   aiIntro: 'Buɗe panel ɗin AI a gefen zanen, ka faɗi abin da kake so da kalmominka. Mataimakin yana karanta aikin, yana kallon hoton tauraron ɗan adam da yanayin ƙasa, kuma yana aiki da kayan aiki iri ɗaya da na cikin menu, don haka abin da yake zanawa ƙira ce ta gaske: abubuwa, bututu, bawuloli, yankuna da sakamako, ba hoto kawai ba. Kowane canji yana jiran amincewarka, ko kuma ana aiwatar da shi ta atomatik idan ka fi so, kuma ana iya warware shi da danna sau ɗaya.',
   aiPoints: [
-    ('Yana zane da ƙira ta atomatik', 'Yana tsara masu fesa ruwa da layukan ɗigo, raba gonaki zuwa rukunai, daidaita pivot, shimfiɗa hanyoyin bututu da bawuloli, sanya famfo da tushen ruwa, gudanar da ƙira, gyara gargaɗi da inganta ƙirar don rage kuɗi, sannan ya rubuta rahoton fasaha da ƙiyasin farashi.'),
-    ('Yana ganin wurin', 'Yana nemo wurin daga adireshi, yana kallon hoton tauraron ɗan adam na aikin da aka saita matsayin wurinsa da kuma yanayin ƙasa (tudu da kwari, layukan tsayi, gangara, bayanan tsayi a tsawon layi), yana karanta zane-zane da fayilolin GIS da ka haɗa, kuma yana ƙara abubuwa a kundi daga takardar bayanai ta PDF. Yana zana iyakokin gonaki a kan hoton da kansa, yana bin ɗigo da layukan da ka yi wa alama a taswira, kuma yana manna hotunan gona masu GPS a kan zanen a inda aka ɗauke su.'),
-    ('Yana bayani kuma yana dubawa', 'Yana amsa tambayoyi game da aikin da sakamakonsa, yana bayyana kowane saƙon ƙira da yadda za a gyara shi, yana gudanar da bincike, kuma yana ajiye jerin abubuwan yi da bayanan kula na shawarwarinka a cikin aikin. Idan ka buƙata, yana bitar dukkan ƙirar ba tare da canza komai ba, kuma yana duba takardar zanen kafin ka fitar da ita.'),
-    ('Maɓallinka, ikonka', 'Samfuran Claude (Anthropic) ko GPT (OpenAI) a aji mafi girma, matsakaici ko mai sauri, tare da maɓallin API na kanka, ana kiransu kai tsaye daga mai binciken gizo ba tare da wata sabar a tsakani ba. Yanayin karatu kawai, na tsari da farko, na tambaya kafin kowane canji ko na atomatik, iyakar matakai da iyakar kashe kuɗi a kowace ɗawainiya, warware canje-canjen kowace amsa, kuma ba a aika komai kafin ka danna Aika.'),
+    (
+      'Yana zane da ƙira ta atomatik',
+      'Yana tsara masu fesa ruwa da layukan ɗigo, raba gonaki zuwa rukunai, daidaita pivot, shimfiɗa hanyoyin bututu da bawuloli, sanya famfo da tushen ruwa, gudanar da ƙira, gyara gargaɗi da inganta ƙirar don rage kuɗi, sannan ya rubuta rahoton fasaha da ƙiyasin farashi.',
+    ),
+    (
+      'Yana ganin wurin',
+      'Yana nemo wurin daga adireshi, yana kallon hoton tauraron ɗan adam na aikin da aka saita matsayin wurinsa da kuma yanayin ƙasa (tudu da kwari, layukan tsayi, gangara, bayanan tsayi a tsawon layi), yana karanta zane-zane da fayilolin GIS da ka haɗa, kuma yana ƙara abubuwa a kundi daga takardar bayanai ta PDF. Yana zana iyakokin gonaki a kan hoton da kansa, yana bin ɗigo da layukan da ka yi wa alama a taswira, kuma yana manna hotunan gona masu GPS a kan zanen a inda aka ɗauke su.',
+    ),
+    (
+      'Yana bayani kuma yana dubawa',
+      'Yana amsa tambayoyi game da aikin da sakamakonsa, yana bayyana kowane saƙon ƙira da yadda za a gyara shi, yana gudanar da bincike, kuma yana ajiye jerin abubuwan yi da bayanan kula na shawarwarinka a cikin aikin. Idan ka buƙata, yana bitar dukkan ƙirar ba tare da canza komai ba, kuma yana duba takardar zanen kafin ka fitar da ita.',
+    ),
+    (
+      'Maɓallinka, ikonka',
+      'Samfuran Claude (Anthropic) ko GPT (OpenAI) a aji mafi girma, matsakaici ko mai sauri, tare da maɓallin API na kanka, ana kiransu kai tsaye daga mai binciken gizo ba tare da wata sabar a tsakani ba. Yanayin karatu kawai, na tsari da farko, na tambaya kafin kowane canji ko na atomatik, iyakar matakai da iyakar kashe kuɗi a kowace ɗawainiya, warware canje-canjen kowace amsa, kuma ba a aika komai kafin ka danna Aika.',
+    ),
   ],
   aiCta: 'Buɗe mataimakin AI',
   featuresTitle: 'Abin da OpenCADIrrigation yake yi',
   features: [
-    ('Mataimakin AI', 'Na zaɓi ne: tambayi AI game da aikin, ko ka bar ta ta yi maka zane da ƙira. Tana tsara masu fesa ruwa da ɗigo, raba gonaki, shimfiɗa bututu, gudanar da auna girma da kayan aikin atomatik, yayin da take kallon hoton tauraron ɗan adam da yanayin ƙasa, ta amfani da samfuran Claude (Anthropic) ko GPT (OpenAI) da maɓallin API na kanka, kai tsaye daga mai binciken gizonka ba tare da wata sabar a tsakani ba. Ba a aika komai kafin ka danna Aika, kuma kowane canji yana jiran amincewarka (ko kuma ana aiwatar da shi ta atomatik, idan ka zaɓa) kuma ana iya warware shi.'),
-    ('Ƙira da auna girma ta atomatik', 'Rukunin lateral da grid na masu fesa ruwa da danna ɗaya, tsara masu fesa ruwa da daidaitaccen ruwan sama (matched precipitation), raba yankuna bisa kwarara, shimfiɗa hanyoyin bututu da bawuloli, raba gona zuwa rukunai, daidaita pivot da gona da gano tsirrai a hotunan da aka ɗauka daga sama; ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, tare da daidaita kuɗin bututu da na makamashi.'),
-    ('Cikakken zanen CAD', 'Layi, polyline, baka, spline, zanen cikewa (hatch), ma\'auni, rubutu, layers da bulo (blocks), tare da coordinates da ake rubutawa, snap, bin polar, grips, gajimaren bita da gajerun umarni irin na AutoCAD (L, PL, C, D, ZE…).'),
-    ('Hanyar sadarwar ruwa', 'Tushen ruwa, famfuna masu tsayayyen sauri da masu sauyin sauri, babban bututu, bawuloli na yanki, na rage matsi, masu riƙe matsi da masu sarrafa kwarara, masu fesa ruwa masu bawul a cikin kansu (valve-in-head), layukan lateral masu fitar da ruwa, tef ɗin ɗigo, matattara da mitocin ruwa, da kuma pivot na tsakiya da injunan layi tare da kunshinsu na masu fesa ruwa, bindigogi masu tafiya ta hos da ban ruwa ta saman ƙasa.'),
-    ('Ingantaccen injin lissafin ruwa', 'Hazen-Williams, Darcy-Weisbach, Scobey da Manning, ƙananan asarar matsi daga haɗe-haɗen da aka yi amfani da su, masu fitar da ruwa q = k·Hˣ, warware hanyar sadarwa da Global Gradient Algorithm (kamar EPANET), lanƙwasan famfo tare da NPSH, yanayin wucin gadi (bugun ruwa) ta hanyar method of characteristics da bawuloli na iska, da kuma kwaikwayo na awa 24 bisa farashin makamashi.'),
-    ('Ƙasa, yanayi da aikin gona', 'Layukan tsayi, wuraren tsayi, samfurin ƙasa ta triangulation tare da layukan karyewa (breaklines), tsayin ƙasa da ake saukewa daga intanet, gajimaren wurare na LAS, taswirorin gangara da bayanan tsayi a tsawon layi; yanayin wurin da ake saukewa ko ake shigarwa da hannu, amfanin gona na FAO-56 bisa matakin girma, nau\'o\'in ƙasa, ruwan sama mai amfani da wanke gishiri don buƙatun ruwa, da kuma kasafin ruwan lambu.'),
-    ('Rahotanni, zane-zane da kayan aiki', 'Yankuna, bututu, masu fitar da ruwa, daidaito (CU, DU, EU), shirin na\'urar sarrafawa da wayoyin bawuloli; jerin kayan aiki tare da haɗe-haɗe, da ƙiyasin farashi mai ladar aiki, haraji da lokacin dawo da jari; tarin takardun PDF masu cikakkun bayanan gini da jadawalai, a kowane ɗaya daga cikin harsuna 20, da kowane tebur a Excel, CSV da TXT.'),
-    ('Musayar fayiloli', 'Yana shigo da DXF, DWG, zane-zanen PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF da hotuna; yana fitar da DXF 2000 mai abubuwan CAD na asali (ko R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp da IFC.'),
-    ('Kundin masana\'antun', 'Kundin masana\'antun a JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) a shirye don amfani, da kuma fakitinka da ake lodawa daga fayil ko URL.'),
-    ('Ba tare da intanet ba, da kuma a gona', 'Bayan ziyarar farko, manhajar tana buɗewa ba tare da intanet ba, a kwamfuta, tablet ko waya, da jigo mai haske ko mai duhu. A gona, GPS na na\'ura yana yin rikodin tafiyarka a matsayin rufaffiyar iyaka ko layi, yana yin alamar wurare kuma yana nuna nisa da alƙibla zuwa abin da aka zaɓa don sanya alamomin ƙira a ƙasa.'),
+    (
+      'Mataimakin AI',
+      'Na zaɓi ne: tambayi AI game da aikin, ko ka bar ta ta yi maka zane da ƙira. Tana tsara masu fesa ruwa da ɗigo, raba gonaki, shimfiɗa bututu, gudanar da auna girma da kayan aikin atomatik, yayin da take kallon hoton tauraron ɗan adam da yanayin ƙasa, ta amfani da samfuran Claude (Anthropic) ko GPT (OpenAI) da maɓallin API na kanka, kai tsaye daga mai binciken gizonka ba tare da wata sabar a tsakani ba. Ba a aika komai kafin ka danna Aika, kuma kowane canji yana jiran amincewarka (ko kuma ana aiwatar da shi ta atomatik, idan ka zaɓa) kuma ana iya warware shi.',
+    ),
+    (
+      'Ƙira da auna girma ta atomatik',
+      'Rukunin lateral da grid na masu fesa ruwa da danna ɗaya, tsara masu fesa ruwa da daidaitaccen ruwan sama (matched precipitation), raba yankuna bisa kwarara, shimfiɗa hanyoyin bututu da bawuloli, raba gona zuwa rukunai, daidaita pivot da gona da gano tsirrai a hotunan da aka ɗauka daga sama; ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, tare da daidaita kuɗin bututu da na makamashi.',
+    ),
+    (
+      'Cikakken zanen CAD',
+      'Layi, polyline, baka, spline, zanen cikewa (hatch), ma\'auni, rubutu, layers da bulo (blocks), tare da coordinates da ake rubutawa, snap, bin polar, grips, gajimaren bita da gajerun umarni irin na AutoCAD (L, PL, C, D, ZE…).',
+    ),
+    (
+      'Hanyar sadarwar ruwa',
+      'Tushen ruwa, famfuna masu tsayayyen sauri da masu sauyin sauri, babban bututu, bawuloli na yanki, na rage matsi, masu riƙe matsi da masu sarrafa kwarara, masu fesa ruwa masu bawul a cikin kansu (valve-in-head), layukan lateral masu fitar da ruwa, tef ɗin ɗigo, matattara da mitocin ruwa, da kuma pivot na tsakiya da injunan layi tare da kunshinsu na masu fesa ruwa, bindigogi masu tafiya ta hos da ban ruwa ta saman ƙasa.',
+    ),
+    (
+      'Ingantaccen injin lissafin ruwa',
+      'Hazen-Williams, Darcy-Weisbach, Scobey da Manning, ƙananan asarar matsi daga haɗe-haɗen da aka yi amfani da su, masu fitar da ruwa q = k·Hˣ, warware hanyar sadarwa da Global Gradient Algorithm (kamar EPANET), lanƙwasan famfo tare da NPSH, yanayin wucin gadi (bugun ruwa) ta hanyar method of characteristics da bawuloli na iska, da kuma kwaikwayo na awa 24 bisa farashin makamashi.',
+    ),
+    (
+      'Ƙasa, yanayi da aikin gona',
+      'Layukan tsayi, wuraren tsayi, samfurin ƙasa ta triangulation tare da layukan karyewa (breaklines), tsayin ƙasa da ake saukewa daga intanet, gajimaren wurare na LAS, taswirorin gangara da bayanan tsayi a tsawon layi; yanayin wurin da ake saukewa ko ake shigarwa da hannu, amfanin gona na FAO-56 bisa matakin girma, nau\'o\'in ƙasa, ruwan sama mai amfani da wanke gishiri don buƙatun ruwa, da kuma kasafin ruwan lambu.',
+    ),
+    (
+      'Rahotanni, zane-zane da kayan aiki',
+      'Yankuna, bututu, masu fitar da ruwa, daidaito (CU, DU, EU), shirin na\'urar sarrafawa da wayoyin bawuloli; jerin kayan aiki tare da haɗe-haɗe, da ƙiyasin farashi mai ladar aiki, haraji da lokacin dawo da jari; tarin takardun PDF masu cikakkun bayanan gini da jadawalai, a kowane ɗaya daga cikin harsuna 20, da kowane tebur a Excel, CSV da TXT.',
+    ),
+    (
+      'Musayar fayiloli',
+      'Yana shigo da DXF, DWG, zane-zanen PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF da hotuna; yana fitar da DXF 2000 mai abubuwan CAD na asali (ko R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp da IFC.',
+    ),
+    (
+      'Kundin masana\'antun',
+      'Kundin masana\'antun a JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) a shirye don amfani, da kuma fakitinka da ake lodawa daga fayil ko URL.',
+    ),
+    (
+      'Ba tare da intanet ba, da kuma a gona',
+      'Bayan ziyarar farko, manhajar tana buɗewa ba tare da intanet ba, a kwamfuta, tablet ko waya, da jigo mai haske ko mai duhu. A gona, GPS na na\'ura yana yin rikodin tafiyarka a matsayin rufaffiyar iyaka ko layi, yana yin alamar wurare kuma yana nuna nisa da alƙibla zuwa abin da aka zaɓa don sanya alamomin ƙira a ƙasa.',
+    ),
   ],
   howTitle: 'Yadda yake aiki',
   how: [
-    ('Zana ko shigo da wurin', 'Kawo DXF, DWG, KML ko hoton tauraron ɗan adam, ko ka zana gona, lambu ko filin wasa kai tsaye, ko kuma ka faɗa wa mataimakin AI adireshin, shi kuma zai nemo wurin a kan taswira. Ƙara layukan tsayi ko sauke tsayin ƙasa ta coordinate.'),
-    ('Gina hanyar sadarwa, da hannu ko da AI', 'Samar da rukunin lateral ko grid na masu fesa ruwa da danna ɗaya, ko ka umarci mataimakin AI ya tsara masu fesa ruwa, ya raba gonar, ya shimfiɗa bututu, ya kuma sanya bawuloli, famfo da tushen ruwa; sannan ka haɗa komai da babban bututu.'),
-    ('Yi ƙira ka rubuta bayanai', 'Danna F5, ko ka umarci AI ta yi: manhajar tana auna girman yankuna da babban bututu, tana duba matsi da gudun ruwa, kuma tana samar da rahotanni, jerin kayan aiki da takardar PDF.'),
+    (
+      'Zana ko shigo da wurin',
+      'Kawo DXF, DWG, KML ko hoton tauraron ɗan adam, ko ka zana gona, lambu ko filin wasa kai tsaye, ko kuma ka faɗa wa mataimakin AI adireshin, shi kuma zai nemo wurin a kan taswira. Ƙara layukan tsayi ko sauke tsayin ƙasa ta coordinate.',
+    ),
+    (
+      'Gina hanyar sadarwa, da hannu ko da AI',
+      'Samar da rukunin lateral ko grid na masu fesa ruwa da danna ɗaya, ko ka umarci mataimakin AI ya tsara masu fesa ruwa, ya raba gonar, ya shimfiɗa bututu, ya kuma sanya bawuloli, famfo da tushen ruwa; sannan ka haɗa komai da babban bututu.',
+    ),
+    (
+      'Yi ƙira ka rubuta bayanai',
+      'Danna F5, ko ka umarci AI ta yi: manhajar tana auna girman yankuna da babban bututu, tana duba matsi da gudun ruwa, kuma tana samar da rahotanni, jerin kayan aiki da takardar PDF.',
+    ),
   ],
   examplesTitle: 'Misalai a shirye don buɗewa',
   examplesIntro: 'Kowane aiki yana buɗewa cikakke kuma ana ƙira shi da F5. Yi amfani da su don sanin manhajar ko a matsayin mafari.',
@@ -47,30 +98,87 @@ const _ha = SiteText(
     SiteExample('rowCrop', 'Amfanin gona na layi da ɗigo', 'Rukunin tumatir huɗu a kan tef ɗin ɗigo, manifolds da bawuloli, tace mai raga, famfo da ƙasa mai gangara.'),
     SiteExample('pivot', 'Pivot na tsakiya', 'Pivot na m 300 a masara da babban bututu, rijiya da famfo ke ciyarwa; rahoton hasumiya, tsawo da bakin fesawa.'),
     SiteExample('greenhouse', 'Gidan ganye na kayan lambu', 'Ramuka huɗu na barkono a kan bututun ɗigo mai daidaita matsi, yanki ɗaya ga kowane rami, tanki, ƙaramin famfo da tace mai faifai.'),
-    SiteExample('nursery', 'Gandun shuke-shuke', 'Lambuna uku na m 12 × 48 ƙarƙashin ƙananan masu fesa ruwa na sama a grid na m 4 × 4, yanki ɗaya ga kowane lambu, tanki mai tsayi, ƙaramin famfo da tace mai faifai.'),
-    SiteExample('coffee', 'Kofi a layukan tsayi', 'Rukunin kofi uku a gangaren tudu masu laterals masu lanƙwasa da ke bin layukan tsayi (rukunin jagora), bututun ɗigo na PC, rijiya da famfo a gindin gangara.'),
+    SiteExample(
+      'nursery',
+      'Gandun shuke-shuke',
+      'Lambuna uku na m 12 × 48 ƙarƙashin ƙananan masu fesa ruwa na sama a grid na m 4 × 4, yanki ɗaya ga kowane lambu, tanki mai tsayi, ƙaramin famfo da tace mai faifai.',
+    ),
+    SiteExample(
+      'coffee',
+      'Kofi a layukan tsayi',
+      'Rukunin kofi uku a gangaren tudu masu laterals masu lanƙwasa da ke bin layukan tsayi (rukunin jagora), bututun ɗigo na PC, rijiya da famfo a gindin gangara.',
+    ),
     SiteExample('bananas', 'Gonar ayaba', 'Rukunin ayaba biyu ƙarƙashin ƙananan masu fesa ruwa masu daidaita matsi a m 5 × 5, rijiya da famfon nutsewa, tace mai faifai da ƙasa mai gangara.'),
-    SiteExample('sugarcane', 'Rake da ɗigo na ƙarƙashin ƙasa', 'Rukunin rake biyu a kan bututun ɗigo na PC na mm 20 da aka binne m 0.3, laterals na m 180, manifolds da aka binne, tafki, famfo, tace mai raga da bawul na iska.'),
-    SiteExample('gravity', 'Ɗigo ta nauyi', 'Tafki m 40 sama da rukunin kayan lambu biyu masu ɗigo, ba tare da famfo ba: bawul na ƙofa, bawul na rage matsi da tace mai faifai a babban bututu; layukan tsayi na gangara.'),
+    SiteExample(
+      'sugarcane',
+      'Rake da ɗigo na ƙarƙashin ƙasa',
+      'Rukunin rake biyu a kan bututun ɗigo na PC na mm 20 da aka binne m 0.3, laterals na m 180, manifolds da aka binne, tafki, famfo, tace mai raga da bawul na iska.',
+    ),
+    SiteExample(
+      'gravity',
+      'Ɗigo ta nauyi',
+      'Tafki m 40 sama da rukunin kayan lambu biyu masu ɗigo, ba tare da famfo ba: bawul na ƙofa, bawul na rage matsi da tace mai faifai a babban bututu; layukan tsayi na gangara.',
+    ),
     SiteExample('pasture', 'Makiyaya da fesa ruwa', 'Filaye uku na m 72 × 72 masu layukan masu fesa ruwa na bugu a m 12 × 18, manifolds da bawuloli, tafki, famfo da bawul na hana komawa.'),
     SiteExample('golf', 'Ramin golf', 'Tee da fesa, fairway da rotors a grid na triangular (yankuna biyu) da green da rotors kewaye da gefe, tafki da famfo da zangunan dare.'),
-    SiteExample('sectorPivot', 'Pivot na sashe da bindigar ƙarshe', 'Pivot na m 250 a waken soya da ke juyawa 270°, yana barin kwata na gidan gona a buɗe, da bindigar ƙarshe ta m³/h 12; tafki, famfo na hp 20 da bawul na ƙofa.'),
-    SiteExample('linear', 'Injin layi', 'Injin layi na m 392 a alkama da ke tafiya m 800 tare da magudanar ruwa, ɗaukar ruwa da famfo na hp 30 da bawul na hana komawa; rahoton hasumiya da bakin fesawa.'),
+    SiteExample(
+      'sectorPivot',
+      'Pivot na sashe da bindigar ƙarshe',
+      'Pivot na m 250 a waken soya da ke juyawa 270°, yana barin kwata na gidan gona a buɗe, da bindigar ƙarshe ta m³/h 12; tafki, famfo na hp 20 da bawul na ƙofa.',
+    ),
+    SiteExample(
+      'linear',
+      'Injin layi',
+      'Injin layi na m 392 a alkama da ke tafiya m 800 tare da magudanar ruwa, ɗaukar ruwa da famfo na hp 30 da bawul na hana komawa; rahoton hasumiya da bakin fesawa.',
+    ),
   ],
   faqTitle: 'Tambayoyin da ake yawan yi',
   faq: [
-    ('Mene ne OpenCADIrrigation?', 'OpenCADIrrigation manhajar yanar gizo ce kyauta, mai buɗaɗɗen lambar tushe, don ƙirar tsarin ban ruwa ta matsi: CAD mai injin lissafin ruwa wanda ke shimfiɗa hanyar sadarwa, yake auna girman bututu, yake duba matsi da daidaito, sannan yake samar da jerin kayan aiki da rahotanni, daga lambun gida har zuwa pivot na tsakiya, kuma yana da mataimakin AI na zaɓi wanda ke zana aikin da yin ƙirarsa tare da kai, daga bayanin da ka yi na wurin.'),
-    ('Shin ƙirƙirarriyar basira (AI) za ta iya yi mini ƙirar aikin?', 'Ee, idan kana so. Mataimakin AI, wanda na zaɓi ne, yana aiki a kan aikin da ke buɗe da kayan aiki iri ɗaya da na cikin menu: bayyana wurin, ko ka bar shi ya kalli hoton tauraron ɗan adam da yanayin ƙasa na aikin da aka saita matsayin wurinsa, sai ya tsara masu fesa ruwa da ɗigo, ya raba gonaki zuwa rukunai, ya shimfiɗa hanyoyin bututu da bawuloli, ya sanya famfo da tushen ruwa, ya gudanar da ƙira da kayan aikin atomatik, ya gyara gargaɗi, ya inganta ƙirar don rage kuɗi, sannan ya rubuta rahoton aikin. Yana tambaya kafin kowane canji, ko kuma yana aiwatar da canje-canjen ta atomatik idan ka zaɓa, kuma ana iya warware kowace amsa da danna sau ɗaya. Samfurin AI na iya yin kuskure, don haka ka duba aikinsa kamar yadda za ka duba na abokin aikinka.'),
-    ('Waɗanne samfuran AI yake amfani da su?', 'Samfuran Claude na Anthropic (Claude Opus 5.5 a matsayin tsoho, Claude Fable 5.1, Claude Sonnet 5.5 da Claude Haiku 5.5) da samfuran GPT na OpenAI (GPT-6 Astra, GPT-6.1 Sol da GPT-6 Luna): samfuri na aji mafi girma, na matsakaici da na mai sauri daga kowane kamfani, kowanne da matakan zurfin tunani guda biyar. Kai ne kake zaɓar samfurin a saitunan mataimakin, sannan ka liƙa maɓallin API na kanka; panel ɗin yana nuna token da ƙiyasin kuɗin kowace amsa, kuma iyakar matakai da iyakar kashe kuɗi suna dakatar da ɗawainiyar da ta ja tsawo.'),
-    ('Me mataimakin AI yake aikawa, kuma zuwa ina?', 'Babu abin da ake aikawa sai ka danna Aika. A lokacin ne saƙonka, fayilolin da ka haɗa da bayanan aikin da ka yi wa alama suke tafiya kai tsaye daga mai binciken gizonka zuwa API na mai ba da sabis ɗin da ka zaɓa, Anthropic ko OpenAI, ba tare da wata sabar ta OpenCADIrrigation a tsakani ba, tare da sakamakon kayan aikin da yake amfani da su yayin amsawa, har da hotunan zane. Mai ba da sabis ɗin yana karɓar kuɗin amfanin daga asusunka. Maɓallin yana zama a ƙwaƙwalwa ne kawai a tsawon zaman da kake ciki, sai dai idan ka zaɓi a tuna da shi a na\'urar, kuma ba ya taɓa shiga fayilolin aiki, hanyoyin haɗin rabawa ko fayilolin da aka fitar. Faɗar da baki, idan ka yi amfani da ita, mai binciken kansa ne ke gane maganar, kuma yana aika sautin ga kamfanin da ya ƙera mai binciken (Google a Chrome, Microsoft a Edge, Apple a Safari). Tattaunawar da aka ajiye tana zama a mai bincikenka kawai, ba ta taɓa shiga fayilolin aiki ko hanyoyin haɗin rabawa ba.'),
-    ('Shin OpenCADIrrigation kyauta ne?', 'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba. Haka kuma lambar tushensa a buɗe take ƙarƙashin lasisin MIT, kuma an wallafa ta a GitHub. Mataimakin AI, wanda na zaɓi ne, yana amfani da asusunka na Anthropic ko OpenAI na kanka, kuma mai ba da sabis ɗin yana karɓar kuɗin amfaninsa daga wannan asusun.'),
-    ('Wa aka yi shi dominsa?', 'Ga masu ƙirar ban ruwa na gona da na lambuna, masana aikin gona da injiniyoyi, dillalan kayan aiki, malamai da ɗalibai. Koyarwa mai mu\'amala, misalai 15 da aka shirya, da kuma mataimakin AI suna ba ka damar farawa ba tare da karanta littafin jagora ba.'),
+    (
+      'Mene ne OpenCADIrrigation?',
+      'OpenCADIrrigation manhajar yanar gizo ce kyauta, mai buɗaɗɗen lambar tushe, don ƙirar tsarin ban ruwa ta matsi: CAD mai injin lissafin ruwa wanda ke shimfiɗa hanyar sadarwa, yake auna girman bututu, yake duba matsi da daidaito, sannan yake samar da jerin kayan aiki da rahotanni, daga lambun gida har zuwa pivot na tsakiya, kuma yana da mataimakin AI na zaɓi wanda ke zana aikin da yin ƙirarsa tare da kai, daga bayanin da ka yi na wurin.',
+    ),
+    (
+      'Shin ƙirƙirarriyar basira (AI) za ta iya yi mini ƙirar aikin?',
+      'Ee, idan kana so. Mataimakin AI, wanda na zaɓi ne, yana aiki a kan aikin da ke buɗe da kayan aiki iri ɗaya da na cikin menu: bayyana wurin, ko ka bar shi ya kalli hoton tauraron ɗan adam da yanayin ƙasa na aikin da aka saita matsayin wurinsa, sai ya tsara masu fesa ruwa da ɗigo, ya raba gonaki zuwa rukunai, ya shimfiɗa hanyoyin bututu da bawuloli, ya sanya famfo da tushen ruwa, ya gudanar da ƙira da kayan aikin atomatik, ya gyara gargaɗi, ya inganta ƙirar don rage kuɗi, sannan ya rubuta rahoton aikin. Yana tambaya kafin kowane canji, ko kuma yana aiwatar da canje-canjen ta atomatik idan ka zaɓa, kuma ana iya warware kowace amsa da danna sau ɗaya. Samfurin AI na iya yin kuskure, don haka ka duba aikinsa kamar yadda za ka duba na abokin aikinka.',
+    ),
+    (
+      'Waɗanne samfuran AI yake amfani da su?',
+      'Samfuran Claude na Anthropic (Claude Opus 5.5 a matsayin tsoho, Claude Fable 5.1, Claude Sonnet 5.5 da Claude Haiku 5.5) da samfuran GPT na OpenAI (GPT-6 Astra, GPT-6.1 Sol da GPT-6 Luna): samfuri na aji mafi girma, na matsakaici da na mai sauri daga kowane kamfani, kowanne da matakan zurfin tunani guda biyar. Kai ne kake zaɓar samfurin a saitunan mataimakin, sannan ka liƙa maɓallin API na kanka; panel ɗin yana nuna token da ƙiyasin kuɗin kowace amsa, kuma iyakar matakai da iyakar kashe kuɗi suna dakatar da ɗawainiyar da ta ja tsawo.',
+    ),
+    (
+      'Me mataimakin AI yake aikawa, kuma zuwa ina?',
+      'Babu abin da ake aikawa sai ka danna Aika. A lokacin ne saƙonka, fayilolin da ka haɗa da bayanan aikin da ka yi wa alama suke tafiya kai tsaye daga mai binciken gizonka zuwa API na mai ba da sabis ɗin da ka zaɓa, Anthropic ko OpenAI, ba tare da wata sabar ta OpenCADIrrigation a tsakani ba, tare da sakamakon kayan aikin da yake amfani da su yayin amsawa, har da hotunan zane. Mai ba da sabis ɗin yana karɓar kuɗin amfanin daga asusunka. Maɓallin yana zama a ƙwaƙwalwa ne kawai a tsawon zaman da kake ciki, sai dai idan ka zaɓi a tuna da shi a na\'urar, kuma ba ya taɓa shiga fayilolin aiki, hanyoyin haɗin rabawa ko fayilolin da aka fitar. Faɗar da baki, idan ka yi amfani da ita, mai binciken kansa ne ke gane maganar, kuma yana aika sautin ga kamfanin da ya ƙera mai binciken (Google a Chrome, Microsoft a Edge, Apple a Safari). Tattaunawar da aka ajiye tana zama a mai bincikenka kawai, ba ta taɓa shiga fayilolin aiki ko hanyoyin haɗin rabawa ba.',
+    ),
+    (
+      'Shin OpenCADIrrigation kyauta ne?',
+      'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba. Haka kuma lambar tushensa a buɗe take ƙarƙashin lasisin MIT, kuma an wallafa ta a GitHub. Mataimakin AI, wanda na zaɓi ne, yana amfani da asusunka na Anthropic ko OpenAI na kanka, kuma mai ba da sabis ɗin yana karɓar kuɗin amfaninsa daga wannan asusun.',
+    ),
+    (
+      'Wa aka yi shi dominsa?',
+      'Ga masu ƙirar ban ruwa na gona da na lambuna, masana aikin gona da injiniyoyi, dillalan kayan aiki, malamai da ɗalibai. Koyarwa mai mu\'amala, misalai 15 da aka shirya, da kuma mataimakin AI suna ba ka damar farawa ba tare da karanta littafin jagora ba.',
+    ),
     ('Shin sai na girka wani abu?', 'A\'a. Yana aiki a Chrome, Edge, Firefox da Safari, a kwamfuta, tablet da waya, kuma ana iya girka shi a matsayin manhaja (PWA) mai buɗewa a tagarta.'),
-    ('Shin yana aiki ba tare da intanet ba?', 'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 24, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.'),
-    ('Shin ana ajiye ayyukana a gajimare (cloud)?', 'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a fayilolin .oci.json da kake ajiyewa inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a wata sabar ba. Ana amfani da intanet ne kawai idan ka nema: taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da kuma, idan kana amfani da shi, mataimakin AI, wanda ke magana da mai ba da sabis ɗin da ka zaɓa kaɗai (Anthropic ko OpenAI).'),
-    ('Yaya ake lissafin ruwa?', 'Asarar matsi ta gogayya da Hazen-Williams, Darcy-Weisbach, Scobey ko Manning, masu fitar da ruwa da q = k·Hˣ, kuma ana warware duk hanyar sadarwa da Global Gradient Algorithm, hanyar da EPANET ke amfani da ita. Ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, kuma ƙirar tana duba daidaito (CU, DU, EU), wanke bututu da yanayin wucin gadi ta hanyar method of characteristics (rufewar bawuloli, tsayawar famfo kwatsam, bawuloli na iska), tare da kwaikwayo na awa 24 na matsi da kuɗin makamashi.'),
-    ('Shin yana aiki da AutoCAD da sauran CAD?', 'Ee. Yana shigo da DXF da DWG har zuwa AutoCAD 2018, DGN V7 da zane-zanen PDF, kuma yana fitar da DXF 2000 mai abubuwan CAD na asali (polyline masu baka, zanen cikewa, spline, ma\'auni, bulo masu sifofi), DXF R12 don tsofaffin manhajoji da DWG 2000. Don GIS, binciken ƙasa da BIM, yana kuma shigo da fitar da KML/KMZ, shapefile, GeoJSON, GPX, LandXML da EPANET .inp, yana shigo da gajimaren wurare na LAS kuma yana fitar da IFC 4.'),
-    ('A waɗanne harsuna ake samunsa?', 'A harsuna 20, iri ɗaya da na wannan shafin (jerin yana ƙasan shafin). Manhajar tana buɗewa a harshen kwamfutarka kuma kana iya canzawa kowane lokaci a Kallo → Harshe.'),
+    (
+      'Shin yana aiki ba tare da intanet ba?',
+      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 24, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
+    ),
+    (
+      'Shin ana ajiye ayyukana a gajimare (cloud)?',
+      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a fayilolin .oci.json da kake ajiyewa inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a wata sabar ba. Ana amfani da intanet ne kawai idan ka nema: taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da kuma, idan kana amfani da shi, mataimakin AI, wanda ke magana da mai ba da sabis ɗin da ka zaɓa kaɗai (Anthropic ko OpenAI).',
+    ),
+    (
+      'Yaya ake lissafin ruwa?',
+      'Asarar matsi ta gogayya da Hazen-Williams, Darcy-Weisbach, Scobey ko Manning, masu fitar da ruwa da q = k·Hˣ, kuma ana warware duk hanyar sadarwa da Global Gradient Algorithm, hanyar da EPANET ke amfani da ita. Ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, kuma ƙirar tana duba daidaito (CU, DU, EU), wanke bututu da yanayin wucin gadi ta hanyar method of characteristics (rufewar bawuloli, tsayawar famfo kwatsam, bawuloli na iska), tare da kwaikwayo na awa 24 na matsi da kuɗin makamashi.',
+    ),
+    (
+      'Shin yana aiki da AutoCAD da sauran CAD?',
+      'Ee. Yana shigo da DXF da DWG har zuwa AutoCAD 2018, DGN V7 da zane-zanen PDF, kuma yana fitar da DXF 2000 mai abubuwan CAD na asali (polyline masu baka, zanen cikewa, spline, ma\'auni, bulo masu sifofi), DXF R12 don tsofaffin manhajoji da DWG 2000. Don GIS, binciken ƙasa da BIM, yana kuma shigo da fitar da KML/KMZ, shapefile, GeoJSON, GPX, LandXML da EPANET .inp, yana shigo da gajimaren wurare na LAS kuma yana fitar da IFC 4.',
+    ),
+    (
+      'A waɗanne harsuna ake samunsa?',
+      'A harsuna 20, iri ɗaya da na wannan shafin (jerin yana ƙasan shafin). Manhajar tana buɗewa a harshen kwamfutarka kuma kana iya canzawa kowane lokaci a Kallo → Harshe.',
+    ),
   ],
   loading: 'Ana loda CAD na ban ruwa…',
   slow: 'Lodawa na ɗaukar lokaci. Duba haɗin intanet ko sake loda shafin; ana iya karanta abin da ke sama tuni.',

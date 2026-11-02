@@ -33,7 +33,7 @@ class TrueTypeFont {
     if (bytes.length < 12) throw const FontFormatException('file too short');
     final data = ByteData.sublistView(bytes);
     final version = data.getUint32(0);
-    if (version != 0x00010000 && version != 0x74727565 /* 'true' */) {
+    if (version != 0x00010000 && version != 0x74727565 /* 'true' */ ) {
       throw FontFormatException(version == 0x4F54544F ? 'CFF outlines are not supported' : 'not a TrueType font');
     }
     final numTables = data.getUint16(4);

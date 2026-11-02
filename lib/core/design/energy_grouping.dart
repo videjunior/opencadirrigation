@@ -64,14 +64,23 @@ class EnergyZone {
   double get piezometric => elevation + requiredHead;
 
   Map<String, dynamic> toJson() => {'id': id, 'q': flow, 'h': hours, 'hreq': requiredHead, 'z': elevation, 'k': lossCoefficient};
-  static EnergyZone fromJson(Map<String, dynamic> j) => EnergyZone(
-    id: j['id'] as String, flow: _d(j['q']), hours: _d(j['h'], 1), requiredHead: _d(j['hreq']), elevation: _d(j['z']), lossCoefficient: _d(j['k']),
-  );
+  static EnergyZone fromJson(Map<String, dynamic> j) =>
+      EnergyZone(id: j['id'] as String, flow: _d(j['q']), hours: _d(j['h'], 1), requiredHead: _d(j['hreq']), elevation: _d(j['z']), lossCoefficient: _d(j['k']));
 }
 
 /// Limits and constants of [groupZonesForEnergy].
 class GroupingOptions {
-  const GroupingOptions({this.maxFlow = 0, this.maxGroups = 0, this.maxHours = 0, this.maxZonesPerGroup = 0, this.sourceElevation = 0, this.pumpEfficiency = 0.65, this.lossExponent = 1.852, this.maxEvaluations = 20000, this.maxHeadCalls = 200});
+  const GroupingOptions({
+    this.maxFlow = 0,
+    this.maxGroups = 0,
+    this.maxHours = 0,
+    this.maxZonesPerGroup = 0,
+    this.sourceElevation = 0,
+    this.pumpEfficiency = 0.65,
+    this.lossExponent = 1.852,
+    this.maxEvaluations = 20000,
+    this.maxHeadCalls = 200,
+  });
 
   /// Largest flow of a group (m³/s; 0 = none). A zone above it alone gets a
   /// group of its own.
@@ -109,9 +118,8 @@ class EnergyGroup {
   final double energyKwh;
 
   Map<String, dynamic> toJson() => {'zones': zoneIds, 'q': flow, 'h': head, 't': hours, 'v': volume, 'e': energyKwh};
-  static EnergyGroup fromJson(Map<String, dynamic> j) => EnergyGroup(
-    zoneIds: ((j['zones'] as List?) ?? []).cast<String>(), flow: _d(j['q']), head: _d(j['h']), hours: _d(j['t']), volume: _d(j['v']), energyKwh: _d(j['e']),
-  );
+  static EnergyGroup fromJson(Map<String, dynamic> j) =>
+      EnergyGroup(zoneIds: ((j['zones'] as List?) ?? []).cast<String>(), flow: _d(j['q']), head: _d(j['h']), hours: _d(j['t']), volume: _d(j['v']), energyKwh: _d(j['e']));
 }
 
 /// Outcome of [groupZonesForEnergy].
@@ -135,13 +143,15 @@ class EnergyGroupingResult {
 
   Map<String, dynamic> toJson() => {'groups': groups.map((g) => g.toJson()).toList(), 'base': baseline.map((g) => g.toJson()).toList(), 'codes': codes};
   static EnergyGroupingResult fromJson(Map<String, dynamic> j) => EnergyGroupingResult(
-    groups: [for (final g in (j['groups'] as List?) ?? []) EnergyGroup.fromJson(g as Map<String, dynamic>)], baseline: [for (final g in (j['base'] as List?) ?? []) EnergyGroup.fromJson(g as Map<String, dynamic>)],
+    groups: [for (final g in (j['groups'] as List?) ?? []) EnergyGroup.fromJson(g as Map<String, dynamic>)],
+    baseline: [for (final g in (j['base'] as List?) ?? []) EnergyGroup.fromJson(g as Map<String, dynamic>)],
     codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }
 
 /// Groups [zones] for the least pumping energy (see the library comment).
-EnergyGroupingResult groupZonesForEnergy(List<EnergyZone> zones, {GroupingOptions options = const GroupingOptions(), double Function(List<EnergyZone> group)? groupHead}) => _Grouper(zones, options, groupHead).run();
+EnergyGroupingResult groupZonesForEnergy(List<EnergyZone> zones, {GroupingOptions options = const GroupingOptions(), double Function(List<EnergyZone> group)? groupHead}) =>
+    _Grouper(zones, options, groupHead).run();
 
 /// Zones of a design: every zone result of [results] with its flow, required
 /// head at the valve and valve elevation, the hours of the system flow that
@@ -194,7 +204,14 @@ EnergyGroupingResult groupZonesForEnergy(List<EnergyZone> zones, {GroupingOption
       if (z.totalFlow > 0)
         EnergyZone(id: z.valveId, flow: z.totalFlow, requiredHead: z.requiredUpstreamHead, elevation: z.valveElevation, hours: hours[z.valveId] ?? defaultHours, lossCoefficient: loss[z.valveId] ?? 0),
     for (final h in heads.values)
-      EnergyZone(id: h.stationId, flow: headFlow[h.stationId]!, requiredHead: h.requiredHead, elevation: h.elevation, hours: hours[h.stationId] ?? defaultHours, lossCoefficient: loss[h.stationId] ?? 0),
+      EnergyZone(
+        id: h.stationId,
+        flow: headFlow[h.stationId]!,
+        requiredHead: h.requiredHead,
+        elevation: h.elevation,
+        hours: hours[h.stationId] ?? defaultHours,
+        lossCoefficient: loss[h.stationId] ?? 0,
+      ),
   ];
   return (zones, source ?? 0);
 }
@@ -209,7 +226,9 @@ List<SystemFlow> systemFlowsFromGroups(Project p, List<EnergyGroup> groups, {dou
     return i < 0 ? drawn.length : i;
   }
 
-  final sorted = [for (final g in groups) [...g.zoneIds]..sort((a, b) => rank(a).compareTo(rank(b)))];
+  final sorted = [
+    for (final g in groups) [...g.zoneIds]..sort((a, b) => rank(a).compareTo(rank(b))),
+  ];
   final order = List<int>.generate(groups.length, (i) => i)..sort((a, b) => rank(sorted[a].first).compareTo(rank(sorted[b].first)));
   final taken = {for (final f in p.systemFlows) f.id};
   final out = <SystemFlow>[];
@@ -373,7 +392,9 @@ class _Grouper {
   /// Moves and swaps while they improve the score (by the formula, or with
   /// [exact] by [groupHead] until [GroupingOptions.maxHeadCalls] calls).
   List<List<int>> _improve(List<List<int>> start, {bool exact = false}) {
-    var groups = [for (final g in start) [...g]];
+    var groups = [
+      for (final g in start) [...g],
+    ];
     var score = _score(groups, exact: exact);
     var improved = true;
     final budget = options.maxEvaluations;
@@ -441,12 +462,18 @@ class _Grouper {
   }
 
   List<EnergyGroup> _groups(List<List<int>> groups) {
-    final sorted = [for (final g in groups) [...g]..sort()]..sort((a, b) => a.first.compareTo(b.first));
+    final sorted = [
+      for (final g in groups) [...g]..sort(),
+    ]..sort((a, b) => a.first.compareTo(b.first));
     return [
       for (final g in sorted)
         EnergyGroup(
-          zoneIds: [for (final i in g) zones[i].id], flow: g.fold(0.0, (s, i) => s + zones[i].flow), head: _head(g), hours: _hours(g),
-          volume: g.fold(0.0, (s, i) => s + zones[i].flow * zones[i].hours * 3600), energyKwh: _energy(g),
+          zoneIds: [for (final i in g) zones[i].id],
+          flow: g.fold(0.0, (s, i) => s + zones[i].flow),
+          head: _head(g),
+          hours: _hours(g),
+          volume: g.fold(0.0, (s, i) => s + zones[i].flow * zones[i].hours * 3600),
+          energyKwh: _energy(g),
         ),
     ];
   }

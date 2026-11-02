@@ -122,9 +122,7 @@ class EpsSchedule {
 
   /// Status set at given times, (time, open); before the first one the link
   /// keeps its own status.
-  const EpsSchedule.events(this.linkId, List<(double, bool)> this.events)
-      : intervals = null,
-        period = null;
+  const EpsSchedule.events(this.linkId, List<(double, bool)> this.events) : intervals = null, period = null;
 
   final String linkId;
   final List<(double, double)>? intervals;
@@ -208,23 +206,12 @@ enum EpsControlKind { levelBelow, levelAbove, time, clockTime }
 /// tank level falls below or rises above a value, at a time, or every day at
 /// a clock hour. Controls act after the schedules.
 class EpsControl {
-  const EpsControl.levelBelow(this.linkId, {required String this.tankId, required this.level, required this.open})
-      : kind = EpsControlKind.levelBelow,
-        time = 0;
-  const EpsControl.levelAbove(this.linkId, {required String this.tankId, required this.level, required this.open})
-      : kind = EpsControlKind.levelAbove,
-        time = 0;
-  const EpsControl.atTime(this.linkId, {required this.time, required this.open})
-      : kind = EpsControlKind.time,
-        tankId = null,
-        level = 0;
+  const EpsControl.levelBelow(this.linkId, {required String this.tankId, required this.level, required this.open}) : kind = EpsControlKind.levelBelow, time = 0;
+  const EpsControl.levelAbove(this.linkId, {required String this.tankId, required this.level, required this.open}) : kind = EpsControlKind.levelAbove, time = 0;
+  const EpsControl.atTime(this.linkId, {required this.time, required this.open}) : kind = EpsControlKind.time, tankId = null, level = 0;
 
   /// Every day at [hour] (0–24) of the clock (see [EpsOptions.startHour]).
-  const EpsControl.atClockTime(this.linkId, {required double hour, required this.open})
-      : kind = EpsControlKind.clockTime,
-        time = hour * 3600,
-        tankId = null,
-        level = 0;
+  const EpsControl.atClockTime(this.linkId, {required double hour, required this.open}) : kind = EpsControlKind.clockTime, time = hour * 3600, tankId = null, level = 0;
 
   final EpsControlKind kind;
   final String linkId;
@@ -384,16 +371,56 @@ class _TankState {
 /// [tanks] are nodes with a variable level (turned into fixed heads at each
 /// step), [schedules] and [controls] open and close links over time and
 /// [demandSchedules] switch the demands of nodes on and off.
-EpsResult simulateEps(HydraulicNetwork network, {List<EpsTank> tanks = const [], List<EpsSchedule> schedules = const [], List<EpsControl> controls = const [], List<EpsDemandSchedule> demandSchedules = const [], EpsOptions options = const EpsOptions()}) =>
-    _Eps(network, tanks, schedules, controls, demandSchedules, options).run();
+EpsResult simulateEps(
+  HydraulicNetwork network, {
+  List<EpsTank> tanks = const [],
+  List<EpsSchedule> schedules = const [],
+  List<EpsControl> controls = const [],
+  List<EpsDemandSchedule> demandSchedules = const [],
+  EpsOptions options = const EpsOptions(),
+}) => _Eps(network, tanks, schedules, controls, demandSchedules, options).run();
 
 class _Eps {
   _Eps(HydraulicNetwork source, this.tankSpecs, this.schedules, this.controls, this.demandSchedules, this.o) : net = HydraulicNetwork(options: source.options) {
     for (final n in source.nodes.values) {
-      net.addNode(HNode(id: n.id, kind: n.kind, elevation: n.elevation, demand: n.demand, fixedHead: n.fixedHead, emitter: n.emitter, emitterCount: n.emitterCount, emitterOffset: n.emitterOffset, label: n.label, tag: n.tag));
+      net.addNode(
+        HNode(
+          id: n.id,
+          kind: n.kind,
+          elevation: n.elevation,
+          demand: n.demand,
+          fixedHead: n.fixedHead,
+          emitter: n.emitter,
+          emitterCount: n.emitterCount,
+          emitterOffset: n.emitterOffset,
+          label: n.label,
+          tag: n.tag,
+        ),
+      );
     }
     for (final l in source.links) {
-      net.addLink(HLink(id: l.id, from: l.from, to: l.to, kind: l.kind, diameter: l.diameter, length: l.length, hazenC: l.hazenC, roughness: l.roughness, minorK: l.minorK, checkValve: l.checkValve, pump: l.pump, device: l.device, prvSetting: l.prvSetting, label: l.label, tag: l.tag, scobeyKs: l.scobeyKs, manningN: l.manningN, fcvFlow: l.fcvFlow));
+      net.addLink(
+        HLink(
+          id: l.id,
+          from: l.from,
+          to: l.to,
+          kind: l.kind,
+          diameter: l.diameter,
+          length: l.length,
+          hazenC: l.hazenC,
+          roughness: l.roughness,
+          minorK: l.minorK,
+          checkValve: l.checkValve,
+          pump: l.pump,
+          device: l.device,
+          prvSetting: l.prvSetting,
+          label: l.label,
+          tag: l.tag,
+          scobeyKs: l.scobeyKs,
+          manningN: l.manningN,
+          fcvFlow: l.fcvFlow,
+        ),
+      );
     }
   }
 
@@ -695,12 +722,12 @@ class _Eps {
 
   /// Net inflow (m³/s) of every tank.
   List<double> _tankFlows(NetworkResult r) => [
-        for (final s in tanks)
-          (linksAt[s.node.id] ?? const <HLink>[]).fold(0.0, (q, l) {
-            final f = _flow(r, l);
-            return q + (l.to == s.node.id ? f : -f);
-          }),
-      ];
+    for (final s in tanks)
+      (linksAt[s.node.id] ?? const <HLink>[]).fold(0.0, (q, l) {
+        final f = _flow(r, l);
+        return q + (l.to == s.node.id ? f : -f);
+      }),
+  ];
 
   /// Length of the step from [t]: the hydraulic step, cut at the next
   /// pattern, schedule or time control, when a tank fills or empties or

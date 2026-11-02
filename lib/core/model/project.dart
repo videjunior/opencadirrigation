@@ -170,14 +170,47 @@ class DesignParameters {
   double adjustedC(double c) => c * hazenCScale + hazenCOffset;
 
   Map<String, dynamic> toJson() => {
-    'units': units.toJson(), 'method': frictionMethod.name, 'temp': waterTempC, 'vZone': maxZoneVelocity,
-    'vMain': maxMainlineVelocity, 'vLat': maxLateralVelocity, 'minorPct': minorLossPct, 'minor': applyMinorLosses, 'minorMethod': minorLossMethod.name,
-    'tol': connectTolerance, 'interest': interestRate, 'term': termYears, 'kwh': powerCostPerKwh, 'eff': pumpEfficiency,
-    'hours': hoursPerYear, 'zoneHours': zoneHoursPerYear, 'trade': tradeCapitalVsRunning, 'latSizes': maxLateralSizes,
-    'subSizes': maxSubmainSizes, 'cScale': hazenCScale, 'cOffset': hazenCOffset, 'densify': terrainDensify, 'currency': currency, 'currencyCode': currencyCode,
-    'sizing': sizingMethod.name, 'mainSizes': maxMainlineSizes, 'epp': emittersPerPlant, 'maxNodes': maxNodesPerLateral, 'flushV': flushingVelocity, 'flushH': flushingMinEndHeadM,
-    'surge': checkSurge, 'closure': valveClosureTimeS, 'fittings': selectFittings, 'stick': pipeStickLengthM, 'zoneVar': maxZoneVariationPct, 'terrain': terrainMethod.name,
-    'inrushA': solenoidInrushA, 'holdA': solenoidHoldingA, 'minV': solenoidMinVolts, 'slack': wireSlackPct, if (mainsHz != 60) 'hz': mainsHz,
+    'units': units.toJson(),
+    'method': frictionMethod.name,
+    'temp': waterTempC,
+    'vZone': maxZoneVelocity,
+    'vMain': maxMainlineVelocity,
+    'vLat': maxLateralVelocity,
+    'minorPct': minorLossPct,
+    'minor': applyMinorLosses,
+    'minorMethod': minorLossMethod.name,
+    'tol': connectTolerance,
+    'interest': interestRate,
+    'term': termYears,
+    'kwh': powerCostPerKwh,
+    'eff': pumpEfficiency,
+    'hours': hoursPerYear,
+    'zoneHours': zoneHoursPerYear,
+    'trade': tradeCapitalVsRunning,
+    'latSizes': maxLateralSizes,
+    'subSizes': maxSubmainSizes,
+    'cScale': hazenCScale,
+    'cOffset': hazenCOffset,
+    'densify': terrainDensify,
+    'currency': currency,
+    'currencyCode': currencyCode,
+    'sizing': sizingMethod.name,
+    'mainSizes': maxMainlineSizes,
+    'epp': emittersPerPlant,
+    'maxNodes': maxNodesPerLateral,
+    'flushV': flushingVelocity,
+    'flushH': flushingMinEndHeadM,
+    'surge': checkSurge,
+    'closure': valveClosureTimeS,
+    'fittings': selectFittings,
+    'stick': pipeStickLengthM,
+    'zoneVar': maxZoneVariationPct,
+    'terrain': terrainMethod.name,
+    'inrushA': solenoidInrushA,
+    'holdA': solenoidHoldingA,
+    'minV': solenoidMinVolts,
+    'slack': wireSlackPct,
+    if (mainsHz != 60) 'hz': mainsHz,
   };
   static DesignParameters fromJson(Map<String, dynamic>? j) {
     if (j == null) return DesignParameters();
@@ -254,8 +287,8 @@ class SystemFlow {
 
 class ProjectMeta {
   ProjectMeta({this.name = 'New project', this.client = '', this.site = '', this.designer = '', this.notes = '', this.georef, String? uid, DateTime? created, this.modified})
-      : uid = uid ?? newUid(),
-        created = created ?? DateTime.now();
+    : uid = uid ?? newUid(),
+      created = created ?? DateTime.now();
 
   /// Stable identifier used by autosave, recent files and versions.
   String uid;
@@ -278,7 +311,17 @@ class ProjectMeta {
 
   /// Set when data was imported from geographic coordinates (KML/KMZ).
   GeoReference? georef;
-  Map<String, dynamic> toJson() => {'uid': uid, 'created': created.toIso8601String(), if (modified != null) 'modified': modified!.toIso8601String(), 'name': name, 'client': client, 'site': site, 'designer': designer, 'notes': notes, if (georef != null) 'georef': georef!.toJson()};
+  Map<String, dynamic> toJson() => {
+    'uid': uid,
+    'created': created.toIso8601String(),
+    if (modified != null) 'modified': modified!.toIso8601String(),
+    'name': name,
+    'client': client,
+    'site': site,
+    'designer': designer,
+    'notes': notes,
+    if (georef != null) 'georef': georef!.toJson(),
+  };
   static ProjectMeta fromJson(Map<String, dynamic>? j) => j == null
       ? ProjectMeta()
       : ProjectMeta(
@@ -295,19 +338,32 @@ class ProjectMeta {
 }
 
 class Project {
-  Project({ProjectMeta? meta, DesignParameters? params, Catalog? catalog, List<Layer>? layers, List<Entity>? entities, List<SystemFlow>? systemFlows, ProposalSettings? proposal, List<Scenario>? scenarios, this.climate, List<LabelRule>? labelRules, BlockLibrary? blocks, this.aiNotes = '', int nextId = 1})
-      : meta = meta ?? ProjectMeta(),
-        proposal = proposal ?? ProposalSettings(),
-        scenarios = scenarios ?? [],
-        labelRules = labelRules ?? [],
-        blocks = blocks ?? BlockLibrary(),
-        params = params ?? DesignParameters(),
-        catalog = catalog ?? Catalog.defaultCatalog(),
-        layers = layers ?? defaultLayers(),
-        entities = entities ?? [],
-        systemFlows = systemFlows ?? [],
-        // ignore: prefer_initializing_formals
-        _nextId = nextId;
+  Project({
+    ProjectMeta? meta,
+    DesignParameters? params,
+    Catalog? catalog,
+    List<Layer>? layers,
+    List<Entity>? entities,
+    List<SystemFlow>? systemFlows,
+    ProposalSettings? proposal,
+    List<Scenario>? scenarios,
+    this.climate,
+    List<LabelRule>? labelRules,
+    BlockLibrary? blocks,
+    this.aiNotes = '',
+    int nextId = 1,
+  }) : meta = meta ?? ProjectMeta(),
+       proposal = proposal ?? ProposalSettings(),
+       scenarios = scenarios ?? [],
+       labelRules = labelRules ?? [],
+       blocks = blocks ?? BlockLibrary(),
+       params = params ?? DesignParameters(),
+       catalog = catalog ?? Catalog.defaultCatalog(),
+       layers = layers ?? defaultLayers(),
+       entities = entities ?? [],
+       systemFlows = systemFlows ?? [],
+       // ignore: prefer_initializing_formals
+       _nextId = nextId;
 
   static const formatName = 'opencadirrigation';
   static const legacyFormatName = 'irrigationcad';

@@ -60,7 +60,11 @@ final manualTopics = <ManualTopic>[
   ManualTopic('tools', 'every tool with its purpose; with an item, its inputs and example calls', toolsTopic, items: 'a tool name'),
   ManualTopic('operations', 'the other functions of the program, reached with run_operation', operationsTopic, items: 'an operation name'),
   ManualTopic('playbooks', 'the design playbooks and the examples they come from', (b, _) => playbooksTopic(b)),
-  ManualTopic('interface', 'the menus the user works with: the tutorial, walking the field with the device\'s GPS and the other functions only the user runs, with their menu paths; the interface language', (b, _) => interfaceTopic(b)),
+  ManualTopic(
+    'interface',
+    'the menus the user works with: the tutorial, walking the field with the device\'s GPS and the other functions only the user runs, with their menu paths; the interface language',
+    (b, _) => interfaceTopic(b),
+  ),
   ManualTopic('mistakes', 'common mistakes and the messages that reveal them', (b, _) => mistakesTopic(b)),
   ManualTopic('example', 'a small project designed end to end: the calls and what they return', (b, _) => exampleTopic(b)),
 ];

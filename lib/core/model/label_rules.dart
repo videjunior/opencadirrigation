@@ -86,7 +86,11 @@ class LabelRule {
 
   Map<String, dynamic> toJson() => {'target': target, 'field': field, 'op': op, 'value': value, 'color': color, if (!enabled) 'off': true};
   static LabelRule fromJson(Map<String, dynamic> j) => LabelRule(
-    target: j['target'] as String? ?? 'pipes', field: j['field'] as String? ?? 'velocity', op: j['op'] as String? ?? '>', value: (j['value'] as num?)?.toDouble() ?? 0,
-    color: (j['color'] as num?)?.toInt() ?? 0xFFFF5252, enabled: j['off'] != true,
+    target: j['target'] as String? ?? 'pipes',
+    field: j['field'] as String? ?? 'velocity',
+    op: j['op'] as String? ?? '>',
+    value: (j['value'] as num?)?.toDouble() ?? 0,
+    color: (j['color'] as num?)?.toInt() ?? 0xFFFF5252,
+    enabled: j['off'] != true,
   );
 }

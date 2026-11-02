@@ -14,7 +14,20 @@ import '../model/geometry.dart';
 import 'geo.dart';
 
 class GeoImage {
-  GeoImage({required this.bytes, required this.mime, required this.widthPx, required this.heightPx, this.worldTopLeft, this.pixelSizeX, this.pixelSizeY, this.rotationDeg = 0, this.geographic = false, this.utmZone, this.utmNorth, this.source = ''});
+  GeoImage({
+    required this.bytes,
+    required this.mime,
+    required this.widthPx,
+    required this.heightPx,
+    this.worldTopLeft,
+    this.pixelSizeX,
+    this.pixelSizeY,
+    this.rotationDeg = 0,
+    this.geographic = false,
+    this.utmZone,
+    this.utmNorth,
+    this.source = '',
+  });
 
   /// Encoded PNG/JPEG bytes for display.
   final Uint8List bytes;
@@ -64,10 +77,29 @@ class GeoImageReader {
       // column axis (A, D) gives the pixel size and rotation; the top-left
       // corner is half a pixel back along both axes
       final (a, d, b, e, c, f) = w;
-      return GeoImage(bytes: base.bytes, mime: base.mime, widthPx: base.widthPx, heightPx: base.heightPx, worldTopLeft: Pt(c - a / 2 - b / 2, f - d / 2 - e / 2), pixelSizeX: math.sqrt(a * a + d * d), pixelSizeY: -math.sqrt(b * b + e * e), rotationDeg: radToDeg(atan2Safe(d, a)), geographic: geo, utmZone: zone != null ? int.parse(zone.group(1)!) : null, utmNorth: zone != null ? zone.group(2)!.toUpperCase() == 'N' : null, source: image.name);
+      return GeoImage(
+        bytes: base.bytes,
+        mime: base.mime,
+        widthPx: base.widthPx,
+        heightPx: base.heightPx,
+        worldTopLeft: Pt(c - a / 2 - b / 2, f - d / 2 - e / 2),
+        pixelSizeX: math.sqrt(a * a + d * d),
+        pixelSizeY: -math.sqrt(b * b + e * e),
+        rotationDeg: radToDeg(atan2Safe(d, a)),
+        geographic: geo,
+        utmZone: zone != null ? int.parse(zone.group(1)!) : null,
+        utmNorth: zone != null ? zone.group(2)!.toUpperCase() == 'N' : null,
+        source: image.name,
+      );
     }
     if (lower.endsWith('.tif') || lower.endsWith('.tiff')) return _readTiff(name, bytes);
-    final info = img.findDecoderForData(bytes)?.startDecode(bytes);
+    final img.DecodeInfo? info;
+    try {
+      info = img.findDecoderForData(bytes)?.startDecode(bytes);
+    } on img.ImageException catch (e) {
+      // the decoder refuses headers beyond its own pixel limit by itself
+      throw FormatException(e.message.contains('exceed') ? 'image_too_large' : 'image_unreadable');
+    }
     if (info != null) checkPixels(info.width, info.height);
     final decoded = img.decodeImage(bytes);
     if (decoded == null) throw const FormatException('image_unreadable');
@@ -107,7 +139,20 @@ class GeoImageReader {
     if (decoded == null) throw const FormatException('image_unreadable');
     final png = Uint8List.fromList(img.encodePng(decoded));
     final g = tiffGeo(tags);
-    return GeoImage(bytes: png, mime: 'image/png', widthPx: decoded.width, heightPx: decoded.height, worldTopLeft: g.topLeft, pixelSizeX: g.sx, pixelSizeY: g.sy, rotationDeg: g.rot, geographic: g.geographic, utmZone: g.zone, utmNorth: g.north, source: name);
+    return GeoImage(
+      bytes: png,
+      mime: 'image/png',
+      widthPx: decoded.width,
+      heightPx: decoded.height,
+      worldTopLeft: g.topLeft,
+      pixelSizeX: g.sx,
+      pixelSizeY: g.sy,
+      rotationDeg: g.rot,
+      geographic: g.geographic,
+      utmZone: g.zone,
+      utmNorth: g.north,
+      source: name,
+    );
   }
 
   /// Georeference carried by the GeoTIFF tags (ModelTransformation or
@@ -181,7 +226,13 @@ class GeoImageReader {
       final tag = bd.getUint16(e, endian);
       final type = bd.getUint16(e + 2, endian);
       final n = bd.getUint32(e + 4, endian);
-      final size = switch (type) { 1 || 2 || 6 || 7 => 1, 3 || 8 => 2, 4 || 9 || 11 => 4, 5 || 10 || 12 => 8, _ => 1 };
+      final size = switch (type) {
+        1 || 2 || 6 || 7 => 1,
+        3 || 8 => 2,
+        4 || 9 || 11 => 4,
+        5 || 10 || 12 => 8,
+        _ => 1,
+      };
       final total = size * n;
       final off = total <= 4 ? e + 8 : bd.getUint32(e + 8, endian);
       if (off + total > bytes.length) continue;

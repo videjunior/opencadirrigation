@@ -44,13 +44,7 @@ class EmitterCurve {
   }
 
   /// Convenience: build from nominal flow at nominal head and exponent.
-  static EmitterCurve fromNominal({
-    required double flow,
-    required double head,
-    double x = 0.5,
-    double radius = 0,
-    double radiusB = 0.5,
-  }) {
+  static EmitterCurve fromNominal({required double flow, required double head, double x = 0.5, double radius = 0, double radiusB = 0.5}) {
     final k = flow / math.pow(head, x);
     final a = radius > 0 ? radius / math.pow(head, radiusB) : 0.0;
     return EmitterCurve(k: k, x: x, radiusA: a, radiusB: radius > 0 ? radiusB : 0);
@@ -85,8 +79,14 @@ class EmitterCurve {
   /// [EmitterFit.maxRadiusError] give the worst relative deviation of the
   /// rows from the fitted laws.
   static EmitterFit fitTable(List<(double, double, double?)> rows, {double defaultRadiusB = 0.5}) {
-    final flows = [for (final r in rows) if (r.$1 > 0 && r.$2 > 0) (r.$1, r.$2)];
-    final radii = [for (final r in rows) if (r.$1 > 0 && (r.$3 ?? 0) > 0) (r.$1, r.$3!)];
+    final flows = [
+      for (final r in rows)
+        if (r.$1 > 0 && r.$2 > 0) (r.$1, r.$2),
+    ];
+    final radii = [
+      for (final r in rows)
+        if (r.$1 > 0 && (r.$3 ?? 0) > 0) (r.$1, r.$3!),
+    ];
     final c = fit(flows);
     var a = 0.0, b = 0.0;
     if (radii.length == 1) {
@@ -118,12 +118,8 @@ class EmitterCurve {
   }
 
   Map<String, dynamic> toJson() => {'k': k, 'x': x, 'ra': radiusA, 'rb': radiusB};
-  static EmitterCurve fromJson(Map<String, dynamic> j) => EmitterCurve(
-    k: (j['k'] as num).toDouble(),
-    x: (j['x'] as num).toDouble(),
-    radiusA: (j['ra'] as num?)?.toDouble() ?? 0,
-    radiusB: (j['rb'] as num?)?.toDouble() ?? 0,
-  );
+  static EmitterCurve fromJson(Map<String, dynamic> j) =>
+      EmitterCurve(k: (j['k'] as num).toDouble(), x: (j['x'] as num).toDouble(), radiusA: (j['ra'] as num?)?.toDouble() ?? 0, radiusB: (j['rb'] as num?)?.toDouble() ?? 0);
 }
 
 /// Result of [EmitterCurve.fitTable].
@@ -147,12 +143,7 @@ class EmitterFit {
 /// layouts, the same convention as [gridOverlapCU]; only when
 /// [equilateral] is true is [spacingBetween] the side of the equilateral
 /// triangle (lateral distance = Sm·sin 60°).
-double precipitationRate({
-  required double flow,
-  required double spacingAlong,
-  required double spacingBetween,
-  bool equilateral = false,
-}) {
+double precipitationRate({required double flow, required double spacingAlong, required double spacingBetween, bool equilateral = false}) {
   final area = spacingAlong * spacingBetween * (equilateral ? 0.8660254 : 1.0);
   if (area <= 0) return 0;
   return flow / area;
@@ -164,13 +155,7 @@ double precipitationMmPerHour(double rateSi) => rateSi * 1000 * 3600;
 /// Simulates the overlapped application depth on a grid of sprinklers with a
 /// simple triangular (linear) radial distribution profile and returns the
 /// Christiansen CU (%) inside one spacing cell. Useful as a coverage check.
-double gridOverlapCU({
-  required double radius,
-  required double spacingAlong,
-  required double spacingBetween,
-  bool triangular = false,
-  int samples = 24,
-}) {
+double gridOverlapCU({required double radius, required double spacingAlong, required double spacingBetween, bool triangular = false, int samples = 24}) {
   if (radius <= 0 || spacingAlong <= 0 || spacingBetween <= 0 || samples <= 0) return 0;
   // every head that reaches the cell: up to radius/spacing rows away
   // (bounded for absurd layouts, where the overlap is uniform anyway)

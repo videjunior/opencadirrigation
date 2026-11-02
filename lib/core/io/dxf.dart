@@ -14,7 +14,23 @@ import 'dart:math' as math;
 import '../model/geometry.dart';
 
 class DxfEntity {
-  DxfEntity({required this.type, required this.layer, this.points = const [], this.center, this.radius = 0, this.startAngle = 0, this.endAngle = 0, this.text = '', this.height = 1, this.rotation = 0, this.closed = false, this.color = 256, this.elevation, this.name = '', this.solid = false});
+  DxfEntity({
+    required this.type,
+    required this.layer,
+    this.points = const [],
+    this.center,
+    this.radius = 0,
+    this.startAngle = 0,
+    this.endAngle = 0,
+    this.text = '',
+    this.height = 1,
+    this.rotation = 0,
+    this.closed = false,
+    this.color = 256,
+    this.elevation,
+    this.name = '',
+    this.solid = false,
+  });
 
   /// LINE, POLYLINE, SPLINE (fit points), HATCH, CIRCLE, ARC, TEXT, POINT.
   /// A HATCH carries its boundary in [points], the pattern line angle in
@@ -47,9 +63,7 @@ class DxfLayer {
 }
 
 class DxfDocument {
-  DxfDocument({List<DxfEntity>? entities, List<DxfLayer>? layers, this.unitScale = 1})
-      : entities = entities ?? [],
-        layers = layers ?? [];
+  DxfDocument({List<DxfEntity>? entities, List<DxfLayer>? layers, this.unitScale = 1}) : entities = entities ?? [], layers = layers ?? [];
   final List<DxfEntity> entities;
   final List<DxfLayer> layers;
 
@@ -81,7 +95,20 @@ class DxfBlock {
 
 /// A block reference (INSERT / MINSERT / the anonymous block of a DIMENSION).
 class DxfInsert {
-  DxfInsert({required this.name, required this.layer, this.color = 256, required this.position, this.scaleX = 1, this.scaleY = 1, this.rotation = 0, this.cols = 1, this.rows = 1, this.colSpacing = 0, this.rowSpacing = 0, this.ocsMirror = false});
+  DxfInsert({
+    required this.name,
+    required this.layer,
+    this.color = 256,
+    required this.position,
+    this.scaleX = 1,
+    this.scaleY = 1,
+    this.rotation = 0,
+    this.cols = 1,
+    this.rows = 1,
+    this.colSpacing = 0,
+    this.rowSpacing = 0,
+    this.ocsMirror = false,
+  });
   final String name;
   final String layer;
   final int color;
@@ -119,7 +146,8 @@ class Affine2 {
   Pt apply(Pt p) => Pt(a * p.x + b * p.y + tx, c * p.x + d * p.y + ty);
 
   /// This transform applied after [inner].
-  Affine2 then(Affine2 inner) => Affine2(a * inner.a + b * inner.c, a * inner.b + b * inner.d, c * inner.a + d * inner.c, c * inner.b + d * inner.d, a * inner.tx + b * inner.ty + tx, c * inner.tx + d * inner.ty + ty);
+  Affine2 then(Affine2 inner) =>
+      Affine2(a * inner.a + b * inner.c, a * inner.b + b * inner.d, c * inner.a + d * inner.c, c * inner.b + d * inner.d, a * inner.tx + b * inner.ty + tx, c * inner.tx + d * inner.ty + ty);
 
   /// Object coordinates of an entity whose extrusion is (0, 0, −1), the
   /// usual result of mirroring in CAD programs, to world coordinates: by
@@ -412,7 +440,22 @@ class DxfReader {
       case 'POINT':
         out.add(DxfEntity(type: 'POINT', layer: layer, color: color, points: [Pt(num(10), num(20))], elevation: props.containsKey(30) ? num(30) : null));
       case 'INSERT':
-        inserts.add(DxfInsert(name: props[2]?.first ?? '', layer: layer, color: color, position: Pt(num(10), num(20)), scaleX: num(41, 0, 1), scaleY: num(42, 0, 1), rotation: num(50), cols: math.max(1, flags(70)), rows: math.max(1, flags(71)), colSpacing: num(44), rowSpacing: num(45), ocsMirror: mirrored));
+        inserts.add(
+          DxfInsert(
+            name: props[2]?.first ?? '',
+            layer: layer,
+            color: color,
+            position: Pt(num(10), num(20)),
+            scaleX: num(41, 0, 1),
+            scaleY: num(42, 0, 1),
+            rotation: num(50),
+            cols: math.max(1, flags(70)),
+            rows: math.max(1, flags(71)),
+            colSpacing: num(44),
+            rowSpacing: num(45),
+            ocsMirror: mirrored,
+          ),
+        );
       case 'DIMENSION':
         // the dimension's geometry lives in an anonymous block, inserted at
         // the origin of the dimension's object coordinates
@@ -441,7 +484,16 @@ class DxfReader {
   static String plainText(String s) {
     if (!s.contains('\\U+') && !s.contains('%%') && !s.contains('^')) return s;
     var t = s.replaceAllMapped(RegExp(r'\\U\+([0-9A-Fa-f]{4})'), (m) => String.fromCharCode(int.parse(m[1]!, radix: 16)));
-    t = t.replaceAllMapped(RegExp(r'%%([cCdDpPuUoO%])'), (m) => switch (m[1]!.toLowerCase()) { 'c' => 'Ø', 'd' => '°', 'p' => '±', '%' => '%', _ => '' });
+    t = t.replaceAllMapped(
+      RegExp(r'%%([cCdDpPuUoO%])'),
+      (m) => switch (m[1]!.toLowerCase()) {
+        'c' => 'Ø',
+        'd' => '°',
+        'p' => '±',
+        '%' => '%',
+        _ => '',
+      },
+    );
     return t.replaceAll('^ ', '^').replaceAll(RegExp(r'\^[@-_]'), ' ');
   }
 
@@ -705,7 +757,16 @@ class DxfReader {
         if (t.isConformal) {
           out.add(DxfEntity(type: 'CIRCLE', layer: layer, color: color, center: t.apply(e.center!), radius: e.radius * t.scale, elevation: e.elevation));
         } else {
-          out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: [for (var k = 0; k < 36; k++) t.apply(e.center! + Pt.polar(e.radius, 2 * math.pi * k / 36))], closed: true, elevation: e.elevation));
+          out.add(
+            DxfEntity(
+              type: 'POLYLINE',
+              layer: layer,
+              color: color,
+              points: [for (var k = 0; k < 36; k++) t.apply(e.center! + Pt.polar(e.radius, 2 * math.pi * k / 36))],
+              closed: true,
+              elevation: e.elevation,
+            ),
+          );
         }
       case 'ARC':
         var sweep = e.endAngle - e.startAngle;
@@ -716,14 +777,60 @@ class DxfReader {
           out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: t.apply(e.center!), radius: e.radius * t.scale, startAngle: start, endAngle: start + sweep, elevation: e.elevation));
         } else {
           final n = math.max(4, (sweep / 10).ceil());
-          out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: [for (var k = 0; k <= n; k++) t.apply(e.center! + Pt.polar(e.radius, degToRad(e.startAngle + sweep * k / n)))], elevation: e.elevation));
+          out.add(
+            DxfEntity(
+              type: 'POLYLINE',
+              layer: layer,
+              color: color,
+              points: [for (var k = 0; k <= n; k++) t.apply(e.center! + Pt.polar(e.radius, degToRad(e.startAngle + sweep * k / n)))],
+              elevation: e.elevation,
+            ),
+          );
         }
       case 'TEXT':
-        out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [t.apply(e.points[0])], text: e.text, height: e.height * t.scale, rotation: t.dirDeg(e.rotation), elevation: e.elevation, name: e.name));
+        out.add(
+          DxfEntity(
+            type: 'TEXT',
+            layer: layer,
+            color: color,
+            points: [t.apply(e.points[0])],
+            text: e.text,
+            height: e.height * t.scale,
+            rotation: t.dirDeg(e.rotation),
+            elevation: e.elevation,
+            name: e.name,
+          ),
+        );
       case 'HATCH':
-        out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: true, rotation: t.dirDeg(e.rotation), height: e.height * t.scale, solid: e.solid, name: e.name, elevation: e.elevation));
+        out.add(
+          DxfEntity(
+            type: 'HATCH',
+            layer: layer,
+            color: color,
+            points: e.points.map(t.apply).toList(),
+            closed: true,
+            rotation: t.dirDeg(e.rotation),
+            height: e.height * t.scale,
+            solid: e.solid,
+            name: e.name,
+            elevation: e.elevation,
+          ),
+        );
       default:
-        out.add(DxfEntity(type: e.type, layer: layer, color: color, points: e.points.map(t.apply).toList(), closed: e.closed, elevation: e.elevation, name: e.name, text: e.text, height: e.height, rotation: e.rotation));
+        out.add(
+          DxfEntity(
+            type: e.type,
+            layer: layer,
+            color: color,
+            points: e.points.map(t.apply).toList(),
+            closed: e.closed,
+            elevation: e.elevation,
+            name: e.name,
+            text: e.text,
+            height: e.height,
+            rotation: e.rotation,
+          ),
+        );
     }
   }
 }

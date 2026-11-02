@@ -128,7 +128,19 @@ void main() {
 
   test('the light palette keeps WCAG AA for the text on its surfaces', () {
     const p = CadPalette.light;
-    final surfaces = {'panel': p.panel, 'panelAlt': p.panelAlt, 'menu': p.menu, 'dialog': p.dialog, 'card': p.card, 'cardHigh': p.cardHigh, 'background': p.background, 'raised': p.raised, 'bubble': p.bubble, 'tintInfo': p.tintInfo, 'tintWarning': p.tintWarning};
+    final surfaces = {
+      'panel': p.panel,
+      'panelAlt': p.panelAlt,
+      'menu': p.menu,
+      'dialog': p.dialog,
+      'card': p.card,
+      'cardHigh': p.cardHigh,
+      'background': p.background,
+      'raised': p.raised,
+      'bubble': p.bubble,
+      'tintInfo': p.tintInfo,
+      'tintWarning': p.tintWarning,
+    };
     final text = {
       'fg': p.fg, 'fg87': p.fg87, 'fg70': p.fg70, 'fg60': p.fg60, 'fg54': p.fg54, 'fg38': p.fg38, 'bodyText': p.bodyText, 'accentText': p.accentText, 'accentIcon': p.accentIcon, //
       'info': p.info, 'codeText': p.codeText, 'ok': p.ok, 'okAlt': p.okAlt, 'positive': p.positive, 'warning': p.warning, 'caution': p.caution, 'attention': p.attention, //

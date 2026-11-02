@@ -17,7 +17,16 @@ void Function() watchGps(void Function(GpsFix fix) onFix, void Function(String c
   final id = geo.watchPosition(
     ((web.GeolocationPosition p) {
       final c = p.coords;
-      onFix(GpsFix(lat: c.latitude, lon: c.longitude, accuracyM: c.accuracy, altitudeM: c.altitude?.toDouble(), altitudeAccuracyM: c.altitudeAccuracy?.toDouble(), time: DateTime.fromMillisecondsSinceEpoch(p.timestamp.toInt())));
+      onFix(
+        GpsFix(
+          lat: c.latitude,
+          lon: c.longitude,
+          accuracyM: c.accuracy,
+          altitudeM: c.altitude?.toDouble(),
+          altitudeAccuracyM: c.altitudeAccuracy?.toDouble(),
+          time: DateTime.fromMillisecondsSinceEpoch(p.timestamp.toInt()),
+        ),
+      );
     }).toJS,
     ((web.GeolocationPositionError e) {
       onError(switch (e.code) {

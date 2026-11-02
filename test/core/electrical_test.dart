@@ -68,14 +68,28 @@ void main() {
 
   test('valves in separate flows load the common wire less', () {
     final together = designElectrical(_site(400), flows: all)!;
-    final apart = designElectrical(_site(400), flows: const [{'vA'}, {'vB'}, {'vC'}])!;
+    final apart = designElectrical(
+      _site(400),
+      flows: const [
+        {'vA'},
+        {'vB'},
+        {'vC'},
+      ],
+    )!;
     double cost(ElectricalResult r, Catalog c) => r.wireMeters.entries.fold(0.0, (s, e) => s + e.value * c.wire(e.key)!.costPerM);
     final c = Project().catalog;
     expect(apart.controllers.single.maxOpen, 1);
     expect(apart.controllers.single.peakCurrentA, closeTo(0.37, 1e-12));
     expect(cost(apart, c), lessThanOrEqualTo(cost(together, c) + 1e-9));
     // same wires, fewer amps: never a lower voltage
-    final a = designElectrical(_site(400), flows: const [{'vA'}, {'vB'}, {'vC'}])!;
+    final a = designElectrical(
+      _site(400),
+      flows: const [
+        {'vA'},
+        {'vB'},
+        {'vC'},
+      ],
+    )!;
     for (final run in a.runs) {
       expect(run.volts, greaterThanOrEqualTo(20 - 1e-9));
     }
@@ -94,9 +108,19 @@ void main() {
     double commonDrop(String v) {
       // per Ω/km, with the others holding (all open together)
       final edges = <String, List<(double, Set<String>)>>{
-        'vC': [(400, {'vA', 'vB', 'vC'})],
-        'vA': [(400, {'vA', 'vB', 'vC'}), (400, {'vA', 'vB'}), (400, {'vA'})],
-        'vB': [(400, {'vA', 'vB', 'vC'}), (400, {'vA', 'vB'}), (800, {'vB'})],
+        'vC': [
+          (400, {'vA', 'vB', 'vC'}),
+        ],
+        'vA': [
+          (400, {'vA', 'vB', 'vC'}),
+          (400, {'vA', 'vB'}),
+          (400, {'vA'}),
+        ],
+        'vB': [
+          (400, {'vA', 'vB', 'vC'}),
+          (400, {'vA', 'vB'}),
+          (800, {'vB'}),
+        ],
       };
       var d = 0.0;
       for (final (len, users) in edges[v]!) {
@@ -152,7 +176,15 @@ void main() {
     final p = _site(100);
     (p.byId('ctl') as ControllerEntity).maxSimultaneous = 2;
     expect(designElectrical(p, flows: all)!.warnings, contains('elec_simultaneous:ctl'));
-    expect(designElectrical(p, flows: const [{'vA', 'vB'}])!.warnings, isNot(contains('elec_simultaneous:ctl')));
+    expect(
+      designElectrical(
+        p,
+        flows: const [
+          {'vA', 'vB'},
+        ],
+      )!.warnings,
+      isNot(contains('elec_simultaneous:ctl')),
+    );
   });
 
   test('without catalogue wires a 1.5 mm² conductor is assumed and reported', () {
@@ -239,7 +271,9 @@ void main() {
     final x = CatalogIo.parseXlsx(CatalogIo.exportXlsx(cat));
     expect(x.catalog.wires.length, cat.wires.length);
     // merge and ids
-    final other = Catalog(wires: [WireSpec(id: 'w1', name: 'x', sectionMm2: 1, ohmPerKm: 18)]);
+    final other = Catalog(
+      wires: [WireSpec(id: 'w1', name: 'x', sectionMm2: 1, ohmPerKm: 18)],
+    );
     expect(cat.merge(other, replace: true), 1);
     expect(cat.wire('w1')!.name, 'x');
     expect(cat.newId('w'), isNot(anyOf('w1', 'w4')));

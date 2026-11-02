@@ -23,7 +23,15 @@ class StoredProject {
   final String label;
 
   Map<String, dynamic> toJson() => {'uid': uid, 'name': name, 'at': savedAt.toIso8601String(), 'kind': kind, 'bytes': bytes, 'v': version, if (label.isNotEmpty) 'label': label};
-  static StoredProject fromJson(Map<String, dynamic> j) => StoredProject(uid: j['uid'] as String, name: j['name'] as String? ?? '', savedAt: DateTime.tryParse(j['at'] as String? ?? '') ?? DateTime.now(), kind: j['kind'] as String? ?? 'saved', bytes: (j['bytes'] as num?)?.toInt() ?? 0, version: (j['v'] as num?)?.toInt() ?? 0, label: j['label'] as String? ?? '');
+  static StoredProject fromJson(Map<String, dynamic> j) => StoredProject(
+    uid: j['uid'] as String,
+    name: j['name'] as String? ?? '',
+    savedAt: DateTime.tryParse(j['at'] as String? ?? '') ?? DateTime.now(),
+    kind: j['kind'] as String? ?? 'saved',
+    bytes: (j['bytes'] as num?)?.toInt() ?? 0,
+    version: (j['v'] as num?)?.toInt() ?? 0,
+    label: j['label'] as String? ?? '',
+  );
 }
 
 /// Repository of stored projects (browser storage).

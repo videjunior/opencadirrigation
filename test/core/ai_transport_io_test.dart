@@ -61,7 +61,8 @@ void main() {
   });
   tearDown(() => server.close());
 
-  AiHttpRequest request({void Function()? onSent}) => AiHttpRequest(Uri.parse('http://127.0.0.1:${server.port}/v1/messages'), const {'content-type': 'application/json'}, '{"q": "ação"}', onSent: onSent);
+  AiHttpRequest request({void Function()? onSent}) =>
+      AiHttpRequest(Uri.parse('http://127.0.0.1:${server.port}/v1/messages'), const {'content-type': 'application/json'}, '{"q": "ação"}', onSent: onSent);
 
   test('the body goes up as UTF-8 and the transport says so before the answer; cancelling closes the connection', () async {
     var sent = false;

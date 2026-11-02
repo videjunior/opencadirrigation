@@ -74,7 +74,10 @@ void main() {
     });
 
     test('a path closer than the folded arm reaches: folded at the limit and flagged', () {
-      final f = analyzeCornerArm(CornerArmSpec(center: c, hingeRadiusM: 300, armLengthM: 100, guidePath: circle(c, 310), maxArmAngleDeg: 80, grossDepthMm: 10, hoursPerRev: 20, stepDeg: 2), id: 'ca');
+      final f = analyzeCornerArm(
+        CornerArmSpec(center: c, hingeRadiusM: 300, armLengthM: 100, guidePath: circle(c, 310), maxArmAngleDeg: 80, grossDepthMm: 10, hoursPerRev: 20, stepDeg: 2),
+        id: 'ca',
+      );
       expect(f.steps.every((s) => s.state == CornerArmState.folded), isTrue);
       expect(f.steps.first.armDeg, closeTo(80, 1e-9));
       expect(f.maxOverrunM, closeTo(math.sqrt(100000 + 60000 * math.cos(degToRad(80))) - 310, 0.05));
@@ -158,7 +161,10 @@ void main() {
     });
 
     test('invalid data', () {
-      final bad = analyzeCornerArm(CornerArmSpec(center: c + const Pt(5000, 0), hingeRadiusM: 350, armLengthM: 60, guidePath: path), id: 'x');
+      final bad = analyzeCornerArm(
+        CornerArmSpec(center: c + const Pt(5000, 0), hingeRadiusM: 350, armLengthM: 60, guidePath: path),
+        id: 'x',
+      );
       expect(bad.warnings, contains('corner_arm_no_path:x'));
       expect(bad.steps, isEmpty);
       final noRate = analyzeCornerArm(CornerArmSpec(center: c, hingeRadiusM: 350, armLengthM: 60, guidePath: path, stepDeg: 5));

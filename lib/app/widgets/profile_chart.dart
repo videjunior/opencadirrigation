@@ -109,14 +109,20 @@ class _ProfilePainter extends CustomPainter {
       final y = yMin + (yMax - yMin) * i / 5;
       final o = pt(0, y);
       canvas.drawLine(Offset(left, o.dy), Offset(left + width, o.dy), gridPaint);
-      final tp = TextPainter(text: TextSpan(text: fmt(y, 1), style: txt), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(text: fmt(y, 1), style: txt),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, Offset(left - tp.width - 4, o.dy - tp.height / 2));
     }
     for (var i = 0; i <= 5; i++) {
       final x = xMax * i / 5;
       final o = pt(x, yMin);
       canvas.drawLine(Offset(o.dx, top), Offset(o.dx, top + h), gridPaint);
-      final tp = TextPainter(text: TextSpan(text: '${fmt(u.lengthFromSi(x), 0)} ${u.lengthLabel}', style: txt), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(text: '${fmt(u.lengthFromSi(x), 0)} ${u.lengthLabel}', style: txt),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, Offset(o.dx - tp.width / 2, top + h + 4));
     }
     Path line(List<(double, double)> list) {
@@ -134,21 +140,30 @@ class _ProfilePainter extends CustomPainter {
     fill.lineTo(pt(0, yMin).dx, pt(0, yMin).dy);
     fill.close();
     canvas.drawPath(fill, Paint()..color = groundColor.withValues(alpha: 0.2));
-    canvas.drawPath(ground, Paint()
-      ..color = groundColor
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke);
+    canvas.drawPath(
+      ground,
+      Paint()
+        ..color = groundColor
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
     if (w.pipe != null && w.pipe!.length >= 2) {
-      canvas.drawPath(line(w.pipe!), Paint()
-        ..color = pipeColor
-        ..strokeWidth = 2.5
-        ..style = PaintingStyle.stroke);
+      canvas.drawPath(
+        line(w.pipe!),
+        Paint()
+          ..color = pipeColor
+          ..strokeWidth = 2.5
+          ..style = PaintingStyle.stroke,
+      );
     }
     if (w.hgl != null && w.hgl!.length >= 2) {
-      canvas.drawPath(line(w.hgl!), Paint()
-        ..color = hglColor
-        ..strokeWidth = 1.5
-        ..style = PaintingStyle.stroke);
+      canvas.drawPath(
+        line(w.hgl!),
+        Paint()
+          ..color = hglColor
+          ..strokeWidth = 1.5
+          ..style = PaintingStyle.stroke,
+      );
     }
     // min / max markers
     var lo = s.first, hi = s.first;
@@ -159,10 +174,22 @@ class _ProfilePainter extends CustomPainter {
     for (final (p, col) in [(lo, lowColor), (hi, highColor)]) {
       final o = pt(p.$1, p.$2);
       canvas.drawCircle(o, 3.5, Paint()..color = col);
-      final tp = TextPainter(text: TextSpan(text: fmt(p.$2, 2), style: TextStyle(color: col, fontSize: 10)), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(
+          text: fmt(p.$2, 2),
+          style: TextStyle(color: col, fontSize: 10),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, o + Offset(5, identical(p, hi) ? -13 : 3));
     }
-    final tp = TextPainter(text: TextSpan(text: '${w.title}   ${w.yLabel}', style: TextStyle(color: Cad.fg70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
+    final tp = TextPainter(
+      text: TextSpan(
+        text: '${w.title}   ${w.yLabel}',
+        style: TextStyle(color: Cad.fg70, fontSize: 11),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
     tp.paint(canvas, const Offset(left, 4));
     // legend (bottom row)
     var lx = left;
@@ -172,11 +199,21 @@ class _ProfilePainter extends CustomPainter {
       if (dot) {
         canvas.drawCircle(Offset(lx + 6, ly), 3.5, Paint()..color = col);
       } else {
-        canvas.drawLine(Offset(lx, ly), Offset(lx + 14, ly), Paint()
-          ..color = col
-          ..strokeWidth = 2.5);
+        canvas.drawLine(
+          Offset(lx, ly),
+          Offset(lx + 14, ly),
+          Paint()
+            ..color = col
+            ..strokeWidth = 2.5,
+        );
       }
-      final t = TextPainter(text: TextSpan(text: label, style: TextStyle(color: Cad.fg60, fontSize: 10)), textDirection: TextDirection.ltr)..layout();
+      final t = TextPainter(
+        text: TextSpan(
+          text: label,
+          style: TextStyle(color: Cad.fg60, fontSize: 10),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
       t.paint(canvas, Offset(lx + 18, ly - t.height / 2));
       lx += 18 + t.width + 14;
     }
@@ -192,9 +229,13 @@ class _ProfilePainter extends CustomPainter {
       final x = (hv.dx - left) / width * xMax;
       final z = _interp(s, x);
       final o = pt(x, z);
-      canvas.drawLine(Offset(o.dx, top), Offset(o.dx, top + h), Paint()
-        ..color = Cad.fg30
-        ..strokeWidth = 1);
+      canvas.drawLine(
+        Offset(o.dx, top),
+        Offset(o.dx, top + h),
+        Paint()
+          ..color = Cad.fg30
+          ..strokeWidth = 1,
+      );
       canvas.drawCircle(o, 4, Paint()..color = Cad.fg);
       var text = '${w.stationLabel} ${fmt(u.lengthFromSi(x), 1)} ${u.lengthLabel}   ${fmt(z, 2)} m';
       final hg = w.hgl;
@@ -203,7 +244,13 @@ class _ProfilePainter extends CustomPainter {
         final pz = w.pipe != null && w.pipe!.length >= 2 ? _interp(w.pipe!, x) : z;
         text += '   ${w.pressureLabel} ${fmt(u.pressureFromHead(head - pz), 1)} ${u.pressureLabel}';
       }
-      final t = TextPainter(text: TextSpan(text: text, style: TextStyle(color: Cad.fg, fontSize: 10.5)), textDirection: TextDirection.ltr)..layout();
+      final t = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(color: Cad.fg, fontSize: 10.5),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
       var tx = o.dx + 8;
       if (tx + t.width > size.width - 4) tx = o.dx - t.width - 8;
       final ty = (o.dy - 24).clamp(top, top + h - t.height);

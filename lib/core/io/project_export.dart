@@ -149,7 +149,9 @@ class ProjectExporter {
         case WireEntity w:
           ents.add(DxfEntity(type: 'POLYLINE', layer: w.layer, points: w.points));
         case ControllerEntity k:
-          ents.add(DxfEntity(type: 'POLYLINE', layer: k.layer, points: [k.position + const Pt(-1, -1), k.position + const Pt(1, -1), k.position + const Pt(1, 1), k.position + const Pt(-1, 1)], closed: true));
+          ents.add(
+            DxfEntity(type: 'POLYLINE', layer: k.layer, points: [k.position + const Pt(-1, -1), k.position + const Pt(1, -1), k.position + const Pt(1, 1), k.position + const Pt(-1, 1)], closed: true),
+          );
           ents.add(DxfEntity(type: 'TEXT', layer: Layers.labels, points: [k.position + const Pt(1.3, 0)], text: k.name, height: 0.8));
         case LeaderEntity le:
           ents.add(DxfEntity(type: 'POLYLINE', layer: le.layer, points: le.points));
@@ -175,7 +177,17 @@ class ProjectExporter {
           ents.add(DxfEntity(type: 'TEXT', layer: n.layer, points: [n.position + const Pt(0.9, 0)], text: [if (n.author.isNotEmpty) '${n.author}:', n.text].join(' '), height: 0.6));
         case RevisionCloudEntity r:
           ents.add(DxfEntity(type: 'POLYLINE', layer: r.layer, points: r.scallops(), closed: true));
-          if (r.points.isNotEmpty) ents.add(DxfEntity(type: 'TEXT', layer: r.layer, points: [Pt(r.bounds.maxX, r.bounds.maxY)], text: [if (r.revision.isNotEmpty) r.revision, r.description].where((x) => x.isNotEmpty).join(' — '), height: 0.8));
+          if (r.points.isNotEmpty) {
+            ents.add(
+              DxfEntity(
+                type: 'TEXT',
+                layer: r.layer,
+                points: [Pt(r.bounds.maxX, r.bounds.maxY)],
+                text: [if (r.revision.isNotEmpty) r.revision, r.description].where((x) => x.isNotEmpty).join(' — '),
+                height: 0.8,
+              ),
+            );
+          }
         case SpotHeightEntity s:
           ents.add(DxfEntity(type: 'POINT', layer: s.layer, points: [s.position], elevation: s.elevation));
           ents.add(DxfEntity(type: 'TEXT', layer: s.layer, points: [s.position], text: fmt(s.elevation, 1), height: 0.5));
@@ -251,7 +263,19 @@ class ProjectExporter {
     List<(double, double, double)> ring(Pt c, double r, [int n = 36]) => [for (var i = 0; i <= n; i++) ll(c + Pt.polar(r, 2 * 3.141592653589793 * i / n))];
     void add(Entity e, String type, List<(double, double, double)> coords, {String? name, String description = '', Map<String, String>? data, double fillAlpha = 0}) {
       if (coords.isEmpty) return;
-      out.add(GeoFeature(name: name ?? e.name, folder: layerLabel(e.layer), type: type, coords: coords, color: col(e.layer), widthPx: e is PipeEntity && e.scope == HydraulicScope.mainline ? 3 : 2, description: description, data: {'id': e.id, 'type': e.type.name, ...?data}, fillAlpha: fillAlpha));
+      out.add(
+        GeoFeature(
+          name: name ?? e.name,
+          folder: layerLabel(e.layer),
+          type: type,
+          coords: coords,
+          color: col(e.layer),
+          widthPx: e is PipeEntity && e.scope == HydraulicScope.mainline ? 3 : 2,
+          description: description,
+          data: {'id': e.id, 'type': e.type.name, ...?data},
+          fillAlpha: fillAlpha,
+        ),
+      );
     }
 
     String pipeInfo(String id, String? specName) {
@@ -291,7 +315,14 @@ class ProjectExporter {
           add(e, 'LineString', w.points.map(ll).toList(), name: w.name.isEmpty ? t('tool.wire') : w.name, data: {'length_m': fmt(w.length, 2)});
         case ControllerEntity k:
           final duty = results?.electrical?.controllers.where((d) => d.controllerId == k.id).firstOrNull;
-          add(e, 'Point', [ll(k.position)], name: k.name.isEmpty ? t('tool.controller') : k.name, description: duty == null ? '${k.stations}' : '${duty.used}/${k.stations}', data: {'stations': '${k.stations}', if (duty != null) 'used': '${duty.used}'});
+          add(
+            e,
+            'Point',
+            [ll(k.position)],
+            name: k.name.isEmpty ? t('tool.controller') : k.name,
+            description: duty == null ? '${k.stations}' : '${duty.used}/${k.stations}',
+            data: {'stations': '${k.stations}', if (duty != null) 'used': '${duty.used}'},
+          );
         case LeaderEntity le:
           add(e, 'LineString', le.points.map(ll).toList(), name: le.text);
         case ImageEntity im:
@@ -307,19 +338,49 @@ class ProjectExporter {
           add(e, 'Point', [ll(s.position, s.elevation)], name: s.name.isEmpty ? fmt(s.elevation, 1) : s.name, data: {'ELEV': fmt(s.elevation, 2)});
         case PipeEntity p:
           final spec = project.catalog.pipe(p.pipeSpecId);
-          add(e, 'LineString', p.points.map(ll).toList(), name: p.name.isEmpty ? (spec?.name ?? t('tool.${p.scope == HydraulicScope.zone ? 'zonePipe' : 'mainPipe'}')) : p.name, description: pipeInfo(p.id, spec?.name), data: {'length_m': fmt(p.length, 2), if (spec != null) 'pipe': spec.name});
+          add(
+            e,
+            'LineString',
+            p.points.map(ll).toList(),
+            name: p.name.isEmpty ? (spec?.name ?? t('tool.${p.scope == HydraulicScope.zone ? 'zonePipe' : 'mainPipe'}')) : p.name,
+            description: pipeInfo(p.id, spec?.name),
+            data: {'length_m': fmt(p.length, 2), if (spec != null) 'pipe': spec.name},
+          );
         case SpraylineEntity s:
           final spec = project.catalog.pipe(s.pipeSpecId);
           final outlet = project.catalog.outlet(s.outletSpecId);
-          add(e, 'LineString', s.points.map(ll).toList(), name: s.name.isEmpty ? t('tool.sprayline') : s.name, description: '${outlet?.name ?? s.outletSpecId} × ${s.outletCount} · ${pipeInfo(s.id, spec?.name)}', data: {'length_m': fmt(s.length, 2), 'outlets': '${s.outletCount}', 'spacing_m': fmt(s.spacing, 2)});
+          add(
+            e,
+            'LineString',
+            s.points.map(ll).toList(),
+            name: s.name.isEmpty ? t('tool.sprayline') : s.name,
+            description: '${outlet?.name ?? s.outletSpecId} × ${s.outletCount} · ${pipeInfo(s.id, spec?.name)}',
+            data: {'length_m': fmt(s.length, 2), 'outlets': '${s.outletCount}', 'spacing_m': fmt(s.spacing, 2)},
+          );
         case TapeEntity tp:
           final spec = project.catalog.tape(tp.tapeSpecId);
-          add(e, 'LineString', tp.points.map(ll).toList(), name: tp.name.isEmpty ? (spec?.name ?? t('tool.tape')) : tp.name, description: pipeInfo(tp.id, spec?.name), data: {'length_m': fmt(tp.length, 2)});
+          add(
+            e,
+            'LineString',
+            tp.points.map(ll).toList(),
+            name: tp.name.isEmpty ? (spec?.name ?? t('tool.tape')) : tp.name,
+            description: pipeInfo(tp.id, spec?.name),
+            data: {'length_m': fmt(tp.length, 2)},
+          );
         case OutletEntity o:
           add(e, 'Point', [ll(o.position)], name: o.name.isEmpty ? (project.catalog.outlet(o.outletSpecId)?.name ?? t('tool.outlet')) : o.name);
         case ControlValveEntity v:
           final z = results?.zones[v.id];
-          add(e, 'Point', [ll(v.position)], name: v.zoneName, description: z == null ? (project.catalog.valve(v.valveSpecId)?.name ?? '') : '${fmt(u.flowFromSi(z.totalFlow), 1)} ${u.flowLabel} · ${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}', data: {if (z != null) 'flow': fmt(u.flowFromSi(z.totalFlow), 1), if (z != null) 'required_head': fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)});
+          add(
+            e,
+            'Point',
+            [ll(v.position)],
+            name: v.zoneName,
+            description: z == null
+                ? (project.catalog.valve(v.valveSpecId)?.name ?? '')
+                : '${fmt(u.flowFromSi(z.totalFlow), 1)} ${u.flowLabel} · ${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}',
+            data: {if (z != null) 'flow': fmt(u.flowFromSi(z.totalFlow), 1), if (z != null) 'required_head': fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)},
+          );
         case WaterSupplyEntity s:
           add(e, 'Point', [ll(s.position)], name: s.name.isEmpty ? t('tool.supply') : s.name);
         case PumpEntity p:
@@ -329,7 +390,15 @@ class ProjectExporter {
         case JunctionEntity j:
           add(e, 'Point', [ll(j.position)], name: j.name.isEmpty ? t('tool.junction') : j.name);
         case AreaEntity a:
-          add(e, 'Polygon', a.points.map(ll).toList(), name: a.name.isEmpty ? t('tool.area') : a.name, description: '${fmt(a.area / 10000, 2)} ha${a.crop.isNotEmpty ? ' · ${a.crop}' : ''}', data: {'area_ha': fmt(a.area / 10000, 3), if (a.crop.isNotEmpty) 'crop': a.crop}, fillAlpha: 0.3);
+          add(
+            e,
+            'Polygon',
+            a.points.map(ll).toList(),
+            name: a.name.isEmpty ? t('tool.area') : a.name,
+            description: '${fmt(a.area / 10000, 2)} ha${a.crop.isNotEmpty ? ' · ${a.crop}' : ''}',
+            data: {'area_ha': fmt(a.area / 10000, 3), if (a.crop.isNotEmpty) 'crop': a.crop},
+            fillAlpha: 0.3,
+          );
         default:
           break;
       }
@@ -374,21 +443,28 @@ class ProjectExporter {
 
   String reportTxt() {
     final m = project.meta;
-    return reportTablesToText(reportTables(), header: [
-      'OpenCADIrrigation · ${t('pdf.reportTitle')}',
-      '${t('dlg.project')}: ${m.name}',
-      if (m.client.isNotEmpty) '${t('dlg.client')}: ${m.client}',
-      if (m.site.isNotEmpty) '${t('dlg.site')}: ${m.site}',
-      if (m.designer.isNotEmpty) '${t('dlg.designer')}: ${m.designer}',
-      '${t('pdf.date')}: ${PdfSheetBuilder.dateString(DateTime.now())}',
-    ]);
+    return reportTablesToText(
+      reportTables(),
+      header: [
+        'OpenCADIrrigation · ${t('pdf.reportTitle')}',
+        '${t('dlg.project')}: ${m.name}',
+        if (m.client.isNotEmpty) '${t('dlg.client')}: ${m.client}',
+        if (m.site.isNotEmpty) '${t('dlg.site')}: ${m.site}',
+        if (m.designer.isNotEmpty) '${t('dlg.designer')}: ${m.designer}',
+        '${t('pdf.date')}: ${PdfSheetBuilder.dateString(DateTime.now())}',
+      ],
+    );
   }
 
   Uint8List reportXlsx() => XlsxWriter.write([
     for (final tb in reportTables())
-      XlsxSheet(name: tb.title, headers: tb.headers, rows: [
-        for (final r in tb.rows) [for (final c in r) c is RNum ? double.parse(c.value.toStringAsFixed(c.decimals)) : c],
-      ]),
+      XlsxSheet(
+        name: tb.title,
+        headers: tb.headers,
+        rows: [
+          for (final r in tb.rows) [for (final c in r) c is RNum ? double.parse(c.value.toStringAsFixed(c.decimals)) : c],
+        ],
+      ),
   ]);
 
   Uint8List reportPdf() => sheetBuilder().buildReport(reportTables());

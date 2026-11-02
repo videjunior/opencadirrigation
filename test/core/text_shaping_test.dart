@@ -14,7 +14,13 @@ import 'package:opencadirrigation/core/io/fonts/unicode.dart';
 final fixtureDir = Platform.environment['SHAPING_FIXTURES'] ?? 'test/fixtures/shaping';
 
 const scripts = {
-  'Arab': Script.arabic, 'Deva': Script.devanagari, 'Beng': Script.bengali, 'Guru': Script.gurmukhi, 'Telu': Script.telugu, 'Latn': Script.latin, 'Cyrl': Script.cyrillic,
+  'Arab': Script.arabic,
+  'Deva': Script.devanagari,
+  'Beng': Script.bengali,
+  'Guru': Script.gurmukhi,
+  'Telu': Script.telugu,
+  'Latn': Script.latin,
+  'Cyrl': Script.cyrillic,
   'Grek': Script.greek,
 };
 
@@ -34,7 +40,10 @@ String encode(TrueTypeFont font, ShapedRun r) => [
 void main() {
   final fonts = <String, ShapingFont>{};
   final names = Platform.environment.containsKey('SHAPING_FIXTURES')
-      ? [for (final f in Directory(fixtureDir).listSync()) if (f.path.endsWith('.json')) f.uri.pathSegments.last.replaceAll('.json', '')]
+      ? [
+          for (final f in Directory(fixtureDir).listSync())
+            if (f.path.endsWith('.json')) f.uri.pathSegments.last.replaceAll('.json', ''),
+        ]
       : ['ar', 'ur', 'hi', 'mr', 'bn', 'pa', 'te'];
   for (final name in names) {
     test('$name runs shape like the reference engine', () {

@@ -89,7 +89,15 @@ class DxfR2000Writer {
   }
 
   // handles of the skeleton
-  static final _tBlockRecord = _hex(0x01), _tLayer = _hex(0x02), _tStyle = _hex(0x03), _tLtype = _hex(0x05), _tView = _hex(0x06), _tUcs = _hex(0x07), _tVport = _hex(0x08), _tAppid = _hex(0x09), _tDimstyle = _hex(0x0A);
+  static final _tBlockRecord = _hex(0x01),
+      _tLayer = _hex(0x02),
+      _tStyle = _hex(0x03),
+      _tLtype = _hex(0x05),
+      _tView = _hex(0x06),
+      _tUcs = _hex(0x07),
+      _tVport = _hex(0x08),
+      _tAppid = _hex(0x09),
+      _tDimstyle = _hex(0x0A);
   static final _root = _hex(0x0C), _groupDict = _hex(0x0D), _plotStyleDict = _hex(0x0E), _placeholder = _hex(0x0F), _layer0 = _hex(0x10), _style = _hex(0x11), _appid = _hex(0x12);
   static final _ltByBlock = _hex(0x14), _ltByLayer = _hex(0x15), _ltContinuous = _hex(0x16), _mlineDict = _hex(0x17), _mlineStd = _hex(0x18), _plotSettingsDict = _hex(0x19), _layoutDict = _hex(0x1A);
   static final _brModel = _hex(0x1F), _blkModel = _hex(0x20), _endModel = _hex(0x21), _layoutModel = _hex(0x22), _dimStandard = _hex(0x27), _vport = _hex(0x2C);
@@ -106,7 +114,11 @@ class DxfR2000Writer {
     return out;
   }();
 
-  List<CadDimStyle> get _allDimStyles => [CadDimStyle.standard, for (final s in d.dimStyles) if (s.name != 'Standard') s];
+  List<CadDimStyle> get _allDimStyles => [
+    CadDimStyle.standard,
+    for (final s in d.dimStyles)
+      if (s.name != 'Standard') s,
+  ];
 
   String _build() {
     for (final lt in d.linetypes) {
@@ -292,7 +304,12 @@ class DxfR2000Writer {
     });
     _table('LTYPE', _tLtype, 3 + d.linetypes.length, () {
       const none = <double>[];
-      for (final (h, name, desc, dashes) in [(_ltByBlock, 'ByBlock', '', none), (_ltByLayer, 'ByLayer', '', none), (_ltContinuous, 'Continuous', 'Solid line', none), for (final lt in d.linetypes) (_ltypes[lt.name]!, lt.name, lt.description, lt.dashes)]) {
+      for (final (h, name, desc, dashes) in [
+        (_ltByBlock, 'ByBlock', '', none),
+        (_ltByLayer, 'ByLayer', '', none),
+        (_ltContinuous, 'Continuous', 'Solid line', none),
+        for (final lt in d.linetypes) (_ltypes[lt.name]!, lt.name, lt.description, lt.dashes),
+      ]) {
         _record('LTYPE', h, _tLtype, 'AcDbLinetypeTableRecord', name);
         _s(3, desc);
         _p(72, 65);
@@ -741,7 +758,13 @@ class DxfR2000Writer {
   void _objects() {
     _p(0, 'SECTION');
     _p(2, 'OBJECTS');
-    _dict('DICTIONARY', _root, '0', [('ACAD_GROUP', _groupDict), ('ACAD_LAYOUT', _layoutDict), ('ACAD_MLINESTYLE', _mlineDict), ('ACAD_PLOTSETTINGS', _plotSettingsDict), ('ACAD_PLOTSTYLENAME', _plotStyleDict)]);
+    _dict('DICTIONARY', _root, '0', [
+      ('ACAD_GROUP', _groupDict),
+      ('ACAD_LAYOUT', _layoutDict),
+      ('ACAD_MLINESTYLE', _mlineDict),
+      ('ACAD_PLOTSETTINGS', _plotSettingsDict),
+      ('ACAD_PLOTSTYLENAME', _plotStyleDict),
+    ]);
     _dict('DICTIONARY', _groupDict, _root, const []);
     _dict('DICTIONARY', _layoutDict, _root, [('Layout1', _layoutPaper), ('Model', _layoutModel)]);
     _dict('DICTIONARY', _mlineDict, _root, [('Standard', _mlineStd)]);

@@ -9,9 +9,30 @@ import 'package:opencadirrigation/core/hydraulics/network.dart';
 /// The network of FAO Irrigation and Drainage Paper 59, Box 1 and Table 2:
 /// 24 sections, 19 hydrants of 10 L/s serving 3 ha each.
 const _sections = [
-  (1, 0, 1, 19, 60), (2, 1, 2, 18, 60), (3, 2, 3, 17, 50), (4, 3, 4, 16, 50), (5, 4, 5, 15, 50), (6, 5, 6, 14, 50), (7, 6, 7, 11, 40), (8, 7, 8, 8, 40),
-  (9, 8, 9, 7, 40), (10, 9, 10, 6, 40), (11, 10, 11, 5, 40), (12, 11, 12, 5, 40), (13, 12, 13, 4, 40), (14, 13, 14, 3, 30), (15, 14, 15, 2, 20), (16, 15, 16, 1, 10),
-  (17, 7, 17, 3, 30), (18, 17, 18, 3, 30), (19, 18, 19, 2, 20), (20, 19, 20, 1, 10), (21, 6, 21, 3, 30), (22, 21, 22, 2, 20), (23, 22, 23, 1, 10), (24, 8, 24, 1, 10),
+  (1, 0, 1, 19, 60),
+  (2, 1, 2, 18, 60),
+  (3, 2, 3, 17, 50),
+  (4, 3, 4, 16, 50),
+  (5, 4, 5, 15, 50),
+  (6, 5, 6, 14, 50),
+  (7, 6, 7, 11, 40),
+  (8, 7, 8, 8, 40),
+  (9, 8, 9, 7, 40),
+  (10, 9, 10, 6, 40),
+  (11, 10, 11, 5, 40),
+  (12, 11, 12, 5, 40),
+  (13, 12, 13, 4, 40),
+  (14, 13, 14, 3, 30),
+  (15, 14, 15, 2, 20),
+  (16, 15, 16, 1, 10),
+  (17, 7, 17, 3, 30),
+  (18, 17, 18, 3, 30),
+  (19, 18, 19, 2, 20),
+  (20, 19, 20, 1, 10),
+  (21, 6, 21, 3, 30),
+  (22, 21, 22, 2, 20),
+  (23, 22, 23, 1, 10),
+  (24, 8, 24, 1, 10),
 ];
 const _hydrantNodes = [1, 2, 3, 4, 5, 9, 10, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 24];
 
@@ -31,8 +52,15 @@ void main() {
   group('normal quantile (AS 241)', () {
     test('matches reference quantiles', () {
       const ref = [
-        (0.5, 0.0), (0.9, 1.2815515655446006), (0.95, 1.6448536269514715), (0.975, 1.9599639845400534), (0.99, 2.3263478740408408), (0.999, 3.090232306167813),
-        (1e-10, -6.361340902404057), (0.02, -2.0537489106318225), (0.3, -0.5244005127080408),
+        (0.5, 0.0),
+        (0.9, 1.2815515655446006),
+        (0.95, 1.6448536269514715),
+        (0.975, 1.9599639845400534),
+        (0.99, 2.3263478740408408),
+        (0.999, 3.090232306167813),
+        (1e-10, -6.361340902404057),
+        (0.02, -2.0537489106318225),
+        (0.3, -0.5244005127080408),
       ];
       for (final (p, u) in ref) {
         expect(normalQuantile(p), closeTo(u, 1e-12), reason: 'p = $p');
@@ -257,7 +285,10 @@ void main() {
     });
 
     test('codes for unknown nodes and a discharge above every hydrant', () {
-      final r = checkRandomConfigurations(twoHydrants(), [...hydrants, const Hydrant(id: 'hx', nodeId: 'X', discharge: 0.01)], options: const RandomCheckOptions(configurations: 3, upstreamDischarge: 1));
+      final r = checkRandomConfigurations(twoHydrants(), [
+        ...hydrants,
+        const Hydrant(id: 'hx', nodeId: 'X', discharge: 0.01),
+      ], options: const RandomCheckOptions(configurations: 3, upstreamDischarge: 1));
       expect(r.codes, containsAll(['random_unknown_node:hx', 'random_discharge_above_total']));
       expect(r.meanOpen, 2);
       expect(checkRandomConfigurations(twoHydrants(), const []).codes, ['random_no_hydrants']);

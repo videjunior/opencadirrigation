@@ -697,7 +697,8 @@ class AiRequest {
   int get outputTokens => maxTokens ?? model.maxOutput;
 
   /// The same request over [h].
-  AiRequest withHistory(List<Map<String, dynamic>> h) => AiRequest(model: model, system: system, history: h, tools: tools, effort: effort, maxTokens: maxTokens, taskBudget: taskBudget, compactAt: compactAt);
+  AiRequest withHistory(List<Map<String, dynamic>> h) =>
+      AiRequest(model: model, system: system, history: h, tools: tools, effort: effort, maxTokens: maxTokens, taskBudget: taskBudget, compactAt: compactAt);
 }
 
 /// One provider's API.
@@ -949,9 +950,15 @@ abstract class AiHttpClient implements AiClient {
   Future<String> readAll(Stream<List<int>> body, AiModel model, AiCancel cancel, {Duration? idle}) async {
     final out = StringBuffer();
     try {
-      await readLines(body, model, (l) {
-        if (out.length < 65536) out.writeln(l);
-      }, cancel, idle: idle);
+      await readLines(
+        body,
+        model,
+        (l) {
+          if (out.length < 65536) out.writeln(l);
+        },
+        cancel,
+        idle: idle,
+      );
     } on AiError catch (e) {
       if (e.kind == AiErrorKind.cancelled) rethrow;
     }

@@ -13,16 +13,7 @@ import 'terrain.dart';
 /// or contour layout in yellow and orange, the steep ones in red and purple
 /// (class limits after the soil-survey slope phases, USDA Soil Survey
 /// Manual ch. 3, rounded for irrigation layout).
-const slopeClasses = <(double, int)>[
-  (2, 0xFF1B9E77),
-  (5, 0xFF66BD63),
-  (10, 0xFFD9EF8B),
-  (15, 0xFFFEE08B),
-  (20, 0xFFFDAE61),
-  (30, 0xFFF46D43),
-  (45, 0xFFD73027),
-  (double.infinity, 0xFF7B3294),
-];
+const slopeClasses = <(double, int)>[(2, 0xFF1B9E77), (5, 0xFF66BD63), (10, 0xFFD9EF8B), (15, 0xFFFEE08B), (20, 0xFFFDAE61), (30, 0xFFF46D43), (45, 0xFFD73027), (double.infinity, 0xFF7B3294)];
 
 /// Index of the slope class of [slopePct] in [slopeClasses].
 int slopeClassOf(double slopePct) {

@@ -60,6 +60,7 @@ class RecordingCanvas implements Canvas {
     paragraphs.add(offset);
     ops.add('text');
   }
+
   @override
   void drawImage(ui.Image image, Offset offset, Paint paint) => images++;
 
@@ -123,10 +124,17 @@ void main() {
     c.overlay = OverlayMode.pressure;
     final coloured = paint();
     // the same dots as in the velocity view, where and as big as there
-    int byPlace((Offset, double, Color) a, (Offset, double, Color) b) => a.$1.dx != b.$1.dx ? a.$1.dx.compareTo(b.$1.dx) : a.$1.dy != b.$1.dy ? a.$1.dy.compareTo(b.$1.dy) : a.$2.compareTo(b.$2);
+    int byPlace((Offset, double, Color) a, (Offset, double, Color) b) => a.$1.dx != b.$1.dx
+        ? a.$1.dx.compareTo(b.$1.dx)
+        : a.$1.dy != b.$1.dy
+        ? a.$1.dy.compareTo(b.$1.dy)
+        : a.$2.compareTo(b.$2);
     final before = [...plain.circles]..sort(byPlace), after = [...coloured.circles]..sort(byPlace);
     expect([for (final x in after) (x.$1, x.$2)], [for (final x in before) (x.$1, x.$2)]);
-    final recoloured = [for (var i = 0; i < after.length; i++) if (after[i].$3.toARGB32() != before[i].$3.toARGB32()) after[i].$3];
+    final recoloured = [
+      for (var i = 0; i < after.length; i++)
+        if (after[i].$3.toARGB32() != before[i].$3.toARGB32()) after[i].$3,
+    ];
     expect(recoloured, isNotEmpty);
     expect(recoloured.every(pressureColour), isTrue);
     expect(recoloured.where((x) => x.toARGB32() == 0xFFE53935), isEmpty, reason: 'the example stays inside its pressure window');
@@ -138,7 +146,10 @@ void main() {
     final tape = c.project.entities.whereType<TapeEntity>().firstWhere((t) => (res.outletsByEntity[t.id] ?? const []).isNotEmpty);
     final spacing = c.project.catalog.tape(tape.tapeSpecId)!.emitterSpacingM;
     final emitters = (tape.length / spacing).floor();
-    List<(Offset, double, Color)> dots(RecordingCanvas r) => [for (final x in r.circles) if (tape.distanceTo(c.camera.toWorld(x.$1)) < 0.02) x];
+    List<(Offset, double, Color)> dots(RecordingCanvas r) => [
+      for (final x in r.circles)
+        if (tape.distanceTo(c.camera.toWorld(x.$1)) < 0.02) x,
+    ];
     List<Offset> at(List<(Offset, double, Color)> d) => [for (final x in d) x.$1]..sort((a, b) => a.dx != b.dx ? a.dx.compareTo(b.dx) : a.dy.compareTo(b.dy));
     // the colours of the lines drawn through [o]
     Set<int> lineColoursAt(RecordingCanvas r, Offset o) => {
@@ -181,7 +192,10 @@ void main() {
     final line = c.project.entities.whereType<SpraylineEntity>().firstWhere((s) => (c.results!.outletsByEntity[s.id] ?? const []).isNotEmpty);
     c.camera.center = pointAlongPolyline(line.points, line.length / 2);
     c.camera.scale = 12;
-    List<(Offset, double, Color)> dots(RecordingCanvas r) => [for (final x in r.circles) if (line.distanceTo(c.camera.toWorld(x.$1)) < 0.02) x];
+    List<(Offset, double, Color)> dots(RecordingCanvas r) => [
+      for (final x in r.circles)
+        if (line.distanceTo(c.camera.toWorld(x.$1)) < 0.02) x,
+    ];
     c.overlay = OverlayMode.velocity;
     final plain = dots(paint());
     c.overlay = OverlayMode.pressure;
@@ -262,10 +276,7 @@ void main() {
     c.newProject();
     c.camera.center = Pt.zero;
     c.camera.scale = 10;
-    c.addEntities([
-      LineEntity(id: 'l', a: const Pt(-10, 0), b: const Pt(10, 0)),
-      TextEntity(id: 't', position: const Pt(0, 5), text: 'Casa', height: 2),
-    ]);
+    c.addEntities([LineEntity(id: 'l', a: const Pt(-10, 0), b: const Pt(10, 0)), TextEntity(id: 't', position: const Pt(0, 5), text: 'Casa', height: 2)]);
     // (as ARGB: a paint gives its colour back in single precision)
     final hover = Cad.hover.toARGB32();
     List<int> argb(RecordingCanvas r) => [for (final x in r.lineColors) x.toARGB32()];
@@ -285,7 +296,9 @@ void main() {
     c.newProject();
     c.camera.center = const Pt(500, 450);
     c.camera.scale = 1.2;
-    c.addEntities([for (var i = 0; i < 300; i++) PolylineEntity(id: 'p$i', points: [for (var k = 0; k <= 200; k++) Pt(k * 5.0, i * 3.0 + (k.isEven ? 0 : 1))])]);
+    c.addEntities([
+      for (var i = 0; i < 300; i++) PolylineEntity(id: 'p$i', points: [for (var k = 0; k <= 200; k++) Pt(k * 5.0, i * 3.0 + (k.isEven ? 0 : 1))]),
+    ]);
     RecordingCanvas at(double dpr) {
       final canvas = RecordingCanvas();
       CadPainter(c: c, tool: null, snapResult: null, repaint: c, devicePixelRatio: dpr).paint(canvas, const Size(1200, 800));
@@ -299,7 +312,9 @@ void main() {
     expect(at(1).pathWidths, contains(1.0));
     // a few lines keep their 2 device pixels, segment by segment with square ends
     c.newProject();
-    c.addEntities([PolylineEntity(id: 'q', points: const [Pt(400, 400), Pt(500, 420), Pt(600, 400)])]);
+    c.addEntities([
+      PolylineEntity(id: 'q', points: const [Pt(400, 400), Pt(500, 420), Pt(600, 400)]),
+    ]);
     c.camera.center = const Pt(500, 450);
     c.camera.scale = 1.2;
     final sparse = at(2);

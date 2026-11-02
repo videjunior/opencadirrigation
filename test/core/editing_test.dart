@@ -106,7 +106,9 @@ void main() {
 
     test('extend reaches the next boundary; offset keeps distance', () {
       final line = LineEntity(id: 'l', a: Pt.zero, b: const Pt(5, 0));
-      final ok = extendLinearEntity(line, const Pt(5, 0), [[const Pt(8, -5), const Pt(8, 5)]]);
+      final ok = extendLinearEntity(line, const Pt(5, 0), [
+        [const Pt(8, -5), const Pt(8, 5)],
+      ]);
       expect(ok, isTrue);
       expect(line.b.x, closeTo(8, 1e-9));
       final off = offsetEntity(PolylineEntity(id: 'p', points: [Pt.zero, const Pt(10, 0), const Pt(10, 10)]), 1, 'o') as PolylineEntity;

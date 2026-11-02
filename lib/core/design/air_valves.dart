@@ -93,7 +93,16 @@ class ProfilePoint {
 
 /// A pipeline: its profile, bore and flows.
 class PipelineProfile {
-  const PipelineProfile({required this.points, required this.diameter, this.hazenC = 140, this.designFlow = 0, this.fillFlow, this.drainFlow, this.pumpDischarges = const [], this.checkValves = const []});
+  const PipelineProfile({
+    required this.points,
+    required this.diameter,
+    this.hazenC = 140,
+    this.designFlow = 0,
+    this.fillFlow,
+    this.drainFlow,
+    this.pumpDischarges = const [],
+    this.checkValves = const [],
+  });
 
   /// Points in any order (sorted by chainage).
   final List<ProfilePoint> points;
@@ -418,7 +427,12 @@ AirValvePlan suggestAirValves(PipelineProfile profile, {AirValveOptions options 
   for (final (c, a, b) in runs) {
     final xa = p[a].chainage, xb = p[b + 1].chainage;
     if (xb - xa <= o.maxSpacing) continue;
-    final anchors = <double>[xa, for (final q in cands) if (q.x > xa + 1e-9 && q.x < xb - 1e-9) q.x, xb]..sort();
+    final anchors = <double>[
+      xa,
+      for (final q in cands)
+        if (q.x > xa + 1e-9 && q.x < xb - 1e-9) q.x,
+      xb,
+    ]..sort();
     final reason = c == 1 ? AirValveReason.longAscent : (c == -1 ? AirValveReason.longDescent : AirValveReason.longHorizontal);
     final type = c == -1 ? descentType : (o.preferCombination ? AirValveType.combination : AirValveType.airRelease);
     for (var i = 1; i < anchors.length; i++) {
@@ -469,12 +483,7 @@ AirValvePlan suggestAirValves(PipelineProfile profile, {AirValveOptions options 
   final w = ((x - a.chainage) / (b.chainage - a.chainage)).clamp(0.0, 1.0);
   final ha = a.hgl, hb = b.hgl;
   final pa = a.position, pb = b.position;
-  return (
-    a.pipe + (b.pipe - a.pipe) * w,
-    a.ground + (b.ground - a.ground) * w,
-    ha != null && hb != null ? ha + (hb - ha) * w : null,
-    pa != null && pb != null ? pa + (pb - pa) * w : null,
-  );
+  return (a.pipe + (b.pipe - a.pipe) * w, a.ground + (b.ground - a.ground) * w, ha != null && hb != null ? ha + (hb - ha) * w : null, pa != null && pb != null ? pa + (pb - pa) * w : null);
 }
 
 /// Sizes a valve at chainage [x]: drainage by gravity on the slopes that
@@ -513,7 +522,14 @@ AirValveSizing _size(PipelineProfile profile, AirValveOptions o, List<ProfilePoi
   var dSmall = 0.0, release = 0.0;
   if (small && profile.designFlow > 0) {
     release = o.airContent * profile.designFlow;
-    dSmall = airReleaseOrificeDiameter(waterFlow: profile.designFlow, pressureHead: pressure ?? 10, airContent: o.airContent, cd: o.dischargeCoefficient, barometricHead: o.barometricHead, temperature: o.temperature);
+    dSmall = airReleaseOrificeDiameter(
+      waterFlow: profile.designFlow,
+      pressureHead: pressure ?? 10,
+      airContent: o.airContent,
+      cd: o.dischargeCoefficient,
+      barometricHead: o.barometricHead,
+      temperature: o.temperature,
+    );
   }
   final nominal = large ? _nominal(dLarge, airValveSizes) : _nominal(dSmall, airReleaseSizes);
   return AirValveSizing(largeOrifice: dLarge, smallOrifice: dSmall, nominalSize: nominal, drainFlow: large ? drain : 0, fillFlow: large ? fill : 0, releaseAirFlow: release);

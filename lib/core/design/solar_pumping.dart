@@ -90,7 +90,14 @@ double beamTiltRatio(double latitudeDeg, double tiltDeg, double azimuthFromEquat
 /// Monthly mean daily irradiation on a tilted surface (kWh/m²/day) from the
 /// monthly mean on the horizontal [horizontalKWhM2Day] (isotropic sky, Liu &
 /// Jordan; Duffie & Beckman eq. 2.19.1), for [month] (1–12).
-double tiltedMonthlyIrradiationKWhM2({required double horizontalKWhM2Day, required double latitudeDeg, required int month, double tiltDeg = 0, double azimuthFromEquatorDeg = 0, double groundAlbedo = 0.2}) {
+double tiltedMonthlyIrradiationKWhM2({
+  required double horizontalKWhM2Day,
+  required double latitudeDeg,
+  required int month,
+  double tiltDeg = 0,
+  double azimuthFromEquatorDeg = 0,
+  double groundAlbedo = 0.2,
+}) {
   if (horizontalKWhM2Day <= 0) return 0;
   if (tiltDeg == 0) return horizontalKWhM2Day;
   final n = meanDayOfMonth[(month - 1).clamp(0, 11)];
@@ -212,7 +219,19 @@ class SolarPumpInput {
 
 /// One month of the sizing result.
 class SolarPumpMonthResult {
-  const SolarPumpMonthResult({required this.month, required this.days, required this.tiltedKWhM2Day, required this.peakSunHours, required this.performanceRatio, required this.motorPumpEfficiency, required this.hydraulicKWhDay, required this.requiredKWp, required this.pumpedM3Day, required this.demandM3Day, required this.pumpingHours});
+  const SolarPumpMonthResult({
+    required this.month,
+    required this.days,
+    required this.tiltedKWhM2Day,
+    required this.peakSunHours,
+    required this.performanceRatio,
+    required this.motorPumpEfficiency,
+    required this.hydraulicKWhDay,
+    required this.requiredKWp,
+    required this.pumpedM3Day,
+    required this.demandM3Day,
+    required this.pumpingHours,
+  });
   final int month;
   final int days;
 
@@ -237,7 +256,20 @@ class SolarPumpMonthResult {
 
 /// PV pumping sizing result.
 class SolarPumpResult {
-  const SolarPumpResult({required this.months, required this.tiltDeg, required this.criticalMonth, required this.requiredKWp, required this.modules, required this.arrayKWp, required this.annualDemandM3, required this.annualPumpedM3, required this.annualHydraulicKWh, required this.annualGridKWh, required this.annualGridCost, this.warnings = const []});
+  const SolarPumpResult({
+    required this.months,
+    required this.tiltDeg,
+    required this.criticalMonth,
+    required this.requiredKWp,
+    required this.modules,
+    required this.arrayKWp,
+    required this.annualDemandM3,
+    required this.annualPumpedM3,
+    required this.annualHydraulicKWh,
+    required this.annualGridKWh,
+    required this.annualGridCost,
+    this.warnings = const [],
+  });
   final List<SolarPumpMonthResult> months;
   final double tiltDeg;
 
@@ -270,7 +302,14 @@ SolarPumpResult sizeSolarPumping(SolarPumpInput input) {
   final conv = input.converterEfficiency.clamp(0.05, 1.0);
   final pre = <(SolarPumpMonth, double ht, double pr, int days, double head)>[];
   for (final m in input.months) {
-    final ht = tiltedMonthlyIrradiationKWhM2(horizontalKWhM2Day: m.horizontalKWhM2Day, latitudeDeg: input.latitudeDeg, month: m.month, tiltDeg: tilt, azimuthFromEquatorDeg: input.azimuthFromEquatorDeg, groundAlbedo: input.groundAlbedo);
+    final ht = tiltedMonthlyIrradiationKWhM2(
+      horizontalKWhM2Day: m.horizontalKWhM2Day,
+      latitudeDeg: input.latitudeDeg,
+      month: m.month,
+      tiltDeg: tilt,
+      azimuthFromEquatorDeg: input.azimuthFromEquatorDeg,
+      groundAlbedo: input.groundAlbedo,
+    );
     final tf = m.ambientC == null ? 1.0 : pvTemperatureFactor(ambientC: m.ambientC!, noctC: input.noctC, powerTempCoeffPerC: input.powerTempCoeffPerC);
     final pr = input.performanceRatio ?? pvPerformanceRatio(temperatureFactor: tf, soiling: input.soiling, wiring: input.wiring, mismatch: input.mismatch);
     final days = DateTime.utc(input.year, m.month + 1).difference(DateTime.utc(input.year, m.month)).inDays;
@@ -326,19 +365,21 @@ SolarPumpResult sizeSolarPumping(SolarPumpInput input) {
     final q = input.nominalFlowM3h;
     final served = math.min(v, m.dailyVolumeM3);
     if (served < m.dailyVolumeM3 * (1 - 1e-6) && reqByMonth[i].isFinite) warnings.add('solar_deficit:${m.month}');
-    results.add(SolarPumpMonthResult(
-      month: m.month,
-      days: days,
-      tiltedKWhM2Day: ht,
-      peakSunHours: psh,
-      performanceRatio: pr,
-      motorPumpEfficiency: e,
-      hydraulicKWhDay: eh,
-      requiredKWp: reqByMonth[i],
-      pumpedM3Day: v,
-      demandM3Day: m.dailyVolumeM3,
-      pumpingHours: q != null && q > 0 ? served / q : psh,
-    ));
+    results.add(
+      SolarPumpMonthResult(
+        month: m.month,
+        days: days,
+        tiltedKWhM2Day: ht,
+        peakSunHours: psh,
+        performanceRatio: pr,
+        motorPumpEfficiency: e,
+        hydraulicKWhDay: eh,
+        requiredKWp: reqByMonth[i],
+        pumpedM3Day: v,
+        demandM3Day: m.dailyVolumeM3,
+        pumpingHours: q != null && q > 0 ? served / q : psh,
+      ),
+    );
     demandYear += m.dailyVolumeM3 * days;
     pumpedYear += served * days;
     hydraulicYear += eh * days;

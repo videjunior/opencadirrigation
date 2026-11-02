@@ -34,11 +34,7 @@ Map<String, num> _figures(DesignResults r, {bool costs = true}) => {
     '${z.valveId} EU': z.uniformity.eu,
     '${z.valveId} warnings': z.warnings.length,
   },
-  for (final f in r.systemFlows) ...{
-    '${f.flowId} flow': f.totalFlow,
-    for (final s in f.supplies) '${f.flowId} ${s.supplyId} head': s.requiredHead,
-    '${f.flowId} warnings': f.warnings.length,
-  },
+  for (final f in r.systemFlows) ...{'${f.flowId} flow': f.totalFlow, for (final s in f.supplies) '${f.flowId} ${s.supplyId} head': s.requiredHead, '${f.flowId} warnings': f.warnings.length},
   for (final e in r.pivots.entries) ...{'${e.key} flow': e.value.flow, '${e.key} head': e.value.inletHead},
   'bom lines': r.bom.length,
 };

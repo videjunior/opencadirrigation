@@ -98,7 +98,17 @@ class TreeRing {
 
 /// Outcome of [layoutTreeRings].
 class TreeRingLayout {
-  TreeRingLayout({required this.trees, required this.rings, required this.laterals, required this.submain, required this.stub, required this.valve, required this.kind, required this.direction, required this.messages});
+  TreeRingLayout({
+    required this.trees,
+    required this.rings,
+    required this.laterals,
+    required this.submain,
+    required this.stub,
+    required this.valve,
+    required this.kind,
+    required this.direction,
+    required this.messages,
+  });
 
   final List<Pt> trees;
   final List<TreeRing> rings;
@@ -131,7 +141,17 @@ class TreeRingLayout {
   /// zone pipes, the valve of zone [zoneName], and the rings as dripline
   /// ([tapeSpecId] at [tapeInletHeadM]) or as ring pipes with drippers
   /// ([outletSpecId], [nozzleId] at [headM]).
-  List<Entity> toEntities(Project p, {String? tapeSpecId, double tapeInletHeadM = 10, String? outletSpecId, String? nozzleId, double headM = 10, String? valveSpecId, String zoneName = '', String? lateralPipeSpecId}) {
+  List<Entity> toEntities(
+    Project p, {
+    String? tapeSpecId,
+    double tapeInletHeadM = 10,
+    String? outletSpecId,
+    String? nozzleId,
+    double headM = 10,
+    String? valveSpecId,
+    String zoneName = '',
+    String? lateralPipeSpecId,
+  }) {
     final out = <Entity>[];
     PipeEntity pipe(List<Pt> pts) => PipeEntity(id: p.newId(), points: List.of(pts), scope: HydraulicScope.zone, pipeSpecId: lateralPipeSpecId, computerSized: lateralPipeSpecId == null);
     for (final l in laterals) {
@@ -261,8 +281,14 @@ TreeRingLayout layoutTreeRings({List<Pt>? area, List<Pt>? trees, required TreeRi
         runs.add((_feedPoint(region, dir, perp, v, row.last.dot(dir) + half, row.last, 1.25 * r), row.reversed.toList()));
       case SubmainPosition.centre:
         final feed = dir * uMid + perp * v;
-        final before = [for (final t in row) if (t.dot(dir) < uMid) t].reversed.toList();
-        final after = [for (final t in row) if (t.dot(dir) >= uMid) t];
+        final before = [
+          for (final t in row)
+            if (t.dot(dir) < uMid) t,
+        ].reversed.toList();
+        final after = [
+          for (final t in row)
+            if (t.dot(dir) >= uMid) t,
+        ];
         if (before.isNotEmpty) runs.add((feed, before));
         if (after.isNotEmpty) runs.add((feed, after));
     }
@@ -354,8 +380,14 @@ TreeRing _ring(Pt c, Pt e, double r, int row, TreeRingOptions o) {
   final count = math.max(1, o.drippersPerTree);
   final phis = [for (var k = 0; k < count; k++) math.pi / count * (1 + 2 * k)];
   final onUp = phis.any((p) => (p - math.pi).abs() < 1e-9);
-  final leftPhis = [for (final p in phis) if (p > 1e-9 && p < math.pi - 1e-9) p]..sort((a, b) => b.compareTo(a));
-  final rightPhis = [for (final p in phis) if (p > math.pi + 1e-9) p]..sort();
+  final leftPhis = [
+    for (final p in phis)
+      if (p > 1e-9 && p < math.pi - 1e-9) p,
+  ]..sort((a, b) => b.compareTo(a));
+  final rightPhis = [
+    for (final p in phis)
+      if (p > math.pi + 1e-9) p,
+  ]..sort();
   final left = [up, for (final p in leftPhis) at(p), down];
   final right = [up, for (final p in rightPhis) at(p), down];
   return TreeRing(tree: c, row: row, halves: [left, right], drippers: [if (onUp) up, for (final p in leftPhis) at(p), for (final p in rightPhis) at(p)]);

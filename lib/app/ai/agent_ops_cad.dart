@@ -100,7 +100,8 @@ const cadCoverage = <String, String>{
   'menu:view.labels': 'setting:view.labels',
   'menu:view.wetted': 'setting:view.wetted_radii',
   'menu:view.grips': 'setting:view.grips',
-  'menu:gps.menu': 'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
+  'menu:gps.menu':
+      'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
   'menu:view.overlay.none': 'setting:view.overlay',
   'menu:view.overlay.velocity': 'setting:view.overlay',
   'menu:view.overlay.pressure': 'setting:view.overlay',
@@ -126,11 +127,16 @@ const cadCoverage = <String, String>{
   'menu:tool.dimRadial': 'op:add_dimension',
   'menu:tool.dimOrdinate': 'op:add_dimension',
   'menu:tool.revisionCloud': 'op:add_revision_cloud',
-  'menu:gps.walkStart': 'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
-  'menu:gps.walkArea': 'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
-  'menu:gps.walkOutline': 'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
-  'menu:gps.walkLine': 'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
-  'menu:gps.mark': 'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
+  'menu:gps.walkStart':
+      'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
+  'menu:gps.walkArea':
+      'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
+  'menu:gps.walkOutline':
+      'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
+  'menu:gps.walkLine':
+      'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
+  'menu:gps.mark':
+      'n/a:the device\'s GPS follows the user walking the site; the user starts it (View → Device GPS, Draw → GPS in the field; read_manual "interface" gives the assistant the menu paths)',
   // ---- Zone menu
   'menu:tool.block': 'op:fill_block',
   'menu:tool.autohead': 'op:sprinkler_grid',

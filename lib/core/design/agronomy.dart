@@ -86,19 +86,21 @@ List<CropWaterResult> cropWaterRequirements(Project project, DesignResults? resu
     final gross = net / math.max(a.efficiency, 0.05);
     final hours = rate > 0 ? gross * a.wettedFraction.clamp(0.05, 1.0) / rate : 0.0;
     final volume = gross / 1000 * a.area * a.wettedFraction.clamp(0.05, 1.0);
-    out.add(CropWaterResult(
-      areaId: a.id,
-      name: a.name.isEmpty ? a.id : a.name,
-      etcMmDay: etc,
-      rawMm: raw,
-      intervalDays: interval,
-      netDepthMm: net,
-      grossDepthMm: gross,
-      applicationRateMmH: rate,
-      hoursPerEvent: hours,
-      volumePerEventM3: volume,
-      dailyHours: interval > 0 ? hours / interval : hours,
-    ));
+    out.add(
+      CropWaterResult(
+        areaId: a.id,
+        name: a.name.isEmpty ? a.id : a.name,
+        etcMmDay: etc,
+        rawMm: raw,
+        intervalDays: interval,
+        netDepthMm: net,
+        grossDepthMm: gross,
+        applicationRateMmH: rate,
+        hoursPerEvent: hours,
+        volumePerEventM3: volume,
+        dailyHours: interval > 0 ? hours / interval : hours,
+      ),
+    );
   }
   return out;
 }
@@ -144,7 +146,10 @@ class ControllerProgram {
 List<AreaEntity> areasOfZone(Project project, DesignResults results, String valveId) {
   final z = results.zones[valveId];
   if (z == null || z.outlets.isEmpty) return const [];
-  final heads = {for (final e in project.entities) if (e is OutletEntity) e.id: e};
+  final heads = {
+    for (final e in project.entities)
+      if (e is OutletEntity) e.id: e,
+  };
   final total = z.outlets.fold(0, (s, o) => s + o.count);
   final out = <AreaEntity>[];
   for (final a in project.entities.whereType<AreaEntity>()) {
@@ -165,7 +170,10 @@ List<AreaEntity> areasOfZone(Project project, DesignResults results, String valv
 List<AreaEntity> areasOfStation(Project project, String stationId, {VihStations? stations}) {
   final ids = (stations ?? VihStations.of(project)).heads[stationId];
   if (ids == null || ids.isEmpty) return const [];
-  final heads = [for (final e in project.entities) if (e is OutletEntity && ids.contains(e.id)) e];
+  final heads = [
+    for (final e in project.entities)
+      if (e is OutletEntity && ids.contains(e.id)) e,
+  ];
   return [
     for (final a in project.entities.whereType<AreaEntity>())
       if (a.points.length >= 3 && heads.where((h) => project.outletWatersArea(h, a.points)).length * 5 >= heads.length) a,
@@ -185,8 +193,15 @@ ControllerProgram buildControllerProgram(Project project, DesignResults? results
   final vih = VihStations.of(project);
   // flows without any zone have nothing to water (an empty project gets no
   // automatic flow either)
-  final all = project.systemFlows.isNotEmpty ? project.systemFlows : [SystemFlow(id: 'auto', name: 'all', valveIds: {...project.entities.whereType<ControlValveEntity>().map((v) => v.id), ...vih.heads.keys})];
-  final flows = [for (final f in all) if (f.valveIds.isNotEmpty) f];
+  final all = project.systemFlows.isNotEmpty
+      ? project.systemFlows
+      : [
+          SystemFlow(id: 'auto', name: 'all', valveIds: {...project.entities.whereType<ControlValveEntity>().map((v) => v.id), ...vih.heads.keys}),
+        ];
+  final flows = [
+    for (final f in all)
+      if (f.valveIds.isNotEmpty) f,
+  ];
   final perFlow = <String, double>{};
   final intervalOf = <String, double>{};
   final zoneNames = <String, List<String>>{};

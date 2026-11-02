@@ -103,7 +103,14 @@ double kellerBliesnerWettedWidthM({required BulbTexture texture, BulbProfile pro
 /// Se' = 0.8·W, so that emitters too far apart to form a strip are not
 /// counted as one (FAO's second example applies eq. 10 without it); the
 /// result is limited to 100 %.
-double percentWettedArea({required double emittersPerPlant, required double emitterSpacingM, required double wettedWidthM, required double plantSpacingM, required double rowSpacingM, bool limitSpacingToWettedWidth = true}) {
+double percentWettedArea({
+  required double emittersPerPlant,
+  required double emitterSpacingM,
+  required double wettedWidthM,
+  required double plantSpacingM,
+  required double rowSpacingM,
+  bool limitSpacingToWettedWidth = true,
+}) {
   if (plantSpacingM <= 0 || rowSpacingM <= 0 || wettedWidthM <= 0) return 0;
   final s = math.max(emitterSpacingM, 0.0);
   final se = limitSpacingToWettedWidth ? math.min(s, 0.8 * wettedWidthM) : s;

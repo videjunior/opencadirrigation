@@ -407,7 +407,9 @@ List<WireEntity> wireEntitiesOf(Project p, WireRoutingResult r) => [
 List<Set<String>> wiringFlows(Project p) {
   final vih = VihStations.of(p);
   return p.systemFlows.isNotEmpty
-      ? [for (final f in p.systemFlows) vih.isEmpty ? f.valveIds : {...f.valveIds, ...vih.runningIn(f.valveIds)}]
+      ? [
+          for (final f in p.systemFlows) vih.isEmpty ? f.valveIds : {...f.valveIds, ...vih.runningIn(f.valveIds)},
+        ]
       : [
           {for (final v in p.entities.whereType<ControlValveEntity>()) v.id, ...vih.heads.keys},
         ];
@@ -669,7 +671,12 @@ double demandsAreaM2(Project p, DesignResults r, Iterable<String> ids) {
   final areas = <String, double>{};
   var other = 0.0;
   final vih = VihStations.of(p);
-  final at = vih.isEmpty ? const <String, Pt>{} : {for (final e in p.entities) if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position};
+  final at = vih.isEmpty
+      ? const <String, Pt>{}
+      : {
+          for (final e in p.entities)
+            if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position,
+        };
   for (final id in ids) {
     final pv = r.pivots[id];
     if (pv != null) {
@@ -778,7 +785,15 @@ FertigationSetup? fertigationSetup(Designer d, DesignResults r, SystemFlow sf, S
     final times = [for (final h in d.vih.heads[s]!) ?travel.nodes[headNode[h] ?? '']];
     if (times.isEmpty) continue;
     final near = times.reduce((a, b) => b.earliest < a.earliest ? b : a);
-    zones.add(FertigationZoneTime(demandId: s, valveFirst: near.earliest, valveFull: near.latest, emitterFirst: times.map((t) => t.earliest).reduce(math.max), emitterFull: times.map((t) => t.latest).reduce(math.max)));
+    zones.add(
+      FertigationZoneTime(
+        demandId: s,
+        valveFirst: near.earliest,
+        valveFull: near.latest,
+        emitterFirst: times.map((t) => t.earliest).reduce(math.max),
+        emitterFull: times.map((t) => t.latest).reduce(math.max),
+      ),
+    );
   }
   for (final id in sf.valveIds) {
     final n = d.demandNodeOf(id);
@@ -799,7 +814,15 @@ FertigationSetup? fertigationSetup(Designer d, DesignResults r, SystemFlow sf, S
   }
   final order = demandIds(d.project);
   zones.sort((a, b) => order.indexOf(a.demandId).compareTo(order.indexOf(b.demandId)));
-  return FertigationSetup(network: net, result: res, injectionNode: node, mainline: travel, zones: zones, flow: math.max(0.0, flow), areaM2: demandsAreaM2(d.project, r, {...sf.valveIds, ...stations}));
+  return FertigationSetup(
+    network: net,
+    result: res,
+    injectionNode: node,
+    mainline: travel,
+    zones: zones,
+    flow: math.max(0.0, flow),
+    areaM2: demandsAreaM2(d.project, r, {...sf.valveIds, ...stations}),
+  );
 }
 
 /// A device of the mainline a venturi injector can bypass, with its head

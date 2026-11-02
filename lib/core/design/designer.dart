@@ -84,9 +84,9 @@ class Designer {
   /// mainline outlet as a plain emitter of every flow, as before the heads
   /// could be scheduled.
   Designer(this.project, {String Function(String key)? label, VihStations? stations})
-      : model = NetworkBuilder(project).build(),
-        vih = stations ?? VihStations.of(project),
-        _label = label ?? ((k) => k);
+    : model = NetworkBuilder(project).build(),
+      vih = stations ?? VihStations.of(project),
+      _label = label ?? ((k) => k);
 
   final Project project;
   final String Function(String key) _label;
@@ -164,7 +164,24 @@ class Designer {
       }
       if (crit == null || at == null) continue;
       final scheduled = vih.scheduled.contains(s.key);
-      out.add(VihDuty(stationId: s.key, name: vih.nameOf(s.key), heads: n, flow: q, minPressure: pMin, maxPressure: pMax, allowedMin: lo, allowedMax: hi, criticalId: crit, availableHead: avail, requiredHead: need, elevation: at.elevation, p: at.p, scheduled: scheduled));
+      out.add(
+        VihDuty(
+          stationId: s.key,
+          name: vih.nameOf(s.key),
+          heads: n,
+          flow: q,
+          minPressure: pMin,
+          maxPressure: pMax,
+          allowedMin: lo,
+          allowedMax: hi,
+          criticalId: crit,
+          availableHead: avail,
+          requiredHead: need,
+          elevation: at.elevation,
+          p: at.p,
+          scheduled: scheduled,
+        ),
+      );
       if (scheduled && worst > 0.01) warnings.add('vih_pressure_deficit:$crit');
       if (scheduled && top != null && pMax > hi + 0.01) warnings.add('vih_pressure_high:$top');
     }
@@ -353,7 +370,8 @@ class Designer {
     PipeUsage.mainline => params.maxMainlineVelocity,
   };
 
-  double _effectiveLength(GLink l) => math.max(l.length * (params.applyMinorLosses && params.minorLossMethod == MinorLossMethod.percent && l.usage != PipeUsage.lateral ? 1 + params.minorLossPct / 100 : 1), 1e-3);
+  double _effectiveLength(GLink l) =>
+      math.max(l.length * (params.applyMinorLosses && params.minorLossMethod == MinorLossMethod.percent && l.usage != PipeUsage.lateral ? 1 + params.minorLossPct / 100 : 1), 1e-3);
 
   HLink _toHLink(GLink l) {
     switch (l.kind) {
@@ -362,7 +380,19 @@ class Designer {
         final spec = _specOf(l);
         final c = params.adjustedC(tape?.hazenC ?? spec?.hazenC ?? 150);
         final rough = tape != null ? tape.roughnessMm / 1000 : (spec?.roughness ?? 1.5e-6);
-        return HLink(id: l.id, from: l.from, to: l.to, diameter: _diameter(l), length: _effectiveLength(l), hazenC: c, roughness: rough, minorK: params.applyMinorLosses ? l.minorK : 0, tag: l, scobeyKs: spec?.scobeyKs ?? 0.32, manningN: spec?.manningN ?? 0.009);
+        return HLink(
+          id: l.id,
+          from: l.from,
+          to: l.to,
+          diameter: _diameter(l),
+          length: _effectiveLength(l),
+          hazenC: c,
+          roughness: rough,
+          minorK: params.applyMinorLosses ? l.minorK : 0,
+          tag: l,
+          scobeyKs: spec?.scobeyKs ?? 0.32,
+          manningN: spec?.manningN ?? 0.009,
+        );
       case GLinkKind.controlValve:
         final spec = catalog.valve(l.valveSpecId);
         return HLink(id: l.id, from: l.from, to: l.to, kind: HLinkKind.device, device: spec?.loss ?? const DeviceLossCurve(k: 1e-3), tag: l);
@@ -388,7 +418,17 @@ class Designer {
   /// Head loss of a pipe link built with [spec] carrying [q] (m³/s).
   double _linkLoss(GLink l, PipeSpec spec, double q) {
     if (q <= 0) return 0;
-    final hf = frictionLoss(method: params.frictionMethod, flow: q, diameter: spec.innerDiameter, length: _effectiveLength(l), c: params.adjustedC(spec.hazenC), roughness: spec.roughness, kinematicViscosity: params.kinematicViscosity, scobeyKs: spec.scobeyKs, manningN: spec.manningN);
+    final hf = frictionLoss(
+      method: params.frictionMethod,
+      flow: q,
+      diameter: spec.innerDiameter,
+      length: _effectiveLength(l),
+      c: params.adjustedC(spec.hazenC),
+      roughness: spec.roughness,
+      kinematicViscosity: params.kinematicViscosity,
+      scobeyKs: spec.scobeyKs,
+      manningN: spec.manningN,
+    );
     final hm = params.applyMinorLosses && l.minorK > 0 ? minorLoss(k: l.minorK, flow: q, diameter: spec.innerDiameter) : 0.0;
     return hf + hm;
   }
@@ -401,7 +441,17 @@ class Designer {
     final c = params.adjustedC(tape?.hazenC ?? spec?.hazenC ?? 150);
     final rough = tape != null ? tape.roughnessMm / 1000 : (spec?.roughness ?? 1.5e-6);
     final d = _diameter(l);
-    final hf = frictionLoss(method: params.frictionMethod, flow: q, diameter: d, length: _effectiveLength(l), c: c, roughness: rough, kinematicViscosity: params.kinematicViscosity, scobeyKs: spec?.scobeyKs ?? 0.32, manningN: spec?.manningN ?? 0.009);
+    final hf = frictionLoss(
+      method: params.frictionMethod,
+      flow: q,
+      diameter: d,
+      length: _effectiveLength(l),
+      c: c,
+      roughness: rough,
+      kinematicViscosity: params.kinematicViscosity,
+      scobeyKs: spec?.scobeyKs ?? 0.32,
+      manningN: spec?.manningN ?? 0.009,
+    );
     final hm = params.applyMinorLosses && l.minorK > 0 ? minorLoss(k: l.minorK, flow: q, diameter: d) : 0.0;
     return hf + hm;
   }
@@ -526,12 +576,30 @@ class Designer {
     final na = a.nodes.values.toList(), nb = b.nodes.values.toList();
     for (var i = 0; i < na.length; i++) {
       final x = na[i], y = nb[i];
-      if (x.id != y.id || x.kind != y.kind || x.elevation != y.elevation || x.demand != y.demand || x.fixedHead != y.fixedHead || !identical(x.emitter, y.emitter) || x.emitterCount != y.emitterCount || x.emitterOffset != y.emitterOffset) return false;
+      if (x.id != y.id ||
+          x.kind != y.kind ||
+          x.elevation != y.elevation ||
+          x.demand != y.demand ||
+          x.fixedHead != y.fixedHead ||
+          !identical(x.emitter, y.emitter) ||
+          x.emitterCount != y.emitterCount ||
+          x.emitterOffset != y.emitterOffset) {
+        return false;
+      }
     }
     for (var i = 0; i < a.links.length; i++) {
       final x = a.links[i], y = b.links[i];
       if (x.id != y.id || x.from != y.from || x.to != y.to || x.kind != y.kind || x.diameter != y.diameter || x.length != y.length || x.hazenC != y.hazenC || x.roughness != y.roughness) return false;
-      if (x.minorK != y.minorK || x.checkValve != y.checkValve || !identical(x.device, y.device) || x.prvSetting != y.prvSetting || x.fcvFlow != y.fcvFlow || x.scobeyKs != y.scobeyKs || x.manningN != y.manningN || !identical(x.tag, y.tag)) return false;
+      if (x.minorK != y.minorK ||
+          x.checkValve != y.checkValve ||
+          !identical(x.device, y.device) ||
+          x.prvSetting != y.prvSetting ||
+          x.fcvFlow != y.fcvFlow ||
+          x.scobeyKs != y.scobeyKs ||
+          x.manningN != y.manningN ||
+          !identical(x.tag, y.tag)) {
+        return false;
+      }
     }
     return true;
   }
@@ -701,7 +769,21 @@ class Designer {
         final q = detailed ? e.curve.flow(math.max(p, 0)) : e.curve.flow(e.nominalHead);
         totalFlow += q * e.count;
         if (e.index == -2) continue;
-        outlets.add(OutletResult(entityId: e.entityId, index: e.index, p: n.p, elevation: n.elevation + e.offset, pressure: p, flow: q, nominalFlow: e.curve.flow(e.nominalHead), count: e.count, allowedMin: e.allowedMin, allowedMax: e.allowedMax, label: e.label));
+        outlets.add(
+          OutletResult(
+            entityId: e.entityId,
+            index: e.index,
+            p: n.p,
+            elevation: n.elevation + e.offset,
+            pressure: p,
+            flow: q,
+            nominalFlow: e.curve.flow(e.nominalHead),
+            count: e.count,
+            allowedMin: e.allowedMin,
+            allowedMax: e.allowedMax,
+            label: e.label,
+          ),
+        );
         // each flow relative to its own nominal flow: part-circle nozzles of
         // a matched-precipitation zone differ by design, not by pressure
         final qn = e.curve.flow(e.nominalHead);
@@ -751,12 +833,46 @@ class Designer {
         final tape = catalog.tape(l.tapeSpecId);
         final d = _diameter(l);
         final v = velocity(flow: lr.flow.abs(), diameter: d);
-        pipes.add(PipeSegmentResult(linkId: lid, entityId: l.entityId, segmentIndex: l.segmentIndex, a: l.a, b: l.b, elevationA: na.elevation, elevationB: nb.elevation, length: l.length, diameter: d, pipeSpecId: tape?.id ?? spec?.id, pipeName: tape?.name ?? spec?.name ?? '?', flow: lr.flow, velocity: v, headLoss: lr.headLoss, pressureStart: ha - na.elevation, pressureEnd: hb - nb.elevation, pressureRating: tape?.pressureRatingM ?? (spec == null ? 0 : _rating(spec)), zoneId: valveId, overVelocity: v > _vmax(l) + 1e-6));
+        pipes.add(
+          PipeSegmentResult(
+            linkId: lid,
+            entityId: l.entityId,
+            segmentIndex: l.segmentIndex,
+            a: l.a,
+            b: l.b,
+            elevationA: na.elevation,
+            elevationB: nb.elevation,
+            length: l.length,
+            diameter: d,
+            pipeSpecId: tape?.id ?? spec?.id,
+            pipeName: tape?.name ?? spec?.name ?? '?',
+            flow: lr.flow,
+            velocity: v,
+            headLoss: lr.headLoss,
+            pressureStart: ha - na.elevation,
+            pressureEnd: hb - nb.elevation,
+            pressureRating: tape?.pressureRatingM ?? (spec == null ? 0 : _rating(spec)),
+            zoneId: valveId,
+            overVelocity: v > _vmax(l) + 1e-6,
+          ),
+        );
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         final rating = tape?.pressureRatingM ?? (spec == null ? 0.0 : _rating(spec));
         if (rating > 0 && math.max(ha - na.elevation, hb - nb.elevation) > rating) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
-        devices.add(DeviceResult(entityId: l.entityId, linkId: lid, flow: lr.flow, headLoss: lr.headLoss, pumpHead: lr.pumpHead, upstreamPressure: ha - na.elevation, downstreamPressure: hb - nb.elevation, status: lr.status.name, elevation: na.elevation));
+        devices.add(
+          DeviceResult(
+            entityId: l.entityId,
+            linkId: lid,
+            flow: lr.flow,
+            headLoss: lr.headLoss,
+            pumpHead: lr.pumpHead,
+            upstreamPressure: ha - na.elevation,
+            downstreamPressure: hb - nb.elevation,
+            status: lr.status.name,
+            elevation: na.elevation,
+          ),
+        );
         if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
       }
     }
@@ -933,9 +1049,24 @@ class Designer {
   }
 
   ZoneResult _emptyZone(String valveId, String name, List<String> warnings) => ZoneResult(
-    valveId: valveId, zoneName: name, converged: false, totalFlow: 0, downstreamHead: 0, valveLoss: 0, requiredUpstreamHead: 0,
-    minOutletPressure: 0, maxOutletPressure: 0, allowedMin: 0, allowedMax: 0, nominalPressure: 0, uniformity: UniformityStats.empty,
-    pipes: const [], outlets: const [], devices: const [], warnings: warnings, valveElevation: 0,
+    valveId: valveId,
+    zoneName: name,
+    converged: false,
+    totalFlow: 0,
+    downstreamHead: 0,
+    valveLoss: 0,
+    requiredUpstreamHead: 0,
+    minOutletPressure: 0,
+    maxOutletPressure: 0,
+    allowedMin: 0,
+    allowedMax: 0,
+    nominalPressure: 0,
+    uniformity: UniformityStats.empty,
+    pipes: const [],
+    outlets: const [],
+    devices: const [],
+    warnings: warnings,
+    valveElevation: 0,
   );
 
   /// Sizable units (entities with computer-sized pipes) among the given links.
@@ -1121,7 +1252,10 @@ class Designer {
     final r = _zoneNetwork(valveId, 10, false).solve();
     double q(GLink l) => (r.links[l.id]?.flow ?? 0).abs();
     final (parent, _, depth) = _bfs([zoneNode], linkIds);
-    final unitOf = <String, String>{for (final e in units.entries) for (final l in e.value) l.id: e.key};
+    final unitOf = <String, String>{
+      for (final e in units.entries)
+        for (final l in e.value) l.id: e.key,
+    };
     final cands = <String, List<PipeSpec>>{};
     final lengths = <String, double>{};
     final maxSizes = <String, int>{};
@@ -1140,7 +1274,9 @@ class Designer {
         total += e.nominalFlow;
       }
     }
-    final energy = params.tradeCapitalVsRunning ? annualEnergyCost(flow: total, head: 1, hoursPerYear: params.zoneHoursPerYear, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency) : 0.0;
+    final energy = params.tradeCapitalVsRunning
+        ? annualEnergyCost(flow: total, head: 1, hoursPerYear: params.zoneHoursPerYear, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency)
+        : 0.0;
     final zRoot = model.nodes[zoneNode]!.elevation;
     final nodes = {..._criticalNodes(valveId, depth), ...extraNodes};
     final constraints = <LpHeadConstraint>[];
@@ -1180,7 +1316,19 @@ class Designer {
       final dz = n.elevation + off - zRoot;
       constraints.add(LpHeadConstraint(headVar: 0, lossByUnitSpec: byUnit, constant: constant, minPressure: lo.isFinite ? lo + dz : null, maxPressure: hi.isFinite ? hi + dz : null, tag: k));
     }
-    return lpSize(LpSizingInput(units: units.keys.toList(), candidates: cands, unitLength: lengths, maxSizes: maxSizes, headVars: [LpHeadVar(energyPerMetre: energy, name: 'zone')], constraints: constraints, crf: _crf(), tradeCapital: params.tradeCapitalVsRunning, pipeCost: _pipeCost));
+    return lpSize(
+      LpSizingInput(
+        units: units.keys.toList(),
+        candidates: cands,
+        unitLength: lengths,
+        maxSizes: maxSizes,
+        headVars: [LpHeadVar(energyPerMetre: energy, name: 'zone')],
+        constraints: constraints,
+        crf: _crf(),
+        tradeCapital: params.tradeCapitalVsRunning,
+        pipeCost: _pipeCost,
+      ),
+    );
   }
 
   ZoneResult sizeZone(String valveId) {
@@ -1477,7 +1625,8 @@ class Designer {
     return net;
   }
 
-  List<WaterSupplyEntity> get _supplies => project.entities.whereType<WaterSupplyEntity>().where((s) => model.supplyNodes.containsKey(s.id) && model.mainlineNodes.contains(model.supplyNodes[s.id])).toList();
+  List<WaterSupplyEntity> get _supplies =>
+      project.entities.whereType<WaterSupplyEntity>().where((s) => model.supplyNodes.containsKey(s.id) && model.mainlineNodes.contains(model.supplyNodes[s.id])).toList();
 
   /// A running surface pump whose inlet pressure is below minus the
   /// practical suction lift (atmospheric head − vapour pressure − NPSH
@@ -1493,7 +1642,18 @@ class Designer {
     final warnings = <String>[];
     final supplies = _supplies;
     if (supplies.isEmpty) {
-      return SystemFlowResult(flowId: sf.id, name: sf.name, converged: false, supplies: const [], valves: const [], pipes: const [], devices: const [], warnings: const ['no_water_supply'], totalFlow: 0, durationHours: sf.durationHours);
+      return SystemFlowResult(
+        flowId: sf.id,
+        name: sf.name,
+        converged: false,
+        supplies: const [],
+        valves: const [],
+        pipes: const [],
+        devices: const [],
+        warnings: const ['no_water_supply'],
+        totalFlow: 0,
+        durationHours: sf.durationHours,
+      );
     }
     final demand = <String, double>{};
     final required = <String, double>{};
@@ -1585,7 +1745,21 @@ class Designer {
       total += q;
       final avail = pressure[s.id]!;
       final req = s.calculatePressure ? requiredExtra : (s.designHeadM + deficit(r));
-      duties.add(SupplyDuty(supplyId: s.id, name: s.name.isEmpty ? _label('name.supply') : s.name, flow: q, head: avail, requiredHead: req, elevation: model.nodes[nid]!.elevation, calculated: s.calculatePressure, designHead: s.designHeadM, maxHead: s.maxHeadM, designFlow: s.designFlow, maxFlow: s.maxFlow));
+      duties.add(
+        SupplyDuty(
+          supplyId: s.id,
+          name: s.name.isEmpty ? _label('name.supply') : s.name,
+          flow: q,
+          head: avail,
+          requiredHead: req,
+          elevation: model.nodes[nid]!.elevation,
+          calculated: s.calculatePressure,
+          designHead: s.designHeadM,
+          maxHead: s.maxHeadM,
+          designFlow: s.designFlow,
+          maxFlow: s.maxFlow,
+        ),
+      );
       if (s.designFlow > 0 && q > s.designFlow + 1e-9) warnings.add('supply_flow_exceeded:${s.id}');
       if (s.maxHeadM > 0 && req > s.maxHeadM + 1e-6) warnings.add('supply_head_exceeded:${s.id}');
     }
@@ -1601,18 +1775,54 @@ class Designer {
         final spec = _specOf(l);
         final d = _diameter(l);
         final v = velocity(flow: lr.flow.abs(), diameter: d);
-        pipes.add(PipeSegmentResult(linkId: lid, entityId: l.entityId, segmentIndex: l.segmentIndex, a: l.a, b: l.b, elevationA: na.elevation, elevationB: nb.elevation, length: l.length, diameter: d, pipeSpecId: spec?.id, pipeName: spec?.name ?? '?', flow: lr.flow, velocity: v, headLoss: lr.headLoss, pressureStart: ha - na.elevation, pressureEnd: hb - nb.elevation, pressureRating: spec == null ? 0 : _rating(spec), overVelocity: v > _vmax(l) + 1e-6));
+        pipes.add(
+          PipeSegmentResult(
+            linkId: lid,
+            entityId: l.entityId,
+            segmentIndex: l.segmentIndex,
+            a: l.a,
+            b: l.b,
+            elevationA: na.elevation,
+            elevationB: nb.elevation,
+            length: l.length,
+            diameter: d,
+            pipeSpecId: spec?.id,
+            pipeName: spec?.name ?? '?',
+            flow: lr.flow,
+            velocity: v,
+            headLoss: lr.headLoss,
+            pressureStart: ha - na.elevation,
+            pressureEnd: hb - nb.elevation,
+            pressureRating: spec == null ? 0 : _rating(spec),
+            overVelocity: v > _vmax(l) + 1e-6,
+          ),
+        );
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         if (spec != null && spec.pressureRatingM > 0 && math.max(ha - na.elevation, hb - nb.elevation) > _rating(spec)) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
-        devices.add(DeviceResult(entityId: l.entityId, linkId: lid, flow: lr.flow, headLoss: lr.headLoss, pumpHead: lr.pumpHead, upstreamPressure: ha - na.elevation, downstreamPressure: hb - nb.elevation, status: lr.status.name, elevation: na.elevation, speedRatio: l.kind == GLinkKind.pump ? (_vfdSpeed[l.entityId] ?? l.speedRatio) : 1));
+        devices.add(
+          DeviceResult(
+            entityId: l.entityId,
+            linkId: lid,
+            flow: lr.flow,
+            headLoss: lr.headLoss,
+            pumpHead: lr.pumpHead,
+            upstreamPressure: ha - na.elevation,
+            downstreamPressure: hb - nb.elevation,
+            status: lr.status.name,
+            elevation: na.elevation,
+            speedRatio: l.kind == GLinkKind.pump ? (_vfdSpeed[l.entityId] ?? l.speedRatio) : 1,
+          ),
+        );
         if (l.kind == GLinkKind.pump) {
           final spec = catalog.pump(l.pumpSpecId);
           if (spec != null && (lr.flow > spec.maxFlow + 1e-9 || lr.flow <= 0)) warnings.add('pump_out_of_range:${l.entityId}');
           if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
           // NPSH available against the required one (curve of the catalogue)
           final npshr = spec?.npshrAt(lr.flow, speed: _vfdSpeed[l.entityId] ?? l.speedRatio);
-          if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: ha - na.elevation, elevation: na.elevation, tempC: params.waterTempC) < npshr + npshMargin) warnings.add('pump_npsh:${l.entityId}');
+          if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: ha - na.elevation, elevation: na.elevation, tempC: params.waterTempC) < npshr + npshMargin) {
+            warnings.add('pump_npsh:${l.entityId}');
+          }
         }
       }
     }
@@ -1621,18 +1831,39 @@ class Designer {
     final hours = params.hoursPerYear * share;
     var energy = 0.0;
     for (final d in duties) {
-      if (d.calculated && d.requiredHead > 0) energy += annualEnergyCost(flow: d.flow, head: d.requiredHead, hoursPerYear: hours, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency);
+      if (d.calculated && d.requiredHead > 0) {
+        energy += annualEnergyCost(flow: d.flow, head: d.requiredHead, hoursPerYear: hours, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency);
+      }
     }
     for (final d in devices) {
       if (d.pumpHead > 0) {
         final l = model.linkById(d.linkId)!;
         final spec = catalog.pump(l.pumpSpecId);
-        energy += annualEnergyCost(flow: d.flow, head: d.pumpHead, hoursPerYear: hours, costPerKwh: params.powerCostPerKwh, pumpEfficiency: spec?.efficiencyAt(d.flow, speed: d.speedRatio) ?? params.pumpEfficiency);
+        energy += annualEnergyCost(
+          flow: d.flow,
+          head: d.pumpHead,
+          hoursPerYear: hours,
+          costPerKwh: params.powerCostPerKwh,
+          pumpEfficiency: spec?.efficiencyAt(d.flow, speed: d.speedRatio) ?? params.pumpEfficiency,
+        );
       }
     }
     // the speeds belong to this flow; sizing analyses run the pumps as drawn
     _vfdSpeed.clear();
-    return SystemFlowResult(flowId: sf.id, name: sf.name, converged: r.converged, supplies: duties, valves: valves, pipes: pipes, devices: devices, warnings: warnings.toSet().toList(), totalFlow: total, durationHours: sf.durationHours, annualEnergyCost: energy, heads: heads);
+    return SystemFlowResult(
+      flowId: sf.id,
+      name: sf.name,
+      converged: r.converged,
+      supplies: duties,
+      valves: valves,
+      pipes: pipes,
+      devices: devices,
+      warnings: warnings.toSet().toList(),
+      totalFlow: total,
+      durationHours: sf.durationHours,
+      annualEnergyCost: energy,
+      heads: heads,
+    );
   }
 
   /// The mainline network of system flow [sf] as [analyzeSystemFlow] solves
@@ -1722,7 +1953,9 @@ class Designer {
 
   List<SystemFlow> effectiveSystemFlows() {
     if (project.systemFlows.isNotEmpty) return project.systemFlows;
-    return [SystemFlow(id: 'auto', name: _label('name.allZones'), valveIds: {...model.valveNodes.keys, ...model.pivotNodes.keys}, durationHours: 1)];
+    return [
+      SystemFlow(id: 'auto', name: _label('name.allZones'), valveIds: {...model.valveNodes.keys, ...model.pivotNodes.keys}, durationHours: 1),
+    ];
   }
 
   /// Builds and solves the mainline LP over all system flows.
@@ -1730,7 +1963,10 @@ class Designer {
     final supplies = _supplies;
     final supplyNodes = {for (final s in supplies) model.supplyNodes[s.id]!: s};
     final (parent, source, _) = _bfs(supplyNodes.keys, model.mainlineLinks);
-    final unitOf = <String, String>{for (final e in units.entries) for (final l in e.value) l.id: e.key};
+    final unitOf = <String, String>{
+      for (final e in units.entries)
+        for (final l in e.value) l.id: e.key,
+    };
     // nominal analyses per flow
     final flowResults = <NetworkResult>[];
     final demands = <Map<String, double>>[];
@@ -1770,9 +2006,18 @@ class Designer {
           if (lr == null) continue;
           q += l.from == nid ? lr.flow : -lr.flow;
         }
-        final energy = s.calculatePressure && params.tradeCapitalVsRunning ? annualEnergyCost(flow: math.max(q, 0), head: 1, hoursPerYear: params.hoursPerYear * share, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency) : 0.0;
+        final energy = s.calculatePressure && params.tradeCapitalVsRunning
+            ? annualEnergyCost(flow: math.max(q, 0), head: 1, hoursPerYear: params.hoursPerYear * share, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency)
+            : 0.0;
         headIndex['${s.id}|$fi'] = headVars.length;
-        headVars.add(LpHeadVar(energyPerMetre: energy, fixedValue: s.calculatePressure ? null : s.designHeadM, maxValue: s.calculatePressure && s.maxHeadM > 0 ? s.maxHeadM : null, name: '${s.name}|${flows[fi].name}'));
+        headVars.add(
+          LpHeadVar(
+            energyPerMetre: energy,
+            fixedValue: s.calculatePressure ? null : s.designHeadM,
+            maxValue: s.calculatePressure && s.maxHeadM > 0 ? s.maxHeadM : null,
+            name: '${s.name}|${flows[fi].name}',
+          ),
+        );
       }
     }
     final constraints = <LpHeadConstraint>[];
@@ -1799,7 +2044,16 @@ class Designer {
           }
         }
         final dz = model.nodes[node]!.elevation + offset - model.nodes[src]!.elevation;
-        constraints.add(LpHeadConstraint(headVar: headIndex['${s.id}|$fi']!, lossByUnitSpec: byUnit, constant: constant, minPressure: minPressure + dz, maxPressure: maxPressure != null ? maxPressure + dz : null, tag: node));
+        constraints.add(
+          LpHeadConstraint(
+            headVar: headIndex['${s.id}|$fi']!,
+            lossByUnitSpec: byUnit,
+            constant: constant,
+            minPressure: minPressure + dz,
+            maxPressure: maxPressure != null ? maxPressure + dz : null,
+            tag: node,
+          ),
+        );
       }
 
       for (final vid in flows[fi].valveIds) {
@@ -1831,7 +2085,19 @@ class Designer {
         if (lo.isFinite) constrain(id, lo, hi.isFinite ? hi : null, off);
       }
     }
-    return lpSize(LpSizingInput(units: units.keys.toList(), candidates: cands, unitLength: lengths, maxSizes: maxSizes, headVars: headVars, constraints: constraints, crf: _crf(), tradeCapital: params.tradeCapitalVsRunning, pipeCost: _pipeCost));
+    return lpSize(
+      LpSizingInput(
+        units: units.keys.toList(),
+        candidates: cands,
+        unitLength: lengths,
+        maxSizes: maxSizes,
+        headVars: headVars,
+        constraints: constraints,
+        crf: _crf(),
+        tradeCapital: params.tradeCapitalVsRunning,
+        pipeCost: _pipeCost,
+      ),
+    );
   }
 
   void sizeMainline() {
@@ -2139,12 +2405,7 @@ class Designer {
   /// UI can repaint and show [onProgress]. [yieldControl] is awaited before
   /// each step; it defaults to a zero-delay timer, which is enough for the
   /// browser to paint a frame between steps.
-  Future<DesignResults> designAllAsync({
-    bool sizeZones = true,
-    bool sizeMain = true,
-    void Function(DesignProgress progress)? onProgress,
-    Future<void> Function()? yieldControl,
-  }) async {
+  Future<DesignResults> designAllAsync({bool sizeZones = true, bool sizeMain = true, void Function(DesignProgress progress)? onProgress, Future<void> Function()? yieldControl}) async {
     final pause = yieldControl ?? () => Future<void>.delayed(Duration.zero);
     final zoneCount = model.valveNodes.length;
     // zones + mainline + flushing + surge + wiring + BOM; a split re-analysis
@@ -2253,7 +2514,20 @@ class Designer {
         final valveSpec = catalog.valve(valve.valveSpecId);
         final valveLoss = valveSpec?.loss.loss(flow) ?? 0;
         final zn = model.nodes[zoneNode]!, mn = model.nodes[mainNode]!;
-        results.flushing.add(FlushingResult(valveId: vid, zoneName: valve.zoneName, flow: flow, requiredDownstreamHead: head, requiredUpstreamHead: head + valveLoss + (zn.elevation - mn.elevation), tapeCount: tapeCount, minEndHead: minEnd(r), maxVelocity: vmax, flushingVelocity: params.flushingVelocity, converged: r.converged));
+        results.flushing.add(
+          FlushingResult(
+            valveId: vid,
+            zoneName: valve.zoneName,
+            flow: flow,
+            requiredDownstreamHead: head,
+            requiredUpstreamHead: head + valveLoss + (zn.elevation - mn.elevation),
+            tapeCount: tapeCount,
+            minEndHead: minEnd(r),
+            maxVelocity: vmax,
+            flushingVelocity: params.flushingVelocity,
+            converged: r.converged,
+          ),
+        );
       }
     } finally {
       for (final t in tapes) {
@@ -2308,7 +2582,18 @@ class Designer {
           if (q.entityId == entry.key) staticMax = math.max(staticMax, math.max(q.pressureStart, q.pressureEnd));
         }
       }
-      final sr = SurgeResult(entityId: entry.key, context: ctx, pipeName: spec.name, velocity: p.velocity, celerity: a, surgeHead: surge, maxStaticHead: staticMax, rating: _rating(spec), closureTime: closure, criticalTime: tc);
+      final sr = SurgeResult(
+        entityId: entry.key,
+        context: ctx,
+        pipeName: spec.name,
+        velocity: p.velocity,
+        celerity: a,
+        surgeHead: surge,
+        maxStaticHead: staticMax,
+        rating: _rating(spec),
+        closureTime: closure,
+        criticalTime: tc,
+      );
       results.surge.add(sr);
       if (sr.exceeds) results.messages.add('surge_rating_exceeded:${entry.key}');
     }
@@ -2340,7 +2625,9 @@ class Designer {
   /// solenoid voltage (see `electrical.dart`), with the system flows telling
   /// which valves (and valve-in-head stations) are on together.
   ElectricalResult? designWiring() {
-    final flows = [for (final f in effectiveSystemFlows()) {...f.valveIds, ...vih.runningIn(f.valveIds)}];
+    final flows = [
+      for (final f in effectiveSystemFlows()) {...f.valveIds, ...vih.runningIn(f.valveIds)},
+    ];
     final r = designElectrical(project, flows: flows);
     results.electrical = r;
     if (r != null) results.messages.addAll(r.warnings);
@@ -2357,7 +2644,17 @@ class Designer {
       if (l != null) {
         l.quantity += qty;
       } else {
-        into[key] = BomLine(category: cat, description: desc, unit: unit, quantity: qty, unitCost: cost, specId: specId, code: code, supplier: supplier, finame: specId == null ? '' : (catalog.finame[specId] ?? ''));
+        into[key] = BomLine(
+          category: cat,
+          description: desc,
+          unit: unit,
+          quantity: qty,
+          unitCost: cost,
+          specId: specId,
+          code: code,
+          supplier: supplier,
+          finame: specId == null ? '' : (catalog.finame[specId] ?? ''),
+        );
       }
     }
 
@@ -2398,7 +2695,9 @@ class Designer {
           if (s != null) add('bom.outlets', '${s.name} — ${s.nozzle(o.nozzleId)?.name ?? ''}', 'un', 1, s.cost, s.id, code: s.code, supplier: s.supplier, zone: zone);
         case SpraylineEntity s:
           final spec = catalog.outlet(s.outletSpecId);
-          if (spec != null) add('bom.outlets', '${spec.name} — ${spec.nozzle(s.nozzleId)?.name ?? ''}', 'un', s.outletCount.toDouble(), spec.cost, spec.id, code: spec.code, supplier: spec.supplier, zone: zone);
+          if (spec != null) {
+            add('bom.outlets', '${spec.name} — ${spec.nozzle(s.nozzleId)?.name ?? ''}', 'un', s.outletCount.toDouble(), spec.cost, spec.id, code: spec.code, supplier: spec.supplier, zone: zone);
+          }
         case ControlValveEntity v:
           final s = catalog.valve(v.valveSpecId);
           if (s != null) add('bom.valves', s.name, 'un', 1, s.cost, s.id, code: s.code, supplier: s.supplier, zone: zone);
@@ -2413,20 +2712,44 @@ class Designer {
           final r = results.pivots[p.id];
           final towers = r?.towerCount ?? p.towerPositions().length;
           final label = p.name.isNotEmpty ? p.name : _label('tool.pivot');
-          add('bom.pivots', '$label — ${p.kind == PivotKind.pivot ? _label('pivot.kindPivot') : _label('pivot.kindLinear')} ${p.radiusM.round()} m, $towers ${_label('pivot.towers')}', 'un', 1, p.machineCost, null, zone: zone);
+          add(
+            'bom.pivots',
+            '$label — ${p.kind == PivotKind.pivot ? _label('pivot.kindPivot') : _label('pivot.kindLinear')} ${p.radiusM.round()} m, $towers ${_label('pivot.towers')}',
+            'un',
+            1,
+            p.machineCost,
+            null,
+            zone: zone,
+          );
           add('bom.pivots', '$label — ${_label('pivot.towersItem')} (${p.spanLengthM.round()} m)', 'un', towers.toDouble(), p.towerCost, null, zone: zone);
           final pipe = catalog.pipe(p.pipeSpecId);
           if (pipe != null) add('bom.pipes', pipe.name, 'm', p.radiusM, pipe.costPerM, pipe.id, code: pipe.code, supplier: pipe.supplier, zone: zone);
           final mech = results.mechanised[p.id];
           final nSpr = mech?.package.sprinklerCount ?? r?.sprinklerCount ?? (p.sprinklerSpacingM > 0 ? (p.radiusM / p.sprinklerSpacingM).round() : 0);
           final spr = catalog.outlet(p.sprinklerSpecId);
-          if (nSpr > 0) add('bom.pivots', '$label — ${spr?.name ?? _label('pivot.sprinklersItem')}', 'un', nSpr.toDouble(), spr?.cost ?? 0, spr?.id, code: spr?.code ?? '', supplier: spr?.supplier ?? '', zone: zone);
+          if (nSpr > 0) {
+            add(
+              'bom.pivots',
+              '$label — ${spr?.name ?? _label('pivot.sprinklersItem')}',
+              'un',
+              nSpr.toDouble(),
+              spr?.cost ?? 0,
+              spr?.id,
+              code: spr?.code ?? '',
+              supplier: spr?.supplier ?? '',
+              zone: zone,
+            );
+          }
           final reg = catalog.valve(p.regulatorSpecId);
           if (reg != null && nSpr > 0) add('bom.pivots', '$label — ${reg.name}', 'un', nSpr.toDouble(), reg.cost, reg.id, code: reg.code, supplier: reg.supplier, zone: zone);
           if (p.endGunFlow > 0 || (mech?.package.endGunFlow ?? 0) > 0) add('bom.pivots', '$label — ${_label('pivot.endGunItem')}', 'un', 1, 0, null, zone: zone);
           if (mech != null) {
-            if (mech.package.boosterPowerKw > 0) add('bom.pivots', '$label — ${_label('mech.booster')} (${fmt(mech.electrical?.boosterMotorKw ?? mech.package.boosterPowerKw, 1)} kW)', 'un', 1, 0, null, zone: zone);
-            if (mech.cornerArm != null && mech.cornerArm!.steps.isNotEmpty) add('bom.pivots', '$label — ${_label('mech.cornerArm')} (${p.machine.cornerArmLengthM.round()} m)', 'un', 1, 0, null, zone: zone);
+            if (mech.package.boosterPowerKw > 0) {
+              add('bom.pivots', '$label — ${_label('mech.booster')} (${fmt(mech.electrical?.boosterMotorKw ?? mech.package.boosterPowerKw, 1)} kW)', 'un', 1, 0, null, zone: zone);
+            }
+            if (mech.cornerArm != null && mech.cornerArm!.steps.isNotEmpty) {
+              add('bom.pivots', '$label — ${_label('mech.cornerArm')} (${p.machine.cornerArmLengthM.round()} m)', 'un', 1, 0, null, zone: zone);
+            }
             final el = mech.electrical;
             if (el != null) {
               add('bom.pivots', '$label — ${_label('mech.spanCable')} ${fmt(el.cableMm2, 1)} mm²', 'm', el.towers.isEmpty ? 0 : el.towers.last.cableM, 0, null, zone: zone);
@@ -2485,7 +2808,16 @@ class Designer {
 
 /// Water requirement summary for an irrigation area.
 class AreaRequirement {
-  AreaRequirement({required this.areaId, required this.name, required this.areaM2, required this.grossDepthMm, required this.dailyVolumeM3, required this.flow, required this.hoursPerDay, required this.precipitationMmH});
+  AreaRequirement({
+    required this.areaId,
+    required this.name,
+    required this.areaM2,
+    required this.grossDepthMm,
+    required this.dailyVolumeM3,
+    required this.flow,
+    required this.hoursPerDay,
+    required this.precipitationMmH,
+  });
   final String areaId;
   final String name;
   final double areaM2;

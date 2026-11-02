@@ -309,10 +309,13 @@ class SelectTool extends Tool {
       final r = Rect.fromPoints(a, b);
       final crossing = _dragCurrent!.x < _downRaw!.x;
       canvas.drawRect(r, Paint()..color = (crossing ? Cad.ok : Cad.selection).withValues(alpha: 0.12));
-      canvas.drawRect(r, Paint()
-        ..color = crossing ? Cad.ok : Cad.selection
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1);
+      canvas.drawRect(
+        r,
+        Paint()
+          ..color = crossing ? Cad.ok : Cad.selection
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
     }
     if (_dragged && _moving && _moveStart != null && _dragCurrent != null) {
       final d = _dragCurrent! - (_moveAnchor ?? _moveStart!);
@@ -475,7 +478,16 @@ class HatchTool extends PolyTool {
   @override
   void commit(List<Pt> points) {
     final s = c.toolSettings;
-    c.addEntity(HatchEntity(id: c.project.newId(), layer: c.drawingLayer == Layers.drawing ? Layers.hatches : c.drawingLayer, points: points, angleDeg: s.hatchAngle, spacing: s.hatchSpacing, solid: s.hatchSolid));
+    c.addEntity(
+      HatchEntity(
+        id: c.project.newId(),
+        layer: c.drawingLayer == Layers.drawing ? Layers.hatches : c.drawingLayer,
+        points: points,
+        angleDeg: s.hatchAngle,
+        spacing: s.hatchSpacing,
+        solid: s.hatchSolid,
+      ),
+    );
   }
 }
 
@@ -605,7 +617,9 @@ class AngularDimensionTool extends PolyTool {
     final preview = [...pts, ?cursor];
     if (preview.length >= 3) {
       final r = preview.length == 4 ? preview[0].distanceTo(preview[3]) : c.toolSettings.angularDimRadius;
-      final d = preview.length == 4 ? orientedAngularDimension('', preview[0], preview[1], preview[2], preview[3], math.max(0.1, r)) : AngularDimensionEntity(id: '', vertex: preview[0], a: preview[1], b: preview[2], radius: math.max(0.1, r));
+      final d = preview.length == 4
+          ? orientedAngularDimension('', preview[0], preview[1], preview[2], preview[3], math.max(0.1, r))
+          : AngularDimensionEntity(id: '', vertex: preview[0], a: preview[1], b: preview[2], radius: math.max(0.1, r));
       drawPolyline(canvas, cam, [preview[1], preview[0], preview[2]], previewPaint);
       drawPolyline(canvas, cam, d.arcPoints(), previewPaint);
       host.setStatus('${d.angleDeg.toStringAsFixed(1)}°');
@@ -730,7 +744,13 @@ class ContourTool extends PolyTool {
     super.paint(canvas, cam);
     if (pts.isNotEmpty) {
       final o = cam.toScreen(pts.first);
-      final tp = TextPainter(text: TextSpan(text: '${c.toolSettings.contourElevation.toStringAsFixed(1)} m', style: TextStyle(fontSize: 11, color: Cad.preview)), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(
+          text: '${c.toolSettings.contourElevation.toStringAsFixed(1)} m',
+          style: TextStyle(fontSize: 11, color: Cad.preview),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, o + const Offset(6, -16));
     }
   }
@@ -773,7 +793,20 @@ class SpraylineTool extends PolyTool {
   @override
   void commit(List<Pt> points) {
     final s = c.toolSettings;
-    c.addEntity(SpraylineEntity(id: c.project.newId(), points: points, pipeSpecId: s.lateralPipeSpecId, computerSized: s.lateralPipeSpecId == null, outletSpecId: s.outletSpecId, nozzleId: s.nozzleId, headM: s.headM, spacing: s.spacing, offset: s.outletOffsetHalf ? s.spacing / 2 : s.offset, arcDeg: s.arcDeg));
+    c.addEntity(
+      SpraylineEntity(
+        id: c.project.newId(),
+        points: points,
+        pipeSpecId: s.lateralPipeSpecId,
+        computerSized: s.lateralPipeSpecId == null,
+        outletSpecId: s.outletSpecId,
+        nozzleId: s.nozzleId,
+        headM: s.headM,
+        spacing: s.spacing,
+        offset: s.outletOffsetHalf ? s.spacing / 2 : s.offset,
+        arcDeg: s.arcDeg,
+      ),
+    );
   }
 }
 
@@ -830,7 +863,9 @@ class MeasureTool extends PolyTool {
   void commit(List<Pt> points) {
     final d = points[0].distanceTo(points[1]);
     final dx = points[1].x - points[0].x, dy = points[1].y - points[0].y;
-    host.setStatus('Δ = ${c.units.lengthFromSi(d).toStringAsFixed(3)} ${c.units.lengthLabel}  (Δx ${c.units.lengthFromSi(dx).toStringAsFixed(2)}, Δy ${c.units.lengthFromSi(dy).toStringAsFixed(2)}, ${radToDeg(math.atan2(dy, dx)).toStringAsFixed(1)}°)');
+    host.setStatus(
+      'Δ = ${c.units.lengthFromSi(d).toStringAsFixed(3)} ${c.units.lengthLabel}  (Δx ${c.units.lengthFromSi(dx).toStringAsFixed(2)}, Δy ${c.units.lengthFromSi(dy).toStringAsFixed(2)}, ${radToDeg(math.atan2(dy, dx)).toStringAsFixed(1)}°)',
+    );
   }
 }
 
@@ -1201,7 +1236,8 @@ class SymbolTool extends PointTool {
   @override
   String get hintKey => 'hint.symbol';
   @override
-  Entity create(Pt p) => SymbolEntity(id: c.project.newId(), layer: c.drawingLayer == Layers.drawing ? Layers.symbols : c.drawingLayer, position: p, kind: c.toolSettings.symbolKind, size: c.toolSettings.symbolSize);
+  Entity create(Pt p) =>
+      SymbolEntity(id: c.project.newId(), layer: c.drawingLayer == Layers.drawing ? Layers.symbols : c.drawingLayer, position: p, kind: c.toolSettings.symbolKind, size: c.toolSettings.symbolSize);
   @override
   void paint(Canvas canvas, Camera cam) {
     if (cursor == null) return;
@@ -1268,7 +1304,8 @@ class PumpTool extends PointTool {
   @override
   ToolId get id => ToolId.pump;
   @override
-  Entity create(Pt p) => PumpEntity(id: c.project.newId(), position: p, pumpSpecId: c.toolSettings.pumpSpecId, scope: c.toolSettings.pointScope == HydraulicScope.zone ? HydraulicScope.zone : HydraulicScope.mainline);
+  Entity create(Pt p) =>
+      PumpEntity(id: c.project.newId(), position: p, pumpSpecId: c.toolSettings.pumpSpecId, scope: c.toolSettings.pointScope == HydraulicScope.zone ? HydraulicScope.zone : HydraulicScope.mainline);
   @override
   Iterable<HydraulicScope>? splitScopes(Entity e) => [(e as PumpEntity).scope];
 }
@@ -1408,7 +1445,13 @@ class AlignTool extends Tool {
     for (var i = 0; i < pts.length; i++) {
       final o = cam.toScreen(pts[i]);
       canvas.drawCircle(o, 5, p);
-      final tp = TextPainter(text: TextSpan(text: i.isEven ? (i == 0 ? 'A' : 'B') : (i == 1 ? "A'" : "B'"), style: TextStyle(fontSize: 11, color: Cad.preview)), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(
+          text: i.isEven ? (i == 0 ? 'A' : 'B') : (i == 1 ? "A'" : "B'"),
+          style: TextStyle(fontSize: 11, color: Cad.preview),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, o + const Offset(7, -14));
       if (i.isOdd) canvas.drawLine(cam.toScreen(pts[i - 1]), o, p);
     }

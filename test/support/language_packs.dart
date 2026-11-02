@@ -24,5 +24,4 @@ List<String> installLanguagePacksFromDisk() {
 
 /// A [languageLoader] that reads the packs from disk, for tests of the
 /// on-demand loading path.
-Future<Map<String, dynamic>> loadLanguagePackFromDisk(String code) async =>
-    jsonDecode(await File('assets/i18n/$code.json').readAsString()) as Map<String, dynamic>;
+Future<Map<String, dynamic>> loadLanguagePackFromDisk(String code) async => jsonDecode(await File('assets/i18n/$code.json').readAsString()) as Map<String, dynamic>;

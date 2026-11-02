@@ -73,8 +73,12 @@ class FertigationTravel {
 
   Map<String, dynamic> toJson() => {'inj': injectionNode, 'nodes': nodes.values.map((t) => t.toJson()).toList(), 'out': outlets, 'unreached': unreached, 'vol': volume, 'codes': codes};
   static FertigationTravel fromJson(Map<String, dynamic> j) => FertigationTravel(
-    injectionNode: j['inj'] as String? ?? '', nodes: {for (final t in ((j['nodes'] as List?) ?? []).map((e) => TravelTime.fromJson(e as Map<String, dynamic>))) t.nodeId: t},
-    outlets: ((j['out'] as List?) ?? []).cast<String>(), unreached: ((j['unreached'] as List?) ?? []).cast<String>(), volume: _d(j['vol']), codes: ((j['codes'] as List?) ?? []).cast<String>(),
+    injectionNode: j['inj'] as String? ?? '',
+    nodes: {for (final t in ((j['nodes'] as List?) ?? []).map((e) => TravelTime.fromJson(e as Map<String, dynamic>))) t.nodeId: t},
+    outlets: ((j['out'] as List?) ?? []).cast<String>(),
+    unreached: ((j['unreached'] as List?) ?? []).cast<String>(),
+    volume: _d(j['vol']),
+    codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }
 
@@ -86,7 +90,15 @@ class FertigationTravel {
 /// emitter that flows or a demand). [offsetSeconds] is added to every time
 /// (the travel to the injection point, to chain the mainline and a zone).
 /// Links carrying under [minFlow] (m³/s) are taken as stagnant.
-FertigationTravel fertigationTravel(HydraulicNetwork net, NetworkResult result, String injectionNode, {Map<String, double>? lengths, Iterable<String>? outlets, double offsetSeconds = 0, double minFlow = 1e-9}) {
+FertigationTravel fertigationTravel(
+  HydraulicNetwork net,
+  NetworkResult result,
+  String injectionNode, {
+  Map<String, double>? lengths,
+  Iterable<String>? outlets,
+  double offsetSeconds = 0,
+  double minFlow = 1e-9,
+}) {
   final codes = <String>[];
   if (!net.nodes.containsKey(injectionNode)) {
     codes.add('fertigation_unknown_node');
@@ -133,7 +145,10 @@ FertigationTravel fertigationTravel(HydraulicNetwork net, NetworkResult result, 
     }
   }
   final latest = <String, double>{injectionNode: 0};
-  final ready = [for (final e in indeg.entries) if (e.value == 0) e.key]..sort();
+  final ready = [
+    for (final e in indeg.entries)
+      if (e.value == 0) e.key,
+  ]..sort();
   final done = <String>{};
   for (var i = 0; i < ready.length; i++) {
     final n = ready[i];
@@ -151,19 +166,38 @@ FertigationTravel fertigationTravel(HydraulicNetwork net, NetworkResult result, 
     final l = done.contains(e.key) ? math.max(latest[e.key] ?? e.value, e.value) : e.value;
     nodes[e.key] = TravelTime(nodeId: e.key, earliest: e.value + offsetSeconds, latest: l + offsetSeconds);
   }
-  final wanted = outlets?.toList() ?? [
-    for (final n in net.nodes.values)
-      if (n.kind == HNodeKind.junction && ((n.emitter != null && n.emitterCount > 0 && (result.nodes[n.id]?.emitterFlow ?? 0) > 0) || n.demand > 0)) n.id,
+  final wanted =
+      outlets?.toList() ??
+      [
+        for (final n in net.nodes.values)
+          if (n.kind == HNodeKind.junction && ((n.emitter != null && n.emitterCount > 0 && (result.nodes[n.id]?.emitterFlow ?? 0) > 0) || n.demand > 0)) n.id,
+      ];
+  final reached = [
+    for (final o in wanted)
+      if (nodes.containsKey(o)) o,
   ];
-  final reached = [for (final o in wanted) if (nodes.containsKey(o)) o];
-  final unreached = [for (final o in wanted) if (!nodes.containsKey(o)) o];
+  final unreached = [
+    for (final o in wanted)
+      if (!nodes.containsKey(o)) o,
+  ];
   if (unreached.isNotEmpty) codes.add('fertigation_unreached');
   return FertigationTravel(injectionNode: injectionNode, nodes: nodes, outlets: reached, unreached: unreached, volume: volume, codes: codes);
 }
 
 /// What a fertigation needs.
 class FertigationInput {
-  const FertigationInput({required this.irrigationHours, required this.flow, required this.areaHa, required this.doseKgPerHa, required this.stockKgPerL, this.nutrientFraction = 1, this.preWettingFraction = 0.25, this.flushingFraction = 0.25, this.flushingMargin = 1, this.tankLitres = 0});
+  const FertigationInput({
+    required this.irrigationHours,
+    required this.flow,
+    required this.areaHa,
+    required this.doseKgPerHa,
+    required this.stockKgPerL,
+    this.nutrientFraction = 1,
+    this.preWettingFraction = 0.25,
+    this.flushingFraction = 0.25,
+    this.flushingMargin = 1,
+    this.tankLitres = 0,
+  });
 
   /// Duration of the irrigation (h) and the flow through the injection point
   /// (m³/s).
@@ -194,7 +228,17 @@ class FertigationInput {
 
 /// A fertigation schedule and its amounts.
 class FertigationPlan {
-  FertigationPlan({required this.preWetting, required this.injection, required this.flushing, required this.productKg, required this.stockLitres, required this.injectionRate, required this.concentration, required this.flow, required this.codes});
+  FertigationPlan({
+    required this.preWetting,
+    required this.injection,
+    required this.flushing,
+    required this.productKg,
+    required this.stockLitres,
+    required this.injectionRate,
+    required this.concentration,
+    required this.flow,
+    required this.codes,
+  });
 
   /// Pre-wetting, injection and flushing time (s), in that order, adding up
   /// to the irrigation time (the injection is 0 when nothing is left for it).
@@ -225,7 +269,14 @@ class FertigationPlan {
 
   Map<String, dynamic> toJson() => {'pre': preWetting, 'inj': injection, 'flush': flushing, 'kg': productKg, 'L': stockLitres, 'qi': injectionRate, 'c': concentration, 'q': flow, 'codes': codes};
   static FertigationPlan fromJson(Map<String, dynamic> j) => FertigationPlan(
-    preWetting: _d(j['pre']), injection: _d(j['inj']), flushing: _d(j['flush']), productKg: _d(j['kg']), stockLitres: _d(j['L']), injectionRate: _d(j['qi']), concentration: _d(j['c']), flow: _d(j['q']),
+    preWetting: _d(j['pre']),
+    injection: _d(j['inj']),
+    flushing: _d(j['flush']),
+    productKg: _d(j['kg']),
+    stockLitres: _d(j['L']),
+    injectionRate: _d(j['qi']),
+    concentration: _d(j['c']),
+    flow: _d(j['q']),
     codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }

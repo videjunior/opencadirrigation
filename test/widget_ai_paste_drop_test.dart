@@ -218,11 +218,7 @@ void main() {
     expect(find.byKey(const Key('ai_input')), findsNothing);
     drops.dragAt(panel.center);
     await tester.pump();
-    drops.dropped(panel.center, [
-      DroppedFile.bytes('shot.png', png(), type: 'image/png'),
-      DroppedFile.bytes('memo.docx', text('x')),
-      DroppedFile.bytes('valves.csv', text('zone;valve')),
-    ]);
+    drops.dropped(panel.center, [DroppedFile.bytes('shot.png', png(), type: 'image/png'), DroppedFile.bytes('memo.docx', text('x')), DroppedFile.bytes('valves.csv', text('zone;valve'))]);
     await settle(tester);
     expect(overlay, findsNothing);
     expect(names(), ['shot.png', 'valves.csv']);

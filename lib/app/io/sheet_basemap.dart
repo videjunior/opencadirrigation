@@ -51,12 +51,18 @@ Future<SheetOptions> withSheetBaseMap(ProjectController c, SheetOptions o, {doub
     mosaic = await fetchMosaic(g: g, world: world, mpp: mpp, map: c.baseMap, fetcher: fetcher, googleKey: c.googleMapsKey, customUrl: c.customTileUrl, lang: c.lang, maxTiles: sheetMapMaxTiles);
     // no finer than the tiles that came (coarser where the imagery stops)
     final (jpeg, covered) = await _compose(mosaic, world, math.max(mpp, mosaic.groundMpp));
-    return o.copyWith(rasters: [PlotRaster.bounds(jpeg, covered, mime: 'image/jpeg', opacity: c.baseMapOpacity)], attribution: mosaic.attribution);
+    return o.copyWith(
+      rasters: [PlotRaster.bounds(jpeg, covered, mime: 'image/jpeg', opacity: c.baseMapOpacity)],
+      attribution: mosaic.attribution,
+    );
   } on Object catch (e) {
     debugPrint('sheet base map: tiles not downloaded ($e), the view on screen instead');
     final snap = await c.baseMapSnapshot?.call();
     if (snap == null) return o;
-    return o.copyWith(rasters: [PlotRaster(bytes: snap.$1, mime: 'image/png', corners: snap.$2, opacity: c.baseMapOpacity)], attribution: c.baseMapAttribution?.call() ?? '');
+    return o.copyWith(
+      rasters: [PlotRaster(bytes: snap.$1, mime: 'image/png', corners: snap.$2, opacity: c.baseMapOpacity)],
+      attribution: c.baseMapAttribution?.call() ?? '',
+    );
   } finally {
     mosaic?.dispose();
   }

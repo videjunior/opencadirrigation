@@ -47,7 +47,10 @@ List<int> bidiLevels(String text, {int? baseLevel}) {
     if (t[i] >= Bidi.lri && t[i] <= Bidi.pdi) t[i] = Bidi.on;
   }
   // indexes that take part in resolution (X9: formatting characters removed)
-  final idx = [for (var i = 0; i < n; i++) if (!removed(t[i])) i];
+  final idx = [
+    for (var i = 0; i < n; i++)
+      if (!removed(t[i])) i,
+  ];
   final m = idx.length;
   // W1: NSM takes the type of the previous character
   for (var k = 0; k < m; k++) {

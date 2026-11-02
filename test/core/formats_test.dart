@@ -375,14 +375,19 @@ void main() {
       final eb = Bounds.ofPoints(ellipse.points);
       expect(eb.width, closeTo(4, 1e-6));
       expect(eb.height, closeTo(6, 1e-6));
-      expect(dwg.where((e) => e.type == 'CIRCLE').map((e) => e.center), unorderedEquals([for (final y in [20.0, 25.0]) for (final x in [60.0, 64.0, 68.0]) Pt(x, y)]));
+      expect(
+        dwg.where((e) => e.type == 'CIRCLE').map((e) => e.center),
+        unorderedEquals([
+          for (final y in [20.0, 25.0])
+            for (final x in [60.0, 64.0, 68.0]) Pt(x, y),
+        ]),
+      );
       // a left text sits on its insertion point, a centred one on its alignment point
       for (final doc in [dxf, dwg]) {
         expect(doc.singleWhere((e) => e.text == 'Esquerda').points.single, near(const Pt(0, -5), 1e-9));
         expect(doc.singleWhere((e) => e.text == 'Centro').points.single, near(const Pt(20, -5), 1e-9));
       }
     });
-
   });
 
   group('extrusion (0, 0, −1): mirrored object coordinates', () {
@@ -447,15 +452,86 @@ void main() {
   });
 
   test('a mirrored block keeps its circles and arcs, turned the other way', () {
-    final d = DxfReader.parse([
-      '0', 'SECTION', '2', 'BLOCKS', '0', 'BLOCK', '2', 'B', '10', '0', '20', '0',
-      '0', 'ARC', '8', '0', '10', '0', '20', '0', '40', '1', '50', '0', '51', '90',
-      '0', 'CIRCLE', '8', '0', '10', '2', '20', '0', '40', '0.5',
-      '0', 'TEXT', '8', '0', '10', '0', '20', '0', '40', '1', '1', 'T', '50', '30',
-      '0', 'ENDBLK', '0', 'ENDSEC',
-      '0', 'SECTION', '2', 'ENTITIES', '0', 'INSERT', '8', 'L', '2', 'B', '10', '10', '20', '0', '41', '-2', '42', '2',
-      '0', 'ENDSEC', '0', 'EOF',
-    ].join('\n'));
+    final d = DxfReader.parse(
+      [
+        '0',
+        'SECTION',
+        '2',
+        'BLOCKS',
+        '0',
+        'BLOCK',
+        '2',
+        'B',
+        '10',
+        '0',
+        '20',
+        '0',
+        '0',
+        'ARC',
+        '8',
+        '0',
+        '10',
+        '0',
+        '20',
+        '0',
+        '40',
+        '1',
+        '50',
+        '0',
+        '51',
+        '90',
+        '0',
+        'CIRCLE',
+        '8',
+        '0',
+        '10',
+        '2',
+        '20',
+        '0',
+        '40',
+        '0.5',
+        '0',
+        'TEXT',
+        '8',
+        '0',
+        '10',
+        '0',
+        '20',
+        '0',
+        '40',
+        '1',
+        '1',
+        'T',
+        '50',
+        '30',
+        '0',
+        'ENDBLK',
+        '0',
+        'ENDSEC',
+        '0',
+        'SECTION',
+        '2',
+        'ENTITIES',
+        '0',
+        'INSERT',
+        '8',
+        'L',
+        '2',
+        'B',
+        '10',
+        '10',
+        '20',
+        '0',
+        '41',
+        '-2',
+        '42',
+        '2',
+        '0',
+        'ENDSEC',
+        '0',
+        'EOF',
+      ].join('\n'),
+    );
     final arc = d.entities.singleWhere((e) => e.type == 'ARC');
     expect(arc.center, near(const Pt(10, 0), 1e-9));
     expect(arc.radius, 2);
@@ -694,7 +770,37 @@ void main() {
     });
 
     test('the import filter lists only the supported formats', () {
-      expect(importAccept.split(','), unorderedEquals(['.dxf', '.dwg', '.dgn', '.pdf', '.kml', '.kmz', '.shp', '.zip', '.geojson', '.json', '.gpx', '.xml', '.landxml', '.inp', '.las', '.laz', '.csv', '.txt', '.xyz', '.pts', '.pnezd', '.jpg', '.jpeg', '.png', '.tif', '.tiff']));
+      expect(
+        importAccept.split(','),
+        unorderedEquals([
+          '.dxf',
+          '.dwg',
+          '.dgn',
+          '.pdf',
+          '.kml',
+          '.kmz',
+          '.shp',
+          '.zip',
+          '.geojson',
+          '.json',
+          '.gpx',
+          '.xml',
+          '.landxml',
+          '.inp',
+          '.las',
+          '.laz',
+          '.csv',
+          '.txt',
+          '.xyz',
+          '.pts',
+          '.pnezd',
+          '.jpg',
+          '.jpeg',
+          '.png',
+          '.tif',
+          '.tiff',
+        ]),
+      );
       final z = ZipDecoder().decodeBytes(fixture('earth_farm.kmz'));
       expect(z.files.map((f) => f.name), contains('doc.kml'));
     });

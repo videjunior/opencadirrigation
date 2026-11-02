@@ -274,7 +274,20 @@ BlockResult generateBlock(Project project, BlockOptions o) {
         if (o.isTape) {
           laterals.add(TapeEntity(id: project.newId(), name: '${o.lateralPrefix}$idx', points: [s, e], tapeSpecId: o.tapeSpecId ?? '', inletHeadM: o.tapeInletHeadM));
         } else {
-          laterals.add(SpraylineEntity(id: project.newId(), name: '${o.lateralPrefix}$idx', points: [s, e], pipeSpecId: o.lateralPipeSpecId, computerSized: o.lateralPipeSpecId == null, outletSpecId: o.outletSpecId ?? '', nozzleId: o.nozzleId, headM: o.headM, spacing: o.outletSpacing, offset: o.outletOffsetHalf ? o.outletSpacing / 2 : 0));
+          laterals.add(
+            SpraylineEntity(
+              id: project.newId(),
+              name: '${o.lateralPrefix}$idx',
+              points: [s, e],
+              pipeSpecId: o.lateralPipeSpecId,
+              computerSized: o.lateralPipeSpecId == null,
+              outletSpecId: o.outletSpecId ?? '',
+              nozzleId: o.nozzleId,
+              headM: o.headM,
+              spacing: o.outletSpacing,
+              offset: o.outletOffsetHalf ? o.outletSpacing / 2 : 0,
+            ),
+          );
         }
       }
     }
@@ -290,7 +303,8 @@ BlockResult generateBlock(Project project, BlockOptions o) {
 /// Submain, branches, valve and stub of a block whose submain runs through
 /// [main]; the stub leaves the block along [outward].
 BlockResult _finishBlock(Project project, BlockOptions o, String zone, List<Entity> laterals, List<Pt> main, List<List<Pt>> branchLines, Pt outward) {
-  PipeEntity pipe(String name, List<Pt> pts) => PipeEntity(id: project.newId(), name: name, points: pts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
+  PipeEntity pipe(String name, List<Pt> pts) =>
+      PipeEntity(id: project.newId(), name: name, points: pts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
   final submain = main.length >= 2 && polylineLength(main) > 1e-6 ? pipe('${o.submainLabel} $zone', main) : null;
   final branches = [for (var k = 0; k < branchLines.length; k++) pipe('${o.submainLabel} $zone (${k + 2})', branchLines[k])];
   final anchor = switch (o.valvePosition) {
@@ -311,7 +325,17 @@ BlockResult _finishBlock(Project project, BlockOptions o, String zone, List<Enti
 enum GridPattern { square, triangular }
 
 class SprinklerGridOptions {
-  SprinklerGridOptions({required this.polygon, required this.outletSpecId, this.nozzleId, required this.spacingAlong, required this.spacingBetween, this.pattern = GridPattern.square, this.direction = const Pt(1, 0), this.headM = 25, this.scope = HydraulicScope.zone});
+  SprinklerGridOptions({
+    required this.polygon,
+    required this.outletSpecId,
+    this.nozzleId,
+    required this.spacingAlong,
+    required this.spacingBetween,
+    this.pattern = GridPattern.square,
+    this.direction = const Pt(1, 0),
+    this.headM = 25,
+    this.scope = HydraulicScope.zone,
+  });
   final List<Pt> polygon;
   final String outletSpecId;
   final String? nozzleId;
@@ -407,7 +431,20 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
         if (o.isTape) {
           laterals.add(TapeEntity(id: project.newId(), name: '${o.lateralPrefix}$idx', points: pts, tapeSpecId: o.tapeSpecId ?? '', inletHeadM: o.tapeInletHeadM));
         } else {
-          laterals.add(SpraylineEntity(id: project.newId(), name: '${o.lateralPrefix}$idx', points: pts, pipeSpecId: o.lateralPipeSpecId, computerSized: o.lateralPipeSpecId == null, outletSpecId: o.outletSpecId ?? '', nozzleId: o.nozzleId, headM: o.headM, spacing: o.outletSpacing, offset: o.outletOffsetHalf ? o.outletSpacing / 2 : 0));
+          laterals.add(
+            SpraylineEntity(
+              id: project.newId(),
+              name: '${o.lateralPrefix}$idx',
+              points: pts,
+              pipeSpecId: o.lateralPipeSpecId,
+              computerSized: o.lateralPipeSpecId == null,
+              outletSpecId: o.outletSpecId ?? '',
+              nozzleId: o.nozzleId,
+              headM: o.headM,
+              spacing: o.outletSpacing,
+              offset: o.outletOffsetHalf ? o.outletSpacing / 2 : 0,
+            ),
+          );
         }
       }
     }

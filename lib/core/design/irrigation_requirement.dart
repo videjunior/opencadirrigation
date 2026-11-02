@@ -129,7 +129,17 @@ class CropCycle {
 
   /// Cycle of a crop of the table ([fao56Crops]) with its Table 11 curve,
   /// root depth for scheduling, p and salt tolerance.
-  factory CropCycle.fromTable(String cropKey, {required DateTime planting, bool repeatsYearly = true, KcCurve? curve, double kr = 1, double? rootDepthM, double? depletionFraction, double percolationMmDay = 0, double establishmentMm = 0}) {
+  factory CropCycle.fromTable(
+    String cropKey, {
+    required DateTime planting,
+    bool repeatsYearly = true,
+    KcCurve? curve,
+    double kr = 1,
+    double? rootDepthM,
+    double? depletionFraction,
+    double percolationMmDay = 0,
+    double establishmentMm = 0,
+  }) {
     final c = fao56Crops[cropKey];
     return CropCycle(
       cropKey: cropKey,
@@ -365,7 +375,22 @@ class RequirementRow {
 
 /// Totals of one crop cycle (or of the whole area) over the rows given.
 class RequirementTotals {
-  const RequirementTotals({required this.etoMm, required this.etcMm, required this.etcLocMm, required this.rainMm, required this.effectiveRainMm, required this.netMm, required this.grossMm, required this.volumeM3, required this.cropDays, this.peakPeriodId, required this.peakNetMmDay, required this.peakGrossMmDay, required this.peakDailyVolumeM3, this.peakFlowM3h});
+  const RequirementTotals({
+    required this.etoMm,
+    required this.etcMm,
+    required this.etcLocMm,
+    required this.rainMm,
+    required this.effectiveRainMm,
+    required this.netMm,
+    required this.grossMm,
+    required this.volumeM3,
+    required this.cropDays,
+    this.peakPeriodId,
+    required this.peakNetMmDay,
+    required this.peakGrossMmDay,
+    required this.peakDailyVolumeM3,
+    this.peakFlowM3h,
+  });
   final double etoMm;
   final double etcMm;
   final double etcLocMm;
@@ -492,7 +517,15 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
     perCycle[i].forEach((date, day) => (groups[(date.year, date.month)] ??= []).add(day));
     groups.forEach((ym, list) {
       final demand = list.fold(0.0, (s, d) => s + d.etcLoc + d.extra);
-      final pe = effectiveRainForPartOfMonthMm(input.rainMethod, monthRainMm: rain[ym.$2 - 1], days: list.length, monthDays: daysInMonth(ym.$1, ym.$2), etcMmInPeriod: demand, netDepthMm: storage, fraction: input.rainFraction);
+      final pe = effectiveRainForPartOfMonthMm(
+        input.rainMethod,
+        monthRainMm: rain[ym.$2 - 1],
+        days: list.length,
+        monthDays: daysInMonth(ym.$1, ym.$2),
+        etcMmInPeriod: demand,
+        netDepthMm: storage,
+        fraction: input.rainFraction,
+      );
       for (final d in list) {
         d.pe = pe / list.length;
       }

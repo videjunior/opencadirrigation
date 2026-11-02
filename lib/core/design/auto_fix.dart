@@ -176,7 +176,10 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
 
     case FixKind.addFittings:
       final have = {for (final f in p.catalog.fittings) f.id};
-      final add = [for (final f in Catalog.defaultFittings(p.catalog.pipes, lang: lang, currency: p.params.currencyCode)) if (!have.contains(f.id)) f];
+      final add = [
+        for (final f in Catalog.defaultFittings(p.catalog.pipes, lang: lang, currency: p.params.currencyCode))
+          if (!have.contains(f.id)) f,
+      ];
       if (add.isEmpty) return const FixResult.failed('fixfail.noChange');
       p.catalog.fittings.addAll(add);
       return FixResult.done('fixed.addFittings', {'n': '${add.length}'});
@@ -259,7 +262,10 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
       return n == 0 ? const FixResult.failed('fixfail.noOption') : FixResult.done('fixed.enableWires', {'n': '$n'});
 
     case FixKind.controllerStations:
-      final ctrls = [for (final id in a.entityIds) if (p.byId(id) is ControllerEntity) p.byId(id) as ControllerEntity];
+      final ctrls = [
+        for (final id in a.entityIds)
+          if (p.byId(id) is ControllerEntity) p.byId(id) as ControllerEntity,
+      ];
       final r = results?.electrical;
       var n = 0;
       for (final k in ctrls) {
@@ -288,7 +294,10 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
 
     case FixKind.addMissingFlow:
       final inFlow = {for (final f in p.systemFlows) ...f.valveIds};
-      final ids = [for (final e in ents) if ((e is ControlValveEntity || e is PivotEntity) && !inFlow.contains(e.id)) e.id];
+      final ids = [
+        for (final e in ents)
+          if ((e is ControlValveEntity || e is PivotEntity) && !inFlow.contains(e.id)) e.id,
+      ];
       if (ids.isEmpty) return const FixResult.failed('fixfail.noChange');
       final end = p.systemFlows.fold<double>(0, (m, f) => math.max(m, f.startHour + math.max(f.durationHours, 0)));
       final taken = {for (final f in p.systemFlows) f.id};
@@ -563,8 +572,14 @@ typedef FixFilter = bool Function(Advice a, FixKind kind, DesignResults? results
 /// correction that did not help is not repeated; [skip] leaves out the
 /// corrections the caller keeps for later (none by default).
 List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? results, required Set<String> attempted, String Function(String key)? label, String lang = 'en', FixFilter? skip}) {
-  final candidates = [for (final a in advice) if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}') && !(skip?.call(a, a.fixes.first, results) ?? false)) a];
-  final drawing = [for (final a in candidates) if (!resultFixes.contains(a.fixes.first)) a];
+  final candidates = [
+    for (final a in advice)
+      if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}') && !(skip?.call(a, a.fixes.first, results) ?? false)) a,
+  ];
+  final drawing = [
+    for (final a in candidates)
+      if (!resultFixes.contains(a.fixes.first)) a,
+  ];
   final round = drawing.isNotEmpty ? drawing : [if (results != null) ...candidates];
   final out = <FixResult>[];
   final touched = <String>{};
@@ -598,7 +613,15 @@ class AutoFixReport {
 /// returns its results, null when it cannot run), applies a round of
 /// corrections, designs again, and repeats until a round changes nothing
 /// (at most [maxRounds]). [skip] leaves corrections out (see [autoFixRound]).
-Future<AutoFixReport> runAutoFix(Project p, Future<DesignResults?> Function() design, {String Function(String key)? label, String lang = 'en', int maxRounds = 6, void Function(int round)? onRound, FixFilter? skip}) async {
+Future<AutoFixReport> runAutoFix(
+  Project p,
+  Future<DesignResults?> Function() design, {
+  String Function(String key)? label,
+  String lang = 'en',
+  int maxRounds = 6,
+  void Function(int round)? onRound,
+  FixFilter? skip,
+}) async {
   final applied = <FixResult>[];
   final attempted = <String>{};
   var results = await design();
@@ -632,11 +655,11 @@ class OptimizeOptions {
 /// Cost and problem count of a design, for the before / after comparison.
 class DesignScore {
   DesignScore(DesignResults? r, List<Advice> advice)
-      : capital = r?.capitalCost ?? 0,
-        annualCapital = r?.annualCapitalCost ?? 0,
-        energy = r?.annualEnergyCost ?? 0,
-        errors = advice.where((a) => a.level == AdviceLevel.error).length,
-        warnings = advice.where((a) => a.level == AdviceLevel.warning).length;
+    : capital = r?.capitalCost ?? 0,
+      annualCapital = r?.annualCapitalCost ?? 0,
+      energy = r?.annualEnergyCost ?? 0,
+      errors = advice.where((a) => a.level == AdviceLevel.error).length,
+      warnings = advice.where((a) => a.level == AdviceLevel.warning).length;
   final double capital;
   final double annualCapital;
   final double energy;
@@ -662,7 +685,13 @@ class OptimizeReport {
 /// cost against pumping energy, optionally every pipe free, the smallest
 /// valve per zone and the pump with the lowest life-cycle cost per supply.
 /// The caller keeps or undoes the result ([OptimizeReport.improved]).
-Future<OptimizeReport> runOptimize(Project p, Future<DesignResults?> Function() design, {OptimizeOptions options = const OptimizeOptions(), DesignResults? baseline, String Function(String key)? label}) async {
+Future<OptimizeReport> runOptimize(
+  Project p,
+  Future<DesignResults?> Function() design, {
+  OptimizeOptions options = const OptimizeOptions(),
+  DesignResults? baseline,
+  String Function(String key)? label,
+}) async {
   final start = baseline ?? await design();
   final before = DesignScore(start, buildAdvice(p, results: start));
   final applied = <FixResult>[];

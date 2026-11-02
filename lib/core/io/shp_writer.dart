@@ -74,15 +74,17 @@ class ShapefileParts {
       final shp = files['shp'];
       if (shp == null) return;
       final type = shp.length >= 36 ? ByteData.sublistView(Uint8List.fromList(shp)).getInt32(32, Endian.little) : 0;
-      out.add(ShapefileParts(
-        name: base,
-        shp: Uint8List.fromList(shp),
-        shx: Uint8List.fromList(files['shx'] ?? const []),
-        dbf: Uint8List.fromList(files['dbf'] ?? const []),
-        prj: files['prj'] != null ? latin1.decode(files['prj']!) : null,
-        cpg: files['cpg'] != null ? latin1.decode(files['cpg']!).trim() : null,
-        shapeType: ShpShapeType.values.where((t) => t.code == type).firstOrNull ?? ShpShapeType.point,
-      ));
+      out.add(
+        ShapefileParts(
+          name: base,
+          shp: Uint8List.fromList(shp),
+          shx: Uint8List.fromList(files['shx'] ?? const []),
+          dbf: Uint8List.fromList(files['dbf'] ?? const []),
+          prj: files['prj'] != null ? latin1.decode(files['prj']!) : null,
+          cpg: files['cpg'] != null ? latin1.decode(files['cpg']!).trim() : null,
+          shapeType: ShpShapeType.values.where((t) => t.code == type).firstOrNull ?? ShpShapeType.point,
+        ),
+      );
     });
     return out;
   }
@@ -165,7 +167,10 @@ class ShapefileWriter {
       }
       usedNames.add(base.toLowerCase());
       final records = [
-        for (final f in feats) [for (final part in f.parts) [for (final v in part) (coord(Pt(v.$1, v.$2)), v.$3 ?? 0.0)]],
+        for (final f in feats)
+          [
+            for (final part in f.parts) [for (final v in part) (coord(Pt(v.$1, v.$2)), v.$3 ?? 0.0)],
+          ],
       ];
       final (shp, shx) = writeShapes(type, records);
       final fields = _fieldsFor(feats);
@@ -252,11 +257,20 @@ class ShapefileWriter {
     for (final e in project.entities) {
       switch (e) {
         case LineEntity l:
-          add(e, 'line', [flat([l.a, l.b])], {...base(e), 'LENGTH_M': l.length});
+          add(
+            e,
+            'line',
+            [
+              flat([l.a, l.b]),
+            ],
+            {...base(e), 'LENGTH_M': l.length},
+          );
         case PolylineEntity p:
           add(e, p.closed && p.points.length >= 3 ? 'polygon' : 'line', [flat(p.points)], {...base(e), if (p.closed) 'AREA_HA': p.area / 10000 else 'LENGTH_M': p.length});
         case CircleEntity c:
-          add(e, 'line', [flat([for (var i = 0; i <= 36; i++) c.center + Pt.polar(c.radius, 2 * math.pi * i / 36)])], base(e));
+          add(e, 'line', [
+            flat([for (var i = 0; i <= 36; i++) c.center + Pt.polar(c.radius, 2 * math.pi * i / 36)]),
+          ], base(e));
         case ArcEntity a:
           add(e, 'line', [flat(a.polyline())], {...base(e), 'LENGTH_M': a.length});
         case SplineEntity sp:
@@ -264,37 +278,87 @@ class ShapefileWriter {
         case HatchEntity h:
           add(e, 'polygon', [flat(h.points)], {...base(e), 'AREA_HA': h.area / 10000});
         case SymbolEntity sy:
-          add(e, 'point', [flat([sy.position])], base(e, name: sy.name.isEmpty ? sy.kind.name : sy.name));
+          add(e, 'point', [
+            flat([sy.position]),
+          ], base(e, name: sy.name.isEmpty ? sy.kind.name : sy.name));
         case TextEntity tx:
-          add(e, 'point', [flat([tx.position])], base(e, name: tx.text));
+          add(e, 'point', [
+            flat([tx.position]),
+          ], base(e, name: tx.text));
         case LeaderEntity le:
           add(e, 'line', [flat(le.points)], base(e, name: le.text));
         case DimensionEntity d:
-          add(e, 'line', [flat([d.a, d.b])], {...base(e), 'LENGTH_M': d.length});
+          add(
+            e,
+            'line',
+            [
+              flat([d.a, d.b]),
+            ],
+            {...base(e), 'LENGTH_M': d.length},
+          );
         case WireEntity w:
           add(e, 'line', [flat(w.points)], {...base(e), 'LENGTH_M': w.length});
         case ControllerEntity k:
-          add(e, 'point', [flat([k.position], _ground(k.position))], {...base(e), 'STATIONS': k.stations});
+          add(
+            e,
+            'point',
+            [
+              flat([k.position], _ground(k.position)),
+            ],
+            {...base(e), 'STATIONS': k.stations},
+          );
         case ImageEntity im:
           add(e, 'polygon', [flat(im.corners)], base(e, name: im.name.isEmpty ? im.source : im.name));
         case ContourEntity c:
           add(e, 'line', [flat(c.points, c.elevation)], {...base(e), 'ELEV': c.elevation});
         case SpotHeightEntity s:
-          add(e, 'point', [flat([s.position], s.elevation)], {...base(e), 'ELEV': s.elevation});
+          add(
+            e,
+            'point',
+            [
+              flat([s.position], s.elevation),
+            ],
+            {...base(e), 'ELEV': s.elevation},
+          );
         case PipeEntity p:
           final spec = cat.pipe(p.pipeSpecId);
-          final a = {...base(e, name: p.name.isEmpty ? (spec?.name ?? '') : p.name), 'LENGTH_M': p.length, 'SPEC': spec?.name, 'DN_MM': spec?.nominalMm, 'ID_MM': spec?.innerDiameterMm, 'DEPTH_M': p.depth};
+          final a = {
+            ...base(e, name: p.name.isEmpty ? (spec?.name ?? '') : p.name),
+            'LENGTH_M': p.length,
+            'SPEC': spec?.name,
+            'DN_MM': spec?.nominalMm,
+            'ID_MM': spec?.innerDiameterMm,
+            'DEPTH_M': p.depth,
+          };
           hydraulics(a, pipeRes[p.id]);
           add(e, 'line', [buried(p.points, p.depth)], a);
         case SpraylineEntity s:
           final spec = cat.pipe(s.pipeSpecId);
           final outlet = cat.outlet(s.outletSpecId);
-          final a = {...base(e), 'LENGTH_M': s.length, 'SPEC': spec?.name, 'DN_MM': spec?.nominalMm, 'ID_MM': spec?.innerDiameterMm, 'EMITTER': outlet?.name ?? s.outletSpecId, 'OUTLETS': s.outletCount, 'SPACING_M': s.spacing, 'DEPTH_M': s.depth};
+          final a = {
+            ...base(e),
+            'LENGTH_M': s.length,
+            'SPEC': spec?.name,
+            'DN_MM': spec?.nominalMm,
+            'ID_MM': spec?.innerDiameterMm,
+            'EMITTER': outlet?.name ?? s.outletSpecId,
+            'OUTLETS': s.outletCount,
+            'SPACING_M': s.spacing,
+            'DEPTH_M': s.depth,
+          };
           hydraulics(a, pipeRes[s.id]);
           add(e, 'line', [buried(s.points, s.depth)], a);
         case TapeEntity tp:
           final spec = cat.tape(tp.tapeSpecId);
-          final a = {...base(e, name: tp.name.isEmpty ? (spec?.name ?? '') : tp.name), 'LENGTH_M': tp.length, 'SPEC': spec?.name, 'DN_MM': spec?.nominalMm, 'ID_MM': spec?.innerDiameterMm, 'SPACING_M': spec?.emitterSpacingM, 'DEPTH_M': tp.depth};
+          final a = {
+            ...base(e, name: tp.name.isEmpty ? (spec?.name ?? '') : tp.name),
+            'LENGTH_M': tp.length,
+            'SPEC': spec?.name,
+            'DN_MM': spec?.nominalMm,
+            'ID_MM': spec?.innerDiameterMm,
+            'SPACING_M': spec?.emitterSpacingM,
+            'DEPTH_M': tp.depth,
+          };
           hydraulics(a, pipeRes[tp.id]);
           add(e, 'line', [buried(tp.points, tp.depth)], a);
         case OutletEntity o:
@@ -307,42 +371,74 @@ class ShapefileWriter {
             a['PMIN_$_pressureSuffix'] = _u.pressureFromHead(r.first.pressure);
             a['PMAX_$_pressureSuffix'] = _u.pressureFromHead(r.first.pressure);
           }
-          add(e, 'point', [flat([o.position], _ground(o.position))], a);
+          add(e, 'point', [
+            flat([o.position], _ground(o.position)),
+          ], a);
         case ControlValveEntity v:
           final spec = cat.valve(v.valveSpecId);
           final z = results?.zones[v.id];
-          add(e, 'point', [flat([v.position], _ground(v.position))], {
-            ...base(e, name: v.zoneName.isEmpty ? v.name : v.zoneName),
-            'SPEC': spec?.name,
-            'DN_MM': spec?.sizeMm,
-            'ZONE': v.zoneName,
-            if (z != null) _flowField: _u.flowFromSi(z.totalFlow),
-            if (z != null) 'PREQ_$_pressureSuffix': _u.pressureFromHead(z.requiredUpstreamHead),
-          });
+          add(
+            e,
+            'point',
+            [
+              flat([v.position], _ground(v.position)),
+            ],
+            {
+              ...base(e, name: v.zoneName.isEmpty ? v.name : v.zoneName),
+              'SPEC': spec?.name,
+              'DN_MM': spec?.sizeMm,
+              'ZONE': v.zoneName,
+              if (z != null) _flowField: _u.flowFromSi(z.totalFlow),
+              if (z != null) 'PREQ_$_pressureSuffix': _u.pressureFromHead(z.requiredUpstreamHead),
+            },
+          );
         case WaterSupplyEntity s:
           final duties = [for (final f in results?.systemFlows ?? const <SystemFlowResult>[]) ...f.supplies.where((d) => d.supplyId == s.id)];
-          add(e, 'point', [flat([s.position], _ground(s.position))], {
-            ...base(e),
-            if (duties.isNotEmpty) _flowField: _u.flowFromSi(duties.map((d) => d.flow).reduce(math.max)),
-            if (duties.isNotEmpty) 'PREQ_$_pressureSuffix': _u.pressureFromHead(duties.map((d) => d.requiredHead).reduce(math.max)),
-          });
+          add(
+            e,
+            'point',
+            [
+              flat([s.position], _ground(s.position)),
+            ],
+            {
+              ...base(e),
+              if (duties.isNotEmpty) _flowField: _u.flowFromSi(duties.map((d) => d.flow).reduce(math.max)),
+              if (duties.isNotEmpty) 'PREQ_$_pressureSuffix': _u.pressureFromHead(duties.map((d) => d.requiredHead).reduce(math.max)),
+            },
+          );
         case PumpEntity pu:
           final spec = cat.pump(pu.pumpSpecId);
           final a = {...base(e, name: pu.name.isEmpty ? (spec?.name ?? '') : pu.name), 'SPEC': spec?.name};
           _deviceAttrs(a, devices[pu.id]);
-          add(e, 'point', [flat([pu.position], _ground(pu.position))], a);
+          add(e, 'point', [
+            flat([pu.position], _ground(pu.position)),
+          ], a);
         case MiscHydraulicEntity m:
           final spec = cat.valve(m.valveSpecId);
           final a = {...base(e, name: m.name.isEmpty ? (spec?.name ?? '') : m.name), 'SPEC': spec?.name, 'DN_MM': spec?.sizeMm};
           _deviceAttrs(a, devices[m.id]);
-          add(e, 'point', [flat([m.position], _ground(m.position))], a);
+          add(e, 'point', [
+            flat([m.position], _ground(m.position)),
+          ], a);
         case JunctionEntity j:
-          add(e, 'point', [flat([j.position], j.fixedElevation ?? _ground(j.position))], base(e));
+          add(e, 'point', [
+            flat([j.position], j.fixedElevation ?? _ground(j.position)),
+          ], base(e));
         case AreaEntity a:
           add(e, 'polygon', [flat(a.points)], {...base(e), 'AREA_HA': a.area / 10000, 'CROP': a.crop});
         case PivotEntity pv:
           final r = results?.pivots[pv.id];
-          add(e, 'polygon', [flat(pv.outline())], {...base(e, name: pv.name.isEmpty ? pv.zoneName : pv.name), 'LENGTH_M': pv.radiusM, if (r != null) _flowField: _u.flowFromSi(r.flow), if (r != null) 'PREQ_$_pressureSuffix': _u.pressureFromHead(r.inletHead)});
+          add(
+            e,
+            'polygon',
+            [flat(pv.outline())],
+            {
+              ...base(e, name: pv.name.isEmpty ? pv.zoneName : pv.name),
+              'LENGTH_M': pv.radiusM,
+              if (r != null) _flowField: _u.flowFromSi(r.flow),
+              if (r != null) 'PREQ_$_pressureSuffix': _u.pressureFromHead(r.inletHead),
+            },
+          );
         default:
           break;
       }
@@ -388,7 +484,10 @@ class ShapefileWriter {
       const DbfField('STATIONS', 'N', 6, 0),
     ];
     const always = {'ID', 'TYPE', 'LAYER', 'NAME'};
-    return [for (final f in all) if (always.contains(f.name) || feats.any((x) => x.attrs[f.name] != null)) f];
+    return [
+      for (final f in all)
+        if (always.contains(f.name) || feats.any((x) => x.attrs[f.name] != null)) f,
+    ];
   }
 
   static String _asciiName(String s) {

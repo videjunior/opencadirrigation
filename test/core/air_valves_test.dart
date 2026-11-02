@@ -6,9 +6,8 @@ import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/units.dart';
 
 List<ProfilePoint> profile(List<(double, double)> xz, {List<double>? hgl, List<double>? minHgl}) => [
-      for (var i = 0; i < xz.length; i++)
-        ProfilePoint(chainage: xz[i].$1, pipe: xz[i].$2, ground: xz[i].$2 + 1, hgl: hgl?[i], minHgl: minHgl?[i], position: Pt(xz[i].$1, 0)),
-    ];
+  for (var i = 0; i < xz.length; i++) ProfilePoint(chainage: xz[i].$1, pipe: xz[i].$2, ground: xz[i].$2 + 1, hgl: hgl?[i], minHgl: minHgl?[i], position: Pt(xz[i].$1, 0)),
+];
 
 List<double> at(AirValvePlan p) => [for (final s in p.suggestions) s.chainage];
 
@@ -78,10 +77,16 @@ void main() {
 
     test('a flat top gets a valve at both ends; a small bump is ignored', () {
       final plan = suggestAirValves(PipelineProfile(points: profile([(0, 0), (300, 12), (600, 12), (900, 0)]), diameter: 0.2));
-      final highs = [for (final s in plan.suggestions) if (s.reasons.contains(AirValveReason.highPoint)) s.chainage];
+      final highs = [
+        for (final s in plan.suggestions)
+          if (s.reasons.contains(AirValveReason.highPoint)) s.chainage,
+      ];
       expect(highs, [300, 600]);
       final bump = suggestAirValves(PipelineProfile(points: profile([(0, 0), (200, 10), (210, 10.05), (220, 10.04), (400, 20), (600, 0)]), diameter: 0.2));
-      final bumpHighs = [for (final s in bump.suggestions) if (s.reasons.contains(AirValveReason.highPoint)) s.chainage];
+      final bumpHighs = [
+        for (final s in bump.suggestions)
+          if (s.reasons.contains(AirValveReason.highPoint)) s.chainage,
+      ];
       expect(bumpHighs, [400], reason: 'a 1 cm dip is below the 0.1 m relief');
     });
 
@@ -156,11 +161,9 @@ void main() {
       expect(top.sizing.nominalSize, greaterThanOrEqualTo(top.sizing.largeOrifice));
       expect(top.sizing.fillFlow, 0.02);
       // a telescoped line: each side drains with its own bore
-      final tele = suggestAirValves(PipelineProfile(points: const [
-        ProfilePoint(chainage: 0, pipe: 0, diameter: 0.3),
-        ProfilePoint(chainage: 500, pipe: 10, diameter: 0.2),
-        ProfilePoint(chainage: 1000, pipe: 0),
-      ], diameter: 0.25));
+      final tele = suggestAirValves(
+        PipelineProfile(points: const [ProfilePoint(chainage: 0, pipe: 0, diameter: 0.3), ProfilePoint(chainage: 500, pipe: 10, diameter: 0.2), ProfilePoint(chainage: 1000, pipe: 0)], diameter: 0.25),
+      );
       final tTop = tele.suggestions.firstWhere((s) => s.reason == AirValveReason.highPoint);
       expect(tTop.sizing.drainFlow, closeTo(gravityDrainageFlow(diameter: 0.3, slope: 0.02) + gravityDrainageFlow(diameter: 0.2, slope: 0.02), 1e-12));
       expect(tTop.sizing.fillFlow, closeTo(0.3 * math.pi * 0.09 / 4, 1e-12), reason: 'filling at 0.3 m/s in the larger bore');

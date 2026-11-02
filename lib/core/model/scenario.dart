@@ -11,9 +11,7 @@ import 'project.dart';
 
 /// Figures compared between alternatives (keys of [Scenario.metrics],
 /// translated as `scn.<key>`).
-const scenarioMetricKeys = [
-  'capital', 'annualEnergy', 'annualTotal', 'peakFlow', 'pumpHead', 'pMin', 'pMax', 'euMin', 'cuMin', 'mainlineM', 'zonePipeM', 'messages',
-];
+const scenarioMetricKeys = ['capital', 'annualEnergy', 'annualTotal', 'peakFlow', 'pumpHead', 'pMin', 'pMax', 'euMin', 'cuMin', 'mainlineM', 'zonePipeM', 'messages'];
 
 class Scenario {
   Scenario({required this.id, required this.name, required this.created, required this.metrics, required this.snapshot});
@@ -33,7 +31,10 @@ class Scenario {
     id: j['id'] as String,
     name: j['name'] as String? ?? '',
     created: DateTime.tryParse(j['created'] as String? ?? '') ?? DateTime.now(),
-    metrics: {for (final e in ((j['metrics'] as Map?) ?? const {}).entries) if (e.value is num) e.key as String: (e.value as num).toDouble()},
+    metrics: {
+      for (final e in ((j['metrics'] as Map?) ?? const {}).entries)
+        if (e.value is num) e.key as String: (e.value as num).toDouble(),
+    },
     snapshot: (j['project'] as Map?)?.cast<String, dynamic>() ?? const {},
   );
 }

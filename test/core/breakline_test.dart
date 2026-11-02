@@ -28,9 +28,12 @@ void main() {
   test('without the breakline the valley is bridged; with it the surface folds along the channel', () {
     final plain = Tin.build(slopes());
     expect(plain.elevationAt(const Pt(50, 0))!, greaterThan(100.9), reason: 'interpolated across the channel');
-    final tin = Tin.build(slopes(), breaklines: [
-      [(0, 0, 100), (50, 0, 100), (100, 0, 100)],
-    ]);
+    final tin = Tin.build(
+      slopes(),
+      breaklines: [
+        [(0, 0, 100), (50, 0, 100), (100, 0, 100)],
+      ],
+    );
     expect(tin.elevationAt(const Pt(50, 0))!, closeTo(100, 1e-9));
     expect(tin.elevationAt(const Pt(30, 0))!, closeTo(100, 1e-9));
     expect(tin.elevationAt(const Pt(30, 5))!, closeTo(100.5, 1e-9));
@@ -48,9 +51,12 @@ void main() {
       for (var x = 0.0; x <= 100; x += 7)
         for (var y = 0.0; y <= 100; y += 7) (x + (y % 3) * 0.37, y + (x % 5) * 0.21, 50.0),
     ];
-    final tin = Tin.build(pts, breaklines: [
-      [(1, 2, 60), (99, 97, 60)],
-    ]);
+    final tin = Tin.build(
+      pts,
+      breaklines: [
+        [(1, 2, 60), (99, 97, 60)],
+      ],
+    );
     const a = Pt(1, 2), b = Pt(99, 97);
     for (final t in tin.triangles) {
       for (final (u, v) in [(t.a, t.b), (t.b, t.c), (t.c, t.a)]) {

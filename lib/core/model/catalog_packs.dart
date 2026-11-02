@@ -54,7 +54,8 @@ class CatalogPack {
 /// the number of items added.
 int mergeCatalogPack(Catalog target, Catalog pack) {
   var n = 0;
-  bool has(String id) => target.pipe(id) != null || target.outlet(id) != null || target.tape(id) != null || target.valve(id) != null || target.pump(id) != null || target.fittings.any((f) => f.id == id);
+  bool has(String id) =>
+      target.pipe(id) != null || target.outlet(id) != null || target.tape(id) != null || target.valve(id) != null || target.pump(id) != null || target.fittings.any((f) => f.id == id);
   for (final p in pack.pipes) {
     if (has(p.id)) continue;
     target.pipes.add(p);

@@ -22,12 +22,14 @@ class LanguagePack {
   static Map<String, String> _section(Map<String, dynamic> j, String name) {
     final s = j[name];
     if (s is! Map) return const {};
-    return {for (final e in s.entries) if (e.value is String) '${e.key}': e.value as String};
+    return {
+      for (final e in s.entries)
+        if (e.value is String) '${e.key}': e.value as String,
+    };
   }
 
   /// Reads the JSON of an `assets/i18n/<code>.json` file.
-  factory LanguagePack.fromJson(Map<String, dynamic> j) =>
-      LanguagePack(strings: _section(j, 'strings'), tutorial: _section(j, 'tutorial'), catalog: _section(j, 'catalog'));
+  factory LanguagePack.fromJson(Map<String, dynamic> j) => LanguagePack(strings: _section(j, 'strings'), tutorial: _section(j, 'tutorial'), catalog: _section(j, 'catalog'));
 
   Map<String, dynamic> toJson() => {'strings': strings, 'tutorial': tutorial, 'catalog': catalog};
 

@@ -13,9 +13,14 @@ import 'package:opencadirrigation/core/units.dart';
 OutletSpec _sportsRotor() {
   EmitterCurve q(double m3h, double r) => EmitterCurve.fromNominal(flow: m3h * m3sPerM3h, head: 45, x: 0.5, radius: r, radiusB: 0.35);
   NozzleSpec n(String id, double m3h, double r, double arc) => NozzleSpec(id: id, name: id, curve: q(m3h, r), arcDeg: arc, minHeadM: 30, maxHeadM: 60, defaultHeadM: 45);
-  return OutletSpec(id: 'sport', name: 'Sports rotor', kind: OutletKind.sprinkler, nozzles: [
-    for (final (r, f) in const [(18.0, 3.2), (24.0, 5.6), (35.0, 12.0)]) ...[n('f$r', f, r, 360), n('t$r', f * 0.75, r, 270), n('h$r', f / 2, r, 180), n('q$r', f / 4, r, 90)],
-  ]);
+  return OutletSpec(
+    id: 'sport',
+    name: 'Sports rotor',
+    kind: OutletKind.sprinkler,
+    nozzles: [
+      for (final (r, f) in const [(18.0, 3.2), (24.0, 5.6), (35.0, 12.0)]) ...[n('f$r', f, r, 360), n('t$r', f * 0.75, r, 270), n('h$r', f / 2, r, 180), n('q$r', f / 4, r, 90)],
+    ],
+  );
 }
 
 Pt _bisector(LayoutHead h) => Pt.polar(1, degToRad(h.orientationDeg + h.arcDeg / 2));

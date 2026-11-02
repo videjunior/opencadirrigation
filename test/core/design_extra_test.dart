@@ -30,7 +30,23 @@ void main() {
   /// A 60 × 30 m micro-sprinkler block fed from a supply 30 m away.
   Project block({SubmainPosition submain = SubmainPosition.start, ValvePosition valve = ValvePosition.centre, bool withSupply = true, double stub = 1.5}) {
     final p = Project();
-    final b = generateBlock(p, BlockOptions(polygon: [const Pt(0, 0), const Pt(60, 0), const Pt(60, 30), const Pt(0, 30)], direction: const Pt(1, 0), lateralSpacing: 5, outletSpecId: 'micro', nozzleId: 'm50', outletSpacing: 3, headM: 15, submainPosition: submain, valvePosition: valve, submainStub: stub, valveSpecId: 'ev50', zoneName: 'A'));
+    final b = generateBlock(
+      p,
+      BlockOptions(
+        polygon: [const Pt(0, 0), const Pt(60, 0), const Pt(60, 30), const Pt(0, 30)],
+        direction: const Pt(1, 0),
+        lateralSpacing: 5,
+        outletSpecId: 'micro',
+        nozzleId: 'm50',
+        outletSpacing: 3,
+        headM: 15,
+        submainPosition: submain,
+        valvePosition: valve,
+        submainStub: stub,
+        valveSpecId: 'ev50',
+        zoneName: 'A',
+      ),
+    );
     p.entities.addAll(b.all);
     if (withSupply) {
       final v = b.valve!.position;
@@ -90,10 +106,15 @@ void main() {
       final withFilter = block(stub: 4);
       // the stub between the valve and the submain carries the whole zone
       final valvePos = withFilter.entities.whereType<ControlValveEntity>().single.position;
-      final sub = withFilter.entities.whereType<PipeEntity>().firstWhere((e) => e.scope == HydraulicScope.zone && (e.points.first.distanceTo(valvePos) < 1e-9 || e.points.last.distanceTo(valvePos) < 1e-9));
+      final sub = withFilter.entities.whereType<PipeEntity>().firstWhere(
+        (e) => e.scope == HydraulicScope.zone && (e.points.first.distanceTo(valvePos) < 1e-9 || e.points.last.distanceTo(valvePos) < 1e-9),
+      );
       final mid = Pt.lerp(sub.points.first, sub.points.last, 0.5);
       // insert a screen filter in the zone (split the stub under it)
-      final pieces = [PipeEntity(id: withFilter.newId(), points: [sub.points.first, mid], scope: HydraulicScope.zone), PipeEntity(id: withFilter.newId(), points: [mid, sub.points.last], scope: HydraulicScope.zone)];
+      final pieces = [
+        PipeEntity(id: withFilter.newId(), points: [sub.points.first, mid], scope: HydraulicScope.zone),
+        PipeEntity(id: withFilter.newId(), points: [mid, sub.points.last], scope: HydraulicScope.zone),
+      ];
       withFilter.entities
         ..remove(sub)
         ..addAll(pieces)
@@ -153,7 +174,13 @@ void main() {
     test('largest size of an LP unit, delivery velocity and the extreme outlets', () {
       final a = PipeSpec(id: 'a', name: 'a', nominalMm: 75, innerDiameterMm: 70);
       final b = PipeSpec(id: 'b', name: 'b', nominalMm: 50, innerDiameterMm: 46);
-      final lp = LpAssignment(feasible: true, fractions: {'u': [(a, 0.6), (b, 0.4)]}, heads: const []);
+      final lp = LpAssignment(
+        feasible: true,
+        fractions: {
+          'u': [(a, 0.6), (b, 0.4)],
+        },
+        heads: const [],
+      );
       expect(lp.largest('u'), same(a));
       expect(lp.largest('x'), isNull);
       expect(mainVelocity(0.01, 0.1), closeTo(velocity(flow: 0.01, diameter: 0.1), 1e-12));
@@ -206,7 +233,10 @@ void main() {
       final missing = runDesignCheck(p).issues.where((i) => i.code == 'spec_missing').map((i) => i.value).toSet();
       expect(missing, containsAll(['gone_pipe', 'gone_valve', 'gone_pump', 'gone_pivot']));
       final m = NetworkBuilder(p).build();
-      expect(m.warnings, containsAll(['outlet_spec_missing:${lateral.id}', 'outlet_spec_missing:${outlet.id}', 'tape_spec_missing:${tape.id}', 'pump_spec_missing:${pump.id}', 'valve_spec_missing:${misc.id}']));
+      expect(
+        m.warnings,
+        containsAll(['outlet_spec_missing:${lateral.id}', 'outlet_spec_missing:${outlet.id}', 'tape_spec_missing:${tape.id}', 'pump_spec_missing:${pump.id}', 'valve_spec_missing:${misc.id}']),
+      );
       expect(m.unconnectedEntities, containsAll([lateral.id, tape.id]));
       expect(pipe.pipeSpecId, 'gone_pipe', reason: 'the check never changes the drawing');
       expect(valve.valveSpecId, 'gone_valve');
@@ -245,7 +275,21 @@ void main() {
     test('guided (curved) blocks with the submain at the end or in the centre', () {
       for (final pos in [SubmainPosition.end, SubmainPosition.centre]) {
         final p = Project();
-        final r = generateBlock(p, BlockOptions(polygon: [const Pt(0, 0), const Pt(100, 0), const Pt(100, 60), const Pt(0, 60)], direction: const Pt(1, 0), lateralSpacing: 10, outletSpecId: 'micro', nozzleId: 'm50', outletSpacing: 4, guide: [const Pt(-10, 5), const Pt(50, 15), const Pt(110, 5)], submainPosition: pos, valveSpecId: 'ev50', zoneName: 'Curva ${pos.name}'));
+        final r = generateBlock(
+          p,
+          BlockOptions(
+            polygon: [const Pt(0, 0), const Pt(100, 0), const Pt(100, 60), const Pt(0, 60)],
+            direction: const Pt(1, 0),
+            lateralSpacing: 10,
+            outletSpecId: 'micro',
+            nozzleId: 'm50',
+            outletSpacing: 4,
+            guide: [const Pt(-10, 5), const Pt(50, 15), const Pt(110, 5)],
+            submainPosition: pos,
+            valveSpecId: 'ev50',
+            zoneName: 'Curva ${pos.name}',
+          ),
+        );
         expect(r.laterals, isNotEmpty, reason: pos.name);
         expect(r.submain, isNotNull, reason: pos.name);
         for (final l in r.laterals.cast<SpraylineEntity>()) {
@@ -299,16 +343,42 @@ void main() {
       final p = block();
       final lone = OutletEntity(id: p.newId(), name: 'Aspersor solto', position: const Pt(500, 500), outletSpecId: 'micro', nozzleId: 'm50');
       p.entities.add(lone);
-      final tables = buildReportTables(project: p, results: null, labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w, entityName: (id) => p.byId(id)?.name ?? id), unconnected: {lone.id});
+      final tables = buildReportTables(
+        project: p,
+        results: null,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w, entityName: (id) => p.byId(id)?.name ?? id),
+        unconnected: {lone.id},
+      );
       final msg = tables.firstWhere((tb) => tb.key == 'messages');
-      expect(msg.rows, [['msg.unconnectedItem', 'Aspersor solto']]);
+      expect(msg.rows, [
+        ['msg.unconnectedItem', 'Aspersor solto'],
+      ]);
       expect(msg.warn, [true]);
-      expect(buildReportTables(project: p, results: null, labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w), unconnected: {lone.id}, includeMessages: false).any((tb) => tb.key == 'messages'), isFalse);
+      expect(
+        buildReportTables(
+          project: p,
+          results: null,
+          labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w),
+          unconnected: {lone.id},
+          includeMessages: false,
+        ).any((tb) => tb.key == 'messages'),
+        isFalse,
+      );
     });
 
     test('a Darcy-Weisbach pivot agrees with Hazen-Williams for a smooth span pipe', () {
       const hw = PivotSpec(kind: PivotKind.pivot, lengthM: 400, endThrowM: 0, pipeInnerMm: 162, hazenC: 145, grossDepthMm: 8, hoursPerCycle: 24, endPressureM: 14);
-      const dw = PivotSpec(kind: PivotKind.pivot, lengthM: 400, endThrowM: 0, pipeInnerMm: 162, grossDepthMm: 8, hoursPerCycle: 24, endPressureM: 14, method: FrictionMethod.darcyWeisbach, roughnessMm: 0.0015);
+      const dw = PivotSpec(
+        kind: PivotKind.pivot,
+        lengthM: 400,
+        endThrowM: 0,
+        pipeInnerMm: 162,
+        grossDepthMm: 8,
+        hoursPerCycle: 24,
+        endPressureM: 14,
+        method: FrictionMethod.darcyWeisbach,
+        roughnessMm: 0.0015,
+      );
       final a = analyzePivot(hw, id: 'a', name: 'a');
       final b = analyzePivot(dw, id: 'b', name: 'b');
       expect(b.flow, closeTo(a.flow, 1e-12));

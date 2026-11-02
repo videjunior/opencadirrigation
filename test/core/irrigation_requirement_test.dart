@@ -39,7 +39,14 @@ void main() {
     final input = RequirementInput(
       areaId: 'a1',
       areaM2: 36,
-      cycles: [CropCycle(cropKey: 'crop.citrus', curve: const KcCurve.constant(1), planting: DateTime.utc(2001), kr: localizedReductionFactor(0.7, method: LocalizedReductionMethod.freemanGarzoli))],
+      cycles: [
+        CropCycle(
+          cropKey: 'crop.citrus',
+          curve: const KcCurve.constant(1),
+          planting: DateTime.utc(2001),
+          kr: localizedReductionFactor(0.7, method: LocalizedReductionMethod.freemanGarzoli),
+        ),
+      ],
       climate: flat(7.1),
       rainMethod: EffectiveRainMethod.none,
       efficiency: 0.86,
@@ -73,7 +80,20 @@ void main() {
     });
 
     test('a fixed interval beyond the RAW is flagged', () {
-      final t = irrigationRequirement(RequirementInput(areaId: 'a1', areaM2: 36, cycles: input.cycles, climate: input.climate, rainMethod: EffectiveRainMethod.none, wettedFraction: 0.6, rootDepthM: 1, depletionFraction: 0.2, adjustDepletionToEtc: false, fixedIntervalDays: 4));
+      final t = irrigationRequirement(
+        RequirementInput(
+          areaId: 'a1',
+          areaM2: 36,
+          cycles: input.cycles,
+          climate: input.climate,
+          rainMethod: EffectiveRainMethod.none,
+          wettedFraction: 0.6,
+          rootDepthM: 1,
+          depletionFraction: 0.2,
+          adjustDepletionToEtc: false,
+          fixedIntervalDays: 4,
+        ),
+      );
       final july = t.monthly.firstWhere((r) => r.periodId == '2001-07');
       expect(july.intervalDays, 4);
       expect(july.warnings, containsAll(['req_interval_exceeds_raw', 'req_no_application_rate']));
@@ -87,14 +107,16 @@ void main() {
     const etcMonth = <double>[0, 69, 123, 180, 234, 180, 0, 0, 0, 0, 0, 0];
     const rainMonth = <double>[0, 20, 38, 40, 80, 16, 0, 0, 0, 0, 0, 0];
     final eto = [for (var m = 1; m <= 12; m++) etcMonth[m - 1] / daysInMonth(2001, m)];
-    final t = irrigationRequirement(RequirementInput(
-      areaId: 'tm3',
-      areaM2: 10000,
-      cycles: [CropCycle(cropKey: 'crop.vegetables', curve: const KcCurve.constant(1), planting: DateTime.utc(2001))],
-      climate: ClimateNormals(etoMmDay: eto, rainMm: rainMonth),
-      rainMethod: EffectiveRainMethod.faoEmpirical,
-      efficiency: 1,
-    ));
+    final t = irrigationRequirement(
+      RequirementInput(
+        areaId: 'tm3',
+        areaM2: 10000,
+        cycles: [CropCycle(cropKey: 'crop.vegetables', curve: const KcCurve.constant(1), planting: DateTime.utc(2001))],
+        climate: ClimateNormals(etoMmDay: eto, rainMm: rainMonth),
+        rainMethod: EffectiveRainMethod.faoEmpirical,
+        efficiency: 1,
+      ),
+    );
     const need = <double>[67, 110, 166, 195, 180];
     for (var m = 2; m <= 6; m++) {
       final r = t.monthly.firstWhere((r) => r.periodId == '2001-0$m');
@@ -108,14 +130,24 @@ void main() {
 
   test('FAO Training Manual 3, section 4.4: paddy rice in April needs 313 mm', () {
     // ETo 6 mm/day, Kc 1.1, percolation 5 mm/day, 100 mm water layer, Pe 135 mm
-    final t = irrigationRequirement(RequirementInput(
-      areaId: 'rice',
-      areaM2: 10000,
-      cycles: [CropCycle(cropKey: 'crop.rice', curve: const KcCurve(kcIni: 1.1, kcMid: 1.1, kcEnd: 1.1, stages: CropStages(30, 0, 0, 0)), planting: DateTime.utc(2001, 4, 1), percolationMmDay: 5, establishmentMm: 100)],
-      climate: ClimateNormals(etoMmDay: List.filled(12, 6), rainMm: [0, 0, 0, 135, 0, 0, 0, 0, 0, 0, 0, 0]),
-      rainMethod: EffectiveRainMethod.total,
-      efficiency: 1,
-    ));
+    final t = irrigationRequirement(
+      RequirementInput(
+        areaId: 'rice',
+        areaM2: 10000,
+        cycles: [
+          CropCycle(
+            cropKey: 'crop.rice',
+            curve: const KcCurve(kcIni: 1.1, kcMid: 1.1, kcEnd: 1.1, stages: CropStages(30, 0, 0, 0)),
+            planting: DateTime.utc(2001, 4, 1),
+            percolationMmDay: 5,
+            establishmentMm: 100,
+          ),
+        ],
+        climate: ClimateNormals(etoMmDay: List.filled(12, 6), rainMm: [0, 0, 0, 135, 0, 0, 0, 0, 0, 0, 0, 0]),
+        rainMethod: EffectiveRainMethod.total,
+        efficiency: 1,
+      ),
+    );
     final april = t.monthly.single;
     expect(april.periodId, '2001-04');
     expect(april.cropDays, 30);
@@ -130,24 +162,48 @@ void main() {
     CropCycle maize() => CropCycle.fromTable('crop.maize', planting: DateTime.utc(2001, 4, 1));
 
     test('multiplicative rule: gross = net/(Ea·(1 − LR))', () {
-      final t = irrigationRequirement(RequirementInput(areaId: 'm', areaM2: 1, cycles: [maize()], climate: flat(5), rainMethod: EffectiveRainMethod.none, efficiency: 0.65, ecwDsM: 1.2, yieldPotentialPct: 90));
+      final t = irrigationRequirement(
+        RequirementInput(areaId: 'm', areaM2: 1, cycles: [maize()], climate: flat(5), rainMethod: EffectiveRainMethod.none, efficiency: 0.65, ecwDsM: 1.2, yieldPotentialPct: 90),
+      );
       final r = t.monthly.firstWhere((r) => r.periodId == '2001-06');
       expect(r.leachingFraction, closeTo(1.2 / (5 * eceForYieldPotential(eceThreshold: 1.7, eceMax: 10, yieldPct: 90) - 1.2), 1e-9));
       expect(r.grossMm, closeTo(r.netMm / (0.65 * (1 - r.leachingFraction)), 1e-9));
     });
 
     test('FAO-29 Example 3 reasoning: application losses already leach', () {
-      final t = irrigationRequirement(RequirementInput(areaId: 'm', areaM2: 1, cycles: [maize()], climate: flat(5), rainMethod: EffectiveRainMethod.none, efficiency: 0.65, ecwDsM: 1.2, yieldPotentialPct: 90, leachingRule: LeachingRule.lossesLeach));
+      final t = irrigationRequirement(
+        RequirementInput(
+          areaId: 'm',
+          areaM2: 1,
+          cycles: [maize()],
+          climate: flat(5),
+          rainMethod: EffectiveRainMethod.none,
+          efficiency: 0.65,
+          ecwDsM: 1.2,
+          yieldPotentialPct: 90,
+          leachingRule: LeachingRule.lossesLeach,
+        ),
+      );
       final r = t.monthly.firstWhere((r) => r.periodId == '2001-06');
       expect(r.grossMm, closeTo(r.netMm / 0.65, 1e-9));
     });
 
     test('high-frequency drip and too saline water', () {
-      final drip = irrigationRequirement(RequirementInput(areaId: 'm', areaM2: 1, cycles: [maize()], climate: flat(5), rainMethod: EffectiveRainMethod.none, ecwDsM: 1.2, leachingFormula: LeachingFormula.highFrequencyDrip));
+      final drip = irrigationRequirement(
+        RequirementInput(areaId: 'm', areaM2: 1, cycles: [maize()], climate: flat(5), rainMethod: EffectiveRainMethod.none, ecwDsM: 1.2, leachingFormula: LeachingFormula.highFrequencyDrip),
+      );
       expect(drip.monthly.first.leachingFraction, closeTo(0.06, 1e-9));
       final salty = irrigationRequirement(RequirementInput(areaId: 'm', areaM2: 1, cycles: [maize()], climate: flat(5), rainMethod: EffectiveRainMethod.none, ecwDsM: 9));
       expect(salty.monthly.first.warnings, contains('req_leaching_infeasible'));
-      final unknown = irrigationRequirement(RequirementInput(areaId: 'm', areaM2: 1, cycles: [CropCycle.fromTable('crop.coffee', planting: DateTime.utc(2001))], climate: flat(5), ecwDsM: 1));
+      final unknown = irrigationRequirement(
+        RequirementInput(
+          areaId: 'm',
+          areaM2: 1,
+          cycles: [CropCycle.fromTable('crop.coffee', planting: DateTime.utc(2001))],
+          climate: flat(5),
+          ecwDsM: 1,
+        ),
+      );
       expect(unknown.monthly.first.warnings, contains('req_salt_tolerance_unknown'));
       expect(unknown.monthly.first.leachingFraction, 0);
     });
@@ -194,10 +250,13 @@ void main() {
     });
 
     test('user periods sum to the months they cover', () {
-      final t = irrigationRequirement(two(), periods: [
-        RequirementPeriod(id: 'season1', start: DateTime.utc(2001, 4, 1), end: DateTime.utc(2001, 8, 31)),
-        RequirementPeriod(id: 'q4', start: DateTime.utc(2001, 10, 1), end: DateTime.utc(2001, 12, 31)),
-      ]);
+      final t = irrigationRequirement(
+        two(),
+        periods: [
+          RequirementPeriod(id: 'season1', start: DateTime.utc(2001, 4, 1), end: DateTime.utc(2001, 8, 31)),
+          RequirementPeriod(id: 'q4', start: DateTime.utc(2001, 10, 1), end: DateTime.utc(2001, 12, 31)),
+        ],
+      );
       final s1 = t.periods.firstWhere((r) => r.periodId == 'season1' && r.cycleIndex == 0);
       final months = t.monthly.where((r) => r.cycleIndex == 0);
       expect(s1.cropDays, months.fold(0, (s, r) => s + r.cropDays));
@@ -211,7 +270,12 @@ void main() {
 
     test('periods in another year use the same monthly normals', () {
       final t = irrigationRequirement(
-        RequirementInput(areaId: 'p', areaM2: 1, cycles: [CropCycle.fromTable('crop.citrus', planting: DateTime.utc(2001))], climate: flat(5, rain: 31)),
+        RequirementInput(
+          areaId: 'p',
+          areaM2: 1,
+          cycles: [CropCycle.fromTable('crop.citrus', planting: DateTime.utc(2001))],
+          climate: flat(5, rain: 31),
+        ),
         periods: [RequirementPeriod(id: 'y2030', start: DateTime.utc(2030), end: DateTime.utc(2030, 12, 31))],
       );
       expect(t.periods.single.cropDays, 365);
@@ -219,12 +283,17 @@ void main() {
     });
 
     test('overlapping cycles in the same area are flagged; no cycle is reported', () {
-      final t = irrigationRequirement(RequirementInput(
-        areaId: 'o',
-        areaM2: 1,
-        cycles: [CropCycle.fromTable('crop.tomato', planting: DateTime.utc(2001, 4, 1)), CropCycle.fromTable('crop.lettuce', planting: DateTime.utc(2001, 5, 1))],
-        climate: flat(5),
-      ));
+      final t = irrigationRequirement(
+        RequirementInput(
+          areaId: 'o',
+          areaM2: 1,
+          cycles: [
+            CropCycle.fromTable('crop.tomato', planting: DateTime.utc(2001, 4, 1)),
+            CropCycle.fromTable('crop.lettuce', planting: DateTime.utc(2001, 5, 1)),
+          ],
+          climate: flat(5),
+        ),
+      );
       expect(t.warnings, contains('req_cycles_overlap:0:1'));
       expect(irrigationRequirement(RequirementInput(areaId: 'e', areaM2: 1, cycles: const [], climate: flat(5))).warnings, ['req_no_cycles']);
     });
@@ -234,7 +303,13 @@ void main() {
       final c = ClimateNormals.fromMonthlyClimate(months, latitudeDeg: -15, elevationM: 500);
       expect(c.etoMmDay.every((e) => e > 2 && e < 8), isTrue);
       expect(c.dependableRainMm, everyElement(60));
-      final input = RequirementInput(areaId: 'd', areaM2: 1, cycles: [CropCycle.fromTable('crop.turf', planting: DateTime.utc(2001))], climate: c, rainMethod: EffectiveRainMethod.total);
+      final input = RequirementInput(
+        areaId: 'd',
+        areaM2: 1,
+        cycles: [CropCycle.fromTable('crop.turf', planting: DateTime.utc(2001))],
+        climate: c,
+        rainMethod: EffectiveRainMethod.total,
+      );
       final mean = irrigationRequirement(input).areaTotals;
       final dep = irrigationRequirement(RequirementInput(areaId: 'd', areaM2: 1, cycles: input.cycles, climate: c, rainMethod: EffectiveRainMethod.total, useDependableRain: true)).areaTotals;
       expect(dep.effectiveRainMm, lessThan(mean.effectiveRainMm));

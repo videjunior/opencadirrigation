@@ -112,7 +112,11 @@ void main() {
     final p = example();
     final seen = <DesignProgress>[];
     String? mode;
-    final r = await IsolateDesignRunner().run(DesignRequest.of(p, lang: 'pt'), onProgress: seen.add, onMode: (m) => mode = m);
+    final r = await IsolateDesignRunner().run(
+      DesignRequest.of(p, lang: 'pt'),
+      onProgress: seen.add,
+      onMode: (m) => mode = m,
+    );
     expect(mode, 'isolate');
     expect(seen.first.stage, DesignStage.zones);
     expect(seen.last.done, seen.last.total);

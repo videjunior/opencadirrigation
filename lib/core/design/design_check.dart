@@ -270,14 +270,29 @@ DesignCheckReport runDesignCheck(Project project) {
       }
       return false;
     }
-    final any = ents.any((e) => (e is OutletEntity && project.outletWatersArea(e, a.points)) || ((e is SpraylineEntity || e is TapeEntity) && lateralInside((e as PolyEntity).points)) || (e is PivotEntity && watersArea(e.center, a.points)));
+
+    final any = ents.any(
+      (e) =>
+          (e is OutletEntity && project.outletWatersArea(e, a.points)) ||
+          ((e is SpraylineEntity || e is TapeEntity) && lateralInside((e as PolyEntity).points)) ||
+          (e is PivotEntity && watersArea(e.center, a.points)),
+    );
     if (!any) issues.add(CheckIssue('area_no_emitters', CheckSeverity.info, entityIds: [a.id], value: a.name));
   }
   // ---- valve wiring (routes, stations, solenoid voltage), when drawn
   // as in the design: without system flows every zone runs at once, and
   // every flow runs the valve-in-head stations it schedules or no flow does
   final vih = VihStations.of(project);
-  final wiring = designElectrical(project, flows: project.systemFlows.isEmpty ? [{for (final v in valves) v.id, ...vih.heads.keys}] : [for (final f in project.systemFlows) {...f.valveIds, ...vih.runningIn(f.valveIds)}]);
+  final wiring = designElectrical(
+    project,
+    flows: project.systemFlows.isEmpty
+        ? [
+            {for (final v in valves) v.id, ...vih.heads.keys},
+          ]
+        : [
+            for (final f in project.systemFlows) {...f.valveIds, ...vih.runningIn(f.valveIds)},
+          ],
+  );
   for (final w in wiring?.warnings ?? const <String>[]) {
     final idx = w.indexOf(':');
     final code = idx > 0 ? w.substring(0, idx) : w;

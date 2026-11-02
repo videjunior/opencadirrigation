@@ -13,30 +13,81 @@ const _tr = SiteText(
   aiTitle: 'Sizinle birlikte çizen ve projelendiren yapay zekâ asistanı',
   aiIntro: 'Çizimin yanındaki yapay zekâ panelini açın ve ne istediğinizi kendi cümlelerinizle yazın. Asistan projeyi okur, uydu görüntüsüne ve araziye bakar ve menülerdeki araçların aynısıyla çalışır; bu yüzden çizdiği şey bir resim değil, gerçek bir projedir: öğeler, borular, vanalar, bölgeler ve sonuçlar. Her değişiklik onayınızı bekler ya da isterseniz otomatik uygulanır ve tek tıkla geri alınabilir.',
   aiPoints: [
-    ('Otomatik çizer ve projelendirir', 'Yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, pivotları tarlaya uydurur, boru ve vana güzergâhlarını çizer, pompayı ve su kaynağını konumlandırır, projeyi hesaplar, uyarıları giderir ve maliyeti optimize eder; ardından teknik açıklama raporunu yazar ve fiyat teklifini hazırlar.'),
-    ('Araziyi görür', 'Araziyi adresinden bulur; coğrafi referanslı bir projenin uydu görüntüsüne ve topoğrafyasına (gölgeli rölyef, eş yükselti eğrileri, eğim, boy kesitler) bakar; eklediğiniz çizimleri ve CBS dosyalarını okur ve PDF biçimindeki bir veri sayfasından kataloğa öğe ekler. Görüntüdeki tarlaların sınırını kendiliğinden çizer, haritada işaretlediğiniz nokta ve çizgileri izler ve GPS’li arazi fotoğraflarını çekildikleri yere, çizimin üzerine iliştirir.'),
-    ('Açıklar ve denetler', 'Proje ve sonuçları hakkındaki soruları yanıtlar, her tasarım iletisini ve nasıl düzeltileceğini açıklar, analizleri çalıştırır ve projede bir yapılacaklar listesiyle kararlarınıza dair notlar tutar. İstendiğinde hiçbir şeyi değiştirmeden tüm tasarımı gözden geçirir ve dışa aktarmadan önce paftaya bakar.'),
-    ('Anahtar sizin, kontrol sizde', 'En üst, orta ve hızlı sınıflardaki Claude (Anthropic) veya GPT (OpenAI) modelleri, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan çağrılır. Salt okunur, önce plan, her değişiklikten önce sorma ya da otomatik uygulama modları, görev başına adım sınırı ve harcama sınırı vardır; her yanıt geri alınabilir ve Gönder’e basmadan hiçbir şey gönderilmez.'),
+    (
+      'Otomatik çizer ve projelendirir',
+      'Yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, pivotları tarlaya uydurur, boru ve vana güzergâhlarını çizer, pompayı ve su kaynağını konumlandırır, projeyi hesaplar, uyarıları giderir ve maliyeti optimize eder; ardından teknik açıklama raporunu yazar ve fiyat teklifini hazırlar.',
+    ),
+    (
+      'Araziyi görür',
+      'Araziyi adresinden bulur; coğrafi referanslı bir projenin uydu görüntüsüne ve topoğrafyasına (gölgeli rölyef, eş yükselti eğrileri, eğim, boy kesitler) bakar; eklediğiniz çizimleri ve CBS dosyalarını okur ve PDF biçimindeki bir veri sayfasından kataloğa öğe ekler. Görüntüdeki tarlaların sınırını kendiliğinden çizer, haritada işaretlediğiniz nokta ve çizgileri izler ve GPS’li arazi fotoğraflarını çekildikleri yere, çizimin üzerine iliştirir.',
+    ),
+    (
+      'Açıklar ve denetler',
+      'Proje ve sonuçları hakkındaki soruları yanıtlar, her tasarım iletisini ve nasıl düzeltileceğini açıklar, analizleri çalıştırır ve projede bir yapılacaklar listesiyle kararlarınıza dair notlar tutar. İstendiğinde hiçbir şeyi değiştirmeden tüm tasarımı gözden geçirir ve dışa aktarmadan önce paftaya bakar.',
+    ),
+    (
+      'Anahtar sizin, kontrol sizde',
+      'En üst, orta ve hızlı sınıflardaki Claude (Anthropic) veya GPT (OpenAI) modelleri, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan çağrılır. Salt okunur, önce plan, her değişiklikten önce sorma ya da otomatik uygulama modları, görev başına adım sınırı ve harcama sınırı vardır; her yanıt geri alınabilir ve Gönder’e basmadan hiçbir şey gönderilmez.',
+    ),
   ],
   aiCta: 'Yapay zekâ asistanını aç',
   featuresTitle: 'OpenCADIrrigation neler yapar',
   features: [
-    ('Yapay zekâ asistanı', 'İsteğe bağlı: yapay zekâya proje hakkında sorular sorun ya da sizin yerinize çizmesine ve projelendirmesine izin verin. Uydu görüntüsüne ve araziye bakarak yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, boru güzergâhlarını çizer, boyutlandırmayı ve otomatik araçları çalıştırır; bunu Claude (Anthropic) veya GPT (OpenAI) modelleriyle, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan yapar. Gönder düğmesine basmadan hiçbir şey gönderilmez; her değişiklik onayınızı bekler (ya da isterseniz otomatik uygulanır) ve geri alınabilir.'),
-    ('Otomatik projelendirme ve boyutlandırma', 'Tek tıkla lateral blokları ve yağmurlayıcı ızgaraları, eşit yağmurlama hızlı memelerle yağmurlayıcı yerleşimi, debiye göre bölgeleme, boru ve vana güzergâhlandırma, tarlanın bloklara bölünmesi, pivotun tarlaya uydurulması ve hava görüntülerinde bitki örtüsü tespiti; borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde, boru maliyeti ile enerji dengelenerek doğrusal programlamayla boyutlandırılır.'),
-    ('Tam CAD çizimi', 'Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler, katmanlar ve bloklar; klavyeden koordinat girişi, nesne kenetleme, kutupsal izleme, tutamaçlar, revizyon bulutları ve AutoCAD tarzı kısayollar (L, PL, C, D, ZE…).'),
-    ('Hidrolik şebeke', 'Su kaynakları, sabit ve değişken devirli pompalar, ana hat, bölge vanaları, basınç düşürücü, basınç tutucu ve debi kontrol vanaları, dahili vanalı yağmurlayıcılar, damlatıcılı lateraller, damla bantları, filtreler ve su sayaçları; ayrıca yağmurlayıcı paketleriyle center pivot ve lineer sistemler, tamburlu sulama makineleri ve yüzey sulama.'),
-    ('Doğrulanmış hidrolik motor', 'Hazen-Williams, Darcy-Weisbach, Scobey ve Manning, kullanılan bağlantı parçalarından hesaplanan yerel kayıplar, damlatıcılar q = k·Hˣ, Global Gradient Algorithm ile şebeke çözümü (EPANET’teki gibi), NPSH dahil pompa eğrileri, karakteristikler yöntemiyle hava tahliye vanalarını da içeren geçici rejim (su darbesi) analizi ve enerji tarifeleriyle 24 saatlik simülasyon.'),
-    ('Arazi, iklim ve agronomi', 'Eş yükselti eğrileri, kot noktaları, kırılma hatlarıyla üçgenlenmiş sayısal arazi modeli, çevrimiçi yükseklik verisi, LAS nokta bulutları, eğim haritaları ve boy kesitler; indirilen ya da elle girilen saha iklimi, su ihtiyacı hesabı için gelişme dönemlerine göre FAO-56 bitkileri, toprak türleri, etkili yağış ve tuz yıkama, ayrıca peyzaj su bütçeleri.'),
-    ('Raporlar, paftalar ve malzemeler', 'Bölgeler, borular, damlatıcılar, üniformite (CU, DU, EU), kontrol ünitesi programı ve vana kablolaması; bağlantı parçalarını içeren malzeme listesi ile işçilik, vergi ve geri ödeme süresini kapsayan fiyat teklifi; yapım detayları ve grafikler içeren PDF pafta setleri (20 dilden herhangi birinde) ve her tablo için Excel, CSV ve TXT çıktısı.'),
-    ('Dosya alışverişi', 'DXF, DWG, PDF çizimler, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF ve görüntüleri içe aktarır; özgün CAD nesneleriyle DXF 2000 (veya R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp ve IFC dışa aktarır.'),
-    ('Üretici katalogları', 'JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.'),
-    ('Çevrimdışı ve arazide', 'İlk ziyaretten sonra uygulama bilgisayarda, tablette veya telefonda ağ bağlantısı olmadan açılır; açık ya da koyu tema kullanılabilir. Arazide cihaz GPS’i yürüdüğünüz sınırları ve çizgileri kaydeder, nokta işaretler ve aplikasyon için seçili öğeye olan mesafeyi ve yön açısını gösterir.'),
+    (
+      'Yapay zekâ asistanı',
+      'İsteğe bağlı: yapay zekâya proje hakkında sorular sorun ya da sizin yerinize çizmesine ve projelendirmesine izin verin. Uydu görüntüsüne ve araziye bakarak yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, boru güzergâhlarını çizer, boyutlandırmayı ve otomatik araçları çalıştırır; bunu Claude (Anthropic) veya GPT (OpenAI) modelleriyle, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan yapar. Gönder düğmesine basmadan hiçbir şey gönderilmez; her değişiklik onayınızı bekler (ya da isterseniz otomatik uygulanır) ve geri alınabilir.',
+    ),
+    (
+      'Otomatik projelendirme ve boyutlandırma',
+      'Tek tıkla lateral blokları ve yağmurlayıcı ızgaraları, eşit yağmurlama hızlı memelerle yağmurlayıcı yerleşimi, debiye göre bölgeleme, boru ve vana güzergâhlandırma, tarlanın bloklara bölünmesi, pivotun tarlaya uydurulması ve hava görüntülerinde bitki örtüsü tespiti; borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde, boru maliyeti ile enerji dengelenerek doğrusal programlamayla boyutlandırılır.',
+    ),
+    (
+      'Tam CAD çizimi',
+      'Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler, katmanlar ve bloklar; klavyeden koordinat girişi, nesne kenetleme, kutupsal izleme, tutamaçlar, revizyon bulutları ve AutoCAD tarzı kısayollar (L, PL, C, D, ZE…).',
+    ),
+    (
+      'Hidrolik şebeke',
+      'Su kaynakları, sabit ve değişken devirli pompalar, ana hat, bölge vanaları, basınç düşürücü, basınç tutucu ve debi kontrol vanaları, dahili vanalı yağmurlayıcılar, damlatıcılı lateraller, damla bantları, filtreler ve su sayaçları; ayrıca yağmurlayıcı paketleriyle center pivot ve lineer sistemler, tamburlu sulama makineleri ve yüzey sulama.',
+    ),
+    (
+      'Doğrulanmış hidrolik motor',
+      'Hazen-Williams, Darcy-Weisbach, Scobey ve Manning, kullanılan bağlantı parçalarından hesaplanan yerel kayıplar, damlatıcılar q = k·Hˣ, Global Gradient Algorithm ile şebeke çözümü (EPANET’teki gibi), NPSH dahil pompa eğrileri, karakteristikler yöntemiyle hava tahliye vanalarını da içeren geçici rejim (su darbesi) analizi ve enerji tarifeleriyle 24 saatlik simülasyon.',
+    ),
+    (
+      'Arazi, iklim ve agronomi',
+      'Eş yükselti eğrileri, kot noktaları, kırılma hatlarıyla üçgenlenmiş sayısal arazi modeli, çevrimiçi yükseklik verisi, LAS nokta bulutları, eğim haritaları ve boy kesitler; indirilen ya da elle girilen saha iklimi, su ihtiyacı hesabı için gelişme dönemlerine göre FAO-56 bitkileri, toprak türleri, etkili yağış ve tuz yıkama, ayrıca peyzaj su bütçeleri.',
+    ),
+    (
+      'Raporlar, paftalar ve malzemeler',
+      'Bölgeler, borular, damlatıcılar, üniformite (CU, DU, EU), kontrol ünitesi programı ve vana kablolaması; bağlantı parçalarını içeren malzeme listesi ile işçilik, vergi ve geri ödeme süresini kapsayan fiyat teklifi; yapım detayları ve grafikler içeren PDF pafta setleri (20 dilden herhangi birinde) ve her tablo için Excel, CSV ve TXT çıktısı.',
+    ),
+    (
+      'Dosya alışverişi',
+      'DXF, DWG, PDF çizimler, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF ve görüntüleri içe aktarır; özgün CAD nesneleriyle DXF 2000 (veya R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp ve IFC dışa aktarır.',
+    ),
+    (
+      'Üretici katalogları',
+      'JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.',
+    ),
+    (
+      'Çevrimdışı ve arazide',
+      'İlk ziyaretten sonra uygulama bilgisayarda, tablette veya telefonda ağ bağlantısı olmadan açılır; açık ya da koyu tema kullanılabilir. Arazide cihaz GPS’i yürüdüğünüz sınırları ve çizgileri kaydeder, nokta işaretler ve aplikasyon için seçili öğeye olan mesafeyi ve yön açısını gösterir.',
+    ),
   ],
   howTitle: 'Nasıl çalışır',
   how: [
-    ('Alanı çizin veya içe aktarın', 'Bir DXF, DWG, KML ya da uydu görüntüsü getirin, tarlayı, bahçeyi ya da sahayı doğrudan çizin veya adresi yapay zekâ asistanına söyleyin, o da araziyi haritada bulsun. Eş yükselti eğrileri ekleyin ya da yüksekliği bir koordinattan indirin.'),
-    ('Şebekeyi elle ya da yapay zekâyla kurun', 'Tek tıkla lateral blokları veya yağmurlayıcı ızgaraları oluşturun ya da yapay zekâ asistanından yağmurlayıcıları yerleştirmesini, tarlayı bloklara bölmesini, boru güzergâhlarını çizmesini ve vanaları, pompayı ve su kaynağını konumlandırmasını isteyin; ardından hepsini ana hatla bağlayın.'),
-    ('Projelendirin ve belgeleyin', 'F5 tuşuna basın ya da yapay zekâdan isteyin: uygulama bölgeleri ve ana hattı boyutlandırır, basınçları ve hızları denetler; raporları, malzeme listesini ve PDF paftayı üretir.'),
+    (
+      'Alanı çizin veya içe aktarın',
+      'Bir DXF, DWG, KML ya da uydu görüntüsü getirin, tarlayı, bahçeyi ya da sahayı doğrudan çizin veya adresi yapay zekâ asistanına söyleyin, o da araziyi haritada bulsun. Eş yükselti eğrileri ekleyin ya da yüksekliği bir koordinattan indirin.',
+    ),
+    (
+      'Şebekeyi elle ya da yapay zekâyla kurun',
+      'Tek tıkla lateral blokları veya yağmurlayıcı ızgaraları oluşturun ya da yapay zekâ asistanından yağmurlayıcıları yerleştirmesini, tarlayı bloklara bölmesini, boru güzergâhlarını çizmesini ve vanaları, pompayı ve su kaynağını konumlandırmasını isteyin; ardından hepsini ana hatla bağlayın.',
+    ),
+    (
+      'Projelendirin ve belgeleyin',
+      'F5 tuşuna basın ya da yapay zekâdan isteyin: uygulama bölgeleri ve ana hattı boyutlandırır, basınçları ve hızları denetler; raporları, malzeme listesini ve PDF paftayı üretir.',
+    ),
   ],
   examplesTitle: 'Açmaya hazır örnekler',
   examplesIntro: 'Her proje eksiksiz açılır ve F5 ile projelendirilir. Uygulamayı tanımak için ya da bir başlangıç noktası olarak kullanın.',
@@ -50,8 +101,16 @@ const _tr = SiteText(
     SiteExample('nursery', 'Fidanlık', '4 × 4 m ızgarada asılı mikro yağmurlayıcılarla 12 × 48 m üç tava, tava başına bir bölge, yüksek depo, küçük pompa ve disk filtre.'),
     SiteExample('coffee', 'Eş yükselti eğrilerinde kahve', 'Yamaçta eş yükselti eğrilerini izleyen eğri laterallerle (kılavuzlu blok) üç kahve bloğu, PC damla borusu, yamaç dibinde kuyu ve pompa.'),
     SiteExample('bananas', 'Muz plantasyonu', '5 × 5 m’de basınç dengeleyici mikro yağmurlayıcılarla iki muz bloğu, dalgıç pompalı kuyu, disk filtre ve eğimli arazi.'),
-    SiteExample('sugarcane', 'Yüzey altı damla sulamalı şeker kamışı', '0,3 m derine gömülü 20 mm PC damla borulu iki şeker kamışı bloğu, 180 m lateraller, gömülü manifoldlar, depo, pompa, elek filtre ve hava vanası.'),
-    SiteExample('gravity', 'Cazibeli damla sulama', 'Damla sulamalı iki sebze bloğunun 40 m üstünde depo, pompasız: ana hatta sürgülü vana, basınç düşürücü vana ve disk filtre; yamaç eş yükselti eğrileri.'),
+    SiteExample(
+      'sugarcane',
+      'Yüzey altı damla sulamalı şeker kamışı',
+      '0,3 m derine gömülü 20 mm PC damla borulu iki şeker kamışı bloğu, 180 m lateraller, gömülü manifoldlar, depo, pompa, elek filtre ve hava vanası.',
+    ),
+    SiteExample(
+      'gravity',
+      'Cazibeli damla sulama',
+      'Damla sulamalı iki sebze bloğunun 40 m üstünde depo, pompasız: ana hatta sürgülü vana, basınç düşürücü vana ve disk filtre; yamaç eş yükselti eğrileri.',
+    ),
     SiteExample('pasture', 'Yağmurlama sulamalı mera', '12 × 18 m’de çarpmalı yağmurlayıcı hatlarıyla 72 × 72 m üç padok, vanalı manifoldlar, depo, pompa ve çekvalf.'),
     SiteExample('golf', 'Golf çukuru', 'Spreyli tee, üçgen ızgarada rotorlu fairway (iki bölge) ve kenarında rotorlu green, pompalı gölet ve gece vardiyaları.'),
     SiteExample('sectorPivot', 'Uç tabancalı sektör pivotu', 'Çiftlik evi çeyreğini boş bırakarak 270° dönen soyada 250 m pivot, 12 m³/h uç tabancalı; gölet, 20 hp pompa ve sürgülü vana.'),
@@ -59,18 +118,51 @@ const _tr = SiteText(
   ],
   faqTitle: 'Sık sorulan sorular',
   faq: [
-    ('OpenCADIrrigation nedir?', 'OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz ve açık kaynaklı bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar. Ayrıca arazinin tarifinden yola çıkarak projeyi sizinle birlikte çizen ve projelendiren isteğe bağlı bir yapay zekâ asistanı da sunar.'),
-    ('Projeyi yapay zekâ benim yerime hazırlayabilir mi?', 'Evet, isterseniz. İsteğe bağlı yapay zekâ asistanı, açık proje üzerinde menülerdeki araçların aynısıyla çalışır: araziyi tarif edin ya da coğrafi referanslı bir projenin uydu görüntüsüne ve topoğrafyasına bakmasına izin verin; asistan yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, boru ve vana güzergâhlarını çizer, pompayı ve su kaynağını konumlandırır, projeyi hesaplayıp otomatik araçları çalıştırır, uyarıları giderir, maliyeti optimize eder ve raporu yazar. Her değişiklikten önce onayınızı ister (ya da isterseniz değişiklikleri otomatik uygular) ve her yanıt tek tıkla geri alınabilir. Bir model yanılabilir; bu yüzden yaptığı işi, bir meslektaşınızın işini kontrol eder gibi kontrol edin.'),
-    ('Hangi yapay zekâ modellerini kullanır?', 'Anthropic’in Claude modelleri (varsayılan olarak Claude Opus 5.5, ayrıca Claude Fable 5.1, Claude Sonnet 5.5 ve Claude Haiku 5.5) ve OpenAI’ın GPT modelleri (GPT-6 Astra, GPT-6.1 Sol ve GPT-6 Luna): her iki şirketten de en üst, orta ve hızlı sınıfta modeller; her biri beş akıl yürütme derinliği sunar. Modeli asistanın ayarlarından seçer ve kendi API anahtarınızı yapıştırırsınız; panel her yanıtın token sayısını ve tahmini maliyetini gösterir, adım sınırı ve harcama sınırı da uzayan bir görevi durdurur.'),
-    ('Yapay zekâ asistanı neyi, nereye gönderir?', 'Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez. Sesle dikteyi kullanırsanız bu işi tarayıcının kendi konuşma tanıma özelliği yapar ve sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple). Kaydedilen sohbetler tarayıcınızda kalır, hiçbir zaman proje dosyalarına veya bağlantılara girmez.'),
-    ('OpenCADIrrigation ücretsiz mi?', 'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez. Ayrıca MIT lisansıyla açık kaynaklıdır; kaynak kodu GitHub’da yayımlanmıştır. İsteğe bağlı yapay zekâ asistanı kendi Anthropic veya OpenAI hesabınızı kullanır ve hizmet sağlayıcı bu kullanımı o hesaba faturalandırır.'),
-    ('Kimler için?', 'Tarımsal ve peyzaj sulama projecileri, ziraat mühendisleri ve mühendisler, ekipman bayileri, öğretmenler ve öğrenciler için. Etkileşimli eğitim, 15 hazır örnek ve yapay zekâ asistanı sayesinde kılavuz okumadan başlayabilirsiniz.'),
+    (
+      'OpenCADIrrigation nedir?',
+      'OpenCADIrrigation, basınçlı sulama sistemlerini projelendirmek için ücretsiz ve açık kaynaklı bir web uygulamasıdır: şebekeyi yerleştiren, boruları boyutlandıran, basınçları ve üniformiteyi kontrol eden, malzeme listesini ve raporları hazırlayan hidrolik motorlu bir CAD; ev bahçesinden center pivota kadar. Ayrıca arazinin tarifinden yola çıkarak projeyi sizinle birlikte çizen ve projelendiren isteğe bağlı bir yapay zekâ asistanı da sunar.',
+    ),
+    (
+      'Projeyi yapay zekâ benim yerime hazırlayabilir mi?',
+      'Evet, isterseniz. İsteğe bağlı yapay zekâ asistanı, açık proje üzerinde menülerdeki araçların aynısıyla çalışır: araziyi tarif edin ya da coğrafi referanslı bir projenin uydu görüntüsüne ve topoğrafyasına bakmasına izin verin; asistan yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, boru ve vana güzergâhlarını çizer, pompayı ve su kaynağını konumlandırır, projeyi hesaplayıp otomatik araçları çalıştırır, uyarıları giderir, maliyeti optimize eder ve raporu yazar. Her değişiklikten önce onayınızı ister (ya da isterseniz değişiklikleri otomatik uygular) ve her yanıt tek tıkla geri alınabilir. Bir model yanılabilir; bu yüzden yaptığı işi, bir meslektaşınızın işini kontrol eder gibi kontrol edin.',
+    ),
+    (
+      'Hangi yapay zekâ modellerini kullanır?',
+      'Anthropic’in Claude modelleri (varsayılan olarak Claude Opus 5.5, ayrıca Claude Fable 5.1, Claude Sonnet 5.5 ve Claude Haiku 5.5) ve OpenAI’ın GPT modelleri (GPT-6 Astra, GPT-6.1 Sol ve GPT-6 Luna): her iki şirketten de en üst, orta ve hızlı sınıfta modeller; her biri beş akıl yürütme derinliği sunar. Modeli asistanın ayarlarından seçer ve kendi API anahtarınızı yapıştırırsınız; panel her yanıtın token sayısını ve tahmini maliyetini gösterir, adım sınırı ve harcama sınırı da uzayan bir görevi durdurur.',
+    ),
+    (
+      'Yapay zekâ asistanı neyi, nereye gönderir?',
+      'Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez. Sesle dikteyi kullanırsanız bu işi tarayıcının kendi konuşma tanıma özelliği yapar ve sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple). Kaydedilen sohbetler tarayıcınızda kalır, hiçbir zaman proje dosyalarına veya bağlantılara girmez.',
+    ),
+    (
+      'OpenCADIrrigation ücretsiz mi?',
+      'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez. Ayrıca MIT lisansıyla açık kaynaklıdır; kaynak kodu GitHub’da yayımlanmıştır. İsteğe bağlı yapay zekâ asistanı kendi Anthropic veya OpenAI hesabınızı kullanır ve hizmet sağlayıcı bu kullanımı o hesaba faturalandırır.',
+    ),
+    (
+      'Kimler için?',
+      'Tarımsal ve peyzaj sulama projecileri, ziraat mühendisleri ve mühendisler, ekipman bayileri, öğretmenler ve öğrenciler için. Etkileşimli eğitim, 15 hazır örnek ve yapay zekâ asistanı sayesinde kılavuz okumadan başlayabilirsiniz.',
+    ),
     ('Bir şey kurmam gerekiyor mu?', 'Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.'),
-    ('Çevrimdışı çalışır mı?', 'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 24 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.'),
-    ('Projelerim bulutta mı saklanıyor?', 'Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey bir sunucuya yüklenmez. İnternete yalnızca siz istediğinizde bağlanılır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve, kullanıyorsanız, sadece seçtiğiniz hizmet sağlayıcıyla (Anthropic veya OpenAI) iletişim kuran yapay zekâ asistanı için.'),
-    ('Hidrolik hesap nasıl yapılır?', 'Sürtünme kayıpları Hazen-Williams, Darcy-Weisbach, Scobey veya Manning ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde doğrusal programlamayla boyutlandırılır; ayrıca üniformite (CU, DU, EU), yıkama ve karakteristikler yöntemiyle geçici rejimler (vana kapanması, ani pompa durması, hava tahliye vanaları) kontrol edilir, basınçların ve enerji maliyetinin 24 saatlik simülasyonu da yapılır.'),
-    ('AutoCAD ve diğer CAD programlarıyla çalışır mı?', 'Evet. DXF ve DWG (AutoCAD 2018’e kadar), DGN V7 ve PDF çizimleri içe aktarır; özgün CAD nesneleriyle (yaylı polyline’lar, taramalar, spline’lar, ölçüler, öznitelikli bloklar) DXF 2000, eski programlar için DXF R12 ve DWG 2000 dışa aktarır. CBS, ölçüm ve BIM için ayrıca KML/KMZ, shapefile, GeoJSON, GPX, LandXML ve EPANET .inp okuyup yazar, LAS nokta bulutlarını okur ve IFC 4 dışa aktarır.'),
-    ('Hangi dillerde kullanılabilir?', 'Bu siteyle aynı 20 dilde (liste sayfanın altındadır). Uygulama bilgisayarınızın dilinde açılır ve Görünüm → Dil menüsünden istediğiniz zaman değiştirebilirsiniz.'),
+    (
+      'Çevrimdışı çalışır mı?',
+      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 24 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
+    ),
+    (
+      'Projelerim bulutta mı saklanıyor?',
+      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey bir sunucuya yüklenmez. İnternete yalnızca siz istediğinizde bağlanılır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve, kullanıyorsanız, sadece seçtiğiniz hizmet sağlayıcıyla (Anthropic veya OpenAI) iletişim kuran yapay zekâ asistanı için.',
+    ),
+    (
+      'Hidrolik hesap nasıl yapılır?',
+      'Sürtünme kayıpları Hazen-Williams, Darcy-Weisbach, Scobey veya Manning ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde doğrusal programlamayla boyutlandırılır; ayrıca üniformite (CU, DU, EU), yıkama ve karakteristikler yöntemiyle geçici rejimler (vana kapanması, ani pompa durması, hava tahliye vanaları) kontrol edilir, basınçların ve enerji maliyetinin 24 saatlik simülasyonu da yapılır.',
+    ),
+    (
+      'AutoCAD ve diğer CAD programlarıyla çalışır mı?',
+      'Evet. DXF ve DWG (AutoCAD 2018’e kadar), DGN V7 ve PDF çizimleri içe aktarır; özgün CAD nesneleriyle (yaylı polyline’lar, taramalar, spline’lar, ölçüler, öznitelikli bloklar) DXF 2000, eski programlar için DXF R12 ve DWG 2000 dışa aktarır. CBS, ölçüm ve BIM için ayrıca KML/KMZ, shapefile, GeoJSON, GPX, LandXML ve EPANET .inp okuyup yazar, LAS nokta bulutlarını okur ve IFC 4 dışa aktarır.',
+    ),
+    (
+      'Hangi dillerde kullanılabilir?',
+      'Bu siteyle aynı 20 dilde (liste sayfanın altındadır). Uygulama bilgisayarınızın dilinde açılır ve Görünüm → Dil menüsünden istediğiniz zaman değiştirebilirsiniz.',
+    ),
   ],
   loading: 'Sulama CAD’i yükleniyor…',
   slow: 'Yükleme uzun sürüyor. Bağlantınızı kontrol edin veya sayfayı yeniden yükleyin; yukarıdaki içerik zaten okunabilir.',

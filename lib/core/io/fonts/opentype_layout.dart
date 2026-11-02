@@ -343,8 +343,18 @@ class ContextSubtable extends Subtable {
 }
 
 class ChainContextSubtable extends Subtable {
-  ChainContextSubtable(super.coverage, this.format,
-      {this.ruleSets = const [], this.backtrackClassDef, this.inputClassDef, this.lookaheadClassDef, this.backtrackCoverages = const [], this.inputCoverages = const [], this.lookaheadCoverages = const [], this.lookups = const []});
+  ChainContextSubtable(
+    super.coverage,
+    this.format, {
+    this.ruleSets = const [],
+    this.backtrackClassDef,
+    this.inputClassDef,
+    this.lookaheadClassDef,
+    this.backtrackCoverages = const [],
+    this.inputCoverages = const [],
+    this.lookaheadCoverages = const [],
+    this.lookups = const [],
+  });
   final int format;
   final List<List<ChainRule>?> ruleSets;
   final ClassDef? backtrackClassDef, inputClassDef, lookaheadClassDef;
@@ -362,7 +372,18 @@ class SinglePos extends Subtable {
 }
 
 class PairPos extends Subtable {
-  PairPos(super.coverage, this.format, this.valueFormat1, this.valueFormat2, {this.pairSets = const [], this.classDef1, this.classDef2, this.class1Count = 0, this.class2Count = 0, this.classValues = const []});
+  PairPos(
+    super.coverage,
+    this.format,
+    this.valueFormat1,
+    this.valueFormat2, {
+    this.pairSets = const [],
+    this.classDef1,
+    this.classDef2,
+    this.class1Count = 0,
+    this.class2Count = 0,
+    this.classValues = const [],
+  });
   final int format;
   final int valueFormat1, valueFormat2;
 

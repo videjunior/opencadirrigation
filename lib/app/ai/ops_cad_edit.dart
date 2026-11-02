@@ -702,10 +702,14 @@ List<AgentTool> editOperations(AgentToolbox b) {
         final tapeId = a.str('tape') ?? s.tapeSpecId;
         final outlet = a.str('outlet') ?? s.outletSpecId;
         if (tape && cat.tape(tapeId) == null) {
-          throw ToolInputError(cat.tapes.any((x) => x.enabled) ? 'Unknown tape "$tapeId" (search_catalog kind "tape").' : 'The catalogue has no enabled drip tape or dripline. ${catalogNextStep('tape')}');
+          throw ToolInputError(
+            cat.tapes.any((x) => x.enabled) ? 'Unknown tape "$tapeId" (search_catalog kind "tape").' : 'The catalogue has no enabled drip tape or dripline. ${catalogNextStep('tape')}',
+          );
         }
         if (!tape && cat.outlet(outlet) == null) {
-          throw ToolInputError(cat.outlets.any((x) => x.enabled) ? 'Unknown emitter "$outlet" (search_catalog kind "emitter").' : 'The catalogue has no enabled emitter. ${catalogNextStep('emitter')}');
+          throw ToolInputError(
+            cat.outlets.any((x) => x.enabled) ? 'Unknown emitter "$outlet" (search_catalog kind "emitter").' : 'The catalogue has no enabled emitter. ${catalogNextStep('emitter')}',
+          );
         }
         final nozzle = a.str('nozzle') ?? (a.has('outlet') ? cat.outlet(outlet)?.nozzles.firstOrNull?.id : s.nozzleId);
         if (!tape && nozzle != null && exactNozzle(cat.outlet(outlet), nozzle) == null) throw ToolInputError('Emitter "$outlet" has no nozzle "$nozzle".');

@@ -109,12 +109,8 @@ class PumpCurve {
   }
 
   Map<String, dynamic> toJson() => {'a': a, 'b': b, 'c': c, 'w': speedRatio};
-  static PumpCurve fromJson(Map<String, dynamic> j) => PumpCurve(
-    a: (j['a'] as num).toDouble(),
-    b: (j['b'] as num).toDouble(),
-    c: (j['c'] as num).toDouble(),
-    speedRatio: (j['w'] as num?)?.toDouble() ?? 1,
-  );
+  static PumpCurve fromJson(Map<String, dynamic> j) =>
+      PumpCurve(a: (j['a'] as num).toDouble(), b: (j['b'] as num).toDouble(), c: (j['c'] as num).toDouble(), speedRatio: (j['w'] as num?)?.toDouble() ?? 1);
 }
 
 /// System curve H = static + k·Q^n.
@@ -179,11 +175,9 @@ double npshAvailable({required double inletPressure, required double elevation, 
 double maxSuctionLift(double elevation) => atmosphericHead(elevation) - vapourHead20C - suctionNpshAllowance;
 
 /// Hydraulic power (W) = ρ·g·Q·H; shaft power divides by efficiency.
-double hydraulicPower({required double flow, required double head}) =>
-    waterDensity * gravity * flow * head;
+double hydraulicPower({required double flow, required double head}) => waterDensity * gravity * flow * head;
 
-double shaftPower({required double flow, required double head, double efficiency = 0.7}) =>
-    hydraulicPower(flow: flow, head: head) / math.max(efficiency, 0.05);
+double shaftPower({required double flow, required double head, double efficiency = 0.7}) => hydraulicPower(flow: flow, head: head) / math.max(efficiency, 0.05);
 
 /// Capital recovery factor for interest [rate] (fraction) over [years].
 double capitalRecoveryFactor(double rate, int years) {
@@ -194,11 +188,5 @@ double capitalRecoveryFactor(double rate, int years) {
 }
 
 /// Annual energy cost (currency) for a duty point.
-double annualEnergyCost({
-  required double flow,
-  required double head,
-  required double hoursPerYear,
-  required double costPerKwh,
-  double pumpEfficiency = 0.7,
-}) =>
+double annualEnergyCost({required double flow, required double head, required double hoursPerYear, required double costPerKwh, double pumpEfficiency = 0.7}) =>
     shaftPower(flow: flow, head: head, efficiency: pumpEfficiency) / 1000 * hoursPerYear * costPerKwh;

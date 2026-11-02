@@ -1,6 +1,7 @@
 /// Generates the icon set and in-app brand assets from web/brand/*.png.
 /// Run: dart run tool/gen_brand.dart
 library;
+
 import 'dart:io';
 
 import 'package:image/image.dart' as img;

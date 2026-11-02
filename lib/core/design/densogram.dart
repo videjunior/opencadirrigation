@@ -107,7 +107,17 @@ class SpraySource {
 }
 
 class DensogramOptions {
-  DensogramOptions({this.cellSize = 0, this.profile = SprayProfile.triangular, this.useResults = true, this.valveIds, this.maxCells = 60000, this.useMeasured = true, this.windSpeed = 0, this.windTowardsDeg = 0, this.windDrift = defaultWindDrift});
+  DensogramOptions({
+    this.cellSize = 0,
+    this.profile = SprayProfile.triangular,
+    this.useResults = true,
+    this.valveIds,
+    this.maxCells = 60000,
+    this.useMeasured = true,
+    this.windSpeed = 0,
+    this.windTowardsDeg = 0,
+    this.windDrift = defaultWindDrift,
+  });
 
   /// Grid spacing (m); 0 = automatic (a quarter of the smallest wetted
   /// radius, coarser when the grid would exceed [maxCells]).
@@ -161,7 +171,17 @@ Pt windDisplace(Pt v, double a, Pt dir) => v + dir * (a * v.length);
 
 /// Uniformity statistics of the application rate over the target cells.
 class DensogramStats {
-  const DensogramStats({required this.cells, required this.mean, required this.min, required this.max, required this.cu, required this.du, required this.sc, required this.dryPct, required this.areaM2});
+  const DensogramStats({
+    required this.cells,
+    required this.mean,
+    required this.min,
+    required this.max,
+    required this.cu,
+    required this.du,
+    required this.sc,
+    required this.dryPct,
+    required this.areaM2,
+  });
   static const empty = DensogramStats(cells: 0, mean: 0, min: 0, max: 0, cu: 0, du: 0, sc: 0, dryPct: 0, areaM2: 0);
 
   /// Cells evaluated.
@@ -197,8 +217,20 @@ class DensogramArea {
 }
 
 class Densogram {
-  Densogram({required this.origin, required this.cell, required this.nx, required this.ny, required this.rate, required this.inside, required this.sources, required this.stats, required this.masked, required this.fromResults, Int16List? areaOf, this.areas = const []})
-      : areaOf = areaOf ?? (Int16List(nx * ny)..fillRange(0, nx * ny, -1));
+  Densogram({
+    required this.origin,
+    required this.cell,
+    required this.nx,
+    required this.ny,
+    required this.rate,
+    required this.inside,
+    required this.sources,
+    required this.stats,
+    required this.masked,
+    required this.fromResults,
+    Int16List? areaOf,
+    this.areas = const [],
+  }) : areaOf = areaOf ?? (Int16List(nx * ny)..fillRange(0, nx * ny, -1));
 
   /// Lower-left corner of the grid (world metres) and cell size (m).
   final Pt origin;
@@ -417,8 +449,18 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
       if (inside[k] == 1) rate[k],
   ];
   return Densogram(
-    origin: origin, cell: cell, nx: nx, ny: ny, rate: rate, inside: inside, sources: sources, stats: densogramStats(values, cell * cell), masked: areas.isNotEmpty, fromResults: fromResults,
-    areaOf: areaOf, areas: [for (var a = 0; a < areas.length; a++) DensogramArea(areaEntities[a].id, areaEntities[a].name, densogramStats(perArea[a], cell * cell))],
+    origin: origin,
+    cell: cell,
+    nx: nx,
+    ny: ny,
+    rate: rate,
+    inside: inside,
+    sources: sources,
+    stats: densogramStats(values, cell * cell),
+    masked: areas.isNotEmpty,
+    fromResults: fromResults,
+    areaOf: areaOf,
+    areas: [for (var a = 0; a < areas.length; a++) DensogramArea(areaEntities[a].id, areaEntities[a].name, densogramStats(perArea[a], cell * cell))],
   );
 }
 
@@ -456,15 +498,7 @@ bool hasSprinklerNozzles(Catalog c) => c.outlets.any((o) => o.nozzles.any((n) =>
 
 /// Colour stops of the densogram: rate relative to the mean → ARGB.
 /// Dry spots are red, the mean green, over-watering blue to purple.
-const densogramStops = <(double, int)>[
-  (0.0, 0xFF7F1D0B),
-  (0.5, 0xFFE65100),
-  (0.8, 0xFFFFD54F),
-  (1.0, 0xFF66BB6A),
-  (1.25, 0xFF29B6F6),
-  (1.6, 0xFF1565C0),
-  (2.0, 0xFF6A1B9A),
-];
+const densogramStops = <(double, int)>[(0.0, 0xFF7F1D0B), (0.5, 0xFFE65100), (0.8, 0xFFFFD54F), (1.0, 0xFF66BB6A), (1.25, 0xFF29B6F6), (1.6, 0xFF1565C0), (2.0, 0xFF6A1B9A)];
 
 /// Colour (ARGB, opaque) of a cell receiving [v] mm/h when the mean over
 /// the target is [mean].

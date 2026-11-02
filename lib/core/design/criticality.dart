@@ -28,12 +28,46 @@ HydraulicNetwork copyNetwork(HydraulicNetwork net, {bool Function(HLink l)? keep
   final out = HydraulicNetwork(options: options ?? net.options);
   for (final n in net.nodes.values) {
     if (keepNodes != null && !keepNodes.contains(n.id)) continue;
-    out.addNode(HNode(id: n.id, kind: n.kind, elevation: n.elevation, demand: n.demand, fixedHead: n.fixedHead, emitter: n.emitter, emitterCount: n.emitterCount, emitterOffset: n.emitterOffset, label: n.label, tag: n.tag));
+    out.addNode(
+      HNode(
+        id: n.id,
+        kind: n.kind,
+        elevation: n.elevation,
+        demand: n.demand,
+        fixedHead: n.fixedHead,
+        emitter: n.emitter,
+        emitterCount: n.emitterCount,
+        emitterOffset: n.emitterOffset,
+        label: n.label,
+        tag: n.tag,
+      ),
+    );
   }
   for (final l in net.links) {
     if (keepLink != null && !keepLink(l)) continue;
     if (!out.nodes.containsKey(l.from) || !out.nodes.containsKey(l.to)) continue;
-    out.addLink(HLink(id: l.id, from: l.from, to: l.to, kind: l.kind, diameter: l.diameter, length: l.length, hazenC: l.hazenC, roughness: l.roughness, minorK: l.minorK, checkValve: l.checkValve, pump: l.pump, device: l.device, prvSetting: l.prvSetting, label: l.label, tag: l.tag, scobeyKs: l.scobeyKs, manningN: l.manningN, fcvFlow: l.fcvFlow));
+    out.addLink(
+      HLink(
+        id: l.id,
+        from: l.from,
+        to: l.to,
+        kind: l.kind,
+        diameter: l.diameter,
+        length: l.length,
+        hazenC: l.hazenC,
+        roughness: l.roughness,
+        minorK: l.minorK,
+        checkValve: l.checkValve,
+        pump: l.pump,
+        device: l.device,
+        prvSetting: l.prvSetting,
+        label: l.label,
+        tag: l.tag,
+        scobeyKs: l.scobeyKs,
+        manningN: l.manningN,
+        fcvFlow: l.fcvFlow,
+      ),
+    );
   }
   return out;
 }
@@ -49,7 +83,10 @@ Set<String> nodesReachingSource(HydraulicNetwork net, {Set<String> removed = con
     adj.putIfAbsent(l.from, () => []).add(l.to);
     adj.putIfAbsent(l.to, () => []).add(l.from);
   }
-  final seen = <String>{for (final n in net.nodes.values) if (n.kind == HNodeKind.reservoir) n.id};
+  final seen = <String>{
+    for (final n in net.nodes.values)
+      if (n.kind == HNodeKind.reservoir) n.id,
+  };
   final queue = [...seen];
   for (var i = 0; i < queue.length; i++) {
     for (final o in adj[queue[i]] ?? const <String>[]) {
@@ -221,7 +258,11 @@ class NodeDeficit {
 
   Map<String, dynamic> toJson() => {'node': nodeId, 'req': requiredPressure, 'p': pressure, 'q': demand, 'del': delivered};
   static NodeDeficit fromJson(Map<String, dynamic> j) => NodeDeficit(
-    nodeId: j['node'] as String, requiredPressure: (j['req'] as num?)?.toDouble() ?? 0, pressure: (j['p'] as num?)?.toDouble() ?? 0, demand: (j['q'] as num?)?.toDouble() ?? 0, delivered: (j['del'] as num?)?.toDouble() ?? 0,
+    nodeId: j['node'] as String,
+    requiredPressure: (j['req'] as num?)?.toDouble() ?? 0,
+    pressure: (j['p'] as num?)?.toDouble() ?? 0,
+    demand: (j['q'] as num?)?.toDouble() ?? 0,
+    delivered: (j['del'] as num?)?.toDouble() ?? 0,
   );
 }
 
@@ -253,11 +294,22 @@ class CriticalityScenario {
   double get maxDeficit => deficits.fold(0.0, (m, d) => math.max(m, d.deficit));
 
   Map<String, dynamic> toJson() => {
-    'link': linkId, 'cut': cutOffNodes, 'qcut': cutOffDemand, 'qunmet': unmetDemand, 'def': deficits.map((d) => d.toJson()).toList(), 'solved': solved, 'conv': converged,
+    'link': linkId,
+    'cut': cutOffNodes,
+    'qcut': cutOffDemand,
+    'qunmet': unmetDemand,
+    'def': deficits.map((d) => d.toJson()).toList(),
+    'solved': solved,
+    'conv': converged,
   };
   static CriticalityScenario fromJson(Map<String, dynamic> j) => CriticalityScenario(
-    linkId: j['link'] as String, cutOffNodes: ((j['cut'] as List?) ?? []).cast<String>(), cutOffDemand: (j['qcut'] as num?)?.toDouble() ?? 0, unmetDemand: (j['qunmet'] as num?)?.toDouble() ?? 0,
-    deficits: ((j['def'] as List?) ?? []).map((d) => NodeDeficit.fromJson(d as Map<String, dynamic>)).toList(), solved: j['solved'] as bool? ?? true, converged: j['conv'] as bool? ?? true,
+    linkId: j['link'] as String,
+    cutOffNodes: ((j['cut'] as List?) ?? []).cast<String>(),
+    cutOffDemand: (j['qcut'] as num?)?.toDouble() ?? 0,
+    unmetDemand: (j['qunmet'] as num?)?.toDouble() ?? 0,
+    deficits: ((j['def'] as List?) ?? []).map((d) => NodeDeficit.fromJson(d as Map<String, dynamic>)).toList(),
+    solved: j['solved'] as bool? ?? true,
+    converged: j['conv'] as bool? ?? true,
   );
 }
 
@@ -285,19 +337,28 @@ class CriticalityResult {
   final List<String> codes;
 
   /// Scenarios from the worst: lost demand, then the largest deficit.
-  List<CriticalityScenario> get ranked => [...scenarios]..sort((a, b) {
-    if ((a.lostDemand - b.lostDemand).abs() > 1e-12) return b.lostDemand.compareTo(a.lostDemand);
-    final d = b.maxDeficit.compareTo(a.maxDeficit);
-    return d != 0 ? d : a.linkId.compareTo(b.linkId);
-  });
+  List<CriticalityScenario> get ranked => [...scenarios]
+    ..sort((a, b) {
+      if ((a.lostDemand - b.lostDemand).abs() > 1e-12) return b.lostDemand.compareTo(a.lostDemand);
+      final d = b.maxDeficit.compareTo(a.maxDeficit);
+      return d != 0 ? d : a.linkId.compareTo(b.linkId);
+    });
 
   Map<String, dynamic> toJson() => {
-    'scen': scenarios.map((s) => s.toJson()).toList(), 'q': totalDemand, 'base': baseDeficits.map((d) => d.toJson()).toList(), 'baseUnmet': baseUnmet, 'tree': tree, 'codes': codes,
+    'scen': scenarios.map((s) => s.toJson()).toList(),
+    'q': totalDemand,
+    'base': baseDeficits.map((d) => d.toJson()).toList(),
+    'baseUnmet': baseUnmet,
+    'tree': tree,
+    'codes': codes,
   };
   static CriticalityResult fromJson(Map<String, dynamic> j) => CriticalityResult(
-    scenarios: ((j['scen'] as List?) ?? []).map((s) => CriticalityScenario.fromJson(s as Map<String, dynamic>)).toList(), totalDemand: (j['q'] as num?)?.toDouble() ?? 0,
-    baseDeficits: ((j['base'] as List?) ?? []).map((d) => NodeDeficit.fromJson(d as Map<String, dynamic>)).toList(), baseUnmet: (j['baseUnmet'] as num?)?.toDouble() ?? 0,
-    tree: j['tree'] as bool? ?? false, codes: ((j['codes'] as List?) ?? []).cast<String>(),
+    scenarios: ((j['scen'] as List?) ?? []).map((s) => CriticalityScenario.fromJson(s as Map<String, dynamic>)).toList(),
+    totalDemand: (j['q'] as num?)?.toDouble() ?? 0,
+    baseDeficits: ((j['base'] as List?) ?? []).map((d) => NodeDeficit.fromJson(d as Map<String, dynamic>)).toList(),
+    baseUnmet: (j['baseUnmet'] as num?)?.toDouble() ?? 0,
+    tree: j['tree'] as bool? ?? false,
+    codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }
 
@@ -311,7 +372,14 @@ class CriticalityResult {
 /// [treeShortcut] a tree fed by one source is not re-solved (see the library
 /// comment). Deficits under [minDeficit] (m) are ignored. [net] is not
 /// changed.
-CriticalityResult analyzeCriticality(HydraulicNetwork net, {Map<String, double> requiredPressure = const {}, Iterable<String>? linkIds, bool pressureDriven = true, bool treeShortcut = true, double minDeficit = 0.01}) {
+CriticalityResult analyzeCriticality(
+  HydraulicNetwork net, {
+  Map<String, double> requiredPressure = const {},
+  Iterable<String>? linkIds,
+  bool pressureDriven = true,
+  bool treeShortcut = true,
+  double minDeficit = 0.01,
+}) {
   final codes = <String>[];
   final base = copyNetwork(net);
   final r0 = base.solve();
@@ -379,20 +447,37 @@ CriticalityResult analyzeCriticality(HydraulicNetwork net, {Map<String, double> 
   final (baseDeficits, baseUnmet, _) = evaluate(copyNetwork(net));
   final linkById = {for (final l in net.links) l.id: l};
   final scenarios = <CriticalityScenario>[];
-  for (final id in linkIds ?? [for (final l in net.links) if (l.kind == HLinkKind.pipe) l.id]) {
+  for (final id
+      in linkIds ??
+          [
+            for (final l in net.links)
+              if (l.kind == HLinkKind.pipe) l.id,
+          ]) {
     if (!linkById.containsKey(id)) {
       codes.add('criticality_unknown_link:$id');
       continue;
     }
     final reach = nodesReachingSource(net, removed: {id});
-    final cut = [for (final n in demand.keys) if (!reach.contains(n)) n]..sort();
+    final cut = [
+      for (final n in demand.keys)
+        if (!reach.contains(n)) n,
+    ]..sort();
     final cutQ = cut.fold(0.0, (s, n) => s + demand[n]!);
     if (tree && treeShortcut) {
-      scenarios.add(CriticalityScenario(
-        linkId: id, cutOffNodes: cut, cutOffDemand: cutQ, solved: false, converged: r0.converged,
-        deficits: [for (final d in baseDeficits) if (reach.contains(d.nodeId)) d],
-        unmetDemand: cut.isEmpty ? baseUnmet : _unmetWithout(baseDeficits, reach, baseUnmet),
-      ));
+      scenarios.add(
+        CriticalityScenario(
+          linkId: id,
+          cutOffNodes: cut,
+          cutOffDemand: cutQ,
+          solved: false,
+          converged: r0.converged,
+          deficits: [
+            for (final d in baseDeficits)
+              if (reach.contains(d.nodeId)) d,
+          ],
+          unmetDemand: cut.isEmpty ? baseUnmet : _unmetWithout(baseDeficits, reach, baseUnmet),
+        ),
+      );
       continue;
     }
     final scen = copyNetwork(net, keepLink: (l) => l.id != id, keepNodes: reach);

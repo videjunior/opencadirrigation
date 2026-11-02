@@ -322,9 +322,14 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Padding(padding: const EdgeInsets.only(top: 1), child: Icon(Icons.fact_check_outlined, size: 15, color: Cad.accentIcon)),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 1),
+                                        child: Icon(Icons.fact_check_outlined, size: 15, color: Cad.accentIcon),
+                                      ),
                                       const SizedBox(width: 8),
-                                      Expanded(child: Text(t('ai.review'), style: const TextStyle(fontSize: 12, height: 1.3, fontWeight: FontWeight.w600))),
+                                      Expanded(
+                                        child: Text(t('ai.review'), style: const TextStyle(fontSize: 12, height: 1.3, fontWeight: FontWeight.w600)),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -346,7 +351,10 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Padding(padding: const EdgeInsets.only(top: 1), child: Icon(Icons.lightbulb_outline, size: 15, color: Cad.accentIcon)),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 1),
+                                        child: Icon(Icons.lightbulb_outline, size: 15, color: Cad.accentIcon),
+                                      ),
                                       const SizedBox(width: 8),
                                       Expanded(child: Text(q, style: const TextStyle(fontSize: 12, height: 1.3))),
                                     ],
@@ -1415,11 +1423,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // without any key, the keys come first: one is enough
-            if (noKey) ...[
-              Text(t('ai.key.oneEnough'), key: const Key('ai_key_one'), style: const TextStyle(fontSize: 12.5)),
-              _keySection(m.provider),
-              for (final p in other) _keySection(p),
-            ],
+            if (noKey) ...[Text(t('ai.key.oneEnough'), key: const Key('ai_key_one'), style: const TextStyle(fontSize: 12.5)), _keySection(m.provider), for (final p in other) _keySection(p)],
             SectionTitle(t('ai.model')),
             _modelPicker(),
             Text(
@@ -1429,10 +1433,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
             ),
             Text(t('ai.model.switch'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
             // the key of the chosen model's company first
-            if (!noKey) ...[
-              _keySection(m.provider),
-              for (final p in other) _keySection(p),
-            ],
+            if (!noKey) ...[_keySection(m.provider), for (final p in other) _keySection(p)],
             Text(t('ai.key.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
             SectionTitle(t('ai.effort')),
             DropdownButton<AiEffort>(

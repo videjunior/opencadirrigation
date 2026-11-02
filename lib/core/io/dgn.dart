@@ -176,7 +176,10 @@ class _Parser {
     tcb = true;
     dim3 = b[o + 1214] & 0x40 != 0;
     final subPerMaster = i32(o + 1112), uorPerSub = i32(o + 1116);
-    masterUnit = latin1.decode([for (final c in b.sublist(o + 1120, o + 1122)) if (c > 0x20) c]).trim();
+    masterUnit = latin1.decode([
+      for (final c in b.sublist(o + 1120, o + 1122))
+        if (c > 0x20) c,
+    ]).trim();
     final f = (subPerMaster == 0 ? 1 : subPerMaster) * (uorPerSub == 0 ? 1 : uorPerSub);
     scale = 1 / f.toDouble();
     ox = vax(o + 1240) * scale;

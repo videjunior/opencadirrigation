@@ -276,14 +276,7 @@ class Affine {
   Pt applyVector(Pt v) => Pt(a * v.x + c * v.y, b * v.x + d * v.y);
 
   /// This transform followed by [o].
-  Affine then(Affine o) => Affine(
-    o.a * a + o.c * b,
-    o.b * a + o.d * b,
-    o.a * c + o.c * d,
-    o.b * c + o.d * d,
-    o.a * e + o.c * f + o.e,
-    o.b * e + o.d * f + o.f,
-  );
+  Affine then(Affine o) => Affine(o.a * a + o.c * b, o.b * a + o.d * b, o.a * c + o.c * d, o.b * c + o.d * d, o.a * e + o.c * f + o.e, o.b * e + o.d * f + o.f);
 
   double get determinant => a * d - b * c;
   bool get isMirror => determinant < 0;
@@ -370,6 +363,7 @@ List<Pt> catmullRom(List<Pt> pts, {bool closed = false, int segments = 8}) {
     if (i >= n) return pts[n - 1] * 2 - pts[n - 2];
     return pts[i];
   }
+
   final out = <Pt>[];
   final spans = closed ? n : n - 1;
   for (var i = 0; i < spans; i++) {
@@ -433,10 +427,7 @@ List<List<Pt>> hatchLines(List<Pt> poly, double angleRad, double spacing) {
 /// All intersection points between two polylines (open unless [closedA]/[closedB]).
 List<Pt> polylineIntersections(List<Pt> a, List<Pt> b, {bool closedA = false, bool closedB = false}) {
   final out = <Pt>[];
-  List<(Pt, Pt)> segs(List<Pt> pts, bool closed) => [
-    for (var i = 1; i < pts.length; i++) (pts[i - 1], pts[i]),
-    if (closed && pts.length > 2) (pts.last, pts.first),
-  ];
+  List<(Pt, Pt)> segs(List<Pt> pts, bool closed) => [for (var i = 1; i < pts.length; i++) (pts[i - 1], pts[i]), if (closed && pts.length > 2) (pts.last, pts.first)];
   for (final (a1, a2) in segs(a, closedA)) {
     for (final (b1, b2) in segs(b, closedB)) {
       final p = segmentIntersection(a1, a2, b1, b2);

@@ -21,11 +21,7 @@ class ProjectTabBar extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (var i = 0; i < ws.tabs.length; i++) _tab(context, i, t),
-                ],
-              ),
+              child: Row(children: [for (var i = 0; i < ws.tabs.length; i++) _tab(context, i, t)]),
             ),
           ),
           Tooltip(
@@ -53,19 +49,31 @@ class ProjectTabBar extends StatelessWidget {
         padding: const EdgeInsets.only(left: 12, right: 4),
         decoration: BoxDecoration(
           color: active ? Cad.panel : Colors.transparent,
-          border: Border(bottom: BorderSide(color: active ? Cad.accent : Colors.transparent, width: 2), right: BorderSide(color: Cad.divider)),
+          border: Border(
+            bottom: BorderSide(color: active ? Cad.accent : Colors.transparent, width: 2),
+            right: BorderSide(color: Cad.divider),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(child: Text('${c.dirty ? '• ' : ''}$name', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11.5, color: active ? Cad.fg : Cad.fg60))),
+            Flexible(
+              child: Text(
+                '${c.dirty ? '• ' : ''}$name',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11.5, color: active ? Cad.fg : Cad.fg60),
+              ),
+            ),
             const SizedBox(width: 4),
             Tooltip(
               message: c.t('tab.close'),
               child: InkWell(
                 key: Key('tab_close_$i'),
                 onTap: () => onClose(i),
-                child: Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, size: 12, color: Cad.fg54)),
+                child: Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close, size: 12, color: Cad.fg54),
+                ),
               ),
             ),
           ],

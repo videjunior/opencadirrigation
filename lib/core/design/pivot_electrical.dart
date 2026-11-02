@@ -41,8 +41,17 @@ class CableOption {
 
 /// IEC 60228 class-2 (stranded) copper conductors: maximum resistance at 20 °C (Ω/km).
 const iecCopperCables = <CableOption>[
-  CableOption(1.5, 12.1), CableOption(2.5, 7.41), CableOption(4, 4.61), CableOption(6, 3.08), CableOption(10, 1.83), CableOption(16, 1.15), CableOption(25, 0.727), CableOption(35, 0.524),
-  CableOption(50, 0.387), CableOption(70, 0.268), CableOption(95, 0.193),
+  CableOption(1.5, 12.1),
+  CableOption(2.5, 7.41),
+  CableOption(4, 4.61),
+  CableOption(6, 3.08),
+  CableOption(10, 1.83),
+  CableOption(16, 1.15),
+  CableOption(25, 0.727),
+  CableOption(35, 0.524),
+  CableOption(50, 0.387),
+  CableOption(70, 0.268),
+  CableOption(95, 0.193),
 ];
 
 /// Standard generator-set ratings (kVA).
@@ -142,7 +151,15 @@ class PivotElectricalSpec {
 
 /// One drive tower of the electrical table.
 class PivotTowerElectrical {
-  const PivotTowerElectrical({required this.index, required this.radiusM, required this.cableM, required this.spanCurrentA, required this.volts, required this.runningDropPct, required this.startingDropPct});
+  const PivotTowerElectrical({
+    required this.index,
+    required this.radiusM,
+    required this.cableM,
+    required this.spanCurrentA,
+    required this.volts,
+    required this.runningDropPct,
+    required this.startingDropPct,
+  });
 
   /// 1-based tower number, distance from the pivot point (m) and cable length to it (m).
   final int index;
@@ -221,15 +238,44 @@ class PivotElectricalResult {
   final List<String> warnings;
 
   Map<String, dynamic> toJson() => {
-    'towers': towers.map((t) => t.toJson()).toList(), 'mm2': cableMm2, 'smm2': supplyCableMm2, 'im': motorCurrentA, 'kw': connectedKw, 'irun': runningCurrentA, 'kva': runningKva, 'du': maxRunningDropPct,
-    'dus': maxStartingDropPct, 'bsh': boosterShaftKw, 'bkw': boosterMotorKw, 'bi': boosterCurrentA, 'slr': largestStartingKva, 'greq': generatorKvaRequired, 'gkva': generatorKva, 'pavg': averagePowerKw, 'warn': warnings,
+    'towers': towers.map((t) => t.toJson()).toList(),
+    'mm2': cableMm2,
+    'smm2': supplyCableMm2,
+    'im': motorCurrentA,
+    'kw': connectedKw,
+    'irun': runningCurrentA,
+    'kva': runningKva,
+    'du': maxRunningDropPct,
+    'dus': maxStartingDropPct,
+    'bsh': boosterShaftKw,
+    'bkw': boosterMotorKw,
+    'bi': boosterCurrentA,
+    'slr': largestStartingKva,
+    'greq': generatorKvaRequired,
+    'gkva': generatorKva,
+    'pavg': averagePowerKw,
+    'warn': warnings,
   };
   static PivotElectricalResult fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     return PivotElectricalResult(
-      towers: ((j['towers'] as List?) ?? const []).map((t) => PivotTowerElectrical.fromJson(t as Map<String, dynamic>)).toList(), cableMm2: d('mm2'), supplyCableMm2: d('smm2'), motorCurrentA: d('im'),
-      connectedKw: d('kw'), runningCurrentA: d('irun'), runningKva: d('kva'), maxRunningDropPct: d('du'), maxStartingDropPct: d('dus'), boosterShaftKw: d('bsh'), boosterMotorKw: d('bkw'), boosterCurrentA: d('bi'),
-      largestStartingKva: d('slr'), generatorKvaRequired: d('greq'), generatorKva: d('gkva'), averagePowerKw: d('pavg'), warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+      towers: ((j['towers'] as List?) ?? const []).map((t) => PivotTowerElectrical.fromJson(t as Map<String, dynamic>)).toList(),
+      cableMm2: d('mm2'),
+      supplyCableMm2: d('smm2'),
+      motorCurrentA: d('im'),
+      connectedKw: d('kw'),
+      runningCurrentA: d('irun'),
+      runningKva: d('kva'),
+      maxRunningDropPct: d('du'),
+      maxStartingDropPct: d('dus'),
+      boosterShaftKw: d('bsh'),
+      boosterMotorKw: d('bkw'),
+      boosterCurrentA: d('bi'),
+      largestStartingKva: d('slr'),
+      generatorKvaRequired: d('greq'),
+      generatorKva: d('gkva'),
+      averagePowerKw: d('pavg'),
+      warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
     );
   }
 }
@@ -370,7 +416,17 @@ PivotElectricalResult designPivotElectrical(PivotElectricalSpec s, {String id = 
         sq += l.reactive;
       }
     }
-    towers.add(PivotTowerElectrical(index: t + 1, radiusM: radii[t], cableM: cable, spanCurrentA: math.sqrt(sp * sp + sq * sq), volts: u - running[t], runningDropPct: 100 * running[t] / u, startingDropPct: 100 * startAt[t] / u));
+    towers.add(
+      PivotTowerElectrical(
+        index: t + 1,
+        radiusM: radii[t],
+        cableM: cable,
+        spanCurrentA: math.sqrt(sp * sp + sq * sq),
+        volts: u - running[t],
+        runningDropPct: 100 * running[t] / u,
+        startingDropPct: 100 * startAt[t] / u,
+      ),
+    );
   }
   var ip = 0.0, iq = 0.0, kva = 0.0, startKva = 0.0;
   for (final l in loads) {
@@ -389,9 +445,22 @@ PivotElectricalResult designPivotElectrical(PivotElectricalSpec s, {String id = 
     avg += s.motorKw / s.motorEfficiency * timer * r / rLast;
   }
   return PivotElectricalResult(
-    towers: towers, cableMm2: chosen, supplyCableMm2: s.supplyCableM > 0 ? (s.supplyCableMm2 > 0 ? s.supplyCableMm2 : chosen) : 0, motorCurrentA: im,
-    connectedKw: s.motorKw * radii.length + boosterKw + s.auxiliaryKw + s.otherMotorKw, runningCurrentA: math.sqrt(ip * ip + iq * iq), runningKva: kva, maxRunningDropPct: 100 * runDrop / u,
-    maxStartingDropPct: 100 * startDrop / u, boosterShaftKw: boosterShaft, boosterMotorKw: boosterKw, boosterCurrentA: boosterAmps, largestStartingKva: startKva, generatorKvaRequired: genNeed,
-    generatorKva: gen, averagePowerKw: avg, warnings: warnings,
+    towers: towers,
+    cableMm2: chosen,
+    supplyCableMm2: s.supplyCableM > 0 ? (s.supplyCableMm2 > 0 ? s.supplyCableMm2 : chosen) : 0,
+    motorCurrentA: im,
+    connectedKw: s.motorKw * radii.length + boosterKw + s.auxiliaryKw + s.otherMotorKw,
+    runningCurrentA: math.sqrt(ip * ip + iq * iq),
+    runningKva: kva,
+    maxRunningDropPct: 100 * runDrop / u,
+    maxStartingDropPct: 100 * startDrop / u,
+    boosterShaftKw: boosterShaft,
+    boosterMotorKw: boosterKw,
+    boosterCurrentA: boosterAmps,
+    largestStartingKva: startKva,
+    generatorKvaRequired: genNeed,
+    generatorKva: gen,
+    averagePowerKw: avg,
+    warnings: warnings,
   );
 }

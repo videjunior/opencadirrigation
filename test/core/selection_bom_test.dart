@@ -21,7 +21,9 @@ void main() {
     final pipes = p.entities.whereType<PipeEntity>().take(3).toList();
     final outlets = p.entities.whereType<OutletEntity>().take(4).toList();
     final valve = p.entities.whereType<ControlValveEntity>().first;
-    final ids = {for (final e in [...pipes, ...outlets, valve]) e.id};
+    final ids = {
+      for (final e in [...pipes, ...outlets, valve]) e.id,
+    };
     final lines = selectionBom(p, ids);
 
     final metres = lines.where((l) => l.category == 'bom.pipes').fold(0.0, (a, l) => a + l.quantity);

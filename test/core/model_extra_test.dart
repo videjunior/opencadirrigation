@@ -161,7 +161,12 @@ void main() {
       expect(c.pipes.first.costPerM, isNot(999));
       expect(copy.pipes.length, c.pipes.length - 1);
       // merge adds the missing ids; with replace it overwrites the others too
-      final other = Catalog(pipes: [PipeSpec(id: c.pipes.first.id, name: 'replaced', nominalMm: 50, innerDiameterMm: 46), PipeSpec(id: 'brand_new', name: 'new', nominalMm: 50, innerDiameterMm: 46)]);
+      final other = Catalog(
+        pipes: [
+          PipeSpec(id: c.pipes.first.id, name: 'replaced', nominalMm: 50, innerDiameterMm: 46),
+          PipeSpec(id: 'brand_new', name: 'new', nominalMm: 50, innerDiameterMm: 46),
+        ],
+      );
       expect(c.merge(other), 1);
       expect(c.pipes.first.name, isNot('replaced'));
       expect(c.merge(other, replace: true), 2);
@@ -173,8 +178,15 @@ void main() {
     });
 
     test('packs merge fittings too, skipping the ids already there', () {
-      final target = Catalog(fittings: [FittingSpec(id: 'f1', name: 'a', kind: FittingKind.tee, sizeMm: 50)]);
-      final pack = Catalog(fittings: [FittingSpec(id: 'f1', name: 'dup', kind: FittingKind.tee, sizeMm: 50), FittingSpec(id: 'f2', name: 'b', kind: FittingKind.elbow90, sizeMm: 50)]);
+      final target = Catalog(
+        fittings: [FittingSpec(id: 'f1', name: 'a', kind: FittingKind.tee, sizeMm: 50)],
+      );
+      final pack = Catalog(
+        fittings: [
+          FittingSpec(id: 'f1', name: 'dup', kind: FittingKind.tee, sizeMm: 50),
+          FittingSpec(id: 'f2', name: 'b', kind: FittingKind.elbow90, sizeMm: 50),
+        ],
+      );
       expect(mergeCatalogPack(target, pack), 1);
       expect(target.fittings.map((f) => f.id), ['f1', 'f2']);
       expect(target.fittings.first.name, 'a');
@@ -320,17 +332,29 @@ void main() {
     });
 
     test('extend moves the start of a line and the end vertex of a polyline', () {
-      final wall = [[const Pt(-10, -5), const Pt(-10, 5)]];
+      final wall = [
+        [const Pt(-10, -5), const Pt(-10, 5)],
+      ];
       final l = LineEntity(id: 'l', a: const Pt(0, 0), b: const Pt(5, 0));
       expect(extendLinearEntity(l, const Pt(0.5, 0), wall), isTrue);
       expect(l.a.x, closeTo(-10, 1e-9));
       expect(l.b.x, closeTo(5, 1e-9));
       final p = PolylineEntity(id: 'p', points: [const Pt(0, 0), const Pt(5, 0), const Pt(5, 5)]);
-      expect(extendLinearEntity(p, const Pt(5, 4), [[const Pt(0, 12), const Pt(10, 12)]]), isTrue);
+      expect(
+        extendLinearEntity(p, const Pt(5, 4), [
+          [const Pt(0, 12), const Pt(10, 12)],
+        ]),
+        isTrue,
+      );
       expect(p.points.last.y, closeTo(12, 1e-9));
       expect(p.points.length, 3);
       // nothing ahead: unchanged
-      expect(extendLinearEntity(p, const Pt(5, 4), [[const Pt(0, -12), const Pt(10, -12)]]), isFalse);
+      expect(
+        extendLinearEntity(p, const Pt(5, 4), [
+          [const Pt(0, -12), const Pt(10, -12)],
+        ]),
+        isFalse,
+      );
       expect(extendLinearEntity(CircleEntity(id: 'c', center: Pt.zero, radius: 1), Pt.zero, wall), isFalse);
     });
 
@@ -338,7 +362,11 @@ void main() {
       final arc = offsetEntity(ArcEntity(id: 'a', center: Pt.zero, radius: 5, startRad: 0, sweepRad: 1), 2, 'o') as ArcEntity;
       expect(arc.radius, 7);
       expect(arc.sweepRad, 1);
-      expect(offsetEntity(ArcEntity(id: 'a', center: Pt.zero, radius: 1, startRad: 0, sweepRad: 1), -2, 'o'), isNull, reason: 'a negative radius is refused');
+      expect(
+        offsetEntity(ArcEntity(id: 'a', center: Pt.zero, radius: 1, startRad: 0, sweepRad: 1), -2, 'o'),
+        isNull,
+        reason: 'a negative radius is refused',
+      );
       final line = [const Pt(0, 0), const Pt(10, 0)];
       final contour = offsetEntity(ContourEntity(id: 'c', points: List.of(line), elevation: 7), 1, 'o') as ContourEntity;
       expect(contour.elevation, 7);

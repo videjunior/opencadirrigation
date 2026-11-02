@@ -29,7 +29,8 @@ class _WindowHotkeys implements NativeHotkeys {
     return false;
   }
 
-  static HotkeyEvent _convert(web.KeyboardEvent e, {required bool down}) => HotkeyEvent(e.key, code: e.code, ctrl: e.ctrlKey, shift: e.shiftKey, alt: e.altKey, meta: e.metaKey, repeat: e.repeat, down: down);
+  static HotkeyEvent _convert(web.KeyboardEvent e, {required bool down}) =>
+      HotkeyEvent(e.key, code: e.code, ctrl: e.ctrlKey, shift: e.shiftKey, alt: e.altKey, meta: e.metaKey, repeat: e.repeat, down: down);
 
   @override
   void install() {

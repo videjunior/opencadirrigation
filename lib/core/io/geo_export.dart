@@ -10,8 +10,17 @@ import 'package:archive/archive.dart';
 
 /// One exported geographic feature (a KML Placemark / GeoJSON Feature).
 class GeoFeature {
-  GeoFeature({required this.name, required this.folder, required this.type, required this.coords, this.color = 0xFFFFFFFF, this.widthPx = 2, this.description = '', Map<String, String>? data, this.fillAlpha = 0.3})
-      : data = data ?? {};
+  GeoFeature({
+    required this.name,
+    required this.folder,
+    required this.type,
+    required this.coords,
+    this.color = 0xFFFFFFFF,
+    this.widthPx = 2,
+    this.description = '',
+    Map<String, String>? data,
+    this.fillAlpha = 0.3,
+  }) : data = data ?? {};
 
   final String name;
 
@@ -129,7 +138,10 @@ class GeoJsonWriter {
         case 'Polygon':
           final ring = f.coords.map(pos).toList();
           if (ring.isNotEmpty && (ring.first[0] != ring.last[0] || ring.first[1] != ring.last[1])) ring.add(ring.first);
-          geometry = {'type': 'Polygon', 'coordinates': [ring]};
+          geometry = {
+            'type': 'Polygon',
+            'coordinates': [ring],
+          };
         default:
           geometry = {'type': 'LineString', 'coordinates': f.coords.map(pos).toList()};
       }

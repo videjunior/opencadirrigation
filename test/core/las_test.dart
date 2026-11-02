@@ -18,9 +18,17 @@ Uint8List fixture(String name) => File('test/fixtures/formats/$name').readAsByte
 
 void main() {
   final files = {
-    'las12_f0.las': (2, 0), 'las12_f1.las': (2, 1), 'las12_f2.las': (2, 2), 'las12_f3.las': (2, 3),
-    'las13_f4.las': (3, 4), 'las13_f5.las': (3, 5),
-    'las14_f6.las': (4, 6), 'las14_f7.las': (4, 7), 'las14_f8.las': (4, 8), 'las14_f9.las': (4, 9), 'las14_f10.las': (4, 10),
+    'las12_f0.las': (2, 0),
+    'las12_f1.las': (2, 1),
+    'las12_f2.las': (2, 2),
+    'las12_f3.las': (2, 3),
+    'las13_f4.las': (3, 4),
+    'las13_f5.las': (3, 5),
+    'las14_f6.las': (4, 6),
+    'las14_f7.las': (4, 7),
+    'las14_f8.las': (4, 8),
+    'las14_f9.las': (4, 9),
+    'las14_f10.las': (4, 10),
   };
 
   test('every version and point format: ground points on the plane, CRS from the keys or the WKT', () {
@@ -65,10 +73,13 @@ void main() {
       expect(s.z, closeTo(plane(e, n), 2e-3));
     }
     final mean = LasReader.read(fixture('las14_f6.las'), classes: null, maxPoints: 50);
-    expect(mean.samples.any((s) {
-      final (e, n) = mean.georef!.toUtm(s.p.x, s.p.y);
-      return s.z > plane(e, n) + 0.1;
-    }), isTrue);
+    expect(
+      mean.samples.any((s) {
+        final (e, n) = mean.georef!.toUtm(s.p.x, s.p.y);
+        return s.z > plane(e, n) + 0.1;
+      }),
+      isTrue,
+    );
   });
 
   test('an unclassified cloud falls back to the lowest points', () {

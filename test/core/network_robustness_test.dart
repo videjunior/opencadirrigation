@@ -76,14 +76,16 @@ HydraulicNetwork randomNetwork(int seed) {
     final q = (2 + rnd.nextDouble() * 2000) / 3.6e6, h = 10 + rnd.nextDouble() * 20;
     final count = 1 + rnd.nextInt(50);
     final demand = rnd.nextDouble() < 0.1 ? rnd.nextDouble() * 0.001 : 0.0;
-    net.addNode(HNode(
-      id: id,
-      elevation: rnd.nextDouble() * 40 - 5,
-      demand: demand,
-      emitter: hasEmitters ? EmitterCurve(k: q / math.pow(h, x), x: x) : null,
-      emitterCount: count,
-      emitterOffset: hasEmitters && rnd.nextBool() ? rnd.nextDouble() : 0,
-    ));
+    net.addNode(
+      HNode(
+        id: id,
+        elevation: rnd.nextDouble() * 40 - 5,
+        demand: demand,
+        emitter: hasEmitters ? EmitterCurve(k: q / math.pow(h, x), x: x) : null,
+        emitterCount: count,
+        emitterOffset: hasEmitters && rnd.nextBool() ? rnd.nextDouble() : 0,
+      ),
+    );
     nominal[id] = (hasEmitters ? count * q : 0) + demand;
     ids.add(id);
   }
@@ -91,16 +93,21 @@ HydraulicNetwork randomNetwork(int seed) {
   const sizes = [0.016, 0.02, 0.025, 0.032, 0.04, 0.05, 0.063, 0.075, 0.09, 0.11, 0.125, 0.16, 0.2, 0.25];
   for (final id in ids.skip(1)) {
     final q = downstream(id);
-    net.addLink(HLink(
-      id: 'L$id',
-      from: parent[id]!,
-      to: id,
-      diameter: sizes.firstWhere((d) => velocity(flow: q, diameter: d) <= 2.5, orElse: () => 0.3),
-      length: 2 + rnd.nextDouble() * 200,
-      hazenC: 120 + rnd.nextDouble() * 30,
-      checkValve: rnd.nextDouble() < 0.1,
-      minorK: rnd.nextDouble() < 0.3 ? rnd.nextDouble() * 5 : 0,
-    ));
+    net.addLink(
+      HLink(
+        id: 'L$id',
+        from: parent[id]!,
+        to: id,
+        diameter: sizes.firstWhere(
+          (d) => velocity(flow: q, diameter: d) <= 2.5,
+          orElse: () => 0.3,
+        ),
+        length: 2 + rnd.nextDouble() * 200,
+        hazenC: 120 + rnd.nextDouble() * 30,
+        checkValve: rnd.nextDouble() < 0.1,
+        minorK: rnd.nextDouble() < 0.3 ? rnd.nextDouble() * 5 : 0,
+      ),
+    );
   }
   return net;
 }
@@ -264,9 +271,11 @@ void main() {
       for (var i = 1; i <= n; i++) {
         final parent = 'N${rnd.nextInt(i)}';
         net.addNode(HNode(id: 'N$i', elevation: 90 + rnd.nextDouble() * 10));
-        net.addLink(i % 7 == 0
-            ? HLink(id: 'L$i', from: parent, to: 'N$i', kind: HLinkKind.device, diameter: 0.1, device: const DeviceLossCurve(k: 0))
-            : HLink(id: 'L$i', from: parent, to: 'N$i', diameter: 0.05 + rnd.nextDouble() * 0.2, length: 0.5 + rnd.nextDouble() * 200, hazenC: 140));
+        net.addLink(
+          i % 7 == 0
+              ? HLink(id: 'L$i', from: parent, to: 'N$i', kind: HLinkKind.device, diameter: 0.1, device: const DeviceLossCurve(k: 0))
+              : HLink(id: 'L$i', from: parent, to: 'N$i', diameter: 0.05 + rnd.nextDouble() * 0.2, length: 0.5 + rnd.nextDouble() * 200, hazenC: 140),
+        );
       }
       if (emitter) net.nodes['N$n']!.emitter = const EmitterCurve(k: 1e-4, x: 0.5);
       return net

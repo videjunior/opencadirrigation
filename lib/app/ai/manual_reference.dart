@@ -380,14 +380,16 @@ String reportsTopic(AgentToolbox b) {
   out.writeln(
     '\nAvailable now: ${now.isEmpty ? 'none' : now.map((t) => '${t.key} (${t.rows.length} rows)').join(', ')}${b.c.results == null ? '. Without design results only the tables that need none exist.' : '.'}',
   );
-  out.writeln('''
+  out.writeln(
+    '''
 ## Files (export_file; always confirmed by the user, only when asked)
 - Drawing: ${DrawingFormat.values.map((f) => '${f.name} (.${f.extension}${f.needsGeoref ? ', needs a georeference' : ''})').join(', ')}. pdf is one plot sheet, dxf and dwg keep the layers, inp is an EPANET model of the network, landxml the terrain and pipes, shp a zipped shapefile set.
 - Reports: ${ReportFormat.values.map((f) => 'report_${f.name}').join(', ')}: every report table (xlsx a sheet each); they need design results.
 - project: the project file (.oci.json) with the catalogue and the results.
 
 ## Sheet sets (run_operation export_sheet_pdf; always confirmed, only when asked)
-For drawings to build or to hand over, use export_sheet_pdf rather than export_file "pdf": it has every option of the plot dialog — page size and orientation, scale, labels, legend, the bill of materials beside the drawing, the base map under it, split "zones" or "areas" (an overview plus one sheet per zone or per irrigated area, the others in grey), extra sheets of chosen windows or of the user's view, construction detail sheets (trench, valve box, riser, drip connection, air valve, thrust block, pump suction, filter station), the report pages and the charts (grade lines, profiles, pump curves) after the sheets. export_sheet_png makes a picture of the sheet.''');
+For drawings to build or to hand over, use export_sheet_pdf rather than export_file "pdf": it has every option of the plot dialog — page size and orientation, scale, labels, legend, the bill of materials beside the drawing, the base map under it, split "zones" or "areas" (an overview plus one sheet per zone or per irrigated area, the others in grey), extra sheets of chosen windows or of the user's view, construction detail sheets (trench, valve box, riser, drip connection, air valve, thrust block, pump suction, filter station), the report pages and the charts (grade lines, profiles, pump curves) after the sheets. export_sheet_png makes a picture of the sheet.''',
+  );
   return out.toString();
 }
 

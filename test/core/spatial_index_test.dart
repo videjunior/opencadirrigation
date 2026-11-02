@@ -31,7 +31,10 @@ void main() {
     return out;
   }
 
-  List<int> brute(List<Entity> ents, Bounds q) => [for (var i = 0; i < ents.length; i++) if (ents[i].bounds.intersects(q)) i];
+  List<int> brute(List<Entity> ents, Bounds q) => [
+    for (var i = 0; i < ents.length; i++)
+      if (ents[i].bounds.intersects(q)) i,
+  ];
 
   group('SpatialIndex', () {
     test('window queries match a brute-force scan and keep drawing order', () {
@@ -69,10 +72,7 @@ void main() {
       expect(one.query(const Bounds(4, 4, 5, 5)), isEmpty);
       expect(one.entitiesNear(const Pt(3.5, 4), 1).single.id, 'a');
       // an entity without geometry (empty bounds) is skipped, not crashed on
-      final mixed = SpatialIndex.build([
-        PolylineEntity(id: 'empty', points: []),
-        LineEntity(id: 'l', a: const Pt(0, 0), b: const Pt(10, 10)),
-      ]);
+      final mixed = SpatialIndex.build([PolylineEntity(id: 'empty', points: []), LineEntity(id: 'l', a: const Pt(0, 0), b: const Pt(10, 10))]);
       expect(mixed.indexed, 1);
       expect(mixed.entitiesIn(const Bounds(-1, -1, 20, 20)).single.id, 'l');
       // leaf size 2 forces a deep tree

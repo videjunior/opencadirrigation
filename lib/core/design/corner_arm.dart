@@ -168,7 +168,10 @@ class CornerArmSpec {
   List<double> bankEdges() {
     final reach = reachM;
     if (bankEdgesM.isNotEmpty) {
-      final inner = [for (final e in [...bankEdgesM]..sort()) if (e > 1e-9 && e < reach - 1e-9) e];
+      final inner = [
+        for (final e in [...bankEdgesM]..sort())
+          if (e > 1e-9 && e < reach - 1e-9) e,
+      ];
       return [0, ...inner, reach];
     }
     final n = math.max(1, bankCount);
@@ -178,7 +181,17 @@ class CornerArmSpec {
 
 /// The arm at one machine position.
 class CornerArmStep {
-  const CornerArmStep({required this.pivotDeg, required this.armDeg, required this.tipRadiusM, required this.tipAzimuthDeg, required this.banksOn, required this.armFlow, required this.pulsedFlow, required this.totalFlow, this.state = CornerArmState.tracking});
+  const CornerArmStep({
+    required this.pivotDeg,
+    required this.armDeg,
+    required this.tipRadiusM,
+    required this.tipAzimuthDeg,
+    required this.banksOn,
+    required this.armFlow,
+    required this.pulsedFlow,
+    required this.totalFlow,
+    this.state = CornerArmState.tracking,
+  });
 
   /// Machine azimuth (degrees counter-clockwise from +x, within 0–360).
   final double pivotDeg;
@@ -207,10 +220,27 @@ class CornerArmStep {
     return n;
   }
 
-  Map<String, dynamic> toJson() => {'th': pivotDeg, 'phi': armDeg, 'rt': tipRadiusM, 'at': tipAzimuthDeg, 'on': banksOn, 'qa': armFlow, 'qp': pulsedFlow, 'qt': totalFlow, if (state != CornerArmState.tracking) 'st': state.name};
+  Map<String, dynamic> toJson() => {
+    'th': pivotDeg,
+    'phi': armDeg,
+    'rt': tipRadiusM,
+    'at': tipAzimuthDeg,
+    'on': banksOn,
+    'qa': armFlow,
+    'qp': pulsedFlow,
+    'qt': totalFlow,
+    if (state != CornerArmState.tracking) 'st': state.name,
+  };
   static CornerArmStep fromJson(Map<String, dynamic> j) => CornerArmStep(
-    pivotDeg: (j['th'] as num).toDouble(), armDeg: (j['phi'] as num).toDouble(), tipRadiusM: (j['rt'] as num).toDouble(), tipAzimuthDeg: (j['at'] as num).toDouble(), banksOn: (j['on'] as num).toInt(),
-    armFlow: (j['qa'] as num).toDouble(), pulsedFlow: (j['qp'] as num).toDouble(), totalFlow: (j['qt'] as num).toDouble(), state: CornerArmState.values.byName(j['st'] as String? ?? 'tracking'),
+    pivotDeg: (j['th'] as num).toDouble(),
+    armDeg: (j['phi'] as num).toDouble(),
+    tipRadiusM: (j['rt'] as num).toDouble(),
+    tipAzimuthDeg: (j['at'] as num).toDouble(),
+    banksOn: (j['on'] as num).toInt(),
+    armFlow: (j['qa'] as num).toDouble(),
+    pulsedFlow: (j['qp'] as num).toDouble(),
+    totalFlow: (j['qt'] as num).toDouble(),
+    state: CornerArmState.values.byName(j['st'] as String? ?? 'tracking'),
   );
 }
 
@@ -230,8 +260,13 @@ class CornerArmBank {
   final double onFraction;
 
   Map<String, dynamic> toJson() => {'i': index, 's0': startM, 's1': endM, 'q': designFlow, 'on': onFraction};
-  static CornerArmBank fromJson(Map<String, dynamic> j) =>
-      CornerArmBank(index: (j['i'] as num).toInt(), startM: (j['s0'] as num).toDouble(), endM: (j['s1'] as num).toDouble(), designFlow: (j['q'] as num).toDouble(), onFraction: (j['on'] as num).toDouble());
+  static CornerArmBank fromJson(Map<String, dynamic> j) => CornerArmBank(
+    index: (j['i'] as num).toInt(),
+    startM: (j['s0'] as num).toDouble(),
+    endM: (j['s1'] as num).toDouble(),
+    designFlow: (j['q'] as num).toDouble(),
+    onFraction: (j['on'] as num).toDouble(),
+  );
 }
 
 /// Kinematics, coverage and flows of a corner arm.
@@ -284,16 +319,38 @@ class CornerArmResult {
   final List<String> warnings;
 
   Map<String, dynamic> toJson() => {
-    'steps': steps.map((e) => e.toJson()).toList(), 'banks': banks.map((e) => e.toJson()).toList(), 'outline': outline.map((p) => p.toList()).toList(), 'at': totalAreaM2, 'aa': armAreaM2, 'ad': addedAreaM2,
-    'qm': mainFlow, 'qpk': peakFlow, 'qpp': peakPulsedFlow, 'qmin': minFlow, 'vr': maxTipSpeedRatio, 'short': maxShortfallM, 'over': maxOverrunM, 'warn': warnings,
+    'steps': steps.map((e) => e.toJson()).toList(),
+    'banks': banks.map((e) => e.toJson()).toList(),
+    'outline': outline.map((p) => p.toList()).toList(),
+    'at': totalAreaM2,
+    'aa': armAreaM2,
+    'ad': addedAreaM2,
+    'qm': mainFlow,
+    'qpk': peakFlow,
+    'qpp': peakPulsedFlow,
+    'qmin': minFlow,
+    'vr': maxTipSpeedRatio,
+    'short': maxShortfallM,
+    'over': maxOverrunM,
+    'warn': warnings,
   };
   static CornerArmResult fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     return CornerArmResult(
       steps: ((j['steps'] as List?) ?? const []).map((e) => CornerArmStep.fromJson(e as Map<String, dynamic>)).toList(),
       banks: ((j['banks'] as List?) ?? const []).map((e) => CornerArmBank.fromJson(e as Map<String, dynamic>)).toList(),
-      outline: ((j['outline'] as List?) ?? const []).map((p) => Pt.fromList(p as List)).toList(), totalAreaM2: d('at'), armAreaM2: d('aa'), addedAreaM2: d('ad'), mainFlow: d('qm'), peakFlow: d('qpk'),
-      peakPulsedFlow: d('qpp'), minFlow: d('qmin'), maxTipSpeedRatio: d('vr'), maxShortfallM: d('short'), maxOverrunM: d('over'), warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+      outline: ((j['outline'] as List?) ?? const []).map((p) => Pt.fromList(p as List)).toList(),
+      totalAreaM2: d('at'),
+      armAreaM2: d('aa'),
+      addedAreaM2: d('ad'),
+      mainFlow: d('qm'),
+      peakFlow: d('qpk'),
+      peakPulsedFlow: d('qpp'),
+      minFlow: d('qmin'),
+      maxTipSpeedRatio: d('vr'),
+      maxShortfallM: d('short'),
+      maxOverrunM: d('over'),
+      warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
     );
   }
 }
@@ -344,7 +401,22 @@ CornerArmResult analyzeCornerArm(CornerArmSpec s, {String id = ''}) {
   final mainFlow = s.mainFlow > 0 ? s.mainFlow : s.applicationRate * math.pi * s.mainRadius * s.mainRadius;
   if (path.length < 3 || r0 <= 0 || lc <= 0 || !pointInPolygon(s.center, path)) {
     warn('corner_arm_no_path');
-    return CornerArmResult(steps: const [], banks: const [], outline: const [], totalAreaM2: 0, armAreaM2: 0, addedAreaM2: 0, mainFlow: mainFlow, peakFlow: mainFlow, peakPulsedFlow: mainFlow, minFlow: mainFlow, maxTipSpeedRatio: 0, maxShortfallM: 0, maxOverrunM: 0, warnings: warnings);
+    return CornerArmResult(
+      steps: const [],
+      banks: const [],
+      outline: const [],
+      totalAreaM2: 0,
+      armAreaM2: 0,
+      addedAreaM2: 0,
+      mainFlow: mainFlow,
+      peakFlow: mainFlow,
+      peakPulsedFlow: mainFlow,
+      minFlow: mainFlow,
+      maxTipSpeedRatio: 0,
+      maxShortfallM: 0,
+      maxOverrunM: 0,
+      warnings: warnings,
+    );
   }
   if (kappa <= 0) warn('corner_arm_no_rate');
   final dir = s.clockwise ? -1.0 : 1.0;
@@ -432,10 +504,19 @@ CornerArmResult analyzeCornerArm(CornerArmSpec s, {String id = ''}) {
     peak = math.max(peak, total);
     peakPulsed = math.max(peakPulsed, mainFlow + pulsed);
     minFlow = math.min(minFlow, total);
-    rows.add(CornerArmStep(
-      pivotDeg: _deg360(degToRad(s.startDeg) + dir * k * dTheta), armDeg: radToDeg(phis[k]), tipRadiusM: tip.distanceTo(s.center), tipAzimuthDeg: _deg360((tip - s.center).angle), banksOn: mask,
-      armFlow: armFlow, pulsedFlow: pulsed, totalFlow: total, state: states[k],
-    ));
+    rows.add(
+      CornerArmStep(
+        pivotDeg: _deg360(degToRad(s.startDeg) + dir * k * dTheta),
+        armDeg: radToDeg(phis[k]),
+        tipRadiusM: tip.distanceTo(s.center),
+        tipAzimuthDeg: _deg360((tip - s.center).angle),
+        banksOn: mask,
+        armFlow: armFlow,
+        pulsedFlow: pulsed,
+        totalFlow: total,
+        state: states[k],
+      ),
+    );
   }
 
   // coverage: trajectory of the arm end
@@ -451,7 +532,19 @@ CornerArmResult analyzeCornerArm(CornerArmSpec s, {String id = ''}) {
   // two branches of the guide (folded and extended) instead of following it
   if (maxSpeed > cornerArmMaxTipSpeed) warn('corner_arm_jump');
   return CornerArmResult(
-    steps: rows, banks: banks, outline: outline, totalAreaM2: total, armAreaM2: armArea, addedAreaM2: added, mainFlow: mainFlow, peakFlow: peak, peakPulsedFlow: peakPulsed,
-    minFlow: minFlow.isFinite ? minFlow : mainFlow, maxTipSpeedRatio: maxSpeed, maxShortfallM: maxShort, maxOverrunM: maxOver, warnings: warnings,
+    steps: rows,
+    banks: banks,
+    outline: outline,
+    totalAreaM2: total,
+    armAreaM2: armArea,
+    addedAreaM2: added,
+    mainFlow: mainFlow,
+    peakFlow: peak,
+    peakPulsedFlow: peakPulsed,
+    minFlow: minFlow.isFinite ? minFlow : mainFlow,
+    maxTipSpeedRatio: maxSpeed,
+    maxShortfallM: maxShort,
+    maxOverrunM: maxOver,
+    warnings: warnings,
   );
 }

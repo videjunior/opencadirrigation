@@ -50,7 +50,11 @@ Uint8List jpeg(int w, int h) {
   return Uint8List.fromList(img.encodeJpg(im, quality: 90));
 }
 
-ProjectExporter exporter(Project p) => ProjectExporter(project: p, results: null, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+ProjectExporter exporter(Project p) => ProjectExporter(
+  project: p,
+  results: null,
+  labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+);
 
 void main() {
   group('PDF images', () {
@@ -114,7 +118,10 @@ void main() {
       for (final p in deep) {
         p.setRgb(65535, 0, 32768);
       }
-      for (final (bytes, rgb) in [(Uint8List.fromList(img.encodePng(gray)), [200, 200, 200]), (Uint8List.fromList(img.encodePng(deep)), [255, 0, 128])]) {
+      for (final (bytes, rgb) in [
+        (Uint8List.fromList(img.encodePng(gray)), [200, 200, 200]),
+        (Uint8List.fromList(img.encodePng(deep)), [255, 0, 128]),
+      ]) {
         final doc = PdfDocument();
         final page = doc.addPage(widthPt: 50, heightPt: 50);
         final im = doc.image(bytes)!;
@@ -219,7 +226,9 @@ void main() {
         expect(got, closeTo(want, 0.02));
       }
       // a window sheet at another scale: the union of the views covers both drawing areas
-      final set = single.copyWith(windows: [SheetWindow(bounds: Bounds(p.bounds.maxX + 200, 0, p.bounds.maxX + 230, 20), title: 'W')]);
+      final set = single.copyWith(
+        windows: [SheetWindow(bounds: Bounds(p.bounds.maxX + 200, 0, p.bounds.maxX + 230, 20), title: 'W')],
+      );
       final views = b.sheetViews(set);
       expect(views, hasLength(2));
       expect(views[1].$2, isNot(views[0].$2));

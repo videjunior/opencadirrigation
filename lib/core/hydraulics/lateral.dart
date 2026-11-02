@@ -111,12 +111,7 @@ class LateralResult {
 }
 
 /// Analyses a lateral working upstream from a known distal-end pressure.
-LateralResult analyzeLateralFromEnd(
-  LateralSpec spec,
-  double endPressure, {
-  ElevationAt? elevationAt,
-  double manufacturerCv = 0,
-}) {
+LateralResult analyzeLateralFromEnd(LateralSpec spec, double endPressure, {ElevationAt? elevationAt, double manufacturerCv = 0}) {
   final n = spec.outletCount;
   final z = elevationAt ?? (_) => 0.0;
   final off = spec.firstOffset ?? spec.spacing;
@@ -132,15 +127,7 @@ LateralResult analyzeLateralFromEnd(
     final pos = positions[i];
     final segLen = prevPos - pos;
     if (segLen > 0 && flow > 0) {
-      final hf = frictionLoss(
-        method: spec.method,
-        flow: flow,
-        diameter: spec.diameter,
-        length: segLen,
-        c: spec.hazenC,
-        roughness: spec.roughness,
-        kinematicViscosity: spec.kinematicViscosity,
-      );
+      final hf = frictionLoss(method: spec.method, flow: flow, diameter: spec.diameter, length: segLen, c: spec.hazenC, roughness: spec.roughness, kinematicViscosity: spec.kinematicViscosity);
       totalHead += hf;
       loss += hf;
       maxV = math.max(maxV, velocity(flow: flow, diameter: spec.diameter));
@@ -160,15 +147,7 @@ LateralResult analyzeLateralFromEnd(
   }
   // inlet segment
   if (prevPos > 0 && flow > 0) {
-    final hf = frictionLoss(
-      method: spec.method,
-      flow: flow,
-      diameter: spec.diameter,
-      length: prevPos,
-      c: spec.hazenC,
-      roughness: spec.roughness,
-      kinematicViscosity: spec.kinematicViscosity,
-    );
+    final hf = frictionLoss(method: spec.method, flow: flow, diameter: spec.diameter, length: prevPos, c: spec.hazenC, roughness: spec.roughness, kinematicViscosity: spec.kinematicViscosity);
     totalHead += hf;
     loss += hf;
     maxV = math.max(maxV, velocity(flow: flow, diameter: spec.diameter));
@@ -189,11 +168,7 @@ LateralResult analyzeLateralFromEnd(
   if (ordered.isEmpty) {
     minP = maxP = inletPressure;
   }
-  final stats = UniformityStats.compute(
-    ordered.map((p) => p.emitterFlow).toList(),
-    manufacturerCv: manufacturerCv,
-    emittersPerPlant: spec.emittersPerOutlet,
-  );
+  final stats = UniformityStats.compute(ordered.map((p) => p.emitterFlow).toList(), manufacturerCv: manufacturerCv, emittersPerPlant: spec.emittersPerOutlet);
   return LateralResult(
     inletPressure: inletPressure,
     endPressure: endPressure,
@@ -210,12 +185,7 @@ LateralResult analyzeLateralFromEnd(
 }
 
 /// Analyses a lateral for a known inlet pressure (iterates on the end pressure).
-LateralResult analyzeLateralFromInlet(
-  LateralSpec spec,
-  double inletPressure, {
-  ElevationAt? elevationAt,
-  double manufacturerCv = 0,
-}) {
+LateralResult analyzeLateralFromInlet(LateralSpec spec, double inletPressure, {ElevationAt? elevationAt, double manufacturerCv = 0}) {
   var lo = 0.0;
   var hi = math.max(inletPressure * 2, 1.0);
   final z = elevationAt ?? (_) => 0.0;
@@ -244,12 +214,7 @@ LateralResult analyzeLateralFromInlet(
 
 /// Finds the inlet pressure that makes the mean emitter pressure equal to
 /// [targetMeanPressure] (design condition used to set the valve pressure).
-LateralResult analyzeLateralForMeanPressure(
-  LateralSpec spec,
-  double targetMeanPressure, {
-  ElevationAt? elevationAt,
-  double manufacturerCv = 0,
-}) {
+LateralResult analyzeLateralForMeanPressure(LateralSpec spec, double targetMeanPressure, {ElevationAt? elevationAt, double manufacturerCv = 0}) {
   var lo = 0.0, hi = math.max(targetMeanPressure * 3, 1.0);
   LateralResult res = analyzeLateralFromEnd(spec, hi, elevationAt: elevationAt, manufacturerCv: manufacturerCv);
   var it = 0;
@@ -382,14 +347,7 @@ List<FeedPositionResult> allowableFeedPositions(
     if (results.isEmpty) {
       mn = mx = inlet;
     }
-    out.add(FeedPositionResult(
-      fraction: frac,
-      ok: mn >= minPressure && mx <= maxPressure,
-      minPressure: mn,
-      maxPressure: mx,
-      inletPressure: inlet,
-      variation: mx - mn,
-    ));
+    out.add(FeedPositionResult(fraction: frac, ok: mn >= minPressure && mx <= maxPressure, minPressure: mn, maxPressure: mx, inletPressure: inlet, variation: mx - mn));
   }
   return out;
 }

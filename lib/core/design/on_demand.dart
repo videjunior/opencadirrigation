@@ -109,19 +109,44 @@ double normalQuantile(double p) {
   if (q.abs() <= 0.425) {
     final r = 0.180625 - q * q;
     return q *
-        (((((((2509.0809287301226727 * r + 33430.575583588128105) * r + 67265.770927008700853) * r + 45921.953931549871457) * r + 13731.693765509461125) * r + 1971.5909503065514427) * r + 133.14166789178437745) * r + 3.3871328727963666080) /
-        (((((((5226.4952788528545610 * r + 28729.085735721942674) * r + 39307.895800092710610) * r + 21213.794301586595867) * r + 5394.1960214247511077) * r + 687.18700749205790830) * r + 42.313330701600911252) * r + 1);
+        (((((((2509.0809287301226727 * r + 33430.575583588128105) * r + 67265.770927008700853) * r + 45921.953931549871457) * r + 13731.693765509461125) * r + 1971.5909503065514427) * r +
+                    133.14166789178437745) *
+                r +
+            3.3871328727963666080) /
+        (((((((5226.4952788528545610 * r + 28729.085735721942674) * r + 39307.895800092710610) * r + 21213.794301586595867) * r + 5394.1960214247511077) * r + 687.18700749205790830) * r +
+                    42.313330701600911252) *
+                r +
+            1);
   }
   var r = math.sqrt(-math.log(q < 0 ? p : 1 - p));
   double x;
   if (r <= 5) {
     r -= 1.6;
-    x = (((((((7.74545014278341407640e-4 * r + 0.0227238449892691845833) * r + 0.241780725177450611770) * r + 1.27045825245236838258) * r + 3.64784832476320460504) * r + 5.76949722146069140550) * r + 4.63033784615654529590) * r + 1.42343711074968357734) /
-        (((((((1.05075007164441684324e-9 * r + 5.47593808499534494600e-4) * r + 0.0151986665636164571966) * r + 0.148103976427480074590) * r + 0.689767334985100004550) * r + 1.67638483018380384940) * r + 2.05319162663775882187) * r + 1);
+    x =
+        (((((((7.74545014278341407640e-4 * r + 0.0227238449892691845833) * r + 0.241780725177450611770) * r + 1.27045825245236838258) * r + 3.64784832476320460504) * r + 5.76949722146069140550) * r +
+                    4.63033784615654529590) *
+                r +
+            1.42343711074968357734) /
+        (((((((1.05075007164441684324e-9 * r + 5.47593808499534494600e-4) * r + 0.0151986665636164571966) * r + 0.148103976427480074590) * r + 0.689767334985100004550) * r + 1.67638483018380384940) *
+                        r +
+                    2.05319162663775882187) *
+                r +
+            1);
   } else {
     r -= 5;
-    x = (((((((2.01033439929228813265e-7 * r + 2.71155556874348757815e-5) * r + 1.24266094738807843860e-3) * r + 0.0265321895265761230930) * r + 0.296560571828504891230) * r + 1.78482653991729133580) * r + 5.46378491116411436990) * r + 6.65790464350110377720) /
-        (((((((2.04426310338993978564e-15 * r + 1.42151175831644588870e-7) * r + 1.84631831751005468180e-5) * r + 7.86869131145613259100e-4) * r + 0.0148753612908506148525) * r + 0.136929880922735805310) * r + 0.599832206555887937690) * r + 1);
+    x =
+        (((((((2.01033439929228813265e-7 * r + 2.71155556874348757815e-5) * r + 1.24266094738807843860e-3) * r + 0.0265321895265761230930) * r + 0.296560571828504891230) * r +
+                            1.78482653991729133580) *
+                        r +
+                    5.46378491116411436990) *
+                r +
+            6.65790464350110377720) /
+        (((((((2.04426310338993978564e-15 * r + 1.42151175831644588870e-7) * r + 1.84631831751005468180e-5) * r + 7.86869131145613259100e-4) * r + 0.0148753612908506148525) * r +
+                            0.136929880922735805310) *
+                        r +
+                    0.599832206555887937690) *
+                r +
+            1);
   }
   return q < 0 ? -x : x;
 }
@@ -150,8 +175,13 @@ class Hydrant {
 
   Map<String, dynamic> toJson() => {'id': id, 'node': nodeId, 'd': discharge, 'hmin': minPressure, if (probability != null) 'p': probability, 'h': hoursPerDay, 'a': areaHa};
   static Hydrant fromJson(Map<String, dynamic> j) => Hydrant(
-    id: j['id'] as String, nodeId: j['node'] as String, discharge: (j['d'] as num?)?.toDouble() ?? 0, minPressure: (j['hmin'] as num?)?.toDouble() ?? 20,
-    probability: (j['p'] as num?)?.toDouble(), hoursPerDay: (j['h'] as num?)?.toDouble() ?? 0, areaHa: (j['a'] as num?)?.toDouble() ?? 0,
+    id: j['id'] as String,
+    nodeId: j['node'] as String,
+    discharge: (j['d'] as num?)?.toDouble() ?? 0,
+    minPressure: (j['hmin'] as num?)?.toDouble() ?? 20,
+    probability: (j['p'] as num?)?.toDouble(),
+    hoursPerDay: (j['h'] as num?)?.toDouble() ?? 0,
+    areaHa: (j['a'] as num?)?.toDouble() ?? 0,
   );
 }
 
@@ -200,7 +230,17 @@ enum ClementRule {
 
 /// Design flow of one link.
 class ClementFlow {
-  ClementFlow({required this.linkId, required this.downstreamNode, required this.hydrants, required this.meanFlow, required this.stdFlow, required this.formulaFlow, required this.flow, required this.rule, required this.headLoss});
+  ClementFlow({
+    required this.linkId,
+    required this.downstreamNode,
+    required this.hydrants,
+    required this.meanFlow,
+    required this.stdFlow,
+    required this.formulaFlow,
+    required this.flow,
+    required this.rule,
+    required this.headLoss,
+  });
   final String linkId;
 
   /// Node at the end away from the source.
@@ -225,14 +265,30 @@ class ClementFlow {
 
   Map<String, dynamic> toJson() => {'link': linkId, 'node': downstreamNode, 'n': hydrants, 'mean': meanFlow, 'std': stdFlow, 'qf': formulaFlow, 'q': flow, 'rule': rule.name, 'hl': headLoss};
   static ClementFlow fromJson(Map<String, dynamic> j) => ClementFlow(
-    linkId: j['link'] as String, downstreamNode: j['node'] as String? ?? '', hydrants: (j['n'] as num?)?.toInt() ?? 0, meanFlow: _d(j['mean']), stdFlow: _d(j['std']), formulaFlow: _d(j['qf']), flow: _d(j['q']),
-    rule: ClementRule.values.firstWhere((r) => r.name == j['rule'], orElse: () => ClementRule.formula), headLoss: _d(j['hl']),
+    linkId: j['link'] as String,
+    downstreamNode: j['node'] as String? ?? '',
+    hydrants: (j['n'] as num?)?.toInt() ?? 0,
+    meanFlow: _d(j['mean']),
+    stdFlow: _d(j['std']),
+    formulaFlow: _d(j['qf']),
+    flow: _d(j['q']),
+    rule: ClementRule.values.firstWhere((r) => r.name == j['rule'], orElse: () => ClementRule.formula),
+    headLoss: _d(j['hl']),
   );
 }
 
 /// Outcome of [clementFlows].
 class ClementResult {
-  ClementResult({required this.flows, required this.probabilities, required this.requiredHead, required this.sourceFlow, required this.sourceRequiredHead, required this.u, required this.elasticity, required this.codes});
+  ClementResult({
+    required this.flows,
+    required this.probabilities,
+    required this.requiredHead,
+    required this.sourceFlow,
+    required this.sourceRequiredHead,
+    required this.u,
+    required this.elasticity,
+    required this.codes,
+  });
 
   /// Design flow of every link of the tree, by link id.
   final Map<String, ClementFlow> flows;
@@ -270,11 +326,24 @@ class ClementResult {
   String? get criticalHydrant => requiredHead.isEmpty ? null : requiredHead.entries.reduce((a, b) => b.value > a.value ? b : a).key;
 
   Map<String, dynamic> toJson() => {
-    'flows': flows.values.map((f) => f.toJson()).toList(), 'p': probabilities, 'hreq': requiredHead, 'qsrc': sourceFlow, 'hsrc': sourceRequiredHead, 'u': u, 'eR': elasticity, 'codes': codes,
+    'flows': flows.values.map((f) => f.toJson()).toList(),
+    'p': probabilities,
+    'hreq': requiredHead,
+    'qsrc': sourceFlow,
+    'hsrc': sourceRequiredHead,
+    'u': u,
+    'eR': elasticity,
+    'codes': codes,
   };
   static ClementResult fromJson(Map<String, dynamic> j) => ClementResult(
     flows: {for (final f in ((j['flows'] as List?) ?? []).map((e) => ClementFlow.fromJson(e as Map<String, dynamic>))) f.linkId: f},
-    probabilities: _map(j['p']), requiredHead: _map(j['hreq']), sourceFlow: _map(j['qsrc']), sourceRequiredHead: _map(j['hsrc']), u: _d(j['u']), elasticity: _d(j['eR']), codes: ((j['codes'] as List?) ?? []).cast<String>(),
+    probabilities: _map(j['p']),
+    requiredHead: _map(j['hreq']),
+    sourceFlow: _map(j['qsrc']),
+    sourceRequiredHead: _map(j['hsrc']),
+    u: _d(j['u']),
+    elasticity: _d(j['eR']),
+    codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }
 
@@ -372,7 +441,10 @@ ClementResult clementFlows(HydraulicNetwork net, List<Hydrant> hydrants, {Clemen
       order.add(o);
     }
   }
-  final treeLinks = {for (final l in parent.values) if (l != null) l.id};
+  final treeLinks = {
+    for (final l in parent.values)
+      if (l != null) l.id,
+  };
   for (final l in net.links) {
     if (l.kind != HLinkKind.closed && !treeLinks.contains(l.id) && parent.containsKey(l.from) && parent.containsKey(l.to)) codes.add('clement_looped:${l.id}');
   }
@@ -442,7 +514,9 @@ ClementResult clementFlows(HydraulicNetwork net, List<Hydrant> hydrants, {Clemen
     double hl;
     switch (l.kind) {
       case HLinkKind.pipe:
-        hl = frictionLoss(method: net.options.method, flow: q, diameter: l.diameter, length: l.length, c: l.hazenC, roughness: l.roughness, kinematicViscosity: net.options.kinematicViscosity) + (l.minorK > 0 ? minorLoss(k: l.minorK, flow: q, diameter: l.diameter) : 0);
+        hl =
+            frictionLoss(method: net.options.method, flow: q, diameter: l.diameter, length: l.length, c: l.hazenC, roughness: l.roughness, kinematicViscosity: net.options.kinematicViscosity) +
+            (l.minorK > 0 ? minorLoss(k: l.minorK, flow: q, diameter: l.diameter) : 0);
       case HLinkKind.device:
         hl = (l.device?.loss(q) ?? 0).abs();
       case HLinkKind.pump:
@@ -456,7 +530,17 @@ ClementResult clementFlows(HydraulicNetwork net, List<Hydrant> hydrants, {Clemen
     }
     final s = down[id]!;
     cumLoss[id] = cumLoss[l.from == id ? l.to : l.from]! + hl;
-    flows[l.id] = ClementFlow(linkId: l.id, downstreamNode: id, hydrants: s.count, meanFlow: s.mean, stdFlow: math.sqrt(math.max(0.0, s.variance)), formulaFlow: formula[id]!, flow: q, rule: rule[id]!, headLoss: hl);
+    flows[l.id] = ClementFlow(
+      linkId: l.id,
+      downstreamNode: id,
+      hydrants: s.count,
+      meanFlow: s.mean,
+      stdFlow: math.sqrt(math.max(0.0, s.variance)),
+      formulaFlow: formula[id]!,
+      flow: q,
+      rule: rule[id]!,
+      headLoss: hl,
+    );
   }
   final required = <String, double>{};
   final sourceRequired = <String, double>{};
@@ -471,9 +555,21 @@ ClementResult clementFlows(HydraulicNetwork net, List<Hydrant> hydrants, {Clemen
       sourceRequired[src] = math.max(sourceRequired[src] ?? -double.infinity, need);
     }
   }
-  final sourceFlow = {for (final id in order) if (parent[id] == null) id: flow[id]!};
+  final sourceFlow = {
+    for (final id in order)
+      if (parent[id] == null) id: flow[id]!,
+  };
   final total = sourceFlow.values.fold(0.0, (a, b) => a + b);
-  return ClementResult(flows: flows, probabilities: prob, requiredHead: required, sourceFlow: sourceFlow, sourceRequiredHead: sourceRequired, u: u, elasticity: qs > 0 && area > 0 ? total / (qs * area) : 0, codes: codes);
+  return ClementResult(
+    flows: flows,
+    probabilities: prob,
+    requiredHead: required,
+    sourceFlow: sourceFlow,
+    sourceRequiredHead: sourceRequired,
+    u: u,
+    elasticity: qs > 0 && area > 0 ? total / (qs * area) : 0,
+    codes: codes,
+  );
 }
 
 /// Parameters of [checkRandomConfigurations].
@@ -502,7 +598,19 @@ class RandomCheckOptions {
 
 /// Performance of one hydrant over the configurations.
 class HydrantReliability {
-  HydrantReliability({required this.hydrantId, required this.nodeId, required this.open, required this.satisfied, required this.minRelative, required this.p10Relative, required this.meanRelative, required this.maxRelative, required this.meanDeficit, required this.maxDeficit, required this.deliveredShare});
+  HydrantReliability({
+    required this.hydrantId,
+    required this.nodeId,
+    required this.open,
+    required this.satisfied,
+    required this.minRelative,
+    required this.p10Relative,
+    required this.meanRelative,
+    required this.maxRelative,
+    required this.meanDeficit,
+    required this.maxDeficit,
+    required this.deliveredShare,
+  });
   final String hydrantId;
   final String nodeId;
 
@@ -530,17 +638,47 @@ class HydrantReliability {
   double get reliability => open > 0 ? satisfied / open : 1;
 
   Map<String, dynamic> toJson() => {
-    'id': hydrantId, 'node': nodeId, 'open': open, 'ok': satisfied, 'rmin': minRelative, 'r10': p10Relative, 'rmean': meanRelative, 'rmax': maxRelative, 'dmean': meanDeficit, 'dmax': maxDeficit, 'share': deliveredShare,
+    'id': hydrantId,
+    'node': nodeId,
+    'open': open,
+    'ok': satisfied,
+    'rmin': minRelative,
+    'r10': p10Relative,
+    'rmean': meanRelative,
+    'rmax': maxRelative,
+    'dmean': meanDeficit,
+    'dmax': maxDeficit,
+    'share': deliveredShare,
   };
   static HydrantReliability fromJson(Map<String, dynamic> j) => HydrantReliability(
-    hydrantId: j['id'] as String, nodeId: j['node'] as String? ?? '', open: (j['open'] as num?)?.toInt() ?? 0, satisfied: (j['ok'] as num?)?.toInt() ?? 0, minRelative: _d(j['rmin']), p10Relative: _d(j['r10']),
-    meanRelative: _d(j['rmean']), maxRelative: _d(j['rmax']), meanDeficit: _d(j['dmean']), maxDeficit: _d(j['dmax']), deliveredShare: _d(j['share'], 1),
+    hydrantId: j['id'] as String,
+    nodeId: j['node'] as String? ?? '',
+    open: (j['open'] as num?)?.toInt() ?? 0,
+    satisfied: (j['ok'] as num?)?.toInt() ?? 0,
+    minRelative: _d(j['rmin']),
+    p10Relative: _d(j['r10']),
+    meanRelative: _d(j['rmean']),
+    maxRelative: _d(j['rmax']),
+    meanDeficit: _d(j['dmean']),
+    maxDeficit: _d(j['dmax']),
+    deliveredShare: _d(j['share'], 1),
   );
 }
 
 /// Outcome of [checkRandomConfigurations].
 class RandomCheckResult {
-  RandomCheckResult({required this.hydrants, required this.configurations, required this.satisfiedConfigurations, required this.meanUnsatisfied, required this.p90Unsatisfied, required this.maxUnsatisfied, required this.meanOpen, required this.meanDischarge, required this.notConverged, required this.codes});
+  RandomCheckResult({
+    required this.hydrants,
+    required this.configurations,
+    required this.satisfiedConfigurations,
+    required this.meanUnsatisfied,
+    required this.p90Unsatisfied,
+    required this.maxUnsatisfied,
+    required this.meanOpen,
+    required this.meanDischarge,
+    required this.notConverged,
+    required this.codes,
+  });
 
   /// One entry per hydrant, in the order given.
   final List<HydrantReliability> hydrants;
@@ -570,11 +708,28 @@ class RandomCheckResult {
   double get satisfiedShare => configurations > 0 ? satisfiedConfigurations / configurations : 0;
 
   Map<String, dynamic> toJson() => {
-    'hyd': hydrants.map((h) => h.toJson()).toList(), 'c': configurations, 'ok': satisfiedConfigurations, 'puh': meanUnsatisfied, 'puh90': p90Unsatisfied, 'puhMax': maxUnsatisfied, 'open': meanOpen, 'q': meanDischarge, 'nc': notConverged, 'codes': codes,
+    'hyd': hydrants.map((h) => h.toJson()).toList(),
+    'c': configurations,
+    'ok': satisfiedConfigurations,
+    'puh': meanUnsatisfied,
+    'puh90': p90Unsatisfied,
+    'puhMax': maxUnsatisfied,
+    'open': meanOpen,
+    'q': meanDischarge,
+    'nc': notConverged,
+    'codes': codes,
   };
   static RandomCheckResult fromJson(Map<String, dynamic> j) => RandomCheckResult(
-    hydrants: ((j['hyd'] as List?) ?? []).map((h) => HydrantReliability.fromJson(h as Map<String, dynamic>)).toList(), configurations: (j['c'] as num?)?.toInt() ?? 0, satisfiedConfigurations: (j['ok'] as num?)?.toInt() ?? 0,
-    meanUnsatisfied: _d(j['puh']), p90Unsatisfied: _d(j['puh90']), maxUnsatisfied: _d(j['puhMax']), meanOpen: _d(j['open']), meanDischarge: _d(j['q']), notConverged: (j['nc'] as num?)?.toInt() ?? 0, codes: ((j['codes'] as List?) ?? []).cast<String>(),
+    hydrants: ((j['hyd'] as List?) ?? []).map((h) => HydrantReliability.fromJson(h as Map<String, dynamic>)).toList(),
+    configurations: (j['c'] as num?)?.toInt() ?? 0,
+    satisfiedConfigurations: (j['ok'] as num?)?.toInt() ?? 0,
+    meanUnsatisfied: _d(j['puh']),
+    p90Unsatisfied: _d(j['puh90']),
+    maxUnsatisfied: _d(j['puhMax']),
+    meanOpen: _d(j['open']),
+    meanDischarge: _d(j['q']),
+    notConverged: (j['nc'] as num?)?.toInt() ?? 0,
+    codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }
 
@@ -596,7 +751,18 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
   final n = hyd.length;
   if (n == 0) {
     codes.add('random_no_hydrants');
-    return RandomCheckResult(hydrants: const [], configurations: 0, satisfiedConfigurations: 0, meanUnsatisfied: 0, p90Unsatisfied: 0, maxUnsatisfied: 0, meanOpen: 0, meanDischarge: 0, notConverged: 0, codes: codes);
+    return RandomCheckResult(
+      hydrants: const [],
+      configurations: 0,
+      satisfiedConfigurations: 0,
+      meanUnsatisfied: 0,
+      p90Unsatisfied: 0,
+      maxUnsatisfied: 0,
+      meanOpen: 0,
+      meanDischarge: 0,
+      notConverged: 0,
+      codes: codes,
+    );
   }
   final count = options.configurations > 0 ? options.configurations : math.max(200, n + 1);
   final rng = Mrg32k3a(options.seed);
@@ -686,16 +852,34 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
   for (var i = 0; i < n; i++) {
     final v = rel[i]..sort();
     final k = opened[i];
-    out.add(HydrantReliability(
-      hydrantId: hyd[i].id, nodeId: hyd[i].nodeId, open: k, satisfied: ok[i],
-      minRelative: v.isEmpty ? 0 : v.first, p10Relative: percentile(v, 0.10), meanRelative: v.isEmpty ? 0 : v.fold(0.0, (a, b) => a + b) / v.length, maxRelative: v.isEmpty ? 0 : v.last,
-      meanDeficit: k > 0 ? deficitSum[i] / k : 0, maxDeficit: deficitMax[i], deliveredShare: k > 0 ? shareSum[i] / k : 1,
-    ));
+    out.add(
+      HydrantReliability(
+        hydrantId: hyd[i].id,
+        nodeId: hyd[i].nodeId,
+        open: k,
+        satisfied: ok[i],
+        minRelative: v.isEmpty ? 0 : v.first,
+        p10Relative: percentile(v, 0.10),
+        meanRelative: v.isEmpty ? 0 : v.fold(0.0, (a, b) => a + b) / v.length,
+        maxRelative: v.isEmpty ? 0 : v.last,
+        meanDeficit: k > 0 ? deficitSum[i] / k : 0,
+        maxDeficit: deficitMax[i],
+        deliveredShare: k > 0 ? shareSum[i] / k : 1,
+      ),
+    );
   }
   puh.sort();
   return RandomCheckResult(
-    hydrants: out, configurations: count, satisfiedConfigurations: satisfiedConfigs, meanUnsatisfied: puh.fold(0.0, (a, b) => a + b) / puh.length, p90Unsatisfied: percentile(puh, 0.90), maxUnsatisfied: puh.last,
-    meanOpen: openSum / count, meanDischarge: dischargeSum / count, notConverged: notConverged, codes: codes,
+    hydrants: out,
+    configurations: count,
+    satisfiedConfigurations: satisfiedConfigs,
+    meanUnsatisfied: puh.fold(0.0, (a, b) => a + b) / puh.length,
+    p90Unsatisfied: percentile(puh, 0.90),
+    maxUnsatisfied: puh.last,
+    meanOpen: openSum / count,
+    meanDischarge: dischargeSum / count,
+    notConverged: notConverged,
+    codes: codes,
   );
 }
 

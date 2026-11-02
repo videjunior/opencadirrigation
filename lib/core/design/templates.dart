@@ -43,7 +43,9 @@ import 'densogram.dart';
 /// turned [rotationDeg] about it, counter-clockwise.
 List<Pt> rotatedRectangle(Pt origin, double length, double width, {double rotationDeg = 0}) {
   final t = Affine.rotation(degToRad(rotationDeg), origin);
-  return [for (final p in [origin, origin + Pt(length, 0), origin + Pt(length, width), origin + Pt(0, width)]) t.apply(p)];
+  return [
+    for (final p in [origin, origin + Pt(length, 0), origin + Pt(length, width), origin + Pt(0, width)]) t.apply(p),
+  ];
 }
 
 /// Ellipse of [length] × [width] centred on [center], turned [rotationDeg]
@@ -99,8 +101,16 @@ NozzleSpec? _byId(OutletSpec family, String? id) {
 /// sets the spacing along the rows. Codes: `template_radius_short` (no
 /// nozzle throws as far as the next row).
 LandscapeLayout sportsPitchLayout({
-  required OutletSpec family, double length = 105, double width = 68, int rows = 5, Pt origin = Pt.zero, double rotationDeg = 0, double headM = 0, String? nozzleId,
-  bool evaluate = true, SprayProfile profile = SprayProfile.triangular,
+  required OutletSpec family,
+  double length = 105,
+  double width = 68,
+  int rows = 5,
+  Pt origin = Pt.zero,
+  double rotationDeg = 0,
+  double headM = 0,
+  String? nozzleId,
+  bool evaluate = true,
+  SprayProfile profile = SprayProfile.triangular,
 }) {
   final h = headM > 0 ? headM : defaultLayoutHead(family);
   final outline = rotatedRectangle(origin, length, width, rotationDeg: rotationDeg);
@@ -146,8 +156,17 @@ LandscapeLayout sportsPitchLayout({
     }
   }
   return finishHeadLayout(
-    region: region, family: family, heads: heads, headM: h, reference: ref, spacing: colSp, rowSpacing: rowSp, direction: Pt.polar(1, degToRad(rotationDeg)),
-    messages: messages, evaluate: evaluate, profile: profile,
+    region: region,
+    family: family,
+    heads: heads,
+    headM: h,
+    reference: ref,
+    spacing: colSp,
+    rowSpacing: rowSp,
+    direction: Pt.polar(1, degToRad(rotationDeg)),
+    messages: messages,
+    evaluate: evaluate,
+    profile: profile,
   );
 }
 
@@ -156,7 +175,11 @@ LandscapeLayout sportsPitchLayout({
 LandscapeLayout runningTrackInfieldLayout({required OutletSpec family, double straight = 84.39, double radius = 36.5, Pt center = Pt.zero, double rotationDeg = 0, LandscapeLayoutOptions? options}) {
   final o = options?.copy() ?? LandscapeLayoutOptions();
   o.direction ??= Pt.polar(1, degToRad(rotationDeg));
-  return layoutLandscape(outline: trackInfieldOutline(straight: straight, radius: radius, center: center, rotationDeg: rotationDeg), family: family, options: o);
+  return layoutLandscape(
+    outline: trackInfieldOutline(straight: straight, radius: radius, center: center, rotationDeg: rotationDeg),
+    family: family,
+    options: o,
+  );
 }
 
 /// A tee of [length] × [width] centred on [center], turned [rotationDeg],
@@ -165,7 +188,11 @@ LandscapeLayout teeLayout({required OutletSpec family, required double length, r
   final o = options?.copy() ?? LandscapeLayoutOptions();
   o.direction ??= Pt.polar(1, degToRad(rotationDeg));
   final corner = center + Pt(-length / 2, -width / 2).rotate(degToRad(rotationDeg));
-  return layoutLandscape(outline: rotatedRectangle(corner, length, width, rotationDeg: rotationDeg), family: family, options: o);
+  return layoutLandscape(
+    outline: rotatedRectangle(corner, length, width, rotationDeg: rotationDeg),
+    family: family,
+    options: o,
+  );
 }
 
 /// [poly] (counter-clockwise) moved [d] metres outwards (vertices along the
@@ -194,8 +221,15 @@ List<Pt> _grow(List<Pt> poly, double d) {
 /// spacing; the uniformity is that of the green itself. Codes:
 /// `template_radius_short`.
 LandscapeLayout golfGreenLayout({
-  required OutletSpec family, required List<Pt> green, double setback = 1.5, double headM = 0, String? nozzleId, double arcMarginDeg = 15, int minHeads = 4,
-  bool evaluate = true, SprayProfile profile = SprayProfile.triangular,
+  required OutletSpec family,
+  required List<Pt> green,
+  double setback = 1.5,
+  double headM = 0,
+  String? nozzleId,
+  double arcMarginDeg = 15,
+  int minHeads = 4,
+  bool evaluate = true,
+  SprayProfile profile = SprayProfile.triangular,
 }) {
   final h = headM > 0 ? headM : defaultLayoutHead(family);
   final region = LayoutRegion(green);
@@ -249,11 +283,20 @@ LandscapeLayout golfGreenLayout({
 /// facing in. The nozzle [nozzleId] (else the full circle with the largest
 /// radius) sets the spacing.
 LandscapeLayout fairwayLayout({
-  required OutletSpec family, required List<Pt> centreline, required double width, double headM = 0, String? nozzleId, bool edgePartCircles = false,
-  bool evaluate = true, SprayProfile profile = SprayProfile.triangular,
+  required OutletSpec family,
+  required List<Pt> centreline,
+  required double width,
+  double headM = 0,
+  String? nozzleId,
+  bool edgePartCircles = false,
+  bool evaluate = true,
+  SprayProfile profile = SprayProfile.triangular,
 }) {
   final h = headM > 0 ? headM : defaultLayoutHead(family);
-  final line = [for (var i = 0; i < centreline.length; i++) if (i == 0 || centreline[i].distanceTo(centreline[i - 1]) > 1e-9) centreline[i]];
+  final line = [
+    for (var i = 0; i < centreline.length; i++)
+      if (i == 0 || centreline[i].distanceTo(centreline[i - 1]) > 1e-9) centreline[i],
+  ];
   if (line.length < 2 || !(width > 0)) return _empty(LayoutRegion(const []), family, h, 'layout_empty');
   final corridor = [...offsetPolyline(line, width / 2), ...offsetPolyline(line, -width / 2).reversed];
   final region = LayoutRegion(corridor);
@@ -303,7 +346,15 @@ LandscapeLayout fairwayLayout({
     }
   }
   return finishHeadLayout(
-    region: region, family: family, heads: heads, headM: h, reference: ref, spacing: s, rowSpacing: rowTarget, direction: (line.last - line.first).normalized,
-    evaluate: evaluate, profile: profile,
+    region: region,
+    family: family,
+    heads: heads,
+    headM: h,
+    reference: ref,
+    spacing: s,
+    rowSpacing: rowTarget,
+    direction: (line.last - line.first).normalized,
+    evaluate: evaluate,
+    profile: profile,
   );
 }

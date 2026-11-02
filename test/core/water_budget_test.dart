@@ -14,10 +14,14 @@ void main() {
     });
 
     test('ETWU with ETAF = PF/IE per hydrozone and the compliance checks', () {
-      final b = mweloWaterBudget(etoPerYear: 50, units: BudgetUnits.us, hydrozones: const [
-        Hydrozone(id: 'lawn', area: 2000, plantFactor: 0.7),
-        Hydrozone(id: 'shrubs', area: 3000, plantFactor: 0.3, irrigationEfficiency: mweloEfficiencyDrip),
-      ]);
+      final b = mweloWaterBudget(
+        etoPerYear: 50,
+        units: BudgetUnits.us,
+        hydrozones: const [
+          Hydrozone(id: 'lawn', area: 2000, plantFactor: 0.7),
+          Hydrozone(id: 'shrubs', area: 3000, plantFactor: 0.3, irrigationEfficiency: mweloEfficiencyDrip),
+        ],
+      );
       final lawn = 50 * 0.62 * 0.7 / 0.75 * 2000, shrubs = 50 * 0.62 * 0.3 / 0.81 * 3000;
       expect(b.perHydrozone['lawn'], closeTo(lawn, 1e-6));
       expect(b.perHydrozone['shrubs'], closeTo(shrubs, 1e-6));
@@ -25,10 +29,14 @@ void main() {
       expect(b.mawa, closeTo(85250, 1e-6));
       expect(b.averageEtaf, closeTo((0.7 / 0.75 * 2000 + 0.3 / 0.81 * 3000) / 5000, 1e-12));
       expect(b.complies, isFalse); // ETAF 0.60 > 0.55 and ETWU > MAWA
-      final ok = mweloWaterBudget(etoPerYear: 50, units: BudgetUnits.us, hydrozones: const [
-        Hydrozone(id: 'shrubs', area: 4000, plantFactor: 0.3, irrigationEfficiency: mweloEfficiencyDrip),
-        Hydrozone(id: 'veg', area: 1000, plantFactor: 0.8, specialLandscapeArea: true),
-      ]);
+      final ok = mweloWaterBudget(
+        etoPerYear: 50,
+        units: BudgetUnits.us,
+        hydrozones: const [
+          Hydrozone(id: 'shrubs', area: 4000, plantFactor: 0.3, irrigationEfficiency: mweloEfficiencyDrip),
+          Hydrozone(id: 'veg', area: 1000, plantFactor: 0.8, specialLandscapeArea: true),
+        ],
+      );
       expect(ok.specialArea, 1000);
       expect(ok.landscapeArea, 5000);
       expect(ok.complies, isTrue);

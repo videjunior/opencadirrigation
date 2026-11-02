@@ -18,7 +18,10 @@ Future<Uint8List> Function(String asset) pdfFontLoader = (asset) async => (await
 /// that fails to load leaves its text to the next font of the chain.
 Future<void> preparePdfFonts(Iterable<String> texts, {String? language}) async {
   final fonts = PdfFonts.shared..language = language;
-  final list = [for (final t in texts) if (t.isNotEmpty) t];
+  final list = [
+    for (final t in texts)
+      if (t.isNotEmpty) t,
+  ];
   // a second round adds the fallbacks of characters the first fonts lack
   for (var round = 0; round < 3; round++) {
     final missing = fonts.missingFor(list);

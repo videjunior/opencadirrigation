@@ -10,7 +10,14 @@ double perMin(double q) => q / 60;
 void main() {
   group('volume-balance advance (FAO 45 §5.3.1)', () {
     test('worked example: 200 m furrow, 0.15 m³/min, advance about 65 min', () {
-      final s = SurfaceSpec(system: SurfaceSystem.furrow, lengthM: 200, slope: 0.001, manningN: 0.04, section: const FlowSection(rho1: 0.55, rho2: 1.35), intake: KostiakovLewis.perMinute(k: 0.00324, a: 0.568, f0: 0.000174));
+      final s = SurfaceSpec(
+        system: SurfaceSystem.furrow,
+        lengthM: 200,
+        slope: 0.001,
+        manningN: 0.04,
+        section: const FlowSection(rho1: 0.55, rho2: 1.35),
+        intake: KostiakovLewis.perMinute(k: 0.00324, a: 0.568, f0: 0.000174),
+      );
       final adv = surfaceAdvance(s, perMin(0.15));
       expect(adv.complete, isTrue);
       expect(adv.advanceS / 60, closeTo(65, 1));
@@ -36,7 +43,8 @@ void main() {
   group('furrow design example (FAO 45 §5.4.4)', () {
     final first = KostiakovLewis.perMinute(k: 0.00346, a: 0.388, f0: 0.000057);
     final later = KostiakovLewis.perMinute(k: 0.0038, a: 0.327, f0: 0.000037);
-    SurfaceSpec spec(KostiakovLewis i) => SurfaceSpec(system: SurfaceSystem.furrow, lengthM: 200, slope: 0.001, manningN: 0.04, section: const FlowSection(rho1: 0.57, rho2: 1.367), furrowSpacingM: 0.5, intake: i);
+    SurfaceSpec spec(KostiakovLewis i) =>
+        SurfaceSpec(system: SurfaceSystem.furrow, lengthM: 200, slope: 0.001, manningN: 0.04, section: const FlowSection(rho1: 0.57, rho2: 1.367), furrowSpacingM: 0.5, intake: i);
 
     test('required opportunity times for 8 cm: 214 and 371 min', () {
       expect(first.timeFor(0.08 * 0.5) / 60, closeTo(214, 1));
@@ -195,7 +203,14 @@ void main() {
 
   group('two-point infiltration from a field evaluation (FAO 45 §4.6)', () {
     test('a = 0.532, σz = 0.7622 and k = 0.00208 m³/min^a/m', () {
-      final s = SurfaceSpec(system: SurfaceSystem.furrow, lengthM: 200, slope: 0.0075, manningN: 0.04, section: const FlowSection(rho1: 0.444, rho2: 1.357), intake: const KostiakovLewis(k: 0, a: 0.5));
+      final s = SurfaceSpec(
+        system: SurfaceSystem.furrow,
+        lengthM: 200,
+        slope: 0.0075,
+        manningN: 0.04,
+        section: const FlowSection(rho1: 0.444, rho2: 1.357),
+        intake: const KostiakovLewis(k: 0, a: 0.5),
+      );
       final a0 = inletFlowArea(s, perMin(0.12));
       expect(a0, closeTo(0.0106, 0.0001));
       final f0 = basicIntakeFromInflowOutflow(inflow: 0.002, outflow: 0.00095, lengthM: 200);

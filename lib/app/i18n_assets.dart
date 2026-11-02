@@ -53,6 +53,7 @@ Future<void> warmUpFonts(String lang, {Duration timeout = const Duration(seconds
       if (!done.isCompleted) done.complete();
     });
   }
+
   final fonts = PaintingBinding.instance.systemFonts;
   fonts.addListener(onFonts);
   try {

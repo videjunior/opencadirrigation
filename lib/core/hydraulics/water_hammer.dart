@@ -30,8 +30,7 @@ double waveCelerity({required double diameter, required double wallThickness, re
 }
 
 /// Joukowsky surge head ΔH = a·ΔV/g (metres of water).
-double joukowskySurgeHead({required double celerity, required double velocityChange}) =>
-    celerity * velocityChange / gravity;
+double joukowskySurgeHead({required double celerity, required double velocityChange}) => celerity * velocityChange / gravity;
 
 /// Critical closure time 2L/a (s): closures faster than this give the full surge.
 double criticalClosureTime({required double length, required double celerity}) => 2 * length / celerity;

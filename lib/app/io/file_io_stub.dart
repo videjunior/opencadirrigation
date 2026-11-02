@@ -45,7 +45,12 @@ Future<String?> _pickPath(String suggested, {required bool save, String accept =
   if (nav == null) return save ? suggested : null;
   final start = getPref('desktop.dir') ?? Directory.current.path;
   final exts = accept.split(',').map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty).toList();
-  final r = await nav.push<String>(MaterialPageRoute(builder: (_) => _FileDialog(startDir: start, suggested: suggested, save: save, extensions: exts), fullscreenDialog: true));
+  final r = await nav.push<String>(
+    MaterialPageRoute(
+      builder: (_) => _FileDialog(startDir: start, suggested: suggested, save: save, extensions: exts),
+      fullscreenDialog: true,
+    ),
+  );
   if (r != null) setPref('desktop.dir', File(r).parent.path);
   return r;
 }
@@ -76,7 +81,8 @@ class _FileDialogState extends State<_FileDialog> {
 
   void _refresh() {
     try {
-      final list = _dir.listSync()..sort((a, b) {
+      final list = _dir.listSync()
+        ..sort((a, b) {
           final da = a is Directory, db = b is Directory;
           if (da != db) return da ? -1 : 1;
           return a.path.toLowerCase().compareTo(b.path.toLowerCase());
@@ -110,47 +116,72 @@ class _FileDialogState extends State<_FileDialog> {
   Widget build(BuildContext context) {
     final sep = Platform.pathSeparator;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.save ? 'Save as' : 'Open'), actions: [
-        IconButton(icon: const Icon(Icons.arrow_upward), tooltip: '..', onPressed: () => _go(_dir.parent.path)),
-        IconButton(icon: const Icon(Icons.home_outlined), onPressed: () => _go(Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? Directory.current.path)),
-      ]),
-      body: Column(children: [
-        Padding(padding: const EdgeInsets.all(8), child: TextField(controller: _path, decoration: const InputDecoration(labelText: 'Folder', isDense: true), onSubmitted: _go)),
-        if (_error != null) Padding(padding: const EdgeInsets.all(8), child: Text(_error!, style: TextStyle(color: Cad.caution))),
-        Expanded(
-          child: ListView.builder(
-            itemCount: _items.length,
-            itemBuilder: (ctx, i) {
-              final e = _items[i];
-              final name = e.path.split(sep).last;
-              final isDir = e is Directory;
-              return ListTile(
-                dense: true,
-                leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file_outlined, size: 18),
-                title: Text(name),
-                onTap: () {
-                  if (isDir) {
-                    _go(e.path);
-                  } else if (widget.save) {
-                    setState(() => _name.text = name);
-                  } else {
-                    _done(e.path);
-                  }
-                },
-              );
-            },
+      appBar: AppBar(
+        title: Text(widget.save ? 'Save as' : 'Open'),
+        actions: [
+          IconButton(icon: const Icon(Icons.arrow_upward), tooltip: '..', onPressed: () => _go(_dir.parent.path)),
+          IconButton(icon: const Icon(Icons.home_outlined), onPressed: () => _go(Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? Directory.current.path)),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: TextField(
+              controller: _path,
+              decoration: const InputDecoration(labelText: 'Folder', isDense: true),
+              onSubmitted: _go,
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(children: [
-            Expanded(child: TextField(key: const Key('desktop_filename'), controller: _name, decoration: const InputDecoration(labelText: 'File name', isDense: true), onSubmitted: (_) => _confirm())),
-            const SizedBox(width: 8),
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-            FilledButton(onPressed: _confirm, child: Text(widget.save ? 'Save' : 'Open')),
-          ]),
-        ),
-      ]),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(_error!, style: TextStyle(color: Cad.caution)),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _items.length,
+              itemBuilder: (ctx, i) {
+                final e = _items[i];
+                final name = e.path.split(sep).last;
+                final isDir = e is Directory;
+                return ListTile(
+                  dense: true,
+                  leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file_outlined, size: 18),
+                  title: Text(name),
+                  onTap: () {
+                    if (isDir) {
+                      _go(e.path);
+                    } else if (widget.save) {
+                      setState(() => _name.text = name);
+                    } else {
+                      _done(e.path);
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const Key('desktop_filename'),
+                    controller: _name,
+                    decoration: const InputDecoration(labelText: 'File name', isDense: true),
+                    onSubmitted: (_) => _confirm(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                FilledButton(onPressed: _confirm, child: Text(widget.save ? 'Save' : 'Open')),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

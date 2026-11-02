@@ -116,7 +116,13 @@ class AnthropicClient extends AiHttpClient {
   bool _updates(AiRequest r) => r.model.progressUpdates && offers(r.model, 'display');
 
   @override
-  List<String> optionalFields(AiRequest r) => [if (_fallback(r)) 'fallbacks', if (_budget(r)) 'task_budget', if (_clear(r)) 'clear_tool_uses', if (_compact(r)) 'context_management', if (_updates(r)) 'display'];
+  List<String> optionalFields(AiRequest r) => [
+    if (_fallback(r)) 'fallbacks',
+    if (_budget(r)) 'task_budget',
+    if (_clear(r)) 'clear_tool_uses',
+    if (_compact(r)) 'context_management',
+    if (_updates(r)) 'display',
+  ];
 
   /// A complaint about context management drops the clearing first, then
   /// compaction; a beta the account does not have drops its field.
@@ -162,10 +168,7 @@ class AnthropicClient extends AiHttpClient {
     // adaptive thinking with the notes between tool calls as text; thinking
     // is always on for Claude Fable 5.1, which takes no other setting (an
     // explicit adaptive one included), so without the notes it gets none
-    if (_updates(r))
-      'thinking': {'type': 'adaptive', 'display': 'updates'}
-    else if (!r.model.alwaysThinks)
-      'thinking': {'type': 'adaptive'},
+    if (_updates(r)) 'thinking': {'type': 'adaptive', 'display': 'updates'} else if (!r.model.alwaysThinks) 'thinking': {'type': 'adaptive'},
     'output_config': {
       'effort': r.effort.name,
       if (_budget(r)) 'task_budget': {'type': 'tokens', 'total': r.taskBudget! < minTaskBudget ? minTaskBudget : r.taskBudget},

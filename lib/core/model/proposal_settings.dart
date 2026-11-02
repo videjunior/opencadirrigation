@@ -16,12 +16,8 @@ class ProposalExtra {
   double get total => quantity * unitPrice;
 
   Map<String, dynamic> toJson() => {'desc': description, 'unit': unit, 'qty': quantity, 'price': unitPrice};
-  static ProposalExtra fromJson(Map<String, dynamic> j) => ProposalExtra(
-    description: j['desc'] as String? ?? '',
-    unit: j['unit'] as String? ?? '',
-    quantity: (j['qty'] as num?)?.toDouble() ?? 1,
-    unitPrice: (j['price'] as num?)?.toDouble() ?? 0,
-  );
+  static ProposalExtra fromJson(Map<String, dynamic> j) =>
+      ProposalExtra(description: j['desc'] as String? ?? '', unit: j['unit'] as String? ?? '', quantity: (j['qty'] as num?)?.toDouble() ?? 1, unitPrice: (j['price'] as num?)?.toDouble() ?? 0);
 }
 
 class ProposalSettings {
@@ -41,8 +37,8 @@ class ProposalSettings {
     List<ProposalExtra>? extras,
     this.crews = 1,
     Map<String, double>? productivity,
-  })  : extras = extras ?? [],
-        productivity = productivity ?? {};
+  }) : extras = extras ?? [],
+       productivity = productivity ?? {};
 
   /// Margin over the cost of the materials (%), applied to every BOM line.
   double markupPct;
@@ -86,7 +82,22 @@ class ProposalSettings {
   final Map<String, double> productivity;
 
   /// Whether anything beyond the plain bill of materials was set.
-  bool get isDefault => markupPct == 0 && labourPct == 0 && trenchCostPerM3 == 0 && discountPct == 0 && taxPct == 0 && freight == 0 && extras.isEmpty && paymentTerms.isEmpty && notes.isEmpty && validityDays == 15 && trenchWidthM == 0 && beddingM == 0.1 && annualBenefit == 0 && crews == 1 && productivity.isEmpty;
+  bool get isDefault =>
+      markupPct == 0 &&
+      labourPct == 0 &&
+      trenchCostPerM3 == 0 &&
+      discountPct == 0 &&
+      taxPct == 0 &&
+      freight == 0 &&
+      extras.isEmpty &&
+      paymentTerms.isEmpty &&
+      notes.isEmpty &&
+      validityDays == 15 &&
+      trenchWidthM == 0 &&
+      beddingM == 0.1 &&
+      annualBenefit == 0 &&
+      crews == 1 &&
+      productivity.isEmpty;
 
   /// Multiplies every amount of money by [factor] (currency conversion).
   void scalePrices(double factor) {
@@ -99,11 +110,21 @@ class ProposalSettings {
   }
 
   Map<String, dynamic> toJson() => {
-    'markup': markupPct, 'labour': labourPct, 'trenchM3': trenchCostPerM3, 'trenchW': trenchWidthM, 'bed': beddingM,
-    'discount': discountPct, 'tax': taxPct, 'freight': freight, 'validity': validityDays,
-    if (paymentTerms.isNotEmpty) 'terms': paymentTerms, if (notes.isNotEmpty) 'notes': notes, if (annualBenefit != 0) 'benefit': annualBenefit,
+    'markup': markupPct,
+    'labour': labourPct,
+    'trenchM3': trenchCostPerM3,
+    'trenchW': trenchWidthM,
+    'bed': beddingM,
+    'discount': discountPct,
+    'tax': taxPct,
+    'freight': freight,
+    'validity': validityDays,
+    if (paymentTerms.isNotEmpty) 'terms': paymentTerms,
+    if (notes.isNotEmpty) 'notes': notes,
+    if (annualBenefit != 0) 'benefit': annualBenefit,
     if (extras.isNotEmpty) 'extras': [for (final x in extras) x.toJson()],
-    if (crews != 1) 'crews': crews, if (productivity.isNotEmpty) 'prod': productivity,
+    if (crews != 1) 'crews': crews,
+    if (productivity.isNotEmpty) 'prod': productivity,
   };
 
   static ProposalSettings fromJson(Map<String, dynamic>? j) {
@@ -124,7 +145,10 @@ class ProposalSettings {
       annualBenefit: d('benefit', 0),
       extras: [for (final x in (j['extras'] as List?) ?? const []) ProposalExtra.fromJson(x as Map<String, dynamic>)],
       crews: math.max(1, (j['crews'] as num?)?.toInt() ?? 1),
-      productivity: {for (final e in ((j['prod'] as Map?) ?? const {}).entries) if (e.key is String && e.value is num && (e.value as num) > 0) e.key as String: (e.value as num).toDouble()},
+      productivity: {
+        for (final e in ((j['prod'] as Map?) ?? const {}).entries)
+          if (e.key is String && e.value is num && (e.value as num) > 0) e.key as String: (e.value as num).toDouble(),
+      },
     );
   }
 }

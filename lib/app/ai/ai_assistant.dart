@@ -90,6 +90,7 @@ class AiAttachment {
     }
     return _modelImage;
   }
+
   bool get isPdf => mime == 'application/pdf';
 
   /// Not sent to the model: it learns the file is there and imports it with
@@ -1118,7 +1119,16 @@ class AiAssistant extends ChangeNotifier {
       AiErrorKind.unexpected => t('ai.err.unexpected', {'e': e.message.isEmpty ? '?' : e.message}),
     };
     // the id the provider's support asks for, where it may have to look
-    const withId = {AiErrorKind.invalidRequest, AiErrorKind.server, AiErrorKind.overloaded, AiErrorKind.timeout, AiErrorKind.interrupted, AiErrorKind.http, AiErrorKind.permission, AiErrorKind.unexpected};
+    const withId = {
+      AiErrorKind.invalidRequest,
+      AiErrorKind.server,
+      AiErrorKind.overloaded,
+      AiErrorKind.timeout,
+      AiErrorKind.interrupted,
+      AiErrorKind.http,
+      AiErrorKind.permission,
+      AiErrorKind.unexpected,
+    };
     final id = e.requestId ?? '';
     return id.isNotEmpty && withId.contains(e.kind) ? '$text ${t('ai.err.requestId', {'r': id})}' : text;
   }
@@ -1128,7 +1138,9 @@ class AiAssistant extends ChangeNotifier {
     'tool' => s.note.isEmpty ? t('ai.st.tool', {'n': s.tool}) : t('ai.status.note', {'m': m.label, 'x': s.note}),
     'update' => t('ai.status.note', {'m': m.label, 'x': s.note}),
     'approval' => t('ai.st.approval'),
-    'retry' => t(const {AiErrorKind.network, AiErrorKind.timeout, AiErrorKind.interrupted}.contains(s.reason) ? 'ai.status.retryNet' : 'ai.st.retry', {'s': '${(s.wait.inMilliseconds / 1000).ceil()}'}),
+    'retry' => t(const {AiErrorKind.network, AiErrorKind.timeout, AiErrorKind.interrupted}.contains(s.reason) ? 'ai.status.retryNet' : 'ai.st.retry', {
+      's': '${(s.wait.inMilliseconds / 1000).ceil()}',
+    }),
     _ => t('ai.st.thinking', {'m': m.label}),
   };
 

@@ -72,14 +72,17 @@ void main() {
 
   group('dxf', () {
     test('round trip', () {
-      final doc = DxfDocument(layers: [DxfLayer('A', color: 1)], entities: [
-        DxfEntity(type: 'LINE', layer: 'A', points: [const Pt(0, 0), const Pt(10, 5)]),
-        DxfEntity(type: 'POLYLINE', layer: 'A', points: [const Pt(0, 0), const Pt(1, 1), const Pt(2, 0)], closed: true),
-        DxfEntity(type: 'CIRCLE', layer: 'A', center: const Pt(3, 3), radius: 2),
-        DxfEntity(type: 'ARC', layer: 'A', center: const Pt(3, 3), radius: 2, startAngle: 0, endAngle: 90),
-        DxfEntity(type: 'TEXT', layer: 'A', points: [const Pt(1, 2)], text: 'Hello', height: 2.5),
-        DxfEntity(type: 'POINT', layer: 'A', points: [const Pt(7, 7)]),
-      ]);
+      final doc = DxfDocument(
+        layers: [DxfLayer('A', color: 1)],
+        entities: [
+          DxfEntity(type: 'LINE', layer: 'A', points: [const Pt(0, 0), const Pt(10, 5)]),
+          DxfEntity(type: 'POLYLINE', layer: 'A', points: [const Pt(0, 0), const Pt(1, 1), const Pt(2, 0)], closed: true),
+          DxfEntity(type: 'CIRCLE', layer: 'A', center: const Pt(3, 3), radius: 2),
+          DxfEntity(type: 'ARC', layer: 'A', center: const Pt(3, 3), radius: 2, startAngle: 0, endAngle: 90),
+          DxfEntity(type: 'TEXT', layer: 'A', points: [const Pt(1, 2)], text: 'Hello', height: 2.5),
+          DxfEntity(type: 'POINT', layer: 'A', points: [const Pt(7, 7)]),
+        ],
+      );
       final s = DxfWriter.write(doc);
       final r = DxfReader.parse(s);
       expect(r.layers.single.name, 'A');

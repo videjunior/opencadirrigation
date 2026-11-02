@@ -236,7 +236,10 @@ class Snapper {
     final disc = qb * qb - 4 * qa * qc;
     if (qa < 1e-18 || disc < 0) return const [];
     final sq = math.sqrt(disc);
-    return [for (final t in {(-qb - sq) / (2 * qa), (-qb + sq) / (2 * qa)}) if (t >= -1e-9 && t <= 1 + 1e-9) a + d * t];
+    return [
+      for (final t in {(-qb - sq) / (2 * qa), (-qb + sq) / (2 * qa)})
+        if (t >= -1e-9 && t <= 1 + 1e-9) a + d * t,
+    ];
   }
 
   /// Points where two circles cross.

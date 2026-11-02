@@ -71,7 +71,8 @@ class ZoneItem {
 List<ZoneItem> zoneItemsOf(LandscapeLayout layout, OutletSpec family, {bool byFamily = false}) => [
   for (final h in layout.heads)
     ZoneItem(
-      position: h.position, flow: h.flow,
+      position: h.position,
+      flow: h.flow,
       classKey: [precipitationClassOf(family, nozzle: family.nozzle(h.nozzleId), headM: layout.headM).name, if (byFamily) family.id].join(':'),
     ),
 ];
@@ -171,7 +172,10 @@ ZoningResult zoneByFlow(List<ZoneItem> items, ZoningOptions o) {
     if (!classes.contains(it.classKey)) classes.add(it.classKey);
   }
   for (final key in classes) {
-    final members = [for (var i = 0; i < items.length; i++) if (items[i].classKey == key) i];
+    final members = [
+      for (var i = 0; i < items.length; i++)
+        if (items[i].classKey == key) i,
+    ];
     final adj = _neighbourGraph(items, members, o);
     for (final comp in _components(members, adj)) {
       for (final g in _zoneComponent(items, comp, adj, cap, o)) {
@@ -294,9 +298,17 @@ List<List<int>> _components(List<int> members, Map<int, List<int>> adj) {
 /// re-seeding.
 List<List<int>> _zoneComponent(List<ZoneItem> items, List<int> comp, Map<int, List<int>> adj, double cap, ZoningOptions o) {
   // items over the cap get zones of their own
-  final big = [for (final i in comp) if (items[i].flow > cap) i];
-  final rest = [for (final i in comp) if (items[i].flow <= cap) i];
-  final out = <List<int>>[for (final i in big) [i]];
+  final big = [
+    for (final i in comp)
+      if (items[i].flow > cap) i,
+  ];
+  final rest = [
+    for (final i in comp)
+      if (items[i].flow <= cap) i,
+  ];
+  final out = <List<int>>[
+    for (final i in big) [i],
+  ];
   if (rest.isEmpty) return out;
   final total = rest.fold(0.0, (s, i) => s + math.max(0.0, items[i].flow));
   var n = cap.isFinite ? math.max(1, (total / cap - 1e-9).ceil()) : 1;
@@ -520,8 +532,11 @@ void _mergeSmall(List<ZoneItem> items, List<List<int>> zones, Map<int, List<int>
     final order = List<int>.generate(zones.length, (i) => i)..sort((a, b) => loads[a] != loads[b] ? loads[a].compareTo(loads[b]) : a.compareTo(b));
     for (final z in order) {
       if (loads[z] >= 0.5 * mean) break;
-      final nbs = <int>{for (final i in zones[z]) for (final nb in adj[i]!) if (zoneOf[nb] != null && zoneOf[nb] != z) zoneOf[nb]!}.toList()
-        ..sort((a, b) => loads[a] != loads[b] ? loads[a].compareTo(loads[b]) : a.compareTo(b));
+      final nbs = <int>{
+        for (final i in zones[z])
+          for (final nb in adj[i]!)
+            if (zoneOf[nb] != null && zoneOf[nb] != z) zoneOf[nb]!,
+      }.toList()..sort((a, b) => loads[a] != loads[b] ? loads[a].compareTo(loads[b]) : a.compareTo(b));
       for (final y in nbs) {
         if (loads[y] + loads[z] > cap + 1e-12 || zones[y].length + zones[z].length > maxItems) continue;
         zones[y].addAll(zones[z]);
@@ -566,7 +581,10 @@ void _refine(List<ZoneItem> items, List<List<int>> zones, Map<int, List<int>> ad
     for (final i in all) {
       final a = zoneOf[i]!;
       final q = items[i].flow;
-      final targets = <int>{for (final nb in adj[i]!) if (zoneOf[nb] != null && zoneOf[nb] != a) zoneOf[nb]!}.toList()..sort();
+      final targets = <int>{
+        for (final nb in adj[i]!)
+          if (zoneOf[nb] != null && zoneOf[nb] != a) zoneOf[nb]!,
+      }.toList()..sort();
       for (final b in targets) {
         if (!(q < loads[a] - loads[b] - 1e-12)) continue;
         if (loads[b] + q > cap + 1e-12 || zones[b].length >= maxItems) continue;

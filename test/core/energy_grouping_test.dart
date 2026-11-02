@@ -14,8 +14,24 @@ import 'package:opencadirrigation/core/units.dart';
 double _kwh(double head, double volume, [double eff = 0.65]) => waterDensity * gravity * head * volume / eff / 3.6e6;
 
 ZoneResult _zone(String id, double q, double h, double z) => ZoneResult(
-  valveId: id, zoneName: id, converged: true, totalFlow: q, downstreamHead: h, valveLoss: 0, requiredUpstreamHead: h, minOutletPressure: 0, maxOutletPressure: 0, allowedMin: 0, allowedMax: 0,
-  nominalPressure: 0, uniformity: UniformityStats.empty, pipes: const [], outlets: const [], devices: const [], warnings: const [], valveElevation: z,
+  valveId: id,
+  zoneName: id,
+  converged: true,
+  totalFlow: q,
+  downstreamHead: h,
+  valveLoss: 0,
+  requiredUpstreamHead: h,
+  minOutletPressure: 0,
+  maxOutletPressure: 0,
+  allowedMin: 0,
+  allowedMax: 0,
+  nominalPressure: 0,
+  uniformity: UniformityStats.empty,
+  pipes: const [],
+  outlets: const [],
+  devices: const [],
+  warnings: const [],
+  valveElevation: z,
 );
 
 void main() {
@@ -30,8 +46,20 @@ void main() {
 
   test('zones of similar head together: 30 % less energy than first fit by flow', () {
     final r = groupZonesForEnergy(zones, options: const GroupingOptions(maxFlow: 0.02));
-    expect([for (final g in r.baseline) g.zoneIds], [['H1', 'L1'], ['H2', 'L2']]);
-    expect([for (final g in r.groups) g.zoneIds], [['H1', 'H2'], ['L1', 'L2']]);
+    expect(
+      [for (final g in r.baseline) g.zoneIds],
+      [
+        ['H1', 'L1'],
+        ['H2', 'L2'],
+      ],
+    );
+    expect(
+      [for (final g in r.groups) g.zoneIds],
+      [
+        ['H1', 'H2'],
+        ['L1', 'L2'],
+      ],
+    );
     const v = 0.02 * 2 * 3600;
     expect(r.baselineEnergyKwh, closeTo(2 * _kwh(50, v), 1e-9));
     expect(r.energyKwh, closeTo(_kwh(50, v) + _kwh(20, v), 1e-9));
@@ -70,19 +98,20 @@ void main() {
 
   test('the pump also covers the loss to the farthest valve of its group', () {
     // k·Q^m to each valve, with the elevation and the source level
-    const zs = [
-      EnergyZone(id: 'A', flow: 0.01, requiredHead: 25, elevation: 10, lossCoefficient: 2000),
-      EnergyZone(id: 'B', flow: 0.01, requiredHead: 25, elevation: 0, lossCoefficient: 500),
-    ];
+    const zs = [EnergyZone(id: 'A', flow: 0.01, requiredHead: 25, elevation: 10, lossCoefficient: 2000), EnergyZone(id: 'B', flow: 0.01, requiredHead: 25, elevation: 0, lossCoefficient: 500)];
     final r = groupZonesForEnergy(zs, options: const GroupingOptions(maxGroups: 1, sourceElevation: -5));
     final head = math.max(10 + 25 + 2000 * math.pow(0.02, 1.852), 0 + 25 + 500 * math.pow(0.02, 1.852)) + 5;
     expect(r.groups.single.head, closeTo(head, 1e-9));
     // an exact head from the caller is used for the energies reported
     var calls = 0;
-    final exact = groupZonesForEnergy(zs, options: const GroupingOptions(maxGroups: 1), groupHead: (g) {
-      calls++;
-      return 77;
-    });
+    final exact = groupZonesForEnergy(
+      zs,
+      options: const GroupingOptions(maxGroups: 1),
+      groupHead: (g) {
+        calls++;
+        return 77;
+      },
+    );
     expect(exact.groups.single.head, 77);
     expect(calls, greaterThan(0));
   });
@@ -91,42 +120,72 @@ void main() {
     // the two high zones together lose much more than the formula says
     double head(List<EnergyZone> g) => g.where((z) => z.id.startsWith('H')).length == 2 ? 100 : g.map((z) => z.requiredHead).reduce(math.max);
     var calls = 0;
-    final r = groupZonesForEnergy(zones, options: const GroupingOptions(maxFlow: 0.02), groupHead: (g) {
-      calls++;
-      return head(g);
-    });
+    final r = groupZonesForEnergy(
+      zones,
+      options: const GroupingOptions(maxFlow: 0.02),
+      groupHead: (g) {
+        calls++;
+        return head(g);
+      },
+    );
     // free: the high zones apart
-    expect([for (final g in r.groups) g.zoneIds], [['H1'], ['L1', 'L2'], ['H2']]);
+    expect(
+      [for (final g in r.groups) g.zoneIds],
+      [
+        ['H1'],
+        ['L1', 'L2'],
+        ['H2'],
+      ],
+    );
     expect(r.energyKwh, closeTo(2 * _kwh(50, 72) + _kwh(20, 144), 1e-9));
     expect(calls, lessThan(30));
     // two groups: a high zone with a low one in each
     final two = groupZonesForEnergy(zones, options: const GroupingOptions(maxFlow: 0.02, maxGroups: 2), groupHead: head);
-    expect([for (final g in two.groups) g.zoneIds], [['H1', 'L2'], ['L1', 'H2']]);
+    expect(
+      [for (final g in two.groups) g.zoneIds],
+      [
+        ['H1', 'L2'],
+        ['L1', 'H2'],
+      ],
+    );
     expect(two.energyKwh, closeTo(2 * _kwh(50, 144), 1e-9));
     var few = 0;
-    groupZonesForEnergy(zones, options: const GroupingOptions(maxFlow: 0.02, maxHeadCalls: 2), groupHead: (g) {
-      few++;
-      return head(g);
-    });
+    groupZonesForEnergy(
+      zones,
+      options: const GroupingOptions(maxFlow: 0.02, maxHeadCalls: 2),
+      groupHead: (g) {
+        few++;
+        return head(g);
+      },
+    );
     // two for the search, the rest for the groups reported
     expect(few, lessThanOrEqualTo(2 + 4 + 2));
   });
 
   test('zones of a design and system flows for the groups', () {
     final p = Project();
-    p.entities.addAll([
-      ControlValveEntity(id: 'v1', position: Pt.zero, zoneName: 'North'),
-      ControlValveEntity(id: 'v2', position: const Pt(10, 0), zoneName: 'South'),
-    ]);
+    p.entities.addAll([ControlValveEntity(id: 'v1', position: Pt.zero, zoneName: 'North'), ControlValveEntity(id: 'v2', position: const Pt(10, 0), zoneName: 'South')]);
     p.systemFlows.add(SystemFlow(id: 'sf1', name: 'old', valveIds: {'v1', 'v2'}, durationHours: 3));
     final r = DesignResults(timestamp: DateTime(2026));
     r.zones['v1'] = _zone('v1', 0.01, 30, 12);
     r.zones['v2'] = _zone('v2', 0.02, 20, 2);
-    r.systemFlows.add(SystemFlowResult(
-      flowId: 'sf1', name: 'old', converged: true, totalFlow: 0.03, durationHours: 3, pipes: const [], devices: const [], warnings: const [],
-      supplies: [SupplyDuty(supplyId: 's', name: 's', flow: 0.03, head: 50, requiredHead: 50, elevation: 0, calculated: true)],
-      valves: [ValveDuty(valveId: 'v1', zoneName: 'North', flow: 0.01, availableHead: 30, requiredHead: 30, p: Pt.zero), ValveDuty(valveId: 'v2', zoneName: 'South', flow: 0.02, availableHead: 45, requiredHead: 20, p: Pt.zero)],
-    ));
+    r.systemFlows.add(
+      SystemFlowResult(
+        flowId: 'sf1',
+        name: 'old',
+        converged: true,
+        totalFlow: 0.03,
+        durationHours: 3,
+        pipes: const [],
+        devices: const [],
+        warnings: const [],
+        supplies: [SupplyDuty(supplyId: 's', name: 's', flow: 0.03, head: 50, requiredHead: 50, elevation: 0, calculated: true)],
+        valves: [
+          ValveDuty(valveId: 'v1', zoneName: 'North', flow: 0.01, availableHead: 30, requiredHead: 30, p: Pt.zero),
+          ValveDuty(valveId: 'v2', zoneName: 'South', flow: 0.02, availableHead: 45, requiredHead: 20, p: Pt.zero),
+        ],
+      ),
+    );
     final (zs, source) = energyZonesFromDesign(p, r);
     expect(source, 0);
     final z1 = zs.firstWhere((z) => z.id == 'v1');

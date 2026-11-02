@@ -91,7 +91,16 @@ enum BudgetUnits {
 
 /// MWELO water budget of a landscape.
 class WaterBudget {
-  const WaterBudget({required this.units, required this.mawa, required this.etwu, required this.landscapeArea, required this.specialArea, required this.averageEtaf, required this.etafLimit, required this.perHydrozone});
+  const WaterBudget({
+    required this.units,
+    required this.mawa,
+    required this.etwu,
+    required this.landscapeArea,
+    required this.specialArea,
+    required this.averageEtaf,
+    required this.etafLimit,
+    required this.perHydrozone,
+  });
   final BudgetUnits units;
 
   /// Maximum applied water allowance and estimated total water use per year
@@ -153,7 +162,16 @@ WaterBudget mweloWaterBudget({required double etoPerYear, required List<Hydrozon
 
 /// Cycle-and-soak schedule of one station.
 class CycleSoak {
-  const CycleSoak({required this.totalRunMinutes, required this.maxCycleMinutes, required this.cycles, required this.runMinutesPerCycle, required this.depthPerCycleMm, required this.soakMinutes, required this.windowMinutes, required this.runoffFree});
+  const CycleSoak({
+    required this.totalRunMinutes,
+    required this.maxCycleMinutes,
+    required this.cycles,
+    required this.runMinutesPerCycle,
+    required this.depthPerCycleMm,
+    required this.soakMinutes,
+    required this.windowMinutes,
+    required this.runoffFree,
+  });
 
   /// Run time needed for the whole depth at the precipitation rate.
   final double totalRunMinutes;
@@ -185,7 +203,14 @@ class CycleSoak {
 /// [minCycleMinutes] and [maxCycles] keep the schedule practical for a
 /// controller (cycles are merged to respect them, which may cause runoff:
 /// see [CycleSoak.runoffFree]).
-CycleSoak cycleAndSoak({required double precipitationRateMmH, required double depthMm, required double intakeRateMmH, required double allowableSurfaceMm, double minCycleMinutes = 0, int maxCycles = 24}) {
+CycleSoak cycleAndSoak({
+  required double precipitationRateMmH,
+  required double depthMm,
+  required double intakeRateMmH,
+  required double allowableSurfaceMm,
+  double minCycleMinutes = 0,
+  int maxCycles = 24,
+}) {
   final pr = math.max(precipitationRateMmH, 1e-9);
   final ir = math.max(intakeRateMmH, 1e-9);
   final depth = math.max(depthMm, 0.0);
@@ -216,7 +241,14 @@ CycleSoak cycleAndSoak({required double precipitationRateMmH, required double de
 
 /// [cycleAndSoak] with the intake rate and allowable surface accumulation
 /// of a USDA texture class and slope (%) from the SWAT/EPA table.
-CycleSoak cycleAndSoakForSoil({required double precipitationRateMmH, required double depthMm, required SoilTexture texture, required double slopePct, double minCycleMinutes = 0, int maxCycles = 24}) => cycleAndSoak(
+CycleSoak cycleAndSoakForSoil({
+  required double precipitationRateMmH,
+  required double depthMm,
+  required SoilTexture texture,
+  required double slopePct,
+  double minCycleMinutes = 0,
+  int maxCycles = 24,
+}) => cycleAndSoak(
   precipitationRateMmH: precipitationRateMmH,
   depthMm: depthMm,
   intakeRateMmH: soilOf(texture).basicIntakeMmH,

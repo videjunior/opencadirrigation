@@ -185,7 +185,11 @@ ValveSpec? pickZoneValve(Catalog catalog, double flow) {
 /// (or runs inside it); detours follow the shortest path through the
 /// corners of the exclusions pushed out by a margin (visibility graph).
 class _Obstacles {
-  _Obstacles(List<List<Pt>> polys, double margin) : polys = [for (final p in polys) if (normalizePolygon(p) case final q when q.length >= 3) q] {
+  _Obstacles(List<List<Pt>> polys, double margin)
+    : polys = [
+        for (final p in polys)
+          if (normalizePolygon(p) case final q when q.length >= 3) q,
+      ] {
     for (final poly in this.polys) {
       final n = poly.length;
       for (var i = 0; i < n; i++) {
@@ -239,13 +243,23 @@ class _Obstacles {
     if (!blocked(a, b)) return [a, b];
     if (nodes.isEmpty) return null;
     final vis = _vis ??= [
-      for (var i = 0; i < nodes.length; i++) [for (var j = 0; j < nodes.length; j++) if (i != j && !blocked(nodes[i], nodes[j])) j],
+      for (var i = 0; i < nodes.length; i++)
+        [
+          for (var j = 0; j < nodes.length; j++)
+            if (i != j && !blocked(nodes[i], nodes[j])) j,
+        ],
     ];
     final n = nodes.length;
     // Dijkstra over a, the nodes and b (n, n + 1 are a and b)
     Pt at(int i) => i < n ? nodes[i] : (i == n ? a : b);
-    final fromA = [for (var j = 0; j < n; j++) if (!blocked(a, nodes[j])) j];
-    final toB = {for (var j = 0; j < n; j++) if (!blocked(nodes[j], b)) j};
+    final fromA = [
+      for (var j = 0; j < n; j++)
+        if (!blocked(a, nodes[j])) j,
+    ];
+    final toB = {
+      for (var j = 0; j < n; j++)
+        if (!blocked(nodes[j], b)) j,
+    };
     final dist = List<double>.filled(n + 2, double.infinity);
     final prev = List<int>.filled(n + 2, -1);
     final done = List<bool>.filled(n + 2, false);
@@ -396,7 +410,10 @@ List<Pt> _placeValves(List<List<Pt>> zoneHeads, RouteOptions o, _Obstacles obsta
   }
   final poc = o.pointOfConnection;
   if (poc == null) messages.add('route_no_connection');
-  final placed = <Pt>[for (var z = 0; z < n; z++) if (given[z]) out[z]];
+  final placed = <Pt>[
+    for (var z = 0; z < n; z++)
+      if (given[z]) out[z],
+  ];
   bool free(Pt p, int zone) {
     if (obstacles.inside(p)) return false;
     for (final q in placed) {
@@ -786,7 +803,11 @@ List<RoutedPipe> _mainlineTree(Pt poc, List<Pt> valves, _Obstacles obstacles) {
     if (path == null) {
       // no way round from that point: join at the nearest tree vertex that
       // has one
-      final verts = <Pt>{poc, for (var k = 0; k < segs.length; k++) if (alive[k]) ...[segs[k].$1, segs[k].$2]}.toList()..sort((a, b) => a.distanceTo(v).compareTo(b.distanceTo(v)));
+      final verts = <Pt>{
+        poc,
+        for (var k = 0; k < segs.length; k++)
+          if (alive[k]) ...[segs[k].$1, segs[k].$2],
+      }.toList()..sort((a, b) => a.distanceTo(v).compareTo(b.distanceTo(v)));
       for (final c in verts) {
         final pth = obstacles.path(c, v);
         if (pth != null) {
@@ -878,7 +899,9 @@ int _crossings(List<RoutedPipe> pipes) {
     }
   }
   if (segs.length < 2) return 0;
-  final b = Bounds.ofPoints([for (final s in segs) ...[s.$1, s.$2]]);
+  final b = Bounds.ofPoints([
+    for (final s in segs) ...[s.$1, s.$2],
+  ]);
   final avg = segs.fold(0.0, (s, e) => s + e.$1.distanceTo(e.$2)) / segs.length;
   final cell = math.max(avg, math.max(b.width, b.height) / 512);
   final buckets = <int, List<int>>{};

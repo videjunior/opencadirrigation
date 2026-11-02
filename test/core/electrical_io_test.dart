@@ -96,10 +96,7 @@ void main() {
         expect(adviceCodes, contains(code));
       }
       final p = _wired(stations: 1);
-      p.entities.addAll([
-        ControlValveEntity(id: 'v2', position: const Pt(-5, 20), zoneName: 'Z2'),
-        ControlValveEntity(id: 'v3', position: const Pt(-5, 10), zoneName: 'Z3'),
-      ]);
+      p.entities.addAll([ControlValveEntity(id: 'v2', position: const Pt(-5, 20), zoneName: 'Z2'), ControlValveEntity(id: 'v3', position: const Pt(-5, 10), zoneName: 'Z3')]);
       final r = Designer(p).designAll();
       final advice = buildAdvice(p, results: r);
       final a = advice.firstWhere((x) => x.code == 'elec_stations');

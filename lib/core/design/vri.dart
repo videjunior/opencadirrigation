@@ -91,7 +91,12 @@ class VriSpec {
   /// Ring boundaries from the inner to the irrigated radius.
   List<double> rings() {
     final inner = math.max(innerRadiusM, 0.0);
-    return [inner, for (final e in [...bankEdgesM]..sort()) if (e > inner + 1e-9 && e < radiusM - 1e-9) e, radiusM];
+    return [
+      inner,
+      for (final e in [...bankEdgesM]..sort())
+        if (e > inner + 1e-9 && e < radiusM - 1e-9) e,
+      radiusM,
+    ];
   }
 }
 
@@ -116,8 +121,13 @@ class VriRow {
 
   Map<String, dynamic> toJson() => {'a0': startDeg, 'a1': endDeg, 'p': timerPct, 'd': depthMm, 't': targetMm, if (bankDutyPct.isNotEmpty) 'duty': bankDutyPct, if (limit != 0) 'lim': limit};
   static VriRow fromJson(Map<String, dynamic> j) => VriRow(
-    startDeg: (j['a0'] as num).toDouble(), endDeg: (j['a1'] as num).toDouble(), timerPct: (j['p'] as num).toDouble(), depthMm: (j['d'] as num).toDouble(), targetMm: (j['t'] as num).toDouble(),
-    bankDutyPct: ((j['duty'] as List?) ?? const []).map((e) => (e as num).toDouble()).toList(), limit: (j['lim'] as num?)?.toInt() ?? 0,
+    startDeg: (j['a0'] as num).toDouble(),
+    endDeg: (j['a1'] as num).toDouble(),
+    timerPct: (j['p'] as num).toDouble(),
+    depthMm: (j['d'] as num).toDouble(),
+    targetMm: (j['t'] as num).toDouble(),
+    bankDutyPct: ((j['duty'] as List?) ?? const []).map((e) => (e as num).toDouble()).toList(),
+    limit: (j['lim'] as num?)?.toInt() ?? 0,
   );
 }
 
@@ -155,8 +165,11 @@ class VriResult {
 
   Map<String, dynamic> toJson() => {'rows': rows.map((e) => e.toJson()).toList(), 'edges': bankEdgesM, 'd100': depthAt100Mm, 'dmax': maxDepthMm, 'warn': warnings};
   static VriResult fromJson(Map<String, dynamic> j) => VriResult(
-    rows: ((j['rows'] as List?) ?? const []).map((e) => VriRow.fromJson(e as Map<String, dynamic>)).toList(), bankEdgesM: ((j['edges'] as List?) ?? const []).map((e) => (e as num).toDouble()).toList(),
-    depthAt100Mm: (j['d100'] as num?)?.toDouble() ?? 0, maxDepthMm: (j['dmax'] as num?)?.toDouble() ?? 0, warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+    rows: ((j['rows'] as List?) ?? const []).map((e) => VriRow.fromJson(e as Map<String, dynamic>)).toList(),
+    bankEdgesM: ((j['edges'] as List?) ?? const []).map((e) => (e as num).toDouble()).toList(),
+    depthAt100Mm: (j['d100'] as num?)?.toDouble() ?? 0,
+    maxDepthMm: (j['dmax'] as num?)?.toDouble() ?? 0,
+    warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
   );
 }
 
@@ -257,7 +270,11 @@ VriResult _prescribe(VriSpec s, String id, (double, double, double) Function(dou
     final a0 = s.startDeg + k * step, a1 = math.min(s.startDeg + (k + 1) * step, s.startDeg + sweep);
     final (mean, mx, mn) = sample(a0, a1, rings.first, rings.last);
     if (!zoneControl) {
-      final target = switch (s.rule) { VriSectorRule.areaWeighted => mean, VriSectorRule.maximum => mx, VriSectorRule.minimum => mn };
+      final target = switch (s.rule) {
+        VriSectorRule.areaWeighted => mean,
+        VriSectorRule.maximum => mx,
+        VriSectorRule.minimum => mn,
+      };
       final (p, limit) = timerFor(target);
       raw.add(VriRow(startDeg: a0, endDeg: a1, timerPct: p, depthMm: d100 * 100 / p, targetMm: target, limit: limit));
       continue;
@@ -282,7 +299,13 @@ VriResult _prescribe(VriSpec s, String id, (double, double, double) Function(dou
     if (same) {
       final w0 = last!.endDeg - last.startDeg, w1 = r.endDeg - r.startDeg;
       rows[rows.length - 1] = VriRow(
-        startDeg: last.startDeg, endDeg: r.endDeg, timerPct: last.timerPct, depthMm: last.depthMm, targetMm: (last.targetMm * w0 + r.targetMm * w1) / (w0 + w1), bankDutyPct: last.bankDutyPct, limit: last.limit,
+        startDeg: last.startDeg,
+        endDeg: r.endDeg,
+        timerPct: last.timerPct,
+        depthMm: last.depthMm,
+        targetMm: (last.targetMm * w0 + r.targetMm * w1) / (w0 + w1),
+        bankDutyPct: last.bankDutyPct,
+        limit: last.limit,
       );
     } else {
       rows.add(r);

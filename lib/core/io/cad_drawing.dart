@@ -40,8 +40,23 @@ class CadLinetype {
 /// names it. [horizontalText] keeps the text horizontal (DIMTIH, DIMTOH)
 /// instead of aligned with the dimension line.
 class CadDimStyle {
-  const CadDimStyle(this.name, {this.scale = 1, this.textHeight = 2.5, this.arrowSize = 2.5, this.extOffset = 0.625, this.extBeyond = 1.25, this.gap = 0.625, this.decimals = 2,
-      this.angleDecimals = 1, this.lengthFactor = 1, this.suffix = '', this.horizontalText = false, this.centerMark = 0, this.suppressZeros = 0});
+  const CadDimStyle(
+    this.name, {
+    this.scale = 1,
+    this.textHeight = 2.5,
+    this.arrowSize = 2.5,
+    this.extOffset = 0.625,
+    this.extBeyond = 1.25,
+    this.gap = 0.625,
+    this.decimals = 2,
+    this.angleDecimals = 1,
+    this.lengthFactor = 1,
+    this.suffix = '',
+    this.horizontalText = false,
+    this.centerMark = 0,
+    this.suppressZeros = 0,
+  });
+
   /// The style every drawing has (AutoCAD's metric defaults).
   static const standard = CadDimStyle('Standard', suppressZeros: 8);
 
@@ -245,8 +260,22 @@ enum CadDimKind { aligned, angular, radius, diameter, ordinate }
 /// end), [p15] (angle vertex or the point on the circle). [text] is the
 /// override (empty = the measured value, `<>` stands for it).
 class CadDimension extends CadEntity {
-  const CadDimension(super.layer, this.kind, {super.color, required this.block, required this.style, required this.defPoint, required this.textMid, this.p13 = Pt.zero, this.p14 = Pt.zero,
-      this.p15 = Pt.zero, required this.measurement, this.text = '', this.userTextPosition = false, this.xOrdinate = true});
+  const CadDimension(
+    super.layer,
+    this.kind, {
+    super.color,
+    required this.block,
+    required this.style,
+    required this.defPoint,
+    required this.textMid,
+    this.p13 = Pt.zero,
+    this.p14 = Pt.zero,
+    this.p15 = Pt.zero,
+    required this.measurement,
+    this.text = '',
+    this.userTextPosition = false,
+    this.xOrdinate = true,
+  });
   final CadDimKind kind;
   final String block, style;
   final Pt defPoint, textMid, p13, p14, p15;
@@ -259,7 +288,13 @@ class CadDimension extends CadEntity {
 
   /// DXF code 70 (type, block-referenced bit, ordinate X bit, user text position).
   int get dxfFlags =>
-      switch (kind) { CadDimKind.aligned => 1, CadDimKind.angular => 5, CadDimKind.radius => 4, CadDimKind.diameter => 3, CadDimKind.ordinate => 6 } |
+      switch (kind) {
+        CadDimKind.aligned => 1,
+        CadDimKind.angular => 5,
+        CadDimKind.radius => 4,
+        CadDimKind.diameter => 3,
+        CadDimKind.ordinate => 6,
+      } |
       32 |
       (kind == CadDimKind.ordinate && xOrdinate ? 64 : 0) |
       (userTextPosition ? 128 : 0);
@@ -291,7 +326,16 @@ class CadBlock {
 }
 
 class CadDrawing {
-  CadDrawing({required this.layers, this.linetypes = const [], this.dimStyles = const [], this.blocks = const [], required this.entities, this.textFont = 'arial.ttf', this.pointMode = 0, this.pointSize = 0});
+  CadDrawing({
+    required this.layers,
+    this.linetypes = const [],
+    this.dimStyles = const [],
+    this.blocks = const [],
+    required this.entities,
+    this.textFont = 'arial.ttf',
+    this.pointMode = 0,
+    this.pointSize = 0,
+  });
   final List<CadLayer> layers;
   final List<CadLinetype> linetypes;
   final List<CadDimStyle> dimStyles;
@@ -353,7 +397,14 @@ int aciRgb(int i) {
   // hue sector between two primaries; the minor channel rises or falls with the hue
   final h = hue / 60, f = h - h.floor();
   final up = lo + (v - lo) * f, down = v - (v - lo) * f;
-  final (r, g, b) = switch (h.floor() % 6) { 0 => (v, up, lo), 1 => (down, v, lo), 2 => (lo, v, up), 3 => (lo, down, v), 4 => (up, lo, v), _ => (v, lo, down) };
+  final (r, g, b) = switch (h.floor() % 6) {
+    0 => (v, up, lo),
+    1 => (down, v, lo),
+    2 => (lo, v, up),
+    3 => (lo, down, v),
+    4 => (up, lo, v),
+    _ => (v, lo, down),
+  };
   return (r.round() << 16) | (g.round() << 8) | b.round();
 }
 

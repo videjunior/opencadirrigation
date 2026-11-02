@@ -472,23 +472,27 @@ List<Fao56Result?> fao56MonthlySeries(List<MonthlyClimate> months, {required dou
     }
     final prev = byMonth[m == 1 ? 12 : m - 1], next = byMonth[m == 12 ? 1 : m + 1];
     final g = monthlySoilHeatFluxMJ(tMeanC: c.tMeanC, tPrevMonthC: prev?.tMeanC, tNextMonthC: next?.tMeanC);
-    out.add(fao56Eto(Fao56Input(
-      latitudeDeg: latitudeDeg,
-      elevationM: elevationM,
-      dayOfYear: midMonthDayOfYear(m),
-      tMaxC: c.tMaxC,
-      tMinC: c.tMinC,
-      tDewC: c.tDewC,
-      rhMaxPct: c.rhMaxPct,
-      rhMinPct: c.rhMinPct,
-      rhMeanPct: c.rhMeanPct,
-      windSpeedMs: c.windSpeed2mMs,
-      sunshineHours: c.sunshineHours,
-      solarRadiationMJ: c.solarRadiationMJ,
-      soilHeatFluxMJ: g,
-      kRs: kRs,
-      island: island,
-    )));
+    out.add(
+      fao56Eto(
+        Fao56Input(
+          latitudeDeg: latitudeDeg,
+          elevationM: elevationM,
+          dayOfYear: midMonthDayOfYear(m),
+          tMaxC: c.tMaxC,
+          tMinC: c.tMinC,
+          tDewC: c.tDewC,
+          rhMaxPct: c.rhMaxPct,
+          rhMinPct: c.rhMinPct,
+          rhMeanPct: c.rhMeanPct,
+          windSpeedMs: c.windSpeed2mMs,
+          sunshineHours: c.sunshineHours,
+          solarRadiationMJ: c.solarRadiationMJ,
+          soilHeatFluxMJ: g,
+          kRs: kRs,
+          island: island,
+        ),
+      ),
+    );
   }
   return out;
 }

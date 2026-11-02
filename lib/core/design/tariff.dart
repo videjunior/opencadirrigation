@@ -65,7 +65,8 @@ class TariffBand {
   }
 
   Map<String, dynamic> toJson() => {'s': startMinute, 'e': endMinute, 'p': pricePerKwh, if (peak) 'peak': true};
-  static TariffBand fromJson(Map<String, dynamic> j) => TariffBand(startMinute: (j['s'] as num).toInt(), endMinute: (j['e'] as num).toInt(), pricePerKwh: (j['p'] as num?)?.toDouble() ?? 0, peak: j['peak'] as bool? ?? false);
+  static TariffBand fromJson(Map<String, dynamic> j) =>
+      TariffBand(startMinute: (j['s'] as num).toInt(), endMinute: (j['e'] as num).toInt(), pricePerKwh: (j['p'] as num?)?.toDouble() ?? 0, peak: j['peak'] as bool? ?? false);
 }
 
 /// Consumer groups of the Brazilian tariff (Group A: medium and high
@@ -104,17 +105,44 @@ class IrrigationDiscount {
   /// (start, end) clock minutes never discounted.
   final List<(int, int)> excluded;
 
-  Map<String, dynamic> toJson() => {'f': fraction, 'w': windowMinutes, 'b': maxBlocks, 'g': blockMinutes, 'x': [for (final (s, e) in excluded) [s, e]]};
+  Map<String, dynamic> toJson() => {
+    'f': fraction,
+    'w': windowMinutes,
+    'b': maxBlocks,
+    'g': blockMinutes,
+    'x': [
+      for (final (s, e) in excluded) [s, e],
+    ],
+  };
   static IrrigationDiscount fromJson(Map<String, dynamic> j) => IrrigationDiscount(
-    fraction: (j['f'] as num?)?.toDouble() ?? 0, windowMinutes: (j['w'] as num?)?.toInt() ?? 510, maxBlocks: (j['b'] as num?)?.toInt() ?? 3, blockMinutes: (j['g'] as num?)?.toInt() ?? 30,
-    excluded: [for (final x in (j['x'] as List?) ?? const [[1020, 1290]]) (((x as List)[0] as num).toInt(), (x[1] as num).toInt())],
+    fraction: (j['f'] as num?)?.toDouble() ?? 0,
+    windowMinutes: (j['w'] as num?)?.toInt() ?? 510,
+    maxBlocks: (j['b'] as num?)?.toInt() ?? 3,
+    blockMinutes: (j['g'] as num?)?.toInt() ?? 30,
+    excluded: [
+      for (final x
+          in (j['x'] as List?) ??
+              const [
+                [1020, 1290],
+              ])
+        (((x as List)[0] as num).toInt(), (x[1] as num).toInt()),
+    ],
   );
 }
 
 /// The tariff of a season: energy price by band, demand charges and the
 /// irrigation discount.
 class TariffSeason {
-  const TariffSeason({this.id = '', this.months = const {}, this.bands = const [], this.basePricePerKwh = 0, this.demandChargePerKw = 0, this.peakDemandChargePerKw = 0, this.daysPerMonth = 30, this.discount});
+  const TariffSeason({
+    this.id = '',
+    this.months = const {},
+    this.bands = const [],
+    this.basePricePerKwh = 0,
+    this.demandChargePerKw = 0,
+    this.peakDemandChargePerKw = 0,
+    this.daysPerMonth = 30,
+    this.discount,
+  });
   final String id;
 
   /// Months (1–12) of the season; empty = the whole year.
@@ -149,12 +177,23 @@ class TariffSeason {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id, 'months': months.toList()..sort(), 'bands': bands.map((b) => b.toJson()).toList(), 'base': basePricePerKwh, 'dem': demandChargePerKw, 'peakDem': peakDemandChargePerKw, 'days': daysPerMonth,
+    'id': id,
+    'months': months.toList()..sort(),
+    'bands': bands.map((b) => b.toJson()).toList(),
+    'base': basePricePerKwh,
+    'dem': demandChargePerKw,
+    'peakDem': peakDemandChargePerKw,
+    'days': daysPerMonth,
     if (discount != null) 'disc': discount!.toJson(),
   };
   static TariffSeason fromJson(Map<String, dynamic> j) => TariffSeason(
-    id: j['id'] as String? ?? '', months: {for (final m in (j['months'] as List?) ?? []) (m as num).toInt()}, bands: [for (final b in (j['bands'] as List?) ?? []) TariffBand.fromJson(b as Map<String, dynamic>)],
-    basePricePerKwh: (j['base'] as num?)?.toDouble() ?? 0, demandChargePerKw: (j['dem'] as num?)?.toDouble() ?? 0, peakDemandChargePerKw: (j['peakDem'] as num?)?.toDouble() ?? 0, daysPerMonth: (j['days'] as num?)?.toDouble() ?? 30,
+    id: j['id'] as String? ?? '',
+    months: {for (final m in (j['months'] as List?) ?? []) (m as num).toInt()},
+    bands: [for (final b in (j['bands'] as List?) ?? []) TariffBand.fromJson(b as Map<String, dynamic>)],
+    basePricePerKwh: (j['base'] as num?)?.toDouble() ?? 0,
+    demandChargePerKw: (j['dem'] as num?)?.toDouble() ?? 0,
+    peakDemandChargePerKw: (j['peakDem'] as num?)?.toDouble() ?? 0,
+    daysPerMonth: (j['days'] as num?)?.toDouble() ?? 30,
     discount: j['disc'] is Map<String, dynamic> ? IrrigationDiscount.fromJson(j['disc'] as Map<String, dynamic>) : null,
   );
 }
@@ -223,7 +262,16 @@ class ScheduleOptions {
 
 /// A job in the schedule.
 class ScheduledJob {
-  ScheduledJob({required this.id, required this.startMinute, required this.minutes, required this.powerKw, required this.cost, required this.costWithoutDiscount, required this.windowMinutes, required this.peakMinutes});
+  ScheduledJob({
+    required this.id,
+    required this.startMinute,
+    required this.minutes,
+    required this.powerKw,
+    required this.cost,
+    required this.costWithoutDiscount,
+    required this.windowMinutes,
+    required this.peakMinutes,
+  });
   final String id;
 
   /// Start (clock minute, 0–1439) and duration (min).
@@ -245,7 +293,14 @@ class ScheduledJob {
 
   Map<String, dynamic> toJson() => {'id': id, 's': startMinute, 'min': minutes, 'kw': powerKw, 'c': cost, 'c0': costWithoutDiscount, 'win': windowMinutes, 'peak': peakMinutes};
   static ScheduledJob fromJson(Map<String, dynamic> j) => ScheduledJob(
-    id: j['id'] as String, startMinute: (j['s'] as num?)?.toInt() ?? 0, minutes: _d(j['min']), powerKw: _d(j['kw']), cost: _d(j['c']), costWithoutDiscount: _d(j['c0']), windowMinutes: _d(j['win']), peakMinutes: _d(j['peak']),
+    id: j['id'] as String,
+    startMinute: (j['s'] as num?)?.toInt() ?? 0,
+    minutes: _d(j['min']),
+    powerKw: _d(j['kw']),
+    cost: _d(j['c']),
+    costWithoutDiscount: _d(j['c0']),
+    windowMinutes: _d(j['win']),
+    peakMinutes: _d(j['peak']),
   );
 }
 
@@ -263,7 +318,17 @@ class DiscountBlock {
 
 /// Outcome of [scheduleJobs].
 class TariffSchedule {
-  TariffSchedule({required this.seasonId, required this.jobs, required this.blocks, required this.energyCost, required this.energyCostWithoutDiscount, required this.demandCost, required this.baselineCost, required this.exact, required this.violations});
+  TariffSchedule({
+    required this.seasonId,
+    required this.jobs,
+    required this.blocks,
+    required this.energyCost,
+    required this.energyCostWithoutDiscount,
+    required this.demandCost,
+    required this.baselineCost,
+    required this.exact,
+    required this.violations,
+  });
   final String seasonId;
 
   /// The jobs from the start of the scheduling day.
@@ -301,12 +366,26 @@ class TariffSchedule {
   double get discountSaving => energyCostWithoutDiscount - energyCost;
 
   Map<String, dynamic> toJson() => {
-    'season': seasonId, 'jobs': jobs.map((j) => j.toJson()).toList(), 'blocks': blocks.map((b) => b.toJson()).toList(), 'e': energyCost, 'e0': energyCostWithoutDiscount, 'd': demandCost,
-    if (baselineCost != null) 'base': baselineCost, 'exact': exact, 'viol': violations,
+    'season': seasonId,
+    'jobs': jobs.map((j) => j.toJson()).toList(),
+    'blocks': blocks.map((b) => b.toJson()).toList(),
+    'e': energyCost,
+    'e0': energyCostWithoutDiscount,
+    'd': demandCost,
+    if (baselineCost != null) 'base': baselineCost,
+    'exact': exact,
+    'viol': violations,
   };
   static TariffSchedule fromJson(Map<String, dynamic> j) => TariffSchedule(
-    seasonId: j['season'] as String? ?? '', jobs: [for (final x in (j['jobs'] as List?) ?? []) ScheduledJob.fromJson(x as Map<String, dynamic>)], blocks: [for (final x in (j['blocks'] as List?) ?? []) DiscountBlock.fromJson(x as Map<String, dynamic>)],
-    energyCost: _d(j['e']), energyCostWithoutDiscount: _d(j['e0']), demandCost: _d(j['d']), baselineCost: (j['base'] as num?)?.toDouble(), exact: j['exact'] as bool? ?? false, violations: ((j['viol'] as List?) ?? []).cast<String>(),
+    seasonId: j['season'] as String? ?? '',
+    jobs: [for (final x in (j['jobs'] as List?) ?? []) ScheduledJob.fromJson(x as Map<String, dynamic>)],
+    blocks: [for (final x in (j['blocks'] as List?) ?? []) DiscountBlock.fromJson(x as Map<String, dynamic>)],
+    energyCost: _d(j['e']),
+    energyCostWithoutDiscount: _d(j['e0']),
+    demandCost: _d(j['d']),
+    baselineCost: (j['base'] as num?)?.toDouble(),
+    exact: j['exact'] as bool? ?? false,
+    violations: ((j['viol'] as List?) ?? []).cast<String>(),
   );
 }
 
@@ -314,7 +393,9 @@ class TariffSchedule {
 TariffSchedule scheduleJobs(List<TariffJob> jobs, TariffSeason season, {ScheduleOptions options = const ScheduleOptions()}) => _Scheduler(jobs, season, options).run();
 
 /// Schedules for every season of [tariff], the jobs of each from [jobsFor].
-List<TariffSchedule> scheduleSeasons(Tariff tariff, List<TariffJob> Function(TariffSeason season) jobsFor, {ScheduleOptions options = const ScheduleOptions()}) => [for (final s in tariff.seasons) scheduleJobs(jobsFor(s), s, options: options)];
+List<TariffSchedule> scheduleSeasons(Tariff tariff, List<TariffJob> Function(TariffSeason season) jobsFor, {ScheduleOptions options = const ScheduleOptions()}) => [
+  for (final s in tariff.seasons) scheduleJobs(jobsFor(s), s, options: options),
+];
 
 /// Jobs for the system flows of [p] from the design [results]: the daily
 /// duration of every flow and its power, the shaft power of the calculated
@@ -541,7 +622,11 @@ class _Scheduler {
   /// Energy cost of slot o of job k when it runs at step t (undiscounted),
   /// at [k][t·len[k] + o].
   late final List<Float64List> _slot = [
-    for (var k = 0; k < jobs.length; k++) Float64List.fromList([for (var t = 0; t < slots; t++) for (var o = 0; o < len[k]; o++) power[k] * _slotCost(k, t, o)]),
+    for (var k = 0; k < jobs.length; k++)
+      Float64List.fromList([
+        for (var t = 0; t < slots; t++)
+          for (var o = 0; o < len[k]; o++) power[k] * _slotCost(k, t, o),
+      ]),
   ];
 
   final Map<double, List<Uint8List>> _startOk = {};
@@ -568,9 +653,7 @@ class _Scheduler {
         return _encode(u + 1, d == 1 ? r : r + 1, 1, f);
       }(),
   ]);
-  late final List<bool> _endOk = [
-    for (var ds = 0; ds < _nd; ds++) (ds ~/ _nf ~/ 2) % _nr - (wrap && ds % _nf == 1 && (ds ~/ _nf) % 2 == 1 ? 1 : 0) <= rmax,
-  ];
+  late final List<bool> _endOk = [for (var ds = 0; ds < _nd; ds++) (ds ~/ _nf ~/ 2) % _nr - (wrap && ds % _nf == 1 && (ds ~/ _nf) % 2 == 1 ? 1 : 0) <= rmax];
 
   /// Start times and discount blocks of [order], together and exactly (the
   /// dynamic programme of the library comment); null when the jobs do not
@@ -702,10 +785,7 @@ class _Scheduler {
       for (var k = 0; k < jobs.length; k++)
         Float64List.fromList([
           for (var t = 0; t < slots; t++)
-            if (start[k][t] == 0)
-              double.nan
-            else
-              [for (var o = 0; o < len[k]; o++) _slot[k][(t + o) * len[k] + o] * (flags[(t + o) ~/ perBlock] ? 1 - delta : 1)].fold(0.0, (a, b) => a + b),
+            if (start[k][t] == 0) double.nan else [for (var o = 0; o < len[k]; o++) _slot[k][(t + o) * len[k] + o] * (flags[(t + o) ~/ perBlock] ? 1 - delta : 1)].fold(0.0, (a, b) => a + b),
         ]),
     ];
   }
@@ -844,11 +924,7 @@ class _Scheduler {
       }
       return (best, true);
     }
-    final candidates = <List<int>>[
-      if (_respects(List<int>.generate(n, (i) => i))) List<int>.generate(n, (i) => i),
-      _topological((i) => -power[i])!,
-      _topological((i) => power[i])!,
-    ];
+    final candidates = <List<int>>[if (_respects(List<int>.generate(n, (i) => i))) List<int>.generate(n, (i) => i), _topological((i) => -power[i])!, _topological((i) => power[i])!];
     // starting orders: the candidates, and with up to 8 jobs the best order
     // for a single window of the whole discount at every place it fits
     final starts = <List<int>>[...candidates];
@@ -986,7 +1062,16 @@ class _Scheduler {
           x = y;
         }
         final pk = _count(peakCum, startClock[k], end).toDouble().clamp(0.0, minutes[k]);
-        return ScheduledJob(id: jobs[k].id, startMinute: startClock[k].round() % _day, minutes: minutes[k], powerKw: power[k], cost: cost, costWithoutDiscount: cost0, windowMinutes: win, peakMinutes: pk);
+        return ScheduledJob(
+          id: jobs[k].id,
+          startMinute: startClock[k].round() % _day,
+          minutes: minutes[k],
+          powerKw: power[k],
+          cost: cost,
+          costWithoutDiscount: cost0,
+          windowMinutes: win,
+          peakMinutes: pk,
+        );
       }(),
   ];
 
@@ -1032,7 +1117,12 @@ class _Scheduler {
     }
     // caps on the power drawn in the peak bands
     final peakBands = season.peakDemandChargePerKw > 0 && peakCum[_day] > 0;
-    final caps = peakBands ? <double>[0, ...{...power}.toList()..sort()] : <double>[double.infinity];
+    final caps = peakBands
+        ? <double>[
+            0,
+            ...{...power}.toList()..sort(),
+          ]
+        : <double>[double.infinity];
     _Plan? best;
     var bestTotal = double.infinity;
     var exact = true;
@@ -1091,8 +1181,15 @@ class _Scheduler {
       if (j.peakMinutes > 0) violations.add('tariff_peak_use:${j.id}');
     }
     return TariffSchedule(
-      seasonId: season.id, jobs: js, blocks: _blocks(clockFlags), energyCost: js.fold(0.0, (s, j) => s + j.cost), energyCostWithoutDiscount: js.fold(0.0, (s, j) => s + j.costWithoutDiscount),
-      demandCost: _demand(js), baselineCost: baseline, exact: exact && best != null, violations: violations,
+      seasonId: season.id,
+      jobs: js,
+      blocks: _blocks(clockFlags),
+      energyCost: js.fold(0.0, (s, j) => s + j.cost),
+      energyCostWithoutDiscount: js.fold(0.0, (s, j) => s + j.costWithoutDiscount),
+      demandCost: _demand(js),
+      baselineCost: baseline,
+      exact: exact && best != null,
+      violations: violations,
     );
   }
 }

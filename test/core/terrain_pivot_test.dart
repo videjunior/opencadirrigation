@@ -74,7 +74,9 @@ void main() {
       }
       // project-level: contours become entities via the project's terrain
       final p = Project();
-      p.entities.addAll([for (var i = 0; i <= 4; i++) ContourEntity(id: p.newId(), points: [Pt(0, i * 25.0), Pt(100, i * 25.0)], elevation: 100 + i * 2.5)]);
+      p.entities.addAll([
+        for (var i = 0; i <= 4; i++) ContourEntity(id: p.newId(), points: [Pt(0, i * 25.0), Pt(100, i * 25.0)], elevation: 100 + i * 2.5),
+      ]);
       expect(p.params.terrainMethod, TerrainMethod.tin);
       expect(p.buildTerrain().generateContours(5).map((l) => l.$1).toSet(), containsAll([105.0]));
     });
@@ -114,7 +116,20 @@ void main() {
     test('guided block generator produces curved laterals clipped to the polygon', () {
       final p = Project();
       final poly = [const Pt(0, 0), const Pt(100, 0), const Pt(100, 60), const Pt(0, 60)];
-      final r = generateBlock(p, BlockOptions(polygon: poly, direction: const Pt(1, 0), lateralSpacing: 10, outletSpecId: 'micro', nozzleId: 'm50', outletSpacing: 4, guide: [const Pt(-10, 5), const Pt(50, 15), const Pt(110, 5)], valveSpecId: 'ev50', zoneName: 'Curva'));
+      final r = generateBlock(
+        p,
+        BlockOptions(
+          polygon: poly,
+          direction: const Pt(1, 0),
+          lateralSpacing: 10,
+          outletSpecId: 'micro',
+          nozzleId: 'm50',
+          outletSpacing: 4,
+          guide: [const Pt(-10, 5), const Pt(50, 15), const Pt(110, 5)],
+          valveSpecId: 'ev50',
+          zoneName: 'Curva',
+        ),
+      );
       expect(r.laterals.length, greaterThanOrEqualTo(4));
       for (final l in r.laterals) {
         final pts = (l as SpraylineEntity).points;
@@ -132,7 +147,10 @@ void main() {
       final lines = [sub, for (final b in r.branches) b.points];
       for (final l in r.laterals) {
         final start = (l as SpraylineEntity).points.first;
-        final d = [for (final line in lines) for (var k = 1; k < line.length; k++) distanceToSegment(start, line[k - 1], line[k])].reduce((a, b) => a < b ? a : b);
+        final d = [
+          for (final line in lines)
+            for (var k = 1; k < line.length; k++) distanceToSegment(start, line[k - 1], line[k]),
+        ].reduce((a, b) => a < b ? a : b);
         expect(d, lessThan(1e-6));
       }
       for (var k = 1; k < sub.length; k++) {
@@ -239,7 +257,10 @@ void main() {
     test('a connected block passes without errors', () {
       final p = Project();
       final poly = [const Pt(0, 0), const Pt(60, 0), const Pt(60, 30), const Pt(0, 30)];
-      final b = generateBlock(p, BlockOptions(polygon: poly, direction: const Pt(1, 0), lateralSpacing: 5, outletSpecId: 'micro', nozzleId: 'm50', outletSpacing: 3, valveSpecId: 'ev50', zoneName: 'A'));
+      final b = generateBlock(
+        p,
+        BlockOptions(polygon: poly, direction: const Pt(1, 0), lateralSpacing: 5, outletSpecId: 'micro', nozzleId: 'm50', outletSpacing: 3, valveSpecId: 'ev50', zoneName: 'A'),
+      );
       p.entities.addAll(b.all);
       final v = b.valve!.position;
       p.entities.add(PipeEntity(id: p.newId(), points: [v + const Pt(-30, 0), v], scope: HydraulicScope.mainline));
@@ -268,7 +289,16 @@ void main() {
     });
 
     test('XLSX reader handles shared and inline strings written by the writer', () {
-      final bytes = XlsxWriter.write([XlsxSheet(name: 'S', headers: ['a', 'b'], rows: [[1.5, 'x'], [2, 'y z']])]);
+      final bytes = XlsxWriter.write([
+        XlsxSheet(
+          name: 'S',
+          headers: ['a', 'b'],
+          rows: [
+            [1.5, 'x'],
+            [2, 'y z'],
+          ],
+        ),
+      ]);
       final s = XlsxReader.read(Uint8List.fromList(bytes)).single;
       expect(s.headers, ['a', 'b']);
       expect(s.rows[0][0], 1.5);

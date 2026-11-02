@@ -41,53 +41,54 @@ List<Map<String, dynamic>> message(
     'type': 'message_start',
     'message': {'id': 'msg', 'type': 'message', 'role': 'assistant', 'model': model, 'content': [], 'usage': usage},
   },
-  for (var i = 0; i < blocks.length; i++) ...switch (blocks[i]['type']) {
-    'thinking' => [
-      {
-        'type': 'content_block_start',
-        'index': i,
-        'content_block': {'type': 'thinking', 'thinking': '', 'signature': ''},
-      },
-      if ((blocks[i]['thinking'] as String).isNotEmpty)
+  for (var i = 0; i < blocks.length; i++)
+    ...switch (blocks[i]['type']) {
+      'thinking' => [
+        {
+          'type': 'content_block_start',
+          'index': i,
+          'content_block': {'type': 'thinking', 'thinking': '', 'signature': ''},
+        },
+        if ((blocks[i]['thinking'] as String).isNotEmpty)
+          {
+            'type': 'content_block_delta',
+            'index': i,
+            'delta': {'type': 'thinking_delta', 'thinking': blocks[i]['thinking']},
+          },
         {
           'type': 'content_block_delta',
           'index': i,
-          'delta': {'type': 'thinking_delta', 'thinking': blocks[i]['thinking']},
+          'delta': {'type': 'signature_delta', 'signature': blocks[i]['signature']},
         },
-      {
-        'type': 'content_block_delta',
-        'index': i,
-        'delta': {'type': 'signature_delta', 'signature': blocks[i]['signature']},
-      },
-      {'type': 'content_block_stop', 'index': i},
-    ],
-    'text' => [
-      {
-        'type': 'content_block_start',
-        'index': i,
-        'content_block': {'type': 'text', 'text': ''},
-      },
-      {
-        'type': 'content_block_delta',
-        'index': i,
-        'delta': {'type': 'text_delta', 'text': blocks[i]['text']},
-      },
-      {'type': 'content_block_stop', 'index': i},
-    ],
-    _ => [
-      {
-        'type': 'content_block_start',
-        'index': i,
-        'content_block': {...blocks[i], 'input': {}},
-      },
-      {
-        'type': 'content_block_delta',
-        'index': i,
-        'delta': {'type': 'input_json_delta', 'partial_json': jsonEncode(blocks[i]['input'])},
-      },
-      {'type': 'content_block_stop', 'index': i},
-    ],
-  },
+        {'type': 'content_block_stop', 'index': i},
+      ],
+      'text' => [
+        {
+          'type': 'content_block_start',
+          'index': i,
+          'content_block': {'type': 'text', 'text': ''},
+        },
+        {
+          'type': 'content_block_delta',
+          'index': i,
+          'delta': {'type': 'text_delta', 'text': blocks[i]['text']},
+        },
+        {'type': 'content_block_stop', 'index': i},
+      ],
+      _ => [
+        {
+          'type': 'content_block_start',
+          'index': i,
+          'content_block': {...blocks[i], 'input': {}},
+        },
+        {
+          'type': 'content_block_delta',
+          'index': i,
+          'delta': {'type': 'input_json_delta', 'partial_json': jsonEncode(blocks[i]['input'])},
+        },
+        {'type': 'content_block_stop', 'index': i},
+      ],
+    },
   if (end) ...[
     {
       'type': 'message_delta',
@@ -208,8 +209,16 @@ void main() {
 
     test('mid-task (400): the history kept is the input of the last request it accepted, every call answered', () async {
       final s = Script([
-        (_, _) => sse(message([toolUse('t1', 'look', {'x': 1})], stop: 'tool_use')),
-        (_, _) => sse(message([toolUse('t2', 'look', {'x': 2})], stop: 'tool_use')),
+        (_, _) => sse(
+          message([
+            toolUse('t1', 'look', {'x': 1}),
+          ], stop: 'tool_use'),
+        ),
+        (_, _) => sse(
+          message([
+            toolUse('t2', 'look', {'x': 2}),
+          ], stop: 'tool_use'),
+        ),
         (_, _) => apiError(400, 'invalid_request_error', 'messages.6.content.0.image.source: Could not process image'),
       ]);
       final turn = await run(s, prior);
@@ -234,8 +243,16 @@ void main() {
 
     test('too large to send: stopped before it leaves, with the size, and what made it so is left out', () async {
       final big = 'A' * (AiHttpClient.maxRequestBytes + 1000);
-      final s = Script([(_, _) => sse(message([toolUse('t1', 'shot', {})], stop: 'tool_use'))]);
-      final turn = await run(s, prior, tools: [tool('shot', out: (_) => ToolOutput('a picture', images: [ToolImage('image/jpeg', big)]))]);
+      final s = Script([
+        (_, _) => sse(message([toolUse('t1', 'shot', {})], stop: 'tool_use')),
+      ]);
+      final turn = await run(
+        s,
+        prior,
+        tools: [
+          tool('shot', out: (_) => ToolOutput('a picture', images: [ToolImage('image/jpeg', big)])),
+        ],
+      );
       expect(s.calls, 1, reason: 'the second request never left');
       expect(turn.error!.kind, AiErrorKind.tooLarge);
       expect(turn.error!.size, greaterThan(AiHttpClient.maxRequestBytes));
@@ -246,7 +263,11 @@ void main() {
 
     test('a failure of the service, not of the request, keeps everything (every call answered)', () async {
       final s = Script([
-        (_, _) => sse(message([toolUse('t1', 'look', {'x': 1})], stop: 'tool_use')),
+        (_, _) => sse(
+          message([
+            toolUse('t1', 'look', {'x': 1}),
+          ], stop: 'tool_use'),
+        ),
         for (var k = 0; k < 3; k++) (_, _) => throw AiError(AiErrorKind.network),
       ]);
       final turn = await run(s, prior);
@@ -320,7 +341,10 @@ void main() {
       expect(r.text, 'whole');
       expect(s.calls, 2);
 
-      final cut = Script([(_, _) => sse(message([textBlock('half an ans')], end: false)), (_, _) => sse(message([textBlock('never')]))]);
+      final cut = Script([
+        (_, _) => sse(message([textBlock('half an ans')], end: false)),
+        (_, _) => sse(message([textBlock('never')])),
+      ]);
       final shown = <String>[];
       await expectLater(
         api(cut).send(
@@ -393,7 +417,9 @@ void main() {
   group('the request', () {
     test('every Claude model asks for its whole output limit (128 000, streamed); OpenAI keeps its own', () async {
       for (final m in [AiModel.fable51, AiModel.opus55, AiModel.sonnet55, AiModel.haiku55]) {
-        final s = Script([(_, _) => sse(message([textBlock('ok')], model: m.id))]);
+        final s = Script([
+          (_, _) => sse(message([textBlock('ok')], model: m.id)),
+        ]);
         await api(s).send(
           AiRequest(model: m, system: 's', history: [user('q')]),
           cancel: AiCancel(),
@@ -401,7 +427,9 @@ void main() {
         expect(s.bodies.single['max_tokens'], 128000, reason: m.id);
         expect(s.bodies.single['stream'], isTrue);
       }
-      final asked = Script([(_, _) => sse(message([textBlock('ok')]))]);
+      final asked = Script([
+        (_, _) => sse(message([textBlock('ok')])),
+      ]);
       await api(asked).send(
         AiRequest(model: AiModel.opus55, system: 's', history: [user('q')], maxTokens: 4096),
         cancel: AiCancel(),
@@ -425,7 +453,14 @@ void main() {
       for (final e in AiEffort.values) {
         final f = FakeOpenAi([(_) => OpenAiReply.text('ok')]);
         await OpenAiClient(apiKey: 'sk-proj-test-0000', transport: f.call).send(
-          AiRequest(model: AiModel.gpt6Astra, system: 's', history: [OpenAiFormat.user([AiTextPart('q')])], effort: e),
+          AiRequest(
+            model: AiModel.gpt6Astra,
+            system: 's',
+            history: [
+              OpenAiFormat.user([AiTextPart('q')]),
+            ],
+            effort: e,
+          ),
           cancel: AiCancel(),
         );
         expect((f.bodies.single['reasoning'] as Map)['effort'], e == AiEffort.max ? 'xhigh' : e.name);
@@ -441,7 +476,10 @@ void main() {
 
   group('errors named for what they are', () {
     Future<(AiError, int)> fail(FutureOr<AiHttpResponse> Function(AiHttpRequest, AiCancel) step, {AiModel model = AiModel.opus55}) async {
-      final s = Script([step, (_, _) => sse(message([textBlock('retried')]))]);
+      final s = Script([
+        step,
+        (_, _) => sse(message([textBlock('retried')])),
+      ]);
       try {
         await api(s).send(
           AiRequest(model: model, system: 's', history: [user('q')]),
@@ -475,7 +513,10 @@ void main() {
       (e, n) = await fail((_, _) => apiError(429, 'rate_limit_error', 'Number of request tokens has exceeded your per-minute rate limit', headers: {'retry-after': '120'}));
       expect((e.kind, n), (AiErrorKind.rateLimit, 1));
       expect(e.retryAfter, const Duration(seconds: 120), reason: 'the wait goes to the user');
-      final s = Script([(_, _) => apiError(504, 'timeout_error', 'Request timed out'), (_, _) => sse(message([textBlock('second')]))]);
+      final s = Script([
+        (_, _) => apiError(504, 'timeout_error', 'Request timed out'),
+        (_, _) => sse(message([textBlock('second')])),
+      ]);
       final r = await api(s).send(
         AiRequest(model: AiModel.opus55, system: 's', history: [user('q')]),
         cancel: AiCancel(),
@@ -493,13 +534,16 @@ void main() {
         throwsA(isA<AiError>().having((e) => e.kind, 'kind', AiErrorKind.server).having((e) => e.requestId, 'requestId', 'req_body')),
       );
       final s = Script([
-        (_, _) => sse([
-          message(const [])[0],
-          {
-            'type': 'error',
-            'error': {'type': 'invalid_request_error', 'message': 'bad things'},
-          },
-        ], headers: {'request-id': 'req_stream'}),
+        (_, _) => sse(
+          [
+            message(const [])[0],
+            {
+              'type': 'error',
+              'error': {'type': 'invalid_request_error', 'message': 'bad things'},
+            },
+          ],
+          headers: {'request-id': 'req_stream'},
+        ),
       ]);
       await expectLater(
         api(s).send(
@@ -511,25 +555,27 @@ void main() {
     });
 
     test('a full context window is not "cut at the length limit"; a refusal says which model to try', () async {
-      final full = Script([(_, _) => sse(message([textBlock('A partial answer')], stop: 'model_context_window_exceeded'))]);
+      final full = Script([
+        (_, _) => sse(message([textBlock('A partial answer')], stop: 'model_context_window_exceeded')),
+      ]);
       final t = await AgentLoop(api: api(full), tools: const []).run(model: AiModel.opus55, system: 's', history: const [], user: user('q'), cancel: AiCancel());
       expect(t.stop, AgentStop.error);
       expect(t.error!.kind, AiErrorKind.contextWindow);
       expect(t.messages.length, 2, reason: 'what the model wrote stays');
-      final cut = Script([(_, _) => sse(message([toolUse('t1', 'look', {'x': 1})], stop: 'model_context_window_exceeded'))]);
+      final cut = Script([
+        (_, _) => sse(
+          message([
+            toolUse('t1', 'look', {'x': 1}),
+          ], stop: 'model_context_window_exceeded'),
+        ),
+      ]);
       final t2 = await AgentLoop(api: api(cut), tools: [tool('look')]).run(model: AiModel.opus55, system: 's', history: const [], user: user('q'), cancel: AiCancel());
       expect(t2.error!.kind, AiErrorKind.contextWindow);
       expect(ran, isEmpty, reason: 'a call cut by the full window is not run');
       expect(t2.messages, isEmpty);
 
       final declined = Script([
-        (_, _) => sse(
-          message(
-            const [],
-            stop: 'refusal',
-            stopDetails: {'type': 'refusal', 'category': 'cyber', 'explanation': 'Declined by a classifier.', 'recommended_model': 'claude-opus-4-8'},
-          ),
-        ),
+        (_, _) => sse(message(const [], stop: 'refusal', stopDetails: {'type': 'refusal', 'category': 'cyber', 'explanation': 'Declined by a classifier.', 'recommended_model': 'claude-opus-4-8'})),
       ]);
       final t3 = await AgentLoop(api: api(declined), tools: const []).run(model: AiModel.opus55, system: 's', history: const [], user: user('q'), cancel: AiCancel());
       expect(t3.error!.kind, AiErrorKind.refusal);
@@ -559,7 +605,10 @@ void main() {
     test('is taken out with every thinking block after it, the request sent once more, and the stripped history kept', () async {
       final history = conversation();
       final before = jsonEncode(history);
-      final s = Script([(_, _) => apiError(400, 'invalid_request_error', bound(1)), (_, _) => sse(message([thinking('', 'sigC'), textBlock('fine')]))]);
+      final s = Script([
+        (_, _) => apiError(400, 'invalid_request_error', bound(1)),
+        (_, _) => sse(message([thinking('', 'sigC'), textBlock('fine')])),
+      ]);
       final turn = await AgentLoop(api: api(s), tools: const []).run(model: AiModel.opus55, system: 's', history: history, user: user('third'), cancel: AiCancel());
       expect(turn.stop, AgentStop.done);
       expect(s.calls, 2);
@@ -574,7 +623,10 @@ void main() {
     });
 
     test('a block later on goes with the ones after it only; positions count from the last compaction', () async {
-      final s = Script([(_, _) => apiError(400, 'invalid_request_error', bound(3)), (_, _) => sse(message([textBlock('fine')]))]);
+      final s = Script([
+        (_, _) => apiError(400, 'invalid_request_error', bound(3)),
+        (_, _) => sse(message([textBlock('fine')])),
+      ]);
       await api(s).send(
         AiRequest(model: AiModel.opus55, system: 's', history: [...conversation(), user('third')]),
         cancel: AiCancel(),
@@ -597,7 +649,10 @@ void main() {
         },
         user('now'),
       ];
-      final c = Script([(_, _) => apiError(400, 'invalid_request_error', bound(2)), (_, _) => sse(message([textBlock('fine')]))]);
+      final c = Script([
+        (_, _) => apiError(400, 'invalid_request_error', bound(2)),
+        (_, _) => sse(message([textBlock('fine')])),
+      ]);
       final r = await api(c).send(
         AiRequest(model: AiModel.opus55, system: 's', history: compacted),
         cancel: AiCancel(),
@@ -639,7 +694,9 @@ void main() {
   group('the model\'s notes between tool calls', () {
     test('Claude Opus 5.5, Sonnet 5.5 and Fable 5.1 ask for them; Haiku 5.5 does not', () async {
       for (final m in [AiModel.opus55, AiModel.sonnet55, AiModel.fable51, AiModel.haiku55]) {
-        final s = Script([(_, _) => sse(message([textBlock('ok')], model: m.id))]);
+        final s = Script([
+          (_, _) => sse(message([textBlock('ok')], model: m.id)),
+        ]);
         await api(s).send(
           AiRequest(model: m, system: 's', history: [user('q')]),
           cancel: AiCancel(),
@@ -655,7 +712,10 @@ void main() {
         (AiModel.opus55, "thinking.display: Input should be 'summarized' or 'omitted'"),
         (AiModel.fable51, 'Unexpected value(s) `thinking-display-updates-2026-08-18` for the `anthropic-beta` header.'),
       ]) {
-        final s = Script([(_, _) => apiError(400, 'invalid_request_error', why), (_, _) => sse(message([textBlock('ok')], model: m.id))]);
+        final s = Script([
+          (_, _) => apiError(400, 'invalid_request_error', why),
+          (_, _) => sse(message([textBlock('ok')], model: m.id)),
+        ]);
         final r = await api(s).send(
           AiRequest(model: m, system: 's', history: [user('q')]),
           cancel: AiCancel(),
@@ -668,7 +728,10 @@ void main() {
         expect(AiHttpClient.declined, contains('${m.id}:display'));
       }
       // a beta the account lacks drops its own field
-      final s = Script([(_, _) => apiError(400, 'invalid_request_error', 'Unexpected value(s) `task-budgets-2026-03-13` for the `anthropic-beta` header.'), (_, _) => sse(message([textBlock('ok')]))]);
+      final s = Script([
+        (_, _) => apiError(400, 'invalid_request_error', 'Unexpected value(s) `task-budgets-2026-03-13` for the `anthropic-beta` header.'),
+        (_, _) => sse(message([textBlock('ok')])),
+      ]);
       await api(s).send(
         AiRequest(model: AiModel.sonnet55, system: 's', history: [user('q')], taskBudget: 50000),
         cancel: AiCancel(),
@@ -680,7 +743,13 @@ void main() {
     test('a note streams as a status, stays with the tool it introduced, and goes back unchanged', () async {
       const note = 'Found the mainline; checking the laterals next.';
       final s = Script([
-        (_, _) => sse(message([thinking('', 'sig0'), thinking(note, 'sig1'), toolUse('t1', 'look', {'x': 1})], stop: 'tool_use')),
+        (_, _) => sse(
+          message([
+            thinking('', 'sig0'),
+            thinking(note, 'sig1'),
+            toolUse('t1', 'look', {'x': 1}),
+          ], stop: 'tool_use'),
+        ),
         (_, _) => sse(message([thinking(AnthropicClient.interruptedNote, 'sig2'), textBlock('Done.')])),
       ]);
       final statuses = <AgentStatus>[];
@@ -696,7 +765,11 @@ void main() {
       final updates = statuses.where((x) => x.kind == 'update').map((x) => x.note).toList();
       expect(updates, [note], reason: 'empty blocks and the stand-in for unfinished work are no notes');
       expect(statuses.firstWhere((x) => x.kind == 'tool').note, note);
-      expect(s.messages(1)[1]['content'], [thinking('', 'sig0'), thinking(note, 'sig1'), toolUse('t1', 'look', {'x': 1})]);
+      expect(s.messages(1)[1]['content'], [
+        thinking('', 'sig0'),
+        thinking(note, 'sig1'),
+        toolUse('t1', 'look', {'x': 1}),
+      ]);
     });
   });
 
@@ -706,7 +779,10 @@ void main() {
         (_, _) => sse([
           message(const [])[0],
           {'type': 'content_block_start', 'index': 'zero', 'content_block': null},
-          {'type': 'content_block_delta', 'delta': {'type': 'text_delta', 'text': 'x'}},
+          {
+            'type': 'content_block_delta',
+            'delta': {'type': 'text_delta', 'text': 'x'},
+          },
           {'type': 'content_block_stop', 'index': 7},
           ...message([textBlock('still fine')]).sublist(1),
         ]),
@@ -736,7 +812,12 @@ void main() {
 
     test('an exception in the middle of a round ends the turn as an error with every call answered', () async {
       final s = Script([
-        (_, _) => sse(message([toolUse('t1', 'look', {'x': 1}), toolUse('t2', 'look', {'x': 2})], stop: 'tool_use')),
+        (_, _) => sse(
+          message([
+            toolUse('t1', 'look', {'x': 1}),
+            toolUse('t2', 'look', {'x': 2}),
+          ], stop: 'tool_use'),
+        ),
       ]);
       var n = 0;
       final turn = await AgentLoop(api: api(s), tools: [tool('look')]).run(
@@ -762,7 +843,11 @@ void main() {
       expect(results.last['content'], contains('Not run'));
 
       final throwing = Script([
-        (_, _) => sse(message([toolUse('t1', 'look', {'x': 1})], stop: 'tool_use')),
+        (_, _) => sse(
+          message([
+            toolUse('t1', 'look', {'x': 1}),
+          ], stop: 'tool_use'),
+        ),
         (_, _) => sse(message([textBlock('words')])),
       ]);
       final t2 = await AgentLoop(api: api(throwing), tools: [tool('look')]).run(
@@ -778,7 +863,14 @@ void main() {
     });
 
     test('tool calls in an answer that did not stop for them get "not run" results', () async {
-      final s = Script([(_, _) => sse(message([textBlock('I will look.'), toolUse('t1', 'look', {'x': 1})], stop: 'end_turn'))]);
+      final s = Script([
+        (_, _) => sse(
+          message([
+            textBlock('I will look.'),
+            toolUse('t1', 'look', {'x': 1}),
+          ], stop: 'end_turn'),
+        ),
+      ]);
       final turn = await AgentLoop(api: api(s), tools: [tool('look')]).run(model: AiModel.opus55, system: 's', history: const [], user: user('go'), cancel: AiCancel());
       expect(turn.stop, AgentStop.done);
       expect(ran, isEmpty);

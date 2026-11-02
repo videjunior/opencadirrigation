@@ -96,8 +96,10 @@ void main() {
 
   group('CRS recognition', () {
     test('ESRI .prj of SIRGAS 2000 / UTM 23S', () {
-      final c = parseCrs('PROJCS["SIRGAS_2000_UTM_Zone_23S",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
-          'PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",10000000.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]');
+      final c = parseCrs(
+        'PROJCS["SIRGAS_2000_UTM_Zone_23S",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
+        'PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",10000000.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]',
+      );
       expect(c.recognised, isTrue);
       expect(c.kind, CrsKind.projected);
       expect(c.datum, GeodeticDatum.sirgas2000);
@@ -107,20 +109,26 @@ void main() {
     });
 
     test('OGC WKT with authority codes, SAD69 and Córrego Alegre names, WKT 2', () {
-      final ogc = parseCrs('PROJCS["SAD69 / UTM zone 22S",GEOGCS["SAD69",DATUM["South_American_Datum_1969",SPHEROID["GRS 1967 Modified",6378160,298.25,AUTHORITY["EPSG","7050"]],TOWGS84[-57,1,-41,0,0,0,0],AUTHORITY["EPSG","6618"]],'
-          'PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4618"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],'
-          'PARAMETER["central_meridian",-51],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","29192"]]');
+      final ogc = parseCrs(
+        'PROJCS["SAD69 / UTM zone 22S",GEOGCS["SAD69",DATUM["South_American_Datum_1969",SPHEROID["GRS 1967 Modified",6378160,298.25,AUTHORITY["EPSG","7050"]],TOWGS84[-57,1,-41,0,0,0,0],AUTHORITY["EPSG","6618"]],'
+        'PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4618"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],'
+        'PARAMETER["central_meridian",-51],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","29192"]]',
+      );
       expect(ogc.datum, GeodeticDatum.sad69);
       expect(ogc.utmZone, 22);
       expect(ogc.epsgCode, 29192);
-      final ca = parseCrs('PROJCS["Corrego_Alegre_UTM_Zone_23S",GEOGCS["GCS_Corrego_Alegre",DATUM["D_Corrego_Alegre",SPHEROID["International_1924",6378388.0,297.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
-          'PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",10000000.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]');
+      final ca = parseCrs(
+        'PROJCS["Corrego_Alegre_UTM_Zone_23S",GEOGCS["GCS_Corrego_Alegre",DATUM["D_Corrego_Alegre",SPHEROID["International_1924",6378388.0,297.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
+        'PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",10000000.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]',
+      );
       expect(ca.datum, GeodeticDatum.corregoAlegre);
       expect(ca.epsgCode, 22523);
-      final wkt2 = parseCrs('PROJCRS["SIRGAS 2000 / UTM zone 24S",BASEGEOGCRS["SIRGAS 2000",DATUM["Sistema de Referencia Geocentrico para las AmericaS 2000",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],'
-          'PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4674]],CONVERSION["UTM zone 24S",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433]],'
-          'PARAMETER["Longitude of natural origin",-39,ANGLEUNIT["degree",0.0174532925199433]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1]],'
-          'PARAMETER["False northing",10000000,LENGTHUNIT["metre",1]]],CS[Cartesian,2],AXIS["easting (E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (N)",north,ORDER[2],LENGTHUNIT["metre",1]]]');
+      final wkt2 = parseCrs(
+        'PROJCRS["SIRGAS 2000 / UTM zone 24S",BASEGEOGCRS["SIRGAS 2000",DATUM["Sistema de Referencia Geocentrico para las AmericaS 2000",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],'
+        'PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4674]],CONVERSION["UTM zone 24S",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433]],'
+        'PARAMETER["Longitude of natural origin",-39,ANGLEUNIT["degree",0.0174532925199433]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1]],'
+        'PARAMETER["False northing",10000000,LENGTHUNIT["metre",1]]],CS[Cartesian,2],AXIS["easting (E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (N)",north,ORDER[2],LENGTHUNIT["metre",1]]]',
+      );
       expect(wkt2.recognised, isTrue);
       expect(wkt2.datum, GeodeticDatum.sirgas2000);
       expect(wkt2.utmZone, 24);
@@ -128,7 +136,10 @@ void main() {
       final geo = parseCrs('GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]');
       expect(geo.kind, CrsKind.geographic);
       expect(geo.datum, GeodeticDatum.wgs84);
-      expect(parseCrs('GEOGCS["SAD69(96)",DATUM["South_American_Datum_1969_96",SPHEROID["GRS 1967 Modified",6378160,298.25]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]').datum, GeodeticDatum.sad69r96);
+      expect(
+        parseCrs('GEOGCS["SAD69(96)",DATUM["South_American_Datum_1969_96",SPHEROID["GRS 1967 Modified",6378160,298.25]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]').datum,
+        GeodeticDatum.sad69r96,
+      );
     });
 
     test('EPSG codes and URNs', () {
@@ -148,12 +159,16 @@ void main() {
 
     test('unrecognised systems carry a problem code instead of a guess', () {
       expect(parseCrs('EPSG:5880').problem, 'crs_epsg_unknown'); // a polyconic projection
-      final poly = parseCrs('PROJCS["SIRGAS_2000_Brazil_Polyconic",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
-          'PROJECTION["Polyconic"],PARAMETER["False_Easting",5000000.0],PARAMETER["False_Northing",10000000.0],PARAMETER["Central_Meridian",-54.0],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]');
+      final poly = parseCrs(
+        'PROJCS["SIRGAS_2000_Brazil_Polyconic",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
+        'PROJECTION["Polyconic"],PARAMETER["False_Easting",5000000.0],PARAMETER["False_Northing",10000000.0],PARAMETER["Central_Meridian",-54.0],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]',
+      );
       expect(poly.recognised, isFalse);
       expect(poly.problem, 'crs_projection_unsupported');
-      final unknownDatum = parseCrs('PROJCS["Local_UTM",GEOGCS["GCS_Unknown",DATUM["D_Unknown",SPHEROID["Clarke_1866",6378206.4,294.9786982]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
-          'PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]');
+      final unknownDatum = parseCrs(
+        'PROJCS["Local_UTM",GEOGCS["GCS_Unknown",DATUM["D_Unknown",SPHEROID["Clarke_1866",6378206.4,294.9786982]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'
+        'PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-45.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]',
+      );
       expect(unknownDatum.problem, 'crs_datum_unknown');
       expect(parseCrs('not a crs [').problem, 'crs_unparsed');
       expect(parseCrs('GEOCCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["metre",1]]').problem, 'crs_geocentric');

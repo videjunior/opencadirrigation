@@ -61,7 +61,18 @@ void main() {
     return jsonEncode({
       'elevation': 600,
       'daily_units': {'wind_speed_10m_mean': 'm/s'},
-      'daily': {'time': time, 'et0_fao_evapotranspiration': f(4), 'precipitation_sum': f(3), 'temperature_2m_max': f(30), 'temperature_2m_min': f(18), 'wind_speed_10m_mean': f(3), 'shortwave_radiation_sum': f(18), 'relative_humidity_2m_max': f(90), 'relative_humidity_2m_min': f(40), 'dew_point_2m_mean': f(15)},
+      'daily': {
+        'time': time,
+        'et0_fao_evapotranspiration': f(4),
+        'precipitation_sum': f(3),
+        'temperature_2m_max': f(30),
+        'temperature_2m_min': f(18),
+        'wind_speed_10m_mean': f(3),
+        'shortwave_radiation_sum': f(18),
+        'relative_humidity_2m_max': f(90),
+        'relative_humidity_2m_min': f(40),
+        'dew_point_2m_mean': f(15),
+      },
     });
   }
 

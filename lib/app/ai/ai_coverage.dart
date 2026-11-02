@@ -29,6 +29,17 @@ import '../shortcuts.dart';
 import '../state/controller.dart' show ToolId;
 import 'agent_ops_cad.dart';
 import 'agent_ops_engineering.dart';
+import 'coverage_parts/mot.dart';
+import 'coverage_parts/aut.dart';
+import 'coverage_parts/agr.dart';
+import 'coverage_parts/fmt.dart';
+import 'coverage_parts/mod.dart';
+import 'coverage_parts/ia.dart';
+import 'coverage_parts/cad.dart';
+import 'coverage_parts/ui.dart';
+import 'coverage_parts/sit.dart';
+import 'coverage_parts/eng.dart';
+import 'coverage_parts/prd.dart';
 
 /// The functions the tools sent with every request already cover.
 const coreCoverage = <String, String>{
@@ -358,15 +369,30 @@ const coreCoverage = <String, String>{
   'view:unconnected': 'tool:get_design_messages',
 };
 
-/// Every function → its route for the model: [coreCoverage], `cadCoverage`
-/// and `engineeringCoverage`, plus an `alias:` entry for every command
+/// Every function → its route for the model: [coreCoverage], `cadCoverage`,
+/// `engineeringCoverage` and the 1.6.0 maps of lib/app/ai/coverage_parts, plus an `alias:` entry for every command
 /// alias, routed like the action or tool it names. Not const: a key in two
 /// of the maps would be a compile-time error of a const map; the coverage
 /// test reports it instead.
 final Map<String, String> aiCoverage = _buildCoverage();
 
 Map<String, String> _buildCoverage() {
-  final m = <String, String>{...coreCoverage, ...cadCoverage, ...engineeringCoverage};
+  final m = <String, String>{
+    ...coreCoverage,
+    ...cadCoverage,
+    ...engineeringCoverage,
+    ...coverageMot,
+    ...coverageAut,
+    ...coverageAgr,
+    ...coverageFmt,
+    ...coverageMod,
+    ...coverageIa,
+    ...coverageCad,
+    ...coverageUi,
+    ...coverageSit,
+    ...coverageEng,
+    ...coveragePrd,
+  };
   for (final e in commandAliases.entries) {
     final route = m[coverageKeyOf(e.value)];
     if (route != null) m.putIfAbsent('alias:${e.key}', () => route);

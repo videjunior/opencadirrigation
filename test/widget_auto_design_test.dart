@@ -300,13 +300,20 @@ void main() {
   testWidgets('tree rings: surveyed trees get drippers on a ring', (tester) async {
     final c = await pumpShell(tester);
     // two rows of three trees, 6 m apart along rows that run at 30°
-    final trees = [for (var r = 0; r < 2; r++) for (var k = 0; k < 3; k++) SymbolEntity(id: c.project.newId(), position: Pt(k * 6.0, r * 7.0).rotate(degToRad(30)))];
+    final trees = [
+      for (var r = 0; r < 2; r++)
+        for (var k = 0; k < 3; k++) SymbolEntity(id: c.project.newId(), position: Pt(k * 6.0, r * 7.0).rotate(degToRad(30))),
+    ];
     await place(tester, c, trees);
     final before = c.project.entities.length, step = c.historyIndex;
     showTreeRingsDialog(ctxOf(tester), c);
     await settle(tester);
     expect(find.textContaining('6 árvores selecionadas'), findsOneWidget);
-    expect(find.descendant(of: find.byKey(const Key('tr_direction')), matching: find.text('30.0')), findsOneWidget, reason: 'the row direction of the survey');
+    expect(
+      find.descendant(of: find.byKey(const Key('tr_direction')), matching: find.text('30.0')),
+      findsOneWidget,
+      reason: 'the row direction of the survey',
+    );
     await tester.tap(find.text('Gotejadores num anel'));
     await settle(tester);
     await tapKey(tester, 'tr_generate');

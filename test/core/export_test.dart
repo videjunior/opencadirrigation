@@ -36,7 +36,8 @@ ReportLabels labels(Project p) => ReportLabels(
   return (p, r);
 }
 
-ProjectExporter exporterFor(Project p, DesignResults? r) => ProjectExporter(project: p, results: r, labels: labels(p), layerNames: {for (final l in p.layers) l.name: i18n.has('layer.${l.name}') ? i18n('layer.${l.name}') : l.name});
+ProjectExporter exporterFor(Project p, DesignResults? r) =>
+    ProjectExporter(project: p, results: r, labels: labels(p), layerNames: {for (final l in p.layers) l.name: i18n.has('layer.${l.name}') ? i18n('layer.${l.name}') : l.name});
 
 /// Parses the xref table of a PDF and checks every offset points at "n 0 obj".
 int checkPdf(List<int> bytes) {

@@ -14,22 +14,25 @@ Project orchard({bool tape = false, bool slope = false}) {
     p.entities.add(ContourEntity(id: p.newId(), points: [const Pt(-50, 60), const Pt(200, 60)], elevation: 104));
   }
   final poly = [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)];
-  final block = generateBlock(p, BlockOptions(
-    polygon: poly,
-    direction: const Pt(1, 0),
-    lateralSpacing: 4,
-    isTape: tape,
-    tapeSpecId: 'drip16_16_50',
-    outletSpecId: 'micro',
-    nozzleId: 'm50',
-    outletSpacing: 3.5,
-    headM: 15,
-    submainPosition: SubmainPosition.start,
-    valveSpecId: 'ev80',
-    valvePosition: ValvePosition.centre,
-    submainStub: 1.5,
-    zoneName: 'Zona 1',
-  ));
+  final block = generateBlock(
+    p,
+    BlockOptions(
+      polygon: poly,
+      direction: const Pt(1, 0),
+      lateralSpacing: 4,
+      isTape: tape,
+      tapeSpecId: 'drip16_16_50',
+      outletSpecId: 'micro',
+      nozzleId: 'm50',
+      outletSpacing: 3.5,
+      headM: 15,
+      submainPosition: SubmainPosition.start,
+      valveSpecId: 'ev80',
+      valvePosition: ValvePosition.centre,
+      submainStub: 1.5,
+      zoneName: 'Zona 1',
+    ),
+  );
   p.entities.addAll(block.all);
   final valve = block.valve!;
   // mainline from supply to the valve

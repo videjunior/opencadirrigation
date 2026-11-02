@@ -496,10 +496,41 @@ String? openTypeLanguage(String? code) {
   if (code == null || code.isEmpty) return null;
   final base = code.toLowerCase().split(RegExp('[-_]')).first;
   return const {
-    'ar': 'ARA ', 'bn': 'BEN ', 'ca': 'CAT ', 'de': 'DEU ', 'en': 'ENG ', 'es': 'ESP ', 'fr': 'FRA ', 'ha': 'HAU ', 'hi': 'HIN ', 'id': 'IND ', 'ja': 'JAN ',
-    'kok': 'KOK ', 'ks': 'KSH ', 'ku': 'KUR ', 'mh': 'MAH ', 'mk': 'MKD ', 'mo': 'MOL ', 'mr': 'MAR ', 'ne': 'NEP ', 'nv': 'NAV ', 'pa': 'PAN ', 'pi': 'PAL ',
-    'pt': 'PTG ', 'ro': 'ROM ', 'ru': 'RUS ', 'sa': 'SAN ', 'sat': 'SAT ', 'sd': 'SND ', 'sr': 'SRB ', 'sw': 'SWK ', 'te': 'TEL ', 'tr': 'TRK ', 'ur': 'URD ',
-    'vi': 'VIT ', 'zh': 'ZHS ',
+    'ar': 'ARA ',
+    'bn': 'BEN ',
+    'ca': 'CAT ',
+    'de': 'DEU ',
+    'en': 'ENG ',
+    'es': 'ESP ',
+    'fr': 'FRA ',
+    'ha': 'HAU ',
+    'hi': 'HIN ',
+    'id': 'IND ',
+    'ja': 'JAN ',
+    'kok': 'KOK ',
+    'ks': 'KSH ',
+    'ku': 'KUR ',
+    'mh': 'MAH ',
+    'mk': 'MKD ',
+    'mo': 'MOL ',
+    'mr': 'MAR ',
+    'ne': 'NEP ',
+    'nv': 'NAV ',
+    'pa': 'PAN ',
+    'pi': 'PAL ',
+    'pt': 'PTG ',
+    'ro': 'ROM ',
+    'ru': 'RUS ',
+    'sa': 'SAN ',
+    'sat': 'SAT ',
+    'sd': 'SND ',
+    'sr': 'SRB ',
+    'sw': 'SWK ',
+    'te': 'TEL ',
+    'tr': 'TRK ',
+    'ur': 'URD ',
+    'vi': 'VIT ',
+    'zh': 'ZHS ',
   }[base];
 }
 
@@ -512,8 +543,8 @@ _Plan _planFor(ShapingFont font, int script, String? language, bool rtl) {
     final kind = script == Script.arabic
         ? _ShaperKind.arabic
         : indicScript && gsubScript != null && gsubScript != 'DFLT' && gsubScript != 'latn' && !gsubScript.endsWith('3')
-            ? _ShaperKind.indic
-            : _ShaperKind.simple;
+        ? _ShaperKind.indic
+        : _ShaperKind.simple;
     b.enable('rvrn');
     b.pauseGsub();
     if (rtl) {
@@ -535,7 +566,15 @@ _Plan _planFor(ShapingFont font, int script, String? language, bool rtl) {
       case _ShaperKind.simple:
         break;
     }
-    for (final (t, f) in const [('abvm', _fGlobal), ('blwm', _fGlobal), ('ccmp', _fGlobal), ('locl', _fGlobal), ('mark', _fGlobal | _fManualJoiners), ('mkmk', _fGlobal | _fManualJoiners), ('rlig', _fGlobal)]) {
+    for (final (t, f) in const [
+      ('abvm', _fGlobal),
+      ('blwm', _fGlobal),
+      ('ccmp', _fGlobal),
+      ('locl', _fGlobal),
+      ('mark', _fGlobal | _fManualJoiners),
+      ('mkmk', _fGlobal | _fManualJoiners),
+      ('rlig', _fGlobal),
+    ]) {
       b.add(t, f);
     }
     for (final (t, f) in const [('calt', _fGlobal), ('clig', _fGlobal), ('curs', _fGlobal), ('dist', _fGlobal), ('kern', _fGlobal | _fHasFallback), ('liga', _fGlobal), ('rclt', _fGlobal)]) {
@@ -745,8 +784,22 @@ void _propagateAttachment(_Ctx c, int i, int nesting) {
 /// width (figure space), -2 a full stop's (punctuation space), -3 half the
 /// space (narrow space), -4 four eighteenths of the em.
 const _spaceFallback = <int, int>{
-  0x0020: 0, 0x00A0: 0, 0x2000: 2, 0x2001: 1, 0x2002: 2, 0x2003: 1, 0x2004: 3, 0x2005: 4, 0x2006: 6, 0x2007: -1, 0x2008: -2, 0x2009: 5, 0x200A: 16, 0x202F: -3,
-  0x205F: -4, 0x3000: 1,
+  0x0020: 0,
+  0x00A0: 0,
+  0x2000: 2,
+  0x2001: 1,
+  0x2002: 2,
+  0x2003: 1,
+  0x2004: 3,
+  0x2005: 4,
+  0x2006: 6,
+  0x2007: -1,
+  0x2008: -2,
+  0x2009: 5,
+  0x200A: 16,
+  0x202F: -3,
+  0x205F: -4,
+  0x3000: 1,
 };
 
 int _fallbackSpaceAdvance(ShapingFont font, int rule, int advance) {
@@ -1557,13 +1610,7 @@ class _Apply {
 
   bool _acceptBase(int i) {
     final info = buf[i];
-    return !info.multiplied ||
-        info.ligComp == 0 ||
-        i == 0 ||
-        buf[i - 1].isMark ||
-        !buf[i - 1].multiplied ||
-        info.ligId != buf[i - 1].ligId ||
-        info.ligComp != buf[i - 1].ligComp + 1;
+    return !info.multiplied || info.ligComp == 0 || i == 0 || buf[i - 1].isMark || !buf[i - 1].multiplied || info.ligId != buf[i - 1].ligId || info.ligComp != buf[i - 1].ligComp + 1;
   }
 
   bool _markAttach(List<MarkRecord> marks, int markIndex, List<List<Anchor?>> matrix, int row, int glyphPos) {

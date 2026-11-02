@@ -18,7 +18,10 @@ void main() {
       ..addNode(HNode(id: 'J', demand: 0.01));
     net.addLink(HLink(id: 'p', from: 'R', to: 'J', diameter: 0.1, length: 500, hazenC: 150));
     final measured = 40 - _hf(0.01, 0.1, 500, 120);
-    final r = calibrateRoughness(net, pressures: [PressureMeasurement(nodeId: 'J', pressure: measured)]);
+    final r = calibrateRoughness(
+      net,
+      pressures: [PressureMeasurement(nodeId: 'J', pressure: measured)],
+    );
     expect(r.converged, isTrue);
     expect(r.scales.single, closeTo(0.8, 1e-4));
     expect(r.objective, lessThan(1e-6));
@@ -46,7 +49,15 @@ void main() {
     net.addLink(HLink(id: 'p2', from: 'J1', to: 'J2', diameter: 0.075, length: 600, hazenC: 150));
     final p1 = 60 - _hf(0.008, 0.1, 800, 150 * 0.9);
     final p2 = p1 - 5 - _hf(0.004, 0.075, 600, 150 * 0.7);
-    final r = calibrateRoughness(net, pressures: [PressureMeasurement(nodeId: 'J1', pressure: p1), PressureMeasurement(nodeId: 'J2', pressure: p2)], groups: 2, groupOf: const {'p1': 0, 'p2': 1});
+    final r = calibrateRoughness(
+      net,
+      pressures: [
+        PressureMeasurement(nodeId: 'J1', pressure: p1),
+        PressureMeasurement(nodeId: 'J2', pressure: p2),
+      ],
+      groups: 2,
+      groupOf: const {'p1': 0, 'p2': 1},
+    );
     expect(r.converged, isTrue);
     expect(r.scales[0], closeTo(0.9, 1e-3));
     expect(r.scales[1], closeTo(0.7, 1e-3));
@@ -68,10 +79,16 @@ void main() {
     truth.addLink(HLink(id: 'b', from: 'R', to: 'J', diameter: 0.1, length: 300, hazenC: 84));
     final t = truth.solve();
     expect(t.links['a']!.flow / t.links['b']!.flow, closeTo(140 / 84, 1e-3));
-    final r = calibrateRoughness(net, groups: 2, groupOf: const {'a': 0, 'b': 1}, pressures: [PressureMeasurement(nodeId: 'J', pressure: t.nodes['J']!.pressure, sigma: 0.05)], flows: [
-      FlowMeasurement(linkId: 'a', flow: t.links['a']!.flow),
-      FlowMeasurement(linkId: 'b', flow: t.links['b']!.flow),
-    ]);
+    final r = calibrateRoughness(
+      net,
+      groups: 2,
+      groupOf: const {'a': 0, 'b': 1},
+      pressures: [PressureMeasurement(nodeId: 'J', pressure: t.nodes['J']!.pressure, sigma: 0.05)],
+      flows: [
+        FlowMeasurement(linkId: 'a', flow: t.links['a']!.flow),
+        FlowMeasurement(linkId: 'b', flow: t.links['b']!.flow),
+      ],
+    );
     expect(r.scales[0], closeTo(1.0, 2e-3));
     expect(r.scales[1], closeTo(0.6, 2e-3));
     expect(r.rmseFlow, lessThan(2e-5));
@@ -86,7 +103,16 @@ void main() {
     net.addLink(HLink(id: 'p', from: 'R', to: 'J', diameter: 0.1, length: 500, hazenC: 150));
     net.addLink(HLink(id: 'dead', from: 'J', to: 'D', diameter: 0.05, length: 50, hazenC: 150));
     final measured = 40 - _hf(0.01, 0.1, 500, 135);
-    final r = calibrateRoughness(net, pressures: [PressureMeasurement(nodeId: 'J', pressure: measured), const PressureMeasurement(nodeId: 'nope', pressure: 1)], flows: const [FlowMeasurement(linkId: 'zz', flow: 1)], groups: 3, groupOf: const {'p': 0, 'dead': 1});
+    final r = calibrateRoughness(
+      net,
+      pressures: [
+        PressureMeasurement(nodeId: 'J', pressure: measured),
+        const PressureMeasurement(nodeId: 'nope', pressure: 1),
+      ],
+      flows: const [FlowMeasurement(linkId: 'zz', flow: 1)],
+      groups: 3,
+      groupOf: const {'p': 0, 'dead': 1},
+    );
     expect(r.codes, containsAll(['calibration_insensitive:1', 'calibration_empty_group:2', 'calibration_unknown_node:nope', 'calibration_unknown_link:zz']));
     expect(r.scales[0], closeTo(0.9, 1e-4));
     expect(r.scales[1], 1);

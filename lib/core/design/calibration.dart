@@ -69,14 +69,28 @@ class CalibrationResidual {
 
   Map<String, dynamic> toJson() => {'id': id, 'kind': kind.name, 'm': measured, 'b': before, 'a': after, 's': sigma};
   static CalibrationResidual fromJson(Map<String, dynamic> j) => CalibrationResidual(
-    id: j['id'] as String, kind: MeasurementKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => MeasurementKind.pressure),
-    measured: _d(j['m']), before: _d(j['b']), after: _d(j['a']), sigma: _d(j['s'], 1),
+    id: j['id'] as String,
+    kind: MeasurementKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => MeasurementKind.pressure),
+    measured: _d(j['m']),
+    before: _d(j['b']),
+    after: _d(j['a']),
+    sigma: _d(j['s'], 1),
   );
 }
 
 /// Outcome of [calibrateRoughness].
 class CalibrationResult {
-  CalibrationResult({required this.scales, required this.standardErrors, required this.initialObjective, required this.objective, required this.iterations, required this.evaluations, required this.residuals, required this.converged, required this.codes});
+  CalibrationResult({
+    required this.scales,
+    required this.standardErrors,
+    required this.initialObjective,
+    required this.objective,
+    required this.iterations,
+    required this.evaluations,
+    required this.residuals,
+    required this.converged,
+    required this.codes,
+  });
 
   /// Fitted factor of every group (multiplies the C of its pipes).
   final List<double> scales;
@@ -114,13 +128,26 @@ class CalibrationResult {
   }
 
   Map<String, dynamic> toJson() => {
-    'scales': scales, 'se': [for (final s in standardErrors) s.isFinite ? s : null], 'f0': initialObjective, 'f': objective, 'it': iterations, 'ev': evaluations,
-    'res': residuals.map((r) => r.toJson()).toList(), 'conv': converged, 'codes': codes,
+    'scales': scales,
+    'se': [for (final s in standardErrors) s.isFinite ? s : null],
+    'f0': initialObjective,
+    'f': objective,
+    'it': iterations,
+    'ev': evaluations,
+    'res': residuals.map((r) => r.toJson()).toList(),
+    'conv': converged,
+    'codes': codes,
   };
   static CalibrationResult fromJson(Map<String, dynamic> j) => CalibrationResult(
-    scales: [for (final s in (j['scales'] as List?) ?? []) (s as num).toDouble()], standardErrors: [for (final s in (j['se'] as List?) ?? []) (s as num?)?.toDouble() ?? double.nan],
-    initialObjective: _d(j['f0']), objective: _d(j['f']), iterations: (j['it'] as num?)?.toInt() ?? 0, evaluations: (j['ev'] as num?)?.toInt() ?? 0,
-    residuals: ((j['res'] as List?) ?? []).map((r) => CalibrationResidual.fromJson(r as Map<String, dynamic>)).toList(), converged: j['conv'] as bool? ?? false, codes: ((j['codes'] as List?) ?? []).cast<String>(),
+    scales: [for (final s in (j['scales'] as List?) ?? []) (s as num).toDouble()],
+    standardErrors: [for (final s in (j['se'] as List?) ?? []) (s as num?)?.toDouble() ?? double.nan],
+    initialObjective: _d(j['f0']),
+    objective: _d(j['f']),
+    iterations: (j['it'] as num?)?.toInt() ?? 0,
+    evaluations: (j['ev'] as num?)?.toInt() ?? 0,
+    residuals: ((j['res'] as List?) ?? []).map((r) => CalibrationResidual.fromJson(r as Map<String, dynamic>)).toList(),
+    converged: j['conv'] as bool? ?? false,
+    codes: ((j['codes'] as List?) ?? []).cast<String>(),
   );
 }
 
@@ -159,7 +186,14 @@ class CalibrationResult {
 /// every link id (−1 or absent = not scaled); null puts every pipe in group
 /// 0, one global factor. [net] is not changed: apply the factors to the pipes
 /// (or, for one global factor, to DesignParameters.hazenCScale).
-CalibrationResult calibrateRoughness(HydraulicNetwork net, {List<PressureMeasurement> pressures = const [], List<FlowMeasurement> flows = const [], int groups = 1, Map<String, int>? groupOf, CalibrationOptions options = const CalibrationOptions()}) {
+CalibrationResult calibrateRoughness(
+  HydraulicNetwork net, {
+  List<PressureMeasurement> pressures = const [],
+  List<FlowMeasurement> flows = const [],
+  int groups = 1,
+  Map<String, int>? groupOf,
+  CalibrationOptions options = const CalibrationOptions(),
+}) {
   final codes = <String>[];
   final ng = math.max(1, groups);
   final lo = math.min(options.minScale, options.maxScale), hi = math.max(options.minScale, options.maxScale);
@@ -305,7 +339,9 @@ CalibrationResult calibrateRoughness(HydraulicNetwork net, {List<PressureMeasure
       List<double>? sNew;
       List<double>? rNew;
       for (var tries = 0; tries < 12; tries++) {
-        final m = [for (var x = 0; x < p; x++) [for (var y = 0; y < p; y++) a[x][y] + (x == y ? lambda * math.max(a[x][x], 1e-12) : 0.0)]];
+        final m = [
+          for (var x = 0; x < p; x++) [for (var y = 0; y < p; y++) a[x][y] + (x == y ? lambda * math.max(a[x][x], 1e-12) : 0.0)],
+        ];
         final delta = _solve(m, [for (final v in gvec) -v]);
         if (delta == null) {
           lambda *= 10;
@@ -380,11 +416,40 @@ CalibrationResult calibrateRoughness(HydraulicNetwork net, {List<PressureMeasure
   return _result(s, se, f0, fs, iterations, evaluations, pm, fm, measured, before, after, sigma, converged, codes);
 }
 
-CalibrationResult _result(List<double> s, List<double> se, double f0, double f, int it, int ev, List<PressureMeasurement> pm, List<FlowMeasurement> fm, List<double> measured, List<double> before, List<double> after, List<double> sigma, bool converged, List<String> codes) => CalibrationResult(
-  scales: s, standardErrors: se, initialObjective: f0, objective: f, iterations: it, evaluations: ev, converged: converged, codes: codes,
+CalibrationResult _result(
+  List<double> s,
+  List<double> se,
+  double f0,
+  double f,
+  int it,
+  int ev,
+  List<PressureMeasurement> pm,
+  List<FlowMeasurement> fm,
+  List<double> measured,
+  List<double> before,
+  List<double> after,
+  List<double> sigma,
+  bool converged,
+  List<String> codes,
+) => CalibrationResult(
+  scales: s,
+  standardErrors: se,
+  initialObjective: f0,
+  objective: f,
+  iterations: it,
+  evaluations: ev,
+  converged: converged,
+  codes: codes,
   residuals: [
     for (var i = 0; i < measured.length; i++)
-      CalibrationResidual(id: i < pm.length ? pm[i].nodeId : fm[i - pm.length].linkId, kind: i < pm.length ? MeasurementKind.pressure : MeasurementKind.flow, measured: measured[i], before: before[i], after: after[i], sigma: sigma[i]),
+      CalibrationResidual(
+        id: i < pm.length ? pm[i].nodeId : fm[i - pm.length].linkId,
+        kind: i < pm.length ? MeasurementKind.pressure : MeasurementKind.flow,
+        measured: measured[i],
+        before: before[i],
+        after: after[i],
+        sigma: sigma[i],
+      ),
   ],
 );
 
@@ -412,7 +477,9 @@ List<List<double>> _jacobian(List<double> Function(List<double>) residual, List<
 /// partial pivoting); null when singular.
 List<double>? _solve(List<List<double>> m, List<double> b) {
   final n = b.length;
-  final a = [for (var i = 0; i < n; i++) [...m[i], b[i]]];
+  final a = [
+    for (var i = 0; i < n; i++) [...m[i], b[i]],
+  ];
   for (var c = 0; c < n; c++) {
     var piv = c;
     for (var r = c + 1; r < n; r++) {
@@ -443,7 +510,9 @@ List<List<double>>? _inverse(List<List<double>> m) {
     if (x == null) return null;
     cols.add(x);
   }
-  return [for (var i = 0; i < n; i++) [for (var j = 0; j < n; j++) cols[j][i]]];
+  return [
+    for (var i = 0; i < n; i++) [for (var j = 0; j < n; j++) cols[j][i]],
+  ];
 }
 
 double _d(Object? v, [double def = 0]) => (v as num?)?.toDouble() ?? def;

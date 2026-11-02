@@ -201,9 +201,26 @@ void main() {
       final r = DesignResults(timestamp: DateTime(2026));
       final nominal = spraySources(p).single;
       r.zones['v'] = ZoneResult(
-        valveId: 'v', zoneName: 'Z', converged: true, totalFlow: 0, downstreamHead: 0, valveLoss: 0, requiredUpstreamHead: 0, minOutletPressure: 36, maxOutletPressure: 36,
-        allowedMin: 0, allowedMax: 99, nominalPressure: 25, uniformity: UniformityStats.empty, pipes: const [], devices: const [], warnings: const [], valveElevation: 0,
-        outlets: [OutletResult(entityId: 'o', index: -1, p: Pt.zero, elevation: 0, pressure: 36, flow: nominal.flow * 1.2, nominalFlow: nominal.flow, count: 1, allowedMin: 0, allowedMax: 99, label: '')],
+        valveId: 'v',
+        zoneName: 'Z',
+        converged: true,
+        totalFlow: 0,
+        downstreamHead: 0,
+        valveLoss: 0,
+        requiredUpstreamHead: 0,
+        minOutletPressure: 36,
+        maxOutletPressure: 36,
+        allowedMin: 0,
+        allowedMax: 99,
+        nominalPressure: 25,
+        uniformity: UniformityStats.empty,
+        pipes: const [],
+        devices: const [],
+        warnings: const [],
+        valveElevation: 0,
+        outlets: [
+          OutletResult(entityId: 'o', index: -1, p: Pt.zero, elevation: 0, pressure: 36, flow: nominal.flow * 1.2, nominalFlow: nominal.flow, count: 1, allowedMin: 0, allowedMax: 99, label: ''),
+        ],
       );
       final withRes = spraySources(p, results: r).single;
       expect(withRes.flow, closeTo(nominal.flow * 1.2, 1e-12));

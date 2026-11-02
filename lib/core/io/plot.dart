@@ -59,7 +59,16 @@ class PlotCircle extends PlotItem {
 }
 
 class PlotText extends PlotItem {
-  PlotText({required super.layer, required super.color, required this.position, required this.text, required this.heightMm, this.rotationDeg = 0, this.bold = false, this.anchor = PlotAnchor.bottomLeft});
+  PlotText({
+    required super.layer,
+    required super.color,
+    required this.position,
+    required this.text,
+    required this.heightMm,
+    this.rotationDeg = 0,
+    this.bold = false,
+    this.anchor = PlotAnchor.bottomLeft,
+  });
   final Pt position;
   final String text;
 
@@ -241,13 +250,35 @@ PlotScene buildPlotScene(
     if (pts.isEmpty) return;
     use(layer);
     final c = color ?? colorOf(layer);
-    items.add(PlotPath(layer: layer, color: dim ? mutedColor(c) : c, points: pts, closed: closed, widthMm: widthMm, dashed: dashed, fillColor: fill == null || !dim ? fill : mutedColor(fill), fillOpacity: fillOpacity));
+    items.add(
+      PlotPath(
+        layer: layer,
+        color: dim ? mutedColor(c) : c,
+        points: pts,
+        closed: closed,
+        widthMm: widthMm,
+        dashed: dashed,
+        fillColor: fill == null || !dim ? fill : mutedColor(fill),
+        fillOpacity: fillOpacity,
+      ),
+    );
   }
 
   void circle(String layer, Pt c, double r, {double widthMm = 0.25, int? fill, double fillOpacity = 1, bool stroke = true, int? color}) {
     use(layer);
     final k = color ?? colorOf(layer);
-    items.add(PlotCircle(layer: layer, color: dim ? mutedColor(k) : k, center: c, radius: r, widthMm: widthMm, fillColor: fill == null || !dim ? fill : mutedColor(fill), fillOpacity: fillOpacity, stroke: stroke));
+    items.add(
+      PlotCircle(
+        layer: layer,
+        color: dim ? mutedColor(k) : k,
+        center: c,
+        radius: r,
+        widthMm: widthMm,
+        fillColor: fill == null || !dim ? fill : mutedColor(fill),
+        fillOpacity: fillOpacity,
+        stroke: stroke,
+      ),
+    );
   }
 
   void text(String layer, Pt p, String s, {double? heightMm, double rotation = 0, bool bold = false, PlotAnchor anchor = PlotAnchor.bottomLeft, int? color}) {
@@ -327,7 +358,13 @@ PlotScene buildPlotScene(
         text(ad.layer, ad.textPoint, '${fmt(ad.angleDeg, 1)}°', heightMm: labelH, anchor: PlotAnchor.center);
       case RadialDimensionEntity rd:
         path(rd.layer, [rd.start, rd.point], widthMm: 0.18);
-        text(rd.layer, rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5), '${rd.diameter ? 'Ø' : 'R'} ${fmt(units.lengthFromSi(rd.value))} ${units.lengthLabel}', heightMm: labelH, anchor: PlotAnchor.bottomCenter);
+        text(
+          rd.layer,
+          rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5),
+          '${rd.diameter ? 'Ø' : 'R'} ${fmt(units.lengthFromSi(rd.value))} ${units.lengthLabel}',
+          heightMm: labelH,
+          anchor: PlotAnchor.bottomCenter,
+        );
       case OrdinateDimensionEntity od:
         path(od.layer, od.leader, widthMm: 0.18);
         text(od.layer, od.leaderEnd, '${od.xAxis ? 'X' : 'Y'} ${fmt(units.lengthFromSi(od.value))}', heightMm: labelH, anchor: od.xAxis ? PlotAnchor.bottomCenter : PlotAnchor.center);
@@ -508,7 +545,13 @@ PlotScene buildPlotScene(
         // resolved ones are left off the sheet (they are settled)
         if (cm.resolved) break;
         final a = mm;
-        path(cm.layer, [p, p + Pt(a, 1.5 * a), p + Pt(4.5 * a, 1.5 * a), p + Pt(4.5 * a, 5 * a), p + Pt(-1.5 * a, 5 * a), p + Pt(-1.5 * a, 1.5 * a), p + Pt(0.4 * a, 1.5 * a)], closed: true, widthMm: 0.2, fill: blendOverWhite(colorOf(cm.layer), 0.55));
+        path(
+          cm.layer,
+          [p, p + Pt(a, 1.5 * a), p + Pt(4.5 * a, 1.5 * a), p + Pt(4.5 * a, 5 * a), p + Pt(-1.5 * a, 5 * a), p + Pt(-1.5 * a, 1.5 * a), p + Pt(0.4 * a, 1.5 * a)],
+          closed: true,
+          widthMm: 0.2,
+          fill: blendOverWhite(colorOf(cm.layer), 0.55),
+        );
         var note = cm.text.replaceAll(RegExp(r'\s+'), ' ').trim();
         if (note.length > 90) note = '${note.substring(0, 89)}…';
         text(cm.layer, p + Pt(5.3 * a, 2.4 * a), cm.author.isEmpty ? note : '${cm.author}: $note', heightMm: labelH);
@@ -549,8 +592,15 @@ PlotScene buildPlotScene(
 double _characterWidths(String s) {
   var n = 0.0;
   for (final r in s.runes) {
-    final wide = (r >= 0x1100 && r <= 0x115F) || (r >= 0x2E80 && r <= 0xA4CF) || (r >= 0xAC00 && r <= 0xD7A3) || (r >= 0xF900 && r <= 0xFAFF) || (r >= 0xFE30 && r <= 0xFE4F) ||
-        (r >= 0xFF00 && r <= 0xFF60) || (r >= 0xFFE0 && r <= 0xFFE6) || (r >= 0x20000 && r <= 0x3FFFD);
+    final wide =
+        (r >= 0x1100 && r <= 0x115F) ||
+        (r >= 0x2E80 && r <= 0xA4CF) ||
+        (r >= 0xAC00 && r <= 0xD7A3) ||
+        (r >= 0xF900 && r <= 0xFAFF) ||
+        (r >= 0xFE30 && r <= 0xFE4F) ||
+        (r >= 0xFF00 && r <= 0xFF60) ||
+        (r >= 0xFFE0 && r <= 0xFFE6) ||
+        (r >= 0x20000 && r <= 0x3FFFD);
     n += wide ? 1.6 : 1;
   }
   return n;

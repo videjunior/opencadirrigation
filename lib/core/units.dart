@@ -35,12 +35,7 @@ enum PressureUnit { mH2O, kPa, bar, psi }
 enum DiameterUnit { mm, inch }
 
 class Units {
-  const Units({
-    this.length = LengthUnit.m,
-    this.flow = FlowUnit.lph,
-    this.pressure = PressureUnit.mH2O,
-    this.diameter = DiameterUnit.mm,
-  });
+  const Units({this.length = LengthUnit.m, this.flow = FlowUnit.lph, this.pressure = PressureUnit.mH2O, this.diameter = DiameterUnit.mm});
 
   final LengthUnit length;
   final FlowUnit flow;
@@ -48,31 +43,12 @@ class Units {
   final DiameterUnit diameter;
 
   static const metric = Units();
-  static const us = Units(
-    length: LengthUnit.ft,
-    flow: FlowUnit.gpm,
-    pressure: PressureUnit.psi,
-    diameter: DiameterUnit.inch,
-  );
+  static const us = Units(length: LengthUnit.ft, flow: FlowUnit.gpm, pressure: PressureUnit.psi, diameter: DiameterUnit.inch);
 
-  Units copyWith({
-    LengthUnit? length,
-    FlowUnit? flow,
-    PressureUnit? pressure,
-    DiameterUnit? diameter,
-  }) => Units(
-    length: length ?? this.length,
-    flow: flow ?? this.flow,
-    pressure: pressure ?? this.pressure,
-    diameter: diameter ?? this.diameter,
-  );
+  Units copyWith({LengthUnit? length, FlowUnit? flow, PressureUnit? pressure, DiameterUnit? diameter}) =>
+      Units(length: length ?? this.length, flow: flow ?? this.flow, pressure: pressure ?? this.pressure, diameter: diameter ?? this.diameter);
 
-  Map<String, dynamic> toJson() => {
-    'length': length.name,
-    'flow': flow.name,
-    'pressure': pressure.name,
-    'diameter': diameter.name,
-  };
+  Map<String, dynamic> toJson() => {'length': length.name, 'flow': flow.name, 'pressure': pressure.name, 'diameter': diameter.name};
 
   static Units fromJson(Map<String, dynamic>? j) {
     if (j == null) return metric;
@@ -177,10 +153,8 @@ class Units {
   String get depthRateLabel => _us ? 'in/h' : 'mm/h';
   double volumeFromM3(double m3) => _us ? m3 * 264.1720524 : m3;
   String get volumeLabel => _us ? 'gal' : 'm³';
-  double velocityFromSi(double v) =>
-      length == LengthUnit.ft ? v / metersPerFoot : v;
-  double velocityToSi(double v) =>
-      length == LengthUnit.ft ? v * metersPerFoot : v;
+  double velocityFromSi(double v) => length == LengthUnit.ft ? v / metersPerFoot : v;
+  double velocityToSi(double v) => length == LengthUnit.ft ? v * metersPerFoot : v;
 }
 
 /// Formats a number with a fixed number of decimals for reports, tables and

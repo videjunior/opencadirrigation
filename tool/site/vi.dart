@@ -13,29 +13,77 @@ const _vi = SiteText(
   aiTitle: 'Trợ lý AI cùng bạn vẽ và thiết kế',
   aiIntro: 'Mở khung trợ lý AI bên cạnh bản vẽ và đưa ra yêu cầu bằng lời của chính bạn. Trợ lý đọc dự án, xem ảnh vệ tinh và địa hình, rồi làm việc bằng chính các công cụ có trong menu, nên những gì nó vẽ ra là một thiết kế thực sự: đối tượng, ống, van, khu vực và kết quả, chứ không phải một bức hình. Mỗi thay đổi đều chờ bạn phê duyệt, hoặc được tự động áp dụng nếu bạn muốn, và có thể hoàn tác chỉ với một cú nhấp.',
   aiPoints: [
-    ('Tự động vẽ và thiết kế', 'Bố trí béc phun và ống nhỏ giọt, chia thửa ruộng thành lô, khớp pivot vào ruộng, vạch tuyến ống và van, đặt máy bơm và nguồn nước, chạy tính toán thiết kế, sửa các cảnh báo và tối ưu chi phí, rồi viết thuyết minh kỹ thuật và báo giá.'),
-    ('Quan sát khu đất', 'Tìm khu đất từ một địa chỉ, xem ảnh vệ tinh của dự án đã tham chiếu địa lý và xem địa hình (bóng đổ, đường đồng mức, độ dốc, mặt cắt), đọc các bản vẽ và tệp GIS bạn đính kèm, và thêm mục vào danh mục từ tài liệu kỹ thuật dạng PDF. Tự khoanh vùng các thửa ruộng trên ảnh, đi theo các điểm và đường bạn đánh dấu trên bản đồ, và ghim ảnh hiện trường có GPS lên bản vẽ đúng nơi đã chụp.'),
-    ('Giải thích và kiểm tra', 'Trả lời câu hỏi về dự án và kết quả tính toán, giải thích từng thông báo thiết kế và cách khắc phục, chạy các phân tích, đồng thời lưu trong dự án danh sách việc cần làm và ghi chú về các quyết định của bạn. Khi được yêu cầu, rà soát toàn bộ thiết kế mà không thay đổi gì, và xem tờ bản vẽ trước khi bạn xuất.'),
-    ('Khóa của bạn, bạn làm chủ', 'Các mô hình Claude (Anthropic) hoặc GPT (OpenAI) ở các hạng cao nhất, trung bình và nhanh, dùng khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Các chế độ Chỉ đọc, Lập kế hoạch trước, Hỏi trước mỗi thay đổi hoặc Tự động áp dụng thay đổi; giới hạn số bước và mức trần chi phí cho mỗi tác vụ; hoàn tác cho từng câu trả lời; và không có gì được gửi đi trước khi bạn nhấn Gửi.'),
+    (
+      'Tự động vẽ và thiết kế',
+      'Bố trí béc phun và ống nhỏ giọt, chia thửa ruộng thành lô, khớp pivot vào ruộng, vạch tuyến ống và van, đặt máy bơm và nguồn nước, chạy tính toán thiết kế, sửa các cảnh báo và tối ưu chi phí, rồi viết thuyết minh kỹ thuật và báo giá.',
+    ),
+    (
+      'Quan sát khu đất',
+      'Tìm khu đất từ một địa chỉ, xem ảnh vệ tinh của dự án đã tham chiếu địa lý và xem địa hình (bóng đổ, đường đồng mức, độ dốc, mặt cắt), đọc các bản vẽ và tệp GIS bạn đính kèm, và thêm mục vào danh mục từ tài liệu kỹ thuật dạng PDF. Tự khoanh vùng các thửa ruộng trên ảnh, đi theo các điểm và đường bạn đánh dấu trên bản đồ, và ghim ảnh hiện trường có GPS lên bản vẽ đúng nơi đã chụp.',
+    ),
+    (
+      'Giải thích và kiểm tra',
+      'Trả lời câu hỏi về dự án và kết quả tính toán, giải thích từng thông báo thiết kế và cách khắc phục, chạy các phân tích, đồng thời lưu trong dự án danh sách việc cần làm và ghi chú về các quyết định của bạn. Khi được yêu cầu, rà soát toàn bộ thiết kế mà không thay đổi gì, và xem tờ bản vẽ trước khi bạn xuất.',
+    ),
+    (
+      'Khóa của bạn, bạn làm chủ',
+      'Các mô hình Claude (Anthropic) hoặc GPT (OpenAI) ở các hạng cao nhất, trung bình và nhanh, dùng khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Các chế độ Chỉ đọc, Lập kế hoạch trước, Hỏi trước mỗi thay đổi hoặc Tự động áp dụng thay đổi; giới hạn số bước và mức trần chi phí cho mỗi tác vụ; hoàn tác cho từng câu trả lời; và không có gì được gửi đi trước khi bạn nhấn Gửi.',
+    ),
   ],
   aiCta: 'Mở trợ lý AI',
   featuresTitle: 'OpenCADIrrigation làm được gì',
   features: [
-    ('Trợ lý AI', 'Tùy chọn: hỏi AI về dự án, hoặc để AI vẽ và thiết kế thay bạn. Trợ lý xem ảnh vệ tinh và địa hình, bố trí béc phun và ống nhỏ giọt, chia thửa ruộng, vạch tuyến ống, chạy tính toán thiết kế và các công cụ tự động, với các mô hình Claude (Anthropic) hoặc GPT (OpenAI) và khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Không có gì được gửi đi trước khi bạn nhấn Gửi, và mọi thay đổi đều chờ bạn phê duyệt (hoặc tự động áp dụng, nếu bạn chọn) và có thể hoàn tác.'),
-    ('Tự động thiết kế và chọn kích thước', 'Khối ống nhánh và lưới béc phun chỉ với một cú nhấp, bố trí béc với cường độ mưa cân bằng, chia khu theo lưu lượng, vạch tuyến ống và van, chia thửa ruộng thành lô, khớp pivot vào thửa ruộng và nhận diện thảm thực vật trên ảnh hàng không; đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống, cân bằng chi phí ống và năng lượng.'),
-    ('Bản vẽ CAD đầy đủ', 'Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản, lớp và khối, với nhập tọa độ bằng bàn phím, bắt điểm, truy bắt góc cực, grip, đám mây sửa đổi và phím tắt kiểu AutoCAD (L, PL, C, D, ZE…).'),
-    ('Mạng thủy lực', 'Nguồn nước, máy bơm tốc độ cố định và bơm biến tần, đường ống chính, van khu vực, van giảm áp, van duy trì áp và van điều chỉnh lưu lượng, béc phun tích hợp van, ống nhánh gắn đầu tưới, dây tưới nhỏ giọt, bộ lọc và đồng hồ nước, cùng pivot trung tâm và máy tưới thẳng kèm bộ béc phun, máy tưới cuộn ống và tưới mặt.'),
-    ('Bộ tính thủy lực đã kiểm chứng', 'Hazen-Williams, Darcy-Weisbach, Scobey và Manning, tổn thất cục bộ tính theo các phụ kiện được dùng, đầu tưới q = k·Hˣ, giải mạng bằng Global Gradient Algorithm (như EPANET), đường đặc tính bơm kèm NPSH, quá trình quá độ (nước va) theo phương pháp đường đặc trưng có tính đến van xả khí, và mô phỏng 24 giờ với biểu giá điện.'),
-    ('Địa hình, khí hậu và nông học', 'Đường đồng mức, điểm cao độ, mô hình số địa hình tam giác hóa có đường gãy, cao độ trực tuyến, đám mây điểm LAS, bản đồ độ dốc và mặt cắt dọc; khí hậu địa điểm tải về hoặc nhập tay, cây trồng FAO-56 theo giai đoạn sinh trưởng, loại đất, mưa hiệu quả và rửa mặn để tính nhu cầu nước, cùng ngân sách nước cảnh quan.'),
-    ('Báo cáo, bản vẽ và vật tư', 'Khu vực, ống, đầu tưới, độ đồng đều (CU, DU, EU), chương trình bộ điều khiển và đi dây van; bảng kê vật tư kèm phụ kiện và báo giá gồm nhân công, thuế và thời gian hoàn vốn; bộ bản vẽ PDF kèm chi tiết thi công và biểu đồ, bằng bất kỳ ngôn ngữ nào trong số 20 ngôn ngữ, và mọi bảng đều xuất được ra Excel, CSV và TXT.'),
-    ('Trao đổi tệp', 'Nhập DXF, DWG, bản vẽ PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF và hình ảnh; xuất DXF 2000 với đối tượng CAD nguyên bản (hoặc R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp và IFC.'),
-    ('Danh mục nhà sản xuất', 'Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.'),
-    ('Ngoại tuyến và ngoài thực địa', 'Sau lần truy cập đầu tiên, ứng dụng khởi động được mà không cần mạng, trên máy tính, máy tính bảng hay điện thoại, với giao diện sáng hoặc tối. Ngoài thực địa, GPS của thiết bị ghi lại hành trình đi bộ thành đường bao hoặc đường, đánh dấu điểm và cho biết khoảng cách cùng góc phương vị đến đối tượng đã chọn để cắm mốc.'),
+    (
+      'Trợ lý AI',
+      'Tùy chọn: hỏi AI về dự án, hoặc để AI vẽ và thiết kế thay bạn. Trợ lý xem ảnh vệ tinh và địa hình, bố trí béc phun và ống nhỏ giọt, chia thửa ruộng, vạch tuyến ống, chạy tính toán thiết kế và các công cụ tự động, với các mô hình Claude (Anthropic) hoặc GPT (OpenAI) và khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Không có gì được gửi đi trước khi bạn nhấn Gửi, và mọi thay đổi đều chờ bạn phê duyệt (hoặc tự động áp dụng, nếu bạn chọn) và có thể hoàn tác.',
+    ),
+    (
+      'Tự động thiết kế và chọn kích thước',
+      'Khối ống nhánh và lưới béc phun chỉ với một cú nhấp, bố trí béc với cường độ mưa cân bằng, chia khu theo lưu lượng, vạch tuyến ống và van, chia thửa ruộng thành lô, khớp pivot vào thửa ruộng và nhận diện thảm thực vật trên ảnh hàng không; đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống, cân bằng chi phí ống và năng lượng.',
+    ),
+    (
+      'Bản vẽ CAD đầy đủ',
+      'Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản, lớp và khối, với nhập tọa độ bằng bàn phím, bắt điểm, truy bắt góc cực, grip, đám mây sửa đổi và phím tắt kiểu AutoCAD (L, PL, C, D, ZE…).',
+    ),
+    (
+      'Mạng thủy lực',
+      'Nguồn nước, máy bơm tốc độ cố định và bơm biến tần, đường ống chính, van khu vực, van giảm áp, van duy trì áp và van điều chỉnh lưu lượng, béc phun tích hợp van, ống nhánh gắn đầu tưới, dây tưới nhỏ giọt, bộ lọc và đồng hồ nước, cùng pivot trung tâm và máy tưới thẳng kèm bộ béc phun, máy tưới cuộn ống và tưới mặt.',
+    ),
+    (
+      'Bộ tính thủy lực đã kiểm chứng',
+      'Hazen-Williams, Darcy-Weisbach, Scobey và Manning, tổn thất cục bộ tính theo các phụ kiện được dùng, đầu tưới q = k·Hˣ, giải mạng bằng Global Gradient Algorithm (như EPANET), đường đặc tính bơm kèm NPSH, quá trình quá độ (nước va) theo phương pháp đường đặc trưng có tính đến van xả khí, và mô phỏng 24 giờ với biểu giá điện.',
+    ),
+    (
+      'Địa hình, khí hậu và nông học',
+      'Đường đồng mức, điểm cao độ, mô hình số địa hình tam giác hóa có đường gãy, cao độ trực tuyến, đám mây điểm LAS, bản đồ độ dốc và mặt cắt dọc; khí hậu địa điểm tải về hoặc nhập tay, cây trồng FAO-56 theo giai đoạn sinh trưởng, loại đất, mưa hiệu quả và rửa mặn để tính nhu cầu nước, cùng ngân sách nước cảnh quan.',
+    ),
+    (
+      'Báo cáo, bản vẽ và vật tư',
+      'Khu vực, ống, đầu tưới, độ đồng đều (CU, DU, EU), chương trình bộ điều khiển và đi dây van; bảng kê vật tư kèm phụ kiện và báo giá gồm nhân công, thuế và thời gian hoàn vốn; bộ bản vẽ PDF kèm chi tiết thi công và biểu đồ, bằng bất kỳ ngôn ngữ nào trong số 20 ngôn ngữ, và mọi bảng đều xuất được ra Excel, CSV và TXT.',
+    ),
+    (
+      'Trao đổi tệp',
+      'Nhập DXF, DWG, bản vẽ PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF và hình ảnh; xuất DXF 2000 với đối tượng CAD nguyên bản (hoặc R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp và IFC.',
+    ),
+    (
+      'Danh mục nhà sản xuất',
+      'Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.',
+    ),
+    (
+      'Ngoại tuyến và ngoài thực địa',
+      'Sau lần truy cập đầu tiên, ứng dụng khởi động được mà không cần mạng, trên máy tính, máy tính bảng hay điện thoại, với giao diện sáng hoặc tối. Ngoài thực địa, GPS của thiết bị ghi lại hành trình đi bộ thành đường bao hoặc đường, đánh dấu điểm và cho biết khoảng cách cùng góc phương vị đến đối tượng đã chọn để cắm mốc.',
+    ),
   ],
   howTitle: 'Cách hoạt động',
   how: [
-    ('Vẽ hoặc nhập khu tưới', 'Đưa vào tệp DXF, DWG, KML hoặc ảnh vệ tinh, vẽ trực tiếp lô ruộng, khu vườn hay sân bóng, hoặc cho trợ lý AI biết địa chỉ để nó tìm khu đất trên bản đồ. Thêm đường đồng mức hoặc tải cao độ theo tọa độ.'),
-    ('Dựng mạng ống bằng tay hoặc nhờ AI', 'Tạo khối ống nhánh hoặc lưới béc phun chỉ với một cú nhấp, hoặc nhờ trợ lý AI bố trí béc phun, chia thửa ruộng thành lô, vạch tuyến ống và đặt van, máy bơm và nguồn nước; sau đó nối tất cả bằng đường ống chính.'),
+    (
+      'Vẽ hoặc nhập khu tưới',
+      'Đưa vào tệp DXF, DWG, KML hoặc ảnh vệ tinh, vẽ trực tiếp lô ruộng, khu vườn hay sân bóng, hoặc cho trợ lý AI biết địa chỉ để nó tìm khu đất trên bản đồ. Thêm đường đồng mức hoặc tải cao độ theo tọa độ.',
+    ),
+    (
+      'Dựng mạng ống bằng tay hoặc nhờ AI',
+      'Tạo khối ống nhánh hoặc lưới béc phun chỉ với một cú nhấp, hoặc nhờ trợ lý AI bố trí béc phun, chia thửa ruộng thành lô, vạch tuyến ống và đặt van, máy bơm và nguồn nước; sau đó nối tất cả bằng đường ống chính.',
+    ),
     ('Thiết kế và lập hồ sơ', 'Nhấn F5, hoặc nhờ AI: ứng dụng tính kích thước các khu và đường ống chính, kiểm tra áp suất và vận tốc, rồi tạo báo cáo, bảng kê vật tư và bản vẽ PDF.'),
   ],
   examplesTitle: 'Ví dụ có sẵn để mở',
@@ -54,23 +102,63 @@ const _vi = SiteText(
     SiteExample('gravity', 'Nhỏ giọt tự chảy', 'Bể chứa cao hơn 40 m so với hai lô rau tưới nhỏ giọt, không bơm: van cổng, van giảm áp và lọc đĩa trên ống chính; đường đồng mức sườn đồi.'),
     SiteExample('pasture', 'Đồng cỏ tưới phun mưa', 'Ba bãi chăn 72 × 72 m với các hàng béc phun va đập bố trí 12 × 18 m, ống nhánh có van, bể chứa, máy bơm và van một chiều.'),
     SiteExample('golf', 'Lỗ golf', 'Điểm phát bóng dùng béc phun, fairway dùng rotor theo lưới tam giác (hai khu vực) và green có rotor quanh mép, ao có máy bơm và ca tưới ban đêm.'),
-    SiteExample('sectorPivot', 'Pivot hình quạt có súng phun cuối', 'Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 20 hp và van cổng.'),
+    SiteExample(
+      'sectorPivot',
+      'Pivot hình quạt có súng phun cuối',
+      'Pivot 250 m trên đậu tương quét 270°, chừa góc phần tư của khu nhà trại, có súng phun cuối 12 m³/h; ao, máy bơm 20 hp và van cổng.',
+    ),
     SiteExample('linear', 'Máy tưới thẳng', 'Máy tưới thẳng 392 m trên lúa mì di chuyển 800 m dọc kênh, cửa lấy nước có bơm 30 hp và van một chiều; báo cáo tháp và vòi phun.'),
   ],
   faqTitle: 'Câu hỏi thường gặp',
   faq: [
-    ('OpenCADIrrigation là gì?', 'OpenCADIrrigation là ứng dụng web miễn phí, mã nguồn mở để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm, kèm theo một trợ lý AI tùy chọn cùng bạn vẽ và thiết kế dự án từ mô tả về khu đất.'),
-    ('AI có thể thiết kế dự án thay tôi không?', 'Có, nếu bạn muốn. Trợ lý AI tùy chọn làm việc trên dự án đang mở bằng chính các công cụ có trong menu: bạn mô tả khu đất, hoặc để trợ lý xem ảnh vệ tinh và địa hình của một dự án đã tham chiếu địa lý, rồi trợ lý sẽ bố trí béc phun và ống nhỏ giọt, chia thửa ruộng thành lô, vạch tuyến ống và van, đặt máy bơm và nguồn nước, chạy tính toán thiết kế và các công cụ tự động, sửa các cảnh báo, tối ưu chi phí và viết báo cáo dự án. Trợ lý hỏi bạn trước mỗi thay đổi, hoặc tự động áp dụng thay đổi nếu bạn chọn, và mọi câu trả lời đều có thể hoàn tác chỉ với một cú nhấp. Mô hình AI cũng có thể sai, vì vậy hãy kiểm tra kết quả như khi bạn kiểm tra công việc của một đồng nghiệp.'),
-    ('Ứng dụng dùng những mô hình AI nào?', 'Các mô hình Claude của Anthropic (Claude Opus 5.5 theo mặc định, Claude Fable 5.1, Claude Sonnet 5.5 và Claude Haiku 5.5) và các mô hình GPT của OpenAI (GPT-6 Astra, GPT-6.1 Sol và GPT-6 Luna): mỗi công ty có một hạng cao nhất, một hạng trung bình và một hạng nhanh, mỗi mô hình có năm mức độ sâu suy luận. Bạn chọn mô hình trong phần cài đặt của trợ lý và dán khóa API của riêng bạn; khung trợ lý hiển thị số token và chi phí ước tính của từng câu trả lời, còn giới hạn số bước và mức trần chi phí sẽ dừng một tác vụ kéo dài quá lâu.'),
-    ('Trợ lý AI gửi những gì, và gửi đến đâu?', 'Không gửi gì cho đến khi bạn nhấn Gửi. Khi đó, tin nhắn của bạn, các tệp bạn đính kèm và dữ liệu dự án bạn đánh dấu được gửi thẳng từ trình duyệt của bạn đến API của nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI, không qua bất kỳ máy chủ nào của OpenCADIrrigation, cùng với kết quả của các công cụ mà trợ lý dùng trong khi trả lời, kể cả hình ảnh bản vẽ. Nhà cung cấp tính phí sử dụng vào tài khoản của bạn. Khóa chỉ nằm trong bộ nhớ trong suốt phiên làm việc, trừ khi bạn chọn ghi nhớ khóa trên thiết bị, và không bao giờ được đưa vào tệp dự án, liên kết chia sẻ hay tệp xuất. Nếu bạn dùng tính năng nhập bằng giọng nói, việc nhận dạng do chính trình duyệt đảm nhận và âm thanh được gửi đến hãng làm trình duyệt (Google với Chrome, Microsoft với Edge, Apple với Safari). Các cuộc trò chuyện đã lưu chỉ nằm trong trình duyệt của bạn, không bao giờ vào tệp dự án hay liên kết.'),
-    ('OpenCADIrrigation có miễn phí không?', 'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký. Phần mềm cũng là mã nguồn mở theo giấy phép MIT, với mã nguồn được công bố trên GitHub. Trợ lý AI tùy chọn dùng tài khoản Anthropic hoặc OpenAI của riêng bạn, và nhà cung cấp dịch vụ tính phí sử dụng vào tài khoản đó.'),
-    ('Ứng dụng dành cho ai?', 'Cho người thiết kế tưới nông nghiệp và tưới cảnh quan, kỹ sư nông học và kỹ sư, đại lý thiết bị, giảng viên và sinh viên. Hướng dẫn tương tác, 15 ví dụ sẵn có và trợ lý AI giúp bạn bắt đầu mà không cần đọc tài liệu.'),
-    ('Tôi có cần cài đặt gì không?', 'Không. Ứng dụng chạy trên Chrome, Edge, Firefox và Safari, trên máy tính, máy tính bảng và điện thoại, và có thể cài như ứng dụng (PWA) để mở trong cửa sổ riêng.'),
-    ('Có dùng được ngoại tuyến không?', 'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 24 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.'),
-    ('Dự án của tôi có được lưu trên đám mây không?', 'Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu; liên kết chia sẻ chứa dự án ngay trong chính địa chỉ, nên không có gì được tải lên. Internet chỉ được truy cập khi bạn yêu cầu: bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI, vốn chỉ giao tiếp với nhà cung cấp bạn đã chọn (Anthropic hoặc OpenAI).'),
-    ('Tính toán thủy lực được thực hiện thế nào?', 'Tổn thất ma sát theo Hazen-Williams, Darcy-Weisbach, Scobey hoặc Manning, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống; thiết kế còn kiểm tra độ đồng đều (CU, DU, EU), xả rửa ống và nước va theo phương pháp đường đặc trưng (đóng van, bơm dừng đột ngột, van xả khí), kèm mô phỏng 24 giờ về áp suất và chi phí năng lượng.'),
-    ('Có dùng được với AutoCAD và các phần mềm CAD khác không?', 'Có. Ứng dụng nhập DXF và DWG đến phiên bản AutoCAD 2018, DGN V7 và bản vẽ PDF, đồng thời xuất DXF 2000 với đối tượng CAD nguyên bản (polyline có cung tròn, mặt cắt, spline, kích thước, khối có thuộc tính), DXF R12 cho các phần mềm cũ và DWG 2000. Đối với GIS, khảo sát và BIM, ứng dụng còn đọc và ghi KML/KMZ, shapefile, GeoJSON, GPX, LandXML và EPANET .inp, đọc đám mây điểm LAS và xuất IFC 4.'),
-    ('Ứng dụng có những ngôn ngữ nào?', '20 ngôn ngữ, giống như trang web này (danh sách ở cuối trang). Ứng dụng mở bằng ngôn ngữ máy tính của bạn và bạn có thể đổi bất cứ lúc nào tại Xem → Ngôn ngữ.'),
+    (
+      'OpenCADIrrigation là gì?',
+      'OpenCADIrrigation là ứng dụng web miễn phí, mã nguồn mở để thiết kế hệ thống tưới có áp: một phần mềm CAD có bộ tính thủy lực, giúp bố trí mạng ống, chọn đường kính ống, kiểm tra áp suất và độ đồng đều, rồi lập bảng kê vật tư và báo cáo, từ sân vườn nhà ở đến pivot trung tâm, kèm theo một trợ lý AI tùy chọn cùng bạn vẽ và thiết kế dự án từ mô tả về khu đất.',
+    ),
+    (
+      'AI có thể thiết kế dự án thay tôi không?',
+      'Có, nếu bạn muốn. Trợ lý AI tùy chọn làm việc trên dự án đang mở bằng chính các công cụ có trong menu: bạn mô tả khu đất, hoặc để trợ lý xem ảnh vệ tinh và địa hình của một dự án đã tham chiếu địa lý, rồi trợ lý sẽ bố trí béc phun và ống nhỏ giọt, chia thửa ruộng thành lô, vạch tuyến ống và van, đặt máy bơm và nguồn nước, chạy tính toán thiết kế và các công cụ tự động, sửa các cảnh báo, tối ưu chi phí và viết báo cáo dự án. Trợ lý hỏi bạn trước mỗi thay đổi, hoặc tự động áp dụng thay đổi nếu bạn chọn, và mọi câu trả lời đều có thể hoàn tác chỉ với một cú nhấp. Mô hình AI cũng có thể sai, vì vậy hãy kiểm tra kết quả như khi bạn kiểm tra công việc của một đồng nghiệp.',
+    ),
+    (
+      'Ứng dụng dùng những mô hình AI nào?',
+      'Các mô hình Claude của Anthropic (Claude Opus 5.5 theo mặc định, Claude Fable 5.1, Claude Sonnet 5.5 và Claude Haiku 5.5) và các mô hình GPT của OpenAI (GPT-6 Astra, GPT-6.1 Sol và GPT-6 Luna): mỗi công ty có một hạng cao nhất, một hạng trung bình và một hạng nhanh, mỗi mô hình có năm mức độ sâu suy luận. Bạn chọn mô hình trong phần cài đặt của trợ lý và dán khóa API của riêng bạn; khung trợ lý hiển thị số token và chi phí ước tính của từng câu trả lời, còn giới hạn số bước và mức trần chi phí sẽ dừng một tác vụ kéo dài quá lâu.',
+    ),
+    (
+      'Trợ lý AI gửi những gì, và gửi đến đâu?',
+      'Không gửi gì cho đến khi bạn nhấn Gửi. Khi đó, tin nhắn của bạn, các tệp bạn đính kèm và dữ liệu dự án bạn đánh dấu được gửi thẳng từ trình duyệt của bạn đến API của nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI, không qua bất kỳ máy chủ nào của OpenCADIrrigation, cùng với kết quả của các công cụ mà trợ lý dùng trong khi trả lời, kể cả hình ảnh bản vẽ. Nhà cung cấp tính phí sử dụng vào tài khoản của bạn. Khóa chỉ nằm trong bộ nhớ trong suốt phiên làm việc, trừ khi bạn chọn ghi nhớ khóa trên thiết bị, và không bao giờ được đưa vào tệp dự án, liên kết chia sẻ hay tệp xuất. Nếu bạn dùng tính năng nhập bằng giọng nói, việc nhận dạng do chính trình duyệt đảm nhận và âm thanh được gửi đến hãng làm trình duyệt (Google với Chrome, Microsoft với Edge, Apple với Safari). Các cuộc trò chuyện đã lưu chỉ nằm trong trình duyệt của bạn, không bao giờ vào tệp dự án hay liên kết.',
+    ),
+    (
+      'OpenCADIrrigation có miễn phí không?',
+      'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký. Phần mềm cũng là mã nguồn mở theo giấy phép MIT, với mã nguồn được công bố trên GitHub. Trợ lý AI tùy chọn dùng tài khoản Anthropic hoặc OpenAI của riêng bạn, và nhà cung cấp dịch vụ tính phí sử dụng vào tài khoản đó.',
+    ),
+    (
+      'Ứng dụng dành cho ai?',
+      'Cho người thiết kế tưới nông nghiệp và tưới cảnh quan, kỹ sư nông học và kỹ sư, đại lý thiết bị, giảng viên và sinh viên. Hướng dẫn tương tác, 15 ví dụ sẵn có và trợ lý AI giúp bạn bắt đầu mà không cần đọc tài liệu.',
+    ),
+    (
+      'Tôi có cần cài đặt gì không?',
+      'Không. Ứng dụng chạy trên Chrome, Edge, Firefox và Safari, trên máy tính, máy tính bảng và điện thoại, và có thể cài như ứng dụng (PWA) để mở trong cửa sổ riêng.',
+    ),
+    (
+      'Có dùng được ngoại tuyến không?',
+      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 24 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
+    ),
+    (
+      'Dự án của tôi có được lưu trên đám mây không?',
+      'Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu; liên kết chia sẻ chứa dự án ngay trong chính địa chỉ, nên không có gì được tải lên. Internet chỉ được truy cập khi bạn yêu cầu: bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI, vốn chỉ giao tiếp với nhà cung cấp bạn đã chọn (Anthropic hoặc OpenAI).',
+    ),
+    (
+      'Tính toán thủy lực được thực hiện thế nào?',
+      'Tổn thất ma sát theo Hazen-Williams, Darcy-Weisbach, Scobey hoặc Manning, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống; thiết kế còn kiểm tra độ đồng đều (CU, DU, EU), xả rửa ống và nước va theo phương pháp đường đặc trưng (đóng van, bơm dừng đột ngột, van xả khí), kèm mô phỏng 24 giờ về áp suất và chi phí năng lượng.',
+    ),
+    (
+      'Có dùng được với AutoCAD và các phần mềm CAD khác không?',
+      'Có. Ứng dụng nhập DXF và DWG đến phiên bản AutoCAD 2018, DGN V7 và bản vẽ PDF, đồng thời xuất DXF 2000 với đối tượng CAD nguyên bản (polyline có cung tròn, mặt cắt, spline, kích thước, khối có thuộc tính), DXF R12 cho các phần mềm cũ và DWG 2000. Đối với GIS, khảo sát và BIM, ứng dụng còn đọc và ghi KML/KMZ, shapefile, GeoJSON, GPX, LandXML và EPANET .inp, đọc đám mây điểm LAS và xuất IFC 4.',
+    ),
+    (
+      'Ứng dụng có những ngôn ngữ nào?',
+      '20 ngôn ngữ, giống như trang web này (danh sách ở cuối trang). Ứng dụng mở bằng ngôn ngữ máy tính của bạn và bạn có thể đổi bất cứ lúc nào tại Xem → Ngôn ngữ.',
+    ),
   ],
   loading: 'Đang tải CAD thiết kế tưới…',
   slow: 'Quá trình tải đang lâu. Hãy kiểm tra kết nối hoặc tải lại trang; nội dung phía trên đã có thể đọc được.',

@@ -72,8 +72,18 @@ class IfcWriter {
   /// outlet of the laterals (at most [maxTerminals] terminals); [terrain]
   /// gives the site the TIN as its body; pipes follow the ground with a
   /// vertex every [densify] metres.
-  static IfcExport write(Project project, {DesignResults? results, String fileName = 'project.ifc', DateTime? time, String applicationVersion = '', GeodeticDatum datum = GeodeticDatum.sirgas2000, bool terrain = true, bool lateralOutlets = true, int maxTerminals = 20000, double densify = 5}) =>
-      _IfcBuilder(project, results, fileName, time ?? DateTime.now(), applicationVersion, datum, terrain, lateralOutlets, maxTerminals, densify).build();
+  static IfcExport write(
+    Project project, {
+    DesignResults? results,
+    String fileName = 'project.ifc',
+    DateTime? time,
+    String applicationVersion = '',
+    GeodeticDatum datum = GeodeticDatum.sirgas2000,
+    bool terrain = true,
+    bool lateralOutlets = true,
+    int maxTerminals = 20000,
+    double densify = 5,
+  }) => _IfcBuilder(project, results, fileName, time ?? DateTime.now(), applicationVersion, datum, terrain, lateralOutlets, maxTerminals, densify).build();
 }
 
 // ------------------------------------------------------------------ STEP values
@@ -243,9 +253,12 @@ class _IfcBuilder {
   String nextGuid(String kind) => guid('$kind#${_seq++}');
 
   _Ref pt3(double x, double y, double z) => s.add('IFCCARTESIANPOINT', [
-        [x, y, z],
-      ]);
-  _Ref placementAt(double x, double y, double z) => s.add('IFCLOCALPLACEMENT', [sitePlacement, s.add('IFCAXIS2PLACEMENT3D', [pt3(x, y, z), null, null])]);
+    [x, y, z],
+  ]);
+  _Ref placementAt(double x, double y, double z) => s.add('IFCLOCALPLACEMENT', [
+    sitePlacement,
+    s.add('IFCAXIS2PLACEMENT3D', [pt3(x, y, z), null, null]),
+  ]);
   double ground(Pt p) => terrain.isEmpty ? 0 : terrain.elevationAt(p);
 
   IfcExport build() {
@@ -262,12 +275,18 @@ class _IfcBuilder {
       s.add('IFCSIUNIT', [_star, const _Enum('POWERUNIT'), null, const _Enum('WATT')]),
       second,
       s.add('IFCDERIVEDUNIT', [
-        [s.add('IFCDERIVEDUNITELEMENT', [metre, const _Int(3)]), s.add('IFCDERIVEDUNITELEMENT', [second, const _Int(-1)])],
+        [
+          s.add('IFCDERIVEDUNITELEMENT', [metre, const _Int(3)]),
+          s.add('IFCDERIVEDUNITELEMENT', [second, const _Int(-1)]),
+        ],
         const _Enum('VOLUMETRICFLOWRATEUNIT'),
         null,
       ]),
       s.add('IFCDERIVEDUNIT', [
-        [s.add('IFCDERIVEDUNITELEMENT', [metre, const _Int(1)]), s.add('IFCDERIVEDUNITELEMENT', [second, const _Int(-1)])],
+        [
+          s.add('IFCDERIVEDUNITELEMENT', [metre, const _Int(1)]),
+          s.add('IFCDERIVEDUNITELEMENT', [second, const _Int(-1)]),
+        ],
         const _Enum('LINEARVELOCITYUNIT'),
         null,
       ]),
@@ -290,13 +309,31 @@ class _IfcBuilder {
     axis = s.add('IFCGEOMETRICREPRESENTATIONSUBCONTEXT', ['Axis', 'Model', _star, _star, _star, _star, ctx, null, const _Enum('GRAPH_VIEW'), null]);
     identityOp = s.add('IFCCARTESIANTRANSFORMATIONOPERATOR3D', [null, null, origin, null, null]);
     final m = project.meta;
-    final proj = s.add('IFCPROJECT', [guid('project'), null, m.name, [m.client, m.site].where((x) => x.isNotEmpty).join(' · '), null, m.name, null, [ctx], unitAssignment]);
+    final proj = s.add('IFCPROJECT', [
+      guid('project'),
+      null,
+      m.name,
+      [m.client, m.site].where((x) => x.isNotEmpty).join(' · '),
+      null,
+      m.name,
+      null,
+      [ctx],
+      unitAssignment,
+    ]);
     // ---- georeference
     final g = m.georef;
     List<_Int>? lat, lon;
     if (g != null) {
       final crs = CrsInfo.utm(g.zone, g.north, datum: datum);
-      final pcrs = s.add('IFCPROJECTEDCRS', [crs.epsgCode != null ? 'EPSG:${crs.epsgCode}' : crs.name, crs.name, datum.ogcName.replaceAll(' ', ''), null, 'UTM', '${g.zone}${g.north ? 'N' : 'S'}', metre]);
+      final pcrs = s.add('IFCPROJECTEDCRS', [
+        crs.epsgCode != null ? 'EPSG:${crs.epsgCode}' : crs.name,
+        crs.name,
+        datum.ogcName.replaceAll(' ', ''),
+        null,
+        'UTM',
+        '${g.zone}${g.north ? 'N' : 'S'}',
+        metre,
+      ]);
       s.add('IFCMAPCONVERSION', [ctx, pcrs, g.originEasting, g.originNorthing, 0.0, 1.0, 0.0, 1.0]);
       final (la, lo) = g.toLatLon(0, 0);
       lat = _dms(la);
@@ -310,13 +347,56 @@ class _IfcBuilder {
     if (withTerrain && !terrain.isEmpty && !terrain.tin.isEmpty) {
       final tin = terrain.tin;
       final pl = s.add('IFCCARTESIANPOINTLIST3D', [
-        [for (var i = 0; i < tin.pointCount; i++) [tin.xs[i], tin.ys[i], tin.zs[i]]],
+        [
+          for (var i = 0; i < tin.pointCount; i++) [tin.xs[i], tin.ys[i], tin.zs[i]],
+        ],
       ]);
-      final fs = s.add('IFCTRIANGULATEDFACESET', [pl, null, false, [for (final t in tin.triangles) [_Int(t.a + 1), _Int(t.b + 1), _Int(t.c + 1)]], null]);
-      siteShape = s.add('IFCPRODUCTDEFINITIONSHAPE', [null, null, [s.add('IFCSHAPEREPRESENTATION', [body, 'Body', 'Tessellation', [fs]])]]);
+      final fs = s.add('IFCTRIANGULATEDFACESET', [
+        pl,
+        null,
+        false,
+        [
+          for (final t in tin.triangles) [_Int(t.a + 1), _Int(t.b + 1), _Int(t.c + 1)],
+        ],
+        null,
+      ]);
+      siteShape = s.add('IFCPRODUCTDEFINITIONSHAPE', [
+        null,
+        null,
+        [
+          s.add('IFCSHAPEREPRESENTATION', [
+            body,
+            'Body',
+            'Tessellation',
+            [fs],
+          ]),
+        ],
+      ]);
     }
-    final site = s.add('IFCSITE', [guid('site'), null, m.site.isNotEmpty ? m.site : m.name, null, null, sitePlacement, siteShape, null, const _Enum('ELEMENT'), lat, lon, lat != null ? 0.0 : null, null, null]);
-    s.add('IFCRELAGGREGATES', [nextGuid('agg'), null, null, null, proj, [site]]);
+    final site = s.add('IFCSITE', [
+      guid('site'),
+      null,
+      m.site.isNotEmpty ? m.site : m.name,
+      null,
+      null,
+      sitePlacement,
+      siteShape,
+      null,
+      const _Enum('ELEMENT'),
+      lat,
+      lon,
+      lat != null ? 0.0 : null,
+      null,
+      null,
+    ]);
+    s.add('IFCRELAGGREGATES', [
+      nextGuid('agg'),
+      null,
+      null,
+      null,
+      proj,
+      [site],
+    ]);
 
     // ---- elements
     _pipes();
@@ -344,7 +424,14 @@ class _IfcBuilder {
       if (refs.isEmpty) continue;
       final sys = s.add('IFCDISTRIBUTIONSYSTEM', [nextGuid('sys'), null, name, null, 'IRRIGATION', null, const _Enum('USERDEFINED')]);
       s.add('IFCRELASSIGNSTOGROUP', [nextGuid('grp'), null, null, null, refs, null, sys]);
-      s.add('IFCRELSERVICESBUILDINGS', [nextGuid('srv'), null, null, null, sys, [site]]);
+      s.add('IFCRELSERVICESBUILDINGS', [
+        nextGuid('srv'),
+        null,
+        null,
+        null,
+        sys,
+        [site],
+      ]);
     }
     if (elements.isNotEmpty) s.add('IFCRELCONTAINEDINSPATIALSTRUCTURE', [nextGuid('cont'), null, null, null, elements, site]);
 
@@ -355,7 +442,9 @@ class _IfcBuilder {
       ..writeln('ISO-10303-21;')
       ..writeln('HEADER;')
       ..writeln("FILE_DESCRIPTION(('ViewDefinition [ReferenceView_V1.2]'),'2;1');")
-      ..writeln('FILE_NAME(${_str(fileName)},${_str(stamp)},(${_str(m.designer)}),(${_str(m.client)}),${_str('OpenCADIrrigation${version.isNotEmpty ? ' $version' : ''}')},${_str('OpenCADIrrigation')},${_str('')});')
+      ..writeln(
+        'FILE_NAME(${_str(fileName)},${_str(stamp)},(${_str(m.designer)}),(${_str(m.client)}),${_str('OpenCADIrrigation${version.isNotEmpty ? ' $version' : ''}')},${_str('OpenCADIrrigation')},${_str('')});',
+      )
       ..writeln("FILE_SCHEMA(('IFC4'));")
       ..writeln('ENDSEC;')
       ..writeln('DATA;')
@@ -425,17 +514,38 @@ class _IfcBuilder {
   /// A vertical cylinder (or box) standing on its local origin, as a
   /// representation map shared by the elements of one kind.
   _Ref _map(String key, {double radius = 0, double x = 0, double y = 0, required double height}) => maps[key] ??= () {
-    final pos2 = s.add('IFCAXIS2PLACEMENT2D', [s.add('IFCCARTESIANPOINT', [[0, 0]]), null]);
+    final pos2 = s.add('IFCAXIS2PLACEMENT2D', [
+      s.add('IFCCARTESIANPOINT', [
+        [0, 0],
+      ]),
+      null,
+    ]);
     final profile = radius > 0 ? s.add('IFCCIRCLEPROFILEDEF', [const _Enum('AREA'), null, pos2, radius]) : s.add('IFCRECTANGLEPROFILEDEF', [const _Enum('AREA'), null, pos2, x, y]);
     final solid = s.add('IFCEXTRUDEDAREASOLID', [profile, wcs, zDir, height]);
-    final rep = s.add('IFCSHAPEREPRESENTATION', [body, 'Body', 'SweptSolid', [solid]]);
+    final rep = s.add('IFCSHAPEREPRESENTATION', [
+      body,
+      'Body',
+      'SweptSolid',
+      [solid],
+    ]);
     return s.add('IFCREPRESENTATIONMAP', [wcs, rep]);
   }();
 
   _Ref _mapped(_Ref map, [double scale = 1]) {
     final op = scale == 1 ? identityOp : s.add('IFCCARTESIANTRANSFORMATIONOPERATOR3D', [null, null, origin, scale, null]);
     final item = s.add('IFCMAPPEDITEM', [map, op]);
-    return s.add('IFCPRODUCTDEFINITIONSHAPE', [null, null, [s.add('IFCSHAPEREPRESENTATION', [body, 'Body', 'MappedRepresentation', [item]])]]);
+    return s.add('IFCPRODUCTDEFINITIONSHAPE', [
+      null,
+      null,
+      [
+        s.add('IFCSHAPEREPRESENTATION', [
+          body,
+          'Body',
+          'MappedRepresentation',
+          [item],
+        ]),
+      ],
+    ]);
   }
 
   Map<String, String> get _zoneNames => {for (final v in project.entities.whereType<ControlValveEntity>()) v.id: v.zoneName.isNotEmpty ? v.zoneName : v.id};
@@ -475,23 +585,52 @@ class _IfcBuilder {
         addPoint(pts[i]);
       }
       if (path.length < 2) continue;
-      final poly = s.add('IFCPOLYLINE', [[for (final (x, y, z) in path) pt3(x, y, z)]]);
+      final poly = s.add('IFCPOLYLINE', [
+        [for (final (x, y, z) in path) pt3(x, y, z)],
+      ]);
       final solid = s.add('IFCSWEPTDISKSOLID', [poly, dOut / 2, di / 2, null, null]);
       final shape = s.add('IFCPRODUCTDEFINITIONSHAPE', [
         null,
         null,
-        [s.add('IFCSHAPEREPRESENTATION', [axis, 'Axis', 'Curve3D', [poly]]), s.add('IFCSHAPEREPRESENTATION', [body, 'Body', 'AdvancedSweptSolid', [solid]])],
+        [
+          s.add('IFCSHAPEREPRESENTATION', [
+            axis,
+            'Axis',
+            'Curve3D',
+            [poly],
+          ]),
+          s.add('IFCSHAPEREPRESENTATION', [
+            body,
+            'Body',
+            'AdvancedSweptSolid',
+            [solid],
+          ]),
+        ],
       ]);
       final flexible = tape != null || e is TapeEntity || pipe == null || pipe.material == PipeMaterial.peld || pipe.material == PipeMaterial.pehd;
       final specName = tape?.name ?? pipe?.name;
-      final el = _element('IFCPIPESEGMENT', e, 'pipe:${e.id}', name: e.name.isNotEmpty ? e.name : specName, description: specName, objectType: e.type.name.toUpperCase(), placement: placementAt(0, 0, 0), shape: shape, predefined: flexible ? 'FLEXIBLESEGMENT' : 'RIGIDSEGMENT');
-      _pset('Pset_PipeSegmentTypeCommon', [el], {
-        'Reference': pipe?.code.isNotEmpty == true ? _Typed('IFCIDENTIFIER', pipe!.code) : null,
-        'NominalDiameter': _pos((tape?.nominalMm ?? pipe?.nominalMm ?? 0) / 1000),
-        'InnerDiameter': _pos(di),
-        'OuterDiameter': _pos(dOut),
-        'WorkingPressure': _pa(tape?.pressureRatingM ?? pipe?.pressureRatingM),
-      });
+      final el = _element(
+        'IFCPIPESEGMENT',
+        e,
+        'pipe:${e.id}',
+        name: e.name.isNotEmpty ? e.name : specName,
+        description: specName,
+        objectType: e.type.name.toUpperCase(),
+        placement: placementAt(0, 0, 0),
+        shape: shape,
+        predefined: flexible ? 'FLEXIBLESEGMENT' : 'RIGIDSEGMENT',
+      );
+      _pset(
+        'Pset_PipeSegmentTypeCommon',
+        [el],
+        {
+          'Reference': pipe?.code.isNotEmpty == true ? _Typed('IFCIDENTIFIER', pipe!.code) : null,
+          'NominalDiameter': _pos((tape?.nominalMm ?? pipe?.nominalMm ?? 0) / 1000),
+          'InnerDiameter': _pos(di),
+          'OuterDiameter': _pos(dOut),
+          'WorkingPressure': _pa(tape?.pressureRatingM ?? pipe?.pressureRatingM),
+        },
+      );
       final rough = tape != null ? tape.roughnessMm / 1000 : pipe?.roughness;
       _pset('Pset_PipeSegmentOccurrence', [el], {'InteriorRoughnessCoefficient': _pos(rough), 'InvertElevation': _len(path.first.$3 - di / 2)});
       final segs = res[e.id] ?? const <PipeSegmentResult>[];
@@ -504,23 +643,27 @@ class _IfcBuilder {
         pMax = math.max(pMax ?? -double.infinity, math.max(r.pressureStart, r.pressureEnd));
         zone ??= r.zoneId;
       }
-      _pset('OCI_Hydraulics', [el], {
-        'CatalogueItem': _label(specName),
-        'Length': _len(e.length),
-        'BurialDepth': _len(depth),
-        'HazenWilliamsC': tape?.hazenC != null || pipe?.hazenC != null ? _Typed('IFCREAL', project.params.adjustedC(tape?.hazenC ?? pipe!.hazenC)) : null,
-        'Zone': _label(zone != null ? zones[zone] : null),
-        'DesignFlow': _q(qMax),
-        'MaximumVelocity': vMax == null ? null : _Typed('IFCLINEARVELOCITYMEASURE', vMax),
-        'MinimumPressure': _pa(pMin),
-        'MaximumPressure': _pa(pMax),
-        'MinimumPressureHead': _len(pMin),
-        'MaximumPressureHead': _len(pMax),
-        if (e is SpraylineEntity) 'Outlets': _Typed('IFCINTEGER', _Int(e.outletCount)),
-        if (e is SpraylineEntity) 'OutletSpacing': _pos(e.spacing),
-        if (tape != null) 'EmitterSpacing': _pos(tape.emitterSpacingM),
-        if (tape != null) 'Emitters': _Typed('IFCINTEGER', _Int(tape.emitterSpacingM > 0 ? (e.length / tape.emitterSpacingM).floor() : 0)),
-      });
+      _pset(
+        'OCI_Hydraulics',
+        [el],
+        {
+          'CatalogueItem': _label(specName),
+          'Length': _len(e.length),
+          'BurialDepth': _len(depth),
+          'HazenWilliamsC': tape?.hazenC != null || pipe?.hazenC != null ? _Typed('IFCREAL', project.params.adjustedC(tape?.hazenC ?? pipe!.hazenC)) : null,
+          'Zone': _label(zone != null ? zones[zone] : null),
+          'DesignFlow': _q(qMax),
+          'MaximumVelocity': vMax == null ? null : _Typed('IFCLINEARVELOCITYMEASURE', vMax),
+          'MinimumPressure': _pa(pMin),
+          'MaximumPressure': _pa(pMax),
+          'MinimumPressureHead': _len(pMin),
+          'MaximumPressureHead': _len(pMax),
+          if (e is SpraylineEntity) 'Outlets': _Typed('IFCINTEGER', _Int(e.outletCount)),
+          if (e is SpraylineEntity) 'OutletSpacing': _pos(e.spacing),
+          if (tape != null) 'EmitterSpacing': _pos(tape.emitterSpacingM),
+          if (tape != null) 'Emitters': _Typed('IFCINTEGER', _Int(tape.emitterSpacingM > 0 ? (e.length / tape.emitterSpacingM).floor() : 0)),
+        },
+      );
       if (pipe != null) _catalogue('pipe:${pipe.id}', pipe.name, pipe.supplier, pipe.code, el);
       if (tape != null) _catalogue('tape:${tape.id}', tape.name, tape.supplier, tape.code, el);
     }
@@ -535,19 +678,33 @@ class _IfcBuilder {
       final kind = (spec?.kind ?? OutletKind.sprinkler).name.toUpperCase();
       final height = math.max(riser, 0.15);
       final map = _map('terminal:$kind:${height.toStringAsFixed(2)}', radius: spec?.kind == OutletKind.gun ? 0.08 : 0.025, height: height);
-      final el = _element('IFCFLOWTERMINAL', e, seed, name: name, description: [?spec?.name, ?nz?.name].join(' · '), objectType: 'IRRIGATION_$kind', placement: placementAt(p.x, p.y, base), shape: _mapped(map), hasPredefined: false);
-      _pset('OCI_Hydraulics', [el], {
-        'CatalogueItem': _label(spec?.name),
-        'Nozzle': _label(nz?.name),
-        'Arc': _Typed('IFCPLANEANGLEMEASURE', arcDeg * math.pi / 180),
-        'RiserHeight': _len(riser),
-        'NominalFlow': _q(nz != null && r != null ? r.nominalFlow : null),
-        'DesignFlow': _q(r?.flow),
-        'Pressure': _pa(r?.pressure),
-        'PressureHead': _len(r?.pressure),
-        'DischargeCoefficient': nz != null ? _Typed('IFCREAL', nz.curve.k) : null,
-        'DischargeExponent': nz != null ? _Typed('IFCREAL', nz.curve.x) : null,
-      });
+      final el = _element(
+        'IFCFLOWTERMINAL',
+        e,
+        seed,
+        name: name,
+        description: [?spec?.name, ?nz?.name].join(' · '),
+        objectType: 'IRRIGATION_$kind',
+        placement: placementAt(p.x, p.y, base),
+        shape: _mapped(map),
+        hasPredefined: false,
+      );
+      _pset(
+        'OCI_Hydraulics',
+        [el],
+        {
+          'CatalogueItem': _label(spec?.name),
+          'Nozzle': _label(nz?.name),
+          'Arc': _Typed('IFCPLANEANGLEMEASURE', arcDeg * math.pi / 180),
+          'RiserHeight': _len(riser),
+          'NominalFlow': _q(nz != null && r != null ? r.nominalFlow : null),
+          'DesignFlow': _q(r?.flow),
+          'Pressure': _pa(r?.pressure),
+          'PressureHead': _len(r?.pressure),
+          'DischargeCoefficient': nz != null ? _Typed('IFCREAL', nz.curve.k) : null,
+          'DischargeExponent': nz != null ? _Typed('IFCREAL', nz.curve.x) : null,
+        },
+      );
       if (spec != null) _catalogue('outlet:${spec.id}', spec.name, spec.supplier, spec.code, el);
     }
 
@@ -556,7 +713,18 @@ class _IfcBuilder {
       switch (e) {
         case OutletEntity o:
           final spec = cat.outlet(o.outletSpecId);
-          terminal(e, 'outlet:${e.id}', o.position, ground(o.position), spec, spec?.nozzle(o.nozzleId), o.riserHeight + (spec?.riserHeightM ?? 0), spec?.nozzle(o.nozzleId)?.effectiveArcDeg(o.arcDeg) ?? o.arcDeg, res[o.id]?.firstOrNull, o.name.isNotEmpty ? o.name : (spec?.name ?? ''));
+          terminal(
+            e,
+            'outlet:${e.id}',
+            o.position,
+            ground(o.position),
+            spec,
+            spec?.nozzle(o.nozzleId),
+            o.riserHeight + (spec?.riserHeightM ?? 0),
+            spec?.nozzle(o.nozzleId)?.effectiveArcDeg(o.arcDeg) ?? o.arcDeg,
+            res[o.id]?.firstOrNull,
+            o.name.isNotEmpty ? o.name : (spec?.name ?? ''),
+          );
         case SpraylineEntity sl when lateralOutlets:
           final spec = cat.outlet(sl.outletSpecId);
           final pos = sl.outletPositions();
@@ -567,7 +735,18 @@ class _IfcBuilder {
               break;
             }
             final r = rs.where((x) => i >= x.index && i < x.index + x.count).firstOrNull;
-            terminal(e, 'outlet:${e.id}:$i', pos[i], ground(pos[i]) - sl.depth, spec, spec?.nozzle(sl.nozzleId), sl.riserHeight + (spec?.riserHeightM ?? 0) + sl.depth, sl.arcDeg, r, '${sl.name.isNotEmpty ? sl.name : sl.id}-${i + 1}');
+            terminal(
+              e,
+              'outlet:${e.id}:$i',
+              pos[i],
+              ground(pos[i]) - sl.depth,
+              spec,
+              spec?.nozzle(sl.nozzleId),
+              sl.riserHeight + (spec?.riserHeightM ?? 0) + sl.depth,
+              sl.arcDeg,
+              r,
+              '${sl.name.isNotEmpty ? sl.name : sl.id}-${i + 1}',
+            );
           }
         default:
           break;
@@ -597,17 +776,31 @@ class _IfcBuilder {
           final size = (spec?.sizeMm ?? 50) / 1000;
           final z = zones[v.id];
           final prv = v.fixedDownstreamHeadM != null;
-          final el = _element('IFCVALVE', e, 'valve:${e.id}', name: v.zoneName.isNotEmpty ? v.zoneName : v.name, description: spec?.name, objectType: prv ? null : 'ZONECONTROL', placement: placementAt(v.position.x, v.position.y, ground(v.position) - v.depth), shape: _mapped(_map('valve', radius: 0.06, height: 0.2), math.max(size / 0.05, 0.3)), predefined: prv ? 'PRESSUREREDUCING' : 'USERDEFINED');
+          final el = _element(
+            'IFCVALVE',
+            e,
+            'valve:${e.id}',
+            name: v.zoneName.isNotEmpty ? v.zoneName : v.name,
+            description: spec?.name,
+            objectType: prv ? null : 'ZONECONTROL',
+            placement: placementAt(v.position.x, v.position.y, ground(v.position) - v.depth),
+            shape: _mapped(_map('valve', radius: 0.06, height: 0.2), math.max(size / 0.05, 0.3)),
+            predefined: prv ? 'PRESSUREREDUCING' : 'USERDEFINED',
+          );
           _pset('Pset_ValveTypeCommon', [el], {'Size': _pos(size)});
-          _pset('OCI_Hydraulics', [el], {
-            'CatalogueItem': _label(spec?.name),
-            'Zone': _label(v.zoneName),
-            'DesignFlow': _q(z?.totalFlow),
-            'HeadLoss': _len(z?.valveLoss),
-            'RequiredUpstreamPressure': _pa(z?.requiredUpstreamHead),
-            'RequiredUpstreamPressureHead': _len(z?.requiredUpstreamHead),
-            'DownstreamPressureHead': _len(z?.downstreamHead ?? v.fixedDownstreamHeadM),
-          });
+          _pset(
+            'OCI_Hydraulics',
+            [el],
+            {
+              'CatalogueItem': _label(spec?.name),
+              'Zone': _label(v.zoneName),
+              'DesignFlow': _q(z?.totalFlow),
+              'HeadLoss': _len(z?.valveLoss),
+              'RequiredUpstreamPressure': _pa(z?.requiredUpstreamHead),
+              'RequiredUpstreamPressureHead': _len(z?.requiredUpstreamHead),
+              'DownstreamPressureHead': _len(z?.downstreamHead ?? v.fixedDownstreamHeadM),
+            },
+          );
           if (spec != null) _catalogue('valve:${spec.id}', spec.name, spec.supplier, spec.code, el);
         case MiscHydraulicEntity mh:
           final spec = cat.valve(mh.valveSpecId);
@@ -628,35 +821,73 @@ class _IfcBuilder {
             ValveKind.other => ('IFCVALVE', 'NOTDEFINED', null),
           };
           final d = devices[mh.id];
-          final el = _element(type, e, 'device:${e.id}', name: mh.name.isNotEmpty ? mh.name : spec?.name, description: spec?.name, objectType: objectType, placement: placementAt(mh.position.x, mh.position.y, ground(mh.position)), shape: _mapped(_map(kind == ValveKind.filter ? 'filter' : 'valve', radius: kind == ValveKind.filter ? 0.1 : 0.06, height: kind == ValveKind.filter ? 0.5 : 0.2), math.max(size / 0.05, 0.3)), predefined: predefined);
+          final el = _element(
+            type,
+            e,
+            'device:${e.id}',
+            name: mh.name.isNotEmpty ? mh.name : spec?.name,
+            description: spec?.name,
+            objectType: objectType,
+            placement: placementAt(mh.position.x, mh.position.y, ground(mh.position)),
+            shape: _mapped(
+              _map(kind == ValveKind.filter ? 'filter' : 'valve', radius: kind == ValveKind.filter ? 0.1 : 0.06, height: kind == ValveKind.filter ? 0.5 : 0.2),
+              math.max(size / 0.05, 0.3),
+            ),
+            predefined: predefined,
+          );
           if (type == 'IFCVALVE') _pset('Pset_ValveTypeCommon', [el], {'Size': _pos(size)});
           if (type == 'IFCFILTER' && spec != null) _pset('Pset_FilterTypeCommon', [el], {'NominalFlowrate': _q(spec.maxFlow), 'NominalPressureDrop': _pa(spec.loss.loss(spec.maxFlow))});
-          _pset('OCI_Hydraulics', [el], {
-            'CatalogueItem': _label(spec?.name),
-            'Setting': kind == ValveKind.prv || kind == ValveKind.psv ? _len(mh.settingM > 0 ? mh.settingM : spec?.defaultSettingM) : null,
-            'FlowSetting': kind == ValveKind.fcv && mh.settingFlow > 0 ? _q(mh.settingFlow) : null,
-            'DesignFlow': _q(d?.flow.abs()),
-            'HeadLoss': _len(d?.headLoss),
-            'UpstreamPressure': _pa(d?.upstreamPressure),
-            'DownstreamPressure': _pa(d?.downstreamPressure),
-          });
+          _pset(
+            'OCI_Hydraulics',
+            [el],
+            {
+              'CatalogueItem': _label(spec?.name),
+              'Setting': kind == ValveKind.prv || kind == ValveKind.psv ? _len(mh.settingM > 0 ? mh.settingM : spec?.defaultSettingM) : null,
+              'FlowSetting': kind == ValveKind.fcv && mh.settingFlow > 0 ? _q(mh.settingFlow) : null,
+              'DesignFlow': _q(d?.flow.abs()),
+              'HeadLoss': _len(d?.headLoss),
+              'UpstreamPressure': _pa(d?.upstreamPressure),
+              'DownstreamPressure': _pa(d?.downstreamPressure),
+            },
+          );
           if (spec != null) _catalogue('valve:${spec.id}', spec.name, spec.supplier, spec.code, el);
         case PumpEntity pu:
           final spec = cat.pump(pu.pumpSpecId);
           final d = devices[pu.id];
-          final el = _element('IFCPUMP', e, 'pump:${e.id}', name: pu.name.isNotEmpty ? pu.name : spec?.name, description: spec?.name, placement: placementAt(pu.position.x, pu.position.y, ground(pu.position)), shape: _mapped(_map('pump', x: 0.6, y: 0.35, height: 0.4)), predefined: spec?.submersible == true ? 'SUBMERSIBLEPUMP' : 'NOTDEFINED');
-          _pset('OCI_Hydraulics', [el], {
-            'CatalogueItem': _label(spec?.name),
-            'SpeedRatio': _Typed('IFCREAL', pu.speedRatio),
-            'ShutoffHead': _len(spec?.curve.withSpeed(pu.speedRatio).shutoffHead),
-            'RatedPower': spec != null && spec.powerKw > 0 ? _Typed('IFCPOWERMEASURE', spec.powerKw * 1000) : null,
-            'Efficiency': spec != null ? _Typed('IFCPOSITIVERATIOMEASURE', spec.efficiency) : null,
-            'DesignFlow': _q(d?.flow),
-            'PumpHead': _len(d?.pumpHead),
-          });
+          final el = _element(
+            'IFCPUMP',
+            e,
+            'pump:${e.id}',
+            name: pu.name.isNotEmpty ? pu.name : spec?.name,
+            description: spec?.name,
+            placement: placementAt(pu.position.x, pu.position.y, ground(pu.position)),
+            shape: _mapped(_map('pump', x: 0.6, y: 0.35, height: 0.4)),
+            predefined: spec?.submersible == true ? 'SUBMERSIBLEPUMP' : 'NOTDEFINED',
+          );
+          _pset(
+            'OCI_Hydraulics',
+            [el],
+            {
+              'CatalogueItem': _label(spec?.name),
+              'SpeedRatio': _Typed('IFCREAL', pu.speedRatio),
+              'ShutoffHead': _len(spec?.curve.withSpeed(pu.speedRatio).shutoffHead),
+              'RatedPower': spec != null && spec.powerKw > 0 ? _Typed('IFCPOWERMEASURE', spec.powerKw * 1000) : null,
+              'Efficiency': spec != null ? _Typed('IFCPOSITIVERATIOMEASURE', spec.efficiency) : null,
+              'DesignFlow': _q(d?.flow),
+              'PumpHead': _len(d?.pumpHead),
+            },
+          );
           if (spec != null) _catalogue('pump:${spec.id}', spec.name, spec.supplier, spec.code, el);
         case WaterSupplyEntity ws when ws.waterLevelOffsetM > 0:
-          final el = _element('IFCTANK', e, 'tank:${e.id}', name: ws.name, placement: placementAt(ws.position.x, ws.position.y, ground(ws.position)), shape: _mapped(_map('tank', radius: 2, height: math.max(ws.waterLevelOffsetM, 0.5))), predefined: 'STORAGE');
+          final el = _element(
+            'IFCTANK',
+            e,
+            'tank:${e.id}',
+            name: ws.name,
+            placement: placementAt(ws.position.x, ws.position.y, ground(ws.position)),
+            shape: _mapped(_map('tank', radius: 2, height: math.max(ws.waterLevelOffsetM, 0.5))),
+            predefined: 'STORAGE',
+          );
           _pset('OCI_Hydraulics', [el], {'WaterLevelAboveGround': _len(ws.waterLevelOffsetM), 'DesignFlow': ws.designFlow > 0 ? _q(ws.designFlow) : null});
         default:
           break;

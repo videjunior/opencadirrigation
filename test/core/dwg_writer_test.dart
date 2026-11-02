@@ -17,15 +17,18 @@ void main() {
     expect(dwgCrc16(b, 0, 79, 0xC0C1), 0x2347);
   });
 
-  DxfDocument sample() => DxfDocument(layers: [DxfLayer('PIPES', color: 5), DxfLayer('TEXTO', color: 2)], entities: [
-    DxfEntity(type: 'LINE', layer: 'PIPES', points: [const Pt(1, 2), const Pt(30.5, -4.25)]),
-    DxfEntity(type: 'POLYLINE', layer: 'PIPES', points: [const Pt(0, 0), const Pt(10, 0), const Pt(10, 5), const Pt(0, 5)], closed: true, color: 1),
-    DxfEntity(type: 'CIRCLE', layer: '0', center: const Pt(5, 5), radius: 2.5),
-    DxfEntity(type: 'ARC', layer: '0', center: const Pt(-3, 1), radius: 4, startAngle: 30, endAngle: 120),
-    DxfEntity(type: 'POINT', layer: 'PIPES', points: [const Pt(7, 8)], elevation: 12.5),
-    DxfEntity(type: 'TEXT', layer: 'TEXTO', points: [const Pt(2, 3)], text: 'Zona 1 – açude', height: 0.8, rotation: 15),
-    DxfEntity(type: 'POLYLINE', layer: 'PIPES', points: [const Pt(1, 1)]), // too short: dropped
-  ]);
+  DxfDocument sample() => DxfDocument(
+    layers: [DxfLayer('PIPES', color: 5), DxfLayer('TEXTO', color: 2)],
+    entities: [
+      DxfEntity(type: 'LINE', layer: 'PIPES', points: [const Pt(1, 2), const Pt(30.5, -4.25)]),
+      DxfEntity(type: 'POLYLINE', layer: 'PIPES', points: [const Pt(0, 0), const Pt(10, 0), const Pt(10, 5), const Pt(0, 5)], closed: true, color: 1),
+      DxfEntity(type: 'CIRCLE', layer: '0', center: const Pt(5, 5), radius: 2.5),
+      DxfEntity(type: 'ARC', layer: '0', center: const Pt(-3, 1), radius: 4, startAngle: 30, endAngle: 120),
+      DxfEntity(type: 'POINT', layer: 'PIPES', points: [const Pt(7, 8)], elevation: 12.5),
+      DxfEntity(type: 'TEXT', layer: 'TEXTO', points: [const Pt(2, 3)], text: 'Zona 1 – açude', height: 0.8, rotation: 15),
+      DxfEntity(type: 'POLYLINE', layer: 'PIPES', points: [const Pt(1, 1)]), // too short: dropped
+    ],
+  );
 
   List<String> errors(DwgResult r) => r.warnings.where((w) => w.startsWith('object_error') || w.startsWith('eof') || w.startsWith('handle_mismatch') || w.startsWith('decompress')).toList();
 

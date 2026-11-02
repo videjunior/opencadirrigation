@@ -12,17 +12,30 @@ void main() {
   const hgl = [(0.0, 130.0), (100.0, 124.0)];
 
   Future<void> pumpChart(WidgetTester tester, {List<(double, double)> samples = ground, List<(double, double)>? pipeLine = pipe, List<(double, double)>? head = hgl}) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 600,
-            height: 300,
-            child: ProfileChart(samples: samples, units: Units.metric, title: 'Perfil', pipe: pipeLine, hgl: head, legendGround: 'Terreno', legendPipe: 'Tubo', legendHgl: 'LP', stationLabel: 'Est.', pressureLabel: 'P'),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 600,
+              height: 300,
+              child: ProfileChart(
+                samples: samples,
+                units: Units.metric,
+                title: 'Perfil',
+                pipe: pipeLine,
+                hgl: head,
+                legendGround: 'Terreno',
+                legendPipe: 'Tubo',
+                legendHgl: 'LP',
+                stationLabel: 'Est.',
+                pressureLabel: 'P',
+              ),
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   /// Where the painter shows the readout (null when hidden).

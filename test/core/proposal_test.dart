@@ -24,7 +24,16 @@ void main() {
     p.entities.add(PipeEntity(id: 'm', points: [Pt.zero, const Pt(100, 0)], scope: HydraulicScope.mainline, pipeSpecId: 'pvc100', depth: 0.6));
     p.entities.add(PipeEntity(id: 'z', points: [Pt.zero, const Pt(0, 50)], scope: HydraulicScope.zone, pipeSpecId: 'pvc50', depth: 0.4));
     p.entities.add(PipeEntity(id: 'surface', points: [Pt.zero, const Pt(30, 0)], scope: HydraulicScope.zone, pipeSpecId: 'pvc50'));
-    final s = ProposalSettings(markupPct: 25, labourPct: 30, trenchCostPerM3: 40, beddingM: 0.1, discountPct: 10, taxPct: 8, freight: 150, extras: [ProposalExtra(description: 'Start-up', unit: 'h', quantity: 4, unitPrice: 80)]);
+    final s = ProposalSettings(
+      markupPct: 25,
+      labourPct: 30,
+      trenchCostPerM3: 40,
+      beddingM: 0.1,
+      discountPct: 10,
+      taxPct: 8,
+      freight: 150,
+      extras: [ProposalExtra(description: 'Start-up', unit: 'h', quantity: 4, unitPrice: 80)],
+    );
     final r = bom([
       BomLine(category: 'bom.pipes', description: 'PVC 100', unit: 'm', quantity: 100, unitCost: 24),
       BomLine(category: 'bom.pipes', description: 'PVC 50', unit: 'm', quantity: 80, unitCost: 7.2),
@@ -60,7 +69,15 @@ void main() {
 
   test('settings survive the project file and convert with the currency', () {
     final p = Project();
-    p.proposal = ProposalSettings(markupPct: 12, trenchCostPerM3: 50, freight: 200, validityDays: 30, paymentTerms: '30/60', notes: 'n', extras: [ProposalExtra(description: 'x', quantity: 2, unitPrice: 10)]);
+    p.proposal = ProposalSettings(
+      markupPct: 12,
+      trenchCostPerM3: 50,
+      freight: 200,
+      validityDays: 30,
+      paymentTerms: '30/60',
+      notes: 'n',
+      extras: [ProposalExtra(description: 'x', quantity: 2, unitPrice: 10)],
+    );
     final back = Project.fromJsonString(p.toJsonString());
     expect(back.proposal.markupPct, 12);
     expect(back.proposal.validityDays, 30);
@@ -82,7 +99,11 @@ void main() {
     }
     p.proposal = ProposalSettings(markupPct: 20, taxPct: 5);
     final r = Designer(p, label: (k) => t(k)).designAll();
-    final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)));
+    final tables = buildReportTables(
+      project: p,
+      results: r,
+      labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)),
+    );
     final quote = tables.firstWhere((x) => x.key == 'proposal');
     final trench = tables.firstWhere((x) => x.key == 'trench');
     final q = buildProposal(p, r, p.proposal);
@@ -130,7 +151,11 @@ void bomZoneTests() {
     expect(r.bomByZone['']!.any((l) => l.description == pump), isTrue);
     final back = DesignResults.fromJson(r.toJson());
     expect(back.bomByZone.length, r.bomByZone.length);
-    final table = buildReportTables(project: p, results: r, labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w))).firstWhere((x) => x.key == 'bomZones');
+    final table = buildReportTables(
+      project: p,
+      results: r,
+      labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)),
+    ).firstWhere((x) => x.key == 'bomZones');
     expect(table.rows.length, greaterThan(r.bomByZone.length));
   });
 }
@@ -164,7 +189,11 @@ void scenarioTests() {
     final back = Project.fromJsonString(c.project.toJsonString());
     expect(back.scenarios.map((s) => s.name), ['LP', 'Alternative 2']);
     expect(back.scenarios.last.metrics['capital'], closeTo(greedyCapital, 1e-6));
-    final table = buildReportTables(project: back, results: null, labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w))).firstWhere((x) => x.key == 'scenarios');
+    final table = buildReportTables(
+      project: back,
+      results: null,
+      labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)),
+    ).firstWhere((x) => x.key == 'scenarios');
     expect(table.rows, hasLength(2));
     c.deleteScenario(first.id);
     expect(c.project.scenarios.single.name, 'Alternative 2');

@@ -31,30 +31,42 @@ class _DemViewState extends State<DemView> {
   @override
   Widget build(BuildContext context) {
     final t = widget.c.t;
-    if (_terrain.isEmpty) return Center(child: Text(t('dem.noData'), style: TextStyle(color: Cad.fg54)));
+    if (_terrain.isEmpty) {
+      return Center(
+        child: Text(t('dem.noData'), style: TextStyle(color: Cad.fg54)),
+      );
+    }
     final (lo, hi) = _terrain.elevationRange;
-    return Column(children: [
-      Row(children: [
-        Text(t('dem.exaggeration'), style: const TextStyle(fontSize: 11.5)),
-        Expanded(child: Slider(value: _exaggeration, min: 0.5, max: 10, divisions: 19, label: '${_exaggeration.toStringAsFixed(1)}×', onChanged: (v) => setState(() => _exaggeration = v))),
-        Text(t('dem.range', {'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
-      ]),
-      Expanded(
-        child: Listener(
-          onPointerSignal: (e) {
-            if (e is PointerScrollEvent) setState(() => _zoom = (_zoom * (e.scrollDelta.dy > 0 ? 0.9 : 1.1)).clamp(0.3, 6));
-          },
-          child: GestureDetector(
-            onPanUpdate: (d) => setState(() {
-              _azimuth += d.delta.dx * 0.01;
-              _tilt = (_tilt - d.delta.dy * 0.01).clamp(0.15, 1.5);
-            }),
-            child: ClipRect(child: CustomPaint(painter: _DemPainter(_mesh, _azimuth, _tilt, _zoom, _exaggeration), size: Size.infinite)),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text(t('dem.exaggeration'), style: const TextStyle(fontSize: 11.5)),
+            Expanded(
+              child: Slider(value: _exaggeration, min: 0.5, max: 10, divisions: 19, label: '${_exaggeration.toStringAsFixed(1)}×', onChanged: (v) => setState(() => _exaggeration = v)),
+            ),
+            Text(t('dem.range', {'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+          ],
+        ),
+        Expanded(
+          child: Listener(
+            onPointerSignal: (e) {
+              if (e is PointerScrollEvent) setState(() => _zoom = (_zoom * (e.scrollDelta.dy > 0 ? 0.9 : 1.1)).clamp(0.3, 6));
+            },
+            child: GestureDetector(
+              onPanUpdate: (d) => setState(() {
+                _azimuth += d.delta.dx * 0.01;
+                _tilt = (_tilt - d.delta.dy * 0.01).clamp(0.15, 1.5);
+              }),
+              child: ClipRect(
+                child: CustomPaint(painter: _DemPainter(_mesh, _azimuth, _tilt, _zoom, _exaggeration), size: Size.infinite),
+              ),
+            ),
           ),
         ),
-      ),
-      Text(t('dem.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
-    ]);
+        Text(t('dem.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+      ],
+    );
   }
 }
 
@@ -205,10 +217,13 @@ class _DemPainter extends CustomPainter {
           path.lineTo(o.dx, o.dy);
         }
       }
-      canvas.drawPath(path, Paint()
-        ..color = col
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = w);
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = col
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w,
+      );
     }
     // north arrow
     final (o1, _) = proj(cx, cy, zMid);
@@ -221,7 +236,13 @@ class _DemPainter extends CustomPainter {
     if (dir.distance > 1e-6) {
       final u = dir / dir.distance * 28;
       canvas.drawLine(origin, origin + u, arrow);
-      final tp = TextPainter(text: TextSpan(text: 'N', style: TextStyle(color: Cad.fg70, fontSize: 11)), textDirection: TextDirection.ltr)..layout();
+      final tp = TextPainter(
+        text: TextSpan(
+          text: 'N',
+          style: TextStyle(color: Cad.fg70, fontSize: 11),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
       tp.paint(canvas, origin + u * 1.25 - Offset(tp.width / 2, tp.height / 2));
     }
   }

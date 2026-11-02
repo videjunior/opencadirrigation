@@ -115,7 +115,14 @@ class ShpReader {
       }
       if (shp == null) throw const FormatException('shp_zip_no_shp');
       final layer = shp.name.split('/').last.replaceAll(RegExp(r'\.shp$', caseSensitive: false), '');
-      return parse(Uint8List.fromList(shp.content as List<int>), dbf: dbf != null ? Uint8List.fromList(dbf.content as List<int>) : null, prj: prj != null ? latin1.decode(prj.content as List<int>) : null, cpg: cpg != null ? latin1.decode(cpg.content as List<int>).trim() : null, georef: georef, layer: layer.isEmpty ? 'SHP' : layer);
+      return parse(
+        Uint8List.fromList(shp.content as List<int>),
+        dbf: dbf != null ? Uint8List.fromList(dbf.content as List<int>) : null,
+        prj: prj != null ? latin1.decode(prj.content as List<int>) : null,
+        cpg: cpg != null ? latin1.decode(cpg.content as List<int>).trim() : null,
+        georef: georef,
+        layer: layer.isEmpty ? 'SHP' : layer,
+      );
     }
     final layer = name.split('/').last.replaceAll(RegExp(r'\.shp$', caseSensitive: false), '');
     return parse(bytes, georef: georef, layer: layer.isEmpty ? 'SHP' : layer);

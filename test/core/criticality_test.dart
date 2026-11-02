@@ -116,12 +116,16 @@ void main() {
     expect(d1.pressure, closeTo(h1, 1e-3));
     expect(d1.deficit, closeTo(30 - h1, 1e-3));
     // the pressure-driven delivery of N1, by hand
-    final p1 = _root((p) {
-      final q1 = 0.004 * math.sqrt(p / 30);
-      final p2 = 40 - _hf(0.002 + q1, 0.1, 600);
-      // N2 itself stays above its 20 m here
-      return p2 - _hf(q1, 0.05, 300) - p;
-    }, 0, 40);
+    final p1 = _root(
+      (p) {
+        final q1 = 0.004 * math.sqrt(p / 30);
+        final p2 = 40 - _hf(0.002 + q1, 0.1, 600);
+        // N2 itself stays above its 20 m here
+        return p2 - _hf(q1, 0.05, 300) - p;
+      },
+      0,
+      40,
+    );
     expect(s.unmetDemand, closeTo(0.004 - 0.004 * math.sqrt(p1 / 30), 2e-6));
     expect(d1.delivered, closeTo(0.004 * math.sqrt(p1 / 30), 2e-6));
     expect(net.links.length, 3);

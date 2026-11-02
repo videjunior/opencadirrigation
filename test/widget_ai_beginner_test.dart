@@ -107,7 +107,11 @@ void main() {
     await c.setLanguage('en', persist: false);
     host = _Host();
     tiles = _Tiles();
-    box = AgentToolbox(c, host: host, snapshots: CanvasSnapshots(tiles: tiles));
+    box = AgentToolbox(
+      c,
+      host: host,
+      snapshots: CanvasSnapshots(tiles: tiles),
+    );
   });
 
   Future<ToolOutput> call(WidgetTester tester, String name, Map<String, dynamic> input) async {
@@ -155,9 +159,12 @@ void main() {
     expect(c.lang, 'es', reason: set.text);
     expect(c.t('menu.file'), 'Archivo');
     expect(c.historyIndex, before, reason: 'the language is not a project change');
-    expect(await fails(tester, 'set_setting', {
-      'values': {'view.language': 'xx'},
-    }), contains('view.language must be one of'));
+    expect(
+      await fails(tester, 'set_setting', {
+        'values': {'view.language': 'xx'},
+      }),
+      contains('view.language must be one of'),
+    );
     await c.setLanguage('en');
   });
 

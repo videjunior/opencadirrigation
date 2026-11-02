@@ -48,7 +48,24 @@ void main() {
     expect(html, contains('<base href="\$FLUTTER_BASE_HREF">'));
     expect(html, contains('<html lang="en">'), reason: 'English is the default: the root page is the English one');
     expect(html, contains('<link rel="canonical" href="$site">'));
-    for (final needle in ['og:title', 'og:description', 'og:url', 'og:type', 'twitter:card', 'name="description"', 'name="viewport"', 'rel="manifest"', 'rel="apple-touch-icon"', 'hreflang="en"', 'hreflang="es"', 'hreflang="pt-BR"', 'hreflang="zh-CN"', 'hreflang="x-default"', 'theme-color', 'name="robots"']) {
+    for (final needle in [
+      'og:title',
+      'og:description',
+      'og:url',
+      'og:type',
+      'twitter:card',
+      'name="description"',
+      'name="viewport"',
+      'rel="manifest"',
+      'rel="apple-touch-icon"',
+      'hreflang="en"',
+      'hreflang="es"',
+      'hreflang="pt-BR"',
+      'hreflang="zh-CN"',
+      'hreflang="x-default"',
+      'theme-color',
+      'name="robots"',
+    ]) {
       expect(html, contains(needle), reason: needle);
     }
     for (final l in siteLanguages) {
@@ -272,7 +289,16 @@ void main() {
         expect(e.text, isNotEmpty, reason: '${l.code} ${e.id}');
       }
       if (l.code == 'en') continue;
-      for (final (field, value, english) in [('title', t.title, en.title), ('description', t.description, en.description), ('h1', t.h1, en.h1), ('intro', t.intro, en.intro), ('aiTitle', t.aiTitle, en.aiTitle), ('aiIntro', t.aiIntro, en.aiIntro), ('faq', t.faq.last.$2, en.faq.last.$2), ('notFoundText', t.notFoundText, en.notFoundText)]) {
+      for (final (field, value, english) in [
+        ('title', t.title, en.title),
+        ('description', t.description, en.description),
+        ('h1', t.h1, en.h1),
+        ('intro', t.intro, en.intro),
+        ('aiTitle', t.aiTitle, en.aiTitle),
+        ('aiIntro', t.aiIntro, en.aiIntro),
+        ('faq', t.faq.last.$2, en.faq.last.$2),
+        ('notFoundText', t.notFoundText, en.notFoundText),
+      ]) {
         expect(value, isNot(english), reason: '${l.code}.$field is still the English text');
       }
       expect(t.title, startsWith('OpenCADIrrigation'), reason: l.code);

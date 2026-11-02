@@ -96,12 +96,7 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
                   children: [
                     Icon(ai.waiting ? Icons.pan_tool_outlined : Icons.sync, size: 15, color: ai.waiting ? Cad.warning : Cad.accentText),
                     const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        c.t(ai.waiting ? 'ai.tab.waiting' : 'ai.tab.working', {'n': c.project.meta.name}),
-                        style: const TextStyle(fontSize: 11.5),
-                      ),
-                    ),
+                    Expanded(child: Text(c.t(ai.waiting ? 'ai.tab.waiting' : 'ai.tab.working', {'n': c.project.meta.name}), style: const TextStyle(fontSize: 11.5))),
                     TextButton(key: const Key('ai_other_tab_show'), onPressed: widget.onShowTab, child: Text(c.t('ai.tab.show'))),
                   ],
                 ),

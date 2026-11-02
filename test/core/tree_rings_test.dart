@@ -23,7 +23,12 @@ void main() {
     expect(rows.first[1].x - rows.first[0].x, closeTo(6, 1e-9));
     expect(rows[1].first.y - rows[0].first.y, closeTo(7, 1e-9));
     // offsets and a turned grid stay inside the area, a ring radius from the edge
-    final turned = plantingGrid(const [Pt(0, 0), Pt(50, 10), Pt(40, 50), Pt(-5, 35)], TreeRingOptions(direction: const Pt(5, 1), plantSpacing: 5, rowSpacing: 6, rowOffset: 2, plantOffset: 1, ringRadius: 1));
+    final turned = plantingGrid(const [
+      Pt(0, 0),
+      Pt(50, 10),
+      Pt(40, 50),
+      Pt(-5, 35),
+    ], TreeRingOptions(direction: const Pt(5, 1), plantSpacing: 5, rowSpacing: 6, rowOffset: 2, plantOffset: 1, ringRadius: 1));
     for (final t in [...turned.expand((r) => r)]) {
       expect(pointInPolygon(t, const [Pt(0, 0), Pt(50, 10), Pt(40, 50), Pt(-5, 35)]), isTrue);
     }
@@ -32,7 +37,10 @@ void main() {
   test('every ring is joined to its lateral at both ends, round its tree', () {
     for (final kind in RingKind.values) {
       for (final side in SubmainPosition.values) {
-        final t = layoutTreeRings(area: _rect(0, 0, 60, 40), options: TreeRingOptions(plantSpacing: 6, rowSpacing: 7, ringRadius: 0.75, kind: kind, drippersPerTree: 4, submainPosition: side));
+        final t = layoutTreeRings(
+          area: _rect(0, 0, 60, 40),
+          options: TreeRingOptions(plantSpacing: 6, rowSpacing: 7, ringRadius: 0.75, kind: kind, drippersPerTree: 4, submainPosition: side),
+        );
         expect(t.messages, isEmpty, reason: '$kind $side');
         expect(t.trees, hasLength(60));
         expect(t.rings, hasLength(60));
@@ -68,7 +76,10 @@ void main() {
   });
 
   test('the entities connect: rings, laterals, submain and valve form one zone', () {
-    final t = layoutTreeRings(area: _rect(0, 0, 30, 20), options: TreeRingOptions(plantSpacing: 5, rowSpacing: 6, ringRadius: 0.6, kind: RingKind.drippers, drippersPerTree: 3));
+    final t = layoutTreeRings(
+      area: _rect(0, 0, 30, 20),
+      options: TreeRingOptions(plantSpacing: 5, rowSpacing: 6, ringRadius: 0.6, kind: RingKind.drippers, drippersPerTree: 3),
+    );
     final p = Project();
     p.entities.addAll(t.toEntities(p, outletSpecId: 'drip_pc', nozzleId: 'pc4', headM: 10, valveSpecId: 'ev25', zoneName: 'Orchard'));
     final valve = p.entities.whereType<ControlValveEntity>().single;
@@ -87,11 +98,17 @@ void main() {
 
   test('surveyed trees grouped in rows', () {
     final rnd = math.Random(3);
-    final pts = [for (var r = 0; r < 5; r++) for (var c = 0; c < 8; c++) Pt(c * 5.0 + rnd.nextDouble() * 0.6, r * 6.0 + rnd.nextDouble() * 0.6)];
+    final pts = [
+      for (var r = 0; r < 5; r++)
+        for (var c = 0; c < 8; c++) Pt(c * 5.0 + rnd.nextDouble() * 0.6, r * 6.0 + rnd.nextDouble() * 0.6),
+    ];
     final rows = treeRows(pts, const Pt(1, 0), 1.5);
     expect(rows, hasLength(5));
     expect(rows.every((r) => r.length == 8), isTrue);
-    final t = layoutTreeRings(trees: pts, options: TreeRingOptions(rowSpacing: 6, plantSpacing: 5, kind: RingKind.drippers, drippersPerTree: 3));
+    final t = layoutTreeRings(
+      trees: pts,
+      options: TreeRingOptions(rowSpacing: 6, plantSpacing: 5, kind: RingKind.drippers, drippersPerTree: 3),
+    );
     expect(t.laterals, hasLength(5));
     expect(t.dripperCount, 40 * 3);
     for (final r in t.rings) {

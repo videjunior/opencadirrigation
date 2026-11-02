@@ -29,9 +29,11 @@ enum DemKind { points, tiles }
 enum DemSource {
   /// Terrarium tiles: elevation = R·256 + G + B/256 − 32768 per pixel.
   terrainTiles('Terrain Tiles 30 m (SRTM · AWS)', 0, kind: DemKind.tiles, concurrency: 4, minInterval: Duration.zero),
+
   /// Open-Meteo counts every coordinate as one API call (600 per minute,
   /// 5000 per hour on the free tier), so big grids are paced by points.
   openMeteo('Open-Meteo (Copernicus DEM 90 m)', 100, concurrency: 4, minInterval: Duration.zero, pointsPerMinute: 550),
+
   /// OpenTopoData: one request per second, 100 locations each. Its public
   /// API sends no CORS header, so browsers cannot use it.
   openTopoSrtm('OpenTopoData SRTM 30 m', 100, concurrency: 1, minInterval: Duration(milliseconds: 1100), browserOk: false),
@@ -177,10 +179,7 @@ List<double?> demParseResponse(DemSource source, String body, {int? expected}) {
       if (j['status'] != 'OK') throw FormatException(j['error'] as String? ?? 'dem_bad_response');
       final list = j['results'];
       if (list is! List) throw const FormatException('dem_bad_response');
-      out = [
-        for (final r in list)
-          r is Map && r['elevation'] is num && (r['elevation'] as num).isFinite ? (r['elevation'] as num).toDouble() : null,
-      ];
+      out = [for (final r in list) r is Map && r['elevation'] is num && (r['elevation'] as num).isFinite ? (r['elevation'] as num).toDouble() : null];
   }
   if (expected != null && out.length != expected) throw const FormatException('dem_count_mismatch');
   return out;

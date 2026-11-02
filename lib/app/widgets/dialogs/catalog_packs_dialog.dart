@@ -26,124 +26,146 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
   var busy = false;
   return showDialog<void>(
     context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      final cat = c.project.catalog;
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        final cat = c.project.catalog;
 
-      Future<void> addPacks(Future<List<CatalogPack>> Function() load) async {
-        setState(() {
-          busy = true;
-          error = null;
-        });
-        try {
-          final packs = await load();
-          for (final p in packs) {
-            loaded.removeWhere((x) => x.id == p.id);
-            loaded.add(p);
+        Future<void> addPacks(Future<List<CatalogPack>> Function() load) async {
+          setState(() {
+            busy = true;
+            error = null;
+          });
+          try {
+            final packs = await load();
+            for (final p in packs) {
+              loaded.removeWhere((x) => x.id == p.id);
+              loaded.add(p);
+            }
+            if (packs.isNotEmpty) c.notify(t('cat.packLoaded', {'n': '${packs.length}'}));
+          } catch (e) {
+            error = t('cat.packLoadError', {'e': c.describeError(e)});
+          } finally {
+            if (ctx.mounted) setState(() => busy = false);
           }
-          if (packs.isNotEmpty) c.notify(t('cat.packLoaded', {'n': '${packs.length}'}));
-        } catch (e) {
-          error = t('cat.packLoadError', {'e': c.describeError(e)});
-        } finally {
-          if (ctx.mounted) setState(() => busy = false);
         }
-      }
 
-      Widget tile(CatalogPack pack) {
-        final present = pack.isMergedInto(cat);
-        final origin = pack.origin.isEmpty ? '' : '  ·  ${t('cat.packFrom', {'o': pack.origin.split('/').last})}';
-        final prices = pack.hasPrices ? t('cat.packPriced', {'c': pack.meta.currency.isEmpty ? '?' : pack.meta.currency}) : t('cat.packUnpriced');
-        final dated = pack.meta.updated.isEmpty ? '' : '  ·  ${pack.meta.updated}';
-        return ListTile(
-          dense: true,
-          title: Text('${pack.brand}  ·  ${t('cat.packItems', {'n': '${pack.itemCount}'})}$origin', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-          subtitle: Text([if (pack.description.isNotEmpty) pack.description, '$prices$dated', if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}'].join('\n'), style: TextStyle(fontSize: 11, color: Cad.fg60)),
-          isThreeLine: true,
-          trailing: FilledButton.tonal(
-            key: Key('pack_${pack.id}'),
-            onPressed: present
-                ? null
-                : () {
-                    final r = c.mutate(() => addCatalogPack(cat, pack, projectCurrency: c.project.params.currencyCode));
-                    if (r == null) return;
-                    c.notify([
-                      t('cat.packAdded', {'n': '${r.added}', 'b': pack.brand}),
-                      if (r.converted) t('cat.packConverted', {'from': r.from, 'to': r.to, 'r': fmtRate(r.rate!)}),
-                      if (r.unknownCurrency) t('cat.packNoCurrency'),
-                    ].join(' '));
-                    setState(() {});
-                  },
-            child: Text(present ? '✓' : t('cat.packAdd')),
-          ),
-        );
-      }
-
-      return AlertDialog(
-        title: Text(t('cat.packs'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(
-          width: dialogWidth(ctx, 640),
-          height: 500,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('cat.packsExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
-            const SizedBox(height: 4),
-            Text(t('cat.packFormat'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
-            const SizedBox(height: 8),
-            Row(children: [
-              OutlinedButton.icon(
-                key: const Key('pack_import'),
-                onPressed: busy
-                    ? null
-                    : () => addPacks(() async {
-                          final f = await openBinaryFile(accept: '.cat,.json');
-                          if (f == null) return const [];
-                          return [CatalogPack.parse(utf8.decode(f.$2, allowMalformed: true), origin: f.$1)];
-                        }),
-                icon: const Icon(Icons.file_open_outlined, size: 15),
-                label: Text(t('cat.packImport'), style: const TextStyle(fontSize: 12)),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  key: const Key('pack_url'),
-                  controller: urlCtl,
-                  style: const TextStyle(fontSize: 12),
-                  decoration: InputDecoration(labelText: t('cat.packUrl'), isDense: true, hintText: 'https://…/index.json'),
-                  onSubmitted: (_) => addPacks(() => loadCatalogPacksFromUrl(urlCtl.text)),
-                ),
-              ),
-              const SizedBox(width: 8),
-              FilledButton.tonal(
-                key: const Key('pack_load_url'),
-                onPressed: busy ? null : () => addPacks(() => loadCatalogPacksFromUrl(urlCtl.text)),
-                child: Text(busy ? t('cat.packLoading') : t('cat.packLoad'), style: const TextStyle(fontSize: 12)),
-              ),
-            ]),
-            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(error!, key: const Key('pack_error'), style: TextStyle(fontSize: 11.5, color: Cad.warning))),
-            const SizedBox(height: 6),
-            Expanded(
-              child: ListView(
-                children: [
-                  if (loaded.isNotEmpty) ...[
-                    SectionTitle(t('cat.packsLoaded')),
-                    for (final p in loaded.reversed) tile(p),
-                  ],
-                  SectionTitle(t('cat.packsBundled')),
-                  FutureBuilder<List<CatalogPack>>(
-                    future: loadBundledCatalogPacks(),
-                    builder: (ctx, snap) {
-                      if (snap.hasError) return Padding(padding: const EdgeInsets.all(8), child: Text(t('cat.packLoadError', {'e': '${snap.error}'}), style: TextStyle(fontSize: 11.5, color: Cad.warning)));
-                      final packs = snap.data;
-                      if (packs == null) return const Padding(padding: EdgeInsets.all(12), child: LinearProgressIndicator());
-                      return Column(children: [for (final p in packs) tile(p)]);
-                    },
-                  ),
-                ],
-              ),
+        Widget tile(CatalogPack pack) {
+          final present = pack.isMergedInto(cat);
+          final origin = pack.origin.isEmpty ? '' : '  ·  ${t('cat.packFrom', {'o': pack.origin.split('/').last})}';
+          final prices = pack.hasPrices ? t('cat.packPriced', {'c': pack.meta.currency.isEmpty ? '?' : pack.meta.currency}) : t('cat.packUnpriced');
+          final dated = pack.meta.updated.isEmpty ? '' : '  ·  ${pack.meta.updated}';
+          return ListTile(
+            dense: true,
+            title: Text('${pack.brand}  ·  ${t('cat.packItems', {'n': '${pack.itemCount}'})}$origin', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+            subtitle: Text(
+              [if (pack.description.isNotEmpty) pack.description, '$prices$dated', if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}'].join('\n'),
+              style: TextStyle(fontSize: 11, color: Cad.fg60),
             ),
-          ]),
-        ),
-        actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close')))],
-      );
-    }),
+            isThreeLine: true,
+            trailing: FilledButton.tonal(
+              key: Key('pack_${pack.id}'),
+              onPressed: present
+                  ? null
+                  : () {
+                      final r = c.mutate(() => addCatalogPack(cat, pack, projectCurrency: c.project.params.currencyCode));
+                      if (r == null) return;
+                      c.notify(
+                        [
+                          t('cat.packAdded', {'n': '${r.added}', 'b': pack.brand}),
+                          if (r.converted) t('cat.packConverted', {'from': r.from, 'to': r.to, 'r': fmtRate(r.rate!)}),
+                          if (r.unknownCurrency) t('cat.packNoCurrency'),
+                        ].join(' '),
+                      );
+                      setState(() {});
+                    },
+              child: Text(present ? '✓' : t('cat.packAdd')),
+            ),
+          );
+        }
+
+        return AlertDialog(
+          title: Text(t('cat.packs'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: dialogWidth(ctx, 640),
+            height: 500,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('cat.packsExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                const SizedBox(height: 4),
+                Text(t('cat.packFormat'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    OutlinedButton.icon(
+                      key: const Key('pack_import'),
+                      onPressed: busy
+                          ? null
+                          : () => addPacks(() async {
+                              final f = await openBinaryFile(accept: '.cat,.json');
+                              if (f == null) return const [];
+                              return [CatalogPack.parse(utf8.decode(f.$2, allowMalformed: true), origin: f.$1)];
+                            }),
+                      icon: const Icon(Icons.file_open_outlined, size: 15),
+                      label: Text(t('cat.packImport'), style: const TextStyle(fontSize: 12)),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        key: const Key('pack_url'),
+                        controller: urlCtl,
+                        style: const TextStyle(fontSize: 12),
+                        decoration: InputDecoration(labelText: t('cat.packUrl'), isDense: true, hintText: 'https://…/index.json'),
+                        onSubmitted: (_) => addPacks(() => loadCatalogPacksFromUrl(urlCtl.text)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.tonal(
+                      key: const Key('pack_load_url'),
+                      onPressed: busy ? null : () => addPacks(() => loadCatalogPacksFromUrl(urlCtl.text)),
+                      child: Text(busy ? t('cat.packLoading') : t('cat.packLoad'), style: const TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      error!,
+                      key: const Key('pack_error'),
+                      style: TextStyle(fontSize: 11.5, color: Cad.warning),
+                    ),
+                  ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      if (loaded.isNotEmpty) ...[SectionTitle(t('cat.packsLoaded')), for (final p in loaded.reversed) tile(p)],
+                      SectionTitle(t('cat.packsBundled')),
+                      FutureBuilder<List<CatalogPack>>(
+                        future: loadBundledCatalogPacks(),
+                        builder: (ctx, snap) {
+                          if (snap.hasError) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(t('cat.packLoadError', {'e': '${snap.error}'}), style: TextStyle(fontSize: 11.5, color: Cad.warning)),
+                            );
+                          }
+                          final packs = snap.data;
+                          if (packs == null) return const Padding(padding: EdgeInsets.all(12), child: LinearProgressIndicator());
+                          return Column(children: [for (final p in packs) tile(p)]);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close')))],
+        );
+      },
+    ),
   );
 }
 
@@ -155,38 +177,53 @@ Future<void> showExportCatalogPackDialog(BuildContext context, ProjectController
   var name = '', description = '', source = '';
   return showDialog<void>(
     context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      final id = CatalogPackMeta.idFrom(name.isEmpty ? brand : name);
-      return AlertDialog(
-        title: Text(t('cat.packExportTitle'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(
-          width: dialogWidth(ctx, 460),
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('cat.packExportExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
-            const SizedBox(height: 8),
-            TextFieldRow(label: t('cat.packBrand'), value: brand, onChanged: (v) => setState(() => brand = v)),
-            TextFieldRow(label: t('cat.packName'), value: name, onChanged: (v) => setState(() => name = v)),
-            TextFieldRow(label: t('cat.packDescription'), value: description, onChanged: (v) => description = v),
-            TextFieldRow(label: t('cat.packSource'), value: source, onChanged: (v) => source = v),
-            const SizedBox(height: 6),
-            Text('$id$catalogPackExtension  ·  ${t('cat.packItems', {'n': '${cat.itemCount}'})}', style: TextStyle(fontSize: 11, color: Cad.fg54)),
-          ]),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
-          FilledButton(
-            key: const Key('pack_export_ok'),
-            onPressed: () async {
-              final meta = CatalogPackMeta(id: id, brand: brand.trim().isEmpty ? id : brand.trim(), name: name.trim(), description: description.trim(), source: source.trim(), updated: DateTime.now().toIso8601String().substring(0, 10), author: c.project.meta.designer, currency: catalogHasPrices(cat) ? c.project.params.currencyCode : '');
-              final file = '$id$catalogPackExtension';
-              await saveTextFile(file, CatalogIo.encodePack(meta, cat));
-              c.notify(t('cat.packExported', {'f': file, 'n': '${cat.itemCount}'}));
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: Text(t('ok')),
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        final id = CatalogPackMeta.idFrom(name.isEmpty ? brand : name);
+        return AlertDialog(
+          title: Text(t('cat.packExportTitle'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: dialogWidth(ctx, 460),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('cat.packExportExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                const SizedBox(height: 8),
+                TextFieldRow(label: t('cat.packBrand'), value: brand, onChanged: (v) => setState(() => brand = v)),
+                TextFieldRow(label: t('cat.packName'), value: name, onChanged: (v) => setState(() => name = v)),
+                TextFieldRow(label: t('cat.packDescription'), value: description, onChanged: (v) => description = v),
+                TextFieldRow(label: t('cat.packSource'), value: source, onChanged: (v) => source = v),
+                const SizedBox(height: 6),
+                Text('$id$catalogPackExtension  ·  ${t('cat.packItems', {'n': '${cat.itemCount}'})}', style: TextStyle(fontSize: 11, color: Cad.fg54)),
+              ],
+            ),
           ),
-        ],
-      );
-    }),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+            FilledButton(
+              key: const Key('pack_export_ok'),
+              onPressed: () async {
+                final meta = CatalogPackMeta(
+                  id: id,
+                  brand: brand.trim().isEmpty ? id : brand.trim(),
+                  name: name.trim(),
+                  description: description.trim(),
+                  source: source.trim(),
+                  updated: DateTime.now().toIso8601String().substring(0, 10),
+                  author: c.project.meta.designer,
+                  currency: catalogHasPrices(cat) ? c.project.params.currencyCode : '',
+                );
+                final file = '$id$catalogPackExtension';
+                await saveTextFile(file, CatalogIo.encodePack(meta, cat));
+                c.notify(t('cat.packExported', {'f': file, 'n': '${cat.itemCount}'}));
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: Text(t('ok')),
+            ),
+          ],
+        );
+      },
+    ),
   );
 }

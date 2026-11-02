@@ -7,6 +7,7 @@
 /// With `--check` nothing is written; the exit code is 1 when a file would
 /// change or a pack is invalid (for CI).
 library;
+
 import 'dart:io';
 
 import 'package:opencadirrigation/core/io/catalog_io.dart';

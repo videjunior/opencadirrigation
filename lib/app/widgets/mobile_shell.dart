@@ -97,27 +97,53 @@ class _MobileShellState extends State<MobileShell> {
     var index = tab;
     _sheet(
       key: const Key('mobile_props_sheet'),
-      StatefulBuilder(builder: (ctx, setState) {
-        final t = c.t;
-        return Column(children: [
-          const SizedBox(height: 6),
-          Container(width: 36, height: 4, decoration: BoxDecoration(color: Cad.fg24, borderRadius: BorderRadius.circular(2))),
-          Row(children: [
-            Expanded(child: _tab(t('props.title'), index == 0, () => setState(() => index = 0))),
-            Expanded(child: _tab(t('view.layers'), index == 1, () => setState(() => index = 1))),
-            Expanded(child: _tab(t('hist.title'), index == 2, () => setState(() => index = 2))),
-            IconButton(icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
-          ]),
-          Expanded(child: ListenableBuilder(listenable: c, builder: (_, _) => switch (index) { 1 => LayersPanel(c: c), 2 => HistoryPanel(c: c), _ => PropertiesPanel(c: c) })),
-        ]);
-      }),
+      StatefulBuilder(
+        builder: (ctx, setState) {
+          final t = c.t;
+          return Column(
+            children: [
+              const SizedBox(height: 6),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(color: Cad.fg24, borderRadius: BorderRadius.circular(2)),
+              ),
+              Row(
+                children: [
+                  Expanded(child: _tab(t('props.title'), index == 0, () => setState(() => index = 0))),
+                  Expanded(child: _tab(t('view.layers'), index == 1, () => setState(() => index = 1))),
+                  Expanded(child: _tab(t('hist.title'), index == 2, () => setState(() => index = 2))),
+                  IconButton(icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
+                ],
+              ),
+              Expanded(
+                child: ListenableBuilder(
+                  listenable: c,
+                  builder: (_, _) => switch (index) {
+                    1 => LayersPanel(c: c),
+                    2 => HistoryPanel(c: c),
+                    _ => PropertiesPanel(c: c),
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
       height: 0.7,
     );
   }
 
   void _openReports() {
     c.showReports = true;
-    _sheet(key: const Key('mobile_reports_sheet'), ListenableBuilder(listenable: c, builder: (_, _) => ReportsPanel(c: c)), height: 0.85).then((_) {
+    _sheet(
+      key: const Key('mobile_reports_sheet'),
+      ListenableBuilder(
+        listenable: c,
+        builder: (_, _) => ReportsPanel(c: c),
+      ),
+      height: 0.85,
+    ).then((_) {
       c.showReports = false;
       c.refresh();
     });
@@ -128,7 +154,9 @@ class _MobileShellState extends State<MobileShell> {
     child: Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: on ? Cad.accent : Colors.transparent, width: 2))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: on ? Cad.accent : Colors.transparent, width: 2)),
+      ),
       child: Text(label, style: TextStyle(fontSize: 12.5, color: on ? Cad.fg : Cad.fg60)),
     ),
   );
@@ -174,7 +202,13 @@ class _MobileShellState extends State<MobileShell> {
         padding: const EdgeInsets.only(bottom: 24),
         children: [
           const SizedBox(height: 6),
-          Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Cad.fg24, borderRadius: BorderRadius.circular(2)))),
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(color: Cad.fg24, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
           section(t('menu.file'), Icons.folder_outlined, [
             row(t('file.new'), () => confirmNew(context, c), icon: Icons.note_add_outlined),
             row(t('file.open'), () => openProjectInTabAction(context, ws), icon: Icons.folder_open),
@@ -186,7 +220,12 @@ class _MobileShellState extends State<MobileShell> {
             row(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera),
             for (final f in DrawingFormat.values) row('${t('file.exportDrawing')}: ${t('exp.${f.name}')}', () => exportDrawingAction(context, c, f), icon: Icons.download),
             row('${t('file.exportDrawing')}: ${t('exp.png')}', () => exportSheetPngAction(context, c), icon: Icons.image_outlined, key: const Key('mobile_menu_export_png')),
-            for (final f in ReportFormat.values) row('${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}', c.results == null ? null : () => exportReportAction(context, c, f), icon: Icons.table_view),
+            for (final f in ReportFormat.values)
+              row(
+                '${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}',
+                c.results == null ? null : () => exportReportAction(context, c, f),
+                icon: Icons.table_view,
+              ),
             row(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined),
             row(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
             row(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
@@ -204,7 +243,12 @@ class _MobileShellState extends State<MobileShell> {
             row(t('edit.delete'), c.selection.isEmpty ? null : c.deleteSelected, icon: Icons.delete_outline),
             row(t('bomSel.menu'), c.selection.isEmpty ? null : () => showSelectionBomDialog(context, c), icon: Icons.receipt_long_outlined, key: const Key('mobile_menu_selection_bom')),
             row(t('blk.save'), c.selection.isEmpty ? null : () => saveBlockAction(context, c, c.project.blocks), icon: Icons.widgets_outlined, key: const Key('mobile_menu_block_save')),
-            row(t('blk.insert'), () => insertBlockAction(context, c, c.project.blocks, pickTool: ToolId.insertBlock), icon: Icons.input, key: const Key('mobile_menu_block_insert')),
+            row(
+              t('blk.insert'),
+              () => insertBlockAction(context, c, c.project.blocks, pickTool: ToolId.insertBlock),
+              icon: Icons.input,
+              key: const Key('mobile_menu_block_insert'),
+            ),
             row(t('edit.array'), c.selection.isEmpty ? null : () => showArrayDialog(context, c)),
             for (final id in [ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe]) row(toolLabel(t, id), () => c.setTool(id)),
           ]),
@@ -249,8 +293,7 @@ class _MobileShellState extends State<MobileShell> {
                 c.overlay = m;
                 c.refresh();
               }),
-            for (final m in BaseMap.values)
-              check('${t('view.baseMap')}: ${t('view.baseMap.${m.name}')}', c.baseMap == m, (_) => selectBaseMap(context, c, m)),
+            for (final m in BaseMap.values) check('${t('view.baseMap')}: ${t('view.baseMap.${m.name}')}', c.baseMap == m, (_) => selectBaseMap(context, c, m)),
             row(t('view.baseMap.googleKey'), () => showGoogleMapsKeyDialog(context, c), icon: Icons.key_outlined),
             row(t('view.baseMap.customUrl'), () => showCustomTilesDialog(context, c), icon: Icons.link),
             for (final l in supportedLanguages) check(languageNames[l] ?? l, c.lang == l, (_) => c.setLanguage(l)),
@@ -348,106 +391,152 @@ class _MobileShellState extends State<MobileShell> {
             Container(
               height: 44,
               color: Cad.panel,
-              child: Row(children: [
-                IconButton(key: const Key('mobile_menu'), tooltip: t('mob.menu'), icon: const Icon(Icons.menu), onPressed: _openMenu),
-                Image.asset('assets/brand/logo-mark.png', height: 22, filterQuality: FilterQuality.medium),
-                const SizedBox(width: 6),
-                Expanded(child: Text(c.project.meta.name.isEmpty ? t('app.title') : c.project.meta.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-                if (c.busy) const Padding(padding: EdgeInsets.only(right: 8), child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))),
-                AiPanelButton(key: const Key('mobile_ai'), c: c, size: 22, onPressed: () => showAiAssistantDialog(context, c)),
-                IconButton(key: TutorialTargets.runButton, tooltip: t('design.all'), icon: Icon(Icons.play_arrow, color: Cad.ok), onPressed: c.busy ? null : () => c.runDesign()),
-                IconButton(key: TutorialTargets.saveButton, tooltip: t('file.save'), icon: Icon(Icons.save_outlined, color: c.dirty ? Cad.amber : null), onPressed: () => saveProjectAction(context, c)),
-              ]),
+              child: Row(
+                children: [
+                  IconButton(key: const Key('mobile_menu'), tooltip: t('mob.menu'), icon: const Icon(Icons.menu), onPressed: _openMenu),
+                  Image.asset('assets/brand/logo-mark.png', height: 22, filterQuality: FilterQuality.medium),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      c.project.meta.name.isEmpty ? t('app.title') : c.project.meta.name,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (c.busy)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                  AiPanelButton(key: const Key('mobile_ai'), c: c, size: 22, onPressed: () => showAiAssistantDialog(context, c)),
+                  IconButton(
+                    key: TutorialTargets.runButton,
+                    tooltip: t('design.all'),
+                    icon: Icon(Icons.play_arrow, color: Cad.ok),
+                    onPressed: c.busy ? null : () => c.runDesign(),
+                  ),
+                  IconButton(
+                    key: TutorialTargets.saveButton,
+                    tooltip: t('file.save'),
+                    icon: Icon(Icons.save_outlined, color: c.dirty ? Cad.amber : null),
+                    onPressed: () => saveProjectAction(context, c),
+                  ),
+                ],
+              ),
             ),
             // canvas with floating actions
             Expanded(
               child: KeyedSubtree(
                 key: TutorialTargets.canvas,
-                child: Stack(children: [
-                  Positioned.fill(child: widget.canvas),
-                  // hint
-                  Positioned(
-                    left: 8,
-                    top: 8,
-                    right: 130,
-                    child: IgnorePointer(
-                      child: Container(
-                        key: TutorialTargets.statusBar,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: Cad.overlay, borderRadius: BorderRadius.circular(6)),
-                        child: Text(c.command.isNotEmpty ? '${t('status.command')}: ${c.command}' : widget.hint, style: TextStyle(fontSize: 11, color: Cad.fg70), maxLines: 2, overflow: TextOverflow.ellipsis),
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: widget.canvas),
+                    // hint
+                    Positioned(
+                      left: 8,
+                      top: 8,
+                      right: 130,
+                      child: IgnorePointer(
+                        child: Container(
+                          key: TutorialTargets.statusBar,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(color: Cad.overlay, borderRadius: BorderRadius.circular(6)),
+                          child: Text(
+                            c.command.isNotEmpty ? '${t('status.command')}: ${c.command}' : widget.hint,
+                            style: TextStyle(fontSize: 11, color: Cad.fg70),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  // floating actions (bottom-right, above the zoom buttons)
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [
-                      if (drawing) _fab(const Key('mobile_done'), Icons.check, t('mob.done'), () => _toolKey('Enter'), color: Cad.okFill),
-                      if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Escape')),
-                      if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
-                      _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
-                      _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
-                      _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
-                      _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
-                    ]),
-                  ),
-                ]),
+                    // floating actions (bottom-right, above the zoom buttons)
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (drawing) _fab(const Key('mobile_done'), Icons.check, t('mob.done'), () => _toolKey('Enter'), color: Cad.okFill),
+                          if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Escape')),
+                          if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
+                          _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
+                          _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
+                          _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
+                          _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             // tool bar: group tabs + tools of the group
             Container(
               key: TutorialTargets.palette,
               color: Cad.panel,
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                SizedBox(
-                  height: 34,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final g in ToolPalette.groups)
-                        InkWell(
-                          key: Key('mobile_group_${g.$1}'),
-                          onTap: () => setState(() => _group = g.$1),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: _group == g.$1 ? Cad.accent : Colors.transparent, width: 2))),
-                            child: Text(t('mob.group.${g.$1}'), style: TextStyle(fontSize: 12, color: _group == g.$1 ? Cad.fg : Cad.fg60)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 34,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        for (final g in ToolPalette.groups)
+                          InkWell(
+                            key: Key('mobile_group_${g.$1}'),
+                            onTap: () => setState(() => _group = g.$1),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                border: Border(bottom: BorderSide(color: _group == g.$1 ? Cad.accent : Colors.transparent, width: 2)),
+                              ),
+                              child: Text(t('mob.group.${g.$1}'), style: TextStyle(fontSize: 12, color: _group == g.$1 ? Cad.fg : Cad.fg60)),
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 52,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    children: [
-                      for (final (id, icon) in group.$2)
-                        InkWell(
-                          key: Key('mtool_${id.name}'),
-                          onTap: () {
-                            if (group.$1 == 'main' && (id == ToolId.pump || id == ToolId.misc || id == ToolId.junction)) c.toolSettings.pointScope = HydraulicScope.mainline;
-                            if (group.$1 == 'zone' && (id == ToolId.outlet || id == ToolId.valve)) c.toolSettings.pointScope = HydraulicScope.zone;
-                            c.setTool(id);
-                          },
-                          child: Container(
-                            width: 56,
-                            margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
-                            decoration: BoxDecoration(color: c.activeTool == id ? Cad.accentFill : Colors.transparent, borderRadius: BorderRadius.circular(6)),
-                            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Icon(icon, size: 20, color: c.activeTool == id ? Colors.white : Cad.fg70),
-                              Text(_shortLabel(t, id), style: TextStyle(fontSize: 9, color: c.activeTool == id ? Colors.white : Cad.fg60), maxLines: 1, overflow: TextOverflow.ellipsis),
-                            ]),
+                  SizedBox(
+                    height: 52,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      children: [
+                        for (final (id, icon) in group.$2)
+                          InkWell(
+                            key: Key('mtool_${id.name}'),
+                            onTap: () {
+                              if (group.$1 == 'main' && (id == ToolId.pump || id == ToolId.misc || id == ToolId.junction)) c.toolSettings.pointScope = HydraulicScope.mainline;
+                              if (group.$1 == 'zone' && (id == ToolId.outlet || id == ToolId.valve)) c.toolSettings.pointScope = HydraulicScope.zone;
+                              c.setTool(id);
+                            },
+                            child: Container(
+                              width: 56,
+                              margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
+                              decoration: BoxDecoration(color: c.activeTool == id ? Cad.accentFill : Colors.transparent, borderRadius: BorderRadius.circular(6)),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(icon, size: 20, color: c.activeTool == id ? Colors.white : Cad.fg70),
+                                  Text(
+                                    _shortLabel(t, id),
+                                    style: TextStyle(fontSize: 9, color: c.activeTool == id ? Colors.white : Cad.fg60),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ]),
+                ],
+              ),
             ),
           ],
         ),
@@ -475,11 +564,23 @@ class _MobileShellState extends State<MobileShell> {
           child: SizedBox(
             width: 44,
             height: 44,
-            child: Stack(alignment: Alignment.center, children: [
-              // white on a coloured button (Done), the text colour on the others
-              Icon(icon, size: 20, color: onTap == null ? Cad.fg30 : (color != null ? Colors.white : Cad.fg)),
-              if (badge != null) Positioned(right: 6, top: 6, child: Container(padding: const EdgeInsets.symmetric(horizontal: 4), decoration: BoxDecoration(color: Cad.accent, borderRadius: BorderRadius.circular(8)), child: Text(badge, style: const TextStyle(fontSize: 9, color: Colors.white)))),
-            ]),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // white on a coloured button (Done), the text colour on the others
+                Icon(icon, size: 20, color: onTap == null ? Cad.fg30 : (color != null ? Colors.white : Cad.fg)),
+                if (badge != null)
+                  Positioned(
+                    right: 6,
+                    top: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(color: Cad.accent, borderRadius: BorderRadius.circular(8)),
+                      child: Text(badge, style: const TextStyle(fontSize: 9, color: Colors.white)),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

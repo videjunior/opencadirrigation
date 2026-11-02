@@ -21,7 +21,11 @@ void main() {
       }
 
       final net = build();
-      final r = simulateEps(net, tanks: const [EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 6, area: 50)], options: const EpsOptions(duration: 5 * 3600));
+      final r = simulateEps(
+        net,
+        tanks: const [EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 6, area: 50)],
+        options: const EpsOptions(duration: 5 * 3600),
+      );
       expect(r.times, [0, 3600, 7200, 10800, 14400, 18000]);
       for (var i = 0; i < r.times.length; i++) {
         expect(r.tankLevels['T']![i], closeTo(1 + 0.01 * r.times[i] / 50, 1e-9));
@@ -32,7 +36,11 @@ void main() {
       expect(net.nodes['T']!.kind, HNodeKind.junction, reason: 'the network is not changed');
       // a tank of variable section, by its volume curve
       const curve = [(0.0, 0.0), (2.0, 50.0), (4.0, 150.0), (6.0, 300.0)];
-      final r2 = simulateEps(build(), tanks: const [EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 6, volumeCurve: curve)], options: const EpsOptions(duration: 5 * 3600));
+      final r2 = simulateEps(
+        build(),
+        tanks: const [EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 6, volumeCurve: curve)],
+        options: const EpsOptions(duration: 5 * 3600),
+      );
       const tank = EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 6, volumeCurve: curve);
       for (var i = 0; i < r2.times.length; i++) {
         final v = 25 + 0.01 * r2.times[i];
@@ -50,7 +58,11 @@ void main() {
       net.addNode(HNode(id: 'T', elevation: 20));
       net.addLink(HLink(id: 'PU', from: 'S', to: 'D', kind: HLinkKind.pump, pump: const PumpCurve(a: -2000, b: 0, c: 40)));
       net.addLink(HLink(id: 'P', from: 'D', to: 'T', diameter: 0.15, length: 200, hazenC: 130));
-      final r = simulateEps(net, tanks: const [EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 4, area: 20)], options: const EpsOptions(duration: 6 * 3600, hydraulicStep: 600));
+      final r = simulateEps(
+        net,
+        tanks: const [EpsTank(nodeId: 'T', initialLevel: 1, maxLevel: 4, area: 20)],
+        options: const EpsOptions(duration: 6 * 3600, hydraulicStep: 600),
+      );
       final full = r.tankFullTimes['T'];
       expect(r.messages, contains('eps_tank_full:T'));
       expect(full, isNotNull);
@@ -89,7 +101,11 @@ void main() {
       double exact(double t) => math.pow(math.pow(h0, 1 - n) - (1 - n) * math.pow(rr, -n) * t / area, 1 / (1 - n)).toDouble();
       const tank = EpsTank(nodeId: 'T', initialLevel: h0, maxLevel: 5, minLevel: 0.5, area: area);
       double worstError(EpsIntegration method, double step) {
-        final r = simulateEps(build(), tanks: const [tank], options: EpsOptions(duration: 3 * 3600, hydraulicStep: step, integration: method));
+        final r = simulateEps(
+          build(),
+          tanks: const [tank],
+          options: EpsOptions(duration: 3 * 3600, hydraulicStep: step, integration: method),
+        );
         var worst = 0.0;
         for (var i = 0; i < r.times.length; i++) {
           final h = exact(r.times[i]);
@@ -109,7 +125,11 @@ void main() {
       expect(h60, lessThan(1e-3));
       expect(h60 / h10, greaterThan(20));
       // it empties at 0.5 m and the outflow stops
-      final r = simulateEps(build(), tanks: const [tank], options: const EpsOptions(duration: 4 * 3600, hydraulicStep: 10, integration: EpsIntegration.heun));
+      final r = simulateEps(
+        build(),
+        tanks: const [tank],
+        options: const EpsOptions(duration: 4 * 3600, hydraulicStep: 10, integration: EpsIntegration.heun),
+      );
       expect(r.messages, contains('eps_tank_empty:T'));
       final te = r.tankEmptyTimes['T']!.first;
       final analytic = (math.pow(h0, 1 - n) - math.pow(0.5, 1 - n)) * area / ((1 - n) * math.pow(rr, -n));
@@ -127,10 +147,14 @@ void main() {
       net.addLink(HLink(id: 'main', from: 'R', to: 'M', diameter: 0.15, length: 300, hazenC: 140));
       net.addLink(HLink(id: 'V1', from: 'M', to: 'Z1', kind: HLinkKind.device, device: const DeviceLossCurve(k: 2000)));
       net.addLink(HLink(id: 'V2', from: 'M', to: 'Z2', kind: HLinkKind.device, device: const DeviceLossCurve(k: 2000)));
-      final r = simulateEps(net, schedules: const [
-        EpsSchedule.intervals('V1', [(0, 5400)]),
-        EpsSchedule.intervals('V2', [(5400, 5400)]),
-      ], options: const EpsOptions(duration: 4 * 3600));
+      final r = simulateEps(
+        net,
+        schedules: const [
+          EpsSchedule.intervals('V1', [(0, 5400)]),
+          EpsSchedule.intervals('V2', [(5400, 5400)]),
+        ],
+        options: const EpsOptions(duration: 4 * 3600),
+      );
       expect(r.times, [0, 3600, 5400, 7200, 10800, 14400]);
       for (var i = 0; i < r.times.length; i++) {
         final t = r.times[i];
@@ -172,11 +196,15 @@ void main() {
       net.addLink(HLink(id: 'm2', from: 'A', to: 'B', diameter: 0.15, length: 300, hazenC: 140));
       net.addLink(HLink(id: 'm3', from: 'A', to: 'C', diameter: 0.1, length: 200, hazenC: 140));
       // shift 1 from 6:00 for 2 h (zone A), shift 2 from 8:00 for 3 h (B and C)
-      final r = simulateEps(net, demandSchedules: const [
-        EpsDemandSchedule('A', [(6 * 3600, 2 * 3600)]),
-        EpsDemandSchedule('B', [(8 * 3600, 3 * 3600)]),
-        EpsDemandSchedule('C', [(8 * 3600, 3 * 3600)]),
-      ], options: const EpsOptions(duration: 12 * 3600, pumpEfficiency: {'PU': 0.7}));
+      final r = simulateEps(
+        net,
+        demandSchedules: const [
+          EpsDemandSchedule('A', [(6 * 3600, 2 * 3600)]),
+          EpsDemandSchedule('B', [(8 * 3600, 3 * 3600)]),
+          EpsDemandSchedule('C', [(8 * 3600, 3 * 3600)]),
+        ],
+        options: const EpsOptions(duration: 12 * 3600, pumpEfficiency: {'PU': 0.7}),
+      );
       for (var i = 0; i < r.times.length; i++) {
         final t = r.times[i];
         final q = r.linkFlows['PU']![i];
@@ -216,7 +244,10 @@ void main() {
       final r = simulateEps(
         net,
         tanks: const [EpsTank(nodeId: 'T', initialLevel: 2, maxLevel: 5, area: 30)],
-        controls: const [EpsControl.levelBelow('PU', tankId: 'T', level: 1, open: true), EpsControl.levelAbove('PU', tankId: 'T', level: 4, open: false)],
+        controls: const [
+          EpsControl.levelBelow('PU', tankId: 'T', level: 1, open: true),
+          EpsControl.levelAbove('PU', tankId: 'T', level: 4, open: false),
+        ],
         options: const EpsOptions(duration: 24 * 3600),
       );
       final open = r.linkOpen['PU']!;
@@ -242,8 +273,13 @@ void main() {
       pnet.addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 30));
       pnet.addNode(HNode(id: 'J', demand: 0.01));
       pnet.addLink(HLink(id: 'P', from: 'R', to: 'J', diameter: 0.15, length: 300, hazenC: 140));
-      final rp = simulateEps(pnet, options: const EpsOptions(duration: 5 * 3600, defaultDemandPattern: EpsPattern([1, 2, 0.5])));
-      expect(rp.linkFlows['P'], [for (final m in [1, 2, 0.5, 1, 2, 0.5]) closeTo(0.01 * m, 1e-7)]);
+      final rp = simulateEps(
+        pnet,
+        options: const EpsOptions(duration: 5 * 3600, defaultDemandPattern: EpsPattern([1, 2, 0.5])),
+      );
+      expect(rp.linkFlows['P'], [
+        for (final m in [1, 2, 0.5, 1, 2, 0.5]) closeTo(0.01 * m, 1e-7),
+      ]);
 
       // clock controls: the pump stops at 18:00 and starts at 06:00
       final cnet = HydraulicNetwork();
@@ -252,7 +288,11 @@ void main() {
       cnet.addNode(HNode(id: 'T', kind: HNodeKind.reservoir, fixedHead: 20));
       cnet.addLink(HLink(id: 'PU', from: 'S', to: 'D', kind: HLinkKind.pump, pump: const PumpCurve(a: -2000, b: 0, c: 40)));
       cnet.addLink(HLink(id: 'P', from: 'D', to: 'T', diameter: 0.15, length: 200, hazenC: 130));
-      final rc = simulateEps(cnet, controls: const [EpsControl.atClockTime('PU', hour: 18, open: false), EpsControl.atClockTime('PU', hour: 6, open: true)], options: const EpsOptions(duration: 24 * 3600, startHour: 16, hydraulicStep: 7200));
+      final rc = simulateEps(
+        cnet,
+        controls: const [EpsControl.atClockTime('PU', hour: 18, open: false), EpsControl.atClockTime('PU', hour: 6, open: true)],
+        options: const EpsOptions(duration: 24 * 3600, startHour: 16, hydraulicStep: 7200),
+      );
       for (var i = 0; i < rc.times.length; i++) {
         final clock = (16 + rc.times[i] / 3600) % 24;
         final on = clock < 18 && clock >= 6;
@@ -273,7 +313,10 @@ void main() {
       final q = steady.links['PU']!.flow, hp = steady.links['PU']!.pumpHead;
       final kw = waterDensity * gravity * q * hp / 0.75 / 1000;
       double price(double hour) => hour < 6 ? 0.1 : 0.2;
-      final r = simulateEps(net, options: EpsOptions(duration: 24 * 3600, pumpEfficiency: const {'PU': 0.75}, tariff: price));
+      final r = simulateEps(
+        net,
+        options: EpsOptions(duration: 24 * 3600, pumpEfficiency: const {'PU': 0.75}, tariff: price),
+      );
       final e = r.pumps['PU']!;
       expect(e.energyKwh, closeTo(kw * 24, 1e-6 * kw * 24));
       expect(e.cost, closeTo(kw * (6 * 0.1 + 18 * 0.2), 1e-6 * kw));
@@ -283,9 +326,15 @@ void main() {
       expect(e.maxPowerKw, closeTo(kw, 1e-9 * kw));
       expect(e.power.every((p) => (p - kw).abs() < 1e-6 * kw), isTrue);
       // the price follows the clock: starting at 03:00 three cheap hours remain
-      final r3 = simulateEps(net, options: EpsOptions(duration: 24 * 3600, pumpEfficiency: const {'PU': 0.75}, tariff: price, startHour: 3));
+      final r3 = simulateEps(
+        net,
+        options: EpsOptions(duration: 24 * 3600, pumpEfficiency: const {'PU': 0.75}, tariff: price, startHour: 3),
+      );
       expect(r3.pumps['PU']!.cost, closeTo(kw * (6 * 0.1 + 18 * 0.2), 1e-6 * kw));
-      final r4 = simulateEps(net, options: EpsOptions(duration: 6 * 3600, pumpEfficiency: const {'PU': 0.75}, tariff: price, startHour: 3));
+      final r4 = simulateEps(
+        net,
+        options: EpsOptions(duration: 6 * 3600, pumpEfficiency: const {'PU': 0.75}, tariff: price, startHour: 3),
+      );
       expect(r4.pumps['PU']!.cost, closeTo(kw * (3 * 0.1 + 3 * 0.2), 1e-6 * kw));
     });
 
@@ -294,7 +343,15 @@ void main() {
       net.addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 30));
       net.addNode(HNode(id: 'J', demand: 0.01));
       net.addLink(HLink(id: 'P', from: 'R', to: 'J', diameter: 0.15, length: 300, hazenC: 140));
-      final r = simulateEps(net, tanks: const [EpsTank(nodeId: 'X', initialLevel: 1, maxLevel: 2)], schedules: const [EpsSchedule.intervals('Y', [(0, 10)])], controls: const [EpsControl.levelBelow('P', tankId: 'Z', level: 1, open: true)], options: const EpsOptions(duration: 3600));
+      final r = simulateEps(
+        net,
+        tanks: const [EpsTank(nodeId: 'X', initialLevel: 1, maxLevel: 2)],
+        schedules: const [
+          EpsSchedule.intervals('Y', [(0, 10)]),
+        ],
+        controls: const [EpsControl.levelBelow('P', tankId: 'Z', level: 1, open: true)],
+        options: const EpsOptions(duration: 3600),
+      );
       expect(r.messages, containsAll(['eps_unknown_node:X', 'eps_unknown_link:Y', 'eps_unknown_node:Z']));
       expect(r.converged, isTrue);
       expect(r.indexAt(1800), 0);

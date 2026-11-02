@@ -160,7 +160,11 @@ void main() {
     });
 
     test('triangular pattern on a rectangle', () {
-      final l = layoutLandscape(outline: _rect(0, 0, 40, 30), family: _rotor, options: LandscapeLayoutOptions(pattern: GridPattern.triangular));
+      final l = layoutLandscape(
+        outline: _rect(0, 0, 40, 30),
+        family: _rotor,
+        options: LandscapeLayoutOptions(pattern: GridPattern.triangular),
+      );
       expect(l.metrics!.cu, greaterThan(90));
       expect(l.rowSpacing, lessThan(l.spacing));
     });
@@ -245,17 +249,33 @@ void main() {
       expect(l.maxPrecipitationMismatch, lessThan(0.01));
       expect(l.metrics!.cu, greaterThan(82));
       // part circles forced on: corners get the full nozzle and a mismatch
-      final forced = layoutLandscape(outline: _rect(0, 0, 80, 60), family: impact, options: LandscapeLayoutOptions(partCircles: PartCircleMode.always));
+      final forced = layoutLandscape(
+        outline: _rect(0, 0, 80, 60),
+        family: impact,
+        options: LandscapeLayoutOptions(partCircles: PartCircleMode.always),
+      );
       expect(forced.messages.any((m) => m.startsWith('layout_mp_mismatch:')), isTrue);
     });
 
     test('spacing rules', () {
-      final wide = layoutLandscape(outline: _rect(0, 0, 60, 40), family: _rotor, options: LandscapeLayoutOptions(spacingRule: SpacingRule.percentOfDiameter, spacingPercent: 60));
+      final wide = layoutLandscape(
+        outline: _rect(0, 0, 60, 40),
+        family: _rotor,
+        options: LandscapeLayoutOptions(spacingRule: SpacingRule.percentOfDiameter, spacingPercent: 60),
+      );
       expect(wide.spacing, closeTo(12, 1e-9));
-      final fixed = layoutLandscape(outline: _rect(0, 0, 60, 40), family: _rotor, options: LandscapeLayoutOptions(spacingRule: SpacingRule.fixed, spacingM: 8));
+      final fixed = layoutLandscape(
+        outline: _rect(0, 0, 60, 40),
+        family: _rotor,
+        options: LandscapeLayoutOptions(spacingRule: SpacingRule.fixed, spacingM: 8),
+      );
       expect(fixed.spacing, 8);
       expect(fixed.heads.length, greaterThan(wide.heads.length));
-      final clamped = layoutLandscape(outline: _rect(0, 0, 60, 40), family: _rotor, options: LandscapeLayoutOptions(spacingRule: SpacingRule.fixed, spacingM: 50));
+      final clamped = layoutLandscape(
+        outline: _rect(0, 0, 60, 40),
+        family: _rotor,
+        options: LandscapeLayoutOptions(spacingRule: SpacingRule.fixed, spacingM: 50),
+      );
       expect(clamped.messages, contains('layout_spacing_clamped'));
       expect(clamped.spacing, closeTo(20, 1e-9));
     });

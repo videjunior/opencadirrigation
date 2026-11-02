@@ -10,11 +10,13 @@ import 'package:opencadirrigation/core/io/climate_online.dart';
 /// normals with the dependable rain.
 void main() {
   // shapes of real answers (October 2026), shortened
-  const openMeteoBody = '{"latitude":-22.88225,"longitude":-47.01773,"generationtime_ms":0.18,"utc_offset_seconds":-10800,"timezone":"America/Sao_Paulo","timezone_abbreviation":"GMT-3","elevation":667.0,'
+  const openMeteoBody =
+      '{"latitude":-22.88225,"longitude":-47.01773,"generationtime_ms":0.18,"utc_offset_seconds":-10800,"timezone":"America/Sao_Paulo","timezone_abbreviation":"GMT-3","elevation":667.0,'
       '"daily_units":{"time":"iso8601","et0_fao_evapotranspiration":"mm","precipitation_sum":"mm","temperature_2m_max":"°C","temperature_2m_min":"°C","wind_speed_10m_mean":"m/s","shortwave_radiation_sum":"MJ/m²","relative_humidity_2m_max":"%","relative_humidity_2m_min":"%","dew_point_2m_mean":"°C"},'
       '"daily":{"time":["2024-01-01","2024-01-02","2024-01-03"],"et0_fao_evapotranspiration":[5.67,5.50,null],"precipitation_sum":[1.00,1.40,26.30],"temperature_2m_max":[28.3,30.0,31.4],"temperature_2m_min":[19.1,18.6,19.6],'
       '"wind_speed_10m_mean":[3.22,2.60,3.21],"shortwave_radiation_sum":[25.41,25.68,24.93],"relative_humidity_2m_max":[83,89,95],"relative_humidity_2m_min":[50,48,49],"dew_point_2m_mean":[17.1,17.6,19.5]}}';
-  const powerBody = '{"type":"Feature","geometry":{"type":"Point","coordinates":[-47.06,-22.9,755.36]},"properties":{"parameter":{'
+  const powerBody =
+      '{"type":"Feature","geometry":{"type":"Point","coordinates":[-47.06,-22.9,755.36]},"properties":{"parameter":{'
       '"T2M_MAX":{"20240101":33.75,"20240102":33.86},"T2M_MIN":{"20240101":18.08,"20240102":19.35},"T2MDEW":{"20240101":15.71,"20240102":16.99},"RH2M":{"20240101":61.41,"20240102":64.4},'
       '"WS2M":{"20240101":2.22,"20240102":1.85},"PRECTOTCORR":{"20240101":0.12,"20240102":0.85},"ALLSKY_SFC_SW_DWN":{"20240101":20.37,"20240102":-999.0}}},'
       '"header":{"title":"NASA/POWER Source Native Resolution Daily Data","api":{"version":"v2.10.1","name":"POWER Daily API"},"fill_value":-999.0,"time_standard":"LST","start":"20240101","end":"20240102"},"messages":[]}';
@@ -96,8 +98,14 @@ void main() {
 
     test('errors become message codes', () {
       Matcher code(String c, [String? detail]) => isA<ClimateException>().having((e) => e.code, 'code', c).having((e) => e.detail, 'detail', detail);
-      expect(() => climateParseResponse(ClimateSource.openMeteo, '{"error":true,"reason":"Cannot initialize WeatherVariable"}'), throwsA(code('climate_service_error', 'Cannot initialize WeatherVariable')));
-      expect(() => climateParseResponse(ClimateSource.nasaPower, '{"header":"The POWER Daily API failed","messages":["One of your parameters is incorrect: BADPARAM."]}'), throwsA(code('climate_service_error', 'One of your parameters is incorrect: BADPARAM.')));
+      expect(
+        () => climateParseResponse(ClimateSource.openMeteo, '{"error":true,"reason":"Cannot initialize WeatherVariable"}'),
+        throwsA(code('climate_service_error', 'Cannot initialize WeatherVariable')),
+      );
+      expect(
+        () => climateParseResponse(ClimateSource.nasaPower, '{"header":"The POWER Daily API failed","messages":["One of your parameters is incorrect: BADPARAM."]}'),
+        throwsA(code('climate_service_error', 'One of your parameters is incorrect: BADPARAM.')),
+      );
       expect(() => climateParseResponse(ClimateSource.openMeteo, '<html>502</html>'), throwsA(code('climate_bad_response')));
       expect(() => climateParseResponse(ClimateSource.nasaPower, '[]'), throwsA(code('climate_bad_response')));
       expect(const ClimateException('climate_service_error', 'x').toString(), 'climate_service_error:x');
@@ -119,7 +127,18 @@ void main() {
       return jsonEncode({
         'elevation': 600,
         'daily_units': {'wind_speed_10m_mean': 'm/s'},
-        'daily': {'time': time, 'et0_fao_evapotranspiration': f(5), 'precipitation_sum': rain, 'temperature_2m_max': f(30), 'temperature_2m_min': f(18), 'wind_speed_10m_mean': f(3), 'shortwave_radiation_sum': f(20), 'relative_humidity_2m_max': f(90), 'relative_humidity_2m_min': f(40), 'dew_point_2m_mean': f(15)},
+        'daily': {
+          'time': time,
+          'et0_fao_evapotranspiration': f(5),
+          'precipitation_sum': rain,
+          'temperature_2m_max': f(30),
+          'temperature_2m_min': f(18),
+          'wind_speed_10m_mean': f(3),
+          'shortwave_radiation_sum': f(20),
+          'relative_humidity_2m_max': f(90),
+          'relative_humidity_2m_min': f(40),
+          'dew_point_2m_mean': f(15),
+        },
       });
     }
 
@@ -167,7 +186,15 @@ void main() {
     });
 
     test('incomplete months are left out of the normals', () async {
-      final s = await climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2003, lastYear: 2003, today: DateTime.utc(2003, 3, 10), fetch: (url) async => fakeOpenMeteo(url));
+      final s = await climateDownload(
+        ClimateSource.openMeteo,
+        latitudeDeg: 0,
+        longitudeDeg: 0,
+        firstYear: 2003,
+        lastYear: 2003,
+        today: DateTime.utc(2003, 3, 10),
+        fetch: (url) async => fakeOpenMeteo(url),
+      );
       expect(s.days.last.date, DateTime.utc(2003, 3, 4));
       final n = climateMonthlyNormals(s);
       expect(n[0].years, 1);
@@ -179,27 +206,55 @@ void main() {
 
     test('transient errors are retried, rate limits wait, service errors are not retried', () async {
       var calls = 0;
-      final s = await climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2001, lastYear: 2001, today: DateTime.utc(2026), retryDelay: const Duration(milliseconds: 1), fetch: (url) async {
-        if (calls++ == 0) throw StateError('connection reset');
-        return fakeOpenMeteo(url);
-      });
+      final s = await climateDownload(
+        ClimateSource.openMeteo,
+        latitudeDeg: 0,
+        longitudeDeg: 0,
+        firstYear: 2001,
+        lastYear: 2001,
+        today: DateTime.utc(2026),
+        retryDelay: const Duration(milliseconds: 1),
+        fetch: (url) async {
+          if (calls++ == 0) throw StateError('connection reset');
+          return fakeOpenMeteo(url);
+        },
+      );
       expect(calls, 2);
       expect(s.days, hasLength(365));
 
       final waits = <Duration>[];
       var limited = 0;
-      await climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2001, lastYear: 2001, today: DateTime.utc(2026), rateLimited: (e) => e is _TooManyRequests, rateLimitDelay: const Duration(milliseconds: 2), onWait: waits.add, fetch: (url) async {
-        if (limited++ == 0) throw const _TooManyRequests();
-        return fakeOpenMeteo(url);
-      });
+      await climateDownload(
+        ClimateSource.openMeteo,
+        latitudeDeg: 0,
+        longitudeDeg: 0,
+        firstYear: 2001,
+        lastYear: 2001,
+        today: DateTime.utc(2026),
+        rateLimited: (e) => e is _TooManyRequests,
+        rateLimitDelay: const Duration(milliseconds: 2),
+        onWait: waits.add,
+        fetch: (url) async {
+          if (limited++ == 0) throw const _TooManyRequests();
+          return fakeOpenMeteo(url);
+        },
+      );
       expect(waits, [const Duration(milliseconds: 2)]);
 
       var serviceCalls = 0;
       await expectLater(
-        climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2001, lastYear: 2001, today: DateTime.utc(2026), fetch: (url) async {
-          serviceCalls++;
-          return '{"error":true,"reason":"bad"}';
-        }),
+        climateDownload(
+          ClimateSource.openMeteo,
+          latitudeDeg: 0,
+          longitudeDeg: 0,
+          firstYear: 2001,
+          lastYear: 2001,
+          today: DateTime.utc(2026),
+          fetch: (url) async {
+            serviceCalls++;
+            return '{"error":true,"reason":"bad"}';
+          },
+        ),
         throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_service_error')),
       );
       expect(serviceCalls, 1);
@@ -208,16 +263,34 @@ void main() {
     test('cancellation and bad requests', () async {
       var n = 0;
       await expectLater(
-        climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2001, lastYear: 2003, today: DateTime.utc(2026), cancelled: () => n > 0, fetch: (url) async {
-          n++;
-          return fakeOpenMeteo(url);
-        }),
+        climateDownload(
+          ClimateSource.openMeteo,
+          latitudeDeg: 0,
+          longitudeDeg: 0,
+          firstYear: 2001,
+          lastYear: 2003,
+          today: DateTime.utc(2026),
+          cancelled: () => n > 0,
+          fetch: (url) async {
+            n++;
+            return fakeOpenMeteo(url);
+          },
+        ),
         throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_cancelled')),
       );
       expect(n, 1);
-      await expectLater(climateDownload(ClimateSource.openMeteo, latitudeDeg: 95, longitudeDeg: 0, firstYear: 2001, lastYear: 2001, fetch: (url) async => ''), throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_bad_request')));
-      await expectLater(climateDownload(ClimateSource.nasaPower, latitudeDeg: 0, longitudeDeg: 0, firstYear: 1975, lastYear: 1970, fetch: (url) async => ''), throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_bad_request')));
-      await expectLater(climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2030, lastYear: 2031, today: DateTime.utc(2026), fetch: (url) async => ''), throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_no_data')));
+      await expectLater(
+        climateDownload(ClimateSource.openMeteo, latitudeDeg: 95, longitudeDeg: 0, firstYear: 2001, lastYear: 2001, fetch: (url) async => ''),
+        throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_bad_request')),
+      );
+      await expectLater(
+        climateDownload(ClimateSource.nasaPower, latitudeDeg: 0, longitudeDeg: 0, firstYear: 1975, lastYear: 1970, fetch: (url) async => ''),
+        throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_bad_request')),
+      );
+      await expectLater(
+        climateDownload(ClimateSource.openMeteo, latitudeDeg: 0, longitudeDeg: 0, firstYear: 2030, lastYear: 2031, today: DateTime.utc(2026), fetch: (url) async => ''),
+        throwsA(isA<ClimateException>().having((e) => e.code, 'code', 'climate_no_data')),
+      );
     });
 
     test('NASA POWER series: Penman-Monteith ETo from the daily variables', () async {
@@ -231,13 +304,26 @@ void main() {
         }
         Map<String, double> f(double v) => {for (final k in keys) k: v};
         return jsonEncode({
-          'geometry': {'coordinates': [-47.06, -22.9, 755.36]},
+          'geometry': {
+            'coordinates': [-47.06, -22.9, 755.36],
+          },
           'header': {'fill_value': -999.0},
-          'properties': {'parameter': {'T2M_MAX': f(30), 'T2M_MIN': f(18), 'T2MDEW': f(15), 'RH2M': f(65), 'WS2M': f(2), 'PRECTOTCORR': f(3), 'ALLSKY_SFC_SW_DWN': f(20)}},
+          'properties': {
+            'parameter': {'T2M_MAX': f(30), 'T2M_MIN': f(18), 'T2MDEW': f(15), 'RH2M': f(65), 'WS2M': f(2), 'PRECTOTCORR': f(3), 'ALLSKY_SFC_SW_DWN': f(20)},
+          },
         });
       }
 
-      final s = await climateDownload(ClimateSource.nasaPower, latitudeDeg: -22.9, longitudeDeg: -47.06, firstYear: 2001, lastYear: 2002, today: DateTime.utc(2026), minInterval: Duration.zero, fetch: (url) async => fakePower(url));
+      final s = await climateDownload(
+        ClimateSource.nasaPower,
+        latitudeDeg: -22.9,
+        longitudeDeg: -47.06,
+        firstYear: 2001,
+        lastYear: 2002,
+        today: DateTime.utc(2026),
+        minInterval: Duration.zero,
+        fetch: (url) async => fakePower(url),
+      );
       expect(s.elevationM, 755.36);
       final n = climateMonthlyNormals(s);
       expect(n.first.etoServiceMmDay, isNull);

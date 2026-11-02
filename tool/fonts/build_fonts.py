@@ -184,6 +184,8 @@ def used_chars(langs):
         for s in strings_of(json.loads(path.read_text(encoding='utf-8')), []):
             chars.update(ord(c) for c in s)
     chars.update(ord(c) for c in (ROOT / 'lib' / 'app' / 'i18n.dart').read_text(encoding='utf-8'))
+    for part in sorted((ROOT / 'lib' / 'app' / 'i18n_parts').glob('*.dart')):
+        chars.update(ord(c) for c in part.read_text(encoding='utf-8'))
     return chars
 
 

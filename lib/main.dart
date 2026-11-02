@@ -149,10 +149,12 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   /// Keyboard shortcuts, fed by the platform (native listener on the web).
   late final Hotkeys hotkeys = Hotkeys(this);
   late final NativeHotkeys _nativeKeys = NativeHotkeys(hotkeys.handle);
+
   /// Cursor coordinates for the status bar, with the view scale they were
   /// read at: they change on every pointer move, so only the status bar
   /// listens (the rest of the window is not rebuilt for them).
   final _status = ValueNotifier<(String, double)>(('', 0));
+
   /// Side panel tab: 0 properties, 1 layers, 2 history.
   int _sideTabIndex = 0;
   double _reportsHeight = 220;
@@ -299,7 +301,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         builder: (ctx) => AlertDialog(
           title: Text(tab.t('file.closeTab')),
           content: Text(tab.t('msg.unsavedConfirm')),
-          actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tab.t('cancel'))), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tab.t('ok')))],
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tab.t('cancel'))),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tab.t('ok'))),
+          ],
         ),
       );
       if (ok != true) return;
@@ -459,9 +464,16 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
           final compact = MediaQuery.sizeOf(context).width < mobileBreakpoint;
           ScaffoldMessenger.of(context)
             ..clearSnackBars()
-            ..showSnackBar(compact
-                ? SnackBar(content: Text(msg, style: const TextStyle(fontSize: 12)), duration: const Duration(milliseconds: 2200), behavior: SnackBarBehavior.floating, margin: const EdgeInsets.fromLTRB(12, 0, 72, 100))
-                : SnackBar(content: Text(msg), duration: const Duration(seconds: 3), behavior: SnackBarBehavior.floating, width: 420));
+            ..showSnackBar(
+              compact
+                  ? SnackBar(
+                      content: Text(msg, style: const TextStyle(fontSize: 12)),
+                      duration: const Duration(milliseconds: 2200),
+                      behavior: SnackBarBehavior.floating,
+                      margin: const EdgeInsets.fromLTRB(12, 0, 72, 100),
+                    )
+                  : SnackBar(content: Text(msg), duration: const Duration(seconds: 3), behavior: SnackBarBehavior.floating, width: 420),
+            );
         });
       }
     }
@@ -557,7 +569,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
             onCloseTab: () => _closeTab(ws.active),
             onDesignCheck: designCheck,
           ),
-          if (tutorial.active) Positioned.fill(child: TutorialOverlay(tutorial: tutorial, controller: c, host: this, lang: c.lang)),
+          if (tutorial.active)
+            Positioned.fill(
+              child: TutorialOverlay(tutorial: tutorial, controller: c, host: this, lang: c.lang),
+            ),
         ],
       );
     }
@@ -566,7 +581,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         children: [
           Column(
             children: [
-              SizedBox(height: 36, child: AppMenuBar(c: c, ws: ws, onStartTutorial: startTutorial, onShowWelcome: showWelcome, onCloseTab: () => _closeTab(ws.active))),
+              SizedBox(
+                height: 36,
+                child: AppMenuBar(c: c, ws: ws, onStartTutorial: startTutorial, onShowWelcome: showWelcome, onCloseTab: () => _closeTab(ws.active)),
+              ),
               ProjectTabBar(ws: ws, onClose: _closeTab, onAdd: () => ws.addTab()),
               const Divider(height: 1),
               Expanded(
@@ -580,7 +598,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                           Expanded(
                             child: Stack(
                               children: [
-                                Positioned.fill(child: KeyedSubtree(key: TutorialTargets.canvas, child: canvas)),
+                                Positioned.fill(
+                                  child: KeyedSubtree(key: TutorialTargets.canvas, child: canvas),
+                                ),
                                 // non-blocking progress card: the workspace stays usable while a design runs
                                 if (c.busy) Positioned(right: 12, bottom: 12, child: DesignProgressOverlay(c: c)),
                               ],
@@ -590,9 +610,16 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                             GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onVerticalDragUpdate: (d) => setState(() => _reportsHeight = (_reportsHeight - d.delta.dy).clamp(120, 600)),
-                              child: MouseRegion(cursor: SystemMouseCursors.resizeRow, child: SizedBox(height: 5, child: ColoredBox(color: Cad.divider))),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeRow,
+                                child: SizedBox(height: 5, child: ColoredBox(color: Cad.divider)),
+                              ),
                             ),
-                            SizedBox(key: TutorialTargets.reportsBar, height: _reportsHeight, child: ReportsPanel(c: c)),
+                            SizedBox(
+                              key: TutorialTargets.reportsBar,
+                              height: _reportsHeight,
+                              child: ReportsPanel(c: c),
+                            ),
                           ] else
                             SizedBox(
                               key: TutorialTargets.reportsBar,
@@ -628,7 +655,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                               ],
                             ),
                           ),
-                          Expanded(child: switch (_sideTabIndex) { 1 => LayersPanel(c: c), 2 => HistoryPanel(c: c), _ => PropertiesPanel(c: c) }),
+                          Expanded(
+                            child: switch (_sideTabIndex) {
+                              1 => LayersPanel(c: c),
+                              2 => HistoryPanel(c: c),
+                              _ => PropertiesPanel(c: c),
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -645,18 +678,21 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                                     ? null
                                     : AiAssistant.live.where((a) => !identical(a.c, c) && ws.tabs.contains(a.c) && (a.busy || a.waiting)).firstOrNull;
                                 final pc = away?.c ?? c;
-                                return Row(mainAxisSize: MainAxisSize.min, children: [
-                                  const VerticalDivider(width: 1),
-                                  SizedBox(
-                                    width: aiPanelWidth,
-                                    child: AiAgentPanel(
-                                      key: ValueKey('ai_panel_${pc.tabId}'),
-                                      c: pc,
-                                      onClose: AiAssistant.togglePanel,
-                                      onShowTab: away == null ? null : () => ws.select(ws.tabs.indexOf(pc)),
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const VerticalDivider(width: 1),
+                                    SizedBox(
+                                      width: aiPanelWidth,
+                                      child: AiAgentPanel(
+                                        key: ValueKey('ai_panel_${pc.tabId}'),
+                                        c: pc,
+                                        onClose: AiAssistant.togglePanel,
+                                        onShowTab: away == null ? null : () => ws.select(ws.tabs.indexOf(pc)),
+                                      ),
                                     ),
-                                  ),
-                                ]);
+                                  ],
+                                );
                               },
                             )
                           : const SizedBox.shrink(),
@@ -665,10 +701,16 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                 ),
               ),
               const Divider(height: 1),
-              KeyedSubtree(key: TutorialTargets.statusBar, child: StatusBar(c: c, status: _status, hint: t('hint.${_hintFor(c.activeTool)}'))),
+              KeyedSubtree(
+                key: TutorialTargets.statusBar,
+                child: StatusBar(c: c, status: _status, hint: t('hint.${_hintFor(c.activeTool)}')),
+              ),
             ],
           ),
-          if (tutorial.active) Positioned.fill(child: TutorialOverlay(tutorial: tutorial, controller: c, host: this, lang: c.lang)),
+          if (tutorial.active)
+            Positioned.fill(
+              child: TutorialOverlay(tutorial: tutorial, controller: c, host: this, lang: c.lang),
+            ),
         ],
       ),
     );
@@ -680,7 +722,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       onTap: onTap,
       child: Container(
         alignment: Alignment.center,
-        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: on ? Cad.accent : Colors.transparent, width: 2))),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: on ? Cad.accent : Colors.transparent, width: 2)),
+        ),
         child: Text(label, style: TextStyle(fontSize: 11.5, color: on ? Cad.fg : Cad.fg60)),
       ),
     ),
@@ -688,16 +732,6 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   String _hintFor(ToolId t) => hintKeyOf(t);
 }
-
-
-
-
-
-
-
-
-
-
 
 // Aliases to avoid name clashes with ToolHost members.
 Future<void> showBlockDialogFn(BuildContext context, ProjectController c, List<Pt> polygon) => showBlockDialog(context, c, polygon);

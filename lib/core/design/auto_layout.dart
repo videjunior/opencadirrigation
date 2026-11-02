@@ -746,8 +746,14 @@ class LayoutHead {
   double get precipitationRatio => targetFlow > 0 && flow > 0 ? flow / targetFlow : 1;
 
   LayoutHead copyWith({Pt? position, double? arcDeg, double? orientationDeg, HeadRole? role, String? nozzleId, double? flow, double? radius, double? targetFlow}) => LayoutHead(
-    position: position ?? this.position, arcDeg: arcDeg ?? this.arcDeg, orientationDeg: orientationDeg ?? this.orientationDeg, role: role ?? this.role,
-    nozzleId: nozzleId ?? this.nozzleId, flow: flow ?? this.flow, radius: radius ?? this.radius, targetFlow: targetFlow ?? this.targetFlow,
+    position: position ?? this.position,
+    arcDeg: arcDeg ?? this.arcDeg,
+    orientationDeg: orientationDeg ?? this.orientationDeg,
+    role: role ?? this.role,
+    nozzleId: nozzleId ?? this.nozzleId,
+    flow: flow ?? this.flow,
+    radius: radius ?? this.radius,
+    targetFlow: targetFlow ?? this.targetFlow,
   );
 
   /// Wetted sector for the densogram model.
@@ -792,8 +798,7 @@ int matchedPartCircles(OutletSpec family, NozzleSpec full, double headM) {
   if (!(qf > 0) || !(rf > 0)) return 0;
   var c = 0;
   for (final arc in const [90.0, 180.0]) {
-    final match = family.nozzles.any((n) =>
-        (n.arcDeg - arc).abs() <= 5 && (n.curve.radius(headM) / rf - 1).abs() <= 0.15 && (n.curve.flow(headM) / (qf * arc / 360) - 1).abs() <= 0.2);
+    final match = family.nozzles.any((n) => (n.arcDeg - arc).abs() <= 5 && (n.curve.radius(headM) / rf - 1).abs() <= 0.15 && (n.curve.flow(headM) / (qf * arc / 360) - 1).abs() <= 0.2);
     if (match) c++;
   }
   return c;
@@ -807,12 +812,21 @@ int matchedPartCircles(OutletSpec family, NozzleSpec full, double headM) {
 /// radius, so the fewest heads. When none fits, the smallest radius. Null
 /// when no nozzle has a radius.
 NozzleSpec? referenceNozzle(OutletSpec family, double headM, {double maxRadius = double.infinity}) {
-  final withRadius = [for (final n in family.nozzles) if (n.curve.radius(headM) > 0 && n.curve.flow(headM) > 0) n];
+  final withRadius = [
+    for (final n in family.nozzles)
+      if (n.curve.radius(headM) > 0 && n.curve.flow(headM) > 0) n,
+  ];
   if (withRadius.isEmpty) return null;
-  final full = [for (final n in withRadius) if (n.arcDeg >= 360 - 1e-6) n];
+  final full = [
+    for (final n in withRadius)
+      if (n.arcDeg >= 360 - 1e-6) n,
+  ];
   final cands = full.isNotEmpty ? full : withRadius;
   int completeness(NozzleSpec f) => matchedPartCircles(family, f, headM);
-  final fits = [for (final n in cands) if (n.curve.radius(headM) <= maxRadius * (1 + 1e-9)) n];
+  final fits = [
+    for (final n in cands)
+      if (n.curve.radius(headM) <= maxRadius * (1 + 1e-9)) n,
+  ];
   if (fits.isEmpty) {
     var best = cands.first;
     for (final n in cands) {
@@ -870,8 +884,18 @@ NozzleChoice? matchedPrecipitationNozzle(OutletSpec family, double arcDeg, {requ
 /// Uniformity and efficiency of a head layout over its region.
 class LayoutMetrics {
   const LayoutMetrics({
-    required this.cu, required this.du, required this.sc, required this.dryPct, required this.meanRateMmH, required this.minRateMmH, required this.maxRateMmH,
-    required this.oversprayPct, required this.areaM2, required this.totalFlow, required this.heads, required this.cellSize,
+    required this.cu,
+    required this.du,
+    required this.sc,
+    required this.dryPct,
+    required this.meanRateMmH,
+    required this.minRateMmH,
+    required this.maxRateMmH,
+    required this.oversprayPct,
+    required this.areaM2,
+    required this.totalFlow,
+    required this.heads,
+    required this.cellSize,
   });
 
   static const empty = LayoutMetrics(cu: 0, du: 0, sc: 0, dryPct: 100, meanRateMmH: 0, minRateMmH: 0, maxRateMmH: 0, oversprayPct: 0, areaM2: 0, totalFlow: 0, heads: 0, cellSize: 0);
@@ -986,8 +1010,18 @@ LayoutMetrics evaluateHeadLayout(LayoutRegion region, List<LayoutHead> heads, {S
   final total = sources.fold(0.0, (s, e) => s + e.flow);
   final st = densogramStats(values, h * h);
   return LayoutMetrics(
-    cu: st.cu, du: st.du, sc: st.sc, dryPct: st.dryPct, meanRateMmH: st.mean, minRateMmH: st.min, maxRateMmH: st.max,
-    oversprayPct: total > 0 ? (100 * (1 - inside / total)).clamp(0.0, 100.0).toDouble() : 0, areaM2: st.areaM2, totalFlow: total, heads: sources.length, cellSize: h,
+    cu: st.cu,
+    du: st.du,
+    sc: st.sc,
+    dryPct: st.dryPct,
+    meanRateMmH: st.mean,
+    minRateMmH: st.min,
+    maxRateMmH: st.max,
+    oversprayPct: total > 0 ? (100 * (1 - inside / total)).clamp(0.0, 100.0).toDouble() : 0,
+    areaM2: st.areaM2,
+    totalFlow: total,
+    heads: sources.length,
+    cellSize: h,
   );
 }
 
@@ -1132,10 +1166,27 @@ class LandscapeLayoutOptions {
 
   /// A copy (the templates fill in the direction of their rows).
   LandscapeLayoutOptions copy() => LandscapeLayoutOptions(
-    headM: headM, referenceNozzleId: referenceNozzleId, spacingRule: spacingRule, spacingPercent: spacingPercent, spacingM: spacingM, pattern: pattern, direction: direction,
-    partCircles: partCircles, cornerAngleDeg: cornerAngleDeg, minCornerArcDeg: minCornerArcDeg, minSpacingFraction: minSpacingFraction, narrowStripFraction: narrowStripFraction, edgeClearanceFraction: edgeClearanceFraction,
-    coverageFraction: coverageFraction, rowStretchFraction: rowStretchFraction, smallExclusionFactor: smallExclusionFactor, relaxIterations: relaxIterations,
-    minRadiusRatio: minRadiusRatio, profile: profile, evaluate: evaluate, maxHeads: maxHeads,
+    headM: headM,
+    referenceNozzleId: referenceNozzleId,
+    spacingRule: spacingRule,
+    spacingPercent: spacingPercent,
+    spacingM: spacingM,
+    pattern: pattern,
+    direction: direction,
+    partCircles: partCircles,
+    cornerAngleDeg: cornerAngleDeg,
+    minCornerArcDeg: minCornerArcDeg,
+    minSpacingFraction: minSpacingFraction,
+    narrowStripFraction: narrowStripFraction,
+    edgeClearanceFraction: edgeClearanceFraction,
+    coverageFraction: coverageFraction,
+    rowStretchFraction: rowStretchFraction,
+    smallExclusionFactor: smallExclusionFactor,
+    relaxIterations: relaxIterations,
+    minRadiusRatio: minRadiusRatio,
+    profile: profile,
+    evaluate: evaluate,
+    maxHeads: maxHeads,
   );
 }
 
@@ -1143,8 +1194,16 @@ class LandscapeLayoutOptions {
 /// templates).
 class LandscapeLayout {
   LandscapeLayout({
-    required this.region, required this.outletSpecId, required this.heads, required this.headM, this.referenceNozzleId, this.spacing = 0, this.rowSpacing = 0,
-    this.direction = const Pt(1, 0), this.metrics, this.messages = const [],
+    required this.region,
+    required this.outletSpecId,
+    required this.heads,
+    required this.headM,
+    this.referenceNozzleId,
+    this.spacing = 0,
+    this.rowSpacing = 0,
+    this.direction = const Pt(1, 0),
+    this.metrics,
+    this.messages = const [],
   });
 
   /// The area the layout waters (outline minus every exclusion).
@@ -1191,9 +1250,16 @@ class LandscapeLayout {
   List<OutletEntity> toOutlets(Project p, {String Function(int index)? zoneName, HydraulicScope scope = HydraulicScope.zone, double riserHeight = 0}) => [
     for (var i = 0; i < heads.length; i++)
       OutletEntity(
-        id: p.newId(), position: heads[i].position, scope: scope, outletSpecId: outletSpecId, nozzleId: heads[i].nozzleId, headM: headM,
-        arcDeg: heads[i].fullCircle ? 360 : _round(heads[i].arcDeg, 1e-6), orientationDeg: heads[i].fullCircle ? 0 : _round(normalizeDeg(heads[i].orientationDeg), 1e-6),
-        riserHeight: riserHeight, zoneName: zoneName?.call(i) ?? '',
+        id: p.newId(),
+        position: heads[i].position,
+        scope: scope,
+        outletSpecId: outletSpecId,
+        nozzleId: heads[i].nozzleId,
+        headM: headM,
+        arcDeg: heads[i].fullCircle ? 360 : _round(heads[i].arcDeg, 1e-6),
+        orientationDeg: heads[i].fullCircle ? 0 : _round(normalizeDeg(heads[i].orientationDeg), 1e-6),
+        riserHeight: riserHeight,
+        zoneName: zoneName?.call(i) ?? '',
       ),
   ];
 }
@@ -1355,8 +1421,18 @@ LandscapeLayout layoutLandscape({required List<Pt> outline, List<List<Pt>> exclu
   // 5. matched-precipitation nozzles and the uniformity
   final laid = [for (final h in heads) LayoutHead(position: h.p, arcDeg: h.arc, orientationDeg: normalizeDeg(h.orient), role: h.role)];
   return finishHeadLayout(
-    region: region, family: family, heads: laid, headM: headM, reference: ref, spacing: spacing, rowSpacing: rowSp, direction: dir, messages: messages,
-    evaluate: o.evaluate, profile: o.profile, minRadiusRatio: o.minRadiusRatio,
+    region: region,
+    family: family,
+    heads: laid,
+    headM: headM,
+    reference: ref,
+    spacing: spacing,
+    rowSpacing: rowSp,
+    direction: dir,
+    messages: messages,
+    evaluate: o.evaluate,
+    profile: o.profile,
+    minRadiusRatio: o.minRadiusRatio,
   );
 }
 
@@ -1367,8 +1443,17 @@ LandscapeLayout layoutLandscape({required List<Pt> outline, List<List<Pt>> exclu
 /// 15 %, `layout_radius_short:<head>` when it throws less than
 /// [minRadiusRatio] of the reference radius.
 LandscapeLayout finishHeadLayout({
-  required LayoutRegion region, required OutletSpec family, required List<LayoutHead> heads, required double headM, NozzleSpec? reference, double spacing = 0,
-  double rowSpacing = 0, Pt direction = const Pt(1, 0), List<String> messages = const [], bool evaluate = true, SprayProfile profile = SprayProfile.triangular,
+  required LayoutRegion region,
+  required OutletSpec family,
+  required List<LayoutHead> heads,
+  required double headM,
+  NozzleSpec? reference,
+  double spacing = 0,
+  double rowSpacing = 0,
+  Pt direction = const Pt(1, 0),
+  List<String> messages = const [],
+  bool evaluate = true,
+  SprayProfile profile = SprayProfile.triangular,
   double minRadiusRatio = 0.9,
 }) {
   final msgs = List.of(messages);
@@ -1388,8 +1473,16 @@ LandscapeLayout finishHeadLayout({
     done.add(h.copyWith(nozzleId: c.nozzle.id, flow: c.flow, radius: c.radius, targetFlow: c.targetFlow));
   }
   return LandscapeLayout(
-    region: region, outletSpecId: family.id, heads: done, headM: headM, referenceNozzleId: ref?.id, spacing: spacing, rowSpacing: rowSpacing, direction: direction,
-    metrics: evaluate ? evaluateHeadLayout(region, done, profile: profile) : null, messages: msgs,
+    region: region,
+    outletSpecId: family.id,
+    heads: done,
+    headM: headM,
+    referenceNozzleId: ref?.id,
+    spacing: spacing,
+    rowSpacing: rowSpacing,
+    direction: direction,
+    metrics: evaluate ? evaluateHeadLayout(region, done, profile: profile) : null,
+    messages: msgs,
   );
 }
 
@@ -1401,7 +1494,10 @@ List<_Head> _loopHeads(RegionLoop loop, double spacing, {required double cornerD
   final total = loop.length;
   if (n < 3 || total <= 0) return const [];
   final turns = [for (var i = 0; i < n; i++) loop.turnDeg(i)];
-  final corners = [for (var i = 0; i < n; i++) if (turns[i].abs() >= cornerDeg) i];
+  final corners = [
+    for (var i = 0; i < n; i++)
+      if (turns[i].abs() >= cornerDeg) i,
+  ];
   final out = <_Head>[];
   if (corners.isEmpty) {
     // a smooth loop (a round bed): heads evenly round it
@@ -1467,8 +1563,18 @@ List<_Head> _loopHeads(RegionLoop loop, double spacing, {required double cornerD
 /// of the heads), and a head goes there when it is out of reach: inside the
 /// area, or on the boundary as an edge head when [onBoundary] and the spot
 /// is within [clearance] of it. Nothing goes in [inSoft] exclusions.
-void _fillGaps(LayoutRegion region, _Raster raster, PointGrid grid,
-    {required double spacing, required double reach, required double clearance, required double minGap, required bool onBoundary, required bool Function(Pt) inSoft, required void Function(_Head) addHead}) {
+void _fillGaps(
+  LayoutRegion region,
+  _Raster raster,
+  PointGrid grid, {
+  required double spacing,
+  required double reach,
+  required double clearance,
+  required double minGap,
+  required bool onBoundary,
+  required bool Function(Pt) inSoft,
+  required void Function(_Head) addHead,
+}) {
   if (!(reach > 0)) return;
   double far(Pt q) {
     final i = grid.nearest(q);

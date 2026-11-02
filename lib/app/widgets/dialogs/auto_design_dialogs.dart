@@ -43,12 +43,25 @@ Future<void>? showAutoDesignDialog(BuildContext context, ProjectController c, St
 
 // ---------------------------------------------------------------- shared
 
-Widget _row(List<Widget> children) => Row(children: [for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: children[i])]]);
+Widget _row(List<Widget> children) => Row(
+  children: [
+    for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: children[i])],
+  ],
+);
 
-Widget _note(String s, {Color? color}) => Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Text(s, style: TextStyle(fontSize: 11.5, color: color ?? Cad.fg70)));
+Widget _note(String s, {Color? color}) => Padding(
+  padding: const EdgeInsets.symmetric(vertical: 2),
+  child: Text(s, style: TextStyle(fontSize: 11.5, color: color ?? Cad.fg70)),
+);
 
-Widget _switch(String label, bool value, ValueChanged<bool>? onChanged, {Key? key}) =>
-    SwitchListTile(key: key, dense: true, contentPadding: EdgeInsets.zero, title: Text(label, style: const TextStyle(fontSize: 12)), value: value, onChanged: onChanged);
+Widget _switch(String label, bool value, ValueChanged<bool>? onChanged, {Key? key}) => SwitchListTile(
+  key: key,
+  dense: true,
+  contentPadding: EdgeInsets.zero,
+  title: Text(label, style: const TextStyle(fontSize: 12)),
+  value: value,
+  onChanged: onChanged,
+);
 
 /// A fraction typed as a percentage.
 Widget _pct(String label, double fraction, ValueChanged<double> onChanged) => NumField(label: label, value: fraction * 100, decimals: 0, onChanged: (v) => onChanged((v < 0 ? 0 : v) / 100));
@@ -67,9 +80,7 @@ String _flow(Units u, double q) => '${_n(u.flowFromSi(q))} ${u.flowLabel}';
 String _head(Units u, double h) => '${fmt(u.pressureFromHead(h), 1)} ${u.pressureLabel}';
 String _rate(Units u, double mmH) => '${fmt(u.depthFromMm(mmH), u.length == LengthUnit.ft ? 2 : 1)} ${u.depthRateLabel}';
 String _hectares(Units u, double m2) => '${fmt(u.areaFromSi(m2), 2)} ${u.areaLabel}';
-String _surface(Units u, double m2) => u.length == LengthUnit.ft
-    ? '${fmt(m2 / (metersPerFoot * metersPerFoot), 0)} ft² (${_hectares(u, m2)})'
-    : '${fmt(m2, 0)} m² (${_hectares(u, m2)})';
+String _surface(Units u, double m2) => u.length == LengthUnit.ft ? '${fmt(m2 / (metersPerFoot * metersPerFoot), 0)} ft² (${_hectares(u, m2)})' : '${fmt(m2, 0)} m² (${_hectares(u, m2)})';
 
 Color _grade(double v, double good, double fair) => v >= good ? Cad.ok : (v >= fair ? Cad.warning : Cad.unconnected);
 
@@ -283,7 +294,10 @@ List<String> _messages(ProjectController c, Iterable<String> codes, {String Func
 
 Widget _messageBlock(List<String> lines) => lines.isEmpty
     ? const SizedBox.shrink()
-    : Padding(padding: const EdgeInsets.only(top: 6), child: Text(lines.map((l) => '• $l').join('\n'), style: TextStyle(fontSize: 11, color: Cad.warning)));
+    : Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Text(lines.map((l) => '• $l').join('\n'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+      );
 
 /// The inputs beside the live summary on a wide screen (both scroll on their
 /// own), the summary under the inputs otherwise. The dialogs are never
@@ -292,7 +306,12 @@ Widget _messageBlock(List<String> lines) => lines.isEmpty
 /// the ScrollBody scrolls instead.
 Widget _body(BuildContext ctx, List<Widget> inputs, List<Widget> summary) {
   Widget col(List<Widget> ws) => Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: ws);
-  if (MediaQuery.sizeOf(ctx).width < 1000) return SizedBox(width: dialogWidth(ctx, 580), child: ScrollBody(child: col([...inputs, ...summary])));
+  if (MediaQuery.sizeOf(ctx).width < 1000) {
+    return SizedBox(
+      width: dialogWidth(ctx, 580),
+      child: ScrollBody(child: col([...inputs, ...summary])),
+    );
+  }
   return SizedBox(
     width: dialogWidth(ctx, 960),
     child: Row(
@@ -311,7 +330,15 @@ Widget _nothingSelected(BuildContext ctx, ProjectController c, String title, Str
   title: Text(title, style: const TextStyle(fontSize: 15)),
   content: SizedBox(
     width: dialogWidth(ctx, 480),
-    child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [_note(hint), const SizedBox(height: 8), _note(message, color: Cad.warning)]),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _note(hint),
+        const SizedBox(height: 8),
+        _note(message, color: Cad.warning),
+      ],
+    ),
   ),
   actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
 );
@@ -402,9 +429,27 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
   final preview = _Preview<_LayoutPlan>();
 
   String layoutKey() => [
-    familyId, o.headM, o.referenceNozzleId, o.spacingRule.name, o.spacingPercent, o.spacingM, o.pattern.name, o.partCircles.name, autoDirection, directionDeg, o.cornerAngleDeg,
-    o.minCornerArcDeg, o.minSpacingFraction, o.narrowStripFraction, o.edgeClearanceFraction, o.coverageFraction, o.rowStretchFraction, o.smallExclusionFactor, o.relaxIterations,
-    o.minRadiusRatio, o.profile.name,
+    familyId,
+    o.headM,
+    o.referenceNozzleId,
+    o.spacingRule.name,
+    o.spacingPercent,
+    o.spacingM,
+    o.pattern.name,
+    o.partCircles.name,
+    autoDirection,
+    directionDeg,
+    o.cornerAngleDeg,
+    o.minCornerArcDeg,
+    o.minSpacingFraction,
+    o.narrowStripFraction,
+    o.edgeClearanceFraction,
+    o.coverageFraction,
+    o.rowStretchFraction,
+    o.smallExclusionFactor,
+    o.relaxIterations,
+    o.minRadiusRatio,
+    o.profile.name,
   ].join('|');
   String zoningKey() => '${layoutKey()}|$zoneOn|$maxZoneFlow|$itemsPerZone';
   String key() => '${zoningKey()}|$routeOn|$sourceId|${placement.name}';
@@ -431,10 +476,9 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     RoutingResult? routing;
     if (routeOn && groups.isNotEmpty) {
       final src = _sourceOf(sources, sourceId);
-      routing = routeZones(
-        [for (final g in groups) [for (final i in g) layout.heads[i].position]],
-        RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction),
-      );
+      routing = routeZones([
+        for (final g in groups) [for (final i in g) layout.heads[i].position],
+      ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction));
     }
     return _LayoutPlan(family, layout, zoning, routing, groups, names);
   }
@@ -443,7 +487,10 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     if (!ctx.mounted) return;
     final plan = preview.now(key(), compute);
     if (plan == null || plan.layout.heads.isEmpty) return;
-    final zoneOf = <int, int>{for (var z = 0; z < plan.groups.length; z++) for (final i in plan.groups[z]) i: z};
+    final zoneOf = <int, int>{
+      for (var z = 0; z < plan.groups.length; z++)
+        for (final i in plan.groups[z]) i: z,
+    };
     final made = c.mutate(() {
       final p = c.project;
       final out = <Entity>[
@@ -494,8 +541,17 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
               }),
             ),
             switch (o.spacingRule) {
-              SpacingRule.percentOfDiameter => NumField(label: t('dlg.spacingPct'), value: o.spacingPercent, decimals: 0, onChanged: (v) => setState(() => o.spacingPercent = v > 0 ? v : o.spacingPercent)),
-              SpacingRule.fixed => NumField(label: t('autolay.spacing', {'u': u.lengthLabel}), value: u.lengthFromSi(o.spacingM), onChanged: (v) => setState(() => o.spacingM = v > 0 ? u.lengthToSi(v) : o.spacingM)),
+              SpacingRule.percentOfDiameter => NumField(
+                label: t('dlg.spacingPct'),
+                value: o.spacingPercent,
+                decimals: 0,
+                onChanged: (v) => setState(() => o.spacingPercent = v > 0 ? v : o.spacingPercent),
+              ),
+              SpacingRule.fixed => NumField(
+                label: t('autolay.spacing', {'u': u.lengthLabel}),
+                value: u.lengthFromSi(o.spacingM),
+                onChanged: (v) => setState(() => o.spacingM = v > 0 ? u.lengthToSi(v) : o.spacingM),
+              ),
               SpacingRule.headToHead => const SizedBox.shrink(),
             },
           ]),
@@ -509,7 +565,10 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
               onChanged: (v) => setState(() => o.partCircles = PartCircleMode.values.byName(v!)),
             ),
             SegmentedButton<GridPattern>(
-              segments: [ButtonSegment(value: GridPattern.square, label: Text(t('dlg.square'))), ButtonSegment(value: GridPattern.triangular, label: Text(t('dlg.triangular')))],
+              segments: [
+                ButtonSegment(value: GridPattern.square, label: Text(t('dlg.square'))),
+                ButtonSegment(value: GridPattern.triangular, label: Text(t('dlg.triangular'))),
+              ],
               selected: {o.pattern},
               onSelectionChanged: (v) => setState(() => o.pattern = v.first),
             ),
@@ -526,7 +585,10 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
                   key: ValueKey('al_ref_$familyId'),
                   label: t('autolay.refNozzle'),
                   value: o.referenceNozzleId,
-                  items: [for (final n in family.nozzles) if (n.arcDeg >= 360 - 1e-6) n],
+                  items: [
+                    for (final n in family.nozzles)
+                      if (n.arcDeg >= 360 - 1e-6) n,
+                  ],
                   labelOf: (n) => n.name,
                   idOf: (n) => n.id,
                   allowNull: true,
@@ -563,7 +625,12 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
           _switch(t('autolay.zoning'), zoneOn, (v) => setState(() => zoneOn = v), key: const Key('al_zoning')),
           if (zoneOn) ...[
             _row([
-              NumField(key: const Key('al_zone_flow'), label: t('autolay.maxZoneFlow', {'u': u.flowLabel}), value: u.flowFromSi(maxZoneFlow), onChanged: (v) => setState(() => maxZoneFlow = v > 0 ? u.flowToSi(v) : 0)),
+              NumField(
+                key: const Key('al_zone_flow'),
+                label: t('autolay.maxZoneFlow', {'u': u.flowLabel}),
+                value: u.flowFromSi(maxZoneFlow),
+                onChanged: (v) => setState(() => maxZoneFlow = v > 0 ? u.flowToSi(v) : 0),
+              ),
               NumField(label: t('autolay.itemsPerZone'), value: itemsPerZone.toDouble(), decimals: 0, onChanged: (v) => setState(() => itemsPerZone = v < 0 ? 0 : v.round())),
             ]),
             _note(t('autolay.zoneFlowHint', {'s': supplyFlow > 0 ? _flow(u, supplyFlow) : '-', 'v': valveFlow > 0 ? _flow(u, valveFlow) : '-'}), color: Cad.fg54),
@@ -571,7 +638,15 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
           _switch(t('autolay.routing'), routeOn, (v) => setState(() => routeOn = v), key: const Key('al_routing')),
           if (routeOn)
             _row([
-              SpecDropdown<_Source>(key: const Key('al_source'), label: t('auto.connection'), value: sourceId, items: sources, labelOf: (s) => s.label, idOf: (s) => s.id, onChanged: (v) => setState(() => sourceId = v ?? '')),
+              SpecDropdown<_Source>(
+                key: const Key('al_source'),
+                label: t('auto.connection'),
+                value: sourceId,
+                items: sources,
+                labelOf: (s) => s.label,
+                idOf: (s) => s.id,
+                onChanged: (v) => setState(() => sourceId = v ?? ''),
+              ),
               SpecDropdown<ValvePlacement>(
                 label: t('autolay.placement'),
                 value: placement.name,
@@ -644,8 +719,27 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
   final preview = _Preview<LandscapeLayout>();
 
   String key() => [
-    familyId, headM, nozzleId, kind.name, rotation, pitchLength, pitchWidth, rows, straight, bend, greenLength, greenWidth, setback, arcMargin, useShape, teeLength, teeWidth,
-    fairwayLength, fairwayWidth, edgeParts, useLine,
+    familyId,
+    headM,
+    nozzleId,
+    kind.name,
+    rotation,
+    pitchLength,
+    pitchWidth,
+    rows,
+    straight,
+    bend,
+    greenLength,
+    greenWidth,
+    setback,
+    arcMargin,
+    useShape,
+    teeLength,
+    teeWidth,
+    fairwayLength,
+    fairwayWidth,
+    edgeParts,
+    useLine,
   ].join('|');
 
   LandscapeLayout? compute() {
@@ -655,17 +749,32 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
     final opts = LandscapeLayoutOptions(headM: headM, referenceNozzleId: nozzleId);
     return switch (kind) {
       _Template.pitch => sportsPitchLayout(
-        family: family, length: pitchLength, width: pitchWidth, rows: rows, origin: centre - Pt(pitchLength / 2, pitchWidth / 2).rotate(rot), rotationDeg: rotation, headM: headM, nozzleId: nozzleId,
+        family: family,
+        length: pitchLength,
+        width: pitchWidth,
+        rows: rows,
+        origin: centre - Pt(pitchLength / 2, pitchWidth / 2).rotate(rot),
+        rotationDeg: rotation,
+        headM: headM,
+        nozzleId: nozzleId,
       ),
       _Template.track => runningTrackInfieldLayout(family: family, straight: straight, radius: bend, center: centre, rotationDeg: rotation, options: opts),
       _Template.green => golfGreenLayout(
-        family: family, green: useShape && sel.area != null ? sel.area! : ellipseOutline(centre, greenLength, greenWidth, rotationDeg: rotation), setback: setback, headM: headM,
-        nozzleId: nozzleId, arcMarginDeg: arcMargin,
+        family: family,
+        green: useShape && sel.area != null ? sel.area! : ellipseOutline(centre, greenLength, greenWidth, rotationDeg: rotation),
+        setback: setback,
+        headM: headM,
+        nozzleId: nozzleId,
+        arcMarginDeg: arcMargin,
       ),
       _Template.tee => teeLayout(family: family, length: teeLength, width: teeWidth, center: centre, rotationDeg: rotation, options: opts),
       _Template.fairway => fairwayLayout(
-        family: family, centreline: useLine && sel.lines.isNotEmpty ? sel.lines.first : [centre - Pt.polar(fairwayLength / 2, rot), centre + Pt.polar(fairwayLength / 2, rot)],
-        width: fairwayWidth, headM: headM, nozzleId: nozzleId, edgePartCircles: edgeParts,
+        family: family,
+        centreline: useLine && sel.lines.isNotEmpty ? sel.lines.first : [centre - Pt.polar(fairwayLength / 2, rot), centre + Pt.polar(fairwayLength / 2, rot)],
+        width: fairwayWidth,
+        headM: headM,
+        nozzleId: nozzleId,
+        edgePartCircles: edgeParts,
       ),
     };
   }
@@ -678,10 +787,7 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
     final hasArea = kind == _Template.green && useShape && sel.areaEntity is AreaEntity;
     final made = c.mutate(() {
       final p = c.project;
-      final out = <Entity>[
-        ...l.toOutlets(p),
-        if (!hasArea && l.region.outline.length >= 3) AreaEntity(id: p.newId(), points: List.of(l.region.outline), name: t('tpl.${kind.name}')),
-      ];
+      final out = <Entity>[...l.toOutlets(p), if (!hasArea && l.region.outline.length >= 3) AreaEntity(id: p.newId(), points: List.of(l.region.outline), name: t('tpl.${kind.name}'))];
       p.entities.addAll(out);
       return out;
     }, label: 'hist.template');
@@ -728,7 +834,10 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
               key: ValueKey('tpl_nozzle_$familyId'),
               label: t('autolay.refNozzle'),
               value: nozzleId,
-              items: [for (final n in family.nozzles) if (n.arcDeg >= 360 - 1e-6) n],
+              items: [
+                for (final n in family.nozzles)
+                  if (n.arcDeg >= 360 - 1e-6) n,
+              ],
               labelOf: (n) => n.name,
               idOf: (n) => n.id,
               allowNull: true,
@@ -741,7 +850,10 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
               NumField(label: t('tpl.rows'), value: rows.toDouble(), decimals: 0, onChanged: (v) => setState(() => rows = v.round() <= 0 ? 0 : v.round().clamp(2, 50))),
             ],
             _Template.track => [
-              _row([size(t('tpl.straight', {'u': u.lengthLabel}), straight, (v) => straight = v), size(t('tpl.bendRadius', {'u': u.lengthLabel}), bend, (v) => bend = v)]),
+              _row([
+                size(t('tpl.straight', {'u': u.lengthLabel}), straight, (v) => straight = v),
+                size(t('tpl.bendRadius', {'u': u.lengthLabel}), bend, (v) => bend = v),
+              ]),
             ],
             _Template.green => [
               if (sel.area != null) _switch(t('tpl.useShape'), useShape, (v) => setState(() => useShape = v)),
@@ -762,21 +874,14 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
           },
           if (!fixedShape) ...[
             NumField(label: t('props.rotation'), value: rotation, decimals: 1, onChanged: (v) => setState(() => rotation = v)),
-            _note(
-              t('tpl.at', {'x': _n(u.lengthFromSi(centre.x)), 'y': _n(u.lengthFromSi(centre.y)), 's': t(atSelection ? 'tpl.atSelection' : 'tpl.atView')}),
-              color: Cad.fg54,
-            ),
+            _note(t('tpl.at', {'x': _n(u.lengthFromSi(centre.x)), 'y': _n(u.lengthFromSi(centre.y)), 's': t(atSelection ? 'tpl.atSelection' : 'tpl.atView')}), color: Cad.fg54),
           ],
         ];
         final summary = <Widget>[
           SectionTitle(t('auto.summary')),
           ...preview.status(c),
           if (l == null && preview.stale) _note(t('auto.computing'), color: Cad.fg54),
-          if (l != null && family != null) ...[
-            KV(t('rep.area'), _surface(u, l.region.area)),
-            ..._layoutSummary(c, family, l),
-            _messageBlock(_messages(c, l.messages, count: (n) => _headCount(c, n))),
-          ],
+          if (l != null && family != null) ...[KV(t('rep.area'), _surface(u, l.region.area)), ..._layoutSummary(c, family, l), _messageBlock(_messages(c, l.messages, count: (n) => _headCount(c, n)))],
         ];
         return AlertDialog(
           title: Text(t('tpl.title'), style: const TextStyle(fontSize: 15)),
@@ -848,8 +953,26 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
   final preview = _Preview<_FieldPlan>();
 
   String key() => [
-    autoDirection, directionDeg, mode.name, byFlow, maxArea, maxFlow, maxLateral, road, minWidth, centreFeed, isTape, tapeLateral, sprayLateral, tapeSpec, tapeInlet, outletSpec, nozzle,
-    headM, outletSpacing, sourceId,
+    autoDirection,
+    directionDeg,
+    mode.name,
+    byFlow,
+    maxArea,
+    maxFlow,
+    maxLateral,
+    road,
+    minWidth,
+    centreFeed,
+    isTape,
+    tapeLateral,
+    sprayLateral,
+    tapeSpec,
+    tapeInlet,
+    outletSpec,
+    nozzle,
+    headM,
+    outletSpacing,
+    sourceId,
   ].join('|');
 
   _FieldPlan? compute() {
@@ -867,8 +990,15 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
     final sub = subdivideField(
       field,
       FieldSubdivisionOptions(
-        direction: autoDirection ? longestEdgeDirection(normalizePolygon(field)) : Pt.polar(1, degToRad(directionDeg)), mode: mode, maxBlockArea: byFlow ? 0 : maxArea,
-        maxBlockFlow: byFlow ? maxFlow : 0, flowPerHectare: perHa, maxLateralLength: maxLateral, centreFeed: centreFeed, minBlockWidth: minWidth, roadWidth: road,
+        direction: autoDirection ? longestEdgeDirection(normalizePolygon(field)) : Pt.polar(1, degToRad(directionDeg)),
+        mode: mode,
+        maxBlockArea: byFlow ? 0 : maxArea,
+        maxBlockFlow: byFlow ? maxFlow : 0,
+        flowPerHectare: perHa,
+        maxLateralLength: maxLateral,
+        centreFeed: centreFeed,
+        minBlockWidth: minWidth,
+        roadWidth: road,
         pointOfConnection: _sourceOf(sources, sourceId).point,
       ),
     );
@@ -898,10 +1028,24 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
         final res = generateBlock(
           p,
           blockOptionsFor(
-            b, sub.direction, lateralSpacing: plan.lateralSpacing, isTape: isTape, tapeSpecId: tapeSpec, tapeInletHeadM: tapeInlet, outletSpecId: outletSpec, nozzleId: nozzle,
-            outletSpacing: outletSpacing, headM: headM, lateralPipeSpecId: isTape ? null : lateralPipe, submainPipeSpecId: submainPipe,
-            valveSpecId: valveSpec ?? (b.flow > 0 ? pickZoneValve(p.catalog, b.flow)?.id : s.valveSpecId), submainStub: stub, zoneName: plan.names[i], submainLabel: t('name.submain'),
-            stubLabel: t('name.stub'), lateralPrefix: t('name.lateral'),
+            b,
+            sub.direction,
+            lateralSpacing: plan.lateralSpacing,
+            isTape: isTape,
+            tapeSpecId: tapeSpec,
+            tapeInletHeadM: tapeInlet,
+            outletSpecId: outletSpec,
+            nozzleId: nozzle,
+            outletSpacing: outletSpacing,
+            headM: headM,
+            lateralPipeSpecId: isTape ? null : lateralPipe,
+            submainPipeSpecId: submainPipe,
+            valveSpecId: valveSpec ?? (b.flow > 0 ? pickZoneValve(p.catalog, b.flow)?.id : s.valveSpecId),
+            submainStub: stub,
+            zoneName: plan.names[i],
+            submainLabel: t('name.submain'),
+            stubLabel: t('name.stub'),
+            lateralPrefix: t('name.lateral'),
           ),
         );
         out.addAll(res.all);
@@ -938,19 +1082,30 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
           if (!autoDirection) NumField(label: t('auto.direction'), value: directionDeg, decimals: 1, onChanged: (v) => setState(() => directionDeg = normalizeDeg(v))),
           SegmentedButton<SubdivisionMode>(
             key: const Key('fs_mode'),
-            segments: [ButtonSegment(value: SubdivisionMode.strips, label: Text(t('subdiv.mode.strips'))), ButtonSegment(value: SubdivisionMode.grid, label: Text(t('subdiv.mode.grid')))],
+            segments: [
+              ButtonSegment(value: SubdivisionMode.strips, label: Text(t('subdiv.mode.strips'))),
+              ButtonSegment(value: SubdivisionMode.grid, label: Text(t('subdiv.mode.grid'))),
+            ],
             selected: {mode},
             onSelectionChanged: (v) => setState(() => mode = v.first),
           ),
           const SizedBox(height: 6),
           SegmentedButton<bool>(
             key: const Key('fs_limit'),
-            segments: [ButtonSegment(value: false, label: Text(t('subdiv.limit.area'))), ButtonSegment(value: true, label: Text(t('subdiv.limit.flow')))],
+            segments: [
+              ButtonSegment(value: false, label: Text(t('subdiv.limit.area'))),
+              ButtonSegment(value: true, label: Text(t('subdiv.limit.flow'))),
+            ],
             selected: {byFlow},
             onSelectionChanged: (v) => setState(() => byFlow = v.first),
           ),
           if (byFlow)
-            NumField(key: const Key('fs_max_flow'), label: t('subdiv.maxFlow', {'u': u.flowLabel}), value: u.flowFromSi(maxFlow), onChanged: (v) => setState(() => maxFlow = v > 0 ? u.flowToSi(v) : maxFlow))
+            NumField(
+              key: const Key('fs_max_flow'),
+              label: t('subdiv.maxFlow', {'u': u.flowLabel}),
+              value: u.flowFromSi(maxFlow),
+              onChanged: (v) => setState(() => maxFlow = v > 0 ? u.flowToSi(v) : maxFlow),
+            )
           else
             NumField(
               key: const Key('fs_max_area'),
@@ -963,7 +1118,10 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
           _switch(t('subdiv.centreFeed'), centreFeed, (v) => setState(() => centreFeed = v)),
           SectionTitle(t('dlg.laterals')),
           SegmentedButton<bool>(
-            segments: [ButtonSegment(value: false, label: Text(t('dlg.sprayBlock'))), ButtonSegment(value: true, label: Text(t('dlg.dripBlock')))],
+            segments: [
+              ButtonSegment(value: false, label: Text(t('dlg.sprayBlock'))),
+              ButtonSegment(value: true, label: Text(t('dlg.dripBlock'))),
+            ],
             selected: {isTape},
             onSelectionChanged: (v) => setState(() => isTape = v.first),
           ),
@@ -1016,11 +1174,29 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
               len('${t('dlg.emitterSpacing')} (${u.lengthLabel})', outletSpacing, (v) => outletSpacing = math.max(0.05, v)),
               len('${t('dlg.lateralSpacing')} (${u.lengthLabel})', sprayLateral, (v) => sprayLateral = math.max(0.1, v)),
             ]),
-            SpecDropdown<PipeSpec>(label: t('dlg.lateralPipe'), value: lateralPipe, items: cat.pipesFor(PipeUsage.lateral), labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: true, nullLabel: t('auto'), onChanged: (v) => setState(() => lateralPipe = v)),
+            SpecDropdown<PipeSpec>(
+              label: t('dlg.lateralPipe'),
+              value: lateralPipe,
+              items: cat.pipesFor(PipeUsage.lateral),
+              labelOf: (x) => x.name,
+              idOf: (x) => x.id,
+              allowNull: true,
+              nullLabel: t('auto'),
+              onChanged: (v) => setState(() => lateralPipe = v),
+            ),
           ],
           SectionTitle(t('dlg.submainValve')),
           _row([
-            SpecDropdown<PipeSpec>(label: t('dlg.submainPipe'), value: submainPipe, items: cat.pipesFor(PipeUsage.zone), labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: true, nullLabel: t('auto'), onChanged: (v) => setState(() => submainPipe = v)),
+            SpecDropdown<PipeSpec>(
+              label: t('dlg.submainPipe'),
+              value: submainPipe,
+              items: cat.pipesFor(PipeUsage.zone),
+              labelOf: (x) => x.name,
+              idOf: (x) => x.id,
+              allowNull: true,
+              nullLabel: t('auto'),
+              onChanged: (v) => setState(() => submainPipe = v),
+            ),
             SpecDropdown<ValveSpec>(
               label: t('props.valve'),
               value: valveSpec,
@@ -1063,9 +1239,13 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
               Table(
                 defaultColumnWidth: const IntrinsicColumnWidth(),
                 children: [
-                  TableRow(children: [_cell(t('subdiv.block'), bold: true), _cell(u.areaLabel, bold: true), _cell(u.flowLabel, bold: true), _cell('${t('subdiv.lateral')} (${u.lengthLabel})', bold: true)]),
+                  TableRow(
+                    children: [_cell(t('subdiv.block'), bold: true), _cell(u.areaLabel, bold: true), _cell(u.flowLabel, bold: true), _cell('${t('subdiv.lateral')} (${u.lengthLabel})', bold: true)],
+                  ),
                   for (var i = 0; i < math.min(blocks.length, 30); i++)
-                    TableRow(children: [_cell(plan.names[i]), _cell(fmt(u.areaFromSi(blocks[i].area), 2)), _cell(_n(u.flowFromSi(blocks[i].flow))), _cell(_n(u.lengthFromSi(blocks[i].lateralLength)))]),
+                    TableRow(
+                      children: [_cell(plan.names[i]), _cell(fmt(u.areaFromSi(blocks[i].area), 2)), _cell(_n(u.flowFromSi(blocks[i].flow))), _cell(_n(u.lengthFromSi(blocks[i].lateralLength)))],
+                    ),
                 ],
               ),
               if (blocks.length > 30) _note(t('subdiv.more', {'n': '${blocks.length - 30}'}), color: Cad.fg54),
@@ -1119,7 +1299,10 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
   final cat = c.project.catalog;
   final sel = _Picked(c);
   final area = sel.area;
-  final trees = [for (final e in sel.symbols) if (e.kind == SymbolKind.tree) e.position];
+  final trees = [
+    for (final e in sel.symbols)
+      if (e.kind == SymbolKind.tree) e.position,
+  ];
   var autoDirection = area != null && trees.isEmpty;
   var directionDeg = trees.isNotEmpty ? _rowDirectionDeg(trees) : (area == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(area)).angle)));
   var plantSpacing = 6.0, rowSpacing = 7.0, rowOffset = 0.0, plantOffset = 0.0, ringRadius = 0.75;
@@ -1127,7 +1310,10 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
   var drippers = 4;
   var tapeSpec = cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? '');
   var tapeInlet = cat.tape(tapeSpec)?.defaultInletHeadM ?? s.tapeInletHeadM;
-  final dripperFamilies = [for (final o in cat.outlets) if (o.enabled && o.nozzles.isNotEmpty && (o.kind == OutletKind.dripper || o.kind == OutletKind.bubbler)) o];
+  final dripperFamilies = [
+    for (final o in cat.outlets)
+      if (o.enabled && o.nozzles.isNotEmpty && (o.kind == OutletKind.dripper || o.kind == OutletKind.bubbler)) o,
+  ];
   var dripperSpec = dripperFamilies.firstOrNull?.id;
   var nozzle = dripperFamilies.firstOrNull?.nozzles.first.id;
   var headM = dripperFamilies.firstOrNull?.nozzles.first.defaultHeadM ?? 10.0;
@@ -1148,8 +1334,16 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
       area: area,
       trees: trees.isEmpty ? null : trees,
       options: TreeRingOptions(
-        direction: dir, plantSpacing: plantSpacing, rowSpacing: rowSpacing, rowOffset: rowOffset, plantOffset: plantOffset, ringRadius: ringRadius, kind: kind, drippersPerTree: drippers,
-        submainPosition: side, submainStub: stub,
+        direction: dir,
+        plantSpacing: plantSpacing,
+        rowSpacing: rowSpacing,
+        rowOffset: rowOffset,
+        plantOffset: plantOffset,
+        ringRadius: ringRadius,
+        kind: kind,
+        drippersPerTree: drippers,
+        submainPosition: side,
+        submainStub: stub,
       ),
     );
   }
@@ -1172,8 +1366,15 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
       final p = c.project;
       final zone = zoneName.trim().isEmpty ? _zoneNames(p, t('name.zone'), 1).first : zoneName.trim();
       final out = r.toEntities(
-        p, tapeSpecId: tapeSpec, tapeInletHeadM: tapeInlet, outletSpecId: dripperSpec, nozzleId: nozzle, headM: headM, valveSpecId: valveSpec ?? pickZoneValve(p.catalog, flowOf(r))?.id,
-        zoneName: zone, lateralPipeSpecId: lateralPipe,
+        p,
+        tapeSpecId: tapeSpec,
+        tapeInletHeadM: tapeInlet,
+        outletSpecId: dripperSpec,
+        nozzleId: nozzle,
+        headM: headM,
+        valveSpecId: valveSpec ?? pickZoneValve(p.catalog, flowOf(r))?.id,
+        zoneName: zone,
+        lateralPipeSpecId: lateralPipe,
       );
       p.entities.addAll(out);
       return out;
@@ -1204,14 +1405,14 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
             len(lenLabel('rings.plantSpacing'), plantSpacing, (v) => plantSpacing = math.max(0.3, v), key: const Key('tr_plant')),
             len(lenLabel('rings.rowSpacing'), rowSpacing, (v) => rowSpacing = math.max(0.3, v), key: const Key('tr_row')),
           ]),
-          if (trees.isEmpty) ...[
-            len(lenLabel('rings.rowOffset'), rowOffset, (v) => rowOffset = v, zero: true),
-            len(lenLabel('rings.plantOffset'), plantOffset, (v) => plantOffset = v, zero: true),
-          ],
+          if (trees.isEmpty) ...[len(lenLabel('rings.rowOffset'), rowOffset, (v) => rowOffset = v, zero: true), len(lenLabel('rings.plantOffset'), plantOffset, (v) => plantOffset = v, zero: true)],
           len(lenLabel('rings.radius'), ringRadius, (v) => ringRadius = v.clamp(0.05, 10).toDouble()),
           SegmentedButton<RingKind>(
             key: const Key('tr_kind'),
-            segments: [ButtonSegment(value: RingKind.dripline, label: Text(t('rings.kind.dripline'))), ButtonSegment(value: RingKind.drippers, label: Text(t('rings.kind.drippers')))],
+            segments: [
+              ButtonSegment(value: RingKind.dripline, label: Text(t('rings.kind.dripline'))),
+              ButtonSegment(value: RingKind.drippers, label: Text(t('rings.kind.drippers'))),
+            ],
             selected: {kind},
             onSelectionChanged: (v) => setState(() => kind = v.first),
           ),
@@ -1264,13 +1465,26 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
             ]),
           ],
           SectionTitle(t('dlg.submainValve')),
-          SpecDropdown<PipeSpec>(label: t('dlg.lateralPipe'), value: lateralPipe, items: cat.pipesFor(PipeUsage.lateral), labelOf: (x) => x.name, idOf: (x) => x.id, allowNull: true, nullLabel: t('auto'), onChanged: (v) => setState(() => lateralPipe = v)),
+          SpecDropdown<PipeSpec>(
+            label: t('dlg.lateralPipe'),
+            value: lateralPipe,
+            items: cat.pipesFor(PipeUsage.lateral),
+            labelOf: (x) => x.name,
+            idOf: (x) => x.id,
+            allowNull: true,
+            nullLabel: t('auto'),
+            onChanged: (v) => setState(() => lateralPipe = v),
+          ),
           _row([
             SpecDropdown<SubmainPosition>(
               label: t('dlg.submainPosition'),
               value: side.name,
               items: SubmainPosition.values,
-              labelOf: (x) => switch (x) { SubmainPosition.start => t('dlg.submainStart'), SubmainPosition.centre => t('dlg.submainCentre'), SubmainPosition.end => t('dlg.submainEnd') },
+              labelOf: (x) => switch (x) {
+                SubmainPosition.start => t('dlg.submainStart'),
+                SubmainPosition.centre => t('dlg.submainCentre'),
+                SubmainPosition.end => t('dlg.submainEnd'),
+              },
               idOf: (x) => x.name,
               onChanged: (v) => setState(() => side = SubmainPosition.values.byName(v!)),
             ),
@@ -1363,8 +1577,14 @@ Future<void> showPivotFitDialog(BuildContext context, ProjectController c) {
   PivotFit? compute() {
     if (field == null) return null;
     final o = PivotFitOptions(
-      obstacles: sel.others, pointObstacles: [for (final q in points) PointObstacle(q, clearance)], spanLengths: spans, overhangs: overhangs, minSpans: minSpans, maxSpans: maxSpans,
-      endThrowM: endThrow, minSweepDeg: minSweep,
+      obstacles: sel.others,
+      pointObstacles: [for (final q in points) PointObstacle(q, clearance)],
+      spanLengths: spans,
+      overhangs: overhangs,
+      minSpans: minSpans,
+      maxSpans: maxSpans,
+      endThrowM: endThrow,
+      minSweepDeg: minSweep,
     );
     return sector ? fitSectorPivot(field, o) : fitFullCirclePivot(field, o);
   }
@@ -1400,7 +1620,10 @@ Future<void> showPivotFitDialog(BuildContext context, ProjectController c) {
           _note(t('pfit.info', {'a': _hectares(u, LayoutRegion(field, exclusions: sel.others).area), 'n': '${sel.others.length}', 'p': '${points.length}'}), color: Cad.fg),
           SegmentedButton<bool>(
             key: const Key('pf_mode'),
-            segments: [ButtonSegment(value: false, label: Text(t('pfit.full'))), ButtonSegment(value: true, label: Text(t('pfit.sector')))],
+            segments: [
+              ButtonSegment(value: false, label: Text(t('pfit.full'))),
+              ButtonSegment(value: true, label: Text(t('pfit.sector'))),
+            ],
             selected: {sector},
             onSelectionChanged: (v) => setState(() => sector = v.first),
           ),
@@ -1433,7 +1656,8 @@ Future<void> showPivotFitDialog(BuildContext context, ProjectController c) {
             NumField(label: t('pfit.maxSpans'), value: maxSpans.toDouble(), decimals: 0, onChanged: (v) => setState(() => maxSpans = math.max(minSpans, v.round().clamp(1, 60)))),
           ]),
           NumField(label: t('pfit.endThrow', {'u': u.lengthLabel}), value: u.lengthFromSi(endThrow), onChanged: (v) => setState(() => endThrow = v < 0 ? 0 : u.lengthToSi(v))),
-          if (points.isNotEmpty) NumField(label: t('pfit.clearance', {'u': u.lengthLabel}), value: u.lengthFromSi(clearance), onChanged: (v) => setState(() => clearance = v < 0 ? 0 : u.lengthToSi(v))),
+          if (points.isNotEmpty)
+            NumField(label: t('pfit.clearance', {'u': u.lengthLabel}), value: u.lengthFromSi(clearance), onChanged: (v) => setState(() => clearance = v < 0 ? 0 : u.lengthToSi(v))),
           if (sector) NumField(label: t('pfit.minSweep'), value: minSweep, decimals: 0, onChanged: (v) => setState(() => minSweep = v.clamp(1, 360).toDouble())),
         ];
         final summary = <Widget>[

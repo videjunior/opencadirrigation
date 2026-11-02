@@ -109,8 +109,12 @@ class TransientLinkData {
   const TransientLinkData({this.celerity, this.length, this.rating, this.minRating});
 
   /// Celerity from the pipe wall by [waveCelerity] (Korteweg formula).
-  factory TransientLinkData.fromPipe({required double diameter, required double wallThickness, required PipeMaterial material, double? length, double? rating, double? minRating}) =>
-      TransientLinkData(celerity: waveCelerity(diameter: diameter, wallThickness: wallThickness, material: material), length: length, rating: rating, minRating: minRating);
+  factory TransientLinkData.fromPipe({required double diameter, required double wallThickness, required PipeMaterial material, double? length, double? rating, double? minRating}) => TransientLinkData(
+    celerity: waveCelerity(diameter: diameter, wallThickness: wallThickness, material: material),
+    length: length,
+    rating: rating,
+    minRating: minRating,
+  );
 
   /// Wave celerity a (m/s); null takes [TransientModel.defaultCelerity].
   final double? celerity;
@@ -185,7 +189,18 @@ enum DemandStopMode { ramp, orifice }
 
 /// An event of a transient simulation.
 class TransientEvent {
-  const TransientEvent._({required this.kind, required this.target, this.startTime = 0, this.motion, this.inertia, this.speedRpm = 2900, this.powerKw, this.efficiency = 0.7, this.shutoffTorqueRatio = 0.5, this.demandMode = DemandStopMode.ramp});
+  const TransientEvent._({
+    required this.kind,
+    required this.target,
+    this.startTime = 0,
+    this.motion,
+    this.inertia,
+    this.speedRpm = 2900,
+    this.powerKw,
+    this.efficiency = 0.7,
+    this.shutoffTorqueRatio = 0.5,
+    this.demandMode = DemandStopMode.ramp,
+  });
 
   /// Valve on link [linkId] closing in [closureTime] seconds (0 = at once) to
   /// [finalOpening], with the stroke [exponent] of [ValveMotion.linear], or
@@ -196,21 +211,21 @@ class TransientEvent {
   /// only near the end of its stroke, so its effective closure is much
   /// shorter than the stroke.
   factory TransientEvent.valveClosure(String linkId, {double closureTime = 0, double exponent = 1, double startTime = 0, double finalOpening = 0, List<(double, double)>? table}) => TransientEvent._(
-        kind: TransientEventKind.valveClosure,
-        target: linkId,
-        startTime: startTime,
-        motion: table != null ? ValveMotion.table([...table]..sort((a, b) => a.$1.compareTo(b.$1))) : ValveMotion.linear(time: closureTime, from: 1, to: finalOpening, exponent: exponent),
-      );
+    kind: TransientEventKind.valveClosure,
+    target: linkId,
+    startTime: startTime,
+    motion: table != null ? ValveMotion.table([...table]..sort((a, b) => a.$1.compareTo(b.$1))) : ValveMotion.linear(time: closureTime, from: 1, to: finalOpening, exponent: exponent),
+  );
 
   /// Valve on link [linkId] opening from [initialOpening] to fully open in
   /// [openingTime] seconds, or following [table] (t, τ). A closed link
   /// ([HLinkKind.closed]) opens with the loss of its device curve.
   factory TransientEvent.valveOpening(String linkId, {double openingTime = 0, double exponent = 1, double startTime = 0, double initialOpening = 0, List<(double, double)>? table}) => TransientEvent._(
-        kind: TransientEventKind.valveOpening,
-        target: linkId,
-        startTime: startTime,
-        motion: table != null ? ValveMotion.table([...table]..sort((a, b) => a.$1.compareTo(b.$1))) : ValveMotion.linear(time: openingTime, from: initialOpening, to: 1, exponent: exponent),
-      );
+    kind: TransientEventKind.valveOpening,
+    target: linkId,
+    startTime: startTime,
+    motion: table != null ? ValveMotion.table([...table]..sort((a, b) => a.$1.compareTo(b.$1))) : ValveMotion.linear(time: openingTime, from: initialOpening, to: 1, exponent: exponent),
+  );
 
   /// Power failure of the pump on link [linkId]: the set runs down with its
   /// moment of inertia [inertia] (kg·m², pump + motor + water; null =
@@ -220,18 +235,27 @@ class TransientEvent {
   /// at zero flow relative to the operating torque. The built-in check valve
   /// closes on reverse flow.
   factory TransientEvent.pumpTrip(String linkId, {double? inertia, double speedRpm = 2900, double? powerKw, double efficiency = 0.7, double shutoffTorqueRatio = 0.5, double startTime = 0}) =>
-      TransientEvent._(kind: TransientEventKind.pumpTrip, target: linkId, startTime: startTime, inertia: inertia, speedRpm: speedRpm, powerKw: powerKw, efficiency: efficiency, shutoffTorqueRatio: shutoffTorqueRatio);
+      TransientEvent._(
+        kind: TransientEventKind.pumpTrip,
+        target: linkId,
+        startTime: startTime,
+        inertia: inertia,
+        speedRpm: speedRpm,
+        powerKw: powerKw,
+        efficiency: efficiency,
+        shutoffTorqueRatio: shutoffTorqueRatio,
+      );
 
   /// The demand (and the emitters) of node [nodeId] stopping in [stopTime]
   /// seconds to [finalFactor] of the steady value: a zone valve closing as
   /// seen from the mainline.
   factory TransientEvent.demandStop(String nodeId, {double stopTime = 0, double startTime = 0, DemandStopMode mode = DemandStopMode.ramp, double finalFactor = 0}) => TransientEvent._(
-        kind: TransientEventKind.demandStop,
-        target: nodeId,
-        startTime: startTime,
-        demandMode: mode,
-        motion: ValveMotion.linear(time: stopTime, from: 1, to: finalFactor),
-      );
+    kind: TransientEventKind.demandStop,
+    target: nodeId,
+    startTime: startTime,
+    demandMode: mode,
+    motion: ValveMotion.linear(time: stopTime, from: 1, to: finalFactor),
+  );
 
   final TransientEventKind kind;
 
@@ -262,7 +286,8 @@ class TransientEvent {
 /// plain air/vacuum valve, smaller for an anti-slam exhaust). The air
 /// admitted forms an isothermal pocket at the node (Wylie & Streeter 1993).
 class AirValve {
-  const AirValve({required this.nodeId, required this.inflowDiameter, double? outflowDiameter, this.inflowCd = 0.6, this.outflowCd = 0.6, this.elevation}) : outflowDiameter = outflowDiameter ?? inflowDiameter;
+  const AirValve({required this.nodeId, required this.inflowDiameter, double? outflowDiameter, this.inflowCd = 0.6, this.outflowCd = 0.6, this.elevation})
+    : outflowDiameter = outflowDiameter ?? inflowDiameter;
   final String nodeId;
 
   /// Orifice diameters (m).
@@ -282,7 +307,17 @@ class AirValve {
 /// an orifice with different loss coefficients for inflow and outflow
 /// (Wylie & Streeter 1993; Chaudhry 2014).
 class SurgeVessel {
-  const SurgeVessel({required this.nodeId, required this.gasVolume, this.totalVolume, this.polytropicExponent = 1.2, this.connectionDiameter = 0.1, this.inflowLossK = 2.5, this.outflowLossK = 1.0, this.area, this.elevation});
+  const SurgeVessel({
+    required this.nodeId,
+    required this.gasVolume,
+    this.totalVolume,
+    this.polytropicExponent = 1.2,
+    this.connectionDiameter = 0.1,
+    this.inflowLossK = 2.5,
+    this.outflowLossK = 1.0,
+    this.area,
+    this.elevation,
+  });
   final String nodeId;
 
   /// Gas volume in the steady state (m³).
@@ -405,7 +440,19 @@ class TransientOptions {
 
 /// Envelope of a node.
 class TransientNodeEnvelope {
-  const TransientNodeEnvelope({required this.nodeId, required this.elevation, required this.steadyHead, required this.maxHead, required this.minHead, required this.timeOfMax, required this.timeOfMin, this.maxCavityVolume = 0, this.maxAirVolume = 0, this.minGasVolume = 0, this.maxGasVolume = 0});
+  const TransientNodeEnvelope({
+    required this.nodeId,
+    required this.elevation,
+    required this.steadyHead,
+    required this.maxHead,
+    required this.minHead,
+    required this.timeOfMax,
+    required this.timeOfMin,
+    this.maxCavityVolume = 0,
+    this.maxAirVolume = 0,
+    this.minGasVolume = 0,
+    this.maxGasVolume = 0,
+  });
   final String nodeId;
   final double elevation;
   final double steadyHead;
@@ -980,7 +1027,16 @@ class _Simulation {
       var ok = false;
       final n = net.nodes[id];
       final at = pipeAt[id];
-      if (n != null && n.kind == HNodeKind.junction && at != null && at.length == 2 && (elemCount[id] ?? 0) == 0 && n.demand == 0 && (n.emitter == null || n.emitterCount <= 0) && !_airAt.containsKey(id) && !_vesselAt.containsKey(id) && !_demandEv.containsKey(id)) {
+      if (n != null &&
+          n.kind == HNodeKind.junction &&
+          at != null &&
+          at.length == 2 &&
+          (elemCount[id] ?? 0) == 0 &&
+          n.demand == 0 &&
+          (n.emitter == null || n.emitterCount <= 0) &&
+          !_airAt.containsKey(id) &&
+          !_vesselAt.containsKey(id) &&
+          !_demandEv.containsKey(id)) {
         final a = pipes[at[0]], b = pipes[at[1]];
         ok = (a.diameter - b.diameter).abs() <= 1e-9 * math.max(a.diameter, b.diameter) && (a.celerity - b.celerity).abs() <= 1e-9 * math.max(a.celerity, b.celerity);
       }
@@ -1799,7 +1855,8 @@ class _Simulation {
     final pMin = waterDensity * gravity * math.max(o.vapourHead, 1e-3);
     final p = math.max(waterDensity * gravity * (hh - a.z + o.barometricHead), pMin);
     final temp = o.airTemperature;
-    double flowAt(double p) => p < pa ? airOrificeMassFlow(cdArea: a.cdaIn, upstream: pa, downstream: p, temperature: temp) : -airOrificeMassFlow(cdArea: a.cdaOut, upstream: p, downstream: pa, temperature: temp);
+    double flowAt(double p) =>
+        p < pa ? airOrificeMassFlow(cdArea: a.cdaIn, upstream: pa, downstream: p, temperature: temp) : -airOrificeMassFlow(cdArea: a.cdaOut, upstream: p, downstream: pa, temperature: temp);
     // the orifice flow grows with √Δp, infinitely steep at Δp = 0, where
     // Newton steps went back and forth for ever: within 1 mm of water of
     // the atmospheric pressure it is interpolated linearly

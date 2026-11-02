@@ -11,7 +11,11 @@ import 'package:opencadirrigation/core/units.dart';
 const _excludedStart = 17 * 60, _excludedEnd = 21 * 60 + 30;
 
 /// Flat price 1.0 with the Brazilian discount of Group B, other regions (60 %).
-TariffSeason _flat({int blocks = 3}) => TariffSeason(id: 'flat', basePricePerKwh: 1, discount: IrrigationDiscount(fraction: 0.6, maxBlocks: blocks));
+TariffSeason _flat({int blocks = 3}) => TariffSeason(
+  id: 'flat',
+  basePricePerKwh: 1,
+  discount: IrrigationDiscount(fraction: 0.6, maxBlocks: blocks),
+);
 
 void _checkBlocks(TariffSchedule s, {int maxBlocks = 3, int window = 510}) {
   expect(s.blocks.length, lessThanOrEqualTo(maxBlocks));
@@ -143,7 +147,9 @@ void main() {
   test('exact against a brute force over every start and block choice', () {
     double price(int m) => m >= 1080 && m < 1260 ? 3.0 : (m >= 360 && m < 1020 ? 1.0 : 0.8);
     final season = TariffSeason(
-      id: 'tou', basePricePerKwh: 0.8, bands: const [TariffBand(startMinute: 360, endMinute: 1020, pricePerKwh: 1.0), TariffBand(startMinute: 1080, endMinute: 1260, pricePerKwh: 3.0, peak: true)],
+      id: 'tou',
+      basePricePerKwh: 0.8,
+      bands: const [TariffBand(startMinute: 360, endMinute: 1020, pricePerKwh: 1.0), TariffBand(startMinute: 1080, endMinute: 1260, pricePerKwh: 3.0, peak: true)],
       discount: IrrigationDiscount.brazil(BrazilConsumerGroup.a, BrazilDiscountRegion.others),
     );
     for (final jobs in const [
@@ -151,7 +157,11 @@ void main() {
       [(15.0, 20), (40.0, 6)],
       [(30.0, 17), (30.0, 17)],
     ]) {
-      final s = scheduleJobs([for (var i = 0; i < jobs.length; i++) TariffJob(id: 'j$i', hours: jobs[i].$2 / 2, powerKw: jobs[i].$1)], season, options: const ScheduleOptions(stepMinutes: 30));
+      final s = scheduleJobs(
+        [for (var i = 0; i < jobs.length; i++) TariffJob(id: 'j$i', hours: jobs[i].$2 / 2, powerKw: jobs[i].$1)],
+        season,
+        options: const ScheduleOptions(stepMinutes: 30),
+      );
       expect(s.exact, isTrue);
       expect(s.energyCost, closeTo(_bruteForce(jobs, price, 0.7), 1e-6), reason: '$jobs');
       _checkBlocks(s);
@@ -171,7 +181,13 @@ void main() {
   });
 
   test('peak demand charge: the small job takes the peak', () {
-    const season = TariffSeason(basePricePerKwh: 1, bands: [TariffBand(startMinute: 1080, endMinute: 1260, pricePerKwh: 1, peak: true)], demandChargePerKw: 15, peakDemandChargePerKw: 30, daysPerMonth: 30);
+    const season = TariffSeason(
+      basePricePerKwh: 1,
+      bands: [TariffBand(startMinute: 1080, endMinute: 1260, pricePerKwh: 1, peak: true)],
+      demandChargePerKw: 15,
+      peakDemandChargePerKw: 30,
+      daysPerMonth: 30,
+    );
     final s = scheduleJobs(const [TariffJob(id: 'A', hours: 10, powerKw: 30), TariffJob(id: 'B', hours: 12, powerKw: 5)], season);
     expect(s.energyCost, closeTo(360, 1e-9));
     expect(s.demandCost, closeTo(15 + 5, 1e-9));
@@ -180,21 +196,39 @@ void main() {
   });
 
   test('precedences, limits and impossible days', () {
-    final s = scheduleJobs(const [TariffJob(id: 'A', hours: 5, powerKw: 10), TariffJob(id: 'B', hours: 2, powerKw: 50, after: {'A'})], _flat());
+    final s = scheduleJobs(const [
+      TariffJob(id: 'A', hours: 5, powerKw: 10),
+      TariffJob(id: 'B', hours: 2, powerKw: 50, after: {'A'}),
+    ], _flat());
     final a = s.jobs.firstWhere((j) => j.id == 'A'), b = s.jobs.firstWhere((j) => j.id == 'B');
     expect((b.startMinute - 1290) % 1440, greaterThanOrEqualTo((a.startMinute - 1290) % 1440 + a.minutes - 1e-9));
     expect(s.energyCost, closeTo((50 + 100) * 0.4, 1e-9));
-    final cyc = scheduleJobs(const [TariffJob(id: 'A', hours: 1, powerKw: 1, after: {'B'}), TariffJob(id: 'B', hours: 1, powerKw: 1, after: {'A', 'Z'})], _flat());
+    final cyc = scheduleJobs(const [
+      TariffJob(id: 'A', hours: 1, powerKw: 1, after: {'B'}),
+      TariffJob(id: 'B', hours: 1, powerKw: 1, after: {'A', 'Z'}),
+    ], _flat());
     expect(cyc.violations, containsAll(['tariff_precedence_cycle', 'tariff_unknown_job:Z']));
-    final hours = scheduleJobs(const [TariffJob(id: 'A', hours: 7, powerKw: 1), TariffJob(id: 'B', hours: 5, powerKw: 1)], _flat(), options: const ScheduleOptions(maxHoursPerDay: 10));
+    final hours = scheduleJobs(
+      const [TariffJob(id: 'A', hours: 7, powerKw: 1), TariffJob(id: 'B', hours: 5, powerKw: 1)],
+      _flat(),
+      options: const ScheduleOptions(maxHoursPerDay: 10),
+    );
     expect(hours.violations, contains('tariff_hours_exceeded'));
     final full = scheduleJobs(const [TariffJob(id: 'A', hours: 13, powerKw: 1), TariffJob(id: 'B', hours: 12, powerKw: 1), TariffJob(id: 'C', hours: 0, powerKw: 1)], _flat());
     expect(full.violations, containsAll(['tariff_day_overfull', 'tariff_job_empty:C']));
     expect(full.exact, isFalse);
     expect(full.jobs.length, 2);
-    final blocked = scheduleJobs(const [TariffJob(id: 'A', hours: 3, powerKw: 1)], _flat(), options: const ScheduleOptions(noRunIntervals: [(0, 1200)]));
+    final blocked = scheduleJobs(
+      const [TariffJob(id: 'A', hours: 3, powerKw: 1)],
+      _flat(),
+      options: const ScheduleOptions(noRunIntervals: [(0, 1200)]),
+    );
     expect(blocked.violations, contains('tariff_job_blocked:A'));
-    final order = scheduleJobs(const [TariffJob(id: 'A', hours: 2, powerKw: 1), TariffJob(id: 'B', hours: 2, powerKw: 100)], _flat(), options: const ScheduleOptions(keepOrder: true));
+    final order = scheduleJobs(
+      const [TariffJob(id: 'A', hours: 2, powerKw: 1), TariffJob(id: 'B', hours: 2, powerKw: 100)],
+      _flat(),
+      options: const ScheduleOptions(keepOrder: true),
+    );
     expect(order.jobs.map((j) => j.id), ['A', 'B']);
   });
 
@@ -206,7 +240,8 @@ void main() {
     expect(many.energyCost, closeTo(6.5 * 10 * 0.4, 1e-9));
     // against every order on four jobs of different powers
     final season = TariffSeason(
-      basePricePerKwh: 0.8, bands: const [TariffBand(startMinute: 360, endMinute: 1020, pricePerKwh: 1.0), TariffBand(startMinute: 1080, endMinute: 1260, pricePerKwh: 3.0, peak: true)],
+      basePricePerKwh: 0.8,
+      bands: const [TariffBand(startMinute: 360, endMinute: 1020, pricePerKwh: 1.0), TariffBand(startMinute: 1080, endMinute: 1260, pricePerKwh: 3.0, peak: true)],
       discount: IrrigationDiscount.brazil(BrazilConsumerGroup.b, BrazilDiscountRegion.others),
     );
     const jobs = [TariffJob(id: 'a', hours: 4, powerKw: 12), TariffJob(id: 'b', hours: 3.5, powerKw: 40), TariffJob(id: 'c', hours: 6, powerKw: 8), TariffJob(id: 'd', hours: 2.5, powerKw: 25)];
@@ -231,7 +266,10 @@ void main() {
   });
 
   test('seasons and the jobs of a design', () {
-    final t = Tariff([TariffSeason(id: 'dry', months: const {6, 7, 8}, basePricePerKwh: 1), TariffSeason(id: 'rest', basePricePerKwh: 0.5)]);
+    final t = Tariff([
+      TariffSeason(id: 'dry', months: const {6, 7, 8}, basePricePerKwh: 1),
+      TariffSeason(id: 'rest', basePricePerKwh: 0.5),
+    ]);
     expect(t.seasonFor(7)!.id, 'dry');
     expect(t.seasonFor(1)!.id, 'rest');
     final back = Tariff.fromJson(jsonDecode(jsonEncode(t.toJson())) as Map<String, dynamic>);
@@ -240,11 +278,20 @@ void main() {
     expect([for (final s in all) s.energyCost], [closeTo(6, 1e-9), closeTo(3, 1e-9)]);
     final p = Project()..systemFlows.add(SystemFlow(id: 'f1', name: 'F1', valveIds: {'v'}, startHour: 7, durationHours: 3));
     final r = DesignResults(timestamp: DateTime(2026))
-      ..systemFlows.add(SystemFlowResult(
-        flowId: 'f1', name: 'F1', converged: true, totalFlow: 0.01, durationHours: 3, pipes: const [], devices: const [], warnings: const [],
-        supplies: [SupplyDuty(supplyId: 's', name: 's', flow: 0.01, head: 40, requiredHead: 40, elevation: 0, calculated: true)],
-        valves: [ValveDuty(valveId: 'v', zoneName: 'v', flow: 0.01, availableHead: 20, requiredHead: 20, p: Pt.zero)],
-      ));
+      ..systemFlows.add(
+        SystemFlowResult(
+          flowId: 'f1',
+          name: 'F1',
+          converged: true,
+          totalFlow: 0.01,
+          durationHours: 3,
+          pipes: const [],
+          devices: const [],
+          warnings: const [],
+          supplies: [SupplyDuty(supplyId: 's', name: 's', flow: 0.01, head: 40, requiredHead: 40, elevation: 0, calculated: true)],
+          valves: [ValveDuty(valveId: 'v', zoneName: 'v', flow: 0.01, availableHead: 20, requiredHead: 20, p: Pt.zero)],
+        ),
+      );
     final jobs = tariffJobsFromDesign(p, r);
     expect(jobs.single.id, 'f1');
     expect(jobs.single.hours, 3);

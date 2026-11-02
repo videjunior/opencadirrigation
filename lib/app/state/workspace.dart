@@ -84,11 +84,26 @@ class ClipboardPayload {
       entities: ents.map((e) => e.toJson()).toList(),
       layers: {for (final e in ents) e.layer: p.layerNamed(e.layer).color},
       catalog: {
-        'pipes': [for (final id in pipes) if (cat.pipe(id) != null) cat.pipe(id)!.toJson()],
-        'outlets': [for (final id in outlets) if (cat.outlet(id) != null) cat.outlet(id)!.toJson()],
-        'tapes': [for (final id in tapes) if (cat.tape(id) != null) cat.tape(id)!.toJson()],
-        'valves': [for (final id in valves) if (cat.valve(id) != null) cat.valve(id)!.toJson()],
-        'pumps': [for (final id in pumps) if (cat.pump(id) != null) cat.pump(id)!.toJson()],
+        'pipes': [
+          for (final id in pipes)
+            if (cat.pipe(id) != null) cat.pipe(id)!.toJson(),
+        ],
+        'outlets': [
+          for (final id in outlets)
+            if (cat.outlet(id) != null) cat.outlet(id)!.toJson(),
+        ],
+        'tapes': [
+          for (final id in tapes)
+            if (cat.tape(id) != null) cat.tape(id)!.toJson(),
+        ],
+        'valves': [
+          for (final id in valves)
+            if (cat.valve(id) != null) cat.valve(id)!.toJson(),
+        ],
+        'pumps': [
+          for (final id in pumps)
+            if (cat.pump(id) != null) cat.pump(id)!.toJson(),
+        ],
       },
     );
   }

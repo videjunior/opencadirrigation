@@ -20,10 +20,46 @@ void main() {
   });
 
   test('what a start needs is kept; the site files stay on the network', () {
-    for (final p in ['index.html', 'flutter_bootstrap.js', 'main.dart.js', 'main.dart.js_1.part.js', 'design_worker.js', 'offline.js', 'manifest.json', 'favicon.ico', 'favicon-32.png', 'icons/Icon-192.png', 'assets/FontManifest.json', 'assets/assets/i18n/de.json', 'assets/assets/fonts/NotoSansJP-Regular.ttf', 'assets/fonts/fallback/Roboto-Regular.ttf', 'assets/catalogs/index.json', 'brand/logo-horizontal-520.webp']) {
+    for (final p in [
+      'index.html',
+      'flutter_bootstrap.js',
+      'main.dart.js',
+      'main.dart.js_1.part.js',
+      'design_worker.js',
+      'offline.js',
+      'manifest.json',
+      'favicon.ico',
+      'favicon-32.png',
+      'icons/Icon-192.png',
+      'assets/FontManifest.json',
+      'assets/assets/i18n/de.json',
+      'assets/assets/fonts/NotoSansJP-Regular.ttf',
+      'assets/fonts/fallback/Roboto-Regular.ttf',
+      'assets/catalogs/index.json',
+      'brand/logo-horizontal-520.webp',
+    ]) {
       expect(isShellPath(p), isTrue, reason: p);
     }
-    for (final p in ['pt/index.html', 'en/index.html', '404.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'flutter.js', 'flutter_service_worker.js', 'sw.js', 'version.json', 'canvaskit/canvaskit.wasm', 'canvaskit/chromium/canvaskit.js', 'screenshots/design-720.webp', 'og-image.png', 'brand/logo-square.png', '.DS_Store', 'assets/.DS_Store', 'CNAME']) {
+    for (final p in [
+      'pt/index.html',
+      'en/index.html',
+      '404.html',
+      'robots.txt',
+      'sitemap.xml',
+      'llms.txt',
+      'flutter.js',
+      'flutter_service_worker.js',
+      'sw.js',
+      'version.json',
+      'canvaskit/canvaskit.wasm',
+      'canvaskit/chromium/canvaskit.js',
+      'screenshots/design-720.webp',
+      'og-image.png',
+      'brand/logo-square.png',
+      '.DS_Store',
+      'assets/.DS_Store',
+      'CNAME',
+    ]) {
       expect(isShellPath(p), isFalse, reason: p);
     }
   });

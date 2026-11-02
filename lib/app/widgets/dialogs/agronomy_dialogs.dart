@@ -473,13 +473,31 @@ Future<void> showWaterBudgetDialog(BuildContext context, ProjectController c) {
                     Table(
                       defaultColumnWidth: const IntrinsicColumnWidth(),
                       children: [
-                        TableRow(children: [_cell(t('rep.area'), bold: true), _cell('mm/h', bold: true), _cell('mm', bold: true), _cell(t('wb.cycles'), bold: true), _cell(t('wb.runMin'), bold: true), _cell(t('wb.soakMin'), bold: true)]),
+                        TableRow(
+                          children: [
+                            _cell(t('rep.area'), bold: true),
+                            _cell('mm/h', bold: true),
+                            _cell('mm', bold: true),
+                            _cell(t('wb.cycles'), bold: true),
+                            _cell(t('wb.runMin'), bold: true),
+                            _cell(t('wb.soakMin'), bold: true),
+                          ],
+                        ),
                         for (final a in areas)
                           if (requirements[a.id] case final r?)
                             if (soilTable[a.soilKey] case final soil? when r.precipitationMmH > 0 && r.grossDepthMm > 0)
                               () {
                                 final cs = cycleAndSoakForSoil(precipitationRateMmH: r.precipitationMmH, depthMm: r.grossDepthMm, texture: soil.texture, slopePct: a.slopePct);
-                                return TableRow(children: [_cell(a.name.isNotEmpty ? a.name : a.id), _cell(fmt(r.precipitationMmH, 1)), _cell(fmt(r.grossDepthMm, 1)), _cell('${cs.cycles}'), _cell(fmt(cs.runMinutesPerCycle, 0)), _cell(cs.cycles > 1 ? fmt(cs.soakMinutes, 0) : '-')]);
+                                return TableRow(
+                                  children: [
+                                    _cell(a.name.isNotEmpty ? a.name : a.id),
+                                    _cell(fmt(r.precipitationMmH, 1)),
+                                    _cell(fmt(r.grossDepthMm, 1)),
+                                    _cell('${cs.cycles}'),
+                                    _cell(fmt(cs.runMinutesPerCycle, 0)),
+                                    _cell(cs.cycles > 1 ? fmt(cs.soakMinutes, 0) : '-'),
+                                  ],
+                                );
                               }(),
                       ],
                     ),

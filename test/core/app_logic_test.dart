@@ -33,7 +33,8 @@ import 'package:opencadirrigation/core/model/geometry.dart';
 /// A runner whose design always fails.
 class FailingRunner implements DesignRunner {
   @override
-  Future<DesignResponse> run(DesignRequest request, {void Function(DesignProgress progress)? onProgress, void Function(String mode)? onMode, Future<void> Function()? yieldControl}) async => throw DesignJobException('boom');
+  Future<DesignResponse> run(DesignRequest request, {void Function(DesignProgress progress)? onProgress, void Function(String mode)? onMode, Future<void> Function()? yieldControl}) async =>
+      throw DesignJobException('boom');
 
   @override
   void dispose() {}
@@ -291,7 +292,9 @@ void main() {
       ProjectController.demUrlLoader = (url) async {
         calls++;
         final lats = Uri.parse(url).queryParameters['latitude']!.split(',');
-        return jsonEncode({'elevation': [for (var i = 0; i < lats.length; i++) i % 5 == 0 ? null : 600 + i * 0.1]});
+        return jsonEncode({
+          'elevation': [for (var i = 0; i < lats.length; i++) i % 5 == 0 ? null : 600 + i * 0.1],
+        });
       };
       try {
         final r = await c.importOnlineDem(DemSource.openMeteo, spacing: 25);
@@ -346,7 +349,8 @@ void main() {
 
     test('DXF polylines with an elevation become contours, scaled to metres', () {
       final c = fresh();
-      const dxf = '0\nSECTION\n2\nHEADER\n9\n\$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n'
+      const dxf =
+          '0\nSECTION\n2\nHEADER\n9\n\$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n'
           '0\nLWPOLYLINE\n8\nOBRA\n90\n3\n70\n0\n38\n105000\n10\n0\n20\n0\n10\n1000\n20\n0\n10\n2000\n20\n500\n'
           '0\nLWPOLYLINE\n8\nOBRA\n90\n2\n70\n0\n38\n106000\n10\n0\n20\n0\n10\n1000\n20\n0\n'
           '0\nLWPOLYLINE\n8\nCURVAS\n90\n2\n70\n0\n38\n107000\n10\n0\n20\n1000\n10\n1000\n20\n1000\n0\nENDSEC\n0\nEOF\n';

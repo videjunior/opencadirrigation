@@ -255,7 +255,7 @@ void main() {
       final arc = Archive()
         ..addFile(ArchiveFile('curvas.shp', shp.length, shp))
         ..addFile(ArchiveFile('curvas.dbf', dbf.length, dbf.toBytes()))
-        ..addFile(ArchiveFile('curvas.prj', 10, 'PROJCS["WGS 84 / UTM zone 23S"]'.codeUnits));
+        ..addFile(ArchiveFile('curvas.prj', 31, 'PROJCS["WGS 84 / UTM zone 23S"]'.codeUnits));
       final zip = Uint8List.fromList(ZipEncoder().encode(arc));
       final r = ShpReader.parseAny('curvas.zip', zip);
       expect(r.recordCount, 1);

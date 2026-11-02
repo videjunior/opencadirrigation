@@ -40,7 +40,10 @@ void main() {
 
   test('unique, well-formed GlobalIds', () {
     // the first attribute of every rooted instance (objects, relations, property sets)
-    final rooted = RegExp(r"^#\d+=(IFCPROJECT|IFCSITE|IFCREL[A-Z]+|IFCPROPERTYSET|IFCPIPESEGMENT|IFCFLOWTERMINAL|IFCVALVE|IFCFILTER|IFCFLOWMETER|IFCPUMP|IFCTANK|IFCDISTRIBUTIONSYSTEM)\('([^']*)'", multiLine: true);
+    final rooted = RegExp(
+      r"^#\d+=(IFCPROJECT|IFCSITE|IFCREL[A-Z]+|IFCPROPERTYSET|IFCPIPESEGMENT|IFCFLOWTERMINAL|IFCVALVE|IFCFILTER|IFCFLOWMETER|IFCPUMP|IFCTANK|IFCDISTRIBUTIONSYSTEM)\('([^']*)'",
+      multiLine: true,
+    );
     final ids = rooted.allMatches(x.text).map((m) => m.group(2)!).toList();
     for (final g in ids) {
       expect(RegExp(r'^[0-3][0-9A-Za-z_$]{21}$').hasMatch(g), isTrue, reason: g);

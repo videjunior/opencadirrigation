@@ -10,17 +10,32 @@ part of '../site.dart';
 
 /// Short facts, as `(label, value)`, shared by both files.
 List<(String, String)> _facts() => [
-  ('What', 'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports, and an optional AI assistant (Claude or GPT, with the user\'s own key) that draws and designs the project with the program\'s own tools'),
+  (
+    'What',
+    'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports, and an optional AI assistant (Claude or GPT, with the user\'s own key) that draws and designs the project with the program\'s own tools',
+  ),
   ('Price', 'Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user\'s own Anthropic or OpenAI account, which that provider bills'),
   ('Licence', 'Open source under the MIT licence; source code (Dart and Flutter) at $appRepositoryUrl'),
   ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download'),
-  ('Privacy', 'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key; its voice dictation, when used, goes through the browser\'s own speech recognition (the browser maker\'s service), and saved conversations stay in that browser'),
+  (
+    'Privacy',
+    'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key; its voice dictation, when used, goes through the browser\'s own speech recognition (the browser maker\'s service), and saved conversations stay in that browser',
+  ),
   ('Languages', '${siteLanguages.length}: ${[for (final l in siteLanguages) _englishNames[l.code]].join(', ')}'),
   ('Project file', '`.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results'),
-  ('CAD, GIS and survey exchange', 'Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4'),
+  (
+    'CAD, GIS and survey exchange',
+    'Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4',
+  ),
   ('Reports', 'PDF in any of the 20 languages, Excel (XLSX), CSV and TXT'),
-  ('AI assistant', 'Optional: a Claude (Anthropic) or GPT (OpenAI) model with the user\'s own API key, called from the browser with no server in between; it reads the project, looks at the satellite image and the terrain, outlines fields on the imagery, follows the points the user marks on the map and, with the program\'s own tools, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the design, fixes warnings, optimises, reviews the design, checks drawing sheets before export and writes the report; every change waits for the user\'s approval (or applies automatically) and can be undone; open it at $siteUrl?ai=1'),
-  ('Command line and API', '`bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md]($appRepositoryUrl/blob/main/docs/API.md))'),
+  (
+    'AI assistant',
+    'Optional: a Claude (Anthropic) or GPT (OpenAI) model with the user\'s own API key, called from the browser with no server in between; it reads the project, looks at the satellite image and the terrain, outlines fields on the imagery, follows the points the user marks on the map and, with the program\'s own tools, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the design, fixes warnings, optimises, reviews the design, checks drawing sheets before export and writes the report; every change waits for the user\'s approval (or applies automatically) and can be undone; open it at $siteUrl?ai=1',
+  ),
+  (
+    'Command line and API',
+    '`bin/oci.dart` designs, analyses, checks and exports `.oci.json` projects and lists their materials; the engine is a documented Dart library ([docs/API.md]($appRepositoryUrl/blob/main/docs/API.md))',
+  ),
   ('Version', '$appVersion, updated $siteLastMod'),
   ('Site', siteUrl),
 ];
@@ -66,7 +81,7 @@ const _reference = [
 - Review: `/review`, or the tile at the start of a conversation, runs a read-only review whatever the mode: the assistant looks at the zones, the messages and the pressures over the drawing, reads the messages and the report tables and answers with a checklist (OK, attention or problem, with the figures and where to fix each point), changing nothing.
 - Control: read only; plan first; ask before each change (the default, with Apply and Skip); or apply changes automatically (saving files, the georeference and large deletions are always confirmed). The user can type while it works and stop it at any time; the changes of each answer can be undone in one click, and every message has "Rewind to here". After an error or a stop the answer offers Try again (the same message, when nothing of it reached the model) or Continue; approving a plan to run automatically applies to that task only. A task ends at its step limit (50 by default) or at its spending cap (2 US dollars by default, with Continue). Long conversations are summarised on the provider's side.
 - What is sent, and when: nothing before the user presses Send; then the message, any attached files, the project data the user ticks, the earlier messages of the conversation and the program's instructions; while answering, the results of the tools it uses, pictures included. Voice dictation sends the sound of the voice to the browser's speech service (Chrome uses Google's servers, Edge Microsoft's and Safari Apple's), which returns the text; the app neither records nor keeps the audio. Conversations are kept in the browser's storage by project (the 12 most recent, never the keys; a setting turns this off and deletes them), so a reload brings them back, but they are not saved with the project, so shared files and links never carry them; a pinned field photo is kept in the project file and left out of share links.
-- The provider bills the use to the user's account. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.'''
+- The provider bills the use to the user's account. The key stays in memory for the session unless the user chooses to remember it on the device; it never goes into project files, autosave, share links or exports.''',
   ),
   (
     'Design workflow',
@@ -77,7 +92,7 @@ const _reference = [
 5. **Management**: system flows, i.e. which valves, valve-in-head stations and pivots open together, with start time and duration; grouped automatically within the supply flow, for the least pumping energy or around a time-of-use tariff.
 6. **Check**: unconnected items, pipes crossing without a junction, dead ends, zones without emitters or mixing emitter families, missing catalogue items, missing terrain.
 7. **Design (F5)**: zones, mainline, telescoping, flushing, water hammer, valve wiring and materials; or only zones, only the mainline, or an analysis of the current diameters (also automatically while editing). Further studies on demand: hydraulic transients, the 24-hour simulation, air valves, fertigation, on-demand operation, pipe criticality, roughness calibration, pump selection and design alternatives compared side by side.
-8. **Reports and plotting**: reports panel, PDF sheet sets with title block, legend, north arrow, scale bar, bill of materials, construction details, charts and revision table, a commercial quote, and exports to other CAD, GIS, survey and BIM programs, to EPANET and to spreadsheets.'''
+8. **Reports and plotting**: reports panel, PDF sheet sets with title block, legend, north arrow, scale bar, bill of materials, construction details, charts and revision table, a commercial quote, and exports to other CAD, GIS, survey and BIM programs, to EPANET and to spreadsheets.''',
   ),
   (
     'Hydraulic engine',
@@ -91,7 +106,7 @@ const _reference = [
 - Uniformity: Christiansen CU, low-quarter DU, Keller-Karmeli emission uniformity EU (with the manufacturing CV and emitters per plant), statistical uniformity and flow variation; overlap CU for sprinklers with a wetted radius; a densogram adds up the water every sprinkler applies as drawn (arc, orientation and design pressure) and gives the rate map with CU, DU and the scheduling coefficient per irrigated area.
 - Water hammer in the design step: wave celerity from pipe material and wall, Joukowsky surge, critical time 2L/a and comparison with the pipe pressure class, including the valve closure time. The full transient analysis is described below.
 - Flushing of drip tapes with open ends at the flushing velocity (0.3 m/s and 1 m end pressure by default).
-- The calculation runs in a Web Worker, off the interface thread.'''
+- The calculation runs in a Web Worker, off the interface thread.''',
   ),
   (
     'Transients and extended-period simulation',
@@ -99,7 +114,7 @@ const _reference = [
 - Every pipe takes its wave celerity from its wall and material (Korteweg) and its pressure class at the water temperature; vapour cavities by the discrete vapour cavity model; the air valves drawn on the mainline act as combination air valves; surge vessels; the barometric head follows the site elevation.
 - Results: head and pressure envelopes per pipe against the class and against vacuum, the profile along the critical path, the pressure in time at the pump and at the worst point, and findings explained by the design assistant.
 - Air valves placed and sized along the mainline profile after AWWA Manual M51: high points, changes of slope, long runs, pump discharges and the points where the grade line or the transient minimum comes close to the pipe.
-- A 24-hour extended-period simulation with time steps as in EPANET: tanks, the system flows at their start hours, pumps on while their flows run, pressures in time, and the energy and its cost at a time-of-use tariff.'''
+- A 24-hour extended-period simulation with time steps as in EPANET: tanks, the system flows at their start hours, pumps on while their flows run, pressures in time, and the energy and its cost at a time-of-use tariff.''',
   ),
   (
     'Pipe sizing and optimisation',
@@ -111,7 +126,7 @@ const _reference = [
 - The mainline is sized over all system flows with the energy weighted by the operating hours of each, with pump operating points and supply duties (flow, available and required pressure, deficit, annual energy).
 - Economics: interest rate, term, energy tariff (also by time of use), pump efficiency and operating hours; costs in the currency of the user's region.
 - **Pump selection**: the catalogue pumps ranked for the duty of each water supply, suitable ones first, then by life-cycle cost.
-- **Design assistant**: every problem explained (what happened, why it matters, how to fix it), impossible settings detected, one-click corrections, *Fix automatically* and *Optimise design* (lowest annual cost that meets every requirement, kept only when it improves).'''
+- **Design assistant**: every problem explained (what happened, why it matters, how to fix it), impossible settings detected, one-click corrections, *Fix automatically* and *Optimise design* (lowest annual cost that meets every requirement, kept only when it improves).''',
   ),
   (
     'Automatic design',
@@ -121,7 +136,7 @@ const _reference = [
 - **Field subdivision**: an agricultural field cut into blocks of equal net area, by area or by flow, as strips or a grid, with service roads; every block is ready for the lateral-block generator.
 - **Orchard drip rings** around every tree, and **sports and golf templates** (football pitch, running-track infield, green, tee and fairway).
 - **Pivot fit**: the largest full-circle pivot, or the part-circle pivot that irrigates the most, that fits a field and its obstacles, from standard span lengths.
-- **Vegetation detection** in aerial imagery (the satellite base map in view or an aerial photo in the drawing), on the device with no online service: lawns and trees or shrubs found by an excess-green index with an automatic threshold, outlined and simplified into irrigated areas with agronomic presets, plus exclusion outlines.'''
+- **Vegetation detection** in aerial imagery (the satellite base map in view or an aerial photo in the drawing), on the device with no online service: lawns and trees or shrubs found by an excess-green index with an automatic threshold, outlined and simplified into irrigated areas with agronomic presets, plus exclusion outlines.''',
   ),
   (
     'Agronomy, operation and energy',
@@ -132,7 +147,7 @@ const _reference = [
 - Soil water balance, irrigation interval and run times; controller programme per system flow (days and start times), exportable as CSV.
 - Landscape water budget (MAWA and ETWU after the California Model Water Efficient Landscape Ordinance) with cycle-and-soak scheduling; wetted bulb of drip emitters and the wetted percentage.
 - Fertigation: travel times from the injection point to every outlet, the injection plan that delivers the dose and flushes it out before the irrigation ends, and the check of a venturi injector.
-- Energy and operation: zones grouped into system flows for the least pumping energy; flows scheduled around a time-of-use tariff and an irrigation discount window (such as the Brazilian rural irrigation discount); on-demand networks of hydrants (Clément flows and a random-demand check, after FAO Irrigation and Drainage Paper 59); pipe criticality (N−1); roughness calibration from field readings; solar (photovoltaic) pumping sized and compared with grid energy.'''
+- Energy and operation: zones grouped into system flows for the least pumping energy; flows scheduled around a time-of-use tariff and an irrigation discount window (such as the Brazilian rural irrigation discount); on-demand networks of hydrants (Clément flows and a random-demand check, after FAO Irrigation and Drainage Paper 59); pipe criticality (N−1); roughness calibration from field readings; solar (photovoltaic) pumping sized and compared with grid energy.''',
   ),
   (
     'Valve wiring',
@@ -140,34 +155,34 @@ const _reference = [
 - Conventional wiring: station and common wire sizes chosen at the lowest cost that keeps every solenoid above its minimum voltage (20 V by default) while it opens with the other valves of its system flow already on (inrush and holding currents, route lengths plus slack).
 - Two-wire (decoder) systems: one pair along the routes with decoders of 1, 2, 4 or 6 stations at the valves, sized for the idle and running currents.
 - Valve-in-head stations are wired like valves (their solenoids in parallel, or a decoder at the heads).
-- Electrical report (route, wire lengths, sizes, solenoid voltage) and wires, controllers, decoders and connectors in the bill of materials; stations and simultaneous valves checked.'''
+- Electrical report (route, wire lengths, sizes, solenoid voltage) and wires, controllers, decoders and connectors in the bill of materials; stations and simultaneous valves checked.''',
   ),
   (
     'Terrain',
     '''- Sources: drawn contour lines, spot heights and breaklines, survey points (CSV, TXT, XYZ, PNEZD, decimal comma accepted), DXF, DWG and DGN polylines with elevation, KML with altitude, shapefiles with Z or an elevation attribute, GPX waypoints, LandXML surfaces, LAS point clouds (ground class by default, decimated on a grid), elevation GeoTIFF and online elevation.
 - Online elevation for the project area or a pasted coordinate (decimal, map link or degrees/minutes/seconds), from free keyless services: Terrain Tiles on AWS Open Data (SRTM and other models, the default) and Open-Meteo (Copernicus DEM); OpenTopoData in the desktop builds.
-- Digital terrain model by Delaunay triangulation (TIN) with breaklines as constrained edges, or inverse-distance interpolation; contours generated from the model; slope and aspect maps with the share of the area in each slope class; 3D view with the pipes draped on the ground; longitudinal profiles with the pipe and the hydraulic grade line.'''
+- Digital terrain model by Delaunay triangulation (TIN) with breaklines as constrained edges, or inverse-distance interpolation; contours generated from the model; slope and aspect maps with the share of the area in each slope class; 3D view with the pipes draped on the ground; longitudinal profiles with the pipe and the hydraulic grade line.''',
   ),
   (
     'Centre pivots and mechanised irrigation',
     '''- Centre pivots and linear moves with radius, spans and towers, applied depth, cycle time, end pressure, sector angle and end gun, fed from the mainline as a demand; report of towers, spans and sprinklers, and a check of the application rate against the soil intake limit.
 - Sprinkler package (nozzle chart): outlets span by span, the flow of every outlet for a uniform depth, pressure regulators, drops, numbered nozzles, end gun and booster pump, checked against the pressure along the machine; the timer chart (depth against the percent timer) from the drive train.
 - Corner arm with its guide path (warning where the tip would jump), variable-rate prescriptions by zones or sectors (CSV), and the electrical design of the machine (span cable voltage drop, generator).
-- Hose-reel travellers (lane spacing by wind, travel speed, hose friction, inlet pressure and power), surface irrigation (furrows, borders and level basins by the volume-balance model of FAO Irrigation and Drainage Paper 45) and gated pipe (gate openings or hole sizes for the furrow flow).'''
+- Hose-reel travellers (lane spacing by wind, travel speed, hose friction, inlet pressure and power), surface irrigation (furrows, borders and level basins by the volume-balance model of FAO Irrigation and Drainage Paper 45) and gated pipe (gate openings or hole sizes for the furrow flow).''',
   ),
   (
     'Component catalogue',
     '''- Seven groups: pipes, emitters with nozzles, tapes and driplines, valves and devices, pumps (Q-H curve, efficiency and NPSH curves, the frequency the curve was measured at), fittings and wires.
 - Default catalogue: 17 pipes (PE 16–50 mm, PVC DN 35–250, HDPE 110 and 160, 6" steel), 9 emitter families and a demand point, 6 tapes and driplines, 36 valves and devices from 1" to 6" (solenoid, hydraulic and master valves, pressure-reducing and pressure-sustaining valves, hydrants with flow limiters, gate and check valves, filters, meters, backflow preventers, air release valves), 18 pumps (centrifugal 1 to 100 hp, submersible 3 to 30 hp), about 330 fittings and 12 copper wires (1 to 10 mm² and AWG 18 to 8), with illustrative prices.
 - 14 manufacturer packs (259 items) built from published data sheets: Hunter, Rain Bird, Toro, Netafim, Rivulis, NaanDanJain, Jain, Nelson and Senninger (sprinklers, micro-sprinklers, drippers, tapes and driplines, pivot sprinklers, big guns, valves and regulators), Irritec (driplines and drippers), Bermad (hydraulic valves), Schneider (centrifugal and submersible pumps, curves at 60 Hz), and Amanco Wavin and Multilit (PVC irrigation pipes). Nozzle curves are fitted to the manufacturers' tables; prices are left to the user.
-- The catalogue editor imports and exports JSON, CSV and Excel; packs in the `.oci.cat` JSON format load from a file or a URL, so dealers can publish their own.'''
+- The catalogue editor imports and exports JSON, CSV and Excel; packs in the `.oci.cat` JSON format load from a file or a URL, so dealers can publish their own.''',
   ),
   (
     'Reports and plotting',
     '''- Reports: zone summary, pipes, emitters, mainline and supply duties, devices, bill of materials with automatically selected fittings (couplers, elbows, tees, crosses, reducers, end caps, take-offs, risers) for the whole design, per sector or for the current selection, water requirements, agronomy, controller schedule, flushing, water hammer, pivots and spans, pivot sprinkler packages, valve-in-head stations, valve wiring, hydraulic grade line chart, terrain profile, densogram and messages; conditional labels show results on the drawing.
 - Commercial quote from the bill of materials: margin, labour, trenches, extra lines, discount, taxes, freight, validity, payback (NPV and IRR) and a construction schedule; for Brazil, BNDES FINAME codes and the CONAMA 284 licensing category (informative).
 - PDF sheets from A4 to A0, Letter and Tabloid, automatic or fixed scale, title block, legend, north arrow, scale bar, images and the base map, bill of materials on the sheet and attached report pages; sheet sets (an overview plus one sheet per zone or irrigated area, the others greyed or hidden, and extra windows at their own scale); construction detail sheets drawn with the design's values (trench, thrust block, valve box, sprinkler riser or swing joint, drip line start, air valve, filter station, pump suction); charts (mainline grade line per system flow, profile, pump curves with duty points); a revision table from the revision clouds. Text in every script of the 20 languages (embedded Noto fonts, Arabic and Indic shaping, right-to-left text).
-- PNG image of the sheet (96 to 300 dpi); every table to PDF, Excel (one sheet per table, numbers as numbers), CSV and TXT.'''
+- PNG image of the sheet (96 to 300 dpi); every table to PDF, Excel (one sheet per table, numbers as numbers), CSV and TXT.''',
   ),
   (
     'File formats',
@@ -191,7 +206,7 @@ const _reference = [
 | GeoTIFF | elevation grid or background image | — |
 | JPG, PNG, world file | background image, georeferenced or aligned by 2 points | PNG of the sheet (96 to 300 dpi) |
 | SVG | — | sheet in millimetres, one group per layer |
-| XLSX | catalogue prices | reports and catalogue |'''
+| XLSX | catalogue prices | reports and catalogue |''',
   ),
   (
     'Storage, privacy and network access',
@@ -199,20 +214,20 @@ const _reference = [
 - Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
 - Share by link: the whole project, compressed, travels in the fragment of the address (`#p=…`), which browsers never send to a server; embedded images, the photos of comments and results stay out of the link, and the receiver designs again.
 - Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 24 MB, once per version), so the installed app and the site start without a network; a new version downloads in the background and is used from the next start.
-- The internet is reached only when the user asks: base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose). Keys typed by the user go only to their own service.'''
+- The internet is reached only when the user asks: base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose). Keys typed by the user go only to their own service.''',
   ),
   (
     'Phone, tablet and field work',
     '''- A compact layout for phones and tablets.
 - Device GPS (the browser's geolocation): record a walk and finish it as an irrigated area, a closed outline or a line; mark a point at the current position; the distance and bearing to the selected item for staking out.
 - GPX export of every designed item for a GPS receiver, and LandXML points for survey instruments.
-- After the first visit the app starts without a network in the field; maps, online elevation and climate and the AI assistant need one.'''
+- After the first visit the app starts without a network in the field; maps, online elevation and climate and the AI assistant need one.''',
   ),
   (
     'Command line and engine API',
     '''- `dart run bin/oci.dart --help`: the commands design, analyze, check, export and bom work on `.oci.json` projects in the Dart VM, without Flutter or a browser, with the same engine as the app.
 - `package:opencadirrigation/core/api.dart` exports the whole public surface of the engine (`lib/core`, plain Dart): projects, the design, reports, exporters, the hydraulic solver, transients, the extended-period simulation, air valves, the layout automation, agronomy, mechanised machines and the file formats.
-- Documented in [docs/API.md]($appRepositoryUrl/blob/main/docs/API.md) (Portuguese: [docs/API.pt-BR.md]($appRepositoryUrl/blob/main/docs/API.pt-BR.md)); every snippet there is run by the tests.'''
+- Documented in [docs/API.md]($appRepositoryUrl/blob/main/docs/API.md) (Portuguese: [docs/API.pt-BR.md]($appRepositoryUrl/blob/main/docs/API.pt-BR.md)); every snippet there is run by the tests.''',
   ),
   (
     'Known limitations',
@@ -229,7 +244,7 @@ const _reference = [
 - The automatic copy in the browser keeps projects up to about 3.5 MB compressed; larger projects should be saved as files.
 - No simultaneous editing; projects are shared as `.oci.json` files or by link.
 - Native Android and iOS builds are not built or tested; the web app works on phones and tablets.
-- Projects with hundreds of tapes per zone take a few seconds per zone; flushing is the heaviest step.'''
+- Projects with hundreds of tapes per zone take a few seconds per zone; flushing is the heaviest step.''',
   ),
 ];
 
@@ -245,11 +260,7 @@ const _deepLinks = [
 
 String _examplesTable(String Function(SiteExample) url) {
   final en = siteText('en');
-  return [
-    '| Id | Example | What it shows |',
-    '|---|---|---|',
-    for (final ex in en.examples) '| `${ex.id}` | [${ex.title}](${url(ex)}) | ${ex.text} |',
-  ].join('\n');
+  return ['| Id | Example | What it shows |', '|---|---|---|', for (final ex in en.examples) '| `${ex.id}` | [${ex.title}](${url(ex)}) | ${ex.text} |'].join('\n');
 }
 
 /// llms.txt: the summary a language model reads first.
@@ -278,13 +289,19 @@ String renderLlmsTxt() {
     ..writeln()
     ..writeln('## AI assistant')
     ..writeln()
-    ..writeln('- Optional: Claude (Anthropic) or GPT (OpenAI) models with the user\'s own API key, called straight from the browser with no server in between; the provider bills that account, and nothing is sent before the user presses Send')
-    ..writeln('- It draws and designs with the program\'s own tools: finds the site, looks at the satellite image and the terrain, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the sizing, fixes warnings, optimises and writes the report; every change waits for approval (or applies automatically) and can be undone')
+    ..writeln(
+      '- Optional: Claude (Anthropic) or GPT (OpenAI) models with the user\'s own API key, called straight from the browser with no server in between; the provider bills that account, and nothing is sent before the user presses Send',
+    )
+    ..writeln(
+      '- It draws and designs with the program\'s own tools: finds the site, looks at the satellite image and the terrain, lays out sprinklers and drip, divides fields, routes pipes and valves, runs the sizing, fixes warnings, optimises and writes the report; every change waits for approval (or applies automatically) and can be undone',
+    )
     ..writeln('- [Open the AI assistant]($siteUrl?ai=1) (Design → AI assistant in the app); details under "AI assistant" in the complete reference')
     ..writeln()
     ..writeln('## Reference')
     ..writeln()
-    ..writeln('- [Complete reference](${siteUrl}llms-full.txt): features, design workflow, hydraulic methods, transients, sizing, automatic design, agronomy, catalogues, file formats, the AI assistant, offline and field use, examples, deep links, limitations and FAQ in one Markdown file')
+    ..writeln(
+      '- [Complete reference](${siteUrl}llms-full.txt): features, design workflow, hydraulic methods, transients, sizing, automatic design, agronomy, catalogues, file formats, the AI assistant, offline and field use, examples, deep links, limitations and FAQ in one Markdown file',
+    )
     ..writeln()
     ..writeln('## ${en.examplesTitle}')
     ..writeln()
@@ -318,7 +335,9 @@ String renderLlmsFullTxt() {
     ..writeln()
     ..writeln('> ${en.faq.first.$2}')
     ..writeln()
-    ..writeln('This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at $siteUrl; a summary is at ${siteUrl}llms.txt. Version $appVersion, updated $siteLastMod.')
+    ..writeln(
+      'This file describes OpenCADIrrigation for language models and other automated readers. The application itself is at $siteUrl; a summary is at ${siteUrl}llms.txt. Version $appVersion, updated $siteLastMod.',
+    )
     ..writeln()
     ..writeln('## At a glance')
     ..writeln()
@@ -385,7 +404,9 @@ String renderLlmsFullTxt() {
   b
     ..writeln('## Languages')
     ..writeln()
-    ..writeln('The interface, the reports, the tutorial and the example projects are available in ${siteLanguages.length} languages. The app opens in the first language of the browser that it speaks, else in English. Each language has its own page:')
+    ..writeln(
+      'The interface, the reports, the tutorial and the example projects are available in ${siteLanguages.length} languages. The app opens in the first language of the browser that it speaks, else in English. Each language has its own page:',
+    )
     ..writeln()
     ..writeln('| Language | Code | Page | Description on that page |')
     ..writeln('|---|---|---|---|');

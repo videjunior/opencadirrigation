@@ -42,14 +42,31 @@ class SiteClimate {
   ClimateNormals get normals => ClimateNormals(etoMmDay: etoMmDay, rainMm: rainMm, dependableRainMm: dependableRainMm);
 
   SiteClimate copyWith({List<double>? etoMmDay, List<double>? rainMm, List<double>? dependableRainMm, List<double>? solarKWhM2Day, String? source}) => SiteClimate(
-    etoMmDay: etoMmDay ?? this.etoMmDay, rainMm: rainMm ?? this.rainMm, dependableRainMm: dependableRainMm ?? this.dependableRainMm, solarKWhM2Day: solarKWhM2Day ?? this.solarKWhM2Day,
-    source: source ?? this.source, firstYear: firstYear, lastYear: lastYear, latitudeDeg: latitudeDeg, longitudeDeg: longitudeDeg, retrieved: retrieved, attribution: attribution,
+    etoMmDay: etoMmDay ?? this.etoMmDay,
+    rainMm: rainMm ?? this.rainMm,
+    dependableRainMm: dependableRainMm ?? this.dependableRainMm,
+    solarKWhM2Day: solarKWhM2Day ?? this.solarKWhM2Day,
+    source: source ?? this.source,
+    firstYear: firstYear,
+    lastYear: lastYear,
+    latitudeDeg: latitudeDeg,
+    longitudeDeg: longitudeDeg,
+    retrieved: retrieved,
+    attribution: attribution,
   );
 
   Map<String, dynamic> toJson() => {
-    'eto': etoMmDay, 'rain': rainMm, if (dependableRainMm != null) 'rainDep': dependableRainMm, if (solarKWhM2Day != null) 'rs': solarKWhM2Day,
-    'source': source, if (firstYear > 0) 'y0': firstYear, if (lastYear > 0) 'y1': lastYear, 'lat': latitudeDeg, 'lon': longitudeDeg,
-    if (retrieved.isNotEmpty) 'at': retrieved, if (attribution.isNotEmpty) 'credit': attribution,
+    'eto': etoMmDay,
+    'rain': rainMm,
+    if (dependableRainMm != null) 'rainDep': dependableRainMm,
+    if (solarKWhM2Day != null) 'rs': solarKWhM2Day,
+    'source': source,
+    if (firstYear > 0) 'y0': firstYear,
+    if (lastYear > 0) 'y1': lastYear,
+    'lat': latitudeDeg,
+    'lon': longitudeDeg,
+    if (retrieved.isNotEmpty) 'at': retrieved,
+    if (attribution.isNotEmpty) 'credit': attribution,
   };
 
   static List<double>? _months(Object? v) {
@@ -62,9 +79,17 @@ class SiteClimate {
     final eto = _months(j['eto']), rain = _months(j['rain']);
     if (eto == null || rain == null) return null;
     return SiteClimate(
-      etoMmDay: eto, rainMm: rain, dependableRainMm: _months(j['rainDep']), solarKWhM2Day: _months(j['rs']),
-      source: j['source'] as String? ?? 'manual', firstYear: (j['y0'] as num?)?.toInt() ?? 0, lastYear: (j['y1'] as num?)?.toInt() ?? 0,
-      latitudeDeg: (j['lat'] as num?)?.toDouble() ?? 0, longitudeDeg: (j['lon'] as num?)?.toDouble() ?? 0, retrieved: j['at'] as String? ?? '', attribution: j['credit'] as String? ?? '',
+      etoMmDay: eto,
+      rainMm: rain,
+      dependableRainMm: _months(j['rainDep']),
+      solarKWhM2Day: _months(j['rs']),
+      source: j['source'] as String? ?? 'manual',
+      firstYear: (j['y0'] as num?)?.toInt() ?? 0,
+      lastYear: (j['y1'] as num?)?.toInt() ?? 0,
+      latitudeDeg: (j['lat'] as num?)?.toDouble() ?? 0,
+      longitudeDeg: (j['lon'] as num?)?.toDouble() ?? 0,
+      retrieved: j['at'] as String? ?? '',
+      attribution: j['credit'] as String? ?? '',
     );
   }
 }

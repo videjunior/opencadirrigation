@@ -19,11 +19,15 @@ void main() {
 
   testWidgets('a number the model rejects is replaced by the value it keeps', (tester) async {
     var value = 5.0;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: StatefulBuilder(builder: (ctx, setState) => NumField(label: 'R', value: value, onChanged: (v) => setState(() => value = v <= 0 ? value : v.clamp(0, 360).toDouble()))),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (ctx, setState) => NumField(label: 'R', value: value, onChanged: (v) => setState(() => value = v <= 0 ? value : v.clamp(0, 360).toDouble())),
+          ),
+        ),
       ),
-    ));
+    );
     await type(tester, '-3');
     expect(value, 5);
     expect(shown(tester), '5.0', reason: 'the field must not keep showing the rejected number');

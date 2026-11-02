@@ -30,7 +30,19 @@ void main() {
     });
 
     test('sample calculation 11-17: 515 gpm gun, 455 ft diameter, 2,640 ft field, 2.56 in', () {
-      final r = analyzeTraveller(TravellerSpec(gunFlow: gpm(515), gunPressureM: psi(80), wettedDiameterM: ft(455), wind: WindClass.light, fieldWidthM: ft(2640), laneLengthM: ft(1320), targetDepthMm: 2.56 * 25.4, hoseLengthM: ft(660), hoseInnerMm: 4.5 * 25.4));
+      final r = analyzeTraveller(
+        TravellerSpec(
+          gunFlow: gpm(515),
+          gunPressureM: psi(80),
+          wettedDiameterM: ft(455),
+          wind: WindClass.light,
+          fieldWidthM: ft(2640),
+          laneLengthM: ft(1320),
+          targetDepthMm: 2.56 * 25.4,
+          hoseLengthM: ft(660),
+          hoseInnerMm: 4.5 * 25.4,
+        ),
+      );
       // 75 % of 455 ft = 341 ft: eight towpaths 330 ft apart
       expect(r.recommendedPct, 75);
       expect(r.lanes, 8);
@@ -56,7 +68,19 @@ void main() {
   });
 
   group('hydraulics of the hose reel', () {
-    const spec = TravellerSpec(gunFlow: 30 / 3600, gunPressureM: 45, wettedDiameterM: 90, hoseLengthM: 350, hoseInnerMm: 90, driveLossM: 8, gunHeightM: 2.5, groundRiseM: 3, speedMPerMin: 0.5, wind: WindClass.moderate, pumpEfficiency: 0.7);
+    const spec = TravellerSpec(
+      gunFlow: 30 / 3600,
+      gunPressureM: 45,
+      wettedDiameterM: 90,
+      hoseLengthM: 350,
+      hoseInnerMm: 90,
+      driveLossM: 8,
+      gunHeightM: 2.5,
+      groundRiseM: 3,
+      speedMPerMin: 0.5,
+      wind: WindClass.moderate,
+      pumpEfficiency: 0.7,
+    );
     final r = analyzeTraveller(spec);
 
     test('hose friction over the whole hose, inlet pressure and power', () {
@@ -67,7 +91,9 @@ void main() {
       expect(r.hydraulicPowerKw, closeTo(waterDensity * gravity * 30 / 3600 * r.inletHeadM / 1000, 1e-9));
       expect(r.hoseVelocity, closeTo(30 / 3600 / (math.pi * 0.045 * 0.045), 1e-9));
       // Darcy-Weisbach on the same hose gives a similar loss
-      final dw = analyzeTraveller(const TravellerSpec(gunFlow: 30 / 3600, gunPressureM: 45, wettedDiameterM: 90, hoseLengthM: 350, hoseInnerMm: 90, method: FrictionMethod.darcyWeisbach, speedMPerMin: 0.5));
+      final dw = analyzeTraveller(
+        const TravellerSpec(gunFlow: 30 / 3600, gunPressureM: 45, wettedDiameterM: 90, hoseLengthM: 350, hoseInnerMm: 90, method: FrictionMethod.darcyWeisbach, speedMPerMin: 0.5),
+      );
       expect(dw.hoseFrictionM, closeTo(hf, hf * 0.25));
     });
 
@@ -93,7 +119,11 @@ void main() {
     });
 
     test('flow and wetted diameter of a catalogue gun nozzle', () {
-      final n = NozzleSpec(id: 'g', name: 'gun', curve: EmitterCurve.fromNominal(flow: 25 * m3sPerM3h, head: 45, radius: 40, radiusB: 0.5));
+      final n = NozzleSpec(
+        id: 'g',
+        name: 'gun',
+        curve: EmitterCurve.fromNominal(flow: 25 * m3sPerM3h, head: 45, radius: 40, radiusB: 0.5),
+      );
       final (q, d) = gunPerformance(n, 45);
       expect(q, closeTo(25 * m3sPerM3h, 1e-15));
       expect(d, closeTo(80, 1e-9));

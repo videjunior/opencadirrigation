@@ -125,7 +125,9 @@ class CadExport {
     }
     return CadDrawing(
       layers: layers,
-      linetypes: const [CadLinetype(dashed, 'Dashed __ __ __', [0.5, -0.25])],
+      linetypes: const [
+        CadLinetype(dashed, 'Dashed __ __ __', [0.5, -0.25]),
+      ],
       dimStyles: [_alignedStyle, _horizontalStyle],
       blocks: _blocks.values.toList(),
       entities: List.of(_entities),
@@ -253,7 +255,16 @@ class CadExport {
       // gives the hatch's lines at their angle and spacing
       final sp = h.spacing > 0 ? h.spacing : 1.0;
       final a = degToRad(h.angleDeg);
-      _add(CadHatch(layer, [loop], pattern: 'ANSI31', patternAngleDeg: _deg360(h.angleDeg - 45), patternScale: sp / 3.175, lines: [CadHatchLine(_deg360(h.angleDeg), Pt.zero, Pt.polar(sp, a + math.pi / 2))]));
+      _add(
+        CadHatch(
+          layer,
+          [loop],
+          pattern: 'ANSI31',
+          patternAngleDeg: _deg360(h.angleDeg - 45),
+          patternScale: sp / 3.175,
+          lines: [CadHatchLine(_deg360(h.angleDeg), Pt.zero, Pt.polar(sp, a + math.pi / 2))],
+        ),
+      );
     }
     // the outline the app draws around it
     _add(CadPolyline(layer, h.points, closed: true));
@@ -292,7 +303,9 @@ class CadExport {
     } else if (pv.kind != PivotKind.linear) {
       // sector: centre, then the arc as one bulge (tan of a quarter of its angle)
       final start = pv.angleRad - sweep / 2;
-      _add(CadPolyline(layer, [pv.center, pv.center + Pt.polar(pv.irrigatedRadius, start), pv.center + Pt.polar(pv.irrigatedRadius, start + sweep)], bulges: [0, math.tan(sweep / 4), 0], closed: true));
+      _add(
+        CadPolyline(layer, [pv.center, pv.center + Pt.polar(pv.irrigatedRadius, start), pv.center + Pt.polar(pv.irrigatedRadius, start + sweep)], bulges: [0, math.tan(sweep / 4), 0], closed: true),
+      );
     } else {
       _add(CadPolyline(layer, pv.outline(), closed: true));
     }
@@ -311,9 +324,7 @@ class CadExport {
   CadInsert _insert(String name, String layer, Pt at, Map<String, String> values, {double scale = 1, double rotationDeg = 0}) {
     final blk = _blocks.putIfAbsent(name, () => _hydraulicBlock(name, values.keys.toList()));
     final r = degToRad(rotationDeg);
-    final attribs = [
-      for (final a in blk.attdefs) CadAttrib(a.tag, values[a.tag] ?? '', at + (a.position * scale).rotate(r), a.height * scale, rotationDeg: rotationDeg, invisible: a.invisible),
-    ];
+    final attribs = [for (final a in blk.attdefs) CadAttrib(a.tag, values[a.tag] ?? '', at + (a.position * scale).rotate(r), a.height * scale, rotationDeg: rotationDeg, invisible: a.invisible)];
     return CadInsert(layer, name, at, scale: scale, rotationDeg: rotationDeg, attribs: attribs);
   }
 
@@ -324,19 +335,54 @@ class CadExport {
     CadLoop disc(double r) => CadLoop([Pt(r, 0), Pt(-r, 0)], const [1, 1]);
     CadText letter(String s, double h) => CadText('0', Pt.zero, s, h, hAlign: 1, vAlign: 2);
     final (ents, size) = switch (name) {
-      outletBlock => ([const CadCircle('0', Pt.zero, 0.5), CadHatch('0', [disc(0.5)], solid: true)], 0.5),
-      valveBlock => ([
-        const CadPolyline('0', [Pt(-1, -0.7), Pt(1, 0.7), Pt(1, -0.7), Pt(-1, 0.7)], closed: true),
-        CadSolid.triangle('0', const Pt(-1, -0.7), Pt.zero, const Pt(-1, 0.7)),
-        CadSolid.triangle('0', const Pt(1, 0.7), Pt.zero, const Pt(1, -0.7)),
-      ], 1.0),
+      outletBlock => (
+        [
+          const CadCircle('0', Pt.zero, 0.5),
+          CadHatch('0', [disc(0.5)], solid: true),
+        ],
+        0.5,
+      ),
+      valveBlock => (
+        [
+          const CadPolyline('0', [Pt(-1, -0.7), Pt(1, 0.7), Pt(1, -0.7), Pt(-1, 0.7)], closed: true),
+          CadSolid.triangle('0', const Pt(-1, -0.7), Pt.zero, const Pt(-1, 0.7)),
+          CadSolid.triangle('0', const Pt(1, 0.7), Pt.zero, const Pt(1, -0.7)),
+        ],
+        1.0,
+      ),
       supplyBlock => ([CadPolyline('0', square(1.5), closed: true), letter('W', 1.5)], 1.5),
       pumpBlock => ([const CadCircle('0', Pt.zero, 1), letter('P', 1)], 1.0),
-      miscBlock => ([const CadPolyline('0', [Pt(0, 0.8), Pt(0.8, 0), Pt(0, -0.8), Pt(-0.8, 0)], closed: true), const CadHatch('0', [CadLoop([Pt(0, 0.8), Pt(0.8, 0), Pt(0, -0.8), Pt(-0.8, 0)])], solid: true)], 0.8),
-      junctionBlock => ([const CadCircle('0', Pt.zero, 0.25), CadHatch('0', [disc(0.25)], solid: true)], 0.25),
+      miscBlock => (
+        [
+          const CadPolyline('0', [Pt(0, 0.8), Pt(0.8, 0), Pt(0, -0.8), Pt(-0.8, 0)], closed: true),
+          const CadHatch('0', [
+            CadLoop([Pt(0, 0.8), Pt(0.8, 0), Pt(0, -0.8), Pt(-0.8, 0)]),
+          ], solid: true),
+        ],
+        0.8,
+      ),
+      junctionBlock => (
+        [
+          const CadCircle('0', Pt.zero, 0.25),
+          CadHatch('0', [disc(0.25)], solid: true),
+        ],
+        0.25,
+      ),
       controllerBlock => ([CadPolyline('0', square(1), closed: true), letter('C', 1)], 1.0),
-      pivotBlock => ([const CadCircle('0', Pt.zero, 1.5), CadHatch('0', [disc(1.5)], solid: true)], 1.5),
-      _ => ([CadPolyline('0', square(0.8), closed: true), CadHatch('0', [CadLoop(square(0.8))], solid: true)], 0.8),
+      pivotBlock => (
+        [
+          const CadCircle('0', Pt.zero, 1.5),
+          CadHatch('0', [disc(1.5)], solid: true),
+        ],
+        1.5,
+      ),
+      _ => (
+        [
+          CadPolyline('0', square(0.8), closed: true),
+          CadHatch('0', [CadLoop(square(0.8))], solid: true),
+        ],
+        0.8,
+      ),
     };
     return CadBlock(name, ents, attdefs: [for (var i = 0; i < tags.length; i++) CadAttrib(tags[i], '', Pt(size * 1.3, size * 0.3 - i * 0.7), 0.5, prompt: tags[i])]);
   }
@@ -492,7 +538,22 @@ class CadExport {
       CadMText('0', mid, '$axis ${_length(od.value, st)}', st.textSize, color: 0, attachment: 5),
       ..._defPoints([od.origin, od.point, od.leaderEnd]),
     ];
-    _add(CadDimension(layer, CadDimKind.ordinate, block: _dimBlock(ents), style: st.name, defPoint: od.origin, textMid: mid, p13: od.point, p14: od.leaderEnd, measurement: od.value, text: '$axis <>', userTextPosition: true, xOrdinate: od.xAxis));
+    _add(
+      CadDimension(
+        layer,
+        CadDimKind.ordinate,
+        block: _dimBlock(ents),
+        style: st.name,
+        defPoint: od.origin,
+        textMid: mid,
+        p13: od.point,
+        p14: od.leaderEnd,
+        measurement: od.value,
+        text: '$axis <>',
+        userTextPosition: true,
+        xOrdinate: od.xAxis,
+      ),
+    );
   }
 }
 
@@ -548,5 +609,12 @@ double _deg360(double deg) {
     knots.addAll(i == spans - 1 ? [t, t, t, t] : [t, t, t]);
   }
   Pt? unit(Pt v) => v.length < 1e-12 ? null : v / v.length;
-  return (control: control, knots: knots, fit: pts, closed: isClosed, startTangent: isClosed ? null : unit(control[1] - control[0]), endTangent: isClosed ? null : unit(control.last - control[control.length - 2]));
+  return (
+    control: control,
+    knots: knots,
+    fit: pts,
+    closed: isClosed,
+    startTangent: isClosed ? null : unit(control[1] - control[0]),
+    endTangent: isClosed ? null : unit(control.last - control[control.length - 2]),
+  );
 }

@@ -31,88 +31,132 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
   String? error;
   return showDialog<bool>(
     context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      double? num(TextEditingController tc) => parseNumber(tc.text);
-      GeoReference? parse() {
-        if (useUtm) {
-          final z = int.tryParse(zone.text.trim()), e = num(east), n = num(north);
-          if (z == null || z < 1 || z > 60 || e == null || n == null) return null;
-          return GeoReference(zone: z, north: northern, originEasting: e, originNorthing: n);
-        }
-        var la = num(lat), lo = num(lon);
-        if (la == null || lo == null) {
-          // a pasted pair ("-22.9068, -43.1729", a Google Maps link, DMS)
-          final pair = parseLatLon('${lat.text} ${lon.text}');
-          if (pair != null) {
-            la = pair.$1;
-            lo = pair.$2;
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        double? num(TextEditingController tc) => parseNumber(tc.text);
+        GeoReference? parse() {
+          if (useUtm) {
+            final z = int.tryParse(zone.text.trim()), e = num(east), n = num(north);
+            if (z == null || z < 1 || z > 60 || e == null || n == null) return null;
+            return GeoReference(zone: z, north: northern, originEasting: e, originNorthing: n);
           }
+          var la = num(lat), lo = num(lon);
+          if (la == null || lo == null) {
+            // a pasted pair ("-22.9068, -43.1729", a Google Maps link, DMS)
+            final pair = parseLatLon('${lat.text} ${lon.text}');
+            if (pair != null) {
+              la = pair.$1;
+              lo = pair.$2;
+            }
+          }
+          if (la == null || lo == null || la.abs() > 84 || lo.abs() > 180) return null;
+          return GeoReference.fromLatLonOrigin(la, lo);
         }
-        if (la == null || lo == null || la.abs() > 84 || lo.abs() > 180) return null;
-        return GeoReference.fromLatLonOrigin(la, lo);
-      }
 
-      Widget field(TextEditingController tc, String label, {String? suffix}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: TextField(key: Key('geo_${label.hashCode}'), controller: tc, decoration: InputDecoration(labelText: label, suffixText: suffix, isDense: true), keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true), style: const TextStyle(fontSize: 12)),
-      );
-      return AlertDialog(
-        title: Text(t('geo.title'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(
-          width: 460,
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('geo.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70, height: 1.35)),
-            const SizedBox(height: 8),
-            Text(g == null ? t('geo.none') : t('geo.current', {'crs': g.crsName, 'e': g.originEasting.toStringAsFixed(0), 'n': g.originNorthing.toStringAsFixed(0)}), style: TextStyle(fontSize: 11.5, color: Cad.fg54)),
-            const SizedBox(height: 6),
-            SegmentedButton<bool>(
-              segments: [ButtonSegment(value: false, label: Text(t('geo.modeLatLon'), style: const TextStyle(fontSize: 12))), ButtonSegment(value: true, label: Text(t('geo.modeUtm'), style: const TextStyle(fontSize: 12)))],
-              selected: {useUtm},
-              onSelectionChanged: (s) => setState(() => useUtm = s.first),
-            ),
-            if (!useUtm) ...[
-              Row(children: [Expanded(child: field(lat, t('geo.lat'))), const SizedBox(width: 8), Expanded(child: field(lon, t('geo.lon')))]),
-            ] else ...[
-              Row(children: [
-                Expanded(child: field(zone, t('geo.zone'))),
-                const SizedBox(width: 8),
-                Expanded(child: SwitchListTile(dense: true, contentPadding: EdgeInsets.zero, title: Text(t('geo.north'), style: const TextStyle(fontSize: 12)), value: northern, onChanged: (v) => setState(() => northern = v))),
-              ]),
-              Row(children: [Expanded(child: field(east, t('geo.easting'), suffix: 'm')), const SizedBox(width: 8), Expanded(child: field(north, t('geo.northing'), suffix: 'm'))]),
-            ],
-            if (error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(error!, style: TextStyle(fontSize: 12, color: Cad.attention))),
-          ]),
-        ),
-        actions: [
-          if (g != null)
-            TextButton(
-              onPressed: () {
-                c.project.meta.georef = null;
-                c.dirty = true;
-                c.refresh();
-                Navigator.pop(ctx, false);
-              },
-              child: Text(t('geo.remove')),
-            ),
-          TextButton(onPressed: () => Navigator.pop(ctx, c.project.meta.georef != null), child: Text(t('cancel'))),
-          FilledButton(
-            key: const Key('geo_ok'),
-            onPressed: () {
-              final ref = parse();
-              if (ref == null) {
-                setState(() => error = t('geo.invalid'));
-                return;
-              }
-              c.project.meta.georef = ref;
-              c.dirty = true;
-              c.notify(t('msg.georefSet', {'crs': ref.crsName}));
-              Navigator.pop(ctx, true);
-            },
-            child: Text(t('ok')),
+        Widget field(TextEditingController tc, String label, {String? suffix}) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: TextField(
+            key: Key('geo_${label.hashCode}'),
+            controller: tc,
+            decoration: InputDecoration(labelText: label, suffixText: suffix, isDense: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+            style: const TextStyle(fontSize: 12),
           ),
-        ],
-      );
-    }),
+        );
+        return AlertDialog(
+          title: Text(t('geo.title'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: 460,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('geo.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70, height: 1.35)),
+                const SizedBox(height: 8),
+                Text(
+                  g == null ? t('geo.none') : t('geo.current', {'crs': g.crsName, 'e': g.originEasting.toStringAsFixed(0), 'n': g.originNorthing.toStringAsFixed(0)}),
+                  style: TextStyle(fontSize: 11.5, color: Cad.fg54),
+                ),
+                const SizedBox(height: 6),
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: false, label: Text(t('geo.modeLatLon'), style: const TextStyle(fontSize: 12))),
+                    ButtonSegment(value: true, label: Text(t('geo.modeUtm'), style: const TextStyle(fontSize: 12))),
+                  ],
+                  selected: {useUtm},
+                  onSelectionChanged: (s) => setState(() => useUtm = s.first),
+                ),
+                if (!useUtm) ...[
+                  Row(
+                    children: [
+                      Expanded(child: field(lat, t('geo.lat'))),
+                      const SizedBox(width: 8),
+                      Expanded(child: field(lon, t('geo.lon'))),
+                    ],
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(child: field(zone, t('geo.zone'))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SwitchListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(t('geo.north'), style: const TextStyle(fontSize: 12)),
+                          value: northern,
+                          onChanged: (v) => setState(() => northern = v),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: field(east, t('geo.easting'), suffix: 'm')),
+                      const SizedBox(width: 8),
+                      Expanded(child: field(north, t('geo.northing'), suffix: 'm')),
+                    ],
+                  ),
+                ],
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(error!, style: TextStyle(fontSize: 12, color: Cad.attention)),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            if (g != null)
+              TextButton(
+                onPressed: () {
+                  c.project.meta.georef = null;
+                  c.dirty = true;
+                  c.refresh();
+                  Navigator.pop(ctx, false);
+                },
+                child: Text(t('geo.remove')),
+              ),
+            TextButton(onPressed: () => Navigator.pop(ctx, c.project.meta.georef != null), child: Text(t('cancel'))),
+            FilledButton(
+              key: const Key('geo_ok'),
+              onPressed: () {
+                final ref = parse();
+                if (ref == null) {
+                  setState(() => error = t('geo.invalid'));
+                  return;
+                }
+                c.project.meta.georef = ref;
+                c.dirty = true;
+                c.notify(t('msg.georefSet', {'crs': ref.crsName}));
+                Navigator.pop(ctx, true);
+              },
+              child: Text(t('ok')),
+            ),
+          ],
+        );
+      },
+    ),
   );
 }
 
@@ -139,161 +183,252 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
   final chartsAvailable = c.results != null || c.profilePath != null || c.project.entities.any((e) => e is PumpEntity && c.project.catalog.pump(e.pumpSpecId) != null);
   return showDialog<SheetOptions>(
     context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      final autoScale = builder.sheetScale(o.copyWith(clearScale: true));
-      final wide = MediaQuery.sizeOf(ctx).width >= 760;
-      Widget check(String label, bool value, ValueChanged<bool> on, {bool enabled = true, Key? key}) => CheckboxListTile(key: key, dense: true, contentPadding: EdgeInsets.zero, controlAffinity: ListTileControlAffinity.leading, title: Text(label, style: const TextStyle(fontSize: 12)), value: value, onChanged: enabled ? (v) => on(v ?? false) : null);
-      SheetOptions result() {
-        // "500", or the whole ratio typed ("1:500", "1/500")
-        final s = parseNumber(scaleCtl.text.split(RegExp(r'[:/]')).last);
-        var res = fit || s == null || s <= 0 ? o.copyWith(clearScale: true) : o.copyWith(scale: s);
-        if (raster) return res.copyWith(split: SheetSplit.single, windows: const [], details: const [], charts: false, includeReports: false, clearProfilePath: true);
-        res = res.copyWith(
-          windows: withView && view != null ? [SheetWindow(bounds: view, title: t('sheet.view'))] : const [],
-          details: [for (final k in DetailKind.values) if (details.contains(k)) k],
-          charts: o.charts && chartsAvailable,
-          profilePath: o.charts ? c.profilePath : null,
-          clearProfilePath: !o.charts || c.profilePath == null,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        final autoScale = builder.sheetScale(o.copyWith(clearScale: true));
+        final wide = MediaQuery.sizeOf(ctx).width >= 760;
+        Widget check(String label, bool value, ValueChanged<bool> on, {bool enabled = true, Key? key}) => CheckboxListTile(
+          key: key,
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: Text(label, style: const TextStyle(fontSize: 12)),
+          value: value,
+          onChanged: enabled ? (v) => on(v ?? false) : null,
         );
-        return res;
-      }
+        SheetOptions result() {
+          // "500", or the whole ratio typed ("1:500", "1/500")
+          final s = parseNumber(scaleCtl.text.split(RegExp(r'[:/]')).last);
+          var res = fit || s == null || s <= 0 ? o.copyWith(clearScale: true) : o.copyWith(scale: s);
+          if (raster) return res.copyWith(split: SheetSplit.single, windows: const [], details: const [], charts: false, includeReports: false, clearProfilePath: true);
+          res = res.copyWith(
+            windows: withView && view != null ? [SheetWindow(bounds: view, title: t('sheet.view'))] : const [],
+            details: [
+              for (final k in DetailKind.values)
+                if (details.contains(k)) k,
+            ],
+            charts: o.charts && chartsAvailable,
+            profilePath: o.charts ? c.profilePath : null,
+            clearProfilePath: !o.charts || c.profilePath == null,
+          );
+          return res;
+        }
 
-      final extra = raster ? 0 : (o.split == SheetSplit.zones ? zoneCount : (o.split == SheetSplit.areas ? areaCount : 0)) + (withView && view != null ? 1 : 0);
-      final sheetsTotal = 1 + extra + (raster ? 0 : builder.detailSheets(o.copyWith(details: details.toList())).length);
-      final page = <Widget>[
-        Row(children: [
-          Expanded(
-            child: DropdownButtonFormField<PageSize>(
-              isExpanded: true,
-              initialValue: o.page,
-              decoration: InputDecoration(labelText: t('plot.page'), isDense: true),
-              style: TextStyle(fontSize: 12, color: Cad.fg),
-              items: [for (final p in PageSize.values) DropdownMenuItem(value: p, child: Text('${p.label}  (${p.shortMm.round()} × ${p.longMm.round()} mm)', style: const TextStyle(fontSize: 12)))],
-              onChanged: (v) => setState(() => o = o.copyWith(page: v)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: DropdownButtonFormField<bool>(
-              isExpanded: true,
-              initialValue: o.landscape,
-              decoration: InputDecoration(labelText: t('plot.orientation'), isDense: true),
-              style: TextStyle(fontSize: 12, color: Cad.fg),
-              items: [DropdownMenuItem(value: true, child: Text(t('plot.landscape'), style: const TextStyle(fontSize: 12))), DropdownMenuItem(value: false, child: Text(t('plot.portrait'), style: const TextStyle(fontSize: 12)))],
-              onChanged: (v) => setState(() => o = o.copyWith(landscape: v)),
-            ),
-          ),
-        ]),
-        const SizedBox(height: 6),
-        Row(children: [
-          Expanded(child: check(t('plot.scaleAuto'), fit, (v) => setState(() {
-            fit = v;
-            if (v) scaleCtl.text = autoScale.round().toString();
-          }))),
-          SizedBox(
-            width: 140,
-            child: TextField(
-              controller: scaleCtl,
-              enabled: !fit,
-              decoration: InputDecoration(labelText: t('plot.scale'), isDense: true),
-              keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
-        ]),
-        Padding(padding: const EdgeInsets.only(left: 4, top: 2), child: Text(t('plot.fits', {'n': autoScale.round().toString()}), style: TextStyle(fontSize: 11, color: Cad.fg54))),
-        if (raster) ...[
-          const SizedBox(height: 6),
-          DropdownButtonFormField<double>(
-            key: const Key('plot_dpi'),
-            isExpanded: true,
-            initialValue: pngResolutionsOffered.contains(o.dpi) ? o.dpi : 200,
-            decoration: InputDecoration(labelText: t('plot.dpi'), isDense: true),
-            style: TextStyle(fontSize: 12, color: Cad.fg),
-            items: [for (final d in pngResolutionsOffered) DropdownMenuItem(value: d, child: Text('${d.round()} dpi', style: const TextStyle(fontSize: 12)))],
-            onChanged: (v) => setState(() => o = o.copyWith(dpi: v)),
-          ),
-          Padding(padding: const EdgeInsets.only(left: 4, top: 4), child: Text(t('plot.pngHint'), style: TextStyle(fontSize: 11, color: Cad.fg54))),
-        ],
-        const Divider(height: 14),
-        check(t('plot.labels'), o.labels, (v) => setState(() => o = o.copyWith(labels: v))),
-        check(t('plot.wetted'), o.wettedRadii, (v) => setState(() => o = o.copyWith(wettedRadii: v))),
-        check(t('plot.legend'), o.legend, (v) => setState(() => o = o.copyWith(legend: v))),
-        check(t('plot.bomOnSheet'), o.bomOnSheet && c.results != null, (v) => setState(() => o = o.copyWith(bomOnSheet: v)), enabled: c.results != null),
-        if (!raster) check(t('plot.reports'), o.includeReports && c.results != null, (v) => setState(() => o = o.copyWith(includeReports: v)), enabled: c.results != null),
-        check(t('plot.baseMap'), withMap, (v) => setState(() => withMap = v), enabled: mapAvailable),
-        if (mapAvailable && withMap) Padding(padding: const EdgeInsets.only(left: 40), child: Text(t('plot.baseMapHint'), style: TextStyle(fontSize: 11, color: Cad.fg54))),
-      ];
-      final sheets = raster
-          ? const <Widget>[]
-          : <Widget>[
-              DropdownButtonFormField<SheetSplit>(
-                key: const Key('plot_split'),
-                isExpanded: true,
-                initialValue: o.split,
-                decoration: InputDecoration(labelText: t('plot.sheets'), isDense: true),
-                style: TextStyle(fontSize: 12, color: Cad.fg),
-                items: [
-                  DropdownMenuItem(value: SheetSplit.single, child: Text(t('plot.split.single'), style: const TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: SheetSplit.zones, enabled: zoneCount > 0, child: Text(t('plot.split.zones', {'n': '$zoneCount'}), style: const TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: SheetSplit.areas, enabled: areaCount > 0, child: Text(t('plot.split.areas', {'n': '$areaCount'}), style: const TextStyle(fontSize: 12))),
-                ],
-                onChanged: (v) => setState(() => o = o.copyWith(split: v)),
+        final extra = raster ? 0 : (o.split == SheetSplit.zones ? zoneCount : (o.split == SheetSplit.areas ? areaCount : 0)) + (withView && view != null ? 1 : 0);
+        final sheetsTotal = 1 + extra + (raster ? 0 : builder.detailSheets(o.copyWith(details: details.toList())).length);
+        final page = <Widget>[
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<PageSize>(
+                  isExpanded: true,
+                  initialValue: o.page,
+                  decoration: InputDecoration(labelText: t('plot.page'), isDense: true),
+                  style: TextStyle(fontSize: 12, color: Cad.fg),
+                  items: [
+                    for (final p in PageSize.values)
+                      DropdownMenuItem(
+                        value: p,
+                        child: Text('${p.label}  (${p.shortMm.round()} × ${p.longMm.round()} mm)', style: const TextStyle(fontSize: 12)),
+                      ),
+                  ],
+                  onChanged: (v) => setState(() => o = o.copyWith(page: v)),
+                ),
               ),
-              check(t('plot.dimOthers'), o.dimOthers, (v) => setState(() => o = o.copyWith(dimOthers: v)), enabled: o.split != SheetSplit.single),
-              check(t('plot.currentView'), withView && view != null, (v) => setState(() => withView = v), enabled: view != null),
-              const SizedBox(height: 4),
-              Row(children: [
-                Expanded(child: Text(t('plot.details'), style: TextStyle(fontSize: 12, color: Cad.fg70))),
-                TextButton(key: const Key('plot_details_all'), onPressed: () => setState(() => details.length == DetailKind.values.length ? details.clear() : details.addAll(DetailKind.values)), child: Text(details.length == DetailKind.values.length ? t('plot.detailsNone') : t('plot.detailsAll'), style: const TextStyle(fontSize: 11))),
-              ]),
-              Wrap(spacing: 4, runSpacing: 2, children: [
-                for (final k in DetailKind.values)
-                  FilterChip(
-                    key: Key('plot_detail_${k.name}'),
-                    label: Text(t(detailTitleKey(k, detailCtx!)), style: const TextStyle(fontSize: 11)),
-                    selected: details.contains(k),
-                    visualDensity: VisualDensity.compact,
-                    onSelected: (v) => setState(() => v ? details.add(k) : details.remove(k)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DropdownButtonFormField<bool>(
+                  isExpanded: true,
+                  initialValue: o.landscape,
+                  decoration: InputDecoration(labelText: t('plot.orientation'), isDense: true),
+                  style: TextStyle(fontSize: 12, color: Cad.fg),
+                  items: [
+                    DropdownMenuItem(value: true, child: Text(t('plot.landscape'), style: const TextStyle(fontSize: 12))),
+                    DropdownMenuItem(value: false, child: Text(t('plot.portrait'), style: const TextStyle(fontSize: 12))),
+                  ],
+                  onChanged: (v) => setState(() => o = o.copyWith(landscape: v)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: check(
+                  t('plot.scaleAuto'),
+                  fit,
+                  (v) => setState(() {
+                    fit = v;
+                    if (v) scaleCtl.text = autoScale.round().toString();
+                  }),
+                ),
+              ),
+              SizedBox(
+                width: 140,
+                child: TextField(
+                  controller: scaleCtl,
+                  enabled: !fit,
+                  decoration: InputDecoration(labelText: t('plot.scale'), isDense: true),
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 2),
+            child: Text(t('plot.fits', {'n': autoScale.round().toString()}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+          ),
+          if (raster) ...[
+            const SizedBox(height: 6),
+            DropdownButtonFormField<double>(
+              key: const Key('plot_dpi'),
+              isExpanded: true,
+              initialValue: pngResolutionsOffered.contains(o.dpi) ? o.dpi : 200,
+              decoration: InputDecoration(labelText: t('plot.dpi'), isDense: true),
+              style: TextStyle(fontSize: 12, color: Cad.fg),
+              items: [
+                for (final d in pngResolutionsOffered)
+                  DropdownMenuItem(
+                    value: d,
+                    child: Text('${d.round()} dpi', style: const TextStyle(fontSize: 12)),
                   ),
-              ]),
-              const SizedBox(height: 4),
-              check(t('plot.charts'), o.charts && chartsAvailable, (v) => setState(() => o = o.copyWith(charts: v)), enabled: chartsAvailable, key: const Key('plot_charts')),
-              Padding(padding: const EdgeInsets.only(left: 4, top: 2), child: Text(t('plot.sheetCount', {'n': '$sheetsTotal'}), key: const Key('plot_sheet_count'), style: TextStyle(fontSize: 11, color: Cad.fg54))),
-            ];
-      return AlertDialog(
-        title: Text(raster ? t('plot.pngTitle') : t('plot.title'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(
-          width: dialogWidth(ctx, raster ? 440 : (wide ? 760 : 440)),
-          child: ScrollBody(
-            child: wide && !raster
-                ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Expanded(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: page)),
-                    const SizedBox(width: 16),
-                    Expanded(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: sheets)),
-                  ])
-                : Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [...page, if (sheets.isNotEmpty) const Divider(height: 14), ...sheets]),
+              ],
+              onChanged: (v) => setState(() => o = o.copyWith(dpi: v)),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, top: 4),
+              child: Text(t('plot.pngHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ),
+          ],
+          const Divider(height: 14),
+          check(t('plot.labels'), o.labels, (v) => setState(() => o = o.copyWith(labels: v))),
+          check(t('plot.wetted'), o.wettedRadii, (v) => setState(() => o = o.copyWith(wettedRadii: v))),
+          check(t('plot.legend'), o.legend, (v) => setState(() => o = o.copyWith(legend: v))),
+          check(t('plot.bomOnSheet'), o.bomOnSheet && c.results != null, (v) => setState(() => o = o.copyWith(bomOnSheet: v)), enabled: c.results != null),
+          if (!raster) check(t('plot.reports'), o.includeReports && c.results != null, (v) => setState(() => o = o.copyWith(includeReports: v)), enabled: c.results != null),
+          check(t('plot.baseMap'), withMap, (v) => setState(() => withMap = v), enabled: mapAvailable),
+          if (mapAvailable && withMap)
+            Padding(
+              padding: const EdgeInsets.only(left: 40),
+              child: Text(t('plot.baseMapHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ),
+        ];
+        final sheets = raster
+            ? const <Widget>[]
+            : <Widget>[
+                DropdownButtonFormField<SheetSplit>(
+                  key: const Key('plot_split'),
+                  isExpanded: true,
+                  initialValue: o.split,
+                  decoration: InputDecoration(labelText: t('plot.sheets'), isDense: true),
+                  style: TextStyle(fontSize: 12, color: Cad.fg),
+                  items: [
+                    DropdownMenuItem(
+                      value: SheetSplit.single,
+                      child: Text(t('plot.split.single'), style: const TextStyle(fontSize: 12)),
+                    ),
+                    DropdownMenuItem(
+                      value: SheetSplit.zones,
+                      enabled: zoneCount > 0,
+                      child: Text(t('plot.split.zones', {'n': '$zoneCount'}), style: const TextStyle(fontSize: 12)),
+                    ),
+                    DropdownMenuItem(
+                      value: SheetSplit.areas,
+                      enabled: areaCount > 0,
+                      child: Text(t('plot.split.areas', {'n': '$areaCount'}), style: const TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                  onChanged: (v) => setState(() => o = o.copyWith(split: v)),
+                ),
+                check(t('plot.dimOthers'), o.dimOthers, (v) => setState(() => o = o.copyWith(dimOthers: v)), enabled: o.split != SheetSplit.single),
+                check(t('plot.currentView'), withView && view != null, (v) => setState(() => withView = v), enabled: view != null),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(t('plot.details'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+                    ),
+                    TextButton(
+                      key: const Key('plot_details_all'),
+                      onPressed: () => setState(() => details.length == DetailKind.values.length ? details.clear() : details.addAll(DetailKind.values)),
+                      child: Text(details.length == DetailKind.values.length ? t('plot.detailsNone') : t('plot.detailsAll'), style: const TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
+                  children: [
+                    for (final k in DetailKind.values)
+                      FilterChip(
+                        key: Key('plot_detail_${k.name}'),
+                        label: Text(t(detailTitleKey(k, detailCtx!)), style: const TextStyle(fontSize: 11)),
+                        selected: details.contains(k),
+                        visualDensity: VisualDensity.compact,
+                        onSelected: (v) => setState(() => v ? details.add(k) : details.remove(k)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                check(
+                  t('plot.charts'),
+                  o.charts && chartsAvailable,
+                  (v) => setState(() => o = o.copyWith(charts: v)),
+                  enabled: chartsAvailable,
+                  key: const Key('plot_charts'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 2),
+                  child: Text(
+                    t('plot.sheetCount', {'n': '$sheetsTotal'}),
+                    key: const Key('plot_sheet_count'),
+                    style: TextStyle(fontSize: 11, color: Cad.fg54),
+                  ),
+                ),
+              ];
+        return AlertDialog(
+          title: Text(raster ? t('plot.pngTitle') : t('plot.title'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: dialogWidth(ctx, raster ? 440 : (wide ? 760 : 440)),
+            child: ScrollBody(
+              child: wide && !raster
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: page),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: sheets),
+                        ),
+                      ],
+                    )
+                  : Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [...page, if (sheets.isNotEmpty) const Divider(height: 14), ...sheets]),
+            ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
-          FilledButton(
-            key: const Key('plot_ok'),
-            onPressed: busy
-                ? null
-                : () async {
-                    var res = result();
-                    if (withMap && mapAvailable) {
-                      setState(() => busy = true);
-                      res = await withSheetBaseMap(c, res, dpi: raster ? res.dpi : sheetMapDpi);
-                    }
-                    if (ctx.mounted) Navigator.pop(ctx, res);
-                  },
-            child: busy ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Text(t('plot.export')),
-          ),
-        ],
-      );
-    }),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+            FilledButton(
+              key: const Key('plot_ok'),
+              onPressed: busy
+                  ? null
+                  : () async {
+                      var res = result();
+                      if (withMap && mapAvailable) {
+                        setState(() => busy = true);
+                        res = await withSheetBaseMap(c, res, dpi: raster ? res.dpi : sheetMapDpi);
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx, res);
+                    },
+              child: busy ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Text(t('plot.export')),
+            ),
+          ],
+        );
+      },
+    ),
   );
 }
 

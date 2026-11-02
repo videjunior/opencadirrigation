@@ -12,7 +12,33 @@ import '../model/project.dart';
 import 'results.dart';
 
 /// Standard IEC motor ratings (kW) with their nominal cv (hp metric).
-const standardMotorsKw = <(double, double)>[(0.75, 1), (1.1, 1.5), (1.5, 2), (2.2, 3), (3, 4), (3.7, 5), (4, 5.5), (5.5, 7.5), (7.5, 10), (9.2, 12.5), (11, 15), (15, 20), (18.5, 25), (22, 30), (30, 40), (37, 50), (45, 60), (55, 75), (75, 100), (90, 125), (110, 150), (132, 180), (160, 220), (200, 270), (250, 340)];
+const standardMotorsKw = <(double, double)>[
+  (0.75, 1),
+  (1.1, 1.5),
+  (1.5, 2),
+  (2.2, 3),
+  (3, 4),
+  (3.7, 5),
+  (4, 5.5),
+  (5.5, 7.5),
+  (7.5, 10),
+  (9.2, 12.5),
+  (11, 15),
+  (15, 20),
+  (18.5, 25),
+  (22, 30),
+  (30, 40),
+  (37, 50),
+  (45, 60),
+  (55, 75),
+  (75, 100),
+  (90, 125),
+  (110, 150),
+  (132, 180),
+  (160, 220),
+  (200, 270),
+  (250, 340),
+];
 
 /// Smallest standard motor whose rating covers the shaft power with the
 /// service factor (default 1.15); returns (kW, cv). Null for zero power.
@@ -26,7 +52,18 @@ const standardMotorsKw = <(double, double)>[(0.75, 1), (1.1, 1.5), (1.5, 2), (2.
 }
 
 class PumpCandidate {
-  PumpCandidate({required this.spec, required this.headAtDuty, required this.margin, required this.operatingFlow, required this.operatingHead, required this.shaftPowerKw, required this.annualEnergy, required this.inRange, required this.parallelCount, this.suctionOk = true});
+  PumpCandidate({
+    required this.spec,
+    required this.headAtDuty,
+    required this.margin,
+    required this.operatingFlow,
+    required this.operatingHead,
+    required this.shaftPowerKw,
+    required this.annualEnergy,
+    required this.inRange,
+    required this.parallelCount,
+    this.suctionOk = true,
+  });
   final PumpSpec spec;
 
   /// Head the pump delivers at the duty flow (m).
@@ -80,7 +117,18 @@ List<PumpDuty> pumpDuties(DesignResults r, String supplyId) {
 /// pump, see [suctionLiftTooDeep]) only submersible pumps are suitable.
 /// Curves measured at another frequency than the [mainsHz] mains are read
 /// at the speed the motor turns there.
-List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required double head, double? staticHead, required double hoursPerYear, required double costPerKwh, int maxParallel = 3, List<(double, double)> otherDuties = const [], bool requireSubmersible = false, double mainsHz = 60}) {
+List<PumpCandidate> rankPumps(
+  Catalog cat, {
+  required double flow,
+  required double head,
+  double? staticHead,
+  required double hoursPerYear,
+  required double costPerKwh,
+  int maxParallel = 3,
+  List<(double, double)> otherDuties = const [],
+  bool requireSubmersible = false,
+  double mainsHz = 60,
+}) {
   final out = <PumpCandidate>[];
   if (!(flow > 0) || !(head > 0)) return out; // no meaningful duty
   final sys = systemCurveFromDuty(flow: flow, head: head, staticHead: staticHead ?? 0.6 * head);
@@ -105,7 +153,20 @@ List<PumpCandidate> rankPumps(Catalog cat, {required double flow, required doubl
       final op = _operatingPoint(parallel, sys, qMax: math.max(flow * 3, 0.01));
       final oq = op?.$1 ?? 0, oh = op?.$2 ?? 0;
       final power = oq > 0 ? shaftPower(flow: oq, head: oh, efficiency: p.efficiency) / 1000 : 0.0;
-      out.add(PumpCandidate(spec: p, headAtDuty: hAt, margin: margin, operatingFlow: oq, operatingHead: oh, shaftPowerKw: power, annualEnergy: power * hoursPerYear * costPerKwh, inRange: inRange, parallelCount: n, suctionOk: p.submersible || !requireSubmersible));
+      out.add(
+        PumpCandidate(
+          spec: p,
+          headAtDuty: hAt,
+          margin: margin,
+          operatingFlow: oq,
+          operatingHead: oh,
+          shaftPowerKw: power,
+          annualEnergy: power * hoursPerYear * costPerKwh,
+          inRange: inRange,
+          parallelCount: n,
+          suctionOk: p.submersible || !requireSubmersible,
+        ),
+      );
       if (margin >= 0 && inRange) break; // a single unit (or fewer units) is enough
     }
   }

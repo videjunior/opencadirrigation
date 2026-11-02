@@ -19,22 +19,25 @@ import 'package:opencadirrigation/core/units.dart';
 Project series({String pump = 'pump_mid', bool calculated = true, double prvSetting = 40, double waterLevel = 1.5}) {
   final p = Project();
   final poly = [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)];
-  final block = generateBlock(p, BlockOptions(
-    polygon: poly,
-    direction: const Pt(1, 0),
-    lateralSpacing: 4,
-    isTape: false,
-    tapeSpecId: 'drip16_16_50',
-    outletSpecId: 'micro',
-    nozzleId: 'm50',
-    outletSpacing: 3.5,
-    headM: 15,
-    submainPosition: SubmainPosition.start,
-    valveSpecId: 'ev50',
-    valvePosition: ValvePosition.centre,
-    submainStub: 1.5,
-    zoneName: 'Zona 1',
-  ));
+  final block = generateBlock(
+    p,
+    BlockOptions(
+      polygon: poly,
+      direction: const Pt(1, 0),
+      lateralSpacing: 4,
+      isTape: false,
+      tapeSpecId: 'drip16_16_50',
+      outletSpecId: 'micro',
+      nozzleId: 'm50',
+      outletSpacing: 3.5,
+      headM: 15,
+      submainPosition: SubmainPosition.start,
+      valveSpecId: 'ev50',
+      valvePosition: ValvePosition.centre,
+      submainStub: 1.5,
+      zoneName: 'Zona 1',
+    ),
+  );
   p.entities.addAll(block.all);
   final valve = block.valve!;
   final supplyPos = valve.position + const Pt(-100, 0);
@@ -211,7 +214,11 @@ void main() {
       expect(pump.upstreamPressure, greaterThan(-12.5));
       expect(pump.elevation, closeTo(0, 1e-9));
       expect(f.warnings, contains('pump_suction_lift:pump'));
-      final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w));
+      final tables = buildReportTables(
+        project: p,
+        results: r,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => true, warning: (w) => w),
+      );
       final dev = tables.firstWhere((t) => t.key == 'devices');
       expect(dev.headers, containsAllInOrder(['rep.pIn (m.c.a.)', 'rep.pOut', 'rep.pumpHead', 'rep.loss', 'rep.status']));
       final row = dev.rows.firstWhere((r) => '${r[1]}'.startsWith('rep.pump:'));
@@ -292,7 +299,10 @@ void main() {
     test('a graded range of centrifugal and submersible pumps with consistent curves and motors', () {
       final cat = Catalog.defaultCatalog();
       expect(cat.pumps.length, greaterThanOrEqualTo(17));
-      expect(cat.pumps.map((p) => p.id), containsAll(['pump_c1', 'pump_small', 'pump_c5', 'pump_c7_5', 'pump_mid', 'pump_c20', 'pump_big', 'pump_c50', 'pump_c100', 'pump_s3', 'pump_sub', 'pump_s25']));
+      expect(
+        cat.pumps.map((p) => p.id),
+        containsAll(['pump_c1', 'pump_small', 'pump_c5', 'pump_c7_5', 'pump_mid', 'pump_c20', 'pump_big', 'pump_c50', 'pump_c100', 'pump_s3', 'pump_sub', 'pump_s25']),
+      );
       expect(cat.pumps.map((p) => p.id).toSet().length, cat.pumps.length);
       for (final p in cat.pumps) {
         expect(p.powerKw, greaterThan(0), reason: p.id);
@@ -310,7 +320,11 @@ void main() {
         expect(p.curve.runoutFlow, greaterThan(p.maxFlow), reason: p.id);
         // the duty point (third sample) fits the rated motor with the 1.15 service factor
         final (q, h) = p.points[2];
-        expect(shaftPower(flow: q, head: h, efficiency: p.efficiency) / 1000, lessThanOrEqualTo(p.powerKw * 1.15), reason: p.id);
+        expect(
+          shaftPower(flow: q, head: h, efficiency: p.efficiency) / 1000,
+          lessThanOrEqualTo(p.powerKw * 1.15),
+          reason: p.id,
+        );
         // the fit passes close to the catalogue samples
         for (final (qs, hs) in p.points) {
           expect(p.curve.head(qs), closeTo(hs, 0.08 * hs + 0.5), reason: '${p.id} @ ${qs / m3sPerM3h} m³/h');
@@ -326,7 +340,26 @@ void main() {
 
     test('the device list covers 1" to 6" and every kind', () {
       final cat = Catalog.defaultCatalog();
-      expect(cat.valves.map((v) => v.id), containsAll(['ev150', 'prv100', 'gate80', 'gate150', 'check50', 'check80', 'filter_disc80', 'filter_disc100', 'filter_screen100', 'filter_screen150', 'meter80', 'meter100', 'backflow80', 'air25', 'air80']));
+      expect(
+        cat.valves.map((v) => v.id),
+        containsAll([
+          'ev150',
+          'prv100',
+          'gate80',
+          'gate150',
+          'check50',
+          'check80',
+          'filter_disc80',
+          'filter_disc100',
+          'filter_screen100',
+          'filter_screen150',
+          'meter80',
+          'meter100',
+          'backflow80',
+          'air25',
+          'air80',
+        ]),
+      );
       expect(cat.valves.map((v) => v.id).toSet().length, cat.valves.length);
       for (final k in ValveKind.values) {
         if (k == ValveKind.other) continue;

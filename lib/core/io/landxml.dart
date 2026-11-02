@@ -75,7 +75,16 @@ class LandXmlPipe {
 }
 
 class LandXmlImportResult {
-  LandXmlImportResult({required this.document, required this.georef, required this.crs, required this.surfaces, required this.cgPointCount, required this.pipes, required this.warnings, required this.localOrigin});
+  LandXmlImportResult({
+    required this.document,
+    required this.georef,
+    required this.crs,
+    required this.surfaces,
+    required this.cgPointCount,
+    required this.pipes,
+    required this.warnings,
+    required this.localOrigin,
+  });
   final DxfDocument document;
   final GeoReference? georef;
   final CrsInfo crs;
@@ -120,14 +129,35 @@ class LandXmlReader {
     final metric = units == null ? null : _child(units, 'Metric');
     final imperial = units == null ? null : _child(units, 'Imperial');
     final lin = metric != null
-        ? switch (metric.getAttribute('linearUnit')) { 'millimeter' => 0.001, 'centimeter' => 0.01, 'kilometer' => 1000.0, _ => 1.0 }
+        ? switch (metric.getAttribute('linearUnit')) {
+            'millimeter' => 0.001,
+            'centimeter' => 0.01,
+            'kilometer' => 1000.0,
+            _ => 1.0,
+          }
         : imperial != null
-        ? switch (imperial.getAttribute('linearUnit')) { 'USSurveyFoot' => 1200 / 3937, 'inch' => 0.0254, 'mile' => 1609.344, _ => 0.3048 }
+        ? switch (imperial.getAttribute('linearUnit')) {
+            'USSurveyFoot' => 1200 / 3937,
+            'inch' => 0.0254,
+            'mile' => 1609.344,
+            _ => 0.3048,
+          }
         : 1.0;
     final diam = metric != null
-        ? switch (metric.getAttribute('diameterUnit')) { 'millimeter' => 0.001, 'centimeter' => 0.01, 'kilometer' => 1000.0, 'meter' => 1.0, _ => lin }
+        ? switch (metric.getAttribute('diameterUnit')) {
+            'millimeter' => 0.001,
+            'centimeter' => 0.01,
+            'kilometer' => 1000.0,
+            'meter' => 1.0,
+            _ => lin,
+          }
         : imperial != null
-        ? switch (imperial.getAttribute('diameterUnit')) { 'inch' => 0.0254, 'foot' => 0.3048, 'USSurveyFoot' => 1200 / 3937, _ => lin }
+        ? switch (imperial.getAttribute('diameterUnit')) {
+            'inch' => 0.0254,
+            'foot' => 0.3048,
+            'USSurveyFoot' => 1200 / 3937,
+            _ => lin,
+          }
         : lin;
     // coordinate system
     CrsInfo? crs;
@@ -135,7 +165,11 @@ class LandXmlReader {
     if (cs != null) {
       final epsg = int.tryParse(cs.getAttribute('epsgCode') ?? '');
       final wkt = cs.getAttribute('ogcWktCode') ?? '';
-      final names = [cs.getAttribute('projectedCoordinateSystemName'), cs.getAttribute('name'), cs.getAttribute('horizontalCoordinateSystemName')].whereType<String>().where((s) => s.trim().isNotEmpty);
+      final names = [
+        cs.getAttribute('projectedCoordinateSystemName'),
+        cs.getAttribute('name'),
+        cs.getAttribute('horizontalCoordinateSystemName'),
+      ].whereType<String>().where((s) => s.trim().isNotEmpty);
       if (epsg != null) {
         crs = crsFromEpsg(epsg);
       } else if (wkt.isNotEmpty) {
@@ -164,10 +198,18 @@ class LandXmlReader {
       for (final p in g.childElements.where((e) => e.name.local == 'CgPoint')) {
         final v = _nums(p.innerText);
         if (v.length < 2) continue;
-        cg.add((x: v[1], y: v[0], z: v.length > 2 ? v[2] * lin : null, name: p.getAttribute('name') ?? p.getAttribute('oID') ?? '', layer: lname.isEmpty ? 'CGPOINTS' : lname, code: p.getAttribute('code') ?? ''));
+        cg.add((
+          x: v[1],
+          y: v[0],
+          z: v.length > 2 ? v[2] * lin : null,
+          name: p.getAttribute('name') ?? p.getAttribute('oID') ?? '',
+          layer: lname.isEmpty ? 'CGPOINTS' : lname,
+          code: p.getAttribute('code') ?? '',
+        ));
       }
     }
-    final surfaces = <({String name, List<(double, double, double)> pts, List<int> ids, List<(int, int, int)> faces, List<({String kind, List<List<double>> pts, double? elev, String name})> source})>[];
+    final surfaces =
+        <({String name, List<(double, double, double)> pts, List<int> ids, List<(int, int, int)> faces, List<({String kind, List<List<double>> pts, double? elev, String name})> source})>[];
     for (final s in root.findAllElements('Surface')) {
       final name = s.getAttribute('name') ?? 'SURFACE';
       final pts = <(double, double, double)>[];
@@ -248,8 +290,13 @@ class LandXmlReader {
     // ---- placement
     final sample = <(double, double)>[
       for (final p in cg) (p.x * unitXY, p.y * unitXY),
-      for (final s in surfaces) ...[for (final p in s.pts) (p.$1 * unitXY, p.$2 * unitXY), for (final x in s.source) for (final q in x.pts) (q[1] * unitXY, q[0] * unitXY)],
-      for (final p in pipes) for (final q in p.pts) (q.$1 * unitXY, q.$2 * unitXY),
+      for (final s in surfaces) ...[
+        for (final p in s.pts) (p.$1 * unitXY, p.$2 * unitXY),
+        for (final x in s.source)
+          for (final q in x.pts) (q[1] * unitXY, q[0] * unitXY),
+      ],
+      for (final p in pipes)
+        for (final q in p.pts) (q.$1 * unitXY, q.$2 * unitXY),
     ];
     final placement = GeoPlacement.plan(crs, sample, georef: georef);
     warnings.addAll(placement.warnings);
@@ -316,7 +363,16 @@ class LandXmlReader {
       pipeOut.add(LandXmlPipe(name: p.name, network: p.layer, points: pts, diameter: p.diameter, invertStart: p.invertStart, invertEnd: p.invertEnd));
     }
     out.layers.addAll(layers.values);
-    return LandXmlImportResult(document: out, georef: placement.georef, crs: placement.crs, surfaces: result, cgPointCount: cg.length, pipes: pipeOut, warnings: warnings, localOrigin: placement.localOrigin);
+    return LandXmlImportResult(
+      document: out,
+      georef: placement.georef,
+      crs: placement.crs,
+      surfaces: result,
+      cgPointCount: cg.length,
+      pipes: pipeOut,
+      warnings: warnings,
+      localOrigin: placement.localOrigin,
+    );
   }
 
   static XmlElement? _child(XmlElement e, String local) {
@@ -353,12 +409,18 @@ class LandXmlWriter {
     final terrain = project.buildTerrain();
     final b = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-      ..writeln('<LandXML xmlns="${LandXmlReader.namespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="${LandXmlReader.namespace} http://www.landxml.org/schema/LandXML-1.2/LandXML-1.2.xsd" '
-          'date="${now.year}-${two(now.month)}-${two(now.day)}" time="${two(now.hour)}:${two(now.minute)}:${two(now.second)}" version="1.2" language="English" readOnly="false">')
-      ..writeln('  <Units><Metric areaUnit="squareMeter" linearUnit="meter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" diameterUnit="millimeter" velocityUnit="metersPerSecond" flowUnit="cubicMeterSecond" angularUnit="decimal degrees" directionUnit="decimal degrees"/></Units>');
+      ..writeln(
+        '<LandXML xmlns="${LandXmlReader.namespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="${LandXmlReader.namespace} http://www.landxml.org/schema/LandXML-1.2/LandXML-1.2.xsd" '
+        'date="${now.year}-${two(now.month)}-${two(now.day)}" time="${two(now.hour)}:${two(now.minute)}:${two(now.second)}" version="1.2" language="English" readOnly="false">',
+      )
+      ..writeln(
+        '  <Units><Metric areaUnit="squareMeter" linearUnit="meter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" diameterUnit="millimeter" velocityUnit="metersPerSecond" flowUnit="cubicMeterSecond" angularUnit="decimal degrees" directionUnit="decimal degrees"/></Units>',
+      );
     if (g != null) {
       final crs = CrsInfo.utm(g.zone, g.north, datum: datum);
-      b.writeln('  <CoordinateSystem name="${_esc(crs.name)}"${crs.epsgCode != null ? ' epsgCode="${crs.epsgCode}"' : ''} ogcWktCode="${_esc(crs.toOgcWkt())}" horizontalDatum="${_esc(datum.ogcName)}" projectedCoordinateSystemName="${_esc(crs.name)}"/>');
+      b.writeln(
+        '  <CoordinateSystem name="${_esc(crs.name)}"${crs.epsgCode != null ? ' epsgCode="${crs.epsgCode}"' : ''} ogcWktCode="${_esc(crs.toOgcWkt())}" horizontalDatum="${_esc(datum.ogcName)}" projectedCoordinateSystemName="${_esc(crs.name)}"/>',
+      );
     }
     final m = project.meta;
     b
@@ -483,8 +545,17 @@ class LandXmlWriter {
         final pipes = StringBuffer();
         for (final e in entities) {
           final pts = (e as PolyEntity).points;
-          final depth = switch (e) { PipeEntity p => p.depth, SpraylineEntity s => s.depth, TapeEntity t => t.depth, _ => 0.0 };
-          final pipe = switch (e) { PipeEntity p => cat.pipe(p.pipeSpecId), SpraylineEntity s => cat.pipe(s.pipeSpecId), _ => null };
+          final depth = switch (e) {
+            PipeEntity p => p.depth,
+            SpraylineEntity s => s.depth,
+            TapeEntity t => t.depth,
+            _ => 0.0,
+          };
+          final pipe = switch (e) {
+            PipeEntity p => cat.pipe(p.pipeSpecId),
+            SpraylineEntity s => cat.pipe(s.pipeSpecId),
+            _ => null,
+          };
           final tape = e is TapeEntity ? cat.tape(e.tapeSpecId) : null;
           final dMm = tape?.innerDiameterMm ?? pipe?.innerDiameterMm ?? 0;
           final c = tape?.hazenC ?? pipe?.hazenC;
@@ -513,7 +584,9 @@ class LandXmlWriter {
 
             final desc = [?pipe?.name, ?tape?.name, if (e.name.isNotEmpty) e.name].join(' · ');
             pipes.write('        <Pipe name="$pname" refStart="${structs[sa].name}" refEnd="${structs[sb].name}" length="${_n(a.distanceTo(bb))}"${desc.isNotEmpty ? ' desc="${_esc(desc)}"' : ''}>');
-            pipes.write('<CircPipe diameter="${_n(dMm > 0 ? dMm : 1)}"${c != null ? ' hazenWilliams="${_n(c)}"' : ''}${pipe != null ? ' material="${pipe.material.name}"' : ''}${wall != null && wall > 0 ? ' thickness="${_n(wall)}"' : ''}/>');
+            pipes.write(
+              '<CircPipe diameter="${_n(dMm > 0 ? dMm : 1)}"${c != null ? ' hazenWilliams="${_n(c)}"' : ''}${pipe != null ? ' material="${pipe.material.name}"' : ''}${wall != null && wall > 0 ? ' thickness="${_n(wall)}"' : ''}/>',
+            );
             if (flow != null) {
               final hu = hgl(a), hd = hgl(bb);
               pipes.write('<PipeFlow flowIn="${_n(flow.abs(), 9)}"${hu != null ? ' hglUp="${_n(hu)}"' : ''}${hd != null ? ' hglDown="${_n(hd)}"' : ''}/>');

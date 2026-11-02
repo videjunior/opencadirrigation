@@ -20,7 +20,15 @@ import 'package:opencadirrigation/core/units.dart';
   final area = math.pi * diameter * diameter / 4;
   final q = velocity * area;
   net.addLink(HLink(id: 'P', from: 'R', to: 'N', diameter: diameter, length: length, hazenC: hazenC));
-  net.addLink(HLink(id: 'V', from: 'N', to: 'O', kind: HLinkKind.device, device: DeviceLossCurve(k: head / (q * q))));
+  net.addLink(
+    HLink(
+      id: 'V',
+      from: 'N',
+      to: 'O',
+      kind: HLinkKind.device,
+      device: DeviceLossCurve(k: head / (q * q)),
+    ),
+  );
   return (net, net.solve());
 }
 
@@ -42,7 +50,10 @@ void main() {
       final (net, steady) = reservoirPipeValve();
       const a = 1000.0;
       final model = TransientModel.fromNetwork(net, steady, linkData: const {'P': TransientLinkData(celerity: a)});
-      final r = model.simulate(events: [TransientEvent.valveClosure('V')], options: const TransientOptions(duration: 12, probes: [TransientProbe.node('N')]));
+      final r = model.simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 12, probes: [TransientProbe.node('N')]),
+      );
       final v0 = steady.links['P']!.flow / (math.pi * 0.25 * 0.25);
       final dh = a * v0 / gravity;
       final n = r.nodes['N']!;
@@ -67,7 +78,10 @@ void main() {
       final steady = net.solve();
       final model = TransientModel.fromNetwork(net, steady, linkData: const {'P': TransientLinkData(celerity: a)});
       for (final tc in [4.0, 6.0, 10.0]) {
-        final r = model.simulate(events: [TransientEvent.demandStop('N', stopTime: tc)], options: const TransientOptions(duration: 20));
+        final r = model.simulate(
+          events: [TransientEvent.demandStop('N', stopTime: tc)],
+          options: const TransientOptions(duration: 20),
+        );
         final n = r.nodes['N']!;
         final michaud = 2 * len * 1.0 / (gravity * tc);
         expect(n.maxHead - n.steadyHead, closeTo(michaud, 1e-3 * michaud));
@@ -82,7 +96,10 @@ void main() {
       final jouk = a * v0 / gravity;
       final h0 = steady.nodes['N']!.head;
       for (final tc in [8.0, 20.0, 80.0]) {
-        final r = model.simulate(events: [TransientEvent.valveClosure('V', closureTime: tc)], options: TransientOptions(duration: tc + 10, probes: const [TransientProbe.node('N')]));
+        final r = model.simulate(
+          events: [TransientEvent.valveClosure('V', closureTime: tc)],
+          options: TransientOptions(duration: tc + 10, probes: const [TransientProbe.node('N')]),
+        );
         final surge = r.nodes['N']!.maxHead - h0;
         expect(surge, lessThan(jouk));
         // up to 2L/a the C+ characteristic still carries the steady state:
@@ -104,10 +121,20 @@ void main() {
         final rigidMax = h0 * (k / 2 + math.sqrt(k + k * k / 4));
         if (tc == 8) {
           // the same stroke as a τ(t) table gives the same transient
-          final rt = model.simulate(events: [TransientEvent.valveClosure('V', table: const [(0, 1), (8, 0)])], options: TransientOptions(duration: tc + 10, probes: const [TransientProbe.node('N')]));
+          final rt = model.simulate(
+            events: [
+              TransientEvent.valveClosure('V', table: const [(0, 1), (8, 0)]),
+            ],
+            options: TransientOptions(duration: tc + 10, probes: const [TransientProbe.node('N')]),
+          );
           expect(rt.seriesOf('N')!.heads, s.heads);
           // a fast first stage to 20 % then a slow one: a larger surge than the uniform stroke
-          final two = model.simulate(events: [TransientEvent.valveClosure('V', table: const [(0, 1), (1, 0.2), (8, 0)])], options: TransientOptions(duration: tc + 10));
+          final two = model.simulate(
+            events: [
+              TransientEvent.valveClosure('V', table: const [(0, 1), (1, 0.2), (8, 0)]),
+            ],
+            options: TransientOptions(duration: tc + 10),
+          );
           expect(two.nodes['N']!.maxHead - h0, greaterThan(surge));
           expect(two.nodes['N']!.maxHead - h0, lessThan(jouk));
         }
@@ -156,7 +183,10 @@ void main() {
       const a = 1000.0;
       final hEnd = 200.0;
       final model = TransientModel.fromNetwork(net, steady, linkData: const {'P': TransientLinkData(celerity: a)});
-      final r = model.simulate(events: [TransientEvent.valveClosure('V')], options: const TransientOptions(duration: 40, probes: [TransientProbe.node('N')]));
+      final r = model.simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 40, probes: [TransientProbe.node('N')]),
+      );
       expect(r.messages.where((m) => m.startsWith('transient_column')), isEmpty);
       final s = r.seriesOf('N')!;
       final peaks = List<double>.filled(10, 0);
@@ -170,7 +200,10 @@ void main() {
       expect(peaks[9], lessThan(0.9 * peaks[0]));
       // the frictionless case keeps its amplitude
       final (net2, steady2) = reservoirPipeValve(diameter: 0.3, velocity: 1, hazenC: 1e7, head: 200);
-      final r2 = TransientModel.fromNetwork(net2, steady2, linkData: const {'P': TransientLinkData(celerity: a)}).simulate(events: [TransientEvent.valveClosure('V')], options: const TransientOptions(duration: 40, probes: [TransientProbe.node('N')]));
+      final r2 = TransientModel.fromNetwork(net2, steady2, linkData: const {'P': TransientLinkData(celerity: a)}).simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 40, probes: [TransientProbe.node('N')]),
+      );
       final s2 = r2.seriesOf('N')!;
       var first = 0.0, last = 0.0;
       for (var i = 0; i < r2.times.length; i++) {
@@ -198,7 +231,10 @@ void main() {
       final model = TransientModel.fromNetwork(net, steady, linkData: const {'A': TransientLinkData(celerity: 1000), 'PB': TransientLinkData(celerity: 1000), 'PC': TransientLinkData(celerity: 1000)});
       final r = model.simulate(
         events: [TransientEvent.valveClosure('VB', closureTime: 0.5)],
-        options: const TransientOptions(duration: 15, probes: [TransientProbe.link('A', fraction: 1), TransientProbe.link('PB', fraction: 0), TransientProbe.link('PC', fraction: 1), TransientProbe.link('VB')]),
+        options: const TransientOptions(
+          duration: 15,
+          probes: [TransientProbe.link('A', fraction: 1), TransientProbe.link('PB', fraction: 0), TransientProbe.link('PC', fraction: 1), TransientProbe.link('VB')],
+        ),
       );
       final qa = r.seriesOf('A')!.flows, qb = r.seriesOf('PB')!.flows, qc = r.seriesOf('PC')!.flows;
       var worst = 0.0;
@@ -213,7 +249,10 @@ void main() {
     test('column separation: vapour cavity at the valve after the downsurge', () {
       final (net, steady) = reservoirPipeValve(head: 20);
       final model = TransientModel.fromNetwork(net, steady, linkData: const {'P': TransientLinkData(celerity: 1000)});
-      final r = model.simulate(events: [TransientEvent.valveClosure('V')], options: const TransientOptions(duration: 20, probes: [TransientProbe.node('N')]));
+      final r = model.simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 20, probes: [TransientProbe.node('N')]),
+      );
       final n = r.nodes['N']!;
       expect(n.minPressure, closeTo(0.24 - 10.33, 1e-6));
       expect(n.maxCavityVolume, greaterThan(0));
@@ -258,7 +297,12 @@ void main() {
       const data = {'P1': TransientLinkData(celerity: 400), 'P2': TransientLinkData(celerity: 400)};
       const opts = TransientOptions(duration: 30, probes: [TransientProbe.node('HP')]);
       final bare = TransientModel.fromNetwork(net, steady, linkData: data).simulate(events: [TransientEvent.valveClosure('U')], options: opts);
-      final prot = TransientModel.fromNetwork(net, steady, linkData: data, airValves: const [AirValve(nodeId: 'HP', inflowDiameter: 0.1, outflowDiameter: 0.01)]).simulate(events: [TransientEvent.valveClosure('U')], options: opts);
+      final prot = TransientModel.fromNetwork(
+        net,
+        steady,
+        linkData: data,
+        airValves: const [AirValve(nodeId: 'HP', inflowDiameter: 0.1, outflowDiameter: 0.01)],
+      ).simulate(events: [TransientEvent.valveClosure('U')], options: opts);
       final b = bare.nodes['HP']!, p = prot.nodes['HP']!;
       expect(b.minPressure, closeTo(0.24 - 10.33, 1e-6), reason: 'unprotected, the high point reaches the vapour pressure');
       expect(bare.messages, contains('transient_column_separation:HP'));
@@ -357,7 +401,12 @@ void main() {
         final trip = [TransientEvent.pumpTrip('PU', inertia: 2, speedRpm: 1480)];
         const opts = TransientOptions(duration: 60, probes: [TransientProbe.node('D')]);
         final bare = TransientModel.fromNetwork(net, steady, linkData: data).simulate(events: trip, options: opts);
-        final prot = TransientModel.fromNetwork(net, steady, linkData: data, surgeVessels: const [SurgeVessel(nodeId: 'D', gasVolume: 2, totalVolume: 6, connectionDiameter: 0.25)]).simulate(events: trip, options: opts);
+        final prot = TransientModel.fromNetwork(
+          net,
+          steady,
+          linkData: data,
+          surgeVessels: const [SurgeVessel(nodeId: 'D', gasVolume: 2, totalVolume: 6, connectionDiameter: 0.25)],
+        ).simulate(events: trip, options: opts);
         final b = bare.nodes['D']!, p = prot.nodes['D']!;
         expect(bare.messages, contains('transient_column_separation:D'));
         expect(b.minPressure, closeTo(0.24 - 10.33, 1e-6));
@@ -390,7 +439,15 @@ void main() {
       net.addLink(HLink(id: 'a', from: 'R', to: 'J1', diameter: d, length: 300, hazenC: 1e7));
       net.addLink(HLink(id: 'b', from: 'J2', to: 'J1', diameter: d, length: 450, hazenC: 1e7));
       net.addLink(HLink(id: 'c', from: 'J2', to: 'N', diameter: d, length: 250, hazenC: 1e7));
-      net.addLink(HLink(id: 'V', from: 'N', to: 'O', kind: HLinkKind.device, device: DeviceLossCurve(k: 100 / (q * q))));
+      net.addLink(
+        HLink(
+          id: 'V',
+          from: 'N',
+          to: 'O',
+          kind: HLinkKind.device,
+          device: DeviceLossCurve(k: 100 / (q * q)),
+        ),
+      );
       final steady = net.solve();
       const data = {'a': TransientLinkData(celerity: 1000), 'b': TransientLinkData(celerity: 1000), 'c': TransientLinkData(celerity: 1000)};
       final r = TransientModel.fromNetwork(net, steady, linkData: data).simulate(
@@ -443,7 +500,10 @@ void main() {
       final steady = net.solve();
       const data = {'main': TransientLinkData(celerity: 1000), 'stub': TransientLinkData(celerity: 1000), 'tail': TransientLinkData(celerity: 1000)};
       final model = TransientModel.fromNetwork(net, steady, linkData: data);
-      final auto = model.simulate(events: [TransientEvent.valveClosure('V', closureTime: 3)], options: const TransientOptions(duration: 10, probes: [TransientProbe.link('main', fraction: 1), TransientProbe.link('stub', fraction: 0), TransientProbe.link('tail', fraction: 0)]));
+      final auto = model.simulate(
+        events: [TransientEvent.valveClosure('V', closureTime: 3)],
+        options: const TransientOptions(duration: 10, probes: [TransientProbe.link('main', fraction: 1), TransientProbe.link('stub', fraction: 0), TransientProbe.link('tail', fraction: 0)]),
+      );
       expect(auto.messages, isEmpty, reason: 'no cavity: the liquid alone balances at J');
       expect(auto.lumpedLinks, ['stub']);
       expect(auto.interpolatedLinks, isEmpty);
@@ -501,11 +561,11 @@ void main() {
       net.addLink(HLink(id: 'P2', from: 'B', to: 'N', diameter: 0.25, length: 900, hazenC: 130));
       net.addLink(HLink(id: 'V', from: 'N', to: 'O', kind: HLinkKind.device, device: const DeviceLossCurve(k: 9000)));
       final steady = net.solve();
-      final data = {
-        'P1': const TransientLinkData(celerity: 900, rating: 100),
-        'P2': const TransientLinkData(celerity: 900, rating: 100, minRating: -3),
-      };
-      final r = TransientModel.fromNetwork(net, steady, linkData: data).simulate(events: [TransientEvent.valveClosure('V')], options: const TransientOptions(duration: 20, probes: [TransientProbe.link('CV')]));
+      final data = {'P1': const TransientLinkData(celerity: 900, rating: 100), 'P2': const TransientLinkData(celerity: 900, rating: 100, minRating: -3)};
+      final r = TransientModel.fromNetwork(net, steady, linkData: data).simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 20, probes: [TransientProbe.link('CV')]),
+      );
       expect(r.checkValveClosures.keys, contains('CV'));
       expect(r.seriesOf('CV')!.flows.every((q) => q >= 0), isTrue);
       expect(r.messages, contains('transient_overpressure:P2'));
@@ -524,12 +584,7 @@ void main() {
       final q0 = steady.nodes['E']!.emitterFlow;
       expect(q0, greaterThan(0));
       final model = TransientModel.fromNetwork(net, steady, linkData: const {'P': TransientLinkData(celerity: 450), 'Q': TransientLinkData(celerity: 450)});
-      final events = [
-        TransientEvent.demandStop('E', stopTime: 2, mode: DemandStopMode.orifice),
-        TransientEvent.valveClosure('nope'),
-        TransientEvent.pumpTrip('P'),
-        TransientEvent.demandStop('J'),
-      ];
+      final events = [TransientEvent.demandStop('E', stopTime: 2, mode: DemandStopMode.orifice), TransientEvent.valveClosure('nope'), TransientEvent.pumpTrip('P'), TransientEvent.demandStop('J')];
       const opts = TransientOptions(duration: 15, probes: [TransientProbe.node('E'), TransientProbe.node('missing')]);
       final r1 = model.simulate(events: events, options: opts);
       final r2 = model.simulate(events: events, options: opts);
@@ -555,11 +610,22 @@ void main() {
       net.addLink(HLink(id: 'A', from: 'R', to: 'J', diameter: 0.4, length: 1000, hazenC: 1e7));
       net.addLink(HLink(id: 'B', from: 'J', to: 'N', diameter: 0.4, length: 1000, hazenC: 1e7));
       final qv = math.pi * 0.04;
-      net.addLink(HLink(id: 'D', from: 'N', to: 'O', kind: HLinkKind.device, device: DeviceLossCurve(k: 150 / (qv * qv))));
+      net.addLink(
+        HLink(
+          id: 'D',
+          from: 'N',
+          to: 'O',
+          kind: HLinkKind.device,
+          device: DeviceLossCurve(k: 150 / (qv * qv)),
+        ),
+      );
       final steady = net.solve();
       const data = {'A': TransientLinkData(celerity: 1000), 'B': TransientLinkData(celerity: 1000)};
       final model = TransientModel.fromNetwork(net, steady, linkData: data);
-      final r = model.simulate(events: [TransientEvent.valveClosure('A')], options: const TransientOptions(duration: 1.9, probes: [TransientProbe.link('A', fraction: 1), TransientProbe.node('J')]));
+      final r = model.simulate(
+        events: [TransientEvent.valveClosure('A')],
+        options: const TransientOptions(duration: 1.9, probes: [TransientProbe.link('A', fraction: 1), TransientProbe.node('J')]),
+      );
       final q0 = steady.links['A']!.flow;
       final dh = 1000 / gravity * q0 / (math.pi * 0.04);
       final hj = steady.nodes['J']!.head;
@@ -570,7 +636,12 @@ void main() {
       // a valve added to a pipe has the small open loss of a gate valve: it
       // throttles only at the very end of its stroke, so even a 3 s stroke
       // closes almost at once
-      final slow = model.simulate(events: [TransientEvent.valveClosure('A', table: const [(0, 1), (1, 0.4), (3, 0)])], options: const TransientOptions(duration: 6));
+      final slow = model.simulate(
+        events: [
+          TransientEvent.valveClosure('A', table: const [(0, 1), (1, 0.4), (3, 0)]),
+        ],
+        options: const TransientOptions(duration: 6),
+      );
       expect(slow.links['A']!.points.last.maxHead - hj, greaterThan(0.95 * dh));
       // a check valve on a pipe: the downstream reservoir rises above the upstream one
       final cnet = HydraulicNetwork();
@@ -582,7 +653,10 @@ void main() {
       cnet.addLink(HLink(id: 'B', from: 'J', to: 'N', diameter: 0.3, length: 800, hazenC: 140));
       cnet.addLink(HLink(id: 'V', from: 'N', to: 'O', kind: HLinkKind.device, device: const DeviceLossCurve(k: 3000)));
       final cs = cnet.solve();
-      final cr = TransientModel.fromNetwork(cnet, cs, linkData: const {'A': TransientLinkData(celerity: 1000), 'B': TransientLinkData(celerity: 1000)}).simulate(events: [TransientEvent.valveClosure('V')], options: const TransientOptions(duration: 20, probes: [TransientProbe.link('B', fraction: 0)]));
+      final cr = TransientModel.fromNetwork(cnet, cs, linkData: const {'A': TransientLinkData(celerity: 1000), 'B': TransientLinkData(celerity: 1000)}).simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 20, probes: [TransientProbe.link('B', fraction: 0)]),
+      );
       expect(cr.checkValveClosures['A'], closeTo(2.5, 0.2), reason: 'the wave reflected by R returns to the valve at 2.4 s');
       // the check valve sits at the end of A: the flow through it, into B, never reverses
       expect(cr.seriesOf('B')!.flows.every((q) => q >= -1e-12), isTrue);
@@ -641,7 +715,13 @@ void main() {
       }
       expect(quiet.lumpedLinks, contains('sat_Xs'));
       expect(quiet.messages, isEmpty);
-      final trip = model.simulate(events: [TransientEvent.pumpTrip('pump', powerKw: 5.5, speedRpm: 2900 * 0.95), TransientEvent.demandStop('Z1', stopTime: 2, startTime: 5)], options: const TransientOptions(duration: 40, probes: [TransientProbe.link('pump'), TransientProbe.link('check')]));
+      final trip = model.simulate(
+        events: [
+          TransientEvent.pumpTrip('pump', powerKw: 5.5, speedRpm: 2900 * 0.95),
+          TransientEvent.demandStop('Z1', stopTime: 2, startTime: 5),
+        ],
+        options: const TransientOptions(duration: 40, probes: [TransientProbe.link('pump'), TransientProbe.link('check')]),
+      );
       expect(trip.messages.where((m) => m.startsWith('transient_not_converged')), isEmpty);
       expect(trip.checkValveClosures.keys, anyOf(contains('pump'), contains('check')));
       expect(trip.seriesOf('check')!.flows.every((q) => q >= 0), isTrue);

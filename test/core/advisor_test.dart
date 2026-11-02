@@ -15,7 +15,8 @@ void main() {
   final t = I18n('pt');
   Project example(ExampleId id) => buildExample(id, t.call, lang: 'pt');
   DesignResults design(Project p) => Designer(p, label: t.call).designAll();
-  Future<DesignResults?> Function() designer(Project p) => () async => design(p);
+  Future<DesignResults?> Function() designer(Project p) =>
+      () async => design(p);
   Advice find(List<Advice> list, String code) => list.firstWhere((a) => a.code == code, orElse: () => throw TestFailure('no $code in ${list.map((a) => a.code).toList()}'));
   FixResult fix(Project p, Advice a, [DesignResults? r]) => applyFix(p, a, a.fixes.first, results: r, label: t.call, lang: 'pt');
 

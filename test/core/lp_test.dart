@@ -59,7 +59,10 @@ void main() {
       p.add({for (var j = 0; j < 3; j++) i * 3 + j: 1.0}, LpSense.eq, 1);
     }
     // end node pressure H0 - losses >= 10 and <= 14
-    final path = {for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) i * 3 + j: -losses[i][j]};
+    final path = {
+      for (var i = 0; i < 3; i++)
+        for (var j = 0; j < 3; j++) i * 3 + j: -losses[i][j],
+    };
     p.add({...path, h0: 1.0}, LpSense.ge, 10);
     p.add({...path, h0: 1.0}, LpSense.le, 14);
     final r = solveLp(p);

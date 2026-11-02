@@ -38,27 +38,34 @@ Future<bool> showGoogleMapsKeyDialog(BuildContext context, ProjectController c) 
       title: Text(t('basemap.googleKey.title'), style: const TextStyle(fontSize: 15)),
       content: SizedBox(
         width: dialogWidth(ctx, 560),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t('basemap.googleKey.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
-          const SizedBox(height: 6),
-          Text(t('basemap.googleKey.steps'), style: TextStyle(fontSize: 11.5, color: Cad.fg60)),
-          const SizedBox(height: 6),
-          Wrap(spacing: 8, children: [
-            TextButton.icon(onPressed: () => openExternalLink(googleMapsConsoleUrl), icon: const Icon(Icons.open_in_new, size: 14), label: Text(t('basemap.googleKey.console'))),
-            TextButton.icon(onPressed: () => openExternalLink(googleMapsKeyDocsUrl), icon: const Icon(Icons.help_outline, size: 14), label: Text(t('basemap.googleKey.docs'))),
-          ]),
-          const SizedBox(height: 4),
-          TextField(
-            key: const Key('google_key_field'),
-            controller: ctl,
-            autofocus: true,
-            decoration: InputDecoration(labelText: t('basemap.googleKey.field'), hintText: 'AIza…', isDense: true),
-            style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-            onSubmitted: (_) => Navigator.pop(ctx, true),
-          ),
-          const SizedBox(height: 6),
-          Text(t('basemap.googleKey.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t('basemap.googleKey.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+            const SizedBox(height: 6),
+            Text(t('basemap.googleKey.steps'), style: TextStyle(fontSize: 11.5, color: Cad.fg60)),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              children: [
+                TextButton.icon(onPressed: () => openExternalLink(googleMapsConsoleUrl), icon: const Icon(Icons.open_in_new, size: 14), label: Text(t('basemap.googleKey.console'))),
+                TextButton.icon(onPressed: () => openExternalLink(googleMapsKeyDocsUrl), icon: const Icon(Icons.help_outline, size: 14), label: Text(t('basemap.googleKey.docs'))),
+              ],
+            ),
+            const SizedBox(height: 4),
+            TextField(
+              key: const Key('google_key_field'),
+              controller: ctl,
+              autofocus: true,
+              decoration: InputDecoration(labelText: t('basemap.googleKey.field'), hintText: 'AIza…', isDense: true),
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              onSubmitted: (_) => Navigator.pop(ctx, true),
+            ),
+            const SizedBox(height: 6),
+            Text(t('basemap.googleKey.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+          ],
+        ),
       ),
       actions: [
         if (c.googleMapsKey != null)
@@ -93,40 +100,46 @@ Future<bool> showCustomTilesDialog(BuildContext context, ProjectController c) as
   String? error;
   final saved = await showDialog<bool>(
     context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
-      void submit() {
-        if (!BaseMapLayer.isValidTemplate(ctl.text)) {
-          setState(() => error = t('basemap.customInvalid'));
-          return;
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        void submit() {
+          if (!BaseMapLayer.isValidTemplate(ctl.text)) {
+            setState(() => error = t('basemap.customInvalid'));
+            return;
+          }
+          Navigator.pop(ctx, true);
         }
-        Navigator.pop(ctx, true);
-      }
 
-      return AlertDialog(
-        title: Text(t('basemap.custom.title'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(
-          width: dialogWidth(ctx, 560),
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(t('basemap.custom.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
-            const SizedBox(height: 6),
-            TextField(
-              key: const Key('custom_tiles_field'),
-              controller: ctl,
-              autofocus: true,
-              decoration: InputDecoration(labelText: t('basemap.custom.field'), hintText: 'https://example.com/tiles/{z}/{x}/{y}.png', isDense: true, errorText: error),
-              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-              onSubmitted: (_) => submit(),
+        return AlertDialog(
+          title: Text(t('basemap.custom.title'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: dialogWidth(ctx, 560),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('basemap.custom.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+                const SizedBox(height: 6),
+                TextField(
+                  key: const Key('custom_tiles_field'),
+                  controller: ctl,
+                  autofocus: true,
+                  decoration: InputDecoration(labelText: t('basemap.custom.field'), hintText: 'https://example.com/tiles/{z}/{x}/{y}.png', isDense: true, errorText: error),
+                  style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                  onSubmitted: (_) => submit(),
+                ),
+                const SizedBox(height: 6),
+                Text(t('basemap.custom.placeholders'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+              ],
             ),
-            const SizedBox(height: 6),
-            Text(t('basemap.custom.placeholders'), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
-          ]),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('cancel'))),
-          FilledButton(key: const Key('custom_tiles_save'), onPressed: submit, child: Text(t('ok'))),
-        ],
-      );
-    }),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('cancel'))),
+            FilledButton(key: const Key('custom_tiles_save'), onPressed: submit, child: Text(t('ok'))),
+          ],
+        );
+      },
+    ),
   );
   if (saved == true) c.setCustomTileUrl(ctl.text);
   return BaseMapLayer.isValidTemplate(c.customTileUrl);

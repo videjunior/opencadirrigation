@@ -31,7 +31,16 @@ void main() {
     final tagged = HydraulicNetwork()
       ..addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 30))
       ..addNode(HNode(id: 'J', demand: 0.002));
-    tagged.addLink(HLink(id: 'p', from: 'R', to: 'J', diameter: 0.05, length: 105, tag: GLink(id: 'p', from: 'R', to: 'J', kind: GLinkKind.pipe, scope: HydraulicScope.mainline, entityId: 'e', length: 100)));
+    tagged.addLink(
+      HLink(
+        id: 'p',
+        from: 'R',
+        to: 'J',
+        diameter: 0.05,
+        length: 105,
+        tag: GLink(id: 'p', from: 'R', to: 'J', kind: GLinkKind.pipe, scope: HydraulicScope.mainline, entityId: 'e', length: 100),
+      ),
+    );
     expect(fertigationTravel(tagged, tagged.solve(), 'R').nodes['J']!.earliest, closeTo(_vol(0.05, 100) / 0.002, 1e-6));
     // offset: chained after the travel to the injection point
     expect(fertigationTravel(net, r, 'R', offsetSeconds: 30).nodes['J']!.earliest, closeTo(30 + _vol(0.05, 120) / 0.002, 1e-6));
@@ -78,7 +87,14 @@ void main() {
   });
 
   test('plan: quarters of the irrigation, amounts by hand', () {
-    final travel = FertigationTravel(injectionNode: 'R', nodes: const {'J': TravelTime(nodeId: 'J', earliest: 900, latest: 1800)}, outlets: const ['J'], unreached: const [], volume: 1, codes: const []);
+    final travel = FertigationTravel(
+      injectionNode: 'R',
+      nodes: const {'J': TravelTime(nodeId: 'J', earliest: 900, latest: 1800)},
+      outlets: const ['J'],
+      unreached: const [],
+      volume: 1,
+      codes: const [],
+    );
     final plan = planFertigation(const FertigationInput(irrigationHours: 4, flow: 0.01, areaHa: 2, doseKgPerHa: 50, nutrientFraction: 0.5, stockKgPerL: 0.25, tankLitres: 1000), travel);
     expect(plan.preWetting, 3600);
     expect(plan.flushing, 3600);
@@ -90,7 +106,14 @@ void main() {
     expect(plan.dilution, closeTo(0.01 / (0.8 / 7200), 1e-6));
     expect(plan.codes, isEmpty);
     // a long travel lengthens the flushing
-    final slow = FertigationTravel(injectionNode: 'R', nodes: const {'J': TravelTime(nodeId: 'J', earliest: 3600, latest: 7200)}, outlets: const ['J'], unreached: const [], volume: 1, codes: const []);
+    final slow = FertigationTravel(
+      injectionNode: 'R',
+      nodes: const {'J': TravelTime(nodeId: 'J', earliest: 3600, latest: 7200)},
+      outlets: const ['J'],
+      unreached: const [],
+      volume: 1,
+      codes: const [],
+    );
     final p2 = planFertigation(const FertigationInput(irrigationHours: 4, flow: 0.01, areaHa: 2, doseKgPerHa: 50, stockKgPerL: 0.25, tankLitres: 300), slow);
     expect(p2.flushing, 7200);
     expect(p2.injection, 3600);

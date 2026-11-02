@@ -97,7 +97,10 @@ void main() {
     });
 
     test('a long low-voltage machine fails even on the largest cable', () {
-      final r = designPivotElectrical(PivotElectricalSpec(towerRadiiM: [for (var i = 1; i <= 20; i++) 60.0 * i], voltage: 220, motorKw: 1.1, cables: const [CableOption(1.5, 12.1), CableOption(2.5, 7.41)]), id: 'pv');
+      final r = designPivotElectrical(
+        PivotElectricalSpec(towerRadiiM: [for (var i = 1; i <= 20; i++) 60.0 * i], voltage: 220, motorKw: 1.1, cables: const [CableOption(1.5, 12.1), CableOption(2.5, 7.41)]),
+        id: 'pv',
+      );
       expect(r.cableMm2, 2.5);
       expect(r.warnings, contains('pivot_elec_drop:pv'));
       expect(designPivotElectrical(const PivotElectricalSpec(towerRadiiM: []), id: 'x').warnings, contains('pivot_elec_no_towers:x'));

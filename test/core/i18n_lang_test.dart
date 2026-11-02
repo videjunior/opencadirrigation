@@ -38,8 +38,7 @@ void main() {
     expect(languageFromPath(const []), isNull);
     expect(languageFromPath(['app', 'v2']), isNull);
     expect(languageFromPath(Uri.parse('https://opencadirrigation.com/pt/?example=garden').pathSegments), 'pt');
-    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/').pathSegments), isNull,
-        reason: 'the root page names no language: the machine decides, English when it names none');
+    expect(languageFromPath(Uri.parse('https://opencadirrigation.com/').pathSegments), isNull, reason: 'the root page names no language: the machine decides, English when it names none');
   });
 
   test('a saved choice wins over the machine; URL languages are not saved', () {

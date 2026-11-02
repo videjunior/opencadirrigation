@@ -1,3 +1,5 @@
+// dart format off
+// (the snippets of docs/API.md are matched line by line against this file)
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;

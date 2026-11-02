@@ -72,7 +72,10 @@ Project everything() {
   return p;
 }
 
-ProjectExporter exporterOf(Project p) => ProjectExporter(project: p, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+ProjectExporter exporterOf(Project p) => ProjectExporter(
+  project: p,
+  labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+);
 
 /// The group code pairs of a DXF text.
 List<(int, String)> pairsOf(String dxf) {
@@ -130,7 +133,8 @@ List<String> readErrors(DwgResult r) => r.warnings.where((w) => w.startsWith('ob
 
 /// dwgread's complaints, without the one LibreDWG 0.14 prints for every
 /// R2000 hatch (AutoCAD's own files included).
-List<String> libreDwgProblems(String log) => log.split('\n').where((l) => (l.contains('ERROR') || l.contains('Warning') || l.contains('mismatch')) && !l.contains('Skip HATCH common handles')).toList();
+List<String> libreDwgProblems(String log) =>
+    log.split('\n').where((l) => (l.contains('ERROR') || l.contains('Warning') || l.contains('mismatch')) && !l.contains('Skip HATCH common handles')).toList();
 
 void main() {
   final out = Directory('build/cad_export')..createSync(recursive: true);
@@ -192,7 +196,11 @@ void main() {
         expect(text, contains('SECTION\n  2\n$section\n'));
       }
       // every entity has a handle (unique in the file) and an owner
-      final handles = [for (final s in ['TABLES', 'BLOCKS', 'ENTITIES', 'OBJECTS']) for (final (type, codes) in objectsOf(text, s)) if (type != 'TABLE' && type != 'ENDTAB') ...?(codes[5] ?? codes[105])];
+      final handles = [
+        for (final s in ['TABLES', 'BLOCKS', 'ENTITIES', 'OBJECTS'])
+          for (final (type, codes) in objectsOf(text, s))
+            if (type != 'TABLE' && type != 'ENDTAB') ...?(codes[5] ?? codes[105]),
+      ];
       expect(handles.toSet().length, handles.length);
       expect(ents.every((e) => e.$2.containsKey(5) && e.$2.containsKey(330)), isTrue);
       expect(int.parse(headerVar(r'$HANDSEED'), radix: 16), greaterThan(handles.map((h) => int.parse(h, radix: 16)).reduce(math.max)));
@@ -252,7 +260,13 @@ void main() {
       expect(ents[i + 1 + attribs.length].$1, 'SEQEND');
       // symbols: references to one block per kind, scaled and turned
       final tree = one('INSERT', (c) => c[2]!.first == CadExport.symbolBlock(SymbolKind.tree));
-      expect([tree[41], tree[50]], [['3.0'], ['20.0']]);
+      expect(
+        [tree[41], tree[50]],
+        [
+          ['3.0'],
+          ['20.0'],
+        ],
+      );
       // text: accents and symbols in the \U+ notation, multiline text escaped
       expect(one('TEXT', (c) => c[8]!.first == Layers.text)[1], [r'Zona 1 \U+2013 a\U+00E7ude {x} 50% \U+0416']);
       expect(one('MTEXT', (c) => c[8]!.first == Layers.text)[1], [r'linha 1\Plinha 2']);
@@ -333,7 +347,27 @@ void main() {
       expect(on(Layers.outlets).where((e) => e.type == 'CIRCLE' && (e.radius - 0.3).abs() < 1e-9).length, 4, reason: 'sprayline outlets');
       // invisible attributes are not drawn; labels and notes are
       final texts = doc.entities.where((e) => e.type == 'TEXT').map((e) => e.text).toList();
-      expect(texts, containsAll(['Zona 1 – açude {x} 50% Ж', 'linha 1 linha 2', 'Setor 1', 'Poço', 'Nota', 'MJ: conferir cota', 'B — novo setor', '10.00', '90.0°', 'R5.00', 'Ø4.00', 'X 10.00', 'Y 5.00', 'P', 'W', 'C']));
+      expect(
+        texts,
+        containsAll([
+          'Zona 1 – açude {x} 50% Ж',
+          'linha 1 linha 2',
+          'Setor 1',
+          'Poço',
+          'Nota',
+          'MJ: conferir cota',
+          'B — novo setor',
+          '10.00',
+          '90.0°',
+          'R5.00',
+          'Ø4.00',
+          'X 10.00',
+          'Y 5.00',
+          'P',
+          'W',
+          'C',
+        ]),
+      );
       expect(texts, isNot(contains('rotor')));
       final leader = on(Layers.dimensions).firstWhere((e) => e.type == 'POLYLINE' && e.points.length == 3 && e.points.last == const Pt(9, 5));
       expect(leader.points.first, Pt.zero);
@@ -359,7 +393,15 @@ void main() {
 
     test('user blocks of the project become block definitions', () {
       final q = Project();
-      q.blocks.put(BlockDefinition(name: 'Cavalete 1"', entities: [CircleEntity(id: 'a', center: Pt.zero, radius: 1), ControlValveEntity(id: 'b', position: const Pt(2, 0))]));
+      q.blocks.put(
+        BlockDefinition(
+          name: 'Cavalete 1"',
+          entities: [
+            CircleEntity(id: 'a', center: Pt.zero, radius: 1),
+            ControlValveEntity(id: 'b', position: const Pt(2, 0)),
+          ],
+        ),
+      );
       q.entities.add(LineEntity(id: 'l', a: Pt.zero, b: const Pt(1, 1)));
       final d = exporterOf(q).cadDrawing();
       final blk = d.block('Cavalete 1_')!;
@@ -387,7 +429,8 @@ void main() {
       String xy(Pt q) => '${q.x.toStringAsFixed(3)},${q.y.toStringAsFixed(3)}';
       Set<String> keys(Iterable<DxfEntity> es) => {
         for (final e in es)
-          if (e.type != 'SPLINE' && e.type != 'POLYLINE') '${e.type} ${e.layer} ${[...(e.type == 'HATCH' ? e.points.take(1) : e.points), ?e.center].map(xy).join(' ')} ${DxfReader.plainText(e.text)} ${e.radius.toStringAsFixed(3)}',
+          if (e.type != 'SPLINE' && e.type != 'POLYLINE')
+            '${e.type} ${e.layer} ${[...(e.type == 'HATCH' ? e.points.take(1) : e.points), ?e.center].map(xy).join(' ')} ${DxfReader.plainText(e.text)} ${e.radius.toStringAsFixed(3)}',
       };
       expect(keys(r.document.entities), keys(dxf.entities));
       final valve = r.document.entities.where((e) => e.layer == Layers.controlValves && e.type == 'POLYLINE').single;
@@ -406,7 +449,23 @@ void main() {
       final log = '${read.stdout}${read.stderr}';
       expect(read.exitCode, 0);
       expect(libreDwgProblems(log), isEmpty);
-      for (final type in ['LWPOLYLINE', 'SPLINE', 'HATCH', 'INSERT', 'ATTRIB', 'ATTDEF', 'SEQEND', 'MTEXT', 'LEADER', 'DIMENSION_ALIGNED', 'DIMENSION_ANG3PT', 'DIMENSION_RADIUS', 'DIMENSION_DIAMETER', 'DIMENSION_ORDINATE', 'SOLID']) {
+      for (final type in [
+        'LWPOLYLINE',
+        'SPLINE',
+        'HATCH',
+        'INSERT',
+        'ATTRIB',
+        'ATTDEF',
+        'SEQEND',
+        'MTEXT',
+        'LEADER',
+        'DIMENSION_ALIGNED',
+        'DIMENSION_ANG3PT',
+        'DIMENSION_RADIUS',
+        'DIMENSION_DIAMETER',
+        'DIMENSION_ORDINATE',
+        'SOLID',
+      ]) {
         expect(log, contains('Add entity $type'), reason: type);
       }
       expect('Add table record BLOCK_HEADER'.allMatches(log).length, ex.cadDrawing().blocks.length + 2, reason: 'model and paper space and every block');

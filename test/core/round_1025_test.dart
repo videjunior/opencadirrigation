@@ -264,7 +264,11 @@ void reviewTests() {
         CommentEntity(id: 'c2', position: Pt.zero, text: 'y'),
         RevisionCloudEntity(id: 'r1', points: [Pt.zero, const Pt(1, 0), const Pt(1, 1)], revision: 'A', date: '2026-01-02'),
       ]);
-    final tables = buildReportTables(project: p, results: null, labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)));
+    final tables = buildReportTables(
+      project: p,
+      results: null,
+      labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)),
+    );
     final comments = tables.firstWhere((x) => x.key == 'comments');
     expect(comments.rows, hasLength(2));
     expect(comments.warn, [false, true]);

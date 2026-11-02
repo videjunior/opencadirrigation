@@ -66,7 +66,10 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
   }
 
   final entityById = {for (final e in project.entities) e.id: e};
-  final lateralEntities = <String>{for (final e in project.entities) if (e is SpraylineEntity || e is TapeEntity) e.id};
+  final lateralEntities = <String>{
+    for (final e in project.entities)
+      if (e is SpraylineEntity || e is TapeEntity) e.id,
+  };
 
   for (final n in model.nodes.values) {
     if (zone != null && (n.zoneId ?? '') != zone) continue;
@@ -150,7 +153,10 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
       var branch = 0;
       var bestScore = double.infinity;
       for (var i = 0; i < 3; i++) {
-        final others = [for (var j = 0; j < 3; j++) if (j != i) dirFrom(mains[j], n.id)];
+        final others = [
+          for (var j = 0; j < 3; j++)
+            if (j != i) dirFrom(mains[j], n.id),
+        ];
         final straight = (-others[0]).dot(others[1]);
         final score = -straight; // the more collinear the other two, the better
         if (score < bestScore) {
@@ -158,7 +164,10 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
           branch = i;
         }
       }
-      final run = [for (var i = 0; i < 3; i++) if (i != branch) sizeOf(mains[i])];
+      final run = [
+        for (var i = 0; i < 3; i++)
+          if (i != branch) sizeOf(mains[i]),
+      ];
       final runSize = run.reduce(math.max);
       final branchSize = sizeOf(mains[branch]);
       need(FittingKind.tee, math.max(runSize, branchSize), size2: branchSize < runSize - 0.5 ? branchSize : 0);
@@ -247,7 +256,17 @@ FittingSelection selectFittings(Project project, NetworkModel model, PipeSpec? F
     if (cur != null) {
       cur.quantity += qty;
     } else {
-      byItem[f.id] = BomLine(category: category(n.kind), description: f.name, unit: 'un', quantity: qty, unitCost: f.cost, specId: f.id, code: f.code, supplier: f.supplier, finame: cat.finame[f.id] ?? '');
+      byItem[f.id] = BomLine(
+        category: category(n.kind),
+        description: f.name,
+        unit: 'un',
+        quantity: qty,
+        unitCost: f.cost,
+        specId: f.id,
+        code: f.code,
+        supplier: f.supplier,
+        finame: cat.finame[f.id] ?? '',
+      );
     }
   }
   for (final l in byItem.values) {

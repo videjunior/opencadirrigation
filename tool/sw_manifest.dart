@@ -114,7 +114,14 @@ String _replaceOnce(String text, String marker, String value, String file) {
 String fillServiceWorker(String template, {required String build, required List<ShellFile> files, required Map<String, List<ShellFile>> canvasKit}) {
   var s = _replaceOnce(template, "'__OCI_BUILD__'", jsonEncode(build), 'sw.js');
   s = _replaceOnce(s, '[/*__OCI_FILES__*/]', _jsonLines([for (final f in files) f.toJson()]), 'sw.js');
-  s = _replaceOnce(s, '{/*__OCI_CANVASKIT__*/}', jsonEncode({for (final e in canvasKit.entries) e.key: [for (final f in e.value) f.toJson()]}), 'sw.js');
+  s = _replaceOnce(
+    s,
+    '{/*__OCI_CANVASKIT__*/}',
+    jsonEncode({
+      for (final e in canvasKit.entries) e.key: [for (final f in e.value) f.toJson()],
+    }),
+    'sw.js',
+  );
   return s;
 }
 

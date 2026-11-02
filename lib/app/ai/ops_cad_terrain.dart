@@ -76,7 +76,11 @@ List<AgentTool> terrainOperations(AgentToolbox b) {
           pts = e.isClosedShape ? [...line, line.first] : line;
         }
         if (pts == null) throw ToolInputError('Give "pts" (2–500 points, m) or the "id" of a line item.');
-        if (b.p.buildTerrain().isEmpty) throw ToolInputError('The drawing has no terrain data: every elevation is 0 m. Next: ${b.p.meta.georef == null ? 'set_site, then download_terrain' : 'download_terrain'}, or import_attachment of the user\'s survey.');
+        if (b.p.buildTerrain().isEmpty) {
+          throw ToolInputError(
+            'The drawing has no terrain data: every elevation is 0 m. Next: ${b.p.meta.georef == null ? 'set_site, then download_terrain' : 'download_terrain'}, or import_attachment of the user\'s survey.',
+          );
+        }
         final samples = c.profileAlong(pts);
         if (samples.isEmpty) throw ToolInputError('The path has no length.');
         c.setProfilePath(pts);

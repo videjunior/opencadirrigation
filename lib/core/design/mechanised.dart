@@ -55,7 +55,13 @@ PivotPackageSpec pivotPackageSpecOf(PivotSpec spec, PivotEntity p, {double avail
   final m = p.machine;
   final n = spec.towerCount;
   PivotSpanDef span(double len, {bool overhang = false}) => PivotSpanDef(
-    lengthM: len, pipeInnerMm: spec.pipeInnerMm, hazenC: spec.hazenC, roughnessMm: spec.roughnessMm, outletSpacingM: spec.sprinklerSpacingM, overhang: overhang, archM: overhang ? 0 : m.spanArchM,
+    lengthM: len,
+    pipeInnerMm: spec.pipeInnerMm,
+    hazenC: spec.hazenC,
+    roughnessMm: spec.roughnessMm,
+    outletSpacingM: spec.sprinklerSpacingM,
+    overhang: overhang,
+    archM: overhang ? 0 : m.spanArchM,
   );
   final spans = n == 0 ? [span(spec.lengthM)] : [for (var i = 0; i < n; i++) span(spec.spanLengthM), if (spec.overhangM > 1e-6) span(spec.overhangM, overhang: true)];
   final gun = switch (m.endGun) {
@@ -65,10 +71,28 @@ PivotPackageSpec pivotPackageSpecOf(PivotSpec spec, PivotEntity p, {double avail
     _ => spec.endGunFlow > 0 ? EndGunUse.corners : EndGunUse.none,
   };
   return PivotPackageSpec(
-    spans: spans, kind: spec.kind, endThrowM: spec.endThrowM, endGun: gun, endGunFlow: spec.endGunFlow, endGunPressureM: spec.endGunPressureM, endGunRadiusM: m.endGunRadiusM,
-    endGunBooster: m.endGunBooster, grossDepthMm: spec.grossDepthMm, hoursPerCycle: spec.hoursPerCycle, sectorDeg: spec.sectorDeg, travelM: spec.travelM, method: spec.method,
-    kinematicViscosity: spec.kinematicViscosity, pipeHeightM: spec.pipeHeightM, machineLossM: spec.machineLossM, nozzlePressureM: spec.endPressureM, regulated: m.regulated,
-    nozzleHeightM: m.nozzleHeightM, dropInnerMm: m.dropInnerMm, minNozzleNumber: m.minNozzleNumber, maxNozzleNumber: math.max(m.minNozzleNumber, m.maxNozzleNumber),
+    spans: spans,
+    kind: spec.kind,
+    endThrowM: spec.endThrowM,
+    endGun: gun,
+    endGunFlow: spec.endGunFlow,
+    endGunPressureM: spec.endGunPressureM,
+    endGunRadiusM: m.endGunRadiusM,
+    endGunBooster: m.endGunBooster,
+    grossDepthMm: spec.grossDepthMm,
+    hoursPerCycle: spec.hoursPerCycle,
+    sectorDeg: spec.sectorDeg,
+    travelM: spec.travelM,
+    method: spec.method,
+    kinematicViscosity: spec.kinematicViscosity,
+    pipeHeightM: spec.pipeHeightM,
+    machineLossM: spec.machineLossM,
+    nozzlePressureM: spec.endPressureM,
+    regulated: m.regulated,
+    nozzleHeightM: m.nozzleHeightM,
+    dropInnerMm: m.dropInnerMm,
+    minNozzleNumber: m.minNozzleNumber,
+    maxNozzleNumber: math.max(m.minNozzleNumber, m.maxNozzleNumber),
     availableInletHeadM: availableInletHeadM,
     drive: TowerDrive(motorRpm: m.motorRpm, centerGearRatio: m.centerGearRatio, wheelGearRatio: m.wheelGearRatio, tyreRollingDiameterM: m.tyreRollingDiameterM, speedMPerMin: m.towerSpeedMPerMin),
     timerSettings: {...defaultTimerSettings, if (m.timerPct > 0 && m.timerPct <= 100) m.timerPct}.toList()..sort((a, b) => b.compareTo(a)),
@@ -100,11 +124,16 @@ class MechanisedResult {
   List<String> get warnings => [...package.warnings, ...?cornerArm?.warnings, ...?vri?.warnings, ...?electrical?.warnings];
 
   Map<String, dynamic> toJson() => {
-    'id': pivotId, 'pkg': package.toJson(), if (cornerArm != null) 'arm': cornerArm!.toJson(), if (vri != null) 'vri': vri!.toJson(), if (electrical != null) 'elec': electrical!.toJson(),
+    'id': pivotId,
+    'pkg': package.toJson(),
+    if (cornerArm != null) 'arm': cornerArm!.toJson(),
+    if (vri != null) 'vri': vri!.toJson(),
+    if (electrical != null) 'elec': electrical!.toJson(),
   };
 
   static MechanisedResult fromJson(Map<String, dynamic> j) => MechanisedResult(
-    pivotId: j['id'] as String? ?? '', package: PivotPackageResult.fromJson(j['pkg'] as Map<String, dynamic>),
+    pivotId: j['id'] as String? ?? '',
+    package: PivotPackageResult.fromJson(j['pkg'] as Map<String, dynamic>),
     cornerArm: j['arm'] == null ? null : CornerArmResult.fromJson(j['arm'] as Map<String, dynamic>),
     vri: j['vri'] == null ? null : VriResult.fromJson(j['vri'] as Map<String, dynamic>),
     electrical: j['elec'] == null ? null : PivotElectricalResult.fromJson(j['elec'] as Map<String, dynamic>),
@@ -122,8 +151,12 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
   final rise = terrain == null || terrain.isEmpty ? null : groundRiseFunction(spec, p.center, p.angleRad, terrain.elevationAt);
   final regulator = catalog.valve(p.regulatorSpecId);
   final pkg = designPivotPackage(
-    pivotPackageSpecOf(spec, p, availableInletHeadM: availableInletHeadM), id: p.id,
-    nozzles: catalog.outlet(p.sprinklerSpecId)?.nozzles ?? const [], regulators: [?regulator], gunNozzles: catalog.outlet(m.endGunSpecId)?.nozzles ?? const [], worstRiseAt: rise,
+    pivotPackageSpecOf(spec, p, availableInletHeadM: availableInletHeadM),
+    id: p.id,
+    nozzles: catalog.outlet(p.sprinklerSpecId)?.nozzles ?? const [],
+    regulators: [?regulator],
+    gunNozzles: catalog.outlet(m.endGunSpecId)?.nozzles ?? const [],
+    worstRiseAt: rise,
   );
   final sector = p.kind == PivotKind.pivot && p.sectorDeg < 360 - 1e-6;
   final startDeg = sector ? p.angleDeg - p.sectorDeg / 2 : 0.0, sweepDeg = sector ? p.sectorDeg : 360.0;
@@ -133,9 +166,22 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
     final path = boundary == null ? const <Pt>[] : (m.guideOffsetM.abs() > 1e-9 ? guidancePathFromBoundary(boundary, m.guideOffsetM) : boundary);
     arm = analyzeCornerArm(
       CornerArmSpec(
-        center: p.center, hingeRadiusM: pkg.lastTowerRadiusM, armLengthM: m.cornerArmLengthM, guidePath: path, armOverhangM: m.cornerArmOverhangM, tipThrowM: p.endThrowM,
-        maxArmAngleDeg: m.cornerArmMaxDeg, clockwise: m.clockwise, startDeg: startDeg, sweepDeg: sweepDeg, bankCount: math.max(1, m.cornerArmBanks), grossDepthMm: p.grossDepthMm,
-        hoursPerRev: p.hoursPerCycle, mainFlow: pkg.systemFlow, mainRadiusM: pkg.effectiveRadiusM, referenceRadiusM: p.irrigatedRadius,
+        center: p.center,
+        hingeRadiusM: pkg.lastTowerRadiusM,
+        armLengthM: m.cornerArmLengthM,
+        guidePath: path,
+        armOverhangM: m.cornerArmOverhangM,
+        tipThrowM: p.endThrowM,
+        maxArmAngleDeg: m.cornerArmMaxDeg,
+        clockwise: m.clockwise,
+        startDeg: startDeg,
+        sweepDeg: sweepDeg,
+        bankCount: math.max(1, m.cornerArmBanks),
+        grossDepthMm: p.grossDepthMm,
+        hoursPerRev: p.hoursPerCycle,
+        mainFlow: pkg.systemFlow,
+        mainRadiusM: pkg.effectiveRadiusM,
+        referenceRadiusM: p.irrigatedRadius,
       ),
       id: p.id,
     );
@@ -143,8 +189,14 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
   VriResult? vri;
   if (m.hasVri && p.kind == PivotKind.pivot && pkg.depthAt100Mm > 0) {
     final vs = VriSpec(
-      center: p.center, radiusM: pkg.effectiveRadiusM, depthAt100Mm: pkg.depthAt100Mm, startDeg: startDeg, sweepDeg: sweepDeg, sectorStepDeg: m.vriStepDeg.clamp(0.5, 90.0).toDouble(),
-      minTimerPct: m.minTimerPct.clamp(1.0, 100.0).toDouble(), bankEdgesM: m.vriBankEdgesM,
+      center: p.center,
+      radiusM: pkg.effectiveRadiusM,
+      depthAt100Mm: pkg.depthAt100Mm,
+      startDeg: startDeg,
+      sweepDeg: sweepDeg,
+      sectorStepDeg: m.vriStepDeg.clamp(0.5, 90.0).toDouble(),
+      minTimerPct: m.minTimerPct.clamp(1.0, 100.0).toDouble(),
+      bankEdgesM: m.vriBankEdgesM,
     );
     final zones = [
       for (final e in m.vriZones.entries)
@@ -159,8 +211,14 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
     final towers = [for (var i = 1; i <= spec.towerCount; i++) i * spec.spanLengthM];
     elec = designPivotElectrical(
       PivotElectricalSpec(
-        towerRadiiM: towers.isEmpty ? [spec.lengthM] : towers, motorKw: m.towerMotorKw, voltage: m.voltage, supplyCableM: m.supplyCableM, supplyCableMm2: m.supplyCableMm2,
-        boosterFlow: m.endGunBooster ? pkg.endGunFlow : 0, boosterHeadM: m.endGunBooster ? pkg.boosterHeadM : 0, timerPct: m.timerPct.clamp(1.0, 100.0).toDouble(),
+        towerRadiiM: towers.isEmpty ? [spec.lengthM] : towers,
+        motorKw: m.towerMotorKw,
+        voltage: m.voltage,
+        supplyCableM: m.supplyCableM,
+        supplyCableMm2: m.supplyCableMm2,
+        boosterFlow: m.endGunBooster ? pkg.endGunFlow : 0,
+        boosterHeadM: m.endGunBooster ? pkg.boosterHeadM : 0,
+        timerPct: m.timerPct.clamp(1.0, 100.0).toDouble(),
       ),
       id: p.id,
     );

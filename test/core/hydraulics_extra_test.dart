@@ -51,7 +51,10 @@ void main() {
 
     test('frictionLoss dispatches to Hazen-Williams or Darcy-Weisbach', () {
       expect(frictionLoss(method: FrictionMethod.hazenWilliams, flow: 0.003, diameter: 0.06, length: 80, c: 140), closeTo(hazenWilliamsLoss(flow: 0.003, diameter: 0.06, length: 80, c: 140), 1e-12));
-      expect(frictionLoss(method: FrictionMethod.darcyWeisbach, flow: 0.003, diameter: 0.06, length: 80, roughness: 7e-6), closeTo(darcyWeisbachLoss(flow: 0.003, diameter: 0.06, length: 80, roughness: 7e-6), 1e-12));
+      expect(
+        frictionLoss(method: FrictionMethod.darcyWeisbach, flow: 0.003, diameter: 0.06, length: 80, roughness: 7e-6),
+        closeTo(darcyWeisbachLoss(flow: 0.003, diameter: 0.06, length: 80, roughness: 7e-6), 1e-12),
+      );
       expect(flowExponent(FrictionMethod.hazenWilliams), 1.852);
       expect(flowExponent(FrictionMethod.darcyWeisbach), inInclusiveRange(1.75, 2.0));
     });

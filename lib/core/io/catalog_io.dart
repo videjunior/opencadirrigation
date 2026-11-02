@@ -36,7 +36,18 @@ const catalogPackVersion = 1;
 
 /// Metadata of a catalogue pack: who made the products, who wrote the file.
 class CatalogPackMeta {
-  const CatalogPackMeta({required this.id, required this.brand, this.name = '', this.description = '', this.source = '', this.license = '', this.updated = '', this.author = '', this.currency = '', this.sources = const []});
+  const CatalogPackMeta({
+    required this.id,
+    required this.brand,
+    this.name = '',
+    this.description = '',
+    this.source = '',
+    this.license = '',
+    this.updated = '',
+    this.author = '',
+    this.currency = '',
+    this.sources = const [],
+  });
 
   /// Stable identifier (lowercase, `[a-z0-9_-]`), also the file name.
   final String id;
@@ -86,7 +97,10 @@ class CatalogPackMeta {
       updated: j['updated'] as String? ?? '',
       author: j['author'] as String? ?? '',
       currency: (j['currency'] as String? ?? '').trim().toUpperCase(),
-      sources: [for (final x in (j['sources'] as List?) ?? const []) if (x is String && x.trim().isNotEmpty) x.trim()],
+      sources: [
+        for (final x in (j['sources'] as List?) ?? const [])
+          if (x is String && x.trim().isNotEmpty) x.trim(),
+      ],
     );
   }
 
@@ -136,13 +150,7 @@ class CatalogIo {
   /// Serialises a catalogue pack (`*.oci.cat`).
   static String encodePack(CatalogPackMeta meta, Catalog c) => const JsonEncoder.withIndent('  ').convert(packJson(meta, c));
 
-  static Map<String, dynamic> packJson(CatalogPackMeta meta, Catalog c) => {
-    'format': catalogPackFormat,
-    'version': catalogPackVersion,
-    ...meta.toJson(),
-    'items': c.itemCount,
-    'catalog': c.toJson(),
-  };
+  static Map<String, dynamic> packJson(CatalogPackMeta meta, Catalog c) => {'format': catalogPackFormat, 'version': catalogPackVersion, ...meta.toJson(), 'items': c.itemCount, 'catalog': c.toJson()};
 
   /// Whether [j] is a pack file (as opposed to a bare catalogue or an index).
   static bool isPackJson(Map<String, dynamic> j) => j['format'] == catalogPackFormat || (j['catalog'] is Map && j.containsKey('brand'));
@@ -166,11 +174,8 @@ class CatalogIo {
   }
 
   /// Serialises an index of packs (`index.json`).
-  static String encodeIndex(List<CatalogIndexEntry> packs) => const JsonEncoder.withIndent('  ').convert({
-    'format': catalogIndexFormat,
-    'version': catalogPackVersion,
-    'packs': packs.map((p) => p.toJson()).toList(),
-  });
+  static String encodeIndex(List<CatalogIndexEntry> packs) =>
+      const JsonEncoder.withIndent('  ').convert({'format': catalogIndexFormat, 'version': catalogPackVersion, 'packs': packs.map((p) => p.toJson()).toList()});
 
   static bool isIndexJson(Map<String, dynamic> j) => j['format'] == catalogIndexFormat || j['packs'] is List;
 
@@ -317,27 +322,84 @@ class CatalogIo {
             if (usageS.contains('main') || usageS.contains('m')) PipeUsage.mainline,
           };
           final matS = str(r, col(['material']), 'pvc').toLowerCase();
-          final mat = PipeMaterial.values.firstWhere((m) => m.name == matS || m.label.toLowerCase() == matS, orElse: () => matS.contains('pe') ? PipeMaterial.pehd : (matS.contains('aco') || matS.contains('steel') ? PipeMaterial.steel : PipeMaterial.pvc));
+          final mat = PipeMaterial.values.firstWhere(
+            (m) => m.name == matS || m.label.toLowerCase() == matS,
+            orElse: () => matS.contains('pe') ? PipeMaterial.pehd : (matS.contains('aco') || matS.contains('steel') ? PipeMaterial.steel : PipeMaterial.pvc),
+          );
           final nominal = num(r, col(['nominalmm', 'dn', 'nominal']));
           final inner = num(r, col(['idmm', 'di', 'innermm', 'inner']), nominal * 0.9);
-          c.pipes.add(PipeSpec(id: id, name: name, nominalMm: nominal > 0 ? nominal : inner, innerDiameterMm: inner, material: mat, hazenC: num(r, col(['c', 'hazenc']), 150), roughnessMm: num(r, col(['roughmm', 'roughness']), 0.0015), pressureRatingM: num(r, col(['ratingm', 'pn', 'rating']), 60), wallThicknessMm: num(r, col(['wallmm', 'wall']), 2), costPerM: cost, usage: usage.isEmpty ? {PipeUsage.zone, PipeUsage.mainline} : usage, supplier: sup, code: code));
+          c.pipes.add(
+            PipeSpec(
+              id: id,
+              name: name,
+              nominalMm: nominal > 0 ? nominal : inner,
+              innerDiameterMm: inner,
+              material: mat,
+              hazenC: num(r, col(['c', 'hazenc']), 150),
+              roughnessMm: num(r, col(['roughmm', 'roughness']), 0.0015),
+              pressureRatingM: num(r, col(['ratingm', 'pn', 'rating']), 60),
+              wallThicknessMm: num(r, col(['wallmm', 'wall']), 2),
+              costPerM: cost,
+              usage: usage.isEmpty ? {PipeUsage.zone, PipeUsage.mainline} : usage,
+              supplier: sup,
+              code: code,
+            ),
+          );
         case CatalogGroup.fittings:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'coupler');
           final kind = FittingKind.values.firstWhere((k) => k.name.toLowerCase() == kindS.toLowerCase(), orElse: () => fittingKindFromText(kindS));
-          c.fittings.add(FittingSpec(id: id, name: name, kind: kind, sizeMm: num(r, col(['sizemm', 'dn', 'size'])), size2Mm: num(r, col(['size2mm', 'dn2', 'size2'])), cost: cost, supplier: sup, code: code));
+          c.fittings.add(
+            FittingSpec(id: id, name: name, kind: kind, sizeMm: num(r, col(['sizemm', 'dn', 'size'])), size2Mm: num(r, col(['size2mm', 'dn2', 'size2'])), cost: cost, supplier: sup, code: code),
+          );
         case CatalogGroup.tapes:
           final q = num(r, col(['qlph', 'q', 'flow']), 1.6);
           final h = num(r, col(['headm', 'head', 'h', 'inleth']), 10);
           final x = num(r, col(['x', 'exponent']), 0.5);
           final inner = num(r, col(['idmm', 'di']), 15.6);
-          c.tapes.add(TapeSpec(id: id, name: name, innerDiameterMm: inner, emitterSpacingM: tapeSpacing(num(r, col(['spacing', 'espacamento', 'sp']), 0.5)), emitter: EmitterCurve.fromNominal(flow: q * m3sPerLph, head: h, x: x), nominalMm: num(r, col(['nominalmm', 'dn']), 16), cv: num(r, col(['cv']), 0.03), minHeadM: num(r, col(['minh', 'pmin']), 4), maxHeadM: num(r, col(['maxh', 'pmax']), 15), defaultInletHeadM: h, pressureRatingM: num(r, col(['ratingm', 'pn']), 25), costPerM: cost, supplier: sup, code: code));
+          c.tapes.add(
+            TapeSpec(
+              id: id,
+              name: name,
+              innerDiameterMm: inner,
+              emitterSpacingM: tapeSpacing(num(r, col(['spacing', 'espacamento', 'sp']), 0.5)),
+              emitter: EmitterCurve.fromNominal(flow: q * m3sPerLph, head: h, x: x),
+              nominalMm: num(r, col(['nominalmm', 'dn']), 16),
+              cv: num(r, col(['cv']), 0.03),
+              minHeadM: num(r, col(['minh', 'pmin']), 4),
+              maxHeadM: num(r, col(['maxh', 'pmax']), 15),
+              defaultInletHeadM: h,
+              pressureRatingM: num(r, col(['ratingm', 'pn']), 25),
+              costPerM: cost,
+              supplier: sup,
+              code: code,
+            ),
+          );
         case CatalogGroup.valves:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'control').toLowerCase();
-          final kind = ValveKind.values.firstWhere((k) => k.name == kindS, orElse: () => kindS.contains('prv') || kindS.contains('regul') ? ValveKind.prv : (kindS.contains('filt') ? ValveKind.filter : (kindS.contains('check') || kindS.contains('reten') ? ValveKind.check : ValveKind.control)));
+          final kind = ValveKind.values.firstWhere(
+            (k) => k.name == kindS,
+            orElse: () => kindS.contains('prv') || kindS.contains('regul')
+                ? ValveKind.prv
+                : (kindS.contains('filt') ? ValveKind.filter : (kindS.contains('check') || kindS.contains('reten') ? ValveKind.check : ValveKind.control)),
+          );
           final size = num(r, col(['sizemm', 'dn', 'size']), 50);
           final k = num(r, col(['k']));
           final loss = k > 0 ? DeviceLossCurve(k: k, n: num(r, col(['n']), 2)) : DeviceLossCurve.fromK(num(r, col(['kv', 'kcoef']), 5), size / 1000);
-          c.valves.add(ValveSpec(id: id, name: name, kind: kind, sizeMm: size, loss: loss, minFlow: num(r, col(['minqm3h', 'qmin'])) * m3sPerM3h, maxFlow: num(r, col(['maxqm3h', 'qmax']), 1000) * m3sPerM3h, cost: cost, defaultSettingM: num(r, col(['setting'])), supplier: sup, code: code));
+          c.valves.add(
+            ValveSpec(
+              id: id,
+              name: name,
+              kind: kind,
+              sizeMm: size,
+              loss: loss,
+              minFlow: num(r, col(['minqm3h', 'qmin'])) * m3sPerM3h,
+              maxFlow: num(r, col(['maxqm3h', 'qmax']), 1000) * m3sPerM3h,
+              cost: cost,
+              defaultSettingM: num(r, col(['setting'])),
+              supplier: sup,
+              code: code,
+            ),
+          );
         case CatalogGroup.pumps:
           final ptsS = str(r, col(['points', 'curve', 'curva']));
           final pts = [for (final (q, h) in parseCurvePoints(ptsS)) (q * m3sPerM3h, h)];
@@ -346,28 +408,71 @@ class CatalogIo {
             if (q > 0 && h > 0) pts.add((q * m3sPerM3h, h));
           }
           if (pts.isEmpty) continue;
-          c.pumps.add(PumpSpec(id: id, name: name, points: pts, efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65), maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2, cost: cost, powerKw: num(r, col(['kw', 'power'])), submersible: isSubmersible(str(r, col(['type', 'tipo', 'install']))), ratedHz: num(r, col(['hz', 'frequency', 'frequencia', 'frecuencia'])), supplier: sup, code: code));
+          c.pumps.add(
+            PumpSpec(
+              id: id,
+              name: name,
+              points: pts,
+              efficiency: num(r, col(['eff', 'efficiency', 'rendimento']), 0.65),
+              maxFlow: pts.map((p) => p.$1).reduce((a, b) => a > b ? a : b) * 1.2,
+              cost: cost,
+              powerKw: num(r, col(['kw', 'power'])),
+              submersible: isSubmersible(str(r, col(['type', 'tipo', 'install']))),
+              ratedHz: num(r, col(['hz', 'frequency', 'frequencia', 'frecuencia'])),
+              supplier: sup,
+              code: code,
+            ),
+          );
         case CatalogGroup.wires:
           var mm2 = num(r, col(['mm2', 'section', 'secao', 'seccion', 'area']));
           final awg = num(r, col(['awg', 'gauge']));
           if (mm2 <= 0 && awg > 0) mm2 = awgMm2(awg.round());
           if (mm2 <= 0) continue;
-          c.wires.add(WireSpec(id: id, name: name, sectionMm2: mm2, ohmPerKm: num(r, col(['ohmkm', 'ohm', 'resistance', 'resistencia']), copperOhmPerKm(mm2)), costPerM: cost, supplier: sup, code: code));
+          c.wires.add(
+            WireSpec(id: id, name: name, sectionMm2: mm2, ohmPerKm: num(r, col(['ohmkm', 'ohm', 'resistance', 'resistencia']), copperOhmPerKm(mm2)), costPerM: cost, supplier: sup, code: code),
+          );
         case CatalogGroup.outlets:
           final kindS = str(r, col(['kind', 'tipo', 'type']), 'sprinkler').toLowerCase();
-          final kind = OutletKind.values.firstWhere((k) => k.name.toLowerCase() == kindS, orElse: () => kindS.contains('micro') ? OutletKind.microSprinkler : (kindS.contains('drip') || kindS.contains('gotej') ? OutletKind.dripper : (kindS.contains('gun') || kindS.contains('canh') ? OutletKind.gun : OutletKind.sprinkler)));
+          final kind = OutletKind.values.firstWhere(
+            (k) => k.name.toLowerCase() == kindS,
+            orElse: () => kindS.contains('micro')
+                ? OutletKind.microSprinkler
+                : (kindS.contains('drip') || kindS.contains('gotej') ? OutletKind.dripper : (kindS.contains('gun') || kindS.contains('canh') ? OutletKind.gun : OutletKind.sprinkler)),
+          );
           final q = num(r, col(['qlph', 'q', 'flow']), 50);
           final h = num(r, col(['headm', 'head', 'h']), 20);
           final x = num(r, col(['x', 'exponent']), 0.5);
           final radius = num(r, col(['radiusm', 'radius', 'raio']));
           final nozzleName = str(r, col(['nozzle', 'bocal', 'boquilla']), '${fmt(q, 0)} L/h');
-          final nozzle = NozzleSpec(id: '${id}_n', name: nozzleName, curve: EmitterCurve.fromNominal(flow: q * m3sPerLph, head: h, x: x, radius: radius, radiusB: radius > 0 ? 0.35 : 0), minHeadM: num(r, col(['minh', 'pmin']), h * 0.6), maxHeadM: num(r, col(['maxh', 'pmax']), h * 1.6), defaultHeadM: h, cv: num(r, col(['cv']), 0.04), arcDeg: num(r, col(['arc']), 360));
+          final nozzle = NozzleSpec(
+            id: '${id}_n',
+            name: nozzleName,
+            curve: EmitterCurve.fromNominal(flow: q * m3sPerLph, head: h, x: x, radius: radius, radiusB: radius > 0 ? 0.35 : 0),
+            minHeadM: num(r, col(['minh', 'pmin']), h * 0.6),
+            maxHeadM: num(r, col(['maxh', 'pmax']), h * 1.6),
+            defaultHeadM: h,
+            cv: num(r, col(['cv']), 0.04),
+            arcDeg: num(r, col(['arc']), 360),
+          );
           // several rows with the same outlet id become nozzles of one outlet
           final existing = c.outlet(id);
           if (existing != null) {
-            existing.nozzles.add(NozzleSpec(id: '${id}_n${existing.nozzles.length + 1}', name: nozzle.name, curve: nozzle.curve, minHeadM: nozzle.minHeadM, maxHeadM: nozzle.maxHeadM, defaultHeadM: nozzle.defaultHeadM, cv: nozzle.cv, arcDeg: nozzle.arcDeg));
+            existing.nozzles.add(
+              NozzleSpec(
+                id: '${id}_n${existing.nozzles.length + 1}',
+                name: nozzle.name,
+                curve: nozzle.curve,
+                minHeadM: nozzle.minHeadM,
+                maxHeadM: nozzle.maxHeadM,
+                defaultHeadM: nozzle.defaultHeadM,
+                cv: nozzle.cv,
+                arcDeg: nozzle.arcDeg,
+              ),
+            );
           } else {
-            c.outlets.add(OutletSpec(id: id, name: name, kind: kind, nozzles: [nozzle], cost: cost, inletMm: num(r, col(['inletmm', 'inlet']), kind == OutletKind.sprinkler ? 20 : 0), supplier: sup, code: code));
+            c.outlets.add(
+              OutletSpec(id: id, name: name, kind: kind, nozzles: [nozzle], cost: cost, inletMm: num(r, col(['inletmm', 'inlet']), kind == OutletKind.sprinkler ? 20 : 0), supplier: sup, code: code),
+            );
           }
       }
       n++;
@@ -469,7 +574,23 @@ class CatalogIo {
       case CatalogGroup.pipes:
         b.writeln('id;name;nominalMm;idMm;material;c;roughMm;ratingM;wallMm;cost;usage;supplier;code');
         for (final p in c.pipes) {
-          b.writeln([p.id, q(p.name), p.nominalMm, p.innerDiameterMm, p.material.name, p.hazenC, p.roughnessMm, p.pressureRatingM, p.wallThicknessMm, p.costPerM, p.usage.map((u) => u.name).join(','), q(p.supplier), q(p.code)].join(';'));
+          b.writeln(
+            [
+              p.id,
+              q(p.name),
+              p.nominalMm,
+              p.innerDiameterMm,
+              p.material.name,
+              p.hazenC,
+              p.roughnessMm,
+              p.pressureRatingM,
+              p.wallThicknessMm,
+              p.costPerM,
+              p.usage.map((u) => u.name).join(','),
+              q(p.supplier),
+              q(p.code),
+            ].join(';'),
+          );
         }
       case CatalogGroup.fittings:
         b.writeln('id;name;kind;sizeMm;size2Mm;cost;supplier;code');
@@ -479,7 +600,25 @@ class CatalogIo {
       case CatalogGroup.tapes:
         b.writeln('id;name;nominalMm;idMm;spacing;qLph;headM;x;cv;minH;maxH;ratingM;cost;supplier;code');
         for (final t in c.tapes) {
-          b.writeln([t.id, q(t.name), t.nominalMm, t.innerDiameterMm, t.emitterSpacingM, t.emitter.flow(t.defaultInletHeadM) / m3sPerLph, t.defaultInletHeadM, t.emitter.x, t.cv, t.minHeadM, t.maxHeadM, t.pressureRatingM, t.costPerM, q(t.supplier), q(t.code)].join(';'));
+          b.writeln(
+            [
+              t.id,
+              q(t.name),
+              t.nominalMm,
+              t.innerDiameterMm,
+              t.emitterSpacingM,
+              t.emitter.flow(t.defaultInletHeadM) / m3sPerLph,
+              t.defaultInletHeadM,
+              t.emitter.x,
+              t.cv,
+              t.minHeadM,
+              t.maxHeadM,
+              t.pressureRatingM,
+              t.costPerM,
+              q(t.supplier),
+              q(t.code),
+            ].join(';'),
+          );
         }
       case CatalogGroup.valves:
         b.writeln('id;name;kind;sizeMm;k;n;minQm3h;maxQm3h;setting;cost;supplier;code');
@@ -489,7 +628,20 @@ class CatalogIo {
       case CatalogGroup.pumps:
         b.writeln('id;name;points;eff;kw;type;hz;cost;supplier;code');
         for (final p in c.pumps) {
-          b.writeln([p.id, q(p.name), q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')), p.efficiency, p.powerKw, p.submersible ? 'submersible' : 'surface', p.ratedHz > 0 ? p.ratedHz : '', p.cost, q(p.supplier), q(p.code)].join(';'));
+          b.writeln(
+            [
+              p.id,
+              q(p.name),
+              q(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 2)}@${fmt(pt.$2, 2)}').join('|')),
+              p.efficiency,
+              p.powerKw,
+              p.submersible ? 'submersible' : 'surface',
+              p.ratedHz > 0 ? p.ratedHz : '',
+              p.cost,
+              q(p.supplier),
+              q(p.code),
+            ].join(';'),
+          );
         }
       case CatalogGroup.wires:
         b.writeln('id;name;mm2;ohmKm;cost;supplier;code');
@@ -500,7 +652,26 @@ class CatalogIo {
         b.writeln('id;name;kind;nozzle;qLph;headM;x;radiusM;minH;maxH;cv;arc;inletMm;cost;supplier;code');
         for (final o in c.outlets) {
           for (final n in o.nozzles) {
-            b.writeln([o.id, q(o.name), o.kind.name, q(n.name), n.curve.flow(n.defaultHeadM) / m3sPerLph, n.defaultHeadM, n.curve.x, n.curve.radius(n.defaultHeadM), n.minHeadM, n.maxHeadM, n.cv, n.arcDeg, o.inletMm, o.cost, q(o.supplier), q(o.code)].join(';'));
+            b.writeln(
+              [
+                o.id,
+                q(o.name),
+                o.kind.name,
+                q(n.name),
+                n.curve.flow(n.defaultHeadM) / m3sPerLph,
+                n.defaultHeadM,
+                n.curve.x,
+                n.curve.radius(n.defaultHeadM),
+                n.minHeadM,
+                n.maxHeadM,
+                n.cv,
+                n.arcDeg,
+                o.inletMm,
+                o.cost,
+                q(o.supplier),
+                q(o.code),
+              ].join(';'),
+            );
           }
         }
     }

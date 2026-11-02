@@ -184,7 +184,15 @@ class PdfDocument {
       a[i] = rgba[4 * i + 3];
       if (a[i] != 255) opaque = false;
     }
-    return PdfImage._(name, decoded.width, decoded.height, Uint8List.fromList(ZLibEncoder().encodeBytes(rgb)), 'FlateDecode', 'DeviceRGB', opaque ? null : Uint8List.fromList(ZLibEncoder().encodeBytes(a)));
+    return PdfImage._(
+      name,
+      decoded.width,
+      decoded.height,
+      Uint8List.fromList(ZLibEncoder().encodeBytes(rgb)),
+      'FlateDecode',
+      'DeviceRGB',
+      opaque ? null : Uint8List.fromList(ZLibEncoder().encodeBytes(a)),
+    );
   }
 
   static double _downscale(int w, int h, int? maxW, int? maxH) {
@@ -280,7 +288,12 @@ class PdfDocument {
     final now = DateTime.now();
     String two(int v) => v.toString().padLeft(2, '0');
     final date = 'D:${now.year}${two(now.month)}${two(now.day)}${two(now.hour)}${two(now.minute)}${two(now.second)}';
-    obj(5, latin1.encode('<< /Title ${pdfTextString(title)} /Author ${pdfTextString(author)} /Subject ${pdfTextString(subject)} /Creator ${pdfTextString(creator)} /Producer (OpenCADIrrigation) /CreationDate ($date) >>'));
+    obj(
+      5,
+      latin1.encode(
+        '<< /Title ${pdfTextString(title)} /Author ${pdfTextString(author)} /Subject ${pdfTextString(subject)} /Creator ${pdfTextString(creator)} /Producer (OpenCADIrrigation) /CreationDate ($date) >>',
+      ),
+    );
     final fontRes = StringBuffer('/F1 3 0 R /F2 4 0 R');
     for (final f in _fonts.values) {
       fontRes.write(' /${f.resource} ${fontIds[f.name]} 0 R');
@@ -303,9 +316,19 @@ class PdfDocument {
       String s(num v) => _num(v * scale);
       final baseName = '${_subsetTag(f)}+${f.font.postScriptName.replaceAll(RegExp(r'[^A-Za-z0-9\-]'), '')}';
       obj(id, latin1.encode('<< /Type /Font /Subtype /Type0 /BaseFont /$baseName /Encoding /Identity-H /DescendantFonts [${id + 1} 0 R] /ToUnicode ${id + 4} 0 R >>'));
-      obj(id + 1, latin1.encode('<< /Type /Font /Subtype /CIDFontType2 /BaseFont /$baseName /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor ${id + 2} 0 R /DW 0 /W ${_widths(f)} /CIDToGIDMap /Identity >>'));
+      obj(
+        id + 1,
+        latin1.encode(
+          '<< /Type /Font /Subtype /CIDFontType2 /BaseFont /$baseName /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor ${id + 2} 0 R /DW 0 /W ${_widths(f)} /CIDToGIDMap /Identity >>',
+        ),
+      );
       final flags = 4 | (f.font.fixedPitch ? 1 : 0) | (f.font.italicAngle != 0 ? 64 : 0);
-      obj(id + 2, latin1.encode('<< /Type /FontDescriptor /FontName /$baseName /Flags $flags /FontBBox [${s(f.font.xMin)} ${s(f.font.yMin)} ${s(f.font.xMax)} ${s(f.font.yMax)}] /ItalicAngle ${_num(f.font.italicAngle)} /Ascent ${s(f.font.ascender)} /Descent ${s(f.font.descender)} /CapHeight ${s(f.font.capHeight)} /StemV ${f.font.weightClass >= 600 ? 120 : 80} /FontFile2 ${id + 3} 0 R >>'));
+      obj(
+        id + 2,
+        latin1.encode(
+          '<< /Type /FontDescriptor /FontName /$baseName /Flags $flags /FontBBox [${s(f.font.xMin)} ${s(f.font.yMin)} ${s(f.font.xMax)} ${s(f.font.yMax)}] /ItalicAngle ${_num(f.font.italicAngle)} /Ascent ${s(f.font.ascender)} /Descent ${s(f.font.descender)} /CapHeight ${s(f.font.capHeight)} /StemV ${f.font.weightClass >= 600 ? 120 : 80} /FontFile2 ${id + 3} 0 R >>',
+        ),
+      );
       obj(id + 3, stream(' /Length1 ${subset.bytes.length}', subset.bytes));
       obj(id + 4, stream('', latin1.encode(_toUnicodeCMap(f))));
     }
@@ -318,7 +341,9 @@ class PdfDocument {
       } else {
         obj(id, stream('$bpc$smask', im.data, alreadyCompressed: true));
       }
-      if (im.alpha != null) obj(id + 1, stream(' /Type /XObject /Subtype /Image /Width ${im.width} /Height ${im.height} /ColorSpace /DeviceGray /BitsPerComponent 8', im.alpha!, alreadyCompressed: true));
+      if (im.alpha != null) {
+        obj(id + 1, stream(' /Type /XObject /Subtype /Image /Width ${im.width} /Height ${im.height} /ColorSpace /DeviceGray /BitsPerComponent 8', im.alpha!, alreadyCompressed: true));
+      }
     }
     for (final e in _alphaStates.entries) {
       final a = _num(e.key / 1000);

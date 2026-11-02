@@ -69,25 +69,30 @@ class ReportsPanel extends StatelessWidget {
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: Row(children: [
-                      for (var i = 0; i < reportTabKeys.length; i++)
-                        InkWell(
-                          key: Key('report_tab_$i'),
-                          onTap: () {
-                            c.reportTab = i;
-                            c.refresh();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9),
-                            height: 30,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              border: Border(bottom: BorderSide(color: c.reportTab == i ? Cad.accent : Colors.transparent, width: 2)),
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < reportTabKeys.length; i++)
+                          InkWell(
+                            key: Key('report_tab_$i'),
+                            onTap: () {
+                              c.reportTab = i;
+                              c.refresh();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 9),
+                              height: 30,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                border: Border(bottom: BorderSide(color: c.reportTab == i ? Cad.accent : Colors.transparent, width: 2)),
+                              ),
+                              child: Text(
+                                i == ControllerTabs.messages ? _messagesLabel() : t(reportTabKeys[i]),
+                                style: TextStyle(fontSize: 11.5, color: c.reportTab == i ? Cad.fg : (i == ControllerTabs.messages && _errorCount() > 0 ? Cad.unconnected : Cad.fg60)),
+                              ),
                             ),
-                            child: Text(i == ControllerTabs.messages ? _messagesLabel() : t(reportTabKeys[i]), style: TextStyle(fontSize: 11.5, color: c.reportTab == i ? Cad.fg : (i == ControllerTabs.messages && _errorCount() > 0 ? Cad.unconnected : Cad.fg60))),
                           ),
-                        ),
-                    ]),
+                      ],
+                    ),
                   ),
                 ),
                 IconButton(
@@ -103,7 +108,9 @@ class ReportsPanel extends StatelessWidget {
           ),
           Expanded(
             child: r == null && !_noResultTabs.contains(c.reportTab)
-                ? Center(child: Text(t('msg.noResults'), style: TextStyle(color: Cad.fg54)))
+                ? Center(
+                    child: Text(t('msg.noResults'), style: TextStyle(color: Cad.fg54)),
+                  )
                 : _tab(context, r),
           ),
         ],
@@ -172,15 +179,21 @@ class ReportsPanel extends StatelessWidget {
   /// the given flex.
   Widget _stack(List<(String, int)> keys, {String? emptyKey}) {
     final tables = c.reportTables();
-    final present = [for (final (k, f) in keys) if (tables.where((x) => x.key == k).firstOrNull case final tb? when !tb.isEmpty) (k, f)];
-    if (present.isEmpty) return Center(child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)));
+    final present = [
+      for (final (k, f) in keys)
+        if (tables.where((x) => x.key == k).firstOrNull case final tb? when !tb.isEmpty) (k, f),
+    ];
+    if (present.isEmpty) {
+      return Center(
+        child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)),
+      );
+    }
     if (present.length == 1) return _fromTable(present.single.$1);
-    return Column(children: [
-      for (var i = 0; i < present.length; i++) ...[
-        if (i > 0) Container(height: 1, color: Cad.fg12),
-        Expanded(flex: present[i].$2, child: _fromTable(present[i].$1)),
+    return Column(
+      children: [
+        for (var i = 0; i < present.length; i++) ...[if (i > 0) Container(height: 1, color: Cad.fg12), Expanded(flex: present[i].$2, child: _fromTable(present[i].$1))],
       ],
-    ]);
+    );
   }
 
   int _errorCount() => c.advice.where((a) => a.level == AdviceLevel.error).length;
@@ -202,7 +215,9 @@ class ReportsPanel extends StatelessWidget {
   Widget _fromTable(String key, {String? emptyKey}) {
     final tb = c.reportTables().where((x) => x.key == key).firstOrNull;
     if (tb == null || tb.isEmpty) {
-      return Center(child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)));
+      return Center(
+        child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)),
+      );
     }
     // keyed per table so switching tabs starts from a fresh scroll position
     return _table(tb.headers, tb.rows, rowColors: [for (final w in tb.warn) w ? Cad.warning : null], key: ValueKey('report_table_$key'));
@@ -215,16 +230,21 @@ class ReportsPanel extends StatelessWidget {
     final dev = tables.where((x) => x.key == 'devices').firstOrNull;
     if (dev == null || dev.isEmpty) return _fromTable('mainline');
     final main = tables.where((x) => x.key == 'mainline').firstOrNull;
-    return Column(children: [
-      if (main != null && !main.isEmpty) Expanded(flex: main.rows.length + 1, child: _fromTable('mainline')),
-      Container(
-        width: double.infinity,
-        color: Cad.panel,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(dev.title, style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600)),
-      ),
-      Expanded(flex: dev.rows.length + 1, child: _fromTable('devices')),
-    ]);
+    return Column(
+      children: [
+        if (main != null && !main.isEmpty) Expanded(flex: main.rows.length + 1, child: _fromTable('mainline')),
+        Container(
+          width: double.infinity,
+          color: Cad.panel,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Text(
+            dev.title,
+            style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600),
+          ),
+        ),
+        Expanded(flex: dev.rows.length + 1, child: _fromTable('devices')),
+      ],
+    );
   }
 
   Widget _profile() {
@@ -244,17 +264,24 @@ class ReportsPanel extends StatelessWidget {
     if (path == null || path.length < 2) {
       return Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t('prof.hint'), style: TextStyle(color: Cad.fg70, fontSize: 12)),
-          const SizedBox(height: 6),
-          Text(t('prof.howTo'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
-          const SizedBox(height: 8),
-          FilledButton.tonalIcon(key: const Key('profile_tool'), onPressed: () => c.setTool(ToolId.profile), icon: const Icon(Icons.show_chart, size: 16), label: Text(t('tool.profile'))),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t('prof.hint'), style: TextStyle(color: Cad.fg70, fontSize: 12)),
+            const SizedBox(height: 6),
+            Text(t('prof.howTo'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
+            const SizedBox(height: 8),
+            FilledButton.tonalIcon(key: const Key('profile_tool'), onPressed: () => c.setTool(ToolId.profile), icon: const Icon(Icons.show_chart, size: 16), label: Text(t('tool.profile'))),
+          ],
+        ),
       );
     }
     final samples = c.profileAlong(path);
-    if (samples.length < 2) return Center(child: Text(t('dem.noData'), style: TextStyle(color: Cad.fg54)));
+    if (samples.length < 2) {
+      return Center(
+        child: Text(t('dem.noData'), style: TextStyle(color: Cad.fg54)),
+      );
+    }
     // pipe and hydraulic grade line of a designed pipe / lateral
     List<(double, double)>? pipe, hgl;
     final segs = entityId == null ? null : c.results?.pipesByEntity[entityId];
@@ -276,32 +303,51 @@ class ReportsPanel extends StatelessWidget {
     final noTerrain = c.terrainIsEmpty;
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Column(children: [
-        if (noTerrain) Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(t('prof.noTerrain'), style: TextStyle(fontSize: 11, color: Cad.warning))),
-        Expanded(
-          child: ProfileChart(
-            samples: samples,
-            units: u,
-            title: title,
-            yLabel: t('prof.elevation'),
-            pipe: pipe,
-            hgl: hgl,
-            legendGround: t('prof.ground'),
-            legendPipe: t('prof.pipe'),
-            legendHgl: t('prof.hgl'),
-            legendLow: t('prof.lowest'),
-            legendHigh: t('prof.highest'),
-            stationLabel: t('prof.station'),
-            pressureLabel: t('prof.pressure'),
+      child: Column(
+        children: [
+          if (noTerrain)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(t('prof.noTerrain'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+            ),
+          Expanded(
+            child: ProfileChart(
+              samples: samples,
+              units: u,
+              title: title,
+              yLabel: t('prof.elevation'),
+              pipe: pipe,
+              hgl: hgl,
+              legendGround: t('prof.ground'),
+              legendPipe: t('prof.pipe'),
+              legendHgl: t('prof.hgl'),
+              legendLow: t('prof.lowest'),
+              legendHigh: t('prof.highest'),
+              stationLabel: t('prof.station'),
+              pressureLabel: t('prof.pressure'),
+            ),
           ),
-        ),
-        Row(children: [
-          Expanded(child: Text(info, style: TextStyle(fontSize: 11, color: Cad.fg60))),
-          if (c.profilePath != null)
-            TextButton.icon(key: const Key('profile_clear'), onPressed: c.clearProfile, icon: const Icon(Icons.close, size: 14), label: Text(t('prof.clear'), style: const TextStyle(fontSize: 11))),
-          TextButton.icon(onPressed: () => c.setTool(ToolId.profile), icon: const Icon(Icons.show_chart, size: 14), label: Text('PR', style: const TextStyle(fontSize: 11))),
-        ]),
-      ]),
+          Row(
+            children: [
+              Expanded(
+                child: Text(info, style: TextStyle(fontSize: 11, color: Cad.fg60)),
+              ),
+              if (c.profilePath != null)
+                TextButton.icon(
+                  key: const Key('profile_clear'),
+                  onPressed: c.clearProfile,
+                  icon: const Icon(Icons.close, size: 14),
+                  label: Text(t('prof.clear'), style: const TextStyle(fontSize: 11)),
+                ),
+              TextButton.icon(
+                onPressed: () => c.setTool(ToolId.profile),
+                icon: const Icon(Icons.show_chart, size: 14),
+                label: Text('PR', style: const TextStyle(fontSize: 11)),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -346,7 +392,9 @@ class ReportsPanel extends StatelessWidget {
       }
     }
     if (segs == null || segs.isEmpty) {
-      return Center(child: Text(c.t('msg.selectForHgl'), style: TextStyle(color: Cad.fg54)));
+      return Center(
+        child: Text(c.t('msg.selectForHgl'), style: TextStyle(color: Cad.fg54)),
+      );
     }
     final ordered = List<PipeSegmentResult>.from(segs)..sort((a, b) => a.segmentIndex.compareTo(b.segmentIndex));
     return Padding(
@@ -357,7 +405,6 @@ class ReportsPanel extends StatelessWidget {
 
   /// Every problem with its explanation and corrections (design assistant).
   Widget _messages(DesignResults? r) => AdvicePanel(c: c);
-
 }
 
 /// Tool key matching an entity type (used for labels).
@@ -458,8 +505,10 @@ class _ReportTableViewState extends State<ReportTableView> {
 
     _widths = [
       for (var i = 0; i < n; i++)
-        (math.max(measure(widget.headers[i], _headStyle!), measure(longest[i], _cellStyle!)) + 2 * ReportTableView.cellPadding + ReportTableView.slack)
-            .clamp(ReportTableView.minColumnWidth, ReportTableView.maxColumnWidth),
+        (math.max(measure(widget.headers[i], _headStyle!), measure(longest[i], _cellStyle!)) + 2 * ReportTableView.cellPadding + ReportTableView.slack).clamp(
+          ReportTableView.minColumnWidth,
+          ReportTableView.maxColumnWidth,
+        ),
     ];
     painter.dispose();
   }
@@ -477,7 +526,9 @@ class _ReportTableViewState extends State<ReportTableView> {
     final total = _widths.fold(0.0, (a, b) => a + b);
     final header = Container(
       height: ReportTableView.headerHeight,
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Cad.fg24))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Cad.fg24)),
+      ),
       child: Row(children: [for (var i = 0; i < _widths.length; i++) _cell(i, widget.headers[i], ReportTableView.headingStyle)]),
     );
     final colors = widget.rowColors;

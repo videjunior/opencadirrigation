@@ -266,8 +266,19 @@ void main() {
         // every tile exists except those of odd columns
         final parts = u.pathSegments;
         final top = int.parse(parts[parts.length - 4]), left = int.parse(parts[parts.length - 3]);
-        final data = [for (var r = 0; r < 32; r++) for (var c = 0; c < 32; c++) (left + c).isEven ? 1 : 0];
-        return (200, utf8.encode(jsonEncode({'data': data, 'location': {'top': top, 'left': left, 'width': 32, 'height': 32}})));
+        final data = [
+          for (var r = 0; r < 32; r++)
+            for (var c = 0; c < 32; c++) (left + c).isEven ? 1 : 0,
+        ];
+        return (
+          200,
+          utf8.encode(
+            jsonEncode({
+              'data': data,
+              'location': {'top': top, 'left': left, 'width': 32, 'height': 32},
+            }),
+          ),
+        );
       }
       return (200, png);
     });
@@ -316,7 +327,17 @@ void main() {
         return (200, utf8.encode(jsonEncode({'session': 'tok-${sessions.length}', 'expiry': '${DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600}'})));
       }
       if (u.path.contains('/viewport')) {
-        return (200, utf8.encode(jsonEncode({'copyright': 'Map data ©2026 Google', 'maxZoomRects': [{'maxZoom': 22, 'north': 90, 'south': -90, 'east': 180, 'west': -180}]})));
+        return (
+          200,
+          utf8.encode(
+            jsonEncode({
+              'copyright': 'Map data ©2026 Google',
+              'maxZoomRects': [
+                {'maxZoom': 22, 'north': 90, 'south': -90, 'east': 180, 'west': -180},
+              ],
+            }),
+          ),
+        );
       }
       return (200, png);
     });
@@ -325,7 +346,12 @@ void main() {
     expect(paint(layer, o), 0, reason: 'waiting for the session');
     expect(paint(layer, o), 0, reason: 'one pending session request is enough');
     await settle(() => sessions.isNotEmpty);
-    expect(sessions.single, {'mapType': 'satellite', 'layerTypes': ['layerRoadmap'], 'language': 'pt-BR', 'region': 'BR'});
+    expect(sessions.single, {
+      'mapType': 'satellite',
+      'layerTypes': ['layerRoadmap'],
+      'language': 'pt-BR',
+      'region': 'BR',
+    });
     paint(layer, o);
     await settle(() => client.requests.any((r) => r.contains('/2dtiles/')));
     final tiles = client.requests.where((r) => r.contains('/2dtiles/')).toList();

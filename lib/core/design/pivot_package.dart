@@ -77,8 +77,7 @@ double orificeDiameter({required double flow, required double head, double cd = 
 }
 
 /// Flow (m³/s) of an orifice of [diameter] (m) at [head] (m).
-double orificeFlow({required double diameter, required double head, double cd = 0.97}) =>
-    diameter <= 0 || head <= 0 ? 0 : cd * math.pi / 4 * diameter * diameter * math.sqrt(2 * gravity * head);
+double orificeFlow({required double diameter, required double head, double cd = 0.97}) => diameter <= 0 || head <= 0 ? 0 : cd * math.pi / 4 * diameter * diameter * math.sqrt(2 * gravity * head);
 
 /// Drive train of the last regular tower, for its speed at 100 % timer.
 class TowerDrive {
@@ -115,14 +114,26 @@ class TowerDrive {
 
   Map<String, dynamic> toJson() => {'rpm': motorRpm, 'g1': centerGearRatio, 'g2': wheelGearRatio, 'tyre': tyreRollingDiameterM, 'v': speedMPerMin};
   static TowerDrive fromJson(Map<String, dynamic> j) => TowerDrive(
-    motorRpm: (j['rpm'] as num?)?.toDouble() ?? 0, centerGearRatio: (j['g1'] as num?)?.toDouble() ?? 0, wheelGearRatio: (j['g2'] as num?)?.toDouble() ?? 0,
-    tyreRollingDiameterM: (j['tyre'] as num?)?.toDouble() ?? 0, speedMPerMin: (j['v'] as num?)?.toDouble() ?? 0,
+    motorRpm: (j['rpm'] as num?)?.toDouble() ?? 0,
+    centerGearRatio: (j['g1'] as num?)?.toDouble() ?? 0,
+    wheelGearRatio: (j['g2'] as num?)?.toDouble() ?? 0,
+    tyreRollingDiameterM: (j['tyre'] as num?)?.toDouble() ?? 0,
+    speedMPerMin: (j['v'] as num?)?.toDouble() ?? 0,
   );
 }
 
 /// One span of the machine, or the overhang, as the package sees it.
 class PivotSpanDef {
-  const PivotSpanDef({required this.lengthM, this.pipeInnerMm = 162, this.hazenC = 130, this.roughnessMm = 0.15, this.outletSpacingM = 2.5, this.firstOutletM = -1, this.overhang = false, this.archM = 0});
+  const PivotSpanDef({
+    required this.lengthM,
+    this.pipeInnerMm = 162,
+    this.hazenC = 130,
+    this.roughnessMm = 0.15,
+    this.outletSpacingM = 2.5,
+    this.firstOutletM = -1,
+    this.overhang = false,
+    this.archM = 0,
+  });
 
   /// Span length (m).
   final double lengthM;
@@ -198,9 +209,26 @@ class PivotPackageSpec {
         PivotSpanDef(lengthM: len, pipeInnerMm: p.pipeInnerMm, hazenC: p.hazenC, roughnessMm: p.roughnessMm, outletSpacingM: p.sprinklerSpacingM, overhang: overhang);
     final spans = n == 0 ? [span(p.lengthM)] : [for (var i = 0; i < n; i++) span(p.spanLengthM), if (p.overhangM > 1e-6) span(p.overhangM, overhang: true)];
     return PivotPackageSpec(
-      spans: spans, kind: p.kind, endThrowM: p.endThrowM, endGun: p.endGunFlow > 0 ? EndGunUse.corners : EndGunUse.none, endGunFlow: p.endGunFlow, endGunPressureM: p.endGunPressureM,
-      endGunRadiusM: endGunRadiusM, endGunBooster: endGunBooster, grossDepthMm: p.grossDepthMm, hoursPerCycle: p.hoursPerCycle, sectorDeg: p.sectorDeg, travelM: p.travelM, method: p.method,
-      kinematicViscosity: p.kinematicViscosity, pipeHeightM: p.pipeHeightM, machineLossM: p.machineLossM, nozzlePressureM: p.endPressureM, regulated: regulated, nozzleHeightM: nozzleHeightM, drive: drive,
+      spans: spans,
+      kind: p.kind,
+      endThrowM: p.endThrowM,
+      endGun: p.endGunFlow > 0 ? EndGunUse.corners : EndGunUse.none,
+      endGunFlow: p.endGunFlow,
+      endGunPressureM: p.endGunPressureM,
+      endGunRadiusM: endGunRadiusM,
+      endGunBooster: endGunBooster,
+      grossDepthMm: p.grossDepthMm,
+      hoursPerCycle: p.hoursPerCycle,
+      sectorDeg: p.sectorDeg,
+      travelM: p.travelM,
+      method: p.method,
+      kinematicViscosity: p.kinematicViscosity,
+      pipeHeightM: p.pipeHeightM,
+      machineLossM: p.machineLossM,
+      nozzlePressureM: p.endPressureM,
+      regulated: regulated,
+      nozzleHeightM: nozzleHeightM,
+      drive: drive,
     );
   }
 
@@ -305,7 +333,12 @@ class PivotPackageSpec {
   /// every span from its first outlet at its own spacing.
   List<double> outletPositions() {
     final length = pipeLengthM;
-    if (outletPositionsM.isNotEmpty) return [for (final r in [...outletPositionsM]..sort()) if (r > 0 && r <= length + 1e-9) r];
+    if (outletPositionsM.isNotEmpty) {
+      return [
+        for (final r in [...outletPositionsM]..sort())
+          if (r > 0 && r <= length + 1e-9) r,
+      ];
+    }
     final out = <double>[];
     var start = 0.0;
     for (final sp in spans) {
@@ -313,7 +346,7 @@ class PivotPackageSpec {
       final step = sp.outletSpacingM;
       if (len > 0 && step > 0) {
         final first = sp.firstOutletM >= 0 ? sp.firstOutletM : step / 2;
-        for (var k = 0;; k++) {
+        for (var k = 0; ; k++) {
           final r = start + first + k * step;
           if (r > start + len + 1e-9) break;
           // an outlet on a tower joint belongs to one span only
@@ -377,21 +410,59 @@ class PivotOutletRow {
   final bool plugged;
 
   Map<String, dynamic> toJson() => {
-    'n': number, 'sp': span, 'r': distanceM, 's': spacingM, 'w': servedWidthM, 'q': requiredFlow, 'qd': deliveredFlow, 'hp': pipePressureM, 'hn': nozzlePressureM,
-    if (regulatorM > 0) 'reg': regulatorM, if (nozzle.isNotEmpty) 'noz': nozzle, if (nozzleNumber > 0) 'num': nozzleNumber, if (nozzleDiameterMm > 0) 'dmm': nozzleDiameterMm, if (dropLengthM > 0) 'drop': dropLengthM, if (plugged) 'plug': true,
+    'n': number,
+    'sp': span,
+    'r': distanceM,
+    's': spacingM,
+    'w': servedWidthM,
+    'q': requiredFlow,
+    'qd': deliveredFlow,
+    'hp': pipePressureM,
+    'hn': nozzlePressureM,
+    if (regulatorM > 0) 'reg': regulatorM,
+    if (nozzle.isNotEmpty) 'noz': nozzle,
+    if (nozzleNumber > 0) 'num': nozzleNumber,
+    if (nozzleDiameterMm > 0) 'dmm': nozzleDiameterMm,
+    if (dropLengthM > 0) 'drop': dropLengthM,
+    if (plugged) 'plug': true,
   };
   static PivotOutletRow fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     return PivotOutletRow(
-      number: (j['n'] as num?)?.toInt() ?? 0, span: (j['sp'] as num?)?.toInt() ?? 0, distanceM: d('r'), spacingM: d('s'), servedWidthM: d('w'), requiredFlow: d('q'), deliveredFlow: d('qd'), pipePressureM: d('hp'),
-      nozzlePressureM: d('hn'), regulatorM: d('reg'), nozzle: j['noz'] as String? ?? '', nozzleNumber: (j['num'] as num?)?.toInt() ?? 0, nozzleDiameterMm: d('dmm'), dropLengthM: d('drop'), plugged: j['plug'] as bool? ?? false,
+      number: (j['n'] as num?)?.toInt() ?? 0,
+      span: (j['sp'] as num?)?.toInt() ?? 0,
+      distanceM: d('r'),
+      spacingM: d('s'),
+      servedWidthM: d('w'),
+      requiredFlow: d('q'),
+      deliveredFlow: d('qd'),
+      pipePressureM: d('hp'),
+      nozzlePressureM: d('hn'),
+      regulatorM: d('reg'),
+      nozzle: j['noz'] as String? ?? '',
+      nozzleNumber: (j['num'] as num?)?.toInt() ?? 0,
+      nozzleDiameterMm: d('dmm'),
+      dropLengthM: d('drop'),
+      plugged: j['plug'] as bool? ?? false,
     );
   }
 }
 
 /// Summary of one span of the package.
 class PivotPackageSpanRow {
-  const PivotPackageSpanRow({required this.index, required this.startM, required this.endM, required this.outlets, required this.requiredFlow, required this.deliveredFlow, required this.pipeInnerMm, required this.pressureStartM, required this.pressureEndM, required this.frictionLossM, this.overhang = false});
+  const PivotPackageSpanRow({
+    required this.index,
+    required this.startM,
+    required this.endM,
+    required this.outlets,
+    required this.requiredFlow,
+    required this.deliveredFlow,
+    required this.pipeInnerMm,
+    required this.pressureStartM,
+    required this.pressureEndM,
+    required this.frictionLossM,
+    this.overhang = false,
+  });
 
   /// 1-based span index; the overhang is the last.
   final int index;
@@ -412,10 +483,34 @@ class PivotPackageSpanRow {
   final double frictionLossM;
   final bool overhang;
 
-  Map<String, dynamic> toJson() => {'i': index, 'r0': startM, 'r1': endM, 'n': outlets, 'q': requiredFlow, 'qd': deliveredFlow, 'dmm': pipeInnerMm, 'h0': pressureStartM, 'h1': pressureEndM, 'hf': frictionLossM, if (overhang) 'oh': true};
+  Map<String, dynamic> toJson() => {
+    'i': index,
+    'r0': startM,
+    'r1': endM,
+    'n': outlets,
+    'q': requiredFlow,
+    'qd': deliveredFlow,
+    'dmm': pipeInnerMm,
+    'h0': pressureStartM,
+    'h1': pressureEndM,
+    'hf': frictionLossM,
+    if (overhang) 'oh': true,
+  };
   static PivotPackageSpanRow fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
-    return PivotPackageSpanRow(index: (j['i'] as num?)?.toInt() ?? 0, startM: d('r0'), endM: d('r1'), outlets: (j['n'] as num?)?.toInt() ?? 0, requiredFlow: d('q'), deliveredFlow: d('qd'), pipeInnerMm: d('dmm'), pressureStartM: d('h0'), pressureEndM: d('h1'), frictionLossM: d('hf'), overhang: j['oh'] as bool? ?? false);
+    return PivotPackageSpanRow(
+      index: (j['i'] as num?)?.toInt() ?? 0,
+      startM: d('r0'),
+      endM: d('r1'),
+      outlets: (j['n'] as num?)?.toInt() ?? 0,
+      requiredFlow: d('q'),
+      deliveredFlow: d('qd'),
+      pipeInnerMm: d('dmm'),
+      pressureStartM: d('h0'),
+      pressureEndM: d('h1'),
+      frictionLossM: d('hf'),
+      overhang: j['oh'] as bool? ?? false,
+    );
   }
 }
 
@@ -430,7 +525,8 @@ class PivotTimerRow {
   final double speedMPerMin;
 
   Map<String, dynamic> toJson() => {'p': timerPct, 'h': hours, 'd': depthMm, 'v': speedMPerMin};
-  static PivotTimerRow fromJson(Map<String, dynamic> j) => PivotTimerRow(timerPct: (j['p'] as num).toDouble(), hours: (j['h'] as num).toDouble(), depthMm: (j['d'] as num).toDouble(), speedMPerMin: (j['v'] as num?)?.toDouble() ?? 0);
+  static PivotTimerRow fromJson(Map<String, dynamic> j) =>
+      PivotTimerRow(timerPct: (j['p'] as num).toDouble(), hours: (j['h'] as num).toDouble(), depthMm: (j['d'] as num).toDouble(), speedMPerMin: (j['v'] as num?)?.toDouble() ?? 0);
 }
 
 /// Sprinkler chart, span summary and timer chart of a machine.
@@ -525,19 +621,60 @@ class PivotPackageResult {
   double timerForDepth(double depthMm) => depthMm > 0 && depthAt100Mm > 0 ? math.min(100.0, 100 * depthAt100Mm / depthMm) : 0;
 
   Map<String, dynamic> toJson() => {
-    'id': pivotId, 'kind': kind.name, 'qs': systemFlow, 'qd': designFlow, 'qdel': deliveredFlow, 'qg': endGunFlow, if (gunNozzle.isNotEmpty) 'gnoz': gunNozzle, 'rg': gunRadiusM, 're': effectiveRadiusM,
-    'hin': inletHeadM, 'hreq': requiredInletHeadM, 'hf': frictionLossM, 'hend': endPressureM, 'reg': regulatorM, if (regulatorId.isNotEmpty) 'regid': regulatorId, 'hb': boosterHeadM, 'pb': boosterPowerKw,
-    'rlast': lastTowerRadiusM, 'v100': speedAt100MPerMin, 't100': hoursAt100, 'd100': depthAt100Mm,
-    'outlets': outlets.map((o) => o.toJson()).toList(), 'spans': spans.map((o) => o.toJson()).toList(), 'timer': timer.map((o) => o.toJson()).toList(), 'warn': warnings,
+    'id': pivotId,
+    'kind': kind.name,
+    'qs': systemFlow,
+    'qd': designFlow,
+    'qdel': deliveredFlow,
+    'qg': endGunFlow,
+    if (gunNozzle.isNotEmpty) 'gnoz': gunNozzle,
+    'rg': gunRadiusM,
+    're': effectiveRadiusM,
+    'hin': inletHeadM,
+    'hreq': requiredInletHeadM,
+    'hf': frictionLossM,
+    'hend': endPressureM,
+    'reg': regulatorM,
+    if (regulatorId.isNotEmpty) 'regid': regulatorId,
+    'hb': boosterHeadM,
+    'pb': boosterPowerKw,
+    'rlast': lastTowerRadiusM,
+    'v100': speedAt100MPerMin,
+    't100': hoursAt100,
+    'd100': depthAt100Mm,
+    'outlets': outlets.map((o) => o.toJson()).toList(),
+    'spans': spans.map((o) => o.toJson()).toList(),
+    'timer': timer.map((o) => o.toJson()).toList(),
+    'warn': warnings,
   };
   static PivotPackageResult fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     List<T> list<T>(String k, T Function(Map<String, dynamic>) f) => ((j[k] as List?) ?? const []).map((e) => f(e as Map<String, dynamic>)).toList();
     return PivotPackageResult(
-      pivotId: j['id'] as String? ?? '', kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'), systemFlow: d('qs'), designFlow: d('qd'), deliveredFlow: d('qdel'), endGunFlow: d('qg'),
-      gunNozzle: j['gnoz'] as String? ?? '', gunRadiusM: d('rg'), effectiveRadiusM: d('re'), inletHeadM: d('hin'), requiredInletHeadM: d('hreq'), frictionLossM: d('hf'), endPressureM: d('hend'),
-      regulatorM: d('reg'), regulatorId: j['regid'] as String? ?? '', boosterHeadM: d('hb'), boosterPowerKw: d('pb'), lastTowerRadiusM: d('rlast'), speedAt100MPerMin: d('v100'), hoursAt100: d('t100'),
-      depthAt100Mm: d('d100'), outlets: list('outlets', PivotOutletRow.fromJson), spans: list('spans', PivotPackageSpanRow.fromJson), timer: list('timer', PivotTimerRow.fromJson),
+      pivotId: j['id'] as String? ?? '',
+      kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'),
+      systemFlow: d('qs'),
+      designFlow: d('qd'),
+      deliveredFlow: d('qdel'),
+      endGunFlow: d('qg'),
+      gunNozzle: j['gnoz'] as String? ?? '',
+      gunRadiusM: d('rg'),
+      effectiveRadiusM: d('re'),
+      inletHeadM: d('hin'),
+      requiredInletHeadM: d('hreq'),
+      frictionLossM: d('hf'),
+      endPressureM: d('hend'),
+      regulatorM: d('reg'),
+      regulatorId: j['regid'] as String? ?? '',
+      boosterHeadM: d('hb'),
+      boosterPowerKw: d('pb'),
+      lastTowerRadiusM: d('rlast'),
+      speedAt100MPerMin: d('v100'),
+      hoursAt100: d('t100'),
+      depthAt100Mm: d('d100'),
+      outlets: list('outlets', PivotOutletRow.fromJson),
+      spans: list('spans', PivotPackageSpanRow.fromJson),
+      timer: list('timer', PivotTimerRow.fromJson),
       warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
     );
   }
@@ -675,7 +812,10 @@ PivotPackageResult designPivotPackage(
   var rating = 0.0;
   var regulatorId = '';
   if (s.regulated) {
-    final cat = [for (final v in regulators) if (v.enabled && v.kind == ValveKind.prv && v.defaultSettingM > 0) v];
+    final cat = [
+      for (final v in regulators)
+        if (v.enabled && v.kind == ValveKind.prv && v.defaultSettingM > 0) v,
+    ];
     if (cat.isNotEmpty) {
       final v = cat.reduce((a, b) => (a.defaultSettingM - s.nozzlePressureM).abs() <= (b.defaultSettingM - s.nozzlePressureM).abs() ? a : b);
       rating = v.defaultSettingM;
@@ -769,7 +909,21 @@ PivotPackageResult designPivotPackage(
     final atInlet = nozzleInlet(i, designRise(r));
     final worstInlet = nozzleInlet(i, worstRise(r));
     if (plugged[i]) {
-      rows.add(PivotOutletRow(number: i + 1, span: spanAt(r) + 1, distanceM: r, spacingM: 0, servedWidthM: 0, requiredFlow: 0, deliveredFlow: 0, pipePressureM: pipeHead, nozzlePressureM: 0, dropLengthM: drops[i], plugged: true));
+      rows.add(
+        PivotOutletRow(
+          number: i + 1,
+          span: spanAt(r) + 1,
+          distanceM: r,
+          spacingM: 0,
+          servedWidthM: 0,
+          requiredFlow: 0,
+          deliveredFlow: 0,
+          pipePressureM: pipeHead,
+          nozzlePressureM: 0,
+          dropLengthM: drops[i],
+          plugged: true,
+        ),
+      );
       continue;
     }
     final head = nozzleHead(atInlet);
@@ -801,10 +955,24 @@ PivotPackageResult designPivotPackage(
       reqSum += req[i];
     }
     delivered += q;
-    rows.add(PivotOutletRow(
-      number: i + 1, span: spanAt(r) + 1, distanceM: r, spacingM: r - lastActive, servedWidthM: upper[i] - lo, requiredFlow: req[i], deliveredFlow: q, pipePressureM: pipeHead, nozzlePressureM: math.max(head, 0.0),
-      regulatorM: rating, nozzle: nozzleId, nozzleNumber: number, nozzleDiameterMm: diameterMm, dropLengthM: drops[i],
-    ));
+    rows.add(
+      PivotOutletRow(
+        number: i + 1,
+        span: spanAt(r) + 1,
+        distanceM: r,
+        spacingM: r - lastActive,
+        servedWidthM: upper[i] - lo,
+        requiredFlow: req[i],
+        deliveredFlow: q,
+        pipePressureM: pipeHead,
+        nozzlePressureM: math.max(head, 0.0),
+        regulatorM: rating,
+        nozzle: nozzleId,
+        nozzleNumber: number,
+        nozzleDiameterMm: diameterMm,
+        dropLengthM: drops[i],
+      ),
+    );
     lastActive = r;
     lo = upper[i];
   }
@@ -840,10 +1008,21 @@ PivotPackageResult designPivotPackage(
     final a = spanStart[j], b = a + math.max(s.spans[j].lengthM, 0.0);
     final inSpan = rows.where((o) => !o.plugged && o.span == j + 1);
     final hfa = hfAt(a), hfb = hfAt(b);
-    spanRows.add(PivotPackageSpanRow(
-      index: j + 1, startM: a, endM: b, outlets: inSpan.length, requiredFlow: inSpan.fold(0.0, (t, o) => t + o.requiredFlow), deliveredFlow: inSpan.fold(0.0, (t, o) => t + o.deliveredFlow),
-      pipeInnerMm: s.spans[j].pipeInnerMm, pressureStartM: pressureAt(a), pressureEndM: pressureAt(b), frictionLossM: hfb - hfa, overhang: s.spans[j].overhang,
-    ));
+    spanRows.add(
+      PivotPackageSpanRow(
+        index: j + 1,
+        startM: a,
+        endM: b,
+        outlets: inSpan.length,
+        requiredFlow: inSpan.fold(0.0, (t, o) => t + o.requiredFlow),
+        deliveredFlow: inSpan.fold(0.0, (t, o) => t + o.deliveredFlow),
+        pipeInnerMm: s.spans[j].pipeInnerMm,
+        pressureStartM: pressureAt(a),
+        pressureEndM: pressureAt(b),
+        frictionLossM: hfb - hfa,
+        overhang: s.spans[j].overhang,
+      ),
+    );
   }
 
   // timer chart
@@ -864,9 +1043,30 @@ PivotPackageResult designPivotPackage(
   }
 
   return PivotPackageResult(
-    pivotId: id, kind: s.kind, systemFlow: qs, designFlow: designFlow, deliveredFlow: delivered + gunDelivered, endGunFlow: qGun, gunNozzle: gunNozzle?.id ?? '', gunRadiusM: gunRadius,
-    effectiveRadiusM: re, inletHeadM: inlet, requiredInletHeadM: inletNeed, frictionLossM: hfEnd, endPressureM: endPressure, regulatorM: rating, regulatorId: regulatorId,
-    boosterHeadM: boosterHead, boosterPowerKw: boosterKw, lastTowerRadiusM: rLast, speedAt100MPerMin: v100, hoursAt100: hours100, depthAt100Mm: depth100,
-    outlets: rows, spans: spanRows, timer: timer, warnings: warnings,
+    pivotId: id,
+    kind: s.kind,
+    systemFlow: qs,
+    designFlow: designFlow,
+    deliveredFlow: delivered + gunDelivered,
+    endGunFlow: qGun,
+    gunNozzle: gunNozzle?.id ?? '',
+    gunRadiusM: gunRadius,
+    effectiveRadiusM: re,
+    inletHeadM: inlet,
+    requiredInletHeadM: inletNeed,
+    frictionLossM: hfEnd,
+    endPressureM: endPressure,
+    regulatorM: rating,
+    regulatorId: regulatorId,
+    boosterHeadM: boosterHead,
+    boosterPowerKw: boosterKw,
+    lastTowerRadiusM: rLast,
+    speedAt100MPerMin: v100,
+    hoursAt100: hours100,
+    depthAt100Mm: depth100,
+    outlets: rows,
+    spans: spanRows,
+    timer: timer,
+    warnings: warnings,
   );
 }

@@ -24,11 +24,7 @@ UtmPoint latLonToUtm(double lat, double lon, {int? zone}) {
   final lam = (lon - lon0) * math.pi / 180;
   final n = f / (2 - f);
   final aBig = a / (1 + n) * (1 + n * n / 4 + n * n * n * n / 64);
-  final alpha = [
-    n / 2 - 2 * n * n / 3 + 5 * n * n * n / 16,
-    13 * n * n / 48 - 3 * n * n * n / 5,
-    61 * n * n * n / 240,
-  ];
+  final alpha = [n / 2 - 2 * n * n / 3 + 5 * n * n * n / 16, 13 * n * n / 48 - 3 * n * n * n / 5, 61 * n * n * n / 240];
   final e2 = 2 * f - f * f;
   final t = math.tan(phi);
   // conformal latitude
@@ -74,16 +70,8 @@ int utmZoneFor(double lat, double lon) {
   final lon0 = (zone - 1) * 6 - 180 + 3;
   final n = f / (2 - f);
   final aBig = a / (1 + n) * (1 + n * n / 4 + n * n * n * n / 64);
-  final beta = [
-    n / 2 - 2 * n * n / 3 + 37 * n * n * n / 96,
-    n * n / 48 + n * n * n / 15,
-    17 * n * n * n / 480,
-  ];
-  final delta = [
-    2 * n - 2 * n * n / 3 - 2 * n * n * n,
-    7 * n * n / 3 - 8 * n * n * n / 5,
-    56 * n * n * n / 15,
-  ];
+  final beta = [n / 2 - 2 * n * n / 3 + 37 * n * n * n / 96, n * n / 48 + n * n * n / 15, 17 * n * n * n / 480];
+  final delta = [2 * n - 2 * n * n / 3 - 2 * n * n * n, 7 * n * n / 3 - 8 * n * n * n / 5, 56 * n * n * n / 15];
   final y = north ? northing : northing - 10000000;
   final xi = y / (k0 * aBig);
   final eta = (easting - 500000) / (k0 * aBig);
@@ -136,8 +124,10 @@ class GeoReference {
     if (!north && lat >= 0) northing += 10000000;
     return (u.easting - originEasting, northing - originNorthing);
   }
+
   Map<String, dynamic> toJson() => {'zone': zone, 'north': north, 'e0': originEasting, 'n0': originNorthing};
-  static GeoReference fromJson(Map<String, dynamic> j) => GeoReference(zone: (j['zone'] as num).toInt(), north: j['north'] as bool? ?? true, originEasting: (j['e0'] as num).toDouble(), originNorthing: (j['n0'] as num).toDouble());
+  static GeoReference fromJson(Map<String, dynamic> j) =>
+      GeoReference(zone: (j['zone'] as num).toInt(), north: j['north'] as bool? ?? true, originEasting: (j['e0'] as num).toDouble(), originNorthing: (j['n0'] as num).toDouble());
 }
 
 /// Reads a coordinate typed or pasted by the user and returns (lat, lon) in

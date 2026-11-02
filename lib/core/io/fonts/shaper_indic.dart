@@ -49,15 +49,17 @@ const _indicConfigs = <int, _IndicConfig>{
 
 class _IndicPlan {
   _IndicPlan(this.font, _Plan plan, int script)
-      : config = _indicConfigs[script]!,
-        rphf = plan.mask('rphf'),
-        pref = plan.mask('pref'),
-        blwf = plan.mask('blwf'),
-        abvf = plan.mask('abvf'),
-        half = plan.mask('half'),
-        pstf = plan.mask('pstf'),
-        init = plan.mask('init'),
-        _stageLookups = {for (final t in const ['rphf', 'pref', 'blwf', 'pstf', 'vatu']) t: _lookupsOf(plan, t)};
+    : config = _indicConfigs[script]!,
+      rphf = plan.mask('rphf'),
+      pref = plan.mask('pref'),
+      blwf = plan.mask('blwf'),
+      abvf = plan.mask('abvf'),
+      half = plan.mask('half'),
+      pstf = plan.mask('pstf'),
+      init = plan.mask('init'),
+      _stageLookups = {
+        for (final t in const ['rphf', 'pref', 'blwf', 'pstf', 'vatu']) t: _lookupsOf(plan, t),
+      };
 
   final ShapingFont font;
   final _IndicConfig config;
@@ -168,10 +170,7 @@ void _collectIndicFeatures(_PlanBuilder b) {
   b.enable('locl', _fPerSyllable);
   b.enable('ccmp', _fPerSyllable);
   b.pauseGsub(_initialReordering);
-  const basic = [
-    ('nukt', _fGlobal), ('akhn', _fGlobal), ('rphf', 0), ('rkrf', _fGlobal), ('pref', 0), ('blwf', 0), ('abvf', 0), ('half', 0), ('pstf', 0), ('vatu', _fGlobal),
-    ('cjct', _fGlobal),
-  ];
+  const basic = [('nukt', _fGlobal), ('akhn', _fGlobal), ('rphf', 0), ('rkrf', _fGlobal), ('pref', 0), ('blwf', 0), ('abvf', 0), ('half', 0), ('pstf', 0), ('vatu', _fGlobal), ('cjct', _fGlobal)];
   for (final (tag, f) in basic) {
     b.add(tag, f | _fManualJoiners | _fPerSyllable);
     b.pauseGsub();
@@ -352,23 +351,111 @@ _Re _star(_Re r) => _Star(r);
 
 final _Nfa _syllableNfa = () {
   final c = _s([_cC, _cRa]);
-  final n = _seq([_q(_seq([_q(_s([_cZWNJ])), _s([_cRS])])), _q(_seq([_s([_cN]), _q(_s([_cN]))]))]);
+  final n = _seq([
+    _q(
+      _seq([
+        _q(_s([_cZWNJ])),
+        _s([_cRS]),
+      ]),
+    ),
+    _q(
+      _seq([
+        _s([_cN]),
+        _q(_s([_cN])),
+      ]),
+    ),
+  ]);
   final z = _s([_cZWJ, _cZWNJ]);
-  final reph = _or([_seq([_s([_cRa]), _s([_cH])]), _s([_cRepha])]);
+  final reph = _or([
+    _seq([
+      _s([_cRa]),
+      _s([_cH]),
+    ]),
+    _s([_cRepha]),
+  ]);
   final sm = _s([_cSM, _cSMPst]);
-  final cn = _seq([c, _q(_s([_cZWJ])), _q(n)]);
-  final symbol = _seq([_s([_cSymbol]), _q(_s([_cN]))]);
-  final matraGroup = _seq([_star(z), _or([_s([_cM]), _seq([_q(sm), _s([_cMPst])])]), _q(_s([_cN])), _q(_s([_cH]))]);
-  final syllableTail = _seq([_q(_seq([_q(z), sm, _q(sm), _q(_s([_cZWNJ]))])), _star(_s([_cA]))]);
-  final halantGroup = _seq([_q(z), _s([_cH]), _q(_seq([_s([_cZWJ]), _q(_s([_cN]))]))]);
-  final finalHalantGroup = _or([halantGroup, _seq([_s([_cH]), _s([_cZWNJ])])]);
+  final cn = _seq([
+    c,
+    _q(_s([_cZWJ])),
+    _q(n),
+  ]);
+  final symbol = _seq([
+    _s([_cSymbol]),
+    _q(_s([_cN])),
+  ]);
+  final matraGroup = _seq([
+    _star(z),
+    _or([
+      _s([_cM]),
+      _seq([
+        _q(sm),
+        _s([_cMPst]),
+      ]),
+    ]),
+    _q(_s([_cN])),
+    _q(_s([_cH])),
+  ]);
+  final syllableTail = _seq([
+    _q(
+      _seq([
+        _q(z),
+        sm,
+        _q(sm),
+        _q(_s([_cZWNJ])),
+      ]),
+    ),
+    _star(_s([_cA])),
+  ]);
+  final halantGroup = _seq([
+    _q(z),
+    _s([_cH]),
+    _q(
+      _seq([
+        _s([_cZWJ]),
+        _q(_s([_cN])),
+      ]),
+    ),
+  ]);
+  final finalHalantGroup = _or([
+    halantGroup,
+    _seq([
+      _s([_cH]),
+      _s([_cZWNJ]),
+    ]),
+  ]);
   final medialGroup = _q(_s([_cCM]));
   final halantOrMatraGroup = _or([finalHalantGroup, _star(matraGroup)]);
-  final complexTail = _seq([_star(_seq([halantGroup, cn])), medialGroup, halantOrMatraGroup, syllableTail]);
-  final consonantSyllable = _seq([_q(_s([_cRepha, _cCS])), cn, complexTail]);
-  final vowelSyllable = _seq([_q(reph), _s([_cV]), _q(n), _or([_s([_cZWJ]), complexTail])]);
+  final complexTail = _seq([
+    _star(_seq([halantGroup, cn])),
+    medialGroup,
+    halantOrMatraGroup,
+    syllableTail,
+  ]);
+  final consonantSyllable = _seq([
+    _q(_s([_cRepha, _cCS])),
+    cn,
+    complexTail,
+  ]);
+  final vowelSyllable = _seq([
+    _q(reph),
+    _s([_cV]),
+    _q(n),
+    _or([
+      _s([_cZWJ]),
+      complexTail,
+    ]),
+  ]);
   final standalone = _seq([
-    _or([_seq([_q(_s([_cRepha, _cCS])), _s([_cPlaceholder])]), _seq([_q(reph), _s([_cDottedCircle])])]),
+    _or([
+      _seq([
+        _q(_s([_cRepha, _cCS])),
+        _s([_cPlaceholder]),
+      ]),
+      _seq([
+        _q(reph),
+        _s([_cDottedCircle]),
+      ]),
+    ]),
     _q(n),
     complexTail,
   ]);
@@ -376,7 +463,15 @@ final _Nfa _syllableNfa = () {
   final broken = _seq([_q(reph), _q(n), complexTail]);
   final any = _s(List<int>.generate(32, (i) => i));
   // patterns in priority order with their syllable types
-  final patterns = [consonantSyllable, vowelSyllable, standalone, symbolCluster, _s([_cSMPst]), broken, any];
+  final patterns = [
+    consonantSyllable,
+    vowelSyllable,
+    standalone,
+    symbolCluster,
+    _s([_cSMPst]),
+    broken,
+    any,
+  ];
   final nfa = _Nfa();
   final start = nfa.state();
   for (var i = 0; i < patterns.length; i++) {

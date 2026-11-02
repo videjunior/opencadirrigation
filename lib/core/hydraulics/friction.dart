@@ -13,36 +13,18 @@ import '../units.dart';
 enum FrictionMethod { hazenWilliams, darcyWeisbach, scobey, manning }
 
 /// Hazen-Williams head loss (SI form): hf = 10.67·L·Q^1.852 / (C^1.852·D^4.871).
-double hazenWilliamsLoss({
-  required double flow,
-  required double diameter,
-  required double length,
-  required double c,
-}) {
+double hazenWilliamsLoss({required double flow, required double diameter, required double length, required double c}) {
   if (flow == 0 || length == 0) return 0;
   final q = flow.abs();
-  final hf = 10.67 *
-      length *
-      math.pow(q, 1.852) /
-      (math.pow(c, 1.852) * math.pow(diameter, 4.871));
+  final hf = 10.67 * length * math.pow(q, 1.852) / (math.pow(c, 1.852) * math.pow(diameter, 4.871));
   return flow < 0 ? -hf : hf;
 }
 
 /// Hazen-Williams resistance coefficient r so that hf = r·Q^1.852.
-double hazenWilliamsResistance({
-  required double diameter,
-  required double length,
-  required double c,
-}) =>
-    10.67 * length / (math.pow(c, 1.852) * math.pow(diameter, 4.871));
+double hazenWilliamsResistance({required double diameter, required double length, required double c}) => 10.67 * length / (math.pow(c, 1.852) * math.pow(diameter, 4.871));
 
 /// Unit head-loss gradient J (m/m) by Hazen-Williams.
-double hazenWilliamsGradient({
-  required double flow,
-  required double diameter,
-  required double c,
-}) =>
-    hazenWilliamsLoss(flow: flow, diameter: diameter, length: 1, c: c);
+double hazenWilliamsGradient({required double flow, required double diameter, required double c}) => hazenWilliamsLoss(flow: flow, diameter: diameter, length: 1, c: c);
 
 /// Scobey (1930) head loss of sprinkler laterals (SI form of Keller &
 /// Bliesner 1990): hf = 4.1·10⁻³·Ks·L·Q^1.9 / D^4.9 with Q in m³/s and D in
@@ -75,21 +57,15 @@ double manningLoss({required double flow, required double diameter, required dou
 double manningResistance({required double diameter, required double length, required double n}) => 10.29 * n * n * length / math.pow(diameter, 16 / 3);
 
 /// Reynolds number for a full circular pipe.
-double reynolds({
-  required double flow,
-  required double diameter,
-  double kinematicViscosity = 1.004e-6,
-}) {
+double reynolds({required double flow, required double diameter, double kinematicViscosity = 1.004e-6}) {
   final v = velocity(flow: flow.abs(), diameter: diameter);
   return v * diameter / kinematicViscosity;
 }
 
 /// Mean velocity (m/s).
-double velocity({required double flow, required double diameter}) =>
-    flow / (math.pi * diameter * diameter / 4);
+double velocity({required double flow, required double diameter}) => flow / (math.pi * diameter * diameter / 4);
 
-double flowForVelocity({required double velocity, required double diameter}) =>
-    velocity * math.pi * diameter * diameter / 4;
+double flowForVelocity({required double velocity, required double diameter}) => velocity * math.pi * diameter * diameter / 4;
 
 /// Explicit Swamee-Jain approximation of the Colebrook-White friction factor.
 double swameeJain({required double reynolds, required double relRoughness}) {
@@ -99,16 +75,10 @@ double swameeJain({required double reynolds, required double relRoughness}) {
 }
 
 /// Colebrook-White friction factor solved iteratively (reference accuracy).
-double colebrook({
-  required double reynolds,
-  required double relRoughness,
-  int maxIter = 50,
-}) {
+double colebrook({required double reynolds, required double relRoughness, int maxIter = 50}) {
   var f = swameeJain(reynolds: reynolds, relRoughness: relRoughness);
   for (var i = 0; i < maxIter; i++) {
-    final rhs = -2 *
-        math.log(relRoughness / 3.7 + 2.51 / (reynolds * math.sqrt(f))) /
-        math.ln10;
+    final rhs = -2 * math.log(relRoughness / 3.7 + 2.51 / (reynolds * math.sqrt(f))) / math.ln10;
     final fNew = 1 / (rhs * rhs);
     if ((fNew - f).abs() < 1e-10) return fNew;
     f = fNew;
@@ -121,10 +91,7 @@ double blasius(double reynolds) => 0.3164 / math.pow(reynolds, 0.25);
 
 /// Darcy friction factor covering laminar, transitional (cubic interpolation
 /// as in EPANET) and turbulent (Swamee-Jain) regimes.
-double darcyFrictionFactor({
-  required double reynolds,
-  required double relRoughness,
-}) {
+double darcyFrictionFactor({required double reynolds, required double relRoughness}) {
   final re = reynolds;
   if (re <= 0) return 0;
   if (re < 2000) return 64 / re;
@@ -159,10 +126,7 @@ double darcyWeisbachLoss({
   final q = flow.abs();
   final v = velocity(flow: q, diameter: diameter);
   final re = v * diameter / kinematicViscosity;
-  final f = darcyFrictionFactor(
-    reynolds: re,
-    relRoughness: roughness / diameter,
-  );
+  final f = darcyFrictionFactor(reynolds: re, relRoughness: roughness / diameter);
   final hf = f * (length / diameter) * v * v / (2 * gravity);
   return flow < 0 ? -hf : hf;
 }
@@ -181,20 +145,9 @@ double frictionLoss({
 }) {
   switch (method) {
     case FrictionMethod.hazenWilliams:
-      return hazenWilliamsLoss(
-        flow: flow,
-        diameter: diameter,
-        length: length,
-        c: c,
-      );
+      return hazenWilliamsLoss(flow: flow, diameter: diameter, length: length, c: c);
     case FrictionMethod.darcyWeisbach:
-      return darcyWeisbachLoss(
-        flow: flow,
-        diameter: diameter,
-        length: length,
-        roughness: roughness,
-        kinematicViscosity: kinematicViscosity,
-      );
+      return darcyWeisbachLoss(flow: flow, diameter: diameter, length: length, roughness: roughness, kinematicViscosity: kinematicViscosity);
     case FrictionMethod.scobey:
       return scobeyLoss(flow: flow, diameter: diameter, length: length, ks: scobeyKs);
     case FrictionMethod.manning:
@@ -213,16 +166,11 @@ double flowExponent(FrictionMethod method) => switch (method) {
 /// Christiansen (1942) multiple-outlet factor.
 /// [outlets] N equally spaced outlets, [m] flow exponent.
 /// If [firstOutletAtHalfSpacing] the Jensen-Fratini form is used.
-double christiansenF({
-  required int outlets,
-  double m = 1.852,
-  bool firstOutletAtHalfSpacing = false,
-}) {
+double christiansenF({required int outlets, double m = 1.852, bool firstOutletAtHalfSpacing = false}) {
   final n = outlets.toDouble();
   if (outlets <= 0) return 1;
   if (firstOutletAtHalfSpacing) {
-    return (2 * n / (2 * n - 1)) *
-        (1 / (m + 1) + math.sqrt(m - 1) / (6 * n * n));
+    return (2 * n / (2 * n - 1)) * (1 / (m + 1) + math.sqrt(m - 1) / (6 * n * n));
   }
   return 1 / (m + 1) + 1 / (2 * n) + math.sqrt(m - 1) / (6 * n * n);
 }
@@ -236,8 +184,7 @@ double scaloppiF({required int outlets, required double r, double m = 1.852}) {
 
 /// Equivalent single-pipe diameter for n identical parallel laterals
 /// (Hazen-Williams): D = (d^4.871 · n^1.852)^0.2053.
-double equivalentDiameterParallel(double d, int n) =>
-    math.pow(math.pow(d, 4.871) * math.pow(n, 1.852), 0.2053).toDouble();
+double equivalentDiameterParallel(double d, int n) => math.pow(math.pow(d, 4.871) * math.pow(n, 1.852), 0.2053).toDouble();
 
 /// Hazen-Williams C converted to an equivalent absolute roughness for the
 /// given diameter and velocity (Diskin 1960 approximation).

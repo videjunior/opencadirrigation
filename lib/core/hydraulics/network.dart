@@ -150,14 +150,7 @@ class LinkResult {
 }
 
 class NetworkResult {
-  NetworkResult({
-    required this.converged,
-    required this.iterations,
-    required this.nodes,
-    required this.links,
-    required this.warnings,
-    required this.relativeFlowError,
-  });
+  NetworkResult({required this.converged, required this.iterations, required this.nodes, required this.links, required this.warnings, required this.relativeFlowError});
   final bool converged;
   final int iterations;
   final Map<String, NodeResult> nodes;
@@ -879,7 +872,19 @@ class HydraulicNetwork {
 
   static bool _isValve(HLink l) => l.kind == HLinkKind.prv || l.kind == HLinkKind.psv || l.kind == HLinkKind.fcv;
 
-  NetworkResult _results(List<HNode> nodeList, Float64List heads, Int32List fromNode, Int32List toNode, Float64List q, Float64List emitterFlow, Uint8List emitterOpen, bool converged, int iter, List<String> warnings, double relErr) {
+  NetworkResult _results(
+    List<HNode> nodeList,
+    Float64List heads,
+    Int32List fromNode,
+    Int32List toNode,
+    Float64List q,
+    Float64List emitterFlow,
+    Uint8List emitterOpen,
+    bool converged,
+    int iter,
+    List<String> warnings,
+    double relErr,
+  ) {
     final nodeResults = <String, NodeResult>{};
     for (var i = 0; i < nodeList.length; i++) {
       final n = nodeList[i];
@@ -897,14 +902,7 @@ class HydraulicNetwork {
       final pumpHead = l.kind == HLinkKind.pump && l.pump != null && flow > 0 ? l.pump!.head(flow) : 0.0;
       linkResults[l.id] = LinkResult(flow: flow, velocity: v, headLoss: hl, status: l.status, pumpHead: pumpHead);
     }
-    return NetworkResult(
-      converged: converged,
-      iterations: iter,
-      nodes: nodeResults,
-      links: linkResults,
-      warnings: warnings,
-      relativeFlowError: relErr,
-    );
+    return NetworkResult(converged: converged, iterations: iter, nodes: nodeResults, links: linkResults, warnings: warnings, relativeFlowError: relErr);
   }
 
   /// Flow on the curve of [pump] where it gives [head] (a trickle when it

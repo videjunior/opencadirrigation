@@ -32,14 +32,26 @@ Future<void> showShortcutsDialog(BuildContext context, ProjectController c) {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(t(g.titleKey).toUpperCase(), style: TextStyle(fontSize: 10.5, letterSpacing: 1, color: Cad.fg54, fontWeight: FontWeight.bold))),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                t(g.titleKey).toUpperCase(),
+                                style: TextStyle(fontSize: 10.5, letterSpacing: 1, color: Cad.fg54, fontWeight: FontWeight.bold),
+                              ),
+                            ),
                             for (final (keys, label) in g.items)
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 1.5),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(width: 150, child: Text(keys, style: TextStyle(fontSize: 11.5, fontFamily: 'monospace', color: Cad.accentText))),
+                                    SizedBox(
+                                      width: 150,
+                                      child: Text(
+                                        keys,
+                                        style: TextStyle(fontSize: 11.5, fontFamily: 'monospace', color: Cad.accentText),
+                                      ),
+                                    ),
                                     Expanded(child: Text(t(label), style: const TextStyle(fontSize: 11.5))),
                                   ],
                                 ),

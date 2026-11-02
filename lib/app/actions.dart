@@ -35,7 +35,10 @@ Future<void> confirmNew(BuildContext context, ProjectController c) async {
       builder: (ctx) => AlertDialog(
         title: Text(c.t('file.new')),
         content: Text(c.t('msg.unsavedConfirm')),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(c.t('cancel'))), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(c.t('ok')))],
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(c.t('cancel'))),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(c.t('ok'))),
+        ],
       ),
     );
     if (ok != true) return;
@@ -288,22 +291,33 @@ Future<void> shareLinkAction(BuildContext context, ProjectController c) {
       scrollable: true,
       content: SizedBox(
         width: 520,
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t('share.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
-          const SizedBox(height: 10),
-          if (tooLong)
-            Text(t('share.tooLong'), style: TextStyle(fontSize: 12, color: Cad.attention))
-          else ...[
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(border: Border.all(color: Cad.fg24), borderRadius: BorderRadius.circular(4)),
-              child: SelectableText(link.length > 600 ? '${link.substring(0, 600)}…' : link, key: const Key('share_link_text'), style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
-            ),
-            const SizedBox(height: 6),
-            Text(t('share.size', {'n': '${(link.length / 1024).toStringAsFixed(1)} KB'}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
-            if (link.length > shareLinkWarnLength) Text(t('share.long'), style: TextStyle(fontSize: 11, color: Cad.attention)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t('share.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+            const SizedBox(height: 10),
+            if (tooLong)
+              Text(t('share.tooLong'), style: TextStyle(fontSize: 12, color: Cad.attention))
+            else ...[
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Cad.fg24),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: SelectableText(
+                  link.length > 600 ? '${link.substring(0, 600)}…' : link,
+                  key: const Key('share_link_text'),
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(t('share.size', {'n': '${(link.length / 1024).toStringAsFixed(1)} KB'}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+              if (link.length > shareLinkWarnLength) Text(t('share.long'), style: TextStyle(fontSize: 11, color: Cad.attention)),
+            ],
           ],
-        ]),
+        ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),

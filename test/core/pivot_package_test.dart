@@ -101,7 +101,15 @@ void main() {
   group('regulated package with the numbered nozzle series', () {
     PivotPackageSpec spec({double available = 0, int maxNumber = 80}) => PivotPackageSpec(
       spans: [for (var i = 0; i < 7; i++) const PivotSpanDef(lengthM: 54, outletSpacingM: 3, archM: 0.5), const PivotSpanDef(lengthM: 22, outletSpacingM: 3, overhang: true)],
-      nozzlePressureM: 14, regulated: true, nozzleHeightM: 1.5, grossDepthMm: 8, hoursPerCycle: 24, endThrowM: 5, availableInletHeadM: available, minNozzleNumber: 8, maxNozzleNumber: maxNumber,
+      nozzlePressureM: 14,
+      regulated: true,
+      nozzleHeightM: 1.5,
+      grossDepthMm: 8,
+      hoursPerCycle: 24,
+      endThrowM: 5,
+      availableInletHeadM: available,
+      minNozzleNumber: 8,
+      maxNozzleNumber: maxNumber,
       drive: const TowerDrive(motorRpm: 1740, centerGearRatio: 40, wheelGearRatio: 52, tyreRollingDiameterM: 1.3),
     );
     final r = designPivotPackage(spec(), id: 'p2');
@@ -218,12 +226,25 @@ void main() {
 
   group('catalogue nozzles, end guns and linear moves', () {
     final family = [
-      for (final lph in [400.0, 600, 800, 1000, 1200, 1500, 1800, 2200, 2600, 3000]) NozzleSpec(id: 'n$lph', name: '$lph', curve: EmitterCurve.fromNominal(flow: lph * m3sPerLph, head: 10), minHeadM: 5, maxHeadM: 30),
+      for (final lph in [400.0, 600, 800, 1000, 1200, 1500, 1800, 2200, 2600, 3000])
+        NozzleSpec(
+          id: 'n$lph',
+          name: '$lph',
+          curve: EmitterCurve.fromNominal(flow: lph * m3sPerLph, head: 10),
+          minHeadM: 5,
+          maxHeadM: 30,
+        ),
     ];
 
     test('the closest catalogue nozzle at the nozzle pressure', () {
       final r = designPivotPackage(
-        const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 50, outletSpacingM: 5), PivotSpanDef(lengthM: 50, outletSpacingM: 5), PivotSpanDef(lengthM: 50, outletSpacingM: 2.5)], nozzlePressureM: 10, regulated: true, grossDepthMm: 10, hoursPerCycle: 20),
+        const PivotPackageSpec(
+          spans: [PivotSpanDef(lengthM: 50, outletSpacingM: 5), PivotSpanDef(lengthM: 50, outletSpacingM: 5), PivotSpanDef(lengthM: 50, outletSpacingM: 2.5)],
+          nozzlePressureM: 10,
+          regulated: true,
+          grossDepthMm: 10,
+          hoursPerCycle: 20,
+        ),
         nozzles: family,
         regulators: [ValveSpec(id: 'reg10', name: 'regulator', kind: ValveKind.prv, sizeMm: 20, loss: const DeviceLossCurve(k: 1e5), defaultSettingM: 10.5)],
       );
@@ -238,24 +259,48 @@ void main() {
     });
 
     test('a corner gun is added on top of the sprinklers', () {
-      final r = designPivotPackage(const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 300, outletSpacingM: 3)], endGun: EndGunUse.corners, endGunRadiusM: 30, endGunPressureM: 40, grossDepthMm: 8, hoursPerCycle: 24));
+      final r = designPivotPackage(
+        const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 300, outletSpacingM: 3)], endGun: EndGunUse.corners, endGunRadiusM: 30, endGunPressureM: 40, grossDepthMm: 8, hoursPerCycle: 24),
+      );
       final rate = r.systemFlow / (math.pi * 305 * 305);
       expect(r.endGunFlow, closeTo(rate * math.pi * (327 * 327 - 305 * 305), 1e-12));
       expect(r.designFlow, closeTo(r.systemFlow + r.endGunFlow, 1e-12));
-      final noRadius = designPivotPackage(const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 300, outletSpacingM: 3)], endGun: EndGunUse.corners, endGunPressureM: 40), id: 'g');
+      final noRadius = designPivotPackage(
+        const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 300, outletSpacingM: 3)], endGun: EndGunUse.corners, endGunPressureM: 40),
+        id: 'g',
+      );
       expect(noRadius.warnings, contains('pivot_pkg_gun_undefined:g'));
     });
 
     test('the gun radius comes from its catalogue nozzle', () {
-      final gun = [NozzleSpec(id: 'g20', name: 'gun', curve: EmitterCurve.fromNominal(flow: 20 * m3sPerM3h, head: 40, radius: 36, radiusB: 0.5))];
-      final r = designPivotPackage(const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 300, outletSpacingM: 3)], endGun: EndGunUse.fullCircle, endGunPressureM: 40, grossDepthMm: 8, hoursPerCycle: 24), gunNozzles: gun);
+      final gun = [
+        NozzleSpec(
+          id: 'g20',
+          name: 'gun',
+          curve: EmitterCurve.fromNominal(flow: 20 * m3sPerM3h, head: 40, radius: 36, radiusB: 0.5),
+        ),
+      ];
+      final r = designPivotPackage(
+        const PivotPackageSpec(spans: [PivotSpanDef(lengthM: 300, outletSpacingM: 3)], endGun: EndGunUse.fullCircle, endGunPressureM: 40, grossDepthMm: 8, hoursPerCycle: 24),
+        gunNozzles: gun,
+      );
       expect(r.gunNozzle, 'g20');
       expect(r.gunRadiusM, closeTo(36, 1e-9));
       expect(r.effectiveRadiusM, closeTo(300 + 0.9 * 36, 1e-9));
     });
 
     test('a linear move gets flows in proportion to the width each outlet waters', () {
-      final r = designPivotPackage(const PivotPackageSpec(kind: PivotKind.linear, spans: [PivotSpanDef(lengthM: 200, outletSpacingM: 2.5)], travelM: 800, endThrowM: 0, grossDepthMm: 10, hoursPerCycle: 20, drive: TowerDrive(speedMPerMin: 2)));
+      final r = designPivotPackage(
+        const PivotPackageSpec(
+          kind: PivotKind.linear,
+          spans: [PivotSpanDef(lengthM: 200, outletSpacingM: 2.5)],
+          travelM: 800,
+          endThrowM: 0,
+          grossDepthMm: 10,
+          hoursPerCycle: 20,
+          drive: TowerDrive(speedMPerMin: 2),
+        ),
+      );
       expect(r.systemFlow, closeTo(200 * 800 * 0.010 / (20 * 3600), 1e-12));
       final inner = r.outlets[10], other = r.outlets[50];
       expect(inner.requiredFlow, closeTo(other.requiredFlow, 1e-15));
@@ -281,4 +326,3 @@ void main() {
     });
   });
 }
-

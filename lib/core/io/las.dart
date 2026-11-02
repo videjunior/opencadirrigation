@@ -115,7 +115,17 @@ class LasHeader {
 int _u64(ByteData d, int o) => d.getUint32(o, Endian.little) + d.getUint32(o + 4, Endian.little) * 4294967296;
 
 class LasImportResult {
-  LasImportResult({required this.header, required this.samples, required this.georef, required this.crs, required this.pointsRead, required this.classCounts, required this.cellSize, required this.warnings, required this.localOrigin});
+  LasImportResult({
+    required this.header,
+    required this.samples,
+    required this.georef,
+    required this.crs,
+    required this.pointsRead,
+    required this.classCounts,
+    required this.cellSize,
+    required this.warnings,
+    required this.localOrigin,
+  });
   final LasHeader header;
 
   /// Terrain samples in local coordinates (elevations in metres).
@@ -340,7 +350,17 @@ class LasStreamReader {
     final placement = GeoPlacement.plan(crs, [for (final p in pts) (p.$1, p.$2)], georef: georef);
     warnings.addAll(placement.warnings);
     final samples = [for (final (x, y, z) in pts) DemSample(placement.place(x, y), z * zUnit)];
-    return LasImportResult(header: h, samples: samples, georef: placement.georef, crs: placement.crs, pointsRead: _read, classCounts: Map.unmodifiable(_classes), cellSize: cell, warnings: warnings, localOrigin: placement.localOrigin);
+    return LasImportResult(
+      header: h,
+      samples: samples,
+      georef: placement.georef,
+      crs: placement.crs,
+      pointsRead: _read,
+      classCounts: Map.unmodifiable(_classes),
+      cellSize: cell,
+      warnings: warnings,
+      localOrigin: placement.localOrigin,
+    );
   }
 
   /// The CRS of the (E)VLRs (WKT first, then the GeoTIFF keys) and the
@@ -365,7 +385,11 @@ class LasStreamReader {
         if (loc == 0) keys[key] = value;
       }
     }
-    double unitOf(int? code) => switch (code) { 9002 => 0.3048, 9003 => 1200 / 3937, _ => 1.0 };
+    double unitOf(int? code) => switch (code) {
+      9002 => 0.3048,
+      9003 => 1200 / 3937,
+      _ => 1.0,
+    };
     var zUnit = keys == null ? 1.0 : unitOf(keys[4099] ?? keys[3076]);
     CrsInfo? fromKeys;
     if (keys != null) {

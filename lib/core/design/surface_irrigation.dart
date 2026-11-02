@@ -193,7 +193,16 @@ NrcsIntakeFamily nrcsIntakeFamily(double family, {bool later = false}) {
     if (family <= b.family + 1e-12) {
       final w = (family - a.family) / (b.family - a.family);
       double l(double x, double y) => x + (y - x) * w;
-      return NrcsIntakeFamily(family, l(a.a, b.a), l(a.furrowK, b.furrowK), l(a.furrowF0, b.furrowF0), l(a.refFlowGpm, b.refFlowGpm), l(a.refPerimeterFt, b.refPerimeterFt), l(a.borderK, b.borderK), l(a.borderF0, b.borderF0));
+      return NrcsIntakeFamily(
+        family,
+        l(a.a, b.a),
+        l(a.furrowK, b.furrowK),
+        l(a.furrowF0, b.furrowF0),
+        l(a.refFlowGpm, b.refFlowGpm),
+        l(a.refPerimeterFt, b.refPerimeterFt),
+        l(a.borderK, b.borderK),
+        l(a.borderF0, b.borderF0),
+      );
     }
   }
   return t.last;
@@ -449,8 +458,13 @@ class SurfacePoint {
   final double depthM;
 
   Map<String, dynamic> toJson() => {'x': x, 'ta': advanceS, 'tr': recessionS, 'tau': opportunityS, 'z': depthM};
-  static SurfacePoint fromJson(Map<String, dynamic> j) =>
-      SurfacePoint(x: (j['x'] as num).toDouble(), advanceS: (j['ta'] as num).toDouble(), recessionS: (j['tr'] as num).toDouble(), opportunityS: (j['tau'] as num).toDouble(), depthM: (j['z'] as num).toDouble());
+  static SurfacePoint fromJson(Map<String, dynamic> j) => SurfacePoint(
+    x: (j['x'] as num).toDouble(),
+    advanceS: (j['ta'] as num).toDouble(),
+    recessionS: (j['tr'] as num).toDouble(),
+    opportunityS: (j['tau'] as num).toDouble(),
+    depthM: (j['z'] as num).toDouble(),
+  );
 }
 
 /// Performance of one irrigation (per furrow, or per metre of border or basin width).
@@ -535,18 +549,65 @@ class SurfaceEvaluation {
   bool get complete => advanceS.isFinite;
 
   Map<String, dynamic> toJson() => {
-    'sys': system.name, 'q': inflow, 'tco': cutoffS, 'tl': advanceS.isFinite ? advanceS : -1, 'r': r, 'p': p, 'a0': inletArea, 'y0': inletDepthM, 'td': depletionS, 'tr': recessionS, 'zreq': requiredDepthM,
-    'treq': requiredTimeS.isFinite ? requiredTimeS : -1, 'vin': appliedM3, 'vinf': infiltratedM3, 'vst': storedM3, 'vdp': deepPercolationM3, 'vro': runoffM3, 'ea': efficiency, 'er': requirementEfficiency,
-    'du': lowQuarterDu, 'dpr': deepPercolationRatio, 'twr': tailwaterRatio, 'zm': meanDepthM, 'zmin': minDepthM, 'zmax': maxDepthM, 'prof': profile.map((e) => e.toJson()).toList(), 'warn': warnings,
+    'sys': system.name,
+    'q': inflow,
+    'tco': cutoffS,
+    'tl': advanceS.isFinite ? advanceS : -1,
+    'r': r,
+    'p': p,
+    'a0': inletArea,
+    'y0': inletDepthM,
+    'td': depletionS,
+    'tr': recessionS,
+    'zreq': requiredDepthM,
+    'treq': requiredTimeS.isFinite ? requiredTimeS : -1,
+    'vin': appliedM3,
+    'vinf': infiltratedM3,
+    'vst': storedM3,
+    'vdp': deepPercolationM3,
+    'vro': runoffM3,
+    'ea': efficiency,
+    'er': requirementEfficiency,
+    'du': lowQuarterDu,
+    'dpr': deepPercolationRatio,
+    'twr': tailwaterRatio,
+    'zm': meanDepthM,
+    'zmin': minDepthM,
+    'zmax': maxDepthM,
+    'prof': profile.map((e) => e.toJson()).toList(),
+    'warn': warnings,
   };
   static SurfaceEvaluation fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     double inf(String k) => d(k) < 0 ? double.infinity : d(k);
     return SurfaceEvaluation(
-      system: SurfaceSystem.values.byName(j['sys'] as String? ?? 'furrow'), inflow: d('q'), cutoffS: d('tco'), advanceS: inf('tl'), r: d('r'), p: d('p'), inletArea: d('a0'), inletDepthM: d('y0'),
-      depletionS: d('td'), recessionS: d('tr'), requiredDepthM: d('zreq'), requiredTimeS: inf('treq'), appliedM3: d('vin'), infiltratedM3: d('vinf'), storedM3: d('vst'), deepPercolationM3: d('vdp'),
-      runoffM3: d('vro'), efficiency: d('ea'), requirementEfficiency: d('er'), lowQuarterDu: d('du'), deepPercolationRatio: d('dpr'), tailwaterRatio: d('twr'), meanDepthM: d('zm'), minDepthM: d('zmin'),
-      maxDepthM: d('zmax'), profile: ((j['prof'] as List?) ?? const []).map((e) => SurfacePoint.fromJson(e as Map<String, dynamic>)).toList(), warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+      system: SurfaceSystem.values.byName(j['sys'] as String? ?? 'furrow'),
+      inflow: d('q'),
+      cutoffS: d('tco'),
+      advanceS: inf('tl'),
+      r: d('r'),
+      p: d('p'),
+      inletArea: d('a0'),
+      inletDepthM: d('y0'),
+      depletionS: d('td'),
+      recessionS: d('tr'),
+      requiredDepthM: d('zreq'),
+      requiredTimeS: inf('treq'),
+      appliedM3: d('vin'),
+      infiltratedM3: d('vinf'),
+      storedM3: d('vst'),
+      deepPercolationM3: d('vdp'),
+      runoffM3: d('vro'),
+      efficiency: d('ea'),
+      requirementEfficiency: d('er'),
+      lowQuarterDu: d('du'),
+      deepPercolationRatio: d('dpr'),
+      tailwaterRatio: d('twr'),
+      meanDepthM: d('zm'),
+      minDepthM: d('zmin'),
+      maxDepthM: d('zmax'),
+      profile: ((j['prof'] as List?) ?? const []).map((e) => SurfacePoint.fromJson(e as Map<String, dynamic>)).toList(),
+      warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
     );
   }
 }
@@ -625,15 +686,35 @@ SurfaceEvaluation evaluateSurface(SurfaceSpec s, {required double inflow, requir
   final quarter = math.max(1, (nSeg / 4).ceil());
   final mean = infiltrated / length;
   final lowQuarter = sorted.take(quarter).fold(0.0, (a, b) => a + b) / quarter;
-  final profile = [
-    for (var j = 0; j < nSeg; j++) SurfacePoint(x: xs[j], advanceS: tAdv[j].isFinite ? tAdv[j] : -1, recessionS: recs[j], opportunityS: taus[j], depthM: zs[j] / w),
-  ];
+  final profile = [for (var j = 0; j < nSeg; j++) SurfacePoint(x: xs[j], advanceS: tAdv[j].isFinite ? tAdv[j] : -1, recessionS: recs[j], opportunityS: taus[j], depthM: zs[j] / w)];
   return SurfaceEvaluation(
-    system: s.system, inflow: inflow, cutoffS: tco, advanceS: adv.advanceS, r: adv.r, p: adv.p, inletArea: adv.inletArea, inletDepthM: y0, depletionS: depletion, recessionS: recession,
-    requiredDepthM: math.max(requiredDepthM, 0.0), requiredTimeS: tauReq, appliedM3: applied, infiltratedM3: infiltrated, storedM3: stored, deepPercolationM3: infiltrated - stored, runoffM3: runoff,
-    efficiency: applied > 0 ? stored / applied : 0, requirementEfficiency: zReq > 0 ? stored / (zReq * length) : 0, lowQuarterDu: mean > 0 ? lowQuarter / mean : 0,
-    deepPercolationRatio: applied > 0 ? (infiltrated - stored) / applied : 0, tailwaterRatio: applied > 0 ? runoff / applied : 0, meanDepthM: mean / w, minDepthM: sorted.first / w, maxDepthM: sorted.last / w,
-    profile: profile, warnings: warnings,
+    system: s.system,
+    inflow: inflow,
+    cutoffS: tco,
+    advanceS: adv.advanceS,
+    r: adv.r,
+    p: adv.p,
+    inletArea: adv.inletArea,
+    inletDepthM: y0,
+    depletionS: depletion,
+    recessionS: recession,
+    requiredDepthM: math.max(requiredDepthM, 0.0),
+    requiredTimeS: tauReq,
+    appliedM3: applied,
+    infiltratedM3: infiltrated,
+    storedM3: stored,
+    deepPercolationM3: infiltrated - stored,
+    runoffM3: runoff,
+    efficiency: applied > 0 ? stored / applied : 0,
+    requirementEfficiency: zReq > 0 ? stored / (zReq * length) : 0,
+    lowQuarterDu: mean > 0 ? lowQuarter / mean : 0,
+    deepPercolationRatio: applied > 0 ? (infiltrated - stored) / applied : 0,
+    tailwaterRatio: applied > 0 ? runoff / applied : 0,
+    meanDepthM: mean / w,
+    minDepthM: sorted.first / w,
+    maxDepthM: sorted.last / w,
+    profile: profile,
+    warnings: warnings,
   );
 }
 
@@ -679,7 +760,16 @@ SurfaceEvaluation designForDepth(SurfaceSpec s, {required double inflow, require
 
 /// One inflow tried by [designSurface].
 class SurfaceDesignRow {
-  const SurfaceDesignRow({required this.inflow, required this.advanceS, required this.cutoffS, required this.efficiency, required this.lowQuarterDu, required this.tailwaterRatio, required this.deepPercolationRatio, required this.requirementEfficiency});
+  const SurfaceDesignRow({
+    required this.inflow,
+    required this.advanceS,
+    required this.cutoffS,
+    required this.efficiency,
+    required this.lowQuarterDu,
+    required this.tailwaterRatio,
+    required this.deepPercolationRatio,
+    required this.requirementEfficiency,
+  });
   final double inflow;
   final double advanceS;
   final double cutoffS;
@@ -689,11 +779,29 @@ class SurfaceDesignRow {
   final double deepPercolationRatio;
   final double requirementEfficiency;
 
-  Map<String, dynamic> toJson() => {'q': inflow, 'tl': advanceS.isFinite ? advanceS : -1, 'tco': cutoffS.isFinite ? cutoffS : -1, 'ea': efficiency, 'du': lowQuarterDu, 'twr': tailwaterRatio, 'dpr': deepPercolationRatio, 'er': requirementEfficiency};
+  Map<String, dynamic> toJson() => {
+    'q': inflow,
+    'tl': advanceS.isFinite ? advanceS : -1,
+    'tco': cutoffS.isFinite ? cutoffS : -1,
+    'ea': efficiency,
+    'du': lowQuarterDu,
+    'twr': tailwaterRatio,
+    'dpr': deepPercolationRatio,
+    'er': requirementEfficiency,
+  };
   static SurfaceDesignRow fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     double inf(String k) => d(k) < 0 ? double.infinity : d(k);
-    return SurfaceDesignRow(inflow: d('q'), advanceS: inf('tl'), cutoffS: inf('tco'), efficiency: d('ea'), lowQuarterDu: d('du'), tailwaterRatio: d('twr'), deepPercolationRatio: d('dpr'), requirementEfficiency: d('er'));
+    return SurfaceDesignRow(
+      inflow: d('q'),
+      advanceS: inf('tl'),
+      cutoffS: inf('tco'),
+      efficiency: d('ea'),
+      lowQuarterDu: d('du'),
+      tailwaterRatio: d('twr'),
+      deepPercolationRatio: d('dpr'),
+      requirementEfficiency: d('er'),
+    );
   }
 }
 
@@ -712,8 +820,11 @@ class SurfaceDesign {
 
   Map<String, dynamic> toJson() => {if (best != null) 'best': best!.toJson(), 'rows': rows.map((e) => e.toJson()).toList(), 'qmin': minInflow, 'qmax': maxInflow, 'warn': warnings};
   static SurfaceDesign fromJson(Map<String, dynamic> j) => SurfaceDesign(
-    best: j['best'] == null ? null : SurfaceEvaluation.fromJson(j['best'] as Map<String, dynamic>), rows: ((j['rows'] as List?) ?? const []).map((e) => SurfaceDesignRow.fromJson(e as Map<String, dynamic>)).toList(),
-    minInflow: (j['qmin'] as num?)?.toDouble() ?? 0, maxInflow: (j['qmax'] as num?)?.toDouble() ?? 0, warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+    best: j['best'] == null ? null : SurfaceEvaluation.fromJson(j['best'] as Map<String, dynamic>),
+    rows: ((j['rows'] as List?) ?? const []).map((e) => SurfaceDesignRow.fromJson(e as Map<String, dynamic>)).toList(),
+    minInflow: (j['qmin'] as num?)?.toDouble() ?? 0,
+    maxInflow: (j['qmax'] as num?)?.toDouble() ?? 0,
+    warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
   );
 }
 
@@ -724,7 +835,16 @@ class SurfaceDesign {
 /// reduced so the inlet depth stays below [maxFlowDepthM] (dykes; 0 = no
 /// limit), and the minimum is the border spreading flow (eq. 93) or 1/50 of
 /// the maximum.
-SurfaceDesign designSurface(SurfaceSpec s, {required double requiredDepthM, double minInflow = 0, double maxInflow = 0, double maxVelocity = 13 / 60, double maxFlowDepthM = 0, int steps = 24, String id = ''}) {
+SurfaceDesign designSurface(
+  SurfaceSpec s, {
+  required double requiredDepthM,
+  double minInflow = 0,
+  double maxInflow = 0,
+  double maxVelocity = 13 / 60,
+  double maxFlowDepthM = 0,
+  int steps = 24,
+  String id = '',
+}) {
   final warnings = <String>[];
   void warn(String code) {
     final c = id.isEmpty ? code : '$code:$id';
@@ -766,7 +886,18 @@ SurfaceDesign designSurface(SurfaceSpec s, {required double requiredDepthM, doub
       continue;
     }
     final e = evaluateSurface(s, inflow: q, cutoffS: tco, requiredDepthM: requiredDepthM, id: id);
-    rows.add(SurfaceDesignRow(inflow: q, advanceS: e.advanceS, cutoffS: tco, efficiency: e.efficiency, lowQuarterDu: e.lowQuarterDu, tailwaterRatio: e.tailwaterRatio, deepPercolationRatio: e.deepPercolationRatio, requirementEfficiency: e.requirementEfficiency));
+    rows.add(
+      SurfaceDesignRow(
+        inflow: q,
+        advanceS: e.advanceS,
+        cutoffS: tco,
+        efficiency: e.efficiency,
+        lowQuarterDu: e.lowQuarterDu,
+        tailwaterRatio: e.tailwaterRatio,
+        deepPercolationRatio: e.deepPercolationRatio,
+        requirementEfficiency: e.requirementEfficiency,
+      ),
+    );
     if (best == null || e.efficiency > best.efficiency + 1e-12) best = e;
   }
   if (best == null) warn('surface_no_advance');
@@ -787,11 +918,24 @@ class TwoPointInfiltration {
 /// advance, then V = Q0·t/x − σy·A0 − f0·t/(1+r) at both points,
 /// a = ln(V2/V1)/ln(t2/t1), σz from eq. 47 and k = V2/(σz·t2^a)
 /// (Elliott & Walker 1982; FAO 45 eqs. 49–54).
-TwoPointInfiltration twoPointInfiltration({required double inflow, required double basicIntake, required double x1, required double t1, required double x2, required double t2, required double inletArea, double sigmaY = defaultSigmaY}) {
+TwoPointInfiltration twoPointInfiltration({
+  required double inflow,
+  required double basicIntake,
+  required double x1,
+  required double t1,
+  required double x2,
+  required double t2,
+  required double inletArea,
+  double sigmaY = defaultSigmaY,
+}) {
   final r = math.log(x2 / x1) / math.log(t2 / t1);
   final v1 = inflow * t1 / x1 - sigmaY * inletArea - basicIntake * t1 / (1 + r);
   final v2 = inflow * t2 / x2 - sigmaY * inletArea - basicIntake * t2 / (1 + r);
   final a = math.log(v2 / v1) / math.log(t2 / t1);
   final sz = sigmaZ(a, r);
-  return TwoPointInfiltration(intake: KostiakovLewis(k: v2 / (sz * math.pow(t2, a)), a: a, f0: basicIntake), r: r, sigmaZ: sz);
+  return TwoPointInfiltration(
+    intake: KostiakovLewis(k: v2 / (sz * math.pow(t2, a)), a: a, f0: basicIntake),
+    r: r,
+    sigmaZ: sz,
+  );
 }

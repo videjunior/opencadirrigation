@@ -102,7 +102,18 @@ void main() {
     expect((pipe.pipeSpecId, pipe.computerSized), (null, true));
 
     // lateral: a new outlet brings its first nozzle; a lateral pipe back to auto
-    final lat = await add(tester, c, SpraylineEntity(id: c.project.newId(), points: [const Pt(0, 10), const Pt(30, 10)], outletSpecId: 'micro', nozzleId: 'm50', pipeSpecId: c.project.catalog.pipesFor(PipeUsage.lateral).first.id, computerSized: false));
+    final lat = await add(
+      tester,
+      c,
+      SpraylineEntity(
+        id: c.project.newId(),
+        points: [const Pt(0, 10), const Pt(30, 10)],
+        outletSpecId: 'micro',
+        nozzleId: 'm50',
+        pipeSpecId: c.project.catalog.pipesFor(PipeUsage.lateral).first.id,
+        computerSized: false,
+      ),
+    );
     await pick(tester, t('props.outlet'), 'rotor');
     expect((lat.outletSpecId, lat.nozzleId), ('rotor', c.project.catalog.outlet('rotor')!.nozzles.first.id));
     await pick(tester, t('props.pipe'), null);
@@ -196,7 +207,9 @@ void main() {
     }
 
     // laterals with different heads show "mixed"
-    final lats = await two((i) => SpraylineEntity(id: c.project.newId(), points: [Pt(0, i * 10.0), Pt(20, i * 10.0)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15.0 + i, pipeSpecId: 'x', computerSized: false));
+    final lats = await two(
+      (i) => SpraylineEntity(id: c.project.newId(), points: [Pt(0, i * 10.0), Pt(20, i * 10.0)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15.0 + i, pipeSpecId: 'x', computerSized: false),
+    );
     expect(find.text(t('props.mixed')), findsWidgets);
     await pick(tester, t('props.pipe'), null);
     expect(lats.every((e) => e.pipeSpecId == null && e.computerSized), isTrue);

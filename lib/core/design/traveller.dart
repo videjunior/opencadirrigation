@@ -202,15 +202,50 @@ class TravellerResult {
   final List<String> warnings;
 
   Map<String, dynamic> toJson() => {
-    'sl': laneSpacingM, 'pct': laneSpacingPct, 'rpct': recommendedPct, 'n': lanes, 'll': laneLengthM, 'v': speedMPerMin, 'd': grossDepthMm, 'th': travelHours, 'lh': laneHours, 'ch': cycleHours, 'cd': cycleDays,
-    'a': areaPerLaneM2, 'vol': volumePerLaneM3, 'i': applicationRateMmH, 'hf': hoseFrictionM, 'vh': hoseVelocity, 'hin': inletHeadM, 'ph': hydraulicPowerKw, 'ps': shaftPowerKw, 'warn': warnings,
+    'sl': laneSpacingM,
+    'pct': laneSpacingPct,
+    'rpct': recommendedPct,
+    'n': lanes,
+    'll': laneLengthM,
+    'v': speedMPerMin,
+    'd': grossDepthMm,
+    'th': travelHours,
+    'lh': laneHours,
+    'ch': cycleHours,
+    'cd': cycleDays,
+    'a': areaPerLaneM2,
+    'vol': volumePerLaneM3,
+    'i': applicationRateMmH,
+    'hf': hoseFrictionM,
+    'vh': hoseVelocity,
+    'hin': inletHeadM,
+    'ph': hydraulicPowerKw,
+    'ps': shaftPowerKw,
+    'warn': warnings,
   };
   static TravellerResult fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     return TravellerResult(
-      laneSpacingM: d('sl'), laneSpacingPct: d('pct'), recommendedPct: d('rpct'), lanes: (j['n'] as num?)?.toInt() ?? 1, laneLengthM: d('ll'), speedMPerMin: d('v'), grossDepthMm: d('d'), travelHours: d('th'),
-      laneHours: d('lh'), cycleHours: d('ch'), cycleDays: d('cd'), areaPerLaneM2: d('a'), volumePerLaneM3: d('vol'), applicationRateMmH: d('i'), hoseFrictionM: d('hf'), hoseVelocity: d('vh'), inletHeadM: d('hin'),
-      hydraulicPowerKw: d('ph'), shaftPowerKw: d('ps'), warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+      laneSpacingM: d('sl'),
+      laneSpacingPct: d('pct'),
+      recommendedPct: d('rpct'),
+      lanes: (j['n'] as num?)?.toInt() ?? 1,
+      laneLengthM: d('ll'),
+      speedMPerMin: d('v'),
+      grossDepthMm: d('d'),
+      travelHours: d('th'),
+      laneHours: d('lh'),
+      cycleHours: d('ch'),
+      cycleDays: d('cd'),
+      areaPerLaneM2: d('a'),
+      volumePerLaneM3: d('vol'),
+      applicationRateMmH: d('i'),
+      hoseFrictionM: d('hf'),
+      hoseVelocity: d('vh'),
+      inletHeadM: d('hin'),
+      hydraulicPowerKw: d('ph'),
+      shaftPowerKw: d('ps'),
+      warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
     );
   }
 }
@@ -274,9 +309,25 @@ TravellerResult analyzeTraveller(TravellerSpec s, {String id = ''}) {
       : 0.0;
   final inlet = s.gunPressureM + hf + s.driveLossM + s.gunHeightM + s.groundRiseM;
   return TravellerResult(
-    laneSpacingM: spacing, laneSpacingPct: dw > 0 ? spacing / dw * 100 : 0, recommendedPct: pct, lanes: lanes, laneLengthM: runLength, speedMPerMin: vMin, grossDepthMm: depthMm,
-    travelHours: travelHours, laneHours: laneHours, cycleHours: cycleHours, cycleDays: s.hoursPerDay > 0 ? cycleHours / s.hoursPerDay : 0, areaPerLaneM2: spacing * runLength,
-    volumePerLaneM3: q * travelHours * 3600, applicationRateMmH: rate, hoseFrictionM: hf, hoseVelocity: d > 0 ? velocity(flow: q, diameter: d) : 0, inletHeadM: inlet,
-    hydraulicPowerKw: hydraulicPower(flow: q, head: inlet) / 1000, shaftPowerKw: shaftPower(flow: q, head: inlet, efficiency: s.pumpEfficiency) / 1000, warnings: warnings,
+    laneSpacingM: spacing,
+    laneSpacingPct: dw > 0 ? spacing / dw * 100 : 0,
+    recommendedPct: pct,
+    lanes: lanes,
+    laneLengthM: runLength,
+    speedMPerMin: vMin,
+    grossDepthMm: depthMm,
+    travelHours: travelHours,
+    laneHours: laneHours,
+    cycleHours: cycleHours,
+    cycleDays: s.hoursPerDay > 0 ? cycleHours / s.hoursPerDay : 0,
+    areaPerLaneM2: spacing * runLength,
+    volumePerLaneM3: q * travelHours * 3600,
+    applicationRateMmH: rate,
+    hoseFrictionM: hf,
+    hoseVelocity: d > 0 ? velocity(flow: q, diameter: d) : 0,
+    inletHeadM: inlet,
+    hydraulicPowerKw: hydraulicPower(flow: q, head: inlet) / 1000,
+    shaftPowerKw: shaftPower(flow: q, head: inlet, efficiency: s.pumpEfficiency) / 1000,
+    warnings: warnings,
   );
 }

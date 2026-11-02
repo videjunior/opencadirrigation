@@ -203,7 +203,13 @@ final _inlineRe = RegExp(
 TextDirection? aiTextDirection(String s) {
   for (final r in s.runes) {
     if ((r >= 0x0590 && r <= 0x08FF) || (r >= 0xFB1D && r <= 0xFDFF) || (r >= 0xFE70 && r <= 0xFEFF)) return TextDirection.rtl;
-    if ((r >= 0x41 && r <= 0x5A) || (r >= 0x61 && r <= 0x7A) || (r >= 0xC0 && r <= 0x24F) || (r >= 0x370 && r <= 0x58F) || (r >= 0x900 && r <= 0x1FFF) || (r >= 0x3040 && r <= 0x9FFF) || (r >= 0xAC00 && r <= 0xD7AF)) {
+    if ((r >= 0x41 && r <= 0x5A) ||
+        (r >= 0x61 && r <= 0x7A) ||
+        (r >= 0xC0 && r <= 0x24F) ||
+        (r >= 0x370 && r <= 0x58F) ||
+        (r >= 0x900 && r <= 0x1FFF) ||
+        (r >= 0x3040 && r <= 0x9FFF) ||
+        (r >= 0xAC00 && r <= 0xD7AF)) {
       return TextDirection.ltr;
     }
   }
@@ -227,7 +233,9 @@ String aiPlainText(String md) {
         MdParagraph(:final text) || MdHeading(:final text) || MdQuote(:final text) => inline(text),
         MdListItem(:final depth, :final marker, :final text) => '${'  ' * depth}$marker ${inline(text)}',
         MdCode(:final code) => code,
-        MdTable(:final header, :final rows) => [for (final r in [header, ...rows]) r.map(inline).join('\t')].join('\n'),
+        MdTable(:final header, :final rows) => [
+          for (final r in [header, ...rows]) r.map(inline).join('\t'),
+        ].join('\n'),
         MdRule() => '',
       },
   ].join('\n');
@@ -256,12 +264,7 @@ class _SideScrollState extends State<_SideScroll> {
   Widget build(BuildContext context) => Scrollbar(
     controller: ctrl,
     thumbVisibility: true,
-    child: SingleChildScrollView(
-      controller: ctrl,
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(bottom: 8),
-      child: widget.child,
-    ),
+    child: SingleChildScrollView(controller: ctrl, scrollDirection: Axis.horizontal, padding: const EdgeInsets.only(bottom: 8), child: widget.child),
   );
 }
 
@@ -297,7 +300,12 @@ class _AiMarkdownState extends State<AiMarkdown> {
     for (final m in _inlineRe.allMatches(s)) {
       if (m.start > i) spans.add(TextSpan(text: s.substring(i, m.start), style: style));
       if (m.group(1) != null) {
-        spans.add(TextSpan(text: m.group(1), style: style.copyWith(fontFamily: 'monospace', color: Cad.codeText)));
+        spans.add(
+          TextSpan(
+            text: m.group(1),
+            style: style.copyWith(fontFamily: 'monospace', color: Cad.codeText),
+          ),
+        );
       } else if (m.group(2) != null) {
         spans.addAll(_inline(m.group(2)!, style.copyWith(fontWeight: FontWeight.bold, fontStyle: FontStyle.italic)));
       } else if ((m.group(3) ?? m.group(4)) != null) {
@@ -309,7 +317,14 @@ class _AiMarkdownState extends State<AiMarkdown> {
         final url = m.group(8) ?? m.group(9)!;
         final tap = TapGestureRecognizer()..onTap = () => openExternalLink(url);
         _taps.add(tap);
-        spans.add(TextSpan(text: label, style: style.copyWith(color: Cad.accentText, decoration: TextDecoration.underline), recognizer: tap, mouseCursor: SystemMouseCursors.click));
+        spans.add(
+          TextSpan(
+            text: label,
+            style: style.copyWith(color: Cad.accentText, decoration: TextDecoration.underline),
+            recognizer: tap,
+            mouseCursor: SystemMouseCursors.click,
+          ),
+        );
       }
       i = m.end;
     }
@@ -317,7 +332,12 @@ class _AiMarkdownState extends State<AiMarkdown> {
     return spans;
   }
 
-  Widget _text(String s, TextStyle style, {TextAlign align = TextAlign.start}) => Text.rich(TextSpan(children: _inline(s, style)), style: style, textAlign: align, textDirection: aiTextDirection(s));
+  Widget _text(String s, TextStyle style, {TextAlign align = TextAlign.start}) => Text.rich(
+    TextSpan(children: _inline(s, style)),
+    style: style,
+    textAlign: align,
+    textDirection: aiTextDirection(s),
+  );
 
   Widget _table(MdTable t, TextStyle base) {
     var n = t.header.length;
@@ -337,7 +357,10 @@ class _AiMarkdownState extends State<AiMarkdown> {
         border: TableBorder.all(color: Cad.divider, width: 0.6),
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
-          TableRow(decoration: BoxDecoration(color: Cad.cardHigh), children: [for (var i = 0; i < n; i++) cell(t.header, i, head)]),
+          TableRow(
+            decoration: BoxDecoration(color: Cad.cardHigh),
+            children: [for (var i = 0; i < n; i++) cell(t.header, i, head)],
+          ),
           for (final r in t.rows) TableRow(children: [for (var i = 0; i < n; i++) cell(r, i, base)]),
         ],
       ),
@@ -352,7 +375,10 @@ class _AiMarkdownState extends State<AiMarkdown> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: marker.length > 2 ? 26 : 18, child: Text(marker, style: base)),
+          SizedBox(
+            width: marker.length > 2 ? 26 : 18,
+            child: Text(marker, style: base),
+          ),
           Expanded(child: _text(text, base)),
         ],
       ),
@@ -369,7 +395,11 @@ class _AiMarkdownState extends State<AiMarkdown> {
       decoration: BoxDecoration(color: Cad.cardHigh, borderRadius: BorderRadius.circular(4)),
       // code reads left to right in every interface language
       child: _SideScroll(
-        child: Text(code, textDirection: TextDirection.ltr, style: base.copyWith(fontFamily: 'monospace', fontSize: base.fontSize! - 1, color: Cad.codeText)),
+        child: Text(
+          code,
+          textDirection: TextDirection.ltr,
+          style: base.copyWith(fontFamily: 'monospace', fontSize: base.fontSize! - 1, color: Cad.codeText),
+        ),
       ),
     ),
     MdTable() => _table(b, base),

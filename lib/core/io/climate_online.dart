@@ -213,18 +213,20 @@ double? _num(Object? v, {double? fill}) {
         final date = DateTime.tryParse('${time[i]}');
         if (date == null) continue;
         final w = _num(wind[i]);
-        days.add(ClimateDay(
-          date: DateTime.utc(date.year, date.month, date.day),
-          tMaxC: _num(tx[i]),
-          tMinC: _num(tn[i]),
-          tDewC: _num(dew[i]),
-          rhMaxPct: _num(rhx[i]),
-          rhMinPct: _num(rhn[i]),
-          windSpeed2mMs: w == null ? null : windSpeedAt2m(w * windFactor, 10),
-          solarMJm2: _num(rs[i]),
-          rainMm: _num(rain[i]),
-          etoMmDay: _num(eto[i]),
-        ));
+        days.add(
+          ClimateDay(
+            date: DateTime.utc(date.year, date.month, date.day),
+            tMaxC: _num(tx[i]),
+            tMinC: _num(tn[i]),
+            tDewC: _num(dew[i]),
+            rhMaxPct: _num(rhx[i]),
+            rhMinPct: _num(rhn[i]),
+            windSpeed2mMs: w == null ? null : windSpeedAt2m(w * windFactor, 10),
+            solarMJm2: _num(rs[i]),
+            rainMm: _num(rain[i]),
+            etoMmDay: _num(eto[i]),
+          ),
+        );
       }
       return (days, _num(j['elevation']));
     case ClimateSource.nasaPower:
@@ -246,7 +248,18 @@ double? _num(Object? v, {double? fill}) {
         final y = int.tryParse(k.substring(0, 4)), m = int.tryParse(k.substring(4, 6)), d = int.tryParse(k.substring(6, 8));
         if (y == null || m == null || d == null || m < 1 || m > 12 || d < 1 || d > 31) continue;
         double? v(String p) => _num(s[p]![k], fill: fill);
-        days.add(ClimateDay(date: DateTime.utc(y, m, d), tMaxC: v('T2M_MAX'), tMinC: v('T2M_MIN'), tDewC: v('T2MDEW'), rhMeanPct: v('RH2M'), windSpeed2mMs: v('WS2M'), solarMJm2: v('ALLSKY_SFC_SW_DWN'), rainMm: v('PRECTOTCORR')));
+        days.add(
+          ClimateDay(
+            date: DateTime.utc(y, m, d),
+            tMaxC: v('T2M_MAX'),
+            tMinC: v('T2M_MIN'),
+            tDewC: v('T2MDEW'),
+            rhMeanPct: v('RH2M'),
+            windSpeed2mMs: v('WS2M'),
+            solarMJm2: v('ALLSKY_SFC_SW_DWN'),
+            rainMm: v('PRECTOTCORR'),
+          ),
+        );
       }
       days.sort((a, b) => a.date.compareTo(b.date));
       final geometry = j['geometry'];
@@ -420,7 +433,20 @@ class MonthlyNormal {
   /// As FAO-56 monthly climate (null without temperatures).
   MonthlyClimate? toMonthlyClimate() {
     if (tMaxC == null || tMinC == null) return null;
-    return MonthlyClimate(month: month, tMaxC: tMaxC!, tMinC: tMinC!, tDewC: tDewC, rhMaxPct: rhMaxPct, rhMinPct: rhMinPct, rhMeanPct: rhMeanPct, windSpeed2mMs: windSpeed2mMs, solarRadiationMJ: solarMJm2Day, rainMm: rainMeanMm ?? 0, dependableRainMm: rainDependableMm, etoMmDay: etoMmDay);
+    return MonthlyClimate(
+      month: month,
+      tMaxC: tMaxC!,
+      tMinC: tMinC!,
+      tDewC: tDewC,
+      rhMaxPct: rhMaxPct,
+      rhMinPct: rhMinPct,
+      rhMeanPct: rhMeanPct,
+      windSpeed2mMs: windSpeed2mMs,
+      solarRadiationMJ: solarMJm2Day,
+      rainMm: rainMeanMm ?? 0,
+      dependableRainMm: rainDependableMm,
+      etoMmDay: etoMmDay,
+    );
   }
 }
 
@@ -452,23 +478,25 @@ List<MonthlyNormal> climateMonthlyNormals(ClimateSeries series, {double dependab
     }
 
     final rains = [for (final s in list) s.rainMm];
-    out.add(MonthlyNormal(
-      month: m,
-      years: list.length,
-      tMaxC: mean((s) => s.tMaxC),
-      tMinC: mean((s) => s.tMinC),
-      tDewC: mean((s) => s.tDewC),
-      rhMaxPct: mean((s) => s.rhMaxPct),
-      rhMinPct: mean((s) => s.rhMinPct),
-      rhMeanPct: mean((s) => s.rhMeanPct),
-      windSpeed2mMs: mean((s) => s.wind),
-      solarMJm2Day: mean((s) => s.solar),
-      rainMeanMm: rains.isEmpty ? null : rains.reduce((a, b) => a + b) / rains.length,
-      rainDependableMm: rainExceededWithProbability(rains, dependableProbability),
-      rainYearsMm: rains,
-      etoServiceMmDay: mean((s) => s.etoService),
-      etoPenmanMonteithMmDay: mean((s) => s.etoPm),
-    ));
+    out.add(
+      MonthlyNormal(
+        month: m,
+        years: list.length,
+        tMaxC: mean((s) => s.tMaxC),
+        tMinC: mean((s) => s.tMinC),
+        tDewC: mean((s) => s.tDewC),
+        rhMaxPct: mean((s) => s.rhMaxPct),
+        rhMinPct: mean((s) => s.rhMinPct),
+        rhMeanPct: mean((s) => s.rhMeanPct),
+        windSpeed2mMs: mean((s) => s.wind),
+        solarMJm2Day: mean((s) => s.solar),
+        rainMeanMm: rains.isEmpty ? null : rains.reduce((a, b) => a + b) / rains.length,
+        rainDependableMm: rainExceededWithProbability(rains, dependableProbability),
+        rainYearsMm: rains,
+        etoServiceMmDay: mean((s) => s.etoService),
+        etoPenmanMonteithMmDay: mean((s) => s.etoPm),
+      ),
+    );
   }
   return out;
 }
@@ -506,19 +534,23 @@ class _MonthStats {
     final pm = <double>[];
     for (final d in days) {
       if (d.tMaxC == null || d.tMinC == null || d.solarMJm2 == null) continue;
-      pm.add(fao56Eto(Fao56Input(
-        latitudeDeg: lat,
-        elevationM: elev,
-        dayOfYear: dayOfYear(d.date),
-        tMaxC: d.tMaxC!,
-        tMinC: d.tMinC!,
-        tDewC: d.tDewC,
-        rhMaxPct: d.rhMaxPct,
-        rhMinPct: d.rhMinPct,
-        rhMeanPct: d.rhMeanPct,
-        windSpeedMs: d.windSpeed2mMs,
-        solarRadiationMJ: d.solarMJm2,
-      )).etoMmDay);
+      pm.add(
+        fao56Eto(
+          Fao56Input(
+            latitudeDeg: lat,
+            elevationM: elev,
+            dayOfYear: dayOfYear(d.date),
+            tMaxC: d.tMaxC!,
+            tMinC: d.tMinC!,
+            tDewC: d.tDewC,
+            rhMaxPct: d.rhMaxPct,
+            rhMinPct: d.rhMinPct,
+            rhMeanPct: d.rhMeanPct,
+            windSpeedMs: d.windSpeed2mMs,
+            solarRadiationMJ: d.solarMJm2,
+          ),
+        ).etoMmDay,
+      );
     }
     return _MonthStats(
       rainMm: rain,

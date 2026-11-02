@@ -240,7 +240,18 @@ class ToolSettings {
 
 /// Rectangular / polar array options (Edit → Array).
 class ArrayOptions {
-  ArrayOptions({this.polar = false, this.rows = 2, this.cols = 2, this.dx = 5, this.dy = 5, this.angleDeg = 0, this.count = 6, this.center = Pt.zero, this.totalAngleDeg = 360, this.rotateItems = true});
+  ArrayOptions({
+    this.polar = false,
+    this.rows = 2,
+    this.cols = 2,
+    this.dx = 5,
+    this.dy = 5,
+    this.angleDeg = 0,
+    this.count = 6,
+    this.center = Pt.zero,
+    this.totalAngleDeg = 360,
+    this.rotateItems = true,
+  });
   bool polar;
   int rows;
   int cols;
@@ -449,6 +460,7 @@ class ProjectController extends ChangeNotifier {
     }
     notifyListeners();
   }
+
   bool showGrid = true;
   bool showLabels = true;
   bool showWettedRadii = true;
@@ -481,6 +493,7 @@ class ProjectController extends ChangeNotifier {
 
   final List<_UndoState> _undo = [];
   final List<_UndoState> _redo = [];
+
   /// Undo depth: up to [maxUndo] steps while the copies kept stay below
   /// [undoEntityBudget] entities in all (a large drawing keeps fewer steps).
   static const maxUndo = 150;
@@ -495,6 +508,7 @@ class ProjectController extends ChangeNotifier {
       total -= _undo.removeAt(0).entities.length;
     }
   }
+
   String? lastMessage;
   int messageSeq = 0;
   bool busy = false;
@@ -752,7 +766,10 @@ class ProjectController extends ChangeNotifier {
       _ => jsonEncode(j[k]),
     };
     const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules'];
-    final changed = [for (final k in sections) if (part(before, k) != part(now, k)) k];
+    final changed = [
+      for (final k in sections)
+        if (part(before, k) != part(now, k)) k,
+    ];
     // undo steps recorded while the dialog was open (currency conversion…)
     var mutated = 0;
     while (_undo.isNotEmpty && !_undo.last.time.isBefore(edit._state.time)) {
@@ -1006,21 +1023,25 @@ class ProjectController extends ChangeNotifier {
       return 0;
     }
     final newIds = <String>[];
-    mutate(() {
-      if (copy) {
-        for (final e in targets) {
-          final c = _transformed(e.clone(newId: project.newId()), t);
-          project.entities.add(c);
-          newIds.add(c.id);
+    mutate(
+      () {
+        if (copy) {
+          for (final e in targets) {
+            final c = _transformed(e.clone(newId: project.newId()), t);
+            project.entities.add(c);
+            newIds.add(c.id);
+          }
+        } else {
+          final ids = targets.map((e) => e.id).toSet();
+          for (var i = 0; i < project.entities.length; i++) {
+            final e = project.entities[i];
+            if (ids.contains(e.id)) project.entities[i] = _transformed(e, t);
+          }
         }
-      } else {
-        final ids = targets.map((e) => e.id).toSet();
-        for (var i = 0; i < project.entities.length; i++) {
-          final e = project.entities[i];
-          if (ids.contains(e.id)) project.entities[i] = _transformed(e, t);
-        }
-      }
-    }, invalidateResults: !copy || targets.any((e) => e.isHydraulic), label: label ?? (copy ? 'hist.copy|${targets.length}' : 'hist.transform|${targets.length}'));
+      },
+      invalidateResults: !copy || targets.any((e) => e.isHydraulic),
+      label: label ?? (copy ? 'hist.copy|${targets.length}' : 'hist.transform|${targets.length}'),
+    );
     if (copy) select(newIds);
     return targets.length;
   }
@@ -1269,9 +1290,10 @@ class ProjectController extends ChangeNotifier {
     final e = project.byId(id);
     if (e is! PolyEntity || _locked(e)) return false;
     return mutate(() {
-      e.insertVertex(index, p);
-      return true;
-    }, invalidateResults: e.isHydraulic) ?? false;
+          e.insertVertex(index, p);
+          return true;
+        }, invalidateResults: e.isHydraulic) ??
+        false;
   }
 
   void removeVertex(String id, int index) {
@@ -1285,11 +1307,15 @@ class ProjectController extends ChangeNotifier {
   int mutateSelected<T extends Entity>(void Function(T e) fn, {bool invalidateResults = true}) {
     final targets = editableSelection.whereType<T>().toList();
     if (targets.isEmpty) return 0;
-    mutate(() {
-      for (final e in targets) {
-        fn(e);
-      }
-    }, invalidateResults: invalidateResults, label: 'hist.props');
+    mutate(
+      () {
+        for (final e in targets) {
+          fn(e);
+        }
+      },
+      invalidateResults: invalidateResults,
+      label: 'hist.props',
+    );
     return targets.length;
   }
 
@@ -1331,7 +1357,16 @@ class ProjectController extends ChangeNotifier {
           final pipes = cat.pipesFor(PipeUsage.lateral);
           spec = (pipes.where((p) => p.innerDiameterMm >= bore - 0.5).firstOrNull ?? pipes.lastOrNull)?.id;
         }
-        final pipe = PipeEntity(id: project.newId(), layer: Layers.zonePipes, name: e.name, points: List.of((e as PolyEntity).points), scope: HydraulicScope.zone, pipeSpecId: spec, computerSized: spec == null || (e is SpraylineEntity && e.computerSized), depth: e is SpraylineEntity ? e.depth : (e as TapeEntity).depth);
+        final pipe = PipeEntity(
+          id: project.newId(),
+          layer: Layers.zonePipes,
+          name: e.name,
+          points: List.of((e as PolyEntity).points),
+          scope: HydraulicScope.zone,
+          pipeSpecId: spec,
+          computerSized: spec == null || (e is SpraylineEntity && e.computerSized),
+          depth: e is SpraylineEntity ? e.depth : (e as TapeEntity).depth,
+        );
         final i = project.entities.indexOf(e);
         project.entities[i] = pipe;
         made.add(pipe.id);
@@ -1379,7 +1414,13 @@ class ProjectController extends ChangeNotifier {
     if (r == null) return null;
     final snap = project.toJson()..remove('scenarios');
     snap['results'] = r.toJson();
-    final sc = Scenario(id: 'scn${DateTime.now().microsecondsSinceEpoch}', name: name.trim().isEmpty ? t('scn.default', {'n': '${project.scenarios.length + 1}'}) : name.trim(), created: DateTime.now(), metrics: scenarioMetrics(project, r), snapshot: snap);
+    final sc = Scenario(
+      id: 'scn${DateTime.now().microsecondsSinceEpoch}',
+      name: name.trim().isEmpty ? t('scn.default', {'n': '${project.scenarios.length + 1}'}) : name.trim(),
+      created: DateTime.now(),
+      metrics: scenarioMetrics(project, r),
+      snapshot: snap,
+    );
     mutate(() => project.scenarios.add(sc), invalidateResults: false, label: 'hist.scenarioSave');
     return sc;
   }
@@ -1443,15 +1484,34 @@ class ProjectController extends ChangeNotifier {
     final ll = siteLatLon;
     if (ll == null) throw const ClimateException('climate_no_site', '');
     final now = DateTime.now().toUtc();
-    final series = await climateDownload(source, latitudeDeg: ll.$1, longitudeDeg: ll.$2, firstYear: now.year - years, lastYear: now.year - 1, fetch: climateUrlLoader, onProgress: onProgress, onWait: onWait, cancelled: cancelled);
+    final series = await climateDownload(
+      source,
+      latitudeDeg: ll.$1,
+      longitudeDeg: ll.$2,
+      firstYear: now.year - years,
+      lastYear: now.year - 1,
+      fetch: climateUrlLoader,
+      onProgress: onProgress,
+      onWait: onWait,
+      cancelled: cancelled,
+    );
     final normals = climateMonthlyNormals(series);
     final req = climateNormalsForRequirement(normals);
     if (req == null) throw const ClimateException('climate_no_data', '');
     final rs = [for (final n in normals) n.solarKWhM2Day];
     String two(int v) => v.toString().padLeft(2, '0');
     final sc = SiteClimate(
-      etoMmDay: req.etoMmDay, rainMm: req.rainMm, dependableRainMm: req.dependableRainMm, solarKWhM2Day: rs.every((x) => x != null) ? [for (final x in rs) x!] : null,
-      source: source.name, firstYear: now.year - years, lastYear: now.year - 1, latitudeDeg: ll.$1, longitudeDeg: ll.$2, retrieved: '${now.year}-${two(now.month)}-${two(now.day)}', attribution: source.attribution,
+      etoMmDay: req.etoMmDay,
+      rainMm: req.rainMm,
+      dependableRainMm: req.dependableRainMm,
+      solarKWhM2Day: rs.every((x) => x != null) ? [for (final x in rs) x!] : null,
+      source: source.name,
+      firstYear: now.year - years,
+      lastYear: now.year - 1,
+      latitudeDeg: ll.$1,
+      longitudeDeg: ll.$2,
+      retrieved: '${now.year}-${two(now.month)}-${two(now.day)}',
+      attribution: source.attribution,
     );
     mutate(() => project.climate = sc, invalidateResults: false, label: 'hist.climate');
     return sc;
@@ -1488,7 +1548,10 @@ class ProjectController extends ChangeNotifier {
   List<Entity> entitiesIn(Bounds b) {
     final idx = index;
     final visible = {for (final l in project.layers) l.name: l.visible};
-    return [for (final i in idx.query(b)) if (visible[idx.entities[i].layer] ?? true) idx.entities[i]];
+    return [
+      for (final i in idx.query(b))
+        if (visible[idx.entities[i].layer] ?? true) idx.entities[i],
+    ];
   }
 
   /// Hit test in world units (entities on locked layers are skipped unless [includeLocked]).
@@ -1783,7 +1846,8 @@ class ProjectController extends ChangeNotifier {
     return _advice!;
   }
 
-  String _adviceSignature() => '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${jsonEncode(project.params.toJson())}|${jsonEncode([for (final f in project.systemFlows) f.toJson()])}';
+  String _adviceSignature() =>
+      '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${jsonEncode(project.params.toJson())}|${jsonEncode([for (final f in project.systemFlows) f.toJson()])}';
 
   /// Applies one correction (one undo step). With results on screen the
   /// design runs again, so the message list shows what is left.
@@ -1828,13 +1892,20 @@ class ProjectController extends ChangeNotifier {
     assistantProgress = t('adv.working', {'n': '1'});
     notifyListeners();
     try {
-      final report = await runAutoFix(project, () async {
-        _editSeq++;
-        return _design();
-      }, label: t.call, lang: lang, skip: skip, onRound: (n) {
-        assistantProgress = t('adv.working', {'n': '$n'});
-        notifyListeners();
-      });
+      final report = await runAutoFix(
+        project,
+        () async {
+          _editSeq++;
+          return _design();
+        },
+        label: t.call,
+        lang: lang,
+        skip: skip,
+        onRound: (n) {
+          assistantProgress = t('adv.working', {'n': '$n'});
+          notifyListeners();
+        },
+      );
       _editSeq++;
       dirty = true;
       showReports = true;
@@ -1857,10 +1928,16 @@ class ProjectController extends ChangeNotifier {
     assistantProgress = t('opt.working');
     notifyListeners();
     try {
-      final report = await runOptimize(project, () async {
-        _editSeq++;
-        return _design();
-      }, options: options, baseline: base, label: t.call);
+      final report = await runOptimize(
+        project,
+        () async {
+          _editSeq++;
+          return _design();
+        },
+        options: options,
+        baseline: base,
+        label: t.call,
+      );
       if (!report.improved) {
         // nothing gained: back to the project as it was
         final st = _undo.removeLast();
@@ -1970,7 +2047,17 @@ class ProjectController extends ChangeNotifier {
       final nz = o?.nozzle(e.nozzleId);
       final pipe = cat.pipe(e.pipeSpecId) ?? cat.pipesFor(PipeUsage.lateral).firstOrNull;
       if (nz == null || pipe == null) return null;
-      spec = LateralSpec(length: e.length, diameter: pipe.innerDiameter, spacing: e.spacing, emitter: nz.curve, firstOffset: e.firstOutletDistance, method: p.frictionMethod, hazenC: p.adjustedC(pipe.hazenC), roughness: pipe.roughness, kinematicViscosity: p.kinematicViscosity);
+      spec = LateralSpec(
+        length: e.length,
+        diameter: pipe.innerDiameter,
+        spacing: e.spacing,
+        emitter: nz.curve,
+        firstOffset: e.firstOutletDistance,
+        method: p.frictionMethod,
+        hazenC: p.adjustedC(pipe.hazenC),
+        roughness: pipe.roughness,
+        kinematicViscosity: p.kinematicViscosity,
+      );
       nominal = e.headM;
       final (l, h) = nz.curve.headWindow(nominal, below: nz.flowTolBelow, above: nz.flowTolAbove);
       lo = math.max(l, nz.minHeadM);
@@ -1978,7 +2065,17 @@ class ProjectController extends ChangeNotifier {
     } else if (e is TapeEntity) {
       final tp = cat.tape(e.tapeSpecId);
       if (tp == null) return null;
-      spec = LateralSpec(length: e.length, diameter: tp.innerDiameter, spacing: tp.emitterSpacingM, emitter: tp.emitter, barbK: tp.barbK, method: p.frictionMethod, hazenC: p.adjustedC(tp.hazenC), roughness: tp.roughnessMm / 1000, kinematicViscosity: p.kinematicViscosity);
+      spec = LateralSpec(
+        length: e.length,
+        diameter: tp.innerDiameter,
+        spacing: tp.emitterSpacingM,
+        emitter: tp.emitter,
+        barbK: tp.barbK,
+        method: p.frictionMethod,
+        hazenC: p.adjustedC(tp.hazenC),
+        roughness: tp.roughnessMm / 1000,
+        kinematicViscosity: p.kinematicViscosity,
+      );
       nominal = e.inletHeadM;
       lo = math.max(tp.minHeadM, nominal * (1 - tp.tolBelowPct / 100));
       hi = math.min(tp.maxHeadM, nominal * (1 + tp.tolAbovePct / 100));
@@ -2041,15 +2138,19 @@ class ProjectController extends ChangeNotifier {
     final lines = terrain.generateContours(interval);
     if (lines.isEmpty) return 0;
     final created = <Entity>[];
-    mutate(() {
-      if (replacePrevious) project.entities.removeWhere((e) => e is ContourEntity && e.derived);
-      for (final (z, pts) in lines) {
-        if (pts.length < 2 || polylineLength(pts) < interval) continue;
-        final e = ContourEntity(id: project.newId(), points: pts, elevation: z, derived: true, name: 'DTM');
-        project.entities.add(e);
-        created.add(e);
-      }
-    }, invalidateResults: false, label: 'hist.contours');
+    mutate(
+      () {
+        if (replacePrevious) project.entities.removeWhere((e) => e is ContourEntity && e.derived);
+        for (final (z, pts) in lines) {
+          if (pts.length < 2 || polylineLength(pts) < interval) continue;
+          final e = ContourEntity(id: project.newId(), points: pts, elevation: z, derived: true, name: 'DTM');
+          project.entities.add(e);
+          created.add(e);
+        }
+      },
+      invalidateResults: false,
+      label: 'hist.contours',
+    );
     return created.length;
   }
 
@@ -2102,7 +2203,17 @@ class ProjectController extends ChangeNotifier {
   /// (they usually sit on another datum, e.g. example data at 100 m, and
   /// would turn the model into spikes). [onProgress] gets (done, total)
   /// requests.
-  Future<DemImportResult> importOnlineDem(DemSource source, {double spacing = 25, bool useView = false, bool replacePrevious = true, bool replaceExisting = false, int maxPoints = 5000, void Function(int done, int total)? onProgress, void Function(Duration wait)? onWait, bool Function()? cancelled}) async {
+  Future<DemImportResult> importOnlineDem(
+    DemSource source, {
+    double spacing = 25,
+    bool useView = false,
+    bool replacePrevious = true,
+    bool replaceExisting = false,
+    int maxPoints = 5000,
+    void Function(int done, int total)? onProgress,
+    void Function(Duration wait)? onWait,
+    bool Function()? cancelled,
+  }) async {
     final geo = project.meta.georef;
     if (geo == null) throw const GeoReferenceMissing();
     var b = useView ? camera.visible : project.bounds;
@@ -2248,7 +2359,12 @@ class ProjectController extends ChangeNotifier {
     final name = t('gps.trackName', {'t': _hhmm(DateTime.now())});
     final Entity e = asArea ? AreaEntity(id: project.newId(), points: List.of(pts), name: name) : PolylineEntity(id: project.newId(), points: List.of(pts), closed: closed, name: name);
     mutate(() => project.entities.add(e), label: 'hist.gpsTrack');
-    notify(t('gps.trackDone', {'n': '${pts.length}', 'l': fmt(polylineLength([...pts, if (closed || asArea) pts.first]), 0)}));
+    notify(
+      t('gps.trackDone', {
+        'n': '${pts.length}',
+        'l': fmt(polylineLength([...pts, if (closed || asArea) pts.first]), 0),
+      }),
+    );
     return e;
   }
 
@@ -2316,7 +2432,10 @@ class ProjectController extends ChangeNotifier {
     track('check');
     final r = runDesignCheck(project);
     checkReport = r;
-    unconnected = {for (final i in r.issues) if (i.code == 'unconnected') ...i.entityIds};
+    unconnected = {
+      for (final i in r.issues)
+        if (i.code == 'unconnected') ...i.entityIds,
+    };
     notifyListeners();
     return r;
   }
@@ -2332,7 +2451,8 @@ class ProjectController extends ChangeNotifier {
   ui.Image? densogramImage;
   int _densogramImageGen = 0;
 
-  String get _densogramKey => '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.useMeasured}|${densogramOptions.windSpeed}|${densogramOptions.windTowardsDeg}|${densogramOptions.windDrift}|${densogramOptions.valveIds?.join(',')}';
+  String get _densogramKey =>
+      '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.useMeasured}|${densogramOptions.windSpeed}|${densogramOptions.windTowardsDeg}|${densogramOptions.windDrift}|${densogramOptions.valveIds?.join(',')}';
 
   /// Water applied by the sprinklers as laid out (recomputed when the
   /// drawing, the results or the options changed).
@@ -2443,13 +2563,17 @@ class ProjectController extends ChangeNotifier {
     final data = e.data;
     if (data == null || _decoding.contains(e.id)) return null;
     _decoding.add(e.id);
-    ui.instantiateImageCodec(data).then((codec) => codec.getNextFrame()).then((frame) {
-      images[e.id] = frame.image;
-      _decoding.remove(e.id);
-      notifyListeners();
-    }).catchError((Object err) {
-      _decoding.remove(e.id);
-    });
+    ui
+        .instantiateImageCodec(data)
+        .then((codec) => codec.getNextFrame())
+        .then((frame) {
+          images[e.id] = frame.image;
+          _decoding.remove(e.id);
+          notifyListeners();
+        })
+        .catchError((Object err) {
+          _decoding.remove(e.id);
+        });
     return null;
   }
 
@@ -2560,7 +2684,10 @@ class ProjectController extends ChangeNotifier {
   /// (units of [code] per unit of the current currency); without a rate only
   /// the currency changes. [symbol] overrides the symbol shown.
   void setProjectCurrency(String code, {double? rate, String? symbol}) {
-    mutate(() => project.setCurrency(code, rate: rate, symbol: symbol), label: 'hist.currency');
+    mutate(
+      () => project.setCurrency(code, rate: rate, symbol: symbol),
+      label: 'hist.currency',
+    );
     _autoCurrency = false;
   }
 
@@ -2654,7 +2781,11 @@ class ProjectController extends ChangeNotifier {
     if (lower.endsWith('.pdf')) {
       // without the dialog (drag and drop, scripts): page 1 at 1:100
       final page = PdfReader.open(bytes).readPage(0);
-      final r = mutate(() => addPdfPage(project, page, PdfImportOptions(layer: pdfLayerName(name), source: name)), invalidateResults: false, label: 'hist.importPdf');
+      final r = mutate(
+        () => addPdfPage(project, page, PdfImportOptions(layer: pdfLayerName(name), source: name)),
+        invalidateResults: false,
+        label: 'hist.importPdf',
+      );
       zoomAll();
       return t('pdfimp.done', {'n': '${r?.entities.length ?? 0}', 'l': '${r?.layers.length ?? 0}'}) + _importWarnings([...page.warnings, ...?r?.warnings]);
     }
@@ -2837,7 +2968,19 @@ class ProjectController extends ChangeNotifier {
           case 'SPLINE':
             if (e.points.length >= 2) list.add(SplineEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map((p) => p * s).toList(), closed: e.closed));
           case 'HATCH':
-            if (e.points.length >= 3) list.add(HatchEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map((p) => p * s).toList(), angleDeg: e.rotation, spacing: e.height > 0 ? e.height * s : 1, solid: e.solid));
+            if (e.points.length >= 3) {
+              list.add(
+                HatchEntity(
+                  id: project.newId(),
+                  layer: layer,
+                  name: e.name,
+                  points: e.points.map((p) => p * s).toList(),
+                  angleDeg: e.rotation,
+                  spacing: e.height > 0 ? e.height * s : 1,
+                  solid: e.solid,
+                ),
+              );
+            }
           case 'CIRCLE':
             list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: e.center! * s, radius: e.radius * s));
           case 'ARC':
@@ -2892,7 +3035,12 @@ class ProjectController extends ChangeNotifier {
     results: results,
     unconnected: unconnected,
     layerNames: layerNames(),
-    labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w, entityName: entityName), entityName: entityName),
+    labels: ReportLabels(
+      t: t.call,
+      has: t.has,
+      warning: (w) => t.warning(w, entityName: entityName),
+      entityName: entityName,
+    ),
   );
 
   String exportDxf() => exporter().dxf();

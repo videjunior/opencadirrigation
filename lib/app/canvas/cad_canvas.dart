@@ -16,14 +16,7 @@ import 'snapping.dart';
 import '../theme.dart';
 
 class CadCanvas extends StatefulWidget {
-  const CadCanvas({
-    super.key,
-    required this.controller,
-    required this.host,
-    required this.focusNode,
-    this.workspace,
-    this.onArray,
-  });
+  const CadCanvas({super.key, required this.controller, required this.host, required this.focusNode, this.workspace, this.onArray});
   final ProjectController controller;
   final ToolHost host;
   final FocusNode focusNode;
@@ -191,10 +184,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       _touchDrawPending = true;
       return;
     }
-    if (e.buttons == kMiddleMouseButton ||
-        e.buttons == kSecondaryMouseButton ||
-        _spaceDown ||
-        c.activeTool == ToolId.pan) {
+    if (e.buttons == kMiddleMouseButton || e.buttons == kSecondaryMouseButton || _spaceDown || c.activeTool == ToolId.pan) {
       _panning = true;
       return;
     }
@@ -205,10 +195,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   void _primaryDown(Offset local, {bool touch = false}) {
     final now = DateTime.now();
-    final isDouble =
-        now.difference(_lastDown).inMilliseconds < 350 &&
-        _lastDownPos != null &&
-        (_lastDownPos! - local).distance < 6;
+    final isDouble = now.difference(_lastDown).inMilliseconds < 350 && _lastDownPos != null && (_lastDownPos! - local).distance < 6;
     _lastDown = now;
     _lastDownPos = local;
     final p = _snapped(local);
@@ -216,11 +203,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     if (isDouble) {
       _tool.onDoubleClick(p);
     } else {
-      _tool.onDown(
-        p,
-        shift: keys.isShiftPressed,
-        ctrl: keys.isControlPressed || keys.isMetaPressed,
-      );
+      _tool.onDown(p, shift: keys.isShiftPressed, ctrl: keys.isControlPressed || keys.isMetaPressed);
       if (_snap?.locked ?? false) c.track('lock');
     }
     _dragging = true;
@@ -288,10 +271,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     final p = _snapped(e.localPosition);
     _tool.onMove(p);
     if (_tool is SelectTool) {
-      final hit = c.pick(
-        _world(e.localPosition),
-        c.snap.tolerancePx / c.camera.scale,
-      );
+      final hit = c.pick(_world(e.localPosition), c.snap.tolerancePx / c.camera.scale);
       final id = hit?.id;
       if (id != c.hoverId) c.hoverId = id;
     }
@@ -420,11 +400,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         builder: (context, constraints) {
           c.camera.size = Size(constraints.maxWidth, constraints.maxHeight);
           return MouseRegion(
-            cursor: c.activeTool == ToolId.pan || _panning
-                ? SystemMouseCursors.grab
-                : (c.activeTool == ToolId.select
-                      ? SystemMouseCursors.basic
-                      : SystemMouseCursors.precise),
+            cursor: c.activeTool == ToolId.pan || _panning ? SystemMouseCursors.grab : (c.activeTool == ToolId.select ? SystemMouseCursors.basic : SystemMouseCursors.precise),
             onHover: _onPointerHover,
             onExit: (_) {
               _tool.cursor = null;
@@ -481,7 +457,11 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     child: InkWell(
       customBorder: const CircleBorder(),
       onTap: onTap,
-      child: SizedBox(width: math.max(28, 32), height: 32, child: Icon(icon, size: 16, color: Cad.fg70)),
+      child: SizedBox(
+        width: math.max(28, 32),
+        height: 32,
+        child: Icon(icon, size: 16, color: Cad.fg70),
+      ),
     ),
   );
 }

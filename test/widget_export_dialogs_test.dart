@@ -68,7 +68,11 @@ void main() {
     // latitude and longitude pasted as one pair in the first field
     result = showGeoreferenceDialog(ctx(tester), c);
     await settle(tester);
-    expect(find.descendant(of: find.byType(AlertDialog), matching: find.textContaining('UTM 23N')), findsOneWidget, reason: 'the current georeference is shown');
+    expect(
+      find.descendant(of: find.byType(AlertDialog), matching: find.textContaining('UTM 23N')),
+      findsOneWidget,
+      reason: 'the current georeference is shown',
+    );
     await tester.tap(find.text(t('geo.modeLatLon')));
     await settle(tester, 1);
     await enter(tester, t('geo.lat'), '-22.9068, -43.1729');

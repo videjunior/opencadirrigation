@@ -99,7 +99,14 @@ class GeoJsonReader {
       }
     }
     doc.layers.addAll(layers.values);
-    return GeoJsonImportResult(document: doc, georef: placement.georef, featureCount: feats.map((f) => f.id).toSet().length, crs: placement.crs, warnings: warnings, localOrigin: placement.localOrigin);
+    return GeoJsonImportResult(
+      document: doc,
+      georef: placement.georef,
+      featureCount: feats.map((f) => f.id).toSet().length,
+      crs: placement.crs,
+      warnings: warnings,
+      localOrigin: placement.localOrigin,
+    );
   }
 
   /// The CRS named by a 2008 `crs` member; RFC 7946 (WGS 84) when absent.
@@ -136,11 +143,23 @@ class GeoJsonReader {
     switch (g['type']) {
       case 'Point':
         final p = _pos(c);
-        if (p != null) out.add(_Feat(id, 'point', [[p]], props));
+        if (p != null) {
+          out.add(
+            _Feat(id, 'point', [
+              [p],
+            ], props),
+          );
+        }
       case 'MultiPoint':
         for (final q in (c as List?) ?? const []) {
           final p = _pos(q);
-          if (p != null) out.add(_Feat(id, 'point', [[p]], props));
+          if (p != null) {
+            out.add(
+              _Feat(id, 'point', [
+                [p],
+              ], props),
+            );
+          }
         }
       case 'LineString':
         out.add(_Feat(id, 'line', [_line(c)], props));
@@ -149,7 +168,12 @@ class GeoJsonReader {
       case 'Polygon':
         out.add(_Feat(id, 'ring', [for (final r in (c as List?) ?? const []) _line(r)], props));
       case 'MultiPolygon':
-        out.add(_Feat(id, 'ring', [for (final poly in (c as List?) ?? const []) for (final r in (poly as List?) ?? const []) _line(r)], props));
+        out.add(
+          _Feat(id, 'ring', [
+            for (final poly in (c as List?) ?? const [])
+              for (final r in (poly as List?) ?? const []) _line(r),
+          ], props),
+        );
       case 'GeometryCollection':
         for (final sub in (g['geometries'] as List?) ?? const []) {
           if (sub is Map<String, dynamic>) _geometry(sub, props, out, warnings, id);

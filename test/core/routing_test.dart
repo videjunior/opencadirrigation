@@ -44,7 +44,12 @@ bool _crossesInside(Pt a, Pt b, List<Pt> poly) {
   final family = Catalog.defaultCatalog().outlet('rotor')!;
   final layout = layoutLandscape(outline: lawn, exclusions: exclusions, family: family);
   final z = zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: maxM3h * m3sPerM3h));
-  return (layout, [for (final g in z.zones) [for (final i in g.items) layout.heads[i].position]]);
+  return (
+    layout,
+    [
+      for (final g in z.zones) [for (final i in g.items) layout.heads[i].position],
+    ],
+  );
 }
 
 void main() {
@@ -156,9 +161,16 @@ void main() {
 
   test('thousands of heads in well under a second', () {
     final family = Catalog.defaultCatalog().outlet('rotor')!;
-    final layout = layoutLandscape(outline: const [Pt(0, 0), Pt(600, 0), Pt(600, 250), Pt(300, 400), Pt(0, 400)], exclusions: [_rect(100, 100, 160, 140)], family: family, options: LandscapeLayoutOptions(evaluate: false));
+    final layout = layoutLandscape(
+      outline: const [Pt(0, 0), Pt(600, 0), Pt(600, 250), Pt(300, 400), Pt(0, 400)],
+      exclusions: [_rect(100, 100, 160, 140)],
+      family: family,
+      options: LandscapeLayoutOptions(evaluate: false),
+    );
     final z = zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: 4 * m3sPerM3h));
-    final zones = [for (final g in z.zones) [for (final i in g.items) layout.heads[i].position]];
+    final zones = [
+      for (final g in z.zones) [for (final i in g.items) layout.heads[i].position],
+    ];
     final sw = Stopwatch()..start();
     final r = routeZones(zones, RouteOptions(pointOfConnection: const Pt(-10, -10), exclusions: [_rect(100, 100, 160, 140)], direction: layout.direction));
     expect(sw.elapsedMilliseconds, lessThan(1500));

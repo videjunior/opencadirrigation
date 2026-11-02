@@ -27,7 +27,14 @@ void main() {
 
   String answer(DemSource source, String url) {
     final zs = [for (final (lat, lon) in coordsOf(url)) zOf(lat, lon)];
-    return source == DemSource.openMeteo ? jsonEncode({'elevation': zs}) : jsonEncode({'status': 'OK', 'results': [for (final z in zs) {'elevation': z}]});
+    return source == DemSource.openMeteo
+        ? jsonEncode({'elevation': zs})
+        : jsonEncode({
+            'status': 'OK',
+            'results': [
+              for (final z in zs) {'elevation': z},
+            ],
+          });
   }
 
   group('grid', () {
@@ -83,14 +90,20 @@ void main() {
       final rnd = math.Random(3);
       var inFlight = 0, maxInFlight = 0, calls = 0;
       final progress = <(int, int)>[];
-      final zs = await demDownload(DemSource.openMeteo, pts, (url) async {
-        calls++;
-        inFlight++;
-        maxInFlight = math.max(maxInFlight, inFlight);
-        await Future<void>.delayed(Duration(milliseconds: rnd.nextInt(20)));
-        inFlight--;
-        return answer(DemSource.openMeteo, url);
-      }, onProgress: (d, t) => progress.add((d, t)), pointsPerMinute: 0);
+      final zs = await demDownload(
+        DemSource.openMeteo,
+        pts,
+        (url) async {
+          calls++;
+          inFlight++;
+          maxInFlight = math.max(maxInFlight, inFlight);
+          await Future<void>.delayed(Duration(milliseconds: rnd.nextInt(20)));
+          inFlight--;
+          return answer(DemSource.openMeteo, url);
+        },
+        onProgress: (d, t) => progress.add((d, t)),
+        pointsPerMinute: 0,
+      );
       expect(calls, 11);
       expect(maxInFlight, greaterThan(1), reason: 'Open-Meteo batches run in parallel');
       expect(maxInFlight, lessThanOrEqualTo(DemSource.openMeteo.concurrency));
@@ -127,15 +140,21 @@ void main() {
       final pts = demGrid(const Bounds(0, 0, 500, 300), 25, geo);
       final failures = <String, int>{};
       var calls = 0;
-      final zs = await demDownload(DemSource.openMeteo, pts, (url) async {
-        calls++;
-        final f = failures[url] ?? 0;
-        if (f < 2) {
-          failures[url] = f + 1;
-          throw StateError('network down');
-        }
-        return answer(DemSource.openMeteo, url);
-      }, retryDelay: const Duration(milliseconds: 2), pointsPerMinute: 0);
+      final zs = await demDownload(
+        DemSource.openMeteo,
+        pts,
+        (url) async {
+          calls++;
+          final f = failures[url] ?? 0;
+          if (f < 2) {
+            failures[url] = f + 1;
+            throw StateError('network down');
+          }
+          return answer(DemSource.openMeteo, url);
+        },
+        retryDelay: const Duration(milliseconds: 2),
+        pointsPerMinute: 0,
+      );
       expect(calls, 3 * 3, reason: 'every batch fails twice, then succeeds');
       for (var i = 0; i < pts.length; i++) {
         expect(zs[i], closeTo(zOf(double.parse(pts[i].lat.toStringAsFixed(6)), double.parse(pts[i].lon.toStringAsFixed(6))), 1e-6));
@@ -146,10 +165,16 @@ void main() {
       final pts = demGrid(const Bounds(0, 0, 100, 100), 25, geo);
       var calls = 0;
       await expectLater(
-        demDownload(DemSource.openMeteo, pts, (url) async {
-          calls++;
-          throw StateError('down');
-        }, retries: 2, retryDelay: const Duration(milliseconds: 1)),
+        demDownload(
+          DemSource.openMeteo,
+          pts,
+          (url) async {
+            calls++;
+            throw StateError('down');
+          },
+          retries: 2,
+          retryDelay: const Duration(milliseconds: 1),
+        ),
         throwsA(isA<StateError>()),
       );
       expect(calls, 3);
@@ -168,10 +193,16 @@ void main() {
       expect(calls, 1);
       calls = 0;
       await expectLater(
-        demDownload(DemSource.openMeteo, pts, (url) async {
-          calls++;
-          throw StateError('HTTP 400');
-        }, retryable: (e) => false, retryDelay: const Duration(milliseconds: 1)),
+        demDownload(
+          DemSource.openMeteo,
+          pts,
+          (url) async {
+            calls++;
+            throw StateError('HTTP 400');
+          },
+          retryable: (e) => false,
+          retryDelay: const Duration(milliseconds: 1),
+        ),
         throwsA(isA<StateError>()),
       );
       expect(calls, 1);
@@ -196,10 +227,17 @@ void main() {
       final pts = demGrid(const Bounds(0, 0, 1000, 600), 25, geo); // 1025 points, 11 batches
       final starts = <DateTime>[];
       final waits = <Duration>[];
-      final zs = await demDownload(DemSource.openMeteo, pts, (url) async {
-        starts.add(DateTime.now());
-        return answer(DemSource.openMeteo, url);
-      }, pointsPerMinute: 550, budgetWindow: const Duration(milliseconds: 300), onWait: waits.add);
+      final zs = await demDownload(
+        DemSource.openMeteo,
+        pts,
+        (url) async {
+          starts.add(DateTime.now());
+          return answer(DemSource.openMeteo, url);
+        },
+        pointsPerMinute: 550,
+        budgetWindow: const Duration(milliseconds: 300),
+        onWait: waits.add,
+      );
       expect(zs.where((z) => z == null), isEmpty);
       expect(starts.length, 11);
       // 5 batches (500 points) fit the budget at once; the rest wait for the window
@@ -219,11 +257,19 @@ void main() {
       final pts = demGrid(const Bounds(0, 0, 100, 100), 25, geo);
       var calls = 0;
       final waits = <Duration>[];
-      final zs = await demDownload(DemSource.openMeteo, pts, (url) async {
-        calls++;
-        if (calls <= 2) throw StateError('429');
-        return answer(DemSource.openMeteo, url);
-      }, rateLimited: (e) => e is StateError && e.message == '429', retryable: (e) => false, rateLimitDelay: const Duration(milliseconds: 20), onWait: waits.add);
+      final zs = await demDownload(
+        DemSource.openMeteo,
+        pts,
+        (url) async {
+          calls++;
+          if (calls <= 2) throw StateError('429');
+          return answer(DemSource.openMeteo, url);
+        },
+        rateLimited: (e) => e is StateError && e.message == '429',
+        retryable: (e) => false,
+        rateLimitDelay: const Duration(milliseconds: 20),
+        onWait: waits.add,
+      );
       expect(calls, 3);
       expect(waits.map((w) => w.inMilliseconds).toList(), [20, 40], reason: 'growing pauses');
       expect(zs.where((z) => z == null), isEmpty);
@@ -234,12 +280,18 @@ void main() {
       var calls = 0;
       var cancel = false;
       await expectLater(
-        demDownload(DemSource.openMeteo, pts, (url) async {
-          final n = ++calls;
-          await Future<void>.delayed(const Duration(milliseconds: 5));
-          if (n == 3) cancel = true;
-          return answer(DemSource.openMeteo, url);
-        }, cancelled: () => cancel, pointsPerMinute: 0),
+        demDownload(
+          DemSource.openMeteo,
+          pts,
+          (url) async {
+            final n = ++calls;
+            await Future<void>.delayed(const Duration(milliseconds: 5));
+            if (n == 3) cancel = true;
+            return answer(DemSource.openMeteo, url);
+          },
+          cancelled: () => cancel,
+          pointsPerMinute: 0,
+        ),
         throwsA(isA<DemCancelled>()),
       );
       expect(calls, lessThan(12));
@@ -316,7 +368,10 @@ void main() {
         return z;
       }
 
-      final tiles = {for (var tx = 0; tx < 2; tx++) for (var ty = 0; ty < 2; ty++) (tx, ty): DemTile(plane(tx, ty))};
+      final tiles = {
+        for (var tx = 0; tx < 2; tx++)
+          for (var ty = 0; ty < 2; ty++) (tx, ty): DemTile(plane(tx, ty)),
+      };
       final pts = [at(10.5, 20.5, 1), at(11.0, 20.5, 1), at(255.5, 300.5, 1), at(256.0, 256.0, 1), at(300.25, 100.75, 1)];
       final zs = demSampleTiles(pts, 1, tiles);
       expect(zs[0], closeTo(10 + 40, 1e-6), reason: 'pixel centre');
@@ -373,10 +428,16 @@ void main() {
       final pts = demGrid(const Bounds(0, 0, 100, 100), 25, geo);
       var calls = 0;
       await expectLater(
-        demDownloadTiles(pts, 25, (url) async {
-          calls++;
-          throw StateError('down');
-        }, retries: 2, retryDelay: const Duration(milliseconds: 1)),
+        demDownloadTiles(
+          pts,
+          25,
+          (url) async {
+            calls++;
+            throw StateError('down');
+          },
+          retries: 2,
+          retryDelay: const Duration(milliseconds: 1),
+        ),
         throwsA(isA<StateError>()),
       );
       expect(calls, 3);

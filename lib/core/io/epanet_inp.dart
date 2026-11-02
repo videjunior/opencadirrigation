@@ -82,27 +82,17 @@ enum EpanetScopeKind { zone, systemFlow, all }
 class EpanetScope {
   /// One zone and its valve, fed by a reservoir at the pressure the zone needs
   /// upstream of the valve.
-  const EpanetScope.zone(String valveId)
-      : kind = EpanetScopeKind.zone,
-        id = valveId,
-        detailedZones = true,
-        includeClosedZones = false;
+  const EpanetScope.zone(String valveId) : kind = EpanetScopeKind.zone, id = valveId, detailedZones = true, includeClosedZones = false;
 
   /// The mainline with system flow [flowId] running (an id of
   /// `project.systemFlows`, or `auto` when the project defines none): the
   /// zones of the flow as demands at their valves, or with [detailedZones]
   /// the zones themselves behind their valves; [includeClosedZones] adds the
   /// other zones with their valves CLOSED in [STATUS].
-  const EpanetScope.systemFlow(String flowId, {this.detailedZones = false, this.includeClosedZones = false})
-      : kind = EpanetScopeKind.systemFlow,
-        id = flowId;
+  const EpanetScope.systemFlow(String flowId, {this.detailedZones = false, this.includeClosedZones = false}) : kind = EpanetScopeKind.systemFlow, id = flowId;
 
   /// Everything, every valve open.
-  const EpanetScope.all()
-      : kind = EpanetScopeKind.all,
-        id = '',
-        detailedZones = true,
-        includeClosedZones = false;
+  const EpanetScope.all() : kind = EpanetScopeKind.all, id = '', detailedZones = true, includeClosedZones = false;
 
   final EpanetScopeKind kind;
   final String id;
@@ -162,7 +152,8 @@ class EpanetWriter {
   /// Writes the network of [project] for [scope]. Boundary conditions (zone
   /// inlet pressures, supply pressures, zone and pivot flows) come from
   /// [results] when given, else from an analysis run here.
-  static EpanetExport write(Project project, {DesignResults? results, EpanetScope scope = const EpanetScope.all(), EpanetOptions options = const EpanetOptions()}) => _InpBuilder(project, results, scope, options).build();
+  static EpanetExport write(Project project, {DesignResults? results, EpanetScope scope = const EpanetScope.all(), EpanetOptions options = const EpanetOptions()}) =>
+      _InpBuilder(project, results, scope, options).build();
 }
 
 class _Jn {
@@ -648,7 +639,11 @@ class _InpBuilder {
     final existing = curves[id];
     if (existing != null && existing.$2.last.$1 >= qMax * fq * 0.999) return id;
     if (existing != null) id = '${id}_${curves.length}';
-    final qs = <double>{0, for (final f in const [0.002, 0.005, 0.01, 0.02]) qMax * f, for (var i = 1; i <= 40; i++) qMax * i / 40}.toList()..sort();
+    final qs = <double>{
+      0,
+      for (final f in const [0.002, 0.005, 0.01, 0.02]) qMax * f,
+      for (var i = 1; i <= 40; i++) qMax * i / 40,
+    }.toList()..sort();
     curves[id] = ('HEADLOSS', [for (final q in qs) (q * fq, q == 0 ? c.c : c.k * math.pow(q, c.n) + c.c)]);
     return id;
   }
@@ -692,7 +687,10 @@ class _InpBuilder {
       at.putIfAbsent(p.n1, () => []).add(p);
       at.putIfAbsent(p.n2, () => []).add(p);
     }
-    final busy = <String>{for (final v in valves) ...[v.n1, v.n2], for (final p in pumps) ...[p.n1, p.n2]};
+    final busy = <String>{
+      for (final v in valves) ...[v.n1, v.n2],
+      for (final p in pumps) ...[p.n1, p.n2],
+    };
     bool free(String id) {
       final j = junctions[id];
       if (j == null || j.demand != 0 || j.emitter != null || busy.contains(id) || keepNodes.contains(id)) return false;
@@ -1076,7 +1074,9 @@ class InpModel {
   /// reservoir heads times the first multiplier of their patterns; tanks are
   /// fixed heads at their initial level.
   HydraulicNetwork toNetwork() {
-    final net = HydraulicNetwork(options: NetworkOptions(method: method, kinematicViscosity: viscosity, maxIterations: math.max(trials, 200), flowTolerance: math.min(accuracy, 1e-5)));
+    final net = HydraulicNetwork(
+      options: NetworkOptions(method: method, kinematicViscosity: viscosity, maxIterations: math.max(trials, 200), flowTolerance: math.min(accuracy, 1e-5)),
+    );
     double mult(String pattern) {
       final p = patterns[pattern.isEmpty ? (options['PATTERN'] ?? '1') : pattern];
       return p == null || p.isEmpty ? 1.0 : p.first;
@@ -1086,7 +1086,14 @@ class InpModel {
       final extra = demands[j.id];
       final d = extra != null ? extra.fold(0.0, (s, e) => s + e.$1 * mult(e.$2)) : j.baseDemand * mult(j.pattern);
       final k = emitters[j.id];
-      net.addNode(HNode(id: j.id, elevation: j.elevation, demand: d * demandMultiplier, emitter: k != null && k > 0 ? EmitterCurve(k: k, x: emitterExponent) : null));
+      net.addNode(
+        HNode(
+          id: j.id,
+          elevation: j.elevation,
+          demand: d * demandMultiplier,
+          emitter: k != null && k > 0 ? EmitterCurve(k: k, x: emitterExponent) : null,
+        ),
+      );
     }
     for (final r in reservoirs) {
       final h = r.head * (r.pattern.isEmpty ? 1.0 : (patterns[r.pattern]?.firstOrNull ?? 1.0));
@@ -1098,19 +1105,21 @@ class InpModel {
     for (final p in pipes) {
       final st = (status[p.id] ?? p.status).toUpperCase();
       final rough = method == FrictionMethod.hazenWilliams ? p.roughness : 0.0;
-      net.addLink(HLink(
-        id: p.id,
-        from: p.n1,
-        to: p.n2,
-        kind: st == 'CLOSED' ? HLinkKind.closed : HLinkKind.pipe,
-        diameter: p.diameter,
-        length: p.length,
-        hazenC: method == FrictionMethod.hazenWilliams ? rough : 150,
-        roughness: method == FrictionMethod.darcyWeisbach ? p.roughness : 1.5e-6,
-        manningN: method == FrictionMethod.manning && p.roughness > 0 ? p.roughness : 0.009,
-        minorK: p.minorLoss,
-        checkValve: p.status.toUpperCase() == 'CV',
-      ));
+      net.addLink(
+        HLink(
+          id: p.id,
+          from: p.n1,
+          to: p.n2,
+          kind: st == 'CLOSED' ? HLinkKind.closed : HLinkKind.pipe,
+          diameter: p.diameter,
+          length: p.length,
+          hazenC: method == FrictionMethod.hazenWilliams ? rough : 150,
+          roughness: method == FrictionMethod.darcyWeisbach ? p.roughness : 1.5e-6,
+          manningN: method == FrictionMethod.manning && p.roughness > 0 ? p.roughness : 0.009,
+          minorK: p.minorLoss,
+          checkValve: p.status.toUpperCase() == 'CV',
+        ),
+      );
     }
     for (final p in pumps) {
       final st = (status[p.id] ?? 'OPEN').toUpperCase();
@@ -1214,7 +1223,10 @@ class InpModel {
 /// (exact for points sampled from such a law).
 DeviceLossCurve lossCurveFromPoints(List<(double, double)> pts) {
   final c = pts.first.$1 == 0 ? math.max(pts.first.$2, 0.0) : 0.0;
-  final fit = DeviceLossCurve.fit([for (final (q, h) in pts) if (q > 0 && h - c > 0) (q, h - c)]);
+  final fit = DeviceLossCurve.fit([
+    for (final (q, h) in pts)
+      if (q > 0 && h - c > 0) (q, h - c),
+  ]);
   return DeviceLossCurve(k: fit.k, n: fit.n, c: c);
 }
 
@@ -1255,7 +1267,18 @@ class EpanetInpReader {
       }
     }
     final flowUnits = (m.options['UNITS'] ?? 'GPM').toUpperCase();
-    const flowFactor = {'CFS': 0.028316846592, 'GPM': 6.30901964e-5, 'MGD': 0.0438126364, 'IMGD': 0.0526167, 'AFD': 0.0142764, 'LPS': 1e-3, 'LPM': 1 / 60000, 'MLD': 1 / 86.4, 'CMH': 1 / 3600, 'CMD': 1 / 86400};
+    const flowFactor = {
+      'CFS': 0.028316846592,
+      'GPM': 6.30901964e-5,
+      'MGD': 0.0438126364,
+      'IMGD': 0.0526167,
+      'AFD': 0.0142764,
+      'LPS': 1e-3,
+      'LPM': 1 / 60000,
+      'MLD': 1 / 86.4,
+      'CMH': 1 / 3600,
+      'CMD': 1 / 86400,
+    };
     final fq = flowFactor[flowUnits] ?? (throw const FormatException('inp_units_unknown'));
     final si = const {'LPS', 'LPM', 'MLD', 'CMH', 'CMD'}.contains(flowUnits);
     final fl = si ? 1.0 : metersPerFoot; // lengths, elevations, heads
@@ -1333,7 +1356,10 @@ class EpanetInpReader {
     }
     // curves: pump curves and GPV head-loss curves in SI
     final pumpCurves = {for (final p in m.pumps) ?p.headCurve};
-    final lossCurves = {for (final v in m.valves) if (v.type == 'GPV') v.setting};
+    final lossCurves = {
+      for (final v in m.valves)
+        if (v.type == 'GPV') v.setting,
+    };
     for (final r in rows['CURVES'] ?? const <List<String>>[]) {
       if (r.length < 3) continue;
       final id = r[0];

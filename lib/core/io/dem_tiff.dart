@@ -73,7 +73,19 @@ class GeoTiffDemReader {
     if (w == 0 || h == 0) return null;
     final geo = GeoImageReader.tiffGeo(tags);
     // placement (bottom-left, width, height, rotation) through the image placer
-    final shell = GeoImage(bytes: Uint8List(0), mime: 'image/tiff', widthPx: w, heightPx: h, worldTopLeft: geo.topLeft, pixelSizeX: geo.sx, pixelSizeY: geo.sy, rotationDeg: geo.rot, geographic: geo.geographic, utmZone: geo.zone, utmNorth: geo.north);
+    final shell = GeoImage(
+      bytes: Uint8List(0),
+      mime: 'image/tiff',
+      widthPx: w,
+      heightPx: h,
+      worldTopLeft: geo.topLeft,
+      pixelSizeX: geo.sx,
+      pixelSizeY: geo.sy,
+      rotationDeg: geo.rot,
+      geographic: geo.geographic,
+      utmZone: geo.zone,
+      utmNorth: geo.north,
+    );
     final (bl, worldW, worldH, rot, ref) = placeGeoImage(shell, georef);
     final u = Pt.polar(1, degToRad(rot)), v = u.perpendicular;
     // nodata

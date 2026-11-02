@@ -26,7 +26,20 @@ import 'valve_in_head.dart';
 
 /// One valve circuit: station conductor from the controller to the valve.
 class WireRun {
-  WireRun({required this.valveId, required this.zoneName, required this.controllerId, required this.station, required this.routeM, required this.wireM, this.stationWireId, this.commonWireId, required this.volts, required this.ok, this.openTogether = 1, this.solenoids = 1});
+  WireRun({
+    required this.valveId,
+    required this.zoneName,
+    required this.controllerId,
+    required this.station,
+    required this.routeM,
+    required this.wireM,
+    this.stationWireId,
+    this.commonWireId,
+    required this.volts,
+    required this.ok,
+    this.openTogether = 1,
+    this.solenoids = 1,
+  });
 
   /// The valve, master valve or valve-in-head station (station id).
   final String valveId;
@@ -56,19 +69,48 @@ class WireRun {
   final int solenoids;
 
   Map<String, dynamic> toJson() => {
-    'valve': valveId, 'zone': zoneName, 'ctrl': controllerId, 'st': station, 'route': routeM, 'wire': wireM, if (stationWireId != null) 'sw': stationWireId, if (commonWireId != null) 'cw': commonWireId,
-    'v': volts, 'ok': ok, 'n': openTogether, if (solenoids != 1) 'sol': solenoids,
+    'valve': valveId,
+    'zone': zoneName,
+    'ctrl': controllerId,
+    'st': station,
+    'route': routeM,
+    'wire': wireM,
+    if (stationWireId != null) 'sw': stationWireId,
+    if (commonWireId != null) 'cw': commonWireId,
+    'v': volts,
+    'ok': ok,
+    'n': openTogether,
+    if (solenoids != 1) 'sol': solenoids,
   };
   static WireRun fromJson(Map<String, dynamic> j) => WireRun(
-    valveId: j['valve'] as String, zoneName: j['zone'] as String? ?? '', controllerId: j['ctrl'] as String? ?? '', station: (j['st'] as num?)?.toInt() ?? 0,
-    routeM: (j['route'] as num?)?.toDouble() ?? 0, wireM: (j['wire'] as num?)?.toDouble() ?? 0, stationWireId: j['sw'] as String?, commonWireId: j['cw'] as String?,
-    volts: (j['v'] as num?)?.toDouble() ?? 0, ok: j['ok'] as bool? ?? true, openTogether: (j['n'] as num?)?.toInt() ?? 1, solenoids: (j['sol'] as num?)?.toInt() ?? 1,
+    valveId: j['valve'] as String,
+    zoneName: j['zone'] as String? ?? '',
+    controllerId: j['ctrl'] as String? ?? '',
+    station: (j['st'] as num?)?.toInt() ?? 0,
+    routeM: (j['route'] as num?)?.toDouble() ?? 0,
+    wireM: (j['wire'] as num?)?.toDouble() ?? 0,
+    stationWireId: j['sw'] as String?,
+    commonWireId: j['cw'] as String?,
+    volts: (j['v'] as num?)?.toDouble() ?? 0,
+    ok: j['ok'] as bool? ?? true,
+    openTogether: (j['n'] as num?)?.toInt() ?? 1,
+    solenoids: (j['sol'] as num?)?.toInt() ?? 1,
   );
 }
 
 /// What a controller drives.
 class ControllerDuty {
-  ControllerDuty({required this.controllerId, required this.name, required this.stations, required this.used, this.commonWireId, required this.commonRouteM, required this.commonWireM, required this.maxOpen, required this.peakCurrentA});
+  ControllerDuty({
+    required this.controllerId,
+    required this.name,
+    required this.stations,
+    required this.used,
+    this.commonWireId,
+    required this.commonRouteM,
+    required this.commonWireM,
+    required this.maxOpen,
+    required this.peakCurrentA,
+  });
   final String controllerId;
   final String name;
   final int stations;
@@ -86,20 +128,35 @@ class ControllerDuty {
   bool get overloaded => used > stations;
 
   Map<String, dynamic> toJson() => {
-    'ctrl': controllerId, 'name': name, 'stations': stations, 'used': used, if (commonWireId != null) 'cw': commonWireId, 'route': commonRouteM, 'wire': commonWireM, 'open': maxOpen, 'amps': peakCurrentA,
+    'ctrl': controllerId,
+    'name': name,
+    'stations': stations,
+    'used': used,
+    if (commonWireId != null) 'cw': commonWireId,
+    'route': commonRouteM,
+    'wire': commonWireM,
+    'open': maxOpen,
+    'amps': peakCurrentA,
   };
   static ControllerDuty fromJson(Map<String, dynamic> j) => ControllerDuty(
-    controllerId: j['ctrl'] as String, name: j['name'] as String? ?? '', stations: (j['stations'] as num?)?.toInt() ?? 0, used: (j['used'] as num?)?.toInt() ?? 0, commonWireId: j['cw'] as String?,
-    commonRouteM: (j['route'] as num?)?.toDouble() ?? 0, commonWireM: (j['wire'] as num?)?.toDouble() ?? 0, maxOpen: (j['open'] as num?)?.toInt() ?? 0, peakCurrentA: (j['amps'] as num?)?.toDouble() ?? 0,
+    controllerId: j['ctrl'] as String,
+    name: j['name'] as String? ?? '',
+    stations: (j['stations'] as num?)?.toInt() ?? 0,
+    used: (j['used'] as num?)?.toInt() ?? 0,
+    commonWireId: j['cw'] as String?,
+    commonRouteM: (j['route'] as num?)?.toDouble() ?? 0,
+    commonWireM: (j['wire'] as num?)?.toDouble() ?? 0,
+    maxOpen: (j['open'] as num?)?.toInt() ?? 0,
+    peakCurrentA: (j['amps'] as num?)?.toDouble() ?? 0,
   );
 }
 
 class ElectricalResult {
   ElectricalResult({List<WireRun>? runs, List<ControllerDuty>? controllers, List<String>? warnings, Map<String, double>? wireMeters})
-      : runs = runs ?? [],
-        controllers = controllers ?? [],
-        warnings = warnings ?? [],
-        wireMeters = wireMeters ?? {};
+    : runs = runs ?? [],
+      controllers = controllers ?? [],
+      warnings = warnings ?? [],
+      wireMeters = wireMeters ?? {};
   final List<WireRun> runs;
   final List<ControllerDuty> controllers;
 
@@ -112,9 +169,7 @@ class ElectricalResult {
 
   WireRun? runOf(String valveId) => runs.where((r) => r.valveId == valveId).firstOrNull;
 
-  Map<String, dynamic> toJson() => {
-    'runs': runs.map((r) => r.toJson()).toList(), 'ctrls': controllers.map((c) => c.toJson()).toList(), 'warn': warnings, 'meters': wireMeters,
-  };
+  Map<String, dynamic> toJson() => {'runs': runs.map((r) => r.toJson()).toList(), 'ctrls': controllers.map((c) => c.toJson()).toList(), 'warn': warnings, 'meters': wireMeters};
   static ElectricalResult fromJson(Map<String, dynamic> j) => ElectricalResult(
     runs: ((j['runs'] as List?) ?? []).map((e) => WireRun.fromJson(e as Map<String, dynamic>)).toList(),
     controllers: ((j['ctrls'] as List?) ?? []).map((e) => ControllerDuty.fromJson(e as Map<String, dynamic>)).toList(),
@@ -264,10 +319,16 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
   final valves = p.entities.whereType<ControlValveEntity>().toList();
   // master valves on the mainline: open whenever a zone of their controller
   // is (its master-valve output, not a station)
-  final masters = [for (final e in p.entities.whereType<MiscHydraulicEntity>()) if (p.catalog.valve(e.valveSpecId)?.kind == ValveKind.master) e];
+  final masters = [
+    for (final e in p.entities.whereType<MiscHydraulicEntity>())
+      if (p.catalog.valve(e.valveSpecId)?.kind == ValveKind.master) e,
+  ];
   final circuits = <String, Pt>{for (final v in valves) v.id: v.position, for (final m in masters) m.id: m.position};
   final vih = VihStations.of(p);
-  final headAt = <String, Pt>{for (final e in p.entities) if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position};
+  final headAt = <String, Pt>{
+    for (final e in p.entities)
+      if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position,
+  };
   if (controllers.isEmpty) {
     result.warnings.add('elec_no_controller');
     return result;
@@ -339,8 +400,16 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
       }
     }
     final dist = best == null ? const <int, double>{} : paths[best]!.$1;
-    final wired = [for (final h in s.value) if (dist.containsKey(headNode[h] ?? -1)) h];
-    if (wired.length < s.value.length) result.warnings.add('elec_unwired:${[for (final h in s.value) if (!wired.contains(h)) h].join(':')}');
+    final wired = [
+      for (final h in s.value)
+        if (dist.containsKey(headNode[h] ?? -1)) h,
+    ];
+    if (wired.length < s.value.length) {
+      result.warnings.add(
+        'elec_unwired:${[for (final h in s.value)
+          if (!wired.contains(h)) h].join(':')}',
+      );
+    }
     if (best == null || wired.isEmpty) continue;
     owner[s.key] = best;
     distance[s.key] = wired.map((h) => dist[headNode[h]!]!).reduce(math.min);
@@ -362,15 +431,24 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
   final candidates = catWires.isEmpty ? [WireSpec(id: '', name: '', sectionMm2: 1.5, ohmPerKm: copperOhmPerKm(1.5))] : catWires;
 
   for (final c in controllers) {
-    final mine = [for (final v in valves) if (owner[v.id] == c.id) v]..sort((a, b) => distance[a.id]!.compareTo(distance[b.id]!));
+    final mine = [
+      for (final v in valves)
+        if (owner[v.id] == c.id) v,
+    ]..sort((a, b) => distance[a.id]!.compareTo(distance[b.id]!));
     // valve-in-head stations after the zone valves, by their nearest head
-    final myHeads = [for (final s in stationHeads.keys) if (owner[s] == c.id) s]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
+    final myHeads = [
+      for (final s in stationHeads.keys)
+        if (owner[s] == c.id) s,
+    ]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
     if (mine.isEmpty && myHeads.isEmpty) {
       result.controllers.add(ControllerDuty(controllerId: c.id, name: c.name, stations: c.stations, used: 0, commonRouteM: 0, commonWireM: 0, maxOpen: 0, peakCurrentA: 0));
       continue;
     }
     if (mine.length + myHeads.length > c.stations) result.warnings.add('elec_stations:${c.id}');
-    final myMasters = [for (final m in masters) if (owner[m.id] == c.id) m.id]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
+    final myMasters = [
+      for (final m in masters)
+        if (owner[m.id] == c.id) m.id,
+    ]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
     final circuitIds = [for (final v in mine) v.id, ...myHeads, ...myMasters];
     final via = paths[c.id]!.$2;
     List<int> walk(int from) {
@@ -445,7 +523,10 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
       return drop;
     }
 
-    final worstCommon = {for (final id in circuitIds) if (!headPaths.containsKey(id)) id: groups.where((gs) => gs.contains(id)).map((gs) => commonDropPerOhmKm(pathOf[id]!, id, gs)).fold(0.0, math.max)};
+    final worstCommon = {
+      for (final id in circuitIds)
+        if (!headPaths.containsKey(id)) id: groups.where((gs) => gs.contains(id)).map((gs) => commonDropPerOhmKm(pathOf[id]!, id, gs)).fold(0.0, math.max),
+    };
     final openWith = {for (final id in circuitIds) id: groups.where((gs) => gs.contains(id)).map((gs) => gs.length).fold(1, math.max)};
     // every head of a valve-in-head station: the station and common
     // conductor drops per ohm/km (all its heads opening together)
@@ -520,17 +601,39 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
       final route = routeOf(id);
       final len = route * slack;
       final name = drops != null ? vih.nameOf(id) : (v == null ? (p.byId(id)?.name ?? '') : (v.zoneName.isNotEmpty ? v.zoneName : v.name));
-      result.runs.add(WireRun(
-        // station 0: the master-valve output
-        valveId: id, zoneName: name, controllerId: c.id, station: v == null && drops == null ? 0 : ++station, routeM: route, wireM: len,
-        stationWireId: sw.id.isEmpty ? null : sw.id, commonWireId: common.id.isEmpty ? null : common.id, volts: u, ok: ok, openTogether: openWith[id]!, solenoids: solenoids(id),
-      ));
+      result.runs.add(
+        WireRun(
+          // station 0: the master-valve output
+          valveId: id,
+          zoneName: name,
+          controllerId: c.id,
+          station: v == null && drops == null ? 0 : ++station,
+          routeM: route,
+          wireM: len,
+          stationWireId: sw.id.isEmpty ? null : sw.id,
+          commonWireId: common.id.isEmpty ? null : common.id,
+          volts: u,
+          ok: ok,
+          openTogether: openWith[id]!,
+          solenoids: solenoids(id),
+        ),
+      );
       if (sw.id.isNotEmpty) result.wireMeters[sw.id] = (result.wireMeters[sw.id] ?? 0) + len;
     }
     if (common.id.isNotEmpty) result.wireMeters[common.id] = (result.wireMeters[common.id] ?? 0) + commonRoute * slack;
-    result.controllers.add(ControllerDuty(
-      controllerId: c.id, name: c.name, stations: c.stations, used: mine.length + myHeads.length, commonWireId: common.id.isEmpty ? null : common.id, commonRouteM: commonRoute, commonWireM: commonRoute * slack, maxOpen: maxOpen, peakCurrentA: peak,
-    ));
+    result.controllers.add(
+      ControllerDuty(
+        controllerId: c.id,
+        name: c.name,
+        stations: c.stations,
+        used: mine.length + myHeads.length,
+        commonWireId: common.id.isEmpty ? null : common.id,
+        commonRouteM: commonRoute,
+        commonWireM: commonRoute * slack,
+        maxOpen: maxOpen,
+        peakCurrentA: peak,
+      ),
+    );
   }
   return result;
 }

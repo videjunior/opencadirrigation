@@ -182,8 +182,10 @@ class BaseMapLayer extends ChangeNotifier {
     BaseMap.satellite => _esri('World_Imagery', z, x, y),
     BaseMap.esriStreets => _esri('World_Street_Map', z, x, y),
     BaseMap.esriTopo => _esri('World_Topo_Map', z, x, y),
-    BaseMap.googleRoads || BaseMap.googleSatellite || BaseMap.googleHybrid || BaseMap.googleTerrain =>
-      '$googleTilesHost/v1/2dtiles/$z/$x/$y?session=${Uri.encodeQueryComponent(session)}&key=${Uri.encodeQueryComponent(key)}',
+    BaseMap.googleRoads ||
+    BaseMap.googleSatellite ||
+    BaseMap.googleHybrid ||
+    BaseMap.googleTerrain => '$googleTilesHost/v1/2dtiles/$z/$x/$y?session=${Uri.encodeQueryComponent(session)}&key=${Uri.encodeQueryComponent(key)}',
     BaseMap.custom => customUrl(custom, z, x, y),
   };
 
@@ -201,7 +203,8 @@ class BaseMapLayer extends ChangeNotifier {
 
   /// The `tilemap` resource of an ArcGIS service: a JSON block saying which
   /// tiles exist from row [top], column [left] ([size] × [size]).
-  static String esriTilemapUrl(BaseMap m, int z, int top, int left, {int size = 32}) => 'https://server.arcgisonline.com/ArcGIS/rest/services/${_esriService(m)}/MapServer/tilemap/$z/$top/$left/$size/$size';
+  static String esriTilemapUrl(BaseMap m, int z, int top, int left, {int size = 32}) =>
+      'https://server.arcgisonline.com/ArcGIS/rest/services/${_esriService(m)}/MapServer/tilemap/$z/$top/$left/$size/$size';
 
   /// Fills an XYZ template: `{z}` `{x}` `{y}`, `{-y}` (TMS row, counted
   /// from the south) and `{s}` (subdomain a/b/c, or the letters given as
@@ -400,32 +403,36 @@ class BaseMapLayer extends ChangeNotifier {
   void _fetch(_TileJob j) {
     final m = j.map, key = j.key;
     _loading.add(key);
-    httpBytes(j.url).then((bytes) => ui.instantiateImageCodec(Uint8List.fromList(bytes))).then((codec) => codec.getNextFrame()).then((frame) {
-      _loading.remove(key);
-      if (_disposed) {
-        frame.image.dispose();
-        return;
-      }
-      _failures = 0;
-      _store(key, frame.image);
-      notifyListeners();
-      _pump();
-    }).catchError((Object e) {
-      _loading.remove(key);
-      if (m.isGoogle && e is HttpStatusException && (e.status == 400 || e.status == 403)) {
-        _googleError = e.message;
-      } else {
-        // 404 (no tile there), or a network/CORS failure: fall back to the
-        // parent tile either way, but count the failures
-        _markMissing(key);
-        if (e is! HttpStatusException || e.status != 404) {
-          _failures++;
-          _lastFailure = DateTime.now();
-        }
-      }
-      _changed(); // the next paint asks for the parent tile
-      _pump();
-    });
+    httpBytes(j.url)
+        .then((bytes) => ui.instantiateImageCodec(Uint8List.fromList(bytes)))
+        .then((codec) => codec.getNextFrame())
+        .then((frame) {
+          _loading.remove(key);
+          if (_disposed) {
+            frame.image.dispose();
+            return;
+          }
+          _failures = 0;
+          _store(key, frame.image);
+          notifyListeners();
+          _pump();
+        })
+        .catchError((Object e) {
+          _loading.remove(key);
+          if (m.isGoogle && e is HttpStatusException && (e.status == 400 || e.status == 403)) {
+            _googleError = e.message;
+          } else {
+            // 404 (no tile there), or a network/CORS failure: fall back to the
+            // parent tile either way, but count the failures
+            _markMissing(key);
+            if (e is! HttpStatusException || e.status != 404) {
+              _failures++;
+              _lastFailure = DateTime.now();
+            }
+          }
+          _changed(); // the next paint asks for the parent tile
+          _pump();
+        });
   }
 
   /// Whether the ArcGIS service has tile (z, x, y) according to its
@@ -442,16 +449,19 @@ class BaseMapLayer extends ChangeNotifier {
     final top = y, left = x;
     final pending = TileBlock(top, left, 32, 32, null);
     list.add(pending);
-    httpRequest('GET', esriTilemapUrl(m, z, top, left)).then((text) {
-      list.remove(pending);
-      list.add(TileBlock.parse(text, top, left));
-    }).catchError((Object _) {
-      // unknown: try the tiles themselves
-      list.remove(pending);
-      list.add(TileBlock(top, left, 32, 32, List.filled(32 * 32, 1)));
-      _failures++;
-      _lastFailure = DateTime.now();
-    }).whenComplete(_changed);
+    httpRequest('GET', esriTilemapUrl(m, z, top, left))
+        .then((text) {
+          list.remove(pending);
+          list.add(TileBlock.parse(text, top, left));
+        })
+        .catchError((Object _) {
+          // unknown: try the tiles themselves
+          list.remove(pending);
+          list.add(TileBlock(top, left, 32, 32, List.filled(32 * 32, 1)));
+          _failures++;
+          _lastFailure = DateTime.now();
+        })
+        .whenComplete(_changed);
     return null;
   }
 
@@ -480,19 +490,22 @@ class BaseMapLayer extends ChangeNotifier {
     if (_googleError != null || _sessionPending.contains(m)) return null;
     _sessionPending.add(m);
     final body = jsonEncode(googleSessionRequest(m, lang));
-    httpRequest('POST', '$googleTilesHost/v1/createSession?key=${Uri.encodeQueryComponent(key)}', headers: const {'Content-Type': 'application/json'}, body: body).then((text) {
-      if (_sessionKey != key || _sessionLang != lang) return;
-      final j = jsonDecode(text) as Map<String, dynamic>;
-      final nowS = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final expiry = int.tryParse('${j['expiry']}') ?? (nowS + 3600);
-      _sessions[m] = _GoogleSession('${j['session']}', DateTime.fromMillisecondsSinceEpoch(expiry * 1000).subtract(const Duration(minutes: 5)));
-    }).catchError((Object e) {
-      if (_sessionKey != key || _sessionLang != lang) return;
-      _googleError = e is HttpStatusException ? e.message : '$e';
-    }).whenComplete(() {
-      _sessionPending.remove(m);
-      _changed();
-    });
+    httpRequest('POST', '$googleTilesHost/v1/createSession?key=${Uri.encodeQueryComponent(key)}', headers: const {'Content-Type': 'application/json'}, body: body)
+        .then((text) {
+          if (_sessionKey != key || _sessionLang != lang) return;
+          final j = jsonDecode(text) as Map<String, dynamic>;
+          final nowS = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          final expiry = int.tryParse('${j['expiry']}') ?? (nowS + 3600);
+          _sessions[m] = _GoogleSession('${j['session']}', DateTime.fromMillisecondsSinceEpoch(expiry * 1000).subtract(const Duration(minutes: 5)));
+        })
+        .catchError((Object e) {
+          if (_sessionKey != key || _sessionLang != lang) return;
+          _googleError = e is HttpStatusException ? e.message : '$e';
+        })
+        .whenComplete(() {
+          _sessionPending.remove(m);
+          _changed();
+        });
     return null;
   }
 
@@ -535,17 +548,19 @@ class BaseMapLayer extends ChangeNotifier {
     _viewportTimer?.cancel();
     _viewportTimer = Timer(const Duration(milliseconds: 600), () {
       final q = 'session=${Uri.encodeQueryComponent(session)}&key=${Uri.encodeQueryComponent(key)}&zoom=$z&north=$north&south=$south&east=$east&west=$west';
-      httpRequest('GET', '$googleTilesHost/tile/v1/viewport?$q').then((text) {
-        if (_viewportKey != k) return;
-        final j = jsonDecode(text) as Map<String, dynamic>;
-        final c = '${j['copyright'] ?? ''}';
-        final mz = maxZoomFromViewport(text, north, south, east, west);
-        if (c != _googleCopyright || mz != _googleMaxZoom) {
-          _googleCopyright = c;
-          _googleMaxZoom = mz;
-          _changed();
-        }
-      }).catchError((Object _) {});
+      httpRequest('GET', '$googleTilesHost/tile/v1/viewport?$q')
+          .then((text) {
+            if (_viewportKey != k) return;
+            final j = jsonDecode(text) as Map<String, dynamic>;
+            final c = '${j['copyright'] ?? ''}';
+            final mz = maxZoomFromViewport(text, north, south, east, west);
+            if (c != _googleCopyright || mz != _googleMaxZoom) {
+              _googleCopyright = c;
+              _googleMaxZoom = mz;
+              _changed();
+            }
+          })
+          .catchError((Object _) {});
     });
   }
 

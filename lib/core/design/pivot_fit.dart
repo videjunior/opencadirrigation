@@ -108,8 +108,14 @@ class SpanCombination {
 /// for every distinct length (to the centimetre) the combination with the
 /// fewest span lengths, then the fewest spans; longest first.
 List<SpanCombination> pivotLengthOptions({List<double> spans = defaultSpanLengths, List<double> overhangs = defaultOverhangs, int minSpans = 1, int maxSpans = 20}) {
-  final ls = {for (final s in spans) if (s > 0 && s.isFinite) s}.toList()..sort((a, b) => b.compareTo(a));
-  final os = {for (final o in overhangs) if (o >= 0 && o.isFinite) o}.toList()..sort();
+  final ls = {
+    for (final s in spans)
+      if (s > 0 && s.isFinite) s,
+  }.toList()..sort((a, b) => b.compareTo(a));
+  final os = {
+    for (final o in overhangs)
+      if (o >= 0 && o.isFinite) o,
+  }.toList()..sort();
   if (os.isEmpty) os.add(0);
   final lo = math.max(1, minSpans), hi = math.max(lo, maxSpans);
   final best = <int, (SpanCombination, int, int)>{};
@@ -149,8 +155,14 @@ SpanCombination? snapPivotLength(double maxLength, {List<double> spans = default
 /// A pivot fitted to a field.
 class PivotFit {
   PivotFit({
-    required this.center, required this.availableRadius, required this.spans, required this.endThrowM, required this.sectorStartDeg, required this.sectorSweepDeg,
-    required this.fieldArea, required this.messages,
+    required this.center,
+    required this.availableRadius,
+    required this.spans,
+    required this.endThrowM,
+    required this.sectorStartDeg,
+    required this.sectorSweepDeg,
+    required this.fieldArea,
+    required this.messages,
   });
 
   /// Pivot point.
@@ -193,8 +205,16 @@ class PivotFit {
   /// The machine as a pivot of [p] (new id), its spans drawn at the main
   /// span length.
   PivotEntity toPivotEntity(Project p, {String zoneName = '', String name = ''}) => PivotEntity(
-    id: p.newId(), name: name, center: center, radiusM: machineLength, angleDeg: angleDeg, kind: PivotKind.pivot, spanLengthM: spans?.mainSpan ?? 50,
-    endThrowM: endThrowM, sectorDeg: fullCircle ? 360 : sectorSweepDeg, zoneName: zoneName,
+    id: p.newId(),
+    name: name,
+    center: center,
+    radiusM: machineLength,
+    angleDeg: angleDeg,
+    kind: PivotKind.pivot,
+    spanLengthM: spans?.mainSpan ?? 50,
+    endThrowM: endThrowM,
+    sectorDeg: fullCircle ? 360 : sectorSweepDeg,
+    zoneName: zoneName,
   );
 }
 
@@ -316,7 +336,16 @@ PivotFit fitFullCirclePivot(List<Pt> field, PivotFitOptions o) {
   }
   final (c, r) = pivotInscribedCircle(field, o);
   final spans = snapPivotLength(r - o.endThrowM, spans: o.spanLengths, overhangs: o.overhangs, minSpans: o.minSpans, maxSpans: o.maxSpans);
-  return PivotFit(center: c, availableRadius: r, spans: spans, endThrowM: o.endThrowM, sectorStartDeg: 0, sectorSweepDeg: 360, fieldArea: area, messages: spans == null ? const ['pivot_no_room'] : const []);
+  return PivotFit(
+    center: c,
+    availableRadius: r,
+    spans: spans,
+    endThrowM: o.endThrowM,
+    sectorStartDeg: 0,
+    sectorSweepDeg: 360,
+    fieldArea: area,
+    messages: spans == null ? const ['pivot_no_room'] : const [],
+  );
 }
 
 /// The part-circle (or full-circle) pivot of [field] irrigating the most
@@ -333,7 +362,10 @@ PivotFit fitSectorPivot(List<Pt> field, PivotFitOptions o) {
   final diag = math.sqrt(b.width * b.width + b.height * b.height);
   // machines that may fit: up to the diagonal of the field, at most 32
   // lengths spread over the range
-  final all = [for (final c in pivotLengthOptions(spans: o.spanLengths, overhangs: o.overhangs, minSpans: o.minSpans, maxSpans: o.maxSpans)) if (c.length + o.endThrowM <= diag) c];
+  final all = [
+    for (final c in pivotLengthOptions(spans: o.spanLengths, overhangs: o.overhangs, minSpans: o.minSpans, maxSpans: o.maxSpans))
+      if (c.length + o.endThrowM <= diag) c,
+  ];
   if (all.isEmpty) {
     return PivotFit(center: Pt.zero, availableRadius: 0, spans: null, endThrowM: o.endThrowM, sectorStartDeg: 0, sectorSweepDeg: 0, fieldArea: fieldArea, messages: const ['pivot_no_room']);
   }
@@ -402,7 +434,13 @@ PivotFit fitSectorPivot(List<Pt> field, PivotFitOptions o) {
   final machine = lengths[best.$4];
   final sweep = radToDeg(best.$3);
   return PivotFit(
-    center: bestC, availableRadius: machine.length + o.endThrowM, spans: machine, endThrowM: o.endThrowM, sectorStartDeg: sweep >= 360 - 1e-6 ? 0 : normalizeDeg(radToDeg(best.$2)),
-    sectorSweepDeg: sweep >= 360 - 1e-6 ? 360 : sweep, fieldArea: fieldArea, messages: const [],
+    center: bestC,
+    availableRadius: machine.length + o.endThrowM,
+    spans: machine,
+    endThrowM: o.endThrowM,
+    sectorStartDeg: sweep >= 360 - 1e-6 ? 0 : normalizeDeg(radToDeg(best.$2)),
+    sectorSweepDeg: sweep >= 360 - 1e-6 ? 360 : sweep,
+    fieldArea: fieldArea,
+    messages: const [],
   );
 }

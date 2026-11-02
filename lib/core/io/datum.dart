@@ -66,13 +66,69 @@ class Ellipsoid {
 enum GeodeticDatum {
   wgs84(Ellipsoid.wgs84, 0, 0, 0, 4326, 0, 'WGS 84', 'WGS_1984', 'D_WGS_1984', 'GCS_WGS_1984', 'WGS_1984', 'WGS 84', 'WGS_1984'),
   sirgas2000(Ellipsoid.grs80, 0, 0, 0, 4674, 0.5, 'SIRGAS 2000', 'Sistema_de_Referencia_Geocentrico_para_las_AmericaS_2000', 'D_SIRGAS_2000', 'GCS_SIRGAS_2000', 'GRS_1980', 'GRS 1980', 'SIRGAS_2000'),
-  sad69(Ellipsoid.sad69, -67.35, 3.88, -38.22, 4618, 5, 'SAD69', 'South_American_Datum_1969', 'D_South_American_1969', 'GCS_South_American_1969', 'GRS_1967_Truncated', 'GRS 1967 Modified', 'SAD_1969'),
-  sad69r96(Ellipsoid.sad69, -67.35, 3.88, -38.22, 5527, 2, 'SAD69(96)', 'South_American_Datum_1969_96', 'D_South_American_1969_96', 'GCS_SAD_1969_96', 'GRS_1967_Truncated', 'GRS 1967 Modified', 'SAD_1969_96'),
-  corregoAlegre(Ellipsoid.international1924, -206.05, 168.28, -3.82, 4225, 5, 'Corrego Alegre 1970-72', 'Corrego_Alegre_1970_1972', 'D_Corrego_Alegre', 'GCS_Corrego_Alegre', 'International_1924', 'International 1924', 'Corrego_Alegre'),
+  sad69(
+    Ellipsoid.sad69,
+    -67.35,
+    3.88,
+    -38.22,
+    4618,
+    5,
+    'SAD69',
+    'South_American_Datum_1969',
+    'D_South_American_1969',
+    'GCS_South_American_1969',
+    'GRS_1967_Truncated',
+    'GRS 1967 Modified',
+    'SAD_1969',
+  ),
+  sad69r96(
+    Ellipsoid.sad69,
+    -67.35,
+    3.88,
+    -38.22,
+    5527,
+    2,
+    'SAD69(96)',
+    'South_American_Datum_1969_96',
+    'D_South_American_1969_96',
+    'GCS_SAD_1969_96',
+    'GRS_1967_Truncated',
+    'GRS 1967 Modified',
+    'SAD_1969_96',
+  ),
+  corregoAlegre(
+    Ellipsoid.international1924,
+    -206.05,
+    168.28,
+    -3.82,
+    4225,
+    5,
+    'Corrego Alegre 1970-72',
+    'Corrego_Alegre_1970_1972',
+    'D_Corrego_Alegre',
+    'GCS_Corrego_Alegre',
+    'International_1924',
+    'International 1924',
+    'Corrego_Alegre',
+  ),
   etrs89(Ellipsoid.grs80, 0, 0, 0, 4258, 1, 'ETRS89', 'European_Terrestrial_Reference_System_1989', 'D_ETRS_1989', 'GCS_ETRS_1989', 'GRS_1980', 'GRS 1980', 'ETRS_1989'),
   nad83(Ellipsoid.grs80, 0, 0, 0, 4269, 2, 'NAD83', 'North_American_Datum_1983', 'D_North_American_1983', 'GCS_North_American_1983', 'GRS_1980', 'GRS 1980', 'NAD_1983');
 
-  const GeodeticDatum(this.ellipsoid, this.dx, this.dy, this.dz, this.geographicEpsg, this.toleranceM, this.ogcName, this.ogcDatumName, this.esriDatumName, this.esriGcsName, this.esriSpheroidName, this.ogcSpheroidName, this.esriProjectedPrefix);
+  const GeodeticDatum(
+    this.ellipsoid,
+    this.dx,
+    this.dy,
+    this.dz,
+    this.geographicEpsg,
+    this.toleranceM,
+    this.ogcName,
+    this.ogcDatumName,
+    this.esriDatumName,
+    this.esriGcsName,
+    this.esriSpheroidName,
+    this.ogcSpheroidName,
+    this.esriProjectedPrefix,
+  );
   final Ellipsoid ellipsoid;
   final double dx, dy, dz;
 
@@ -177,7 +233,8 @@ class TransverseMercator {
   const TransverseMercator({required this.centralMeridian, this.scale = 0.9996, this.falseEasting = 500000, this.falseNorthing = 0, this.latitudeOfOrigin = 0, this.ellipsoid = Ellipsoid.wgs84});
 
   /// The UTM zone [zone] (1–60) of the given hemisphere.
-  factory TransverseMercator.utm(int zone, bool north, [Ellipsoid ellipsoid = Ellipsoid.wgs84]) => TransverseMercator(centralMeridian: zone * 6.0 - 183, falseNorthing: north ? 0 : 10000000, ellipsoid: ellipsoid);
+  factory TransverseMercator.utm(int zone, bool north, [Ellipsoid ellipsoid = Ellipsoid.wgs84]) =>
+      TransverseMercator(centralMeridian: zone * 6.0 - 183, falseNorthing: north ? 0 : 10000000, ellipsoid: ellipsoid);
 
   /// Degrees.
   final double centralMeridian;
@@ -362,7 +419,8 @@ class CrsInfo {
   /// WKT 1 in the ESRI flavour (the text of a .prj file).
   String toEsriWkt() {
     final d = datum ?? GeodeticDatum.wgs84;
-    final gcs = 'GEOGCS["${d.esriGcsName}",DATUM["${d.esriDatumName}",SPHEROID["${d.esriSpheroidName}",${_wktNum(d.ellipsoid.a)},${_wktNum(d.ellipsoid.inverseFlattening)}]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+    final gcs =
+        'GEOGCS["${d.esriGcsName}",DATUM["${d.esriDatumName}",SPHEROID["${d.esriSpheroidName}",${_wktNum(d.ellipsoid.a)},${_wktNum(d.ellipsoid.inverseFlattening)}]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
     final pr = projection;
     if (kind != CrsKind.projected || pr == null) return gcs;
     final z = pr.utmZone;
@@ -374,7 +432,8 @@ class CrsInfo {
   /// WKT 1 in the OGC flavour, with EPSG authority codes.
   String toOgcWkt() {
     final d = datum ?? GeodeticDatum.wgs84;
-    final gcs = 'GEOGCS["${d.ogcName}",DATUM["${d.ogcDatumName}",SPHEROID["${d.ogcSpheroidName}",${_wktNum(d.ellipsoid.a)},${_wktNum(d.ellipsoid.inverseFlattening)}],TOWGS84[${_wktNum(d.dx)},${_wktNum(d.dy)},${_wktNum(d.dz)},0,0,0,0]],'
+    final gcs =
+        'GEOGCS["${d.ogcName}",DATUM["${d.ogcDatumName}",SPHEROID["${d.ogcSpheroidName}",${_wktNum(d.ellipsoid.a)},${_wktNum(d.ellipsoid.inverseFlattening)}],TOWGS84[${_wktNum(d.dx)},${_wktNum(d.dy)},${_wktNum(d.dz)},0,0,0,0]],'
         'PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","${d.geographicEpsg}"]]';
     final pr = projection;
     if (kind != CrsKind.projected || pr == null) return gcs;
@@ -478,7 +537,10 @@ CrsInfo crsFromWkt(WktNode root) {
     return CrsInfo(kind: CrsKind.geographic, datum: datum, epsg: authority ?? datum.geographicEpsg, name: name);
   }
   // projection: transverse Mercator parameters, or a UTM zone in the name
-  final method = (root.find('PROJECTION')?.stringArg(0) ?? root.find('CONVERSION')?.find('METHOD')?.stringArg(0) ?? root.find('METHOD')?.stringArg(0) ?? '').toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
+  final method = (root.find('PROJECTION')?.stringArg(0) ?? root.find('CONVERSION')?.find('METHOD')?.stringArg(0) ?? root.find('METHOD')?.stringArg(0) ?? '').toLowerCase().replaceAll(
+    RegExp(r'[^a-z]'),
+    '',
+  );
   final unit = _linearUnit(root) ?? 1;
   final params = <String, double>{};
   for (final p in root.findAll('PARAMETER')) {
@@ -488,7 +550,8 @@ CrsInfo crsFromWkt(WktNode root) {
   }
   final ellipsoid = datum?.ellipsoid ?? Ellipsoid.wgs84;
   TransverseMercator? tm;
-  final zoneMatch = RegExp(r'UTM[\s_]*(?:zone[\s_]*)?(\d{1,2})\s*([NS])\b', caseSensitive: false).firstMatch(name) ?? RegExp(r'UTM[\s_]*zone[\s_]*(\d{1,2})([NS])', caseSensitive: false).firstMatch(name);
+  final zoneMatch =
+      RegExp(r'UTM[\s_]*(?:zone[\s_]*)?(\d{1,2})\s*([NS])\b', caseSensitive: false).firstMatch(name) ?? RegExp(r'UTM[\s_]*zone[\s_]*(\d{1,2})([NS])', caseSensitive: false).firstMatch(name);
   if (method.contains('transversemercator') || method.contains('gausskruger') || method == 'tm') {
     final cm = params['centralmeridian'] ?? params['longitudeofnaturalorigin'] ?? params['longitudeoforigin'];
     if (cm != null) {
@@ -566,7 +629,9 @@ GeodeticDatum? _datumOf(WktNode geo, String crsName) {
 GeodeticDatum? datumFromName(String name) {
   final u = name.toUpperCase().replaceAll(RegExp(r'[ÓÒ]'), 'O').replaceAll(RegExp(r'[^A-Z0-9]'), '');
   if (u.isEmpty) return null;
-  if (u.contains('SIRGAS') || u.contains('SISTEMADEREFERENCIAGEOCENTRICOPARALASAMERICAS')) return u.contains('SIRGAS') && !u.contains('2000') && !u.contains('AMERICAS2000') ? null : GeodeticDatum.sirgas2000;
+  if (u.contains('SIRGAS') || u.contains('SISTEMADEREFERENCIAGEOCENTRICOPARALASAMERICAS')) {
+    return u.contains('SIRGAS') && !u.contains('2000') && !u.contains('AMERICAS2000') ? null : GeodeticDatum.sirgas2000;
+  }
   if (u.contains('SAD69') || u.contains('SAD1969') || u.contains('SOUTHAMERICAN1969') || u.contains('SOUTHAMERICANDATUM1969')) return u.contains('6996') ? GeodeticDatum.sad69r96 : GeodeticDatum.sad69;
   if (u.contains('CORREGOALEGRE')) return GeodeticDatum.corregoAlegre;
   if (u.contains('ETRS89') || u.contains('ETRS1989') || u.contains('EUROPEANTERRESTRIALREFERENCESYSTEM1989')) return GeodeticDatum.etrs89;
@@ -750,7 +815,10 @@ class GeoPlacement {
   /// longitude) are in [crs] (null when the file names none: degrees are
   /// recognised by their range and precision) for a project with [georef].
   static GeoPlacement plan(CrsInfo? crs, Iterable<(double, double)> sample, {GeoReference? georef}) {
-    final pts = [for (final p in sample) if (p.$1.isFinite && p.$2.isFinite) p];
+    final pts = [
+      for (final p in sample)
+        if (p.$1.isFinite && p.$2.isFinite) p,
+    ];
     final warnings = <String>[];
     var c = crs;
     if (c == null) {

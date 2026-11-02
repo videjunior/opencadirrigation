@@ -157,7 +157,9 @@ void main() {
   group('pivot sprinkler chart and BOM', () {
     test('spans list sprinklers, flow each, pressure and the closest nozzle', () {
       const s = PivotSpec(kind: PivotKind.pivot, lengthM: 300, endThrowM: 0, spanLengthM: 50, sprinklerSpacingM: 2.5, grossDepthMm: 8, hoursPerCycle: 24, endPressureM: 14);
-      final nozzles = [for (final (n, q) in [('#20', 500.0), ('#28', 1000.0), ('#36', 1700.0), ('#44', 2500.0)]) (n, EmitterCurve.fromNominal(flow: q * m3sPerLph, head: 14, x: 0.5))];
+      final nozzles = [
+        for (final (n, q) in [('#20', 500.0), ('#28', 1000.0), ('#36', 1700.0), ('#44', 2500.0)]) (n, EmitterCurve.fromNominal(flow: q * m3sPerLph, head: 14, x: 0.5)),
+      ];
       final r = analyzePivot(s, id: 'p', name: 'P', nozzles: nozzles);
       expect(r.spans.length, 6);
       expect(r.sprinklerCount, 6 * 20);
@@ -178,7 +180,18 @@ void main() {
 
     test('designer costs towers, sprinklers and regulators and reports the spans', () {
       final p = Project();
-      final pivot = PivotEntity(id: p.newId(), center: const Pt(0, 0), radiusM: 200, endThrowM: 0, name: 'PV', machineCost: 100000, towerCost: 15000, sprinklerSpacingM: 2.5, sprinklerSpecId: 'impact34', regulatorSpecId: 'prv50');
+      final pivot = PivotEntity(
+        id: p.newId(),
+        center: const Pt(0, 0),
+        radiusM: 200,
+        endThrowM: 0,
+        name: 'PV',
+        machineCost: 100000,
+        towerCost: 15000,
+        sprinklerSpacingM: 2.5,
+        sprinklerSpecId: 'impact34',
+        regulatorSpecId: 'prv50',
+      );
       p.entities.add(pivot);
       p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-300, 0), const Pt(0, 0)], scope: HydraulicScope.mainline));
       p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-300, 0), calculatePressure: true));
@@ -197,7 +210,11 @@ void main() {
       expect(spr.quantity, installed);
       final reg = r.bom.firstWhere((b) => b.category == 'bom.pivots' && b.specId == 'prv50');
       expect(reg.quantity, installed);
-      final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+      final tables = buildReportTables(
+        project: p,
+        results: r,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+      );
       final spans = tables.firstWhere((tb) => tb.key == 'pivotSpans');
       expect(spans.rows.length, 4);
       expect(spans.rows.first[4], 20);
@@ -210,7 +227,11 @@ void main() {
   group('sheet bill of materials', () {
     test('the sheet carries a materials table when there are results', () {
       final p = Project();
-      final exporter = ProjectExporter(project: p, results: null, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+      final exporter = ProjectExporter(
+        project: p,
+        results: null,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+      );
       expect(exporter.sheetBuilder().sheetScale(const SheetOptions()), 1000, reason: 'empty project keeps the default');
       // a designed block
       final block = ControlValveEntity(id: p.newId(), position: const Pt(-2, 15), zoneName: 'Z');
@@ -224,7 +245,11 @@ void main() {
       p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-30, 15), calculatePressure: true));
       final r = Designer(p).designAll();
       expect(r.bom, isNotEmpty);
-      final ex = ProjectExporter(project: p, results: r, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+      final ex = ProjectExporter(
+        project: p,
+        results: r,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+      );
       final b = ex.sheetBuilder();
       final withBom = b.buildSheet(const SheetOptions(page: PageSize.a3));
       final without = b.buildSheet(const SheetOptions(page: PageSize.a3, bomOnSheet: false));

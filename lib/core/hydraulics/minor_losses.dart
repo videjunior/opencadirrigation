@@ -44,8 +44,7 @@ double minorLossFlowCoefficient({required double k, required double diameter}) {
 }
 
 /// Equivalent pipe length for a fitting: Le = K·D/f.
-double equivalentLength({required double k, required double diameter, double f = 0.02}) =>
-    k * diameter / f;
+double equivalentLength({required double k, required double diameter, double f = 0.02}) => k * diameter / f;
 
 /// Head loss law of a valve/device: h = K·Q^n + C with Q in m³/s.
 class DeviceLossCurve {
@@ -95,13 +94,11 @@ class DeviceLossCurve {
   }
 
   /// Build from a nominal K coefficient and diameter (h = K V²/2g).
-  static DeviceLossCurve fromK(double k, double diameter) =>
-      DeviceLossCurve(k: minorLossFlowCoefficient(k: k, diameter: diameter), n: 2);
+  static DeviceLossCurve fromK(double k, double diameter) => DeviceLossCurve(
+    k: minorLossFlowCoefficient(k: k, diameter: diameter),
+    n: 2,
+  );
 
   Map<String, dynamic> toJson() => {'k': k, 'n': n, 'c': c};
-  static DeviceLossCurve fromJson(Map<String, dynamic> j) => DeviceLossCurve(
-    k: (j['k'] as num).toDouble(),
-    n: (j['n'] as num?)?.toDouble() ?? 2,
-    c: (j['c'] as num?)?.toDouble() ?? 0,
-  );
+  static DeviceLossCurve fromJson(Map<String, dynamic> j) => DeviceLossCurve(k: (j['k'] as num).toDouble(), n: (j['n'] as num?)?.toDouble() ?? 2, c: (j['c'] as num?)?.toDouble() ?? 0);
 }

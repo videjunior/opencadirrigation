@@ -60,7 +60,24 @@ void main() {
       final zr = res.zones[valveId]!;
       final x = EpanetWriter.write(p, results: res, scope: EpanetScope.zone(valveId));
       // every section of the format is there
-      for (final s in ['[TITLE]', '[JUNCTIONS]', '[RESERVOIRS]', '[TANKS]', '[PIPES]', '[PUMPS]', '[VALVES]', '[EMITTERS]', '[CURVES]', '[STATUS]', '[OPTIONS]', '[TIMES]', '[REPORT]', '[COORDINATES]', '[VERTICES]', '[END]']) {
+      for (final s in [
+        '[TITLE]',
+        '[JUNCTIONS]',
+        '[RESERVOIRS]',
+        '[TANKS]',
+        '[PIPES]',
+        '[PUMPS]',
+        '[VALVES]',
+        '[EMITTERS]',
+        '[CURVES]',
+        '[STATUS]',
+        '[OPTIONS]',
+        '[TIMES]',
+        '[REPORT]',
+        '[COORDINATES]',
+        '[VERTICES]',
+        '[END]',
+      ]) {
         expect(x.text, contains(s));
       }
       expect(x.emitterExponent, 0.5);
@@ -128,7 +145,12 @@ void main() {
     test('flows in m³/h and coordinates in UTM for a georeferenced project', () {
       final q = Project.fromJson(p.toJson())..meta.georef = const GeoReference(zone: 23, north: false, originEasting: 186000, originNorthing: 8253200);
       final zr = res.zones[valveId]!;
-      final x = EpanetWriter.write(q, results: res, scope: EpanetScope.zone(valveId), options: const EpanetOptions(flowUnits: EpanetFlowUnits.cmh));
+      final x = EpanetWriter.write(
+        q,
+        results: res,
+        scope: EpanetScope.zone(valveId),
+        options: const EpanetOptions(flowUnits: EpanetFlowUnits.cmh),
+      );
       expect(x.text, contains('Units\tCMH'));
       final (m, r) = solveBack(x.text);
       comparePipes(x, r, zr.pipes);
@@ -155,7 +177,12 @@ void main() {
       expect(r.nodes[prv.n2]!.pressure, closeTo(dev.downstreamPressure, 1e-4));
       // with more head at the reservoir the valve regulates: 25 m downstream
       final s = p.entities.whereType<WaterSupplyEntity>().single;
-      final high = EpanetWriter.write(p, results: res, scope: EpanetScope.systemFlow(fr.flowId), options: EpanetOptions(supplyHeads: {s.id: 40}));
+      final high = EpanetWriter.write(
+        p,
+        results: res,
+        scope: EpanetScope.systemFlow(fr.flowId),
+        options: EpanetOptions(supplyHeads: {s.id: 40}),
+      );
       final (m2, r2) = solveBack(high.text);
       expect(r2.nodes[m2.valves.firstWhere((v) => v.type == 'PRV').n2]!.pressure, closeTo(25, 1e-3));
     });
@@ -274,7 +301,8 @@ Emitter Exponent 0.5
 [END]
 ''';
     const ft = 0.3048, inch = 0.0254, gpm = 6.30901964e-5;
-    final si = '''
+    final si =
+        '''
 [JUNCTIONS]
 J1  ${100 * ft}  ${50 * gpm * 1000}
 J2  ${90 * ft}   0

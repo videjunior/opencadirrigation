@@ -99,7 +99,9 @@ void main() {
     final r = LandXmlReader.parse(xml, georef: georef);
     expect(r.crs.datum, GeodeticDatum.sirgas2000);
     expect(r.warnings, isEmpty);
-    final hydraulic = p.entities.where((e) => e is OutletEntity || e is ControlValveEntity || e is WaterSupplyEntity || e is PumpEntity || e is MiscHydraulicEntity || e is JunctionEntity || e is ControllerEntity).toList();
+    final hydraulic = p.entities
+        .where((e) => e is OutletEntity || e is ControlValveEntity || e is WaterSupplyEntity || e is PumpEntity || e is MiscHydraulicEntity || e is JunctionEntity || e is ControllerEntity)
+        .toList();
     expect(r.cgPointCount, hydraulic.length);
     for (final e in hydraulic.cast<PointEntity>()) {
       expect(r.document.entities.any((d) => d.layer == 'HYDRAULICS' && d.points.first.distanceTo(e.position) < 1e-3), isTrue, reason: e.id);

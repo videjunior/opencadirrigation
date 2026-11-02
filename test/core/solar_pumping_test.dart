@@ -62,7 +62,9 @@ void main() {
   group('sizing', () {
     test('energy balance of a constant need at the equator (tilt 0)', () {
       final months = [for (var m = 1; m <= 12; m++) SolarPumpMonth(month: m, dailyVolumeM3: 100, horizontalKWhM2Day: 5)];
-      final r = sizeSolarPumping(SolarPumpInput(months: months, latitudeDeg: 0, headM: 30, motorPumpEfficiency: 0.45, converterEfficiency: 0.95, performanceRatio: 0.8, modulePowerWp: 550, gridTariffPerKWh: 0.2));
+      final r = sizeSolarPumping(
+        SolarPumpInput(months: months, latitudeDeg: 0, headM: 30, motorPumpEfficiency: 0.45, converterEfficiency: 0.95, performanceRatio: 0.8, modulePowerWp: 550, gridTariffPerKWh: 0.2),
+      );
       final eh = hydraulicEnergyKWh(100, 30);
       expect(eh, closeTo(998.2 * 9.80665 * 3000 / 3.6e6, 1e-9));
       expect(r.tiltDeg, 0);
@@ -80,9 +82,7 @@ void main() {
     });
 
     test('the darkest month with the largest need sets the array', () {
-      final months = [
-        for (var m = 1; m <= 12; m++) SolarPumpMonth(month: m, dailyVolumeM3: m == 7 ? 120 : 80, horizontalKWhM2Day: m == 6 ? 3.5 : 5.5),
-      ];
+      final months = [for (var m = 1; m <= 12; m++) SolarPumpMonth(month: m, dailyVolumeM3: m == 7 ? 120 : 80, horizontalKWhM2Day: m == 6 ? 3.5 : 5.5)];
       final r = sizeSolarPumping(SolarPumpInput(months: months, latitudeDeg: 0, headM: 40, performanceRatio: 0.8));
       // July: 120/5.5 > June: 80/3.5? 21.8 < 22.9: June governs
       expect(r.criticalMonth, 6);

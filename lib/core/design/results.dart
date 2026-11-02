@@ -61,19 +61,63 @@ class PipeSegmentResult {
   bool get overPressure => pressureRating > 0 && (pressureStart > pressureRating || pressureEnd > pressureRating);
 
   Map<String, dynamic> toJson() => {
-    'link': linkId, 'ent': entityId, 'seg': segmentIndex, 'a': _pt(a), 'b': _pt(b), 'za': elevationA, 'zb': elevationB, 'len': length, 'd': diameter,
-    if (pipeSpecId != null) 'spec': pipeSpecId, 'name': pipeName, 'q': flow, 'v': velocity, 'hf': headLoss, 'p0': pressureStart, 'p1': pressureEnd, 'pn': pressureRating,
-    if (zoneId != null) 'zone': zoneId, if (overVelocity) 'ov': true,
+    'link': linkId,
+    'ent': entityId,
+    'seg': segmentIndex,
+    'a': _pt(a),
+    'b': _pt(b),
+    'za': elevationA,
+    'zb': elevationB,
+    'len': length,
+    'd': diameter,
+    if (pipeSpecId != null) 'spec': pipeSpecId,
+    'name': pipeName,
+    'q': flow,
+    'v': velocity,
+    'hf': headLoss,
+    'p0': pressureStart,
+    'p1': pressureEnd,
+    'pn': pressureRating,
+    if (zoneId != null) 'zone': zoneId,
+    if (overVelocity) 'ov': true,
   };
   static PipeSegmentResult fromJson(Map<String, dynamic> j) => PipeSegmentResult(
-    linkId: j['link'] as String, entityId: j['ent'] as String, segmentIndex: (j['seg'] as num?)?.toInt() ?? 0, a: _p(j['a']), b: _p(j['b']), elevationA: _d(j, 'za'), elevationB: _d(j, 'zb'),
-    length: _d(j, 'len'), diameter: _d(j, 'd'), pipeSpecId: j['spec'] as String?, pipeName: j['name'] as String? ?? '', flow: _d(j, 'q'), velocity: _d(j, 'v'), headLoss: _d(j, 'hf'),
-    pressureStart: _d(j, 'p0'), pressureEnd: _d(j, 'p1'), pressureRating: _d(j, 'pn'), zoneId: j['zone'] as String?, overVelocity: j['ov'] as bool? ?? false,
+    linkId: j['link'] as String,
+    entityId: j['ent'] as String,
+    segmentIndex: (j['seg'] as num?)?.toInt() ?? 0,
+    a: _p(j['a']),
+    b: _p(j['b']),
+    elevationA: _d(j, 'za'),
+    elevationB: _d(j, 'zb'),
+    length: _d(j, 'len'),
+    diameter: _d(j, 'd'),
+    pipeSpecId: j['spec'] as String?,
+    pipeName: j['name'] as String? ?? '',
+    flow: _d(j, 'q'),
+    velocity: _d(j, 'v'),
+    headLoss: _d(j, 'hf'),
+    pressureStart: _d(j, 'p0'),
+    pressureEnd: _d(j, 'p1'),
+    pressureRating: _d(j, 'pn'),
+    zoneId: j['zone'] as String?,
+    overVelocity: j['ov'] as bool? ?? false,
   );
 }
 
 class OutletResult {
-  OutletResult({required this.entityId, required this.index, required this.p, required this.elevation, required this.pressure, required this.flow, required this.nominalFlow, required this.count, required this.allowedMin, required this.allowedMax, required this.label});
+  OutletResult({
+    required this.entityId,
+    required this.index,
+    required this.p,
+    required this.elevation,
+    required this.pressure,
+    required this.flow,
+    required this.nominalFlow,
+    required this.count,
+    required this.allowedMin,
+    required this.allowedMax,
+    required this.label,
+  });
   final String entityId;
   final int index;
   final Pt p;
@@ -89,15 +133,47 @@ class OutletResult {
   final String label;
   bool get inWindow => pressure >= allowedMin - 1e-6 && pressure <= allowedMax + 1e-6;
 
-  Map<String, dynamic> toJson() => {'ent': entityId, 'i': index, 'p': _pt(p), 'z': elevation, 'h': pressure, 'q': flow, 'qn': nominalFlow, 'n': count, 'lo': allowedMin, 'hi': allowedMax, 'label': label};
+  Map<String, dynamic> toJson() => {
+    'ent': entityId,
+    'i': index,
+    'p': _pt(p),
+    'z': elevation,
+    'h': pressure,
+    'q': flow,
+    'qn': nominalFlow,
+    'n': count,
+    'lo': allowedMin,
+    'hi': allowedMax,
+    'label': label,
+  };
   static OutletResult fromJson(Map<String, dynamic> j) => OutletResult(
-    entityId: j['ent'] as String, index: (j['i'] as num?)?.toInt() ?? -1, p: _p(j['p']), elevation: _d(j, 'z'), pressure: _d(j, 'h'), flow: _d(j, 'q'), nominalFlow: _d(j, 'qn'),
-    count: (j['n'] as num?)?.toInt() ?? 1, allowedMin: _d(j, 'lo'), allowedMax: _d(j, 'hi', double.infinity), label: j['label'] as String? ?? '',
+    entityId: j['ent'] as String,
+    index: (j['i'] as num?)?.toInt() ?? -1,
+    p: _p(j['p']),
+    elevation: _d(j, 'z'),
+    pressure: _d(j, 'h'),
+    flow: _d(j, 'q'),
+    nominalFlow: _d(j, 'qn'),
+    count: (j['n'] as num?)?.toInt() ?? 1,
+    allowedMin: _d(j, 'lo'),
+    allowedMax: _d(j, 'hi', double.infinity),
+    label: j['label'] as String? ?? '',
   );
 }
 
 class DeviceResult {
-  DeviceResult({required this.entityId, required this.linkId, required this.flow, required this.headLoss, required this.pumpHead, required this.upstreamPressure, required this.downstreamPressure, this.status = '', this.elevation = 0, this.speedRatio = 1});
+  DeviceResult({
+    required this.entityId,
+    required this.linkId,
+    required this.flow,
+    required this.headLoss,
+    required this.pumpHead,
+    required this.upstreamPressure,
+    required this.downstreamPressure,
+    this.status = '',
+    this.elevation = 0,
+    this.speedRatio = 1,
+  });
   final String entityId;
   final String linkId;
   final double flow;
@@ -114,8 +190,30 @@ class DeviceResult {
   /// Speed ratio of a pump in this flow (a variable-speed drive sets it).
   final double speedRatio;
 
-  Map<String, dynamic> toJson() => {'ent': entityId, 'link': linkId, 'q': flow, 'hf': headLoss, 'hp': pumpHead, 'pu': upstreamPressure, 'pd': downstreamPressure, 'st': status, 'z': elevation, if (speedRatio != 1) 'n': speedRatio};
-  static DeviceResult fromJson(Map<String, dynamic> j) => DeviceResult(entityId: j['ent'] as String, linkId: j['link'] as String? ?? '', flow: _d(j, 'q'), headLoss: _d(j, 'hf'), pumpHead: _d(j, 'hp'), upstreamPressure: _d(j, 'pu'), downstreamPressure: _d(j, 'pd'), status: j['st'] as String? ?? '', elevation: _d(j, 'z'), speedRatio: (j['n'] as num?)?.toDouble() ?? 1);
+  Map<String, dynamic> toJson() => {
+    'ent': entityId,
+    'link': linkId,
+    'q': flow,
+    'hf': headLoss,
+    'hp': pumpHead,
+    'pu': upstreamPressure,
+    'pd': downstreamPressure,
+    'st': status,
+    'z': elevation,
+    if (speedRatio != 1) 'n': speedRatio,
+  };
+  static DeviceResult fromJson(Map<String, dynamic> j) => DeviceResult(
+    entityId: j['ent'] as String,
+    linkId: j['link'] as String? ?? '',
+    flow: _d(j, 'q'),
+    headLoss: _d(j, 'hf'),
+    pumpHead: _d(j, 'hp'),
+    upstreamPressure: _d(j, 'pu'),
+    downstreamPressure: _d(j, 'pd'),
+    status: j['st'] as String? ?? '',
+    elevation: _d(j, 'z'),
+    speedRatio: (j['n'] as num?)?.toDouble() ?? 1,
+  );
 }
 
 class ZoneResult {
@@ -180,28 +278,100 @@ class ZoneResult {
   OutletResult? get maxOutlet => outlets.isEmpty ? null : outlets.reduce((a, b) => a.pressure >= b.pressure ? a : b);
 
   ZoneResult copyWith({List<String>? warnings, double? overlapCu, int? emittersPerPlant, UniformityStats? uniformity}) => ZoneResult(
-    valveId: valveId, zoneName: zoneName, converged: converged, totalFlow: totalFlow, downstreamHead: downstreamHead, valveLoss: valveLoss, requiredUpstreamHead: requiredUpstreamHead,
-    minOutletPressure: minOutletPressure, maxOutletPressure: maxOutletPressure, allowedMin: allowedMin, allowedMax: allowedMax, nominalPressure: nominalPressure, uniformity: uniformity ?? this.uniformity,
-    pipes: pipes, outlets: outlets, devices: devices, warnings: warnings ?? this.warnings, valveElevation: valveElevation, valveSpecName: valveSpecName, emitterCount: emitterCount, pipeCost: pipeCost,
-    annualEnergyCost: annualEnergyCost, overlapCu: overlapCu ?? this.overlapCu, emittersPerPlant: emittersPerPlant ?? this.emittersPerPlant,
+    valveId: valveId,
+    zoneName: zoneName,
+    converged: converged,
+    totalFlow: totalFlow,
+    downstreamHead: downstreamHead,
+    valveLoss: valveLoss,
+    requiredUpstreamHead: requiredUpstreamHead,
+    minOutletPressure: minOutletPressure,
+    maxOutletPressure: maxOutletPressure,
+    allowedMin: allowedMin,
+    allowedMax: allowedMax,
+    nominalPressure: nominalPressure,
+    uniformity: uniformity ?? this.uniformity,
+    pipes: pipes,
+    outlets: outlets,
+    devices: devices,
+    warnings: warnings ?? this.warnings,
+    valveElevation: valveElevation,
+    valveSpecName: valveSpecName,
+    emitterCount: emitterCount,
+    pipeCost: pipeCost,
+    annualEnergyCost: annualEnergyCost,
+    overlapCu: overlapCu ?? this.overlapCu,
+    emittersPerPlant: emittersPerPlant ?? this.emittersPerPlant,
   );
 
   Map<String, dynamic> toJson() => {
-    'valve': valveId, 'name': zoneName, 'conv': converged, 'q': totalFlow, 'hd': downstreamHead, 'hv': valveLoss, 'hreq': requiredUpstreamHead, 'pmin': minOutletPressure, 'pmax': maxOutletPressure,
-    'lo': allowedMin, 'hi': allowedMax, 'pn': nominalPressure, 'uni': uniformity.toJson(), 'pipes': pipes.map((p) => p.toJson()).toList(), 'outlets': outlets.map((o) => o.toJson()).toList(),
-    'devices': devices.map((d) => d.toJson()).toList(), 'warn': warnings, 'zv': valveElevation, 'valveName': valveSpecName, 'n': emitterCount, 'cost': pipeCost, 'energy': annualEnergyCost, 'ocu': overlapCu, 'epp': emittersPerPlant,
+    'valve': valveId,
+    'name': zoneName,
+    'conv': converged,
+    'q': totalFlow,
+    'hd': downstreamHead,
+    'hv': valveLoss,
+    'hreq': requiredUpstreamHead,
+    'pmin': minOutletPressure,
+    'pmax': maxOutletPressure,
+    'lo': allowedMin,
+    'hi': allowedMax,
+    'pn': nominalPressure,
+    'uni': uniformity.toJson(),
+    'pipes': pipes.map((p) => p.toJson()).toList(),
+    'outlets': outlets.map((o) => o.toJson()).toList(),
+    'devices': devices.map((d) => d.toJson()).toList(),
+    'warn': warnings,
+    'zv': valveElevation,
+    'valveName': valveSpecName,
+    'n': emitterCount,
+    'cost': pipeCost,
+    'energy': annualEnergyCost,
+    'ocu': overlapCu,
+    'epp': emittersPerPlant,
   };
   static ZoneResult fromJson(Map<String, dynamic> j) => ZoneResult(
-    valveId: j['valve'] as String, zoneName: j['name'] as String? ?? '', converged: j['conv'] as bool? ?? false, totalFlow: _d(j, 'q'), downstreamHead: _d(j, 'hd'), valveLoss: _d(j, 'hv'), requiredUpstreamHead: _d(j, 'hreq'),
-    minOutletPressure: _d(j, 'pmin'), maxOutletPressure: _d(j, 'pmax'), allowedMin: _d(j, 'lo'), allowedMax: _d(j, 'hi'), nominalPressure: _d(j, 'pn'), uniformity: UniformityStats.fromJson(j['uni'] as Map<String, dynamic>?),
-    pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSegmentResult.fromJson(p as Map<String, dynamic>)).toList(), outlets: ((j['outlets'] as List?) ?? []).map((p) => OutletResult.fromJson(p as Map<String, dynamic>)).toList(),
-    devices: ((j['devices'] as List?) ?? []).map((p) => DeviceResult.fromJson(p as Map<String, dynamic>)).toList(), warnings: ((j['warn'] as List?) ?? []).cast<String>(), valveElevation: _d(j, 'zv'),
-    valveSpecName: j['valveName'] as String? ?? '', emitterCount: (j['n'] as num?)?.toInt() ?? 0, pipeCost: _d(j, 'cost'), annualEnergyCost: _d(j, 'energy'), overlapCu: _d(j, 'ocu'), emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 1,
+    valveId: j['valve'] as String,
+    zoneName: j['name'] as String? ?? '',
+    converged: j['conv'] as bool? ?? false,
+    totalFlow: _d(j, 'q'),
+    downstreamHead: _d(j, 'hd'),
+    valveLoss: _d(j, 'hv'),
+    requiredUpstreamHead: _d(j, 'hreq'),
+    minOutletPressure: _d(j, 'pmin'),
+    maxOutletPressure: _d(j, 'pmax'),
+    allowedMin: _d(j, 'lo'),
+    allowedMax: _d(j, 'hi'),
+    nominalPressure: _d(j, 'pn'),
+    uniformity: UniformityStats.fromJson(j['uni'] as Map<String, dynamic>?),
+    pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSegmentResult.fromJson(p as Map<String, dynamic>)).toList(),
+    outlets: ((j['outlets'] as List?) ?? []).map((p) => OutletResult.fromJson(p as Map<String, dynamic>)).toList(),
+    devices: ((j['devices'] as List?) ?? []).map((p) => DeviceResult.fromJson(p as Map<String, dynamic>)).toList(),
+    warnings: ((j['warn'] as List?) ?? []).cast<String>(),
+    valveElevation: _d(j, 'zv'),
+    valveSpecName: j['valveName'] as String? ?? '',
+    emitterCount: (j['n'] as num?)?.toInt() ?? 0,
+    pipeCost: _d(j, 'cost'),
+    annualEnergyCost: _d(j, 'energy'),
+    overlapCu: _d(j, 'ocu'),
+    emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 1,
   );
 }
 
 class SupplyDuty {
-  SupplyDuty({required this.supplyId, required this.name, required this.flow, required this.head, required this.requiredHead, required this.elevation, required this.calculated, this.designHead = 0, this.maxHead = 0, this.designFlow = 0, this.maxFlow = 0});
+  SupplyDuty({
+    required this.supplyId,
+    required this.name,
+    required this.flow,
+    required this.head,
+    required this.requiredHead,
+    required this.elevation,
+    required this.calculated,
+    this.designHead = 0,
+    this.maxHead = 0,
+    this.designFlow = 0,
+    this.maxFlow = 0,
+  });
   final String supplyId;
   final String name;
   final double flow;
@@ -226,8 +396,32 @@ class SupplyDuty {
   /// above its requirement. Zero when the need is met exactly or not met.
   double get surplusHead => math.max(0, head - requiredHead);
 
-  Map<String, dynamic> toJson() => {'id': supplyId, 'name': name, 'q': flow, 'h': head, 'hreq': requiredHead, 'z': elevation, 'calc': calculated, 'dh': designHead, 'mh': maxHead, 'dq': designFlow, 'mq': maxFlow};
-  static SupplyDuty fromJson(Map<String, dynamic> j) => SupplyDuty(supplyId: j['id'] as String, name: j['name'] as String? ?? '', flow: _d(j, 'q'), head: _d(j, 'h'), requiredHead: _d(j, 'hreq'), elevation: _d(j, 'z'), calculated: j['calc'] as bool? ?? true, designHead: _d(j, 'dh'), maxHead: _d(j, 'mh'), designFlow: _d(j, 'dq'), maxFlow: _d(j, 'mq'));
+  Map<String, dynamic> toJson() => {
+    'id': supplyId,
+    'name': name,
+    'q': flow,
+    'h': head,
+    'hreq': requiredHead,
+    'z': elevation,
+    'calc': calculated,
+    'dh': designHead,
+    'mh': maxHead,
+    'dq': designFlow,
+    'mq': maxFlow,
+  };
+  static SupplyDuty fromJson(Map<String, dynamic> j) => SupplyDuty(
+    supplyId: j['id'] as String,
+    name: j['name'] as String? ?? '',
+    flow: _d(j, 'q'),
+    head: _d(j, 'h'),
+    requiredHead: _d(j, 'hreq'),
+    elevation: _d(j, 'z'),
+    calculated: j['calc'] as bool? ?? true,
+    designHead: _d(j, 'dh'),
+    maxHead: _d(j, 'mh'),
+    designFlow: _d(j, 'dq'),
+    maxFlow: _d(j, 'mq'),
+  );
 }
 
 class ValveDuty {
@@ -241,7 +435,8 @@ class ValveDuty {
   double get deficit => requiredHead - availableHead;
 
   Map<String, dynamic> toJson() => {'id': valveId, 'name': zoneName, 'q': flow, 'h': availableHead, 'hreq': requiredHead, 'p': _pt(p)};
-  static ValveDuty fromJson(Map<String, dynamic> j) => ValveDuty(valveId: j['id'] as String, zoneName: j['name'] as String? ?? '', flow: _d(j, 'q'), availableHead: _d(j, 'h'), requiredHead: _d(j, 'hreq'), p: _p(j['p']));
+  static ValveDuty fromJson(Map<String, dynamic> j) =>
+      ValveDuty(valveId: j['id'] as String, zoneName: j['name'] as String? ?? '', flow: _d(j, 'q'), availableHead: _d(j, 'h'), requiredHead: _d(j, 'hreq'), p: _p(j['p']));
 }
 
 /// A number that may not be finite as JSON (null), as [encodeJson] writes
@@ -251,7 +446,22 @@ double? _jn(double v) => v.isFinite ? v : null;
 /// A valve-in-head station (see `valve_in_head.dart`) running in a system
 /// flow: its heads on the mainline, their flow and pressures.
 class VihDuty {
-  VihDuty({required this.stationId, required this.name, required this.heads, required this.flow, required this.minPressure, required this.maxPressure, required this.allowedMin, required this.allowedMax, required this.criticalId, required this.availableHead, required this.requiredHead, required this.elevation, required this.p, this.scheduled = true});
+  VihDuty({
+    required this.stationId,
+    required this.name,
+    required this.heads,
+    required this.flow,
+    required this.minPressure,
+    required this.maxPressure,
+    required this.allowedMin,
+    required this.allowedMax,
+    required this.criticalId,
+    required this.availableHead,
+    required this.requiredHead,
+    required this.elevation,
+    required this.p,
+    this.scheduled = true,
+  });
   final String stationId;
   final String name;
 
@@ -286,18 +496,54 @@ class VihDuty {
   bool get withinWindow => minPressure >= allowedMin - 1e-6 && maxPressure <= allowedMax + 1e-6;
 
   Map<String, dynamic> toJson() => {
-    'id': stationId, 'name': name, 'n': heads, 'q': flow, 'pmin': _jn(minPressure), 'pmax': _jn(maxPressure), 'lo': _jn(allowedMin), 'hi': _jn(allowedMax),
-    'crit': criticalId, 'h': _jn(availableHead), 'hreq': _jn(requiredHead), 'z': elevation, 'p': _pt(p), if (!scheduled) 'sch': false,
+    'id': stationId,
+    'name': name,
+    'n': heads,
+    'q': flow,
+    'pmin': _jn(minPressure),
+    'pmax': _jn(maxPressure),
+    'lo': _jn(allowedMin),
+    'hi': _jn(allowedMax),
+    'crit': criticalId,
+    'h': _jn(availableHead),
+    'hreq': _jn(requiredHead),
+    'z': elevation,
+    'p': _pt(p),
+    if (!scheduled) 'sch': false,
   };
   static VihDuty fromJson(Map<String, dynamic> j) => VihDuty(
-    stationId: j['id'] as String, name: j['name'] as String? ?? '', heads: (j['n'] as num?)?.toInt() ?? 0, flow: _d(j, 'q'), minPressure: _d(j, 'pmin', double.nan), maxPressure: _d(j, 'pmax', double.nan),
-    allowedMin: _d(j, 'lo', double.nan), allowedMax: _d(j, 'hi', double.infinity), criticalId: j['crit'] as String? ?? '', availableHead: _d(j, 'h', double.nan), requiredHead: _d(j, 'hreq', double.nan),
-    elevation: _d(j, 'z'), p: _p(j['p']), scheduled: j['sch'] as bool? ?? true,
+    stationId: j['id'] as String,
+    name: j['name'] as String? ?? '',
+    heads: (j['n'] as num?)?.toInt() ?? 0,
+    flow: _d(j, 'q'),
+    minPressure: _d(j, 'pmin', double.nan),
+    maxPressure: _d(j, 'pmax', double.nan),
+    allowedMin: _d(j, 'lo', double.nan),
+    allowedMax: _d(j, 'hi', double.infinity),
+    criticalId: j['crit'] as String? ?? '',
+    availableHead: _d(j, 'h', double.nan),
+    requiredHead: _d(j, 'hreq', double.nan),
+    elevation: _d(j, 'z'),
+    p: _p(j['p']),
+    scheduled: j['sch'] as bool? ?? true,
   );
 }
 
 class SystemFlowResult {
-  SystemFlowResult({required this.flowId, required this.name, required this.converged, required this.supplies, required this.valves, required this.pipes, required this.devices, required this.warnings, required this.totalFlow, required this.durationHours, this.annualEnergyCost = 0, this.heads = const []});
+  SystemFlowResult({
+    required this.flowId,
+    required this.name,
+    required this.converged,
+    required this.supplies,
+    required this.valves,
+    required this.pipes,
+    required this.devices,
+    required this.warnings,
+    required this.totalFlow,
+    required this.durationHours,
+    this.annualEnergyCost = 0,
+    this.heads = const [],
+  });
   final String flowId;
   final String name;
   final bool converged;
@@ -315,14 +561,31 @@ class SystemFlowResult {
   double get maxDeficit => valves.isEmpty ? 0 : valves.map((v) => v.deficit).reduce((a, b) => a > b ? a : b);
 
   Map<String, dynamic> toJson() => {
-    'id': flowId, 'name': name, 'conv': converged, 'supplies': supplies.map((s) => s.toJson()).toList(), 'valves': valves.map((v) => v.toJson()).toList(), 'pipes': pipes.map((p) => p.toJson()).toList(),
-    'devices': devices.map((d) => d.toJson()).toList(), 'warn': warnings, 'q': totalFlow, 'dur': durationHours, 'energy': annualEnergyCost, if (heads.isNotEmpty) 'vih': heads.map((h) => h.toJson()).toList(),
+    'id': flowId,
+    'name': name,
+    'conv': converged,
+    'supplies': supplies.map((s) => s.toJson()).toList(),
+    'valves': valves.map((v) => v.toJson()).toList(),
+    'pipes': pipes.map((p) => p.toJson()).toList(),
+    'devices': devices.map((d) => d.toJson()).toList(),
+    'warn': warnings,
+    'q': totalFlow,
+    'dur': durationHours,
+    'energy': annualEnergyCost,
+    if (heads.isNotEmpty) 'vih': heads.map((h) => h.toJson()).toList(),
   };
   static SystemFlowResult fromJson(Map<String, dynamic> j) => SystemFlowResult(
-    flowId: j['id'] as String, name: j['name'] as String? ?? '', converged: j['conv'] as bool? ?? false,
-    supplies: ((j['supplies'] as List?) ?? []).map((s) => SupplyDuty.fromJson(s as Map<String, dynamic>)).toList(), valves: ((j['valves'] as List?) ?? []).map((s) => ValveDuty.fromJson(s as Map<String, dynamic>)).toList(),
-    pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSegmentResult.fromJson(p as Map<String, dynamic>)).toList(), devices: ((j['devices'] as List?) ?? []).map((p) => DeviceResult.fromJson(p as Map<String, dynamic>)).toList(),
-    warnings: ((j['warn'] as List?) ?? []).cast<String>(), totalFlow: _d(j, 'q'), durationHours: _d(j, 'dur', 1), annualEnergyCost: _d(j, 'energy'),
+    flowId: j['id'] as String,
+    name: j['name'] as String? ?? '',
+    converged: j['conv'] as bool? ?? false,
+    supplies: ((j['supplies'] as List?) ?? []).map((s) => SupplyDuty.fromJson(s as Map<String, dynamic>)).toList(),
+    valves: ((j['valves'] as List?) ?? []).map((s) => ValveDuty.fromJson(s as Map<String, dynamic>)).toList(),
+    pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSegmentResult.fromJson(p as Map<String, dynamic>)).toList(),
+    devices: ((j['devices'] as List?) ?? []).map((p) => DeviceResult.fromJson(p as Map<String, dynamic>)).toList(),
+    warnings: ((j['warn'] as List?) ?? []).cast<String>(),
+    totalFlow: _d(j, 'q'),
+    durationHours: _d(j, 'dur', 1),
+    annualEnergyCost: _d(j, 'energy'),
     heads: [for (final h in (j['vih'] as List?) ?? const []) VihDuty.fromJson(h as Map<String, dynamic>)],
   );
 }
@@ -330,7 +593,19 @@ class SystemFlowResult {
 /// A valve-in-head station over the system flows it runs in
 /// ([DesignResults.vihStations]).
 class VihStationResult {
-  VihStationResult({required this.stationId, required this.name, required this.flowIds, required this.heads, required this.flow, required this.minPressure, required this.maxPressure, required this.allowedMin, required this.allowedMax, required this.worstDeficit, required this.scheduled});
+  VihStationResult({
+    required this.stationId,
+    required this.name,
+    required this.flowIds,
+    required this.heads,
+    required this.flow,
+    required this.minPressure,
+    required this.maxPressure,
+    required this.allowedMin,
+    required this.allowedMax,
+    required this.worstDeficit,
+    required this.scheduled,
+  });
   final String stationId;
   final String name;
 
@@ -365,13 +640,44 @@ class BomLine {
   final String finame;
   double get total => quantity * unitCost;
 
-  Map<String, dynamic> toJson() => {'cat': category, 'desc': description, 'unit': unit, 'qty': quantity, 'cost': unitCost, if (specId != null) 'spec': specId, if (code.isNotEmpty) 'code': code, if (supplier.isNotEmpty) 'sup': supplier, if (finame.isNotEmpty) 'finame': finame};
-  static BomLine fromJson(Map<String, dynamic> j) => BomLine(category: j['cat'] as String, description: j['desc'] as String? ?? '', unit: j['unit'] as String? ?? '', quantity: _d(j, 'qty'), unitCost: _d(j, 'cost'), specId: j['spec'] as String?, code: j['code'] as String? ?? '', supplier: j['sup'] as String? ?? '', finame: j['finame'] as String? ?? '');
+  Map<String, dynamic> toJson() => {
+    'cat': category,
+    'desc': description,
+    'unit': unit,
+    'qty': quantity,
+    'cost': unitCost,
+    if (specId != null) 'spec': specId,
+    if (code.isNotEmpty) 'code': code,
+    if (supplier.isNotEmpty) 'sup': supplier,
+    if (finame.isNotEmpty) 'finame': finame,
+  };
+  static BomLine fromJson(Map<String, dynamic> j) => BomLine(
+    category: j['cat'] as String,
+    description: j['desc'] as String? ?? '',
+    unit: j['unit'] as String? ?? '',
+    quantity: _d(j, 'qty'),
+    unitCost: _d(j, 'cost'),
+    specId: j['spec'] as String?,
+    code: j['code'] as String? ?? '',
+    supplier: j['sup'] as String? ?? '',
+    finame: j['finame'] as String? ?? '',
+  );
 }
 
 /// Flushing analysis of a zone: tapes flushed with open ends.
 class FlushingResult {
-  FlushingResult({required this.valveId, required this.zoneName, required this.flow, required this.requiredDownstreamHead, required this.requiredUpstreamHead, required this.tapeCount, required this.minEndHead, required this.maxVelocity, required this.flushingVelocity, this.converged = true});
+  FlushingResult({
+    required this.valveId,
+    required this.zoneName,
+    required this.flow,
+    required this.requiredDownstreamHead,
+    required this.requiredUpstreamHead,
+    required this.tapeCount,
+    required this.minEndHead,
+    required this.maxVelocity,
+    required this.flushingVelocity,
+    this.converged = true,
+  });
   final String valveId;
   final String zoneName;
   final double flow;
@@ -383,13 +689,46 @@ class FlushingResult {
   final double flushingVelocity;
   final bool converged;
 
-  Map<String, dynamic> toJson() => {'valve': valveId, 'name': zoneName, 'q': flow, 'hd': requiredDownstreamHead, 'hreq': requiredUpstreamHead, 'n': tapeCount, 'hend': minEndHead, 'vmax': maxVelocity, 'vf': flushingVelocity, 'conv': converged};
-  static FlushingResult fromJson(Map<String, dynamic> j) => FlushingResult(valveId: j['valve'] as String, zoneName: j['name'] as String? ?? '', flow: _d(j, 'q'), requiredDownstreamHead: _d(j, 'hd'), requiredUpstreamHead: _d(j, 'hreq'), tapeCount: (j['n'] as num?)?.toInt() ?? 0, minEndHead: _d(j, 'hend'), maxVelocity: _d(j, 'vmax'), flushingVelocity: _d(j, 'vf'), converged: j['conv'] as bool? ?? true);
+  Map<String, dynamic> toJson() => {
+    'valve': valveId,
+    'name': zoneName,
+    'q': flow,
+    'hd': requiredDownstreamHead,
+    'hreq': requiredUpstreamHead,
+    'n': tapeCount,
+    'hend': minEndHead,
+    'vmax': maxVelocity,
+    'vf': flushingVelocity,
+    'conv': converged,
+  };
+  static FlushingResult fromJson(Map<String, dynamic> j) => FlushingResult(
+    valveId: j['valve'] as String,
+    zoneName: j['name'] as String? ?? '',
+    flow: _d(j, 'q'),
+    requiredDownstreamHead: _d(j, 'hd'),
+    requiredUpstreamHead: _d(j, 'hreq'),
+    tapeCount: (j['n'] as num?)?.toInt() ?? 0,
+    minEndHead: _d(j, 'hend'),
+    maxVelocity: _d(j, 'vmax'),
+    flushingVelocity: _d(j, 'vf'),
+    converged: j['conv'] as bool? ?? true,
+  );
 }
 
 /// Water-hammer check of a pipe (worst segment).
 class SurgeResult {
-  SurgeResult({required this.entityId, required this.context, required this.pipeName, required this.velocity, required this.celerity, required this.surgeHead, required this.maxStaticHead, required this.rating, required this.closureTime, required this.criticalTime});
+  SurgeResult({
+    required this.entityId,
+    required this.context,
+    required this.pipeName,
+    required this.velocity,
+    required this.celerity,
+    required this.surgeHead,
+    required this.maxStaticHead,
+    required this.rating,
+    required this.closureTime,
+    required this.criticalTime,
+  });
   final String entityId;
   final String context;
   final String pipeName;
@@ -403,8 +742,30 @@ class SurgeResult {
   double get totalHead => maxStaticHead + surgeHead;
   bool get exceeds => rating > 0 && totalHead > rating + 1e-6;
 
-  Map<String, dynamic> toJson() => {'ent': entityId, 'ctx': context, 'name': pipeName, 'v': velocity, 'a': celerity, 'dh': surgeHead, 'hs': maxStaticHead, 'pn': rating, 'tc': closureTime, 'tcrit': criticalTime};
-  static SurgeResult fromJson(Map<String, dynamic> j) => SurgeResult(entityId: j['ent'] as String, context: j['ctx'] as String? ?? '', pipeName: j['name'] as String? ?? '', velocity: _d(j, 'v'), celerity: _d(j, 'a'), surgeHead: _d(j, 'dh'), maxStaticHead: _d(j, 'hs'), rating: _d(j, 'pn'), closureTime: _d(j, 'tc'), criticalTime: _d(j, 'tcrit'));
+  Map<String, dynamic> toJson() => {
+    'ent': entityId,
+    'ctx': context,
+    'name': pipeName,
+    'v': velocity,
+    'a': celerity,
+    'dh': surgeHead,
+    'hs': maxStaticHead,
+    'pn': rating,
+    'tc': closureTime,
+    'tcrit': criticalTime,
+  };
+  static SurgeResult fromJson(Map<String, dynamic> j) => SurgeResult(
+    entityId: j['ent'] as String,
+    context: j['ctx'] as String? ?? '',
+    pipeName: j['name'] as String? ?? '',
+    velocity: _d(j, 'v'),
+    celerity: _d(j, 'a'),
+    surgeHead: _d(j, 'dh'),
+    maxStaticHead: _d(j, 'hs'),
+    rating: _d(j, 'pn'),
+    closureTime: _d(j, 'tc'),
+    criticalTime: _d(j, 'tcrit'),
+  );
 }
 
 class DesignResults {

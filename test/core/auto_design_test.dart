@@ -69,7 +69,9 @@ void main() {
     expect(layout.metrics!.cu, greaterThan(85));
     final zoning = zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: 3 * m3sPerM3h));
     const poc = Pt(-8, -6);
-    final routing = routeZones([for (final z in zoning.zones) [for (final i in z.items) layout.heads[i].position]], RouteOptions(pointOfConnection: poc, exclusions: [house], direction: layout.direction));
+    final routing = routeZones([
+      for (final z in zoning.zones) [for (final i in z.items) layout.heads[i].position],
+    ], RouteOptions(pointOfConnection: poc, exclusions: [house], direction: layout.direction));
     final names = [for (var z = 0; z < zoning.zones.length; z++) 'Zone ${z + 1}'];
     p.entities.addAll(layout.toOutlets(p, zoneName: (i) => names[zoning.zoneOf[i]]));
     p.entities.addAll(routing.toEntities(p, zoneNames: names, valveSpecIds: [for (final z in zoning.zones) pickZoneValve(p.catalog, z.flow)?.id]));
@@ -91,7 +93,9 @@ void main() {
     final layout = layoutLandscape(outline: lawn, family: family);
     final zoning = zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: 4 * m3sPerM3h));
     const main = [Pt(-3, -2), Pt(22, -2)];
-    final routing = routeZones([for (final z in zoning.zones) [for (final i in z.items) layout.heads[i].position]], RouteOptions(mainline: main, direction: layout.direction));
+    final routing = routeZones([
+      for (final z in zoning.zones) [for (final i in z.items) layout.heads[i].position],
+    ], RouteOptions(mainline: main, direction: layout.direction));
     final names = [for (var z = 0; z < zoning.zones.length; z++) 'Zone ${z + 1}'];
     p.entities.addAll(layout.toOutlets(p));
     p.entities.addAll(routing.toEntities(p, zoneNames: names, valveSpecIds: [for (final z in zoning.zones) pickZoneValve(p.catalog, z.flow)?.id]));
@@ -108,13 +112,29 @@ void main() {
     final perHa = tape.emitter.flow(8) * 1e4 / (tape.emitterSpacingM * 1.8);
     const field = [Pt(0, 0), Pt(160, 0), Pt(160, 40), Pt(110, 60), Pt(0, 60)];
     const poc = Pt(-20, 30);
-    final s = subdivideField(field, FieldSubdivisionOptions(direction: const Pt(1, 0), mode: SubdivisionMode.grid, maxBlockFlow: 8 * m3sPerM3h, flowPerHectare: perHa, maxLateralLength: 80, roadWidth: 4, pointOfConnection: poc));
+    final s = subdivideField(
+      field,
+      FieldSubdivisionOptions(direction: const Pt(1, 0), mode: SubdivisionMode.grid, maxBlockFlow: 8 * m3sPerM3h, flowPerHectare: perHa, maxLateralLength: 80, roadWidth: 4, pointOfConnection: poc),
+    );
     expect(s.blocks.length, greaterThanOrEqualTo(2));
     expect(s.messages.where((m) => !m.startsWith('field_block_narrow')), isEmpty);
     final valves = <Pt>[];
     for (var i = 0; i < s.blocks.length; i++) {
       final b = s.blocks[i];
-      final res = generateBlock(p, blockOptionsFor(b, s.direction, lateralSpacing: 1.8, isTape: true, tapeSpecId: tape.id, tapeInletHeadM: 8, valveSpecId: pickZoneValve(p.catalog, b.flow)?.id, submainStub: 2, zoneName: 'Block ${i + 1}'));
+      final res = generateBlock(
+        p,
+        blockOptionsFor(
+          b,
+          s.direction,
+          lateralSpacing: 1.8,
+          isTape: true,
+          tapeSpecId: tape.id,
+          tapeInletHeadM: 8,
+          valveSpecId: pickZoneValve(p.catalog, b.flow)?.id,
+          submainStub: 2,
+          zoneName: 'Block ${i + 1}',
+        ),
+      );
       p.entities.addAll(res.all);
       valves.add(res.valve!.position);
     }

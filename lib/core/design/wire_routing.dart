@@ -44,7 +44,15 @@ enum StationKind { zoneValve, valveInHead, masterValve, pumpRelay }
 
 /// Options of [routeWires].
 class WireRoutingOptions {
-  const WireRoutingOptions({this.mode = RoutingMode.shortestPaths, this.tolerance = 0.1, this.connectCrossings = true, this.maxStubM = 30, this.masterValveStations = true, this.pumpRelayStations = true, this.includeZonePipes = true});
+  const WireRoutingOptions({
+    this.mode = RoutingMode.shortestPaths,
+    this.tolerance = 0.1,
+    this.connectCrossings = true,
+    this.maxStubM = 30,
+    this.masterValveStations = true,
+    this.pumpRelayStations = true,
+    this.includeZonePipes = true,
+  });
   final RoutingMode mode;
 
   /// Distance (m) within which points are one node and an item is on a pipe.
@@ -75,7 +83,10 @@ class WireRoute {
   final List<Pt> points;
   double get length => polylineLength(points);
 
-  Map<String, dynamic> toJson() => {'ctrl': controllerId, 'pts': [for (final p in points) p.toList()]};
+  Map<String, dynamic> toJson() => {
+    'ctrl': controllerId,
+    'pts': [for (final p in points) p.toList()],
+  };
   static WireRoute fromJson(Map<String, dynamic> j) => WireRoute(controllerId: j['ctrl'] as String? ?? '', points: [for (final p in (j['pts'] as List?) ?? []) Pt.fromList(p as List)]);
 }
 
@@ -98,8 +109,11 @@ class StationAllocation {
 
   Map<String, dynamic> toJson() => {'ctrl': controllerId, 'st': station, 'kind': kind.name, 'id': entityId, 'route': routeM};
   static StationAllocation fromJson(Map<String, dynamic> j) => StationAllocation(
-    controllerId: j['ctrl'] as String? ?? '', station: (j['st'] as num?)?.toInt() ?? 0, kind: StationKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => StationKind.zoneValve),
-    entityId: j['id'] as String? ?? '', routeM: (j['route'] as num?)?.toDouble() ?? 0,
+    controllerId: j['ctrl'] as String? ?? '',
+    station: (j['st'] as num?)?.toInt() ?? 0,
+    kind: StationKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => StationKind.zoneValve),
+    entityId: j['id'] as String? ?? '',
+    routeM: (j['route'] as num?)?.toDouble() ?? 0,
   );
 }
 
@@ -120,7 +134,8 @@ class WireRoutingResult {
 
   Map<String, dynamic> toJson() => {'routes': routes.map((r) => r.toJson()).toList(), 'st': stations.map((s) => s.toJson()).toList(), 'warn': warnings};
   static WireRoutingResult fromJson(Map<String, dynamic> j) => WireRoutingResult(
-    routes: [for (final r in (j['routes'] as List?) ?? []) WireRoute.fromJson(r as Map<String, dynamic>)], stations: [for (final s in (j['st'] as List?) ?? []) StationAllocation.fromJson(s as Map<String, dynamic>)],
+    routes: [for (final r in (j['routes'] as List?) ?? []) WireRoute.fromJson(r as Map<String, dynamic>)],
+    stations: [for (final s in (j['st'] as List?) ?? []) StationAllocation.fromJson(s as Map<String, dynamic>)],
     warnings: ((j['warn'] as List?) ?? []).cast<String>(),
   );
 }
@@ -135,7 +150,12 @@ WireRoutingResult autoRouteWires(Project p, {WireRoutingOptions options = const 
   final valves = {for (final v in p.entities.whereType<ControlValveEntity>()) v.id: v.position};
   final masters = {
     for (final m in p.entities.whereType<MiscHydraulicEntity>())
-      if (switch (p.catalog.valve(m.valveSpecId)?.kind) { ValveKind.master => true, ValveKind.control => m.scope == HydraulicScope.mainline, _ => false }) m.id: m.position,
+      if (switch (p.catalog.valve(m.valveSpecId)?.kind) {
+        ValveKind.master => true,
+        ValveKind.control => m.scope == HydraulicScope.mainline,
+        _ => false,
+      })
+        m.id: m.position,
   };
   final relays = {for (final pu in p.entities.whereType<PumpEntity>()) pu.id: pu.position};
   final pipes = [
@@ -155,7 +175,10 @@ WireRoutingResult autoRouteWires(Project p, {WireRoutingOptions options = const 
 Map<String, Map<String, Pt>> valveInHeadOf(Project p) {
   final vih = VihStations.of(p);
   if (vih.isEmpty) return const {};
-  final at = {for (final e in p.entities) if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position};
+  final at = {
+    for (final e in p.entities)
+      if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position,
+  };
   return {
     for (final s in vih.heads.entries) s.key: {for (final h in s.value) h: at[h]!},
   };

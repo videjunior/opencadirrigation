@@ -277,7 +277,7 @@ void main() {
       await settle(tester, 2);
     }
     expect(getPref('catalog.default'), isNull);
-    expect(cat.outlets.length, counts['Emissores']!() , reason: 'restored');
+    expect(cat.outlets.length, counts['Emissores']!(), reason: 'restored');
     expect(c.lastMessage, 'Catálogo padrão restaurado');
     removePref('catalog.default');
     removePref('catalog.default.currency');

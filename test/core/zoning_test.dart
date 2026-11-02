@@ -106,7 +106,12 @@ void main() {
 
   test('thousands of heads in well under a second', () {
     final family = cat.outlet('rotor')!;
-    final layout = layoutLandscape(outline: const [Pt(0, 0), Pt(600, 0), Pt(600, 250), Pt(300, 400), Pt(0, 400)], exclusions: [_rect(100, 100, 160, 140)], family: family, options: LandscapeLayoutOptions(evaluate: false));
+    final layout = layoutLandscape(
+      outline: const [Pt(0, 0), Pt(600, 0), Pt(600, 250), Pt(300, 400), Pt(0, 400)],
+      exclusions: [_rect(100, 100, 160, 140)],
+      family: family,
+      options: LandscapeLayoutOptions(evaluate: false),
+    );
     final items = zoneItemsOf(layout, family);
     final sw = Stopwatch()..start();
     final r = zoneByFlow(items, ZoningOptions(maxZoneFlow: 4 * m3sPerM3h));

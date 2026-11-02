@@ -80,8 +80,34 @@ class Layers {
   static const revisions = 'REVISIONS';
 
   static const all = [
-    images, drawing, hatches, symbols, text, dimensions, contours, breaklines, spotHeights, dem, zonePipes, mainlinePipes, spraylines, tapes,
-    outlets, wettedRadii, controlValves, waterSupply, pumps, misc, junctions, pivots, wires, controllers, areas, labels, revisions, comments,
+    images,
+    drawing,
+    hatches,
+    symbols,
+    text,
+    dimensions,
+    contours,
+    breaklines,
+    spotHeights,
+    dem,
+    zonePipes,
+    mainlinePipes,
+    spraylines,
+    tapes,
+    outlets,
+    wettedRadii,
+    controlValves,
+    waterSupply,
+    pumps,
+    misc,
+    junctions,
+    pivots,
+    wires,
+    controllers,
+    areas,
+    labels,
+    revisions,
+    comments,
   ];
 
   static const defaultColors = <String, int>{
@@ -177,7 +203,19 @@ sealed class Entity {
       case EntityType.leader:
         return LeaderEntity(id: id, layer: layer, name: name, points: pts(), text: j['text'] as String? ?? '', height: d('h', 1));
       case EntityType.image:
-        return ImageEntity(id: id, layer: layer, name: name, origin: pos(), width: d('w', 1), height: d('h', 1), rotationDeg: d('rot'), opacity: d('op', 1), mime: j['mime'] as String? ?? 'image/png', data: j['data'] != null ? base64Decode(j['data'] as String) : null, source: j['src'] as String? ?? '');
+        return ImageEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          origin: pos(),
+          width: d('w', 1),
+          height: d('h', 1),
+          rotationDeg: d('rot'),
+          opacity: d('op', 1),
+          mime: j['mime'] as String? ?? 'image/png',
+          data: j['data'] != null ? base64Decode(j['data'] as String) : null,
+          source: j['src'] as String? ?? '',
+        );
       case EntityType.contour:
         return ContourEntity(id: id, layer: layer, name: name, points: pts(), elevation: d('z'), derived: j['gen'] as bool? ?? false);
       case EntityType.breakline:
@@ -185,51 +223,228 @@ sealed class Entity {
       case EntityType.spotHeight:
         return SpotHeightEntity(id: id, layer: layer, name: name, position: pos(), elevation: d('z'));
       case EntityType.pipe:
-        return PipeEntity(id: id, layer: layer, name: name, points: pts(), scope: HydraulicScope.values.byName(j['scope'] as String), pipeSpecId: j['spec'] as String?, computerSized: j['auto'] as bool? ?? true, depth: d('depth'));
+        return PipeEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          points: pts(),
+          scope: HydraulicScope.values.byName(j['scope'] as String),
+          pipeSpecId: j['spec'] as String?,
+          computerSized: j['auto'] as bool? ?? true,
+          depth: d('depth'),
+        );
       case EntityType.sprayline:
-        return SpraylineEntity(id: id, layer: layer, name: name, points: pts(), pipeSpecId: j['spec'] as String?, computerSized: j['auto'] as bool? ?? true, outletSpecId: j['outlet'] as String? ?? '', nozzleId: j['nozzle'] as String?, headM: d('head', 20), spacing: d('sp', 5), offset: d('off', 0), arcDeg: d('arc', 360), riserHeight: d('riser'), depth: d('depth'));
+        return SpraylineEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          points: pts(),
+          pipeSpecId: j['spec'] as String?,
+          computerSized: j['auto'] as bool? ?? true,
+          outletSpecId: j['outlet'] as String? ?? '',
+          nozzleId: j['nozzle'] as String?,
+          headM: d('head', 20),
+          spacing: d('sp', 5),
+          offset: d('off', 0),
+          arcDeg: d('arc', 360),
+          riserHeight: d('riser'),
+          depth: d('depth'),
+        );
       case EntityType.tape:
-        return TapeEntity(id: id, layer: layer, name: name, points: pts(), tapeSpecId: j['spec'] as String? ?? '', inletHeadM: d('inlet', 10), regulated: j['reg'] as bool? ?? false, submainMinHeadM: d('submin', 0), depth: d('depth'), flushingFlow: d('flush'));
+        return TapeEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          points: pts(),
+          tapeSpecId: j['spec'] as String? ?? '',
+          inletHeadM: d('inlet', 10),
+          regulated: j['reg'] as bool? ?? false,
+          submainMinHeadM: d('submin', 0),
+          depth: d('depth'),
+          flushingFlow: d('flush'),
+        );
       case EntityType.outlet:
-        return OutletEntity(id: id, layer: layer, name: name, position: pos(), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'zone'), outletSpecId: j['outlet'] as String? ?? '', nozzleId: j['nozzle'] as String?, headM: d('head', 20), arcDeg: d('arc', 360), orientationDeg: d('rot'), riserHeight: d('riser'), zoneName: j['zone'] as String? ?? '');
+        return OutletEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'zone'),
+          outletSpecId: j['outlet'] as String? ?? '',
+          nozzleId: j['nozzle'] as String?,
+          headM: d('head', 20),
+          arcDeg: d('arc', 360),
+          orientationDeg: d('rot'),
+          riserHeight: d('riser'),
+          zoneName: j['zone'] as String? ?? '',
+        );
       case EntityType.controlValve:
-        return ControlValveEntity(id: id, layer: layer, name: name, position: pos(), valveSpecId: j['spec'] as String?, zoneName: j['zone'] as String? ?? name, orientationDeg: d('rot'), fixedDownstreamHeadM: (j['fixed'] as num?)?.toDouble(), depth: d('depth'));
+        return ControlValveEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          valveSpecId: j['spec'] as String?,
+          zoneName: j['zone'] as String? ?? name,
+          orientationDeg: d('rot'),
+          fixedDownstreamHeadM: (j['fixed'] as num?)?.toDouble(),
+          depth: d('depth'),
+        );
       case EntityType.waterSupply:
-        return WaterSupplyEntity(id: id, layer: layer, name: name, position: pos(), calculatePressure: j['calc'] as bool? ?? true, designHeadM: d('dh'), maxHeadM: d('mh'), designFlow: d('dq'), maxFlow: d('mq'), waterLevelOffsetM: d('wl'));
+        return WaterSupplyEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          calculatePressure: j['calc'] as bool? ?? true,
+          designHeadM: d('dh'),
+          maxHeadM: d('mh'),
+          designFlow: d('dq'),
+          maxFlow: d('mq'),
+          waterLevelOffsetM: d('wl'),
+        );
       case EntityType.pump:
-        return PumpEntity(id: id, layer: layer, name: name, position: pos(), pumpSpecId: j['spec'] as String?, speedRatio: d('speed', 1), orientationDeg: d('rot'), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'), hourMeter: j['hm'] != null, hourMeterCost: d('hm'), targetPressureM: d('vfd'), minSpeedRatio: d('vmin', 0.5));
+        return PumpEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          pumpSpecId: j['spec'] as String?,
+          speedRatio: d('speed', 1),
+          orientationDeg: d('rot'),
+          scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'),
+          hourMeter: j['hm'] != null,
+          hourMeterCost: d('hm'),
+          targetPressureM: d('vfd'),
+          minSpeedRatio: d('vmin', 0.5),
+        );
       case EntityType.misc:
-        return MiscHydraulicEntity(id: id, layer: layer, name: name, position: pos(), valveSpecId: j['spec'] as String?, scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'), settingM: d('set'), orientationDeg: d('rot'), settingFlow: d('setq'));
+        return MiscHydraulicEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          valveSpecId: j['spec'] as String?,
+          scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'),
+          settingM: d('set'),
+          orientationDeg: d('rot'),
+          settingFlow: d('setq'),
+        );
       case EntityType.junction:
         return JunctionEntity(id: id, layer: layer, name: name, position: pos(), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'zone'), fixedElevation: (j['z'] as num?)?.toDouble());
       case EntityType.area:
         return AreaEntity(
-          id: id, layer: layer, name: name, points: pts(), netDepthMmPerDay: d('depth', 5), efficiency: d('eff', 0.9), crop: j['crop'] as String? ?? '',
-          emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 0, useWaterBalance: j['wb'] as bool? ?? false, etoMmDay: d('eto', 5), kc: d('kc', 1), awcMmPerM: d('awc', 120), rootDepthM: d('root', 0.6), mad: d('mad', 0.5),
-          plantSpacingM: d('psp'), rowSpacingM: d('rsp'), wettedFraction: d('wf', 1),
-          cropKey: j['ck'] as String? ?? '', plantingMonthDay: j['pd'] as String? ?? '', soilKey: j['soil'] as String? ?? '', slopePct: d('slope'), irrigationMethod: j['im'] as String? ?? 'sprinkler',
-          groundCover: d('gc', 1), ecwDsM: d('ecw'), rainMethod: j['erm'] as String? ?? 'usdaScs', useDependableRain: j['dep'] as bool? ?? false, plantWaterUse: j['pwu'] as String? ?? '',
+          id: id,
+          layer: layer,
+          name: name,
+          points: pts(),
+          netDepthMmPerDay: d('depth', 5),
+          efficiency: d('eff', 0.9),
+          crop: j['crop'] as String? ?? '',
+          emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 0,
+          useWaterBalance: j['wb'] as bool? ?? false,
+          etoMmDay: d('eto', 5),
+          kc: d('kc', 1),
+          awcMmPerM: d('awc', 120),
+          rootDepthM: d('root', 0.6),
+          mad: d('mad', 0.5),
+          plantSpacingM: d('psp'),
+          rowSpacingM: d('rsp'),
+          wettedFraction: d('wf', 1),
+          cropKey: j['ck'] as String? ?? '',
+          plantingMonthDay: j['pd'] as String? ?? '',
+          soilKey: j['soil'] as String? ?? '',
+          slopePct: d('slope'),
+          irrigationMethod: j['im'] as String? ?? 'sprinkler',
+          groundCover: d('gc', 1),
+          ecwDsM: d('ecw'),
+          rainMethod: j['erm'] as String? ?? 'usdaScs',
+          useDependableRain: j['dep'] as bool? ?? false,
+          plantWaterUse: j['pwu'] as String? ?? '',
         );
       case EntityType.pivot:
         return PivotEntity(
-          id: id, layer: layer, name: name, center: pos(), radiusM: d('r', 400), angleDeg: d('ang'), kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'), travelM: d('travel'),
-          spanLengthM: d('span', 50), pipeSpecId: j['spec'] as String?, pipeInnerMm: d('idmm', 162), hazenC: d('c', 130), pipeHeightM: d('hp', 3.5), endPressureM: d('hend', 14),
-          endGunFlow: d('qg'), endGunPressureM: d('hg'), endThrowM: d('throw', 5), grossDepthMm: d('depth', 8), hoursPerCycle: d('hours', 24), wettedWidthM: d('ww', 18),
-          machineLossM: d('hm', 2), maxAppRateMmH: d('imax'), sectorDeg: d('sector', 360), machineCost: d('cost'), zoneName: j['zone'] as String? ?? '',
-          sprinklerSpacingM: d('ssp', 2.5), sprinklerSpecId: j['sspec'] as String?, regulatorSpecId: j['rspec'] as String?, towerCost: d('tcost'),
+          id: id,
+          layer: layer,
+          name: name,
+          center: pos(),
+          radiusM: d('r', 400),
+          angleDeg: d('ang'),
+          kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'),
+          travelM: d('travel'),
+          spanLengthM: d('span', 50),
+          pipeSpecId: j['spec'] as String?,
+          pipeInnerMm: d('idmm', 162),
+          hazenC: d('c', 130),
+          pipeHeightM: d('hp', 3.5),
+          endPressureM: d('hend', 14),
+          endGunFlow: d('qg'),
+          endGunPressureM: d('hg'),
+          endThrowM: d('throw', 5),
+          grossDepthMm: d('depth', 8),
+          hoursPerCycle: d('hours', 24),
+          wettedWidthM: d('ww', 18),
+          machineLossM: d('hm', 2),
+          maxAppRateMmH: d('imax'),
+          sectorDeg: d('sector', 360),
+          machineCost: d('cost'),
+          zoneName: j['zone'] as String? ?? '',
+          sprinklerSpacingM: d('ssp', 2.5),
+          sprinklerSpecId: j['sspec'] as String?,
+          regulatorSpecId: j['rspec'] as String?,
+          towerCost: d('tcost'),
           machine: PivotMachine.fromJson(j['mach'] as Map<String, dynamic>?),
         );
       case EntityType.controller:
-        return ControllerEntity(id: id, layer: layer, name: name, position: pos(), stations: (j['st'] as num?)?.toInt() ?? 12, outputVolts: d('v', 24), cost: d('cost'), maxSimultaneous: (j['sim'] as num?)?.toInt() ?? 0,
-            accessories: {for (final e in ((j['acc'] as Map?) ?? const {}).entries) if (e.value is num) e.key as String: (e.value as num).toDouble()});
+        return ControllerEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          stations: (j['st'] as num?)?.toInt() ?? 12,
+          outputVolts: d('v', 24),
+          cost: d('cost'),
+          maxSimultaneous: (j['sim'] as num?)?.toInt() ?? 0,
+          accessories: {
+            for (final e in ((j['acc'] as Map?) ?? const {}).entries)
+              if (e.value is num) e.key as String: (e.value as num).toDouble(),
+          },
+        );
       case EntityType.wire:
         return WireEntity(id: id, layer: layer, name: name, points: pts());
       case EntityType.comment:
-        return CommentEntity(id: id, layer: layer, name: name, position: pos(), text: j['text'] as String? ?? '', author: j['author'] as String? ?? '', date: j['date'] as String? ?? '', resolved: j['done'] as bool? ?? false, photo: j['photo'] as String? ?? '');
+        return CommentEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          text: j['text'] as String? ?? '',
+          author: j['author'] as String? ?? '',
+          date: j['date'] as String? ?? '',
+          resolved: j['done'] as bool? ?? false,
+          photo: j['photo'] as String? ?? '',
+        );
       case EntityType.revisionCloud:
-        return RevisionCloudEntity(id: id, layer: layer, name: name, points: pts(), revision: j['rev'] as String? ?? '', date: j['date'] as String? ?? '', description: j['desc'] as String? ?? '', arcLength: d('arc', 0));
+        return RevisionCloudEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          points: pts(),
+          revision: j['rev'] as String? ?? '',
+          date: j['date'] as String? ?? '',
+          description: j['desc'] as String? ?? '',
+          arcLength: d('arc', 0),
+        );
       case EntityType.ordinateDimension:
-        return OrdinateDimensionEntity(id: id, layer: layer, name: name, point: pos(), leaderEnd: Pt.fromList(j['e'] as List), origin: j['o'] == null ? Pt.zero : Pt.fromList(j['o'] as List), xAxis: j['x'] as bool? ?? true);
+        return OrdinateDimensionEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          point: pos(),
+          leaderEnd: Pt.fromList(j['e'] as List),
+          origin: j['o'] == null ? Pt.zero : Pt.fromList(j['o'] as List),
+          xAxis: j['x'] as bool? ?? true,
+        );
     }
   }
 }
@@ -278,7 +493,6 @@ mixin PolyEntity on Entity {
 List<List<double>> _ptsJson(List<Pt> pts) => pts.map((p) => p.toList()).toList();
 List<Pt> _map(List<Pt> pts, Affine t) => pts.map(t.apply).toList();
 double _rotDeg(Affine t, double deg) => radToDeg(t.transformAngle(degToRad(deg)));
-
 
 // ---------------------------------------------------------------- drawing
 
@@ -430,7 +644,8 @@ class ArcEntity extends Entity {
   @override
   ArcEntity translated(Pt d) => ArcEntity(id: id, layer: layer, name: name, center: center + d, radius: radius, startRad: startRad, sweepRad: sweepRad);
   @override
-  ArcEntity transformed(Affine t) => ArcEntity(id: id, layer: layer, name: name, center: t.apply(center), radius: radius * t.scale, startRad: t.transformAngle(startRad), sweepRad: t.isMirror ? -sweepRad : sweepRad);
+  ArcEntity transformed(Affine t) =>
+      ArcEntity(id: id, layer: layer, name: name, center: t.apply(center), radius: radius * t.scale, startRad: t.transformAngle(startRad), sweepRad: t.isMirror ? -sweepRad : sweepRad);
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': center.toList(), 'r': radius, 's': startRad, 'w': sweepRad};
 }
@@ -517,26 +732,168 @@ class SymbolEntity extends Entity with PointEntity {
     switch (kind) {
       case SymbolKind.northArrow:
         return [
-          poly([[0, -1], [0, 1]]),
-          poly([[-0.25, 0.55], [0, 1], [0.25, 0.55], [0, 0.7], [-0.25, 0.55]]),
-          poly([[-0.18, -0.5], [-0.18, -0.15], [0.18, -0.5], [0.18, -0.15]]), // "N"
+          poly([
+            [0, -1],
+            [0, 1],
+          ]),
+          poly([
+            [-0.25, 0.55],
+            [0, 1],
+            [0.25, 0.55],
+            [0, 0.7],
+            [-0.25, 0.55],
+          ]),
+          poly([
+            [-0.18, -0.5],
+            [-0.18, -0.15],
+            [0.18, -0.5],
+            [0.18, -0.15],
+          ]), // "N"
         ];
       case SymbolKind.tree:
-        return [circle(0, 0, 1), circle(0, 0, 0.08), poly([[0, 0], [0.7, 0.7]]), poly([[0, 0], [-0.7, 0.7]]), poly([[0, 0], [0, -1]])];
+        return [
+          circle(0, 0, 1),
+          circle(0, 0, 0.08),
+          poly([
+            [0, 0],
+            [0.7, 0.7],
+          ]),
+          poly([
+            [0, 0],
+            [-0.7, 0.7],
+          ]),
+          poly([
+            [0, 0],
+            [0, -1],
+          ]),
+        ];
       case SymbolKind.building:
-        return [poly([[-1, -0.7], [1, -0.7], [1, 0.7], [-1, 0.7], [-1, -0.7]]), poly([[-1, -0.7], [1, 0.7]]), poly([[-1, 0.7], [1, -0.7]])];
+        return [
+          poly([
+            [-1, -0.7],
+            [1, -0.7],
+            [1, 0.7],
+            [-1, 0.7],
+            [-1, -0.7],
+          ]),
+          poly([
+            [-1, -0.7],
+            [1, 0.7],
+          ]),
+          poly([
+            [-1, 0.7],
+            [1, -0.7],
+          ]),
+        ];
       case SymbolKind.tank:
-        return [circle(0, 0, 1), circle(0, 0, 0.8), poly([[-0.5, 0], [0.5, 0]]), poly([[0, -0.5], [0, 0.5]])];
+        return [
+          circle(0, 0, 1),
+          circle(0, 0, 0.8),
+          poly([
+            [-0.5, 0],
+            [0.5, 0],
+          ]),
+          poly([
+            [0, -0.5],
+            [0, 0.5],
+          ]),
+        ];
       case SymbolKind.well:
-        return [circle(0, 0, 0.8), poly([[-0.8, 0], [0.8, 0]]), poly([[0, 0.8], [0, -0.8]]), poly([[-0.57, -0.57], [0.57, 0.57]]), poly([[-0.57, 0.57], [0.57, -0.57]])];
+        return [
+          circle(0, 0, 0.8),
+          poly([
+            [-0.8, 0],
+            [0.8, 0],
+          ]),
+          poly([
+            [0, 0.8],
+            [0, -0.8],
+          ]),
+          poly([
+            [-0.57, -0.57],
+            [0.57, 0.57],
+          ]),
+          poly([
+            [-0.57, 0.57],
+            [0.57, -0.57],
+          ]),
+        ];
       case SymbolKind.valveBox:
-        return [poly([[-1, -0.6], [1, -0.6], [1, 0.6], [-1, 0.6], [-1, -0.6]]), poly([[-0.5, -0.3], [0.5, 0.3], [0.5, -0.3], [-0.5, 0.3], [-0.5, -0.3]])];
+        return [
+          poly([
+            [-1, -0.6],
+            [1, -0.6],
+            [1, 0.6],
+            [-1, 0.6],
+            [-1, -0.6],
+          ]),
+          poly([
+            [-0.5, -0.3],
+            [0.5, 0.3],
+            [0.5, -0.3],
+            [-0.5, 0.3],
+            [-0.5, -0.3],
+          ]),
+        ];
       case SymbolKind.pumpHouse:
-        return [poly([[-1, -0.8], [1, -0.8], [1, 0.4], [0, 1], [-1, 0.4], [-1, -0.8]]), circle(0, -0.1, 0.35), poly([[0.35, -0.1], [0.7, -0.1]])];
+        return [
+          poly([
+            [-1, -0.8],
+            [1, -0.8],
+            [1, 0.4],
+            [0, 1],
+            [-1, 0.4],
+            [-1, -0.8],
+          ]),
+          circle(0, -0.1, 0.35),
+          poly([
+            [0.35, -0.1],
+            [0.7, -0.1],
+          ]),
+        ];
       case SymbolKind.gate:
-        return [poly([[-1, 0], [1, 0]]), poly([[-1, -0.3], [-1, 0.3]]), poly([[1, -0.3], [1, 0.3]]), poly([[-0.6, 0], [-0.6, 0.5], [0.6, 0.5], [0.6, 0]])];
+        return [
+          poly([
+            [-1, 0],
+            [1, 0],
+          ]),
+          poly([
+            [-1, -0.3],
+            [-1, 0.3],
+          ]),
+          poly([
+            [1, -0.3],
+            [1, 0.3],
+          ]),
+          poly([
+            [-0.6, 0],
+            [-0.6, 0.5],
+            [0.6, 0.5],
+            [0.6, 0],
+          ]),
+        ];
       case SymbolKind.filterStation:
-        return [poly([[-1, -0.6], [1, -0.6], [1, 0.6], [-1, 0.6], [-1, -0.6]]), poly([[-0.6, -0.3], [-0.2, 0.3]]), poly([[-0.2, -0.3], [0.2, 0.3]]), poly([[0.2, -0.3], [0.6, 0.3]])];
+        return [
+          poly([
+            [-1, -0.6],
+            [1, -0.6],
+            [1, 0.6],
+            [-1, 0.6],
+            [-1, -0.6],
+          ]),
+          poly([
+            [-0.6, -0.3],
+            [-0.2, 0.3],
+          ]),
+          poly([
+            [-0.2, -0.3],
+            [0.2, 0.3],
+          ]),
+          poly([
+            [0.2, -0.3],
+            [0.6, 0.3],
+          ]),
+        ];
     }
   }
 
@@ -745,7 +1102,19 @@ class LeaderEntity extends Entity with PolyEntity {
 /// [origin] is the bottom-left corner in world metres; the image spans
 /// [width] × [height] metres rotated by [rotationDeg] about the origin.
 class ImageEntity extends Entity {
-  ImageEntity({required super.id, super.layer = Layers.images, super.name, required this.origin, required this.width, required this.height, this.rotationDeg = 0, this.opacity = 1, this.mime = 'image/png', this.data, this.source = ''});
+  ImageEntity({
+    required super.id,
+    super.layer = Layers.images,
+    super.name,
+    required this.origin,
+    required this.width,
+    required this.height,
+    this.rotationDeg = 0,
+    this.opacity = 1,
+    this.mime = 'image/png',
+    this.data,
+    this.source = '',
+  });
   Pt origin;
   double width;
   double height;
@@ -799,7 +1168,8 @@ class ImageEntity extends Entity {
   }
 
   @override
-  ImageEntity clone({String? newId}) => ImageEntity(id: newId ?? id, layer: layer, name: name, origin: origin, width: width, height: height, rotationDeg: rotationDeg, opacity: opacity, mime: mime, data: data, source: source);
+  ImageEntity clone({String? newId}) =>
+      ImageEntity(id: newId ?? id, layer: layer, name: name, origin: origin, width: width, height: height, rotationDeg: rotationDeg, opacity: opacity, mime: mime, data: data, source: source);
   @override
   ImageEntity translated(Pt d) => clone()..origin = origin + d;
   @override
@@ -817,7 +1187,17 @@ class ImageEntity extends Entity {
   }
 
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': origin.toList(), 'w': width, 'h': height, 'rot': rotationDeg, 'op': opacity, 'mime': mime, if (data != null) 'data': base64Encode(data!), if (source.isNotEmpty) 'src': source};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': origin.toList(),
+    'w': width,
+    'h': height,
+    'rot': rotationDeg,
+    'op': opacity,
+    'mime': mime,
+    if (data != null) 'data': base64Encode(data!),
+    if (source.isNotEmpty) 'src': source,
+  };
 }
 
 // ---------------------------------------------------------------- terrain
@@ -864,7 +1244,11 @@ class BreaklineEntity extends Entity with PolyEntity {
   @override
   BreaklineEntity transformed(Affine t) => clone()..points = _map(points, t);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), if (elevations.any((z) => z.isFinite)) 'zs': [for (var i = 0; i < points.length; i++) elevationOf(i).isFinite ? elevationOf(i) : null]};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'pts': _ptsJson(points),
+    if (elevations.any((z) => z.isFinite)) 'zs': [for (var i = 0; i < points.length; i++) elevationOf(i).isFinite ? elevationOf(i) : null],
+  };
 }
 
 class SpotHeightEntity extends Entity with PointEntity {
@@ -892,7 +1276,7 @@ class SpotHeightEntity extends Entity with PointEntity {
 
 class PipeEntity extends Entity with PolyEntity {
   PipeEntity({required super.id, String? layer, super.name, required this.points, required this.scope, this.pipeSpecId, this.computerSized = true, this.depth = 0})
-      : super(layer: layer ?? (scope == HydraulicScope.zone ? Layers.zonePipes : Layers.mainlinePipes));
+    : super(layer: layer ?? (scope == HydraulicScope.zone ? Layers.zonePipes : Layers.mainlinePipes));
   @override
   List<Pt> points;
   HydraulicScope scope;
@@ -904,7 +1288,8 @@ class PipeEntity extends Entity with PolyEntity {
   @override
   PipeEntity clone({String? newId}) => PipeEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth);
   @override
-  PipeEntity translated(Pt d) => PipeEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth);
+  PipeEntity translated(Pt d) =>
+      PipeEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth);
   @override
   PipeEntity transformed(Affine t) => clone()..points = _map(points, t);
   @override
@@ -959,7 +1344,22 @@ class SpraylineEntity extends Entity with PolyEntity {
   List<Pt> outletPositions() => [for (var i = 0; i < outletCount; i++) pointAlongPolyline(points, firstOutletDistance + i * spacing)];
 
   @override
-  SpraylineEntity clone({String? newId}) => SpraylineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), pipeSpecId: pipeSpecId, computerSized: computerSized, outletSpecId: outletSpecId, nozzleId: nozzleId, headM: headM, spacing: spacing, offset: offset, arcDeg: arcDeg, riserHeight: riserHeight, depth: depth);
+  SpraylineEntity clone({String? newId}) => SpraylineEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    points: List.of(points),
+    pipeSpecId: pipeSpecId,
+    computerSized: computerSized,
+    outletSpecId: outletSpecId,
+    nozzleId: nozzleId,
+    headM: headM,
+    spacing: spacing,
+    offset: offset,
+    arcDeg: arcDeg,
+    riserHeight: riserHeight,
+    depth: depth,
+  );
   @override
   SpraylineEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
   @override
@@ -968,11 +1368,35 @@ class SpraylineEntity extends Entity with PolyEntity {
     ..spacing = spacing * t.scale
     ..offset = offset * t.scale;
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), if (pipeSpecId != null) 'spec': pipeSpecId, 'auto': computerSized, 'outlet': outletSpecId, if (nozzleId != null) 'nozzle': nozzleId, 'head': headM, 'sp': spacing, 'off': offset, 'arc': arcDeg, 'riser': riserHeight, 'depth': depth};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'pts': _ptsJson(points),
+    if (pipeSpecId != null) 'spec': pipeSpecId,
+    'auto': computerSized,
+    'outlet': outletSpecId,
+    if (nozzleId != null) 'nozzle': nozzleId,
+    'head': headM,
+    'sp': spacing,
+    'off': offset,
+    'arc': arcDeg,
+    'riser': riserHeight,
+    'depth': depth,
+  };
 }
 
 class TapeEntity extends Entity with PolyEntity {
-  TapeEntity({required super.id, super.layer = Layers.tapes, super.name, required this.points, required this.tapeSpecId, this.inletHeadM = 10, this.regulated = false, this.submainMinHeadM = 0, this.depth = 0, this.flushingFlow = 0});
+  TapeEntity({
+    required super.id,
+    super.layer = Layers.tapes,
+    super.name,
+    required this.points,
+    required this.tapeSpecId,
+    this.inletHeadM = 10,
+    this.regulated = false,
+    this.submainMinHeadM = 0,
+    this.depth = 0,
+    this.flushingFlow = 0,
+  });
   @override
   List<Pt> points;
   String tapeSpecId;
@@ -986,7 +1410,18 @@ class TapeEntity extends Entity with PolyEntity {
   @override
   EntityType get type => EntityType.tape;
   @override
-  TapeEntity clone({String? newId}) => TapeEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), tapeSpecId: tapeSpecId, inletHeadM: inletHeadM, regulated: regulated, submainMinHeadM: submainMinHeadM, depth: depth, flushingFlow: flushingFlow);
+  TapeEntity clone({String? newId}) => TapeEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    points: List.of(points),
+    tapeSpecId: tapeSpecId,
+    inletHeadM: inletHeadM,
+    regulated: regulated,
+    submainMinHeadM: submainMinHeadM,
+    depth: depth,
+    flushingFlow: flushingFlow,
+  );
   @override
   TapeEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
   @override
@@ -998,7 +1433,20 @@ class TapeEntity extends Entity with PolyEntity {
 // ---------------------------------------------------------------- hydraulic (point)
 
 class OutletEntity extends Entity with PointEntity {
-  OutletEntity({required super.id, super.layer = Layers.outlets, super.name, required this.position, this.scope = HydraulicScope.zone, required this.outletSpecId, this.nozzleId, this.headM = 20, this.arcDeg = 360, this.orientationDeg = 0, this.riserHeight = 0, this.zoneName = ''});
+  OutletEntity({
+    required super.id,
+    super.layer = Layers.outlets,
+    super.name,
+    required this.position,
+    this.scope = HydraulicScope.zone,
+    required this.outletSpecId,
+    this.nozzleId,
+    this.headM = 20,
+    this.arcDeg = 360,
+    this.orientationDeg = 0,
+    this.riserHeight = 0,
+    this.zoneName = '',
+  });
   @override
   Pt position;
   HydraulicScope scope;
@@ -1016,7 +1464,20 @@ class OutletEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.outlet;
   @override
-  OutletEntity clone({String? newId}) => OutletEntity(id: newId ?? id, layer: layer, name: name, position: position, scope: scope, outletSpecId: outletSpecId, nozzleId: nozzleId, headM: headM, arcDeg: arcDeg, orientationDeg: orientationDeg, riserHeight: riserHeight, zoneName: zoneName);
+  OutletEntity clone({String? newId}) => OutletEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    scope: scope,
+    outletSpecId: outletSpecId,
+    nozzleId: nozzleId,
+    headM: headM,
+    arcDeg: arcDeg,
+    orientationDeg: orientationDeg,
+    riserHeight: riserHeight,
+    zoneName: zoneName,
+  );
   @override
   OutletEntity translated(Pt d) => clone()..position = position + d;
 
@@ -1028,11 +1489,32 @@ class OutletEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..orientationDeg = _rotDeg(t, t.isMirror && arcDeg < 360 ? orientationDeg + arcDeg : orientationDeg);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'scope': scope.name, 'outlet': outletSpecId, if (nozzleId != null) 'nozzle': nozzleId, 'head': headM, 'arc': arcDeg, 'rot': orientationDeg, 'riser': riserHeight, if (zoneName.isNotEmpty) 'zone': zoneName};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    'scope': scope.name,
+    'outlet': outletSpecId,
+    if (nozzleId != null) 'nozzle': nozzleId,
+    'head': headM,
+    'arc': arcDeg,
+    'rot': orientationDeg,
+    'riser': riserHeight,
+    if (zoneName.isNotEmpty) 'zone': zoneName,
+  };
 }
 
 class ControlValveEntity extends Entity with PointEntity {
-  ControlValveEntity({required super.id, super.layer = Layers.controlValves, super.name, required this.position, this.valveSpecId, this.zoneName = '', this.orientationDeg = 0, this.fixedDownstreamHeadM, this.depth = 0});
+  ControlValveEntity({
+    required super.id,
+    super.layer = Layers.controlValves,
+    super.name,
+    required this.position,
+    this.valveSpecId,
+    this.zoneName = '',
+    this.orientationDeg = 0,
+    this.fixedDownstreamHeadM,
+    this.depth = 0,
+  });
   @override
   Pt position;
   String? valveSpecId;
@@ -1045,7 +1527,17 @@ class ControlValveEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.controlValve;
   @override
-  ControlValveEntity clone({String? newId}) => ControlValveEntity(id: newId ?? id, layer: layer, name: name, position: position, valveSpecId: valveSpecId, zoneName: zoneName, orientationDeg: orientationDeg, fixedDownstreamHeadM: fixedDownstreamHeadM, depth: depth);
+  ControlValveEntity clone({String? newId}) => ControlValveEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    valveSpecId: valveSpecId,
+    zoneName: zoneName,
+    orientationDeg: orientationDeg,
+    fixedDownstreamHeadM: fixedDownstreamHeadM,
+    depth: depth,
+  );
   @override
   ControlValveEntity translated(Pt d) => clone()..position = position + d;
   @override
@@ -1053,11 +1545,30 @@ class ControlValveEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..orientationDeg = _rotDeg(t, orientationDeg);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (valveSpecId != null) 'spec': valveSpecId, 'zone': zoneName, 'rot': orientationDeg, if (fixedDownstreamHeadM != null) 'fixed': fixedDownstreamHeadM, 'depth': depth};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    if (valveSpecId != null) 'spec': valveSpecId,
+    'zone': zoneName,
+    'rot': orientationDeg,
+    if (fixedDownstreamHeadM != null) 'fixed': fixedDownstreamHeadM,
+    'depth': depth,
+  };
 }
 
 class WaterSupplyEntity extends Entity with PointEntity {
-  WaterSupplyEntity({required super.id, super.layer = Layers.waterSupply, super.name, required this.position, this.calculatePressure = true, this.designHeadM = 0, this.maxHeadM = 0, this.designFlow = 0, this.maxFlow = 0, this.waterLevelOffsetM = 0});
+  WaterSupplyEntity({
+    required super.id,
+    super.layer = Layers.waterSupply,
+    super.name,
+    required this.position,
+    this.calculatePressure = true,
+    this.designHeadM = 0,
+    this.maxHeadM = 0,
+    this.designFlow = 0,
+    this.maxFlow = 0,
+    this.waterLevelOffsetM = 0,
+  });
   @override
   Pt position;
   bool calculatePressure;
@@ -1071,7 +1582,18 @@ class WaterSupplyEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.waterSupply;
   @override
-  WaterSupplyEntity clone({String? newId}) => WaterSupplyEntity(id: newId ?? id, layer: layer, name: name, position: position, calculatePressure: calculatePressure, designHeadM: designHeadM, maxHeadM: maxHeadM, designFlow: designFlow, maxFlow: maxFlow, waterLevelOffsetM: waterLevelOffsetM);
+  WaterSupplyEntity clone({String? newId}) => WaterSupplyEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    calculatePressure: calculatePressure,
+    designHeadM: designHeadM,
+    maxHeadM: maxHeadM,
+    designFlow: designFlow,
+    maxFlow: maxFlow,
+    waterLevelOffsetM: waterLevelOffsetM,
+  );
   @override
   WaterSupplyEntity translated(Pt d) => clone()..position = position + d;
   @override
@@ -1081,7 +1603,20 @@ class WaterSupplyEntity extends Entity with PointEntity {
 }
 
 class PumpEntity extends Entity with PointEntity {
-  PumpEntity({required super.id, super.layer = Layers.pumps, super.name, required this.position, this.pumpSpecId, this.speedRatio = 1, this.orientationDeg = 0, this.scope = HydraulicScope.mainline, this.hourMeter = false, this.hourMeterCost = 0, this.targetPressureM = 0, this.minSpeedRatio = 0.5});
+  PumpEntity({
+    required super.id,
+    super.layer = Layers.pumps,
+    super.name,
+    required this.position,
+    this.pumpSpecId,
+    this.speedRatio = 1,
+    this.orientationDeg = 0,
+    this.scope = HydraulicScope.mainline,
+    this.hourMeter = false,
+    this.hourMeterCost = 0,
+    this.targetPressureM = 0,
+    this.minSpeedRatio = 0.5,
+  });
   @override
   Pt position;
   String? pumpSpecId;
@@ -1102,7 +1637,20 @@ class PumpEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.pump;
   @override
-  PumpEntity clone({String? newId}) => PumpEntity(id: newId ?? id, layer: layer, name: name, position: position, pumpSpecId: pumpSpecId, speedRatio: speedRatio, orientationDeg: orientationDeg, scope: scope, hourMeter: hourMeter, hourMeterCost: hourMeterCost, targetPressureM: targetPressureM, minSpeedRatio: minSpeedRatio);
+  PumpEntity clone({String? newId}) => PumpEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    pumpSpecId: pumpSpecId,
+    speedRatio: speedRatio,
+    orientationDeg: orientationDeg,
+    scope: scope,
+    hourMeter: hourMeter,
+    hourMeterCost: hourMeterCost,
+    targetPressureM: targetPressureM,
+    minSpeedRatio: minSpeedRatio,
+  );
   @override
   PumpEntity translated(Pt d) => clone()..position = position + d;
   @override
@@ -1110,11 +1658,31 @@ class PumpEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..orientationDeg = _rotDeg(t, orientationDeg);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (pumpSpecId != null) 'spec': pumpSpecId, 'speed': speedRatio, 'rot': orientationDeg, 'scope': scope.name, if (hourMeter) 'hm': hourMeterCost, if (targetPressureM > 0) 'vfd': targetPressureM, if (targetPressureM > 0) 'vmin': minSpeedRatio};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    if (pumpSpecId != null) 'spec': pumpSpecId,
+    'speed': speedRatio,
+    'rot': orientationDeg,
+    'scope': scope.name,
+    if (hourMeter) 'hm': hourMeterCost,
+    if (targetPressureM > 0) 'vfd': targetPressureM,
+    if (targetPressureM > 0) 'vmin': minSpeedRatio,
+  };
 }
 
 class MiscHydraulicEntity extends Entity with PointEntity {
-  MiscHydraulicEntity({required super.id, super.layer = Layers.misc, super.name, required this.position, this.valveSpecId, this.scope = HydraulicScope.mainline, this.settingM = 0, this.orientationDeg = 0, this.settingFlow = 0});
+  MiscHydraulicEntity({
+    required super.id,
+    super.layer = Layers.misc,
+    super.name,
+    required this.position,
+    this.valveSpecId,
+    this.scope = HydraulicScope.mainline,
+    this.settingM = 0,
+    this.orientationDeg = 0,
+    this.settingFlow = 0,
+  });
   @override
   Pt position;
   String? valveSpecId;
@@ -1130,7 +1698,17 @@ class MiscHydraulicEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.misc;
   @override
-  MiscHydraulicEntity clone({String? newId}) => MiscHydraulicEntity(id: newId ?? id, layer: layer, name: name, position: position, valveSpecId: valveSpecId, scope: scope, settingM: settingM, orientationDeg: orientationDeg, settingFlow: settingFlow);
+  MiscHydraulicEntity clone({String? newId}) => MiscHydraulicEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    valveSpecId: valveSpecId,
+    scope: scope,
+    settingM: settingM,
+    orientationDeg: orientationDeg,
+    settingFlow: settingFlow,
+  );
   @override
   MiscHydraulicEntity translated(Pt d) => clone()..position = position + d;
   @override
@@ -1138,7 +1716,15 @@ class MiscHydraulicEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..orientationDeg = _rotDeg(t, orientationDeg);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), if (valveSpecId != null) 'spec': valveSpecId, 'scope': scope.name, 'set': settingM, 'rot': orientationDeg, if (settingFlow > 0) 'setq': settingFlow};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    if (valveSpecId != null) 'spec': valveSpecId,
+    'scope': scope.name,
+    'set': settingM,
+    'rot': orientationDeg,
+    if (settingFlow > 0) 'setq': settingFlow,
+  };
 }
 
 class JunctionEntity extends Entity with PointEntity {
@@ -1308,10 +1894,36 @@ class PivotEntity extends Entity {
 
   @override
   PivotEntity clone({String? newId}) => PivotEntity(
-    id: newId ?? id, layer: layer, name: name, center: center, radiusM: radiusM, angleDeg: angleDeg, kind: kind, travelM: travelM, spanLengthM: spanLengthM, pipeSpecId: pipeSpecId, pipeInnerMm: pipeInnerMm,
-    hazenC: hazenC, pipeHeightM: pipeHeightM, endPressureM: endPressureM, endGunFlow: endGunFlow, endGunPressureM: endGunPressureM, endThrowM: endThrowM, grossDepthMm: grossDepthMm, hoursPerCycle: hoursPerCycle,
-    wettedWidthM: wettedWidthM, machineLossM: machineLossM, maxAppRateMmH: maxAppRateMmH, sectorDeg: sectorDeg, machineCost: machineCost, zoneName: zoneName,
-    sprinklerSpacingM: sprinklerSpacingM, sprinklerSpecId: sprinklerSpecId, regulatorSpecId: regulatorSpecId, towerCost: towerCost, machine: machine.clone(),
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    center: center,
+    radiusM: radiusM,
+    angleDeg: angleDeg,
+    kind: kind,
+    travelM: travelM,
+    spanLengthM: spanLengthM,
+    pipeSpecId: pipeSpecId,
+    pipeInnerMm: pipeInnerMm,
+    hazenC: hazenC,
+    pipeHeightM: pipeHeightM,
+    endPressureM: endPressureM,
+    endGunFlow: endGunFlow,
+    endGunPressureM: endGunPressureM,
+    endThrowM: endThrowM,
+    grossDepthMm: grossDepthMm,
+    hoursPerCycle: hoursPerCycle,
+    wettedWidthM: wettedWidthM,
+    machineLossM: machineLossM,
+    maxAppRateMmH: maxAppRateMmH,
+    sectorDeg: sectorDeg,
+    machineCost: machineCost,
+    zoneName: zoneName,
+    sprinklerSpacingM: sprinklerSpacingM,
+    sprinklerSpecId: sprinklerSpecId,
+    regulatorSpecId: regulatorSpecId,
+    towerCost: towerCost,
+    machine: machine.clone(),
   );
   @override
   PivotEntity translated(Pt d) => clone()..center = center + d;
@@ -1323,10 +1935,33 @@ class PivotEntity extends Entity {
     ..angleDeg = _rotDeg(t, angleDeg);
   @override
   Map<String, dynamic> toJson() => {
-    ..._base(), 'p': center.toList(), 'r': radiusM, 'ang': angleDeg, 'kind': kind.name, if (travelM > 0) 'travel': travelM, 'span': spanLengthM, if (pipeSpecId != null) 'spec': pipeSpecId, 'idmm': pipeInnerMm, 'c': hazenC,
-    'hp': pipeHeightM, 'hend': endPressureM, if (endGunFlow > 0) 'qg': endGunFlow, if (endGunPressureM > 0) 'hg': endGunPressureM, 'throw': endThrowM, 'depth': grossDepthMm, 'hours': hoursPerCycle, 'ww': wettedWidthM,
-    'hm': machineLossM, if (maxAppRateMmH > 0) 'imax': maxAppRateMmH, if (sectorDeg != 360) 'sector': sectorDeg, if (machineCost > 0) 'cost': machineCost, if (zoneName.isNotEmpty) 'zone': zoneName,
-    'ssp': sprinklerSpacingM, if (sprinklerSpecId != null) 'sspec': sprinklerSpecId, if (regulatorSpecId != null) 'rspec': regulatorSpecId, if (towerCost > 0) 'tcost': towerCost,
+    ..._base(),
+    'p': center.toList(),
+    'r': radiusM,
+    'ang': angleDeg,
+    'kind': kind.name,
+    if (travelM > 0) 'travel': travelM,
+    'span': spanLengthM,
+    if (pipeSpecId != null) 'spec': pipeSpecId,
+    'idmm': pipeInnerMm,
+    'c': hazenC,
+    'hp': pipeHeightM,
+    'hend': endPressureM,
+    if (endGunFlow > 0) 'qg': endGunFlow,
+    if (endGunPressureM > 0) 'hg': endGunPressureM,
+    'throw': endThrowM,
+    'depth': grossDepthMm,
+    'hours': hoursPerCycle,
+    'ww': wettedWidthM,
+    'hm': machineLossM,
+    if (maxAppRateMmH > 0) 'imax': maxAppRateMmH,
+    if (sectorDeg != 360) 'sector': sectorDeg,
+    if (machineCost > 0) 'cost': machineCost,
+    if (zoneName.isNotEmpty) 'zone': zoneName,
+    'ssp': sprinklerSpacingM,
+    if (sprinklerSpecId != null) 'sspec': sprinklerSpecId,
+    if (regulatorSpecId != null) 'rspec': regulatorSpecId,
+    if (towerCost > 0) 'tcost': towerCost,
     if (!machine.isDefault) 'mach': machine.toJson(),
   };
 }
@@ -1428,19 +2063,66 @@ class AreaEntity extends Entity with PolyEntity {
   @override
   double distanceTo(Pt p) => pointInPolygon(p, points) ? 0 : math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
   @override
-  AreaEntity clone({String? newId}) => AreaEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), netDepthMmPerDay: netDepthMmPerDay, efficiency: efficiency, crop: crop, emittersPerPlant: emittersPerPlant, useWaterBalance: useWaterBalance, etoMmDay: etoMmDay, kc: kc, awcMmPerM: awcMmPerM, rootDepthM: rootDepthM, mad: mad, plantSpacingM: plantSpacingM, rowSpacingM: rowSpacingM, wettedFraction: wettedFraction, cropKey: cropKey, plantingMonthDay: plantingMonthDay, soilKey: soilKey, slopePct: slopePct, irrigationMethod: irrigationMethod, groundCover: groundCover, ecwDsM: ecwDsM, rainMethod: rainMethod, useDependableRain: useDependableRain, plantWaterUse: plantWaterUse);
+  AreaEntity clone({String? newId}) => AreaEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    points: List.of(points),
+    netDepthMmPerDay: netDepthMmPerDay,
+    efficiency: efficiency,
+    crop: crop,
+    emittersPerPlant: emittersPerPlant,
+    useWaterBalance: useWaterBalance,
+    etoMmDay: etoMmDay,
+    kc: kc,
+    awcMmPerM: awcMmPerM,
+    rootDepthM: rootDepthM,
+    mad: mad,
+    plantSpacingM: plantSpacingM,
+    rowSpacingM: rowSpacingM,
+    wettedFraction: wettedFraction,
+    cropKey: cropKey,
+    plantingMonthDay: plantingMonthDay,
+    soilKey: soilKey,
+    slopePct: slopePct,
+    irrigationMethod: irrigationMethod,
+    groundCover: groundCover,
+    ecwDsM: ecwDsM,
+    rainMethod: rainMethod,
+    useDependableRain: useDependableRain,
+    plantWaterUse: plantWaterUse,
+  );
   @override
   AreaEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
   @override
   AreaEntity transformed(Affine t) => clone()..points = _map(points, t);
   @override
   Map<String, dynamic> toJson() => {
-    ..._base(), 'pts': _ptsJson(points), 'depth': netDepthMmPerDay, 'eff': efficiency, 'crop': crop,
-    if (emittersPerPlant > 0) 'epp': emittersPerPlant, if (useWaterBalance) 'wb': true, 'eto': etoMmDay, 'kc': kc, 'awc': awcMmPerM, 'root': rootDepthM, 'mad': mad,
-    if (plantSpacingM > 0) 'psp': plantSpacingM, if (rowSpacingM > 0) 'rsp': rowSpacingM, if (wettedFraction != 1) 'wf': wettedFraction,
-    if (cropKey.isNotEmpty) 'ck': cropKey, if (plantingMonthDay.isNotEmpty) 'pd': plantingMonthDay, if (soilKey.isNotEmpty) 'soil': soilKey, if (slopePct != 0) 'slope': slopePct,
-    if (irrigationMethod != 'sprinkler') 'im': irrigationMethod, if (groundCover != 1) 'gc': groundCover, if (ecwDsM > 0) 'ecw': ecwDsM, if (rainMethod != 'usdaScs') 'erm': rainMethod,
-    if (useDependableRain) 'dep': true, if (plantWaterUse.isNotEmpty) 'pwu': plantWaterUse,
+    ..._base(),
+    'pts': _ptsJson(points),
+    'depth': netDepthMmPerDay,
+    'eff': efficiency,
+    'crop': crop,
+    if (emittersPerPlant > 0) 'epp': emittersPerPlant,
+    if (useWaterBalance) 'wb': true,
+    'eto': etoMmDay,
+    'kc': kc,
+    'awc': awcMmPerM,
+    'root': rootDepthM,
+    'mad': mad,
+    if (plantSpacingM > 0) 'psp': plantSpacingM,
+    if (rowSpacingM > 0) 'rsp': rowSpacingM,
+    if (wettedFraction != 1) 'wf': wettedFraction,
+    if (cropKey.isNotEmpty) 'ck': cropKey,
+    if (plantingMonthDay.isNotEmpty) 'pd': plantingMonthDay,
+    if (soilKey.isNotEmpty) 'soil': soilKey,
+    if (slopePct != 0) 'slope': slopePct,
+    if (irrigationMethod != 'sprinkler') 'im': irrigationMethod,
+    if (groundCover != 1) 'gc': groundCover,
+    if (ecwDsM > 0) 'ecw': ecwDsM,
+    if (rainMethod != 'usdaScs') 'erm': rainMethod,
+    if (useDependableRain) 'dep': true,
+    if (plantWaterUse.isNotEmpty) 'pwu': plantWaterUse,
   };
 }
 
@@ -1453,7 +2135,17 @@ class AreaEntity extends Entity with PolyEntity {
 const controllerAccessoryKinds = ['rain', 'soil', 'flow', 'freeze', 'wind', 'pumpRelay', 'surge'];
 
 class ControllerEntity extends Entity with PointEntity {
-  ControllerEntity({required super.id, super.layer = Layers.controllers, super.name, required this.position, this.stations = 12, this.outputVolts = 24, this.cost = 0, this.maxSimultaneous = 0, Map<String, double>? accessories}) : accessories = accessories ?? {};
+  ControllerEntity({
+    required super.id,
+    super.layer = Layers.controllers,
+    super.name,
+    required this.position,
+    this.stations = 12,
+    this.outputVolts = 24,
+    this.cost = 0,
+    this.maxSimultaneous = 0,
+    Map<String, double>? accessories,
+  }) : accessories = accessories ?? {};
   @override
   Pt position;
 
@@ -1477,13 +2169,31 @@ class ControllerEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.controller;
   @override
-  ControllerEntity clone({String? newId}) => ControllerEntity(id: newId ?? id, layer: layer, name: name, position: position, stations: stations, outputVolts: outputVolts, cost: cost, maxSimultaneous: maxSimultaneous, accessories: Map.of(accessories));
+  ControllerEntity clone({String? newId}) => ControllerEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    stations: stations,
+    outputVolts: outputVolts,
+    cost: cost,
+    maxSimultaneous: maxSimultaneous,
+    accessories: Map.of(accessories),
+  );
   @override
   ControllerEntity translated(Pt d) => clone()..position = position + d;
   @override
   ControllerEntity transformed(Affine t) => clone()..position = t.apply(position);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'st': stations, 'v': outputVolts, if (cost > 0) 'cost': cost, if (maxSimultaneous > 0) 'sim': maxSimultaneous, if (accessories.isNotEmpty) 'acc': accessories};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    'st': stations,
+    'v': outputVolts,
+    if (cost > 0) 'cost': cost,
+    if (maxSimultaneous > 0) 'sim': maxSimultaneous,
+    if (accessories.isNotEmpty) 'acc': accessories,
+  };
 }
 
 /// Wire route (trench or conduit) from a controller towards the valves:
@@ -1589,7 +2299,15 @@ class CommentEntity extends Entity with PointEntity {
   @override
   CommentEntity transformed(Affine t) => clone()..position = t.apply(position);
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'text': text, if (author.isNotEmpty) 'author': author, if (date.isNotEmpty) 'date': date, if (resolved) 'done': true, if (photo.isNotEmpty) 'photo': photo};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    'text': text,
+    if (author.isNotEmpty) 'author': author,
+    if (date.isNotEmpty) 'date': date,
+    if (resolved) 'done': true,
+    if (photo.isNotEmpty) 'photo': photo,
+  };
 }
 
 /// Revision cloud: a closed outline drawn as a chain of arcs around what
@@ -1650,7 +2368,8 @@ class RevisionCloudEntity extends Entity with PolyEntity {
   @override
   double distanceTo(Pt p) => math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
   @override
-  RevisionCloudEntity clone({String? newId}) => RevisionCloudEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), revision: revision, date: date, description: description, arcLength: arcLength);
+  RevisionCloudEntity clone({String? newId}) =>
+      RevisionCloudEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), revision: revision, date: date, description: description, arcLength: arcLength);
   @override
   RevisionCloudEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
   @override
@@ -1658,13 +2377,28 @@ class RevisionCloudEntity extends Entity with PolyEntity {
     ..points = _map(points, t)
     ..arcLength = arcLength * t.scale;
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), if (revision.isNotEmpty) 'rev': revision, if (date.isNotEmpty) 'date': date, if (description.isNotEmpty) 'desc': description, if (arcLength > 0) 'arc': arcLength};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'pts': _ptsJson(points),
+    if (revision.isNotEmpty) 'rev': revision,
+    if (date.isNotEmpty) 'date': date,
+    if (description.isNotEmpty) 'desc': description,
+    if (arcLength > 0) 'arc': arcLength,
+  };
 }
 
 extension EntityKindX on Entity {
   bool get isHydraulic => switch (type) {
-    EntityType.pipe || EntityType.sprayline || EntityType.tape || EntityType.outlet || EntityType.controlValve ||
-    EntityType.waterSupply || EntityType.pump || EntityType.misc || EntityType.junction || EntityType.pivot => true,
+    EntityType.pipe ||
+    EntityType.sprayline ||
+    EntityType.tape ||
+    EntityType.outlet ||
+    EntityType.controlValve ||
+    EntityType.waterSupply ||
+    EntityType.pump ||
+    EntityType.misc ||
+    EntityType.junction ||
+    EntityType.pivot => true,
     _ => false,
   };
 

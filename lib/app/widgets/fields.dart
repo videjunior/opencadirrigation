@@ -24,7 +24,8 @@ class _NumFieldState extends State<NumField> {
   late final TextEditingController _c = TextEditingController(text: _fmt(widget.value));
   final _focus = FocusNode();
 
-  String _fmt(double v) => v.isFinite ? (v == v.roundToDouble() && widget.decimals <= 2 ? v.toStringAsFixed(v.abs() < 1e-9 ? 0 : (widget.decimals == 0 ? 0 : 1)) : v.toStringAsFixed(widget.decimals)) : '';
+  String _fmt(double v) =>
+      v.isFinite ? (v == v.roundToDouble() && widget.decimals <= 2 ? v.toStringAsFixed(v.abs() < 1e-9 ? 0 : (widget.decimals == 0 ? 0 : 1)) : v.toStringAsFixed(widget.decimals)) : '';
 
   @override
   void initState() {
@@ -75,7 +76,10 @@ class _NumFieldState extends State<NumField> {
       onSubmitted: (_) => _commit(),
       style: const TextStyle(fontSize: 12),
     );
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: widget.width != null ? SizedBox(width: widget.width, child: f) : f);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: widget.width != null ? SizedBox(width: widget.width, child: f) : f,
+    );
   }
 }
 
@@ -130,7 +134,17 @@ class _TextFieldRowState extends State<TextFieldRow> {
 }
 
 class SpecDropdown<T> extends StatelessWidget {
-  const SpecDropdown({super.key, required this.label, required this.value, required this.items, required this.labelOf, required this.idOf, required this.onChanged, this.allowNull = false, this.nullLabel = '—'});
+  const SpecDropdown({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.labelOf,
+    required this.idOf,
+    required this.onChanged,
+    this.allowNull = false,
+    this.nullLabel = '—',
+  });
   final String label;
   final String? value;
   final List<T> items;
@@ -153,7 +167,11 @@ class SpecDropdown<T> extends StatelessWidget {
         style: TextStyle(fontSize: 12, color: Cad.fg),
         items: [
           if (allowNull) DropdownMenuItem<String?>(value: null, child: Text(nullLabel, style: const TextStyle(fontSize: 12))),
-          for (final i in items) DropdownMenuItem<String?>(value: idOf(i), child: Text(labelOf(i), style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
+          for (final i in items)
+            DropdownMenuItem<String?>(
+              value: idOf(i),
+              child: Text(labelOf(i), style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
+            ),
         ],
         onChanged: onChanged,
       ),
@@ -167,7 +185,10 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 10, bottom: 2),
-    child: Text(text.toUpperCase(), style: TextStyle(fontSize: 10.5, letterSpacing: 1, color: Cad.fg54, fontWeight: FontWeight.bold)),
+    child: Text(
+      text.toUpperCase(),
+      style: TextStyle(fontSize: 10.5, letterSpacing: 1, color: Cad.fg54, fontWeight: FontWeight.bold),
+    ),
   );
 }
 
@@ -180,16 +201,25 @@ class KV extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 1.5),
     child: LayoutBuilder(
-      builder: (context, box) => Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(child: Text(k, style: TextStyle(fontSize: 11.5, color: Cad.fg60))),
-        const SizedBox(width: 6),
-        // a long value ("15.2 m³/h @ 31.4 m.c.a. (surplus 2.0)") wraps
-        // instead of running off a narrow panel
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: box.maxWidth * 0.62),
-          child: Text(v, textAlign: TextAlign.end, style: TextStyle(fontSize: 11.5, color: color ?? Cad.fg, fontFamily: 'monospace')),
-        ),
-      ]),
+      builder: (context, box) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(k, style: TextStyle(fontSize: 11.5, color: Cad.fg60)),
+          ),
+          const SizedBox(width: 6),
+          // a long value ("15.2 m³/h @ 31.4 m.c.a. (surplus 2.0)") wraps
+          // instead of running off a narrow panel
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: box.maxWidth * 0.62),
+            child: Text(
+              v,
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 11.5, color: color ?? Cad.fg, fontFamily: 'monospace'),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -214,5 +244,9 @@ class _ScrollBodyState extends State<ScrollBody> {
   }
 
   @override
-  Widget build(BuildContext context) => Scrollbar(controller: _ctl, thumbVisibility: true, child: SingleChildScrollView(controller: _ctl, padding: const EdgeInsets.only(right: 12), child: widget.child));
+  Widget build(BuildContext context) => Scrollbar(
+    controller: _ctl,
+    thumbVisibility: true,
+    child: SingleChildScrollView(controller: _ctl, padding: const EdgeInsets.only(right: 12), child: widget.child),
+  );
 }

@@ -335,7 +335,9 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final headM = a.number('head_m', min: 0.5, max: 120) ?? (a.has('outlet') ? cat.outlet(outletSpec)?.nozzle(nozzle)?.defaultHeadM : null) ?? s.headM;
         final outletSpacing = a.number('emitter_spacing_m', min: 0.05, max: 50) ?? s.spacing;
         if (isTape && cat.tape(tapeSpec) == null) {
-          throw ToolInputError(cat.tapes.any((x) => x.enabled) ? 'Unknown tape "$tapeSpec" (search_catalog kind "tape").' : 'The catalogue has no enabled drip tape or dripline. ${catalogNextStep('tape')}');
+          throw ToolInputError(
+            cat.tapes.any((x) => x.enabled) ? 'Unknown tape "$tapeSpec" (search_catalog kind "tape").' : 'The catalogue has no enabled drip tape or dripline. ${catalogNextStep('tape')}',
+          );
         }
         if (!isTape && cat.outlet(outletSpec)?.nozzle(nozzle) == null) throw ToolInputError('Unknown emitter or nozzle "$outletSpec/$nozzle" (search_catalog kind "emitter").');
         for (final (k, usage) in [('lateral_pipe', PipeUsage.lateral), ('submain_pipe', PipeUsage.zone)]) {
@@ -476,10 +478,14 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final headM = a.number('head_m', min: 0.5, max: 120) ?? nz?.defaultHeadM ?? 10;
         if (kind == RingKind.dripline && cat.tape(tapeSpec) == null) {
           throw ToolInputError(
-            a.has('tape') ? 'Unknown tape "$tapeSpec" (search_catalog kind "tape").' : 'The catalogue has no enabled dripline for the rings. ${catalogNextStep('tape')} Then give "tape", or use kind "drippers".',
+            a.has('tape')
+                ? 'Unknown tape "$tapeSpec" (search_catalog kind "tape").'
+                : 'The catalogue has no enabled dripline for the rings. ${catalogNextStep('tape')} Then give "tape", or use kind "drippers".',
           );
         }
-        if (kind == RingKind.drippers && nz == null) throw ToolInputError('The catalogue has no enabled dripper or bubbler for the rings. ${catalogNextStep('emitter')} Then give "dripper", or use kind "dripline".');
+        if (kind == RingKind.drippers && nz == null) {
+          throw ToolInputError('The catalogue has no enabled dripper or bubbler for the rings. ${catalogNextStep('emitter')} Then give "dripper", or use kind "dripline".');
+        }
         final lateralPipe = a.str('lateral_pipe') ?? s.lateralPipeSpecId;
         if (a.has('lateral_pipe') && !cat.pipesFor(PipeUsage.lateral).any((x) => x.id == lateralPipe)) throw ToolInputError('"$lateralPipe" is not a lateral pipe of the catalogue.');
         final valve = a.str('valve');

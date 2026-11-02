@@ -82,7 +82,17 @@ class FieldSubdivisionOptions {
 
 /// One block of the subdivision.
 class FieldBlock {
-  FieldBlock({required this.polygon, required this.area, required this.flow, required this.submain, required this.valvePosition, required this.valvePoint, required this.strip, required this.column, required this.lateralLength});
+  FieldBlock({
+    required this.polygon,
+    required this.area,
+    required this.flow,
+    required this.submain,
+    required this.valvePosition,
+    required this.valvePoint,
+    required this.strip,
+    required this.column,
+    required this.lateralLength,
+  });
 
   /// Outline, counter-clockwise.
   final List<Pt> polygon;
@@ -126,15 +136,46 @@ class FieldSubdivision {
 
 /// Block-generator options for [block] of a subdivision along [direction]
 /// (the rest as [generateBlock] takes it).
-BlockOptions blockOptionsFor(FieldBlock block, Pt direction, {
-  required double lateralSpacing, bool isTape = false, String? tapeSpecId, String? outletSpecId, String? nozzleId, double outletSpacing = 4, double headM = 15,
-  double tapeInletHeadM = 10, String? lateralPipeSpecId, String? submainPipeSpecId, String? valveSpecId, double submainStub = 1.5, String? zoneName,
-  String submainLabel = 'Submain', String stubLabel = 'Stub', String lateralPrefix = 'L',
+BlockOptions blockOptionsFor(
+  FieldBlock block,
+  Pt direction, {
+  required double lateralSpacing,
+  bool isTape = false,
+  String? tapeSpecId,
+  String? outletSpecId,
+  String? nozzleId,
+  double outletSpacing = 4,
+  double headM = 15,
+  double tapeInletHeadM = 10,
+  String? lateralPipeSpecId,
+  String? submainPipeSpecId,
+  String? valveSpecId,
+  double submainStub = 1.5,
+  String? zoneName,
+  String submainLabel = 'Submain',
+  String stubLabel = 'Stub',
+  String lateralPrefix = 'L',
 }) => BlockOptions(
-  polygon: block.polygon, direction: direction, lateralSpacing: lateralSpacing, isTape: isTape, tapeSpecId: tapeSpecId, outletSpecId: outletSpecId, nozzleId: nozzleId,
-  outletSpacing: outletSpacing, headM: headM, tapeInletHeadM: tapeInletHeadM, lateralPipeSpecId: lateralPipeSpecId, submainPipeSpecId: submainPipeSpecId,
-  submainPosition: block.submain, valveSpecId: valveSpecId, valvePosition: block.valvePosition, submainStub: submainStub, zoneName: zoneName,
-  submainLabel: submainLabel, stubLabel: stubLabel, lateralPrefix: lateralPrefix,
+  polygon: block.polygon,
+  direction: direction,
+  lateralSpacing: lateralSpacing,
+  isTape: isTape,
+  tapeSpecId: tapeSpecId,
+  outletSpecId: outletSpecId,
+  nozzleId: nozzleId,
+  outletSpacing: outletSpacing,
+  headM: headM,
+  tapeInletHeadM: tapeInletHeadM,
+  lateralPipeSpecId: lateralPipeSpecId,
+  submainPipeSpecId: submainPipeSpecId,
+  submainPosition: block.submain,
+  valveSpecId: valveSpecId,
+  valvePosition: block.valvePosition,
+  submainStub: submainStub,
+  zoneName: zoneName,
+  submainLabel: submainLabel,
+  stubLabel: stubLabel,
+  lateralPrefix: lateralPrefix,
 );
 
 /// Pieces of the simple polygon [poly] where p·[n] ≥ [c] ([above]) or
@@ -212,10 +253,7 @@ List<List<Pt>> clipPolygonHalfPlane(List<Pt> poly, Pt n, double c, {bool above =
 }
 
 /// Pieces of [poly] between p·[n] = [a] and p·[n] = [b] (a < b).
-List<List<Pt>> clipPolygonSlab(List<Pt> poly, Pt n, double a, double b) => [
-  for (final piece in clipPolygonHalfPlane(poly, n, a))
-    ...clipPolygonHalfPlane(piece, n, b, above: false),
-];
+List<List<Pt>> clipPolygonSlab(List<Pt> poly, Pt n, double a, double b) => [for (final piece in clipPolygonHalfPlane(poly, n, a)) ...clipPolygonHalfPlane(piece, n, b, above: false)];
 
 double _areaBelow(List<Pt> poly, Pt n, double v) => clipPolygonHalfPlane(poly, n, v, above: false).fold(0.0, (s, q) => s + polygonArea(q).abs());
 
@@ -373,8 +411,7 @@ FieldBlock _block(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int
   }
   final area = polygonArea(poly).abs();
   final poc = o.pointOfConnection;
-  final submain = o.submainPosition ??
-      (o.centreFeed ? SubmainPosition.centre : (poc != null && poc.dot(dir) > (u0 + u1) / 2 ? SubmainPosition.end : SubmainPosition.start));
+  final submain = o.submainPosition ?? (o.centreFeed ? SubmainPosition.centre : (poc != null && poc.dot(dir) > (u0 + u1) / 2 ? SubmainPosition.end : SubmainPosition.start));
   final uSub = switch (submain) {
     SubmainPosition.start => u0,
     SubmainPosition.centre => (u0 + u1) / 2,
@@ -410,7 +447,14 @@ FieldBlock _block(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int
     _ => u1 - u0,
   };
   return FieldBlock(
-    polygon: poly, area: area, flow: o.flowPerHectare > 0 ? area / 1e4 * o.flowPerHectare : 0, submain: submain, valvePosition: valve, valvePoint: valvePoint,
-    strip: strip, column: column, lateralLength: lateral,
+    polygon: poly,
+    area: area,
+    flow: o.flowPerHectare > 0 ? area / 1e4 * o.flowPerHectare : 0,
+    submain: submain,
+    valvePosition: valve,
+    valvePoint: valvePoint,
+    strip: strip,
+    column: column,
+    lateralLength: lateral,
   );
 }

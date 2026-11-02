@@ -34,9 +34,20 @@ void main() {
         final entry = index.firstWhere((e) => e.file == name);
         expect(entry.items, pack.itemCount, reason: name);
         expect(entry.meta.brand, pack.meta.brand);
-        for (final id in [...pack.catalog.pipes.map((e) => e.id), ...pack.catalog.outlets.map((e) => e.id), ...pack.catalog.tapes.map((e) => e.id), ...pack.catalog.valves.map((e) => e.id), ...pack.catalog.pumps.map((e) => e.id), ...pack.catalog.fittings.map((e) => e.id)]) {
+        for (final id in [
+          ...pack.catalog.pipes.map((e) => e.id),
+          ...pack.catalog.outlets.map((e) => e.id),
+          ...pack.catalog.tapes.map((e) => e.id),
+          ...pack.catalog.valves.map((e) => e.id),
+          ...pack.catalog.pumps.map((e) => e.id),
+          ...pack.catalog.fittings.map((e) => e.id),
+        ]) {
           expect(ids.add(id), isTrue, reason: 'duplicate id $id in $name');
-          expect(defaults.outlet(id) ?? defaults.tape(id) ?? defaults.valve(id) ?? defaults.pipe(id) ?? defaults.pump(id) ?? defaults.fitting(id), isNull, reason: '$id clashes with the built-in catalogue');
+          expect(
+            defaults.outlet(id) ?? defaults.tape(id) ?? defaults.valve(id) ?? defaults.pipe(id) ?? defaults.pump(id) ?? defaults.fitting(id),
+            isNull,
+            reason: '$id clashes with the built-in catalogue',
+          );
         }
         // curves are plausible
         for (final o in pack.catalog.outlets) {
@@ -128,7 +139,16 @@ void main() {
   group('pack file format', () {
     test('encode / parse round trip keeps metadata and items', () {
       final cat = Catalog.defaultCatalog(lang: 'pt');
-      const meta = CatalogPackMeta(id: 'acme_2026', brand: 'ACME', name: 'ACME 2026', description: 'sprays', source: 'https://acme.example/ds.pdf', license: 'CC0-1.0', updated: '2026-09-16', author: 'me');
+      const meta = CatalogPackMeta(
+        id: 'acme_2026',
+        brand: 'ACME',
+        name: 'ACME 2026',
+        description: 'sprays',
+        source: 'https://acme.example/ds.pdf',
+        license: 'CC0-1.0',
+        updated: '2026-09-16',
+        author: 'me',
+      );
       final text = CatalogIo.encodePack(meta, cat);
       final j = jsonDecode(text) as Map<String, dynamic>;
       expect(j['format'], catalogPackFormat);
@@ -160,14 +180,25 @@ void main() {
       expect(() => CatalogIo.parsePack('[1, 2]'), throwsFormatException);
       expect(() => CatalogIo.parsePack('{"hello": 1}'), throwsFormatException);
       expect(() => CatalogIo.parsePack(CatalogIo.encodeIndex(const [])), throwsA(isA<FormatException>().having((e) => e.message, 'message', 'catalog_index_not_pack')));
-      expect(() => CatalogIo.parsePack('{"format": "opencadirrigation-catalog", "version": 99, "id": "x", "brand": "x", "catalog": {}}'), throwsA(isA<FormatException>().having((e) => e.message, 'message', 'catalog_pack_version')));
+      expect(
+        () => CatalogIo.parsePack('{"format": "opencadirrigation-catalog", "version": 99, "id": "x", "brand": "x", "catalog": {}}'),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', 'catalog_pack_version')),
+      );
       expect(() => CatalogIo.parseIndex('{"a": 1}'), throwsFormatException);
     });
 
     test('index round trip', () {
       final entries = [
-        const CatalogIndexEntry(meta: CatalogPackMeta(id: 'a', brand: 'A', description: 'd'), file: 'a.oci.cat', items: 3),
-        const CatalogIndexEntry(meta: CatalogPackMeta(id: 'b', brand: 'B'), file: 'sub/b.oci.cat', items: 1),
+        const CatalogIndexEntry(
+          meta: CatalogPackMeta(id: 'a', brand: 'A', description: 'd'),
+          file: 'a.oci.cat',
+          items: 3,
+        ),
+        const CatalogIndexEntry(
+          meta: CatalogPackMeta(id: 'b', brand: 'B'),
+          file: 'sub/b.oci.cat',
+          items: 1,
+        ),
       ];
       final back = CatalogIo.parseIndex(CatalogIo.encodeIndex(entries));
       expect(back.length, 2);
@@ -203,8 +234,14 @@ void main() {
       final toro = File('catalogs/toro.oci.cat').readAsStringSync();
       final served = <String, String>{
         'https://cat.example/repo/index.json': CatalogIo.encodeIndex([
-          const CatalogIndexEntry(meta: CatalogPackMeta(id: 'rainbird', brand: 'Rain Bird'), file: 'rainbird.oci.cat'),
-          const CatalogIndexEntry(meta: CatalogPackMeta(id: 'toro', brand: 'Toro'), file: 'packs/toro.oci.cat'),
+          const CatalogIndexEntry(
+            meta: CatalogPackMeta(id: 'rainbird', brand: 'Rain Bird'),
+            file: 'rainbird.oci.cat',
+          ),
+          const CatalogIndexEntry(
+            meta: CatalogPackMeta(id: 'toro', brand: 'Toro'),
+            file: 'packs/toro.oci.cat',
+          ),
         ]),
         'https://cat.example/repo/rainbird.oci.cat': rain,
         'https://cat.example/repo/packs/toro.oci.cat': toro,

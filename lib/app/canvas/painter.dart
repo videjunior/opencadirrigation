@@ -88,7 +88,13 @@ class CadPainter extends CustomPainter {
   TextPainter _text(String s, {double size = 11, Color? color, FontWeight weight = FontWeight.normal}) {
     final ink = color ?? Cad.canvasText;
     return _cachedText('$s|$size|${ink.toARGB32()}|$weight', () {
-      final tp = TextPainter(text: TextSpan(text: s, style: TextStyle(fontSize: size, color: ink, fontWeight: weight)), textDirection: TextDirection.ltr);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: s,
+          style: TextStyle(fontSize: size, color: ink, fontWeight: weight),
+        ),
+        textDirection: TextDirection.ltr,
+      );
       tp.layout();
       return tp;
     });
@@ -191,10 +197,10 @@ class CadPainter extends CustomPainter {
       final (text, color) = m.isGoogle && c.googleMapsKey == null
           ? (c.t('basemap.googleKeyMissing'), Cad.attention)
           : m.isGoogle && err != null
-              ? (c.t('basemap.googleError', {'e': err}), Cad.attention)
-              : m == BaseMap.custom && !BaseMapLayer.isValidTemplate(c.customTileUrl)
-                  ? (c.t('basemap.customInvalid'), Cad.attention)
-                  : (basemap!.attributionText(m), Cad.fg70);
+          ? (c.t('basemap.googleError', {'e': err}), Cad.attention)
+          : m == BaseMap.custom && !BaseMapLayer.isValidTemplate(c.customTileUrl)
+          ? (c.t('basemap.customInvalid'), Cad.attention)
+          : (basemap!.attributionText(m), Cad.fg70);
       if (text.isNotEmpty) _label(canvas, Offset(8, size.height - 36), text, size: 9, shift: Offset.zero, color: color);
     }
     if (c.showGrid) _grid(canvas, size);
@@ -327,7 +333,9 @@ class CadPainter extends CustomPainter {
         for (final stroke in s.strokes()) {
           _poly(canvas, stroke, p);
         }
-        if (s.kind == SymbolKind.northArrow && cam.scale * s.size > 8) _label(canvas, cam.toScreen(s.position + Pt.polar(s.size * 1.15, degToRad(s.rotationDeg) + math.pi / 2)), 'N', color: color, size: 11, bg: false, shift: const Offset(-4, -14));
+        if (s.kind == SymbolKind.northArrow && cam.scale * s.size > 8) {
+          _label(canvas, cam.toScreen(s.position + Pt.polar(s.size * 1.15, degToRad(s.rotationDeg) + math.pi / 2)), 'N', color: color, size: 11, bg: false, shift: const Offset(-4, -14));
+        }
       case TextEntity t:
         _worldText(canvas, t.position, t.text, t.height, color, t.rotationDeg);
       case DimensionEntity d:
@@ -465,7 +473,14 @@ class CadPainter extends CustomPainter {
       if (target != null && to != null) {
         final t = cam.toScreen(target);
         canvas.drawLine(o, t, _stroke(Cad.stakeOut, 1.6));
-        _label(canvas, Offset.lerp(o, t, 0.5)!, '${fmt(c.project.params.units.lengthFromSi(to.$1), to.$1 < 10 ? 2 : 1)} ${c.project.params.units.lengthLabel} · ${to.$2.round().toString().padLeft(3, '0')}°', color: Cad.stakeOut, size: 11, bg: true);
+        _label(
+          canvas,
+          Offset.lerp(o, t, 0.5)!,
+          '${fmt(c.project.params.units.lengthFromSi(to.$1), to.$1 < 10 ? 2 : 1)} ${c.project.params.units.lengthLabel} · ${to.$2.round().toString().padLeft(3, '0')}°',
+          color: Cad.stakeOut,
+          size: 11,
+          bg: true,
+        );
       }
     }
     // the user's marks for the AI assistant over everything drawn (its
@@ -505,12 +520,15 @@ class CadPainter extends CustomPainter {
           canvas.drawCircle(o, 5, p);
           canvas.drawLine(o + const Offset(-7, -5), o + const Offset(7, -5), p);
         case 'quadrant':
-          canvas.drawPath(Path()
-            ..moveTo(o.dx, o.dy - 6)
-            ..lineTo(o.dx + 6, o.dy)
-            ..lineTo(o.dx, o.dy + 6)
-            ..lineTo(o.dx - 6, o.dy)
-            ..close(), p);
+          canvas.drawPath(
+            Path()
+              ..moveTo(o.dx, o.dy - 6)
+              ..lineTo(o.dx + 6, o.dy)
+              ..lineTo(o.dx, o.dy + 6)
+              ..lineTo(o.dx - 6, o.dy)
+              ..close(),
+            p,
+          );
         case 'extension':
           canvas.drawLine(o + const Offset(-6, 0), o + const Offset(6, 0), p);
           canvas.drawLine(o + const Offset(0, -6), o + const Offset(0, 6), p);
@@ -716,9 +734,13 @@ class CadPainter extends CustomPainter {
     final step = cam.gridStep();
     final px = step * cam.scale;
     final o = Offset(size.width - px - 20, size.height - 22);
-    canvas.drawLine(o, o + Offset(px, 0), Paint()
-      ..color = Cad.fg70
-      ..strokeWidth = 2);
+    canvas.drawLine(
+      o,
+      o + Offset(px, 0),
+      Paint()
+        ..color = Cad.fg70
+        ..strokeWidth = 2,
+    );
     canvas.drawLine(o, o + const Offset(0, -5), _fill(Cad.fg70));
     canvas.drawLine(o + Offset(px, 0), o + Offset(px, -5), _fill(Cad.fg70));
     _label(canvas, o, '${fmt(c.units.lengthFromSi(step), step < 1 ? 2 : 0)} ${c.units.lengthLabel}', size: 10, bg: false, shift: Offset(px / 2 - 12, -16), color: Cad.fg70);
@@ -1123,7 +1145,10 @@ class CadPainter extends CustomPainter {
   }
 
   /// The enabled conditional label rules of [target] (once per paint).
-  List<LabelRule> _rules(String target) => _ruleCache[target] ??= [for (final r in c.project.labelRules) if (r.enabled && r.target == target) r];
+  List<LabelRule> _rules(String target) => _ruleCache[target] ??= [
+    for (final r in c.project.labelRules)
+      if (r.enabled && r.target == target) r,
+  ];
   final Map<String, List<LabelRule>> _ruleCache = {};
 
   /// The labels of the rules of [target] that hold for the values [valueOf]
@@ -1393,7 +1418,14 @@ class CadPainter extends CustomPainter {
       if (run != null && cam.scale > 0.8) {
         final wire = c.project.catalog.wire(run.stationWireId);
         final w = wire == null ? '' : '  ${fmt(wire.sectionMm2, wire.sectionMm2 < 10 ? 1 : 0)} mm²';
-        _label(canvas, s, '${run.station == 0 ? c.t('elec.masterTag') : c.t('elec.stationTag', {'n': '${run.station}'})}$w  ${fmt(run.volts, 1)} V', size: 9, color: run.ok ? Cad.wireOk : Cad.warning, shift: Offset(r + 3, 7));
+        _label(
+          canvas,
+          s,
+          '${run.station == 0 ? c.t('elec.masterTag') : c.t('elec.stationTag', {'n': '${run.station}'})}$w  ${fmt(run.volts, 1)} V',
+          size: 9,
+          color: run.ok ? Cad.wireOk : Cad.warning,
+          shift: Offset(r + 3, 7),
+        );
       }
     }
   }
@@ -1599,7 +1631,16 @@ class CadPainter extends CustomPainter {
       return;
     }
     // laid out once at a reference size and scaled to the zoom
-    final tp = _cachedText('world|$text|${color.toARGB32()}', () => TextPainter(text: TextSpan(text: text, style: TextStyle(fontSize: _worldTextSize, color: color)), textDirection: TextDirection.ltr)..layout());
+    final tp = _cachedText(
+      'world|$text|${color.toARGB32()}',
+      () => TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(fontSize: _worldTextSize, color: color),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(),
+    );
     final o = cam.toScreen(pos);
     canvas.save();
     canvas.translate(o.dx, o.dy);
@@ -1733,7 +1774,10 @@ class CadPainter extends CustomPainter {
         text: TextSpan(
           style: TextStyle(fontSize: 11, color: ink),
           children: [
-            TextSpan(text: label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            TextSpan(
+              text: label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
             if (short.isNotEmpty) TextSpan(text: ' $short'),
           ],
         ),

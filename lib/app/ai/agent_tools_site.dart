@@ -64,10 +64,7 @@ List<AgentTool> siteTools(AgentToolbox b) {
           throw ToolInputError(e.status == null ? '${e.message} Ask the user for the coordinates.' : (e.status == 429 ? '${e.message} Wait, or ask the user for coordinates.' : e.message));
         }
         if (hits.isEmpty) return ToolOutput('No place found for "$q". Try a simpler query (town, region, country) or ask the user for coordinates.\n$nominatimAttribution');
-        final lines = [
-          for (final h in hits)
-            '${h.name} | lat ${h.lat}, lon ${h.lon} | ${h.kind}${h.bbox != null ? ' | bbox lat ${h.bbox![0]}…${h.bbox![1]}, lon ${h.bbox![2]}…${h.bbox![3]}' : ''}',
-        ];
+        final lines = [for (final h in hits) '${h.name} | lat ${h.lat}, lon ${h.lon} | ${h.kind}${h.bbox != null ? ' | bbox lat ${h.bbox![0]}…${h.bbox![1]}, lon ${h.bbox![2]}…${h.bbox![3]}' : ''}'];
         return ToolOutput('${lines.join('\n')}\n$nominatimAttribution');
       },
     ),
@@ -240,7 +237,11 @@ List<AgentTool> siteTools(AgentToolbox b) {
           final place = photoPlace(bytes);
           if (place == null) throw ToolInputError('"$name" carries no GPS position: give `at` [x, y] in metres (ask the user where it was taken, or use the device position the attachment mentions).');
           final g = c.project.meta.georef;
-          if (g == null) throw ToolInputError('The photo\'s GPS gives latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}, but the project has no georeference: set_site first, or give `at`.');
+          if (g == null) {
+            throw ToolInputError(
+              'The photo\'s GPS gives latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}, but the project has no georeference: set_site first, or give `at`.',
+            );
+          }
           final (x, y) = g.fromLatLon(place.lat, place.lon);
           at = Pt(x, y);
         }
@@ -263,7 +264,30 @@ List<AgentTool> siteTools(AgentToolbox b) {
 /// coordinates (GIS files and georeferenced rasters are placed by their
 /// coordinate system).
 bool isCadFile(String lowerName) {
-  const placed = ['.kml', '.kmz', '.shp', '.zip', '.geojson', '.json', '.gpx', '.xml', '.landxml', '.csv', '.txt', '.xyz', '.pnezd', '.pts', '.las', '.laz', '.tif', '.tiff', '.inp', '.jpg', '.jpeg', '.png'];
+  const placed = [
+    '.kml',
+    '.kmz',
+    '.shp',
+    '.zip',
+    '.geojson',
+    '.json',
+    '.gpx',
+    '.xml',
+    '.landxml',
+    '.csv',
+    '.txt',
+    '.xyz',
+    '.pnezd',
+    '.pts',
+    '.las',
+    '.laz',
+    '.tif',
+    '.tiff',
+    '.inp',
+    '.jpg',
+    '.jpeg',
+    '.png',
+  ];
   return !placed.any(lowerName.endsWith);
 }
 

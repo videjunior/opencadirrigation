@@ -338,7 +338,18 @@ class NetworkBuilder {
           final lumps = _lump(positions, total);
           final emitterAt = <double, EmitterRef>{};
           for (final (d, cnt, idx) in lumps) {
-            emitterAt[d] = EmitterRef(entityId: e.id, index: idx, curve: nozzle.curve, count: cnt, nominalHead: s.headM, allowedMin: lo, allowedMax: hi, cv: nozzle.cv, offset: s.riserHeight + outlet.riserHeightM + s.depth, label: nozzle.name);
+            emitterAt[d] = EmitterRef(
+              entityId: e.id,
+              index: idx,
+              curve: nozzle.curve,
+              count: cnt,
+              nominalHead: s.headM,
+              allowedMin: lo,
+              allowedMax: hi,
+              cv: nozzle.cv,
+              offset: s.riserHeight + outlet.riserHeightM + s.depth,
+              label: nozzle.name,
+            );
           }
           _addLateralLinks(e.id, pts, scope, emitterAt, usage: PipeUsage.lateral, pipeSpecId: spec?.id, computerSized: s.computerSized || spec == null, depth: s.depth, perEmitterK: 0.0);
         case TapeEntity t:
@@ -356,9 +367,32 @@ class NetworkBuilder {
           final hi = math.min(spec.maxHeadM, t.inletHeadM * (1 + spec.tolAbovePct / 100));
           final emitterAt = <double, EmitterRef>{};
           for (final (d, cnt, idx) in lumps) {
-            emitterAt[d] = EmitterRef(entityId: e.id, index: idx, curve: spec.emitter, count: cnt, nominalHead: t.inletHeadM, allowedMin: lo, allowedMax: hi, cv: spec.cv, offset: t.depth, label: spec.name);
+            emitterAt[d] = EmitterRef(
+              entityId: e.id,
+              index: idx,
+              curve: spec.emitter,
+              count: cnt,
+              nominalHead: t.inletHeadM,
+              allowedMin: lo,
+              allowedMax: hi,
+              cv: spec.cv,
+              offset: t.depth,
+              label: spec.name,
+            );
           }
-          _addLateralLinks(e.id, pts, scope, emitterAt, usage: PipeUsage.lateral, pipeSpecId: null, tapeSpecId: spec.id, computerSized: false, depth: t.depth, perEmitterK: spec.barbK, endFlow: t.flushingFlow);
+          _addLateralLinks(
+            e.id,
+            pts,
+            scope,
+            emitterAt,
+            usage: PipeUsage.lateral,
+            pipeSpecId: null,
+            tapeSpecId: spec.id,
+            computerSized: false,
+            depth: t.depth,
+            perEmitterK: spec.barbK,
+            endFlow: t.flushingFlow,
+          );
         default:
           break;
       }
@@ -366,77 +400,128 @@ class NetworkBuilder {
 
     // 3. point items (two passes: devices after supplies and valves)
     for (final pass in [0, 1]) {
-    for (final e in project.entities) {
-      final isDevice = e is PumpEntity || e is MiscHydraulicEntity;
-      if ((pass == 0) == isDevice) continue;
-      switch (e) {
-        case OutletEntity o:
-          final outlet = catalog.outlet(o.outletSpecId);
-          final nozzle = outlet?.nozzle(o.nozzleId);
-          if (outlet == null || nozzle == null) {
-            model.warnings.add('outlet_spec_missing:${e.id}');
-            continue;
-          }
-          final n = _nodeAt(o.position, o.scope, create: false);
-          if (n.id.isEmpty) {
-            model.unconnectedEntities.add(e.id);
-            continue;
-          }
-          final (lo, hi) = _window(nozzle, o.headM);
-          n.entityIds.add(e.id);
-          n.emitters.add(EmitterRef(entityId: e.id, index: -1, curve: nozzle.curve, count: 1, nominalHead: o.headM, allowedMin: lo, allowedMax: hi, cv: nozzle.cv, offset: o.riserHeight + outlet.riserHeightM, label: nozzle.name));
-        case JunctionEntity j:
-          final n = _nodeAt(j.position, j.scope);
-          n.entityIds.add(e.id);
-          if (j.fixedElevation != null) n.fixedElevation = j.fixedElevation;
-        case PivotEntity p:
-          final n = _nodeAt(p.center, HydraulicScope.mainline, create: false);
-          if (n.id.isEmpty) {
-            model.unconnectedEntities.add(e.id);
-            continue;
-          }
-          n.entityIds.add(e.id);
-          model.pivotNodes[e.id] = n.id;
-        case WaterSupplyEntity s:
-          final n = _nodeAt(s.position, HydraulicScope.mainline);
-          n.entityIds.add(e.id);
-          n.isSupply = true;
-          n.supplyEntityId = e.id;
-          model.supplyNodes[e.id] = n.id;
-          if (n.links.isEmpty) model.unconnectedEntities.add(e.id);
-        case ControlValveEntity v:
-          final nm = _nodeAt(v.position, HydraulicScope.mainline);
-          final nz = _nodeAt(v.position, HydraulicScope.zone);
-          nm.entityIds.add(e.id);
-          nz.entityIds.add(e.id);
-          final l = GLink(id: 'cv_${e.id}', from: nm.id, to: nz.id, kind: GLinkKind.controlValve, scope: HydraulicScope.mainline, entityId: e.id, valveSpecId: v.valveSpecId, depth: v.depth, a: v.position, b: v.position);
-          _register(l);
-          model.valveNodes[e.id] = (nm.id, nz.id);
-          if (nz.links.length <= 1) model.warnings.add('valve_no_zone_pipes:${e.id}');
-        case PumpEntity p:
-          final spec = catalog.pump(p.pumpSpecId);
-          if (spec == null) {
-            model.warnings.add('pump_spec_missing:${e.id}');
-            continue;
-          }
-          // a fixed-speed motor turns with the mains frequency; a variable
-          // speed drive makes its own (its speeds are set by the designer)
-          final speed = p.speedRatio * (p.targetPressureM > 0 ? 1 : spec.mainsSpeedRatio(project.params.mainsHz));
-          _insertInline(e.id, p.position, p.scope, (up, down) => GLink(id: 'pump_${e.id}', from: up, to: down, kind: GLinkKind.pump, scope: p.scope, entityId: e.id, pumpSpecId: spec.id, speedRatio: speed, a: p.position, b: p.position));
-        case MiscHydraulicEntity m:
-          final spec = catalog.valve(m.valveSpecId);
-          if (spec == null) {
-            model.warnings.add('valve_spec_missing:${e.id}');
-            continue;
-          }
-          final kind = switch (spec.kind) { ValveKind.prv => GLinkKind.prv, ValveKind.psv => GLinkKind.psv, ValveKind.fcv => GLinkKind.fcv, _ => GLinkKind.device };
-          final pressureSet = kind == GLinkKind.prv || kind == GLinkKind.psv ? (m.settingM > 0 ? m.settingM : spec.defaultSettingM) : 0.0;
-          final flowSet = kind == GLinkKind.fcv ? (m.settingFlow > 0 ? m.settingFlow : spec.maxFlow) : 0.0;
-          _insertInline(e.id, m.position, m.scope, (up, down) => GLink(id: 'dev_${e.id}', from: up, to: down, kind: kind, scope: m.scope, entityId: e.id, valveSpecId: spec.id, settingM: pressureSet, settingFlow: flowSet, a: m.position, b: m.position));
-        default:
-          break;
+      for (final e in project.entities) {
+        final isDevice = e is PumpEntity || e is MiscHydraulicEntity;
+        if ((pass == 0) == isDevice) continue;
+        switch (e) {
+          case OutletEntity o:
+            final outlet = catalog.outlet(o.outletSpecId);
+            final nozzle = outlet?.nozzle(o.nozzleId);
+            if (outlet == null || nozzle == null) {
+              model.warnings.add('outlet_spec_missing:${e.id}');
+              continue;
+            }
+            final n = _nodeAt(o.position, o.scope, create: false);
+            if (n.id.isEmpty) {
+              model.unconnectedEntities.add(e.id);
+              continue;
+            }
+            final (lo, hi) = _window(nozzle, o.headM);
+            n.entityIds.add(e.id);
+            n.emitters.add(
+              EmitterRef(
+                entityId: e.id,
+                index: -1,
+                curve: nozzle.curve,
+                count: 1,
+                nominalHead: o.headM,
+                allowedMin: lo,
+                allowedMax: hi,
+                cv: nozzle.cv,
+                offset: o.riserHeight + outlet.riserHeightM,
+                label: nozzle.name,
+              ),
+            );
+          case JunctionEntity j:
+            final n = _nodeAt(j.position, j.scope);
+            n.entityIds.add(e.id);
+            if (j.fixedElevation != null) n.fixedElevation = j.fixedElevation;
+          case PivotEntity p:
+            final n = _nodeAt(p.center, HydraulicScope.mainline, create: false);
+            if (n.id.isEmpty) {
+              model.unconnectedEntities.add(e.id);
+              continue;
+            }
+            n.entityIds.add(e.id);
+            model.pivotNodes[e.id] = n.id;
+          case WaterSupplyEntity s:
+            final n = _nodeAt(s.position, HydraulicScope.mainline);
+            n.entityIds.add(e.id);
+            n.isSupply = true;
+            n.supplyEntityId = e.id;
+            model.supplyNodes[e.id] = n.id;
+            if (n.links.isEmpty) model.unconnectedEntities.add(e.id);
+          case ControlValveEntity v:
+            final nm = _nodeAt(v.position, HydraulicScope.mainline);
+            final nz = _nodeAt(v.position, HydraulicScope.zone);
+            nm.entityIds.add(e.id);
+            nz.entityIds.add(e.id);
+            final l = GLink(
+              id: 'cv_${e.id}',
+              from: nm.id,
+              to: nz.id,
+              kind: GLinkKind.controlValve,
+              scope: HydraulicScope.mainline,
+              entityId: e.id,
+              valveSpecId: v.valveSpecId,
+              depth: v.depth,
+              a: v.position,
+              b: v.position,
+            );
+            _register(l);
+            model.valveNodes[e.id] = (nm.id, nz.id);
+            if (nz.links.length <= 1) model.warnings.add('valve_no_zone_pipes:${e.id}');
+          case PumpEntity p:
+            final spec = catalog.pump(p.pumpSpecId);
+            if (spec == null) {
+              model.warnings.add('pump_spec_missing:${e.id}');
+              continue;
+            }
+            // a fixed-speed motor turns with the mains frequency; a variable
+            // speed drive makes its own (its speeds are set by the designer)
+            final speed = p.speedRatio * (p.targetPressureM > 0 ? 1 : spec.mainsSpeedRatio(project.params.mainsHz));
+            _insertInline(
+              e.id,
+              p.position,
+              p.scope,
+              (up, down) => GLink(id: 'pump_${e.id}', from: up, to: down, kind: GLinkKind.pump, scope: p.scope, entityId: e.id, pumpSpecId: spec.id, speedRatio: speed, a: p.position, b: p.position),
+            );
+          case MiscHydraulicEntity m:
+            final spec = catalog.valve(m.valveSpecId);
+            if (spec == null) {
+              model.warnings.add('valve_spec_missing:${e.id}');
+              continue;
+            }
+            final kind = switch (spec.kind) {
+              ValveKind.prv => GLinkKind.prv,
+              ValveKind.psv => GLinkKind.psv,
+              ValveKind.fcv => GLinkKind.fcv,
+              _ => GLinkKind.device,
+            };
+            final pressureSet = kind == GLinkKind.prv || kind == GLinkKind.psv ? (m.settingM > 0 ? m.settingM : spec.defaultSettingM) : 0.0;
+            final flowSet = kind == GLinkKind.fcv ? (m.settingFlow > 0 ? m.settingFlow : spec.maxFlow) : 0.0;
+            _insertInline(
+              e.id,
+              m.position,
+              m.scope,
+              (up, down) => GLink(
+                id: 'dev_${e.id}',
+                from: up,
+                to: down,
+                kind: kind,
+                scope: m.scope,
+                entityId: e.id,
+                valveSpecId: spec.id,
+                settingM: pressureSet,
+                settingFlow: flowSet,
+                a: m.position,
+                b: m.position,
+              ),
+            );
+          default:
+            break;
+        }
       }
-    }
     }
 
     // 4. node depths
@@ -532,7 +617,10 @@ class NetworkBuilder {
   /// from 22.5° a 45° elbow; at a node of three or more pipes the straightest
   /// pair is the run (half the run K on each) and the others are branches.
   void _assignFittingLosses() {
-    final laterals = {for (final e in project.entities) if (e is SpraylineEntity || e is TapeEntity) e.id};
+    final laterals = {
+      for (final e in project.entities)
+        if (e is SpraylineEntity || e is TapeEntity) e.id,
+    };
     Pt away(GLink l, String nodeId) => l.from == nodeId ? (l.b - l.a).normalized : (l.a - l.b).normalized;
     for (final n in model.nodes.values) {
       final pipes = n.links.where((l) => l.kind == GLinkKind.pipe && !laterals.contains(l.entityId) && l.length > 0).toList();
@@ -599,12 +687,39 @@ class NetworkBuilder {
       b.entityIds.add(entityId);
       if (a.id == b.id) continue;
       final len = pts[i - 1].distanceTo(pts[i]);
-      final l = GLink(id: '${entityId}_${i - 1}', from: a.id, to: b.id, kind: GLinkKind.pipe, scope: scope, entityId: entityId, segmentIndex: i - 1, length: len, pipeSpecId: pipeSpecId, computerSized: computerSized, usage: usage, depth: depth, a: pts[i - 1], b: pts[i]);
+      final l = GLink(
+        id: '${entityId}_${i - 1}',
+        from: a.id,
+        to: b.id,
+        kind: GLinkKind.pipe,
+        scope: scope,
+        entityId: entityId,
+        segmentIndex: i - 1,
+        length: len,
+        pipeSpecId: pipeSpecId,
+        computerSized: computerSized,
+        usage: usage,
+        depth: depth,
+        a: pts[i - 1],
+        b: pts[i],
+      );
       _register(l);
     }
   }
 
-  void _addLateralLinks(String entityId, List<Pt> pts, HydraulicScope scope, Map<double, EmitterRef> emitterAt, {required PipeUsage usage, String? pipeSpecId, String? tapeSpecId, bool computerSized = false, double depth = 0, double perEmitterK = 0, double endFlow = 0}) {
+  void _addLateralLinks(
+    String entityId,
+    List<Pt> pts,
+    HydraulicScope scope,
+    Map<double, EmitterRef> emitterAt, {
+    required PipeUsage usage,
+    String? pipeSpecId,
+    String? tapeSpecId,
+    bool computerSized = false,
+    double depth = 0,
+    double perEmitterK = 0,
+    double endFlow = 0,
+  }) {
     // Build a list of stations along the polyline: vertices + emitter lumps.
     final total = polylineLength(pts);
     final stations = <double>{0, total};
@@ -629,7 +744,25 @@ class NetworkBuilder {
         emittersSince += em.count;
       }
       if (prev != null && prev.id != n.id) {
-        final l = GLink(id: '${entityId}_${seg++}', from: prev.id, to: n.id, kind: GLinkKind.pipe, scope: scope, entityId: entityId, segmentIndex: seg - 1, length: d - prevD, pipeSpecId: pipeSpecId, tapeSpecId: tapeSpecId, computerSized: computerSized, usage: usage, minorK: perEmitterK * emittersSince, depth: depth, a: pointAlongPolyline(pts, prevD), b: p, emitterCountAlong: emittersSince);
+        final l = GLink(
+          id: '${entityId}_${seg++}',
+          from: prev.id,
+          to: n.id,
+          kind: GLinkKind.pipe,
+          scope: scope,
+          entityId: entityId,
+          segmentIndex: seg - 1,
+          length: d - prevD,
+          pipeSpecId: pipeSpecId,
+          tapeSpecId: tapeSpecId,
+          computerSized: computerSized,
+          usage: usage,
+          minorK: perEmitterK * emittersSince,
+          depth: depth,
+          a: pointAlongPolyline(pts, prevD),
+          b: p,
+          emitterCountAlong: emittersSince,
+        );
         _register(l);
         emittersSince = 0;
       }
@@ -637,7 +770,19 @@ class NetworkBuilder {
       prevD = d;
     }
     if (endFlow > 0 && prev != null) {
-      prev.emitters.add(EmitterRef(entityId: entityId, index: -2, curve: EmitterCurve(k: endFlow, x: 0), count: 1, nominalHead: 1, allowedMin: 0, allowedMax: double.infinity, cv: 0, label: 'flush'));
+      prev.emitters.add(
+        EmitterRef(
+          entityId: entityId,
+          index: -2,
+          curve: EmitterCurve(k: endFlow, x: 0),
+          count: 1,
+          nominalHead: 1,
+          allowedMin: 0,
+          allowedMax: double.infinity,
+          cv: 0,
+          label: 'flush',
+        ),
+      );
     }
   }
 
@@ -720,7 +865,29 @@ class NetworkBuilder {
       if (identical(l, upstreamLink)) continue;
       // move link end from n to down
       final idx = model.links.indexOf(l);
-      final moved = GLink(id: l.id, from: l.from == n.id ? down.id : l.from, to: l.to == n.id ? down.id : l.to, kind: l.kind, scope: l.scope, entityId: l.entityId, segmentIndex: l.segmentIndex, length: l.length, pipeSpecId: l.pipeSpecId, tapeSpecId: l.tapeSpecId, computerSized: l.computerSized, usage: l.usage, minorK: l.minorK, depth: l.depth, settingM: l.settingM, valveSpecId: l.valveSpecId, pumpSpecId: l.pumpSpecId, speedRatio: l.speedRatio, a: l.a, b: l.b, emitterCountAlong: l.emitterCountAlong);
+      final moved = GLink(
+        id: l.id,
+        from: l.from == n.id ? down.id : l.from,
+        to: l.to == n.id ? down.id : l.to,
+        kind: l.kind,
+        scope: l.scope,
+        entityId: l.entityId,
+        segmentIndex: l.segmentIndex,
+        length: l.length,
+        pipeSpecId: l.pipeSpecId,
+        tapeSpecId: l.tapeSpecId,
+        computerSized: l.computerSized,
+        usage: l.usage,
+        minorK: l.minorK,
+        depth: l.depth,
+        settingM: l.settingM,
+        valveSpecId: l.valveSpecId,
+        pumpSpecId: l.pumpSpecId,
+        speedRatio: l.speedRatio,
+        a: l.a,
+        b: l.b,
+        emitterCountAlong: l.emitterCountAlong,
+      );
       model.links[idx] = moved;
       n.links.remove(l);
       final other = model.nodes[l.other(n.id)]!;

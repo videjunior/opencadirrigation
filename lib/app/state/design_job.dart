@@ -25,7 +25,10 @@ class DesignRequest {
   /// Builds the request for [project], leaving embedded images behind.
   factory DesignRequest.of(Project project, {required String lang, bool sizeZones = true, bool sizeMain = true}) {
     final j = project.toJson(includeEntities: false);
-    j['entities'] = [for (final e in project.entities) if (!isDesignPassive(e)) e.toJson()];
+    j['entities'] = [
+      for (final e in project.entities)
+        if (!isDesignPassive(e)) e.toJson(),
+    ];
     return DesignRequest(project: j, lang: lang, strings: languagePack(lang)?.strings, sizeZones: sizeZones, sizeMain: sizeMain);
   }
 
@@ -37,13 +40,7 @@ class DesignRequest {
   final bool sizeZones;
   final bool sizeMain;
 
-  Map<String, dynamic> toJson() => {
-    'project': project,
-    'lang': lang,
-    if (strings != null) 'strings': strings,
-    'sizeZones': sizeZones,
-    'sizeMain': sizeMain,
-  };
+  Map<String, dynamic> toJson() => {'project': project, 'lang': lang, if (strings != null) 'strings': strings, 'sizeZones': sizeZones, 'sizeMain': sizeMain};
 
   static DesignRequest fromJson(Map<String, dynamic> j) => DesignRequest(
     project: j['project'] as Map<String, dynamic>,
@@ -110,12 +107,7 @@ Future<void> runDesignJob(Map<String, dynamic> request, void Function(Map<String
     if (req.strings != null && !isLanguagePackInstalled(req.lang)) installLanguagePack(req.lang, LanguagePack(strings: req.strings!));
     final t = I18n(req.lang);
     final d = Designer(project, label: (k) => t(k));
-    final r = await d.designAllAsync(
-      sizeZones: req.sizeZones,
-      sizeMain: req.sizeMain,
-      onProgress: (p) => post({'type': 'progress', ...p.toJson()}),
-      yieldControl: yieldControl ?? _noYield,
-    );
+    final r = await d.designAllAsync(sizeZones: req.sizeZones, sizeMain: req.sizeMain, onProgress: (p) => post({'type': 'progress', ...p.toJson()}), yieldControl: yieldControl ?? _noYield);
     List<Advice>? advice;
     try {
       advice = buildAdvice(project, results: r);
@@ -131,7 +123,10 @@ Future<void> runDesignJob(Map<String, dynamic> request, void Function(Map<String
 /// Puts the entities of a finished job into [project], keeping the passive
 /// entities (images) that were not sent, at their former positions.
 void applyDesignResponse(Project project, DesignResponse response) {
-  final kept = <(int, Entity)>[for (var i = 0; i < project.entities.length; i++) if (isDesignPassive(project.entities[i])) (i, project.entities[i])];
+  final kept = <(int, Entity)>[
+    for (var i = 0; i < project.entities.length; i++)
+      if (isDesignPassive(project.entities[i])) (i, project.entities[i]),
+  ];
   final merged = List<Entity>.of(response.entities);
   for (final (i, e) in kept) {
     merged.insert(i < merged.length ? i : merged.length, e);
@@ -181,7 +176,12 @@ class InThreadDesignRunner implements DesignRunner {
 }
 
 /// Decodes one message from a worker or isolate and routes it.
-void dispatchDesignMessage(Map<String, dynamic> m, {void Function(DesignProgress progress)? onProgress, required void Function(DesignResponse response) onDone, required void Function(DesignJobException error) onError}) {
+void dispatchDesignMessage(
+  Map<String, dynamic> m, {
+  void Function(DesignProgress progress)? onProgress,
+  required void Function(DesignResponse response) onDone,
+  required void Function(DesignJobException error) onError,
+}) {
   switch (m['type']) {
     case 'progress':
       onProgress?.call(DesignProgress.fromJson(m));

@@ -129,7 +129,12 @@ void main() {
       expect(BaseMap.googleHybrid.isGoogle, isTrue);
       expect(BaseMap.satellite.isGoogle, isFalse);
       expect(BaseMapLayer.googleSessionRequest(BaseMap.googleRoads, 'en'), {'mapType': 'roadmap', 'language': 'en-US'});
-      expect(BaseMapLayer.googleSessionRequest(BaseMap.googleHybrid, 'pt'), {'mapType': 'satellite', 'layerTypes': ['layerRoadmap'], 'language': 'pt-BR', 'region': 'BR'});
+      expect(BaseMapLayer.googleSessionRequest(BaseMap.googleHybrid, 'pt'), {
+        'mapType': 'satellite',
+        'layerTypes': ['layerRoadmap'],
+        'language': 'pt-BR',
+        'region': 'BR',
+      });
       expect(BaseMapLayer.googleSessionRequest(BaseMap.googleTerrain, 'es')['layerTypes'], ['layerRoadmap']);
       expect(BaseMapLayer.googleSessionRequest(BaseMap.googleSatellite, 'es'), {'mapType': 'satellite', 'language': 'es-419'});
       expect(HttpStatusException(400, '{"error": {"code": 400, "message": "API key not valid. Please pass a valid API key."}}').message, 'API key not valid. Please pass a valid API key.');
@@ -189,7 +194,8 @@ void main() {
     });
 
     test('google viewport answers give the copyright and the maximum zoom', () {
-      const text = '{"copyright":"Map data ©2026 Google","maxZoomRects":[{"maxZoom":19,"north":-15.5,"south":-15.7,"east":-47.6,"west":-47.8},{"maxZoom":22,"north":-15.0,"south":-15.2,"east":-47.0,"west":-47.2}]}';
+      const text =
+          '{"copyright":"Map data ©2026 Google","maxZoomRects":[{"maxZoom":19,"north":-15.5,"south":-15.7,"east":-47.6,"west":-47.8},{"maxZoom":22,"north":-15.0,"south":-15.2,"east":-47.0,"west":-47.2}]}';
       expect(BaseMapLayer.maxZoomFromViewport(text, -15.55, -15.65, -47.65, -47.75), 19);
       expect(BaseMapLayer.maxZoomFromViewport(text, -15.05, -15.15, -47.05, -47.15), 22);
       expect(BaseMapLayer.maxZoomFromViewport(text, -15.05, -15.65, -47.05, -47.75), 19, reason: 'both touched: the lowest wins');

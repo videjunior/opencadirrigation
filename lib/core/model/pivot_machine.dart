@@ -52,9 +52,9 @@ class PivotMachine {
     this.towerMotorKw = 0.55,
     this.supplyCableM = 0,
     this.supplyCableMm2 = 0,
-  })  : vriBankEdgesM = vriBankEdgesM ?? [],
-        vriZones = vriZones ?? {},
-        vriSectors = vriSectors ?? [];
+  }) : vriBankEdgesM = vriBankEdgesM ?? [],
+       vriZones = vriZones ?? {},
+       vriSectors = vriSectors ?? [];
 
   /// Regulated package (the target nozzle pressure picks the regulator
   /// rating), or unregulated (the end pressure is the least at every nozzle).
@@ -118,15 +118,38 @@ class PivotMachine {
   PivotMachine clone() => PivotMachine.fromJson(toJson());
 
   Map<String, dynamic> _json() => {
-    if (!regulated) 'reg': false, if (nozzleHeightM > 0) 'hnoz': nozzleHeightM, if (spanArchM > 0) 'arch': spanArchM, if (dropInnerMm != 19) 'drop': dropInnerMm,
-    if (minNozzleNumber != 2) 'nmin': minNozzleNumber, if (maxNozzleNumber != 64) 'nmax': maxNozzleNumber,
-    if (endGun != 'auto') 'gun': endGun, if (endGunRadiusM > 0) 'rg': endGunRadiusM, if (endGunSpecId != null) 'gspec': endGunSpecId, if (endGunBooster) 'boost': true,
-    if (motorRpm > 0) 'rpm': motorRpm, if (centerGearRatio > 0) 'g1': centerGearRatio, if (wheelGearRatio > 0) 'g2': wheelGearRatio, if (tyreRollingDiameterM > 0) 'tyre': tyreRollingDiameterM,
-    if (towerSpeedMPerMin > 0) 'v100': towerSpeedMPerMin, if (timerPct != 100) 'timer': timerPct, if (minTimerPct != 5) 'tmin': minTimerPct,
-    if (cornerArmLengthM > 0) 'cal': cornerArmLengthM, if (cornerArmOverhangM > 0) 'cao': cornerArmOverhangM, if (cornerArmMaxDeg != 120) 'camax': cornerArmMaxDeg, if (cornerArmBanks != 4) 'cab': cornerArmBanks,
-    if (guidePathId != null) 'gpath': guidePathId, if (guideOffsetM != 0) 'goff': guideOffsetM, if (clockwise) 'cw': true,
-    if (vriStepDeg != 2) 'vris': vriStepDeg, if (vriBankEdgesM.isNotEmpty) 'vrib': vriBankEdgesM, if (vriZones.isNotEmpty) 'vriz': vriZones, if (vriSectors.isNotEmpty) 'vri': [for (final s in vriSectors) s.toJson()],
-    if (voltage > 0) 'volt': voltage, if (towerMotorKw != 0.55) 'mkw': towerMotorKw, if (supplyCableM > 0) 'scl': supplyCableM, if (supplyCableMm2 > 0) 'smm2': supplyCableMm2,
+    if (!regulated) 'reg': false,
+    if (nozzleHeightM > 0) 'hnoz': nozzleHeightM,
+    if (spanArchM > 0) 'arch': spanArchM,
+    if (dropInnerMm != 19) 'drop': dropInnerMm,
+    if (minNozzleNumber != 2) 'nmin': minNozzleNumber,
+    if (maxNozzleNumber != 64) 'nmax': maxNozzleNumber,
+    if (endGun != 'auto') 'gun': endGun,
+    if (endGunRadiusM > 0) 'rg': endGunRadiusM,
+    if (endGunSpecId != null) 'gspec': endGunSpecId,
+    if (endGunBooster) 'boost': true,
+    if (motorRpm > 0) 'rpm': motorRpm,
+    if (centerGearRatio > 0) 'g1': centerGearRatio,
+    if (wheelGearRatio > 0) 'g2': wheelGearRatio,
+    if (tyreRollingDiameterM > 0) 'tyre': tyreRollingDiameterM,
+    if (towerSpeedMPerMin > 0) 'v100': towerSpeedMPerMin,
+    if (timerPct != 100) 'timer': timerPct,
+    if (minTimerPct != 5) 'tmin': minTimerPct,
+    if (cornerArmLengthM > 0) 'cal': cornerArmLengthM,
+    if (cornerArmOverhangM > 0) 'cao': cornerArmOverhangM,
+    if (cornerArmMaxDeg != 120) 'camax': cornerArmMaxDeg,
+    if (cornerArmBanks != 4) 'cab': cornerArmBanks,
+    if (guidePathId != null) 'gpath': guidePathId,
+    if (guideOffsetM != 0) 'goff': guideOffsetM,
+    if (clockwise) 'cw': true,
+    if (vriStepDeg != 2) 'vris': vriStepDeg,
+    if (vriBankEdgesM.isNotEmpty) 'vrib': vriBankEdgesM,
+    if (vriZones.isNotEmpty) 'vriz': vriZones,
+    if (vriSectors.isNotEmpty) 'vri': [for (final s in vriSectors) s.toJson()],
+    if (voltage > 0) 'volt': voltage,
+    if (towerMotorKw != 0.55) 'mkw': towerMotorKw,
+    if (supplyCableM > 0) 'scl': supplyCableM,
+    if (supplyCableMm2 > 0) 'smm2': supplyCableMm2,
   };
 
   Map<String, dynamic> toJson() => _json();
@@ -135,16 +158,47 @@ class PivotMachine {
     if (j == null) return PivotMachine();
     double d(String k, double def) => (j[k] as num?)?.toDouble() ?? def;
     return PivotMachine(
-      regulated: j['reg'] as bool? ?? true, nozzleHeightM: d('hnoz', 0), spanArchM: d('arch', 0), dropInnerMm: d('drop', 19),
-      minNozzleNumber: (j['nmin'] as num?)?.toInt() ?? 2, maxNozzleNumber: (j['nmax'] as num?)?.toInt() ?? 64,
-      endGun: switch (j['gun']) { 'none' || 'fullCircle' || 'corners' => j['gun'] as String, _ => 'auto' }, endGunRadiusM: d('rg', 0), endGunSpecId: j['gspec'] as String?, endGunBooster: j['boost'] as bool? ?? false,
-      motorRpm: d('rpm', 0), centerGearRatio: d('g1', 0), wheelGearRatio: d('g2', 0), tyreRollingDiameterM: d('tyre', 0), towerSpeedMPerMin: d('v100', 0), timerPct: d('timer', 100), minTimerPct: d('tmin', 5),
-      cornerArmLengthM: d('cal', 0), cornerArmOverhangM: d('cao', 0), cornerArmMaxDeg: d('camax', 120), cornerArmBanks: (j['cab'] as num?)?.toInt() ?? 4,
-      guidePathId: j['gpath'] as String?, guideOffsetM: d('goff', 0), clockwise: j['cw'] as bool? ?? false,
-      vriStepDeg: d('vris', 2), vriBankEdgesM: [for (final v in (j['vrib'] as List?) ?? const []) if (v is num) v.toDouble()],
-      vriZones: {for (final e in ((j['vriz'] as Map?) ?? const {}).entries) if (e.key is String && e.value is num) e.key as String: (e.value as num).toDouble()},
+      regulated: j['reg'] as bool? ?? true,
+      nozzleHeightM: d('hnoz', 0),
+      spanArchM: d('arch', 0),
+      dropInnerMm: d('drop', 19),
+      minNozzleNumber: (j['nmin'] as num?)?.toInt() ?? 2,
+      maxNozzleNumber: (j['nmax'] as num?)?.toInt() ?? 64,
+      endGun: switch (j['gun']) {
+        'none' || 'fullCircle' || 'corners' => j['gun'] as String,
+        _ => 'auto',
+      },
+      endGunRadiusM: d('rg', 0),
+      endGunSpecId: j['gspec'] as String?,
+      endGunBooster: j['boost'] as bool? ?? false,
+      motorRpm: d('rpm', 0),
+      centerGearRatio: d('g1', 0),
+      wheelGearRatio: d('g2', 0),
+      tyreRollingDiameterM: d('tyre', 0),
+      towerSpeedMPerMin: d('v100', 0),
+      timerPct: d('timer', 100),
+      minTimerPct: d('tmin', 5),
+      cornerArmLengthM: d('cal', 0),
+      cornerArmOverhangM: d('cao', 0),
+      cornerArmMaxDeg: d('camax', 120),
+      cornerArmBanks: (j['cab'] as num?)?.toInt() ?? 4,
+      guidePathId: j['gpath'] as String?,
+      guideOffsetM: d('goff', 0),
+      clockwise: j['cw'] as bool? ?? false,
+      vriStepDeg: d('vris', 2),
+      vriBankEdgesM: [
+        for (final v in (j['vrib'] as List?) ?? const [])
+          if (v is num) v.toDouble(),
+      ],
+      vriZones: {
+        for (final e in ((j['vriz'] as Map?) ?? const {}).entries)
+          if (e.key is String && e.value is num) e.key as String: (e.value as num).toDouble(),
+      },
       vriSectors: [for (final s in (j['vri'] as List?) ?? const []) ?VriSectorDepth.fromJson(s)],
-      voltage: d('volt', 0), towerMotorKw: d('mkw', 0.55), supplyCableM: d('scl', 0), supplyCableMm2: d('smm2', 0),
+      voltage: d('volt', 0),
+      towerMotorKw: d('mkw', 0.55),
+      supplyCableM: d('scl', 0),
+      supplyCableMm2: d('smm2', 0),
     );
   }
 }

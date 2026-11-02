@@ -41,9 +41,7 @@ class _Eof implements Exception {}
 /// All multi-byte integers are assembled arithmetically so the code is safe
 /// on the web (dart2js bitwise operations are 32-bit).
 class _BitReader {
-  _BitReader(this.data, int startByte, int endByte)
-      : pos = startByte * 8,
-        end = endByte * 8;
+  _BitReader(this.data, int startByte, int endByte) : pos = startByte * 8, end = endByte * 8;
   final Uint8List data;
   int pos;
   final int end;
@@ -271,7 +269,35 @@ class _BitReader {
   }
 
   static int _cp1252(int c) {
-    const map = {0x80: 0x20AC, 0x82: 0x201A, 0x83: 0x0192, 0x84: 0x201E, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021, 0x88: 0x02C6, 0x89: 0x2030, 0x8A: 0x0160, 0x8B: 0x2039, 0x8C: 0x0152, 0x8E: 0x017D, 0x91: 0x2018, 0x92: 0x2019, 0x93: 0x201C, 0x94: 0x201D, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014, 0x98: 0x02DC, 0x99: 0x2122, 0x9A: 0x0161, 0x9B: 0x203A, 0x9C: 0x0153, 0x9E: 0x017E, 0x9F: 0x0178};
+    const map = {
+      0x80: 0x20AC,
+      0x82: 0x201A,
+      0x83: 0x0192,
+      0x84: 0x201E,
+      0x85: 0x2026,
+      0x86: 0x2020,
+      0x87: 0x2021,
+      0x88: 0x02C6,
+      0x89: 0x2030,
+      0x8A: 0x0160,
+      0x8B: 0x2039,
+      0x8C: 0x0152,
+      0x8E: 0x017D,
+      0x91: 0x2018,
+      0x92: 0x2019,
+      0x93: 0x201C,
+      0x94: 0x201D,
+      0x95: 0x2022,
+      0x96: 0x2013,
+      0x97: 0x2014,
+      0x98: 0x02DC,
+      0x99: 0x2122,
+      0x9A: 0x0161,
+      0x9B: 0x203A,
+      0x9C: 0x0153,
+      0x9E: 0x017E,
+      0x9F: 0x0178,
+    };
     return map[c] ?? c;
   }
 }
@@ -365,6 +391,7 @@ class DwgReader {
   void _t(int handle, String msg) {
     if (traceHandle == handle) debugLog.add('trace $handle: $msg');
   }
+
   final Map<String, int> typeCounts = {};
   int objectCount = 0;
 
@@ -514,7 +541,9 @@ class DwgReader {
     final pageMapId = _rl(h, 0x50);
     final pageMapAddr = _rl(h, 0x54) + _rl(h, 0x58) * 4294967296 + 0x100;
     final sectionMapId = _rl(h, 0x5C);
-    debugLog.add('hdr magic=${String.fromCharCodes(h.sublist(0, 11))} pageMapId=$pageMapId pageMapAddr=$pageMapAddr sectionMapId=$sectionMapId pages=${_rl(h, 0x40)} sections=${_rl(h, 0x60)} file=${file.length}');
+    debugLog.add(
+      'hdr magic=${String.fromCharCodes(h.sublist(0, 11))} pageMapId=$pageMapId pageMapAddr=$pageMapAddr sectionMapId=$sectionMapId pages=${_rl(h, 0x40)} sections=${_rl(h, 0x60)} file=${file.length}',
+    );
     // page map
     final pm = _readSystemPage(pageMapAddr, 0x41630e3b);
     final pages = <int, (int, int)>{}; // page number -> (address, size)
@@ -700,7 +729,6 @@ class DwgReader {
     return dst;
   }
 
-
   // ---- R2007 container: pages are Reed–Solomon interleaved (the parity
   // bytes are ignored, only the de-interleave matters) and compressed with a
   // variant of the 2004 scheme that reverses byte runs.
@@ -718,7 +746,9 @@ class DwgReader {
     int f(int i) => _rl(hdr, i * 8) + _rl(hdr, i * 8 + 4) * 4294967296;
     final pagesMapCorrection = f(3), pagesMapOffset = f(7), pagesMapSizeComp = f(10), pagesMapSizeUncomp = f(11);
     final sectionsMapSizeComp = f(22), sectionsMapId = f(24), sectionsMapSizeUncomp = f(25), sectionsMapCorrection = f(27);
-    debugLog.add('r2007 hdr size=${f(0)} file=${f(1)} pagesMap@${0x480 + pagesMapOffset} comp=$pagesMapSizeComp uncomp=$pagesMapSizeUncomp corr=$pagesMapCorrection sectionsMapId=$sectionsMapId comp=$sectionsMapSizeComp uncomp=$sectionsMapSizeUncomp sections=${f(20)}');
+    debugLog.add(
+      'r2007 hdr size=${f(0)} file=${f(1)} pagesMap@${0x480 + pagesMapOffset} comp=$pagesMapSizeComp uncomp=$pagesMapSizeUncomp corr=$pagesMapCorrection sectionsMapId=$sectionsMapId comp=$sectionsMapSizeComp uncomp=$sectionsMapSizeUncomp sections=${f(20)}',
+    );
     if (pagesMapSizeUncomp <= 0 || pagesMapSizeUncomp > file.length || sectionsMapSizeUncomp <= 0 || sectionsMapSizeUncomp > file.length) {
       throw DwgUnsupportedException('corrupt', 'R2007 file header is damaged.');
     }
@@ -1130,7 +1160,28 @@ class DwgReader {
     } else {
       bitsize = 0; // R13/R14: after the handle and EED (objects) or the graphics (entities)
     }
-    final interesting = type == 51 || type == 49 || type == 7 || type == 8 || (type >= 20 && type <= 26) || type == 1 || type == 10 || type == 11 || type == 15 || type == 16 || type == 17 || type == 18 || type == 19 || type == 27 || type == 44 || type == 77 || type == 31 || type == 32 || type == 35 || type == 36 || type == 78;
+    final interesting =
+        type == 51 ||
+        type == 49 ||
+        type == 7 ||
+        type == 8 ||
+        (type >= 20 && type <= 26) ||
+        type == 1 ||
+        type == 10 ||
+        type == 11 ||
+        type == 15 ||
+        type == 16 ||
+        type == 17 ||
+        type == 18 ||
+        type == 19 ||
+        type == 27 ||
+        type == 44 ||
+        type == 77 ||
+        type == 31 ||
+        type == 32 ||
+        type == 35 ||
+        type == 36 ||
+        type == 78;
     _t(handle, 'bitsize=$bitsize');
     if (!interesting) return;
     _stage = 'handle';
@@ -1325,7 +1376,10 @@ class DwgReader {
     final invis = br.readBS(); // invisibility
     var lw = 0;
     if (ver.index >= DwgVersion.r2000.index) lw = br.readRC(); // lineweight
-    _t(handle, 'entmode=$entmode reactors=$numReactors xdicMissing=$xdicMissing noLinks=$noLinks color=$color ltFlags=$ltFlags psFlags=$psFlags matFlags=$matFlags invis=$invis lw=$lw pos=${br.pos - start * 8}');
+    _t(
+      handle,
+      'entmode=$entmode reactors=$numReactors xdicMissing=$xdicMissing noLinks=$noLinks color=$color ltFlags=$ltFlags psFlags=$psFlags matFlags=$matFlags invis=$invis lw=$lw pos=${br.pos - start * 8}',
+    );
     if (traceHandle == handle) {
       final tail = objData.sublist(math.max(start, start + size - 8), math.min(objData.length, start + size + 2));
       _t(handle, 'tail bytes=${tail.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')} size=$size bitsize=$bitsize');
@@ -1924,7 +1978,9 @@ class DwgReader {
   DwgResult _build() {
     final resolved = _entities.where((e) => _layers.containsKey(e.layerHandle)).length;
     debugLog.add('layerResolved=$resolved/${_entities.length} layerHandles=${_layers.keys.take(6).toList()} entityLayerRefs=${_entities.map((e) => e.layerHandle).toSet().take(6).toList()}');
-    debugLog.add('layers=${_layers.length} vertices=${_vertices.length} rawEntities=${_entities.length} entmodes=${_entities.map((e) => e.entmode).fold<Map<int, int>>({}, (m, v) => m..[v] = (m[v] ?? 0) + 1)} blockHeaders=${_blockHeaders.length} modelSpace=$_modelSpaceHandle owners=${_entities.where((e) => e.entmode == 0).map((e) => e.owner).toSet().take(6).toList()}');
+    debugLog.add(
+      'layers=${_layers.length} vertices=${_vertices.length} rawEntities=${_entities.length} entmodes=${_entities.map((e) => e.entmode).fold<Map<int, int>>({}, (m, v) => m..[v] = (m[v] ?? 0) + 1)} blockHeaders=${_blockHeaders.length} modelSpace=$_modelSpaceHandle owners=${_entities.where((e) => e.entmode == 0).map((e) => e.owner).toSet().take(6).toList()}',
+    );
     final layerList = <DxfLayer>[];
     final seen = <String>{};
     for (final l in _layers.values) {
@@ -1957,10 +2013,14 @@ class DwgReader {
         case 31:
         case 32:
         case 78:
-          return e.points.length >= 3 ? DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points, closed: true, rotation: e.rotation, height: e.height, solid: e.solidFill, elevation: e.elevation) : null;
+          return e.points.length >= 3
+              ? DxfEntity(type: 'HATCH', layer: layer, color: color, points: e.points, closed: true, rotation: e.rotation, height: e.height, solid: e.solidFill, elevation: e.elevation)
+              : null;
         case 15:
         case 16:
-          final handles = e.ownedVertices.isNotEmpty ? e.ownedVertices.where((h) => _vertices[h] != null).toList() : (_vertices.keys.where((h) => h >= e.firstVertex && h <= e.lastVertex).toList()..sort());
+          final handles = e.ownedVertices.isNotEmpty
+              ? e.ownedVertices.where((h) => _vertices[h] != null).toList()
+              : (_vertices.keys.where((h) => h >= e.firstVertex && h <= e.lastVertex).toList()..sort());
           var pts = [for (final h in handles) _vertices[h]!];
           final bulges = [for (final h in handles) _vertexBulge[h] ?? 0.0];
           if (e.type == 15 && bulges.any((b) => b != 0)) pts = _tessellateBulges(pts, bulges, e.closed);
@@ -1976,7 +2036,20 @@ class DwgReader {
       }
     }
 
-    DxfInsert toInsert(_Entity e) => DxfInsert(name: _blocks[e.blockHandle]?.name ?? '', layer: layerOf(e), color: colorOf(e), position: e.points.first, scaleX: e.scaleX, scaleY: e.scaleY, rotation: e.rotation, cols: math.max(1, e.cols), rows: math.max(1, e.rows), colSpacing: e.colSpacing, rowSpacing: e.rowSpacing, ocsMirror: e.ocsMirror);
+    DxfInsert toInsert(_Entity e) => DxfInsert(
+      name: _blocks[e.blockHandle]?.name ?? '',
+      layer: layerOf(e),
+      color: colorOf(e),
+      position: e.points.first,
+      scaleX: e.scaleX,
+      scaleY: e.scaleY,
+      rotation: e.rotation,
+      cols: math.max(1, e.cols),
+      rows: math.max(1, e.rows),
+      colSpacing: e.colSpacing,
+      rowSpacing: e.rowSpacing,
+      ocsMirror: e.ocsMirror,
+    );
     // block membership: owned lists (R2004+), owner handle, or the handle range (R13–R2000)
     final blockOfHandle = <int, _Block>{};
     for (final b in _blocks.values) {
@@ -2040,7 +2113,16 @@ class DwgReader {
     for (final d in ents) {
       counts[d.type] = (counts[d.type] ?? 0) + 1;
     }
-    debugLog.add('blockHeaders=${_blockHeaders.length} blocks=${[for (final b in _blocks.values.take(12)) '${b.name}@${b.handle}:base=${b.base},first=${b.first},last=${b.last},owned=${b.owned.length},ents=${blockEntities[b.handle]?.length ?? 0}']} inserts=${[for (final i in inserts.take(8)) '${i.name}@${i.position} s=${i.scaleX},${i.scaleY} r=${i.rotation}']} nonModel=${_entities.where((e) => e.entmode != 2).map((e) => 'h${e.handle}:t${e.type}:m${e.entmode}:o${e.owner}').take(8).toList()}');
-    return DwgResult(document: DxfDocument(entities: ents, layers: layerList), version: ver.name, warnings: warnings, typeCounts: counts, objectCount: objectCount, debugLog: debugLog);
+    debugLog.add(
+      'blockHeaders=${_blockHeaders.length} blocks=${[for (final b in _blocks.values.take(12)) '${b.name}@${b.handle}:base=${b.base},first=${b.first},last=${b.last},owned=${b.owned.length},ents=${blockEntities[b.handle]?.length ?? 0}']} inserts=${[for (final i in inserts.take(8)) '${i.name}@${i.position} s=${i.scaleX},${i.scaleY} r=${i.rotation}']} nonModel=${_entities.where((e) => e.entmode != 2).map((e) => 'h${e.handle}:t${e.type}:m${e.entmode}:o${e.owner}').take(8).toList()}',
+    );
+    return DwgResult(
+      document: DxfDocument(entities: ents, layers: layerList),
+      version: ver.name,
+      warnings: warnings,
+      typeCounts: counts,
+      objectCount: objectCount,
+      debugLog: debugLog,
+    );
   }
 }

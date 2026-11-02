@@ -40,16 +40,11 @@ class UniformityStats {
   /// Coefficient of variation of the sample (fraction).
   final double cv;
 
-  static const empty = UniformityStats(
-    count: 0, mean: 0, min: 0, max: 0, cu: 0, du: 0, eu: 0, us: 0, qvar: 0, cv: 0);
+  static const empty = UniformityStats(count: 0, mean: 0, min: 0, max: 0, cu: 0, du: 0, eu: 0, us: 0, qvar: 0, cv: 0);
 
   /// Computes the statistics from a list of emitter flows.
   /// [manufacturerCv] fraction (e.g. 0.03), [emittersPerPlant] n.
-  static UniformityStats compute(
-    List<double> flows, {
-    double manufacturerCv = 0,
-    int emittersPerPlant = 1,
-  }) {
+  static UniformityStats compute(List<double> flows, {double manufacturerCv = 0, int emittersPerPlant = 1}) {
     final q = flows.where((v) => v.isFinite).toList();
     if (q.isEmpty) return empty;
     final n = q.length;
@@ -83,10 +78,7 @@ class UniformityStats {
     return 'unacceptable';
   }
 
-  Map<String, dynamic> toJson() => {
-    'count': count, 'mean': mean, 'min': min, 'max': max, 'cu': cu, 'du': du,
-    'eu': eu, 'us': us, 'qvar': qvar, 'cv': cv,
-  };
+  Map<String, dynamic> toJson() => {'count': count, 'mean': mean, 'min': min, 'max': max, 'cu': cu, 'du': du, 'eu': eu, 'us': us, 'qvar': qvar, 'cv': cv};
 
   static UniformityStats fromJson(Map<String, dynamic>? j) {
     if (j == null) return empty;

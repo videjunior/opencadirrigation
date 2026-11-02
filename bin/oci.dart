@@ -57,7 +57,8 @@ const _commands = ['design', 'analyze', 'check', 'export', 'bom'];
 const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper'};
 const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version'};
 
-const usageText = '''
+const usageText =
+    '''
 Usage: dart run bin/oci.dart <command> <project.oci.json> [options]
 
 Commands:
@@ -295,28 +296,30 @@ class _Session {
     final advice = buildAdvice(project, results: r);
     final count = {for (final l in AdviceLevel.values) l: advice.where((x) => x.level == l).length};
     if (a.flags.contains('json')) {
-      out.writeln(const JsonEncoder.withIndent('  ').convert({
-        'project': project.meta.name,
-        'designed': r != null,
-        'errors': count[AdviceLevel.error],
-        'warnings': count[AdviceLevel.warning],
-        'notes': count[AdviceLevel.info],
-        'messages': [
-          for (final x in advice)
-            {
-              'level': x.level.name,
-              'code': x.code,
-              'raw': x.raw,
-              'message': adviceText(project, x),
-              if (x.context.isNotEmpty) 'context': x.context,
-              if (x.entityIds.isNotEmpty) 'entities': x.entityIds,
-              if (x.value.isNotEmpty) 'value': x.value,
-              if (t.has('adv.${x.code}.why')) 'why': t('adv.${x.code}.why'),
-              if (t.has('adv.${x.code}.how')) 'how': t('adv.${x.code}.how'),
-              if (x.fixes.isNotEmpty) 'fixes': [for (final f in x.fixes) f.name],
-            },
-        ],
-      }));
+      out.writeln(
+        const JsonEncoder.withIndent('  ').convert({
+          'project': project.meta.name,
+          'designed': r != null,
+          'errors': count[AdviceLevel.error],
+          'warnings': count[AdviceLevel.warning],
+          'notes': count[AdviceLevel.info],
+          'messages': [
+            for (final x in advice)
+              {
+                'level': x.level.name,
+                'code': x.code,
+                'raw': x.raw,
+                'message': adviceText(project, x),
+                if (x.context.isNotEmpty) 'context': x.context,
+                if (x.entityIds.isNotEmpty) 'entities': x.entityIds,
+                if (x.value.isNotEmpty) 'value': x.value,
+                if (t.has('adv.${x.code}.why')) 'why': t('adv.${x.code}.why'),
+                if (t.has('adv.${x.code}.how')) 'how': t('adv.${x.code}.how'),
+                if (x.fixes.isNotEmpty) 'fixes': [for (final f in x.fixes) f.name],
+              },
+          ],
+        }),
+      );
     } else {
       out.writeln('${t('check.title')}: ${project.meta.name}');
       _printAdvice(project, advice, explain: true);
@@ -341,7 +344,9 @@ class _Session {
 
   void _printAdvice(Project project, List<Advice> advice, {bool explain = false}) {
     final count = {for (final l in AdviceLevel.values) l: advice.where((x) => x.level == l).length};
-    out.writeln('${t('reports.messages')}: ${count[AdviceLevel.error]} ${t('adv.level.error')}, ${count[AdviceLevel.warning]} ${t('adv.level.warning')}, ${count[AdviceLevel.info]} ${t('adv.level.info')}');
+    out.writeln(
+      '${t('reports.messages')}: ${count[AdviceLevel.error]} ${t('adv.level.error')}, ${count[AdviceLevel.warning]} ${t('adv.level.warning')}, ${count[AdviceLevel.info]} ${t('adv.level.info')}',
+    );
     for (final x in advice) {
       out.writeln('  ${x.level.name.padRight(7)} ${adviceText(project, x)}');
       if (!explain) continue;
@@ -421,7 +426,12 @@ class _Session {
       results: results,
       unconnected: results?.unconnected ?? const {},
       layerNames: {for (final l in project.layers) l.name: t.has('layer.${l.name}') ? t('layer.${l.name}') : l.name},
-      labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w, entityName: entityName), entityName: entityName),
+      labels: ReportLabels(
+        t: t.call,
+        has: t.has,
+        warning: (w) => t.warning(w, entityName: entityName),
+        entityName: entityName,
+      ),
     );
   }
 
@@ -437,7 +447,15 @@ class _Session {
           headers: [t('rep.zone'), '${t('rep.flow')} (${u.flowLabel})', '${t('rep.pRequired')} ($p)', '${t('rep.pMin')} ($p)', '${t('rep.pMax')} ($p)', 'EU %', t('rep.warnings')],
           rows: [
             for (final z in r.zones.values)
-              [z.zoneName, RNum(u.flowFromSi(z.totalFlow), 1), RNum(u.pressureFromHead(z.requiredUpstreamHead), 1), RNum(u.pressureFromHead(z.minOutletPressure), 1), RNum(u.pressureFromHead(z.maxOutletPressure), 1), RNum(z.uniformity.eu, 1), z.warnings.length],
+              [
+                z.zoneName,
+                RNum(u.flowFromSi(z.totalFlow), 1),
+                RNum(u.pressureFromHead(z.requiredUpstreamHead), 1),
+                RNum(u.pressureFromHead(z.minOutletPressure), 1),
+                RNum(u.pressureFromHead(z.maxOutletPressure), 1),
+                RNum(z.uniformity.eu, 1),
+                z.warnings.length,
+              ],
           ],
         ),
       if (r.systemFlows.isNotEmpty)
@@ -447,7 +465,12 @@ class _Session {
           headers: [t('rep.flowName'), '${t('rep.flow')} (${u.flowLabel})', '${t('rep.supply')} ${t('rep.pRequired')} ($p)', t('rep.warnings')],
           rows: [
             for (final f in r.systemFlows)
-              [f.name, RNum(u.flowFromSi(f.totalFlow), 1), f.supplies.isEmpty ? '-' : RNum(u.pressureFromHead(f.supplies.map((s) => s.requiredHead).reduce((x, y) => x > y ? x : y)), 1), f.warnings.length],
+              [
+                f.name,
+                RNum(u.flowFromSi(f.totalFlow), 1),
+                f.supplies.isEmpty ? '-' : RNum(u.pressureFromHead(f.supplies.map((s) => s.requiredHead).reduce((x, y) => x > y ? x : y)), 1),
+                f.warnings.length,
+              ],
           ],
         ),
       if (r.pivots.isNotEmpty)
@@ -478,9 +501,13 @@ class _Session {
   /// The XLSX of the app's report export, for some tables only.
   Uint8List xlsxOf(List<ReportTable> tables) => XlsxWriter.write([
     for (final tb in tables)
-      XlsxSheet(name: tb.title, headers: tb.headers, rows: [
-        for (final r in tb.rows) [for (final c in r) c is RNum ? double.parse(c.value.toStringAsFixed(c.decimals)) : c],
-      ]),
+      XlsxSheet(
+        name: tb.title,
+        headers: tb.headers,
+        rows: [
+          for (final r in tb.rows) [for (final c in r) c is RNum ? double.parse(c.value.toStringAsFixed(c.decimals)) : c],
+        ],
+      ),
   ]);
 
   /// Registers in [PdfFonts.shared] the bundled fonts the PDF texts need
@@ -488,7 +515,11 @@ class _Session {
   void _preparePdfFonts(Project project, ProjectExporter ex, {required bool reports}) {
     final fonts = PdfFonts.shared..language = lang;
     final texts = <String>[
-      project.meta.name, project.meta.client, project.meta.site, project.meta.designer, project.meta.notes,
+      project.meta.name,
+      project.meta.client,
+      project.meta.site,
+      project.meta.designer,
+      project.meta.notes,
       for (final l in project.layers) l.name,
       for (final e in project.entities) ...[
         e.name,
@@ -499,7 +530,13 @@ class _Session {
       ],
       for (final k in const ['plot.title', 'reports.zone', 'reports.bom', 'rep.zone', 'rep.description', 'menu.mainline', 'name.report']) t(k),
       if (reports)
-        for (final tb in ex.reportTables()) ...[tb.title, ...tb.headers, for (final row in tb.rows) for (final c in row) if (c is String) c],
+        for (final tb in ex.reportTables()) ...[
+          tb.title,
+          ...tb.headers,
+          for (final row in tb.rows)
+            for (final c in row)
+              if (c is String) c,
+        ],
     ].where((s) => s.isNotEmpty).toList();
     for (var round = 0; round < 3; round++) {
       final missing = fonts.missingFor(texts);

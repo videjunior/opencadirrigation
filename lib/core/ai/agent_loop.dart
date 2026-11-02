@@ -262,7 +262,18 @@ enum AgentStop { done, maxTokens, stepLimit, budget, cancelled, error }
 
 /// What a turn produced.
 class AgentTurn {
-  AgentTurn({required this.messages, required this.text, required this.usage, required this.cost, required this.steps, required this.stop, required this.calls, this.error, this.compactions = 0, this.history});
+  AgentTurn({
+    required this.messages,
+    required this.text,
+    required this.usage,
+    required this.cost,
+    required this.steps,
+    required this.stop,
+    required this.calls,
+    this.error,
+    this.compactions = 0,
+    this.history,
+  });
 
   /// Entries to append to the conversation, in the provider's format: the
   /// question and everything the model and the tools added, ending in a
@@ -407,11 +418,13 @@ class AgentLoop {
           AgentStop.done => 'Not run: your answer ended before this call could run. Call it again if it is still needed.',
           _ => 'Not run: the request ended early${e == null ? '' : ' (${e.kind.name})'}. Call it again if it is still needed.',
         };
-        kept.addAll(api.toolResults([
-          ...results,
-          for (final u in open)
-            if (!done.contains(u.id)) _error(u.id, why),
-        ]));
+        kept.addAll(
+          api.toolResults([
+            ...results,
+            for (final u in open)
+              if (!done.contains(u.id)) _error(u.id, why),
+          ]),
+        );
         open = const [];
       }
       return AgentTurn(

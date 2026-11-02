@@ -17,7 +17,11 @@ void main() {
   test('our GeoJSON export reads back in place: pipes, heads, valves, contours', () {
     final p = buildExample(ExampleId.orchard, tr)..meta.georef = const GeoReference(zone: 22, north: false, originEasting: 612300, originNorthing: 7412800);
     final results = Designer(p).designAll();
-    final text = ProjectExporter(project: p, results: results, labels: ReportLabels(t: tr, has: (_) => false, warning: (w) => w)).geoJson();
+    final text = ProjectExporter(
+      project: p,
+      results: results,
+      labels: ReportLabels(t: tr, has: (_) => false, warning: (w) => w),
+    ).geoJson();
     final r = GeoJsonReader.parse(text, georef: p.meta.georef);
     expect(r.georef, same(p.meta.georef));
     expect(r.warnings, isEmpty);
@@ -35,7 +39,14 @@ void main() {
       expect(d.name, e.zoneName);
       expect(d.layer, Layers.controlValves);
     }
-    expect(r.featureCount, ProjectExporter(project: p, results: results, labels: ReportLabels(t: tr, has: (_) => false, warning: (w) => w)).geoFeatures().length);
+    expect(
+      r.featureCount,
+      ProjectExporter(
+        project: p,
+        results: results,
+        labels: ReportLabels(t: tr, has: (_) => false, warning: (w) => w),
+      ).geoFeatures().length,
+    );
     // contour lines keep their elevation (third coordinate and ELEV)
     final contours = p.entities.whereType<ContourEntity>().toList();
     if (contours.isNotEmpty) {
@@ -85,30 +96,56 @@ void main() {
   });
 
   test('RFC 7946 longitude/latitude, a bare geometry, and data in SAD 69 shifted to SIRGAS 2000', () {
-    final r = GeoJsonReader.parse(jsonEncode({'type': 'Point', 'coordinates': [-47.93, -15.78, 1000.5]}));
+    final r = GeoJsonReader.parse(
+      jsonEncode({
+        'type': 'Point',
+        'coordinates': [-47.93, -15.78, 1000.5],
+      }),
+    );
     expect(r.georef!.zone, 23);
     expect(r.document.entities.single.elevation, 1000.5);
     // the same position given in SAD 69 / UTM 23S (EPSG:29193) lands on it
     final sad = CrsInfo.utm(23, false, datum: GeodeticDatum.sad69);
     final (e, n) = sad.fromWgs84(-15.78, -47.93);
-    final s = GeoJsonReader.parse(jsonEncode({
-      'type': 'Feature',
-      'crs': {'type': 'name', 'properties': {'name': 'EPSG:29193'}},
-      'properties': {},
-      'geometry': {'type': 'Point', 'coordinates': [e, n]},
-    }), georef: r.georef);
+    final s = GeoJsonReader.parse(
+      jsonEncode({
+        'type': 'Feature',
+        'crs': {
+          'type': 'name',
+          'properties': {'name': 'EPSG:29193'},
+        },
+        'properties': {},
+        'geometry': {
+          'type': 'Point',
+          'coordinates': [e, n],
+        },
+      }),
+      georef: r.georef,
+    );
     expect(s.document.entities.single.points.single.distanceTo(r.document.entities.single.points.single), lessThan(0.01));
     expect(s.warnings, contains(startsWith('crs_datum_shift:sad69')));
   });
 
   test('an unrecognised crs is reported, not guessed', () {
-    final r = GeoJsonReader.parse(jsonEncode({
-      'type': 'FeatureCollection',
-      'crs': {'type': 'name', 'properties': {'name': 'urn:ogc:def:crs:EPSG::5880'}},
-      'features': [
-        {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Point', 'coordinates': [5512345.5, 8123456.5]}},
-      ],
-    }));
+    final r = GeoJsonReader.parse(
+      jsonEncode({
+        'type': 'FeatureCollection',
+        'crs': {
+          'type': 'name',
+          'properties': {'name': 'urn:ogc:def:crs:EPSG::5880'},
+        },
+        'features': [
+          {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+              'type': 'Point',
+              'coordinates': [5512345.5, 8123456.5],
+            },
+          },
+        ],
+      }),
+    );
     expect(r.warnings, contains('crs_epsg_unknown'));
     expect(r.georef, isNull);
     expect(r.localOrigin, const Pt(5512300, 8123500));

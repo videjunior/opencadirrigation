@@ -6,9 +6,7 @@ library;
 import 'dart:typed_data';
 
 class SparseSymmetricSystem {
-  SparseSymmetricSystem(this.n)
-      : rows = List.generate(n, (_) => <int, double>{}),
-        rhs = List.filled(n, 0);
+  SparseSymmetricSystem(this.n) : rows = List.generate(n, (_) => <int, double>{}), rhs = List.filled(n, 0);
 
   final int n;
   final List<Map<int, double>> rows;
@@ -265,7 +263,20 @@ class EliminationPlan {
       nbStart.add(end);
       updStart.add(upd.length);
     }
-    return EliminationPlan._(n, Int32List.fromList(from), Int32List.fromList(to), slotCount, ft, tf, Int32List.fromList(order), Int32List.fromList(nbStart), Int32List.fromList(nb), Int32List.fromList(nbSlot), Int32List.fromList(updStart), Int32List.fromList(upd));
+    return EliminationPlan._(
+      n,
+      Int32List.fromList(from),
+      Int32List.fromList(to),
+      slotCount,
+      ft,
+      tf,
+      Int32List.fromList(order),
+      Int32List.fromList(nbStart),
+      Int32List.fromList(nb),
+      Int32List.fromList(nbSlot),
+      Int32List.fromList(updStart),
+      Int32List.fromList(upd),
+    );
   }
 
   final int n;

@@ -27,8 +27,10 @@ void main(List<String> args) {
   try {
     final r = generateServiceWorker(dir, version: version, commit: option('--commit') ?? '', date: option('--date') ?? '');
     String mb(int b) => (b / 1e6).toStringAsFixed(1);
-    stdout.writeln('sw.js: build ${r.build}, ${r.files.length} files + CanvasKit ${r.canvasKit.keys.join('/')}: '
-        '${mb(r.bytesFor('chromium'))} MB kept in Chromium browsers, ${mb(r.bytesFor('full'))} MB in the others (uncompressed)');
+    stdout.writeln(
+      'sw.js: build ${r.build}, ${r.files.length} files + CanvasKit ${r.canvasKit.keys.join('/')}: '
+      '${mb(r.bytesFor('chromium'))} MB kept in Chromium browsers, ${mb(r.bytesFor('full'))} MB in the others (uncompressed)',
+    );
   } on Exception catch (e) {
     stderr.writeln('gen_sw: $e');
     exitCode = 1;

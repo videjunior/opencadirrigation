@@ -10,7 +10,22 @@ class LayersPanel extends StatelessWidget {
   final ProjectController c;
 
   static const palette = <int>[
-    0xFFB0BEC5, 0xFFECEFF1, 0xFFFF5252, 0xFFFFA726, 0xFFFFEB3B, 0xFF66BB6A, 0xFF26C6DA, 0xFF42A5F5, 0xFF1E88E5, 0xFF7E57C2, 0xFFE040FB, 0xFF8D6E63, 0xFF78909C, 0xFFAED581, 0xFFFFFFFF, 0xFF9E9E9E,
+    0xFFB0BEC5,
+    0xFFECEFF1,
+    0xFFFF5252,
+    0xFFFFA726,
+    0xFFFFEB3B,
+    0xFF66BB6A,
+    0xFF26C6DA,
+    0xFF42A5F5,
+    0xFF1E88E5,
+    0xFF7E57C2,
+    0xFFE040FB,
+    0xFF8D6E63,
+    0xFF78909C,
+    0xFFAED581,
+    0xFFFFFFFF,
+    0xFF9E9E9E,
   ];
 
   @override
@@ -21,10 +36,14 @@ class LayersPanel extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
-          child: Row(children: [
-            Expanded(child: Text(t('layer.hint'), style: TextStyle(fontSize: 10, color: Cad.fg38))),
-            IconButton(key: const Key('layer_add'), tooltip: t('layer.add'), icon: const Icon(Icons.add, size: 16), onPressed: () => _addLayer(context)),
-          ]),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(t('layer.hint'), style: TextStyle(fontSize: 10, color: Cad.fg38)),
+              ),
+              IconButton(key: const Key('layer_add'), tooltip: t('layer.add'), icon: const Icon(Icons.add, size: 16), onPressed: () => _addLayer(context)),
+            ],
+          ),
         ),
         Expanded(
           child: ListView(
@@ -56,16 +75,33 @@ class LayersPanel extends StatelessWidget {
                         InkWell(
                           key: Key('layer_color_${l.name}'),
                           onTap: () => _pickColor(context, l.name, l.color),
-                          child: Container(width: 12, height: 12, decoration: BoxDecoration(color: Color(l.color), borderRadius: BorderRadius.circular(2), border: Border.all(color: Cad.fg24))),
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Color(l.color),
+                              borderRadius: BorderRadius.circular(2),
+                              border: Border.all(color: Cad.fg24),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 6),
-                        Expanded(child: Text(t.has('layer.${l.name}') ? '${t('layer.${l.name}')} · ${l.name}' : l.name, style: TextStyle(fontSize: 11, color: l.visible ? Cad.fg : Cad.fg38), overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(
+                            t.has('layer.${l.name}') ? '${t('layer.${l.name}')} · ${l.name}' : l.name,
+                            style: TextStyle(fontSize: 11, color: l.visible ? Cad.fg : Cad.fg38),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         Text('${counts[l.name] ?? 0}', style: TextStyle(fontSize: 10, color: Cad.fg38)),
                         if (!Layers.all.contains(l.name))
                           InkWell(
                             key: Key('layer_del_${l.name}'),
                             onTap: () => c.removeLayer(l.name),
-                            child: Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.close, size: 12, color: Cad.fg38)),
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 4),
+                              child: Icon(Icons.close, size: 12, color: Cad.fg38),
+                            ),
                           ),
                       ],
                     ),
@@ -97,7 +133,16 @@ class LayersPanel extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(title, style: const TextStyle(fontSize: 15)),
-        content: SizedBox(width: 320, child: TextField(key: const Key('layer_name'), controller: ctl, autofocus: true, decoration: InputDecoration(labelText: c.t('layer.name'), isDense: true), onSubmitted: (v) => Navigator.pop(ctx, v))),
+        content: SizedBox(
+          width: 320,
+          child: TextField(
+            key: const Key('layer_name'),
+            controller: ctl,
+            autofocus: true,
+            decoration: InputDecoration(labelText: c.t('layer.name'), isDense: true),
+            onSubmitted: (v) => Navigator.pop(ctx, v),
+          ),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('cancel'))),
           FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: Text(c.t('ok'))),
@@ -113,14 +158,26 @@ class LayersPanel extends StatelessWidget {
         title: Text(c.t('layer.color'), style: const TextStyle(fontSize: 15)),
         content: SizedBox(
           width: 260,
-          child: Wrap(spacing: 6, runSpacing: 6, children: [
-            for (final col in palette)
-              InkWell(
-                key: Key('color_${col.toRadixString(16)}'),
-                onTap: () => Navigator.pop(ctx, col),
-                child: Container(width: 26, height: 26, decoration: BoxDecoration(color: Color(col), borderRadius: BorderRadius.circular(4), border: Border.all(color: col == current ? Cad.fg : Cad.fg24, width: col == current ? 2 : 1))),
-              ),
-          ]),
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final col in palette)
+                InkWell(
+                  key: Key('color_${col.toRadixString(16)}'),
+                  onTap: () => Navigator.pop(ctx, col),
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: Color(col),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: col == current ? Cad.fg : Cad.fg24, width: col == current ? 2 : 1),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('cancel')))],
       ),

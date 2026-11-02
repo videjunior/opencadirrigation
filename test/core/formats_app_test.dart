@@ -40,10 +40,48 @@ void main() {
     final text = jsonEncode({
       'type': 'FeatureCollection',
       'features': [
-        {'type': 'Feature', 'properties': {'name': 'Poço'}, 'geometry': {'type': 'Point', 'coordinates': [-47.9301, -15.7801]}},
-        {'type': 'Feature', 'properties': {'name': 'Cota'}, 'geometry': {'type': 'Point', 'coordinates': [-47.9302, -15.7802, 1051.5]}},
-        {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'LineString', 'coordinates': [[-47.9300, -15.7800], [-47.9290, -15.7800]]}},
-        {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Polygon', 'coordinates': [[[-47.931, -15.781], [-47.930, -15.781], [-47.930, -15.780], [-47.931, -15.781]]]}},
+        {
+          'type': 'Feature',
+          'properties': {'name': 'Poço'},
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [-47.9301, -15.7801],
+          },
+        },
+        {
+          'type': 'Feature',
+          'properties': {'name': 'Cota'},
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [-47.9302, -15.7802, 1051.5],
+          },
+        },
+        {
+          'type': 'Feature',
+          'properties': {},
+          'geometry': {
+            'type': 'LineString',
+            'coordinates': [
+              [-47.9300, -15.7800],
+              [-47.9290, -15.7800],
+            ],
+          },
+        },
+        {
+          'type': 'Feature',
+          'properties': {},
+          'geometry': {
+            'type': 'Polygon',
+            'coordinates': [
+              [
+                [-47.931, -15.781],
+                [-47.930, -15.781],
+                [-47.930, -15.780],
+                [-47.931, -15.781],
+              ],
+            ],
+          },
+        },
       ],
     });
     final s = c.importFile('talhoes.geojson', Uint8List.fromList(utf8.encode(text)));
@@ -58,7 +96,8 @@ void main() {
 
   test('GPX waypoints with elevation are spot heights, tracks are polylines', () {
     final c = fresh();
-    const xml = '<?xml version="1.0"?><gpx version="1.1" creator="t" xmlns="http://www.topografix.com/GPX/1/1">'
+    const xml =
+        '<?xml version="1.0"?><gpx version="1.1" creator="t" xmlns="http://www.topografix.com/GPX/1/1">'
         '<wpt lat="-15.78" lon="-47.93"><ele>1050</ele><name>P1</name></wpt><wpt lat="-15.781" lon="-47.931"><name>Marco</name></wpt>'
         '<trk><name>Linha</name><trkseg><trkpt lat="-15.78" lon="-47.93"/><trkpt lat="-15.78" lon="-47.929"/></trkseg></trk></gpx>';
     final s = c.importFile('campo.gpx', Uint8List.fromList(utf8.encode(xml)));

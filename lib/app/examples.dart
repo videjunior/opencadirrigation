@@ -116,43 +116,82 @@ Project buildOrchardExample(Tr t, String lang) {
   p.entities.add(PolylineEntity(id: p.newId(), points: [const Pt(-30, -15), const Pt(280, -15), const Pt(280, 70), const Pt(-30, 70)], closed: true, name: t('ex.boundary')));
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(-28, 62), text: t('ex.title'), height: 2.5));
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(270, 60), kind: SymbolKind.northArrow, size: 4));
-  final a = generateBlock(p, BlockOptions(
-    polygon: [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)],
-    direction: const Pt(1, 0),
-    lateralSpacing: 4,
-    outletSpecId: 'micro',
-    nozzleId: 'm50',
-    outletSpacing: 3.5,
-    headM: 15,
-    submainPosition: SubmainPosition.start,
-    valveSpecId: 'ev80',
-    valvePosition: ValvePosition.centre,
-    submainStub: 2,
-    zoneName: t('ex.zoneA'),
-    submainLabel: t('name.submain'),
-    stubLabel: t('name.stub'),
-    lateralPrefix: t('name.lateral'),
-  ));
+  final a = generateBlock(
+    p,
+    BlockOptions(
+      polygon: [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)],
+      direction: const Pt(1, 0),
+      lateralSpacing: 4,
+      outletSpecId: 'micro',
+      nozzleId: 'm50',
+      outletSpacing: 3.5,
+      headM: 15,
+      submainPosition: SubmainPosition.start,
+      valveSpecId: 'ev80',
+      valvePosition: ValvePosition.centre,
+      submainStub: 2,
+      zoneName: t('ex.zoneA'),
+      submainLabel: t('name.submain'),
+      stubLabel: t('name.stub'),
+      lateralPrefix: t('name.lateral'),
+    ),
+  );
   p.entities.addAll(a.all);
-  p.entities.add(AreaEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)], name: t('ex.blockA'), crop: t('ex.citrus'), netDepthMmPerDay: 4.5, efficiency: 0.9, useWaterBalance: true, etoMmDay: 5.5, kc: 0.7, awcMmPerM: 120, rootDepthM: 0.8, mad: 0.5, emittersPerPlant: 1));
-  final b = generateBlock(p, BlockOptions(
-    polygon: [const Pt(150, 0), const Pt(260, 0), const Pt(260, 50), const Pt(150, 50)],
-    direction: const Pt(1, 0),
-    lateralSpacing: 3,
-    isTape: true,
-    tapeSpecId: 'drip16_16_50',
-    tapeInletHeadM: 10,
-    submainPosition: SubmainPosition.start,
-    valveSpecId: 'ev80',
-    valvePosition: ValvePosition.centre,
-    submainStub: 2,
-    zoneName: t('ex.zoneB'),
-    submainLabel: t('name.submain'),
-    stubLabel: t('name.stub'),
-    lateralPrefix: t('name.lateral'),
-  ));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: [const Pt(0, 0), const Pt(120, 0), const Pt(120, 45), const Pt(0, 45)],
+      name: t('ex.blockA'),
+      crop: t('ex.citrus'),
+      netDepthMmPerDay: 4.5,
+      efficiency: 0.9,
+      useWaterBalance: true,
+      etoMmDay: 5.5,
+      kc: 0.7,
+      awcMmPerM: 120,
+      rootDepthM: 0.8,
+      mad: 0.5,
+      emittersPerPlant: 1,
+    ),
+  );
+  final b = generateBlock(
+    p,
+    BlockOptions(
+      polygon: [const Pt(150, 0), const Pt(260, 0), const Pt(260, 50), const Pt(150, 50)],
+      direction: const Pt(1, 0),
+      lateralSpacing: 3,
+      isTape: true,
+      tapeSpecId: 'drip16_16_50',
+      tapeInletHeadM: 10,
+      submainPosition: SubmainPosition.start,
+      valveSpecId: 'ev80',
+      valvePosition: ValvePosition.centre,
+      submainStub: 2,
+      zoneName: t('ex.zoneB'),
+      submainLabel: t('name.submain'),
+      stubLabel: t('name.stub'),
+      lateralPrefix: t('name.lateral'),
+    ),
+  );
   p.entities.addAll(b.all);
-  p.entities.add(AreaEntity(id: p.newId(), points: [const Pt(150, 0), const Pt(260, 0), const Pt(260, 50), const Pt(150, 50)], name: t('ex.blockB'), crop: t('ex.grape'), netDepthMmPerDay: 4.0, efficiency: 0.92, useWaterBalance: true, etoMmDay: 5.5, kc: 0.7, awcMmPerM: 110, rootDepthM: 0.6, mad: 0.45, emittersPerPlant: 4, wettedFraction: 0.4));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: [const Pt(150, 0), const Pt(260, 0), const Pt(260, 50), const Pt(150, 50)],
+      name: t('ex.blockB'),
+      crop: t('ex.grape'),
+      netDepthMmPerDay: 4.0,
+      efficiency: 0.92,
+      useWaterBalance: true,
+      etoMmDay: 5.5,
+      kc: 0.7,
+      awcMmPerM: 110,
+      rootDepthM: 0.6,
+      mad: 0.45,
+      emittersPerPlant: 4,
+      wettedFraction: 0.4,
+    ),
+  );
   final va = a.valve!.position, vb = b.valve!.position;
   final well = Pt(va.x - 30, -8);
   final tee = Pt(va.x, -8);
@@ -229,7 +268,22 @@ Project buildGardenExample(Tr t, String lang) {
   final v1 = ControlValveEntity(id: p.newId(), position: const Pt(-1, 4), valveSpecId: 'ev25', zoneName: z1, name: z1);
   p.entities.add(v1);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-1, 4), const Pt(0, 4)], scope: HydraulicScope.zone));
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 0, 16, 8), name: t('ex.g.front'), crop: t('ex.g.grass'), netDepthMmPerDay: 5, efficiency: 0.75, useWaterBalance: true, etoMmDay: 5, kc: 0.85, awcMmPerM: 100, rootDepthM: 0.3, mad: 0.5));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(0, 0, 16, 8),
+      name: t('ex.g.front'),
+      crop: t('ex.g.grass'),
+      netDepthMmPerDay: 5,
+      efficiency: 0.75,
+      useWaterBalance: true,
+      etoMmDay: 5,
+      kc: 0.85,
+      awcMmPerM: 100,
+      rootDepthM: 0.3,
+      mad: 0.5,
+    ),
+  );
 
   // zone 2: back lawn 16 × 14 m, rotors 8 × 7 m
   final z2 = t('ex.g.zone2');
@@ -257,7 +311,22 @@ Project buildGardenExample(Tr t, String lang) {
   final v2 = ControlValveEntity(id: p.newId(), position: const Pt(-1, 33), valveSpecId: 'ev25', zoneName: z2, name: z2);
   p.entities.add(v2);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-1, 33), const Pt(0, 33)], scope: HydraulicScope.zone));
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 26, 16, 40), name: t('ex.g.back'), crop: t('ex.g.grass'), netDepthMmPerDay: 5, efficiency: 0.8, useWaterBalance: true, etoMmDay: 5, kc: 0.85, awcMmPerM: 100, rootDepthM: 0.3, mad: 0.5));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(0, 26, 16, 40),
+      name: t('ex.g.back'),
+      crop: t('ex.g.grass'),
+      netDepthMmPerDay: 5,
+      efficiency: 0.8,
+      useWaterBalance: true,
+      etoMmDay: 5,
+      kc: 0.85,
+      awcMmPerM: 100,
+      rootDepthM: 0.3,
+      mad: 0.5,
+    ),
+  );
 
   // zone 3: dripline in the two side beds (3 × 12 m each), fed along the house front
   final z3 = t('ex.g.zone3');
@@ -268,15 +337,58 @@ Project buildGardenExample(Tr t, String lang) {
   for (final x in dripX) {
     p.entities.add(TapeEntity(id: p.newId(), points: [Pt(x, 11), Pt(x, 24)], tapeSpecId: 'drip16_16_50', inletHeadM: 10, name: '${t('ex.g.bed')} ${x < 8 ? 1 : 2}'));
   }
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 12, 3, 24), name: '${t('ex.g.bed')} 1', crop: t('ex.g.shrubs'), netDepthMmPerDay: 3, efficiency: 0.9, useWaterBalance: true, etoMmDay: 5, kc: 0.6, awcMmPerM: 110, rootDepthM: 0.4, mad: 0.5, emittersPerPlant: 2, wettedFraction: 0.5));
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(13, 12, 16, 24), name: '${t('ex.g.bed')} 2', crop: t('ex.g.shrubs'), netDepthMmPerDay: 3, efficiency: 0.9, useWaterBalance: true, etoMmDay: 5, kc: 0.6, awcMmPerM: 110, rootDepthM: 0.4, mad: 0.5, emittersPerPlant: 2, wettedFraction: 0.5));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(0, 12, 3, 24),
+      name: '${t('ex.g.bed')} 1',
+      crop: t('ex.g.shrubs'),
+      netDepthMmPerDay: 3,
+      efficiency: 0.9,
+      useWaterBalance: true,
+      etoMmDay: 5,
+      kc: 0.6,
+      awcMmPerM: 110,
+      rootDepthM: 0.4,
+      mad: 0.5,
+      emittersPerPlant: 2,
+      wettedFraction: 0.5,
+    ),
+  );
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(13, 12, 16, 24),
+      name: '${t('ex.g.bed')} 2',
+      crop: t('ex.g.shrubs'),
+      netDepthMmPerDay: 3,
+      efficiency: 0.9,
+      useWaterBalance: true,
+      etoMmDay: 5,
+      kc: 0.6,
+      awcMmPerM: 110,
+      rootDepthM: 0.4,
+      mad: 0.5,
+      emittersPerPlant: 2,
+      wettedFraction: 0.5,
+    ),
+  );
 
   // mains: meter and backflow preventer at the street, trunk along the side path, stubs to the valves
   const supply = Pt(8, -5), meter = Pt(8, -4), backflow = Pt(8, -3);
-  p.entities.add(WaterSupplyEntity(id: p.newId(), position: supply, name: t('ex.g.supply'), calculatePressure: false, designHeadM: 35, maxHeadM: 40, designFlow: 6 * m3sPerM3h, maxFlow: 8 * m3sPerM3h));
+  p.entities.add(
+    WaterSupplyEntity(id: p.newId(), position: supply, name: t('ex.g.supply'), calculatePressure: false, designHeadM: 35, maxHeadM: 40, designFlow: 6 * m3sPerM3h, maxFlow: 8 * m3sPerM3h),
+  );
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: meter, valveSpecId: 'meter50'));
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: backflow, valveSpecId: 'backflow50'));
-  p.entities.add(PipeEntity(id: p.newId(), points: [supply, meter, backflow, const Pt(8, -2), const Pt(-2, -2), const Pt(-2, 4), const Pt(-2, 11), const Pt(-2, 33)], scope: HydraulicScope.mainline, name: t('ex.g.main')));
+  p.entities.add(
+    PipeEntity(
+      id: p.newId(),
+      points: [supply, meter, backflow, const Pt(8, -2), const Pt(-2, -2), const Pt(-2, 4), const Pt(-2, 11), const Pt(-2, 33)],
+      scope: HydraulicScope.mainline,
+      name: t('ex.g.main'),
+    ),
+  );
   for (final y in [4.0, 11.0, 33.0]) {
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-2, y), Pt(-1, y)], scope: HydraulicScope.mainline, name: t('name.stub')));
   }
@@ -319,7 +431,22 @@ Project buildSportsFieldExample(Tr t, String lang) {
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(-14, -21), kind: SymbolKind.pumpHouse, size: 3));
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(-20, -27), text: t('ex.f.pumpHouse'), height: 1.5));
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(-14, -28), kind: SymbolKind.tank, size: 2.5));
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 0, 105, 68), name: t('ex.f.pitch'), crop: t('ex.f.grass'), netDepthMmPerDay: 6, efficiency: 0.8, useWaterBalance: true, etoMmDay: 6, kc: 0.9, awcMmPerM: 110, rootDepthM: 0.25, mad: 0.4));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(0, 0, 105, 68),
+      name: t('ex.f.pitch'),
+      crop: t('ex.f.grass'),
+      netDepthMmPerDay: 6,
+      efficiency: 0.8,
+      useWaterBalance: true,
+      etoMmDay: 6,
+      kc: 0.9,
+      awcMmPerM: 110,
+      rootDepthM: 0.25,
+      mad: 0.4,
+    ),
+  );
 
   // sprinklers: 8 columns × 5 rows, one zone per row
   const cols = [0.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 105.0];
@@ -401,25 +528,47 @@ Project buildRowCropExample(Tr t, String lang) {
   for (var i = 0; i < blocks.length; i++) {
     final (poly, pos) = blocks[i];
     final name = t('ex.c.block', {'n': '${i + 1}'});
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(1, 0),
-      lateralSpacing: 1.8,
-      isTape: true,
-      tapeSpecId: 'tape16_10_30',
-      tapeInletHeadM: 8,
-      submainPosition: pos,
-      valveSpecId: 'ev80',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(1, 0),
+        lateralSpacing: 1.8,
+        isTape: true,
+        tapeSpecId: 'tape16_10_30',
+        tapeInletHeadM: 8,
+        submainPosition: pos,
+        valveSpecId: 'ev80',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.c.tomato'), netDepthMmPerDay: 5.5, efficiency: 0.92, useWaterBalance: true, etoMmDay: 5.5, kc: 1.1, awcMmPerM: 130, rootDepthM: 0.5, mad: 0.4, plantSpacingM: 0.4, rowSpacingM: 1.8, wettedFraction: 0.6, emittersPerPlant: 1));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.c.tomato'),
+        netDepthMmPerDay: 5.5,
+        efficiency: 0.92,
+        useWaterBalance: true,
+        etoMmDay: 5.5,
+        kc: 1.1,
+        awcMmPerM: 130,
+        rootDepthM: 0.5,
+        mad: 0.4,
+        plantSpacingM: 0.4,
+        rowSpacingM: 1.8,
+        wettedFraction: 0.6,
+        emittersPerPlant: 1,
+      ),
+    );
   }
   // trunk: reservoir → pump → filter → tee, then west and east branches with stubs to the valves
   const reservoir = Pt(122, -40), pump = Pt(122, -36), filter = Pt(122, -30), tee = Pt(122, -6);
@@ -474,7 +623,22 @@ Project buildPivotExample(Tr t, String lang) {
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(20, 380), text: t('ex.p.well'), height: 6));
   // the irrigated field reaches the throw of the end sprinklers
   final circle = [for (var i = 0; i < 48; i++) centre + Pt.polar(radius + endThrow, 2 * math.pi * i / 48)];
-  p.entities.add(AreaEntity(id: p.newId(), points: circle, name: t('ex.p.field'), crop: t('ex.p.maize'), netDepthMmPerDay: 6, efficiency: 0.85, useWaterBalance: true, etoMmDay: 6, kc: 1.15, awcMmPerM: 120, rootDepthM: 0.6, mad: 0.5));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: circle,
+      name: t('ex.p.field'),
+      crop: t('ex.p.maize'),
+      netDepthMmPerDay: 6,
+      efficiency: 0.85,
+      useWaterBalance: true,
+      etoMmDay: 6,
+      kc: 1.15,
+      awcMmPerM: 120,
+      rootDepthM: 0.6,
+      mad: 0.5,
+    ),
+  );
 
   const well = Pt(60, 400), pump = Pt(66, 400), gate = Pt(72, 400);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.p.well'), calculatePressure: true, waterLevelOffsetM: -25));
@@ -487,23 +651,25 @@ Project buildPivotExample(Tr t, String lang) {
   p.entities.add(PipeEntity(id: p.newId(), points: [well, pump, gate], scope: HydraulicScope.mainline, name: t('ex.riser')));
   p.entities.add(PipeEntity(id: p.newId(), points: [gate, centre], scope: HydraulicScope.mainline, name: t('ex.p.adductor')));
   final name = t('ex.p.pivot');
-  p.entities.add(PivotEntity(
-    id: p.newId(),
-    center: centre,
-    radiusM: radius,
-    angleDeg: 30,
-    kind: PivotKind.pivot,
-    spanLengthM: 50,
-    grossDepthMm: 8.5,
-    hoursPerCycle: 24,
-    endPressureM: 14,
-    endThrowM: endThrow,
-    name: name,
-    zoneName: name,
-    sprinklerSpacingM: 2.5,
-    machineCost: 480000,
-    towerCost: 0,
-  ));
+  p.entities.add(
+    PivotEntity(
+      id: p.newId(),
+      center: centre,
+      radiusM: radius,
+      angleDeg: 30,
+      kind: PivotKind.pivot,
+      spanLengthM: 50,
+      grossDepthMm: 8.5,
+      hoursPerCycle: 24,
+      endPressureM: 14,
+      endThrowM: endThrow,
+      name: name,
+      zoneName: name,
+      sprinklerSpacingM: 2.5,
+      machineCost: 480000,
+      towerCost: 0,
+    ),
+  );
   return p;
 }
 
@@ -530,26 +696,48 @@ Project buildGreenhouseExample(Tr t, String lang) {
     final name = t('ex.gh.tunnel', {'n': '${i + 1}'});
     p.entities.add(PolylineEntity(id: p.newId(), points: poly, closed: true, name: name));
     p.entities.add(TextEntity(id: p.newId(), position: Pt(x0 + 0.5, 51), text: name, height: 1));
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(0, 1),
-      lateralSpacing: 1.5,
-      firstLateralOffset: 0.75,
-      isTape: true,
-      tapeSpecId: 'drip16pc_16_50',
-      tapeInletHeadM: 15,
-      submainPosition: SubmainPosition.start,
-      valveSpecId: 'ev25',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(0, 1),
+        lateralSpacing: 1.5,
+        firstLateralOffset: 0.75,
+        isTape: true,
+        tapeSpecId: 'drip16pc_16_50',
+        tapeInletHeadM: 15,
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev25',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.gh.crop'), netDepthMmPerDay: 4, efficiency: 0.95, useWaterBalance: true, etoMmDay: 4, kc: 1.05, awcMmPerM: 150, rootDepthM: 0.3, mad: 0.3, plantSpacingM: 0.4, rowSpacingM: 1.5, wettedFraction: 0.5, emittersPerPlant: 1));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.gh.crop'),
+        netDepthMmPerDay: 4,
+        efficiency: 0.95,
+        useWaterBalance: true,
+        etoMmDay: 4,
+        kc: 1.05,
+        awcMmPerM: 150,
+        rootDepthM: 0.3,
+        mad: 0.3,
+        plantSpacingM: 0.4,
+        rowSpacingM: 1.5,
+        wettedFraction: 0.5,
+        emittersPerPlant: 1,
+      ),
+    );
   }
   const tank = Pt(-9, -12), pump = Pt(-9, -9), filter = Pt(-9, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.gh.tank'), calculatePressure: true, waterLevelOffsetM: 2));
@@ -588,6 +776,7 @@ Project buildCoffeeExample(Tr t, String lang) {
     final base = [for (var x = x0; x <= x1 + 1e-9; x += 5) Pt(x, shift + hump(x))];
     return v == 0 ? base : offsetPolyline(base, v);
   }
+
   // terrain: 7 % slope rising northwards, contours every 20 m parallel to the laterals
   for (var k = -2; k <= 12; k++) {
     final v = 20.0 * k;
@@ -605,26 +794,48 @@ Project buildCoffeeExample(Tr t, String lang) {
     final bottom = curve(v0, 0, 0, 150), top = curve(v0, 60, 0, 150);
     final poly = [...bottom, ...top.reversed];
     final name = t('ex.cf.block', {'n': '${k + 1}'});
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(1, 0),
-      guide: curve(v0, 0, -12.5, 162.5), // vertices away from the block sides: no tiny clipped segments
-      lateralSpacing: 3.5,
-      isTape: true,
-      tapeSpecId: 'drip16pc_16_50',
-      tapeInletHeadM: 15,
-      submainPosition: SubmainPosition.start,
-      valveSpecId: 'ev40',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(1, 0),
+        guide: curve(v0, 0, -12.5, 162.5), // vertices away from the block sides: no tiny clipped segments
+        lateralSpacing: 3.5,
+        isTape: true,
+        tapeSpecId: 'drip16pc_16_50',
+        tapeInletHeadM: 15,
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev40',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.cf.coffee'), netDepthMmPerDay: 4, efficiency: 0.92, useWaterBalance: true, etoMmDay: 4.5, kc: 0.95, awcMmPerM: 120, rootDepthM: 0.8, mad: 0.5, plantSpacingM: 0.7, rowSpacingM: 3.5, wettedFraction: 0.4, emittersPerPlant: 1));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.cf.coffee'),
+        netDepthMmPerDay: 4,
+        efficiency: 0.92,
+        useWaterBalance: true,
+        etoMmDay: 4.5,
+        kc: 0.95,
+        awcMmPerM: 120,
+        rootDepthM: 0.8,
+        mad: 0.5,
+        plantSpacingM: 0.7,
+        rowSpacingM: 3.5,
+        wettedFraction: 0.4,
+        emittersPerPlant: 1,
+      ),
+    );
   }
   const well = Pt(-8, -26), pump = Pt(-8, -18), filter = Pt(-8, -12);
   // shallow well: the surface pump lifts under 6 m, within its practical
@@ -676,29 +887,47 @@ Project buildPastureExample(Tr t, String lang) {
     final x0 = 78.0 * i;
     final poly = _rect(x0, 0, x0 + 72, 72);
     final name = t('ex.pa.paddock', {'n': '${i + 1}'});
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(1, 0),
-      lateralSpacing: 18,
-      firstLateralOffset: 9,
-      outletSpecId: 'impact34',
-      nozzleId: 'i4.0',
-      outletSpacing: 12,
-      outletOffsetHalf: true,
-      headM: 30,
-      lateralPipeSpecId: 'pvc50',
-      submainPosition: SubmainPosition.start,
-      valveSpecId: 'ev80',
-      valvePosition: ValvePosition.centre,
-      submainStub: 3,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(1, 0),
+        lateralSpacing: 18,
+        firstLateralOffset: 9,
+        outletSpecId: 'impact34',
+        nozzleId: 'i4.0',
+        outletSpacing: 12,
+        outletOffsetHalf: true,
+        headM: 30,
+        lateralPipeSpecId: 'pvc50',
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev80',
+        valvePosition: ValvePosition.centre,
+        submainStub: 3,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.pa.grass'), netDepthMmPerDay: 5, efficiency: 0.75, useWaterBalance: true, etoMmDay: 5, kc: 0.85, awcMmPerM: 110, rootDepthM: 0.5, mad: 0.55));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.pa.grass'),
+        netDepthMmPerDay: 5,
+        efficiency: 0.75,
+        useWaterBalance: true,
+        etoMmDay: 5,
+        kc: 0.85,
+        awcMmPerM: 110,
+        rootDepthM: 0.5,
+        mad: 0.55,
+      ),
+    );
   }
   const tank = Pt(-24, -30), pump = Pt(-24, -24), check = Pt(-24, -18);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.pa.reservoir'), calculatePressure: true, waterLevelOffsetM: 1.5));
@@ -762,7 +991,22 @@ Project buildGolfExample(Tr t, String lang) {
   final vg = ControlValveEntity(id: p.newId(), position: const Pt(145, 15), valveSpecId: 'ev25', zoneName: zg, name: zg);
   p.entities.add(vg);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(145, 15), heads[0]], scope: HydraulicScope.zone, name: t('name.stub')));
-  p.entities.add(AreaEntity(id: p.newId(), points: [for (var i = 0; i < 24; i++) const Pt(130, 15) + Pt.polar(10, math.pi * i / 12)], name: zg, crop: t('ex.go.turf'), netDepthMmPerDay: 6, efficiency: 0.8, useWaterBalance: true, etoMmDay: 6, kc: 0.9, awcMmPerM: 100, rootDepthM: 0.15, mad: 0.35));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: [for (var i = 0; i < 24; i++) const Pt(130, 15) + Pt.polar(10, math.pi * i / 12)],
+      name: zg,
+      crop: t('ex.go.turf'),
+      netDepthMmPerDay: 6,
+      efficiency: 0.8,
+      useWaterBalance: true,
+      etoMmDay: 6,
+      kc: 0.9,
+      awcMmPerM: 100,
+      rootDepthM: 0.15,
+      mad: 0.35,
+    ),
+  );
 
   // tee: half-circle sprays along both long sides, facing inwards
   final zt = t('ex.go.tee');
@@ -778,10 +1022,28 @@ Project buildGolfExample(Tr t, String lang) {
   final vt = ControlValveEntity(id: p.newId(), position: const Pt(-44, 15), valveSpecId: 'ev25', zoneName: zt, name: zt);
   p.entities.add(vt);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-44, 15), const Pt(-42, 15)], scope: HydraulicScope.zone, name: t('name.stub')));
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(-40, 12, -10, 18), name: zt, crop: t('ex.go.turf'), netDepthMmPerDay: 5, efficiency: 0.75, useWaterBalance: true, etoMmDay: 6, kc: 0.9, awcMmPerM: 100, rootDepthM: 0.2, mad: 0.4));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(-40, 12, -10, 18),
+      name: zt,
+      crop: t('ex.go.turf'),
+      netDepthMmPerDay: 5,
+      efficiency: 0.75,
+      useWaterBalance: true,
+      etoMmDay: 6,
+      kc: 0.9,
+      awcMmPerM: 100,
+      rootDepthM: 0.2,
+      mad: 0.4,
+    ),
+  );
 
   // fairway: rotors on a triangular grid (automatic head layout), one zone per pair of rows
-  final grid = generateSprinklerGrid(p, SprinklerGridOptions(polygon: _rect(0, 0, 100, 30), outletSpecId: 'rotor', nozzleId: 'r3', spacingAlong: 10, spacingBetween: 10 * math.sqrt(3) / 2, pattern: GridPattern.triangular, headM: 25));
+  final grid = generateSprinklerGrid(
+    p,
+    SprinklerGridOptions(polygon: _rect(0, 0, 100, 30), outletSpecId: 'rotor', nozzleId: 'r3', spacingAlong: 10, spacingBetween: 10 * math.sqrt(3) / 2, pattern: GridPattern.triangular, headM: 25),
+  );
   final rowYs = grid.map((o) => o.position.y).toSet().toList()..sort();
   assert(rowYs.length == 4, 'four rows of rotors expected, got ${rowYs.length}');
   final fairwayValves = <ControlValveEntity>[];
@@ -803,7 +1065,22 @@ Project buildGolfExample(Tr t, String lang) {
     fairwayValves.add(v);
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-4, mid), Pt(-2, mid)], scope: HydraulicScope.zone, name: t('name.stub')));
   }
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 0, 100, 30), name: t('ex.go.fairway'), crop: t('ex.go.turf'), netDepthMmPerDay: 5, efficiency: 0.75, useWaterBalance: true, etoMmDay: 6, kc: 0.85, awcMmPerM: 100, rootDepthM: 0.25, mad: 0.45));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(0, 0, 100, 30),
+      name: t('ex.go.fairway'),
+      crop: t('ex.go.turf'),
+      netDepthMmPerDay: 5,
+      efficiency: 0.75,
+      useWaterBalance: true,
+      etoMmDay: 6,
+      kc: 0.85,
+      awcMmPerM: 100,
+      rootDepthM: 0.25,
+      mad: 0.45,
+    ),
+  );
 
   // pond, pump and a header along the cart path with stubs to the valves
   const pond = Pt(60, -42), pump = Pt(60, -36);
@@ -857,28 +1134,46 @@ Project buildNurseryExample(Tr t, String lang) {
     final name = t('ex.nu.bed', {'n': '${i + 1}'});
     p.entities.add(PolylineEntity(id: p.newId(), points: poly, closed: true, name: name));
     p.entities.add(TextEntity(id: p.newId(), position: Pt(x0 + 0.5, 49), text: name, height: 1));
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(0, 1),
-      lateralSpacing: 4,
-      firstLateralOffset: 2,
-      outletSpecId: 'micro',
-      nozzleId: 'm70',
-      outletSpacing: 4,
-      outletOffsetHalf: true,
-      headM: 15,
-      submainPosition: SubmainPosition.start,
-      valveSpecId: 'ev25',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(0, 1),
+        lateralSpacing: 4,
+        firstLateralOffset: 2,
+        outletSpecId: 'micro',
+        nozzleId: 'm70',
+        outletSpacing: 4,
+        outletOffsetHalf: true,
+        headM: 15,
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev25',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.nu.crop'), netDepthMmPerDay: 6, efficiency: 0.8, useWaterBalance: true, etoMmDay: 5, kc: 1.0, awcMmPerM: 100, rootDepthM: 0.2, mad: 0.3));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.nu.crop'),
+        netDepthMmPerDay: 6,
+        efficiency: 0.8,
+        useWaterBalance: true,
+        etoMmDay: 5,
+        kc: 1.0,
+        awcMmPerM: 100,
+        rootDepthM: 0.2,
+        mad: 0.3,
+      ),
+    );
   }
   const tank = Pt(-10, -12), pump = Pt(-10, -9), filter = Pt(-10, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: tank, name: t('ex.nu.tank'), calculatePressure: true, waterLevelOffsetM: 2.5));
@@ -921,30 +1216,30 @@ Project buildSugarcaneExample(Tr t, String lang) {
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(194, -38), kind: SymbolKind.pumpHouse, size: 3));
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(194, -32), kind: SymbolKind.filterStation, size: 3));
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(199, -45), text: t('ex.sc.reservoir'), height: 2));
-  final blocks = <(List<Pt>, SubmainPosition)>[
-    (_rect(0, 0, 180, 90), SubmainPosition.start),
-    (_rect(184, 0, 364, 90), SubmainPosition.end),
-  ];
+  final blocks = <(List<Pt>, SubmainPosition)>[(_rect(0, 0, 180, 90), SubmainPosition.start), (_rect(184, 0, 364, 90), SubmainPosition.end)];
   final valves = <ControlValveEntity>[];
   for (var i = 0; i < blocks.length; i++) {
     final (poly, pos) = blocks[i];
     final name = t('ex.sc.block', {'n': '${i + 1}'});
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(1, 0),
-      lateralSpacing: 1.5,
-      isTape: true,
-      tapeSpecId: 'drip20pc_23_75',
-      tapeInletHeadM: 15,
-      submainPosition: pos,
-      valveSpecId: 'ev80',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(1, 0),
+        lateralSpacing: 1.5,
+        isTape: true,
+        tapeSpecId: 'drip20pc_23_75',
+        tapeInletHeadM: 15,
+        submainPosition: pos,
+        valveSpecId: 'ev80',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     for (final e in r.laterals) {
       if (e is TapeEntity) e.depth = 0.3;
     }
@@ -952,7 +1247,24 @@ Project buildSugarcaneExample(Tr t, String lang) {
     r.stub?.depth = 0.6;
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.sc.cane'), netDepthMmPerDay: 6, efficiency: 0.95, useWaterBalance: true, etoMmDay: 6, kc: 1.2, awcMmPerM: 130, rootDepthM: 0.6, mad: 0.6, rowSpacingM: 1.5, wettedFraction: 0.5));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.sc.cane'),
+        netDepthMmPerDay: 6,
+        efficiency: 0.95,
+        useWaterBalance: true,
+        etoMmDay: 6,
+        kc: 1.2,
+        awcMmPerM: 130,
+        rootDepthM: 0.6,
+        mad: 0.6,
+        rowSpacingM: 1.5,
+        wettedFraction: 0.5,
+      ),
+    );
   }
   const reservoir = Pt(182, -44), pump = Pt(182, -38), filter = Pt(182, -32), air = Pt(182, -20), tee = Pt(182, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: reservoir, name: t('ex.sc.reservoir'), calculatePressure: true, waterLevelOffsetM: 1.5));
@@ -1002,33 +1314,52 @@ Project buildGravityExample(Tr t, String lang) {
   p.entities.add(PolylineEntity(id: p.newId(), points: _rect(-8, 4, 212, 76), closed: true, name: t('ex.gr.field')));
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(-8, 82), text: t('ex.gr.title'), height: 3.5));
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(206, 70), kind: SymbolKind.northArrow, size: 4));
-  final blocks = <(List<Pt>, SubmainPosition)>[
-    (_rect(0, 10, 100, 70), SubmainPosition.start),
-    (_rect(104, 10, 204, 70), SubmainPosition.end),
-  ];
+  final blocks = <(List<Pt>, SubmainPosition)>[(_rect(0, 10, 100, 70), SubmainPosition.start), (_rect(104, 10, 204, 70), SubmainPosition.end)];
   final valves = <ControlValveEntity>[];
   for (var i = 0; i < blocks.length; i++) {
     final (poly, pos) = blocks[i];
     final name = t('ex.gr.block', {'n': '${i + 1}'});
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(1, 0),
-      lateralSpacing: 1.5,
-      isTape: true,
-      tapeSpecId: 'drip16_16_50',
-      tapeInletHeadM: 10,
-      submainPosition: pos,
-      valveSpecId: 'ev40',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(1, 0),
+        lateralSpacing: 1.5,
+        isTape: true,
+        tapeSpecId: 'drip16_16_50',
+        tapeInletHeadM: 10,
+        submainPosition: pos,
+        valveSpecId: 'ev40',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.gr.crop'), netDepthMmPerDay: 5, efficiency: 0.9, useWaterBalance: true, etoMmDay: 5, kc: 1.05, awcMmPerM: 120, rootDepthM: 0.4, mad: 0.45, plantSpacingM: 0.3, rowSpacingM: 1.5, wettedFraction: 0.5, emittersPerPlant: 2));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.gr.crop'),
+        netDepthMmPerDay: 5,
+        efficiency: 0.9,
+        useWaterBalance: true,
+        etoMmDay: 5,
+        kc: 1.05,
+        awcMmPerM: 120,
+        rootDepthM: 0.4,
+        mad: 0.45,
+        plantSpacingM: 0.3,
+        rowSpacingM: 1.5,
+        wettedFraction: 0.5,
+        emittersPerPlant: 2,
+      ),
+    );
   }
   const reservoir = Pt(100, -210), gate = Pt(100, -204), prv = Pt(100, -20), filter = Pt(100, -14), tee = Pt(100, -6);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: reservoir, name: t('ex.gr.reservoir'), calculatePressure: true, waterLevelOffsetM: 2));
@@ -1079,28 +1410,50 @@ Project buildBananaExample(Tr t, String lang) {
     final y0 = 64.0 * i;
     final poly = _rect(0, y0, 100, y0 + 60);
     final name = t('ex.ba.block', {'n': '${i + 1}'});
-    final r = generateBlock(p, BlockOptions(
-      polygon: poly,
-      direction: const Pt(1, 0),
-      lateralSpacing: 5,
-      firstLateralOffset: 2.5,
-      outletSpecId: 'micro_pc',
-      nozzleId: 'mpc70',
-      outletSpacing: 5,
-      outletOffsetHalf: true,
-      headM: 20,
-      submainPosition: SubmainPosition.start,
-      valveSpecId: 'ev50',
-      valvePosition: ValvePosition.centre,
-      submainStub: 2,
-      zoneName: name,
-      submainLabel: t('name.submain'),
-      stubLabel: t('name.stub'),
-      lateralPrefix: t('name.lateral'),
-    ));
+    final r = generateBlock(
+      p,
+      BlockOptions(
+        polygon: poly,
+        direction: const Pt(1, 0),
+        lateralSpacing: 5,
+        firstLateralOffset: 2.5,
+        outletSpecId: 'micro_pc',
+        nozzleId: 'mpc70',
+        outletSpacing: 5,
+        outletOffsetHalf: true,
+        headM: 20,
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev50',
+        valvePosition: ValvePosition.centre,
+        submainStub: 2,
+        zoneName: name,
+        submainLabel: t('name.submain'),
+        stubLabel: t('name.stub'),
+        lateralPrefix: t('name.lateral'),
+      ),
+    );
     p.entities.addAll(r.all);
     valves.add(r.valve!);
-    p.entities.add(AreaEntity(id: p.newId(), points: poly, name: name, crop: t('ex.ba.banana'), netDepthMmPerDay: 5.5, efficiency: 0.9, useWaterBalance: true, etoMmDay: 5.5, kc: 1.1, awcMmPerM: 130, rootDepthM: 0.6, mad: 0.35, plantSpacingM: 2.5, rowSpacingM: 5, wettedFraction: 0.7, emittersPerPlant: 1));
+    p.entities.add(
+      AreaEntity(
+        id: p.newId(),
+        points: poly,
+        name: name,
+        crop: t('ex.ba.banana'),
+        netDepthMmPerDay: 5.5,
+        efficiency: 0.9,
+        useWaterBalance: true,
+        etoMmDay: 5.5,
+        kc: 1.1,
+        awcMmPerM: 130,
+        rootDepthM: 0.6,
+        mad: 0.35,
+        plantSpacingM: 2.5,
+        rowSpacingM: 5,
+        wettedFraction: 0.7,
+        emittersPerPlant: 1,
+      ),
+    );
   }
   const well = Pt(-30, -20), pump = Pt(-30, -14), filter = Pt(-30, -8);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: well, name: t('ex.ba.well'), calculatePressure: true, waterLevelOffsetM: -30));
@@ -1145,26 +1498,43 @@ Project buildSectorPivotExample(Tr t, String lang) {
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(462, 124), text: t('ex.sp.pond'), height: 6));
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(505, 190), kind: SymbolKind.pumpHouse, size: 7));
   final name = t('ex.sp.pivot');
-  p.entities.add(AreaEntity(id: p.newId(), points: [centre, for (var i = 0; i <= 36; i++) centre + Pt.polar(radius + 8, 1.5 * math.pi * i / 36)], name: t('ex.sp.field'), crop: t('ex.sp.soy'), netDepthMmPerDay: 6, efficiency: 0.85, useWaterBalance: true, etoMmDay: 6, kc: 1.1, awcMmPerM: 120, rootDepthM: 0.5, mad: 0.5));
-  p.entities.add(PivotEntity(
-    id: p.newId(),
-    center: centre,
-    radiusM: radius,
-    angleDeg: 135,
-    kind: PivotKind.pivot,
-    sectorDeg: 270,
-    spanLengthM: 50,
-    grossDepthMm: 8,
-    hoursPerCycle: 24,
-    endPressureM: 14,
-    endThrowM: 8,
-    endGunFlow: 12 * m3sPerM3h,
-    endGunPressureM: 30,
-    name: name,
-    zoneName: name,
-    sprinklerSpacingM: 2.5,
-    machineCost: 380000,
-  ));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: [centre, for (var i = 0; i <= 36; i++) centre + Pt.polar(radius + 8, 1.5 * math.pi * i / 36)],
+      name: t('ex.sp.field'),
+      crop: t('ex.sp.soy'),
+      netDepthMmPerDay: 6,
+      efficiency: 0.85,
+      useWaterBalance: true,
+      etoMmDay: 6,
+      kc: 1.1,
+      awcMmPerM: 120,
+      rootDepthM: 0.5,
+      mad: 0.5,
+    ),
+  );
+  p.entities.add(
+    PivotEntity(
+      id: p.newId(),
+      center: centre,
+      radiusM: radius,
+      angleDeg: 135,
+      kind: PivotKind.pivot,
+      sectorDeg: 270,
+      spanLengthM: 50,
+      grossDepthMm: 8,
+      hoursPerCycle: 24,
+      endPressureM: 14,
+      endThrowM: 8,
+      endGunFlow: 12 * m3sPerM3h,
+      endGunPressureM: 30,
+      name: name,
+      zoneName: name,
+      sprinklerSpacingM: 2.5,
+      machineCost: 380000,
+    ),
+  );
   const pond = Pt(480, 160), pump = Pt(505, 160), gate = Pt(515, 160);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: pond, name: t('ex.sp.pond'), calculatePressure: true, waterLevelOffsetM: -1.5));
   // 64 m³/h at about 45 m: a 20 hp pump near its best efficiency (a 30 hp
@@ -1173,7 +1543,9 @@ Project buildSectorPivotExample(Tr t, String lang) {
   p.entities.add(MiscHydraulicEntity(id: p.newId(), position: gate, valveSpecId: 'gate100'));
   // DN 150 rather than the cheapest DN 125: at 1.1 m/s the water hammer of a
   // stop stays within PN 80 with a margin
-  p.entities.add(PipeEntity(id: p.newId(), points: [pond, pump, gate, const Pt(430, 240), centre], scope: HydraulicScope.mainline, name: t('ex.sp.adductor'), pipeSpecId: 'pvc150', computerSized: false));
+  p.entities.add(
+    PipeEntity(id: p.newId(), points: [pond, pump, gate, const Pt(430, 240), centre], scope: HydraulicScope.mainline, name: t('ex.sp.adductor'), pipeSpecId: 'pvc150', computerSized: false),
+  );
   return p;
 }
 
@@ -1195,24 +1567,41 @@ Project buildLinearExample(Tr t, String lang) {
   p.entities.add(SymbolEntity(id: p.newId(), position: const Pt(-36, 24), kind: SymbolKind.pumpHouse, size: 8));
   p.entities.add(TextEntity(id: p.newId(), position: const Pt(-30, 10), text: t('ex.li.intake'), height: 5));
   final name = t('ex.li.machine');
-  p.entities.add(AreaEntity(id: p.newId(), points: _rect(0, 0, 400, 800), name: t('ex.li.field'), crop: t('ex.li.wheat'), netDepthMmPerDay: 5.5, efficiency: 0.85, useWaterBalance: true, etoMmDay: 5.5, kc: 1.15, awcMmPerM: 120, rootDepthM: 0.8, mad: 0.55));
-  p.entities.add(PivotEntity(
-    id: p.newId(),
-    center: const Pt(0, 0),
-    radiusM: 392,
-    angleDeg: 0,
-    kind: PivotKind.linear,
-    travelM: 800,
-    spanLengthM: 56,
-    grossDepthMm: 8,
-    hoursPerCycle: 24,
-    endPressureM: 14,
-    endThrowM: 8,
-    name: name,
-    zoneName: name,
-    sprinklerSpacingM: 2.5,
-    machineCost: 520000,
-  ));
+  p.entities.add(
+    AreaEntity(
+      id: p.newId(),
+      points: _rect(0, 0, 400, 800),
+      name: t('ex.li.field'),
+      crop: t('ex.li.wheat'),
+      netDepthMmPerDay: 5.5,
+      efficiency: 0.85,
+      useWaterBalance: true,
+      etoMmDay: 5.5,
+      kc: 1.15,
+      awcMmPerM: 120,
+      rootDepthM: 0.8,
+      mad: 0.55,
+    ),
+  );
+  p.entities.add(
+    PivotEntity(
+      id: p.newId(),
+      center: const Pt(0, 0),
+      radiusM: 392,
+      angleDeg: 0,
+      kind: PivotKind.linear,
+      travelM: 800,
+      spanLengthM: 56,
+      grossDepthMm: 8,
+      hoursPerCycle: 24,
+      endPressureM: 14,
+      endThrowM: 8,
+      name: name,
+      zoneName: name,
+      sprinklerSpacingM: 2.5,
+      machineCost: 520000,
+    ),
+  );
   const intake = Pt(-47, 0), pump = Pt(-40, 0), check = Pt(-32, 0);
   p.entities.add(WaterSupplyEntity(id: p.newId(), position: intake, name: t('ex.li.intake'), calculatePressure: true, waterLevelOffsetM: -2));
   p.entities.add(PumpEntity(id: p.newId(), position: pump, pumpSpecId: 'pump_big'));

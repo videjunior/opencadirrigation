@@ -650,10 +650,7 @@ class _TransientDialogState extends State<_TransientDialog> {
           _cell(p(e.steadyMaxPressure), mono: true),
           _cell(p(e.maxPressure), mono: true, color: e.overRating ? Cad.warning : null),
           _cell(p(e.minPressure), mono: true, color: e.vacuum ? Cad.unconnected : (e.belowAtmosphere ? Cad.warning : null)),
-          _cell(
-            [if (e.overRating) t('tr.st.over'), if (e.vacuum) t('tr.st.vacuum') else if (e.belowAtmosphere) t('tr.st.below')].join(' · ').ifEmpty(t('rep.ok')),
-            color: e.ok ? Cad.ok : Cad.warning,
-          ),
+          _cell([if (e.overRating) t('tr.st.over'), if (e.vacuum) t('tr.st.vacuum') else if (e.belowAtmosphere) t('tr.st.below')].join(' · ').ifEmpty(t('rep.ok')), color: e.ok ? Cad.ok : Cad.warning),
         ],
     ]);
   }

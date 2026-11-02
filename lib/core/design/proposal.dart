@@ -168,9 +168,20 @@ Proposal buildProposal(Project project, DesignResults results, ProposalSettings 
   final subtotal = sale + labour + trenchCost + extras;
   final discount = subtotal * s.discountPct / 100;
   final taxes = (subtotal - discount) * s.taxPct / 100;
-  return Proposal(lines: lines, materialsCost: cost, materialsSale: sale, labour: labour, trenchVolume: volume, trenchCost: trenchCost, extras: extras, discount: discount, taxes: taxes, freight: s.freight, unpriced: unpriced);
+  return Proposal(
+    lines: lines,
+    materialsCost: cost,
+    materialsSale: sale,
+    labour: labour,
+    trenchVolume: volume,
+    trenchCost: trenchCost,
+    extras: extras,
+    discount: discount,
+    taxes: taxes,
+    freight: s.freight,
+    unpriced: unpriced,
+  );
 }
-
 
 // ---------------------------------------------------------------- construction schedule
 
@@ -194,9 +205,7 @@ class ScheduleTask {
 /// emitters on risers (units), valve wiring (m), pump and filter station
 /// (units) and the pressure test and flushing (zones). Typical figures for
 /// a small crew with a trencher; the project may set its own.
-const defaultProductivity = <String, double>{
-  'staking': 20, 'trench': 40, 'pipe': 300, 'backfill': 80, 'valves': 6, 'laterals': 3000, 'emitters': 200, 'wiring': 800, 'station': 1, 'testing': 4,
-};
+const defaultProductivity = <String, double>{'staking': 20, 'trench': 40, 'pipe': 300, 'backfill': 80, 'valves': 6, 'laterals': 3000, 'emitters': 200, 'wiring': 800, 'station': 1, 'testing': 4};
 
 /// The construction schedule of the project: the tasks with work to do, in
 /// working days, each starting when the work it follows has started (and
@@ -289,7 +298,17 @@ List<BomLine> selectionBom(Project p, Set<String> ids) {
     if (l != null) {
       l.quantity += qty;
     } else {
-      lines[key] = BomLine(category: category, description: description, unit: unit, quantity: qty, unitCost: cost, specId: specId, code: code, supplier: supplier, finame: specId == null ? '' : (cat.finame[specId] ?? ''));
+      lines[key] = BomLine(
+        category: category,
+        description: description,
+        unit: unit,
+        quantity: qty,
+        unitCost: cost,
+        specId: specId,
+        code: code,
+        supplier: supplier,
+        finame: specId == null ? '' : (cat.finame[specId] ?? ''),
+      );
     }
   }
 

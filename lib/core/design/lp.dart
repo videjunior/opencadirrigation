@@ -61,7 +61,11 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
     var r = c.rhs;
     if (r < 0) {
       r = -r;
-      s = switch (s) { LpSense.le => LpSense.ge, LpSense.ge => LpSense.le, LpSense.eq => LpSense.eq };
+      s = switch (s) {
+        LpSense.le => LpSense.ge,
+        LpSense.ge => LpSense.le,
+        LpSense.eq => LpSense.eq,
+      };
     }
     rowSense.add(s);
     rowRhs.add(r);

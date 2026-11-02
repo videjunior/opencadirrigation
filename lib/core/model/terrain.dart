@@ -89,6 +89,7 @@ class Terrain {
     _resolving = false;
     return out;
   }
+
   List<TerrainSample> get samples => List.unmodifiable(_samples);
 
   /// Largest sample count triangulated as is; bigger surveys are decimated

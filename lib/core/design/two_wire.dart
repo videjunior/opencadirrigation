@@ -48,7 +48,19 @@ import 'valve_in_head.dart';
 
 /// Electrical data of a two-wire system.
 class TwoWireSpec {
-  const TwoWireSpec({this.outputVolts = 34, this.minVolts = 24, this.decoderIdleA = 0.001, this.inrushA, this.holdingA, this.decoderCapacities = const [1, 2, 4, 6], this.maxSolenoidCableM = 30, this.groundEveryDecoders = 12, this.groundEveryM = 150, this.slackPct, this.solenoidsPerOutput = 2});
+  const TwoWireSpec({
+    this.outputVolts = 34,
+    this.minVolts = 24,
+    this.decoderIdleA = 0.001,
+    this.inrushA,
+    this.holdingA,
+    this.decoderCapacities = const [1, 2, 4, 6],
+    this.maxSolenoidCableM = 30,
+    this.groundEveryDecoders = 12,
+    this.groundEveryM = 150,
+    this.slackPct,
+    this.solenoidsPerOutput = 2,
+  });
 
   /// Solenoids one decoder output drives in parallel (the heads of one
   /// valve-in-head station near a decoder share an output up to it).
@@ -85,7 +97,18 @@ class TwoWireSpec {
 /// One station: a valve driven by a decoder (or one head of a valve-in-head
 /// station, its station's name and number).
 class TwoWireStation {
-  TwoWireStation({required this.valveId, required this.zoneName, required this.controllerId, required this.decoderId, required this.station, required this.routeM, required this.solenoidCableM, required this.volts, required this.ok, this.openTogether = 1});
+  TwoWireStation({
+    required this.valveId,
+    required this.zoneName,
+    required this.controllerId,
+    required this.decoderId,
+    required this.station,
+    required this.routeM,
+    required this.solenoidCableM,
+    required this.volts,
+    required this.ok,
+    this.openTogether = 1,
+  });
 
   /// The valve, or the head (outlet id) of a valve-in-head station.
   final String valveId;
@@ -111,11 +134,28 @@ class TwoWireStation {
   final int openTogether;
 
   Map<String, dynamic> toJson() => {
-    'valve': valveId, 'zone': zoneName, 'ctrl': controllerId, 'dec': decoderId, 'st': station, 'route': routeM, 'sol': solenoidCableM, 'v': volts, 'ok': ok, 'n': openTogether,
+    'valve': valveId,
+    'zone': zoneName,
+    'ctrl': controllerId,
+    'dec': decoderId,
+    'st': station,
+    'route': routeM,
+    'sol': solenoidCableM,
+    'v': volts,
+    'ok': ok,
+    'n': openTogether,
   };
   static TwoWireStation fromJson(Map<String, dynamic> j) => TwoWireStation(
-    valveId: j['valve'] as String, zoneName: j['zone'] as String? ?? '', controllerId: j['ctrl'] as String? ?? '', decoderId: j['dec'] as String? ?? '', station: (j['st'] as num?)?.toInt() ?? 0,
-    routeM: _d(j['route']), solenoidCableM: _d(j['sol']), volts: _d(j['v']), ok: j['ok'] as bool? ?? true, openTogether: (j['n'] as num?)?.toInt() ?? 1,
+    valveId: j['valve'] as String,
+    zoneName: j['zone'] as String? ?? '',
+    controllerId: j['ctrl'] as String? ?? '',
+    decoderId: j['dec'] as String? ?? '',
+    station: (j['st'] as num?)?.toInt() ?? 0,
+    routeM: _d(j['route']),
+    solenoidCableM: _d(j['sol']),
+    volts: _d(j['v']),
+    ok: j['ok'] as bool? ?? true,
+    openTogether: (j['n'] as num?)?.toInt() ?? 1,
   );
 }
 
@@ -138,8 +178,13 @@ class TwoWireDecoder {
 
   Map<String, dynamic> toJson() => {'id': id, 'ctrl': controllerId, 'p': p.toList(), 'cap': capacity, 'valves': valveIds, 'route': routeM, 'v': volts};
   static TwoWireDecoder fromJson(Map<String, dynamic> j) => TwoWireDecoder(
-    id: j['id'] as String, controllerId: j['ctrl'] as String? ?? '', p: j['p'] is List ? Pt.fromList(j['p'] as List) : Pt.zero, capacity: (j['cap'] as num?)?.toInt() ?? 1,
-    valveIds: ((j['valves'] as List?) ?? []).cast<String>(), routeM: _d(j['route']), volts: _d(j['v']),
+    id: j['id'] as String,
+    controllerId: j['ctrl'] as String? ?? '',
+    p: j['p'] is List ? Pt.fromList(j['p'] as List) : Pt.zero,
+    capacity: (j['cap'] as num?)?.toInt() ?? 1,
+    valveIds: ((j['valves'] as List?) ?? []).cast<String>(),
+    routeM: _d(j['route']),
+    volts: _d(j['v']),
   );
 }
 
@@ -157,13 +202,28 @@ class TwoWireSizeCheck {
   final double maxDistanceM;
 
   Map<String, dynamic> toJson() => {if (wireId != null) 'w': wireId, 'v': worstVolts, 'ok': ok, 'max': maxDistanceM.isFinite ? maxDistanceM : null};
-  static TwoWireSizeCheck fromJson(Map<String, dynamic> j) => TwoWireSizeCheck(wireId: j['w'] as String?, worstVolts: _d(j['v']), ok: j['ok'] as bool? ?? true, maxDistanceM: (j['max'] as num?)?.toDouble() ?? double.infinity);
+  static TwoWireSizeCheck fromJson(Map<String, dynamic> j) =>
+      TwoWireSizeCheck(wireId: j['w'] as String?, worstVolts: _d(j['v']), ok: j['ok'] as bool? ?? true, maxDistanceM: (j['max'] as num?)?.toDouble() ?? double.infinity);
 }
 
 /// What a controller's two-wire path carries (the [ControllerDuty] of
 /// `electrical.dart`).
 class TwoWirePath {
-  TwoWirePath({required this.controllerId, required this.name, required this.stations, required this.used, this.wireId, required this.routeM, required this.cableM, required this.decoders, required this.maxOpen, required this.peakCurrentA, required this.worstVolts, required this.maxDistanceM, required this.sizes});
+  TwoWirePath({
+    required this.controllerId,
+    required this.name,
+    required this.stations,
+    required this.used,
+    this.wireId,
+    required this.routeM,
+    required this.cableM,
+    required this.decoders,
+    required this.maxOpen,
+    required this.peakCurrentA,
+    required this.worstVolts,
+    required this.maxDistanceM,
+    required this.sizes,
+  });
   final String controllerId;
   final String name;
 
@@ -194,13 +254,34 @@ class TwoWirePath {
   bool get overloaded => used > stations;
 
   Map<String, dynamic> toJson() => {
-    'ctrl': controllerId, 'name': name, 'stations': stations, 'used': used, if (wireId != null) 'w': wireId, 'route': routeM, 'cable': cableM, 'dec': decoders, 'open': maxOpen, 'amps': peakCurrentA,
-    'v': worstVolts, 'max': maxDistanceM.isFinite ? maxDistanceM : null, 'sizes': sizes.map((s) => s.toJson()).toList(),
+    'ctrl': controllerId,
+    'name': name,
+    'stations': stations,
+    'used': used,
+    if (wireId != null) 'w': wireId,
+    'route': routeM,
+    'cable': cableM,
+    'dec': decoders,
+    'open': maxOpen,
+    'amps': peakCurrentA,
+    'v': worstVolts,
+    'max': maxDistanceM.isFinite ? maxDistanceM : null,
+    'sizes': sizes.map((s) => s.toJson()).toList(),
   };
   static TwoWirePath fromJson(Map<String, dynamic> j) => TwoWirePath(
-    controllerId: j['ctrl'] as String, name: j['name'] as String? ?? '', stations: (j['stations'] as num?)?.toInt() ?? 0, used: (j['used'] as num?)?.toInt() ?? 0, wireId: j['w'] as String?,
-    routeM: _d(j['route']), cableM: _d(j['cable']), decoders: (j['dec'] as num?)?.toInt() ?? 0, maxOpen: (j['open'] as num?)?.toInt() ?? 0, peakCurrentA: _d(j['amps']), worstVolts: _d(j['v']),
-    maxDistanceM: (j['max'] as num?)?.toDouble() ?? double.infinity, sizes: [for (final s in (j['sizes'] as List?) ?? []) TwoWireSizeCheck.fromJson(s as Map<String, dynamic>)],
+    controllerId: j['ctrl'] as String,
+    name: j['name'] as String? ?? '',
+    stations: (j['stations'] as num?)?.toInt() ?? 0,
+    used: (j['used'] as num?)?.toInt() ?? 0,
+    wireId: j['w'] as String?,
+    routeM: _d(j['route']),
+    cableM: _d(j['cable']),
+    decoders: (j['dec'] as num?)?.toInt() ?? 0,
+    maxOpen: (j['open'] as num?)?.toInt() ?? 0,
+    peakCurrentA: _d(j['amps']),
+    worstVolts: _d(j['v']),
+    maxDistanceM: (j['max'] as num?)?.toDouble() ?? double.infinity,
+    sizes: [for (final s in (j['sizes'] as List?) ?? []) TwoWireSizeCheck.fromJson(s as Map<String, dynamic>)],
   );
 }
 
@@ -219,19 +300,22 @@ class TwoWireGround {
 
   Map<String, dynamic> toJson() => {'ctrl': controllerId, 'p': p.toList(), 'kind': kind.name, if (decoderId != null) 'dec': decoderId};
   static TwoWireGround fromJson(Map<String, dynamic> j) => TwoWireGround(
-    controllerId: j['ctrl'] as String? ?? '', p: j['p'] is List ? Pt.fromList(j['p'] as List) : Pt.zero, kind: GroundKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => GroundKind.interval), decoderId: j['dec'] as String?,
+    controllerId: j['ctrl'] as String? ?? '',
+    p: j['p'] is List ? Pt.fromList(j['p'] as List) : Pt.zero,
+    kind: GroundKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => GroundKind.interval),
+    decoderId: j['dec'] as String?,
   );
 }
 
 /// Outcome of [designTwoWire] (the [ElectricalResult] of a two-wire system).
 class TwoWireResult {
   TwoWireResult({List<TwoWireStation>? stations, List<TwoWireDecoder>? decoders, List<TwoWirePath>? paths, List<TwoWireGround>? grounds, List<String>? warnings, Map<String, double>? wireMeters})
-      : stations = stations ?? [],
-        decoders = decoders ?? [],
-        paths = paths ?? [],
-        grounds = grounds ?? [],
-        warnings = warnings ?? [],
-        wireMeters = wireMeters ?? {};
+    : stations = stations ?? [],
+      decoders = decoders ?? [],
+      paths = paths ?? [],
+      grounds = grounds ?? [],
+      warnings = warnings ?? [],
+      wireMeters = wireMeters ?? {};
   final List<TwoWireStation> stations;
   final List<TwoWireDecoder> decoders;
   final List<TwoWirePath> paths;
@@ -254,13 +338,20 @@ class TwoWireResult {
   TwoWireStation? stationOf(String valveId) => stations.where((s) => s.valveId == valveId).firstOrNull;
 
   Map<String, dynamic> toJson() => {
-    'st': stations.map((s) => s.toJson()).toList(), 'dec': decoders.map((d) => d.toJson()).toList(), 'paths': paths.map((p) => p.toJson()).toList(), 'gnd': grounds.map((g) => g.toJson()).toList(),
-    'warn': warnings, 'meters': wireMeters,
+    'st': stations.map((s) => s.toJson()).toList(),
+    'dec': decoders.map((d) => d.toJson()).toList(),
+    'paths': paths.map((p) => p.toJson()).toList(),
+    'gnd': grounds.map((g) => g.toJson()).toList(),
+    'warn': warnings,
+    'meters': wireMeters,
   };
   static TwoWireResult fromJson(Map<String, dynamic> j) => TwoWireResult(
-    stations: [for (final s in (j['st'] as List?) ?? []) TwoWireStation.fromJson(s as Map<String, dynamic>)], decoders: [for (final s in (j['dec'] as List?) ?? []) TwoWireDecoder.fromJson(s as Map<String, dynamic>)],
-    paths: [for (final s in (j['paths'] as List?) ?? []) TwoWirePath.fromJson(s as Map<String, dynamic>)], grounds: [for (final s in (j['gnd'] as List?) ?? []) TwoWireGround.fromJson(s as Map<String, dynamic>)],
-    warnings: ((j['warn'] as List?) ?? []).cast<String>(), wireMeters: {for (final e in ((j['meters'] as Map?) ?? const {}).entries) e.key as String: (e.value as num).toDouble()},
+    stations: [for (final s in (j['st'] as List?) ?? []) TwoWireStation.fromJson(s as Map<String, dynamic>)],
+    decoders: [for (final s in (j['dec'] as List?) ?? []) TwoWireDecoder.fromJson(s as Map<String, dynamic>)],
+    paths: [for (final s in (j['paths'] as List?) ?? []) TwoWirePath.fromJson(s as Map<String, dynamic>)],
+    grounds: [for (final s in (j['gnd'] as List?) ?? []) TwoWireGround.fromJson(s as Map<String, dynamic>)],
+    warnings: ((j['warn'] as List?) ?? []).cast<String>(),
+    wireMeters: {for (final e in ((j['meters'] as Map?) ?? const {}).entries) e.key as String: (e.value as num).toDouble()},
   );
 }
 
@@ -271,8 +362,18 @@ class TwoWireResult {
 /// run, as `wiringFlows` of `network_ops.dart` gives them).
 TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], TwoWireSpec spec = const TwoWireSpec(), List<List<Pt>>? routes}) {
   final controllers = p.entities.whereType<ControllerEntity>().toList();
-  final lines = routes ?? [for (final w in p.entities.whereType<WireEntity>()) if (w.points.length >= 2) w.points];
-  final wireIds = routes == null ? [for (final w in p.entities.whereType<WireEntity>()) if (w.points.length >= 2) w.id] : [for (var i = 0; i < lines.length; i++) 'route$i'];
+  final lines =
+      routes ??
+      [
+        for (final w in p.entities.whereType<WireEntity>())
+          if (w.points.length >= 2) w.points,
+      ];
+  final wireIds = routes == null
+      ? [
+          for (final w in p.entities.whereType<WireEntity>())
+            if (w.points.length >= 2) w.id,
+        ]
+      : [for (var i = 0; i < lines.length; i++) 'route$i'];
   if (controllers.isEmpty && lines.isEmpty) return null;
   final params = p.params;
   final inrush = spec.inrushA ?? params.solenoidInrushA;
@@ -285,7 +386,10 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
   }
   final valves = p.entities.whereType<ControlValveEntity>().toList();
   final vih = VihStations.of(p);
-  final headAt = <String, Pt>{for (final e in p.entities) if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position};
+  final headAt = <String, Pt>{
+    for (final e in p.entities)
+      if (e is OutletEntity && vih.stationOf.containsKey(e.id)) e.id: e.position,
+  };
   final g = WireGraph(math.max(params.connectTolerance, 0.1));
   for (var k = 0; k < lines.length; k++) {
     final pts = lines[k];
@@ -351,8 +455,16 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
       }
     }
     final dist = best == null ? const <int, double>{} : paths[best]!.$1;
-    final wired = [for (final h in s.value) if (dist.containsKey(headNode[h] ?? -1)) h];
-    if (wired.length < s.value.length) result.warnings.add('twowire_unwired:${[for (final h in s.value) if (!wired.contains(h)) h].join(':')}');
+    final wired = [
+      for (final h in s.value)
+        if (dist.containsKey(headNode[h] ?? -1)) h,
+    ];
+    if (wired.length < s.value.length) {
+      result.warnings.add(
+        'twowire_unwired:${[for (final h in s.value)
+          if (!wired.contains(h)) h].join(':')}',
+      );
+    }
     if (best == null || wired.isEmpty) continue;
     owner[s.key] = best;
     stationHeads[s.key] = wired;
@@ -373,10 +485,31 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
   var decoderSeq = 0;
 
   for (final c in controllers) {
-    final mine = [for (final v in valves) if (owner[v.id] == c.id) v];
-    final myStations = [for (final s in stationHeads.keys) if (owner[s] == c.id) s];
+    final mine = [
+      for (final v in valves)
+        if (owner[v.id] == c.id) v,
+    ];
+    final myStations = [
+      for (final s in stationHeads.keys)
+        if (owner[s] == c.id) s,
+    ];
     if (mine.isEmpty && myStations.isEmpty) {
-      result.paths.add(TwoWirePath(controllerId: c.id, name: c.name, stations: c.stations, used: 0, routeM: 0, cableM: 0, decoders: 0, maxOpen: 0, peakCurrentA: 0, worstVolts: spec.outputVolts, maxDistanceM: double.infinity, sizes: const []));
+      result.paths.add(
+        TwoWirePath(
+          controllerId: c.id,
+          name: c.name,
+          stations: c.stations,
+          used: 0,
+          routeM: 0,
+          cableM: 0,
+          decoders: 0,
+          maxOpen: 0,
+          peakCurrentA: 0,
+          worstVolts: spec.outputVolts,
+          maxDistanceM: double.infinity,
+          sizes: const [],
+        ),
+      );
       continue;
     }
     if (mine.length + myStations.length > c.stations) result.warnings.add('twowire_stations:${c.id}');
@@ -387,7 +520,10 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
       for (final s in myStations)
         for (final h in stationHeads[s]!) (h, headNode[h]!, s),
     ];
-    final pointsOf = <String, List<String>>{for (final v in mine) v.id: [v.id], for (final s in myStations) s: stationHeads[s]!};
+    final pointsOf = <String, List<String>>{
+      for (final v in mine) v.id: [v.id],
+      for (final s in myStations) s: stationHeads[s]!,
+    };
     final root = ctrlNode[c.id]!;
     final (dist, via) = paths[c.id]!;
     // the tree: the shortest paths from the controller to its valves
@@ -422,11 +558,12 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
       }
     }
     final rank = {for (var i = 0; i < preorder.length; i++) preorder[i]: i};
-    final ordered = [...points]..sort((a, b) {
-      final ra = rank[a.$2]!, rb = rank[b.$2]!;
-      if (ra != rb) return ra.compareTo(rb);
-      return a.$1.compareTo(b.$1);
-    });
+    final ordered = [...points]
+      ..sort((a, b) {
+        final ra = rank[a.$2]!, rb = rank[b.$2]!;
+        if (ra != rb) return ra.compareTo(rb);
+        return a.$1.compareTo(b.$1);
+      });
     int parentOf(int n) => g.edge(parentEdge[n]!).other(n);
     double treeDistance(int a, int b) {
       final up = <int>{};
@@ -551,7 +688,9 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
     final sizes = [
       for (final w in candidates)
         TwoWireSizeCheck(
-          wireId: w.id.isEmpty ? null : w.id, worstVolts: volts(worstDrop, w), ok: volts(worstDrop, w) >= spec.minVolts - 1e-9,
+          wireId: w.id.isEmpty ? null : w.id,
+          worstVolts: volts(worstDrop, w),
+          ok: volts(worstDrop, w) >= spec.minVolts - 1e-9,
           maxDistanceM: worstDrop > 0 && w.ohmPerKm > 0 ? farthest * (spec.outputVolts - spec.minVolts) / (worstDrop * w.ohmPerKm / 1000) : double.infinity,
         ),
     ];
@@ -574,23 +713,53 @@ TwoWireResult? designTwoWire(Project p, {List<Set<String>> flows = const [], Two
       final ok = u >= spec.minVolts - 1e-9;
       if (!ok) result.warnings.add('twowire_voltage:$id');
       final v = valveOf[id];
-      result.stations.add(TwoWireStation(
-        valveId: id, zoneName: v == null ? vih.nameOf(s) : (v.zoneName.isNotEmpty ? v.zoneName : v.name), controllerId: c.id, decoderId: decoderIds[k], station: numberOf.putIfAbsent(s, () => ++station), routeM: dist[host]!,
-        solenoidCableM: treeDistance(host, n) * slack, volts: u, ok: ok, openTogether: openWith[id] ?? 1,
-      ));
+      result.stations.add(
+        TwoWireStation(
+          valveId: id,
+          zoneName: v == null ? vih.nameOf(s) : (v.zoneName.isNotEmpty ? v.zoneName : v.name),
+          controllerId: c.id,
+          decoderId: decoderIds[k],
+          station: numberOf.putIfAbsent(s, () => ++station),
+          routeM: dist[host]!,
+          solenoidCableM: treeDistance(host, n) * slack,
+          volts: u,
+          ok: ok,
+          openTogether: openWith[id] ?? 1,
+        ),
+      );
     }
     for (var k = 0; k < decoders.length; k++) {
       final (host, members, outputs) = decoders[k];
-      result.decoders.add(TwoWireDecoder(
-        id: decoderIds[k], controllerId: c.id, p: g.nodes[host], capacity: caps.firstWhere((x) => x >= outputs.length, orElse: () => caps.last), valveIds: [...members], routeM: dist[host]!,
-        volts: volts(decoderDrop[k], wire),
-      ));
+      result.decoders.add(
+        TwoWireDecoder(
+          id: decoderIds[k],
+          controllerId: c.id,
+          p: g.nodes[host],
+          capacity: caps.firstWhere((x) => x >= outputs.length, orElse: () => caps.last),
+          valveIds: [...members],
+          routeM: dist[host]!,
+          volts: volts(decoderDrop[k], wire),
+        ),
+      );
     }
     if (wire.id.isNotEmpty) result.wireMeters[wire.id] = (result.wireMeters[wire.id] ?? 0) + 2 * treeLength * slack;
-    result.paths.add(TwoWirePath(
-      controllerId: c.id, name: c.name, stations: c.stations, used: mine.length + myStations.length, wireId: wire.id.isEmpty ? null : wire.id, routeM: treeLength, cableM: treeLength * slack, decoders: decoders.length,
-      maxOpen: maxOpen, peakCurrentA: peak, worstVolts: check.worstVolts, maxDistanceM: check.maxDistanceM, sizes: sizes,
-    ));
+    result.paths.add(
+      TwoWirePath(
+        controllerId: c.id,
+        name: c.name,
+        stations: c.stations,
+        used: mine.length + myStations.length,
+        wireId: wire.id.isEmpty ? null : wire.id,
+        routeM: treeLength,
+        cableM: treeLength * slack,
+        decoders: decoders.length,
+        maxOpen: maxOpen,
+        peakCurrentA: peak,
+        worstVolts: check.worstVolts,
+        maxDistanceM: check.maxDistanceM,
+        sizes: sizes,
+      ),
+    );
     // grounding points: the controller, every N decoders or M metres, the ends
     final decodersAt = <int, List<int>>{};
     for (var k = 0; k < decoders.length; k++) {

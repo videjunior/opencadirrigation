@@ -68,7 +68,10 @@ void main() {
           home: Directionality(
             textDirection: dir,
             child: Scaffold(
-              body: SizedBox(width: width, child: SingleChildScrollView(child: AiMarkdown(md))),
+              body: SizedBox(
+                width: width,
+                child: SingleChildScrollView(child: AiMarkdown(md)),
+              ),
             ),
           ),
         ),
@@ -96,7 +99,11 @@ void main() {
     });
 
     testWidgets('a wide table scrolls sideways in a narrow panel, with its cells as text', (tester) async {
-      await pump(tester, '| Zone | Flow | Pressure | Velocity | Uniformity | Status |\n|---|--:|--:|--:|--:|---|\n| Zone A | 4.2 m³/h | 21.0 m | 1.4 m/s | 93 % | within window |\n| Zone B | 5.1 m³/h | 19.5 m | 1.6 m/s | 88 % | needs a bigger submain |', width: 300);
+      await pump(
+        tester,
+        '| Zone | Flow | Pressure | Velocity | Uniformity | Status |\n|---|--:|--:|--:|--:|---|\n| Zone A | 4.2 m³/h | 21.0 m | 1.4 m/s | 93 % | within window |\n| Zone B | 5.1 m³/h | 19.5 m | 1.6 m/s | 88 % | needs a bigger submain |',
+        width: 300,
+      );
       expect(find.byType(Table), findsOneWidget);
       expect(find.text('needs a bigger submain'), findsOneWidget);
       expect(find.text('Zone B'), findsOneWidget);

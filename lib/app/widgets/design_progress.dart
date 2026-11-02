@@ -25,15 +25,8 @@ class DesignProgressOverlay extends StatelessWidget {
     switch (p.stage) {
       case DesignStage.zones:
         final e = p.zoneId == null ? null : c.project.byId(p.zoneId!);
-        final name = e == null
-            ? ''
-            : (e is ControlValveEntity && e.zoneName.isNotEmpty
-                  ? e.zoneName
-                  : e.name);
-        final base = t('design.progress.zones', {
-          'i': '${p.zoneIndex}',
-          'n': '${p.zoneCount}',
-        });
+        final name = e == null ? '' : (e is ControlValveEntity && e.zoneName.isNotEmpty ? e.zoneName : e.name);
+        final base = t('design.progress.zones', {'i': '${p.zoneIndex}', 'n': '${p.zoneCount}'});
         return name.isEmpty ? base : '$base: $name';
       case DesignStage.mainline:
         return t('design.progress.mainline');
@@ -69,7 +62,11 @@ class DesignProgressOverlay extends StatelessWidget {
               Row(
                 children: [
                   // determinate: an indeterminate spinner freezes mid-arc while a step runs
-                  SizedBox(width: 16, height: 16, child: CircularProgressIndicator(value: fraction, strokeWidth: 2.5, backgroundColor: Cad.fg12)),
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(value: fraction, strokeWidth: 2.5, backgroundColor: Cad.fg12),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -100,11 +97,7 @@ class DesignProgressOverlay extends StatelessWidget {
               const SizedBox(height: 6),
               ClipRRect(
                 borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: p?.fraction,
-                  minHeight: 4,
-                  backgroundColor: Cad.fg12,
-                ),
+                child: LinearProgressIndicator(value: p?.fraction, minHeight: 4, backgroundColor: Cad.fg12),
               ),
               if (!compact) ...[
                 const SizedBox(height: 8),

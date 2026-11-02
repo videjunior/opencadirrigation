@@ -44,7 +44,22 @@ void main() {
     // FAO-56 does not list three classes
     expect(soilOf(SoilTexture.clayLoam).fao56Awc, isNull);
     // conductivity falls from sand to clay
-    final ks = [for (final t in [SoilTexture.sand, SoilTexture.loamySand, SoilTexture.sandyLoam, SoilTexture.loam, SoilTexture.siltLoam, SoilTexture.sandyClayLoam, SoilTexture.clayLoam, SoilTexture.siltyClayLoam, SoilTexture.sandyClay, SoilTexture.siltyClay, SoilTexture.clay]) soilOf(t).ksatMmH];
+    final ks = [
+      for (final t in [
+        SoilTexture.sand,
+        SoilTexture.loamySand,
+        SoilTexture.sandyLoam,
+        SoilTexture.loam,
+        SoilTexture.siltLoam,
+        SoilTexture.sandyClayLoam,
+        SoilTexture.clayLoam,
+        SoilTexture.siltyClayLoam,
+        SoilTexture.sandyClay,
+        SoilTexture.siltyClay,
+        SoilTexture.clay,
+      ])
+        soilOf(t).ksatMmH,
+    ];
     for (var i = 1; i < ks.length; i++) {
       expect(ks[i], lessThan(ks[i - 1]));
     }

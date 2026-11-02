@@ -43,7 +43,17 @@ class LpHeadConstraint {
 }
 
 class LpSizingInput {
-  LpSizingInput({required this.units, required this.candidates, required this.unitLength, required this.maxSizes, required this.headVars, required this.constraints, required this.crf, required this.tradeCapital, this.pipeCost});
+  LpSizingInput({
+    required this.units,
+    required this.candidates,
+    required this.unitLength,
+    required this.maxSizes,
+    required this.headVars,
+    required this.constraints,
+    required this.crf,
+    required this.tradeCapital,
+    this.pipeCost,
+  });
 
   /// Unit ids in order.
   final List<String> units;

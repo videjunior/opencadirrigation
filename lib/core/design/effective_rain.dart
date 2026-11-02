@@ -104,7 +104,10 @@ double effectiveRainMm(EffectiveRainMethod method, double rainMm, {double? etcMm
 /// interpolation between ranks (clamped to the sample range). Null for an
 /// empty sample.
 double? rainExceededWithProbability(List<double> monthlyTotals, double probability) {
-  final xs = [for (final x in monthlyTotals) if (x.isFinite) x]..sort();
+  final xs = [
+    for (final x in monthlyTotals)
+      if (x.isFinite) x,
+  ]..sort();
   if (xs.isEmpty) return null;
   final n = xs.length;
   // non-exceedance F = 1 − probability; rank r (1-based, ascending) where r/(n+1) = F
@@ -119,7 +122,15 @@ double? rainExceededWithProbability(List<double> monthlyTotals, double probabili
 /// Effective rain (mm) over [days] days of a month of [monthDays] days:
 /// the whole-month value of [method] (with the monthly ETc extrapolated
 /// from [etcMmInPeriod] when given) prorated by the share of days.
-double effectiveRainForPartOfMonthMm(EffectiveRainMethod method, {required double monthRainMm, required int days, required int monthDays, double? etcMmInPeriod, double netDepthMm = 75, double fraction = 0.8}) {
+double effectiveRainForPartOfMonthMm(
+  EffectiveRainMethod method, {
+  required double monthRainMm,
+  required int days,
+  required int monthDays,
+  double? etcMmInPeriod,
+  double netDepthMm = 75,
+  double fraction = 0.8,
+}) {
   if (days <= 0 || monthDays <= 0) return 0;
   final share = (days / monthDays).clamp(0.0, 1.0);
   final etcMonth = etcMmInPeriod == null ? null : etcMmInPeriod / share;
