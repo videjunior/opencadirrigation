@@ -38,7 +38,8 @@ class PipeSegmentResult {
     required this.pressureRating,
     this.zoneId,
     this.overVelocity = false,
-  });
+    double? slopeLength,
+  }) : slopeLength = slopeLength ?? length;
   final String linkId;
   final String entityId;
   final int segmentIndex;
@@ -46,7 +47,13 @@ class PipeSegmentResult {
   final Pt b;
   final double elevationA;
   final double elevationB;
+
+  /// Length in plan, along the drawn line (stations, profiles).
   final double length;
+
+  /// Length along the ground (√(L² + Δz²)): the one of the losses and of
+  /// the bill of materials.
+  final double slopeLength;
   final double diameter;
   final String? pipeSpecId;
   final String pipeName;
@@ -80,6 +87,7 @@ class PipeSegmentResult {
     'pn': pressureRating,
     if (zoneId != null) 'zone': zoneId,
     if (overVelocity) 'ov': true,
+    if (slopeLength != length) 'ls': slopeLength,
   };
   static PipeSegmentResult fromJson(Map<String, dynamic> j) => PipeSegmentResult(
     linkId: j['link'] as String,
@@ -101,6 +109,7 @@ class PipeSegmentResult {
     pressureRating: _d(j, 'pn'),
     zoneId: j['zone'] as String?,
     overVelocity: j['ov'] as bool? ?? false,
+    slopeLength: (j['ls'] as num?)?.toDouble(),
   );
 }
 

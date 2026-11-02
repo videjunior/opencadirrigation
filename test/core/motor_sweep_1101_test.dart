@@ -714,9 +714,14 @@ void main() {
     final dz = (b.ground - a.ground).abs();
     expect(dz, greaterThan(15));
     expect(link.length, closeTo(math.sqrt(100 * 100 + dz * dz), 1e-9));
+    expect(link.drawnLength, closeTo(100, 1e-9), reason: 'stations and profiles keep the plan');
     final r = Designer(p).designAll();
     final pvc = r.bom.firstWhere((l) => l.specId == 'pvc75');
     expect(pvc.quantity, closeTo(link.length, 1e-9), reason: 'the pipe bought along the slope');
+    final seg = r.systemFlows.single.pipes.single;
+    expect(seg.length, closeTo(100, 1e-9));
+    expect(seg.slopeLength, closeTo(link.length, 1e-9));
+    expect(PipeSegmentResult.fromJson(seg.toJson()).slopeLength, closeTo(link.length, 1e-9));
   });
 
   test('MOT-18: a pressure-compensating emitter below its range is an orifice, in the law and in the solver', () {

@@ -95,6 +95,7 @@ class GLink {
     this.a = Pt.zero,
     this.b = Pt.zero,
     this.emitterCountAlong = 0,
+    this.planLength,
   });
   final String id;
   final String from;
@@ -124,6 +125,13 @@ class GLink {
   final int emitterCountAlong;
   String? zoneId;
 
+  /// Length in plan of a pipe link ([length] runs along the ground).
+  final double? planLength;
+
+  /// The length along the drawn line, in plan: stations, profiles and the
+  /// positions between [a] and [b].
+  double get drawnLength => planLength ?? length;
+
   String other(String n) => n == from ? to : from;
 
   /// The same link between other nodes (every setting kept: the flow of an
@@ -151,6 +159,7 @@ class GLink {
     a: a,
     b: b,
     emitterCountAlong: emitterCountAlong,
+    planLength: planLength,
   )..zoneId = zoneId;
 }
 
@@ -808,7 +817,8 @@ class NetworkBuilder {
       a.entityIds.add(entityId);
       b.entityIds.add(entityId);
       if (a.id == b.id) continue;
-      final len = _slopeLength(pts[i - 1].distanceTo(pts[i]), a, b);
+      final plan = pts[i - 1].distanceTo(pts[i]);
+      final len = _slopeLength(plan, a, b);
       final l = GLink(
         id: '${entityId}_${i - 1}',
         from: a.id,
@@ -818,6 +828,7 @@ class NetworkBuilder {
         entityId: entityId,
         segmentIndex: i - 1,
         length: len,
+        planLength: plan,
         pipeSpecId: pipeSpecId,
         computerSized: computerSized,
         usage: usage,
@@ -899,6 +910,7 @@ class NetworkBuilder {
         entityId: entityId,
         segmentIndex: seg,
         length: _slopeLength((dd - du).abs(), up, down),
+        planLength: (dd - du).abs(),
         pipeSpecId: pipeSpecId,
         tapeSpecId: tapeSpecId,
         computerSized: computerSized,

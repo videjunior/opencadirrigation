@@ -141,7 +141,7 @@ class MainlineFlows {
 }
 
 /// Position at [x] metres along [l] from its `from` end (its drawn segment).
-Pt _along(GLink l, double x) => l.length > 1e-9 ? Pt.lerp(l.a, l.b, (x / l.length).clamp(0.0, 1.0)) : l.a;
+Pt _along(GLink l, double x) => l.drawnLength > 1e-9 ? Pt.lerp(l.a, l.b, (x / l.drawnLength).clamp(0.0, 1.0)) : l.a;
 
 /// Minimal binary heap of (distance, node) for the shortest-path trees.
 class _Heap {
@@ -1205,7 +1205,7 @@ class TransientStudy {
                 minHead: floor(p.minHead, p.elevation),
                 ratingHead: r > 0 ? p.elevation + r : double.nan,
                 entityId: gl?.entityId,
-                position: gl == null ? null : _along(gl, forward ? x / math.max(total, 1e-9) * gl.length : (total - x) / math.max(total, 1e-9) * gl.length),
+                position: gl == null ? null : _along(gl, forward ? x / math.max(total, 1e-9) * gl.drawnLength : (total - x) / math.max(total, 1e-9) * gl.drawnLength),
               ),
             );
           }
@@ -1496,7 +1496,8 @@ AirValveStudy suggestMainlineAirValvesOn(MainlineFlows mainline, {TransientAnaly
     for (final id in model.supplyNodes.values)
       if (model.mainlineNodes.contains(id)) id,
   ];
-  final tree = _PathTree(roots, [for (final l in links) (l.from, l.to, l.kind == GLinkKind.pipe ? l.length : 0.0)]);
+  // the profile in plan stations (its slopes are rises over plan distances)
+  final tree = _PathTree(roots, [for (final l in links) (l.from, l.to, l.kind == GLinkKind.pipe ? l.drawnLength : 0.0)]);
   final leaves = tree.leaves..sort((a, b) => (tree.dist[b] ?? 0).compareTo(tree.dist[a] ?? 0));
 
   bool busy(String nodeId) {
@@ -1526,7 +1527,7 @@ AirValveStudy suggestMainlineAirValvesOn(MainlineFlows mainline, {TransientAnaly
     final nodes = <String>[fwd.first ? seq.first.from : seq.first.to, for (var k = 0; k < seq.length; k++) fwd[k] ? seq[k].to : seq[k].from];
     final chain = <double>[0];
     for (final l in seq) {
-      chain.add(chain.last + (l.kind == GLinkKind.pipe ? l.length : 0));
+      chain.add(chain.last + (l.kind == GLinkKind.pipe ? l.drawnLength : 0));
     }
     // the profile starts at the discharge of the first pump: the suction
     // side of a pump drawing from the source is no place for an air valve
@@ -1604,13 +1605,13 @@ AirValveStudy suggestMainlineAirValvesOn(MainlineFlows mainline, {TransientAnaly
     (Pt, String?, double, String)? place(double x) {
       var k = -1;
       for (var i = start; i < seq.length; i++) {
-        if (seq[i].kind != GLinkKind.pipe || seq[i].length <= 1e-9) continue;
+        if (seq[i].kind != GLinkKind.pipe || seq[i].drawnLength <= 1e-9) continue;
         k = i;
         if (chain[i + 1] >= x - 1e-9) break;
       }
       if (k < 0) return null;
       final l = seq[k];
-      final len = l.length;
+      final len = l.drawnLength;
       var local = (x - chain[k]).clamp(0.0, len).toDouble();
       final startBusy = busy(nodes[k]), endBusy = busy(nodes[k + 1]);
       const clear = 1.0, snap = 0.3;
