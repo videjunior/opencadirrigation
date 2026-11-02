@@ -1339,7 +1339,7 @@ String renderSiteScript() {
   }
   // The app starts by itself for an app address, the installed app and whoever has used it here before.
   function wanted() {
-    if (/[?&](example|tutorial|design|ai|lang|source|app)=/.test(location.search)) return true;
+    if (/[?&](example|tutorial|design|ai|lang|source|app|share)=/.test(location.search)) return true;
     if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
     return usedHere();
   }
@@ -1510,9 +1510,86 @@ String renderManifest(SiteLang lang) {
       shortcut(example('garden').title, example('garden').text, 'example=garden'),
       shortcut(example('pivot').title, example('pivot').text, 'example=pivot'),
     ],
+    // the installed app as a program of the computer: "Open with" a project or a drawing, the window already open
+    // focused (the app reads the launch from its queue, lib/app/io/launch_files.dart), and what is shared with it
+    // (web/sw.js keeps it for the page)
+    'file_handlers': [
+      for (final accept in [manifestProjectTypes, manifestDrawingTypes])
+        {
+          'action': './?source=file',
+          'accept': accept,
+          'icons': [
+            {'src': '${up}icons/Icon-192.png', 'sizes': '192x192', 'type': 'image/png'},
+          ],
+          'launch_type': 'single-client',
+        },
+    ],
+    'launch_handler': {
+      'client_mode': ['focus-existing', 'auto'],
+    },
+    'share_target': {
+      'action': './share-target',
+      'method': 'POST',
+      'enctype': 'multipart/form-data',
+      'params': {
+        'title': 'title',
+        'text': 'text',
+        'url': 'url',
+        'files': [
+          {'name': 'files', 'accept': manifestShareAccept},
+        ],
+      },
+    },
   };
   return '${const JsonEncoder.withIndent('  ').convert(manifest)}\n';
 }
+
+/// The project files the installed app opens with "Open with" (a file handler of the manifests), by MIME type
+/// (the systems register them by extension): a `.json` opens as a project when its "format" says so, and is
+/// imported otherwise (lib/app/launch_actions.dart).
+const manifestProjectTypes = {
+  'application/json': ['.oci.json', '.json'],
+};
+
+/// The drawings, maps and surveys it imports the same way.
+const manifestDrawingTypes = {
+  'image/vnd.dxf': ['.dxf'],
+  'image/vnd.dwg': ['.dwg'],
+  'image/vnd.dgn': ['.dgn'],
+  'application/vnd.google-earth.kml+xml': ['.kml'],
+  'application/vnd.google-earth.kmz': ['.kmz'],
+  'application/geo+json': ['.geojson'],
+  'application/gpx+xml': ['.gpx'],
+  'application/vnd.las': ['.las', '.laz'],
+};
+
+/// What may be shared with the installed app (its share target): pictures, PDF plans, projects, drawings, maps,
+/// surveys and point files (types and extensions: phones share many of these files without a type of their own).
+const manifestShareAccept = [
+  'image/*',
+  'application/pdf',
+  'application/json',
+  'application/zip',
+  'text/csv',
+  'text/plain',
+  'application/octet-stream',
+  '.oci.json',
+  '.json',
+  '.dxf',
+  '.dwg',
+  '.dgn',
+  '.kml',
+  '.kmz',
+  '.geojson',
+  '.gpx',
+  '.shp',
+  '.zip',
+  '.las',
+  '.laz',
+  '.csv',
+  '.txt',
+  '.pdf',
+];
 
 /// Screenshots of the app in the manifests: `(path, size, form factor)`;
 /// the narrow one lets phones show the full install sheet.

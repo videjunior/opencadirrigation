@@ -596,6 +596,27 @@ void main() {
       expect([for (final s in m['shortcuts'] as List) (s as Map)['name']], contains(t.tutorial), reason: l.code);
       final forms = [for (final s in m['screenshots'] as List) (s as Map)['form_factor']];
       expect(forms, containsAll(['wide', 'narrow']), reason: '${l.code}: phones show the full install sheet');
+      // 1.6.0: "Open with" a project or a drawing, the window already open focused, files and pictures shared with it
+      final manifestUrl = Uri.parse('${l.url}manifest.json');
+      final handlers = [for (final h in m['file_handlers'] as List) h as Map<String, dynamic>];
+      expect(handlers, hasLength(2), reason: l.code);
+      for (final h in handlers) {
+        expect(manifestUrl.resolve(h['action'] as String).toString(), '${l.url}?source=file', reason: '${l.code}: the page of the language');
+      }
+      final extensions = [
+        for (final h in handlers)
+          for (final list in (h['accept'] as Map).values) ...(list as List),
+      ];
+      expect(extensions, containsAll(['.oci.json', '.dxf', '.dwg', '.kml', '.kmz', '.geojson', '.gpx']), reason: l.code);
+      expect(extensions.every((e) => (e as String).startsWith('.')), isTrue, reason: l.code);
+      expect((m['launch_handler'] as Map)['client_mode'], ['focus-existing', 'auto'], reason: '${l.code}: a second launch focuses the window already open');
+      final share = m['share_target'] as Map<String, dynamic>;
+      expect(share['method'], 'POST', reason: l.code);
+      expect(share['enctype'], 'multipart/form-data', reason: l.code);
+      expect(manifestUrl.resolve(share['action'] as String).toString(), '${l.url}share-target', reason: '${l.code}: web/sw.js answers it');
+      final files = ((share['params'] as Map)['files'] as List).single as Map;
+      expect(files['name'], 'files');
+      expect(files['accept'], containsAll(['image/*', 'application/pdf', '.oci.json', '.dxf', '.kml']), reason: l.code);
       for (final s in [...m['icons'] as List, ...m['screenshots'] as List]) {
         final src = Uri.parse('${l.url}manifest.json').resolve((s as Map)['src'] as String).path.substring(1);
         expect(File('web/$src').existsSync(), isTrue, reason: '${l.code}: $src');

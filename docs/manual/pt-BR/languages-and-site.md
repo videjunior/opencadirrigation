@@ -109,6 +109,24 @@ coreano pede, 2,0 MB de emoji e 6,2 MB de 130 outras escritas. O visitante baixa
 o texto na tela precisa, e o service worker as guarda depois de usadas. No `flutter run` e num
 `flutter build web` simples o marcador fica, e o motor usa o servidor do Google como antes.
 
+**App instalado.** Cada página de entrada tem um manifest no seu idioma (`manifest.json`,
+`<código>/manifest.json`): o mesmo app qualquer que seja a página de onde foi instalado, aberto na página
+daquele idioma, com os seus atalhos. Os manifests também fazem o app instalado se comportar como um
+programa do computador:
+- **Abrir com**: projetos (`.oci.json`, e um `.json` cujo formato é o do projeto) e os desenhos, mapas
+  e levantamentos que o app importa (DXF, DWG, DGN, KML, KMZ, GeoJSON, GPX, LAS/LAZ) podem ser abertos
+  com o OpenCADIrrigation pelo gerenciador de arquivos (navegadores Chromium no computador). Um projeto
+  abre numa aba própria (a aba em branco de uma abertura nova é usada), o resto é importado numa aba
+  nova.
+- **Uma janela só**: uma segunda abertura (um atalho, outro arquivo) vai para a janela já aberta, que
+  vem para a frente e faz o que a abertura pede; nada é recarregado e nenhum trabalho se perde.
+- **Compartilhar**: no Android, arquivos, fotos e links compartilhados com o app instalado (o alvo de
+  compartilhamento do manifest) chegam ao service worker como um envio para `<página>share-target`; ele
+  os guarda no cache `oci-share` e abre a página em `?share=<id>`, onde o `flutter_bootstrap.js` os
+  entrega ao app uma vez e os descarta (um compartilhamento que ninguém abriu é descartado depois de um
+  dia). Uma planta em PDF passa pelo seu diálogo de importação, um projeto ou um desenho abre como
+  acima, um link do OpenCADIrrigation num texto compartilhado abre o seu projeto.
+
 **Guia do usuário.** O gerador também escreve este manual como páginas do site, de `docs/manual`
 (inglês, em `/manual/`) e de `docs/manual/pt-BR` (português, em `/pt/manual/`), com o
 `tool/site_manual.dart`: uma página por capítulo, com a lista de capítulos, o sumário das seções, o

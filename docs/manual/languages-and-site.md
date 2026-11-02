@@ -104,6 +104,22 @@ for 130 other scripts. A visitor downloads only the slices the text on screen ne
 service worker keeps them once used. Under `flutter run` and in a plain `flutter build web` the
 placeholder stays and the engine uses Google's server as before.
 
+**Installed app.** Every entry page has a manifest in its language (`manifest.json`, `<code>/manifest.json`):
+the same app whatever page it is installed from, started on the page of that language, with its
+shortcuts. The manifests also make the installed app behave like a program of the computer:
+- **Open with**: projects (`.oci.json`, and a `.json` whose format is the project's) and the drawings,
+  maps and surveys the app imports (DXF, DWG, DGN, KML, KMZ, GeoJSON, GPX, LAS/LAZ) can be opened with
+  OpenCADIrrigation from the file manager (Chromium browsers on the computer). A project opens in a
+  tab of its own (the blank tab of a fresh start is used), anything else is imported into a new tab.
+- **One window**: a second launch (a shortcut, another file) goes to the window already open, which
+  comes to the front and does what the launch asks; nothing is reloaded and no work is lost.
+- **Share**: on Android, files, pictures and links shared with the installed app (the share target of
+  the manifest) reach the service worker as a post to `<page>share-target`; it keeps them in the cache
+  `oci-share` and opens the page at `?share=<id>`, where `flutter_bootstrap.js` hands them to the app
+  once and drops them (a share nobody picked up is dropped after a day). A PDF plan goes through its
+  import dialog, a project or a drawing opens as above, an OpenCADIrrigation link in a shared text
+  opens its project.
+
 **User guide.** The generator also writes this manual as pages of the site, from `docs/manual`
 (English, at `/manual/`) and `docs/manual/pt-BR` (Portuguese, at `/pt/manual/`), with
 `tool/site_manual.dart`: one page per chapter with the list of chapters, a table of contents of its

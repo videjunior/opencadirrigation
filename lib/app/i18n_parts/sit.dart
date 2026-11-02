@@ -21,4 +21,15 @@ const _sit = <String, (String, String, String)>{
     'There are unsaved changes. They stay in this browser\'s autosave, and the app offers to recover them when it opens again; an AI conversation in progress is stopped.',
     'Hay cambios sin guardar. Quedan en el guardado automático de este navegador, y la aplicación ofrece recuperarlos cuando se abra de nuevo; una conversación de la IA en curso se interrumpe.',
   ),
+  // ---- 1.6.0 SIT+: files opened with the installed app or shared with it (lib/app/launch_actions.dart)
+  'launch.shareFailed': (
+    'O que foi compartilhado com o OpenCADIrrigation não pôde ser lido (ou já foi aberto). Compartilhe de novo ou abra o arquivo pelo menu Arquivo.',
+    'What was shared with OpenCADIrrigation could not be read (or was opened already). Share it again, or open the file from the File menu.',
+    'Lo que se compartió con OpenCADIrrigation no se pudo leer (o ya se abrió). Compártalo de nuevo o abra el archivo desde el menú Archivo.',
+  ),
+  'launch.nothing': (
+    'Nada do que foi compartilhado é um projeto, um desenho ou um link do OpenCADIrrigation.',
+    'Nothing that was shared is a project, a drawing or an OpenCADIrrigation link.',
+    'Nada de lo compartido es un proyecto, un dibujo o un enlace de OpenCADIrrigation.',
+  ),
 };
