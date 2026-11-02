@@ -3059,7 +3059,7 @@ class ProjectController extends ChangeNotifier {
 
   /// Offset of a drawing whose coordinates are UTM ones (eastings of 100 to
   /// 900 km, northings up to 10 000 km) for a georeferenced project: its
-  /// origin, when the drawing lands within 200 km of it (a note says the
+  /// origin, when the drawing lands within 100 km of it (a note says the
   /// drawing was moved, or that it lies far away and was kept). Raw CAD
   /// coordinates only reach here that large: the GIS readers place theirs.
   Pt _utmShift(DxfDocument doc) {
@@ -3075,7 +3075,7 @@ class ProjectController extends ChangeNotifier {
       _drawingNotes.add('cad_utm_no_georef');
       return Pt.zero;
     }
-    if ((cx - g.originEasting).abs() > 200000 || (cy - g.originNorthing).abs() > 200000) {
+    if ((cx - g.originEasting).abs() > 100000 || (cy - g.originNorthing).abs() > 100000) {
       _drawingNotes.add('cad_far_from_georef');
       return Pt.zero;
     }

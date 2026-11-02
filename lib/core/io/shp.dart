@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 
 import '../model/geometry.dart';
+import 'codepages.dart';
 import 'datum.dart';
 import 'dxf.dart';
 import 'geo.dart';
@@ -215,16 +216,21 @@ class ShpReader {
   /// GDAL) and Latin-1 otherwise (older GIS software).
   static List<Map<String, String>> _readDbf(Uint8List dbf, {String? cpg}) {
     if (dbf.length < 32) return const [];
-    final c = (cpg ?? '').toUpperCase();
+    final c = (cpg ?? '').toUpperCase().trim();
     final forceUtf8 = c.contains('UTF') || c.contains('65001');
-    final forceLatin = c.contains('1252') || c.contains('8859') || c.contains('LATIN');
+    // the code page the .cpg names ("1252", "CP1251", "ANSI 1250", "ISO-8859-1")
+    final named = RegExp(r'^(?:CP|ANSI|WINDOWS)?[ _-]?(\d{3,4})$').firstMatch(c)?.group(1);
+    final page = c.contains('8859') || c.contains('LATIN') ? 28591 : (named != null ? int.parse(named) : null);
+    final forced = page != null && supportedCodepages.contains(page) ? page : null;
     String decode(List<int> b) {
       if (forceUtf8) return utf8.decode(b, allowMalformed: true);
-      if (forceLatin) return latin1.decode(b);
+      if (forced != null) return decodeCodepage(b, forced);
       try {
         return utf8.decode(b);
       } catch (_) {
-        return latin1.decode(b);
+        // older GIS software: Windows' Western page (not Latin-1, which
+        // turns "–" and the curly quotes into control characters)
+        return decodeCodepage(b, 1252);
       }
     }
 

@@ -13,11 +13,19 @@ import '../../../core/io/work_slicer.dart';
 import '../../state/controller.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
 
+/// Files from this size on (bytes) are read in slices; smaller ones take
+/// well under the 300 ms before the dialog would show (a DWG costs more per
+/// byte than a text file).
+const _sliceAbove = 2 << 20, _sliceDwgAbove = 512 << 10;
+
 /// Imports the file [name] with its progress shown after a moment and a
 /// cancel button. Returns the summary of the import, or null when the user
 /// cancelled it (nothing changed then); errors are thrown as by
 /// [ProjectController.importFile].
 Future<String?> showImportProgressDialog(BuildContext context, ProjectController c, String name, Uint8List bytes) async {
+  // a small file reads in a moment: at once, without slices
+  final dwg = name.toLowerCase().endsWith('.dwg');
+  if (bytes.length < (dwg ? _sliceDwgAbove : _sliceAbove)) return c.importFile(name, bytes);
   final progress = ValueNotifier<double?>(null);
   final slicer = WorkSlicer(onProgress: (f) => progress.value = f);
   var done = false;

@@ -296,6 +296,42 @@ void main() {
       expect(r.warnings, contains('shp_truncated'));
     });
 
+    test('attribute texts in the code page of the .cpg (1251), else 1252 rather than Latin-1', () {
+      final shp = ByteData(100 + 28)
+        ..setInt32(0, 9994)
+        ..setInt32(24, (100 + 28) ~/ 2)
+        ..setInt32(28, 1000, Endian.little)
+        ..setInt32(32, 1, Endian.little)
+        ..setInt32(100, 1)
+        ..setInt32(104, 10)
+        ..setInt32(108, 1, Endian.little)
+        ..setFloat64(112, 1, Endian.little)
+        ..setFloat64(120, 2, Endian.little);
+      Uint8List dbf(List<int> name) {
+        final b = ByteData(32 + 32 + 1 + 1 + 20);
+        b
+          ..setUint8(0, 3)
+          ..setUint32(4, 1, Endian.little)
+          ..setUint16(8, 32 + 32 + 1, Endian.little)
+          ..setUint16(10, 1 + 20, Endian.little);
+        final u = b.buffer.asUint8List();
+        u.setRange(32, 36, latin1.encode('NAME'));
+        u[32 + 11] = 0x43; // C
+        u[32 + 16] = 20;
+        u[64] = 0x0D;
+        u[65] = 0x20;
+        u.setRange(66, 66 + 20, [...name, ...List.filled(20 - name.length, 0x20)]);
+        return u;
+      }
+
+      // "Скважина" in code page 1251
+      final cyr = ShpReader.parse(shp.buffer.asUint8List(), dbf: dbf([0xD1, 0xEA, 0xE2, 0xE0, 0xE6, 0xE8, 0xED, 0xE0]), cpg: '1251');
+      expect(cyr.document.entities.single.name, 'Скважина');
+      // without a .cpg: not UTF-8, so 1252 ("–" is 0x96 there, a control character in Latin-1)
+      final west = ShpReader.parse(shp.buffer.asUint8List(), dbf: dbf([0x50, 0x6F, 0xE7, 0x6F, 0x20, 0x96, 0x20, 0x31]));
+      expect(west.document.entities.single.name, 'Poço – 1');
+    });
+
     test('the .shx index finds the records after a damaged one', () {
       // two point records; the first record header says length 0
       final shp = ByteData(100 + 2 * 28)

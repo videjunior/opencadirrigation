@@ -20,7 +20,6 @@ import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
-import 'package:opencadirrigation/core/units.dart';
 
 /// A host with attached files that records the tabs it opens.
 class _Host implements AgentHost {
@@ -211,8 +210,9 @@ void main() {
     final e0 = g.originEasting, n0 = g.originNorthing;
     host.files['survey.dxf'] = _bytes(_dxf([(e0 + 100, n0 + 100), (e0 + 300, n0 + 100), (e0 + 300, n0 + 250), (e0 + 100, n0 + 250)]));
     final out = await call(tester, 'import_attachment', {'name': 'survey.dxf'});
-    expect(out.text, contains('transform_entities {selected true, operation "move", dx ${fmt(-e0, 2)}, dy ${fmt(-n0, 2)}}'));
-    await call(tester, 'transform_entities', {'selected': true, 'operation': 'move', 'dx': -e0, 'dy': -n0});
+    // the import itself moves a drawing in UTM coordinates of the project's
+    // zone by the origin, and says so
+    expect(out.text, contains(c.t('warn.cad_moved_to_georef')));
     expect(c.project.entities.whereType<PolylineEntity>().single.points.first.distanceTo(const Pt(100, 100)), lessThan(1e-6));
     // a local drawing next to the origin only gets the check
     host.files['local.dxf'] = _bytes(_dxf([(0, 0), (50, 0), (50, 50), (0, 50)]));
