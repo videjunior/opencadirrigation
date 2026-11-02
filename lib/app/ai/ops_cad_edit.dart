@@ -334,6 +334,7 @@ List<AgentTool> editOperations(AgentToolbox b) {
         required: ['from_a', 'to_a', 'from_b', 'to_b'],
       ),
       args: (i) => {'n': '${i['selected'] == true ? b.c.selection.length : ((i['ids'] as List?)?.length ?? 0)}'},
+      binder: (i) => cadBindSelected(b, i),
       run: (a, i) async {
         cadNotBusy(b);
         final es = cadEditableOrSelection(b, a);
@@ -402,6 +403,7 @@ List<AgentTool> editOperations(AgentToolbox b) {
         required: ['action'],
       ),
       args: (i) => {'n': '${(i['ids'] as List?)?.length ?? ''}', 'op': '${i['action']}'},
+      binder: (i) => i['action'] == 'paste' ? i : cadBindDefaultIds(b, i),
       run: (a, i) async {
         final action = a.str('action', required: true)!;
         final ws = b.host is AiWorkspaceHost ? b.host as AiWorkspaceHost : null;
@@ -553,6 +555,7 @@ List<AgentTool> editOperations(AgentToolbox b) {
       description: 'Edit → Materials of the selection: the bill of materials of some items (a stretch of the works, a supplier\'s order) — category, description, code, unit, quantity, unit cost and total in the project currency — with the length of pipe still unsized (run the design to size it). With csv true it also saves the list as a CSV file for the user (always confirmed). get_report_table "bom" is the whole project.',
       schema: obj({'ids': idsWith('The items (default: the selection).', maxItems: 20000), 'csv': bool_('Save the list as a CSV file (default false).')}),
       args: count,
+      binder: (i) => cadBindDefaultIds(b, i),
       run: (a, i) async {
         final ids = a.strings('ids');
         final set = ids.isEmpty ? {...c.selection} : {for (final e in b.findAll(ids)) e.id};
@@ -634,6 +637,7 @@ List<AgentTool> editOperations(AgentToolbox b) {
       description: 'Zone → Feed envelope (FE): for each spray lateral or tape, the positions along it where a submain may feed it so every emitter stays in its pressure window (with the slope of the terrain), as the properties panel then shows: the best position (fraction of the length from the first vertex) with its pressure variation, and the range of positions that work. Changes nothing in the project (the result shows on the selected laterals).',
       schema: obj({'ids': idsWith('Laterals and tapes (default: the selected ones).', maxItems: 2000)}),
       args: count,
+      binder: (i) => cadBindDefaultIds(b, i, keep: (e) => e is SpraylineEntity || e is TapeEntity),
       run: (a, i) async {
         final ids = a.strings('ids');
         final es = ids.isEmpty

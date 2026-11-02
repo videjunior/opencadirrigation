@@ -11,13 +11,25 @@ library;
 
 import '../../core/ai/agent_loop.dart';
 import 'agent_tools.dart';
+import 'ai_safety.dart';
 import 'ops_cad_commands.dart';
 import 'ops_cad_settings.dart';
 
 /// An operation reached through run_operation, with the [group] that
 /// find_operations filters by (edit, annotate, view, terrain…).
 class OpTool extends FnTool {
-  OpTool({required this.group, required super.name, required super.description, required super.inputSchema, super.effect, super.effectFor, super.summary, super.confirm, required super.handler});
+  OpTool({
+    required this.group,
+    required super.name,
+    required super.description,
+    required super.inputSchema,
+    super.effect,
+    super.effectFor,
+    super.summary,
+    super.confirm,
+    super.binder,
+    required super.handler,
+  });
   final String group;
 }
 
@@ -210,6 +222,13 @@ List<AgentTool> operationTools(AgentToolbox b) {
           return t('ai.op.run_operation', {'n': v.$1.name});
         }
       },
+      // the operation's own binding (the selection it works on, taken now)
+      binder: (i) {
+        final v = valid(i);
+        if (v == null) return i;
+        final bound = v.$1.bind(v.$2);
+        return identical(bound, v.$2) ? i : {...i, 'input': bound};
+      },
       handler: (i) async {
         final name = ToolArgs(i).str('name', required: true)!;
         final op = named(name);
@@ -242,6 +261,7 @@ List<AgentTool> operationTools(AgentToolbox b) {
       effectFor: commands.effectOf,
       confirm: commands.mustConfirm,
       summary: commands.describe,
+      binder: commands.bind,
       handler: commands.run,
     ),
     FnTool(
@@ -277,20 +297,30 @@ List<AgentTool> operationTools(AgentToolbox b) {
     FnTool(
       name: 'set_setting',
       effect: ToolEffect.write,
-      description: 'Changes settings by key (see get_setting), every value checked against its type and range before anything changes. Project settings (params.*, units.*, project.*, quote.*) are one undo step and need the user\'s approval like any change; params.* go through set_parameters and discard the design results. View, snap, tool and program settings (view.*, snap.*, tool.*, app.*) change the screen or the defaults of the user\'s drawing tools, not the project. Setting tool.outlet_spec, tool.nozzle, tool.tape_spec or tool.misc_spec also sets the nozzle, head or setting that go with it (reported). Returns the old and new values.',
+      description: 'Changes settings by key (see get_setting), every value checked against its type and range before anything changes. Project settings (params.*, units.*, project.*, quote.*) are one undo step and need the user\'s approval like any change; params.* go through set_parameters and discard the design results. View, snap and tool settings (view.*, snap.*, tool.*) change the screen or the defaults of the user\'s drawing tools, not the project, and are allowed in every mode — except what this browser keeps: the interface language and the theme are changes (approval in "ask", refused in read-only), and the custom base map (view.custom_tile_url, view.base_map "custom": its tiles come from that address) and the program options (app.*) are always confirmed by the user. Setting tool.outlet_spec, tool.nozzle, tool.tape_spec or tool.misc_spec also sets the nozzle, head or setting that go with it (reported). Returns the old and new values.',
       inputSchema: obj(
         {
           'values': {'type': 'object', 'description': 'key → new value, e.g. {"snap.ortho": true, "view.overlay": "pressure", "units.flow": "m3h"}.'},
         },
         required: ['values'],
       ),
+      // by key: the view's toggles are reads, the rest are changes (settingImpact)
       effectFor: (i) {
         final v = i['values'];
         if (v is! Map) return ToolEffect.read;
-        final keys = v.keys.map((k) => '$k').toList();
-        return keys.any((k) => k.startsWith('params.') || k.startsWith('units.') || k.startsWith('project.') || k.startsWith('quote.')) ? ToolEffect.write : ToolEffect.read;
+        return v.entries.any((e) => settingImpact('${e.key}', e.value) != null) ? ToolEffect.write : ToolEffect.read;
       },
-      summary: (i) => t('ai.op.set_setting', {'n': ((i['values'] as Map?) ?? const {}).entries.map((e) => '${e.key} = ${e.value}').join(', ')}),
+      confirm: (i) {
+        final v = i['values'];
+        return v is Map && v.entries.any((e) => settingImpact('${e.key}', e.value)?.confirm ?? false);
+      },
+      summary: (i) {
+        final v = (i['values'] as Map?) ?? const {};
+        final text = t('ai.op.set_setting', {'n': v.entries.map((e) => '${e.key} = ${e.value}').join(', ')});
+        // where the custom base map would fetch its tiles from, in plain sight
+        final url = v['view.custom_tile_url'] is String ? v['view.custom_tile_url'] as String : (v['view.base_map'] == 'custom' ? b.c.customTileUrl : '');
+        return url.trim().isEmpty ? text : '$text — ${t('ai.ask.tileHost', {'h': aiHost(url)})}';
+      },
       handler: (i) async => ToolOutput(await setSettings(b, i['values'])),
     ),
   ];

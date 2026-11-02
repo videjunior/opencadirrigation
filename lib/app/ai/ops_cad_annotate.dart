@@ -211,6 +211,7 @@ List<AgentTool> annotateOperations(AgentToolbox b) {
         'base_point': pointWith('With base "point": the base point (m).'),
       }),
       args: (i) => {'n': '${i['name'] ?? ''}'},
+      binder: (i) => cadBindDefaultIds(b, i),
       run: (a, i) async {
         cadNotBusy(b);
         final ids = a.strings('ids');

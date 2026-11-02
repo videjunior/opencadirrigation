@@ -207,7 +207,7 @@ void main() {
       },
     ];
 
-    test('mid-task (400): the history kept is the input of the last request it accepted, every call answered', () async {
+    test('mid-task (400) after rounds of tools ran: they stay in the history (the project may have changed), every call answered', () async {
       final s = Script([
         (_, _) => sse(
           message([
@@ -226,12 +226,13 @@ void main() {
       expect(turn.error!.kind, AiErrorKind.invalidRequest);
       expect(turn.error!.requestId, 'req_body');
       expect(ran, ['look', 'look'], reason: 'both rounds ran before the refusal');
-      expect(s.calls, 3, reason: 'a refused request is not retried');
-      // what the second request carried (the API accepted it), minus the earlier conversation
-      expect(jsonEncode(turn.messages), jsonEncode(s.messages(1).sublist(prior.length)));
+      expect(s.calls, 3, reason: 'a refused request without pictures to leave out is not retried');
+      // what the refused request carried, minus the earlier conversation: the second round ran, so it stays
+      expect(jsonEncode(turn.messages), jsonEncode(s.messages(2).sublist(prior.length)));
       final (uses, answers) = callsAndResults(turn.messages);
-      expect(uses, ['t1']);
+      expect(uses, ['t1', 't2']);
       expect(answers, uses);
+      expect(jsonEncode(turn.messages), contains('look ok {\\"x\\":2}'), reason: 'Try again goes on from there instead of doing it again');
     });
 
     test('a 413 at the first step keeps nothing, so the question can be sent again', () async {
@@ -241,10 +242,11 @@ void main() {
       expect(turn.messages, isEmpty);
     });
 
-    test('too large to send: stopped before it leaves, with the size, and what made it so is left out', () async {
+    test('too large to send: stopped before it leaves, and sent again without the pictures of the round that made it so', () async {
       final big = 'A' * (AiHttpClient.maxRequestBytes + 1000);
       final s = Script([
         (_, _) => sse(message([toolUse('t1', 'shot', {})], stop: 'tool_use')),
+        (_, _) => sse(message([textBlock('Done without the picture.')])),
       ]);
       final turn = await run(
         s,
@@ -253,12 +255,40 @@ void main() {
           tool('shot', out: (_) => ToolOutput('a picture', images: [ToolImage('image/jpeg', big)])),
         ],
       );
-      expect(s.calls, 1, reason: 'the second request never left');
+      expect(s.calls, 2, reason: 'the oversized request never left; the lightened one did');
+      expect(turn.stop, AgentStop.done);
+      expect(turn.lightened, isTrue);
+      final sent = jsonEncode(s.messages(1).last);
+      expect(sent.contains(big.substring(0, 100)), isFalse, reason: 'the picture is left out');
+      expect(sent, contains('A picture was left out'));
+      expect(sent, contains('a picture'), reason: 'the text of the result stays');
+      expect(callsAndResults(turn.messages).$1, ['t1'], reason: 'the round that ran stays in the history');
+    });
+
+    test('too large even so: the error with the size, and the round that ran kept without its pictures', () async {
+      final big = 'A' * (AiHttpClient.maxRequestBytes + 1000);
+      final s = Script([
+        (_, _) => sse(message([toolUse('t1', 'shot', {})], stop: 'tool_use')),
+        (_, _) => apiError(413, 'request_too_large', 'Request exceeds the maximum size'),
+      ]);
+      final turn = await run(
+        s,
+        prior,
+        tools: [
+          tool('shot', out: (_) => ToolOutput('a picture', images: [ToolImage('image/jpeg', big)])),
+        ],
+      );
+      expect(s.calls, 2);
+      expect(turn.stop, AgentStop.error);
       expect(turn.error!.kind, AiErrorKind.tooLarge);
-      expect(turn.error!.size, greaterThan(AiHttpClient.maxRequestBytes));
-      expect(turn.error!.limit, AiHttpClient.maxRequestBytes);
       expect(turn.error!.refusedContent, isTrue);
-      expect(turn.messages, isEmpty);
+      expect(callsAndResults(turn.messages).$1, ['t1'], reason: 'the tool ran: the history says so, so Try again does not do it twice');
+      expect(jsonEncode(turn.messages).contains(big.substring(0, 100)), isFalse);
+      // the size check itself, before anything leaves
+      expect(
+        () => AiHttpClient.checkSize(big),
+        throwsA(isA<AiError>().having((e) => e.size, 'size', greaterThan(AiHttpClient.maxRequestBytes)).having((e) => e.limit, 'limit', AiHttpClient.maxRequestBytes)),
+      );
     });
 
     test('a failure of the service, not of the request, keeps everything (every call answered)', () async {
@@ -702,7 +732,8 @@ void main() {
           cancel: AiCancel(),
         );
         final notes = m != AiModel.haiku55;
-        expect(s.bodies.single['thinking'], notes ? {'type': 'adaptive', 'display': 'updates'} : {'type': 'adaptive'}, reason: m.id);
+        const binding = {'prefix_mismatch_behavior': 'drop_block'};
+        expect(s.bodies.single['thinking'], notes ? {'type': 'adaptive', 'display': 'updates', 'block_binding': binding} : {'type': 'adaptive', 'block_binding': binding}, reason: m.id);
         expect((s.requests.single.headers['anthropic-beta'] ?? '').contains(AnthropicClient.displayBeta), notes, reason: m.id);
       }
     });
@@ -722,8 +753,10 @@ void main() {
         );
         expect(r.text, 'ok');
         expect(s.calls, 2);
-        expect(s.bodies[1].containsKey('thinking'), m != AiModel.fable51, reason: 'Claude Fable 5.1 then gets no thinking setting at all');
-        if (m == AiModel.opus55) expect(s.bodies[1]['thinking'], {'type': 'adaptive'});
+        expect(s.bodies[1]['thinking'], {
+          'type': 'adaptive',
+          'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
+        }, reason: 'Claude Fable 5.1 keeps an explicit adaptive setting for the binding only');
         expect((s.requests[1].headers['anthropic-beta'] ?? '').contains('thinking-display'), isFalse);
         expect(AiHttpClient.declined, contains('${m.id}:display'));
       }
@@ -737,7 +770,11 @@ void main() {
         cancel: AiCancel(),
       );
       expect((s.bodies[1]['output_config'] as Map).containsKey('task_budget'), isFalse);
-      expect(s.bodies[1]['thinking'], {'type': 'adaptive', 'display': 'updates'});
+      expect(s.bodies[1]['thinking'], {
+        'type': 'adaptive',
+        'display': 'updates',
+        'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
+      });
     });
 
     test('a note streams as a status, stays with the tool it introduced, and goes back unchanged', () async {

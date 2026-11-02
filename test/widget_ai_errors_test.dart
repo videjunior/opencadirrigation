@@ -168,11 +168,25 @@ void main() {
       requests.add(r);
       throw StateError('never sent');
     };
-    ai().addAttachment(AiAttachment('notes.txt', 'text/plain', Uint8List.fromList(List.filled(31000000, 0x61))));
-    await tester.runAsync(() => ai().send('Read this.'));
+    // three PDFs of 9 MB go whole (each under the limit for one), 36 MB in base64 together
+    for (final n in ['a.pdf', 'b.pdf', 'c.pdf']) {
+      ai().addAttachment(AiAttachment(n, 'application/pdf', Uint8List.fromList(List.filled(9000000, 0x61))));
+    }
+    await tester.runAsync(() => ai().send('Read these.'));
     expect(requests, isEmpty);
-    expect(ai().items.last.error, t('ai.err.tooLargeConv', {'s': '32', 'l': '30'}));
-    expect(ai().attachments.single.name, 'notes.txt', reason: 'nothing was kept: the file is back in the input');
+    expect(ai().items.last.error, startsWith(t('ai.err.tooLargeConv', {'s': '§', 'l': '30'}).split('§').first));
+    expect(ai().items.last.error, contains('30 MB'));
+    expect(ai().attachments.map((a) => a.name), ['a.pdf', 'b.pdf', 'c.pdf'], reason: 'nothing was kept: the files are back in the input');
+    // a long text file is no longer too large: it goes as a note, and the model reads it in parts
+    ai()
+      ..clear()
+      ..addAttachment(AiAttachment('notes.txt', 'text/plain', Uint8List.fromList(List.filled(31000000, 0x61))));
+    expect(ai().attachments.single.paged, isTrue);
+    await tester.runAsync(() => ai().send('Read this.'));
+    expect(requests, hasLength(greaterThan(0)), reason: 'it was sent');
+    final body = requests.first.body;
+    expect(body.length, lessThan(1000000), reason: 'without the file itself (31 MB)');
+    expect(body, contains('read_attachment'));
   });
 
   testWidgets('the status line: the model\'s note between tool calls, and a retry after a lost connection', (tester) async {

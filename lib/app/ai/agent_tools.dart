@@ -67,6 +67,11 @@ class AgentToolbox {
   /// pictures that mark them.
   late final ChangeTracker changes = ChangeTracker(c);
 
+  /// Items the assistant removed in this task so far, by every tool (the
+  /// assistant counts them after each change): deleting more than
+  /// [largeDelete] in a task is confirmed, however the deletions are split.
+  int removedThisTask = 0;
+
   I18n get t => c.t;
   Project get p => c.project;
   Units get u => p.params.units;

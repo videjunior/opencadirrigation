@@ -430,10 +430,20 @@ List<AgentTool> designTools(AgentToolbox b) {
           'zoning': bool_('Group the heads into zones by flow (default false).'),
           'max_zone_flow_m3h': num_('zoning: largest zone flow (m³/h); default the smaller of the supply design flow and the largest control valve.'),
           'routing': bool_('Add the valves, zone pipes, laterals and the mainline (default false; needs a water supply or a selected mainline pipe).'),
+          'mainline': str('routing: id of the mainline pipe the zones are fed from (default: the mainline pipe the user selected, else a mainline from the water supply).'),
         },
         required: ['area'],
       ),
       summary: (i) => t('ai.do.layout', {'n': '${i['area']}'}),
+      // the mainline pipe the user selected is taken when the call is planned
+      binder: (i) {
+        if (i['routing'] != true || i['mainline'] != null) return i;
+        final pipe = [
+          for (final e in b.p.entities)
+            if (c.selection.contains(e.id) && e is PipeEntity && e.scope == HydraulicScope.mainline && e.points.length >= 2) e.id,
+        ].firstOrNull;
+        return pipe == null ? i : {...i, 'mainline': pipe};
+      },
       handler: (i) async {
         final a = ToolArgs(i);
         final area = _outline(b, a.str('area', required: true)!);
@@ -461,10 +471,18 @@ List<AgentTool> designTools(AgentToolbox b) {
         final routeOn = a.flag('routing') ?? false;
         final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn) List<int>.generate(layout.heads.length, (k) => k)];
         final names = zoneNames(b.p, t('name.zone'), groups.length);
-        final selMain = [
-          for (final e in b.p.entities)
-            if (c.selection.contains(e.id) && e is PipeEntity && e.scope == HydraulicScope.mainline && e.points.length >= 2) e,
-        ].firstOrNull;
+        final given = a.str('mainline');
+        final PipeEntity? selMain;
+        if (given != null) {
+          final e = b.find(given);
+          if (e is! PipeEntity || e.scope != HydraulicScope.mainline || e.points.length < 2) throw ToolInputError('"$given" is not a mainline pipe.');
+          selMain = e;
+        } else {
+          selMain = [
+            for (final e in b.p.entities)
+              if (c.selection.contains(e.id) && e is PipeEntity && e.scope == HydraulicScope.mainline && e.points.length >= 2) e,
+          ].firstOrNull;
+        }
         final routing = routeOn && groups.isNotEmpty
             ? routeZones(
                 [
@@ -1141,9 +1159,11 @@ List<AgentTool> designTools(AgentToolbox b) {
         'master_valve_stations': bool_('Master valves take stations after the zone valves (default true; false = the controller\'s dedicated terminal).'),
         'pump_relay_stations': bool_('Pump-start relays take stations (default true; false = the dedicated terminal).'),
         'max_stub_m': num_('Stubs longer than this from an item to the nearest pipe are reported, 0–1000 m (default 30).'),
-        'replace': bool_('Remove the wire routes already drawn (default true).'),
+        'replace': bool_('Remove the wire routes already drawn (default true; with wires drawn, always confirmed by the user).'),
       }),
       summary: (_) => t('wr.menu'),
+      // the wires the user drew go: confirmed whatever the mode
+      confirm: (i) => (i['replace'] ?? true) == true && b.p.entities.any((e) => e is WireEntity),
       handler: (i) async {
         final a = ToolArgs(i);
         final options = WireRoutingOptions(
@@ -1249,11 +1269,13 @@ List<AgentTool> designTools(AgentToolbox b) {
     ),
     FnTool(
       name: 'show_message',
-      description: 'Shows a short message (up to 200 characters) in the program\'s status bar, for a note the user should see outside the chat. Changes nothing.',
+      description:
+          'Shows a short message (up to 200 characters) in the program\'s status bar, for a note the user should see outside the chat; the program marks it as the assistant\'s. Changes nothing.',
       inputSchema: obj({'text': str('The message, in the user\'s language.')}, required: ['text']),
       summary: (_) => t('ai.tool.message'),
       handler: (i) async {
-        c.notify(AgentToolbox.short(ToolArgs(i).str('text', required: true)!, 200));
+        // marked as the assistant's: a message in the program's own place could pass for the program's
+        c.notify(t('ai.fromAi', {'m': AgentToolbox.short(ToolArgs(i).str('text', required: true)!, 200)}));
         return const ToolOutput('Shown.');
       },
     ),

@@ -114,9 +114,11 @@ List<AgentTool> siteTools(AgentToolbox b) {
       inputSchema: obj({
         'source': str('Default "terrainTiles".', ['terrainTiles', 'openMeteo']),
         'spacing_m': num_('Grid spacing, 10–200 m (default 25).'),
-        'replace_own': bool_('Also remove the user\'s own contours and spot heights (default false).'),
+        'replace_own': bool_('Also remove the user\'s own contours and spot heights (default false; always confirmed by the user).'),
       }),
       summary: (i) => t('ai.do.terrain', {'n': '${i['source'] ?? 'terrainTiles'}'}),
+      // the user's own survey goes: confirmed whatever the mode
+      confirm: (i) => i['replace_own'] == true && c.ownTerrainData().isNotEmpty,
       handler: (i) async {
         final a = ToolArgs(i);
         if (c.project.meta.georef == null) throw ToolInputError('The project has no georeference: call set_site first.');

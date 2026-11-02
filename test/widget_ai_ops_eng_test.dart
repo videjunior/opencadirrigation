@@ -157,7 +157,14 @@ void main() {
     expect(op('design_alternatives').effectOf(const {'action': 'list'}), ToolEffect.read);
     expect(op('design_alternatives').mustConfirm(const {'action': 'restore', 'id': 'x'}), isTrue);
     expect(op('catalog_default').mustConfirm(const {'action': 'save'}), isTrue);
-    expect(op('catalog_default').mustConfirm(const {'action': 'reset'}), isFalse);
+    // the whole catalogue replaced: confirmed whatever the mode (IA-14)
+    expect(op('catalog_default').mustConfirm(const {'action': 'reset'}), isTrue);
+    // an address outside the program's own site and repository: confirmed whatever the mode (IA-04)
+    expect(op('list_catalog_packs').mustConfirm(const {'url': 'https://example.com/index.json'}), isTrue);
+    expect(op('list_catalog_packs').mustConfirm(const {'url': 'https://opencadirrigation.com/catalogs/index.json'}), isFalse);
+    expect(op('add_catalog_pack').mustConfirm(const {'url': 'https://example.com/x.oci.cat'}), isTrue);
+    expect(op('add_catalog_pack').mustConfirm(const {'id': 'acme'}), isFalse);
+    expect(op('list_catalog_packs').describe(const {'url': 'https://example.com/index.json'}), contains('example.com'));
     // every route of the engineering map reaches something that exists
     final allOps = {for (final o in box.operations) o.name};
     final settings = {for (final s in aiSettings(box)) s.key};

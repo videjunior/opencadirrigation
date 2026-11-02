@@ -12,6 +12,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/ai/agent_loop.dart';
@@ -23,6 +24,7 @@ import '../../ai/ai_assistant.dart';
 import '../../io/file_drop.dart';
 import '../../io/file_io.dart';
 import '../../io/links.dart';
+import '../../keys/hotkeys.dart' show OwnKeys;
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
@@ -84,6 +86,12 @@ class AiChatView extends StatefulWidget {
 class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
   final scroll = ScrollController();
   final focus = FocusNode();
+
+  /// The main button of the card waiting for the user (Apply, Send the
+  /// answers, Approve): it takes the focus when the card appears, unless the
+  /// user is typing in the box.
+  final cardFocus = FocusNode();
+  Object? _card;
   int _seen = 0;
   Timer? _clock;
 
@@ -145,6 +153,7 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
     scroll.removeListener(_onScroll);
     scroll.dispose();
     focus.dispose();
+    cardFocus.dispose();
     super.dispose();
   }
 
@@ -168,6 +177,14 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
       focusNow = true;
     }
     if (focusNow) _focusSoon();
+    // a card that waits for the user: said aloud, and its main button focused
+    final card = ai.pending ?? ai.question ?? ai.planReview;
+    if (card == null) {
+      _card = null;
+    } else if (!identical(card, _card)) {
+      _card = card;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _announce(card));
+    }
     if (ai.busy && _clock == null) {
       _clock = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() {});
@@ -187,6 +204,53 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
       });
     }
   }
+
+  /// Says what the card [card] waits for (screen readers) and puts the focus
+  /// on its main button — not while the user types in the box, whose text
+  /// would then go to the card.
+  void _announce(Object card) {
+    if (!mounted || !identical(card, _card)) return;
+    final t = c.t;
+    final text = switch (card) {
+      AiApproval p => t('ai.announce.approval', {'x': p.call.summary}),
+      AiAsk _ => t('ai.announce.questions'),
+      _ => t('ai.announce.plan'),
+    };
+    SemanticsService.sendAnnouncement(View.of(context), text, Directionality.of(context));
+    if (!(focus.hasFocus && input.text.trim().isNotEmpty)) cardFocus.requestFocus();
+  }
+
+  /// Keys on a card: a character typed there goes to the box (the user
+  /// meant to write), with the focus; Enter, Space (they press the focused
+  /// button) and Escape are the card's.
+  KeyEventResult _cardKey(FocusNode _, KeyEvent e) {
+    final ch = e.character;
+    if (e is! KeyDownEvent || ch == null || ch.isEmpty || ch.codeUnitAt(0) <= 0x20 || ch.codeUnitAt(0) == 0x7f) return KeyEventResult.ignored;
+    final sel = input.selection;
+    final at = sel.isValid ? sel.end : input.text.length;
+    input.value = TextEditingValue(
+      text: input.text.replaceRange(at, at, ch),
+      selection: TextSelection.collapsed(offset: at + ch.length),
+    );
+    focus.requestFocus();
+    return KeyEventResult.handled;
+  }
+
+  /// [child] as a card that waits for the user: announced (a live region,
+  /// for the screen readers that ignore announcements), its keys its own
+  /// (the app's shortcuts leave them alone), Escape running [onEscape].
+  Widget _cardShell(Widget child, {VoidCallback? onEscape}) => OwnKeys(
+    child: Semantics(
+      liveRegion: true,
+      container: true,
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        onKeyEvent: _cardKey,
+        child: onEscape == null ? child : CallbackShortcuts(bindings: {const SingleActivator(LogicalKeyboardKey.escape): onEscape}, child: child),
+      ),
+    ),
+  );
 
   /// Enter in the box: sends, unless an input method is still composing.
   void _enter() {
@@ -293,6 +357,14 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
               ],
             ),
           ),
+        // the conversation is kept by another tab of this browser
+        if (ai.otherTab) _banner(Icons.tab_unselected, t('ai.otherTab'), const Key('ai_other_tab')),
+        // the project's notes came from elsewhere: read as information, until the user takes them as theirs
+        if (ai.historyLength == 0 && !ai.notesTrusted)
+          _banner(Icons.policy_outlined, t('ai.notes.foreign'), const Key('ai_notes_foreign'), [
+            TextButton(key: const Key('ai_notes_trust'), onPressed: ai.trustNotes, child: Text(t('ai.notes.trust'))),
+            if (widget.onSettings != null) TextButton(key: const Key('ai_notes_review'), onPressed: widget.onSettings, child: Text(t('ai.notes.review'))),
+          ]),
         if (ai.todos.isNotEmpty) _todos(),
         Expanded(
           child: items.isEmpty
@@ -397,9 +469,13 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                   ],
                 ),
         ),
-        if (ai.pending != null) _approval(ai.pending!),
-        if (ai.question != null) _QuestionCard(key: ValueKey(ai.question), c: c, ai: ai, ask: ai.question!, maxHeight: cardMax),
-        if (ai.planReview != null) _PlanCard(key: ValueKey(ai.planReview), c: c, ai: ai, review: ai.planReview!, maxHeight: cardMax),
+        if (ai.pending != null) _cardShell(_approval(ai.pending!), onEscape: () => ai.answer(Approval.skip)),
+        if (ai.question != null)
+          _cardShell(
+            _QuestionCard(key: ValueKey(ai.question), c: c, ai: ai, ask: ai.question!, maxHeight: cardMax, mainFocus: cardFocus),
+            onEscape: () => ai.answerQuestions([for (final _ in ai.question!.questions) '']),
+          ),
+        if (ai.planReview != null) _cardShell(_PlanCard(key: ValueKey(ai.planReview), c: c, ai: ai, review: ai.planReview!, maxHeight: cardMax, mainFocus: cardFocus)),
         if (ai.queued.isNotEmpty) _queued(),
         if (ai.attachments.isNotEmpty) _attachments(),
         if (ai.commandsFor(input.text).isNotEmpty) _commands(),
@@ -418,6 +494,27 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
       ],
     );
   }
+
+  Widget _banner(IconData icon, String text, Key key, [List<Widget> actions = const []]) => Container(
+    key: key,
+    margin: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+    padding: const EdgeInsets.fromLTRB(8, 6, 4, 4),
+    decoration: BoxDecoration(color: Cad.cardHigh, borderRadius: BorderRadius.circular(4)),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 16, color: Cad.warning),
+            const SizedBox(width: 6),
+            Expanded(child: Text(text, style: const TextStyle(fontSize: 11.5))),
+          ],
+        ),
+        if (actions.isNotEmpty) Wrap(alignment: WrapAlignment.end, spacing: 4, children: actions),
+      ],
+    ),
+  );
 
   Widget _todos() {
     final t = c.t;
@@ -516,10 +613,11 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
               size: 15,
             ),
             label: Text(
-              '${a.name} (${(a.bytes.length / 1024).ceil()} KB)${a.isPdf ? ' · ${c.t(a.asText ? 'ai.attach.asText' : 'ai.attach.asPdf')}' : (a.importOnly ? ' · ${c.t('ai.attach.import')}' : '')}',
-              style: const TextStyle(fontSize: 11),
+              '${a.name} (${(a.bytes.length / 1024).ceil()} KB · ${c.t('ai.attach.tokens', {'n': AiAssistant.aiTokensText(a.approxTokens)})})${a.isPdf ? ' · ${c.t(a.asText || a.pdfTooLarge ? 'ai.attach.asText' : 'ai.attach.asPdf')}' : (a.importOnly ? ' · ${c.t('ai.attach.import')}' : '')}',
+              style: TextStyle(fontSize: 11, color: a.paged ? Cad.warning : null),
             ),
-            tooltip: a.isPdf ? c.t(a.asText ? 'ai.attach.asPdf' : 'ai.attach.asText') : null,
+            // a long file: read in parts by the assistant, as needed
+            tooltip: a.paged ? c.t('ai.attach.large', {'n': AiAssistant.aiTokensText(a.approxTokens)}) : (a.isPdf ? c.t(a.asText ? 'ai.attach.asPdf' : 'ai.attach.asText') : null),
             // a PDF goes whole, or as the text read on this device
             onPressed: a.isPdf ? () => setState(() => a.asText = !a.asText && a.pdfText != null) : null,
             onDeleted: () => ai.removeAttachment(a),
@@ -572,50 +670,65 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
     );
   }
 
+  /// The box on a line of its own, as wide as the panel, and its buttons on
+  /// the line below: the attachments and the voice on one side, Send (or
+  /// Queue and Stop) on the other. Beside the buttons, in a 400 px panel,
+  /// the box had less than half the width.
   Widget _inputBar() {
     final t = c.t;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 6, 8, 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      padding: const EdgeInsets.fromLTRB(8, 6, 8, 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(key: const Key('ai_attach'), tooltip: t('ai.attach'), visualDensity: VisualDensity.compact, icon: const Icon(Icons.attach_file, size: 19), onPressed: ai.busy ? null : _attach),
-          IconButton(
-            key: const Key('ai_attach_view'),
-            tooltip: t('ai.attach.view'),
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.add_photo_alternate_outlined, size: 19),
-            onPressed: ai.busy ? null : _attachView,
+          CallbackShortcuts(
+            bindings: {const SingleActivator(LogicalKeyboardKey.enter): _enter, const SingleActivator(LogicalKeyboardKey.numpadEnter): _enter},
+            child: TextField(
+              key: const Key('ai_input'),
+              controller: input,
+              focusNode: focus,
+              minLines: 1,
+              maxLines: 6,
+              textInputAction: TextInputAction.newline,
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(hintText: t(ai.busy ? 'ai.hint.busy' : 'ai.hint'), isDense: true),
+            ),
           ),
-          // speaking instead of typing (hidden where the browser has no dictation)
-          AiVoiceButton(c: c, input: input, focus: focus),
-          Expanded(
-            child: CallbackShortcuts(
-              bindings: {const SingleActivator(LogicalKeyboardKey.enter): _enter, const SingleActivator(LogicalKeyboardKey.numpadEnter): _enter},
-              child: TextField(
-                key: const Key('ai_input'),
-                controller: input,
-                focusNode: focus,
-                minLines: 1,
-                maxLines: 5,
-                textInputAction: TextInputAction.newline,
-                style: const TextStyle(fontSize: 13),
-                decoration: InputDecoration(hintText: t(ai.busy ? 'ai.hint.busy' : 'ai.hint'), isDense: true),
+          const SizedBox(height: 2),
+          Row(
+            key: const Key('ai_input_buttons'),
+            children: [
+              IconButton(
+                key: const Key('ai_attach'),
+                tooltip: t('ai.attach'),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.attach_file, size: 19),
+                onPressed: ai.busy ? null : _attach,
               ),
-            ),
+              IconButton(
+                key: const Key('ai_attach_view'),
+                tooltip: t('ai.attach.view'),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.add_photo_alternate_outlined, size: 19),
+                onPressed: ai.busy ? null : _attachView,
+              ),
+              // speaking instead of typing (hidden where the browser has no dictation)
+              AiVoiceButton(c: c, input: input, focus: focus),
+              const Spacer(),
+              if (ai.busy) ...[
+                IconButton(key: const Key('ai_queue'), tooltip: t('ai.queue'), onPressed: _send, icon: const Icon(Icons.schedule_send_outlined, size: 18)),
+                OutlinedButton.icon(
+                  key: const Key('ai_stop'),
+                  style: OutlinedButton.styleFrom(foregroundColor: Cad.unconnected),
+                  onPressed: ai.stop,
+                  icon: const Icon(Icons.stop_circle_outlined, size: 17),
+                  label: Text(t('ai.stop')),
+                ),
+              ] else
+                FilledButton.icon(key: const Key('ai_send'), onPressed: _send, icon: const Icon(Icons.send, size: 16), label: Text(t('ai.send'))),
+            ],
           ),
-          const SizedBox(width: 6),
-          if (ai.busy) ...[
-            IconButton(key: const Key('ai_queue'), tooltip: t('ai.queue'), onPressed: _send, icon: const Icon(Icons.schedule_send_outlined, size: 18)),
-            OutlinedButton.icon(
-              key: const Key('ai_stop'),
-              style: OutlinedButton.styleFrom(foregroundColor: Cad.unconnected),
-              onPressed: ai.stop,
-              icon: const Icon(Icons.stop_circle_outlined, size: 17),
-              label: Text(t('ai.stop')),
-            ),
-          ] else
-            FilledButton.icon(key: const Key('ai_send'), onPressed: _send, icon: const Icon(Icons.send, size: 16), label: Text(t('ai.send'))),
         ],
       ),
     );
@@ -697,16 +810,30 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                 children: [
                   const SizedBox(width: 13, height: 13, child: CircularProgressIndicator(strokeWidth: 2)),
                   const SizedBox(width: 8),
+                  // the status is announced when it changes; the clock that ticks every second is not
+                  // (nodes of their own: merged, the clock would be in the live region's text)
                   Flexible(
                     child: Semantics(
+                      container: true,
                       liveRegion: true,
                       child: Text(
-                        secs >= 10 ? '${it.status} · ${t('ai.elapsed', {'s': '$secs'})}' : it.status,
+                        it.status,
                         key: const Key('ai_status'),
                         style: TextStyle(fontSize: 11.5, color: Cad.fg60),
                       ),
                     ),
                   ),
+                  if (secs >= 10)
+                    Semantics(
+                      container: true,
+                      label: t('ai.status.elapsed', {'s': '$secs'}),
+                      excludeSemantics: true,
+                      child: Text(
+                        ' · ${t('ai.elapsed', {'s': '$secs'})}',
+                        key: const Key('ai_elapsed'),
+                        style: TextStyle(fontSize: 11.5, color: Cad.fg60),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -748,6 +875,7 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
               ],
             ),
           if (it.changes != null && !it.changes!.isEmpty) _changes(it.changes!),
+          if (it.servedBy != null) _servedBy(it.servedBy!),
           if (!it.running && (it.text.isNotEmpty || it.usage.totalInput > 0))
             Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -821,6 +949,19 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
     );
   }
 
+  /// The model a fallback answered with, and its price.
+  Widget _servedBy(String id) {
+    final m = AiModel.all.where((x) => x.label == id || x.id == id).firstOrNull;
+    return Padding(
+      padding: const EdgeInsets.only(top: 3),
+      child: Text(
+        c.t('ai.servedBy', {'m': m?.label ?? id, 'p': m?.priceText ?? '?'}),
+        key: const Key('ai_served_by'),
+        style: TextStyle(fontSize: 10.5, color: Cad.warning),
+      ),
+    );
+  }
+
   Widget _changes(AiTurnChanges ch) {
     final t = c.t;
     String list(Map<String, int> m) => [for (final e in m.entries) '${e.value} × ${e.key}'].join(', ');
@@ -837,6 +978,12 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
           if (ch.changed.isNotEmpty) Text('~ ${list(ch.changed)}', style: TextStyle(fontSize: 11, color: Cad.accentText)),
           if (ch.removed.isNotEmpty) Text('− ${list(ch.removed)}', style: TextStyle(fontSize: 11, color: Cad.warning)),
           if (ch.settings.isNotEmpty) Text('${t('ai.chg.settings')}: ${ch.settings.join(', ')}', style: TextStyle(fontSize: 11, color: Cad.fg70)),
+          if (ch.interleaved)
+            Text(
+              t('ai.chg.mixed'),
+              key: const Key('ai_changes_mixed'),
+              style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+            ),
           Align(
             alignment: AlignmentDirectional.centerEnd,
             child: ch.undone
@@ -912,7 +1059,10 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                 children: [
                   TextButton(key: const Key('ai_stop_all'), onPressed: () => ai.answer(Approval.stop), child: Text(t('ai.stop'))),
                   OutlinedButton(key: const Key('ai_skip'), onPressed: () => ai.answer(Approval.skip), child: Text(t('ai.ask.skip'))),
-                  FilledButton(key: const Key('ai_apply'), onPressed: () => ai.answer(Approval.apply), child: Text(t('ai.ask.apply'))),
+                  Tooltip(
+                    message: t('ai.ask.keys'),
+                    child: FilledButton(key: const Key('ai_apply'), focusNode: cardFocus, onPressed: () => ai.answer(Approval.apply), child: Text(t('ai.ask.apply'))),
+                  ),
                 ],
               ),
             ],
@@ -925,8 +1075,11 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
 
 /// The questions of ask_user: options to tap, a free answer, Send or Skip.
 class _QuestionCard extends StatefulWidget {
-  const _QuestionCard({super.key, required this.c, required this.ai, required this.ask, this.maxHeight = 420});
+  const _QuestionCard({super.key, required this.c, required this.ai, required this.ask, this.maxHeight = 420, this.mainFocus});
   final ProjectController c;
+
+  /// The focus of Send (the card's main button).
+  final FocusNode? mainFocus;
 
   /// Height the card may take (half of the conversation area).
   final double maxHeight;
@@ -1018,7 +1171,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                   spacing: 6,
                   children: [
                     TextButton(key: const Key('ai_question_skip'), onPressed: () => widget.ai.answerQuestions([for (final _ in qs) '']), child: Text(t('ai.questions.skip'))),
-                    FilledButton(key: const Key('ai_question_send'), onPressed: () => widget.ai.answerQuestions(_answers()), child: Text(t('ai.questions.send'))),
+                    FilledButton(key: const Key('ai_question_send'), focusNode: widget.mainFocus, onPressed: () => widget.ai.answerQuestions(_answers()), child: Text(t('ai.questions.send'))),
                   ],
                 ),
               ],
@@ -1033,8 +1186,12 @@ class _QuestionCardState extends State<_QuestionCard> {
 /// The plan of plan mode: approve it (and how changes then apply), or ask
 /// for changes.
 class _PlanCard extends StatefulWidget {
-  const _PlanCard({super.key, required this.c, required this.ai, required this.review, this.maxHeight = 420});
+  const _PlanCard({super.key, required this.c, required this.ai, required this.review, this.maxHeight = 420, this.mainFocus});
   final ProjectController c;
+
+  /// The focus of Approve (changes then wait for approval one by one: the
+  /// safe choice for a key pressed by habit).
+  final FocusNode? mainFocus;
 
   /// Height the card may take (half of the conversation area).
   final double maxHeight;
@@ -1095,6 +1252,7 @@ class _PlanCardState extends State<_PlanCard> {
                     TextButton(key: const Key('ai_plan_revise'), onPressed: () => widget.ai.decidePlan(PlanDecision.revise(feedback.text)), child: Text(t('ai.plan.revise'))),
                     OutlinedButton(
                       key: const Key('ai_plan_approve_ask'),
+                      focusNode: widget.mainFocus,
                       onPressed: () => widget.ai.decidePlan(const PlanDecision.approved(AgentPermission.ask)),
                       child: Text(t('ai.plan.approveAsk')),
                     ),
@@ -1407,6 +1565,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
       if (m.earlier) t('ai.model.earlierHint'),
       t('ai.model.to', {'p': m.provider.company, 'h': m.provider.host}),
       if (ai.switchStartsAnew(m)) t('ai.model.newConv'),
+      ?ai.switchCostText(m),
     ].join(' ');
   }
 
@@ -1449,6 +1608,12 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               ],
               onChanged: (e) => setState(() => ai.effort = e ?? ai.effort),
             ),
+            if (m.perMessageEffort)
+              Text(
+                t('ai.effort.hint'),
+                key: const Key('ai_effort_hint'),
+                style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+              ),
             SectionTitle(t('ai.mode')),
             RadioGroup<AgentPermission>(
               groupValue: ai.permission,
@@ -1521,6 +1686,16 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               title: Text(t('ai.compact'), style: const TextStyle(fontSize: 12.5)),
               subtitle: Text(t('ai.compact.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             ),
+            if (m.provider == AiProvider.anthropic)
+              SwitchListTile(
+                key: const Key('ai_keep_warm'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                value: ai.keepWarm,
+                onChanged: (v) => setState(() => ai.keepWarm = v),
+                title: Text(t('ai.keepWarm'), style: const TextStyle(fontSize: 12.5)),
+                subtitle: Text(t('ai.keepWarm.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+              ),
             SwitchListTile(
               key: const Key('ai_show_changes'),
               dense: true,

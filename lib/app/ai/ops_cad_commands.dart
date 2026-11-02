@@ -203,6 +203,23 @@ class CommandRunner {
 
   Future<ToolOutput> run(Map<String, dynamic> i) => _plan(i).run();
 
+  /// The commands that work on the selection when no ids are given.
+  static const _onSelection = {CadAction.erase, CadAction.duplicate, CadAction.feedEnvelope, CadAction.copy, CadAction.cut};
+
+  /// The call with the selection it would work on taken now, as
+  /// "selection" ([AgentTool.bind]): the approval card shows those ids, and
+  /// they are what runs, whatever the user selects while the card waits.
+  Map<String, dynamic> bind(Map<String, dynamic> i) {
+    if (i['selection'] is List) return i;
+    final t = resolveCommand('${i['command'] ?? ''}');
+    final uses = t is CadAction && (_onSelection.contains(t) || _dialogTool(t) != null);
+    return uses ? {...i, 'selection': _selection} : i;
+  }
+
+  /// The selection a call works on: the one bound when it was planned, else
+  /// the user's now.
+  List<String> _sel(Map<String, dynamic> i) => i['selection'] is List ? [for (final x in i['selection'] as List) '$x'] : _selection;
+
   AgentTool? _named(String name) {
     for (final o in b.operations) {
       if (o.name == name) return o;
@@ -276,13 +293,14 @@ class CommandRunner {
           return 'Zoomed ${a == CadAction.zoomIn ? 'in' : 'out'}; the view shows ${AgentToolbox.box(c.camera.visible)}.';
         });
       case CadAction.erase:
-        final ids = input['ids'] is List ? [for (final x in input['ids'] as List) '$x'] : _selection;
+        final ids = input['ids'] is List ? [for (final x in input['ids'] as List) '$x'] : _sel(i);
         if (ids.isEmpty) return _say(cmd, 'Nothing is selected. Call delete_entities with the ids, or select_entities first.');
         return _delegate(_named('delete_entities')!, {'ids': ids});
       case CadAction.copy || CadAction.cut || CadAction.paste:
         final op = _named('clipboard');
         if (op == null) return _say(cmd, 'The clipboard is not available here.');
-        return _delegate(op, {'action': a.name, ...input});
+        final sel = _sel(i);
+        return _delegate(op, {'action': a.name, if (a != CadAction.paste && input['ids'] == null && sel.isNotEmpty) 'ids': sel, ...input});
       case CadAction.undo || CadAction.redo:
         return _delegate(_named(a.name)!, input);
       case CadAction.selectAll:
@@ -291,13 +309,14 @@ class CommandRunner {
           return '${c.selection.length} items selected.';
         });
       case CadAction.duplicate:
-        final ids = input['ids'] is List ? [for (final x in input['ids'] as List) '$x'] : _selection;
+        final ids = input['ids'] is List ? [for (final x in input['ids'] as List) '$x'] : _sel(i);
         if (ids.isEmpty) {
           return _say(cmd, 'Nothing is selected. Duplicate copies the selection 2 m east and 2 m south; with transform_entities {ids, operation: "copy", dx, dy} you choose the offset.');
         }
         return _delegate(_named('transform_entities')!, {'ids': ids, 'operation': 'copy', 'dx': 2, 'dy': -2});
       case CadAction.feedEnvelope:
-        return _delegate(_named('feed_envelope')!, {if (_selection.isNotEmpty) 'ids': _selection, ...input});
+        final sel = _sel(i);
+        return _delegate(_named('feed_envelope')!, {if (sel.isNotEmpty) 'ids': sel, ...input});
       case CadAction.run:
         return _delegate(_named('run_design')!, input);
       case CadAction.check:
@@ -341,12 +360,12 @@ class CommandRunner {
         );
       case CadAction.wireRoutes:
         final t = _dialogTool(a);
-        if (t != null && t.$1.name != 'route_wires') return _dialogPlan(cmd, a, t, input, given);
+        if (t != null && t.$1.name != 'route_wires') return _dialogPlan(cmd, a, t, input, given, _sel(i));
         return given ? _delegate(_named('route_wires')!, input) : _act(cmd, _wirePreview);
       default:
         final t = _dialogTool(a);
         if (t == null) return _say(cmd, 'The ${_label(a)} dialog has no operation for the assistant yet. Try find_operations {query: "${_label(a)}"}.');
-        return _dialogPlan(cmd, a, t, input, given);
+        return _dialogPlan(cmd, a, t, input, given, _sel(i));
     }
   }
 
@@ -362,12 +381,11 @@ class CommandRunner {
     return (tool, fb != null && fb.$1 == name ? fb.$2 : const <String, Object?>{});
   }
 
-  _Plan _dialogPlan(String cmd, CadAction a, (AgentTool, Map<String, Object?>) target, Map<String, dynamic> input, bool given) {
+  _Plan _dialogPlan(String cmd, CadAction a, (AgentTool, Map<String, Object?>) target, Map<String, dynamic> input, bool given, List<String> sel) {
     final (tool, defaults) = target;
     final props = (tool.inputSchema['properties'] as Map?) ?? const {};
     final eff = <String, dynamic>{...defaults, ...input};
     // the selection stands in for the items or the area the dialog works on
-    final sel = _selection;
     if (props.containsKey('ids') && !eff.containsKey('ids') && sel.isNotEmpty) eff['ids'] = sel;
     if (props.containsKey('area') && !eff.containsKey('area') && sel.length == 1) eff['area'] = sel.first;
     ToolEffect effect;

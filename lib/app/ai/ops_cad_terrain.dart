@@ -135,11 +135,13 @@ List<AgentTool> terrainOperations(AgentToolbox b) {
         'max_points': int_('Most grid points, 100–20000 (default 5000).'),
         'use_view': bool_('Cover the area on screen instead of the drawing (default: the view when the drawing is empty).'),
         'replace_previous': bool_('Replace an earlier download (default true).'),
-        'replace_own': bool_('Also remove the user\'s own elevation data (default false).'),
+        'replace_own': bool_('Also remove the user\'s own elevation data (default false; always confirmed by the user).'),
         'contours': bool_('Draw contours from the result (default: when the terrain had no own data).'),
         'contour_interval_m': num_('Their interval (default: automatic, about 20 contours).'),
       }),
       args: (i) => {'n': '${i['source'] ?? 'terrainTiles'}'},
+      // the user's own survey goes: confirmed whatever the mode
+      confirm: (i) => i['replace_own'] == true && c.ownTerrainData().isNotEmpty,
       run: (a, i) async {
         cadNotBusy(b);
         if (b.p.meta.georef == null) throw ToolInputError('The project has no georeference: call set_site (or set_georeference) first.');

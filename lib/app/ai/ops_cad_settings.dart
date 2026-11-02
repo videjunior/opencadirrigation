@@ -107,6 +107,26 @@ class AiSetting {
   String line() => '$key = ${showValue(read())} ($typeText) — $description';
 }
 
+/// What setting [key] to [value] does beyond the screen, for the
+/// permissions of set_setting: null for a toggle of the view, the snapping
+/// or the defaults of the drawing tools of this page (a read: allowed in
+/// every mode, as nothing leaves the page or outlives it); otherwise a
+/// change — the project's settings, and what this browser keeps (the
+/// interface language, the theme, the program options) — refused in
+/// read-only and plan modes, and [confirm]ed whatever the mode when it
+/// fetches from an address of the model's choosing (the custom base map:
+/// its tiles would come from that host, every view of the user's screen
+/// telling it where the project is, the pictures coming back into the
+/// conversation) or changes how the program keeps the user's work
+/// (`app.*`: the autosave).
+({bool confirm})? settingImpact(String key, Object? value) {
+  if (key.startsWith('params.') || key.startsWith('units.') || key.startsWith('project.') || key.startsWith('quote.')) return (confirm: false);
+  if (key == 'view.custom_tile_url' || (key == 'view.base_map' && value == 'custom')) return (confirm: true);
+  if (key.startsWith('app.')) return (confirm: true);
+  if (key == 'view.language' || key == 'view.theme') return (confirm: false);
+  return null;
+}
+
 /// [v] for the model: numbers without scientific notation, lists of numbers
 /// as `[a, b]`, null as `null`.
 String showValue(Object? v) => switch (v) {

@@ -29,6 +29,7 @@ FnTool engOp(
   ToolEffect Function(Map<String, dynamic> input)? effectFor,
   bool Function(Map<String, dynamic> input)? confirm,
   String Function(Map<String, dynamic> input)? summary,
+  Map<String, dynamic> Function(Map<String, dynamic> input)? binder,
   required Future<ToolOutput> Function(ToolArgs a, Map<String, dynamic> input) run,
 }) => FnTool(
   name: name,
@@ -37,6 +38,7 @@ FnTool engOp(
   effect: effect,
   effectFor: effectFor,
   confirm: confirm,
+  binder: binder,
   summary: summary ?? (_) => b.t('ai.op.$name'),
   handler: (i) => run(ToolArgs(i), i),
 );

@@ -1348,15 +1348,28 @@ String render404() {
   return b.toString();
 }
 
-/// Google Analytics (gtag.js), on every entry page.
+/// Google Analytics (gtag.js), on every entry page — except on a device
+/// that keeps an AI assistant key ("Remember the key on this device": it is
+/// in this page's localStorage, which any script of the page can read; the
+/// analytics script is the only one from elsewhere), whose visits are then
+/// not counted.
 const _analytics =
-    '''  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=$analyticsId"></script>
+    '''  <!-- Google tag (gtag.js), not where an AI key is remembered -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '$analyticsId');
+    (function () {
+      try {
+        var s = window.localStorage;
+        if (s.getItem('opencadirrigation.ai.key') || s.getItem('opencadirrigation.ai.key.openai')) return;
+      } catch (e) {}
+      var g = document.createElement('script');
+      g.async = true;
+      g.src = 'https://www.googletagmanager.com/gtag/js?id=$analyticsId';
+      document.head.appendChild(g);
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', '$analyticsId');
+    })();
   </script>''';
 
 /// Page kept at the old English address `/en/`, which is now the site root:

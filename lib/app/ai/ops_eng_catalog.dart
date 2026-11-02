@@ -13,6 +13,7 @@ import 'dart:typed_data';
 import '../../core/api.dart';
 import '../io/catalog_packs.dart';
 import 'agent_tools.dart';
+import 'ai_safety.dart';
 import 'ops_eng_common.dart';
 
 const _kinds = ['pipe', 'emitter', 'tape', 'valve', 'pump', 'fitting', 'wire'];
@@ -498,9 +499,13 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
       name: 'list_catalog_packs',
       effect: ToolEffect.read,
       effectFor: (i) => i['url'] == null ? ToolEffect.read : ToolEffect.network,
-      description: 'Design → Catalogue → Manufacturer packs: lists the catalogue packs bundled with the program (manufacturers\' pipes, emitters, tapes, valves, pumps, fittings, read from their data sheets), or — with url — the pack or pack index (index.json of a community repository) at that address (the address is fetched; the user approves it unless changes apply automatically). add_catalog_pack adds one to the project. Inputs: url (optional), query (text in the id, brand or description). Output: id | brand | items | prices | updated | whether it is in the project | origin | description | sources.',
+      // an address outside the program's own site and repository is confirmed whatever the mode
+      confirm: (i) => i['url'] is String && !aiKnownPackUrl(i['url'] as String),
+      description: 'Design → Catalogue → Manufacturer packs: lists the catalogue packs bundled with the program (manufacturers\' pipes, emitters, tapes, valves, pumps, fittings, read from their data sheets), or — with url — the pack or pack index (index.json of a community repository) at that address (the address is fetched; the user approves it unless changes apply automatically, and always when it is not on the program\'s own site or repository). add_catalog_pack adds one to the project. Inputs: url (optional), query (text in the id, brand or description). Output: id | brand | items | prices | updated | whether it is in the project | origin | description | sources.',
       schema: obj({'url': str('Address of a pack (.oci.cat) or of an index.json.'), 'query': str('Filter (case-insensitive).')}),
-      summary: (i) => i['url'] == null ? t('ai.op.list_catalog_packs') : t('ai.op.list_catalog_packs.url', {'n': AgentToolbox.short('${i['url']}', 60)}),
+      summary: (i) => i['url'] == null
+          ? t('ai.op.list_catalog_packs')
+          : '${t('ai.op.list_catalog_packs.url', {'n': AgentToolbox.short('${i['url']}', 60)})} — ${t('ai.ask.fetchFrom', {'h': aiHost('${i['url']}')})}',
       run: (a, _) async {
         final url = a.str('url');
         List<CatalogPack> packs;
@@ -531,9 +536,12 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
       b,
       name: 'add_catalog_pack',
       effect: ToolEffect.write,
+      confirm: (i) => i['url'] is String && !aiKnownPackUrl(i['url'] as String),
       description: 'Design → Catalogue → Manufacturer packs → Add: merges a pack into the project catalogue — the items it does not have yet (by id), prices converted from the pack currency to the project currency with the reference rate. One undo step; results discarded. Inputs: id (a bundled pack, or one listed from a url in this conversation; list_catalog_packs) or url (a pack or index to fetch and add; the address is fetched). Output: the items added and the conversion.',
       schema: obj({'id': str('Pack id (list_catalog_packs).'), 'url': str('Address of a pack or index to fetch and add.')}),
-      summary: (i) => t('ai.op.add_catalog_pack', {'n': '${i['id'] ?? i['url'] ?? ''}'}),
+      summary: (i) => i['url'] is String
+          ? '${t('ai.op.add_catalog_pack', {'n': AgentToolbox.short('${i['url']}', 60)})} — ${t('ai.ask.fetchFrom', {'h': aiHost('${i['url']}')})}'
+          : t('ai.op.add_catalog_pack', {'n': '${i['id'] ?? ''}'}),
       run: (a, _) async {
         engNotBusy(c);
         final id = a.str('id'), url = a.str('url');
@@ -563,8 +571,9 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
       b,
       name: 'catalog_default',
       effect: ToolEffect.write,
-      confirm: (i) => i['action'] != 'reset',
-      description: 'Design → Catalogue → Default catalogue: "save" keeps the project catalogue as the catalogue of new projects on this browser (a preference, not an undo step; always confirmed); "forget" drops the saved one (new projects get the program\'s catalogue again; always confirmed); "reset" replaces the project catalogue with the program\'s default catalogue for the language and currency and forgets the saved one (one undo step; results discarded). Input: action. Output: what was done.',
+      // every action is confirmed: a preference of this browser, or the whole catalogue replaced
+      confirm: (_) => true,
+      description: 'Design → Catalogue → Default catalogue: "save" keeps the project catalogue as the catalogue of new projects on this browser (a preference, not an undo step); "forget" drops the saved one (new projects get the program\'s catalogue again); "reset" replaces the project catalogue with the program\'s default catalogue for the language and currency and forgets the saved one (one undo step; results discarded). Every action is confirmed by the user. Input: action. Output: what was done.',
       schema: obj(
         {
           'action': str(null, ['save', 'forget', 'reset']),

@@ -145,4 +145,70 @@ class _IdbConversations implements ConversationStore {
     });
     return ok && keys != null && times != null ? _times(keys!, times!) : {};
   }
+
+  // ------------------------------------------------ claims (Web Locks)
+
+  /// Claims held by this page: the lock is held while its completer is not
+  /// completed. Claims on their way share one future.
+  final Map<String, Completer<void>> _held = {};
+  final Map<String, Future<bool>> _asking = {};
+
+  static String _lock(String uid) => 'opencadirrigation-ai-chat:$uid';
+
+  @override
+  Future<bool> claim(String uid) {
+    if (_held.containsKey(uid)) return Future.value(true);
+    return _asking[uid] ??= _request(uid).whenComplete(() => _asking.remove(uid));
+  }
+
+  Future<bool> _request(String uid) {
+    final granted = Completer<bool>();
+    try {
+      final locks = web.window.navigator.locks;
+      final hold = Completer<void>();
+      locks
+          .request(
+            _lock(uid),
+            web.LockOptions(ifAvailable: true),
+            ((web.Lock? lock) {
+              if (lock == null) {
+                if (!granted.isCompleted) granted.complete(false);
+                return null;
+              }
+              _held[uid] = hold;
+              if (!granted.isCompleted) granted.complete(true);
+              // held until [release] (or the page closes)
+              return hold.future.toJS;
+            }).toJS,
+          )
+          .toDart
+          .then(
+            (_) {},
+            onError: (Object _) {
+              if (!granted.isCompleted) granted.complete(true);
+            },
+          );
+    } catch (_) {
+      // a browser without Web Locks: as before, this page keeps the conversation
+      if (!granted.isCompleted) granted.complete(true);
+    }
+    return granted.future;
+  }
+
+  @override
+  void release(String uid) {
+    final h = _held.remove(uid);
+    if (h != null && !h.isCompleted) h.complete();
+  }
+
+  @override
+  Future<bool> claimed(String uid) async {
+    if (_held.containsKey(uid)) return true;
+    try {
+      final snap = await web.window.navigator.locks.query().toDart;
+      return snap.held.toDart.any((l) => l.name == _lock(uid));
+    } catch (_) {
+      return false;
+    }
+  }
 }

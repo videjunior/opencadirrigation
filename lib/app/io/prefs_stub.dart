@@ -13,6 +13,9 @@ String? getPref(String key) => _store.get(key);
 void setPref(String key, String value) => _store.set(key, value);
 void removePref(String key) => _store.remove(key);
 
+/// The keys of this run and their values (tests compare them before and after).
+Map<String, String> debugPrefs() => _store.snapshot();
+
 final PrefsStore _store = _platformStore();
 
 PrefsStore _platformStore() {
@@ -80,6 +83,13 @@ class PrefsStore {
       // read-only or full disk: kept for this session only
     }
   }
+
+  /// The keys read or written in this run that have a value (a store kept
+  /// in files does not list its folder).
+  Map<String, String> snapshot() => {
+    for (final e in _cache.entries)
+      if (e.value != null) e.key: e.value!,
+  };
 
   void remove(String key) {
     if (folder == null) {

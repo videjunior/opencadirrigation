@@ -24,6 +24,7 @@ OpTool cadOp(
   ToolEffect Function(Map<String, dynamic> input)? effectFor,
   bool Function(Map<String, dynamic> input)? confirm,
   Map<String, String> Function(Map<String, dynamic> input)? args,
+  Map<String, dynamic> Function(Map<String, dynamic> input)? binder,
   required Future<ToolOutput> Function(ToolArgs a, Map<String, dynamic> input) run,
 }) => OpTool(
   group: group,
@@ -33,6 +34,7 @@ OpTool cadOp(
   effect: effect,
   effectFor: effectFor,
   confirm: confirm,
+  binder: binder,
   summary: (i) {
     Map<String, String>? x;
     try {
@@ -71,6 +73,34 @@ List<Entity> cadEditableOrSelection(AgentToolbox b, ToolArgs a) {
   if (!a.has('ids')) throw ToolInputError('Give "ids" (or "selected": true for the current selection).');
   return cadEditable(b, a.strings('ids', required: true));
 }
+
+/// [AgentTool.bind] of a call that takes "ids" or "selected": true (the
+/// items of an import, which come in selected): the selection as ids, taken
+/// when the call is planned, so the approval card names the items and
+/// those are the ones that change, whatever the user selects meanwhile.
+Map<String, dynamic> cadBindSelected(AgentToolbox b, Map<String, dynamic> i) {
+  if (i['selected'] != true || b.c.selection.isEmpty) return i;
+  return {
+    for (final e in i.entries)
+      if (e.key != 'selected') e.key: e.value,
+    'ids': cadSelectionIds(b),
+  };
+}
+
+/// [AgentTool.bind] of a call whose "ids" default to the selection: the
+/// selection as ids, taken when the call is planned. [keep] picks the items
+/// the call works on (e.g. only laterals).
+Map<String, dynamic> cadBindDefaultIds(AgentToolbox b, Map<String, dynamic> i, {bool Function(Entity e)? keep}) {
+  if (i['ids'] is List && (i['ids'] as List).isNotEmpty) return i;
+  final ids = cadSelectionIds(b, keep: keep);
+  return ids.isEmpty ? i : {...i, 'ids': ids};
+}
+
+/// The ids of the selected items, in the drawing's order.
+List<String> cadSelectionIds(AgentToolbox b, {bool Function(Entity e)? keep}) => [
+  for (final e in b.p.entities)
+    if (b.c.selection.contains(e.id) && (keep == null || keep(e))) e.id,
+];
 
 /// Ids of the entities added to the project since [before] (the ids it
 /// held then).

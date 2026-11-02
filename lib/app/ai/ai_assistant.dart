@@ -21,6 +21,8 @@
 /// the same storage; an API key is never in it.
 library;
 
+export 'attachment_text.dart' show pdfToText;
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -47,6 +49,8 @@ import 'agent_tools.dart';
 import 'agent_tools_agent.dart';
 import 'agent_tools_vision.dart';
 import 'ai_prompt.dart';
+import 'attachment_text.dart';
+import 'ai_safety.dart';
 import 'ai_transport.dart';
 import 'ops_cad_view.dart' show AiTab, AiWorkspaceHost;
 import 'view_snapshot.dart';
@@ -128,69 +132,101 @@ class AiAttachment {
     };
   }
 
-  /// What goes into the message.
+  /// Estimated tokens past which a text or a PDF read as text is not put
+  /// in the message: the model reads it in parts with read_attachment (each
+  /// part then cleared from the conversation on the server like any tool
+  /// result), and the attachment's chip warns.
+  static const largeTokens = 30000;
+
+  /// A PDF sent whole with more pages or bytes than this is read as text
+  /// instead (the API refuses more than 600 pages, and the base64 of a large
+  /// PDF fills the size a request may have).
+  static const maxPdfPages = 100, maxPdfBytes = 10 * 1024 * 1024;
+
+  int? _pages;
+
+  /// Pages of the PDF (0 when it cannot be read).
+  int get pdfPages {
+    if (_pages != null) return _pages!;
+    try {
+      return _pages = isPdf ? PdfReader.open(bytes).pageCount : 0;
+    } catch (_) {
+      return _pages = 0;
+    }
+  }
+
+  /// The PDF goes as text whatever the chip says: too large to go whole.
+  bool get pdfTooLarge => isPdf && (bytes.length > maxPdfBytes || pdfPages > maxPdfPages);
+
+  /// The PDF goes as its text ([asText], or [pdfTooLarge]) and has some.
+  bool get _sendsText => isPdf && (asText || pdfTooLarge) && pdfText != null;
+
+  /// Tokens the file is likely to take in the message (an estimate: about
+  /// four characters a token for text, the pixels ÷ 750 for a picture, a
+  /// page of a PDF sent whole as its text and a picture of the page).
+  int get approxTokens {
+    if (importOnly) return 60;
+    if (isImage) {
+      final p = modelImage;
+      return p == null ? 20 : (p.width * p.height / 750).ceil();
+    }
+    if (_sendsText) return (pdfText!.length / 4).ceil();
+    if (isPdf) return (pdfPages == 0 ? 1 : pdfPages) * 2200;
+    return (bytes.length / 4).ceil();
+  }
+
+  /// Read in parts with read_attachment rather than put in the message.
+  bool get paged => !importOnly && !isImage && (!isPdf || _sendsText || pdfTooLarge) && (approxTokens > largeTokens || pdfTooLarge || (isPdf && pdfPages > pdfTextPages));
+
+  /// Pages of a PDF read as text that go in the message (more are read in
+  /// parts: [pdfText] stops there).
+  static const pdfTextPages = 40;
+
+  /// What goes into the message. Names and content are quoted so that
+  /// nothing in the file can close its wrapper (ai_safety.dart).
   List<AiPart> parts() {
+    final n = aiAttr(name);
+    final kb = (bytes.length / 1024).ceil();
     if (importOnly) {
       return [
         AiTextPart(
-          '<attachment name="$name" size="${(bytes.length / 1024).ceil()} KB">A drawing or GIS file for the project, not shown to you: import it with import_attachment {"name": "$name"} when the user wants it in the project.</attachment>',
+          '<attachment name="$n" size="$kb KB">A drawing or GIS file for the project, not shown to you: import it with import_attachment {"name": ${jsonEncode(name)}} when the user wants it in the project.</attachment>',
         ),
       ];
     }
     if (isImage) {
       final p = modelImage;
-      if (p == null) return [AiTextPart('<attachment name="$name">This file could not be read as a picture.</attachment>')];
+      if (p == null) return [AiTextPart('<attachment name="$n">This file could not be read as a picture.</attachment>')];
       return [AiImagePart(p.mediaType, base64Encode(p.bytes)), if (note.isNotEmpty) AiTextPart(note), if (place.isNotEmpty) AiTextPart(place)];
     }
-    if (isPdf && asText && pdfText != null) return [AiTextPart('<attachment name="$name" content="text extracted from the PDF">\n$pdfText\n</attachment>')];
-    if (isPdf) return [AiPdfPart(name, base64Encode(bytes))];
-    return [AiTextPart('<attachment name="$name">\n${utf8.decode(bytes, allowMalformed: true)}\n</attachment>')];
-  }
-}
-
-/// The text of a PDF, page by page, its runs ordered top to bottom and
-/// left to right, one line per baseline (cells joined by tabs); at most
-/// [maxPages] pages and [maxChars] characters. Null when nothing readable.
-String? pdfToText(Uint8List bytes, {int maxPages = 40, int maxChars = 80000}) {
-  try {
-    final r = PdfReader.open(bytes);
-    final out = StringBuffer();
-    for (var i = 0; i < r.pageCount && i < maxPages && out.length < maxChars; i++) {
-      final runs = [
-        for (final t in r.readPage(i, vectors: false, images: false).texts)
-          if (!t.hidden && t.text.trim().isNotEmpty) t,
-      ]..sort((a, b) => a.origin.y != b.origin.y ? b.origin.y.compareTo(a.origin.y) : a.origin.x.compareTo(b.origin.x));
-      if (runs.isEmpty) continue;
-      out.writeln('--- page ${i + 1}');
-      final line = <PdfTextItem>[];
-      void flush() {
-        line.sort((a, b) => a.origin.x.compareTo(b.origin.x));
-        out.writeln(line.map((t) => t.text.trim()).join('\t'));
-        line.clear();
-      }
-
-      for (final t in runs) {
-        if (line.isNotEmpty && (line.first.origin.y - t.origin.y).abs() > 0.5 * (line.first.height > 0 ? line.first.height : 1)) flush();
-        line.add(t);
-      }
-      if (line.isNotEmpty) flush();
+    if (paged) {
+      final unit = isPdf ? 'pages (1–$pdfPages)' : 'lines (1–${'\n'.allMatches(utf8.decode(bytes, allowMalformed: true)).length + 1})';
+      return [
+        AiTextPart(
+          '<attachment name="$n" size="$kb KB" tokens="≈$approxTokens">This file is long (about $approxTokens tokens), so it is not in this message: read the parts you need with read_attachment {"name": ${jsonEncode(name)}, "from": 1, "to": …}, by $unit.</attachment>',
+        ),
+      ];
     }
-    final s = out.toString().trim();
-    if (s.isEmpty) return null;
-    return s.length <= maxChars ? s : '${s.substring(0, maxChars)}\n… (cut at $maxChars characters)';
-  } catch (_) {
-    return null;
+    if (_sendsText) return [AiTextPart('<attachment name="$n" content="text extracted from the PDF">\n${aiData(pdfText!)}\n</attachment>')];
+    if (isPdf) return [AiPdfPart(name, base64Encode(bytes))];
+    return [AiTextPart('<attachment name="$n">\n${aiData(utf8.decode(bytes, allowMalformed: true))}\n</attachment>')];
   }
 }
 
 /// What the AI changed in one turn (by kind of item, and which settings).
 class AiTurnChanges {
-  AiTurnChanges({required this.added, required this.changed, required this.removed, required this.settings, required this.endIndex, required this.steps});
+  AiTurnChanges({required this.added, required this.changed, required this.removed, required this.settings, required this.endIndex, required this.steps, this.interleaved = false});
   final Map<String, int> added, changed, removed;
   final List<String> settings;
 
   /// History position after the turn and the undo steps it made.
   final int endIndex, steps;
+
+  /// The user changed the project while the assistant worked: the
+  /// assistant's changes are undo steps of their own on either side of the
+  /// user's (Edit → Undo takes them back one by one), and they are not
+  /// undone together, as that would take the user's work with them.
+  final bool interleaved;
   bool undone = false;
   bool get isEmpty => added.isEmpty && changed.isEmpty && removed.isEmpty && settings.isEmpty;
 }
@@ -268,6 +304,14 @@ class AiItem {
   /// Pictures sent in the turn (they count in the input tokens).
   int pictures = 0;
   String model = '';
+
+  /// The model that answered instead of [model] (a server-side fallback,
+  /// after a refusal of the safety classifiers), when one did.
+  String? servedBy;
+
+  /// Thinking blocks the API dropped in the turn, the conversation before
+  /// them having changed (it should not happen: it costs the cache).
+  int droppedThinking = 0;
   AiTurnChanges? changes;
 }
 
@@ -361,6 +405,8 @@ typedef _Kept = ({
   int pictures,
   bool context,
   String? marks,
+  AiEffort? effort,
+  bool inTurn,
   int dropped,
   List<String> filesLeft,
   Map<String, Uint8List> files,
@@ -369,11 +415,16 @@ typedef _Kept = ({
   Object? views,
 });
 
-/// A tool whose first change opens the turn's undo group.
+/// A tool whose first change opens the turn's undo group. It runs in a zone
+/// that marks what it does as the assistant's ([AiAssistant.zoneKey]): the
+/// controller's history changes made from anywhere else are the user's, and
+/// close the group first. [removed] gets the items a change took out.
 class _Tracked extends AgentTool {
-  _Tracked(this.inner, this.before);
+  _Tracked(this.inner, this.owner, this.before, this.removed);
   final AgentTool inner;
+  final AiAssistant owner;
   final void Function() before;
+  final void Function(int n) removed;
   @override
   String get name => inner.name;
   @override
@@ -389,18 +440,34 @@ class _Tracked extends AgentTool {
   @override
   bool mustConfirm(Map<String, dynamic> input) => inner.mustConfirm(input);
   @override
-  Future<ToolOutput> run(Map<String, dynamic> input) {
-    if (inner.effectOf(input) == ToolEffect.write) before();
-    return inner.run(input);
-  }
+  Map<String, dynamic> bind(Map<String, dynamic> input) => inner.bind(input);
+  @override
+  Future<ToolOutput> run(Map<String, dynamic> input) => runZoned(() async {
+    final write = inner.effectOf(input) == ToolEffect.write;
+    if (write) before();
+    final c = owner.c;
+    final ids = write ? {for (final e in c.project.entities) e.id} : null;
+    try {
+      return await inner.run(input);
+    } finally {
+      if (ids != null) {
+        for (final e in c.project.entities) {
+          ids.remove(e.id);
+        }
+        if (ids.isNotEmpty) removed(ids.length);
+      }
+    }
+  }, zoneValues: {AiAssistant.zoneKey: owner});
 }
 
 class AiAssistant extends ChangeNotifier {
   AiAssistant(this.c) : _uid = c.project.meta.uid {
     _live.add(this);
+    c.beforeHistoryChange.add(_beforeHistoryChange);
     // the conversation kept for the project comes back, and follows it
     _claimed = !_shared;
     c.addListener(_onProject);
+    _claimPage();
     _load();
   }
   final ProjectController c;
@@ -508,6 +575,7 @@ class AiAssistant extends ChangeNotifier {
   void forgetKey([AiProvider provider = AiProvider.anthropic]) {
     removePref(keyPrefOf(provider));
     _sessionKeys.remove(provider);
+    _stopWarm();
     notifyListeners();
   }
 
@@ -535,16 +603,78 @@ class AiAssistant extends ChangeNotifier {
   /// conversation of another Claude model.
   set model(AiModel m) {
     final from = _convModel;
+    final was = model;
     setPref('ai.model', m.id);
+    _stopWarm();
     if (from != null && items.isNotEmpty && needsNewConversation(from, m)) {
       clear();
       items.add(AiItem.notice(t('ai.newConv', {'m': m.label, 'p': m.provider.company})));
     } else if (_history.isEmpty && !busy) {
       // the tools describe the pictures the model reads: built anew for it
       _toolbox = null;
+    } else if (!identical(was, m)) {
+      // another Claude model goes on with the conversation: it reads it all again, without the cache
+      final cost = switchCostText(m, from: was);
+      if (cost != null) items.add(AiItem.notice(cost)..transient = true);
     }
     notifyListeners();
   }
+
+  /// Input tokens of the last request (the conversation as the model last
+  /// read it); 0 before the first one of this page.
+  int _lastInput = 0;
+  int _turnInput = 0;
+
+  /// Tokens the conversation takes, about: the last request's input, or an
+  /// estimate from its text and pictures (a conversation brought back).
+  int conversationTokens() {
+    if (_lastInput > 0) return _lastInput;
+    var chars = 0, pictures = 0, docs = 0;
+    void walk(Object? o) {
+      if (o is Map) {
+        final type = o['type'];
+        if (type == 'image' || type == 'input_image') {
+          pictures++;
+          return;
+        }
+        if (type == 'document' || type == 'input_file') {
+          docs++;
+          return;
+        }
+        for (final v in o.values) {
+          walk(v);
+        }
+      } else if (o is List) {
+        for (final v in o) {
+          walk(v);
+        }
+      } else if (o is String) {
+        chars += o.length;
+      }
+    }
+
+    for (final m in _history) {
+      walk(m);
+    }
+    return chars ~/ 4 + pictures * 1600 + docs * 20000;
+  }
+
+  /// What switching from [from] to [m] in the middle of the conversation
+  /// costs, for the user: the conversation read again without the cache (it
+  /// belongs to each model) at [m]'s price, and the earlier reasoning left
+  /// behind; null when nothing is lost (no conversation yet, the same
+  /// model, or one that starts a new conversation anyway).
+  String? switchCostText(AiModel m, {AiModel? from}) {
+    final own = from ?? _convModel;
+    if (own == null || _history.isEmpty || identical(own, m) || needsNewConversation(own, m)) return null;
+    final n = conversationTokens();
+    if (n <= 0) return null;
+    final usd = n * m.cacheWrite / 1e6;
+    return t('ai.model.switchCost', {'m': m.label, 'n': aiTokensText(n), 'c': usd.toStringAsFixed(usd < 1 ? 3 : 2)});
+  }
+
+  /// [n] tokens for the user (12 300 → "12k").
+  static String aiTokensText(int n) => n < 1000 ? '$n' : (n < 100000 ? '${(n / 1000).toStringAsFixed(1).replaceFirst('.0', '')}k' : '${(n / 1000).round()}k');
 
   static bool needsNewConversation(AiModel from, AiModel to) => from.provider != to.provider || (to.provider == AiProvider.openai && from.id != to.id);
 
@@ -589,12 +719,76 @@ class AiAssistant extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// A picture of the drawing goes to the model after its changes (costs
-  /// tokens; off by default).
+  /// A picture of the drawing goes to the model after its changes, so it
+  /// sees what it drew (on by default; each picture costs tokens).
   bool get showChanges => getPref('ai.showChanges') != 'off';
   set showChanges(bool on) {
     setPref('ai.showChanges', on ? 'on' : 'off');
     notifyListeners();
+  }
+
+  /// While the user pauses, the conversation is kept in Anthropic's cache
+  /// (which lasts five minutes) by a request that reads it without an
+  /// answer, every [warmEvery], for up to [warmFor] after the last message:
+  /// each is billed as a cache read, against the whole conversation written
+  /// to the cache again once it lapsed. Off by default (it sends requests
+  /// while the user does nothing); the one-hour cache of long steps
+  /// ([AiRequest.longCache]) needs none.
+  bool get keepWarm => getPref('ai.keepWarm') == 'on';
+  set keepWarm(bool on) {
+    setPref('ai.keepWarm', on ? 'on' : 'off');
+    if (!on) _stopWarm();
+    notifyListeners();
+  }
+
+  static Duration warmEvery = const Duration(seconds: 270);
+  static Duration warmFor = const Duration(hours: 1);
+
+  Timer? _warmTimer;
+  int _warmGen = 0;
+
+  /// Keep-alive requests sent in this conversation, and what they cost.
+  int warmSent = 0;
+  double warmCost = 0;
+
+  /// Starts keeping the conversation cached, as [template] would ask for it
+  /// (the history is the conversation's when each keep-alive goes).
+  void _scheduleWarm(AiClient client, AiRequest template) {
+    _stopWarm();
+    if (!keepWarm || client is! AnthropicClient || template.longCache) return;
+    final gen = ++_warmGen;
+    final until = DateTime.now().add(warmFor);
+    void next() {
+      _warmTimer = Timer(warmEvery, () async {
+        _warmTimer = null;
+        if (gen != _warmGen || busy || _disposed || _history.isEmpty || DateTime.now().isAfter(until)) return;
+        final cancel = AiCancel();
+        try {
+          final r = template.withHistory([..._history]);
+          final u = await client.keepWarm(r, cancel: cancel);
+          if (gen != _warmGen || _disposed) return;
+          final x = u.cost(r.model);
+          usage += u;
+          cost += x;
+          warmSent++;
+          warmCost += x;
+          notifyListeners();
+          _saveSoon();
+          next();
+        } on AiError catch (_) {
+          // the key no longer works, or the conversation cannot be sent: no more
+          if (gen == _warmGen) _stopWarm();
+        }
+      });
+    }
+
+    next();
+  }
+
+  void _stopWarm() {
+    _warmGen++;
+    _warmTimer?.cancel();
+    _warmTimer = null;
   }
 
   /// The app asks at start-up whether the user wants to design with the
@@ -611,10 +805,23 @@ class AiAssistant extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The project's AI notes (requirements, decisions).
+  /// The project's AI notes (requirements, decisions). Notes written here
+  /// (by the user in the settings, or by the assistant) are this device's
+  /// user's ([notesTrusted]).
   String get notes => notesStore.read(c);
   set notes(String s) {
     notesStore.write(c, s);
+    trustNotesText(s);
+    notifyListeners();
+  }
+
+  /// The notes the assistant writes (update_notes): this device's user's
+  /// only when the notes it wrote over were (so notes from elsewhere stay
+  /// marked however the assistant adds to them).
+  void writeNotesByAi(String s) {
+    final was = notesTrusted;
+    notesStore.write(c, s);
+    if (was) trustNotesText(s);
     notifyListeners();
   }
 
@@ -644,6 +851,14 @@ class AiAssistant extends ChangeNotifier {
   final List<Map<String, dynamic>> _history = [];
   String? _system;
   AiModel? _convModel;
+
+  /// The effort of the conversation's requests (its first message's): a
+  /// later change goes as an effort message ([AiClient.effortMessage]).
+  AiEffort? _convEffort;
+
+  /// The turn that runs, as far as it went (kept with the conversation
+  /// after each change: see [_saveNow]).
+  List<Map<String, dynamic>>? _inTurn;
   AgentToolbox? _toolbox;
   late final _Host _host = _Host(this);
   final List<AiAttachment> attachments = [];
@@ -703,12 +918,59 @@ class AiAssistant extends ChangeNotifier {
   }
 
   /// The text of the next message as it will be sent: the project data, the
-  /// project's notes at the start of a conversation, the user's marks on the
-  /// drawing when they changed since the last message, then the question.
+  /// project's notes at the start of a conversation (marked when they came
+  /// with the project from elsewhere, see [notesTrusted]), the user's marks
+  /// on the drawing when they changed since the last message, then the
+  /// question. The content is quoted (ai_safety.dart): nothing in the
+  /// project can close its wrapper.
   String composeText(String question, ProjectContext ctx) {
     final n = _history.isEmpty ? notes.trim() : '';
     final marks = _marksText();
-    return [if (!ctx.isEmpty) '<project_data>\n${ctx.text}\n</project_data>', if (n.isNotEmpty) '<project_notes>\n$n\n</project_notes>', ?marks, question.trim()].join('\n\n');
+    final notesBlock = n.isEmpty
+        ? null
+        : (notesTrusted ? '<project_notes>\n${aiData(n)}\n</project_notes>' : '<project_notes origin="project file">\n$foreignNotesNote\n${aiData(n)}\n</project_notes>');
+    return [if (!ctx.isEmpty) '<project_data>\n${aiData(ctx.text)}\n</project_data>', ?notesBlock, ?marks, question.trim()].join('\n\n');
+  }
+
+  // ---------------------------------------------------------------- where the notes came from
+
+  /// Fingerprints of the notes the user wrote or accepted on this device
+  /// (and those the assistant wrote here), the latest last.
+  static const trustedNotesPref = 'ai.notes.trusted';
+  static const _trustedKept = 60;
+
+  static List<String> _trusted() {
+    try {
+      final j = jsonDecode(getPref(trustedNotesPref) ?? '[]');
+      return j is List ? [for (final x in j) '$x'] : <String>[];
+    } catch (_) {
+      return <String>[];
+    }
+  }
+
+  /// Remembers [text] as notes of this device's user.
+  static void trustNotesText(String text) {
+    if (text.trim().isEmpty) return;
+    final f = aiFingerprint(text);
+    final list = _trusted()
+      ..remove(f)
+      ..add(f);
+    setPref(trustedNotesPref, jsonEncode(list.length > _trustedKept ? list.sublist(list.length - _trustedKept) : list));
+  }
+
+  /// The project's notes were written (or accepted) on this device: they go
+  /// to the model as the user's. Notes that came with a project file or a
+  /// link go marked as written elsewhere — information, never instructions
+  /// — until the user accepts them ([trustNotes]) or leaves them out.
+  bool get notesTrusted {
+    final n = notes.trim();
+    return n.isEmpty || notesStore is DeviceNotesStore || _trusted().contains(aiFingerprint(n));
+  }
+
+  /// The user accepts the project's notes as their own.
+  void trustNotes() {
+    trustNotesText(notes);
+    notifyListeners();
   }
 
   /// Version of the marks the last message carried (-1: none sent; -2: the
@@ -727,7 +989,7 @@ class AiAssistant extends ChangeNotifier {
     final m = c.aiMarks;
     if (_marksSent != -2 && (m.version == _marksSent || (m.isEmpty && _marksSent < 0))) return null;
     if (m.isEmpty) return '<user_marks>The user removed the marks from the drawing.</user_marks>';
-    return '<user_marks>\nMarks the user placed on the drawing for you, labelled there and in your pictures (orange), coordinates in metres:\n${m.describe()}\n</user_marks>';
+    return '<user_marks>\nMarks the user placed on the drawing for you, labelled there and in your pictures (orange), coordinates in metres:\n${aiData(m.describe())}\n</user_marks>';
   }
 
   void addAttachment(AiAttachment a) {
@@ -759,20 +1021,20 @@ class AiAssistant extends ChangeNotifier {
       return best == null || bd > 500 ? '' : '; the nearest item is ${best.id} (${best.type.name}${best.name.isEmpty ? '' : ' "${best.name}"'}) ${fmt(bd, 1)} m away';
     }
 
-    final keep = 'To keep it on the drawing: add_photo_comment {"name": "${a.name}", "text": "what the photo shows"} pins a comment with the photo there.';
+    final keep = 'To keep it on the drawing: add_photo_comment {"name": ${jsonEncode(a.name)}, "text": "what the photo shows"} pins a comment with the photo there.';
     if (place != null) {
       final facing = place.direction == null ? '' : ', facing ${fmt(place.direction!, 0)}° from north';
       final when = place.taken == null ? '' : ', taken ${place.taken!.toIso8601String().substring(0, 16).replaceFirst('T', ' ')}';
       if (g == null) {
-        return '<photo_place name="${a.name}">The photo\'s GPS puts it at latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}$facing$when. The project has no georeference: set_site at these coordinates would put the project there.</photo_place>';
+        return '<photo_place name="${aiAttr(a.name)}">The photo\'s GPS puts it at latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}$facing$when. The project has no georeference: set_site at these coordinates would put the project there.</photo_place>';
       }
       final (x, y) = g.fromLatLon(place.lat, place.lon);
       final q = Pt(x, y);
-      return '<photo_place name="${a.name}">Taken at [${fmt(x, 2)}, ${fmt(y, 2)}] m in the project (latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}, from the photo\'s GPS: a phone is usually within 5–10 m)$facing$when${near(q)}. $keep</photo_place>';
+      return '<photo_place name="${aiAttr(a.name)}">Taken at [${fmt(x, 2)}, ${fmt(y, 2)}] m in the project (latitude ${place.lat.toStringAsFixed(6)}, longitude ${place.lon.toStringAsFixed(6)}, from the photo\'s GPS: a phone is usually within 5–10 m)$facing$when${near(q)}. $keep</photo_place>';
     }
     final fix = c.gpsFix, here = c.gpsPoint;
     if (fix != null && here != null && DateTime.now().difference(fix.time).inMinutes < 10) {
-      return '<photo_place name="${a.name}">The photo carries no position; the device\'s GPS was at [${fmt(here.x, 2)}, ${fmt(here.y, 2)}] m (±${fmt(fix.accuracyM, 0)} m) when it was attached: if it was taken here, add_photo_comment {"name": "${a.name}", "at": [${fmt(here.x, 2)}, ${fmt(here.y, 2)}], "text": "…"} pins it there.</photo_place>';
+      return '<photo_place name="${aiAttr(a.name)}">The photo carries no position; the device\'s GPS was at [${fmt(here.x, 2)}, ${fmt(here.y, 2)}] m (±${fmt(fix.accuracyM, 0)} m) when it was attached: if it was taken here, add_photo_comment {"name": "${a.name}", "at": [${fmt(here.x, 2)}, ${fmt(here.y, 2)}], "text": "…"} pins it there.</photo_place>';
     }
     return '';
   }
@@ -797,7 +1059,7 @@ class AiAssistant extends ChangeNotifier {
   void clear() {
     _reset();
     attachments.clear();
-    if (_claimed) conversations.delete(_uid);
+    if (_claimed && _pageMine == true) conversations.delete(_uid);
     notifyListeners();
     _mark();
   }
@@ -810,6 +1072,9 @@ class AiAssistant extends ChangeNotifier {
     _history.clear();
     _system = null;
     _convModel = null;
+    _convEffort = null;
+    _inTurn = null;
+    _stopWarm();
     _toolbox = null;
     _files.clear();
     _filesLeft.clear();
@@ -912,11 +1177,29 @@ class AiAssistant extends ChangeNotifier {
     });
   }
 
-  // the undo group and the change summary of a turn
+  // the undo group and the change summary of a turn: one group per run of
+  // the assistant's changes ([_edit] while it is open), closed when the user
+  // changes the project meanwhile; what each group changed adds up in the
+  // summary (by item id: how it changed, and its kind)
   SettingsEdit? _edit;
   Map<String, (String, String)>? _before;
   Map<String, String>? _beforeSettings;
   int _startIndex = 0;
+  int _groups = 0, _committed = 0;
+  final Map<String, (String, String)> _turnChange = {};
+  final Set<String> _turnSettings = {};
+
+  /// Zone value that marks what runs as this assistant's (see [_Tracked]).
+  static const zoneKey = #aiAssistantChange;
+
+  /// The controller's history is about to change: when that is not the
+  /// assistant's doing (the user draws, undoes, opens a settings dialog
+  /// while it works), its open group closes first, so the user's step stays
+  /// apart and "Undo these changes" never takes it.
+  void _beforeHistoryChange() {
+    if (_edit == null || identical(Zone.current[zoneKey], this)) return;
+    _closeGroup();
+  }
 
   static String _sig(Entity e) {
     final j = e.toJson()..remove('data');
@@ -933,24 +1216,27 @@ class AiAssistant extends ChangeNotifier {
       t('ai.chg.details'): jsonEncode(p.meta.toJson()..remove('modified')),
       t('ai.chg.quote'): jsonEncode(p.proposal.toJson()),
       t('ai.chg.labels'): jsonEncode([for (final r in p.labelRules) r.toJson()]),
+      t('ai.chg.notes'): notes,
     };
   }
 
   I18n get t => c.t;
 
-  /// Called before the first change of a turn.
+  /// Called before each change of a turn: opens a group when none is open.
   void _openTurn() {
     if (_edit != null) return;
     _before = {for (final e in c.project.entities) e.id: (_sig(e), toolbox.kindOf(e))};
     _beforeSettings = _settingsSig();
-    _startIndex = c.historyIndex;
+    if (_groups == 0) _startIndex = c.historyIndex;
     _edit = c.beginSettingsEdit('hist.ai');
   }
 
-  AiTurnChanges? _closeTurn() {
+  /// Closes the open group: its steps become one, and what it changed adds
+  /// up in the turn's summary.
+  void _closeGroup() {
     final edit = _edit;
     _edit = null;
-    if (edit == null) return null;
+    if (edit == null) return;
     final kept = c.results;
     final committed = c.commitSettingsEdit(edit);
     // the results the AI computed after its last change still hold
@@ -958,33 +1244,66 @@ class AiAssistant extends ChangeNotifier {
       c.results = kept;
       c.refresh();
     }
+    _groups++;
+    if (committed) _committed++;
     final before = _before ?? const {};
     final now = {for (final e in c.project.entities) e.id: (_sig(e), toolbox.kindOf(e))};
-    final added = <String, int>{}, changed = <String, int>{}, removed = <String, int>{};
-    void add(Map<String, int> m, String k) => m[k] = (m[k] ?? 0) + 1;
     for (final e in now.entries) {
       final old = before[e.key];
       if (old == null) {
-        add(added, e.value.$2);
+        // added (an item an earlier group took out, back again: changed)
+        _turnChange[e.key] = (_turnChange[e.key]?.$1 == 'removed' ? 'changed' : 'added', e.value.$2);
       } else if (old.$1 != e.value.$1) {
-        add(changed, e.value.$2);
+        if (_turnChange[e.key]?.$1 != 'added') _turnChange[e.key] = ('changed', e.value.$2);
       }
     }
     for (final e in before.entries) {
-      if (!now.containsKey(e.key)) add(removed, e.value.$2);
+      if (now.containsKey(e.key)) continue;
+      // added and taken out again in this turn: nothing to tell
+      if (_turnChange[e.key]?.$1 == 'added') {
+        _turnChange.remove(e.key);
+      } else {
+        _turnChange[e.key] = ('removed', e.value.$2);
+      }
     }
     final s0 = _beforeSettings ?? const {}, s1 = _settingsSig();
-    final settings = [
+    _turnSettings.addAll([
       for (final k in s1.keys)
         if (s0[k] != s1[k]) k,
-    ];
+    ]);
+  }
+
+  AiTurnChanges? _closeTurn() {
+    _closeGroup();
+    if (_groups == 0) return null;
+    final added = <String, int>{}, changed = <String, int>{}, removed = <String, int>{};
+    for (final (how, kind) in _turnChange.values) {
+      final m = switch (how) {
+        'added' => added,
+        'removed' => removed,
+        _ => changed,
+      };
+      m[kind] = (m[kind] ?? 0) + 1;
+    }
     final end = c.historyIndex;
-    return AiTurnChanges(added: added, changed: changed, removed: removed, settings: settings, endIndex: end, steps: committed ? 1 : end - _startIndex);
+    final r = AiTurnChanges(
+      added: added,
+      changed: changed,
+      removed: removed,
+      settings: [..._turnSettings],
+      endIndex: end,
+      steps: _groups == 1 ? (_committed > 0 ? 1 : end - _startIndex) : _committed,
+      interleaved: _groups > 1,
+    );
+    _groups = _committed = 0;
+    _turnChange.clear();
+    _turnSettings.clear();
+    return r;
   }
 
   /// Whether [ch] can still be undone (nothing happened in the project
-  /// since).
-  bool canUndo(AiTurnChanges ch) => !ch.undone && !busy && ch.steps > 0 && c.historyIndex == ch.endIndex;
+  /// since, and the user did not change it while the assistant worked).
+  bool canUndo(AiTurnChanges ch) => !ch.undone && !ch.interleaved && !busy && ch.steps > 0 && c.historyIndex == ch.endIndex;
 
   /// Undoes what the AI changed in that turn.
   void undoTurn(AiTurnChanges ch) {
@@ -1044,6 +1363,7 @@ class AiAssistant extends ChangeNotifier {
     if (_history.isEmpty) {
       _system = null;
       _convModel = null;
+      _convEffort = null;
       _toolbox = null;
       attachContext = true;
       _marksSent = -1;
@@ -1205,10 +1525,6 @@ class AiAssistant extends ChangeNotifier {
     AiProvider.openai => OpenAiClient(apiKey: key, transport: debugTransport ?? platformTransport, sleep: debugSleep),
   };
 
-  /// Tools that may change the project (their first change opens the
-  /// turn's undo group): the dispatchers run changes too.
-  static const _dispatchers = {'run_operation', 'run_command', 'set_setting'};
-
   /// Sends [question] (with the project data and attachments chosen) and
   /// runs the task to its end. While a task runs, a message is queued for
   /// the model's next step instead.
@@ -1255,11 +1571,23 @@ class AiAssistant extends ChangeNotifier {
     if (_history.isEmpty) {
       _system = null;
       _convModel = m;
+      _convEffort = null;
     }
     _convModel ??= m;
     _system ??= aiSystemPrompt(c, instructions: instructions);
+    _stopWarm();
     final client = _client(m.provider, key);
     final message = client.userMessage([for (final a in files) ...a.parts(), AiTextPart(composeText(q.isEmpty ? t('ai.q.attachment') : q, ctx))]);
+    // the effort: the conversation's first stays the request's own (a change
+    // there would rewrite the whole cached conversation); a change goes as an
+    // effort message after the question, where the model takes one
+    final base = _convEffort ??= effort;
+    final current = effortAfter(_history, base);
+    final effortMsg = effort == current ? null : client.effortMessage(m, effort);
+    final requestEffort = effort != current && effortMsg == null ? effort : base;
+    if (effortMsg == null && effort != current) _convEffort = effort;
+    // a step that may think for longer than five minutes would find the cache gone
+    final longCache = m.provider == AiProvider.anthropic && (m.longTurns || effort.index >= AiEffort.xhigh.index);
     _marksSent = c.aiMarks.version;
     _marksSaid = c.aiMarks.isEmpty ? '' : c.aiMarks.describe();
     for (final a in files) {
@@ -1281,23 +1609,33 @@ class AiAssistant extends ChangeNotifier {
     _sending = files;
     _rev++;
     _saveNow(turnStart: true);
-    final box = toolbox..pictures = PictureLimits.of(m);
+    final box = toolbox
+      ..pictures = PictureLimits.of(m)
+      ..removedThisTask = 0;
     void beforeWrite() {
       _openTurn();
       box.changes.beforeWrite();
     }
 
-    final loop = AgentLoop(api: client, tools: [for (final tool in box.tools) tool.effect == ToolEffect.read && !_dispatchers.contains(tool.name) ? tool : _Tracked(tool, beforeWrite)]);
+    final loop = AgentLoop(
+      api: client,
+      // every tool runs as the assistant's (a read may still touch the history: an analysis
+      // records a step); a change opens the turn's undo group first
+      tools: [for (final tool in box.tools) _Tracked(tool, this, beforeWrite, (n) => box.removedThisTask += n)],
+    );
     final usage0 = usage, cost0 = cost;
+    _turnInput = 0;
     final cap = costCap;
     AgentTurn? turn;
     try {
       turn = await loop.run(
         model: m,
-        effort: effort,
+        effort: requestEffort,
         system: _system!,
         history: _history,
         user: message,
+        extra: [?effortMsg],
+        longCache: longCache,
         permission: taskPermission,
         permissionNow: () => taskPermission,
         maxSteps: maxSteps,
@@ -1308,9 +1646,21 @@ class AiAssistant extends ChangeNotifier {
         // sessions). The app's own spending cap and step limit end a task,
         // with Continue.
         taskBudget: null,
-        compactAt: compaction ? (m.provider == AiProvider.anthropic ? 150000 : 200000) : null,
+        // below the price step of a model that has one
+        compactAt: compaction ? m.compactAt : null,
         cancel: cancel,
         events: AgentEvents(
+          // kept as far as it went after each change: should the page close
+          // during the turn, the conversation comes back with what was done
+          onProgress: (messages, {required changed}) {
+            _inTurn = messages;
+            if (changed) _saveNow(midTurn: true);
+          },
+          onModel: (id) {
+            final served = AiModel.served(id, m);
+            answer.servedBy = identical(served, m) ? id : served.label;
+            _soon();
+          },
           onText: (s) {
             answer.text += answer.text.isEmpty ? s.trimLeft() : s;
             _soon();
@@ -1331,6 +1681,9 @@ class AiAssistant extends ChangeNotifier {
             return p.done.future;
           },
           onUsage: (u, x) {
+            // the input of the last request: what the model read of the conversation
+            if (u.totalInput > _turnInput) _lastInput = u.totalInput - _turnInput;
+            _turnInput = u.totalInput;
             answer
               ..usage = u
               ..cost = x;
@@ -1398,6 +1751,7 @@ class AiAssistant extends ChangeNotifier {
         if (it.kind == AiItemKind.assistant) it.running = false;
       }
     }
+    _inTurn = null;
     if (turn != null) {
       // a recovery may have stripped thinking blocks from the earlier
       // history (same length: the checkpoints stay valid)
@@ -1410,7 +1764,16 @@ class AiAssistant extends ChangeNotifier {
       if (turn.messages.isNotEmpty && !ctx.isEmpty) attachContext = false;
       answer.pictures += _picturesIn(turn);
       pictures += answer.pictures;
-      final kept = turn.messages.isNotEmpty;
+      answer.droppedThinking = turn.prefixDrops;
+      if (turn.prefixDrops > 0) debugPrint('AI: the API dropped ${turn.prefixDrops} thinking blocks: the conversation before them had changed (prefix_binding_mismatch).');
+      if (turn.effortDeclined) {
+        // the model (or the account) takes no effort message: the effort is the request's own from now on
+        AiHttpClient.declined.add('${m.id}:effort_message');
+        _convEffort = effort;
+      }
+      // a turn that changed the project goes on from there: sending the
+      // question again would do the work twice
+      final kept = turn.messages.isNotEmpty || (answer.changes != null && !answer.changes!.isEmpty);
       switch (turn.stop) {
         case AgentStop.cancelled:
           answer
@@ -1442,12 +1805,22 @@ class AiAssistant extends ChangeNotifier {
     _tick?.cancel();
     _tick = null;
     _sending = null;
+    // the cache of the conversation kept while the user pauses
+    if (turn != null && turn.messages.isNotEmpty) {
+      // (the effort of the requests from now on: an effort message turned down made it the request's own)
+      _scheduleWarm(
+        client,
+        AiRequest(model: m, system: _system!, history: const [], tools: loop.specs, effort: _convEffort ?? requestEffort, compactAt: compaction ? m.compactAt : null, longCache: longCache),
+      );
+    }
     // the project was replaced during the turn (a new one, by the AI or the
     // user): the conversation went on in it and moves with it
     if (c.project.meta.uid != _uid) {
-      if (_claimed) conversations.delete(_uid);
+      if (_claimed && _pageMine == true) conversations.delete(_uid);
+      _releasePage(_uid);
       _uid = c.project.meta.uid;
       _claimed = !_shared;
+      _claimPage();
     }
     notifyListeners();
     // what the user wrote after the last step is the next message
@@ -1581,10 +1954,15 @@ class AiAssistant extends ChangeNotifier {
   /// Not when a project kept in this browser has that uid.
   static void resumePristine(ProjectController c) {
     final uid = getPref(pristinePref);
-    if (uid == null || uid.isEmpty || uid == c.project.meta.uid || !keepConversations || !_pristine(c)) return;
-    if (c.store.has(uid)) return;
-    c.project.meta.uid = uid;
-    c.refresh();
+    bool fits() => uid != null && uid.isNotEmpty && uid != c.project.meta.uid && keepConversations && _pristine(c) && !c.store.has(uid);
+    if (!fits()) return;
+    // not when another tab of this browser has that conversation open (the
+    // two would save over each other)
+    conversations.claimed(uid!).then((held) {
+      if (held || !fits()) return;
+      c.project.meta.uid = uid;
+      c.refresh();
+    }, onError: (Object _) {});
   }
 
   static set keepConversations(bool on) {
@@ -1626,6 +2004,47 @@ class AiAssistant extends ChangeNotifier {
   /// open tab's assistant keeps it (the project is open twice).
   bool _claimed = false;
   bool get _shared => _inTabs.any((a) => !identical(a, this) && a._claimed && a._uid == _uid);
+
+  /// This page holds the conversation of [_uid] against the other tabs of
+  /// the browser ([ConversationStore.claim]): true, false (another tab has
+  /// it: nothing is kept from here, and the panel says so), or null while
+  /// the claim is on its way.
+  bool? _pageMine;
+  Future<bool>? _claiming;
+  final List<void Function()> _afterClaim = [];
+
+  /// The project's conversation is open in another tab of this browser: this
+  /// tab's is not kept (leaving the page asks first).
+  bool get otherTab => _pageMine == false;
+
+  void _claimPage() {
+    final uid = _uid;
+    _pageMine = null;
+    final f = _claiming = conversations.claim(uid);
+    f.then((mine) {
+      if (!identical(_claiming, f) || uid != _uid || _disposed) {
+        // claimed for a project this assistant has left
+        if (mine && !_live.any((a) => a._uid == uid)) conversations.release(uid);
+        return;
+      }
+      _pageMine = mine;
+      final then = [..._afterClaim];
+      _afterClaim.clear();
+      for (final g in then) {
+        g();
+      }
+      if (!mine) {
+        notifyListeners();
+        _mark();
+      }
+    }, onError: (Object _) {});
+  }
+
+  /// Gives up this page's claim on [uid] when no assistant of the page keeps
+  /// that conversation any more.
+  void _releasePage(String uid) {
+    if (_pageMine == true && !_live.any((a) => !identical(a, this) && a._uid == uid)) conversations.release(uid);
+  }
 
   /// Changes to the conversation (each bumps [_rev]) and the last one kept.
   /// A save still on its way for an earlier conversation of the tab ([_gen]:
@@ -1671,8 +2090,10 @@ class AiAssistant extends ChangeNotifier {
       if (_rev != _savedRev) _saveNow();
       _reset();
     }
+    _releasePage(_uid);
     _uid = uid;
     _claimed = !_shared;
+    _claimPage();
     _load();
     if (swap) {
       notifyListeners();
@@ -1686,12 +2107,18 @@ class AiAssistant extends ChangeNotifier {
     final token = ++_loading;
     if (!keepConversations || !_claimed) return;
     final uid = _uid;
-    conversations.load(uid).then((s) {
-      if (s == null || token != _loading || uid != _uid || _disposed || busy || items.isNotEmpty || _history.isNotEmpty) return;
-      if (!_restore(s)) return;
-      notifyListeners();
-      _mark();
-    }, onError: (Object _) {});
+    void go() {
+      // another tab of this browser has the conversation: it is not brought here
+      if (token != _loading || uid != _uid || _disposed || _pageMine != true) return;
+      conversations.load(uid).then((s) {
+        if (s == null || token != _loading || uid != _uid || _disposed || busy || items.isNotEmpty || _history.isNotEmpty) return;
+        if (!_restore(s)) return;
+        notifyListeners();
+        _mark();
+      }, onError: (Object _) {});
+    }
+
+    _pageMine == null ? _afterClaim.add(go) : go();
   }
 
   /// Keeps the conversation once the changes in hand are made (one save for
@@ -1721,12 +2148,19 @@ class AiAssistant extends ChangeNotifier {
 
   /// Writes the conversation to [conversations]: encoded now, written in
   /// the background. [turnStart]: the copy taken as a turn starts, with the
-  /// question in it, before the request goes (never while it streams).
-  void _saveNow({bool turnStart = false}) {
-    if (!keepConversations || (busy && !turnStart) || _disposed) return;
+  /// question in it, before the request goes (never while it streams);
+  /// [midTurn]: the copy taken after each change of a turn, with the turn as
+  /// far as it went (every tool call answered).
+  void _saveNow({bool turnStart = false, bool midTurn = false}) {
+    if (!keepConversations || (busy && !turnStart && !midTurn) || _disposed) return;
     if (!_claimed) {
       _claimed = !_shared;
       if (!_claimed) return;
+    }
+    // another tab of this browser keeps this conversation: nothing is kept from here
+    if (_pageMine != true) {
+      if (_pageMine == null) _afterClaim.add(() => _saveNow(turnStart: turnStart, midTurn: midTurn));
+      return;
     }
     final uid = _uid, rev = _rev, gen = _gen;
     void done(bool ok) {
@@ -1768,7 +2202,10 @@ class AiAssistant extends ChangeNotifier {
       return s;
     }
 
-    var history = [for (final m in _history) _jsonOf[m] ??= clean(jsonEncode(m))];
+    final turn = busy ? _inTurn ?? const <Map<String, dynamic>>[] : const <Map<String, dynamic>>[];
+    var history = [
+      for (final m in [..._history, ...turn]) _jsonOf[m] ??= clean(jsonEncode(m)),
+    ];
     // the files attached, the latest first, up to keptFileBytes in all
     final kept = <String>{};
     var bytes = 0;
@@ -1837,6 +2274,9 @@ class AiAssistant extends ChangeNotifier {
       'pictures': pictures,
       'context': attachContext,
       'marks': _marksSaid,
+      if (_convEffort != null) 'effort': _convEffort!.name,
+      // the history holds the running turn as far as it went: it goes on from there
+      if (busy && (_inTurn?.isNotEmpty ?? false)) 'inTurn': true,
       if (dropped > 0) 'dropped': dropped,
       if (filesLeft.isNotEmpty) 'filesLeft': [...filesLeft],
       if (busy && sending != null)
@@ -1876,7 +2316,9 @@ class AiAssistant extends ChangeNotifier {
       if (it.cost != 0) 'cost': it.cost,
       if (it.pictures != 0) 'pics': it.pictures,
       if (it.model.isNotEmpty) 'model': it.model,
-      if (ch != null) 'chg': {'add': ch.added, 'chg': ch.changed, 'rem': ch.removed, 'set': ch.settings, if (ch.undone) 'undone': true},
+      'served': ?it.servedBy,
+      if (it.droppedThinking > 0) 'drops': it.droppedThinking,
+      if (ch != null) 'chg': {'add': ch.added, 'chg': ch.changed, 'rem': ch.removed, 'set': ch.settings, if (ch.undone) 'undone': true, if (ch.interleaved) 'mixed': true},
     };
   }
 
@@ -1910,7 +2352,9 @@ class AiAssistant extends ChangeNotifier {
       ..usage = _usageOf(j['usage'])
       ..cost = (j['cost'] as num?)?.toDouble() ?? 0
       ..pictures = (j['pics'] as num?)?.toInt() ?? 0
-      ..model = '${j['model'] ?? ''}';
+      ..model = '${j['model'] ?? ''}'
+      ..servedBy = j['served'] as String?
+      ..droppedThinking = (j['drops'] as num?)?.toInt() ?? 0;
     // the undo steps it made were of the page that made them (or of the
     // project before it was opened again): shown, no longer undoable
     if (ch is Map) {
@@ -1921,16 +2365,17 @@ class AiAssistant extends ChangeNotifier {
         settings: [for (final s in (ch['set'] as List?) ?? const []) '$s'],
         endIndex: -1,
         steps: 0,
+        interleaved: ch['mixed'] == true,
       )..undone = ch['undone'] == true;
     }
     return it;
   }
 
-  static Map<String, int> _usageJson(AiUsage u) => {'i': u.input, 'o': u.output, 'w': u.cacheWrite, 'r': u.cacheRead};
+  static Map<String, int> _usageJson(AiUsage u) => {'i': u.input, 'o': u.output, 'w': u.cacheWrite, 'r': u.cacheRead, if (u.cacheWriteHour > 0) 'wh': u.cacheWriteHour};
 
   static AiUsage _usageOf(Object? j) {
     int n(String k) => j is Map && j[k] is num ? (j[k] as num).toInt() : 0;
-    return AiUsage(input: n('i'), output: n('o'), cacheWrite: n('w'), cacheRead: n('r'));
+    return AiUsage(input: n('i'), output: n('o'), cacheWrite: n('w'), cacheRead: n('r'), cacheWriteHour: n('wh'));
   }
 
   static Map<String, int> _counts(Object? j) => {
@@ -1969,6 +2414,8 @@ class AiAssistant extends ChangeNotifier {
         pictures: (meta['pictures'] as num?)?.toInt() ?? 0,
         context: meta['context'] != false,
         marks: meta['marks'] as String?,
+        effort: AiEffort.values.where((e) => e.name == meta['effort']).firstOrNull,
+        inTurn: meta['inTurn'] == true,
         dropped: (meta['dropped'] as num?)?.toInt() ?? 0,
         filesLeft: [for (final n in (meta['filesLeft'] as List?) ?? const []) '$n'],
         files: files,
@@ -2001,6 +2448,7 @@ class AiAssistant extends ChangeNotifier {
       ..addAll(k.history);
     _system = k.system;
     _convModel = k.model;
+    _convEffort = k.effort;
     _toolbox = null;
     todos = List.unmodifiable(k.todos);
     usage = k.usage;
@@ -2027,11 +2475,13 @@ class AiAssistant extends ChangeNotifier {
       if (!it.running) continue;
       it.running = false;
       if (it.kind != AiItemKind.assistant) continue;
-      // nothing of that turn reached the history kept: the question goes again
+      // the turn as far as it went is in the history kept (it goes on from
+      // there: what it changed is in the project's recovery); or nothing of
+      // it is, and the question goes again
       interrupted = true;
       it.stopped = true;
       final q = items.take(i).lastWhere((x) => x.kind == AiItemKind.user && !x.steered, orElse: () => AiItem.user('')).text;
-      it.retry ??= AiRetry(q, kept: false);
+      it.retry ??= AiRetry(q, kept: k.inTurn);
       if (k.pending.isNotEmpty) _retryFiles[it] = k.pending;
     }
     items.add(
@@ -2040,7 +2490,7 @@ class AiAssistant extends ChangeNotifier {
           t('ai.restored', {'d': _when(s.saved)}),
           if (_dropped > 0) t('ai.restored.reduced'),
           if (_filesLeft.isNotEmpty) t('ai.restored.files', {'f': _filesLeft.join(', ')}),
-          if (interrupted) t('ai.restored.interrupted'),
+          if (interrupted) t(k.inTurn ? 'ai.restored.interruptedKept' : 'ai.restored.interrupted'),
         ].join(' '),
       )..transient = true,
     );
@@ -2155,17 +2605,23 @@ class AiAssistant extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     stop();
+    _stopWarm();
     _tick?.cancel();
     c.removeListener(_onProject);
+    c.beforeHistoryChange.remove(_beforeHistoryChange);
     _live.remove(this);
+    _releasePage(_uid);
     super.dispose();
   }
 }
 
 /// What the tools reach of the assistant and of the app around it.
-class _Host implements AgentHost, AiWorkspaceHost {
+class _Host implements AgentHost, AiWorkspaceHost, AiNotesOrigin {
   _Host(this.ai);
   final AiAssistant ai;
+
+  @override
+  bool get notesTrusted => ai.notesTrusted;
   ProjectController get c => ai.c;
   Workspace? get ws => AiAssistant.workspace;
 
@@ -2203,7 +2659,7 @@ class _Host implements AgentHost, AiWorkspaceHost {
   String get notes => ai.notes;
 
   @override
-  void setNotes(String text) => ai.notes = text;
+  void setNotes(String text) => ai.writeNotesByAi(text);
 
   @override
   String get instructions => ai.instructions;

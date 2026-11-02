@@ -30,18 +30,27 @@ List<Map<String, dynamic>> sinceCompactionItem(List<Map<String, dynamic>> items)
 /// What replaces a picture taken out of an earlier tool result.
 const prunedPicture = '[An earlier picture was removed to keep the conversation small; take a new one if you need it.]';
 
-/// [items] with the pictures of tool results beyond the newest [keep]
-/// replaced by a short text, once there are more than [above] (in steps,
-/// so the cached prefix changes rarely). The pictures the user attached
-/// stay. The stored history is not touched: only the request is lighter.
+/// How many of [n] pictures of tool results [pruneToolPictures] replaces:
+/// none up to [above]; past it, all but the newest [keep], and that number
+/// holds while the pictures shown climb back to [above] — so the cached
+/// prefix changes once every `above − keep + 1` new pictures, not with
+/// each one.
+int prunedPictures(int n, {int keep = 3, int above = 6}) {
+  if (n <= above) return 0;
+  return n - keep - (n - above - 1) % (above - keep + 1);
+}
+
+/// [items] with the oldest pictures of tool results replaced by a short
+/// text, in steps ([prunedPictures]). The pictures the user attached stay.
+/// The stored history is not touched: only the request is lighter.
 List<Map<String, dynamic>> pruneToolPictures(List<Map<String, dynamic>> items, {int keep = 3, int above = 6}) {
   var n = 0;
   for (final it in items) {
     final out = it['output'];
     if (it['type'] == 'function_call_output' && out is List) n += out.where((p) => p is Map && p['type'] == 'input_image').length;
   }
-  if (n <= above) return items;
-  var drop = n - keep;
+  var drop = prunedPictures(n, keep: keep, above: above);
+  if (drop == 0) return items;
   return [
     for (final it in items)
       if (drop > 0 && it['type'] == 'function_call_output' && it['output'] is List && (it['output'] as List).any((p) => p is Map && p['type'] == 'input_image'))

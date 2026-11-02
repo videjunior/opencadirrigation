@@ -408,6 +408,8 @@ List<AgentTool> networkOperations(AgentToolbox b) {
         'ground_every_m': num_('A ground every this many metres; default 150.'),
       }),
       summary: (i) => t(i['apply'] == true ? 'ai.op.wire_routing_study.apply' : 'ai.op.wire_routing_study'),
+      // drawing them replaces the wires drawn: confirmed whatever the mode
+      confirm: (i) => i['apply'] == true && (i['replace'] ?? true) == true && b.p.entities.any((e) => e is WireEntity),
       run: (a, _) async {
         final p = b.p;
         if (!p.entities.any((e) => e is ControllerEntity)) throw ToolInputError('The drawing has no controller: add one (create_entities type "controller") near the valves first.');
