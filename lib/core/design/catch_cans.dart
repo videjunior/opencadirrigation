@@ -125,7 +125,15 @@ class FieldStats {
 
 /// A field evaluation set against the design.
 class FieldEvaluation {
-  const FieldEvaluation({required this.test, required this.measured, required this.measuredStats, required this.predicted, required this.predictedStats, required this.meanRateMmH, required this.designMean});
+  const FieldEvaluation({
+    required this.test,
+    required this.measured,
+    required this.measuredStats,
+    required this.predicted,
+    required this.predictedStats,
+    required this.meanRateMmH,
+    required this.designMean,
+  });
   final FieldTest test;
 
   /// The values read as depths (mm, cans) or flows (L/h, emitters), slot by

@@ -196,7 +196,8 @@ StationFile parseInmetCsv(String text, {double windHeightM = 10, double? latitud
   for (var i = 0; i < lines.length && i < 60; i++) {
     final l = lines[i].replaceFirst('﻿', '');
     final cells = l.split(';');
-    if (cells.length >= 3 && _colOf(cells.first) == _Col.date) {
+    // the titles (`DATA DE FUNDACAO:;…` is station data)
+    if (cells.length >= 3 && !cells.first.contains(':') && _colOf(cells.first) == _Col.date) {
       header = i;
       break;
     }

@@ -290,7 +290,16 @@ List<ReportTable> programmeTablesOf(IrrigationProgramme prog, ReportLabels label
         title: t('reports.programmeRuns'),
         headers: [t('sch.date'), t('sch.flow'), t('sch.zones'), t('prog.cycle'), t('sch.start'), t('sch.end'), t('sch.duration')],
         rows: [
-          for (final r in prog.runs) [r.day.toIso8601String().substring(0, 10), r.flowName, r.zones.join(' + '), '${r.cycle}/${r.cycles}', hhmm(r.startHour), hhmm(r.endHour), RNum(r.durationHours, 2)],
+          for (final r in prog.runs)
+            [
+              r.day.toIso8601String().substring(0, 10),
+              r.flowName,
+              r.zones.join(' + '),
+              '${r.cycle}/${r.cycles}',
+              hhmm(r.startHour),
+              hhmm(r.endHour),
+              RNum(r.durationHours, 2),
+            ],
         ],
       ),
     );
@@ -384,7 +393,21 @@ ReportTable? fieldTestTable(Project p, DesignResults? results, ReportLabels labe
   return ReportTable(
     key: 'fieldTests',
     title: t('reports.fieldTests'),
-    headers: [t('ft.name'), t('ft.kind'), t('sch.zones'), t('ft.date'), t('ft.count'), t('ft.mean'), t('ft.unit'), 'CU %', 'DU %', 'US %', '${t('ft.design')} CU %', '${t('ft.design')} DU %', '${t('ft.meanRatio')} (%)'],
+    headers: [
+      t('ft.name'),
+      t('ft.kind'),
+      t('sch.zones'),
+      t('ft.date'),
+      t('ft.count'),
+      t('ft.mean'),
+      t('ft.unit'),
+      'CU %',
+      'DU %',
+      'US %',
+      '${t('ft.design')} CU %',
+      '${t('ft.design')} DU %',
+      '${t('ft.meanRatio')} (%)',
+    ],
     rows: rows,
   );
 }

@@ -201,7 +201,8 @@ Future<void> showUserCropsDialog(BuildContext context, ProjectController c) {
                 FocusManager.instance.primaryFocus?.unfocus();
                 Future<void>.delayed(Duration.zero, () {
                   final ids = {for (final x in crops) x.id};
-                  final areasChanged = assign.isNotEmpty || p.entities.whereType<AreaEntity>().any((a) => a.cropKey.startsWith(userCropPrefix) && !ids.contains(a.cropKey.substring(userCropPrefix.length)));
+                  bool deleted(AreaEntity a) => a.cropKey.startsWith(userCropPrefix) && !ids.contains(a.cropKey.substring(userCropPrefix.length));
+                  final areasChanged = assign.isNotEmpty || p.entities.whereType<AreaEntity>().any(deleted);
                   c.mutate(
                     () {
                       p.agronomy.userCrops
@@ -218,7 +219,7 @@ Future<void> showUserCropsDialog(BuildContext context, ProjectController c) {
                             ..rootDepthM = x.rootDepthM
                             ..mad = x.depletionFraction
                             ..kc = x.kcMid;
-                        } else if (a.cropKey.startsWith(userCropPrefix) && !ids.contains(a.cropKey.substring(userCropPrefix.length))) {
+                        } else if (deleted(a)) {
                           // a crop deleted: the area keeps its typed Kc
                           a.cropKey = '';
                         }
@@ -309,7 +310,16 @@ Future<void> showFertigationStagesDialog(BuildContext context, ProjectController
           ),
           if (plan.sharePct != null)
             for (var s = 0; s < 4; s++)
-              _grid(ctx, [for (var k = 0; k < 3; k++) num('share${s}_$k', '${t('fst.stage.${fertStageNames[s]}')} · ${nutrients[k]} (%)', plan.sharePct![s][k], (v) => plan.sharePct![s][k] = v.clamp(0, 100).toDouble(), decimals: 0)]),
+              _grid(ctx, [
+                for (var k = 0; k < 3; k++)
+                  num(
+                    'share${s}_$k',
+                    '${t('fst.stage.${fertStageNames[s]}')} · ${nutrients[k]} (%)',
+                    plan.sharePct![s][k],
+                    (v) => plan.sharePct![s][k] = v.clamp(0, 100).toDouble(),
+                    decimals: 0,
+                  ),
+              ]),
           const SizedBox(height: 4),
           Text(t('fst.products'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
           for (var k = 0; k < 3; k++)
@@ -334,7 +344,11 @@ Future<void> showFertigationStagesDialog(BuildContext context, ProjectController
             Text(t('swb.none'), style: TextStyle(color: Cad.caution, fontSize: 12))
           else ...[
             KV(t('fst.totals'), [for (var k = 0; k < 3; k++) '${_prodName(c, plan.products[k])} ${fmtUi(f.productTotalsKg[k], 1)} kg'].join(' · ')),
-            KV('ECw', '${fmtUi(f.ecwDsM, 2)} → ${fmtUi(f.peakEcwDsM, 2)} dS/m${f.ecwLimitDsM == null ? '' : ' (${t('fst.ecLimit')} ${fmtUi(f.ecwLimitDsM!, 2)})'}', color: f.warnings.any((w) => w.startsWith('fert_ec_high')) ? Cad.caution : null),
+            KV(
+              'ECw',
+              '${fmtUi(f.ecwDsM, 2)} → ${fmtUi(f.peakEcwDsM, 2)} dS/m${f.ecwLimitDsM == null ? '' : ' (${t('fst.ecLimit')} ${fmtUi(f.ecwLimitDsM!, 2)})'}',
+              color: f.warnings.any((w) => w.startsWith('fert_ec_high')) ? Cad.caution : null,
+            ),
             for (final w in f.warnings) Text(c.t.warning(w), style: TextStyle(fontSize: 11, color: Cad.caution)),
             _table(
               ReportTable(
@@ -561,7 +575,17 @@ Future<void> showFieldUniformityDialog(BuildContext context, ProjectController c
                         ? null
                         : () => setState(() {
                             final a = p.byId(ft.areaId) as AreaEntity;
-                            final g = canGridOver(a.points, id: ft.id, dx: ft.spacingXM, dy: ft.spacingYM, angleDeg: ft.angleDeg, mouthMm: ft.canMouthMm, hours: ft.durationH, zoneId: ft.zoneId, areaId: a.id);
+                            final g = canGridOver(
+                              a.points,
+                              id: ft.id,
+                              dx: ft.spacingXM,
+                              dy: ft.spacingYM,
+                              angleDeg: ft.angleDeg,
+                              mouthMm: ft.canMouthMm,
+                              hours: ft.durationH,
+                              zoneId: ft.zoneId,
+                              areaId: a.id,
+                            );
                             ft
                               ..origin = g.origin
                               ..cols = g.cols

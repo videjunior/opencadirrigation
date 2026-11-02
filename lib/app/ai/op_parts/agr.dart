@@ -124,7 +124,11 @@ List<AgentTool> opsAgr(AgentToolbox b) {
         for (final m in machines) {
           var soil = runoffSoilAt(b.p, m.center);
           if (a.has('family') || a.has('storage_mm')) {
-            soil = RunoffSoil(family: a.number('family', min: 0.05, max: 4) ?? soil?.family ?? 0.5, surfaceStorageMm: a.number('storage_mm', min: 0, max: 50) ?? soil?.surfaceStorageMm ?? 5, areaId: soil?.areaId);
+            soil = RunoffSoil(
+              family: a.number('family', min: 0.05, max: 4) ?? soil?.family ?? 0.5,
+              surfaceStorageMm: a.number('storage_mm', min: 0, max: 50) ?? soil?.surfaceStorageMm ?? 5,
+              areaId: soil?.areaId,
+            );
           }
           final r = soil == null ? null : machineRunoff(b.p, m, soil: soil, results: c.results, laterIrrigations: !(a.flag('initial_irrigation') ?? false));
           if (r == null) {
@@ -143,7 +147,19 @@ List<AgentTool> opsAgr(AgentToolbox b) {
           out.add('Sprinkler areas:');
           out.add(
             engTable(['area', 'rate mm/h', 'intake mm/h', 'storage mm', 'depth mm', 'run h', 'runoff mm', 'max run min', 'cycles', 'soak min'], [
-              for (final z in zones) [z.name, z.rateMmH, z.intakeMmH, z.surfaceStorageMm, z.depthMm, z.runHours, z.runoffMm, z.maxRunMinutes.isFinite ? engN(z.maxRunMinutes, 0) : '∞', z.cycles, z.soakMinutes],
+              for (final z in zones)
+                [
+                  z.name,
+                  z.rateMmH,
+                  z.intakeMmH,
+                  z.surfaceStorageMm,
+                  z.depthMm,
+                  z.runHours,
+                  z.runoffMm,
+                  z.maxRunMinutes.isFinite ? engN(z.maxRunMinutes, 0) : '∞',
+                  z.cycles,
+                  z.soakMinutes,
+                ],
             ]),
           );
         }
@@ -228,7 +244,17 @@ List<AgentTool> opsAgr(AgentToolbox b) {
           'Seasonal adjustment (%): ${[for (var m = 0; m < 12; m++) '${engMonths[m]} ${engN(prog.seasonalPct[m], 0)}'].join(', ')}.',
           if (prog.stations.isNotEmpty)
             engTable(['controller', 'station', 'zone', 'areas', 'm³/h', 'mm/h', 'every d', ...engMonths.map((m) => '$m min')], [
-              for (final st in prog.stations) [st.controller.isEmpty ? '-' : st.controller, st.station, st.name, st.areas.join(' + '), st.flowM3h, st.rateMmH, st.intervalDays, for (final x in st.minutesByMonth) engN(x, 0)],
+              for (final st in prog.stations)
+                [
+                  st.controller.isEmpty ? '-' : st.controller,
+                  st.station,
+                  st.name,
+                  st.areas.join(' + '),
+                  st.flowM3h,
+                  st.rateMmH,
+                  st.intervalDays,
+                  for (final x in st.minutesByMonth) engN(x, 0),
+                ],
             ], max: limit),
           engTable(['date', 'flow', 'cycle', 'start', 'end', 'hours'], [
             for (final r in prog.runs) [d10(r.day), r.flowName, '${r.cycle}/${r.cycles}', clockText(r.startHour), clockText(r.endHour), r.durationHours],

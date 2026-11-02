@@ -386,7 +386,17 @@ String programmeRunsCsv(IrrigationProgramme prog, {required String Function(Stri
   final b = StringBuffer('﻿');
   b.writeln([t('sch.date'), t('sch.flow'), t('sch.zones'), t('prog.cycle'), t('sch.start'), t('sch.end'), t('sch.duration')].join(';'));
   for (final r in prog.runs) {
-    b.writeln([r.day.toIso8601String().substring(0, 10), r.flowName, r.zones.join(' + '), '${r.cycle}/${r.cycles}', clockText(r.startHour, t: t), clockText(r.endHour, t: t), r.durationHours.toStringAsFixed(2)].join(';'));
+    b.writeln(
+      [
+        r.day.toIso8601String().substring(0, 10),
+        r.flowName,
+        r.zones.join(' + '),
+        '${r.cycle}/${r.cycles}',
+        clockText(r.startHour, t: t),
+        clockText(r.endHour, t: t),
+        r.durationHours.toStringAsFixed(2),
+      ].join(';'),
+    );
   }
   return b.toString();
 }
@@ -396,7 +406,19 @@ String programmeRunsCsv(IrrigationProgramme prog, {required String Function(Stri
 /// adjustment (%) in the last line.
 String programmeStationsCsv(IrrigationProgramme prog, {required String Function(String key) t}) {
   final b = StringBuffer('﻿');
-  b.writeln([t('prog.controller'), t('prog.station'), t('sch.zones'), t('rep.area'), '${t('rep.flow')} (m³/h)', '${t('rep.rate')} (mm/h)', t('rep.interval'), t('prog.cycleSoak'), for (var m = 1; m <= 12; m++) t('mon.$m')].join(';'));
+  b.writeln(
+    [
+      t('prog.controller'),
+      t('prog.station'),
+      t('sch.zones'),
+      t('rep.area'),
+      '${t('rep.flow')} (m³/h)',
+      '${t('rep.rate')} (mm/h)',
+      t('rep.interval'),
+      t('prog.cycleSoak'),
+      for (var m = 1; m <= 12; m++) t('mon.$m'),
+    ].join(';'),
+  );
   String n(double v, [int d = 1]) => v.toStringAsFixed(d);
   for (final s in prog.stations) {
     final c = s.cycles;

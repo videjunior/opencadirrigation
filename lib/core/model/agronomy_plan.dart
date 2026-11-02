@@ -625,7 +625,13 @@ class AgronomyPlan {
     return userCrops.where((u) => u.id == id).firstOrNull;
   }
 
-  bool get isDefault => userCrops.isEmpty && programme.isDefault && balance.values.every((b) => b.isDefault) && fertigation.values.every((f) => f.isEmpty) && fieldTests.isEmpty && (extra?.isEmpty ?? true);
+  bool get isDefault =>
+      userCrops.isEmpty &&
+      programme.isDefault &&
+      balance.values.every((b) => b.isDefault) &&
+      fertigation.values.every((f) => f.isEmpty) &&
+      fieldTests.isEmpty &&
+      (extra?.isEmpty ?? true);
 
   Map<String, dynamic> toJson() => {
     ...?extra,

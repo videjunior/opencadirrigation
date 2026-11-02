@@ -164,7 +164,17 @@ Future<void> showWaterBalanceDialog(BuildContext context, ProjectController c) {
               height: 190,
               child: CustomPaint(
                 key: const Key('swb_chart'),
-                painter: BalanceChartPainter(r, line: Cad.accent, raw: Cad.caution, taw: Cad.error, rain: Cad.info, irrigation: Cad.ok, grid: Cad.chartGrid, text: Cad.fg60, labels: (t('swb.depletion'), 'RAW', 'TAW')),
+                painter: BalanceChartPainter(
+                  r,
+                  line: Cad.accent,
+                  raw: Cad.caution,
+                  taw: Cad.error,
+                  rain: Cad.info,
+                  irrigation: Cad.ok,
+                  grid: Cad.chartGrid,
+                  text: Cad.fg60,
+                  labels: (t('swb.depletion'), 'RAW', 'TAW'),
+                ),
                 child: const SizedBox.expand(),
               ),
             ),
@@ -347,7 +357,11 @@ Future<void> showRunoffPotentialDialog(BuildContext context, ProjectController c
             ]),
             if (auto == null && soil == null) Text(t('ro.noSoil'), style: TextStyle(fontSize: 11.5, color: Cad.caution)),
             if (r != null) ...[
-              KV(t('ro.worst'), '${fmtUi(r.worst.runoffMm, 1)} mm (${fmtUi(r.worst.runoffPct, 0)} %) · ${t('ro.maxDepth')} ${fmtUi(r.worst.maxDepthMm, 1)} mm', color: r.worst.runoffMm > 0.5 ? Cad.caution : Cad.ok),
+              KV(
+                t('ro.worst'),
+                '${fmtUi(r.worst.runoffMm, 1)} mm (${fmtUi(r.worst.runoffPct, 0)} %) · ${t('ro.maxDepth')} ${fmtUi(r.worst.maxDepthMm, 1)} mm',
+                color: r.worst.runoffMm > 0.5 ? Cad.caution : Cad.ok,
+              ),
               _table(
                 ReportTable(
                   key: 'runoff_${m.name.isEmpty ? m.id : m.name}',
@@ -482,7 +496,13 @@ Future<void> showIrrigationProgrammeDialog(BuildContext context, ProjectControll
                 for (var m = 0; m < 12; m++)
                   SizedBox(
                     width: 74,
-                    child: NumField(key: ValueKey('prog_pct_${m}_$gen'), label: t('mon.${m + 1}'), value: s.seasonalPct![m], decimals: 0, onChanged: (v) => setState(() => s.seasonalPct![m] = v.clamp(0, 300).toDouble())),
+                    child: NumField(
+                      key: ValueKey('prog_pct_${m}_$gen'),
+                      label: t('mon.${m + 1}'),
+                      value: s.seasonalPct![m],
+                      decimals: 0,
+                      onChanged: (v) => setState(() => s.seasonalPct![m] = v.clamp(0, 300).toDouble()),
+                    ),
                   ),
               ],
             )
