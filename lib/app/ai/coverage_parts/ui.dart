@@ -20,4 +20,11 @@ const coverageUi = <String, String>{
   'panel:properties.pipe.length': 'op:edit_vertices',
   // ---- UI-07 layout: the side panel of narrow windows folds into a drawer
   'view:sideDrawer': 'n/a:the user folds the side panel of a narrow window away to see more of the drawing; the panels\' contents have their own routes',
+  // ---- UI-17 report tables: sort, filter, copy, CSV, locate the row's item
+  'panel:reports.sort': 'tool:get_report_table',
+  'panel:reports.filter': 'tool:get_report_table',
+  'panel:reports.highlighted': 'tool:get_report_table',
+  'panel:reports.copy': 'tool:get_report_table',
+  'panel:reports.csv': 'tool:get_report_table',
+  'panel:reports.locate': 'tool:zoom_to',
 };

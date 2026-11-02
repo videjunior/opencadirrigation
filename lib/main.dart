@@ -181,7 +181,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     ws.addListener(_onWorkspace);
     _syncSubscriptions();
     tutorial.addListener(_onTutorial);
-    // a finger or a mouse: the touch layout and the ⌨ button follow it
+    // a finger or a mouse: the touch layout and the ⌨ button follow it (a new
+    // shell starts from what the platform suggests)
+    lastPointerKind.value = null;
     startPointerKindTracking();
     lastPointerKind.addListener(_onPointerKind);
     // unsaved projects, and conversations with the assistant that are not kept

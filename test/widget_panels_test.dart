@@ -11,6 +11,7 @@ import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/app/actions.dart';
 import 'package:opencadirrigation/app/widgets/hgl_chart.dart';
 import 'package:opencadirrigation/app/widgets/history_panel.dart';
+import 'package:opencadirrigation/app/widgets/layers_panel.dart';
 import 'package:opencadirrigation/app/widgets/reports_panel.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
@@ -316,7 +317,13 @@ void main() {
     await tester.tap(find.text('OK').last);
     await settle(tester, 2);
     expect(c.project.findLayer('MINHA'), isNotNull);
-    // rename with a double tap on the name
+    // rename with a double tap on the name (the new layer is at the end of the list)
+    await tester.scrollUntilVisible(
+      find.text('MINHA'),
+      200,
+      scrollable: find.descendant(of: find.byType(LayersPanel), matching: find.byType(Scrollable)).first,
+    );
+    await settle(tester, 1);
     await tester.tap(find.text('MINHA'));
     await tester.pump(const Duration(milliseconds: 60));
     await tester.tap(find.text('MINHA'));

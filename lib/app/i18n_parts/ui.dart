@@ -115,4 +115,19 @@ const _ui = <String, (String, String, String)>{
   ),
   'ui.velocityChange': ('Variação de velocidade', 'Velocity change', 'Variación de velocidad'),
   'ui.removeFlow': ('Remover este turno', 'Remove this shift', 'Quitar este turno'),
+  // ---- UI-17 report tables: sort, filter, copy, CSV, locate
+  'rt.filter': ('Filtrar linhas…', 'Filter rows…', 'Filtrar filas…'),
+  'rt.highlighted': ('Só destacadas', 'Highlighted only', 'Solo destacadas'),
+  'rt.count': ('{n} de {m}', '{n} of {m}', '{n} de {m}'),
+  'rt.copy': ('Copiar as linhas visíveis (cole na planilha)', 'Copy the visible rows (paste into a spreadsheet)', 'Copiar las filas visibles (pegue en la hoja de cálculo)'),
+  'rt.copied': ('{n} linhas copiadas', '{n} rows copied', '{n} filas copiadas'),
+  'rt.csv': ('Salvar esta tabela em CSV', 'Save this table as CSV', 'Guardar esta tabla en CSV'),
+  'rt.sortBy': ('Ordenar por {c}', 'Sort by {c}', 'Ordenar por {c}'),
+  'rt.locate': ('Clique para localizar no desenho', 'Click to find it in the drawing', 'Haga clic para ubicarlo en el dibujo'),
+  'ui.reportsClose': ('Fechar os relatórios', 'Close the reports', 'Cerrar los informes'),
+  // ---- UI-23 the layer buttons say what they do
+  'layer.toggleVis': ('Mostrar ou ocultar a camada {l}', 'Show or hide the layer {l}', 'Mostrar u ocultar la capa {l}'),
+  'layer.toggleLock': ('Travar ou destravar a camada {l}', 'Lock or unlock the layer {l}', 'Bloquear o desbloquear la capa {l}'),
+  'layer.colorOf': ('Cor da camada {l}', 'Colour of the layer {l}', 'Color de la capa {l}'),
+  'layer.remove': ('Excluir a camada {l}', 'Delete the layer {l}', 'Eliminar la capa {l}'),
 };

@@ -138,7 +138,7 @@ class AppMenuBar extends StatelessWidget {
                       onClose: _menuClosed,
                       leadingIcon: const Icon(Icons.table_view, size: 16),
                       menuChildren: [
-                        for (final f in ReportFormat.values) item(t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}'), c.results == null ? null : () => exportReportAction(context, c, f)),
+                        for (final f in ReportFormat.values) item(t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}'), () => exportReportAction(context, c, f)),
                         const Divider(height: 1),
                         item(t('mgmt.export'), () => exportScheduleAction(context, c)),
                       ],

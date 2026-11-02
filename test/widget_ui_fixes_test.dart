@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/actions.dart';
 import 'package:opencadirrigation/app/io/app_keys.dart';
@@ -632,6 +634,107 @@ void main() {
       await tester.tap(find.byKey(const Key('units_cancel')));
       await settle(tester);
       expect(find.byKey(const Key('units_ok')), findsNothing);
+    });
+  });
+  group('UI-17 / UI-33 / UI-23 report tables, the phone sheet, the layer buttons', () {
+    Future<ProjectController> designed(WidgetTester tester, dynamic shell) async {
+      final ProjectController c = shell.c;
+      loadExampleAction(c);
+      c.designRunner = InThreadDesignRunner();
+      c.runDesign();
+      for (var k = 0; k < 400 && c.busy; k++) {
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      await settle(tester);
+      expect(c.results, isNotNull);
+      return c;
+    }
+
+    List<String> column(WidgetTester tester, int k) => [
+      for (final e in find.descendant(of: find.byKey(const Key('report_table_list')), matching: find.byType(Row)).evaluate())
+        if (((e.widget as Row).children.length > k)) ((((e.widget as Row).children[k] as SizedBox).child as Padding).child as Text).data ?? '',
+    ];
+
+    testWidgets('the pipes table sorts, filters, copies and finds the pipe of a row', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(1600, 1000));
+      final c = await designed(tester, shell);
+      shell.openReports(true, tab: 1);
+      await settle(tester);
+      final tb = c.reportTables().firstWhere((t) => t.key == 'pipes');
+      expect(tb.ids.length, tb.rows.length, reason: 'every row knows its pipe');
+      // sort by the length column (index 5), then the other way
+      await tester.tap(find.byKey(const Key('report_sort_5')));
+      await settle(tester);
+      List<double> lengths() => [for (final s in column(tester, 5)) parseUiNumber(s) ?? double.nan];
+      final asc = lengths();
+      expect(asc.length, greaterThan(1));
+      for (var i = 1; i < asc.length; i++) {
+        expect(asc[i], greaterThanOrEqualTo(asc[i - 1]));
+      }
+      await tester.tap(find.byKey(const Key('report_sort_5')));
+      await settle(tester);
+      final desc = lengths();
+      for (var i = 1; i < desc.length; i++) {
+        expect(desc[i], lessThanOrEqualTo(desc[i - 1]));
+      }
+      // filter by a pipe name
+      final name = (tb.rows.first[3] as String);
+      await tester.enterText(find.byKey(const Key('report_filter')), name);
+      await settle(tester);
+      final shown = tb.rows.where((r) => r.any((x) => '$x'.toLowerCase().contains(name.toLowerCase()))).length;
+      expect(find.text(c.t('rt.count', {'n': '$shown', 'm': '${tb.rows.length}'})), findsOneWidget);
+      // copy the visible rows
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String?;
+        return null;
+      });
+      addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+      await tester.tap(find.byKey(const Key('report_copy')));
+      await settle(tester);
+      expect(copied, isNotNull);
+      expect(copied!.split('\n').length, shown + 1, reason: 'the header and the visible rows');
+      expect(copied!.split('\n').first, tb.headers.join('\t'));
+      // a row selects and frames its pipe
+      await tester.enterText(find.byKey(const Key('report_filter')), '');
+      await settle(tester);
+      final first = find.byWidgetPredicate((w) => w.key is ValueKey<String> && (w.key as ValueKey<String>).value.startsWith('report_locate_')).first;
+      final index = int.parse(((tester.widget(first).key as ValueKey<String>).value).split('_').last);
+      await tester.tap(first);
+      await settle(tester);
+      expect(c.selection, [tb.ids[index]]);
+    });
+
+    testWidgets('UI-33 the × of the reports closes the sheet on the phone, and a row closes it over the drawing', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(390, 844));
+      final c = await designed(tester, shell);
+      await tester.tap(find.byKey(const Key('mobile_reports')));
+      await settle(tester);
+      expect(find.byKey(const Key('mobile_reports_sheet')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('reports_close')));
+      await settle(tester);
+      expect(find.byKey(const Key('mobile_reports_sheet')), findsNothing);
+      expect(c.showReports, isFalse);
+    });
+
+    testWidgets('UI-23 the layer buttons are big enough, labelled, and say whether they are on', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      shell.showSideTab(1);
+      await settle(tester);
+      final layer = c.project.layers.first.name;
+      final vis = find.byKey(Key('layer_vis_$layer'));
+      expect(tester.getSize(vis).width, greaterThanOrEqualTo(40));
+      expect(tester.getSize(vis).height, greaterThanOrEqualTo(40));
+      expect(find.byTooltip(c.t('layer.toggleVis', {'l': layer})), findsOneWidget);
+      final semantics = tester.ensureSemantics();
+      final node = tester.getSemantics(find.ancestor(of: vis, matching: find.byType(Semantics)).first);
+      expect(node.label, c.t('layer.toggleVis', {'l': layer}));
+      expect(node.flagsCollection.isToggled, isNot(Tristate.none), reason: 'says whether it is on');
+      semantics.dispose();
+      await tester.tap(vis);
+      await settle(tester);
+      expect(c.project.layers.first.visible, isFalse);
     });
   });
 }

@@ -1,11 +1,15 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/design/advisor.dart';
+import '../../core/design/report_tables.dart' show RNum;
 import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
 import '../../core/units.dart';
+import '../i18n.dart';
+import '../io/file_io.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import 'advice_panel.dart';
@@ -51,8 +55,14 @@ abstract final class ControllerTabs {
 const _noResultTabs = {5, 7, 8, 11, 12, 17, 19, 20, 21, 22};
 
 class ReportsPanel extends StatelessWidget {
-  const ReportsPanel({super.key, required this.c});
+  const ReportsPanel({super.key, required this.c, this.onClose, this.onLocated});
   final ProjectController c;
+
+  /// What × does (the phone closes its sheet); null hides the panel.
+  final VoidCallback? onClose;
+
+  /// After a row framed its item (the phone closes its sheet over the drawing).
+  final VoidCallback? onLocated;
 
   @override
   Widget build(BuildContext context) {
@@ -98,11 +108,14 @@ class ReportsPanel extends StatelessWidget {
                 ),
                 IconButton(
                   key: const Key('reports_close'),
+                  tooltip: t('ui.reportsClose'),
                   icon: const Icon(Icons.close, size: 16),
-                  onPressed: () {
-                    c.showReports = false;
-                    c.refresh();
-                  },
+                  onPressed:
+                      onClose ??
+                      () {
+                        c.showReports = false;
+                        c.refresh();
+                      },
                 ),
               ],
             ),
@@ -205,7 +218,13 @@ class ReportsPanel extends StatelessWidget {
     return n == 0 ? c.t('reports.messages') : '${c.t('reports.messages')} ($n)';
   }
 
-  Widget _table(List<String> headers, List<List<Object>> rows, {List<Color?>? rowColors, Key? key}) => ReportTableView(key: key, headers: headers, rows: rows, rowColors: rowColors);
+  /// Selects and frames the item of a report row.
+  void _locate(String id) {
+    if (c.project.byId(id) == null) return;
+    c.select([id]);
+    c.zoomToEntity(id);
+    onLocated?.call();
+  }
 
   String _entityName(String id) {
     final n = c.project.byId(id)?.name ?? '';
@@ -221,7 +240,16 @@ class ReportsPanel extends StatelessWidget {
       );
     }
     // keyed per table so switching tabs starts from a fresh scroll position
-    return _table(tb.headers, tb.rows, rowColors: [for (final w in tb.warn) w ? Cad.warning : null], key: ValueKey('report_table_$key'));
+    return ReportTableView(
+      key: ValueKey('report_table_$key'),
+      headers: tb.headers,
+      rows: tb.rows,
+      rowColors: [for (final w in tb.warn) w ? Cad.warning : null],
+      rowIds: tb.ids,
+      onLocate: _locate,
+      title: tb.title,
+      tools: true,
+    );
   }
 
   /// Mainline duties on top, the pumps and devices of the mainline below
@@ -416,8 +444,13 @@ String toolNameOfEntity(Entity e) => ProjectController.toolKeyOf(e);
 /// rebuild the whole panel on every repaint), the header stays put while the
 /// rows scroll, and both axes have visible scrollbars. Cells are formatted
 /// and column widths measured once per table.
+///
+/// With [tools], a header tap sorts by that column (again: the other way), a
+/// filter keeps the rows that contain a text (or only the highlighted ones),
+/// and the visible rows are copied to the clipboard or saved as CSV; a row
+/// with an entity in [rowIds] selects and frames it through [onLocate].
 class ReportTableView extends StatefulWidget {
-  const ReportTableView({super.key, required this.headers, required this.rows, this.rowColors});
+  const ReportTableView({super.key, required this.headers, required this.rows, this.rowColors, this.rowIds, this.onLocate, this.title = '', this.tools = false});
 
   final List<String> headers;
 
@@ -426,6 +459,18 @@ class ReportTableView extends StatefulWidget {
 
   /// Highlight colour per row (null: none).
   final List<Color?>? rowColors;
+
+  /// The entity each row is about (null: none), for [onLocate].
+  final List<String?>? rowIds;
+
+  /// Selects and frames the entity of a tapped row.
+  final void Function(String id)? onLocate;
+
+  /// Name of the table: the file name of its CSV.
+  final String title;
+
+  /// Sort, filter, copy and export above the table.
+  final bool tools;
 
   static const rowHeight = 26.0;
   static const headerHeight = 30.0;
@@ -447,6 +492,13 @@ class _ReportTableViewState extends State<ReportTableView> {
   final _vertical = ScrollController();
   late List<List<String>> _cells;
   late List<double> _widths;
+
+  /// The rows shown, in the order shown (indices of [ReportTableView.rows]).
+  late List<int> _order;
+  int? _sortColumn;
+  bool _ascending = true;
+  String _filter = '';
+  bool _highlightedOnly = false;
 
   // effective styles (the ambient DefaultTextStyle adds letter spacing and
   // fallbacks, so measuring the bare styles undersizes the columns)
@@ -485,6 +537,9 @@ class _ReportTableViewState extends State<ReportTableView> {
   /// (the numbers in the notation of the interface language)
   static String _text(Object v) => localizeUi(reportCellText(v));
 
+  /// Height of a row: grows with the text size the user chose.
+  double get _rowHeight => math.max(ReportTableView.rowHeight, _scaler.scale(11) + 15);
+
   /// Formats every cell once and sizes each column to its widest text (the
   /// longest string is the widest one in a monospace font).
   void _layout() {
@@ -505,14 +560,83 @@ class _ReportTableViewState extends State<ReportTableView> {
       return painter.width;
     }
 
+    // (room for the sort arrow of the tools)
+    final arrow = widget.tools ? measure(' ▲', _headStyle!) : 0.0;
     _widths = [
       for (var i = 0; i < n; i++)
-        (math.max(measure(widget.headers[i], _headStyle!), measure(longest[i], _cellStyle!)) + 2 * ReportTableView.cellPadding + ReportTableView.slack).clamp(
+        (math.max(measure(widget.headers[i], _headStyle!) + arrow, measure(longest[i], _cellStyle!)) + 2 * ReportTableView.cellPadding + ReportTableView.slack).clamp(
           ReportTableView.minColumnWidth,
           ReportTableView.maxColumnWidth,
         ),
     ];
     painter.dispose();
+    _arrange();
+  }
+
+  /// The order of the rows after the filter and the sort.
+  void _arrange() {
+    final colors = widget.rowColors;
+    final f = _filter.trim().toLowerCase();
+    final order = [
+      for (var r = 0; r < _cells.length; r++)
+        if ((!_highlightedOnly || (colors != null && r < colors.length && colors[r] != null)) && (f.isEmpty || _cells[r].any((s) => s.toLowerCase().contains(f)))) r,
+    ];
+    final k = _sortColumn;
+    if (k != null) {
+      // numbers by value (before texts), texts alphabetically; ties keep their order
+      Object key(int r) {
+        final row = widget.rows[r];
+        final v = k < row.length ? row[k] : '';
+        return switch (v) {
+          RNum n => n.value,
+          int i => i.toDouble(),
+          double d => d,
+          _ => _cells[r][k].toLowerCase(),
+        };
+      }
+
+      int compare(int a, int b) {
+        final x = key(a), y = key(b);
+        final c = switch ((x, y)) {
+          (double p, double q) => p.isNaN ? (q.isNaN ? 0 : 1) : (q.isNaN ? -1 : p.compareTo(q)),
+          (double _, _) => -1,
+          (_, double _) => 1,
+          _ => (x as String).compareTo(y as String),
+        };
+        return c != 0 ? (_ascending ? c : -c) : a.compareTo(b);
+      }
+
+      order.sort(compare);
+    }
+    _order = order;
+  }
+
+  void _sortBy(int column) => setState(() {
+    if (_sortColumn == column) {
+      if (_ascending) {
+        _ascending = false;
+      } else {
+        // a third tap: back to the order of the report
+        _sortColumn = null;
+        _ascending = true;
+      }
+    } else {
+      _sortColumn = column;
+      _ascending = true;
+    }
+    _arrange();
+  });
+
+  /// The visible rows as tab-separated text (pastes into a spreadsheet).
+  String _tsv() => [widget.headers.join('\t'), for (final r in _order) _cells[r].join('\t')].join('\n');
+
+  /// The visible rows as CSV with the decimal point, as the other exports.
+  String _csv() {
+    String q(String s) => s.contains(RegExp(r'[",\n]')) ? '"${s.replaceAll('"', '""')}"' : s;
+    return [
+      widget.headers.map(q).join(','),
+      for (final r in _order) [for (var i = 0; i < widget.headers.length; i++) q(i < widget.rows[r].length ? reportCellText(widget.rows[r][i]) : '')].join(','),
+    ].join('\r\n');
   }
 
   Widget _cell(int i, String s, TextStyle style) => SizedBox(
@@ -523,18 +647,103 @@ class _ReportTableViewState extends State<ReportTableView> {
     ),
   );
 
+  Widget _toolbar(I18n t) {
+    final colors = widget.rowColors;
+    final highlighted = colors != null && colors.any((c) => c != null);
+    return Container(
+      color: Cad.panel,
+      padding: const EdgeInsetsDirectional.only(start: 8, end: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              key: const Key('report_filter'),
+              style: const TextStyle(fontSize: 12),
+              decoration: InputDecoration(isDense: true, hintText: t('rt.filter'), prefixIcon: const Icon(Icons.filter_list, size: 16), prefixIconConstraints: const BoxConstraints(minWidth: 28)),
+              onChanged: (v) => setState(() {
+                _filter = v;
+                _arrange();
+              }),
+            ),
+          ),
+          if (highlighted)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 6),
+              child: FilterChip(
+                key: const Key('report_highlighted'),
+                label: Text(t('rt.highlighted'), style: const TextStyle(fontSize: 11)),
+                selected: _highlightedOnly,
+                onSelected: (v) => setState(() {
+                  _highlightedOnly = v;
+                  _arrange();
+                }),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 6),
+            child: Text(
+              t('rt.count', {'n': '${_order.length}', 'm': '${_cells.length}'}),
+              key: const Key('report_count'),
+              style: TextStyle(fontSize: 11, color: Cad.fg60),
+            ),
+          ),
+          IconButton(
+            key: const Key('report_copy'),
+            tooltip: t('rt.copy'),
+            icon: const Icon(Icons.copy_outlined, size: 18),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: _tsv()));
+              if (mounted) {
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(t('rt.copied', {'n': '${_order.length}'})), duration: const Duration(seconds: 2)));
+              }
+            },
+          ),
+          IconButton(
+            key: const Key('report_csv'),
+            tooltip: t('rt.csv'),
+            icon: const Icon(Icons.download_outlined, size: 18),
+            onPressed: () => saveTextFile('${_fileName(widget.title.isEmpty ? 'table' : widget.title)}.csv', _csv(), mime: 'text/csv'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _fileName(String s) => s.replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_');
+
   @override
   Widget build(BuildContext context) {
+    final t = I18n(uiLanguage.value);
     final total = _widths.fold(0.0, (a, b) => a + b);
+    final rowHeight = _rowHeight;
     final header = Container(
-      height: ReportTableView.headerHeight,
+      height: math.max(ReportTableView.headerHeight, _scaler.scale(11) + 19),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Cad.fg24)),
       ),
-      child: Row(children: [for (var i = 0; i < _widths.length; i++) _cell(i, widget.headers[i], ReportTableView.headingStyle)]),
+      child: Row(
+        children: [
+          for (var i = 0; i < _widths.length; i++)
+            if (widget.tools)
+              Semantics(
+                button: true,
+                label: t('rt.sortBy', {'c': widget.headers[i]}),
+                excludeSemantics: true,
+                child: InkWell(
+                  key: Key('report_sort_$i'),
+                  onTap: () => _sortBy(i),
+                  child: _cell(i, '${widget.headers[i]}${_sortColumn == i ? (_ascending ? ' ▲' : ' ▼') : ''}', ReportTableView.headingStyle),
+                ),
+              )
+            else
+              _cell(i, widget.headers[i], ReportTableView.headingStyle),
+        ],
+      ),
     );
     final colors = widget.rowColors;
-    return Scrollbar(
+    final ids = widget.rowIds;
+    final locate = widget.onLocate;
+    final table = Scrollbar(
       controller: _vertical,
       thumbVisibility: true,
       // the rows' notifications pass through the horizontal scroll view first
@@ -557,16 +766,24 @@ class _ReportTableViewState extends State<ReportTableView> {
                     child: ListView.builder(
                       key: const Key('report_table_list'),
                       controller: _vertical,
-                      itemExtent: ReportTableView.rowHeight,
-                      itemCount: _cells.length,
-                      itemBuilder: (context, r) {
+                      itemExtent: rowHeight,
+                      itemCount: _order.length,
+                      itemBuilder: (context, i) {
+                        final r = _order[i];
                         final warn = colors != null && r < colors.length ? colors[r] : null;
-                        final bg = warn != null ? warn.withValues(alpha: 0.15) : (r.isOdd ? Cad.stripe : null);
-                        return Container(
+                        final bg = warn != null ? warn.withValues(alpha: 0.15) : (i.isOdd ? Cad.stripe : null);
+                        final id = ids != null && r < ids.length ? ids[r] : null;
+                        final row = Container(
                           key: ValueKey('report_row_$r'),
                           color: bg,
-                          alignment: Alignment.centerLeft,
-                          child: Row(children: [for (var i = 0; i < _widths.length; i++) _cell(i, _cells[r][i], ReportTableView.cellStyle)]),
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Row(children: [for (var k = 0; k < _widths.length; k++) _cell(k, _cells[r][k], ReportTableView.cellStyle)]),
+                        );
+                        if (id == null || locate == null) return row;
+                        return Tooltip(
+                          message: t('rt.locate'),
+                          waitDuration: const Duration(milliseconds: 800),
+                          child: InkWell(key: ValueKey('report_locate_$r'), onTap: () => locate(id), child: row),
                         );
                       },
                     ),
@@ -577,6 +794,13 @@ class _ReportTableViewState extends State<ReportTableView> {
           ),
         ),
       ),
+    );
+    if (!widget.tools) return table;
+    return Column(
+      children: [
+        _toolbar(t),
+        Expanded(child: table),
+      ],
     );
   }
 }

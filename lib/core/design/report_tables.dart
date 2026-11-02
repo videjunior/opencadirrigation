@@ -45,7 +45,7 @@ class RBar {
 }
 
 class ReportTable {
-  ReportTable({required this.key, required this.title, required this.headers, required this.rows, List<bool>? warn}) : warn = warn ?? List.filled(rows.length, false);
+  ReportTable({required this.key, required this.title, required this.headers, required this.rows, List<bool>? warn, this.ids = const []}) : warn = warn ?? List.filled(rows.length, false);
 
   /// Stable identifier: zones, pipes, outlets, mainline, bom, water, messages.
   final String key;
@@ -57,6 +57,10 @@ class ReportTable {
 
   /// Rows that should be highlighted as warnings.
   final List<bool> warn;
+
+  /// The entity each row is about (null or missing: none), so the screen can
+  /// select and frame it from its row.
+  final List<String?> ids;
 
   bool get isEmpty => rows.isEmpty;
 }
@@ -138,12 +142,15 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
             ],
         ],
         warn: [for (final z in zones) !z.withinWindow],
+        ids: [for (final z in zones) z.valveId],
       ),
     );
     // ---- pipes
     final pipeRows = <List<Object>>[];
     final pipeWarn = <bool>[];
+    final pipeIds = <String?>[];
     void addPipe(String ctx, PipeSegmentResult p) {
+      pipeIds.add(p.entityId);
       pipeRows.add([
         ctx,
         labels.name(p.entityId),
@@ -195,11 +202,13 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         ],
         rows: pipeRows,
         warn: pipeWarn,
+        ids: pipeIds,
       ),
     );
     // ---- outlets
     final outletRows = <List<Object>>[];
     final outletWarn = <bool>[];
+    final outletIds = <String?>[];
     for (final z in r.zones.values) {
       final byEntity = <String, List<OutletResult>>{};
       for (final o in z.outlets) {
@@ -224,6 +233,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           RNum(u.pressureFromHead(list.first.allowedMax), 1),
         ]);
         outletWarn.add(!list.every((o) => o.inWindow));
+        outletIds.add(e.key);
       }
     }
     out.add(
@@ -244,6 +254,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         ],
         rows: outletRows,
         warn: outletWarn,
+        ids: outletIds,
       ),
     );
     // ---- mainline / duty
@@ -979,6 +990,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           for (var i = 0; i < comments.length; i++) [i + 1, comments[i].date, comments[i].author, comments[i].text, comments[i].resolved ? '✓' : ''],
         ],
         warn: [for (final cm in comments) !cm.resolved],
+        ids: [for (final cm in comments) cm.id],
       ),
     );
   }
@@ -992,6 +1004,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         rows: [
           for (final rv in revisions) [rv.revision, rv.date, rv.description],
         ],
+        ids: [for (final rv in revisions) rv.id],
       ),
     );
   }

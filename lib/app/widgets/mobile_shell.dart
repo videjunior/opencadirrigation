@@ -154,9 +154,11 @@ class _MobileShellState extends State<MobileShell> {
     c.showReports = true;
     _sheet(
       key: const Key('mobile_reports_sheet'),
-      ListenableBuilder(
-        listenable: c,
-        builder: (_, _) => ReportsPanel(c: c),
+      Builder(
+        builder: (ctx) => ListenableBuilder(
+          listenable: c,
+          builder: (_, _) => ReportsPanel(c: c, onClose: () => Navigator.of(ctx).pop(), onLocated: () => Navigator.of(ctx).pop()),
+        ),
       ),
       height: 0.85,
     ).then((_) {
@@ -292,11 +294,7 @@ class _MobileShellState extends State<MobileShell> {
             for (final f in DrawingFormat.values) row('${t('file.exportDrawing')}: ${t('exp.${f.name}')}', () => exportDrawingAction(context, c, f), icon: Icons.download),
             row('${t('file.exportDrawing')}: ${t('exp.png')}', () => exportSheetPngAction(context, c), icon: Icons.image_outlined, key: const Key('mobile_menu_export_png')),
             for (final f in ReportFormat.values)
-              row(
-                '${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}',
-                c.results == null ? null : () => exportReportAction(context, c, f),
-                icon: Icons.table_view,
-              ),
+              row('${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}', () => exportReportAction(context, c, f), icon: Icons.table_view),
             row(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined),
             row(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
             row(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),

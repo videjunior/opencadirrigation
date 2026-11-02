@@ -5,6 +5,7 @@ import '../shortcuts.dart';
 import '../state/controller.dart';
 import '../tutorial/tutorial.dart';
 import '../theme.dart';
+import 'layout_mode.dart';
 
 class ToolPalette extends StatelessWidget {
   const ToolPalette({super.key, required this.c});
@@ -82,15 +83,17 @@ class ToolPalette extends StatelessWidget {
       'zone': TutorialTargets.paletteZone,
       'main': TutorialTargets.paletteMain,
     };
+    // a finger needs bigger buttons than a mouse
+    final w = touchInput ? 44.0 : 36.0, h = touchInput ? 44.0 : 28.0;
     return LayoutBuilder(
       builder: (context, constraints) {
         // one column when everything fits, otherwise two so the hydraulic
         // groups stay visible without scrolling
-        final needed = groups.fold<double>(0, (sum, g) => sum + 12 + g.$2.length * 30.0);
+        final needed = groups.fold<double>(0, (sum, g) => sum + 12 + g.$2.length * (h + 2));
         final cols = constraints.maxHeight < needed ? 2 : 1;
         return Container(
           key: TutorialTargets.palette,
-          width: 8 + cols * 36 + (cols - 1) * 2,
+          width: 8 + cols * w + (cols - 1) * 2,
           color: Cad.panel,
           child: SingleChildScrollView(
             child: Column(
@@ -104,19 +107,26 @@ class ToolPalette extends StatelessWidget {
                       for (final (id, icon) in g.$2)
                         Tooltip(
                           message: toolLabel(c.t, id),
-                          child: InkWell(
-                            key: Key('tool_${id.name}'),
-                            onTap: () {
-                              if (g.$1 == 'main' && (id == ToolId.pump || id == ToolId.misc || id == ToolId.junction)) c.toolSettings.pointScope = HydraulicScope.mainline;
-                              if (g.$1 == 'zone' && (id == ToolId.outlet || id == ToolId.valve)) c.toolSettings.pointScope = HydraulicScope.zone;
-                              c.setTool(id);
-                            },
-                            child: Container(
-                              width: 36,
-                              height: 28,
-                              margin: const EdgeInsets.symmetric(vertical: 1),
-                              decoration: BoxDecoration(color: c.activeTool == id ? Cad.accentFill : Colors.transparent, borderRadius: BorderRadius.circular(4)),
-                              child: Icon(icon, size: 17, color: c.activeTool == id ? Colors.white : Cad.fg70),
+                          // the screen reader says which tool is on
+                          child: Semantics(
+                            button: true,
+                            selected: c.activeTool == id,
+                            label: toolLabel(c.t, id),
+                            excludeSemantics: true,
+                            child: InkWell(
+                              key: Key('tool_${id.name}'),
+                              onTap: () {
+                                if (g.$1 == 'main' && (id == ToolId.pump || id == ToolId.misc || id == ToolId.junction)) c.toolSettings.pointScope = HydraulicScope.mainline;
+                                if (g.$1 == 'zone' && (id == ToolId.outlet || id == ToolId.valve)) c.toolSettings.pointScope = HydraulicScope.zone;
+                                c.setTool(id);
+                              },
+                              child: Container(
+                                width: w,
+                                height: h,
+                                margin: const EdgeInsets.symmetric(vertical: 1),
+                                decoration: BoxDecoration(color: c.activeTool == id ? Cad.accentFill : Colors.transparent, borderRadius: BorderRadius.circular(4)),
+                                child: Icon(icon, size: touchInput ? 20 : 17, color: c.activeTool == id ? Colors.white : Cad.fg70),
+                              ),
                             ),
                           ),
                         ),

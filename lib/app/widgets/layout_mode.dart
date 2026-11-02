@@ -35,8 +35,16 @@ const wideMinWidth = 1100.0;
 /// Kind of the last pointer pressed on the screen (null before any).
 final ValueNotifier<PointerDeviceKind?> lastPointerKind = ValueNotifier<PointerDeviceKind?>(null);
 
+PointerDeviceKind? _pressed;
+
 void _trackPointer(PointerEvent e) {
-  if (e is PointerDownEvent && lastPointerKind.value != e.kind) lastPointerKind.value = e.kind;
+  if (e is PointerDownEvent) _pressed = e.kind;
+  // the arrangement follows once the finger or the button is lifted, never
+  // under a gesture (a palette that grows would move the drawing mid-drag)
+  if ((e is PointerUpEvent || e is PointerCancelEvent) && _pressed != null) {
+    if (lastPointerKind.value != _pressed) lastPointerKind.value = _pressed;
+    _pressed = null;
+  }
 }
 
 var _tracking = 0;

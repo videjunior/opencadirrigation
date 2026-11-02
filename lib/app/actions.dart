@@ -212,9 +212,13 @@ Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
   }
 }
 
-/// Exports the design report (needs results).
+/// The report tables with the project's own data that need no design.
+const _noDesignTables = {'water', 'crop', 'schedule', 'comments', 'revisions', 'scenarios', 'requirement', 'requirementTotals', 'licensing', 'trench'};
+
+/// Exports the report: every table there is (without a design, the ones
+/// that need none: water, crops, comments, revisions, requirements…).
 Future<void> exportReportAction(BuildContext context, ProjectController c, ReportFormat f) async {
-  if (c.results == null) {
+  if (c.results == null && !c.reportTables().any((t) => _noDesignTables.contains(t.key) && !t.isEmpty)) {
     c.notify(c.t('msg.needResults'));
     return;
   }
