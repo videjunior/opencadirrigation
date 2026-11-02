@@ -243,7 +243,9 @@ class CadPalette {
     hover: Color(0xFF80DEEA),
     snap: Color(0xFF69F0AE),
     preview: Color(0xFFB0BEC5),
-    unconnected: Color(0xFFFF1744),
+    // (a lighter red than the original 0xFFFF1744: it is also the colour of error
+    // texts, which need 4.5:1 on the panels)
+    unconnected: Color(0xFFFF6E6E),
     profilePath: Color(0xFFCE93D8),
     gps: Color(0xFF29B6F6),
     gpsTrack: Color(0xFF4DD0E1),
@@ -275,7 +277,9 @@ class CadPalette {
     fg70: Color(0xB3FFFFFF),
     fg60: Color(0x99FFFFFF),
     fg54: Color(0x8AFFFFFF),
-    fg38: Color(0x62FFFFFF),
+    // hints and secondary labels: 4.5:1 on every surface (white38, the original,
+    // gave 3.6:1 on the panels)
+    fg38: Color(0x86FFFFFF),
     fg30: Color(0x4DFFFFFF),
     fg24: Color(0x3DFFFFFF),
     fg12: Color(0x1FFFFFFF),
@@ -297,7 +301,7 @@ class CadPalette {
     attention: Color(0xFFFFAB40),
     amber: Color(0xFFFFC107),
     highlight: Color(0xFFFFD54F),
-    error: Color(0xFFEF5350),
+    error: Color(0xFFFF6E6E),
     chartGrid: Color(0xFF2B333C),
     chartGround: Color(0xFF8D6E63),
     chartGroundDark: Color(0xFF6D4C41),

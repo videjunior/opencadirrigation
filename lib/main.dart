@@ -39,6 +39,7 @@ import 'app/widgets/dialogs/welcome_dialog.dart';
 import 'app/widgets/mobile_shell.dart';
 import 'app/widgets/command_entry.dart';
 import 'app/widgets/layout_mode.dart';
+import 'app/widgets/message_log.dart';
 import 'app/widgets/design_progress.dart';
 import 'app/widgets/history_panel.dart';
 import 'app/widgets/layers_panel.dart';
@@ -371,7 +372,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   bool dismissModal() {
     final r = appRouteObserver.top;
     if (r is PopupRoute && r.barrierDismissible) {
-      appNavigatorKey.currentState?.pop();
+      appNavigatorKey.currentState?.maybePop();
       return true;
     }
     return false;
@@ -507,23 +508,29 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final last = _lastSeqByTab[tab.tabId] ?? 0;
       if (tab.messageSeq != last && tab.lastMessage != null) {
         _lastSeqByTab[tab.tabId] = tab.messageSeq;
+        // every message is kept (Help → Recent messages), also those of the other tabs
+        logMessage(tab.project.meta.name.trim().isEmpty ? tab.t('name.newProject') : tab.project.meta.name, tab.lastMessage!);
         if (!identical(tab, c)) continue;
         final msg = tab.lastMessage!;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           // phones: above the tool bar, so it never covers the tools
           final compact = shellLayoutOf(context) == ShellLayout.phone;
+          // long enough to be read, and the list of all of them one tap away
+          final more = SnackBarAction(key: const Key('snack_messages'), label: c.t('ui.messagesShort'), onPressed: () => showMessageLogDialog(context, c));
           ScaffoldMessenger.of(context)
             ..clearSnackBars()
             ..showSnackBar(
               compact
                   ? SnackBar(
                       content: Text(msg, style: const TextStyle(fontSize: 12)),
-                      duration: const Duration(milliseconds: 2200),
+                      duration: const Duration(milliseconds: 3500),
+                      persist: false,
+                      action: more,
                       behavior: SnackBarBehavior.floating,
                       margin: const EdgeInsets.fromLTRB(12, 0, 72, 100),
                     )
-                  : SnackBar(content: Text(msg), duration: const Duration(seconds: 3), behavior: SnackBarBehavior.floating, width: 420),
+                  : SnackBar(content: Text(msg), duration: const Duration(seconds: 6), persist: false, action: more, behavior: SnackBarBehavior.floating, width: 480),
             );
         });
       }

@@ -53,9 +53,16 @@ Future<void> openProjectAction(BuildContext context, ProjectController c) async 
     c.loadJson(f.$2);
     c.store.acknowledge(c.project.meta.uid);
   } catch (e) {
-    c.notify(c.t('msg.error', {'e': '$e'}));
+    c.notify(openErrorMessage(c, e));
   }
 }
+
+/// What to tell when a file did not open as a project: one that is no
+/// project (a renamed drawing, damaged JSON, another kind of JSON) says to
+/// import it instead; anything else with the program's own wording.
+String openErrorMessage(ProjectController c, Object e) => e is FormatException || e is TypeError || e is ArgumentError || e is NoSuchMethodError
+    ? c.t('msg.notProject', {'m': '${c.t('menu.file')} → ${c.t('file.importDrawing').replaceAll(RegExp(r'\s*\(.*\)'), '').replaceAll('…', '').trim()}'})
+    : c.t('msg.error', {'e': c.describeError(e)});
 
 /// Opens a project file into the current tab when it is still blank,
 /// otherwise in a new tab.
@@ -76,7 +83,7 @@ ProjectController? openJsonInTab(Workspace ws, String json) {
     return target;
   } catch (e) {
     if (!reuse) ws.closeTab(ws.tabs.indexOf(target));
-    ws.current.notify(cur.t('msg.error', {'e': '$e'}));
+    ws.current.notify(openErrorMessage(ws.current, e));
     return null;
   }
 }

@@ -27,4 +27,9 @@ const coverageUi = <String, String>{
   'panel:reports.copy': 'tool:get_report_table',
   'panel:reports.csv': 'tool:get_report_table',
   'panel:reports.locate': 'tool:zoom_to',
+  // ---- UI-28 Help → Recent messages (desktop and phone) and the notices' button
+  'menu:ui.messagesMenu': 'n/a:the notices the program showed the user lately, to read again; the assistant gets the outcome of each of its own actions from the tools',
+  'view:messageLog': 'n/a:the notices the program showed the user lately, to read again; the assistant gets the outcome of each of its own actions from the tools',
+  // ---- UI-26 the start-up screen: go on without a place
+  'dialog:ai_start_dialog.aiStart.skipPlace': 'n/a:the user leaves the place out of the first screen; the assistant georeferences later with the tools',
 };

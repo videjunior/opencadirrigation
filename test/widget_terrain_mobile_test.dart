@@ -175,9 +175,15 @@ void main() {
       await settle(tester);
       expect(c.selection.length, 2);
       expect(c.camera.center.distanceTo(const Pt(50, 0)), lessThan(1e-6));
+      // the check closed over the drawing (UI-18): open it again to run it again
+      expect(find.byKey(const Key('check_list')), findsNothing);
+      await tester.tap(find.text('Projeto').first);
+      await settle(tester, 2);
+      await tester.tap(find.byKey(const Key('menu_check')));
+      await settle(tester);
       await tester.tap(find.byKey(const Key('check_rerun')));
       await settle(tester);
-      expect(c.eventCount('check'), 2);
+      expect(c.eventCount('check'), 3);
       await tester.tap(find.text('Fechar'));
       await settle(tester);
     });

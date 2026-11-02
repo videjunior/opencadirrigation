@@ -29,6 +29,7 @@ import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'advice_panel.dart';
+import 'message_log.dart';
 import 'reports_panel.dart';
 
 class AppMenuBar extends StatelessWidget {
@@ -524,6 +525,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('help.tutorial'), onStartTutorial, icon: Icons.school_outlined),
                     item(t('help.welcome'), onShowWelcome, icon: Icons.waving_hand_outlined, key: const Key('menu_welcome')),
                     item(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
+                    // 1.6.0 UI
+                    item(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('menu_messages')),
                     item(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
                   ],
                   child: Text(t('menu.help')),

@@ -5,6 +5,8 @@
 /// properties, layers and reports panels as bottom sheets.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/io/project_export.dart';
@@ -40,6 +42,7 @@ import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'history_panel.dart';
 import 'layout_mode.dart';
+import 'message_log.dart';
 import 'layers_panel.dart';
 import 'properties_panel.dart';
 import 'reports_panel.dart';
@@ -106,7 +109,15 @@ class _MobileShellState extends State<MobileShell> {
     isScrollControlled: true,
     backgroundColor: Cad.panel,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
-    builder: (ctx) => SizedBox(key: key, height: MediaQuery.sizeOf(ctx).height * height, child: child),
+    builder: (ctx) {
+      // above the on-screen keyboard: the sheet takes what the keyboard leaves
+      final mq = MediaQuery.of(ctx);
+      final room = mq.size.height - mq.viewInsets.bottom - mq.padding.top - 8;
+      return Padding(
+        padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
+        child: SizedBox(key: key, height: math.max(120.0, math.min(mq.size.height * height, room)), child: child),
+      );
+    },
   );
 
   void _openProperties({int tab = 0}) {
@@ -129,7 +140,7 @@ class _MobileShellState extends State<MobileShell> {
                   Expanded(child: _tab(t('props.title'), index == 0, () => setState(() => index = 0))),
                   Expanded(child: _tab(t('view.layers'), index == 1, () => setState(() => index = 1))),
                   Expanded(child: _tab(t('hist.title'), index == 2, () => setState(() => index = 2))),
-                  IconButton(icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
+                  IconButton(tooltip: t('close'), icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
                 ],
               ),
               Expanded(
@@ -211,7 +222,7 @@ class _MobileShellState extends State<MobileShell> {
       leading: Icon(icon, size: 18),
       title: Text(title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold)),
       initiallyExpanded: open,
-      childrenPadding: const EdgeInsets.only(left: 12),
+      childrenPadding: const EdgeInsetsDirectional.only(start: 12),
       children: children,
     );
     // the open tabs (the phone has no tab bar) and the projects kept in this browser
@@ -454,6 +465,7 @@ class _MobileShellState extends State<MobileShell> {
             row(t('help.tutorial'), widget.onStartTutorial, icon: Icons.school_outlined),
             row(t('help.welcome'), widget.onShowWelcome, icon: Icons.waving_hand_outlined),
             row(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
+            row(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('mobile_menu_messages')),
             row(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
           ]),
         ],
@@ -477,7 +489,10 @@ class _MobileShellState extends State<MobileShell> {
               color: Cad.panel,
               child: Row(
                 children: [
-                  IconButton(key: const Key('mobile_menu'), tooltip: t('mob.menu'), icon: const Icon(Icons.menu), onPressed: _openMenu),
+                  KeyedSubtree(
+                    key: TutorialTargets.mobileMenu,
+                    child: IconButton(key: const Key('mobile_menu'), tooltip: t('mob.menu'), icon: const Icon(Icons.menu), onPressed: _openMenu),
+                  ),
                   Image.asset('assets/brand/logo-mark.png', height: 22, filterQuality: FilterQuality.medium),
                   const SizedBox(width: 6),
                   Expanded(
@@ -548,8 +563,14 @@ class _MobileShellState extends State<MobileShell> {
                           if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
                           _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
                           _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
-                          _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
-                          _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                          KeyedSubtree(
+                            key: TutorialTargets.mobileProps,
+                            child: _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
+                          ),
+                          KeyedSubtree(
+                            key: TutorialTargets.mobileReports,
+                            child: _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                          ),
                         ],
                       ),
                     ),

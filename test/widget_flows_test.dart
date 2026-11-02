@@ -503,7 +503,9 @@ void main() {
     await pick(openProjectAction(ctx(tester), c), 'pomar.oci.json', 'Open');
     expect(c.project.entities.length, n);
     await pick(openProjectAction(ctx(tester), c), 'ruim.oci.json', 'Open');
-    expect(c.lastMessage, startsWith('Erro'));
+    // (says what the file is not and what to do, not the raw exception: UI-28)
+    expect(c.lastMessage, startsWith('Este arquivo não é um projeto do OpenCADIrrigation'));
+    expect(c.lastMessage, contains('Importar'));
     expect(c.project.entities.length, n, reason: 'a bad file leaves the project as it was');
     await pick(importDxfAction(ctx(tester), c), 'linha.dxf', 'Open');
     expect(c.lastMessage, startsWith('Importado: '));

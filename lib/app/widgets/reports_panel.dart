@@ -68,13 +68,15 @@ class ReportsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = c.t;
     final r = c.results;
+    // (the tab bar grows with the text size the user chose)
+    final tabHeight = math.max(30.0, MediaQuery.textScalerOf(context).scale(11.5) + 16);
     return ColoredBox(
       color: Cad.background,
       child: Column(
         children: [
           Container(
             color: Cad.panel,
-            height: 30,
+            height: tabHeight,
             child: Row(
               children: [
                 Expanded(
@@ -91,7 +93,7 @@ class ReportsPanel extends StatelessWidget {
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 9),
-                              height: 30,
+                              height: tabHeight,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 border: Border(bottom: BorderSide(color: c.reportTab == i ? Cad.accent : Colors.transparent, width: 2)),
@@ -428,7 +430,17 @@ class ReportsPanel extends StatelessWidget {
     final ordered = List<PipeSegmentResult>.from(segs)..sort((a, b) => a.segmentIndex.compareTo(b.segmentIndex));
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: HglChart(segments: ordered, units: c.units, allowedMin: lo, allowedMax: hi, title: title, legend: c.t('hgl.legend')),
+      child: HglChart(
+        segments: ordered,
+        units: c.units,
+        allowedMin: lo,
+        allowedMax: hi,
+        title: title,
+        legend: c.t('hgl.legend'),
+        // elevations and heads, in the length unit (not the pressure unit)
+        axisLabel: c.t('hgl.axis', {'u': c.units.lengthLabel}),
+        readout: (d, z, h, p) => c.t('hgl.readout', {'d': d, 'z': z, 'h': h, 'p': p}),
+      ),
     );
   }
 

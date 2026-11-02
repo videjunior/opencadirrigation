@@ -130,4 +130,32 @@ const _ui = <String, (String, String, String)>{
   'layer.toggleLock': ('Travar ou destravar a camada {l}', 'Lock or unlock the layer {l}', 'Bloquear o desbloquear la capa {l}'),
   'layer.colorOf': ('Cor da camada {l}', 'Colour of the layer {l}', 'Color de la capa {l}'),
   'layer.remove': ('Excluir a camada {l}', 'Delete the layer {l}', 'Eliminar la capa {l}'),
+  // ---- UI-20 downloads that must not be left running out of sight
+  'ui.downloadRunning': ('O download continua: use Cancelar para interrompê-lo.', 'The download is still running: use Cancel to stop it.', 'La descarga sigue: use Cancelar para detenerla.'),
+  // ---- UI-26 the start-up screen never traps the user on a place it cannot find
+  'start.notFoundGoOn': (
+    'Nenhum lugar encontrado. Corrija o nome, ou toque de novo no botão para seguir sem localizar (dá para georreferenciar depois).',
+    'No place found. Correct the name, or press the button again to go on without a place (you can georeference later).',
+    'No se encontró ningún lugar. Corrija el nombre o pulse de nuevo el botón para seguir sin ubicar (puede georreferenciar después).',
+  ),
+  'start.searchFailedGoOn': (
+    'A busca não respondeu (sem internet?). Tente de novo, ou toque outra vez no botão para seguir sem localizar.',
+    'The search did not answer (no internet?). Try again, or press the button again to go on without a place.',
+    'La búsqueda no respondió (¿sin internet?). Inténtelo de nuevo o pulse otra vez el botón para seguir sin ubicar.',
+  ),
+  'start.skipPlace': ('Continuar sem localizar', 'Go on without a place', 'Seguir sin ubicar'),
+  // ---- UI-28 messages kept and read again; a file that is no project
+  'ui.messages': ('Mensagens recentes', 'Recent messages', 'Mensajes recientes'),
+  'ui.messagesMenu': ('Mensagens recentes…', 'Recent messages…', 'Mensajes recientes…'),
+  'ui.messagesShort': ('Ver todas', 'See all', 'Ver todas'),
+  'ui.noMessages': ('Nenhuma mensagem nesta sessão.', 'No messages in this session.', 'Ningún mensaje en esta sesión.'),
+  'ui.copyAll': ('Copiar tudo', 'Copy all', 'Copiar todo'),
+  'msg.notProject': (
+    'Este arquivo não é um projeto do OpenCADIrrigation (.oci.json). Para trazer desenhos e dados (DXF, DWG, KML, SHP, CSV…) use {m}.',
+    'This file is not an OpenCADIrrigation project (.oci.json). To bring in drawings and data (DXF, DWG, KML, SHP, CSV…) use {m}.',
+    'Este archivo no es un proyecto de OpenCADIrrigation (.oci.json). Para traer dibujos y datos (DXF, DWG, KML, SHP, CSV…) use {m}.',
+  ),
+  // ---- UI-22 the hydraulic grade line chart
+  'hgl.axis': ('cota e carga ({u})', 'elevation and head ({u})', 'cota y carga ({u})'),
+  'hgl.readout': ('{d}: terreno {z}, carga {h}, pressão {p}', '{d}: ground {z}, head {h}, pressure {p}', '{d}: terreno {z}, carga {h}, presión {p}'),
 };

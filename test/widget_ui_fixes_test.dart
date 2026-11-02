@@ -27,6 +27,11 @@ import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/units.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/app/theme.dart';
+import 'package:opencadirrigation/app/io/place_search.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/ai_start_dialog.dart';
+import 'package:opencadirrigation/app/widgets/hgl_chart.dart';
+import 'package:opencadirrigation/app/widgets/message_log.dart';
+import 'package:opencadirrigation/app/widgets/reports_panel.dart';
 import 'package:opencadirrigation/main.dart';
 
 /// Defects of the interface outside the drawing (sweep of 2026-11-01, UI-*):
@@ -348,8 +353,10 @@ void main() {
     });
 
     testWidgets('on a low window the reports leave the drawing room', (tester) async {
-      lastPointerKind.value = PointerDeviceKind.mouse;
       final shell = await pumpFresh(tester, size: const Size(1280, 480));
+      // a mouse: a low desktop window keeps the desktop layout
+      lastPointerKind.value = PointerDeviceKind.mouse;
+      await settle(tester);
       final ProjectController c = shell.c;
       c.showReports = true;
       c.refresh();
@@ -735,6 +742,108 @@ void main() {
       await tester.tap(vis);
       await settle(tester);
       expect(c.project.layers.first.visible, isFalse);
+    });
+  });
+  group('UI-22 / UI-26 / UI-27 / UI-28 the rest of the interface', () {
+    testWidgets('UI-22 the hydraulic grade line: the axis in metres, the reading under the pointer', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      loadExampleAction(c);
+      c.designRunner = InThreadDesignRunner();
+      c.runDesign();
+      for (var k = 0; k < 400 && c.busy; k++) {
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      c.project.params.units = const Units(pressure: PressureUnit.kPa);
+      shell.openReports(true, tab: reportTabKeys.indexOf('reports.hgl'));
+      await settle(tester);
+      final chart = find.byKey(const Key('hgl_chart'));
+      expect(chart, findsOneWidget);
+      final painter = tester.widget<CustomPaint>(chart).painter!;
+      final w = (painter as dynamic).w as HglChart;
+      expect(w.axisLabel, c.t('hgl.axis', {'u': 'm'}), reason: 'elevations and heads in m, even with kPa pressures');
+      expect(w.readout!('1', '2', '3', '4'), contains('4'));
+      final g = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      // (left of the middle: the notice of the design floats over the middle of the window)
+      ScaffoldMessenger.of(tester.element(chart)).removeCurrentSnackBar();
+      await tester.pump();
+      final at = tester.getTopLeft(chart) + Offset(100, tester.getSize(chart).height / 2);
+      await g.addPointer(location: at - const Offset(20, 0));
+      await g.moveTo(at);
+      await tester.pump();
+      expect(((tester.widget<CustomPaint>(chart).painter!) as dynamic).cursorX, isNotNull);
+      await g.removePointer();
+    });
+
+    testWidgets('UI-26 a place that is not found never traps the first screen', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final fetch = siteFetch;
+      addTearDown(() => siteFetch = fetch);
+      siteFetch = (url, headers) async => throw Exception('offline');
+      final choice = showAiStartDialog(tester.element(find.byType(MenuBar)), c);
+      await settle(tester);
+      await tester.enterText(find.byKey(const Key('start_where')), 'Fazenda Boa Vista');
+      await tester.tap(find.byKey(const Key('ai_start_no')));
+      await settle(tester);
+      expect(find.byKey(const Key('start_where_error')), findsOneWidget);
+      expect(find.byKey(const Key('start_skip_place')), findsOneWidget);
+      // pressing again goes on, without a place
+      await tester.tap(find.byKey(const Key('ai_start_no')));
+      await settle(tester);
+      final got = await choice;
+      expect(got.place, isNull);
+      expect(got.ai, isFalse);
+    });
+
+    testWidgets('UI-27 on the phone the tutorial card leaves the floating buttons free and speaks of touch', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(390, 844));
+      await tester.tap(find.byKey(const Key('mobile_menu')));
+      await settle(tester);
+      await tester.scrollUntilVisible(
+        find.text('Ajuda'),
+        200,
+        scrollable: find.descendant(of: find.byKey(const Key('mobile_menu_sheet')), matching: find.byType(Scrollable)).first,
+      );
+      await tester.tap(find.text('Ajuda'));
+      await settle(tester);
+      await tester.scrollUntilVisible(
+        find.text('Tutorial interativo'),
+        200,
+        scrollable: find.descendant(of: find.byKey(const Key('mobile_menu_sheet')), matching: find.byType(Scrollable)).first,
+      );
+      await tester.tap(find.text('Tutorial interativo'));
+      await settle(tester);
+      shell.tutorial.setAutoAdvance(false);
+      // a step that points at a menu: the ☰ stands in for it, and the card does not cover the buttons
+      final steps = buildTutorialSteps('pt');
+      shell.tutorial.goTo(steps.indexWhere((s) => s.id == 'georef'));
+      await settle(tester);
+      expect(find.byKey(const Key('tut_touch_hint')), findsOneWidget);
+      final card = tester.getRect(find.byKey(const Key('tut_next')));
+      final buttons = tester.getRect(find.byKey(const Key('mobile_reports')));
+      expect(card.bottom < buttons.top || card.top > buttons.bottom, isTrue, reason: 'card $card over the buttons $buttons');
+    });
+
+    testWidgets('UI-28 messages are kept and listed again; opening a drawing as a project says to import it', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      messageLog.clear();
+      c.notify('Primeira mensagem');
+      await settle(tester);
+      expect(find.byKey(const Key('snack_messages')), findsOneWidget, reason: 'the notice leads to the list');
+      expect(messageLog.map((m) => m.text), contains('Primeira mensagem'));
+      // a file that is no project
+      expect(openJsonInTab(shell.ws as Workspace, '0\nSECTION\n2\nENTITIES'), isNull);
+      await settle(tester);
+      expect(c.lastMessage, contains('Importar'));
+      expect(c.lastMessage, isNot(contains('FormatException')));
+      await tester.tap(find.text('Ajuda'));
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('menu_messages')));
+      await settle(tester);
+      expect(find.byKey(const Key('message_log')), findsOneWidget);
+      expect(find.text('Primeira mensagem'), findsOneWidget);
     });
   });
 }

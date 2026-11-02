@@ -178,196 +178,204 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
           });
         }
 
-        return AlertDialog(
-          title: Text(t('dem.online.title'), style: const TextStyle(fontSize: 15)),
-          content: SizedBox(
-            width: dialogWidth(ctx, 460),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(t('dem.online.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
-                const SizedBox(height: 8),
-                if (geo == null) ...[
-                  Text(t('dem.online.coordExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
-                  const SizedBox(height: 4),
-                  TextField(
-                    key: const Key('dem_coord'),
-                    controller: coordCtl,
-                    style: const TextStyle(fontSize: 12),
-                    decoration: InputDecoration(labelText: t('dem.online.coord'), hintText: t('dem.online.coordHint'), isDense: true, errorText: coordError),
-                    onSubmitted: (_) => useCoordinate(),
-                  ),
-                  const SizedBox(height: 4),
-                  _row([
-                    if (c.project.bounds.isEmpty) NumField(label: t('dem.online.areaSize'), value: areaSize, decimals: 0, onChanged: (v) => setState(() => areaSize = v.clamp(50, 20000))),
-                    FilledButton.tonal(
-                      key: const Key('dem_use_coord'),
-                      onPressed: useCoordinate,
-                      child: Text(t('dem.online.useCoord'), style: const TextStyle(fontSize: 12)),
-                    ),
-                    OutlinedButton.icon(
-                      key: const Key('dem_georef'),
-                      onPressed: () async {
-                        await showGeoreferenceDialog(ctx, c);
-                        setState(() {});
-                      },
-                      icon: const Icon(Icons.public, size: 16),
-                      label: Text(t('file.georef'), style: const TextStyle(fontSize: 12)),
-                    ),
-                  ]),
-                ] else ...[
-                  Text(geo.crsName, style: TextStyle(fontSize: 11, color: Cad.fg54)),
-                  SpecDropdown<DemSource>(
-                    label: t('dem.online.source'),
-                    value: source.name,
-                    items: sources,
-                    labelOf: (x) => x.label,
-                    idOf: (x) => x.name,
-                    onChanged: (v) => setState(() => source = DemSource.values.byName(v!)),
-                  ),
-                  _row([
-                    NumField(label: t('dem.online.spacing'), value: spacing, onChanged: (v) => setState(() => spacing = v <= 1 ? 1 : v)),
-                    NumField(label: t('dem.online.maxPoints'), value: maxPoints, decimals: 0, onChanged: (v) => setState(() => maxPoints = v.clamp(100, 20000))),
-                  ]),
-                  SwitchListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(t('dem.online.useView'), style: const TextStyle(fontSize: 12)),
-                    value: useView,
-                    onChanged: (v) => setState(() => useView = v),
-                  ),
-                  SwitchListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(t('dem.online.replace'), style: const TextStyle(fontSize: 12)),
-                    value: replace,
-                    onChanged: (v) => setState(() => replace = v),
-                  ),
-                  if (own.isNotEmpty) ...[
-                    Text(t('dem.online.existing', {'n': '${own.spots}', 'm': '${own.contours}', 'a': fmt(own.lo, 1), 'b': fmt(own.hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
-                    SwitchListTile(
-                      key: const Key('dem_replace_existing'),
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(t('dem.online.replaceExisting'), style: const TextStyle(fontSize: 12)),
-                      value: replaceExisting,
-                      onChanged: (v) => setState(() => replaceExisting = v),
-                    ),
-                    if (!replaceExisting) Text(t('dem.online.keepWarn'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+        return PopScope(
+          canPop: !busy,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) c.notify(t('ui.downloadRunning'));
+          },
+          child: AlertDialog(
+            title: Text(t('dem.online.title'), style: const TextStyle(fontSize: 15)),
+            content: SizedBox(
+              width: dialogWidth(ctx, 460),
+              child: ScrollBody(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t('dem.online.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                    const SizedBox(height: 8),
+                    if (geo == null) ...[
+                      Text(t('dem.online.coordExplain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                      const SizedBox(height: 4),
+                      TextField(
+                        key: const Key('dem_coord'),
+                        controller: coordCtl,
+                        style: const TextStyle(fontSize: 12),
+                        decoration: InputDecoration(labelText: t('dem.online.coord'), hintText: t('dem.online.coordHint'), isDense: true, errorText: coordError),
+                        onSubmitted: (_) => useCoordinate(),
+                      ),
+                      const SizedBox(height: 4),
+                      _row([
+                        if (c.project.bounds.isEmpty) NumField(label: t('dem.online.areaSize'), value: areaSize, decimals: 0, onChanged: (v) => setState(() => areaSize = v.clamp(50, 20000))),
+                        FilledButton.tonal(
+                          key: const Key('dem_use_coord'),
+                          onPressed: useCoordinate,
+                          child: Text(t('dem.online.useCoord'), style: const TextStyle(fontSize: 12)),
+                        ),
+                        OutlinedButton.icon(
+                          key: const Key('dem_georef'),
+                          onPressed: () async {
+                            await showGeoreferenceDialog(ctx, c);
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.public, size: 16),
+                          label: Text(t('file.georef'), style: const TextStyle(fontSize: 12)),
+                        ),
+                      ]),
+                    ] else ...[
+                      Text(geo.crsName, style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                      SpecDropdown<DemSource>(
+                        label: t('dem.online.source'),
+                        value: source.name,
+                        items: sources,
+                        labelOf: (x) => x.label,
+                        idOf: (x) => x.name,
+                        onChanged: (v) => setState(() => source = DemSource.values.byName(v!)),
+                      ),
+                      _row([
+                        NumField(label: t('dem.online.spacing'), value: spacing, onChanged: (v) => setState(() => spacing = v <= 1 ? 1 : v)),
+                        NumField(label: t('dem.online.maxPoints'), value: maxPoints, decimals: 0, onChanged: (v) => setState(() => maxPoints = v.clamp(100, 20000))),
+                      ]),
+                      SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(t('dem.online.useView'), style: const TextStyle(fontSize: 12)),
+                        value: useView,
+                        onChanged: (v) => setState(() => useView = v),
+                      ),
+                      SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(t('dem.online.replace'), style: const TextStyle(fontSize: 12)),
+                        value: replace,
+                        onChanged: (v) => setState(() => replace = v),
+                      ),
+                      if (own.isNotEmpty) ...[
+                        Text(t('dem.online.existing', {'n': '${own.spots}', 'm': '${own.contours}', 'a': fmt(own.lo, 1), 'b': fmt(own.hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                        SwitchListTile(
+                          key: const Key('dem_replace_existing'),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(t('dem.online.replaceExisting'), style: const TextStyle(fontSize: 12)),
+                          value: replaceExisting,
+                          onChanged: (v) => setState(() => replaceExisting = v),
+                        ),
+                        if (!replaceExisting) Text(t('dem.online.keepWarn'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+                      ],
+                      Text(
+                        b.isEmpty
+                            ? t('dem.online.empty')
+                            : t('dem.online.extent', {'w': fmt(b.width, 0), 'h': fmt(b.height, 0), 'n': '$n', 'r': '$requests'}) +
+                                  (eta.inSeconds >= 10 ? ' · ${t('dem.online.estimate', {'t': etaText()})}' : ''),
+                        style: TextStyle(fontSize: 11.5, color: Cad.fg70),
+                      ),
+                      if (source.pointsPerMinute != null && n > source.pointsPerMinute!) Text(t('dem.online.limitHint'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+                      Text('${source.attribution} · ${t('dem.online.layerHint')}', style: TextStyle(fontSize: 10, color: Cad.fg38)),
+                      SwitchListTile(
+                        key: const Key('dem_contours'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(t('dem.online.contours'), style: const TextStyle(fontSize: 12)),
+                        value: contours,
+                        onChanged: (v) => setState(() => contours = v),
+                      ),
+                      if (contours) NumField(label: t('dem.online.contourInterval'), value: contourInterval, onChanged: (v) => setState(() => contourInterval = v < 0 ? 0 : v)),
+                    ],
+                    if (busy) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(value: total == 0 ? null : done / total),
+                      Text(
+                        t('dem.online.progress', {'i': '$done', 'n': '$total'}) + (waiting != null ? ' · ${t('dem.online.wait', {'s': '${waiting!.inSeconds}'})}' : ''),
+                        key: const Key('dem_progress'),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ],
+                    if (error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(t('dem.online.error', {'e': error!}), style: TextStyle(fontSize: 11.5, color: Cad.unconnected)),
+                      ),
                   ],
-                  Text(
-                    b.isEmpty
-                        ? t('dem.online.empty')
-                        : t('dem.online.extent', {'w': fmt(b.width, 0), 'h': fmt(b.height, 0), 'n': '$n', 'r': '$requests'}) +
-                              (eta.inSeconds >= 10 ? ' · ${t('dem.online.estimate', {'t': etaText()})}' : ''),
-                    style: TextStyle(fontSize: 11.5, color: Cad.fg70),
-                  ),
-                  if (source.pointsPerMinute != null && n > source.pointsPerMinute!) Text(t('dem.online.limitHint'), style: TextStyle(fontSize: 11, color: Cad.warning)),
-                  Text('${source.attribution} · ${t('dem.online.layerHint')}', style: TextStyle(fontSize: 10, color: Cad.fg38)),
-                  SwitchListTile(
-                    key: const Key('dem_contours'),
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(t('dem.online.contours'), style: const TextStyle(fontSize: 12)),
-                    value: contours,
-                    onChanged: (v) => setState(() => contours = v),
-                  ),
-                  if (contours) NumField(label: t('dem.online.contourInterval'), value: contourInterval, onChanged: (v) => setState(() => contourInterval = v < 0 ? 0 : v)),
-                ],
-                if (busy) ...[
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(value: total == 0 ? null : done / total),
-                  Text(
-                    t('dem.online.progress', {'i': '$done', 'n': '$total'}) + (waiting != null ? ' · ${t('dem.online.wait', {'s': '${waiting!.inSeconds}'})}' : ''),
-                    key: const Key('dem_progress'),
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ],
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(t('dem.online.error', {'e': error!}), style: TextStyle(fontSize: 11.5, color: Cad.unconnected)),
-                  ),
-              ],
+                ),
+              ),
             ),
-          ),
-          actions: [
-            TextButton(key: const Key('dem_close'), onPressed: busy ? (cancel ? null : () => setState(() => cancel = true)) : () => Navigator.pop(ctx), child: Text(busy ? t('cancel') : t('close'))),
-            FilledButton.icon(
-              key: const Key('dem_run'),
-              onPressed: geo == null || busy || n == 0
-                  ? null
-                  : () async {
-                      setState(() {
-                        busy = true;
-                        cancel = false;
-                        waiting = null;
-                        error = null;
-                      });
-                      try {
-                        final res = await c.importOnlineDem(
-                          source,
-                          spacing: spacing,
-                          useView: useView,
-                          replacePrevious: replace,
-                          replaceExisting: replaceExisting,
-                          maxPoints: maxPoints.round(),
-                          cancelled: () => cancel,
-                          onWait: (w) {
-                            waiting = w;
-                            if (ctx.mounted) setState(() {});
-                          },
-                          onProgress: (d, tot) {
-                            done = d;
-                            total = tot;
-                            waiting = null;
-                            if (ctx.mounted) setState(() {});
-                          },
-                        );
-                        final count = res.count;
-                        if (res.datumMismatch && ctx.mounted) {
-                          // kept data on another datum: offer to drop it now
-                          final remove = await showDialog<bool>(
-                            context: ctx,
-                            builder: (d) => AlertDialog(
-                              title: Text(t('dem.online.mismatchTitle'), style: const TextStyle(fontSize: 15)),
-                              content: SizedBox(
-                                width: dialogWidth(d, 420),
-                                child: Text(
-                                  t('dem.online.mismatch', {'a': fmt(res.ownRange.$1, 1), 'b': fmt(res.ownRange.$2, 1), 'c': fmt(res.range.$1, 1), 'd': fmt(res.range.$2, 1)}),
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ),
-                              actions: [
-                                TextButton(key: const Key('dem_mismatch_keep'), onPressed: () => Navigator.pop(d, false), child: Text(t('dem.online.mismatchKeep'))),
-                                FilledButton(key: const Key('dem_mismatch_remove'), onPressed: () => Navigator.pop(d, true), child: Text(t('dem.online.mismatchRemove'))),
-                              ],
-                            ),
+            actions: [
+              TextButton(key: const Key('dem_close'), onPressed: busy ? (cancel ? null : () => setState(() => cancel = true)) : () => Navigator.pop(ctx), child: Text(busy ? t('cancel') : t('close'))),
+              FilledButton.icon(
+                key: const Key('dem_run'),
+                onPressed: geo == null || busy || n == 0
+                    ? null
+                    : () async {
+                        setState(() {
+                          busy = true;
+                          cancel = false;
+                          waiting = null;
+                          error = null;
+                        });
+                        try {
+                          final res = await c.importOnlineDem(
+                            source,
+                            spacing: spacing,
+                            useView: useView,
+                            replacePrevious: replace,
+                            replaceExisting: replaceExisting,
+                            maxPoints: maxPoints.round(),
+                            cancelled: () => cancel,
+                            onWait: (w) {
+                              waiting = w;
+                              if (ctx.mounted) setState(() {});
+                            },
+                            onProgress: (d, tot) {
+                              done = d;
+                              total = tot;
+                              waiting = null;
+                              if (ctx.mounted) setState(() {});
+                            },
                           );
-                          if (remove == true) c.removeOwnTerrainData();
+                          final count = res.count;
+                          if (res.datumMismatch && ctx.mounted) {
+                            // kept data on another datum: offer to drop it now
+                            final remove = await showDialog<bool>(
+                              context: ctx,
+                              builder: (d) => AlertDialog(
+                                title: Text(t('dem.online.mismatchTitle'), style: const TextStyle(fontSize: 15)),
+                                content: SizedBox(
+                                  width: dialogWidth(d, 420),
+                                  child: Text(
+                                    t('dem.online.mismatch', {'a': fmt(res.ownRange.$1, 1), 'b': fmt(res.ownRange.$2, 1), 'c': fmt(res.range.$1, 1), 'd': fmt(res.range.$2, 1)}),
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(key: const Key('dem_mismatch_keep'), onPressed: () => Navigator.pop(d, false), child: Text(t('dem.online.mismatchKeep'))),
+                                  FilledButton(key: const Key('dem_mismatch_remove'), onPressed: () => Navigator.pop(d, true), child: Text(t('dem.online.mismatchRemove'))),
+                                ],
+                              ),
+                            );
+                            if (remove == true) c.removeOwnTerrainData();
+                          }
+                          final noData = res.noData > 0 ? ' · ${t('dem.online.noData', {'n': '${res.noData}'})}' : '';
+                          if (contours && count > 0) {
+                            final interval = contourInterval > 0 ? contourInterval : c.autoContourInterval();
+                            final drawn = c.generateContours(interval);
+                            c.notify(t('dem.online.doneContours', {'n': '$count', 's': source.attribution, 'c': '$drawn', 'i': fmt(interval, 2)}) + noData);
+                          } else {
+                            c.notify(t('dem.online.done', {'n': '$count', 's': source.attribution}) + noData);
+                          }
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        } on DemCancelled {
+                          c.notify(t('dem.online.cancelled'));
+                          if (ctx.mounted) setState(() => busy = false);
+                        } catch (e) {
+                          error = e is GeoReferenceMissing ? t('geo.none') : c.describeError(e);
+                          if (ctx.mounted) setState(() => busy = false);
                         }
-                        final noData = res.noData > 0 ? ' · ${t('dem.online.noData', {'n': '${res.noData}'})}' : '';
-                        if (contours && count > 0) {
-                          final interval = contourInterval > 0 ? contourInterval : c.autoContourInterval();
-                          final drawn = c.generateContours(interval);
-                          c.notify(t('dem.online.doneContours', {'n': '$count', 's': source.attribution, 'c': '$drawn', 'i': fmt(interval, 2)}) + noData);
-                        } else {
-                          c.notify(t('dem.online.done', {'n': '$count', 's': source.attribution}) + noData);
-                        }
-                        if (ctx.mounted) Navigator.pop(ctx);
-                      } on DemCancelled {
-                        c.notify(t('dem.online.cancelled'));
-                        if (ctx.mounted) setState(() => busy = false);
-                      } catch (e) {
-                        error = e is GeoReferenceMissing ? t('geo.none') : c.describeError(e);
-                        if (ctx.mounted) setState(() => busy = false);
-                      }
-                    },
-              icon: const Icon(Icons.cloud_download_outlined, size: 16),
-              label: Text(t('dem.online.run')),
-            ),
-          ],
+                      },
+                icon: const Icon(Icons.cloud_download_outlined, size: 16),
+                label: Text(t('dem.online.run')),
+              ),
+            ],
+          ),
         );
       },
     ),
@@ -451,7 +459,7 @@ Future<void> showDesignCheckDialog(BuildContext context, ProjectController c) {
             const SizedBox(height: 4),
             // the same assistant as the Messages tab: why, how to fix, corrections
             Expanded(
-              child: AdvicePanel(c: c, listKey: const Key('check_list')),
+              child: AdvicePanel(c: c, listKey: const Key('check_list'), onLocated: () => Navigator.pop(ctx)),
             ),
           ],
         ),
