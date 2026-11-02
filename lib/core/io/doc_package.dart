@@ -38,6 +38,30 @@
 /// from 100 (identification) to 990 (signature), with gaps of 10 or more so
 /// a section can go between two others. The texts of a section are i18n
 /// keys of its area ([DocSection.titleKey]).
+///
+/// For example, the memorial, water permit table, operation plan, budget
+/// and life-cycle cost of the area PRB would join as:
+/// ```dart
+/// final prbDocumentSections = <DocSection>[
+///   DocSection(
+///     id: 'prb.memorial',
+///     titleKey: 'prb.doc.memorial', // an i18n key of the PRB part
+///     profiles: const {DocProfile.memorial: 150, DocProfile.permit: 230},
+///     build: (ctx) => [
+///       DocHeading(ctx.t('prb.memorial.object')),
+///       DocParagraph(memorialText(ctx)),
+///       if (ctx.table('prbPermit') case final tb?) DocTable(tb),
+///     ],
+///   ),
+///   // the permit table at permit 225 (after the abstraction points, 220);
+///   // the operation plan at operation 160; the budget at proposal 410
+///   // (after the quote, 400; or with the id 'prd.quote' to replace it);
+///   // the life-cycle cost at proposal 460 and memorial 650
+/// ];
+/// ```
+/// and `...prbDocumentSections,` in [documentSections]. A report table of
+/// that area (buildReportTables) is reachable from a section through
+/// [DocContext.table]; [DocContext.tablesOf] gives the blocks of several.
 library;
 
 import '../design/report_tables.dart';
