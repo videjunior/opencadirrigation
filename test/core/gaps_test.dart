@@ -271,22 +271,16 @@ void main() {
     });
 
     test('very large surveys are decimated for the TIN but kept for IDW', () {
-      final old = Terrain.maxTinPoints;
-      Terrain.maxTinPoints = 500;
-      try {
-        final t = Terrain(densify: 1);
-        for (var i = 0; i < 40; i++) {
-          for (var j = 0; j < 40; j++) {
-            t.addSpot(Pt(i * 5.0, j * 5.0), 100 + i * 0.1 + j * 0.2);
-          }
+      final t = Terrain(densify: 1, tinLimit: 500);
+      for (var i = 0; i < 40; i++) {
+        for (var j = 0; j < 40; j++) {
+          t.addSpot(Pt(i * 5.0, j * 5.0), 100 + i * 0.1 + j * 0.2);
         }
-        expect(t.sampleCount, 1600);
-        expect(t.tin.pointCount, lessThanOrEqualTo(534));
-        expect(t.tin.pointCount, greaterThanOrEqualTo(400));
-        expect(t.elevationAt(const Pt(100, 100)), closeTo(100 + 20 * 0.1 + 20 * 0.2, 0.05));
-      } finally {
-        Terrain.maxTinPoints = old;
       }
+      expect(t.sampleCount, 1600);
+      expect(t.tin.pointCount, lessThanOrEqualTo(500));
+      expect(t.tin.pointCount, greaterThanOrEqualTo(400));
+      expect(t.elevationAt(const Pt(100, 100)), closeTo(100 + 20 * 0.1 + 20 * 0.2, 0.05));
     });
 
     test('looped mainline sizing with LP adds the approximation note and still converges', () {

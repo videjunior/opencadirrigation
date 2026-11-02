@@ -3,6 +3,7 @@ library;
 
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import '../hydraulics/friction.dart';
 import '../io/geo.dart';
@@ -505,16 +506,68 @@ class Project {
     return b;
   }
 
-  /// Builds the DEM from contour and spot-height entities.
+  /// Builds the DEM from contour and spot-height entities. The same model
+  /// comes back while the terrain data and settings stay as they were, so a
+  /// large survey is triangulated once, not on every query. Callers only
+  /// read it.
   Terrain buildTerrain() {
+    final key = <double>[params.terrainDensify, params.terrainMethod.index.toDouble()];
+    for (final e in entities) {
+      switch (e) {
+        case ContourEntity c when !c.derived:
+          key
+            ..add(1)
+            ..add(c.elevation)
+            ..add(c.points.length.toDouble());
+          for (final p in c.points) {
+            key
+              ..add(p.x)
+              ..add(p.y);
+          }
+        case SpotHeightEntity s:
+          key
+            ..add(_isDemSpot(s) ? 3 : 2)
+            ..add(s.position.x)
+            ..add(s.position.y)
+            ..add(s.elevation);
+        case BreaklineEntity b:
+          key
+            ..add(4)
+            ..add(b.points.length.toDouble());
+          for (var i = 0; i < b.points.length; i++) {
+            key
+              ..add(b.points[i].x)
+              ..add(b.points[i].y)
+              ..add(b.elevationOf(i));
+          }
+        default:
+          break;
+      }
+    }
+    final cached = _terrain, cachedKey = _terrainKey;
+    if (cached != null && cachedKey != null && cachedKey.length == key.length) {
+      var same = true;
+      for (var i = 0; i < key.length && same; i++) {
+        final a = cachedKey[i], b = key[i];
+        same = a == b || (a.isNaN && b.isNaN);
+      }
+      if (same) return cached;
+    }
     final t = Terrain(densify: params.terrainDensify, method: params.terrainMethod);
     for (final e in entities) {
       if (e is ContourEntity && !e.derived) t.addContour(e.points, e.elevation);
-      if (e is SpotHeightEntity) t.addSpot(e.position, e.elevation);
+      if (e is SpotHeightEntity) t.addSpot(e.position, e.elevation, dem: _isDemSpot(e));
       if (e is BreaklineEntity) t.addBreakline(e.points, [for (var i = 0; i < e.points.length; i++) e.elevationOf(i)]);
     }
+    _terrain = t;
+    _terrainKey = Float64List.fromList(key);
     return t;
   }
+
+  static bool _isDemSpot(SpotHeightEntity s) => s.isDem || s.layer == Layers.dem;
+
+  Terrain? _terrain;
+  Float64List? _terrainKey;
 
   String uniqueZoneName([String prefix = 'Zone']) {
     final used = entities.whereType<ControlValveEntity>().map((v) => v.zoneName).toSet();
