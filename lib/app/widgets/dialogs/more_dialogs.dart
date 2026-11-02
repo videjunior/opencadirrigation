@@ -995,21 +995,27 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
               ],
           ],
         );
+        // a phone: the buttons wrap into more lines and the table keeps its room
+        // (the dialog's content scrolls)
+        final narrow = MediaQuery.sizeOf(ctx).width < 700;
         return SizedBox(
-          height: 520,
+          height: narrow ? 820 : 520,
           child: Column(
             children: [
-              SegmentedButton<CatalogGroup>(
-                segments: [
-                  for (final g in CatalogGroup.values)
-                    ButtonSegment(
-                      value: g,
-                      label: Text(t('cat.${g.name}'), style: const TextStyle(fontSize: 11.5)),
-                    ),
-                ],
-                selected: {tab},
-                onSelectionChanged: (v) => setState(() => tab = v.first),
-                style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SegmentedButton<CatalogGroup>(
+                  segments: [
+                    for (final g in CatalogGroup.values)
+                      ButtonSegment(
+                        value: g,
+                        label: Text(t('cat.${g.name}'), style: const TextStyle(fontSize: 11.5)),
+                      ),
+                  ],
+                  selected: {tab},
+                  onSelectionChanged: (v) => setState(() => tab = v.first),
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                ),
               ),
               const SizedBox(height: 6),
               Wrap(

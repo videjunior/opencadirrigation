@@ -1902,7 +1902,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
       return Positioned(
         left: margin,
         right: margin,
-        top: low ? 52 : null,
+        top: low ? 56 : null,
         bottom: low ? null : 100,
         child: Align(alignment: low ? Alignment.topLeft : Alignment.bottomLeft, child: card),
       );

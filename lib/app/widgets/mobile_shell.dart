@@ -483,9 +483,9 @@ class _MobileShellState extends State<MobileShell> {
       body: SafeArea(
         child: Column(
           children: [
-            // top bar
+            // top bar (48 px: the buttons are finger-sized)
             Container(
-              height: 44,
+              height: 48,
               color: Cad.panel,
               child: Row(
                 children: [
@@ -588,7 +588,7 @@ class _MobileShellState extends State<MobileShell> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    height: 34,
+                    height: 48,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
@@ -670,8 +670,8 @@ class _MobileShellState extends State<MobileShell> {
           customBorder: const CircleBorder(),
           onTap: onTap,
           child: SizedBox(
-            width: 44,
-            height: 44,
+            width: 48,
+            height: 48,
             child: Stack(
               alignment: Alignment.center,
               children: [
