@@ -487,16 +487,19 @@ extension GeometryCommands on ProjectController {
     }
     if (changed.isEmpty) return 0;
     final affects = project.entities.any((e) => changed.containsKey(e.id) && editAffectsResults(e));
-    mutate(
+    final done = mutate(
       () {
         for (var i = 0; i < project.entities.length; i++) {
           final s = changed[project.entities[i].id];
           if (s != null) project.entities[i] = s;
         }
+        return true;
       },
       invalidateResults: affects,
       label: 'hist.stretch|${changed.length}',
     );
+    // refused while a design runs: nothing changed
+    if (done != true) return 0;
     return changed.length;
   }
 

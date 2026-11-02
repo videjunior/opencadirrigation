@@ -68,6 +68,9 @@ void main() {
         LineEntity(id: 'c', a: const Pt(10, 10), b: const Pt(0, 10)),
         LineEntity(id: 'd', a: Pt.zero, b: const Pt(0, 10)),
       ];
+      // a fifth line from a corner: the closed square takes no more
+      final tail = LineEntity(id: 'e', a: Pt.zero, b: const Pt(-5, -5));
+      expect(joinChains([...lines, tail], 1e-6).single.members.map((e) => e.id).toSet(), {'a', 'b', 'c', 'd'});
       final chains = joinChains(lines, 1e-6);
       expect(chains.length, 1);
       final pl = joinedEntity(chains.single, 1e-6) as PolylineEntity;
@@ -250,6 +253,10 @@ void main() {
         PipeEntity(id: 'q', points: [const Pt(10, 0), const Pt(10, 10)], scope: HydraulicScope.zone),
         LineEntity(id: 'far', a: const Pt(30, 0), b: const Pt(40, 0)),
       ]);
+      // while a design runs the edit is refused and nothing is counted
+      c.busy = true;
+      expect(c.stretchWindow(const Bounds(8, -1, 12, 1), const Pt(2, 0)), 0);
+      c.busy = false;
       expect(c.stretchWindow(const Bounds(8, -1, 12, 1), const Pt(2, 0)), 2);
       expect(lastLabel(), 'hist.stretch|2');
       expect((c.project.byId('p') as PipeEntity).points.last, const Pt(12, 0));

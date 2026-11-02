@@ -232,7 +232,11 @@ List<(Pt, Pt)> _segments(List<Pt> pts, {bool closed = false}) => [for (var i = 1
 
 bool _crossesSegments(List<(Pt, Pt)> a, List<(Pt, Pt)> b) {
   for (final (p, q) in a) {
+    final ax0 = p.x < q.x ? p.x : q.x, ax1 = p.x < q.x ? q.x : p.x;
+    final ay0 = p.y < q.y ? p.y : q.y, ay1 = p.y < q.y ? q.y : p.y;
     for (final (r, s) in b) {
+      // segments whose boxes do not meet cannot cross (most pairs)
+      if ((r.x < ax0 && s.x < ax0) || (r.x > ax1 && s.x > ax1) || (r.y < ay0 && s.y < ay0) || (r.y > ay1 && s.y > ay1)) continue;
       if (segmentIntersection(p, q, r, s) != null) return true;
     }
   }
@@ -246,11 +250,13 @@ bool inPolygon(Entity e, List<Pt> poly, {bool crossing = false}) {
   if (poly.length < 3) return false;
   final pts = outlineOf(e);
   if (pts.isEmpty) return false;
-  final inside = [for (final p in pts) pointInPolygon(p, poly)];
   final edges = _segments(poly, closed: true);
   final own = _segments(pts, closed: _closedOutline(e));
-  if (crossing) return inside.any((x) => x) || _crossesSegments(own, edges);
-  return inside.every((x) => x) && !_crossesSegments(own, edges);
+  if (crossing) return pts.any((p) => pointInPolygon(p, poly)) || _crossesSegments(own, edges);
+  // inside: first the cheap tests that rule an item out
+  final pb = Bounds.ofPoints(poly), eb = Bounds.ofPoints(pts);
+  if (eb.minX < pb.minX || eb.maxX > pb.maxX || eb.minY < pb.minY || eb.maxY > pb.maxY) return false;
+  return pts.every((p) => pointInPolygon(p, poly)) && !_crossesSegments(own, edges);
 }
 
 /// Whether the fence [fence] (an open polyline) crosses [e], or passes

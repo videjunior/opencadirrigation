@@ -75,10 +75,12 @@ List<JoinChain> joinChains(List<Entity> items, double tol, {bool Function(Pt joi
       grown = false;
       for (final e in pending) {
         if (used.contains(e.id) || joinFamily(e) != family) continue;
+        final head = pts.first, tail = pts.last;
+        // a chain back at its start is closed: nothing more joins it
+        if (members.length >= 2 && head.distanceTo(tail) <= tol) break;
         var q = _joinPoints(e);
         var qz = zsOf(e, q.length);
-        final head = pts.first, tail = pts.last;
-        // the chain must not close on itself through a joint it already used
+        // a joint with a valve or another item on it is not crossed
         bool ok(Pt joint) => blocked == null || !blocked(joint);
         if (q.first.distanceTo(tail) <= tol && ok(tail)) {
           pts = [...pts, ...q.skip(1)];
