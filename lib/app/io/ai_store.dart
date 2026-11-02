@@ -25,8 +25,8 @@ class StoredConversation {
 /// The conversations kept, by project uid. No call throws: what cannot be
 /// read is missing, and what cannot be kept says so.
 abstract class ConversationStore {
-  /// Conversations kept at most.
-  static const maxKept = 12;
+  /// Conversations kept at most (a project may keep several since 1.6.0).
+  static const maxKept = 24;
 
   /// Characters of JSON one conversation may take.
   static const maxChars = 40 * 1000 * 1000;

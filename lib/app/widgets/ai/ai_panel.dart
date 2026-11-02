@@ -12,6 +12,7 @@ import '../../ai/ai_assistant.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../layout_mode.dart';
+import 'ai_conversations.dart';
 import 'ai_drop.dart';
 import 'ai_views.dart';
 
@@ -57,7 +58,13 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
     super.dispose();
   }
 
+  /// A new conversation: the one on screen stays in the project's list when
+  /// it is kept; otherwise it goes, after a confirmation.
   Future<void> _newConversation() async {
+    if (ai.keepsConversations && !ai.busy) {
+      ai.newConversation();
+      return;
+    }
     if (await aiConfirmNew(context, c, ai)) ai.clear();
   }
 
@@ -155,6 +162,14 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
           tab(AiPanelView.chat, Icons.forum_outlined, t('ai.view.chat')),
           tab(AiPanelView.data, Icons.fact_check_outlined, t('ai.view.data')),
           tab(AiPanelView.settings, Icons.settings_outlined, t('ai.view.settings')),
+          // the project's conversations kept in this browser (and export, import)
+          IconButton(
+            key: const Key('ai_conversations'),
+            tooltip: t('ai.conv.title'),
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.history, size: 18),
+            onPressed: () => showAiConversations(context, c, ai),
+          ),
           IconButton(
             key: const Key('ai_new'),
             tooltip: t('ai.new'),

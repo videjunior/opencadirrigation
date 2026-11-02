@@ -87,3 +87,41 @@ String attachmentPart(String name, Uint8List bytes, int from, int to) {
   final more = b < lines.length ? ' Next: from ${b + 1} (of ${lines.length} lines).' : ' That is the last line.';
   return 'Lines $a–$b of ${lines.length} of "$name".$more\n$out';
 }
+
+/// Most pages, lines and characters summarize_attachment hands the reading
+/// model at once: well under the price step of the cheapest models
+/// (100 000 input tokens), at about four characters a token.
+const subagentMaxPages = 200, subagentMaxLines = 20000, subagentMaxChars = 320000;
+
+/// A larger part of an attached file than [attachmentPart] gives, for the
+/// model that reads it for the main one (summarize_attachment): pages
+/// [from]…[to] of a PDF as text, or lines [from]…[to] of a text file, within
+/// [subagentMaxPages] pages or [subagentMaxLines] lines and [maxChars]
+/// characters. Returns the text, the range read ("pages 1–80 of 120") and
+/// where the next part starts (null at the end); a null text when nothing
+/// can be read.
+({String? text, String range, int? next}) attachmentRange(String name, Uint8List bytes, {int from = 1, int? to, int maxChars = subagentMaxChars}) {
+  final pdf = name.toLowerCase().endsWith('.pdf') || (bytes.length > 4 && bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46);
+  if (pdf) {
+    final pages = pdfPageCount(bytes);
+    if (pages == 0) return (text: null, range: 'no page readable', next: null);
+    final a = from.clamp(1, pages);
+    final b = (to ?? pages).clamp(a, a + subagentMaxPages - 1).clamp(a, pages);
+    final text = pdfToText(bytes, first: a - 1, maxPages: b - a + 1, maxChars: maxChars);
+    return (text: text, range: 'pages $a–$b of $pages', next: b < pages ? b + 1 : null);
+  }
+  final lines = const LineSplitter().convert(utf8.decode(bytes, allowMalformed: true));
+  if (lines.isEmpty) return (text: null, range: 'empty', next: null);
+  final a = from.clamp(1, lines.length);
+  var b = (to ?? lines.length).clamp(a, a + subagentMaxLines - 1).clamp(a, lines.length);
+  final out = StringBuffer();
+  for (var k = a; k <= b; k++) {
+    final l = lines[k - 1];
+    if (out.length + l.length > maxChars && k > a) {
+      b = k - 1;
+      break;
+    }
+    out.writeln(l);
+  }
+  return (text: out.toString(), range: 'lines $a–$b of ${lines.length}', next: b < lines.length ? b + 1 : null);
+}

@@ -104,6 +104,25 @@ abstract class AiNotesOrigin {
   bool get notesTrusted;
 }
 
+/// What a reading model answered for summarize_attachment: its text (or why
+/// it could not answer), its tokens and cost, and its id.
+class AiReading {
+  const AiReading({required this.model, this.text = '', this.error, this.usage = AiUsage.zero, this.cost = 0});
+  final String model;
+  final String text;
+  final String? error;
+  final AiUsage usage;
+  final double cost;
+}
+
+/// A host whose conversation can ask a smaller model of the same company
+/// to read a long attachment for the task (summarize_attachment).
+abstract class AiReadingHost {
+  /// [text] ([range] of the file [name]) read by the reading model, which
+  /// answers [question].
+  Future<AiReading> readForTask({required String name, required String range, required String text, required String question});
+}
+
 /// What the notes of [host] are, for the model: the user's own, or text
 /// that came with the project from elsewhere.
 bool aiNotesForeign(AgentHost host) => host is AiNotesOrigin && !(host as AiNotesOrigin).notesTrusted && host.notes.trim().isNotEmpty;
@@ -266,6 +285,51 @@ List<AgentTool> agentTools(AgentToolbox b, AgentHost host) {
         final from = a.integer('from', min: 1) ?? 1;
         final to = a.integer('to', min: 1) ?? from + attachmentMaxLines;
         return ToolOutput(aiData(attachmentPart(name, bytes, from, to)));
+      },
+    ),
+    // 1.6.0 IA: a cheaper model reads a long attachment for the task
+    FnTool(
+      name: 'summarize_attachment',
+      description:
+          'Has a smaller, cheaper model of the same company read a long file the user attached (a data sheet, a catalogue, a report, a long table: up to $subagentMaxPages pages or $subagentMaxLines lines a call, from…to) and answer your question about it — the figures, tables or passages the task needs, quoted with their page or line — instead of reading it all yourself with read_attachment: a long read then costs a fraction, and only the answer enters the conversation. Ask precisely ("the flow of each nozzle at 2.0–3.5 bar, with its page"); check what matters with read_attachment on the pages it names. The reading model\'s tokens count in the task\'s cost and spending cap. The file goes to the same company as the conversation, with the user\'s key; nothing changes in the project.',
+      inputSchema: obj(
+        {
+          'name': str('The file\'s name as attached.'),
+          'question': str('What to find or extract, in full.'),
+          'from': int_('First page or line (default 1).'),
+          'to': int_('Last page or line (default: as far as one call goes).'),
+        },
+        required: ['name', 'question'],
+      ),
+      summary: (i) => t('ai.tool.summarizeAttachment', {'n': '${i['name'] ?? ''}'}),
+      handler: (i) async {
+        final a = ToolArgs(i);
+        final name = a.str('name', required: true)!;
+        final question = a.str('question', required: true)!;
+        final reader = switch (host) {
+          final AiReadingHost r => r,
+          _ => null,
+        };
+        if (reader == null) throw ToolInputError('No reading model is available here: read the file with read_attachment.');
+        final files = host.files;
+        final bytes = files[name] ?? files.entries.where((e) => e.key.toLowerCase() == name.toLowerCase()).firstOrNull?.value;
+        if (bytes == null) throw ToolInputError('No file "$name" is attached in this conversation. Attached: ${files.keys.isEmpty ? 'none' : files.keys.join(', ')}.');
+        final part = attachmentRange(name, bytes, from: a.integer('from', min: 1) ?? 1, to: a.integer('to', min: 1));
+        final text = part.text;
+        if (text == null || text.trim().isEmpty) {
+          throw ToolInputError('Nothing readable in "$name" (${part.range}): a scan or pictures only. Ask the user for the figures, or attach it as a picture.');
+        }
+        final r = await reader.readForTask(name: name, range: part.range, text: text, question: question);
+        final next = part.next == null ? 'That is the end of the file.' : 'The file goes on: from ${part.next} in the next call.';
+        return ToolOutput(
+          r.error == null
+              ? 'The reading model (${r.model}) read ${part.range} of "$name". $next\nIts answer:\n${aiData(r.text)}'
+              : 'The reading model could not answer (${r.error}). Read the parts you need with read_attachment.',
+          isError: r.error != null,
+          spent: r.usage,
+          spentCost: r.cost,
+          spentModel: r.model,
+        );
       },
     ),
     FnTool(

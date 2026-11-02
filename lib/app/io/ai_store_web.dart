@@ -147,6 +147,23 @@ class _IdbConversations implements ConversationStore {
   }
 
   // ------------------------------------------------ claims (Web Locks)
+  //
+  // Two Web Locks are held per project uid, on purpose apart:
+  // `opencadirrigation.project.<uid>` (window_locks_web.dart) by the window
+  // that has the project open, and `opencadirrigation-ai-chat:<uid>` (here)
+  // by the page whose assistant keeps that project's conversations. Their
+  // lives differ: the project's goes with the tab's project (another file
+  // opened in the tab, the tab closed); the conversation's goes when no
+  // assistant of the page keeps that uid any more — later than the project
+  // during a task (the conversation moves to the new project only when the
+  // task ends), and without one while no assistant was ever opened. One
+  // lock for both would need a count of holders and a release that waits
+  // for both sides, more code than the second name. Both are requested
+  // with ifAvailable (never waited for), so they cannot deadlock; a project
+  // opened in a second window takes a uid of its own (a copy), so its
+  // assistant claims another name too. resumePristine asks this lock before
+  // a new empty project adopts the uid of a kept conversation: a live page
+  // that keeps that conversation holds it.
 
   /// Claims held by this page: the lock is held while its completer is not
   /// completed. Claims on their way share one future.

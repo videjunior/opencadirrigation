@@ -9,6 +9,12 @@
 /// alive in another window. The project index of the browser store is read
 /// and written under one more lock, so two windows saving at once do not
 /// lose each other's entries.
+///
+/// The AI assistant claims a lock of its own per uid for the conversations
+/// it keeps (`opencadirrigation-ai-chat:<uid>`, lib/app/io/ai_store_web.dart),
+/// with a different life (it outlasts the project's during a task, and is
+/// released when no assistant keeps the uid): see the note there on why the
+/// two stay apart and cannot deadlock.
 library;
 
 import 'window_locks_stub.dart' if (dart.library.js_interop) 'window_locks_web.dart' as impl;

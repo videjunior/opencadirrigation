@@ -110,11 +110,12 @@ List<AgentTool> designManagementOperations(AgentToolbox b) {
       name: 'controller_program',
       effect: ToolEffect.read,
       effectFor: (i) => i['apply_durations'] == true ? ToolEffect.write : ToolEffect.read,
-      description: 'Design → Management → Schedule: the controller programme the system flows give over the coming days — which flow runs when, with which zones, for how long — from the irrigation requirement of the areas (crop, climate, soil), the run time each flow needs per irrigation day, the busiest day and the warnings. apply_durations true sets each system flow\'s duration to the time it needs (the dialog\'s Apply; one undo step; results discarded). set_system_flows edits the flows themselves; export_controller_program saves the CSV. Better with design results (real flows). Inputs: days 1–60 (default 7), day_start_hour 0–23 (default 6), keep_start_hours (keep each flow\'s own start hour instead of running them one after another; default false), entries_limit 1–500 (default 60), apply_durations. Output: hours per flow, the busiest day, the warnings and the programme table (date, flow, zones, start, end, hours).',
+      description: 'Design → Management → Schedule: the controller programme the system flows give over the coming days — which flow runs when, with which zones, for how long — from the irrigation requirement of the areas (crop, climate, soil), the run time each flow needs per irrigation day, the busiest day and the warnings. apply_durations true sets each system flow\'s duration to the time it needs (the dialog\'s Apply; one undo step; results discarded). set_system_flows edits the flows themselves; export_controller_program saves the CSV. Better with design results (real flows). Inputs: days 1–60 (default 7), day_start_hour 0–23 (default 6), keep_start_hours (keep each flow\'s own start hour instead of running them one after another; default false), month 1–12 (the month whose crop water requirement sets the run times, e.g. the month the programme is for; default the design month of each area), entries_limit 1–500 (default 60), apply_durations. Output: hours per flow, the busiest day, the warnings and the programme table (date, flow, zones, start, end, hours).',
       schema: obj({
         'days': int_('Days to programme, 1–60; default 7.'),
         'day_start_hour': num_('Hour the irrigation day starts, 0–23; default 6.'),
         'keep_start_hours': bool_('Keep the start hours of the flows (default false).'),
+        'month': int_('Month of the requirement, 1–12; default the design month of each area.'),
         'entries_limit': int_('Rows of the programme, 1–500; default 60.'),
         'apply_durations': bool_('Set each flow\'s duration to the hours it needs.'),
       }),
@@ -127,12 +128,14 @@ List<AgentTool> designManagementOperations(AgentToolbox b) {
           days: a.integer('days', min: 1, max: 60) ?? 7,
           dayStartHour: a.number('day_start_hour', min: 0, max: 23) ?? 6,
           keepStartHours: a.flag('keep_start_hours') ?? false,
+          month: a.integer('month', min: 1, max: 12),
         );
         // rounded to the minute, "+1 d" after midnight
         String hhmm(double h) => clockText(h);
 
         final out = <String>[
           if (c.results == null) 'No design results: the flows are estimated from the catalogue; run_design for the real ones.',
+          a.has('month') ? 'Run times for the requirement of ${engMonths[a.integer('month', min: 1, max: 12)! - 1]}.' : 'Run times for the design month of each area.',
           if (p.systemFlows.isEmpty) 'The project has no system flows (every zone runs at once): set_system_flows first.',
           for (final f in p.systemFlows) '${f.name}: needs ${engN(prog.perFlowHours[f.id] ?? 0, 2)} h per irrigation day (set ${engN(f.durationHours, 2)} h, from ${engN(f.startHour, 2)} h).',
           'Busiest day: ${engN(prog.maxDailyHours, 1)} h of irrigation${prog.maxDailyHours > 24 ? ' (MORE THAN A DAY)' : ''}.',
@@ -170,8 +173,13 @@ List<AgentTool> designManagementOperations(AgentToolbox b) {
       b,
       name: 'export_controller_program',
       effect: ToolEffect.export,
-      description: 'File → Export report → Controller programme: saves the irrigation programme of the system flows as a CSV file (date, flow, zones, start, end, duration) to load into a controller or hand to the operator. Always confirmed by the user (a download in the browser). Inputs: days 1–60 (default 14, as the menu), day_start_hour 0–23 (default 6), keep_start_hours (default false). Output: the file name and the rows.',
-      schema: obj({'days': int_('Days, 1–60; default 14.'), 'day_start_hour': num_('0–23; default 6.'), 'keep_start_hours': bool_('Keep the start hours of the flows (default false).')}),
+      description: 'File → Export report → Controller programme: saves the irrigation programme of the system flows as a CSV file (date, flow, zones, start, end, duration) to load into a controller or hand to the operator. Always confirmed by the user (a download in the browser). Inputs: days 1–60 (default 14, as the menu), day_start_hour 0–23 (default 6), keep_start_hours (default false), month 1–12 (the month of the requirement; default the design month of each area). Output: the file name and the rows.',
+      schema: obj({
+        'days': int_('Days, 1–60; default 14.'),
+        'day_start_hour': num_('0–23; default 6.'),
+        'keep_start_hours': bool_('Keep the start hours of the flows (default false).'),
+        'month': int_('Month of the requirement, 1–12; default the design month of each area.'),
+      }),
       run: (a, _) async {
         final prog = buildControllerProgram(
           b.p,
@@ -179,6 +187,7 @@ List<AgentTool> designManagementOperations(AgentToolbox b) {
           days: a.integer('days', min: 1, max: 60) ?? 14,
           dayStartHour: a.number('day_start_hour', min: 0, max: 23) ?? 6,
           keepStartHours: a.flag('keep_start_hours') ?? false,
+          month: a.integer('month', min: 1, max: 12),
         );
         if (prog.entries.isEmpty) throw ToolInputError('${t('msg.noAreas')} (no programme to export: the areas need a crop or a daily depth and the flows zones).');
         final file = '${engStem(c)}_schedule.csv';

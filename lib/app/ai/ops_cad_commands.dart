@@ -64,6 +64,10 @@ const _fallbacks = <CadAction, (String, Map<String, Object?>)>{
   CadAction.airValves: ('suggest_air_valves', {}),
   CadAction.insertBlock: ('insert_block', {}),
   CadAction.saveBlock: ('save_block', {}),
+  // 1.6.0 IA: the geometry edits of the selection (CAD-26)
+  CadAction.join: ('join_entities', {}),
+  CadAction.explode: ('explode_entities', {}),
+  CadAction.toArea: ('convert_to_area', {}),
 };
 
 /// How the user's drawing tools are done without the pointer.
@@ -123,10 +127,10 @@ const toolInstead = <ToolId, String>{
   ToolId.copy: 'transform_entities {ids, operation: "copy", dx, dy} (once per copy)',
   ToolId.lasso: 'list_entities {bbox, types, layer} to find the items, then select_entities {ids}',
   ToolId.fence: 'list_entities {bbox, types, layer} to find the items, then select_entities {ids}',
-  ToolId.stretch: 'update_entities {updates: [{id, set: {pts}}]} with the vertices inside the window moved (one entry per item)',
-  ToolId.fillet: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the arc vertices (or create_entities an arc between two lines)',
-  ToolId.chamfer: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the two cut points',
-  ToolId.breakTwo: 'run_operation split_entity {id, at} at both points, then delete_entities the piece between',
+  ToolId.stretch: 'run_operation stretch_entities {bbox, dx, dy} (the crossing window and the move; ids limits it)',
+  ToolId.fillet: 'run_operation fillet_corner {id, at, other_id, other_at, radius_m}',
+  ToolId.chamfer: 'run_operation chamfer_corner {id, at, other_id, other_at, d1_m, d2_m}',
+  ToolId.breakTwo: 'run_operation break_entity {id, from, to}',
   // 1.6.0 AUT
   ToolId.traceImage: 'run_operation outline_from_image {at: [x, y]} (it traces the region on the satellite image and adds it as an area), or trace_region then create_entities',
 };

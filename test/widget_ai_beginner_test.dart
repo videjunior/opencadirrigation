@@ -215,6 +215,9 @@ void main() {
     // zone by the origin, and says so
     expect(out.text, contains(c.t('warn.cad_moved_to_georef')));
     expect(c.project.entities.whereType<PolylineEntity>().single.points.first.distanceTo(const Pt(100, 100)), lessThan(1e-6));
+    // the advice knows it is in place already: a check, never a second move
+    expect(out.text, contains('do not move it again'));
+    expect(out.text, isNot(contains('transform_entities')));
     // a local drawing next to the origin only gets the check
     host.files['local.dxf'] = _bytes(_dxf([(0, 0), (50, 0), (50, 50), (0, 50)]));
     final local = await call(tester, 'import_attachment', {'name': 'local.dxf'});

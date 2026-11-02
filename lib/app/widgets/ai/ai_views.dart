@@ -21,6 +21,7 @@ import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../ai/agent_tools_agent.dart';
 import '../../ai/ai_assistant.dart';
+import '../../ai/ai_attention.dart';
 import '../../io/file_drop.dart';
 import '../../io/file_io.dart';
 import '../../io/links.dart';
@@ -28,9 +29,11 @@ import '../../keys/hotkeys.dart' show OwnKeys;
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
+import 'ai_conversations.dart';
 import 'ai_drop.dart';
 import 'ai_markdown.dart';
 import 'ai_marks_bar.dart';
+import 'ai_steps.dart';
 import 'ai_voice.dart';
 
 /// The assistant's text, rendered from its Markdown (see ai_markdown.dart).
@@ -908,6 +911,8 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                 ],
               ],
             ),
+          // the costs and the cache by step
+          if (!it.running && it.steps.isNotEmpty) AiStepCosts(key: ObjectKey(it), c: c, item: it),
         ],
       ),
     );
@@ -1059,6 +1064,12 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                 children: [
                   TextButton(key: const Key('ai_stop_all'), onPressed: () => ai.answer(Approval.stop), child: Text(t('ai.stop'))),
                   OutlinedButton(key: const Key('ai_skip'), onPressed: () => ai.answer(Approval.skip), child: Text(t('ai.ask.skip'))),
+                  // in "ask": this change and the plain ones after it, without more cards
+                  if (ai.taskPermission == AgentPermission.ask)
+                    Tooltip(
+                      message: t('ai.ask.applyRestHint'),
+                      child: OutlinedButton(key: const Key('ai_apply_rest'), onPressed: ai.applyRest, child: Text(t('ai.ask.applyRest'))),
+                    ),
                   Tooltip(
                     message: t('ai.ask.keys'),
                     child: FilledButton(key: const Key('ai_apply'), focusNode: cardFocus, onPressed: () => ai.answer(Approval.apply), child: Text(t('ai.ask.apply'))),
@@ -1520,6 +1531,76 @@ class _AiSettingsViewState extends State<AiSettingsView> {
 
   String _tier(AiTier x) => c.t('ai.tier.${x.name}');
 
+  /// The connection test of [m]: the button, and the result of the last
+  /// test of this page.
+  Widget _testRow(AiModel m) {
+    final t = c.t;
+    final p = AiAssistant.probes[m.id];
+    final running = AiAssistant.probing.contains(m.id);
+    final key = ai.hasKeyFor(m.provider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const Key('ai_test'),
+            onPressed: !key || running
+                ? null
+                : () async {
+                    await ai.testConnection(m);
+                    if (mounted) setState(() {});
+                  },
+            icon: running ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.network_check, size: 16),
+            label: Text(t('ai.test', {'m': m.label}), style: const TextStyle(fontSize: 12)),
+          ),
+        ),
+        if (!key)
+          Text(t('ai.test.needKey', {'p': m.provider.company}), style: TextStyle(fontSize: 10.5, color: Cad.fg54))
+        else if (p != null)
+          Text(ai.probeText(p), key: const Key('ai_test_result'), style: TextStyle(fontSize: 11, color: p.ok ? Cad.ok : Cad.unconnected))
+        else
+          Text(t('ai.test.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+      ],
+    );
+  }
+
+  /// The system notifications of the call back: allowed, asked or refused
+  /// by the browser (nothing where it has none).
+  Widget _notifyRow() {
+    final t = c.t;
+    final p = AiAttention.permission;
+    if (p == 'unsupported') return const SizedBox.shrink();
+    if (p == 'granted') {
+      return SwitchListTile(
+        key: const Key('ai_notify'),
+        dense: true,
+        contentPadding: const EdgeInsetsDirectional.only(start: 16),
+        value: AiAttention.notify,
+        onChanged: (v) => setState(() => AiAttention.notify = v),
+        title: Text(t('ai.attn.notify'), style: const TextStyle(fontSize: 12)),
+      );
+    }
+    if (p == 'denied') {
+      return Padding(
+        padding: const EdgeInsetsDirectional.only(start: 16, bottom: 4),
+        child: Text(t('ai.attn.denied'), key: const Key('ai_notify_denied'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+      );
+    }
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: TextButton.icon(
+        key: const Key('ai_notify_allow'),
+        onPressed: () async {
+          await AiAttention.allowNotifications();
+          if (mounted) setState(() {});
+        },
+        icon: const Icon(Icons.notifications_active_outlined, size: 16),
+        label: Text(t('ai.attn.allow'), style: const TextStyle(fontSize: 12)),
+      ),
+    );
+  }
+
   /// The model picker: grouped by company, each with its tier and price.
   Widget _modelPicker() {
     final t = c.t;
@@ -1591,6 +1672,8 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               style: TextStyle(fontSize: 10.5, color: Cad.fg54),
             ),
             Text(t('ai.model.switch'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+            // 1.6.0 IA: a connection test of the model chosen (one small request)
+            _testRow(m),
             // the key of the chosen model's company first
             if (!noKey) ...[_keySection(m.provider), for (final p in other) _keySection(p)],
             Text(t('ai.key.privacy'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
@@ -1613,6 +1696,17 @@ class _AiSettingsViewState extends State<AiSettingsView> {
                 t('ai.effort.hint'),
                 key: const Key('ai_effort_hint'),
                 style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+              ),
+            // 1.6.0 IA: the effort follows the stage of the task (Claude, through effort messages)
+            if (m.perMessageEffort && m.provider == AiProvider.anthropic)
+              SwitchListTile(
+                key: const Key('ai_stage_effort'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                value: ai.stageEffort,
+                onChanged: (v) => setState(() => ai.stageEffort = v),
+                title: Text(t('ai.stageEffort'), style: const TextStyle(fontSize: 12.5)),
+                subtitle: Text(t('ai.stageEffort.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
               ),
             SectionTitle(t('ai.mode')),
             RadioGroup<AgentPermission>(
@@ -1714,6 +1808,17 @@ class _AiSettingsViewState extends State<AiSettingsView> {
               title: Text(t('ai.askStart'), style: const TextStyle(fontSize: 12.5)),
               subtitle: Text(t('ai.askStart.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             ),
+            // 1.6.0 IA: a task that waits or ends while the app is in the background
+            SwitchListTile(
+              key: const Key('ai_attention'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              value: AiAttention.enabled,
+              onChanged: (v) => setState(() => AiAttention.enabled = v),
+              title: Text(t('ai.attn.setting'), style: const TextStyle(fontSize: 12.5)),
+              subtitle: Text(t('ai.attn.setting.hint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            ),
+            if (AiAttention.enabled) _notifyRow(),
             // conversations kept in this browser (IndexedDB), by project
             SwitchListTile(
               key: const Key('ai_keep'),
@@ -1785,6 +1890,30 @@ class _AiSettingsViewState extends State<AiSettingsView> {
                   onPressed: ai.items.isEmpty ? null : ai.saveTranscript,
                   icon: const Icon(Icons.download_outlined, size: 16),
                   label: Text(t('ai.transcript.save')),
+                ),
+                // 1.6.0 IA: the project's conversations, and a conversation to or from a file
+                OutlinedButton.icon(
+                  key: const Key('ai_conv_list'),
+                  onPressed: () => showAiConversations(context, c, ai),
+                  icon: const Icon(Icons.history, size: 16),
+                  label: Text(t('ai.conv.title')),
+                ),
+                OutlinedButton.icon(
+                  key: const Key('ai_conv_export_file'),
+                  onPressed: ai.busy || !ai.items.any((it) => it.kind != AiItemKind.notice) ? null : () => aiExportConversation(c, ai),
+                  icon: const Icon(Icons.file_download_outlined, size: 16),
+                  label: Text(t('ai.conv.export')),
+                ),
+                OutlinedButton.icon(
+                  key: const Key('ai_conv_import_file'),
+                  onPressed: ai.busy
+                      ? null
+                      : () async {
+                          await aiImportConversation(c, ai);
+                          if (mounted) setState(() {});
+                        },
+                  icon: const Icon(Icons.file_open_outlined, size: 16),
+                  label: Text(t('ai.conv.import')),
                 ),
                 OutlinedButton.icon(
                   key: const Key('ai_clear'),

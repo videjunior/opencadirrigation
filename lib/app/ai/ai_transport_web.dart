@@ -5,8 +5,20 @@ import 'package:web/web.dart' as web;
 
 import '../../core/ai/llm.dart';
 
-/// Response headers the clients read (when the API exposes them to the page).
-const _headers = ['content-type', 'retry-after', 'retry-after-ms', 'request-id', 'x-request-id', 'x-should-retry'];
+/// Response headers the clients read (when the API exposes them to the page),
+/// the account's rate limits among them (the connection test shows them).
+final _headers = [
+  'content-type',
+  'retry-after',
+  'retry-after-ms',
+  'request-id',
+  'x-request-id',
+  'x-should-retry',
+  for (final k in ['requests', 'tokens', 'input-tokens', 'output-tokens'])
+    for (final x in ['limit', 'remaining', 'reset']) 'anthropic-ratelimit-$k-$x',
+  for (final x in ['limit', 'remaining', 'reset'])
+    for (final k in ['requests', 'tokens']) 'x-ratelimit-$x-$k',
+];
 
 /// fetch with an AbortController; the body is read chunk by chunk from its
 /// ReadableStream, so the answer shows as it is written. No cookies and no
