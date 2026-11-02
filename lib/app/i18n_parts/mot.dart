@@ -51,4 +51,20 @@ const _mot = <String, (String, String, String)>{
     'Split the zone or the mainline into smaller parts, or enable fewer candidate diameters in the catalogue for the use.',
     'Divida el sector o la línea principal en partes menores, o habilite menos diámetros candidatos en el catálogo para el uso.',
   ),
+  // ---- zone whose ground alone exceeds the pressure window (MOT-09)
+  'warn.zone_slope_exceeds_window': (
+    'O desnível do setor sozinho passa da janela de pressão dos emissores',
+    'The elevation range of the zone alone exceeds the emitter pressure window',
+    'El desnivel del sector por sí solo supera la ventana de presión de los emisores',
+  ),
+  'adv.zone_slope_exceeds_window.why': (
+    'A diferença de cota entre os emissores mais alto e mais baixo do setor é maior que a faixa de pressão permitida: mesmo sem perda nenhuma nos tubos, uns ficariam fora da janela. Tubos maiores não resolvem, por isso o programa manteve os tubos mais baratos.',
+    'The elevation difference between the highest and the lowest emitter of the zone is larger than the allowed pressure range: even with no loss at all in the pipes some would be outside the window. Larger pipes do not help, so the program kept the cheaper pipes.',
+    'La diferencia de cota entre el emisor más alto y el más bajo del sector es mayor que el rango de presión permitido: aun sin pérdida alguna en las tuberías, algunos quedarían fuera de la ventana. Tuberías mayores no lo resuelven, por eso el programa mantuvo las tuberías más baratas.',
+  ),
+  'adv.zone_slope_exceeds_window.how': (
+    'Use emissores autocompensantes, ponha as linhas laterais em nível (seguindo as curvas), divida o setor por faixas de cota ou instale reguladores de pressão nas laterais.',
+    'Use pressure-compensating emitters, lay the laterals along the contours, split the zone by elevation bands or fit pressure regulators on the laterals.',
+    'Use emisores autocompensantes, ponga las laterales a nivel (siguiendo las curvas), divida el sector por franjas de cota o instale reguladores de presión en las laterales.',
+  ),
 };

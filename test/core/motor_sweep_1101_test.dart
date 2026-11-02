@@ -224,4 +224,30 @@ void main() {
     expect(solveLp(p, maxIterations: 0).status, LpStatus.iterationLimit);
     expect(solveLp(p).status, LpStatus.optimal);
   });
+
+  test('MOT-09: a zone on a slope beyond its pressure window keeps its cheaper pipes and says why', () {
+    double cost(double slopePct, List<String> warnings, Set<String> names) {
+      final (p, _, supply, _) = _zone();
+      for (final (x, y) in [(-200.0, -200.0), (400.0, -200.0), (-200.0, 300.0), (400.0, 300.0), (0.0, 0.0), (120.0, 0.0), (0.0, 45.0), (120.0, 45.0)]) {
+        p.entities.add(SpotHeightEntity(id: p.newId(), position: Pt(x, y), elevation: 100 - slopePct / 100 * x));
+      }
+      p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: true, designHeadM: 0, waterLevelOffsetM: 0));
+      final z = Designer(p).designAll().zones.values.single;
+      warnings.addAll(z.warnings);
+      names.addAll(z.pipes.map((x) => x.pipeName));
+      return z.pipeCost;
+    }
+
+    final flat = <String>[], steep = <String>[];
+    final steepPipes = <String>{};
+    final c0 = cost(0, flat, {});
+    final c6 = cost(6, steep, steepPipes);
+    expect(flat, isEmpty);
+    // 7.2 m of ground across a 3 m window: the submain went to DN100 (+15 %)
+    // and the window was missed all the same
+    expect(steep, contains('zone_slope_exceeds_window'));
+    expect(steep, isNot(contains('cannot_meet_pressure_window')));
+    expect(steepPipes.where((n) => n.contains('DN 100')), isEmpty);
+    expect(c6, lessThanOrEqualTo(c0 + 1e-6));
+  });
 }

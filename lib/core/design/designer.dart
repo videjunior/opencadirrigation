@@ -1212,10 +1212,19 @@ class Designer {
     return warnings;
   }
 
-  /// Greedy upsizing along the critical path until the window is met.
+  /// Greedy upsizing along the critical path until the window is met. When
+  /// it cannot be met and the ground alone spreads the emitters beyond the
+  /// window (no pipe, however large, gives them the same pressure), the
+  /// assignment goes back to the one before the repair, with
+  /// `zone_slope_exceeds_window` (it bought the largest pipes for nothing).
   ZoneResult _repairZone(String valveId, Map<String, List<GLink>> units, List<String> warnings, ZoneResult res) {
+    if (res.withinWindow) return res;
     final (_, zoneNode) = model.valveNodes[valveId]!;
     final linkIds = model.zoneLinks[valveId] ?? <String>{};
+    final start = res;
+    final assigned = {for (final u in units.keys) u: _assigned[u]};
+    final splits = {for (final u in units.keys) u: ?_pendingSplits[u]};
+    var failed = false;
     for (var it = 0; it < 400 && !res.withinWindow; it++) {
       final target = res.minOutlet;
       if (target == null) break;
@@ -1241,14 +1250,46 @@ class Designer {
         }
       }
       if (bestUnit == null) {
-        warnings.add('cannot_meet_pressure_window');
+        failed = true;
         break;
       }
       _assign(bestUnit, bestSpec!);
       _pendingSplits.remove(bestUnit);
       res = analyzeZone(valveId, detailed: false);
     }
+    if (res.withinWindow) return res;
+    if (_staticSpread(valveId) > res.allowedMax - res.allowedMin + 1e-6) {
+      for (final e in assigned.entries) {
+        final id = e.value;
+        if (id == null) {
+          _assigned.remove(e.key);
+        } else {
+          _assigned[e.key] = id;
+        }
+      }
+      _pendingSplits.addAll(splits);
+      _networkInputs++;
+      warnings.add('zone_slope_exceeds_window');
+      return start;
+    }
+    if (failed) warnings.add('cannot_meet_pressure_window');
     return res;
+  }
+
+  /// Spread (m) of the elevations of the emitters of zone [valveId], risers
+  /// included: the spread of their pressures with no friction at all.
+  double _staticSpread(String valveId) {
+    var lo = double.infinity, hi = -double.infinity;
+    for (final id in model.zoneNodes[valveId] ?? const <String>{}) {
+      final n = model.nodes[id]!;
+      for (final e in n.emitters) {
+        if (e.index == -2) continue;
+        final z = n.elevation + e.offset;
+        lo = math.min(lo, z);
+        hi = math.max(hi, z);
+      }
+    }
+    return hi > lo ? hi - lo : 0;
   }
 
   /// Critical emitter nodes of a zone for the LP: per lateral its end, its
