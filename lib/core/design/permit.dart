@@ -575,7 +575,7 @@ double _up(double h) => (h * 10 - 1e-9).ceil() / 10;
 
 /// Degrees, minutes and seconds of [deg] with the hemisphere letter of
 /// [pos] or [neg]: `17°51'14.44" S`.
-String dmsText(double deg, String pos, String neg, {int decimals = 2}) {
+String permitDms(double deg, String pos, String neg, {int decimals = 2}) {
   final a = deg.abs();
   var d = a.floor();
   var mFull = (a - d) * 60;
@@ -712,8 +712,8 @@ TechDocument permitDocument(Project p, PermitStudy study, Translate t, {String F
           (t('prb.permit.basin'), info.basin),
           (t('prb.permit.municipality'), info.municipality),
           (t('prb.permit.datum'), u == null ? '' : t('prb.src.sirgas')),
-          (t('prb.permit.lat'), src.lat == null ? '' : '${dmsText(src.lat!, 'N', 'S')}  (${fmt(src.lat!, 6)}°)'),
-          (t('prb.permit.lon'), src.lon == null ? '' : '${dmsText(src.lon!, t('prb.east'), t('prb.west'))}  (${fmt(src.lon!, 6)}°)'),
+          (t('prb.permit.lat'), src.lat == null ? '' : '${permitDms(src.lat!, 'N', 'S')}  (${fmt(src.lat!, 6)}°)'),
+          (t('prb.permit.lon'), src.lon == null ? '' : '${permitDms(src.lon!, t('prb.east'), t('prb.west'))}  (${fmt(src.lon!, 6)}°)'),
           (
             t('prb.permit.utm'),
             u == null ? '' : 'E ${fmt(u.easting, 1)} m · N ${fmt(u.northing, 1)} m · ${t('prb.permit.zone')} ${u.zone}${u.north ? 'N' : 'S'}${src.epsg == null ? '' : ' (EPSG:${src.epsg})'}',

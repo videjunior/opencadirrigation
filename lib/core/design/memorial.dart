@@ -88,7 +88,7 @@ TechDocument buildMemorial(Project p, DesignResults? r, ReportLabels labels) {
         (t('dlg.client'), m.client),
         (t('dlg.site'), m.site),
         (t('dlg.designer'), m.designer),
-        (t('prb.mem.location'), lat == null ? t('prb.mem.noGeoref') : '${dmsText(lat, 'N', 'S')}, ${dmsText(lon!, t('prb.east'), t('prb.west'))} (SIRGAS 2000)'),
+        (t('prb.mem.location'), lat == null ? t('prb.mem.noGeoref') : '${permitDms(lat, 'N', 'S')}, ${permitDms(lon!, t('prb.east'), t('prb.west'))} (SIRGAS 2000)'),
         (t('prb.mem.irrigatedArea'), '${fmt(totalHa, 2)} ha'),
         (t('prb.mem.counts'), t('prb.mem.countsValue', {'a': '${areas.length}', 'z': '${valves.length}', 'e': '$emitters', 's': '${supplies.length}'})),
         (t('prb.mem.methods'), methods.map((x) => t('req.method.$x')).join(', ')),

@@ -47,7 +47,10 @@ String _supplyId(AgentToolbox b, String ref) {
 List<AgentTool> opsPrb(AgentToolbox b) {
   final c = b.c;
   final t = b.t;
-  final docs = str('Which document: permit (water permit table and self-monitoring sheet), memorial (descriptive and calculation memorial), om (operation and maintenance plan), budget (budget by compositions, BDI and physical-financial schedule), lcc (life-cycle cost of the alternatives).', techDocumentKeys);
+  final docs = str(
+    'Which document: permit (water permit table and self-monitoring sheet), memorial (descriptive and calculation memorial), om (operation and maintenance plan), budget (budget by compositions, BDI and physical-financial schedule), lcc (life-cycle cost of the alternatives).',
+    techDocumentKeys,
+  );
   return [
     // ---------------------------------------------------------------- permit table (PRD-02)
     cadOp(
@@ -70,13 +73,15 @@ List<AgentTool> opsPrb(AgentToolbox b) {
         for (final src in _sourcesOf(b, st, a.str('source'))) {
           final i = src.info;
           final u = src.utm;
-          out.write('\n\nSource ${src.supply.id} "${src.supply.name}": kind ${i.kind}, water body "${i.waterBody}", basin "${i.basin}", municipality "${i.municipality}", register "${i.registry}", permit "${i.permitNumber}", status ${i.status}.');
+          out.write(
+            '\n\nSource ${src.supply.id} "${src.supply.name}": kind ${i.kind}, water body "${i.waterBody}", basin "${i.basin}", municipality "${i.municipality}", register "${i.registry}", permit "${i.permitNumber}", status ${i.status}.',
+          );
           if (src.lat == null || src.lon == null || u == null) {
             out.write('\nCoordinates: none (no georeference).');
           } else {
             final lat = src.lat!, lon = src.lon!;
             out.write(
-              '\nCoordinates SIRGAS 2000: ${dmsText(lat, 'N', 'S')}, ${dmsText(lon, 'E', 'W')} (${engN(lat, 6)}, ${engN(lon, 6)}); '
+              '\nCoordinates SIRGAS 2000: ${permitDms(lat, 'N', 'S')}, ${permitDms(lon, 'E', 'W')} (${engN(lat, 6)}, ${engN(lon, 6)}); '
               'UTM E ${engN(u.easting, 1)} N ${engN(u.northing, 1)} zone ${u.zone}${u.north ? 'N' : 'S'}${src.epsg == null ? '' : ' (EPSG:${src.epsg})'}.',
             );
           }
@@ -141,7 +146,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
         if (id == null && fixed == null && max == null && !a.has('federal_floor') && !a.has('monitoring_unit')) {
           throw ToolInputError('Nothing to set: give the source fields with "source", or the regime fields.');
         }
-        final set = <String>[];
+        final given = <String>[];
         b.change('set_permit_info', () {
           final s = b.p.deliverables.permit;
           if (id != null) {
@@ -153,28 +158,28 @@ List<AgentTool> opsPrb(AgentToolbox b) {
             if (a.has('registry')) info.registry = a.str('registry')!;
             if (a.has('permit_number')) info.permitNumber = a.str('permit_number')!;
             if (a.has('status')) info.status = a.str('status')!;
-            set.add('source $id');
+            given.add('source $id');
           }
           if (fixed != null) {
             s.fixedHoursPerDay = fixed;
-            set.add('fixed hours $fixed');
+            given.add('fixed hours $fixed');
           }
           if (max != null) {
             s.maxHoursPerDay = max;
-            set.add('max hours $max');
+            given.add('max hours $max');
           }
           if (a.has('federal_floor')) {
             s.federalFloor = a.flag('federal_floor')!;
-            set.add('federal floor ${s.federalFloor}');
+            given.add('federal floor ${s.federalFloor}');
           }
           if (a.has('monitoring_unit')) {
             final u = a.str('monitoring_unit')!;
             s.monitoringUnit = u == 'other' ? '' : u;
-            set.add('unit $u');
+            given.add('unit $u');
           }
-          return set.length;
+          return given.length;
         }, invalidate: false);
-        return ToolOutput('Set ${set.join(', ')}. permit_table shows the table.');
+        return ToolOutput('Set ${given.join(', ')}. permit_table shows the table.');
       },
     ),
     // ---------------------------------------------------------------- every document
@@ -287,11 +292,11 @@ List<AgentTool> opsPrb(AgentToolbox b) {
         final esc = a.number('energy_escalation_pct', min: -50, max: 50);
         final water = a.number('water_price', min: 0, max: 1e6);
         final life = byCategory('life', 1, 100), maint = byCategory('maintenance', 0, 100);
-        final set = [
+        final given = [
           for (final k in i.keys)
             if (i[k] != null) k,
         ];
-        if (set.isEmpty) throw ToolInputError('Nothing to set.');
+        if (given.isEmpty) throw ToolInputError('Nothing to set.');
         b.change('set_life_cycle_settings', () {
           final s = b.p.deliverables.lifeCycle;
           if (years != null) s.years = years;
@@ -309,9 +314,9 @@ List<AgentTool> opsPrb(AgentToolbox b) {
           }
           s.life.addAll(life);
           s.maintenance.addAll(maint);
-          return set.length;
+          return given.length;
         }, invalidate: false);
-        return ToolOutput('Set ${set.join(', ')}. life_cycle_cost shows the comparison.');
+        return ToolOutput('Set ${given.join(', ')}. life_cycle_cost shows the comparison.');
       },
     ),
     // ---------------------------------------------------------------- memorial and O&M plan (PRD-03, PRD-12)
@@ -410,11 +415,11 @@ List<AgentTool> opsPrb(AgentToolbox b) {
             costs[key] = (v as num?)?.toDouble();
           }
         }
-        final set = [
+        final given = [
           for (final k in i.keys)
             if (i[k] != null) k,
         ];
-        if (set.isEmpty) throw ToolInputError('Nothing to set.');
+        if (given.isEmpty) throw ToolInputError('Nothing to set.');
         b.change('set_budget_settings', () {
           final s = b.p.deliverables.budget;
           void pct(String k, void Function(double v) to) {
@@ -444,7 +449,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
           return true;
         }, invalidate: false);
         final s = b.p.deliverables.budget;
-        return ToolOutput('Set ${set.join(', ')}. BDI of the services ${engN(s.servicesBdi * 100, 2)} %, of the materials ${engN(s.materialsBdi * 100, 2)} %.');
+        return ToolOutput('Set ${given.join(', ')}. BDI of the services ${engN(s.servicesBdi * 100, 2)} %, of the materials ${engN(s.materialsBdi * 100, 2)} %.');
       },
     ),
   ];

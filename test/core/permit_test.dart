@@ -86,13 +86,13 @@ void main() {
     final s = buildPermitStudy(oneHectare(), null).sources.single;
     expect(s.lat, closeTo(-17.853, 1e-6));
     expect(s.lon, closeTo(-51.85, 1e-6));
-    expect(dmsText(s.lat!, 'N', 'S'), '17°51\'10.80" S');
-    expect(dmsText(s.lon!, 'E', 'W'), '51°51\'00.00" W');
+    expect(permitDms(s.lat!, 'N', 'S'), '17°51\'10.80" S');
+    expect(permitDms(s.lon!, 'E', 'W'), '51°51\'00.00" W');
     expect(s.utm!.zone, 22);
     expect(s.utm!.north, isFalse);
     expect(s.epsg, 31982);
     // seconds that round to 60 carry into the minutes
-    expect(dmsText(-10.999999, 'N', 'S'), '11°00\'00.00" S');
+    expect(permitDms(-10.999999, 'N', 'S'), '11°00\'00.00" S');
     // without a georeference the coordinates stay blank, and the table says why
     final none = buildPermitStudy(oneHectare(georef: false), null).sources.single;
     expect(none.lat, isNull);

@@ -319,8 +319,8 @@ List<Widget> _sourceFields(ProjectController c, PermitSource src, SourcePermitIn
     KV(t('prb.permit.maxFlow'), '${fmt(src.maxFlowM3h, 1)} m³/h'),
     KV(t('prb.permit.annualVolume'), '${fmt(src.annualM3, 0)} m³'),
     KV(t('prb.permit.months'), [for (final m in src.months) t('prb.mon.$m')].join(', ')),
-    if (src.lat != null) KV(t('prb.permit.lat'), dmsText(src.lat!, 'N', 'S')),
-    if (src.lon != null) KV(t('prb.permit.lon'), dmsText(src.lon!, t('prb.east'), t('prb.west'))),
+    if (src.lat != null) KV(t('prb.permit.lat'), permitDms(src.lat!, 'N', 'S')),
+    if (src.lon != null) KV(t('prb.permit.lon'), permitDms(src.lon!, t('prb.east'), t('prb.west'))),
     for (final w in src.warnings) _hint(permitWarningText(w, t.call, src: src, s: c.project.deliverables.permit, name: c.entityName), color: w == 'permit_federal_floor' ? null : Cad.attention),
   ];
 }
@@ -405,7 +405,7 @@ Future<void> showBudgetDialog(BuildContext context, ProjectController c) {
       final p = c.project;
       final s = p.deliverables.budget;
       final b = buildBudget(p, c.results, describe: t.call);
-      Widget pct(String label, double v, ValueChanged<double> set, {Key? key}) => NumField(key: key, label: label, value: v, onChanged: (x) => setState(() => set(x.clamp(0, 100).toDouble())));
+      Widget pct(String label, double v, ValueChanged<double> apply, {Key? key}) => NumField(key: key, label: label, value: v, onChanged: (x) => setState(() => apply(x.clamp(0, 100).toDouble())));
       final out = !bdiWithin(b.servicesBdi, bdiReferenceRanges.services) || !bdiWithin(b.materialsBdi, bdiReferenceRanges.materials);
       return [
         _hint(t('prb.dlg.budHint')),
