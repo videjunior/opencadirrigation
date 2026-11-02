@@ -14,6 +14,8 @@ void main() {
       if (!f.path.endsWith('.dart')) continue;
       final rel = f.path.replaceAll(r'\', '/').split('lib/core/').last;
       if (rel == 'api.dart' || rel == 'hydraulics/sparse_solver.dart') continue;
+      // 1.6.0 FMT: the code page tables codepages.dart loads on demand (deferred)
+      if (rel == 'io/codepages_cjk_data.dart') continue;
       if (rel.startsWith('io/fonts/') && rel != 'io/fonts/pdf_fonts.dart') continue;
       // a part comes with its library
       if (RegExp(r'^part of ', multiLine: true).hasMatch(f.readAsStringSync())) continue;

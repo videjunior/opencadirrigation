@@ -20,6 +20,8 @@ import 'dart:typed_data';
 
 import '../model/geometry.dart';
 import 'cad_drawing.dart';
+import 'cad_xdata.dart' show xdataApp;
+import 'codepages.dart' show encodeCp1252;
 import 'dxf.dart';
 
 // --------------------------------------------------------------------- bits
@@ -453,13 +455,22 @@ class DwgWriter {
   /// Encodes one object: type, bitsize placeholder, own handle, empty EED,
   /// [data], then the handle stream at [bitsize]; framed by the MS size and
   /// followed by the CRC.
-  void _add(int handle, int type, void Function(_BitWriter w) data, void Function(_BitWriter w) handles) {
+  void _add(int handle, int type, void Function(_BitWriter w) data, void Function(_BitWriter w) handles, {Uint8List? eed}) {
     final w = _BitWriter();
     w.writeBS(type);
     final bsPos = w.pos;
     w.writeRL(0);
     w.writeH(0, handle);
-    w.writeBS(0); // no extended entity data
+    // extended data of the application of the hydraulic data, then the end of the EED
+    final app = _appXdata;
+    if (eed != null && eed.isNotEmpty && app != null) {
+      w.writeBS(eed.length);
+      w.writeH(5, app);
+      for (final b in eed) {
+        w.writeRC(b);
+      }
+    }
+    w.writeBS(0);
     data(w);
     w.patchRL(bsPos, w.pos);
     handles(w);
@@ -531,6 +542,7 @@ class DwgWriter {
   /// handles that follow the common ones.
   void _ent(int handle, int type, CadEntity e, _Link link, void Function(_BitWriter w) data, [void Function(_BitWriter w)? extra]) {
     final layer = _layerHandles[e.layer.toLowerCase()] ?? _H.layer0;
+    final x = d.xdata[e];
     _add(
       handle,
       type,
@@ -542,7 +554,50 @@ class DwgWriter {
         _entityHandles(w, owner: link.owner, prev: link.prev, next: link.next, layer: layer);
         extra?.call(w);
       },
+      eed: x == null ? null : eedBytes(x),
     );
+  }
+
+  /// Handle of the APPID of the hydraulic data, when the drawing has extended data.
+  int? _appXdata;
+
+  /// The extended data groups [groups] as the bytes of a DWG EED (R2000):
+  /// per group the code − 1000, then the value (a text as length, code page
+  /// (big-endian) and bytes in 1252; a brace as 0 or 1; a real as 8 bytes; a
+  /// 16-bit integer as 2 bytes, little-endian).
+  static Uint8List eedBytes(List<(int, Object)> groups) {
+    final b = BytesBuilder();
+    for (final (code, value) in groups) {
+      switch (code) {
+        case 1000:
+          final s = encodeCp1252('$value');
+          final n = s.length > 255 ? 255 : s.length;
+          // the code page (30, ANSI 1252) high byte first, as the files of
+          // other programs have it
+          b
+            ..addByte(0)
+            ..addByte(n)
+            ..addByte(0)
+            ..addByte(30)
+            ..add(s.sublist(0, n));
+        case 1002:
+          b
+            ..addByte(2)
+            ..addByte('$value' == '}' ? 1 : 0);
+        case 1040:
+          final v = ByteData(8)..setFloat64(0, (value as num).toDouble(), Endian.little);
+          b
+            ..addByte(40)
+            ..add(v.buffer.asUint8List());
+        case 1070:
+          final v = (value as num).toInt();
+          b
+            ..addByte(70)
+            ..addByte(v & 0xFF)
+            ..addByte((v >> 8) & 0xFF);
+      }
+    }
+    return b.toBytes();
   }
 
   static int _color(int c) => c == 0 || (c >= 1 && c <= 255) ? c : 256;
@@ -1036,9 +1091,11 @@ class DwgWriter {
       _objHandles(w, 0);
       w.writeH(2, _H.vport);
     });
-    _add(_H.appidControl, 66, (w) => _control(w, 1, short: true), (w) {
+    final app = _appXdata;
+    _add(_H.appidControl, 66, (w) => _control(w, app == null ? 1 : 2, short: true), (w) {
       _objHandles(w, 0);
       w.writeH(2, _H.appidAcad);
+      if (app != null) w.writeH(2, app);
     });
     _add(
       _H.dimstyleControl,
@@ -1136,6 +1193,13 @@ class DwgWriter {
       _tableFlags(w, 'ACAD');
       w.writeRC(0);
     }, (w) => _objHandles(w, _H.appidControl, xrefNull: true));
+    if (app != null) {
+      _add(app, 67, (w) {
+        w.writeBL(0);
+        _tableFlags(w, xdataApp);
+        w.writeRC(0);
+      }, (w) => _objHandles(w, _H.appidControl, xrefNull: true));
+    }
     // linetypes: dash lengths with their (unused) shape fields and the strings area
     const none = <double>[];
     for (final (h, name, desc, dashes) in [
@@ -1763,6 +1827,8 @@ class DwgWriter {
     for (final s in d.dimStyles) {
       if (s.name != 'Standard') _dimstyleHandles[s.name] = _nextHandle++;
     }
+    // the application of the hydraulic data (extended data)
+    if (d.xdata.isNotEmpty) _appXdata = _nextHandle++;
     // blocks: header, BLOCK, ENDBLK, then their entities and attribute definitions
     final blocks = d.blocks.where((b) => b.name.trim().isNotEmpty).toList();
     final blockEnds = <String, (int, int)>{};

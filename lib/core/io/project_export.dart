@@ -114,8 +114,10 @@ class ProjectExporter {
   Uint8List dwg() => DwgWriter.writeDrawing(cadDrawing());
 
   /// The project as a native CAD drawing (layers with true colours and
-  /// linetypes, blocks, dimension styles) for the R2000 exports.
-  CadDrawing cadDrawing() => CadExport(project, units: units).build();
+  /// linetypes, blocks, dimension styles) for the R2000 exports; pipes,
+  /// laterals and hydraulic items carry their hydraulic data (with the
+  /// flows and pressures of the results) as extended data.
+  CadDrawing cadDrawing() => CadExport(project, units: units, results: results).build();
 
   /// The drawing as a plain CAD document (layers + primitive entities), the
   /// content of the R12 export.

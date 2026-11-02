@@ -22,6 +22,8 @@ import 'state/workspace.dart';
 import 'widgets/dialogs/export_dialogs.dart';
 import 'widgets/dialogs/import_progress_dialog.dart';
 import 'widgets/dialogs/pdf_import_dialog.dart';
+// 1.6.0 FMT
+import 'widgets/dialogs/points_import_dialog.dart' show isPointsFile, showPointsImportDialog;
 import 'theme.dart';
 import 'project_name.dart'; // 1.6.0 UI
 
@@ -212,6 +214,12 @@ Future<void> importDrawingAction(BuildContext context, ProjectController c) asyn
     if (context.mounted) await importPdfAction(context, c, f.$1, f.$2);
     return;
   }
+  // 1.6.0 FMT: a points file through the import wizard (columns, encoding, system)
+  if (isPointsFile(f.$1) && context.mounted) {
+    final summary = await showPointsImportDialog(context, c, f.$1, f.$2);
+    if (summary != null) c.notify('${c.t('msg.imported')}: $summary');
+    return;
+  }
   try {
     // large files are read in slices, with their progress and a cancel button
     final summary = context.mounted ? await showImportProgressDialog(context, c, f.$1, f.$2) : c.importFile(f.$1, f.$2);
@@ -244,6 +252,8 @@ Future<void> exportDrawingAction(BuildContext context, ProjectController c, Draw
     if (o == null) return;
     sheet = o;
     await preparePdfFonts(pdfTexts(c, reports: sheet.includeReports || sheet.bomOnSheet || sheet.details.isNotEmpty || sheet.charts), language: c.lang);
+    // 1.6.0 FMT: PDF/A embeds every font, the Latin one included
+    if (sheet.pdfA) await ensurePdfLatinFont();
   }
   await deliverExport(c, '${_safeName(c)}.${f.extension}', f.mime, () => c.exporter().exportDrawing(f, sheet: sheet));
 }

@@ -455,14 +455,6 @@ const _ui = <String, (String, String, String)>{
   'prev.noMap': ('O mapa base entra só no arquivo exportado.', 'The base map goes into the exported file only.', 'El mapa base va solo en el archivo exportado.'),
   'prev.show': ('Pré-visualizar', 'Preview', 'Previsualizar'),
   'prev.failed': ('Não foi possível pré-visualizar: {e}', 'Could not preview: {e}', 'No se pudo previsualizar: {e}'),
-  // ---- FMT-09 a large project opened from a link
-  'link.bigTitle': ('Abrir o projeto do link?', 'Open the project of the link?', '¿Abrir el proyecto del enlace?'),
-  'link.big': (
-    'O link traz um projeto grande ({mb} MB, {n} itens): abri-lo pode deixar o navegador lento por alguns segundos. Ele abre numa aba nova, como cópia; os seus projetos não mudam.',
-    'The link holds a large project ({mb} MB, {n} items): opening it may slow the browser down for a few seconds. It opens in a new tab, as a copy; your projects do not change.',
-    'El enlace trae un proyecto grande ({mb} MB, {n} elementos): abrirlo puede volver lento el navegador unos segundos. Se abre en una pestaña nueva, como copia; sus proyectos no cambian.',
-  ),
-  'link.open': ('Abrir', 'Open', 'Abrir'),
   // ---- approval lines of the assistant's operations for these functions
   'ai.op.interface_settings': ('Ajustar a interface: {n}', 'Set the interface: {n}', 'Ajustar la interfaz: {n}'),
   'ai.op.manual_topic': ('Manual: {n}', 'Manual: {n}', 'Manual: {n}'),

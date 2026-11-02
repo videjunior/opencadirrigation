@@ -56,6 +56,9 @@ import 'dialogs/transient_dialogs.dart';
 import 'dialogs/document_package_dialog.dart'; // 1.6.0 PRD
 import 'dialogs/title_block_dialog.dart'; // 1.6.0 PRD
 import 'dialogs/water_balance_dialogs.dart';
+// 1.6.0 FMT
+import 'dialogs/data_cache_dialog.dart';
+import 'dialogs/stakeout_dialog.dart';
 import 'history_panel.dart';
 import 'layout_mode.dart';
 import 'message_log.dart';
@@ -330,6 +333,8 @@ class _MobileShellState extends State<MobileShell> {
             row(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera),
             for (final f in DrawingFormat.values) row('${t('file.exportDrawing')}: ${t('exp.${f.name}')}', () => exportDrawingAction(context, c, f), icon: Icons.download),
             row('${t('file.exportDrawing')}: ${t('exp.png')}', () => exportSheetPngAction(context, c), icon: Icons.image_outlined, key: const Key('mobile_menu_export_png')),
+            // 1.6.0 FMT
+            row('${t('file.exportDrawing')}: ${t('exp.stakeout')}', () => showStakeoutDialog(context, c), icon: Icons.place_outlined, key: const Key('mobile_menu_export_stakeout')),
             for (final f in ReportFormat.values)
               row('${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}', () => exportReportAction(context, c, f), icon: Icons.table_view),
             // 1.6.0 PRD
@@ -345,6 +350,8 @@ class _MobileShellState extends State<MobileShell> {
             row(t('file.saveAs'), () => saveProjectAction(context, c, saveAs: true), icon: Icons.save_as_outlined, key: const Key('mobile_menu_save_as')),
             row(t('file.saveCopy'), () => saveCopyAction(context, c), icon: Icons.file_copy_outlined, key: const Key('mobile_menu_save_copy')),
             row(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('mobile_menu_storage')),
+            // 1.6.0 FMT
+            row(t('cache.menu'), () => showDataCacheDialog(context, c), icon: Icons.cloud_download_outlined, key: const Key('mobile_menu_data_cache')),
           ], key: const Key('mobile_menu_file')),
           section(t('menu.edit'), Icons.edit_outlined, [
             row(t('edit.undo'), c.canUndo ? c.undo : null, icon: Icons.undo),

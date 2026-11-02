@@ -60,8 +60,6 @@ const coverageUi = <String, String>{
   'view:sideDock': 'op:interface_settings',
   // ---- the preview of the sheet in the export dialog
   'dialog:export_dialogs.plot.preview': 'op:preview_sheet',
-  // ---- FMT-09: a large project of a link opens once the user agrees
-  'view:sharedLinkConfirm': 'n/a:the user agrees to open a large project shared with them by link; the assistant opens projects with its own tools',
   // ---- the tutorial: chapters, tracks, where the user stopped, the AI chapter
   'view:tutorialChapters': 'n/a:the tutorial teaches the user the program by their own hands (its AI chapter only writes an example request, never sends it)',
 };

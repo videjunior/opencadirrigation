@@ -14,7 +14,10 @@
 ///   kind) whose invisible attributes carry the entity's name and catalogue
 ///   item, on the item's layer;
 /// * contours keep their elevation, spot heights and breakline vertices are
-///   3D points; tapes, wire routes and breaklines use a dashed linetype.
+///   3D points; tapes, wire routes and breaklines use a dashed linetype;
+/// * pipes, laterals, drip lines and hydraulic items carry their hydraulic
+///   data as extended data (XDATA, cad_xdata.dart): catalogue item,
+///   diameters, length and, with design results, flows and pressures.
 library;
 
 import 'dart:math' as math;
@@ -22,18 +25,45 @@ import 'dart:math' as math;
 import '../design/pivot.dart' show PivotKind;
 import '../model/blocks.dart' show resolveBlockRefs;
 import '../model/dim_style.dart';
+import '../design/results.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import '../units.dart';
 import 'cad_drawing.dart';
+import 'cad_xdata.dart';
 
 /// Builds the [CadDrawing] of a project; [units] decide the unit dimensions
-/// show (the drawing itself is always in metres).
+/// show (the drawing itself is always in metres). [results] add the flows
+/// and pressures to the hydraulic data; [hydraulicData] false leaves the
+/// extended data out.
 class CadExport {
-  CadExport(this.project, {this.units = Units.metric});
+  CadExport(this.project, {this.units = Units.metric, this.results, this.hydraulicData = true});
   final Project project;
   final Units units;
+  final DesignResults? results;
+  final bool hydraulicData;
+
+  /// The extended data of the entities of the drawing (see [CadDrawing.xdata]).
+  final _xdata = <CadEntity, List<(int, Object)>>{};
+
+  /// Adds [c], the CAD entity of hydraulic item [e], with the item's data.
+  void _addItem(CadEntity c, Entity e) {
+    final n = _out.length;
+    _add(c);
+    if (!hydraulicData || _out.length == n || !identical(_out, _entities)) return;
+    final x = hydraulicXdata(e, project, results);
+    if (x.isNotEmpty) _xdata[c] = x;
+  }
+
+  /// Adds [c], drawn for hydraulic item [e] besides its own entity (a label,
+  /// the outlet symbols of a lateral), marked as a part of it.
+  void _addPart(CadEntity c, Entity e) {
+    final n = _out.length;
+    _add(c);
+    if (!hydraulicData || _out.length == n || !identical(_out, _entities)) return;
+    _xdata[c] = partXdata(e.id);
+  }
 
   static const outletBlock = 'OCI_OUTLET', valveBlock = 'OCI_VALVE', supplyBlock = 'OCI_SUPPLY', pumpBlock = 'OCI_PUMP', miscBlock = 'OCI_MISC';
   static const junctionBlock = 'OCI_JUNCTION', controllerBlock = 'OCI_CONTROLLER', pivotBlock = 'OCI_PIVOT', towerBlock = 'OCI_TOWER';
@@ -120,6 +150,7 @@ class CadExport {
   CadDrawing build() {
     _entities.clear();
     _blocks.clear();
+    _xdata.clear();
     _out = _entities;
     _dims = 0;
     // 1.6.0 CAD: the names the user's blocks take in the drawing, known
@@ -190,6 +221,7 @@ class CadExport {
       // spot heights and breakline vertices drawn as small crosses
       pointMode: 2,
       pointSize: 0.5,
+      xdata: Map.of(_xdata),
     );
   }
 
@@ -255,33 +287,33 @@ class CadExport {
         _add(CadPoint(layer, s.position, z: s.elevation));
         _add(CadText(layer, s.position, fmt(s.elevation, 1), 0.5, z: s.elevation));
       case PipeEntity p:
-        _add(CadPolyline(layer, p.points));
+        _addItem(CadPolyline(layer, p.points), p);
         final spec = cat.pipe(p.pipeSpecId);
-        if (spec != null && p.points.length >= 2) _add(CadText(labels, Pt.lerp(p.points[0], p.points[1], 0.5), spec.name, 0.6));
+        if (spec != null && p.points.length >= 2) _addPart(CadText(labels, Pt.lerp(p.points[0], p.points[1], 0.5), spec.name, 0.6), p);
       case SpraylineEntity s:
-        _add(CadPolyline(layer, s.points));
+        _addItem(CadPolyline(layer, s.points), s);
         final (item, nozzle) = _outletItem(s.outletSpecId, s.nozzleId);
         final outlets = _layer(Layers.outlets);
         for (final o in s.outletPositions()) {
-          _add(_insert(outletBlock, outlets, o, {'NAME': s.name, 'ITEM': item, 'NOZZLE': nozzle}, scale: 0.6));
+          _addPart(_insert(outletBlock, outlets, o, {'NAME': s.name, 'ITEM': item, 'NOZZLE': nozzle}, scale: 0.6), s);
         }
       case TapeEntity tp:
-        _add(CadPolyline(layer, tp.points));
+        _addItem(CadPolyline(layer, tp.points), tp);
       case OutletEntity o:
         final (item, nozzle) = _outletItem(o.outletSpecId, o.nozzleId);
-        _add(_insert(outletBlock, layer, o.position, {'NAME': o.name, 'ITEM': item, 'NOZZLE': nozzle}, rotationDeg: o.orientationDeg));
+        _addItem(_insert(outletBlock, layer, o.position, {'NAME': o.name, 'ITEM': item, 'NOZZLE': nozzle}, rotationDeg: o.orientationDeg), o);
       case ControlValveEntity v:
-        _add(_insert(valveBlock, layer, v.position, {'NAME': v.name, 'ZONE': v.zoneName, 'ITEM': cat.valve(v.valveSpecId)?.name ?? ''}, rotationDeg: v.orientationDeg));
-        if (v.zoneName.isNotEmpty) _add(CadText(labels, v.position + const Pt(1.2, 0), v.zoneName, 0.8));
+        _addItem(_insert(valveBlock, layer, v.position, {'NAME': v.name, 'ZONE': v.zoneName, 'ITEM': cat.valve(v.valveSpecId)?.name ?? ''}, rotationDeg: v.orientationDeg), v);
+        if (v.zoneName.isNotEmpty) _addPart(CadText(labels, v.position + const Pt(1.2, 0), v.zoneName, 0.8), v);
       case WaterSupplyEntity s:
-        _add(_insert(supplyBlock, layer, s.position, {'NAME': s.name}));
-        if (s.name.isNotEmpty) _add(CadText(labels, s.position + const Pt(1.8, 0), s.name, 0.8));
+        _addItem(_insert(supplyBlock, layer, s.position, {'NAME': s.name}), s);
+        if (s.name.isNotEmpty) _addPart(CadText(labels, s.position + const Pt(1.8, 0), s.name, 0.8), s);
       case PumpEntity p:
-        _add(_insert(pumpBlock, layer, p.position, {'NAME': p.name, 'ITEM': cat.pump(p.pumpSpecId)?.name ?? ''}, rotationDeg: p.orientationDeg));
+        _addItem(_insert(pumpBlock, layer, p.position, {'NAME': p.name, 'ITEM': cat.pump(p.pumpSpecId)?.name ?? ''}, rotationDeg: p.orientationDeg), p);
       case MiscHydraulicEntity m:
-        _add(_insert(miscBlock, layer, m.position, {'NAME': m.name, 'ITEM': cat.valve(m.valveSpecId)?.name ?? ''}, rotationDeg: m.orientationDeg));
+        _addItem(_insert(miscBlock, layer, m.position, {'NAME': m.name, 'ITEM': cat.valve(m.valveSpecId)?.name ?? ''}, rotationDeg: m.orientationDeg), m);
       case JunctionEntity j:
-        _add(_insert(junctionBlock, layer, j.position, {'NAME': j.name}));
+        _addItem(_insert(junctionBlock, layer, j.position, {'NAME': j.name}), j);
       case AreaEntity a:
         _add(CadPolyline(layer, a.points, closed: true));
       case PivotEntity pv:

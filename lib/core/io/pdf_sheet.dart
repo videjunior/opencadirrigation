@@ -40,7 +40,18 @@ enum PageSize {
   a1(594, 841),
   a0(841, 1189),
   letter(215.9, 279.4),
-  tabloid(279.4, 431.8);
+  tabloid(279.4, 431.8),
+  // 1.6.0 FMT: the elongated sizes of ISO 5457 (NBR 10068) for long fields and
+  // large pivots, the larger ANSI sheets, and a sheet of any size (a plotter roll)
+  a3x3(420, 891),
+  a3x4(420, 1189),
+  a2x3(594, 1261),
+  a1x3(841, 1783),
+  a0x2(1189, 1682),
+  ansiC(431.8, 558.8),
+  ansiD(558.8, 863.6),
+  ansiE(863.6, 1117.6),
+  custom(0, 0);
 
   const PageSize(this.shortMm, this.longMm);
   final double shortMm;
@@ -48,8 +59,20 @@ enum PageSize {
   String get label => switch (this) {
     PageSize.letter => 'Letter',
     PageSize.tabloid => 'Tabloid',
+    PageSize.a3x3 => 'A3×3',
+    PageSize.a3x4 => 'A3×4',
+    PageSize.a2x3 => 'A2×3',
+    PageSize.a1x3 => 'A1×3',
+    PageSize.a0x2 => 'A0×2',
+    PageSize.ansiC => 'ANSI C',
+    PageSize.ansiD => 'ANSI D',
+    PageSize.ansiE => 'ANSI E',
     _ => name.toUpperCase(),
   };
+
+  /// Smallest and largest side of a sheet of [custom] size (mm): a PDF page
+  /// is at most 200 inches.
+  static const minCustomMm = 100.0, maxCustomMm = 5000.0;
 }
 
 class SheetOptions {
@@ -75,9 +98,26 @@ class SheetOptions {
     // 1.6.0 PRD
     this.grid = SheetGrid.none,
     this.themes = const [],
+    this.customWidthMm = 914,
+    this.customHeightMm = 1500,
+    this.pdfA = false,
+    this.pdfLayers = false,
   });
   final PageSize page;
   final bool landscape;
+
+  /// Width and height (mm) of a sheet of [PageSize.custom] (as drawn: the
+  /// orientation does not turn it).
+  final double customWidthMm, customHeightMm;
+
+  /// PDF/A-2b (ISO 19005-2, level B): every font embedded, the sRGB output
+  /// intent and the XMP metadata, for the archives of public bodies.
+  final bool pdfA;
+
+  /// One optional content group (a layer the PDF viewer turns on and off)
+  /// per layer of the project and for the base map; the frame, the title
+  /// block and the tables stay always on.
+  final bool pdfLayers;
 
   /// Scale denominator (1:N); null fits the drawing to the sheet. Sheets of
   /// zones and areas always fit their subject; windows have their own scale.
@@ -130,8 +170,8 @@ class SheetOptions {
   /// (slope by class, aspect), each with its key.
   final List<SheetTheme> themes;
 
-  double get widthMm => landscape ? page.longMm : page.shortMm;
-  double get heightMm => landscape ? page.shortMm : page.longMm;
+  double get widthMm => page == PageSize.custom ? customWidthMm.clamp(PageSize.minCustomMm, PageSize.maxCustomMm) : (landscape ? page.longMm : page.shortMm);
+  double get heightMm => page == PageSize.custom ? customHeightMm.clamp(PageSize.minCustomMm, PageSize.maxCustomMm) : (landscape ? page.shortMm : page.longMm);
 
   SheetOptions copyWith({
     PageSize? page,
@@ -157,7 +197,15 @@ class SheetOptions {
     // 1.6.0 PRD
     SheetGrid? grid,
     List<SheetTheme>? themes,
+    double? customWidthMm,
+    double? customHeightMm,
+    bool? pdfA,
+    bool? pdfLayers,
   }) => SheetOptions(
+    customWidthMm: customWidthMm ?? this.customWidthMm,
+    customHeightMm: customHeightMm ?? this.customHeightMm,
+    pdfA: pdfA ?? this.pdfA,
+    pdfLayers: pdfLayers ?? this.pdfLayers,
     page: page ?? this.page,
     landscape: landscape ?? this.landscape,
     scale: clearScale ? null : (scale ?? this.scale),
@@ -329,7 +377,9 @@ class PdfSheetBuilder {
 
   /// Drawing sheets, detail sheets, then report pages and charts as [o] asks.
   Uint8List buildSheet(SheetOptions o, {List<ReportTable> reports = const []}) {
-    final doc = PdfDocument(title: _title, author: project.meta.designer, subject: t('pdf.subtitle'), fonts: fonts);
+    final doc = PdfDocument(title: _title, author: project.meta.designer, subject: t('pdf.subtitle'), fonts: fonts, pdfA: o.pdfA);
+    // 1.6.0 FMT: a layer of the viewer per layer of the project
+    if (o.pdfLayers) doc.layerTitle = t('pdf.layers');
     addSheetPages(doc, o);
     final charts = o.charts ? designCharts(project, results, t: t, u: units, profilePath: o.profilePath) : const <PlotChart>[];
     if (o.includeReports) {
@@ -529,7 +579,7 @@ class PdfSheetBuilder {
     page.save();
     page.clipRect(px(lay.areaX) + 0.5, px(lay.areaY) + 0.5, px(lay.areaW) - 1, px(lay.areaH) - 1);
     if (theme == null) {
-      drawScene(page, scene, map, unitsPerMm);
+      drawScene(page, scene, map, unitsPerMm, layers: true);
     } else {
       // the base map, the classes, then the drawing in grey with the names of the areas
       drawScene(page, PlotScene(items: const [], bounds: scene.bounds, unitsPerMm: unitsPerMm, layers: const {}, rasters: scene.rasters), map, unitsPerMm);
@@ -716,11 +766,16 @@ class PdfSheetBuilder {
     page.restore();
   }
 
-  void drawScene(SheetCanvas page, PlotScene scene, (double, double) Function(Pt) map, double unitsPerMm) {
+  void drawScene(SheetCanvas page, PlotScene scene, (double, double) Function(Pt) map, double unitsPerMm, {bool layers = false}) {
+    // 1.6.0 FMT: on a drawing sheet each layer of the project (and the base
+    // map) in a layer of the PDF viewer, when the document has layers
+    final pdf = layers && page is PdfSheetCanvas ? page.page : null;
+    if (scene.rasters.isNotEmpty) pdf?.beginLayer(t('pdf.layer.baseMap'));
     for (final r in scene.rasters) {
       _drawImage(page, r.bytes, r.mime, r.corners, r.opacity, map);
     }
     for (final it in scene.items) {
+      pdf?.beginLayer(layerLabel(it.layer));
       switch (it) {
         case PlotImage im:
           _drawImage(page, im.bytes, im.mime, im.corners, im.opacity, map);
@@ -765,6 +820,7 @@ class PdfSheetBuilder {
           }
       }
     }
+    pdf?.endLayer();
   }
 
   /// Draws the legend in the side column; returns the y (mm) below it. Rows
@@ -953,7 +1009,8 @@ class PdfSheetBuilder {
     page.text(px(xc + wc / 2), px(y0 + 4), fonts.fit(t('pdf.generated', {'d': dateString(DateTime.now())}), px(wc - 4), 5.5), size: 5.5, align: PdfAlign.center);
   }
 
-  String _pageLabel(SheetOptions o) => '${o.page.label} ${o.landscape ? t('plot.landscape') : t('plot.portrait')}';
+  String _pageLabel(SheetOptions o) =>
+      o.page == PageSize.custom ? '${fmt(o.widthMm, 0)} × ${fmt(o.heightMm, 0)} mm' : '${o.page.label} ${o.landscape ? t('plot.landscape') : t('plot.portrait')}';
 
   // ------------------------------------------------------------------ details
 

@@ -13,6 +13,19 @@ import '../../core/io/fonts/pdf_fonts.dart';
 /// Reads a bundled font file (tests swap it).
 Future<Uint8List> Function(String asset) pdfFontLoader = (asset) async => (await rootBundle.load(asset)).buffer.asUint8List();
 
+/// Registers the bundled Latin font in [PdfFonts.shared] (a PDF/A document
+/// draws with it the text Helvetica would draw: every font embedded).
+/// False when it cannot be loaded (the document then keeps Helvetica).
+Future<bool> ensurePdfLatinFont() async {
+  final fonts = PdfFonts.shared;
+  if (fonts.isRegistered(BundledFonts.latin)) return true;
+  try {
+    return fonts.register(BundledFonts.latin, await pdfFontLoader(BundledFonts.asset(BundledFonts.latin)));
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Registers in [PdfFonts.shared] every bundled font [texts] need, for
 /// [language] (the interface language: Japanese and Marathi forms); a font
 /// that fails to load leaves its text to the next font of the chain.

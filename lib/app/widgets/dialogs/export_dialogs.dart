@@ -14,6 +14,7 @@ import '../../../core/units.dart';
 import '../../io/sheet_basemap.dart';
 import '../../state/controller.dart';
 import '../fields.dart' show ScrollBody, ScrollSizedBox, parseUiNumber, signedNumberKeyboard;
+import 'sheet_size_fields.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
 import '../../theme.dart';
 import '../sheet_preview.dart'; // 1.6.0 UI
@@ -265,7 +266,8 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                     for (final p in PageSize.values)
                       DropdownMenuItem(
                         value: p,
-                        child: Text('${p.label}  (${p.shortMm.round()} × ${p.longMm.round()} mm)', style: const TextStyle(fontSize: 12)),
+                        // 1.6.0 FMT: a sheet of any size
+                        child: Text(p == PageSize.custom ? t('plot.page.custom') : '${p.label}  (${p.shortMm.round()} × ${p.longMm.round()} mm)', style: const TextStyle(fontSize: 12)),
                       ),
                   ],
                   onChanged: (v) => setState(() => o = o.copyWith(page: v)),
@@ -282,11 +284,13 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                     DropdownMenuItem(value: true, child: Text(t('plot.landscape'), style: const TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: false, child: Text(t('plot.portrait'), style: const TextStyle(fontSize: 12))),
                   ],
-                  onChanged: (v) => setState(() => o = o.copyWith(landscape: v)),
+                  onChanged: o.page == PageSize.custom ? null : (v) => setState(() => o = o.copyWith(landscape: v)),
                 ),
               ),
             ],
           ),
+          // 1.6.0 FMT: the width and height of a sheet of custom size (a plotter roll)
+          if (o.page == PageSize.custom) ...customSheetFields(c, o, (n) => setState(() => o = n)),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -458,6 +462,9 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                     style: TextStyle(fontSize: 11, color: Cad.fg54),
                   ),
                 ),
+                // 1.6.0 FMT: layers the PDF viewer turns on and off, and PDF/A for archives
+                check(t('plot.pdfLayers'), o.pdfLayers, (v) => setState(() => o = o.copyWith(pdfLayers: v)), key: const Key('plot_layers')),
+                check(t('plot.pdfA'), o.pdfA, (v) => setState(() => o = o.copyWith(pdfA: v)), key: const Key('plot_pdfa')),
               ];
         return AlertDialog(
           title: helpTitle(c, raster ? t('plot.pngTitle') : t('plot.title'), style: const TextStyle(fontSize: 15), topic: 'sheets'), // 1.6.0 UI

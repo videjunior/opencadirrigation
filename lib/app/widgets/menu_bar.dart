@@ -44,6 +44,9 @@ import 'dialogs/transient_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'dialogs/document_package_dialog.dart'; // 1.6.0 PRD
 import 'dialogs/title_block_dialog.dart'; // 1.6.0 PRD
+// 1.6.0 FMT
+import 'dialogs/data_cache_dialog.dart';
+import 'dialogs/stakeout_dialog.dart';
 import 'advice_panel.dart';
 import 'message_log.dart';
 import 'reports_panel.dart';
@@ -170,6 +173,8 @@ class AppMenuBar extends StatelessWidget {
                       menuChildren: [
                         for (final f in DrawingFormat.values) item(t('exp.${f.name}'), () => exportDrawingAction(context, c, f)),
                         item(t('exp.png'), () => exportSheetPngAction(context, c), key: const Key('menu_export_png')),
+                        // 1.6.0 FMT
+                        item(t('exp.stakeout'), () => showStakeoutDialog(context, c), key: const Key('menu_export_stakeout')),
                       ],
                       child: Text(t('file.exportDrawing')),
                     ),
@@ -199,6 +204,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_storage')),
                     // 1.6.0 CAD+: compare with another copy, the comments of a copy
                     ...cadPlusFileItems(context, c, item),
+                    // 1.6.0 FMT
+                    item(t('cache.menu'), () => showDataCacheDialog(context, c), icon: Icons.cloud_download_outlined, key: const Key('menu_data_cache')),
                   ],
                   child: Text(t('menu.file')),
                 ),

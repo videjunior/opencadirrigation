@@ -11,13 +11,16 @@
 /// Text is written in ASCII: characters outside it become `\U+XXXX`, the
 /// notation of the format for files in a code page ($DWGCODEPAGE
 /// ANSI_1252), so the file reads the same whatever encoding a program
-/// assumes.
+/// assumes. The extended data of the drawing ([CadDrawing.xdata], the
+/// hydraulic data of pipes and items) follows each entity's own groups,
+/// its application registered in the APPID table.
 library;
 
 import 'dart:math' as math;
 
 import '../model/geometry.dart';
 import 'cad_drawing.dart';
+import 'cad_xdata.dart' show xdataApp;
 
 class DxfR2000Writer {
   DxfR2000Writer._(this.d);
@@ -26,6 +29,26 @@ class DxfR2000Writer {
   static String write(CadDrawing d) => DxfR2000Writer._(d)._build();
 
   StringBuffer _b = StringBuffer();
+
+  /// Handle of the APPID record of [xdataApp], when the drawing has extended data.
+  String? _appXdata;
+
+  /// The extended data of [e], when it has any (1001 and its groups).
+  void _xdata(CadEntity e) {
+    final groups = d.xdata[e];
+    if (groups == null || groups.isEmpty || _appXdata == null) return;
+    _p(1001, xdataApp);
+    for (final (code, value) in groups) {
+      switch (value) {
+        case double v:
+          _f(code, v);
+        case int v:
+          _p(code, v);
+        default:
+          _s(code, '$value');
+      }
+    }
+  }
 
   /// Handles from 0x60 on; below are the objects of the skeleton, numbered
   /// as the usual writers number them (and as the DWG writer does): programs that
@@ -137,6 +160,8 @@ class DxfR2000Writer {
       _blk[blk.name] = _h();
       _endblk[blk.name] = _h();
     }
+    // the application of the hydraulic data (extended data) is registered
+    if (d.xdata.isNotEmpty) _appXdata = _h();
     final body = StringBuffer();
     _b = body;
     _classes();
@@ -346,8 +371,10 @@ class DxfR2000Writer {
     });
     _table('VIEW', _tView, 0, () {});
     _table('UCS', _tUcs, 0, () {});
-    _table('APPID', _tAppid, 1, () {
+    final app = _appXdata;
+    _table('APPID', _tAppid, app == null ? 1 : 2, () {
       _record('APPID', _appid, _tAppid, 'AcDbRegAppTableRecord', 'ACAD');
+      if (app != null) _record('APPID', app, _tAppid, 'AcDbRegAppTableRecord', xdataApp);
     });
     final styles = _allDimStyles;
     _table('DIMSTYLE', _tDimstyle, styles.length, () {
@@ -512,6 +539,7 @@ class DxfR2000Writer {
         _head('LINE', e, owner, 'AcDbLine');
         _pt(10, l.a, l.z);
         _pt(11, l.b, l.z);
+        _xdata(e);
       case CadPolyline p:
         if (p.points.length < 2) return;
         _head('LWPOLYLINE', e, owner, 'AcDbPolyline');
@@ -524,6 +552,7 @@ class DxfR2000Writer {
           _f(20, p.points[i].y);
           if (p.bulgeAt(i) != 0) _f(42, p.bulgeAt(i));
         }
+        _xdata(e);
       case CadCircle c:
         _head('CIRCLE', e, owner, 'AcDbCircle');
         _pt(10, c.center);
@@ -550,6 +579,8 @@ class DxfR2000Writer {
         if (t.aligned) _pt(11, t.position, t.z);
         _p(100, 'AcDbText');
         if (t.vAlign != 0) _p(73, t.vAlign);
+        // the label of a hydraulic item says whose it is
+        _xdata(e);
       case CadMText m:
         if (m.text.trim().isEmpty) return;
         _head('MTEXT', e, owner, 'AcDbMText');
@@ -655,6 +686,7 @@ class DxfR2000Writer {
           _f(43, ins.scale);
         }
         if (ins.rotationDeg != 0) _f(50, ins.rotationDeg);
+        _xdata(e);
         if (ins.attribs.isEmpty) return;
         for (final a in ins.attribs) {
           _attribute(a, h, e.layer, color: e.color);

@@ -1,20 +1,170 @@
 /// Text encodings of the files the readers take: byte order marks (UTF-8,
-/// UTF-16), strict UTF-8, and the single-byte code pages of Windows and DOS
+/// UTF-16), strict UTF-8, the single-byte code pages of Windows and DOS
 /// (the `$DWGCODEPAGE` of DXF files and the code page of DWG R13–R2004
-/// files). The tables are the upper halves (0x80–0xFF) of the Unicode
+/// files) and the East Asian double-byte pages 932 (Japanese), 936
+/// (Simplified Chinese), 949 (Korean) and 950 (Traditional Chinese). The
+/// single-byte tables are the upper halves (0x80–0xFF) of the Unicode
 /// mappings of each code page; a byte a page leaves undefined keeps its own
-/// value, as Windows does. Multibyte East Asian pages (932, 936, 949, 950,
-/// 1361) are not held: callers read them as 1252 and say so.
+/// value, as Windows does. The double-byte tables live in a library loaded
+/// on demand ([loadCjkCodepages], codepages_cjk_data.dart): until then
+/// those pages are not held and callers read them as 1252 and say so.
+/// Johab (1361) is not held.
 library;
 
 import 'dart:convert';
 import 'dart:typed_data';
 
-/// Code pages held (numbers as in `ANSI_1252`, `DOS850`).
-const supportedCodepages = {874, 1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257, 1258, 437, 850, 852, 866, 28591};
+import 'package:archive/archive.dart';
 
-/// Multibyte East Asian code pages (not held).
+import 'codepages_cjk_data.dart' deferred as cjk;
+
+/// The single-byte code pages (numbers as in `ANSI_1252`, `DOS850`).
+const singleByteCodepages = {874, 1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257, 1258, 437, 850, 852, 866, 28591};
+
+/// Code pages held: the single-byte ones, and the East Asian ones once
+/// their tables are loaded.
+Set<int> get supportedCodepages => _dbcs.isEmpty ? singleByteCodepages : {...singleByteCodepages, ..._dbcs.keys};
+
+/// Multibyte East Asian code pages.
 const cjkCodepages = {932, 936, 949, 950, 1361};
+
+/// The East Asian pages whose tables [loadCjkCodepages] brings.
+const loadableCjkCodepages = {932, 936, 949, 950};
+
+/// Whether the double-byte tables are loaded.
+bool get cjkCodepagesLoaded => _dbcs.isNotEmpty;
+
+final Map<int, _Dbcs> _dbcs = {};
+Future<void>? _loading;
+
+/// Loads the tables of the East Asian code pages (932, 936, 949, 950):
+/// a deferred library, which the browser fetches the first time a file
+/// needs it. A failure (offline, no copy of the library) leaves them out
+/// and the readers fall back to 1252 with their note.
+Future<void> loadCjkCodepages() => _loading ??= () async {
+  try {
+    await cjk.loadLibrary();
+    for (final e in cjk.cjkTables.entries) {
+      _dbcs[e.key] = _Dbcs.decode(e.value);
+    }
+  } on Object {
+    _loading = null;
+  }
+}();
+
+/// A double-byte code page: the characters of the single bytes 0x80–0xFF
+/// and, per lead byte, of the trail bytes 0x40–0xFF (0: none).
+class _Dbcs {
+  _Dbcs(this.single, this.rows);
+  final Uint16List single;
+  final Map<int, Uint16List> rows;
+
+  /// The table of tool/formats/gen_codepages_cjk.py.
+  static _Dbcs decode(String base64Data) {
+    final raw = const ZLibDecoder().decodeBytes(base64.decode(base64Data));
+    final bd = ByteData.sublistView(Uint8List.fromList(raw));
+    final single = Uint16List(128);
+    var p = 0;
+    for (var i = 0; i < 128; i++, p += 2) {
+      single[i] = bd.getUint16(p, Endian.little);
+    }
+    final n = raw[p++];
+    final rows = <int, Uint16List>{};
+    for (var k = 0; k < n; k++) {
+      final lead = raw[p++];
+      final row = Uint16List(256);
+      var prev = 0;
+      for (var t = 0x40; t < 0x100; t++, p += 2) {
+        final d = bd.getUint16(p, Endian.little);
+        if (d == 0) continue;
+        prev = (prev + d) & 0xFFFF;
+        row[t] = prev;
+      }
+      rows[lead] = row;
+    }
+    return _Dbcs(single, rows);
+  }
+
+  String decodeRange(List<int> bytes, int start, int end) {
+    final out = Uint16List(end - start);
+    var o = 0;
+    for (var i = start; i < end; i++) {
+      final b = bytes[i];
+      if (b < 0x80) {
+        out[o++] = b;
+        continue;
+      }
+      final row = rows[b];
+      if (row != null && i + 1 < end) {
+        final c = row[bytes[i + 1]];
+        if (c != 0) {
+          out[o++] = c;
+          i++;
+          continue;
+        }
+      }
+      final s = single[b - 0x80];
+      out[o++] = s != 0 ? s : 0xFFFD;
+    }
+    return String.fromCharCodes(Uint16List.sublistView(out, 0, o));
+  }
+}
+
+/// Whether file [name] ([bytes]) names an East Asian code page whose
+/// tables are not loaded yet: the `$DWGCODEPAGE` of a DXF, the code page of
+/// a DWG R13–R2004 or the .cpg of a shapefile (in a zip or beside it as a
+/// DBF's language driver).
+bool needsCjkCodepages(String name, Uint8List bytes) {
+  if (cjkCodepagesLoaded) return false;
+  final lower = name.toLowerCase();
+  int? cp;
+  if (lower.endsWith('.dxf')) {
+    final head = latin1.decode(Uint8List.sublistView(bytes, 0, bytes.length < 65536 ? bytes.length : 65536));
+    final page = RegExp(r'\$DWGCODEPAGE\s*\r?\n\s*3\s*\r?\n\s*([^\r\n]+)').firstMatch(head)?.group(1);
+    cp = page == null ? null : codepageFromName(page);
+  } else if (lower.endsWith('.dwg')) {
+    final v = bytes.length > 6 ? String.fromCharCodes(bytes.sublist(0, 6)) : '';
+    if (v.compareTo('AC1021') < 0 && bytes.length > 0x14) cp = codepageFromDwg(bytes[0x13] + bytes[0x14] * 256);
+  } else if (lower.endsWith('.dbf')) {
+    cp = bytes.length > 29 ? codepageFromDbfLanguage(bytes[29]) : null;
+  } else if (lower.endsWith('.zip')) {
+    // the .cpg of a shapefile (a few bytes; the DBF is not opened for this)
+    try {
+      for (final f in ZipDecoder().decodeBytes(bytes)) {
+        if (!f.name.toLowerCase().endsWith('.cpg') || f.size <= 0 || f.size > 256) continue;
+        final page = codepageFromCpg(latin1.decode(f.readBytes() ?? const []));
+        if (page != null && loadableCjkCodepages.contains(page)) return true;
+      }
+    } on Object {
+      return false;
+    }
+  }
+  return cp != null && loadableCjkCodepages.contains(cp);
+}
+
+/// The code page a .cpg file names (`1252`, `CP1251`, `ANSI 1250`,
+/// `ISO-8859-1`, `GBK`, `BIG5`, `SJIS`, `EUC-KR`), or null.
+int? codepageFromCpg(String text) {
+  final c = text.toUpperCase().trim();
+  if (c.isEmpty) return null;
+  if (c.contains('8859') || c.contains('LATIN')) return 28591;
+  if (c.contains('GBK') || c.contains('GB2312') || c.contains('GB18030')) return 936;
+  if (c.contains('BIG5') || c.contains('BIG-5')) return 950;
+  if (c.contains('SJIS') || c.contains('SHIFT_JIS') || c.contains('SHIFT-JIS')) return 932;
+  if (c.contains('EUC-KR') || c.contains('EUCKR') || c.contains('KS_C_5601') || c.contains('UHC')) return 949;
+  final named = RegExp(r'^(?:CP|ANSI|WINDOWS|MS)?[ _-]?(\d{3,5})$').firstMatch(c)?.group(1);
+  return named == null ? null : int.parse(named);
+}
+
+/// The code page of a DBF language driver id (byte 29 of the header) for
+/// the East Asian pages, or null.
+int? codepageFromDbfLanguage(int ldid) => switch (ldid) {
+  0x13 || 0x7B => 932,
+  0x4D || 0x7A => 936,
+  0x4E || 0x79 => 949,
+  0x4F || 0x78 => 950,
+  _ => null,
+};
 
 /// The code page named by a DXF `$DWGCODEPAGE` value (`ANSI_1251`,
 /// `DOS850`, `ISO8859-1`), or null when the name is not understood.
@@ -66,14 +216,19 @@ String codepageName(int cp) => switch (cp) {
 /// the page is not held).
 int codepageChar(int b, int cp) {
   if (b < 0x80 || cp == 28591) return b;
+  final d = _dbcs[cp];
+  if (d != null) return d.single[b - 0x80] != 0 ? d.single[b - 0x80] : b;
   final t = _tables[cp] ?? _tables[1252]!;
   return t.codeUnitAt(b - 0x80);
 }
 
-/// [bytes] (or the range [start]–[end]) read in code page [cp].
+/// [bytes] (or the range [start]–[end]) read in code page [cp] (an East
+/// Asian page as double bytes once its table is loaded).
 String decodeCodepage(List<int> bytes, int cp, [int start = 0, int? end]) {
   final e = end ?? bytes.length;
   if (cp == 28591) return latin1.decode(bytes.sublist(start, e));
+  final d = _dbcs[cp];
+  if (d != null) return d.decodeRange(bytes, start, e);
   final t = _tables[cp] ?? _tables[1252]!;
   final out = Uint16List(e - start);
   for (var i = start; i < e; i++) {

@@ -15,7 +15,6 @@ import 'package:opencadirrigation/app/version.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/command_palette.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/feedback_dialog.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/help_dialog.dart';
-import 'package:opencadirrigation/app/widgets/dialogs/shared_link_dialog.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/whats_new_dialog.dart';
 import 'package:opencadirrigation/core/io/catalog_io.dart';
 import 'package:opencadirrigation/core/io/points_csv.dart';
@@ -408,12 +407,6 @@ void main() {
       tc.dispose();
       again.dispose();
     });
-  });
-
-  test('a large project of a link asks first; its items are counted without reading it', () {
-    expect(isLargeSharedProject('{}'), isFalse);
-    expect(isLargeSharedProject('x' * (largeSharedProjectChars + 1)), isTrue);
-    expect(sharedProjectItemCount('{"entities":[{"type":"line"},{"type" : "pipe"}]}'), 2);
   });
 
   group('tables read in the notation they are written in (UI-08)', () {

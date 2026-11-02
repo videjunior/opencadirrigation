@@ -23,6 +23,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../model/geometry.dart';
+import 'cad_xdata.dart' show readHydraulicXdata;
 import 'codepages.dart';
 import 'work_slicer.dart';
 
@@ -43,6 +44,7 @@ class DxfEntity {
     this.elevation,
     this.name = '',
     this.solid = false,
+    this.xdata,
   });
 
   /// LINE, POLYLINE, SPLINE (fit points), HATCH, CIRCLE, ARC, TEXT, POINT.
@@ -68,6 +70,11 @@ class DxfEntity {
   /// Solid fill (HATCH).
   final bool solid;
 
+  /// The hydraulic data the app wrote in the extended data of the entity
+  /// (cad_xdata.dart), when it has any: a pipe, lateral or drip line, or a
+  /// label drawn for an item (`PART_OF`).
+  final Map<String, String>? xdata;
+
   /// This entity with another [elevation].
   DxfEntity withElevation(double? z) => DxfEntity(
     type: type,
@@ -85,7 +92,45 @@ class DxfEntity {
     elevation: z,
     name: name,
     solid: solid,
+    xdata: xdata,
   );
+
+  /// This entity with the hydraulic data [x].
+  DxfEntity withXdata(Map<String, String>? x) => DxfEntity(
+    type: type,
+    layer: layer,
+    points: points,
+    center: center,
+    radius: radius,
+    startAngle: startAngle,
+    endAngle: endAngle,
+    text: text,
+    height: height,
+    rotation: rotation,
+    closed: closed,
+    color: color,
+    elevation: elevation,
+    name: name,
+    solid: solid,
+    xdata: x,
+  );
+}
+
+/// A hydraulic item of the app exported as a block reference (an outlet,
+/// a valve, a pump…), or a block drawn for one (the outlet symbols of a
+/// lateral: `PART_OF` in [xdata]): its data from the extended data, where
+/// it was inserted, and the drawing of the reference.
+class DxfItem {
+  DxfItem(this.xdata, this.position, this.layer, this.fallback);
+  final Map<String, String> xdata;
+  final Pt position;
+  final String layer;
+
+  /// The block of the reference drawn where it was inserted: these very
+  /// entities are in [DxfDocument.entities] as well (a reader of the
+  /// drawing sees it whole); an import that restores the item leaves them
+  /// out.
+  final List<DxfEntity> fallback;
 }
 
 class DxfLayer {
@@ -103,9 +148,17 @@ class DxfLayer {
 }
 
 class DxfDocument {
-  DxfDocument({List<DxfEntity>? entities, List<DxfLayer>? layers, this.unitScale = 1, List<String>? warnings}) : entities = entities ?? [], layers = layers ?? [], warnings = warnings ?? [];
+  DxfDocument({List<DxfEntity>? entities, List<DxfLayer>? layers, this.unitScale = 1, List<String>? warnings, List<DxfItem>? items})
+    : entities = entities ?? [],
+      layers = layers ?? [],
+      warnings = warnings ?? [],
+      items = items ?? [];
   final List<DxfEntity> entities;
   final List<DxfLayer> layers;
+
+  /// The hydraulic items of the app exported as block references (their
+  /// blocks are not among [entities]).
+  final List<DxfItem> items;
 
   /// Multiplier from file units to metres ($INSUNITS), 1 if unknown.
   final double unitScale;
@@ -173,6 +226,21 @@ class DxfInsert {
   /// Extrusion (0, 0, −1): position, rotation and block are in an object
   /// coordinate system whose X axis is the world −X (see [Affine2.ocsMirror]).
   final bool ocsMirror;
+
+  /// The values of the attributes that follow the reference (ATTRIB), by
+  /// tag in upper case, invisible ones included.
+  final Map<String, String> attributes = {};
+
+  /// Z of the insertion point, when the file gives it.
+  double? z;
+
+  /// A survey point (see [DxfReader.surveyPoints]): the points of its block
+  /// are its marker, not data.
+  bool survey = false;
+
+  /// The hydraulic data the app wrote in the extended data of the
+  /// reference (an outlet, a valve…), when it has any.
+  Map<String, String>? xdata;
 
   /// Block → world transform of the array cell ([col], [row]).
   Affine2 affine(Pt base, [int col = 0, int row = 0]) {
@@ -488,6 +556,8 @@ class _DxfParser {
     final ordered = type == 'HATCH' || type == 'MULTILEADER' || type == 'MLEADER' ? <(int, String)>[] : null;
     final verts = <_Vertex>[]; // LWPOLYLINE vertices in file order (10, 20, 42)
     final lw = type == 'LWPOLYLINE';
+    // the extended data (1001 and the groups after it), in order
+    List<(int, String)>? xg;
     while (g.next()) {
       final c = g.code;
       if (c == 0) {
@@ -495,6 +565,9 @@ class _DxfParser {
         break;
       }
       final v = g.value;
+      if (c == 1001) xg ??= [];
+      // a caret is written "^ " (the caret notation of control characters)
+      if (c >= 1000 && xg != null) xg.add((c, c == 1000 ? v.replaceAll('^ ', '^') : v));
       if (lw && (c == 10 || c == 20 || c == 42)) {
         if (c == 10) {
           verts.add(_Vertex(_d(v), 0));
@@ -512,12 +585,35 @@ class _DxfParser {
     }
     // a POLYLINE is followed by its VERTEX records up to SEQEND
     final pv = type == 'POLYLINE' ? _polylineVertices() : null;
+    // the attributes of a block reference follow it up to SEQEND: their
+    // values (invisible ones too) go with the reference
+    final owner = _attribOwner;
+    if (type == 'ATTRIB' && owner != null) {
+      final tag = DxfReader.plainName(props[2]?.first ?? '').trim().toUpperCase();
+      if (tag.isNotEmpty) owner.attributes[tag] = DxfReader.plainText([...?props[3], ...?props[1]].join()).trim();
+    } else if (type != 'ATTRIB') {
+      _attribOwner = null;
+    }
     if (top && (props[67]?.first.trim() ?? '') == '1') {
       if (!_silentTypes.contains(type)) paper++;
       return;
     }
+    final n = out.length, ni = ins.length;
     _build(type, props, ordered, verts, pv, out, ins);
+    // the hydraulic data of an item the app exported goes with the entity
+    final x = xg == null ? null : readHydraulicXdata(xg);
+    if (x != null) {
+      if (type == 'INSERT' && ins.length > ni) {
+        ins.last.xdata = x;
+      } else if (out.length == n + 1 && (type == 'LWPOLYLINE' || type == 'POLYLINE' || type == 'LINE' || type == 'TEXT' || type == 'MTEXT')) {
+        out[n] = out[n].withXdata(x);
+      }
+    }
+    if (type == 'INSERT' && (props[66]?.first.trim() ?? '') == '1' && ins.isNotEmpty) _attribOwner = ins.last;
   }
+
+  /// The block reference whose attributes are being read.
+  DxfInsert? _attribOwner;
 
   /// The vertices after a POLYLINE: positions (spline frame points and mesh
   /// face records left out), bulges and elevations.
@@ -705,19 +801,20 @@ class _DxfParser {
       case 'INSERT':
         inserts.add(
           DxfInsert(
-            name: DxfReader.plainName(props[2]?.first ?? ''),
-            layer: layer,
-            color: color,
-            position: Pt(num(10), num(20)),
-            scaleX: num(41, 0, 1),
-            scaleY: num(42, 0, 1),
-            rotation: num(50),
-            cols: flags(70).clamp(1, 32767),
-            rows: flags(71).clamp(1, 32767),
-            colSpacing: num(44),
-            rowSpacing: num(45),
-            ocsMirror: mirrored,
-          ),
+              name: DxfReader.plainName(props[2]?.first ?? ''),
+              layer: layer,
+              color: color,
+              position: Pt(num(10), num(20)),
+              scaleX: num(41, 0, 1),
+              scaleY: num(42, 0, 1),
+              rotation: num(50),
+              cols: flags(70).clamp(1, 32767),
+              rows: flags(71).clamp(1, 32767),
+              colSpacing: num(44),
+              rowSpacing: num(45),
+              ocsMirror: mirrored,
+            )
+            ..z = props.containsKey(30) ? num(30) : null,
         );
       case 'DIMENSION' || 'ARC_DIMENSION' || 'LARGE_RADIAL_DIMENSION':
         // the dimension's geometry lives in an anonymous block, inserted at
@@ -761,10 +858,20 @@ class _DxfParser {
     final w = <String>[];
     if (g.resyncs > 0) w.add('dxf_resync:${g.resyncs}');
     if (paper > 0) w.add('dxf_paper_space:$paper');
+    // the hydraulic items the app exported (outlets, valves…): restored by
+    // the import from their data, their blocks only drawn when they cannot be
+    final items = DxfReader.hydraulicItems(inserts, blocks);
+    for (final it in items) {
+      entities.addAll(it.fallback);
+    }
+    // survey points delivered as blocks with an elevation attribute
+    final survey = DxfReader.surveyPoints(inserts, blocks);
+    entities.addAll(survey);
+    if (survey.isNotEmpty) w.add('dxf_survey_points:${survey.length}');
     DxfReader.expandInserts(inserts, blocks, entities, warnings: w);
     DxfReader.flatPointElevations(entities);
     if (skipped.isNotEmpty) w.add('dxf_unsupported:${DxfReader.typeList(skipped)}');
-    return DxfDocument(entities: entities, layers: layers, unitScale: DxfReader._unitScale(insunits), warnings: w);
+    return DxfDocument(entities: entities, layers: layers, unitScale: DxfReader._unitScale(insunits), warnings: w, items: items);
   }
 }
 
@@ -832,8 +939,10 @@ class _Expansion {
           final local = ins.affine(block.base, c, r);
           final t = outer == null ? local : outer.then(local);
           for (final e in block.entities) {
-            // definition points of dimensions are not drawing geometry
-            if (e.type == 'POINT' && block.name.startsWith('*D')) continue;
+            // definition points of dimensions are not drawing geometry, and
+            // the point of a survey block is its marker (the point itself
+            // comes with the elevation of its attribute)
+            if (e.type == 'POINT' && (block.name.startsWith('*D') || ins.survey)) continue;
             if (full) {
               truncated = true;
               stack.removeLast();
@@ -941,6 +1050,120 @@ class DxfReader {
 
   /// Counts of entity types as a note (`3DSOLID ×2, IMAGE`).
   static String typeList(Map<String, int> counts) => counts.entries.map((e) => e.value > 1 ? '${e.key} ×${e.value}' : e.key).join(', ');
+
+  /// The block references of [inserts] that carry the app's hydraulic data,
+  /// taken out of the list: each one with its data, its insertion point and
+  /// its block drawn there (which the caller adds to the drawing: it stays
+  /// when the item cannot be restored).
+  static List<DxfItem> hydraulicItems(List<DxfInsert> inserts, Map<String, DxfBlock> blocks) {
+    final items = <DxfItem>[];
+    inserts.removeWhere((ins) {
+      final x = ins.xdata;
+      if (x == null || ins.rows * ins.cols != 1) return false;
+      final geo = <DxfEntity>[];
+      expandInserts([ins], blocks, geo);
+      final base = blocks[ins.name]?.base ?? Pt.zero;
+      items.add(DxfItem(x, ins.affine(base).apply(base), ins.layer, geo));
+      return true;
+    });
+    return items;
+  }
+
+  /// An attribute tag reduced to its name: upper case, without accents,
+  /// units in parentheses or punctuation (`COTA (m)` → `COTA`, `Elevação` →
+  /// `ELEVACAO`, `PT_NUM` → `PT NUM`).
+  static String attributeKey(String tag) {
+    var s = tag.toUpperCase().replaceAll(RegExp(r'\([^)]*\)|\[[^\]]*\]'), ' ');
+    const from = 'ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ';
+    const to = 'AAAAAACEEEEIIIINOOOOOUUUUY';
+    final b = StringBuffer();
+    for (final ch in s.split('')) {
+      final i = from.indexOf(ch);
+      b.write(i >= 0 ? to[i] : ch);
+    }
+    s = b.toString().replaceAll(RegExp(r'[._:/\\-]+'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    return s;
+  }
+
+  /// Attribute tags of the elevation of a survey point.
+  static const surveyElevationTags = {
+    'COTA',
+    'COTAS',
+    'ELEV',
+    'ELEVACAO',
+    'ELEVATION',
+    'ELEVACION',
+    'Z',
+    'ALT',
+    'ALTITUDE',
+    'ALTURA',
+    'H',
+    'HEIGHT',
+    'NIVEL',
+    'LEVEL',
+    'COTA TERRENO',
+    'COTA PONTO',
+    'COTA PT',
+    'ELEV PT',
+    'PT ELEV',
+    'Z PT',
+  };
+
+  /// Attribute tags of the number or name of a survey point.
+  static const surveyNameTags = {'PONTO', 'PT', 'PTO', 'POINT', 'PUNTO', 'NUM', 'NUMERO', 'NUMBER', 'ID', 'NOME', 'NAME', 'NOMBRE', 'PT NUM', 'NUM PT', 'ESTACA', 'MARCO'};
+
+  /// Attribute tags of the description (code) of a survey point.
+  static const surveyDescriptionTags = {'DESC', 'DESCRICAO', 'DESCRIPTION', 'DESCRIPCION', 'COD', 'CODIGO', 'CODE', 'OBS', 'OBSERVACAO', 'TIPO', 'TYPE'};
+
+  /// Block names of survey points (`PONTO`, `PT_COTADO`, `SPOT`, `MARCO`…).
+  static final _surveyBlockName = RegExp(r'^(PONTO|PTO?|POINT|PUNTO|COTA|SPOT|ELEV|LEVEL|MARCO|ESTACA|SURVEY|TOPO|LEV)([^A-Z]|$)');
+
+  /// The first number in [s] (`612,35 m` → 612.35), or null.
+  static double? _attributeNumber(String s) {
+    final m = RegExp(r'[-+]?\d+(?:[.,]\d+)?').firstMatch(s.replaceAll(' ', ''));
+    if (m == null) return null;
+    return double.tryParse(m.group(0)!.replaceAll(',', '.'));
+  }
+
+  /// Survey points delivered as block references, the most common form of a
+  /// topographic survey in DXF and DWG: a reference whose attributes give an
+  /// elevation (COTA, ELEV, Z…) becomes a point with that elevation, or with
+  /// the Z of its insertion point when the reference names a point (its
+  /// attributes number or describe it, or the block is called PONTO, PT,
+  /// SPOT…); the point is named by the number and description attributes.
+  /// Top-level references only (not the references inside blocks); each one
+  /// taken is marked [DxfInsert.survey].
+  static List<DxfEntity> surveyPoints(List<DxfInsert> inserts, Map<String, DxfBlock> blocks) {
+    final out = <DxfEntity>[];
+    for (final ins in inserts) {
+      if (ins.rows * ins.cols != 1) continue;
+      final attrs = {for (final e in ins.attributes.entries) attributeKey(e.key): e.value};
+      double? elev;
+      for (final k in attrs.keys) {
+        if (surveyElevationTags.contains(k)) {
+          elev = _attributeNumber(attrs[k]!);
+          if (elev != null) break;
+        }
+      }
+      String? first(Set<String> tags) {
+        for (final e in attrs.entries) {
+          if (tags.contains(e.key) && e.value.trim().isNotEmpty) return e.value.trim();
+        }
+        return null;
+      }
+
+      final id = first(surveyNameTags), desc = first(surveyDescriptionTags);
+      final pointLike = id != null || desc != null || _surveyBlockName.hasMatch(attributeKey(ins.name));
+      if (elev == null && pointLike && ins.z != null && ins.z != 0 && ins.z!.isFinite) elev = ins.z;
+      if (elev == null || !elev.isFinite) continue;
+      final block = blocks[ins.name];
+      final at = ins.affine(block?.base ?? Pt.zero).apply(block?.base ?? Pt.zero);
+      if (!at.x.isFinite || !at.y.isFinite) continue;
+      ins.survey = true;
+      out.add(DxfEntity(type: 'POINT', layer: ins.layer, color: ins.color, points: [at], elevation: elev, name: [?id, ?desc].join(' ')));
+    }
+    return out;
+  }
 
   /// Points of a 2D drawing are flat: a POINT at Z = 0 has no elevation
   /// (it would pull the terrain to sea level) unless other points of its

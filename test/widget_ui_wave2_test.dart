@@ -18,7 +18,6 @@ import 'package:opencadirrigation/app/widgets/dialogs/dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/export_dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/feedback_dialog.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/help_dialog.dart';
-import 'package:opencadirrigation/app/widgets/dialogs/shared_link_dialog.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/whats_new_dialog.dart';
 import 'package:opencadirrigation/app/widgets/layout_mode.dart';
 import 'package:opencadirrigation/app/widgets/menu_bar.dart';
@@ -362,22 +361,10 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a large project of a link opens only once the user agrees (FMT-09)', (tester) async {
-    final shell = await pumpShell(tester, example: false);
-    final c = shell.c as ProjectController;
-    final answer = confirmLargeSharedProject(ctxOf(tester), c, '{"type":"line"}' * 10);
-    await settle(tester);
-    expect(find.byKey(const Key('link_big')), findsOneWidget);
-    expect(find.textContaining(c.t('link.bigTitle')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('link_big_cancel')));
-    await settle(tester);
-    expect(await answer, isFalse);
-  });
-
   test('the new strings are in the three compiled languages', () {
     for (final lang in ['pt', 'en', 'es']) {
       final t = I18n(lang);
-      for (final k in ['pal.menu', 'help.manual', 'fb.menu', 'new.menu', 'uiv.menu', 'uiv.contrast', 'prev.title', 'link.big']) {
+      for (final k in ['pal.menu', 'help.manual', 'fb.menu', 'new.menu', 'uiv.menu', 'uiv.contrast', 'prev.title']) {
         expect(t.has(k), isTrue, reason: '$lang $k');
       }
     }

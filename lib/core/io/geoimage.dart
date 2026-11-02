@@ -2,9 +2,13 @@
 /// inside a .zip with the image and, when there is one, its .prj), GeoTIFF
 /// (ModelPixelScale/ModelTiepoint or ModelTransformation tags, the CRS of its
 /// GeoKeys: any datum and UTM zone the app knows, SIRGAS 2000, SAD 69 and
-/// Córrego Alegre included) and plain images placed by the user. TIFF pixels
-/// are re-encoded to PNG for the canvas. A raster in another zone or datum
-/// than the project is moved through latitude/longitude (see [GeoPlacement]).
+/// Córrego Alegre included, and the projections given key by key: Albers,
+/// Lambert conformal conic, polyconic) and plain images placed by the user.
+/// TIFF pixels are re-encoded to PNG for the canvas; large GeoTIFFs
+/// (BigTIFF, cloud-optimised GeoTIFF, drone orthomosaics of hundreds of
+/// megapixels) are read block by block and reduced (see tiff_raster.dart).
+/// A raster in another zone or datum than the project is moved through
+/// latitude/longitude (see [GeoPlacement]).
 library;
 
 import 'dart:convert';
@@ -19,6 +23,8 @@ import 'datum.dart';
 import 'geo.dart';
 import 'image_decode.dart';
 import 'safe_archive.dart';
+import 'tiff_raster.dart';
+import 'work_slicer.dart';
 
 class GeoImage {
   GeoImage({
@@ -151,9 +157,22 @@ class GeoImageReader {
   }
 
   static GeoImage _readTiff(String name, Uint8List bytes) {
+    // a BigTIFF, a raster of many megapixels or a COG: block by block, reduced
+    if (isLargeTiff(bytes)) return readLargeTiffNow(name, bytes);
     final tags = readTiffTags(bytes);
     checkTiffSize(tags);
-    final decoded = decodeTiffSafe(bytes);
+    // what the picture decoder reads wrongly without failing: the
+    // floating-point predictor, the horizontal one of samples wider than a byte
+    final f = TiffFile.open(bytes), m = f?.main;
+    if (f != null && m != null && (m.predictor == 3 || (m.predictor == 2 && m.bitsPerSample > 8)) && TiffRaster(f, m).unsupported == null) return readLargeTiffNow(name, bytes);
+    img.Image? decoded;
+    try {
+      decoded = decodeTiffSafe(bytes);
+    } on FormatException {
+      decoded = null;
+    }
+    // what the picture decoder does not take
+    if (decoded == null && m != null) return readLargeTiffNow(name, bytes);
     if (decoded == null) throw const FormatException('image_unreadable');
     final png = Uint8List.fromList(img.encodePng(decoded));
     final g = tiffGeo(tags);
@@ -178,8 +197,9 @@ class GeoImageReader {
   /// Georeference carried by the GeoTIFF tags (ModelTransformation or
   /// ModelPixelScale + ModelTiepoint) and its CRS from the GeoKeys: the
   /// projected CRS (key 3072) or the geographic one (2048, model type 2) by
-  /// their EPSG codes; a user-defined projection or a geocentric model is
-  /// named as a problem.
+  /// their EPSG codes, or a projection given key by key ([userDefinedCrs]);
+  /// a projection the app does not hold or a geocentric model is named as a
+  /// problem.
   static TiffGeo tiffGeo(TiffTags tags) {
     Pt? topLeft;
     double? sx, sy;
@@ -201,28 +221,18 @@ class GeoImageReader {
       // tiepoint (I,J,K) ↔ (X,Y,Z): top-left = X − I·sx, Y + J·sy
       topLeft = Pt(tie[3] - tie[0] * sx, tie[4] - tie[1] * sy);
     }
-    final keys = tags.shorts[34735];
-    int? model, geographicCode, projectedCode;
-    if (keys != null && keys.length >= 4) {
-      final n = keys[3];
-      for (var k = 0; k < n; k++) {
-        final o = 4 + k * 4;
-        if (o + 3 >= keys.length) break;
-        final id = keys[o], loc = keys[o + 1], value = keys[o + 3];
-        if (loc != 0) continue;
-        if (id == 1024) model = value;
-        if (id == 2048) geographicCode = value;
-        if (id == 3072) projectedCode = value;
-      }
-    }
+    final keys = geoKeys(tags);
+    final model = keys.ints[1024], geographicCode = keys.ints[2048], projectedCode = keys.ints[3072];
     CrsInfo? crs;
     if (projectedCode != null && projectedCode > 0 && projectedCode != 32767) {
       crs = crsFromEpsg(projectedCode);
     } else if (model == 3) {
       crs = const CrsInfo(kind: CrsKind.unknown, name: 'geocentric', problem: 'crs_geocentric');
     } else if (model == 1 || (projectedCode == 32767)) {
-      // a projection defined key by key (not by a code): not supported
-      crs = const CrsInfo(kind: CrsKind.unknown, name: 'user-defined', problem: 'crs_projection_unsupported');
+      // a projection defined key by key (ProjectedCSType 32767): the method
+      // and its parameters (transverse Mercator, Albers, Lambert conformal
+      // conic, polyconic) on the datum the geographic keys give
+      crs = userDefinedCrs(keys);
     } else if (model == 2 || geographicCode != null) {
       crs = geographicCode != null && geographicCode > 0 && geographicCode != 32767 ? crsFromEpsg(geographicCode) : CrsInfo.geographic();
       // a code that is not geographic (a damaged key) gives no CRS
@@ -233,52 +243,252 @@ class GeoImageReader {
     return TiffGeo(topLeft: topLeft, sx: sx, sy: sy, rot: rot, geographic: geographic, zone: zone, north: zone != null ? crs!.north : null, crs: crs);
   }
 
-  /// Baseline TIFF IFD reader for the geo tags (first IFD only).
-  static TiffTags readTiffTags(Uint8List bytes) {
+  /// The tags of the full-resolution image of a TIFF or BigTIFF (empty for
+  /// other data): SHORT values in [TiffTags.shorts], LONG and LONG8 in
+  /// [TiffTags.longs], DOUBLE, FLOAT and RATIONAL in [TiffTags.doubles],
+  /// ASCII in [TiffTags.strings].
+  static TiffTags readTiffTags(Uint8List bytes) => tagsOf(TiffFile.open(bytes)?.main);
+
+  /// [readTiffTags] of one directory.
+  static TiffTags tagsOf(TiffIfd? ifd) {
     final out = TiffTags();
-    if (bytes.length < 8) return out;
-    final bd = ByteData.sublistView(bytes);
-    final little = bytes[0] == 0x49 && bytes[1] == 0x49;
-    final endian = little ? Endian.little : Endian.big;
-    final version = bd.getUint16(2, endian);
-    // BigTIFF (64-bit offsets) is not read: say so rather than fail later
-    // with an unreadable image
-    if (version == 43 && (little || (bytes[0] == 0x4D && bytes[1] == 0x4D))) throw const FormatException('tiff_bigtiff');
-    if (version != 42) return out;
-    final ifd = bd.getUint32(4, endian);
-    if (ifd + 2 > bytes.length) return out;
-    final count = bd.getUint16(ifd, endian);
-    for (var i = 0; i < count; i++) {
-      final e = ifd + 2 + i * 12;
-      if (e + 12 > bytes.length) break;
-      final tag = bd.getUint16(e, endian);
-      final type = bd.getUint16(e + 2, endian);
-      final n = bd.getUint32(e + 4, endian);
-      final size = switch (type) {
-        1 || 2 || 6 || 7 => 1,
-        3 || 8 => 2,
-        4 || 9 || 11 => 4,
-        5 || 10 || 12 => 8,
-        _ => 1,
-      };
-      final total = size * n;
-      final off = total <= 4 ? e + 8 : bd.getUint32(e + 8, endian);
-      if (off + total > bytes.length) continue;
-      switch (type) {
+    if (ifd == null) return out;
+    for (final e in ifd.values.entries) {
+      switch (ifd.types[e.key]) {
         case 3:
-          out.shorts[tag] = [for (var k = 0; k < n; k++) bd.getUint16(off + k * 2, endian)];
-        case 4:
-          out.longs[tag] = [for (var k = 0; k < n; k++) bd.getUint32(off + k * 4, endian)];
-        case 12:
-          out.doubles[tag] = [for (var k = 0; k < n; k++) bd.getFloat64(off + k * 8, endian)];
-        case 2:
-          out.strings[tag] = String.fromCharCodes(bytes.sublist(off, off + n).where((b) => b != 0));
+          out.shorts[e.key] = [for (final v in e.value) v.toInt()];
+        case 4 || 13 || 16:
+          out.longs[e.key] = [for (final v in e.value) v.toInt()];
+        case 5 || 11 || 12:
+          out.doubles[e.key] = [for (final v in e.value) v.toDouble()];
         default:
           break;
       }
     }
+    out.strings.addAll(ifd.strings);
     return out;
   }
+
+  /// Rasters above this size (pixels) are read block by block and reduced
+  /// ([readLargeTiff]); smaller ones are decoded whole.
+  static const reduceAbove = 4096 * 4096;
+
+  /// The longer side (pixels) of a reduced raster.
+  static const reducedSide = 4096;
+
+  /// Whether the TIFF in [bytes] is read block by block: a BigTIFF, a
+  /// raster above [reduceAbove] pixels, or one with overviews (a COG).
+  static bool isLargeTiff(Uint8List bytes) {
+    final f = TiffFile.open(bytes);
+    final m = f?.main;
+    if (f == null || m == null) return false;
+    // a BigTIFF only this reader takes; a large raster or a COG when this
+    // reader takes its layout (the picture decoder takes the others, fax
+    // compressions or 1-bit scans of a plan, within its size limit)
+    if (f.big) return true;
+    final large = m.width.toDouble() * m.height > reduceAbove || f.overviewsOf(m).isNotEmpty;
+    return large && TiffRaster(f, m).unsupported == null;
+  }
+
+  /// A large GeoTIFF (an orthomosaic of a drone survey) read block by block
+  /// from its smallest overview that still holds [maxSide] pixels, reduced
+  /// by averaging to at most [maxSide] on its longer side and encoded as
+  /// JPEG (PNG when it has transparent parts), with its georeference
+  /// scaled to the new pixels. [GeoImage.warnings] gets
+  /// `image_reduced:<W>×<H> → <w>×<h>`.
+  static Future<GeoImage> readLargeTiff(String name, Uint8List bytes, {int maxSide = reducedSide, WorkSlicer? slicer}) async {
+    final (raster, main, nodata) = _largeRaster(bytes, maxSide);
+    final (image, factor) = await raster.reduced(maxSide, nodata: nodata, slicer: slicer);
+    if (slicer != null) await slicer.pause(0.97);
+    return _reducedImage(name, main, raster.ifd, image, factor);
+  }
+
+  /// [readLargeTiff] at once (imports without a progress dialog).
+  static GeoImage readLargeTiffNow(String name, Uint8List bytes, {int maxSide = reducedSide}) {
+    final (raster, main, nodata) = _largeRaster(bytes, maxSide);
+    final (image, factor) = raster.reducedNow(maxSide, nodata: nodata);
+    return _reducedImage(name, main, raster.ifd, image, factor);
+  }
+
+  /// The raster [readLargeTiff] reads (the smallest image, the full one or
+  /// an overview, still [maxSide] across), the full image and the value
+  /// of the empty pixels.
+  static (TiffRaster, TiffIfd, double?) _largeRaster(Uint8List bytes, int maxSide) {
+    final f = TiffFile.open(bytes);
+    final main = f?.main;
+    if (f == null || main == null) throw const FormatException('image_unreadable');
+    var use = main;
+    for (final o in f.overviewsOf(main)) {
+      if (math.max(o.width, o.height) >= maxSide) use = o;
+    }
+    final raster = TiffRaster(f, use);
+    final problem = raster.unsupported;
+    if (problem != null) throw FormatException(problem);
+    final nd = main.strings[GeoTiffNoData.tag];
+    return (raster, main, nd == null ? null : double.tryParse(nd.trim()));
+  }
+
+  static GeoImage _reducedImage(String name, TiffIfd main, TiffIfd use, img.Image image, int factor) {
+    final tags = tagsOf(main);
+    var opaque = true;
+    for (final p in image) {
+      if (p.a < 255) {
+        opaque = false;
+        break;
+      }
+    }
+    final encoded = opaque ? Uint8List.fromList(img.encodeJpg(image, quality: 88)) : Uint8List.fromList(img.encodePng(image));
+    final g = tiffGeo(tags);
+    // the pixel size of the reduced image: of the image read, times the factor
+    final k = main.width / use.width * factor;
+    return GeoImage(
+      bytes: encoded,
+      mime: opaque ? 'image/jpeg' : 'image/png',
+      widthPx: image.width,
+      heightPx: image.height,
+      worldTopLeft: g.topLeft,
+      pixelSizeX: g.sx == null ? null : g.sx! * k,
+      pixelSizeY: g.sy == null ? null : g.sy! * k,
+      rotationDeg: g.rot,
+      geographic: g.geographic,
+      utmZone: g.zone,
+      utmNorth: g.north,
+      crs: g.crs,
+      source: name,
+      warnings: [if (g.georeferenced) ...crsNotes(g.crs), if (main.width != image.width) 'image_reduced:${main.width}×${main.height} → ${image.width}×${image.height}'],
+    );
+  }
+}
+
+/// The GDAL_NODATA tag: the value of the empty pixels, as text.
+abstract final class GeoTiffNoData {
+  static const tag = 42113;
+}
+
+/// The GeoKeys of a GeoTIFF (GeoKeyDirectoryTag 34735): integer values
+/// (stored in the directory), doubles (GeoDoubleParamsTag 34736) and texts
+/// (GeoAsciiParamsTag 34737), by key.
+class GeoKeys {
+  final Map<int, int> ints = {};
+  final Map<int, double> doubles = {};
+  final Map<int, String> texts = {};
+}
+
+/// The GeoKeys of [tags].
+GeoKeys geoKeys(TiffTags tags) {
+  final out = GeoKeys();
+  final keys = tags.shorts[34735];
+  if (keys == null || keys.length < 4) return out;
+  final dbl = tags.doubles[34736] ?? const <double>[];
+  final ascii = tags.strings[34737] ?? '';
+  final n = keys[3];
+  for (var k = 0; k < n; k++) {
+    final o = 4 + k * 4;
+    if (o + 3 >= keys.length) break;
+    final id = keys[o], loc = keys[o + 1], count = keys[o + 2], value = keys[o + 3];
+    if (loc == 0) {
+      out.ints[id] = value;
+    } else if (loc == 34736 && value < dbl.length) {
+      out.doubles[id] = dbl[value];
+    } else if (loc == 34737 && value < ascii.length) {
+      out.texts[id] = ascii.substring(value, (value + count).clamp(value, ascii.length)).replaceAll('|', ' ').trim();
+    }
+  }
+  return out;
+}
+
+/// The datum of the geographic keys: GeographicTypeGeoKey (2048) or
+/// GeogGeodeticDatumGeoKey (2050) by EPSG code, else GRS 80 or WGS 84
+/// ellipsoid parameters (7019, 7030 or the axis and flattening keys),
+/// taken as WGS 84 at mapping accuracy; null when unknown.
+GeodeticDatum? geoKeysDatum(GeoKeys k) {
+  final gcs = k.ints[2048];
+  if (gcs != null && gcs > 0 && gcs != 32767) {
+    final c = crsFromEpsg(gcs);
+    if (c.datum != null) return c.datum;
+  }
+  const datums = {
+    6326: GeodeticDatum.wgs84,
+    6674: GeodeticDatum.sirgas2000,
+    6618: GeodeticDatum.sad69,
+    1075: GeodeticDatum.sad69r96,
+    // the code of its geographic system, which some writers put here
+    5527: GeodeticDatum.sad69r96,
+    6225: GeodeticDatum.corregoAlegre,
+    6258: GeodeticDatum.etrs89,
+    6171: GeodeticDatum.etrs89,
+    6269: GeodeticDatum.nad83,
+  };
+  final d = datums[k.ints[2050]];
+  if (d != null) return d;
+  final citation = k.texts[2049] ?? k.texts[1026] ?? '';
+  final named = datumFromName(citation);
+  if (named != null) return named;
+  final ellipsoid = k.ints[2056];
+  if (ellipsoid == 7019 || ellipsoid == 7030) return GeodeticDatum.wgs84;
+  final a = k.doubles[2057], rf = k.doubles[2059];
+  if (a != null && (a - 6378137).abs() < 1e-3 && rf != null && (rf - 298.2572).abs() < 1e-3) return GeodeticDatum.wgs84;
+  return null;
+}
+
+/// The CRS of a projection given key by key (ProjectedCSType 32767): the
+/// coordinate transformation (ProjCoordTransGeoKey 3075: 1 transverse
+/// Mercator, 8 and 9 Lambert conformal conic, 11 Albers, 22 polyconic), its
+/// parameters (3078–3093, as GDAL and the GeoTIFF specification write them)
+/// and the linear unit (3076/3077); a problem code when it cannot be used.
+CrsInfo userDefinedCrs(GeoKeys k) {
+  final name = k.texts[3073] ?? k.texts[1026] ?? 'user-defined';
+  // a projection given by its EPSG code (ProjectionGeoKey 3074: 16001–16060 UTM north, 16101–16160 south)
+  final conv = k.ints[3074];
+  final datum = geoKeysDatum(k);
+  if (conv != null && conv >= 16001 && conv <= 16160 && (conv - 16000) % 100 <= 60 && (conv - 16000) % 100 >= 1) {
+    final zone = (conv - 16000) % 100, north = conv < 16100;
+    if (datum == null) return CrsInfo(kind: CrsKind.projected, projection: TransverseMercator.utm(zone, north), name: name, problem: 'crs_datum_unknown');
+    final c = CrsInfo.utm(zone, north, datum: datum);
+    return CrsInfo(kind: c.kind, datum: datum, projection: c.projection, epsg: c.epsg, name: c.name);
+  }
+  final unitCode = k.ints[3076];
+  final unit = k.doubles[3077] ?? switch (unitCode) {
+    9002 => 0.3048,
+    9003 => 1200 / 3937,
+    9036 => 1000.0,
+    _ => 1.0,
+  };
+  final method = switch (k.ints[3075]) {
+    1 => 'transverse_mercator',
+    8 => 'lambert_conformal_conic_2sp',
+    9 => 'lambert_conformal_conic_1sp',
+    11 => 'albers',
+    22 => 'polyconic',
+    _ => '',
+  };
+  if (method.isEmpty) return CrsInfo(kind: CrsKind.unknown, datum: datum, name: name, problem: 'crs_projection_unsupported');
+  final d = k.doubles;
+  double? first(List<int> ids) {
+    for (final id in ids) {
+      final v = d[id];
+      if (v != null) return v;
+    }
+    return null;
+  }
+
+  // the natural origin, the false origin or the centre, whichever is given
+  final fe = first([3082, 3086]), fn = first([3083, 3087]);
+  final params = <String, double>{
+    'standardparallel1': ?d[3078],
+    'standardparallel2': ?d[3079],
+    'longitudeofnaturalorigin': ?first([3080, 3084, 3088]),
+    'latitudeofnaturalorigin': ?first([3081, 3085, 3089]),
+    'falseeasting': ?(fe == null ? null : fe * unit),
+    'falsenorthing': ?(fn == null ? null : fn * unit),
+    'scalefactor': ?first([3092, 3093]),
+  };
+  final ellipsoid = datum?.ellipsoid ?? (d[2057] != null && d[2059] != null ? Ellipsoid(d[2057]!, d[2059]!) : Ellipsoid.wgs84);
+  final p = projectionFromParameters(method, params, ellipsoid);
+  if (p == null) return CrsInfo(kind: CrsKind.unknown, datum: datum, name: name, problem: 'crs_projection_unsupported');
+  if (datum == null) return CrsInfo(kind: CrsKind.projected, projection: p, name: name, unitM: unit, problem: 'crs_datum_unknown');
+  final z = p.utmZone;
+  return CrsInfo(kind: CrsKind.projected, datum: datum, projection: p, epsg: z != null ? datum.utmEpsg(z, p.north) : null, name: name, unitM: unit);
 }
 
 /// Georeference read from GeoTIFF tags.

@@ -15,7 +15,10 @@
 /// Importing the individual libraries (`core/model/project.dart`,
 /// `core/design/designer.dart`, …) works as well and is what the app does.
 /// Left out here: the internals of the PDF text shaping (`io/fonts/*` except
-/// pdf_fonts.dart) and the sparse matrix solver behind the network solver
+/// pdf_fonts.dart), the sparse matrix solver behind the network solver and
+/// the tables of the East Asian code pages (`io/codepages_cjk_data.dart`, a
+/// library codepages.dart loads on demand: exported here, it would be part
+/// of every program that imports this file)
 /// (test/core/api_exports_test.dart keeps the list complete; the parts of a
 /// library come with it).
 library;
@@ -104,9 +107,11 @@ export 'hydraulics/water_hammer.dart';
 export 'i18n/language_packs.dart';
 export 'io/cad_drawing.dart';
 export 'io/cad_export.dart';
+export 'io/cad_xdata.dart';
 export 'io/catalog_io.dart';
 export 'io/climate_online.dart';
 export 'io/codepages.dart';
+export 'io/data_cache.dart';
 export 'io/datum.dart';
 export 'io/dem_online.dart';
 export 'io/dem_tiff.dart';
@@ -123,8 +128,10 @@ export 'io/geo_export.dart';
 export 'io/geoimage.dart';
 export 'io/geojson_reader.dart';
 export 'io/gpx.dart';
+export 'io/icc_srgb.dart';
 export 'io/ifc.dart';
 export 'io/image_decode.dart';
+export 'io/import_async.dart';
 export 'io/kml.dart';
 export 'io/landxml.dart';
 export 'io/las.dart';
@@ -144,7 +151,9 @@ export 'io/sheet_check.dart';
 export 'io/sheet_set.dart';
 export 'io/shp.dart';
 export 'io/shp_writer.dart';
+export 'io/stakeout.dart';
 export 'io/svg.dart';
+export 'io/tiff_raster.dart';
 export 'io/work_slicer.dart';
 export 'io/xlsx.dart';
 export 'io/xml_text.dart';
