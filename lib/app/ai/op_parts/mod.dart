@@ -11,11 +11,42 @@ import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../../core/model/project.dart';
 import '../../../core/model/project_merge.dart';
+import '../../state/new_project_prefs.dart';
 import '../agent_tools.dart';
 import '../ops_cad_common.dart';
 import '../ops_cad_edit.dart' show cadPolygon;
 
-List<AgentTool> opsMod(AgentToolbox b) => [..._areaHoleOps(b), ..._insertProjectOps(b)];
+List<AgentTool> opsMod(AgentToolbox b) => [..._areaHoleOps(b), ..._insertProjectOps(b), ..._newProjectOps(b)];
+
+/// Design parameters → New projects: what new projects start with on this
+/// device, kept or forgotten.
+List<AgentTool> _newProjectOps(AgentToolbox b) => [
+  cadOp(
+    b,
+    group: 'file',
+    name: 'new_project_defaults',
+    effect: ToolEffect.write,
+    description:
+        'What new projects start with on this device (Design → Design parameters → New projects): the mains frequency and the currency of the machine\'s region unless the user chose others, the display units the user chose (metric otherwise: US units are never taken from the region alone) and, once kept, every design parameter of a project (velocities, losses, economics…). "action": "show" tells what they start with and where each comes from; "save" keeps the parameters of the open project for the next ones (only when the user asks for it); "clear" forgets every choice (back to the region\'s frequency and currency, metric units, the program\'s parameters). The open project does not change.',
+    schema: obj({'action': str('What to do (default "show").', ['show', 'save', 'clear'])}),
+    effectFor: (i) => (i['action'] ?? 'show') == 'show' ? ToolEffect.read : ToolEffect.write,
+    args: (i) => {'n': '${i['action'] ?? 'show'}'},
+    run: (a, i) async {
+      final c = b.c;
+      switch (a.str('action') ?? 'show') {
+        case 'save':
+          c.saveParamsAsDefault();
+        case 'clear':
+          c.clearParamsDefault();
+        case 'show':
+          break;
+        default:
+          throw ToolInputError('"action" is one of show, save, clear.');
+      }
+      return ToolOutput('${c.newProjectDefaultsText()}${c.hasNewProjectChoices ? '' : ' (no choice kept on this device)'}');
+    },
+  ),
+];
 
 /// File → Insert project…: a project file attached to the conversation
 /// inserted into the open one.

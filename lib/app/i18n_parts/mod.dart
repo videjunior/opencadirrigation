@@ -165,4 +165,28 @@ const _mod = <String, (String, String, String)>{
   ),
   'insert.converted': ('preços convertidos de {c} para {t}', 'prices converted from {c} to {t}', 'precios convertidos de {c} a {t}'),
   'ai.op.insert_project': ('Inserir o projeto {n}', 'Insert the project {n}', 'Insertar el proyecto {n}'),
+  // ---- what new projects start with (1.6.0 MOD)
+  'npd.title': ('Projetos novos', 'New projects', 'Proyectos nuevos'),
+  'npd.now': (
+    'Projetos novos começam com {hz} ({hzFrom}), moeda {c} ({cFrom}) e unidades: {u} ({uFrom}){p}.',
+    'New projects start with {hz} ({hzFrom}), currency {c} ({cFrom}) and units: {u} ({uFrom}){p}.',
+    'Los proyectos nuevos empiezan con {hz} ({hzFrom}), moneda {c} ({cFrom}) y unidades: {u} ({uFrom}){p}.',
+  ),
+  'npd.fromChoice': ('sua escolha', 'your choice', 'su elección'),
+  'npd.fromRegion': ('da região {r}', 'of the region {r}', 'de la región {r}'),
+  'npd.fromProgram': ('padrão do programa', 'the program\'s default', 'predeterminado del programa'),
+  'npd.withTemplate': (', com os parâmetros que você guardou', ', with the parameters you kept', ', con los parámetros que usted guardó'),
+  'npd.save': ('Usar estes parâmetros nos projetos novos', 'Use these parameters for new projects', 'Usar estos parámetros en los proyectos nuevos'),
+  'npd.clear': ('Voltar ao padrão da região', 'Back to the region\'s defaults', 'Volver a lo predeterminado de la región'),
+  'npd.saved': (
+    'Os próximos projetos novos começam com estes parâmetros (velocidades, perdas, economia, unidades, frequência e moeda).',
+    'The next new projects start with these parameters (velocities, losses, economics, units, frequency and currency).',
+    'Los próximos proyectos nuevos empiezan con estos parámetros (velocidades, pérdidas, economía, unidades, frecuencia y moneda).',
+  ),
+  'npd.cleared': (
+    'Escolhas esquecidas: os projetos novos voltam à frequência e à moeda da região, unidades métricas e os parâmetros do programa.',
+    'Choices forgotten: new projects go back to the frequency and currency of the region, metric units and the program\'s parameters.',
+    'Elecciones olvidadas: los proyectos nuevos vuelven a la frecuencia y la moneda de la región, unidades métricas y los parámetros del programa.',
+  ),
+  'ai.op.new_project_defaults': ('Projetos novos: {n}', 'New projects: {n}', 'Proyectos nuevos: {n}'),
 };

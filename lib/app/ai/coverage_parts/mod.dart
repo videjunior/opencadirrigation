@@ -9,4 +9,6 @@ const coverageMod = <String, String>{
   'panel:properties.areaIslands': 'op:set_area_holes',
   // ---- another project inserted into the open one
   'menu:file.insertProject': 'op:insert_project',
+  // ---- what new projects start with (region, the user's choices)
+  'dialog:dialogs.designParams.newProjectDefaults': 'op:new_project_defaults',
 };

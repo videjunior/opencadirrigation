@@ -66,6 +66,7 @@ import '../io/window_locks.dart';
 import '../keys/canvas_keys.dart';
 import 'ai_marks.dart';
 import 'design_runner.dart';
+import 'new_project_prefs.dart';
 
 /// Language of the interface: the app lays itself out right to left for
 /// the languages written that way (see [rtlLanguages]).
@@ -3351,7 +3352,9 @@ class ProjectController extends ChangeNotifier {
     final code = defaultCurrency();
     project = Project(catalog: defaultCatalog(code));
     _applyNewProjectCurrency(code);
-    // 1.6.0 MOD: mains frequency and units of the user's region (or choice)
+    // 1.6.0 MOD: the parameters the user kept for new projects, then the
+    // mains frequency and units of the user's region (or choice)
+    this.applyNewProjectTemplate();
     project.params
       ..mainsHz = defaultMainsHz()
       ..units = defaultUnits();

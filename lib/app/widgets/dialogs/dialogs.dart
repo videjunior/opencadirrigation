@@ -26,6 +26,7 @@ import '../../../core/model/terrain.dart';
 import '../../../core/units.dart';
 import '../../io/file_io.dart';
 import '../../theme.dart';
+import '../new_project_defaults.dart';
 import '../reports_panel.dart' show ReportTableView;
 import '../../io/links.dart';
 import '../../io/prefs.dart';
@@ -594,6 +595,8 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
               // 1.6.0 MOD
               if (exchangeRatesStale(DateTime.now()))
                 Text(t('dlg.ratesStale', {'d': exchangeRatesDate, 'n': '${exchangeRatesAgeDays(DateTime.now())}'}), style: TextStyle(fontSize: 10.5, color: Cad.warning)),
+              // 1.6.0 MOD: what new projects start with
+              NewProjectDefaults(c: c),
             ],
           ),
         );
