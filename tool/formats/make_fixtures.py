@@ -339,6 +339,39 @@ if shutil.which('dxf2dwg'):
     r = subprocess.run(['dxf2dwg', '--as', 'r2000', '-y', '-o', str(target), str(OUT / 'ocs_mirrored_r2000.dxf')], capture_output=True, text=True)
     print(f'  {target.name} ({target.stat().st_size} bytes)' if r.returncode == 0 and target.exists() else f'  {target.name}: dxf2dwg failed ({r.returncode}) {r.stderr[-300:]}')
 
+
+def dxf2dwg(source, target):
+    """An R2000 DWG of [source] written by LibreDWG (the independent writer)."""
+    if not shutil.which('dxf2dwg'):
+        print(f'  {target}: dxf2dwg not installed, not rewritten')
+        return
+    t = OUT / target
+    if t.exists():
+        t.unlink()
+    r = subprocess.run(['dxf2dwg', '--as', 'r2000', '-y', '-o', str(t), str(OUT / source)], capture_output=True, text=True)
+    print(f'  {target} ({t.stat().st_size} bytes)' if r.returncode == 0 and t.exists() else f'  {target}: dxf2dwg failed ({r.returncode}) {r.stderr[-300:]}')
+
+
+# the drawing in millimetres as a DWG: $INSUNITS read from the DWG header (FMT-02)
+dxf2dwg('client_mm_r2010.dxf', 'client_mm_r2000.dwg')
+
+# a DXF in the Cyrillic code page ANSI_1251 (FMT-12), written by hand so that
+# its bytes are exactly those of the page, and its DWG by LibreDWG
+CP1251_DXF = '\n'.join([
+    '  0', 'SECTION', '  2', 'HEADER', '  9', '$ACADVER', '  1', 'AC1015', '  9', '$DWGCODEPAGE', '  3', 'ANSI_1251', '  9', '$INSUNITS', ' 70', '6', '  0', 'ENDSEC',
+    '  0', 'SECTION', '  2', 'TABLES', '  0', 'TABLE', '  2', 'LAYER', ' 70', '1', '  0', 'LAYER', '  2', 'Трубы', ' 70', '0', ' 62', '3', '  6', 'CONTINUOUS', '  0', 'ENDTAB', '  0', 'ENDSEC',
+    '  0', 'SECTION', '  2', 'ENTITIES',
+    '  0', 'LINE', '  8', 'Трубы', ' 10', '0', ' 20', '0', ' 30', '0', ' 11', '10', ' 21', '0', ' 31', '0',
+    '  0', 'TEXT', '  8', 'Трубы', ' 10', '0', ' 20', '5', ' 30', '0', ' 40', '1', '  1', 'Задвижка №1',
+    '  0', 'ENDSEC', '  0', 'EOF', '',
+])
+write('cp1251_r2000.dxf', CP1251_DXF.encode('cp1251'))
+dxf2dwg('cp1251_r2000.dxf', 'cp1251_r2000.dwg')
+
+# the fixtures of the new functions of 1.6.0 (survey blocks, ground overlays,
+# large and cloud-optimised GeoTIFFs, projections given key by key, classes
+# of DWG entities, East Asian code pages): tool/formats/make_fixtures_1102.py
+
 # ----------------------------------------------------------------- KML / KMZ
 print('KML / KMZ')
 kml = '''<?xml version="1.0" encoding="UTF-8"?>
