@@ -3,6 +3,7 @@
 /// clipboard as JSON so it can be pasted into another browser window.
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -178,6 +179,8 @@ class Workspace extends ChangeNotifier {
     c.tabId = ++_seq;
     if (tabs.isNotEmpty && c.lang != tabs.first.lang) c.setLanguage(tabs.first.lang, persist: false);
     c.onLanguageChanged = _propagateLanguage;
+    // two tabs never work on the same project uid (a file opened twice, a version opened beside its project)
+    c.uidTaken = (uid) => tabs.any((t) => !identical(t, c) && t.project.meta.uid == uid);
     if (controller == null) c.newProject();
     tabs.add(c);
     if (select) _active = tabs.length - 1;
@@ -201,18 +204,23 @@ class Workspace extends ChangeNotifier {
   void next() => select((_active + 1) % tabs.length);
   void previous() => select((_active - 1 + tabs.length) % tabs.length);
 
-  /// Removes a tab; the workspace always keeps at least one.
+  /// Removes a tab; the workspace always keeps at least one. The tab's
+  /// controller is disposed (its GPS, timers, design worker and window lock
+  /// go with it; a copy being written still completes).
   void closeTab(int i) {
     if (i < 0 || i >= tabs.length) return;
     final c = tabs.removeAt(i);
     c.onLanguageChanged = null;
+    c.uidTaken = null;
     if (tabs.isEmpty) {
       _active = 0;
       addTab();
-      return;
+    } else {
+      if (i < _active || _active >= tabs.length) _active = (_active - 1).clamp(0, tabs.length - 1);
+      notifyListeners();
     }
-    if (i < _active || _active >= tabs.length) _active = (_active - 1).clamp(0, tabs.length - 1);
-    notifyListeners();
+    // after the listeners let go of it
+    scheduleMicrotask(c.dispose);
   }
 
   /// Copies (or cuts) the selection of the current tab. Returns the count.

@@ -17,6 +17,7 @@ import '../../../core/model/geometry.dart';
 import '../../../core/units.dart';
 import '../../io/file_io.dart';
 import '../../io/project_store.dart';
+import '../../io/window_locks.dart';
 import '../../state/controller.dart';
 import '../../state/workspace.dart';
 import '../dem_view.dart';
@@ -318,54 +319,78 @@ Future<void> showDemDialog(BuildContext context, ProjectController c) => showDia
 
 // ---------------------------------------------------------------- recovery
 
-/// Offers to recover autosaved projects (called at start-up). Returns the
-/// number of projects restored into new tabs.
+/// Offers, at start-up, the copies of projects with changes that were not
+/// saved to a file (the app or the browser closed before): one line per
+/// project, each ticked to restore or to discard, and Later keeps them all
+/// for another time. A project open in another window of this browser, or
+/// in a tab here, is left out (it is alive there). Discarding drops only
+/// the copy with the unsaved changes: a project saved before goes back to
+/// its last saved version, whose history stays. Returns the number of
+/// projects restored into tabs.
 Future<int> showRecoveryDialog(BuildContext context, Workspace ws) async {
   final c = ws.current;
   final t = c.t;
-  final items = c.store.recoverable();
-  if (items.isEmpty) return 0;
-  final chosen = await showDialog<List<StoredProject>>(
+  await c.store.prepare();
+  final elsewhere = await windowLocks.openElsewhere();
+  final open = {for (final x in ws.tabs) x.project.meta.uid};
+  final items = c.store.recoverable().where((p) => !elsewhere.contains(p.uid) && !open.contains(p.uid)).toList();
+  if (items.isEmpty || !context.mounted) return 0;
+  final picked = {for (final p in items) p.uid};
+  final choice = await showDialog<String>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(t('rec.title'), style: const TextStyle(fontSize: 15)),
-      content: SizedBox(
-        width: 460,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(t('rec.text'), style: const TextStyle(fontSize: 12)),
-            const SizedBox(height: 8),
-            for (final p in items) Text('• ${t('rec.item', {'name': p.name, 'when': _when(p.savedAt), 'kb': (p.bytes / 1024).toStringAsFixed(0)})}', style: const TextStyle(fontSize: 11.5)),
-          ],
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: Text(t('rec.title'), style: const TextStyle(fontSize: 15)),
+        content: SizedBox(
+          width: 480,
+          child: ScrollBody(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('rec.text2'), style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 6),
+                for (final p in items)
+                  CheckboxListTile(
+                    key: Key('rec_item_${p.uid}'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: picked.contains(p.uid),
+                    onChanged: (v) => setState(() => v == true ? picked.add(p.uid) : picked.remove(p.uid)),
+                    title: Text(t('rec.item', {'name': p.name, 'when': _when(p.savedAt), 'kb': (p.bytes / 1024).toStringAsFixed(0)}), style: const TextStyle(fontSize: 11.5)),
+                    subtitle: c.store.versions(p.uid).isEmpty ? null : Text(t('rec.hasVersions', {'n': '${c.store.versions(p.uid).length}'}), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+                  ),
+                const SizedBox(height: 4),
+                Text(t('rec.discardNote'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+              ],
+            ),
+          ),
         ),
+        actions: [
+          TextButton(key: const Key('rec_discard'), onPressed: picked.isEmpty ? null : () => Navigator.pop(ctx, 'discard'), child: Text(t('rec.discard'))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('rec.later'))),
+          FilledButton(key: const Key('rec_restore'), onPressed: picked.isEmpty ? null : () => Navigator.pop(ctx, 'restore'), child: Text(t('rec.restore'))),
+        ],
       ),
-      actions: [
-        TextButton(
-          key: const Key('rec_discard'),
-          onPressed: () {
-            for (final p in items) {
-              c.store.remove(p.uid);
-            }
-            Navigator.pop(ctx, <StoredProject>[]);
-          },
-          child: Text(t('rec.discard')),
-        ),
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('rec.later'))),
-        FilledButton(key: const Key('rec_restore'), onPressed: () => Navigator.pop(ctx, items), child: Text(t('rec.restore'))),
-      ],
     ),
   );
-  if (chosen == null || chosen.isEmpty) return 0;
+  final chosen = items.where((p) => picked.contains(p.uid)).toList();
+  if (choice == 'discard') {
+    for (final p in chosen) {
+      await c.store.discardAutosave(p.uid);
+    }
+    return 0;
+  }
+  if (choice != 'restore') return 0;
   var n = 0;
   for (final p in chosen) {
-    final json = c.store.load(p.uid);
+    final json = await c.store.load(p.uid);
     if (json == null) continue;
     final blank = ws.current.project.entities.isEmpty && !ws.current.dirty;
     final target = blank && n == 0 ? ws.current : ws.addTab();
     try {
-      target.loadJson(json);
+      target.loadJson(json, fromStore: true);
       target.dirty = true;
       c.store.acknowledge(p.uid);
       n++;
@@ -379,39 +404,75 @@ Future<int> showRecoveryDialog(BuildContext context, Workspace ws) async {
 
 // ---------------------------------------------------------------- versions
 
+/// File → Version history: the versions of this project kept in this
+/// browser (every save keeps one). Restoring one is an undo step (Ctrl+Z
+/// brings the work back as it was); a project with changes not saved to a
+/// file asks first.
 Future<void> showVersionsDialog(BuildContext context, ProjectController c) {
   final t = c.t;
   final versions = c.store.versions(c.project.meta.uid);
+  Future<void> restore(BuildContext ctx, StoredProject v) async {
+    if (c.dirty) {
+      final ok = await showDialog<bool>(
+        context: ctx,
+        builder: (q) => AlertDialog(
+          title: Text(t('ver.restore')),
+          content: Text(t('ver.restoreConfirm', {'v': '${v.version}'})),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(q, false), child: Text(t('cancel'))),
+            FilledButton(key: const Key('ver_restore_ok'), onPressed: () => Navigator.pop(q, true), child: Text(t('ok'))),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      // the work as it was also stays in the browser's copy until the next one
+      await c.autosaveIfChanged();
+    }
+    final json = await c.store.load(v.uid, version: v.version);
+    if (json == null) {
+      c.notify(t('store.err.read'));
+      return;
+    }
+    if (!c.restoreVersionJson(json, version: v.version)) return;
+    c.notify(t('msg.versionRestoredUndo', {'v': '${v.version}'}));
+    if (ctx.mounted) Navigator.pop(ctx);
+  }
+
   return _show(
     context,
     c,
     t('ver.title', {'name': c.project.meta.name}),
     SizedBox(
-      height: 300,
-      child: versions.isEmpty
-          ? Text(t('ver.none'), style: TextStyle(fontSize: 12, color: Cad.fg70))
-          : ListView(
-              children: [
-                for (final v in versions)
-                  ListTile(
-                    dense: true,
-                    title: Text(t('ver.item', {'v': '${v.version}', 'when': _when(v.savedAt)}), style: const TextStyle(fontSize: 12)),
-                    subtitle: Text('${(v.bytes / 1024).toStringAsFixed(0)} kB${v.label.isNotEmpty ? ' · ${v.label}' : ''}', style: const TextStyle(fontSize: 10.5)),
-                    trailing: TextButton(
-                      key: Key('ver_restore_${v.version}'),
-                      onPressed: () {
-                        final json = c.store.load(v.uid, version: v.version);
-                        if (json == null) return;
-                        c.loadJson(json);
-                        c.dirty = true;
-                        c.notify(t('msg.versionRestored', {'v': '${v.version}'}));
-                        Navigator.pop(context);
-                      },
-                      child: Text(t('ver.restore')),
+      height: 320,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: versions.isEmpty
+                ? Text(t('ver.none'), style: TextStyle(fontSize: 12, color: Cad.fg70))
+                : Builder(
+                    builder: (ctx) => ListView(
+                      children: [
+                        for (final v in versions)
+                          ListTile(
+                            dense: true,
+                            title: Text(t('ver.item', {'v': '${v.version}', 'when': _when(v.savedAt)}), style: const TextStyle(fontSize: 12)),
+                            subtitle: Text('${(v.bytes / 1024).toStringAsFixed(0)} kB${v.label.isNotEmpty ? ' · ${v.label}' : ''}', style: const TextStyle(fontSize: 10.5)),
+                            trailing: TextButton(key: Key('ver_restore_${v.version}'), onPressed: () => restore(ctx, v), child: Text(t('ver.restore'))),
+                          ),
+                      ],
                     ),
                   ),
-              ],
-            ),
+          ),
+          const SizedBox(height: 6),
+          // what these copies are, and are not
+          Text(
+            t('store.notBackup'),
+            key: const Key('ver_note'),
+            style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+          ),
+        ],
+      ),
     ),
     width: 480,
   );

@@ -244,7 +244,7 @@ void main() {
       expect(d.project.meta.uid, c.project.meta.uid);
     });
 
-    test('autosave and version history in the local store', () {
+    test('autosave and version history in the local store', () async {
       final store = LocalProjectStore();
       store.clearAll();
       final c = ProjectController(store: store);
@@ -253,14 +253,14 @@ void main() {
       c.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(1, 0)));
       c.autosaveNow();
       expect(store.recoverable().length, 1);
-      expect(store.load(c.project.meta.uid), isNotNull);
+      expect(await store.load(c.project.meta.uid), isNotNull);
       c.saveJson();
       expect(store.recoverable(), isEmpty);
       expect(store.versions(c.project.meta.uid).length, 1);
       c.addEntity(LineEntity(id: 'l2', a: Pt.zero, b: const Pt(2, 0)));
       c.saveJson();
       expect(store.versions(c.project.meta.uid).length, 2);
-      final v1 = store.load(c.project.meta.uid, version: 1)!;
+      final v1 = (await store.load(c.project.meta.uid, version: 1))!;
       final d = ProjectController(store: store)..loadJson(v1);
       expect(d.project.entities.length, 1);
       store.remove(c.project.meta.uid);

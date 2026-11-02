@@ -1,5 +1,7 @@
 /// Web Worker entry point: receives a design request as a JSON string and
-/// answers with `progress`, then `done` or `error` messages (JSON strings).
+/// answers with `progress`, then `done` or `error` messages (JSON strings),
+/// each with the job number of the request and the build of this code (see
+/// design_job.dart: the app replaces a worker of another build).
 ///
 /// Compiled with `tool/build_worker.sh` into `web/design_worker.js`, which
 /// the app loads through `WorkerDesignRunner`. Rebuild it after changing the

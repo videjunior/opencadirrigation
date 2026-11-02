@@ -25,6 +25,7 @@ import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
+import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
@@ -114,7 +115,15 @@ class AppMenuBar extends StatelessWidget {
                       onClose: _menuClosed,
                       key: const Key('menu_examples'),
                       leadingIcon: const Icon(Icons.auto_awesome_outlined, size: 16),
-                      menuChildren: [for (final ex in exampleGallery) item(t(ex.titleKey), () => loadExampleAction(c, ex.id), icon: exampleIcon(ex.id), key: Key('menu_example_${ex.id.name}'))],
+                      menuChildren: [
+                        for (final ex in exampleGallery)
+                          item(
+                            t(ex.titleKey),
+                            () => openExampleAction(context, c, ex.id, ws: ws),
+                            icon: exampleIcon(ex.id),
+                            key: Key('menu_example_${ex.id.name}'),
+                          ),
+                      ],
                       child: Text(t('file.examples')),
                     ),
                     const Divider(height: 1),
@@ -147,6 +156,11 @@ class AppMenuBar extends StatelessWidget {
                     item(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined, key: const Key('menu_share_link')),
                     item(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
                     item(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
+                    // 1.6.0 CAD
+                    const Divider(height: 1),
+                    item(t('file.saveAs'), () => saveProjectAction(context, c, saveAs: true), icon: Icons.save_as_outlined, key: const Key('menu_save_as')),
+                    item(t('file.saveCopy'), () => saveCopyAction(context, c), icon: Icons.file_copy_outlined, key: const Key('menu_save_copy')),
+                    item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_storage')),
                   ],
                   child: Text(t('menu.file')),
                 ),
@@ -338,6 +352,8 @@ class AppMenuBar extends StatelessWidget {
                         item(t('gps.walkOutline'), c.gpsTrack == null ? null : () => c.finishGpsTrack(), icon: Icons.pentagon_outlined),
                         item(t('gps.walkLine'), c.gpsTrack == null ? null : () => c.finishGpsTrack(closed: false), icon: Icons.timeline),
                         item(t('gps.mark'), c.gpsPoint == null ? null : c.markGpsPoint, icon: Icons.add_location_alt_outlined, key: const Key('menu_gps_mark')),
+                        // 1.6.0 CAD
+                        item(t('gps.walkDiscard'), c.gpsTrack == null && !c.hasKeptWalk ? null : c.discardGpsTrack, icon: Icons.delete_sweep_outlined, key: const Key('menu_gps_walk_discard')),
                       ],
                       child: Text(t('gps.submenu')),
                     ),

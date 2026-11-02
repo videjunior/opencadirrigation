@@ -62,9 +62,15 @@ void main() {
       await tester.tap(find.byKey(const Key('example_garden')));
       await settle(tester);
       expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsNothing);
-      expect(c.project.meta.name, 'Jardim residencial');
-      expect(c.project.entities.whereType<OutletEntity>().length, 24);
-      expect(c.eventCount('example'), greaterThanOrEqualTo(1));
+      // the tab already had a project: the example opens in a tab of its own
+      final shell = tester.state(find.byType(AppShell)) as dynamic;
+      final ProjectController shown = shell.c as ProjectController;
+      expect(identical(shown, c), isFalse);
+      expect(shell.ws.tabs.length, 2);
+      expect(c.project.meta.name, 'Exemplo pomar', reason: 'the work of the first tab is never replaced');
+      expect(shown.project.meta.name, 'Jardim residencial');
+      expect(shown.project.entities.whereType<OutletEntity>().length, 24);
+      expect(shown.eventCount('example'), greaterThanOrEqualTo(1));
     });
 
     testWidgets('Help reopens the gallery; File → Examples loads any example; the tutorial still starts', (tester) async {
@@ -74,8 +80,15 @@ void main() {
       expect(find.text('Bem-vindo ao OpenCADIrrigation'), findsOneWidget);
       await tester.tap(find.byKey(const Key('example_pivot')));
       await settle(tester);
-      expect(c.project.entities.whereType<PivotEntity>().length, 1);
-      expect(c.project.meta.name, 'Pivô central');
+      final shell = tester.state(find.byType(AppShell)) as dynamic;
+      ProjectController shown() => shell.c as ProjectController;
+      expect(shown().project.entities.whereType<PivotEntity>().length, 1);
+      expect(shown().project.meta.name, 'Pivô central');
+      expect(c.project.meta.name, 'Exemplo pomar', reason: 'opened in a new tab');
+      // a blank tab is used as it is
+      shell.ws.addTab();
+      await settle(tester, 2);
+      final blank = shown();
       // File → Examples submenu
       await tester.tap(find.text('Arquivo').first);
       await settle(tester, 2);
@@ -84,8 +97,10 @@ void main() {
       expect(find.byKey(const Key('menu_example_sportsField')), findsOneWidget);
       await tester.tap(find.byKey(const Key('menu_example_sportsField')));
       await settle(tester);
-      expect(c.project.meta.name, 'Campo de futebol');
-      expect(c.project.entities.whereType<ControlValveEntity>().length, 5);
+      expect(identical(shown(), blank), isTrue, reason: 'the blank tab takes the example');
+      expect(shell.ws.tabs.length, 3);
+      expect(shown().project.meta.name, 'Campo de futebol');
+      expect(shown().project.entities.whereType<ControlValveEntity>().length, 5);
       // the gallery's tutorial button starts the tutorial
       await openMenu(tester, 'Ajuda', 'Boas-vindas e galeria de exemplos…');
       await tester.tap(find.byKey(const Key('tut_start')));

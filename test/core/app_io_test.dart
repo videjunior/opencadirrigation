@@ -62,16 +62,16 @@ void main() {
   group('LocalProjectStore', () {
     setUp(() => LocalProjectStore().clearAll());
 
-    test('save, list, versions, rename, recover and remove', () {
+    test('save, list, versions, rename, recover and remove', () async {
       final store = LocalProjectStore();
       store.save('u1', 'Um', '{"a":1}');
       store.save('u1', 'Um', '{"a":2}');
       store.save('u2', 'Dois', '{"b":1}', kind: 'autosave');
       expect(store.list().map((p) => p.uid).toSet(), {'u1', 'u2'});
-      expect(store.load('u1'), '{"a":2}');
+      expect(await store.load('u1'), '{"a":2}');
       final v = store.versions('u1');
       expect(v.length, greaterThanOrEqualTo(1));
-      expect(store.load('u1', version: v.first.version), isNotNull);
+      expect(await store.load('u1', version: v.first.version), isNotNull);
       expect(store.recoverable().map((p) => p.uid), ['u2']);
       store.acknowledge('u2');
       expect(store.recoverable(), isEmpty);
@@ -79,7 +79,7 @@ void main() {
       expect(store.list().firstWhere((p) => p.uid == 'u1').name, 'Um renomeado');
       store.remove('u1');
       expect(store.list().map((p) => p.uid), isNot(contains('u1')));
-      expect(store.load('u1'), isNull);
+      expect(await store.load('u1'), isNull);
       store.clearAll();
       expect(store.list(), isEmpty);
     });

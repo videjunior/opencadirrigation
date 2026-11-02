@@ -55,6 +55,8 @@ import '../io/gps.dart';
 import '../io/http.dart';
 import '../io/prefs.dart';
 import '../io/project_store.dart';
+import '../io/wake_lock.dart';
+import '../io/window_locks.dart';
 import '../keys/canvas_keys.dart';
 import 'ai_marks.dart';
 import 'design_runner.dart';
@@ -265,7 +267,7 @@ class ArrayOptions {
 }
 
 class _UndoState {
-  _UndoState(this.entities, this.rest, this.label, this.time);
+  _UndoState(this.entities, this.rest, this.label, this.time, {this.results, this.unconnected = const {}, this.advice, this.vertices = 0, this.restChars = 0});
   final List<Entity> entities;
   final Map<String, dynamic> rest;
 
@@ -273,6 +275,19 @@ class _UndoState {
   /// `|argument` for the entity kind or a count).
   final String label;
   final DateTime time;
+
+  /// The results on screen in this state, the items they found unconnected
+  /// and the design assistant's messages (replaced by every design, never
+  /// changed in place): undo and redo bring them back with the drawing.
+  /// The oldest states let them go (see [ProjectController.undoResultsKept]).
+  DesignResults? results;
+  final Set<String> unconnected;
+  List<Advice>? advice;
+
+  /// Vertices of the entities kept and characters of the rest of the
+  /// project (settings, catalogue, scenarios): what the undo budget counts.
+  final int vertices;
+  final int restChars;
 }
 
 /// One row of the history panel (Photoshop-style states).
@@ -395,13 +410,21 @@ class ProjectController extends ChangeNotifier {
 
   @override
   void notifyListeners() {
+    // a closed tab: what still completes (a copy, a design, a picture) tells nobody
+    if (_disposed) return;
     _notifySeq++;
     super.notifyListeners();
   }
 
   /// Tells the listeners about a change the drawing does not show (the
   /// progress of a design): the canvas keeps its scene.
-  void _notifyQuiet() => super.notifyListeners();
+  void _notifyQuiet() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  /// Set by [dispose] (the tab was closed).
+  bool _disposed = false;
+  bool get disposed => _disposed;
   DesignResults? results;
   final Set<String> selection = {};
   String? hoverId;
@@ -495,17 +518,45 @@ class ProjectController extends ChangeNotifier {
   final List<_UndoState> _redo = [];
 
   /// Undo depth: up to [maxUndo] steps while the copies kept stay below
-  /// [undoEntityBudget] entities in all (a large drawing keeps fewer steps).
+  /// [undoEntityBudget] entities, [undoVertexBudget] vertices and
+  /// [undoRestBudget] characters of settings in all (a large drawing, or a
+  /// survey of a few very dense contours, keeps fewer steps).
   static const maxUndo = 150;
   static const undoEntityBudget = 400000;
+  static const undoVertexBudget = 4000000;
+  static const undoRestBudget = 40 * 1000 * 1000;
+
+  /// Undo states that keep their results (each design makes new ones): the
+  /// older states keep the drawing only.
+  static const undoResultsKept = 24;
 
   void _trimUndo() {
-    var total = 0;
+    var entities = 0, vertices = 0, rest = 0;
     for (final u in _undo) {
-      total += u.entities.length;
+      entities += u.entities.length;
+      vertices += u.vertices;
+      rest += u.restChars;
     }
-    while (_undo.length > 1 && (_undo.length > maxUndo || total > undoEntityBudget)) {
-      total -= _undo.removeAt(0).entities.length;
+    while (_undo.length > 1 && (_undo.length > maxUndo || entities > undoEntityBudget || vertices > undoVertexBudget || rest > undoRestBudget)) {
+      final u = _undo.removeAt(0);
+      entities -= u.entities.length;
+      vertices -= u.vertices;
+      rest -= u.restChars;
+    }
+    // the results of the oldest states go first
+    final kept = <DesignResults>{};
+    for (final list in [_redo, _undo.reversed]) {
+      for (final u in list) {
+        final r = u.results;
+        if (r == null) continue;
+        if (kept.contains(r) || kept.length < undoResultsKept) {
+          kept.add(r);
+        } else {
+          u
+            ..results = null
+            ..advice = null;
+        }
+      }
     }
   }
 
@@ -564,9 +615,19 @@ class ProjectController extends ChangeNotifier {
   /// Last design check (Design → Design check…).
   DesignCheckReport? checkReport;
 
-  /// Decoded raster images by entity id.
+  /// Decoded raster images by entity id, at most [imageMaxSide] pixels on
+  /// their longest side (the screen never needs more; the entity keeps the
+  /// file's own bytes for the exports).
   final Map<String, ui.Image> images = {};
   final Set<String> _decoding = {};
+
+  /// The bytes each decoded image came from: an entity whose bytes changed
+  /// (another picture under the same id) is decoded again.
+  final Map<String, Uint8List> _imageBytes = {};
+
+  /// Longest side of a decoded picture: a drone orthophoto of 10 000 px
+  /// takes about 400 MB decoded in full, and no screen shows it finer.
+  static int imageMaxSide = 4096;
 
   /// Called after the language changes so a workspace can propagate it to other tabs.
   void Function(String lang)? onLanguageChanged;
@@ -576,6 +637,7 @@ class ProjectController extends ChangeNotifier {
   void _init() {
     camera.center = const Pt(60, 30);
     camera.scale = 5;
+    _claimUid();
     setDocumentLanguage(lang);
     // a controller is made while the shell builds: tell the app afterwards
     final l = lang;
@@ -635,7 +697,26 @@ class ProjectController extends ChangeNotifier {
   void refresh() => notifyListeners();
 
   // ------------------------------------------------------------ undo / redo
-  _UndoState _capture(String label) => _UndoState([for (final e in project.entities) e.clone()], project.toJson(includeEntities: false), label, DateTime.now());
+  _UndoState _capture(String label) {
+    var vertices = 0;
+    final copies = <Entity>[];
+    for (final e in project.entities) {
+      vertices += e is PolyEntity ? e.points.length : 1;
+      copies.add(e.clone());
+    }
+    final rest = project.toJson(includeEntities: false);
+    return _UndoState(copies, rest, label, DateTime.now(), results: results, unconnected: unconnected, advice: _advice, vertices: vertices, restChars: _restChars(rest));
+  }
+
+  /// Characters of the settings part of a state, roughly (the catalogue
+  /// and the scenarios dominate it): what the undo budget counts.
+  static int _restChars(Map<String, dynamic> rest) {
+    try {
+      return jsonEncode(rest).length;
+    } catch (_) {
+      return 0;
+    }
+  }
 
   /// Time of the last state change (history panel).
   DateTime historyTouched = DateTime.now();
@@ -708,10 +789,26 @@ class ProjectController extends ChangeNotifier {
     _ => 'select',
   };
 
+  /// The project of state [s]. Its id counter never goes back: an id given
+  /// after the state was captured is not given again (it may still name a
+  /// cached picture, a grade-line pick or an item of another tab's paste).
   Project _restore(_UndoState s) {
     final p = Project.fromJson({...s.rest, 'entities': const []});
     p.entities.addAll(s.entities.map((e) => e.clone()));
+    p.ensureNextId(math.max(project.nextIdValue, _highestId));
+    _highestId = p.nextIdValue;
     return p;
+  }
+
+  /// The highest id counter any state of this project reached.
+  int _highestId = 0;
+
+  /// Puts back the results, unconnected items and messages of state [s].
+  void _restoreResults(_UndoState s) {
+    results = s.results;
+    unconnected = s.unconnected;
+    _advice = s.advice;
+    if (_advice != null) _adviceSig = _adviceSignature();
   }
 
   void _snapshot([String label = 'hist.edit']) {
@@ -722,15 +819,36 @@ class ProjectController extends ChangeNotifier {
     historyTouched = DateTime.now();
   }
 
+  /// Takes back the snapshot [st] of an action that did not happen (failed,
+  /// cancelled): the project as it was and the redo steps it cleared.
+  void _dropSnapshot(_UndoState st, List<_UndoState> redo, {bool restore = false}) {
+    final i = _undo.lastIndexOf(st);
+    if (i >= 0) _undo.removeAt(i);
+    if (restore) project = _restore(st);
+    if (_redo.isEmpty) _redo.addAll(redo);
+    _editSeq++;
+  }
+
   /// Runs a mutation with an undo snapshot; [label] names the action in the
   /// history panel (`hist.*` key, optional `|argument`). Refused (returns
   /// null, tells the user) while a design runs: its result replaces the
-  /// hydraulic entities, so an edit made meanwhile would be lost.
+  /// hydraulic entities, so an edit made meanwhile would be lost. A mutation
+  /// that throws changes nothing: the project goes back to the snapshot (an
+  /// edit half applied would leave it inconsistent) and the error goes on.
   T? mutate<T>(T Function() fn, {bool invalidateResults = true, String? label}) {
     if (!editAllowed()) return null;
     track('edit');
+    final redo = List.of(_redo);
     _snapshot(label ?? 'hist.edit');
-    final r = fn();
+    final st = _undo.last;
+    final T r;
+    try {
+      r = fn();
+    } catch (_) {
+      _dropSnapshot(st, redo, restore: true);
+      notifyListeners();
+      rethrow;
+    }
     _editSeq++; // geometry changed: the spatial index is stale
     dirty = true;
     project.meta.modified = DateTime.now();
@@ -797,13 +915,18 @@ class ProjectController extends ChangeNotifier {
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
 
-  /// Whether the project may be edited now; when not (a design is running)
-  /// the user is told why.
+  /// Whether the project may be edited now; when not (a design is running,
+  /// or "fix automatically" / "optimise" between their rounds) the user is
+  /// told why.
   bool editAllowed() {
-    if (!busy) return true;
+    if (!busy && !_assistantRounds) return true;
     notify(t('msg.designBusy'));
     return false;
   }
+
+  /// "Fix automatically" or "optimise" is working in rounds: the project
+  /// stays as they leave it between two designs, so nothing else edits it.
+  bool _assistantRounds = false;
 
   void _undoOnce() {
     _editSeq++;
@@ -811,10 +934,11 @@ class ProjectController extends ChangeNotifier {
     _redo.add(_capture(st.label));
     project = _restore(st);
     selection.clear();
-    results = null;
+    _restoreResults(st);
     feedEnvelope.clear();
     dirty = true;
     historyTouched = DateTime.now();
+    _pruneImages();
   }
 
   void _redoOnce() {
@@ -823,10 +947,11 @@ class ProjectController extends ChangeNotifier {
     _undo.add(_capture(st.label));
     project = _restore(st);
     selection.clear();
-    results = null;
+    _restoreResults(st);
     feedEnvelope.clear();
     dirty = true;
     historyTouched = DateTime.now();
+    _pruneImages();
   }
 
   void undo() {
@@ -849,37 +974,96 @@ class ProjectController extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------ autosave
-  /// Autosaves at most every few seconds of activity (no timers, so it is
-  /// deterministic and test friendly), in the background (see
-  /// [_autosaveInBackground]); [autosaveNow] saves at once.
+  /// Time between copies while the editing goes on: the first edit after a
+  /// quiet moment is copied at once (in the background, see
+  /// [_autosaveInBackground]), the edits that follow within this time once
+  /// it has passed, so the last edits of a burst always reach the copy.
+  static Duration autosaveInterval = const Duration(seconds: 3);
+
+  /// Whether the last edits of a burst get their copy from a timer: in the
+  /// browser, where the copy recovers the work after a crash (elsewhere the
+  /// store is in memory, and the tests that check it turn it on).
+  static bool trailingAutosave = kIsWeb;
+  Timer? _autosaveTimer;
+
+  /// [editSeq] of the project as the browser store last kept it.
+  int _storedSeq = -1;
+
+  /// Changes the browser store has not been given yet.
+  bool get unsavedInBrowser => autosaveEnabled && project.entities.isNotEmpty && _editSeq != _storedSeq;
+
+  /// Why the last copy or save of this project could not be kept in the
+  /// browser (message key and its arguments), until a later one is kept:
+  /// the status bar shows it until then.
+  (String, Map<String, String>)? _storeProblem;
+
+  /// The text of [_storeProblem]; null while the browser keeps the project.
+  String? get storeProblem => _storeProblem == null ? null : t(_storeProblem!.$1, _storeProblem!.$2);
+
   void _autosaveMaybe() {
-    if (!autosaveEnabled) return;
-    final now = DateTime.now();
-    if (now.difference(_lastAutosave).inMilliseconds < 3000) return;
-    _autosaveInBackground();
+    if (!autosaveEnabled || _disposed) return;
+    final wait = autosaveInterval - DateTime.now().difference(_lastAutosave);
+    if (wait <= Duration.zero) {
+      _autosaveTimer?.cancel();
+      _autosaveTimer = null;
+      unawaited(_autosaveInBackground());
+    } else if (trailingAutosave && _autosaveTimer == null) {
+      _autosaveTimer = Timer(wait, () {
+        _autosaveTimer = null;
+        if (!_disposed && unsavedInBrowser) unawaited(_autosaveInBackground());
+      });
+    }
   }
 
   /// Bumped by every copy started and every save: a copy still compressing
   /// in the background is stored only if nothing newer came meanwhile.
   int _autosaveRun = 0;
 
-  /// The copy in the browser, at once (a tab being closed).
-  void autosaveNow() {
-    if (!autosaveEnabled || project.entities.isEmpty) return;
+  /// The copy in the browser at once (a tab being closed, the page hidden,
+  /// an error): written during the call when the store is synchronous
+  /// (memory: desktop builds, tests), otherwise compressed by the browser
+  /// and written in the background. Completes once it is kept or refused.
+  Future<void> autosaveNow() {
+    _autosaveTimer?.cancel();
+    _autosaveTimer = null;
+    if (!autosaveEnabled || project.entities.isEmpty || _disposed) return Future<void>.value();
+    if (!store.synchronous) return _autosaveInBackground();
     _lastAutosave = DateTime.now();
     _autosaveRun++;
+    final seq = _editSeq, uid = project.meta.uid;
     try {
       final (json, stored, limit) = _storeJson();
-      store.save(project.meta.uid, project.meta.name, json, kind: 'autosave', stored: stored);
+      final done = store.save(uid, project.meta.name, json, kind: 'autosave', stored: stored, edited: project.meta.modified).then((o) => _stored(o, seq, uid));
       // the copy in the browser is what recovers the work after a crash:
       // say once per project when it is incomplete or impossible
-      if (limit != null && _autosaveWarned != project.meta.uid) {
-        _autosaveWarned = project.meta.uid;
+      if (limit != null && _autosaveWarned != uid) {
+        _autosaveWarned = uid;
         final mb = fmt(json.length / 1e6, 1);
         scheduleMicrotask(() => notify(t(limit, {'mb': mb})));
       }
+      return done;
     } catch (_) {
       // storage unavailable: ignore
+      return Future<void>.value();
+    }
+  }
+
+  /// The copy at once only when the browser store lacks some changes (the
+  /// page hidden, an error).
+  Future<void> autosaveIfChanged() => unsavedInBrowser ? autosaveNow() : Future<void>.value();
+
+  /// The changes the browser store lacks, kept at once in localStorage
+  /// while the page is being closed (a database write started now may never
+  /// finish); the next start makes them the copy of the project, which the
+  /// recovery offers.
+  void rescueNow() {
+    if (!unsavedInBrowser || _disposed || store.synchronous) return;
+    try {
+      final (json, stored, limit) = _storeJson();
+      if (limit == 'msg.autosaveTooLarge') return;
+      store.rescue(project.meta.uid, project.meta.name, stored, bytes: json.length, edited: project.meta.modified);
+    } catch (_) {
+      // nothing more can be done while the page goes away
     }
   }
 
@@ -888,48 +1072,90 @@ class ProjectController extends ChangeNotifier {
   /// (compressing a large project in Dart held everything for seconds after
   /// each design) and the copy is stored when that is done; when it does
   /// not fit, again without the embedded pictures, as [autosaveNow] does.
-  void _autosaveInBackground() {
-    if (!autosaveEnabled || project.entities.isEmpty) return;
+  /// The store's answer is checked: a copy that could not be kept is shown
+  /// in the status bar until one is ([storeProblem]).
+  Future<void> _autosaveInBackground() async {
+    if (!autosaveEnabled || project.entities.isEmpty || _disposed) return;
     // a project already found too large is not compressed again on every
     // edit, only once it has fewer entities
     final big = _tooLarge;
     if (big != null && big.$1 == project.meta.uid && project.entities.length >= big.$2) return;
     _lastAutosave = DateTime.now();
     final run = ++_autosaveRun;
-    final uid = project.meta.uid, name = project.meta.name, count = project.entities.length;
-    unawaited(() async {
-      try {
-        final j = _saveMap();
-        var json = encodeJson(j, pretty: false);
-        var stored = await LocalProjectStore.encodeAsync(json);
-        String? limit;
-        if (stored.length > store.maxBytes) {
-          if (run != _autosaveRun) return;
-          // as autosaveNow: the embedded pictures are left out of the copy
-          var dropped = false;
-          for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
-            dropped = e.remove('data') != null || dropped;
-          }
-          if (dropped) {
-            json = encodeJson(j);
-            stored = await LocalProjectStore.encodeAsync(json);
-          }
-          limit = stored.length > store.maxBytes ? 'msg.autosaveTooLarge' : (dropped ? 'msg.autosaveNoImages' : null);
-        }
+    // a project open in another window gets a uid of its own first
+    await _claim;
+    if (run != _autosaveRun || _disposed) return;
+    final uid = project.meta.uid, name = project.meta.name, count = project.entities.length, seq = _editSeq, edited = project.meta.modified;
+    try {
+      final j = _saveMap();
+      var json = encodeJson(j, pretty: false);
+      var stored = await LocalProjectStore.encodeAsync(json);
+      String? limit;
+      if (stored.length > store.maxBytes) {
         if (run != _autosaveRun) return;
-        if (limit == 'msg.autosaveTooLarge') {
-          _tooLarge = (uid, count);
-        } else {
-          store.save(uid, name, json, kind: 'autosave', stored: stored);
+        // as autosaveNow: the embedded pictures are left out of the copy
+        var dropped = false;
+        for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
+          dropped = e.remove('data') != null || dropped;
         }
-        if (limit != null && _autosaveWarned != uid && uid == project.meta.uid) {
-          _autosaveWarned = uid;
-          notify(t(limit, {'mb': fmt(json.length / 1e6, 1)}));
+        if (dropped) {
+          json = encodeJson(j);
+          stored = await LocalProjectStore.encodeAsync(json);
         }
-      } catch (_) {
-        // storage unavailable: ignore
+        limit = stored.length > store.maxBytes ? 'msg.autosaveTooLarge' : (dropped ? 'msg.autosaveNoImages' : null);
       }
-    }());
+      if (run != _autosaveRun) return;
+      if (limit == 'msg.autosaveTooLarge') {
+        _tooLarge = (uid, count);
+        // the chip of the status bar; the message with the size follows
+        _storeFailed(uid, 'store.err.tooLarge', quiet: true);
+      } else {
+        _stored(await store.save(uid, name, json, kind: 'autosave', stored: stored, edited: edited), seq, uid);
+      }
+      if (limit != null && _autosaveWarned != uid && uid == project.meta.uid && !_disposed) {
+        _autosaveWarned = uid;
+        notify(t(limit, {'mb': fmt(json.length / 1e6, 1)}));
+      }
+    } catch (_) {
+      // storage unavailable: ignore
+    }
+  }
+
+  /// After a write of project [uid] at [seq]: what the browser now keeps,
+  /// or why it does not.
+  void _stored(StoreOutcome o, int seq, String uid) {
+    if (_disposed || uid != project.meta.uid) return;
+    if (o.ok) {
+      _storedSeq = seq;
+      if (_storeProblem != null) {
+        _storeProblem = null;
+        notifyListeners();
+      }
+      if (!o.versionKept && _versionWarned != uid) {
+        _versionWarned = uid;
+        notify(t('store.err.version'));
+      }
+      return;
+    }
+    _storeFailed(uid, switch (o.status) {
+      StoreStatus.tooLarge => 'store.err.tooLarge',
+      StoreStatus.unavailable => 'store.err.unavailable',
+      _ => 'store.err.full',
+    });
+  }
+
+  String? _versionWarned;
+
+  void _storeFailed(String uid, String key, {Map<String, String> args = const {}, bool quiet = false}) {
+    if (_disposed || uid != project.meta.uid) return;
+    // a copy too large was told with its size already (msg.autosaveTooLarge)
+    final first = _storeProblem?.$1 != key && !quiet && !(key == 'store.err.tooLarge' && _autosaveWarned == uid);
+    _storeProblem = (key, args);
+    if (first) {
+      notify(t(key, args));
+    } else {
+      notifyListeners();
+    }
   }
 
   /// The project (uid, entity count) whose copy did not fit the store even
@@ -958,18 +1184,20 @@ class ProjectController extends ChangeNotifier {
   /// (compressed once, see [LocalProjectStore.encode]) and the message key
   /// of what the copy leaves out (null = complete).
   (String, String, String?) _storeJson() {
-    var s = saveJson(pretty: false, markClean: false);
+    final j = _saveMap();
+    var s = encodeJson(j, pretty: false);
     var stored = LocalProjectStore.encode(s);
     // large projects are stored compressed; drop the embedded pictures only
     // when even that does not fit
     if (stored.length > store.maxBytes) {
-      final j = jsonDecode(s) as Map<String, dynamic>;
       var dropped = false;
       for (final e in (j['entities'] as List).cast<Map<String, dynamic>>()) {
         dropped = e.remove('data') != null || dropped;
       }
-      s = encodeJson(j);
-      stored = LocalProjectStore.encode(s);
+      if (dropped) {
+        s = encodeJson(j);
+        stored = LocalProjectStore.encode(s);
+      }
       if (stored.length > store.maxBytes) return (s, stored, 'msg.autosaveTooLarge');
       return (s, stored, dropped ? 'msg.autosaveNoImages' : null);
     }
@@ -977,10 +1205,43 @@ class ProjectController extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------ entities
-  void addEntity(Entity e) => mutate(() => project.entities.add(e), label: 'hist.add|${toolKeyOf(e)}');
+  /// Whether a change of [e] can change the design results: the network
+  /// (pipes, laterals, emitters, valves, pumps, pivots), the terrain they
+  /// are computed over (contours other than those generated from the model,
+  /// spot heights, breaklines), the irrigated areas, the valve wiring and
+  /// the closed outlines a pivot follows (corner arm, variable rate).
+  /// Annotations, dimensions, pictures and plain drawing keep the results.
+  bool affectsResults(Entity e) {
+    if (e.isHydraulic || e is SpotHeightEntity || e is BreaklineEntity || e is AreaEntity || e is WireEntity || e is ControllerEntity) return true;
+    if (e is ContourEntity) return !e.derived;
+    if (e is PolylineEntity || e is SplineEntity) return _pivotOutlines().contains(e.id);
+    return false;
+  }
+
+  /// [affectsResults] for any of [es].
+  bool anyAffectsResults(Iterable<Entity> es) => es.any(affectsResults);
+
+  Set<String>? _pivotOutlineIds;
+  int _pivotOutlineSeq = -1;
+
+  /// Ids of the outlines the pivots of the project follow.
+  Set<String> _pivotOutlines() {
+    if (_pivotOutlineIds != null && _pivotOutlineSeq == _editSeq) return _pivotOutlineIds!;
+    final ids = <String>{};
+    for (final e in project.entities) {
+      if (e is! PivotEntity) continue;
+      final m = e.machine;
+      if (m.guidePathId != null) ids.add(m.guidePathId!);
+      ids.addAll(m.vriZones.keys);
+    }
+    _pivotOutlineSeq = _editSeq;
+    return _pivotOutlineIds = ids;
+  }
+
+  void addEntity(Entity e) => mutate(() => project.entities.add(e), invalidateResults: affectsResults(e), label: 'hist.add|${toolKeyOf(e)}');
   void addEntities(Iterable<Entity> es, {String? label}) {
     final list = es.toList();
-    mutate(() => project.entities.addAll(list), label: label ?? 'hist.addMany|${list.length}');
+    mutate(() => project.entities.addAll(list), invalidateResults: anyAffectsResults(list), label: label ?? 'hist.addMany|${list.length}');
   }
 
   /// Adds a point hydraulic item and, when enabled, splits the pipe under it
@@ -994,20 +1255,48 @@ class ProjectController extends ChangeNotifier {
 
   bool _locked(Entity e) => project.isLocked(e.layer);
 
-  /// Selected entities that are not on a locked layer.
-  List<Entity> get editableSelection => project.entities.where((e) => selection.contains(e.id) && !_locked(e)).toList();
+  /// Names of the locked layers and of the hidden ones (one pass over the
+  /// layers per call, instead of a search of the layer list per entity).
+  Set<String> get _lockedLayers => {
+    for (final l in project.layers)
+      if (l.locked) l.name,
+  };
+  Set<String> get _hiddenLayers => {
+    for (final l in project.layers)
+      if (!l.visible) l.name,
+  };
 
-  void deleteSelected() {
+  /// Selected entities that are not on a locked layer.
+  List<Entity> get editableSelection {
+    if (selection.isEmpty) return const [];
+    final locked = _lockedLayers;
+    return project.entities.where((e) => selection.contains(e.id) && !locked.contains(e.layer)).toList();
+  }
+
+  /// Deletes the editable selection; the number deleted (0 when nothing
+  /// could be: a locked layer, a design running).
+  int deleteSelected() {
     track('delete');
-    if (selection.isEmpty) return;
-    final ids = editableSelection.map((e) => e.id).toSet();
+    if (selection.isEmpty) return 0;
+    final targets = editableSelection;
+    final ids = targets.map((e) => e.id).toSet();
     if (ids.isEmpty) {
       notify(t('msg.layerLocked'));
-      return;
+      return 0;
     }
-    mutate(() => project.entities.removeWhere((e) => ids.contains(e.id)), label: 'hist.delete|${ids.length}');
+    final done = mutate(
+      () {
+        project.entities.removeWhere((e) => ids.contains(e.id));
+        return true;
+      },
+      invalidateResults: anyAffectsResults(targets),
+      label: 'hist.delete|${ids.length}',
+    );
+    // refused (a design is running): nothing was deleted, the selection stays
+    if (done != true) return 0;
     selection.removeAll(ids);
     notify(t('msg.deleted', {'n': '${ids.length}'}));
+    return ids.length;
   }
 
   void moveSelected(Pt delta) {
@@ -1039,7 +1328,7 @@ class ProjectController extends ChangeNotifier {
           }
         }
       },
-      invalidateResults: !copy || targets.any((e) => e.isHydraulic),
+      invalidateResults: anyAffectsResults(targets),
       label: label ?? (copy ? 'hist.copy|${targets.length}' : 'hist.transform|${targets.length}'),
     );
     if (copy) select(newIds);
@@ -1067,38 +1356,42 @@ class ProjectController extends ChangeNotifier {
     final targets = editableSelection;
     if (targets.isEmpty) return 0;
     final created = <Entity>[];
-    mutate(() {
-      if (o.polar) {
-        final n = math.max(2, o.count);
-        final full = (o.totalAngleDeg.abs() - 360).abs() < 1e-6;
-        for (var i = 1; i < n; i++) {
-          final ang = degToRad(o.totalAngleDeg) * i / (full ? n : n - 1);
-          final rot = Affine.rotation(ang, o.center);
-          for (final e in targets) {
-            var c = e.clone(newId: project.newId()).transformed(rot);
-            if (!o.rotateItems) {
-              // keep orientation: rotate back about the copy's own centre
-              final cen = c.bounds.center;
-              c = c.transformed(Affine.rotation(-ang, cen));
-            }
-            created.add(c);
-          }
-        }
-      } else {
-        final ang = degToRad(o.angleDeg);
-        final ux = Pt.polar(1, ang), uy = Pt.polar(1, ang + math.pi / 2);
-        for (var r = 0; r < math.max(1, o.rows); r++) {
-          for (var c = 0; c < math.max(1, o.cols); c++) {
-            if (r == 0 && c == 0) continue;
-            final d = ux * (o.dx * c) + uy * (o.dy * r);
+    mutate(
+      () {
+        if (o.polar) {
+          final n = math.max(2, o.count);
+          final full = (o.totalAngleDeg.abs() - 360).abs() < 1e-6;
+          for (var i = 1; i < n; i++) {
+            final ang = degToRad(o.totalAngleDeg) * i / (full ? n : n - 1);
+            final rot = Affine.rotation(ang, o.center);
             for (final e in targets) {
-              created.add(e.clone(newId: project.newId()).translated(d));
+              var c = e.clone(newId: project.newId()).transformed(rot);
+              if (!o.rotateItems) {
+                // keep orientation: rotate back about the copy's own centre
+                final cen = c.bounds.center;
+                c = c.transformed(Affine.rotation(-ang, cen));
+              }
+              created.add(c);
+            }
+          }
+        } else {
+          final ang = degToRad(o.angleDeg);
+          final ux = Pt.polar(1, ang), uy = Pt.polar(1, ang + math.pi / 2);
+          for (var r = 0; r < math.max(1, o.rows); r++) {
+            for (var c = 0; c < math.max(1, o.cols); c++) {
+              if (r == 0 && c == 0) continue;
+              final d = ux * (o.dx * c) + uy * (o.dy * r);
+              for (final e in targets) {
+                created.add(e.clone(newId: project.newId()).translated(d));
+              }
             }
           }
         }
-      }
-      project.entities.addAll(created);
-    }, label: 'hist.array');
+        project.entities.addAll(created);
+      },
+      invalidateResults: anyAffectsResults(targets),
+      label: 'hist.array',
+    );
     select(created.map((e) => e.id));
     return created.length;
   }
@@ -1130,17 +1423,50 @@ class ProjectController extends ChangeNotifier {
     }
     final out = offsetEntity(e, sign * distance.abs(), project.newId());
     if (out == null) return null;
-    mutate(() => project.entities.add(out), invalidateResults: out.isHydraulic);
+    final done = mutate(
+      () {
+        project.entities.add(out);
+        return true;
+      },
+      invalidateResults: affectsResults(out),
+      label: 'hist.offset',
+    );
+    if (done != true) return null;
     select([out.id]);
     return out;
   }
 
   /// Linear entities used as cutting/boundary edges: the selection when it
-  /// holds any (other than [exclude]), else every visible linear entity.
-  List<Entity> _boundaries(String exclude) {
-    final sel = project.entities.where((e) => selection.contains(e.id) && e.id != exclude && e.linearPoints != null).toList();
+  /// holds any (other than [exclude]), else the visible linear entities
+  /// [near] gives (the spatial index around the edited entity), else every
+  /// visible one.
+  List<Entity> _boundaries(String exclude, {Iterable<Entity> Function()? near}) {
+    final sel = selection.isEmpty ? const <Entity>[] : project.entities.where((e) => selection.contains(e.id) && e.id != exclude && e.linearPoints != null).toList();
     if (sel.isNotEmpty) return sel;
-    return visibleEntities().where((e) => e.id != exclude && e.linearPoints != null).toList();
+    final candidates = near == null ? visibleEntities() : near();
+    return candidates.where((e) => e.id != exclude && e.linearPoints != null).toList();
+  }
+
+  /// Visible entities along the ray from [from] towards [dir] across the
+  /// drawing: the boxes of a corridor of the spatial index, so an extension
+  /// in a dense survey looks only at what lies ahead.
+  List<Entity> _alongRay(Pt from, Pt dir) {
+    final b = project.bounds;
+    if (b.isEmpty || dir.length < 1e-12) return visibleEntities();
+    final u = dir * (1 / dir.length);
+    final reach = math.sqrt(b.width * b.width + b.height * b.height) + from.distanceTo(b.center);
+    const steps = 32;
+    final step = reach / steps;
+    final half = math.max(step / 2, 1e-3);
+    final seen = <String>{};
+    final out = <Entity>[];
+    for (var k = 0; k <= steps; k++) {
+      final c = from + u * (step * k);
+      for (final e in entitiesIn(Bounds(c.x - half, c.y - half, c.x + half, c.y + half))) {
+        if (seen.add(e.id)) out.add(e);
+      }
+    }
+    return out;
   }
 
   List<double> _cutStations(Entity target, List<Entity> boundaries) {
@@ -1160,16 +1486,22 @@ class ProjectController extends ChangeNotifier {
   bool trimAt(String id, Pt world) {
     final e = project.byId(id);
     if (e == null || _locked(e) || e.linearPoints == null || e.isClosedShape) return false;
-    final cuts = _cutStations(e, _boundaries(id));
+    final cuts = _cutStations(e, _boundaries(id, near: () => entitiesIn(e.bounds.inflate(1e-6))));
     if (cuts.isEmpty) return false;
     final (at, _) = polylineStationOf(e.linearPoints!, world);
     final pieces = trimLinearEntity(e, at, cuts, () => project.newId());
     if (pieces.length == 1 && identical(pieces.first, e)) return false;
-    mutate(() {
-      final idx = project.entities.indexOf(e);
-      project.entities.removeAt(idx);
-      project.entities.insertAll(idx, pieces);
-    });
+    final done = mutate(
+      () {
+        final idx = project.entities.indexOf(e);
+        project.entities.removeAt(idx);
+        project.entities.insertAll(idx, pieces);
+        return true;
+      },
+      invalidateResults: affectsResults(e),
+      label: 'hist.trim',
+    );
+    if (done != true) return false;
     selection.remove(id);
     return true;
   }
@@ -1178,14 +1510,23 @@ class ProjectController extends ChangeNotifier {
   bool extendAt(String id, Pt world) {
     final e = project.byId(id);
     if (e == null || _locked(e) || e.linearPoints == null || e.isClosedShape) return false;
-    final b = _boundaries(id).map((x) => x.linearPoints!).toList();
+    final pts = e.linearPoints!;
+    // the end nearest to the click, and the direction it extends in
+    final atEnd = pts.last.distanceTo(world) <= pts.first.distanceTo(world);
+    final tip = atEnd ? pts.last : pts.first, before = atEnd ? pts[pts.length - 2] : pts[1];
+    final b = _boundaries(id, near: () => _alongRay(tip, tip - before)).map((x) => x.linearPoints!).toList();
     final copy = e.clone();
     if (!extendLinearEntity(copy, world, b)) return false;
-    mutate(() {
-      final idx = project.entities.indexOf(e);
-      project.entities[idx] = copy;
-    });
-    return true;
+    final done = mutate(
+      () {
+        final idx = project.entities.indexOf(e);
+        project.entities[idx] = copy;
+        return true;
+      },
+      invalidateResults: affectsResults(e),
+      label: 'hist.extend',
+    );
+    return done == true;
   }
 
   /// Cuts a pipe / lateral / line at the point closest to [world].
@@ -1199,11 +1540,18 @@ class ProjectController extends ChangeNotifier {
   bool _splitEntityAt(Entity e, double station) {
     final pieces = splitLinearEntity(e, [station], () => project.newId());
     if (pieces.length < 2) return false;
-    mutate(() {
-      final idx = project.entities.indexOf(e);
-      project.entities.removeAt(idx);
-      project.entities.insertAll(idx, pieces);
-    });
+    final done = mutate(
+      () {
+        final idx = project.entities.indexOf(e);
+        project.entities.removeAt(idx);
+        project.entities.insertAll(idx, pieces);
+        return true;
+      },
+      invalidateResults: affectsResults(e),
+      label: 'hist.cut',
+    );
+    // refused (a design is running): the pieces are not in the project
+    if (done != true) return false;
     select(pieces.map((p) => p.id));
     return true;
   }
@@ -1246,20 +1594,24 @@ class ProjectController extends ChangeNotifier {
     final grips = e.grips;
     final from = index >= 0 && index < grips.length ? grips[index] : null;
     final joined = keepConnections && from != null && from.distanceTo(p) > 1e-12 ? _joinedAt(from, e.id) : const <Entity>[];
-    mutate(() {
-      e.setGrip(index, p);
-      final tol = _junctionTolerance;
-      for (final other in joined) {
-        if (other is PointEntity) {
-          other.position = p;
-        } else if (other is PolyEntity) {
-          final pts = other.points;
-          for (var i = 0; i < pts.length; i++) {
-            if (pts[i].distanceTo(from!) <= tol) pts[i] = p;
+    mutate(
+      () {
+        e.setGrip(index, p);
+        final tol = _junctionTolerance;
+        for (final other in joined) {
+          if (other is PointEntity) {
+            other.position = p;
+          } else if (other is PolyEntity) {
+            final pts = other.points;
+            for (var i = 0; i < pts.length; i++) {
+              if (pts[i].distanceTo(from!) <= tol) pts[i] = p;
+            }
           }
         }
-      }
-    }, invalidateResults: e.isHydraulic || joined.isNotEmpty);
+      },
+      invalidateResults: affectsResults(e) || anyAffectsResults(joined),
+      label: 'hist.grip',
+    );
   }
 
   double get _junctionTolerance => math.max(project.params.connectTolerance, 1e-6);
@@ -1289,10 +1641,14 @@ class ProjectController extends ChangeNotifier {
   bool insertVertex(String id, int index, Pt p) {
     final e = project.byId(id);
     if (e is! PolyEntity || _locked(e)) return false;
-    return mutate(() {
-          e.insertVertex(index, p);
-          return true;
-        }, invalidateResults: e.isHydraulic) ??
+    return mutate(
+          () {
+            e.insertVertex(index, p);
+            return true;
+          },
+          invalidateResults: affectsResults(e),
+          label: 'hist.vertexAdd',
+        ) ??
         false;
   }
 
@@ -1300,7 +1656,7 @@ class ProjectController extends ChangeNotifier {
     final e = project.byId(id);
     if (e is! PolyEntity || _locked(e)) return;
     if (e.points.length <= 2) return;
-    mutate(() => e.removeVertex(index), invalidateResults: e.isHydraulic);
+    mutate(() => e.removeVertex(index), invalidateResults: affectsResults(e), label: 'hist.vertexRemove');
   }
 
   /// Applies [fn] to every selected entity of type [T] (batch properties).
@@ -1323,12 +1679,16 @@ class ProjectController extends ChangeNotifier {
     track('duplicate');
     if (selection.isEmpty) return;
     final copies = <Entity>[];
-    mutate(() {
-      for (final e in editableSelection) {
-        copies.add(e.clone(newId: project.newId()).translated(const Pt(2, -2)));
-      }
-      project.entities.addAll(copies);
-    }, label: 'hist.copy|${editableSelection.length}');
+    mutate(
+      () {
+        for (final e in editableSelection) {
+          copies.add(e.clone(newId: project.newId()).translated(const Pt(2, -2)));
+        }
+        project.entities.addAll(copies);
+      },
+      invalidateResults: anyAffectsResults(editableSelection),
+      label: 'hist.copy|${editableSelection.length}',
+    );
     // refused (a design is running) or nothing editable: keep the selection
     if (copies.isEmpty) return;
     selection
@@ -1522,9 +1882,13 @@ class ProjectController extends ChangeNotifier {
 
   void selectAll() {
     track('selectAll');
+    final hidden = _hiddenLayers, locked = _lockedLayers;
     selection
       ..clear()
-      ..addAll(project.entities.where((e) => project.layerNamed(e.layer).visible && !_locked(e)).map((e) => e.id));
+      ..addAll([
+        for (final e in project.entities)
+          if (!hidden.contains(e.layer) && !locked.contains(e.layer)) e.id,
+      ]);
     notifyListeners();
   }
 
@@ -1541,7 +1905,10 @@ class ProjectController extends ChangeNotifier {
 
   Entity? get selectedEntity => selection.length == 1 ? project.byId(selection.first) : null;
 
-  List<Entity> visibleEntities() => project.entities.where((e) => project.layerNamed(e.layer).visible).toList();
+  List<Entity> visibleEntities() {
+    final hidden = _hiddenLayers;
+    return hidden.isEmpty ? List.of(project.entities) : project.entities.where((e) => !hidden.contains(e.layer)).toList();
+  }
 
   /// Entities on visible layers whose bounds intersect [b], in drawing
   /// order (spatial index query).
@@ -1630,12 +1997,13 @@ class ProjectController extends ChangeNotifier {
 
   void setLayerLocked(String name, bool locked) {
     project.layerNamed(name).locked = locked;
-    if (locked) selection.removeWhere((id) => project.byId(id)?.layer == name);
+    // the lookup by id of the spatial index (the project's own scans every entity)
+    if (locked) selection.removeWhere((id) => entityById(id)?.layer == name);
     notifyListeners();
   }
 
   void setLayerColor(String name, int argb) {
-    mutate(() => project.layerNamed(name).color = argb, invalidateResults: false);
+    mutate(() => project.layerNamed(name).color = argb, invalidateResults: false, label: 'hist.layerColor');
   }
 
   void setCurrentLayer(String name) {
@@ -1647,22 +2015,26 @@ class ProjectController extends ChangeNotifier {
   bool addLayer(String name, {int color = 0xFFB0BEC5}) {
     final n = name.trim();
     if (n.isEmpty || project.findLayer(n) != null) return false;
-    return mutate(() {
-          project.layers.add(Layer(name: n, color: color));
-          return true;
-        }, invalidateResults: false) ??
+    return mutate(
+          () {
+            project.layers.add(Layer(name: n, color: color));
+            return true;
+          },
+          invalidateResults: false,
+          label: 'hist.layerAdd',
+        ) ??
         false;
   }
 
   bool renameLayer(String from, String to) {
     var ok = false;
-    mutate(() => ok = project.renameLayer(from, to), invalidateResults: false);
+    mutate(() => ok = project.renameLayer(from, to), invalidateResults: false, label: 'hist.layerRename');
     return ok;
   }
 
   void removeLayer(String name) {
     if (Layers.all.contains(name)) return;
-    mutate(() => project.removeLayer(name), invalidateResults: false);
+    mutate(() => project.removeLayer(name), invalidateResults: false, label: 'hist.layerRemove');
   }
 
   /// Layer for a new drawing entity: the current layer, unless it is locked.
@@ -1695,11 +2067,23 @@ class ProjectController extends ChangeNotifier {
   bool autoRunning = false;
   Future<void>? _autoJob;
 
+  /// Closes the tab's work: the GPS (and the screen kept on for a walk),
+  /// the timers of the copy and of the automatic analysis, the design job
+  /// and its worker, the decoded pictures and the window lock of the
+  /// project. A copy already being written still completes.
   @override
   void dispose() {
+    if (_disposed) return;
     _autoTimer?.cancel();
+    _autosaveTimer?.cancel();
     _gpsStop?.call();
     _gpsStop = null;
+    _releaseWakeLock();
+    if (busy || autoRunning) designRunner.cancel();
+    designRunner.dispose();
+    _releaseUid();
+    _disposeImages();
+    _disposed = true;
     super.dispose();
   }
 
@@ -1732,6 +2116,8 @@ class ProjectController extends ChangeNotifier {
         // edited while it ran: the next quiet moment analyses again
         _scheduleAutoAnalysis();
       }
+    } on DesignCancelled {
+      // stopped (a tab closed, Cancel): the next quiet moment analyses again
     } catch (e, st) {
       debugPrint('$e\n$st');
     } finally {
@@ -1746,10 +2132,32 @@ class ProjectController extends ChangeNotifier {
       notify(t('msg.noValves'));
       return;
     }
-    if (busy) return;
+    if (busy || _assistantRounds) return;
+    final redo = List.of(_redo);
     _snapshot('hist.design');
+    final st = _undo.last;
     final r = await _design(sizeZones: sizeZones, sizeMain: sizeMain);
-    if (r != null) _designNotice(r);
+    if (r != null) {
+      _designNotice(r);
+    } else if (_undo.isNotEmpty && identical(_undo.last, st)) {
+      // a design that failed, was cancelled or went stale changed nothing:
+      // no undo step, and the redo steps stay
+      _dropSnapshot(st, redo);
+    }
+  }
+
+  /// Set by [cancelDesign] until the next design starts.
+  bool _cancelRequested = false;
+
+  /// Stops the running design (the Cancel button of the progress card):
+  /// the worker is stopped, nothing of the design is applied and editing
+  /// is allowed again at once. "Fix automatically" and "optimise" stop too
+  /// and put the project back as it was before them.
+  void cancelDesign() {
+    if (!busy && !autoRunning && !_assistantRounds) return;
+    _cancelRequested = true;
+    track('designCancel');
+    designRunner.cancel();
   }
 
   bool get _canDesign => project.entities.any((e) => e is ControlValveEntity || e is WaterSupplyEntity);
@@ -1765,10 +2173,12 @@ class ProjectController extends ChangeNotifier {
     if (autoRunning && pending != null) await pending;
     busy = true;
     progress = null;
+    if (!_assistantRounds) _cancelRequested = false;
     track('design');
     notifyListeners();
     await _yieldFrame();
     try {
+      if (_cancelRequested) throw const DesignCancelled();
       final gen = _editSeq;
       final request = DesignRequest.of(project, lang: lang, sizeZones: sizeZones, sizeMain: sizeMain);
       final response = await designRunner.run(
@@ -1806,6 +2216,10 @@ class ProjectController extends ChangeNotifier {
       // the copy in the browser once the results are on screen
       if (autosaveEnabled) unawaited(_yieldFrame().then((_) => _autosaveInBackground()));
       return r;
+    } on DesignCancelled {
+      _cancelRequested = true;
+      notify(t('msg.designCancelled'));
+      return null;
     } catch (e, st) {
       debugPrint('$e\n$st');
       notify(t('msg.error', {'e': '$e'}));
@@ -1855,10 +2269,20 @@ class ProjectController extends ChangeNotifier {
     if (!editAllowed()) return null;
     track('fix');
     final before = results;
+    final redo = List.of(_redo);
     _snapshot('hist.fix|${kind.name}');
-    final res = applyFix(project, a, kind, results: before, label: t.call, lang: lang);
+    final st = _undo.last;
+    final FixResult res;
+    try {
+      res = applyFix(project, a, kind, results: before, label: t.call, lang: lang);
+    } catch (_) {
+      _dropSnapshot(st, redo, restore: true);
+      notifyListeners();
+      rethrow;
+    }
     if (!res.ok) {
-      _undo.removeLast(); // a correction that fails changes nothing
+      // a correction that fails changes nothing: no undo step, and the redo steps stay
+      _dropSnapshot(st, redo);
       notify(t('adv.fixFailed', {'m': t(res.key, res.args)}));
       return res;
     }
@@ -1888,15 +2312,22 @@ class ProjectController extends ChangeNotifier {
   Future<AutoFixReport?> autoFixAll({FixFilter? skip}) async {
     if (!editAllowed()) return null;
     track('autofix');
+    final redo = List.of(_redo);
     _snapshot('hist.autofix');
+    final st = _undo.last;
+    final base = results;
     assistantProgress = t('adv.working', {'n': '1'});
+    _assistantRounds = true;
+    _cancelRequested = false;
     notifyListeners();
     try {
       final report = await runAutoFix(
         project,
         () async {
           _editSeq++;
-          return _design();
+          final r = await _design();
+          if (_cancelRequested) throw const DesignCancelled();
+          return r;
         },
         label: t.call,
         lang: lang,
@@ -1912,10 +2343,26 @@ class ProjectController extends ChangeNotifier {
       reportTab = messagesReportTab;
       notify(report.applied.isEmpty ? t('adv.summaryNone') : t('adv.summaryApplied', {'n': '${report.applied.length}'}).replaceAll(RegExp(r'\s*[:：]\s*$'), ''));
       return report;
+    } on DesignCancelled {
+      _backTo(st, redo, base);
+      notify(t('msg.designCancelled'));
+      return null;
     } finally {
+      _assistantRounds = false;
       assistantProgress = '';
       notifyListeners();
     }
+  }
+
+  /// Puts the project back to its own snapshot [st] (taken out of the undo
+  /// steps by identity, wherever it is) with the results [base] it had:
+  /// "optimise" that gained nothing, a cancelled "fix automatically".
+  void _backTo(_UndoState st, List<_UndoState> redo, DesignResults? base) {
+    _dropSnapshot(st, redo, restore: true);
+    results = base;
+    unconnected = base?.unconnected ?? unconnected;
+    _advice = st.advice;
+    if (_advice != null) _adviceSig = _adviceSignature();
   }
 
   /// Optimises the design (see [runOptimize]); keeps the result when it is
@@ -1924,15 +2371,22 @@ class ProjectController extends ChangeNotifier {
     if (!editAllowed()) return null;
     track('optimize');
     final base = results;
+    final redo = List.of(_redo);
     _snapshot('hist.optimize');
+    // its own snapshot, put back by identity (nothing else edits meanwhile)
+    final st = _undo.last;
     assistantProgress = t('opt.working');
+    _assistantRounds = true;
+    _cancelRequested = false;
     notifyListeners();
     try {
       final report = await runOptimize(
         project,
         () async {
           _editSeq++;
-          return _design();
+          final r = await _design();
+          if (_cancelRequested) throw const DesignCancelled();
+          return r;
         },
         options: options,
         baseline: base,
@@ -1940,11 +2394,7 @@ class ProjectController extends ChangeNotifier {
       );
       if (!report.improved) {
         // nothing gained: back to the project as it was
-        final st = _undo.removeLast();
-        project = _restore(st);
-        results = base;
-        unconnected = base?.unconnected ?? unconnected;
-        _editSeq++;
+        _backTo(st, redo, base);
       } else {
         dirty = true;
         _editSeq++;
@@ -1952,7 +2402,12 @@ class ProjectController extends ChangeNotifier {
       showReports = true;
       notify(report.improved ? t('opt.kept') : t('opt.reverted'));
       return report;
+    } on DesignCancelled {
+      _backTo(st, redo, base);
+      notify(t('msg.designCancelled'));
+      return null;
     } finally {
+      _assistantRounds = false;
       assistantProgress = '';
       notifyListeners();
     }
@@ -2317,12 +2772,76 @@ class ProjectController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Stops the GPS. A walk being recorded stays kept in this browser and
+  /// goes on from where it was at the next "start walk".
   void stopGps() {
     _gpsStop?.call();
     _gpsStop = null;
     gpsFix = null;
+    _saveWalk();
     gpsTrack = null;
+    _releaseWakeLock();
     notifyListeners();
+  }
+
+  // ---- the walk kept in the browser
+  /// Where the points of the walk being recorded are kept, every few
+  /// points, so a page the phone discarded in the background, a stopped
+  /// GPS or a crash does not lose the walk: `gps.walk.<uid>`.
+  String get _walkKey => 'gps.walk.${project.meta.uid}';
+
+  DateTime _walkSaved = DateTime.fromMillisecondsSinceEpoch(0);
+
+  void _saveWalk({bool force = true}) {
+    final w = gpsTrack;
+    if (w == null || w.isEmpty) return;
+    final now = DateTime.now();
+    if (!force && now.difference(_walkSaved) < const Duration(seconds: 5)) return;
+    _walkSaved = now;
+    setPref(
+      _walkKey,
+      jsonEncode({
+        'at': now.toIso8601String(),
+        'p': [
+          for (final q in w) [q.x, q.y],
+        ],
+      }),
+    );
+  }
+
+  /// The walk kept for this project (a week at most), if any.
+  List<Pt>? _keptWalk() {
+    final raw = getPref(_walkKey);
+    if (raw == null) return null;
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      final at = DateTime.tryParse(j['at'] as String? ?? '');
+      if (at == null || DateTime.now().difference(at) > const Duration(days: 7)) return null;
+      final pts = [for (final q in (j['p'] as List).cast<List>()) Pt((q[0] as num).toDouble(), (q[1] as num).toDouble())];
+      return pts.isEmpty ? null : pts;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Whether a walk of this project is kept in this browser.
+  bool get hasKeptWalk => gpsTrack == null && _keptWalk() != null;
+
+  /// Drops the walk being recorded (and the one kept): the next walk
+  /// starts afresh.
+  void discardGpsTrack() {
+    gpsTrack = null;
+    removePref(_walkKey);
+    _releaseWakeLock();
+    notify(t('gps.walkDiscarded'));
+  }
+
+  bool _wakeLockHeld = false;
+
+  void _releaseWakeLock() {
+    if (!_wakeLockHeld) return;
+    _wakeLockHeld = false;
+    releaseScreenWakeLock();
   }
 
   void _onGpsFix(GpsFix f) {
@@ -2334,23 +2853,42 @@ class ProjectController extends ChangeNotifier {
     // the first fix brings the view to the device
     if (first && !camera.visible.contains(p)) camera.center = p;
     final walk = gpsTrack;
-    if (walk != null && f.accuracyM <= gpsMaxAccuracyM && (walk.isEmpty || walk.last.distanceTo(p) >= gpsStepM)) walk.add(p);
+    if (walk != null && f.accuracyM <= gpsMaxAccuracyM && (walk.isEmpty || walk.last.distanceTo(p) >= gpsStepM)) {
+      walk.add(p);
+      _saveWalk(force: false);
+    }
     notifyListeners();
   }
 
-  /// Starts recording a walk (the outline of a field, a lawn, a pipe route).
+  /// Starts recording a walk (the outline of a field, a lawn, a pipe route),
+  /// or goes on with the walk of this project kept in the browser (the GPS
+  /// was stopped, the page reloaded). The screen is kept on while it lasts:
+  /// with the screen off the browser gives no positions.
   void startGpsTrack() {
     if (!gpsActive) startGps();
-    gpsTrack = [if (gpsPoint case final p? when (gpsFix?.accuracyM ?? 1e9) <= gpsMaxAccuracyM) p];
-    notifyListeners();
+    final kept = _keptWalk();
+    gpsTrack = kept ?? [if (gpsPoint case final p? when (gpsFix?.accuracyM ?? 1e9) <= gpsMaxAccuracyM) p];
+    _wakeLockHeld = true;
+    final granted = keepScreenOn();
+    if (kept != null) {
+      notify(t('gps.walkResumed', {'n': '${kept.length}'}));
+    } else {
+      unawaited(
+        granted.then((on) {
+          if (!on && !_disposed && gpsTrack != null) notify(t('gps.keepScreenOn'));
+        }),
+      );
+      notifyListeners();
+    }
   }
 
   /// Ends the walk as one undo step: an irrigated area ([asArea]), a closed
   /// outline or an open polyline; null (and nothing added) with too few
   /// points.
   Entity? finishGpsTrack({bool closed = true, bool asArea = false}) {
+    // refused (a design is running): the walk goes on, nothing is lost
+    if (!editAllowed()) return null;
     final pts = gpsTrack;
-    gpsTrack = null;
     if (pts == null || pts.length < (closed || asArea ? 3 : 2)) {
       notify(t('gps.trackShort'));
       notifyListeners();
@@ -2358,7 +2896,14 @@ class ProjectController extends ChangeNotifier {
     }
     final name = t('gps.trackName', {'t': _hhmm(DateTime.now())});
     final Entity e = asArea ? AreaEntity(id: project.newId(), points: List.of(pts), name: name) : PolylineEntity(id: project.newId(), points: List.of(pts), closed: closed, name: name);
-    mutate(() => project.entities.add(e), label: 'hist.gpsTrack');
+    final added = mutate(() {
+      project.entities.add(e);
+      return true;
+    }, label: 'hist.gpsTrack');
+    if (added != true) return null;
+    gpsTrack = null;
+    removePref(_walkKey);
+    _releaseWakeLock();
     notify(
       t('gps.trackDone', {
         'n': '${pts.length}',
@@ -2556,25 +3101,77 @@ class ProjectController extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------ images
-  /// Decoded image for an image entity (starts decoding on first request).
+  /// Decoded image for an image entity (starts decoding on first request),
+  /// scaled down to [imageMaxSide] pixels on its longest side.
   ui.Image? imageFor(ImageEntity e) {
-    final cached = images[e.id];
-    if (cached != null) return cached;
     final data = e.data;
+    final cached = images[e.id];
+    if (cached != null) {
+      if (identical(_imageBytes[e.id], data)) return cached;
+      // another picture under this id (an undo, a paste): decoded again
+      images.remove(e.id)?.dispose();
+      _imageBytes.remove(e.id);
+    }
     if (data == null || _decoding.contains(e.id)) return null;
     _decoding.add(e.id);
-    ui
-        .instantiateImageCodec(data)
-        .then((codec) => codec.getNextFrame())
-        .then((frame) {
-          images[e.id] = frame.image;
-          _decoding.remove(e.id);
+    final id = e.id;
+    _decodeCapped(data)
+        .then((img) {
+          _decoding.remove(id);
+          if (_disposed) {
+            img.dispose();
+            return;
+          }
+          images.remove(id)?.dispose();
+          images[id] = img;
+          _imageBytes[id] = data;
           notifyListeners();
         })
         .catchError((Object err) {
-          _decoding.remove(e.id);
+          _decoding.remove(id);
         });
     return null;
+  }
+
+  /// [data] decoded at most [imageMaxSide] pixels on its longest side.
+  static Future<ui.Image> _decodeCapped(Uint8List data) async {
+    final buffer = await ui.ImmutableBuffer.fromUint8List(data);
+    final desc = await ui.ImageDescriptor.encoded(buffer);
+    final w = desc.width, h = desc.height;
+    final scale = math.min(1.0, imageMaxSide / math.max(1, math.max(w, h)));
+    final codec = await desc.instantiateCodec(targetWidth: scale < 1 ? math.max(1, (w * scale).round()) : null, targetHeight: scale < 1 ? math.max(1, (h * scale).round()) : null);
+    try {
+      return (await codec.getNextFrame()).image;
+    } finally {
+      codec.dispose();
+      desc.dispose();
+      buffer.dispose();
+    }
+  }
+
+  /// Lets go of the decoded pictures of entities no longer in the project
+  /// (deleted, undone) or whose bytes changed.
+  void _pruneImages() {
+    if (images.isEmpty) return;
+    final live = <String, Uint8List?>{
+      for (final e in project.entities)
+        if (e is ImageEntity) e.id: e.data,
+    };
+    for (final id in images.keys.toList()) {
+      if (!live.containsKey(id) || !identical(live[id], _imageBytes[id])) {
+        images.remove(id)?.dispose();
+        _imageBytes.remove(id);
+      }
+    }
+  }
+
+  /// Lets go of every decoded picture (another project opened, the tab closed).
+  void _disposeImages() {
+    for (final img in images.values) {
+      img.dispose();
+    }
+    images.clear();
+    _imageBytes.clear();
   }
 
   /// Places an imported raster (georeferenced when possible) as an image entity.
@@ -2605,10 +3202,15 @@ class ProjectController extends ChangeNotifier {
     selection.clear();
     unconnected = {};
     _forgetProjectViews();
-    images.clear();
+    _disposeImages();
     _undo.clear();
     _redo.clear();
+    _highestId = 0;
+    _storedSeq = _editSeq;
+    _storeProblem = null;
+    fileHandle = null;
     dirty = false;
+    _claimUid();
     zoomAll();
   }
 
@@ -2710,15 +3312,46 @@ class ProjectController extends ChangeNotifier {
   String saveJson({bool pretty = true, bool markClean = true}) {
     final j = _saveMap();
     final s = encodeJson(j, pretty: pretty);
-    if (markClean) {
-      dirty = false;
-      _autosaveRun++;
-      try {
-        store.save(project.meta.uid, project.meta.name, pretty ? encodeJson(j) : s, kind: 'saved');
-      } catch (_) {}
-    }
+    if (markClean) markSaved(compact: pretty ? encodeJson(j) : s);
     return s;
   }
+
+  /// The project file as Save writes it (pretty JSON with the results)
+  /// and its compact form for the browser store, without marking anything.
+  (String, String) fileJson() {
+    final j = _saveMap();
+    return (encodeJson(j, pretty: true), encodeJson(j));
+  }
+
+  /// The project was written to a file: clean, and a version in the
+  /// browser history. [compact] is the JSON of the file without indentation
+  /// (taken now when not given); the browser compresses it beside the app
+  /// when it is large, then the store says whether it kept it.
+  void markSaved({String? compact}) {
+    dirty = false;
+    final run = ++_autosaveRun;
+    final json = compact ?? encodeJson(_saveMap());
+    final uid = project.meta.uid, name = project.meta.name, seq = _editSeq, edited = project.meta.modified;
+    if (store.synchronous) {
+      try {
+        unawaited(store.save(uid, name, json, kind: 'saved', edited: edited).then((o) => _stored(o, seq, uid)));
+      } catch (_) {}
+      return;
+    }
+    unawaited(() async {
+      try {
+        final stored = await LocalProjectStore.encodeAsync(json);
+        // a copy started after this save goes on its own; this one still records the version
+        _stored(await store.save(uid, name, json, kind: 'saved', stored: stored, edited: edited), seq, uid);
+        if (run == _autosaveRun) _storedSeq = seq;
+      } catch (_) {}
+    }());
+  }
+
+  /// The file this tab's project was last saved to or opened from (a file
+  /// handle of the browser's file system access, in Chromium browsers):
+  /// Save writes it again. Null otherwise (each save is a download).
+  Object? fileHandle;
 
   /// The project as a file holds it: the drawing and the last results.
   Map<String, dynamic> _saveMap() {
@@ -2728,9 +3361,15 @@ class ProjectController extends ChangeNotifier {
     return j;
   }
 
-  void loadJson(String s) {
+  /// Opens project JSON [s] in this tab. [fromStore]: the browser store's own
+  /// copy (recovery, recent projects), whose uid is kept; a file or a link
+  /// whose project is open in another tab or window, or whose copy in this
+  /// browser holds changes not saved to a file, opens as a copy (a uid of
+  /// its own, see [openProject]); [asCopy] always does (a shared link).
+  void loadJson(String s, {bool fromStore = false, bool asCopy = false}) {
     final j = jsonDecode(s) as Map<String, dynamic>;
     final p = Project.fromJson(j);
+    if (asCopy) p.meta.uid = ProjectMeta.newUid();
     DesignResults? r;
     final rj = j['results'];
     if (rj is Map<String, dynamic>) {
@@ -2740,25 +3379,131 @@ class ProjectController extends ChangeNotifier {
         debugPrint('results: $e');
       }
     }
-    openProject(p, results: r);
+    openProject(p, results: r, fromStore: fromStore);
   }
 
   /// Shows [p] in place of the current project (a file, a version, an
   /// example): selection, marks, history and cached images of the previous
   /// project are dropped. [dirty] marks it as not saved yet.
-  void openProject(Project p, {DesignResults? results, bool dirty = false}) {
+  ///
+  /// Two tabs or windows never work on the same uid, which names the copy
+  /// in the browser, the versions, the recent entry and the AI conversation:
+  /// [p] gets a uid of its own when another tab of this window has its uid,
+  /// when another window holds it (found out right after opening, see
+  /// [_claimUid]), when it is a gallery file of the site (`example-…`) or,
+  /// unless it comes [fromStore], when the browser keeps a copy of it with
+  /// changes not saved to a file (the recovery keeps offering that one).
+  void openProject(Project p, {DesignResults? results, bool dirty = false, bool fromStore = false}) {
+    final why = _uidConflict(p, fromStore: fromStore);
+    if (why != null) p.meta.uid = ProjectMeta.newUid();
     project = p;
     this.results = results;
     selection.clear();
     unconnected = results?.unconnected ?? {};
     _forgetProjectViews();
     _autoCurrency = false;
-    images.clear();
+    _disposeImages();
     _undo.clear();
     _redo.clear();
+    _highestId = p.nextIdValue;
+    // what was opened is what the browser keeps (or a new project of its own)
+    _storedSeq = fromStore ? _editSeq : -1;
+    _storeProblem = null;
+    fileHandle = null;
     this.dirty = dirty;
+    _claimUid();
     zoomAll();
-    notify(t('msg.loaded'));
+    notify(why == null || why.isEmpty ? t('msg.loaded') : '${t('msg.loaded')} ${t(why)}');
+  }
+
+  /// Another tab of this window with project [uid] (set by the workspace).
+  bool Function(String uid)? uidTaken;
+
+  /// Why [p] cannot keep its uid (a message key, '' to say nothing); null
+  /// when it can.
+  String? _uidConflict(Project p, {bool fromStore = false}) {
+    final uid = p.meta.uid;
+    if (uidTaken?.call(uid) ?? false) return 'msg.openedAsCopyTab';
+    // the files of the site's gallery all carry the same uid
+    if (uid.startsWith('example-')) return '';
+    if (!fromStore && store.entry(uid)?.kind == 'autosave') return 'msg.openedAsCopyKept';
+    return null;
+  }
+
+  // ------------------------------------------------------------ windows
+
+  /// The check, across the windows of this browser, of the uid of the
+  /// project on screen ([WindowLocks.claim]); the copies wait for it.
+  Future<void> _claim = Future<void>.value();
+  String? _claimedUid;
+
+  /// Holds the lock of the project's uid for this window; when another
+  /// window holds it, this tab's project takes a uid of its own (a copy),
+  /// so the two never overwrite each other's copy and versions.
+  void _claimUid() {
+    final uid = project.meta.uid;
+    if (_claimedUid == uid) return;
+    _releaseUid();
+    _claimedUid = uid;
+    final locks = windowLocks;
+    _claim = locks.claim(uid).then((held) {
+      if (held != false || _disposed || project.meta.uid != uid) return;
+      if (_claimedUid == uid) _claimedUid = null;
+      renewUid();
+      notify(t('msg.openedAsCopyWindow'));
+    });
+  }
+
+  void _releaseUid() {
+    final old = _claimedUid;
+    if (old == null) return;
+    _claimedUid = null;
+    windowLocks.release(old);
+  }
+
+  /// Gives the project a uid of its own (a copy that no longer shares the
+  /// copy in the browser, the versions and the recent entry of the one it
+  /// came from): Save as copy, a project open in another window.
+  void renewUid() {
+    project.meta.uid = ProjectMeta.newUid();
+    _storedSeq = -1;
+    _tooLarge = null;
+    _claimUid();
+    dirty = true;
+    notifyListeners();
+  }
+
+  /// Brings back saved version [version] of this project from its JSON [s]
+  /// as one undo step (Ctrl+Z goes back to the work as it was): the
+  /// drawing, the settings and the results the version was saved with; the
+  /// uid, the version history and the recent entry stay. False when the
+  /// JSON cannot be read or the edit is refused (a design running).
+  bool restoreVersionJson(String s, {int? version}) {
+    final Project p;
+    DesignResults? r;
+    try {
+      final j = jsonDecode(s) as Map<String, dynamic>;
+      p = Project.fromJson(j);
+      final rj = j['results'];
+      if (rj is Map<String, dynamic>) r = DesignResults.fromJson(rj);
+    } catch (_) {
+      return false;
+    }
+    final uid = project.meta.uid;
+    final done = mutate(() {
+      p.meta.uid = uid;
+      p.ensureNextId(math.max(project.nextIdValue, _highestId));
+      project = p;
+      return true;
+    }, label: 'hist.versionRestore|${version ?? ''}');
+    if (done != true) return false;
+    selection.clear();
+    results = r;
+    unconnected = r?.unconnected ?? {};
+    _forgetProjectViews();
+    _pruneImages();
+    notifyListeners();
+    return true;
   }
 
   int importDxf(String content, {String? layerPrefix}) => importDrawing(DxfReader.parse(content));

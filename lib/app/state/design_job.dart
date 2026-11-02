@@ -3,7 +3,12 @@
 /// itself (fallback), and the code that runs the job.
 ///
 /// Messages are JSON-encodable maps with a `type`: `progress` (a
-/// [DesignProgress]), `done` (a [DesignResponse]) or `error`.
+/// [DesignProgress]), `done` (a [DesignResponse]) or `error`. The request
+/// carries a job number ([jobKey]) that every answer repeats, so an answer
+/// to an earlier job (one cancelled) is never taken for the current one,
+/// and every answer says which build of the program made it ([buildKey]):
+/// a worker script left in the browser cache by an earlier version is
+/// recognised and replaced (see [isSameBuild]).
 library;
 
 import '../../core/design/advisor.dart';
@@ -12,6 +17,7 @@ import '../../core/design/results.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/project.dart';
 import '../i18n.dart';
+import '../version.dart';
 
 export '../../core/design/designer.dart' show DesignProgress, DesignStage;
 
@@ -95,12 +101,50 @@ class DesignJobException implements Exception {
   String toString() => message;
 }
 
+/// The design was stopped before it finished (the Cancel button of the
+/// progress card, the tab closed): nothing of it is applied.
+class DesignCancelled implements Exception {
+  const DesignCancelled();
+
+  @override
+  String toString() => 'design cancelled';
+}
+
+/// Version of the messages between the app and the job; raised whenever a
+/// field changes meaning.
+const designJobProtocol = 2;
+
+/// Key of the job number in the request and in every answer.
+const jobKey = 'job';
+
+/// Key of the build that made an answer: version, protocol and commit.
+const buildKey = 'build';
+
+/// The build of this code, as the answers carry it.
+Map<String, Object> get designJobBuild => {'v': appVersionFull, 'p': designJobProtocol, if (appCommit.isNotEmpty) 'c': appCommit};
+
+/// Whether answer [m] comes from a job of the same build as this code (the
+/// commit counts when both sides know theirs: the worker script is
+/// compiled without one).
+bool isSameBuild(Map<String, dynamic> m) {
+  final b = m[buildKey];
+  if (b is! Map) return false;
+  if (b['v'] != appVersionFull || b['p'] != designJobProtocol) return false;
+  final c = b['c'];
+  return c == null || appCommit.isEmpty || c == appCommit;
+}
+
 Future<void> _noYield() => Future<void>.value();
 
 /// Runs [request] and reports through [post]: `progress` messages, then one
-/// `done` or `error` message. Never throws. [yieldControl] is awaited between
+/// `done` or `error` message, each with the job number of the request and
+/// the build of this code. Never throws. [yieldControl] is awaited between
 /// design steps (only needed when running on the UI thread).
 Future<void> runDesignJob(Map<String, dynamic> request, void Function(Map<String, dynamic> message) post, {Future<void> Function()? yieldControl}) async {
+  final job = request[jobKey];
+  final build = designJobBuild;
+  final send = post;
+  post = (m) => send({...m, jobKey: ?job, buildKey: build});
   try {
     final req = DesignRequest.fromJson(request);
     final project = Project.fromJson(req.project);
@@ -142,34 +186,57 @@ abstract class DesignRunner {
   /// Runs [request]; [onProgress] gets the progress messages, [onMode] is
   /// told where the job runs (`worker`, `isolate` or `thread`) before it
   /// starts, and [yieldControl] is awaited between steps when the job runs
-  /// on the UI thread.
+  /// on the UI thread. Throws [DesignCancelled] after [cancel].
   Future<DesignResponse> run(DesignRequest request, {void Function(DesignProgress progress)? onProgress, void Function(String mode)? onMode, Future<void> Function()? yieldControl});
+
+  /// Stops the running job: its [run] throws [DesignCancelled] and the
+  /// next job starts afresh (a new worker).
+  void cancel() {}
 
   /// Releases the worker, if any.
   void dispose() {}
 }
 
 /// Runs the job on the calling thread (yielding between steps so a UI can
-/// repaint). The fallback when no worker is available.
+/// repaint). The fallback when no worker is available. [cancel] stops it at
+/// the next step.
 class InThreadDesignRunner implements DesignRunner {
+  bool _cancel = false;
+
   @override
   Future<DesignResponse> run(DesignRequest request, {void Function(DesignProgress progress)? onProgress, void Function(String mode)? onMode, Future<void> Function()? yieldControl}) async {
     onMode?.call('thread');
+    _cancel = false;
     DesignResponse? response;
     Object? error;
-    await runDesignJob(request.toJson(), (m) {
-      switch (m['type']) {
-        case 'progress':
-          onProgress?.call(DesignProgress.fromJson(m));
-        case 'done':
-          response = DesignResponse.fromJson(m);
-        case 'error':
-          error = DesignJobException(m['message'] as String? ?? 'error', m['stack'] as String? ?? '');
-      }
-    }, yieldControl: yieldControl);
+    final yieldTo = yieldControl ?? _noYield;
+    await runDesignJob(
+      request.toJson(),
+      (m) {
+        switch (m['type']) {
+          case 'progress':
+            onProgress?.call(DesignProgress.fromJson(m));
+          case 'done':
+            response = DesignResponse.fromJson(m);
+          case 'error':
+            error = DesignJobException(m['message'] as String? ?? 'error', m['stack'] as String? ?? '');
+        }
+      },
+      yieldControl: () async {
+        await yieldTo();
+        if (_cancel) throw const DesignCancelled();
+      },
+    );
+    if (_cancel) {
+      _cancel = false;
+      throw const DesignCancelled();
+    }
     if (error != null) throw error!;
     return response!;
   }
+
+  @override
+  void cancel() => _cancel = true;
 
   @override
   void dispose() {}

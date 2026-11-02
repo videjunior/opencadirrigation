@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'app_keys.dart';
+import 'file_io.dart' show FileSaveResult;
 import 'prefs.dart';
 import '../theme.dart';
 
@@ -17,6 +18,19 @@ Future<void> saveTextFile(String filename, String content, {String mime = 'appli
   if (path == null) return;
   await File(path).writeAsString(content);
 }
+
+Future<FileSaveResult> saveProjectFile(String filename, String content, {Object? handle, bool saveAs = false, void Function(Object handle)? onHandle}) async {
+  final path = await _pickPath(filename, save: true);
+  if (path == null) return FileSaveResult.cancelled;
+  try {
+    await File(path).writeAsString(content);
+    return FileSaveResult.saved;
+  } catch (_) {
+    return FileSaveResult.failed;
+  }
+}
+
+bool get confirmedFileSaves => true;
 
 Future<void> saveBinaryFile(String filename, Uint8List bytes, {String mime = 'application/octet-stream'}) async {
   final path = await _pickPath(filename, save: true);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +15,7 @@ import 'examples.dart';
 import 'io/file_io.dart';
 import 'io/pdf_font_loader.dart';
 import 'io/project_store.dart';
+import 'io/storage_info.dart';
 import 'state/controller.dart';
 import 'state/workspace.dart';
 import 'widgets/dialogs/export_dialogs.dart';
@@ -50,8 +53,9 @@ Future<void> openProjectAction(BuildContext context, ProjectController c) async 
   final f = await openTextFile(accept: '.json,.oci,.icad');
   if (f == null) return;
   try {
+    // a project whose copy here has changes not saved to a file opens as a
+    // copy, so that copy stays offered (see ProjectController.openProject)
     c.loadJson(f.$2);
-    c.store.acknowledge(c.project.meta.uid);
   } catch (e) {
     c.notify(c.t('msg.error', {'e': '$e'}));
   }
@@ -65,14 +69,16 @@ Future<void> openProjectInTabAction(BuildContext context, Workspace ws) async {
   openJsonInTab(ws, f.$2);
 }
 
-/// Loads project JSON into the blank current tab or a new tab.
-ProjectController? openJsonInTab(Workspace ws, String json) {
+/// Loads project JSON into the blank current tab or a new tab. [fromStore]:
+/// the browser's own copy (recent projects), whose uid is kept; [asCopy]: a
+/// project with a uid of its own (a shared link, which carries the uid of
+/// whoever sent it).
+ProjectController? openJsonInTab(Workspace ws, String json, {bool fromStore = false, bool asCopy = false}) {
   final cur = ws.current;
   final reuse = cur.project.entities.isEmpty && !cur.dirty;
   final target = reuse ? cur : ws.addTab();
   try {
-    target.loadJson(json);
-    target.store.acknowledge(target.project.meta.uid);
+    target.loadJson(json, fromStore: fromStore, asCopy: asCopy);
     return target;
   } catch (e) {
     if (!reuse) ws.closeTab(ws.tabs.indexOf(target));
@@ -81,10 +87,10 @@ ProjectController? openJsonInTab(Workspace ws, String json) {
   }
 }
 
-/// Opens a project kept in the browser store (recent projects).
-void openStoredAction(Workspace ws, StoredProject p) {
-  final json = ws.current.store.load(p.uid);
-  if (json == null) return;
+/// Opens a project kept in the browser store (recent projects): the tab
+/// that has it already, else a tab with the copy kept (changes not saved to
+/// a file stay marked as such).
+Future<void> openStoredAction(Workspace ws, StoredProject p) async {
   // already open in a tab?
   for (var i = 0; i < ws.tabs.length; i++) {
     if (ws.tabs[i].project.meta.uid == p.uid) {
@@ -92,7 +98,20 @@ void openStoredAction(Workspace ws, StoredProject p) {
       return;
     }
   }
-  openJsonInTab(ws, json);
+  final json = await ws.current.store.load(p.uid);
+  if (json == null) {
+    if (ws.current.store.has(p.uid)) ws.current.notify(ws.current.t('store.err.read'));
+    return;
+  }
+  for (final t in ws.tabs) {
+    if (t.project.meta.uid == p.uid) return; // opened meanwhile
+  }
+  final c = openJsonInTab(ws, json, fromStore: true);
+  if (c == null) return;
+  if (p.kind == 'autosave') {
+    c.dirty = true;
+    c.store.acknowledge(p.uid);
+  }
 }
 
 /// Copies (or cuts) the selection of the active tab to the clipboard.
@@ -114,11 +133,60 @@ String _safeName(ProjectController c) {
   return (n.isEmpty ? c.t('name.newProject') : n).replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_');
 }
 
-Future<void> saveProjectAction(BuildContext context, ProjectController c) async {
-  await saveTextFile('${_safeName(c)}$projectExtension', c.saveJson());
+/// File → Save (Ctrl+S): the project file, written again into the same
+/// file where the browser allows it (file system access, Chromium on the
+/// computer), else through its save dialog or as a download. The project is
+/// marked saved only once the file is written (or handed to the browser as
+/// a download, which tells nothing back): a cancelled dialog leaves it
+/// unsaved. [saveAs] always asks where.
+Future<void> saveProjectAction(BuildContext context, ProjectController c, {bool saveAs = false}) async {
+  final name = '${_safeName(c)}$projectExtension';
+  final (file, compact) = c.fileJson();
+  final r = await saveProjectFile(name, file, handle: c.fileHandle, saveAs: saveAs, onHandle: (h) => c.fileHandle = h);
   c.track('save');
-  c.notify(c.t('msg.saved'));
+  switch (r) {
+    case FileSaveResult.cancelled:
+      c.notify(c.t('msg.saveCancelled'));
+      return;
+    case FileSaveResult.failed:
+      c.notify(c.t('msg.saveFailed'));
+      return;
+    case FileSaveResult.saved:
+      c.markSaved(compact: compact);
+      c.notify(c.t('msg.saved'));
+    case FileSaveResult.downloaded:
+      c.markSaved(compact: compact);
+      c.notify(c.t('msg.savedDownload', {'f': name}));
+  }
+  unawaited(_keepBrowserStorage(c));
 }
+
+/// File → Save as copy: the project becomes a copy of its own (a new uid:
+/// its copy in the browser, versions and recent entry no longer mix with
+/// the original's), named as a copy, then saved where the user says.
+Future<void> saveCopyAction(BuildContext context, ProjectController c) async {
+  if (!c.editAllowed()) return;
+  c.renewUid();
+  final suffix = c.t('file.copyName', {'n': ''}).trim();
+  if (!c.project.meta.name.trimRight().endsWith(suffix)) c.project.meta.name = c.t('file.copyName', {'n': c.project.meta.name});
+  c.fileHandle = null;
+  if (!context.mounted) return;
+  await saveProjectAction(context, c, saveAs: true);
+}
+
+/// After the first save of a visit: asks the browser to keep this site's
+/// storage under pressure (the copies, versions and conversations), which
+/// Chromium grants to sites in use without a question; Firefox would show a
+/// question at every first save, so there it is asked from File → Browser
+/// storage only.
+Future<void> _keepBrowserStorage(ProjectController c) async {
+  if (_askedPersistence || browserIsFirefox) return;
+  _askedPersistence = true;
+  if (await storagePersisted() ?? true) return;
+  await requestPersistentStorage();
+}
+
+bool _askedPersistence = false;
 
 Future<void> importDxfAction(BuildContext context, ProjectController c) => importDrawingAction(context, c);
 
@@ -254,8 +322,41 @@ void feedEnvelopeAction(ProjectController c) {
   c.notify(n == 0 ? c.t('msg.selectLateral') : c.t('msg.feedComputed', {'n': '$n'}));
 }
 
-/// Loads one of the gallery examples (File → Examples, the welcome dialog,
-/// `?example=<id>` in the URL).
+/// Opens a gallery example from File → Examples, the welcome dialog or the
+/// phone menu without replacing any work: in the current tab only when it
+/// is blank (nothing drawn, nothing changed), otherwise in a new tab, or,
+/// without a workspace, after the user confirms.
+Future<void> openExampleAction(BuildContext context, ProjectController c, ExampleId id, {Workspace? ws}) async {
+  final blank = c.project.entities.isEmpty && !c.dirty && !c.canUndo;
+  if (blank) {
+    loadExampleAction(c, id);
+    return;
+  }
+  if (ws != null) {
+    final tab = ws.addTab();
+    loadExampleAction(tab, id);
+    return;
+  }
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(c.t('file.examples')),
+      content: Text(c.t('msg.exampleReplaces')),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(c.t('cancel'))),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(c.t('ok'))),
+      ],
+    ),
+  );
+  if (ok == true) {
+    await c.autosaveNow();
+    loadExampleAction(c, id);
+  }
+}
+
+/// Loads one of the gallery examples into [c] (the start-up `?example=<id>`
+/// in the URL, the tutorial, tests; the menus go through
+/// [openExampleAction]).
 void loadExampleAction(ProjectController c, [ExampleId id = ExampleId.orchard]) {
   final p = buildExample(id, c.t.call, lang: c.lang);
   // the user's currency (region or explicit choice) when it differs from the

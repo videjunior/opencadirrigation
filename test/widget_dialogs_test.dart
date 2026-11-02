@@ -190,18 +190,29 @@ void main() {
     await tapText(tester, 'Fechar');
     expect(find.textContaining('Nuvem'), findsNothing, reason: 'the cloud feature was removed');
     // an autosaved project that was never saved is offered for recovery
+    // (the copy of a project left by another session: the one open here is
+    // alive, and the recovery leaves it out)
     c.autosaveEnabled = true;
     c.dirty = true;
     c.autosaveNow();
     expect(LocalProjectStore().recoverable().length, 1);
     final ctx = tester.element(find.byType(AppShell));
-    final future = showRecoveryDialog(ctx, shell.ws);
+    var future = showRecoveryDialog(ctx, shell.ws);
+    await settle(tester);
+    expect(find.text('Recuperar projeto'), findsNothing, reason: 'open in a tab here');
+    expect(await future, 0);
+    final gone = ProjectController()..newProject();
+    gone.project.meta.name = 'Perdido';
+    gone.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(3, 0)));
+    gone.autosaveNow();
+    expect(LocalProjectStore().recoverable().length, 2);
+    future = showRecoveryDialog(ctx, shell.ws);
     await settle(tester);
     expect(find.text('Recuperar projeto'), findsOneWidget);
     await tester.tap(find.byKey(const Key('rec_discard')));
     await settle(tester);
     expect(await future, 0);
-    expect(LocalProjectStore().recoverable(), isEmpty);
+    expect(LocalProjectStore().recoverable().map((p) => p.uid), [c.project.meta.uid], reason: 'the never-saved copy is forgotten');
   });
 
   testWidgets('DEM view and pump selection dialogs', (tester) async {

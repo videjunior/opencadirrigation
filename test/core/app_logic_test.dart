@@ -37,6 +37,9 @@ class FailingRunner implements DesignRunner {
       throw DesignJobException('boom');
 
   @override
+  void cancel() {}
+
+  @override
   void dispose() {}
 }
 
@@ -377,7 +380,7 @@ void main() {
       final c = fresh(store: store)..autosaveEnabled = true;
       c.addEntity(photo());
       c.autosaveNow();
-      final saved = store.load(c.project.meta.uid)!;
+      final saved = (await store.load(c.project.meta.uid))!;
       final entity = ((jsonDecode(saved) as Map)['entities'] as List).single as Map;
       expect(entity.containsKey('data'), isFalse);
       expect(entity['src'] ?? entity['source'], 'foto.png');
@@ -395,7 +398,7 @@ void main() {
       big.addEntity(LineEntity(id: big.project.newId(), a: Pt.zero, b: const Pt(1, 1)));
       big.autosaveNow();
       await Future<void>.delayed(Duration.zero);
-      expect(tiny.load(big.project.meta.uid), isNull);
+      expect(await tiny.load(big.project.meta.uid), isNull);
       expect(big.lastMessage, startsWith(big.t('msg.autosaveTooLarge', {'mb': ''}).split('(').first));
       tiny.clearAll();
       store.clearAll();
@@ -447,23 +450,23 @@ void main() {
       expect(w.current.lastMessage, startsWith('Erro'));
     });
 
-    test('recent projects open once: an open one is brought to the front', () {
+    test('recent projects open once: an open one is brought to the front', () async {
       final store = LocalProjectStore()..clearAll();
       final w = ws();
       w.current.setLanguage('pt');
       final src = fresh();
       loadExampleAction(src);
-      store.save(src.project.meta.uid, 'Pomar', src.saveJson());
+      await store.save(src.project.meta.uid, 'Pomar', src.saveJson());
       final entry = store.list().single;
-      openStoredAction(w, entry);
+      await openStoredAction(w, entry);
       expect(w.current.project.meta.uid, src.project.meta.uid);
       w.addTab();
       expect(w.active, 1);
-      openStoredAction(w, entry);
+      await openStoredAction(w, entry);
       expect(w.active, 0, reason: 'already open: switch to it');
       expect(w.tabs.length, 2);
-      store.remove(entry.uid);
-      openStoredAction(w, entry);
+      await store.remove(entry.uid);
+      await openStoredAction(w, entry);
       expect(w.tabs.length, 2, reason: 'a project that is gone does nothing');
       store.clearAll();
     });

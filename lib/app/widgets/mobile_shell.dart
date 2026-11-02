@@ -34,6 +34,7 @@ import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
+import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'history_panel.dart';
@@ -214,7 +215,7 @@ class _MobileShellState extends State<MobileShell> {
             row(t('file.open'), () => openProjectInTabAction(context, ws), icon: Icons.folder_open),
             row(t('file.save'), () => saveProjectAction(context, c), icon: Icons.save_outlined),
             row(t('file.versions'), () => showVersionsDialog(context, c), icon: Icons.layers_outlined),
-            for (final ex in exampleGallery) row('${t('file.examples')}: ${t(ex.titleKey)}', () => loadExampleAction(c, ex.id), icon: exampleIcon(ex.id)),
+            for (final ex in exampleGallery) row('${t('file.examples')}: ${t(ex.titleKey)}', () => openExampleAction(context, c, ex.id, ws: ws), icon: exampleIcon(ex.id)),
             row(t('file.importDrawing'), () => importDrawingAction(context, c), icon: Icons.upload_file),
             row(t('file.georefImage'), c.selectedEntity == null ? null : () => showImageGeorefDialog(context, c), icon: Icons.image_outlined),
             row(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera),
@@ -231,6 +232,10 @@ class _MobileShellState extends State<MobileShell> {
             row(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
             row(t('file.newTab'), () => ws.addTab(), icon: Icons.tab_outlined),
             row(t('file.closeTab'), widget.onCloseTab, icon: Icons.tab_unselected),
+            // 1.6.0 CAD
+            row(t('file.saveAs'), () => saveProjectAction(context, c, saveAs: true), icon: Icons.save_as_outlined, key: const Key('mobile_menu_save_as')),
+            row(t('file.saveCopy'), () => saveCopyAction(context, c), icon: Icons.file_copy_outlined, key: const Key('mobile_menu_save_copy')),
+            row(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('mobile_menu_storage')),
           ], key: const Key('mobile_menu_file')),
           section(t('menu.edit'), Icons.edit_outlined, [
             row(t('edit.undo'), c.canUndo ? c.undo : null, icon: Icons.undo),
@@ -261,6 +266,8 @@ class _MobileShellState extends State<MobileShell> {
               row(t('gps.walkLine'), () => c.finishGpsTrack(closed: false), icon: Icons.timeline),
             ],
             if (c.gpsPoint != null) row(t('gps.mark'), () => c.markGpsPoint(), icon: Icons.add_location_alt_outlined),
+            // 1.6.0 CAD
+            if (c.gpsTrack != null || c.hasKeptWalk) row(t('gps.walkDiscard'), c.discardGpsTrack, icon: Icons.delete_sweep_outlined),
           ]),
           section(t('menu.view'), Icons.visibility_outlined, [
             row(t('view.zoomAll'), c.zoomAll, icon: Icons.fit_screen),
