@@ -245,6 +245,17 @@ class NetworkBuilder {
 
   static final _dummy = GNode(id: '', p: Pt.zero, ground: 0, scope: HydraulicScope.zone);
 
+  /// The law the network uses for a catalogue curve: a pressure-compensating
+  /// one (x < 0.1) compensates from the least pressure of its range,
+  /// [minHeadM], an orifice below it (it gave 91 % of its flow at 1 m). One
+  /// curve per catalogue curve, so emitters of one model still share it.
+  final Map<(EmitterCurve, double), EmitterCurve> _compensated = {};
+
+  EmitterCurve _compensating(EmitterCurve c, double minHeadM) {
+    if (!c.isPressureCompensating || !(minHeadM > 0) || c.compensationHead > 0) return c;
+    return _compensated[(c, minHeadM)] ??= c.compensatingFrom(minHeadM);
+  }
+
   /// (min x, min y, max x, max y) of [pts].
   static (double, double, double, double) _bounds(List<Pt> pts) {
     var x0 = double.infinity, y0 = double.infinity, x1 = double.negativeInfinity, y1 = double.negativeInfinity;
@@ -407,7 +418,7 @@ class NetworkBuilder {
             emitterAt[d] = EmitterRef(
               entityId: e.id,
               index: idx,
-              curve: nozzle.curve,
+              curve: _compensating(nozzle.curve, nozzle.minHeadM),
               count: cnt,
               nominalHead: s.headM,
               allowedMin: lo,
@@ -452,7 +463,7 @@ class NetworkBuilder {
             emitterAt[d] = EmitterRef(
               entityId: e.id,
               index: idx,
-              curve: spec.emitter,
+              curve: _compensating(spec.emitter, spec.minHeadM),
               count: cnt,
               nominalHead: t.inletHeadM,
               allowedMin: lo,
@@ -510,7 +521,7 @@ class NetworkBuilder {
               EmitterRef(
                 entityId: e.id,
                 index: -1,
-                curve: nozzle.curve,
+                curve: _compensating(nozzle.curve, nozzle.minHeadM),
                 count: 1,
                 nominalHead: o.headM,
                 allowedMin: lo,

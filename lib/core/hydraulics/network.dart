@@ -1040,6 +1040,17 @@ class HydraulicNetwork {
     final x = math.max(em.x, 0.01);
     final kk = em.k * count * (em.x < 0.01 ? math.pow(10.0, em.x - x).toDouble() : 1.0);
     if (!(kk > 0)) return (0.0, _emitterMinGradient);
+    final hc = em.compensationHead;
+    if (hc > 0) {
+      // below its compensating range an orifice: h = hc·(q/qc)²
+      final qc = kk * math.pow(hc, x).toDouble();
+      final qq = math.max(flow, 0.0);
+      if (qq < qc) {
+        final h = hc * (qq / qc) * (qq / qc), grad = 2 * hc * qq / (qc * qc);
+        if (grad < _emitterMinGradient) return (_emitterMinGradient * qq, _emitterMinGradient);
+        return (h, grad);
+      }
+    }
     final q = math.min(math.max(flow, 0.0), kk * math.pow(_emitterMaxHead, x).toDouble());
     final h = math.pow(q / kk, 1 / x).toDouble();
     final grad = q > 0 ? h / (x * q) : 0.0;
@@ -1059,6 +1070,8 @@ class HydraulicNetwork {
   static double _emitterLaw(EmitterCurve em, int count, double p) {
     final x = math.max(em.x, 0.01);
     final kk = em.k * count * (em.x < 0.01 ? math.pow(10.0, em.x - x).toDouble() : 1.0);
+    final hc = em.compensationHead;
+    if (hc > 0 && p < hc) return kk * math.pow(hc, x).toDouble() * math.sqrt(math.max(p, 0.0) / hc);
     return kk * math.pow(math.min(math.max(p, 0.0), _emitterMaxHead), x).toDouble();
   }
 

@@ -718,4 +718,48 @@ void main() {
     final pvc = r.bom.firstWhere((l) => l.specId == 'pvc75');
     expect(pvc.quantity, closeTo(link.length, 1e-9), reason: 'the pipe bought along the slope');
   });
+
+  test('MOT-18: a pressure-compensating emitter below its range is an orifice, in the law and in the solver', () {
+    // the PC dripline of the catalogue: q = k·H^0.04, compensating from 6 m
+    final base = EmitterCurve.fromNominal(flow: 1.6 / 3.6e6, head: 10, x: 0.04);
+    final c = base.compensatingFrom(6);
+    final q6 = base.flow(6);
+    expect(c.flow(10), base.flow(10), reason: 'in its range the same law');
+    expect(c.flow(1) / q6, closeTo(math.sqrt(1 / 6), 1e-12), reason: '41 %, it was ${(base.flow(1) / q6 * 100).toStringAsFixed(0)} %');
+    expect(c.headForFlow(c.flow(2)), closeTo(2, 1e-9));
+    expect(c.headForFlow(c.flow(8)), closeTo(8, 1e-6));
+    expect(EmitterCurve.fromJson(c.toJson()).compensationHead, 6);
+    // the solver: 100 emitters at the end of a pipe from a 2 m head
+    final n = HydraulicNetwork()
+      ..addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 2))
+      ..addNode(HNode(id: 'E', emitter: c, emitterCount: 100))
+      ..addLink(HLink(id: 'p', from: 'R', to: 'E', diameter: 0.05, length: 1));
+    final r = n.solve();
+    expect(r.converged, isTrue);
+    expect(r.nodes['E']!.emitterFlow, closeTo(100 * c.flow(r.nodes['E']!.pressure), 1e-3 * 100 * q6));
+    expect(r.nodes['E']!.emitterFlow, lessThan(0.6 * 100 * q6));
+    // a zone of the catalogue dripline fed at 3 m draws what the orifice law gives
+    final p = Project();
+    final b = generateBlock(
+      p,
+      BlockOptions(
+        polygon: const [Pt(0, 0), Pt(40, 0), Pt(40, 15), Pt(0, 15)],
+        direction: const Pt(1, 0),
+        lateralSpacing: 1.5,
+        isTape: true,
+        tapeSpecId: 'drip16pc_16_50',
+        tapeInletHeadM: 15,
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev50',
+        valvePosition: ValvePosition.centre,
+        submainStub: 1.5,
+        zoneName: 'Z',
+      ),
+    );
+    p.entities.addAll(b.all);
+    final z = Designer(p).analyzeZone(b.valve!.id, downstreamHead: 3);
+    final full = z.outlets.fold(0.0, (s, o) => s + o.nominalFlow * o.count);
+    expect(z.totalFlow, lessThan(0.75 * full), reason: 'below its 6 m the dripline does not keep its flow');
+    expect(z.uniformity.eu, lessThan(99));
+  });
 }
