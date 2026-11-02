@@ -20,6 +20,7 @@ import 'electrical.dart';
 import 'irrigation_requirement.dart';
 import 'model_checks.dart';
 import 'network_builder.dart';
+import 'permit.dart' show permitChecks; // 1.6.0 PRB
 import 'soils.dart';
 import 'valve_in_head.dart';
 import 'water_budget.dart' show cycleAndSoakForSoil;
@@ -372,6 +373,8 @@ DesignCheckReport runDesignCheck(Project project) {
   issues.addAll(checkAreaUniformity(project, sources: sprinklers));
   // 1.6.0 MOD: elevations extrapolated beyond the terrain data, area outlines crossing themselves
   issues.addAll(modelChecks(project));
+  // 1.6.0 PRB: an intake without a flow meter nor an hour meter (water permit)
+  issues.addAll(permitChecks(project));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));

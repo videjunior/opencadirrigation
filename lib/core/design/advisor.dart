@@ -337,6 +337,8 @@ const adviceCodes = [
   'zone_slope_exceeds_window',
   'pressure_below_atmospheric',
   'valve_pressure_excess',
+  // 1.6.0 PRB
+  'supply_no_meter',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -377,6 +379,8 @@ AdviceLevel _level(String code) => switch (code) {
   'pump_motor_sf' => AdviceLevel.info,
   // 1.6.0 MOT: the flow control of the valve can throttle it on site
   'valve_pressure_excess' => AdviceLevel.info,
+  // 1.6.0 PRB: a requirement of the water permit, not of the hydraulics
+  'supply_no_meter' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 

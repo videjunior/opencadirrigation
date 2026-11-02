@@ -971,7 +971,7 @@ class ProjectController extends ChangeNotifier {
       'meta' => jsonEncode({...(j['meta'] as Map<String, dynamic>)}..remove('modified')),
       _ => jsonEncode(j[k]),
     };
-    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules'];
+    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules', 'deliverables' /* 1.6.0 PRB */];
     final changed = [
       for (final k in sections)
         if (part(before, k) != part(now, k)) k,
