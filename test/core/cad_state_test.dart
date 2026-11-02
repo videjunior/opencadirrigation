@@ -214,6 +214,8 @@ void main() {
 
     test('nothing edits between the rounds of "optimise"; a cancel puts the project back', () async {
       final c = designed();
+      // something for the first round to change (a step with nothing to change runs no design)
+      c.project.params.sizingMethod = SizingMethod.greedy;
       await c.runDesign();
       final before = c.project.toJsonString();
       final held = _HeldRunner();

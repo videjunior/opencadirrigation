@@ -960,7 +960,7 @@ Project buildPastureExample(Tr t, String lang) {
 /// edges, full circles down the middle), a fairway with rotors on a
 /// triangular grid (two zones) and a green ringed by part-circle rotors
 /// throwing across it (the green template), all fed from a pond by a pump;
-/// three night-time shifts.
+/// four night-time shifts.
 Project buildGolfExample(Tr t, String lang) {
   final p = _newProject(t, lang, name: 'ex.go.name', client: 'ex.go.client', site: 'ex.go.site');
   for (final (x, y) in [(-60.0, -60.0), (170.0, -60.0), (-60.0, 50.0), (170.0, 50.0), (60.0, 0.0)]) {
@@ -1122,10 +1122,14 @@ Project buildGolfExample(Tr t, String lang) {
     [Pt(fw.x, junction.y), Pt(vt.position.x - 1, junction.y), Pt(vt.position.x - 1, vt.position.y), vt.position],
     [junction, Pt(vg.position.x + 1, junction.y), Pt(vg.position.x + 1, vg.position.y), vg.position],
   ]);
+  // the green's rotors and the tee's sprays apply water at very different
+  // rates, so each runs in a shift of its own (together, one of them would
+  // get far more water than it needs)
   p.systemFlows.addAll([
-    SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': '$zg + $zt'}), valveIds: {vg.id, vt.id}, startHour: 22, durationHours: 0.5),
-    SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': fairwayValves[0].zoneName}), valveIds: {fairwayValves[0].id}, startHour: 22.5, durationHours: 0.75),
-    SystemFlow(id: 'sf3', name: t('ex.shift', {'n': '3', 'z': fairwayValves[1].zoneName}), valveIds: {fairwayValves[1].id}, startHour: 23.25, durationHours: 0.75),
+    SystemFlow(id: 'sf1', name: t('ex.shift', {'n': '1', 'z': zg}), valveIds: {vg.id}, startHour: 22, durationHours: 0.5),
+    SystemFlow(id: 'sf2', name: t('ex.shift', {'n': '2', 'z': zt}), valveIds: {vt.id}, startHour: 22.5, durationHours: 0.25),
+    SystemFlow(id: 'sf3', name: t('ex.shift', {'n': '3', 'z': fairwayValves[0].zoneName}), valveIds: {fairwayValves[0].id}, startHour: 22.75, durationHours: 0.75),
+    SystemFlow(id: 'sf4', name: t('ex.shift', {'n': '4', 'z': fairwayValves[1].zoneName}), valveIds: {fairwayValves[1].id}, startHour: 23.5, durationHours: 0.75),
   ]);
   return p;
 }
