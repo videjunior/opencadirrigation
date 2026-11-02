@@ -116,7 +116,8 @@ List<Map<String, dynamic>> withCacheMarkers(List<Map<String, dynamic>> messages,
   if (targets.isEmpty) return messages;
   final out = [...messages];
   for (final (i0, j0) in targets) {
-    // the nearest block towards the end that takes a breakpoint
+    // the nearest block towards the end that takes a breakpoint (towards
+    // the start when there is none after: a thinking block last)
     var (i, j) = (i0, j0);
     while (i < out.length) {
       final c = out[i]['content'];
@@ -128,7 +129,21 @@ List<Map<String, dynamic>> withCacheMarkers(List<Map<String, dynamic>> messages,
         j = 0;
       }
     }
-    if (i >= out.length) continue;
+    if (i >= out.length) {
+      (i, j) = (i0, j0);
+      while (i >= 0) {
+        final c = out[i]['content'];
+        if (c is List && j >= 0 && j < c.length && _cacheable(c[j])) break;
+        if (c is List && j - 1 >= 0) {
+          j--;
+        } else {
+          i--;
+          final p = i >= 0 ? out[i]['content'] : null;
+          j = p is List ? p.length - 1 : -1;
+        }
+      }
+      if (i < 0) continue;
+    }
     final c = [...out[i]['content'] as List];
     c[j] = {...c[j] as Map<String, dynamic>, 'cache_control': marker};
     out[i] = {...out[i], 'content': c};

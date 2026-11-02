@@ -333,6 +333,26 @@ void main() {
       expect(headers.single['anthropic-beta'], isNot(contains('compact-')));
     });
 
+    test('the breakpoint at the end goes on the nearest block that takes one, never a thinking block', () {
+      final m = withCacheMarkers(
+        [
+          user('q'),
+          {
+            'role': 'assistant',
+            'content': [
+              {'type': 'text', 'text': 'answer'},
+              {'type': 'thinking', 'thinking': '', 'signature': 's'},
+            ],
+          },
+        ],
+        const {'type': 'ephemeral'},
+        atEnd: true,
+      );
+      final blocks = (m.last['content'] as List).cast<Map>();
+      expect(blocks.first['cache_control'], {'type': 'ephemeral'});
+      expect(blocks.last.containsKey('cache_control'), isFalse);
+    });
+
     test('a long answer gets breakpoints within 20 positions of each other; a short one none', () {
       Map<String, dynamic> answer(int calls) => {
         'role': 'assistant',

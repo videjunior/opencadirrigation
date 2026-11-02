@@ -634,6 +634,47 @@ void main() {
     });
   });
 
+  group('the cache during pauses (IA-09)', () {
+    testWidgets('off by default; on, a read without an answer goes after the pause, and a new message stops it', (tester) async {
+      final ai = AiAssistant.of(c);
+      expect(ai.keepWarm, isFalse, reason: 'it sends requests while the user does nothing: the user turns it on');
+      ai.keepWarm = true;
+      AiAssistant.warmEvery = const Duration(seconds: 5);
+      addTearDown(() => AiAssistant.warmEvery = const Duration(seconds: 270));
+      final f = script([(_) => FakeReply.text('Hi.'), (_) => FakeReply.text('warm'), (_) => FakeReply.text('Two.')]);
+      await say(tester, ai, 'Hello');
+      expect(f.calls, 1);
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pump();
+      expect(f.calls, 2, reason: 'the keep-alive after the pause');
+      final warm = f.bodies[1];
+      expect(warm['max_tokens'], 0);
+      expect(warm.containsKey('stream'), isFalse);
+      expect((warm['messages'] as List).length, 3, reason: 'the conversation, then the placeholder');
+      expect(jsonEncode(warm['messages']), contains('Cache keep-alive'));
+      await say(tester, ai, 'Again');
+      expect(f.calls, 3);
+      expect((f.bodies[2]['messages'] as List).length, 3, reason: 'the placeholder never enters the conversation');
+      ai.keepWarm = false;
+      await tester.pump(const Duration(seconds: 6));
+      expect(f.calls, 3, reason: 'off: no more');
+    });
+
+    testWidgets('a long step caches for an hour, and then needs no keep-alive', (tester) async {
+      final ai = AiAssistant.of(c)
+        ..model = AiModel.fable51
+        ..keepWarm = true;
+      AiAssistant.warmEvery = const Duration(seconds: 5);
+      addTearDown(() => AiAssistant.warmEvery = const Duration(seconds: 270));
+      final f = script([(_) => FakeReply.text('Hi.', model: 'claude-fable-5-1')]);
+      await say(tester, ai, 'Hello');
+      expect(f.bodies.first['cache_control'], {'type': 'ephemeral', 'ttl': '1h'});
+      await tester.pump(const Duration(seconds: 6));
+      expect(f.calls, 1);
+      ai.keepWarm = false;
+    });
+  });
+
   group('a turn kept as far as it went (IA-02)', () {
     testWidgets('the page closes in the middle of a turn: the conversation comes back with what was done, and goes on with Continue', (tester) async {
       final ai = AiAssistant.of(c)..permission = AgentPermission.auto;

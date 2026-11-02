@@ -1807,7 +1807,11 @@ class AiAssistant extends ChangeNotifier {
     _sending = null;
     // the cache of the conversation kept while the user pauses
     if (turn != null && turn.messages.isNotEmpty) {
-      _scheduleWarm(client, AiRequest(model: m, system: _system!, history: const [], tools: loop.specs, effort: requestEffort, compactAt: compaction ? m.compactAt : null, longCache: longCache));
+      // (the effort of the requests from now on: an effort message turned down made it the request's own)
+      _scheduleWarm(
+        client,
+        AiRequest(model: m, system: _system!, history: const [], tools: loop.specs, effort: _convEffort ?? requestEffort, compactAt: compaction ? m.compactAt : null, longCache: longCache),
+      );
     }
     // the project was replaced during the turn (a new one, by the AI or the
     // user): the conversation went on in it and moves with it
