@@ -6,7 +6,9 @@
 //   2. the version label it prints is the build's (version.json: version,
 //      build number, commit);
 //   3. the service worker installs, and the app starts again offline;
-//   4. no page errors along the way.
+//   4. the AI assistant sends a message with the user's key and shows the
+//      answer, against a fake of the API (nothing leaves the machine);
+//   5. no page errors along the way.
 //
 // Setup, once (playwright-core only drives an installed Chrome; nothing is
 // downloaded besides the package, and node_modules stays out of git):
@@ -171,7 +173,10 @@ try {
     await context.setOffline(false);
   }
 
-  // 4. no page errors
+  // 4. the AI assistant against a fake of the API, with a remembered key
+  await aiAssistant(browser, base, logs, check, shots);
+
+  // 5. no page errors
   const errors = logs.filter((l) => l.startsWith('[pageerror]') || (l.startsWith('[error]') && !l.includes('ERR_INTERNET_DISCONNECTED') && !l.includes('Failed to load resource')));
   check('no page errors', errors.length === 0, errors.slice(0, 5).join(' | '));
 } finally {
@@ -183,3 +188,76 @@ if (failures.length) {
   process.exit(1);
 }
 console.log('all checks passed');
+
+/** The stream of server-sent events of an answer of the Messages API. */
+function answer(n, text) {
+  const events = [
+    { type: 'message_start', message: { id: `msg_e2e_${n}`, type: 'message', role: 'assistant', model: 'claude-opus-5-5', content: [], usage: { input_tokens: 1200, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 } } },
+    { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
+    { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text } },
+    { type: 'content_block_stop', index: 0 },
+    { type: 'message_delta', delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: 20 } },
+    { type: 'message_stop' },
+  ];
+  return events.map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join('');
+}
+
+/** Opens the assistant (?ai=1) with a remembered key, sends a message and reads the answer of a fake API. */
+async function aiAssistant(browser, base, logs, check, shots) {
+  const key = 'sk-ant-api03-E2E-FAKE-KEY-0000';
+  const reply = 'Fake answer from the end-to-end test.';
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript((key) => {
+    localStorage.setItem('opencadirrigation.tutorial_done', '1');
+    localStorage.setItem('opencadirrigation.ai.askAtStart', 'off');
+    localStorage.setItem('opencadirrigation.ai.key', key);
+  }, key);
+  const requests = [];
+  await context.route('https://api.anthropic.com/**', async (route) => {
+    const r = route.request();
+    const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-expose-headers': 'request-id' };
+    if (r.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    requests.push({ headers: r.headers(), body: r.postData() ?? '' });
+    return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'text/event-stream; charset=utf-8', 'request-id': `req_e2e_${requests.length}` }, body: answer(requests.length, reply) });
+  });
+  // anything else beyond this machine stays unanswered
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1|api\.anthropic\.com)/, (route) => route.abort());
+  const page = await context.newPage();
+  page.on('console', (m) => logs.push(`[${m.type()}] ${m.text().slice(0, 400)}`));
+  page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
+  page.on('dialog', (d) => d.accept());
+  try {
+    await page.goto(`${base}/?ai=1&lang=en`);
+    await page.waitForSelector('flutter-view', { timeout: 90000 });
+    await page.waitForTimeout(4000);
+    await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
+    await page.waitForTimeout(1500);
+    // the message box: the text field of the assistant's panel
+    const box = await page.evaluate(() => {
+      const fields = [...document.querySelectorAll('flt-semantics-host textarea, flt-semantics-host input')].map((e) => e.getBoundingClientRect()).filter((b) => b.width > 0);
+      const b = fields.sort((x, y) => y.bottom - x.bottom)[0];
+      return b ? [b.left + b.width / 2, b.top + b.height / 2] : null;
+    });
+    check('the assistant opens with its message box', !!box);
+    if (!box) return;
+    await page.mouse.click(box[0], box[1]);
+    await page.waitForTimeout(500);
+    await page.keyboard.type('Hello from the smoke test.');
+    await page.keyboard.press('Enter');
+    const end = Date.now() + 60000;
+    let shown = false;
+    while (!shown && Date.now() < end) {
+      await page.waitForTimeout(300);
+      shown = await page.evaluate((reply) => [...document.querySelectorAll('flt-semantics-host *')].some((e) => `${e.getAttribute('aria-label') ?? ''} ${e.textContent ?? ''}`.includes(reply)), reply);
+    }
+    const sent = requests[0];
+    check('the message goes to the API with the user\'s key', !!sent && sent.headers['x-api-key'] === key && sent.body.includes('Hello from the smoke test.'));
+    check('the answer shows in the panel', shown);
+    if (shots) {
+      await mkdir(shots, { recursive: true });
+      await page.screenshot({ path: join(shots, '3-assistant.png') });
+    }
+  } finally {
+    await context.close();
+  }
+}
