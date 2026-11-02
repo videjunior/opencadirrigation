@@ -10,6 +10,8 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../design/results.dart';
+import '../model/blocks.dart' show resolveBlockRefs;
+import '../model/dim_style.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
@@ -321,8 +323,18 @@ PlotScene buildPlotScene(
       text(e.layer, Pt(b.minX + 1.5 * mm, b.maxY - (1.5 + labelH) * mm), '${e.name}  ${fmt(e.area / 10000, 2)} ha', heightMm: labelH, bold: true);
     }
   }
-  // pass 2: drawing, terrain, linear hydraulics
-  for (final e in project.entities) {
+  // 1.6.0 CAD: the dimension style of the project; a text height of the
+  // drawing prints at its size, else the size of the labels
+  final dims = project.dimStyle;
+  final dimH = dims.textHeightM > 0 ? dims.textHeightM / mm : labelH;
+  // pass 2: drawing, terrain, linear hydraulics (1.6.0 CAD: a block
+  // reference prints what it draws, when its own layer is shown)
+  resolveBlockRefs(project);
+  final drawn = [
+    for (final e in project.entities)
+      if (e is BlockRefEntity) ...(shown(e.layer) ? e.expanded() : const <Entity>[]) else e,
+  ];
+  for (final e in drawn) {
     if (e is AreaEntity || skip(e)) continue;
     switch (e) {
       case LineEntity l:
@@ -358,16 +370,23 @@ PlotScene buildPlotScene(
         text(ad.layer, ad.textPoint, '${fmt(ad.angleDeg, 1)}°', heightMm: labelH, anchor: PlotAnchor.center);
       case RadialDimensionEntity rd:
         path(rd.layer, [rd.start, rd.point], widthMm: 0.18);
+        // 1.6.0 CAD: the dimension style (text height, decimals, unit)
         text(
           rd.layer,
           rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5),
-          '${rd.diameter ? 'Ø' : 'R'} ${fmt(units.lengthFromSi(rd.value))} ${units.lengthLabel}',
-          heightMm: labelH,
+          '${rd.diameter ? 'Ø' : 'R'} ${dims.length(rd.value, units)}',
+          heightMm: dimH,
           anchor: PlotAnchor.bottomCenter,
         );
       case OrdinateDimensionEntity od:
         path(od.layer, od.leader, widthMm: 0.18);
-        text(od.layer, od.leaderEnd, '${od.xAxis ? 'X' : 'Y'} ${fmt(units.lengthFromSi(od.value))}', heightMm: labelH, anchor: od.xAxis ? PlotAnchor.bottomCenter : PlotAnchor.center);
+        text(
+          od.layer,
+          od.leaderEnd,
+          '${od.xAxis ? 'X' : 'Y'} ${fmt(dims.unitsFor(units).lengthFromSi(od.value), dims.decimals)}',
+          heightMm: dimH,
+          anchor: od.xAxis ? PlotAnchor.bottomCenter : PlotAnchor.center,
+        );
       case WireEntity w:
         path(w.layer, w.points, widthMm: 0.25, dashed: true);
       case LeaderEntity le:
@@ -389,8 +408,27 @@ PlotScene buildPlotScene(
         path(d.layer, [d.a, d.a + n], widthMm: 0.18);
         path(d.layer, [d.b, d.b + n], widthMm: 0.18);
         path(d.layer, [d.a + n, d.b + n], widthMm: 0.18);
-        final mid = Pt.lerp(d.a, d.b, 0.5) + n + n.normalized * (0.6 * labelH * mm);
-        text(d.layer, mid, '${fmt(units.lengthFromSi(d.length))} ${units.lengthLabel}', heightMm: labelH, rotation: radToDeg((d.b - d.a).angle), anchor: PlotAnchor.bottomCenter);
+        // 1.6.0 CAD: the dimension style (arrowheads, text height, decimals, unit)
+        final ends = [d.a + n, d.b + n];
+        final along = (ends[1] - ends[0]).normalized;
+        if (dims.arrow != DimArrow.none && along.length > 0) {
+          final len = dims.arrowFor(dimH * mm);
+          final across = along.perpendicular;
+          for (final (tip, u) in [(ends[0], -along), (ends[1], along)]) {
+            switch (dims.arrow) {
+              case DimArrow.arrow:
+                path(d.layer, [tip, tip - u * len + across * (len * 0.35), tip - u * len - across * (len * 0.35)], closed: true, widthMm: 0.18, fill: colorOf(d.layer));
+              case DimArrow.tick:
+                path(d.layer, [tip - (u + across) * (len * 0.5), tip + (u + across) * (len * 0.5)], widthMm: 0.3);
+              case DimArrow.dot:
+                circle(d.layer, tip, len * 0.25, widthMm: 0.18, fill: colorOf(d.layer));
+              case DimArrow.none:
+                break;
+            }
+          }
+        }
+        final mid = Pt.lerp(d.a, d.b, 0.5) + n + n.normalized * (0.6 * dimH * mm);
+        text(d.layer, mid, dims.length(d.length, units), heightMm: dimH, rotation: radToDeg((d.b - d.a).angle), anchor: PlotAnchor.bottomCenter);
       case ContourEntity ct:
         path(ct.layer, ct.points, widthMm: 0.2);
         if (labels && ct.points.isNotEmpty) text(ct.layer, ct.points.first, fmt(ct.elevation, 1), heightMm: labelH * 0.9);

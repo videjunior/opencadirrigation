@@ -105,7 +105,9 @@ List<Entity> splitLinearEntity(Entity e, List<double> distances, String Function
 /// Trims the portion of a linear entity around station [at]: the pieces
 /// between the nearest cut stations on either side of [at] are removed.
 /// [cuts] are stations along the entity (from intersections). Returns the
-/// remaining pieces (possibly empty when the whole entity is removed).
+/// remaining pieces; [e] itself (nothing trimmed) when no cut falls inside
+/// it — a boundary that only touches its ends does not take the whole item
+/// away (1.6.0 CAD).
 List<Entity> trimLinearEntity(Entity e, double at, List<double> cuts, String Function() newId) {
   final pts = e.linearPoints;
   if (pts == null || pts.length < 2) return [e];
@@ -116,7 +118,7 @@ List<Entity> trimLinearEntity(Entity e, double at, List<double> cuts, String Fun
     if (c < at && (before == null || c > before)) before = c;
     if (c > at && (after == null || c < after)) after = c;
   }
-  if (before == null && after == null) return const [];
+  if (before == null && after == null) return [e];
   final pieces = splitLinearEntity(e, [?before, ?after], newId);
   final out = <Entity>[];
   var start = 0.0;

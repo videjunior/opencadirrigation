@@ -20,6 +20,8 @@ library;
 import 'dart:math' as math;
 
 import '../design/pivot.dart' show PivotKind;
+import '../model/blocks.dart' show resolveBlockRefs;
+import '../model/dim_style.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
@@ -52,14 +54,35 @@ class CadExport {
   final _entities = <CadEntity>[];
   final _blocks = <String, CadBlock>{};
 
+  /// 1.6.0 CAD: the drawing's name of each user block, by its name in the project.
+  final _userBlocks = <String, String>{};
+
   /// Where [_add] puts entities: model space, or the block being converted.
   late List<CadEntity> _out = _entities;
   final _layerNames = <String, String>{};
   var _dims = 0;
 
-  CadDimStyle get _alignedStyle => CadDimStyle(dimStyle, scale: dimScale, lengthFactor: units.lengthFromSi(1), suffix: _suffix);
-  CadDimStyle get _horizontalStyle => CadDimStyle(dimStyleHorizontal, scale: dimScale, lengthFactor: units.lengthFromSi(1), suffix: _suffix, horizontalText: true);
-  String get _suffix => units.length == LengthUnit.m ? '' : '<> ${units.lengthLabel}';
+  CadDimStyle get _alignedStyle =>
+      CadDimStyle(dimStyle, scale: dimScale, lengthFactor: _dimUnits.lengthFromSi(1), suffix: _suffix, decimals: _ds.decimals, textHeight: _dimTextHeight, arrowSize: _dimArrowSize);
+  CadDimStyle get _horizontalStyle => CadDimStyle(
+    dimStyleHorizontal,
+    scale: dimScale,
+    lengthFactor: _dimUnits.lengthFromSi(1),
+    suffix: _suffix,
+    horizontalText: true,
+    decimals: _ds.decimals,
+    textHeight: _dimTextHeight,
+    arrowSize: _dimArrowSize,
+  );
+  String get _suffix => _dimUnits.length == LengthUnit.m || !_ds.showUnit ? '' : '<> ${_dimUnits.lengthLabel}';
+
+  // 1.6.0 CAD: the project's dimension style — decimals, unit and the text
+  // height and arrowheads in metres of the drawing (paper sizes of the
+  // styles are those sizes over DIMSCALE)
+  DimStyle get _ds => project.dimStyle;
+  Units get _dimUnits => _ds.unitsFor(units);
+  double get _dimTextHeight => _ds.textHeightM > 0 ? _ds.textHeightM / dimScale : 2.5;
+  double get _dimArrowSize => _ds.arrowSizeM > 0 ? _ds.arrowSizeM / dimScale : _dimTextHeight;
 
   /// The layer name in the drawing (a valid table name).
   String _layer(String name) => _layerNames.putIfAbsent(name, () {
@@ -99,31 +122,47 @@ class CadExport {
     _blocks.clear();
     _out = _entities;
     _dims = 0;
-    for (final e in project.entities) {
-      _entity(e);
-    }
-    // the user's blocks, ready to insert in the CAD program (their entities
-    // are already in block coordinates)
-    final blockKeys = {for (final k in _blocks.keys) k.toLowerCase()};
+    // 1.6.0 CAD: the names the user's blocks take in the drawing, known
+    // before the entities (block references insert them); the names of the
+    // program's own blocks (OCI_…) stay theirs
+    resolveBlockRefs(project);
+    _userBlocks.clear();
+    final blockKeys = <String>{};
     for (final b in project.blocks.blocks) {
       var name = cadTableName(b.name, 'BLOCK');
       if (b.isEmpty || name.startsWith('*')) continue;
+      if (name.toUpperCase().startsWith('OCI_')) name = 'U_$name';
       // block names do not tell case apart either: another spelling of a name taken gets a number
-      if (blockKeys.contains(name.toLowerCase())) {
+      bool taken(String n) => blockKeys.contains(n.toLowerCase());
+      if (taken(name)) {
         var k = 2;
-        while (blockKeys.contains('${name}_$k'.toLowerCase())) {
+        while (taken('${name}_$k')) {
           k++;
         }
         name = '${name}_$k';
       }
       blockKeys.add(name.toLowerCase());
+      _userBlocks[b.name] = name;
+    }
+    for (final e in project.entities) {
+      _entity(e);
+    }
+    // the user's blocks, ready to insert in the CAD program (their entities
+    // are already in block coordinates; 1.6.0 CAD: with their attributes)
+    for (final b in project.blocks.blocks) {
+      final name = _userBlocks[b.name];
+      if (name == null) continue;
       final ents = <CadEntity>[];
       _out = ents;
       for (final e in b.entities) {
         _entity(e);
       }
       _out = _entities;
-      _blocks[name] = CadBlock(name, ents);
+      _blocks[name] = CadBlock(
+        name,
+        ents,
+        attdefs: [for (final a in b.attributes) CadAttrib(a.tag, a.defaultValue, a.position, a.height, rotationDeg: a.rotationDeg, invisible: !a.visible, prompt: a.prompt.isEmpty ? a.tag : a.prompt)],
+      );
     }
     // layers: '0', the project's (with colours, linetypes and states), any
     // other layer an entity uses, and Defpoints for the dimension points
@@ -252,6 +291,32 @@ class CadExport {
         if (k.name.isNotEmpty) _add(CadText(labels, k.position + const Pt(1.3, 0), k.name, 0.8));
       case WireEntity w:
         _add(CadPolyline(layer, w.points));
+      // 1.6.0 CAD: a reference to a user block is an INSERT of it with its
+      // attributes; a mirrored one (an INSERT of one scale only) or one whose
+      // block is missing goes in as what it draws
+      case BlockRefEntity r:
+        final name = _userBlocks[r.blockName];
+        final d = r.definition;
+        if (name == null || d == null || r.mirrored) {
+          for (final x in r.expanded()) {
+            _entity(x);
+          }
+        } else {
+          final t = r.placement;
+          _add(
+            CadInsert(
+              layer,
+              name,
+              r.position,
+              scale: r.scale,
+              rotationDeg: r.rotationDeg,
+              attribs: [
+                for (final a in d.attributes)
+                  CadAttrib(a.tag, r.attribute(a.tag), t.apply(a.position), a.height * r.scale, rotationDeg: r.rotationDeg + a.rotationDeg, invisible: !a.visible),
+              ],
+            ),
+          );
+        }
       default:
         break;
     }

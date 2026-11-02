@@ -74,6 +74,8 @@ const fieldNotes = <String, String>{
   'src': 'file the image came from',
   'op': 'opacity (0–1)',
   'photo': 'photo of the comment (base64 JPEG)',
+  // 1.6.0 CAD
+  'block': 'name of the block of the project a block reference draws',
   // parameters
   'units': 'display units (length, flow, pressure, diameter)',
   'method': 'friction formula',
@@ -148,6 +150,9 @@ Entity sampleEntity(EntityType type) => switch (type) {
   EntityType.comment => CommentEntity(id: 'e1', position: Pt.zero),
   EntityType.revisionCloud => RevisionCloudEntity(id: 'e1', points: const [Pt.zero, Pt(1, 0), Pt(1, 1)]),
   EntityType.breakline => BreaklineEntity(id: 'e1', points: const [Pt.zero, Pt(1, 0)]),
+  // 1.6.0 CAD
+  // the keys written only when set (rot, sc, mir, attrs) stay out, as for the other kinds
+  EntityType.blockRef => BlockRefEntity(id: 'e1', position: Pt.zero, blockName: ''),
 };
 
 /// The JSON Schema (draft 2020-12) of a project file.

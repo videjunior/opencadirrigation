@@ -47,6 +47,8 @@ void main() {
     CommentEntity(id: 'e30', position: const Pt(4, 4), text: 'poço', photo: 'abc'),
     RevisionCloudEntity(id: 'e31', points: const [Pt(0, 0), Pt(5, 0), Pt(5, 5)], revision: 'A'),
     BreaklineEntity(id: 'e32', points: const [Pt(0, 0), Pt(10, 0)], elevations: const [5, double.nan]),
+    // 1.6.0 CAD
+    BlockRefEntity(id: 'e33', position: const Pt(2, 2), blockName: 'Caixa', rotationDeg: 30, scale: 2, mirrored: true, attributes: {'CODE': 'CX-01'}),
   ];
 
   test('the samples cover every kind of entity', () {

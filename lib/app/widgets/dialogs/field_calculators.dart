@@ -107,7 +107,7 @@ Future<void> showTravellerCalculator(BuildContext context, ProjectController c) 
             maxSpeedMPerMin: maxSpeed,
           ),
         );
-        final pd = u.pressure == PressureUnit.bar ? 2 : 1;
+        final pd = u.pressure == PressureUnit.bar || u.pressure == PressureUnit.kgfcm2 ? 2 : 1;
         String len(double m, [int d = 1]) => '${fmt(u.lengthFromSi(m), d)} ${u.lengthLabel}';
         String pr(double h) => '${fmt(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
         final dd = u.depthLabel == 'in' ? 2 : 1;
@@ -549,6 +549,8 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
           PressureUnit.bar => 4,
           PressureUnit.psi => 3,
           PressureUnit.ftH2O => 2,
+          // 1.6.0 CAD
+          PressureUnit.kgfcm2 => 4,
         };
         String pr(double h) => '${fmt(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
         final inch = u.diameter == DiameterUnit.inch;

@@ -6,11 +6,16 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../design/pivot.dart' show PivotKind;
+// 1.6.0 CAD: the references to user blocks (entities_block_ref.dart)
+import 'blocks.dart' show BlockAttributeDef, BlockDefinition;
 import 'geometry.dart';
 import 'pivot_machine.dart';
 import 'read_report.dart';
 
 export 'pivot_machine.dart';
+
+// 1.6.0 CAD
+part 'entities_block_ref.dart';
 
 enum HydraulicScope { zone, mainline }
 
@@ -47,6 +52,8 @@ enum EntityType {
   comment,
   revisionCloud,
   breakline,
+  // 1.6.0 CAD: a reference to a user block (entities_block_ref.dart)
+  blockRef,
 }
 
 /// Default layer names.
@@ -505,6 +512,23 @@ sealed class Entity {
         );
       case EntityType.ordinateDimension:
         return OrdinateDimensionEntity(id: id, layer: layer, name: name, point: pos(), leaderEnd: pt('e'), origin: j['o'] == null ? Pt.zero : pt('o'), xAxis: j['x'] as bool? ?? true);
+      // 1.6.0 CAD
+      case EntityType.blockRef:
+        final sc = d('sc', 1);
+        return BlockRefEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          blockName: j['block'] as String? ?? '',
+          rotationDeg: d('rot'),
+          scale: sc > 0 ? sc : 1,
+          mirrored: j['mir'] as bool? ?? false,
+          attributes: {
+            for (final e in ((j['attrs'] as Map?) ?? const {}).entries)
+              if (e.value is String) '${e.key}': e.value as String,
+          },
+        );
     }
   }
 }
