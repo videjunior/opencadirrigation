@@ -29,8 +29,9 @@
   the coordinates of the site, nothing of the project. The Google Maps API key is kept in the
   browser's storage, which any script of the site could read, and sent to Google only (restrict it
   to the site in the Google Cloud console); where a tile server has no imagery at the current zoom the
-  app scales the nearest coarser tile instead of showing a "no data" placeholder. Interface fonts
-  for scripts the app does not bundle are fetched from Google Fonts when first needed.
+  app scales the nearest coarser tile instead of showing a "no data" placeholder. The fonts of
+  every script and symbol (Chinese, Japanese, Arabic and Indian scripts, emoji, arrows) come from
+  the site itself, never from a font service (see [Languages and site](languages-and-site.md)).
 - **AI assistant** (optional, [AI assistant](ai-assistant.md)): the one feature that sends
   project data to a third party, and only on your action. Nothing goes out until you send a
   message; then the requests go only to the company of the model you chose, Anthropic

@@ -8,6 +8,7 @@ import 'package:opencadirrigation/app/i18n.dart' show rtlLanguages, supportedLan
 import 'package:opencadirrigation/app/version.dart' show appRepositoryUrl, appVersion;
 
 import '../tool/site.dart';
+import '../tool/site_manual.dart' show manualSitemapEntries, manualUrl;
 
 /// Guards the web launch metadata for opencadirrigation.com: one entry page
 /// per interface language (en at /, the others under /<code>/: /pt/, /es/,
@@ -194,7 +195,7 @@ void main() {
     final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
     expect(bootstrap, contains('{{flutter_js}}'));
     expect(bootstrap, contains('{{flutter_build_config}}'));
-    expect(bootstrap, contains('_flutter.loader.load();'));
+    expect(bootstrap, contains('_flutter.loader.load('));
     expect(bootstrap, isNot(contains('serviceWorker')));
   });
 
@@ -399,8 +400,16 @@ void main() {
     expect(sitemap, isNot(contains('<loc>${site}en/</loc>')), reason: 'English is the root page now');
     expect(sitemap, isNot(contains('?lang=')), reason: 'query URLs are not canonical pages');
     final legalPages = 2 * siteLanguages.where((l) => hasLegalText(l.code)).length;
-    expect(RegExp('hreflang="x-default"').allMatches(sitemap).length, siteLanguages.length + legalPages);
-    expect(RegExp(r'<lastmod>\d{4}-\d\d-\d\d</lastmod>').allMatches(sitemap).length, siteLanguages.length + legalPages);
+    // the user guide: every chapter in English and Portuguese (tool/site_manual.dart)
+    final guidePages = manualSitemapEntries().length;
+    expect(guidePages, greaterThan(30));
+    expect(RegExp('hreflang="x-default"').allMatches(sitemap).length, siteLanguages.length + legalPages + guidePages);
+    expect(RegExp(r'<lastmod>\d{4}-\d\d-\d\d</lastmod>').allMatches(sitemap).length, siteLanguages.length + legalPages + guidePages);
+    expect(sitemap, contains('<loc>${site}manual/</loc>'));
+    expect(sitemap, contains('<loc>${site}pt/manual/</loc>'));
+    for (final l in siteLanguages) {
+      expect(File('web/${l.file}').readAsStringSync(), contains('<a href="${manualUrl(l.code)}"'), reason: '${l.code}: the footer links to the user guide');
+    }
     expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="pt" href="${site}pt/"/>'));
     expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="zh" href="${site}zh/"/>'));
     expect(sitemap, contains('<loc>${site}privacy/</loc>'));
@@ -463,7 +472,7 @@ void main() {
         'consent',
         '14 months',
         'Firebase Hosting',
-        'fonts.gstatic.com',
+        'no font service is contacted',
         'Nominatim',
         'Anthropic or OpenAI',
         'LGPD',
@@ -474,7 +483,8 @@ void main() {
         expect(privacy, contains(needle), reason: needle);
       }
       final terms = File('web/terms/index.html').readAsStringSync();
-      for (final needle in ['MIT licence', '&quot;as is&quot;', 'qualified professional', 'technical responsibility', 'ART', 'data sheets']) {
+      // (1.6.0: the free use of the third-party data in professional work, PRD-06)
+      for (final needle in ['MIT licence', '&quot;as is&quot;', 'qualified professional', 'technical responsibility', 'ART', 'data sheets', 'Terms of the data', 'NASA POWER', 'non-commercial']) {
         expect(terms, contains(needle), reason: needle);
       }
       final pt = File('web/pt/terms/index.html').readAsStringSync();
@@ -564,6 +574,11 @@ void main() {
     for (final needle in ['main.dart.js', 'design_worker.js', 'site.js', 'sw.js', 'flutter_bootstrap.js', '*.part.js', '@(assets|canvaskit)/**', '**/manifest.json']) {
       expect(revalidated.any((s) => s.contains(needle)), isTrue, reason: needle);
     }
+    // a deploy of a build tool/build_web.sh did not finish is refused (1.6.0)
+    expect(hosting['predeploy'], [predeployCheck]);
+    for (final needle in ['public/sw.js', 'public/offline.js', 'public/flutter_bootstrap.js', 'public/fonts', '__OCI_']) {
+      expect(predeployCheck, contains(needle));
+    }
     final redirects = [for (final r in hosting['redirects'] as List) r as Map<String, dynamic>];
     expect(redirects.where((r) => r['source'] == '/en/' && r['destination'] == '/' && r['type'] == 301), hasLength(1));
     // site.js sends new visitors from the default addresses of the project to the site's own
@@ -587,6 +602,27 @@ void main() {
       expect([for (final s in m['shortcuts'] as List) (s as Map)['name']], contains(t.tutorial), reason: l.code);
       final forms = [for (final s in m['screenshots'] as List) (s as Map)['form_factor']];
       expect(forms, containsAll(['wide', 'narrow']), reason: '${l.code}: phones show the full install sheet');
+      // 1.6.0: "Open with" a project or a drawing, the window already open focused, files and pictures shared with it
+      final manifestUrl = Uri.parse('${l.url}manifest.json');
+      final handlers = [for (final h in m['file_handlers'] as List) h as Map<String, dynamic>];
+      expect(handlers, hasLength(2), reason: l.code);
+      for (final h in handlers) {
+        expect(manifestUrl.resolve(h['action'] as String).toString(), '${l.url}?source=file', reason: '${l.code}: the page of the language');
+      }
+      final extensions = [
+        for (final h in handlers)
+          for (final list in (h['accept'] as Map).values) ...(list as List),
+      ];
+      expect(extensions, containsAll(['.oci.json', '.dxf', '.dwg', '.kml', '.kmz', '.geojson', '.gpx']), reason: l.code);
+      expect(extensions.every((e) => (e as String).startsWith('.')), isTrue, reason: l.code);
+      expect((m['launch_handler'] as Map)['client_mode'], ['focus-existing', 'auto'], reason: '${l.code}: a second launch focuses the window already open');
+      final share = m['share_target'] as Map<String, dynamic>;
+      expect(share['method'], 'POST', reason: l.code);
+      expect(share['enctype'], 'multipart/form-data', reason: l.code);
+      expect(manifestUrl.resolve(share['action'] as String).toString(), '${l.url}share-target', reason: '${l.code}: web/sw.js answers it');
+      final files = ((share['params'] as Map)['files'] as List).single as Map;
+      expect(files['name'], 'files');
+      expect(files['accept'], containsAll(['image/*', 'application/pdf', '.oci.json', '.dxf', '.kml']), reason: l.code);
       for (final s in [...m['icons'] as List, ...m['screenshots'] as List]) {
         final src = Uri.parse('${l.url}manifest.json').resolve((s as Map)['src'] as String).path.substring(1);
         expect(File('web/$src').existsSync(), isTrue, reason: '${l.code}: $src');
@@ -614,9 +650,10 @@ void main() {
     final en = siteText('en');
     final cloud = en.faq.indexWhere((f) => f.$1 == 'Are my projects stored in the cloud?');
     expect(en.faq[cloud].$2, faqCloudAnswerEn);
-    for (final needle in ['Google Fonts', 'Google Analytics only if you accept it', 'never while the app is open', 'privacy policy']) {
+    for (final needle in ['come from this site itself', 'Google Analytics only if you accept it', 'never while the app is open', 'privacy policy']) {
       expect(faqCloudAnswerEn, contains(needle));
     }
+    expect(faqCloudAnswerEn, isNot(contains('Google Fonts')), reason: 'the fonts are served by the site (tool/site_fonts.dart)');
     for (final l in siteLanguages) {
       final a = siteText(l.code).faq[cloud].$2;
       expect(a, contains('Google Analytics'), reason: '${l.code}: the statistics are named');

@@ -671,16 +671,24 @@ class PdfSheetBuilder {
   void _attribution(SheetCanvas page, String text, SheetLayout lay, double Function(double) px) {
     const size = 5.0;
     final maxW = px(lay.areaW) * 0.6;
-    final s = fonts.fit(text, maxW, size);
-    final w = fonts.textWidth(s, size);
-    final x = px(lay.areaX + lay.areaW) - 3, y = px(lay.areaY) + 3;
-    page.save();
-    page.opacity(0.75);
-    page.fillColor(0xFFFFFFFF);
-    page.rect(x - w - 2, y - 1.5, w + 4, size + 2.5, stroke: false, fill: true);
-    page.restore();
-    page.fillColor(_grey);
-    page.text(x, y, s, size: size, align: PdfAlign.right);
+    // 1.6.0 SIT: one credit per line (the base map, the kept pictures, the online elevation), the first at the bottom
+    final lines = [
+      for (final l in text.split('\n'))
+        if (l.trim().isNotEmpty) fonts.fit(l.trim(), maxW, size),
+    ];
+    final x = px(lay.areaX + lay.areaW) - 3;
+    for (var i = 0; i < lines.length && i < 4; i++) {
+      final s = lines[i];
+      final w = fonts.textWidth(s, size);
+      final y = px(lay.areaY) + 3 + i * (size + 2.5);
+      page.save();
+      page.opacity(0.75);
+      page.fillColor(0xFFFFFFFF);
+      page.rect(x - w - 2, y - 1.5, w + 4, size + 2.5, stroke: false, fill: true);
+      page.restore();
+      page.fillColor(_grey);
+      page.text(x, y, s, size: size, align: PdfAlign.right);
+    }
   }
 
   /// Title of a sheet of a set, top-left in the drawing area on a white box.

@@ -1,0 +1,25 @@
+# Category "Q&A" (slug: q-a). Questions about using the app; mark the answer that solved it.
+title: "[Question] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The [user guide](https://opencadirrigation.com/manual/) (also [in Portuguese](https://opencadirrigation.com/pt/manual/)) and the interactive tutorial (Help → Interactive tutorial) answer many questions.
+        A defect of the app goes in an [issue](https://github.com/videjunior/opencadirrigation/issues/new/choose); a security problem never goes in public (see SECURITY.md).
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What you are trying to do, what you did and what happened.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Help → About shows it (for example 1.6.0+14); add the browser or the system.
+  - type: textarea
+    id: project
+    attributes:
+      label: Project or screenshot
+      description: A small .oci.json project, a share link (File → Share by link) or a screenshot helps a lot. Remove anything private first.

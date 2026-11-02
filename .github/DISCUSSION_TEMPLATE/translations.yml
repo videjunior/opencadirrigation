@@ -1,0 +1,43 @@
+# Category "Translations" (slug: translations; created by the owner in the repository settings, see docs/GITHUB.md).
+# Native speakers review the interface in their language with the review files of tool/i18n_review.dart.
+title: "[Translation] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping OpenCADIrrigation speak your language well. The app has 20 interface languages; the texts of 17 of them live in `assets/i18n/<code>.json`.
+        The easiest way to review is a spreadsheet: ask here for the review file of your language (or make it with `dart run tool/i18n_review.dart export <code>`), write in the **review** column where a text is wrong or missing, and attach it back. The [user guide](https://opencadirrigation.com/manual/languages-and-site/#native-speaker-review-of-the-translations) explains the workflow and the glossary.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Arabic (ar)
+        - Bengali (bn)
+        - Chinese (zh)
+        - French (fr)
+        - German (de)
+        - Hausa (ha)
+        - Hindi (hi)
+        - Indonesian (id)
+        - Japanese (ja)
+        - Marathi (mr)
+        - Portuguese (pt)
+        - Punjabi (pa)
+        - Russian (ru)
+        - Spanish (es)
+        - Swahili (sw)
+        - Telugu (te)
+        - Turkish (tr)
+        - Urdu (ur)
+        - Vietnamese (vi)
+        - Another language
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What to change
+      description: The screen or menu, the text as it is and as it should be, or the reviewed file attached. A technical term used one way throughout (an emitter, a lateral, a submain…) belongs in the glossary.
+    validations:
+      required: true

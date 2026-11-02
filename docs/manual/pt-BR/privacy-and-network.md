@@ -29,8 +29,8 @@
   Maps fica no armazenamento do navegador, que qualquer script do site poderia ler, e é enviada
   apenas ao Google (restrinja-a ao site no console do Google Cloud); onde o servidor não tem imagem no zoom
   atual, o app amplia o tile mais próximo em vez de mostrar um aviso de "dados indisponíveis". As
-  fontes da interface para escritas que o app não traz são baixadas do Google Fonts na primeira vez
-  em que são necessárias.
+  fontes de todas as escritas e símbolos (chinês, japonês, árabe, escritas indianas, emoji, setas)
+  vêm do próprio site, nunca de um serviço de fontes (veja [Idiomas e site](languages-and-site.md)).
 - **Assistente de IA** (opcional, [assistente de IA](ai-assistant.md)): o único recurso que envia
   dados do projeto a terceiros, e só por ação sua. Nada sai antes de você enviar uma mensagem; então
   os pedidos vão só para a empresa do modelo que você escolheu, a Anthropic (`api.anthropic.com`)

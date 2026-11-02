@@ -57,7 +57,8 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
   // humidity and wind of the Kc adjustment (NaN = unknown)
   final rhMin = _known(cur?.rhMinPct);
   final wind = _known(cur?.windSpeed2mMs);
-  var source = ClimateSource.openMeteo;
+  // 1.6.0 SIT: free for professional work (the free Open-Meteo API is for non-commercial use, PRD-06)
+  var source = ClimateSource.nasaPower;
   var years = 10;
   var busy = false;
   var progress = 0.0;
@@ -248,6 +249,8 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
               ),
               NumField(label: t('clim.years'), value: years.toDouble(), decimals: 0, onChanged: (v) => years = v.round().clamp(1, 40)),
             ]),
+            // 1.6.0 SIT: what the free service of the source allows (PRD-06)
+            Text(t('clim.terms.${source.name}'), key: const Key('clim_terms'), style: TextStyle(fontSize: 10.5, color: source == ClimateSource.openMeteo ? Cad.warning : Cad.fg54)),
             Row(
               children: [
                 FilledButton.icon(key: const Key('clim_download'), onPressed: busy ? null : download, icon: const Icon(Icons.cloud_download_outlined, size: 16), label: Text(t('clim.download'))),

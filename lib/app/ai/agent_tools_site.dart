@@ -140,14 +140,15 @@ List<AgentTool> siteTools(AgentToolbox b) {
       effect: ToolEffect.write,
       description: 'Downloads daily weather at the site for the last years from an online archive through the app\'s own download and stores its monthly normals (reference evapotranspiration ETo, rain, dependable rain, solar radiation) in the project, where the irrigation requirement and the agronomy reports use them (one undo step; it sends the site\'s coordinates to the service). Needs a georeference.',
       inputSchema: obj({
-        'source': str('Default "openMeteo".', ['openMeteo', 'nasaPower']),
+        // 1.6.0 SIT: NASA POWER by default, free for professional work; the free Open-Meteo API is non-commercial (PRD-06)
+        'source': str('Default "nasaPower" (free for any use, professional work included). "openMeteo" only when the user asks for it: its free API is for non-commercial use.', ['nasaPower', 'openMeteo']),
         'years': int_('Whole years to average, 1–30 (default 10).'),
       }),
-      summary: (i) => t('ai.do.climate', {'n': '${i['source'] ?? 'openMeteo'}'}),
+      summary: (i) => t('ai.do.climate', {'n': '${i['source'] ?? 'nasaPower'}'}),
       handler: (i) async {
         final a = ToolArgs(i);
         if (c.busy) throw ToolInputError('A design is running; wait until it finishes.');
-        final src = a.str('source') == 'nasaPower' ? ClimateSource.nasaPower : ClimateSource.openMeteo;
+        final src = a.str('source') == 'openMeteo' ? ClimateSource.openMeteo : ClimateSource.nasaPower;
         try {
           final sc = await c.downloadClimate(src, years: a.integer('years', min: 1, max: 30) ?? 10, cancelled: stopped);
           String row(List<double> v) => [for (final x in v) fmt(x, 1)].join(' ');

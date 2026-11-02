@@ -19,7 +19,8 @@ todos os exportadores, de modo que PDF, Excel e CSV mostram os mesmos números.
 
 Arquivo → Exportar desenho → PDF abre as opções de plotagem: tamanho (A4 a A0, Letter, Tabloid),
 orientação, escala (automática ou fixa), margem, raios molhados, rótulos, legenda de camadas, lista
-de materiais na prancha, o mapa base da tela sob o desenho (com o crédito do provedor) e páginas de
+de materiais na prancha, o mapa base da tela sob o desenho (com o crédito do provedor e, abaixo, os
+das imagens de mapa guardadas para o campo e da elevação online mostrada) e páginas de
 relatório anexadas. Um PDF pode trazer um **conjunto de folhas**: uma folha, ou uma visão geral mais
 uma folha por zona ou por área irrigada (cada uma enquadrada no seu assunto com os seus materiais,
 as outras zonas em cinza ou ocultas), e a vista atual da tela como folha extra na sua própria

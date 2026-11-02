@@ -76,6 +76,11 @@ fi
 # version.json (written by flutter build, left to the network by the service
 # worker) also names the toolchain, the commit and the date of the build.
 perl -0pi -e 's/\}\s*\z/,"flutter_version":"'"$FLUTTER"'","dart_version":"'"$DART"'","commit":"'"$COMMIT"'","build_date":"'"$DATE"'"}\n/' "$OUT/version.json"
+# The fallback fonts of the engine (other scripts, symbols, emoji) served by
+# the site itself under fonts/, and their address in flutter_bootstrap.js: no
+# start asks a font service for anything (tool/site_fonts.dart; downloaded
+# once into build/web_fonts_cache).
+dart run tool/site_fonts.dart "$OUT"
 # Offline start: the build name and the files of the build, with their
 # SHA-256, into sw.js; the worker's address into offline.js. Last, since it
 # hashes the files as they are served.

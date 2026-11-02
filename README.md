@@ -78,13 +78,14 @@ students. The interactive tutorial and the example gallery let you start without
 |---|---|
 | Open | Code, project format (`.oci.json`), catalogues (`.oci.cat`) and examples are readable files, documented in this repository. |
 | In the browser | Chrome, Edge, Firefox and Safari, on desktop, tablet and phone; installable as a PWA that starts without a network after the first visit. It also builds for desktop (macOS, Windows, Linux). Native Android and iOS builds are not made: on phones and tablets use the web app. |
-| No server | There is no server behind the app and no account. Projects live in the browser and in local files. The internet is used for what you ask for (base maps, online elevation and climate, address search, catalogues by URL, and the optional AI assistant, the one feature that sends project data, to the AI provider you choose), for the fonts of the scripts and symbols the app does not bundle (Google Fonts) and, on the site's pages and only if you accept them, for the visit statistics; see [Storage, privacy and network access](docs/manual/privacy-and-network.md). |
+| No server | There is no server behind the app and no account. Projects live in the browser and in local files. The internet is used for what you ask for (base maps, online elevation and climate, address search, catalogues by URL, and the optional AI assistant, the one feature that sends project data, to the AI provider you choose) and, on the site's pages and only if you accept them, for the visit statistics; see [Storage, privacy and network access](docs/manual/privacy-and-network.md). |
 | Transparent engine | Every formula is documented in the code and in the [technical study](docs/TECHNICAL_STUDY.md), with tests comparing it to reference values. |
 | 20 languages | Interface in Portuguese, English, Spanish, Chinese, Hindi, Arabic, French, Bengali, Russian, Urdu, Indonesian, German, Japanese, Marathi, Vietnamese, Telugu, Hausa, Turkish, Punjabi and Swahili; the app opens in the system language, and Arabic and Urdu lay the interface out right to left. |
 
 ## Manual
 
-The manual is in [docs/manual/](docs/manual/README.md) (Portuguese: [docs/manual/pt-BR/](docs/manual/pt-BR/README.md)):
+The manual is in [docs/manual/](docs/manual/README.md) (Portuguese: [docs/manual/pt-BR/](docs/manual/pt-BR/README.md)), and on the
+site as the [user guide](https://opencadirrigation.com/manual/) ([in Portuguese](https://opencadirrigation.com/pt/manual/)):
 
 - [Five-minute start](docs/manual/getting-started.md): open the app, the example gallery, the URL parameters
 - [Design workflow](docs/manual/workflow.md): from the area to the reports, step by step

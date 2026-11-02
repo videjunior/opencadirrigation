@@ -82,13 +82,14 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 |---|---|
 | Aberto | Código, formato de projeto (`.oci.json`), catálogos (`.oci.cat`) e exemplos são arquivos legíveis, documentados neste repositório. |
 | No navegador | Chrome, Edge, Firefox e Safari, em computador, tablet e celular; instalável como PWA, que abre sem rede depois da primeira visita. Também compila para desktop (macOS, Windows, Linux). Não há builds nativos para Android e iOS: no celular e no tablet use o app web. |
-| Sem servidor | Não há servidor por trás do app nem cadastro. Projetos ficam no navegador e em arquivos locais. A internet é usada para o que você pede (mapas base, elevação e clima online, busca de endereços, catálogos por URL e o assistente de IA opcional, o único recurso que envia dados do projeto, para o provedor de IA que você escolher), para as fontes das escritas e dos símbolos que o app não traz (Google Fonts) e, nas páginas do site e só se você aceitar, para as estatísticas de visita; veja a [Armazenamento, privacidade e rede](docs/manual/pt-BR/privacy-and-network.md). |
+| Sem servidor | Não há servidor por trás do app nem cadastro. Projetos ficam no navegador e em arquivos locais. A internet é usada para o que você pede (mapas base, elevação e clima online, busca de endereços, catálogos por URL e o assistente de IA opcional, o único recurso que envia dados do projeto, para o provedor de IA que você escolher) e, nas páginas do site e só se você aceitar, para as estatísticas de visita; veja a [Armazenamento, privacidade e rede](docs/manual/pt-BR/privacy-and-network.md). |
 | Motor transparente | Cada fórmula está documentada no código e no [estudo técnico](docs/PESQUISA.pt-BR.md), com testes que a comparam a valores de referência. |
 | 20 idiomas | Interface em português, inglês, espanhol, chinês, hindi, árabe, francês, bengali, russo, urdu, indonésio, alemão, japonês, marati, vietnamita, télugo, hauçá, turco, panjabi e suaíli; o app abre no idioma do sistema, e em árabe e urdu a interface é da direita para a esquerda. |
 
 ## Manual
 
-O manual está em [docs/manual/pt-BR/](docs/manual/pt-BR/README.md) (inglês, o canônico: [docs/manual/](docs/manual/README.md)):
+O manual está em [docs/manual/pt-BR/](docs/manual/pt-BR/README.md) (inglês, o canônico: [docs/manual/](docs/manual/README.md)), e no
+site como o [guia do usuário](https://opencadirrigation.com/pt/manual/) ([em inglês](https://opencadirrigation.com/manual/)):
 
 - [Início em cinco minutos](docs/manual/pt-BR/getting-started.md): abrir o app, a galeria de exemplos, os parâmetros de endereço
 - [Fluxo de projeto](docs/manual/pt-BR/workflow.md): da área aos relatórios, passo a passo

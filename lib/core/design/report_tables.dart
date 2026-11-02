@@ -5,6 +5,7 @@ library;
 import 'dart:math' as math;
 
 import '../hydraulics/pump.dart';
+import '../io/data_credits.dart'; // 1.6.0 SIT
 import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
@@ -965,6 +966,21 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           for (final (method, ha, cat) in lic) [t('req.method.$method'), RNum(ha, 2), cat, t('lic.limits.$method')],
           [t('lic.project'), RNum(lic.fold(0.0, (a, r) => a + r.$2), 2), lic.map((r) => r.$3).reduce((a, b) => a.compareTo(b) >= 0 ? a : b), t('lic.note')],
         ],
+      ),
+    );
+  }
+  // 1.6.0 SIT: the third-party data of the project, the credit each source asks for and what its free use allows (PRD-06)
+  final credits = projectDataCredits(project);
+  if (credits.isNotEmpty) {
+    out.add(
+      ReportTable(
+        key: 'sources',
+        title: t('reports.sources'),
+        headers: [t('src.kind'), t('src.source'), t('src.credit'), t('src.use')],
+        rows: [
+          for (final c in credits) [t('src.kind.${c.kind.name}'), c.source, c.credit, t('src.use.${c.use.name}')],
+        ],
+        warn: [for (final c in credits) c.use == DataUse.nonCommercial],
       ),
     );
   }

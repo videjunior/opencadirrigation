@@ -36,6 +36,7 @@ import '../io/http.dart';
 import '../io/prefs.dart';
 import '../state/controller.dart';
 import 'camera.dart';
+import 'seen_tiles.dart'; // 1.6.0 SIT
 
 /// What the layer needs from the app state to fetch and draw tiles.
 class BaseMapOptions {
@@ -446,7 +447,12 @@ class BaseMapLayer extends ChangeNotifier {
     final m = j.map, key = j.key;
     _loading.add(key);
     httpBytes(j.url)
-        .then((bytes) => ui.instantiateImageCodec(Uint8List.fromList(bytes)))
+        .then((bytes) {
+          final data = Uint8List.fromList(bytes);
+          // 1.6.0 SIT: what was shown, for the map kept for the field (never the Google maps: their terms forbid it)
+          if (!m.isGoogle) seenTiles.put(j.url, data);
+          return ui.instantiateImageCodec(data);
+        })
         .then((codec) => codec.getNextFrame())
         .then((frame) {
           _loading.remove(key);

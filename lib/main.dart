@@ -10,7 +10,9 @@ import 'app/i18n.dart';
 import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
 import 'app/io/app_update.dart'; // 1.6.0 SIT
+import 'app/io/launch_files.dart'; // 1.6.0 SIT
 import 'app/io/links.dart';
+import 'app/launch_actions.dart'; // 1.6.0 SIT
 import 'app/io/page_lifecycle.dart';
 import 'app/io/unload.dart';
 import 'app/keys/hotkeys.dart';
@@ -235,6 +237,14 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       });
       WidgetsBinding.instance.ensureVisualUpdate();
     });
+    // 1.6.0 SIT: the files the installed app is asked to open or is sent (the file handlers and the share target of
+    // its manifest) and the launches of its window already open (a shortcut)
+    watchLaunches((r) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) handleLaunch(context, ws, r, startTutorial: (step) => startTutorial(startAt: step));
+      });
+      WidgetsBinding.instance.ensureVisualUpdate();
+    });
     _nativeKeys.install();
     // a file dropped on the window never replaces the app: it goes to the AI
     // panel (pasted pictures to its chat box)
@@ -272,6 +282,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final tutorialLink = tut != null && tut > 0;
       // ?ai=1 (the site's "Open the AI assistant" button, the app shortcut)
       final aiLink = q['ai'] == '1';
+      // 1.6.0 SIT: opened with files ("Open with", the share target): they open as they arrive, nothing to ask
+      final launched = openedWithFiles();
       // an example only when the address asks for one (the designed sample
       // works on the orchard; the tutorial opens its own); otherwise the app
       // starts empty
@@ -282,7 +294,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         return;
       }
       // a project the address chose, or recovered work: nothing to ask
-      if (example != null || designLink || shared != null || recovered > 0) {
+      if (example != null || designLink || shared != null || recovered > 0 || launched) {
         if (aiLink && mounted) showAiAssistantDialog(context, c);
         return;
       }

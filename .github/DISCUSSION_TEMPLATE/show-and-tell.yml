@@ -1,0 +1,25 @@
+# Category "Show and tell" (slug: show-and-tell). Projects designed with the app.
+title: "[Project] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show a design you made with OpenCADIrrigation: what it irrigates, how it was laid out and sized, what worked and what did not.
+        Share only what you may share: no client data, no address you were not allowed to publish.
+  - type: textarea
+    id: project
+    attributes:
+      label: The project
+      description: Crop or use, area, irrigation method, water source, number of zones, anything special about the site.
+    validations:
+      required: true
+  - type: textarea
+    id: pictures
+    attributes:
+      label: Pictures, sheets or a share link
+      description: Drag pictures or a PDF here, or paste a share link (File → Share by link).
+  - type: textarea
+    id: lessons
+    attributes:
+      label: What you learned
+      description: What the app did well, what was missing, what you would do differently.

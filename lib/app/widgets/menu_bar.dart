@@ -15,6 +15,8 @@ import '../tutorial/tutorial.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
+import 'dialogs/data_terms_dialog.dart'; // 1.6.0 SIT
+import 'dialogs/field_map_dialog.dart'; // 1.6.0 SIT
 import 'dialogs/agronomy_dialogs.dart';
 // 1.6.0 AGB
 import 'dialogs/agb_dialogs.dart';
@@ -351,6 +353,8 @@ class AppMenuBar extends StatelessWidget {
                         const Divider(height: 1),
                         item(t('basemap.osm.menu'), () => showStreetsServerDialog(context, c), icon: Icons.dns_outlined, key: const Key('menu_osm_server')),
                         item(t('basemap.terms.menu'), () => showBaseMapTermsDialog(context, c), icon: Icons.gavel_outlined, key: const Key('menu_map_terms')),
+                        // 1.6.0 SIT: the map of the area kept in the project, for the field without a network (PRD-09)
+                        item(t('fieldmap.menu'), () => showFieldMapDialog(context, c), icon: Icons.download_for_offline_outlined, key: const Key('menu_field_map')),
                       ],
                       child: Text(t('view.baseMap')),
                     ),
@@ -671,6 +675,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('help.manual'), () => showHelpDialog(context, c), icon: Icons.menu_book_outlined, shortcut: 'F1', key: const Key('menu_manual')),
                     item(t('new.menu'), () => showWhatsNewDialog(context, c), icon: Icons.new_releases_outlined, key: const Key('menu_whats_new')),
                     item(t('fb.menu'), () => showFeedbackDialog(context, c), icon: Icons.bug_report_outlined, key: const Key('menu_feedback')),
+                    // 1.6.0 SIT: the terms of the third-party data in professional work (PRD-06)
+                    item(t('terms.menu'), () => showDataTermsDialog(context, c), icon: Icons.policy_outlined, key: const Key('menu_data_terms')),
                     item(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
                   ],
                   child: Text(t('menu.help')),

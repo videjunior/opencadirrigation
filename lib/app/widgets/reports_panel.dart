@@ -188,7 +188,8 @@ class ReportsPanel extends StatelessWidget {
       case 21:
         return _fromTable('scenarios', emptyKey: 'msg.noScenarios');
       case 22:
-        return _stack(const [('requirement', 3), ('requirementTotals', 1), ('licensing', 1)], emptyKey: 'msg.noRequirement');
+        // 1.6.0 SIT: with the sources of the data (the climate of the requirement among them) and their credits
+        return _stack(const [('requirement', 3), ('requirementTotals', 1), ('licensing', 1), ('sources', 1)], emptyKey: 'msg.noRequirement');
       case 23:
         return _stack(const [('pivotPackageSummary', 1), ('pivotPackage', 3), ('pivotTimer', 1)], emptyKey: 'msg.noPivotPackage');
       case 25:

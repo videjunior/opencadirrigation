@@ -197,3 +197,41 @@ export 'design/permit.dart';
 export 'io/tech_doc.dart';
 export 'io/tech_doc_sections.dart';
 export 'model/deliverables.dart';
+
+// 1.6.0 AUT+: the longest lateral a block can have
+export 'design/lateral_limit.dart';
+
+// 1.6.0 AGB: pump house electrics, solar pumping, water quality, two-wire,
+// several pivots, travelling guns and furrows
+export 'design/agb_design.dart';
+export 'design/agb_reports.dart';
+export 'design/field_machines.dart';
+export 'design/multi_pivot.dart';
+export 'design/pump_house.dart';
+export 'design/solar_design.dart';
+export 'design/water_quality.dart';
+export 'model/agb_settings.dart';
+
+// 1.6.0 AGR+: daily soil water balance, runoff, capacity, the irrigation
+// programme, field uniformity, fertigation by stage, user crops, INMET files
+export 'design/agr_tables.dart';
+export 'design/catch_cans.dart';
+export 'design/fertigation_stages.dart';
+export 'design/irrigation_programme.dart';
+export 'design/runoff_potential.dart';
+export 'design/soil_water_balance.dart';
+export 'design/system_capacity.dart';
+export 'io/inmet_csv.dart';
+export 'model/agronomy_plan.dart';
+
+// 1.6.0 CAD+: typed coordinates, the outline by a click inside, dimension
+// style, layer states, lengthen, comparing two projects
+export 'io/typed_geo.dart';
+export 'model/boundary.dart';
+export 'model/dim_style.dart';
+export 'model/layer_states.dart';
+export 'model/lengthen.dart';
+export 'model/project_compare.dart';
+
+// 1.6.0 SIT+: the credits of the third-party data in a project
+export 'io/data_credits.dart';

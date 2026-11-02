@@ -1,0 +1,27 @@
+# Category "Catalogues" (slug: catalogues; created by the owner in the repository settings, see docs/GITHUB.md).
+# Data for the component catalogue: pipes, emitters, valves, pumps, filters, prices.
+title: "[Catalogue] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The catalogue packs in `catalogs/` are compiled from the manufacturers' public data sheets, and each pack names its source. `catalogs/README.md` describes the format (`.oci.cat`, JSON) and how to send a pack.
+  - type: input
+    id: maker
+    attributes:
+      label: Manufacturer or standard
+      description: The manufacturer, or the standard of generic items (for example a pipe standard and its pressure classes).
+    validations:
+      required: true
+  - type: textarea
+    id: items
+    attributes:
+      label: Items and data
+      description: The models and their data (diameters and classes, emitter law, pressure range, pump curve…), with the link to the public data sheet they come from. A pack file can be attached.
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region and currency of the prices
+      description: Only when prices are included, with their date and source.

@@ -92,9 +92,9 @@ const _legalEn = LegalText(
     ]),
     LegalSection('Hosting', [
       'The site is served by Firebase Hosting (Google), which receives the IP address and the technical data of each request (address asked for, browser, time) to deliver the pages and protect the service. Legal basis: the legitimate interest in running the site safely. These data are used for nothing else.',
+      'The app and all its fonts, those of every script and symbol included (Chinese, Japanese, Arabic and Indian scripts, arrows, emoji), come from this site too: no font service is contacted.',
     ]),
     LegalSection('Services your browser contacts when you use them', [
-      '- Fonts: Google Fonts (fonts.gstatic.com) sends the fonts of the scripts and symbols the app does not bundle (Chinese, Japanese, Arabic and Indian scripts, arrows and other symbols) when a screen needs them; it receives the IP address.',
       '- Base maps: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (with your own key) or the address you set receive the IP address and the map area on screen.',
       '- Online elevation and climate: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData and NASA POWER receive the coordinates of the area, nothing else of the project.',
       '- Address search: Nominatim (OpenStreetMap) receives the address you type.',
@@ -124,6 +124,7 @@ const _legalEn = LegalText(
     ]),
     LegalSection('Data and services of others', [
       'Maps, imagery, elevation, climate, address search and the manufacturer catalogues come from third parties, under their own terms and licences (see Help → About in the app). Catalogue data are taken from published tables and may be out of date: confirm models, curves and prices with the current data sheets before buying.',
+      'In professional work, use each source within its terms: Help → Terms of the data in the app says what the free use of each allows. Some free services are for non-commercial use only (the free Open-Meteo services and the CARTO base maps), so the app downloads the climate from NASA POWER and the elevation from Terrain Tiles by default; the OpenStreetMap Foundation\'s tile server forbids heavy use and downloading areas for offline use, so the map kept for the field uses only the tiles already shown. The sheets, the PDFs and the report carry the credit of every source: keep it when you deliver or publish the work.',
       'The optional AI assistant runs on your own account with Anthropic or OpenAI, under that company\'s terms, and that company bills the use. A model can be wrong: approve the changes it proposes knowingly and check its work.',
     ]),
     LegalSection('Your content', ['Your projects, drawings, images and files are yours: you are responsible for them and for having the right to use what you import.']),
@@ -165,9 +166,9 @@ const _legalPt = LegalText(
     ]),
     LegalSection('Hospedagem', [
       'O site é servido pelo Firebase Hosting (Google), que recebe o endereço IP e os dados técnicos de cada requisição (endereço pedido, navegador, hora) para entregar as páginas e proteger o serviço. Base legal: o legítimo interesse em manter o site funcionando com segurança. Esses dados não são usados para mais nada.',
+      'O app e todas as suas fontes, inclusive as de todas as escritas e símbolos (chinês, japonês, árabe, escritas indianas, setas, emoji), também vêm deste site: nenhum serviço de fontes é acessado.',
     ]),
     LegalSection('Serviços que o seu navegador acessa quando você os usa', [
-      '- Fontes: o Google Fonts (fonts.gstatic.com) envia as fontes das escritas e dos símbolos que o app não traz (chinês, japonês, árabe, escritas indianas, setas e outros símbolos) quando uma tela precisa delas; ele recebe o endereço IP.',
       '- Mapas base: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (com a sua própria chave) ou o endereço que você configurar recebem o endereço IP e a área do mapa na tela.',
       '- Elevação e clima online: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData e NASA POWER recebem as coordenadas da área, nada mais do projeto.',
       '- Busca de endereços: o Nominatim (OpenStreetMap) recebe o endereço que você digita.',
@@ -197,6 +198,7 @@ const _legalPt = LegalText(
     ]),
     LegalSection('Dados e serviços de terceiros', [
       'Mapas, imagens, elevação, clima, busca de endereços e os catálogos de fabricantes vêm de terceiros, com termos e licenças próprios (veja Ajuda → Sobre no app). Os dados de catálogo são tirados das tabelas publicadas e podem estar desatualizados: confirme modelos, curvas e preços nas folhas de dados atuais antes de comprar.',
+      'No trabalho profissional, use cada fonte dentro dos seus termos: Ajuda → Termos dos dados, no app, diz o que o uso gratuito de cada uma permite. Alguns serviços gratuitos são só para uso não comercial (os serviços gratuitos do Open-Meteo e os mapas base da CARTO), por isso o app baixa o clima do NASA POWER e a elevação do Terrain Tiles por padrão; o servidor de blocos da Fundação OpenStreetMap proíbe o uso intenso e o download de áreas para uso off-line, por isso o mapa guardado para o campo usa só os blocos já mostrados. As pranchas, os PDFs e o relatório levam o crédito de cada fonte: mantenha-o ao entregar ou publicar o trabalho.',
       'O assistente de IA, opcional, funciona com a sua própria conta na Anthropic ou na OpenAI, sob os termos dessa empresa, que cobra o uso. Um modelo pode errar: aprove com consciência as alterações que ele propõe e confira o trabalho dele.',
     ]),
     LegalSection('O seu conteúdo', ['Os seus projetos, desenhos, imagens e arquivos são seus: você responde por eles e por ter o direito de usar o que importa.']),
@@ -238,9 +240,9 @@ const _legalEs = LegalText(
     ]),
     LegalSection('Alojamiento', [
       'El sitio lo sirve Firebase Hosting (Google), que recibe la dirección IP y los datos técnicos de cada petición (dirección pedida, navegador, hora) para entregar las páginas y proteger el servicio. Base jurídica: el interés legítimo en mantener el sitio funcionando con seguridad. Estos datos no se usan para nada más.',
+      'La aplicación y todas sus fuentes, incluidas las de todas las escrituras y símbolos (chino, japonés, árabe, escrituras indias, flechas, emoji), también vienen de este sitio: no se contacta ningún servicio de fuentes.',
     ]),
     LegalSection('Servicios a los que su navegador accede cuando usted los usa', [
-      '- Fuentes: Google Fonts (fonts.gstatic.com) envía las fuentes de las escrituras y los símbolos que la aplicación no incluye (chino, japonés, árabe, escrituras indias, flechas y otros símbolos) cuando una pantalla las necesita; recibe la dirección IP.',
       '- Mapas base: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (con su propia clave) o la dirección que usted configure reciben la dirección IP y el área del mapa en pantalla.',
       '- Elevación y clima en línea: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData y NASA POWER reciben las coordenadas del área, nada más del proyecto.',
       '- Búsqueda de direcciones: Nominatim (OpenStreetMap) recibe la dirección que usted escribe.',
@@ -270,6 +272,7 @@ const _legalEs = LegalText(
     ]),
     LegalSection('Datos y servicios de terceros', [
       'Los mapas, las imágenes, la elevación, el clima, la búsqueda de direcciones y los catálogos de fabricantes provienen de terceros, con sus propios términos y licencias (vea Ayuda → Acerca de en la aplicación). Los datos de catálogo se toman de las tablas publicadas y pueden estar desactualizados: confirme modelos, curvas y precios en las fichas técnicas vigentes antes de comprar.',
+      'En el trabajo profesional, use cada fuente dentro de sus términos: Ayuda → Términos de los datos, en la aplicación, dice lo que permite el uso gratuito de cada una. Algunos servicios gratuitos son solo para uso no comercial (los servicios gratuitos de Open-Meteo y los mapas base de CARTO), por eso la aplicación descarga el clima de NASA POWER y la elevación de Terrain Tiles por defecto; el servidor de teselas de la Fundación OpenStreetMap prohíbe el uso intensivo y la descarga de áreas para uso sin conexión, por eso el mapa guardado para el campo usa solo las teselas ya mostradas. Las láminas, los PDF y el informe llevan el crédito de cada fuente: consérvelo al entregar o publicar el trabajo.',
       'El asistente de IA, opcional, funciona con su propia cuenta en Anthropic u OpenAI, según los términos de esa empresa, que factura el uso. Un modelo puede equivocarse: apruebe con criterio los cambios que propone y revise su trabajo.',
     ]),
     LegalSection('Su contenido', ['Sus proyectos, dibujos, imágenes y archivos son suyos: usted responde por ellos y por tener derecho a usar lo que importa.']),

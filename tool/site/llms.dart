@@ -19,7 +19,7 @@ List<(String, String)> _facts() => [
   ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download'),
   (
     'Privacy',
-    'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key; its voice dictation, when used, goes through the browser\'s own speech recognition (the browser maker\'s service), and saved conversations stay in that browser. Fonts for the scripts and symbols the app does not bundle come from Google Fonts; the pages of the site count visits with Google Analytics only after the visitor accepts it, never in a page where the app runs. Privacy policy: ${siteUrl}privacy/; terms of use: ${siteUrl}terms/',
+    'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key; its voice dictation, when used, goes through the browser\'s own speech recognition (the browser maker\'s service), and saved conversations stay in that browser. The fonts of every script and symbol come from the site itself; the pages of the site count visits with Google Analytics only after the visitor accepts it, never in a page where the app runs. Privacy policy: ${siteUrl}privacy/; terms of use: ${siteUrl}terms/',
   ),
   ('Languages', '${siteLanguages.length}: ${[for (final l in siteLanguages) _englishNames[l.code]].join(', ')}'),
   ('Project file', '`.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results'),
@@ -214,7 +214,7 @@ const _reference = [
 - Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
 - Share by link: the whole project, compressed, travels in the fragment of the address (`#p=…`), which browsers never send to a server; embedded images, the photos of comments and results stay out of the link, and the receiver designs again.
 - Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 20 MB, once per version), so the installed app and the site start without a network; the language packs and the PDF fonts are kept once used. A new version downloads in the background: the app offers to reload into it (unsaved work goes to the autosave), or it is used from the next start.
-- Network use: the fonts of the scripts and symbols the app does not bundle come from Google Fonts (fonts.gstatic.com) when a screen needs them; base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, address search, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose) are reached when the user uses them. Keys typed by the user go only to their own service.
+- Network use: the app and all its fonts (those of every script and symbol included) come from the site itself; base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, address search, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose) are reached when the user uses them. Keys typed by the user go only to their own service.
 - Visit statistics: the pages of the site ask once whether visits may be counted and load Google Analytics 4 only after the visitor accepts (Consent Mode v2, everything denied by default and only the statistics granted), never in a page where the app runs, so the statistics never see projects or keys; declining, also later with Cookie settings at the foot of the pages, deletes their cookies.
 - Privacy policy: ${siteUrl}privacy/ (controller: the maintainer of OpenCADIrrigation, reached through the project's issues); terms of use: ${siteUrl}terms/ (MIT licence, no warranty, a design aid whose results a qualified professional checks and signs).''',
   ),
@@ -304,6 +304,7 @@ String renderLlmsTxt() {
     ..writeln(
       '- [Complete reference](${siteUrl}llms-full.txt): features, design workflow, hydraulic methods, transients, sizing, automatic design, agronomy, catalogues, file formats, the AI assistant, offline and field use, examples, deep links, limitations and FAQ in one Markdown file',
     )
+    ..writeln('- [User guide](${manualUrl('en')}): the manual of the app, chapter by chapter, as web pages (in Portuguese at ${manualUrl('pt')})')
     ..writeln()
     ..writeln('## ${en.examplesTitle}')
     ..writeln()

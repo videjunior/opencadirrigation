@@ -32,6 +32,8 @@ import 'dart:io';
 import 'package:opencadirrigation/app/i18n.dart' show languageNames, languageTag, rtlLanguages, supportedLanguages;
 import 'package:opencadirrigation/app/version.dart' show appRepositoryUrl, appVersion;
 
+import 'site_manual.dart';
+
 part 'site/ar.dart';
 part 'site/bn.dart';
 part 'site/de.dart';
@@ -79,11 +81,12 @@ const _localServers = 'http://localhost:* http://127.0.0.1:* http://[::1]:*';
 /// elevation, climate and AI services and the catalogues by URL are
 /// fetched from any HTTPS address the user picks, and map tiles also from a
 /// server of one's own on this computer (http://localhost, the one plain
-/// address a browser loads into an HTTPS page); fonts also come from
-/// fonts.gstatic.com; no plugins, frames or foreign base address.
+/// address a browser loads into an HTTPS page); the fonts, the fallback
+/// fonts of the engine included (tool/site_fonts.dart), come from the site
+/// itself; no plugins, frames or foreign base address.
 const contentSecurityPolicy =
     "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; "
-    "img-src 'self' data: blob: https: $_localServers; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: data: blob: $_localServers; "
+    "img-src 'self' data: blob: https: $_localServers; font-src 'self' data:; connect-src 'self' https: data: blob: $_localServers; "
     "worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; "
     "object-src 'none'; base-uri 'self'; form-action 'self'";
 
@@ -245,7 +248,7 @@ class SiteText {
 /// internet was reached only on request, which the fonts and the visit
 /// statistics contradicted).
 const faqCloudAnswerEn =
-    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
+    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The fonts of every script and symbol come from this site itself. The browser does reach other services: base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
 
 const _pt = SiteText(
   title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
@@ -388,7 +391,7 @@ const _pt = SiteText(
     ),
     (
       'Meus projetos ficam na nuvem?',
-      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. O navegador acessa outros serviços: as fontes das escritas e dos símbolos que o app não traz vêm do Google Fonts quando uma tela precisa delas; mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
+      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. As fontes de todas as escritas e símbolos vêm do próprio site. O navegador acessa outros serviços: mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
     ),
     (
       'Como é feito o cálculo hidráulico?',
@@ -720,7 +723,7 @@ const _es = SiteText(
     ),
     (
       '¿Mis proyectos se guardan en la nube?',
-      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. El navegador sí accede a otros servicios: las fuentes de las escrituras y los símbolos que la aplicación no incluye vienen de Google Fonts cuando una pantalla las necesita; los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
+      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. Las fuentes de todas las escrituras y símbolos vienen del propio sitio. El navegador sí accede a otros servicios: los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
     ),
     (
       '¿Cómo se hace el cálculo hidráulico?',
@@ -1178,7 +1181,7 @@ ${jsonLd(lang)}
       <footer>
         <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>
         <p>${_esc(t.footer)}</p>
-        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · ${legalLinks(lang)} · <time datetime="$siteLastMod">$siteLastMod</time></p>
+        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · ${manualLink(lang)} · ${legalLinks(lang)} · <time datetime="$siteLastMod">$siteLastMod</time></p>
       </footer>
     </div>
 ${consentNotice(lang, legalText(lang.code))}
@@ -1187,6 +1190,21 @@ ${consentNotice(lang, legalText(lang.code))}
 </body>
 </html>''');
   return b.toString();
+}
+
+/// Name of the user guide in the footer of the entry pages (the guide is
+/// written in English and Portuguese; the other languages link to the
+/// English one, under its English name until the next translation pass).
+const _manualLabels = {'pt': 'Guia do usuário', 'en': 'User guide', 'es': 'Guía del usuario'};
+
+/// The footer link of [lang] to the user guide (tool/site_manual.dart):
+/// the Portuguese guide from the Portuguese page, the English one elsewhere.
+String manualLink(SiteLang lang) {
+  final label = _manualLabels[lang.code];
+  final guideLang = manualSources.containsKey(lang.code) ? lang : siteLang('en');
+  final marked = label == null || !manualSources.containsKey(lang.code) ? ' hreflang="${guideLang.tag}"' : '';
+  final own = label == null ? ' lang="en"' : '';
+  return '<a href="${manualUrl(lang.code)}"$marked$own>${_esc(label ?? _manualLabels['en']!)}</a>';
 }
 
 /// Address of the site script, versioned by its content (the page asks for
@@ -1321,7 +1339,7 @@ String renderSiteScript() {
   }
   // The app starts by itself for an app address, the installed app and whoever has used it here before.
   function wanted() {
-    if (/[?&](example|tutorial|design|ai|lang|source|app)=/.test(location.search)) return true;
+    if (/[?&](example|tutorial|design|ai|lang|source|app|share)=/.test(location.search)) return true;
     if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
     return usedHere();
   }
@@ -1332,13 +1350,8 @@ String renderSiteScript() {
     showBanner(false);
     landing.className += ' oci-starting';
     status.textContent = landing.getAttribute('data-loading');
-    // The engine and the app code come from this site and are fetched while the loader runs;
-    // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
-    var engine = document.createElement('link');
-    engine.rel = 'preconnect';
-    engine.href = 'https://fonts.gstatic.com';
-    engine.crossOrigin = '';
-    document.head.appendChild(engine);
+    // The engine, the app code and the fonts (those of other scripts and the symbols too,
+    // under fonts/) come from this site and are fetched while the loader runs.
     var code = document.createElement('link');
     code.rel = 'preload';
     code.as = 'script';
@@ -1427,6 +1440,18 @@ String renderSitemap() {
       b.writeln('  </url>');
     }
   }
+  // the user guide (tool/site_manual.dart): its chapters in English and Portuguese
+  for (final (url, alternates) in manualSitemapEntries()) {
+    b.writeln('  <url>');
+    b.writeln('    <loc>$url</loc>');
+    b.writeln('    <lastmod>$siteLastMod</lastmod>');
+    b.writeln('    <changefreq>monthly</changefreq>');
+    b.writeln('    <priority>0.6</priority>');
+    for (final e in alternates.entries) {
+      b.writeln('    <xhtml:link rel="alternate" hreflang="${e.key}" href="${e.value}"/>');
+    }
+    b.writeln('  </url>');
+  }
   b.writeln('</urlset>');
   return b.toString();
 }
@@ -1485,9 +1510,86 @@ String renderManifest(SiteLang lang) {
       shortcut(example('garden').title, example('garden').text, 'example=garden'),
       shortcut(example('pivot').title, example('pivot').text, 'example=pivot'),
     ],
+    // the installed app as a program of the computer: "Open with" a project or a drawing, the window already open
+    // focused (the app reads the launch from its queue, lib/app/io/launch_files.dart), and what is shared with it
+    // (web/sw.js keeps it for the page)
+    'file_handlers': [
+      for (final accept in [manifestProjectTypes, manifestDrawingTypes])
+        {
+          'action': './?source=file',
+          'accept': accept,
+          'icons': [
+            {'src': '${up}icons/Icon-192.png', 'sizes': '192x192', 'type': 'image/png'},
+          ],
+          'launch_type': 'single-client',
+        },
+    ],
+    'launch_handler': {
+      'client_mode': ['focus-existing', 'auto'],
+    },
+    'share_target': {
+      'action': './share-target',
+      'method': 'POST',
+      'enctype': 'multipart/form-data',
+      'params': {
+        'title': 'title',
+        'text': 'text',
+        'url': 'url',
+        'files': [
+          {'name': 'files', 'accept': manifestShareAccept},
+        ],
+      },
+    },
   };
   return '${const JsonEncoder.withIndent('  ').convert(manifest)}\n';
 }
+
+/// The project files the installed app opens with "Open with" (a file handler of the manifests), by MIME type
+/// (the systems register them by extension): a `.json` opens as a project when its "format" says so, and is
+/// imported otherwise (lib/app/launch_actions.dart).
+const manifestProjectTypes = {
+  'application/json': ['.oci.json', '.json'],
+};
+
+/// The drawings, maps and surveys it imports the same way.
+const manifestDrawingTypes = {
+  'image/vnd.dxf': ['.dxf'],
+  'image/vnd.dwg': ['.dwg'],
+  'image/vnd.dgn': ['.dgn'],
+  'application/vnd.google-earth.kml+xml': ['.kml'],
+  'application/vnd.google-earth.kmz': ['.kmz'],
+  'application/geo+json': ['.geojson'],
+  'application/gpx+xml': ['.gpx'],
+  'application/vnd.las': ['.las', '.laz'],
+};
+
+/// What may be shared with the installed app (its share target): pictures, PDF plans, projects, drawings, maps,
+/// surveys and point files (types and extensions: phones share many of these files without a type of their own).
+const manifestShareAccept = [
+  'image/*',
+  'application/pdf',
+  'application/json',
+  'application/zip',
+  'text/csv',
+  'text/plain',
+  'application/octet-stream',
+  '.oci.json',
+  '.json',
+  '.dxf',
+  '.dwg',
+  '.dgn',
+  '.kml',
+  '.kmz',
+  '.geojson',
+  '.gpx',
+  '.shp',
+  '.zip',
+  '.las',
+  '.laz',
+  '.csv',
+  '.txt',
+  '.pdf',
+];
 
 /// Screenshots of the app in the manifests: `(path, size, form factor)`;
 /// the narrow one lets phones show the full install sheet.
@@ -1651,6 +1753,8 @@ Map<String, String> renderSite() => {
   for (final l in siteLanguages) '${l.path}manifest.json': renderManifest(l),
   for (final l in siteLanguages) '${l.path}privacy/index.html': renderLegalPage(l, privacy: true),
   for (final l in siteLanguages) '${l.path}terms/index.html': renderLegalPage(l, privacy: false),
+  // the user guide, from docs/manual (English) and docs/manual/pt-BR
+  ...renderManualPages(),
   'site.js': renderSiteScript(),
   '.well-known/security.txt': renderSecurityTxt(),
   'en/index.html': renderLegacyEnRedirect(),
@@ -1695,6 +1799,11 @@ const _revalidate = 'no-cache';
 /// the site itself; nothing else.
 const permissionsPolicy = 'camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), serial=(), hid=(), bluetooth=(), browsing-topics=()';
 
+/// What `firebase deploy` checks first, in the deploy folder (1.6.0): the build was made by tool/build_web.sh, not a
+/// plain `flutter build web`: the offline worker, its registration and the address of the fonts filled in (no
+/// `__OCI_` placeholder left) and the fonts the site serves present.
+const predeployCheck = 'test -f public/sw.js && test -d public/fonts && ! grep -q __OCI_ public/sw.js public/offline.js public/flutter_bootstrap.js';
+
 /// firebase.json for the site: security headers on every file, the cache
 /// rules above, and the old English address answered by a permanent
 /// redirect (the query, `?example=…`, is kept by the hosting). The default
@@ -1710,6 +1819,7 @@ String renderHostingConfig() {
   final config = {
     'hosting': {
       'public': 'public',
+      'predeploy': [predeployCheck],
       // the dot files of a build and of the system, not /.well-known/
       'ignore': ['firebase.json', '**/.DS_Store', '**/.last_build_id', '**/.git/**', '**/.firebase/**', '**/node_modules/**'],
       'redirects': [
@@ -1718,11 +1828,16 @@ String renderHostingConfig() {
       'headers': [
         rule('**', {'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': permissionsPolicy}),
         rule('/@(brand|icons|screenshots|og)/**', {'Cache-Control': _monthCache}),
+        // the fallback fonts the site serves (tool/site_fonts.dart): their addresses carry their version
+        rule('/fonts/**', {'Cache-Control': _monthCache}),
         rule('/*.@(png|ico)', {'Cache-Control': _monthCache}),
         rule('/', {'Cache-Control': _revalidate}),
         rule('/*/', {'Cache-Control': _revalidate}),
         rule('**/*.html', {'Cache-Control': _revalidate}),
         rule('**/manifest.json', {'Cache-Control': _revalidate}),
+        // the pages of the user guide, asked for by their folder address (/manual/calculation/)
+        rule('/manual/**', {'Cache-Control': _revalidate}),
+        rule('/*/manual/**', {'Cache-Control': _revalidate}),
         rule('/@(flutter_bootstrap.js|flutter.js|version.json|sw.js|offline.js|site.js|main.dart.js|design_worker.js)', {'Cache-Control': _revalidate}),
         rule('/*.part.js', {'Cache-Control': _revalidate}),
         rule('/@(assets|canvaskit)/**', {'Cache-Control': _revalidate}),
