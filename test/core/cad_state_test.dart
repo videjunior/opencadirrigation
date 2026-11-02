@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/painting.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/actions.dart';
@@ -310,6 +313,47 @@ void main() {
       );
       expect(c.project.entities.map((e) => e.id), ['a']);
       expect(c.historyEntries.length, steps);
+    });
+
+    test('pictures are decoded at most imageMaxSide wide, and again when the bytes under an id change', () async {
+      final saved = ProjectController.imageMaxSide;
+      ProjectController.imageMaxSide = 8;
+      addTearDown(() => ProjectController.imageMaxSide = saved);
+      Future<Uint8List> png(int w, int h, Color color) async {
+        final rec = ui.PictureRecorder();
+        Canvas(rec).drawRect(Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()), Paint()..color = color);
+        final img = await rec.endRecording().toImage(w, h);
+        final data = await img.toByteData(format: ui.ImageByteFormat.png);
+        img.dispose();
+        return data!.buffer.asUint8List();
+      }
+
+      Future<ui.Image?> decoded(ProjectController c, ImageEntity e) async {
+        for (var i = 0; i < 200; i++) {
+          final img = c.imageFor(e);
+          if (img != null) return img;
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        return null;
+      }
+
+      final c = fresh();
+      final a = ImageEntity(id: 'photo', origin: Pt.zero, width: 10, height: 5, data: await png(32, 16, const Color(0xFFFF0000)));
+      c.addEntity(a);
+      final first = await decoded(c, a);
+      expect(first, isNotNull);
+      expect(first!.width, 8, reason: 'scaled down to the longest side allowed');
+      expect(first.height, 4);
+      // another picture under the same id (an undo, a paste): not the old one
+      final b = ImageEntity(id: 'photo', origin: Pt.zero, width: 10, height: 5, data: await png(8, 8, const Color(0xFF00FF00)));
+      expect(c.imageFor(b), isNull);
+      final second = await decoded(c, b);
+      expect(second!.width, 8);
+      expect(second.height, 8);
+      // deleted: the decoded picture is let go
+      c.select(['photo']);
+      c.deleteSelected();
+      expect(c.images, isEmpty);
     });
 
     test('undo never gives an id twice', () {

@@ -86,12 +86,10 @@ class _IdbBodyStore implements BodyStore {
       tx.oncomplete = ((web.Event _) {
         if (!done.isCompleted) done.complete(true);
       }).toJS;
+      // a failed request (left to abort the transaction) and a full storage
+      // (QuotaExceededError) both end here
       tx.onabort = ((web.Event _) {
         if (!done.isCompleted) done.complete(false);
-      }).toJS;
-      tx.onerror = ((web.Event e) {
-        // the abort that follows says it (QuotaExceededError aborts the transaction)
-        e.preventDefault();
       }).toJS;
       body(tx.objectStore(_bodies));
     } catch (_) {

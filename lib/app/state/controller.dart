@@ -1117,7 +1117,8 @@ class ProjectController extends ChangeNotifier {
     // a project open in another window gets a uid of its own first (a uid set from outside is claimed now)
     if (_claimedUid != project.meta.uid) _claimUid();
     await _claim;
-    if (run != _autosaveRun || _disposed) return;
+    // (a tab closed meanwhile still writes its last copy: its project is intact)
+    if (run != _autosaveRun) return;
     final uid = project.meta.uid, name = project.meta.name, count = project.entities.length, seq = _editSeq, edited = project.meta.modified;
     try {
       final j = _saveMap();
@@ -3183,7 +3184,12 @@ class ProjectController extends ChangeNotifier {
     final data = e.data;
     final cached = images[e.id];
     if (cached != null) {
-      if (identical(_imageBytes[e.id], data)) return cached;
+      final known = _imageBytes[e.id];
+      if (known == null || data == null || identical(known, data)) {
+        // (a picture put in the cache from outside is taken with these bytes)
+        if (known == null && data != null) _imageBytes[e.id] = data;
+        return cached;
+      }
       // another picture under this id (an undo, a paste): decoded again
       images.remove(e.id)?.dispose();
       _imageBytes.remove(e.id);
@@ -3234,7 +3240,8 @@ class ProjectController extends ChangeNotifier {
         if (e is ImageEntity) e.id: e.data,
     };
     for (final id in images.keys.toList()) {
-      if (!live.containsKey(id) || !identical(live[id], _imageBytes[id])) {
+      final known = _imageBytes[id];
+      if (!live.containsKey(id) || (known != null && !identical(live[id], known))) {
         images.remove(id)?.dispose();
         _imageBytes.remove(id);
       }
