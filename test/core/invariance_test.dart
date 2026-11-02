@@ -111,6 +111,15 @@ void main() {
       _expectSame(base, _figures(design(_moved(original, const Pt(1234.5, -987.25)))), 'moved');
       _expectSame(base, _figures(design(_moved(original, const Pt(523456.789, 7456789.123)))), 'moved to UTM coordinates');
       _expectSame(base, _figures(design(_reversed(original))), 'pipes, tapes and spraylines drawn the other way round');
+      // the order the hydraulic items were drawn in (the terrain keeps its
+      // own: the triangulation of co-circular spot heights follows it)
+      final shuffled = _copy(original);
+      final hydraulic = shuffled.entities.where((e) => e.isHydraulic).toList();
+      final others = shuffled.entities.where((e) => !e.isHydraulic).toList();
+      shuffled.entities
+        ..clear()
+        ..addAll([...others, ...hydraulic.reversed]);
+      _expectSame(base, _figures(design(shuffled)), 'hydraulic items in the other order');
       for (final lang in ['pt', 'ar']) {
         final other = Designer(buildExample(id, I18n(lang).call, lang: lang), label: (k) => I18n(lang)(k)).designAll();
         _expectSame(_figures(design(_copy(original)), costs: false), _figures(other, costs: false), 'language $lang');
