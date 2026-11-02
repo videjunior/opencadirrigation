@@ -16,6 +16,7 @@ import '../actions.dart';
 import '../i18n.dart';
 import '../shortcuts.dart';
 import '../state/controller.dart';
+import '../state/insert_project.dart';
 import '../state/workspace.dart';
 import '../examples.dart';
 import '../theme.dart';
@@ -304,6 +305,8 @@ class _MobileShellState extends State<MobileShell> {
             }),
             for (final ex in exampleGallery) row('${t('file.examples')}: ${t(ex.titleKey)}', () => openExampleAction(context, c, ex.id, ws: ws), icon: exampleIcon(ex.id)),
             row(t('file.importDrawing'), () => importDrawingAction(context, c), icon: Icons.upload_file),
+            // 1.6.0 MOD: another project into this one
+            row(t('file.insertProject'), () => insertProjectAction(context, c), icon: Icons.merge_type, key: const Key('mobile_menu_insert_project')),
             row(t('file.georefImage'), c.selectedEntity == null ? null : () => showImageGeorefDialog(context, c), icon: Icons.image_outlined),
             row(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera),
             for (final f in DrawingFormat.values) row('${t('file.exportDrawing')}: ${t('exp.${f.name}')}', () => exportDrawingAction(context, c, f), icon: Icons.download),

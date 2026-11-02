@@ -138,4 +138,31 @@ const _mod = <String, (String, String, String)>{
   'area.holes.value': ('{n}, {a} fora da área de {g}', '{n}, {a} left out of {g}', '{n}, {a} fuera del área de {g}'),
   'ai.op.subtract_from_area': ('Subtrair {n} da área', 'Subtract {n} from the area', 'Restar {n} del área'),
   'ai.op.set_area_holes': ('Definir as ilhas da área {n}', 'Set the islands of area {n}', 'Definir las islas del área {n}'),
+  // ---- File → Insert project (1.6.0 MOD)
+  'file.insertProject': ('Inserir projeto…', 'Insert project…', 'Insertar proyecto…'),
+  'hist.insertProject': ('Inserir projeto', 'Insert project', 'Insertar proyecto'),
+  'insert.notProject': (
+    'O arquivo não é um projeto do OpenCADIrrigation (.oci.json): para desenhos e mapas use Importar desenho.',
+    'The file is not an OpenCADIrrigation project (.oci.json): for drawings and maps use Import drawing.',
+    'El archivo no es un proyecto de OpenCADIrrigation (.oci.json): para dibujos y mapas use Importar dibujo.',
+  ),
+  'insert.done': (
+    '{n} itens inseridos de {f} ({l} camada(s), {s} turno(s) e {b} bloco(s) novos)',
+    '{n} items inserted from {f} ({l} new layer(s), {s} system flow(s) and {b} block(s))',
+    '{n} elementos insertados de {f} ({l} capa(s), {s} turno(s) y {b} bloque(s) nuevos)',
+  ),
+  'insert.placedGeo': ('no mesmo lugar do terreno, pelas georreferências', 'in the same place on the ground, by the georeferences', 'en el mismo lugar del terreno, por las georreferencias'),
+  'insert.tookGeo': ('o projeto passou a usar a georreferência do arquivo', 'the project now uses the georeference of the file', 'el proyecto pasó a usar la georreferencia del archivo'),
+  'insert.noGeo': (
+    'o projeto aberto não tem georreferência: os itens entraram como estavam desenhados',
+    'the open project has no georeference: the items came in as drawn',
+    'el proyecto abierto no tiene georreferencia: los elementos entraron como estaban dibujados',
+  ),
+  'insert.renamed': (
+    '{n} item(ns) do catálogo com o mesmo id e outro conteúdo ganharam um id novo',
+    '{n} catalogue item(s) with the same id and other data got a new id',
+    '{n} elemento(s) del catálogo con el mismo id y otros datos recibieron un id nuevo',
+  ),
+  'insert.converted': ('preços convertidos de {c} para {t}', 'prices converted from {c} to {t}', 'precios convertidos de {c} a {t}'),
+  'ai.op.insert_project': ('Inserir o projeto {n}', 'Insert the project {n}', 'Insertar el proyecto {n}'),
 };

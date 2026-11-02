@@ -8,6 +8,7 @@ import '../examples.dart';
 import '../i18n.dart';
 import '../shortcuts.dart';
 import '../state/controller.dart';
+import '../state/insert_project.dart';
 import '../state/workspace.dart';
 import '../theme.dart';
 import '../tools/area_hole_commands.dart';
@@ -136,6 +137,8 @@ class AppMenuBar extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     item(t('file.importDrawing'), () => importDrawingAction(context, c), icon: Icons.upload_file, shortcut: 'Ctrl+I'),
+                    // 1.6.0 MOD: another project into this one
+                    item(t('file.insertProject'), () => insertProjectAction(context, c), icon: Icons.merge_type, key: const Key('menu_insert_project')),
                     item(t('file.georefImage'), c.selectedEntity == null ? null : () => showImageGeorefDialog(context, c), icon: Icons.image_outlined),
                     item(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera, shortcut: 'AL ⏎', key: const Key('menu_align')),
                     SubmenuButton(

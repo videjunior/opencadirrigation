@@ -3,15 +3,61 @@
 /// joined to [AgentToolbox.operations].
 library;
 
+import 'dart:convert';
+
 import '../../../core/ai/agent_loop.dart';
 import '../../../core/model/area_holes.dart';
 import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
+import '../../../core/model/project.dart';
+import '../../../core/model/project_merge.dart';
 import '../agent_tools.dart';
 import '../ops_cad_common.dart';
 import '../ops_cad_edit.dart' show cadPolygon;
 
-List<AgentTool> opsMod(AgentToolbox b) => [..._areaHoleOps(b)];
+List<AgentTool> opsMod(AgentToolbox b) => [..._areaHoleOps(b), ..._insertProjectOps(b)];
+
+/// File → Insert project…: a project file attached to the conversation
+/// inserted into the open one.
+List<AgentTool> _insertProjectOps(AgentToolbox b) => [
+  cadOp(
+    b,
+    group: 'file',
+    name: 'insert_project',
+    effect: ToolEffect.write,
+    description:
+        'File → Insert project…: inserts a project file the user attached to the conversation (.oci.json) into the open project, as the menu does: every item with a new id (references between them kept), the catalogue items they use (renamed when this project has another item under the same id, prices converted to this project\'s currency), the layers this project lacks, the system flows of those items and the blocks; placed by the two georeferences (the same place on the ground), else as drawn, moved by "offset" (an empty project without a georeference takes the file\'s). The design parameters, details and quote of the open project stay. One undo step; the inserted items become the selection. To open the file in a tab of its own use open_attached_project.',
+    schema: obj({
+      'name': str('File name of the attached project, as the attachment gives it.'),
+      'offset': pointWith('[dx, dy] in metres to move the items by when the two projects are not both georeferenced (default [0, 0]).'),
+    }, required: ['name']),
+    args: (i) => {'n': '${i['name']}'},
+    run: (a, i) async {
+      cadNotBusy(b);
+      final name = a.str('name', required: true)!;
+      final files = b.host?.files ?? const {};
+      final bytes = files[name] ?? files.entries.where((e) => e.key.toLowerCase() == name.toLowerCase()).firstOrNull?.value;
+      if (bytes == null) throw ToolInputError(files.isEmpty ? 'No file was attached in this conversation.' : 'No attached file "$name". Attached: ${files.keys.join(', ')}.');
+      final ProjectFile f;
+      try {
+        f = readProjectFile(utf8.decode(bytes, allowMalformed: true));
+      } catch (_) {
+        throw ToolInputError('"$name" is not an OpenCADIrrigation project file (.oci.json); drawings and maps come in with import_attachment.');
+      }
+      final offset = a.point('offset') ?? Pt.zero;
+      final r = b.change('insert_project', () => insertProject(b.p, f.project, offset: offset));
+      b.c.select(r.ids);
+      final placed = switch (r.placement) {
+        InsertPlacement.georeferenced => 'placed by the two georeferences',
+        InsertPlacement.georeferenceTaken => 'this project took the georeference of the file',
+        InsertPlacement.asDrawn => offset == Pt.zero ? 'as drawn' : 'moved by ${cadPt(offset)}',
+      };
+      final renamed = r.paste.renamedItems.isEmpty ? '' : '; catalogue items renamed: ${[for (final e in r.paste.renamedItems.entries) '${e.key} → ${e.value}'].join(', ')}';
+      final rate = r.paste.rate == null ? '' : '; prices converted from ${f.project.params.currencyCode} at ${cadN(r.paste.rate!, 4)}';
+      return ToolOutput('${cadMade(b, r.ids, verb: 'Inserted')} From $name: ${r.layers} new layers, ${r.flows} system flows, ${r.blocks} blocks; $placed$renamed$rate. Now selected.');
+    },
+  ),
+];
 
 /// The islands of irrigated areas (AUT-29): Edit → Geometry → Subtract from
 /// area, and the islands set or removed.

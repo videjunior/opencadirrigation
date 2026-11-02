@@ -156,6 +156,7 @@ export 'model/paste.dart';
 export 'model/pipe_standards.dart';
 export 'model/pivot_machine.dart';
 export 'model/project.dart';
+export 'model/project_merge.dart';
 export 'model/proposal_settings.dart';
 export 'model/read_report.dart';
 export 'model/regional.dart';

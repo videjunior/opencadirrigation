@@ -7,4 +7,6 @@ const coverageMod = <String, String>{
   'menu:area.subtract': 'op:subtract_from_area',
   'menu:area.holes.clear': 'op:set_area_holes',
   'panel:properties.areaIslands': 'op:set_area_holes',
+  // ---- another project inserted into the open one
+  'menu:file.insertProject': 'op:insert_project',
 };
