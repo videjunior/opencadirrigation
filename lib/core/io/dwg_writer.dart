@@ -1,4 +1,4 @@
-/// Pure-Dart writer for AutoCAD DWG files in the R2000 (AC1015) format.
+/// Pure-Dart writer for DWG files in the R2000 (AC1015) format.
 ///
 /// Produces a complete drawing database: the standard control tables
 /// (layers with their colour, state and linetype, linetypes with dashes,
@@ -8,10 +8,10 @@
 /// LINE, LWPOLYLINE (with arcs), CIRCLE, ARC, POINT, TEXT, MTEXT, SPLINE,
 /// HATCH, SOLID, INSERT with ATTRIBs, DIMENSION (aligned, angular, radius,
 /// diameter, ordinate) with its anonymous block, and LEADER. R2000 colours
-/// are colour indices only (true colours came with AutoCAD 2004).
+/// are colour indices only (true colours came with R2004).
 /// The byte layout follows the Open Design Alliance specification as
 /// LibreDWG implements it; field order and default values were checked
-/// against files written by AutoCAD and verified with LibreDWG (`dwgread`,
+/// against real-world files and verified with LibreDWG (`dwgread`,
 /// `dwg2dxf`) and with [DwgReader].
 library;
 
@@ -345,7 +345,7 @@ const _sentinel2ndEnd = [0x2B, 0x84, 0xDE, 0x31, 0xD7, 0x6C, 0x60, 0x40, 0xAC, 0
 
 // ------------------------------------------------------------------- handles
 
-/// Fixed handles of the database skeleton (AutoCAD uses the same numbers).
+/// Fixed handles of the database skeleton (the usual writers use the same numbers).
 class _H {
   static const blockControl = 0x01,
       layerControl = 0x02,
@@ -394,7 +394,7 @@ class _Link {
 }
 
 /// Writes a [CadDrawing] (or the primitives of a [DxfDocument]) as an
-/// AutoCAD 2000 DWG.
+/// R2000 DWG.
 class DwgWriter {
   DwgWriter._(this.d, this.now);
   final CadDrawing d;
@@ -408,7 +408,7 @@ class DwgWriter {
   int _nextHandle = _H.firstFree;
   late Bounds _bounds;
 
-  /// The native drawing of the AutoCAD 2000 export (see `cad_export.dart`).
+  /// The native drawing of the R2000 export (see `cad_export.dart`).
   static Uint8List writeDrawing(CadDrawing d, {DateTime? now}) => DwgWriter._(d, now ?? DateTime.now())._build();
 
   /// A plain document: its lines, polylines, circles, arcs, points and
@@ -482,7 +482,7 @@ class DwgWriter {
   }
 
   /// Control object data: reactor count, then the entry count (BL, or BS for
-  /// the tables AutoCAD stores with a short).
+  /// the tables real-world files store with a short).
   static void _control(_BitWriter w, int entries, {bool short = false}) {
     w.writeBL(0); // num_reactors
     if (short) {
@@ -1543,7 +1543,7 @@ class DwgWriter {
     w.writeH(5, _H.ltByBlock);
     w.writeH(5, _H.ltContinuous);
     for (final v in [33157, 11426, 52689, 40600]) {
-      w.writeBS(v); // unknown_54..57 as written by AutoCAD
+      w.writeBS(v); // unknown_54..57 as real-world files have them
     }
     w.alignByte();
     return _sectionWithSentinels(_sentinelVarBegin, w.bytes(), _sentinelVarEnd);
@@ -1626,7 +1626,7 @@ class DwgWriter {
     w.writeRL(0);
     w.writeRL(0);
     for (var i = 0; i < 8; i++) {
-      w.writeRC(0); // padding to the size AutoCAD writes
+      w.writeRC(0); // padding to the size real-world files have
     }
     return w.bytes();
   }
@@ -1660,7 +1660,7 @@ class DwgWriter {
       lastOffset = 0;
     }
 
-    // Each section restarts the deltas from zero (as AutoCAD writes them).
+    // Each section restarts the deltas from zero (as real-world files have them).
     // The first section is kept short when more follow, so a reader that
     // guesses the convention from the first few dozen entries sees entries of
     // the second section too.

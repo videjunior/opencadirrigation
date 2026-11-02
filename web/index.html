@@ -258,7 +258,7 @@
       "featureList": [
         "AI assistant: Optional: ask the AI about the project, or let it draw and design for you. It lays out heads and drip, divides fields, routes pipes, runs the sizing and the automatic tools, looking at the satellite image and the terrain, with Claude (Anthropic) or GPT (OpenAI) models and your own API key, straight from the browser with no server in between. Nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.",
         "Automatic design and sizing: Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.",
-        "Full CAD drawing: Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and AutoCAD-style shortcuts (L, PL, C, D, ZE…).",
+        "Full CAD drawing: Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and the command shortcuts of CAD programs (L, PL, C, D, ZE…).",
         "Hydraulic network: Water supplies, fixed and variable-speed pumps, mainline, zone, pressure-reducing, pressure-sustaining and flow-control valves, valve-in-head sprinklers, laterals with emitters, drip tapes, filters and meters, plus centre pivots and linear moves with their sprinkler package, hose-reel travellers and surface irrigation.",
         "Validated hydraulic engine: Hazen-Williams, Darcy-Weisbach, Scobey and Manning, minor losses from the fittings used, emitters q = k·Hˣ, network solver by the Global Gradient Algorithm (as in EPANET), pump curves with NPSH, transients by the method of characteristics with air valves, and a 24-hour simulation with energy tariffs.",
         "Terrain, climate and agronomy: Contours, spot heights, a triangulated terrain model with breaklines, online elevation, LAS point clouds, slope maps and profiles; site climate downloaded or typed in, FAO-56 crops by stage, soils, effective rain and leaching for the water requirement, plus landscape water budgets.",
@@ -449,10 +449,10 @@
         },
         {
           "@type": "Question",
-          "name": "Does it work with AutoCAD and other CADs?",
+          "name": "Does it work with other CAD programs?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. It imports DXF and DWG up to AutoCAD 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4."
+            "text": "Yes. It imports DXF and DWG up to version 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4."
           }
         },
         {
@@ -758,7 +758,7 @@
         <ul class="grid">
           <li><h3>AI assistant</h3><p>Optional: ask the AI about the project, or let it draw and design for you. It lays out heads and drip, divides fields, routes pipes, runs the sizing and the automatic tools, looking at the satellite image and the terrain, with Claude (Anthropic) or GPT (OpenAI) models and your own API key, straight from the browser with no server in between. Nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.</p></li>
           <li><h3>Automatic design and sizing</h3><p>Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.</p></li>
-          <li><h3>Full CAD drawing</h3><p>Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and AutoCAD-style shortcuts (L, PL, C, D, ZE…).</p></li>
+          <li><h3>Full CAD drawing</h3><p>Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and the command shortcuts of CAD programs (L, PL, C, D, ZE…).</p></li>
           <li><h3>Hydraulic network</h3><p>Water supplies, fixed and variable-speed pumps, mainline, zone, pressure-reducing, pressure-sustaining and flow-control valves, valve-in-head sprinklers, laterals with emitters, drip tapes, filters and meters, plus centre pivots and linear moves with their sprinkler package, hose-reel travellers and surface irrigation.</p></li>
           <li><h3>Validated hydraulic engine</h3><p>Hazen-Williams, Darcy-Weisbach, Scobey and Manning, minor losses from the fittings used, emitters q = k·Hˣ, network solver by the Global Gradient Algorithm (as in EPANET), pump curves with NPSH, transients by the method of characteristics with air valves, and a 24-hour simulation with energy tariffs.</p></li>
           <li><h3>Terrain, climate and agronomy</h3><p>Contours, spot heights, a triangulated terrain model with breaklines, online elevation, LAS point clouds, slope maps and profiles; site climate downloaded or typed in, FAO-56 crops by stage, soils, effective rain and leaching for the water requirement, plus landscape water budgets.</p></li>
@@ -827,8 +827,8 @@
           <dd>No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded. The internet is reached only when you ask for it: base maps, online elevation and climate, catalogues loaded by URL and, if you use it, the AI assistant, which talks only to the provider you chose (Anthropic or OpenAI).</dd>
           <dt>How does it calculate the hydraulics?</dt>
           <dd>Friction losses by Hazen-Williams, Darcy-Weisbach, Scobey or Manning, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window and the pipe pressure class, and the design also checks uniformity (CU, DU, EU), flushing and transients by the method of characteristics (valve closure, pump trip, air valves), with a 24-hour simulation of pressures and energy cost.</dd>
-          <dt>Does it work with AutoCAD and other CADs?</dt>
-          <dd>Yes. It imports DXF and DWG up to AutoCAD 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.</dd>
+          <dt>Does it work with other CAD programs?</dt>
+          <dd>Yes. It imports DXF and DWG up to version 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.</dd>
           <dt>Which languages are available?</dt>
           <dd>Twenty, the same as this site (the list is at the foot of the page). The app opens in your computer's language and you can switch at any time under View → Language.</dd>
         </dl>

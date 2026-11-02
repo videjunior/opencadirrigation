@@ -239,9 +239,9 @@ const _base = <String, (String, String, String)>{
   'help.shortcuts': ('Atalhos de teclado…', 'Keyboard shortcuts…', 'Atajos de teclado…'),
   'sc.title': ('Atalhos de teclado', 'Keyboard shortcuts', 'Atajos de teclado'),
   'sc.intro': (
-    'Com o desenho em foco, digite o alias do comando e pressione Enter ou Espaço, como no AutoCAD (ex.: L ⏎ linha, PL ⏎ polilinha, ZE ⏎ enquadrar, E ⏎ apagar). Esc limpa o comando digitado. As combinações com Ctrl e as teclas F funcionam em qualquer parte da tela.',
-    'With the drawing focused, type the command alias and press Enter or Space, as in AutoCAD (e.g. L ⏎ line, PL ⏎ polyline, ZE ⏎ zoom extents, E ⏎ erase). Esc clears the typed command. Ctrl combinations and F keys work anywhere.',
-    'Con el dibujo enfocado, escriba el alias del comando y pulse Enter o Espacio, como en AutoCAD (p. ej. L ⏎ línea, PL ⏎ polilínea, ZE ⏎ encuadrar, E ⏎ borrar). Esc limpia el comando. Las combinaciones con Ctrl y las teclas F funcionan en toda la pantalla.',
+    'Com o desenho em foco, digite o alias do comando e pressione Enter ou Espaço, como nos programas de CAD (ex.: L ⏎ linha, PL ⏎ polilinha, ZE ⏎ enquadrar, E ⏎ apagar). Esc limpa o comando digitado. As combinações com Ctrl e as teclas F funcionam em qualquer parte da tela.',
+    'With the drawing focused, type the command alias and press Enter or Space, as in CAD programs (e.g. L ⏎ line, PL ⏎ polyline, ZE ⏎ zoom extents, E ⏎ erase). Esc clears the typed command. Ctrl combinations and F keys work anywhere.',
+    'Con el dibujo enfocado, escriba el alias del comando y pulse Enter o Espacio, como en los programas de CAD (p. ej. L ⏎ línea, PL ⏎ polilínea, ZE ⏎ encuadrar, E ⏎ borrar). Esc limpia el comando. Las combinaciones con Ctrl y las teclas F funcionan en toda la pantalla.',
   ),
   'sc.file': ('Arquivo e abas', 'File and tabs', 'Archivo y pestañas'),
   'sc.edit': ('Edição', 'Editing', 'Edición'),
@@ -267,8 +267,8 @@ const _base = <String, (String, String, String)>{
   'sc.toggles': ('Snap / orto / grade visível / snap à grade', 'Snap / ortho / grid display / grid snap', 'Snap / orto / cuadrícula visible / snap a cuadrícula'),
   'sc.designCmds': ('Projetar tudo / verificar conexões / relatórios', 'Design all / check connectivity / reports', 'Diseñar todo / verificar conexiones / informes'),
   // export formats
-  'exp.dxf': ('DXF (AutoCAD, QGIS)', 'DXF (AutoCAD, QGIS)', 'DXF (AutoCAD, QGIS)'),
-  'exp.dwg': ('DWG (AutoCAD 2000, binário)', 'DWG (AutoCAD 2000, binary)', 'DWG (AutoCAD 2000, binario)'),
+  'exp.dxf': ('DXF (programas de CAD, QGIS)', 'DXF (CAD programs, QGIS)', 'DXF (programas de CAD, QGIS)'),
+  'exp.dwg': ('DWG R2000 (binário)', 'DWG R2000 (binary)', 'DWG R2000 (binario)'),
   'exp.pdf': ('PDF (prancha para impressão)…', 'PDF (plot sheet)…', 'PDF (lámina para impresión)…'),
   'exp.svg': ('SVG (figura vetorial: web, Inkscape)', 'SVG (vector figure: web, Inkscape)', 'SVG (figura vectorial: web, Inkscape)'),
   'exp.kml': ('KML (Google Earth)', 'KML (Google Earth)', 'KML (Google Earth)'),

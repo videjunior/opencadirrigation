@@ -43,7 +43,7 @@ const _de = SiteText(
     ),
     (
       'Vollwertiges CAD',
-      'Linien, Polylinien, Bögen, Splines, Schraffuren, Bemaßungen, Texte, Ebenen und Blöcke, mit Koordinateneingabe, Objektfang, polarer Spur, Griffen, Revisionswolken und Kurzbefehlen im AutoCAD-Stil (L, PL, C, D, ZE…).',
+      'Linien, Polylinien, Bögen, Splines, Schraffuren, Bemaßungen, Texte, Ebenen und Blöcke, mit Koordinateneingabe, Objektfang, polarer Spur, Griffen, Revisionswolken und den Kurzbefehlen von CAD-Programmen (L, PL, C, D, ZE…).',
     ),
     (
       'Hydraulisches Netz',
@@ -163,8 +163,8 @@ const _de = SiteText(
       'Reibungsverluste nach Hazen-Williams, Darcy-Weisbach, Scobey oder Manning, Emitter nach q = k·Hˣ und das gesamte Netz mit dem Global Gradient Algorithm, dem Verfahren von EPANET. Die Rohrdurchmesser werden per linearer Optimierung innerhalb des Druckfensters der Emitter und der Druckstufe der Rohre bestimmt; außerdem prüft die Berechnung Gleichmäßigkeit (CU, DU, EU), Spülung und Druckstöße nach dem Charakteristikenverfahren (Ventilschließung, Pumpenausfall, Be-/Entlüftungsventile), mit einer 24-Stunden-Simulation von Drücken und Energiekosten.',
     ),
     (
-      'Funktioniert es mit AutoCAD und anderen CAD-Programmen?',
-      'Ja. Es importiert DXF und DWG bis AutoCAD 2018, DGN V7 und PDF-Pläne und exportiert DXF 2000 mit nativen Objekten (Polylinien mit Bögen, Schraffuren, Splines, Bemaßungen, Blöcke mit Attributen), DXF R12 für ältere Programme und DWG 2000. Für GIS, Vermessung und BIM liest und schreibt es außerdem KML/KMZ, Shapefiles, GeoJSON, GPX, LandXML und EPANET .inp, liest LAS-Punktwolken und exportiert IFC 4.',
+      'Funktioniert es mit anderen CAD-Programmen?',
+      'Ja. Es importiert DXF und DWG bis Version 2018, DGN V7 und PDF-Pläne und exportiert DXF 2000 mit nativen Objekten (Polylinien mit Bögen, Schraffuren, Splines, Bemaßungen, Blöcke mit Attributen), DXF R12 für ältere Programme und DWG 2000. Für GIS, Vermessung und BIM liest und schreibt es außerdem KML/KMZ, Shapefiles, GeoJSON, GPX, LandXML und EPANET .inp, liest LAS-Punktwolken und exportiert IFC 4.',
     ),
     (
       'In welchen Sprachen ist es verfügbar?',

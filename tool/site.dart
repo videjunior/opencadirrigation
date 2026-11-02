@@ -252,7 +252,7 @@ const _pt = SiteText(
     ),
     (
       'Desenho CAD completo',
-      'Linhas, polilinhas, arcos, splines, hachuras, cotas, textos, camadas e blocos, com coordenadas digitadas, snaps, rastreamento polar, grips, nuvens de revisão e atalhos no estilo AutoCAD (L, PL, C, D, ZE…).',
+      'Linhas, polilinhas, arcos, splines, hachuras, cotas, textos, camadas e blocos, com coordenadas digitadas, snaps, rastreamento polar, grips, nuvens de revisão e os atalhos de comando dos programas de CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Rede hidráulica',
@@ -357,8 +357,8 @@ const _pt = SiteText(
       'Perda de carga por Hazen-Williams, Darcy-Weisbach, Scobey ou Manning, emissores por q = k·Hˣ e a rede inteira resolvida pelo Global Gradient Algorithm, o método do EPANET. As tubulações são dimensionadas por programação linear dentro da janela de pressão dos emissores e da classe de pressão dos tubos, e o projeto verifica também uniformidade (CU, DU, EU), lavagem e transientes pelo método das características (fechamento de válvulas, parada de bomba, ventosas), com simulação de 24 horas das pressões e do custo de energia.',
     ),
     (
-      'Funciona com AutoCAD e outros CADs?',
-      'Sim. Importa DXF e DWG até o AutoCAD 2018, DGN V7 e plantas em PDF, e exporta DXF 2000 com entidades nativas (polilinhas com arcos, hachuras, splines, cotas, blocos com atributos), DXF R12 para programas antigos e DWG 2000. Para SIG, topografia e BIM, também lê e grava KML/KMZ, shapefile, GeoJSON, GPX, LandXML e EPANET .inp, lê nuvens de pontos LAS e exporta IFC 4.',
+      'Funciona com outros programas de CAD?',
+      'Sim. Importa DXF e DWG até a versão 2018, DGN V7 e plantas em PDF, e exporta DXF 2000 com entidades nativas (polilinhas com arcos, hachuras, splines, cotas, blocos com atributos), DXF R12 para programas antigos e DWG 2000. Para SIG, topografia e BIM, também lê e grava KML/KMZ, shapefile, GeoJSON, GPX, LandXML e EPANET .inp, lê nuvens de pontos LAS e exporta IFC 4.',
     ),
     (
       'Em que idiomas está disponível?',
@@ -421,7 +421,7 @@ const _en = SiteText(
     ),
     (
       'Full CAD drawing',
-      'Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and AutoCAD-style shortcuts (L, PL, C, D, ZE…).',
+      'Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and the command shortcuts of CAD programs (L, PL, C, D, ZE…).',
     ),
     (
       'Hydraulic network',
@@ -523,8 +523,8 @@ const _en = SiteText(
       'Friction losses by Hazen-Williams, Darcy-Weisbach, Scobey or Manning, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window and the pipe pressure class, and the design also checks uniformity (CU, DU, EU), flushing and transients by the method of characteristics (valve closure, pump trip, air valves), with a 24-hour simulation of pressures and energy cost.',
     ),
     (
-      'Does it work with AutoCAD and other CADs?',
-      'Yes. It imports DXF and DWG up to AutoCAD 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.',
+      'Does it work with other CAD programs?',
+      'Yes. It imports DXF and DWG up to version 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.',
     ),
     (
       'Which languages are available?',
@@ -587,7 +587,7 @@ const _es = SiteText(
     ),
     (
       'Dibujo CAD completo',
-      'Líneas, polilíneas, arcos, splines, sombreados, cotas, textos, capas y bloques, con entrada de coordenadas, referencias a objetos, rastreo polar, pinzamientos, nubes de revisión y atajos al estilo AutoCAD (L, PL, C, D, ZE…).',
+      'Líneas, polilíneas, arcos, splines, sombreados, cotas, textos, capas y bloques, con entrada de coordenadas, referencias a objetos, rastreo polar, pinzamientos, nubes de revisión y los atajos de comandos de los programas de CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Red hidráulica',
@@ -692,8 +692,8 @@ const _es = SiteText(
       'Pérdidas de carga por Hazen-Williams, Darcy-Weisbach, Scobey o Manning, emisores por q = k·Hˣ y toda la red resuelta por el Global Gradient Algorithm, el método de EPANET. Las tuberías se dimensionan por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, y el diseño verifica también la uniformidad (CU, DU, EU), el lavado y los transitorios por el método de las características (cierre de válvulas, parada de bombas, ventosas), con una simulación de 24 horas de las presiones y el coste de la energía.',
     ),
     (
-      '¿Funciona con AutoCAD y otros CAD?',
-      'Sí. Importa DXF y DWG hasta AutoCAD 2018, DGN V7 y planos en PDF, y exporta DXF 2000 con entidades nativas (polilíneas con arcos, sombreados, splines, cotas, bloques con atributos), DXF R12 para programas antiguos y DWG 2000. Para SIG, topografía y BIM también lee y escribe KML/KMZ, shapefile, GeoJSON, GPX, LandXML y EPANET .inp, lee nubes de puntos LAS y exporta IFC 4.',
+      '¿Funciona con otros programas de CAD?',
+      'Sí. Importa DXF y DWG hasta la versión 2018, DGN V7 y planos en PDF, y exporta DXF 2000 con entidades nativas (polilíneas con arcos, sombreados, splines, cotas, bloques con atributos), DXF R12 para programas antiguos y DWG 2000. Para SIG, topografía y BIM también lee y escribe KML/KMZ, shapefile, GeoJSON, GPX, LandXML y EPANET .inp, lee nubes de puntos LAS y exporta IFC 4.',
     ),
     (
       '¿En qué idiomas está disponible?',

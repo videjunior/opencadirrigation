@@ -699,9 +699,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Orto (F8)', 'Ortho (F8)', 'Orto (F8)'),
       target: TutorialTargets.statusToggles,
       body: t(
-        'Orto trava todo segmento em horizontal ou vertical, como no AutoCAD. Deixe ligado para desenhar tubos alinhados.',
-        'Ortho locks every segment to horizontal or vertical, as in AutoCAD. Keep it on to draw aligned pipes.',
-        'Orto bloquea cada segmento en horizontal o vertical, como en AutoCAD. Déjelo activado para dibujar tuberías alineadas.',
+        'Orto trava todo segmento em horizontal ou vertical, como nos programas de CAD. Deixe ligado para desenhar tubos alinhados.',
+        'Ortho locks every segment to horizontal or vertical, as in CAD programs. Keep it on to draw aligned pipes.',
+        'Orto bloquea cada segmento en horizontal o vertical, como en los programas de CAD. Déjelo activado para dibujar tuberías alineadas.',
       ),
       action: t('Pressione F8 para alternar o modo orto', 'Press F8 to toggle ortho', 'Pulse F8 para alternar el modo orto'),
       read: (x) => x.c.snap.ortho,
@@ -828,9 +828,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Comandos digitados', 'Typed commands', 'Comandos escritos'),
       target: TutorialTargets.statusBar,
       body: t(
-        'Com o desenho em foco, digite o alias como no AutoCAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Enter ou Espaço; após uma pausa curta ele executa sozinho. A barra de status mostra o comando e o que ele vai fazer. Ajuda → Atalhos lista todos.',
-        'With the drawing focused, type the alias as in AutoCAD (L, PL, C, REC, ZP, MP, SL, V, WS…) and Enter or Space; after a short pause it runs by itself. The status bar shows the command and what it will do. Help → Shortcuts lists them all.',
-        'Con el dibujo activo, escriba el alias como en AutoCAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Intro o Espacio; tras una pausa corta se ejecuta solo. La barra de estado muestra el comando y lo que hará. Ayuda → Atajos los lista todos.',
+        'Com o desenho em foco, digite o alias como nos programas de CAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Enter ou Espaço; após uma pausa curta ele executa sozinho. A barra de status mostra o comando e o que ele vai fazer. Ajuda → Atalhos lista todos.',
+        'With the drawing focused, type the alias as in CAD programs (L, PL, C, REC, ZP, MP, SL, V, WS…) and Enter or Space; after a short pause it runs by itself. The status bar shows the command and what it will do. Help → Shortcuts lists them all.',
+        'Con el dibujo activo, escriba el alias como en los programas de CAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Intro o Espacio; tras una pausa corta se ejecuta solo. La barra de estado muestra el comando y lo que hará. Ayuda → Atajos los lista todos.',
       ),
       action: t('Digite REC e pressione Enter', 'Type REC and press Enter', 'Escriba REC y pulse Intro'),
       event: 'command',
@@ -1530,9 +1530,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Importar e exportar', 'Import and export', 'Importar y exportar'),
       target: TutorialTargets.menuFile,
       body: t(
-        'Importar (Ctrl+I) aceita DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, pontos CSV/XYZ e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF, DWG, PDF (prancha com carimbo, legenda e escala; Ctrl+P), SVG, KML/KMZ e GeoJSON. Exportar relatório gera CSV, TXT, XLSX ou PDF.',
-        'Import (Ctrl+I) accepts DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, CSV/XYZ points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF, DWG, PDF (plot sheet with title block, legend and scale; Ctrl+P), SVG, KML/KMZ and GeoJSON. Export report writes CSV, TXT, XLSX or PDF.',
-        'Importar (Ctrl+I) acepta DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, puntos CSV/XYZ e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF, DWG, PDF (lámina con cajetín, leyenda y escala; Ctrl+P), SVG, KML/KMZ y GeoJSON. Exportar informe genera CSV, TXT, XLSX o PDF.',
+        'Importar (Ctrl+I) aceita DXF, DWG (versões 2000–2018), KML/KMZ, SHP, pontos CSV/XYZ e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF, DWG, PDF (prancha com carimbo, legenda e escala; Ctrl+P), SVG, KML/KMZ e GeoJSON. Exportar relatório gera CSV, TXT, XLSX ou PDF.',
+        'Import (Ctrl+I) accepts DXF, DWG (versions 2000–2018), KML/KMZ, SHP, CSV/XYZ points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF, DWG, PDF (plot sheet with title block, legend and scale; Ctrl+P), SVG, KML/KMZ and GeoJSON. Export report writes CSV, TXT, XLSX or PDF.',
+        'Importar (Ctrl+I) acepta DXF, DWG (versiones 2000–2018), KML/KMZ, SHP, puntos CSV/XYZ e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF, DWG, PDF (lámina con cajetín, leyenda y escala; Ctrl+P), SVG, KML/KMZ y GeoJSON. Exportar informe genera CSV, TXT, XLSX o PDF.',
       ),
     ),
     TutorialStep(

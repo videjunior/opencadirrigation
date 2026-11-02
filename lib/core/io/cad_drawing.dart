@@ -1,4 +1,4 @@
-/// Native CAD drawing for the AutoCAD 2000 writers (DXF AC1015 in
+/// Native CAD drawing for the R2000 writers (DXF AC1015 in
 /// `dxf_r2000.dart`, DWG AC1015 in `dwg_writer.dart`): layers with their
 /// true colours and linetypes, dimension styles, block definitions with
 /// attribute definitions, and the entities CAD programs edit natively
@@ -13,7 +13,7 @@ import 'dart:math' as math;
 
 import '../model/geometry.dart';
 
-/// A layer: AutoCAD colour index (1–255), optional true colour (0xRRGGBB,
+/// A layer: colour index (ACI, 1–255), optional true colour (0xRRGGBB,
 /// DXF code 420), linetype name, and the on/locked/plot states.
 class CadLayer {
   const CadLayer(this.name, {this.aci = 7, this.rgb, this.linetype = 'Continuous', this.off = false, this.locked = false, this.plot = true});
@@ -57,7 +57,7 @@ class CadDimStyle {
     this.suppressZeros = 0,
   });
 
-  /// The style every drawing has (AutoCAD's metric defaults).
+  /// The style every drawing has (the usual metric defaults of CAD programs).
   static const standard = CadDimStyle('Standard', suppressZeros: 8);
 
   final String name;
@@ -383,7 +383,7 @@ class CadDrawing {
 
 // ------------------------------------------------------------------ colours
 
-/// RGB (0xRRGGBB) of the AutoCAD colour index [i] (0–255): the nine basic
+/// RGB (0xRRGGBB) of the colour index (ACI) [i] (0–255): the nine basic
 /// colours, 24 hues × 5 shades × 2 saturations, and six greys.
 int aciRgb(int i) {
   const basic = [0x000000, 0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x0000FF, 0xFF00FF, 0xFFFFFF, 0x808080, 0xC0C0C0];

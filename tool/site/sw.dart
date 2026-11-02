@@ -43,7 +43,7 @@ const _sw = SiteText(
     ),
     (
       'Mchoro kamili wa CAD',
-      'Mistari, polyline, tao, spline, vivuli, vipimo, maandishi, tabaka na bloku, pamoja na kuratibu zinazoandikwa, snap, ufuatiliaji wa polar, grips, mawingu ya marekebisho na njia za mkato za mtindo wa AutoCAD (L, PL, C, D, ZE…).',
+      'Mistari, polyline, tao, spline, vivuli, vipimo, maandishi, tabaka na bloku, pamoja na kuratibu zinazoandikwa, snap, ufuatiliaji wa polar, grips, mawingu ya marekebisho na njia za mkato za amri kama za programu za CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Mtandao wa haidroliki',
@@ -187,8 +187,8 @@ const _sw = SiteText(
       'Upotevu wa msuguano kwa Hazen-Williams, Darcy-Weisbach, Scobey au Manning, vitoa-maji kwa q = k·Hˣ, na mtandao wote hutatuliwa kwa Global Gradient Algorithm, mbinu inayotumiwa na EPANET. Mabomba hupimwa kwa linear programming ndani ya dirisha la shinikizo la vitoa-maji na daraja la shinikizo la mabomba, na usanifu pia hukagua usawa (CU, DU, EU), usafishaji na hali za mpito kwa method of characteristics (kufungwa kwa vali, kusimama ghafla kwa pampu, vali za hewa), pamoja na uigaji wa saa 24 wa shinikizo na gharama ya nishati.',
     ),
     (
-      'Je, inafanya kazi na AutoCAD na CAD nyingine?',
-      'Ndiyo. Huingiza DXF na DWG hadi AutoCAD 2018, DGN V7 na michoro ya PDF, na huhamisha DXF 2000 yenye vipengele asilia (polyline zenye tao, vivuli, spline, vipimo, bloku zenye sifa), DXF R12 kwa programu za zamani na DWG 2000. Kwa GIS, upimaji ardhi na BIM pia huingiza na kuhamisha KML/KMZ, shapefile, GeoJSON, GPX, LandXML na EPANET .inp, huingiza mawingu ya nukta ya LAS na huhamisha IFC 4.',
+      'Je, inafanya kazi na programu nyingine za CAD?',
+      'Ndiyo. Huingiza DXF na DWG hadi toleo la 2018, DGN V7 na michoro ya PDF, na huhamisha DXF 2000 yenye vipengele asilia (polyline zenye tao, vivuli, spline, vipimo, bloku zenye sifa), DXF R12 kwa programu za zamani na DWG 2000. Kwa GIS, upimaji ardhi na BIM pia huingiza na kuhamisha KML/KMZ, shapefile, GeoJSON, GPX, LandXML na EPANET .inp, huingiza mawingu ya nukta ya LAS na huhamisha IFC 4.',
     ),
     (
       'Inapatikana kwa lugha zipi?',

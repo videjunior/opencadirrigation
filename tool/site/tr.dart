@@ -43,7 +43,7 @@ const _tr = SiteText(
     ),
     (
       'Tam CAD çizimi',
-      'Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler, katmanlar ve bloklar; klavyeden koordinat girişi, nesne kenetleme, kutupsal izleme, tutamaçlar, revizyon bulutları ve AutoCAD tarzı kısayollar (L, PL, C, D, ZE…).',
+      'Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler, katmanlar ve bloklar; klavyeden koordinat girişi, nesne kenetleme, kutupsal izleme, tutamaçlar, revizyon bulutları ve CAD programlarındaki gibi komut kısayolları (L, PL, C, D, ZE…).',
     ),
     (
       'Hidrolik şebeke',
@@ -156,8 +156,8 @@ const _tr = SiteText(
       'Sürtünme kayıpları Hazen-Williams, Darcy-Weisbach, Scobey veya Manning ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde doğrusal programlamayla boyutlandırılır; ayrıca üniformite (CU, DU, EU), yıkama ve karakteristikler yöntemiyle geçici rejimler (vana kapanması, ani pompa durması, hava tahliye vanaları) kontrol edilir, basınçların ve enerji maliyetinin 24 saatlik simülasyonu da yapılır.',
     ),
     (
-      'AutoCAD ve diğer CAD programlarıyla çalışır mı?',
-      'Evet. DXF ve DWG (AutoCAD 2018’e kadar), DGN V7 ve PDF çizimleri içe aktarır; özgün CAD nesneleriyle (yaylı polyline’lar, taramalar, spline’lar, ölçüler, öznitelikli bloklar) DXF 2000, eski programlar için DXF R12 ve DWG 2000 dışa aktarır. CBS, ölçüm ve BIM için ayrıca KML/KMZ, shapefile, GeoJSON, GPX, LandXML ve EPANET .inp okuyup yazar, LAS nokta bulutlarını okur ve IFC 4 dışa aktarır.',
+      'Diğer CAD programlarıyla çalışır mı?',
+      'Evet. DXF ve DWG (2018 sürümüne kadar), DGN V7 ve PDF çizimleri içe aktarır; özgün CAD nesneleriyle (yaylı polyline’lar, taramalar, spline’lar, ölçüler, öznitelikli bloklar) DXF 2000, eski programlar için DXF R12 ve DWG 2000 dışa aktarır. CBS, ölçüm ve BIM için ayrıca KML/KMZ, shapefile, GeoJSON, GPX, LandXML ve EPANET .inp okuyup yazar, LAS nokta bulutlarını okur ve IFC 4 dışa aktarır.',
     ),
     (
       'Hangi dillerde kullanılabilir?',

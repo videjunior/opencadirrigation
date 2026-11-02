@@ -10,7 +10,7 @@ automação do traçado, os algoritmos de terreno e de desempenho, os formatos d
 as fontes. Onde uma fórmula aparece, o módulo que a implementa está indicado, e o teste que a valida
 também.
 
-Este documento não cita empresas nem produtos de software concorrentes; as fontes são normas,
+Este documento não cita empresas nem produtos de software concorrentes, nem produtos de CAD; as fontes são normas,
 literatura técnica, software aberto (os mecanismos de referência e as bibliotecas que validam os
 formatos) e a documentação da API dos provedores de modelos que o assistente de IA chama.
 
@@ -77,9 +77,10 @@ revisados sobre fator de atrito, emissores, uniformidade, operação de redes e 
 especificação aberta do formato DWG, as especificações de PDF, OpenType, LAS, LandXML e IFC e a
 documentação dos serviços públicos de elevação e de clima.
 
-Este estudo não cita empresas nem produtos de software de terceiros. Fabricantes de componentes de
-irrigação aparecem apenas como origem dos dados dos catálogos, e formatos de arquivo de terceiros
-apenas pelo nome do formato.
+Este estudo não cita produtos de software concorrentes nem as empresas que os fazem, nem produtos de
+CAD. Fabricantes de componentes de irrigação aparecem apenas como origem dos dados dos catálogos, os
+formatos de arquivo pelo nome do formato (DXF, DWG R2000) e os provedores de dados, mapas e IA como
+fontes.
 
 ---
 
@@ -213,7 +214,7 @@ das válvulas (estações, bitolas, tensão nos solenoides, decodificadores).
 
 Importação de DXF, DWG, DGN V7, plantas em PDF, KML/KMZ, SHP (também zips com vários shapefiles),
 GeoJSON, GPX, LandXML, nuvens de pontos LAS, INP do EPANET, CSV/XYZ/PNEZD, GeoTIFF e imagens
-georreferenciadas; exportação de DXF (AutoCAD 2000 e R12), DWG (AutoCAD 2000), PDF (pranchas,
+georreferenciadas; exportação de DXF (R2000 e R12), DWG (R2000), PDF (pranchas,
 conjuntos de pranchas, detalhes e gráficos), PNG, SVG, KML/KMZ, GeoJSON, shapefiles, GPX, LandXML,
 IFC 4, INP do EPANET e relatórios em CSV, TXT, XLSX e PDF; projeto em JSON aberto com o catálogo
 embutido.
@@ -2287,7 +2288,7 @@ relevo geral e não substitui um levantamento, o que o diálogo avisa.
 
 ### 24.1 DXF
 
-Formato de texto do AutoCAD organizado em pares "código de grupo / valor". O leitor (`dxf.dart`)
+Formato de texto do DXF, organizado em pares "código de grupo / valor". O leitor (`dxf.dart`)
 percorre as seções BLOCKS e ENTITIES e lê LINE (10/20 e 11/21), LWPOLYLINE (vértices 10/20 em ordem,
 bulge 42, flag 70 de fechamento, elevação 38), POLYLINE com VERTEX (elevação no código 30 ou nos Z
 iguais dos vértices; vértices de controle de spline ignorados), CIRCLE, ARC (50/51 em graus),
@@ -2331,7 +2332,7 @@ textos e hachuras seguem as direções espelhadas) e viram polilinhas quando há
 os pontos de definição das cotas (camada Defpoints) não entram. O texto é decodificado como UTF-8
 (R2007+) ou Latin-1 (cp1252 dos arquivos antigos).
 
-Dois escritores: a exportação AutoCAD 2000 com entidades nativas (seção 24.3) e, como escolha
+Dois escritores: a exportação R2000 com entidades nativas (seção 24.3) e, como escolha
 separada para programas antigos, um arquivo R12 (AC1009) das primitivas (LINE, POLYLINE, CIRCLE,
 ARC, TEXT e POINT com a sua elevação, splines e símbolos como polilinhas, hachuras como contorno e
 linhas, cotas como linhas e texto) em camadas com índice de cor, o denominador comum de todos os
@@ -2352,12 +2353,12 @@ reversa que serviu de base para o leitor (`dwg.dart`, 2,0 mil linhas) e para o e
 - **Dados**: os objetos são endereçados pelo mapa de objetos (handles), e cada objeto é um fluxo de
   bits com códigos de tamanho variável (B, BB, BS, BL, BD, DD, MC, MS, H, entre outros); o leitor
   monta inteiros de vários bytes aritmeticamente porque as operações bit a bit do dart2js são de
-  32 bits. O CRC-16 do cabeçalho é verificado (teste "CRC-16 matches the checksum AutoCAD wrote"). O
+  32 bits. O CRC-16 do cabeçalho é verificado contra a soma gravada em arquivos reais. O
   mapa de handles é uma lista de pares (handle, deslocamento) codificados por diferença em seções: a
   especificação reinicia as diferenças a cada seção, alguns escritores as mantêm correndo, e as duas
   leituras concordam na primeira seção, então são distinguidas conferindo objetos espalhados pelo
-  mapa inteiro (conferir só as primeiras entradas lia errado 64 dos 750 objetos de um arquivo gravado
-  pelo AutoCAD).
+  mapa inteiro (conferir só as primeiras entradas lia errado 64 dos 750 objetos de um arquivo
+  real).
 - **Blocos e cotas**: INSERT (tipo 7) e MINSERT (8) trazem o ponto de inserção, as escalas
   (R13/R14 em três BD; R2000+ com um código BB que escolhe entre 1,1,1, um valor único, X = 1 ou
   três valores DD relativos ao X), a rotação, a extrusão, o flag de atributos, o vetor da matriz e,
@@ -2390,16 +2391,16 @@ reversa que serviu de base para o leitor (`dwg.dart`, 2,0 mil linhas) e para o e
   modelo e do papel, definições de bloco com as suas definições de atributo, e as entidades nativas
   LINE, LWPOLYLINE (com arcos), CIRCLE, ARC, POINT, TEXT, MTEXT, SPLINE, HATCH, SOLID, INSERT com
   ATTRIBs, DIMENSION (alinhada, angular, de raio, de diâmetro, de ordenada) com o seu bloco anônimo,
-  e LEADER. As cores do R2000 são só índices de cor (as cores verdadeiras chegaram com o AutoCAD
-  2004), e os caracteres fora da página de código são gravados na notação `\U+XXXX` que os programas
+  e LEADER. As cores do R2000 são só índices de cor (as cores verdadeiras chegaram com o formato
+  R2004), e os caracteres fora da página de código são gravados na notação `\U+XXXX` que os programas
   de CAD leem. O layout dos bytes segue a especificação da Open Design Alliance como o LibreDWG a
-  implementa; a ordem dos campos e os valores padrão foram conferidos contra arquivos gravados pelo
-  AutoCAD e validados com o LibreDWG (`dwgread`, `dwg2dxf`), que o teste executa quando está
+  implementa; a ordem dos campos e os valores padrão foram conferidos contra arquivos
+  reais e validados com o LibreDWG (`dwgread`, `dwg2dxf`), que o teste executa quando está
   instalado, além de relidos pelo próprio leitor.
 
 ### 24.3 O desenho CAD nativo
 
-Módulos `cad_drawing.dart` e `cad_export.dart`: os dois escritores AutoCAD 2000 (DXF AC1015 em
+Módulos `cad_drawing.dart` e `cad_export.dart`: os dois escritores R2000 (DXF AC1015 em
 `dxf_r2000.dart`, DWG AC1015 em `dwg_writer.dart`) recebem um único modelo do desenho, de modo que o
 DXF e o DWG levam o mesmo desenho, em metros do mundo, para o trabalho continuar num programa de CAD:
 
@@ -2421,8 +2422,8 @@ DXF e o DWG levam o mesmo desenho, em metros do mundo, para o trabalho continuar
   bloco;
 - as curvas de nível mantêm a sua elevação, as cotas de ponto e os vértices das linhas de quebra são
   pontos 3D; fitas, rotas de fios e linhas de quebra usam um tipo de linha tracejado;
-- as camadas levam o índice de cor e, no DXF, a cor verdadeira (código 420, lido a partir do AutoCAD
-  2004), o seu tipo de linha e os seus estados ligada, travada e de plotagem; os nomes de tabela são
+- as camadas levam o índice de cor e, no DXF, a cor verdadeira (código 420, lido pelos programas de CAD a partir do
+  formato R2004), o seu tipo de linha e os seus estados ligada, travada e de plotagem; os nomes de tabela são
   tornados válidos (os caracteres `<>/\":;?*|=,` e o acento grave viram `_`); o DXF tem $INSUNITS em
   metros, o seu texto em ASCII com `\U+XXXX` para o resto ($DWGCODEPAGE ANSI_1252), de modo que é lido
   igual qualquer que seja a codificação que um programa presuma, e todos os handles e donos do banco
@@ -3267,7 +3268,7 @@ A suíte tem 1.752 testes (`flutter test`). Os que validam os métodos contra re
 | UTM inverse round trip; georeference from a lat/lon origin | Karney 2011 |
 | SAD 69 and Córrego Alegre to SIRGAS 2000 agree with the Molodensky formula and round-trip | IBGE R.PR 1/2005 e R.PR 23/1989 |
 | every version and point format: ground points on the plane | ASPRS LAS 1.4 |
-| CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Arquivos reais e ferramenta independente |
+| O CRC-16 confere com a soma gravada em arquivos reais; o LibreDWG aceita o arquivo | Arquivos reais e ferramenta independente |
 | example_\<version\>: splines, hatches, solids and the ellipse like LibreDWG reads them | Entidades listadas pelo LibreDWG |
 | is an AC1015 file in metres, ASCII, with handles and owners; LibreDWG reads it and converts it to DXF | Auditoria do ezdxf; LibreDWG |
 | \<language\> runs shape like the reference engine | HarfBuzz |
@@ -3297,7 +3298,7 @@ Do ponto de vista da pesquisa, o que a literatura e a prática de projeto sugere
    dentro das zonas (o estudo vê uma zona como um orifício na sua válvula) e a liberação distribuída
    de ar.
 3. **Sprayline "unconnected"** automática.
-4. **Exportação DWG e DXF**: versões mais novas que o AutoCAD 2000 (cores verdadeiras no DWG) e
+4. **Exportação DWG e DXF**: versões mais novas que o R2000 (cores verdadeiras no DWG) e
    entidades como multileaders e tabelas.
 5. **Qualidade da água**: risco de entupimento e química da água junto com a fertirrigação, e a
    dispersão do produto injetado (os tempos de deslocamento são de escoamento em pistão).
@@ -3316,7 +3317,7 @@ Limites atuais que o programa informa ao usuário: o navegador guarda cerca de 3
 projeto (depois da compressão); arquivos BigTIFF e rasters acima de 100 milhões de pixels são
 recusados; levantamentos acima de 12 000 amostras são reduzidos para o TIN; LAS comprimido (LAZ), DGN
 V8, PDFs criptografados e as imagens JPEG 2000 e JBIG2 dos PDFs não são lidos; o OpenTopoData só
-funciona no aplicativo de desktop; as exportações CAD são AutoCAD 2000 (cores verdadeiras no DXF,
+funciona no aplicativo de desktop; as exportações CAD são R2000 (cores verdadeiras no DXF,
 índices de cor no DWG) ou R12; o assistente de IA precisa da rede e só foi testado contra falsos
 roteirizados das duas APIs de modelos; e nenhuma versão móvel nativa é produzida (o aplicativo web
 funciona em celulares).
@@ -3466,7 +3467,7 @@ Terreno, geoprocessamento e algoritmos:
 Formatos:
 - Open Design Alliance. Open Design Specification for .dwg files (versão 5.4.1).
 - LibreDWG: https://www.gnu.org/software/libredwg/ ; ezdxf (validação dos arquivos DXF).
-- Autodesk DXF Reference.
+- DXF Reference: a especificação publicada do formato (R12 a 2018).
 - ESRI Shapefile Technical Description (1998); estrutura de arquivo do dBASE III; GeoTIFF Specification 1.8.2; OGC KML 2.3; RFC 7946 (GeoJSON) e The GeoJSON Format Specification rev. 1.0 (2008); GPX 1.1 Schema Documentation (2004); especificação ISFF do arquivo de projeto DGN V7 (1994).
 - ISO 32000-1 (PDF 1.7) e PDF Reference 1.4 (Adobe); especificação OpenType 1.9 e os seus documentos de desenvolvimento de escritas; Unicode UAX #9 (algoritmo bidirecional), UAX #53 (renderização de marcas árabes) e ArabicShaping.txt; HarfBuzz (mecanismo de moldagem de referência dos testes).
 - ISO 10303-21 (arquivo físico STEP); ISO 16739-1:2018 (IFC4 ADD2 TC1).

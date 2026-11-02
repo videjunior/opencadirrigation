@@ -59,7 +59,8 @@ A single application covering the whole cycle of a pressurised irrigation design
   draws, designs, checks and reports, with your approval and an undo for every answer
   ([section 9](#ai-assistant-optional)); nothing is sent until you press Send.
 - **2D CAD drawing** with layers, snaps, typed coordinates, dimensions, hatches, symbols, user
-  blocks, review comments and revision clouds, and AutoCAD-style command aliases.
+  blocks, review comments and revision clouds, and typed command aliases (L, PL, C, ZE…) as in desktop
+  CAD programs.
 - **Hydraulic network** drawn on top of the CAD: water supplies, pumps (fixed or variable speed),
   mainline, zone valves, laterals with emitters, drip tapes and driplines, filters, pressure
   regulators, pressure-sustaining valves, hydrants with flow limiters, meters, junctions,
@@ -84,7 +85,7 @@ A single application covering the whole cycle of a pressurised irrigation design
   slope maps, profiles and hydraulic grade line.
 - **Outputs**: reports of zones, pipes, emitters, system flows, bill of materials with fittings,
   water requirements and controller programme; PDF sheets in every interface script (sets per
-  zone, construction details, charts); a commercial quote; DXF and DWG (AutoCAD 2000, native
+  zone, construction details, charts); a commercial quote; DXF and DWG (R2000, native
   entities), SVG, PNG, KML, KMZ, GeoJSON, shapefile, GPX, LandXML, IFC 4, EPANET, Excel, CSV.
 - **Open manufacturer catalogues** in JSON, loadable by file or URL.
 - **Command line and engine API**: `bin/oci.dart` designs, checks and exports projects without a
@@ -347,7 +348,7 @@ marker changes shape with the snap type.
 ### Selection and grips
 
 Click selects; Shift+click toggles; a window dragged left to right selects what lies entirely
-inside it and right to left what it crosses (AutoCAD convention). Up to 60 selected entities show
+inside it and right to left what it crosses (the usual CAD convention). Up to 60 selected entities show
 **grips**: drag a vertex to move it, drag the midpoint of a segment to insert a vertex, Ctrl+click a
 vertex to remove it. With *keep connections* (on by default) dragging a pipe node takes the
 valves, items and wire routes sharing it along; dragging a wire vertex moves only the wires.
@@ -992,9 +993,9 @@ by side and restores one in one undo step.
 
 | Format | Contents | Notes |
 |---|---|---|
-| DXF | AutoCAD 2000 (AC1015) with native entities: polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes (NAME, ITEM, NOZZLE, ZONE, STATIONS); layers with true colours and dashed linetypes; user blocks as block definitions | Validated with ezdxf and LibreDWG and re-read by the app's reader |
+| DXF | R2000 (AC1015) with native entities: polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes (NAME, ITEM, NOZZLE, ZONE, STATIONS); layers with true colours and dashed linetypes; user blocks as block definitions | Validated with ezdxf and LibreDWG and re-read by the app's reader |
 | DXF R12 | The plain primitives of the earlier export, one text per line | For older programs |
-| DWG | AutoCAD 2000 (AC1015), the same native drawing (colour indices only) | Our own writer, validated with LibreDWG and re-read by the app's reader |
+| DWG | R2000 (AC1015), the same native drawing (colour indices only) | Our own writer, validated with LibreDWG and re-read by the app's reader |
 | PDF | Sheet sets with title block, legend, north arrow, scale bar, details, charts and, optionally, reports | Every interface script |
 | PNG | The sheet as an image, 96–300 dpi | |
 | SVG | Sheet in millimetres, one group per layer, images embedded | Browsers, Inkscape |
@@ -1288,7 +1289,7 @@ lib/
       las.dart, epanet_inp.dart, points_csv.dart, point_grid.dart, geoimage.dart, dem_tiff.dart
                               readers (the EPANET, GPX and LandXML files also write)
       cad_drawing.dart, cad_export.dart, dxf_r2000.dart, dwg_writer.dart
-                              AutoCAD 2000 DXF and DWG with native entities
+                              R2000 DXF and DWG with native entities
       pdf_reader.dart, pdf_reader_fonts.dart, pdf_reader_images.dart, pdf_import.dart
                               PDF plans as an underlay
       plot.dart, pdf.dart, pdf_sheet.dart, sheet_set.dart, sheet_canvas.dart, details.dart,
@@ -1485,7 +1486,7 @@ app (installable as a PWA).
 | `core/mechanised_test.dart`, `core/pivot_package_test.dart`, `core/corner_arm_test.dart`, `core/vri_test.dart`, `core/pivot_electrical_test.dart`, `core/traveller_test.dart`, `core/surface_irrigation_test.dart`, `core/gated_pipe_test.dart` | NEH 623 sample calculation 11-18 (system capacity, outlet flow, end gun, friction, revolution and booster), regulated packages with numbered or catalogue nozzles, timer chart from the drive train; corner arm against analytic cases; variable rate from sectors and zones; tower motors and cable drop by IEC 60364-5-52, generator size; traveller sample calculation 11-17; the furrow, border and basin examples of FAO 45; gated pipe outlets |
 | `core/network_ops_test.dart`, `core/on_demand_test.dart`, `core/tariff_test.dart`, `core/energy_grouping_test.dart`, `core/criticality_test.dart`, `core/calibration_test.dart`, `core/fertigation_test.dart` | Clément flows against FAO 59 Box 1 and the random-configuration check (AS 241 quantiles, MRG32k3a reference sequence); the Brazilian discount rule and the scheduler exact against brute force; energy grouping 30 % below first fit by flow; N−1 on trees and loops; golden section and Levenberg–Marquardt recovering C; fertigation travel times, plan and venturi; all of them on a designed project |
 | `core/valve_in_head_test.dart`, `core/two_wire_test.dart`, `core/wire_routing_test.dart`, `core/round_1025_test.dart`, `widget_valve_in_head_test.dart` | Valve-in-head stations scheduled by the flows (pressures, 24 hours, wiring, two-wire, EPANET, pump static lift, controller programme, transients, fertigation) and the results of projects that never scheduled them; two-wire voltage by hand, decoders and grounding; routes along the trenches (shortest paths, Steiner-like tree), master valves and pump relays; master valve and accessories in the BOM, compressed browser storage, a device on every selected lateral, share links, comments and revision clouds, nozzle curves fitted to pasted tables |
-| `core/dwg_test.dart`, `core/dwg_writer_test.dart`, `core/cad_export_test.dart` | Reading R2000–R2018 and R2007 samples, with blocks and dimensions expanded; rejection of unknown versions; CRC; writer round trip; LibreDWG validation when installed; AutoCAD 2000 DXF and DWG with native entities, dimension blocks, layers with true colours and linetypes, attribute definitions and user blocks, for every gallery example, read back alike |
+| `core/dwg_test.dart`, `core/dwg_writer_test.dart`, `core/cad_export_test.dart` | Reading R2000–R2018 and R2007 samples, with blocks and dimensions expanded; rejection of unknown versions; CRC; writer round trip; LibreDWG validation when installed; R2000 DXF and DWG with native entities, dimension blocks, layers with true colours and linetypes, attribute definitions and user blocks, for every gallery example, read back alike |
 | `core/formats_test.dart`, `core/formats_app_test.dart` | Every import format against files written by other programs (ezdxf, LibreDWG, pyshp, tifffile, Pillow, openpyxl and Google Earth style KML; fixtures in `test/fixtures/formats`, generated by `tool/formats/make_fixtures.py`) with positions, elevations, names and layers checked; every export re-read by our own readers and written to `build/formats` for `tool/formats/check_exports.py`, which validates them with ezdxf, LibreDWG, lxml, openpyxl and pypdf; the new formats through the app (GeoJSON, GPX, LAS, DGN, EPANET, zips of shapefiles) |
 | `core/epanet_inp_test.dart`, `core/shp_writer_test.dart`, `core/gpx_test.dart`, `core/landxml_test.dart`, `core/ifc_test.dart`, `core/geojson_reader_test.dart`, `core/las_test.dart`, `core/dgn_test.dart`, `core/datum_test.dart` | EPANET files of designed projects matching our analysis zone by zone and flow by flow, and the reader; shapefiles, GPX, LandXML and IFC by their specifications and read back; GeoJSON with every geometry and `crs`; LAS formats 0–10, decimation and refusals; DGN V7 2D and 3D; transverse Mercator, the IBGE datum shifts and CRS recognition |
 | `core/pdf_reader_test.dart`, `core/pdf_import_test.dart`, `core/pdf_fonts_test.dart`, `core/pdf_images_test.dart`, `core/text_shaping_test.dart`, `core/sheets_test.dart`, `widget_sheets_test.dart` | The PDF reader on our own files and on file structures, filters, colours, texts, images and layers of other writers, plans imported to scale; TrueType reading and subsetting, bidirectional order, embedded fonts in every interface script; shaping identical to HarfBuzz on the interface strings (fixtures by `tool/fonts/make_shaping_fixtures.py`); images in PDF and SVG; sheet sets, details, charts and the revision table; PNG of a sheet |
@@ -1537,7 +1538,7 @@ loading (catalogues) uses `rootBundle` and works in `flutter test`.
   separate analysis whose decoders and cable do not enter the bill of materials.
 - **DWG and DXF**: the reader covers the typical entities of a plan (lines, polylines, circles,
   arcs, ellipses, splines, hatches, solids, leaders, points, texts, blocks and dimensions), with
-  R13/R14 read in part; the writers produce AutoCAD 2000 only (DWG with colour indices; true
+  R13/R14 read in part; the writers produce R2000 only (DWG with colour indices; true
   colours in the DXF), and pictures go out as their frame, without the raster.
 - **PDF plans**: shadings, pattern fills (drawn grey), transparency groups, annotations and Type 3
   glyph drawings are not interpreted; clipping is approximated by rectangles; filled areas come in
@@ -1607,9 +1608,14 @@ Firefox and Safari; automated browser tests for runtime language switching.
   read them in `build` and `paint`, never in `const` expressions or in fields that outlive a
   rebuild. A new command, tool, menu item or dialog needs its route for the AI assistant in
   `lib/app/ai/ai_coverage.dart` (the coverage test says which is missing).
-- **Editorial rule**: this repository does not cite third-party software companies or products,
-  not even indirectly; component manufacturers appear only as the origin of catalogue data, and
-  third-party file formats only by the name of the format.
+- **Editorial rule**: competing irrigation-design products and their makers are never named, anywhere
+  in the repository (code, comments, texts, tests, documentation and commit messages), and neither
+  are CAD products: a file format goes by the name of the format (DXF, DWG R2000). Component
+  manufacturers appear only as the origin of catalogue data; EPANET may be cited as the reference of
+  an algorithm; data and map providers (OpenStreetMap, Esri, Open-Meteo…) and the AI providers
+  (Anthropic, OpenAI) appear as sources and credits; other programs (spreadsheets, GIS, virtual
+  globes, browsers) only as the target of a file format. `test/editorial_names_test.dart` checks the
+  forbidden names by their SHA-256, so it names none of them.
 
 ---
 

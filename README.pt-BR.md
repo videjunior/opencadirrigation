@@ -59,7 +59,8 @@ Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pre
   aprovação e um desfazer para cada resposta ([seção 9](#assistente-de-ia-opcional)); nada é
   enviado antes de você clicar em Enviar.
 - **Desenho CAD 2D** com camadas, snaps, coordenadas digitadas, cotas, hachuras, símbolos, blocos
-  do usuário, comentários de revisão e nuvens de revisão, e atalhos no estilo AutoCAD.
+  do usuário, comentários de revisão e nuvens de revisão, e aliases de comando digitados (L, PL, C,
+  ZE…) como nos programas de CAD.
 - **Rede hidráulica** desenhada sobre o CAD: fontes de água, bombas (de rotação fixa ou com
   inversor), linha principal, válvulas de zona, laterais com emissores, fitas e tubos gotejadores,
   filtros, reguladores de pressão, válvulas sustentadoras de pressão, hidrantes com limitador de
@@ -84,8 +85,8 @@ Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pre
   mapas de declividade, perfis e linha piezométrica.
 - **Saídas**: relatórios de zonas, tubos, emissores, turnos, lista de materiais com conexões,
   requisitos hídricos e programa do controlador; pranchas em PDF em todas as escritas da interface
-  (conjuntos por zona, detalhes construtivos, gráficos); orçamento comercial; DXF e DWG (AutoCAD
-  2000, entidades nativas), SVG, PNG, KML, KMZ, GeoJSON, shapefile, GPX, LandXML, IFC 4, EPANET,
+  (conjuntos por zona, detalhes construtivos, gráficos); orçamento comercial; DXF e DWG (R2000,
+  entidades nativas), SVG, PNG, KML, KMZ, GeoJSON, shapefile, GPX, LandXML, IFC 4, EPANET,
   Excel, CSV.
 - **Catálogos abertos** de fabricantes em JSON, carregáveis por arquivo ou URL.
 - **Linha de comando e API do motor**: `bin/oci.dart` projeta, verifica e exporta projetos sem
@@ -360,7 +361,7 @@ portanto independe do zoom. O marcador muda de forma conforme o tipo de snap.
 ### Seleção e grips
 
 Clique seleciona; Shift+clique alterna; janela da esquerda para a direita seleciona o que está
-inteiro dentro dela e da direita para a esquerda o que ela cruza (convenção AutoCAD). Até 60
+inteiro dentro dela e da direita para a esquerda o que ela cruza (a convenção usual dos programas de CAD). Até 60
 entidades selecionadas mostram **grips**: arraste um vértice para movê-lo, arraste o ponto médio
 de um segmento para inserir um vértice, Ctrl+clique num vértice para removê-lo. Com *manter
 conexões* (ligado por padrão), arrastar um nó de tubo leva junto as válvulas, os itens e as rotas de
@@ -1033,9 +1034,9 @@ restaura uma num único passo de desfazer.
 
 | Formato | Conteúdo | Observações |
 |---|---|---|
-| DXF | AutoCAD 2000 (AC1015) com entidades nativas: polilinhas com arcos, splines, hachuras, cotas, chamadas, texto multilinha; símbolos e itens hidráulicos como blocos com atributos (NAME, ITEM, NOZZLE, ZONE, STATIONS); camadas com cores verdadeiras e tipos de linha tracejados; blocos do usuário como definições de bloco | Validado com ezdxf e LibreDWG e relido pelo leitor do app |
+| DXF | R2000 (AC1015) com entidades nativas: polilinhas com arcos, splines, hachuras, cotas, chamadas, texto multilinha; símbolos e itens hidráulicos como blocos com atributos (NAME, ITEM, NOZZLE, ZONE, STATIONS); camadas com cores verdadeiras e tipos de linha tracejados; blocos do usuário como definições de bloco | Validado com ezdxf e LibreDWG e relido pelo leitor do app |
 | DXF R12 | As primitivas simples da exportação anterior, um texto por linha | Para programas antigos |
-| DWG | AutoCAD 2000 (AC1015), o mesmo desenho nativo (só índices de cor) | Escritor próprio, validado com LibreDWG e relido pelo leitor do app |
+| DWG | R2000 (AC1015), o mesmo desenho nativo (só índices de cor) | Escritor próprio, validado com LibreDWG e relido pelo leitor do app |
 | PDF | Conjuntos de folhas com carimbo, legenda, seta norte, escala, detalhes, gráficos e, opcionalmente, relatórios | Todas as escritas da interface |
 | PNG | A prancha como imagem, 96–300 dpi | |
 | SVG | Folha em milímetros, um grupo por camada, imagens embutidas | Navegadores, Inkscape |
@@ -1343,7 +1344,7 @@ lib/
       las.dart, epanet_inp.dart, points_csv.dart, point_grid.dart, geoimage.dart, dem_tiff.dart
                               leitores (os de EPANET, GPX e LandXML também escrevem)
       cad_drawing.dart, cad_export.dart, dxf_r2000.dart, dwg_writer.dart
-                              DXF e DWG AutoCAD 2000 com entidades nativas
+                              DXF e DWG R2000 com entidades nativas
       pdf_reader.dart, pdf_reader_fonts.dart, pdf_reader_images.dart, pdf_import.dart
                               plantas em PDF como base de fundo
       plot.dart, pdf.dart, pdf_sheet.dart, sheet_set.dart, sheet_canvas.dart, details.dart,
@@ -1546,7 +1547,7 @@ nem testados, e celulares e tablets usam o app web (instalável como PWA).
 | `core/mechanised_test.dart`, `core/pivot_package_test.dart`, `core/corner_arm_test.dart`, `core/vri_test.dart`, `core/pivot_electrical_test.dart`, `core/traveller_test.dart`, `core/surface_irrigation_test.dart`, `core/gated_pipe_test.dart` | Cálculo exemplo 11-18 do NEH 623 (capacidade do sistema, vazão por saída, canhão final, atrito, volta e booster), pacotes regulados com bocais numerados ou do catálogo, temporizador pela transmissão; braço de canto contra casos analíticos; taxa variável por setores e zonas; motores das torres e queda no cabo pela IEC 60364-5-52, tamanho do gerador; cálculo exemplo 11-17 do autopropelido; os exemplos de sulco, faixa e bacia da FAO 45; saídas do tubo janelado |
 | `core/network_ops_test.dart`, `core/on_demand_test.dart`, `core/tariff_test.dart`, `core/energy_grouping_test.dart`, `core/criticality_test.dart`, `core/calibration_test.dart`, `core/fertigation_test.dart` | Vazões de Clément contra o Box 1 da FAO 59 e a verificação por configurações aleatórias (quantis AS 241, sequência de referência do MRG32k3a); a regra brasileira do desconto e o agendador exato contra força bruta; agrupamento por energia 30 % abaixo do primeiro encaixe por vazão; N−1 em árvores e anéis; seção áurea e Levenberg–Marquardt recuperando o C; tempos de chegada, plano e venturi da fertirrigação; tudo sobre um projeto calculado |
 | `core/valve_in_head_test.dart`, `core/two_wire_test.dart`, `core/wire_routing_test.dart`, `core/round_1025_test.dart`, `widget_valve_in_head_test.dart` | Estações de aspersores com válvula programadas pelos turnos (pressões, 24 horas, fiação, dois fios, EPANET, altura estática da bomba, programa do controlador, transientes, fertirrigação) e os resultados de projetos que nunca as programaram; tensão no par de dois fios à mão, decodificadores e aterramento; rotas pelas valas (menores caminhos, árvore do tipo Steiner), válvulas mestras e relés de bomba; válvula mestra e acessórios na lista de materiais, armazenamento comprimido no navegador, um dispositivo em cada lateral selecionada, links de compartilhamento, comentários e nuvens de revisão, curvas de bocal ajustadas por tabelas coladas |
-| `core/dwg_test.dart`, `core/dwg_writer_test.dart`, `core/cad_export_test.dart` | Leitura de amostras R2000–R2018 e R2007, com blocos e cotas expandidos; rejeição de versões desconhecidas; CRC; ida e volta do escritor; validação com LibreDWG quando instalado; DXF e DWG AutoCAD 2000 com entidades nativas, blocos das cotas, camadas com cores verdadeiras e tipos de linha, definições de atributo e blocos do usuário, para cada exemplo da galeria, relidos iguais |
+| `core/dwg_test.dart`, `core/dwg_writer_test.dart`, `core/cad_export_test.dart` | Leitura de amostras R2000–R2018 e R2007, com blocos e cotas expandidos; rejeição de versões desconhecidas; CRC; ida e volta do escritor; validação com LibreDWG quando instalado; DXF e DWG R2000 com entidades nativas, blocos das cotas, camadas com cores verdadeiras e tipos de linha, definições de atributo e blocos do usuário, para cada exemplo da galeria, relidos iguais |
 | `core/formats_test.dart`, `core/formats_app_test.dart` | Cada formato de importação contra arquivos gravados por outros programas (ezdxf, LibreDWG, pyshp, tifffile, Pillow, openpyxl e KML no estilo do Google Earth; fixtures em `test/fixtures/formats`, gerados por `tool/formats/make_fixtures.py`) com posições, elevações, nomes e camadas conferidos; todas as exportações relidas pelos próprios leitores e gravadas em `build/formats` para `tool/formats/check_exports.py`, que as valida com ezdxf, LibreDWG, lxml, openpyxl e pypdf; os formatos novos pelo app (GeoJSON, GPX, LAS, DGN, EPANET, zips de shapefiles) |
 | `core/epanet_inp_test.dart`, `core/shp_writer_test.dart`, `core/gpx_test.dart`, `core/landxml_test.dart`, `core/ifc_test.dart`, `core/geojson_reader_test.dart`, `core/las_test.dart`, `core/dgn_test.dart`, `core/datum_test.dart` | Arquivos EPANET de projetos calculados batendo com a nossa análise zona a zona e turno a turno, e o leitor; shapefiles, GPX, LandXML e IFC pelas suas especificações e relidos; GeoJSON com todas as geometrias e o `crs`; formatos 0–10 do LAS, rarefação e recusas; DGN V7 2D e 3D; Mercator transversa, as translações de datum do IBGE e o reconhecimento de sistemas |
 | `core/pdf_reader_test.dart`, `core/pdf_import_test.dart`, `core/pdf_fonts_test.dart`, `core/pdf_images_test.dart`, `core/text_shaping_test.dart`, `core/sheets_test.dart`, `widget_sheets_test.dart` | O leitor de PDF nos nossos arquivos e em estruturas de arquivo, filtros, cores, textos, imagens e camadas de outros programas, plantas importadas em escala; leitura e subconjunto de TrueType, ordem bidirecional, fontes embutidas em todas as escritas da interface; formatação idêntica à do HarfBuzz nos textos da interface (fixtures por `tool/fonts/make_shaping_fixtures.py`); imagens no PDF e no SVG; conjuntos de folhas, detalhes, gráficos e a tabela de revisões; PNG de uma prancha |
@@ -1601,7 +1602,7 @@ tamanho de janela definido; o carregamento de assets (catálogos) usa `rootBundl
   lista de materiais.
 - **DWG e DXF**: o leitor cobre as entidades típicas de uma planta (linhas, polilinhas, círculos,
   arcos, elipses, splines, hachuras, sólidos, chamadas, pontos, textos, blocos e cotas), com R13/R14
-  lidos em parte; os escritores gravam só AutoCAD 2000 (DWG com índices de cor; cores verdadeiras no
+  lidos em parte; os escritores gravam só R2000 (DWG com índices de cor; cores verdadeiras no
   DXF), e as imagens saem como a sua moldura, sem o raster.
 - **Plantas em PDF**: degradês, preenchimentos com padrão (desenhados em cinza), grupos de
   transparência, anotações e glifos Type 3 não são interpretados; o recorte é aproximado por
@@ -1675,9 +1676,14 @@ para a troca de idioma em tempo de execução.
   `build` e `paint`, nunca em expressões `const` nem em campos que sobrevivam a uma reconstrução.
   Um comando, ferramenta, item de menu ou diálogo novo precisa da sua rota para o assistente de IA
   em `lib/app/ai/ai_coverage.dart` (o teste de cobertura diz qual falta).
-- **Regra editorial**: este repositório não cita empresas nem produtos de software de terceiros, nem
-  de forma indireta; fabricantes de componentes aparecem apenas como origem dos dados de catálogo,
-  e formatos de arquivo de terceiros apenas pelo nome do formato.
+- **Regra editorial**: produtos concorrentes de projeto de irrigação e as empresas que os fazem nunca
+  são citados, em nenhum lugar do repositório (código, comentários, textos, testes, documentação e
+  mensagens de commit), nem os produtos de CAD: um formato de arquivo é chamado pelo nome do formato
+  (DXF, DWG R2000). Fabricantes de componentes aparecem apenas como origem dos dados de catálogo; o
+  EPANET pode ser citado como referência de algoritmo; os provedores de dados e mapas (OpenStreetMap,
+  Esri, Open-Meteo…) e de IA (Anthropic, OpenAI) aparecem como fontes e créditos; outros programas
+  (planilhas, SIG, globos virtuais, navegadores) só como destino de um formato de arquivo.
+  `test/editorial_names_test.dart` confere os nomes proibidos pelo SHA-256, sem citar nenhum.
 
 ---
 

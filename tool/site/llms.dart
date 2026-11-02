@@ -189,7 +189,7 @@ const _reference = [
     '''| Format | Import | Export |
 |---|---|---|
 | `.oci.json` project | yes | yes |
-| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | AutoCAD 2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
+| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | R2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
 | DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015): the same native drawing, with colour indices |
 | DGN | V7: elements, cells, levels as layers, 2D and 3D | — |
 | PDF | plans as an underlay: vectors, texts, images and PDF layers, scale 1:N read from the sheet | sheets, sheet sets, detail sheets and reports |

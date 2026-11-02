@@ -43,7 +43,7 @@ const _fr = SiteText(
     ),
     (
       'Dessin CAO complet',
-      'Lignes, polylignes, arcs, splines, hachures, cotes, textes, calques et blocs, avec saisie de coordonnées, accrochages, repérage polaire, poignées, nuages de révision et raccourcis façon AutoCAD (L, PL, C, D, ZE…).',
+      'Lignes, polylignes, arcs, splines, hachures, cotes, textes, calques et blocs, avec saisie de coordonnées, accrochages, repérage polaire, poignées, nuages de révision et raccourcis de commande des logiciels de CAO (L, PL, C, D, ZE…).',
     ),
     (
       'Réseau hydraulique',
@@ -179,8 +179,8 @@ const _fr = SiteText(
       'Pertes de charge par Hazen-Williams, Darcy-Weisbach, Scobey ou Manning, distributeurs selon q = k·Hˣ et réseau complet résolu par le Global Gradient Algorithm, la méthode d’EPANET. Les conduites sont dimensionnées par programmation linéaire dans la plage de pression des distributeurs et selon la classe de pression des tubes, et le calcul vérifie aussi l’uniformité (CU, DU, EU), le rinçage et les régimes transitoires par la méthode des caractéristiques (fermeture des vannes, disjonction des pompes, ventouses), avec une simulation sur 24 heures des pressions et du coût de l’énergie.',
     ),
     (
-      'Fonctionne-t-il avec AutoCAD et d’autres CAO ?',
-      'Oui. Il importe DXF et DWG jusqu’à AutoCAD 2018, DGN V7 et des plans PDF, et exporte en DXF 2000 avec entités natives (polylignes avec arcs, hachures, splines, cotes, blocs avec attributs), en DXF R12 pour les logiciels plus anciens et en DWG 2000. Pour les SIG, la topographie et le BIM, il lit et écrit aussi KML/KMZ, shapefile, GeoJSON, GPX, LandXML et EPANET .inp, lit les nuages de points LAS et exporte en IFC 4.',
+      'Fonctionne-t-il avec d’autres logiciels de CAO ?',
+      'Oui. Il importe DXF et DWG jusqu’à la version 2018, DGN V7 et des plans PDF, et exporte en DXF 2000 avec entités natives (polylignes avec arcs, hachures, splines, cotes, blocs avec attributs), en DXF R12 pour les logiciels plus anciens et en DWG 2000. Pour les SIG, la topographie et le BIM, il lit et écrit aussi KML/KMZ, shapefile, GeoJSON, GPX, LandXML et EPANET .inp, lit les nuages de points LAS et exporte en IFC 4.',
     ),
     (
       'Dans quelles langues est-il disponible ?',

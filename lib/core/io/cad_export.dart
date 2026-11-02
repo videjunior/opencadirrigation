@@ -1,5 +1,5 @@
 /// Turns a project into a native CAD drawing ([CadDrawing]) for the
-/// AutoCAD 2000 DXF and DWG exports, so the work can go on in a CAD program:
+/// R2000 DXF and DWG exports, so the work can go on in a CAD program:
 ///
 /// * drawing entities stay what they are: lines, lightweight polylines (the
 ///   arcs of revision clouds and pivot sectors as bulges), circles, arcs,

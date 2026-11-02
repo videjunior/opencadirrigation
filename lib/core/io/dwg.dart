@@ -1,4 +1,4 @@
-/// Pure-Dart reader for AutoCAD DWG files (R13/R14/R2000 uncompressed
+/// Pure-Dart reader for DWG files (R13/R14/R2000 uncompressed
 /// containers, the R2004/R2010–R2018 compressed container and the R2007
 /// Reed–Solomon interleaved container). Extracts layers and the entities
 /// relevant to an irrigation plan, producing a [DxfDocument]: LINE, CIRCLE,
@@ -451,7 +451,7 @@ class DwgReader {
   /// specification restarts the deltas at every section; some writers keep
   /// them running. Both readings agree on the first section, so they are
   /// told apart by checking objects spread over the whole map (a check of
-  /// the first entries only misread 64 of 750 objects of an AutoCAD file).
+  /// the first entries only misread 64 of 750 objects of a real-world file).
   void _parseHandleMap(Uint8List data, int start) {
     List<(int, int)>? best;
     var bestGood = -1;

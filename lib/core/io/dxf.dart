@@ -6,7 +6,7 @@
 /// (its line) and POINT entities with their layers, `\U+XXXX` characters
 /// and `%%` symbols decoded, and expands block references (INSERT, MINSERT,
 /// DIMENSION blocks); writes an R12-compatible file with a LAYER table (the
-/// AutoCAD 2000 export with native entities is in `dxf_r2000.dart`).
+/// R2000 export with native entities is in `dxf_r2000.dart`).
 library;
 
 import 'dart:math' as math;
@@ -837,7 +837,7 @@ class DxfReader {
 
 /// R12 writer (AC1009) of a [DxfDocument]: LINE, POLYLINE, CIRCLE, ARC,
 /// TEXT and POINT (with its elevation) on layers with a colour index. The
-/// AutoCAD 2000 export with native entities is in `dxf_r2000.dart`.
+/// R2000 export with native entities is in `dxf_r2000.dart`.
 class DxfWriter {
   static String _n(double v) => v.isFinite ? v.toStringAsFixed(4) : '0.0000';
 

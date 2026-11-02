@@ -1,11 +1,11 @@
-/// Writer of AutoCAD 2000 DXF files (AC1015) from a [CadDrawing]: the
+/// Writer of R2000 DXF files (AC1015) from a [CadDrawing]: the
 /// complete drawing database CAD programs expect from that version (handles
 /// and owners on every object, the symbol tables with their records, model
 /// and paper space blocks, layouts and the named object dictionaries) and
 /// native entities: LWPOLYLINE with arcs, SPLINE, HATCH, TEXT, MTEXT,
 /// INSERT with ATTRIBs, DIMENSION with its anonymous block, LEADER, SOLID,
 /// POINT, CIRCLE, ARC and LINE. Layers carry the colour index and the true
-/// colour (code 420, read by CAD programs from AutoCAD 2004 on), their
+/// colour (code 420, read by CAD programs from R2004 on), their
 /// linetype and their on/locked/plot states; $INSUNITS says metres.
 ///
 /// Text is written in ASCII: characters outside it become `\U+XXXX`, the
@@ -28,7 +28,7 @@ class DxfR2000Writer {
   StringBuffer _b = StringBuffer();
 
   /// Handles from 0x60 on; below are the objects of the skeleton, numbered
-  /// as AutoCAD numbers them (and as the DWG writer does): programs that
+  /// as the usual writers number them (and as the DWG writer does): programs that
   /// create those objects themselves on import (LibreDWG) find them there.
   int _next = 0x60;
   String _h() => (_next++).toRadixString(16).toUpperCase();
@@ -368,7 +368,7 @@ class DxfR2000Writer {
     _p(0, 'ENDSEC');
   }
 
-  /// The variables of a dimension style, in the order AutoCAD writes them.
+  /// The variables of a dimension style, in the order real-world files have them.
   void _dimStyle(CadDimStyle s) {
     _s(3, s.suffix);
     _p(4, '');

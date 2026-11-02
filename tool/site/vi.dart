@@ -43,7 +43,7 @@ const _vi = SiteText(
     ),
     (
       'Bản vẽ CAD đầy đủ',
-      'Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản, lớp và khối, với nhập tọa độ bằng bàn phím, bắt điểm, truy bắt góc cực, grip, đám mây sửa đổi và phím tắt kiểu AutoCAD (L, PL, C, D, ZE…).',
+      'Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản, lớp và khối, với nhập tọa độ bằng bàn phím, bắt điểm, truy bắt góc cực, grip, đám mây sửa đổi và phím tắt lệnh như các phần mềm CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Mạng thủy lực',
@@ -152,8 +152,8 @@ const _vi = SiteText(
       'Tổn thất ma sát theo Hazen-Williams, Darcy-Weisbach, Scobey hoặc Manning, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống; thiết kế còn kiểm tra độ đồng đều (CU, DU, EU), xả rửa ống và nước va theo phương pháp đường đặc trưng (đóng van, bơm dừng đột ngột, van xả khí), kèm mô phỏng 24 giờ về áp suất và chi phí năng lượng.',
     ),
     (
-      'Có dùng được với AutoCAD và các phần mềm CAD khác không?',
-      'Có. Ứng dụng nhập DXF và DWG đến phiên bản AutoCAD 2018, DGN V7 và bản vẽ PDF, đồng thời xuất DXF 2000 với đối tượng CAD nguyên bản (polyline có cung tròn, mặt cắt, spline, kích thước, khối có thuộc tính), DXF R12 cho các phần mềm cũ và DWG 2000. Đối với GIS, khảo sát và BIM, ứng dụng còn đọc và ghi KML/KMZ, shapefile, GeoJSON, GPX, LandXML và EPANET .inp, đọc đám mây điểm LAS và xuất IFC 4.',
+      'Có dùng được với các phần mềm CAD khác không?',
+      'Có. Ứng dụng nhập DXF và DWG đến phiên bản 2018, DGN V7 và bản vẽ PDF, đồng thời xuất DXF 2000 với đối tượng CAD nguyên bản (polyline có cung tròn, mặt cắt, spline, kích thước, khối có thuộc tính), DXF R12 cho các phần mềm cũ và DWG 2000. Đối với GIS, khảo sát và BIM, ứng dụng còn đọc và ghi KML/KMZ, shapefile, GeoJSON, GPX, LandXML và EPANET .inp, đọc đám mây điểm LAS và xuất IFC 4.',
     ),
     (
       'Ứng dụng có những ngôn ngữ nào?',
