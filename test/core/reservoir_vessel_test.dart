@@ -180,6 +180,11 @@ void main() {
       final without = lowest(pumped(mainLength: 800));
       final withVessel = lowest(pumped(mainLength: 800, vessel: 800));
       expect(withVessel, greaterThan(without));
+      // a flywheel on the pump slows its run-down: the line falls less too
+      final flywheel = pumped(mainLength: 800);
+      (flywheel.byId('pump') as PumpEntity).flywheelKgm2 = 2;
+      expect(lowest(flywheel), greaterThan(without));
+      expect((Entity.fromJson((flywheel.byId('pump') as PumpEntity).toJson()) as PumpEntity).flywheelKgm2, 2);
     });
   });
 }

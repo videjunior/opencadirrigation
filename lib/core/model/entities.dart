@@ -391,8 +391,9 @@ sealed class Entity {
           targetPressureM: d('vfd'),
           minSpeedRatio: d('vmin', 0.5),
           motorEfficiency: d('meff', 1).clamp(0.05, 1.0).toDouble(),
-          // 1.6.0 MOT: a pump station
+          // 1.6.0 MOT: a pump station, a flywheel
           station: PumpStation.fromJson(j['stn'], report: report),
+          flywheelKgm2: d('fly'),
         );
       case EntityType.misc:
         return MiscHydraulicEntity(
@@ -1810,6 +1811,7 @@ class PumpEntity extends Entity with PointEntity {
     this.minSpeedRatio = 0.5,
     this.motorEfficiency = 1,
     this.station,
+    this.flywheelKgm2 = 0,
   });
   @override
   Pt position;
@@ -1821,6 +1823,11 @@ class PumpEntity extends Entity with PointEntity {
   /// 1.6.0 MOT: the other pumps of a pump station this item stands for (in
   /// parallel or in series, on duty or on standby); null = a single pump.
   PumpStation? station;
+
+  /// 1.6.0 MOT: moment of inertia (kg·m²) of a flywheel fitted to the pump
+  /// against the water hammer: added to that of the pump and its motor in
+  /// the transient study, it slows the run-down after a power failure.
+  double flywheelKgm2;
 
   /// Efficiency (0–1) of the motor and of its drive, from the wire to the
   /// pump shaft: the energy divides by it as well as by the pump's own
@@ -1855,6 +1862,7 @@ class PumpEntity extends Entity with PointEntity {
     minSpeedRatio: minSpeedRatio,
     motorEfficiency: motorEfficiency,
     station: station?.copy(),
+    flywheelKgm2: flywheelKgm2,
   )..extra = extra;
   @override
   PumpEntity translated(Pt d) => clone()
@@ -1878,6 +1886,7 @@ class PumpEntity extends Entity with PointEntity {
     if (targetPressureM > 0) 'vmin': minSpeedRatio,
     if (motorEfficiency != 1) 'meff': motorEfficiency,
     if (station case final s? when !s.isEmpty || s.extra != null) 'stn': s.toJson(),
+    if (flywheelKgm2 > 0) 'fly': flywheelKgm2,
   };
 }
 

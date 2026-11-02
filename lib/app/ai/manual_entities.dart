@@ -367,7 +367,13 @@ final Map<String, TypeDoc> entityDocs = {
       ),
       'hm': const FieldDoc('hour meter fitted: its price for the bill of materials (the key present = fitted)', panel: 'acc.hourMeter', defText: 'none (no hour meter)'),
       'rot': _rot,
-      // 1.6.0 MOT: a pump station
+      // 1.6.0 MOT: a flywheel, a pump station
+      'fly': const FieldDoc(
+        'moment of inertia of a flywheel fitted to the pump against the water hammer: the transient study adds it to that of the pump and its motor, so a power failure slows the pump down more gently',
+        unit: 'kg·m²',
+        panel: 'props.flywheel',
+        def: 0,
+      ),
       'stn': const FieldDoc(
         'pump station: {units: [{spec, sb}] the pumps after this one (spec = catalogue pump, default this one\'s model; sb true = standby), arr ("series"; default parallel), staged (false = every duty pump always runs)}. Set it with run_operation set_pump_station',
         panel: 'pumpStation.title',

@@ -935,7 +935,10 @@ class TransientStudy {
           // when a drive runs it slower
           final given = options.inertia;
           final shaftKw = waterDensity * gravity * q * math.max(lr?.pumpHead ?? 0, 0.1) / eff / 1000;
-          final inertia = given != null && given > 0 ? given : estimatePumpInertia(powerKw: spec != null && spec.powerKw > 0 ? spec.powerKw : shaftKw, speedRpm: rpm);
+          // 1.6.0 MOT: plus the flywheel fitted to the pump, against the water hammer
+          final item = project.byId(gl?.entityId ?? '');
+          final flywheel = item is PumpEntity ? item.flywheelKgm2 : 0.0;
+          final inertia = (given != null && given > 0 ? given : estimatePumpInertia(powerKw: spec != null && spec.powerKw > 0 ? spec.powerKw : shaftKw, speedRpm: rpm)) + flywheel;
           events.add(TransientEvent.pumpTrip(l.id, inertia: inertia, speedRpm: rpm * w, efficiency: eff));
         }
         if (events.isEmpty) return skip('transient_no_pump');

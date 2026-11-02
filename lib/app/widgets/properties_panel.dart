@@ -335,6 +335,8 @@ class PropertiesPanel extends StatelessWidget {
           if (p.targetPressureM > 0) NumField(label: t('props.vfdMin'), value: p.minSpeedRatio, onChanged: (x) => set(() => p.minSpeedRatio = x.clamp(0.1, 1.0).toDouble())),
           // 1.6.0 MOT: the motor and its drive in the energy
           NumField(label: t('props.motorEfficiency'), value: p.motorEfficiency, onChanged: (x) => set(() => p.motorEfficiency = x.clamp(0.05, 1.0).toDouble())),
+          // 1.6.0 MOT: a flywheel against the water hammer
+          NumField(key: const Key('pump_flywheel'), label: t('props.flywheel'), value: p.flywheelKgm2, onChanged: (x) => set(() => p.flywheelKgm2 = x < 0 ? 0 : x)),
           // 1.6.0 MOT: the pump station the item stands for (PRD-17)
           KV(t('pumpStation.title'), pumpStationSummary(c, p)),
           OutlinedButton.icon(

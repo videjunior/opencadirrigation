@@ -13,6 +13,8 @@ const coverageMot = <String, String>{
   'dialog:pump_station_dialog.pumpStation': 'op:set_pump_station',
   'dialog:pump_station_dialog.pumpStation.duty': 'op:pump_stations',
   'panel:properties.pump.station': 'op:set_pump_station',
+  // a flywheel of the pump (a key of the item)
+  'panel:properties.pump.flywheel': 'tool:update_entities',
   'panel:reports.mainline.stations': 'tool:get_report_table',
   // ---- 1.6.0 MOT+: the real operation of the zones at the pressure the mainline gives them
   'dialog:dialogs.designParams.realZoneOperation': 'tool:set_parameters',

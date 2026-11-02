@@ -235,6 +235,7 @@ const _motPlus = <String, (String, String, String)>{
   'pumpStation.power': ('Potência elétrica', 'Electric power', 'Potencia eléctrica'),
   'reports.stations': ('Estações de bombeamento', 'Pump stations', 'Estaciones de bombeo'),
   'hist.pumpStation': ('Estação de bombeamento', 'Pump station', 'Estación de bombeo'),
+  'props.flywheel': ('Volante de inércia (kg·m², contra o golpe)', 'Flywheel (kg·m², against the water hammer)', 'Volante de inercia (kg·m², contra el golpe)'),
   'ai.op.set_pump_station': ('Configurar a estação de bombeamento {n}', 'Set up the pump station {n}', 'Configurar la estación de bombeo {n}'),
   'ai.op.pump_stations': ('Ler as estações de bombeamento', 'Read the pump stations', 'Leer las estaciones de bombeo'),
   // ---- real operation of the zones at the pressure the mainline gives them
