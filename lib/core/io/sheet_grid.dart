@@ -83,7 +83,7 @@ class GridLine {
 /// georeference.
 List<GridLine> utmGridLines(GeoReference? g, Bounds view, double step) {
   if (view.isEmpty || !(step > 0)) return const [];
-  final e0 = g?.originEasting ?? 0, n0 = g?.originNorthing ?? 0;
+  final e0 = g?.originEasting ?? 0.0, n0 = g?.originNorthing ?? 0.0;
   final out = <GridLine>[];
   final eFirst = ((view.minX + e0) / step).ceil(), eLast = ((view.maxX + e0) / step).floor();
   final nFirst = ((view.minY + n0) / step).ceil(), nLast = ((view.maxY + n0) / step).floor();
