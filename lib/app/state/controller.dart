@@ -839,6 +839,9 @@ class ProjectController extends ChangeNotifier {
     MiscHydraulicEntity _ => 'misc',
     JunctionEntity _ => 'junction',
     PivotEntity _ => 'pivot',
+    // 1.6.0 AGB
+    TravellerEntity _ => 'traveller',
+    FurrowEntity _ => 'furrows',
     AreaEntity _ => 'area',
     ControllerEntity _ => 'controller',
     WireEntity _ => 'wire',
@@ -971,7 +974,8 @@ class ProjectController extends ChangeNotifier {
       'meta' => jsonEncode({...(j['meta'] as Map<String, dynamic>)}..remove('modified')),
       _ => jsonEncode(j[k]),
     };
-    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules'];
+    // 1.6.0 AGB: 'agb' (pump house, solar, water quality, two-wire settings)
+    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules', 'agb'];
     final changed = [
       for (final k in sections)
         if (part(before, k) != part(now, k)) k,
@@ -990,7 +994,7 @@ class ProjectController extends ChangeNotifier {
     historyTouched = DateTime.now();
     dirty = true;
     project.meta.modified = DateTime.now();
-    if (changed.any((k) => k == 'params' || k == 'catalog' || k == 'systemFlows')) {
+    if (changed.any((k) => k == 'params' || k == 'catalog' || k == 'systemFlows' || k == 'agb')) {
       results = null;
       feedEnvelope.clear();
       _scheduleAutoAnalysis();

@@ -13,7 +13,7 @@ import 'results.dart';
 import 'water_quality.dart';
 
 /// Keys of the tables, in order.
-const agbTableKeys = ['pumpHouse', 'pumpHouseSupply', 'pivotSupply', 'solar', 'solarMonths', 'water', 'waterTreatment', 'twoWire', 'travellers', 'furrows'];
+const agbTableKeys = ['pumpHouse', 'pumpHouseSupply', 'pivotSupply', 'solar', 'solarMonths', 'waterQuality', 'waterTreatment', 'twoWire', 'travellers', 'furrows'];
 
 /// The tables of [results] (none without results or with every part off).
 List<ReportTable> agbReportTables(Project project, DesignResults? results, ReportLabels labels) {
@@ -174,7 +174,7 @@ List<ReportTable> agbReportTables(Project project, DesignResults? results, Repor
     const units = {'tss': 'mg/L', 'ph': '', 'tds': 'mg/L', 'mn': 'mg/L', 'fe': 'mg/L', 'h2s': 'mg/L', 'bact': '/mL'};
     out.add(
       ReportTable(
-        key: 'water',
+        key: 'waterQuality',
         title: t('agb.rep.water'),
         headers: [t('agb.rep.parameter'), t('agb.rep.value'), t('agb.rep.risk')],
         rows: [

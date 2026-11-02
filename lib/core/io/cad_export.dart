@@ -252,6 +252,15 @@ class CadExport {
         if (k.name.isNotEmpty) _add(CadText(labels, k.position + const Pt(1.3, 0), k.name, 0.8));
       case WireEntity w:
         _add(CadPolyline(layer, w.points));
+      // 1.6.0 AGB: the strip of a traveller lane with its axis, the field of a furrow set with its head line
+      case TravellerEntity tv:
+        _add(CadPolyline(layer, tv.outline(), closed: true));
+        _add(CadPolyline(layer, [tv.start, tv.end]));
+        if (tv.name.isNotEmpty) _add(CadText(labels, tv.start + const Pt(1, 1), tv.name, 0.8));
+      case FurrowEntity fs when fs.points.length >= 2:
+        _add(CadPolyline(layer, fs.outline(), closed: true));
+        _add(CadPolyline(layer, fs.points));
+        if (fs.name.isNotEmpty) _add(CadText(labels, fs.points.first + const Pt(1, 1), fs.name, 0.8));
       default:
         break;
     }

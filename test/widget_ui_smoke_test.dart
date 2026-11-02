@@ -5,7 +5,9 @@ import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/agb_dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/dialogs.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/field_machine_dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/more_dialogs.dart';
 import 'package:opencadirrigation/app/widgets/message_log.dart';
 import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
@@ -62,6 +64,14 @@ void main() {
     'versions': showVersionsDialog,
     'messages': showMessageLogDialog,
     'about': showAboutDialogApp,
+    // 1.6.0 AGB
+    'pumpHouse': showPumpHouseDialog,
+    'solarDesign': showSolarDesignDialog,
+    'waterQuality': showWaterQualityDialog,
+    'twoWire': showTwoWireDialog,
+    'multiPivot': showMultiPivotDialog,
+    'travellerLanes': showTravellerLanesDialog,
+    'furrowSet': showFurrowSetDialog,
   };
 
   for (final (name, size, lang, scale) in const [

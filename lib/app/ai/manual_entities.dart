@@ -19,6 +19,8 @@ import '../../core/design/crops.dart' show fao56Crops;
 import '../../core/design/effective_rain.dart' show EffectiveRainMethod;
 import '../../core/design/pivot.dart' show PivotKind;
 import '../../core/design/soils.dart' show soilTable;
+// 1.6.0 AGB
+import '../../core/design/traveller.dart' show WindClass;
 import '../../core/design/water_budget.dart' show PlantWaterUse;
 import '../../core/model/entities.dart';
 import '../i18n.dart';
@@ -214,6 +216,17 @@ const entitySamples = <String, Map<String, Object>>{
     'pts': [
       [0, 0],
       [10, 0],
+    ],
+  },
+  // 1.6.0 AGB
+  'traveller': {
+    'a': [0, 0],
+    'b': [0, 300],
+  },
+  'furrows': {
+    'pts': [
+      [0, 0],
+      [100, 0],
     ],
   },
 };
@@ -570,11 +583,64 @@ final Map<String, TypeDoc> entityDocs = {
     'desc': const FieldDoc('description', panel: 'props.description', def: ''),
     'arc': const FieldDoc('chord of each arc; 0 = from the outline size', unit: 'm', panel: 'props.arcLength', def: 0),
   }),
+  // 1.6.0 AGB
+  'traveller': TypeDoc(
+    'Traveller lane',
+    'One lane of a travelling gun (hose reel): the reel at the hydrant winds the gun cart in from the far end. Its flow and the pressure it needs at the hydrant (gun pressure + hose friction + turbine loss + gun height + ground rise) come from the traveller hydraulics (NRCS NEH 623 ch. 11); the report gives the speed, depth and times.',
+    {
+      'a': const FieldDoc('hydrant and reel position (the inlet)', unit: 'm'),
+      'b': const FieldDoc('far end of the run, where the gun cart starts', unit: 'm'),
+      'w': const FieldDoc('lane spacing; 0 = the NRCS wind table for the wetted diameter', unit: 'm', def: 0),
+      'gun': const FieldDoc('catalogue gun (search_catalog kind "outlet", a gun); without one q and dw are used', defText: 'none'),
+      'noz': const FieldDoc('nozzle of the gun', defText: 'none'),
+      'q': const FieldDoc('gun flow without a catalogue gun', unit: 'm³/s', def: 0.0125),
+      'hg': const FieldDoc('pressure at the gun', unit: 'm', def: 50),
+      'dw': const FieldDoc('wetted diameter without a catalogue gun', unit: 'm', def: 80),
+      'sector': const FieldDoc('part of the circle the gun waters', unit: '°', def: 300),
+      'hose': const FieldDoc('hose length; 0 = the run length', unit: 'm', def: 0),
+      'hosemm': const FieldDoc('hose bore', unit: 'mm', def: 100),
+      'hd': const FieldDoc('loss of the turbine and drum', unit: 'm', def: 7),
+      'zg': const FieldDoc('height of the gun above the hydrant', unit: 'm', def: 2.5),
+      'depth': const FieldDoc('gross depth wanted, which sets the speed', unit: 'mm', def: 25),
+      'v': const FieldDoc('travel speed; 0 = from the depth', unit: 'm/min', def: 0),
+      'setup': const FieldDoc('time to move and set up between lanes', unit: 'h', def: 0.5),
+      'hday': const FieldDoc('working hours per day', unit: 'h', def: 22),
+      'wind': FieldDoc('wind class of the spacing table', values: [for (final w in WindClass.values) w.name], def: 'light'),
+      'ring': const FieldDoc('true: ring nozzle (closer spacing)', def: false),
+      'mach': const FieldDoc('reel serving the lane: lanes with the same label share one machine in the bill of materials', panel: 'agb.rep.machine', def: 'A'),
+      'cost': const FieldDoc('price of the machine', def: 0),
+      'hcost': const FieldDoc('price of the hydrant', def: 0),
+    },
+    connects: 'A demand on the mainline at "a" (like a pivot point): "a" must lie on a mainline pipe. List it in a system flow to run it (one lane at a time per reel).',
+  ),
+  'furrows': TypeDoc(
+    'Furrow set',
+    'Furrows fed from a head line (a gated pipe, or a head ditch with siphons): the volume-balance model of FAO 45 finds the inflow of the highest efficiency and the cutoff time for the depth; the gated pipe of the farthest set gives the pressure at the inlet.',
+    {
+      'pts': const FieldDoc('head line [[x, y], …], the first point is the inlet', unit: 'm'),
+      'right': const FieldDoc('true: the furrows run to the right of the head line', def: false),
+      'len': const FieldDoc('furrow length', unit: 'm', def: 200),
+      'sp': const FieldDoc('furrow spacing', unit: 'm', def: 0.9),
+      'slope': const FieldDoc('slope along the furrows', unit: 'm/m', def: 0.002),
+      'n': const FieldDoc('Manning roughness', def: 0.04),
+      'fam': const FieldDoc('NRCS intake family of the soil', unit: 'in/h', def: 0.5),
+      'depth': const FieldDoc('depth to infiltrate', unit: 'mm', def: 60),
+      'q': const FieldDoc('inflow of a furrow; 0 = the one of the highest efficiency', unit: 'L/s', def: 0),
+      'set': const FieldDoc('furrows irrigated together; 0 = all', def: 0),
+      'ditch': const FieldDoc('true: a head ditch with siphons (no pressure) instead of a gated pipe', def: false),
+      'mm': const FieldDoc('gated pipe bore', unit: 'mm', def: 150),
+      'c': const FieldDoc('Hazen-Williams C of the gated pipe', def: 150),
+      'cost': const FieldDoc('gated pipe price per metre', def: 0),
+      'gcost': const FieldDoc('price of a gate (or siphon)', def: 0),
+    },
+    connects: 'A demand on the mainline at its first point: it must lie on a mainline pipe. List it in a system flow to run it.',
+  ),
 };
 
 /// Order of the index: the hydraulic network first.
 const _groups = <String, List<String>>{
-  'Hydraulic network': ['waterSupply', 'pump', 'misc', 'pipe', 'controlValve', 'sprayline', 'tape', 'outlet', 'junction', 'pivot'],
+  // 1.6.0 AGB: traveller, furrows
+  'Hydraulic network': ['waterSupply', 'pump', 'misc', 'pipe', 'controlValve', 'sprayline', 'tape', 'outlet', 'junction', 'pivot', 'traveller', 'furrows'],
   'Fields and wiring': ['area', 'controller', 'wire'],
   'Terrain': ['contour', 'spotHeight', 'breakline'],
   'Drawing and notes': ['line', 'polyline', 'spline', 'circle', 'arc', 'hatch', 'text', 'leader', 'symbol', 'comment'],

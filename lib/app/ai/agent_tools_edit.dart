@@ -82,6 +82,9 @@ const entityKeys = <String, List<String>>{
   'leader': ['pts', 'text', 'h'],
   'symbol': ['p', 'kind', 'size', 'rot'],
   'comment': ['p', 'text', 'author', 'date', 'done'],
+  // 1.6.0 AGB
+  'traveller': ['a', 'b', 'w', 'gun', 'noz', 'q', 'hg', 'dw', 'sector', 'hose', 'hosemm', 'hd', 'zg', 'depth', 'v', 'setup', 'hday', 'wind', 'ring', 'mach', 'cost', 'hcost'],
+  'furrows': ['pts', 'right', 'len', 'sp', 'slope', 'n', 'fam', 'depth', 'q', 'set', 'ditch', 'mm', 'c', 'cost', 'gcost'],
 };
 
 /// Properties a new item of each type must have.
@@ -112,6 +115,9 @@ const entityRequired = <String, List<String>>{
   'leader': ['pts', 'text'],
   'symbol': ['p'],
   'comment': ['p', 'text'],
+  // 1.6.0 AGB
+  'traveller': ['a', 'b'],
+  'furrows': ['pts'],
 };
 
 const _pointKeys = {'p', 'a', 'b'};
@@ -135,6 +141,8 @@ final String entityLegend =
 - controller {p, st (stations), v (output volts), sim (most stations at once; 0 = from the system flows), cost}; wire {pts}: a wire route along the trenches from a controller.
 - contour {pts, z}; spotHeight {p, z}; breakline {pts, zs (elevation per vertex, null = from the terrain)}.
 - polyline {pts, closed}; spline {pts, closed}; line {a, b}; circle {p, r}; arc {p, r, s, w (start and sweep in radians)}; hatch {pts, ang, sp, solid}; text {p, text, h (height m), rot}; leader {pts, text, h}; symbol {p, kind (${SymbolKind.values.map((k) => k.name).join(' | ')}), size (m), rot}; comment {p, text, author, date, done}.
+- traveller {a (hydrant and reel, on the mainline), b (far end of the run), w (lane spacing m; 0 = wind table), gun and noz (catalogue gun and nozzle), q (gun flow m³/s without a gun), hg (gun pressure m), dw (wetted diameter m without a gun), sector (deg), hose (m; 0 = the run), hosemm (bore mm), hd (turbine and drum loss m), zg (gun height m), depth (gross mm), v (speed m/min; 0 = from depth), setup (h), hday (h/day), wind ("none" | "light" | "moderate" | "strong"), ring (ring nozzle), mach (reel label), cost, hcost (hydrant price)}: one lane of a travelling gun, a demand on the mainline at its hydrant.
+- furrows {pts (head line, first point the inlet on the mainline), right (furrows to the right), len (furrow length m), sp (spacing m), slope (m/m), n (Manning), fam (NRCS intake family in/h), depth (mm to infiltrate), q (L/s per furrow; 0 = best), set (furrows at once; 0 = all), ditch (head ditch instead of gated pipe), mm (pipe bore), c (Hazen-Williams C), cost (pipe per m), gcost (gate)}: a furrow set fed by a gated pipe, a demand on the mainline at its inlet.
 read_manual "entities" (item: a type) has every key with its unit, default and values; read_manual "drawing" the connection rules.''';
 
 /// The layer a new item of [e]'s type goes to when none is given.
@@ -149,6 +157,9 @@ String defaultLayerOf(Entity e) => switch (e) {
   MiscHydraulicEntity _ => Layers.misc,
   JunctionEntity _ => Layers.junctions,
   PivotEntity _ => Layers.pivots,
+  // 1.6.0 AGB
+  TravellerEntity _ => Layers.travellers,
+  FurrowEntity _ => Layers.surface,
   AreaEntity _ => Layers.areas,
   ControllerEntity _ => Layers.controllers,
   WireEntity _ => Layers.wires,

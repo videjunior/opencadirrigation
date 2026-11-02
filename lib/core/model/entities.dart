@@ -87,7 +87,8 @@ class Layers {
   static const wires = 'WIRES';
   static const comments = 'COMMENTS';
   static const revisions = 'REVISIONS';
-  // 1.6.0 AGB
+  // 1.6.0 AGB: made with the first lane or furrow set (not in [all], so
+  // the files of projects without them do not change)
   static const travellers = 'TRAVELLERS';
   static const surface = 'SURFACE_IRRIGATION';
 
@@ -114,9 +115,6 @@ class Layers {
     misc,
     junctions,
     pivots,
-    // 1.6.0 AGB
-    travellers,
-    surface,
     wires,
     controllers,
     areas,

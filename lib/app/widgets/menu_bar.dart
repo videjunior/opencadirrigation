@@ -16,6 +16,9 @@ import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
 import 'dialogs/agronomy_dialogs.dart';
+// 1.6.0 AGB
+import 'dialogs/agb_dialogs.dart';
+import 'dialogs/field_machine_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/densogram_dialog.dart';
@@ -424,6 +427,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('tool.controller'), () => c.setTool(ToolId.controller), icon: Icons.developer_board, shortcut: 'CTRL ⏎', key: const Key('menu_controller')),
                     item(t('tool.wire'), () => c.setTool(ToolId.wire), icon: Icons.cable, shortcut: 'WR ⏎', key: const Key('menu_wire')),
                     item(t('wr.menu'), () => showWireRoutingDialog(context, c), icon: Icons.alt_route, shortcut: 'WROUTE ⏎', key: const Key('menu_wire_routes')),
+                    // 1.6.0 AGB
+                    item(t('agb.tw.menu'), () => showTwoWireDialog(context, c), icon: Icons.settings_ethernet, key: const Key('menu_agb_two_wire')),
                   ],
                   child: Text(t('menu.zone')),
                 ),
@@ -462,6 +467,9 @@ class AppMenuBar extends StatelessWidget {
                     item(t('fert.menu'), () => showFertigationDialog(context, c), icon: Icons.science_outlined, shortcut: 'FERT ⏎', key: const Key('menu_fertigation')),
                     const Divider(height: 1),
                     item(t('tool.pivot'), () => c.setTool(ToolId.pivot), icon: Icons.radar, shortcut: 'PV ⏎', key: const Key('menu_pivot')),
+                    // 1.6.0 AGB: travelling guns and furrows as parts of the design
+                    item(t('agb.trav.menu'), () => showTravellerLanesDialog(context, c), icon: Icons.agriculture, key: const Key('menu_agb_traveller')),
+                    item(t('agb.furrow.menu'), () => showFurrowSetDialog(context, c), icon: Icons.view_week, key: const Key('menu_agb_furrows')),
                   ],
                   child: Text(t('menu.mainline')),
                 ),
@@ -478,6 +486,10 @@ class AppMenuBar extends StatelessWidget {
                     item(t('design.proposal'), () => showProposalDialog(context, c), icon: Icons.request_quote_outlined, key: const Key('menu_proposal')),
                     item(t('design.scenarios'), () => showScenariosDialog(context, c), icon: Icons.compare_outlined, key: const Key('menu_scenarios')),
                     item(t('clim.menu'), () => showSiteClimateDialog(context, c), icon: Icons.wb_sunny_outlined, key: const Key('menu_climate')),
+                    // 1.6.0 AGB: pump house electrics, solar pumping, water quality
+                    item(t('agb.ph.menu'), () => showPumpHouseDialog(context, c), icon: Icons.electrical_services_outlined, key: const Key('menu_agb_pump_house')),
+                    item(t('agb.solar.menu'), () => showSolarDesignDialog(context, c), icon: Icons.solar_power, key: const Key('menu_agb_solar')),
+                    item(t('agb.water.menu'), () => showWaterQualityDialog(context, c), icon: Icons.water_drop, key: const Key('menu_agb_water')),
                     SubmenuButton(
                       onOpen: _menuOpened,
                       onClose: _menuClosed,
@@ -519,6 +531,8 @@ class AppMenuBar extends StatelessWidget {
                         item(t('subdiv.menu'), () => showFieldSubdivisionDialog(context, c), icon: Icons.grid_view_outlined, shortcut: 'SUBDIV ⏎', key: const Key('menu_subdivide')),
                         item(t('rings.menu'), () => showTreeRingsDialog(context, c), icon: Icons.park_outlined, shortcut: 'RINGS ⏎', key: const Key('menu_tree_rings')),
                         item(t('pfit.menu'), () => showPivotFitDialog(context, c), icon: Icons.track_changes, shortcut: 'PFIT ⏎', key: const Key('menu_pivot_fit')),
+                        // 1.6.0 AGB
+                        item(t('agb.mp.menu'), () => showMultiPivotDialog(context, c), icon: Icons.blur_circular, key: const Key('menu_agb_multi_pivot')),
                         item(t('veg.menu'), () => showVegetationDialog(context, c), icon: Icons.image_search, shortcut: 'VEG ⏎', key: const Key('menu_vegetation')),
                       ],
                       child: Text(t('auto.menu')),

@@ -19,6 +19,8 @@ import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/tools.dart';
 import 'dialogs/mechanised_dialogs.dart';
+// 1.6.0 AGB
+import 'dialogs/field_machine_dialogs.dart' show showFurrowSetDialog, showTravellerLanesDialog;
 import 'edit_fields.dart';
 import 'fields.dart';
 
@@ -628,6 +630,38 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case AreaEntity a:
         items.addAll(_areaFields(a, set));
+      // 1.6.0 AGB: a traveller lane and a furrow set (their data in their dialogs)
+      case TravellerEntity tv:
+        items.addAll([
+          KV(t('agb.rep.length'), '${fmtUi(u.lengthFromSi(tv.runLengthM), 0)} ${u.lengthLabel}'),
+          TextFieldRow(label: t('agb.rep.machine'), value: tv.machine, onChanged: (x) => set(() => tv.machine = x.trim().isEmpty ? 'A' : x.trim())),
+          OutlinedButton.icon(
+            key: const Key('agb_props_traveller'),
+            onPressed: locked
+                ? null
+                : () {
+                    c.select([tv.id]);
+                    showTravellerLanesDialog(context, c);
+                  },
+            icon: const Icon(Icons.tune, size: 16),
+            label: Text(t('agb.props.edit'), style: const TextStyle(fontSize: 12)),
+          ),
+        ]);
+      case FurrowEntity fs:
+        items.addAll([
+          KV(t('agb.rep.furrowCount'), '${fs.furrowCount}'),
+          OutlinedButton.icon(
+            key: const Key('agb_props_furrows'),
+            onPressed: locked
+                ? null
+                : () {
+                    c.select([fs.id]);
+                    showFurrowSetDialog(context, c);
+                  },
+            icon: const Icon(Icons.tune, size: 16),
+            label: Text(t('agb.props.edit'), style: const TextStyle(fontSize: 12)),
+          ),
+        ]);
       default:
         break;
     }
