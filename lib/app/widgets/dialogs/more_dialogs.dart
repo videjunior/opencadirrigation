@@ -25,16 +25,16 @@ import '../fields.dart';
 import 'catalog_packs_dialog.dart';
 import '../../theme.dart';
 
-Future<void> _show(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<void>(
+Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<T>(
   context: context,
   builder: (ctx) {
     final compact = MediaQuery.sizeOf(ctx).width < 700;
-    // the content scrolls by itself (see the dialogs.dart helper)
+    // the content always scrolls (see the dialogs.dart helper)
     return AlertDialog(
       title: Text(title, style: const TextStyle(fontSize: 15)),
       content: SizedBox(
         width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width,
-        child: compact && body is! ScrollBody ? ScrollBody(child: body) : body,
+        child: body is ScrollBody ? body : ScrollBody(child: body),
       ),
       actions: actions ?? [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
     );
@@ -503,7 +503,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
   final cur = c.project.params.currency;
   var tab = CatalogGroup.pipes;
   final edit = c.beginSettingsEdit('hist.catalog');
-  return _show(
+  return _show<bool>(
     context,
     c,
     t('design.catalog'),
@@ -1134,19 +1134,33 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
       },
     ),
     actions: [
-      FilledButton(
+      TextButton(
+        key: const Key('cat_cancel'),
         onPressed: () {
           FocusManager.instance.primaryFocus?.unfocus();
-          Navigator.pop(context);
+          Navigator.pop(context, false);
+        },
+        child: Text(t('cancel')),
+      ),
+      FilledButton(
+        key: const Key('cat_ok'),
+        onPressed: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.pop(context, true);
         },
         child: Text(t('ok')),
       ),
     ],
     width: 1000,
-  ).then((_) async {
-    // however the dialog closes, the edits become one undo step
+  ).then((ok) async {
+    // OK: the edits become one undo step; Cancel, Esc or a tap outside put
+    // the catalogue back as it was (after the field being typed in commits)
     await Future<void>.delayed(Duration.zero);
-    c.commitSettingsEdit(edit);
+    if (ok == true) {
+      c.commitSettingsEdit(edit);
+    } else {
+      c.cancelSettingsEdit(edit);
+    }
   });
 }
 

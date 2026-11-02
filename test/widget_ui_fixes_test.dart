@@ -16,6 +16,7 @@ import 'package:opencadirrigation/app/ai/ai_assistant.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/ai_assistant_dialog.dart';
 import 'package:opencadirrigation/app/widgets/layout_mode.dart';
 import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/dialogs.dart';
 import 'package:opencadirrigation/app/widgets/fields.dart';
 import 'package:opencadirrigation/app/widgets/properties_panel.dart';
 import 'package:opencadirrigation/app/widgets/status_bar.dart';
@@ -558,6 +559,79 @@ void main() {
       expect(tester.widget<TextField>(f).controller!.text, '', reason: 'not a 0 that reads as a value');
       await type(tester, 'Profundidade', '0');
       expect([(c.project.byId(a.id) as PipeEntity).depth, (c.project.byId(b.id) as PipeEntity).depth], [0, 0]);
+    });
+  });
+
+  group('dialogs: small catalogues, Cancel, unit names', () {
+    BuildContext ctxOf(WidgetTester tester) => tester.element(find.byType(MenuBar));
+
+    testWidgets('UI-13 the pump and water hammer calculators say what the catalogue lacks instead of failing', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final cat = c.project.catalog;
+      for (final p in cat.pipes) {
+        p.enabled = false;
+      }
+      showPumpCalculator(ctxOf(tester), c);
+      await settle(tester);
+      expect(tester.takeException(), isNull);
+      expect(c.lastMessage, c.t('msg.pumpCalcNeedsCatalog'));
+      // one main line pipe is enough (the third one was taken blindly)
+      cat.pipes.firstWhere((p) => p.usage.contains(PipeUsage.mainline)).enabled = true;
+      showPumpCalculator(ctxOf(tester), c);
+      await settle(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.text(c.t('tools.pump')), findsOneWidget);
+      await tester.tap(find.text(c.t('close')).last);
+      await settle(tester);
+      cat.pipes.clear();
+      showHammerCalculator(ctxOf(tester), c);
+      await settle(tester);
+      expect(tester.takeException(), isNull);
+      expect(c.lastMessage, c.t('msg.hammerCalcNeedsCatalog'));
+    });
+
+    testWidgets('UI-25 the design parameters: Cancel and Esc put the values back, OK keeps them', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final before = c.project.params.maxZoneVelocity;
+      Future<void> edit(String text) async {
+        showDesignParamsDialog(ctxOf(tester), c);
+        await settle(tester);
+        final f = find.byWidgetPredicate((w) => w is TextField && (w.decoration?.labelText ?? '') == c.t('dlg.vZone'));
+        await tester.enterText(f, text);
+        await tester.pump();
+      }
+
+      await edit('2,5');
+      await tester.tap(find.byKey(const Key('settings_cancel')));
+      await settle(tester);
+      expect(c.project.params.maxZoneVelocity, before, reason: 'Cancel');
+      expect(c.dirty, isFalse);
+      await edit('2,6');
+      (shell.hotkeys as Hotkeys).handle(const HotkeyEvent('Escape'));
+      await settle(tester);
+      expect(find.byKey(const Key('settings_ok')), findsNothing, reason: 'Esc closes the dialog');
+      expect(c.project.params.maxZoneVelocity, before, reason: 'Esc cancels, it no longer writes');
+      await edit('2,7');
+      await tester.tap(find.byKey(const Key('settings_ok')));
+      await settle(tester);
+      expect(c.project.params.maxZoneVelocity, 2.7);
+      expect(c.canUndo, isTrue);
+    });
+
+    testWidgets('UI-38 the units dialog shows L/h, m³/h, m.c.a. and in, and has Cancel', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      showUnitsDialog(ctxOf(tester), c);
+      await settle(tester);
+      expect(find.text('L/h'), findsWidgets);
+      expect(find.text('m.c.a.'), findsWidgets);
+      expect(find.text('lph'), findsNothing);
+      expect(find.text('mH2O'), findsNothing);
+      await tester.tap(find.byKey(const Key('units_cancel')));
+      await settle(tester);
+      expect(find.byKey(const Key('units_ok')), findsNothing);
     });
   });
 }

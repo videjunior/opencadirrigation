@@ -71,7 +71,7 @@ void main() {
 
   BuildContext ctxOf(WidgetTester tester) => tester.element(find.byType(CadCanvas));
 
-  testWidgets('management: pivots join the flows, automatic flows, a tap outside keeps the edit as one undo step', (tester) async {
+  testWidgets('management: pivots join the flows, automatic flows, OK keeps the edit as one undo step', (tester) async {
     final c = await pumpShell(tester);
     c.addEntity(PivotEntity(id: 'pvT', center: const Pt(-300, 0), radiusM: 100, zoneName: 'Pivô T'));
     await settle(tester);
@@ -91,8 +91,8 @@ void main() {
     expect(c.project.systemFlows.length, demands);
     expect(c.project.systemFlows.every((f) => f.valveIds.length == 1), isTrue);
     expect(find.textContaining(c.t('mgmt.demand', {'q': ''}).trim()), findsWidgets);
-    // closed with a tap outside the dialog: the edit stays and can be undone
-    await tester.tapAt(const Offset(4, 1070));
+    // closed with OK: the edit stays and can be undone
+    await tester.tap(find.byKey(const Key('settings_ok')));
     await settle(tester);
     expect(find.byKey(const Key('mgmt_auto_panel')), findsNothing);
     expect(c.dirty, isTrue);
@@ -102,13 +102,20 @@ void main() {
     expect(jsonEncode([for (final f in c.project.systemFlows) f.toJson()]), before);
   });
 
-  testWidgets('parameters closed outside keep the edit, drop the stale results and undo in one step; units keep the results', (tester) async {
+  testWidgets('parameters: a tap outside puts them back; OK keeps the edit, drops the stale results and undoes in one step; units keep the results', (tester) async {
     final c = await pumpShell(tester);
     c.results = DesignResults(timestamp: DateTime(2026));
     showDesignParamsDialog(ctxOf(tester), c);
     await settle(tester);
     await typeInto(tester, find.widgetWithText(TextField, c.t('dlg.vZone')), '1.2');
     await tester.tapAt(const Offset(4, 1070));
+    await settle(tester);
+    expect(c.project.params.maxZoneVelocity, 1.5, reason: 'a tap outside cancels');
+    expect(c.results, isNotNull, reason: 'nothing changed');
+    showDesignParamsDialog(ctxOf(tester), c);
+    await settle(tester);
+    await typeInto(tester, find.widgetWithText(TextField, c.t('dlg.vZone')), '1.2');
+    await tester.tap(find.byKey(const Key('settings_ok')));
     await settle(tester);
     expect(c.project.params.maxZoneVelocity, 1.2);
     expect(c.results, isNull);

@@ -747,7 +747,32 @@ class ProjectController extends ChangeNotifier {
   /// Starts an in-place edit of the project settings (details, parameters,
   /// catalogue, layers, system flows) by a dialog; hand the returned token
   /// to [commitSettingsEdit] when the dialog closes, however it is closed.
-  SettingsEdit beginSettingsEdit([String label = 'hist.settings']) => SettingsEdit._(_capture(label), project);
+  SettingsEdit beginSettingsEdit([String label = 'hist.settings']) => SettingsEdit._(_capture(label), project, dirty, results);
+
+  /// Ends an edit started with [beginSettingsEdit] by putting back what the
+  /// dialog changed (its Cancel, Esc, a tap outside): the project, the
+  /// results and the "modified" mark as they were when it opened; the undo
+  /// steps recorded meanwhile go away. Returns whether anything was put
+  /// back.
+  bool cancelSettingsEdit(SettingsEdit edit) {
+    if (!identical(edit._project, project)) return false; // another project was opened meanwhile
+    final before = edit._state;
+    var mutated = false;
+    while (_undo.isNotEmpty && !_undo.last.time.isBefore(before.time)) {
+      _undo.removeLast();
+      mutated = true;
+    }
+    final same = jsonEncode(before.rest) == jsonEncode(project.toJson(includeEntities: false)) && before.entities.length == project.entities.length;
+    if (same && !mutated) return false;
+    _editSeq++;
+    project = _restore(before);
+    results = edit._results;
+    dirty = edit._dirty;
+    feedEnvelope.clear();
+    historyTouched = DateTime.now();
+    notifyListeners();
+    return true;
+  }
 
   /// Ends an edit started with [beginSettingsEdit]: when anything changed,
   /// the whole dialog session becomes one undo step (edits made through
@@ -3084,9 +3109,14 @@ String prettyJson(Object o) => const JsonEncoder.withIndent('  ').convert(o);
 /// An in-place edit of the project settings by a dialog (see
 /// [ProjectController.beginSettingsEdit]).
 class SettingsEdit {
-  SettingsEdit._(this._state, this._project);
+  SettingsEdit._(this._state, this._project, this._dirty, this._results);
   final _UndoState _state;
   final Project _project;
+
+  /// The "modified" mark and the results when the dialog opened (put back
+  /// by [ProjectController.cancelSettingsEdit]).
+  final bool _dirty;
+  final DesignResults? _results;
 }
 
 /// Outcome of an online DEM download.

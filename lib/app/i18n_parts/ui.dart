@@ -102,4 +102,17 @@ const _ui = <String, (String, String, String)>{
   'ui.dimRadius': ('Raio do arco de cota', 'Dimension arc radius', 'Radio del arco de cota'),
   'ui.imageWidth': ('Largura', 'Width', 'Ancho'),
   'ui.imageHeight': ('Altura', 'Height', 'Alto'),
+  // ---- UI-13 calculators with a small catalogue; UI-21 velocities in the unit system
+  'msg.pumpCalcNeedsCatalog': (
+    'A calculadora de bomba precisa de ao menos uma bomba e um tubo de linha principal ativos no catálogo.',
+    'The pump calculator needs at least one pump and one main line pipe switched on in the catalog.',
+    'La calculadora de bomba necesita al menos una bomba y una tubería de línea principal activas en el catálogo.',
+  ),
+  'msg.hammerCalcNeedsCatalog': (
+    'O cálculo do golpe de aríete precisa de ao menos um tubo no catálogo.',
+    'The water hammer calculator needs at least one pipe in the catalog.',
+    'El cálculo del golpe de ariete necesita al menos una tubería en el catálogo.',
+  ),
+  'ui.velocityChange': ('Variação de velocidade', 'Velocity change', 'Variación de velocidad'),
+  'ui.removeFlow': ('Remover este turno', 'Remove this shift', 'Quitar este turno'),
 };

@@ -32,29 +32,32 @@ import '../../state/controller.dart';
 import '../../version.dart';
 import '../fields.dart';
 
-Future<void> _show(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<void>(
+Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<T>(
   context: context,
   builder: (ctx) {
     final compact = MediaQuery.sizeOf(ctx).width < 700;
-    // the content scrolls by itself: a scrollable AlertDialog asks it for
-    // intrinsic heights, which fields built on LayoutBuilder cannot give
+    // the content always scrolls (a low window, a phone held sideways, the
+    // on-screen keyboard over half the screen); a scrollable AlertDialog
+    // asks it for intrinsic heights, which fields built on LayoutBuilder
+    // cannot give, so the scroll view is the content's own
     return AlertDialog(
       title: Text(title, style: const TextStyle(fontSize: 15)),
       content: SizedBox(
         width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width,
-        child: compact && body is! ScrollBody ? ScrollBody(child: body) : body,
+        child: body is ScrollBody ? body : ScrollBody(child: body),
       ),
       actions: actions ?? [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
     );
   },
 );
 
-/// A dialog that edits the project settings in place: however it is closed
-/// (OK, Esc, a tap outside), what was changed becomes one undo step and
-/// marks the project as modified (see [ProjectController.commitSettingsEdit]).
+/// A dialog that edits the project settings in place: OK makes what was
+/// changed one undo step and marks the project as modified (see
+/// [ProjectController.commitSettingsEdit]); Cancel, Esc or a tap outside put
+/// everything back as it was ([ProjectController.cancelSettingsEdit]).
 Future<void> _showSettings(BuildContext context, ProjectController c, String label, String title, Widget body, {double width = 520, List<Widget> extraActions = const []}) {
   final edit = c.beginSettingsEdit(label);
-  return _show(
+  return _show<bool>(
     context,
     c,
     title,
@@ -62,30 +65,54 @@ Future<void> _showSettings(BuildContext context, ProjectController c, String lab
     width: width,
     actions: [
       ...extraActions,
-      FilledButton(onPressed: () => _closeCommitting(context), child: Text(c.t('ok'))),
+      TextButton(key: const Key('settings_cancel'), onPressed: () => _closeWith(context, false), child: Text(c.t('cancel'))),
+      FilledButton(key: const Key('settings_ok'), onPressed: () => _closeWith(context, true), child: Text(c.t('ok'))),
     ],
-  ).then((_) => _commitAfterFocus(c, edit));
+  ).then((ok) => _endAfterFocus(c, edit, keep: ok == true));
 }
 
 /// Takes the focus from the field being typed in (it commits its value on
-/// focus loss) and closes the dialog.
-void _closeCommitting(BuildContext context) {
+/// focus loss) and closes the dialog with [ok].
+void _closeWith(BuildContext context, bool ok) {
   FocusManager.instance.primaryFocus?.unfocus();
-  Navigator.pop(context);
+  Navigator.pop(context, ok);
 }
 
-/// Commits after the focus change has been applied (focus listeners run in
-/// a microtask), so the last value typed is part of the edit.
-Future<void> _commitAfterFocus(ProjectController c, SettingsEdit edit) async {
+/// Ends the edit after the focus change has been applied (focus listeners
+/// run in a microtask), so the last value typed is part of it: kept with
+/// [keep], else put back.
+Future<void> _endAfterFocus(ProjectController c, SettingsEdit edit, {required bool keep}) async {
   await Future<void>.delayed(Duration.zero);
-  c.commitSettingsEdit(edit);
+  if (keep) {
+    c.commitSettingsEdit(edit);
+  } else {
+    c.cancelSettingsEdit(edit);
+  }
 }
 
-Widget _row(List<Widget> children) => Row(
-  children: [
-    for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: children[i])],
-  ],
+/// Fields side by side, each at least [minWidth] wide; where the dialog is
+/// narrower (a phone) they wrap into more lines instead of squeezing a
+/// label to nothing (UI-14).
+Widget _row(List<Widget> children, {double minWidth = 150}) => LayoutBuilder(
+  builder: (context, box) {
+    final per = box.maxWidth.isFinite ? math.max(1, math.min(children.length, ((box.maxWidth + 8) / (minWidth + 8)).floor())) : children.length;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < children.length; i += per)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var j = i; j < i + per; j++) ...[if (j > i) const SizedBox(width: 8), Expanded(child: j < children.length ? children[j] : const SizedBox.shrink())],
+            ],
+          ),
+      ],
+    );
+  },
 );
+
+/// [wide] when there is at least [breakWidth] of room, else [narrow].
+Widget _byWidth(double breakWidth, Widget Function() wide, Widget Function() narrow) => LayoutBuilder(builder: (context, box) => box.maxWidth >= breakWidth ? wide() : narrow());
 
 // ---------------------------------------------------------------- project details
 
@@ -168,29 +195,48 @@ Future<void> showProposalDialog(BuildContext context, ProjectController c) {
               ),
               SectionTitle(t('proposal.extra')),
               for (final x in s.extras)
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: TextFieldRow(label: t('rep.description'), value: x.description, onChanged: (v) => x.description = v),
-                    ),
-                    const SizedBox(width: 6),
-                    SizedBox(
-                      width: 70,
-                      child: TextFieldRow(label: t('rep.unit'), value: x.unit, onChanged: (v) => x.unit = v),
-                    ),
-                    const SizedBox(width: 6),
-                    SizedBox(
-                      width: 80,
-                      child: NumField(label: t('rep.quantity'), value: x.quantity, onChanged: (v) => setState(() => x.quantity = v)),
-                    ),
-                    const SizedBox(width: 6),
-                    SizedBox(
-                      width: 100,
-                      child: NumField(label: '${t('rep.unitPrice')} ($cur)', value: x.unitPrice, onChanged: (v) => setState(() => x.unitPrice = v)),
-                    ),
-                    IconButton(icon: const Icon(Icons.remove_circle_outline, size: 18), tooltip: t('cat.remove'), onPressed: () => setState(() => s.extras.remove(x))),
-                  ],
+                Builder(
+                  builder: (_) {
+                    final description = TextFieldRow(label: t('rep.description'), value: x.description, onChanged: (v) => x.description = v);
+                    final unit = TextFieldRow(label: t('rep.unit'), value: x.unit, onChanged: (v) => x.unit = v);
+                    final quantity = NumField(label: t('rep.quantity'), value: x.quantity, onChanged: (v) => setState(() => x.quantity = v));
+                    final price = NumField(label: '${t('rep.unitPrice')} ($cur)', value: x.unitPrice, onChanged: (v) => setState(() => x.unitPrice = v));
+                    final remove = IconButton(icon: const Icon(Icons.remove_circle_outline, size: 18), tooltip: t('cat.remove'), onPressed: () => setState(() => s.extras.remove(x)));
+                    return _byWidth(
+                      480,
+                      () => Row(
+                        children: [
+                          Expanded(flex: 4, child: description),
+                          const SizedBox(width: 6),
+                          SizedBox(width: 70, child: unit),
+                          const SizedBox(width: 6),
+                          SizedBox(width: 80, child: quantity),
+                          const SizedBox(width: 6),
+                          SizedBox(width: 100, child: price),
+                          remove,
+                        ],
+                      ),
+                      () => Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: description),
+                              remove,
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(width: 64, child: unit),
+                              const SizedBox(width: 6),
+                              Expanded(child: quantity),
+                              const SizedBox(width: 6),
+                              Expanded(child: price),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               TextButton.icon(
                 key: const Key('proposal_add_extra'),
@@ -484,7 +530,7 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
                 onChanged: (v) => setState(() => p.tradeCapitalVsRunning = v),
               ),
               _row([
-                NumField(label: t('dlg.interest'), value: p.interestRate, decimals: 3, onChanged: (v) => p.interestRate = v),
+                NumField(label: t('dlg.interest'), value: p.interestRate, decimals: 3, onChanged: (v) => p.interestRate = v > 1 ? v / 100 : v),
                 NumField(label: t('dlg.term'), value: p.termYears.toDouble(), decimals: 0, onChanged: (v) => p.termYears = v.round()),
               ]),
               _row([
@@ -572,7 +618,7 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
               label: t('dlg.length'),
               value: u.length.name,
               items: LengthUnit.values,
-              labelOf: (x) => x.name,
+              labelOf: (x) => Units(length: x).lengthLabel,
               idOf: (x) => x.name,
               onChanged: (v) => setState(() => u = u.copyWith(length: LengthUnit.values.byName(v!))),
             ),
@@ -580,7 +626,7 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
               label: t('dlg.flow'),
               value: u.flow.name,
               items: FlowUnit.values,
-              labelOf: (x) => x.name,
+              labelOf: (x) => Units(flow: x).flowLabel,
               idOf: (x) => x.name,
               onChanged: (v) => setState(() => u = u.copyWith(flow: FlowUnit.values.byName(v!))),
             ),
@@ -588,7 +634,7 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
               label: t('dlg.pressure'),
               value: u.pressure.name,
               items: PressureUnit.values,
-              labelOf: (x) => x.name,
+              labelOf: (x) => Units(pressure: x).pressureLabel,
               idOf: (x) => x.name,
               onChanged: (v) => setState(() => u = u.copyWith(pressure: PressureUnit.values.byName(v!))),
             ),
@@ -596,7 +642,7 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
               label: t('dlg.diameter'),
               value: u.diameter.name,
               items: DiameterUnit.values,
-              labelOf: (x) => x.name,
+              labelOf: (x) => Units(diameter: x).diameterLabel,
               idOf: (x) => x.name,
               onChanged: (v) => setState(() => u = u.copyWith(diameter: DiameterUnit.values.byName(v!))),
             ),
@@ -605,7 +651,9 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
       },
     ),
     actions: [
+      TextButton(key: const Key('units_cancel'), onPressed: () => Navigator.pop(context), child: Text(t('cancel'))),
       FilledButton(
+        key: const Key('units_ok'),
         onPressed: () {
           final edit = c.beginSettingsEdit('hist.units');
           c.project.params.units = u;
@@ -878,23 +926,43 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFieldRow(label: t('dlg.name'), value: f.name, onChanged: (v) => f.name = v),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  SizedBox(
-                                    width: 90,
-                                    child: NumField(label: t('dlg.startHour'), value: f.startHour, onChanged: (v) => f.startHour = v),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  SizedBox(
-                                    width: 90,
-                                    child: NumField(label: t('dlg.durationHours'), value: f.durationHours, onChanged: (v) => f.durationHours = v),
-                                  ),
-                                  IconButton(icon: const Icon(Icons.delete_outline, size: 16), onPressed: () => setState(() => flows.remove(f))),
-                                ],
+                              Builder(
+                                builder: (_) {
+                                  final name = TextFieldRow(label: t('dlg.name'), value: f.name, onChanged: (v) => f.name = v);
+                                  final start = NumField(label: t('dlg.startHour'), value: f.startHour, onChanged: (v) => f.startHour = v);
+                                  final hours = NumField(label: t('dlg.durationHours'), value: f.durationHours, onChanged: (v) => f.durationHours = v);
+                                  final remove = IconButton(icon: const Icon(Icons.delete_outline, size: 16), tooltip: t('ui.removeFlow'), onPressed: () => setState(() => flows.remove(f)));
+                                  return _byWidth(
+                                    420,
+                                    () => Row(
+                                      children: [
+                                        Expanded(child: name),
+                                        const SizedBox(width: 6),
+                                        SizedBox(width: 90, child: start),
+                                        const SizedBox(width: 6),
+                                        SizedBox(width: 90, child: hours),
+                                        remove,
+                                      ],
+                                    ),
+                                    () => Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(child: name),
+                                            remove,
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Expanded(child: start),
+                                            const SizedBox(width: 6),
+                                            Expanded(child: hours),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
                               Wrap(
                                 spacing: 4,
@@ -1544,7 +1612,7 @@ Future<void> showLateralCalculator(BuildContext context, ProjectController c) {
               KV(t('dlg.endPressure'), '${fmt(u.pressureFromHead(res.endPressure), 2)} ${u.pressureLabel}'),
               KV(t('dlg.pMinMax'), '${fmt(u.pressureFromHead(res.minPressure), 2)} (${fmt(res.minPressureDistance, 0)} m) / ${fmt(u.pressureFromHead(res.maxPressure), 2)} ${u.pressureLabel}'),
               KV(t('dlg.pVariation'), '${fmt(res.pressureVariationPct, 1)} %'),
-              KV(t('dlg.maxVelocity'), '${fmt(res.maxVelocity, 2)} m/s'),
+              KV(t('dlg.maxVelocity'), '${fmt(u.velocityFromSi(res.maxVelocity), 2)} ${u.velocityLabel}'),
               KV(t('dlg.uniformity4'), '${fmt(res.uniformity.cu, 1)} / ${fmt(res.uniformity.du, 1)} / ${fmt(res.uniformity.eu, 1)} / ${fmt(res.uniformity.us, 1)} %'),
               KV(t('dlg.qvar'), '${fmt(res.uniformity.qvar, 1)} %'),
               KV(t('dlg.maxLength'), '${fmt(u.lengthFromSi(maxLen), 1)} ${u.lengthLabel}'),
@@ -1563,10 +1631,17 @@ Future<void> showPumpCalculator(BuildContext context, ProjectController c) {
   final t = c.t;
   final cat = c.project.catalog;
   final u = c.units;
+  // a catalogue without pumps or main line pipes (a garden one, items
+  // switched off) says what is missing instead of failing
+  final mains = cat.pipesFor(PipeUsage.mainline);
+  if (cat.pumps.isEmpty || mains.isEmpty) {
+    c.notify(t('msg.pumpCalcNeedsCatalog'));
+    return Future.value();
+  }
   var pumpId = cat.pumps.first.id;
   var staticHead = 20.0;
   var lengthM = 500.0;
-  var pipeId = cat.pipesFor(PipeUsage.mainline)[2].id;
+  var pipeId = (mains.elementAtOrNull(2) ?? mains.last).id;
   var speed = 1.0;
   var hours = c.project.params.hoursPerYear;
   return _show(
@@ -1608,7 +1683,7 @@ Future<void> showPumpCalculator(BuildContext context, ProjectController c) {
             else ...[
               KV(t('dlg.flow'), '${fmt(u.flowFromSi(op.$1), 2)} ${u.flowLabel}'),
               KV(t('dlg.head'), '${fmt(u.pressureFromHead(op.$2), 2)} ${u.pressureLabel}'),
-              KV(t('dlg.velocityMain'), '${fmt(velocity(flow: op.$1, diameter: pipe.innerDiameter), 2)} m/s'),
+              KV(t('dlg.velocityMain'), '${fmt(u.velocityFromSi(velocity(flow: op.$1, diameter: pipe.innerDiameter)), 2)} ${u.velocityLabel}'),
               KV(t('dlg.hydraulicPower'), '${fmt(hydraulicPower(flow: op.$1, head: op.$2) / 1000, 2)} kW'),
               KV(
                 t('dlg.shaftPower', {'e': fmt(pump.efficiency * 100, 0)}),
@@ -1637,7 +1712,11 @@ Future<void> showHammerCalculator(BuildContext context, ProjectController c) {
   final t = c.t;
   final cat = c.project.catalog;
   final u = c.units;
-  var pipeId = cat.pipesFor(PipeUsage.mainline).first.id;
+  if (cat.pipes.isEmpty) {
+    c.notify(t('msg.hammerCalcNeedsCatalog'));
+    return Future.value();
+  }
+  var pipeId = (cat.pipesFor(PipeUsage.mainline).firstOrNull ?? cat.pipes.first).id;
   var vel = 1.5;
   var lengthM = 500.0;
   var closure = 2.0;
@@ -1666,7 +1745,7 @@ Future<void> showHammerCalculator(BuildContext context, ProjectController c) {
               onChanged: (v) => setState(() => pipeId = v!),
             ),
             _row([
-              NumField(label: t('dlg.velocity'), value: vel, onChanged: (v) => setState(() => vel = v)),
+              NumField(label: '${t('ui.velocityChange')} (${u.velocityLabel})', value: u.velocityFromSi(vel), onChanged: (v) => setState(() => vel = u.velocityToSi(v))),
               NumField(label: '${t('props.length')} (${u.lengthLabel})', value: u.lengthFromSi(lengthM), onChanged: (v) => setState(() => lengthM = u.lengthToSi(v))),
             ]),
             _row([
@@ -1674,7 +1753,7 @@ Future<void> showHammerCalculator(BuildContext context, ProjectController c) {
               NumField(label: '${t('dlg.staticPressure')} (${u.pressureLabel})', value: u.pressureFromHead(staticP), onChanged: (v) => setState(() => staticP = u.pressureToHead(v))),
             ]),
             SectionTitle(t('dlg.resultJoukowsky')),
-            KV(t('dlg.celerity'), '${fmt(a, 0)} m/s'),
+            KV(t('dlg.celerity'), '${fmt(u.velocityFromSi(a), 0)} ${u.velocityLabel}'),
             KV(t('dlg.maxSurge'), '${fmt(u.pressureFromHead(dh), 1)} ${u.pressureLabel}'),
             KV(t('dlg.criticalTime'), '${fmt(tc, 2)} s'),
             KV(t('dlg.estSurge', {'s': fmt(closure, 1)}), '${fmt(u.pressureFromHead(effective), 1)} ${u.pressureLabel}'),
