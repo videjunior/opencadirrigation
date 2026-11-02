@@ -7,6 +7,7 @@
 /// shows its result live and generates it as one undo step.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import '../../../core/design/block_generator.dart';
 import '../../../core/design/densogram.dart' show SprayProfile, sprayProfileKey;
 import '../../../core/design/field_subdivision.dart';
 import '../../../core/design/pivot_fit.dart';
+import '../../../core/design/proposal.dart' show defaultMainlineDepthM, defaultZonePipeDepthM;
 import '../../../core/design/routing.dart';
 import '../../../core/design/templates.dart';
 import '../../../core/design/tree_rings.dart';
@@ -93,36 +95,114 @@ class _TooMany implements Exception {
   const _TooMany();
 }
 
+/// Thrown inside a stepwise computation whose inputs changed meanwhile.
+class _Cancelled implements Exception {
+  const _Cancelled();
+}
+
+/// A running stepwise computation of a [_Preview]: [pause] lets the screen
+/// paint between two steps and throws [_Cancelled] once the inputs changed
+/// (or the dialog closed); [say] shows how far it got.
+class _Job {
+  _Job(this._stale, this._say);
+  final bool Function() _stale;
+  final void Function(String text) _say;
+
+  bool get cancelled => _stale();
+
+  void say(String text) => _say(text);
+
+  Future<void> pause() async {
+    await Future<void>.delayed(Duration.zero);
+    if (_stale()) throw const _Cancelled();
+  }
+}
+
 /// The live result of a dialog. It is computed again only when the inputs
-/// (summed up in a key) change, and only after the frame that shows the
-/// change, so the dialog keeps up while a large area is laid out; meanwhile
-/// the last result stays on screen, marked as [stale].
+/// (summed up in a key) change, a moment after the last change (typing a
+/// few values in a row computes once) and after the frame that shows it,
+/// so the dialog keeps up while a large area is laid out; meanwhile the
+/// last result stays on screen, marked as [stale]. A stepwise computation
+/// ([watch]'s `steps`) gives the screen back between its steps, says how
+/// far it got and stops as soon as the inputs change again.
 class _Preview<T extends Object> {
+  /// Wait after a change before computing.
+  static const debounce = Duration(milliseconds: 150);
+
   String? _key, _wanted;
   T? value;
   Object? error;
 
+  /// What the running computation is doing ('' when none says).
+  String progress = '';
+  Timer? _timer;
+  int _generation = 0;
+
   bool get stale => _wanted != null;
 
-  T? watch(String key, T? Function() compute, BuildContext ctx, StateSetter setState) {
+  T? watch(String key, T? Function() compute, BuildContext ctx, StateSetter setState, {Future<T?> Function(_Job job)? steps}) {
     if (key == _key) {
-      _wanted = null;
+      if (_wanted != null) {
+        // back to the inputs on screen: drop what was pending
+        _timer?.cancel();
+        _generation++;
+        _wanted = null;
+        progress = '';
+      }
       return value;
     }
     if (key == _wanted) return value;
     _wanted = key;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!ctx.mounted || _wanted != key) return;
-      _run(key, compute);
-      setState(() {});
+    _timer?.cancel();
+    final gen = ++_generation;
+    bool gone() => gen != _generation || !ctx.mounted;
+    void refresh() {
+      if (ctx.mounted) setState(() {});
+    }
+
+    // the frame that shows the change (and the progress bar) is drawn
+    // before the timer fires
+    _timer = Timer(_key == null ? Duration.zero : debounce, () async {
+      if (gone()) return;
+      if (steps == null) {
+        _run(key, compute);
+        refresh();
+        return;
+      }
+      final job = _Job(gone, (text) {
+        if (gone()) return;
+        progress = text;
+        refresh();
+      });
+      try {
+        final v = await steps(job);
+        if (gone()) return;
+        value = v;
+        error = null;
+      } on _Cancelled {
+        return;
+      } catch (e) {
+        if (gone()) return;
+        value = null;
+        error = e;
+      }
+      _key = key;
+      if (_wanted == key) _wanted = null;
+      progress = '';
+      refresh();
     });
     return value;
   }
 
   /// The result for [key] now, computed at once when the inputs changed
-  /// since (generate pressed right after typing a value).
+  /// since (generate pressed right after typing a value); a computation
+  /// under way is dropped.
   T? now(String key, T? Function() compute) {
-    if (key != _key) _run(key, compute);
+    if (key != _key) {
+      _timer?.cancel();
+      _generation++;
+      _run(key, compute);
+    }
     return value;
   }
 
@@ -136,11 +216,14 @@ class _Preview<T extends Object> {
     }
     _key = key;
     if (_wanted == key) _wanted = null;
+    progress = '';
   }
 
-  /// Progress bar while stale and the error of the last computation.
+  /// Progress bar (and what the computation is doing) while stale, and the
+  /// error of the last computation.
   List<Widget> status(ProjectController c) => [
     if (stale) const Padding(padding: EdgeInsets.symmetric(vertical: 3), child: LinearProgressIndicator(minHeight: 2)),
+    if (stale && progress.isNotEmpty) _note(progress, color: Cad.fg54),
     if (error != null) _note(error is _TooMany ? c.t('auto.tooMany', {'n': '$_maxItems'}) : c.describeError(error!), color: Cad.warning),
   ];
 }
@@ -260,20 +343,6 @@ String _defaultFamily(ProjectController c, List<OutletSpec> families) {
   if (last != null && last.kind == OutletKind.sprinkler && families.contains(last)) return last.id;
   if (families.any((f) => f.id == 'rotor')) return 'rotor';
   return families.firstOrNull?.id ?? '';
-}
-
-/// Default largest zone flow: the smaller of the largest water supply design
-/// flow and the largest enabled zone valve (either when only one is known);
-/// with both of them.
-(double, double, double) _zoneFlowDefault(Project p) {
-  var supply = 0.0, valve = 0.0;
-  for (final w in p.entities.whereType<WaterSupplyEntity>()) {
-    supply = math.max(supply, w.designFlow);
-  }
-  for (final v in p.catalog.valves) {
-    if (v.enabled && v.kind == ValveKind.control) valve = math.max(valve, v.maxFlow);
-  }
-  return (supply > 0 && valve > 0 ? math.min(supply, valve) : math.max(supply, valve), supply, valve);
 }
 
 /// The message codes of an engine module translated, each code once; the
@@ -420,8 +489,10 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
   var autoDirection = true;
   var directionDeg = area == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(area)).angle));
   var zoneOn = false, routeOn = false;
-  final (zoneDefault, supplyFlow, valveFlow) = _zoneFlowDefault(c.project);
-  var maxZoneFlow = zoneDefault;
+  // the largest zone flow follows the family until the user types one
+  var zoneFlowTyped = false;
+  ({double flow, double supply, double valve, bool typical}) zoneDefault() => defaultMaxZoneFlow(c.project, family: c.project.catalog.outlet(familyId), headM: o.headM > 0 ? o.headM : null);
+  var maxZoneFlow = zoneDefault().flow;
   var itemsPerZone = 0;
   final sources = _sources(c, sel, mainlines: true);
   var sourceId = sources.first.id;
@@ -459,6 +530,13 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
   (String, LandscapeLayout)? laid;
   (String, ZoningResult?)? zoned;
 
+  ZoneRouter routerFor(LandscapeLayout layout, List<List<int>> groups) {
+    final src = _sourceOf(sources, sourceId);
+    return ZoneRouter([
+      for (final g in groups) [for (final i in g) layout.heads[i].position],
+    ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction, boundary: area));
+  }
+
   _LayoutPlan? compute() {
     final family = c.project.catalog.outlet(familyId);
     if (family == null || area == null) return null;
@@ -468,17 +546,59 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     }
     final layout = laid!.$2;
     if (zoned?.$1 != zk) {
-      zoned = (zk, zoneOn && layout.heads.isNotEmpty ? zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone)) : null);
+      zoned = (
+        zk,
+        zoneOn && layout.heads.isNotEmpty
+            ? zoneByFlow(zoneItemsOf(layout, family, areas: c.project.entities.whereType<AreaEntity>()), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone))
+            : null,
+      );
     }
     final zoning = zoned!.$2;
     final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn && layout.heads.isNotEmpty) List<int>.generate(layout.heads.length, (i) => i)];
     final names = _zoneNames(c.project, t('name.zone'), groups.length);
     RoutingResult? routing;
     if (routeOn && groups.isNotEmpty) {
-      final src = _sourceOf(sources, sourceId);
-      routing = routeZones([
-        for (final g in groups) [for (final i in g) layout.heads[i].position],
-      ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction));
+      final router = routerFor(layout, groups);
+      while (router.step()) {}
+      routing = router.result;
+    }
+    return _LayoutPlan(family, layout, zoning, routing, groups, names);
+  }
+
+  // the same in steps, for the live summary: the screen is given back
+  // between the layout, the zoning and every zone routed, with the step on
+  // screen, and a change of the inputs stops it
+  Future<_LayoutPlan?> steps(_Job job) async {
+    final family = c.project.catalog.outlet(familyId);
+    if (family == null || area == null) return null;
+    final lk = layoutKey(), zk = zoningKey();
+    if (laid?.$1 != lk) {
+      job.say(t('auto.step.layout'));
+      await job.pause();
+      laid = (lk, layoutLandscape(outline: area, exclusions: sel.others, family: family, options: o.copy()..direction = autoDirection ? null : Pt.polar(1, degToRad(directionDeg))));
+    }
+    final layout = laid!.$2;
+    if (zoned?.$1 != zk) {
+      if (zoneOn) job.say(t('auto.step.zoning'));
+      await job.pause();
+      zoned = (
+        zk,
+        zoneOn && layout.heads.isNotEmpty
+            ? zoneByFlow(zoneItemsOf(layout, family, areas: c.project.entities.whereType<AreaEntity>()), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone))
+            : null,
+      );
+    }
+    final zoning = zoned!.$2;
+    final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn && layout.heads.isNotEmpty) List<int>.generate(layout.heads.length, (i) => i)];
+    final names = _zoneNames(c.project, t('name.zone'), groups.length);
+    RoutingResult? routing;
+    if (routeOn && groups.isNotEmpty) {
+      final router = routerFor(layout, groups);
+      do {
+        job.say(t('auto.step.routing', {'n': '${math.min(router.routed + 1, groups.length)}', 'm': '${groups.length}'}));
+        await job.pause();
+      } while (router.step());
+      routing = router.result;
     }
     return _LayoutPlan(family, layout, zoning, routing, groups, names);
   }
@@ -495,7 +615,14 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
       final p = c.project;
       final out = <Entity>[
         ...plan.layout.toOutlets(p, zoneName: plan.groups.isEmpty ? null : (i) => plan.names[zoneOf[i] ?? 0]),
-        ...?plan.routing?.toEntities(p, zoneNames: plan.names, valveSpecIds: [for (var z = 0; z < plan.groups.length; z++) pickZoneValve(p.catalog, plan.flowOf(z))?.id]),
+        // 1.6.0 AUT: buried zone pipes and mainline (their trenches go in the quote)
+        ...?plan.routing?.toEntities(
+          p,
+          zoneNames: plan.names,
+          valveSpecIds: [for (var z = 0; z < plan.groups.length; z++) pickZoneValve(p.catalog, plan.flowOf(z))?.id],
+          depth: defaultZonePipeDepthM,
+          mainlineDepth: defaultMainlineDepthM,
+        ),
       ];
       p.entities.addAll(out);
       return out;
@@ -510,7 +637,7 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) {
         if (area == null || region == null) return _nothingSelected(ctx, c, t('autolay.title'), t('autolay.hint'), t('auto.noArea'));
-        final plan = preview.watch(key(), compute, ctx, setState);
+        final plan = preview.watch(key(), compute, ctx, setState, steps: steps);
         final family = c.project.catalog.outlet(familyId);
         final inputs = <Widget>[
           _note(t('autolay.hint')),
@@ -525,6 +652,7 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
             onChanged: (v) => setState(() {
               familyId = v ?? familyId;
               o.referenceNozzleId = null;
+              if (!zoneFlowTyped) maxZoneFlow = zoneDefault().flow;
             }),
           ),
           NumField(label: t('autolay.pressure', {'u': u.pressureLabel}), value: u.pressureFromHead(o.headM), onChanged: (v) => setState(() => o.headM = v > 0 ? u.pressureToHead(v) : 0)),
@@ -629,11 +757,18 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
                 key: const Key('al_zone_flow'),
                 label: t('autolay.maxZoneFlow', {'u': u.flowLabel}),
                 value: u.flowFromSi(maxZoneFlow),
-                onChanged: (v) => setState(() => maxZoneFlow = v > 0 ? u.flowToSi(v) : 0),
+                onChanged: (v) => setState(() {
+                  maxZoneFlow = v > 0 ? u.flowToSi(v) : 0;
+                  zoneFlowTyped = true;
+                }),
               ),
               NumField(label: t('autolay.itemsPerZone'), value: itemsPerZone.toDouble(), decimals: 0, onChanged: (v) => setState(() => itemsPerZone = v < 0 ? 0 : v.round())),
             ]),
-            _note(t('autolay.zoneFlowHint', {'s': supplyFlow > 0 ? _flow(u, supplyFlow) : '-', 'v': valveFlow > 0 ? _flow(u, valveFlow) : '-'}), color: Cad.fg54),
+            if (zoneDefault() case final zd) ...[
+              _note(t('autolay.zoneFlowHint', {'s': zd.supply > 0 ? _flow(u, zd.supply) : '-', 'v': zd.valve > 0 ? _flow(u, zd.valve) : '-'}), color: Cad.fg54),
+              // 1.6.0 AUT: without the supply's flow the zones start from a usual one
+              if (zd.typical) _note(t('autolay.noSupplyFlow', {'q': _flow(u, zd.flow)}), color: Cad.warning),
+            ],
           ],
           _switch(t('autolay.routing'), routeOn, (v) => setState(() => routeOn = v), key: const Key('al_routing')),
           if (routeOn)
@@ -931,8 +1066,9 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
   var mode = SubdivisionMode.strips;
   var byFlow = false;
   var maxArea = 2e4;
-  final (zoneDefault, _, _) = _zoneFlowDefault(c.project);
-  var maxFlow = zoneDefault > 0 ? zoneDefault : 30 * m3sPerM3h;
+  // without the supply's flow, a usual field block (not the largest valve)
+  final zd = defaultMaxZoneFlow(c.project);
+  var maxFlow = zd.typical ? (zd.valve > 0 ? math.min(30 * m3sPerM3h, zd.valve) : 30 * m3sPerM3h) : zd.flow;
   var maxLateral = 0.0, road = 4.0, minWidth = 10.0;
   var centreFeed = false;
   var isTape = true;
@@ -1000,6 +1136,8 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
         minBlockWidth: minWidth,
         roadWidth: road,
         pointOfConnection: _sourceOf(sources, sourceId).point,
+        // 1.6.0 AUT: the other closed shapes selected are left out of the blocks
+        exclusions: sel.others,
       ),
     );
     // the laterals the blocks would get: one a lateral spacing across the rows (two with the submain in the middle)
@@ -1046,14 +1184,16 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
             submainLabel: t('name.submain'),
             stubLabel: t('name.stub'),
             lateralPrefix: t('name.lateral'),
+            submainDepth: defaultZonePipeDepthM,
+            exclusions: sel.others,
           ),
         );
         out.addAll(res.all);
         if (res.valve != null) valves.add(res.valve!.position);
       }
       if (mainlineOn && poc != null && valves.isNotEmpty) {
-        for (final m in routeMainline(poc, valves)) {
-          out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline));
+        for (final m in routeMainline(poc, valves, boundary: field)) {
+          out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline, depth: defaultMainlineDepthM));
         }
       }
       p.entities.addAll(out);
@@ -1078,6 +1218,8 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
         final inputs = <Widget>[
           _note(t('subdiv.hint')),
           _note(t('auto.fieldInfo', {'a': _hectares(u, polygonArea(field).abs())}), color: Cad.fg),
+          // 1.6.0 AUT: the other closed shapes are holes in the blocks
+          if (sel.others.isNotEmpty) _note(t('auto.exclusionsLeftOut', {'n': '${sel.others.length}'}), color: Cad.fg54),
           _switch(t('auto.longestEdge'), autoDirection, (v) => setState(() => autoDirection = v)),
           if (!autoDirection) NumField(label: t('auto.direction'), value: directionDeg, decimals: 1, onChanged: (v) => setState(() => directionDeg = normalizeDeg(v))),
           SegmentedButton<SubdivisionMode>(
@@ -1344,6 +1486,8 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
         drippersPerTree: drippers,
         submainPosition: side,
         submainStub: stub,
+        // 1.6.0 AUT: no trees in the other closed shapes selected
+        exclusions: sel.others,
       ),
     );
   }
@@ -1398,6 +1542,7 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
         final inputs = <Widget>[
           _note(t('rings.hint')),
           _note(trees.isNotEmpty ? t('rings.fromTrees', {'n': '${trees.length}'}) : t('rings.fromArea', {'a': _hectares(u, polygonArea(area!).abs())}), color: Cad.fg),
+          if (trees.isEmpty && sel.others.isNotEmpty) _note(t('auto.exclusionsLeftOut', {'n': '${sel.others.length}'}), color: Cad.fg54),
           // surveyed trees give their own rows: the direction found is shown
           if (area != null && trees.isEmpty) _switch(t('auto.longestEdge'), autoDirection, (v) => setState(() => autoDirection = v)),
           if (!autoDirection) NumField(key: const Key('tr_direction'), label: t('auto.direction'), value: directionDeg, decimals: 1, onChanged: (v) => setState(() => directionDeg = normalizeDeg(v))),

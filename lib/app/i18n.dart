@@ -2665,7 +2665,7 @@ const _base = <String, (String, String, String)>{
     'Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts.',
     'Tee con difusores, fairway con rotores en malla triangular (dos zonas) y green con rotores en el perímetro, laguna con bomba y turnos nocturnos.',
   ),
-  'exg.golf.tags': ('4 zonas · 64 emissores · lago + bomba', '4 zones · 64 heads · pond + pump', '4 zonas · 64 emisores · laguna + bomba'),
+  'exg.golf.tags': ('4 zonas · 77 emissores · lago + bomba', '4 zones · 77 heads · pond + pump', '4 zonas · 77 emisores · laguna + bomba'),
   'exg.sectorPivot.title': ('Pivô setorial com canhão', 'Sector pivot with end gun', 'Pivote sectorial con cañón'),
   'exg.sectorPivot.sub': (
     'Pivô de 250 m em soja que gira 270°, deixando livre o quadrante da sede, com canhão final de 12 m³/h; lago, bomba de 20 cv e registro.',

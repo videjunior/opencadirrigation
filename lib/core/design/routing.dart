@@ -55,10 +55,18 @@ class RouteOptions {
     this.neighbours = 10,
     this.clearance = 0.3,
     this.obstacleMargin = 0.5,
+    this.boundary,
   });
 
   /// Polygons the pipes keep out of (buildings, ponds, beds).
   final List<List<Pt>> exclusions;
+
+  /// The lot or field outline: pipes between two points on or inside it
+  /// stay inside it (round its re-entrant corners, never across the street
+  /// in front of a house built on the lot line), and the valves are placed
+  /// inside it or on it. A pipe from a point of connection outside it (a
+  /// water meter on the pavement) enters it the short way. Null = no limit.
+  final List<Pt>? boundary;
 
   /// An existing mainline: the valves go on it (the network builder splits
   /// it there) and no new mainline is drawn.
@@ -147,8 +155,10 @@ class RoutingResult {
 
   /// The valves and pipes as entities of [p] (new ids): a zone valve named
   /// [zoneNames] (the zone index when missing) with [valveSpecIds], zone
-  /// pipes and mainline pipes sized by the designer unless a spec is given.
-  List<Entity> toEntities(Project p, {List<String>? zoneNames, List<String?>? valveSpecIds, String? zonePipeSpecId, String? mainlinePipeSpecId, double depth = 0}) {
+  /// pipes and mainline pipes sized by the designer unless a spec is given,
+  /// buried [depth] metres (the mainline [mainlineDepth], by default as
+  /// deep).
+  List<Entity> toEntities(Project p, {List<String>? zoneNames, List<String?>? valveSpecIds, String? zonePipeSpecId, String? mainlinePipeSpecId, double depth = 0, double? mainlineDepth}) {
     final out = <Entity>[];
     for (final z in zones) {
       final name = zoneNames != null && z.zone < zoneNames.length ? zoneNames[z.zone] : '${z.zone + 1}';
@@ -159,38 +169,92 @@ class RoutingResult {
       }
     }
     for (final pipe in mainline) {
-      out.add(PipeEntity(id: p.newId(), points: List.of(pipe.points), scope: HydraulicScope.mainline, pipeSpecId: mainlinePipeSpecId, computerSized: mainlinePipeSpecId == null, depth: depth));
+      out.add(
+        PipeEntity(
+          id: p.newId(),
+          points: List.of(pipe.points),
+          scope: HydraulicScope.mainline,
+          pipeSpecId: mainlinePipeSpecId,
+          computerSized: mainlinePipeSpecId == null,
+          depth: mainlineDepth ?? depth,
+        ),
+      );
     }
     return out;
   }
 }
 
 /// The smallest enabled zone valve of [catalog] whose flow range holds
-/// [flow] (m³/s); else the one with the largest range. Null without zone
-/// valves.
+/// [flow] (m³/s). Out of every range: below every minimum the smallest
+/// valve (a few drippers, a small ring), above every maximum the one with
+/// the largest range, and in a gap between ranges the valve whose range is
+/// nearest (on a log scale). Null without zone valves.
 ValveSpec? pickZoneValve(Catalog catalog, double flow) {
-  ValveSpec? best, widest;
+  ValveSpec? best, widest, smallest, nearest;
+  var nearestGap = double.infinity;
+  var below = true;
+  bool smaller(ValveSpec v, ValveSpec o) => v.sizeMm < o.sizeMm || (v.sizeMm == o.sizeMm && v.cost < o.cost);
   for (final v in catalog.valves) {
     if (!v.enabled || v.kind != ValveKind.control) continue;
     if (widest == null || v.maxFlow > widest.maxFlow) widest = v;
-    if (flow < v.minFlow - 1e-12 || flow > v.maxFlow + 1e-12) continue;
-    if (best == null || v.sizeMm < best.sizeMm || (v.sizeMm == best.sizeMm && v.cost < best.cost)) best = v;
+    if (smallest == null || smaller(v, smallest)) smallest = v;
+    if (flow >= v.minFlow - 1e-12) below = false;
+    if (flow < v.minFlow - 1e-12 || flow > v.maxFlow + 1e-12) {
+      // how far (log ratio) the flow lies outside this valve's range
+      final gap = flow > 0 && v.minFlow > 0 && v.maxFlow > 0 ? (flow < v.minFlow ? math.log(v.minFlow / flow) : math.log(flow / v.maxFlow)) : double.infinity;
+      if (gap < nearestGap - 1e-12 || (gap <= nearestGap + 1e-12 && nearest != null && smaller(v, nearest))) {
+        nearestGap = gap;
+        nearest = v;
+      }
+      continue;
+    }
+    if (best == null || smaller(v, best)) best = v;
   }
-  return best ?? widest;
+  if (best != null) return best;
+  if (below) return smallest;
+  if (widest != null && flow > widest.maxFlow + 1e-12) return widest;
+  return nearest ?? widest;
 }
 
 // ---------------------------------------------------------------- obstacles
 
 /// Exclusions the pipes go round: a segment is blocked when it crosses one
-/// (or runs inside it); detours follow the shortest path through the
-/// corners of the exclusions pushed out by a margin (visibility graph).
+/// (or runs inside it), or when it leaves the [boundary] between two points
+/// inside it; detours follow the shortest path through the corners of the
+/// exclusions pushed out by a margin, and the re-entrant corners of the
+/// boundary pulled in by it (visibility graph). The exclusions are bucketed
+/// on a grid, so a segment is tested only against those near it, and a
+/// detour is searched among the corners near its two ends first (a lawn
+/// with a hundred tree rings has thousands of corners), farther only when
+/// no way is found there; the visibility of two corners is computed once.
 class _Obstacles {
-  _Obstacles(List<List<Pt>> polys, double margin)
+  _Obstacles(List<List<Pt>> polys, double margin, {List<Pt>? boundary})
     : polys = [
         for (final p in polys)
           if (normalizePolygon(p) case final q when q.length >= 3) q,
       ] {
-    for (final poly in this.polys) {
+    final b = boundary == null ? const <Pt>[] : normalizePolygon(boundary);
+    this.boundary = b.length >= 3 && polygonArea(b).abs() > 1e-9 ? b : null;
+    boxes = [for (final p in this.polys) Bounds.ofPoints(p)];
+    var all = Bounds.empty;
+    var size = 0.0;
+    for (final bb in boxes) {
+      all = all.union(bb);
+      size += math.max(bb.width, bb.height);
+    }
+    _origin = all.isEmpty ? Pt.zero : Pt(all.minX, all.minY);
+    _cell = all.isEmpty ? 1 : math.max(1e-3, math.max(size / boxes.length, math.max(all.width, all.height) / 256));
+    for (var k = 0; k < boxes.length; k++) {
+      final bb = boxes[k];
+      for (var ix = _ix(bb.minX); ix <= _ix(bb.maxX); ix++) {
+        for (var iy = _iy(bb.minY); iy <= _iy(bb.maxY); iy++) {
+          (_cells[_key(ix, iy)] ??= []).add(k);
+        }
+      }
+    }
+    _stamp = List<int>.filled(this.polys.length, -1);
+    for (var k = 0; k < this.polys.length; k++) {
+      final poly = this.polys[k];
       final n = poly.length;
       for (var i = 0; i < n; i++) {
         final prev = poly[(i - 1 + n) % n], v = poly[i], next = poly[(i + 1) % n];
@@ -200,27 +264,139 @@ class _Obstacles {
         var bis = (n1 + n2).normalized;
         if (bis.length == 0) bis = n1;
         final cosHalf = bis.dot(n1);
-        final k = cosHalf > 0.3 ? margin / cosHalf : margin * 3;
-        final q = v + bis * k;
-        if (!inside(q)) nodes.add(q);
+        final kk = cosHalf > 0.3 ? margin / cosHalf : margin * 3;
+        final q = v + bis * kk;
+        if (!inside(q) && insideBoundary(q)) _addNode(q, bis);
+      }
+    }
+    final lot = this.boundary;
+    if (lot != null) {
+      // re-entrant corners of the lot (a right turn of the counter-clockwise
+      // outline), pulled in by the margin: the way round them from inside
+      final n = lot.length;
+      for (var i = 0; i < n; i++) {
+        final prev = lot[(i - 1 + n) % n], v = lot[i], next = lot[(i + 1) % n];
+        final d1 = (v - prev).normalized, d2 = (next - v).normalized;
+        if (d1.cross(d2) >= -1e-9) continue;
+        final n1 = d1.perpendicular, n2 = d2.perpendicular; // inward (left) normals
+        var bis = (n1 + n2).normalized;
+        if (bis.length == 0) bis = n1;
+        final cosHalf = bis.dot(n1);
+        final q = v + bis * (cosHalf > 0.3 ? margin / cosHalf : margin * 3);
+        if (!inside(q) && insideBoundary(q)) _addNode(q, bis);
+      }
+    }
+    final nb = Bounds.ofPoints(nodes);
+    _nodeGrid = PointGrid(pointGridCell(nb, nodes.length, minimum: 0.05), origin: nb.isEmpty ? Pt.zero : Pt(nb.minX, nb.minY));
+    for (final q in nodes) {
+      _nodeGrid.add(q);
+    }
+    _reach0 = math.max(2 * margin + 1, boxes.isEmpty ? 1.0 : 2 * size / boxes.length);
+  }
+
+  final List<List<Pt>> polys;
+  late final List<Bounds> boxes;
+
+  /// The lot outline (counter-clockwise), or null.
+  late final List<Pt>? boundary;
+
+  final List<Pt> nodes = [];
+
+  /// Direction in which every node stands off its exclusion (or into the
+  /// lot, for a corner of the boundary).
+  final List<Pt> nodeDirs = [];
+  final Map<Pt, int> _nodeIndex = {};
+  late final PointGrid _nodeGrid;
+  final Map<int, bool> _visible = {};
+  late final double _reach0;
+
+  late final Pt _origin;
+  late final double _cell;
+  final Map<int, List<int>> _cells = {};
+  late final List<int> _stamp;
+  int _query = 0;
+
+  int _ix(double x) => ((x - _origin.x) / _cell).floor();
+  int _iy(double y) => ((y - _origin.y) / _cell).floor();
+  static int _key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+
+  void _addNode(Pt q, Pt dir) {
+    if (_nodeIndex.containsKey(q)) return;
+    _nodeIndex[q] = nodes.length;
+    nodes.add(q);
+    nodeDirs.add(dir);
+  }
+
+  bool get isEmpty => polys.isEmpty && boundary == null;
+
+  /// Outward direction of the detour node at [p] (null: not a node).
+  Pt? outwardAt(Pt p) {
+    final i = _nodeIndex[p];
+    return i == null ? null : nodeDirs[i];
+  }
+
+  /// Exclusions whose bounds meet [bb].
+  Iterable<int> _near(Bounds bb) sync* {
+    if (polys.isEmpty) return;
+    final x0 = _ix(bb.minX), x1 = _ix(bb.maxX), y0 = _iy(bb.minY), y1 = _iy(bb.maxY);
+    _query++;
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 4 * polys.length + 64) {
+      for (var k = 0; k < polys.length; k++) {
+        if (boxes[k].intersects(bb)) yield k;
+      }
+      return;
+    }
+    final q = _query;
+    for (var ix = x0; ix <= x1; ix++) {
+      for (var iy = y0; iy <= y1; iy++) {
+        for (final k in _cells[_key(ix, iy)] ?? const <int>[]) {
+          if (_stamp[k] == q) continue;
+          _stamp[k] = q;
+          if (boxes[k].intersects(bb)) yield k;
+        }
       }
     }
   }
 
-  final List<List<Pt>> polys;
-  final List<Pt> nodes = [];
-  List<List<int>>? _vis;
+  bool inside(Pt p) {
+    for (final k in _near(Bounds(p.x, p.y, p.x, p.y))) {
+      if (pointInPolygon(p, polys[k]) && !pointOnPolygonBoundary(p, polys[k], tol: 1e-9)) return true;
+    }
+    return false;
+  }
 
-  bool get isEmpty => polys.isEmpty;
+  /// Whether [p] lies inside the boundary or on it (true without one).
+  bool insideBoundary(Pt p) {
+    final b = boundary;
+    return b == null || pointInPolygon(p, b) || pointOnPolygonBoundary(p, b, tol: 1e-6);
+  }
 
-  bool inside(Pt p) => polys.any((poly) => pointInPolygon(p, poly) && !pointOnPolygonBoundary(p, poly, tol: 1e-9));
+  /// Whether the segment ab, both of its ends inside the boundary or on
+  /// it, leaves the boundary.
+  bool _leaves(Pt a, Pt b) {
+    final lot = boundary;
+    if (lot == null || !insideBoundary(a) || !insideBoundary(b)) return false;
+    for (var i = 0; i < lot.length; i++) {
+      final c = lot[i], d = lot[(i + 1) % lot.length];
+      final x = segmentIntersection(a, b, c, d, eps: 1e-12);
+      if (x == null) continue;
+      if (x.distanceTo(a) < 1e-7 || x.distanceTo(b) < 1e-7 || x.distanceTo(c) < 1e-7 || x.distanceTo(d) < 1e-7) continue;
+      return true;
+    }
+    for (final f in const [0.25, 0.5, 0.75]) {
+      if (!insideBoundary(Pt.lerp(a, b, f))) return true;
+    }
+    return false;
+  }
 
-  /// Whether the segment ab passes through an exclusion.
+  /// Whether the segment ab passes through an exclusion (or out of the
+  /// boundary between two points inside it).
   bool blocked(Pt a, Pt b) {
+    if (_leaves(a, b)) return true;
     if (polys.isEmpty) return false;
     final bb = Bounds.ofPoints([a, b]);
-    for (final poly in polys) {
-      if (!bb.intersects(Bounds.ofPoints(poly))) continue;
+    for (final k in _near(bb).toList()) {
+      final poly = polys[k];
       for (var i = 0; i < poly.length; i++) {
         final c = poly[i], d = poly[(i + 1) % poly.length];
         final x = segmentIntersection(a, b, c, d, eps: 1e-12);
@@ -237,63 +413,121 @@ class _Obstacles {
     return false;
   }
 
+  /// Whether nodes [i] and [j] see each other (cached).
+  bool _sees(int i, int j) {
+    final k = i < j ? i * nodes.length + j : j * nodes.length + i;
+    return _visible[k] ??= !blocked(nodes[i], nodes[j]);
+  }
+
   /// Shortest polyline from [a] to [b] round the exclusions (null when
-  /// none is found).
+  /// none is found): searched among the nodes near the two ends, in a box
+  /// that grows until a way is found or it holds every node.
   List<Pt>? path(Pt a, Pt b) {
     if (!blocked(a, b)) return [a, b];
     if (nodes.isEmpty) return null;
-    final vis = _vis ??= [
-      for (var i = 0; i < nodes.length; i++)
-        [
-          for (var j = 0; j < nodes.length; j++)
-            if (i != j && !blocked(nodes[i], nodes[j])) j,
-        ],
-    ];
-    final n = nodes.length;
-    // Dijkstra over a, the nodes and b (n, n + 1 are a and b)
-    Pt at(int i) => i < n ? nodes[i] : (i == n ? a : b);
-    final fromA = [
-      for (var j = 0; j < n; j++)
-        if (!blocked(a, nodes[j])) j,
-    ];
-    final toB = {
-      for (var j = 0; j < n; j++)
-        if (!blocked(nodes[j], b)) j,
-    };
-    final dist = List<double>.filled(n + 2, double.infinity);
-    final prev = List<int>.filled(n + 2, -1);
-    final done = List<bool>.filled(n + 2, false);
-    dist[n] = 0;
-    for (var iter = 0; iter < n + 2; iter++) {
-      var u = -1;
-      for (var i = 0; i < n + 2; i++) {
-        if (!done[i] && dist[i].isFinite && (u < 0 || dist[i] < dist[u])) u = i;
-      }
-      if (u < 0 || u == n + 1) break;
+    final all = Bounds.ofPoints(nodes);
+    var box = Bounds.ofPoints([a, b]).inflate(_reach0);
+    for (var round = 0; round < 24; round++) {
+      final c = box.center;
+      final half = math.sqrt(box.width * box.width + box.height * box.height) / 2;
+      final local = [
+        for (final i in _nodeGrid.within(c, half))
+          if (box.contains(nodes[i])) i,
+      ];
+      final covers = box.contains(Pt(all.minX, all.minY)) && box.contains(Pt(all.maxX, all.maxY));
+      if (local.length > 4000 && !covers) return null;
+      final p = _search(a, b, local);
+      if (p != null || covers) return p;
+      box = box.inflate(math.max(box.width, box.height) / 2 + _reach0);
+    }
+    return null;
+  }
+
+  /// A* over [a], the nodes [local] and [b].
+  List<Pt>? _search(Pt a, Pt b, List<int> local) {
+    final m = local.length;
+    Pt at(int i) => i < m ? nodes[local[i]] : (i == m ? a : b);
+    final dist = List<double>.filled(m + 2, double.infinity);
+    final prev = List<int>.filled(m + 2, -1);
+    final done = List<bool>.filled(m + 2, false);
+    final fromA = <int, bool>{};
+    final toB = <int, bool>{};
+    bool sees(int u, int v) {
+      if (u == m) return fromA[v] ??= !blocked(a, at(v));
+      return _sees(local[u], local[v]);
+    }
+
+    final heap = _MinHeap();
+    dist[m] = 0;
+    heap.push(a.distanceTo(b), m);
+    while (heap.isNotEmpty) {
+      final u = heap.pop();
+      if (done[u]) continue;
       done[u] = true;
-      final next = u == n ? fromA : vis[u];
-      for (final v in next) {
+      if (u == m + 1) break;
+      void relax(int v) {
         final d = dist[u] + at(u).distanceTo(at(v));
         if (d < dist[v] - 1e-12) {
           dist[v] = d;
           prev[v] = u;
+          heap.push(d + at(v).distanceTo(b), v);
         }
       }
-      if (u < n && toB.contains(u)) {
-        final d = dist[u] + at(u).distanceTo(b);
-        if (d < dist[n + 1] - 1e-12) {
-          dist[n + 1] = d;
-          prev[n + 1] = u;
-        }
+
+      if (u < m && (toB[u] ??= !blocked(at(u), b))) relax(m + 1);
+      for (var v = 0; v < m; v++) {
+        if (v == u || done[v]) continue;
+        if (sees(u, v)) relax(v);
       }
     }
-    if (!dist[n + 1].isFinite) return null;
+    if (!dist[m + 1].isFinite) return null;
     final out = <Pt>[];
-    for (var v = n + 1; v >= 0; v = prev[v]) {
+    for (var v = m + 1; v >= 0; v = prev[v]) {
       out.add(at(v));
-      if (v == n) break;
+      if (v == m) break;
     }
     return out.reversed.toList();
+  }
+}
+
+/// Binary min-heap of (key, index), ties by the lower index.
+class _MinHeap {
+  final List<(double, int)> _a = [];
+  bool get isNotEmpty => _a.isNotEmpty;
+  bool _less((double, int) x, (double, int) y) => x.$1 != y.$1 ? x.$1 < y.$1 : x.$2 < y.$2;
+
+  void push(double key, int i) {
+    _a.add((key, i));
+    var k = _a.length - 1;
+    while (k > 0) {
+      final p = (k - 1) >> 1;
+      if (!_less(_a[k], _a[p])) break;
+      final t = _a[p];
+      _a[p] = _a[k];
+      _a[k] = t;
+      k = p;
+    }
+  }
+
+  int pop() {
+    final top = _a.first;
+    final last = _a.removeLast();
+    if (_a.isNotEmpty) {
+      _a[0] = last;
+      var k = 0;
+      while (true) {
+        final l = 2 * k + 1, r = l + 1;
+        var m = k;
+        if (l < _a.length && _less(_a[l], _a[m])) m = l;
+        if (r < _a.length && _less(_a[r], _a[m])) m = r;
+        if (m == k) break;
+        final t = _a[m];
+        _a[m] = _a[k];
+        _a[k] = t;
+        k = m;
+      }
+    }
+    return top.$2;
   }
 }
 
@@ -301,48 +535,106 @@ class _Obstacles {
 
 /// Routes the zones whose heads are [zoneHeads] (see the library comment).
 RoutingResult routeZones(List<List<Pt>> zoneHeads, RouteOptions o) {
-  final messages = <String>[];
-  final obstacles = _Obstacles(o.exclusions, math.max(0.05, o.obstacleMargin));
-  final all = <Pt>[for (final z in zoneHeads) ...z];
-  final b = Bounds.ofPoints([...all, ?o.pointOfConnection, ...?o.mainline]);
-  if (all.isEmpty || b.isEmpty) return RoutingResult(zones: const [], mainline: const [], messages: const [], crossings: 0);
-  final cell = pointGridCell(b, all.length + zoneHeads.length, minimum: 0.25);
-  // every head, by zone, for the clearance checks
-  final grid = PointGrid(cell, origin: Pt(b.minX, b.minY));
-  final owner = <int>[];
-  for (var z = 0; z < zoneHeads.length; z++) {
-    for (final h in zoneHeads[z]) {
-      grid.add(h);
-      owner.add(z);
-    }
-  }
-  final valves = _placeValves(zoneHeads, o, obstacles, grid, owner, messages);
-  for (var z = 0; z < valves.length; z++) {
-    grid.add(valves[z]);
-    owner.add(z);
-  }
-  final zones = <RoutedZone>[];
-  // pipes routed so far: later zones go round them where they can
-  final routed = _Segments(math.max(cell, 1.0), Pt(b.minX, b.minY));
-  for (var z = 0; z < zoneHeads.length; z++) {
-    if (zoneHeads[z].isEmpty) continue;
-    final rz = _routeZone(z, zoneHeads[z], valves[z], o, obstacles, grid, owner, messages, routed);
-    for (final pipe in rz.pipes) {
-      for (var i = 1; i < pipe.points.length; i++) {
-        routed.add(pipe.points[i - 1], pipe.points[i], z);
+  final r = ZoneRouter(zoneHeads, o);
+  while (r.step()) {}
+  return r.result;
+}
+
+/// [routeZones] one zone at a time: [step] routes the next zone (the
+/// mainline after the last one), so that a caller can show the progress
+/// between steps, let the screen paint and stop when the inputs change.
+class ZoneRouter {
+  ZoneRouter(this.zoneHeads, this.options) : _obstacles = _Obstacles(options.exclusions, math.max(0.05, options.obstacleMargin), boundary: options.boundary) {
+    final o = options;
+    final all = <Pt>[for (final z in zoneHeads) ...z];
+    final b = Bounds.ofPoints([...all, ?o.pointOfConnection, ...?o.mainline]);
+    _empty = all.isEmpty || b.isEmpty;
+    final cell = _empty ? 1.0 : pointGridCell(b, all.length + zoneHeads.length, minimum: 0.25);
+    final origin = _empty ? Pt.zero : Pt(b.minX, b.minY);
+    _grid = PointGrid(cell, origin: origin);
+    _routed = _Segments(math.max(cell, 1.0), origin);
+    _bends = PointGrid(math.max(cell, 0.25), origin: origin);
+    if (_empty) return;
+    // every head, by zone, for the clearance checks
+    for (var z = 0; z < zoneHeads.length; z++) {
+      for (final h in zoneHeads[z]) {
+        _grid.add(h);
+        _owner.add(z);
       }
     }
-    zones.add(rz);
+    _valves = _placeValves(zoneHeads, o, _obstacles, _grid, _owner, _messages);
+    for (var z = 0; z < _valves.length; z++) {
+      _grid.add(_valves[z]);
+      _owner.add(z);
+    }
   }
-  final mainline = o.mainline == null && o.pointOfConnection != null ? _mainlineTree(o.pointOfConnection!, [for (final z in zones) z.valve], obstacles) : <RoutedPipe>[];
-  return RoutingResult(zones: zones, mainline: mainline, messages: messages, crossings: _crossings([for (final z in zones) ...z.pipes, ...mainline]));
+
+  final List<List<Pt>> zoneHeads;
+  final RouteOptions options;
+  final _Obstacles _obstacles;
+  late final bool _empty;
+  late final PointGrid _grid;
+  final List<int> _owner = [];
+  final List<String> _messages = [];
+  List<Pt> _valves = const [];
+  final List<RoutedZone> _zones = [];
+
+  // pipes routed so far: later zones go round them where they can
+  late final _Segments _routed;
+
+  // the bends of the pipes routed so far (detours round an exclusion, a
+  // dogleg round a head): a later zone never puts a vertex of its own on
+  // one, since coincident vertices connect and would join the two zones
+  late final PointGrid _bends;
+  final List<int> _bendOwner = [];
+  int _next = 0;
+  List<RoutedPipe>? _mainline;
+
+  /// Zones routed so far.
+  int get routed => _next;
+
+  /// Routes the next zone, or the mainline after the last one; false once
+  /// everything is routed.
+  bool step() {
+    if (_empty || _mainline != null) return false;
+    final o = options;
+    while (_next < zoneHeads.length && zoneHeads[_next].isEmpty) {
+      _next++;
+    }
+    if (_next < zoneHeads.length) {
+      final z = _next++;
+      final rz = _routeZone(z, zoneHeads[z], _valves[z], o, _obstacles, _grid, _owner, _messages, _routed, _bends, _bendOwner);
+      final own = {...zoneHeads[z], _valves[z]};
+      for (final pipe in rz.pipes) {
+        for (var i = 1; i < pipe.points.length; i++) {
+          _routed.add(pipe.points[i - 1], pipe.points[i], z);
+        }
+        for (final q in pipe.points) {
+          if (own.contains(q)) continue;
+          _bends.add(q);
+          _bendOwner.add(z);
+        }
+      }
+      _zones.add(rz);
+      return true;
+    }
+    _mainline = o.mainline == null && o.pointOfConnection != null ? _mainlineTree(o.pointOfConnection!, [for (final z in _zones) z.valve], _obstacles) : <RoutedPipe>[];
+    return false;
+  }
+
+  /// The routing (complete once [step] returned false).
+  RoutingResult get result {
+    if (_empty) return RoutingResult(zones: const [], mainline: const [], messages: const [], crossings: 0);
+    final mainline = _mainline ?? const <RoutedPipe>[];
+    return RoutingResult(zones: _zones, mainline: mainline, messages: _messages, crossings: _crossings([for (final z in _zones) ...z.pipes, ...mainline]));
+  }
 }
 
 /// A mainline tree from [pointOfConnection] to [valves] (or to pivot
 /// points, or to the valves of blocks made by the block generator) round
 /// [exclusions]: the greedy Steiner tree of [routeZones].
-List<RoutedPipe> routeMainline(Pt pointOfConnection, List<Pt> valves, {List<List<Pt>> exclusions = const [], double obstacleMargin = 0.5}) =>
-    _mainlineTree(pointOfConnection, valves, _Obstacles(exclusions, math.max(0.05, obstacleMargin)));
+List<RoutedPipe> routeMainline(Pt pointOfConnection, List<Pt> valves, {List<List<Pt>> exclusions = const [], double obstacleMargin = 0.5, List<Pt>? boundary}) =>
+    _mainlineTree(pointOfConnection, valves, _Obstacles(exclusions, math.max(0.05, obstacleMargin), boundary: boundary));
 
 /// Valve of every zone.
 List<Pt> _placeValves(List<List<Pt>> zoneHeads, RouteOptions o, _Obstacles obstacles, PointGrid heads, List<int> owner, List<String> messages) {
@@ -414,8 +706,12 @@ List<Pt> _placeValves(List<List<Pt>> zoneHeads, RouteOptions o, _Obstacles obsta
     for (var z = 0; z < n; z++)
       if (given[z]) out[z],
   ];
+  // valves stay on the lot (a manifold at a point of connection outside it
+  // stays by that point)
+  final keepIn = poc == null || o.placement != ValvePlacement.manifold || obstacles.insideBoundary(poc);
   bool free(Pt p, int zone) {
     if (obstacles.inside(p)) return false;
+    if (keepIn && !obstacles.insideBoundary(p)) return false;
     for (final q in placed) {
       if (q.distanceTo(p) < o.minValveSeparation - 1e-9) return false;
     }
@@ -528,7 +824,19 @@ class _Edge {
 }
 
 /// The zone tree from the valve (node 0) to the heads (nodes 1…).
-RoutedZone _routeZone(int zone, List<Pt> heads, Pt valve, RouteOptions o, _Obstacles obstacles, PointGrid grid, List<int> owner, List<String> messages, _Segments routed) {
+RoutedZone _routeZone(
+  int zone,
+  List<Pt> heads,
+  Pt valve,
+  RouteOptions o,
+  _Obstacles obstacles,
+  PointGrid grid,
+  List<int> owner,
+  List<String> messages,
+  _Segments routed,
+  PointGrid bends,
+  List<int> bendOwner,
+) {
   final nodes = [valve, ...heads];
   final n = nodes.length;
   final b = Bounds.ofPoints(nodes);
@@ -538,6 +846,8 @@ RoutedZone _routeZone(int zone, List<Pt> heads, Pt valve, RouteOptions o, _Obsta
   }
   final dir = o.direction != null && o.direction!.length > 0 ? o.direction!.normalized : null;
   final clear = math.max(o.clearance, 0.06);
+  // a bend of another zone's pipe within twice the clearance of [v]
+  bool bendTaken(Pt v) => bends.nearest(v, maxDistance: 2 * clear, skip: (j) => bendOwner[j] == zone) >= 0;
   // a straight pipe must keep clear of the other zones' heads and valves
   bool foreignNear(Pt a, Pt c) {
     final mid = Pt.lerp(a, c, 0.5);
@@ -583,6 +893,7 @@ RoutedZone _routeZone(int zone, List<Pt> heads, Pt valve, RouteOptions o, _Obsta
     for (final k in const [2.0, 4.0, 8.0]) {
       for (final sgn in const [1.0, -1.0]) {
         final m = f + side * (clear * k * sgn);
+        if (bendTaken(m)) continue;
         if (!foreignNear(a, m) && !foreignNear(m, c) && !obstacles.blocked(a, m) && !obstacles.blocked(m, c)) return [a, m, c];
       }
     }
@@ -596,10 +907,26 @@ RoutedZone _routeZone(int zone, List<Pt> heads, Pt valve, RouteOptions o, _Obsta
     }
     final p = obstacles.path(a, c);
     if (p == null) return null;
-    for (var i = 1; i < p.length; i++) {
-      if (foreignNear(p[i - 1], p[i])) return null;
+    // a detour corner another zone bends at already: this zone bends a
+    // little farther out
+    final q = List.of(p);
+    for (var i = 1; i + 1 < q.length; i++) {
+      if (!bendTaken(q[i])) continue;
+      final away = obstacles.outwardAt(p[i]) ?? (q[i] - Pt.lerp(q[i - 1], q[i + 1], 0.5)).normalized;
+      if (away.length == 0) return null;
+      Pt? moved;
+      for (var k = 1; k <= 8 && moved == null; k++) {
+        final m = q[i] + away * (2 * clear * k);
+        if (bendTaken(m) || obstacles.inside(m) || !obstacles.insideBoundary(m) || obstacles.blocked(q[i - 1], m) || obstacles.blocked(m, q[i + 1])) continue;
+        moved = m;
+      }
+      if (moved == null) return null;
+      q[i] = moved;
     }
-    return p;
+    for (var i = 1; i < q.length; i++) {
+      if (foreignNear(q[i - 1], q[i])) return null;
+    }
+    return q;
   }
 
   final k = math.max(2, o.neighbours);

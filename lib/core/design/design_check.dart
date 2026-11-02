@@ -12,7 +12,9 @@ import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import 'area_water.dart';
+import 'auto_layout.dart' show LayoutRegion, evaluateSprayUniformity, polygonSelfCrossings;
 import 'crops.dart';
+import 'densogram.dart' show SpraySource, spraySources;
 import 'designer.dart' show areaRequirements;
 import 'electrical.dart';
 import 'irrigation_requirement.dart';
@@ -66,7 +68,10 @@ DesignCheckReport runDesignCheck(Project project) {
   final pivots = ents.whereType<PivotEntity>().toList();
   final hydraulic = ents.where((e) => e.isHydraulic || e is PivotEntity).toList();
   if (hydraulic.isEmpty) {
-    issues.add(const CheckIssue('no_hydraulics', CheckSeverity.info));
+    // 1.6.0 AUT: an area crossing itself is wrong before any pipe is drawn
+    issues
+      ..addAll(checkSelfCrossingAreas(project))
+      ..add(const CheckIssue('no_hydraulics', CheckSeverity.info));
     return DesignCheckReport(issues);
   }
   if (supplies.isEmpty) issues.add(const CheckIssue('no_supply', CheckSeverity.error));
@@ -86,7 +91,9 @@ DesignCheckReport runDesignCheck(Project project) {
     final code = idx > 0 ? w.substring(0, idx) : w;
     final rest = idx > 0 ? w.substring(idx + 1) : '';
     final ids = rest.isEmpty ? const <String>[] : rest.split(':');
-    issues.add(CheckIssue(code, code.contains('missing') ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
+    // 1.6.0 AUT: zones joined without a valve are an error (the last valve
+    // takes the other zone's nodes and both zones come out wrong)
+    issues.add(CheckIssue(code, code.contains('missing') || code == 'zone_overlap' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
 
   // ---- zones without emitters
@@ -95,12 +102,21 @@ DesignCheckReport runDesignCheck(Project project) {
     final emitters = nodes.fold<int>(0, (s, id) => s + (model.nodes[id]?.emitters.length ?? 0));
     if (nodes.length > 1 && emitters == 0) issues.add(CheckIssue('zone_no_emitters', CheckSeverity.error, entityIds: [v.id], value: v.zoneName));
   }
-  // ---- zones mixing drip with overhead emitters, or heads that apply
-  // water at very different rates (sprays with rotors, or part circles with
-  // the nozzle of a full circle): one valve cannot water them all right
+  // ---- zones mixing drip with overhead emitters, or emitters that apply
+  // water at very different rates (sprays with rotors, part circles without
+  // matched nozzles, tapes of 1 and 2 L/h, or 20 and 40 cm apart): one valve
+  // cannot water them all right. 1.6.0 AUT: the rate of every emitter is its
+  // flow over the ground it serves: a head its sector of the square of the
+  // distance to its nearest neighbour in the zone (within half and twice its
+  // own throw), a sprinkler of a spray line the outlet spacing by the
+  // distance to the next line, a tape the emitter spacing by the distance to
+  // the next tape, a dripper the square of the distance to the next one
   for (final v in valves) {
     final families = <bool>{}; // true = drip and bubblers, false = overhead
-    final heads = <(String, double, double, double)>[]; // family, flow, radius, arc
+    final heads = <(Pt, double, double, double)>[]; // position, flow, radius, arc
+    final lines = <String, (SpraylineEntity, double, double, double)>{}; // flow, radius, arc
+    final tapes = <String, TapeEntity>{};
+    final drippers = <(Pt, double)>[];
     for (final id in model.zoneNodes[v.id] ?? const <String>{}) {
       for (final em in model.nodes[id]?.emitters ?? const <EmitterRef>[]) {
         if (em.index == -2) continue; // open tape end of the flushing model
@@ -115,26 +131,64 @@ DesignCheckReport runDesignCheck(Project project) {
         if (kind == null || kind == OutletKind.demandPoint) continue;
         final drip = kind == OutletKind.dripper || kind == OutletKind.bubbler;
         families.add(drip);
+        final q = em.curve.flow(em.nominalHead);
+        if (drip) {
+          if (e is TapeEntity) tapes[e.id] = e;
+          if (e is OutletEntity && q > 0) drippers.add((e.position, q));
+          continue;
+        }
         final r = em.curve.radius(em.nominalHead);
-        if (drip || r <= 0) continue;
-        heads.add((specId ?? '', em.curve.flow(em.nominalHead), r, (spec?.nozzle(nozzleId)?.effectiveArcDeg(arc) ?? arc).clamp(1.0, 360.0).toDouble()));
+        if (r <= 0 || q <= 0) continue;
+        final a = (spec?.nozzle(nozzleId)?.effectiveArcDeg(arc) ?? arc).clamp(1.0, 360.0).toDouble();
+        if (e is OutletEntity) heads.add((e.position, q, r, a));
+        if (e is SpraylineEntity) lines[e.id] = (e, q, r, a);
       }
     }
-    // the spacing of a family is set by its longest throw: the rate of each
-    // head is its flow over its sector of that circle (matched part circles
-    // with smaller nozzles keep the rate of the full circles)
-    final familyRadius = <String, double>{};
-    for (final (f, _, r, _) in heads) {
-      familyRadius[f] = math.max(familyRadius[f] ?? 0, r);
+    final rates = <double>[], dripRates = <double>[];
+    for (final (p, q, r, a) in heads) {
+      var nn = double.infinity;
+      for (final (o, _, _, _) in heads) {
+        final d = o.distanceTo(p);
+        if (d > 1e-6 && d < nn) nn = d;
+      }
+      final s = nn.isFinite ? nn.clamp(0.5 * r, 2 * r).toDouble() : r;
+      rates.add(q / (s * s * a / 360));
     }
-    var rateMin = double.infinity, rateMax = 0.0;
-    for (final (f, q, _, arc) in heads) {
-      final r = familyRadius[f]!;
-      final rate = q / (math.pi * r * r * arc / 360);
-      rateMin = math.min(rateMin, rate);
-      rateMax = math.max(rateMax, rate);
+    double nearestLine(PolyEntity l, Iterable<PolyEntity> others) {
+      if (l.points.length < 2) return double.infinity;
+      final mid = pointAlongPolyline(l.points, polylineLength(l.points) / 2);
+      var best = double.infinity;
+      for (final o in others) {
+        if (identical(o, l) || o.points.length < 2) continue;
+        for (var i = 1; i < o.points.length; i++) {
+          best = math.min(best, distanceToSegment(mid, o.points[i - 1], o.points[i]));
+        }
+      }
+      return best;
     }
-    if (families.length > 1 || (rateMax > 0 && rateMax > mixedRateRatio * rateMin)) {
+
+    for (final (l, q, r, a) in lines.values) {
+      final across = nearestLine(l, [for (final x in lines.values) x.$1]);
+      final s = across.isFinite ? across.clamp(0.5 * r, 2 * r).toDouble() : r;
+      if (l.spacing > 0) rates.add(q / (l.spacing * s * a / 360));
+    }
+    for (final t in tapes.values) {
+      final spec = cat.tape(t.tapeSpecId);
+      if (spec == null || !(spec.emitterSpacingM > 0)) continue;
+      final across = nearestLine(t, tapes.values);
+      if (!across.isFinite || across < 0.05) continue;
+      dripRates.add(spec.emitter.flow(t.inletHeadM) / (spec.emitterSpacingM * across));
+    }
+    for (final (p, q) in drippers) {
+      var nn = double.infinity;
+      for (final (o, _) in drippers) {
+        final d = o.distanceTo(p);
+        if (d > 1e-6 && d < nn) nn = d;
+      }
+      if (nn.isFinite) dripRates.add(q / math.max(0.25, nn * nn));
+    }
+    bool spread(List<double> xs) => xs.length >= 2 && xs.reduce(math.max) > mixedRateRatio * xs.reduce(math.min);
+    if (families.length > 1 || spread(rates) || spread(dripRates)) {
       issues.add(CheckIssue('zone_mixed_emitters', CheckSeverity.warning, entityIds: [v.id], value: v.zoneName));
     }
   }
@@ -308,6 +362,13 @@ DesignCheckReport runDesignCheck(Project project) {
   }
   // 1.6.0 AGR
   issues.addAll(agronomyIssues(project));
+  // 1.6.0 AUT: outlines that cross themselves, overlapping pipes and laterals
+  issues.addAll(checkSelfCrossingAreas(project));
+  issues.addAll(checkOverlappingLines(project, tol));
+  // 1.6.0 AUT: sprinklers spaced too far apart, areas watered unevenly
+  final sprinklers = _sprinklerSources(project);
+  issues.addAll(checkSprinklerSpacing(project, model, sources: sprinklers));
+  issues.addAll(checkAreaUniformity(project, sources: sprinklers));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));
@@ -375,6 +436,245 @@ List<CheckIssue> agronomyIssues(Project p) {
         out.add(CheckIssue('area_leaching_infeasible', CheckSeverity.warning, entityIds: [a.id], value: '${f1(a.ecwDsM)} dS/m'));
       }
     }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------- 1.6.0 AUT
+
+/// Irrigated areas whose outline crosses itself (a bow tie made by
+/// dragging a grip across another side, an outline read from a file): their
+/// area, and so the water they need, would come out wrong.
+List<CheckIssue> checkSelfCrossingAreas(Project project) => [
+  for (final a in project.entities.whereType<AreaEntity>())
+    if (a.points.length >= 4)
+      if (polygonSelfCrossings(a.points) case final x when x.isNotEmpty) CheckIssue('area_self_intersect', CheckSeverity.error, entityIds: [a.id], at: x.first, value: a.name),
+];
+
+/// Pipes, laterals and tapes of one scope that run on top of each other for
+/// more than [tol] (a pipe pasted twice, two pipes drawn over the same
+/// stretch, a lateral that doubles back on itself): the design would take
+/// them as pipes in parallel (too little friction) and the bill of
+/// materials would count them twice. The segments are bucketed on a grid.
+List<CheckIssue> checkOverlappingLines(Project project, double tol) {
+  final lines = <PolyEntity>[
+    for (final e in project.entities)
+      if (e.isLinearHydraulic && e is PolyEntity && e.points.length >= 2) e,
+  ];
+  final segs = <(Pt, Pt, int, int)>[]; // a, b, line, segment
+  var b = Bounds.empty;
+  var total = 0.0;
+  for (var k = 0; k < lines.length; k++) {
+    final pts = lines[k].points;
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i - 1].distanceTo(pts[i]) <= 1e-9) continue;
+      segs.add((pts[i - 1], pts[i], k, i));
+      b = b.include(pts[i - 1]).include(pts[i]);
+      total += pts[i - 1].distanceTo(pts[i]);
+    }
+  }
+  if (segs.length < 2) return const [];
+  final cell = math.max(total / segs.length, math.max(b.width, b.height) / 512) + 1e-9;
+  final buckets = <int, List<int>>{};
+  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+  for (var s = 0; s < segs.length; s++) {
+    final (p, q, _, _) = segs[s];
+    final x0 = ((math.min(p.x, q.x) - b.minX - tol) / cell).floor(), x1 = ((math.max(p.x, q.x) - b.minX + tol) / cell).floor();
+    final y0 = ((math.min(p.y, q.y) - b.minY - tol) / cell).floor(), y1 = ((math.max(p.y, q.y) - b.minY + tol) / cell).floor();
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 65536) continue;
+    for (var ix = x0; ix <= x1; ix++) {
+      for (var iy = y0; iy <= y1; iy++) {
+        (buckets[key(ix, iy)] ??= []).add(s);
+      }
+    }
+  }
+  final found = <String, (List<String>, Pt)>{};
+  final tested = <int>{};
+  for (final list in buckets.values) {
+    for (var x = 0; x < list.length; x++) {
+      for (var y = x + 1; y < list.length; y++) {
+        final s1 = list[x], s2 = list[y];
+        if (!tested.add(s1 * segs.length + s2)) continue;
+        final (a, c, l1, i1) = segs[s1];
+        final (d0, d1, l2, i2) = segs[s2];
+        final e1 = lines[l1] as Entity, e2 = lines[l2] as Entity;
+        if (e1.hydraulicScope != e2.hydraulicScope) continue;
+        if (l1 == l2 && i1 == i2) continue;
+        final r = c - a;
+        final len = r.length;
+        // collinear: both ends of the second segment on the first one's line
+        if ((d0 - a).cross(r).abs() / len > tol || (d1 - a).cross(r).abs() / len > tol) continue;
+        final t0 = (d0 - a).dot(r) / len, t1 = (d1 - a).dot(r) / len;
+        final lo = math.max(0.0, math.min(t0, t1)), hi = math.min(len, math.max(t0, t1));
+        if (hi - lo <= tol) continue;
+        final ids = [e1.id, e2.id]..sort();
+        final at = a + r * ((lo + hi) / 2 / len);
+        found.putIfAbsent(ids.toSet().join('|'), () => (ids.toSet().toList(), at));
+      }
+    }
+  }
+  return [for (final (ids, at) in found.values) CheckIssue('pipes_overlap', CheckSeverity.warning, entityIds: ids, at: at)];
+}
+
+/// Largest sprinkler spacing, as a share of the wetted diameter, of zones
+/// whose heads form a square-like grid (or a triangle), and the limits of a
+/// rectangular one (the smaller and the larger spacing): head to head is
+/// 50 %; Keller & Bliesner (1990, table 5.2) allow about 55–60 % square and
+/// 50–55 × 60–65 % rectangular in light wind, less as it blows.
+const spacingLimitSquare = 0.60, spacingLimitNarrow = 0.55, spacingLimitWide = 0.65;
+
+/// The two spacings of a grid of heads: the median distance of a head to
+/// its nearest neighbour, and to its nearest neighbour across that
+/// direction (60° to 120° from it); the second is null for a single row.
+(double, double?) gridSpacings(List<Pt> heads) {
+  if (heads.length < 2) return (0, null);
+  final b = Bounds.ofPoints(heads);
+  final cell = math.max(math.sqrt(math.max(b.width * b.height, 1e-6) / heads.length), math.max(b.width, b.height) / heads.length) + 1e-9;
+  final buckets = <int, List<int>>{};
+  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+  for (var i = 0; i < heads.length; i++) {
+    (buckets[key(((heads[i].x - b.minX) / cell).floor(), ((heads[i].y - b.minY) / cell).floor())] ??= []).add(i);
+  }
+  final along = <double>[], across = <double>[];
+  for (var i = 0; i < heads.length; i++) {
+    final q = heads[i];
+    final ix = ((q.x - b.minX) / cell).floor(), iy = ((q.y - b.minY) / cell).floor();
+    // the neighbours within three cells, the nearest first
+    final near = <(double, Pt)>[];
+    for (var dx = -3; dx <= 3; dx++) {
+      for (var dy = -3; dy <= 3; dy++) {
+        for (final j in buckets[key(ix + dx, iy + dy)] ?? const <int>[]) {
+          if (j != i && heads[j].distanceTo(q) > 1e-6) near.add((heads[j].distanceTo(q), heads[j] - q));
+        }
+      }
+    }
+    if (near.isEmpty) continue;
+    near.sort((x, y) => x.$1.compareTo(y.$1));
+    final (d1, v1) = near.first;
+    along.add(d1);
+    for (final (d, v) in near.skip(1)) {
+      final c = (v.dot(v1) / (v.length * v1.length)).abs();
+      if (c <= 0.5) {
+        across.add(d);
+        break;
+      }
+    }
+  }
+  double median(List<double> xs) => (xs..sort())[xs.length ~/ 2];
+  if (along.isEmpty) return (0, null);
+  return (median(along), across.length * 2 >= along.length ? median(across) : null);
+}
+
+/// Sprinklers of [project] (sprays, rotors, impact sprinklers and guns; not
+/// micro-sprinklers, which wet part of the ground by design) as wetted
+/// sectors at their nominal pressures.
+List<SpraySource> _sprinklerSources(Project project) {
+  final cat = project.catalog;
+  return [
+    for (final s in spraySources(project, measured: true))
+      if (switch (project.byId(s.entityId)) {
+            OutletEntity o => cat.outlet(o.outletSpecId)?.kind,
+            SpraylineEntity l => cat.outlet(l.outletSpecId)?.kind,
+            _ => null,
+          }
+          case OutletKind.sprinkler || OutletKind.gun)
+        s,
+  ];
+}
+
+String _pct(double v) => '${(v * 100).round()} %';
+
+String _m(double v) => v >= 10 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+
+/// Zones whose full-circle sprinklers stand farther apart than their throw allows
+/// ([spacingLimitSquare], [spacingLimitNarrow], [spacingLimitWide]): dry
+/// spots between them that no run time makes up. The value gives the
+/// spacings, the wetted radius and the share of the diameter.
+List<CheckIssue> checkSprinklerSpacing(Project project, NetworkModel model, {List<SpraySource>? sources}) {
+  sources ??= _sprinklerSources(project);
+  if (sources.length < 3) return const [];
+  final byEntity = <String, List<SpraySource>>{};
+  for (final s in sources) {
+    (byEntity[s.entityId] ??= []).add(s);
+  }
+  final out = <CheckIssue>[];
+  for (final v in project.entities.whereType<ControlValveEntity>()) {
+    final ids = <String>{
+      for (final id in model.zoneNodes[v.id] ?? const <String>{})
+        for (final em in model.nodes[id]?.emitters ?? const <EmitterRef>[]) em.entityId,
+    };
+    // the full circles: part circles stand on the edges, where the width of
+    // the area, not a grid, sets how far they are from each other (the
+    // uniformity check of the area judges those)
+    final zone = [
+      for (final id in ids)
+        for (final s in byEntity[id] ?? const <SpraySource>[])
+          if (s.fullCircle) s,
+    ];
+    if (zone.length < 3) continue;
+    final radii = [for (final s in zone) s.radius]..sort();
+    final r = radii[radii.length ~/ 2];
+    if (!(r > 0)) continue;
+    final (s1, s2) = gridSpacings([for (final s in zone) s.p]);
+    if (!(s1 > 0)) continue;
+    final small = s2 == null ? s1 : math.min(s1, s2), large = s2 == null ? s1 : math.max(s1, s2);
+    final square = large <= 1.15 * small;
+    final d = 2 * r;
+    final wide = square ? large > spacingLimitSquare * d + 1e-9 : (small > spacingLimitNarrow * d + 1e-9 || large > spacingLimitWide * d + 1e-9);
+    if (!wide) continue;
+    final limit = square ? spacingLimitSquare * d : spacingLimitWide * d;
+    out.add(
+      CheckIssue(
+        'zone_spacing_wide',
+        CheckSeverity.warning,
+        entityIds: [v.id],
+        at: v.position,
+        value: '${v.zoneName}: ${s2 == null ? _m(s1) : '${_m(small)} × ${_m(large)}'} m, R ${_m(r)} m (${_pct(large / d)} D; ≤ ${_m(limit)} m)',
+      ),
+    );
+  }
+  return out;
+}
+
+/// Irrigated areas their sprinklers water unevenly: the densogram of the
+/// sprinklers at their nominal pressures over the area (every head that
+/// throws onto it, of any zone) with a Christiansen CU below 75 %, a
+/// low-quarter DU below 60 % or more than 5 % of it getting less than half
+/// the mean. Areas a crop wets in part ([AreaEntity.wettedFraction] below
+/// 0.95) are left out.
+List<CheckIssue> checkAreaUniformity(Project project, {List<SpraySource>? sources}) {
+  final areas = [
+    for (final a in project.entities.whereType<AreaEntity>())
+      if (a.points.length >= 3 && a.wettedFraction >= 0.95) a,
+  ];
+  if (areas.isEmpty) return const [];
+  sources ??= _sprinklerSources(project);
+  if (sources.isEmpty) return const [];
+  final out = <CheckIssue>[];
+  for (final a in areas) {
+    final box = Bounds.ofPoints(a.points);
+    final near = [
+      for (final s in sources)
+        if (Bounds(s.p.x - s.radius, s.p.y - s.radius, s.p.x + s.radius, s.p.y + s.radius).intersects(box)) s,
+    ];
+    if (near.length < 2) continue;
+    final region = LayoutRegion(a.points);
+    if (region.isEmpty) continue;
+    // a quarter of the shortest throw, no coarser than a tenth of the area's
+    // size (the check runs after every edit: no inscribed-circle search)
+    final minR = near.fold(double.infinity, (m, s) => math.min(m, s.radius));
+    final cell = math.max(0.05, math.min(minR / 4, math.sqrt(region.area) / 10));
+    final m = evaluateSprayUniformity(region, near, cellSize: cell, maxCells: 40000);
+    if (m.heads == 0 || m.areaM2 <= 0) continue;
+    if (m.cu >= 75 && m.du >= 60 && m.dryPct <= 5) continue;
+    out.add(
+      CheckIssue(
+        'area_uniformity_low',
+        CheckSeverity.warning,
+        entityIds: [a.id],
+        value: '${a.name.isEmpty ? '' : '${a.name}: '}CU ${m.cu.toStringAsFixed(1)} % · DU ${m.du.toStringAsFixed(1)} % · ${m.dryPct.toStringAsFixed(1)} %',
+      ),
+    );
   }
   return out;
 }

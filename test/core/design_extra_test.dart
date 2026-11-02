@@ -298,9 +298,11 @@ void main() {
             expect(q.y, inInclusiveRange(-1e-6, 60 + 1e-6));
           }
         }
-        // rows that cross the whole block (the top row is clipped into two
-        // short pieces by the curve, each fed from its own end)
-        final full = r.laterals.cast<SpraylineEntity>().where((l) => (l.points.first.x - l.points.last.x).abs() > 45).toList();
+        // rows that cross the whole block, from side to side (the bottom row
+        // is an arch the curve clips from the bottom edge, fed from its own
+        // end)
+        bool onSide(Pt q) => q.x < 1e-6 || q.x > 100 - 1e-6 || (pos == SubmainPosition.centre && (q.x - 50).abs() < 1e-6);
+        final full = r.laterals.cast<SpraylineEntity>().where((l) => (l.points.first.x - l.points.last.x).abs() > 45 && onSide(l.points.first) && onSide(l.points.last)).toList();
         expect(full.length, greaterThanOrEqualTo(4), reason: pos.name);
         if (pos == SubmainPosition.centre) {
           expect(full.every((l) => (l.points.first.x - 50).abs() < 1e-6), isTrue, reason: 'both halves start at the middle');

@@ -19,7 +19,9 @@ library;
 import 'dart:math' as math;
 
 import '../model/catalog.dart';
+import '../model/entities.dart';
 import '../model/geometry.dart';
+import '../model/project.dart';
 import 'auto_layout.dart';
 
 /// How fast an emitter applies water: emitters of different classes never
@@ -52,6 +54,42 @@ PrecipitationClass precipitationClassOf(OutletSpec family, {NozzleSpec? nozzle, 
   }
 }
 
+/// Usual flow (m³/s) of one valve zone of [cls] in landscape and
+/// agricultural practice: a 1" valve on a house meter for sprays, a little
+/// more for rotors, a field block for drip, a gun alone.
+double typicalZoneFlow(PrecipitationClass cls) =>
+    switch (cls) {
+      PrecipitationClass.spray => 3.5,
+      PrecipitationClass.rotor => 5.0,
+      PrecipitationClass.microSprinkler => 3.0,
+      PrecipitationClass.bubbler => 2.0,
+      PrecipitationClass.drip => 2.0,
+      PrecipitationClass.gun => 30.0,
+      PrecipitationClass.other => 5.0,
+    } /
+    3600;
+
+/// The largest zone flow the automatic tools start from: the smaller of
+/// the largest design flow of the water supplies and the largest enabled
+/// control valve. Without a supply design flow the largest valve (300 m³/h
+/// in the default catalogue) would make a whole lawn one zone: the usual
+/// flow of the precipitation class of [family] (sprays by default) is taken
+/// instead, within the largest valve, and [typical] says so (the supply's
+/// flow is missing). Flows in m³/s.
+({double flow, double supply, double valve, bool typical}) defaultMaxZoneFlow(Project p, {OutletSpec? family, double? headM}) {
+  var supply = 0.0, valve = 0.0;
+  for (final w in p.entities.whereType<WaterSupplyEntity>()) {
+    supply = math.max(supply, w.designFlow);
+  }
+  for (final v in p.catalog.valves) {
+    if (v.enabled && v.kind == ValveKind.control) valve = math.max(valve, v.maxFlow);
+  }
+  if (supply > 0) return (flow: valve > 0 ? math.min(supply, valve) : supply, supply: supply, valve: valve, typical: false);
+  final cls = family == null ? PrecipitationClass.spray : precipitationClassOf(family, headM: headM);
+  final q = typicalZoneFlow(cls);
+  return (flow: valve > 0 ? math.min(q, valve) : q, supply: supply, valve: valve, typical: true);
+}
+
 /// One thing to put in a zone: a head, or a drip area (its centroid) with
 /// the flow of all its emitters.
 class ZoneItem {
@@ -66,16 +104,41 @@ class ZoneItem {
   final String classKey;
 }
 
+/// Hydrozone of an irrigated area: its plant water use when it states one,
+/// else the water-use class of its crop coefficient (very low below 0.1,
+/// low to 0.35, moderate to 0.65, high above: the classes of the landscape
+/// species factors).
+String hydrozoneOf(AreaEntity a) {
+  if (a.plantWaterUse.isNotEmpty) return a.plantWaterUse;
+  final k = a.kc;
+  return k < 0.1 ? 'veryLow' : (k < 0.35 ? 'low' : (k < 0.65 ? 'moderate' : 'high'));
+}
+
 /// The heads of [layout] as zone items, keyed by their precipitation class
-/// (and family, when [byFamily]).
-List<ZoneItem> zoneItemsOf(LandscapeLayout layout, OutletSpec family, {bool byFamily = false}) => [
-  for (final h in layout.heads)
-    ZoneItem(
-      position: h.position,
-      flow: h.flow,
-      classKey: [precipitationClassOf(family, nozzle: family.nozzle(h.nozzleId), headM: layout.headM).name, if (byFamily) family.id].join(':'),
-    ),
-];
+/// (and family, when [byFamily]) and by the hydrozone of the irrigated area
+/// of [areas] each one waters ([hydrozoneOf]): sprays on a lawn in the sun
+/// and on a bed of shrubs never share a valve.
+List<ZoneItem> zoneItemsOf(LandscapeLayout layout, OutletSpec family, {bool byFamily = false, Iterable<AreaEntity> areas = const []}) {
+  final zones = [
+    for (final a in areas)
+      if (a.points.length >= 3) a,
+  ];
+  String? hydrozone(LayoutHead h) {
+    for (final a in zones) {
+      if (watersArea(h.position, a.points, arcDeg: h.arcDeg, orientationDeg: h.orientationDeg)) return hydrozoneOf(a);
+    }
+    return null;
+  }
+
+  return [
+    for (final h in layout.heads)
+      ZoneItem(
+        position: h.position,
+        flow: h.flow,
+        classKey: [precipitationClassOf(family, nozzle: family.nozzle(h.nozzleId), headM: layout.headM).name, if (byFamily) family.id, ?hydrozone(h)].join(':'),
+      ),
+  ];
+}
 
 /// Options of [zoneByFlow].
 class ZoningOptions {
@@ -323,6 +386,8 @@ List<List<int>> _zoneComponent(List<ZoneItem> items, List<int> comp, Map<int, Li
     final zones = _growFrom(items, rest, inRest, adj, cap, soft, seeds, o);
     _mergeSmall(items, zones, adj, cap, o);
     _refine(items, zones, adj, cap, o);
+    // 1.6.0 AUT: zones emptied into their neighbours while the flows allow
+    if (cap.isFinite && _dissolve(items, zones, adj, cap, o)) _refine(items, zones, adj, cap, o);
     final score = _score(items, zones, rest, cap);
     if (score < bestScore - 1e-12) {
       bestScore = score;
@@ -547,6 +612,67 @@ void _mergeSmall(List<ZoneItem> items, List<List<int>> zones, Map<int, List<int>
       if (merged) break;
     }
   }
+}
+
+/// Empties the lightest zone it can into its neighbours, an item at a time
+/// from the side that touches them (so every zone stays in one piece), the
+/// lightest neighbour with room first, and repeats while a zone can go: the
+/// growth leaves zones at three quarters of the cap, and with a small cap
+/// that is a fifth more valves than the flow asks for. True when a zone went.
+bool _dissolve(List<ZoneItem> items, List<List<int>> zones, Map<int, List<int>> adj, double cap, ZoningOptions o) {
+  final maxItems = o.maxItemsPerZone > 0 ? o.maxItemsPerZone : 1 << 30;
+  var any = false;
+  for (var guard = 0; guard < 100000 && zones.length > 1; guard++) {
+    final zoneOf = <int, int>{};
+    for (var z = 0; z < zones.length; z++) {
+      for (final i in zones[z]) {
+        zoneOf[i] = z;
+      }
+    }
+    final loads = [for (final z in zones) z.fold(0.0, (s, i) => s + items[i].flow)];
+    final order = List<int>.generate(zones.length, (i) => i)..sort((a, b) => loads[a] != loads[b] ? loads[a].compareTo(loads[b]) : a.compareTo(b));
+    var gone = false;
+    for (final z in order) {
+      final load = List.of(loads);
+      final size = [for (final g in zones) g.length];
+      final assign = <int, int>{};
+      final pending = List.of(zones[z]);
+      var stuck = false;
+      while (pending.isNotEmpty) {
+        int? pick, target;
+        var best = double.infinity;
+        for (final i in pending) {
+          for (final nb in adj[i]!) {
+            final tz = assign[nb] ?? zoneOf[nb];
+            if (tz == null || tz == z) continue;
+            if (load[tz] + items[i].flow > cap + 1e-12 || size[tz] >= maxItems) continue;
+            if (load[tz] < best - 1e-15 || (load[tz] <= best + 1e-15 && (tz < target! || (tz == target && i < pick!)))) {
+              best = load[tz];
+              pick = i;
+              target = tz;
+            }
+          }
+        }
+        if (pick == null || target == null) {
+          stuck = true;
+          break;
+        }
+        assign[pick] = target;
+        load[target] += items[pick].flow;
+        size[target]++;
+        pending.remove(pick);
+      }
+      if (stuck) continue;
+      for (final e in assign.entries) {
+        zones[e.value].add(e.key);
+      }
+      zones.removeAt(z);
+      gone = any = true;
+      break;
+    }
+    if (!gone) break;
+  }
+  return any;
 }
 
 /// Moves boundary items from the heavier to the lighter of two neighbouring

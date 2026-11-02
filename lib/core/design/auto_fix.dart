@@ -12,6 +12,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import 'advisor.dart';
+import 'auto_layout.dart' show simplePolygonParts;
 import 'electrical.dart';
 import 'network_builder.dart';
 import 'pump_selection.dart';
@@ -45,6 +46,12 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
       if (plan == null) return FixResult.failed('fixfail.nothingNear', {'d': _m(connectReach(p))});
       final d = plan.distance;
       if (plan.splitPipe != null) splitPipeAt(p, plan.splitPipe!, plan.to);
+      if (plan.pipe && plan.moved is PointEntity) {
+        // 1.6.0 AUT: a short pipe from the head, which keeps its place
+        final from = (plan.moved as PointEntity).position;
+        if (d > 1e-9) p.entities.add(PipeEntity(id: p.newId(), points: [plan.to, from], scope: HydraulicScope.zone, name: tr('name.stub')));
+        return FixResult.done('fixed.connectPipe', {'d': _m(d)});
+      }
       switch (plan.moved) {
         case PointEntity e:
           e.position = plan.to;
@@ -169,6 +176,9 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
       if (supply == null) return const FixResult.failed('fixfail.noSupply');
       final plan = splitFlowsPlan(p, results!, supply, tr);
       if (plan == null) return const FixResult.failed('fixfail.noOption');
+      // 1.6.0 AUT: the flows one after the other must fit in a day
+      final hours = plan.fold(0.0, (s, f) => s + math.max(0.0, f.durationHours));
+      if (hours > 24 + 1e-9) return FixResult.failed('fixfail.flowsPastDay', {'h': _m(hours), 'n': '${plan.length}'});
       p.systemFlows
         ..clear()
         ..addAll(plan);
@@ -368,6 +378,40 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
         n++;
       }
       return n == 0 ? const FixResult.failed('fixfail.noChange') : FixResult.done('fixed.resetPumpSpeed', {'n': '$n'});
+
+    // 1.6.0 AUT
+    case FixKind.capSupplyDesign:
+      var n = 0;
+      for (final s in ents.whereType<WaterSupplyEntity>()) {
+        if (!s.calculatePressure && s.maxHeadM > 0 && s.designHeadM > s.maxHeadM) {
+          s.designHeadM = s.maxHeadM;
+          n++;
+        }
+        if (s.maxFlow > 0 && s.designFlow > s.maxFlow) {
+          s.designFlow = s.maxFlow;
+          n++;
+        }
+      }
+      return n == 0 ? const FixResult.failed('fixfail.noChange') : const FixResult.done('fixed.capSupplyDesign');
+
+    case FixKind.splitArea:
+      var n = 0;
+      for (final area in ents.whereType<AreaEntity>()) {
+        final parts = simplePolygonParts(area.points);
+        final idx = p.entities.indexOf(area);
+        if (parts.length < 2 || idx < 0) continue;
+        final pieces = [
+          for (var k = 0; k < parts.length; k++)
+            area.clone(newId: k == 0 ? area.id : p.newId())
+              ..points = parts[k]
+              ..name = k == 0 || area.name.isEmpty ? area.name : '${area.name} (${k + 1})',
+        ];
+        p.entities
+          ..removeAt(idx)
+          ..insertAll(idx, pieces);
+        n += pieces.length;
+      }
+      return n == 0 ? const FixResult.failed('fixfail.noChange') : FixResult.done('fixed.splitArea', {'n': '$n'});
   }
 }
 
@@ -565,6 +609,38 @@ String? _assignModel(Project p, Entity e, DesignResults? r, String Function(Stri
 /// A correction the caller leaves out of [runAutoFix] (true: not applied).
 typedef FixFilter = bool Function(Advice a, FixKind kind, DesignResults? results);
 
+/// Whether correction [kind] of [a] changes the system in a way the user
+/// must decide, so "fix automatically" lists it instead of applying it: a
+/// booster pump on a mains connection ([addsBoosterToMains]: it costs,
+/// needs power and the water company may forbid it) and new system flows
+/// in place of the user's own (names, hours and groupings are theirs).
+bool needsDecision(Project p, Advice a, FixKind kind, DesignResults? results) => addsBoosterToMains(p, a, kind, results) || (kind == FixKind.splitFlows && p.systemFlows.isNotEmpty);
+
+/// Zone overlaps (pairs of zones joined without a valve) of [p].
+Set<String> _zoneOverlaps(Project p) => {
+  for (final w in NetworkBuilder(p).build().warnings)
+    if (w.startsWith('zone_overlap')) w,
+};
+
+/// Whether the automatic round leaves connection [a] to the user: a valve
+/// or a pipe end it would move farther than [autoConnectReach] (that would
+/// change which zone it feeds, or the layout; a head left off its pipe is
+/// piped instead and stays; a pump or filter just off the mainline goes
+/// onto it), or a joint that would join two zones.
+bool _connectNotForAuto(Project p, Advice a) {
+  final first = a.entityIds.isEmpty ? null : p.byId(a.entityIds.first);
+  if (first == null) return true;
+  final plan = connectTarget(p, first);
+  if (plan == null) return true;
+  final device = first is PointEntity && first is! ControlValveEntity && first.hydraulicScope == HydraulicScope.mainline;
+  if (!plan.pipe && !device && plan.distance > autoConnectReach(p) + 1e-9) return true;
+  // tried on a copy: a joint to another zone's pipe would merge the zones
+  final before = _zoneOverlaps(p);
+  final copy = Project.fromJson(p.toJson());
+  if (!applyFix(copy, a, FixKind.connect).ok) return true;
+  return _zoneOverlaps(copy).difference(before).isNotEmpty;
+}
+
 /// One round of the automatic correction. Settings and drawing corrections
 /// go first, because they change what the design sees; the corrections that
 /// need design results run only in a round without them (and with fresh
@@ -574,7 +650,7 @@ typedef FixFilter = bool Function(Advice a, FixKind kind, DesignResults? results
 List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? results, required Set<String> attempted, String Function(String key)? label, String lang = 'en', FixFilter? skip}) {
   final candidates = [
     for (final a in advice)
-      if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}') && !(skip?.call(a, a.fixes.first, results) ?? false)) a,
+      if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}') && !(skip?.call(a, a.fixes.first, results) ?? false) && !needsDecision(p, a, a.fixes.first, results)) a,
   ];
   final drawing = [
     for (final a in candidates)
@@ -588,6 +664,8 @@ List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? res
     if (a.entityIds.any(touched.contains)) continue;
     final kind = a.fixes.first;
     attempted.add('${a.key}|${kind.name}');
+    // 1.6.0 AUT: no long moves and no joints between zones on its own
+    if (kind == FixKind.connect && _connectNotForAuto(p, a)) continue;
     final res = applyFix(p, a, kind, results: results, label: label, lang: lang);
     if (res.ok) {
       out.add(res);
@@ -600,11 +678,15 @@ List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? res
 }
 
 class AutoFixReport {
-  AutoFixReport(this.applied, this.remaining, this.results, this.rounds);
+  AutoFixReport(this.applied, this.remaining, this.results, this.rounds, {this.decisions = const []});
   final List<FixResult> applied;
   final List<Advice> remaining;
   final DesignResults? results;
   final int rounds;
+
+  /// Problems whose correction waits for the user ([needsDecision]): each
+  /// with its main correction, to apply with its own button.
+  final List<Advice> decisions;
   int get errors => remaining.where((a) => a.level == AdviceLevel.error).length;
   int get warnings => remaining.where((a) => a.level == AdviceLevel.warning).length;
 }
@@ -634,7 +716,12 @@ Future<AutoFixReport> runAutoFix(
     applied.addAll(done);
     results = await design();
   }
-  return AutoFixReport(applied, buildAdvice(p, results: results), results, rounds);
+  final remaining = buildAdvice(p, results: results);
+  final decisions = [
+    for (final a in remaining)
+      if (a.autoFixable && (needsDecision(p, a, a.fixes.first, results) || (skip?.call(a, a.fixes.first, results) ?? false))) a,
+  ];
+  return AutoFixReport(applied, remaining, results, rounds, decisions: decisions);
 }
 
 // ---------------------------------------------------------------- optimisation
@@ -659,32 +746,79 @@ class DesignScore {
       annualCapital = r?.annualCapitalCost ?? 0,
       energy = r?.annualEnergyCost ?? 0,
       errors = advice.where((a) => a.level == AdviceLevel.error).length,
-      warnings = advice.where((a) => a.level == AdviceLevel.warning).length;
+      warnings = advice.where((a) => a.level == AdviceLevel.warning).length,
+      warningCodes = {
+        for (final a in advice)
+          if (a.level == AdviceLevel.warning) a.code: advice.where((x) => x.level == AdviceLevel.warning && x.code == a.code).length,
+      };
   final double capital;
   final double annualCapital;
   final double energy;
   final int errors;
   final int warnings;
+
+  /// Warnings by code (velocity, water hammer, valve range…).
+  final Map<String, int> warningCodes;
   double get annualTotal => annualCapital + energy;
 
-  /// Fewer errors wins; with as many errors, the lower annual cost.
-  bool betterThan(DesignScore o) => errors != o.errors ? errors < o.errors : annualTotal < o.annualTotal - 1e-6 * math.max(1, o.annualTotal);
+  /// Codes of the warnings that come more often here than in [o].
+  List<String> newWarnings(DesignScore o) => [
+    for (final e in warningCodes.entries)
+      if (e.value > (o.warningCodes[e.key] ?? 0)) e.key,
+  ];
+
+  /// Fewer errors wins; with as many errors, a design with a warning [o]
+  /// does not have (water hammer above the pipe class, a valve out of its
+  /// range…) never wins on cost; otherwise the lower annual cost, or as
+  /// low a cost with fewer warnings.
+  bool betterThan(DesignScore o) {
+    if (errors != o.errors) return errors < o.errors;
+    if (newWarnings(o).isNotEmpty) return false;
+    final cheaper = annualTotal < o.annualTotal - 1e-6 * math.max(1, o.annualTotal);
+    final asCheap = annualTotal <= o.annualTotal + 1e-6 * math.max(1, o.annualTotal);
+    return cheaper || (asCheap && o.newWarnings(this).isNotEmpty);
+  }
 }
 
 class OptimizeReport {
-  OptimizeReport(this.before, this.after, this.applied, this.results);
+  OptimizeReport(this.before, this.after, this.applied, this.results, {this.rejected = const []});
   final DesignScore before;
   final DesignScore after;
   final List<FixResult> applied;
   final DesignResults? results;
+
+  /// Changes tried and taken back because the design came out worse
+  /// (more errors, new warnings or a higher cost).
+  final List<FixResult> rejected;
   bool get improved => after.betterThan(before);
+
+  /// Warnings the optimised design has more of than the original.
+  List<String> get newWarnings => after.newWarnings(before);
+}
+
+/// Puts back into [p] the entities, settings and system flows of [json] (a
+/// snapshot taken with `p.toJson()`).
+void _restore(Project p, Map<String, dynamic> json) {
+  final q = Project.fromJson(json);
+  p.params = q.params;
+  p.catalog = q.catalog;
+  p.entities
+    ..clear()
+    ..addAll(q.entities);
+  p.systemFlows
+    ..clear()
+    ..addAll(q.systemFlows);
 }
 
 /// Optimises the design for the lowest annual cost (annualised investment
 /// plus energy) that meets every requirement: LP sizing that trades pipe
 /// cost against pumping energy, optionally every pipe free, the smallest
 /// valve per zone and the pump with the lowest life-cycle cost per supply.
-/// The caller keeps or undoes the result ([OptimizeReport.improved]).
+/// The changes go in two steps (pipes, sizing and valves; then the pumps),
+/// each designed and kept only when it makes the design better
+/// ([DesignScore.betterThan]: no new error, no new warning, a lower cost),
+/// so a pump choice that misfires does not throw away good pipe sizes. The
+/// caller keeps or undoes the result ([OptimizeReport.improved]).
 Future<OptimizeReport> runOptimize(
   Project p,
   Future<DesignResults?> Function() design, {
@@ -694,47 +828,76 @@ Future<OptimizeReport> runOptimize(
 }) async {
   final start = baseline ?? await design();
   final before = DesignScore(start, buildAdvice(p, results: start));
-  final applied = <FixResult>[];
-  if (options.resizeFixedPipes) {
-    var n = 0;
-    for (final e in p.entities) {
-      if (e is PipeEntity && !e.computerSized) {
-        e.computerSized = true;
-        n++;
-      } else if (e is SpraylineEntity && !e.computerSized) {
-        e.computerSized = true;
-        n++;
+  var best = before;
+  var current = start;
+  // whether the controller's last design no longer describes [p] (a step was taken back)
+  var stale = false;
+  final applied = <FixResult>[], rejected = <FixResult>[];
+  Future<void> step(List<FixResult> Function() change) async {
+    final snapshot = p.toJson();
+    final made = change();
+    if (made.isEmpty) return;
+    final r = await design();
+    final score = DesignScore(r, buildAdvice(p, results: r));
+    if (r != null && score.betterThan(best)) {
+      best = score;
+      current = r;
+      applied.addAll(made);
+      stale = false;
+    } else {
+      _restore(p, snapshot);
+      rejected.addAll(made);
+      stale = true;
+    }
+  }
+
+  // 1. pipes, sizing method and valves
+  await step(() {
+    final made = <FixResult>[];
+    if (options.resizeFixedPipes) {
+      var n = 0;
+      for (final e in p.entities) {
+        if (e is PipeEntity && !e.computerSized) {
+          e.computerSized = true;
+          n++;
+        } else if (e is SpraylineEntity && !e.computerSized) {
+          e.computerSized = true;
+          n++;
+        }
+      }
+      if (n > 0) made.add(FixResult.done('fixed.autoSizePipes', {'n': '$n'}));
+    }
+    final params = p.params;
+    if (params.sizingMethod != SizingMethod.lp || (params.powerCostPerKwh > 0 && !params.tradeCapitalVsRunning)) {
+      params.sizingMethod = SizingMethod.lp;
+      if (params.powerCostPerKwh > 0) params.tradeCapitalVsRunning = true;
+      made.add(const FixResult.done('fixed.lpSizing'));
+    }
+    if (options.resizeValves && current != null) {
+      for (final v in p.entities.whereType<ControlValveEntity>().toList()) {
+        final spec = fittingValve(p, current!, v.id);
+        if (spec == null) continue;
+        v.valveSpecId = spec.id;
+        made.add(FixResult.done('fixed.resizeValve', {'n': spec.name}));
       }
     }
-    if (n > 0) applied.add(FixResult.done('fixed.autoSizePipes', {'n': '$n'}));
-  }
-  final params = p.params;
-  if (params.sizingMethod != SizingMethod.lp || (params.powerCostPerKwh > 0 && !params.tradeCapitalVsRunning)) {
-    params.sizingMethod = SizingMethod.lp;
-    if (params.powerCostPerKwh > 0) params.tradeCapitalVsRunning = true;
-    applied.add(const FixResult.done('fixed.lpSizing'));
-  }
-  if (options.resizeValves && start != null) {
-    for (final v in p.entities.whereType<ControlValveEntity>().toList()) {
-      final spec = fittingValve(p, start, v.id);
-      if (spec == null) continue;
-      v.valveSpecId = spec.id;
-      applied.add(FixResult.done('fixed.resizeValve', {'n': spec.name}));
-    }
-  }
-  var results = await design();
-  if (options.choosePumps && results != null) {
-    var changed = false;
-    for (final s in p.entities.whereType<WaterSupplyEntity>().toList()) {
-      final hasPump = p.entities.any((e) => e is PumpEntity && e.scope == HydraulicScope.mainline && e.position.distanceTo(s.position) < 50);
-      if (!hasPump) continue;
-      final res = choosePumpFor(p, results, s);
-      if (res.ok) {
-        applied.add(res);
-        changed = true;
+    return made;
+  });
+  // 2. the pump of every supply, for the duties of the design kept so far
+  if (options.choosePumps && current != null) {
+    final r = current!;
+    await step(() {
+      final made = <FixResult>[];
+      for (final s in p.entities.whereType<WaterSupplyEntity>().toList()) {
+        final hasPump = p.entities.any((e) => e is PumpEntity && e.scope == HydraulicScope.mainline && e.position.distanceTo(s.position) < 50);
+        if (!hasPump) continue;
+        final res = choosePumpFor(p, r, s);
+        if (res.ok) made.add(res);
       }
-    }
-    if (changed) results = await design();
+      return made;
+    });
   }
-  return OptimizeReport(before, DesignScore(results, buildAdvice(p, results: results)), applied, results);
+  // the caller's results follow the project as it is left
+  if (stale) current = await design();
+  return OptimizeReport(before, best, applied, current, rejected: rejected);
 }

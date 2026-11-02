@@ -353,6 +353,30 @@ Future<void> showAutoFixDialog(BuildContext context, ProjectController c) async 
                     ],
                   ),
                 ),
+              // 1.6.0 AUT: what the user decides (a booster on the mains, new system flows)
+              if (r.decisions.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(t('adv.decisions'), style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                for (final a in r.decisions)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Icon(Icons.help_outline, size: 15, color: Cad.warning),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text(adviceTitle(c, a), style: const TextStyle(fontSize: 12))),
+                        TextButton(
+                          key: Key('decide_${a.fixes.first.name}_${a.key.hashCode}'),
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            c.applyAdviceFix(a, a.fixes.first);
+                          },
+                          child: Text(t('fix.${a.fixes.first.name}', {'d': fmt(connectReach(c.project), 1)}), style: const TextStyle(fontSize: 11.5)),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
               const SizedBox(height: 10),
               Text(
                 r.errors + r.warnings == 0 ? t('adv.allClear') : t('adv.remaining', {'e': '${r.errors}', 'w': '${r.warnings}'}),
@@ -504,6 +528,16 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
                   row(t('opt.problems'), '${r.before.errors} / ${r.before.warnings}', '${r.after.errors} / ${r.after.warnings}', better: r.after.errors < r.before.errors),
                 ],
               ),
+              // 1.6.0 AUT: warnings the optimised design would add, and what was taken back for them
+              if (r.newWarnings.isNotEmpty || r.rejected.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                if (r.newWarnings.isNotEmpty)
+                  Text(
+                    t('opt.newWarnings', {'w': r.newWarnings.map((code) => t.has('check.$code') ? t('check.$code') : (t.has('warn.$code') ? t('warn.$code') : code)).join('; ')}),
+                    style: TextStyle(fontSize: 12, color: Cad.warning),
+                  ),
+                if (r.rejected.isNotEmpty) Text(t('opt.rejected', {'n': '${r.rejected.length}'}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+              ],
               if (r.improved && r.applied.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 for (final f in r.applied)

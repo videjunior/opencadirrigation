@@ -25,18 +25,33 @@ class TrenchRow {
   double get volume => length * width * depth;
 }
 
-/// Trenches of every buried pipe (depth > 0) of [project], grouped by use,
-/// diameter, width and depth: width [ProposalSettings.trenchWidthM] or the
-/// outside diameter plus 0.2 m (at least 0.3 m); depth = burial depth of the
-/// pipe axis + half the diameter + the bedding.
+/// Burial depth (m, to the pipe axis) of a mainline pipe drawn without one:
+/// the mainline is buried (the works schedule lays it as buried pipe), so
+/// its trench is dug and backfilled even when no depth was typed or the
+/// automatic routing drew it.
+const defaultMainlineDepthM = 0.6;
+
+/// Burial depth (m) the automatic tools give the zone pipes and submains
+/// they draw (laterals and tapes stay on the surface).
+const defaultZonePipeDepthM = 0.4;
+
+/// Burial depth (m) of [e] for its trench: its own, or for a mainline pipe
+/// without one [defaultMainlineDepthM]; 0 = on the surface.
+double burialDepth(PipeEntity e) => e.depth > 0 ? e.depth : (e.scope == HydraulicScope.mainline ? defaultMainlineDepthM : 0);
+
+/// Trenches of every buried pipe of [project] (see [burialDepth]), grouped
+/// by use, diameter, width and depth: width [ProposalSettings.trenchWidthM]
+/// or the outside diameter plus 0.2 m (at least 0.3 m); depth = burial
+/// depth of the pipe axis + half the diameter + the bedding.
 List<TrenchRow> trenchRows(Project project, ProposalSettings s) {
   final rows = <String, TrenchRow>{};
   for (final e in project.entities.whereType<PipeEntity>()) {
-    if (e.depth <= 0 || e.points.length < 2) continue;
+    final burial = burialDepth(e);
+    if (burial <= 0 || e.points.length < 2) continue;
     final spec = project.catalog.pipe(e.pipeSpecId);
     final od = (spec?.nominalMm ?? 50) / 1000;
     final width = s.trenchWidthM > 0 ? s.trenchWidthM : math.max(0.3, od + 0.2);
-    final depth = e.depth + od / 2 + math.max(0.0, s.beddingM);
+    final depth = burial + od / 2 + math.max(0.0, s.beddingM);
     final key = '${e.scope.name}|${spec?.nominalMm ?? 0}|$width|$depth';
     final row = rows.putIfAbsent(key, () => TrenchRow(scope: e.scope, nominalMm: spec?.nominalMm ?? 0, length: 0, width: width, depth: depth));
     row.length += polylineLength(e.points);

@@ -16,6 +16,7 @@ import 'package:opencadirrigation/app/io/project_store.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/state/design_runner.dart';
 import 'package:opencadirrigation/core/ai/agent_loop.dart';
+import 'package:opencadirrigation/core/design/advisor.dart' show FixKind;
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
@@ -277,7 +278,7 @@ void main() {
     expect(adv.text, contains('Pivot '), reason: adv.text);
   });
 
-  testWidgets('auto_fix leaves a booster pump on a mains connection to the user; Fix automatically still adds it', (tester) async {
+  testWidgets('auto_fix leaves a booster pump on a mains connection to the user; so does Fix automatically', (tester) async {
     void shortMains(ProjectController x) {
       loadExampleAction(x, ExampleId.garden);
       x.project.entities.whereType<WaterSupplyEntity>().first
@@ -299,15 +300,17 @@ void main() {
     final fixed = await call(tester, 'apply_fix', {'index': int.parse(m!.group(1)!), 'code': m.group(2)!, 'fix': 'choosePump'});
     expect(fixed.isError, isFalse, reason: fixed.text);
     expect(c.project.entities.whereType<PumpEntity>(), hasLength(1));
-    // the program's own command is unchanged
+    // the program's own command leaves it to the user as well (1.6.0 AUT:
+    // it added the pump on its own before), listing it among the decisions
     final app = ProjectController()
       ..autosaveEnabled = false
       ..designRunner = InThreadDesignRunner();
     app.newProject();
     await app.setLanguage('en', persist: false);
     shortMains(app);
-    await tester.runAsync(() => app.autoFixAll());
-    expect(app.project.entities.whereType<PumpEntity>(), hasLength(1));
+    final report = await tester.runAsync(() => app.autoFixAll());
+    expect(app.project.entities.whereType<PumpEntity>(), isEmpty);
+    expect(report!.decisions.map((a) => a.fixes.first), contains(FixKind.choosePump));
   });
 
   testWidgets('missing catalogue items end with what to do: pumps, sprinklers, driplines and drippers', (tester) async {

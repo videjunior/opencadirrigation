@@ -37,6 +37,7 @@ import 'dart:math' as math;
 import '../model/catalog.dart';
 import '../model/geometry.dart';
 import 'auto_layout.dart';
+import 'block_generator.dart' show offsetPolylineMitred;
 import 'densogram.dart';
 
 /// Rectangle [length] × [width] with its lower-left corner at [origin],
@@ -245,7 +246,8 @@ LandscapeLayout golfGreenLayout({
   }
   if (ref == null) return _empty(region, family, h, 'layout_no_nozzle');
   final radius = ref.curve.radius(h);
-  final ring = RegionLoop(_grow(region.outline, setback));
+  if (region.selfCrossing) messages.add('layout_self_intersect');
+  final ring = RegionLoop(_grow(region.parts.first, setback));
   final count = math.max(minHeads, (ring.length / radius - 1e-9).ceil());
   final step = ring.length / count;
   // start at the vertex farthest along x (a deterministic place)
@@ -253,12 +255,23 @@ LandscapeLayout golfGreenLayout({
   for (var i = 1; i < ring.vertexCount; i++) {
     if (ring.points[i].x > ring.points[start].x + 1e-9) start = i;
   }
+  // the outline sampled every half metre at most (with its vertices): the
+  // directions to the green from a head are those of the outline points in
+  // reach, along straight sides too, not only of the vertices (a green
+  // drawn with four corners would get 30° arcs at the corners)
+  final samples = <Pt>[
+    for (final outline in region.parts)
+      for (var i = 0; i < outline.length; i++) ...[
+        outline[i],
+        for (var j = 1, m = (outline[i].distanceTo(outline[(i + 1) % outline.length]) / 0.5).ceil(); j < m; j++) Pt.lerp(outline[i], outline[(i + 1) % outline.length], j / m),
+      ],
+  ];
   final heads = <LayoutHead>[];
   for (var k = 0; k < count; k++) {
     final p = ring.at(ring.cum[start] + k * step);
     // directions to the green within reach: the arc spans them
     final angles = <double>[
-      for (final q in region.outline)
+      for (final q in samples)
         if (q.distanceTo(p) <= radius) normalizeDeg(radToDeg((q - p).angle)),
     ]..sort();
     if (angles.isEmpty) continue;
@@ -276,12 +289,19 @@ LandscapeLayout golfGreenLayout({
   return finishHeadLayout(region: region, family: family, heads: heads, headM: h, reference: ref, spacing: step, messages: messages, evaluate: evaluate, profile: profile);
 }
 
+/// Sharpest turn (degrees) a fairway centreline may take: beyond it the
+/// fairway would double back over itself.
+const fairwayMaxTurnDeg = 150.0;
+
 /// Rotors of [family] over a fairway [width] metres wide along
 /// [centreline] (see the library comment): rows 0.866 spacings apart, heads
 /// one spacing apart, alternate rows shifted half a spacing; with
 /// [edgePartCircles] the outer rows run along the edges with half circles
 /// facing in. The nozzle [nozzleId] (else the full circle with the largest
-/// radius) sets the spacing.
+/// radius) sets the spacing. The corridor and the rows are offsets of the
+/// centreline with a mitre limit (round on the outside of a sharp dogleg);
+/// a centreline that turns back by more than [fairwayMaxTurnDeg] gets no
+/// heads (`template_centreline_turn`).
 LandscapeLayout fairwayLayout({
   required OutletSpec family,
   required List<Pt> centreline,
@@ -298,7 +318,11 @@ LandscapeLayout fairwayLayout({
       if (i == 0 || centreline[i].distanceTo(centreline[i - 1]) > 1e-9) centreline[i],
   ];
   if (line.length < 2 || !(width > 0)) return _empty(LayoutRegion(const []), family, h, 'layout_empty');
-  final corridor = [...offsetPolyline(line, width / 2), ...offsetPolyline(line, -width / 2).reversed];
+  for (var i = 1; i + 1 < line.length; i++) {
+    final a = line[i] - line[i - 1], b = line[i + 1] - line[i];
+    if (radToDeg(math.atan2(a.cross(b), a.dot(b))).abs() > fairwayMaxTurnDeg) return _empty(LayoutRegion(const []), family, h, 'template_centreline_turn');
+  }
+  final corridor = [...offsetPolylineMitred(line, width / 2), ...offsetPolylineMitred(line, -width / 2).reversed];
   final region = LayoutRegion(corridor);
   var ref = _byId(family, nozzleId);
   if (ref == null) {
@@ -323,7 +347,7 @@ LandscapeLayout fairwayLayout({
   }
   final heads = <LayoutHead>[];
   for (var k = 0; k < offsets.length; k++) {
-    final row = offsetPolyline(line, offsets[k]);
+    final row = offsetPolylineMitred(line, offsets[k]);
     final len = polylineLength(row);
     final m = math.max(1, (len / s - 1e-9).ceil());
     final step = len / m;
