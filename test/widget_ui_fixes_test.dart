@@ -19,7 +19,9 @@ import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
 import 'package:opencadirrigation/app/widgets/fields.dart';
 import 'package:opencadirrigation/app/widgets/properties_panel.dart';
 import 'package:opencadirrigation/app/widgets/status_bar.dart';
+import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
+import 'package:opencadirrigation/core/units.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/app/theme.dart';
 import 'package:opencadirrigation/main.dart';
@@ -457,6 +459,105 @@ void main() {
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pump();
       expect(got, [0]);
+    });
+  });
+
+  group('properties: the item, the sizing, fractions, units and mixed values', () {
+    Finder field(String prefix) => find.byWidgetPredicate((w) => w is TextField && (w.decoration?.labelText ?? '').startsWith(prefix));
+
+    Future<void> type(WidgetTester tester, String prefix, String value) async {
+      final f = field(prefix).first;
+      await tester.tap(f);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.enterText(f, value);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester, 2);
+    }
+
+    Future<void> pick(WidgetTester tester, String label, String? id) async {
+      final f = find.byWidgetPredicate((w) => w is SpecDropdown && w.label == label);
+      (tester.widget(f.first) as SpecDropdown).onChanged(id);
+      await settle(tester, 2);
+    }
+
+    testWidgets('UI-10 an emitter switched off in the catalogue still shows as itself, marked', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final cat = c.project.catalog;
+      final spec = cat.outlets.firstWhere((o) => o.enabled && o.nozzles.isNotEmpty);
+      final o = OutletEntity(id: c.project.newId(), position: Pt.zero, outletSpecId: spec.id);
+      c.addEntity(o);
+      c.select([o.id]);
+      spec.enabled = false;
+      c.refresh();
+      await settle(tester);
+      expect(find.text('${spec.name} (desativado)'), findsOneWidget, reason: 'not the first emitter of the list');
+      // one gone from the catalogue: its id, marked
+      cat.outlets.remove(spec);
+      c.refresh();
+      await settle(tester);
+      expect(find.text('${spec.id} (fora do catálogo)'), findsOneWidget);
+    });
+
+    testWidgets('UI-11 choosing a pipe fixes it: the automatic sizing switch goes off', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final pipe = PipeEntity(id: c.project.newId(), scope: HydraulicScope.mainline, points: [Pt.zero, const Pt(50, 0)]);
+      c.addEntity(pipe);
+      c.select([pipe.id]);
+      await settle(tester);
+      expect(pipe.computerSized, isTrue);
+      final spec = c.project.catalog.pipesFor(PipeUsage.mainline)[1];
+      await pick(tester, c.t('props.pipe'), spec.id);
+      final now = c.project.byId(pipe.id) as PipeEntity;
+      expect(now.pipeSpecId, spec.id);
+      expect(now.computerSized, isFalse, reason: 'the next design would replace the pipe chosen');
+      await pick(tester, c.t('props.pipe'), null);
+      expect((c.project.byId(pipe.id) as PipeEntity).computerSized, isTrue);
+    });
+
+    testWidgets('UI-12 85 typed as an efficiency is 85 %, and a cut value says so', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final a = AreaEntity(id: c.project.newId(), points: [Pt.zero, const Pt(20, 0), const Pt(20, 20), const Pt(0, 20)]);
+      c.addEntity(a);
+      c.select([a.id]);
+      await settle(tester);
+      expect(field('Eficiência (0–1)'), findsOneWidget, reason: 'the range is in the label');
+      await type(tester, 'Eficiência', '85');
+      expect((c.project.byId(a.id) as AreaEntity).efficiency, closeTo(0.85, 1e-12));
+      await type(tester, 'Eficiência', '0,01');
+      expect((c.project.byId(a.id) as AreaEntity).efficiency, 0.05);
+      expect(c.lastMessage, contains('0,05'), reason: 'the cut is told');
+    });
+
+    testWidgets('UI-21 with US units the depth and the riser are in feet', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      c.project.params.units = Units.us;
+      final pipe = PipeEntity(id: c.project.newId(), scope: HydraulicScope.zone, points: [Pt.zero, const Pt(10, 0)])..depth = 0.3048;
+      c.addEntity(pipe);
+      c.select([pipe.id]);
+      await settle(tester);
+      expect(field('Profundidade (ft)'), findsOneWidget);
+      expect(tester.widget<TextField>(field('Profundidade (ft)')).controller!.text, '1,0');
+      await type(tester, 'Profundidade', '2');
+      expect((c.project.byId(pipe.id) as PipeEntity).depth, closeTo(0.6096, 1e-9));
+    });
+
+    testWidgets('UI-32 batch editing: different depths show an empty field, and 0 typed applies to all', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final a = PipeEntity(id: c.project.newId(), scope: HydraulicScope.zone, points: [Pt.zero, const Pt(10, 0)])..depth = 0.5;
+      final b = PipeEntity(id: c.project.newId(), scope: HydraulicScope.zone, points: [const Pt(0, 5), const Pt(10, 5)])..depth = 0.8;
+      c.addEntity(a);
+      c.addEntity(b);
+      c.select([a.id, b.id]);
+      await settle(tester);
+      final f = field('Profundidade');
+      expect(tester.widget<TextField>(f).controller!.text, '', reason: 'not a 0 that reads as a value');
+      await type(tester, 'Profundidade', '0');
+      expect([(c.project.byId(a.id) as PipeEntity).depth, (c.project.byId(b.id) as PipeEntity).depth], [0, 0]);
     });
   });
 }

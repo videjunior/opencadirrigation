@@ -257,8 +257,9 @@ void main() {
     expect(texts.every((e) => e.height == 2.5), isTrue);
 
     final areas = await two((i) => AreaEntity(id: c.project.newId(), points: [Pt(i * 20.0, 110), Pt(i * 20.0 + 10, 110), Pt(i * 20.0 + 10, 120)]));
-    await type(tester, t('props.efficiency'), '5');
-    expect(areas.every((e) => e.efficiency == 1.0), isTrue, reason: 'clamped to 100 %');
+    // (a value above 1 is a percentage: 85 is 0.85, UI-12)
+    await type(tester, t('props.efficiency'), '85');
+    expect(areas.every((e) => e.efficiency == 0.85), isTrue, reason: '85 %');
     await type(tester, t('props.eto'), '6');
     expect(areas.every((e) => e.etoMmDay == 6), isTrue);
     // the layer of the whole selection

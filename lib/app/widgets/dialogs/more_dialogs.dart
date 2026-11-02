@@ -552,6 +552,12 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
         );
         Widget dupBtn(VoidCallback dup) => IconButton(icon: const Icon(Icons.copy_outlined, size: 15), tooltip: t('cat.duplicate'), onPressed: () => setState(dup));
 
+        // an item switched off while objects use it: they keep it (UI-10)
+        void warnDisabled(String id, bool on) {
+          final n = used[id] ?? 0;
+          if (!on && n > 0) c.notify(t('cat.disabledInUse', {'n': '$n'}));
+        }
+
         List<String> ids(Catalog k) => [
           for (final x in k.pipes) x.id,
           for (final x in k.outlets) x.id,
@@ -705,7 +711,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final p in cat.pipes)
               [
-                Checkbox(value: p.enabled, onChanged: (v) => setState(() => p.enabled = v ?? true)),
+                Checkbox(
+                  value: p.enabled,
+                  onChanged: (v) => setState(() {
+                    p.enabled = v ?? true;
+                    warnDisabled(p.id, p.enabled);
+                  }),
+                ),
                 _cell(p.name, (v) => p.name = v),
                 _num(p.nominalMm, (v) => p.nominalMm = v),
                 _num(p.innerDiameterMm, (v) => p.innerDiameterMm = v),
@@ -726,7 +738,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
             for (final o in cat.outlets)
               for (final n in o.nozzles)
                 [
-                  Checkbox(value: o.enabled, onChanged: (v) => setState(() => o.enabled = v ?? true)),
+                  Checkbox(
+                    value: o.enabled,
+                    onChanged: (v) => setState(() {
+                      o.enabled = v ?? true;
+                      warnDisabled(o.id, o.enabled);
+                    }),
+                  ),
                   identical(n, o.nozzles.first) ? _cell(o.name, (v) => o.name = v) : Text(o.name, style: TextStyle(fontSize: 11, color: Cad.fg38)),
                   _cell(n.name, (v) => n.name = v),
                   _num(n.curve.k / m3sPerLph, (v) => n.curve = EmitterCurve(k: v * m3sPerLph, x: n.curve.x, radiusA: n.curve.radiusA, radiusB: n.curve.radiusB), decimals: 3),
@@ -804,7 +822,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final tp in cat.tapes)
               [
-                Checkbox(value: tp.enabled, onChanged: (v) => setState(() => tp.enabled = v ?? true)),
+                Checkbox(
+                  value: tp.enabled,
+                  onChanged: (v) => setState(() {
+                    tp.enabled = v ?? true;
+                    warnDisabled(tp.id, tp.enabled);
+                  }),
+                ),
                 _cell(tp.name, (v) => tp.name = v),
                 _num(tp.innerDiameterMm, (v) => tp.innerDiameterMm = v),
                 _num(tp.emitterSpacingM, (v) => tp.emitterSpacingM = v > 0 ? v : tp.emitterSpacingM),
@@ -827,7 +851,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final v in cat.valves)
               [
-                Checkbox(value: v.enabled, onChanged: (x) => setState(() => v.enabled = x ?? true)),
+                Checkbox(
+                  value: v.enabled,
+                  onChanged: (x) => setState(() {
+                    v.enabled = x ?? true;
+                    warnDisabled(v.id, v.enabled);
+                  }),
+                ),
                 _cell(v.name, (x) => v.name = x),
                 SizedBox(
                   width: 110,
@@ -857,7 +887,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final p in cat.pumps)
               [
-                Checkbox(value: p.enabled, onChanged: (x) => setState(() => p.enabled = x ?? true)),
+                Checkbox(
+                  value: p.enabled,
+                  onChanged: (x) => setState(() {
+                    p.enabled = x ?? true;
+                    warnDisabled(p.id, p.enabled);
+                  }),
+                ),
                 _cell(p.name, (x) => p.name = x),
                 _cell(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2, 1)}').join(', '), (x) {
                   final pts = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
@@ -892,7 +928,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final f in cat.fittings)
               [
-                Checkbox(value: f.enabled, onChanged: (x) => setState(() => f.enabled = x ?? true)),
+                Checkbox(
+                  value: f.enabled,
+                  onChanged: (x) => setState(() {
+                    f.enabled = x ?? true;
+                    warnDisabled(f.id, f.enabled);
+                  }),
+                ),
                 _cell(f.name, (x) => f.name = x),
                 SizedBox(
                   width: 120,
@@ -929,7 +971,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final w in cat.wires)
               [
-                Checkbox(value: w.enabled, onChanged: (x) => setState(() => w.enabled = x ?? true)),
+                Checkbox(
+                  value: w.enabled,
+                  onChanged: (x) => setState(() {
+                    w.enabled = x ?? true;
+                    warnDisabled(w.id, w.enabled);
+                  }),
+                ),
                 _cell(w.name, (x) => w.name = x),
                 _num(w.sectionMm2, (x) {
                   // a new section keeps the copper resistance unless it was edited
