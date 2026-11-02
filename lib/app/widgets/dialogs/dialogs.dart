@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -510,7 +511,11 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
                   items: const [50, 60],
                   labelOf: (x) => '$x Hz',
                   idOf: (x) => '$x',
-                  onChanged: (v) => setState(() => p.mainsHz = double.tryParse(v ?? '') ?? 60),
+                  onChanged: (v) => setState(() {
+                    p.mainsHz = double.tryParse(v ?? '') ?? 60;
+                    // 1.6.0 MOD: new projects start with this choice
+                    setPref('mainsHz', '${p.mainsHz.round()}');
+                  }),
                 ),
               ),
               _row([
@@ -610,6 +615,8 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
           final edit = c.beginSettingsEdit('hist.units');
           c.project.params.units = u;
           c.commitSettingsEdit(edit);
+          // 1.6.0 MOD: new projects start in these units
+          setPref('units', jsonEncode(u.toJson()));
           Navigator.pop(context);
         },
         child: Text(t('ok')),

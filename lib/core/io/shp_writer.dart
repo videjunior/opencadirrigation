@@ -204,6 +204,7 @@ class ShapefileWriter {
     PressureUnit.kPa => 'KPA',
     PressureUnit.bar => 'BAR',
     PressureUnit.psi => 'PSI',
+    PressureUnit.ftH2O => 'FTH2O',
   };
   String get _velocityField => _u.velocityLabel == 'ft/s' ? 'VEL_FTS' : 'VEL_MS';
 

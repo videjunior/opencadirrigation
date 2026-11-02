@@ -15,6 +15,18 @@
       "items": 26
     },
     {
+      "id": "astm",
+      "brand": "Generic (ASTM)",
+      "name": "PVC pipes by ASTM standard",
+      "description": "PVC 1120 pressure pipes in inches (IPS): ASTM D2241 SDR 21 (200 psi) and SDR 26 (160 psi), 1 to 8 in; ASTM D1785 Schedule 40 (1/2 to 8 in) and Schedule 80 (1/2 to 4 in); minimum walls and ratings at 73 °F",
+      "source": "https://www.astm.org",
+      "license": "CC0-1.0",
+      "updated": "2026-11-02",
+      "author": "OpenCADIrrigation",
+      "file": "astm.oci.cat",
+      "items": 38
+    },
+    {
       "id": "bermad",
       "brand": "Bermad",
       "name": "Bermad",

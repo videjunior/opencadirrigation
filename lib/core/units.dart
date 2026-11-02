@@ -30,7 +30,9 @@ enum LengthUnit { m, mm, cm, ft, inch }
 
 enum FlowUnit { lph, lpm, lps, m3h, gpm }
 
-enum PressureUnit { mH2O, kPa, bar, psi }
+/// Pressure units; [ftH2O] is feet of water, the head of the pump curves of
+/// American manufacturers (TDH).
+enum PressureUnit { mH2O, kPa, bar, psi, ftH2O }
 
 enum DiameterUnit { mm, inch }
 
@@ -114,18 +116,21 @@ class Units {
     PressureUnit.kPa => v / kPaPerMeterHead,
     PressureUnit.bar => v / barPerMeterHead,
     PressureUnit.psi => v / psiPerMeterHead,
+    PressureUnit.ftH2O => v * metersPerFoot,
   };
   double pressureFromHead(double h) => switch (pressure) {
     PressureUnit.mH2O => h,
     PressureUnit.kPa => h * kPaPerMeterHead,
     PressureUnit.bar => h * barPerMeterHead,
     PressureUnit.psi => h * psiPerMeterHead,
+    PressureUnit.ftH2O => h / metersPerFoot,
   };
   String get pressureLabel => switch (pressure) {
     PressureUnit.mH2O => 'm.c.a.',
     PressureUnit.kPa => 'kPa',
     PressureUnit.bar => 'bar',
     PressureUnit.psi => 'psi',
+    PressureUnit.ftH2O => 'ft H₂O',
   };
 
   // ---- diameter ----

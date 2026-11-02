@@ -41,6 +41,7 @@ import '../../core/io/pdf_reader.dart';
 import '../../core/io/shp_writer.dart' show ShapefileParts;
 import '../../core/model/catalog.dart';
 import '../../core/model/currency.dart';
+import '../../core/model/regional.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/project.dart';
@@ -2597,6 +2598,10 @@ class ProjectController extends ChangeNotifier {
     final code = defaultCurrency();
     project = Project(catalog: defaultCatalog(code));
     _applyNewProjectCurrency(code);
+    // 1.6.0 MOD: mains frequency and units of the user's region (or choice)
+    project.params
+      ..mainsHz = defaultMainsHz()
+      ..units = defaultUnits();
     project.meta.name = t('name.newProject');
     results = null;
     selection.clear();
@@ -2664,6 +2669,30 @@ class ProjectController extends ChangeNotifier {
     return currencyForLocale(lang, systemLanguageTags());
   }
 
+  /// Mains frequency of new projects (1.6.0 MOD): the user's choice
+  /// (Parameters, saved in the browser), else that of the machine's region
+  /// for the interface language ([mainsHzForLocale]).
+  double defaultMainsHz() {
+    final saved = double.tryParse(getPref('mainsHz') ?? '');
+    if (saved == 50 || saved == 60) return saved!;
+    return mainsHzForLocale(lang, systemLanguageTags());
+  }
+
+  /// Display units of new projects (1.6.0 MOD): the user's last choice in
+  /// the units dialog, else metric. ([unitsForLocale] tells the units of
+  /// the region; taking them without asking would change what every
+  /// English-speaking user in the United States sees on first use, a choice
+  /// left to the units dialog.)
+  Units defaultUnits() {
+    final saved = getPref('units');
+    if (saved != null) {
+      try {
+        return Units.fromJson(jsonDecode(saved) as Map<String, dynamic>);
+      } catch (_) {}
+    }
+    return Units.metric;
+  }
+
   /// True while the currency of the project is the automatic one of a new,
   /// untouched project (switching the language may then change it).
   bool _autoCurrency = false;
@@ -2693,6 +2722,10 @@ class ProjectController extends ChangeNotifier {
   /// currency of the new language.
   void _followLanguageCurrency() {
     if (!_autoCurrency || dirty || project.entities.isNotEmpty || _undo.isNotEmpty) return;
+    // 1.6.0 MOD: the mains frequency and the units follow too
+    project.params
+      ..mainsHz = defaultMainsHz()
+      ..units = defaultUnits();
     final code = currencyForLocale(lang, systemLanguageTags());
     final from = project.params.currencyCode;
     if (code == from) return;
