@@ -11,4 +11,14 @@ const _sit = <String, (String, String, String)>{
     'A design aid: check the results; the design must be reviewed and signed by a qualified professional.',
     'Herramienta de apoyo al proyecto: revise los resultados; el proyecto debe revisarlo y firmarlo un profesional habilitado.',
   ),
+  // a newer build of the web app is installed while this page runs the older one (SIT-07)
+  'update.ready': ('Há uma versão nova do OpenCADIrrigation pronta.', 'A new version of OpenCADIrrigation is ready.', 'Hay una versión nueva de OpenCADIrrigation lista.'),
+  'update.reload': ('Recarregar', 'Reload', 'Recargar'),
+  'update.later': ('Depois', 'Later', 'Más tarde'),
+  'update.unsavedTitle': ('Recarregar agora?', 'Reload now?', '¿Recargar ahora?'),
+  'update.unsaved': (
+    'Há alterações não salvas. Elas ficam no autossalvamento deste navegador, e o app oferece recuperá-las quando abrir de novo; uma conversa da IA em andamento é interrompida.',
+    'There are unsaved changes. They stay in this browser\'s autosave, and the app offers to recover them when it opens again; an AI conversation in progress is stopped.',
+    'Hay cambios sin guardar. Quedan en el guardado automático de este navegador, y la aplicación ofrece recuperarlos cuando se abra de nuevo; una conversación de la IA en curso se interrumpe.',
+  ),
 };

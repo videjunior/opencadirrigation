@@ -7,6 +7,7 @@ import 'app/examples.dart';
 import 'app/i18n.dart';
 import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
+import 'app/io/app_update.dart'; // 1.6.0 SIT
 import 'app/io/links.dart';
 import 'app/io/unload.dart';
 import 'app/keys/hotkeys.dart';
@@ -44,6 +45,7 @@ import 'app/widgets/properties_panel.dart';
 import 'app/widgets/reports_panel.dart';
 import 'app/widgets/status_bar.dart';
 import 'app/widgets/tool_palette.dart';
+import 'app/widgets/update_notice.dart'; // 1.6.0 SIT
 import 'core/io/project_export.dart';
 import 'core/io/share_link.dart';
 import 'core/model/entities.dart';
@@ -171,6 +173,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     // unsaved projects, and conversations with the assistant that are not kept
     // in this browser as they are now (keeping off, a turn running, a save not done)
     setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
+    // 1.6.0 SIT: a newer build of the web app is installed: offer to reload into it
+    watchForAppUpdate(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showUpdateBanner(context, ws, unsaved: () => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
+      });
+      WidgetsBinding.instance.ensureVisualUpdate();
+    });
     _nativeKeys.install();
     // a file dropped on the window never replaces the app: it goes to the AI
     // panel (pasted pictures to its chat box)

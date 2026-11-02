@@ -29,7 +29,8 @@ void main(List<String> args) {
     String mb(int b) => (b / 1e6).toStringAsFixed(1);
     stdout.writeln(
       'sw.js: build ${r.build}, ${r.files.length} files + CanvasKit ${r.canvasKit.keys.join('/')}: '
-      '${mb(r.bytesFor('chromium'))} MB kept in Chromium browsers, ${mb(r.bytesFor('full'))} MB in the others (uncompressed)',
+      '${mb(r.bytesFor('chromium'))} MB kept in Chromium browsers, ${mb(r.bytesFor('full'))} MB in the others (uncompressed); '
+      '${r.lazy.length} more files (${mb(r.lazyBytes)} MB) kept once used',
     );
   } on Exception catch (e) {
     stderr.writeln('gen_sw: $e');

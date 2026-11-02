@@ -11,6 +11,12 @@
 //   did not change since the previous build are copied from its cache, the
 //   others are fetched past the HTTP cache and checked against their hash, so
 //   a cache never mixes two builds.
+// - Files most starts never need (the language packs, the PDF fonts, the
+//   licence list: LAZY) are kept once a start uses them, and a new build
+//   carries forward those this browser kept, fetching their new version when
+//   they changed: a release does not download every language again.
+// - The page learns of a newer build through offline.js, which asks it to
+//   reload when the user agrees (`oci-pin-open`, then `oci-skip-waiting`).
 // - A page keeps the build it started with, even when a newer one takes over
 //   meanwhile; the next start (a new window, a reload) gets the newest. A
 //   build's cache is deleted once it is older than the current one and no
@@ -30,6 +36,8 @@ const BUILD = '__OCI_BUILD__';
 const FILES = [/*__OCI_FILES__*/];
 /** The same for the CanvasKit engine, by variant: only the browser's own is kept. */
 const CANVASKIT = {/*__OCI_CANVASKIT__*/};
+/** [path, sha256, bytes] of the files kept only once a start uses them. */
+const LAZY = [/*__OCI_LAZY__*/];
 
 const TEMPLATE = BUILD.charAt(0) === '_';
 const BASE = new URL('./', self.location.href).href;
@@ -96,9 +104,33 @@ async function install() {
     }
     await cache.put(url, response || (await fetchChecked(url, hash)));
   }
+  await carryLazy(cache, previous);
   const manifest = { build: BUILD, done: Date.now(), files: {} };
   for (const [path, hash] of files) manifest.files[path] = hash;
   await cache.put(MANIFEST_URL, new Response(JSON.stringify(manifest), { headers: { 'Content-Type': 'application/json' } }));
+}
+
+/**
+ * The LAZY files an earlier build of this browser kept: copied when they did
+ * not change, fetched again when they did (skipped when that fails: the
+ * start that needs one fetches it then).
+ */
+async function carryLazy(cache, previous) {
+  for (const [path, hash] of LAZY) {
+    const url = new URL(path, BASE).href;
+    if (await cache.match(url)) continue;
+    let kept = null;
+    for (const p of previous) {
+      kept = await p.cache.match(url);
+      if (kept) break;
+    }
+    if (!kept) continue;
+    try {
+      await cache.put(url, (await sha256(kept.clone())) === hash ? kept : await fetchChecked(url, hash));
+    } catch (e) {
+      // offline, or a deploy in progress
+    }
+  }
 }
 
 /** Fetches a file of this build from the server and checks it is that build's. */
@@ -369,18 +401,38 @@ async function serveKept(request) {
 /**
  * - `{type: 'oci-keep', urls}` from offline.js, once the app is on screen and
  *   the browser idle: the housekeeping of this start ([housekeeping]).
- * - `{type: 'oci-build'}` with a port: answers the build name.
+ * - `{type: 'oci-build'}` with a port: answers the build name and the build
+ *   the asking page started with (`page`, where the browser tells pages
+ *   apart): a page older than the worker has a newer build to reload into.
+ * - `{type: 'oci-pin-open'}` with a port, to the active worker before a
+ *   waiting build takes over: the open pages keep the build they run.
  * - `{type: 'oci-skip-waiting'}`: a waiting build takes over now.
  */
 function onMessage(event) {
   const data = event.data || {};
+  const port = event.ports && event.ports[0];
   if (data.type === 'oci-keep' && Array.isArray(data.urls)) {
     event.waitUntil(housekeeping(data.urls, event.source).catch(() => {}));
-  } else if (data.type === 'oci-build' && event.ports && event.ports[0]) {
-    event.ports[0].postMessage({ build: BUILD, pin: PIN, variant: VARIANT });
+  } else if (data.type === 'oci-build' && port) {
+    event.waitUntil(
+      loadPins()
+        .then((pins) => port.postMessage({ build: BUILD, pin: PIN, variant: VARIANT, page: (event.source && pins.get(event.source.id)) || null }))
+        .catch(() => port.postMessage({ build: BUILD, pin: PIN, variant: VARIANT, page: null })),
+    );
+  } else if (data.type === 'oci-pin-open') {
+    event.waitUntil(pinOpen().catch(() => {}).then(() => port && port.postMessage({ pinned: true })));
   } else if (data.type === 'oci-skip-waiting') {
     self.skipWaiting();
   }
+}
+
+/** Pins every open page that has no build yet to this one (they run it). */
+async function pinOpen() {
+  const pins = await loadPins();
+  for (const client of await self.clients.matchAll({ type: 'window' })) {
+    if (!pins.has(client.id)) pins.set(client.id, BUILD);
+  }
+  await savePins();
 }
 
 /**
