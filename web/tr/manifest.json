@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — Sulama CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "tr",
+  "dir": "ltr",
+  "description": "Ücretsiz ve açık kaynaklı sulama projelendirme yazılımı: yapay zekâ asistanı tarayıcıda yağmurlayıcı, damla ve boru yerleşimini yapıp sistemi boyutlandırır.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Bölge bazında sonuçlarıyla boyutlandırılmış sulama projesi"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Bölge bazında sonuçlarıyla boyutlandırılmış sulama projesi"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Etkileşimli eğitim",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Yapay zekâ asistanını aç",
+      "description": "Sizinle birlikte çizen ve projelendiren yapay zekâ asistanı",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Meyve bahçesi",
+      "description": "Turunçgilde mikro yağmurlama ve üzümde damla, pompalı ve filtreli kuyu, eğimli arazi.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ev bahçesi",
+      "description": "Ön çimde pop-up spreyler, arkada rotorlar ve yastıklarda damla; sayaç ve geri akış önleyicili şebeke suyu.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Center pivot",
+      "description": "Ana hat, kuyu ve pompayla beslenen mısırda 300 m pivot; kule, açıklık ve meme raporu.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

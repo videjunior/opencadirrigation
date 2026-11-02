@@ -699,9 +699,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Orto (F8)', 'Ortho (F8)', 'Orto (F8)'),
       target: TutorialTargets.statusToggles,
       body: t(
-        'Orto trava todo segmento em horizontal ou vertical, como no AutoCAD. Deixe ligado para desenhar tubos alinhados.',
-        'Ortho locks every segment to horizontal or vertical, as in AutoCAD. Keep it on to draw aligned pipes.',
-        'Orto bloquea cada segmento en horizontal o vertical, como en AutoCAD. Déjelo activado para dibujar tuberías alineadas.',
+        'Orto trava todo segmento em horizontal ou vertical, como nos programas de CAD. Deixe ligado para desenhar tubos alinhados.',
+        'Ortho locks every segment to horizontal or vertical, as in CAD programs. Keep it on to draw aligned pipes.',
+        'Orto bloquea cada segmento en horizontal o vertical, como en los programas de CAD. Déjelo activado para dibujar tuberías alineadas.',
       ),
       action: t('Pressione F8 para alternar o modo orto', 'Press F8 to toggle ortho', 'Pulse F8 para alternar el modo orto'),
       read: (x) => x.c.snap.ortho,
@@ -828,9 +828,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Comandos digitados', 'Typed commands', 'Comandos escritos'),
       target: TutorialTargets.statusBar,
       body: t(
-        'Com o desenho em foco, digite o alias como no AutoCAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Enter ou Espaço; após uma pausa curta ele executa sozinho. A barra de status mostra o comando e o que ele vai fazer. Ajuda → Atalhos lista todos.',
-        'With the drawing focused, type the alias as in AutoCAD (L, PL, C, REC, ZP, MP, SL, V, WS…) and Enter or Space; after a short pause it runs by itself. The status bar shows the command and what it will do. Help → Shortcuts lists them all.',
-        'Con el dibujo activo, escriba el alias como en AutoCAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Intro o Espacio; tras una pausa corta se ejecuta solo. La barra de estado muestra el comando y lo que hará. Ayuda → Atajos los lista todos.',
+        'Com o desenho em foco, digite o alias como nos programas de CAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Enter ou Espaço; após uma pausa curta ele executa sozinho. A barra de status mostra o comando e o que ele vai fazer. Ajuda → Atalhos lista todos.',
+        'With the drawing focused, type the alias as in CAD programs (L, PL, C, REC, ZP, MP, SL, V, WS…) and Enter or Space; after a short pause it runs by itself. The status bar shows the command and what it will do. Help → Shortcuts lists them all.',
+        'Con el dibujo activo, escriba el alias como en los programas de CAD (L, PL, C, REC, ZP, MP, SL, V, WS…) e Intro o Espacio; tras una pausa corta se ejecuta solo. La barra de estado muestra el comando y lo que hará. Ayuda → Atajos los lista todos.',
       ),
       action: t('Digite REC e pressione Enter', 'Type REC and press Enter', 'Escriba REC y pulse Intro'),
       event: 'command',
@@ -982,9 +982,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Válvula de controle', 'Control valve', 'Válvula de control'),
       target: TutorialTargets.paletteZone,
       body: t(
-        'A válvula (V) separa cada zona da linha principal: conecte-a na ponta de um tubo principal. Do lado da zona saem o submain, as laterais e os emissores.',
+        'A válvula (V) separa cada zona da linha principal: conecte-a na ponta de um tubo principal. Do lado da zona saem a linha de derivação, as laterais e os emissores.',
         'The valve (V) separates each zone from the mainline: connect it at the end of a mainline pipe. The submain, laterals and outlets hang on the zone side.',
-        'La válvula (V) separa cada zona de la línea principal: conéctela en el extremo de una tubería principal. Del lado de la zona salen el submain, las laterales y los emisores.',
+        'La válvula (V) separa cada zona de la línea principal: conéctela en el extremo de una tubería principal. Del lado de la zona salen el portalaterales, las laterales y los emisores.',
       ),
       action: t('Digite V e clique na ponta do tubo principal', 'Type V and click at the end of the mainline pipe', 'Escriba V y haga clic en el extremo de la tubería principal'),
       match: (e) => e is ControlValveEntity,
@@ -995,12 +995,12 @@ List<TutorialStep> buildTutorialSteps(String lang) {
     count(
       id: 'zonePipe',
       chapter: chHyd,
-      title: t('Tubo de zona (submain)', 'Zone pipe (submain)', 'Tubería de zona (submain)'),
+      title: t('Tubo de zona (linha de derivação)', 'Zone pipe (submain)', 'Tubería de zona (portalaterales)'),
       target: TutorialTargets.paletteZone,
       body: t(
-        'Tubo de zona (ZP): do lado de jusante da válvula, desenhe o submain que alimenta as laterais.',
+        'Tubo de zona (ZP): do lado de jusante da válvula, desenhe a linha de derivação que alimenta as laterais.',
         'Zone pipe (ZP): downstream of the valve, draw the submain that feeds the laterals.',
-        'Tubería de zona (ZP): aguas abajo de la válvula, dibuje el submain que alimenta las laterales.',
+        'Tubería de zona (ZP): aguas abajo de la válvula, dibuje el portalaterales que alimenta las laterales.',
       ),
       action: t('Digite ZP e desenhe um tubo a partir da válvula', 'Type ZP and draw a pipe from the valve', 'Escriba ZP y dibuje una tubería desde la válvula'),
       match: (e) => e is PipeEntity && e.scope == HydraulicScope.zone,
@@ -1017,7 +1017,7 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         'Sprayline (SL) creates a pipe with equally spaced outlets; Tape (DT) creates a drip tape with catalog data. Outlet, nozzle, nominal pressure and spacing are in the properties; the nominal pressure and tolerance define the zone\'s allowable pressure window.',
         'Lateral (SL) crea una tubería con emisores igualmente espaciados; Cinta (DT) crea una cinta de goteo con los datos del catálogo. Emisor, boquilla, presión nominal y espaciamiento están en las propiedades; la presión nominal y la tolerancia definen la ventana de presión admisible de la zona.',
       ),
-      action: t('Digite SL e desenhe uma lateral a partir do submain', 'Type SL and draw a lateral from the submain', 'Escriba SL y dibuje una lateral desde el submain'),
+      action: t('Digite SL e desenhe uma lateral a partir da linha de derivação', 'Type SL and draw a lateral from the submain', 'Escriba SL y dibuje una lateral desde el portalaterales'),
       match: (e) => e is SpraylineEntity || e is TapeEntity,
       tool: ToolId.sprayline,
       demo: (x) => x.c.addEntity(SpraylineEntity(id: nid(x), points: [base(x) + const Pt(60, -75), base(x) + const Pt(110, -75)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15, spacing: 4)),
@@ -1032,7 +1032,7 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         'Outlet (EM) places a sprinkler or emitter on a zone pipe; the wetted radius shows in the Wetted radii layer. The catalog has micro-sprinklers, impact sprinklers, guns and drippers.',
         'Emisor (EM) coloca un aspersor o gotero sobre una tubería de zona; el radio mojado aparece en la capa Radios mojados. El catálogo trae microaspersores, aspersores de impacto, cañones y goteros.',
       ),
-      action: t('Digite EM e clique sobre o submain', 'Type EM and click on the submain', 'Escriba EM y haga clic sobre el submain'),
+      action: t('Digite EM e clique sobre a linha de derivação', 'Type EM and click on the submain', 'Escriba EM y haga clic sobre el portalaterales'),
       match: (e) => e is OutletEntity,
       tool: ToolId.outlet,
       scope: HydraulicScope.zone,
@@ -1044,9 +1044,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Bloco de laterais', 'Lateral block', 'Bloque de laterales'),
       target: TutorialTargets.paletteZone,
       body: t(
-        'Bloco (B): clique os cantos do talhão, Enter, e escolha tipo (microaspersão ou gotejo), emissor, espaçamentos, direção, posição do submain e válvula: o programa gera laterais, submain, trecho e válvula prontos. É a forma mais rápida de montar uma zona.',
+        'Bloco (B): clique os cantos do talhão, Enter, e escolha tipo (microaspersão ou gotejo), emissor, espaçamentos, direção, posição da linha de derivação e válvula: o programa gera laterais, linha de derivação, trecho e válvula prontos. É a forma mais rápida de montar uma zona.',
         'Block (B): click the field corners, Enter, then choose type (micro-sprinkler or drip), outlet, spacings, direction, submain position and valve: the program generates laterals, submain, stub and valve. The fastest way to build a zone.',
-        'Bloque (B): haga clic en las esquinas de la parcela, Intro, y elija tipo (microaspersión o goteo), emisor, espaciamientos, dirección, posición del submain y válvula: el programa genera laterales, submain, tramo y válvula. La forma más rápida de armar una zona.',
+        'Bloque (B): haga clic en las esquinas de la parcela, Intro, y elija tipo (microaspersión o goteo), emisor, espaciamientos, dirección, posición del portalaterales y válvula: el programa genera laterales, portalaterales, tramo y válvula. La forma más rápida de armar una zona.',
       ),
       action: t(
         'Digite B, clique quatro cantos, Enter e confirme o diálogo',
@@ -1133,7 +1133,7 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       body: t(
         'Ainda em Projeto → Parâmetros: método de dimensionamento (programação linear, que pondera custo dos tubos, energia e topografia, ou guloso por velocidade → janela de pressão → economia); número máximo de bitolas por lateral, ramal e tubo principal (telescopagem); emissores por planta (EU) e variação máxima de pressão na zona; velocidade de lavagem e pressão mínima no fim da fita; verificação de golpe de aríete com tempo de fechamento da válvula e classe do tubo; seleção automática de conexões e comprimento da barra (luvas); densificação do MDT e tolerância de conexão.',
         'Also in Design → Parameters: sizing method (linear programming, which weighs pipe cost, energy and topography, or greedy by velocity → pressure window → economics); maximum number of sizes per lateral, submain and mainline pipe (telescoping); emitters per plant (EU) and maximum zone pressure variation; flushing velocity and minimum pressure at the tape end; water hammer check with valve closure time and pipe class; automatic fitting selection and pipe stick length (couplers); DEM densification and connection tolerance.',
-        'También en Diseño → Parámetros: método de dimensionamiento (programación lineal, que pondera costo de tuberías, energía y topografía, o voraz por velocidad → ventana de presión → economía); número máximo de diámetros por lateral, secundaria y tubería principal (telescópico); emisores por planta (EU) y variación máxima de presión en la zona; velocidad de lavado y presión mínima al final de la cinta; verificación de golpe de ariete con tiempo de cierre de la válvula y clase de tubería; selección automática de accesorios y longitud de barra (uniones); densificación del MDT y tolerancia de conexión.',
+        'También en Diseño → Parámetros: método de dimensionamiento (programación lineal, que pondera costo de tuberías, energía y topografía, o voraz por velocidad → ventana de presión → economía); número máximo de diámetros por lateral, portalaterales y tubería principal (telescópico); emisores por planta (EU) y variación máxima de presión en la zona; velocidad de lavado y presión mínima al final de la cinta; verificación de golpe de ariete con tiempo de cierre de la válvula y clase de tubería; selección automática de accesorios y longitud de barra (uniones); densificación del MDT y tolerancia de conexión.',
       ),
     ),
     TutorialStep(
@@ -1194,7 +1194,7 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       body: t(
         'O menu Projeto separa o ciclo: Dimensionar zonas calcula só laterais e ramais; Dimensionar linha principal só a rede principal e a fonte; Analisar (tamanhos atuais) não muda nenhum diâmetro, apenas calcula vazões e pressões com os tubos como estão desenhados, ideal para conferir uma instalação existente ou as suas próprias escolhas; Limpar resultados apaga resultados e rótulos. Qualquer edição na rede invalida os resultados até o próximo cálculo.',
         'The Design menu splits the cycle: Size zones computes only laterals and submains; Size mainline only the mainline and the supply; Analyse (existing sizes) changes no diameter, it just computes flows and pressures with the pipes as drawn, ideal to check an existing installation or your own choices; Clear results removes results and labels. Any edit to the network invalidates the results until the next run.',
-        'El menú Diseño separa el ciclo: Dimensionar zonas calcula solo laterales y secundarias; Dimensionar línea principal solo la red principal y la fuente; Analizar (tamaños actuales) no cambia ningún diámetro, solo calcula caudales y presiones con las tuberías tal como están dibujadas, ideal para revisar una instalación existente o sus propias elecciones; Limpiar resultados borra resultados y etiquetas. Cualquier edición de la red invalida los resultados hasta el próximo cálculo.',
+        'El menú Diseño separa el ciclo: Dimensionar zonas calcula solo laterales y portalaterales; Dimensionar línea principal solo la red principal y la fuente; Analizar (tamaños actuales) no cambia ningún diámetro, solo calcula caudales y presiones con las tuberías tal como están dibujadas, ideal para revisar una instalación existente o sus propias elecciones; Limpiar resultados borra resultados y etiquetas. Cualquier edición de la red invalida los resultados hasta el próximo cálculo.',
       ),
       action: t('Em Projeto, escolha Analisar (tamanhos atuais)', 'In Design, choose Analyse (existing sizes)', 'En Diseño, elija Analizar (tamaños actuales)'),
       event: 'design',
@@ -1266,9 +1266,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Relatórios', 'Reports', 'Informes'),
       target: TutorialTargets.reportsBar,
       body: t(
-        'O painel inferior (F2) tem abas: Resumo das zonas (vazão, pressões, janela admissível x real, CU/DU/EU), Tubos, Emissores, Linha principal/duty, Lista de materiais com custos, Requisitos hídricos, Linha piezométrica, Mensagens, Perfil, Lavagem, Golpe de aríete, Agronomia e Programação. Arraste a borda para redimensionar.',
+        'O painel inferior (F2) tem abas: Resumo das zonas (vazão, pressões, janela admissível x real, CU/DU/EU), Tubos, Emissores, Linha principal/ponto de trabalho, Lista de materiais com custos, Requisitos hídricos, Linha piezométrica, Mensagens, Perfil, Lavagem, Golpe de aríete, Agronomia e Programação. Arraste a borda para redimensionar.',
         'The bottom panel (F2) has tabs: Zone summary (flow, pressures, allowable vs actual window, CU/DU/EU), Pipes, Outlets, Mainline/duty, Bill of materials with costs, Water requirements, Hydraulic grade line, Messages, Profile, Flushing, Water hammer, Agronomy and Schedule. Drag the edge to resize.',
-        'El panel inferior (F2) tiene pestañas: Resumen de zonas (caudal, presiones, ventana admisible vs. real, CU/DU/EU), Tuberías, Emisores, Línea principal/demanda, Lista de materiales con costos, Requerimientos hídricos, Línea piezométrica, Mensajes, Perfil, Lavado, Golpe de ariete, Agronomía y Programación. Arrastre el borde para cambiar el tamaño.',
+        'El panel inferior (F2) tiene pestañas: Resumen de zonas (caudal, presiones, ventana admisible vs. real, CU/DU/EU), Tuberías, Emisores, Línea principal/punto de trabajo, Lista de materiales con costos, Requerimientos hídricos, Línea piezométrica, Mensajes, Perfil, Lavado, Golpe de ariete, Agronomía y Programación. Arrastre el borde para cambiar el tamaño.',
       ),
       action: t('Abra os relatórios (barra inferior ou F2)', 'Open the reports (bottom bar or F2)', 'Abra los informes (barra inferior o F2)'),
       prepare: (x) => x.host.openReports(false),
@@ -1311,11 +1311,11 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('As outras abas de resultados', 'The other result tabs', 'Las otras pestañas de resultados'),
       target: TutorialTargets.reportsBar,
       body: t(
-        'Linha principal/duty: para cada turno de operação, vazão e pressão exigidas na fonte, pressão disponível, altura da bomba, energia por ano e situação (ok ou déficit). Emissores: cada emissor com vazão e pressão calculadas. Requisitos hídricos: por área, lâmina bruta, volume e horas por dia. Lavagem: velocidade no fim de cada fita/lateral contra a velocidade-alvo. Golpe de aríete: celeridade, sobrepressão e pressão total de cada tubo contra a classe (PN).',
+        'Linha principal/ponto de trabalho: para cada turno de operação, vazão e pressão exigidas na fonte, pressão disponível, altura da bomba, energia por ano e situação (ok ou déficit). Emissores: cada emissor com vazão e pressão calculadas. Requisitos hídricos: por área, lâmina bruta, volume e horas por dia. Lavagem: velocidade no fim de cada fita/lateral contra a velocidade-alvo. Golpe de aríete: celeridade, sobrepressão e pressão total de cada tubo contra a classe (PN).',
         'Mainline/duty: for each system flow, the flow and pressure required at the supply, the available pressure, pump head, energy per year and status (ok or deficit). Outlets: every outlet with its computed flow and pressure. Water requirements: per area, gross depth, volume and hours per day. Flushing: the velocity at the end of each tape/lateral against the target velocity. Water hammer: celerity, surge and total pressure of each pipe against its class (PN).',
-        'Línea principal/demanda: para cada turno de operación, caudal y presión exigidos en la fuente, presión disponible, altura de la bomba, energía por año y estado (ok o déficit). Emisores: cada emisor con su caudal y presión calculados. Requerimientos hídricos: por área, lámina bruta, volumen y horas por día. Lavado: velocidad al final de cada cinta/lateral frente a la velocidad objetivo. Golpe de ariete: celeridad, sobrepresión y presión total de cada tubería frente a su clase (PN).',
+        'Línea principal/punto de trabajo: para cada turno de operación, caudal y presión exigidos en la fuente, presión disponible, altura de la bomba, energía por año y estado (ok o déficit). Emisores: cada emisor con su caudal y presión calculados. Requerimientos hídricos: por área, lámina bruta, volumen y horas por día. Lavado: velocidad al final de cada cinta/lateral frente a la velocidad objetivo. Golpe de ariete: celeridad, sobrepresión y presión total de cada tubería frente a su clase (PN).',
       ),
-      action: t('Clique na aba Linha principal/duty', 'Click the Mainline/duty tab', 'Clic en la pestaña Línea principal/demanda'),
+      action: t('Clique na aba Linha principal/ponto de trabalho', 'Click the Mainline/duty tab', 'Clic en la pestaña Línea principal/punto de trabajo'),
       prepare: (x) => x.host.openReports(true, tab: 0),
       demo: (x) => x.host.openReports(true, tab: reportTab('reports.mainline')),
       isDone: (x) => x.c.showReports && x.c.reportTab == reportTab('reports.mainline'),
@@ -1386,12 +1386,12 @@ List<TutorialStep> buildTutorialSteps(String lang) {
     TutorialStep(
       id: 'feed',
       chapter: chDesign,
-      title: t('Envelope do submain', 'Submain envelope', 'Envolvente del submain'),
+      title: t('Envelope da linha de derivação', 'Submain envelope', 'Envolvente del portalaterales'),
       target: TutorialTargets.menuZone,
       body: t(
-        'Zona → Envelope de posição do submain (FE) pinta em verde o trecho de cada lateral selecionada onde o submain pode ficar respeitando a janela de pressão.',
+        'Zona → Envelope de posição da linha de derivação (FE) pinta em verde o trecho de cada lateral selecionada onde a linha de derivação pode ficar respeitando a janela de pressão.',
         'Zone → Allowable submain position (FE) paints in green the part of each selected lateral where the submain can sit while meeting the pressure window.',
-        'Zona → Posición admisible del submain (FE) pinta en verde el tramo de cada lateral seleccionada donde el submain puede ubicarse cumpliendo la ventana de presión.',
+        'Zona → Posición admisible del portalaterales (FE) pinta en verde el tramo de cada lateral seleccionada donde el portalaterales puede ubicarse cumpliendo la ventana de presión.',
       ),
       action: t('Selecione uma lateral e digite FE', 'Select a lateral and type FE', 'Seleccione una lateral y escriba FE'),
       prepare: (x) {
@@ -1530,9 +1530,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Importar e exportar', 'Import and export', 'Importar y exportar'),
       target: TutorialTargets.menuFile,
       body: t(
-        'Importar (Ctrl+I) aceita DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, pontos CSV/XYZ e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF, DWG, PDF (prancha com carimbo, legenda e escala; Ctrl+P), SVG, KML/KMZ e GeoJSON. Exportar relatório gera CSV, TXT, XLSX ou PDF.',
-        'Import (Ctrl+I) accepts DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, CSV/XYZ points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF, DWG, PDF (plot sheet with title block, legend and scale; Ctrl+P), SVG, KML/KMZ and GeoJSON. Export report writes CSV, TXT, XLSX or PDF.',
-        'Importar (Ctrl+I) acepta DXF, DWG (AutoCAD 2000–2018), KML/KMZ, SHP, puntos CSV/XYZ e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF, DWG, PDF (lámina con cajetín, leyenda y escala; Ctrl+P), SVG, KML/KMZ y GeoJSON. Exportar informe genera CSV, TXT, XLSX o PDF.',
+        'Importar (Ctrl+I) aceita DXF, DWG (versões 2000–2018), KML/KMZ, SHP, pontos CSV/XYZ e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF, DWG, PDF (prancha com carimbo, legenda e escala; Ctrl+P), SVG, KML/KMZ e GeoJSON. Exportar relatório gera CSV, TXT, XLSX ou PDF.',
+        'Import (Ctrl+I) accepts DXF, DWG (versions 2000–2018), KML/KMZ, SHP, CSV/XYZ points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF, DWG, PDF (plot sheet with title block, legend and scale; Ctrl+P), SVG, KML/KMZ and GeoJSON. Export report writes CSV, TXT, XLSX or PDF.',
+        'Importar (Ctrl+I) acepta DXF, DWG (versiones 2000–2018), KML/KMZ, SHP, puntos CSV/XYZ e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF, DWG, PDF (lámina con cajetín, leyenda y escala; Ctrl+P), SVG, KML/KMZ y GeoJSON. Exportar informe genera CSV, TXT, XLSX o PDF.',
       ),
     ),
     TutorialStep(
@@ -1565,6 +1565,48 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         'Arquivo → Exemplos abre 15 projetos prontos para dimensionar: pomar, jardim, campo de futebol, hortaliças em gotejamento, pivô central e setorial, lateral móvel, estufa, viveiro, cafezal em curvas de nível, banana, cana com gotejamento subterrâneo, gotejamento por gravidade, pastagem e buraco de golfe. Ajuda → Boas-vindas e galeria de exemplos mostra a mesma galeria com descrições. Arquivo → Projetos recentes reabre o que foi salvo neste navegador, e Ajuda → Sobre mostra a versão do programa.',
         'File → Examples opens 15 projects ready to design: orchard, garden, football pitch, drip row crop, centre and sector pivot, linear move, greenhouse, nursery, coffee on contour lines, bananas, subsurface drip sugarcane, gravity-fed drip, pasture and a golf hole. Help → Welcome and example gallery shows the same gallery with descriptions. File → Recent projects reopens what was saved in this browser, and Help → About shows the program version.',
         'Archivo → Ejemplos abre 15 proyectos listos para diseñar: huerto, jardín, campo de fútbol, hortalizas en goteo, pivote central y sectorial, lateral de avance, invernadero, vivero, cafetal en curvas de nivel, banano, caña con goteo subterráneo, goteo por gravedad, pastura y hoyo de golf. Ayuda → Bienvenida y galería de ejemplos muestra la misma galería con descripciones. Archivo → Proyectos recientes reabre lo guardado en este navegador, y Ayuda → Acerca de muestra la versión del programa.',
+      ),
+    ),
+    // 1.6.0 SIT: the AI assistant (SIT-23); the steps explain, nothing goes to any AI service
+    TutorialStep(
+      id: 'aiOpen',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Abrir o assistente de IA', 'Open the AI assistant', 'Abrir el asistente de IA'),
+      target: TutorialTargets.statusBar,
+      body: t(
+        'O assistente de IA é opcional e trabalha no projeto aberto com as mesmas ferramentas dos menus: distribui aspersores e gotejamento, traça tubos, dimensiona, corrige avisos e escreve o memorial. Abra-o em Projeto → Assistente de IA, pelo comando AI, pelo botão do robô na barra de status ou pelo endereço ?ai=1; o painel fica ao lado do desenho (embaixo, no celular). Nada é enviado antes de você clicar em Enviar.',
+        'The AI assistant is optional and works on the open project with the same tools as the menus: it lays out sprinklers and drip, routes pipes, sizes, fixes warnings and writes the report. Open it with Design → AI assistant, the AI command, the robot button in the status bar or the address ?ai=1; the panel sits beside the drawing (at the bottom on a phone). Nothing is sent before you press Send.',
+        'El asistente de IA es opcional y trabaja en el proyecto abierto con las mismas herramientas que los menús: distribuye aspersores y goteo, traza tuberías, dimensiona, corrige avisos y redacta la memoria. Ábralo en Diseño → Asistente de IA, con el comando AI, con el botón del robot en la barra de estado o con la dirección ?ai=1; el panel queda junto al dibujo (abajo, en el móvil). No se envía nada antes de pulsar Enviar.',
+      ),
+    ),
+    TutorialStep(
+      id: 'aiKey',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Chave, modelo e modo', 'Key, model and mode', 'Clave, modelo y modo'),
+      body: t(
+        'Nas configurações do assistente, escolha um modelo Claude (Anthropic) ou GPT (OpenAI) e cole a sua própria chave de API: ela fica só na memória, a não ser que você marque Lembrar a chave neste dispositivo, e cada pedido vai direto do navegador ao provedor, que cobra o uso na sua conta. O modo diz o que ele pode fazer: somente leitura, planejar primeiro, perguntar antes de cada alteração (o padrão) ou aplicar as alterações automaticamente; um limite de passos e um teto de gasto encerram uma tarefa longa.',
+        'In the assistant\'s settings, choose a Claude (Anthropic) or GPT (OpenAI) model and paste your own API key: it stays in memory only, unless you tick Remember the key on this device, and every request goes straight from the browser to the provider, which bills your account. The mode says what it may do: read only, plan first, ask before each change (the default) or apply changes automatically; a step limit and a spending cap end a long task.',
+        'En los ajustes del asistente, elija un modelo Claude (Anthropic) o GPT (OpenAI) y pegue su propia clave de API: queda solo en la memoria, a menos que marque Recordar la clave en este dispositivo, y cada petición va directamente del navegador al proveedor, que factura el uso en su cuenta. El modo indica lo que puede hacer: solo lectura, planificar primero, preguntar antes de cada cambio (por defecto) o aplicar los cambios automáticamente; un límite de pasos y un tope de gasto terminan una tarea larga.',
+      ),
+    ),
+    TutorialStep(
+      id: 'aiAsk',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Pedir, aprovar e desfazer', 'Ask, approve and undo', 'Pedir, aprobar y deshacer'),
+      body: t(
+        'Escreva o que você quer com as suas palavras, por exemplo "distribua os aspersores do gramado e dimensione". Ele mostra o plano e pede aprovação a cada alteração (Aplicar ou Pular); você pode escrever enquanto ele trabalha e pará-lo a qualquer momento. Cada resposta se desfaz com um clique, e cada mensagem tem Voltar a este ponto. Um modelo pode errar: confira o trabalho dele como o de um colega.',
+        'Write what you want in your own words, for example "lay out the lawn heads and size the zones". It shows its plan and asks for approval of each change (Apply or Skip); you can type while it works and stop it at any time. Every answer is undone in one click, and every message has Rewind to here. A model can be wrong: check its work as you would a colleague\'s.',
+        'Escriba lo que quiere con sus propias palabras, por ejemplo "distribuye los aspersores del césped y dimensiona". Muestra el plan y pide aprobación para cada cambio (Aplicar u Omitir); puede escribir mientras trabaja y detenerlo en cualquier momento. Cada respuesta se deshace con un clic, y cada mensaje tiene Volver a este punto. Un modelo puede equivocarse: revise su trabajo como el de un colega.',
+      ),
+    ),
+    TutorialStep(
+      id: 'aiReview',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Revisão, marcas e voz', 'Review, marks and voice', 'Revisión, marcas y voz'),
+      body: t(
+        '/review faz uma revisão do projeto inteiro sem alterar nada e responde com uma lista de verificação. Marcar ponto e Marcar linha mostram ao assistente onde você quer algo no desenho; o microfone dita a mensagem; arquivos, desenhos, folhas de dados em PDF e fotos de campo com GPS podem ser anexados, colados ou soltos no painel. As conversas ficam neste navegador (as 12 mais recentes de cada projeto) e nunca vão no arquivo do projeto.',
+        '/review reviews the whole design without changing anything and answers with a checklist. Mark a point and Mark a line show the assistant where you want something on the drawing; the microphone dictates the message; files, drawings, PDF data sheets and field photos with GPS can be attached, pasted or dropped on the panel. Conversations stay in this browser (the 12 most recent of each project) and never go into the project file.',
+        '/review revisa todo el diseño sin cambiar nada y responde con una lista de verificación. Marcar punto y Marcar línea muestran al asistente dónde quiere algo en el dibujo; el micrófono dicta el mensaje; archivos, dibujos, fichas técnicas en PDF y fotos de campo con GPS pueden adjuntarse, pegarse o soltarse en el panel. Las conversaciones quedan en este navegador (las 12 más recientes de cada proyecto) y nunca van al archivo del proyecto.',
       ),
     ),
     TutorialStep(

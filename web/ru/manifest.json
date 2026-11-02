@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — САПР орошения",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "ru",
+  "dir": "ltr",
+  "description": "Бесплатная программа проектирования полива с открытым кодом: ИИ-ассистент в браузере расставит дождеватели и капельницы, проложит трубы и рассчитает систему.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Рассчитанный проект орошения с результатами по зонам"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Рассчитанный проект орошения с результатами по зонам"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Интерактивное обучение",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Открыть ИИ-ассистента",
+      "description": "ИИ-ассистент, который чертит и проектирует вместе с вами",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Сад",
+      "description": "Микродождевание цитрусовых и капельное орошение винограда, скважина с насосом и фильтром, наклонный участок.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Приусадебный участок",
+      "description": "Выдвижные распылители на переднем газоне, роторы сзади и капельное орошение на клумбах, питание от водопровода со счётчиком и обратным клапаном.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Круговая машина",
+      "description": "Пивот 300 м на кукурузе с питанием от магистрали, скважины и насоса; отчёт по башням, пролётам и соплам.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

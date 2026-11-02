@@ -10,7 +10,7 @@ automação do traçado, os algoritmos de terreno e de desempenho, os formatos d
 as fontes. Onde uma fórmula aparece, o módulo que a implementa está indicado, e o teste que a valida
 também.
 
-Este documento não cita empresas nem produtos de software concorrentes; as fontes são normas,
+Este documento não cita empresas nem produtos de software concorrentes, nem produtos de CAD; as fontes são normas,
 literatura técnica, software aberto (os mecanismos de referência e as bibliotecas que validam os
 formatos) e a documentação da API dos provedores de modelos que o assistente de IA chama.
 
@@ -25,7 +25,7 @@ formatos) e a documentação da API dos provedores de modelos que o assistente d
 7. [Múltiplas saídas: fator F](#7-múltiplas-saídas-fator-f)
 8. [Emissores e aspersores](#8-emissores-e-aspersores)
 9. [Uniformidade](#9-uniformidade)
-10. [Laterais e submains](#10-laterais-e-submains)
+10. [Laterais e linhas de derivação](#10-laterais-e-linhas-de-derivação)
 11. [Redes: o Global Gradient Algorithm](#11-redes-o-global-gradient-algorithm)
 12. [Bombas e energia](#12-bombas-e-energia)
 13. [Golpe de aríete e classes de pressão](#13-golpe-de-aríete-e-classes-de-pressão)
@@ -77,9 +77,10 @@ revisados sobre fator de atrito, emissores, uniformidade, operação de redes e 
 especificação aberta do formato DWG, as especificações de PDF, OpenType, LAS, LandXML e IFC e a
 documentação dos serviços públicos de elevação e de clima.
 
-Este estudo não cita empresas nem produtos de software de terceiros. Fabricantes de componentes de
-irrigação aparecem apenas como origem dos dados dos catálogos, e formatos de arquivo de terceiros
-apenas pelo nome do formato.
+Este estudo não cita produtos de software concorrentes nem as empresas que os fazem, nem produtos de
+CAD. Fabricantes de componentes de irrigação aparecem apenas como origem dos dados dos catálogos, os
+formatos de arquivo pelo nome do formato (DXF, DWG R2000) e os provedores de dados, mapas e IA como
+fontes.
 
 ---
 
@@ -109,7 +110,7 @@ O modelo do OpenCADIrrigation (`entities.dart`) separa quatro famílias de itens
 - **Itens de zona**, a jusante de uma válvula de controle: tubo de zona, lateral com emissores
   igualmente espaçados (sprayline), fita ou tubo gotejador com emissores integrados, emissor
   individual, acessório (regulador, registro, filtro), junção e área irrigada com requisito
-  hídrico. Geradores criam blocos de laterais com submain e válvula, grades de aspersores, anéis em
+  hídrico. Geradores criam blocos de laterais com linha de derivação e válvula, grades de aspersores, anéis em
   volta de árvores e traçados automáticos (seção 19).
 - **Itens de linha principal**: fonte de água, tubo principal, bomba, junção, acessório (filtros,
   hidrômetros, a válvula mestra, válvulas redutoras e sustentadoras de pressão, hidrantes com
@@ -177,10 +178,10 @@ Do que a prática de projeto exige, o motor implementa:
   válvulas controladoras de vazão e retenções.
 - **Dimensionamento por programação linear** (topografia, janela de pressão, velocidade, classe de
   pressão na temperatura da água, economia, diâmetros habilitados e fixos, número de diâmetros por
-  lateral e por submain) e por **velocidade máxima**, com racionalização dos diâmetros de montante
+  lateral e por linha de derivação) e por **velocidade máxima**, com racionalização dos diâmetros de montante
   para jusante.
 - **Pressão da válvula** escolhida para que a pressão média dos emissores seja a nominal, ou, para
-  fitas reguladas, para garantir a pressão mínima de submain.
+  fitas reguladas, para garantir a pressão mínima da linha de derivação.
 - **Fonte de água** com pressão calculada (poço com nível negativo, reservatório com altura
   positiva) ou fixa (rede pública, com vazão e pressão de projeto e máximas).
 - **Gerenciamento** por turnos, com duty de cada fonte por turno e tempos de operação a partir dos
@@ -206,14 +207,14 @@ estádio, agronomia, programa do controlador, lavagem, golpe de aríete e transi
 pacotes de aspersores, lista de materiais (também por zona e de uma seleção) com custos anualizados
 e um orçamento; gráficos de linha piezométrica, de perfil e das curvas das bombas, sobreposições de
 velocidade, pressão, diâmetros, mínimos e máximos e declividade/aspecto, envelope de posição do
-submain, densograma (a água aplicada pelos aspersores como desenhados) e vista 3D do terreno; fiação
+linha de derivação, densograma (a água aplicada pelos aspersores como desenhados) e vista 3D do terreno; fiação
 das válvulas (estações, bitolas, tensão nos solenoides, decodificadores).
 
 ### 2.6 Formatos
 
 Importação de DXF, DWG, DGN V7, plantas em PDF, KML/KMZ, SHP (também zips com vários shapefiles),
 GeoJSON, GPX, LandXML, nuvens de pontos LAS, INP do EPANET, CSV/XYZ/PNEZD, GeoTIFF e imagens
-georreferenciadas; exportação de DXF (AutoCAD 2000 e R12), DWG (AutoCAD 2000), PDF (pranchas,
+georreferenciadas; exportação de DXF (R2000 e R12), DWG (R2000), PDF (pranchas,
 conjuntos de pranchas, detalhes e gráficos), PNG, SVG, KML/KMZ, GeoJSON, shapefiles, GPX, LandXML,
 IFC 4, INP do EPANET e relatórios em CSV, TXT, XLSX e PDF; projeto em JSON aberto com o catálogo
 embutido.
@@ -227,7 +228,7 @@ Observações gerais sobre o cenário, sem referência a produtos:
 - As ferramentas profissionais de projeto de irrigação são, em regra, aplicativos de desktop para
   um único sistema operacional ou plug-ins de plataformas CAD pagas, com licença comercial, bancos
   de componentes fechados e formatos de projeto proprietários.
-- Na web existem sobretudo calculadoras de fabricantes (lateral, submain, bomba) e serviços
+- Na web existem sobretudo calculadoras de fabricantes (lateral, linha de derivação, bomba) e serviços
   fechados por assinatura voltados a paisagismo.
 - O motor de rede aberto de referência, já consolidado, é o EPANET (domínio público, US EPA),
   voltado a redes de abastecimento e sem os objetos de irrigação (laterais, fitas, válvulas de zona,
@@ -491,7 +492,7 @@ favor dele.
 
 ---
 
-## 10. Laterais e submains
+## 10. Laterais e linhas de derivação
 
 Módulo `lateral.dart` (Wu & Gitlin 1975; Keller & Bliesner 1990).
 
@@ -501,12 +502,12 @@ Módulo `lateral.dart` (Wu & Gitlin 1975; Keller & Bliesner 1990).
   produz (`analyzeLateralForMeanPressure`), que é o critério de ajuste da válvula.
 - Perfis de pressão: aclive, horizontal, declive suave (mínimo no fim), declive acentuado (mínimo no
   meio, porque o ganho por gravidade supera o atrito). Teste "downhill slope raises end pressure".
-- Repartição usual da perda admissível: 55 % na lateral e 45 % no submain.
+- Repartição usual da perda admissível: 55 % na lateral e 45 % na linha de derivação.
 - **Posição de alimentação**: alimentar pelo meio reduz a perda a ≈ 1/(2^m · 2) e permite laterais
   1,6 a 1,7 vezes mais longas. `allowableFeedPositions` avalia alimentar uma lateral de comprimento
   L numa fração f (0 = extremidade, 0,5 = centro), com os dois ramos partilhando a pressão de entrada
   escolhida para que a média seja a nominal, e devolve as posições aceitáveis e a ótima; é o
-  "envelope do submain" pintado no desenho e o teste "feed positions: centre feed is best on flat
+  "envelope da linha de derivação" pintado no desenho e o teste "feed positions: centre feed is best on flat
   ground".
 - **Comprimento máximo**: bisseção sobre L, múltiplo do espaçamento, até a variação atingir a janela
   (teste "max lateral length is monotonic").
@@ -618,7 +619,7 @@ permite zonas com milhares de nós (teste "large branched network is fast").
 ### 11.4 Uso no projeto
 
 A zona é resolvida como rede completa: reservatório de carga fixa no nó de jusante da válvula
-(pressão da válvula), nós com emissores agregados, trechos de submain e laterais. A **pressão da
+(pressão da válvula), nós com emissores agregados, trechos da linha de derivação e laterais. A **pressão da
 válvula** é achada por bissecção para que a pressão média dos emissores seja a nominal (a versão
 "análise rápida" usa demandas fixas e um ajuste linear em duas passagens). A linha principal é
 resolvida por turno com fontes de pressão fixa ou calculada, bombas e as demandas das válvulas, dos
@@ -977,7 +978,7 @@ Formulação (lp_sizing.dart):
   isolado (com teto). Se a análise não confirmar a janela, os emissores de pressão mínima e máxima
   entram como restrições adicionais e o LP roda de novo, até quatro rodadas.
 - **Arredondamento e telescopagem**: as frações são convertidas no número permitido de diâmetros
-  por unidade (1 lateral, 3 submain, 3 linha principal por padrão), maiores diâmetros a montante; as
+  por unidade (1 lateral, 3 linha de derivação, 3 linha principal por padrão), maiores diâmetros a montante; as
   unidades com mais de um diâmetro são divididas em entidades antes da análise final.
 - **Solver**: simplex denso de duas fases com regra de Dantzig e fallback de Bland contra ciclagem;
   os problemas têm centenas de variáveis e restrições, o que cabe num tableau denso. Detecta
@@ -998,8 +999,8 @@ dois métodos no exemplo do pomar.
 ### 15.4 Pressão da válvula e resultados
 
 A análise detalhada final escolhe a pressão a jusante da válvula por bissecção para que a pressão
-média dos emissores seja a nominal (para fitas reguladas, para garantir a pressão mínima de
-submain). A perda na válvula vem da sua curva; a pressão requerida a montante alimenta a linha
+média dos emissores seja a nominal (para fitas reguladas, para garantir a pressão mínima da
+linha de derivação). A perda na válvula vem da sua curva; a pressão requerida a montante alimenta a linha
 principal. A variação admissível da zona vem da tolerância de vazão do emissor (ou do parâmetro
 "variação máxima da zona") e a real é medida sobre os emissores agregados.
 
@@ -1569,12 +1570,12 @@ from its valve with a vertex at every head", "pipes go round a building").
 - **Divisão de talhões** (`field_subdivision.dart`): um talhão agrícola é cortado em blocos de
   irrigação não maiores que uma área, ou que a vazão que um bloco pode retirar dada a vazão dos
   emissores por hectare, em faixas ao longo das fileiras ou numa grade que também limita o comprimento
-  das laterais (o dobro com o submain no meio), com carreadores entre os blocos (4 m por padrão, que
+  das laterais (o dobro com a linha de derivação no meio), com carreadores entre os blocos (4 m por padrão, que
   também mantêm afastadas as pontas das fitas de duas zonas) e uma largura mínima de bloco (10 m). Os
   cortes dão aos blocos áreas líquidas iguais: a área do talhão entre dois cortes é integrada
   exatamente, descontados os carreadores, e cada corte é posicionado por bissecção, de modo que os
   turnos retiram a mesma vazão (Keller & Bliesner 1990, capítulos 17 e 21; NRCS NEH 623 capítulo 7).
-  Um talhão côncavo pode cair em várias peças por faixa. Cada bloco recebe o lado do seu submain (para
+  Um talhão côncavo pode cair em várias peças por faixa. Cada bloco recebe o lado da sua linha de derivação (para
   o ponto de conexão, ou no meio) e a posição da sua válvula, pronto para o gerador de blocos (testes
   "strips of equal area within the limit, roads between them", "a grid keeps every lateral within the
   limit").
@@ -1582,7 +1583,7 @@ from its valve with a vertex at every head", "pipes go round a building").
   uma área (espaçamento entre plantas × entre fileiras com deslocamentos, as árvores a um raio de anel
   do contorno) ou de posições levantadas (agrupadas em fileiras na direção das fileiras), um anel de
   tubo gotejador de um raio (0,6 m por padrão) ou um número de gotejadores num pequeno tubo em anel (4
-  por padrão), ligado a uma lateral ao longo da fileira; as laterais partem de um submain através das
+  por padrão), ligado a uma lateral ao longo da fileira; as laterais partem de uma linha de derivação através das
   fileiras com a válvula da zona. Um anel de emissores em volta do tronco molha a zona radicular de uma
   árvore jovem de modo uniforme em todos os lados e longe do tronco (Keller & Bliesner 1990, capítulos
   15 e 16; NRCS NEH 623 capítulo 7). Cada anel é desenhado como duas metades do ponto onde a lateral
@@ -2287,7 +2288,7 @@ relevo geral e não substitui um levantamento, o que o diálogo avisa.
 
 ### 24.1 DXF
 
-Formato de texto do AutoCAD organizado em pares "código de grupo / valor". O leitor (`dxf.dart`)
+Formato de texto do DXF, organizado em pares "código de grupo / valor". O leitor (`dxf.dart`)
 percorre as seções BLOCKS e ENTITIES e lê LINE (10/20 e 11/21), LWPOLYLINE (vértices 10/20 em ordem,
 bulge 42, flag 70 de fechamento, elevação 38), POLYLINE com VERTEX (elevação no código 30 ou nos Z
 iguais dos vértices; vértices de controle de spline ignorados), CIRCLE, ARC (50/51 em graus),
@@ -2331,7 +2332,7 @@ textos e hachuras seguem as direções espelhadas) e viram polilinhas quando há
 os pontos de definição das cotas (camada Defpoints) não entram. O texto é decodificado como UTF-8
 (R2007+) ou Latin-1 (cp1252 dos arquivos antigos).
 
-Dois escritores: a exportação AutoCAD 2000 com entidades nativas (seção 24.3) e, como escolha
+Dois escritores: a exportação R2000 com entidades nativas (seção 24.3) e, como escolha
 separada para programas antigos, um arquivo R12 (AC1009) das primitivas (LINE, POLYLINE, CIRCLE,
 ARC, TEXT e POINT com a sua elevação, splines e símbolos como polilinhas, hachuras como contorno e
 linhas, cotas como linhas e texto) em camadas com índice de cor, o denominador comum de todos os
@@ -2352,12 +2353,12 @@ reversa que serviu de base para o leitor (`dwg.dart`, 2,0 mil linhas) e para o e
 - **Dados**: os objetos são endereçados pelo mapa de objetos (handles), e cada objeto é um fluxo de
   bits com códigos de tamanho variável (B, BB, BS, BL, BD, DD, MC, MS, H, entre outros); o leitor
   monta inteiros de vários bytes aritmeticamente porque as operações bit a bit do dart2js são de
-  32 bits. O CRC-16 do cabeçalho é verificado (teste "CRC-16 matches the checksum AutoCAD wrote"). O
+  32 bits. O CRC-16 do cabeçalho é verificado contra a soma gravada em arquivos reais. O
   mapa de handles é uma lista de pares (handle, deslocamento) codificados por diferença em seções: a
   especificação reinicia as diferenças a cada seção, alguns escritores as mantêm correndo, e as duas
   leituras concordam na primeira seção, então são distinguidas conferindo objetos espalhados pelo
-  mapa inteiro (conferir só as primeiras entradas lia errado 64 dos 750 objetos de um arquivo gravado
-  pelo AutoCAD).
+  mapa inteiro (conferir só as primeiras entradas lia errado 64 dos 750 objetos de um arquivo
+  real).
 - **Blocos e cotas**: INSERT (tipo 7) e MINSERT (8) trazem o ponto de inserção, as escalas
   (R13/R14 em três BD; R2000+ com um código BB que escolhe entre 1,1,1, um valor único, X = 1 ou
   três valores DD relativos ao X), a rotação, a extrusão, o flag de atributos, o vetor da matriz e,
@@ -2390,16 +2391,16 @@ reversa que serviu de base para o leitor (`dwg.dart`, 2,0 mil linhas) e para o e
   modelo e do papel, definições de bloco com as suas definições de atributo, e as entidades nativas
   LINE, LWPOLYLINE (com arcos), CIRCLE, ARC, POINT, TEXT, MTEXT, SPLINE, HATCH, SOLID, INSERT com
   ATTRIBs, DIMENSION (alinhada, angular, de raio, de diâmetro, de ordenada) com o seu bloco anônimo,
-  e LEADER. As cores do R2000 são só índices de cor (as cores verdadeiras chegaram com o AutoCAD
-  2004), e os caracteres fora da página de código são gravados na notação `\U+XXXX` que os programas
+  e LEADER. As cores do R2000 são só índices de cor (as cores verdadeiras chegaram com o formato
+  R2004), e os caracteres fora da página de código são gravados na notação `\U+XXXX` que os programas
   de CAD leem. O layout dos bytes segue a especificação da Open Design Alliance como o LibreDWG a
-  implementa; a ordem dos campos e os valores padrão foram conferidos contra arquivos gravados pelo
-  AutoCAD e validados com o LibreDWG (`dwgread`, `dwg2dxf`), que o teste executa quando está
+  implementa; a ordem dos campos e os valores padrão foram conferidos contra arquivos
+  reais e validados com o LibreDWG (`dwgread`, `dwg2dxf`), que o teste executa quando está
   instalado, além de relidos pelo próprio leitor.
 
 ### 24.3 O desenho CAD nativo
 
-Módulos `cad_drawing.dart` e `cad_export.dart`: os dois escritores AutoCAD 2000 (DXF AC1015 em
+Módulos `cad_drawing.dart` e `cad_export.dart`: os dois escritores R2000 (DXF AC1015 em
 `dxf_r2000.dart`, DWG AC1015 em `dwg_writer.dart`) recebem um único modelo do desenho, de modo que o
 DXF e o DWG levam o mesmo desenho, em metros do mundo, para o trabalho continuar num programa de CAD:
 
@@ -2421,8 +2422,8 @@ DXF e o DWG levam o mesmo desenho, em metros do mundo, para o trabalho continuar
   bloco;
 - as curvas de nível mantêm a sua elevação, as cotas de ponto e os vértices das linhas de quebra são
   pontos 3D; fitas, rotas de fios e linhas de quebra usam um tipo de linha tracejado;
-- as camadas levam o índice de cor e, no DXF, a cor verdadeira (código 420, lido a partir do AutoCAD
-  2004), o seu tipo de linha e os seus estados ligada, travada e de plotagem; os nomes de tabela são
+- as camadas levam o índice de cor e, no DXF, a cor verdadeira (código 420, lido pelos programas de CAD a partir do
+  formato R2004), o seu tipo de linha e os seus estados ligada, travada e de plotagem; os nomes de tabela são
   tornados válidos (os caracteres `<>/\":;?*|=,` e o acento grave viram `_`); o DXF tem $INSUNITS em
   metros, o seu texto em ASCII com `\U+XXXX` para o resto ($DWGCODEPAGE ANSI_1252), de modo que é lido
   igual qualquer que seja a codificação que um programa presuma, e todos os handles e donos do banco
@@ -2658,7 +2659,7 @@ leitura de catálogos XLSX.
 ### 24.12 Projeto e catálogos
 
 O projeto `.oci.json` e o catálogo `.oci.cat` são JSON com chave `format` e `version`; a estrutura
-está no README (seção 11) e em `catalogs/README.md`. A decisão de embutir o catálogo no projeto torna o
+está no manual (docs/manual/pt-BR/file-formats.md) e em `catalogs/README.md`. A decisão de embutir o catálogo no projeto torna o
 arquivo autossuficiente e legível; a biblioteca de blocos de usuário também viaja no projeto, e as
 exportações DXF e DWG a gravam como definições de bloco.
 
@@ -2737,7 +2738,7 @@ exportações DXF e DWG a gravam como definições de bloco.
   como são; a seleção é magenta em vez de amarela. Os dados nunca mudam de cor, e as plotagens e as
   exportações (PDF, SVG, PNG e os arquivos CAD) são papel e não seguem o tema da interface.
 - **Site**: páginas geradas com conteúdo HTML real para os buscadores, porque o Flutter desenha em
-  canvas (ver README, seção 13).
+  canvas (ver docs/manual/pt-BR/languages-and-site.md).
 
 ---
 
@@ -3210,16 +3211,17 @@ e o navegador o esconde (a mensagem avisa isso). O assistente é tão confiável
 por isso que todo número sobre o projeto é lido do programa e toda alteração pode ser recusada,
 desfeita ou voltada a um ponto de retorno; uma posição escolhida numa imagem vale o pixel que o modelo
 escolhe (s metros). As imagens não pedem aprovação, embora baixem blocos de mapa; análises longas que
-o modelo pede rodam na thread da interface; as conversas são guardadas por aba na memória e não são
-salvas com o projeto, por decisão de projeto (um arquivo ou link compartilhado levaria a conversa e as
-suas imagens); o uso é cobrado pelo provedor na conta da chave; e os clientes foram testados contra
+o modelo pede rodam na thread da interface; as conversas não são salvas com o projeto, por decisão de
+projeto (um arquivo ou link compartilhado levaria a conversa e as suas imagens), mas ficam guardadas
+no armazenamento do navegador (IndexedDB) por projeto, as 12 mais recentes com as imagens e os anexos
+pequenos, até que a opção que as guarda seja desligada, o que as apaga; o uso é cobrado pelo provedor na conta da chave; e os clientes foram testados contra
 falsos roteirizados das duas APIs, não contra os serviços reais.
 
 ---
 
 ## 28. Validação
 
-A suíte tem 1.752 testes (`flutter test`). Os que validam os métodos contra referências:
+A suíte tem cerca de 1.900 testes (`flutter test`). Os que validam os métodos contra referências:
 
 | Teste | Referência |
 |---|---|
@@ -3267,7 +3269,7 @@ A suíte tem 1.752 testes (`flutter test`). Os que validam os métodos contra re
 | UTM inverse round trip; georeference from a lat/lon origin | Karney 2011 |
 | SAD 69 and Córrego Alegre to SIRGAS 2000 agree with the Molodensky formula and round-trip | IBGE R.PR 1/2005 e R.PR 23/1989 |
 | every version and point format: ground points on the plane | ASPRS LAS 1.4 |
-| CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Arquivos reais e ferramenta independente |
+| O CRC-16 confere com a soma gravada em arquivos reais; o LibreDWG aceita o arquivo | Arquivos reais e ferramenta independente |
 | example_\<version\>: splines, hatches, solids and the ellipse like LibreDWG reads them | Entidades listadas pelo LibreDWG |
 | is an AC1015 file in metres, ASCII, with handles and owners; LibreDWG reads it and converts it to DXF | Auditoria do ezdxf; LibreDWG |
 | \<language\> runs shape like the reference engine | HarfBuzz |
@@ -3297,7 +3299,7 @@ Do ponto de vista da pesquisa, o que a literatura e a prática de projeto sugere
    dentro das zonas (o estudo vê uma zona como um orifício na sua válvula) e a liberação distribuída
    de ar.
 3. **Sprayline "unconnected"** automática.
-4. **Exportação DWG e DXF**: versões mais novas que o AutoCAD 2000 (cores verdadeiras no DWG) e
+4. **Exportação DWG e DXF**: versões mais novas que o R2000 (cores verdadeiras no DWG) e
    entidades como multileaders e tabelas.
 5. **Qualidade da água**: risco de entupimento e química da água junto com a fertirrigação, e a
    dispersão do produto injetado (os tempos de deslocamento são de escoamento em pistão).
@@ -3316,7 +3318,7 @@ Limites atuais que o programa informa ao usuário: o navegador guarda cerca de 3
 projeto (depois da compressão); arquivos BigTIFF e rasters acima de 100 milhões de pixels são
 recusados; levantamentos acima de 12 000 amostras são reduzidos para o TIN; LAS comprimido (LAZ), DGN
 V8, PDFs criptografados e as imagens JPEG 2000 e JBIG2 dos PDFs não são lidos; o OpenTopoData só
-funciona no aplicativo de desktop; as exportações CAD são AutoCAD 2000 (cores verdadeiras no DXF,
+funciona no aplicativo de desktop; as exportações CAD são R2000 (cores verdadeiras no DXF,
 índices de cor no DWG) ou R12; o assistente de IA precisa da rede e só foi testado contra falsos
 roteirizados das duas APIs de modelos; e nenhuma versão móvel nativa é produzida (o aplicativo web
 funciona em celulares).
@@ -3329,7 +3331,7 @@ funciona em celulares).
 |---|---|---|
 | Zona | Zone | Conjunto de tubos e emissores a jusante de uma válvula de controle |
 | Linha principal | Mainline | Da fonte de água às válvulas de zona |
-| Submain | Submain | Tubo de zona que alimenta as laterais |
+| Linha de derivação | Submain | Tubo de zona que alimenta as laterais |
 | Lateral | Sprayline / lateral | Tubo com emissores igualmente espaçados |
 | Fita / tubo gotejador | Tape / dripline | Lateral com emissores integrados |
 | Turno | System flow | Válvulas que operam juntas |
@@ -3466,7 +3468,7 @@ Terreno, geoprocessamento e algoritmos:
 Formatos:
 - Open Design Alliance. Open Design Specification for .dwg files (versão 5.4.1).
 - LibreDWG: https://www.gnu.org/software/libredwg/ ; ezdxf (validação dos arquivos DXF).
-- Autodesk DXF Reference.
+- DXF Reference: a especificação publicada do formato (R12 a 2018).
 - ESRI Shapefile Technical Description (1998); estrutura de arquivo do dBASE III; GeoTIFF Specification 1.8.2; OGC KML 2.3; RFC 7946 (GeoJSON) e The GeoJSON Format Specification rev. 1.0 (2008); GPX 1.1 Schema Documentation (2004); especificação ISFF do arquivo de projeto DGN V7 (1994).
 - ISO 32000-1 (PDF 1.7) e PDF Reference 1.4 (Adobe); especificação OpenType 1.9 e os seus documentos de desenvolvimento de escritas; Unicode UAX #9 (algoritmo bidirecional), UAX #53 (renderização de marcas árabes) e ArabicShaping.txt; HarfBuzz (mecanismo de moldagem de referência dos testes).
 - ISO 10303-21 (arquivo físico STEP); ISO 16739-1:2018 (IFC4 ADD2 TC1).

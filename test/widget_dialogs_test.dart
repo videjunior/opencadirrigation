@@ -273,7 +273,7 @@ void main() {
     // DXF export written to a temp file through the same dialog
     final dir = Directory.systemTemp.createTempSync('oci_export');
     await openMenu(tester, 'Arquivo', 'Exportar desenho');
-    await tapText(tester, 'DXF (AutoCAD, QGIS)');
+    await tapText(tester, 'DXF (programas de CAD, QGIS)');
     expect(find.text('Save as'), findsOneWidget);
     final target = '${dir.path}${Platform.pathSeparator}saida.dxf';
     await tester.enterText(find.byKey(const Key('desktop_filename')), target);

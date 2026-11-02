@@ -43,7 +43,7 @@ const _tr = SiteText(
     ),
     (
       'Tam CAD çizimi',
-      'Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler, katmanlar ve bloklar; klavyeden koordinat girişi, nesne kenetleme, kutupsal izleme, tutamaçlar, revizyon bulutları ve AutoCAD tarzı kısayollar (L, PL, C, D, ZE…).',
+      'Çizgiler, polyline, yaylar, spline, taramalar, ölçüler, metinler, katmanlar ve bloklar; klavyeden koordinat girişi, nesne kenetleme, kutupsal izleme, tutamaçlar, revizyon bulutları ve CAD programlarındaki gibi komut kısayolları (L, PL, C, D, ZE…).',
     ),
     (
       'Hidrolik şebeke',
@@ -145,19 +145,16 @@ const _tr = SiteText(
     ('Bir şey kurmam gerekiyor mu?', 'Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.'),
     (
       'Çevrimdışı çalışır mı?',
-      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 24 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
+      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 20 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
     ),
-    (
-      'Projelerim bulutta mı saklanıyor?',
-      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey bir sunucuya yüklenmez. İnternete yalnızca siz istediğinizde bağlanılır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve, kullanıyorsanız, sadece seçtiğiniz hizmet sağlayıcıyla (Anthropic veya OpenAI) iletişim kuran yapay zekâ asistanı için.',
-    ),
+    ('Projelerim bulutta mı saklanıyor?', faqCloudAnswerEn),
     (
       'Hidrolik hesap nasıl yapılır?',
       'Sürtünme kayıpları Hazen-Williams, Darcy-Weisbach, Scobey veya Manning ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde doğrusal programlamayla boyutlandırılır; ayrıca üniformite (CU, DU, EU), yıkama ve karakteristikler yöntemiyle geçici rejimler (vana kapanması, ani pompa durması, hava tahliye vanaları) kontrol edilir, basınçların ve enerji maliyetinin 24 saatlik simülasyonu da yapılır.',
     ),
     (
-      'AutoCAD ve diğer CAD programlarıyla çalışır mı?',
-      'Evet. DXF ve DWG (AutoCAD 2018’e kadar), DGN V7 ve PDF çizimleri içe aktarır; özgün CAD nesneleriyle (yaylı polyline’lar, taramalar, spline’lar, ölçüler, öznitelikli bloklar) DXF 2000, eski programlar için DXF R12 ve DWG 2000 dışa aktarır. CBS, ölçüm ve BIM için ayrıca KML/KMZ, shapefile, GeoJSON, GPX, LandXML ve EPANET .inp okuyup yazar, LAS nokta bulutlarını okur ve IFC 4 dışa aktarır.',
+      'Diğer CAD programlarıyla çalışır mı?',
+      'Evet. DXF ve DWG (2018 sürümüne kadar), DGN V7 ve PDF çizimleri içe aktarır; özgün CAD nesneleriyle (yaylı polyline’lar, taramalar, spline’lar, ölçüler, öznitelikli bloklar) DXF 2000, eski programlar için DXF R12 ve DWG 2000 dışa aktarır. CBS, ölçüm ve BIM için ayrıca KML/KMZ, shapefile, GeoJSON, GPX, LandXML ve EPANET .inp okuyup yazar, LAS nokta bulutlarını okur ve IFC 4 dışa aktarır.',
     ),
     (
       'Hangi dillerde kullanılabilir?',

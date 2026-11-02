@@ -7,6 +7,7 @@ import 'app/examples.dart';
 import 'app/i18n.dart';
 import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
+import 'app/io/app_update.dart'; // 1.6.0 SIT
 import 'app/io/links.dart';
 import 'app/io/page_lifecycle.dart';
 import 'app/io/unload.dart';
@@ -47,6 +48,7 @@ import 'app/widgets/properties_panel.dart';
 import 'app/widgets/reports_panel.dart';
 import 'app/widgets/status_bar.dart';
 import 'app/widgets/tool_palette.dart';
+import 'app/widgets/update_notice.dart'; // 1.6.0 SIT
 import 'core/io/project_export.dart';
 import 'core/io/share_link.dart';
 import 'core/model/entities.dart';
@@ -192,6 +194,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       },
     );
     AppErrors.attach(ws, (message) => _snack(message, long: true));
+    // 1.6.0 SIT: a newer build of the web app is installed: offer to reload into it
+    watchForAppUpdate(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showUpdateBanner(context, ws, unsaved: () => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
+      });
+      WidgetsBinding.instance.ensureVisualUpdate();
+    });
     _nativeKeys.install();
     // a file dropped on the window never replaces the app: it goes to the AI
     // panel (pasted pictures to its chat box)

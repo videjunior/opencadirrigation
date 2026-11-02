@@ -35,9 +35,9 @@ void main() {
     expect(File('web/design_worker.js.deps').existsSync(), isFalse);
   });
 
-  test('the pages, sitemap and 404 match the generator (tool/gen_site.dart)', () {
-    for (final e in renderSite().entries) {
-      final f = File('web/${e.key}');
+  test('the pages, sitemap, 404, site script and hosting configuration match the generator (tool/gen_site.dart)', () {
+    for (final e in {for (final e in renderSite().entries) 'web/${e.key}': e.value, ...renderRepositoryFiles()}.entries) {
+      final f = File(e.key);
       expect(f.existsSync(), isTrue, reason: e.key);
       expect(f.readAsStringSync(), e.value, reason: '${f.path} is out of date: run dart run tool/gen_site.dart');
     }
@@ -62,6 +62,9 @@ void main() {
       'hreflang="es"',
       'hreflang="pt-BR"',
       'hreflang="zh-CN"',
+      // the bare languages too: Portuguese and Chinese readers outside Brazil and mainland China
+      'hreflang="pt"',
+      'hreflang="zh"',
       'hreflang="x-default"',
       'theme-color',
       'name="robots"',
@@ -72,9 +75,9 @@ void main() {
       expect(html, contains('<link rel="alternate" hreflang="${l.tag}" href="${l.url}">'), reason: l.code);
     }
     expect(html, contains('content="${site}og-image.png"'));
-    expect(html, contains('flutter_bootstrap.js'));
-    expect(html, contains('flutter-first-frame'));
-    expect(html, contains('gtag/js?id=$analyticsId'), reason: 'analytics live in tool/site.dart, not in the generated file');
+    expect(html, contains('<script src="site.js?v='), reason: 'site.js starts flutter_bootstrap.js when the app is wanted');
+    expect(File('web/site.js').readAsStringSync(), allOf(contains("boot.src = 'flutter_bootstrap.js'"), contains('flutter-first-frame')));
+    expect(html, contains('data-ga="$analyticsId"'), reason: 'the measurement id goes to site.js, set when the pages are generated');
 
     final graph = jsonLdOf(html)['@graph'] as List;
     expect(graph.map((e) => (e as Map)['@type']), containsAll(['Organization', 'WebSite', 'WebPage', 'WebApplication', 'SoftwareSourceCode', 'BreadcrumbList', 'FAQPage', 'HowTo', 'ItemList']));
@@ -124,7 +127,7 @@ void main() {
       expect(html, contains('href="${l.url}?tutorial=1"'));
       expect(html, contains('<dt>${t.faq.first.$1}</dt>'));
       expect(html, contains('id="oci-landing"'));
-      expect(html, contains("setAttribute('hidden'"), reason: 'hidden, not removed, on first frame');
+      expect(html, contains('<script src="site.js?v='), reason: '${l.code}: the page logic is site.js');
       expect(html, contains('<noscript>'));
       // links to the other language versions
       for (final o in siteLanguages) {
@@ -134,12 +137,15 @@ void main() {
   });
 
   test('the app loads when asked for: a first visit gets the light page alone', () {
+    final script = File('web/site.js').readAsStringSync();
+    expect(script, contains("boot.src = 'flutter_bootstrap.js'"));
+    expect(script, contains("landing.setAttribute('hidden', '')"), reason: 'hidden, not removed, on first frame');
+    expect(script, contains("var prefix = 'opencadirrigation.';"), reason: 'returning users: the prefix of the app storage');
     final manifest = jsonDecode(File('web/manifest.json').readAsStringSync()) as Map<String, dynamic>;
     final appAddresses = [manifest['start_url'] as String, for (final s in manifest['shortcuts'] as List) (s as Map)['url'] as String];
     for (final l in siteLanguages) {
       final html = File('web/${l.file}').readAsStringSync();
       expect(html, isNot(contains('<script src="flutter_bootstrap.js"')), reason: '${l.code}: the page does not fetch the app by itself');
-      expect(html, contains("boot.src = 'flutter_bootstrap.js'"), reason: l.code);
       expect(html, isNot(contains('rel="preload"')), reason: '${l.code}: the logo is found in the page with fetchpriority=high');
       expect(html, isNot(contains('<link rel="preconnect"')), reason: '${l.code}: no connection to the engine CDN until the app starts');
       // buttons and example links open the app in place
@@ -150,11 +156,10 @@ void main() {
         expect(html, contains('<a href="${l.url}?example=${ex.id}" data-app>'), reason: '${l.code} ${ex.id}');
       }
       // addresses of the app (installed app, its shortcuts, deep links) start it without a click
-      final params = RegExp(r'\[\?&\]\(([a-z|]+)\)=').firstMatch(html)!.group(1)!.split('|');
+      final params = RegExp(r'\[\?&\]\(([a-z|]+)\)=').firstMatch(script)!.group(1)!.split('|');
       for (final address in [...appAddresses, '${l.url}?example=garden', '${l.url}?tutorial=1', '${l.url}?ai=1', '${l.url}?lang=es']) {
         expect(Uri.parse(address.replaceFirst('./', site)).queryParameters.keys.any(params.contains), isTrue, reason: '${l.code}: $address');
       }
-      expect(html, contains("var prefix = 'opencadirrigation.';"), reason: 'returning users: the prefix of the app storage');
       // the logo: WebP in three widths, versioned by content
       for (final w in landingLogoWidths) {
         expect(html, contains('${landingLogo(w)} ${w}w'), reason: '${l.code} $w');
@@ -309,7 +314,7 @@ void main() {
     for (final l in siteLanguages) {
       final html = File('web/${l.file}').readAsStringSync();
       final rtl = rtlLanguages.contains(l.code);
-      expect(html.contains('<main id="oci-landing" dir="rtl">'), rtl, reason: l.code);
+      expect(html.contains('<main id="oci-landing" dir="rtl" '), rtl, reason: l.code);
       expect(html, contains('<html lang="${l.tag}">'), reason: 'the app keeps its own layout: no dir on <html>');
     }
   });
@@ -323,7 +328,7 @@ void main() {
       expect(html, contains('<meta property="og:url" content="${l.url}">'));
       expect(html, contains('<meta property="og:locale" content="${l.ogLocale}">'));
       expect(html, contains('<link rel="alternate" hreflang="x-default" href="$site">'));
-      expect(html, contains('flutter_bootstrap.js'));
+      expect(html, contains('<script src="site.js?v='), reason: '${l.code}: the page logic (and the app start) is site.js');
       final graph = jsonLdOf(html)['@graph'] as List;
       final page = graph.firstWhere((e) => (e as Map)['@type'] == 'WebPage') as Map;
       expect(page['url'], l.url);
@@ -393,8 +398,13 @@ void main() {
     expect(sitemap, contains('<loc>${site}de/</loc>'));
     expect(sitemap, isNot(contains('<loc>${site}en/</loc>')), reason: 'English is the root page now');
     expect(sitemap, isNot(contains('?lang=')), reason: 'query URLs are not canonical pages');
-    expect(RegExp('hreflang="x-default"').allMatches(sitemap).length, siteLanguages.length);
-    expect(RegExp(r'<lastmod>\d{4}-\d\d-\d\d</lastmod>').allMatches(sitemap).length, siteLanguages.length);
+    final legalPages = 2 * siteLanguages.where((l) => hasLegalText(l.code)).length;
+    expect(RegExp('hreflang="x-default"').allMatches(sitemap).length, siteLanguages.length + legalPages);
+    expect(RegExp(r'<lastmod>\d{4}-\d\d-\d\d</lastmod>').allMatches(sitemap).length, siteLanguages.length + legalPages);
+    expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="pt" href="${site}pt/"/>'));
+    expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="zh" href="${site}zh/"/>'));
+    expect(sitemap, contains('<loc>${site}privacy/</loc>'));
+    expect(sitemap, isNot(contains('<loc>${site}de/privacy/</loc>')), reason: 'a page still in English is not offered as the German one');
     final notFound = File('web/404.html').readAsStringSync();
     expect(notFound, contains('noindex'));
     for (final l in siteLanguages) {
@@ -410,5 +420,206 @@ void main() {
     expect(File('assets/brand/logo-mark.png').existsSync(), isTrue);
     expect(File('assets/brand/logo-horizontal.png').existsSync(), isTrue);
     expect(File('pubspec.yaml').readAsStringSync(), contains('assets/brand/'));
+  });
+
+  group('privacy, terms and consent (SIT-01, SIT-13)', () {
+    test('every language has a privacy policy and terms of use, linked from the foot of its entry page', () {
+      for (final l in siteLanguages) {
+        final html = File('web/${l.file}').readAsStringSync();
+        final legal = legalText(l.code);
+        expect(html, contains('<a href="${privacyUrl(l)}">${legal.privacyLink}</a>'), reason: l.code);
+        expect(html, contains('<a href="${termsUrl(l)}">${legal.termsLink}</a>'), reason: l.code);
+        for (final privacy in [true, false]) {
+          final page = File('web/${l.path}${privacy ? 'privacy' : 'terms'}/index.html').readAsStringSync();
+          final url = privacy ? privacyUrl(l) : termsUrl(l);
+          final english = privacy ? privacyUrl(siteLang('en')) : termsUrl(siteLang('en'));
+          if (hasLegalText(l.code)) {
+            expect(page, contains('<html lang="${l.tag}">'), reason: l.code);
+            expect(page, contains('<link rel="canonical" href="$url">'), reason: l.code);
+            expect(page, contains('<meta name="robots" content="index, follow">'), reason: l.code);
+          } else {
+            // English for now: says so, is not indexed and points to the English page
+            expect(page, contains('<html lang="en">'), reason: l.code);
+            expect(page, contains('<link rel="canonical" href="$english">'), reason: l.code);
+            expect(page, contains('noindex'), reason: l.code);
+          }
+          expect(page, contains('href="${l.url}"'), reason: '${l.code}: back to its entry page');
+        }
+      }
+      expect([
+        for (final l in siteLanguages)
+          if (hasLegalText(l.code)) l.code,
+      ], unorderedEquals(['pt', 'en', 'es']));
+    });
+
+    test('the privacy policy names the controller, the contact, what is collected and the rights; the terms the licence and the responsibility', () {
+      final privacy = File('web/privacy/index.html').readAsStringSync();
+      for (final needle in [
+        'the maintainer of OpenCADIrrigation',
+        'controller',
+        '$appRepositoryUrl/issues',
+        'Google Analytics 4',
+        '_ga_&lt;id&gt;',
+        'consent',
+        '14 months',
+        'Firebase Hosting',
+        'fonts.gstatic.com',
+        'Nominatim',
+        'Anthropic or OpenAI',
+        'LGPD',
+        'GDPR',
+        'ANPD',
+        'never while the app is open',
+      ]) {
+        expect(privacy, contains(needle), reason: needle);
+      }
+      final terms = File('web/terms/index.html').readAsStringSync();
+      for (final needle in ['MIT licence', '&quot;as is&quot;', 'qualified professional', 'technical responsibility', 'ART', 'data sheets']) {
+        expect(terms, contains(needle), reason: needle);
+      }
+      final pt = File('web/pt/terms/index.html').readAsStringSync();
+      expect(pt, contains('profissional habilitado'));
+      expect(pt, contains('respectiva ART'));
+      expect(File('web/pt/privacy/index.html').readAsStringSync(), contains('mantenedor do OpenCADIrrigation'));
+    });
+
+    test('no page loads the statistics by itself: site.js asks first and never loads them where the app runs', () {
+      final pages = [
+        for (final e in renderSite().entries)
+          if (e.key.endsWith('.html')) e.value,
+      ];
+      for (final html in pages) {
+        expect(html, isNot(contains('googletagmanager.com/gtag')), reason: 'gtag.js is loaded by site.js after consent only');
+      }
+      final script = File('web/site.js').readAsStringSync();
+      // Consent Mode v2: denied by default, only the statistics granted
+      expect(script, contains("'consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' }"));
+      expect(script, contains("'consent', 'update', { analytics_storage: 'granted' }"));
+      expect(script.indexOf("'consent', 'default'"), lessThan(script.indexOf("tag.src = 'https://www.googletagmanager.com/gtag/js?id='")));
+      // loaded only after the visitor's answer, and never in a page where the app started
+      expect(script, contains('if (analytics || started || !analyticsId) return;'));
+      expect(RegExp(r'loadAnalytics\(\)').allMatches(script).length, 3, reason: 'the definition, Accept and a stored Accept');
+      expect(script, contains("if (answer === 'granted') loadAnalytics();"));
+      // the answer is not stored under the app's prefix: answering the notice is not using the app
+      final key = RegExp(r"var consentKey = '([^']+)';").firstMatch(script)!.group(1)!;
+      expect(key.startsWith('opencadirrigation.'), isFalse);
+      // declining deletes the cookies; the notice comes back from the foot of every page
+      expect(script, contains('dropCookies();'));
+      for (final l in siteLanguages) {
+        final html = File('web/${l.file}').readAsStringSync();
+        expect(html, contains('id="oci-consent"'), reason: l.code);
+        expect(html, contains('data-consent="granted"'), reason: l.code);
+        expect(html, contains('data-consent="denied"'), reason: l.code);
+        expect(html, contains('data-consent-open'), reason: l.code);
+        expect(html.indexOf('id="oci-consent"'), lessThan(html.indexOf('</main>')), reason: '${l.code}: the notice is part of the landing, hidden with it when the app starts');
+      }
+    });
+
+    test('the statistics can be left out of a fork: no measurement id, no notice', () {
+      expect(analyticsId, matches(RegExp(r'^G-[A-Z0-9]+$')));
+      expect(File('tool/site.dart').readAsStringSync(), contains("Platform.environment['OCI_ANALYTICS_ID']"));
+    });
+  });
+
+  test('every own page carries the Content Security Policy before any script, and no inline script runs (ENG-06)', () {
+    for (final e in renderSite().entries) {
+      final isOwnPage = e.key.endsWith('index.html') && e.key != 'en/index.html';
+      if (!isOwnPage) continue;
+      final html = e.value;
+      final meta = '<meta http-equiv="Content-Security-Policy" content="$contentSecurityPolicy">';
+      expect(html, contains(meta), reason: e.key);
+      expect(html.indexOf(meta), lessThan(html.indexOf('<script')), reason: '${e.key}: before every script');
+      for (final m in RegExp(r'<script([^>]*)>').allMatches(html)) {
+        final attrs = m.group(1)!;
+        expect(attrs.contains(' src=') || attrs.contains('type="application/ld+json"'), isTrue, reason: '${e.key}: inline script <script$attrs>');
+      }
+    }
+    for (final directive in ["script-src 'self' 'wasm-unsafe-eval'", "object-src 'none'", "base-uri 'self'", "worker-src 'self'", "frame-src 'none'"]) {
+      expect(contentSecurityPolicy, contains(directive));
+    }
+    expect(contentSecurityPolicy, isNot(contains("'unsafe-eval'")));
+    expect(contentSecurityPolicy, isNot(contains("script-src 'self' 'unsafe-inline'")));
+  });
+
+  test('the hosting configuration: security headers, revalidated app files and the /en/ redirect (ENG-05, SIT-19, SIT-22)', () {
+    final hosting = jsonDecode(File('hosting/firebase.json').readAsStringSync())['hosting'] as Map<String, dynamic>;
+    expect(hosting['public'], 'public');
+    final rules = [for (final r in hosting['headers'] as List) r as Map<String, dynamic>];
+    Map<String, String> headersOf(String source) => {for (final h in rules.firstWhere((r) => r['source'] == source)['headers'] as List) (h as Map)['key'] as String: h['value'] as String};
+    final all = headersOf('**');
+    expect(all['X-Content-Type-Options'], 'nosniff');
+    expect(all['Referrer-Policy'], 'strict-origin-when-cross-origin');
+    expect(all['Permissions-Policy'], contains('geolocation=(self)'));
+    expect(all['Permissions-Policy'], contains('microphone=(self)'));
+    expect(all['Permissions-Policy'], contains('camera=()'));
+    // the app files without a version in their names are revalidated, never kept an hour
+    final revalidated = [
+      for (final r in rules)
+        if ((r['headers'] as List).any((h) => (h as Map)['value'] == 'no-cache')) r['source'] as String,
+    ];
+    for (final needle in ['main.dart.js', 'design_worker.js', 'site.js', 'sw.js', 'flutter_bootstrap.js', '*.part.js', '@(assets|canvaskit)/**', '**/manifest.json']) {
+      expect(revalidated.any((s) => s.contains(needle)), isTrue, reason: needle);
+    }
+    final redirects = [for (final r in hosting['redirects'] as List) r as Map<String, dynamic>];
+    expect(redirects.where((r) => r['source'] == '/en/' && r['destination'] == '/' && r['type'] == 301), hasLength(1));
+    // site.js sends new visitors from the default addresses of the project to the site's own
+    final script = File('web/site.js').readAsStringSync();
+    expect(script, contains('"$firebaseProjectId.web.app","$firebaseProjectId.firebaseapp.com"'));
+    expect(script, contains('&& !usedHere()'), reason: 'whoever has projects stored on that address stays');
+  });
+
+  test('each entry page has a manifest in its language, with the same identity and a start address of its own (SIT-12)', () {
+    for (final l in siteLanguages) {
+      final html = File('web/${l.file}').readAsStringSync();
+      expect(html, contains('<link rel="manifest" href="${l.path}manifest.json">'), reason: l.code);
+      final m = jsonDecode(File('web/${l.path}manifest.json').readAsStringSync()) as Map<String, dynamic>;
+      final t = siteText(l.code);
+      expect(m['lang'], l.tag, reason: l.code);
+      expect(m['dir'], l.dir, reason: l.code);
+      expect(m['description'], t.description, reason: l.code);
+      expect(m['start_url'], './?source=pwa', reason: '${l.code}: the start address is the page of the language');
+      expect(Uri.parse('${l.url}manifest.json').resolve(m['id'] as String).toString(), site, reason: '${l.code}: one app whatever the language it was installed from');
+      expect(Uri.parse('${l.url}manifest.json').resolve(m['scope'] as String).toString(), site, reason: l.code);
+      expect([for (final s in m['shortcuts'] as List) (s as Map)['name']], contains(t.tutorial), reason: l.code);
+      final forms = [for (final s in m['screenshots'] as List) (s as Map)['form_factor']];
+      expect(forms, containsAll(['wide', 'narrow']), reason: '${l.code}: phones show the full install sheet');
+      for (final s in [...m['icons'] as List, ...m['screenshots'] as List]) {
+        final src = Uri.parse('${l.url}manifest.json').resolve((s as Map)['src'] as String).path.substring(1);
+        expect(File('web/$src').existsSync(), isTrue, reason: '${l.code}: $src');
+      }
+    }
+    final (w, h) = size('web/screenshots/phone-780x1688.png');
+    expect((w, h), (780, 1688));
+  });
+
+  test('every page is shared with an image in its own language (SIT-20)', () {
+    for (final l in siteLanguages) {
+      final html = File('web/${l.file}').readAsStringSync();
+      final image = ogImage(l);
+      expect(html, contains('<meta property="og:image" content="$site$image">'), reason: l.code);
+      expect(html, contains('<meta name="twitter:image" content="$site$image">'), reason: l.code);
+      final file = File('web/${image.split('?').first}');
+      expect(file.existsSync(), isTrue, reason: '${l.code}: run node tool/og/render_og.js');
+      final picture = img.decodeImage(file.readAsBytesSync())!;
+      expect((picture.width, picture.height), (1200, 630), reason: l.code);
+      if (!l.isRoot) expect(image, startsWith('og/og-image-${l.code}.jpg?v='), reason: '${l.code}: not the English card');
+    }
+  });
+
+  test('the FAQ no longer promises that the internet is reached only on request (SIT-02)', () {
+    final en = siteText('en');
+    final cloud = en.faq.indexWhere((f) => f.$1 == 'Are my projects stored in the cloud?');
+    expect(en.faq[cloud].$2, faqCloudAnswerEn);
+    for (final needle in ['Google Fonts', 'Google Analytics only if you accept it', 'never while the app is open', 'privacy policy']) {
+      expect(faqCloudAnswerEn, contains(needle));
+    }
+    for (final l in siteLanguages) {
+      final a = siteText(l.code).faq[cloud].$2;
+      expect(a, contains('Google Analytics'), reason: '${l.code}: the statistics are named');
+      expect(a.toLowerCase(), isNot(contains('only when you ask')), reason: l.code);
+    }
+    final llms = File('web/llms-full.txt').readAsStringSync();
+    expect(llms, isNot(contains('reached only when the user asks')));
+    expect(llms, contains('${site}privacy/'));
   });
 }

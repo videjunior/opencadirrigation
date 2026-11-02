@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — CAD thiết kế tưới",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "vi",
+  "dir": "ltr",
+  "description": "Phần mềm thiết kế tưới miễn phí, mã nguồn mở, có trợ lý AI bố trí béc phun và ống nhỏ giọt, vạch tuyến ống và tính kích thước hệ thống trên trình duyệt.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Thiết kế tưới đã tính kích thước với kết quả theo từng khu"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Thiết kế tưới đã tính kích thước với kết quả theo từng khu"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Hướng dẫn tương tác",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Mở trợ lý AI",
+      "description": "Trợ lý AI cùng bạn vẽ và thiết kế",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Vườn cây ăn quả",
+      "description": "Phun mưa cục bộ trên cam quýt và nhỏ giọt trên nho, giếng có bơm và bộ lọc, đất dốc.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Sân vườn nhà ở",
+      "description": "Béc pop-up ở bãi cỏ trước, rotor phía sau và nhỏ giọt ở bồn hoa, cấp từ nước máy với đồng hồ và van chống chảy ngược.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Pivot trung tâm",
+      "description": "Pivot 300 m trên ngô cấp nước từ ống chính, giếng và máy bơm; báo cáo tháp, nhịp và vòi phun.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

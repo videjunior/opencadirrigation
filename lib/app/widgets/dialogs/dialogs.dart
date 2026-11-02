@@ -30,6 +30,7 @@ import '../../io/links.dart';
 import '../../io/prefs.dart';
 import '../../state/controller.dart';
 import '../../version.dart';
+import '../../site_links.dart'; // 1.6.0 SIT
 import '../fields.dart';
 
 Future<void> _show(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<void>(
@@ -1733,6 +1734,13 @@ Future<void> showAboutDialogApp(BuildContext context, ProjectController c) => _s
         ),
         const SizedBox(height: 12),
         Text(c.t('about.text'), style: const TextStyle(fontSize: 13, height: 1.4)),
+        // 1.6.0 SIT: the results are checked and the design signed by a professional (terms of use)
+        const SizedBox(height: 8),
+        Text(
+          c.t('about.disclaimer'),
+          key: const Key('about_disclaimer'),
+          style: const TextStyle(fontSize: 12.5, height: 1.4, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         Text(
           c.t('about.credits'),
@@ -1742,6 +1750,9 @@ Future<void> showAboutDialogApp(BuildContext context, ProjectController c) => _s
         const SizedBox(height: 12),
         _ExternalLink(key: const Key('about_site'), icon: Icons.public, label: c.t('about.site'), url: appSiteUrl),
         _ExternalLink(key: const Key('about_repo'), icon: Icons.code, label: c.t('about.repo'), url: appRepositoryUrl),
+        // 1.6.0 SIT
+        _ExternalLink(key: const Key('about_privacy'), icon: Icons.privacy_tip_outlined, label: c.t('about.privacy'), url: privacyPolicyUrl(c.lang)),
+        _ExternalLink(key: const Key('about_terms'), icon: Icons.gavel_outlined, label: c.t('about.terms'), url: termsOfUseUrl(c.lang)),
       ],
     ),
   ),

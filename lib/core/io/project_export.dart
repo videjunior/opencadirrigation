@@ -38,7 +38,7 @@ class GeoReferenceMissing implements Exception {
 
 enum DrawingFormat {
   dxf('dxf', 'application/dxf'),
-  // the plain R12 file for older programs that do not read AutoCAD 2000
+  // the plain R12 file for older programs that do not read R2000
   dxfR12('dxf', 'application/dxf'),
   dwg('dwg', 'image/vnd.dwg'),
   pdf('pdf', 'application/pdf'),
@@ -90,7 +90,7 @@ class ProjectExporter {
 
   // ------------------------------------------------------------------ DXF / DWG
 
-  /// AutoCAD 2000 DXF (AC1015) with native entities: polylines with arcs,
+  /// R2000 DXF (AC1015) with native entities: polylines with arcs,
   /// splines, hatches, dimensions with their blocks, leaders, multiline text
   /// and blocks with attributes for symbols and hydraulic items (see
   /// [cadDrawing]).
@@ -101,11 +101,11 @@ class ProjectExporter {
   /// dimensions as lines and text).
   String dxfR12() => DxfWriter.write(dxfDocument());
 
-  /// AutoCAD 2000 DWG with the same native drawing as the DXF export.
+  /// R2000 DWG with the same native drawing as the DXF export.
   Uint8List dwg() => DwgWriter.writeDrawing(cadDrawing());
 
   /// The project as a native CAD drawing (layers with true colours and
-  /// linetypes, blocks, dimension styles) for the AutoCAD 2000 exports.
+  /// linetypes, blocks, dimension styles) for the R2000 exports.
   CadDrawing cadDrawing() => CadExport(project, units: units).build();
 
   /// The drawing as a plain CAD document (layers + primitive entities), the
@@ -233,7 +233,7 @@ class ProjectExporter {
     return DxfDocument(entities: ents, layers: layers);
   }
 
-  /// Nearest AutoCAD colour index for an ARGB colour.
+  /// Nearest colour index (ACI) for an ARGB colour.
   static int argbToAci(int argb) {
     final r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = argb & 0xFF;
     if (r > 200 && g < 120 && b < 120) return 1;

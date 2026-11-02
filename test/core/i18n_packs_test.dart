@@ -112,9 +112,13 @@ void main() {
       });
 
       test('is mostly not English', () {
+        // the keys that stay in English (names, symbols, formulas, codes) are listed in tool/i18n/glossary.json,
+        // which test/core/i18n_glossary_test.dart applies key by key
+        final glossary = jsonDecode(File('tool/i18n/glossary.json').readAsStringSync()) as Map<String, dynamic>;
+        final same = {...(glossary['untranslatable'] as Map).keys, ...(glossary['sameAsEnglishAllowed'] as Map).keys};
         var translated = 0, translatable = 0;
         for (final k in I18n.keys) {
-          if (I18n('pt')(k) == en(k)) continue; // symbols, units, product names
+          if (same.contains(k)) continue;
           translatable++;
           if (pack.strings[k] != en(k)) translated++;
         }

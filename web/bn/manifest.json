@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — সেচের জন্য CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "bn",
+  "dir": "ltr",
+  "description": "বিনামূল্যের ও ওপেন সোর্স সেচ ডিজাইন সফটওয়্যার, যার AI সহকারী ব্রাউজারেই স্প্রিংকলার ও ড্রিপ বসায়, পাইপের পথ তৈরি করে ও সেচব্যবস্থার আকার নির্ধারণ করে।",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "জোনভিত্তিক ফলাফলসহ আকার নির্ধারিত সেচ ডিজাইন"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "জোনভিত্তিক ফলাফলসহ আকার নির্ধারিত সেচ ডিজাইন"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ইন্টারঅ্যাক্টিভ টিউটোরিয়াল",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI সহকারী খুলুন",
+      "description": "একটি AI সহকারী, যা আপনার সঙ্গে আঁকে ও ডিজাইন করে",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "বাগান",
+      "description": "লেবুজাতীয়তে মাইক্রো-স্প্রিংকলার ও আঙুরে ড্রিপ, পাম্প ও ফিল্টারসহ কূপ, ঢালু জমি।",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "বাসার বাগান",
+      "description": "সামনের লনে পপ-আপ স্প্রে, পেছনে রোটর ও বেডে ড্রিপ, মিটার ও ব্যাকফ্লো প্রিভেন্টারসহ পৌর সরবরাহ থেকে।",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "সেন্টার পিভট",
+      "description": "ভুট্টায় 300 m পিভট, মূল লাইন, কূপ ও পাম্প থেকে সরবরাহ; টাওয়ার, স্প্যান ও নজল প্রতিবেদন।",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

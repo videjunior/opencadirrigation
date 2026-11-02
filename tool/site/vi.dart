@@ -43,7 +43,7 @@ const _vi = SiteText(
     ),
     (
       'Bản vẽ CAD đầy đủ',
-      'Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản, lớp và khối, với nhập tọa độ bằng bàn phím, bắt điểm, truy bắt góc cực, grip, đám mây sửa đổi và phím tắt kiểu AutoCAD (L, PL, C, D, ZE…).',
+      'Đường thẳng, polyline, cung tròn, spline, mặt cắt, kích thước, văn bản, lớp và khối, với nhập tọa độ bằng bàn phím, bắt điểm, truy bắt góc cực, grip, đám mây sửa đổi và phím tắt lệnh như các phần mềm CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Mạng thủy lực',
@@ -141,19 +141,16 @@ const _vi = SiteText(
     ),
     (
       'Có dùng được ngoại tuyến không?',
-      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 24 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
+      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 20 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
     ),
-    (
-      'Dự án của tôi có được lưu trên đám mây không?',
-      'Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu; liên kết chia sẻ chứa dự án ngay trong chính địa chỉ, nên không có gì được tải lên. Internet chỉ được truy cập khi bạn yêu cầu: bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI, vốn chỉ giao tiếp với nhà cung cấp bạn đã chọn (Anthropic hoặc OpenAI).',
-    ),
+    ('Dự án của tôi có được lưu trên đám mây không?', faqCloudAnswerEn),
     (
       'Tính toán thủy lực được thực hiện thế nào?',
       'Tổn thất ma sát theo Hazen-Williams, Darcy-Weisbach, Scobey hoặc Manning, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống; thiết kế còn kiểm tra độ đồng đều (CU, DU, EU), xả rửa ống và nước va theo phương pháp đường đặc trưng (đóng van, bơm dừng đột ngột, van xả khí), kèm mô phỏng 24 giờ về áp suất và chi phí năng lượng.',
     ),
     (
-      'Có dùng được với AutoCAD và các phần mềm CAD khác không?',
-      'Có. Ứng dụng nhập DXF và DWG đến phiên bản AutoCAD 2018, DGN V7 và bản vẽ PDF, đồng thời xuất DXF 2000 với đối tượng CAD nguyên bản (polyline có cung tròn, mặt cắt, spline, kích thước, khối có thuộc tính), DXF R12 cho các phần mềm cũ và DWG 2000. Đối với GIS, khảo sát và BIM, ứng dụng còn đọc và ghi KML/KMZ, shapefile, GeoJSON, GPX, LandXML và EPANET .inp, đọc đám mây điểm LAS và xuất IFC 4.',
+      'Có dùng được với các phần mềm CAD khác không?',
+      'Có. Ứng dụng nhập DXF và DWG đến phiên bản 2018, DGN V7 và bản vẽ PDF, đồng thời xuất DXF 2000 với đối tượng CAD nguyên bản (polyline có cung tròn, mặt cắt, spline, kích thước, khối có thuộc tính), DXF R12 cho các phần mềm cũ và DWG 2000. Đối với GIS, khảo sát và BIM, ứng dụng còn đọc và ghi KML/KMZ, shapefile, GeoJSON, GPX, LandXML và EPANET .inp, đọc đám mây điểm LAS và xuất IFC 4.',
     ),
     (
       'Ứng dụng có những ngôn ngữ nào?',

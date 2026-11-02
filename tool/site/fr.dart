@@ -43,7 +43,7 @@ const _fr = SiteText(
     ),
     (
       'Dessin CAO complet',
-      'Lignes, polylignes, arcs, splines, hachures, cotes, textes, calques et blocs, avec saisie de coordonnées, accrochages, repérage polaire, poignées, nuages de révision et raccourcis façon AutoCAD (L, PL, C, D, ZE…).',
+      'Lignes, polylignes, arcs, splines, hachures, cotes, textes, calques et blocs, avec saisie de coordonnées, accrochages, repérage polaire, poignées, nuages de révision et raccourcis de commande des logiciels de CAO (L, PL, C, D, ZE…).',
     ),
     (
       'Réseau hydraulique',
@@ -168,19 +168,16 @@ const _fr = SiteText(
     ),
     (
       'Fonctionne-t-il hors ligne ?',
-      'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 24 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
+      'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 20 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
     ),
-    (
-      'Mes projets sont-ils stockés dans le cloud ?',
-      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous rangez où vous voulez ; un lien de partage contient le projet dans l’adresse elle-même, si bien que rien n’est envoyé sur un serveur. L’application n’accède à Internet que lorsque vous le demandez : fonds de carte, altitude et climat en ligne, catalogues chargés par URL et, si vous l’utilisez, l’assistant IA, qui ne communique qu’avec le fournisseur que vous avez choisi (Anthropic ou OpenAI).',
-    ),
+    ('Mes projets sont-ils stockés dans le cloud ?', faqCloudAnswerEn),
     (
       'Comment l’hydraulique est-elle calculée ?',
       'Pertes de charge par Hazen-Williams, Darcy-Weisbach, Scobey ou Manning, distributeurs selon q = k·Hˣ et réseau complet résolu par le Global Gradient Algorithm, la méthode d’EPANET. Les conduites sont dimensionnées par programmation linéaire dans la plage de pression des distributeurs et selon la classe de pression des tubes, et le calcul vérifie aussi l’uniformité (CU, DU, EU), le rinçage et les régimes transitoires par la méthode des caractéristiques (fermeture des vannes, disjonction des pompes, ventouses), avec une simulation sur 24 heures des pressions et du coût de l’énergie.',
     ),
     (
-      'Fonctionne-t-il avec AutoCAD et d’autres CAO ?',
-      'Oui. Il importe DXF et DWG jusqu’à AutoCAD 2018, DGN V7 et des plans PDF, et exporte en DXF 2000 avec entités natives (polylignes avec arcs, hachures, splines, cotes, blocs avec attributs), en DXF R12 pour les logiciels plus anciens et en DWG 2000. Pour les SIG, la topographie et le BIM, il lit et écrit aussi KML/KMZ, shapefile, GeoJSON, GPX, LandXML et EPANET .inp, lit les nuages de points LAS et exporte en IFC 4.',
+      'Fonctionne-t-il avec d’autres logiciels de CAO ?',
+      'Oui. Il importe DXF et DWG jusqu’à la version 2018, DGN V7 et des plans PDF, et exporte en DXF 2000 avec entités natives (polylignes avec arcs, hachures, splines, cotes, blocs avec attributs), en DXF R12 pour les logiciels plus anciens et en DWG 2000. Pour les SIG, la topographie et le BIM, il lit et écrit aussi KML/KMZ, shapefile, GeoJSON, GPX, LandXML et EPANET .inp, lit les nuages de points LAS et exporte en IFC 4.',
     ),
     (
       'Dans quelles langues est-il disponible ?',

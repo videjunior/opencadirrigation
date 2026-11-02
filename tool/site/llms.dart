@@ -4,7 +4,7 @@ part of '../site.dart';
 // model needs to describe OpenCADIrrigation correctly, in Markdown and
 // without the application shell. English, the canonical language of the
 // project, with links to the page of every other language. The page texts
-// come from `_en`; the technical facts below follow README.md, so update both
+// come from `_en`; the technical facts below follow the manual (docs/manual/), so update both
 // when the app changes (and keep to the editorial rules: no competing
 // products).
 
@@ -19,7 +19,7 @@ List<(String, String)> _facts() => [
   ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download'),
   (
     'Privacy',
-    'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key; its voice dictation, when used, goes through the browser\'s own speech recognition (the browser maker\'s service), and saved conversations stay in that browser',
+    'Projects stay on the user\'s computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user\'s own key; its voice dictation, when used, goes through the browser\'s own speech recognition (the browser maker\'s service), and saved conversations stay in that browser. Fonts for the scripts and symbols the app does not bundle come from Google Fonts; the pages of the site count visits with Google Analytics only after the visitor accepts it, never in a page where the app runs. Privacy policy: ${siteUrl}privacy/; terms of use: ${siteUrl}terms/',
   ),
   ('Languages', '${siteLanguages.length}: ${[for (final l in siteLanguages) _englishNames[l.code]].join(', ')}'),
   ('Project file', '`.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results'),
@@ -189,7 +189,7 @@ const _reference = [
     '''| Format | Import | Export |
 |---|---|---|
 | `.oci.json` project | yes | yes |
-| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | AutoCAD 2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
+| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | R2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
 | DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015): the same native drawing, with colour indices |
 | DGN | V7: elements, cells, levels as layers, 2D and 3D | — |
 | PDF | plans as an underlay: vectors, texts, images and PDF layers, scale 1:N read from the sheet | sheets, sheet sets, detail sheets and reports |
@@ -213,8 +213,10 @@ const _reference = [
     '''- Autosave in the browser (made in the background: the browser compresses the copy beside the app, so a large project does not hold the window after a design), recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
 - Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
 - Share by link: the whole project, compressed, travels in the fragment of the address (`#p=…`), which browsers never send to a server; embedded images, the photos of comments and results stay out of the link, and the receiver designs again.
-- Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 24 MB, once per version), so the installed app and the site start without a network; a new version downloads in the background and is used from the next start.
-- The internet is reached only when the user asks: base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose). Keys typed by the user go only to their own service.''',
+- Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 20 MB, once per version), so the installed app and the site start without a network; the language packs and the PDF fonts are kept once used. A new version downloads in the background: the app offers to reload into it (unsaved work goes to the autosave), or it is used from the next start.
+- Network use: the fonts of the scripts and symbols the app does not bundle come from Google Fonts (fonts.gstatic.com) when a screen needs them; base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, address search, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose) are reached when the user uses them. Keys typed by the user go only to their own service.
+- Visit statistics: the pages of the site ask once whether visits may be counted and load Google Analytics 4 only after the visitor accepts (Consent Mode v2, everything denied by default and only the statistics granted), never in a page where the app runs, so the statistics never see projects or keys; declining, also later with Cookie settings at the foot of the pages, deletes their cookies.
+- Privacy policy: ${siteUrl}privacy/ (controller: the maintainer of OpenCADIrrigation, reached through the project's issues); terms of use: ${siteUrl}terms/ (MIT licence, no warranty, a design aid whose results a qualified professional checks and signs).''',
   ),
   (
     'Phone, tablet and field work',
@@ -323,7 +325,9 @@ String renderLlmsTxt() {
     ..writeln()
     ..writeln('## Optional')
     ..writeln()
-    ..writeln('- [Sitemap](${siteUrl}sitemap.xml): every language page with its hreflang alternates');
+    ..writeln('- [Sitemap](${siteUrl}sitemap.xml): every language page with its hreflang alternates')
+    ..writeln('- [Privacy policy](${siteUrl}privacy/): what the app keeps in the browser, what it sends and to whom, the visit statistics and their consent')
+    ..writeln('- [Terms of use](${siteUrl}terms/): the MIT licence, no warranty, and the professional who checks and signs a design made with the app');
   return b.toString();
 }
 

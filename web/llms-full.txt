@@ -13,7 +13,7 @@ This file describes OpenCADIrrigation for language models and other automated re
 | Price | Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user's own Anthropic or OpenAI account, which that provider bills |
 | Licence | Open source under the MIT licence; source code (Dart and Flutter) at https://github.com/videjunior/opencadirrigation |
 | Runs in | Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download |
-| Privacy | Projects stay on the user's computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user's own key; its voice dictation, when used, goes through the browser's own speech recognition (the browser maker's service), and saved conversations stay in that browser |
+| Privacy | Projects stay on the user's computer (browser storage and `.oci.json` files); OpenCADIrrigation runs no server and has no accounts. A share link carries the project inside the address. The optional AI assistant sends nothing until the user presses Send, and then only to the provider the user chose, with the user's own key; its voice dictation, when used, goes through the browser's own speech recognition (the browser maker's service), and saved conversations stay in that browser. Fonts for the scripts and symbols the app does not bundle come from Google Fonts; the pages of the site count visits with Google Analytics only after the visitor accepts it, never in a page where the app runs. Privacy policy: https://opencadirrigation.com/privacy/; terms of use: https://opencadirrigation.com/terms/ |
 | Languages | 20: Indonesian, German, English, Spanish, French, Hausa, Swahili, Portuguese, Vietnamese, Turkish, Russian, Arabic, Urdu, Hindi, Marathi, Bengali, Punjabi, Telugu, Chinese, Japanese |
 | Project file | `.oci.json`, readable JSON that holds the drawing, the catalogue, the parameters and the last results |
 | CAD, GIS and survey exchange | Import DXF, DWG, DGN V7, PDF plans, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, EPANET .inp, CSV/XYZ survey points, GeoTIFF and images; export DXF 2000 with native entities or R12, DWG 2000, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp and IFC 4 |
@@ -39,7 +39,7 @@ Lateral blocks and sprinkler grids in one click, head layout with matched precip
 
 ### Full CAD drawing
 
-Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and AutoCAD-style shortcuts (L, PL, C, D, ZE…).
+Lines, polylines, arcs, splines, hatches, dimensions, text, layers and blocks, with typed coordinates, snaps, polar tracking, grips, revision clouds and the command shortcuts of CAD programs (L, PL, C, D, ZE…).
 
 ### Hydraulic network
 
@@ -194,7 +194,7 @@ After the first visit the app starts without a network, on desktop, tablet or ph
 | Format | Import | Export |
 |---|---|---|
 | `.oci.json` project | yes | yes |
-| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | AutoCAD 2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
+| DXF | R12 to 2018: lines, polylines with bulges, circles, arcs, ellipses, splines (NURBS), hatches, solids, texts, points, layers, blocks and dimensions | R2000 (AC1015) with native entities (polylines with arcs, splines, hatches, dimensions, leaders, multiline text; symbols and hydraulic items as blocks with attributes; layers with true colours and dashed linetypes), or R12 by layer for older programs |
 | DWG | R13/R14 (partial), 2000, 2004, 2007, 2010, 2013 and 2018: the same entities, layers, blocks and dimensions | 2000 (AC1015): the same native drawing, with colour indices |
 | DGN | V7: elements, cells, levels as layers, 2D and 3D | — |
 | PDF | plans as an underlay: vectors, texts, images and PDF layers, scale 1:N read from the sheet | sheets, sheet sets, detail sheets and reports |
@@ -218,8 +218,10 @@ After the first visit the app starts without a network, on desktop, tablet or ph
 - Autosave in the browser (made in the background: the browser compresses the copy beside the app, so a large project does not hold the window after a design), recent projects, the last 10 versions of every project and recovery on start-up; a project too large for the browser copy (about 3.5 MB compressed) is announced once, and embedded images are the first thing left out of that copy.
 - Save and Open work with `.oci.json` files on the user's disk; OpenCADIrrigation runs no server and has no accounts.
 - Share by link: the whole project, compressed, travels in the fragment of the address (`#p=…`), which browsers never send to a server; embedded images, the photos of comments and results stay out of the link, and the receiver designs again.
-- Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 24 MB, once per version), so the installed app and the site start without a network; a new version downloads in the background and is used from the next start.
-- The internet is reached only when the user asks: base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose). Keys typed by the user go only to their own service.
+- Offline start: after the first visit, the app's own service worker keeps a copy of the app (about 20 MB, once per version), so the installed app and the site start without a network; the language packs and the PDF fonts are kept once used. A new version downloads in the background: the app offers to reload into it (unsaved work goes to the autosave), or it is used from the next start.
+- Network use: the fonts of the scripts and symbols the app does not bundle come from Google Fonts (fonts.gstatic.com) when a screen needs them; base maps (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps with the user's own key, or custom XYZ and WMS addresses), online elevation and climate, address search, catalogues loaded by URL and, if used, the AI assistant (only the provider the user chose) are reached when the user uses them. Keys typed by the user go only to their own service.
+- Visit statistics: the pages of the site ask once whether visits may be counted and load Google Analytics 4 only after the visitor accepts (Consent Mode v2, everything denied by default and only the statistics granted), never in a page where the app runs, so the statistics never see projects or keys; declining, also later with Cookie settings at the foot of the pages, deletes their cookies.
+- Privacy policy: https://opencadirrigation.com/privacy/ (controller: the maintainer of OpenCADIrrigation, reached through the project's issues); terms of use: https://opencadirrigation.com/terms/ (MIT licence, no warranty, a design aid whose results a qualified professional checks and signs).
 
 ## Phone, tablet and field work
 
@@ -316,19 +318,19 @@ No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, an
 
 ### Does it work offline?
 
-Yes, after the first visit: the app keeps a copy of itself in the browser (about 24 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background and is used from the next start.
+Yes, after the first visit: the app keeps a copy of itself in the browser (about 20 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background: the app offers to reload into it, or it is used from the next start.
 
 ### Are my projects stored in the cloud?
 
-No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded. The internet is reached only when you ask for it: base maps, online elevation and climate, catalogues loaded by URL and, if you use it, the AI assistant, which talks only to the provider you chose (Anthropic or OpenAI).
+No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.
 
 ### How does it calculate the hydraulics?
 
 Friction losses by Hazen-Williams, Darcy-Weisbach, Scobey or Manning, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window and the pipe pressure class, and the design also checks uniformity (CU, DU, EU), flushing and transients by the method of characteristics (valve closure, pump trip, air valves), with a 24-hour simulation of pressures and energy cost.
 
-### Does it work with AutoCAD and other CADs?
+### Does it work with other CAD programs?
 
-Yes. It imports DXF and DWG up to AutoCAD 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.
+Yes. It imports DXF and DWG up to version 2018, DGN V7 and PDF plans, and exports DXF 2000 with native entities (polylines with arcs, hatches, splines, dimensions, blocks with attributes), DXF R12 for older programs and DWG 2000. For GIS, survey and BIM it also reads and writes KML/KMZ, shapefiles, GeoJSON, GPX, LandXML and EPANET .inp, reads LAS point clouds and exports IFC 4.
 
 ### Which languages are available?
 

@@ -43,7 +43,7 @@ const _de = SiteText(
     ),
     (
       'Vollwertiges CAD',
-      'Linien, Polylinien, Bögen, Splines, Schraffuren, Bemaßungen, Texte, Ebenen und Blöcke, mit Koordinateneingabe, Objektfang, polarer Spur, Griffen, Revisionswolken und Kurzbefehlen im AutoCAD-Stil (L, PL, C, D, ZE…).',
+      'Linien, Polylinien, Bögen, Splines, Schraffuren, Bemaßungen, Texte, Ebenen und Blöcke, mit Koordinateneingabe, Objektfang, polarer Spur, Griffen, Revisionswolken und den Kurzbefehlen von CAD-Programmen (L, PL, C, D, ZE…).',
     ),
     (
       'Hydraulisches Netz',
@@ -152,19 +152,16 @@ const _de = SiteText(
     ),
     (
       'Funktioniert es offline?',
-      'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 24 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
+      'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 20 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
     ),
-    (
-      'Werden meine Projekte in der Cloud gespeichert?',
-      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie ablegen, wo Sie möchten; beim Teilen per Link steckt das Projekt in der Adresse selbst, es wird also nichts hochgeladen. Auf das Internet wird nur zugegriffen, wenn Sie es anfordern: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent, der nur mit dem von Ihnen gewählten Anbieter (Anthropic oder OpenAI) kommuniziert.',
-    ),
+    ('Werden meine Projekte in der Cloud gespeichert?', faqCloudAnswerEn),
     (
       'Wie wird die Hydraulik berechnet?',
       'Reibungsverluste nach Hazen-Williams, Darcy-Weisbach, Scobey oder Manning, Emitter nach q = k·Hˣ und das gesamte Netz mit dem Global Gradient Algorithm, dem Verfahren von EPANET. Die Rohrdurchmesser werden per linearer Optimierung innerhalb des Druckfensters der Emitter und der Druckstufe der Rohre bestimmt; außerdem prüft die Berechnung Gleichmäßigkeit (CU, DU, EU), Spülung und Druckstöße nach dem Charakteristikenverfahren (Ventilschließung, Pumpenausfall, Be-/Entlüftungsventile), mit einer 24-Stunden-Simulation von Drücken und Energiekosten.',
     ),
     (
-      'Funktioniert es mit AutoCAD und anderen CAD-Programmen?',
-      'Ja. Es importiert DXF und DWG bis AutoCAD 2018, DGN V7 und PDF-Pläne und exportiert DXF 2000 mit nativen Objekten (Polylinien mit Bögen, Schraffuren, Splines, Bemaßungen, Blöcke mit Attributen), DXF R12 für ältere Programme und DWG 2000. Für GIS, Vermessung und BIM liest und schreibt es außerdem KML/KMZ, Shapefiles, GeoJSON, GPX, LandXML und EPANET .inp, liest LAS-Punktwolken und exportiert IFC 4.',
+      'Funktioniert es mit anderen CAD-Programmen?',
+      'Ja. Es importiert DXF und DWG bis Version 2018, DGN V7 und PDF-Pläne und exportiert DXF 2000 mit nativen Objekten (Polylinien mit Bögen, Schraffuren, Splines, Bemaßungen, Blöcke mit Attributen), DXF R12 für ältere Programme und DWG 2000. Für GIS, Vermessung und BIM liest und schreibt es außerdem KML/KMZ, Shapefiles, GeoJSON, GPX, LandXML und EPANET .inp, liest LAS-Punktwolken und exportiert IFC 4.',
     ),
     (
       'In welchen Sprachen ist es verfügbar?',

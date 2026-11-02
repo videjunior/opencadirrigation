@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — آبپاشی کے لیے CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "ur",
+  "dir": "rtl",
+  "description": "آبپاشی ڈیزائن کا مفت اور اوپن سورس سافٹ ویئر، جس کا AI اسسٹنٹ آپ کے براؤزر میں اسپرنکلر اور ڈرپ لگاتا، پائپ بچھاتا اور نظام کا سائز طے کرتا ہے۔",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "زون وار نتائج کے ساتھ سائز شدہ آبپاشی ڈیزائن"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "زون وار نتائج کے ساتھ سائز شدہ آبپاشی ڈیزائن"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "انٹرایکٹو ٹیوٹوریل",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI اسسٹنٹ کھولیں",
+      "description": "آپ کے ساتھ ڈرائنگ اور ڈیزائن کرنے والا AI اسسٹنٹ",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "باغ",
+      "description": "ترشاوہ پھلوں پر مائیکرو اسپرنکلر اور انگور پر ڈرپ، پمپ اور فلٹر والا کنواں، ڈھلوان زمین۔",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "گھریلو باغیچہ",
+      "description": "سامنے کے لان پر پاپ اپ اسپرے، پیچھے روٹر اور کیاریوں میں ڈرپ، میٹر اور بیک فلو پریوینٹر کے ساتھ عوامی سپلائی سے۔",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "سینٹر پیوٹ",
+      "description": "مکئی پر 300 m پیوٹ جسے مرکزی لائن، کنواں اور پمپ سپلائی کرتے ہیں؛ ٹاور، اسپین اور نوزل رپورٹ۔",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

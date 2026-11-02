@@ -43,7 +43,7 @@ const _ha = SiteText(
     ),
     (
       'Cikakken zanen CAD',
-      'Layi, polyline, baka, spline, zanen cikewa (hatch), ma\'auni, rubutu, layers da bulo (blocks), tare da coordinates da ake rubutawa, snap, bin polar, grips, gajimaren bita da gajerun umarni irin na AutoCAD (L, PL, C, D, ZE…).',
+      'Layi, polyline, baka, spline, zanen cikewa (hatch), ma\'auni, rubutu, layers da bulo (blocks), tare da coordinates da ake rubutawa, snap, bin polar, grips, gajimaren bita da gajerun umarni irin na shirye-shiryen CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Hanyar sadarwar ruwa',
@@ -161,19 +161,16 @@ const _ha = SiteText(
     ('Shin sai na girka wani abu?', 'A\'a. Yana aiki a Chrome, Edge, Firefox da Safari, a kwamfuta, tablet da waya, kuma ana iya girka shi a matsayin manhaja (PWA) mai buɗewa a tagarta.'),
     (
       'Shin yana aiki ba tare da intanet ba?',
-      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 24, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
+      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 20, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
     ),
-    (
-      'Shin ana ajiye ayyukana a gajimare (cloud)?',
-      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a fayilolin .oci.json da kake ajiyewa inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a wata sabar ba. Ana amfani da intanet ne kawai idan ka nema: taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da kuma, idan kana amfani da shi, mataimakin AI, wanda ke magana da mai ba da sabis ɗin da ka zaɓa kaɗai (Anthropic ko OpenAI).',
-    ),
+    ('Shin ana ajiye ayyukana a gajimare (cloud)?', faqCloudAnswerEn),
     (
       'Yaya ake lissafin ruwa?',
       'Asarar matsi ta gogayya da Hazen-Williams, Darcy-Weisbach, Scobey ko Manning, masu fitar da ruwa da q = k·Hˣ, kuma ana warware duk hanyar sadarwa da Global Gradient Algorithm, hanyar da EPANET ke amfani da ita. Ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, kuma ƙirar tana duba daidaito (CU, DU, EU), wanke bututu da yanayin wucin gadi ta hanyar method of characteristics (rufewar bawuloli, tsayawar famfo kwatsam, bawuloli na iska), tare da kwaikwayo na awa 24 na matsi da kuɗin makamashi.',
     ),
     (
-      'Shin yana aiki da AutoCAD da sauran CAD?',
-      'Ee. Yana shigo da DXF da DWG har zuwa AutoCAD 2018, DGN V7 da zane-zanen PDF, kuma yana fitar da DXF 2000 mai abubuwan CAD na asali (polyline masu baka, zanen cikewa, spline, ma\'auni, bulo masu sifofi), DXF R12 don tsofaffin manhajoji da DWG 2000. Don GIS, binciken ƙasa da BIM, yana kuma shigo da fitar da KML/KMZ, shapefile, GeoJSON, GPX, LandXML da EPANET .inp, yana shigo da gajimaren wurare na LAS kuma yana fitar da IFC 4.',
+      'Shin yana aiki da sauran shirye-shiryen CAD?',
+      'Ee. Yana shigo da DXF da DWG har zuwa sigar 2018, DGN V7 da zane-zanen PDF, kuma yana fitar da DXF 2000 mai abubuwan CAD na asali (polyline masu baka, zanen cikewa, spline, ma\'auni, bulo masu sifofi), DXF R12 don tsofaffin manhajoji da DWG 2000. Don GIS, binciken ƙasa da BIM, yana kuma shigo da fitar da KML/KMZ, shapefile, GeoJSON, GPX, LandXML da EPANET .inp, yana shigo da gajimaren wurare na LAS kuma yana fitar da IFC 4.',
     ),
     (
       'A waɗanne harsuna ake samunsa?',

@@ -6,12 +6,15 @@
 ///
 /// What a start may need: the root page, the JavaScript at the top of the
 /// build (bootstrap, `main.dart.js` and its deferred parts, the design
-/// worker, offline.js), the manifest, the favicons and icons, every Flutter
-/// asset (language packs, PDF fonts, catalogues, icon fonts, shaders…), the
-/// logo of the entry page and CanvasKit, one variant per browser family.
-/// The language pages, the site's text files, the screenshots and the other
-/// brand images stay on the network: the worker keeps a language page once
-/// it is opened and falls back to the root page offline.
+/// worker, offline.js, site.js), the manifest, the favicons and icons, the
+/// Flutter assets (catalogues, icon fonts, shaders, images…), the logo of
+/// the entry page and CanvasKit, one variant per browser family. The
+/// language packs, the PDF fonts and the licence list are [isLazyPath]:
+/// listed with their hash, but kept only once a start uses them (a new
+/// build carries forward those the browser kept). The language pages, the
+/// site's text files, the screenshots and the other brand images stay on
+/// the network: the worker keeps a language page once it is opened and
+/// falls back to the root page offline.
 library;
 
 import 'dart:convert';
@@ -43,9 +46,10 @@ const canvasKitVariants = {
 const _notShellScripts = {'flutter.js', 'flutter_service_worker.js', 'sw.js'};
 
 /// Whether the build file at [path] (relative, '/'-separated) is kept by the
-/// service worker (CanvasKit apart, see [canvasKitVariants]).
+/// service worker at install (CanvasKit apart, see [canvasKitVariants]).
 bool isShellPath(String path) {
   if (path.split('/').any((s) => s.startsWith('.'))) return false;
+  if (isLazyPath(path) || _isAssetDocument(path)) return false;
   if (path == 'index.html' || path == 'manifest.json') return true;
   if (!path.contains('/')) {
     if (RegExp(r'\.(m?js|wasm)$').hasMatch(path)) return !_notShellScripts.contains(path);
@@ -54,6 +58,20 @@ bool isShellPath(String path) {
   if (path.startsWith('assets/') || path.startsWith('icons/')) return true;
   return RegExp(r'^brand/logo-horizontal-\d+\.webp$').hasMatch(path);
 }
+
+/// Whether the build file at [path] is kept only once a start uses it: the
+/// language packs (a start needs its own language at most), the Noto fonts
+/// the PDF writer embeds (needed for the first PDF in another script) and
+/// the licence list. Together they are most of the assets, and almost all
+/// of them change with every release.
+bool isLazyPath(String path) {
+  if (path.split('/').any((s) => s.startsWith('.'))) return false;
+  return RegExp(r'^assets/assets/i18n/[^/]+\.json$').hasMatch(path) || RegExp(r'^assets/assets/fonts/[^/]+\.(ttf|otf)$').hasMatch(path) || path == 'assets/NOTICES';
+}
+
+/// Documentation that a folder of assets brings along (catalogs/README.md,
+/// the fonts' OFL.txt): never read by the app, so never kept.
+bool _isAssetDocument(String path) => path.startsWith('assets/') && RegExp(r'\.(md|txt)$').hasMatch(path);
 
 String _relative(Directory root, File f) {
   final rel = f.path.substring(root.path.length).replaceAll(r'\', '/');
@@ -66,11 +84,16 @@ ShellFile _shellFile(String path, File f) {
 }
 
 /// The files of the build in [dir] that every start may need, by path.
-List<ShellFile> shellFiles(Directory dir) {
+List<ShellFile> shellFiles(Directory dir) => _files(dir, isShellPath);
+
+/// The files of the build in [dir] kept once a start uses them, by path.
+List<ShellFile> lazyFiles(Directory dir) => _files(dir, isLazyPath);
+
+List<ShellFile> _files(Directory dir, bool Function(String path) keep) {
   final out = <ShellFile>[];
   for (final f in dir.listSync(recursive: true).whereType<File>()) {
     final path = _relative(dir, f);
-    if (isShellPath(path)) out.add(_shellFile(path, f));
+    if (keep(path)) out.add(_shellFile(path, f));
   }
   out.sort((a, b) => a.path.compareTo(b.path));
   return out;
@@ -86,9 +109,16 @@ Map<String, List<ShellFile>> canvasKitFiles(Directory dir) => {
 /// build, and a hash of every kept file, so that a rebuild with changes (even
 /// of an uncommitted tree on the same day) is a new build and a rebuild
 /// without changes is not.
-String buildName({required String version, required String commit, required String date, required List<ShellFile> files, required Map<String, List<ShellFile>> canvasKit}) {
+String buildName({
+  required String version,
+  required String commit,
+  required String date,
+  required List<ShellFile> files,
+  required Map<String, List<ShellFile>> canvasKit,
+  List<ShellFile> lazy = const [],
+}) {
   final listing = StringBuffer();
-  for (final f in [...files, for (final v in canvasKit.values) ...v]) {
+  for (final f in [...files, for (final v in canvasKit.values) ...v, ...lazy]) {
     listing.write('${f.path}\u0000${f.sha256}\n');
   }
   final hash = sha256Hex(utf8.encode(listing.toString())).substring(0, 10);
@@ -111,9 +141,10 @@ String _replaceOnce(String text, String marker, String value, String file) {
 }
 
 /// The service worker template [template] (web/sw.js) for [build].
-String fillServiceWorker(String template, {required String build, required List<ShellFile> files, required Map<String, List<ShellFile>> canvasKit}) {
+String fillServiceWorker(String template, {required String build, required List<ShellFile> files, required Map<String, List<ShellFile>> canvasKit, List<ShellFile> lazy = const []}) {
   var s = _replaceOnce(template, "'__OCI_BUILD__'", jsonEncode(build), 'sw.js');
   s = _replaceOnce(s, '[/*__OCI_FILES__*/]', _jsonLines([for (final f in files) f.toJson()]), 'sw.js');
+  s = _replaceOnce(s, '[/*__OCI_LAZY__*/]', _jsonLines([for (final f in lazy) f.toJson()]), 'sw.js');
   s = _replaceOnce(
     s,
     '{/*__OCI_CANVASKIT__*/}',
@@ -134,13 +165,20 @@ String fillOfflineScript(String template, {String workerUrl = 'sw.js'}) => _repl
 
 /// What [generateServiceWorker] did.
 class ServiceWorkerBuild {
-  const ServiceWorkerBuild(this.build, this.files, this.canvasKit);
+  const ServiceWorkerBuild(this.build, this.files, this.canvasKit, [this.lazy = const []]);
   final String build;
   final List<ShellFile> files;
   final Map<String, List<ShellFile>> canvasKit;
 
-  /// Bytes a browser keeps: the files plus its CanvasKit variant ([variant]).
+  /// The files kept once a start uses them.
+  final List<ShellFile> lazy;
+
+  /// Bytes a browser keeps at install: the files plus its CanvasKit variant
+  /// ([variant]); the lazy files it uses come on top.
   int bytesFor(String variant) => files.fold(0, (s, f) => s + f.bytes) + (canvasKit[variant] ?? const []).fold(0, (s, f) => s + f.bytes);
+
+  /// Bytes of the lazy files, all of them.
+  int get lazyBytes => lazy.fold(0, (s, f) => s + f.bytes);
 }
 
 /// Fills in `offline.js` and `sw.js` of the build in [dir]. offline.js goes
@@ -152,9 +190,10 @@ ServiceWorkerBuild generateServiceWorker(Directory dir, {required String version
   offline.writeAsStringSync(fillOfflineScript(offline.readAsStringSync()));
   final files = shellFiles(dir);
   final canvasKit = canvasKitFiles(dir);
-  final build = buildName(version: version, commit: commit, date: date, files: files, canvasKit: canvasKit);
-  worker.writeAsStringSync(fillServiceWorker(worker.readAsStringSync(), build: build, files: files, canvasKit: canvasKit));
-  return ServiceWorkerBuild(build, files, canvasKit);
+  final lazy = lazyFiles(dir);
+  final build = buildName(version: version, commit: commit, date: date, files: files, canvasKit: canvasKit, lazy: lazy);
+  worker.writeAsStringSync(fillServiceWorker(worker.readAsStringSync(), build: build, files: files, canvasKit: canvasKit, lazy: lazy));
+  return ServiceWorkerBuild(build, files, canvasKit, lazy);
 }
 
 /// `version:` of pubspec.yaml (`1.0.1+6`).

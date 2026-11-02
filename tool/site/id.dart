@@ -43,7 +43,7 @@ const _id = SiteText(
     ),
     (
       'Gambar CAD lengkap',
-      'Garis, polyline, busur, spline, arsiran, dimensi, teks, layer dan blok, dengan koordinat yang diketik, snap, pelacakan polar, grip, awan revisi dan pintasan ala AutoCAD (L, PL, C, D, ZE…).',
+      'Garis, polyline, busur, spline, arsiran, dimensi, teks, layer dan blok, dengan koordinat yang diketik, snap, pelacakan polar, grip, awan revisi dan pintasan perintah ala program CAD (L, PL, C, D, ZE…).',
     ),
     (
       'Jaringan hidraulik',
@@ -156,19 +156,16 @@ const _id = SiteText(
     ),
     (
       'Apakah bisa dipakai secara offline?',
-      'Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 24 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.',
+      'Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 20 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.',
     ),
-    (
-      'Apakah proyek saya disimpan di cloud?',
-      'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja; tautan berbagi membawa proyek di dalam alamatnya sendiri, sehingga tidak ada yang diunggah. Internet hanya diakses saat Anda memintanya: peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL dan, jika Anda memakainya, asisten AI, yang hanya berkomunikasi dengan penyedia layanan pilihan Anda (Anthropic atau OpenAI).',
-    ),
+    ('Apakah proyek saya disimpan di cloud?', faqCloudAnswerEn),
     (
       'Bagaimana perhitungan hidrauliknya?',
       'Kehilangan tekanan akibat gesekan dengan Hazen-Williams, Darcy-Weisbach, Scobey atau Manning, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dan desain juga memeriksa keseragaman (CU, DU, EU), pembilasan, serta transien dengan metode karakteristik (penutupan katup, pompa berhenti mendadak, katup udara), disertai simulasi 24 jam untuk tekanan dan biaya energi.',
     ),
     (
-      'Apakah bisa dipakai dengan AutoCAD dan CAD lain?',
-      'Ya. Aplikasi mengimpor DXF dan DWG hingga AutoCAD 2018, DGN V7 dan denah PDF, serta mengekspor DXF 2000 dengan entitas CAD asli (polyline dengan busur, arsiran, spline, dimensi, blok dengan atribut), DXF R12 untuk program lama dan DWG 2000. Untuk SIG, survei dan BIM, aplikasi juga membaca dan menulis KML/KMZ, shapefile, GeoJSON, GPX, LandXML dan EPANET .inp, membaca awan titik LAS, dan mengekspor IFC 4.',
+      'Apakah bisa dipakai dengan program CAD lain?',
+      'Ya. Aplikasi mengimpor DXF dan DWG hingga versi 2018, DGN V7 dan denah PDF, serta mengekspor DXF 2000 dengan entitas CAD asli (polyline dengan busur, arsiran, spline, dimensi, blok dengan atribut), DXF R12 untuk program lama dan DWG 2000. Untuk SIG, survei dan BIM, aplikasi juga membaca dan menulis KML/KMZ, shapefile, GeoJSON, GPX, LandXML dan EPANET .inp, membaca awan titik LAS, dan mengekspor IFC 4.',
     ),
     (
       'Tersedia dalam bahasa apa saja?',

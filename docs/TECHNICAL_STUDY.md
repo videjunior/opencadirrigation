@@ -9,7 +9,7 @@ the transient and operation analyses, the layout automation, the terrain and per
 studied and the sources. Wherever a formula appears, the module that implements it is named, and so is the test that
 validates it.
 
-This document does not cite competing software companies or products; the sources are standards, technical literature,
+This document does not cite competing software companies or products, nor CAD products; the sources are standards, technical literature,
 open software (the reference engines and the libraries that validate the formats) and the API documentation of the
 model providers the AI assistant calls.
 
@@ -77,9 +77,9 @@ factors, emitters, uniformity, network operation and image analysis, the open sp
 DWG format, the PDF, OpenType, LAS, LandXML and IFC specifications and the documentation of the public
 elevation and climate services.
 
-This study does not cite third-party software companies or products. Irrigation component
-manufacturers appear only as the origin of catalogue data, and third-party file formats only by the
-name of the format.
+This study does not name competing software products or their makers, nor CAD products. Irrigation
+component manufacturers appear only as the origin of catalogue data, file formats only by the name of
+the format (DXF, DWG R2000), and the data, map and AI providers as sources.
 
 ---
 
@@ -211,7 +211,7 @@ voltages, decoders).
 
 Import of DXF, DWG, DGN V7, PDF plans, KML/KMZ, SHP (zips of several shapefiles too), GeoJSON, GPX,
 LandXML, LAS point clouds, EPANET INP, CSV/XYZ/PNEZD, GeoTIFF and georeferenced images; export of
-DXF (AutoCAD 2000 and R12), DWG (AutoCAD 2000), PDF (sheets, sets of sheets, details and charts),
+DXF (R2000 and R12), DWG (R2000), PDF (sheets, sets of sheets, details and charts),
 PNG, SVG, KML/KMZ, GeoJSON, shapefiles, GPX, LandXML, IFC 4, EPANET INP and reports in CSV, TXT,
 XLSX and PDF; project in open JSON with the catalogue embedded.
 
@@ -2241,7 +2241,7 @@ replace a survey, which the dialog says.
 
 ### 24.1 DXF
 
-AutoCAD's text format organised in "group code / value" pairs. The reader (`dxf.dart`) walks the
+The text format of DXF, organised in "group code / value" pairs. The reader (`dxf.dart`) walks the
 BLOCKS and ENTITIES sections and reads LINE (10/20 and 11/21), LWPOLYLINE (vertices 10/20 in
 order, bulge 42, closing flag 70, elevation 38), POLYLINE with VERTEX (elevation in code 30 or in
 the equal Z of the vertices; spline control vertices ignored), CIRCLE, ARC (50/51 in degrees),
@@ -2285,7 +2285,7 @@ hatch angles follow the mirrored directions) and become polylines under anisotro
 definition points (Defpoints layer) are left out. Text is decoded as UTF-8 (R2007+) or Latin-1
 (cp1252 of the older files).
 
-Two writers: the AutoCAD 2000 export with native entities (section 24.3) and, as a separate choice
+Two writers: the R2000 export with native entities (section 24.3) and, as a separate choice
 for older programs, an R12 file (AC1009) of the primitives (LINE, POLYLINE, CIRCLE, ARC, TEXT and
 POINT with its elevation, splines and symbols as polylines, hatches as outline and lines, dimensions
 as lines and text) on layers with a colour index, the common denominator of all CADs.
@@ -2305,11 +2305,11 @@ writer (`dwg_writer.dart`, 1.7 thousand lines), both in pure Dart.
 - **Data**: objects are addressed through the object map (handles), and every object is a bit
   stream with variable-length codes (B, BB, BS, BL, BD, DD, MC, MS, H, among others); the reader
   assembles multi-byte integers arithmetically because dart2js bitwise operations are 32-bit. The
-  header CRC-16 is verified (test "CRC-16 matches the checksum AutoCAD wrote"). The handle map is a
+  header CRC-16 is verified against the checksum stored in real files. The handle map is a
   list of (handle, offset) pairs delta-coded in sections: the specification restarts the deltas at
   every section, some writers keep them running, and both readings agree on the first section, so
   they are told apart by checking objects spread over the whole map (checking the first entries
-  only misread 64 of the 750 objects of a file written by AutoCAD).
+  only misread 64 of the 750 objects of a real-world file).
 - **Blocks and dimensions**: INSERT (type 7) and MINSERT (8) carry the insertion point, the scales
   (R13/R14 as three BD; R2000+ with a BB code choosing between 1,1,1, a single value, X = 1 or three
   DD values relative to X), the rotation, the extrusion, the attributes flag, the array vector and,
@@ -2340,15 +2340,15 @@ writer (`dwg_writer.dart`, 1.7 thousand lines), both in pure Dart.
   their attribute definitions, and the native entities LINE, LWPOLYLINE (with arcs), CIRCLE, ARC,
   POINT, TEXT, MTEXT, SPLINE, HATCH, SOLID, INSERT with ATTRIBs, DIMENSION (aligned, angular,
   radius, diameter, ordinate) with its anonymous block, and LEADER. R2000 colours are colour indices
-  only (true colours came with AutoCAD 2004), and characters outside the code page are written in
+  only (true colours came with the R2004 format), and characters outside the code page are written in
   the `\U+XXXX` notation CAD programs read. The byte layout follows the Open Design Alliance
   specification as LibreDWG implements it; the field order and the default values were checked
-  against files written by AutoCAD and validated with LibreDWG (`dwgread`, `dwg2dxf`), which the
+  against real-world files and validated with LibreDWG (`dwgread`, `dwg2dxf`), which the
   test runs when installed, besides being re-read by our own reader.
 
 ### 24.3 The native CAD drawing
 
-Modules `cad_drawing.dart` and `cad_export.dart`: both AutoCAD 2000 writers (DXF AC1015 in
+Modules `cad_drawing.dart` and `cad_export.dart`: both R2000 writers (DXF AC1015 in
 `dxf_r2000.dart`, DWG AC1015 in `dwg_writer.dart`) take one model of the drawing, so the DXF and the
 DWG carry the same drawing, in world metres, for the work to go on in a CAD program:
 
@@ -2368,7 +2368,7 @@ DWG carry the same drawing, in world metres, for the work to go on in a CAD prog
   zone and stations, on the item's layer; the user blocks of the project are block definitions too;
 - contours keep their elevation, spot heights and breakline vertices are 3D points; tapes, wire
   routes and breaklines use a dashed linetype;
-- layers carry the colour index and, in DXF, the true colour (code 420, read from AutoCAD 2004 on),
+- layers carry the colour index and, in DXF, the true colour (code 420, read by CAD programs from the R2004 format on),
   their linetype and their on, locked and plot states; table names are made valid (the characters
   `<>/\":;?*|=,` and the backquote become `_`); the DXF has $INSUNITS in metres, its text in ASCII
   with `\U+XXXX` for the rest ($DWGCODEPAGE ANSI_1252), so it reads the same whatever encoding a
@@ -2592,7 +2592,7 @@ catalogues.
 ### 24.12 Project and catalogues
 
 The `.oci.json` project and the `.oci.cat` catalogue are JSON with `format` and `version` keys; the
-structure is in the README (section 11) and in `catalogs/README.md`. The decision to embed the
+structure is in the manual (docs/manual/file-formats.md) and in `catalogs/README.md`. The decision to embed the
 catalogue in the project makes the file self-contained and readable; the library of user blocks
 travels in the project too, and the DXF and DWG exports write it as block definitions.
 
@@ -2669,7 +2669,7 @@ travels in the project too, and the DXF and DWG exports write it as block defini
   magenta instead of yellow. The data never changes colour, and the plots and exports (PDF, SVG, PNG
   and the CAD files) are paper and do not follow the interface theme.
 - **Site**: pages generated with real HTML content for the search engines, because Flutter paints
-  on a canvas (see README, section 13).
+  on a canvas (see docs/manual/languages-and-site.md).
 
 ---
 
@@ -3117,8 +3117,10 @@ cross-origin headers and the browser hides it (the message says so). The assista
 as the model, which is why every figure about the design is read from the program and every change
 can be refused, undone or rewound; a position picked on a picture is as good as the pixel the model
 picks (s metres). Pictures ask for no approval, though they download map tiles; long analyses the
-model asks for run on the interface thread; conversations are kept per tab in memory and are not
-saved with the project, by design (a shared file or link would carry the chat and its pictures); the
+model asks for run on the interface thread; conversations are not saved with the project, by design
+(a shared file or link would carry the chat and its pictures), but they are kept in the browser's
+storage (IndexedDB) by project, the 12 most recent with their pictures and small attachments, until
+the setting that keeps them is turned off, which deletes them; the
 usage is billed by the provider to the account of the key; and the clients have been tested against
 scripted fakes of the two APIs, not against the live services.
 
@@ -3126,7 +3128,7 @@ scripted fakes of the two APIs, not against the live services.
 
 ## 28. Validation
 
-The suite has 1,752 tests (`flutter test`). Those validating the methods against references:
+The suite has about 1,900 tests (`flutter test`). Those validating the methods against references:
 
 | Test | Reference |
 |---|---|
@@ -3174,7 +3176,7 @@ The suite has 1,752 tests (`flutter test`). Those validating the methods against
 | UTM inverse round trip; georeference from a lat/lon origin | Karney 2011 |
 | SAD 69 and Córrego Alegre to SIRGAS 2000 agree with the Molodensky formula and round-trip | IBGE R.PR 1/2005 and R.PR 23/1989 |
 | every version and point format: ground points on the plane | ASPRS LAS 1.4 |
-| CRC-16 matches the checksum AutoCAD wrote; LibreDWG accepts the file | Real files and an independent tool |
+| The CRC-16 matches the checksum stored in real files; LibreDWG accepts the file | Real files and an independent tool |
 | example_\<version\>: splines, hatches, solids and the ellipse like LibreDWG reads them | Entities listed by LibreDWG |
 | is an AC1015 file in metres, ASCII, with handles and owners; LibreDWG reads it and converts it to DXF | ezdxf audit; LibreDWG |
 | \<language\> runs shape like the reference engine | HarfBuzz |
@@ -3202,7 +3204,7 @@ From the research point of view, what the literature and design practice suggest
    characteristics instead of the simplified torque model of the trip, the transients inside the
    zones (the study sees a zone as an orifice at its valve) and distributed air release.
 3. Automatic **"unconnected" sprayline**.
-4. **DWG and DXF export**: versions newer than AutoCAD 2000 (true colours in DWG) and entities such
+4. **DWG and DXF export**: versions newer than R2000 (true colours in DWG) and entities such
    as multileaders and tables.
 5. **Water quality**: clogging risk and water chemistry next to fertigation, and dispersion of the
    injected product (the travel times are plug flow).
@@ -3219,7 +3221,7 @@ Current limits the program states to the user: the browser keeps about 3.5 MB of
 project (after compression); BigTIFF files and rasters above 100 million pixels are refused;
 surveys above 12 000 samples are thinned for the TIN; compressed LAS (LAZ), DGN V8, encrypted PDFs
 and the JPEG 2000 and JBIG2 images of PDFs are not read; OpenTopoData works only in the desktop
-build; the CAD exports are AutoCAD 2000 (DXF true colours, DWG colour indices) or R12; the AI
+build; the CAD exports are R2000 (DXF true colours, DWG colour indices) or R12; the AI
 assistant needs the network and has been tested against scripted fakes of the two model APIs only;
 and no native mobile build is produced (the web app works on phones).
 
@@ -3368,7 +3370,7 @@ Terrain, geoprocessing and algorithms:
 Formats:
 - Open Design Alliance. Open Design Specification for .dwg files (version 5.4.1).
 - LibreDWG: https://www.gnu.org/software/libredwg/ ; ezdxf (validation of the DXF files).
-- Autodesk DXF Reference.
+- DXF Reference: the published specification of the format (R12 to 2018).
 - ESRI Shapefile Technical Description (1998); dBASE III file structure; GeoTIFF Specification 1.8.2; OGC KML 2.3; RFC 7946 (GeoJSON) and The GeoJSON Format Specification rev. 1.0 (2008); GPX 1.1 Schema Documentation (2004); ISFF specification of the DGN V7 design file (1994).
 - ISO 32000-1 (PDF 1.7) and PDF Reference 1.4 (Adobe); OpenType specification 1.9 and its script development documents; Unicode UAX #9 (bidirectional algorithm), UAX #53 (Arabic mark rendering) and ArabicShaping.txt; HarfBuzz (reference shaping engine of the tests).
 - ISO 10303-21 (STEP physical file); ISO 16739-1:2018 (IFC4 ADD2 TC1).

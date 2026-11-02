@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — CAD ya umwagiliaji",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "sw",
+  "dir": "ltr",
+  "description": "Programu ya bure na huria ya usanifu wa umwagiliaji: msaidizi wa AI hupanga vinyunyizio na matone, hutandaza mabomba na hupima ukubwa wa mfumo kivinjarini.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Usanifu wa umwagiliaji uliopimwa pamoja na matokeo kwa kila kanda"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Usanifu wa umwagiliaji uliopimwa pamoja na matokeo kwa kila kanda"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mafunzo shirikishi",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Fungua msaidizi wa AI",
+      "description": "Msaidizi wa AI anayechora na kusanifu pamoja nawe",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Bustani ya matunda",
+      "description": "Vinyunyizio vidogo kwenye michungwa na matone kwenye zabibu, kisima chenye pampu na chujio, ardhi ya mteremko.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Bustani ya nyumbani",
+      "description": "Vinyunyizio vya pop-up kwenye nyasi za mbele, rota nyuma na matone kwenye vitalu, vikilishwa na mtandao wa maji wenye mita na kizuia mtiririko wa nyuma.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Pivoti ya kati",
+      "description": "Pivoti ya m 300 kwenye mahindi inayolishwa na bomba kuu, kisima na pampu; ripoti ya minara, urefu na nozeli.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

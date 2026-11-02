@@ -1,0 +1,25 @@
+# References
+
+The study that guided the project, with what a designer expects from an irrigation CAD, the engine
+formulas, the sizing formulations, agronomy, pivots, terrain, the file formats and the bibliography,
+is in [docs/TECHNICAL_STUDY.md](../../docs/TECHNICAL_STUDY.md) (Portuguese translation in
+[docs/PESQUISA.pt-BR.md](../../docs/PESQUISA.pt-BR.md)). The modules added since then cite their sources
+in their doc comments, with the equation and table numbers they use:
+
+| Topic | Sources |
+|---|---|
+| Transients | Wylie, E. B.; Streeter, V. L. (1993), *Fluid Transients in Systems*; Chaudhry, M. H. (2014), *Applied Hydraulic Transients*; Thorley, A. R. D.; Faithfull, E. M. (1992), *Inertias of pumps and their driving motors* (also Thorley 2004, *Fluid Transients in Pipeline Systems*); Bergant, A.; Simpson, A. R.; Tijsseling, A. S. (2006), "Water hammer with column separation: a historical review", *Journal of Fluids and Structures* 22(2) (vapour cavity model) |
+| Air valves | AWWA Manual M51, *Air-Release, Air/Vacuum, and Combination Air Valves* |
+| Extended period, EPANET files | Rossman, L. A. (2000), *EPANET 2 Users Manual*, and the analysis algorithms of EPANET 2.2; EPANET 2.2 Users Manual, EPA/600/R-20/133 (input file format) |
+| Sizing and pipes | Alperovits, E.; Shamir, U. (1977), *Water Resources Research* 13(6) (looped networks); Scobey (1930), after Keller & Bliesner (1990); Chow (1959) (Manning n); ISO 1452-2 and ISO 4427-1 annex A, NBR 14312 (pressure class derating with temperature); ANSI/HI 9.6.1 (NPSH margin) |
+| On-demand networks | Clément, R. (1966), "Calcul des débits dans les réseaux d'irrigation fonctionnant à la demande", *La Houille Blanche* 5; Lamaddalena, N.; Sagardoy, J. A. (2000), *Performance analysis of on-demand pressurized irrigation systems*, FAO Irrigation and Drainage Paper 59; Wichura (1988), AS 241; L'Ecuyer (1999), MRG32k3a |
+| Criticality, calibration | Wagner, J. M.; Shamir, U.; Marks, D. H. (1988), *J. Water Resources Planning and Management* 114(3); Kiefer (1953); Levenberg (1944); Marquardt (1963) |
+| Energy and tariffs | Jiménez-Bello, M. A. et al. (2010), *Biosystems Engineering* 105(4); Carrillo Cobo, M. T. et al. (2011), *Irrigation Science* 29; ANEEL Normative Resolution 1,000/2021, art. 186; MME Normative Ordinance 137 of 8 June 2026 |
+| Routing and wiring | Alpert, C. J. et al. (1995), *IEEE Trans. Computer-Aided Design* 14(7); Takahashi, H.; Matsuyama, A. (1980), *Math. Japonica* 24; Dijkstra (1959) |
+| Agronomy | Allen, R. G.; Pereira, L. S.; Raes, D.; Smith, M. (1998), FAO Irrigation and Drainage Paper 56; Ayers, R. S.; Westcot, D. W. (1985), FAO-29 Rev. 1; Smith (1992), FAO-46; Brouwer & Heibloem (1986), FAO Training Manual 3; Savva & Frenken (2002), FAO Irrigation Manual Module 9; USDA-SCS (1970) TR-21 and NRCS NEH Part 623 ch. 2; Keller & Bliesner (1990); Keller, J.; Karmeli, D. (1974); Rawls, Brakensiek & Saxton (1982), *Trans. ASAE* 25(5); NRCS NEH Part 652 (1997); USDA-SCS NEH Section 15 ch. 11 (1983); Irrigation Association SWAT protocol (2008) and US EPA WaterSense (2011); Schwartzman & Zur (1986), *J. Irrig. Drain. Eng.* 112(3); California MWELO (CCR Title 23, §§ 490–495, 2015); Burt, O'Connor & Ruehr (1995), *Fertigation* |
+| Solar pumping | IEC 62253:2011; IEC 61724-1; Duffie & Beckman, *Solar Engineering of Thermal Processes* (Liu & Jordan; Erbs, Klein & Duffie 1982) |
+| Mechanised and surface irrigation | Heermann & Hein (1968); NRCS NEH Part 623 ch. 4 and 11; Kansas State University MF3608 (2022); Evans, R. G. et al. (2013), *Irrigation Science* 31; IEC 60364-5-52 annex G, IEC 60228, IEEE Std 399 and 446; Walker & Skogerboe (1987) and Walker (1989), FAO-45; Elliott & Walker (1982); Strelkoff (1977); U.S. Bureau of Reclamation, *Water Measurement Manual* |
+| Layout and turf | Irrigation Association (2014), *Landscape Irrigation Best Management Practices*; Keller & Bliesner (1990); IFAB Law 1, World Athletics and USGA recommendations for pitches, tracks and greens; Garcia-Castellanos & Lombardo (2007), *Scottish Geographical Journal* 123; Seginer, Kantz & Nir (1991) (sprinklers in wind) |
+| Vegetation detection | Woebbecke et al. (1995) (excess green); Otsu (1979); Meyer & Neto (2008); Gitelson et al. (2002); Taubin (1995); Douglas & Peucker (1973) |
+| Terrain and coordinates | Sloan (1993), *Computers & Structures* 47(3) (constrained Delaunay); ASPRS LAS 1.4 R15 (2019); LandXML 1.2 (2008); IBGE R.PR 1/2005 and R.PR 23/1989 (SIRGAS 2000, SAD 69, Córrego Alegre); OGC 01-009 (WKT 1), ISO 19162:2019 (WKT 2), EPSG; Karney (2011) |
+| Formats and details | ISO 32000-1 (PDF); OpenType and Unicode (UAX #9, Character Database); RFC 7946 and the 2008 GeoJSON specification; GPX 1.1; ISO 16739-1:2018 (IFC4) and ISO 10303-21; ESRI Shapefile Technical Description (1998); ISFF (DGN V7); ASAE S376.2 (covers of buried thermoplastic irrigation pipelines); Azevedo Netto, *Manual de Hidráulica* (suction submergence); CONAMA Resolution 284/2001 (licensing categories) |
