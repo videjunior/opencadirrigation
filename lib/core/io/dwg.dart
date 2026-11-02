@@ -19,6 +19,7 @@ import 'dart:typed_data';
 
 import '../model/geometry.dart';
 import 'cad_drawing.dart' show nearestAci;
+import 'cad_xdata.dart';
 import 'codepages.dart';
 import 'dxf.dart';
 import 'work_slicer.dart';
@@ -351,6 +352,13 @@ class _Entity {
 
   /// 3DFACE: the elevations of the corners in [points].
   List<double> cornerZ = const [];
+
+  /// ATTRIB: its tag, and whether it is invisible (data, not drawing).
+  String attribTag = '';
+  bool invisible = false;
+
+  /// The hydraulic data the app wrote in the extended data (cad_xdata.dart).
+  Map<String, String>? xdata;
 }
 
 /// A BLOCK_HEADER: name, base point and (per version) the handles of the
@@ -400,6 +408,64 @@ class DwgReader {
 
   /// The AcDb:Header section (header variables), when found.
   Uint8List? _header;
+
+  /// The hydraulic data in the EED of the object being read.
+  Map<String, String>? _eed;
+
+  /// The groups of the EED bytes [d] of one application: code (1000 + the
+  /// stored byte) and value as text (strings in the file's code page,
+  /// R2007+ in UTF-16; reals and integers in plain notation).
+  List<(int, String)> _eedGroups(Uint8List d) {
+    final out = <(int, String)>[];
+    final bd = ByteData.sublistView(d);
+    var p = 0;
+    while (p < d.length) {
+      final code = d[p++];
+      switch (code) {
+        case 0:
+          if (ver.index >= DwgVersion.r2007.index) {
+            if (p + 2 > d.length) return out;
+            final n = bd.getUint16(p, Endian.little);
+            p += 2;
+            if (p + 2 * n > d.length) return out;
+            out.add((1000, decodeUtf16(d.sublist(p, p + 2 * n), littleEndian: true)));
+            p += 2 * n;
+          } else {
+            if (p + 3 > d.length) return out;
+            final n = d[p];
+            p += 3; // length, then the code page (2 bytes)
+            if (p + n > d.length) return out;
+            out.add((1000, decodeCodepage(d, _codepage, p, p + n)));
+            p += n;
+          }
+        case 2:
+          if (p >= d.length) return out;
+          out.add((1002, d[p++] == 0 ? '{' : '}'));
+        case 3 || 5:
+          p += 8;
+        case 4:
+          if (p >= d.length) return out;
+          p += 1 + d[p];
+        case >= 10 && <= 13:
+          p += 24;
+        case 40 || 41 || 42:
+          if (p + 8 > d.length) return out;
+          out.add((1000 + code, '${bd.getFloat64(p, Endian.little)}'));
+          p += 8;
+        case 70:
+          if (p + 2 > d.length) return out;
+          out.add((1070, '${bd.getInt16(p, Endian.little)}'));
+          p += 2;
+        case 71:
+          if (p + 4 > d.length) return out;
+          out.add((1071, '${bd.getInt32(p, Endian.little)}'));
+          p += 4;
+        default:
+          return out;
+      }
+    }
+    return out;
+  }
 
   /// Debug aid: handle whose parsing is traced into [debugLog].
   static int? traceHandle;
@@ -492,6 +558,8 @@ class DwgReader {
       final size = _rl(file, at + 5);
       if (num == 2) handlesSeeker = seeker;
       if (num == 0 && seeker > 0 && seeker < file.length) _header = Uint8List.sublistView(file, seeker, math.min(file.length, seeker + math.max(size, 0)));
+      // the classes: the names of the object types from 500 on
+      if (num == 1 && seeker > 0 && seeker < file.length) _readClasses(Uint8List.sublistView(file, seeker, math.min(file.length, seeker + math.max(size, 0))));
       at += 9;
     }
     if (handlesSeeker == null) throw DwgUnsupportedException('corrupt', 'Handles section not found.');
@@ -632,9 +700,9 @@ class DwgReader {
         pageList.add((_rl(sm, q), _rl(sm, q + 4), _rl(sm, q + 8) + _rl(sm, q + 12) * 4294967296));
         q += 16;
       }
-      if (name == 'AcDb:Handles' || name == 'AcDb:AcDbObjects' || name == 'AcDb:Header') {
+      if (name == 'AcDb:Handles' || name == 'AcDb:AcDbObjects' || name == 'AcDb:Header' || name == 'AcDb:Classes') {
         if (size <= 0 || size > 512 * 1024 * 1024) {
-          if (name == 'AcDb:Header') continue;
+          if (name == 'AcDb:Header' || name == 'AcDb:Classes') continue;
           throw DwgUnsupportedException('corrupt', 'Section $name has an invalid size.');
         }
         final buf = Uint8List(size);
@@ -653,6 +721,7 @@ class DwgReader {
         if (name == 'AcDb:Handles') handles = buf;
         if (name == 'AcDb:AcDbObjects') objects = buf;
         if (name == 'AcDb:Header') _header = buf;
+        if (name == 'AcDb:Classes') _readClasses(buf);
       }
     }
     if (handles == null || objects == null) throw DwgUnsupportedException('corrupt', 'Object sections not found in the DWG.');
@@ -848,9 +917,9 @@ class DwgReader {
         q += 56;
       }
       debugLog.add('section "$name" size=$dataSize pages=${pageList.length}');
-      if (name != 'AcDb:Handles' && name != 'AcDb:AcDbObjects' && name != 'AcDb:Header') continue;
+      if (name != 'AcDb:Handles' && name != 'AcDb:AcDbObjects' && name != 'AcDb:Header' && name != 'AcDb:Classes') continue;
       if (dataSize <= 0 || dataSize > 512 * 1024 * 1024) {
-        if (name == 'AcDb:Header') continue;
+        if (name == 'AcDb:Header' || name == 'AcDb:Classes') continue;
         throw DwgUnsupportedException('corrupt', 'Section $name has an invalid size.');
       }
       final buf = Uint8List(dataSize);
@@ -873,11 +942,85 @@ class DwgReader {
       if (name == 'AcDb:Handles') handles = buf;
       if (name == 'AcDb:AcDbObjects') objects = buf;
       if (name == 'AcDb:Header') _header = buf;
+      if (name == 'AcDb:Classes') _readClasses(buf);
     }
     if (handles == null || objects == null) throw DwgUnsupportedException('corrupt', 'Object sections not found in the DWG.');
     objData = objects;
     _parseHandleMap(handles, 0);
     debugLog.add('handles=${handleMap.length} objData=${objData.length}');
+  }
+
+  /// The classes of the drawing (types from 500 on): DXF name and whether
+  /// the class is an entity, by class number.
+  final Map<int, (String, bool)> _classes = {};
+
+  /// Reads the classes section [d] (its start sentinel included): number,
+  /// names and item class (0x1F2 entity, 0x1F3 object) of each class; R2007
+  /// and later keep their names in a string stream at the end of the data.
+  /// A section that does not read leaves the classes it read.
+  void _readClasses(Uint8List d) {
+    if (d.length < 24) return;
+    try {
+      final br = _BitReader(d, 16, d.length)..codepage = _codepage;
+      final size = br.readRL();
+      final dataEnd = math.min(d.length, 20 + size);
+      var base = 160; // bits up to the end of the size
+      _BitReader? strings;
+      final r2007 = ver.index >= DwgVersion.r2007.index;
+      if (ver.index >= DwgVersion.r2010.index && file.length > 0x0B && file[0x0B] > 3) {
+        br.readRL(); // high size
+        base += 32;
+      }
+      if (r2007) {
+        final bitsize = br.readRL();
+        // the string stream ends at the bit before the end of the data, its size before that
+        final probe = _BitReader(d, 0, d.length);
+        probe.pos = base + bitsize - 1;
+        if (probe.readBit() == 1) {
+          probe.pos = base + bitsize - 1 - 16;
+          var strSize = probe.readRS();
+          var back = 16;
+          if (strSize & 0x8000 != 0) {
+            probe.pos = base + bitsize - 1 - 32;
+            strSize = (strSize & 0x7FFF) + probe.readRS() * 32768;
+            back = 32;
+          }
+          final at = base + bitsize - 1 - back - strSize;
+          if (at > 0) strings = _BitReader(d, 0, d.length)..pos = at;
+        }
+        if (strings == null) return;
+      }
+      // R2004 and later say how many classes there are (numbered from 500):
+      // in R2007 and later the string stream follows them in the same data
+      var count = 5000;
+      if (ver.index >= DwgVersion.r2004.index) {
+        final highest = br.readBS();
+        br.readRC();
+        br.readRC();
+        br.readB();
+        count = highest >= 500 ? math.min(5000, highest - 499) : 0;
+      }
+      for (var k = 0; k < count && br.bytePos < dataEnd - 1; k++) {
+        final number = br.readBS();
+        br.readBS(); // proxy flags
+        String text() => strings != null ? strings.readTU() : br.readTV();
+        text(); // application
+        text(); // C++ class
+        final dxf = text();
+        br.readB(); // was a zombie
+        final item = br.readBS();
+        if (ver.index >= DwgVersion.r2004.index) {
+          br.readBL(); // instances
+          br.readBL(); // version
+          br.readBL(); // maintenance version
+          br.readBL();
+          br.readBL();
+        }
+        if (number >= 500 && dxf.isNotEmpty) _classes[number] = (dxf.toUpperCase(), item == 0x1F2);
+      }
+    } catch (_) {
+      // a damaged or unknown layout: the classes read so far
+    }
   }
 
   /// Undoes the Reed–Solomon interleave: block i, byte j sits at
@@ -1215,6 +1358,12 @@ class DwgReader {
     typeCounts['$type'] = (typeCounts['$type'] ?? 0) + 1;
     final unsupported = _unsupportedTypes[type];
     if (unsupported != null) _unsupported[unsupported] = (_unsupported[unsupported] ?? 0) + 1;
+    // the entities of the classes the reader does not draw (MULTILEADER,
+    // IMAGE, WIPEOUT, ACAD_TABLE…), named in the import message
+    if (type >= 500) {
+      final c = _classes[type];
+      if (c != null && c.$2) _unsupported[c.$1] = (_unsupported[c.$1] ?? 0) + 1;
+    }
     _t(handle, 'type=$type hsSize=$handleStreamSize');
     final entity = _isEntity(type);
     int bitsize; // relative to start, position of handle stream
@@ -1258,12 +1407,22 @@ class DwgReader {
     final (_, ownHandle) = br.readH();
     if (ownHandle != handle) warnings.add('handle_mismatch:$handle:$ownHandle');
     _stage = 'eed';
-    // EED
+    // EED: kept when it is the hydraulic data the app writes
+    _eed = null;
     for (var guard = 0; guard < 200; guard++) {
       final sz = br.readBS();
       if (sz == 0) break;
       br.readH();
-      br.skipBytes(sz);
+      if (!entity || sz > 16384) {
+        br.skipBytes(sz);
+        continue;
+      }
+      final data = Uint8List(sz);
+      for (var i = 0; i < sz; i++) {
+        data[i] = br.readRC();
+      }
+      final x = readHydraulicXdata([(1001, xdataApp), ..._eedGroups(data)]);
+      if (x != null) _eed = x;
     }
     if (ver.index < DwgVersion.r2000.index && !entity) bitsize = br.readRL();
     _BitReader? strings;
@@ -1968,14 +2127,10 @@ class DwgReader {
           if (ver.index >= DwgVersion.r2018.index) multiline = br.readRC() > 1;
           // a multiline attribute carries an MTEXT before its tag: taken as shown
           if (!multiline) {
-            if (strings != null) {
-              strings.readTU();
-            } else {
-              br.readTV(); // tag
-            }
+            e.attribTag = DxfReader.plainName(strings != null ? strings.readTU() : br.readTV()).trim().toUpperCase();
             br.readBS(); // field length
-            // invisible attributes are data, not drawing
-            if (br.readRC() & 1 != 0) return;
+            // invisible attributes are data, not drawing: kept for their value
+            if (br.readRC() & 1 != 0) e.invisible = true;
           }
         }
         // a text needs a size to be drawn (0 means "the style's" to CAD programs)
@@ -2060,7 +2215,9 @@ class DwgReader {
       case 7: // INSERT
       case 8: // MINSERT
         final ix = br.readBD(), iy = br.readBD();
-        br.readBD(); // z
+        // the Z of a survey point's block
+        final iz = br.readBD();
+        if (iz != 0 && iz.isFinite) e.elevation = iz;
         double sx = 1, sy = 1;
         if (ver.index < DwgVersion.r2000.index) {
           sx = br.readBD();
@@ -2154,7 +2311,10 @@ class DwgReader {
       ..rows = e.rows
       ..colSpacing = e.colSpacing
       ..rowSpacing = e.rowSpacing
-      ..cornerZ = e.cornerZ;
+      ..cornerZ = e.cornerZ
+      ..attribTag = e.attribTag
+      ..invisible = e.invisible
+      ..xdata = _eed;
     return n;
   }
 
@@ -2509,6 +2669,11 @@ class DwgReader {
       }
     }
 
+    // the attributes of each INSERT (invisible ones included), by its handle
+    final attributesOf = <int, Map<String, String>>{};
+    for (final e in _entities) {
+      if (e.type == 2 && e.entmode == 0 && e.attribTag.isNotEmpty) (attributesOf[e.owner] ??= {})[e.attribTag] = e.text.trim();
+    }
     DxfInsert toInsert(_Entity e) => DxfInsert(
       name: _blocks[e.blockHandle]?.name ?? '',
       layer: layerOf(e),
@@ -2522,7 +2687,10 @@ class DwgReader {
       colSpacing: e.colSpacing,
       rowSpacing: e.rowSpacing,
       ocsMirror: e.ocsMirror,
-    );
+    )
+      ..z = e.elevation
+      ..xdata = e.xdata
+      ..attributes.addAll(attributesOf[e.handle] ?? const {});
     // block membership: owned lists (R2004+), owner handle, or the handle range (R13–R2000)
     final blockOfHandle = <int, _Block>{};
     for (final b in _blocks.values) {
@@ -2579,6 +2747,8 @@ class DwgReader {
       }
     }
     for (final e in _entities) {
+      // invisible attributes are data (read above), not drawing
+      if (e.type == 2 && e.invisible) continue;
       final isInsert = e.type == 7 || e.type == 8 || (e.type >= 20 && e.type <= 26);
       // attributes belong to their INSERT: drawn where it is
       final ofInsert = e.type == 2 && e.entmode == 0 && (insertInModel.contains(e.owner) || insertSpace.containsKey(e.owner));
@@ -2593,7 +2763,8 @@ class DwgReader {
         DxfEntity world(DxfEntity x) => e.ocsMirror ? DxfReader.mirrorOcs(x) : x;
         final d = toDxf(e);
         if (d == null) return;
-        yield world(d);
+        // the hydraulic data of an item the app exported goes with the entity
+        yield e.xdata == null ? world(d) : world(d).withXdata(e.xdata);
         for (final island in e.islands) {
           yield world(DxfEntity(type: 'POLYLINE', layer: d.layer, color: d.color, points: island, closed: true));
         }
@@ -2618,6 +2789,15 @@ class DwgReader {
     }
     final blocksByName = {for (final b in _blocks.values) b.name: DxfBlock(b.name, b.base, blockEntities[b.handle] ?? const [], blockInserts[b.handle] ?? const [], xref: b.xref)};
     final notes = [..._notes];
+    // the hydraulic items the app exported, restored by the import from their data
+    final items = DxfReader.hydraulicItems(inserts, blocksByName);
+    for (final it in items) {
+      ents.addAll(it.fallback);
+    }
+    // survey points delivered as blocks with an elevation attribute
+    final survey = DxfReader.surveyPoints(inserts, blocksByName);
+    ents.addAll(survey);
+    if (survey.isNotEmpty) notes.add('dxf_survey_points:${survey.length}');
     DxfReader.expandInserts(inserts, blocksByName, ents, warnings: notes);
     DxfReader.flatPointElevations(ents);
     for (final d in ents) {
@@ -2632,7 +2812,7 @@ class DwgReader {
       'blockHeaders=${_blockHeaders.length} blocks=${[for (final b in _blocks.values.take(12)) '${b.name}@${b.handle}:base=${b.base},first=${b.first},last=${b.last},owned=${b.owned.length},ents=${blockEntities[b.handle]?.length ?? 0}']} inserts=${[for (final i in inserts.take(8)) '${i.name}@${i.position} s=${i.scaleX},${i.scaleY} r=${i.rotation}']} nonModel=${_entities.where((e) => e.entmode != 2).map((e) => 'h${e.handle}:t${e.type}:m${e.entmode}:o${e.owner}').take(8).toList()}',
     );
     return DwgResult(
-      document: DxfDocument(entities: ents, layers: layerList, unitScale: DxfReader.unitScaleOf(insunits ?? 0), warnings: notes),
+      document: DxfDocument(entities: ents, layers: layerList, unitScale: DxfReader.unitScaleOf(insunits ?? 0), warnings: notes, items: items),
       insunits: insunits,
       version: ver.name,
       warnings: warnings,

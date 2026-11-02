@@ -335,12 +335,18 @@ class CadDrawing {
     this.textFont = 'arial.ttf',
     this.pointMode = 0,
     this.pointSize = 0,
+    this.xdata = const {},
   });
   final List<CadLayer> layers;
   final List<CadLinetype> linetypes;
   final List<CadDimStyle> dimStyles;
   final List<CadBlock> blocks;
   final List<CadEntity> entities;
+
+  /// Extended data of the application `OPENCADIRRIGATION` (cad_xdata.dart)
+  /// by entity (the very objects of [entities]): code and value of each
+  /// group after the 1001 group.
+  final Map<CadEntity, List<(int, Object)>> xdata;
 
   /// Font of the Standard text style (a TrueType font shows accents).
   final String textFont;
