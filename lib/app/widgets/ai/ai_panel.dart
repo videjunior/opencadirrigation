@@ -47,6 +47,12 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
   AiAssistant get ai => AiAssistant.of(c);
 
   @override
+  void initState() {
+    super.initState();
+    AiAssistant.viewsShown++;
+  }
+
+  @override
   void didUpdateWidget(AiAgentPanel old) {
     super.didUpdateWidget(old);
     if (widget.prompt != null && widget.prompt != old.prompt) input.text = widget.prompt!;
@@ -54,6 +60,7 @@ class _AiAgentPanelState extends State<AiAgentPanel> {
 
   @override
   void dispose() {
+    AiAssistant.viewsShown--;
     input.dispose();
     super.dispose();
   }

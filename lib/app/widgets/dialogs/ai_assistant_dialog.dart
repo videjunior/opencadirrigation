@@ -60,7 +60,14 @@ class _AiAssistantDialogState extends State<AiAssistantDialog> {
   AiAssistant get ai => widget.ai;
 
   @override
+  void initState() {
+    super.initState();
+    AiAssistant.viewsShown++;
+  }
+
+  @override
   void dispose() {
+    AiAssistant.viewsShown--;
     // the assistant works only while the conversation is on screen (after
     // the tree is gone: stopping notifies its listeners)
     if (ai.busy && !AiAssistant.panelOpen.value) Future.microtask(ai.stop);

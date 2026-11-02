@@ -84,8 +84,8 @@ abstract class TutorialHost {
   void typeCommand(String alias);
 
   // 1.6.0 UI: the AI chapter (SIT-23) and the help chapter
-  /// The AI assistant is on the screen (its docked panel) or was opened in
-  /// the tutorial's tab (its sheet or dialog).
+  /// The AI assistant is on the screen: its docked panel, its sheet or its
+  /// dialog.
   bool get assistantShown => false;
 
   /// Opens the AI assistant with [prompt] written in its box: nothing is
