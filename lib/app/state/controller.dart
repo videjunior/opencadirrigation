@@ -661,8 +661,21 @@ class ProjectController extends ChangeNotifier {
   /// Number of actions applied (position of the current state).
   int get historyIndex => _undo.length;
 
+  /// Called before the history changes — a new undo step, an undo, a redo,
+  /// a jump in the history, a settings dialog opening — so that whoever is
+  /// grouping steps of their own meanwhile (the AI assistant's turn) can
+  /// close the group first: the user's step then stays apart from theirs.
+  final List<void Function()> beforeHistoryChange = [];
+
+  void _beforeHistory() {
+    for (final f in [...beforeHistoryChange]) {
+      f();
+    }
+  }
+
   /// Goes back (or forward) to the state at [index] of [historyEntries].
   void jumpToHistory(int index) {
+    _beforeHistory();
     var guard = 0;
     while (_undo.length > index && _undo.isNotEmpty && guard++ < 500) {
       _undoOnce();
@@ -715,6 +728,7 @@ class ProjectController extends ChangeNotifier {
   }
 
   void _snapshot([String label = 'hist.edit']) {
+    _beforeHistory();
     _editSeq++;
     _undo.add(_capture(label));
     _trimUndo();
@@ -747,7 +761,10 @@ class ProjectController extends ChangeNotifier {
   /// Starts an in-place edit of the project settings (details, parameters,
   /// catalogue, layers, system flows) by a dialog; hand the returned token
   /// to [commitSettingsEdit] when the dialog closes, however it is closed.
-  SettingsEdit beginSettingsEdit([String label = 'hist.settings']) => SettingsEdit._(_capture(label), project);
+  SettingsEdit beginSettingsEdit([String label = 'hist.settings']) {
+    _beforeHistory();
+    return SettingsEdit._(_capture(label), project);
+  }
 
   /// Ends an edit started with [beginSettingsEdit]: when anything changed,
   /// the whole dialog session becomes one undo step (edits made through
@@ -832,6 +849,7 @@ class ProjectController extends ChangeNotifier {
   void undo() {
     track('undo');
     if (_undo.isNotEmpty && editAllowed()) {
+      _beforeHistory();
       _undoOnce();
       _scheduleAutoAnalysis();
     }
@@ -842,6 +860,7 @@ class ProjectController extends ChangeNotifier {
   void redo() {
     track('redo');
     if (_redo.isNotEmpty && editAllowed()) {
+      _beforeHistory();
       _redoOnce();
       _scheduleAutoAnalysis();
     }

@@ -173,6 +173,23 @@ bool editableTextFocused() {
   return ctx.widget is EditableText || ctx.findAncestorStateOfType<EditableTextState>() != null;
 }
 
+/// Marks a part of the screen that handles its keys itself (the AI
+/// assistant's cards waiting for the user: Enter applies, Escape skips):
+/// with the focus inside it, the shortcuts leave the keys to it, as they do
+/// for a text field.
+class OwnKeys extends StatelessWidget {
+  const OwnKeys({super.key, required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+/// True when the keyboard focus is inside an [OwnKeys].
+bool ownKeysFocused() {
+  final ctx = FocusManager.instance.primaryFocus?.context;
+  return ctx != null && (ctx.widget is OwnKeys || ctx.findAncestorWidgetOfExactType<OwnKeys>() != null);
+}
+
 class Hotkeys {
   Hotkeys(this.actions);
 
@@ -212,7 +229,7 @@ class Hotkeys {
     }
     final modal = actions.modalOpen;
     final menu = actions.menuOpen;
-    final typing = editableTextFocused();
+    final typing = editableTextFocused() || ownKeysFocused();
     // ---- application level: work from anywhere but a dialog
     if (_appKey(e, blocked: modal)) return true;
     if (modal && e.key == 'Escape' && actions.dismissModal()) return true;

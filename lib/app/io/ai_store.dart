@@ -47,16 +47,52 @@ abstract class ConversationStore {
 
   /// When each conversation kept was saved, by uid.
   Future<Map<String, DateTime>> list();
+
+  /// Claims the conversation of [uid] for this page: false while another
+  /// page of this browser holds it (the same project open in two browser
+  /// tabs, each of which would otherwise save over the other's). A page
+  /// claims a uid once (claiming it again says true); the claim lasts until
+  /// [release], or until the page closes.
+  Future<bool> claim(String uid);
+
+  /// Gives up the claim on [uid] (this page no longer keeps it).
+  void release(String uid);
+
+  /// Whether a page of this browser holds [uid] now (this one included).
+  Future<bool> claimed(String uid);
 }
 
 /// The conversations of this platform: IndexedDB in the browser, memory
 /// elsewhere.
 ConversationStore platformConversationStore() => impl.platformConversationStore();
 
-/// Conversations in memory: desktop builds and tests.
+/// Conversations in memory: desktop builds and tests. [pages] holds the
+/// claims of every "page" sharing it (tests give two stores one set to play
+/// two browser tabs).
 class MemoryConversationStore implements ConversationStore {
+  MemoryConversationStore({Set<String>? pages, Map<String, StoredConversation>? kept}) : _pages = pages ?? {}, _kept = kept ?? {};
+  final Set<String> _pages;
+  final Set<String> _mine = {};
+
+  @override
+  Future<bool> claim(String uid) async {
+    if (_mine.contains(uid)) return true;
+    if (_pages.contains(uid)) return false;
+    _pages.add(uid);
+    _mine.add(uid);
+    return true;
+  }
+
+  @override
+  void release(String uid) {
+    if (_mine.remove(uid)) _pages.remove(uid);
+  }
+
+  @override
+  Future<bool> claimed(String uid) async => _pages.contains(uid);
+
   /// Oldest saved first (a conversation saved again moves to the end).
-  final Map<String, StoredConversation> _kept = {};
+  final Map<String, StoredConversation> _kept;
 
   @override
   Future<bool> save(String uid, String json) async {
@@ -72,6 +108,9 @@ class MemoryConversationStore implements ConversationStore {
 
   @override
   Future<StoredConversation?> load(String uid) async => _kept[uid];
+
+  /// What is kept for [uid] now (tests read it in the middle of a turn).
+  StoredConversation? debugKept(String uid) => _kept[uid];
 
   @override
   Future<void> delete(String uid) async => _kept.remove(uid);

@@ -160,7 +160,10 @@ void main() {
     await drive(tester, () => !ai().busy && claude.calls == 1);
     ai().model = AiModel.sonnet55;
     await tester.pump();
-    expect(ai().items.where((i) => i.kind == AiItemKind.notice), isEmpty);
+    // the conversation goes on, and the user is told what the switch costs: no cache, no earlier reasoning
+    final notice = ai().items.where((i) => i.kind == AiItemKind.notice).single;
+    expect(notice.text, contains('Claude Sonnet 5.5 goes on with the conversation, but reads all of it again without the cache'));
+    expect(notice.text, contains('US\$'));
     await send(tester, 'Two');
     await drive(tester, () => !ai().busy && claude.calls == 2);
     expect((claude.bodies[1]['messages'] as List).length, 3, reason: 'the conversation goes on');

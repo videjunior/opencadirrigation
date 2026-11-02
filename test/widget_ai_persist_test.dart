@@ -478,6 +478,8 @@ void main() {
     final t = await tab();
     expect(t.project.meta.uid, isNot(uid));
     AiAssistant.resumePristine(t);
+    // once no other tab of the browser is found holding it
+    await tester.pump();
     expect(t.project.meta.uid, uid);
     final b = AiAssistant.of(t);
     await tester.pump();
@@ -492,10 +494,12 @@ void main() {
     t.store.save('kept-uid', 'Farm', t.saveJson(), kind: 'autosave');
     final u = await tab();
     AiAssistant.resumePristine(u);
+    await tester.pump();
     expect(u.project.meta.uid, isNot('kept-uid'));
     setPref(AiAssistant.pristinePref, uid);
     u.addEntity(TextEntity(id: 't2', position: Pt.zero, text: 'Well'));
     AiAssistant.resumePristine(u);
+    await tester.pump();
     expect(u.project.meta.uid, isNot(uid));
     removePref(AiAssistant.pristinePref);
   });

@@ -22,6 +22,7 @@ import '../../core/model/terrain.dart';
 import '../../core/units.dart';
 import '../state/controller.dart';
 import 'agent_tools.dart';
+import 'ops_cad_common.dart' show cadBindSelected;
 
 // ---------------------------------------------------------------- entity format
 
@@ -913,9 +914,10 @@ List<AgentTool> editTools(AgentToolbox b) {
       name: 'delete_entities',
       effect: ToolEffect.write,
       description:
-          'Deletes items in one undo step; deleted valves and pivots also leave the system flows. Deleting more than ${b.largeDelete} items at once is always confirmed by the user, whatever the mode. Items on locked layers are refused (nothing is deleted then). The design results are discarded. Returns the count by kind.',
+          'Deletes items in one undo step; deleted valves and pivots also leave the system flows. Deleting more than ${b.largeDelete} items in a task (all its deletions counted together, by any tool) is always confirmed by the user, whatever the mode. Items on locked layers are refused (nothing is deleted then). The design results are discarded. Returns the count by kind.',
       inputSchema: obj({'ids': arr(str(), 'Ids or names of the items, at most 5000.', 5000)}, required: ['ids']),
-      confirm: (i) => ((i['ids'] as List?)?.length ?? 0) > b.largeDelete,
+      // counted over the task: five calls of 20 are confirmed like one of 100
+      confirm: (i) => b.removedThisTask + ((i['ids'] as List?)?.length ?? 0) > b.largeDelete,
       summary: (i) {
         try {
           final es = b.findAll([for (final x in i['ids'] as List) '$x']);
@@ -972,6 +974,8 @@ List<AgentTool> editTools(AgentToolbox b) {
         required: ['operation'],
       ),
       summary: (i) => t('ai.do.transform', {'op': '${i['operation']}', 'n': '${i['selected'] == true ? c.selection.length : ((i['ids'] as List?)?.length ?? 0)}'}),
+      // the selection as ids when the call is planned: what the card names is what moves
+      binder: (i) => cadBindSelected(b, i),
       handler: (i) async {
         final a = ToolArgs(i);
         final selected = a.flag('selected') ?? false;

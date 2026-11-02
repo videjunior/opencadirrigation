@@ -19,3 +19,5 @@ void removePref(String key) {
     web.window.localStorage.removeItem('opencadirrigation.$key');
   } catch (_) {}
 }
+
+Map<String, String> debugPrefs() => const {};
