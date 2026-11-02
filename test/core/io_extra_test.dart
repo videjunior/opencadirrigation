@@ -213,6 +213,18 @@ void main() {
       expect(s.headers.first, '', reason: 'no shared strings part');
     });
 
+    test('the phonetic reading of a Japanese workbook stays out of the text (<rPh>)', () {
+      final bytes = zip({
+        'xl/sharedStrings.xml':
+            '<sst><si><t>配管</t><rPh sb="0" eb="2"><t>ハイカン</t></rPh><phoneticPr fontId="1"/></si>'
+            '<si><r><t>塩ビ</t></r><r><t>管</t></r><rPh sb="0" eb="3"><t>エンビカン</t></rPh></si></sst>',
+        'xl/worksheets/sheet1.xml':
+            '<worksheet><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c>'
+            '<c r="C1" t="inlineStr"><is><t>弁</t><rPh sb="0" eb="1"><t>ベン</t></rPh></is></c></row></sheetData></worksheet>',
+      });
+      expect(XlsxReader.read(bytes).single.headers, ['配管', '塩ビ管', '弁']);
+    });
+
     test('sheet names are cleaned, cut to 31 characters and made unique', () {
       final long = 'A' * 40;
       final bytes = XlsxWriter.write([

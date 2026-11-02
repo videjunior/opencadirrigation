@@ -156,6 +156,15 @@ ${[for (var i = 1; i <= sheets.length; i++) '<Relationship Id="rId$i" Type="http
 /// Minimal XLSX reader: worksheets with shared, inline or numeric cells
 /// (what spreadsheet programs write for a price list). Formulas keep their
 /// cached value.
+/// The text of a shared or inline string (`<si>`, `<is>`): its own `<t>` or
+/// those of its rich-text runs `<r>`, without the phonetic reading of
+/// `<rPh>` (Japanese workbooks keep the furigana there).
+String _stringText(XmlElement e) => [
+  for (final t in e.findElements('t')) t.innerText,
+  for (final r in e.findElements('r'))
+    for (final t in r.findElements('t')) t.innerText,
+].join();
+
 class XlsxReader {
   /// Every worksheet, first row as headers and the rest as rows.
   static List<XlsxSheet> read(Uint8List bytes) {
@@ -174,7 +183,7 @@ class XlsxReader {
     if (ss != null) {
       final doc = XmlDocument.parse(ss);
       for (final si in doc.findAllElements('si')) {
-        shared.add(si.findAllElements('t').map((t) => t.innerText).join());
+        shared.add(_stringText(si));
       }
     }
     // sheet names → part names
@@ -231,7 +240,7 @@ class XlsxReader {
             final i = int.tryParse(c.findElements('v').firstOrNull?.innerText ?? '');
             value = i != null && i < shared.length ? shared[i] : '';
           } else if (type == 'inlineStr') {
-            value = c.findAllElements('t').map((t) => t.innerText).join();
+            value = [for (final e in c.findElements('is')) _stringText(e)].join();
           } else if (type == 'str' || type == 'b') {
             value = c.findElements('v').firstOrNull?.innerText ?? '';
           } else {
