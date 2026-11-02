@@ -60,7 +60,13 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
             dense: true,
             title: Text('${pack.brand}  ·  ${t('cat.packItems', {'n': '${pack.itemCount}'})}$origin', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
             subtitle: Text(
-              [if (pack.description.isNotEmpty) pack.description, '$prices$dated', if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}'].join('\n'),
+              [
+                if (pack.description.isNotEmpty) pack.description,
+                '$prices$dated',
+                // 1.6.0 MOD: where the reference prices come from, and their date
+                if (pack.meta.pricesSource.isNotEmpty) t('cat.packPrices', {'d': pack.meta.pricesDate.isEmpty ? '-' : pack.meta.pricesDate, 's': pack.meta.pricesSource}),
+                if (pack.meta.sources.isNotEmpty) '${t('cat.packSources')}: ${pack.meta.sources.join(' · ')}',
+              ].join('\n'),
               style: TextStyle(fontSize: 11, color: Cad.fg60),
             ),
             isThreeLine: true,

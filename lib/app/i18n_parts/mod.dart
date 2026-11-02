@@ -203,4 +203,6 @@ const _mod = <String, (String, String, String)>{
     'Values in the units of the project (the catalogue keeps mm, m and prices per metre); the exported CSV too, with the unit in the name of each column, and the import reads such columns ("dn_in", "rating_psi", "cost_per_ft", "points_gpm_ft"). Emitter flows stay in L/h.',
     'Valores en las unidades del proyecto (el catálogo guarda mm, m y precio por metro); el CSV exportado también, con la unidad en el nombre de cada columna, y la importación lee columnas así ("dn_in", "rating_psi", "cost_per_ft", "points_gpm_ft"). Los caudales de los emisores quedan en L/h.',
   ),
+  // ---- reference prices of a catalogue pack (PRD-07)
+  'cat.packPrices': ('Preços de referência de {d}: {s}', 'Reference prices of {d}: {s}', 'Precios de referencia del {d}: {s}'),
 };

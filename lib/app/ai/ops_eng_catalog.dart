@@ -36,7 +36,7 @@ dynamic _item(Catalog cat, String kind, String id) {
 }
 
 String _packLine(CatalogPack p, Catalog cat) =>
-    '${p.id} | ${p.brand} | ${p.itemCount} items | ${p.hasPrices ? 'priced (${p.meta.currency.isEmpty ? '?' : p.meta.currency})' : 'unpriced'} | ${p.meta.updated.isEmpty ? '-' : p.meta.updated} | ${p.isMergedInto(cat) ? 'in the project' : 'not added'}${p.origin.isEmpty ? '' : ' | from ${p.origin}'}${p.description.isEmpty ? '' : ' | ${AgentToolbox.short(p.description, 120)}'}${p.meta.sources.isEmpty ? '' : ' | sources: ${p.meta.sources.take(3).join(' · ')}'}';
+    '${p.id} | ${p.brand} | ${p.itemCount} items | ${p.hasPrices ? 'priced (${p.meta.currency.isEmpty ? '?' : p.meta.currency}${p.meta.pricesDate.isEmpty ? '' : ', reference prices of ${p.meta.pricesDate}'})' : 'unpriced'} | ${p.meta.updated.isEmpty ? '-' : p.meta.updated} | ${p.isMergedInto(cat) ? 'in the project' : 'not added'}${p.origin.isEmpty ? '' : ' | from ${p.origin}'}${p.description.isEmpty ? '' : ' | ${AgentToolbox.short(p.description, 120)}'}${p.meta.sources.isEmpty ? '' : ' | sources: ${p.meta.sources.take(3).join(' · ')}'}';
 
 List<AgentTool> catalogOperations(AgentToolbox b) {
   final c = b.c;
