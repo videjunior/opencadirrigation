@@ -511,7 +511,14 @@ List<AgentTool> designTools(AgentToolbox b) {
           final p = b.p;
           final out = <Entity>[
             ...layout.toOutlets(p, zoneName: groups.isEmpty ? null : (k) => names[zoneOf[k] ?? 0]),
-            ...?routing?.toEntities(p, zoneNames: names, valveSpecIds: [for (var z = 0; z < groups.length; z++) pickZoneValve(p.catalog, flowOf(z))?.id]),
+            ...?routing?.toEntities(
+              p,
+              zoneNames: names,
+              valveSpecIds: [for (var z = 0; z < groups.length; z++) pickZoneValve(p.catalog, flowOf(z))?.id],
+              // buried as the proposal's default depths say (AUT-25), as the LAYOUT dialog does
+              depth: autoZonePipeDepth(p),
+              mainlineDepth: autoMainlineDepth(p),
+            ),
           ];
           p.entities.addAll(out);
           return out;
@@ -730,6 +737,7 @@ List<AgentTool> designTools(AgentToolbox b) {
                 submainLabel: t('name.submain'),
                 stubLabel: t('name.stub'),
                 lateralPrefix: t('name.lateral'),
+                submainDepth: autoZonePipeDepth(p),
               ),
             );
             out.addAll(res.all);
@@ -737,7 +745,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           }
           if (mainline && valves.isNotEmpty) {
             for (final m in routeMainline(poc, valves, boundary: field)) {
-              out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline));
+              out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline, depth: autoMainlineDepth(p)));
             }
           }
           p.entities.addAll(out);
