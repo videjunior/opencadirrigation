@@ -238,9 +238,27 @@ void main() {
     });
 
     test('a submersible pump sits at the water level: no suction, same duty at the valve', () {
-      final surface = series(pump: 'pump_big', waterLevel: -12);
-      final sub = series(pump: 'pump_big', waterLevel: -12);
-      sub.catalog.pump('pump_big')!.submersible = true;
+      Project well({required bool submersible, String? mainSpec}) {
+        final p = series(pump: 'pump_big', waterLevel: -12);
+        p.catalog.pump('pump_big')!.submersible = submersible;
+        if (mainSpec != null) {
+          (p.byId('main') as PipeEntity)
+            ..computerSized = false
+            ..pipeSpecId = mainSpec;
+        }
+        return p;
+      }
+
+      // sized by the program, the main holds its pressure plus the surge of
+      // a closure (1.6.0 MOT): the riser of the submersible pump starts 12 m
+      // lower and holds 12 m more, which PVC PN 80 no longer takes
+      final sizedA = Designer(well(submersible: false)).designAll().systemFlows.single;
+      final sizedB = Designer(well(submersible: true)).designAll().systemFlows.single;
+      final cat = Catalog.defaultCatalog();
+      expect(cat.pipe(sizedB.pipes.first.pipeSpecId)!.pressureRatingM, greaterThan(cat.pipe(sizedA.pipes.first.pipeSpecId)!.pressureRatingM));
+      // with the same main in both the duty does not depend on where the pump is installed
+      final surface = well(submersible: false, mainSpec: 'pead110');
+      final sub = well(submersible: true, mainSpec: 'pead110');
       final m = NetworkBuilder(sub).build();
       final link = m.links.firstWhere((l) => l.kind == GLinkKind.pump);
       expect(m.nodes[link.from]!.elevation, closeTo(-12, 1e-9));
