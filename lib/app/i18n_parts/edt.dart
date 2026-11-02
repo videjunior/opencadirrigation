@@ -59,8 +59,9 @@ const _edt = <String, (String, String, String)>{
   'sel.onLayer': ('Selecionar os itens desta camada', 'Select the items of this layer', 'Seleccionar los elementos de esta capa'),
   'sel.layerHidden': ('A camada está oculta', 'The layer is hidden', 'La capa está oculta'),
   'sel.lassoCrossing': ('Pegar também o que o laço cruza', 'Also take what the lasso crosses', 'Tomar también lo que cruza el lazo'),
-  'tool.lasso': ('Selecionar por laço', 'Lasso selection', 'Selección por lazo'),
-  'tool.fence': ('Selecionar por cerca', 'Fence selection', 'Selección por cerco'),
+  // (the first word names the tool in the phone's tool bar)
+  'tool.lasso': ('Laço de seleção', 'Lasso selection', 'Lazo de selección'),
+  'tool.fence': ('Cerca de seleção', 'Fence selection', 'Cerco de selección'),
   'hint.lasso': (
     'Arraste em volta dos itens, ou clique nos vértices e Enter; Shift soma à seleção',
     'Drag around the items, or click the vertices and press Enter; Shift adds to the selection',
