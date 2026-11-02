@@ -15,6 +15,7 @@ import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/more_dialogs.dart';
 import 'package:opencadirrigation/core/io/project_export.dart' show DrawingFormat, ReportFormat;
+import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/currency.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
@@ -270,15 +271,35 @@ void main() {
     await settle(tester, 2);
     expect(getPref('catalog.default'), isNotNull);
     expect(c.lastMessage, 'Catálogo salvo como padrão para novos projetos');
-    await tester.tap(find.text('Restaurar padrão'));
+    // the factory catalogue comes back after a confirmation that says what
+    // leaves the catalogue; the default the user saved stays (UI-04)
+    await tester.tap(find.byKey(const Key('cat_factory')));
     await settle(tester, 2);
-    if (find.byType(AlertDialog).evaluate().length > 1) {
-      await tester.tap(find.text('OK').last);
-      await settle(tester, 2);
-    }
+    expect(find.byKey(const Key('cat_replace_text')), findsOneWidget);
+    expect(find.textContaining('5 itens que o novo catálogo não tem'), findsOneWidget, reason: 'one item was added on each of five tabs');
+    await tester.tap(find.byKey(const Key('cat_replace_ok')));
+    await settle(tester, 2);
+    expect(
+      cat.outlets.length,
+      Catalog.defaultCatalog(lang: 'pt', currency: c.project.params.currencyCode).outlets.length,
+      reason: 'restored',
+    );
+    expect(getPref('catalog.default'), isNotNull, reason: 'restoring the factory catalogue keeps the saved default');
+    expect(c.lastMessage, 'Catálogo de fábrica restaurado neste projeto');
+    // the saved default loads back, and forgetting it is a choice of its own
+    await tester.tap(find.byKey(const Key('cat_load_default')));
+    await settle(tester, 2);
+    await tester.tap(find.byKey(const Key('cat_replace_ok')));
+    await settle(tester, 2);
+    expect(cat.outlets.length, counts['Emissores']!());
+    expect(c.lastMessage, 'Seu catálogo padrão foi carregado neste projeto');
+    await tester.tap(find.byKey(const Key('cat_forget_default')));
+    await settle(tester, 2);
+    await tester.tap(find.byKey(const Key('cat_forget_ok')));
+    await settle(tester, 2);
     expect(getPref('catalog.default'), isNull);
-    expect(cat.outlets.length, counts['Emissores']!(), reason: 'restored');
-    expect(c.lastMessage, 'Catálogo padrão restaurado');
+    expect(find.byKey(const Key('cat_forget_default')), findsNothing);
+    expect(c.lastMessage, 'Padrão esquecido: novos projetos começam com o catálogo de fábrica');
     removePref('catalog.default');
     removePref('catalog.default.currency');
   });

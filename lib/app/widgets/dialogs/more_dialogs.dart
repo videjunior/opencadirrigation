@@ -16,6 +16,7 @@ import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../../core/units.dart';
 import '../../io/file_io.dart';
+import '../../io/prefs.dart';
 import '../../io/project_store.dart';
 import '../../state/controller.dart';
 import '../../state/workspace.dart';
@@ -551,6 +552,73 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
         );
         Widget dupBtn(VoidCallback dup) => IconButton(icon: const Icon(Icons.copy_outlined, size: 15), tooltip: t('cat.duplicate'), onPressed: () => setState(dup));
 
+        List<String> ids(Catalog k) => [
+          for (final x in k.pipes) x.id,
+          for (final x in k.outlets) x.id,
+          for (final x in k.tapes) x.id,
+          for (final x in k.valves) x.id,
+          for (final x in k.pumps) x.id,
+          for (final x in k.fittings) x.id,
+          for (final x in k.wires) x.id,
+        ];
+
+        /// Asks before the project catalogue is replaced by [d], saying what
+        /// leaves it: the items [d] does not have and how many objects of
+        /// the drawing use them (they keep the id and lose the model).
+        Future<bool> confirmReplace(String title, Catalog d) async {
+          final keep = ids(d).toSet();
+          final lost = [
+            for (final id in ids(cat))
+              if (!keep.contains(id)) id,
+          ];
+          final inUse = lost.where((id) => (used[id] ?? 0) > 0).toList();
+          final objects = inUse.fold<int>(0, (n, id) => n + used[id]!);
+          final ok = await showDialog<bool>(
+            context: ctx,
+            builder: (dc) => AlertDialog(
+              title: Text(title, style: const TextStyle(fontSize: 15)),
+              content: Text(
+                [
+                  lost.isEmpty ? t('cat.replaceNoLoss') : t('cat.replaceLoss', {'n': '${lost.length}'}),
+                  if (inUse.isNotEmpty) t('cat.replaceInUse', {'n': '${inUse.length}', 'm': '$objects'}),
+                  t('cat.replaceUndo'),
+                ].join('\n\n'),
+                key: const Key('cat_replace_text'),
+                style: const TextStyle(fontSize: 12),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dc, false), child: Text(t('cancel'))),
+                FilledButton(key: const Key('cat_replace_ok'), onPressed: () => Navigator.pop(dc, true), child: Text(t('cat.replace'))),
+              ],
+            ),
+          );
+          return ok == true;
+        }
+
+        void replaceWith(Catalog d) {
+          cat.pipes
+            ..clear()
+            ..addAll(d.pipes);
+          cat.outlets
+            ..clear()
+            ..addAll(d.outlets);
+          cat.tapes
+            ..clear()
+            ..addAll(d.tapes);
+          cat.valves
+            ..clear()
+            ..addAll(d.valves);
+          cat.pumps
+            ..clear()
+            ..addAll(d.pumps);
+          cat.fittings
+            ..clear()
+            ..addAll(d.fittings);
+          cat.wires
+            ..clear()
+            ..addAll(d.wires);
+        }
+
         void addItem() {
           setState(() {
             switch (tab) {
@@ -947,37 +1015,51 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                     },
                     child: Text(t('cat.setDefault')),
                   ),
+                  // three separate choices: the factory catalogue in this project, the
+                  // user's saved default in this project, forgetting that default
                   OutlinedButton(
-                    onPressed: () {
+                    key: const Key('cat_factory'),
+                    onPressed: () async {
                       final d = Catalog.defaultCatalog(lang: c.lang, currency: c.project.params.currencyCode);
-                      setState(() {
-                        cat.pipes
-                          ..clear()
-                          ..addAll(d.pipes);
-                        cat.outlets
-                          ..clear()
-                          ..addAll(d.outlets);
-                        cat.tapes
-                          ..clear()
-                          ..addAll(d.tapes);
-                        cat.valves
-                          ..clear()
-                          ..addAll(d.valves);
-                        cat.pumps
-                          ..clear()
-                          ..addAll(d.pumps);
-                        cat.fittings
-                          ..clear()
-                          ..addAll(d.fittings);
-                        cat.wires
-                          ..clear()
-                          ..addAll(d.wires);
-                      });
-                      c.clearDefaultCatalog();
-                      c.notify(t('msg.catalogReset'));
+                      if (!await confirmReplace(t('cat.factory'), d)) return;
+                      setState(() => replaceWith(d));
+                      c.notify(t('msg.catalogFactory'));
                     },
-                    child: Text(t('cat.reset')),
+                    child: Text(t('cat.factory')),
                   ),
+                  if (hasSavedDefaultCatalog()) ...[
+                    OutlinedButton(
+                      key: const Key('cat_load_default'),
+                      onPressed: () async {
+                        final d = c.defaultCatalog();
+                        if (!await confirmReplace(t('cat.loadDefault'), d)) return;
+                        setState(() => replaceWith(d));
+                        c.notify(t('msg.catalogDefaultLoaded'));
+                      },
+                      child: Text(t('cat.loadDefault')),
+                    ),
+                    OutlinedButton(
+                      key: const Key('cat_forget_default'),
+                      onPressed: () async {
+                        final ok = await showDialog<bool>(
+                          context: ctx,
+                          builder: (d) => AlertDialog(
+                            title: Text(t('cat.forgetDefault'), style: const TextStyle(fontSize: 15)),
+                            content: Text(t('cat.forgetConfirm'), style: const TextStyle(fontSize: 12)),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(d, false), child: Text(t('cancel'))),
+                              FilledButton(key: const Key('cat_forget_ok'), onPressed: () => Navigator.pop(d, true), child: Text(t('cat.forget'))),
+                            ],
+                          ),
+                        );
+                        if (ok != true) return;
+                        c.clearDefaultCatalog();
+                        setState(() {});
+                        c.notify(t('msg.catalogDefaultForgotten'));
+                      },
+                      child: Text(t('cat.forgetDefault')),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 6),
@@ -1227,3 +1309,7 @@ Widget _num(double v, ValueChanged<double> onChanged, {int decimals = 2}) => Siz
   width: 80,
   child: NumField(label: '', value: v, decimals: decimals, onChanged: onChanged),
 );
+
+/// Whether the user saved a catalogue as the default of new projects (in
+/// this browser).
+bool hasSavedDefaultCatalog() => getPref('catalog.default') != null;
