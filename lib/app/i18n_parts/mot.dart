@@ -69,4 +69,36 @@ const _mot = <String, (String, String, String)>{
   ),
   // ---- surge screening over the water path (MOT-10)
   'rep.surgePath': ('Caminho da onda (triagem; ver estudo de transientes)', 'Wave path (screening; see the transient study)', 'Camino de la onda (estimación; ver el estudio de transitorios)'),
+  // ---- pipe below the atmosphere (MOT-12)
+  'warn.pressure_below_atmospheric': (
+    'Pressão abaixo da atmosférica no tubo (linha piezométrica abaixo do tubo)',
+    'Pressure below the atmosphere in the pipe (hydraulic grade line below the pipe)',
+    'Presión por debajo de la atmosférica en la tubería (línea piezométrica por debajo del tubo)',
+  ),
+  'adv.pressure_below_atmospheric.why': (
+    'Num ponto alto do traçado a linha de energia passa abaixo do tubo: a água corre em sifão, com vácuo. O ar sai da água e se acumula, a vazão cai ou para, e um tubo de parede fina (PE, PVC de classe baixa) pode amassar.',
+    'At a high point of the route the hydraulic grade line runs below the pipe: the water flows as a siphon, under vacuum. Air comes out of the water and gathers, the flow falls or stops, and a thin-walled pipe (PE, low-class PVC) may collapse.',
+    'En un punto alto del trazado la línea de energía pasa por debajo del tubo: el agua corre en sifón, con vacío. El aire sale del agua y se acumula, el caudal cae o se detiene, y una tubería de pared delgada (PE, PVC de clase baja) puede aplastarse.',
+  ),
+  'adv.pressure_below_atmospheric.how': (
+    'Dê mais pressão na fonte (ou uma bomba antes do ponto alto), desvie o traçado do morro ou aumente o tubo antes dele para perder menos carga; ponha uma ventosa no ponto alto.',
+    'Give the supply more pressure (or a pump before the high point), route the line around the hill or enlarge the pipe before it to lose less head; fit an air valve at the high point.',
+    'Dé más presión en la fuente (o una bomba antes del punto alto), desvíe el trazado del cerro o agrande la tubería antes de él para perder menos carga; ponga una ventosa en el punto alto.',
+  ),
+  // ---- surplus at a valve that does not regulate (MOT-13)
+  'warn.valve_pressure_excess': (
+    'Pressão de sobra numa válvula de setor que não regula',
+    'Surplus pressure at a zone valve that does not regulate',
+    'Presión de sobra en una válvula de sector que no regula',
+  ),
+  'adv.valve_pressure_excess.why': (
+    'A linha principal entrega na válvula bem mais pressão que o setor precisa (mais de 5 m e de 20 %). Uma válvula solenoide comum não segura a pressão: o setor trabalha acima da pressão de projeto, os emissores dão mais vazão, e a vazão da linha e a da bomba mudam.',
+    'The mainline delivers far more pressure at the valve than the zone needs (more than 5 m and 20 %). A plain solenoid valve does not hold the pressure: the zone runs above its design pressure, the emitters give more flow, and so the flow of the line and of the pump change.',
+    'La línea principal entrega en la válvula mucha más presión que la que el sector necesita (más de 5 m y del 20 %). Una válvula solenoide común no retiene la presión: el sector trabaja por encima de su presión de diseño, los emisores dan más caudal, y el caudal de la línea y el de la bomba cambian.',
+  ),
+  'adv.valve_pressure_excess.how': (
+    'Use uma válvula reguladora de pressão (com piloto redutor) ou informe a pressão de saída na válvula, ou ponha um regulador na entrada do setor.',
+    'Use a pressure regulating valve (with a reducing pilot) or set the outlet pressure of the valve, or fit a regulator at the inlet of the zone.',
+    'Use una válvula reguladora de presión (con piloto reductor) o indique la presión de salida de la válvula, o ponga un regulador a la entrada del sector.',
+  ),
 };

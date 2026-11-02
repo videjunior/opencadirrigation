@@ -270,7 +270,10 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           RNum(u.flowFromSi(v.flow), 1),
           RNum(u.pressureFromHead(v.availableHead), 1),
           RNum(u.pressureFromHead(v.requiredHead), 1),
-          v.deficit > 0.01 ? '${t('rep.deficit')} ${fmt(u.pressureFromHead(v.deficit), 1)}' : t('rep.ok'),
+          v.deficit > 0.01
+              ? '${t('rep.deficit')} ${fmt(u.pressureFromHead(v.deficit), 1)}'
+              // 1.6.0 MOT: a surplus a plain valve passes on to its zone
+              : (v.excessive ? '${t('rep.surplus')} ${fmt(u.pressureFromHead(v.surplus), 1)}' : t('rep.ok')),
           '',
         ]);
         mainWarn.add(v.deficit > 0.01);

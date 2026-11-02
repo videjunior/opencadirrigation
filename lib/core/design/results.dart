@@ -425,18 +425,37 @@ class SupplyDuty {
 }
 
 class ValveDuty {
-  ValveDuty({required this.valveId, required this.zoneName, required this.flow, required this.availableHead, required this.requiredHead, required this.p});
+  ValveDuty({required this.valveId, required this.zoneName, required this.flow, required this.availableHead, required this.requiredHead, required this.p, this.regulates = true});
   final String valveId;
   final String zoneName;
   final double flow;
   final double availableHead;
   final double requiredHead;
   final Pt p;
+
+  /// Whether the valve holds its outlet pressure (a set outlet pressure or
+  /// a pressure reducing model); a plain valve passes a surplus on.
+  final bool regulates;
   double get deficit => requiredHead - availableHead;
 
-  Map<String, dynamic> toJson() => {'id': valveId, 'name': zoneName, 'q': flow, 'h': availableHead, 'hreq': requiredHead, 'p': _pt(p)};
-  static ValveDuty fromJson(Map<String, dynamic> j) =>
-      ValveDuty(valveId: j['id'] as String, zoneName: j['name'] as String? ?? '', flow: _d(j, 'q'), availableHead: _d(j, 'h'), requiredHead: _d(j, 'hreq'), p: _p(j['p']));
+  /// Pressure (m) the valve gets above what its zone needs.
+  double get surplus => availableHead - requiredHead;
+
+  /// A surplus a valve that does not regulate passes on to its zone, the
+  /// larger of 5 m and a fifth of the need: the zone then runs above its
+  /// design pressure and flow (`valve_pressure_excess`).
+  bool get excessive => !regulates && surplus > math.max(5.0, 0.2 * requiredHead);
+
+  Map<String, dynamic> toJson() => {'id': valveId, 'name': zoneName, 'q': flow, 'h': availableHead, 'hreq': requiredHead, 'p': _pt(p), if (!regulates) 'reg': false};
+  static ValveDuty fromJson(Map<String, dynamic> j) => ValveDuty(
+    valveId: j['id'] as String,
+    zoneName: j['name'] as String? ?? '',
+    flow: _d(j, 'q'),
+    availableHead: _d(j, 'h'),
+    requiredHead: _d(j, 'hreq'),
+    p: _p(j['p']),
+    regulates: j['reg'] as bool? ?? true,
+  );
 }
 
 /// A number that may not be finite as JSON (null), as [encodeJson] writes

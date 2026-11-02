@@ -300,6 +300,8 @@ const adviceCodes = [
   'pump_below_min_flow',
   'lp_iteration_limit',
   'zone_slope_exceeds_window',
+  'pressure_below_atmospheric',
+  'valve_pressure_excess',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -331,6 +333,8 @@ AdviceLevel _level(String code) => switch (code) {
   // 1.6.0 MOT
   'zone_pressure_unreachable' || 'zone_slope_exceeds_window' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
+  // 1.6.0 MOT: the flow control of the valve can throttle it on site
+  'valve_pressure_excess' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 

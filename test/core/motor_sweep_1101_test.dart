@@ -10,6 +10,7 @@ import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/lp.dart';
 import 'package:opencadirrigation/core/design/lp_sizing.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
+import 'package:opencadirrigation/core/design/results.dart';
 import 'package:opencadirrigation/core/hydraulics/network.dart';
 import 'package:opencadirrigation/core/hydraulics/water_hammer.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
@@ -336,5 +337,77 @@ void main() {
     // the first piece, next to the tank, gets the share of its distance
     final first = r.surge.firstWhere((x) => x.entityId == 'm0');
     expect(first.surgeHead, lessThan(last.surgeHead));
+  });
+
+  test('MOT-11: the operating range of a pump scales with its speed; below its minimum flow; boosters of a zone too', () {
+    const h = m3sPerM3h;
+    PumpSpec spec({double minFlow = 0, double maxFlow = 20}) =>
+        PumpSpec(id: 'p60', name: '60 Hz', points: [(0.0, 60.0), (10 * h, 55.0), (20 * h, 45.0), (30 * h, 30.0)], ratedHz: 60, minFlow: minFlow * h, maxFlow: maxFlow * h, powerKw: 5.5);
+    List<String> flowWarnings(double mainsHz, PumpSpec s) {
+      final (p, _, supply, _) = _zone();
+      p.params.mainsHz = mainsHz;
+      p.catalog.pumps.add(s);
+      p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: true, designHeadM: 0, waterLevelOffsetM: 1.5));
+      p.entities.add(PumpEntity(id: 'pump', position: Pt(supply.x + 5, supply.y), pumpSpecId: s.id, name: 'Pump'));
+      final f = Designer(p).designAll().systemFlows.single;
+      expect(f.totalFlow / h, inInclusiveRange(17, 20.5));
+      return f.warnings;
+    }
+
+    // 18.7 m³/h: within the 20 m³/h of the 60 Hz curve, beyond the 16.7 m³/h
+    // the motor gives on 50 Hz mains (Q ∝ n)
+    expect(flowWarnings(60, spec()), isNot(contains('pump_out_of_range:pump')));
+    expect(flowWarnings(50, spec()), contains('pump_out_of_range:pump'));
+    // never compared with the minimum flow of the catalogue
+    expect(flowWarnings(60, spec(minFlow: 25, maxFlow: 40)), contains('pump_below_min_flow:pump'));
+    expect(flowWarnings(60, spec(minFlow: 10, maxFlow: 40)), isNot(contains('pump_below_min_flow:pump')));
+    // a booster in the zone had only the suction check
+    final (p, _, supply, stub) = _zone(stub: 6);
+    p.catalog.pumps.add(spec(maxFlow: 5));
+    p.entities.add(PumpEntity(id: 'boost', position: (stub.points.first + stub.points.last) * 0.5, pumpSpecId: 'p60', scope: HydraulicScope.zone, name: 'Booster'));
+    p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: true));
+    final z = Designer(p).designAll().zones.values.single;
+    expect(z.devices.where((d) => d.entityId == 'boost'), isNotEmpty);
+    expect(z.warnings, contains('pump_out_of_range:boost'));
+  });
+
+  test('MOT-12: a mainline over a hill runs below the atmosphere and says so; a suction pipe does not', () {
+    final (p, valve, supply, _) = _zone();
+    final mid = (supply + valve.position) * 0.5;
+    p.entities.removeWhere((e) => e.id == 'main');
+    p.entities.add(PipeEntity(id: 'main', points: [supply, mid, valve.position], scope: HydraulicScope.mainline, name: 'Main', pipeSpecId: 'pvc100', computerSized: false));
+    for (final (at, z) in [(supply, 100.0), (mid, 112.0), (valve.position, 85.0), (const Pt(0, 0), 85.0), (const Pt(120, 45), 85.0), (const Pt(120, 0), 85.0), (const Pt(0, 45), 85.0)]) {
+      p.entities.add(SpotHeightEntity(id: p.newId(), position: at, elevation: z));
+    }
+    p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: false, designHeadM: 4, waterLevelOffsetM: 0));
+    final f = Designer(p).analyzeAll().systemFlows.single;
+    final top = f.pipes.where((x) => x.entityId == 'main').map((x) => math.min(x.pressureStart, x.pressureEnd)).reduce(math.min);
+    expect(top, lessThan(-5), reason: 'the line of heads passes 8 m below the hilltop');
+    expect(f.warnings, contains('pressure_below_atmospheric:main'));
+    // the suction pipe of a surface pump 5 m from a well with the water 6 m
+    // down: its negative pressure is the suction lift, checked as such
+    final (q, _, s2, _) = _zone();
+    q.entities.add(WaterSupplyEntity(id: 'well', position: s2, name: 'Well', calculatePressure: true, waterLevelOffsetM: -6));
+    q.entities.add(PumpEntity(id: 'pump', position: Pt(s2.x + 5, s2.y), pumpSpecId: 'pump_mid', name: 'Pump'));
+    final g = Designer(q).designAll().systemFlows.single;
+    expect(g.devices.firstWhere((d) => d.entityId == 'pump').upstreamPressure, lessThan(-5));
+    expect(g.warnings.where((w) => w.startsWith('pressure_below_atmospheric')), isEmpty);
+  });
+
+  test('MOT-13: a zone valve that does not regulate and gets far more than its zone needs is pointed out', () {
+    for (final regulated in [false, true]) {
+      final (p, valve, supply, _) = _zone();
+      if (regulated) valve.fixedDownstreamHeadM = 17;
+      p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: false, designHeadM: 50, waterLevelOffsetM: 0));
+      final r = Designer(p).designAll();
+      final f = r.systemFlows.single;
+      final duty = f.valves.single;
+      expect(duty.surplus, greaterThan(20), reason: '50 m at the tank, the zone needs about 18');
+      expect(duty.regulates, regulated);
+      expect(f.warnings.contains('valve_pressure_excess:${valve.id}'), !regulated);
+      final back = ValveDuty.fromJson(duty.toJson());
+      expect(back.regulates, regulated);
+      expect(back.excessive, duty.excessive);
+    }
   });
 }

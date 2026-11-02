@@ -907,6 +907,8 @@ class Designer {
           ),
         );
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
+        // a submain over a rise, its line of heads below the pipe
+        if (l.usage == PipeUsage.zone && math.min(ha - na.elevation, hb - nb.elevation) < _belowAtmosphere) warnings.add('pressure_below_atmospheric:${l.entityId}');
         final rating = tape?.pressureRatingM ?? (spec == null ? 0.0 : _rating(spec));
         if (rating > 0 && math.max(ha - na.elevation, hb - nb.elevation) > rating) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
@@ -1734,6 +1736,54 @@ class Designer {
     return -inletPressure > maxSuctionLift(elevation) + 1e-6;
   }
 
+  /// Pressure head (m) below which a pipe runs under vacuum (a margin below
+  /// the atmosphere for the rounding of a line at zero pressure).
+  static const _belowAtmosphere = -0.1;
+
+  /// Whether zone valve [vid] holds its downstream pressure (a set outlet
+  /// pressure, or a pressure reducing model).
+  bool _regulates(String vid) {
+    final v = project.byId(vid);
+    if (v is! ControlValveEntity) return true;
+    return v.fixedDownstreamHeadM != null || catalog.valve(v.valveSpecId)?.kind == ValveKind.prv;
+  }
+
+  NetworkModel? _suctionModel;
+  Set<String> _suctionOf = const {};
+
+  /// Mainline pipes on the suction side of a pump: from its inlet back to a
+  /// supply through no other device. Below the atmosphere there is the
+  /// suction lift of a surface pump, checked as such (a submersible one
+  /// stands at the water level).
+  Set<String> get _suctionLinks {
+    if (identical(_suctionModel, model)) return _suctionOf;
+    _suctionModel = model;
+    final out = <String>{};
+    for (final lid in model.mainlineLinks) {
+      final l = model.linkById(lid)!;
+      if (l.kind != GLinkKind.pump) continue;
+      final seen = <String>{l.from};
+      final queue = [l.from];
+      final pipes = <String>{};
+      var supply = false;
+      for (var i = 0; i < queue.length; i++) {
+        final n = model.nodes[queue[i]]!;
+        if (n.isSupply) {
+          supply = true;
+          continue;
+        }
+        for (final x in n.links) {
+          if (x.kind != GLinkKind.pipe || !model.mainlineLinks.contains(x.id)) continue;
+          pipes.add(x.id);
+          final o = x.other(n.id);
+          if (seen.add(o)) queue.add(o);
+        }
+      }
+      if (supply) out.addAll(pipes);
+    }
+    return _suctionOf = out;
+  }
+
   /// Elevation of the inlet of device link [l] (upstream node [up]): a
   /// surface pump drawn on its water supply stands on the ground there,
   /// above the water it lifts (the supply node lies at the water level, so
@@ -1854,9 +1904,22 @@ class Designer {
         warnings.add('valve_unreachable:$vid');
         continue;
       }
-      valves.add(ValveDuty(valveId: vid, zoneName: zoneName, flow: demand[vid]!, availableHead: nr.pressure, requiredHead: required[vid]!, p: model.nodes[nm]!.p));
+      final duty = ValveDuty(
+        valveId: vid,
+        zoneName: zoneName,
+        flow: demand[vid]!,
+        availableHead: nr.pressure,
+        requiredHead: required[vid]!,
+        p: model.nodes[nm]!.p,
+        regulates: pivot != null || _regulates(vid),
+      );
+      valves.add(duty);
       if (pivot != null) pivot.availableHead = nr.pressure;
       if (nr.pressure < required[vid]! - 0.01) warnings.add(pivot != null ? 'pivot_pressure_deficit:$vid' : 'valve_pressure_deficit:$vid');
+      // a valve that does not regulate passes the surplus on: the zone then
+      // runs above its design pressure and flow, and so do the line and the
+      // pumps (the analysis of the zone takes a valve that throttles)
+      if (duty.excessive) warnings.add('valve_pressure_excess:$vid');
     }
     final heads = _vihDuties(r, listed, warnings);
     final duties = <SupplyDuty>[];
@@ -1926,6 +1989,9 @@ class Designer {
         );
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         if (spec != null && spec.pressureRatingM > 0 && math.max(ha - na.elevation, hb - nb.elevation) > _rating(spec)) warnings.add('pressure_rating_exceeded:${l.entityId}');
+        // a mainline over a hill: siphon, air coming in, a thin wall
+        // collapsing; the suction pipe of a surface pump has its own check
+        if (math.min(ha - na.elevation, hb - nb.elevation) < _belowAtmosphere && !_suctionLinks.contains(lid)) warnings.add('pressure_below_atmospheric:${l.entityId}');
       } else {
         final inletZ = _inletElevation(l, na);
         devices.add(
