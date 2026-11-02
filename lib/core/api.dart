@@ -15,11 +15,14 @@
 /// Importing the individual libraries (`core/model/project.dart`,
 /// `core/design/designer.dart`, …) works as well and is what the app does.
 /// Left out here: the internals of the PDF text shaping (`io/fonts/*` except
-/// pdf_fonts.dart) and the sparse matrix solver behind the network solver.
+/// pdf_fonts.dart) and the sparse matrix solver behind the network solver
+/// (test/core/api_exports_test.dart keeps the list complete; the parts of a
+/// library come with it).
 library;
 
 export 'ai/agent_loop.dart';
 export 'ai/claude_api.dart';
+export 'ai/image_prep.dart';
 export 'ai/llm.dart';
 export 'ai/llm_formats.dart';
 export 'ai/openai_api.dart';
@@ -51,6 +54,7 @@ export 'design/lp.dart';
 export 'design/lp_sizing.dart';
 export 'design/management.dart';
 export 'design/mechanised.dart';
+export 'design/model_checks.dart';
 export 'design/network_builder.dart';
 export 'design/network_ops.dart';
 export 'design/on_demand.dart';
@@ -60,6 +64,7 @@ export 'design/pivot_fit.dart';
 export 'design/pivot_package.dart';
 export 'design/proposal.dart';
 export 'design/pump_selection.dart';
+export 'design/region_trace.dart';
 export 'design/report_tables.dart';
 export 'design/results.dart';
 export 'design/routing.dart';
@@ -125,6 +130,7 @@ export 'io/points_csv.dart';
 export 'io/project_export.dart';
 export 'io/share_link.dart';
 export 'io/sheet_canvas.dart';
+export 'io/sheet_check.dart';
 export 'io/sheet_set.dart';
 export 'io/shp.dart';
 export 'io/shp_writer.dart';
@@ -132,14 +138,18 @@ export 'io/svg.dart';
 export 'io/xlsx.dart';
 export 'model/blocks.dart';
 export 'model/catalog.dart';
+export 'model/catalog_check.dart';
 export 'model/catalog_packs.dart';
 export 'model/currency.dart';
 export 'model/entities.dart';
 export 'model/geometry.dart';
 export 'model/label_rules.dart';
+export 'model/paste.dart';
 export 'model/pivot_machine.dart';
 export 'model/project.dart';
 export 'model/proposal_settings.dart';
+export 'model/read_report.dart';
+export 'model/regional.dart';
 export 'model/scenario.dart';
 export 'model/site_climate.dart';
 export 'model/slope_map.dart';

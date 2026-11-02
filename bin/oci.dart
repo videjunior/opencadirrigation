@@ -5,6 +5,7 @@
 ///   dart run bin/oci.dart --help
 ///   dart run bin/oci.dart design examples/pt/garden.oci.json --lang pt --out designed.oci.json --report report.xlsx
 ///   dart run bin/oci.dart check project.oci.json && echo ok
+///   dart run bin/oci.dart validate project.oci.json
 ///   dart run bin/oci.dart export project.oci.json --format dxf --out project.dxf
 ///
 /// Besides lib/core it reads two plain-Dart files of lib/app that the design
@@ -20,6 +21,7 @@ import 'dart:typed_data';
 import 'package:opencadirrigation/app/i18n.dart';
 import 'package:opencadirrigation/app/version.dart' show appName, appVersionFull;
 import 'package:opencadirrigation/core/design/advisor.dart';
+import 'package:opencadirrigation/core/design/design_check.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/report_tables.dart';
 import 'package:opencadirrigation/core/design/results.dart';
@@ -30,6 +32,7 @@ import 'package:opencadirrigation/core/io/project_export.dart';
 import 'package:opencadirrigation/core/io/xlsx.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/project.dart';
+import 'package:opencadirrigation/core/model/read_report.dart';
 import 'package:opencadirrigation/core/units.dart';
 
 Future<void> main(List<String> args) async {
@@ -53,9 +56,9 @@ abstract final class OciExit {
   static const failed = 4;
 }
 
-const _commands = ['design', 'analyze', 'check', 'export', 'bom'];
+const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom'];
 const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper'};
-const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version'};
+const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version', 'no-results'};
 
 const usageText =
     '''
@@ -66,13 +69,17 @@ Commands:
   analyze   Analyse the design as drawn, without changing any pipe size.
   check     List the problems of the project (design check and the design assistant's
             messages); exit code 1 when there is an error.
+  validate  Read the file item by item and list what had to be repaired (items set
+            aside, renumbered ids, dropped vertices, unknown options, a newer format)
+            and the errors of the design check; exit code 1 when there is any.
   export    Write the drawing in another format (--format, --out).
   bom       Size the design and print the bill of materials.
 
 Options:
-  --out <file>        design: the designed project (.oci.json); export: the exported file
-                      (default: next to the project); bom: the bill of materials (.csv, .txt,
-                      .xlsx or .pdf).
+  --out <file>        design: the designed project (.oci.json) with its results, as the app
+                      saves it; export: the exported file (default: next to the project); bom:
+                      the bill of materials (.csv, .txt, .xlsx or .pdf).
+  --no-results        design: the --out project without the results.
   --report <file>     design, analyze: every report table (.csv, .txt, .xlsx or .pdf).
   --results <file>    design, analyze: the design results as JSON.
   --lang <code>       language of the names, reports and messages (default en):
@@ -86,12 +93,12 @@ Options:
   --analyze           export, check, bom: analyse first, keeping the pipe sizes as drawn.
   --paper <size>      export pdf, svg: a4, a3 (default), a2, a1, a0, letter or tabloid.
   --portrait          export pdf, svg: portrait sheet (default landscape).
-  --json              check: the messages as JSON.
+  --json              check, validate: the messages as JSON.
   -h, --help          This help.
   --version           The version of the engine.
 
-Exit codes: 0 done, 1 check found errors, 2 bad command line, 3 a file could not be
-read or written, 4 the calculation or the export failed.''';
+Exit codes: 0 done, 1 check found errors (validate: repairs or errors), 2 bad command
+line, 3 a file could not be read or written, 4 the calculation or the export failed.''';
 
 String _usage() => usageText.replaceFirst('{languages}', supportedLanguages.join(', '));
 
@@ -184,6 +191,7 @@ Future<int> runOci(List<String> args, {StringSink? out, StringSink? err, String?
       'design' => session.design(project, a, size: true),
       'analyze' => session.design(project, a, size: false),
       'check' => session.check(project, a),
+      'validate' => session.validate(project, a),
       'export' => session.export(project, a, a.positional.single),
       'bom' => session.bom(project, a),
       _ => OciExit.usage,
@@ -242,17 +250,30 @@ class _Session {
     installLanguagePack(lang, LanguagePack.fromJson(jsonDecode(file.readAsStringSync()) as Map<String, dynamic>));
   }
 
+  /// What reading the project had to repair ([readProject]).
+  ProjectReadReport report = ProjectReadReport();
+
+  /// Reads the project item by item; the repairs go to [report] and, one
+  /// line each, to the error output.
   Project readProject(String path) {
     final f = File(path);
     if (!f.existsSync()) throw _Failure(OciExit.io, '$path: no such file');
+    final ProjectFile file;
     try {
-      return Project.fromJsonString(f.readAsStringSync());
+      file = readProjectFile(f.readAsStringSync());
     } on FormatException catch (x) {
-      throw _Failure(OciExit.io, '$path: not an OpenCADIrrigation project (${x.message})');
+      throw _Failure(OciExit.io, '$path: ${t.has('imp.err.${x.message}') ? t('imp.err.${x.message}') : 'not an OpenCADIrrigation project (${x.message})'}');
     } catch (x) {
       throw _Failure(OciExit.io, '$path: cannot be read ($x)');
     }
+    report = file.report;
+    for (final n in report.notes) {
+      err.writeln('oci: $path: ${_note(n)}');
+    }
+    return file.project;
   }
+
+  String _note(ReadNote n) => t.has('read.${n.code}') ? t('read.${n.code}', n.args) : '$n';
 
   // ------------------------------------------------------------------ design
 
@@ -275,7 +296,10 @@ class _Session {
     final projectOut = a.values['out'];
     if (projectOut != null) {
       if (!size) throw _UsageError('analyze does not change the project: --out is for design');
-      _write(projectOut, project.toJsonString(pretty: true));
+      // as the app saves it: the project and the results of its design
+      final j = project.toJson();
+      if (!a.flags.contains('no-results')) j['results'] = r.toJson();
+      _write(projectOut, encodeJson(j, pretty: true));
     }
     final resultsOut = a.values['results'];
     if (resultsOut != null) _write(resultsOut, const JsonEncoder.withIndent('  ').convert(r.toJson()));
@@ -286,6 +310,37 @@ class _Session {
       _write(reportOut, ex.exportReport(f));
     }
     return OciExit.ok;
+  }
+
+  // ------------------------------------------------------------------ validate
+
+  /// The repairs reading the file needed and the errors of the design check.
+  Future<int> validate(Project project, _Args a) async {
+    final check = runDesignCheck(project);
+    final errors = check.issues.where((i) => i.severity == CheckSeverity.error).toList();
+    if (a.flags.contains('json')) {
+      out.writeln(
+        const JsonEncoder.withIndent('  ').convert({
+          'project': project.meta.name,
+          'version': report.fileVersion,
+          'readsVersion': Project.formatVersion,
+          'newerVersion': report.newerVersion,
+          'skipped': report.skipped,
+          'renumbered': report.renumbered,
+          'droppedVertices': report.droppedVertices,
+          'unknownValues': report.unknownValues,
+          'repairs': [for (final n in report.notes) _note(n)],
+          'errors': [for (final i in errors) i.toJson()],
+        }),
+      );
+    } else {
+      out.writeln('${project.meta.name}: format ${report.fileVersion ?? '-'} (this version writes ${Project.formatVersion})');
+      out.writeln(report.clean ? '- nothing to repair' : '- ${report.notes.map(_note).join('\n- ')}');
+      for (final i in errors) {
+        out.writeln('- ${t.has('check.${i.code}') ? t('check.${i.code}') : i.code}${i.value.isEmpty ? '' : ' (${i.value})'}${i.entityIds.isEmpty ? '' : ': ${i.entityIds.take(8).join(', ')}'}');
+      }
+    }
+    return report.clean && errors.isEmpty ? OciExit.ok : OciExit.problems;
   }
 
   // ------------------------------------------------------------------ check

@@ -82,6 +82,34 @@ void main() {
     expect(csv, contains('RESUMO DAS ZONAS'));
     expect(csv, contains('LISTA DE MATERIAIS'));
     expect(err, contains('wrote ${at('report.csv')}'));
+    // the project is written with its results, as the app saves it (MOD-31)
+    final file = readProjectFile(File(at('designed.oci.json')).readAsStringSync());
+    expect(file.results, isNotNull);
+    expect(DesignResults.fromJson(file.results!).capitalCost, closeTo(r.capitalCost, 1e-6));
+    final (bare, _, _) = await oci(['design', example, '--out', at('bare.oci.json'), '--no-results']);
+    expect(bare, OciExit.ok);
+    expect(readProjectFile(File(at('bare.oci.json')).readAsStringSync()).results, isNull);
+  });
+
+  test('validate lists what reading the file repaired (MOD-23)', () async {
+    var (code, out, _) = await oci(['validate', example]);
+    expect(code, OciExit.ok, reason: out);
+    expect(out, contains('nothing to repair'));
+    final j = jsonDecode(File(example).readAsStringSync()) as Map<String, dynamic>;
+    j['version'] = 99;
+    (j['entities'] as List).add({'type': 'futureThing', 'id': 'e999'});
+    File(at('damaged.oci.json')).writeAsStringSync(jsonEncode(j));
+    final String err;
+    (code, out, err) = await oci(['validate', at('damaged.oci.json'), '--json']);
+    expect(code, OciExit.problems);
+    final v = jsonDecode(out) as Map<String, dynamic>;
+    expect(v['newerVersion'], isTrue);
+    expect(v['skipped'], {'entities': 1});
+    expect(err, contains('could not be read'), reason: 'other commands report the repairs too');
+    File(at('not_json.oci.json')).writeAsStringSync('{"format": "opencadirrigation", "entities": [');
+    final broken = await oci(['validate', at('not_json.oci.json')]);
+    expect(broken.$1, OciExit.io);
+    expect(broken.$3, contains('not valid JSON'));
   });
 
   test('reports in every format; analyze keeps the drawing', () async {
