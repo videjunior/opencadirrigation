@@ -284,7 +284,7 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.elevationDem'), value: j.fixedElevation ?? 0, onChanged: (x) => set(() => j.fixedElevation = x == 0 ? null : x)),
         ]);
       case BreaklineEntity bl:
-        String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmt(bl.elevationOf(i), 2) : '-'].join('; ');
+        String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmtUi(bl.elevationOf(i), 2) : '-'].join('; ');
         items.addAll([
           KV(t('props.vertices'), '${bl.points.length}'),
           KV(t('props.length'), '${fmt(u.lengthFromSi(bl.length))} ${u.lengthLabel}'),
@@ -294,7 +294,7 @@ class PropertiesPanel extends StatelessWidget {
             value: zText(),
             onChanged: (x) => set(() {
               final parts = x.split(';');
-              bl.elevations = [for (var i = 0; i < bl.points.length; i++) i < parts.length ? (parseNumber(parts[i].trim()) ?? double.nan) : double.nan];
+              bl.elevations = [for (var i = 0; i < bl.points.length; i++) i < parts.length ? (parseUiNumber(parts[i].trim()) ?? double.nan) : double.nan];
             }),
           ),
           Text(t('props.breaklineHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),

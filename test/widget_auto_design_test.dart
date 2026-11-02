@@ -124,7 +124,7 @@ void main() {
     final expected = layoutLandscape(outline: lawn.points, exclusions: [house.points], family: p.catalog.outlet('rotor')!);
     expect(find.textContaining('${expected.heads.length} ('), findsOneWidget);
     expect(find.text('CU (Christiansen)'), findsOneWidget);
-    expect(find.text('${fmt(expected.metrics!.cu, 1)} %'), findsOneWidget);
+    expect(find.text('${fmtLocale(expected.metrics!.cu, 1, 'pt')} %'), findsOneWidget);
     await tapKey(tester, 'al_zoning');
     // the largest zone flow defaults to the supply's 3 m³/h (3000 L/h)
     expect(find.textContaining('3000'), findsWidgets);
@@ -310,7 +310,7 @@ void main() {
     await settle(tester);
     expect(find.textContaining('6 árvores selecionadas'), findsOneWidget);
     expect(
-      find.descendant(of: find.byKey(const Key('tr_direction')), matching: find.text('30.0')),
+      find.descendant(of: find.byKey(const Key('tr_direction')), matching: find.text('30,0')),
       findsOneWidget,
       reason: 'the row direction of the survey',
     );
@@ -338,7 +338,7 @@ void main() {
     await settle(tester);
     expect(find.text('Pivô ajustado ao talhão'), findsOneWidget);
     final expected = fitFullCirclePivot(field.points, PivotFitOptions(pointObstacles: const [PointObstacle(Pt(200, 300), 10)], endThrowM: 5));
-    expect(find.text('${fmt(expected.coverage * 100, 1)} %'), findsOneWidget);
+    expect(find.text('${fmtLocale(expected.coverage * 100, 1, 'pt')} %'), findsOneWidget);
     await tapKey(tester, 'pf_generate');
     final pivot = c.project.entities.whereType<PivotEntity>().single;
     expect(pivot.center.distanceTo(expected.center), lessThan(1e-6));

@@ -156,7 +156,7 @@ void main() {
     await type(tester, t('props.elevation'), '101.25');
     expect(spot.elevation, 101.25);
     final arc = await add(tester, c, ArcEntity(id: c.project.newId(), center: Pt.zero, radius: 5, startRad: 0, sweepRad: 1.5707963267948966));
-    expect(find.text('90.0°'), findsOneWidget);
+    expect(find.text('90,0°'), findsOneWidget);
     await type(tester, t('props.radius'), '6');
     expect(arc.radius, 6);
     final spline = await add(tester, c, SplineEntity(id: c.project.newId(), points: [Pt.zero, const Pt(5, 3), const Pt(10, 0)]));
@@ -166,7 +166,7 @@ void main() {
     await type(tester, t('props.dimOffset'), '3');
     expect(dim.offset, 3);
     final ang = await add(tester, c, AngularDimensionEntity(id: c.project.newId(), vertex: Pt.zero, a: const Pt(5, 0), b: const Pt(0, 5)));
-    expect(find.text('90.00°'), findsOneWidget);
+    expect(find.text('90,00°'), findsOneWidget);
     await type(tester, t('props.dimRadius'), '-2');
     expect(ang.radius, 1, reason: 'a non-positive radius falls back to 1');
     final rad = await add(tester, c, RadialDimensionEntity(id: c.project.newId(), center: Pt.zero, point: const Pt(3, 0)));
@@ -187,7 +187,7 @@ void main() {
     expect(find.text(t('hint.wire')), findsOneWidget);
     final line = await add(tester, c, LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(3, 4)));
     // (the length is a field: typed, it moves the end of the line)
-    expect(find.descendant(of: find.byKey(const Key('props_length')), matching: find.text('5.0')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('props_length')), matching: find.text('5,0')), findsOneWidget);
     // the layer picker moves the entity
     await pick(tester, t('props.layer'), Layers.text);
     expect(line.layer, Layers.text);

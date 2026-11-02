@@ -66,4 +66,8 @@ const _ui = <String, (String, String, String)>{
     'Scale of the drawing on the screen (a screen of 96 dots per inch)',
     'Escala del dibujo en la pantalla (pantalla de 96 puntos por pulgada)',
   ),
+  // ---- UI-08 numbers in the notation of the language; UI-10 the item of an object outside the list
+  'num.readAs': ('Lido como {v}. Toque aqui se era {alt}.', 'Read as {v}. Tap here if you meant {alt}.', 'Leído como {v}. Toque aquí si quiso decir {alt}.'),
+  'num.negate': ('Trocar o sinal (±)', 'Change the sign (±)', 'Cambiar el signo (±)'),
+  'props.notInList': ('(fora da lista)', '(not in the list)', '(fuera de la lista)'),
 };

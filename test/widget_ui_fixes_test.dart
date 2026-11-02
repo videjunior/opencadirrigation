@@ -16,10 +16,12 @@ import 'package:opencadirrigation/app/ai/ai_assistant.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/ai_assistant_dialog.dart';
 import 'package:opencadirrigation/app/widgets/layout_mode.dart';
 import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
+import 'package:opencadirrigation/app/widgets/fields.dart';
 import 'package:opencadirrigation/app/widgets/properties_panel.dart';
 import 'package:opencadirrigation/app/widgets/status_bar.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
+import 'package:opencadirrigation/app/theme.dart';
 import 'package:opencadirrigation/main.dart';
 
 /// Defects of the interface outside the drawing (sweep of 2026-11-01, UI-*):
@@ -367,6 +369,94 @@ void main() {
       c.refresh();
       await settle(tester);
       expect(find.textContaining('1:945'), findsOneWidget);
+    });
+  });
+
+  group('UI-08 / UI-09 / UI-32 number fields', () {
+    late String lang;
+    setUp(() => lang = uiLanguage.value);
+    tearDown(() => uiLanguage.value = lang);
+
+    Future<List<double>> pumpField(WidgetTester tester, double value, {int decimals = 2, bool mixed = false}) async {
+      final got = <double>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildCadTheme(),
+          home: Scaffold(
+            body: Column(
+              children: [
+                NumField(key: const Key('f'), label: 'x', value: value, decimals: decimals, mixed: mixed, onChanged: got.add),
+                const TextField(key: Key('other')),
+              ],
+            ),
+          ),
+        ),
+      );
+      return got;
+    }
+
+    Finder field() => find.descendant(of: find.byKey(const Key('f')), matching: find.byType(TextField));
+    String text(WidgetTester tester) => tester.widget<TextField>(field()).controller!.text;
+
+    testWidgets('Portuguese: the decimal comma on screen, "2.000" is two thousand and the other reading one tap away', (tester) async {
+      uiLanguage.value = 'pt';
+      final got = await pumpField(tester, 12.5);
+      expect(text(tester), '12,50');
+      await tester.enterText(field(), '2.000');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      expect(got, [2000], reason: 'it was read as 2');
+      expect(find.byKey(const Key('num_alternative')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('num_alternative')));
+      await tester.pump();
+      expect(got, [2000, 2]);
+      expect(find.byKey(const Key('num_alternative')), findsNothing);
+      // a decimal comma is plain
+      await tester.enterText(field(), '3,25');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      expect(got.last, 3.25);
+      expect(find.byKey(const Key('num_alternative')), findsNothing);
+    });
+
+    testWidgets('English: "1,500" is one thousand five hundred', (tester) async {
+      uiLanguage.value = 'en';
+      final got = await pumpField(tester, 1);
+      await tester.enterText(field(), '1,500');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      expect(got, [1500]);
+      expect(find.textContaining('1.5'), findsOneWidget, reason: 'the other reading offered');
+    });
+
+    testWidgets('UI-09 focusing a field and leaving it without typing writes nothing', (tester) async {
+      uiLanguage.value = 'pt';
+      // 15 m of head in bar: 1.471 shows as 1,47
+      final got = await pumpField(tester, 1.4710);
+      expect(text(tester), '1,47');
+      await tester.tap(field());
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('other')));
+      await tester.pump();
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      expect(got, isEmpty, reason: 'the rounded 1,47 must not replace 1,471');
+      // small values keep three significant digits
+      expect(formatFieldNumber(0.004, 2, 'pt'), '0,004');
+      expect(formatFieldNumber(0.0471, 2, 'en'), '0.0471');
+      expect(formatFieldNumber(5, 2, 'pt'), '5,0');
+      expect(formatFieldNumber(2.5, 2, 'en'), '2.50');
+    });
+
+    testWidgets('UI-32 mixed values: an empty field with a hint, and 0 typed applies', (tester) async {
+      uiLanguage.value = 'pt';
+      final got = await pumpField(tester, 0, mixed: true);
+      expect(text(tester), '');
+      expect(find.text('(valores diferentes)'), findsOneWidget);
+      await tester.enterText(field(), '0');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      expect(got, [0]);
     });
   });
 }

@@ -9,6 +9,7 @@ import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import 'advice_panel.dart';
+import 'fields.dart' show localizeUi;
 import 'hgl_chart.dart';
 import 'profile_chart.dart';
 
@@ -481,7 +482,8 @@ class _ReportTableViewState extends State<ReportTableView> {
     super.dispose();
   }
 
-  static String _text(Object v) => reportCellText(v);
+  /// (the numbers in the notation of the interface language)
+  static String _text(Object v) => localizeUi(reportCellText(v));
 
   /// Formats every cell once and sizes each column to its widest text (the
   /// longest string is the widest one in a monospace font).

@@ -292,7 +292,7 @@ void main() {
     showTravellerCalculator(ctxOf(tester), c);
     await settle(tester);
     expect(find.text('Autopropelido com carretel enrolador'), findsOneWidget);
-    expect(find.text('67.5 m (75 % do diâmetro; tabela 75 %)'), findsOneWidget);
+    expect(find.text('67,5 m (75 % do diâmetro; tabela 75 %)'), findsOneWidget);
     await type(tester, const Key('trav_field_width'), '400');
     expect(find.text('Número de faixas'), findsOneWidget);
     expect(find.text('6'), findsOneWidget);
