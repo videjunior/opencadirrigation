@@ -20,8 +20,9 @@ import '../../core/design/report_tables.dart';
 import '../../core/design/results.dart';
 import '../../core/hydraulics/lateral.dart';
 import '../../core/io/cad_drawing.dart' show aciRgb;
+import '../../core/io/cad_xdata.dart' show restoreHydraulic;
 import '../../core/io/climate_online.dart';
-import '../../core/io/codepages.dart' show decodeTextBytes;
+import '../../core/io/codepages.dart' show decodeTextBytes, loadCjkCodepages, needsCjkCodepages;
 import '../../core/io/dem_online.dart';
 import '../../core/io/dem_tiff.dart';
 import '../../core/io/dgn.dart';
@@ -32,6 +33,7 @@ import '../../core/io/geo.dart';
 import '../../core/io/geoimage.dart';
 import '../../core/io/geojson_reader.dart';
 import '../../core/io/gpx.dart';
+import '../../core/io/import_async.dart';
 import '../../core/io/kml.dart';
 import '../../core/io/landxml.dart';
 import '../../core/io/las.dart';
@@ -55,6 +57,7 @@ import '../../core/units.dart';
 import '../canvas/basemap.dart' show BaseMapLayer;
 import '../canvas/camera.dart';
 import '../i18n.dart';
+import '../io/data_cache_store.dart' show appDataCache;
 import '../io/document.dart';
 import '../io/gps.dart';
 import '../io/http.dart';
@@ -1944,7 +1947,8 @@ class ProjectController extends ChangeNotifier {
       longitudeDeg: ll.$2,
       firstYear: now.year - years,
       lastYear: now.year - 1,
-      fetch: climateUrlLoader,
+      // 1.6.0 FMT: a series kept on the device comes from there
+      fetch: appDataCache().text(climateUrlLoader, 'climate'),
       onProgress: onProgress,
       onWait: onWait,
       cancelled: cancelled,
@@ -2778,12 +2782,14 @@ class ProjectController extends ChangeNotifier {
     final pts = demGrid(b, spacing, geo, maxPoints: maxPoints);
     // 5xx and network errors are retried; 429 waits for the server's minute
     bool retryable(Object e) => e is HttpStatusException ? e.status >= 500 : e is! FormatException;
+    // 1.6.0 FMT: tiles and point batches kept on the device come from there
+    final cache = appDataCache();
     final zs = source.kind == DemKind.tiles
-        ? await demDownloadTiles(pts, demGridStep(pts, spacing), demTileLoader, onProgress: onProgress, cancelled: cancelled, retryable: retryable)
+        ? await demDownloadTiles(pts, demGridStep(pts, spacing), cache.bytes(demTileLoader, 'dem'), onProgress: onProgress, cancelled: cancelled, retryable: retryable)
         : await demDownload(
             source,
             pts,
-            demUrlLoader,
+            cache.text(demUrlLoader, 'dem'),
             onProgress: onProgress,
             onWait: onWait,
             cancelled: cancelled,
@@ -3722,6 +3728,8 @@ class ProjectController extends ChangeNotifier {
   /// stops it with [ImportCancelled], before anything changed in the project.
   Future<String> importFileAsync(String name, Uint8List bytes, WorkSlicer slicer) async {
     final lower = name.toLowerCase();
+    // 1.6.0 FMT: the tables of an East Asian code page the file names
+    if (needsCjkCodepages(name, bytes)) await loadCjkCodepages();
     Object? read;
     try {
       if (lower.endsWith('.dwg')) {
@@ -3730,6 +3738,9 @@ class ProjectController extends ChangeNotifier {
         read = await DxfReader.parseBytesAsync(bytes, slicer);
       } else if (lower.endsWith('.las')) {
         read = await LasReader.readAsync(bytes, slicer, georef: project.meta.georef);
+      } else {
+        // 1.6.0 FMT: GeoTIFF block by block, the other formats read between pauses
+        read = await readImportAsync(name, bytes, slicer, georef: project.meta.georef);
       }
     } on Error catch (e, st) {
       debugPrint('$e\n$st');
@@ -3747,6 +3758,24 @@ class ProjectController extends ChangeNotifier {
 
   /// What [importFileAsync] read already (taken by the branch of its format).
   Object? _read;
+
+  // 1.6.0 FMT: the points of a file with the choices of the import wizard
+  /// Imports the survey points of [text] as [o] says (columns, decimal
+  /// mark, coordinate system): one undo step, the georeference a
+  /// geographic file creates going with it. Returns the summary.
+  String importPointsWith(String text, PointsImportOptions o) {
+    final geo = project.meta.georef, mark = _undo.isEmpty ? null : _undo.last;
+    try {
+      _drawingNotes.clear();
+      final r = PointsCsvReader.parseWith(text, o, georef: project.meta.georef);
+      if (r.georef != null) project.meta.georef ??= r.georef;
+      final n = importDrawing(r.document, asSpots: true);
+      final summary = t('imp.points', {'n': '$n', 'geo': r.geographic ? ' (${project.meta.georef?.crsName ?? 'WGS84'})' : ''}) + _importWarnings(r.warnings);
+      return _withNotes(summary, _drawingNotes) + _tinNote();
+    } finally {
+      _georefWithImport(geo, mark);
+    }
+  }
 
   /// Notes of [importDrawing] (placement of the drawing) for the summary.
   final List<String> _drawingNotes = [];
@@ -3781,17 +3810,14 @@ class ProjectController extends ChangeNotifier {
           (skipped > 0 ? t('imp.skipped', {'n': '$skipped'}) : '') +
           _importWarnings(r.document.warnings);
     }
-    if (lower.endsWith('.kmz')) {
-      final r = KmlReader.parseKmz(bytes, georef: project.meta.georef);
+    if (lower.endsWith('.kmz') || lower.endsWith('.kml')) {
+      final pre = _read;
+      final kmz = lower.endsWith('.kmz');
+      final r = pre is KmlImportResult ? pre : (kmz ? KmlReader.parseKmz(bytes, georef: project.meta.georef) : KmlReader.parse(_decodeText(bytes), georef: project.meta.georef));
       project.meta.georef ??= r.georef;
-      final n = importDrawing(r.document);
-      return t('imp.kml', {'k': 'KMZ', 'p': '${r.placemarkCount}', 'n': '$n', 'crs': r.georef.crsName});
-    }
-    if (lower.endsWith('.kml')) {
-      final r = KmlReader.parse(_decodeText(bytes), georef: project.meta.georef);
-      project.meta.georef ??= r.georef;
-      final n = importDrawing(r.document);
-      return t('imp.kml', {'k': 'KML', 'p': '${r.placemarkCount}', 'n': '$n', 'crs': r.georef.crsName});
+      // 1.6.0 FMT: the ground overlays as pictures under the drawing
+      final n = importDrawing(r.document, extra: KmlReader.overlayImages(r.overlays, project.newId));
+      return t('imp.kml', {'k': kmz ? 'KMZ' : 'KML', 'p': '${r.placemarkCount}', 'n': '$n', 'crs': r.georef.crsName}) + _importWarnings(r.warnings);
     }
     if (lower.endsWith('.csv') || lower.endsWith('.txt') || lower.endsWith('.xyz') || lower.endsWith('.pnezd') || lower.endsWith('.pts')) {
       final r = PointsCsvReader.parse(_decodeText(bytes), georef: project.meta.georef);
@@ -3818,7 +3844,8 @@ class ProjectController extends ChangeNotifier {
       }
     }
     if (lower.endsWith('.shp') || (lower.endsWith('.zip') && _zipHas(bytes, '.shp'))) {
-      final r = ShpReader.parseAny(name, bytes, georef: project.meta.georef);
+      final pre = _read;
+      final r = pre is ShpImportResult ? pre : ShpReader.parseAny(name, bytes, georef: project.meta.georef);
       if (r.georef != null) project.meta.georef ??= r.georef;
       final n = importDrawing(r.document);
       return t('imp.shp', {'r': '${r.recordCount}', 'n': '$n', 'crs': r.crs.isEmpty ? (project.meta.georef?.crsName ?? '-') : r.crs}) + _importWarnings(r.warnings);
@@ -3871,7 +3898,8 @@ class ProjectController extends ChangeNotifier {
     }
     if (lower.endsWith('.tif') || lower.endsWith('.tiff')) {
       // an elevation raster (one band of heights) becomes terrain, not a picture
-      final dem = GeoTiffDemReader.read(bytes, georef: project.meta.georef);
+      final pre = _read;
+      final dem = pre is GeoTiffDem ? pre : (pre is GeoImage ? null : GeoTiffDemReader.read(bytes, georef: project.meta.georef));
       if (dem != null) {
         project.meta.georef ??= dem.georef;
         final label = 'DEM $name';
@@ -3887,7 +3915,8 @@ class ProjectController extends ChangeNotifier {
       }
     }
     if (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.tif') || lower.endsWith('.tiff') || lower.endsWith('.zip')) {
-      final g = GeoImageReader.read(name, bytes);
+      final pre = _read;
+      final g = pre is GeoImage ? pre : GeoImageReader.read(name, bytes);
       final e = importImage(g);
       zoomToEntity(e.id);
       return t(g.georeferenced ? 'imp.imageGeo' : 'imp.image', {'w': '${g.widthPx}', 'h': '${g.heightPx}', 'crs': project.meta.georef?.crsName ?? '-'}) + _importWarnings(g.warnings);
@@ -3928,7 +3957,7 @@ class ProjectController extends ChangeNotifier {
   /// and the off or frozen state of the file. A drawing in UTM coordinates
   /// imported into a georeferenced project is moved by the project origin
   /// (with a note); into a project without one, the note says so.
-  int importDrawing(DxfDocument doc, {bool asSpots = false, bool markers = true}) {
+  int importDrawing(DxfDocument doc, {bool asSpots = false, bool markers = true, List<Entity> extra = const []}) {
     final s = doc.unitScale;
     final shift = _utmShift(doc);
     Pt at(Pt p) => Pt(p.x * s - shift.x, p.y * s - shift.y);
@@ -3941,7 +3970,42 @@ class ProjectController extends ChangeNotifier {
         project.layers.add(Layer(name: l.name, color: 0xFF000000 | (l.rgb ?? aciRgb(l.color)), visible: l.visible));
         byKey[key] = l.name;
       }
+      // 1.6.0 FMT: the pipes and items an export of the app carried come back
+      // as pipes and items; the drawing of their blocks, their labels and the
+      // outlet symbols of their laterals are then left out (drawn only for
+      // what cannot be restored)
+      final restored = Map<DxfEntity, Entity>.identity();
+      final skip = Set<DxfEntity>.identity();
+      final restoredIds = <String>{};
+      for (final it in doc.items) {
+        if (it.xdata.containsKey('PART_OF')) continue;
+        final h = restoreHydraulic(it.xdata, project, position: at(it.position), id: project.newId(), layer: byKey[it.layer.toLowerCase()] ?? it.layer);
+        if (h == null) continue;
+        list.add(h);
+        skip.addAll(it.fallback);
+        restoredIds.add(it.xdata['ID'] ?? '');
+      }
       for (final e in doc.entities) {
+        final x = e.xdata;
+        if (x == null || x.containsKey('PART_OF') || e.type != 'POLYLINE' || e.points.length < 2 || !_finiteGeometry(e)) continue;
+        final layer = byKey[e.layer.toLowerCase()] ?? e.layer;
+        final h = restoreHydraulic(x, project, points: e.points.map(at).toList(), id: project.newId(), layer: layer);
+        if (h == null) continue;
+        restored[e] = h;
+        restoredIds.add(x['ID'] ?? '');
+      }
+      restoredIds.remove('');
+      for (final it in doc.items) {
+        if (restoredIds.contains(it.xdata['PART_OF'])) skip.addAll(it.fallback);
+      }
+      list.addAll(extra);
+      for (final e in doc.entities) {
+        if (skip.contains(e) || restoredIds.contains(e.xdata?['PART_OF'])) continue;
+        final h = restored[e];
+        if (h != null) {
+          list.add(h);
+          continue;
+        }
         // a damaged file may hold "nan" or huge exponents: such geometry is
         // left out (it could neither be drawn nor saved)
         if (!_finiteGeometry(e)) continue;
@@ -3987,7 +4051,10 @@ class ProjectController extends ChangeNotifier {
             }
         }
       }
-      project.entities.addAll(list);
+      // 1.6.0 FMT: pictures (ground overlays) under the drawing, as images are
+      project.entities
+        ..insertAll(0, list.whereType<ImageEntity>())
+        ..addAll(list.where((e) => e is! ImageEntity));
     }, label: 'hist.import');
     zoomAll();
     return list.length;

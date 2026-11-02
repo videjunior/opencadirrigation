@@ -40,6 +40,8 @@ import 'app/widgets/dialogs/transient_dialogs.dart';
 import 'app/widgets/dialogs/blocks_dialogs.dart';
 import 'app/widgets/dialogs/selection_dialogs.dart';
 import 'app/widgets/dialogs/welcome_dialog.dart';
+// 1.6.0 FMT
+import 'app/widgets/dialogs/share_confirm_dialog.dart' show confirmSharedProject;
 import 'app/widgets/mobile_shell.dart';
 import 'app/widgets/command_entry.dart';
 import 'app/widgets/layout_mode.dart';
@@ -242,8 +244,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final fragment = Uri.base.fragment;
       final linked = fragment.startsWith('p=');
       if (linked) clearAddressFragment();
-      final shared = linked ? projectJsonFromLink('#$fragment') : null;
-      if (linked && (shared == null || openJsonInTab(ws, shared, asCopy: true) == null)) c.notify(c.t('share.damaged'));
+      final read = linked ? projectJsonFromLink('#$fragment') : null;
+      // 1.6.0 FMT: a large project opens only when the user says so (FMT-09)
+      var declined = false;
+      if (read != null && mounted) declined = !await confirmSharedProject(context, c, read);
+      if (!mounted) return;
+      final shared = declined ? null : read;
+      if (linked && !declined && (shared == null || openJsonInTab(ws, shared, asCopy: true) == null)) c.notify(c.t('share.damaged'));
       final q = Uri.base.queryParameters;
       final example = exampleIdFromName(q['example']) ?? widget.startExample;
       final designLink = q['design'] == '1';
