@@ -35,6 +35,19 @@ import 'agent_tools_manual.dart';
 import 'agent_tools_ops.dart';
 import 'agent_tools_site.dart';
 import 'agent_tools_vision.dart';
+import 'op_parts/mot.dart';
+import 'op_parts/aut.dart';
+import 'op_parts/agr.dart';
+import 'op_parts/agb.dart';
+import 'op_parts/fmt.dart';
+import 'op_parts/mod.dart';
+import 'op_parts/ia.dart';
+import 'op_parts/cad.dart';
+import 'op_parts/ui.dart';
+import 'op_parts/sit.dart';
+import 'op_parts/eng.dart';
+import 'op_parts/prd.dart';
+import 'op_parts/prb.dart';
 import 'view_snapshot.dart';
 import 'vision_marks.dart' show ChangeTracker;
 
@@ -93,7 +106,24 @@ class AgentToolbox {
   /// sheets, settings…), not sent as tools: the model finds them with
   /// find_operations and runs them with run_operation, under the same
   /// permissions.
-  late final List<AgentTool> operations = [...cadOperations(this), ...engineeringOperations(this)];
+  /// (with those of 1.6.0, one list per area in lib/app/ai/op_parts)
+  late final List<AgentTool> operations = [
+    ...cadOperations(this),
+    ...engineeringOperations(this),
+    ...opsMot(this),
+    ...opsAut(this),
+    ...opsAgr(this),
+    ...opsAgb(this),
+    ...opsFmt(this),
+    ...opsMod(this),
+    ...opsIa(this),
+    ...opsCad(this),
+    ...opsUi(this),
+    ...opsSit(this),
+    ...opsEng(this),
+    ...opsPrd(this),
+    ...opsPrb(this),
+  ];
 
   ContextSource source() => ContextSource(
     project: p,
