@@ -880,6 +880,8 @@ class ProjectController extends ChangeNotifier {
       rethrow;
     }
     _editSeq++; // geometry changed: the spatial index is stale
+    // the pictures of what was deleted or replaced are let go
+    if (images.isNotEmpty) _pruneImages();
     dirty = true;
     project.meta.modified = DateTime.now();
     if (invalidateResults) {
@@ -1112,7 +1114,8 @@ class ProjectController extends ChangeNotifier {
     if (big != null && big.$1 == project.meta.uid && project.entities.length >= big.$2) return;
     _lastAutosave = DateTime.now();
     final run = ++_autosaveRun;
-    // a project open in another window gets a uid of its own first
+    // a project open in another window gets a uid of its own first (a uid set from outside is claimed now)
+    if (_claimedUid != project.meta.uid) _claimUid();
     await _claim;
     if (run != _autosaveRun || _disposed) return;
     final uid = project.meta.uid, name = project.meta.name, count = project.entities.length, seq = _editSeq, edited = project.meta.modified;
@@ -3491,8 +3494,8 @@ class ProjectController extends ChangeNotifier {
     _undo.clear();
     _redo.clear();
     _highestId = p.nextIdValue;
-    // what was opened is what the browser keeps (or a new project of its own)
-    _storedSeq = fromStore ? _editSeq : -1;
+    // nothing for the browser to copy until it is edited (a file only looked at is not offered by the recovery)
+    _storedSeq = _editSeq;
     _storeProblem = null;
     fileHandle = null;
     this.dirty = dirty;
@@ -3551,7 +3554,6 @@ class ProjectController extends ChangeNotifier {
   /// came from): Save as copy, a project open in another window.
   void renewUid() {
     project.meta.uid = ProjectMeta.newUid();
-    _storedSeq = -1;
     _tooLarge = null;
     _claimUid();
     dirty = true;

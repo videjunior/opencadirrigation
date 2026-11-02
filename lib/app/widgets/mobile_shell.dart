@@ -418,6 +418,14 @@ class _MobileShellState extends State<MobileShell> {
                       padding: EdgeInsets.only(right: 8),
                       child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
                     ),
+                  // 1.6.0 CAD: the copy in the browser failed (stays until one is kept)
+                  if (c.storeProblem case final problem?)
+                    IconButton(
+                      key: const Key('mobile_store_problem'),
+                      tooltip: problem,
+                      icon: Icon(Icons.warning_amber_rounded, color: Cad.attention),
+                      onPressed: () => showStorageDialog(context, c),
+                    ),
                   AiPanelButton(key: const Key('mobile_ai'), c: c, size: 22, onPressed: () => showAiAssistantDialog(context, c)),
                   IconButton(
                     key: TutorialTargets.runButton,
