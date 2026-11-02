@@ -471,7 +471,6 @@ List<(double, double)> _equalCuts(List<Pt> poly, Pt n, int count, double road, {
 FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
   final poly = normalizePolygon(field);
   final dir = o.direction.length > 0 ? o.direction.normalized : const Pt(1, 0);
-  final messages = <String>[];
   if (poly.length >= 4 && polygonSelfCrossings(poly).isNotEmpty) {
     final parts = simplePolygonParts(field);
     if (parts.length > 1) {
@@ -492,8 +491,169 @@ FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
       return FieldSubdivision(blocks: blocks, fieldArea: area, direction: dir, messages: out);
     }
   }
+  return _subdivide(poly, o, dir, decompose: true);
+}
+
+/// A point inside the simple polygon [poly]: the middle of the first span
+/// of the line across it half way between its extremes along [n].
+Pt _interiorPoint(List<Pt> poly, Pt n) {
+  var lo = double.infinity, hi = -double.infinity;
+  for (final q in poly) {
+    lo = math.min(lo, q.dot(n));
+    hi = math.max(hi, q.dot(n));
+  }
+  final v = (lo + hi) / 2, d = n.perpendicular;
+  final us = <double>[];
+  for (var i = 0; i < poly.length; i++) {
+    final a = poly[i], b = poly[(i + 1) % poly.length];
+    final ta = a.dot(n) - v, tb = b.dot(n) - v;
+    if ((ta > 0) == (tb > 0)) continue;
+    us.add(a.dot(d) + (b.dot(d) - a.dot(d)) * ta / (ta - tb));
+  }
+  us.sort();
+  return us.length >= 2 ? n * v + d * ((us[0] + us[1]) / 2) : polygonCentroid(poly);
+}
+
+/// [poly] cut into pieces whose every line across the strips direction
+/// [n] meets one span (a U-shaped field gives its base and its two arms):
+/// the cuts go through the vertices where the outline turns back along
+/// [n], and pieces that follow one another one to one are joined again.
+/// A piece above a cut that it shares with another piece starts [road]
+/// metres above it (the road between their blocks).
+List<List<Pt>> _monotonePieces(List<Pt> poly, Pt n, double road) {
+  final p = normalizePolygon(poly);
+  final m = p.length;
+  if (m < 4) return [p];
+  final t = [for (final q in p) q.dot(n)];
+  final lo = t.reduce(math.min), hi = t.reduce(math.max);
+  final eps = math.max(1e-9, (hi - lo) * 1e-9);
+  final crit = <double>{};
+  for (var i = 0; i < m; i++) {
+    // the first vertex of a run at one level
+    if ((t[i] - t[(i - 1 + m) % m]).abs() <= eps) continue;
+    var j = i;
+    for (var k = 0; k < m && (t[(j + 1) % m] - t[i]).abs() <= eps; k++) {
+      j = (j + 1) % m;
+    }
+    final prev = t[(i - 1 + m) % m], next = t[(j + 1) % m];
+    final turns = (prev > t[i] + eps && next > t[i] + eps) || (prev < t[i] - eps && next < t[i] - eps);
+    if (turns && t[i] > lo + eps && t[i] < hi - eps) crit.add(t[i]);
+  }
+  if (crit.isEmpty) return [p];
+  final cuts = [lo, ...(crit.toList()..sort()), hi];
+  final slabs = [for (var k = 0; k + 1 < cuts.length; k++) clipPolygonSlab(p, n, cuts[k], cuts[k + 1])];
+  final d = n.perpendicular;
+  (double, double)? spanAt(List<Pt> piece, double v) {
+    final us = [
+      for (final q in piece)
+        if ((q.dot(n) - v).abs() <= eps * 10) q.dot(d),
+    ];
+    return us.length >= 2 ? (us.reduce(math.min), us.reduce(math.max)) : null;
+  }
+
+  bool touch(List<Pt> a, List<Pt> b, double v) {
+    final sa = spanAt(a, v), sb = spanAt(b, v);
+    return sa != null && sb != null && math.min(sa.$2, sb.$2) - math.max(sa.$1, sb.$1) > eps * 10;
+  }
+
+  // groups of slab pieces joined one to one, bottom up
+  final groupOf = <(int, int), int>{};
+  final groups = <List<(int, int)>>[];
+  for (var k = 0; k < slabs.length; k++) {
+    for (var i = 0; i < slabs[k].length; i++) {
+      if (groupOf.containsKey((k, i))) continue;
+      groupOf[(k, i)] = groups.length;
+      groups.add([(k, i)]);
+    }
+    if (k + 1 >= slabs.length) continue;
+    for (var i = 0; i < slabs[k].length; i++) {
+      final up = [
+        for (var j = 0; j < slabs[k + 1].length; j++)
+          if (touch(slabs[k][i], slabs[k + 1][j], cuts[k + 1])) j,
+      ];
+      if (up.length != 1) continue;
+      final down = [
+        for (var x = 0; x < slabs[k].length; x++)
+          if (touch(slabs[k][x], slabs[k + 1][up.single], cuts[k + 1])) x,
+      ];
+      if (down.length != 1) continue;
+      final g = groupOf[(k, i)]!;
+      groupOf[(k + 1, up.single)] = g;
+      groups[g].add((k + 1, up.single));
+    }
+  }
+  final out = <List<Pt>>[];
+  for (final g in groups) {
+    final k0 = g.first.$1, k1 = g.last.$1;
+    final inner = _interiorPoint(slabs[k0][g.first.$2], n);
+    var pieces = clipPolygonSlab(p, n, cuts[k0], cuts[k1 + 1]).where((q) => pointInPolygon(inner, q)).toList();
+    if (pieces.isEmpty) pieces = [slabs[k0][g.first.$2]];
+    // a road above a cut shared with a piece below
+    final below = k0 > 0 && [for (var x = 0; x < slabs[k0 - 1].length; x++) x].any((x) => touch(slabs[k0 - 1][x], slabs[k0][g.first.$2], cuts[k0]));
+    for (final q in pieces) {
+      if (below && road > 0) {
+        out.addAll(clipPolygonHalfPlane(q, n, cuts[k0] + road));
+      } else {
+        out.add(q);
+      }
+    }
+  }
+  return out.isEmpty ? [p] : out;
+}
+
+/// [subdivideField] of the simple polygon [poly]; with [decompose] a field
+/// whose lines across the strips meet it more than once (a U, a comb) is
+/// first cut into pieces that do not, each subdivided as a field of its
+/// own, so a strip across two arms does not give two half blocks.
+FieldSubdivision _subdivide(List<Pt> poly, FieldSubdivisionOptions o, Pt dir, {required bool decompose}) {
+  final messages = <String>[];
   if (poly.length < 3 || polygonArea(poly).abs() < 1e-9) return FieldSubdivision(blocks: const [], fieldArea: 0, direction: dir, messages: ['field_empty']);
   final perp = dir.perpendicular;
+  final limited = o.maxBlockArea > 0 || (o.maxBlockFlow > 0 && o.flowPerHectare > 0);
+  if (decompose && limited) {
+    final pieces = _monotonePieces(poly, perp, math.max(0.0, o.roadWidth));
+    if (pieces.length > 1) {
+      final plain = _subdivide(poly, o, dir, decompose: false);
+      final blocks = <FieldBlock>[];
+      final out = <String>[];
+      var strips = 0;
+      for (final piece in pieces) {
+        final sub = _subdivide(piece, o, dir, decompose: false);
+        for (final msg in sub.messages) {
+          final i = msg.indexOf(':');
+          final k = i > 0 ? int.tryParse(msg.substring(i + 1)) : null;
+          final m = k == null ? msg : '${msg.substring(0, i)}:${k + blocks.length}';
+          if (!out.contains(m)) out.add(m);
+        }
+        var top = -1;
+        for (final b in sub.blocks) {
+          blocks.add(
+            FieldBlock(
+              polygon: b.polygon,
+              area: b.area,
+              flow: b.flow,
+              submain: b.submain,
+              valvePosition: b.valvePosition,
+              valvePoint: b.valvePoint,
+              strip: b.strip + strips,
+              column: b.column,
+              lateralLength: b.lateralLength,
+            ),
+          );
+          top = math.max(top, b.strip);
+        }
+        strips += top + 1;
+      }
+      // the roads between the pieces are not field
+      final holes = _holesIn(poly, o.exclusions);
+      final net = math.max(0.0, polygonArea(poly).abs() - holes.fold(0.0, (s, h) => s + polygonArea(h).abs()));
+      int large(List<String> ms) => ms.where((m) => m.startsWith('field_block_large')).length;
+      // the pieces only when they take fewer blocks (a wiggly outline turns
+      // back at every bump, and its little pieces would take more)
+      if (blocks.length < plain.blocks.length && large(out) <= large(plain.messages)) return FieldSubdivision(blocks: blocks, fieldArea: net, direction: dir, messages: out);
+      return plain;
+    }
+  }
   final holes = _holesIn(poly, o.exclusions);
   final total = math.max(0.0, polygonArea(poly).abs() - holes.fold(0.0, (s, h) => s + polygonArea(h).abs()));
   final fromFlow = o.maxBlockFlow > 0 && o.flowPerHectare > 0 ? o.maxBlockFlow / o.flowPerHectare * 1e4 : double.infinity;
@@ -527,6 +687,15 @@ FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
     if (!maxArea.isFinite || strips >= widest || blocks.every((bl) => bl.area <= maxArea * (1 + 1e-6))) break;
     strips++;
   }
+  // 1.6.0 AUT: when the length of the laterals sets the columns, columns of
+  // that length first and then strips of equal area in each (a triangle
+  // field: the narrow end needs fewer strips than the wide one), kept when
+  // that takes fewer blocks
+  if (o.mode == SubdivisionMode.grid && maxLen.isFinite && maxArea.isFinite) {
+    final alt = _columnsFirst(poly, dir, perp, o, road, maxLen, maxArea, holes);
+    bool fits(List<FieldBlock> bs) => bs.every((bl) => bl.area <= maxArea * (1 + 1e-6));
+    if (alt.isNotEmpty && alt.length < blocks.length && (fits(alt) || !fits(blocks))) blocks = alt;
+  }
   for (var i = 0; i < blocks.length; i++) {
     final bl = blocks[i];
     var w0 = double.infinity, w1 = -double.infinity;
@@ -539,6 +708,74 @@ FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
     if (maxArea.isFinite && bl.area > maxArea * (1 + 1e-6)) messages.add('field_block_large:$i');
   }
   return FieldSubdivision(blocks: blocks, fieldArea: total, direction: dir, messages: messages);
+}
+
+/// Grid blocks cut the other way round: columns along the rows no longer
+/// than [maxLen] (equal widths, roads between), then every column in as
+/// many strips of equal net area as its own area asks for.
+List<FieldBlock> _columnsFirst(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, double road, double maxLen, double maxArea, List<List<Pt>> holes) {
+  var uMin = double.infinity, uMax = -double.infinity;
+  for (final p in poly) {
+    uMin = math.min(uMin, p.dot(dir));
+    uMax = math.max(uMax, p.dot(dir));
+  }
+  final count = math.max(1, ((uMax - uMin + road) / (maxLen + road) - 1e-9).ceil());
+  final width = (uMax - uMin - (count - 1) * road) / count;
+  if (!(width > 0)) return const [];
+  final blocks = <FieldBlock>[];
+  for (var ci = 0; ci < count; ci++) {
+    final a = uMin + ci * (width + road), b = a + width;
+    for (final piece in clipPolygonSlab(poly, dir, a, b)) {
+      final inPiece = [
+        for (final h in holes)
+          if (Bounds.ofPoints(h).intersects(Bounds.ofPoints(piece))) ..._holesIn(piece, [h]),
+      ];
+      final net = math.max(0.0, polygonArea(piece).abs() - inPiece.fold(0.0, (s, h) => s + polygonArea(h).abs()));
+      var vMin = double.infinity, vMax = -double.infinity;
+      for (final p in piece) {
+        vMin = math.min(vMin, p.dot(perp));
+        vMax = math.max(vMax, p.dot(perp));
+      }
+      final widest = math.max(1, ((vMax - vMin + road) / (math.max(o.minBlockWidth, 1e-6) + road)).floor());
+      var strips = math.max(1, (net / maxArea - 1e-9).ceil());
+      var parts = <FieldBlock>[];
+      for (var attempt = 0; attempt < 12; attempt++) {
+        final n = math.min(strips, widest);
+        parts = [
+          for (final (s0, s1) in _equalCuts(piece, perp, n, road, holes: inPiece))
+            if (s1 - s0 > 1e-9)
+              for (final part in clipPolygonSlab(piece, perp, s0, s1)) _block(part, dir, perp, o, 0, ci, holes),
+        ];
+        if (strips >= widest || parts.every((bl) => bl.area <= maxArea * (1 + 1e-6))) break;
+        strips++;
+      }
+      blocks.addAll(parts);
+    }
+  }
+  // strips numbered across the columns by their place across the rows
+  final order = [for (var i = 0; i < blocks.length; i++) i]
+    ..sort((x, y) {
+      final cx = polygonCentroid(blocks[x].polygon).dot(perp), cy = polygonCentroid(blocks[y].polygon).dot(perp);
+      return cx.compareTo(cy);
+    });
+  final strip = List<int>.filled(blocks.length, 0);
+  for (var k = 0; k < order.length; k++) {
+    strip[order[k]] = k;
+  }
+  return [
+    for (var i = 0; i < blocks.length; i++)
+      FieldBlock(
+        polygon: blocks[i].polygon,
+        area: blocks[i].area,
+        flow: blocks[i].flow,
+        submain: blocks[i].submain,
+        valvePosition: blocks[i].valvePosition,
+        valvePoint: blocks[i].valvePoint,
+        strip: strip[i],
+        column: blocks[i].column,
+        lateralLength: blocks[i].lateralLength,
+      ),
+  ];
 }
 
 /// The blocks of [strips] strips (each cut in columns in a grid).

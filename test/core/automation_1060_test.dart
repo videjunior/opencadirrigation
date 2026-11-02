@@ -1149,4 +1149,49 @@ void main() {
       expect(l.trees.every((t) => pond.every((q) => true) && distanceToSegment(t, pond.first, pond[1]) >= 0), isTrue);
     });
   });
+
+  group('AUT-23 subdivision of concave and triangular fields', () {
+    test('a U field: its base and arms are subdivided apart', () {
+      const u = [Pt(0, 0), Pt(300, 0), Pt(300, 200), Pt(200, 200), Pt(200, 60), Pt(100, 60), Pt(100, 200), Pt(0, 200)];
+      final s = subdivideField(u, FieldSubdivisionOptions(direction: const Pt(1, 0), maxBlockArea: 1e4));
+      expect(s.blocks.length, lessThanOrEqualTo(6), reason: '8 blocks before, 6 of them of 0.42 ha');
+      expect(s.blocks.every((b) => b.area <= 1e4 * (1 + 1e-6)), isTrue);
+      expect(s.blocks.every((b) => b.area >= 0.6e4), isTrue, reason: 'no half blocks');
+      for (var i = 0; i < s.blocks.length; i++) {
+        for (var j = 0; j < s.blocks.length; j++) {
+          if (i != j) expect(pointInPolygon(polygonCentroid(s.blocks[i].polygon), s.blocks[j].polygon), isFalse);
+        }
+      }
+    });
+
+    test('a triangle in a grid: columns by the lateral length first', () {
+      const tri = [Pt(0, 0), Pt(400, 0), Pt(0, 300)];
+      final s = subdivideField(tri, FieldSubdivisionOptions(direction: const Pt(1, 0), mode: SubdivisionMode.grid, maxBlockArea: 1e4, maxLateralLength: 120));
+      expect(s.blocks.length, lessThanOrEqualTo(8), reason: '12 blocks of 0.45 ha before');
+      expect(s.blocks.every((b) => b.area <= 1e4 * (1 + 1e-6) && b.lateralLength <= 120 + 1e-6), isTrue);
+      expect(s.messages, isEmpty);
+    });
+
+    test('a wiggly outline is not cut at every bump', () {
+      final pts = [for (var i = 0; i < 600; i++) Pt.polar(560 + 15 * math.sin(7 * 2 * math.pi * i / 600) + 5 * math.sin(31 * 2 * math.pi * i / 600), 2 * math.pi * i / 600)];
+      final s = subdivideField(pts, FieldSubdivisionOptions(direction: const Pt(1, 0), maxBlockArea: 5e4));
+      expect(s.blocks.length, lessThanOrEqualTo(20));
+    });
+  });
+
+  group('AUT-24 zoning by flow close to the fewest zones', () {
+    test('562 sprays in zones of 2 and 4.5 m³/h', () {
+      final family = Catalog.defaultCatalog().outlet('spray')!;
+      final l = layoutLandscape(outline: rect(0, 0, 100, 70), family: family);
+      for (final (cap, before) in [(2.0, 199), (4.5, 85)]) {
+        final z = zoneByFlow(zoneItemsOf(l, family), ZoningOptions(maxZoneFlow: cap / 3600));
+        final least = (l.totalFlow / (cap / 3600) - 1e-9).ceil();
+        expect(z.zones.length, lessThan(before), reason: '$before zones before (at least $least)');
+        expect(z.zones.length, lessThanOrEqualTo((least * 1.18).ceil()));
+        expect(z.maxFlow, lessThanOrEqualTo(cap / 3600 * (1 + 1e-9)));
+        // every zone in one piece and every head in a zone
+        expect(z.zoneOf.every((k) => k >= 0), isTrue);
+      }
+    });
+  });
 }

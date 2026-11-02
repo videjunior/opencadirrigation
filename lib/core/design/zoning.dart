@@ -386,6 +386,8 @@ List<List<int>> _zoneComponent(List<ZoneItem> items, List<int> comp, Map<int, Li
     final zones = _growFrom(items, rest, inRest, adj, cap, soft, seeds, o);
     _mergeSmall(items, zones, adj, cap, o);
     _refine(items, zones, adj, cap, o);
+    // 1.6.0 AUT: zones emptied into their neighbours while the flows allow
+    if (cap.isFinite && _dissolve(items, zones, adj, cap, o)) _refine(items, zones, adj, cap, o);
     final score = _score(items, zones, rest, cap);
     if (score < bestScore - 1e-12) {
       bestScore = score;
@@ -610,6 +612,67 @@ void _mergeSmall(List<ZoneItem> items, List<List<int>> zones, Map<int, List<int>
       if (merged) break;
     }
   }
+}
+
+/// Empties the lightest zone it can into its neighbours, an item at a time
+/// from the side that touches them (so every zone stays in one piece), the
+/// lightest neighbour with room first, and repeats while a zone can go: the
+/// growth leaves zones at three quarters of the cap, and with a small cap
+/// that is a fifth more valves than the flow asks for. True when a zone went.
+bool _dissolve(List<ZoneItem> items, List<List<int>> zones, Map<int, List<int>> adj, double cap, ZoningOptions o) {
+  final maxItems = o.maxItemsPerZone > 0 ? o.maxItemsPerZone : 1 << 30;
+  var any = false;
+  for (var guard = 0; guard < 100000 && zones.length > 1; guard++) {
+    final zoneOf = <int, int>{};
+    for (var z = 0; z < zones.length; z++) {
+      for (final i in zones[z]) {
+        zoneOf[i] = z;
+      }
+    }
+    final loads = [for (final z in zones) z.fold(0.0, (s, i) => s + items[i].flow)];
+    final order = List<int>.generate(zones.length, (i) => i)..sort((a, b) => loads[a] != loads[b] ? loads[a].compareTo(loads[b]) : a.compareTo(b));
+    var gone = false;
+    for (final z in order) {
+      final load = List.of(loads);
+      final size = [for (final g in zones) g.length];
+      final assign = <int, int>{};
+      final pending = List.of(zones[z]);
+      var stuck = false;
+      while (pending.isNotEmpty) {
+        int? pick, target;
+        var best = double.infinity;
+        for (final i in pending) {
+          for (final nb in adj[i]!) {
+            final tz = assign[nb] ?? zoneOf[nb];
+            if (tz == null || tz == z) continue;
+            if (load[tz] + items[i].flow > cap + 1e-12 || size[tz] >= maxItems) continue;
+            if (load[tz] < best - 1e-15 || (load[tz] <= best + 1e-15 && (tz < target! || (tz == target && i < pick!)))) {
+              best = load[tz];
+              pick = i;
+              target = tz;
+            }
+          }
+        }
+        if (pick == null || target == null) {
+          stuck = true;
+          break;
+        }
+        assign[pick] = target;
+        load[target] += items[pick].flow;
+        size[target]++;
+        pending.remove(pick);
+      }
+      if (stuck) continue;
+      for (final e in assign.entries) {
+        zones[e.value].add(e.key);
+      }
+      zones.removeAt(z);
+      gone = any = true;
+      break;
+    }
+    if (!gone) break;
+  }
+  return any;
 }
 
 /// Moves boundary items from the heavier to the lighter of two neighbouring
