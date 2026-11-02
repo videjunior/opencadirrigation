@@ -174,13 +174,17 @@ class Terrain {
         final d2 = dx * dx + dy * dy;
         final key = iy * cols + ix;
         final b = best[key];
-        if (b == null || d2 < b.$1) best[key] = (d2, i);
+        // a tie goes to the least (x, y, z), whatever the order of the samples
+        if (b == null || d2 < b.$1 || (d2 == b.$1 && _before(_samples[i], _samples[b.$2]))) best[key] = (d2, i);
       }
       if (best.length <= budget) return [for (final b in best.values) b.$2]..sort();
       cell *= math.max(1.02, math.sqrt(best.length / budget));
     }
     return idx.sublist(0, budget);
   }
+
+  /// Whether sample [a] comes before [b] in (x, y, z) order.
+  static bool _before(TerrainSample a, TerrainSample b) => a.p.x != b.p.x ? a.p.x < b.p.x : (a.p.y != b.p.y ? a.p.y < b.p.y : a.z < b.z);
 
   /// The triangulation (built on first use).
   Tin get tin {
