@@ -364,10 +364,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   }
 
   void _onPointerKind() {
-    // (the pointer is pressed during a frame's input handling: rebuild after it)
+    // (the pointer is pressed during a frame's input handling: rebuild after it,
+    // in a frame of its own when none is coming — a tap that changes nothing on
+    // the screen asks for none)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() {});
     });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   /// Help → Interactive tutorial (also the welcome's "Start tutorial" and
