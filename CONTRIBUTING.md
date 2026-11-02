@@ -51,8 +51,9 @@ texts, tests, documentation and commit messages), and neither are CAD products: 
 format (DXF, DWG R2000). Component manufacturers appear only as the origin of catalogue data; EPANET may be cited as
 the reference of an algorithm; data and map providers (OpenStreetMap, Esri, Open-Meteo…) and the AI providers
 (Anthropic, OpenAI) appear as sources and credits; other programs (spreadsheets, GIS, virtual globes, browsers) only as
-the target of a file format. `test/editorial_names_test.dart` checks the forbidden names by their SHA-256, so it names
-none of them.
+the target of a file format. The forbidden names are one list of SHA-256 digests, `tool/hooks/banned-names.sha256`, so
+that nothing names them: `test/editorial_names_test.dart` checks the repository with it and the pre-commit hook
+(enabled with `core.hooksPath` set to `tool/hooks`) the lines a commit adds.
 
 ## Releasing
 
