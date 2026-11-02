@@ -23,12 +23,18 @@
 //   open page uses it. Where the browser cannot tell which page a request
 //   comes from, a new build waits until every page of the old one is closed.
 // - Same-origin files are served from the cache first; the pages are
-//   revalidated in the background. The fonts the engine fetches from
-//   fonts.gstatic.com (Roboto and the fallback fonts of other scripts) and the
-//   engine of a build that uses Google's CDN (www.gstatic.com/flutter-canvaskit)
-//   are kept once fetched: their addresses never change content. Every other
-//   request to another origin (map tiles, elevation, climate, analytics) goes
-//   to the network untouched.
+//   revalidated in the background. The fallback fonts of the engine, which
+//   the site serves itself under fonts/<family>/v<version>/ (tool/site_fonts.dart),
+//   and the engine of a build that uses Google's CDN
+//   (www.gstatic.com/flutter-canvaskit) are kept once fetched, in a cache of
+//   their own that every build shares: their addresses never change content.
+//   Every other request to another origin (map tiles, elevation, climate,
+//   analytics) goes to the network untouched.
+// - The share target of the installed app (its manifest): the files and the
+//   text shared with it arrive as a POST to <page>share-target, are kept in the
+//   cache "oci-share" under __oci__/share/<id>, and the page opens at
+//   <page>?share=<id>, where flutter_bootstrap.js hands them to the app once
+//   (and drops them); a share nobody picked up is dropped after a day.
 'use strict';
 
 const BUILD = '__OCI_BUILD__';
@@ -46,6 +52,11 @@ const SHELL_PREFIX = PREFIX + 'shell-';
 const SHELL = SHELL_PREFIX + BUILD;
 const RUNTIME = PREFIX + 'runtime';
 const META = PREFIX + 'meta';
+/** Files shared with the installed app, until its page picks them up (see [receiveShare]). */
+const SHARE = PREFIX + 'share';
+/** The most files one share keeps, and the most bytes. */
+const SHARE_MAX_FILES = 20;
+const SHARE_MAX_BYTES = 200 * 1024 * 1024;
 /** Written last into a build's cache: the build is complete (files and time). */
 const MANIFEST_URL = new URL('__oci__/manifest', BASE).href;
 /** Written first: when the filling started (a stale incomplete cache is dropped). */
@@ -209,7 +220,7 @@ async function prune() {
       await deleteCache(name);
       continue;
     }
-    if (!name.startsWith(PREFIX) || name === RUNTIME || name === META || used.has(name)) continue;
+    if (!name.startsWith(PREFIX) || name === RUNTIME || name === META || name === SHARE || used.has(name)) continue;
     if (!name.startsWith(SHELL_PREFIX)) {
       await deleteCache(name); // a format this worker does not know
       continue;
@@ -223,6 +234,20 @@ async function prune() {
     const started = await cache.match(STARTED_URL);
     const since = started ? Number(await started.text()) : 0;
     if (!(Date.now() - since < DAY)) await deleteCache(name);
+  }
+  await pruneShares();
+}
+
+/** Shares no page picked up within a day (the app did not start, or failed): dropped with their files. */
+async function pruneShares() {
+  if (!(await caches.has(SHARE))) return;
+  const cache = await caches.open(SHARE);
+  for (const request of await cache.keys()) {
+    if (!/\/__oci__\/share\/[0-9a-z-]+$/.test(new URL(request.url).pathname)) continue;
+    const meta = await readJson(await cache.match(request));
+    if (meta && Date.now() - (meta.time || 0) < DAY) continue;
+    for (const f of (meta && meta.files) || []) await cache.delete(new URL(f.key, BASE).href);
+    await cache.delete(request);
   }
 }
 
@@ -315,13 +340,32 @@ function bypassed(path) {
   return path === 'sw.js' || path.startsWith('__oci__/') || /\.(txt|xml)$/.test(path) || path === 'version.json' || path === '404.html';
 }
 
-/** Other origins whose answers never change for an address. */
+/** Other origins whose answers never change for an address: the engine of a build that uses Google's CDN. */
 function kept(url) {
-  return url.origin === 'https://fonts.gstatic.com' || (url.origin === 'https://www.gstatic.com' && url.pathname.startsWith('/flutter-canvaskit/'));
+  return url.origin === 'https://www.gstatic.com' && url.pathname.startsWith('/flutter-canvaskit/');
+}
+
+/** A fallback font of the engine served by the site (tool/site_fonts.dart): its address carries its version. */
+function hostedFont(path) {
+  return /^fonts\/[a-z0-9]+\/v\d+\/[A-Za-z0-9_.-]+\.(?:woff2|woff|ttf|otf)$/.test(path);
+}
+
+/** The page a share goes to, for the address the share target posts to (`share-target`, `pt/share-target`…), or null. */
+function sharePage(path) {
+  const m = /^(?:([a-z]{2})\/)?share-target$/.exec(path);
+  if (!m) return null;
+  return m[1] ? m[1] + '/' : './';
 }
 
 function onFetch(event) {
   const request = event.request;
+  if (request.method === 'POST') {
+    const url = new URL(request.url);
+    const path = url.origin === self.location.origin ? relative(url) : null;
+    const page = path === null ? null : sharePage(path);
+    if (page !== null) event.respondWith(receiveShare(request, page));
+    return;
+  }
   if (request.method !== 'GET' || request.headers.has('range')) return;
   if (request.cache === 'only-if-cached' && request.mode !== 'same-origin') return;
   const url = new URL(request.url);
@@ -335,11 +379,52 @@ function onFetch(event) {
       event.respondWith(navigate(event, page));
       return;
     }
+    if (hostedFont(path)) {
+      event.respondWith(serveKept(event));
+      return;
+    }
     if (bypassed(path)) return;
     event.respondWith(serveShell(event, url));
     return;
   }
-  if (kept(url)) event.respondWith(serveKept(request));
+  if (kept(url)) event.respondWith(serveKept(event));
+}
+
+/**
+ * What is shared with the installed app (files, a text, an address): kept
+ * in SHARE under __oci__/share/<id>, then the page of the share target's
+ * language opens at ?share=<id> (a 303, so a reload does not post again).
+ * Too many files or bytes keep the first ones that fit; a share that cannot
+ * be read still opens the app, at ?share=failed.
+ */
+async function receiveShare(request, page) {
+  const target = new URL(page, BASE);
+  let id = 'failed';
+  try {
+    const form = await request.formData();
+    const files = form.getAll('files').filter((f) => f && typeof f === 'object' && typeof f.arrayBuffer === 'function');
+    const text = ['title', 'text', 'url'].map((k) => form.get(k)).filter((v) => typeof v === 'string' && v.trim()).join('\n');
+    if (files.length || text) {
+      const key = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
+      const cache = await caches.open(SHARE);
+      const list = [];
+      let bytes = 0;
+      for (const f of files) {
+        if (list.length >= SHARE_MAX_FILES || bytes + (f.size || 0) > SHARE_MAX_BYTES) break;
+        const path = '__oci__/share/' + key + '/' + list.length;
+        await cache.put(new URL(path, BASE).href, new Response(f, { headers: { 'Content-Type': f.type || 'application/octet-stream' } }));
+        list.push({ name: f.name || 'file', type: f.type || '', size: f.size || 0, key: path });
+        bytes += f.size || 0;
+      }
+      const meta = { files: list, text: text, time: Date.now() };
+      await cache.put(new URL('__oci__/share/' + key, BASE).href, new Response(JSON.stringify(meta), { headers: { 'Content-Type': 'application/json' } }));
+      id = key;
+    }
+  } catch (e) {
+    id = 'failed';
+  }
+  target.searchParams.set('share', id);
+  return Response.redirect(target.href, 303);
 }
 
 /**
@@ -385,15 +470,26 @@ async function serveShell(event, url) {
   }
 }
 
-async function serveKept(request) {
-  const cache = await openCache(RUNTIME);
-  const hit = await cache.match(request.url, { ignoreVary: true });
-  if (hit) return hit;
-  const response = await fetch(request);
-  if (response.ok && (response.type === 'cors' || response.type === 'basic')) {
-    await cache.put(request.url, response.clone()).catch(() => {});
+/**
+ * A file whose address never changes content (a hosted font, the CDN's
+ * engine): from the shared cache, else the network (kept there). A request
+ * the page gave up on (an aborted font download) or that fails offline
+ * answers with a network error and leaves nothing unhandled in the worker.
+ */
+async function serveKept(event) {
+  const request = event.request;
+  try {
+    const cache = await openCache(RUNTIME);
+    const hit = await cache.match(request.url, { ignoreVary: true });
+    if (hit) return hit;
+    const response = await fetch(request);
+    if (response.ok && (response.type === 'cors' || response.type === 'basic')) {
+      event.waitUntil(cache.put(request.url, response.clone()).catch(() => {}));
+    }
+    return response;
+  } catch (error) {
+    return Response.error();
   }
-  return response;
 }
 
 // ------------------------------------------------------------------ messages
@@ -467,6 +563,12 @@ async function keepUsed(urls, clientId) {
     }
     if (url.origin === self.location.origin) {
       const path = relative(url);
+      if (path !== null && hostedFont(path)) {
+        if (await runtime.match(url.href, { ignoreVary: true })) continue;
+        const font = await fetch(url.href, { cache: 'force-cache', credentials: 'same-origin' }).catch(() => null);
+        if (font && font.ok && font.type === 'basic' && !font.redirected) await runtime.put(url.href, font);
+        continue;
+      }
       if (path === null || bypassed(path) || pagePath(path) !== null) continue;
       if (await lookup(shell, url)) continue;
       const response = await fetch(url.href, { cache: 'force-cache', credentials: 'same-origin' }).catch(() => null);

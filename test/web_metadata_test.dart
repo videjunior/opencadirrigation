@@ -195,7 +195,7 @@ void main() {
     final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
     expect(bootstrap, contains('{{flutter_js}}'));
     expect(bootstrap, contains('{{flutter_build_config}}'));
-    expect(bootstrap, contains('_flutter.loader.load();'));
+    expect(bootstrap, contains('_flutter.loader.load('));
     expect(bootstrap, isNot(contains('serviceWorker')));
   });
 
@@ -472,7 +472,7 @@ void main() {
         'consent',
         '14 months',
         'Firebase Hosting',
-        'fonts.gstatic.com',
+        'no font service is contacted',
         'Nominatim',
         'Anthropic or OpenAI',
         'LGPD',
@@ -623,9 +623,10 @@ void main() {
     final en = siteText('en');
     final cloud = en.faq.indexWhere((f) => f.$1 == 'Are my projects stored in the cloud?');
     expect(en.faq[cloud].$2, faqCloudAnswerEn);
-    for (final needle in ['Google Fonts', 'Google Analytics only if you accept it', 'never while the app is open', 'privacy policy']) {
+    for (final needle in ['come from this site itself', 'Google Analytics only if you accept it', 'never while the app is open', 'privacy policy']) {
       expect(faqCloudAnswerEn, contains(needle));
     }
+    expect(faqCloudAnswerEn, isNot(contains('Google Fonts')), reason: 'the fonts are served by the site (tool/site_fonts.dart)');
     for (final l in siteLanguages) {
       final a = siteText(l.code).faq[cloud].$2;
       expect(a, contains('Google Analytics'), reason: '${l.code}: the statistics are named');

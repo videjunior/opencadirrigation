@@ -92,9 +92,9 @@ const _legalEn = LegalText(
     ]),
     LegalSection('Hosting', [
       'The site is served by Firebase Hosting (Google), which receives the IP address and the technical data of each request (address asked for, browser, time) to deliver the pages and protect the service. Legal basis: the legitimate interest in running the site safely. These data are used for nothing else.',
+      'The app and all its fonts, those of every script and symbol included (Chinese, Japanese, Arabic and Indian scripts, arrows, emoji), come from this site too: no font service is contacted.',
     ]),
     LegalSection('Services your browser contacts when you use them', [
-      '- Fonts: Google Fonts (fonts.gstatic.com) sends the fonts of the scripts and symbols the app does not bundle (Chinese, Japanese, Arabic and Indian scripts, arrows and other symbols) when a screen needs them; it receives the IP address.',
       '- Base maps: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (with your own key) or the address you set receive the IP address and the map area on screen.',
       '- Online elevation and climate: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData and NASA POWER receive the coordinates of the area, nothing else of the project.',
       '- Address search: Nominatim (OpenStreetMap) receives the address you type.',
@@ -165,9 +165,9 @@ const _legalPt = LegalText(
     ]),
     LegalSection('Hospedagem', [
       'O site é servido pelo Firebase Hosting (Google), que recebe o endereço IP e os dados técnicos de cada requisição (endereço pedido, navegador, hora) para entregar as páginas e proteger o serviço. Base legal: o legítimo interesse em manter o site funcionando com segurança. Esses dados não são usados para mais nada.',
+      'O app e todas as suas fontes, inclusive as de todas as escritas e símbolos (chinês, japonês, árabe, escritas indianas, setas, emoji), também vêm deste site: nenhum serviço de fontes é acessado.',
     ]),
     LegalSection('Serviços que o seu navegador acessa quando você os usa', [
-      '- Fontes: o Google Fonts (fonts.gstatic.com) envia as fontes das escritas e dos símbolos que o app não traz (chinês, japonês, árabe, escritas indianas, setas e outros símbolos) quando uma tela precisa delas; ele recebe o endereço IP.',
       '- Mapas base: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (com a sua própria chave) ou o endereço que você configurar recebem o endereço IP e a área do mapa na tela.',
       '- Elevação e clima online: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData e NASA POWER recebem as coordenadas da área, nada mais do projeto.',
       '- Busca de endereços: o Nominatim (OpenStreetMap) recebe o endereço que você digita.',
@@ -238,9 +238,9 @@ const _legalEs = LegalText(
     ]),
     LegalSection('Alojamiento', [
       'El sitio lo sirve Firebase Hosting (Google), que recibe la dirección IP y los datos técnicos de cada petición (dirección pedida, navegador, hora) para entregar las páginas y proteger el servicio. Base jurídica: el interés legítimo en mantener el sitio funcionando con seguridad. Estos datos no se usan para nada más.',
+      'La aplicación y todas sus fuentes, incluidas las de todas las escrituras y símbolos (chino, japonés, árabe, escrituras indias, flechas, emoji), también vienen de este sitio: no se contacta ningún servicio de fuentes.',
     ]),
     LegalSection('Servicios a los que su navegador accede cuando usted los usa', [
-      '- Fuentes: Google Fonts (fonts.gstatic.com) envía las fuentes de las escrituras y los símbolos que la aplicación no incluye (chino, japonés, árabe, escrituras indias, flechas y otros símbolos) cuando una pantalla las necesita; recibe la dirección IP.',
       '- Mapas base: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (con su propia clave) o la dirección que usted configure reciben la dirección IP y el área del mapa en pantalla.',
       '- Elevación y clima en línea: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData y NASA POWER reciben las coordenadas del área, nada más del proyecto.',
       '- Búsqueda de direcciones: Nominatim (OpenStreetMap) recibe la dirección que usted escribe.',

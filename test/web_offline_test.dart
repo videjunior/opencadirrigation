@@ -156,13 +156,13 @@ void main() {
       expect(sw, contains(marker));
     }
     expect(sw, contains('self.registration.unregister()'), reason: 'template mode: removes itself');
-    expect(sw, contains("url.origin === 'https://fonts.gstatic.com'"), reason: "the engine's fonts are kept");
+    expect(sw, contains('if (hostedFont(path)) {'), reason: "the engine's fonts, served by the site, are kept once used");
     final offline = File('web/offline.js').readAsStringSync();
     expect(offline, contains("var script = '__OCI_SW_URL__';"));
     expect(offline, contains('register(script'));
     // the bootstrap: Flutter's loader, then offline.js once the first frame is on screen and the browser idle
     final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
-    expect(bootstrap.indexOf('_flutter.loader.load();'), lessThan(bootstrap.indexOf("'flutter-first-frame'")));
+    expect(bootstrap.indexOf('_flutter.loader.load('), lessThan(bootstrap.indexOf("'flutter-first-frame'")));
     expect(bootstrap, contains("s.src = 'offline.js';"));
     expect(bootstrap, contains('requestIdleCallback'));
     expect(bootstrap, isNot(contains('serviceWorker')), reason: "no service worker of Flutter's");

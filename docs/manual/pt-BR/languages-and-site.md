@@ -81,8 +81,9 @@ navegador já guardou, baixando a versão nova quando mudaram. Na instalação o
 preenche um cache por build (`oci-shell-<build>`): os arquivos que não mudaram desde o build
 anterior são copiados do cache dele, os outros são baixados passando por cima do cache HTTP e
 conferidos pelo hash. Ele responde primeiro pelo cache e revalida a página de abertura depois do
-primeiro quadro; guarda as fontes de fallback que o motor baixa de fonts.gstatic.com; tiles de mapa,
-elevação, clima e analytics vão direto para a rede. Um build novo é instalado em segundo plano; o
+primeiro quadro; guarda as fontes de fallback que o motor baixa de `fonts/` assim que são usadas (o
+endereço delas leva a versão, então uma cópia serve a todos os builds); tiles de mapa, elevação,
+clima e analytics vão direto para a rede. Um build novo é instalado em segundo plano; o
 `offline.js` avisa o app, que oferece recarregar nele (*Há uma versão nova do OpenCADIrrigation
 pronta*, depois de avisar do trabalho não salvo, que vai para o autossalvamento), e senão ele é
 assumido na próxima abertura. Uma página já aberta continua com o build com que abriu (as outras
@@ -91,6 +92,29 @@ novo a cada hora e quando volta à tela, e o cache de um build é apagado quando
 mais. Um
 `sw.js` que não foi preenchido (`flutter run`, um `flutter build web` simples) só remove a si mesmo
 e os seus caches.
+
+**Fontes servidas pelo site.** O Flutter traz o Roboto (latim, cirílico, grego); os glifos de todas
+as outras escritas e os símbolos vêm das fontes de reserva do motor, que ele baixa na primeira vez
+em que uma tela precisa delas, por padrão do servidor de fontes do Google. O build de produção as
+serve ele mesmo: depois do `flutter build web`, o `tool/build_web.sh` roda
+`dart run tool/site_fonts.dart`, que lê os endereços dessas fontes compilados no `main.dart.js`, baixa cada
+arquivo uma vez para `build/web_fonts_cache/` (os builds seguintes reaproveitam; `--offline` usa só
+o cache), copia-os para `fonts/<família>/v<versão>/` no build, com a licença das fontes, e preenche
+o `fontFallbackBaseUrl` no `flutter_bootstrap.js`; assim nem as páginas nem o app pedem nada a um
+serviço de fontes (a Política de Segurança de Conteúdo não tem mais servidor de fontes). Com o
+Flutter 3.47.9 são 725 arquivos, 21,8 MB no servidor: 6,6 MB das escritas dos 20 idiomas da
+interface, dos símbolos e da matemática (as de chinês e japonês divididas em 101 e 124 fatias),
+7,0 MB das variantes de chinês e coreano que um navegador em chinês tradicional, de Hong Kong ou em
+coreano pede, 2,0 MB de emoji e 6,2 MB de 130 outras escritas. O visitante baixa só as fatias de que
+o texto na tela precisa, e o service worker as guarda depois de usadas. No `flutter run` e num
+`flutter build web` simples o marcador fica, e o motor usa o servidor do Google como antes.
+
+**Guia do usuário.** O gerador também escreve este manual como páginas do site, de `docs/manual`
+(inglês, em `/manual/`) e de `docs/manual/pt-BR` (português, em `/pt/manual/`), com o
+`tool/site_manual.dart`: uma página por capítulo, com a lista de capítulos, o sumário das seções, o
+capítulo anterior e o próximo, as âncoras que o GitHub dá aos títulos (os links entre capítulos
+continuam funcionando) e links para os outros arquivos do repositório no GitHub. Os outros idiomas
+apontam para o guia em inglês no rodapé da sua página.
 
 O gerador também escreve o que buscadores e assistentes de IA leem além das páginas:
 `web/robots.txt` (tudo liberado, com os robôs de busca e de IA nomeados: GPTBot, OAI-SearchBot,

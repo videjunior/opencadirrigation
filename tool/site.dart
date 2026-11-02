@@ -81,11 +81,12 @@ const _localServers = 'http://localhost:* http://127.0.0.1:* http://[::1]:*';
 /// elevation, climate and AI services and the catalogues by URL are
 /// fetched from any HTTPS address the user picks, and map tiles also from a
 /// server of one's own on this computer (http://localhost, the one plain
-/// address a browser loads into an HTTPS page); fonts also come from
-/// fonts.gstatic.com; no plugins, frames or foreign base address.
+/// address a browser loads into an HTTPS page); the fonts, the fallback
+/// fonts of the engine included (tool/site_fonts.dart), come from the site
+/// itself; no plugins, frames or foreign base address.
 const contentSecurityPolicy =
     "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; "
-    "img-src 'self' data: blob: https: $_localServers; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: data: blob: $_localServers; "
+    "img-src 'self' data: blob: https: $_localServers; font-src 'self' data:; connect-src 'self' https: data: blob: $_localServers; "
     "worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; "
     "object-src 'none'; base-uri 'self'; form-action 'self'";
 
@@ -247,7 +248,7 @@ class SiteText {
 /// internet was reached only on request, which the fonts and the visit
 /// statistics contradicted).
 const faqCloudAnswerEn =
-    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
+    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The fonts of every script and symbol come from this site itself. The browser does reach other services: base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
 
 const _pt = SiteText(
   title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
@@ -390,7 +391,7 @@ const _pt = SiteText(
     ),
     (
       'Meus projetos ficam na nuvem?',
-      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. O navegador acessa outros serviços: as fontes das escritas e dos símbolos que o app não traz vêm do Google Fonts quando uma tela precisa delas; mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
+      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. As fontes de todas as escritas e símbolos vêm do próprio site. O navegador acessa outros serviços: mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
     ),
     (
       'Como é feito o cálculo hidráulico?',
@@ -722,7 +723,7 @@ const _es = SiteText(
     ),
     (
       '¿Mis proyectos se guardan en la nube?',
-      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. El navegador sí accede a otros servicios: las fuentes de las escrituras y los símbolos que la aplicación no incluye vienen de Google Fonts cuando una pantalla las necesita; los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
+      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. Las fuentes de todas las escrituras y símbolos vienen del propio sitio. El navegador sí accede a otros servicios: los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
     ),
     (
       '¿Cómo se hace el cálculo hidráulico?',
@@ -1349,13 +1350,8 @@ String renderSiteScript() {
     showBanner(false);
     landing.className += ' oci-starting';
     status.textContent = landing.getAttribute('data-loading');
-    // The engine and the app code come from this site and are fetched while the loader runs;
-    // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
-    var engine = document.createElement('link');
-    engine.rel = 'preconnect';
-    engine.href = 'https://fonts.gstatic.com';
-    engine.crossOrigin = '';
-    document.head.appendChild(engine);
+    // The engine, the app code and the fonts (those of other scripts and the symbols too,
+    // under fonts/) come from this site and are fetched while the loader runs.
     var code = document.createElement('link');
     code.rel = 'preload';
     code.as = 'script';

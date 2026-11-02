@@ -78,14 +78,38 @@ browser kept, fetching their new version when they changed. At install the
 worker fills one cache per build (`oci-shell-<build>`): files unchanged since the previous build are
 copied from its cache, the others fetched past the HTTP cache and checked against their hash. It
 answers from the cache first and revalidates the start page after the first frame; it keeps the
-fallback fonts the engine fetches from fonts.gstatic.com; map tiles, elevation, climate and
-analytics go to the network untouched. A new build is installed in the background; `offline.js` tells
+fallback fonts the engine fetches from `fonts/` once used (their addresses carry their version, so
+one copy serves every build); map tiles, elevation, climate and analytics go to the network
+untouched. A new build is installed in the background; `offline.js` tells
 the app, which offers to reload into it (*A new version of OpenCADIrrigation is ready*, after a word
 about unsaved work, which goes to the autosave), and otherwise it is taken at the next start. A
 page already open keeps the build it started with (the other open pages keep theirs when one
 reloads), a page left open for days looks for a new build every hour and when it comes back on
 screen, and a build's cache is deleted once no page uses it. A `sw.js` that was not filled in (`flutter run`, a
 plain `flutter build web`) only removes itself and its caches.
+
+**Fonts served by the site.** Flutter bundles Roboto (Latin, Cyrillic, Greek); the glyphs of every
+other script and the symbols come from the fallback fonts of the engine, which it fetches the first
+time a screen needs them, by default from Google's font server. The production build serves them
+itself: after `flutter build web`, `tool/build_web.sh` runs `dart run tool/site_fonts.dart`, which
+reads the addresses of those fonts compiled into `main.dart.js`, downloads each file once into
+`build/web_fonts_cache/` (later builds reuse it; `--offline` uses only the cache), copies them to
+`fonts/<family>/v<version>/` in the build with the font licence, and fills in `fontFallbackBaseUrl`
+in `flutter_bootstrap.js`, so neither the pages nor the app ever ask a font service for anything (the
+Content Security Policy has no font host left). With Flutter 3.47.9 that is 725 files, 21.8 MB on
+the server: 6.6 MB for the scripts of the 20 interface languages, the symbols and the mathematics
+(the Chinese and Japanese ones split into 101 and 124 slices), 7.0 MB for the Chinese and Korean
+variants a browser in Traditional Chinese, Hong Kong or Korean asks for, 2.0 MB of emoji and 6.2 MB
+for 130 other scripts. A visitor downloads only the slices the text on screen needs, and the
+service worker keeps them once used. Under `flutter run` and in a plain `flutter build web` the
+placeholder stays and the engine uses Google's server as before.
+
+**User guide.** The generator also writes this manual as pages of the site, from `docs/manual`
+(English, at `/manual/`) and `docs/manual/pt-BR` (Portuguese, at `/pt/manual/`), with
+`tool/site_manual.dart`: one page per chapter with the list of chapters, a table of contents of its
+sections, the previous and next chapter, the anchors GitHub gives the headings (links between
+chapters keep working) and links to the other files of the repository on GitHub. The other languages
+link to the English guide from the foot of their page.
 
 The generator also writes what search engines and AI assistants read besides the pages:
 `web/robots.txt` (everything allowed, with the search and AI crawlers named: GPTBot, OAI-SearchBot,
