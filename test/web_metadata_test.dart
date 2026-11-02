@@ -8,6 +8,7 @@ import 'package:opencadirrigation/app/i18n.dart' show rtlLanguages, supportedLan
 import 'package:opencadirrigation/app/version.dart' show appRepositoryUrl, appVersion;
 
 import '../tool/site.dart';
+import '../tool/site_manual.dart' show manualSitemapEntries, manualUrl;
 
 /// Guards the web launch metadata for opencadirrigation.com: one entry page
 /// per interface language (en at /, the others under /<code>/: /pt/, /es/,
@@ -399,8 +400,16 @@ void main() {
     expect(sitemap, isNot(contains('<loc>${site}en/</loc>')), reason: 'English is the root page now');
     expect(sitemap, isNot(contains('?lang=')), reason: 'query URLs are not canonical pages');
     final legalPages = 2 * siteLanguages.where((l) => hasLegalText(l.code)).length;
-    expect(RegExp('hreflang="x-default"').allMatches(sitemap).length, siteLanguages.length + legalPages);
-    expect(RegExp(r'<lastmod>\d{4}-\d\d-\d\d</lastmod>').allMatches(sitemap).length, siteLanguages.length + legalPages);
+    // the user guide: every chapter in English and Portuguese (tool/site_manual.dart)
+    final guidePages = manualSitemapEntries().length;
+    expect(guidePages, greaterThan(30));
+    expect(RegExp('hreflang="x-default"').allMatches(sitemap).length, siteLanguages.length + legalPages + guidePages);
+    expect(RegExp(r'<lastmod>\d{4}-\d\d-\d\d</lastmod>').allMatches(sitemap).length, siteLanguages.length + legalPages + guidePages);
+    expect(sitemap, contains('<loc>${site}manual/</loc>'));
+    expect(sitemap, contains('<loc>${site}pt/manual/</loc>'));
+    for (final l in siteLanguages) {
+      expect(File('web/${l.file}').readAsStringSync(), contains('<a href="${manualUrl(l.code)}"'), reason: '${l.code}: the footer links to the user guide');
+    }
     expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="pt" href="${site}pt/"/>'));
     expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="zh" href="${site}zh/"/>'));
     expect(sitemap, contains('<loc>${site}privacy/</loc>'));

@@ -32,6 +32,8 @@ import 'dart:io';
 import 'package:opencadirrigation/app/i18n.dart' show languageNames, languageTag, rtlLanguages, supportedLanguages;
 import 'package:opencadirrigation/app/version.dart' show appRepositoryUrl, appVersion;
 
+import 'site_manual.dart';
+
 part 'site/ar.dart';
 part 'site/bn.dart';
 part 'site/de.dart';
@@ -1178,7 +1180,7 @@ ${jsonLd(lang)}
       <footer>
         <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>
         <p>${_esc(t.footer)}</p>
-        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · ${legalLinks(lang)} · <time datetime="$siteLastMod">$siteLastMod</time></p>
+        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · ${manualLink(lang)} · ${legalLinks(lang)} · <time datetime="$siteLastMod">$siteLastMod</time></p>
       </footer>
     </div>
 ${consentNotice(lang, legalText(lang.code))}
@@ -1187,6 +1189,21 @@ ${consentNotice(lang, legalText(lang.code))}
 </body>
 </html>''');
   return b.toString();
+}
+
+/// Name of the user guide in the footer of the entry pages (the guide is
+/// written in English and Portuguese; the other languages link to the
+/// English one, under its English name until the next translation pass).
+const _manualLabels = {'pt': 'Guia do usuário', 'en': 'User guide', 'es': 'Guía del usuario'};
+
+/// The footer link of [lang] to the user guide (tool/site_manual.dart):
+/// the Portuguese guide from the Portuguese page, the English one elsewhere.
+String manualLink(SiteLang lang) {
+  final label = _manualLabels[lang.code];
+  final guideLang = manualSources.containsKey(lang.code) ? lang : siteLang('en');
+  final marked = label == null || !manualSources.containsKey(lang.code) ? ' hreflang="${guideLang.tag}"' : '';
+  final own = label == null ? ' lang="en"' : '';
+  return '<a href="${manualUrl(lang.code)}"$marked$own>${_esc(label ?? _manualLabels['en']!)}</a>';
 }
 
 /// Address of the site script, versioned by its content (the page asks for
@@ -1427,6 +1444,18 @@ String renderSitemap() {
       b.writeln('  </url>');
     }
   }
+  // the user guide (tool/site_manual.dart): its chapters in English and Portuguese
+  for (final (url, alternates) in manualSitemapEntries()) {
+    b.writeln('  <url>');
+    b.writeln('    <loc>$url</loc>');
+    b.writeln('    <lastmod>$siteLastMod</lastmod>');
+    b.writeln('    <changefreq>monthly</changefreq>');
+    b.writeln('    <priority>0.6</priority>');
+    for (final e in alternates.entries) {
+      b.writeln('    <xhtml:link rel="alternate" hreflang="${e.key}" href="${e.value}"/>');
+    }
+    b.writeln('  </url>');
+  }
   b.writeln('</urlset>');
   return b.toString();
 }
@@ -1651,6 +1680,8 @@ Map<String, String> renderSite() => {
   for (final l in siteLanguages) '${l.path}manifest.json': renderManifest(l),
   for (final l in siteLanguages) '${l.path}privacy/index.html': renderLegalPage(l, privacy: true),
   for (final l in siteLanguages) '${l.path}terms/index.html': renderLegalPage(l, privacy: false),
+  // the user guide, from docs/manual (English) and docs/manual/pt-BR
+  ...renderManualPages(),
   'site.js': renderSiteScript(),
   '.well-known/security.txt': renderSecurityTxt(),
   'en/index.html': renderLegacyEnRedirect(),
@@ -1723,6 +1754,9 @@ String renderHostingConfig() {
         rule('/*/', {'Cache-Control': _revalidate}),
         rule('**/*.html', {'Cache-Control': _revalidate}),
         rule('**/manifest.json', {'Cache-Control': _revalidate}),
+        // the pages of the user guide, asked for by their folder address (/manual/calculation/)
+        rule('/manual/**', {'Cache-Control': _revalidate}),
+        rule('/*/manual/**', {'Cache-Control': _revalidate}),
         rule('/@(flutter_bootstrap.js|flutter.js|version.json|sw.js|offline.js|site.js|main.dart.js|design_worker.js)', {'Cache-Control': _revalidate}),
         rule('/*.part.js', {'Cache-Control': _revalidate}),
         rule('/@(assets|canvaskit)/**', {'Cache-Control': _revalidate}),

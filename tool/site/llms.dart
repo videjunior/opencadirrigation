@@ -304,6 +304,7 @@ String renderLlmsTxt() {
     ..writeln(
       '- [Complete reference](${siteUrl}llms-full.txt): features, design workflow, hydraulic methods, transients, sizing, automatic design, agronomy, catalogues, file formats, the AI assistant, offline and field use, examples, deep links, limitations and FAQ in one Markdown file',
     )
+    ..writeln('- [User guide](${manualUrl('en')}): the manual of the app, chapter by chapter, as web pages (in Portuguese at ${manualUrl('pt')})')
     ..writeln()
     ..writeln('## ${en.examplesTitle}')
     ..writeln()
