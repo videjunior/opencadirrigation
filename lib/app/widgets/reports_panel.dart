@@ -45,6 +45,8 @@ const reportTabKeys = [
   'reports.pivotPackage',
   'reports.machines',
   'reports.vih',
+  // 1.6.0 AGB
+  'reports.agb',
 ];
 
 /// Report tab indices used in code.
@@ -189,6 +191,20 @@ class ReportsPanel extends StatelessWidget {
         return _stack(const [('pivotPackageSummary', 1), ('pivotPackage', 3), ('pivotTimer', 1)], emptyKey: 'msg.noPivotPackage');
       case 25:
         return _fromTable('vih', emptyKey: 'msg.noVih');
+      // 1.6.0 AGB: pump house, pivots' supply, solar, water, two-wire, lanes and furrows
+      case 26:
+        return _stack(const [
+          ('pumpHouse', 2),
+          ('pumpHouseSupply', 1),
+          ('pivotSupply', 1),
+          ('solar', 1),
+          ('solarMonths', 1),
+          ('waterQuality', 1),
+          ('waterTreatment', 1),
+          ('twoWire', 1),
+          ('travellers', 1),
+          ('furrows', 1),
+        ], emptyKey: 'agb.rep.empty');
       default:
         return _stack(const [('cornerArm', 1), ('vri', 1), ('pivotElectrical', 1)], emptyKey: 'msg.noMachineExtras');
     }

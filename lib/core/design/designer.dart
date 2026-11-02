@@ -26,8 +26,10 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import '../units.dart';
+import 'agb_design.dart';
 import 'area_water.dart';
 import 'electrical.dart';
+import 'field_machines.dart';
 import 'fittings.dart';
 import 'lp.dart';
 import 'lp_sizing.dart';
@@ -273,6 +275,8 @@ class Designer {
   (double, double) _demandOf(String id) {
     if (model.pivotNodes.containsKey(id)) {
       final p = project.byId(id);
+      // 1.6.0 AGB: a traveller lane or a furrow set
+      if (p != null && p is! PivotEntity) return fieldMachineDemand(project, p, terrain: model.terrain) ?? (0, 0);
       if (p is! PivotEntity) return (0, 0);
       final r = results.pivots[id] ?? analyzePivotEntity(p);
       results.pivots[id] = r;
@@ -2790,6 +2794,8 @@ class Designer {
       },
     );
     yield (stage: DesignStage.bom, zoneId: null, zoneIndex: 0, run: designWiring);
+    // 1.6.0 AGB: pump house electrics, solar pumping, water quality, two-wire
+    yield (stage: DesignStage.bom, zoneId: null, zoneIndex: 0, run: designMachinesAndWater);
     yield (stage: DesignStage.bom, zoneId: null, zoneIndex: 0, run: buildBom);
   }
 
@@ -3100,6 +3106,20 @@ class Designer {
     return r;
   }
 
+  // 1.6.0 AGB
+  /// Pump house electrics and the pivots' supply, solar pumping, water
+  /// quality and two-wire wiring (`agb_design.dart`), on the flows of the
+  /// valve wiring.
+  AgbResults? designMachinesAndWater() {
+    final flows = [
+      for (final f in effectiveSystemFlows()) {...f.valveIds, ...vih.runningIn(f.valveIds)},
+    ];
+    final r = designAgb(project, results, flows: flows, terrain: model.terrain);
+    results.agb = r;
+    if (r != null) results.messages.addAll(r.warnings);
+    return r;
+  }
+
   List<BomLine> buildBom() {
     final lines = <String, BomLine>{};
     // the same lines split by where they are installed: a zone (its valve
@@ -3235,10 +3255,12 @@ class Designer {
       }
     }
     final el = results.electrical;
+    // 1.6.0 AGB: with two-wire wiring the decoder path replaces the station wires
+    final twoWire = twoWireOn(project) && results.agb?.twoWire != null;
     if (el != null) {
       for (final e in el.wireMeters.entries) {
         final w = catalog.wire(e.key);
-        if (w != null && e.value > 0) add('bom.electrical', w.name, 'm', e.value, w.costPerM, w.id, code: w.code, supplier: w.supplier, zone: 'elec');
+        if (w != null && e.value > 0 && !twoWire) add('bom.electrical', w.name, 'm', e.value, w.costPerM, w.id, code: w.code, supplier: w.supplier, zone: 'elec');
       }
       for (final c in project.entities.whereType<ControllerEntity>()) {
         add('bom.electrical', '${c.name.isNotEmpty ? c.name : _label('tool.controller')} (${c.stations} ${_label('elec.stationsShort')})', 'un', 1, c.cost, null, zone: 'elec');
@@ -3248,8 +3270,10 @@ class Designer {
         }
       }
       // two waterproof splices per solenoid (station and common conductors)
-      if (el.runs.isNotEmpty) add('bom.electrical', _label('elec.splice'), 'un', 2.0 * el.runs.fold(0, (s, r) => s + r.solenoids), 0, null, zone: 'elec');
+      if (el.runs.isNotEmpty && !twoWire) add('bom.electrical', _label('elec.splice'), 'un', 2.0 * el.runs.fold(0, (s, r) => s + r.solenoids), 0, null, zone: 'elec');
     }
+    // 1.6.0 AGB: pump house, pivots' supply, solar array, filtration, two-wire
+    agbBomLines(project, results, add, _label);
     results.bom
       ..clear()
       ..addAll(lines.values);
@@ -3276,6 +3300,8 @@ class Designer {
     results.capitalCost = results.bom.fold(0.0, (s, l) => s + l.total);
     results.annualCapitalCost = results.capitalCost * _crf();
     results.annualEnergyCost = results.systemFlows.fold(0.0, (s, f) => s + f.annualEnergyCost);
+    // 1.6.0 AGB: what the solar array leaves of the energy cost
+    results.annualEnergyCost = agbEnergyCost(results);
     return results.bom;
   }
 }

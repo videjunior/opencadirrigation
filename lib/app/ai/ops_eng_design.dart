@@ -41,6 +41,8 @@ const reportTabTables = <String, List<String>>{
   'pivotPackage': ['pivotPackageSummary', 'pivotPackage', 'pivotTimer'],
   'machines': ['cornerArm', 'vri', 'pivotElectrical'],
   'vih': ['vih'],
+  // 1.6.0 AGB
+  'agb': ['pumpHouse', 'pumpHouseSupply', 'pivotSupply', 'solar', 'solarMonths', 'waterQuality', 'waterTreatment', 'twoWire', 'travellers', 'furrows'],
 };
 
 String _scenarioTable(AgentToolbox b) {

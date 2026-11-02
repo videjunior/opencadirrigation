@@ -25,6 +25,9 @@ import 'advice_panel.dart';
 import 'command_entry.dart';
 import 'ai/ai_panel.dart';
 import 'dialogs/agronomy_dialogs.dart';
+// 1.6.0 AGB
+import 'dialogs/agb_dialogs.dart';
+import 'dialogs/field_machine_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/field_calculators.dart';
@@ -497,6 +500,14 @@ class _MobileShellState extends State<MobileShell> {
             row(t('rings.menu'), () => showTreeRingsDialog(context, c), icon: Icons.park_outlined, key: const Key('mobile_menu_tree_rings')),
             row(t('pfit.menu'), () => showPivotFitDialog(context, c), icon: Icons.track_changes, key: const Key('mobile_menu_pivot_fit')),
             row(t('veg.menu'), () => showVegetationDialog(context, c), icon: Icons.image_search, key: const Key('mobile_menu_vegetation')),
+            // 1.6.0 AGB: machines, electrics and water
+            row(t('agb.ph.menu'), () => showPumpHouseDialog(context, c), icon: Icons.electrical_services_outlined, key: const Key('mobile_menu_agb_pump_house')),
+            row(t('agb.solar.menu'), () => showSolarDesignDialog(context, c), icon: Icons.solar_power, key: const Key('mobile_menu_agb_solar')),
+            row(t('agb.water.menu'), () => showWaterQualityDialog(context, c), icon: Icons.water_drop, key: const Key('mobile_menu_agb_water')),
+            row(t('agb.tw.menu'), () => showTwoWireDialog(context, c), icon: Icons.settings_ethernet, key: const Key('mobile_menu_agb_two_wire')),
+            row(t('agb.mp.menu'), () => showMultiPivotDialog(context, c), icon: Icons.blur_circular, key: const Key('mobile_menu_agb_multi_pivot')),
+            row(t('agb.trav.menu'), () => showTravellerLanesDialog(context, c), icon: Icons.agriculture, key: const Key('mobile_menu_agb_traveller')),
+            row(t('agb.furrow.menu'), () => showFurrowSetDialog(context, c), icon: Icons.view_week, key: const Key('mobile_menu_agb_furrows')),
             row(t('design.clear'), c.results == null ? null : c.clearResults, icon: Icons.clear_all),
           ], key: const Key('mobile_menu_design')),
           section(t('menu.reports'), Icons.table_chart_outlined, [

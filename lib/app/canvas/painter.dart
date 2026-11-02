@@ -380,6 +380,11 @@ class CadPainter extends CustomPainter {
       case PivotEntity pv:
         // drawn in place: its fill, outline, span and centre in this order
         _unbatched(() => _pivot(canvas, pv, color, selected));
+      // 1.6.0 AGB: traveller lanes and furrow sets
+      case TravellerEntity tv:
+        _unbatched(() => _travellerLane(canvas, tv, color, selected));
+      case FurrowEntity fs:
+        _unbatched(() => _furrowSet(canvas, fs, color, selected));
       case SpotHeightEntity s:
         final o = cam.toScreen(s.position);
         _seg(canvas, o + const Offset(-4, 0), o + const Offset(4, 0), _stroke(color, 1));
@@ -961,6 +966,53 @@ class CadPainter extends CustomPainter {
 
   /// Centre pivot / linear move: irrigated outline, span pipe, towers and
   /// the pivot point, with flow / inlet pressure after the design.
+  // 1.6.0 AGB
+  /// A traveller lane: the strip it waters, the run from the far end to the
+  /// reel and the hydrant at the reel.
+  void _travellerLane(Canvas canvas, TravellerEntity t, Color color, bool selected) {
+    final outline = t.outline();
+    final path = Path();
+    final f = cam.toScreen(outline.first);
+    path.moveTo(f.dx, f.dy);
+    for (final q in outline.skip(1)) {
+      final o = cam.toScreen(q);
+      path.lineTo(o.dx, o.dy);
+    }
+    path.close();
+    canvas.drawPath(path, _fill(color.withValues(alpha: selected ? 0.14 : 0.06)));
+    _poly(canvas, outline, _stroke(color.withValues(alpha: 0.8), selected ? 1.5 : 1), close: true);
+    final a = cam.toScreen(t.start), b = cam.toScreen(t.end);
+    _seg(canvas, a, b, _stroke(color, selected ? 2.5 : 1.5));
+    canvas.drawCircle(b, 4, _stroke(color, 1.5));
+    canvas.drawRect(Rect.fromCenter(center: a, width: 9, height: 9), _fill(color));
+    canvas.drawRect(Rect.fromCenter(center: a, width: 9, height: 9), _stroke(Colors.black, 1));
+    if (c.showLabels && t.name.isNotEmpty) _label(canvas, a, t.name, size: 11, color: color, shift: const Offset(8, -8));
+  }
+
+  /// A furrow set: its field, the head line from the inlet and some furrows.
+  void _furrowSet(Canvas canvas, FurrowEntity f, Color color, bool selected) {
+    if (f.points.length < 2) return;
+    final outline = f.outline();
+    _poly(canvas, outline, _stroke(color.withValues(alpha: 0.6), selected ? 1.5 : 1), close: true);
+    _poly(canvas, f.points, _stroke(color, selected ? 3 : 2));
+    // a furrow every few metres of screen, along the head line
+    final total = f.length;
+    final px = f.furrowSpacingM * cam.scale;
+    final every = px <= 0 ? 0 : math.max(1, (6 / px).ceil());
+    if (every > 0 && f.furrowCount <= 20000) {
+      final along = f.furrowDirection * f.furrowLengthM;
+      final paint = _stroke(color.withValues(alpha: 0.35), 1);
+      for (var i = 0; i < f.furrowCount; i += every) {
+        final p = pointAlongPolyline(f.points, math.min(total, (i + 0.5) * f.furrowSpacingM));
+        _seg(canvas, cam.toScreen(p), cam.toScreen(p + along), paint);
+      }
+    }
+    final o = cam.toScreen(f.points.first);
+    canvas.drawCircle(o, 5, _fill(color));
+    canvas.drawCircle(o, 5, _stroke(Colors.black, 1));
+    if (c.showLabels && f.name.isNotEmpty) _label(canvas, o, f.name, size: 11, color: color, shift: const Offset(8, -8));
+  }
+
   void _pivot(Canvas canvas, PivotEntity p, Color color, bool selected) {
     final outline = p.outline();
     final path = Path();

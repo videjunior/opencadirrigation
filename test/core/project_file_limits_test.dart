@@ -47,6 +47,9 @@ void main() {
     CommentEntity(id: 'e30', position: const Pt(4, 4), text: 'poço', photo: 'abc'),
     RevisionCloudEntity(id: 'e31', points: const [Pt(0, 0), Pt(5, 0), Pt(5, 5)], revision: 'A'),
     BreaklineEntity(id: 'e32', points: const [Pt(0, 0), Pt(10, 0)], elevations: const [5, double.nan]),
+    // 1.6.0 AGB
+    TravellerEntity(id: 'e33', start: const Pt(0, 0), end: const Pt(0, 250), laneWidthM: 60, machine: 'B'),
+    FurrowEntity(id: 'e34', points: [const Pt(0, 0), const Pt(90, 0)], furrowsPerSet: 30, leftSide: false),
   ];
 
   test('the samples cover every kind of entity', () {

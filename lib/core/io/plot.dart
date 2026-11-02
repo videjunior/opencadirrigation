@@ -436,6 +436,14 @@ PlotScene buildPlotScene(
         }
       case TapeEntity tp:
         path(tp.layer, tp.points, widthMm: 0.35, dashed: true);
+      // 1.6.0 AGB: a traveller lane (its strip, axis and hydrant) and a furrow set (its field and head line)
+      case TravellerEntity tv:
+        tintedPath(tv.layer, tv.outline(), colorOf(tv.layer), 0.08, 0.2);
+        path(tv.layer, [tv.start, tv.end], widthMm: 0.5);
+        circle(tv.layer, tv.start, 1.0 * mm, widthMm: 0.3, fill: colorOf(tv.layer));
+      case FurrowEntity fs when fs.points.length >= 2:
+        tintedPath(fs.layer, fs.outline(), colorOf(fs.layer), 0.06, 0.2);
+        path(fs.layer, fs.points, widthMm: 0.6);
       case PivotEntity pv:
         tintedPath(pv.layer, pv.outline(), colorOf(pv.layer), 0.08, 0.25);
         path(pv.layer, [pv.center, pv.endPoint], widthMm: 0.6);

@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import '../hydraulics/uniformity.dart';
 import '../model/geometry.dart';
+import 'agb_design.dart';
 import 'electrical.dart';
 import 'mechanised.dart';
 import 'pivot.dart';
@@ -864,6 +865,10 @@ class DesignResults {
   /// Valve wiring (controllers, wire sizes, solenoid voltages); null when
   /// the drawing has no controller and no wire route.
   ElectricalResult? electrical;
+
+  // 1.6.0 AGB: pump house electrics and the pivots' supply, solar pumping,
+  // water quality and treatment, two-wire wiring (`agb_design.dart`)
+  AgbResults? agb;
   double capitalCost = 0;
   double annualCapitalCost = 0;
   double annualEnergyCost = 0;
@@ -957,6 +962,8 @@ class DesignResults {
     'capital': capitalCost,
     'annualCapital': annualCapitalCost,
     'annualEnergy': annualEnergyCost,
+    // 1.6.0 AGB
+    if (agb != null) 'agb': agb!.toJson(),
   };
 
   static DesignResults fromJson(Map<String, dynamic> j) {
@@ -987,6 +994,9 @@ class DesignResults {
     r.capitalCost = _d(j, 'capital');
     r.annualCapitalCost = _d(j, 'annualCapital');
     r.annualEnergyCost = _d(j, 'annualEnergy');
+    // 1.6.0 AGB
+    final agb = j['agb'];
+    if (agb is Map) r.agb = AgbResults.fromJson(agb.cast<String, dynamic>());
     return r;
   }
 }
