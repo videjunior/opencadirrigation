@@ -77,18 +77,18 @@ void main() {
   });
 
   test('the blocks of a document: numbered lists, formulas, notes, levels and sections left out', () {
-    final doc = TechDocument(
+    const doc = TechDocument(
       key: 'x',
       title: 'X',
       sections: [
-        const TechSection('One', [
+        TechSection('One', [
           TechBullets(['a', 'b'], numbered: true),
           TechFormula('q = k H^x', where: [('q', 'flow')], source: 'Keller'),
           TechNote('Mind it', warning: true),
           TechNote('By the way'),
         ], key: 'one'),
-        const TechSection('Two', [TechParagraph('text')], key: 'two'),
-        const TechSection('Two and a half', [TechParagraph('more')], level: 2, key: 'half'),
+        TechSection('Two', [TechParagraph('text')], key: 'two'),
+        TechSection('Two and a half', [TechParagraph('more')], level: 2, key: 'half'),
       ],
     );
     final blocks = techDocumentBlocks(doc, skip: const {'two'});
