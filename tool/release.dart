@@ -297,24 +297,62 @@ void report(List<String> problems) {
   throw ReleaseStop('the build is not fit to publish:\n  - ${problems.join('\n  - ')}');
 }
 
-/// Warns when about.text has not changed since the last release commit: the
-/// About box (20 languages) lists what each release brings.
+/// Warns about the languages whose About text (about.text) is still the one
+/// of the last release commit: the About box (20 languages) lists what each
+/// release brings. Formatting changes of lib/app/i18n.dart do not count.
 void aboutReminder(Options o) {
   final last = lastRelease();
   if (last == null) return;
-  final hash = last.split(' ').first;
-  final touched = git(['log', '$hash..HEAD', '--oneline', '-G', 'about\\.text', '--', 'lib/app/i18n.dart', 'lib/app/i18n_parts', 'assets/i18n']);
-  if (touched.isNotEmpty) {
-    stdout.writeln('About: about.text changed since $last');
+  final before = aboutTexts(last.split(' ').first), now = aboutTexts();
+  final same = [
+    for (final e in now.entries)
+      if (before[e.key] == e.value) e.key,
+  ]..sort();
+  if (same.isEmpty) {
+    stdout.writeln('About: about.text changed in every language since $last');
     return;
   }
   stdout
     ..writeln()
-    ..writeln('!! about.text has not changed since the last release ($last).')
-    ..writeln('   Add the lines of this release to the About text in the 20 languages')
-    ..writeln('   (lib/app/i18n.dart and assets/i18n/*.json, keys about.text and about.credits).')
+    ..writeln('!! about.text is the one of the last release ($last) in ${same.length} of ${now.length}: ${same.join(', ')}')
+    ..writeln('   Add the lines of this release to the About text in every language')
+    ..writeln('   (lib/app/i18n.dart for pt/en/es, assets/i18n/<code>.json; keys about.text and about.credits).')
     ..writeln();
   if (!confirm(o, 'Go on without it for now?')) throw ReleaseStop('stopped to update the About text; run prepare again after committing it');
+}
+
+/// about.text by language at the commit [rev] (the working tree when null):
+/// pt/en/es from lib/app/i18n.dart (whitespace collapsed), the others from
+/// the packs of assets/i18n.
+Map<String, String> aboutTexts([String? rev]) {
+  String? read(String path) {
+    if (rev == null) {
+      final f = File(path);
+      return f.existsSync() ? f.readAsStringSync() : null;
+    }
+    final r = Process.runSync('git', ['show', '$rev:$path']);
+    return r.exitCode == 0 ? r.stdout as String : null;
+  }
+
+  final out = <String, String>{};
+  final table = read('lib/app/i18n.dart');
+  final m = table == null ? null : RegExp(r"'about\.text':\s*\((.*?)\),\s*\n\s*'", dotAll: true).firstMatch(table);
+  if (m != null) out['pt/en/es'] = m.group(1)!.replaceAll(RegExp(r'\s+'), ' ').trim().replaceAll(RegExp(r',$'), '');
+  final dir = Directory('assets/i18n');
+  final packs = dir.existsSync() ? dir.listSync().whereType<File>().where((f) => f.path.endsWith('.json')).toList() : <File>[];
+  for (final f in packs) {
+    final code = f.uri.pathSegments.last.replaceAll('.json', '');
+    final text = read('assets/i18n/$code.json');
+    if (text == null) continue;
+    try {
+      final strings = (jsonDecode(text) as Map<String, dynamic>)['strings'];
+      final s = strings is Map ? strings['about.text'] : null;
+      if (s is String) out[code] = s;
+    } on FormatException {
+      // a pack that does not parse at that commit: nothing to compare
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------- helpers
