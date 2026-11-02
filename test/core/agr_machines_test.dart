@@ -7,7 +7,6 @@ import 'package:opencadirrigation/core/design/pivot_electrical.dart';
 import 'package:opencadirrigation/core/design/pivot_package.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
-import 'package:opencadirrigation/core/model/pivot_machine.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 
 /// Machines after the sweep of 2026-11-01: a corner arm no longer doubles

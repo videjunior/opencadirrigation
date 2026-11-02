@@ -5,7 +5,14 @@
 /// venturi injector on a bypass.
 ///
 /// Travel times are plug flow along the steady flows: crossing a pipe takes
-/// its volume over its flow, V/|Q| (devices and pumps hold no volume). The
+/// its volume over its flow, V/|Q| (devices and pumps hold no volume). Along
+/// a lateral whose emitters the network lumps into a few nodes, the flow
+/// falls emitter by emitter: the time to cross a lumped stretch is the sum
+/// of A·Δx/Q over the real emitters between the centroids of two lumps
+/// (evenly spaced around each centroid, the spacing from the distance
+/// between the centroids), and the farthest emitter of the last lump adds
+/// the same sum beyond its centroid (the lumped link alone was up to a
+/// quarter off). The
 /// product first appears at a node after the fastest path from the injection
 /// point (Dijkstra 1959) and the node gets the full concentration once the
 /// slowest path has arrived too (longest path over the flow directions,
@@ -90,6 +97,8 @@ class FertigationTravel {
 /// emitter that flows or a demand). [offsetSeconds] is added to every time
 /// (the travel to the injection point, to chain the mainline and a zone).
 /// Links carrying under [minFlow] (m³/s) are taken as stagnant.
+/// [emittersAt] tells how many real emitters a node stands for (the lumps
+/// of the network builder; 1 when absent).
 FertigationTravel fertigationTravel(
   HydraulicNetwork net,
   NetworkResult result,
@@ -98,25 +107,82 @@ FertigationTravel fertigationTravel(
   Iterable<String>? outlets,
   double offsetSeconds = 0,
   double minFlow = 1e-9,
+  Map<String, int> emittersAt = const {},
 }) {
   final codes = <String>[];
   if (!net.nodes.containsKey(injectionNode)) {
     codes.add('fertigation_unknown_node');
     return FertigationTravel(injectionNode: injectionNode, nodes: const {}, outlets: const [], unreached: const [], volume: 0, codes: codes);
   }
+  // the water every node takes off (inflow less outflow): the emitters of a lump
+  final takeoff = <String, double>{};
+  if (emittersAt.isNotEmpty) {
+    for (final l in net.links) {
+      final q = result.links[l.id]?.flow ?? 0;
+      if (q.abs() < minFlow || l.kind == HLinkKind.closed) continue;
+      final (a, b) = q > 0 ? (l.from, l.to) : (l.to, l.from);
+      takeoff[a] = (takeoff[a] ?? 0) - q.abs();
+      takeoff[b] = (takeoff[b] ?? 0) + q.abs();
+    }
+  }
+  // the extra time from the centroid of a lump at the end of a lateral to
+  // its farthest emitter (added to that node only)
+  final tail = <String, double>{};
   // directed edges along the flow, weighted by the travel time
   final out = <String, List<(String, double, double)>>{};
   for (final l in net.links) {
     final q = result.links[l.id]?.flow ?? 0;
     if (q.abs() < minFlow || l.kind == HLinkKind.closed) continue;
     var volume = 0.0;
+    var len = 0.0;
     if (l.kind == HLinkKind.pipe) {
       final tag = l.tag;
-      final len = lengths?[l.id] ?? (tag is GLink ? tag.length : l.length);
-      volume = math.pi * l.diameter * l.diameter / 4 * math.max(0.0, len);
+      len = math.max(0.0, lengths?[l.id] ?? (tag is GLink ? tag.length : l.length));
+      volume = math.pi * l.diameter * l.diameter / 4 * len;
     }
     final (a, b) = q > 0 ? (l.from, l.to) : (l.to, l.from);
-    out.putIfAbsent(a, () => []).add((b, volume / q.abs(), volume));
+    var time = volume / q.abs();
+    final ka = emittersAt[a] ?? 0, kb = emittersAt[b] ?? 0;
+    if (volume > 0 && (ka > 1 || kb > 1)) {
+      final flow = q.abs(), area = volume / len;
+      final qa = ka > 0 ? math.max(0.0, takeoff[a] ?? 0) / ka : 0.0, qb = kb > 0 ? math.max(0.0, takeoff[b] ?? 0) / kb : 0.0;
+      // the emitters of each lump evenly spaced around its centroid
+      final spacing = 2 * len / (ka + kb);
+      double offset(int j, int k) => (j - (k - 1) / 2) * spacing;
+      // from the centroid of a (its emitters beyond it still to come) to
+      // the centroid of b (its emitters before it taken on the way)
+      final drops = <(double, double)>[
+        for (var j = 0; j < ka; j++)
+          if (offset(j, ka) > 1e-12) (offset(j, ka), qa),
+        for (var j = 0; j < kb; j++)
+          if (offset(j, kb) < -1e-12) (len + offset(j, kb), qb),
+      ];
+      // the emitters of a beyond its centroid still take their water downstream of it
+      var current = flow + [for (var j = 0; j < ka; j++) offset(j, ka)].where((x) => x > 1e-12).length * qa;
+      var t = 0.0, prev = 0.0;
+      for (final (x, dq) in drops) {
+        if (current <= 0) break;
+        t += area * (x - prev) / current;
+        current -= dq;
+        prev = x;
+      }
+      if (current > 0) {
+        t += area * (len - prev) / current;
+        time = t;
+      }
+      // the last lump of a lateral: on to its farthest emitter
+      if (kb > 1 && qb * kb >= flow * (1 - 1e-6)) {
+        var tb = 0.0, last = 0.0;
+        for (var j = 0; j < kb; j++) {
+          final x = offset(j, kb);
+          if (x <= 1e-12) continue;
+          tb += area * (x - last) / ((kb - j) * qb);
+          last = x;
+        }
+        tail[b] = math.max(tail[b] ?? 0, tb);
+      }
+    }
+    out.putIfAbsent(a, () => []).add((b, time, volume));
   }
   if ((out[injectionNode] ?? const []).isEmpty) codes.add('fertigation_no_flow');
   // fastest arrival: Dijkstra
@@ -164,7 +230,8 @@ FertigationTravel fertigationTravel(
   final nodes = <String, TravelTime>{};
   for (final e in earliest.entries) {
     final l = done.contains(e.key) ? math.max(latest[e.key] ?? e.value, e.value) : e.value;
-    nodes[e.key] = TravelTime(nodeId: e.key, earliest: e.value + offsetSeconds, latest: l + offsetSeconds);
+    final extra = tail[e.key] ?? 0;
+    nodes[e.key] = TravelTime(nodeId: e.key, earliest: e.value + extra + offsetSeconds, latest: l + extra + offsetSeconds);
   }
   final wanted =
       outlets?.toList() ??

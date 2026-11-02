@@ -235,4 +235,38 @@ void main() {
       expect(daysInMonth(2023, 2), 28);
     });
   });
+
+  group('cloudiness factor limited as ASCE-EWRI (2005) eq. 18 (AGR-15)', () {
+    // the Uccle day of FAO-56 Example 18 under a heavy overcast
+    Fao56Result overcast(double rsOverRso) {
+      final ra = extraterrestrialRadiationMJ(50.8, 187);
+      final rso = clearSkyRadiationMJ(ra, 100);
+      return fao56Eto(Fao56Input(latitudeDeg: 50.8, elevationM: 100, dayOfYear: 187, tMaxC: 18, tMinC: 13, tDewC: 12, windSpeedMs: 2, solarRadiationMJ: rsOverRso * rso));
+    }
+
+    test('below Rs/Rso = 0.3 the factor stays at 0.055: no negative net longwave', () {
+      final r = overcast(0.1);
+      final tx = 18 + 273.16, tn = 13 + 273.16;
+      final sigmaT4 = stefanBoltzmannMJPerM2Day * (math.pow(tx, 4) + math.pow(tn, 4)) / 2;
+      // fcd = 1.35·0.3 − 0.35 = 0.055 (it was 1.35·0.1 − 0.35 = −0.215)
+      expect(r.rnlMJ, closeTo(sigmaT4 * (0.34 - 0.14 * math.sqrt(r.eaKPa)) * 0.055, 1e-12));
+      expect(r.rnlMJ, greaterThan(0));
+      expect(r.rnMJ, lessThan(r.rnsMJ));
+      expect(r.estimated, contains(Fao56Estimate.cloudinessLimited));
+      // 1.12 mm/day instead of 1.45 (+29 %)
+      expect(r.etoMmDay, closeTo(1.12, 0.005));
+      // above the limit nothing changes
+      expect(overcast(0.5).estimated, isNot(contains(Fao56Estimate.cloudinessLimited)));
+      expect(overcast(0.3).rnlMJ, closeTo(r.rnlMJ, 1e-12));
+    });
+
+    test('polar night: no net radiation gained in the dark', () {
+      final r = fao56Eto(const Fao56Input(latitudeDeg: 75, elevationM: 10, dayOfYear: 355, tMaxC: -10, tMinC: -20, tDewC: -22, windSpeedMs: 4, solarRadiationMJ: 0));
+      expect(r.rsoMJ, 0);
+      // it was Rn = +2.25 MJ and ETo 0.62 mm/day
+      expect(r.rnMJ, lessThanOrEqualTo(0));
+      expect(r.estimated, contains(Fao56Estimate.cloudinessLimited));
+      expect(r.etoMmDay, lessThan(0.6));
+    });
+  });
 }
