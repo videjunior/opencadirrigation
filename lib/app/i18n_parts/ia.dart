@@ -73,6 +73,4 @@ const _ia = <String, (String, String, String)>{
   'ai.announce.questions': ('O assistente faz perguntas e espera as respostas.', 'The assistant asks questions and waits for the answers.', 'El asistente hace preguntas y espera las respuestas.'),
   'ai.announce.plan': ('O assistente apresenta um plano e espera sua decisão.', 'The assistant presents a plan and waits for your decision.', 'El asistente presenta un plan y espera su decisión.'),
   'ai.ask.keys': ('Enter aplica, Esc pula', 'Enter applies, Esc skips', 'Enter aplica, Esc omite'),
-  // the input bar
-  'ai.input.tools': ('Anexar, imagem da vista, voz', 'Attach, picture of the view, voice', 'Adjuntar, imagen de la vista, voz'),
 };

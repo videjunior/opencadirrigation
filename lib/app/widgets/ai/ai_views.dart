@@ -221,10 +221,11 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
   }
 
   /// Keys on a card: a character typed there goes to the box (the user
-  /// meant to write), with the focus; Enter and Escape are the card's.
+  /// meant to write), with the focus; Enter, Space (they press the focused
+  /// button) and Escape are the card's.
   KeyEventResult _cardKey(FocusNode _, KeyEvent e) {
     final ch = e.character;
-    if (e is! KeyDownEvent || ch == null || ch.isEmpty || ch.codeUnitAt(0) < 0x20 || ch.codeUnitAt(0) == 0x7f) return KeyEventResult.ignored;
+    if (e is! KeyDownEvent || ch == null || ch.isEmpty || ch.codeUnitAt(0) <= 0x20 || ch.codeUnitAt(0) == 0x7f) return KeyEventResult.ignored;
     final sel = input.selection;
     final at = sel.isValid ? sel.end : input.text.length;
     input.value = TextEditingValue(

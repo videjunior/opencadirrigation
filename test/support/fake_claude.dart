@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/core/ai/claude_api.dart';
+
+import 'claude_contract.dart';
 
 /// One scripted answer of [FakeClaude].
 class FakeReply {
@@ -73,10 +76,28 @@ class FakeReply {
 }
 
 /// A scripted Claude: answers the requests in order with [script] (each
-/// entry may read the request body) and records them.
+/// entry may read the request body) and records them. With [contract] (the
+/// default) every request is checked as the real API would check it
+/// ([ClaudeContract]: tool calls and results paired, no empty text, at most
+/// four cache breakpoints, betas with their fields, and the conversation
+/// sent again byte for byte), and the test fails on the problems found
+/// ([violations]); a test that rewinds a conversation on purpose turns it
+/// off.
 class FakeClaude {
-  FakeClaude(this.script);
+  FakeClaude(this.script, {this.contract = true}) {
+    if (!contract) return;
+    try {
+      addTearDown(() => expect(violations, isEmpty, reason: 'requests the Messages API would refuse, or that lose the cache and the earlier reasoning'));
+    } catch (_) {
+      // made outside a test: the caller checks [violations]
+    }
+  }
   final List<FakeReply Function(Map<String, dynamic> body)> script;
+  final bool contract;
+  final _checker = ClaudeContract();
+
+  /// What [ClaudeContract] found wrong in the requests, by request.
+  final violations = <String>[];
   final requests = <AiHttpRequest>[];
   final bodies = <Map<String, dynamic>>[];
   var _tool = 0;
@@ -88,7 +109,14 @@ class FakeClaude {
     final body = jsonDecode(r.body) as Map<String, dynamic>;
     bodies.add(body);
     final n = requests.length - 1;
+    if (contract) {
+      for (final p in _checker.check(body, r.headers)) {
+        violations.add('request ${n + 1}: $p');
+      }
+    }
     final reply = n < script.length ? script[n](body) : FakeReply.text('(end of script)');
+    // a refused request, or a compaction: the next one starts the comparison anew
+    if (reply.status != 200 || reply.compaction != null || reply.streamError != null || reply.hang) _checker.reset();
     if (reply.status != 200) {
       final err = jsonEncode({
         'type': 'error',

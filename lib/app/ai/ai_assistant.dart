@@ -1525,10 +1525,6 @@ class AiAssistant extends ChangeNotifier {
     AiProvider.openai => OpenAiClient(apiKey: key, transport: debugTransport ?? platformTransport, sleep: debugSleep),
   };
 
-  /// Tools that may change the project (their first change opens the
-  /// turn's undo group): the dispatchers run changes too.
-  static const _dispatchers = {'run_operation', 'run_command', 'set_setting'};
-
   /// Sends [question] (with the project data and attachments chosen) and
   /// runs the task to its end. While a task runs, a message is queued for
   /// the model's next step instead.
@@ -1623,7 +1619,9 @@ class AiAssistant extends ChangeNotifier {
 
     final loop = AgentLoop(
       api: client,
-      tools: [for (final tool in box.tools) tool.effect == ToolEffect.read && !_dispatchers.contains(tool.name) ? tool : _Tracked(tool, this, beforeWrite, (n) => box.removedThisTask += n)],
+      // every tool runs as the assistant's (a read may still touch the history: an analysis
+      // records a step); a change opens the turn's undo group first
+      tools: [for (final tool in box.tools) _Tracked(tool, this, beforeWrite, (n) => box.removedThisTask += n)],
     );
     final usage0 = usage, cost0 = cost;
     _turnInput = 0;
@@ -2488,7 +2486,7 @@ class AiAssistant extends ChangeNotifier {
           t('ai.restored', {'d': _when(s.saved)}),
           if (_dropped > 0) t('ai.restored.reduced'),
           if (_filesLeft.isNotEmpty) t('ai.restored.files', {'f': _filesLeft.join(', ')}),
-          if (interrupted) t('ai.restored.interrupted'),
+          if (interrupted) t(k.inTurn ? 'ai.restored.interruptedKept' : 'ai.restored.interrupted'),
         ].join(' '),
       )..transient = true,
     );
