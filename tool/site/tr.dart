@@ -145,12 +145,9 @@ const _tr = SiteText(
     ('Bir şey kurmam gerekiyor mu?', 'Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.'),
     (
       'Çevrimdışı çalışır mı?',
-      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 24 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
+      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 20 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
     ),
-    (
-      'Projelerim bulutta mı saklanıyor?',
-      faqCloudAnswerEn,
-    ),
+    ('Projelerim bulutta mı saklanıyor?', faqCloudAnswerEn),
     (
       'Hidrolik hesap nasıl yapılır?',
       'Sürtünme kayıpları Hazen-Williams, Darcy-Weisbach, Scobey veya Manning ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde doğrusal programlamayla boyutlandırılır; ayrıca üniformite (CU, DU, EU), yıkama ve karakteristikler yöntemiyle geçici rejimler (vana kapanması, ani pompa durması, hava tahliye vanaları) kontrol edilir, basınçların ve enerji maliyetinin 24 saatlik simülasyonu da yapılır.',

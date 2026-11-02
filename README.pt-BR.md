@@ -104,7 +104,7 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 |---|---|
 | Aberto | Código, formato de projeto (`.oci.json`), catálogos (`.oci.cat`) e exemplos são arquivos legíveis, documentados neste repositório. |
 | No navegador | Chrome, Edge, Firefox e Safari, em computador, tablet e celular; instalável como PWA, que abre sem rede depois da primeira visita. Também compila para desktop (macOS, Windows, Linux). Não há builds nativos para Android e iOS: no celular e no tablet use o app web. |
-| Sem servidor | Não há servidor por trás do app nem cadastro. Projetos ficam no navegador e em arquivos locais. A internet só é usada para o que você pede (mapas base, elevação e clima online, catálogos por URL e o assistente de IA opcional, o único recurso que envia dados do projeto, para o provedor de IA que você escolher); veja a [seção 12](#12-armazenamento-privacidade-e-rede). |
+| Sem servidor | Não há servidor por trás do app nem cadastro. Projetos ficam no navegador e em arquivos locais. A internet é usada para o que você pede (mapas base, elevação e clima online, busca de endereços, catálogos por URL e o assistente de IA opcional, o único recurso que envia dados do projeto, para o provedor de IA que você escolher), para as fontes das escritas e dos símbolos que o app não traz (Google Fonts) e, nas páginas do site e só se você aceitar, para as estatísticas de visita; veja a [seção 12](#12-armazenamento-privacidade-e-rede). |
 | Motor transparente | Cada fórmula está documentada no código e no [estudo técnico](docs/PESQUISA.pt-BR.md), com testes que a comparam a valores de referência. |
 | 20 idiomas | Interface em português, inglês, espanhol, chinês, hindi, árabe, francês, bengali, russo, urdu, indonésio, alemão, japonês, marati, vietnamita, télugo, hauçá, turco, panjabi e suaíli; o app abre no idioma do sistema, e em árabe e urdu a interface é da direita para a esquerda. |
 
@@ -1125,16 +1125,18 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
   novo); um link com mais de cerca de 60 000 caracteres pode ser cortado por aplicativos de e-mail e
   de mensagem, e um projeto grande demais para um link vai como arquivo.
 - **Sem rede**: depois que o app rodou num navegador, o service worker dele guarda uma cópia do app
-  (cerca de 24 MB, uma vez por versão) e a próxima abertura, do app instalado ou do site, funciona
-  sem rede. Mapas base, elevação e clima online, catálogos carregados por URL e o assistente de IA
-  continuam precisando dela. Uma versão nova é baixada em segundo plano e usada a partir da abertura
-  seguinte.
-- **Acesso à internet**, só quando você pede: elevação online (Terrain Tiles na AWS, Open-Meteo,
+  (cerca de 20 MB, uma vez por versão, mais o pacote de idioma e as fontes do PDF que uma abertura
+  usa) e a próxima abertura, do app instalado ou do site, funciona sem rede. Mapas base, elevação e
+  clima online, catálogos carregados por URL e o assistente de IA continuam precisando dela. Uma
+  versão nova é baixada em segundo plano; o app então oferece recarregar nela (o trabalho não salvo
+  vai para o autossalvamento), ou ela é usada a partir da abertura seguinte.
+- **Acesso à internet**, para o que você pede: elevação online (Terrain Tiles na AWS, Open-Meteo,
   OpenTopoData nos builds para desktop), clima do local (histórico meteorológico do Open-Meteo, NASA
   POWER), mapas base (OpenStreetMap, OpenTopoMap, CARTO, Esri, Google Maps com a sua própria chave
   ou uma URL XYZ ou WMS personalizada), catálogos carregados por URL e o assistente de IA. Os
   pedidos de elevação e de clima levam as coordenadas do local, nada do projeto. A chave do Google
-  Maps fica só no navegador e é enviada apenas ao Google; onde o servidor não tem imagem no zoom
+  Maps fica no armazenamento do navegador, que qualquer script do site poderia ler, e é enviada
+  apenas ao Google (restrinja-a ao site no console do Google Cloud); onde o servidor não tem imagem no zoom
   atual, o app amplia o tile mais próximo em vez de mostrar um aviso de "dados indisponíveis". As
   fontes da interface para escritas que o app não traz são baixadas do Google Fonts na primeira vez
   em que são necessárias.
@@ -1151,8 +1153,8 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
   como a tela faz, sem perguntar). Uma busca do local por endereço envia o endereço ao Nominatim do
   OpenStreetMap (`nominatim.openstreetmap.org`), com a sua aprovação, a não ser que as alterações
   sejam aplicadas automaticamente. Cada chave fica na memória enquanto a página está aberta; com
-  *Lembrar a chave neste dispositivo* ela é guardada no armazenamento do navegador, onde scripts que
-  rodam na página (como o de estatística de visitas do site) poderiam lê-la. As chaves nunca entram
+  *Lembrar a chave neste dispositivo* ela é guardada no armazenamento do navegador, que qualquer script
+  do site poderia ler (as estatísticas de visita do site nunca rodam numa página em que o app roda). As chaves nunca entram
   no arquivo do projeto, no autosave, nos links de compartilhamento nem nas exportações, e cada uma
   só vai para a sua própria empresa. O ditado por voz envia o som da sua voz ao serviço de voz do
   navegador (o Chrome usa os servidores do Google, o Edge os da Microsoft e o Safari os da Apple),
@@ -1164,8 +1166,13 @@ projetos de exemplo em [examples/](examples/), regenerados por ferramentas e gua
   modo que recarregar a página ou abrir o projeto de novo as traz de volta; as 12 mais recentes são
   guardadas, e *Guardar as conversas neste navegador*, nas configurações do assistente, desliga isso
   e as apaga. O que cada empresa faz com os pedidos é regido pelo seu acordo com ela.
-- **Estatística de visitas**: as páginas de opencadirrigation.com carregam o Google Analytics
-  (gtag.js), que conta as visitas; o app não envia a ele nada dos projetos.
+- **Estatística de visitas**: as páginas de opencadirrigation.com perguntam uma vez se podem contar
+  as visitas e só carregam o Google Analytics 4 depois de *Aceitar* (Consent Mode v2: tudo negado
+  por padrão, só a estatística liberada), nunca numa página em que o app roda, de modo que ele não
+  alcança projetos nem chaves; *Recusar*, também depois em *Preferências de cookies* no rodapé das
+  páginas, apaga os cookies dele. O ID de medição é definido quando as páginas são geradas
+  (`OCI_ANALYTICS_ID`, vazio para nenhum). A política de privacidade (`/privacy/`) e os termos de uso
+  (`/terms/`) são gerados com as páginas, e Ajuda → Sobre leva a eles no idioma da interface.
 - **Idioma e preferências** (idioma escolhido, tema, catálogo padrão, tutorial concluído, as
   configurações do assistente) ficam nas preferências do navegador.
 
@@ -1199,12 +1206,20 @@ O site é gerado por `dart run tool/gen_site.dart` a partir de `tool/site.dart`:
 (inglês, a página de quem chega sem idioma escolhido), um `web/<código>/index.html` para cada um
 dos outros 19 idiomas da interface (`web/pt/`, `web/es/`, `web/de/`, `web/zh/`, …; a lista segue
 `supportedLanguages`, então um idioma novo no app precisa da sua página), um redirecionamento em
-`web/en/index.html` para o endereço que o inglês tinha antes, `web/sitemap.xml` e `web/404.html`
-(no idioma do navegador quando o site o tem). Os textos das páginas ficam em `tool/site.dart`
+`web/en/index.html` para o endereço que o inglês tinha antes, `web/sitemap.xml`, `web/404.html`
+(no idioma do navegador quando o site o tem), a política de privacidade e os termos de uso de cada
+idioma (`web/privacy/`, `web/<código>/privacy/`, e `terms/` do mesmo jeito; escritos em português,
+inglês e espanhol, em inglês nos demais até serem traduzidos, e então fora da indexação), um
+manifest por idioma (`web/manifest.json`, `web/<código>/manifest.json`: a mesma identidade do app,
+endereço de início, nomes e atalhos naquele idioma, uma captura larga e uma estreita), `web/site.js`
+(o único script das páginas: inicia o app quando ele é pedido e pergunta o consentimento das
+estatísticas) e a configuração de hospedagem `hosting/firebase.json` (veja `hosting/README.md`). Os textos das páginas ficam em `tool/site.dart`
 (português, inglês, espanhol) e em `tool/site/<código>.dart` (os demais, com a galeria de exemplos
 tirada dos pacotes de idioma); as páginas em árabe e urdu são da direita para a esquerda. Como o
 Flutter desenha em canvas, cada página traz o conteúdo em HTML real (título, recursos, exemplos,
-perguntas frequentes), com canônica própria, `hreflang` entre todas as versões, Open Graph e JSON-LD
+perguntas frequentes), com canônica própria, `hreflang` entre todas as versões (também os genéricos
+`pt` e `zh` ao lado de `pt-BR` e `zh-CN`), uma Content Security Policy (scripts só do site,
+WebAssembly para o CanvasKit, nenhum script inline, nenhum plugin nem frame), Open Graph e JSON-LD
 (aplicativo, perguntas frequentes, como funciona e galeria de exemplos, no idioma da página, com o
 assunto ligado à Wikipédia/Wikidata). O teste `test/web_metadata_test.dart` falha quando os arquivos
 gerados divergem do template.
@@ -1219,28 +1234,38 @@ página o iniciam ali mesmo), chega por um endereço do app (`?example=`, `?tuto
 `--no-web-resources-cdn`: o CanvasKit e a fonte Roboto vêm do próprio site, não da CDN do Google. O
 logo do topo é WebP em três larguras (`web/brand/logo-horizontal-{520,780,1040}.webp`, feitos de
 `logo-horizontal.png`), com o endereço versionado por um hash do arquivo. O site é servido pelo
-Firebase Hosting a partir de uma pasta de publicação fora deste repositório (`firebase.json` +
-`public/`, cópia de `build/web`). O `firebase.json` não tem rewrite genérico, então um endereço
-inexistente recebe o `404.html` com status 404 em vez da página do app (o que fazia o PageSpeed ver
-`/.well-known/ai-catalog.json` como um catálogo de IA quebrado); as páginas, `flutter_bootstrap.js`,
-`manifest.json`, `version.json`, `sw.js` e `offline.js` vão com `no-cache`, e as imagens de `brand/`,
-`icons/`, `screenshots/` e da raiz ficam 30 dias em cache.
+Firebase Hosting a partir de uma pasta de publicação fora deste repositório (`public/`, cópia de
+`build/web`, ao lado do `firebase.json`); a configuração é versionada em `hosting/firebase.json`,
+gerada com as páginas (`hosting/README.md` diz como aplicá-la). Ela não tem rewrite genérico, então
+um endereço inexistente recebe o `404.html` com status 404 em vez da página do app (o que fazia o
+PageSpeed ver `/.well-known/ai-catalog.json` como um catálogo de IA quebrado); todo arquivo recebe
+`nosniff`, `SAMEORIGIN`, uma `Referrer-Policy` e uma `Permissions-Policy` limitada à posição do
+aparelho e ao microfone; as páginas, os manifests e todo arquivo do app cujo nome não muda de build
+para build (`main.dart.js`, o worker, `flutter_bootstrap.js`, `sw.js`, `offline.js`, `site.js`,
+`assets/**`, `canvaskit/**`) vão com `no-cache`, as imagens de `brand/`, `icons/`, `screenshots/` e
+da raiz ficam 30 dias em cache, e `/en/` responde com um 301 para `/`.
 
 **Abertura sem rede.** Quando o primeiro quadro já está na tela e o navegador está ocioso,
 `flutter_bootstrap.js` carrega `web/offline.js`, que registra o service worker do próprio app,
 `web/sw.js`; assim a primeira visita nunca fica mais lenta por causa dele. `tool/build_web.sh`
 termina com `dart run tool/gen_sw.dart`, que grava no `sw.js` do build o nome do build (versão,
 commit git, data e um hash dos arquivos) e os arquivos de que uma abertura pode precisar, com seus
-SHA-256: a página raiz, o bootstrap, `main.dart.js`, o worker de cálculo, o manifest e os ícones,
-todos os assets do Flutter (pacotes de idioma e fontes do PDF incluídos), o logo e o CanvasKit (só a
-variante do navegador), cerca de 24 MB descompactados, 3,7 MB transferidos. Na instalação o worker
+SHA-256: a página raiz, o bootstrap, `main.dart.js`, o worker de cálculo, `site.js`, o manifest e os
+ícones, os assets do Flutter, o logo e o CanvasKit (só a variante do navegador), cerca de 17 MB
+descompactados. Os pacotes de idioma, as fontes do PDF e a lista de licenças também vão listados com
+o hash, mas só são guardados quando uma abertura os usa, e um build novo leva adiante os que o
+navegador já guardou, baixando a versão nova quando mudaram. Na instalação o worker
 preenche um cache por build (`oci-shell-<build>`): os arquivos que não mudaram desde o build
 anterior são copiados do cache dele, os outros são baixados passando por cima do cache HTTP e
 conferidos pelo hash. Ele responde primeiro pelo cache e revalida a página de abertura depois do
 primeiro quadro; guarda as fontes de fallback que o motor baixa de fonts.gstatic.com; tiles de mapa,
-elevação, clima e analytics vão direto para a rede. Um build novo é instalado em segundo plano e
-assumido na próxima abertura (uma janela nova ou um recarregamento); uma página já aberta continua
-com o build com que abriu, e o cache de um build é apagado quando nenhuma página o usa mais. Um
+elevação, clima e analytics vão direto para a rede. Um build novo é instalado em segundo plano; o
+`offline.js` avisa o app, que oferece recarregar nele (*Há uma versão nova do OpenCADIrrigation
+pronta*, depois de avisar do trabalho não salvo, que vai para o autossalvamento), e senão ele é
+assumido na próxima abertura. Uma página já aberta continua com o build com que abriu (as outras
+páginas abertas mantêm o delas quando uma recarrega), uma página aberta por dias procura um build
+novo a cada hora e quando volta à tela, e o cache de um build é apagado quando nenhuma página o usa
+mais. Um
 `sw.js` que não foi preenchido (`flutter run`, um `flutter build web` simples) só remove a si mesmo
 e os seus caches.
 
@@ -1751,7 +1776,7 @@ qualificado deve conferir o projeto antes da execução (a licença não dá gar
 | Material Icons, Roboto, Noto | fontes da interface (Roboto servida com o app; Noto baixada sob demanda para outras escritas e guardada para uso sem rede) | Apache-2.0, SIL OFL 1.1 |
 | Subconjuntos Noto Sans em `assets/fonts` (latino, Math, árabe, devanágari, bengali, gurmukhi, télugo, SC, JP) | texto dos PDFs em todas as escritas da interface | SIL OFL 1.1 ([assets/fonts/OFL.txt](assets/fonts/OFL.txt)) |
 
-Os serviços online, acessados só quando você pede, têm seus próprios termos, e o app mostra os
+Os serviços online, acessados quando você os usa, têm seus próprios termos, e o app mostra os
 créditos: mapas base (© colaboradores do OpenStreetMap sob a ODbL, OpenTopoMap sob CC-BY-SA, CARTO,
 Esri, Google Maps com a sua chave, ou o servidor XYZ ou WMS que você configurar), elevação (Terrain
 Tiles no AWS Open Data: SRTM/NASA, GMTED, ETOPO1; Open-Meteo sob CC BY 4.0 com o Copernicus DEM

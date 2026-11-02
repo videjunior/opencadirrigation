@@ -168,12 +168,9 @@ const _fr = SiteText(
     ),
     (
       'Fonctionne-t-il hors ligne ?',
-      'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 24 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
+      'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 20 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
     ),
-    (
-      'Mes projets sont-ils stockés dans le cloud ?',
-      faqCloudAnswerEn,
-    ),
+    ('Mes projets sont-ils stockés dans le cloud ?', faqCloudAnswerEn),
     (
       'Comment l’hydraulique est-elle calculée ?',
       'Pertes de charge par Hazen-Williams, Darcy-Weisbach, Scobey ou Manning, distributeurs selon q = k·Hˣ et réseau complet résolu par le Global Gradient Algorithm, la méthode d’EPANET. Les conduites sont dimensionnées par programmation linéaire dans la plage de pression des distributeurs et selon la classe de pression des tubes, et le calcul vérifie aussi l’uniformité (CU, DU, EU), le rinçage et les régimes transitoires par la méthode des caractéristiques (fermeture des vannes, disjonction des pompes, ventouses), avec une simulation sur 24 heures des pressions et du coût de l’énergie.',

@@ -161,12 +161,9 @@ const _ha = SiteText(
     ('Shin sai na girka wani abu?', 'A\'a. Yana aiki a Chrome, Edge, Firefox da Safari, a kwamfuta, tablet da waya, kuma ana iya girka shi a matsayin manhaja (PWA) mai buɗewa a tagarta.'),
     (
       'Shin yana aiki ba tare da intanet ba?',
-      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 24, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
+      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 20, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
     ),
-    (
-      'Shin ana ajiye ayyukana a gajimare (cloud)?',
-      faqCloudAnswerEn,
-    ),
+    ('Shin ana ajiye ayyukana a gajimare (cloud)?', faqCloudAnswerEn),
     (
       'Yaya ake lissafin ruwa?',
       'Asarar matsi ta gogayya da Hazen-Williams, Darcy-Weisbach, Scobey ko Manning, masu fitar da ruwa da q = k·Hˣ, kuma ana warware duk hanyar sadarwa da Global Gradient Algorithm, hanyar da EPANET ke amfani da ita. Ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, kuma ƙirar tana duba daidaito (CU, DU, EU), wanke bututu da yanayin wucin gadi ta hanyar method of characteristics (rufewar bawuloli, tsayawar famfo kwatsam, bawuloli na iska), tare da kwaikwayo na awa 24 na matsi da kuɗin makamashi.',

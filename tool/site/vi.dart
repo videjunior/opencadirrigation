@@ -141,12 +141,9 @@ const _vi = SiteText(
     ),
     (
       'Có dùng được ngoại tuyến không?',
-      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 24 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
+      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 20 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
     ),
-    (
-      'Dự án của tôi có được lưu trên đám mây không?',
-      faqCloudAnswerEn,
-    ),
+    ('Dự án của tôi có được lưu trên đám mây không?', faqCloudAnswerEn),
     (
       'Tính toán thủy lực được thực hiện thế nào?',
       'Tổn thất ma sát theo Hazen-Williams, Darcy-Weisbach, Scobey hoặc Manning, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống; thiết kế còn kiểm tra độ đồng đều (CU, DU, EU), xả rửa ống và nước va theo phương pháp đường đặc trưng (đóng van, bơm dừng đột ngột, van xả khí), kèm mô phỏng 24 giờ về áp suất và chi phí năng lượng.',

@@ -431,7 +431,7 @@
           "name": "可以离线使用吗？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "可以，只需先访问一次：应用会在浏览器中保存自身的副本（约 24 MB，每个版本只需下载一次），之后无论是启动已安装的应用还是打开网站，都无需网络即可运行，在办公室和现场均可使用。底图、在线高程和气候数据、通过 URL 加载的目录以及 AI 助手仍需联网；新版本会在后台下载，并在下次启动时启用。"
+            "text": "可以，只需先访问一次：应用会在浏览器中保存自身的副本（约 20 MB，每个版本只需下载一次），之后无论是启动已安装的应用还是打开网站，都无需网络即可运行，在办公室和现场均可使用。底图、在线高程和气候数据、通过 URL 加载的目录以及 AI 助手仍需联网；新版本会在后台下载，并在下次启动时启用。"
           }
         },
         {
@@ -439,7 +439,7 @@
           "name": "我的项目会存储在云端吗？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: the interface fonts come from Google Fonts on the first start; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives."
+            "text": "No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives."
           }
         },
         {
@@ -824,9 +824,9 @@
           <dt>需要安装什么吗？</dt>
           <dd>不需要。它可在电脑、平板和手机上的 Chrome、Edge、Firefox 和 Safari 中运行，也可以安装为在独立窗口中打开的应用（PWA）。</dd>
           <dt>可以离线使用吗？</dt>
-          <dd>可以，只需先访问一次：应用会在浏览器中保存自身的副本（约 24 MB，每个版本只需下载一次），之后无论是启动已安装的应用还是打开网站，都无需网络即可运行，在办公室和现场均可使用。底图、在线高程和气候数据、通过 URL 加载的目录以及 AI 助手仍需联网；新版本会在后台下载，并在下次启动时启用。</dd>
+          <dd>可以，只需先访问一次：应用会在浏览器中保存自身的副本（约 20 MB，每个版本只需下载一次），之后无论是启动已安装的应用还是打开网站，都无需网络即可运行，在办公室和现场均可使用。底图、在线高程和气候数据、通过 URL 加载的目录以及 AI 助手仍需联网；新版本会在后台下载，并在下次启动时启用。</dd>
           <dt>我的项目会存储在云端吗？</dt>
-          <dd>No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: the interface fonts come from Google Fonts on the first start; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.</dd>
+          <dd>No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.</dd>
           <dt>水力计算是如何进行的？</dt>
           <dd>沿程损失采用 Hazen-Williams、Darcy-Weisbach、Scobey 或 Manning 公式，灌水器采用 q = k·Hˣ，整个管网用 Global Gradient Algorithm 求解（即 EPANET 所用方法）。管径通过线性规划在灌水器压力范围和管材压力等级内确定，设计还会校核均匀度（CU、DU、EU）和冲洗，用特征线法分析水力瞬变（阀门关闭、停泵、排气阀），并对压力和能耗费用进行 24 小时模拟。</dd>
           <dt>能与其他 CAD 软件配合使用吗？</dt>

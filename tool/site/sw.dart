@@ -176,12 +176,9 @@ const _sw = SiteText(
     ),
     (
       'Je, inafanya kazi bila intaneti?',
-      'Ndiyo, baada ya kutembelea tovuti mara ya kwanza: programu huhifadhi nakala yake kwenye kivinjari (takriban MB 24, mara moja kwa kila toleo), hivyo wakati ujao programu iliyosakinishwa au tovuti hufunguka na kufanya kazi bila intaneti, ofisini au shambani. Ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, katalogi zinazopakiwa kutoka URL na msaidizi wa AI bado vinahitaji muunganisho wa intaneti; toleo jipya hupakuliwa chinichini na hutumika kuanzia mara inayofuata.',
+      'Ndiyo, baada ya kutembelea tovuti mara ya kwanza: programu huhifadhi nakala yake kwenye kivinjari (takriban MB 20, mara moja kwa kila toleo), hivyo wakati ujao programu iliyosakinishwa au tovuti hufunguka na kufanya kazi bila intaneti, ofisini au shambani. Ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, katalogi zinazopakiwa kutoka URL na msaidizi wa AI bado vinahitaji muunganisho wa intaneti; toleo jipya hupakuliwa chinichini na hutumika kuanzia mara inayofuata.',
     ),
-    (
-      'Je, miradi yangu huhifadhiwa kwenye wingu?',
-      faqCloudAnswerEn,
-    ),
+    ('Je, miradi yangu huhifadhiwa kwenye wingu?', faqCloudAnswerEn),
     (
       'Ukokotoaji wa haidroliki hufanywaje?',
       'Upotevu wa msuguano kwa Hazen-Williams, Darcy-Weisbach, Scobey au Manning, vitoa-maji kwa q = k·Hˣ, na mtandao wote hutatuliwa kwa Global Gradient Algorithm, mbinu inayotumiwa na EPANET. Mabomba hupimwa kwa linear programming ndani ya dirisha la shinikizo la vitoa-maji na daraja la shinikizo la mabomba, na usanifu pia hukagua usawa (CU, DU, EU), usafishaji na hali za mpito kwa method of characteristics (kufungwa kwa vali, kusimama ghafla kwa pampu, vali za hewa), pamoja na uigaji wa saa 24 wa shinikizo na gharama ya nishati.',

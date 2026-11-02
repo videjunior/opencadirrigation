@@ -156,12 +156,9 @@ const _id = SiteText(
     ),
     (
       'Apakah bisa dipakai secara offline?',
-      'Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 24 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.',
+      'Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 20 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.',
     ),
-    (
-      'Apakah proyek saya disimpan di cloud?',
-      faqCloudAnswerEn,
-    ),
+    ('Apakah proyek saya disimpan di cloud?', faqCloudAnswerEn),
     (
       'Bagaimana perhitungan hidrauliknya?',
       'Kehilangan tekanan akibat gesekan dengan Hazen-Williams, Darcy-Weisbach, Scobey atau Manning, emitter dengan q = k·Hˣ, dan seluruh jaringan diselesaikan dengan Global Gradient Algorithm, metode yang dipakai EPANET. Ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dan desain juga memeriksa keseragaman (CU, DU, EU), pembilasan, serta transien dengan metode karakteristik (penutupan katup, pompa berhenti mendadak, katup udara), disertai simulasi 24 jam untuk tekanan dan biaya energi.',

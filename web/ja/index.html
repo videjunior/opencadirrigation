@@ -431,7 +431,7 @@
           "name": "オフラインでも使えますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "はい、初回アクセス後は使えます。アプリは自身のコピーをブラウザ内に保存するため（約 24 MB、バージョンごとに 1 回）、次回からはインストールしたアプリでもサイトでも、事務所でも現地でも、ネットワークなしで起動します。背景地図、オンラインの標高と気候、URL から読み込むカタログ、AI アシスタントには引き続き接続が必要です。新しいバージョンはバックグラウンドでダウンロードされ、次回の起動から使われます。"
+            "text": "はい、初回アクセス後は使えます。アプリは自身のコピーをブラウザ内に保存するため（約 20 MB、バージョンごとに 1 回）、次回からはインストールしたアプリでもサイトでも、事務所でも現地でも、ネットワークなしで起動します。背景地図、オンラインの標高と気候、URL から読み込むカタログ、AI アシスタントには引き続き接続が必要です。新しいバージョンはバックグラウンドでダウンロードされ、次回の起動から使われます。"
           }
         },
         {
@@ -439,7 +439,7 @@
           "name": "プロジェクトはクラウドに保存されますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: the interface fonts come from Google Fonts on the first start; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives."
+            "text": "No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives."
           }
         },
         {
@@ -824,9 +824,9 @@
           <dt>何かをインストールする必要がありますか？</dt>
           <dd>いいえ。パソコン、タブレット、スマートフォンの Chrome、Edge、Firefox、Safari で動作し、専用ウィンドウで開くアプリ（PWA）としてインストールすることもできます。</dd>
           <dt>オフラインでも使えますか？</dt>
-          <dd>はい、初回アクセス後は使えます。アプリは自身のコピーをブラウザ内に保存するため（約 24 MB、バージョンごとに 1 回）、次回からはインストールしたアプリでもサイトでも、事務所でも現地でも、ネットワークなしで起動します。背景地図、オンラインの標高と気候、URL から読み込むカタログ、AI アシスタントには引き続き接続が必要です。新しいバージョンはバックグラウンドでダウンロードされ、次回の起動から使われます。</dd>
+          <dd>はい、初回アクセス後は使えます。アプリは自身のコピーをブラウザ内に保存するため（約 20 MB、バージョンごとに 1 回）、次回からはインストールしたアプリでもサイトでも、事務所でも現地でも、ネットワークなしで起動します。背景地図、オンラインの標高と気候、URL から読み込むカタログ、AI アシスタントには引き続き接続が必要です。新しいバージョンはバックグラウンドでダウンロードされ、次回の起動から使われます。</dd>
           <dt>プロジェクトはクラウドに保存されますか？</dt>
-          <dd>No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: the interface fonts come from Google Fonts on the first start; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.</dd>
+          <dd>No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.</dd>
           <dt>水理計算はどのように行われますか？</dt>
           <dd>摩擦損失は Hazen-Williams 式、Darcy-Weisbach 式、Scobey 式または Manning 式、エミッターは q = k·Hˣ で求め、管網全体を EPANET と同じ Global Gradient Algorithm で解きます。管径はエミッターの圧力範囲と管の耐圧クラスを守るよう線形計画法で決定し、均一性（CU、DU、EU）とフラッシングを確認するほか、特性曲線法による過渡解析（バルブ閉鎖、ポンプ停止、空気弁）と、圧力・エネルギー費の 24 時間シミュレーションも行います。</dd>
           <dt>ほかの CAD ソフトと連携できますか？</dt>

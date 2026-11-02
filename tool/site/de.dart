@@ -152,12 +152,9 @@ const _de = SiteText(
     ),
     (
       'Funktioniert es offline?',
-      'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 24 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
+      'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 20 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
     ),
-    (
-      'Werden meine Projekte in der Cloud gespeichert?',
-      faqCloudAnswerEn,
-    ),
+    ('Werden meine Projekte in der Cloud gespeichert?', faqCloudAnswerEn),
     (
       'Wie wird die Hydraulik berechnet?',
       'Reibungsverluste nach Hazen-Williams, Darcy-Weisbach, Scobey oder Manning, Emitter nach q = k·Hˣ und das gesamte Netz mit dem Global Gradient Algorithm, dem Verfahren von EPANET. Die Rohrdurchmesser werden per linearer Optimierung innerhalb des Druckfensters der Emitter und der Druckstufe der Rohre bestimmt; außerdem prüft die Berechnung Gleichmäßigkeit (CU, DU, EU), Spülung und Druckstöße nach dem Charakteristikenverfahren (Ventilschließung, Pumpenausfall, Be-/Entlüftungsventile), mit einer 24-Stunden-Simulation von Drücken und Energiekosten.',

@@ -239,7 +239,7 @@ class SiteText {
 /// internet was reached only on request, which the fonts and the visit
 /// statistics contradicted).
 const faqCloudAnswerEn =
-    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: the interface fonts come from Google Fonts on the first start; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
+    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: fonts for the scripts and symbols the app does not bundle come from Google Fonts when a screen needs them; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
 
 const _pt = SiteText(
   title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
@@ -378,11 +378,11 @@ const _pt = SiteText(
     ),
     (
       'Funciona sem internet?',
-      'Sim, depois da primeira visita: o app guarda uma cópia de si mesmo no navegador (cerca de 24 MB, uma vez por versão), e a próxima abertura, do app instalado ou do site, funciona sem rede, no escritório ou no campo. Mapas base, elevação e clima online, catálogos carregados por URL e o assistente de IA continuam precisando de conexão; uma versão nova é baixada em segundo plano e usada a partir da abertura seguinte.',
+      'Sim, depois da primeira visita: o app guarda uma cópia de si mesmo no navegador (cerca de 20 MB, uma vez por versão), e a próxima abertura, do app instalado ou do site, funciona sem rede, no escritório ou no campo. Mapas base, elevação e clima online, catálogos carregados por URL e o assistente de IA continuam precisando de conexão; uma versão nova é baixada em segundo plano: o app oferece recarregar nela, ou ela é usada a partir da abertura seguinte.',
     ),
     (
       'Meus projetos ficam na nuvem?',
-      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. O navegador acessa outros serviços: as fontes da interface vêm do Google Fonts na primeira abertura; mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
+      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. O navegador acessa outros serviços: as fontes das escritas e dos símbolos que o app não traz vêm do Google Fonts quando uma tela precisa delas; mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
     ),
     (
       'Como é feito o cálculo hidráulico?',
@@ -544,7 +544,7 @@ const _en = SiteText(
     ('Do I need to install anything?', 'No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.'),
     (
       'Does it work offline?',
-      'Yes, after the first visit: the app keeps a copy of itself in the browser (about 24 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background and is used from the next start.',
+      'Yes, after the first visit: the app keeps a copy of itself in the browser (about 20 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background: the app offers to reload into it, or it is used from the next start.',
     ),
     ('Are my projects stored in the cloud?', faqCloudAnswerEn),
     (
@@ -710,11 +710,11 @@ const _es = SiteText(
     ('¿Necesito instalar algo?', 'No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.'),
     (
       '¿Funciona sin conexión?',
-      'Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 24 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano y se usa a partir del siguiente inicio.',
+      'Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 20 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano: la aplicación ofrece recargarla, o se usa a partir del siguiente inicio.',
     ),
     (
       '¿Mis proyectos se guardan en la nube?',
-      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. El navegador sí accede a otros servicios: las fuentes de la interfaz vienen de Google Fonts en el primer inicio; los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
+      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. El navegador sí accede a otros servicios: las fuentes de las escrituras y los símbolos que la aplicación no incluye vienen de Google Fonts cuando una pantalla las necesita; los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
     ),
     (
       '¿Cómo se hace el cálculo hidráulico?',
