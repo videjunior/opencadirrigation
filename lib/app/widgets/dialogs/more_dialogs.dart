@@ -1171,6 +1171,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
               ),
               const SizedBox(height: 6),
               Expanded(
+                flex: 4,
                 child: switch (tab) {
                   CatalogGroup.pipes => pipes(),
                   CatalogGroup.outlets => outlets(),
@@ -1181,18 +1182,15 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   CatalogGroup.wires => wires(),
                 },
               ),
-              Text(
-                t('cat.importHint'),
-                style: TextStyle(fontSize: 10, color: Cad.fg38),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              // 1.6.0 MOD
-              Text(
-                t('cat.importUnits'),
-                style: TextStyle(fontSize: 10, color: Cad.fg38),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+              // what the import reads (1.6.0 MOD: and its units), cut short
+              // before the table loses its room (large text)
+              Flexible(
+                child: Text(
+                  '${t('cat.importHint')}\n${t('cat.importUnits')}',
+                  style: TextStyle(fontSize: 10, color: Cad.fg38),
+                  maxLines: 6,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

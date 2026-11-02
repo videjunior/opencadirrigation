@@ -104,6 +104,8 @@ void main() {
 /// strings of the interface that no PDF prints, by key.
 const interfaceOnly = <int, (String, Set<String>)>{
   0x2630: ('the ☰ menu button of the phone layout', {'sc.mobile'}),
+  0x2715: ('the ✕ cancel button of the drawing hint on touch screens', {'hint.touchKeys'}),
+  0x2328: ('the ⌨ command button of the drawing hint on touch screens', {'hint.touchKeys'}),
 };
 
 /// Every string of [lang], by key: the compiled table for pt, en and es, the

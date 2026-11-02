@@ -208,10 +208,11 @@ void main() {
     // a wetted fraction below 1 is drip: the method shows it, Kr from the cover or typed
     expect((tester.widget(find.byKey(const Key('area_method'))) as SpecDropdown).value, 'localized');
     await type(tester, t('req.groundCover'), '0,49');
-    expect(find.text('0.70'), findsOneWidget, reason: 'Kr = 0.1·√49');
+    // (values shown in the format of the language since 1.6.0, UI-08)
+    expect(find.text('0,70'), findsOneWidget, reason: 'Kr = 0.1·√49');
     await type(tester, t('area.kr'), '0,6');
     expect(a.localizedKr, 0.6);
-    expect(find.text('0.60'), findsWidgets);
+    expect(find.text('0,60'), findsWidgets);
     // sprinkler irrigation: no wetted fraction, no Kr
     await pick(tester, t('req.method'), 'sprinkler');
     expect(a.wettedFraction, 1);
