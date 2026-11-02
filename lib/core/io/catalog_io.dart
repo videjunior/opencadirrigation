@@ -143,6 +143,8 @@ class CatalogPackMeta {
     this.updated = '',
     this.author = '',
     this.currency = '',
+    this.pricesSource = '',
+    this.pricesDate = '',
     this.sources = const [],
   });
 
@@ -163,6 +165,14 @@ class CatalogPackMeta {
   /// ISO 4217 code of the prices in the pack (empty: unknown, or no prices).
   final String currency;
 
+  /// Where the prices came from (document, items, what a price includes)
+  /// and how the ones the document does not give were estimated (empty: not
+  /// stated).
+  final String pricesSource;
+
+  /// Date of the prices, `YYYY-MM-DD` (empty: not stated).
+  final String pricesDate;
+
   /// The documents the data were taken from (data sheets, catalogues, URLs).
   final List<String> sources;
 
@@ -178,6 +188,8 @@ class CatalogPackMeta {
     if (updated.isNotEmpty) 'updated': updated,
     if (author.isNotEmpty) 'author': author,
     if (currency.isNotEmpty) 'currency': currency,
+    if (pricesSource.isNotEmpty) 'pricesSource': pricesSource,
+    if (pricesDate.isNotEmpty) 'pricesDate': pricesDate,
     if (sources.isNotEmpty) 'sources': sources,
   };
 
@@ -194,12 +206,18 @@ class CatalogPackMeta {
       updated: j['updated'] as String? ?? '',
       author: j['author'] as String? ?? '',
       currency: (j['currency'] as String? ?? '').trim().toUpperCase(),
+      pricesSource: _text(j['pricesSource']),
+      pricesDate: _text(j['pricesDate']),
       sources: [
         for (final x in (j['sources'] as List?) ?? const [])
           if (x is String && x.trim().isNotEmpty) x.trim(),
       ],
     );
   }
+
+  /// An optional text field read leniently: trimmed, empty when absent or
+  /// not a text.
+  static String _text(Object? v) => v is String ? v.trim() : '';
 
   /// A safe id derived from a file name or free text (`Rain Bird 5000.oci.cat`
   /// → `rain_bird_5000`).
@@ -230,8 +248,9 @@ class CatalogIndexEntry {
   final String file;
   final int items;
 
-  // the index stays short: the document list lives in the pack only
-  Map<String, dynamic> toJson() => {...meta.toJson()..remove('sources'), 'file': file, 'items': items};
+  // the index stays short: the document list and the note on the prices
+  // live in the pack only
+  Map<String, dynamic> toJson() => {...meta.toJson()..removeWhere((k, _) => k == 'sources' || k == 'pricesSource'), 'file': file, 'items': items};
   static CatalogIndexEntry fromJson(Map<String, dynamic> j) => CatalogIndexEntry(
     meta: CatalogPackMeta.fromJson(j, fallbackId: CatalogPackMeta.idFrom(j['file'] as String? ?? 'pack')),
     file: j['file'] as String? ?? '',

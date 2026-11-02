@@ -1,0 +1,1426 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "en12201",
+  "brand": "Generic (EN)",
+  "name": "PE 100 pipes by EN 12201",
+  "description": "PE 100 pressure pipes of EN 12201-2 / ISO 4427-2, SDR 26 / 21 / 17 / 13.6 / 11 (PN 6 / 8 / 10 / 12.5 / 16 at 20 °C), dn 20 to 315 mm: nominal walls of its Table 2 (MRS 10 MPa, design coefficient 1.25); installed reference prices in EUR",
+  "source": "https://www.cencenelec.eu",
+  "license": "CC0-1.0",
+  "updated": "2026-11-02",
+  "author": "OpenCADIrrigation",
+  "currency": "EUR",
+  "pricesSource": "Regione Autonoma della Sardegna, Prezzario regionale dell'agricoltura, aggiornamento 2024 (Decreto n. 36 prot. 4817 del 12.12.2024), items F.004 to F.006: PE 100 pipes to UNI EN 12201-2 for irrigation, PN 10 / 16 / 25 (SDR 17 / 11 / 7.4), supplied and laid with their joints and fittings (trench and bedding excluded), EUR per metre without VAT. Published rows used as printed (but F.004.004, 90 × 5.4 mm, printed at the price of the SDR 11 pipe of that size and taken as a misprint); the other sizes and classes from a least-squares fit to the published rows (the SDR 7.4 rows F.006 included): price = 3.83 EUR/m + 7.40 EUR/kg × mass per metre (PE 960 kg/m³).",
+  "pricesDate": "2024-12-12",
+  "sources": [
+    "EN 12201-2 - Plastics piping systems for water supply, and for drains and sewers under pressure - Polyethylene (PE) - Part 2: Pipes",
+    "ISO 4427-2 - Plastics piping systems for water supply and for drainage and sewerage under pressure - Polyethylene (PE) - Part 2: Pipes",
+    "ISO 4065 - Thermoplastics pipes - Universal wall thickness table",
+    "Regione Autonoma della Sardegna, Prezzario regionale dell'agricoltura, aggiornamento 2024 (Decreto n. 36 prot. 4817 del 12.12.2024): https://files.regione.sardegna.it/squidex/api/assets/redazionaleras/bc8424d3-e3a4-402e-a0e2-4755218dde78/allegato-decreto-n-36-prot-4817-del-12.12.2024-prezzario-agricoltura.pdf"
+  ],
+  "items": 80,
+  "catalog": {
+    "pipes": [
+      {
+        "id": "en12201_sdr26_50",
+        "name": "PE 100 SDR 26 (PN 6) 50 × 2.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 46.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 61.18,
+        "wallMm": 2.0,
+        "cost": 5.97,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_63",
+        "name": "PE 100 SDR 26 (PN 6) 63 × 2.5 mm",
+        "nominalMm": 63.0,
+        "idMm": 58.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 2.5,
+        "cost": 7.21,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_75",
+        "name": "PE 100 SDR 26 (PN 6) 75 × 2.9 mm",
+        "nominalMm": 75.0,
+        "idMm": 69.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 2.9,
+        "cost": 8.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_90",
+        "name": "PE 100 SDR 26 (PN 6) 90 × 3.5 mm",
+        "nominalMm": 90.0,
+        "idMm": 83.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 3.5,
+        "cost": 10.59,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_110",
+        "name": "PE 100 SDR 26 (PN 6) 110 × 4.2 mm",
+        "nominalMm": 110.0,
+        "idMm": 101.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 4.2,
+        "cost": 13.75,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_125",
+        "name": "PE 100 SDR 26 (PN 6) 125 × 4.8 mm",
+        "nominalMm": 125.0,
+        "idMm": 115.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 4.8,
+        "cost": 16.71,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_140",
+        "name": "PE 100 SDR 26 (PN 6) 140 × 5.4 mm",
+        "nominalMm": 140.0,
+        "idMm": 129.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 5.4,
+        "cost": 20.05,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_160",
+        "name": "PE 100 SDR 26 (PN 6) 160 × 6.2 mm",
+        "nominalMm": 160.0,
+        "idMm": 147.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 6.2,
+        "cost": 25.11,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_180",
+        "name": "PE 100 SDR 26 (PN 6) 180 × 6.9 mm",
+        "nominalMm": 180.0,
+        "idMm": 166.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 6.9,
+        "cost": 30.48,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_200",
+        "name": "PE 100 SDR 26 (PN 6) 200 × 7.7 mm",
+        "nominalMm": 200.0,
+        "idMm": 184.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 7.7,
+        "cost": 36.87,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_225",
+        "name": "PE 100 SDR 26 (PN 6) 225 × 8.6 mm",
+        "nominalMm": 225.0,
+        "idMm": 207.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 8.6,
+        "cost": 45.36,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_250",
+        "name": "PE 100 SDR 26 (PN 6) 250 × 9.6 mm",
+        "nominalMm": 250.0,
+        "idMm": 230.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 9.6,
+        "cost": 55.33,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_280",
+        "name": "PE 100 SDR 26 (PN 6) 280 × 10.7 mm",
+        "nominalMm": 280.0,
+        "idMm": 258.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 10.7,
+        "cost": 68.13,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr26_315",
+        "name": "PE 100 SDR 26 (PN 6) 315 × 12.1 mm",
+        "nominalMm": 315.0,
+        "idMm": 290.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 12.1,
+        "cost": 85.61,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_40",
+        "name": "PE 100 SDR 21 (PN 8) 40 × 2.0 mm",
+        "nominalMm": 40.0,
+        "idMm": 36.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 2.0,
+        "cost": 5.53,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_50",
+        "name": "PE 100 SDR 21 (PN 8) 50 × 2.4 mm",
+        "nominalMm": 50.0,
+        "idMm": 45.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 2.4,
+        "cost": 6.38,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_63",
+        "name": "PE 100 SDR 21 (PN 8) 63 × 3.0 mm",
+        "nominalMm": 63.0,
+        "idMm": 57.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 3.0,
+        "cost": 7.85,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_75",
+        "name": "PE 100 SDR 21 (PN 8) 75 × 3.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 67.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 3.6,
+        "cost": 9.57,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_90",
+        "name": "PE 100 SDR 21 (PN 8) 90 × 4.3 mm",
+        "nominalMm": 90.0,
+        "idMm": 81.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 4.3,
+        "cost": 12.05,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_110",
+        "name": "PE 100 SDR 21 (PN 8) 110 × 5.3 mm",
+        "nominalMm": 110.0,
+        "idMm": 99.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 5.3,
+        "cost": 16.21,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_125",
+        "name": "PE 100 SDR 21 (PN 8) 125 × 6.0 mm",
+        "nominalMm": 125.0,
+        "idMm": 113.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 6.0,
+        "cost": 19.76,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_140",
+        "name": "PE 100 SDR 21 (PN 8) 140 × 6.7 mm",
+        "nominalMm": 140.0,
+        "idMm": 126.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 6.7,
+        "cost": 23.76,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_160",
+        "name": "PE 100 SDR 21 (PN 8) 160 × 7.7 mm",
+        "nominalMm": 160.0,
+        "idMm": 144.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 7.7,
+        "cost": 30.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_180",
+        "name": "PE 100 SDR 21 (PN 8) 180 × 8.6 mm",
+        "nominalMm": 180.0,
+        "idMm": 162.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 8.6,
+        "cost": 36.72,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_200",
+        "name": "PE 100 SDR 21 (PN 8) 200 × 9.6 mm",
+        "nominalMm": 200.0,
+        "idMm": 180.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 9.6,
+        "cost": 44.62,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_225",
+        "name": "PE 100 SDR 21 (PN 8) 225 × 10.8 mm",
+        "nominalMm": 225.0,
+        "idMm": 203.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 10.8,
+        "cost": 55.45,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_250",
+        "name": "PE 100 SDR 21 (PN 8) 250 × 11.9 mm",
+        "nominalMm": 250.0,
+        "idMm": 226.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 11.9,
+        "cost": 67.05,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_280",
+        "name": "PE 100 SDR 21 (PN 8) 280 × 13.4 mm",
+        "nominalMm": 280.0,
+        "idMm": 253.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 13.4,
+        "cost": 83.55,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr21_315",
+        "name": "PE 100 SDR 21 (PN 8) 315 × 15.0 mm",
+        "nominalMm": 315.0,
+        "idMm": 285.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 15.0,
+        "cost": 104.24,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_32",
+        "name": "PE 100 SDR 17 (PN 10) 32 × 2.0 mm",
+        "nominalMm": 32.0,
+        "idMm": 28.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 2.0,
+        "cost": 5.17,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_40",
+        "name": "PE 100 SDR 17 (PN 10) 40 × 2.4 mm",
+        "nominalMm": 40.0,
+        "idMm": 35.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 2.4,
+        "cost": 5.84,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_50",
+        "name": "PE 100 SDR 17 (PN 10) 50 × 3.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 44.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 3.0,
+        "cost": 6.99,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_63",
+        "name": "PE 100 SDR 17 (PN 10) 63 × 3.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 55.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 3.8,
+        "cost": 8.99,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_75",
+        "name": "PE 100 SDR 17 (PN 10) 75 × 4.5 mm",
+        "nominalMm": 75.0,
+        "idMm": 66.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 4.5,
+        "cost": 10.67,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_90",
+        "name": "PE 100 SDR 17 (PN 10) 90 × 5.4 mm",
+        "nominalMm": 90.0,
+        "idMm": 79.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 5.4,
+        "cost": 14.03,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_110",
+        "name": "PE 100 SDR 17 (PN 10) 110 × 6.6 mm",
+        "nominalMm": 110.0,
+        "idMm": 96.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 6.6,
+        "cost": 18.9,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_125",
+        "name": "PE 100 SDR 17 (PN 10) 125 × 7.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 110.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 7.4,
+        "cost": 23.24,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_140",
+        "name": "PE 100 SDR 17 (PN 10) 140 × 8.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 123.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 8.3,
+        "cost": 27.1,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_160",
+        "name": "PE 100 SDR 17 (PN 10) 160 × 9.5 mm",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 9.5,
+        "cost": 34.34,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_180",
+        "name": "PE 100 SDR 17 (PN 10) 180 × 10.7 mm",
+        "nominalMm": 180.0,
+        "idMm": 158.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 10.7,
+        "cost": 42.46,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_200",
+        "name": "PE 100 SDR 17 (PN 10) 200 × 11.9 mm",
+        "nominalMm": 200.0,
+        "idMm": 176.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 11.9,
+        "cost": 51.58,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_225",
+        "name": "PE 100 SDR 17 (PN 10) 225 × 13.4 mm",
+        "nominalMm": 225.0,
+        "idMm": 198.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 13.4,
+        "cost": 64.5,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_250",
+        "name": "PE 100 SDR 17 (PN 10) 250 × 14.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 220.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 14.8,
+        "cost": 78.3,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_280",
+        "name": "PE 100 SDR 17 (PN 10) 280 × 16.6 mm",
+        "nominalMm": 280.0,
+        "idMm": 246.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 16.6,
+        "cost": 101.4,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr17_315",
+        "name": "PE 100 SDR 17 (PN 10) 315 × 18.7 mm",
+        "nominalMm": 315.0,
+        "idMm": 277.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 18.7,
+        "cost": 127.47,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_25",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 25 × 2.0 mm",
+        "nominalMm": 25.0,
+        "idMm": 21.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 2.0,
+        "cost": 4.86,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_32",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 32 × 2.4 mm",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 2.4,
+        "cost": 5.42,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_40",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 40 × 3.0 mm",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 3.0,
+        "cost": 6.31,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_50",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 50 × 3.7 mm",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 3.7,
+        "cost": 7.65,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_63",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 63 × 4.7 mm",
+        "nominalMm": 63.0,
+        "idMm": 53.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 4.7,
+        "cost": 9.95,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_75",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 75 × 5.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 63.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 5.6,
+        "cost": 12.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_90",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 90 × 6.7 mm",
+        "nominalMm": 90.0,
+        "idMm": 76.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 6.7,
+        "cost": 16.28,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_110",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 110 × 8.1 mm",
+        "nominalMm": 110.0,
+        "idMm": 93.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 8.1,
+        "cost": 22.25,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_125",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 125 × 9.2 mm",
+        "nominalMm": 125.0,
+        "idMm": 106.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 9.2,
+        "cost": 27.6,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_140",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 140 × 10.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 119.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 10.3,
+        "cost": 33.64,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_160",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 160 × 11.8 mm",
+        "nominalMm": 160.0,
+        "idMm": 136.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 11.8,
+        "cost": 42.85,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_180",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 180 × 13.3 mm",
+        "nominalMm": 180.0,
+        "idMm": 153.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 13.3,
+        "cost": 53.3,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_200",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 200 × 14.7 mm",
+        "nominalMm": 200.0,
+        "idMm": 170.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 14.7,
+        "cost": 64.61,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_225",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 225 × 16.6 mm",
+        "nominalMm": 225.0,
+        "idMm": 191.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 16.6,
+        "cost": 81.02,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_250",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 250 × 18.4 mm",
+        "nominalMm": 250.0,
+        "idMm": 213.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 18.4,
+        "cost": 98.92,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_280",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 280 × 20.6 mm",
+        "nominalMm": 280.0,
+        "idMm": 238.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 20.6,
+        "cost": 123.07,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr13_6_315",
+        "name": "PE 100 SDR 13.6 (PN 12.5) 315 × 23.2 mm",
+        "nominalMm": 315.0,
+        "idMm": 268.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 23.2,
+        "cost": 154.89,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_20",
+        "name": "PE 100 SDR 11 (PN 16) 20 × 2.0 mm",
+        "nominalMm": 20.0,
+        "idMm": 16.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 2.0,
+        "cost": 4.63,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_25",
+        "name": "PE 100 SDR 11 (PN 16) 25 × 2.3 mm",
+        "nominalMm": 25.0,
+        "idMm": 20.4,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 2.3,
+        "cost": 4.83,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_32",
+        "name": "PE 100 SDR 11 (PN 16) 32 × 3.0 mm",
+        "nominalMm": 32.0,
+        "idMm": 26.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 3.0,
+        "cost": 5.6,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_40",
+        "name": "PE 100 SDR 11 (PN 16) 40 × 3.7 mm",
+        "nominalMm": 40.0,
+        "idMm": 32.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 3.7,
+        "cost": 6.83,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_50",
+        "name": "PE 100 SDR 11 (PN 16) 50 × 4.6 mm",
+        "nominalMm": 50.0,
+        "idMm": 40.8,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 4.6,
+        "cost": 8.61,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_63",
+        "name": "PE 100 SDR 11 (PN 16) 63 × 5.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 51.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 5.8,
+        "cost": 11.62,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_75",
+        "name": "PE 100 SDR 11 (PN 16) 75 × 6.8 mm",
+        "nominalMm": 75.0,
+        "idMm": 61.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 6.8,
+        "cost": 13.94,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_90",
+        "name": "PE 100 SDR 11 (PN 16) 90 × 8.2 mm",
+        "nominalMm": 90.0,
+        "idMm": 73.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 8.2,
+        "cost": 18.69,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_110",
+        "name": "PE 100 SDR 11 (PN 16) 110 × 10.0 mm",
+        "nominalMm": 110.0,
+        "idMm": 90.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 10.0,
+        "cost": 26.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_125",
+        "name": "PE 100 SDR 11 (PN 16) 125 × 11.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 102.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 11.4,
+        "cost": 32.73,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_140",
+        "name": "PE 100 SDR 11 (PN 16) 140 × 12.7 mm",
+        "nominalMm": 140.0,
+        "idMm": 114.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 12.7,
+        "cost": 39.91,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_160",
+        "name": "PE 100 SDR 11 (PN 16) 160 × 14.6 mm",
+        "nominalMm": 160.0,
+        "idMm": 130.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 14.6,
+        "cost": 49.01,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_180",
+        "name": "PE 100 SDR 11 (PN 16) 180 × 16.4 mm",
+        "nominalMm": 180.0,
+        "idMm": 147.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 16.4,
+        "cost": 61.05,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_200",
+        "name": "PE 100 SDR 11 (PN 16) 200 × 18.2 mm",
+        "nominalMm": 200.0,
+        "idMm": 163.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 18.2,
+        "cost": 74.51,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_225",
+        "name": "PE 100 SDR 11 (PN 16) 225 × 20.5 mm",
+        "nominalMm": 225.0,
+        "idMm": 184.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 20.5,
+        "cost": 97.38,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_250",
+        "name": "PE 100 SDR 11 (PN 16) 250 × 22.7 mm",
+        "nominalMm": 250.0,
+        "idMm": 204.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 22.7,
+        "cost": 114.07,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_280",
+        "name": "PE 100 SDR 11 (PN 16) 280 × 25.4 mm",
+        "nominalMm": 280.0,
+        "idMm": 229.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 25.4,
+        "cost": 148.13,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      },
+      {
+        "id": "en12201_sdr11_315",
+        "name": "PE 100 SDR 11 (PN 16) 315 × 28.6 mm",
+        "nominalMm": 315.0,
+        "idMm": 257.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 28.6,
+        "cost": 186.6,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "EN 12201"
+      }
+    ],
+    "outlets": [],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}
