@@ -6,11 +6,16 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../design/pivot.dart' show PivotKind;
+// 1.6.0 AGB
+import '../design/traveller.dart' show WindClass;
 import 'geometry.dart';
 import 'pivot_machine.dart';
 import 'read_report.dart';
 
 export 'pivot_machine.dart';
+
+// 1.6.0 AGB: travelling-gun lanes and furrow sets
+part 'field_machines.dart';
 
 enum HydraulicScope { zone, mainline }
 
@@ -47,6 +52,9 @@ enum EntityType {
   comment,
   revisionCloud,
   breakline,
+  // 1.6.0 AGB
+  traveller,
+  furrows,
 }
 
 /// Default layer names.
@@ -79,6 +87,9 @@ class Layers {
   static const wires = 'WIRES';
   static const comments = 'COMMENTS';
   static const revisions = 'REVISIONS';
+  // 1.6.0 AGB
+  static const travellers = 'TRAVELLERS';
+  static const surface = 'SURFACE_IRRIGATION';
 
   static const all = [
     images,
@@ -103,6 +114,9 @@ class Layers {
     misc,
     junctions,
     pivots,
+    // 1.6.0 AGB
+    travellers,
+    surface,
     wires,
     controllers,
     areas,
@@ -140,6 +154,9 @@ class Layers {
     wires: 0xFFFFEE58,
     comments: 0xFFFFB300,
     revisions: 0xFFE53935,
+    // 1.6.0 AGB
+    travellers: 0xFF9CCC65,
+    surface: 0xFF4FC3F7,
   };
 }
 
@@ -505,6 +522,11 @@ sealed class Entity {
         );
       case EntityType.ordinateDimension:
         return OrdinateDimensionEntity(id: id, layer: layer, name: name, point: pos(), leaderEnd: pt('e'), origin: j['o'] == null ? Pt.zero : pt('o'), xAxis: j['x'] as bool? ?? true);
+      // 1.6.0 AGB
+      case EntityType.traveller:
+        return TravellerEntity._read(j, id, layer, name, pt, d, report);
+      case EntityType.furrows:
+        return FurrowEntity._read(j, id, layer, name, pts(), d);
     }
   }
 }
@@ -2601,7 +2623,10 @@ extension EntityKindX on Entity {
     EntityType.pump ||
     EntityType.misc ||
     EntityType.junction ||
-    EntityType.pivot => true,
+    EntityType.pivot ||
+    // 1.6.0 AGB
+    EntityType.traveller ||
+    EntityType.furrows => true,
     _ => false,
   };
 
@@ -2619,6 +2644,8 @@ extension EntityKindX on Entity {
     MiscHydraulicEntity e => e.scope,
     JunctionEntity e => e.scope,
     PivotEntity _ => HydraulicScope.mainline,
+    // 1.6.0 AGB
+    TravellerEntity _ || FurrowEntity _ => HydraulicScope.mainline,
     _ => null,
   };
 

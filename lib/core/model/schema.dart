@@ -107,6 +107,21 @@ const fieldNotes = <String, String>{
   'points': 'pump curve [[Q (m³/s), H (m)], …]',
   'kw': 'motor power (kW)',
   'curve': 'emitter law q = k·H^x (q in m³/s, H in m), radius r = ra·H^rb (m)',
+  // 1.6.0 AGB: travelling-gun lanes and furrow sets
+  'gun': 'in a traveller lane, the catalogue gun',
+  'noz': 'in a traveller lane, the nozzle of the gun',
+  'dw': 'in a traveller lane, the wetted diameter of the gun (m)',
+  'hose': 'in a traveller lane, the hose length (m; 0 = the run)',
+  'hosemm': 'in a traveller lane, the hose bore (mm)',
+  'zg': 'in a traveller lane, the gun height above the hydrant (m)',
+  'hday': 'in a traveller lane, the working hours per day',
+  'wind': 'in a traveller lane, the wind class of the lane spacing table',
+  'mach': 'in a traveller lane, the reel serving it',
+  'hcost': 'in a traveller lane, the hydrant price (project currency)',
+  'fam': 'in a furrow set, the NRCS intake family (in/h)',
+  'ditch': 'in a furrow set, a head ditch with siphons instead of a gated pipe',
+  'gcost': 'in a furrow set, the price of a gate (project currency)',
+  'agb': 'pump house electrics, solar pumping, water quality and two-wire settings',
   // top level
   'format': 'always "opencadirrigation"',
   'version': 'version of the file layout',
@@ -148,6 +163,9 @@ Entity sampleEntity(EntityType type) => switch (type) {
   EntityType.comment => CommentEntity(id: 'e1', position: Pt.zero),
   EntityType.revisionCloud => RevisionCloudEntity(id: 'e1', points: const [Pt.zero, Pt(1, 0), Pt(1, 1)]),
   EntityType.breakline => BreaklineEntity(id: 'e1', points: const [Pt.zero, Pt(1, 0)]),
+  // 1.6.0 AGB
+  EntityType.traveller => TravellerEntity(id: 'e1', start: Pt.zero, end: const Pt(100, 0)),
+  EntityType.furrows => FurrowEntity(id: 'e1', points: [Pt.zero, const Pt(100, 0)]),
 };
 
 /// The JSON Schema (draft 2020-12) of a project file.

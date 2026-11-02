@@ -12,6 +12,7 @@ import '../model/project.dart';
 import '../model/scenario.dart';
 import '../translate.dart';
 import '../units.dart';
+import 'agb_reports.dart';
 import 'agronomy.dart';
 import 'area_requirement.dart';
 import 'area_water.dart';
@@ -623,6 +624,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     }
     // ---- machines: nozzle chart, timer chart, corner arm, prescription, electrical
     if (r.mechanised.isNotEmpty) out.addAll(mechanisedTables(project, r, labels));
+    // 1.6.0 AGB: pump house and pivots' supply, solar, water quality, two-wire
+    out.addAll(agbReportTables(project, r, labels));
     // ---- valve wiring
     final el = r.electrical;
     if (el != null && (el.runs.isNotEmpty || el.controllers.isNotEmpty)) {

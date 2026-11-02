@@ -332,6 +332,11 @@ class NetworkBuilder {
           requestSplit(s.position, [HydraulicScope.mainline]);
         case PivotEntity p:
           requestSplit(p.center, [HydraulicScope.mainline]);
+        // 1.6.0 AGB: the hydrant of a traveller lane, the inlet of a furrow set
+        case TravellerEntity t:
+          requestSplit(t.start, [HydraulicScope.mainline]);
+        case FurrowEntity f when f.points.isNotEmpty:
+          requestSplit(f.points.first, [HydraulicScope.mainline]);
         default:
           break;
       }
@@ -554,6 +559,16 @@ class NetworkBuilder {
             }
             n.entityIds.add(e.id);
             model.pivotNodes[e.id] = n.id;
+          // 1.6.0 AGB: lanes and furrow sets take their water like a pivot
+          case TravellerEntity _ || FurrowEntity _:
+            final inlet = e is TravellerEntity ? e.start : (e as FurrowEntity).points.firstOrNull;
+            final n = inlet == null ? null : _nodeAt(inlet, HydraulicScope.mainline, create: false);
+            if (n == null || n.id.isEmpty) {
+              model.unconnectedEntities.add(e.id);
+              continue;
+            }
+            n.entityIds.add(e.id);
+            model.pivotNodes[e.id] = n.id;
           case WaterSupplyEntity s:
             final n = _nodeAt(s.position, HydraulicScope.mainline);
             n.entityIds.add(e.id);
@@ -710,6 +725,10 @@ class NetworkBuilder {
         case MiscHydraulicEntity _:
           if (!links(e.id).any((l) => model.mainlineLinks.contains(l.id) || l.zoneId != null)) model.unconnectedEntities.add(e.id);
         case PivotEntity _:
+          final n = model.pivotNodes[e.id];
+          if (n == null || !model.mainlineNodes.contains(n)) model.unconnectedEntities.add(e.id);
+        // 1.6.0 AGB
+        case TravellerEntity _ || FurrowEntity _:
           final n = model.pivotNodes[e.id];
           if (n == null || !model.mainlineNodes.contains(n)) model.unconnectedEntities.add(e.id);
         default:
