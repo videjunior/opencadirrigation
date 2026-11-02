@@ -281,8 +281,13 @@ class LocalProjectStore implements ProjectRepository {
         if (ok) break;
       }
     }
-    // nothing kept and nothing written: the storage refuses every write (blocked, private mode)
-    if (!ok) return StoreOutcome(idx.isEmpty ? StoreStatus.unavailable : StoreStatus.full, dropped: dropped);
+    if (!ok) {
+      // the entries dropped in vain are gone all the same: the index must
+      // not list texts that are no longer there
+      if (dropped > 0) _writeIndex(idx);
+      // nothing kept and nothing written: the storage refuses every write (blocked, private mode)
+      return StoreOutcome(idx.isEmpty ? StoreStatus.unavailable : StoreStatus.full, dropped: dropped);
+    }
     final now = DateTime.now();
     var versionKept = true;
     var version = 0;
