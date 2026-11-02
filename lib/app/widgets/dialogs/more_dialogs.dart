@@ -164,6 +164,7 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
           otherDuties: others,
           requireSubmersible: suctionLiftTooDeep(s, duty),
           mainsHz: p.mainsHz,
+          crf: pumpRankingCrf(p),
         );
         final existing = c.project.entities.whereType<PumpEntity>().toList();
         return SizedBox(

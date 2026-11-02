@@ -29,10 +29,12 @@ import '../units.dart';
 import 'area_water.dart';
 import 'electrical.dart';
 import 'fittings.dart';
+import 'lp.dart';
 import 'lp_sizing.dart';
 import 'mechanised.dart';
 import 'network_builder.dart';
 import 'pivot.dart';
+import 'pump_selection.dart';
 import 'results.dart';
 import 'valve_in_head.dart';
 
@@ -193,16 +195,18 @@ class Designer {
   /// Mainline node of the worst need of flow [f]: the valve or pivot, or the
   /// critical head of a scheduled valve-in-head station, furthest below what
   /// it needs (the first on a tie, valves first); null when it has none.
-  String? _worstNode(SystemFlowResult f) {
+  String? _worstNode(SystemFlowResult f) => _worstNodeOf(f.valves, f.heads);
+
+  String? _worstNodeOf(List<ValveDuty> valves, List<VihDuty> heads) {
     String? node;
     var most = -double.infinity;
-    for (final v in f.valves) {
+    for (final v in valves) {
       if (node == null || v.deficit > most) {
         node = _demandNode(v.valveId);
         most = v.deficit;
       }
     }
-    for (final h in f.heads) {
+    for (final h in heads) {
       if (h.scheduled && (node == null || h.deficit > most)) {
         node = _heads[h.criticalId]?.$1;
         most = h.deficit;
@@ -670,15 +674,64 @@ class Designer {
   /// Mean reference pressure of the emitters of a zone from a solved network.
   /// Whether [id] is a tape, for the entities of [_tapeModel]: a scan of the
   /// entities for every emitter of each analysis was quadratic.
-  final Map<String, bool> _tapeOf = {};
+  final Map<String, int> _tapeOf = {};
   NetworkModel? _tapeModel;
 
-  bool _isTape(String id) {
+  /// 0 for an item that is no tape, 1 for a tape, 2 for a tape with a
+  /// pressure regulator at its inlet.
+  int _tapeKind(String id) {
     if (!identical(_tapeModel, model)) {
       _tapeModel = model;
       _tapeOf.clear();
+      _regulatorsOf.clear();
     }
-    return id.isNotEmpty && (_tapeOf[id] ??= project.byId(id) is TapeEntity);
+    if (id.isEmpty) return 0;
+    return _tapeOf[id] ??= switch (project.byId(id)) {
+      TapeEntity t => t.regulated ? 2 : 1,
+      _ => 0,
+    };
+  }
+
+  bool _isTape(String id) => _tapeKind(id) > 0;
+
+  /// Whether the emitters of [id] sit behind the regulator of a tape: their
+  /// pressure follows the regulator, not the zone valve.
+  bool _regulated(String id) => _tapeKind(id) == 2;
+
+  final Map<String, List<(String, double)>> _regulatorsOf = {};
+
+  /// The inlet regulators of the tapes of zone [valveId]: the submain node
+  /// before each one and the least pressure it needs there (the minimum
+  /// submain pressure of the tape, at least its inlet pressure).
+  List<(String, double)> _regulators(String valveId) {
+    _tapeKind('');
+    return _regulatorsOf[valveId] ??= [
+      for (final lid in model.zoneLinks[valveId] ?? const <String>{})
+        if (model.linkById(lid) case final l? when l.kind == GLinkKind.prv && _regulated(l.entityId))
+          if (project.byId(l.entityId) case final TapeEntity t) (l.from, math.max(t.submainMinHeadM, t.inletHeadM)),
+    ];
+  }
+
+  /// Whether zone [valveId] has emitters that follow the valve (not behind
+  /// the inlet regulator of a tape).
+  bool _followers(String valveId) {
+    for (final id in model.zoneNodes[valveId] ?? const <String>{}) {
+      for (final e in model.nodes[id]!.emitters) {
+        if (e.index != -2 && !_regulated(e.entityId)) return true;
+      }
+    }
+    return false;
+  }
+
+  /// The least margin of the regulators of [regs] in solution [r]: pressure
+  /// at the submain node less what the regulator needs there.
+  double _regulatorMargin(List<(String, double)> regs, NetworkResult r) {
+    var m = double.infinity;
+    for (final (node, need) in regs) {
+      final nr = r.nodes[node];
+      if (nr != null) m = math.min(m, nr.pressure - need);
+    }
+    return m;
   }
 
   (double, double) _meanPressures(String valveId, NetworkResult r) {
@@ -689,7 +742,10 @@ class Designer {
       if (head == null) continue;
       for (final e in n.emitters) {
         if (e.index == -2) continue; // flushing
-        if (e.index != 0 && _isTape(e.entityId)) continue;
+        // a tape by the pressure at its inlet (whichever way it was drawn);
+        // behind a regulator by the regulator, not by the valve
+        if (!e.inlet && _isTape(e.entityId)) continue;
+        if (_regulated(e.entityId)) continue;
         final p = head - (n.elevation + e.offset);
         sumActual += p * e.count;
         sumNominal += e.nominalHead * e.count;
@@ -698,6 +754,23 @@ class Designer {
     }
     if (w == 0) return (0, 0);
     return (sumActual / w, sumNominal / w);
+  }
+
+  /// Least rise of the mean emitter pressure per metre of valve head while
+  /// the emitters follow the valve; below it a PRV, a PSV or an FCV of the
+  /// zone holds them (without one the mean rises by 0.1 m/m or more even
+  /// when nine tenths of the head are lost on the way).
+  static const _saturationSlope = 0.05;
+
+  /// The PRV, PSV or FCV of zone [valveId] that holds the pressure in the
+  /// solution [r] (active), if any.
+  String? _holdingDevice(String valveId, NetworkResult r) {
+    for (final lid in model.zoneLinks[valveId] ?? const <String>{}) {
+      final l = model.linkById(lid);
+      if (l == null || (l.kind != GLinkKind.prv && l.kind != GLinkKind.psv && l.kind != GLinkKind.fcv)) continue;
+      if (r.links[lid]?.status == LinkStatus.active) return l.entityId;
+    }
+    return null;
   }
 
   ZoneResult analyzeZone(String valveId, {double? downstreamHead, bool detailed = true}) {
@@ -714,44 +787,119 @@ class Designer {
     }
     var head = downstreamHead ?? valve.fixedDownstreamHeadM;
     NetworkResult r;
+    var saturated = false;
+    // tapes with an inlet regulator do not follow the valve: they set a
+    // least pressure at the submain instead (MOT-14)
+    final regs = _regulators(valveId);
+    final followers = _followers(valveId);
+    var byRegulators = false;
     if (head != null) {
       r = _zoneNetwork(valveId, head, detailed).solve();
     } else if (!detailed) {
       final h0 = 10.0;
       r = _zoneNetwork(valveId, h0, false).solve();
       final (pm, pn) = _meanPressures(valveId, r);
-      head = h0 + (pn - pm);
+      head = followers ? h0 + (pn - pm) : 0.0;
+      // fixed demands: the pressures upstream of the regulators move with
+      // the valve head
+      if (regs.isNotEmpty && h0 - _regulatorMargin(regs, r) > head) {
+        head = h0 - _regulatorMargin(regs, r);
+        byRegulators = true;
+      }
       r = _zoneNetwork(valveId, head, false).solve();
+    } else if (!followers) {
+      head = 0.0;
+      r = _zoneNetwork(valveId, head, true).solve();
     } else {
       // bisection so that mean emitter pressure equals nominal mean
       final probe = _zoneNetwork(valveId, 10, false).solve();
       final (_, pn) = _meanPressures(valveId, probe);
       var lo = 0.0, hi = math.max(pn * 3, 5.0);
       r = _zoneNetwork(valveId, hi, true).solve();
+      var mean = _meanPressures(valveId, r).$1;
       var it = 0;
-      while (_meanPressures(valveId, r).$1 < pn && it < 20) {
+      double? held;
+      String? holder;
+      while (mean < pn && it < 20) {
+        final next = _zoneNetwork(valveId, hi * 2, true).solve();
+        final m = _meanPressures(valveId, next).$1;
+        // the emitters no longer follow the valve: a PRV or an FCV of the
+        // zone holds them (doubling on took the valve to 4.7·10⁷ m)
+        if (m - mean < _saturationSlope * hi) {
+          held = math.max(m, mean);
+          holder = _holdingDevice(valveId, next);
+          break;
+        }
         hi *= 2;
-        r = _zoneNetwork(valveId, hi, true).solve();
+        r = next;
+        mean = m;
         it++;
       }
-      for (var i = 0; i < 28; i++) {
-        final mid = (lo + hi) / 2;
-        r = _zoneNetwork(valveId, mid, true).solve();
-        if (_meanPressures(valveId, r).$1 > pn) {
-          hi = mid;
-        } else {
-          lo = mid;
+      if (held != null) {
+        // the lowest valve head that gives the zone all it can get
+        final target = held - 0.01;
+        for (var i = 0; i < 40 && hi - lo >= 1e-3; i++) {
+          final mid = (lo + hi) / 2;
+          if (_meanPressures(valveId, _zoneNetwork(valveId, mid, true).solve()).$1 >= target) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
         }
-        if (hi - lo < 1e-3) break;
+        head = hi;
+        r = _zoneNetwork(valveId, head, true).solve();
+        saturated = true;
+        warnings.add(['zone_pressure_unreachable', ?holder].join(':'));
+      } else {
+        for (var i = 0; i < 28; i++) {
+          final mid = (lo + hi) / 2;
+          r = _zoneNetwork(valveId, mid, true).solve();
+          if (_meanPressures(valveId, r).$1 > pn) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
+          if (hi - lo < 1e-3) break;
+        }
+        head = (lo + hi) / 2;
+        r = _zoneNetwork(valveId, head, true).solve();
       }
-      head = (lo + hi) / 2;
-      r = _zoneNetwork(valveId, head, true).solve();
+    }
+    if (detailed && downstreamHead == null && valve.fixedDownstreamHeadM == null && regs.isNotEmpty) {
+      // raise the valve until every regulator gets the pressure it needs
+      final m0 = _regulatorMargin(regs, r);
+      if (m0 < 0) {
+        final base = head;
+        var step = -m0, margin = m0;
+        var top = _zoneNetwork(valveId, base + step, true).solve();
+        for (var it = 0; it < 20; it++) {
+          final m = _regulatorMargin(regs, top);
+          if (m >= 0) break;
+          // a regulator held by another device upstream: as far as it goes
+          if (m - margin < _saturationSlope * step) break;
+          margin = m;
+          step *= 2;
+          top = _zoneNetwork(valveId, base + step, true).solve();
+        }
+        var lo = base, hi = base + step;
+        for (var i = 0; i < 40 && hi - lo >= 1e-3; i++) {
+          final mid = (lo + hi) / 2;
+          if (_regulatorMargin(regs, _zoneNetwork(valveId, mid, true).solve()) >= 0) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
+        }
+        head = hi;
+        r = _zoneNetwork(valveId, head, true).solve();
+        byRegulators = true;
+      }
     }
     if (!r.converged) warnings.add('not_converged');
 
     // If the spread of pressures fits inside the allowable window but the
     // mean-targeted head leaves some outlets outside, centre the band.
-    if (downstreamHead == null && valve.fixedDownstreamHeadM == null) {
+    if (downstreamHead == null && valve.fixedDownstreamHeadM == null && !saturated && !byRegulators) {
       final (mn, mx, aMin, aMax) = _pressureSpread(valveId, r);
       if (mx - mn <= aMax - aMin + 1e-9 && (mn < aMin - 1e-6 || mx > aMax + 1e-6)) {
         final shift = (aMin + aMax) / 2 - (mn + mx) / 2;
@@ -849,7 +997,8 @@ class Designer {
             b: l.b,
             elevationA: na.elevation,
             elevationB: nb.elevation,
-            length: l.length,
+            length: l.drawnLength,
+            slopeLength: l.length,
             diameter: d,
             pipeSpecId: tape?.id ?? spec?.id,
             pipeName: tape?.name ?? spec?.name ?? '?',
@@ -864,6 +1013,8 @@ class Designer {
           ),
         );
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
+        // a submain over a rise, its line of heads below the pipe
+        if (l.usage == PipeUsage.zone && math.min(ha - na.elevation, hb - nb.elevation) < _belowAtmosphere) warnings.add('pressure_below_atmospheric:${l.entityId}');
         final rating = tape?.pressureRatingM ?? (spec == null ? 0.0 : _rating(spec));
         if (rating > 0 && math.max(ha - na.elevation, hb - nb.elevation) > rating) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
@@ -880,7 +1031,8 @@ class Designer {
             elevation: na.elevation,
           ),
         );
-        if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
+        // a booster of the zone: the same range, suction and NPSH checks
+        if (l.kind == GLinkKind.pump) _checkPump(l, lr, ha - na.elevation, na.elevation, warnings);
       }
     }
     for (final o in outlets) {
@@ -1043,7 +1195,7 @@ class Designer {
       final nr = r.nodes[id];
       if (nr == null) continue;
       for (final e in n.emitters) {
-        if (e.index == -2) continue;
+        if (e.index == -2 || _regulated(e.entityId)) continue;
         final p = nr.head - (n.elevation + e.offset);
         mn = math.min(mn, p);
         mx = math.max(mx, p);
@@ -1168,16 +1320,37 @@ class Designer {
     return warnings;
   }
 
-  /// Greedy upsizing along the critical path until the window is met.
+  /// Greedy upsizing along the critical path until the window is met. When
+  /// it cannot be met and the ground alone spreads the emitters beyond the
+  /// window (no pipe, however large, gives them the same pressure), the
+  /// assignment goes back to the one before the repair, with
+  /// `zone_slope_exceeds_window` (it bought the largest pipes for nothing).
   ZoneResult _repairZone(String valveId, Map<String, List<GLink>> units, List<String> warnings, ZoneResult res) {
+    if (res.withinWindow) return res;
     final (_, zoneNode) = model.valveNodes[valveId]!;
     final linkIds = model.zoneLinks[valveId] ?? <String>{};
+    final start = res;
+    final assigned = {for (final u in units.keys) u: _assigned[u]};
+    final splits = {for (final u in units.keys) u: ?_pendingSplits[u]};
+    var failed = false;
     for (var it = 0; it < 400 && !res.withinWindow; it++) {
       final target = res.minOutlet;
       if (target == null) break;
       final targetNode = _nodeOfOutlet(valveId, target);
       if (targetNode == null) break;
-      final path = _path(zoneNode, targetNode, linkIds).toSet();
+      // only the pipes after the last regulating device that holds the
+      // pressure on the way change the pressure of the outlet
+      final route = _path(zoneNode, targetNode, linkIds);
+      final active = {
+        for (final d in res.devices)
+          if (d.status == LinkStatus.active.name) d.linkId,
+      };
+      var from = 0;
+      for (var i = 0; i < route.length; i++) {
+        final k = route[i].kind;
+        if ((k == GLinkKind.prv || k == GLinkKind.psv || k == GLinkKind.fcv) && active.contains(route[i].id)) from = i + 1;
+      }
+      final path = route.sublist(from).toSet();
       final lossByLink = {for (final p in res.pipes) p.linkId: p.headLoss};
       String? bestUnit;
       PipeSpec? bestSpec;
@@ -1197,14 +1370,46 @@ class Designer {
         }
       }
       if (bestUnit == null) {
-        warnings.add('cannot_meet_pressure_window');
+        failed = true;
         break;
       }
       _assign(bestUnit, bestSpec!);
       _pendingSplits.remove(bestUnit);
       res = analyzeZone(valveId, detailed: false);
     }
+    if (res.withinWindow) return res;
+    if (_staticSpread(valveId) > res.allowedMax - res.allowedMin + 1e-6) {
+      for (final e in assigned.entries) {
+        final id = e.value;
+        if (id == null) {
+          _assigned.remove(e.key);
+        } else {
+          _assigned[e.key] = id;
+        }
+      }
+      _pendingSplits.addAll(splits);
+      _networkInputs++;
+      warnings.add('zone_slope_exceeds_window');
+      return start;
+    }
+    if (failed) warnings.add('cannot_meet_pressure_window');
     return res;
+  }
+
+  /// Spread (m) of the elevations of the emitters of zone [valveId], risers
+  /// included: the spread of their pressures with no friction at all.
+  double _staticSpread(String valveId) {
+    var lo = double.infinity, hi = -double.infinity;
+    for (final id in model.zoneNodes[valveId] ?? const <String>{}) {
+      final n = model.nodes[id]!;
+      for (final e in n.emitters) {
+        if (e.index == -2) continue;
+        final z = n.elevation + e.offset;
+        lo = math.min(lo, z);
+        hi = math.max(hi, z);
+      }
+    }
+    return hi > lo ? hi - lo : 0;
   }
 
   /// Critical emitter nodes of a zone for the LP: per lateral its end, its
@@ -1214,7 +1419,9 @@ class Designer {
     for (final id in model.zoneNodes[valveId] ?? <String>{}) {
       final n = model.nodes[id]!;
       for (final e in n.emitters) {
-        if (e.index == -2) continue;
+        // behind a regulator the pressure is the regulator's, whatever the
+        // sizes: the regulator's own need at the submain stands for them
+        if (e.index == -2 || _regulated(e.entityId)) continue;
         byEntity.putIfAbsent(e.entityId, () => []).add(id);
       }
     }
@@ -1252,6 +1459,10 @@ class Designer {
     return out;
   }
 
+  /// Message code of an LP that gave no sizing: infeasible, or stopped at
+  /// its iteration limit (which says nothing about feasibility).
+  static String _lpFailure(LpAssignment a) => a.message == LpStatus.iterationLimit.name ? 'lp_iteration_limit' : 'lp_infeasible';
+
   /// Builds and solves the zone LP with the current assignment for flows.
   LpAssignment _lpZone(String valveId, Map<String, List<GLink>> units, {Set<String> extraNodes = const {}}) {
     final (_, zoneNode) = model.valveNodes[valveId]!;
@@ -1285,14 +1496,18 @@ class Designer {
         ? annualEnergyCost(flow: total, head: 1, hoursPerYear: params.zoneHoursPerYear, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency)
         : 0.0;
     final zRoot = model.nodes[zoneNode]!.elevation;
-    final nodes = {..._criticalNodes(valveId, depth), ...extraNodes};
+    final regNeed = <String, double>{};
+    for (final (node, need) in _regulators(valveId)) {
+      regNeed[node] = math.max(regNeed[node] ?? need, need);
+    }
+    final nodes = {..._criticalNodes(valveId, depth), ...extraNodes, ...regNeed.keys};
     final constraints = <LpHeadConstraint>[];
     for (final k in nodes) {
       final n = model.nodes[k];
       if (n == null || !parent.containsKey(k)) continue;
-      var lo = -double.infinity, hi = double.infinity, off = 0.0, nomSum = 0.0, nomW = 0.0;
+      var lo = regNeed[k] ?? -double.infinity, hi = double.infinity, off = 0.0, nomSum = 0.0, nomW = 0.0;
       for (final e in n.emitters) {
-        if (e.index == -2) continue;
+        if (e.index == -2 || _regulated(e.entityId)) continue;
         lo = math.max(lo, e.allowedMin);
         hi = math.min(hi, e.allowedMax);
         off = math.max(off, e.offset);
@@ -1398,7 +1613,7 @@ class Designer {
         }
         lpDone = true;
       } else {
-        _note('lp_infeasible:${valve.zoneName}');
+        _note('${_lpFailure(a)}:${valve.zoneName}');
         res = analyzeZone(valveId, detailed: false);
       }
     } else {
@@ -1645,6 +1860,88 @@ class Designer {
     return -inletPressure > maxSuctionLift(elevation) + 1e-6;
   }
 
+  /// Pressure head (m) below which a pipe runs under vacuum (a margin below
+  /// the atmosphere for the rounding of a line at zero pressure).
+  static const _belowAtmosphere = -0.1;
+
+  /// Whether zone valve [vid] holds its downstream pressure (a set outlet
+  /// pressure, or a pressure reducing model).
+  bool _regulates(String vid) {
+    final v = project.byId(vid);
+    if (v is! ControlValveEntity) return true;
+    return v.fixedDownstreamHeadM != null || catalog.valve(v.valveSpecId)?.kind == ValveKind.prv;
+  }
+
+  NetworkModel? _suctionModel;
+  Set<String> _suctionOf = const {};
+
+  /// Mainline pipes on the suction side of a pump: from its inlet back to a
+  /// supply through no other device. Below the atmosphere there is the
+  /// suction lift of a surface pump, checked as such (a submersible one
+  /// stands at the water level).
+  Set<String> get _suctionLinks {
+    if (identical(_suctionModel, model)) return _suctionOf;
+    _suctionModel = model;
+    final out = <String>{};
+    for (final lid in model.mainlineLinks) {
+      final l = model.linkById(lid)!;
+      if (l.kind != GLinkKind.pump) continue;
+      final seen = <String>{l.from};
+      final queue = [l.from];
+      final pipes = <String>{};
+      var supply = false;
+      for (var i = 0; i < queue.length; i++) {
+        final n = model.nodes[queue[i]]!;
+        if (n.isSupply) {
+          supply = true;
+          continue;
+        }
+        for (final x in n.links) {
+          if (x.kind != GLinkKind.pipe || !model.mainlineLinks.contains(x.id)) continue;
+          pipes.add(x.id);
+          final o = x.other(n.id);
+          if (seen.add(o)) queue.add(o);
+        }
+      }
+      if (supply) out.addAll(pipes);
+    }
+    return _suctionOf = out;
+  }
+
+  /// Elevation of the inlet of device link [l] (upstream node [up]): a
+  /// surface pump drawn on its water supply stands on the ground there,
+  /// above the water it lifts (the supply node lies at the water level, so
+  /// its suction lift and NPSH were never checked); else the node.
+  double _inletElevation(GLink l, GNode up) {
+    if (l.kind == GLinkKind.pump && up.isSupply && !(catalog.pump(l.pumpSpecId)?.submersible ?? false)) return up.ground;
+    return up.elevation;
+  }
+
+  /// Operating range, suction lift and NPSH of pump link [l] in solution
+  /// [lr], with the pressure head [inletPressure] at its inlet at
+  /// [elevation]. The range of the catalogue scales with the speed the pump
+  /// turns at (a drive, or a curve of other mains): Q ∝ n.
+  void _checkPump(GLink l, LinkResult lr, double inletPressure, double elevation, List<String> warnings) {
+    final spec = catalog.pump(l.pumpSpecId);
+    final speed = _vfdSpeed[l.entityId] ?? l.speedRatio;
+    if (spec != null) {
+      if (lr.flow > spec.maxFlow * speed + 1e-9 || lr.flow <= 0) {
+        warnings.add('pump_out_of_range:${l.entityId}');
+      } else if (spec.minFlow > 0 && lr.flow < spec.minFlow * speed - 1e-9) {
+        warnings.add('pump_below_min_flow:${l.entityId}');
+      }
+    }
+    if (_suctionLiftExceeded(l, lr, inletPressure, elevation)) warnings.add('pump_suction_lift:${l.entityId}');
+    // NPSH available against the required one (curve of the catalogue)
+    final npshr = spec?.npshrAt(lr.flow, speed: speed);
+    if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: inletPressure, elevation: elevation, tempC: params.waterTempC) < npshr + npshMargin) {
+      warnings.add('pump_npsh:${l.entityId}');
+    }
+    // 1.6.0 MOD: the shaft power at the duty against the motor
+    final motor = spec == null ? null : pumpMotorLoad(spec, lr.flow, lr.pumpHead, speed: speed);
+    if (motor != null) warnings.add('$motor:${l.entityId}');
+  }
+
   SystemFlowResult analyzeSystemFlow(SystemFlow sf, {double totalDuration = 0}) {
     final warnings = <String>[];
     final supplies = _supplies;
@@ -1734,9 +2031,22 @@ class Designer {
         warnings.add('valve_unreachable:$vid');
         continue;
       }
-      valves.add(ValveDuty(valveId: vid, zoneName: zoneName, flow: demand[vid]!, availableHead: nr.pressure, requiredHead: required[vid]!, p: model.nodes[nm]!.p));
+      final duty = ValveDuty(
+        valveId: vid,
+        zoneName: zoneName,
+        flow: demand[vid]!,
+        availableHead: nr.pressure,
+        requiredHead: required[vid]!,
+        p: model.nodes[nm]!.p,
+        regulates: pivot != null || _regulates(vid),
+      );
+      valves.add(duty);
       if (pivot != null) pivot.availableHead = nr.pressure;
       if (nr.pressure < required[vid]! - 0.01) warnings.add(pivot != null ? 'pivot_pressure_deficit:$vid' : 'valve_pressure_deficit:$vid');
+      // a valve that does not regulate passes the surplus on: the zone then
+      // runs above its design pressure and flow, and so do the line and the
+      // pumps (the analysis of the zone takes a valve that throttles)
+      if (duty.excessive) warnings.add('valve_pressure_excess:$vid');
     }
     final heads = _vihDuties(r, listed, warnings);
     final duties = <SupplyDuty>[];
@@ -1791,7 +2101,8 @@ class Designer {
             b: l.b,
             elevationA: na.elevation,
             elevationB: nb.elevation,
-            length: l.length,
+            length: l.drawnLength,
+            slopeLength: l.length,
             diameter: d,
             pipeSpecId: spec?.id,
             pipeName: spec?.name ?? '?',
@@ -1806,7 +2117,11 @@ class Designer {
         );
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         if (spec != null && spec.pressureRatingM > 0 && math.max(ha - na.elevation, hb - nb.elevation) > _rating(spec)) warnings.add('pressure_rating_exceeded:${l.entityId}');
+        // a mainline over a hill: siphon, air coming in, a thin wall
+        // collapsing; the suction pipe of a surface pump has its own check
+        if (math.min(ha - na.elevation, hb - nb.elevation) < _belowAtmosphere && !_suctionLinks.contains(lid)) warnings.add('pressure_below_atmospheric:${l.entityId}');
       } else {
+        final inletZ = _inletElevation(l, na);
         devices.add(
           DeviceResult(
             entityId: l.entityId,
@@ -1814,26 +2129,14 @@ class Designer {
             flow: lr.flow,
             headLoss: lr.headLoss,
             pumpHead: lr.pumpHead,
-            upstreamPressure: ha - na.elevation,
+            upstreamPressure: ha - inletZ,
             downstreamPressure: hb - nb.elevation,
             status: lr.status.name,
-            elevation: na.elevation,
+            elevation: inletZ,
             speedRatio: l.kind == GLinkKind.pump ? (_vfdSpeed[l.entityId] ?? l.speedRatio) : 1,
           ),
         );
-        if (l.kind == GLinkKind.pump) {
-          final spec = catalog.pump(l.pumpSpecId);
-          if (spec != null && (lr.flow > spec.maxFlow + 1e-9 || lr.flow <= 0)) warnings.add('pump_out_of_range:${l.entityId}');
-          if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
-          // NPSH available against the required one (curve of the catalogue)
-          final npshr = spec?.npshrAt(lr.flow, speed: _vfdSpeed[l.entityId] ?? l.speedRatio);
-          if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: ha - na.elevation, elevation: na.elevation, tempC: params.waterTempC) < npshr + npshMargin) {
-            warnings.add('pump_npsh:${l.entityId}');
-          }
-          // 1.6.0 MOD: the shaft power at the duty against the motor
-          final motor = spec == null ? null : pumpMotorLoad(spec, lr.flow, lr.pumpHead, speed: _vfdSpeed[l.entityId] ?? l.speedRatio);
-          if (motor != null) warnings.add('$motor:${l.entityId}');
-        }
+        if (l.kind == GLinkKind.pump) _checkPump(l, lr, ha - inletZ, inletZ, warnings);
       }
     }
     // energy: supplies with calculated pressure and pumps
@@ -1848,14 +2151,31 @@ class Designer {
     for (final d in devices) {
       if (d.pumpHead > 0) {
         final l = model.linkById(d.linkId)!;
-        final spec = catalog.pump(l.pumpSpecId);
+        final entity = project.byId(l.entityId);
         energy += annualEnergyCost(
           flow: d.flow,
           head: d.pumpHead,
           hoursPerYear: hours,
           costPerKwh: params.powerCostPerKwh,
-          pumpEfficiency: spec?.efficiencyAt(d.flow, speed: d.speedRatio) ?? params.pumpEfficiency,
+          // the pump on its curve, and its motor and drive (MOT-15)
+          pumpEfficiency: wireToWaterEfficiency(catalog.pump(l.pumpSpecId), entity is PumpEntity ? entity : null, d.flow, speed: d.speedRatio, fallback: params.pumpEfficiency),
         );
+      }
+    }
+    // the pumps in series from each supply to the valve or head that sets
+    // its pressure: what a new pump at the supply must add besides them
+    // (the pump selection summed every pump of the flow, parallel ones and
+    // boosters of other branches too)
+    final worstNode = _worstNodeOf(valves, heads);
+    if (worstNode != null) {
+      final pumpHead = {
+        for (final d in devices)
+          if (d.pumpHead > 0) d.linkId: d.pumpHead,
+      };
+      for (final duty in duties) {
+        final from = model.supplyNodes[duty.supplyId];
+        final path = from == null ? const <GLink>[] : (from == worstNode ? const <GLink>[] : _path(from, worstNode, model.mainlineLinks));
+        if (path.isNotEmpty || from == worstNode) duty.pumpBoost = path.fold<double>(0, (s, l) => s + (pumpHead[l.id] ?? 0));
       }
     }
     // the speeds belong to this flow; sizing analyses run the pumps as drawn
@@ -2196,7 +2516,7 @@ class Designer {
           if (units.keys.every((k) => _assigned[k] == before[k])) break;
         }
       } else {
-        _note('lp_infeasible:${_label('menu.mainline')}');
+        _note('${_lpFailure(a)}:${_label('menu.mainline')}');
       }
     }
     // 2. deficit loop for fixed-pressure supplies
@@ -2488,15 +2808,26 @@ class Designer {
         var lo = 0.0, hi = 20.0;
         var r = _zoneNetwork(vid, hi, true).solve();
         var it = 0;
-        while (minEnd(r) < params.flushingMinEndHeadM && it < 12) {
+        var target = params.flushingMinEndHeadM;
+        var end = minEnd(r);
+        while (end < target && it < 12) {
+          final next = _zoneNetwork(vid, hi * 2, true).solve();
+          final e = minEnd(next);
+          // a PRV or an FCV of the zone holds the ends below the target:
+          // the lowest head that gives them all they can get
+          if (e - end < _saturationSlope * hi) {
+            target = math.max(e, end) - 0.01;
+            break;
+          }
           hi *= 2;
-          r = _zoneNetwork(vid, hi, true).solve();
+          r = next;
+          end = e;
           it++;
         }
         for (var i = 0; i < 30; i++) {
           final mid = (lo + hi) / 2;
           r = _zoneNetwork(vid, mid, true).solve();
-          if (minEnd(r) >= params.flushingMinEndHeadM) {
+          if (minEnd(r) >= target) {
             hi = mid;
           } else {
             lo = mid;
@@ -2550,64 +2881,101 @@ class Designer {
 
   // ------------------------------------------------------------ surge
 
-  /// Joukowsky surge check of every pipe entity against its pressure class.
+  /// Surge screening of every pipe entity against its pressure class
+  /// (Joukowsky / Michaud; the transient study simulates the line): the
+  /// pressure a closure adds at a point x metres along the water path from
+  /// the supply (from the valve in a zone), the envelope of a closure in T
+  /// seconds, min(a·ΔV/g, 2·x·ΔV/(g·T)) (Michaud 1878: the surge grows from
+  /// nothing at the reflecting supply), over the static pressure there; the
+  /// worst point of the entity counts. The critical time 2L/a takes the
+  /// path to the far end of the entity: the length of one entity of a line
+  /// drawn in pieces made the closure look slow and the surge half of what
+  /// it is.
   List<SurgeResult> checkSurge() {
     results.surge.clear();
     if (!params.checkSurge) return results.surge;
-    final worst = <String, (PipeSegmentResult, String)>{};
-    void consider(PipeSegmentResult p, String ctx) {
-      final cur = worst[p.entityId];
-      if (cur == null || p.velocity > cur.$1.velocity) worst[p.entityId] = (p, ctx);
-    }
-
+    // every analysed segment of every entity, with its context, in one pass
+    // (a search of every segment per entity was quadratic)
+    final segs = <String, List<(PipeSegmentResult, String)>>{};
     for (final z in results.zones.values) {
       for (final p in z.pipes) {
-        consider(p, z.zoneName);
+        (segs[p.entityId] ??= []).add((p, z.zoneName));
       }
     }
     for (final f in results.systemFlows) {
       for (final p in f.pipes) {
-        consider(p, f.name);
+        (segs[p.entityId] ??= []).add((p, f.name));
       }
     }
-    for (final entry in worst.entries) {
-      final (p, ctx) = entry.value;
+    final along = _distancesAlongWater();
+    final closure = params.valveClosureTimeS;
+    for (final entry in segs.entries) {
+      // the fastest flow the entity carries: the velocity a closure stops
+      var (p, ctx) = entry.value.first;
+      for (final (q, c) in entry.value) {
+        if (q.velocity > p.velocity) (p, ctx) = (q, c);
+      }
       final spec = catalog.pipe(p.pipeSpecId);
       if (spec == null) continue; // tapes: not checked
       final e = project.byId(entry.key);
-      final length = e is PolyEntity ? e.length : p.length;
+      final own = e is PolyEntity ? e.length : p.length;
       final a = waveCelerity(diameter: spec.innerDiameter, wallThickness: math.max(spec.wallThicknessMm, 0.5) / 1000, material: spec.material);
       final full = joukowskySurgeHead(celerity: a, velocityChange: p.velocity);
-      final tc = criticalClosureTime(length: math.max(length, 1), celerity: a);
-      final closure = params.valveClosureTimeS;
-      final surge = closure <= 0 || closure < tc ? full : full * tc / closure;
-      var staticMax = math.max(p.pressureStart, p.pressureEnd);
-      for (final z in results.zones.values) {
-        for (final q in z.pipes) {
-          if (q.entityId == entry.key) staticMax = math.max(staticMax, math.max(q.pressureStart, q.pressureEnd));
+      double surgeAt(double x) => closure <= 0 ? full : math.min(full, 2 * x * p.velocity / (gravity * closure));
+      var worstTotal = double.negativeInfinity, staticAt = 0.0, surge = 0.0, far = 0.0;
+      for (final (q, _) in entry.value) {
+        final l = model.linkById(q.linkId);
+        for (final (pressure, node) in [(q.pressureStart, l?.from), (q.pressureEnd, l?.to)]) {
+          // off the trees (a loop): the pipe itself, as before
+          final x = along[node] ?? own;
+          far = math.max(far, x);
+          final s = surgeAt(x);
+          if (pressure + s > worstTotal) {
+            worstTotal = pressure + s;
+            staticAt = pressure;
+            surge = s;
+          }
         }
       }
-      for (final f in results.systemFlows) {
-        for (final q in f.pipes) {
-          if (q.entityId == entry.key) staticMax = math.max(staticMax, math.max(q.pressureStart, q.pressureEnd));
-        }
-      }
+      final length = far > 0 ? far : own;
       final sr = SurgeResult(
+        pathLength: length,
         entityId: entry.key,
         context: ctx,
         pipeName: spec.name,
         velocity: p.velocity,
         celerity: a,
         surgeHead: surge,
-        maxStaticHead: staticMax,
+        maxStaticHead: staticAt,
         rating: _rating(spec),
         closureTime: closure,
-        criticalTime: tc,
+        criticalTime: criticalClosureTime(length: math.max(length, 1), celerity: a),
       );
       results.surge.add(sr);
       if (sr.exceeds) results.messages.add('surge_rating_exceeded:${entry.key}');
     }
     return results.surge;
+  }
+
+  /// Distance (m) of every node along the water path from its source: from
+  /// the supplies along the mainline, from its valve in a zone
+  /// (breadth-first trees, lengths summed along them).
+  Map<String, double> _distancesAlongWater() {
+    final out = <String, double>{};
+    void walk(Iterable<String> roots, Set<String> allowed) {
+      final (parent, _, depth) = _bfs(roots, allowed);
+      final order = parent.keys.toList()..sort((x, y) => depth[x]!.compareTo(depth[y]!));
+      for (final id in order) {
+        final l = parent[id];
+        out[id] = l == null ? 0 : out[l.other(id)]! + l.length;
+      }
+    }
+
+    walk(model.supplyNodes.values, model.mainlineLinks);
+    for (final v in model.valveNodes.entries) {
+      walk([v.value.$2], model.zoneLinks[v.key] ?? const <String>{});
+    }
+    return out;
   }
 
   // ------------------------------------------------------------ machines

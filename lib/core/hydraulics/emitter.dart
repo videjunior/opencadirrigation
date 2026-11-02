@@ -6,7 +6,7 @@ import 'dart:math' as math;
 /// q = k·H^x with q in m³/s and H in metres of head (internal SI),
 /// plus the wetted-radius law R = a·H^b.
 class EmitterCurve {
-  const EmitterCurve({required this.k, required this.x, this.radiusA = 0, this.radiusB = 0});
+  const EmitterCurve({required this.k, required this.x, this.radiusA = 0, this.radiusB = 0, this.compensationHead = 0});
 
   /// Discharge coefficient (m³/s per m^x).
   final double k;
@@ -18,10 +18,21 @@ class EmitterCurve {
   final double radiusA;
   final double radiusB;
 
+  /// Head (m) where a pressure-compensating emitter starts compensating:
+  /// below it the diaphragm stays open and the emitter is an orifice,
+  /// q = q(hc)·√(H/hc) (at 1 m a dripline compensating from 6 m gives 41 %
+  /// of its flow, not the 91 % of k·H^0.04); 0 = the law k·H^x everywhere.
+  final double compensationHead;
+
   bool get isPressureCompensating => x < 0.1;
+
+  /// This curve compensating only from [head] (see [compensationHead]).
+  EmitterCurve compensatingFrom(double head) => EmitterCurve(k: k, x: x, radiusA: radiusA, radiusB: radiusB, compensationHead: head);
 
   double flow(double head) {
     if (head <= 0) return 0;
+    final hc = compensationHead;
+    if (hc > 0 && head < hc) return k * math.pow(hc, x) * math.sqrt(head / hc);
     return k * math.pow(head, x);
   }
 
@@ -33,6 +44,8 @@ class EmitterCurve {
   /// dq/dH at the given head (guarded).
   double gradient(double head) {
     final h = math.max(head, 1e-6);
+    final hc = compensationHead;
+    if (hc > 0 && h < hc) return k * math.pow(hc, x) / (2 * math.sqrt(h * hc));
     if (x == 0) return 1e-9;
     return k * x * math.pow(h, x - 1);
   }
@@ -40,6 +53,11 @@ class EmitterCurve {
   /// Head that produces the given flow (inverse law).
   double headForFlow(double q) {
     if (x <= 0 || k <= 0 || q <= 0) return 0;
+    final hc = compensationHead;
+    if (hc > 0) {
+      final qc = k * math.pow(hc, x);
+      if (q < qc) return hc * (q / qc) * (q / qc);
+    }
     return math.pow(q / k, 1 / x).toDouble();
   }
 
@@ -117,9 +135,14 @@ class EmitterCurve {
     return (hMin, hMax);
   }
 
-  Map<String, dynamic> toJson() => {'k': k, 'x': x, 'ra': radiusA, 'rb': radiusB};
-  static EmitterCurve fromJson(Map<String, dynamic> j) =>
-      EmitterCurve(k: (j['k'] as num).toDouble(), x: (j['x'] as num).toDouble(), radiusA: (j['ra'] as num?)?.toDouble() ?? 0, radiusB: (j['rb'] as num?)?.toDouble() ?? 0);
+  Map<String, dynamic> toJson() => {'k': k, 'x': x, 'ra': radiusA, 'rb': radiusB, if (compensationHead > 0) 'hc': compensationHead};
+  static EmitterCurve fromJson(Map<String, dynamic> j) => EmitterCurve(
+    k: (j['k'] as num).toDouble(),
+    x: (j['x'] as num).toDouble(),
+    radiusA: (j['ra'] as num?)?.toDouble() ?? 0,
+    radiusB: (j['rb'] as num?)?.toDouble() ?? 0,
+    compensationHead: (j['hc'] as num?)?.toDouble() ?? 0,
+  );
 }
 
 /// Result of [EmitterCurve.fitTable].

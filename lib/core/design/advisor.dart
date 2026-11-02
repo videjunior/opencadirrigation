@@ -330,6 +330,13 @@ const adviceCodes = [
   'outside_terrain',
   'pump_motor_overload',
   'pump_motor_sf',
+  // 1.6.0 MOT
+  'zone_pressure_unreachable',
+  'pump_below_min_flow',
+  'lp_iteration_limit',
+  'zone_slope_exceeds_window',
+  'pressure_below_atmospheric',
+  'valve_pressure_excess',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -361,10 +368,15 @@ AdviceLevel _level(String code) => switch (code) {
   // 1.6.0 AUT: two valves feeding each other's pipes make both zones wrong;
   // an area crossing itself has the wrong size
   'zone_overlap' ||
-  'area_self_intersect' => AdviceLevel.error,
+  'area_self_intersect' ||
+  // 1.6.0 MOT
+  'zone_pressure_unreachable' ||
+  'zone_slope_exceeds_window' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
   // 1.6.0 MOD: a motor working within its service factor
   'pump_motor_sf' => AdviceLevel.info,
+  // 1.6.0 MOT: the flow control of the valve can throttle it on site
+  'valve_pressure_excess' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 

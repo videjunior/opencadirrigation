@@ -41,6 +41,7 @@ import 'dart:typed_data';
 import '../hydraulics/pump.dart';
 import '../model/entities.dart';
 import '../model/project.dart';
+import 'pump_selection.dart';
 import 'results.dart';
 
 const int _day = 1440;
@@ -400,10 +401,10 @@ List<TariffSchedule> scheduleSeasons(Tariff tariff, List<TariffJob> Function(Tar
 /// Jobs for the system flows of [p] from the design [results]: the daily
 /// duration of every flow and its power, the shaft power of the calculated
 /// supplies at their required head (with the pump efficiency of the
-/// parameters) plus that of the pumps (with their own efficiency), over
-/// [motorEfficiency] (1 = the pump efficiency already stands for the whole
-/// set, as in the annual energy of the design). Flows keep their current
-/// start hours.
+/// parameters) plus that of the pumps (on their efficiency curve, with the
+/// efficiency of their motor and drive, as the annual energy of the
+/// design), over [motorEfficiency] (a further factor for every load; 1 =
+/// none). Flows keep their current start hours.
 List<TariffJob> tariffJobsFromDesign(Project p, DesignResults results, {double motorEfficiency = 1}) {
   final out = <TariffJob>[];
   final starts = {for (final f in p.systemFlows) f.id: f.startHour};
@@ -415,8 +416,14 @@ List<TariffJob> tariffJobsFromDesign(Project p, DesignResults results, {double m
     for (final d in f.devices) {
       if (d.pumpHead <= 0 || d.flow <= 0) continue;
       final e = p.byId(d.entityId);
-      final spec = e is PumpEntity ? p.catalog.pump(e.pumpSpecId) : null;
-      watts += shaftPower(flow: d.flow, head: d.pumpHead, efficiency: spec?.efficiency ?? p.params.pumpEfficiency);
+      final pump = e is PumpEntity ? e : null;
+      // the efficiency curve at the operating point and the motor, as the
+      // annual energy of the design (it took the single efficiency)
+      watts += shaftPower(
+        flow: d.flow,
+        head: d.pumpHead,
+        efficiency: wireToWaterEfficiency(p.catalog.pump(pump?.pumpSpecId), pump, d.flow, speed: d.speedRatio, fallback: p.params.pumpEfficiency),
+      );
     }
     out.add(TariffJob(id: f.flowId, hours: f.durationHours, powerKw: watts / 1000 / math.max(motorEfficiency, 0.05), startHour: starts[f.flowId]));
   }

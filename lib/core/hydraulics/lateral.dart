@@ -25,6 +25,8 @@ class LateralSpec {
     this.roughness = 1.5e-6,
     this.kinematicViscosity = 1.004e-6,
     this.endFlow = 0,
+    this.scobeyKs = 0.32,
+    this.manningN = 0.009,
   });
 
   final double length;
@@ -46,6 +48,12 @@ class LateralSpec {
   /// Extra flow leaving the distal end (flushing) in m³/s.
   final double endFlow;
 
+  /// Coefficients of the Scobey and Manning laws of the pipe (the plastic
+  /// values by default, as the design takes for tapes); the calculator used
+  /// the steel and aluminium ones, 25 % more loss than the design.
+  final double scobeyKs;
+  final double manningN;
+
   int get outletCount {
     final off = firstOffset ?? spacing;
     if (!off.isFinite || off < 0 || length < off) return 0;
@@ -66,6 +74,8 @@ class LateralSpec {
     roughness: roughness,
     kinematicViscosity: kinematicViscosity,
     endFlow: endFlow ?? this.endFlow,
+    scobeyKs: scobeyKs,
+    manningN: manningN,
   );
 }
 
@@ -127,7 +137,17 @@ LateralResult analyzeLateralFromEnd(LateralSpec spec, double endPressure, {Eleva
     final pos = positions[i];
     final segLen = prevPos - pos;
     if (segLen > 0 && flow > 0) {
-      final hf = frictionLoss(method: spec.method, flow: flow, diameter: spec.diameter, length: segLen, c: spec.hazenC, roughness: spec.roughness, kinematicViscosity: spec.kinematicViscosity);
+      final hf = frictionLoss(
+        method: spec.method,
+        flow: flow,
+        diameter: spec.diameter,
+        length: segLen,
+        c: spec.hazenC,
+        roughness: spec.roughness,
+        kinematicViscosity: spec.kinematicViscosity,
+        scobeyKs: spec.scobeyKs,
+        manningN: spec.manningN,
+      );
       totalHead += hf;
       loss += hf;
       maxV = math.max(maxV, velocity(flow: flow, diameter: spec.diameter));
@@ -147,7 +167,17 @@ LateralResult analyzeLateralFromEnd(LateralSpec spec, double endPressure, {Eleva
   }
   // inlet segment
   if (prevPos > 0 && flow > 0) {
-    final hf = frictionLoss(method: spec.method, flow: flow, diameter: spec.diameter, length: prevPos, c: spec.hazenC, roughness: spec.roughness, kinematicViscosity: spec.kinematicViscosity);
+    final hf = frictionLoss(
+      method: spec.method,
+      flow: flow,
+      diameter: spec.diameter,
+      length: prevPos,
+      c: spec.hazenC,
+      roughness: spec.roughness,
+      kinematicViscosity: spec.kinematicViscosity,
+      scobeyKs: spec.scobeyKs,
+      manningN: spec.manningN,
+    );
     totalHead += hf;
     loss += hf;
     maxV = math.max(maxV, velocity(flow: flow, diameter: spec.diameter));

@@ -868,7 +868,17 @@ class _Simulation {
       // factor at 1 m/s instead
       final qr = flowForVelocity(velocity: 1, diameter: d);
       final opt = model.network.options;
-      final hf = frictionLoss(method: opt.method, flow: qr, diameter: d, length: l.length, c: l.hazenC, roughness: l.roughness, kinematicViscosity: opt.kinematicViscosity);
+      final hf = frictionLoss(
+        method: opt.method,
+        flow: qr,
+        diameter: d,
+        length: l.length,
+        c: l.hazenC,
+        roughness: l.roughness,
+        kinematicViscosity: opt.kinematicViscosity,
+        scobeyKs: l.scobeyKs,
+        manningN: l.manningN,
+      );
       final hm = l.minorK > 0 ? minorLoss(k: l.minorK, flow: qr, diameter: d) : 0.0;
       r = (hf + hm) / (qr * qr);
     }
@@ -1225,7 +1235,10 @@ class _Simulation {
         final calibrated = _flowing(q0) && dh0 * q0 > 0 && lr?.status != LinkStatus.closed;
         switch (l.kind) {
           case HLinkKind.prv:
-            // frozen at its steady opening, one-way
+          case HLinkKind.psv:
+          case HLinkKind.fcv:
+            // frozen at its steady opening, one-way (a PSV or an FCV was a
+            // two-way orifice that let water back during the transient)
             e.check = true;
             if (calibrated && q0 > 0) {
               e.rRef = dh0 / (q0 * q0);
@@ -1474,11 +1487,20 @@ class _Simulation {
       return;
     }
     final w = p.speedRatio;
-    e.pa = p.a;
-    e.pb = p.b * w;
-    e.pc = p.c * w * w;
     final gain = nodes[to].h0 - nodes[from].h0;
     final running = lr?.status != LinkStatus.closed && q0 > 0 && _flowing(q0);
+    if (p.throughPoints) {
+      // a curve through the manufacturer's points: its tangent parabola at
+      // the operating point (at half the runout flow when idle)
+      final (pa, pb, pc) = p.localParabola(running ? q0 : (p.runoutFlow.isFinite ? p.runoutFlow / 2 : 0.01));
+      e.pa = pa;
+      e.pb = pb;
+      e.pc = pc;
+    } else {
+      e.pa = p.a;
+      e.pb = p.b * w;
+      e.pc = p.c * w * w;
+    }
     if (running) {
       e.pc += gain - p.head(q0);
       e.q = q0;

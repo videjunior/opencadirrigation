@@ -127,6 +127,10 @@ class NetworkOptions {
   /// Absolute Σ|ΔQ| threshold (m³/s) that also counts as converged, for
   /// networks carrying (almost) no flow, where the relative measure is noise.
   final double absoluteFlowTolerance;
+
+  /// Largest error (m) of the energy equation |hᵢ − hⱼ − h(Q)| over the
+  /// links and emitters once the flows have settled (EPANET 2.2's head
+  /// error); 0 = the flow test alone.
   final double headTolerance;
 }
 
@@ -257,6 +261,21 @@ class HydraulicNetwork {
     final eGrad = Float64List(nodeCount);
     final eLoss = Float64List(nodeCount);
 
+    // Parts with a demand that no fixed head reaches through links that
+    // can ever open (a closed link, a pump without a curve, an FCV set to no
+    // flow): the demand cannot be met. Solved with the rest they drew it
+    // through the 10⁻⁸ conductance of the closed links, the nodes at
+    // −200 000 m with the solution converged; they rest empty instead, at
+    // zero pressure, their demand left out (`demand_disconnected:<node>`).
+    final cutOff = warnings.contains('no_fixed_head_node') ? null : _cutOffParts(nodeList, fromNode, toNode);
+    if (cutOff != null) {
+      for (var i = 0; i < nodeCount; i++) {
+        if (cutOff[i] == 0) continue;
+        emitterOpen[i] = 0;
+        emitterFlow[i] = 0;
+      }
+    }
+
     // What the iterations do not change: the friction exponent, and the
     // resistance (unless Darcy–Weisbach) and minor loss coefficient of each pipe.
     final exponent = switch (options.method) {
@@ -277,6 +296,7 @@ class HydraulicNetwork {
 
     var converged = false;
     var iter = 0;
+    var refine = 0;
     var relErr = double.infinity;
     var lastErr = double.infinity;
     var damping = 1.0;
@@ -355,7 +375,9 @@ class HydraulicNetwork {
               yk = _closedResistance * qk;
             } else {
               // open: the curve at |Q| (EPANET); a pump that cannot deliver
-              // the head is closed by the status check below
+              // the head is closed by the status check below. Left of the
+              // top of a curve that rises first, the top: the pump runs on
+              // the falling part (a rising gradient made the system singular)
               final qa = math.max(qk.abs(), _qMin);
               final runout = p.runoutFlow;
               if (runout.isFinite && qa > runout) {
@@ -363,8 +385,9 @@ class HydraulicNetwork {
                 gk = gr;
                 yk = -p.head(runout) + (qa - runout) * gr;
               } else {
-                gk = math.max(-p.gradient(qa), 1e-6);
-                yk = -p.head(qa);
+                final qe = math.max(qa, p.peakFlow);
+                gk = math.max(-p.gradient(qe), 1e-6);
+                yk = -p.head(qe);
               }
             }
         }
@@ -373,7 +396,7 @@ class HydraulicNetwork {
       }
 
       // parts at rest behind closed links take their level as known heads
-      if (_restingParts(nodeList, fromNode, toNode, heads, emitterOpen, resting, restLevel)) {
+      if (_restingParts(nodeList, fromNode, toNode, heads, emitterOpen, resting, restLevel, cutOff)) {
         for (var i = 0; i < nodeCount; i++) {
           if (resting[i] == 1) heads[i] = restLevel[i];
         }
@@ -610,9 +633,18 @@ class HydraulicNetwork {
         }
         statusChanged = _checkLinkStatus(heads, fromNode, toNode, q, prvs: flowsConverged) || statusChanged;
       }
+      // the flows have settled: the energy equation must hold too, within
+      // headTolerance on every link and emitter (the head error test of
+      // EPANET 2.2). The flow test alone, dominated by the large flows, let
+      // drippers of 4·10⁻⁷ m³/s end centimetres off; a few more Newton steps
+      // settle them (at most [_maxHeadRefinements])
       if (flowsConverged && !statusChanged) {
-        converged = true;
-        break;
+        final tol = options.headTolerance;
+        if (!(tol > 0) || refine >= _maxHeadRefinements || _headError(nodeList, heads, fromNode, toNode, q, emitterFlow, emitterOpen, resting, resistance, minor, exponent, darcy) <= tol) {
+          converged = true;
+          break;
+        }
+        refine++;
       }
       // adaptive damping if diverging
       if (relErr > lastErr * 1.5 && iter > 3) {
@@ -623,7 +655,132 @@ class HydraulicNetwork {
       lastErr = relErr;
     }
     if (!converged) warnings.add('not_converged');
+    if (cutOff != null) warnings.addAll(_cutOffWarnings(nodeList, fromNode, toNode, cutOff));
     return _results(nodeList, heads, fromNode, toNode, q, emitterFlow, emitterOpen, converged, iter, warnings, relErr);
+  }
+
+  /// Newton steps past the flow test to meet [NetworkOptions.headTolerance].
+  static const _maxHeadRefinements = 10;
+
+  /// Largest error (m) of the energy equation over the open links and the
+  /// open emitters for flows [q] and [heads]: |hᵢ − hⱼ − h(Q)| (the head
+  /// error test of EPANET 2.2).
+  double _headError(
+    List<HNode> nodeList,
+    Float64List heads,
+    Int32List fromNode,
+    Int32List toNode,
+    Float64List q,
+    Float64List emitterFlow,
+    Uint8List emitterOpen,
+    Uint8List resting,
+    Float64List resistance,
+    Float64List minor,
+    double exponent,
+    bool darcy,
+  ) {
+    var worst = 0.0;
+    for (var k = 0; k < links.length; k++) {
+      final l = links[k];
+      if (resting[fromNode[k]] == 1 && resting[toNode[k]] == 1) continue;
+      final dh = heads[fromNode[k]] - heads[toNode[k]];
+      double h;
+      switch (l.kind) {
+        case HLinkKind.pipe:
+          if (l.status == LinkStatus.closed) continue;
+          final r = darcy ? _pipeResistance(l, q[k]) : resistance[k];
+          final qa = q[k].abs();
+          final hh = r * math.pow(qa, exponent) + minor[k] * qa * qa;
+          h = q[k] < 0 ? -hh : hh;
+        case HLinkKind.device:
+          if (l.status == LinkStatus.closed) continue;
+          h = (l.device ?? const DeviceLossCurve(k: 0)).loss(q[k]);
+        case HLinkKind.pump:
+          final p = l.pump;
+          if (p == null || l.status == LinkStatus.closed) continue;
+          // as the coefficients: straight on beyond the runout
+          final qa = math.max(q[k].abs(), _qMin), runout = p.runoutFlow;
+          h = runout.isFinite && qa > runout ? -p.head(runout) + (qa - runout) * math.max(-p.gradient(runout), 1e-6) : -p.head(math.max(qa, p.peakFlow));
+        default:
+          continue;
+      }
+      worst = math.max(worst, (h - dh).abs());
+    }
+    for (var i = 0; i < nodeList.length; i++) {
+      final n = nodeList[i];
+      final em = n.emitter;
+      if (em == null || n.emitterCount <= 0 || emitterOpen[i] != 1 || resting[i] == 1 || n.kind != HNodeKind.junction) continue;
+      final (h, _) = _emitterLoss(em, n.emitterCount, emitterFlow[i]);
+      worst = math.max(worst, (h - (heads[i] - n.elevation - n.emitterOffset)).abs());
+    }
+    return worst;
+  }
+
+  /// Links that never let water through: a closed link, a pump without a
+  /// curve, an FCV set to no flow.
+  static bool _neverOpen(HLink l) => l.kind == HLinkKind.closed || (l.kind == HLinkKind.pump && l.pump == null) || (l.kind == HLinkKind.fcv && l.fcvFlow <= 0);
+
+  /// Nodes (1) of the parts no fixed head reaches through links that can
+  /// open and that hold a demand; null when there are none.
+  Uint8List? _cutOffParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode) {
+    if (!links.any(_neverOpen)) return null;
+    final count = nodeList.length;
+    final parent = Int32List.fromList(List<int>.generate(count, (i) => i));
+    int find(int i) {
+      while (parent[i] != i) {
+        parent[i] = parent[parent[i]];
+        i = parent[i];
+      }
+      return i;
+    }
+
+    for (var k = 0; k < links.length; k++) {
+      if (_neverOpen(links[k])) continue;
+      final ra = find(fromNode[k]), rb = find(toNode[k]);
+      if (ra != rb) parent[ra] = rb;
+    }
+    final fed = Uint8List(count), wants = Uint8List(count);
+    for (var i = 0; i < count; i++) {
+      final n = nodeList[i];
+      if (n.kind != HNodeKind.junction) fed[find(i)] = 1;
+      if (n.demand != 0) wants[find(i)] = 1;
+    }
+    Uint8List? out;
+    for (var i = 0; i < count; i++) {
+      final r = find(i);
+      if (fed[r] == 1 || wants[r] == 0) continue;
+      (out ??= Uint8List(count))[i] = 1;
+    }
+    return out;
+  }
+
+  /// `demand_disconnected:<node>` for every part of [cutOff], at its node
+  /// of the largest demand.
+  List<String> _cutOffWarnings(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Uint8List cutOff) {
+    // the parts again (closed links apart), to name each one once
+    final count = nodeList.length;
+    final parent = Int32List.fromList(List<int>.generate(count, (i) => i));
+    int find(int i) {
+      while (parent[i] != i) {
+        parent[i] = parent[parent[i]];
+        i = parent[i];
+      }
+      return i;
+    }
+
+    for (var k = 0; k < links.length; k++) {
+      if (_neverOpen(links[k]) || cutOff[fromNode[k]] == 0 || cutOff[toNode[k]] == 0) continue;
+      final ra = find(fromNode[k]), rb = find(toNode[k]);
+      if (ra != rb) parent[ra] = rb;
+    }
+    final top = <int, int>{};
+    for (var i = 0; i < count; i++) {
+      if (cutOff[i] == 0) continue;
+      final r = find(i);
+      final best = top[r];
+      if (best == null || nodeList[i].demand.abs() > nodeList[best].demand.abs()) top[r] = i;
+    }
+    return [for (final i in top.values) 'demand_disconnected:${nodeList[i].id}'];
   }
 
   /// Plans of the last patterns solved, most recent first: the designer
@@ -647,7 +804,7 @@ class HydraulicNetwork {
   static const _statusCheckFrequency = 2;
   static const _maxStatusCheck = 10;
 
-  static bool _isClosedLink(HLink l) => l.kind == HLinkKind.closed || l.status == LinkStatus.closed || (l.kind == HLinkKind.pump && l.pump == null);
+  static bool _isClosedLink(HLink l) => l.status == LinkStatus.closed || _neverOpen(l);
 
   /// Links meeting at every node, each once and in link order, in CSR form:
   /// those of node i are at [start[i], start[i + 1]) after the n + 1 starts.
@@ -678,8 +835,9 @@ class HydraulicNetwork {
   /// with the rest, such a part left the system singular to rounding, its
   /// level held only by those conductances next to ones of 10⁷ inside it.
   /// Marks those nodes in [resting] with their level in [level]; false when
-  /// no part rests.
-  bool _restingParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Float64List heads, Uint8List emitterOpen, Uint8List resting, Float64List level) {
+  /// no part rests. The parts of [cutOff] (a demand no fixed head reaches)
+  /// rest too, empty: at zero pressure.
+  bool _restingParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Float64List heads, Uint8List emitterOpen, Uint8List resting, Float64List level, Uint8List? cutOff) {
     resting.fillRange(0, resting.length, 0);
     var anyClosed = false;
     for (final l in links) {
@@ -708,11 +866,13 @@ class HydraulicNetwork {
     final busy = Uint8List(count);
     for (var i = 0; i < count; i++) {
       final n = nodeList[i];
+      if (cutOff != null && cutOff[i] == 1) continue;
       if (n.kind != HNodeKind.junction || n.demand != 0 || emitterOpen[i] == 1) busy[find(i)] = 1;
     }
     for (var k = 0; k < links.length; k++) {
       final l = links[k];
       if (_isClosedLink(l)) continue;
+      if (cutOff != null && cutOff[fromNode[k]] == 1) continue;
       if (l.kind == HLinkKind.pump || l.kind == HLinkKind.fcv || ((l.kind == HLinkKind.prv || l.kind == HLinkKind.psv) && l.status == LinkStatus.active)) {
         busy[find(fromNode[k])] = 1;
       }
@@ -750,7 +910,7 @@ class HydraulicNetwork {
       final r = find(i);
       if (rests[r] == 0) continue;
       resting[i] = 1;
-      level[i] = math.min(across[r] > 0 ? sum[r] / across[r] : top[r], lowestEmitter[r]);
+      level[i] = cutOff != null && cutOff[i] == 1 ? nodeList[i].elevation : math.min(across[r] > 0 ? sum[r] / across[r] : top[r], lowestEmitter[r]);
     }
     return true;
   }
@@ -761,6 +921,26 @@ class HydraulicNetwork {
     var statusChanged = false;
     for (var k = 0; k < links.length; k++) {
       final l = links[k];
+      // a device whose loss has a constant part C (the head that opens
+      // it): closed while the head across it is below C, as a check valve
+      // with that cracking head (the step of its law at zero flow left an
+      // idle branch off by ±C and two fixed heads closer than C unsolved)
+      final opening = l.kind == HLinkKind.device ? (l.device?.c ?? 0) : 0.0;
+      if (opening > 0) {
+        final dh = heads[fromNode[k]] - heads[toNode[k]];
+        final push = l.checkValve ? dh : dh.abs();
+        final wasClosed = l.status == LinkStatus.closed;
+        // open with next to no flow: the branch is idle and the valve shut
+        if (!wasClosed && (push < opening - 1e-4 || q[k].abs() < 1e-9 || (l.checkValve && q[k] < -1e-6))) {
+          l.status = LinkStatus.closed;
+          q[k] = 0;
+          statusChanged = true;
+        } else if (wasClosed && push > opening + 1e-4) {
+          l.status = LinkStatus.open;
+          q[k] = dh < 0 ? -_qMin : _qMin;
+          statusChanged = true;
+        }
+      } else
       // check valves: on a pipe, or a device of its own (a check valve
       // placed on the mainline), which used to let water run backwards
       if ((l.kind == HLinkKind.pipe || l.kind == HLinkKind.device) && l.checkValve) {
@@ -777,9 +957,11 @@ class HydraulicNetwork {
       }
       if (l.kind == HLinkKind.pump && l.pump != null) {
         // built-in check valve: closed while the head gain asked for is
-        // above the shutoff head, reopened below it
+        // above the highest head of the curve, reopened below it (the
+        // shutoff head closed a pump that runs right of the top of a curve
+        // that rises first)
         final gain = heads[toNode[k]] - heads[fromNode[k]];
-        final shutoff = l.pump!.shutoffHead;
+        final shutoff = l.pump!.maxHead;
         if (l.status == LinkStatus.closed) {
           if (gain < shutoff - 1e-4) {
             l.status = LinkStatus.open;
@@ -853,7 +1035,7 @@ class HydraulicNetwork {
         if (l.status != old) statusChanged = true;
         if (l.status == LinkStatus.closed) q[k] = 0;
       }
-      if (prvs && l.kind == HLinkKind.fcv) {
+      if (prvs && l.kind == HLinkKind.fcv && l.fcvFlow > 0) {
         // EPANET fcvstatus: active while there is head to push the setting;
         // open (less than the setting) when the head across turns negative
         final hi = heads[fromNode[k]], hj = heads[toNode[k]];
@@ -905,10 +1087,10 @@ class HydraulicNetwork {
     return NetworkResult(converged: converged, iterations: iter, nodes: nodeResults, links: linkResults, warnings: warnings, relativeFlowError: relErr);
   }
 
-  /// Flow on the curve of [pump] where it gives [head] (a trickle when it
-  /// cannot).
+  /// Flow on the falling part of the curve of [pump] where it gives [head]
+  /// (a trickle when it cannot).
   static double _pumpFlowAtHead(PumpCurve pump, double head) {
-    var lo = 0.0, hi = pump.runoutFlow.isFinite ? pump.runoutFlow : 1.0;
+    var lo = pump.peakFlow, hi = pump.runoutFlow.isFinite ? pump.runoutFlow : math.max(1.0, 2 * pump.peakFlow);
     if (!(pump.head(lo) > head)) return _qMin;
     for (var i = 0; i < 60; i++) {
       final mid = (lo + hi) / 2;
@@ -929,6 +1111,17 @@ class HydraulicNetwork {
     final x = math.max(em.x, 0.01);
     final kk = em.k * count * (em.x < 0.01 ? math.pow(10.0, em.x - x).toDouble() : 1.0);
     if (!(kk > 0)) return (0.0, _emitterMinGradient);
+    final hc = em.compensationHead;
+    if (hc > 0) {
+      // below its compensating range an orifice: h = hc·(q/qc)²
+      final qc = kk * math.pow(hc, x).toDouble();
+      final qq = math.max(flow, 0.0);
+      if (qq < qc) {
+        final h = hc * (qq / qc) * (qq / qc), grad = 2 * hc * qq / (qc * qc);
+        if (grad < _emitterMinGradient) return (_emitterMinGradient * qq, _emitterMinGradient);
+        return (h, grad);
+      }
+    }
     final q = math.min(math.max(flow, 0.0), kk * math.pow(_emitterMaxHead, x).toDouble());
     final h = math.pow(q / kk, 1 / x).toDouble();
     final grad = q > 0 ? h / (x * q) : 0.0;
@@ -948,6 +1141,8 @@ class HydraulicNetwork {
   static double _emitterLaw(EmitterCurve em, int count, double p) {
     final x = math.max(em.x, 0.01);
     final kk = em.k * count * (em.x < 0.01 ? math.pow(10.0, em.x - x).toDouble() : 1.0);
+    final hc = em.compensationHead;
+    if (hc > 0 && p < hc) return kk * math.pow(hc, x).toDouble() * math.sqrt(math.max(p, 0.0) / hc);
     return kk * math.pow(math.min(math.max(p, 0.0), _emitterMaxHead), x).toDouble();
   }
 

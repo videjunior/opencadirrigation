@@ -519,6 +519,7 @@ FixResult choosePumpFor(Project p, DesignResults r, WaterSupplyEntity supply, {P
     mainsHz: p.params.mainsHz,
     otherDuties: [for (final d in duties.skip(1)) (d.$1, d.$2)],
     requireSubmersible: wantSub,
+    crf: pumpRankingCrf(p.params),
   );
   final pick = cands.where((c) => c.suitable && c.parallelCount == 1).firstOrNull;
   if (pick == null) return const FixResult.failed('fixfail.noPump');

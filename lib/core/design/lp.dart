@@ -5,6 +5,7 @@
 /// Dantzig pricing and a Bland fallback against cycling is enough.
 library;
 
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 enum LpSense { le, eq, ge }
@@ -72,8 +73,10 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
     if (s != LpSense.eq) slackCount++;
     if (s != LpSense.le) artCount++;
   }
-  final cols = n + slackCount + artCount; // + rhs column
-  final width = cols + 1;
+  // + the right-hand side the pivots work with (perturbed, see below) and
+  // the exact one, carried along to read the solution from
+  final cols = n + slackCount + artCount;
+  final width = cols + 2;
   final t = List<Float64List>.generate(m, (_) => Float64List(width));
   final basis = List<int>.filled(m, -1);
   var slackIdx = n, artIdx = n + slackCount;
@@ -86,6 +89,27 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
       if (j >= 0 && j < n) row[j] += v * flip;
     });
     row[cols] = rowRhs[i];
+    // each row divided by its largest coefficient (equilibration): the
+    // pressure rows of the sizing mix losses of 0.3 to 900 m, and unscaled
+    // the first phase stalled on degenerate pivots until the iteration limit
+    var big = 0.0;
+    for (var j = 0; j < n; j++) {
+      final a = row[j].abs();
+      if (a > big) big = a;
+    }
+    if (big > 0 && big != 1) {
+      final f = 1 / big;
+      for (var j = 0; j < n; j++) {
+        row[j] *= f;
+      }
+      row[cols] *= f;
+    }
+    // a slightly different right-hand side for every row (a fixed sequence:
+    // the same problem gives the same answer) breaks the ties of degenerate
+    // vertices, where the pivots went round without end (the classic cure,
+    // Wolfe 1963; the sizing LPs are degenerate by structure)
+    row[cols + 1] = row[cols];
+    row[cols] += 1e-8 * (1 + row[cols]) * (0.5 + 0.5 * ((i + 1) * 0.6180339887498949 % 1));
     switch (rowSense[i]) {
       case LpSense.le:
         row[slackIdx] = 1;
@@ -139,7 +163,7 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
   /// Runs the simplex on the current tableau for [costs]; returns status.
   LpStatus run(Float64List costs, Set<int> forbidden) {
     var z = reduced(costs);
-    var stall = 0;
+    var stall = 0, gains = 0;
     var lastObj = double.infinity;
     var bland = false;
     while (iterations < limit) {
@@ -174,17 +198,33 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
       if (leave < 0) return LpStatus.unbounded;
       pivot(leave, enter);
       iterations++;
-      z = reduced(costs);
+      // the reduced costs follow the pivot like a row of the tableau (each
+      // made again from the basis cost as much as a pivot), afresh now and
+      // then against rounding drift
+      if (iterations % 64 == 0) {
+        z = reduced(costs);
+      } else {
+        final f = z[enter], pr = t[leave];
+        for (var j = 0; j < width; j++) {
+          z[j] -= f * pr[j];
+        }
+      }
       var obj = 0.0;
       for (var i = 0; i < m; i++) {
         obj += costs[basis[i]] * t[i][cols];
       }
-      if (obj > lastObj - 1e-12) {
+      // Bland's rule against cycling once the objective stalls, kept until
+      // it moves on for good: dropped at the first small gain, the largest
+      // coefficient rule went back into the same degenerate cycle
+      if (obj > lastObj - 1e-12 * (1 + obj.abs())) {
         stall++;
         if (stall > 30) bland = true;
       } else {
         stall = 0;
-        bland = false;
+        if (bland && ++gains > 50) {
+          bland = false;
+          gains = 0;
+        }
       }
       lastObj = obj;
     }
@@ -227,7 +267,7 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
   final st = run(c2, artificial.toSet());
   final x = List<double>.filled(n, 0);
   for (var i = 0; i < m; i++) {
-    if (basis[i] < n) x[basis[i]] = t[i][cols];
+    if (basis[i] < n) x[basis[i]] = math.max(0.0, t[i][cols + 1]);
   }
   var obj = 0.0;
   for (var j = 0; j < n; j++) {

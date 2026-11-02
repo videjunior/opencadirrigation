@@ -38,7 +38,8 @@ class PipeSegmentResult {
     required this.pressureRating,
     this.zoneId,
     this.overVelocity = false,
-  });
+    double? slopeLength,
+  }) : slopeLength = slopeLength ?? length;
   final String linkId;
   final String entityId;
   final int segmentIndex;
@@ -46,7 +47,13 @@ class PipeSegmentResult {
   final Pt b;
   final double elevationA;
   final double elevationB;
+
+  /// Length in plan, along the drawn line (stations, profiles).
   final double length;
+
+  /// Length along the ground (√(L² + Δz²)): the one of the losses and of
+  /// the bill of materials.
+  final double slopeLength;
   final double diameter;
   final String? pipeSpecId;
   final String pipeName;
@@ -80,6 +87,7 @@ class PipeSegmentResult {
     'pn': pressureRating,
     if (zoneId != null) 'zone': zoneId,
     if (overVelocity) 'ov': true,
+    if (slopeLength != length) 'ls': slopeLength,
   };
   static PipeSegmentResult fromJson(Map<String, dynamic> j) => PipeSegmentResult(
     linkId: j['link'] as String,
@@ -101,6 +109,7 @@ class PipeSegmentResult {
     pressureRating: _d(j, 'pn'),
     zoneId: j['zone'] as String?,
     overVelocity: j['ov'] as bool? ?? false,
+    slopeLength: (j['ls'] as num?)?.toDouble(),
   );
 }
 
@@ -371,10 +380,17 @@ class SupplyDuty {
     this.maxHead = 0,
     this.designFlow = 0,
     this.maxFlow = 0,
+    this.pumpBoost,
   });
   final String supplyId;
   final String name;
   final double flow;
+
+  /// Head (m) the running pumps add in series on the way from this supply
+  /// to the valve or head that sets its pressure (pumps in parallel count
+  /// once, boosters of other branches not at all); null when unknown. A pump
+  /// at the supply must add [requiredHead] plus this.
+  double? pumpBoost;
 
   /// Pressure head available at the supply (m).
   final double head;
@@ -408,6 +424,7 @@ class SupplyDuty {
     'mh': maxHead,
     'dq': designFlow,
     'mq': maxFlow,
+    if (pumpBoost != null) 'boost': pumpBoost,
   };
   static SupplyDuty fromJson(Map<String, dynamic> j) => SupplyDuty(
     supplyId: j['id'] as String,
@@ -421,22 +438,42 @@ class SupplyDuty {
     maxHead: _d(j, 'mh'),
     designFlow: _d(j, 'dq'),
     maxFlow: _d(j, 'mq'),
+    pumpBoost: (j['boost'] as num?)?.toDouble(),
   );
 }
 
 class ValveDuty {
-  ValveDuty({required this.valveId, required this.zoneName, required this.flow, required this.availableHead, required this.requiredHead, required this.p});
+  ValveDuty({required this.valveId, required this.zoneName, required this.flow, required this.availableHead, required this.requiredHead, required this.p, this.regulates = true});
   final String valveId;
   final String zoneName;
   final double flow;
   final double availableHead;
   final double requiredHead;
   final Pt p;
+
+  /// Whether the valve holds its outlet pressure (a set outlet pressure or
+  /// a pressure reducing model); a plain valve passes a surplus on.
+  final bool regulates;
   double get deficit => requiredHead - availableHead;
 
-  Map<String, dynamic> toJson() => {'id': valveId, 'name': zoneName, 'q': flow, 'h': availableHead, 'hreq': requiredHead, 'p': _pt(p)};
-  static ValveDuty fromJson(Map<String, dynamic> j) =>
-      ValveDuty(valveId: j['id'] as String, zoneName: j['name'] as String? ?? '', flow: _d(j, 'q'), availableHead: _d(j, 'h'), requiredHead: _d(j, 'hreq'), p: _p(j['p']));
+  /// Pressure (m) the valve gets above what its zone needs.
+  double get surplus => availableHead - requiredHead;
+
+  /// A surplus a valve that does not regulate passes on to its zone, the
+  /// larger of 5 m and a fifth of the need: the zone then runs above its
+  /// design pressure and flow (`valve_pressure_excess`).
+  bool get excessive => !regulates && surplus > math.max(5.0, 0.2 * requiredHead);
+
+  Map<String, dynamic> toJson() => {'id': valveId, 'name': zoneName, 'q': flow, 'h': availableHead, 'hreq': requiredHead, 'p': _pt(p), if (!regulates) 'reg': false};
+  static ValveDuty fromJson(Map<String, dynamic> j) => ValveDuty(
+    valveId: j['id'] as String,
+    zoneName: j['name'] as String? ?? '',
+    flow: _d(j, 'q'),
+    availableHead: _d(j, 'h'),
+    requiredHead: _d(j, 'hreq'),
+    p: _p(j['p']),
+    regulates: j['reg'] as bool? ?? true,
+  );
 }
 
 /// A number that may not be finite as JSON (null), as [encodeJson] writes
@@ -728,6 +765,7 @@ class SurgeResult {
     required this.rating,
     required this.closureTime,
     required this.criticalTime,
+    this.pathLength = 0,
   });
   final String entityId;
   final String context;
@@ -739,6 +777,11 @@ class SurgeResult {
   final double rating;
   final double closureTime;
   final double criticalTime;
+
+  /// Length (m) of the water path the critical time 2L/a is taken over: from
+  /// the supply (or the zone valve) to the farthest point fed through the
+  /// pipe, at least the pipe itself.
+  final double pathLength;
   double get totalHead => maxStaticHead + surgeHead;
   bool get exceeds => rating > 0 && totalHead > rating + 1e-6;
 
@@ -753,6 +796,7 @@ class SurgeResult {
     'pn': rating,
     'tc': closureTime,
     'tcrit': criticalTime,
+    if (pathLength > 0) 'L': pathLength,
   };
   static SurgeResult fromJson(Map<String, dynamic> j) => SurgeResult(
     entityId: j['ent'] as String,
@@ -765,6 +809,7 @@ class SurgeResult {
     rating: _d(j, 'pn'),
     closureTime: _d(j, 'tc'),
     criticalTime: _d(j, 'tcrit'),
+    pathLength: _d(j, 'L'),
   );
 }
 

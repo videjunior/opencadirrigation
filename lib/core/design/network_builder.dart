@@ -25,11 +25,18 @@ class EmitterRef {
     required this.cv,
     this.offset = 0,
     this.label = '',
+    this.inlet = false,
   });
   final String entityId;
 
-  /// Outlet index within a sprayline/tape (−1 for single outlets).
+  /// Outlet index within a sprayline/tape (−1 for single outlets), counted
+  /// from the start of the line as drawn.
   final int index;
+
+  /// The group of outlets of a sprayline or tape next to its inlet (the end
+  /// joined to the submain, whichever way the line was drawn): its pressure
+  /// is the inlet pressure of a tape.
+  final bool inlet;
   final EmitterCurve curve;
   final int count;
   final double nominalHead;
@@ -37,7 +44,9 @@ class EmitterRef {
   final double allowedMax;
   final double cv;
 
-  /// Height of the emitter above the node (riser + burial depth).
+  /// Height of the emitter above the node: the riser of a head up to the
+  /// ground (with the burial depth of its pipe); 0 for the emitters of a
+  /// tape, which discharge at the tube.
   final double offset;
   final String label;
 
@@ -86,6 +95,7 @@ class GLink {
     this.a = Pt.zero,
     this.b = Pt.zero,
     this.emitterCountAlong = 0,
+    this.planLength,
   });
   final String id;
   final String from;
@@ -115,7 +125,42 @@ class GLink {
   final int emitterCountAlong;
   String? zoneId;
 
+  /// Length in plan of a pipe link ([length] runs along the ground).
+  final double? planLength;
+
+  /// The length along the drawn line, in plan: stations, profiles and the
+  /// positions between [a] and [b].
+  double get drawnLength => planLength ?? length;
+
   String other(String n) => n == from ? to : from;
+
+  /// The same link between other nodes (every setting kept: the flow of an
+  /// FCV was lost when a device was inserted next to it).
+  GLink withEnds({required String from, required String to}) => GLink(
+    id: id,
+    from: from,
+    to: to,
+    kind: kind,
+    scope: scope,
+    entityId: entityId,
+    segmentIndex: segmentIndex,
+    length: length,
+    pipeSpecId: pipeSpecId,
+    tapeSpecId: tapeSpecId,
+    computerSized: computerSized,
+    usage: usage,
+    minorK: minorK,
+    depth: depth,
+    settingM: settingM,
+    settingFlow: settingFlow,
+    valveSpecId: valveSpecId,
+    pumpSpecId: pumpSpecId,
+    speedRatio: speedRatio,
+    a: a,
+    b: b,
+    emitterCountAlong: emitterCountAlong,
+    planLength: planLength,
+  )..zoneId = zoneId;
 }
 
 class NetworkModel {
@@ -209,6 +254,17 @@ class NetworkBuilder {
 
   static final _dummy = GNode(id: '', p: Pt.zero, ground: 0, scope: HydraulicScope.zone);
 
+  /// The law the network uses for a catalogue curve: a pressure-compensating
+  /// one (x < 0.1) compensates from the least pressure of its range,
+  /// [minHeadM], an orifice below it (it gave 91 % of its flow at 1 m). One
+  /// curve per catalogue curve, so emitters of one model still share it.
+  final Map<(EmitterCurve, double), EmitterCurve> _compensated = {};
+
+  EmitterCurve _compensating(EmitterCurve c, double minHeadM) {
+    if (!c.isPressureCompensating || !(minHeadM > 0) || c.compensationHead > 0) return c;
+    return _compensated[(c, minHeadM)] ??= c.compensatingFrom(minHeadM);
+  }
+
   /// (min x, min y, max x, max y) of [pts].
   static (double, double, double, double) _bounds(List<Pt> pts) {
     var x0 = double.infinity, y0 = double.infinity, x1 = double.negativeInfinity, y1 = double.negativeInfinity;
@@ -236,7 +292,10 @@ class NetworkBuilder {
     // its segments (a scan of every segment made the build quadratic)
     final boxes = [for (final e in linear) _bounds(ptsOf(e))];
     final margin = 2 * tol + 1e-6;
-    void requestSplit(Pt p, Iterable<HydraulicScope> scopes, {String? exclude}) {
+    // Whether [p] lies on a pipe (not a lateral) of [scopes] other than
+    // [exclude]: the end of a lateral joined to its submain.
+    bool requestSplit(Pt p, Iterable<HydraulicScope> scopes, {String? exclude}) {
+      var onPipe = false;
       for (var k = 0; k < linear.length; k++) {
         final e = linear[k];
         if (e.id == exclude) continue;
@@ -246,12 +305,15 @@ class NetworkBuilder {
         final pts = ptsOf(e);
         for (var i = 1; i < pts.length; i++) {
           final (cp, t) = closestPointOnSegment(p, pts[i - 1], pts[i]);
-          if (cp.distanceTo(p) <= tol && t > 1e-9 && t < 1 - 1e-9) {
+          if (cp.distanceTo(p) > tol) continue;
+          if (e is PipeEntity) onPipe = true;
+          if (t > 1e-9 && t < 1 - 1e-9) {
             // not at a vertex: split
             if (pts[i - 1].distanceTo(p) > tol && pts[i].distanceTo(p) > tol) splitRequests[e.id]!.add(cp);
           }
         }
       }
+      return onPipe;
     }
 
     for (final e in project.entities) {
@@ -274,11 +336,34 @@ class NetworkBuilder {
           break;
       }
     }
+    // Items a lateral may start from (its inlet): valves, junctions, devices.
+    final feeders = <HydraulicScope, List<Pt>>{};
+    for (final e in project.entities) {
+      switch (e) {
+        case ControlValveEntity v:
+          (feeders[HydraulicScope.zone] ??= []).add(v.position);
+        case JunctionEntity j:
+          (feeders[j.scope] ??= []).add(j.position);
+        case MiscHydraulicEntity m:
+          (feeders[m.scope] ??= []).add(m.position);
+        case PumpEntity p:
+          (feeders[p.scope] ??= []).add(p.position);
+        default:
+          break;
+      }
+    }
+    bool fed(Pt p, HydraulicScope scope) => feeders[scope]?.any((f) => f.distanceTo(p) <= tol) ?? false;
+    // laterals (spraylines and tapes) joined to their submain at the end as
+    // drawn only: their emitters are numbered and grouped from that end
+    final inletAtEnd = <String>{};
     for (final e in linear) {
       final pts = ptsOf(e);
       if (pts.length < 2) continue;
-      requestSplit(pts.first, [scopeOf(e)], exclude: e.id);
-      requestSplit(pts.last, [scopeOf(e)], exclude: e.id);
+      final scope = scopeOf(e);
+      final atStart = requestSplit(pts.first, [scope], exclude: e.id);
+      final atEnd = requestSplit(pts.last, [scope], exclude: e.id);
+      if (e is! SpraylineEntity && e is! TapeEntity) continue;
+      if ((atEnd || fed(pts.last, scope)) && !(atStart || fed(pts.first, scope))) inletAtEnd.add(e.id);
     }
 
     // 2. build vertices (with splits) and links
@@ -336,13 +421,14 @@ class NetworkBuilder {
           final first = s.firstOutletDistance;
           final (lo, hi) = _window(nozzle, s.headM);
           final positions = [for (var i = 0; i < n; i++) first + i * s.spacing];
-          final lumps = _lump(positions, total);
+          final fromEnd = inletAtEnd.contains(e.id);
+          final lumps = _lump(positions, total, fromEnd: fromEnd);
           final emitterAt = <double, EmitterRef>{};
           for (final (d, cnt, idx) in lumps) {
             emitterAt[d] = EmitterRef(
               entityId: e.id,
               index: idx,
-              curve: nozzle.curve,
+              curve: _compensating(nozzle.curve, nozzle.minHeadM),
               count: cnt,
               nominalHead: s.headM,
               allowedMin: lo,
@@ -350,9 +436,21 @@ class NetworkBuilder {
               cv: nozzle.cv,
               offset: s.riserHeight + outlet.riserHeightM + s.depth,
               label: nozzle.name,
+              inlet: emitterAt.isEmpty,
             );
           }
-          _addLateralLinks(e.id, pts, scope, emitterAt, usage: PipeUsage.lateral, pipeSpecId: spec?.id, computerSized: s.computerSized || spec == null, depth: s.depth, perEmitterK: 0.0);
+          _addLateralLinks(
+            e.id,
+            pts,
+            scope,
+            emitterAt,
+            usage: PipeUsage.lateral,
+            pipeSpecId: spec?.id,
+            computerSized: s.computerSized || spec == null,
+            depth: s.depth,
+            perEmitterK: 0.0,
+            inletAtEnd: fromEnd,
+          );
         case TapeEntity t:
           final spec = catalog.tape(t.tapeSpecId);
           if (spec == null) {
@@ -362,8 +460,12 @@ class NetworkBuilder {
           }
           final total = polylineLength(pts);
           final n = spec.emitterSpacingM > 0 ? (total / spec.emitterSpacingM).floor() : 0;
-          final positions = [for (var i = 1; i <= n; i++) i * spec.emitterSpacingM];
-          final lumps = _lump(positions, total);
+          // the emitters stand every spacing from the inlet: from the start
+          // as drawn, or from the end when the tape was drawn towards its
+          // submain (numbered from the start either way)
+          final fromEnd = inletAtEnd.contains(e.id);
+          final positions = fromEnd ? [for (var i = n; i >= 1; i--) total - i * spec.emitterSpacingM] : [for (var i = 1; i <= n; i++) i * spec.emitterSpacingM];
+          final lumps = _lump(positions, total, fromEnd: fromEnd);
           final lo = math.max(spec.minHeadM, t.inletHeadM * (1 - spec.tolBelowPct / 100));
           final hi = math.min(spec.maxHeadM, t.inletHeadM * (1 + spec.tolAbovePct / 100));
           final emitterAt = <double, EmitterRef>{};
@@ -371,14 +473,18 @@ class NetworkBuilder {
             emitterAt[d] = EmitterRef(
               entityId: e.id,
               index: idx,
-              curve: spec.emitter,
+              curve: _compensating(spec.emitter, spec.minHeadM),
               count: cnt,
               nominalHead: t.inletHeadM,
               allowedMin: lo,
               allowedMax: hi,
               cv: spec.cv,
-              offset: t.depth,
+              // a buried tape discharges at the tube, at the node's own
+              // elevation (ground − depth): an offset of the depth put the
+              // emitters back at the surface (MOT-21)
+              offset: 0,
               label: spec.name,
+              inlet: emitterAt.isEmpty,
             );
           }
           _addLateralLinks(
@@ -393,6 +499,8 @@ class NetworkBuilder {
             depth: t.depth,
             perEmitterK: spec.barbK,
             endFlow: t.flushingFlow,
+            inletAtEnd: fromEnd,
+            regulatorM: t.regulated ? t.inletHeadM : null,
           );
         default:
           break;
@@ -424,7 +532,7 @@ class NetworkBuilder {
               EmitterRef(
                 entityId: e.id,
                 index: -1,
-                curve: nozzle.curve,
+                curve: _compensating(nozzle.curve, nozzle.minHeadM),
                 count: 1,
                 nominalHead: o.headM,
                 allowedMin: lo,
@@ -657,12 +765,26 @@ class NetworkBuilder {
     return (math.max(lo, nozzle.minHeadM), math.min(hi, nozzle.maxHeadM));
   }
 
-  /// Groups outlet positions into at most [maxNodesPerLateral] lumps.
-  /// Returns (distance of lump centroid, count, first index).
-  List<(double, int, int)> _lump(List<double> positions, double total) {
+  /// Groups outlet positions (increasing) into at most [maxNodesPerLateral]
+  /// lumps, from the inlet: the first position, or with [fromEnd] the last.
+  /// Returns (distance of lump centroid, count, first index), the lump next
+  /// to the inlet first.
+  List<(double, int, int)> _lump(List<double> positions, double total, {bool fromEnd = false}) {
     if (positions.isEmpty) return [];
     final k = (positions.length / maxNodesPerLateral).ceil();
     final out = <(double, int, int)>[];
+    if (fromEnd) {
+      for (var end = positions.length; end > 0; end -= k) {
+        final start = math.max(0, end - k);
+        final cnt = end - start;
+        var sum = 0.0;
+        for (var j = end - 1; j >= start; j--) {
+          sum += positions[j];
+        }
+        out.add((math.max(sum / cnt, 0.0), cnt, start));
+      }
+      return out;
+    }
     for (var i = 0; i < positions.length; i += k) {
       final end = math.min(i + k, positions.length);
       final cnt = end - i;
@@ -673,6 +795,15 @@ class NetworkBuilder {
       out.add((math.min(sum / cnt, total), cnt, i));
     }
     return out;
+  }
+
+  /// Length along the ground of a piece [plan] metres long in plan between
+  /// [a] and [b]: √(L² + Δz²) with the ground at both ends (the distance in
+  /// plan made the losses and the pipe bought 2 % short at a 20 % slope,
+  /// 12 % at 50 %).
+  static double _slopeLength(double plan, GNode a, GNode b) {
+    final dz = b.ground - a.ground;
+    return dz == 0 ? plan : math.sqrt(plan * plan + dz * dz);
   }
 
   void _register(GLink l) {
@@ -688,7 +819,8 @@ class NetworkBuilder {
       a.entityIds.add(entityId);
       b.entityIds.add(entityId);
       if (a.id == b.id) continue;
-      final len = pts[i - 1].distanceTo(pts[i]);
+      final plan = pts[i - 1].distanceTo(pts[i]);
+      final len = _slopeLength(plan, a, b);
       final l = GLink(
         id: '${entityId}_${i - 1}',
         from: a.id,
@@ -698,6 +830,7 @@ class NetworkBuilder {
         entityId: entityId,
         segmentIndex: i - 1,
         length: len,
+        planLength: plan,
         pipeSpecId: pipeSpecId,
         computerSized: computerSized,
         usage: usage,
@@ -721,6 +854,8 @@ class NetworkBuilder {
     double depth = 0,
     double perEmitterK = 0,
     double endFlow = 0,
+    bool inletAtEnd = false,
+    double? regulatorM,
   }) {
     // Build a list of stations along the polyline: vertices + emitter lumps.
     final total = polylineLength(pts);
@@ -732,13 +867,27 @@ class NetworkBuilder {
     }
     stations.addAll(emitterAt.keys);
     final sorted = stations.toList()..sort();
+    // walked from the inlet (the end of a line drawn towards its submain),
+    // so the barb losses and the open end of the flushing come out the same
+    // whichever way the line was drawn; the links keep the drawn order
+    final walk = inletAtEnd ? sorted.reversed : sorted;
     GNode? prev;
     var prevD = 0.0;
-    var seg = 0;
     var emittersSince = 0;
-    for (final d in sorted) {
+    final made = <(GNode, GNode, double, double, Pt, Pt, int)>[];
+    for (final d in walk) {
       final p = pointAlongPolyline(pts, d);
-      final n = (prev != null && (d - prevD) < tol) ? prev : _nodeAt(p, scope);
+      var n = (prev != null && (d - prevD).abs() < tol) ? prev : _nodeAt(p, scope);
+      if (prev == null && regulatorM != null) {
+        // a regulated inlet: a pressure regulator set to the inlet pressure
+        // between the submain and the tape, whose own first node no other
+        // item joins
+        final inlet = GNode(id: 'n${_seq++}', p: p, ground: n.ground, scope: scope);
+        model.nodes[inlet.id] = inlet;
+        n.entityIds.add(entityId);
+        _register(GLink(id: 'reg_$entityId', from: n.id, to: inlet.id, kind: GLinkKind.prv, scope: scope, entityId: entityId, settingM: regulatorM, depth: depth, a: p, b: p));
+        n = inlet;
+      }
       n.entityIds.add(entityId);
       final em = emitterAt[d];
       if (em != null) {
@@ -746,30 +895,36 @@ class NetworkBuilder {
         emittersSince += em.count;
       }
       if (prev != null && prev.id != n.id) {
-        final l = GLink(
-          id: '${entityId}_${seg++}',
-          from: prev.id,
-          to: n.id,
-          kind: GLinkKind.pipe,
-          scope: scope,
-          entityId: entityId,
-          segmentIndex: seg - 1,
-          length: d - prevD,
-          pipeSpecId: pipeSpecId,
-          tapeSpecId: tapeSpecId,
-          computerSized: computerSized,
-          usage: usage,
-          minorK: perEmitterK * emittersSince,
-          depth: depth,
-          a: pointAlongPolyline(pts, prevD),
-          b: p,
-          emitterCountAlong: emittersSince,
-        );
-        _register(l);
+        made.add((prev, n, prevD, d, pointAlongPolyline(pts, prevD), p, emittersSince));
         emittersSince = 0;
       }
       prev = n;
       prevD = d;
+    }
+    var seg = 0;
+    for (final (up, down, du, dd, pu, pd, count) in inletAtEnd ? made.reversed : made) {
+      final l = GLink(
+        id: '${entityId}_$seg',
+        from: inletAtEnd ? down.id : up.id,
+        to: inletAtEnd ? up.id : down.id,
+        kind: GLinkKind.pipe,
+        scope: scope,
+        entityId: entityId,
+        segmentIndex: seg,
+        length: _slopeLength((dd - du).abs(), up, down),
+        planLength: (dd - du).abs(),
+        pipeSpecId: pipeSpecId,
+        tapeSpecId: tapeSpecId,
+        computerSized: computerSized,
+        usage: usage,
+        minorK: perEmitterK * count,
+        depth: depth,
+        a: inletAtEnd ? pd : pu,
+        b: inletAtEnd ? pu : pd,
+        emitterCountAlong: count,
+      );
+      _register(l);
+      seg++;
     }
     if (endFlow > 0 && prev != null) {
       prev.emitters.add(
@@ -843,7 +998,19 @@ class NetworkBuilder {
     final attached = List<GLink>.from(n.links);
     // BFS hop distance from supplies / valves-zone-nodes to each neighbour
     GLink? upstreamLink;
-    if (attached.length >= 2) {
+    // on the zone side of a valve the device follows the valve; at a
+    // supply every pipe leaves through it (the supply is the source)
+    final valveHere = scope == HydraulicScope.zone
+        ? [
+            for (final e in model.valveNodes.entries)
+              if (e.value.$2 == n.id) e.key,
+          ]
+        : const <String>[];
+    if (n.isSupply) {
+      upstreamLink = null;
+    } else if (valveHere.isNotEmpty) {
+      upstreamLink = attached.where((l) => l.kind == GLinkKind.controlValve && l.entityId == valveHere.first).firstOrNull;
+    } else if (attached.length >= 2) {
       final dist = _hopDistances(scope);
       var best = double.infinity;
       for (final l in attached) {
@@ -854,48 +1021,39 @@ class NetworkBuilder {
         }
       }
     } else if (attached.length == 1) {
-      upstreamLink = n.isSupply ? null : attached.first;
-      if (!n.isSupply) {
-        // device at a dead end: treat the single pipe as upstream
-      }
+      // device at a dead end: treat the single pipe as upstream
+      upstreamLink = attached.first;
     }
     final down = GNode(id: 'n${_seq++}', p: p, ground: n.ground, scope: scope);
     model.nodes[down.id] = down;
     _grid.putIfAbsent(_key(p), () => []).add(down);
     down.entityIds.add(entityId);
+    final movedValves = <String>{};
     for (final l in attached) {
       if (identical(l, upstreamLink)) continue;
       // move link end from n to down
       final idx = model.links.indexOf(l);
-      final moved = GLink(
-        id: l.id,
-        from: l.from == n.id ? down.id : l.from,
-        to: l.to == n.id ? down.id : l.to,
-        kind: l.kind,
-        scope: l.scope,
-        entityId: l.entityId,
-        segmentIndex: l.segmentIndex,
-        length: l.length,
-        pipeSpecId: l.pipeSpecId,
-        tapeSpecId: l.tapeSpecId,
-        computerSized: l.computerSized,
-        usage: l.usage,
-        minorK: l.minorK,
-        depth: l.depth,
-        settingM: l.settingM,
-        valveSpecId: l.valveSpecId,
-        pumpSpecId: l.pumpSpecId,
-        speedRatio: l.speedRatio,
-        a: l.a,
-        b: l.b,
-        emitterCountAlong: l.emitterCountAlong,
-      );
+      final moved = l.withEnds(from: l.from == n.id ? down.id : l.from, to: l.to == n.id ? down.id : l.to);
+      if (l.kind == GLinkKind.controlValve) movedValves.add(l.entityId);
       model.links[idx] = moved;
       n.links.remove(l);
       final other = model.nodes[l.other(n.id)]!;
       other.links.remove(l);
       other.links.add(moved);
       down.links.add(moved);
+    }
+    // what is drawn on the device's point is fed through it: a zone valve
+    // (its zone demand), a pivot, the outlets of the node
+    for (final v in movedValves) {
+      final (nm, nz) = model.valveNodes[v]!;
+      model.valveNodes[v] = (nm == n.id ? down.id : nm, nz == n.id ? down.id : nz);
+    }
+    for (final e in model.pivotNodes.entries.toList()) {
+      if (e.value == n.id) model.pivotNodes[e.key] = down.id;
+    }
+    if (n.emitters.isNotEmpty) {
+      down.emitters.addAll(n.emitters);
+      n.emitters.clear();
     }
     _register(make(n.id, down.id));
   }

@@ -377,6 +377,7 @@ sealed class Entity {
           hourMeterCost: d('hm'),
           targetPressureM: d('vfd'),
           minSpeedRatio: d('vmin', 0.5),
+          motorEfficiency: d('meff', 1).clamp(0.05, 1.0).toDouble(),
         );
       case EntityType.misc:
         return MiscHydraulicEntity(
@@ -1742,6 +1743,7 @@ class PumpEntity extends Entity with PointEntity {
     this.hourMeterCost = 0,
     this.targetPressureM = 0,
     this.minSpeedRatio = 0.5,
+    this.motorEfficiency = 1,
   });
   @override
   Pt position;
@@ -1749,6 +1751,11 @@ class PumpEntity extends Entity with PointEntity {
   double speedRatio;
   double orientationDeg;
   HydraulicScope scope;
+
+  /// Efficiency (0–1) of the motor and of its drive, from the wire to the
+  /// pump shaft: the energy divides by it as well as by the pump's own
+  /// efficiency. 1 = the pump efficiency stands for the whole set.
+  double motorEfficiency;
 
   /// An hour meter on the pump panel (operating hours, asked by water-use
   /// permits), with its price for the bill of materials.
@@ -1776,6 +1783,7 @@ class PumpEntity extends Entity with PointEntity {
     hourMeterCost: hourMeterCost,
     targetPressureM: targetPressureM,
     minSpeedRatio: minSpeedRatio,
+    motorEfficiency: motorEfficiency,
   )..extra = extra;
   @override
   PumpEntity translated(Pt d) => clone()
@@ -1797,6 +1805,7 @@ class PumpEntity extends Entity with PointEntity {
     if (hourMeter) 'hm': hourMeterCost,
     if (targetPressureM > 0) 'vfd': targetPressureM,
     if (targetPressureM > 0) 'vmin': minSpeedRatio,
+    if (motorEfficiency != 1) 'meff': motorEfficiency,
   };
 }
 

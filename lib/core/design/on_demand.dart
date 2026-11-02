@@ -515,7 +515,17 @@ ClementResult clementFlows(HydraulicNetwork net, List<Hydrant> hydrants, {Clemen
     switch (l.kind) {
       case HLinkKind.pipe:
         hl =
-            frictionLoss(method: net.options.method, flow: q, diameter: l.diameter, length: l.length, c: l.hazenC, roughness: l.roughness, kinematicViscosity: net.options.kinematicViscosity) +
+            frictionLoss(
+              method: net.options.method,
+              flow: q,
+              diameter: l.diameter,
+              length: l.length,
+              c: l.hazenC,
+              roughness: l.roughness,
+              kinematicViscosity: net.options.kinematicViscosity,
+              scobeyKs: l.scobeyKs,
+              manningN: l.manningN,
+            ) +
             (l.minorK > 0 ? minorLoss(k: l.minorK, flow: q, diameter: l.diameter) : 0);
       case HLinkKind.device:
         hl = (l.device?.loss(q) ?? 0).abs();

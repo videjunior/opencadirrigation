@@ -728,11 +728,16 @@ void main() {
       expect(trip.checkValveClosures.keys, anyOf(contains('pump'), contains('check')));
       expect(trip.seriesOf('check')!.flows.every((q) => q >= 0), isTrue);
       expect(trip.nodes['C1']!.minHead, lessThan(steady.nodes['C1']!.head));
-      // a demand fed only through a closed link is flagged: the steady
-      // solver passed it through the closed link's 10⁻⁸ conductance
+      // a demand fed only through a closed link is flagged by the steady
+      // solver, which no longer passes it through the closed link's 10⁻⁸
+      // conductance (MOT-07): the transient starts in balance
       net.nodes['K']!.demand = 0.003;
-      final bad = TransientModel.fromNetwork(net, net.solve(), linkData: data).simulate(options: const TransientOptions(duration: 1));
-      expect(bad.messages, contains('transient_closed_link_flow:iso'));
+      final cut = net.solve();
+      expect(cut.warnings, contains('demand_disconnected:K'));
+      expect(cut.links['iso']!.flow.abs(), lessThan(1e-6));
+      expect(cut.nodes['K']!.pressure, 0);
+      final bad = TransientModel.fromNetwork(net, cut, linkData: data).simulate(options: const TransientOptions(duration: 1));
+      expect(bad.messages, isNot(contains('transient_closed_link_flow:iso')));
     });
 
     test('a farm mainline of a few hundred pipes runs tens of seconds quickly', () {

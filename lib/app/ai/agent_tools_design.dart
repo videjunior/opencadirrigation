@@ -1013,6 +1013,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           ],
           requireSubmersible: suctionLiftTooDeep(s, pd.supply),
           mainsHz: p.mainsHz,
+          crf: pumpRankingCrf(p),
         );
         if (cands.isEmpty) {
           return ToolOutput(
