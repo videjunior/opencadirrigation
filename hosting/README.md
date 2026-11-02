@@ -25,6 +25,9 @@ repository; this file says how to bring the versioned configuration into it.
 - **Default addresses**: `opencadirrigation.web.app` and `opencadirrigation.firebaseapp.com` serve the same files, and
   Firebase cannot redirect by host. `site.js` sends a new visitor from them to `https://opencadirrigation.com`; whoever
   already has projects stored on one of them stays there, since the browser storage belongs to the address.
+- **Check before deploying**: `predeploy` refuses a build that tool/build_web.sh did not finish (a placeholder
+  `__OCI_…` left in `sw.js`, `offline.js` or `flutter_bootstrap.js`, or no `fonts/` folder): a plain
+  `flutter build web` would deploy a worker that removes itself and fonts fetched from Google.
 
 ## Applying it
 

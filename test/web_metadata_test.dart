@@ -574,6 +574,11 @@ void main() {
     for (final needle in ['main.dart.js', 'design_worker.js', 'site.js', 'sw.js', 'flutter_bootstrap.js', '*.part.js', '@(assets|canvaskit)/**', '**/manifest.json']) {
       expect(revalidated.any((s) => s.contains(needle)), isTrue, reason: needle);
     }
+    // a deploy of a build tool/build_web.sh did not finish is refused (1.6.0)
+    expect(hosting['predeploy'], [predeployCheck]);
+    for (final needle in ['public/sw.js', 'public/offline.js', 'public/flutter_bootstrap.js', 'public/fonts', '__OCI_']) {
+      expect(predeployCheck, contains(needle));
+    }
     final redirects = [for (final r in hosting['redirects'] as List) r as Map<String, dynamic>];
     expect(redirects.where((r) => r['source'] == '/en/' && r['destination'] == '/' && r['type'] == 301), hasLength(1));
     // site.js sends new visitors from the default addresses of the project to the site's own

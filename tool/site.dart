@@ -1799,6 +1799,11 @@ const _revalidate = 'no-cache';
 /// the site itself; nothing else.
 const permissionsPolicy = 'camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), serial=(), hid=(), bluetooth=(), browsing-topics=()';
 
+/// What `firebase deploy` checks first, in the deploy folder (1.6.0): the build was made by tool/build_web.sh, not a
+/// plain `flutter build web`: the offline worker, its registration and the address of the fonts filled in (no
+/// `__OCI_` placeholder left) and the fonts the site serves present.
+const predeployCheck = 'test -f public/sw.js && test -d public/fonts && ! grep -q __OCI_ public/sw.js public/offline.js public/flutter_bootstrap.js';
+
 /// firebase.json for the site: security headers on every file, the cache
 /// rules above, and the old English address answered by a permanent
 /// redirect (the query, `?example=…`, is kept by the hosting). The default
@@ -1814,6 +1819,7 @@ String renderHostingConfig() {
   final config = {
     'hosting': {
       'public': 'public',
+      'predeploy': [predeployCheck],
       // the dot files of a build and of the system, not /.well-known/
       'ignore': ['firebase.json', '**/.DS_Store', '**/.last_build_id', '**/.git/**', '**/.firebase/**', '**/node_modules/**'],
       'redirects': [
