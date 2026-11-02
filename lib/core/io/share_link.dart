@@ -31,6 +31,14 @@ String shareableProjectJson(Map<String, dynamic> project) {
       for (final e in (j['entities'] as List? ?? const []).cast<Map<String, dynamic>>())
         if (e['type'] == 'image') (Map<String, dynamic>.of(e)..remove('data')) else if (e['type'] == 'comment' && e.containsKey('photo')) (Map<String, dynamic>.of(e)..remove('photo')) else e,
     ];
+    // 1.6.0 PRD: the logo of the title block is a picture too
+    final meta = j['meta'];
+    if (meta is Map && meta['titleBlock'] is Map && (meta['titleBlock'] as Map).containsKey('logo')) {
+      final tb = Map<String, dynamic>.of((meta['titleBlock'] as Map).cast<String, dynamic>())
+        ..remove('logo')
+        ..remove('logoMime');
+      j['meta'] = {...meta.cast<String, dynamic>(), 'titleBlock': tb};
+    }
     return j;
   }
 

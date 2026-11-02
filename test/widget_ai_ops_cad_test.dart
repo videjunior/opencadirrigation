@@ -608,7 +608,7 @@ void main() {
     expect(c.project.entities.whereType<ContourEntity>().where((x) => x.derived), isNotEmpty);
     expect(out, contains('Profile 40.0 m: from 100.00 m to 104.00 m'));
     expect(c.profilePath, isNull, reason: 'shown, then cleared');
-    expect(out, contains('WGS84 / UTM 23S'));
+    expect(out, contains('SIRGAS 2000 / UTM 23S'), reason: '1.6.0 PRD: the datum of a site in Brazil');
     expect(c.project.meta.georef?.zone, 23);
     final placed = c.project.byId(photo.id) as ImageEntity;
     expect(placed.origin, const Pt(300, 0));

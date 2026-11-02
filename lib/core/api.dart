@@ -167,3 +167,5 @@ export 'model/terrain.dart';
 export 'model/tin.dart';
 export 'translate.dart';
 export 'units.dart';
+// 1.6.0 PRD: title block, coordinate grid, thematic sheets, standards, document packages
+export 'model/title_block.dart';

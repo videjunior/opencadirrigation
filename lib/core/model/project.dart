@@ -19,6 +19,7 @@ import 'read_report.dart';
 import 'scenario.dart';
 import 'site_climate.dart';
 import 'terrain.dart';
+import 'title_block.dart';
 
 class Layer {
   Layer({required this.name, required this.color, this.visible = true, this.locked = false});
@@ -327,9 +328,10 @@ class SystemFlow {
 }
 
 class ProjectMeta {
-  ProjectMeta({this.name = 'New project', this.client = '', this.site = '', this.designer = '', this.notes = '', this.georef, String? uid, DateTime? created, this.modified})
+  ProjectMeta({this.name = 'New project', this.client = '', this.site = '', this.designer = '', this.notes = '', this.georef, String? uid, DateTime? created, this.modified, TitleBlock? titleBlock})
     : uid = uid ?? newUid(),
-      created = created ?? DateTime.now();
+      created = created ?? DateTime.now(),
+      titleBlock = titleBlock ?? TitleBlock();
 
   /// Stable identifier used by autosave, recent files and versions.
   String uid;
@@ -353,6 +355,10 @@ class ProjectMeta {
   /// Set when data was imported from geographic coordinates (KML/KMZ).
   GeoReference? georef;
 
+  /// 1.6.0 PRD: the professional title block of the sheets and documents
+  /// (written only when something of it is set).
+  TitleBlock titleBlock;
+
   /// Fields of a newer version, kept as read.
   Map<String, dynamic>? extra;
   Map<String, dynamic> toJson() => {
@@ -366,6 +372,7 @@ class ProjectMeta {
     'designer': designer,
     'notes': notes,
     if (georef != null) 'georef': georef!.toJson(),
+    if (!titleBlock.isDefault) 'titleBlock': titleBlock.toJson(),
   };
   static ProjectMeta fromJson(Map<String, dynamic>? json, {ProjectReadReport? report}) {
     if (json == null) return ProjectMeta();
@@ -381,6 +388,16 @@ class ProjectMeta {
         report?.skip('georef');
       }
     }
+    // 1.6.0 PRD: the title block (a damaged one is kept as it was, the sheets print the plain one)
+    TitleBlock? titleBlock;
+    final tb = j['titleBlock'];
+    if (tb is Map) {
+      try {
+        titleBlock = TitleBlock.fromJson(tb.cast<String, dynamic>(), report: report);
+      } catch (_) {
+        report?.skip('titleBlock');
+      }
+    }
     final uid = j['uid'];
     final meta = ProjectMeta(
       uid: uid is String && uid.isNotEmpty ? uid : null,
@@ -392,10 +409,12 @@ class ProjectMeta {
       designer: text('designer'),
       notes: text('notes'),
       georef: georef,
+      titleBlock: titleBlock,
     );
     var unread = j.unread;
     // kept as it was, so a later version can still read it
     if (g != null && georef == null) (unread ??= {})['georef'] = g;
+    if (tb != null && titleBlock == null) (unread ??= {})['titleBlock'] = tb;
     return meta..extra = unread;
   }
 }

@@ -914,3 +914,54 @@ bool looksLikeDegreePairs(List<(double, double)> pts) {
 /// The CRS a project's coordinates are exported in: the UTM zone of its
 /// georeference on [datum] (SIRGAS 2000 or WGS 84 give the same numbers).
 CrsInfo projectUtmCrs(GeoReference g, {GeodeticDatum datum = GeodeticDatum.wgs84}) => CrsInfo.utm(g.zone, g.north, datum: datum);
+
+// ------------------------------------------------------------------ 1.6.0 PRD: the datum of a project
+
+/// Datums a project's georeference can name: those that agree with WGS 84
+/// at the accuracy of a project map (no shift: [GeodeticDatum.isWgs84Compatible]),
+/// so naming one changes no coordinate. A drawing on SAD 69 or Córrego
+/// Alegre is brought in through the readers, which shift it.
+const projectDatums = [GeodeticDatum.sirgas2000, GeodeticDatum.wgs84, GeodeticDatum.etrs89, GeodeticDatum.nad83];
+
+/// The datum as the sheets name it: "SIRGAS 2000", "WGS84", "ETRS89", "NAD83".
+String projectDatumLabel(GeodeticDatum d) => switch (d) {
+  GeodeticDatum.wgs84 => 'WGS84',
+  GeodeticDatum.sirgas2000 => 'SIRGAS 2000',
+  GeodeticDatum.etrs89 => 'ETRS89',
+  GeodeticDatum.nad83 => 'NAD83',
+  _ => d.ogcName,
+};
+
+/// The official datum of the site at [lat], [lon] (degrees), for a
+/// georeference that names none: SIRGAS 2000 in South and Central America
+/// (Brazil's official datum, IBGE R.PR 1/2005, and the reference frame of
+/// the SIRGAS countries; EPSG 4674 covers Latin America), ETRS89 in Europe
+/// (the EUREF frame of the European national grids), WGS 84 elsewhere. The
+/// regions are coarse outlines: near a border the user picks the datum.
+GeodeticDatum defaultProjectDatum(double lat, double lon) {
+  if (!lat.isFinite || !lon.isFinite) return GeodeticDatum.wgs84;
+  final p = Pt(lon, lat);
+  if (pointInPolygon(p, _sirgasRegion)) return GeodeticDatum.sirgas2000;
+  if (pointInPolygon(p, _etrsRegion)) return GeodeticDatum.etrs89;
+  return GeodeticDatum.wgs84;
+}
+
+/// South and Central America (from the Guatemala–Mexico border), with the
+/// Brazilian islands of the Atlantic, the Galápagos and Juan Fernández;
+/// (longitude, latitude).
+const _sirgasRegion = [
+  Pt(-92.3, 14.5), Pt(-91.0, 17.8), Pt(-89.15, 17.8), Pt(-88.3, 18.5), Pt(-87.5, 18.5), Pt(-83.0, 16.0), //
+  Pt(-81.5, 12.6), Pt(-72.0, 12.5), Pt(-63.5, 11.0), Pt(-61.0, 10.9), Pt(-59.5, 9.0), Pt(-55.0, 6.0), //
+  Pt(-28.5, 2.0), Pt(-28.5, -21.5), Pt(-50.0, -35.0), Pt(-63.0, -55.0), Pt(-68.0, -56.5), Pt(-76.0, -56.5), //
+  Pt(-81.0, -34.0), Pt(-82.0, -5.0), Pt(-92.5, -1.8), Pt(-92.5, 1.8), Pt(-88.0, 5.0), Pt(-88.0, 12.0), Pt(-91.5, 13.8),
+];
+
+/// Europe west of Turkey, Belarus and Russia, without North Africa, the
+/// Canaries, Madeira, the Azores and Iceland; (longitude, latitude).
+const _etrsRegion = [
+  Pt(-10.5, 36.0), Pt(-5.6, 35.8), Pt(-2.0, 36.5), Pt(0.0, 37.5), Pt(4.0, 38.3), Pt(8.0, 38.2), Pt(10.5, 37.6), //
+  Pt(12.0, 36.3), Pt(13.0, 35.0), Pt(26.5, 34.5), Pt(26.5, 41.9), Pt(28.1, 42.0), Pt(28.7, 43.7), Pt(29.7, 45.2), //
+  Pt(28.2, 45.5), Pt(26.6, 48.2), Pt(22.9, 48.5), Pt(22.6, 49.0), Pt(23.6, 51.5), Pt(23.5, 53.9), Pt(25.8, 54.0), //
+  Pt(26.8, 55.3), Pt(26.8, 55.7), Pt(28.2, 56.2), Pt(27.8, 57.5), Pt(28.1, 59.4), Pt(27.8, 60.6), Pt(31.6, 62.9), Pt(30.0, 68.0), Pt(31.5, 70.5), //
+  Pt(30.0, 71.5), Pt(-10.5, 71.5),
+];
