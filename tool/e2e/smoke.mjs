@@ -1,5 +1,5 @@
 // End-to-end smoke test of a production web build (sh tool/build_web.sh) in
-// headless Chrome: what only the compiled app in a real browser shows.
+// headless browsers: what only the compiled app in a real browser shows.
 //
 //   1. the app opens an example and designs it in the Web Worker (not in the
 //      fallback on the main thread);
@@ -8,14 +8,28 @@
 //   3. the service worker installs, and the app starts again offline;
 //   4. the AI assistant sends a message with the user's key and shows the
 //      answer, against a fake of the API (nothing leaves the machine);
-//   5. no page errors along the way.
+//   5. a worker of another build (a cache that kept the design_worker.js of
+//      the release before) is noticed by its answer and loaded again past
+//      the cache: the design still runs in a worker of this build;
+//   6. no page errors along the way.
 //
-// Setup, once (playwright-core only drives an installed Chrome; nothing is
-// downloaded besides the package, and node_modules stays out of git):
+// Browsers (--browser, comma-separated, default chromium):
+//   chromium  an installed Chrome (--chrome <path> or CHROME_PATH; the usual
+//             place of each system otherwise): nothing is downloaded;
+//   webkit    the WebKit build of Playwright (the engine of Safari);
+//   firefox   the Firefox build of Playwright.
+// The WebKit and Firefox builds are pinned by the exact playwright-core
+// version of package.json (1.64.1: WebKit 27.2, build 2370, and Firefox 157.0,
+// build 1555), downloaded once with (Linux: add --with-deps):
+//   npm exec --prefix tool/e2e -- playwright-core install webkit firefox
+// (PLAYWRIGHT_BROWSERS_PATH chooses where they go). A check a browser build
+// cannot run is reported as skipped, with the reason, never as passed.
+//
+// Setup, once (node_modules stays out of git):
 //   npm ci --prefix tool/e2e
 // Run, from the repository root:
-//   node tool/e2e/smoke.mjs build/web [--chrome <path>] [--shots <dir>]
-// CHROME_PATH also gives the browser. Exit code 1 when a check fails.
+//   node tool/e2e/smoke.mjs build/web [--browser chromium,webkit,firefox] [--chrome <path>] [--shots <dir>]
+// Exit code 1 when a check fails.
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
@@ -23,7 +37,7 @@ import { platform } from 'node:os';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright-core');
+const playwright = require('playwright-core');
 
 const args = process.argv.slice(2);
 const option = (name) => {
@@ -33,6 +47,17 @@ const option = (name) => {
 const positional = args.filter((a, i) => !a.startsWith('--') && !(i > 0 && args[i - 1].startsWith('--')));
 const root = resolve(positional[0] ?? 'build/web');
 const shots = option('--shots');
+const browsers = (option('--browser') ?? 'chromium')
+  .split(',')
+  .map((b) => b.trim())
+  .filter(Boolean);
+const known = ['chromium', 'webkit', 'firefox'];
+for (const b of browsers) {
+  if (!known.includes(b)) {
+    console.error(`unknown browser ${b} (use ${known.join(', ')})`);
+    process.exit(2);
+  }
+}
 const chrome =
   option('--chrome') ??
   process.env.CHROME_PATH ??
@@ -85,27 +110,74 @@ async function serve(dir) {
 }
 
 const failures = [];
-const check = (what, ok, detail = '') => {
-  console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}${detail ? ` (${detail})` : ''}`);
-  if (!ok) failures.push(what);
-};
+const skipped = [];
+
+/** Launches [name] headless: the installed Chrome, or the Playwright build of WebKit or Firefox. */
+function launch(name) {
+  if (name === 'chromium') return playwright.chromium.launch({ executablePath: chrome, headless: true, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  // WebGL in headless Firefox (CanvasKit draws with it)
+  if (name === 'firefox') return playwright.firefox.launch({ headless: true, firefoxUserPrefs: { 'webgl.force-enabled': true, 'webgl.disabled': false } });
+  return playwright.webkit.launch({ headless: true });
+}
 
 const version = JSON.parse(await readFile(join(root, 'version.json'), 'utf8'));
 const server = await serve(root);
 const base = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({ executablePath: chrome, headless: true, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
 try {
+  for (const name of browsers) {
+    console.log(`-- ${name}`);
+    let browser;
+    try {
+      browser = await launch(name);
+    } catch (e) {
+      // a browser that is not installed fails the run: CI installs all it asks for
+      const what = `${name}: the browser starts`;
+      console.log(`FAIL ${what} (${String(e.message).split('\n')[0]})`);
+      failures.push(what);
+      continue;
+    }
+    try {
+      await smoke(name, browser);
+    } finally {
+      await browser.close();
+    }
+  }
+} finally {
+  server.close();
+}
+if (skipped.length) console.log(`${skipped.length} check(s) skipped: ${skipped.join('; ')}`);
+if (failures.length) {
+  console.log(`${failures.length} check(s) failed`);
+  process.exit(1);
+}
+console.log('all checks passed');
+
+/** The checks in one browser. */
+async function smoke(name, browser) {
+  const check = (what, ok, detail = '') => {
+    console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}${detail ? ` (${detail})` : ''}`);
+    if (!ok) failures.push(`${name}: ${what}`);
+  };
+  const skip = (what, why) => {
+    console.log(`skip ${what} (${why})`);
+    skipped.push(`${name}: ${what} (${why})`);
+  };
+  const logs = [];
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await context.addInitScript(() => {
     // a returning user: no tutorial, no AI question at the start
     localStorage.setItem('opencadirrigation.tutorial_done', '1');
     localStorage.setItem('opencadirrigation.ai.askAtStart', 'off');
+    // when the first frame was drawn (performance.now(), ms)
+    window.addEventListener('flutter-first-frame', () => (window.__ociFirstFrame = performance.now()), { once: true });
   });
   const page = await context.newPage();
-  const logs = [];
   page.on('console', (m) => logs.push(`[${m.type()}] ${m.text().slice(0, 400)}`));
   page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
   page.on('dialog', (d) => d.accept());
+  // dedicated workers the page starts (every browser reports them)
+  const workers = [];
+  page.on('worker', (w) => workers.push(w.url()));
   const texts = () =>
     page.evaluate(() =>
       [...document.querySelectorAll('flt-semantics-host *')]
@@ -121,10 +193,10 @@ try {
     }
     return false;
   };
-  const shot = async (name) => {
+  const shot = async (file) => {
     if (!shots) return;
     await mkdir(shots, { recursive: true });
-    await page.screenshot({ path: join(shots, `${name}.png`) });
+    await page.screenshot({ path: join(shots, `${name}-${file}.png`) });
   };
 
   // 1. an example, designed in the worker
@@ -133,9 +205,12 @@ try {
   await page.waitForSelector('flutter-view', { timeout: 90000 });
   await page.waitForTimeout(2000);
   await semantics();
-  const designed = await waitForText('Design finished', 120000);
-  check('the example opens and designs', designed, `${((Date.now() - t0) / 1000).toFixed(1)} s`);
-  const worker = await page.evaluate(() => performance.getEntriesByType('resource').some((e) => new URL(e.name).pathname.endsWith('/design_worker.js')));
+  const designed = await waitForText('Design finished', 180000);
+  const firstFrame = await page.evaluate(() => window.__ociFirstFrame ?? null);
+  check('the example opens and designs', designed, `${((Date.now() - t0) / 1000).toFixed(1)} s${firstFrame == null ? '' : `, first frame at ${(firstFrame / 1000).toFixed(1)} s`}`);
+  const worker =
+    workers.some((u) => new URL(u, base).pathname.endsWith('/design_worker.js')) ||
+    (await page.evaluate(() => performance.getEntriesByType('resource').some((e) => new URL(e.name).pathname.endsWith('/design_worker.js'))));
   check('the design ran in the Web Worker', worker);
   await shot('1-design');
 
@@ -159,7 +234,12 @@ try {
     }
     return 'the shell cache never held main.dart.js';
   });
-  check('the service worker installs and keeps the app', cached === '', cached);
+  if (cached === 'no service worker API' && name !== 'chromium') {
+    // Playwright's Firefox runs without service workers; Chrome must have them
+    skip('the service worker installs and the app starts again offline', `this ${name} build has no service worker API`);
+  } else {
+    check('the service worker installs and keeps the app', cached === '', cached);
+  }
   if (cached === '') {
     await context.setOffline(true);
     await page.reload();
@@ -172,22 +252,70 @@ try {
     await shot('2-offline');
     await context.setOffline(false);
   }
+  await context.close();
 
   // 4. the AI assistant against a fake of the API, with a remembered key
-  await aiAssistant(browser, base, logs, check, shots);
+  await aiAssistant(name, browser, logs, check);
 
-  // 5. no page errors
-  const errors = logs.filter((l) => l.startsWith('[pageerror]') || (l.startsWith('[error]') && !l.includes('ERR_INTERNET_DISCONNECTED') && !l.includes('Failed to load resource')));
+  // 5. a worker of another build
+  await staleWorker(name, browser, logs, check, skip);
+
+  // 6. no page errors
+  // (a connection hint the test's own blocking refused is no error of the app)
+  const errors = logs.filter((l) => l.startsWith('[pageerror]') || (l.startsWith('[error]') && !l.includes('ERR_INTERNET_DISCONNECTED') && !l.includes('Failed to load resource') && !l.includes('Failed to preconnect')));
   check('no page errors', errors.length === 0, errors.slice(0, 5).join(' | '));
-} finally {
-  await browser.close();
-  server.close();
 }
-if (failures.length) {
-  console.log(`${failures.length} check(s) failed`);
-  process.exit(1);
+
+/**
+ * Serves, at the plain address of the worker, design_worker.js as a release
+ * before would have it (its build stamp changed), and the real one at the
+ * address the app uses to get past the cache (design_worker.js?v=<version>).
+ */
+async function staleWorker(name, browser, logs, check, skip) {
+  const what = 'a worker of another build is noticed and replaced';
+  const full = `${version.version}+${version.build_number}`;
+  const script = await readFile(join(root, 'design_worker.js'), 'utf8');
+  if (!script.includes(full)) {
+    skip(what, `design_worker.js carries no build stamp ${full}: rebuilt with sh tool/build_worker.sh?`);
+    return;
+  }
+  const stale = script.split(full).join('0.0.1+1');
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
+  await context.addInitScript(() => {
+    localStorage.setItem('opencadirrigation.tutorial_done', '1');
+    localStorage.setItem('opencadirrigation.ai.askAtStart', 'off');
+  });
+  const served = [];
+  await context.route(/\/design_worker\.js(\?.*)?$/, (route) => {
+    const fresh = new URL(route.request().url()).search !== '';
+    served.push(fresh ? 'fresh' : 'stale');
+    return fresh ? route.continue() : route.fulfill({ status: 200, headers: { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' }, body: stale });
+  });
+  const page = await context.newPage();
+  page.on('console', (m) => logs.push(`[${m.type()}] ${m.text().slice(0, 400)}`));
+  page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
+  const workers = [];
+  page.on('worker', (w) => workers.push(w.url()));
+  try {
+    await page.goto(`${base}/?example=rowCrop&design=1&lang=en`);
+    await page.waitForSelector('flutter-view', { timeout: 90000 });
+    await page.waitForTimeout(2000);
+    await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
+    const end = Date.now() + 180000;
+    let designed = false;
+    while (!designed && Date.now() < end) {
+      designed = await page.evaluate(() => [...document.querySelectorAll('flt-semantics-host *')].some((e) => `${e.getAttribute('aria-label') ?? ''} ${e.textContent ?? ''}`.includes('Design finished')));
+      if (!designed) await page.waitForTimeout(250);
+    }
+    if (!served.includes('stale')) {
+      skip(what, `this ${name} build does not let the test serve the worker script`);
+      return;
+    }
+    check(what, designed && served.join(',') === 'stale,fresh' && workers.some((u) => u.includes('design_worker.js?v=')), `scripts served: ${served.join(', ')}`);
+  } finally {
+    await context.close();
+  }
 }
-console.log('all checks passed');
 
 /** The stream of server-sent events of an answer of the Messages API. */
 function answer(n, text) {
@@ -203,10 +331,12 @@ function answer(n, text) {
 }
 
 /** Opens the assistant (?ai=1) with a remembered key, sends a message and reads the answer of a fake API. */
-async function aiAssistant(browser, base, logs, check, shots) {
+async function aiAssistant(name, browser, logs, check) {
   const key = 'sk-ant-api03-E2E-FAKE-KEY-0000';
   const reply = 'Fake answer from the end-to-end test.';
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  // no service worker here: in WebKit the requests of a page it controls go
+  // through it, where the routes below do not see them (a real request would leave)
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
   await context.addInitScript((key) => {
     localStorage.setItem('opencadirrigation.tutorial_done', '1');
     localStorage.setItem('opencadirrigation.ai.askAtStart', 'off');
@@ -220,8 +350,9 @@ async function aiAssistant(browser, base, logs, check, shots) {
     requests.push({ headers: r.headers(), body: r.postData() ?? '' });
     return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'text/event-stream; charset=utf-8', 'request-id': `req_e2e_${requests.length}` }, body: answer(requests.length, reply) });
   });
-  // anything else beyond this machine stays unanswered
-  await context.route(/^https?:\/\/(?!127\.0\.0\.1|api\.anthropic\.com)/, (route) => route.abort());
+  // anything else beyond this machine is answered "not found" here (an aborted
+  // font of the fallback chain is an unhandled error in WebKit)
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1|api\.anthropic\.com)/, (route) => route.fulfill({ status: 404, body: '' }));
   const page = await context.newPage();
   page.on('console', (m) => logs.push(`[${m.type()}] ${m.text().slice(0, 400)}`));
   page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
@@ -240,10 +371,40 @@ async function aiAssistant(browser, base, logs, check, shots) {
     });
     check('the assistant opens with its message box', !!box);
     if (!box) return;
-    await page.mouse.click(box[0], box[1]);
-    await page.waitForTimeout(500);
-    await page.keyboard.type('Hello from the smoke test.');
-    await page.keyboard.press('Enter');
+    // Chrome: typed into the box and sent with Enter. WebKit and Firefox take
+    // keys typed by automation into Flutter's text field one at a time (it
+    // moves its editing element after the first one): the first suggestion
+    // fills the box there, and the Send button sends it
+    let message = 'Hello from the smoke test.';
+    if (name === 'chromium') {
+      await page.mouse.click(box[0], box[1]);
+      await page.waitForTimeout(500);
+      await page.keyboard.type(message);
+      await page.keyboard.press('Enter');
+    } else {
+      message = 'I want to design a new irrigation system.';
+      const at = (text, button) =>
+        page.evaluate(
+          ([text, button]) => {
+            const nodes = [...document.querySelectorAll('flt-semantics-host *')].filter((e) => {
+              const label = `${e.getAttribute('aria-label') ?? ''} ${e.textContent ?? ''}`;
+              return label.includes(text) && (!button || e.getAttribute('role') === 'button' || e.tagName === 'BUTTON');
+            });
+            const b = nodes.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0).sort((x, y) => x.width * x.height - y.width * y.height)[0];
+            return b ? [b.left + b.width / 2, b.top + b.height / 2] : null;
+          },
+          [text, button],
+        );
+      const suggestion = await at(message, false);
+      check('the first suggestion is offered', !!suggestion);
+      if (!suggestion) return;
+      await page.mouse.click(suggestion[0], suggestion[1]);
+      await page.waitForTimeout(800);
+      const send = await at('Send', true);
+      check('the Send button is there', !!send);
+      if (!send) return;
+      await page.mouse.click(send[0], send[1]);
+    }
     const end = Date.now() + 60000;
     let shown = false;
     while (!shown && Date.now() < end) {
@@ -251,11 +412,11 @@ async function aiAssistant(browser, base, logs, check, shots) {
       shown = await page.evaluate((reply) => [...document.querySelectorAll('flt-semantics-host *')].some((e) => `${e.getAttribute('aria-label') ?? ''} ${e.textContent ?? ''}`.includes(reply)), reply);
     }
     const sent = requests[0];
-    check('the message goes to the API with the user\'s key', !!sent && sent.headers['x-api-key'] === key && sent.body.includes('Hello from the smoke test.'));
+    check("the message goes to the API with the user's key", !!sent && sent.headers['x-api-key'] === key && sent.body.includes(message));
     check('the answer shows in the panel', shown);
     if (shots) {
       await mkdir(shots, { recursive: true });
-      await page.screenshot({ path: join(shots, '3-assistant.png') });
+      await page.screenshot({ path: join(shots, `${name}-3-assistant.png`) });
     }
   } finally {
     await context.close();

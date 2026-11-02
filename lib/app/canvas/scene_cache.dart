@@ -22,7 +22,14 @@ import '../../core/model/geometry.dart';
 /// map viewers do) and the scene is drawn sharp once the view rests for a
 /// moment, or every [refreshAfter] while it keeps moving.
 class SceneCache {
-  SceneCache({this.onSettle});
+  /// [clock] gives the time the draw times and the rest of the view are
+  /// measured with (a monotonic clock by default; tests give their own, so
+  /// that a loaded machine does not make a light scene heavy).
+  SceneCache({this.onSettle, Duration Function()? clock}) : _clock = clock ?? _monotonic;
+
+  static final Stopwatch _watch = Stopwatch()..start();
+  static Duration _monotonic() => _watch.elapsed;
+  final Duration Function() _clock;
 
   /// Asks for a frame (the canvas repaints) once the view has rested after
   /// a move shown with the moved picture.
@@ -38,7 +45,10 @@ class SceneCache {
 
   /// Milliseconds the last scene took to record and to rasterise.
   double _recordMs = 0, _rasterMs = 0;
-  final Stopwatch _sinceDrawn = Stopwatch();
+
+  /// When the scene was last recorded ([_clock]).
+  Duration _drawnAt = Duration.zero;
+  static double _ms(Duration d) => d.inMicroseconds / 1000;
   Timer? _settle;
   bool _drawNow = false;
 
@@ -75,7 +85,7 @@ class SceneCache {
       _draw(canvas);
       return;
     }
-    if (same && !_drawNow && heavy && _sinceDrawn.elapsedMilliseconds < math.max(refreshAfter, 5 * (_recordMs + _rasterMs))) {
+    if (same && !_drawNow && heavy && _ms(_clock() - _drawnAt) < math.max(refreshAfter, 5 * (_recordMs + _rasterMs))) {
       // only the view moved: move the picture, draw the scene sharp later
       if (_image == null) _rasterise();
       final img = _image;
@@ -98,14 +108,12 @@ class SceneCache {
     }
     _drawNow = false;
     _settle?.cancel();
-    final sw = Stopwatch()..start();
+    final t0 = _clock();
     final rec = ui.PictureRecorder();
     record(Canvas(rec), size);
     _replace(rec.endRecording(), key, center, scale, size, devicePixelRatio);
-    _recordMs = sw.elapsedMicroseconds / 1000;
-    _sinceDrawn
-      ..reset()
-      ..start();
+    _drawnAt = _clock();
+    _recordMs = _ms(_drawnAt - t0);
     // drawn as recorded: it becomes an image on the next frame that shows
     // it again or moves it (the copy costs a read back from the GPU, not
     // worth paying for a scene that is about to change again)
@@ -138,7 +146,7 @@ class SceneCache {
     if (pic == null) return;
     final w = (_size.width * _dpr).ceil(), h = (_size.height * _dpr).ceil();
     if (w <= 0 || h <= 0 || w * h > maxPixels) return;
-    final sw = Stopwatch()..start();
+    final t0 = _clock();
     final rec = ui.PictureRecorder();
     Canvas(rec)
       ..scale(_dpr)
@@ -152,7 +160,7 @@ class SceneCache {
     } finally {
       scaled.dispose();
     }
-    _rasterMs = sw.elapsedMicroseconds / 1000;
+    _rasterMs = _ms(_clock() - t0);
   }
 
   /// Forgets the scene (it is recorded again on the next frame).
