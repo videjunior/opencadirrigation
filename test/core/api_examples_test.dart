@@ -99,6 +99,25 @@ void main() {
       expect(printed.length, 4);
       expect(lightest.costPerM, greaterThan(0));
     });
+
+    test('catalogue plausibility', () {
+      final problems = catalogPlausibility(Catalog.defaultCatalog());
+      print(problems.isEmpty ? 'plausible' : problems.join('\n'));
+
+      expect(printed.single, 'plausible');
+    });
+
+    test('damaged files and files of other versions', () {
+      final file = readProjectFile(File('examples/en/garden.oci.json').readAsStringSync());
+      final report = file.report;
+      for (final note in report.notes) {
+        print('${note.code} ${note.args}');
+      }
+      print('${file.project.entities.length} entities, ${report.skippedCount} set aside, clean: ${report.clean}');
+
+      expect(printed.last, endsWith('0 set aside, clean: true'));
+      expect(file.results, isNull, reason: 'the examples are saved without results');
+    });
   });
 
   group('messages, reports and exports', () {

@@ -44,6 +44,7 @@ import '../../core/io/shp_writer.dart' show ShapefileParts;
 import '../../core/io/work_slicer.dart';
 import '../../core/model/catalog.dart';
 import '../../core/model/currency.dart';
+import '../../core/model/regional.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/project.dart';
@@ -1843,8 +1844,8 @@ class ProjectController extends ChangeNotifier {
   Scenario? saveScenario(String name) {
     final r = results;
     if (r == null) return null;
-    final snap = project.toJson()..remove('scenarios');
-    snap['results'] = r.toJson();
+    // without the pictures of images and comments (they stay in the project)
+    final snap = scenarioSnapshot(project, r);
     final sc = Scenario(
       id: 'scn${DateTime.now().microsecondsSinceEpoch}',
       name: name.trim().isEmpty ? t('scn.default', {'n': '${project.scenarios.length + 1}'}) : name.trim(),
@@ -1861,12 +1862,9 @@ class ProjectController extends ChangeNotifier {
   bool restoreScenario(String id) {
     final sc = project.scenarios.where((x) => x.id == id).firstOrNull;
     if (sc == null) return false;
-    final Project restored;
-    try {
-      restored = Project.fromJson(Map<String, dynamic>.of(sc.snapshot)..remove('results'));
-    } catch (_) {
-      return false;
-    }
+    // the pictures of images and comments come back from the current project
+    final restored = sc.restoredInto(project);
+    if (restored == null) return false;
     final res = sc.snapshot['results'] is Map ? DesignResults.fromJson((sc.snapshot['results'] as Map).cast<String, dynamic>()) : null;
     final done = mutate(() {
       project
@@ -3326,6 +3324,10 @@ class ProjectController extends ChangeNotifier {
     final code = defaultCurrency();
     project = Project(catalog: defaultCatalog(code));
     _applyNewProjectCurrency(code);
+    // 1.6.0 MOD: mains frequency and units of the user's region (or choice)
+    project.params
+      ..mainsHz = defaultMainsHz()
+      ..units = defaultUnits();
     project.meta.name = t('name.newProject');
     results = null;
     selection.clear();
@@ -3398,6 +3400,30 @@ class ProjectController extends ChangeNotifier {
     return currencyForLocale(lang, systemLanguageTags());
   }
 
+  /// Mains frequency of new projects (1.6.0 MOD): the user's choice
+  /// (Parameters, saved in the browser), else that of the machine's region
+  /// for the interface language ([mainsHzForLocale]).
+  double defaultMainsHz() {
+    final saved = double.tryParse(getPref('mainsHz') ?? '');
+    if (saved == 50 || saved == 60) return saved!;
+    return mainsHzForLocale(lang, systemLanguageTags());
+  }
+
+  /// Display units of new projects (1.6.0 MOD): the user's last choice in
+  /// the units dialog, else metric. ([unitsForLocale] tells the units of
+  /// the region; taking them without asking would change what every
+  /// English-speaking user in the United States sees on first use, a choice
+  /// left to the units dialog.)
+  Units defaultUnits() {
+    final saved = getPref('units');
+    if (saved != null) {
+      try {
+        return Units.fromJson(jsonDecode(saved) as Map<String, dynamic>);
+      } catch (_) {}
+    }
+    return Units.metric;
+  }
+
   /// True while the currency of the project is the automatic one of a new,
   /// untouched project (switching the language may then change it).
   bool _autoCurrency = false;
@@ -3427,6 +3453,10 @@ class ProjectController extends ChangeNotifier {
   /// currency of the new language.
   void _followLanguageCurrency() {
     if (!_autoCurrency || dirty || project.entities.isNotEmpty || _undo.isNotEmpty) return;
+    // 1.6.0 MOD: the mains frequency and the units follow too
+    project.params
+      ..mainsHz = defaultMainsHz()
+      ..units = defaultUnits();
     final code = currencyForLocale(lang, systemLanguageTags());
     final from = project.params.currencyCode;
     if (code == from) return;
@@ -3493,18 +3523,19 @@ class ProjectController extends ChangeNotifier {
     return j;
   }
 
-  /// Opens project JSON [s] in this tab. [fromStore]: the browser store's own
+  /// Opens project JSON [s] in this tab, item by item (what could not be
+  /// read is set aside and reported). [fromStore]: the browser store's own
   /// copy (recovery, recent projects), whose uid is kept; a file or a link
   /// whose project is open in another tab or window, or whose copy in this
   /// browser holds changes not saved to a file, opens as a copy (a uid of
   /// its own, see [openProject]); [asCopy] always does (a shared link).
   void loadJson(String s, {bool fromStore = false, bool asCopy = false}) {
-    final j = jsonDecode(s) as Map<String, dynamic>;
-    final p = Project.fromJson(j);
+    final f = readProjectFile(s);
+    final p = f.project;
     if (asCopy) p.meta.uid = ProjectMeta.newUid();
     DesignResults? r;
-    final rj = j['results'];
-    if (rj is Map<String, dynamic>) {
+    final rj = f.results;
+    if (rj != null) {
       try {
         r = DesignResults.fromJson(rj);
       } catch (e) {
@@ -3512,6 +3543,7 @@ class ProjectController extends ChangeNotifier {
       }
     }
     openProject(p, results: r, fromStore: fromStore);
+    if (!f.report.clean) notify([t('msg.loaded'), for (final n in f.report.notes) t('read.${n.code}', n.args)].join('. '));
   }
 
   /// Shows [p] in place of the current project (a file, a version, an

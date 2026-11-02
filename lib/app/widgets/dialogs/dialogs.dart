@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -511,7 +512,11 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
                   items: const [50, 60],
                   labelOf: (x) => '$x Hz',
                   idOf: (x) => '$x',
-                  onChanged: (v) => setState(() => p.mainsHz = double.tryParse(v ?? '') ?? 60),
+                  onChanged: (v) => setState(() {
+                    p.mainsHz = double.tryParse(v ?? '') ?? 60;
+                    // 1.6.0 MOD: new projects start with this choice
+                    setPref('mainsHz', '${p.mainsHz.round()}');
+                  }),
                 ),
               ),
               _row([
@@ -540,6 +545,9 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
                 TextFieldRow(key: ValueKey('sym_${p.currencyCode}'), label: t('dlg.currencySymbol'), value: p.currency, onChanged: (v) => p.currency = v),
               ]),
               Text(t('dlg.currencyNote', {'d': exchangeRatesDate}), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+              // 1.6.0 MOD
+              if (exchangeRatesStale(DateTime.now()))
+                Text(t('dlg.ratesStale', {'d': exchangeRatesDate, 'n': '${exchangeRatesAgeDays(DateTime.now())}'}), style: TextStyle(fontSize: 10.5, color: Cad.warning)),
             ],
           ),
         );
@@ -611,6 +619,8 @@ Future<void> showUnitsDialog(BuildContext context, ProjectController c) {
           final edit = c.beginSettingsEdit('hist.units');
           c.project.params.units = u;
           c.commitSettingsEdit(edit);
+          // 1.6.0 MOD: new projects start in these units
+          setPref('units', jsonEncode(u.toJson()));
           Navigator.pop(context);
         },
         child: Text(t('ok')),
@@ -1816,6 +1826,9 @@ Future<(bool, double, String)?> askCurrencyConversion(BuildContext context, Proj
             const SizedBox(height: 8),
             NumField(key: const Key('cur_rate'), label: t('dlg.rate', {'from': fromLabel, 'to': to}), value: rate, decimals: 6, onChanged: (v) => rate = v),
             Text(known == null ? t('dlg.rateUnknown') : t('dlg.rateSource', {'d': exchangeRatesDate}), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+            // 1.6.0 MOD
+            if (known != null && exchangeRatesStale(DateTime.now()))
+              Text(t('dlg.ratesStale', {'d': exchangeRatesDate, 'n': '${exchangeRatesAgeDays(DateTime.now())}'}), style: TextStyle(fontSize: 10.5, color: Cad.warning)),
           ],
         ),
       ),

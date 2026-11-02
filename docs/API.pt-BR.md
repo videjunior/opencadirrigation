@@ -31,9 +31,10 @@ Uma importação traz toda a superfície pública:
 import 'package:opencadirrigation/core/api.dart';
 ```
 
-`lib/core/api.dart` exporta todas as bibliotecas de `lib/core`, exceto os detalhes internos da composição de texto do PDF e
-o solver de matrizes esparsas; importar as bibliotecas individuais (`core/model/project.dart`,
-`core/design/designer.dart`, …) também funciona e é o que o aplicativo faz. O motor não faz entrada nem saída por conta
+`lib/core/api.dart` exporta todas as bibliotecas de `lib/core`, exceto os detalhes internos da composição de texto do PDF
+(`io/fonts/*`, menos `pdf_fonts.dart`) e o solver de matrizes esparsas (`hydraulics/sparse_solver.dart`);
+`test/core/api_exports_test.dart` falha quando falta alguma. Importar as bibliotecas individuais
+(`core/model/project.dart`, `core/design/designer.dart`, …) também funciona e é o que o aplicativo faz. O motor não faz entrada nem saída por conta
 própria: os leitores recebem textos ou bytes, os gravadores os devolvem, e quem chama decide de onde vêm e para onde vão.
 
 **Onde executar.** O pacote depende do SDK do Flutter (por causa do aplicativo), então `dart run` funciona dentro deste
@@ -48,8 +49,11 @@ comando a usam; os 17 idiomas além de português, inglês e espanhol vêm dos p
 (`installLanguagePack`). Sem função de rótulo, as próprias chaves aparecem.
 
 **A linha de comando.** `dart run bin/oci.dart --help` lista os comandos: `design`, `analyze`, `check` (código de saída 1
-quando há erros), `export` (DXF, DWG, PDF, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, INP do EPANET) e `bom`, com
-as opções `--lang`, `--report`, `--results` e `--out`.
+quando há erros), `validate` (o que a leitura do arquivo teve de reparar; código de saída 1 quando houve algo), `export`
+(DXF, DWG, PDF, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, INP do EPANET), `bom` e `schema` (o JSON Schema
+do arquivo de projeto, gerado do modelo: cada chave, seu tipo, sua unidade e o padrão de um projeto novo), com as opções
+`--lang`, `--report`, `--results` e `--out`. `design --out` grava o projeto dimensionado com os resultados, como o aplicativo salva
+(`--no-results` os deixa de fora).
 
 ## 2. Projetos e o dimensionamento
 
@@ -90,6 +94,25 @@ O que `DesignResults` contém:
 | `capitalCost`, `annualCapitalCost`, `annualEnergyCost` | custos na moeda do projeto |
 
 `results.pipesByEntity` e `results.outletsByEntity` indexam os resultados dos tubos e dos emissores pelo id da entidade.
+
+### Arquivos danificados e de outras versões
+
+O leitor abre o arquivo item a item. Um item que ele não consegue ler (danificado, ou de uma versão mais nova do aplicativo)
+fica de lado em `project.unreadable` e é gravado de novo ao salvar, em `unreadable`, para que uma versão posterior o
+recupere; vértices sem coordenadas são descartados, uma cota desconhecida nunca vira 0 m, ids de entidade repetidos ou
+ausentes recebem novos, opções desconhecidas ficam no padrão e campos desconhecidos são preservados. `readProjectFile`
+devolve o projeto, os resultados que o arquivo guarda ao lado dele e um `ProjectReadReport` dos reparos (`notes`: códigos
+que o aplicativo traduz como `read.<código>`). O formato tem uma `version` (`Project.formatVersion`, 2); arquivos mais
+antigos passam pelas `Project.migrations`, e uma chave ausente recebe o valor de um projeto novo.
+
+```dart
+final file = readProjectFile(File('examples/en/garden.oci.json').readAsStringSync());
+final report = file.report;
+for (final note in report.notes) {
+  print('${note.code} ${note.args}');
+}
+print('${file.project.entities.length} entities, ${report.skippedCount} set aside, clean: ${report.clean}');
+```
 
 ### Só a análise, o progresso, os resultados em JSON
 
@@ -155,6 +178,16 @@ final rotor = catalog.outlet('rotor')!;
 for (final nozzle in rotor.nozzles.take(3)) {
   print('${nozzle.id}: ${fmt(nozzle.curve.flow(30) * 3600, 2)} m³/h at 30 m');
 }
+```
+
+`catalogPlausibility` (`lib/core/model/catalog_check.dart`) acusa valores lidos errado de uma ficha técnica: parede de tubo
+termoplástico fina demais para a classe de pressão (a tensão na parede contra a tensão de projeto do material), bocal que
+passa mais do que um orifício ideal do seu diâmetro, curva de bomba que pede mais do que o motor dá com o fator de serviço.
+O catálogo padrão e todos os pacotes passam nela.
+
+```dart
+final problems = catalogPlausibility(Catalog.defaultCatalog());
+print(problems.isEmpty ? 'plausible' : problems.join('\n'));
 ```
 
 ## 3. Mensagens, relatórios e exportações
@@ -685,7 +718,8 @@ continuam como apelidos.
 - **Mensagens são códigos**: `código` ou `código:argumento` (geralmente o id de uma entidade). O aplicativo as traduz com a
   tabela de textos: `check.<código>`, `warn.<código>`, `adv.<código>.why` e `adv.<código>.how`.
 - **Determinismo**: o mesmo projeto dá os mesmos resultados; além dos pacotes de idioma instalados e das fontes de PDF
-  registradas, o motor não guarda estado global que os altere.
+  registradas, o motor não guarda estado global que os altere (o maior terreno que o TIN aceita inteiro, por exemplo, é o
+  `tinLimit` de cada `Terrain`, por padrão `Terrain.maxTinPoints`).
 - **Alterações**: `Designer.designAll` altera o projeto que dimensiona (diâmetros, tubos telescopados divididos); trabalhe
   sobre `project.copy()` para manter o original. Os leitores nunca alteram o que recebem.
 - **Estabilidade**: esta API é o motor do aplicativo, não uma interface congelada. Ela acompanha as necessidades do

@@ -75,6 +75,14 @@ void main() {
       for (final t in [Affine.rotation(math.pi / 2, const Pt(0, 0)), Affine.mirror(const Pt(0, 0), const Pt(0, 1)), Affine.scaling(2, const Pt(0, 0))]) {
         final out = e.transformed(t);
         expect(out.runtimeType, e.runtimeType);
+        if (e is TextEntity && t.isMirror) {
+          // a mirrored text keeps reading: it covers the mirrored box, from
+          // another corner
+          final want = Bounds.ofPoints(e.corners.map(t.apply));
+          expect(out.bounds.minX, closeTo(want.minX, 1e-6), reason: e.id);
+          expect(out.bounds.maxY, closeTo(want.maxY, 1e-6), reason: e.id);
+          continue;
+        }
         expect(sameSet(out.grips, e.grips.map(t.apply).toList()), isTrue, reason: '${e.id} ${t.isMirror ? 'mirror' : ''}');
       }
       expect(e.transformed(Affine.scaling(2, const Pt(0, 0))).bounds.width, closeTo(e.bounds.width * 2, 1e-6), reason: e.id);

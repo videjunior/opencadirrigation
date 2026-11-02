@@ -11,15 +11,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/io/geo.dart';
-import '../../core/model/catalog.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
+import '../../core/model/paste.dart';
 import '../../core/model/project.dart';
 import 'controller.dart';
 
 /// Entities copied from a project, with the layers and catalog items they use.
 class ClipboardPayload {
-  ClipboardPayload({required this.sourceTab, required this.entities, required this.layers, required this.catalog, this.georef});
+  ClipboardPayload({required this.sourceTab, required this.entities, required this.layers, required this.catalog, this.georef, this.currency = '', this.projectUid = ''});
   static const format = 'opencadirrigation-clipboard';
   final int sourceTab;
   final List<Map<String, dynamic>> entities;
@@ -29,6 +29,13 @@ class ClipboardPayload {
 
   /// Catalog subset: pipes/outlets/tapes/valves/pumps referenced by the entities.
   final Map<String, List<Map<String, dynamic>>> catalog;
+
+  /// ISO code of the prices of the source project (converted on paste).
+  final String currency;
+
+  /// The project copied from: a paste into it keeps the references to the
+  /// entities left behind.
+  final String projectUid;
 
   int get count => entities.length;
 
@@ -41,7 +48,17 @@ class ClipboardPayload {
   /// (the two projects have different origins).
   bool placedOnMap = false;
 
-  Map<String, dynamic> toJson() => {'format': format, 'version': 1, 'source': sourceTab, 'entities': entities, 'layers': layers, 'catalog': catalog, if (georef != null) 'georef': georef!.toJson()};
+  Map<String, dynamic> toJson() => {
+    'format': format,
+    'version': 1,
+    'source': sourceTab,
+    'entities': entities,
+    'layers': layers,
+    'catalog': catalog,
+    if (georef != null) 'georef': georef!.toJson(),
+    if (currency.isNotEmpty) 'currency': currency,
+    if (projectUid.isNotEmpty) 'project': projectUid,
+  };
   String encode() => jsonEncode(toJson());
 
   static ClipboardPayload? tryParse(String? text) {
@@ -55,6 +72,8 @@ class ClipboardPayload {
         layers: ((j['layers'] as Map?) ?? {}).map((k, v) => MapEntry(k as String, (v as num).toInt())),
         catalog: ((j['catalog'] as Map?) ?? {}).map((k, v) => MapEntry(k as String, (v as List).cast<Map<String, dynamic>>())),
         georef: j['georef'] is Map ? GeoReference.fromJson((j['georef'] as Map).cast<String, dynamic>()) : null,
+        currency: j['currency'] as String? ?? '',
+        projectUid: j['project'] as String? ?? '',
       );
     } catch (_) {
       return null;
@@ -65,60 +84,15 @@ class ClipboardPayload {
   static ClipboardPayload fromSelection(ProjectController c) {
     final p = c.project;
     final ents = p.entities.where((e) => c.selection.contains(e.id)).toList();
-    final pipes = <String>{}, outlets = <String>{}, tapes = <String>{}, valves = <String>{}, pumps = <String>{};
-    for (final e in ents) {
-      switch (e) {
-        case PipeEntity x:
-          if (x.pipeSpecId != null) pipes.add(x.pipeSpecId!);
-        case SpraylineEntity x:
-          if (x.pipeSpecId != null) pipes.add(x.pipeSpecId!);
-          outlets.add(x.outletSpecId);
-        case TapeEntity x:
-          tapes.add(x.tapeSpecId);
-        case OutletEntity x:
-          outlets.add(x.outletSpecId);
-        case ControlValveEntity x:
-          if (x.valveSpecId != null) valves.add(x.valveSpecId!);
-        case MiscHydraulicEntity x:
-          if (x.valveSpecId != null) valves.add(x.valveSpecId!);
-        case PumpEntity x:
-          if (x.pumpSpecId != null) pumps.add(x.pumpSpecId!);
-        case PivotEntity x:
-          if (x.pipeSpecId != null) pipes.add(x.pipeSpecId!);
-          if (x.sprinklerSpecId != null) outlets.add(x.sprinklerSpecId!);
-          if (x.regulatorSpecId != null) valves.add(x.regulatorSpecId!);
-        default:
-          break;
-      }
-    }
-    final cat = p.catalog;
     return ClipboardPayload(
       sourceTab: c.tabId,
       georef: p.meta.georef,
       entities: ents.map((e) => e.toJson()).toList(),
       layers: {for (final e in ents) e.layer: p.layerNamed(e.layer).color},
-      catalog: {
-        'pipes': [
-          for (final id in pipes)
-            if (cat.pipe(id) != null) cat.pipe(id)!.toJson(),
-        ],
-        'outlets': [
-          for (final id in outlets)
-            if (cat.outlet(id) != null) cat.outlet(id)!.toJson(),
-        ],
-        'tapes': [
-          for (final id in tapes)
-            if (cat.tape(id) != null) cat.tape(id)!.toJson(),
-        ],
-        'valves': [
-          for (final id in valves)
-            if (cat.valve(id) != null) cat.valve(id)!.toJson(),
-        ],
-        'pumps': [
-          for (final id in pumps)
-            if (cat.pump(id) != null) cat.pump(id)!.toJson(),
-        ],
-      },
+      // the items the entities use, the end gun of a pivot included
+      catalog: catalogSubset(p.catalog, ents),
+      currency: p.params.currencyCode,
+      projectUid: p.meta.uid,
     );
   }
 
@@ -136,39 +110,21 @@ class ClipboardPayload {
     placedOnMap = place != null;
     final adopt = !same && georef != null && c.project.meta.georef == null && c.project.entities.isEmpty;
     c.mutate(() {
-      final p = c.project;
       // a blank project takes the georeference of what is pasted into it
-      if (adopt) p.meta.georef = georef;
-      layers.forEach((name, color) {
-        if (p.layers.every((l) => l.name != name)) p.layers.add(Layer(name: name, color: color));
-      });
-      final cat = p.catalog;
-      for (final j in catalog['pipes'] ?? const []) {
-        final s = PipeSpec.fromJson(j);
-        if (cat.pipe(s.id) == null) cat.pipes.add(s);
-      }
-      for (final j in catalog['outlets'] ?? const []) {
-        final s = OutletSpec.fromJson(j);
-        if (cat.outlet(s.id) == null) cat.outlets.add(s);
-      }
-      for (final j in catalog['tapes'] ?? const []) {
-        final s = TapeSpec.fromJson(j);
-        if (cat.tape(s.id) == null) cat.tapes.add(s);
-      }
-      for (final j in catalog['valves'] ?? const []) {
-        final s = ValveSpec.fromJson(j);
-        if (cat.valve(s.id) == null) cat.valves.add(s);
-      }
-      for (final j in catalog['pumps'] ?? const []) {
-        final s = PumpSpec.fromJson(j);
-        if (cat.pump(s.id) == null) cat.pumps.add(s);
-      }
-      for (final j in entities) {
-        var e = Entity.fromJson(j).clone(newId: p.newId());
-        e = place == null ? e.translated(offset) : e.transformed(place);
-        p.entities.add(e);
-        ids.add(e.id);
-      }
+      if (adopt) c.project.meta.georef = georef;
+      // an item of the same id but other data is renamed, prices follow the
+      // currency, references between the copies follow them
+      final r = pasteEntities(
+        c.project,
+        entities,
+        layers: layers,
+        catalog: catalog,
+        currency: currency,
+        offset: offset,
+        place: place,
+        sameProject: same || (projectUid.isNotEmpty && projectUid == c.project.meta.uid),
+      );
+      ids.addAll(r.ids);
     }, label: 'hist.paste');
     // refused (a design is running): keep the selection
     if (ids.isNotEmpty) c.select(ids);

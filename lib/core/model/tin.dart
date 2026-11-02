@@ -15,6 +15,9 @@ class TinTriangle {
 
   /// Circumcircle (filled by the triangulation).
   double cx = 0, cy = 0, r2 = 0;
+
+  /// Last point whose cavity took this triangle (during the triangulation).
+  int _mark = -1;
 }
 
 /// Delaunay triangulation of a point set (x, y, z). Duplicate positions are
@@ -123,55 +126,106 @@ class Tin {
     }
 
     order.sort((a, b) => cellOf(a).compareTo(cellOf(b)));
-    var alive = <TinTriangle>[];
-    alive.add(root);
+    // Every triangle in the order it was made (null once destroyed: the
+    // order the triangulation keeps) and the directed edges of the live
+    // ones (u → v of triangle k, key u·m + v): the neighbour across an edge
+    // holds the reverse edge. All triangles turn the same way (the super
+    // triangle is clockwise and each new one inherits its edge's sense).
+    final all = <TinTriangle?>[root];
+    final m = n + 3;
+    final edgeOf = <int, int>{s0 * m + s1: 0, s1 * m + s2: 0, s2 * m + s0: 0};
+    double side(int a, int b, double x, double y) => (px[b] - px[a]) * (y - py[a]) - (py[b] - py[a]) * (x - px[a]);
+    // strictly inside: a point on the circle (a tie, within rounding) leaves
+    // the triangle alone, whichever way the rounding went
+    bool inCircle(TinTriangle t, double x, double y) {
+      final dx = x - t.cx, dy = y - t.cy;
+      return dx * dx + dy * dy < t.r2 * (1 - 1e-9);
+    }
+
+    // walk from triangle k towards (x, y), crossing an edge with the point on
+    // its far side (the first edge tried turns with the step, so the walk
+    // cannot circle); -1 when it gets lost
+    int walk(int k, double x, double y) {
+      final limit = 64 + 8 * all.length;
+      for (var step = 0; step < limit; step++) {
+        final t = all[k]!;
+        var next = -1;
+        for (var j = 0; j < 3 && next < 0; j++) {
+          final e = (step + j) % 3;
+          final u = e == 0 ? t.a : (e == 1 ? t.b : t.c), v = e == 0 ? t.b : (e == 1 ? t.c : t.a);
+          if (side(u, v, x, y) > 0) next = edgeOf[v * m + u] ?? -2;
+        }
+        if (next == -1) return k;
+        if (next == -2) return -1;
+        k = next;
+      }
+      return -1;
+    }
+
+    var last = 0;
     for (final i in order) {
       final x = px[i], y = py[i];
-      final bad = <TinTriangle>[];
-      final keep = <TinTriangle>[];
-      for (final t in alive) {
-        final dx = x - t.cx, dy = y - t.cy;
-        // strictly inside: a point on the circle (a tie, within rounding)
-        // leaves the triangle alone, whichever way the rounding went
-        if (dx * dx + dy * dy < t.r2 * (1 - 1e-9)) {
-          bad.add(t);
-        } else {
-          keep.add(t);
+      var start = walk(last, x, y);
+      if (start < 0) {
+        // lost on a degenerate triangulation: any triangle whose circle holds it
+        for (var k = 0; k < all.length && start < 0; k++) {
+          if (all[k] != null && inCircle(all[k]!, x, y)) start = k;
+        }
+        if (start < 0) continue;
+      }
+      // the cavity: the triangles whose circumcircle holds the point, grown
+      // from the one containing it across shared edges
+      final bad = <int>[start];
+      all[start]!._mark = i;
+      for (var q = 0; q < bad.length; q++) {
+        final t = all[bad[q]]!;
+        for (var e = 0; e < 3; e++) {
+          final u = e == 0 ? t.a : (e == 1 ? t.b : t.c), v = e == 0 ? t.b : (e == 1 ? t.c : t.a);
+          final nb = edgeOf[v * m + u];
+          if (nb == null) continue;
+          final o = all[nb]!;
+          if (o._mark == i || !inCircle(o, x, y)) continue;
+          o._mark = i;
+          bad.add(nb);
         }
       }
-      if (bad.isEmpty) {
-        // numerically outside every circumcircle (should not happen inside
-        // the super triangle); skip the point
-        continue;
-      }
-      // boundary of the cavity: edges that belong to exactly one bad triangle
-      final edgeCount = <int, int>{};
-      final edgeList = <(int, int)>[];
-      void edge(int u, int v) {
-        final key = u < v ? u * 4194304 + v : v * 4194304 + u;
-        final c = edgeCount[key];
-        if (c == null) {
-          edgeCount[key] = 1;
-          edgeList.add((u, v));
-        } else {
-          edgeCount[key] = c + 1;
+      // boundary of the cavity, in the order its triangles were made and
+      // a→b, b→c, c→a in each: the new triangles keep the order the
+      // triangulation always had
+      bad.sort();
+      final boundary = <int>[];
+      for (final k in bad) {
+        final t = all[k]!;
+        for (var e = 0; e < 3; e++) {
+          final u = e == 0 ? t.a : (e == 1 ? t.b : t.c), v = e == 0 ? t.b : (e == 1 ? t.c : t.a);
+          final nb = edgeOf[v * m + u];
+          if (nb != null && all[nb]!._mark == i) continue;
+          boundary
+            ..add(u)
+            ..add(v);
         }
       }
-
-      for (final t in bad) {
-        edge(t.a, t.b);
-        edge(t.b, t.c);
-        edge(t.c, t.a);
+      for (final k in bad) {
+        final t = all[k]!;
+        edgeOf
+          ..remove(t.a * m + t.b)
+          ..remove(t.b * m + t.c)
+          ..remove(t.c * m + t.a);
+        all[k] = null;
       }
-      for (final (u, v) in edgeList) {
-        final key = u < v ? u * 4194304 + v : v * 4194304 + u;
-        if (edgeCount[key] != 1) continue;
+      for (var j = 0; j < boundary.length; j += 2) {
+        final u = boundary[j], v = boundary[j + 1];
         final t = TinTriangle(u, v, i);
         circum(t);
-        keep.add(t);
+        final k = all.length;
+        all.add(t);
+        edgeOf[u * m + v] = k;
+        edgeOf[v * m + i] = k;
+        edgeOf[i * m + u] = k;
+        last = k;
       }
-      alive = keep;
     }
+    var alive = [for (final t in all) ?t];
     if (constraints.isNotEmpty) alive = _constrain(alive, px, py, constraints);
     // drop triangles touching the super triangle; orient counter-clockwise
     final out = <TinTriangle>[];

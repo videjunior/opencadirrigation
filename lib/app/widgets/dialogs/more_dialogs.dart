@@ -3,8 +3,6 @@
 /// image georeferencing and the catalog editor.
 library;
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 import '../../../core/design/pump_selection.dart';
@@ -966,18 +964,10 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                     key: const Key('cat_import'),
                     onPressed: () async {
                       final f = await openBinaryFile(accept: '.json,.csv,.txt,.xlsx,.cat');
-                      if (f == null) return;
-                      try {
-                        final lower = f.$1.toLowerCase();
-                        final r = lower.endsWith('.xlsx')
-                            ? CatalogIo.parseXlsx(f.$2)
-                            : CatalogIo.parse(utf8.decode(f.$2, allowMalformed: true), group: lower.endsWith('.csv') || lower.endsWith('.txt') ? tab : null);
-                        final n = cat.merge(r.catalog, replace: true);
-                        c.notify(t('msg.catalogImported', {'n': '$n'}));
-                        setState(() {});
-                      } catch (e) {
-                        c.notify(t('msg.error', {'e': c.describeError(e)}));
-                      }
+                      if (f == null || !ctx.mounted) return;
+                      // 1.6.0 MOD: packs keep the existing ids, rows without id never replace another item
+                      await importCatalogFile(ctx, c, cat, tab, name: f.$1, bytes: f.$2);
+                      setState(() {});
                     },
                     child: Text(t('cat.importAny')),
                   ),
@@ -1055,6 +1045,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
               ),
               Text(
                 t('cat.importHint'),
+                style: TextStyle(fontSize: 10, color: Cad.fg38),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              // 1.6.0 MOD
+              Text(
+                t('cat.importUnits'),
                 style: TextStyle(fontSize: 10, color: Cad.fg38),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,

@@ -37,6 +37,14 @@ const catalogPriceCurrency = 'BRL';
 /// Date of [unitsPerBrl] (`YYYY-MM-DD`).
 const exchangeRatesDate = '2026-09-21';
 
+/// Days from [exchangeRatesDate] to [now]: rates of currencies of high
+/// inflation drift within a few months.
+int exchangeRatesAgeDays(DateTime now) => now.difference(DateTime.parse(exchangeRatesDate)).inDays;
+
+/// The reference rates are older than [days] (90 by default): the app says
+/// so next to them.
+bool exchangeRatesStale(DateTime now, {int days = 90}) => exchangeRatesAgeDays(now) > days;
+
 /// Where [unitsPerBrl] came from.
 const exchangeRatesSource = 'European Central Bank reference rates and exchangerate-api.com, $exchangeRatesDate';
 
@@ -328,14 +336,24 @@ String currencyForLocale(String lang, Iterable<String> tags) {
 }
 
 /// ISO code of a currency written as a symbol or a code in older files
-/// (`R$` → BRL, `€` → EUR, `usd` → USD); null when it cannot be told.
-String? currencyCodeForSymbol(String symbol) {
+/// (`R$` → BRL, `€` → EUR, `usd` → USD); null when it cannot be told. A
+/// symbol of several currencies (`kr`: Swedish, Norwegian and Danish
+/// krone; `Br`: Belarusian ruble and Ethiopian birr) is told by [region]
+/// (ISO 3166, the user's) when one of them is the currency there, else
+/// left unknown rather than guessed.
+String? currencyCodeForSymbol(String symbol, {String? region}) {
   final s = symbol.trim();
   if (s.isEmpty) return null;
   final byCode = currencyByCode(s);
   if (byCode != null) return byCode.code;
-  for (final c in currencies) {
-    if (c.symbol == s) return c.code;
+  final same = [
+    for (final c in currencies)
+      if (c.symbol == s) c.code,
+  ];
+  if (same.length == 1) return same.single;
+  if (same.length > 1) {
+    final local = region == null ? null : regionCurrencies[region.toUpperCase()];
+    return same.contains(local) ? local : null;
   }
   return switch (s) {
     r'$' => 'USD',

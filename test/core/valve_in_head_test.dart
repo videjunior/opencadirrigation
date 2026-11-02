@@ -19,6 +19,7 @@ import 'package:opencadirrigation/core/design/two_wire.dart';
 import 'package:opencadirrigation/core/design/valve_in_head.dart';
 import 'package:opencadirrigation/core/design/wire_routing.dart';
 import 'package:opencadirrigation/core/io/epanet_inp.dart';
+import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
@@ -74,6 +75,10 @@ Project _golf({
 
 const _a = ['h1', 'h2', 'h3', 'h4'], _b = ['h5', 'h6', 'h7', 'h8'], _c = ['h9', 'h10', 'h11', 'h12'];
 
+/// Flow (L/h) of the 4.0 mm nozzle of the default impact sprinkler at its
+/// 30 m (a round nozzle at a discharge coefficient of 0.96).
+final _q40 = Catalog.defaultCatalog().outlet('impact34')!.nozzle('i4.0')!.curve.flow(30) / m3sPerLph;
+
 SystemFlowResult _flow(DesignResults r, String id) => r.systemFlows.firstWhere((f) => f.flowId == id);
 
 /// Results as JSON without the timestamp and the valve-in-head duties.
@@ -114,8 +119,8 @@ void main() {
     expect(s.flowsOf('vih:C', p.systemFlows).map((f) => f.id), ['f2']);
     // nominal demand: the heads at their nominal pressure
     final q = nominalDemands(p);
-    expect(q['vih:A']! / m3sPerLph, closeTo(4 * 1200, 1e-6));
-    expect(q['solo']! / m3sPerLph, closeTo(1200, 1e-6));
+    expect(q['vih:A']! / m3sPerLph, closeTo(4 * _q40, 1e-6));
+    expect(q['solo']! / m3sPerLph, closeTo(_q40, 1e-6));
   });
 
   test('heads run only in the flows that schedule them, the worst at its nominal pressure', () {
@@ -139,7 +144,7 @@ void main() {
         expect(h.deficit, lessThanOrEqualTo(0.01));
         expect(h.withinWindow, isTrue);
         expect(h.requiredHead, closeTo(31, 1e-9)); // 30 m at the nozzle on a 1 m riser
-        expect(h.flow / m3sPerLph, closeTo(4 * 1200, 4 * 1200 * 0.03));
+        expect(h.flow / m3sPerLph, closeTo(4 * _q40, 4 * _q40 * 0.03));
       }
       // the calculated supply gives the worst head exactly what it needs
       expect(f.heads.map((h) => h.deficit).reduce((a, b) => a > b ? a : b), closeTo(0, 0.01));

@@ -1,0 +1,716 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "astm",
+  "brand": "Generic (ASTM)",
+  "name": "PVC pipes by ASTM standard",
+  "description": "PVC 1120 pressure pipes in inches (IPS): ASTM D2241 SDR 21 (200 psi) and SDR 26 (160 psi), 1 to 8 in; ASTM D1785 Schedule 40 (1/2 to 8 in) and Schedule 80 (1/2 to 4 in); minimum walls and ratings at 73 °F",
+  "source": "https://www.astm.org",
+  "license": "CC0-1.0",
+  "updated": "2026-11-02",
+  "author": "OpenCADIrrigation",
+  "sources": [
+    "ASTM D2241 - Standard Specification for Poly(Vinyl Chloride) (PVC) Pressure-Rated Pipe (SDR Series)",
+    "ASTM D1785 - Standard Specification for Poly(Vinyl Chloride) (PVC) Plastic Pipe, Schedules 40, 80, and 120"
+  ],
+  "items": 38,
+  "catalog": {
+    "pipes": [
+      {
+        "id": "astm_sdr21_1",
+        "name": "PVC SDR 21 (200 psi) 1 in IPS",
+        "nominalMm": 25.0,
+        "idMm": 30.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 1.6,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_1_1o4",
+        "name": "PVC SDR 21 (200 psi) 1-1/4 in IPS",
+        "nominalMm": 32.0,
+        "idMm": 38.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 2.01,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_1_1o2",
+        "name": "PVC SDR 21 (200 psi) 1-1/2 in IPS",
+        "nominalMm": 40.0,
+        "idMm": 43.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 2.29,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_2",
+        "name": "PVC SDR 21 (200 psi) 2 in IPS",
+        "nominalMm": 50.0,
+        "idMm": 54.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 2.87,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_2_1o2",
+        "name": "PVC SDR 21 (200 psi) 2-1/2 in IPS",
+        "nominalMm": 65.0,
+        "idMm": 66.1,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 3.48,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_3",
+        "name": "PVC SDR 21 (200 psi) 3 in IPS",
+        "nominalMm": 80.0,
+        "idMm": 80.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 4.24,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_4",
+        "name": "PVC SDR 21 (200 psi) 4 in IPS",
+        "nominalMm": 100.0,
+        "idMm": 103.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 5.44,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_6",
+        "name": "PVC SDR 21 (200 psi) 6 in IPS",
+        "nominalMm": 150.0,
+        "idMm": 152.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 8.0,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr21_8",
+        "name": "PVC SDR 21 (200 psi) 8 in IPS",
+        "nominalMm": 200.0,
+        "idMm": 198.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 140.6,
+        "wallMm": 10.44,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_1",
+        "name": "PVC SDR 26 (160 psi) 1 in IPS",
+        "nominalMm": 25.0,
+        "idMm": 30.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 1.52,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_1_1o4",
+        "name": "PVC SDR 26 (160 psi) 1-1/4 in IPS",
+        "nominalMm": 32.0,
+        "idMm": 38.9,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 1.63,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_1_1o2",
+        "name": "PVC SDR 26 (160 psi) 1-1/2 in IPS",
+        "nominalMm": 40.0,
+        "idMm": 44.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 1.85,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_2",
+        "name": "PVC SDR 26 (160 psi) 2 in IPS",
+        "nominalMm": 50.0,
+        "idMm": 55.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 2.31,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_2_1o2",
+        "name": "PVC SDR 26 (160 psi) 2-1/2 in IPS",
+        "nominalMm": 65.0,
+        "idMm": 67.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 2.82,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_3",
+        "name": "PVC SDR 26 (160 psi) 3 in IPS",
+        "nominalMm": 80.0,
+        "idMm": 82.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 3.43,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_4",
+        "name": "PVC SDR 26 (160 psi) 4 in IPS",
+        "nominalMm": 100.0,
+        "idMm": 105.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 4.39,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_6",
+        "name": "PVC SDR 26 (160 psi) 6 in IPS",
+        "nominalMm": 150.0,
+        "idMm": 155.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 6.48,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sdr26_8",
+        "name": "PVC SDR 26 (160 psi) 8 in IPS",
+        "nominalMm": 200.0,
+        "idMm": 202.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 8.43,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_1o2",
+        "name": "PVC Schedule 40 600 psi 1/2 in",
+        "nominalMm": 15.0,
+        "idMm": 15.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 421.8,
+        "wallMm": 2.77,
+        "cost": 0.0,
+        "usage": [
+          "lateral",
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_3o4",
+        "name": "PVC Schedule 40 480 psi 3/4 in",
+        "nominalMm": 20.0,
+        "idMm": 20.9,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 337.5,
+        "wallMm": 2.87,
+        "cost": 0.0,
+        "usage": [
+          "lateral",
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_1",
+        "name": "PVC Schedule 40 450 psi 1 in",
+        "nominalMm": 25.0,
+        "idMm": 26.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 316.4,
+        "wallMm": 3.38,
+        "cost": 0.0,
+        "usage": [
+          "lateral",
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_1_1o4",
+        "name": "PVC Schedule 40 370 psi 1-1/4 in",
+        "nominalMm": 32.0,
+        "idMm": 35.1,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 260.1,
+        "wallMm": 3.56,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_1_1o2",
+        "name": "PVC Schedule 40 330 psi 1-1/2 in",
+        "nominalMm": 40.0,
+        "idMm": 40.9,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 232.0,
+        "wallMm": 3.68,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_2",
+        "name": "PVC Schedule 40 280 psi 2 in",
+        "nominalMm": 50.0,
+        "idMm": 52.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 196.9,
+        "wallMm": 3.91,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_2_1o2",
+        "name": "PVC Schedule 40 300 psi 2-1/2 in",
+        "nominalMm": 65.0,
+        "idMm": 62.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 210.9,
+        "wallMm": 5.16,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_3",
+        "name": "PVC Schedule 40 260 psi 3 in",
+        "nominalMm": 80.0,
+        "idMm": 77.9,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 182.8,
+        "wallMm": 5.49,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_4",
+        "name": "PVC Schedule 40 220 psi 4 in",
+        "nominalMm": 100.0,
+        "idMm": 102.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 154.7,
+        "wallMm": 6.02,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_6",
+        "name": "PVC Schedule 40 180 psi 6 in",
+        "nominalMm": 150.0,
+        "idMm": 154.1,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 126.6,
+        "wallMm": 7.11,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch40_8",
+        "name": "PVC Schedule 40 160 psi 8 in",
+        "nominalMm": 200.0,
+        "idMm": 202.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 112.5,
+        "wallMm": 8.18,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_1o2",
+        "name": "PVC Schedule 80 850 psi 1/2 in",
+        "nominalMm": 15.0,
+        "idMm": 13.9,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 597.6,
+        "wallMm": 3.73,
+        "cost": 0.0,
+        "usage": [
+          "lateral",
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_3o4",
+        "name": "PVC Schedule 80 690 psi 3/4 in",
+        "nominalMm": 20.0,
+        "idMm": 18.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 485.1,
+        "wallMm": 3.91,
+        "cost": 0.0,
+        "usage": [
+          "lateral",
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_1",
+        "name": "PVC Schedule 80 630 psi 1 in",
+        "nominalMm": 25.0,
+        "idMm": 24.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 442.9,
+        "wallMm": 4.55,
+        "cost": 0.0,
+        "usage": [
+          "lateral",
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_1_1o4",
+        "name": "PVC Schedule 80 520 psi 1-1/4 in",
+        "nominalMm": 32.0,
+        "idMm": 32.5,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 365.6,
+        "wallMm": 4.85,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_1_1o2",
+        "name": "PVC Schedule 80 470 psi 1-1/2 in",
+        "nominalMm": 40.0,
+        "idMm": 38.1,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 330.4,
+        "wallMm": 5.08,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_2",
+        "name": "PVC Schedule 80 400 psi 2 in",
+        "nominalMm": 50.0,
+        "idMm": 49.3,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 281.2,
+        "wallMm": 5.54,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_2_1o2",
+        "name": "PVC Schedule 80 420 psi 2-1/2 in",
+        "nominalMm": 65.0,
+        "idMm": 59.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 295.3,
+        "wallMm": 7.01,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_3",
+        "name": "PVC Schedule 80 370 psi 3 in",
+        "nominalMm": 80.0,
+        "idMm": 73.7,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 260.1,
+        "wallMm": 7.62,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      },
+      {
+        "id": "astm_sch80_4",
+        "name": "PVC Schedule 80 320 psi 4 in",
+        "nominalMm": 100.0,
+        "idMm": 97.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 225.0,
+        "wallMm": 8.56,
+        "cost": 0.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ASTM"
+      }
+    ],
+    "outlets": [],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

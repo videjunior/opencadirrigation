@@ -434,8 +434,11 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
           if ((lower.endsWith('.csv') || lower.endsWith('.txt')) && group == null) throw ToolInputError('A CSV or text table needs "group" (the catalogue group of its rows).');
           final r = lower.endsWith('.xlsx') ? CatalogIo.parseXlsx(bytes) : CatalogIo.parse(utf8.decode(bytes, allowMalformed: true), group: group);
           if (r.count == 0) throw ToolInputError('No catalogue item could be read from "$name".');
-          final n = b.change('import_catalog_attachment', () => b.p.catalog.merge(r.catalog, replace: true));
-          return ToolOutput('Imported $name: $n items added or replaced. Results discarded.');
+          // 1.6.0 MOD: a row without an id never replaces another item
+          final m = b.change('import_catalog_attachment', () => r.mergeInto(b.p.catalog, used: b.p.catalogIdsInUse));
+          return ToolOutput(
+            'Imported $name: ${m.added} items added, ${m.replaced} replaced${m.replacedInUse.isEmpty ? '' : ' (in use by the drawing: ${m.replacedInUse.join(', ')})'}${r.skippedRows.isEmpty ? '' : '; rows left out (no diameter, curve or section): ${r.skippedRows.join(', ')}'}${r.pnAsBar > 0 ? '; ${r.pnAsBar} PN values without unit read in bar' : ''}. Results discarded.',
+          );
         } on FormatException catch (e) {
           throw ToolInputError('"$name" could not be read as a catalogue (${e.message}).');
         }

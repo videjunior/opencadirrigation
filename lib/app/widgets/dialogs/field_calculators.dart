@@ -548,6 +548,7 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
           PressureUnit.kPa => 2,
           PressureUnit.bar => 4,
           PressureUnit.psi => 3,
+          PressureUnit.ftH2O => 2,
         };
         String pr(double h) => '${fmt(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
         final inch = u.diameter == DiameterUnit.inch;

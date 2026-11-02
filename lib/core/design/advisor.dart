@@ -232,6 +232,8 @@ String adviceCode(String raw) => switch (raw) {
   'pivot_elec_drop' || 'pivot_elec_no_towers' || 'pivot_elec_start_drop' => 'pivot_elec_drop',
   // 1.6.0 AGR
   'req_leaching_infeasible' => 'area_leaching_infeasible',
+  // 1.6.0 MOD: a nozzle the catalogue item no longer has
+  'nozzle_missing' => 'spec_missing',
   _ => raw,
 };
 
@@ -324,6 +326,10 @@ const adviceCodes = [
   'pipes_overlap',
   'zone_spacing_wide',
   'area_uniformity_low',
+  // 1.6.0 MOD
+  'outside_terrain',
+  'pump_motor_overload',
+  'pump_motor_sf',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -357,6 +363,8 @@ AdviceLevel _level(String code) => switch (code) {
   'zone_overlap' ||
   'area_self_intersect' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
+  // 1.6.0 MOD: a motor working within its service factor
+  'pump_motor_sf' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 

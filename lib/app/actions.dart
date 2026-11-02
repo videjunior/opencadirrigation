@@ -58,7 +58,7 @@ Future<void> openProjectAction(BuildContext context, ProjectController c) async 
     // copy, so that copy stays offered (see ProjectController.openProject)
     c.loadJson(f.$2);
   } catch (e) {
-    c.notify(c.t('msg.error', {'e': '$e'}));
+    c.notify(c.t('msg.error', {'e': c.describeError(e)}));
   }
 }
 
@@ -83,7 +83,7 @@ ProjectController? openJsonInTab(Workspace ws, String json, {bool fromStore = fa
     return target;
   } catch (e) {
     if (!reuse) ws.closeTab(ws.tabs.indexOf(target));
-    ws.current.notify(cur.t('msg.error', {'e': '$e'}));
+    ws.current.notify(cur.t('msg.error', {'e': cur.describeError(e)}));
     return null;
   }
 }

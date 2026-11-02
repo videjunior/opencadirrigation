@@ -27,6 +27,7 @@ import 'package:opencadirrigation/core/io/project_export.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
+import 'package:opencadirrigation/core/model/read_report.dart';
 import 'package:opencadirrigation/core/model/split.dart';
 import 'package:opencadirrigation/core/units.dart';
 
@@ -214,8 +215,10 @@ void main() {
         PipeEntity(id: 'main', points: reversed ? pts.reversed.toList() : pts, scope: HydraulicScope.mainline),
         WaterSupplyEntity(id: 'w', position: Pt.zero, calculatePressure: false, designHeadM: 40),
         ControlValveEntity(id: 'v', position: valvePos, zoneName: 'Z', valveSpecId: 'ev50'),
-        PipeEntity(id: 'sub', points: [valvePos, valvePos + const Pt(0, 30)], scope: HydraulicScope.zone),
-        for (var i = 0; i < 8; i++)
+        // ten laterals: with the PN 80 bores of the default catalogue the
+        // cheapest line mixes two diameters
+        PipeEntity(id: 'sub', points: [valvePos, valvePos + const Pt(0, 38)], scope: HydraulicScope.zone),
+        for (var i = 0; i < 10; i++)
           SpraylineEntity(id: 's$i', points: [valvePos + Pt(0, 2 + i * 4.0), valvePos + Pt(40, 2 + i * 4.0)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15, spacing: 4, offset: 2),
       ]);
       p.params.maxMainlineSizes = 3;
@@ -639,7 +642,13 @@ void main() {
       c.project.entities.add(spot);
       final text = c.saveJson();
       expect(text, contains('"z": null'));
-      expect(Project.fromJsonString(text).entities.whereType<SpotHeightEntity>().single.elevation, 0);
+      // and the file reopens: the spot height of unknown elevation is set
+      // aside (kept in the file, reported), never read as 0 m
+      final report = ProjectReadReport();
+      final back = Project.fromJsonString(text, report: report);
+      expect(back.entities.whereType<SpotHeightEntity>(), isEmpty);
+      expect(report.skipped['entities'], 1);
+      expect(back.unreadable['entities'], hasLength(1));
       expect(encodeJson({'a': double.infinity, 'b': 1.5}), '{"a":null,"b":1.5}');
     });
   });

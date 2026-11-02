@@ -30,6 +30,7 @@ at zero, to be filled in locally.
 | `schneider` | BC-21 / BC-22 / BC-23 centrifugal and SUB 4" submersible pumps (60 Hz) |
 | `amancowavin` | PVC Linha Fixa PN 40 / 80 (NBR 14312), DEFOFORT PN 60 / 80 / 125, Linha Móvel ERR |
 | `multilit` | PVC irrigation pipes PN 40 / 60 / 80 (NBR 14312) |
+| `astm` | PVC pressure pipes in inches: ASTM D2241 SDR 21 / 26 and ASTM D1785 Schedule 40 / 80 (generic, by the standards) |
 
 ## Using them in the app
 
@@ -62,12 +63,15 @@ A pack is a JSON object (UTF-8). Recommended extension: `.oci.cat`. Keys:
 | `items` | integer | no | item count (informative, recomputed by the tool) |
 | `catalog` | object | yes | the catalogue itself, in the same format the app writes with *Export JSON* |
 
-`catalog` has six lists: `pipes`, `outlets`, `tapes`, `valves`, `pumps`, `fittings`. Every item
-has a globally unique `id` (use a manufacturer prefix: `rb_5004`, `ntf_uniram_16_16_50`), a
-`name`, optional `sup` (supplier), `code` and `enabled`, and a `cost` (price, 0 = unknown). Internal
-units are SI: flows in m³/s, pressures in metres of water column, diameters in mm where the field
-name says so (`idMm`, `sizeMm`, `nominalMm`). The key names below are exactly the ones the app
-reads and writes; unknown `kind` values are rejected.
+`catalog` has seven lists, `pipes`, `outlets`, `tapes`, `valves`, `pumps`, `fittings` and `wires`
+(the conductors from the controller to the solenoids), and `finame`, an object giving the
+financing code (Brazilian BNDES FINAME) of an item by id. Every item has a globally unique `id`
+(use a manufacturer prefix: `rb_5004`, `ntf_uniram_16_16_50`), a `name`, optional `sup`
+(supplier), `code` and `enabled`, and a `cost` (price, 0 = unknown). Internal units are SI: flows in
+m³/s, pressures in metres of water column, diameters in mm where the field name says so (`idMm`,
+`sizeMm`, `nominalMm`). The key names below are exactly the ones the app reads and writes. A `kind`
+the app does not know (a newer version's) falls back to a default (`other` for valves) and is
+reported when the file is read; an item that cannot be read at all is kept aside, not lost.
 
 ### Emitters (`outlets`)
 
@@ -112,10 +116,17 @@ and `roughMm` override the defaults for the tape wall.
 ### Valves and devices (`valves`)
 
 `kind`: `control` (zone valve), `prv`, `isolation` (gate or ball valve), `check`, `backflow`,
-`filter`, `meter`, `airRelease`, `other`. The head loss is `loss`: `{ "k": …, "n": 2, "c": 0 }`
-with `h = k·Q^n + c` (Q in m³/s, h in m; `n` defaults to 2 and `c` to 0), or `DeviceLossCurve.fromK`
-in the app from the dimensionless K and the diameter. `sizeMm` the diameter; `minQ`/`maxQ` in
-m³/s; `setting` the default outlet pressure of a PRV (m).
+`filter`, `meter`, `airRelease`, `other`, `master` (the master valve the controller opens with every
+zone), `psv` (pressure sustaining) and `fcv` (flow control, the flow limiter of a hydrant). The head
+loss is `loss`: `{ "k": …, "n": 2, "c": 0 }` with `h = k·Q^n + c` (Q in m³/s, h in m; `n` defaults
+to 2 and `c` to 0); from a data sheet's flow coefficient Kv (m³/h at 1 bar) `k = 3600² / (Kv² ·
+0.0980665)`, from the dimensionless K of `K·v²/2g` `DeviceLossCurve.fromK` in the app. `sizeMm` the
+diameter; `minQ`/`maxQ` in m³/s; `setting` the default outlet pressure of a PRV (m).
+
+### Wires (`wires`)
+
+`mm2` (conductor cross-section), `ohm` (resistance of one conductor, Ω per km at 20 °C; absent =
+copper of that section), `cost` per metre.
 
 ### Pumps (`pumps`)
 
@@ -135,6 +146,16 @@ Pipes: `nominalMm`, `idMm` (inner diameter), `material` (`pvc`, `pehd`, `peld`, 
 `mainline`), `cost` per metre. Fittings: `kind` (`coupler`, `elbow90`, `elbow45`, `tee`, `cross`,
 `reducer`, `endCap`, `adapter`, `takeOff`, `tapeEnd`, `riser`), `sizeMm`, `size2Mm` (second size of
 reducers and reducing tees), optional `mat`.
+
+### Plausibility
+
+`dart run tool/gen_catalogs.dart --check` and the tests (`test/core/catalog_plausibility_test.dart`)
+check every pack physically: a thermoplastic pipe wall must withstand its pressure class (the hoop
+stress `σ = P·(SDR − 1)/2` within the design stress of PVC 14.7 MPa, PE 100 8 MPa, low-density PE
+3.2 MPa), a sprinkler nozzle whose name gives its bore (`3.5 mm`, `3.0 × 1.8 mm`) cannot pass more
+than an ideal orifice (discharge coefficient ≤ 1), and the hydraulic power along a pump curve stays
+within 0.85 of the motor at its service factor (NEMA MG 1: 1.4 for a 1 hp submersible, 1.15 for a
+common motor). A value that fails was most likely misread from the data sheet.
 
 ### Prices and currency
 

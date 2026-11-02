@@ -18,6 +18,7 @@ import 'densogram.dart' show SpraySource, spraySources;
 import 'designer.dart' show areaRequirements;
 import 'electrical.dart';
 import 'irrigation_requirement.dart';
+import 'model_checks.dart';
 import 'network_builder.dart';
 import 'soils.dart';
 import 'valve_in_head.dart';
@@ -369,6 +370,8 @@ DesignCheckReport runDesignCheck(Project project) {
   final sprinklers = _sprinklerSources(project);
   issues.addAll(checkSprinklerSpacing(project, model, sources: sprinklers));
   issues.addAll(checkAreaUniformity(project, sources: sprinklers));
+  // 1.6.0 MOD: elevations extrapolated beyond the terrain data, area outlines crossing themselves
+  issues.addAll(modelChecks(project));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));

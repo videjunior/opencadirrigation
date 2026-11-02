@@ -15,11 +15,14 @@
 /// Importing the individual libraries (`core/model/project.dart`,
 /// `core/design/designer.dart`, …) works as well and is what the app does.
 /// Left out here: the internals of the PDF text shaping (`io/fonts/*` except
-/// pdf_fonts.dart) and the sparse matrix solver behind the network solver.
+/// pdf_fonts.dart) and the sparse matrix solver behind the network solver
+/// (test/core/api_exports_test.dart keeps the list complete; the parts of a
+/// library come with it).
 library;
 
 export 'ai/agent_loop.dart';
 export 'ai/claude_api.dart';
+export 'ai/image_prep.dart';
 export 'ai/llm.dart';
 export 'ai/llm_formats.dart';
 export 'ai/openai_api.dart';
@@ -28,6 +31,7 @@ export 'design/advisor.dart';
 export 'design/agronomy.dart';
 export 'design/air_valves.dart';
 export 'design/area_requirement.dart';
+export 'design/area_water.dart';
 export 'design/auto_fix.dart';
 export 'design/auto_layout.dart';
 export 'design/block_generator.dart';
@@ -51,6 +55,7 @@ export 'design/lp.dart';
 export 'design/lp_sizing.dart';
 export 'design/management.dart';
 export 'design/mechanised.dart';
+export 'design/model_checks.dart';
 export 'design/network_builder.dart';
 export 'design/network_ops.dart';
 export 'design/on_demand.dart';
@@ -60,6 +65,7 @@ export 'design/pivot_fit.dart';
 export 'design/pivot_package.dart';
 export 'design/proposal.dart';
 export 'design/pump_selection.dart';
+export 'design/region_trace.dart';
 export 'design/report_tables.dart';
 export 'design/results.dart';
 export 'design/routing.dart';
@@ -94,6 +100,7 @@ export 'io/cad_drawing.dart';
 export 'io/cad_export.dart';
 export 'io/catalog_io.dart';
 export 'io/climate_online.dart';
+export 'io/codepages.dart';
 export 'io/datum.dart';
 export 'io/dem_online.dart';
 export 'io/dem_tiff.dart';
@@ -111,6 +118,7 @@ export 'io/geoimage.dart';
 export 'io/geojson_reader.dart';
 export 'io/gpx.dart';
 export 'io/ifc.dart';
+export 'io/image_decode.dart';
 export 'io/kml.dart';
 export 'io/landxml.dart';
 export 'io/las.dart';
@@ -123,24 +131,34 @@ export 'io/plot_charts.dart';
 export 'io/point_grid.dart';
 export 'io/points_csv.dart';
 export 'io/project_export.dart';
+export 'io/safe_archive.dart';
 export 'io/share_link.dart';
 export 'io/sheet_canvas.dart';
+export 'io/sheet_check.dart';
 export 'io/sheet_set.dart';
 export 'io/shp.dart';
 export 'io/shp_writer.dart';
 export 'io/svg.dart';
+export 'io/work_slicer.dart';
 export 'io/xlsx.dart';
+export 'io/xml_text.dart';
 export 'model/blocks.dart';
 export 'model/catalog.dart';
+export 'model/catalog_check.dart';
 export 'model/catalog_packs.dart';
 export 'model/currency.dart';
+export 'model/edit_ops.dart';
 export 'model/entities.dart';
 export 'model/geometry.dart';
 export 'model/label_rules.dart';
+export 'model/paste.dart';
 export 'model/pivot_machine.dart';
 export 'model/project.dart';
 export 'model/proposal_settings.dart';
+export 'model/read_report.dart';
+export 'model/regional.dart';
 export 'model/scenario.dart';
+export 'model/schema.dart';
 export 'model/site_climate.dart';
 export 'model/slope_map.dart';
 export 'model/spatial_index.dart';

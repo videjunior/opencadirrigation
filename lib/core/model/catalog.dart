@@ -2,6 +2,7 @@
 /// default database. All hydraulic values are stored in SI.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 
 import '../hydraulics/emitter.dart';
@@ -11,6 +12,7 @@ import '../hydraulics/minor_losses.dart';
 import '../hydraulics/pump.dart';
 import '../hydraulics/water_hammer.dart';
 import '../units.dart';
+import 'read_report.dart';
 
 enum PipeUsage { lateral, zone, mainline }
 
@@ -94,7 +96,11 @@ class PipeSpec {
     PipeMaterial.ductileIron || PipeMaterial.concrete => 0.013,
   };
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'nominalMm': nominalMm,
@@ -110,22 +116,30 @@ class PipeSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static PipeSpec fromJson(Map<String, dynamic> j) => PipeSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    nominalMm: (j['nominalMm'] as num).toDouble(),
-    innerDiameterMm: (j['idMm'] as num).toDouble(),
-    material: PipeMaterial.values.byName(j['material'] as String? ?? 'pvc'),
-    hazenC: (j['c'] as num?)?.toDouble() ?? 150,
-    roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.0015,
-    pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 60,
-    wallThicknessMm: (j['wallMm'] as num?)?.toDouble() ?? 2,
-    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
-    usage: ((j['usage'] as List?) ?? ['zone', 'mainline']).map((u) => PipeUsage.values.byName(u as String)).toSet(),
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static PipeSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return PipeSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      nominalMm: (j['nominalMm'] as num).toDouble(),
+      innerDiameterMm: (j['idMm'] as num).toDouble(),
+      material: enumByName(PipeMaterial.values, j['material'], PipeMaterial.pvc, report: report, key: 'material'),
+      hazenC: (j['c'] as num?)?.toDouble() ?? 150,
+      roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.0015,
+      pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 60,
+      wallThicknessMm: (j['wallMm'] as num?)?.toDouble() ?? 2,
+      costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+      usage: {
+        for (final u in (j['usage'] as List?) ?? const ['zone', 'mainline']) ?enumOrNull(PipeUsage.values, u, report: report, key: 'usage'),
+      },
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 enum OutletKind { sprinkler, microSprinkler, dripper, bubbler, gun, demandPoint }
@@ -165,7 +179,11 @@ class NozzleSpec {
   /// a full circle still waters only its own arc.
   double effectiveArcDeg(double headArcDeg) => (arcDeg < 360 && headArcDeg >= 360 ? arcDeg : headArcDeg).clamp(1.0, 360.0).toDouble();
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'curve': curve.toJson(),
@@ -181,19 +199,25 @@ class NozzleSpec {
         for (final (x, y) in profile) [x, y],
       ],
   };
-  static NozzleSpec fromJson(Map<String, dynamic> j) => NozzleSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    curve: EmitterCurve.fromJson(j['curve'] as Map<String, dynamic>),
-    arcDeg: (j['arc'] as num?)?.toDouble() ?? 360,
-    minHeadM: (j['minH'] as num?)?.toDouble() ?? 5,
-    maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 60,
-    defaultHeadM: (j['defH'] as num?)?.toDouble() ?? 20,
-    cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
-    flowTolBelow: (j['tolB'] as num?)?.toDouble() ?? 0.05,
-    flowTolAbove: (j['tolA'] as num?)?.toDouble() ?? 0.05,
-    profile: [for (final e in (j['prof'] as List?) ?? const []) (((e as List)[0] as num).toDouble(), (e[1] as num).toDouble())],
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static NozzleSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return NozzleSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      curve: EmitterCurve.fromJson(j['curve'] as Map<String, dynamic>),
+      arcDeg: (j['arc'] as num?)?.toDouble() ?? 360,
+      minHeadM: (j['minH'] as num?)?.toDouble() ?? 5,
+      maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 60,
+      defaultHeadM: (j['defH'] as num?)?.toDouble() ?? 20,
+      cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
+      flowTolBelow: (j['tolB'] as num?)?.toDouble() ?? 0.05,
+      flowTolAbove: (j['tolA'] as num?)?.toDouble() ?? 0.05,
+      profile: [for (final e in (j['prof'] as List?) ?? const []) (((e as List)[0] as num).toDouble(), (e[1] as num).toDouble())],
+    )..extra = j.unread;
+  }
 }
 
 /// Radial profile of a nozzle from a catch-can table: [rows] of (distance
@@ -240,12 +264,24 @@ class OutletSpec {
   double riserHeightM;
   bool enabled;
 
+  /// The nozzle [id]: the first one when no id is given; null when the item
+  /// has no nozzle of that id (deleted, renamed, or heads pasted from a
+  /// project whose item of the same id has other nozzles), so the design
+  /// reports `nozzle_missing` instead of quietly using another nozzle.
   NozzleSpec? nozzle(String? id) {
     if (nozzles.isEmpty) return null;
-    return nozzles.firstWhere((n) => n.id == id, orElse: () => nozzles.first);
+    if (id == null || id.isEmpty) return nozzles.first;
+    for (final n in nozzles) {
+      if (n.id == id) return n;
+    }
+    return null;
   }
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'kind': kind.name,
@@ -257,18 +293,24 @@ class OutletSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static OutletSpec fromJson(Map<String, dynamic> j) => OutletSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    kind: OutletKind.values.byName(j['kind'] as String),
-    nozzles: (j['nozzles'] as List).map((n) => NozzleSpec.fromJson(n as Map<String, dynamic>)).toList(),
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    inletMm: (j['inletMm'] as num?)?.toDouble() ?? 20,
-    riserHeightM: (j['riser'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static OutletSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return OutletSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      kind: enumByName(OutletKind.values, j['kind'], OutletKind.sprinkler, report: report, key: 'kind'),
+      nozzles: (j['nozzles'] as List).map((n) => NozzleSpec.fromJson(n as Map<String, dynamic>, report: report)).toList(),
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      inletMm: (j['inletMm'] as num?)?.toDouble() ?? 20,
+      riserHeightM: (j['riser'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 class TapeSpec {
@@ -320,7 +362,11 @@ class TapeSpec {
   /// Nominal specific discharge rate (m³/s per 100 m) at the default inlet head.
   double get nominalSdr => emitter.flow(defaultInletHeadM) * (100 / emitterSpacingM);
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'nominalMm': nominalMm,
@@ -342,28 +388,34 @@ class TapeSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static TapeSpec fromJson(Map<String, dynamic> j) => TapeSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    nominalMm: (j['nominalMm'] as num?)?.toDouble() ?? 16,
-    innerDiameterMm: (j['idMm'] as num).toDouble(),
-    emitterSpacingM: (j['spacing'] as num).toDouble(),
-    emitter: EmitterCurve.fromJson(j['emitter'] as Map<String, dynamic>),
-    barbK: (j['barbK'] as num?)?.toDouble() ?? 0.4,
-    cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
-    minHeadM: (j['minH'] as num?)?.toDouble() ?? 4,
-    maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 15,
-    defaultInletHeadM: (j['inletH'] as num?)?.toDouble() ?? 10,
-    tolBelowPct: (j['tolB'] as num?)?.toDouble() ?? 30,
-    tolAbovePct: (j['tolA'] as num?)?.toDouble() ?? 20,
-    pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 25,
-    roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.002,
-    hazenC: (j['c'] as num?)?.toDouble() ?? 140,
-    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static TapeSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return TapeSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      nominalMm: (j['nominalMm'] as num?)?.toDouble() ?? 16,
+      innerDiameterMm: (j['idMm'] as num).toDouble(),
+      emitterSpacingM: (j['spacing'] as num).toDouble(),
+      emitter: EmitterCurve.fromJson(j['emitter'] as Map<String, dynamic>),
+      barbK: (j['barbK'] as num?)?.toDouble() ?? 0.4,
+      cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
+      minHeadM: (j['minH'] as num?)?.toDouble() ?? 4,
+      maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 15,
+      defaultInletHeadM: (j['inletH'] as num?)?.toDouble() ?? 10,
+      tolBelowPct: (j['tolB'] as num?)?.toDouble() ?? 30,
+      tolAbovePct: (j['tolA'] as num?)?.toDouble() ?? 20,
+      pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 25,
+      roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.002,
+      hazenC: (j['c'] as num?)?.toDouble() ?? 140,
+      costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 /// Kinds of valves and devices; [master] is the master valve on the
@@ -404,7 +456,11 @@ class ValveSpec {
   double defaultSettingM;
   bool enabled;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'kind': kind.name,
@@ -418,20 +474,26 @@ class ValveSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static ValveSpec fromJson(Map<String, dynamic> j) => ValveSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    kind: ValveKind.values.byName(j['kind'] as String),
-    sizeMm: (j['sizeMm'] as num).toDouble(),
-    loss: DeviceLossCurve.fromJson(j['loss'] as Map<String, dynamic>),
-    minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
-    maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    defaultSettingM: (j['setting'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static ValveSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return ValveSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      kind: enumByName(ValveKind.values, j['kind'], ValveKind.other, report: report, key: 'kind'),
+      sizeMm: (j['sizeMm'] as num).toDouble(),
+      loss: DeviceLossCurve.fromJson(j['loss'] as Map<String, dynamic>),
+      minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
+      maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      defaultSettingM: (j['setting'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 /// Ids of the submersible pumps of the default catalog.
@@ -530,7 +592,11 @@ class PumpSpec {
     return x1 > x0 ? y1 + (y1 - y0) * (x - x1) / (x1 - x0) : y1;
   }
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'points': points.map((p) => [p.$1, p.$2]).toList(),
@@ -553,24 +619,30 @@ class PumpSpec {
         for (final (q, n) in npshPoints) [q, n],
       ],
   };
-  static PumpSpec fromJson(Map<String, dynamic> j) => PumpSpec(
-    id: j['id'] as String,
-    // catalogs saved before the flag existed: the generic submersible units
-    submersible: j['sub'] as bool? ?? defaultSubmersiblePumpIds.contains(j['id']),
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    powerKw: (j['kw'] as num?)?.toDouble() ?? 0,
-    ratedHz: (j['hz'] as num?)?.toDouble() ?? 0,
-    points: (j['points'] as List).map((p) => ((p[0] as num).toDouble(), (p[1] as num).toDouble())).toList(),
-    efficiency: (j['eff'] as num?)?.toDouble() ?? 0.7,
-    minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
-    maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-    efficiencyPoints: [for (final p in (j['effPts'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
-    npshPoints: [for (final p in (j['npsh'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static PumpSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return PumpSpec(
+      id: j['id'] as String,
+      // catalogs saved before the flag existed: the generic submersible units
+      submersible: j['sub'] as bool? ?? defaultSubmersiblePumpIds.contains(j['id']),
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      powerKw: (j['kw'] as num?)?.toDouble() ?? 0,
+      ratedHz: (j['hz'] as num?)?.toDouble() ?? 0,
+      points: (j['points'] as List).map((p) => ((p[0] as num).toDouble(), (p[1] as num).toDouble())).toList(),
+      efficiency: (j['eff'] as num?)?.toDouble() ?? 0.7,
+      minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
+      maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+      efficiencyPoints: [for (final p in (j['effPts'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
+      npshPoints: [for (final p in (j['npsh'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
+    )..extra = j.unread;
+  }
 }
 
 /// Pipe connections selected automatically for the bill of materials.
@@ -602,7 +674,11 @@ class FittingSpec {
   bool enabled;
   String material;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'kind': kind.name,
@@ -614,18 +690,24 @@ class FittingSpec {
     if (code.isNotEmpty) 'code': code,
     if (material.isNotEmpty) 'mat': material,
   };
-  static FittingSpec fromJson(Map<String, dynamic> j) => FittingSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    kind: FittingKind.values.byName(j['kind'] as String),
-    sizeMm: (j['sizeMm'] as num).toDouble(),
-    size2Mm: (j['size2Mm'] as num?)?.toDouble() ?? 0,
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    material: j['mat'] as String? ?? '',
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static FittingSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return FittingSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      kind: enumByName(FittingKind.values, j['kind'], FittingKind.adapter, report: report, key: 'kind'),
+      sizeMm: (j['sizeMm'] as num).toDouble(),
+      size2Mm: (j['size2Mm'] as num?)?.toDouble() ?? 0,
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      material: j['mat'] as String? ?? '',
+    )..extra = j.unread;
+  }
 }
 
 /// Electrical wire (one insulated conductor for direct burial) that carries
@@ -648,7 +730,11 @@ class WireSpec {
   /// Resistance of [lengthM] metres of this conductor (Ω).
   double resistance(double lengthM) => ohmPerKm * lengthM / 1000;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'mm2': sectionMm2,
@@ -658,17 +744,23 @@ class WireSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static WireSpec fromJson(Map<String, dynamic> j) => WireSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    sectionMm2: (j['mm2'] as num?)?.toDouble() ?? 1.5,
-    // a copper conductor when the file gives only the section
-    ohmPerKm: (j['ohm'] as num?)?.toDouble() ?? copperOhmPerKm((j['mm2'] as num?)?.toDouble() ?? 1.5),
-    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static WireSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return WireSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      sectionMm2: (j['mm2'] as num?)?.toDouble() ?? 1.5,
+      // a copper conductor when the file gives only the section
+      ohmPerKm: (j['ohm'] as num?)?.toDouble() ?? copperOhmPerKm((j['mm2'] as num?)?.toDouble() ?? 1.5),
+      costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+    )..extra = j.unread;
+  }
 }
 
 /// Resistance (Ω/km at 20 °C) of a stranded copper conductor of [mm2]
@@ -811,7 +903,16 @@ class Catalog {
 
   List<PipeSpec> pipesFor(PipeUsage usage) => pipes.where((p) => p.enabled && p.usage.contains(usage)).toList()..sort((a, b) => a.innerDiameterMm.compareTo(b.innerDiameterMm));
 
+  /// Items that could not be read, by list (`pipes`, `outlets`…), kept as
+  /// they were and written back under `unreadable` (every read tries them
+  /// again).
+  final Map<String, List<Object?>> unreadable = {};
+
+  /// Top-level fields of a newer version, kept as read.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'pipes': pipes.map((p) => p.toJson()).toList(),
     'outlets': outlets.map((p) => p.toJson()).toList(),
     'tapes': tapes.map((p) => p.toJson()).toList(),
@@ -820,20 +921,104 @@ class Catalog {
     'fittings': fittings.map((p) => p.toJson()).toList(),
     if (wires.isNotEmpty) 'wires': wires.map((p) => p.toJson()).toList(),
     if (finame.isNotEmpty) 'finame': finame,
+    if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
   };
-  static Catalog fromJson(Map<String, dynamic> j) => Catalog(
-    finame: {
-      for (final e in ((j['finame'] as Map?) ?? const {}).entries)
-        if (e.key is String && e.value is String && (e.value as String).trim().isNotEmpty) e.key as String: (e.value as String).trim(),
-    },
-    pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    outlets: ((j['outlets'] as List?) ?? []).map((p) => OutletSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    tapes: ((j['tapes'] as List?) ?? []).map((p) => TapeSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    valves: ((j['valves'] as List?) ?? []).map((p) => ValveSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    pumps: ((j['pumps'] as List?) ?? []).map((p) => PumpSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    fittings: ((j['fittings'] as List?) ?? []).map((p) => FittingSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    wires: ((j['wires'] as List?) ?? []).map((p) => WireSpec.fromJson(p as Map<String, dynamic>)).toList(),
-  );
+
+  /// Reads a catalogue item by item: an item that cannot be read is set
+  /// aside in [unreadable] (counted in [report]), options this version does
+  /// not know take their default and unknown fields are kept.
+  static Catalog fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    final aside = <String, List<Object?>>{};
+    List<T> each<T>(String key, T Function(Map<String, dynamic>) read) {
+      final out = <T>[];
+      final retry = j['unreadable'] is Map ? (j['unreadable'] as Map)[key] : null;
+      for (final list in [j[key], retry]) {
+        if (list is! List) continue;
+        for (final x in list) {
+          try {
+            out.add(read((x as Map).cast<String, dynamic>()));
+          } catch (_) {
+            report?.skip('catalog');
+            if (x is Map) (aside[key] ??= []).add(x);
+          }
+        }
+      }
+      return out;
+    }
+
+    final c = Catalog(
+      finame: {
+        for (final e in ((j['finame'] as Map?) ?? const {}).entries)
+          if (e.key is String && e.value is String && (e.value as String).trim().isNotEmpty) e.key as String: (e.value as String).trim(),
+      },
+      pipes: each('pipes', (m) => PipeSpec.fromJson(m, report: report)),
+      outlets: each('outlets', (m) => OutletSpec.fromJson(m, report: report)),
+      tapes: each('tapes', (m) => TapeSpec.fromJson(m, report: report)),
+      valves: each('valves', (m) => ValveSpec.fromJson(m, report: report)),
+      pumps: each('pumps', (m) => PumpSpec.fromJson(m, report: report)),
+      fittings: each('fittings', (m) => FittingSpec.fromJson(m, report: report)),
+      wires: each('wires', (m) => WireSpec.fromJson(m, report: report)),
+    );
+    c.unreadable.addAll(aside);
+    // a catalogue written as its difference from a default one
+    // ([toReducedJson]): the other items come back, in their places
+    final d = j['defaults'];
+    final full = d is Map
+        ? c._completedWith(Catalog.defaultCatalog(lang: d['lang'] is String ? d['lang'] as String : 'en', currency: d['currency'] is String ? d['currency'] as String : catalogPriceCurrency))
+        : c;
+    full.extra = j.unread;
+    return full;
+  }
+
+  /// This catalogue with the items of [base] it lacks, in [base]'s order
+  /// (its own version of an item where it has one, its items absent from
+  /// [base] after them).
+  Catalog _completedWith(Catalog base) {
+    List<T> merge<T>(List<T> mine, List<T> theirs, String Function(T) idOf) {
+      final byId = {for (final m in mine) idOf(m): m};
+      final baseIds = {for (final t in theirs) idOf(t)};
+      return [for (final t in theirs) byId[idOf(t)] ?? t, ...mine.where((m) => !baseIds.contains(idOf(m)))];
+    }
+
+    final c = Catalog(
+      pipes: merge(pipes, base.pipes, (x) => x.id),
+      outlets: merge(outlets, base.outlets, (x) => x.id),
+      tapes: merge(tapes, base.tapes, (x) => x.id),
+      valves: merge(valves, base.valves, (x) => x.id),
+      pumps: merge(pumps, base.pumps, (x) => x.id),
+      fittings: merge(fittings, base.fittings, (x) => x.id),
+      wires: merge(wires, base.wires, (x) => x.id),
+      finame: {...base.finame, ...finame},
+    );
+    c.unreadable.addAll(unreadable);
+    return c;
+  }
+
+  /// This catalogue written as its difference from the default catalogue of
+  /// [lang] in [currency]: only the items [keep] names (those the drawing
+  /// uses) and those the default one lacks or has otherwise, with a
+  /// `defaults` marker; [fromJson] puts the other items back. The shipped
+  /// examples are stored so, at a fraction of the size.
+  Map<String, dynamic> toReducedJson({required String lang, required String currency, Set<String> keep = const {}}) {
+    final base = Catalog.defaultCatalog(lang: lang, currency: currency);
+    List<Map<String, dynamic>> only<T>(List<T> mine, T? Function(String) baseItem, String Function(T) idOf, Map<String, dynamic> Function(T) json) => [
+      for (final m in mine)
+        if (keep.contains(idOf(m)) || baseItem(idOf(m)) == null || jsonEncode(json(baseItem(idOf(m)) as T)) != jsonEncode(json(m))) json(m),
+    ];
+    final all = toJson();
+    return {
+      ...all,
+      'defaults': {'lang': lang, 'currency': currency},
+      'pipes': only<PipeSpec>(pipes, base.pipe, (x) => x.id, (x) => x.toJson()),
+      'outlets': only<OutletSpec>(outlets, base.outlet, (x) => x.id, (x) => x.toJson()),
+      'tapes': only<TapeSpec>(tapes, base.tape, (x) => x.id, (x) => x.toJson()),
+      'valves': only<ValveSpec>(valves, base.valve, (x) => x.id, (x) => x.toJson()),
+      'pumps': only<PumpSpec>(pumps, base.pump, (x) => x.id, (x) => x.toJson()),
+      'fittings': only<FittingSpec>(fittings, base.fitting, (x) => x.id, (x) => x.toJson()),
+      if (wires.isNotEmpty) 'wires': only<WireSpec>(wires, base.wire, (x) => x.id, (x) => x.toJson()),
+    };
+  }
 
   /// Price per metre used by the economic sizing: the catalogue price, or
   /// for a pipe without one (a manufacturer pack, prices still to be filled
@@ -890,7 +1075,8 @@ class Catalog {
     EmitterCurve q(double lph, double headM, double x, {double radiusM = 0}) => EmitterCurve.fromNominal(flow: lph * m3sPerLph, head: headM, x: x, radius: radiusM, radiusB: radiusM > 0 ? 0.35 : 0);
 
     final pipes = <PipeSpec>[
-      // PE laterals (PN 4 / PN 6)
+      // PE laterals: PN 4 in low-density PE, PN 6 in PE 80 (ISO 4427-2 SDR 21,
+      // 2 mm least wall)
       PipeSpec(
         id: 'pe16',
         name: 'PE 16 mm (PN 4)',
@@ -934,12 +1120,12 @@ class Catalog {
         id: 'pe32',
         name: 'PE 32 mm (PN 6)',
         nominalMm: 32,
-        innerDiameterMm: 27.2,
+        innerDiameterMm: 28.0,
         material: PipeMaterial.pehd,
         hazenC: 145,
         roughnessMm: 0.003,
         pressureRatingM: 60,
-        wallThicknessMm: 2.4,
+        wallThicknessMm: 2.0,
         costPerM: 3.2,
         usage: {PipeUsage.lateral, PipeUsage.zone},
       ),
@@ -947,12 +1133,12 @@ class Catalog {
         id: 'pe40',
         name: 'PE 40 mm (PN 6)',
         nominalMm: 40,
-        innerDiameterMm: 34.0,
+        innerDiameterMm: 36.0,
         material: PipeMaterial.pehd,
         hazenC: 145,
         roughnessMm: 0.003,
         pressureRatingM: 60,
-        wallThicknessMm: 3.0,
+        wallThicknessMm: 2.0,
         costPerM: 4.9,
         usage: {PipeUsage.zone},
       ),
@@ -960,25 +1146,26 @@ class Catalog {
         id: 'pe50',
         name: 'PE 50 mm (PN 6)',
         nominalMm: 50,
-        innerDiameterMm: 42.6,
+        innerDiameterMm: 45.2,
         material: PipeMaterial.pehd,
         hazenC: 145,
         roughnessMm: 0.003,
         pressureRatingM: 60,
-        wallThicknessMm: 3.7,
+        wallThicknessMm: 2.4,
         costPerM: 7.4,
         usage: {PipeUsage.zone},
       ),
-      // PVC irrigation (PN 40 / PN 60 / PN 80 - metres of head)
+      // PVC irrigation PN 80 (metres of head): the walls and bores of NBR
+      // 14312 up to DN 150 and of ISO 1452-2 S 12.5 (PN 8) above it
       PipeSpec(
         id: 'pvc35',
         name: 'PVC DN 35 PN 80',
         nominalMm: 35,
-        innerDiameterMm: 32.0,
+        innerDiameterMm: 34.3,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 1.5,
+        wallThicknessMm: 1.9,
         costPerM: 4.5,
         usage: {PipeUsage.zone, PipeUsage.mainline},
       ),
@@ -986,11 +1173,11 @@ class Catalog {
         id: 'pvc50',
         name: 'PVC DN 50 PN 80',
         nominalMm: 50,
-        innerDiameterMm: 46.4,
+        innerDiameterMm: 46.7,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 1.8,
+        wallThicknessMm: 1.9,
         costPerM: 7.2,
         usage: {PipeUsage.zone, PipeUsage.mainline},
       ),
@@ -998,11 +1185,11 @@ class Catalog {
         id: 'pvc75',
         name: 'PVC DN 75 PN 80',
         nominalMm: 75,
-        innerDiameterMm: 70.6,
+        innerDiameterMm: 70.5,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 2.2,
+        wallThicknessMm: 2.5,
         costPerM: 14.5,
         usage: {PipeUsage.zone, PipeUsage.mainline},
       ),
@@ -1010,11 +1197,11 @@ class Catalog {
         id: 'pvc100',
         name: 'PVC DN 100 PN 80',
         nominalMm: 100,
-        innerDiameterMm: 96.0,
+        innerDiameterMm: 94.4,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 2.5,
+        wallThicknessMm: 3.6,
         costPerM: 24.0,
         usage: {PipeUsage.zone, PipeUsage.mainline},
       ),
@@ -1022,11 +1209,11 @@ class Catalog {
         id: 'pvc125',
         name: 'PVC DN 125 PN 80',
         nominalMm: 125,
-        innerDiameterMm: 118.6,
+        innerDiameterMm: 116.6,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 3.2,
+        wallThicknessMm: 4.2,
         costPerM: 36.0,
         usage: {PipeUsage.mainline},
       ),
@@ -1034,11 +1221,11 @@ class Catalog {
         id: 'pvc150',
         name: 'PVC DN 150 PN 80',
         nominalMm: 150,
-        innerDiameterMm: 144.0,
+        innerDiameterMm: 140.0,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 3.8,
+        wallThicknessMm: 5.0,
         costPerM: 52.0,
         usage: {PipeUsage.mainline},
       ),
@@ -1046,11 +1233,11 @@ class Catalog {
         id: 'pvc200',
         name: 'PVC DN 200 PN 80',
         nominalMm: 200,
-        innerDiameterMm: 191.6,
+        innerDiameterMm: 184.6,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 4.9,
+        wallThicknessMm: 7.7,
         costPerM: 88.0,
         usage: {PipeUsage.mainline},
       ),
@@ -1058,11 +1245,11 @@ class Catalog {
         id: 'pvc250',
         name: 'PVC DN 250 PN 80',
         nominalMm: 250,
-        innerDiameterMm: 239.4,
+        innerDiameterMm: 230.8,
         hazenC: 150,
         roughnessMm: 0.0015,
         pressureRatingM: 80,
-        wallThicknessMm: 6.2,
+        wallThicknessMm: 9.6,
         costPerM: 135.0,
         usage: {PipeUsage.mainline},
       ),
@@ -1223,6 +1410,8 @@ class Catalog {
         ],
         cost: 1.9,
       ),
+      // flows of a single round nozzle at a discharge coefficient of 0.96
+      // (q = Cd·π/4·d²·√(2gH)); the 5 mm nozzle is rated at 35 m
       OutletSpec(
         id: 'impact34',
         name: n('Aspersor de impacto 3/4"', 'Impact sprinkler 3/4"', 'Aspersor de impacto 3/4"'),
@@ -1232,8 +1421,8 @@ class Catalog {
         nozzles: [
           NozzleSpec(
             id: 'i2.5',
-            name: n('Bocal 2,5 mm (0,46 m³/h, R 10,5 m)', 'Nozzle 2.5 mm (0.46 m³/h, R 10.5 m)', 'Boquilla 2,5 mm (0,46 m³/h, R 10,5 m)'),
-            curve: q(460, 30, 0.5, radiusM: 10.5),
+            name: n('Bocal 2,5 mm (0,41 m³/h, R 10,5 m)', 'Nozzle 2.5 mm (0.41 m³/h, R 10.5 m)', 'Boquilla 2,5 mm (0,41 m³/h, R 10,5 m)'),
+            curve: q(411, 30, 0.5, radiusM: 10.5),
             minHeadM: 20,
             maxHeadM: 45,
             defaultHeadM: 30,
@@ -1242,8 +1431,8 @@ class Catalog {
           ),
           NozzleSpec(
             id: 'i3.5',
-            name: n('Bocal 3,5 mm (0,9 m³/h, R 12 m)', 'Nozzle 3.5 mm (0.9 m³/h, R 12 m)', 'Boquilla 3,5 mm (0,9 m³/h, R 12 m)'),
-            curve: q(900, 30, 0.5, radiusM: 12),
+            name: n('Bocal 3,5 mm (0,81 m³/h, R 12 m)', 'Nozzle 3.5 mm (0.81 m³/h, R 12 m)', 'Boquilla 3,5 mm (0,81 m³/h, R 12 m)'),
+            curve: q(807, 30, 0.5, radiusM: 12),
             minHeadM: 20,
             maxHeadM: 45,
             defaultHeadM: 30,
@@ -1252,8 +1441,8 @@ class Catalog {
           ),
           NozzleSpec(
             id: 'i4.0',
-            name: n('Bocal 4,0 mm (1,2 m³/h, R 13 m)', 'Nozzle 4.0 mm (1.2 m³/h, R 13 m)', 'Boquilla 4,0 mm (1,2 m³/h, R 13 m)'),
-            curve: q(1200, 30, 0.5, radiusM: 13),
+            name: n('Bocal 4,0 mm (1,05 m³/h, R 13 m)', 'Nozzle 4.0 mm (1.05 m³/h, R 13 m)', 'Boquilla 4,0 mm (1,05 m³/h, R 13 m)'),
+            curve: q(1053, 30, 0.5, radiusM: 13),
             minHeadM: 20,
             maxHeadM: 45,
             defaultHeadM: 30,
@@ -1262,8 +1451,8 @@ class Catalog {
           ),
           NozzleSpec(
             id: 'i4.5',
-            name: n('Bocal 4,5 mm (1,5 m³/h, R 14 m)', 'Nozzle 4.5 mm (1.5 m³/h, R 14 m)', 'Boquilla 4,5 mm (1,5 m³/h, R 14 m)'),
-            curve: q(1500, 30, 0.5, radiusM: 14),
+            name: n('Bocal 4,5 mm (1,33 m³/h, R 14 m)', 'Nozzle 4.5 mm (1.33 m³/h, R 14 m)', 'Boquilla 4,5 mm (1,33 m³/h, R 14 m)'),
+            curve: q(1333, 30, 0.5, radiusM: 14),
             minHeadM: 20,
             maxHeadM: 45,
             defaultHeadM: 30,
@@ -1272,8 +1461,8 @@ class Catalog {
           ),
           NozzleSpec(
             id: 'i5.0',
-            name: n('Bocal 5,0 mm (1,9 m³/h, R 15 m)', 'Nozzle 5.0 mm (1.9 m³/h, R 15 m)', 'Boquilla 5,0 mm (1,9 m³/h, R 15 m)'),
-            curve: q(1900, 30, 0.5, radiusM: 15),
+            name: n('Bocal 5,0 mm (1,78 m³/h, R 15 m)', 'Nozzle 5.0 mm (1.78 m³/h, R 15 m)', 'Boquilla 5,0 mm (1,78 m³/h, R 15 m)'),
+            curve: q(1778, 35, 0.5, radiusM: 15),
             minHeadM: 25,
             maxHeadM: 50,
             defaultHeadM: 35,
@@ -1794,8 +1983,9 @@ class Catalog {
     ];
 
     // Generic pumps: an illustrative range of centrifugal (1 to 100 cv) and
-    // submersible (3 to 30 cv) units; the shaft power at the duty point stays
-    // within the rated motor (powerKw). Manufacturer curves replace them.
+    // submersible (3 to 30 cv) units; the shaft power at every point of the
+    // curve stays within the rated motor (powerKw, checked by
+    // catalogPlausibility). Manufacturer curves replace them.
     final pumps = <PumpSpec>[
       PumpSpec(
         id: 'pump_c1',
@@ -1871,12 +2061,12 @@ class Catalog {
       ),
       PumpSpec(
         id: 'pump_big',
-        name: n('Bomba centrífuga 30 cv (120 m³/h @ 55 m)', 'Centrifugal pump 30 hp (120 m³/h @ 55 m)', 'Bomba centrífuga 30 CV (120 m³/h @ 55 m)'),
+        name: n('Bomba centrífuga 40 cv (120 m³/h @ 55 m)', 'Centrifugal pump 40 hp (120 m³/h @ 55 m)', 'Bomba centrífuga 40 CV (120 m³/h @ 55 m)'),
         points: [(0, 70), (60 * m3sPerM3h, 64), (120 * m3sPerM3h, 55), (180 * m3sPerM3h, 38)],
         efficiency: 0.72,
         maxFlow: 180 * m3sPerM3h,
         cost: 18000,
-        powerKw: 22,
+        powerKw: 30,
       ),
       PumpSpec(
         id: 'pump_c50',
@@ -1929,7 +2119,7 @@ class Catalog {
         id: 'pump_sub',
         name: n('Bomba submersa 7,5 cv (25 m³/h @ 60 m)', 'Submersible pump 7.5 hp (25 m³/h @ 60 m)', 'Bomba sumergible 7,5 CV (25 m³/h @ 60 m)'),
         points: [(0, 80), (12 * m3sPerM3h, 72), (25 * m3sPerM3h, 60), (35 * m3sPerM3h, 40)],
-        efficiency: 0.68,
+        efficiency: 0.75,
         maxFlow: 35 * m3sPerM3h,
         cost: 5400,
         powerKw: 5.5,
@@ -1959,7 +2149,7 @@ class Catalog {
         id: 'pump_s30',
         name: n('Bomba submersa 30 cv (100 m³/h @ 60 m)', 'Submersible pump 30 hp (100 m³/h @ 60 m)', 'Bomba sumergible 30 CV (100 m³/h @ 60 m)'),
         points: [(0, 82), (50 * m3sPerM3h, 74), (100 * m3sPerM3h, 60), (140 * m3sPerM3h, 40)],
-        efficiency: 0.72,
+        efficiency: 0.75,
         maxFlow: 140 * m3sPerM3h,
         cost: 19000,
         powerKw: 22,

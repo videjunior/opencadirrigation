@@ -30,10 +30,11 @@ One import brings the whole public surface:
 import 'package:opencadirrigation/core/api.dart';
 ```
 
-`lib/core/api.dart` exports every library of `lib/core` except the internals of the PDF text shaping and the sparse matrix
-solver; importing the individual libraries (`core/model/project.dart`, `core/design/designer.dart`, …) works as well and is
-what the app does. The engine does no input or output of its own: readers take strings or bytes, writers return them, and
-the caller decides where they come from and go.
+`lib/core/api.dart` exports every library of `lib/core` except the internals of the PDF text shaping (`io/fonts/*` but
+`pdf_fonts.dart`) and the sparse matrix solver (`hydraulics/sparse_solver.dart`); `test/core/api_exports_test.dart` fails
+when a library is missing from it. Importing the individual libraries (`core/model/project.dart`,
+`core/design/designer.dart`, …) works as well and is what the app does. The engine does no input or output of its own:
+readers take strings or bytes, writers return them, and the caller decides where they come from and go.
 
 **Where to run it.** The package depends on the Flutter SDK (for the app), so `dart run` works inside this repository
 (`dart run bin/oci.dart`, or a script of your own under `tool/` or `bin/`), and a Flutter project can depend on it by path
@@ -47,8 +48,11 @@ design worker and the command line use it; the 17 languages beyond Portuguese, E
 `assets/i18n/<code>.json` (`installLanguagePack`). Without a label function the keys themselves are used.
 
 **The command line.** `dart run bin/oci.dart --help` lists the commands: `design`, `analyze`, `check` (exit code 1 on
-errors), `export` (DXF, DWG, PDF, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, EPANET INP) and `bom`, with
-`--lang`, `--report`, `--results` and `--out` options.
+errors), `validate` (what reading the file had to repair, exit code 1 when anything), `export` (DXF, DWG, PDF, SVG,
+KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, EPANET INP), `bom` and `schema` (the JSON Schema of the project file,
+built from the model: every key, its type, its unit and the default of a new project), with `--lang`, `--report`,
+`--results` and `--out` options. `design --out` writes the designed project with its results, as the app saves it (`--no-results` leaves them
+out).
 
 ## 2. Projects and the design
 
@@ -88,6 +92,25 @@ What `DesignResults` holds:
 | `capitalCost`, `annualCapitalCost`, `annualEnergyCost` | costs in the project currency |
 
 `results.pipesByEntity` and `results.outletsByEntity` index the pipe and outlet results by entity id.
+
+### Damaged files and files of other versions
+
+The reader opens a file item by item. An item it cannot read (damaged, or of a newer version of the app) is set aside in
+`project.unreadable` and written back on save, under `unreadable`, so a later version gets it back; vertices without
+coordinates are dropped, an elevation that is not known is never taken as 0 m, repeated or missing entity ids get new ones,
+options it does not know take their default and fields it does not know are kept. `readProjectFile` returns the project,
+the results the file keeps beside it and a `ProjectReadReport` of the repairs (`notes`: codes translated by the app as
+`read.<code>`). The format carries a `version` (`Project.formatVersion`, 2); older files are upgraded by
+`Project.migrations`, and a key missing from a file takes the value of a new project.
+
+```dart
+final file = readProjectFile(File('examples/en/garden.oci.json').readAsStringSync());
+final report = file.report;
+for (final note in report.notes) {
+  print('${note.code} ${note.args}');
+}
+print('${file.project.entities.length} entities, ${report.skippedCount} set aside, clean: ${report.clean}');
+```
 
 ### Analysis only, progress, results as JSON
 
@@ -153,6 +176,16 @@ final rotor = catalog.outlet('rotor')!;
 for (final nozzle in rotor.nozzles.take(3)) {
   print('${nozzle.id}: ${fmt(nozzle.curve.flow(30) * 3600, 2)} m³/h at 30 m');
 }
+```
+
+`catalogPlausibility` (`lib/core/model/catalog_check.dart`) catches values misread from a data sheet: a thermoplastic pipe
+wall too thin for its pressure class (the hoop stress against the material's design stress), a nozzle passing more than an
+ideal orifice of its bore, a pump curve asking more than its motor gives at its service factor. The default catalogue and
+every pack pass it.
+
+```dart
+final problems = catalogPlausibility(Catalog.defaultCatalog());
+print(problems.isEmpty ? 'plausible' : problems.join('\n'));
 ```
 
 ## 3. Messages, reports and exports
@@ -668,7 +701,8 @@ version (`ClaudeApi`, `ClaudeModel`, `ClaudeCancel`…) remain as aliases.
 - **Messages are codes**: `code` or `code:argument` (usually an entity id). The app translates them with the string table:
   `check.<code>`, `warn.<code>`, `adv.<code>.why` and `adv.<code>.how`.
 - **Determinism**: the same project gives the same results; besides the installed language packs and the registered PDF
-  fonts, the engine keeps no global state that changes them.
+  fonts, the engine keeps no global state that changes them (the largest terrain the TIN takes as is, for one, is the
+  `tinLimit` of each `Terrain`, `Terrain.maxTinPoints` by default).
 - **Mutation**: `Designer.designAll` changes the project it designs (pipe sizes, telescoped pipes split); work on
   `project.copy()` to keep the original. Readers never change their input.
 - **Stability**: this API is the engine of the app, not a frozen interface. It follows the app's needs; the tests in

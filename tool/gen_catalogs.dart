@@ -1,5 +1,6 @@
 /// Maintains the catalogue pack repository (`catalogs/`):
-/// - validates every `*.oci.cat` (format, unique ids, k/x curves);
+/// - validates every `*.oci.cat` (format, unique ids, k/x curves, the
+///   physical plausibility of catalog_check.dart);
 /// - rewrites each pack normalised (pretty JSON, `items` count);
 /// - rebuilds `catalogs/index.json` from the packs.
 ///
@@ -12,6 +13,7 @@ import 'dart:io';
 
 import 'package:opencadirrigation/core/io/catalog_io.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
+import 'package:opencadirrigation/core/model/catalog_check.dart';
 
 void main(List<String> args) {
   final check = args.contains('--check');
@@ -64,6 +66,11 @@ void main(List<String> args) {
         }
       }
     }
+    // a wall too thin for its class, a nozzle above an ideal orifice, a pump curve above its motor
+    for (final issue in catalogPlausibility(pack.catalog)) {
+      stderr.writeln('$name: implausible $issue');
+      problems++;
+    }
     final text = '${CatalogIo.encodePack(pack.meta, pack.catalog)}\n';
     if (text != f.readAsStringSync()) {
       changed++;
@@ -97,4 +104,5 @@ Set<String> _ids(Catalog c) => {
   ...c.valves.map((e) => e.id),
   ...c.pumps.map((e) => e.id),
   ...c.fittings.map((e) => e.id),
+  ...c.wires.map((e) => e.id),
 };
