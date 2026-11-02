@@ -410,7 +410,7 @@ List<AgentTool> designTools(AgentToolbox b) {
     FnTool(
       name: 'layout_sprinklers',
       effect: ToolEffect.write,
-      description: 'Automatic sprinkler layout over a closed area (lawn, sports turf, field): heads of one sprinkler or micro-sprinkler family on a square or triangular grid, with matched part-circle heads along the edges and in the corners, keeping the exclusions dry. zoning groups the heads into zones by flow; routing also adds a zone valve per zone (chosen for its flow), the zone pipes and laterals, and a mainline from the water supply (or from the mainline pipe the user selected) to the valves. One undo step; the new items become the selection. Returns the head count, spacing, total flow, gross precipitation and the expected uniformity of the layout (CU, DU, dry %), the zones with their flow, the items added and the layout\'s notes. Without routing, join the heads with pipes yourself.',
+      description: 'Automatic sprinkler layout over a closed area (lawn, sports turf, field): heads of one sprinkler or micro-sprinkler family on a square or triangular grid, with matched part-circle heads along the edges and in the corners, keeping the exclusions dry. zoning groups the heads into zones by flow, never mixing heads that water areas of different hydrozones (the plant water use of the areas, else the class of their crop coefficient); routing also adds a zone valve per zone (chosen for its flow), the zone pipes and laterals, and a mainline from the water supply (or from the mainline pipe the user selected) to the valves, the pipes kept inside the area (round its re-entrant corners, never across the street) and the valves on it or inside. One undo step; the new items become the selection. Returns the head count, spacing, total flow, gross precipitation and the expected uniformity of the layout (CU, DU, dry %), the zones with their flow, the items added and the layout\'s notes. Without routing, join the heads with pipes yourself.',
       inputSchema: obj(
         {
           'area': str('Id or name of the closed area (area, closed polyline, circle).'),
@@ -463,7 +463,11 @@ List<AgentTool> designTools(AgentToolbox b) {
         final layout = await _soon(() => layoutLandscape(outline: area, exclusions: ex, family: family, options: o));
         if (layout.heads.isEmpty) throw ToolInputError('No head fits.${_warn(b, layout.messages)}');
         final zoning = (a.flag('zoning') ?? false)
-            ? zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: (a.number('max_zone_flow_m3h', min: 0.01) ?? zoneFlowDefault(b.p) / m3sPerM3h) * m3sPerM3h))
+            ? zoneByFlow(
+                // heads watering areas of another hydrozone (plant water use, or the class of the crop coefficient) never share a zone
+                zoneItemsOf(layout, family, areas: b.p.entities.whereType<AreaEntity>()),
+                ZoningOptions(maxZoneFlow: (a.number('max_zone_flow_m3h', min: 0.01) ?? zoneFlowDefault(b.p) / m3sPerM3h) * m3sPerM3h),
+              )
             : null;
         final routeOn = a.flag('routing') ?? false;
         final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn) List<int>.generate(layout.heads.length, (k) => k)];
@@ -485,7 +489,15 @@ List<AgentTool> designTools(AgentToolbox b) {
                 [
                   for (final g in groups) [for (final k in g) layout.heads[k].position],
                 ],
-                RouteOptions(exclusions: ex, mainline: selMain?.points, pointOfConnection: selMain == null ? _firstSource(b.p) : null, placement: ValvePlacement.nearZone, direction: layout.direction),
+                // the pipes stay inside the area (the lot or the field) and the valves on it or inside
+                RouteOptions(
+                  exclusions: ex,
+                  mainline: selMain?.points,
+                  pointOfConnection: selMain == null ? _firstSource(b.p) : null,
+                  placement: ValvePlacement.nearZone,
+                  direction: layout.direction,
+                  boundary: area,
+                ),
               )
             : null;
         final zoneOf = <int, int>{
@@ -640,7 +652,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           'direction_deg': num_('Lateral direction, degrees counter-clockwise from east; default along the longest edge.'),
           'max_lateral_length_m': num_('grid: longest lateral, 5–2000 m (the blocks are also cut along the rows); default none.'),
           'centre_feed': bool_('Submains across the middle of the blocks, laterals both ways (default false).'),
-          'mainline': bool_('Route a mainline from the water supply to the valves (default false).'),
+          'mainline': bool_('Route a mainline from the water supply to the valves, kept inside the field outline (default false).'),
         },
         required: ['area'],
       ),
@@ -722,7 +734,7 @@ List<AgentTool> designTools(AgentToolbox b) {
             if (res.valve != null) valves.add(res.valve!.position);
           }
           if (mainline && valves.isNotEmpty) {
-            for (final m in routeMainline(poc, valves)) {
+            for (final m in routeMainline(poc, valves, boundary: field)) {
               out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline));
             }
           }

@@ -76,7 +76,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
       b,
       name: 'layout_sprinklers_advanced',
       effect: ToolEffect.write,
-      description: 'Design → Auto design → Automatic layout with every option of the dialog (layout_sprinklers is the short version): sprinkler heads over a closed area on a square or triangular grid with part circles at edges and corners, the advanced placement rules, the zoning by flow (and heads per zone) and the routing of valves, zone pipes and mainline to a chosen connection with the valves at the zones or in a manifold. One undo step. Inputs (SI): area (closed shape id), exclusions (closed shape ids inside to leave dry), outlet (sprinkler family id), nozzle (reference nozzle, full circle), head_m, pattern, spacing head_to_head|percent_of_diameter|fixed, spacing_percent 20–100, spacing_m, direction_deg (row direction; default the longest edge), part_circles auto|always|never; advanced: corner_angle_deg 1–179 (25: sharper corners get a corner head), min_corner_arc_deg 0–180 (45), min_spacing_pct (40 % of the spacing: closest two heads), narrow_strip_pct (60), edge_clearance_pct (50), coverage_pct (0 = automatic), row_stretch_pct (12), small_exclusion_factor (3), min_radius_pct (90: least throw of a part circle against the reference), relax_iterations 0–20 (4), profile triangular|elliptical|uniform (for the uniformity figures); zoning, max_zone_flow_m3h, heads_per_zone (0 = no limit); routing, connection (supply, pump or mainline pipe id; "none"; default the first supply), placement nearZone|manifold. Output: heads, spacing, flow, CU/DU, zones, routing lengths, the new ids and the messages.',
+      description: 'Design → Auto design → Automatic layout with every option of the dialog (layout_sprinklers is the short version): sprinkler heads over a closed area on a square or triangular grid with part circles at edges and corners, the advanced placement rules, the zoning by flow (and heads per zone; heads watering areas of different hydrozones apart) and the routing of valves, zone pipes and mainline to a chosen connection with the valves at the zones or in a manifold (the pipes kept inside the area, the valves on it or inside). One undo step. Inputs (SI): area (closed shape id), exclusions (closed shape ids inside to leave dry), outlet (sprinkler family id), nozzle (reference nozzle, full circle), head_m, pattern, spacing head_to_head|percent_of_diameter|fixed, spacing_percent 20–100, spacing_m, direction_deg (row direction; default the longest edge), part_circles auto|always|never; advanced: corner_angle_deg 1–179 (25: sharper corners get a corner head), min_corner_arc_deg 0–180 (45), min_spacing_pct (40 % of the spacing: closest two heads), narrow_strip_pct (60), edge_clearance_pct (50), coverage_pct (0 = automatic), row_stretch_pct (12), small_exclusion_factor (3), min_radius_pct (90: least throw of a part circle against the reference), relax_iterations 0–20 (4), profile triangular|elliptical|uniform (for the uniformity figures); zoning, max_zone_flow_m3h, heads_per_zone (0 = no limit); routing, connection (supply, pump or mainline pipe id; "none"; default the first supply), placement nearZone|manifold. Output: heads, spacing, flow, CU/DU, zones, routing lengths, the new ids and the messages.',
       schema: obj(
         {
           'area': str('Closed shape id.'),
@@ -148,7 +148,8 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         if (layout.heads.isEmpty) throw ToolInputError('No head fits.${_codes(b, layout.messages)}');
         final zoning = (a.flag('zoning') ?? false)
             ? zoneByFlow(
-                zoneItemsOf(layout, family),
+                // heads watering areas of another hydrozone never share a zone
+                zoneItemsOf(layout, family, areas: b.p.entities.whereType<AreaEntity>()),
                 ZoningOptions(
                   maxZoneFlow: (a.number('max_zone_flow_m3h', min: 0.01, max: 1e5) ?? zoneFlowDefault(b.p) / m3sPerM3h) * m3sPerM3h,
                   maxItemsPerZone: a.integer('heads_per_zone', min: 0, max: 10000) ?? 0,
@@ -162,7 +163,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final routing = routeOn && groups.isNotEmpty
             ? routeZones([
                 for (final g in groups) [for (final k in g) layout.heads[k].position],
-              ], RouteOptions(exclusions: ex, mainline: mainline, pointOfConnection: poc, placement: ValvePlacement.values.byName(a.str('placement') ?? 'nearZone'), direction: layout.direction))
+              ], RouteOptions(exclusions: ex, mainline: mainline, pointOfConnection: poc, placement: ValvePlacement.values.byName(a.str('placement') ?? 'nearZone'), direction: layout.direction, boundary: area))
             : null;
         final zoneOf = <int, int>{
           for (var z = 0; z < groups.length; z++)
@@ -318,7 +319,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
           'valve': str('Zone valve id; default picked by the block flow.'),
           'stub_m': num_('Stub from the submain to the valve, 0–50 m; default 1.5.'),
           'connection': str('Water supply or pump id; "none".'),
-          'mainline': bool_('Route a mainline from the connection to the valves.'),
+          'mainline': bool_('Route a mainline from the connection to the valves, kept inside the field outline.'),
         },
         required: ['area'],
       ),
@@ -410,7 +411,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
             if (res.valve != null) valves.add(res.valve!.position);
           }
           if (mainline && valves.isNotEmpty) {
-            for (final m in routeMainline(poc, valves)) {
+            for (final m in routeMainline(poc, valves, boundary: field)) {
               out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline));
             }
           }

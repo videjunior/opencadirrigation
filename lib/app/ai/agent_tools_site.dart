@@ -164,7 +164,7 @@ List<AgentTool> siteTools(AgentToolbox b) {
     FnTool(
       name: 'import_attachment',
       effect: ToolEffect.write,
-      description: 'Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX, LandXML, EPANET .inp, LAS point clouds, GeoTIFF elevations, CSV points, images, PDF drawings (page 1 at 1:100; import_pdf_attachment sets the page and the scale). One undo step; the items of a CAD drawing become the selection. Returns what came in and its extent; a CAD drawing (DXF, DWG, DGN, PDF) keeps its own coordinates, so when it is not on the map yet the result says how to place it (set_georeference "utm" for UTM coordinates, else set_site and align_entities onto two points of the satellite picture). Project files (.oci.json) open with open_attached_project; IFC is written by the program, not read.',
+      description: 'Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX, LandXML, EPANET .inp, LAS point clouds, GeoTIFF elevations, CSV points, images, PDF drawings (page 1 at 1:100; import_pdf_attachment sets the page and the scale). One undo step; the items of a CAD drawing become the selection. Returns what came in and its extent; a CAD drawing (DXF, DWG, DGN, PDF) keeps its own coordinates — except one in UTM coordinates of the project's zone, which comes in moved by the project's origin, in place — so when it is not on the map yet the result says how to place it (set_georeference "utm" for UTM coordinates, else set_site and align_entities onto two points of the satellite picture). Project files (.oci.json) open with open_attached_project; IFC is written by the program, not read.',
       inputSchema: obj({'name': str('File name as attached.')}, required: ['name']),
       summary: (i) => t('ai.do.import', {'n': '${i['name']}'}),
       handler: (i) async {
@@ -200,7 +200,9 @@ List<AgentTool> siteTools(AgentToolbox b) {
         }
         final box = added.fold(Bounds.empty, (Bounds x, e) => x.union(e.bounds));
         final cad = isCadFile(lower);
-        final placement = importPlacementText(b, box, hadGeoref: hadGeoref, cad: cad);
+        // a drawing in UTM coordinates of the project's zone comes in already moved by the origin (the import's note says so)
+        final moved = cad && what.contains(c.t.warning('cad_moved_to_georef'));
+        final placement = importPlacementText(b, box, hadGeoref: hadGeoref, cad: cad, movedFromUtm: moved);
         // a drawing to place comes in selected, for align_entities or transform_entities
         final select = cad || placement.isNotEmpty;
         if (select) c.select(added.map((e) => e.id));
@@ -305,10 +307,16 @@ const farFromOrigin = 20000.0;
 /// for the model: '' when the file placed them (a GIS file read in its
 /// coordinate system). [hadGeoref]: the project was georeferenced before
 /// the import; [cad]: a CAD drawing (DXF, DWG, DGN, PDF), which keeps its
-/// own coordinates.
-String importPlacementText(AgentToolbox b, Bounds box, {required bool hadGeoref, required bool cad}) {
+/// own coordinates; [movedFromUtm]: the import found the drawing in UTM
+/// coordinates of the project's zone, within 100 km of the origin, and
+/// moved it by the origin already (moving it again would take it off the
+/// site).
+String importPlacementText(AgentToolbox b, Bounds box, {required bool hadGeoref, required bool cad, bool movedFromUtm = false}) {
   if (box.isEmpty) return '';
   final g = b.p.meta.georef;
+  if (movedFromUtm && g != null) {
+    return 'The drawing\'s coordinates are UTM coordinates of the project\'s zone (${g.crsName}): the import moved it by the project\'s origin (UTM E ${fmt(g.originEasting, 0)}, N ${fmt(g.originNorthing, 0)}), so it should lie in place now — do not move it again. Check with view_snapshot {region "drawing", base_map "satellite"}; should it sit off the site by a constant shift, it was drawn in another zone or datum: ask the user which.';
+  }
   String km(double m) => fmt(m / 1000, m < 1e4 ? 1 : 0);
   const align =
       'pick two points you recognise both in the drawing (get_entity gives its vertices) and on a satellite picture of the site (view_snapshot {region "bbox", bbox around the site, base_map "satellite"}; image_to_world gives their positions), then run_operation align_entities {selected true, from_a, to_a, from_b, to_b, keep_scale true} moves the imported items there (they are selected; keep_scale false for a plan that is not to scale)';
