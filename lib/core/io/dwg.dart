@@ -363,6 +363,9 @@ class _Block {
   int first = 0;
   int last = 0;
   List<int> owned = const [];
+
+  /// An external reference (or an overlay): a drawing the file only names.
+  bool xref = false;
 }
 
 class DwgReader {
@@ -1295,6 +1298,7 @@ class DwgReader {
       br.readB(); // has attribute definitions
       final isXref = br.readB() == 1;
       final isOverlaid = br.readB() == 1;
+      block.xref = isXref || isOverlaid;
       if (ver.index >= DwgVersion.r2000.index) br.readB(); // loaded
       var numOwned = 0;
       if (ver.index >= DwgVersion.r2004.index) numOwned = br.readBL();
@@ -2612,7 +2616,7 @@ class DwgReader {
         blockEntities.putIfAbsent(b.handle, () => []).addAll(converted());
       }
     }
-    final blocksByName = {for (final b in _blocks.values) b.name: DxfBlock(b.name, b.base, blockEntities[b.handle] ?? const [], blockInserts[b.handle] ?? const [])};
+    final blocksByName = {for (final b in _blocks.values) b.name: DxfBlock(b.name, b.base, blockEntities[b.handle] ?? const [], blockInserts[b.handle] ?? const [], xref: b.xref)};
     final notes = [..._notes];
     DxfReader.expandInserts(inserts, blocksByName, ents, warnings: notes);
     DxfReader.flatPointElevations(ents);
