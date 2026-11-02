@@ -12,7 +12,7 @@ import '../../../core/model/entities.dart' show PumpEntity;
 import '../../../core/units.dart';
 import '../../io/sheet_basemap.dart';
 import '../../state/controller.dart';
-import '../fields.dart' show ScrollBody, signedNumberKeyboard;
+import '../fields.dart' show ScrollBody, ScrollSizedBox, signedNumberKeyboard;
 import 'terrain_dialogs.dart' show dialogWidth;
 import '../../theme.dart';
 
@@ -65,67 +65,65 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
         );
         return AlertDialog(
           title: Text(t('geo.title'), style: const TextStyle(fontSize: 15)),
-          content: SizedBox(
+          content: ScrollSizedBox(
             width: 460,
-            child: ScrollBody(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(t('geo.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70, height: 1.35)),
-                  const SizedBox(height: 8),
-                  Text(
-                    g == null ? t('geo.none') : t('geo.current', {'crs': g.crsName, 'e': g.originEasting.toStringAsFixed(0), 'n': g.originNorthing.toStringAsFixed(0)}),
-                    style: TextStyle(fontSize: 11.5, color: Cad.fg54),
-                  ),
-                  const SizedBox(height: 6),
-                  SegmentedButton<bool>(
-                    segments: [
-                      ButtonSegment(value: false, label: Text(t('geo.modeLatLon'), style: const TextStyle(fontSize: 12))),
-                      ButtonSegment(value: true, label: Text(t('geo.modeUtm'), style: const TextStyle(fontSize: 12))),
-                    ],
-                    selected: {useUtm},
-                    onSelectionChanged: (s) => setState(() => useUtm = s.first),
-                  ),
-                  if (!useUtm) ...[
-                    Row(
-                      children: [
-                        Expanded(child: field(lat, t('geo.lat'))),
-                        const SizedBox(width: 8),
-                        Expanded(child: field(lon, t('geo.lon'))),
-                      ],
-                    ),
-                  ] else ...[
-                    Row(
-                      children: [
-                        Expanded(child: field(zone, t('geo.zone'))),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: SwitchListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(t('geo.north'), style: const TextStyle(fontSize: 12)),
-                            value: northern,
-                            onChanged: (v) => setState(() => northern = v),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(child: field(east, t('geo.easting'), suffix: 'm')),
-                        const SizedBox(width: 8),
-                        Expanded(child: field(north, t('geo.northing'), suffix: 'm')),
-                      ],
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('geo.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70, height: 1.35)),
+                const SizedBox(height: 8),
+                Text(
+                  g == null ? t('geo.none') : t('geo.current', {'crs': g.crsName, 'e': g.originEasting.toStringAsFixed(0), 'n': g.originNorthing.toStringAsFixed(0)}),
+                  style: TextStyle(fontSize: 11.5, color: Cad.fg54),
+                ),
+                const SizedBox(height: 6),
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: false, label: Text(t('geo.modeLatLon'), style: const TextStyle(fontSize: 12))),
+                    ButtonSegment(value: true, label: Text(t('geo.modeUtm'), style: const TextStyle(fontSize: 12))),
                   ],
-                  if (error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(error!, style: TextStyle(fontSize: 12, color: Cad.attention)),
-                    ),
+                  selected: {useUtm},
+                  onSelectionChanged: (s) => setState(() => useUtm = s.first),
+                ),
+                if (!useUtm) ...[
+                  Row(
+                    children: [
+                      Expanded(child: field(lat, t('geo.lat'))),
+                      const SizedBox(width: 8),
+                      Expanded(child: field(lon, t('geo.lon'))),
+                    ],
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(child: field(zone, t('geo.zone'))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SwitchListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(t('geo.north'), style: const TextStyle(fontSize: 12)),
+                          value: northern,
+                          onChanged: (v) => setState(() => northern = v),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: field(east, t('geo.easting'), suffix: 'm')),
+                      const SizedBox(width: 8),
+                      Expanded(child: field(north, t('geo.northing'), suffix: 'm')),
+                    ],
+                  ),
                 ],
-              ),
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(error!, style: TextStyle(fontSize: 12, color: Cad.attention)),
+                  ),
+              ],
             ),
           ),
           actions: [

@@ -32,6 +32,7 @@ import 'package:opencadirrigation/app/widgets/dialogs/ai_start_dialog.dart';
 import 'package:opencadirrigation/app/widgets/hgl_chart.dart';
 import 'package:opencadirrigation/app/widgets/message_log.dart';
 import 'package:opencadirrigation/app/widgets/reports_panel.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/transient_dialogs.dart';
 import 'package:opencadirrigation/main.dart';
 
 /// Defects of the interface outside the drawing (sweep of 2026-11-01, UI-*):
@@ -844,6 +845,32 @@ void main() {
       await settle(tester);
       expect(find.byKey(const Key('message_log')), findsOneWidget);
       expect(find.text('Primeira mensagem'), findsOneWidget);
+    });
+  });
+
+  group('UI-19 a long simulation can be stopped', () {
+    testWidgets('the transients stop between runs, the last analysis stays', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(1920, 1080));
+      final ProjectController c = shell.c;
+      loadExampleAction(c);
+      c.designRunner = InThreadDesignRunner();
+      await tester.runAsync(() => c.runDesign());
+      await settle(tester);
+      expect(c.results, isNotNull);
+      showTransientDialog(tester.element(find.byType(MenuBar)), c);
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('tr_sc_pumpTrip')));
+      await settle(tester, 2);
+      await tester.tap(find.byKey(const Key('tr_run')));
+      await tester.pump(const Duration(milliseconds: 20));
+      expect(find.byKey(const Key('tr_cancel')), findsOneWidget, reason: 'a Cancel while it runs');
+      await tester.tap(find.byKey(const Key('tr_cancel')));
+      for (var i = 0; i < 100 && find.byKey(const Key('tr_progress')).evaluate().isNotEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(find.byKey(const Key('tr_progress')), findsNothing, reason: 'stopped');
+      expect(c.lastMessage, c.t('ui.stopped'));
+      expect(find.byKey(const Key('tr_run')), findsOneWidget, reason: 'it can run again');
     });
   });
 }

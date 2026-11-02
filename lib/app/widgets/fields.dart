@@ -400,6 +400,21 @@ class KV extends StatelessWidget {
   );
 }
 
+/// A [SizedBox] whose child scrolls when it does not fit: the content of a
+/// dialog on a low window or above the on-screen keyboard.
+class ScrollSizedBox extends StatelessWidget {
+  const ScrollSizedBox({super.key, this.width, this.height, required this.child});
+  final double? width, height;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    height: height,
+    child: ScrollBody(child: child),
+  );
+}
+
 /// Vertical scroll view with an always-visible scrollbar, for dialogs whose
 /// content may not fit the window (the room for the bar is on the side it
 /// is drawn on: the right, the left in Arabic and Urdu).

@@ -168,4 +168,6 @@ const _ui = <String, (String, String, String)>{
     '✓ finishes · ✕ cancels · ⌨ types coordinates and lengths',
     '✓ termina · ✕ cancela · ⌨ escribe coordenadas y longitudes',
   ),
+  // ---- UI-19 a long simulation stopped by the user
+  'ui.stopped': ('Interrompido: os resultados anteriores continuam.', 'Stopped: the previous results stay.', 'Interrumpido: los resultados anteriores se mantienen.'),
 };

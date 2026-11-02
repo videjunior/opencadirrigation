@@ -116,110 +116,110 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
           width: 72,
           child: NumField(key: ValueKey('clim_${v.hashCode}_${m}_$gen'), label: '', value: v[m], decimals: decimals, onChanged: (x) => v[m] = x < 0 ? 0 : x),
         );
-        // while the download runs, Esc and a tap outside do not close the dialog
-        // (the values downloaded would be lost): its Cancel stops the download
-        return PopScope(
-          canPop: !busy,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) c.notify(t('ui.downloadRunning'));
-          },
-          child: AlertDialog(
-            title: Text(t('clim.title'), style: const TextStyle(fontSize: 15)),
-            content: SizedBox(
-              width: dialogWidth(ctx, 640),
-              child: ScrollBody(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(t('clim.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
-                    const SizedBox(height: 8),
-                    if (site == null)
-                      Text(t('msg.climate_no_site'), style: TextStyle(fontSize: 12, color: Cad.warning))
-                    else ...[
-                      Text('${t('clim.site')}: ${fmt(site.$1, 4)}°, ${fmt(site.$2, 4)}°', style: const TextStyle(fontSize: 12)),
-                      _row([
-                        SpecDropdown<ClimateSource>(
-                          label: t('clim.source'),
-                          value: source.name,
-                          items: ClimateSource.values,
-                          labelOf: (s) => t('clim.src.${s.name}'),
-                          idOf: (s) => s.name,
-                          onChanged: (v) => setState(() => source = ClimateSource.values.byName(v!)),
+        return AlertDialog(
+          title: Text(t('clim.title'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: dialogWidth(ctx, 640),
+            child: ScrollBody(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // while the download runs, Esc and a tap outside do not close the dialog (its Cancel stops it)
+                  PopScope(
+                    canPop: !busy,
+                    onPopInvokedWithResult: (didPop, _) {
+                      if (!didPop) c.notify(t('ui.downloadRunning'));
+                    },
+                    child: const SizedBox.shrink(),
+                  ),
+                  Text(t('clim.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+                  const SizedBox(height: 8),
+                  if (site == null)
+                    Text(t('msg.climate_no_site'), style: TextStyle(fontSize: 12, color: Cad.warning))
+                  else ...[
+                    Text('${t('clim.site')}: ${fmt(site.$1, 4)}°, ${fmt(site.$2, 4)}°', style: const TextStyle(fontSize: 12)),
+                    _row([
+                      SpecDropdown<ClimateSource>(
+                        label: t('clim.source'),
+                        value: source.name,
+                        items: ClimateSource.values,
+                        labelOf: (s) => t('clim.src.${s.name}'),
+                        idOf: (s) => s.name,
+                        onChanged: (v) => setState(() => source = ClimateSource.values.byName(v!)),
+                      ),
+                      NumField(label: t('clim.years'), value: years.toDouble(), decimals: 0, onChanged: (v) => years = v.round().clamp(1, 40)),
+                    ]),
+                    Row(
+                      children: [
+                        FilledButton.icon(
+                          key: const Key('clim_download'),
+                          onPressed: busy ? null : download,
+                          icon: const Icon(Icons.cloud_download_outlined, size: 16),
+                          label: Text(t('clim.download')),
                         ),
-                        NumField(label: t('clim.years'), value: years.toDouble(), decimals: 0, onChanged: (v) => years = v.round().clamp(1, 40)),
-                      ]),
-                      Row(
-                        children: [
-                          FilledButton.icon(
-                            key: const Key('clim_download'),
-                            onPressed: busy ? null : download,
-                            icon: const Icon(Icons.cloud_download_outlined, size: 16),
-                            label: Text(t('clim.download')),
-                          ),
-                          const SizedBox(width: 8),
-                          if (busy) ...[
-                            SizedBox(width: 120, child: LinearProgressIndicator(value: progress > 0 ? progress : null)),
-                            TextButton(onPressed: () => cancel = true, child: Text(t('cancel'))),
-                          ],
+                        const SizedBox(width: 8),
+                        if (busy) ...[
+                          SizedBox(width: 120, child: LinearProgressIndicator(value: progress > 0 ? progress : null)),
+                          TextButton(onPressed: () => cancel = true, child: Text(t('cancel'))),
                         ],
-                      ),
-                    ],
-                    if (error != null) Text(error!, style: TextStyle(fontSize: 12, color: Cad.warning)),
-                    const SizedBox(height: 8),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Table(
-                        defaultColumnWidth: const IntrinsicColumnWidth(),
-                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                        children: [
-                          TableRow(
-                            children: [
-                              _cell(t('req.month'), bold: true),
-                              _cell('ETo (mm/d)', bold: true),
-                              _cell('${t('req.rain')} (mm)', bold: true),
-                              _cell('${t('clim.dependable')} (mm)', bold: true),
-                              _cell('${t('clim.radiation')} (kWh/m²/d)', bold: true),
-                            ],
-                          ),
-                          for (var m = 0; m < 12; m++) TableRow(children: [_cell(t('mon.${m + 1}')), num(eto, m, decimals: 2), num(rain, m), num(dep, m), num(rs, m, decimals: 2)]),
-                        ],
-                      ),
+                      ],
                     ),
-                    if (info != null && info!.attribution.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        '${info!.attribution}${info!.firstYear > 0 ? ' · ${info!.firstYear}–${info!.lastYear}' : ''}${info!.retrieved.isNotEmpty ? ' · ${info!.retrieved}' : ''}',
-                        style: TextStyle(fontSize: 10.5, color: Cad.fg54),
-                      ),
-                    ],
                   ],
-                ),
+                  if (error != null) Text(error!, style: TextStyle(fontSize: 12, color: Cad.warning)),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Table(
+                      defaultColumnWidth: const IntrinsicColumnWidth(),
+                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                      children: [
+                        TableRow(
+                          children: [
+                            _cell(t('req.month'), bold: true),
+                            _cell('ETo (mm/d)', bold: true),
+                            _cell('${t('req.rain')} (mm)', bold: true),
+                            _cell('${t('clim.dependable')} (mm)', bold: true),
+                            _cell('${t('clim.radiation')} (kWh/m²/d)', bold: true),
+                          ],
+                        ),
+                        for (var m = 0; m < 12; m++) TableRow(children: [_cell(t('mon.${m + 1}')), num(eto, m, decimals: 2), num(rain, m), num(dep, m), num(rs, m, decimals: 2)]),
+                      ],
+                    ),
+                  ),
+                  if (info != null && info!.attribution.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${info!.attribution}${info!.firstYear > 0 ? ' · ${info!.firstYear}–${info!.lastYear}' : ''}${info!.retrieved.isNotEmpty ? ' · ${info!.retrieved}' : ''}',
+                      style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+                    ),
+                  ],
+                ],
               ),
             ),
-            actions: [
-              if (c.project.climate != null)
-                TextButton(
-                  onPressed: () {
-                    c.setClimate(null);
-                    Navigator.pop(ctx);
-                  },
-                  child: Text(t('clim.clear')),
-                ),
-              TextButton(key: const Key('clim_cancel'), onPressed: busy ? () => setState(() => cancel = true) : () => Navigator.pop(ctx), child: Text(t('cancel'))),
-              FilledButton(
-                key: const Key('clim_ok'),
-                onPressed: busy
-                    ? null
-                    : () {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        Future<void>.delayed(Duration.zero, save);
-                        Navigator.pop(ctx);
-                      },
-                child: Text(t('ok')),
-              ),
-            ],
           ),
+          actions: [
+            if (c.project.climate != null)
+              TextButton(
+                onPressed: () {
+                  c.setClimate(null);
+                  Navigator.pop(ctx);
+                },
+                child: Text(t('clim.clear')),
+              ),
+            TextButton(key: const Key('clim_cancel'), onPressed: busy ? () => setState(() => cancel = true) : () => Navigator.pop(ctx), child: Text(t('cancel'))),
+            FilledButton(
+              key: const Key('clim_ok'),
+              onPressed: busy
+                  ? null
+                  : () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      Future<void>.delayed(Duration.zero, save);
+                      Navigator.pop(ctx);
+                    },
+              child: Text(t('ok')),
+            ),
+          ],
         );
       },
     ),

@@ -504,7 +504,7 @@ class _MobileShellState extends State<MobileShell> {
                   ),
                   if (c.busy)
                     const Padding(
-                      padding: EdgeInsets.only(right: 8),
+                      padding: EdgeInsetsDirectional.only(end: 8),
                       child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
                     ),
                   AiPanelButton(key: const Key('mobile_ai'), c: c, size: 22, onPressed: () => showAiAssistantDialog(context, c)),

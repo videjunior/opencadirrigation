@@ -32,4 +32,6 @@ const coverageUi = <String, String>{
   'view:messageLog': 'n/a:the notices the program showed the user lately, to read again; the assistant gets the outcome of each of its own actions from the tools',
   // ---- UI-26 the start-up screen: go on without a place
   'dialog:ai_start_dialog.aiStart.skipPlace': 'n/a:the user leaves the place out of the first screen; the assistant georeferences later with the tools',
+  // ---- UI-19 stopping the transient simulations
+  'dialog:transient_dialogs.transient.cancel': 'n/a:the user stops a long simulation they started; the assistant runs its own analyses through the tools',
 };

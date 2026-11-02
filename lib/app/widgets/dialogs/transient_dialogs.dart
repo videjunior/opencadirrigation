@@ -371,6 +371,9 @@ class _TransientDialogState extends State<_TransientDialog> {
   bool _cavities = true, _airValves = true;
   String _flow = '';
   bool _busy = false;
+
+  /// The user asked to stop the simulation (checked between the runs).
+  bool _cancel = false;
   int _done = 0, _total = 0;
   TransientAnalysis? _analysis;
   int _run = 0;
@@ -390,6 +393,7 @@ class _TransientDialogState extends State<_TransientDialog> {
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       _busy = true;
+      _cancel = false;
       _error = null;
       _done = 0;
       _total = 0;
@@ -419,6 +423,11 @@ class _TransientDialogState extends State<_TransientDialog> {
       for (final j in jobs) {
         await _yieldFrame();
         if (!mounted) return;
+        if (_cancel) {
+          // the last analysis (if any) stays on screen
+          c.notify(c.t('ui.stopped'));
+          return;
+        }
         runs.add(study.run(j));
         setState(() => _done = runs.length);
       }
@@ -524,17 +533,19 @@ class _TransientDialogState extends State<_TransientDialog> {
                 ),
               ]),
               const SizedBox(height: 6),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   FilledButton.icon(key: const Key('tr_run'), onPressed: _busy || _scenarios.isEmpty ? null : _simulate, icon: const Icon(Icons.play_arrow, size: 16), label: Text(t('tr.run'))),
-                  const SizedBox(width: 12),
                   if (_busy) ...[
                     SizedBox(
                       width: 160,
                       child: LinearProgressIndicator(key: const Key('tr_progress'), value: _total > 0 ? _done / _total : null),
                     ),
-                    const SizedBox(width: 8),
                     Text(t('tr.running', {'i': '${math.min(_done + 1, math.max(_total, 1))}', 'n': '${math.max(_total, 1)}'}), style: TextStyle(fontSize: 11.5, color: Cad.fg60)),
+                    TextButton(key: const Key('tr_cancel'), onPressed: _cancel ? null : () => setState(() => _cancel = true), child: Text(t('cancel'))),
                   ],
                 ],
               ),
