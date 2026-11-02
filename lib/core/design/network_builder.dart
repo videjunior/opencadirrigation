@@ -123,6 +123,33 @@ class GLink {
   String? zoneId;
 
   String other(String n) => n == from ? to : from;
+
+  /// The same link between other nodes (every setting kept: the flow of an
+  /// FCV was lost when a device was inserted next to it).
+  GLink withEnds({required String from, required String to}) => GLink(
+    id: id,
+    from: from,
+    to: to,
+    kind: kind,
+    scope: scope,
+    entityId: entityId,
+    segmentIndex: segmentIndex,
+    length: length,
+    pipeSpecId: pipeSpecId,
+    tapeSpecId: tapeSpecId,
+    computerSized: computerSized,
+    usage: usage,
+    minorK: minorK,
+    depth: depth,
+    settingM: settingM,
+    settingFlow: settingFlow,
+    valveSpecId: valveSpecId,
+    pumpSpecId: pumpSpecId,
+    speedRatio: speedRatio,
+    a: a,
+    b: b,
+    emitterCountAlong: emitterCountAlong,
+  )..zoneId = zoneId;
 }
 
 class NetworkModel {
@@ -920,7 +947,19 @@ class NetworkBuilder {
     final attached = List<GLink>.from(n.links);
     // BFS hop distance from supplies / valves-zone-nodes to each neighbour
     GLink? upstreamLink;
-    if (attached.length >= 2) {
+    // on the zone side of a valve the device follows the valve; at a
+    // supply every pipe leaves through it (the supply is the source)
+    final valveHere = scope == HydraulicScope.zone
+        ? [
+            for (final e in model.valveNodes.entries)
+              if (e.value.$2 == n.id) e.key,
+          ]
+        : const <String>[];
+    if (n.isSupply) {
+      upstreamLink = null;
+    } else if (valveHere.isNotEmpty) {
+      upstreamLink = attached.where((l) => l.kind == GLinkKind.controlValve && l.entityId == valveHere.first).firstOrNull;
+    } else if (attached.length >= 2) {
       final dist = _hopDistances(scope);
       var best = double.infinity;
       for (final l in attached) {
@@ -931,48 +970,39 @@ class NetworkBuilder {
         }
       }
     } else if (attached.length == 1) {
-      upstreamLink = n.isSupply ? null : attached.first;
-      if (!n.isSupply) {
-        // device at a dead end: treat the single pipe as upstream
-      }
+      // device at a dead end: treat the single pipe as upstream
+      upstreamLink = attached.first;
     }
     final down = GNode(id: 'n${_seq++}', p: p, ground: n.ground, scope: scope);
     model.nodes[down.id] = down;
     _grid.putIfAbsent(_key(p), () => []).add(down);
     down.entityIds.add(entityId);
+    final movedValves = <String>{};
     for (final l in attached) {
       if (identical(l, upstreamLink)) continue;
       // move link end from n to down
       final idx = model.links.indexOf(l);
-      final moved = GLink(
-        id: l.id,
-        from: l.from == n.id ? down.id : l.from,
-        to: l.to == n.id ? down.id : l.to,
-        kind: l.kind,
-        scope: l.scope,
-        entityId: l.entityId,
-        segmentIndex: l.segmentIndex,
-        length: l.length,
-        pipeSpecId: l.pipeSpecId,
-        tapeSpecId: l.tapeSpecId,
-        computerSized: l.computerSized,
-        usage: l.usage,
-        minorK: l.minorK,
-        depth: l.depth,
-        settingM: l.settingM,
-        valveSpecId: l.valveSpecId,
-        pumpSpecId: l.pumpSpecId,
-        speedRatio: l.speedRatio,
-        a: l.a,
-        b: l.b,
-        emitterCountAlong: l.emitterCountAlong,
-      );
+      final moved = l.withEnds(from: l.from == n.id ? down.id : l.from, to: l.to == n.id ? down.id : l.to);
+      if (l.kind == GLinkKind.controlValve) movedValves.add(l.entityId);
       model.links[idx] = moved;
       n.links.remove(l);
       final other = model.nodes[l.other(n.id)]!;
       other.links.remove(l);
       other.links.add(moved);
       down.links.add(moved);
+    }
+    // what is drawn on the device's point is fed through it: a zone valve
+    // (its zone demand), a pivot, the outlets of the node
+    for (final v in movedValves) {
+      final (nm, nz) = model.valveNodes[v]!;
+      model.valveNodes[v] = (nm == n.id ? down.id : nm, nz == n.id ? down.id : nz);
+    }
+    for (final e in model.pivotNodes.entries.toList()) {
+      if (e.value == n.id) model.pivotNodes[e.key] = down.id;
+    }
+    if (n.emitters.isNotEmpty) {
+      down.emitters.addAll(n.emitters);
+      n.emitters.clear();
     }
     _register(make(n.id, down.id));
   }

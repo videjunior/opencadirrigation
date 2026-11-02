@@ -295,6 +295,9 @@ const adviceCodes = [
   'vih_not_in_flow',
   'vih_pressure_deficit',
   'vih_pressure_high',
+  // 1.6.0 MOT
+  'zone_pressure_unreachable',
+  'pump_below_min_flow',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -323,6 +326,8 @@ AdviceLevel _level(String code) => switch (code) {
   'elec_stations' ||
   'elec_voltage' ||
   'vih_pressure_deficit' => AdviceLevel.error,
+  // 1.6.0 MOT
+  'zone_pressure_unreachable' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };

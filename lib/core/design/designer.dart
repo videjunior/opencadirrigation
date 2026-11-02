@@ -694,6 +694,23 @@ class Designer {
     return (sumActual / w, sumNominal / w);
   }
 
+  /// Least rise of the mean emitter pressure per metre of valve head while
+  /// the emitters follow the valve; below it a PRV, a PSV or an FCV of the
+  /// zone holds them (without one the mean rises by 0.1 m/m or more even
+  /// when nine tenths of the head are lost on the way).
+  static const _saturationSlope = 0.05;
+
+  /// The PRV, PSV or FCV of zone [valveId] that holds the pressure in the
+  /// solution [r] (active), if any.
+  String? _holdingDevice(String valveId, NetworkResult r) {
+    for (final lid in model.zoneLinks[valveId] ?? const <String>{}) {
+      final l = model.linkById(lid);
+      if (l == null || (l.kind != GLinkKind.prv && l.kind != GLinkKind.psv && l.kind != GLinkKind.fcv)) continue;
+      if (r.links[lid]?.status == LinkStatus.active) return l.entityId;
+    }
+    return null;
+  }
+
   ZoneResult analyzeZone(String valveId, {double? downstreamHead, bool detailed = true}) {
     final valve = project.byId(valveId) as ControlValveEntity?;
     final warnings = <String>[];
@@ -708,6 +725,7 @@ class Designer {
     }
     var head = downstreamHead ?? valve.fixedDownstreamHeadM;
     NetworkResult r;
+    var saturated = false;
     if (head != null) {
       r = _zoneNetwork(valveId, head, detailed).solve();
     } else if (!detailed) {
@@ -722,30 +740,60 @@ class Designer {
       final (_, pn) = _meanPressures(valveId, probe);
       var lo = 0.0, hi = math.max(pn * 3, 5.0);
       r = _zoneNetwork(valveId, hi, true).solve();
+      var mean = _meanPressures(valveId, r).$1;
       var it = 0;
-      while (_meanPressures(valveId, r).$1 < pn && it < 20) {
+      double? held;
+      String? holder;
+      while (mean < pn && it < 20) {
+        final next = _zoneNetwork(valveId, hi * 2, true).solve();
+        final m = _meanPressures(valveId, next).$1;
+        // the emitters no longer follow the valve: a PRV or an FCV of the
+        // zone holds them (doubling on took the valve to 4.7·10⁷ m)
+        if (m - mean < _saturationSlope * hi) {
+          held = math.max(m, mean);
+          holder = _holdingDevice(valveId, next);
+          break;
+        }
         hi *= 2;
-        r = _zoneNetwork(valveId, hi, true).solve();
+        r = next;
+        mean = m;
         it++;
       }
-      for (var i = 0; i < 28; i++) {
-        final mid = (lo + hi) / 2;
-        r = _zoneNetwork(valveId, mid, true).solve();
-        if (_meanPressures(valveId, r).$1 > pn) {
-          hi = mid;
-        } else {
-          lo = mid;
+      if (held != null) {
+        // the lowest valve head that gives the zone all it can get
+        final target = held - 0.01;
+        for (var i = 0; i < 40 && hi - lo >= 1e-3; i++) {
+          final mid = (lo + hi) / 2;
+          if (_meanPressures(valveId, _zoneNetwork(valveId, mid, true).solve()).$1 >= target) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
         }
-        if (hi - lo < 1e-3) break;
+        head = hi;
+        r = _zoneNetwork(valveId, head, true).solve();
+        saturated = true;
+        warnings.add(['zone_pressure_unreachable', ?holder].join(':'));
+      } else {
+        for (var i = 0; i < 28; i++) {
+          final mid = (lo + hi) / 2;
+          r = _zoneNetwork(valveId, mid, true).solve();
+          if (_meanPressures(valveId, r).$1 > pn) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
+          if (hi - lo < 1e-3) break;
+        }
+        head = (lo + hi) / 2;
+        r = _zoneNetwork(valveId, head, true).solve();
       }
-      head = (lo + hi) / 2;
-      r = _zoneNetwork(valveId, head, true).solve();
     }
     if (!r.converged) warnings.add('not_converged');
 
     // If the spread of pressures fits inside the allowable window but the
     // mean-targeted head leaves some outlets outside, centre the band.
-    if (downstreamHead == null && valve.fixedDownstreamHeadM == null) {
+    if (downstreamHead == null && valve.fixedDownstreamHeadM == null && !saturated) {
       final (mn, mx, aMin, aMax) = _pressureSpread(valveId, r);
       if (mx - mn <= aMax - aMin + 1e-9 && (mn < aMin - 1e-6 || mx > aMax + 1e-6)) {
         final shift = (aMin + aMax) / 2 - (mn + mx) / 2;
@@ -874,7 +922,8 @@ class Designer {
             elevation: na.elevation,
           ),
         );
-        if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
+        // a booster of the zone: the same range, suction and NPSH checks
+        if (l.kind == GLinkKind.pump) _checkPump(l, lr, ha - na.elevation, na.elevation, warnings);
       }
     }
     for (final o in outlets) {
@@ -1639,6 +1688,37 @@ class Designer {
     return -inletPressure > maxSuctionLift(elevation) + 1e-6;
   }
 
+  /// Elevation of the inlet of device link [l] (upstream node [up]): a
+  /// surface pump drawn on its water supply stands on the ground there,
+  /// above the water it lifts (the supply node lies at the water level, so
+  /// its suction lift and NPSH were never checked); else the node.
+  double _inletElevation(GLink l, GNode up) {
+    if (l.kind == GLinkKind.pump && up.isSupply && !(catalog.pump(l.pumpSpecId)?.submersible ?? false)) return up.ground;
+    return up.elevation;
+  }
+
+  /// Operating range, suction lift and NPSH of pump link [l] in solution
+  /// [lr], with the pressure head [inletPressure] at its inlet at
+  /// [elevation]. The range of the catalogue scales with the speed the pump
+  /// turns at (a drive, or a curve of other mains): Q ∝ n.
+  void _checkPump(GLink l, LinkResult lr, double inletPressure, double elevation, List<String> warnings) {
+    final spec = catalog.pump(l.pumpSpecId);
+    final speed = _vfdSpeed[l.entityId] ?? l.speedRatio;
+    if (spec != null) {
+      if (lr.flow > spec.maxFlow * speed + 1e-9 || lr.flow <= 0) {
+        warnings.add('pump_out_of_range:${l.entityId}');
+      } else if (spec.minFlow > 0 && lr.flow < spec.minFlow * speed - 1e-9) {
+        warnings.add('pump_below_min_flow:${l.entityId}');
+      }
+    }
+    if (_suctionLiftExceeded(l, lr, inletPressure, elevation)) warnings.add('pump_suction_lift:${l.entityId}');
+    // NPSH available against the required one (curve of the catalogue)
+    final npshr = spec?.npshrAt(lr.flow, speed: speed);
+    if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: inletPressure, elevation: elevation, tempC: params.waterTempC) < npshr + npshMargin) {
+      warnings.add('pump_npsh:${l.entityId}');
+    }
+  }
+
   SystemFlowResult analyzeSystemFlow(SystemFlow sf, {double totalDuration = 0}) {
     final warnings = <String>[];
     final supplies = _supplies;
@@ -1801,6 +1881,7 @@ class Designer {
         if (v > _vmax(l) + 1e-6) warnings.add('velocity_exceeded:${l.entityId}');
         if (spec != null && spec.pressureRatingM > 0 && math.max(ha - na.elevation, hb - nb.elevation) > _rating(spec)) warnings.add('pressure_rating_exceeded:${l.entityId}');
       } else {
+        final inletZ = _inletElevation(l, na);
         devices.add(
           DeviceResult(
             entityId: l.entityId,
@@ -1808,23 +1889,14 @@ class Designer {
             flow: lr.flow,
             headLoss: lr.headLoss,
             pumpHead: lr.pumpHead,
-            upstreamPressure: ha - na.elevation,
+            upstreamPressure: ha - inletZ,
             downstreamPressure: hb - nb.elevation,
             status: lr.status.name,
-            elevation: na.elevation,
+            elevation: inletZ,
             speedRatio: l.kind == GLinkKind.pump ? (_vfdSpeed[l.entityId] ?? l.speedRatio) : 1,
           ),
         );
-        if (l.kind == GLinkKind.pump) {
-          final spec = catalog.pump(l.pumpSpecId);
-          if (spec != null && (lr.flow > spec.maxFlow + 1e-9 || lr.flow <= 0)) warnings.add('pump_out_of_range:${l.entityId}');
-          if (_suctionLiftExceeded(l, lr, ha - na.elevation, na.elevation)) warnings.add('pump_suction_lift:${l.entityId}');
-          // NPSH available against the required one (curve of the catalogue)
-          final npshr = spec?.npshrAt(lr.flow, speed: _vfdSpeed[l.entityId] ?? l.speedRatio);
-          if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: ha - na.elevation, elevation: na.elevation, tempC: params.waterTempC) < npshr + npshMargin) {
-            warnings.add('pump_npsh:${l.entityId}');
-          }
-        }
+        if (l.kind == GLinkKind.pump) _checkPump(l, lr, ha - inletZ, inletZ, warnings);
       }
     }
     // energy: supplies with calculated pressure and pumps
@@ -2479,15 +2551,26 @@ class Designer {
         var lo = 0.0, hi = 20.0;
         var r = _zoneNetwork(vid, hi, true).solve();
         var it = 0;
-        while (minEnd(r) < params.flushingMinEndHeadM && it < 12) {
+        var target = params.flushingMinEndHeadM;
+        var end = minEnd(r);
+        while (end < target && it < 12) {
+          final next = _zoneNetwork(vid, hi * 2, true).solve();
+          final e = minEnd(next);
+          // a PRV or an FCV of the zone holds the ends below the target:
+          // the lowest head that gives them all they can get
+          if (e - end < _saturationSlope * hi) {
+            target = math.max(e, end) - 0.01;
+            break;
+          }
           hi *= 2;
-          r = _zoneNetwork(vid, hi, true).solve();
+          r = next;
+          end = e;
           it++;
         }
         for (var i = 0; i < 30; i++) {
           final mid = (lo + hi) / 2;
           r = _zoneNetwork(vid, mid, true).solve();
-          if (minEnd(r) >= params.flushingMinEndHeadM) {
+          if (minEnd(r) >= target) {
             hi = mid;
           } else {
             lo = mid;
