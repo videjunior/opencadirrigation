@@ -1,11 +1,13 @@
 {
   "name": "opencadirrigation-e2e",
   "private": true,
-  "description": "End-to-end smoke test of the production web build (see smoke.mjs); drives an installed Chrome, downloads no browser.",
+  "description": "End-to-end smoke test of the production web build (see smoke.mjs); drives an installed Chrome and the WebKit and Firefox builds this exact playwright-core version pins.",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "smoke": "node smoke.mjs ../../build/web"
+    "smoke": "node smoke.mjs ../../build/web",
+    "browsers": "playwright-core install webkit firefox",
+    "smoke:all": "node smoke.mjs ../../build/web --browser chromium,webkit,firefox"
   },
   "devDependencies": {
     "playwright-core": "1.64.1"
