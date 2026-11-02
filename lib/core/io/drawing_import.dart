@@ -214,8 +214,8 @@ const drawingImportExtensions = [
 /// Reads the file [name] ([bytes]) into [p] by its extension, as File →
 /// Import does in the app: the drawing's entities (see [importDrawingInto]),
 /// the georeference a GIS file brings when [p] has none, the ground points
-/// of a LAS cloud and the heights of a GeoTIFF as spot heights (`DEM
-/// <name>`, replacing those of an earlier import of the same file). Throws
+/// of a LAS cloud and the heights of a GeoTIFF as spot heights (named
+/// `DEM <name>`, replacing those of an earlier import of the same file). Throws
 /// a [FormatException]: `import_format` for an extension it does not read
 /// (PDF plans and pictures need the app), `import_not_dem` for a GeoTIFF
 /// that holds no elevations, `file_corrupt` for a file that trips a reader.

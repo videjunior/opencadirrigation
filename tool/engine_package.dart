@@ -7,8 +7,8 @@
 /// keeps the name `opencadirrigation`, so `package:opencadirrigation/core/…`
 /// imports work unchanged in a server, a CI job or another Dart program:
 ///
-///   dart tool/engine_package.dart [<folder>]      (default build/engine)
-///   cd build/engine && dart pub get && dart run bin/oci.dart --help
+///     dart tool/engine_package.dart [folder]      (default build/engine)
+///     cd build/engine && dart pub get && dart run bin/oci.dart --help
 ///
 /// It imports dart: libraries only, so it runs with the Dart SDK alone,
 /// before any `pub get` of the app (which needs the Flutter SDK).

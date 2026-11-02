@@ -3354,7 +3354,7 @@ class ProjectController extends ChangeNotifier {
     _applyNewProjectCurrency(code);
     // 1.6.0 MOD: the parameters the user kept for new projects, then the
     // mains frequency and units of the user's region (or choice)
-    this.applyNewProjectTemplate();
+    applyNewProjectTemplate();
     project.params
       ..mainsHz = defaultMainsHz()
       ..units = defaultUnits();
