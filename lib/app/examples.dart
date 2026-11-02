@@ -191,6 +191,9 @@ Project buildOrchardExample(Tr t, String lang) {
       mad: 0.45,
       emittersPerPlant: 4,
       wettedFraction: 0.4,
+      // 1.6.0 AGR: the ground the vines shade, FAO-56 eq. 76, fc = ((Kcb mid − 0.15)/(1.20 − 0.15))^(1 + 0.5·h) with Kcb mid and h of Tables 17 and 12 (wine grapes 0.65, 1.75 m):
+      // 0.25, Kr = 0.1·√25 = 0.50 (Keller & Bliesner 1990)
+      groundCover: 0.25,
     ),
   );
   final va = a.valve!.position, vb = b.valve!.position;
@@ -354,6 +357,9 @@ Project buildGardenExample(Tr t, String lang) {
       mad: 0.5,
       emittersPerPlant: 2,
       wettedFraction: 0.5,
+      // 1.6.0 AGR: ground cover left at 1 (Kr 1): the Kc of a landscape bed is
+      // the plant factor of its planting, applied to the whole hydrozone
+      // (MWELO, water_budget.dart), not a crop row to be reduced
     ),
   );
   p.entities.add(
@@ -567,6 +573,9 @@ Project buildRowCropExample(Tr t, String lang) {
         plantSpacingM: 0.4,
         rowSpacingM: 1.8,
         wettedFraction: 0.6,
+        // 1.6.0 AGR: ground the canopy shades, FAO-56 eq. 76, fc = ((Kcb mid − 0.15)/(1.20 − 0.15))^(1 + 0.5·h) with Kcb mid and h of Tables 17 and 12 (tomato 1.10, 0.6 m): 0.88,
+        // Kr = 0.1·√88 = 0.94 (Keller & Bliesner 1990)
+        groundCover: 0.88,
         emittersPerPlant: 1,
       ),
     );
@@ -736,6 +745,9 @@ Project buildGreenhouseExample(Tr t, String lang) {
         plantSpacingM: 0.4,
         rowSpacingM: 1.5,
         wettedFraction: 0.5,
+        // 1.6.0 AGR: ground the canopy shades, FAO-56 eq. 76, fc = ((Kcb mid − 0.15)/(1.20 − 0.15))^(1 + 0.5·h) with Kcb mid and h of Tables 17 and 12 (sweet pepper 1.00, 0.7 m):
+        // 0.75, Kr = 0.1·√75 = 0.87 (Keller & Bliesner 1990)
+        groundCover: 0.75,
         emittersPerPlant: 1,
       ),
     );
@@ -834,6 +846,9 @@ Project buildCoffeeExample(Tr t, String lang) {
         plantSpacingM: 0.7,
         rowSpacingM: 3.5,
         wettedFraction: 0.4,
+        // 1.6.0 AGR: ground the hedgerows shade near noon (Pd of Keller & Bliesner 1990, the fc of FAO-56 chapter 7): adult crowns about 2.1 m wide on rows 3.5 m apart,
+        // 0.6, Kr = 0.1·√60 = 0.77 (FAO-56 eq. 76 from Kcb mid 0.90 and h 2.5 m of Tables 17 and 12 gives 0.47, a young or pruned plot)
+        groundCover: 0.6,
         emittersPerPlant: 1,
       ),
     );
@@ -1286,6 +1301,8 @@ Project buildSugarcaneExample(Tr t, String lang) {
         mad: 0.6,
         rowSpacingM: 1.5,
         wettedFraction: 0.5,
+        // 1.6.0 AGR: ground cover 1 (Kr 1): FAO-56 eq. 76, fc = ((Kcb mid − 0.15)/(1.20 − 0.15))^(1 + 0.5·h) with Kcb mid and h of Tables 17 and 12 gives full cover for sugar
+        // cane (Kcb mid 1.20 = Kc max)
       ),
     );
   }
@@ -1380,6 +1397,9 @@ Project buildGravityExample(Tr t, String lang) {
         plantSpacingM: 0.3,
         rowSpacingM: 1.5,
         wettedFraction: 0.5,
+        // 1.6.0 AGR: ground the beds shade, FAO-56 eq. 76, fc = ((Kcb mid − 0.15)/(1.20 − 0.15))^(1 + 0.5·h) with Kcb mid and h of Tables 17 and 12 (small vegetables 0.95, 0.3 m):
+        // 0.73, Kr = 0.1·√73 = 0.85 (Keller & Bliesner 1990)
+        groundCover: 0.73,
         emittersPerPlant: 2,
       ),
     );
@@ -1474,6 +1494,9 @@ Project buildBananaExample(Tr t, String lang) {
         plantSpacingM: 2.5,
         rowSpacingM: 5,
         wettedFraction: 0.7,
+        // 1.6.0 AGR: ground the plants shade, FAO-56 eq. 76, fc = ((Kcb mid − 0.15)/(1.20 − 0.15))^(1 + 0.5·h) with Kcb mid and h of Tables 17 and 12 (banana, first year, 1.05,
+        // 3 m): 0.68, Kr = 0.1·√68 = 0.82 (Keller & Bliesner 1990)
+        groundCover: 0.68,
         emittersPerPlant: 1,
       ),
     );

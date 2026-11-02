@@ -835,14 +835,15 @@ class PropertiesPanel extends StatelessWidget {
         key: const Key('area_crop_key'),
         label: t('req.crop'),
         value: a.cropKey.isEmpty ? '' : a.cropKey,
-        items: ['', ...fao56Crops.keys],
-        labelOf: (k) => k.isEmpty ? t('req.noCrop') : t(k),
+        // 1.6.0 AGR: the user's crops after the FAO-56 table (PRD-15)
+        items: ['', ...fao56Crops.keys, for (final x in c.project.agronomy.userCrops) x.key],
+        labelOf: (k) => k.isEmpty ? t('req.noCrop') : cropNameOf(c.project, k, t.call),
         idOf: (k) => k,
         onChanged: (k) => set(() {
           a.cropKey = k ?? '';
-          final data = fao56Crops[a.cropKey];
+          final data = cropDataOf(c.project, a.cropKey);
           if (data != null) {
-            if (a.crop.isEmpty) a.crop = t(a.cropKey);
+            if (a.crop.isEmpty) a.crop = cropNameOf(c.project, a.cropKey, t.call);
             a.kc = data.kcMid;
             if (data.schedulingRootDepthM != null) a.rootDepthM = data.schedulingRootDepthM!;
             if (data.depletionFraction != null) a.mad = data.depletionFraction!;
@@ -853,7 +854,7 @@ class PropertiesPanel extends StatelessWidget {
         TextFieldRow(label: t('req.planting'), value: a.plantingMonthDay, onChanged: (x) => set(() => a.plantingMonthDay = x.trim(), inv: false)),
         // how the date was read (DD/MM, MM-DD, month names; the FAO-56 month without one)
         () {
-          final (date, how) = readPlantingDate(a, southern: siteIsSouthern(c.project));
+          final (date, how) = readPlantingDate(a, southern: siteIsSouthern(c.project), crop: cropDataOf(c.project, a.cropKey));
           final day = '${date.day} ${t('mon.${date.month}')}';
           final (text, warn) = switch (how) {
             PlantingRead.given => (t('req.plantingRead', {'d': day}), false),

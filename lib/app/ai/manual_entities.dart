@@ -466,7 +466,12 @@ final Map<String, TypeDoc> entityDocs = {
     {
       'pts': const FieldDoc('polygon vertices [[x, y], …], at least 3, enclosing a surface', unit: 'm'),
       'crop': const FieldDoc('crop name shown in the reports', panel: 'props.crop'),
-      'ck': FieldDoc('FAO-56 crop key (read_manual "agronomy" lists each with its Kc); set kc, root and mad with it, as the panel does', values: [...fao56Crops.keys], panel: 'req.crop', def: ''),
+      'ck': FieldDoc(
+        'FAO-56 crop key (read_manual "agronomy" lists each with its Kc), or user.<id> of a crop of the user (list_user_crops; 1.6.0); set kc, root and mad with it, as the panel does',
+        values: [...fao56Crops.keys],
+        panel: 'req.crop',
+        def: '',
+      ),
       'im': const FieldDoc(
         'irrigation method: the leaching formula and, for localized, the ground-cover reduction of Kc',
         values: ['sprinkler', 'localized', 'surface'],

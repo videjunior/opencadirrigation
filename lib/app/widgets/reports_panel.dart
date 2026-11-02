@@ -47,6 +47,8 @@ const reportTabKeys = [
   'reports.vih',
   // 1.6.0 AGB
   'reports.agb',
+  // 1.6.0 AGR
+  'reports.agronomy',
 ];
 
 /// Report tab indices used in code.
@@ -205,6 +207,18 @@ class ReportsPanel extends StatelessWidget {
           ('travellers', 1),
           ('furrows', 1),
         ], emptyKey: 'agb.rep.empty');
+      // 1.6.0 AGR: water balance, capacity, runoff, programme, fertigation, field tests
+      case 27:
+        return _stack(const [
+          ('waterBalance', 2),
+          ('capacity', 1),
+          ('machineRunoff', 2),
+          ('zoneRunoff', 1),
+          ('programmeStations', 2),
+          ('programmeRuns', 2),
+          ('fertigationStages', 2),
+          ('fieldTests', 1),
+        ], emptyKey: 'msg.noAgronomy');
       default:
         return _stack(const [('cornerArm', 1), ('vri', 1), ('pivotElectrical', 1)], emptyKey: 'msg.noMachineExtras');
     }

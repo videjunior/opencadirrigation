@@ -8,16 +8,18 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../core/design/area_requirement.dart';
+import '../../../core/design/area_water.dart' show cropDataOf;
 import '../../../core/design/climate.dart';
-import '../../../core/design/crops.dart';
 import '../../../core/design/designer.dart' show areaRequirements;
 import '../../../core/design/solar_pumping.dart';
 import '../../../core/design/soils.dart';
 import '../../../core/design/water_budget.dart';
 import '../../../core/design/wetted_bulb.dart';
 import '../../../core/io/climate_online.dart' show ClimateSource;
+import '../../../core/io/inmet_csv.dart';
 import '../../../core/model/entities.dart';
 import '../../../core/model/site_climate.dart';
+import '../../io/file_io.dart' show openBinaryFile;
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
@@ -65,12 +67,14 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
   var gen = 0;
   var tab = 0;
   var fromStation = false;
+  // 1.6.0 AGR: what the last station file gave
+  String? stationRead;
   final siteAtStart = c.siteLatLon;
   final station = _StationNormals(latitudeDeg: siteAtStart?.$1 ?? cur?.latitudeDeg ?? 0);
   // areas whose ETo is typed: the climate can fill it (the crop table uses the climate itself)
   final typedEto = [
     for (final a in c.project.entities.whereType<AreaEntity>())
-      if (a.useWaterBalance && !fao56Crops.containsKey(a.cropKey)) a,
+      if (a.useWaterBalance && cropDataOf(c.project, a.cropKey) == null) a,
   ];
   var fillAreas = typedEto.isNotEmpty;
   return showDialog<void>(
@@ -111,6 +115,45 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
           if (ctx.mounted) setState(() => busy = false);
         }
 
+        // 1.6.0 AGR: the file of a weather station (INMET CSV, or a zip of them)
+        Future<void> importStation() async {
+          final f = await openBinaryFile(accept: '.csv,.zip,.txt');
+          if (f == null) return;
+          String? err;
+          try {
+            final stations = mergeStationFiles(readStationFiles(f.$2, latitudeDeg: site?.$1 ?? cur?.latitudeDeg));
+            stations.sort((a, b) => b.days.length.compareTo(a.days.length));
+            final st = stations.first;
+            final now = DateTime.now();
+            final sc = stationClimate(st, retrieved: now.toIso8601String().substring(0, 10));
+            if (sc == null) {
+              err = t('clim.inmet.noMonths');
+            } else {
+              for (var m = 0; m < 12; m++) {
+                eto[m] = sc.etoMmDay[m];
+                rain[m] = sc.rainMm[m];
+                dep[m] = sc.dependableRainMm?[m] ?? sc.rainMm[m];
+                if (sc.solarKWhM2Day != null) rs[m] = sc.solarKWhM2Day![m];
+                rhMin[m] = sc.rhMinPct?[m] ?? double.nan;
+                wind[m] = sc.windSpeed2mMs?[m] ?? double.nan;
+              }
+              info = sc;
+              fromStation = false;
+              stationRead = t('clim.inmet.read', {
+                's': st.code.isEmpty ? st.name : '${st.name} (${st.code})',
+                'a': st.first == null ? '' : st.first!.toIso8601String().substring(0, 10),
+                'b': st.last == null ? '' : st.last!.toIso8601String().substring(0, 10),
+                'n': '${st.days.length}',
+                'y': '${sc.daily?.completeYears.length ?? 0}',
+              });
+              gen++;
+            }
+          } catch (e) {
+            err = c.describeError(e);
+          }
+          if (ctx.mounted) setState(() => error = err);
+        }
+
         final peak = eto.fold(0.0, math.max);
         final toFill = fillAreas && peak > 0
             ? [
@@ -147,6 +190,8 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
             longitudeDeg: site?.$2 ?? base?.longitudeDeg ?? 0,
             retrieved: base?.retrieved ?? '',
             attribution: base?.attribution ?? '',
+            // 1.6.0 AGR: the days of a download or a station file stay for the water balance
+            daily: fromStation ? null : base?.daily,
           );
           // the climate and the ETo of the areas: one undo step
           c.mutate(
@@ -211,6 +256,25 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
               ],
             ),
           ],
+          // 1.6.0 AGR: monthly normals and daily series from a station file
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  key: const Key('clim_inmet'),
+                  onPressed: busy ? null : importStation,
+                  icon: const Icon(Icons.file_open_outlined, size: 16),
+                  label: Text(t('clim.inmet.import')),
+                ),
+                Text(t('clim.inmet.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+              ],
+            ),
+          ),
+          if (stationRead != null) Text(stationRead!, style: TextStyle(fontSize: 11, color: Cad.fg70)),
           if (error != null) Text(error!, style: TextStyle(fontSize: 12, color: Cad.warning)),
           const SizedBox(height: 8),
           SingleChildScrollView(

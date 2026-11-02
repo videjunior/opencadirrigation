@@ -13,7 +13,6 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import 'area_water.dart';
 import 'auto_layout.dart' show LayoutRegion, evaluateSprayUniformity, polygonSelfCrossings;
-import 'crops.dart';
 import 'densogram.dart' show SpraySource, spraySources;
 import 'designer.dart' show areaRequirements;
 import 'electrical.dart';
@@ -21,7 +20,9 @@ import 'irrigation_requirement.dart';
 import 'model_checks.dart';
 import 'network_builder.dart';
 import 'permit.dart' show permitChecks; // 1.6.0 PRB
+import 'runoff_potential.dart' show machineRunoff;
 import 'soils.dart';
+import 'system_capacity.dart' show systemCapacity;
 import 'valve_in_head.dart';
 import 'water_budget.dart' show cycleAndSoakForSoil;
 
@@ -395,7 +396,13 @@ String _kind(Entity e) => e.type.name;
 /// - `area_planting_date`: a planting date that is not a date or whose day
 ///   and month could be swapped;
 /// - `area_leaching_infeasible`: water too saline for the crop at the
-///   yield potential asked for.
+///   yield potential asked for;
+/// - `capacity_below_peak`, `pivot_capacity_below_peak`: the system flows
+///   need more hours on the peak day than the irrigation window holds, or a
+///   machine cannot apply the peak gross requirement of its area in it
+///   (system_capacity.dart);
+/// - `pivot_runoff`: a pass of a machine at its design depth runs off the
+///   soil of the area under it (runoff_potential.dart).
 List<CheckIssue> agronomyIssues(Project p) {
   final out = <CheckIssue>[];
   final areas = [
@@ -425,15 +432,16 @@ List<CheckIssue> agronomyIssues(Project p) {
   if (climate != null) {
     final peak = climate.etoMmDay.fold(0.0, math.max);
     for (final a in areas) {
-      if (!a.useWaterBalance || fao56Crops.containsKey(a.cropKey) || peak <= 0) continue;
+      if (!a.useWaterBalance || cropDataOf(p, a.cropKey) != null || peak <= 0) continue;
       if ((a.etoMmDay - peak).abs() > math.max(0.15 * peak, 0.3)) out.add(CheckIssue('area_eto_climate', CheckSeverity.warning, entityIds: [a.id], value: '${f1(a.etoMmDay)} / ${f1(peak)} mm/d'));
     }
   }
   final south = siteIsSouthern(p);
   for (final a in areas) {
-    if (!fao56Crops.containsKey(a.cropKey)) continue;
+    final crop = cropDataOf(p, a.cropKey);
+    if (crop == null) continue;
     // planting dates
-    final (_, how) = readPlantingDate(a, southern: south);
+    final (_, how) = readPlantingDate(a, southern: south, crop: crop);
     if (how == PlantingRead.invalid || how == PlantingRead.ambiguous) out.add(CheckIssue('area_planting_date', CheckSeverity.warning, entityIds: [a.id], value: '"${a.plantingMonthDay}"'));
     // water too saline for the crop
     if (a.ecwDsM > 0) {
@@ -441,6 +449,25 @@ List<CheckIssue> agronomyIssues(Project p) {
       if (input != null && irrigationRequirement(input).warnings.contains('req_leaching_infeasible')) {
         out.add(CheckIssue('area_leaching_infeasible', CheckSeverity.warning, entityIds: [a.id], value: '${f1(a.ecwDsM)} dS/m'));
       }
+    }
+  }
+  // 1.6.0 AGR: the system against the peak gross demand, in the irrigation
+  // window of the programme
+  final cap = systemCapacity(p);
+  if (!cap.flowsFit && cap.flows.isNotEmpty) {
+    final worst = cap.flows.reduce((a, b) => b.hours > a.hours ? b : a);
+    out.add(CheckIssue('capacity_below_peak', CheckSeverity.warning, entityIds: [?worst.areaId], value: '${f1(cap.totalHours)} > ${f1(cap.windowHours)} h/d'));
+  }
+  for (final m in cap.machines) {
+    if (m.short) out.add(CheckIssue('pivot_capacity_below_peak', CheckSeverity.warning, entityIds: [m.pivotId], value: '${f1(m.capacityMmDay)} < ${f1(m.peakGrossMmDay)} mm/d'));
+  }
+  // 1.6.0 AGR: potential runoff of a pass of every machine over a known soil
+  for (final m in p.entities.whereType<PivotEntity>()) {
+    final r = machineRunoff(p, m);
+    if (r == null) continue;
+    final w = r.worst;
+    if (w.runoffMm > math.max(0.5, 0.02 * w.depthMm)) {
+      out.add(CheckIssue('pivot_runoff', CheckSeverity.warning, entityIds: [m.id], value: '${f1(w.runoffMm)} mm (${w.runoffPct.round()} %) · ≤ ${f1(w.maxDepthMm)} mm'));
     }
   }
   return out;

@@ -19,10 +19,12 @@ import 'dialogs/agronomy_dialogs.dart';
 // 1.6.0 AGB
 import 'dialogs/agb_dialogs.dart';
 import 'dialogs/field_machine_dialogs.dart';
+import 'dialogs/crop_plan_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/deliverables_dialogs.dart'; // 1.6.0 PRB
 import 'dialogs/densogram_dialog.dart';
+import 'dialogs/water_balance_dialogs.dart';
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
@@ -516,6 +518,22 @@ class AppMenuBar extends StatelessWidget {
                     item(t('agb.ph.menu'), () => showPumpHouseDialog(context, c), icon: Icons.electrical_services_outlined, key: const Key('menu_agb_pump_house')),
                     item(t('agb.solar.menu'), () => showSolarDesignDialog(context, c), icon: Icons.solar_power, key: const Key('menu_agb_solar')),
                     item(t('agb.water.menu'), () => showWaterQualityDialog(context, c), icon: Icons.water_drop, key: const Key('menu_agb_water')),
+                    // 1.6.0 AGR: water balance, programme, runoff, fertigation by stage, field uniformity, user crops
+                    SubmenuButton(
+                      onOpen: _menuOpened,
+                      onClose: _menuClosed,
+                      key: const Key('menu_agronomy'),
+                      leadingIcon: const Icon(Icons.eco_outlined, size: 16),
+                      menuChildren: [
+                        item(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_water_balance')),
+                        item(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('menu_programme')),
+                        item(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('menu_runoff')),
+                        item(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('menu_fert_stages')),
+                        item(t('ft.menu'), () => showFieldUniformityDialog(context, c), icon: Icons.grid_on, key: const Key('menu_field_uniformity')),
+                        item(t('uc.menu'), () => showUserCropsDialog(context, c), icon: Icons.spa_outlined, key: const Key('menu_user_crops')),
+                      ],
+                      child: Text(t('agr.menu')),
+                    ),
                     SubmenuButton(
                       onOpen: _menuOpened,
                       onClose: _menuClosed,

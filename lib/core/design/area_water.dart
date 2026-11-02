@@ -25,6 +25,7 @@ library;
 
 import 'dart:math' as math;
 
+import '../model/agronomy_plan.dart' show userCropPrefix;
 import '../model/entities.dart';
 import '../model/project.dart';
 import 'crops.dart';
@@ -65,6 +66,28 @@ SoilCover soilCoverOf(AreaEntity a) => const {'crop.turf', 'crop.turfCool', 'cro
 double? soilRateLimitMmH(AreaEntity a) {
   final soil = soilTable[a.soilKey];
   return soil == null ? null : maxSprinklerApplicationRateMmH(soil.texture, a.slopePct, cover: soilCoverOf(a));
+}
+
+// ---------------------------------------------------------------- crops
+
+/// The crop of key [key] in [p]: a row of the FAO-56 table ([fao56Crops]),
+/// or one of the user's crops (`user.<id>`, `Project.agronomy`) with
+/// the curve, stages, root depth and depletion fraction typed for it; null
+/// for no crop (the area's single typed Kc).
+CropData? cropDataOf(Project p, String key) {
+  if (key.isEmpty) return null;
+  final table = fao56Crops[key];
+  if (table != null) return table;
+  if (!key.startsWith(userCropPrefix)) return null;
+  return p.agronomy.userCrop(key)?.toCropData();
+}
+
+/// Name of crop [key] for reports: the translated name of a table crop, the
+/// name the user gave one of their crops, else the key.
+String cropNameOf(Project p, String key, String Function(String key) t) {
+  final u = p.agronomy.userCrop(key);
+  if (u != null) return u.name.isEmpty ? u.id : u.name;
+  return t(key);
 }
 
 // ---------------------------------------------------------------- planting
@@ -118,12 +141,13 @@ bool siteIsSouthern(Project p) {
 /// can only be the day. Without a date, or with one that is not a date, the
 /// planting month of the crop's FAO-56 row on the 1st (those rows are mostly
 /// northern-hemisphere seasons: six months later when [southern]), else
-/// January.
-(DateTime, PlantingRead) readPlantingDate(AreaEntity a, {int year = 2001, bool southern = false, bool monthFirst = false}) {
+/// January. A user's crop ([crop], `user.<id>`) keeps the month typed for
+/// it: it was typed for the site.
+(DateTime, PlantingRead) readPlantingDate(AreaEntity a, {int year = 2001, bool southern = false, bool monthFirst = false, CropData? crop}) {
   DateTime byDefault() {
-    final crop = fao56Crops[a.cropKey];
-    var m = crop?.plantingMonth ?? 1;
-    if (southern && crop?.plantingMonth != null && crop?.stages != null) m = (m + 5) % 12 + 1;
+    final c = crop ?? fao56Crops[a.cropKey];
+    var m = c?.plantingMonth ?? 1;
+    if (southern && !a.cropKey.startsWith(userCropPrefix) && c?.plantingMonth != null && c?.stages != null) m = (m + 5) % 12 + 1;
     return DateTime.utc(year, m, 1);
   }
 
@@ -166,7 +190,8 @@ bool siteIsSouthern(Project p) {
 }
 
 /// Planting date of [a] in the typical year (see [readPlantingDate]).
-DateTime plantingDateOf(AreaEntity a, {int year = 2001, bool southern = false, bool monthFirst = false}) => readPlantingDate(a, year: year, southern: southern, monthFirst: monthFirst).$1;
+DateTime plantingDateOf(AreaEntity a, {int year = 2001, bool southern = false, bool monthFirst = false, CropData? crop}) =>
+    readPlantingDate(a, year: year, southern: southern, monthFirst: monthFirst, crop: crop).$1;
 
 // ---------------------------------------------------------------- crop table input
 
@@ -183,18 +208,31 @@ DateTime plantingDateOf(AreaEntity a, {int year = 2001, bool southern = false, b
 /// already in Kr and Pw). The depletion fraction is adjusted to the ETc of
 /// each month (FAO-56 Table 22 note 2) only while it is the table's value.
 RequirementInput? requirementInputOf(Project p, AreaEntity a, {double applicationRateMmH = 0}) {
-  final crop = fao56Crops[a.cropKey];
+  // 1.6.0 AGR: a crop of the table or one of the user's crops (PRD-15)
+  final crop = cropDataOf(p, a.cropKey);
   if (crop == null) return null;
   final localized = isLocalizedArea(a);
   final climate = p.climate;
   final normals = climate?.normals ?? ClimateNormals(etoMmDay: List.filled(12, a.etoMmDay), rainMm: List.filled(12, 0.0));
-  final planting = plantingDateOf(a, southern: siteIsSouthern(p));
+  final planting = plantingDateOf(a, southern: siteIsSouthern(p), crop: crop);
   final adjusted = (a.climateKc ? climateKcAdjustment(p, crop, planting) : null) ?? crop.curve;
   final tableP = crop.depletionFraction;
+  CropCycle cycleWith(KcCurve curve) => fao56Crops.containsKey(a.cropKey)
+      ? CropCycle.fromTable(a.cropKey, planting: planting, kr: areaKr(a), curve: curve, rootDepthM: a.rootDepthM, depletionFraction: a.mad)
+      : CropCycle(
+          cropKey: a.cropKey,
+          curve: curve,
+          planting: planting,
+          kr: areaKr(a),
+          rootDepthM: a.rootDepthM,
+          depletionFraction: a.mad,
+          eceThreshold: crop.eceThreshold,
+          eceMax: crop.eceMax,
+        );
   RequirementInput inputWith(KcCurve curve) => RequirementInput(
     areaId: a.id,
     areaM2: a.area,
-    cycles: [CropCycle.fromTable(a.cropKey, planting: planting, kr: areaKr(a), curve: curve, rootDepthM: a.rootDepthM, depletionFraction: a.mad)],
+    cycles: [cycleWith(curve)],
     climate: normals,
     rainMethod: EffectiveRainMethod.values.asNameMap()[a.rainMethod] ?? EffectiveRainMethod.usdaScs,
     useDependableRain: a.useDependableRain,

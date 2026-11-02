@@ -455,10 +455,16 @@ class MonthlyNormal {
 /// [dependableProbability] sets the dependable rain (0.8 = exceeded in four
 /// years out of five). Daily ETo is computed with the FAO Penman-Monteith
 /// equation (climate.dart) wherever temperatures and radiation exist.
-List<MonthlyNormal> climateMonthlyNormals(ClimateSeries series, {double dependableProbability = 0.8, double minCompleteness = 0.9}) {
-  final elev = series.elevationM ?? 0;
+List<MonthlyNormal> climateMonthlyNormals(ClimateSeries series, {double dependableProbability = 0.8, double minCompleteness = 0.9}) =>
+    monthlyNormalsOfDays(series.days, latitudeDeg: series.latitudeDeg, elevationM: series.elevationM ?? 0, dependableProbability: dependableProbability, minCompleteness: minCompleteness);
+
+/// [climateMonthlyNormals] of daily values [days] of any source (1.6.0 AGR:
+/// also the days of a weather station file) at [latitudeDeg] and
+/// [elevationM].
+List<MonthlyNormal> monthlyNormalsOfDays(List<ClimateDay> days, {required double latitudeDeg, double elevationM = 0, double dependableProbability = 0.8, double minCompleteness = 0.9}) {
+  final elev = elevationM;
   final groups = <(int, int), List<ClimateDay>>{};
-  for (final d in series.days) {
+  for (final d in days) {
     (groups[(d.date.year, d.date.month)] ??= []).add(d);
   }
   final perMonth = <int, List<_MonthStats>>{};
@@ -467,7 +473,7 @@ List<MonthlyNormal> climateMonthlyNormals(ClimateSeries series, {double dependab
     final withRain = days.where((d) => d.rainMm != null).length;
     final withTemp = days.where((d) => d.tMaxC != null && d.tMinC != null).length;
     if (withRain < minCompleteness * n || withTemp < minCompleteness * n) return;
-    (perMonth[ym.$2] ??= []).add(_MonthStats.of(days, series.latitudeDeg, elev, n));
+    (perMonth[ym.$2] ??= []).add(_MonthStats.of(days, latitudeDeg, elev, n));
   });
   final out = <MonthlyNormal>[];
   for (var m = 1; m <= 12; m++) {

@@ -9,6 +9,7 @@ import '../hydraulics/friction.dart';
 import '../io/geo.dart';
 import '../units.dart';
 import 'agb_settings.dart';
+import 'agronomy_plan.dart';
 import 'blocks.dart';
 import 'catalog.dart';
 import 'currency.dart';
@@ -450,9 +451,12 @@ class Project {
     AgbSettings? agb,
     // 1.6.0 PRB
     DeliverableSettings? deliverables,
+    // 1.6.0 AGR
+    AgronomyPlan? agronomy,
   }) : meta = meta ?? ProjectMeta(),
        agb = agb ?? AgbSettings(),
        deliverables = deliverables ?? DeliverableSettings(),
+       agronomy = agronomy ?? AgronomyPlan(),
        proposal = proposal ?? ProposalSettings(),
        scenarios = scenarios ?? [],
        labelRules = labelRules ?? [],
@@ -527,6 +531,9 @@ class Project {
   // 1.6.0 AGB: pump house electrics, solar pumping, water quality and
   // two-wire wiring (`agb_settings.dart`)
   AgbSettings agb;
+  // 1.6.0 AGR: the user's crops, the programme settings, the water balance
+  // and fertigation of the areas, the field evaluations
+  AgronomyPlan agronomy;
   int _nextId;
 
   static List<Layer> defaultLayers() => [for (final n in Layers.all) Layer(name: n, color: Layers.defaultColors[n] ?? 0xFFFFFFFF)];
@@ -769,6 +776,8 @@ class Project {
     // 1.6.0 AGB
     if (!agb.isDefault) 'agb': agb.toJson(),
     if (!deliverables.isDefault) 'deliverables': deliverables.toJson(), // 1.6.0 PRB
+    // 1.6.0 AGR
+    if (!agronomy.isDefault) 'agronomy': agronomy.toJson(),
     'nextId': _nextId,
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
     if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
@@ -886,6 +895,13 @@ class Project {
     // 1.6.0 PRB
     final deliverables = DeliverableSettings.fromJson(object('deliverables'));
     if (j['deliverables'] != null && j['deliverables'] is! Map) rep.skip('deliverables');
+    // 1.6.0 AGR
+    AgronomyPlan? agronomy;
+    try {
+      agronomy = AgronomyPlan.fromJson(object('agronomy'), report: rep);
+    } catch (_) {
+      rep.skip('agronomy');
+    }
     final p = Project(
       meta: ProjectMeta.fromJson(object('meta'), report: rep),
       params: params,
@@ -902,12 +918,13 @@ class Project {
       nextId: next,
       agb: agb,
       deliverables: deliverables, // 1.6.0 PRB
+      agronomy: agronomy,
     )..currentLayer = j['currentLayer'] is String ? j['currentLayer'] as String : Layers.drawing;
     p.unreadable.addAll(aside);
     _companionKeys.forEach(j.containsKey);
     var unread = j.unread;
     // sections that failed as a whole stay in the file as they were
-    for (final k in ['proposal', 'climate', 'blocks', 'agb', 'deliverables']) {
+    for (final k in ['proposal', 'climate', 'blocks', 'agb', 'deliverables', 'agronomy']) {
       if (rep.skipped.containsKey(k) && migrated[k] != null) (unread ??= {})[k] = migrated[k];
     }
     p.extra = unread;
