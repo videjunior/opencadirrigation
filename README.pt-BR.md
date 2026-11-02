@@ -70,7 +70,7 @@ Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pre
   `q = k·H^x`, solver de rede pelo Global Gradient Algorithm (o mesmo do EPANET), bombas, válvulas
   redutoras, sustentadoras e controladoras de vazão, lavagem de fitas, golpe de aríete pelo método
   das características e simulação de período estendido de 24 horas.
-- **Dimensionamento automático** de laterais, submains e linha principal por programação linear
+- **Dimensionamento automático** de laterais, linhas de derivação e linha principal por programação linear
   (custo anualizado de tubos + energia, janela de pressão dos emissores, classe de pressão dos tubos
   na temperatura da água, telescopagem) ou pelo método clássico de velocidade máxima.
 - **Projeto automático**: layout de aspersores em paisagismo com zoneamento e traçado de tubos e
@@ -142,13 +142,13 @@ estudantes. O tutorial interativo e a galeria de exemplos permitem começar sem 
 | `orchard` | Pomar | Microaspersão em citros e gotejamento em uva, poço, bomba e filtro, terreno em declive | 2 |
 | `garden` | Jardim residencial | Sprays pop-up no gramado da frente, rotores atrás, gotejamento nos canteiros; rede pública com hidrômetro e anti-refluxo | 3 |
 | `sportsField` | Campo de futebol | 105 × 68 m, aspersores de impacto em cinco linhas com bocais equivalentes nas linhas do campo, reservatório, bomba, turnos noturnos | 5 |
-| `rowCrop` | Lavoura gotejada | Quatro talhões de tomate com fita, submains com válvulas, filtro de tela, bomba, declive de 1 % | 4 |
+| `rowCrop` | Lavoura gotejada | Quatro talhões de tomate com fita, linhas de derivação com válvulas, filtro de tela, bomba, declive de 1 % | 4 |
 | `pivot` | Pivô central | Pivô de 300 m em milho, adutora, poço e bomba; relatório de torres, vãos e bocais | 1 pivô |
 | `greenhouse` | Estufa de hortaliças | Quatro túneis de pimentão com tubo gotejador autocompensante, reservatório, bomba pequena e filtro de discos | 4 |
 | `nursery` | Viveiro de mudas | Três canteiros com microaspersores suspensos em malha 4 × 4 m, caixa d’água elevada, bomba pequena e filtro de discos | 3 |
 | `coffee` | Cafezal em curvas de nível | Três talhões em encosta com laterais curvas que seguem as curvas de nível (bloco guiado), tubo gotejador PC, poço e bomba | 3 |
 | `bananas` | Bananal | Dois talhões com microaspersores autocompensantes em 5 × 5 m, poço com bomba submersa e filtro de discos | 2 |
-| `sugarcane` | Cana-de-açúcar subsuperficial | Tubo gotejador PC de 20 mm enterrado a 0,3 m, laterais de 180 m, submains enterrados, filtro de tela e ventosa | 2 |
+| `sugarcane` | Cana-de-açúcar subsuperficial | Tubo gotejador PC de 20 mm enterrado a 0,3 m, laterais de 180 m, linhas de derivação enterradas, filtro de tela e ventosa | 2 |
 | `gravity` | Gotejamento por gravidade | Reservatório 40 m acima dos talhões, sem bomba: registro, válvula reguladora de pressão e filtro na adutora | 2 |
 | `pasture` | Pastagem em aspersão | Três piquetes com linhas de aspersores de impacto em 12 × 18 m, reservatório, bomba e válvula de retenção | 3 |
 | `golf` | Buraco de golfe | Tee com sprays, fairway com rotores em malha triangular e green com rotores no perímetro, lago e bomba | 4 |
@@ -243,7 +243,7 @@ zonas, gerenciamento, linha principal, materiais e plotagem), adaptada a um app 
   linha principal, elétrica, revisão).
 - **Canvas** ao centro, com grade, snaps, sobreposições e cartão de progresso do cálculo.
 - **Painel lateral** à direita com três abas: **Propriedades** do item selecionado (com resultados
-  hidráulicos após o cálculo e o envelope de posição do submain para laterais), **Camadas**
+  hidráulicos após o cálculo e o envelope de posição da linha de derivação para laterais), **Camadas**
   (visibilidade, bloqueio, cor, renomear, criar, remover) e **Histórico** (linha do tempo de
   estados, como no Photoshop: clique para voltar ou avançar).
 - **Relatórios** embaixo do canvas (F2), redimensionável.
@@ -279,7 +279,7 @@ painéis deslizantes. Pinça para zoom, dois dedos para mover, um dedo desenha.
 | Editar | Desfazer, Refazer, Selecionar tudo, Copiar, Recortar, Colar, Duplicar seleção, Excluir seleção, Materiais da seleção, Salvar seleção como bloco, Inserir bloco, Modificar ▸ (rotacionar, espelhar, escalar, deslocar, aparar, estender, cortar tubo, alinhar por 2 pontos, matriz) |
 | Ver | Enquadrar tudo, Aproximar/Afastar, Grade, Rótulos, Raios molhados, Alças de edição, Rótulos condicionais, GPS do aparelho, Sobreposição (nenhuma, velocidade, pressão, diâmetros, pressão mín/máx por zona, densograma, declividade do terreno, exposição do terreno), Mapa base ▸ (nenhum, OpenStreetMap, OpenTopoMap, CARTO, Esri imagem/ruas/topográfico, Google Maps mapa/satélite/híbrido/relevo com a sua própria chave de API, URL XYZ ou WMS personalizada; exige georreferência), Chave da API do Google Maps…, URL do mapa personalizado…, Idioma ▸, Tema ▸ (escuro, claro, seguir o sistema) |
 | Desenhar | Linha, Polilinha, Retângulo, Círculo, Arco, Spline, Hachura, Símbolo, Texto, Cota, Cota angular, Cota radial, Cota de ordenada, Chamada (leader), Curva de nível, Cota de ponto, Área irrigada, Medir, Perfil de elevação, Comentário, Nuvem de revisão, GPS no campo ▸ (gravar trajeto a pé; terminá-lo como área irrigada, contorno fechado ou linha; marcar ponto na posição atual) |
-| Zona | Tubo de zona, Lateral (sprayline), Fita/tubo gotejador, Emissor, Válvula de controle, Acessório hidráulico, Junção, Bloco de laterais, Grade de aspersores, Envelope de posição do submain, Densograma, Dispositivo nas laterais selecionadas, Converter laterais selecionadas em tubo cego, Controlador, Rota de fios, Rotas automáticas de fios |
+| Zona | Tubo de zona, Lateral (sprayline), Fita/tubo gotejador, Emissor, Válvula de controle, Acessório hidráulico, Junção, Bloco de laterais, Grade de aspersores, Envelope de posição da linha de derivação, Densograma, Dispositivo nas laterais selecionadas, Converter laterais selecionadas em tubo cego, Controlador, Rota de fios, Rotas automáticas de fios |
 | Linha principal | Fonte de água, Tubo principal, Bomba, Acessório hidráulico, emissor e junção na linha principal, Selecionar bomba, Transientes hidráulicos, Ventosas, Simulação de 24 horas, Operação sob demanda (Clément), Criticidade dos tubos, Calibrar rugosidade com medições, Fertirrigação, Pivô central / lateral móvel |
 | Projeto | Parâmetros de projeto, Catálogo de componentes, Turnos de operação, Tarifa horária e horários dos turnos, Agrupar zonas por energia, Orçamento comercial, Alternativas do projeto, Clima do local, Terreno ▸ (curva de nível, linha de quebra, cota de ponto, perfil de elevação, baixar elevação da internet, gerar curvas de nível do modelo, vista 3D do terreno, limpar perfil, interpolação TIN ou IDW), Projeto automático ▸ (layout automático de aspersores, modelos de gramado esportivo e golfe, dividir talhão em blocos, anéis de gotejamento em pomar, ajustar pivô ao talhão, detectar vegetação na imagem), Verificação do projeto, Corrigir automaticamente, Otimizar projeto, Assistente de IA, Dimensionar zonas, Dimensionar linha principal, Projetar tudo, Analisar (tamanhos atuais), Analisar automaticamente ao editar, Vista 3D do terreno, Limpar resultados |
 | Relatórios | As abas do painel |
@@ -298,7 +298,7 @@ sozinho após uma pausa. Os aliases aceitam nomes em português, inglês e espan
 | Desenho | `L` linha · `PL` polilinha · `REC` retângulo · `C` círculo · `A` arco · `SPL` spline · `H` hachura · `SY` / `I` símbolo · `T` / `MT` texto · `D` cota · `DAN` cota angular · `DRA` cota radial / de diâmetro · `DOR` cota de ordenada · `LE` chamada · `ME` / `DI` medir · `NOTE` / `NOTA` comentário · `RC` / `NUVEM` nuvem de revisão |
 | Terreno | `CT` curva de nível · `BRK` / `QUEBRA` linha de quebra · `SP` cota de ponto · `PR` perfil · `AR` área irrigada |
 | Edição | `RO` rotacionar · `MI` espelhar · `SC` escalar · `O` deslocar · `TR` aparar · `EX` estender · `CUT` / `BR` cortar tubo · `ARRAY` matriz · `E` apagar · `CO` copiar · `PA` colar · `U` desfazer · `REDO` · `ALL` selecionar tudo · `DUP` duplicar · `AL` alinhar por 2 pontos · `WBLOCK` / `SB` salvar seleção como bloco · `INSERT` / `INSERIR` inserir bloco |
-| Zona | `ZP` tubo de zona · `SL` lateral · `DT` fita · `OUT` / `EM` emissor · `V` válvula · `F` acessório · `J` junção · `B` bloco · `AH` grade de aspersores · `FE` envelope do submain · `DENS` densograma |
+| Zona | `ZP` tubo de zona · `SL` lateral · `DT` fita · `OUT` / `EM` emissor · `V` válvula · `F` acessório · `J` junção · `B` bloco · `AH` grade de aspersores · `FE` envelope da linha de derivação · `DENS` densograma |
 | Elétrica | `CTRL` controlador · `WR` rota de fios · `WROUTE` / `ROTAS` rotas automáticas de fios |
 | Linha principal | `MP` tubo principal · `WS` fonte · `PU` bomba · `PV` pivô |
 | Projeto automático | `LAYOUT` layout de aspersores · `TPL` / `MODELO` modelos de gramado e golfe · `SUBDIV` / `TALHAO` blocos do talhão · `RINGS` / `ANEIS` anéis de gotejamento · `PFIT` ajuste do pivô · `VEG` vegetação |
@@ -425,7 +425,7 @@ cada resposta do assistente de IA que alterou o projeto também são um passo.
 | Bomba | `PU` | PUMPS | Curva H(Q) do catálogo, com relação de velocidade, ou um inversor de frequência que mantém uma pressão alvo na saída entre uma rotação mínima e a máxima; curvas de rendimento e de NPSH requerido quando o catálogo as traz; ponto de operação no cálculo dos turnos; horímetro opcional. |
 | Tubo principal | `MP` | MAINLINE_PIPES | Da fonte às válvulas; diâmetro fixo ou dimensionado (`computerSized`). |
 | Válvula de zona | `V` | CONTROL_VALVES | Separa linha principal e zona; define o nome da zona; pode ter pressão de jusante fixa para análise detalhada. |
-| Tubo de zona | `ZP` | ZONE_PIPES | Submains e distribuidores a jusante da válvula. |
+| Tubo de zona | `ZP` | ZONE_PIPES | Linhas de derivação e distribuidores a jusante da válvula. |
 | Lateral (sprayline) | `SL` | SPRAYLINES | Tubo com emissores igualmente espaçados: emissor e bocal do catálogo, espaçamento, deslocamento do primeiro, arco, altura da haste, profundidade. |
 | Fita / tubo gotejador | `DT` | TAPES | Emissores integrados definidos pelo item do catálogo; pressão de entrada, regulada ou não, vazão de lavagem. |
 | Emissor individual | `OUT` | OUTLETS | Aspersor, microaspersor, gotejador, borbulhador, canhão ou ponto de demanda sobre um tubo de zona. Desenhado na linha principal é um aspersor com válvula (valve-in-head): uma estação própria, ou uma estação junto com os aspersores que têm o mesmo nome de estação. |
@@ -464,10 +464,10 @@ cada resposta do assistente de IA que alterou o projeto também são um passo.
 ### Geradores
 
 - **Bloco de laterais** (B): polígono, direção, espaçamento entre laterais, deslocamento da primeira,
-  lateral com emissores ou fita, posição do submain (início, centro, fim), válvula (posição e modelo),
+  lateral com emissores ou fita, posição da linha de derivação (início, centro, fim), válvula (posição e modelo),
   comprimento do pé de válvula (stub), nomes. Se uma linha, polilinha, curva de nível ou spline
   estiver selecionada ao abrir o diálogo, ela pode servir de guia: as laterais seguem a curva
-  (paralelas a uma curva de nível ou a uma divisa curva) e são recortadas pelo polígono. O submain
+  (paralelas a uma curva de nível ou a uma divisa curva) e são recortadas pelo polígono. A linha de derivação
   passa pelo ponto de alimentação de cada fileira no lado escolhido, contornando por dentro do
   talhão onde uma fileira não alcança essa linha (talhão em L); fileiras que o polígono corta em
   vários pedaços (talhão em U, fileira curva recortada em dois) são alimentadas por ramais ligados
@@ -482,8 +482,8 @@ cada resposta do assistente de IA que alterou o projeto também são um passo.
   bocal quando o catálogo o tem, senão um perfil triangular, elíptico ou uniforme; um vento opcional
   (velocidade e direção) que desloca a água a sotavento; tamanho da célula, zonas; o mapa aparece no
   desenho e a grade é exportada em CSV.
-- **Envelope de posição do submain** (FE): para cada lateral selecionada, pinta em verde o trecho
-  onde o submain pode alimentá-la respeitando a janela de pressão, considerando o terreno.
+- **Envelope de posição da linha de derivação** (FE): para cada lateral selecionada, pinta em verde o trecho
+  onde a linha de derivação pode alimentá-la respeitando a janela de pressão, considerando o terreno.
 
 ### Projeto automático (Projeto → Projeto automático)
 
@@ -493,8 +493,8 @@ Cada ferramenta mostra o resultado ao vivo e o gera num único passo de desfazer
 |---|---|---|
 | Layout automático de aspersores | `LAYOUT` | Aspersores para um gramado ou canteiro (cantos, depois bordas, depois o interior, cabeça a cabeça, deixando de fora edificações e canteiros) com bocais de precipitação equivalente e a prévia de CU/DU/SC; opcionalmente zoneados por vazão (sem misturar classes de precipitação) e com o traçado: válvulas na linha principal, junto às zonas ou num cavalete, tubos de zona em árvore pelos aspersores e uma linha principal em árvore desde a fonte. |
 | Modelos de gramado esportivo e golfe | `TPL` | Campo de futebol com 3, 4 ou 5 linhas de rotores, gramado interno de pista de atletismo, green de golfe cercado de setores, tee e fairway em malha triangular. |
-| Dividir talhão em blocos | `SUBDIV` | Blocos de mesma área líquida, limitados por área ou por vazão, em faixas ou em grade, com carreadores, cada um com o lado do submain e a válvula, preenchidos pelo gerador de blocos e alimentados por uma linha principal. |
-| Anéis de gotejamento em pomar | `RINGS` | Um anel de tubo gotejador ou de gotejadores em volta de cada árvore de uma malha de plantio ou de árvores levantadas, ligado a laterais ao longo das fileiras, a um submain e à válvula. |
+| Dividir talhão em blocos | `SUBDIV` | Blocos de mesma área líquida, limitados por área ou por vazão, em faixas ou em grade, com carreadores, cada um com o lado da linha de derivação e a válvula, preenchidos pelo gerador de blocos e alimentados por uma linha principal. |
+| Anéis de gotejamento em pomar | `RINGS` | Um anel de tubo gotejador ou de gotejadores em volta de cada árvore de uma malha de plantio ou de árvores levantadas, ligado a laterais ao longo das fileiras, a uma linha de derivação e à válvula. |
 | Ajustar pivô ao talhão | `PFIT` | O maior círculo completo livre dos obstáculos, ou o pivô setorial que irriga a maior parte do talhão, com o comprimento da máquina em vãos padrão. |
 | Detectar vegetação na imagem | `VEG` | Gramados, árvores e arbustos encontrados por processamento de imagem neste aparelho (sem serviço externo) no mapa base da tela ou numa foto aérea selecionada, criados como áreas irrigadas (com predefinições por classe) e exclusões. Confira se os termos de uso das imagens permitem traçar sobre elas. |
 
@@ -622,7 +622,7 @@ com os campos de cada grupo e as regras de contribuição, está em [catalogs/RE
 |---|---|
 | Hidráulica | Fórmula de perda de carga: Hazen-Williams (padrão), Darcy-Weisbach, Scobey ou Manning; temperatura da água 20 °C (viscosidade, pressão de vapor e a redução da classe de pressão do PVC e do PE); perdas localizadas como 5 % do comprimento (padrão) ou o K das curvas e tês encontrados no desenho, ligadas; escala e deslocamento do C (envelhecimento); tolerância de conexão 0,05 m; máximo de 100 nós agregados por lateral |
 | Velocidades máximas | 2,0 m/s em laterais, 1,5 m/s em zona, 2,0 m/s em linha principal |
-| Dimensionamento | Método LP (padrão) ou velocidade + janela de pressão (greedy); diâmetros por lateral (1), por submain (3) e por linha principal (3); variação máxima de pressão na zona (0 = derivada da tolerância de vazão do emissor); emissores por planta (1) |
+| Dimensionamento | Método LP (padrão) ou velocidade + janela de pressão (greedy); diâmetros por lateral (1), por linha de derivação (3) e por linha principal (3); variação máxima de pressão na zona (0 = derivada da tolerância de vazão do emissor); emissores por planta (1) |
 | Economia | Juros 10 %, prazo 10 anos, energia 0,75 por kWh, eficiência da bomba 65 %, 2000 h/ano de linha principal e 500 h/ano por zona, balanço capital × energia ligado, moeda da região ou do idioma (veja *Preços e moeda*); frequência da rede elétrica 60 Hz (uma bomba de rotação fixa cuja curva foi medida em outra frequência gira na proporção: uma curva de 60 Hz numa rede de 50 Hz roda a 5/6 da rotação e 69 % da altura) |
 | Lavagem e segurança | Velocidade de lavagem das fitas 0,3 m/s com pressão mínima de 1 m na ponta aberta; verificação de golpe de aríete ligada com tempo de fechamento de válvula (0 = instantâneo) |
 | Materiais | Seleção automática de conexões ligada; barra de tubo de 6 m para contar luvas |
@@ -653,7 +653,7 @@ com os campos de cada grupo e as regras de contribuição, está em [catalogs/RE
      limite de diâmetros por unidade;
    - **análise detalhada**: rede não linear com emissores dependentes da pressão; a pressão a
      jusante da válvula é escolhida por bissecção para que a pressão média dos emissores seja a
-     nominal (ou, para fitas reguladas, para garantir a pressão mínima de submain);
+     nominal (ou, para fitas reguladas, para garantir a pressão mínima da linha de derivação);
    - resultados: vazão da zona, pressões mínima e máxima e admissíveis, variação admissível e real,
      pressão requerida na válvula, perda na válvula, uniformidade (CU de Christiansen, DU do quartil
      inferior, EU de Keller-Karmeli com o CV do fabricante e emissores por planta, uniformidade

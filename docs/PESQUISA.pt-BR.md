@@ -25,7 +25,7 @@ formatos) e a documentação da API dos provedores de modelos que o assistente d
 7. [Múltiplas saídas: fator F](#7-múltiplas-saídas-fator-f)
 8. [Emissores e aspersores](#8-emissores-e-aspersores)
 9. [Uniformidade](#9-uniformidade)
-10. [Laterais e submains](#10-laterais-e-submains)
+10. [Laterais e linhas de derivação](#10-laterais-e-linhas-de-derivação)
 11. [Redes: o Global Gradient Algorithm](#11-redes-o-global-gradient-algorithm)
 12. [Bombas e energia](#12-bombas-e-energia)
 13. [Golpe de aríete e classes de pressão](#13-golpe-de-aríete-e-classes-de-pressão)
@@ -110,7 +110,7 @@ O modelo do OpenCADIrrigation (`entities.dart`) separa quatro famílias de itens
 - **Itens de zona**, a jusante de uma válvula de controle: tubo de zona, lateral com emissores
   igualmente espaçados (sprayline), fita ou tubo gotejador com emissores integrados, emissor
   individual, acessório (regulador, registro, filtro), junção e área irrigada com requisito
-  hídrico. Geradores criam blocos de laterais com submain e válvula, grades de aspersores, anéis em
+  hídrico. Geradores criam blocos de laterais com linha de derivação e válvula, grades de aspersores, anéis em
   volta de árvores e traçados automáticos (seção 19).
 - **Itens de linha principal**: fonte de água, tubo principal, bomba, junção, acessório (filtros,
   hidrômetros, a válvula mestra, válvulas redutoras e sustentadoras de pressão, hidrantes com
@@ -178,10 +178,10 @@ Do que a prática de projeto exige, o motor implementa:
   válvulas controladoras de vazão e retenções.
 - **Dimensionamento por programação linear** (topografia, janela de pressão, velocidade, classe de
   pressão na temperatura da água, economia, diâmetros habilitados e fixos, número de diâmetros por
-  lateral e por submain) e por **velocidade máxima**, com racionalização dos diâmetros de montante
+  lateral e por linha de derivação) e por **velocidade máxima**, com racionalização dos diâmetros de montante
   para jusante.
 - **Pressão da válvula** escolhida para que a pressão média dos emissores seja a nominal, ou, para
-  fitas reguladas, para garantir a pressão mínima de submain.
+  fitas reguladas, para garantir a pressão mínima da linha de derivação.
 - **Fonte de água** com pressão calculada (poço com nível negativo, reservatório com altura
   positiva) ou fixa (rede pública, com vazão e pressão de projeto e máximas).
 - **Gerenciamento** por turnos, com duty de cada fonte por turno e tempos de operação a partir dos
@@ -207,7 +207,7 @@ estádio, agronomia, programa do controlador, lavagem, golpe de aríete e transi
 pacotes de aspersores, lista de materiais (também por zona e de uma seleção) com custos anualizados
 e um orçamento; gráficos de linha piezométrica, de perfil e das curvas das bombas, sobreposições de
 velocidade, pressão, diâmetros, mínimos e máximos e declividade/aspecto, envelope de posição do
-submain, densograma (a água aplicada pelos aspersores como desenhados) e vista 3D do terreno; fiação
+linha de derivação, densograma (a água aplicada pelos aspersores como desenhados) e vista 3D do terreno; fiação
 das válvulas (estações, bitolas, tensão nos solenoides, decodificadores).
 
 ### 2.6 Formatos
@@ -228,7 +228,7 @@ Observações gerais sobre o cenário, sem referência a produtos:
 - As ferramentas profissionais de projeto de irrigação são, em regra, aplicativos de desktop para
   um único sistema operacional ou plug-ins de plataformas CAD pagas, com licença comercial, bancos
   de componentes fechados e formatos de projeto proprietários.
-- Na web existem sobretudo calculadoras de fabricantes (lateral, submain, bomba) e serviços
+- Na web existem sobretudo calculadoras de fabricantes (lateral, linha de derivação, bomba) e serviços
   fechados por assinatura voltados a paisagismo.
 - O motor de rede aberto de referência, já consolidado, é o EPANET (domínio público, US EPA),
   voltado a redes de abastecimento e sem os objetos de irrigação (laterais, fitas, válvulas de zona,
@@ -492,7 +492,7 @@ favor dele.
 
 ---
 
-## 10. Laterais e submains
+## 10. Laterais e linhas de derivação
 
 Módulo `lateral.dart` (Wu & Gitlin 1975; Keller & Bliesner 1990).
 
@@ -502,12 +502,12 @@ Módulo `lateral.dart` (Wu & Gitlin 1975; Keller & Bliesner 1990).
   produz (`analyzeLateralForMeanPressure`), que é o critério de ajuste da válvula.
 - Perfis de pressão: aclive, horizontal, declive suave (mínimo no fim), declive acentuado (mínimo no
   meio, porque o ganho por gravidade supera o atrito). Teste "downhill slope raises end pressure".
-- Repartição usual da perda admissível: 55 % na lateral e 45 % no submain.
+- Repartição usual da perda admissível: 55 % na lateral e 45 % na linha de derivação.
 - **Posição de alimentação**: alimentar pelo meio reduz a perda a ≈ 1/(2^m · 2) e permite laterais
   1,6 a 1,7 vezes mais longas. `allowableFeedPositions` avalia alimentar uma lateral de comprimento
   L numa fração f (0 = extremidade, 0,5 = centro), com os dois ramos partilhando a pressão de entrada
   escolhida para que a média seja a nominal, e devolve as posições aceitáveis e a ótima; é o
-  "envelope do submain" pintado no desenho e o teste "feed positions: centre feed is best on flat
+  "envelope da linha de derivação" pintado no desenho e o teste "feed positions: centre feed is best on flat
   ground".
 - **Comprimento máximo**: bisseção sobre L, múltiplo do espaçamento, até a variação atingir a janela
   (teste "max lateral length is monotonic").
@@ -619,7 +619,7 @@ permite zonas com milhares de nós (teste "large branched network is fast").
 ### 11.4 Uso no projeto
 
 A zona é resolvida como rede completa: reservatório de carga fixa no nó de jusante da válvula
-(pressão da válvula), nós com emissores agregados, trechos de submain e laterais. A **pressão da
+(pressão da válvula), nós com emissores agregados, trechos da linha de derivação e laterais. A **pressão da
 válvula** é achada por bissecção para que a pressão média dos emissores seja a nominal (a versão
 "análise rápida" usa demandas fixas e um ajuste linear em duas passagens). A linha principal é
 resolvida por turno com fontes de pressão fixa ou calculada, bombas e as demandas das válvulas, dos
@@ -978,7 +978,7 @@ Formulação (lp_sizing.dart):
   isolado (com teto). Se a análise não confirmar a janela, os emissores de pressão mínima e máxima
   entram como restrições adicionais e o LP roda de novo, até quatro rodadas.
 - **Arredondamento e telescopagem**: as frações são convertidas no número permitido de diâmetros
-  por unidade (1 lateral, 3 submain, 3 linha principal por padrão), maiores diâmetros a montante; as
+  por unidade (1 lateral, 3 linha de derivação, 3 linha principal por padrão), maiores diâmetros a montante; as
   unidades com mais de um diâmetro são divididas em entidades antes da análise final.
 - **Solver**: simplex denso de duas fases com regra de Dantzig e fallback de Bland contra ciclagem;
   os problemas têm centenas de variáveis e restrições, o que cabe num tableau denso. Detecta
@@ -999,8 +999,8 @@ dois métodos no exemplo do pomar.
 ### 15.4 Pressão da válvula e resultados
 
 A análise detalhada final escolhe a pressão a jusante da válvula por bissecção para que a pressão
-média dos emissores seja a nominal (para fitas reguladas, para garantir a pressão mínima de
-submain). A perda na válvula vem da sua curva; a pressão requerida a montante alimenta a linha
+média dos emissores seja a nominal (para fitas reguladas, para garantir a pressão mínima da
+linha de derivação). A perda na válvula vem da sua curva; a pressão requerida a montante alimenta a linha
 principal. A variação admissível da zona vem da tolerância de vazão do emissor (ou do parâmetro
 "variação máxima da zona") e a real é medida sobre os emissores agregados.
 
@@ -1570,12 +1570,12 @@ from its valve with a vertex at every head", "pipes go round a building").
 - **Divisão de talhões** (`field_subdivision.dart`): um talhão agrícola é cortado em blocos de
   irrigação não maiores que uma área, ou que a vazão que um bloco pode retirar dada a vazão dos
   emissores por hectare, em faixas ao longo das fileiras ou numa grade que também limita o comprimento
-  das laterais (o dobro com o submain no meio), com carreadores entre os blocos (4 m por padrão, que
+  das laterais (o dobro com a linha de derivação no meio), com carreadores entre os blocos (4 m por padrão, que
   também mantêm afastadas as pontas das fitas de duas zonas) e uma largura mínima de bloco (10 m). Os
   cortes dão aos blocos áreas líquidas iguais: a área do talhão entre dois cortes é integrada
   exatamente, descontados os carreadores, e cada corte é posicionado por bissecção, de modo que os
   turnos retiram a mesma vazão (Keller & Bliesner 1990, capítulos 17 e 21; NRCS NEH 623 capítulo 7).
-  Um talhão côncavo pode cair em várias peças por faixa. Cada bloco recebe o lado do seu submain (para
+  Um talhão côncavo pode cair em várias peças por faixa. Cada bloco recebe o lado da sua linha de derivação (para
   o ponto de conexão, ou no meio) e a posição da sua válvula, pronto para o gerador de blocos (testes
   "strips of equal area within the limit, roads between them", "a grid keeps every lateral within the
   limit").
@@ -1583,7 +1583,7 @@ from its valve with a vertex at every head", "pipes go round a building").
   uma área (espaçamento entre plantas × entre fileiras com deslocamentos, as árvores a um raio de anel
   do contorno) ou de posições levantadas (agrupadas em fileiras na direção das fileiras), um anel de
   tubo gotejador de um raio (0,6 m por padrão) ou um número de gotejadores num pequeno tubo em anel (4
-  por padrão), ligado a uma lateral ao longo da fileira; as laterais partem de um submain através das
+  por padrão), ligado a uma lateral ao longo da fileira; as laterais partem de uma linha de derivação através das
   fileiras com a válvula da zona. Um anel de emissores em volta do tronco molha a zona radicular de uma
   árvore jovem de modo uniforme em todos os lados e longe do tronco (Keller & Bliesner 1990, capítulos
   15 e 16; NRCS NEH 623 capítulo 7). Cada anel é desenhado como duas metades do ponto onde a lateral
@@ -3331,7 +3331,7 @@ funciona em celulares).
 |---|---|---|
 | Zona | Zone | Conjunto de tubos e emissores a jusante de uma válvula de controle |
 | Linha principal | Mainline | Da fonte de água às válvulas de zona |
-| Submain | Submain | Tubo de zona que alimenta as laterais |
+| Linha de derivação | Submain | Tubo de zona que alimenta as laterais |
 | Lateral | Sprayline / lateral | Tubo com emissores igualmente espaçados |
 | Fita / tubo gotejador | Tape / dripline | Lateral com emissores integrados |
 | Turno | System flow | Válvulas que operam juntas |

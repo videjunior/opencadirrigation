@@ -1,0 +1,111 @@
+{
+  "_doc": [
+    "Terminology and translation rules checked by test/core/i18n_glossary_test.dart.",
+    "untranslatable: keys whose text is the same in every language (product and method names, symbols, formulas, codes); the test requires the English text in pt, es and every pack.",
+    "sameAsEnglishAllowed: keys a pack may leave in English (acronyms of methods and materials, file names, formats).",
+    "provisionalEnglish: keys whose English text changed and whose packs show the English text until the next translation pass; remove a key once its packs are translated.",
+    "perLanguageAllowed: keys that stay as in English in one language on purpose.",
+    "maxSameAsEnglish: the Latin-script packs, where many words are the same as in English, may not have more keys equal to English than this (lower it when translations improve).",
+    "terms: one name per concept and language: a string of that language must not use an avoided word (whole word, ignoring case); 'use' says the chosen term."
+  ],
+  "untranslatable": {
+    "app.title": "product name",
+    "exp.kml": "format and its viewer",
+    "exp.geojson": "format and its programs",
+    "exp.xlsx": "format and its programs",
+    "exp.ifc": "format",
+    "geo.modeUtm": "coordinate system",
+    "props.uniformity": "uniformity coefficients",
+    "dlg.uniformity4": "uniformity coefficients",
+    "rep.length": "symbol",
+    "rep.q": "symbol",
+    "rep.velocity": "symbol and unit",
+    "rep.hf": "symbol",
+    "rep.pn": "pressure class",
+    "rep.n": "symbol",
+    "name.lateral": "name prefix of the laterals",
+    "dlg.hw": "method name",
+    "dlg.dw": "method names",
+    "dlg.manning": "method name",
+    "dlg.qvar": "symbol",
+    "cat.dn": "nominal diameter",
+    "cat.c": "symbol",
+    "cat.pn": "pressure class and unit",
+    "cat.costM": "currency per metre",
+    "cat.k": "emitter law",
+    "cat.x": "emitter exponent",
+    "cat.cv": "coefficient of variation",
+    "cat.cost": "currency",
+    "cat.kd": "symbol",
+    "cat.kLoss": "loss law",
+    "cat.n": "symbol",
+    "cat.eff": "symbol",
+    "mat.pvc": "material code",
+    "basemap.googleError": "service name and error",
+    "props.kc": "crop coefficient",
+    "rep.tCritical": "formula and unit",
+    "rec.item": "format",
+    "ver.item": "format",
+    "lbl.short.velocity": "symbol",
+    "lbl.short.flow": "symbol",
+    "lbl.short.pressure": "symbol",
+    "lbl.short.diameter": "symbol",
+    "fert.curveDp": "symbol"
+  },
+  "sameAsEnglishAllowed": {
+    "ok": "the OK button",
+    "dlg.us": "the US customary units",
+    "mat.pehd": "material code",
+    "mat.peld": "material code",
+    "rep.raw": "FAO-56 acronym",
+    "props.pivotC": "method coefficient",
+    "gate.hazenC": "method coefficient",
+    "surf.manning": "method coefficient",
+    "od.clementFlow": "method name",
+    "elec.stationTag": "station tag",
+    "elec.masterTag": "master valve tag",
+    "lbl.short.downstream": "symbol",
+    "lbl.short.headLoss": "symbol",
+    "name.report": "file name",
+    "bomSel.file": "file name",
+    "hist.aiTool": "format",
+    "ai.status.note": "format",
+    "ai.elapsed": "seconds",
+    "lic.limits.sprinkler": "classes in hectares",
+    "lic.limits.localized": "classes in hectares",
+    "lic.limits.surface": "classes in hectares",
+    "fert.vResult": "device name",
+    "ex.go.tee": "golf term",
+    "ex.go.fairway": "golf term",
+    "ex.go.fairwayZone": "golf term",
+    "ex.go.green": "golf term",
+    "ex.go.bunker": "golf term"
+  },
+  "provisionalEnglish": {
+    "ai.key.privacy": "1.6.0: the visit statistics never run while the app is open (SIT-09)",
+    "basemap.googleKey.privacy": "1.6.0: the key can be read by the site's scripts; restrict it (SIT-09)"
+  },
+  "perLanguageAllowed": {
+    "ja": ["ok"],
+    "ur": ["compass.n", "compass.ne", "compass.e", "compass.se", "compass.s", "compass.sw", "compass.w", "compass.nw"]
+  },
+  "maxSameAsEnglish": {"de": 88, "fr": 127, "ha": 48, "id": 82, "sw": 14, "tr": 16, "vi": 10},
+  "terms": {
+    "pt": [
+      {"concept": "submain", "use": "linha de derivação", "avoid": ["submain", "submains"]},
+      {"concept": "duty", "use": "ponto de trabalho", "avoid": ["duty"]}
+    ],
+    "es": [
+      {"concept": "submain", "use": "portalaterales", "avoid": ["submain", "submains", "secundaria"]}
+    ],
+    "de": [
+      {"concept": "emitter", "use": "Auslass", "avoid": ["Emitter", "Emitters", "Emittern"]}
+    ],
+    "ja": [
+      {"concept": "submain", "use": "副管", "avoid": ["Submain"]}
+    ],
+    "zh": [
+      {"concept": "submain", "use": "支管", "avoid": ["Submain"]}
+    ]
+  }
+}
