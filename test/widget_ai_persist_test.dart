@@ -144,6 +144,9 @@ void main() {
       (_) => FakeReply.text('The lawn is 30 × 20 m.'),
     ]);
     AiAssistant.debugTransport = fake.call;
+    // a project with something to tell (1.6.0: a new project has no name, and
+    // a blank unnamed one sends no data with the first message)
+    c.project.meta.name = 'Lawn';
     final a = AiAssistant.of(c);
     await say(tester, a, 'How large is the lawn?');
     expect(fake.calls, 2);
