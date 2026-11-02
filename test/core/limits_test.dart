@@ -6,9 +6,9 @@ import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/core/io/geoimage.dart';
 import 'package:opencadirrigation/core/model/terrain.dart';
 
-/// Input limits are told to the user in plain words: a BigTIFF is refused by
-/// name (not as an unreadable image), a raster above the pixel cap says so,
-/// and a terrain larger than the TIN takes is announced once.
+/// Input limits are told to the user in plain words: a raster above the
+/// pixel cap says so, and a terrain larger than the TIN takes is announced
+/// once. (BigTIFF files are read since 1.6.0: test/core/formats_1102_test.dart.)
 void main() {
   Uint8List bigTiffHeader({bool little = true}) {
     final b = ByteData(16);
@@ -19,17 +19,12 @@ void main() {
     return b.buffer.asUint8List();
   }
 
-  test('a BigTIFF is refused by name, in both byte orders', () {
-    final c = ProjectController()..setLanguage('pt');
+  test('a BigTIFF header without directories, and other bytes, come back without tags', () {
     for (final little in [true, false]) {
-      expect(() => GeoImageReader.readTiffTags(bigTiffHeader(little: little)), throwsA(isA<FormatException>().having((e) => e.message, 'code', 'tiff_bigtiff')));
+      final tags = GeoImageReader.readTiffTags(bigTiffHeader(little: little));
+      expect(tags.shorts, isEmpty);
+      expect(tags.longs, isEmpty);
     }
-    try {
-      GeoImageReader.readTiffTags(bigTiffHeader());
-    } catch (e) {
-      expect(c.describeError(e), c.t('imp.err.tiff_bigtiff'));
-    }
-    // other files keep coming back without tags
     expect(GeoImageReader.readTiffTags(Uint8List.fromList(List.filled(16, 0x2B))).shorts, isEmpty);
   });
 

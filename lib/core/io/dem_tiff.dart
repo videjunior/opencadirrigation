@@ -2,23 +2,25 @@
 /// as exported by QGIS, drone photogrammetry or public DEMs) imported as a
 /// grid of spot heights for the terrain model. Pure Dart.
 ///
-/// Float rasters written with the floating-point predictor (TIFF tag 317 =
-/// 3, the compression GIS libraries recommend for elevations) are decoded
-/// here, strip by strip or tile by tile (uncompressed, LZW or Deflate): the
-/// picture decoder leaves that predictor in place and its heights would be
-/// noise. The heights taken are checked: values beyond ±10 km are left out
+/// The raster is never decoded whole: the heights are sampled on a regular
+/// grid, from the smallest overview of a cloud-optimised GeoTIFF that still
+/// holds the grid, decoding only the strips or tiles the grid crosses
+/// (tiff_raster.dart: classic TIFF and BigTIFF, uncompressed, LZW, Deflate
+/// or PackBits, with the horizontal or the floating-point predictor), so a
+/// drone elevation model of hundreds of megapixels takes the memory of one
+/// block. The heights taken are checked: values beyond ±10 km are left out
 /// and a raster that is all zero is reported.
 library;
 
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
-
 import '../model/geometry.dart';
 import 'geo.dart';
 import 'geoimage.dart';
 import 'image_decode.dart';
+import 'tiff_raster.dart';
+import 'work_slicer.dart';
 
 class DemSample {
   const DemSample(this.p, this.z);
@@ -37,7 +39,7 @@ class GeoTiffDem {
   /// Project georeference used (created from the raster when none existed).
   final GeoReference? georef;
 
-  /// Pixel step used when sampling.
+  /// Pixel step used when sampling (pixels of the full-resolution raster).
   final int step;
   final bool geographic;
   final String crsName;
@@ -56,6 +58,23 @@ class GeoTiffDem {
   }
 }
 
+/// What [GeoTiffDemReader] reads from: the raster of the grid (the full
+/// image or an overview) and the step on it.
+class _DemPlan {
+  _DemPlan(this.tags, this.width, this.height, this.raster, this.step, this.fullStep);
+  final TiffTags tags;
+
+  /// Size of the full-resolution raster.
+  final int width, height;
+
+  /// Null: decoded by the picture decoder (a layout the block reader does
+  /// not take).
+  final TiffRaster? raster;
+
+  /// The grid step on [raster] and on the full-resolution raster.
+  final int step, fullStep;
+}
+
 class GeoTiffDemReader {
   /// GDAL_NODATA tag.
   static const nodataTag = 42113;
@@ -63,6 +82,10 @@ class GeoTiffDemReader {
   /// Heights beyond this (metres, either sign) are not of the Earth's
   /// surface: damaged or undecoded values.
   static const maxAbsElevation = 10000.0;
+
+  /// Largest elevation raster read (pixels): beyond it a size field is
+  /// damaged, or the file far beyond what a browser holds.
+  static const maxPixels = TiffRaster.maxPixels;
 
   /// True when the TIFF looks like an elevation raster: a single band of
   /// floating point or 16/32-bit integer samples (not an 8-bit picture).
@@ -77,40 +100,91 @@ class GeoTiffDemReader {
     return format == 3 || bits >= 16;
   }
 
-  /// Reads the raster and samples at most [maxPoints] elevations on a regular
-  /// pixel step. Returns null when the file is not an elevation raster.
-  static GeoTiffDem? read(Uint8List bytes, {GeoReference? georef, int maxPoints = 4000}) {
+  static int _stepFor(int w, int h, int maxPoints) => math.max(1, math.sqrt(w * h / math.max(maxPoints, 1)).ceil());
+
+  static _DemPlan? _plan(Uint8List bytes, int maxPoints) {
     if (!looksLikeDem(bytes)) return null;
-    final tags = GeoImageReader.readTiffTags(bytes);
-    GeoImageReader.checkTiffSize(tags);
-    final predictor = tags.shorts[317]?.firstOrNull ?? 1;
-    final format = tags.shorts[339]?.firstOrNull ?? 1;
-    final bits = tags.shorts[258]?.firstOrNull ?? 8;
-    int dim(int tag) => tags.shorts[tag]?.firstOrNull ?? tags.longs[tag]?.firstOrNull ?? 0;
-    // the heights at the sampled pixels (column, row, value)
-    final values = <(int, int, double)>[];
-    int w, h;
-    int stepFor(int w, int h) => math.max(1, math.sqrt(w * h / math.max(maxPoints, 1)).ceil());
-    if (predictor == 3) {
-      w = dim(256);
-      h = dim(257);
-      if (w <= 0 || h <= 0) return null;
-      final s = stepFor(w, h);
-      if (!_FloatPredictorRaster(bytes, tags).sample(s, (c, r, z) => values.add((c, r, z)))) throw const FormatException('tiff_predictor_unsupported');
+    final f = TiffFile.open(bytes);
+    final main = f?.main;
+    if (f == null || main == null) return null;
+    final tags = GeoImageReader.tagsOf(main);
+    final w = main.width, h = main.height;
+    if (w <= 0 || h <= 0) return null;
+    if (w.toDouble() * h > maxPixels) throw const FormatException('image_too_large');
+    final full = _stepFor(w, h, maxPoints);
+    // the smallest overview that still has a pixel for every point of the grid
+    var use = main;
+    for (final o in f.overviewsOf(main)) {
+      if (o.width * full >= w && o.height * full >= h) use = o;
+    }
+    var raster = TiffRaster(f, use);
+    if (raster.unsupported != null && !identical(use, main)) raster = TiffRaster(f, main);
+    if (raster.unsupported != null) {
+      if (raster.unsupported == 'tiff_block_too_large') throw const FormatException('image_too_large');
+      // the picture decoder takes the rest (within its own pixel limit)
+      GeoImageReader.checkTiffSize(tags);
+      if (main.predictor == 3) throw const FormatException('tiff_predictor_unsupported');
+      return _DemPlan(tags, w, h, null, full, full);
+    }
+    final k = w / raster.width;
+    return _DemPlan(tags, w, h, raster, math.max(1, (full / k).round()), full);
+  }
+
+  /// Reads the raster and samples at most about [maxPoints] elevations on a
+  /// regular pixel step. Returns null when the file is not an elevation
+  /// raster.
+  static GeoTiffDem? read(Uint8List bytes, {GeoReference? georef, int maxPoints = 4000}) {
+    final plan = _plan(bytes, maxPoints);
+    if (plan == null) return null;
+    final values = <(double, double, double)>[];
+    final raster = plan.raster;
+    if (raster != null) {
+      if (!raster.sampleGridNow(plan.step, (c, r, z) => values.add(((c + 0.5) / raster.width, (r + 0.5) / raster.height, z)))) throw const FormatException('file_corrupt');
     } else {
-      final decoded = decodeTiffSafe(bytes);
-      if (decoded == null || decoded.numChannels < 1) return null;
-      w = decoded.width;
-      h = decoded.height;
-      if (w == 0 || h == 0) return null;
-      final s = stepFor(w, h);
-      for (var row = s ~/ 2; row < h; row += s) {
-        for (var col = s ~/ 2; col < w; col += s) {
-          values.add((col, row, decoded.getPixel(col, row).r.toDouble()));
-        }
+      if (!_decodeWhole(bytes, plan, values)) return null;
+    }
+    return _finish(plan, values, georef);
+  }
+
+  /// [read] in slices of [slicer] (the interface stays responsive and the
+  /// user can cancel).
+  static Future<GeoTiffDem?> readAsync(Uint8List bytes, WorkSlicer slicer, {GeoReference? georef, int maxPoints = 4000}) async {
+    final plan = _plan(bytes, maxPoints);
+    if (plan == null) return null;
+    final values = <(double, double, double)>[];
+    final raster = plan.raster;
+    if (raster != null) {
+      final ok = await raster.sampleGrid(plan.step, (c, r, z) => values.add(((c + 0.5) / raster.width, (r + 0.5) / raster.height, z)), slicer: slicer);
+      if (!ok) throw const FormatException('file_corrupt');
+    } else {
+      if (!_decodeWhole(bytes, plan, values)) return null;
+    }
+    await slicer.pause(0.95);
+    return _finish(plan, values, georef);
+  }
+
+  /// The grid of [plan] from the picture decoder (the whole raster at once).
+  static bool _decodeWhole(Uint8List bytes, _DemPlan plan, List<(double, double, double)> values) {
+    final decoded = decodeTiffSafe(bytes);
+    if (decoded == null || decoded.numChannels < 1) return false;
+    final w = decoded.width, h = decoded.height;
+    if (w == 0 || h == 0) return false;
+    final s = plan.fullStep;
+    for (var row = s ~/ 2; row < h; row += s) {
+      for (var col = s ~/ 2; col < w; col += s) {
+        values.add(((col + 0.5) / w, (row + 0.5) / h, decoded.getPixel(col, row).r.toDouble()));
       }
     }
-    final step = stepFor(w, h);
+    return true;
+  }
+
+  /// The spot heights of [values] ((fraction across, fraction down, z) of
+  /// pixel centres) placed through the georeference of the raster.
+  static GeoTiffDem? _finish(_DemPlan plan, List<(double, double, double)> values, GeoReference? georef) {
+    final tags = plan.tags;
+    final w = plan.width, h = plan.height;
+    final format = tags.shorts[339]?.firstOrNull ?? 1;
+    final bits = tags.shorts[258]?.firstOrNull ?? 8;
     final geo = GeoImageReader.tiffGeo(tags);
     // placement (bottom-left, width, height, rotation) through the image placer
     final shell = GeoImage(
@@ -129,13 +203,12 @@ class GeoTiffDemReader {
     );
     final (bl, worldW, worldH, rot, ref) = placeGeoImage(shell, georef);
     final u = Pt.polar(1, degToRad(rot)), v = u.perpendicular;
-    // nodata
     double? nodata;
     final nd = tags.strings[nodataTag];
     if (nd != null) nodata = double.tryParse(nd.trim());
     final out = <DemSample>[];
     var outOfRange = 0;
-    for (final (col, row, z) in values) {
+    for (final (fx, fyDown, z) in values) {
       if (!z.isFinite) continue;
       if (nodata != null && (z - nodata).abs() < 1e-6) continue;
       if (z <= -9990) continue; // common sentinel values
@@ -146,8 +219,7 @@ class GeoTiffDemReader {
         continue;
       }
       // pixel centre → world: columns along u from the bottom-left origin, rows from the top
-      final fx = (col + 0.5) / w, fy = 1 - (row + 0.5) / h;
-      final p = bl + u * (worldW * fx) + v * (worldH * fy);
+      final p = bl + u * (worldW * fx) + v * (worldH * (1 - fyDown));
       out.add(DemSample(p, z));
     }
     final warnings = <String>[
@@ -157,159 +229,15 @@ class GeoTiffDemReader {
       if (out.isNotEmpty && out.every((s) => s.z.abs() < 1e-3)) 'dem_all_zero',
     ];
     if (out.isEmpty) return null;
-    return GeoTiffDem(widthPx: w, heightPx: h, samples: out, georef: ref, step: step, geographic: geo.geographic, crsName: ref?.crsName ?? (geo.georeferenced ? 'local' : '-'), warnings: warnings);
-  }
-}
-
-/// A single-band float raster written with the floating-point predictor
-/// (TIFF Technical Note 3): each row (of the image, or of a tile) holds the
-/// bytes of its samples as planes, most significant byte first, and every
-/// byte is stored as the difference from the one before it.
-class _FloatPredictorRaster {
-  _FloatPredictorRaster(this.bytes, this.tags);
-  final Uint8List bytes;
-  final TiffTags tags;
-
-  int _one(int tag, [int def = 0]) => tags.shorts[tag]?.firstOrNull ?? tags.longs[tag]?.firstOrNull ?? def;
-  List<int> _many(int tag) => tags.longs[tag] ?? tags.shorts[tag] ?? const [];
-
-  /// Calls [emit] for the pixels on a grid of [step] (from step/2); false
-  /// when the raster is not one this reader takes (band count, sample size,
-  /// compression).
-  bool sample(int step, void Function(int col, int row, double z) emit) {
-    final w = _one(256), h = _one(257);
-    final bits = _one(258, 32), spp = _one(277, 1), planar = _one(284, 1), compression = _one(259, 1);
-    if (spp != 1 || planar != 1 || (bits != 32 && bits != 64) || w <= 0 || h <= 0) return false;
-    if (compression != 1 && compression != 5 && compression != 8 && compression != 32946) return false;
-    final bps = bits ~/ 8;
-    final tiled = tags.shorts.containsKey(322) || tags.longs.containsKey(322);
-    final bw = tiled ? _one(322) : w;
-    final bh = tiled ? _one(323) : math.min(h, math.max(1, _one(278, h)));
-    final offsets = _many(tiled ? 324 : 273), counts = _many(tiled ? 325 : 279);
-    if (bw <= 0 || bh <= 0 || offsets.isEmpty || counts.length < offsets.length) return false;
-    final across = tiled ? (w + bw - 1) ~/ bw : 1;
-    final value = ByteData(8);
-    for (var k = 0; k < offsets.length; k++) {
-      final x0 = tiled ? (k % across) * bw : 0, y0 = tiled ? (k ~/ across) * bh : k * bh;
-      if (y0 >= h || x0 >= w) continue;
-      // only blocks that hold sampled rows and columns are decoded
-      bool sampled(int a, int n) {
-        final first = a <= step ~/ 2 ? step ~/ 2 : ((a - step ~/ 2 + step - 1) ~/ step) * step + step ~/ 2;
-        return first < a + n;
-      }
-
-      if (!sampled(y0, bh) || !sampled(x0, bw)) continue;
-      final off = offsets[k], n = counts[k];
-      if (off < 0 || n <= 0 || off + n > bytes.length) return false;
-      final raw = Uint8List.sublistView(bytes, off, off + n);
-      final rowBytes = bw * bps;
-      final need = rowBytes * bh;
-      final Uint8List data;
-      switch (compression) {
-        case 1:
-          data = raw;
-        case 5:
-          data = _lzw(raw, need);
-        default:
-          try {
-            data = const ZLibDecoder().decodeBytes(raw, maxOutputSize: need);
-          } on ArchiveLimitException {
-            return false;
-          }
-      }
-      final rows = math.min(bh, data.length ~/ rowBytes);
-      final tmp = Uint8List(rowBytes);
-      for (var r = 0; r < rows; r++) {
-        final row = y0 + r;
-        if (row >= h || (row - step ~/ 2) % step != 0 || row < step ~/ 2) continue;
-        // undo the byte differencing of the row, then put the planes back together
-        tmp.setRange(0, rowBytes, data, r * rowBytes);
-        for (var i = 1; i < rowBytes; i++) {
-          tmp[i] = (tmp[i] + tmp[i - 1]) & 0xFF;
-        }
-        for (var c = 0; c < bw; c++) {
-          final col = x0 + c;
-          if (col >= w || col < step ~/ 2 || (col - step ~/ 2) % step != 0) continue;
-          for (var b = 0; b < bps; b++) {
-            value.setUint8(b, tmp[b * bw + c]);
-          }
-          emit(col, row, bps == 4 ? value.getFloat32(0, Endian.big) : value.getFloat64(0, Endian.big));
-        }
-      }
-    }
-    return true;
-  }
-
-  /// TIFF LZW (codes of 9 to 12 bits, most significant bit first, the code
-  /// width growing one code early), at most [size] bytes.
-  static Uint8List _lzw(Uint8List src, int size) {
-    final out = Uint8List(size);
-    final prefix = Int32List(4096), suffix = Uint8List(4096), first = Uint8List(4096), length = Int32List(4096);
-    for (var i = 0; i < 256; i++) {
-      prefix[i] = -1;
-      suffix[i] = i;
-      first[i] = i;
-      length[i] = 1;
-    }
-    var o = 0, p = 0, buf = 0, nbits = 0, width = 9, next = 258;
-    var old = -1;
-    int read() {
-      while (nbits < width) {
-        if (p >= src.length) return 257;
-        buf = ((buf << 8) | src[p++]) & 0xFFFFFF;
-        nbits += 8;
-      }
-      nbits -= width;
-      return (buf >> nbits) & ((1 << width) - 1);
-    }
-
-    void emit(int code) {
-      final n = length[code];
-      var c = code;
-      for (var k = n - 1; k >= 0; k--) {
-        if (o + k < size) out[o + k] = suffix[c];
-        c = prefix[c];
-        if (c < 0) break;
-      }
-      o += n;
-    }
-
-    while (o < size) {
-      final code = read();
-      if (code == 257) break;
-      if (code == 256) {
-        width = 9;
-        next = 258;
-        old = -1;
-        continue;
-      }
-      if (old < 0) {
-        if (code > 255) break;
-        emit(code);
-        old = code;
-        continue;
-      }
-      if (code < next) {
-        emit(code);
-        if (next < 4096) {
-          prefix[next] = old;
-          suffix[next] = first[code];
-          first[next] = first[old];
-          length[next] = length[old] + 1;
-          next++;
-        }
-      } else {
-        if (next >= 4096 || code > next) break;
-        prefix[next] = old;
-        suffix[next] = first[old];
-        first[next] = first[old];
-        length[next] = length[old] + 1;
-        next++;
-        emit(next - 1);
-      }
-      old = code;
-      if (next >= (1 << width) - 1 && width < 12) width++;
-    }
-    return out;
+    return GeoTiffDem(
+      widthPx: w,
+      heightPx: h,
+      samples: out,
+      georef: ref,
+      step: plan.fullStep,
+      geographic: geo.geographic,
+      crsName: ref?.crsName ?? (geo.georeferenced ? 'local' : '-'),
+      warnings: warnings,
+    );
   }
 }
