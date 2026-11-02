@@ -1,5 +1,5 @@
 /// Fields of the properties panel for the editing tools added in 1.6.0:
-/// the coordinates of the selected item.
+/// the coordinates of the selected item and the settings of the new tools.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../state/controller.dart';
+import '../theme.dart';
+import '../tools/edit_commands.dart';
+import '../tools/tools.dart' show hintKeyOf;
 import 'fields.dart';
 
 /// Vertices listed with their coordinates; the others are edited with the
@@ -106,4 +109,40 @@ class _CoordinateRow extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The settings of the 1.6.0 tool [tool] in the panel shown while it is
+/// active (nothing selected), and its hint.
+List<Widget> editToolFields(ProjectController c, ToolId tool) {
+  final t = c.t;
+  final s = c.editSettings;
+  void upd(void Function() fn) {
+    fn();
+    c.refresh();
+  }
+
+  return [
+    if (tool == ToolId.lasso)
+      SwitchListTile(
+        key: const Key('tool_lasso_crossing'),
+        dense: true,
+        contentPadding: EdgeInsets.zero,
+        title: Text(t('sel.lassoCrossing'), style: const TextStyle(fontSize: 12)),
+        value: s.lassoCrossing,
+        onChanged: (v) => upd(() => s.lassoCrossing = v),
+      ),
+    if (usesAddToSelection(tool))
+      SwitchListTile(
+        key: const Key('tool_add_to_selection'),
+        dense: true,
+        contentPadding: EdgeInsets.zero,
+        title: Text(t('sel.addMode'), style: const TextStyle(fontSize: 12)),
+        value: s.addToSelection,
+        onChanged: (v) => upd(() => s.addToSelection = v),
+      ),
+    Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(t('hint.${hintKeyOf(tool)}'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),
+    ),
+  ];
 }

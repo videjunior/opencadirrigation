@@ -120,6 +120,41 @@ void main() {
     expect(c.project.entities.whereType<PolylineEntity>().last.closed, isTrue);
   });
 
+  testWidgets('quick select from the Edit menu: a kind, the count of matches, the selection (CAD-25)', (tester) async {
+    final c = await pumpShell(tester);
+    c.addEntities([
+      PipeEntity(id: 'p1', points: [Pt.zero, const Pt(10, 0)], scope: HydraulicScope.zone),
+      PipeEntity(id: 'p2', points: [const Pt(0, 5), const Pt(10, 5)], scope: HydraulicScope.zone),
+      LineEntity(id: 'l1', a: const Pt(0, 9), b: const Pt(10, 9)),
+    ]);
+    await settle(tester);
+    await tester.tap(find.text('Edit'));
+    await settle(tester, 2);
+    await tester.tap(find.text(c.t('sel.menu')));
+    await settle(tester, 2);
+    await tester.tap(find.text(c.t('sel.quick')));
+    await settle(tester, 2);
+    expect(find.text(c.t('qs.title')), findsOneWidget);
+    expect(find.text(c.t('qs.matches', {'n': '3'})), findsOneWidget);
+    await tester.tap(find.byKey(const Key('qs_kind')));
+    await settle(tester, 2);
+    await tester.tap(find.text('${c.t('tool.zonePipe')} (2)').last);
+    await settle(tester, 2);
+    expect(find.text(c.t('qs.matches', {'n': '2'})), findsOneWidget);
+    await tester.tap(find.byKey(const Key('qs_apply')));
+    await settle(tester, 2);
+    expect(c.selection, {'p1', 'p2'});
+    // the layers panel selects the items of a layer
+    c.select(const []);
+    final dynamic shell = tester.state(find.byType(AppShell));
+    shell.showSideTab(1);
+    await settle(tester, 2);
+    await tester.tap(find.byKey(Key('layer_select_${Layers.drawing}')));
+    // (the row also takes double taps: the tap is decided after their timeout)
+    await settle(tester, 2);
+    expect(c.selection, {'l1'});
+  });
+
   testWidgets('Edit → Move and Copy start the tools (CAD-06)', (tester) async {
     final c = await pumpShell(tester);
     await tester.tap(find.text('Edit'));

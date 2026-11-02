@@ -1,9 +1,15 @@
-/// Editing tools added in 1.6.0: move and copy by base point. Their
-/// commands on the controller are in edit_commands.dart.
+/// Editing tools added in 1.6.0: move and copy by base point, lasso and
+/// fence selection. Their commands on the controller are in
+/// edit_commands.dart.
 library;
 
+import 'dart:ui';
+
 import '../../core/model/geometry.dart';
+import '../canvas/camera.dart';
 import '../state/controller.dart';
+import '../theme.dart';
+import 'edit_commands.dart';
 import 'tools.dart';
 
 /// Displacement [d] for the status bar: components, length and direction.
@@ -111,5 +117,109 @@ class CopyTool extends TransformTool {
     final d = cursor! - pts.first;
     host.setStatus(displacementText(c, d));
     return Affine.translation(d);
+  }
+}
+
+// ---------------------------------------------------------------- selection (CAD-25)
+
+/// Lasso: drag around the items, or click the vertices of a polygon and
+/// press Enter (or C); selects what lies inside it — also what it crosses
+/// when the setting says so — adding to the selection with Shift. The tool
+/// stays for the next lasso.
+class LassoTool extends PolyTool {
+  LassoTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.lasso;
+  @override
+  String get hintKey => 'hint.lasso';
+  @override
+  bool get closes => true;
+  @override
+  int get minPoints => 3;
+  @override
+  bool get keepsOnLeave => false;
+
+  /// Drawn by hand: no snap.
+  @override
+  bool get usesSnap => false;
+
+  bool _add = false;
+  bool _dragged = false;
+
+  @override
+  void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
+    if (pts.isEmpty) _add = false;
+    _add = _add || shift;
+    _dragged = false;
+    super.onDown(p, shift: shift, ctrl: ctrl);
+  }
+
+  @override
+  void onMove(Pt p, {bool dragging = false}) {
+    super.onMove(p, dragging: dragging);
+    if (!dragging || pts.isEmpty) return;
+    // drawn by hand: a vertex every few pixels
+    if (pts.last.distanceTo(p) * c.camera.scale >= 4) {
+      pts.add(p);
+      _dragged = true;
+    }
+  }
+
+  /// A lasso dragged by hand ends with the button (or the finger).
+  @override
+  void onUp(Pt p) {
+    if (_dragged) finish();
+    _dragged = false;
+  }
+
+  @override
+  void commit(List<Pt> points) {
+    c.selectInPolygon(points, crossing: c.editSettings.lassoCrossing, add: _add);
+    c.notify(c.t('mob.selection', {'n': '${c.selection.length}'}));
+  }
+
+  @override
+  void paint(Canvas canvas, Camera cam) {
+    final preview = [...pts, ?cursor];
+    if (preview.length >= 3) {
+      final path = Path()..moveTo(cam.toScreen(preview.first).dx, cam.toScreen(preview.first).dy);
+      for (final p in preview.skip(1)) {
+        final s = cam.toScreen(p);
+        path.lineTo(s.dx, s.dy);
+      }
+      path.close();
+      canvas.drawPath(path, Paint()..color = Cad.selection.withValues(alpha: 0.1));
+    }
+    super.paint(canvas, cam);
+  }
+}
+
+/// Fence: click the points of a line and press Enter: selects everything
+/// it crosses (point items within the pick distance), adding to the
+/// selection with Shift.
+class FenceTool extends PolyTool {
+  FenceTool(super.c, super.host);
+  @override
+  ToolId get id => ToolId.fence;
+  @override
+  String get hintKey => 'hint.fence';
+  @override
+  bool get keepsOnLeave => false;
+  @override
+  bool get closable => false;
+
+  bool _add = false;
+
+  @override
+  void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
+    if (pts.isEmpty) _add = false;
+    _add = _add || shift;
+    super.onDown(p, shift: shift, ctrl: ctrl);
+  }
+
+  @override
+  void commit(List<Pt> points) {
+    c.selectByFence(points, add: _add);
+    c.notify(c.t('mob.selection', {'n': '${c.selection.length}'}));
   }
 }

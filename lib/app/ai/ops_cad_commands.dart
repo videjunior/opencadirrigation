@@ -121,6 +121,8 @@ const toolInstead = <ToolId, String>{
   // 1.6.0 EDT
   ToolId.move: 'transform_entities {ids, operation: "move", dx, dy}',
   ToolId.copy: 'transform_entities {ids, operation: "copy", dx, dy} (once per copy)',
+  ToolId.lasso: 'list_entities {bbox, types, layer} to find the items, then select_entities {ids}',
+  ToolId.fence: 'list_entities {bbox, types, layer} to find the items, then select_entities {ids}',
 };
 
 /// English names for the model.

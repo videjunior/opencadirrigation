@@ -34,6 +34,7 @@ import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
+import 'dialogs/selection_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
@@ -252,8 +253,12 @@ class _MobileShellState extends State<MobileShell> {
             ),
             row(t('edit.array'), c.selection.isEmpty ? null : () => showArrayDialog(context, c)),
             for (final id in [ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe]) row(toolLabel(t, id), () => c.setTool(id)),
-            // 1.6.0 EDT: editing by base point
+            // 1.6.0 EDT: editing by base point, selection filters
             for (final id in [ToolId.move, ToolId.copy]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
+            row(t('sel.similar'), c.selection.isEmpty ? null : c.selectSimilar, icon: Icons.select_all, key: const Key('mobile_menu_select_similar')),
+            row(t('sel.quick'), () => showQuickSelectDialog(context, c), key: const Key('mobile_menu_quick_select')),
+            row(t('sel.layer'), c.selectOnLayer, key: const Key('mobile_menu_select_layer')),
+            for (final id in [ToolId.lasso, ToolId.fence]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),

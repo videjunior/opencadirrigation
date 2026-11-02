@@ -12,7 +12,18 @@ class ToolPalette extends StatelessWidget {
 
   /// Tool groups (also used by the mobile tool bar).
   static const groups = <(String, List<(ToolId, IconData)>)>[
-    ('nav', [(ToolId.select, Icons.near_me_outlined), (ToolId.pan, Icons.pan_tool_alt_outlined), (ToolId.measure, Icons.straighten), (ToolId.profile, Icons.show_chart)]),
+    (
+      'nav',
+      [
+        (ToolId.select, Icons.near_me_outlined),
+        (ToolId.pan, Icons.pan_tool_alt_outlined),
+        (ToolId.measure, Icons.straighten),
+        (ToolId.profile, Icons.show_chart),
+        // 1.6.0 EDT
+        (ToolId.lasso, Icons.highlight_alt),
+        (ToolId.fence, Icons.multiline_chart),
+      ],
+    ),
     (
       'draw',
       [

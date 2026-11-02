@@ -1400,6 +1400,9 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (v) => upd(() => s.mirrorKeepSource = v),
           ),
         );
+      // 1.6.0 EDT: the settings of the new editing and selection tools
+      case ToolId.lasso || ToolId.fence:
+        items.addAll(editToolFields(c, tool));
       default:
         items.add(
           Padding(

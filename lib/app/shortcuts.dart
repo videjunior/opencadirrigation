@@ -58,6 +58,10 @@ enum CadAction {
   insertBlock,
   saveBlock,
   assistant,
+  // 1.6.0 EDT: selection filters
+  selectSimilar,
+  quickSelect,
+  selectLayer,
 }
 
 /// Command alias → [ToolId] or [CadAction].
@@ -170,6 +174,11 @@ const commandAliases = <String, Object>{
   // 1.6.0 EDT: editing by base point, selection filters and geometry edits
   'M': ToolId.move, 'MOVE': ToolId.move, 'MOVER': ToolId.move,
   'CO': ToolId.copy, 'CP': ToolId.copy, 'COPY': ToolId.copy, 'COPIAR': ToolId.copy,
+  'SELECTSIMILAR': CadAction.selectSimilar, 'SIMILAR': CadAction.selectSimilar, 'SEMELHANTES': CadAction.selectSimilar, 'SIMILARES': CadAction.selectSimilar,
+  'QSELECT': CadAction.quickSelect, 'QS': CadAction.quickSelect, 'FILTER': CadAction.quickSelect, 'FILTRO': CadAction.quickSelect,
+  'SELLAYER': CadAction.selectLayer, 'LAYSEL': CadAction.selectLayer, 'SELCAMADA': CadAction.selectLayer, 'SELCAPA': CadAction.selectLayer,
+  'LASSO': ToolId.lasso, 'WP': ToolId.lasso, 'LACO': ToolId.lasso, 'LAZO': ToolId.lasso,
+  'FENCE': ToolId.fence, 'FEN': ToolId.fence, 'CERCA': ToolId.fence, 'CERCO': ToolId.fence,
 };
 
 /// Preferred (shortest) alias of a tool, for tooltips and menus.
@@ -234,6 +243,10 @@ String actionLabelKey(CadAction a) => switch (a) {
   CadAction.eps => 'eps.menu',
   CadAction.insertBlock => 'blk.insert',
   CadAction.saveBlock => 'blk.save',
+  // 1.6.0 EDT
+  CadAction.selectSimilar => 'sel.similar',
+  CadAction.quickSelect => 'sel.quick',
+  CadAction.selectLayer => 'sel.layer',
 };
 
 /// " → Linha ⏎" for a typed alias that matches a command, else "".
@@ -336,6 +349,11 @@ const shortcutGroups = <ShortcutGroup>[
     ('M · MOVE', 'tool.move'),
     ('CO · CP · COPY', 'tool.copy'),
     ('COPYCLIP', 'edit.clipCopy'),
+    ('SIMILAR · SELECTSIMILAR', 'sel.similar'),
+    ('QSELECT · QS', 'sel.quick'),
+    ('SELLAYER', 'sel.layer'),
+    ('LASSO · WP', 'tool.lasso'),
+    ('FENCE · FEN', 'tool.fence'),
     ('CLIPCUT', 'edit.clipCut'),
     ('PA · PASTE', 'edit.paste'),
     ('U · UNDO  /  REDO', 'edit.undo'),

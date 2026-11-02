@@ -69,6 +69,8 @@ class _Actions implements HotkeyActions {
   void saveBlock() => calls.add('saveBlock');
   @override
   void clipboard(CadAction action) => calls.add('clip:${action.name}');
+  @override
+  void quickSelect() => calls.add('quickSelect');
 }
 
 class _Canvas implements CanvasKeyTarget {
@@ -420,6 +422,12 @@ void main() {
           expect(a.calls, ['save']);
         case CadAction.open:
           expect(a.calls, ['open']);
+        case CadAction.selectSimilar:
+          expect(c.selection, {for (final e in c.project.entities.whereType<LineEntity>()) e.id}, reason: '${e.key}: every line of the layer');
+        case CadAction.quickSelect:
+          expect(a.calls, ['quickSelect']);
+        case CadAction.selectLayer:
+          expect(c.selection.length, c.project.entities.where((x) => x.layer == c.project.currentLayer).length, reason: e.key);
       }
     }
   });

@@ -33,6 +33,7 @@ import 'app/widgets/dialogs/more_dialogs.dart';
 import 'app/widgets/dialogs/terrain_dialogs.dart';
 import 'app/widgets/dialogs/transient_dialogs.dart';
 import 'app/widgets/dialogs/blocks_dialogs.dart';
+import 'app/widgets/dialogs/selection_dialogs.dart';
 import 'app/widgets/dialogs/welcome_dialog.dart';
 import 'app/widgets/mobile_shell.dart';
 import 'app/widgets/design_progress.dart';
@@ -431,6 +432,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         showTransientDialog(context, c);
     }
   }
+
+  // 1.6.0 EDT
+  @override
+  void quickSelect() => showQuickSelectDialog(context, c);
 
   @override
   void clipboard(CadAction action) {

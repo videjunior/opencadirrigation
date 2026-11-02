@@ -1673,6 +1673,8 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   // 1.6.0 EDT
   ToolId.move => MoveTool(c, host),
   ToolId.copy => CopyTool(c, host),
+  ToolId.lasso => LassoTool(c, host),
+  ToolId.fence => FenceTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1721,4 +1723,6 @@ String hintKeyOf(ToolId t) => switch (t) {
   // 1.6.0 EDT
   ToolId.move => 'move',
   ToolId.copy => 'copy',
+  ToolId.lasso => 'lasso',
+  ToolId.fence => 'fence',
 };

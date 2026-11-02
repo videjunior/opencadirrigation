@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 import '../../core/model/entities.dart';
 import '../actions.dart' show feedEnvelopeAction;
 import '../shortcuts.dart';
+import '../tools/edit_commands.dart';
 import '../tools/typed_point.dart';
 import '../state/controller.dart';
 
@@ -163,6 +164,9 @@ abstract class HotkeyActions {
   void insertBlock();
   void saveBlock();
   void clipboard(CadAction action);
+
+  /// Opens the quick-select dialog (QSELECT command).
+  void quickSelect();
 }
 
 /// True when a text field has the keyboard focus (typing must not trigger
@@ -539,6 +543,13 @@ class Hotkeys {
         actions.save();
       case CadAction.open:
         actions.open();
+      // 1.6.0 EDT
+      case CadAction.selectSimilar:
+        c.selectSimilar();
+      case CadAction.quickSelect:
+        actions.quickSelect();
+      case CadAction.selectLayer:
+        c.selectOnLayer();
     }
   }
 
