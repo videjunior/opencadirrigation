@@ -17,6 +17,8 @@ import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/units.dart';
+import 'package:opencadirrigation/core/design/auto_fix.dart';
+import 'package:opencadirrigation/core/design/field_subdivision.dart';
 
 List<Pt> rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
@@ -483,5 +485,113 @@ void main() {
         expect(l.metrics!.cu, greaterThan(85));
       });
     }
+  });
+
+  group('AUT-05 outlines that cross themselves', () {
+    const bow = [Pt(0, 0), Pt(40, 10), Pt(40, 0), Pt(0, 20)];
+    const left = [Pt(0, 0), Pt(80 / 3, 20 / 3), Pt(0, 20)];
+    const right = [Pt(80 / 3, 20 / 3), Pt(40, 10), Pt(40, 0)];
+    test('a bow tie is found and cut into its two triangles', () {
+      expect(polygonSelfCrossings(bow), isNotEmpty);
+      expect(polygonSelfCrossings(rect(0, 0, 10, 10)), isEmpty);
+      final parts = simplePolygonParts(bow);
+      expect(parts, hasLength(2));
+      final areas = [for (final q in parts) polygonArea(q)]..sort();
+      expect(areas.every((a) => a > 0), isTrue, reason: 'every part counter-clockwise');
+      expect(areas.first, closeTo(polygonArea(right).abs(), 1e-6));
+      expect(areas.last, closeTo(polygonArea(left).abs(), 1e-6));
+    });
+
+    test('the layout of a bow tie waters both lobes with arcs opening into them', () {
+      final l = layoutLandscape(outline: bow, family: Catalog.defaultCatalog().outlet('spray')!);
+      expect(l.region.area, closeTo(polygonArea(left).abs() + polygonArea(right).abs(), 1e-3), reason: '200 m² of the real 333 before');
+      expect(l.messages, contains('layout_self_intersect'));
+      for (final h in l.heads.where((h) => !h.fullCircle)) {
+        final mid = h.position + Pt.polar(0.3, degToRad(h.orientationDeg + h.arcDeg / 2));
+        expect(pointInPolygon(mid, left) || pointInPolygon(mid, right), isTrue, reason: 'arc of the head at ${h.position} opens out of the area');
+      }
+      // a symmetric bow tie is not "empty"
+      final sym = layoutLandscape(outline: const [Pt(0, 0), Pt(20, 20), Pt(20, 0), Pt(0, 20)], family: Catalog.defaultCatalog().outlet('spray')!);
+      expect(sym.heads, isNotEmpty);
+      expect(sym.region.area, closeTo(200, 1e-6));
+    });
+
+    test('the design check flags the area and its correction splits it', () {
+      final p = Project();
+      final a = AreaEntity(id: p.newId(), points: List.of(bow), name: 'Gramado', crop: 'grama');
+      p.entities.add(a);
+      final issue = runDesignCheck(p).issues.where((i) => i.code == 'area_self_intersect').single;
+      expect(issue.severity, CheckSeverity.error);
+      final advice = buildAdvice(p).where((x) => x.code == 'area_self_intersect').single;
+      expect(advice.level, AdviceLevel.error);
+      expect(advice.fixes, [FixKind.splitArea]);
+      expect(advice.autoFixable, isTrue);
+      final res = applyFix(p, advice, FixKind.splitArea);
+      expect(res.ok, isTrue);
+      final areas = p.entities.whereType<AreaEntity>().toList();
+      expect(areas, hasLength(2));
+      expect(areas.first.id, a.id, reason: 'the first part keeps the id');
+      expect(areas.every((x) => x.crop == 'grama'), isTrue);
+      expect(areas.fold(0.0, (s, x) => s + x.area), closeTo(polygonArea(left).abs() + polygonArea(right).abs(), 1e-6));
+      expect(runDesignCheck(p).issues.where((i) => i.code == 'area_self_intersect'), isEmpty);
+    });
+
+    test('a field that crosses itself is subdivided lobe by lobe', () {
+      final sub = subdivideField(const [Pt(0, 0), Pt(400, 100), Pt(400, 0), Pt(0, 200)], FieldSubdivisionOptions(direction: const Pt(1, 0), maxBlockArea: 5000));
+      expect(sub.messages, contains('field_self_intersect'));
+      expect(sub.fieldArea, closeTo(100 * 333.3333, 1));
+      expect(sub.blocksArea, greaterThan(0.85 * sub.fieldArea));
+    });
+  });
+
+  group('AUT-16 pipes and laterals on top of each other', () {
+    Project base() {
+      final p = Project();
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-20, 0), calculatePressure: true));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-20, 0), const Pt(0, 0)], scope: HydraulicScope.mainline));
+      p.entities.add(ControlValveEntity(id: p.newId(), position: const Pt(0, 0), zoneName: 'A', valveSpecId: 'ev50'));
+      return p;
+    }
+
+    List<CheckIssue> overlaps(Project p) => runDesignCheck(p).issues.where((i) => i.code == 'pipes_overlap').toList();
+
+    test('a zone pipe pasted twice: found, and the correction keeps one', () {
+      final p = base();
+      final a = PipeEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(30, 0)], scope: HydraulicScope.zone);
+      final b = PipeEntity(id: p.newId(), points: [const Pt(30, 0), const Pt(0, 0)], scope: HydraulicScope.zone);
+      p.entities.addAll([a, b]);
+      p.entities.add(SpraylineEntity(id: p.newId(), points: [const Pt(30, 0), const Pt(30, 40)], outletSpecId: 'micro', nozzleId: 'm50', headM: 15, spacing: 4, offset: 2));
+      expect(overlaps(p).single.entityIds.toSet(), {a.id, b.id});
+      final advice = buildAdvice(p).where((x) => x.code == 'pipes_overlap').single;
+      expect(advice.fixes, [FixKind.removeDuplicates]);
+      expect(applyFix(p, advice, FixKind.removeDuplicates).ok, isTrue);
+      expect(p.entities.whereType<PipeEntity>().where((e) => e.scope == HydraulicScope.zone), hasLength(1));
+      expect(overlaps(p), isEmpty);
+    });
+
+    test('two pipes sharing 20 m: found, no automatic correction', () {
+      final p = base();
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(30, 0)], scope: HydraulicScope.zone));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(10, 0), const Pt(40, 0)], scope: HydraulicScope.zone));
+      final o = overlaps(p).single;
+      expect(o.at!.x, closeTo(20, 1e-6));
+      expect(buildAdvice(p).where((x) => x.code == 'pipes_overlap').single.fixes, isEmpty);
+    });
+
+    test('pipes end to end, crossing or of different scopes are no overlap', () {
+      final p = base();
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(30, 0)], scope: HydraulicScope.zone));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(30, 0), const Pt(60, 0)], scope: HydraulicScope.zone));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(15, -10), const Pt(15, 10)], scope: HydraulicScope.zone));
+      // a mainline in the trench of a zone pipe is not joined to it either
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(5, 0), const Pt(25, 0)], scope: HydraulicScope.mainline));
+      expect(overlaps(p), isEmpty);
+    });
+
+    test('a lateral that doubles back on itself', () {
+      final p = base();
+      p.entities.add(TapeEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(10, 0), const Pt(4, 0), const Pt(4, 20)], tapeSpecId: 'tape16'));
+      expect(overlaps(p), hasLength(1));
+    });
   });
 }

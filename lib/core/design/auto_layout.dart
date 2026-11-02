@@ -71,6 +71,132 @@ List<Pt> normalizePolygon(List<Pt> poly, {bool ccw = true}) {
   return (a < 0) == ccw ? out.reversed.toList() : out;
 }
 
+/// Crossings of the closed polygon [poly] with itself: where two edges that
+/// do not follow each other cross or touch, and the vertices it passes
+/// twice (an outline drawn by hand with a grip dragged across another
+/// side, or read from a file, may do both). Empty for a simple polygon.
+/// The edges are bucketed on a grid, so long outlines are cheap.
+List<Pt> polygonSelfCrossings(List<Pt> poly) {
+  final p = <Pt>[];
+  for (final q in poly) {
+    if (!q.x.isFinite || !q.y.isFinite) continue;
+    if (p.isNotEmpty && p.last.distanceTo(q) < 1e-9) continue;
+    p.add(q);
+  }
+  while (p.length > 1 && p.first.distanceTo(p.last) < 1e-9) {
+    p.removeLast();
+  }
+  final n = p.length;
+  if (n < 4) return const [];
+  final b = Bounds.ofPoints(p);
+  final scale = math.max(b.width, b.height);
+  final eps = math.max(1e-9, scale * 1e-9);
+  final cell = math.max(polylineLength([...p, p.first]) / n, scale / 1024) + 1e-12;
+  final buckets = <int, List<int>>{};
+  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+  Iterable<int> keys(Pt a, Pt c) sync* {
+    final x0 = ((math.min(a.x, c.x) - b.minX) / cell).floor(), x1 = ((math.max(a.x, c.x) - b.minX) / cell).floor();
+    final y0 = ((math.min(a.y, c.y) - b.minY) / cell).floor(), y1 = ((math.max(a.y, c.y) - b.minY) / cell).floor();
+    for (var ix = x0; ix <= x1; ix++) {
+      for (var iy = y0; iy <= y1; iy++) {
+        yield key(ix, iy);
+      }
+    }
+  }
+
+  for (var i = 0; i < n; i++) {
+    for (final k in keys(p[i], p[(i + 1) % n])) {
+      (buckets[k] ??= []).add(i);
+    }
+  }
+  final out = <Pt>[];
+  for (var i = 0; i < n; i++) {
+    final a = p[i], c = p[(i + 1) % n];
+    final seen = <int>{};
+    for (final k in keys(a, c)) {
+      for (final j in buckets[k] ?? const <int>[]) {
+        if (j <= i || !seen.add(j)) continue;
+        // neighbouring edges share a vertex: that is no crossing
+        if (j == i + 1 || (i == 0 && j == n - 1)) continue;
+        final x = segmentIntersection(a, c, p[j], p[(j + 1) % n], eps: 1e-12);
+        if (x != null) {
+          out.add(x);
+        } else if (distanceToSegment(p[j], a, c) <= eps || distanceToSegment(a, p[j], p[(j + 1) % n]) <= eps) {
+          // collinear overlap or a vertex resting on another edge
+          out.add(distanceToSegment(p[j], a, c) <= eps ? p[j] : a);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/// The simple loops a self-crossing outline [poly] encloses: walking it,
+/// each time it comes back to a crossing (or to a vertex it passed) the
+/// loop since then is cut off. Every part is counter-clockwise; a simple
+/// polygon comes back as itself (normalised). A bow tie gives its two
+/// triangles, a figure of eight its two rings.
+List<List<Pt>> simplePolygonParts(List<Pt> poly) {
+  final base = normalizePolygon(poly);
+  if (base.length < 3) return const [];
+  if (polygonSelfCrossings(base).isEmpty) return [base];
+  final p = <Pt>[];
+  for (final q in poly) {
+    if (!q.x.isFinite || !q.y.isFinite) continue;
+    if (p.isNotEmpty && p.last.distanceTo(q) < 1e-9) continue;
+    p.add(q);
+  }
+  while (p.length > 1 && p.first.distanceTo(p.last) < 1e-9) {
+    p.removeLast();
+  }
+  final n = p.length;
+  final b = Bounds.ofPoints(p);
+  final eps = math.max(1e-9, math.max(b.width, b.height) * 1e-9);
+  // every edge with the points where other edges cross it, in order
+  final cuts = [for (var i = 0; i < n; i++) <(double, Pt)>[]];
+  for (var i = 0; i < n; i++) {
+    final a = p[i], c = p[(i + 1) % n];
+    for (var j = i + 2; j < n; j++) {
+      if (i == 0 && j == n - 1) continue;
+      final d0 = p[j], d1 = p[(j + 1) % n];
+      final x = segmentIntersection(a, c, d0, d1, eps: 1e-12);
+      if (x == null) continue;
+      final r = c - a, s = d1 - d0;
+      final ti = r.length > 0 ? (x - a).dot(r) / r.dot(r) : 0.0, tj = s.length > 0 ? (x - d0).dot(s) / s.dot(s) : 0.0;
+      if (ti > 1e-9 && ti < 1 - 1e-9) cuts[i].add((ti, x));
+      if (tj > 1e-9 && tj < 1 - 1e-9) cuts[j].add((tj, x));
+    }
+  }
+  final seq = <Pt>[
+    for (var i = 0; i < n; i++) ...[p[i], ...(cuts[i]..sort((x, y) => x.$1.compareTo(y.$1))).map((c) => c.$2)],
+  ];
+  // the walk: a point met again closes the loop since it was first met
+  final parts = <List<Pt>>[];
+  final stack = <Pt>[];
+  int? onStack(Pt q) {
+    for (var k = stack.length - 1; k >= 0; k--) {
+      if (stack[k].distanceTo(q) <= eps * 10) return k;
+    }
+    return null;
+  }
+
+  for (final q in [...seq, seq.first]) {
+    final k = onStack(q);
+    if (k != null) {
+      final loop = stack.sublist(k);
+      stack.removeRange(k + 1, stack.length);
+      if (loop.length >= 3) parts.add(loop);
+      continue;
+    }
+    stack.add(q);
+  }
+  if (stack.length >= 3) parts.add(List.of(stack));
+  return [
+    for (final part in parts)
+      if (normalizePolygon(part) case final q when q.length >= 3 && polygonArea(q).abs() > eps) q,
+  ];
+}
+
 /// Direction of the longest edge of the closed polygon [poly] (the x axis
 /// for a degenerate one): rows of heads, laterals and strips usually run
 /// along the longest straight side of an area.
@@ -399,18 +525,32 @@ class RegionLoop {
 /// paths), held as closed loops with the region to their left. Exclusions
 /// may lie inside the outline, cross it or overlap each other.
 class LayoutRegion {
-  LayoutRegion._(this.outline, this.exclusions, this.loops, this.bounds, this._segments);
+  LayoutRegion._(this.outline, this.exclusions, this.loops, this.bounds, this._segments, {List<List<Pt>>? parts, this.selfCrossing = false}) : parts = parts ?? [if (outline.length >= 3) outline];
 
   /// Builds the region of [outline] minus [exclusions] (any orientation).
+  /// An outline that crosses itself (a bow tie, a figure of eight) is cut
+  /// into the simple loops it encloses, every one counted with its own
+  /// area and its arcs opening into it ([selfCrossing] tells).
   factory LayoutRegion(List<Pt> outline, {List<List<Pt>> exclusions = const []}) {
     final out = normalizePolygon(outline);
-    if (out.length < 3 || polygonArea(out).abs() < 1e-9) return LayoutRegion._(out, const [], const [], Bounds.ofPoints(out), _SegmentGrid(const [], 1, Pt.zero));
-    final ob = Bounds.ofPoints(out);
+    final crossing = out.length >= 4 && polygonSelfCrossings(out).isNotEmpty;
+    final parts = crossing ? (simplePolygonParts(outline)..sort((a, b) => polygonArea(b).abs().compareTo(polygonArea(a).abs()))) : [out];
+    if (out.length < 3 || parts.isEmpty || polygonArea(parts.first).abs() < 1e-9) {
+      return LayoutRegion._(out, const [], const [], Bounds.ofPoints(out), _SegmentGrid(const [], 1, Pt.zero), parts: const [], selfCrossing: crossing);
+    }
+    final ob = Bounds.ofPoints([for (final part in parts) ...part]);
     final holes = <List<Pt>>[
       for (final e in exclusions)
         if (normalizePolygon(e) case final h when h.length >= 3 && polygonArea(h).abs() > 1e-9 && Bounds.ofPoints(h).intersects(ob)) h,
     ];
-    final loops = [for (final l in _assemble(out, holes)) RegionLoop(l)];
+    final loops = [
+      for (final part in parts)
+        for (final l in _assemble(part, [
+          for (final h in holes)
+            if (Bounds.ofPoints(h).intersects(Bounds.ofPoints(part))) h,
+        ]))
+          RegionLoop(l),
+    ];
     final segs = <(Pt, Pt)>[
       for (final l in loops)
         for (var i = 0; i < l.points.length; i++) (l.points[i], l.points[(i + 1) % l.points.length]),
@@ -419,11 +559,18 @@ class LayoutRegion {
     final scale = math.max(b.width, b.height);
     final avg = segs.isEmpty ? 1.0 : segs.fold(0.0, (s, e) => s + e.$1.distanceTo(e.$2)) / segs.length;
     final cell = math.max(math.max(avg, scale / 256), 1e-3);
-    return LayoutRegion._(out, holes, loops, b, _SegmentGrid(segs, cell, Pt(b.minX, b.minY)));
+    return LayoutRegion._(out, holes, loops, b, _SegmentGrid(segs, cell, Pt(b.minX, b.minY)), parts: parts, selfCrossing: crossing);
   }
 
-  /// The outline, counter-clockwise.
+  /// The outline, counter-clockwise (as drawn when it crosses itself).
   final List<Pt> outline;
+
+  /// The simple loops of the outline, the largest first: the outline itself,
+  /// or the pieces of one that crosses itself.
+  final List<List<Pt>> parts;
+
+  /// Whether the outline crosses itself (see [LayoutRegion.new]).
+  final bool selfCrossing;
 
   /// The exclusions that touch the outline's bounds, counter-clockwise.
   final List<List<Pt>> exclusions;
@@ -1233,7 +1380,8 @@ class LandscapeLayout {
   /// Uniformity of the layout (null when not evaluated).
   final LayoutMetrics? metrics;
 
-  /// Message codes: `layout_empty`, `layout_no_nozzle`, `layout_no_radius`,
+  /// Message codes: `layout_self_intersect` (the outline crosses itself: its
+  /// loops are laid out apart), `layout_empty`, `layout_no_nozzle`, `layout_no_radius`,
   /// `layout_no_spacing`, `layout_too_many_heads` (nothing laid out);
   /// `layout_spacing_clamped` (a spacing beyond the wetted diameter),
   /// `layout_radius_large` (the heads throw farther than the area is wide),
@@ -1313,7 +1461,7 @@ LandscapeLayout layoutLandscape({required List<Pt> outline, List<List<Pt>> exclu
   if (ref == null) return empty('layout_no_nozzle');
   final rRef = ref.curve.radius(headM);
   if (!(rRef > 0)) return empty('layout_no_radius');
-  final messages = <String>[];
+  final messages = <String>[if (region.selfCrossing) 'layout_self_intersect'];
   var spacing = switch (o.spacingRule) {
     SpacingRule.headToHead => rRef,
     SpacingRule.percentOfDiameter => 2 * rRef * (o.spacingPercent > 0 ? o.spacingPercent : 50) / 100,

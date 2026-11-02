@@ -12,6 +12,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import 'advisor.dart';
+import 'auto_layout.dart' show simplePolygonParts;
 import 'electrical.dart';
 import 'network_builder.dart';
 import 'pump_selection.dart';
@@ -368,6 +369,26 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
         n++;
       }
       return n == 0 ? const FixResult.failed('fixfail.noChange') : FixResult.done('fixed.resetPumpSpeed', {'n': '$n'});
+
+    // 1.6.0 AUT
+    case FixKind.splitArea:
+      var n = 0;
+      for (final area in ents.whereType<AreaEntity>()) {
+        final parts = simplePolygonParts(area.points);
+        final idx = p.entities.indexOf(area);
+        if (parts.length < 2 || idx < 0) continue;
+        final pieces = [
+          for (var k = 0; k < parts.length; k++)
+            area.clone(newId: k == 0 ? area.id : p.newId())
+              ..points = parts[k]
+              ..name = k == 0 || area.name.isEmpty ? area.name : '${area.name} (${k + 1})',
+        ];
+        p.entities
+          ..removeAt(idx)
+          ..insertAll(idx, pieces);
+        n += pieces.length;
+      }
+      return n == 0 ? const FixResult.failed('fixfail.noChange') : FixResult.done('fixed.splitArea', {'n': '$n'});
   }
 }
 

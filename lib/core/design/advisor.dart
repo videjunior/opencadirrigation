@@ -104,6 +104,11 @@ enum FixKind {
   /// Gives a controller the next standard number of stations that holds
   /// all the valves wired to it.
   controllerStations,
+
+  // 1.6.0 AUT
+  /// Cuts an irrigated area whose outline crosses itself into the simple
+  /// areas it encloses (same crop and settings, the first keeps the id).
+  splitArea,
 }
 
 /// Corrections the "fix automatically" command may apply on its own: they
@@ -134,6 +139,8 @@ const autoSafeFixes = {
   FixKind.enablePipes,
   FixKind.enableWires,
   FixKind.controllerStations,
+  // 1.6.0 AUT
+  FixKind.splitArea,
 };
 
 /// Corrections that need design results (duties, pressures, flows).
@@ -295,6 +302,9 @@ const adviceCodes = [
   'vih_not_in_flow',
   'vih_pressure_deficit',
   'vih_pressure_high',
+  // 1.6.0 AUT
+  'area_self_intersect',
+  'pipes_overlap',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -323,8 +333,10 @@ AdviceLevel _level(String code) => switch (code) {
   'elec_stations' ||
   'elec_voltage' ||
   'vih_pressure_deficit' ||
-  // 1.6.0 AUT: two valves feeding each other's pipes make both zones wrong
-  'zone_overlap' => AdviceLevel.error,
+  // 1.6.0 AUT: two valves feeding each other's pipes make both zones wrong;
+  // an area crossing itself has the wrong size
+  'zone_overlap' ||
+  'area_self_intersect' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
@@ -597,9 +609,37 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
       return p.catalog.wires.any((w) => !w.enabled && w.ohmPerKm < thickest) ? const [FixKind.enableWires] : const [];
     case 'elec_stations':
       return const [FixKind.controllerStations];
+    // 1.6.0 AUT
+    case 'area_self_intersect':
+      return first is AreaEntity ? const [FixKind.splitArea] : const [];
+    case 'pipes_overlap':
+      return ids.length == 2 && sameLine(p.byId(ids[0]), p.byId(ids[1]), math.max(p.params.connectTolerance, 1e-3)) ? const [FixKind.removeDuplicates] : const [];
     default:
       return const [];
   }
+}
+
+/// Whether [a] and [b] are the same line drawn twice: one kind and model,
+/// vertices within [tol] of each other (in either direction).
+bool sameLine(Entity? a, Entity? b, double tol) {
+  if (a is! PolyEntity || b is! PolyEntity || a.runtimeType != b.runtimeType) return false;
+  final pa = a.points, pb = b.points;
+  if (pa.length != pb.length || pa.isEmpty) return false;
+  final spec = switch ((a, b)) {
+    (PipeEntity x, PipeEntity y) => x.pipeSpecId == y.pipeSpecId && x.scope == y.scope,
+    (SpraylineEntity x, SpraylineEntity y) => x.outletSpecId == y.outletSpecId && x.nozzleId == y.nozzleId && x.spacing == y.spacing,
+    (TapeEntity x, TapeEntity y) => x.tapeSpecId == y.tapeSpecId,
+    _ => false,
+  };
+  if (!spec) return false;
+  bool along(List<Pt> q) {
+    for (var i = 0; i < pa.length; i++) {
+      if (pa[i].distanceTo(q[i]) > tol) return false;
+    }
+    return true;
+  }
+
+  return along(pb) || along(pb.reversed.toList());
 }
 
 // ---------------------------------------------------------------- helpers shared with auto_fix.dart

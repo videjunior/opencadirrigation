@@ -16,7 +16,7 @@ library;
 import 'dart:math' as math;
 
 import '../model/geometry.dart';
-import 'auto_layout.dart' show normalizePolygon;
+import 'auto_layout.dart' show normalizePolygon, polygonSelfCrossings, simplePolygonParts;
 import 'block_generator.dart';
 
 /// How the field is cut.
@@ -306,11 +306,33 @@ List<(double, double)> _equalCuts(List<Pt> poly, Pt n, int count, double road) {
   return place((lo + hi) / 2);
 }
 
-/// Cuts [field] into blocks (see the library comment).
+/// Cuts [field] into blocks (see the library comment). A field outline
+/// that crosses itself is cut into the simple loops it encloses, each
+/// subdivided on its own (`field_self_intersect`).
 FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
   final poly = normalizePolygon(field);
   final dir = o.direction.length > 0 ? o.direction.normalized : const Pt(1, 0);
   final messages = <String>[];
+  if (poly.length >= 4 && polygonSelfCrossings(poly).isNotEmpty) {
+    final parts = simplePolygonParts(field);
+    if (parts.length > 1) {
+      final blocks = <FieldBlock>[];
+      final out = <String>['field_self_intersect'];
+      var area = 0.0;
+      for (final part in parts) {
+        final sub = subdivideField(part, o);
+        for (final m in sub.messages) {
+          final i = m.indexOf(':');
+          final k = i > 0 ? int.tryParse(m.substring(i + 1)) : null;
+          final msg = k == null ? m : '${m.substring(0, i)}:${k + blocks.length}';
+          if (!out.contains(msg)) out.add(msg);
+        }
+        blocks.addAll(sub.blocks);
+        area += sub.fieldArea;
+      }
+      return FieldSubdivision(blocks: blocks, fieldArea: area, direction: dir, messages: out);
+    }
+  }
   if (poly.length < 3 || polygonArea(poly).abs() < 1e-9) return FieldSubdivision(blocks: const [], fieldArea: 0, direction: dir, messages: ['field_empty']);
   final perp = dir.perpendicular;
   final total = polygonArea(poly).abs();

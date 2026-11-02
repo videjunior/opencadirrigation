@@ -246,7 +246,8 @@ LandscapeLayout golfGreenLayout({
   }
   if (ref == null) return _empty(region, family, h, 'layout_no_nozzle');
   final radius = ref.curve.radius(h);
-  final ring = RegionLoop(_grow(region.outline, setback));
+  if (region.selfCrossing) messages.add('layout_self_intersect');
+  final ring = RegionLoop(_grow(region.parts.first, setback));
   final count = math.max(minHeads, (ring.length / radius - 1e-9).ceil());
   final step = ring.length / count;
   // start at the vertex farthest along x (a deterministic place)
@@ -258,12 +259,12 @@ LandscapeLayout golfGreenLayout({
   // directions to the green from a head are those of the outline points in
   // reach, along straight sides too, not only of the vertices (a green
   // drawn with four corners would get 30° arcs at the corners)
-  final outline = region.outline;
   final samples = <Pt>[
-    for (var i = 0; i < outline.length; i++) ...[
-      outline[i],
-      for (var j = 1, m = (outline[i].distanceTo(outline[(i + 1) % outline.length]) / 0.5).ceil(); j < m; j++) Pt.lerp(outline[i], outline[(i + 1) % outline.length], j / m),
-    ],
+    for (final outline in region.parts)
+      for (var i = 0; i < outline.length; i++) ...[
+        outline[i],
+        for (var j = 1, m = (outline[i].distanceTo(outline[(i + 1) % outline.length]) / 0.5).ceil(); j < m; j++) Pt.lerp(outline[i], outline[(i + 1) % outline.length], j / m),
+      ],
   ];
   final heads = <LayoutHead>[];
   for (var k = 0; k < count; k++) {

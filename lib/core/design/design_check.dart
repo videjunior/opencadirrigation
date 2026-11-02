@@ -11,6 +11,7 @@ import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
+import 'auto_layout.dart' show polygonSelfCrossings;
 import 'electrical.dart';
 import 'network_builder.dart';
 import 'valve_in_head.dart';
@@ -60,7 +61,10 @@ DesignCheckReport runDesignCheck(Project project) {
   final pivots = ents.whereType<PivotEntity>().toList();
   final hydraulic = ents.where((e) => e.isHydraulic || e is PivotEntity).toList();
   if (hydraulic.isEmpty) {
-    issues.add(const CheckIssue('no_hydraulics', CheckSeverity.info));
+    // 1.6.0 AUT: an area crossing itself is wrong before any pipe is drawn
+    issues
+      ..addAll(checkSelfCrossingAreas(project))
+      ..add(const CheckIssue('no_hydraulics', CheckSeverity.info));
     return DesignCheckReport(issues);
   }
   if (supplies.isEmpty) issues.add(const CheckIssue('no_supply', CheckSeverity.error));
@@ -302,6 +306,9 @@ DesignCheckReport runDesignCheck(Project project) {
     final ids = idx > 0 ? w.substring(idx + 1).split(':') : const <String>[];
     issues.add(CheckIssue(code, code == 'elec_stations' || code == 'elec_voltage' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
+  // 1.6.0 AUT: outlines that cross themselves, overlapping pipes and laterals
+  issues.addAll(checkSelfCrossingAreas(project));
+  issues.addAll(checkOverlappingLines(project, tol));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));
@@ -309,3 +316,79 @@ DesignCheckReport runDesignCheck(Project project) {
 }
 
 String _kind(Entity e) => e.type.name;
+
+// ---------------------------------------------------------------- 1.6.0 AUT
+
+/// Irrigated areas whose outline crosses itself (a bow tie made by
+/// dragging a grip across another side, an outline read from a file): their
+/// area, and so the water they need, would come out wrong.
+List<CheckIssue> checkSelfCrossingAreas(Project project) => [
+  for (final a in project.entities.whereType<AreaEntity>())
+    if (a.points.length >= 4)
+      if (polygonSelfCrossings(a.points) case final x when x.isNotEmpty) CheckIssue('area_self_intersect', CheckSeverity.error, entityIds: [a.id], at: x.first, value: a.name),
+];
+
+/// Pipes, laterals and tapes of one scope that run on top of each other for
+/// more than [tol] (a pipe pasted twice, two pipes drawn over the same
+/// stretch, a lateral that doubles back on itself): the design would take
+/// them as pipes in parallel (too little friction) and the bill of
+/// materials would count them twice. The segments are bucketed on a grid.
+List<CheckIssue> checkOverlappingLines(Project project, double tol) {
+  final lines = <PolyEntity>[
+    for (final e in project.entities)
+      if (e.isLinearHydraulic && e is PolyEntity && e.points.length >= 2) e,
+  ];
+  final segs = <(Pt, Pt, int, int)>[]; // a, b, line, segment
+  var b = Bounds.empty;
+  var total = 0.0;
+  for (var k = 0; k < lines.length; k++) {
+    final pts = lines[k].points;
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i - 1].distanceTo(pts[i]) <= 1e-9) continue;
+      segs.add((pts[i - 1], pts[i], k, i));
+      b = b.include(pts[i - 1]).include(pts[i]);
+      total += pts[i - 1].distanceTo(pts[i]);
+    }
+  }
+  if (segs.length < 2) return const [];
+  final cell = math.max(total / segs.length, math.max(b.width, b.height) / 512) + 1e-9;
+  final buckets = <int, List<int>>{};
+  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+  for (var s = 0; s < segs.length; s++) {
+    final (p, q, _, _) = segs[s];
+    final x0 = ((math.min(p.x, q.x) - b.minX - tol) / cell).floor(), x1 = ((math.max(p.x, q.x) - b.minX + tol) / cell).floor();
+    final y0 = ((math.min(p.y, q.y) - b.minY - tol) / cell).floor(), y1 = ((math.max(p.y, q.y) - b.minY + tol) / cell).floor();
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 65536) continue;
+    for (var ix = x0; ix <= x1; ix++) {
+      for (var iy = y0; iy <= y1; iy++) {
+        (buckets[key(ix, iy)] ??= []).add(s);
+      }
+    }
+  }
+  final found = <String, (List<String>, Pt)>{};
+  final tested = <int>{};
+  for (final list in buckets.values) {
+    for (var x = 0; x < list.length; x++) {
+      for (var y = x + 1; y < list.length; y++) {
+        final s1 = list[x], s2 = list[y];
+        if (!tested.add(s1 * segs.length + s2)) continue;
+        final (a, c, l1, i1) = segs[s1];
+        final (d0, d1, l2, i2) = segs[s2];
+        final e1 = lines[l1] as Entity, e2 = lines[l2] as Entity;
+        if (e1.hydraulicScope != e2.hydraulicScope) continue;
+        if (l1 == l2 && i1 == i2) continue;
+        final r = c - a;
+        final len = r.length;
+        // collinear: both ends of the second segment on the first one's line
+        if ((d0 - a).cross(r).abs() / len > tol || (d1 - a).cross(r).abs() / len > tol) continue;
+        final t0 = (d0 - a).dot(r) / len, t1 = (d1 - a).dot(r) / len;
+        final lo = math.max(0.0, math.min(t0, t1)), hi = math.min(len, math.max(t0, t1));
+        if (hi - lo <= tol) continue;
+        final ids = [e1.id, e2.id]..sort();
+        final at = a + r * ((lo + hi) / 2 / len);
+        found.putIfAbsent(ids.toSet().join('|'), () => (ids.toSet().toList(), at));
+      }
+    }
+  }
+  return [for (final (ids, at) in found.values) CheckIssue('pipes_overlap', CheckSeverity.warning, entityIds: ids, at: at)];
+}
