@@ -113,6 +113,9 @@ void main() {
         PivotEntity(id: 'pv', center: Pt.zero, machineCost: 10, towerCost: 20),
         ControllerEntity(id: 'c', position: Pt.zero, cost: 30, accessories: {'a': 40}),
         PumpEntity(id: 'pu', position: Pt.zero, hourMeter: true, hourMeterCost: 50),
+        JunctionEntity(id: 'j', position: Pt.zero, scope: HydraulicScope.mainline, vesselLiters: 500, vesselCost: 60),
+        TravellerEntity(id: 't', start: Pt.zero, end: const Pt(0, 200), machineCost: 70, hydrantCost: 80),
+        FurrowEntity(id: 'f', points: [Pt.zero, const Pt(50, 0)], pipeCostPerM: 90, gateCost: 100),
       ]);
       final before = {for (final e in p.entities) e.id: e.toJson()};
       p.scalePrices(2);

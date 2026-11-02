@@ -212,7 +212,7 @@ const _motPlus = <String, (String, String, String)>{
   'pumpStation.title': ('Estação de bombeamento', 'Pump station', 'Estación de bombeo'),
   'pumpStation.edit': ('Estação de bombeamento…', 'Pump station…', 'Estación de bombeo…'),
   'pumpStation.single': ('Bomba única', 'Single pump', 'Bomba única'),
-  'pumpStation.summary': ('{duty} em serviço + {standby} de reserva, {arr}', '{duty} on duty + {standby} on standby, {arr}', '{duty} en servicio + {standby} de reserva, {arr}'),
+  'pumpStation.summary': ('{serving} em serviço + {standby} de reserva, {arr}', '{serving} on duty + {standby} on standby, {arr}', '{serving} en servicio + {standby} de reserva, {arr}'),
   'pumpStation.hint': (
     'O item de bomba passa a representar uma estação: a bomba do item (bomba 1) e as que vêm depois dela. O cálculo resolve a estação pela curva das bombas que funcionam juntas e mostra o ponto de operação de cada uma; as bombas de reserva não funcionam e entram na lista de materiais.',
     'The pump item stands for a station: its own pump (pump 1) and the ones after it. The design solves the station on the curve of the pumps that run together and shows the operating point of each one; standby pumps do not run and go in the bill of materials.',
@@ -240,7 +240,7 @@ const _motPlus = <String, (String, String, String)>{
     'Run the design to see the operating point of each pump.',
     'Calcule el proyecto para ver el punto de operación de cada bomba.',
   ),
-  'pumpStation.running': ('{n} de {duty} bombas em serviço ligadas', '{n} of {duty} duty pumps on', '{n} de {duty} bombas en servicio encendidas'),
+  'pumpStation.running': ('{n} de {serving} bombas em serviço ligadas', '{n} of {serving} duty pumps on', '{n} de {serving} bombas en servicio encendidas'),
   'pumpStation.on': ('ligada', 'on', 'encendida'),
   'pumpStation.off': ('desligada', 'off', 'apagada'),
   'pumpStation.efficiency': ('Rendimento do fio à água', 'Wire-to-water efficiency', 'Rendimiento del cable al agua'),

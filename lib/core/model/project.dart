@@ -543,7 +543,8 @@ class Project {
 
   /// Multiplies every price of the project by [factor]: catalogue costs, the
   /// energy tariff, the quote, the pivot machine and tower costs, the
-  /// controller and its accessories and the pump hour meters (the money
+  /// controller and its accessories, the pump hour meters, the air vessels
+  /// and the traveller and furrow machines (the money
   /// fields of the entities are listed in [entityMoneyKeys]). The
   /// alternatives follow in [setCurrency].
   void scalePrices(double factor) {
@@ -562,6 +563,16 @@ class Project {
           c.accessories.updateAll((_, v) => v * factor);
         case PumpEntity p:
           p.hourMeterCost *= factor;
+        // 1.6.0: the air vessel of a junction, the reel and hydrant of a
+        // traveller lane, the gated pipe and gates of a furrow set
+        case JunctionEntity j:
+          j.vesselCost *= factor;
+        case TravellerEntity t:
+          t.machineCost *= factor;
+          t.hydrantCost *= factor;
+        case FurrowEntity f:
+          f.pipeCostPerM *= factor;
+          f.gateCost *= factor;
         default:
           break;
       }
@@ -575,6 +586,9 @@ class Project {
     EntityType.pivot: {'cost', 'tcost'},
     EntityType.controller: {'cost', 'acc'},
     EntityType.pump: {'hm'},
+    EntityType.junction: {'vc'},
+    EntityType.traveller: {'cost', 'hcost'},
+    EntityType.furrows: {'cost', 'gcost'},
   };
 
   /// Switches the project to currency [code]; with [rate] (units of the new

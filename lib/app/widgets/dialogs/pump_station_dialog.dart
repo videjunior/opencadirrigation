@@ -20,7 +20,7 @@ import 'terrain_dialogs.dart' show dialogWidth;
 String pumpStationSummary(ProjectController c, PumpEntity p) {
   final s = p.station;
   if (s == null || s.isEmpty) return c.t('pumpStation.single');
-  return c.t('pumpStation.summary', {'duty': '${s.dutyCount}', 'standby': '${s.standbyCount}', 'arr': c.t('pumpStation.${s.arrangement.name}')});
+  return c.t('pumpStation.summary', {'serving': '${s.dutyCount}', 'standby': '${s.standbyCount}', 'arr': c.t('pumpStation.${s.arrangement.name}')});
 }
 
 /// The duty of the station of [entityId] in every system flow of [r].
@@ -120,7 +120,7 @@ Future<void> showPumpStationDialog(BuildContext context, ProjectController c, Pu
                     t('pumpStation.title'),
                     work.isEmpty
                         ? t('pumpStation.single')
-                        : t('pumpStation.summary', {'duty': '${work.dutyCount}', 'standby': '${work.standbyCount}', 'arr': t('pumpStation.${work.arrangement.name}')}),
+                        : t('pumpStation.summary', {'serving': '${work.dutyCount}', 'standby': '${work.standbyCount}', 'arr': t('pumpStation.${work.arrangement.name}')}),
                   ),
                   SectionTitle(t('pumpStation.duty')),
                   if (duties.isEmpty)
@@ -130,7 +130,7 @@ Future<void> showPumpStationDialog(BuildContext context, ProjectController c, Pu
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
-                          '$flow: ${t('pumpStation.running', {'n': '${d.running}', 'duty': '${d.duty}'})} · ${q(d.flow)} · ${h(d.head)} · ${fmtUi(d.powerKw, 1)} kW',
+                          '$flow: ${t('pumpStation.running', {'n': '${d.running}', 'serving': '${d.duty}'})} · ${q(d.flow)} · ${h(d.head)} · ${fmtUi(d.powerKw, 1)} kW',
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       ),
