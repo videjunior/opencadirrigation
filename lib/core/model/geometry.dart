@@ -456,9 +456,11 @@ class OffsetReport {
 /// loops a copy makes inside bends tighter than |d| (or where two arms of a
 /// U offset past each other) are then cut out where the copy crosses
 /// itself, so it never runs back over itself — only those no longer than
-/// 4·|d| when the line itself crosses itself (its own crossings stay).
-/// Repeated vertices are dropped first (they have no direction). [report]
-/// counts the corners and loops changed.
+/// 4·|d| when the line itself crosses or touches itself (its own crossings
+/// stay; a closed outline offset through its wrap-around, as offsetEntity
+/// does, touches itself where it closes and is cut so too). Repeated
+/// vertices are dropped first (they have no direction). [report] counts the
+/// corners and loops changed.
 List<Pt> offsetPolyline(List<Pt> pts, double d, {double miterLimit = 2.5, OffsetJoin join = OffsetJoin.bevel, OffsetReport? report}) {
   final p = <Pt>[
     for (var i = 0; i < pts.length; i++)
@@ -502,8 +504,8 @@ List<Pt> offsetPolyline(List<Pt> pts, double d, {double miterLimit = 2.5, Offset
   return withoutPolylineLoops(out, maxLength: polylineSelfCrosses(p) ? 4 * d.abs() : null, report: report);
 }
 
-/// Whether the open polyline [pts] crosses itself (two segments that do not
-/// follow each other meet).
+/// Whether the open polyline [pts] crosses or touches itself (two segments
+/// that do not follow each other meet).
 bool polylineSelfCrosses(List<Pt> pts) {
   final n = pts.length;
   if (n < 4) return false;
