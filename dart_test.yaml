@@ -6,3 +6,6 @@ tags:
   # --concurrency 1`) and the other jobs leave them out (`--exclude-tags perf`).
   perf:
     timeout: 3x
+  # Image comparisons (test/goldens): rebuild with
+  # `flutter test --update-goldens test/goldens` after a deliberate change.
+  golden:
