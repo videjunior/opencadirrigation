@@ -106,6 +106,7 @@ export 'io/dem_online.dart';
 export 'io/dem_tiff.dart';
 export 'io/details.dart';
 export 'io/dgn.dart';
+export 'io/drawing_import.dart';
 export 'io/dwg.dart';
 export 'io/dwg_writer.dart';
 export 'io/dxf.dart';
