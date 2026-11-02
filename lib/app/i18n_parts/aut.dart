@@ -54,6 +54,33 @@ const _aut = <String, (String, String, String)>{
     'When they are the same item drawn twice, use the correction to keep only one. Otherwise delete or trim the repeated stretch, or move one of the pipes aside if they really are two lines in one trench.',
     'Cuando son el mismo elemento dibujado dos veces, use la corrección para dejar solo uno. Si no, borre o recorte el tramo repetido, o desplace una de las tuberías si de verdad son dos líneas en la misma zanja.',
   ),
+  // ---- sprinkler spacing and uniformity
+  'check.zone_spacing_wide': (
+    'Aspersores mais espaçados do que o alcance permite',
+    'Sprinklers spaced farther apart than their throw allows',
+    'Aspersores más espaciados de lo que permite su alcance',
+  ),
+  'adv.zone_spacing_wide.why': (
+    'Os aspersores de círculo inteiro desta zona estão mais afastados do que o raio molhado permite: entre eles fica uma faixa que recebe muito menos água, e nenhum tempo de rega compensa sem encharcar o resto. Cabeça a cabeça é 50 % do diâmetro molhado; com pouco vento aceita-se até cerca de 60 % em malha quadrada ou triangular, e 50–55 % por 60–65 % em malha retangular (Keller e Bliesner), menos com vento.',
+    'The full-circle sprinklers of this zone stand farther apart than their wetted radius allows: a band between them gets far less water, and no run time makes up for it without soaking the rest. Head to head is 50 % of the wetted diameter; in light wind about 60 % is accepted on a square or triangular grid, and 50–55 % by 60–65 % on a rectangular one (Keller and Bliesner), less in wind.',
+    'Los aspersores de círculo completo de esta zona están más separados de lo que permite su radio mojado: entre ellos queda una franja que recibe mucha menos agua, y ningún tiempo de riego lo compensa sin encharcar el resto. Cabeza a cabeza es el 50 % del diámetro mojado; con poco viento se acepta hasta cerca del 60 % en malla cuadrada o triangular, y 50–55 % por 60–65 % en malla rectangular (Keller y Bliesner), menos con viento.',
+  ),
+  'adv.zone_spacing_wide.how': (
+    'Use um bocal de raio maior (a mensagem mostra o espaçamento máximo para o raio atual), aproxime as linhas ou os aspersores, ou acrescente uma fila entre as atuais. O Layout automático e os gabaritos espaçam cabeça a cabeça.',
+    'Use a nozzle with a larger radius (the message shows the largest spacing for the present one), bring the lines or the heads closer, or add a row between the present ones. The automatic layout and the templates space head to head.',
+    'Use una boquilla de mayor radio (el mensaje muestra la separación máxima para el radio actual), acerque las líneas o los aspersores, o agregue una fila entre las actuales. El trazado automático y las plantillas espacian cabeza a cabeza.',
+  ),
+  'check.area_uniformity_low': ('Área regada de forma desigual', 'Area watered unevenly', 'Área regada de forma desigual'),
+  'adv.area_uniformity_low.why': (
+    'O densograma dos aspersores (com a pressão nominal de cada um, todos os que jogam água sobre a área) mostra uma distribuição pobre: CU de Christiansen abaixo de 75 %, DU do quarto mais seco abaixo de 60 % ou mais de 5 % da área recebendo menos da metade da média. As partes secas obrigam a regar mais tempo, desperdiçando água no resto.',
+    'The densogram of the sprinklers (each at its nominal pressure, every one that throws onto the area) shows a poor distribution: a Christiansen CU below 75 %, a low-quarter DU below 60 % or more than 5 % of the area getting less than half the mean. The dry parts force longer run times that waste water on the rest.',
+    'El densograma de los aspersores (cada uno a su presión nominal, todos los que lanzan agua sobre el área) muestra una distribución pobre: CU de Christiansen por debajo del 75 %, DU del cuarto más seco por debajo del 60 % o más del 5 % del área recibiendo menos de la mitad de la media. Las partes secas obligan a regar más tiempo, desperdiciando agua en el resto.',
+  ),
+  'adv.area_uniformity_low.how': (
+    'Abra o densograma para ver onde falta água. Aproxime as cabeças (espaçamento até o raio), troque os bocais para casar a precipitação (meio círculo com metade da vazão), ponha arcos parciais nas bordas ou refaça a área com o Layout automático ou um gabarito.',
+    'Open the densogram to see where water is short. Bring the heads closer (spacing up to the radius), change the nozzles to match the precipitation (a half circle with half the flow), put part circles on the edges, or lay the area out again with the automatic layout or a template.',
+    'Abra el densograma para ver dónde falta agua. Acerque las cabezas (separación hasta el radio), cambie las boquillas para igualar la precipitación (medio círculo con la mitad del caudal), ponga arcos parciales en los bordes o rehaga el área con el trazado automático o una plantilla.',
+  ),
   // ---- fix automatically and optimise
   'fixed.connectPipe': (
     'tubo de {d} m ligando o aspersor ao tubo mais próximo (o aspersor ficou no lugar)',

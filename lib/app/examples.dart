@@ -8,6 +8,7 @@ library;
 import 'dart:math' as math;
 
 import '../core/design/block_generator.dart';
+import '../core/design/templates.dart' show golfGreenLayout;
 import '../core/design/pivot.dart';
 import '../core/model/catalog.dart';
 import '../core/model/currency.dart';
@@ -864,6 +865,9 @@ Project buildCoffeeExample(Tr t, String lang) {
 /// Three 72 × 72 m paddocks watered by spray lines of impact sprinklers on a
 /// 12 × 18 m grid (a lateral every 18 m, a sprinkler every 12 m), one zone
 /// per paddock, reservoir, pump and check valve; one paddock per night shift.
+/// The nozzle throws 14 m: the 18 m between laterals are 64 % of its wetted
+/// diameter and the 12 m along them 43 % (Keller & Bliesner's limits for a
+/// rectangular spacing in light wind are about 65 % and 50–55 %).
 Project buildPastureExample(Tr t, String lang) {
   final p = _newProject(t, lang, name: 'ex.pa.name', client: 'ex.pa.client', site: 'ex.pa.site');
   for (final (x, y) in [(-40.0, -50.0), (240.0, -50.0), (-40.0, 90.0), (240.0, 90.0), (100.0, 30.0)]) {
@@ -895,7 +899,7 @@ Project buildPastureExample(Tr t, String lang) {
         lateralSpacing: 18,
         firstLateralOffset: 9,
         outletSpecId: 'impact34',
-        nozzleId: 'i4.0',
+        nozzleId: 'i4.5',
         outletSpacing: 12,
         outletOffsetHalf: true,
         headM: 30,
@@ -952,9 +956,11 @@ Project buildPastureExample(Tr t, String lang) {
 
 // ---------------------------------------------------------------- golf hole
 
-/// One golf hole: a tee with pop-up sprays, a fairway with rotors on a
-/// triangular grid (two zones) and a green with rotors around its edge, all
-/// fed from a pond by a pump; three night-time shifts.
+/// One golf hole: a tee with pop-up sprays head to head (part circles on its
+/// edges, full circles down the middle), a fairway with rotors on a
+/// triangular grid (two zones) and a green ringed by part-circle rotors
+/// throwing across it (the green template), all fed from a pond by a pump;
+/// three night-time shifts.
 Project buildGolfExample(Tr t, String lang) {
   final p = _newProject(t, lang, name: 'ex.go.name', client: 'ex.go.client', site: 'ex.go.site');
   for (final (x, y) in [(-60.0, -60.0), (170.0, -60.0), (-60.0, 50.0), (170.0, 50.0), (60.0, 0.0)]) {
@@ -962,7 +968,7 @@ Project buildGolfExample(Tr t, String lang) {
   }
   // drawing: fairway, green, tee, bunker, pond, trees
   p.entities.add(PolylineEntity(id: p.newId(), points: _rect(0, 0, 100, 30), closed: true, name: t('ex.go.fairway')));
-  p.entities.add(CircleEntity(id: p.newId(), center: const Pt(130, 15), radius: 10));
+  p.entities.add(CircleEntity(id: p.newId(), center: const Pt(130, 15), radius: 7));
   p.entities.add(PolylineEntity(id: p.newId(), points: _rect(-40, 12, -10, 18), closed: true, name: t('ex.go.tee')));
   final bunker = [const Pt(114, -2), const Pt(122, -6), const Pt(128, -3), const Pt(126, 3), const Pt(118, 4)];
   p.entities.add(PolylineEntity(id: p.newId(), points: List.of(bunker), closed: true, name: t('ex.go.bunker')));
@@ -981,20 +987,24 @@ Project buildGolfExample(Tr t, String lang) {
     p.entities.add(SymbolEntity(id: p.newId(), position: Pt(x + 12, -12), kind: SymbolKind.tree, size: 2.5));
   }
 
-  // green: eight full-circle rotors around the edge on an open ring pipe
+  // green: eight rotors on a ring 1 m outside it, each a part circle
+  // opening onto the green with the nozzle of its arc (the green template),
+  // on an open ring pipe
   final zg = t('ex.go.green');
-  final heads = [for (var i = 0; i < 8; i++) const Pt(130, 15) + Pt.polar(10, math.pi * i / 4)];
-  for (final h in heads) {
-    p.entities.add(OutletEntity(id: p.newId(), position: h, outletSpecId: 'rotor', nozzleId: 'r3', headM: 25, zoneName: zg));
-  }
+  final greenOutline = [for (var i = 0; i < 24; i++) const Pt(130, 15) + Pt.polar(7, math.pi * i / 12)];
+  final ring = golfGreenLayout(family: p.catalog.outlet('rotor')!, green: greenOutline, setback: 1, headM: 25, minHeads: 8, evaluate: false);
+  final greenHeads = ring.toOutlets(p, zoneName: (_) => zg);
+  p.entities.addAll(greenHeads);
+  final heads = [for (final h in greenHeads) h.position];
   p.entities.add(PipeEntity(id: p.newId(), points: List.of(heads), scope: HydraulicScope.zone, name: zg));
   final vg = ControlValveEntity(id: p.newId(), position: const Pt(145, 15), valveSpecId: 'ev25', zoneName: zg, name: zg);
   p.entities.add(vg);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(145, 15), heads[0]], scope: HydraulicScope.zone, name: t('name.stub')));
+  // the turf to water: the green and its collar, where the heads stand
   p.entities.add(
     AreaEntity(
       id: p.newId(),
-      points: [for (var i = 0; i < 24; i++) const Pt(130, 15) + Pt.polar(10, math.pi * i / 12)],
+      points: [for (var i = 0; i < 24; i++) const Pt(130, 15) + Pt.polar(8, math.pi * i / 12)],
       name: zg,
       crop: t('ex.go.turf'),
       netDepthMmPerDay: 6,
@@ -1008,18 +1018,27 @@ Project buildGolfExample(Tr t, String lang) {
     ),
   );
 
-  // tee: half-circle sprays along both long sides, facing inwards
+  // tee: sprays head to head (3.75 m along the rows, 3 m between them,
+  // 3.7 m throw): quarter circles in the corners, half circles along the
+  // edges facing in, full circles down the middle
   final zt = t('ex.go.tee');
-  final teeX = [for (var i = 0; i <= 6; i++) -40.0 + 5 * i];
-  for (final x in teeX) {
-    p.entities.add(OutletEntity(id: p.newId(), position: Pt(x, 12), outletSpecId: 'spray', nozzleId: 's12h', headM: 20, arcDeg: 180, orientationDeg: 0, zoneName: zt));
-    p.entities.add(OutletEntity(id: p.newId(), position: Pt(x, 18), outletSpecId: 'spray', nozzleId: 's12h', headM: 20, arcDeg: 180, orientationDeg: 180, zoneName: zt));
-  }
-  for (final y in [12.0, 18.0]) {
+  final teeX = [for (var i = 0; i <= 8; i++) -40.0 + 3.75 * i];
+  for (final (y, inward) in [(12.0, 0.0), (15.0, -1.0), (18.0, 180.0)]) {
+    for (final x in teeX) {
+      final end = x == teeX.first || x == teeX.last;
+      final (nozzle, arc, orient) = switch ((inward, end)) {
+        (-1.0, false) => ('s12', 360.0, 0.0),
+        (-1.0, true) => ('s12h', 180.0, x == teeX.first ? 270.0 : 90.0),
+        (0.0, true) => ('s12q', 90.0, x == teeX.first ? 0.0 : 90.0),
+        (_, true) => ('s12q', 90.0, x == teeX.first ? 270.0 : 180.0),
+        _ => ('s12h', 180.0, inward),
+      };
+      p.entities.add(OutletEntity(id: p.newId(), position: Pt(x, y), outletSpecId: 'spray', nozzleId: nozzle, headM: 20, arcDeg: arc, orientationDeg: orient, zoneName: zt));
+    }
     p.entities.add(PipeEntity(id: p.newId(), points: [Pt(-42, y), for (final x in teeX) Pt(x, y)], scope: HydraulicScope.zone, name: zt));
   }
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-42, 12), const Pt(-42, 15), const Pt(-42, 18)], scope: HydraulicScope.zone, name: t('name.submain')));
-  final vt = ControlValveEntity(id: p.newId(), position: const Pt(-44, 15), valveSpecId: 'ev25', zoneName: zt, name: zt);
+  final vt = ControlValveEntity(id: p.newId(), position: const Pt(-44, 15), valveSpecId: 'ev40', zoneName: zt, name: zt);
   p.entities.add(vt);
   p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-44, 15), const Pt(-42, 15)], scope: HydraulicScope.zone, name: t('name.stub')));
   p.entities.add(

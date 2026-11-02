@@ -11,7 +11,8 @@ import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
-import 'auto_layout.dart' show polygonSelfCrossings;
+import 'auto_layout.dart' show LayoutRegion, evaluateSprayUniformity, polygonSelfCrossings;
+import 'densogram.dart' show SpraySource, spraySources;
 import 'electrical.dart';
 import 'network_builder.dart';
 import 'valve_in_head.dart';
@@ -309,6 +310,9 @@ DesignCheckReport runDesignCheck(Project project) {
   // 1.6.0 AUT: outlines that cross themselves, overlapping pipes and laterals
   issues.addAll(checkSelfCrossingAreas(project));
   issues.addAll(checkOverlappingLines(project, tol));
+  // 1.6.0 AUT: sprinklers spaced too far apart, areas watered unevenly
+  issues.addAll(checkSprinklerSpacing(project, model));
+  issues.addAll(checkAreaUniformity(project));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));
@@ -391,4 +395,163 @@ List<CheckIssue> checkOverlappingLines(Project project, double tol) {
     }
   }
   return [for (final (ids, at) in found.values) CheckIssue('pipes_overlap', CheckSeverity.warning, entityIds: ids, at: at)];
+}
+
+/// Largest sprinkler spacing, as a share of the wetted diameter, of zones
+/// whose heads form a square-like grid (or a triangle), and the limits of a
+/// rectangular one (the smaller and the larger spacing): head to head is
+/// 50 %; Keller & Bliesner (1990, table 5.2) allow about 55–60 % square and
+/// 50–55 × 60–65 % rectangular in light wind, less as it blows.
+const spacingLimitSquare = 0.60, spacingLimitNarrow = 0.55, spacingLimitWide = 0.65;
+
+/// The two spacings of a grid of heads: the median distance of a head to
+/// its nearest neighbour, and to its nearest neighbour across that
+/// direction (60° to 120° from it); the second is null for a single row.
+(double, double?) gridSpacings(List<Pt> heads) {
+  if (heads.length < 2) return (0, null);
+  final b = Bounds.ofPoints(heads);
+  final cell = math.max(math.sqrt(math.max(b.width * b.height, 1e-6) / heads.length), math.max(b.width, b.height) / heads.length) + 1e-9;
+  final buckets = <int, List<int>>{};
+  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+  for (var i = 0; i < heads.length; i++) {
+    (buckets[key(((heads[i].x - b.minX) / cell).floor(), ((heads[i].y - b.minY) / cell).floor())] ??= []).add(i);
+  }
+  final along = <double>[], across = <double>[];
+  for (var i = 0; i < heads.length; i++) {
+    final q = heads[i];
+    final ix = ((q.x - b.minX) / cell).floor(), iy = ((q.y - b.minY) / cell).floor();
+    // the neighbours within three cells, the nearest first
+    final near = <(double, Pt)>[];
+    for (var dx = -3; dx <= 3; dx++) {
+      for (var dy = -3; dy <= 3; dy++) {
+        for (final j in buckets[key(ix + dx, iy + dy)] ?? const <int>[]) {
+          if (j != i && heads[j].distanceTo(q) > 1e-6) near.add((heads[j].distanceTo(q), heads[j] - q));
+        }
+      }
+    }
+    if (near.isEmpty) continue;
+    near.sort((x, y) => x.$1.compareTo(y.$1));
+    final (d1, v1) = near.first;
+    along.add(d1);
+    for (final (d, v) in near.skip(1)) {
+      final c = (v.dot(v1) / (v.length * v1.length)).abs();
+      if (c <= 0.5) {
+        across.add(d);
+        break;
+      }
+    }
+  }
+  double median(List<double> xs) => (xs..sort())[xs.length ~/ 2];
+  if (along.isEmpty) return (0, null);
+  return (median(along), across.length * 2 >= along.length ? median(across) : null);
+}
+
+/// Sprinklers of [project] (sprays, rotors, impact sprinklers and guns; not
+/// micro-sprinklers, which wet part of the ground by design) as wetted
+/// sectors at their nominal pressures.
+List<SpraySource> _sprinklerSources(Project project) {
+  final cat = project.catalog;
+  return [
+    for (final s in spraySources(project, measured: true))
+      if (switch (project.byId(s.entityId)) {
+            OutletEntity o => cat.outlet(o.outletSpecId)?.kind,
+            SpraylineEntity l => cat.outlet(l.outletSpecId)?.kind,
+            _ => null,
+          }
+          case OutletKind.sprinkler || OutletKind.gun)
+        s,
+  ];
+}
+
+String _pct(double v) => '${(v * 100).round()} %';
+
+String _m(double v) => v >= 10 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+
+/// Zones whose full-circle sprinklers stand farther apart than their throw allows
+/// ([spacingLimitSquare], [spacingLimitNarrow], [spacingLimitWide]): dry
+/// spots between them that no run time makes up. The value gives the
+/// spacings, the wetted radius and the share of the diameter.
+List<CheckIssue> checkSprinklerSpacing(Project project, NetworkModel model) {
+  final sources = _sprinklerSources(project);
+  if (sources.length < 3) return const [];
+  final byEntity = <String, List<SpraySource>>{};
+  for (final s in sources) {
+    (byEntity[s.entityId] ??= []).add(s);
+  }
+  final out = <CheckIssue>[];
+  for (final v in project.entities.whereType<ControlValveEntity>()) {
+    final ids = <String>{
+      for (final id in model.zoneNodes[v.id] ?? const <String>{})
+        for (final em in model.nodes[id]?.emitters ?? const <EmitterRef>[]) em.entityId,
+    };
+    // the full circles: part circles stand on the edges, where the width of
+    // the area, not a grid, sets how far they are from each other (the
+    // uniformity check of the area judges those)
+    final zone = [
+      for (final id in ids)
+        for (final s in byEntity[id] ?? const <SpraySource>[])
+          if (s.fullCircle) s,
+    ];
+    if (zone.length < 3) continue;
+    final radii = [for (final s in zone) s.radius]..sort();
+    final r = radii[radii.length ~/ 2];
+    if (!(r > 0)) continue;
+    final (s1, s2) = gridSpacings([for (final s in zone) s.p]);
+    if (!(s1 > 0)) continue;
+    final small = s2 == null ? s1 : math.min(s1, s2), large = s2 == null ? s1 : math.max(s1, s2);
+    final square = large <= 1.15 * small;
+    final d = 2 * r;
+    final wide = square ? large > spacingLimitSquare * d + 1e-9 : (small > spacingLimitNarrow * d + 1e-9 || large > spacingLimitWide * d + 1e-9);
+    if (!wide) continue;
+    final limit = square ? spacingLimitSquare * d : spacingLimitWide * d;
+    out.add(
+      CheckIssue(
+        'zone_spacing_wide',
+        CheckSeverity.warning,
+        entityIds: [v.id],
+        at: v.position,
+        value: '${v.zoneName}: ${s2 == null ? _m(s1) : '${_m(small)} × ${_m(large)}'} m, R ${_m(r)} m (${_pct(large / d)} D; ≤ ${_m(limit)} m)',
+      ),
+    );
+  }
+  return out;
+}
+
+/// Irrigated areas their sprinklers water unevenly: the densogram of the
+/// sprinklers at their nominal pressures over the area (every head that
+/// throws onto it, of any zone) with a Christiansen CU below 75 %, a
+/// low-quarter DU below 60 % or more than 5 % of it getting less than half
+/// the mean. Areas a crop wets in part ([AreaEntity.wettedFraction] below
+/// 0.95) are left out.
+List<CheckIssue> checkAreaUniformity(Project project) {
+  final areas = [
+    for (final a in project.entities.whereType<AreaEntity>())
+      if (a.points.length >= 3 && a.wettedFraction >= 0.95) a,
+  ];
+  if (areas.isEmpty) return const [];
+  final sources = _sprinklerSources(project);
+  if (sources.isEmpty) return const [];
+  final out = <CheckIssue>[];
+  for (final a in areas) {
+    final box = Bounds.ofPoints(a.points);
+    final near = [
+      for (final s in sources)
+        if (Bounds(s.p.x - s.radius, s.p.y - s.radius, s.p.x + s.radius, s.p.y + s.radius).intersects(box)) s,
+    ];
+    if (near.length < 2) continue;
+    final region = LayoutRegion(a.points);
+    if (region.isEmpty) continue;
+    final m = evaluateSprayUniformity(region, near, maxCells: 40000);
+    if (m.heads == 0 || m.areaM2 <= 0) continue;
+    if (m.cu >= 75 && m.du >= 60 && m.dryPct <= 5) continue;
+    out.add(
+      CheckIssue(
+        'area_uniformity_low',
+        CheckSeverity.warning,
+        entityIds: [a.id],
+        value: '${a.name.isEmpty ? '' : '${a.name}: '}CU ${m.cu.toStringAsFixed(1)} % · DU ${m.du.toStringAsFixed(1)} % · ${m.dryPct.toStringAsFixed(1)} %',
+      ),
+    );
+  }
+  return out;
 }

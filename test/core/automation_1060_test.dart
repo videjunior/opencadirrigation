@@ -920,4 +920,66 @@ void main() {
       expect(es.where((e) => e.scope == HydraulicScope.mainline).every((e) => e.depth == defaultMainlineDepthM), isTrue);
     });
   });
+
+  group('AUT-22 spacing and uniformity of the sprinklers', () {
+    test('the two spacings of a grid of heads', () {
+      expect(
+        gridSpacings([
+          for (var i = 0; i < 6; i++)
+            for (var j = 0; j < 4; j++) Pt(10.0 * i, 10.0 * j),
+        ]),
+        (10.0, 10.0),
+      );
+      final (a, b) = gridSpacings([
+        for (var i = 0; i < 6; i++)
+          for (var j = 0; j < 4; j++) Pt(12.0 * i, 18.0 * j),
+      ]);
+      expect((a, b), (12.0, 18.0));
+      expect(gridSpacings([for (var i = 0; i < 6; i++) Pt(5.0 * i, 0)]), (5.0, null), reason: 'a single row');
+    });
+
+    test('the pasture laterals 18 m apart with a 13 m throw are reported; with 14 m they are not', () {
+      final t = I18n('en');
+      final p = buildExample(ExampleId.pasture, t.call, lang: 'en');
+      expect(runDesignCheck(p).issues.where((i) => i.code == 'zone_spacing_wide'), isEmpty, reason: 'the example throws 14 m now');
+      for (final l in p.entities.whereType<SpraylineEntity>()) {
+        l.nozzleId = 'i4.0';
+      }
+      final wide = runDesignCheck(p).issues.where((i) => i.code == 'zone_spacing_wide').toList();
+      expect(wide, hasLength(3), reason: 'no message at all before');
+      expect(wide.first.value, contains('12 × 18 m'));
+      expect(buildAdvice(p).where((a) => a.code == 'zone_spacing_wide').every((a) => a.level == AdviceLevel.warning), isTrue);
+    });
+
+    test('a tee of half circles 5 m apart and 6 m across is watered unevenly', () {
+      final p = Project();
+      final tee = rect(-40, 12, -10, 18);
+      p.entities.add(AreaEntity(id: p.newId(), points: tee, name: 'Tee'));
+      for (var i = 0; i <= 6; i++) {
+        p.entities.add(OutletEntity(id: p.newId(), position: Pt(-40.0 + 5 * i, 12), outletSpecId: 'spray', nozzleId: 's12h', headM: 20, arcDeg: 180, orientationDeg: 0));
+        p.entities.add(OutletEntity(id: p.newId(), position: Pt(-40.0 + 5 * i, 18), outletSpecId: 'spray', nozzleId: 's12h', headM: 20, arcDeg: 180, orientationDeg: 180));
+      }
+      final low = checkAreaUniformity(p);
+      expect(low, hasLength(1), reason: 'CU 65 %, 12 % dry, and nothing said before');
+      expect(low.single.code, 'area_uniformity_low');
+      expect(low.single.value, startsWith('Tee: CU'));
+    });
+
+    test('the golf example: green and tee head to head, every area evenly watered', () {
+      final t = I18n('en');
+      final p = buildExample(ExampleId.golf, t.call, lang: 'en');
+      final issues = runDesignCheck(p).issues.map((i) => i.code).toList();
+      expect(issues, isNot(contains('area_uniformity_low')));
+      expect(issues, isNot(contains('zone_spacing_wide')));
+      final green = p.entities.whereType<OutletEntity>().where((o) => o.zoneName == t('ex.go.green')).toList();
+      expect(green, hasLength(8));
+      expect(green.every((o) => o.arcDeg < 360), isTrue, reason: 'part circles opening onto the green, not full circles on its edge');
+      final tee = p.entities.whereType<OutletEntity>().where((o) => o.zoneName == t('ex.go.tee')).toList();
+      // no two neighbours farther apart than the throw
+      for (final o in tee) {
+        final d = tee.where((x) => x != o).map((x) => x.position.distanceTo(o.position)).reduce(math.min);
+        expect(d, lessThanOrEqualTo(3.75 + 1e-9));
+      }
+    });
+  });
 }

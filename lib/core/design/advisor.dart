@@ -312,6 +312,8 @@ const adviceCodes = [
   // 1.6.0 AUT
   'area_self_intersect',
   'pipes_overlap',
+  'zone_spacing_wide',
+  'area_uniformity_low',
 ];
 
 AdviceLevel _level(String code) => switch (code) {

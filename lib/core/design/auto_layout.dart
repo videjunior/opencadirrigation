@@ -1121,11 +1121,20 @@ double _rasterCell(LayoutRegion region, double wanted, int maxCells) {
 /// low-quarter DU, scheduling coefficient and dry share inside the region
 /// (see `densogramStats`), and the share thrown outside it. [cellSize] 0 =
 /// a quarter of the smallest wetted radius, coarser beyond [maxCells].
-LayoutMetrics evaluateHeadLayout(LayoutRegion region, List<LayoutHead> heads, {SprayProfile profile = SprayProfile.triangular, double cellSize = 0, int maxCells = 250000}) {
-  final sources = [
+LayoutMetrics evaluateHeadLayout(LayoutRegion region, List<LayoutHead> heads, {SprayProfile profile = SprayProfile.triangular, double cellSize = 0, int maxCells = 250000}) => evaluateSprayUniformity(
+  region,
+  [
     for (var i = 0; i < heads.length; i++)
       if (heads[i].flow > 0 && heads[i].radius > 0) heads[i].toSource('$i'),
-  ];
+  ],
+  profile: profile,
+  cellSize: cellSize,
+  maxCells: maxCells,
+);
+
+/// [evaluateHeadLayout] for wetted sectors already built (the sprinklers of
+/// a drawing, see `spraySources`).
+LayoutMetrics evaluateSprayUniformity(LayoutRegion region, List<SpraySource> sources, {SprayProfile profile = SprayProfile.triangular, double cellSize = 0, int maxCells = 250000}) {
   if (region.isEmpty || sources.isEmpty) return LayoutMetrics.empty;
   final minR = sources.fold(double.infinity, (m, s) => math.min(m, s.radius));
   // a cell no wider than the area: a strip narrower than a quarter of the
