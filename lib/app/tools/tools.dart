@@ -221,7 +221,9 @@ class SelectTool extends Tool {
     _pendingInsert = false;
     _grabOffset = null;
     _moveAnchor = null;
-    final grip = _hitGrip(p);
+    // Shift (or "add to the selection") toggles the item under the pointer:
+    // the grip of a selected point item sits right on it and would win
+    final grip = shift ? null : _hitGrip(p);
     if (grip != null) {
       if (ctrl && !grip.midpoint) {
         c.removeVertex(grip.entityId, grip.index);
@@ -257,6 +259,23 @@ class SelectTool extends Tool {
       _windowing = true;
       if (!shift) c.select(const []);
     }
+  }
+
+  /// Starts a selection window at [p] whatever lies under it — on a touch
+  /// screen a finger held still and then dragged, where a plain drag pans;
+  /// [add] adds to the selection. The canvas then feeds the drag.
+  void startWindow(Pt p, {bool add = false}) {
+    _shift = add;
+    _downRaw = p;
+    _dragCurrent = p;
+    _dragged = true;
+    _moving = false;
+    _grip = null;
+    _gripPos = null;
+    _windowing = true;
+    _pendingInsert = false;
+    _grabOffset = null;
+    _moveAnchor = null;
   }
 
   @override

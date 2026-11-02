@@ -42,4 +42,12 @@ const _edt = <String, (String, String, String)>{
   'edt.badValue': ('Valor inválido: digite um número maior que zero', 'Invalid value: type a number greater than zero', 'Valor no válido: escriba un número mayor que cero'),
   // ---- polyline in progress (CAD-10)
   'edt.closeNeeds3': ('Para fechar, clique ao menos 3 pontos', 'Click at least 3 points to close', 'Haga clic en al menos 3 puntos para cerrar'),
+  // ---- several items on a touch screen (CAD-17)
+  'sel.addMode': ('Somar à seleção', 'Add to selection', 'Añadir a la selección'),
+  'sel.addModeOn': (
+    'Somar à seleção: cada toque soma um item; tocar num item selecionado o retira',
+    'Add to selection: each tap adds an item; tapping a selected item takes it out',
+    'Añadir a la selección: cada toque añade un elemento; tocar uno seleccionado lo quita',
+  ),
+  'sel.addModeOff': ('Cada toque substitui a seleção', 'Each tap replaces the selection', 'Cada toque reemplaza la selección'),
 };

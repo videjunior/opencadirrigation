@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
@@ -8,6 +9,7 @@ import '../../core/model/geometry.dart';
 import '../state/controller.dart';
 import '../keys/canvas_keys.dart';
 import '../state/workspace.dart';
+import '../tools/edit_commands.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'painter.dart';
@@ -73,6 +75,19 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   bool _touchGesture = false;
   bool _touchDrawPending = false;
 
+  // 1.6.0 EDT: a finger held still (CAD-17): dragged afterwards, it opens a
+  // selection window where a plain drag pans
+  static const holdDelay = Duration(milliseconds: 500);
+  Timer? _holdTimer;
+  Offset? _holdAt;
+  bool _held = false;
+
+  void _endHold() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+    _held = false;
+  }
+
   ProjectController get c => widget.controller;
 
   @override
@@ -108,6 +123,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     PaintingBinding.instance.systemFonts.removeListener(_redraw);
     basemap.dispose();
     _scene.dispose();
+    _endHold();
     super.dispose();
   }
 
@@ -172,6 +188,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         if (_touchDrawPending) {
           _touchDrawPending = false;
         }
+        _endHold();
         if (_dragging) {
           _tool.cancel();
           _dragging = false;
@@ -185,6 +202,14 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       // single finger: behaves as the primary button, but the tap is only
       // committed on pointer up so a pinch can still cancel it
       _touchDrawPending = true;
+      _endHold();
+      _holdAt = e.localPosition;
+      _holdTimer = Timer(holdDelay, () {
+        if (!mounted || !_touchDrawPending || _touches.length != 1) return;
+        _touchDrawPending = false;
+        _held = true;
+        HapticFeedback.selectionClick();
+      });
       return;
     }
     if (e.buttons == kMiddleMouseButton || e.buttons == kSecondaryMouseButton || _spaceDown || c.activeTool == ToolId.pan) {
@@ -206,7 +231,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     if (isDouble) {
       _tool.onDoubleClick(p);
     } else {
-      _tool.onDown(p, shift: keys.isShiftPressed, ctrl: keys.isControlPressed || keys.isMetaPressed);
+      // 1.6.0 EDT: "add to the selection" stands in for Shift on a touch screen
+      _tool.onDown(p, shift: keys.isShiftPressed || c.editSettings.addToSelection, ctrl: keys.isControlPressed || keys.isMetaPressed);
       if (_snap?.locked ?? false) c.track('lock');
     }
     _dragging = true;
@@ -239,6 +265,21 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         _pinchCenter = center;
         _redraw();
         return;
+      }
+      if (_held && _holdAt != null && !_dragging) {
+        // 1.6.0 EDT: held still, then dragged: a selection window from where
+        // the finger was held, whatever lies under it (CAD-17)
+        if ((e.localPosition - _holdAt!).distance <= touchDragSlopPx) return;
+        final st = _tool;
+        if (st is! SelectTool) {
+          _held = false;
+          _primaryDown(_holdAt!, touch: true);
+        } else {
+          st.startWindow(_world(_holdAt!), add: c.editSettings.addToSelection);
+          _dragging = true;
+          _dragArmed = true;
+          _dragOrigin = _holdAt;
+        }
       }
       if (_touchDrawPending && _lastPointer != null) {
         // a finger drag before any tap commits: pan (touch-friendly), unless
@@ -301,6 +342,13 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         _pinchCenter = null;
         return;
       }
+      _holdTimer?.cancel();
+      if (_held && !_dragging) {
+        // 1.6.0 EDT: held still and lifted: nothing is drawn (CAD-17)
+        _held = false;
+        return;
+      }
+      _held = false;
       if (_touchDrawPending) {
         // simple tap: run the tool's down + up at the tap position
         _touchDrawPending = false;
@@ -324,6 +372,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   void _onPointerCancel(PointerCancelEvent e) {
     _touches.remove(e.pointer);
+    _endHold();
     if (_touches.isEmpty) {
       _touchGesture = false;
       _touchDrawPending = false;

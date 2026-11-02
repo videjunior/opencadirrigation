@@ -9,4 +9,7 @@ const coverageEdt = <String, String>{
   'menu:tool.move': 'tool:transform_entities',
   'menu:tool.copy': 'tool:transform_entities',
   'panel:properties.coordinates': 'op:edit_vertices',
+  // ---- several items on a touch screen (CAD-17)
+  'menu:sel.addMode': 'tool:select_entities',
+  'panel:canvas.holdWindow': 'tool:select_entities',
 };

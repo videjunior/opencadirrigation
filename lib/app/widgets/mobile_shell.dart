@@ -16,6 +16,7 @@ import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../examples.dart';
 import '../theme.dart';
+import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
 import 'ai/ai_panel.dart';
@@ -468,6 +469,15 @@ class _MobileShellState extends State<MobileShell> {
                           _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
                           _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
                           _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                          // 1.6.0 EDT: taps add to the selection, as Shift does (CAD-17)
+                          if (usesAddToSelection(c.activeTool))
+                            _fab(
+                              const Key('mobile_add_select'),
+                              Icons.library_add_check_outlined,
+                              t('sel.addMode'),
+                              () => c.setAddToSelection(!c.editSettings.addToSelection),
+                              color: c.editSettings.addToSelection ? Cad.accentFill : null,
+                            ),
                         ],
                       ),
                     ),
