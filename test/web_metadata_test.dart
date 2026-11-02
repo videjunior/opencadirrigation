@@ -497,7 +497,11 @@ void main() {
       expect(script, contains("'consent', 'update', { analytics_storage: 'granted' }"));
       expect(script.indexOf("'consent', 'default'"), lessThan(script.indexOf("tag.src = 'https://www.googletagmanager.com/gtag/js?id='")));
       // loaded only after the visitor's answer, and never in a page where the app started
-      expect(script, contains('if (analytics || started || !analyticsId) return;'));
+      expect(script, contains('if (analytics || started || !analyticsId || keepsAiKey()) return;'));
+      // and never on a device that keeps an AI assistant key (IA-20: the key is in this site's localStorage)
+      for (final pref in ['ai.key', 'ai.key.openai']) {
+        expect(script, contains("localStorage.getItem('opencadirrigation.$pref')"), reason: pref);
+      }
       expect(RegExp(r'loadAnalytics\(\)').allMatches(script).length, 3, reason: 'the definition, Accept and a stored Accept');
       expect(script, contains("if (answer === 'granted') loadAnalytics();"));
       // the answer is not stored under the app's prefix: answering the notice is not using the app

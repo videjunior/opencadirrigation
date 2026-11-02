@@ -119,12 +119,25 @@ bool _userFacing(String path) =>
     path == 'docs/PESQUISA.pt-BR.md' ||
     path.startsWith('.github/');
 
-/// Text files of the repository, relative to its root: everything but the
-/// tools' caches, build output and binary files.
+/// Text files of the repository, relative to its root: what git tracks or
+/// would add (so not the folders kept out of it, such as local notes and
+/// reports), binary files left out; without git, everything but the tools'
+/// caches and build output.
 List<String> _repositoryFiles() {
-  final out = <String>[];
-  final skipDirs = {'.git', '.dart_tool', 'build', 'node_modules', '.idea', '.vscode', 'Pods', 'ephemeral'};
   final binary = RegExp(r'\.(png|webp|ico|jpe?g|gif|ttf|otf|woff2?|wasm|dwg|dgn|gz|zip|kmz|shp|shx|dbf|pdf|tiff?|las|laz|bin|xlsx|jar|keystore|icns|so|dylib)$', caseSensitive: false);
+  try {
+    final git = Process.runSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], stdoutEncoding: utf8);
+    if (git.exitCode == 0) {
+      return [
+        for (final path in (git.stdout as String).split('\u0000'))
+          if (path.isNotEmpty && !binary.hasMatch(path) && !path.endsWith('.DS_Store') && File(path).existsSync()) path,
+      ];
+    }
+  } on ProcessException {
+    // no git: walk the folder
+  }
+  final out = <String>[];
+  final skipDirs = {'.git', '.dart_tool', 'build', 'node_modules', '.idea', '.vscode', 'Pods', 'ephemeral', '.claude', 'reports', 'research_notes'};
   void walk(Directory dir, String prefix) {
     for (final e in dir.listSync(followLinks: false)) {
       final name = e.uri.pathSegments.where((s) => s.isNotEmpty).last;
