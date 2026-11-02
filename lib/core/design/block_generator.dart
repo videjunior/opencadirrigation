@@ -38,9 +38,15 @@ class BlockOptions {
     this.lateralPrefix = 'L',
     this.guide,
     this.submainDepth = 0,
+    this.exclusions = const [],
   });
 
   final List<Pt> polygon;
+
+  /// Ground inside the polygon the laterals keep out of (a pond, a shed, a
+  /// well): rows are cut round them and the pieces beyond are fed by
+  /// branches of the submain.
+  final List<List<Pt>> exclusions;
 
   /// Optional guide polyline: laterals follow its shape (offset copies every
   /// [lateralSpacing], clipped to the polygon) instead of straight lines
@@ -104,11 +110,19 @@ typedef _Feed = ({Pt p, double u, double v});
 /// polygon. The other feeds (rows cut in several pieces) form branches,
 /// each joined to the main line across the gap next to it. [at] maps (u, v)
 /// to world coordinates.
-(List<Pt>, List<List<Pt>>) _submainLines(List<List<_Feed>> rows, List<Pt> poly, {required double uRef, required double spacing, required Pt Function(double u, double v) at}) {
+(List<Pt>, List<List<Pt>>) _submainLines(
+  List<List<_Feed>> rows,
+  List<Pt> poly, {
+  required double uRef,
+  required double spacing,
+  required Pt Function(double u, double v) at,
+  List<List<Pt>> holes = const [],
+}) {
   bool inside(Pt a, Pt b) {
     for (var k = 1; k < 8; k++) {
       final q = Pt.lerp(a, b, k / 8);
       if (!pointInPolygon(q, poly) && !_onBoundary(q, poly, 1e-6)) return false;
+      if (holes.any((h) => pointInPolygon(q, h) && !_onBoundary(q, h, 1e-6))) return false;
     }
     return true;
   }
@@ -228,6 +242,71 @@ List<(double, double)> _clipLine(List<Pt> poly, Pt origin, Pt dir) {
   return out;
 }
 
+/// [_clipLine] of [poly] less the intervals inside the [holes].
+List<(double, double)> _clipLineWithHoles(List<Pt> poly, List<List<Pt>> holes, Pt origin, Pt dir) {
+  var out = _clipLine(poly, origin, dir);
+  for (final h in holes) {
+    final cuts = _clipLine(h, origin, dir);
+    if (cuts.isEmpty) continue;
+    final next = <(double, double)>[];
+    for (final (a, b) in out) {
+      var start = a;
+      for (final (c, d) in cuts) {
+        if (d <= start || c >= b) continue;
+        if (c > start + 1e-6) next.add((start, c));
+        start = math.max(start, d);
+      }
+      if (b > start + 1e-6) next.add((start, b));
+    }
+    out = next;
+  }
+  return out;
+}
+
+/// The parts of the polyline [pts] outside every hole of [holes], no
+/// shorter than [minLength].
+List<List<Pt>> _outsideHoles(List<Pt> pts, List<List<Pt>> holes, {double minLength = 1e-6}) {
+  if (holes.isEmpty || pts.length < 2) return [pts];
+  final out = <List<Pt>>[];
+  var cur = <Pt>[];
+  void flush() {
+    if (cur.length >= 2 && polylineLength(cur) >= minLength) out.add(cur);
+    cur = <Pt>[];
+  }
+
+  bool inHole(Pt q) => holes.any((h) => pointInPolygon(q, h) && !_onBoundary(q, h, 1e-9));
+  for (var i = 1; i < pts.length; i++) {
+    final a = pts[i - 1], b = pts[i];
+    final ts = <double>[0, 1];
+    for (final h in holes) {
+      for (var k = 0; k < h.length; k++) {
+        final c = h[k], d = h[(k + 1) % h.length];
+        final r = b - a, sv = d - c;
+        final den = r.cross(sv);
+        if (den.abs() < 1e-12) continue;
+        final t = (c - a).cross(sv) / den, u = (c - a).cross(r) / den;
+        if (t > 1e-9 && t < 1 - 1e-9 && u >= -1e-9 && u <= 1 + 1e-9) ts.add(t);
+      }
+    }
+    ts.sort();
+    for (var k = 0; k + 1 < ts.length; k++) {
+      if (ts[k + 1] - ts[k] < 1e-9) continue;
+      final p0 = Pt.lerp(a, b, ts[k]), p1 = Pt.lerp(a, b, ts[k + 1]);
+      if (inHole(Pt.lerp(p0, p1, 0.5))) {
+        flush();
+        continue;
+      }
+      if (cur.isEmpty || cur.last.distanceTo(p0) > 1e-9) {
+        flush();
+        cur = [p0];
+      }
+      cur.add(p1);
+    }
+  }
+  flush();
+  return out;
+}
+
 /// Most rows of laterals a block gets (a spacing typed far too small would
 /// otherwise stall the page).
 const maxBlockRows = 5000;
@@ -261,7 +340,7 @@ BlockResult generateBlock(Project project, BlockOptions o) {
   var idx = 0;
   for (var v = vMin + first; v <= vMax - first / 2 + 1e-9; v += o.lateralSpacing) {
     final origin = perp * v;
-    final intervals = _clipLine(poly, origin, dir);
+    final intervals = o.exclusions.isEmpty ? _clipLine(poly, origin, dir) : _clipLineWithHoles(poly, o.exclusions, origin, dir);
     final row = <_Feed>[];
     for (final (t0, t1) in intervals) {
       final a = origin + dir * t0;
@@ -307,7 +386,7 @@ BlockResult generateBlock(Project project, BlockOptions o) {
   if (rows.isEmpty) return BlockResult(laterals: laterals, submain: null, valve: null, stub: null);
   // the submain runs across the rows at u = uSub, following the polygon
   // where a row does not reach that line (an L-shaped block)
-  final (main, branchLines) = _submainLines(rows, poly, uRef: uSub, spacing: o.lateralSpacing, at: (u, v) => dir * u + perp * v);
+  final (main, branchLines) = _submainLines(rows, poly, uRef: uSub, spacing: o.lateralSpacing, at: (u, v) => dir * u + perp * v, holes: o.exclusions);
   return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir);
 }
 
@@ -542,7 +621,7 @@ List<Pt> offsetPolylineMitred(List<Pt> pts, double d, {double mitreLimit = 2}) {
 
 /// Share (0–1) of [poly] farther than [reach] from every polyline of
 /// [lines], on a grid of about [samples] points.
-double _uncoveredShare(List<Pt> poly, List<List<Pt>> lines, double reach, {int samples = 2500}) {
+double _uncoveredShare(List<Pt> poly, List<List<Pt>> lines, double reach, {int samples = 2500, List<List<Pt>> holes = const []}) {
   final b = Bounds.ofPoints(poly);
   final area = polygonArea(poly).abs();
   if (area <= 0 || b.isEmpty) return 0;
@@ -571,7 +650,7 @@ double _uncoveredShare(List<Pt> poly, List<List<Pt>> lines, double reach, {int s
   for (var y = b.minY + h / 2; y < b.maxY; y += h) {
     for (var x = b.minX + h / 2; x < b.maxX; x += h) {
       final q = Pt(x, y);
-      if (!pointInPolygon(q, poly)) continue;
+      if (!pointInPolygon(q, poly) || holes.any((h) => pointInPolygon(q, h))) continue;
       inside++;
       final ix = ((x - b.minX) / cell).floor(), iy = ((y - b.minY) / cell).floor();
       var near = false;
@@ -650,7 +729,7 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
   for (var v = vMin + first; v <= vMax - first / 2 + 1e-9; v += o.lateralSpacing) {
     final line = offsetPolylineMitred(prolonged, v);
     final row = <_Feed>[];
-    for (final piece in clipPolylineToPolygon(line, poly, minLength: o.lateralSpacing / 4)) {
+    for (final piece in [for (final part in clipPolylineToPolygon(line, poly, minLength: o.lateralSpacing / 4)) ..._outsideHoles(part, o.exclusions, minLength: o.lateralSpacing / 4)]) {
       final len = polylineLength(piece);
       // feed end (start / end / split at the middle)
       List<List<Pt>> parts;
@@ -709,8 +788,8 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
     SubmainPosition.centre => (uMin + uMax) / 2,
     SubmainPosition.end => uMax,
   };
-  final (main, branchLines) = _submainLines(rows, poly, uRef: uRef, spacing: o.lateralSpacing, at: (u, v) => g0 + dir * u + perp * v);
-  final dry = _uncoveredShare(poly, lines, o.lateralSpacing);
+  final (main, branchLines) = _submainLines(rows, poly, uRef: uRef, spacing: o.lateralSpacing, at: (u, v) => g0 + dir * u + perp * v, holes: o.exclusions);
+  final dry = _uncoveredShare(poly, lines, o.lateralSpacing, holes: o.exclusions);
   final messages = [if (dry > guidedUncoveredLimit) 'block_uncovered:${(dry * 100).toStringAsFixed(1)} %'];
   return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir, messages: messages);
 }

@@ -46,7 +46,12 @@ class TreeRingOptions {
     this.submainStub = 1.5,
     this.rowTolerance = 0,
     this.ringSegments = 8,
+    this.exclusions = const [],
   });
+
+  /// Ground inside the area that gets no trees (a pond, a shed, a well):
+  /// the planting grid keeps out of it, as from the outline.
+  final List<List<Pt>> exclusions;
 
   /// Direction of the rows.
   final Pt direction;
@@ -179,7 +184,7 @@ class TreeRingLayout {
 /// Trees of a planting grid inside [area]: rows along [o.direction] from
 /// the offsets, trees [o.edgeClearance] inside the outline. Grouped by row.
 List<List<Pt>> plantingGrid(List<Pt> area, TreeRingOptions o) {
-  final region = LayoutRegion(area);
+  final region = LayoutRegion(area, exclusions: o.exclusions);
   if (region.isEmpty || !(o.plantSpacing > 0) || !(o.rowSpacing > 0)) return const [];
   final dir = o.direction.length > 0 ? o.direction.normalized : const Pt(1, 0);
   final perp = dir.perpendicular;
@@ -257,7 +262,7 @@ TreeRingLayout layoutTreeRings({List<Pt>? area, List<Pt>? trees, required TreeRi
       }
     }
   }
-  final region = area != null ? LayoutRegion(area) : null;
+  final region = area != null ? LayoutRegion(area, exclusions: o.exclusions) : null;
   // the feed of every row: the start of the row (or its end, or its middle)
   var uMin = double.infinity, uMax = -double.infinity;
   for (final t in all) {

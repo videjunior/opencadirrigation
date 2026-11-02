@@ -1059,4 +1059,94 @@ void main() {
       expect(mixed.zones.map((g) => g.classKey).toSet(), hasLength(1));
     });
   });
+
+  group('AUT-19 exclusions inside blocks, fields and orchards', () {
+    final pond = [for (var i = 0; i < 16; i++) const Pt(50, 30) + Pt.polar(8, 2 * math.pi * i / 16)];
+    bool crossesPond(List<Pt> l) {
+      for (var i = 1; i < l.length; i++) {
+        for (var k = 1; k < 20; k++) {
+          final q = Pt.lerp(l[i - 1], l[i], k / 20);
+          if (pointInPolygon(q, pond) && !pointOnPolygonBoundary(q, pond, tol: 1e-6)) return true;
+        }
+      }
+      return false;
+    }
+
+    for (final guided in [false, true]) {
+      test('a block of tape round a pond${guided ? ' (laterals along a guide)' : ''}', () {
+        final p = Project();
+        final r = generateBlock(
+          p,
+          BlockOptions(
+            polygon: rect(0, 0, 100, 60),
+            direction: const Pt(1, 0),
+            lateralSpacing: 2,
+            isTape: true,
+            tapeSpecId: 'tape16_10_30',
+            exclusions: [pond],
+            guide: guided ? const [Pt(-5, 2), Pt(105, 6)] : null,
+            valveSpecId: 'ev50',
+          ),
+        );
+        final lines = [for (final e in r.laterals) (e as TapeEntity).points];
+        expect(lines.any(crossesPond), isFalse, reason: 'the laterals crossed the pond before');
+        // the rows beyond the pond are fed: every lateral joins the network
+        p.entities.addAll(r.all);
+        p.entities.add(WaterSupplyEntity(id: p.newId(), position: r.valve!.position + const Pt(-5, 0), calculatePressure: true));
+        p.entities.add(PipeEntity(id: p.newId(), points: [r.valve!.position + const Pt(-5, 0), r.valve!.position], scope: HydraulicScope.mainline));
+        final unconnected = NetworkBuilder(p).build().unconnectedEntities;
+        expect(r.laterals.where((e) => unconnected.contains(e.id)), isEmpty);
+        // the ground round the pond is still covered
+        var dry = 0, n = 0;
+        for (var x = 1.0; x < 100; x += 2) {
+          for (var y = 1.0; y < 60; y += 2) {
+            final q = Pt(x, y);
+            if (pointInPolygon(q, pond)) continue;
+            n++;
+            var best = double.infinity;
+            for (final l in lines) {
+              for (var i = 1; i < l.length; i++) {
+                best = math.min(best, distanceToSegment(q, l[i - 1], l[i]));
+              }
+            }
+            if (best > 2) dry++;
+          }
+        }
+        expect(dry / n, lessThan(0.02));
+      });
+    }
+
+    test('a field with a pond: the blocks share the net area and keep out of it', () {
+      final field = rect(0, 0, 200, 120);
+      final big = [for (var i = 0; i < 16; i++) const Pt(100, 60) + Pt.polar(20, 2 * math.pi * i / 16)];
+      final o = FieldSubdivisionOptions(direction: const Pt(1, 0), maxBlockArea: 5000, roadWidth: 0, exclusions: [big]);
+      final s = subdivideField(field, o);
+      final net = 200 * 120 - polygonArea(big).abs();
+      expect(s.fieldArea, closeTo(net, 1e-6), reason: 'the pond counted as field before');
+      expect(s.blocksArea, closeTo(net, 1));
+      for (final b in s.blocks) {
+        expect(b.area, lessThanOrEqualTo(5000 * (1 + 1e-6)));
+      }
+      final p = Project();
+      for (final b in s.blocks) {
+        final r = generateBlock(p, blockOptionsFor(b, s.direction, lateralSpacing: 2, isTape: true, tapeSpecId: 'tape16', exclusions: [big]));
+        for (final e in r.laterals) {
+          final l = (e as TapeEntity).points;
+          for (var i = 1; i < l.length; i++) {
+            expect(pointInPolygon(Pt.lerp(l[i - 1], l[i], 0.5), big), isFalse);
+          }
+        }
+      }
+    });
+
+    test('no tree of the planting grid in the pond', () {
+      final l = layoutTreeRings(
+        area: rect(0, 0, 100, 60),
+        options: TreeRingOptions(plantSpacing: 5, rowSpacing: 6, exclusions: [pond]),
+      );
+      expect(l.trees, isNotEmpty);
+      expect(l.trees.where((t) => pointInPolygon(t, pond)), isEmpty, reason: 'trees were planted in the pond before');
+      expect(l.trees.every((t) => pond.every((q) => true) && distanceToSegment(t, pond.first, pond[1]) >= 0), isTrue);
+    });
+  });
 }

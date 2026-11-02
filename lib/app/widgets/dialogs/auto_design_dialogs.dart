@@ -1136,6 +1136,8 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
         minBlockWidth: minWidth,
         roadWidth: road,
         pointOfConnection: _sourceOf(sources, sourceId).point,
+        // 1.6.0 AUT: the other closed shapes selected are left out of the blocks
+        exclusions: sel.others,
       ),
     );
     // the laterals the blocks would get: one a lateral spacing across the rows (two with the submain in the middle)
@@ -1183,6 +1185,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
             stubLabel: t('name.stub'),
             lateralPrefix: t('name.lateral'),
             submainDepth: defaultZonePipeDepthM,
+            exclusions: sel.others,
           ),
         );
         out.addAll(res.all);
@@ -1215,6 +1218,8 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
         final inputs = <Widget>[
           _note(t('subdiv.hint')),
           _note(t('auto.fieldInfo', {'a': _hectares(u, polygonArea(field).abs())}), color: Cad.fg),
+          // 1.6.0 AUT: the other closed shapes are holes in the blocks
+          if (sel.others.isNotEmpty) _note(t('auto.exclusionsLeftOut', {'n': '${sel.others.length}'}), color: Cad.fg54),
           _switch(t('auto.longestEdge'), autoDirection, (v) => setState(() => autoDirection = v)),
           if (!autoDirection) NumField(label: t('auto.direction'), value: directionDeg, decimals: 1, onChanged: (v) => setState(() => directionDeg = normalizeDeg(v))),
           SegmentedButton<SubdivisionMode>(
@@ -1481,6 +1486,8 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
         drippersPerTree: drippers,
         submainPosition: side,
         submainStub: stub,
+        // 1.6.0 AUT: no trees in the other closed shapes selected
+        exclusions: sel.others,
       ),
     );
   }
@@ -1535,6 +1542,7 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
         final inputs = <Widget>[
           _note(t('rings.hint')),
           _note(trees.isNotEmpty ? t('rings.fromTrees', {'n': '${trees.length}'}) : t('rings.fromArea', {'a': _hectares(u, polygonArea(area!).abs())}), color: Cad.fg),
+          if (trees.isEmpty && sel.others.isNotEmpty) _note(t('auto.exclusionsLeftOut', {'n': '${sel.others.length}'}), color: Cad.fg54),
           // surveyed trees give their own rows: the direction found is shown
           if (area != null && trees.isEmpty) _switch(t('auto.longestEdge'), autoDirection, (v) => setState(() => autoDirection = v)),
           if (!autoDirection) NumField(key: const Key('tr_direction'), label: t('auto.direction'), value: directionDeg, decimals: 1, onChanged: (v) => setState(() => directionDeg = normalizeDeg(v))),

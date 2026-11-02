@@ -16,7 +16,7 @@ library;
 import 'dart:math' as math;
 
 import '../model/geometry.dart';
-import 'auto_layout.dart' show normalizePolygon, polygonSelfCrossings, simplePolygonParts;
+import 'auto_layout.dart' show LayoutRegion, normalizePolygon, polygonSelfCrossings, simplePolygonParts;
 import 'block_generator.dart';
 
 /// How the field is cut.
@@ -43,10 +43,17 @@ class FieldSubdivisionOptions {
     this.roadWidth = 4,
     this.pointOfConnection,
     this.submainPosition,
+    this.exclusions = const [],
   });
 
   /// Direction of the rows (the laterals).
   final Pt direction;
+
+  /// Ground inside the field that is not irrigated (a pond, a shed, a well,
+  /// a stand of trees): left out of the block areas and flows, and the
+  /// laterals go round it ([blockOptionsFor] passes it on). Holes lying
+  /// across the outline count only for their part inside the field.
+  final List<List<Pt>> exclusions;
   final SubdivisionMode mode;
 
   /// Largest block (m²); 0 = from the flow.
@@ -156,6 +163,7 @@ BlockOptions blockOptionsFor(
   String stubLabel = 'Stub',
   String lateralPrefix = 'L',
   double submainDepth = 0,
+  List<List<Pt>> exclusions = const [],
 }) => BlockOptions(
   polygon: block.polygon,
   direction: direction,
@@ -178,6 +186,10 @@ BlockOptions blockOptionsFor(
   stubLabel: stubLabel,
   lateralPrefix: lateralPrefix,
   submainDepth: submainDepth,
+  exclusions: [
+    for (final e in exclusions)
+      if (Bounds.ofPoints(e).intersects(Bounds.ofPoints(block.polygon))) e,
+  ],
 );
 
 /// Pieces of the simple polygon [poly] where p·[n] ≥ [c] ([above]) or
@@ -357,16 +369,76 @@ class _AreaProfile {
   }
 }
 
+/// [_AreaProfile] of a polygon less its holes (each a simple polygon inside
+/// it): the area below a cut minus the holes' areas below it.
+class _NetProfile {
+  _NetProfile(List<Pt> poly, List<List<Pt>> holes, Pt n) : _field = _AreaProfile(poly, n), _holes = [for (final h in holes) _AreaProfile(h, n)];
+  final _AreaProfile _field;
+  final List<_AreaProfile> _holes;
+
+  double get total => math.max(0.0, _field.total - _holes.fold(0.0, (s, h) => s + h.total));
+
+  double below(double v) => math.max(0.0, _field.below(v) - _holes.fold(0.0, (s, h) => s + h.below(v)));
+
+  double cutAt(double lo, double hi, double target) {
+    final span = hi - lo;
+    for (var it = 0; it < 64 && hi - lo > 1e-9 * math.max(1, span); it++) {
+      final mid = (lo + hi) / 2;
+      if (below(mid) < target) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return (lo + hi) / 2;
+  }
+}
+
+/// The holes of [poly] among [holes]: their parts inside it (a hole lying
+/// across the outline counts only inside the field), as simple polygons.
+List<List<Pt>> _holesIn(List<Pt> poly, List<List<Pt>> holes) {
+  final out = <List<Pt>>[];
+  final pb = Bounds.ofPoints(poly);
+  for (final h in holes) {
+    final q = normalizePolygon(h);
+    if (q.length < 3 || !Bounds.ofPoints(q).intersects(pb)) continue;
+    if (q.every((x) => pointInPolygon(x, poly))) {
+      out.add(q);
+      continue;
+    }
+    // the part inside: the hole less the outside of the field, by the
+    // region of the hole with the field's complement pieces taken out
+    final inside = LayoutRegion(q, exclusions: [for (final piece in _complementPieces(poly, q)) piece]);
+    for (final l in inside.loops) {
+      if (!l.isHole && polygonArea(l.points).abs() > 1e-9) out.add(l.points);
+    }
+  }
+  return out;
+}
+
+/// The parts of the bounding box of [hole] outside [poly] (the field), as
+/// polygons: the box less the field.
+List<List<Pt>> _complementPieces(List<Pt> poly, List<Pt> hole) {
+  final b = Bounds.ofPoints(hole).inflate(1);
+  final box = [Pt(b.minX, b.minY), Pt(b.maxX, b.minY), Pt(b.maxX, b.maxY), Pt(b.minX, b.maxY)];
+  final region = LayoutRegion(box, exclusions: [poly]);
+  return [
+    for (final l in region.loops)
+      if (!l.isHole) l.points,
+  ];
+}
+
 /// Positions of the cuts of [poly] across [n] into [count] parts of equal
-/// net area with [road] metres between parts: (start, end) of every part.
-List<(double, double)> _equalCuts(List<Pt> poly, Pt n, int count, double road) {
+/// net area (less the [holes]) with [road] metres between parts: (start,
+/// end) of every part.
+List<(double, double)> _equalCuts(List<Pt> poly, Pt n, int count, double road, {List<List<Pt>> holes = const []}) {
   var vMin = double.infinity, vMax = -double.infinity;
   for (final p in poly) {
     vMin = math.min(vMin, p.dot(n));
     vMax = math.max(vMax, p.dot(n));
   }
   if (count <= 1) return [(vMin, vMax)];
-  final profile = _AreaProfile(poly, n);
+  final profile = _NetProfile(poly, holes, n);
   final total = profile.total;
   List<(double, double)> place(double target) {
     final out = <(double, double)>[];
@@ -422,7 +494,8 @@ FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
   }
   if (poly.length < 3 || polygonArea(poly).abs() < 1e-9) return FieldSubdivision(blocks: const [], fieldArea: 0, direction: dir, messages: ['field_empty']);
   final perp = dir.perpendicular;
-  final total = polygonArea(poly).abs();
+  final holes = _holesIn(poly, o.exclusions);
+  final total = math.max(0.0, polygonArea(poly).abs() - holes.fold(0.0, (s, h) => s + polygonArea(h).abs()));
   final fromFlow = o.maxBlockFlow > 0 && o.flowPerHectare > 0 ? o.maxBlockFlow / o.flowPerHectare * 1e4 : double.infinity;
   final maxArea = math.min(o.maxBlockArea > 0 ? o.maxBlockArea : double.infinity, fromFlow);
   if (!maxArea.isFinite) messages.add('field_no_limit');
@@ -449,7 +522,7 @@ FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
   final widest = math.max(1, ((vMax - vMin + road) / (math.max(o.minBlockWidth, 1e-6) + road)).floor());
   var blocks = <FieldBlock>[];
   for (var attempt = 0; attempt < 12; attempt++) {
-    blocks = _cut(poly, dir, perp, o, math.min(strips, widest), road, maxLen);
+    blocks = _cut(poly, dir, perp, o, math.min(strips, widest), road, maxLen, holes);
     // a strip whose pieces took fewer columns than planned may be too large
     if (!maxArea.isFinite || strips >= widest || blocks.every((bl) => bl.area <= maxArea * (1 + 1e-6))) break;
     strips++;
@@ -469,9 +542,9 @@ FieldSubdivision subdivideField(List<Pt> field, FieldSubdivisionOptions o) {
 }
 
 /// The blocks of [strips] strips (each cut in columns in a grid).
-List<FieldBlock> _cut(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int strips, double road, double maxLen) {
+List<FieldBlock> _cut(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int strips, double road, double maxLen, List<List<Pt>> holes) {
   final blocks = <FieldBlock>[];
-  final cuts = _equalCuts(poly, perp, strips, road);
+  final cuts = _equalCuts(poly, perp, strips, road, holes: holes);
   for (var si = 0; si < cuts.length; si++) {
     final (a, b) = cuts[si];
     if (b - a <= 1e-9) continue;
@@ -486,8 +559,13 @@ List<FieldBlock> _cut(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o,
         // equal areas, one more column while a part is longer than allowed
         final first = math.max(1, ((uMax - uMin + road) / (maxLen + road) - 1e-9).ceil());
         for (var count = first; count > 1 && count < first + 6; count++) {
+          // the holes in this strip piece, cut to it
+          final inPiece = [
+            for (final h in holes)
+              if (Bounds.ofPoints(h).intersects(Bounds.ofPoints(piece))) ..._holesIn(piece, [h]),
+          ];
           parts = [
-            for (final (c0, c1) in _equalCuts(piece, dir, count, road))
+            for (final (c0, c1) in _equalCuts(piece, dir, count, road, holes: inPiece))
               if (c1 - c0 > 1e-9) ...clipPolygonSlab(piece, dir, c0, c1),
           ];
           bool long(List<Pt> q) {
@@ -503,14 +581,14 @@ List<FieldBlock> _cut(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o,
         }
       }
       for (var ci = 0; ci < parts.length; ci++) {
-        blocks.add(_block(parts[ci], dir, perp, o, si, ci));
+        blocks.add(_block(parts[ci], dir, perp, o, si, ci, holes));
       }
     }
   }
   return blocks;
 }
 
-FieldBlock _block(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int strip, int column) {
+FieldBlock _block(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int strip, int column, List<List<Pt>> holes) {
   var u0 = double.infinity, u1 = -double.infinity, v0 = double.infinity, v1 = -double.infinity;
   for (final p in poly) {
     u0 = math.min(u0, p.dot(dir));
@@ -518,7 +596,12 @@ FieldBlock _block(List<Pt> poly, Pt dir, Pt perp, FieldSubdivisionOptions o, int
     v0 = math.min(v0, p.dot(perp));
     v1 = math.max(v1, p.dot(perp));
   }
-  final area = polygonArea(poly).abs();
+  // the net area: the holes inside the block left out
+  final inside = [
+    for (final h in holes)
+      if (Bounds.ofPoints(h).intersects(Bounds.ofPoints(poly))) h,
+  ];
+  final area = inside.isEmpty ? polygonArea(poly).abs() : LayoutRegion(poly, exclusions: inside).area;
   final poc = o.pointOfConnection;
   final submain = o.submainPosition ?? (o.centreFeed ? SubmainPosition.centre : (poc != null && poc.dot(dir) > (u0 + u1) / 2 ? SubmainPosition.end : SubmainPosition.start));
   final uSub = switch (submain) {

@@ -7,6 +7,11 @@ const _aut = <String, (String, String, String)>{
   'auto.step.layout': ('Distribuindo os aspersores…', 'Laying out the heads…', 'Distribuyendo los aspersores…'),
   'auto.step.zoning': ('Agrupando em zonas…', 'Grouping into zones…', 'Agrupando en zonas…'),
   'auto.step.routing': ('Traçando os tubos: zona {n} de {m}…', 'Routing the pipes: zone {n} of {m}…', 'Trazando las tuberías: zona {n} de {m}…'),
+  'auto.exclusionsLeftOut': (
+    '{n} forma(s) fechada(s) selecionada(s) dentro do contorno ficam de fora (lago, galpão, poço)',
+    '{n} selected closed shape(s) inside the outline are left out (a pond, a shed, a well)',
+    '{n} forma(s) cerrada(s) seleccionada(s) dentro del contorno quedan fuera (laguna, galpón, pozo)',
+  ),
   'autolay.noSupplyFlow': (
     'A fonte não tem vazão de projeto: as zonas partem de {q}, a vazão usual de uma zona desta família. Informe a vazão da fonte para zonear por ela.',
     'The supply has no design flow: the zones start from {q}, the usual flow of a zone of this family. Enter the supply flow to zone by it.',
