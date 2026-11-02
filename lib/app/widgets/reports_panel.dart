@@ -147,7 +147,8 @@ class ReportsPanel extends StatelessWidget {
       case 4:
         return _fromTable('bom');
       case 5:
-        return _fromTable('water', emptyKey: 'msg.noAreas');
+        // 1.6.0 PRD: the slope by irrigated area under the water of each area
+        return _stack(const [('water', 2), ('slopeClasses', 1)], emptyKey: 'msg.noAreas');
       case 6:
         return _hgl(r!);
       case 7:

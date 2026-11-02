@@ -18,6 +18,10 @@ enum SheetSplit { single, zones, areas }
 
 enum SheetKind { overview, zone, area, window }
 
+/// 1.6.0 PRD: a thematic sheet of the terrain: its slope by class, or its
+/// aspect (the compass direction it faces), under the drawing in grey.
+enum SheetTheme { slope, aspect }
+
 /// A region of the drawing printed on a sheet of its own.
 class SheetWindow {
   const SheetWindow({required this.bounds, this.scale, this.title = ''});
@@ -32,8 +36,12 @@ class SheetWindow {
 
 /// One drawing sheet of a set.
 class SheetSpec {
-  const SheetSpec({this.kind = SheetKind.overview, this.title = '', this.window, this.scale, this.muted = const {}, this.zones = const []});
+  const SheetSpec({this.kind = SheetKind.overview, this.title = '', this.window, this.scale, this.muted = const {}, this.zones = const [], this.theme});
   final SheetKind kind;
+
+  /// 1.6.0 PRD: the terrain theme a thematic sheet maps (a window sheet of
+  /// the terrain's extent), or null.
+  final SheetTheme? theme;
 
   /// Shown in the drawing and in the title block of a set of sheets.
   final String title;
@@ -50,7 +58,7 @@ class SheetSpec {
   /// Valve ids of the zones the sheet is about (its bill of materials).
   final List<String> zones;
 
-  SheetSpec withScale(double s) => SheetSpec(kind: kind, title: title, window: window, scale: s, muted: muted, zones: zones);
+  SheetSpec withScale(double s) => SheetSpec(kind: kind, title: title, window: window, scale: s, muted: muted, zones: zones, theme: theme);
 }
 
 /// Entity ids of every zone, by valve id (the valve included): from the

@@ -23,10 +23,15 @@ import 'pdf.dart';
 import 'plot.dart';
 import 'plot_charts.dart';
 import 'sheet_canvas.dart';
+import 'sheet_grid.dart';
 import 'sheet_set.dart';
+import 'sheet_theme.dart';
+import 'title_block_sheet.dart';
 
 export 'details.dart' show DetailKind;
-export 'sheet_set.dart' show SheetSplit, SheetWindow, SheetSpec, SheetKind;
+export 'sheet_grid.dart' show SheetGrid;
+export 'sheet_set.dart' show SheetSplit, SheetWindow, SheetSpec, SheetKind, SheetTheme;
+export 'title_block_sheet.dart' show SheetRevision;
 
 enum PageSize {
   a4(210, 297),
@@ -67,6 +72,9 @@ class SheetOptions {
     this.charts = false,
     this.profilePath,
     this.dpi = 200,
+    // 1.6.0 PRD
+    this.grid = SheetGrid.none,
+    this.themes = const [],
   });
   final PageSize page;
   final bool landscape;
@@ -114,6 +122,14 @@ class SheetOptions {
   /// Resolution of raster exports of the sheet (dots per inch).
   final double dpi;
 
+  /// 1.6.0 PRD: the coordinate grid of the drawing sheets (UTM, geographic
+  /// or both; local X, Y without a georeference).
+  final SheetGrid grid;
+
+  /// 1.6.0 PRD: thematic sheets of the terrain after the drawing sheets
+  /// (slope by class, aspect), each with its key.
+  final List<SheetTheme> themes;
+
   double get widthMm => landscape ? page.longMm : page.shortMm;
   double get heightMm => landscape ? page.shortMm : page.longMm;
 
@@ -138,6 +154,9 @@ class SheetOptions {
     List<Pt>? profilePath,
     bool clearProfilePath = false,
     double? dpi,
+    // 1.6.0 PRD
+    SheetGrid? grid,
+    List<SheetTheme>? themes,
   }) => SheetOptions(
     page: page ?? this.page,
     landscape: landscape ?? this.landscape,
@@ -157,17 +176,23 @@ class SheetOptions {
     charts: charts ?? this.charts,
     profilePath: clearProfilePath ? null : (profilePath ?? this.profilePath),
     dpi: dpi ?? this.dpi,
+    grid: grid ?? this.grid,
+    themes: themes ?? this.themes,
   );
 }
 
 /// Sheet geometry: usable drawing area (mm) for a given option set.
 class SheetLayout {
-  SheetLayout(this.o, {required this.hasLegend, double? legendWidthMm}) : legendWidth = legendWidthMm ?? legendMm;
+  SheetLayout(this.o, {required this.hasLegend, double? legendWidthMm, this.titleMm = titleBlockMm}) : legendWidth = legendWidthMm ?? legendMm;
   final SheetOptions o;
   final bool hasLegend;
 
   /// Width of the side column (legend + materials table), mm.
   final double legendWidth;
+
+  /// 1.6.0 PRD: height of the title block (mm): [titleBlockMm], or the
+  /// professional one's.
+  final double titleMm;
   static const titleBlockMm = 30.0;
   static const legendMm = 46.0;
 
@@ -180,9 +205,9 @@ class SheetLayout {
   double get frameW => o.widthMm - 2 * o.marginMm;
   double get frameH => o.heightMm - 2 * o.marginMm;
   double get areaX => frameX;
-  double get areaY => frameY + titleBlockMm;
+  double get areaY => frameY + titleMm;
   double get areaW => frameW - (hasLegend ? legendWidth : 0);
-  double get areaH => frameH - titleBlockMm;
+  double get areaH => frameH - titleMm;
   double get drawW => areaW - 2 * padMm;
   double get drawH => areaH - 2 * padMm;
 }
@@ -213,18 +238,17 @@ class PdfSheetBuilder {
 
   static String dateString(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
-  /// Revision clouds listed in the revision table of the sheets (one row
-  /// per distinct revision, date and description).
-  late final List<RevisionCloudEntity> revisions = () {
-    final seen = <String>{};
-    final out = <RevisionCloudEntity>[];
-    for (final r in project.entities.whereType<RevisionCloudEntity>()) {
-      if (r.revision.isEmpty && r.description.isEmpty) continue;
-      if (seen.add('${r.revision}|${r.date}|${r.description}')) out.add(r);
-    }
-    out.sort((a, b) => a.revision == b.revision ? a.date.compareTo(b.date) : naturalCompare(a.revision, b.revision));
-    return out;
-  }();
+  /// The revision table of the sheets: the revisions of the title block
+  /// (1.6.0 PRD) and of the revision clouds, one row per distinct revision,
+  /// date and description.
+  late final List<SheetRevision> revisions = sheetRevisions(project);
+
+  /// 1.6.0 PRD: height (mm) of the title block of this project's sheets.
+  double get titleMm => project.meta.titleBlock.isProfessional ? proTitleBlockMm : SheetLayout.titleBlockMm;
+
+  /// 1.6.0 PRD: the terrain maps of the thematic sheets, made once.
+  final Map<SheetTheme, ThemeMap?> _themeMaps = {};
+  ThemeMap? themeMap(SheetTheme th) => _themeMaps.putIfAbsent(th, () => ThemeMap.of(project, th));
 
   /// Largest throw of the sprinklers (m): how far beyond a sheet's window
   /// an outlet still shows on it.
@@ -246,18 +270,25 @@ class PdfSheetBuilder {
     if (o.scale != null && o.scale! > 0) return o.scale!;
     final b = project.bounds;
     if (b.isEmpty) return 1000;
-    final lay = SheetLayout(o, hasLegend: o.legend || _showBom(o) || revisions.isNotEmpty, legendWidthMm: _showBom(o) ? SheetLayout.legendWithBomMm : null);
+    final lay = SheetLayout(o, hasLegend: o.legend || _showBom(o) || revisions.isNotEmpty, legendWidthMm: _showBom(o) ? SheetLayout.legendWithBomMm : null, titleMm: titleMm);
     final inflated = b.inflate(math.max(b.width, b.height) * 0.04 + 1);
     return fitScale(inflated, lay.drawW, lay.drawH);
   }
 
   /// The drawing sheets of [o] with their scales: the overview at
   /// [sheetScale], zones and areas fitted to their subject, windows at their
-  /// own scale or fitted.
+  /// own scale or fitted, then the thematic sheets of the terrain (1.6.0
+  /// PRD) fitted to the terrain data.
   List<SheetSpec> sheetPlan(SheetOptions o) {
     final specs = sheetSpecs(project, o.split, results: results, t: t, windows: o.windows);
+    // 1.6.0 PRD: the thematic sheets (a theme without terrain data has none)
+    final themed = [
+      for (final th in SheetTheme.values)
+        if (o.themes.contains(th) && themeMap(th) != null) SheetSpec(kind: SheetKind.window, title: t('prd.sheet.${th.name}'), window: themeMap(th)!.bounds, theme: th),
+    ];
+    final multi = specs.length > 1 || themed.isNotEmpty;
     return [
-      for (final s in specs)
+      for (final s in [if (multi && specs.length == 1 && specs.first.title.isEmpty) SheetSpec(title: t('sheet.overview')) else ...specs, ...themed])
         if (s.scale != null && s.scale! > 0) s else s.withScale(s.window == null ? sheetScale(o) : _fitWindow(o, s)),
     ];
   }
@@ -265,7 +296,10 @@ class PdfSheetBuilder {
   double _fitWindow(SheetOptions o, SheetSpec s) {
     final w = s.window!;
     final bom = o.bomOnSheet && _bomFor(s).isNotEmpty;
-    final lay = SheetLayout(o, hasLegend: o.legend || bom || revisions.isNotEmpty, legendWidthMm: bom ? SheetLayout.legendWithBomMm : null);
+    // 1.6.0 PRD: a thematic sheet has its key in the wide side column
+    final lay = s.theme != null
+        ? SheetLayout(o, hasLegend: true, legendWidthMm: SheetLayout.legendWithBomMm, titleMm: titleMm)
+        : SheetLayout(o, hasLegend: o.legend || bom || revisions.isNotEmpty, legendWidthMm: bom ? SheetLayout.legendWithBomMm : null, titleMm: titleMm);
     return fitScale(w.inflate(math.max(w.width, w.height) * 0.04 + 1), lay.drawW, lay.drawH);
   }
 
@@ -283,7 +317,7 @@ class PdfSheetBuilder {
   }
 
   (int, int) _detailCapacity(SheetOptions o) {
-    final lay = SheetLayout(o, hasLegend: false);
+    final lay = SheetLayout(o, hasLegend: false, titleMm: titleMm);
     return (math.max(1, (lay.areaW / _detailCellW).floor()), math.max(1, (lay.areaH / _detailCellH).floor()));
   }
 
@@ -408,7 +442,7 @@ class PdfSheetBuilder {
         // centred on the window; the widest drawing area (no side column)
         // covers the sheet whatever goes beside it
         centre = s.window!.center;
-        lay = SheetLayout(o, hasLegend: false);
+        lay = SheetLayout(o, hasLegend: false, titleMm: titleMm);
       } else {
         final showBom = o.bomOnSheet && _bomFor(s).isNotEmpty;
         final scene = _sheetScene(o, s, upm, showBom);
@@ -429,15 +463,24 @@ class PdfSheetBuilder {
     if (w != null) {
       // what the drawing area shows around the window centre, plus the throw
       // of the sprinklers outside it and room for their labels
-      final lay0 = SheetLayout(o, hasLegend: true, legendWidthMm: showBom ? SheetLayout.legendWithBomMm : null);
+      final lay0 = SheetLayout(o, hasLegend: true, legendWidthMm: showBom ? SheetLayout.legendWithBomMm : null, titleMm: titleMm);
       final hw = (lay0.areaW + 2 * SheetLayout.legendMm) / 2 * unitsPerMm, hh = lay0.areaH / 2 * unitsPerMm;
       cull = Bounds(w.center.x - hw, w.center.y - hh, w.center.x + hw, w.center.y + hh).inflate(_reach + 30 * unitsPerMm);
     }
+    // 1.6.0 PRD: on a thematic sheet the whole drawing is context, in grey
+    final themed = spec.theme != null;
     return buildPlotScene(
       project,
       results: results,
       unitsPerMm: unitsPerMm,
-      options: PlotOptions(wettedRadii: o.wettedRadii, labels: o.labels, results: o.labels, muted: spec.muted, hideMuted: !o.dimOthers, window: cull),
+      options: PlotOptions(
+        wettedRadii: o.wettedRadii && !themed,
+        labels: o.labels && !themed,
+        results: o.labels && !themed,
+        muted: themed ? {for (final e in project.entities) e.id} : spec.muted,
+        hideMuted: !themed && !o.dimOthers,
+        window: cull,
+      ),
       units: units,
       t: t,
       rasters: o.rasters,
@@ -445,8 +488,9 @@ class PdfSheetBuilder {
     );
   }
 
-  SheetLayout _sheetLayout(SheetOptions o, PlotScene scene, bool showBom) =>
-      SheetLayout(o, hasLegend: (o.legend && scene.layers.isNotEmpty) || showBom || revisions.isNotEmpty, legendWidthMm: showBom ? SheetLayout.legendWithBomMm : null);
+  SheetLayout _sheetLayout(SheetOptions o, PlotScene scene, bool showBom, {bool themed = false}) => themed
+      ? SheetLayout(o, hasLegend: true, legendWidthMm: SheetLayout.legendWithBomMm, titleMm: titleMm)
+      : SheetLayout(o, hasLegend: (o.legend && scene.layers.isNotEmpty) || showBom || revisions.isNotEmpty, legendWidthMm: showBom ? SheetLayout.legendWithBomMm : null, titleMm: titleMm);
 
   /// World point at the centre of the drawing area of sheet [spec]: the
   /// window's centre, else the centre of what is plotted.
@@ -465,7 +509,9 @@ class PdfSheetBuilder {
     final showBom = o.bomOnSheet && bom.isNotEmpty;
     final revs = revisions;
     final scene = _sheetScene(o, spec, unitsPerMm, showBom);
-    final lay = _sheetLayout(o, scene, showBom);
+    // 1.6.0 PRD: the terrain map of a thematic sheet
+    final theme = spec.theme == null ? null : themeMap(spec.theme!);
+    final lay = _sheetLayout(o, scene, showBom, themed: theme != null);
     double px(double mm) => mm * ptPerMm;
     _frame(page, lay, px);
     // drawing (clipped)
@@ -473,23 +519,56 @@ class PdfSheetBuilder {
     final cx = centre.x, cy = centre.y;
     final ox = lay.areaX + lay.areaW / 2, oy = lay.areaY + lay.areaH / 2; // paper centre (mm)
     (double, double) map(Pt p) => (px(ox + (p.x - cx) / unitsPerMm), px(oy + (p.y - cy) / unitsPerMm));
+    final barLen = niceBarLength(unitsPerMm, 40);
+    final barMm = barLen / unitsPerMm;
+    final bx = lay.areaX + 6, by = lay.areaY + 6;
+    final nx = lay.areaX + lay.areaW - 10, ny = lay.areaY + lay.areaH - 14;
     page.save();
     page.clipRect(px(lay.areaX) + 0.5, px(lay.areaY) + 0.5, px(lay.areaW) - 1, px(lay.areaH) - 1);
-    drawScene(page, scene, map, unitsPerMm);
+    if (theme == null) {
+      drawScene(page, scene, map, unitsPerMm);
+    } else {
+      // the base map, the classes, then the drawing in grey with the names of the areas
+      drawScene(page, PlotScene(items: const [], bounds: scene.bounds, unitsPerMm: unitsPerMm, layers: const {}, rasters: scene.rasters), map, unitsPerMm);
+      drawThemeCells(page, theme, map, opacity: 0.7);
+      drawScene(page, PlotScene(items: [...scene.items, ..._areaNames(unitsPerMm)], bounds: scene.bounds, unitsPerMm: unitsPerMm, layers: const {}), map, unitsPerMm);
+    }
+    // 1.6.0 PRD: the coordinate grid, its values clear of the marks of the sheet
+    final gridNote = _gridNote(o, unitsPerMm);
+    if (o.grid != SheetGrid.none) {
+      final view = Bounds(cx - lay.areaW / 2 * unitsPerMm, cy - lay.areaH / 2 * unitsPerMm, cx + lay.areaW / 2 * unitsPerMm, cy + lay.areaH / 2 * unitsPerMm);
+      drawSheetGrid(
+        page,
+        fonts,
+        grid: o.grid,
+        georef: project.meta.georef,
+        view: view,
+        area: Bounds(px(lay.areaX), px(lay.areaY), px(lay.areaX + lay.areaW), px(lay.areaY + lay.areaH)),
+        unitsPerMm: unitsPerMm,
+        map: map,
+        avoid: [
+          Bounds(px(nx - 3), px(ny - 4), px(nx + 3), px(ny + 12)),
+          Bounds(px(bx - 3), px(by - 1.5), px(bx + barMm + 14), px(by + (gridNote.isEmpty ? 6 : 10))),
+          if (count > 1 && spec.title.isNotEmpty) _captionBox(spec.title, lay, px),
+          if (scene.attribution.isNotEmpty) _attributionBox(scene.attribution, lay, px),
+        ],
+        t: t,
+      );
+    }
     page.restore();
     if (scene.attribution.isNotEmpty) _attribution(page, scene.attribution, lay, px);
     if (count > 1 && spec.title.isNotEmpty) _caption(page, spec.title, lay, px);
+    if (gridNote.isNotEmpty) {
+      page.fillColor(_grey);
+      page.text(px(bx - 2), px(by + 6.6), fonts.fit(gridNote, px(lay.areaW * 0.5), 5.5), size: 5.5);
+    }
     // north arrow (top-right of the drawing area)
-    final nx = lay.areaX + lay.areaW - 10, ny = lay.areaY + lay.areaH - 14;
     page.strokeColor(_ink);
     page.fillColor(_ink);
     page.lineWidth(px(0.3));
     page.path([map0(px(nx), px(ny)), map0(px(nx - 2.2), px(ny - 3)), map0(px(nx), px(ny + 7)), map0(px(nx + 2.2), px(ny - 3))], close: true, fill: true);
     page.text(px(nx), px(ny + 8.5), 'N', size: 9, bold: true, align: PdfAlign.center);
     // scale bar (bottom-left)
-    final barLen = niceBarLength(unitsPerMm, 40);
-    final barMm = barLen / unitsPerMm;
-    final bx = lay.areaX + 6, by = lay.areaY + 6;
     page.lineWidth(px(0.25));
     for (var i = 0; i < 4; i++) {
       final seg = barMm / 4;
@@ -503,10 +582,62 @@ class PdfSheetBuilder {
     // legend, materials table and revisions (side column)
     final floor = revs.isEmpty ? null : _revisionTable(page, lay, px, revs);
     var sideY = lay.frameY + lay.frameH - 8;
-    if (lay.hasLegend && o.legend && scene.layers.isNotEmpty) sideY = _legend(page, scene, lay, px, floor: floor);
-    if (showBom) _bomBlock(page, lay, px, sideY - 4, bom, floor: floor);
+    if (theme != null) {
+      // 1.6.0 PRD: the key of the thematic sheet instead
+      drawThemeKey(page, fonts, t, project, theme, x0: lay.areaX + lay.areaW + 4, top: sideY, width: lay.legendWidth - 8, floor: floor ?? lay.areaY);
+    } else {
+      if (lay.hasLegend && o.legend && scene.layers.isNotEmpty) sideY = _legend(page, scene, lay, px, floor: floor);
+      if (showBom) _bomBlock(page, lay, px, sideY - 4, bom, floor: floor);
+    }
     // title block
-    _titleBlock(page, lay, scale, px, sheet: count > 1 ? '$number/$count${spec.title.isEmpty ? '' : ' · ${spec.title}'}' : '1/1');
+    _titleBlock(page, lay, scale, px, sheet: count > 1 ? '$number/$count${spec.title.isEmpty ? '' : ' · ${spec.title}'}' : '1/1', number: number, count: count);
+  }
+
+  /// 1.6.0 PRD: the names of the irrigated areas on a thematic sheet (its
+  /// drawing is greyed without labels), top-left inside each area.
+  List<PlotItem> _areaNames(double unitsPerMm) => [
+    for (final a in project.entities.whereType<AreaEntity>())
+      if (a.points.length >= 3 && a.name.isNotEmpty)
+        PlotText(
+          layer: a.layer,
+          color: _ink,
+          position: Pt(Bounds.ofPoints(a.points).minX + 1.5 * unitsPerMm, Bounds.ofPoints(a.points).maxY - 4 * unitsPerMm),
+          text: a.name,
+          heightMm: 2.2,
+          bold: true,
+        ),
+  ];
+
+  /// 1.6.0 PRD: the steps of the coordinate grid of [o] at [unitsPerMm]
+  /// ("UTM grid 100 m · geographic 30""), or empty without a grid.
+  String _gridNote(SheetOptions o, double unitsPerMm) {
+    if (o.grid == SheetGrid.none) return '';
+    final g = project.meta.georef;
+    final parts = <String>[
+      if (o.grid.hasUtm) t(g == null ? 'prd.grid.noteLocal' : 'prd.grid.noteUtm', {'s': '${fmt(units.lengthFromSi(utmGridStep(unitsPerMm)), 0)} ${units.lengthLabel}'}),
+      if (o.grid.hasGeographic && g != null) t('prd.grid.noteGeo', {'s': _stepText(graticuleStepSeconds(unitsPerMm))}),
+    ];
+    return parts.join(' · ');
+  }
+
+  static String _stepText(int seconds) => seconds % 3600 == 0 ? '${seconds ~/ 3600}°' : (seconds % 60 == 0 ? '${seconds ~/ 60}\'' : '$seconds"');
+
+  /// Box (pt) of the title of a sheet of a set ([_caption]).
+  Bounds _captionBox(String title, SheetLayout lay, double Function(double) px) {
+    const size = 10.0;
+    final s = fonts.fit(title, px(lay.areaW) * 0.6, size, bold: true);
+    final w = fonts.textWidth(s, size, bold: true);
+    final x = px(lay.areaX) + 8, y = px(lay.areaY + lay.areaH) - 8 - size;
+    return Bounds(x - 5, y - 5, x + w + 5, y + size + 4);
+  }
+
+  /// Box (pt) of the credit line of the base map ([_attribution]).
+  Bounds _attributionBox(String text, SheetLayout lay, double Function(double) px) {
+    const size = 5.0;
+    final s = fonts.fit(text, px(lay.areaW) * 0.6, size);
+    final w = fonts.textWidth(s, size);
+    final x = px(lay.areaX + lay.areaW) - 3, y = px(lay.areaY) + 3;
+    return Bounds(x - w - 3, y - 2.5, x + 3, y + size + 2.5);
   }
 
   void _frame(SheetCanvas page, SheetLayout lay, double Function(double) px) {
@@ -693,7 +824,7 @@ class PdfSheetBuilder {
   /// Revision table at the bottom of the side column (revision, date and
   /// description of the revision clouds, oldest at the bottom); returns the
   /// y (mm) of its top.
-  double _revisionTable(SheetCanvas page, SheetLayout lay, double Function(double) px, List<RevisionCloudEntity> revs) {
+  double _revisionTable(SheetCanvas page, SheetLayout lay, double Function(double) px, List<SheetRevision> revs) {
     final x0 = lay.areaX + lay.areaW + 4;
     final w = lay.legendWidth - 8;
     const lineH = 2.9, revW = 7.0, dateW = 14.0;
@@ -727,9 +858,35 @@ class PdfSheetBuilder {
     return y + 4;
   }
 
-  void _titleBlock(SheetCanvas page, SheetLayout lay, double scale, double Function(double) px, {String sheet = '1/1', String? scaleText}) {
+  void _titleBlock(SheetCanvas page, SheetLayout lay, double scale, double Function(double) px, {String sheet = '1/1', String? scaleText, int number = 1, int count = 1}) {
     final m = project.meta;
     final x0 = lay.frameX, y0 = lay.frameY, w = lay.frameW;
+    // 1.6.0 PRD: the professional title block when any of it is set
+    if (m.titleBlock.isProfessional) {
+      final g = m.georef;
+      final issued = m.titleBlock.issued ?? DateTime.now();
+      final epsg = g?.epsg;
+      drawProTitleBlock(
+        page,
+        fonts,
+        t,
+        project,
+        x0: x0,
+        y0: y0,
+        w: w,
+        h: lay.titleMm,
+        sheet: sheet,
+        number: number,
+        count: count,
+        scale: scaleText ?? '1:${scale.round()}',
+        paper: _pageLabel(lay.o),
+        date: dateString(issued),
+        crs: g == null ? '' : g.crsName,
+        crsNote: g == null ? '' : '${epsg == null ? '' : 'EPSG:$epsg · '}E ${g.originEasting.toStringAsFixed(0)} N ${g.originNorthing.toStringAsFixed(0)}',
+        generated: t('pdf.generated', {'d': dateString(DateTime.now())}),
+      );
+      return;
+    }
     final h = SheetLayout.titleBlockMm;
     final colA = w * 0.44, colB = w * 0.32;
     const row = 4.5;
@@ -793,7 +950,7 @@ class PdfSheetBuilder {
   /// in a grid of cells: title and scale on top, the drawing with its
   /// dimensions and callouts, the notes with the values of the design.
   void drawDetailSheet(SheetCanvas page, SheetOptions o, List<DetailKind> kinds, DetailContext ctx, {int number = 1, int count = 1, int firstIndex = 0}) {
-    final lay = SheetLayout(o, hasLegend: false);
+    final lay = SheetLayout(o, hasLegend: false, titleMm: titleMm);
     double px(double mm) => mm * ptPerMm;
     _frame(page, lay, px);
     final (maxCols, maxRows) = _detailCapacity(o);
@@ -804,7 +961,7 @@ class PdfSheetBuilder {
       final x0 = lay.areaX + (i % cols) * cw, y0 = lay.areaY + lay.areaH - (i ~/ cols + 1) * ch;
       _detailCell(page, kinds[i], ctx, firstIndex + i + 1, x0, y0, cw, ch, px);
     }
-    _titleBlock(page, lay, 0, px, sheet: '$number/$count · ${t('det.title')}', scaleText: t('det.scaleAsShown'));
+    _titleBlock(page, lay, 0, px, sheet: '$number/$count · ${t('det.title')}', scaleText: t('det.scaleAsShown'), number: number, count: count);
   }
 
   void _detailCell(SheetCanvas page, DetailKind kind, DetailContext ctx, int n, double x0, double y0, double cw, double ch, double Function(double) px) {
@@ -1039,10 +1196,20 @@ class _ReportPages {
     ];
     final headerLines = [for (var i = 0; i < n; i++) _wrap(fonts, tb.headers[i], widths[i] - 2 * pad, size, bold: true)];
     final headerRows = headerLines.fold(1, (m, l) => math.max(m, l.length));
+    // 1.6.0 PRD: the standards of the criteria of the table, under its title
+    final note = tb.standards.isEmpty ? const <String>[] : _wrap(fonts, tb.standards, avail, 6.5);
     void header({bool cont = false}) {
       page.fillColor(_ink);
       page.text(left, y, cont ? '${tb.title} ${b.t('pdf.cont')}' : tb.title, size: 10, bold: true);
       y -= 12;
+      if (!cont && note.isNotEmpty) {
+        page.fillColor(_grey);
+        for (final l in note) {
+          page.text(left, y + 2, l, size: 6.5);
+          y -= 8.5;
+        }
+        y -= 1.5;
+      }
       page.fillColor(_lightGrey);
       page.rect(left, y - 3 - (headerRows - 1) * lineH, total, headerRows * lineH + 1, fill: true, stroke: false);
       page.fillColor(_ink);
@@ -1059,7 +1226,7 @@ class _ReportPages {
       y -= headerRows * lineH;
     }
 
-    _ensure(12 + lineH * (headerRows + 2));
+    _ensure(12 + note.length * 8.5 + lineH * (headerRows + 2));
     header();
     if (tb.rows.isEmpty) {
       page.fillColor(_grey);

@@ -12,6 +12,7 @@ import '../core/model/currency.dart';
 import '../core/model/entities.dart';
 import '../core/model/project.dart';
 import 'examples.dart';
+import 'i18n.dart' show I18n; // 1.6.0 PRD
 import 'io/file_io.dart';
 import 'io/pdf_font_loader.dart';
 import 'io/project_store.dart';
@@ -255,6 +256,12 @@ Future<void> exportDrawingAction(BuildContext context, ProjectController c, Draw
 Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
   final m = c.project.meta;
   yield* [m.name, m.client, m.site, m.designer, m.notes];
+  // 1.6.0 PRD: the professional title block
+  final tb = m.titleBlock;
+  yield* [tb.company, tb.responsible, tb.council, tb.registration, tb.responsibilityRecord, tb.car, tb.waterPermit, tb.municipality, tb.drawingNumber];
+  for (final r in tb.revisions) {
+    yield* [r.revision, r.date, r.description, r.author];
+  }
   for (final l in c.project.layers) {
     yield l.name;
   }
@@ -282,9 +289,14 @@ Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
   for (final k in const ['plot.title', 'reports.zone', 'reports.bom', 'rep.zone', 'rep.description', 'menu.mainline', 'name.report']) {
     yield c.t(k);
   }
+  // 1.6.0 PRD: the title block, grid, thematic sheets and document packages
+  for (final k in I18n.keys) {
+    if (k.startsWith('prd.')) yield c.t(k);
+  }
   if (reports && c.results != null) {
     for (final tb in c.reportTables()) {
       yield tb.title;
+      yield tb.standards; // 1.6.0 PRD
       yield* tb.headers;
       for (final row in tb.rows) {
         for (final cell in row) {
