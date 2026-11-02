@@ -55,6 +55,11 @@ TextInputType numberKeyboard({bool signed = true}) => TextInputType.numberWithOp
 /// Whether the numeric keyboard of this device lacks the minus sign.
 bool get keyboardLacksMinus => defaultTargetPlatform == TargetPlatform.iOS;
 
+/// The keyboard of a plain text field that takes a number with a sign
+/// (coordinates, elevations): the numeric one, except on the iPhone and
+/// iPad, whose numeric keyboard has no minus sign (UI-30).
+TextInputType get signedNumberKeyboard => keyboardLacksMinus ? TextInputType.text : const TextInputType.numberWithOptions(decimal: true, signed: true);
+
 /// Numeric text field that commits on submit / focus loss — only when the
 /// text was edited (reading a value never writes it back rounded), in the
 /// notation of the interface language, with the other reading of an

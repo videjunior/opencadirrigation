@@ -83,6 +83,7 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
           );
         }
 
+        final narrow = MediaQuery.sizeOf(ctx).width < 600;
         return AlertDialog(
           title: Text(t('cat.packs'), style: const TextStyle(fontSize: 15)),
           content: SizedBox(
@@ -107,7 +108,7 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
                               return [CatalogPack.parse(utf8.decode(f.$2, allowMalformed: true), origin: f.$1)];
                             }),
                       icon: const Icon(Icons.file_open_outlined, size: 15),
-                      label: Text(t('cat.packImport'), style: const TextStyle(fontSize: 12)),
+                      label: Text(narrow ? '' : t('cat.packImport'), style: const TextStyle(fontSize: 12)),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -123,7 +124,9 @@ Future<void> showCatalogPacksDialog(BuildContext context, ProjectController c) {
                     FilledButton.tonal(
                       key: const Key('pack_load_url'),
                       onPressed: busy ? null : () => addPacks(() => loadCatalogPacksFromUrl(urlCtl.text)),
-                      child: Text(busy ? t('cat.packLoading') : t('cat.packLoad'), style: const TextStyle(fontSize: 12)),
+                      child: narrow
+                          ? Icon(busy ? Icons.hourglass_empty : Icons.download, size: 16, semanticLabel: t('cat.packLoad'))
+                          : Text(busy ? t('cat.packLoading') : t('cat.packLoad'), style: const TextStyle(fontSize: 12)),
                     ),
                   ],
                 ),

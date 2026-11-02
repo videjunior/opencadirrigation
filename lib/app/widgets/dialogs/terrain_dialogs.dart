@@ -82,7 +82,7 @@ Future<void> showElevationDialog(BuildContext context, ProjectController c, Enti
                   key: const Key('elev_value'),
                   controller: ctl,
                   autofocus: true,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                  keyboardType: signedNumberKeyboard,
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\-]'))],
                   decoration: InputDecoration(labelText: t('elev.value'), isDense: true),
                   onSubmitted: (_) => apply(ctx),

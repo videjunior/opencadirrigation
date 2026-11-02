@@ -12,7 +12,7 @@ import '../../../core/model/entities.dart' show PumpEntity;
 import '../../../core/units.dart';
 import '../../io/sheet_basemap.dart';
 import '../../state/controller.dart';
-import '../fields.dart' show ScrollBody;
+import '../fields.dart' show ScrollBody, signedNumberKeyboard;
 import 'terrain_dialogs.dart' show dialogWidth;
 import '../../theme.dart';
 
@@ -59,7 +59,7 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
             key: Key('geo_${label.hashCode}'),
             controller: tc,
             decoration: InputDecoration(labelText: label, suffixText: suffix, isDense: true),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+            keyboardType: signedNumberKeyboard,
             style: const TextStyle(fontSize: 12),
           ),
         );

@@ -545,6 +545,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
 
         Widget removeBtn(String id, String name, VoidCallback remove) => IconButton(
           key: Key('cat_rm_$id'),
+          tooltip: t('cat.remove'),
           icon: const Icon(Icons.delete_outline, size: 15),
           onPressed: () async {
             if (await confirmRemove(id, name)) setState(remove);
@@ -798,7 +799,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                       if (identical(n, o.nozzles.first))
                         removeBtn(o.id, o.name, () => cat.outlets.remove(o))
                       else
-                        IconButton(icon: const Icon(Icons.remove, size: 15), onPressed: () => setState(() => o.nozzles.remove(n))),
+                        IconButton(tooltip: t('ui.removeNozzle'), icon: const Icon(Icons.remove, size: 15), onPressed: () => setState(() => o.nozzles.remove(n))),
                     ],
                   ),
                 ],

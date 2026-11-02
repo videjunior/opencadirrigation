@@ -112,11 +112,14 @@ Future<void> showDensogramDialog(BuildContext context, ProjectController c) {
                   else ...[
                     kv(t('dens.sources'), '${d.sources.length}'),
                     kv(t('dens.target'), t(d.masked ? 'dens.targetAreas' : 'dens.targetWetted')),
-                    kv(t('dens.area'), '${fmt(s.areaM2, 0)} m² (${fmt(s.areaM2 / 10000, 3)} ha)'),
-                    kv(t('dens.cellUsed'), '${fmt(d.cell, 2)} m'),
+                    kv(
+                      t('dens.area'),
+                      c.units.length == LengthUnit.ft ? '${fmt(s.areaM2 / 0.09290304, 0)} ft² (${fmt(c.units.areaFromSi(s.areaM2), 3)} ac)' : '${fmt(s.areaM2, 0)} m² (${fmt(s.areaM2 / 10000, 3)} ha)',
+                    ),
+                    kv(t('dens.cellUsed'), '${fmt(c.units.lengthFromSi(d.cell), 2)} ${c.units.lengthLabel}'),
                     kv(t('dens.basis'), t(d.fromResults ? 'dens.fromResults' : 'dens.nominal')),
-                    kv(t('dens.mean'), '${fmt(s.mean, 2)} mm/h'),
-                    kv(t('dens.minMax'), '${fmt(s.min, 2)} / ${fmt(s.max, 2)} mm/h'),
+                    kv(t('dens.mean'), '${fmt(c.units.depthFromMm(s.mean), 2)} ${c.units.depthRateLabel}'),
+                    kv(t('dens.minMax'), '${fmt(c.units.depthFromMm(s.min), 2)} / ${fmt(c.units.depthFromMm(s.max), 2)} ${c.units.depthRateLabel}'),
                     kv('CU (Christiansen)', '${fmt(s.cu, 1)} %', color: grade(s.cu, 84, 75)),
                     kv('DU (${t('dens.lowQuarter')})', '${fmt(s.du, 1)} %', color: grade(s.du, 75, 65)),
                     kv(t('dens.sc'), s.sc.isFinite ? fmt(s.sc, 2) : '∞', color: s.sc <= 1.3 ? Cad.ok : (s.sc <= 1.5 ? Cad.warning : Cad.unconnected)),
@@ -127,7 +130,7 @@ Future<void> showDensogramDialog(BuildContext context, ProjectController c) {
                       for (var i = 0; i < d.areas.length; i++)
                         kv(
                           d.areas[i].name.isNotEmpty ? d.areas[i].name : '${t('tool.area')} ${i + 1}',
-                          '${fmt(d.areas[i].stats.mean, 1)} mm/h · CU ${fmt(d.areas[i].stats.cu, 0)} % · DU ${fmt(d.areas[i].stats.du, 0)} %',
+                          '${fmt(c.units.depthFromMm(d.areas[i].stats.mean), 1)} ${c.units.depthRateLabel} · CU ${fmt(d.areas[i].stats.cu, 0)} % · DU ${fmt(d.areas[i].stats.du, 0)} %',
                           color: grade(d.areas[i].stats.cu, 84, 75),
                         ),
                     ],

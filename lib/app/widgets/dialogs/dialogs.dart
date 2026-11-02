@@ -1918,59 +1918,45 @@ Future<void> showLabelRulesDialog(BuildContext context, ProjectController c) {
                     final fields = LabelRule.fieldsOf(r.target);
                     if (!fields.contains(r.field)) r.field = fields.first;
                     final (shown, unit) = LabelRule.display(r.field, r.value, u);
-                    return Row(
-                      key: ValueKey('lbl_rule_$i'),
-                      children: [
-                        Checkbox(value: r.enabled, onChanged: (v) => setState(() => r.enabled = v ?? true)),
-                        Expanded(
-                          flex: 3,
-                          child: SpecDropdown<String>(
-                            label: t('lbl.target'),
-                            value: r.target,
-                            items: LabelRule.targets,
-                            labelOf: (k) => t('lbl.target.$k'),
-                            idOf: (k) => k,
-                            onChanged: (v) => setState(() => r.target = v ?? r.target),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          flex: 4,
-                          child: SpecDropdown<String>(
-                            label: t('lbl.field'),
-                            value: r.field,
-                            items: fields,
-                            labelOf: (k) => t('lbl.field.$k'),
-                            idOf: (k) => k,
-                            onChanged: (v) => setState(() => r.field = v ?? r.field),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        SizedBox(
-                          width: 80,
-                          child: SpecDropdown<String>(
-                            label: t('lbl.when'),
-                            value: r.op,
-                            items: const ['>', '<', 'any'],
-                            labelOf: (k) => k == 'any' ? t('lbl.always') : k,
-                            idOf: (k) => k,
-                            onChanged: (v) => setState(() => r.op = v ?? r.op),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        SizedBox(
-                          width: 90,
-                          child: NumField(
-                            key: ValueKey('lbl_value_${i}_${r.field}'),
-                            label: unit,
-                            value: shown,
-                            enabled: r.op != 'any',
-                            onChanged: (v) => setState(() => r.value = LabelRule.toSi(r.field, v, u)),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        for (final col in palette)
-                          InkWell(
+                    final enabled = Checkbox(value: r.enabled, onChanged: (v) => setState(() => r.enabled = v ?? true));
+                    final target = SpecDropdown<String>(
+                      label: t('lbl.target'),
+                      value: r.target,
+                      items: LabelRule.targets,
+                      labelOf: (k) => t('lbl.target.$k'),
+                      idOf: (k) => k,
+                      onChanged: (v) => setState(() => r.target = v ?? r.target),
+                    );
+                    final field = SpecDropdown<String>(
+                      label: t('lbl.field'),
+                      value: r.field,
+                      items: fields,
+                      labelOf: (k) => t('lbl.field.$k'),
+                      idOf: (k) => k,
+                      onChanged: (v) => setState(() => r.field = v ?? r.field),
+                    );
+                    final op = SpecDropdown<String>(
+                      label: t('lbl.when'),
+                      value: r.op,
+                      items: const ['>', '<', 'any'],
+                      labelOf: (k) => k == 'any' ? t('lbl.always') : k,
+                      idOf: (k) => k,
+                      onChanged: (v) => setState(() => r.op = v ?? r.op),
+                    );
+                    final value = NumField(
+                      key: ValueKey('lbl_value_${i}_${r.field}'),
+                      label: unit,
+                      value: shown,
+                      enabled: r.op != 'any',
+                      onChanged: (v) => setState(() => r.value = LabelRule.toSi(r.field, v, u)),
+                    );
+                    final colours = [
+                      for (final col in palette)
+                        Semantics(
+                          button: true,
+                          selected: r.color == col,
+                          label: t('ui.ruleColour'),
+                          child: InkWell(
                             onTap: () => setState(() => r.color = col),
                             child: Container(
                               width: 16,
@@ -1983,8 +1969,55 @@ Future<void> showLabelRulesDialog(BuildContext context, ProjectController c) {
                               ),
                             ),
                           ),
-                        IconButton(icon: const Icon(Icons.delete_outline, size: 16), onPressed: () => setState(() => rules.removeAt(i))),
-                      ],
+                        ),
+                    ];
+                    final remove = IconButton(tooltip: t('ui.removeRule'), icon: const Icon(Icons.delete_outline, size: 16), onPressed: () => setState(() => rules.removeAt(i)));
+                    // a phone: the rule in three lines instead of one that cuts its fields (UI-14)
+                    return KeyedSubtree(
+                      key: ValueKey('lbl_rule_$i'),
+                      child: _byWidth(
+                        640,
+                        () => Row(
+                          children: [
+                            enabled,
+                            Expanded(flex: 3, child: target),
+                            const SizedBox(width: 6),
+                            Expanded(flex: 4, child: field),
+                            const SizedBox(width: 6),
+                            SizedBox(width: 80, child: op),
+                            const SizedBox(width: 6),
+                            SizedBox(width: 90, child: value),
+                            const SizedBox(width: 6),
+                            ...colours,
+                            remove,
+                          ],
+                        ),
+                        () => Column(
+                          children: [
+                            Row(
+                              children: [
+                                enabled,
+                                Expanded(child: target),
+                                const SizedBox(width: 6),
+                                Expanded(child: field),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(width: 90, child: op),
+                                const SizedBox(width: 6),
+                                Expanded(child: value),
+                                remove,
+                              ],
+                            ),
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Wrap(children: colours),
+                            ),
+                            const Divider(height: 8),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),

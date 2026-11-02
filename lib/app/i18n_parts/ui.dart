@@ -158,4 +158,8 @@ const _ui = <String, (String, String, String)>{
   // ---- UI-22 the hydraulic grade line chart
   'hgl.axis': ('cota e carga ({u})', 'elevation and head ({u})', 'cota y carga ({u})'),
   'hgl.readout': ('{d}: terreno {z}, carga {h}, pressão {p}', '{d}: ground {z}, head {h}, pressure {p}', '{d}: terreno {z}, carga {h}, presión {p}'),
+  // ---- UI-23 / UI-14 the conditional label rules
+  'ui.ruleColour': ('Cor da regra', 'Colour of the rule', 'Color de la regla'),
+  'ui.removeRule': ('Remover esta regra', 'Remove this rule', 'Quitar esta regla'),
+  'ui.removeNozzle': ('Remover este bocal', 'Remove this nozzle', 'Quitar esta boquilla'),
 };
