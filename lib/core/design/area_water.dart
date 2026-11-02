@@ -174,11 +174,14 @@ DateTime plantingDateOf(AreaEntity a, {int year = 2001, bool southern = false, b
 /// FAO-56 table): the crop's curve with the root depth, depletion fraction
 /// and available water typed on the area (the panel copies the table values
 /// when the crop and the soil are chosen), Kr and Pw of [areaKr] and
-/// [areaPw], the site climate (or the ETo typed on the area every month)
-/// and, when the climate has them and [AreaEntity.climateKc] is on, Kc mid
-/// and Kc end adjusted to its minimum humidity and wind (FAO-56 eqs. 62 and
-/// 65). The depletion fraction is adjusted to the ETc of each month (FAO-56
-/// Table 22 note 2) only while it is the table's value.
+/// [areaPw], the site climate (or the ETo typed on the area every month).
+/// With [AreaEntity.climateKc] on, Kc mid and Kc end are adjusted to the
+/// minimum humidity and wind of the climate when it has them (FAO-56 eqs. 62
+/// and 65), and, for sprinkler and surface irrigation, Kc ini follows the
+/// interval and depth of the irrigations of the initial stage ([wettingKcIni];
+/// localized irrigation keeps the table's Kc ini: its partial wetting is
+/// already in Kr and Pw). The depletion fraction is adjusted to the ETc of
+/// each month (FAO-56 Table 22 note 2) only while it is the table's value.
 RequirementInput? requirementInputOf(Project p, AreaEntity a, {double applicationRateMmH = 0}) {
   final crop = fao56Crops[a.cropKey];
   if (crop == null) return null;
@@ -186,9 +189,9 @@ RequirementInput? requirementInputOf(Project p, AreaEntity a, {double applicatio
   final climate = p.climate;
   final normals = climate?.normals ?? ClimateNormals(etoMmDay: List.filled(12, a.etoMmDay), rainMm: List.filled(12, 0.0));
   final planting = plantingDateOf(a, southern: siteIsSouthern(p));
-  final curve = (a.climateKc ? climateKcAdjustment(p, crop, planting) : null) ?? crop.curve;
+  final adjusted = (a.climateKc ? climateKcAdjustment(p, crop, planting) : null) ?? crop.curve;
   final tableP = crop.depletionFraction;
-  return RequirementInput(
+  RequirementInput inputWith(KcCurve curve) => RequirementInput(
     areaId: a.id,
     areaM2: a.area,
     cycles: [CropCycle.fromTable(a.cropKey, planting: planting, kr: areaKr(a), curve: curve, rootDepthM: a.rootDepthM, depletionFraction: a.mad)],
@@ -205,6 +208,35 @@ RequirementInput? requirementInputOf(Project p, AreaEntity a, {double applicatio
     ecwDsM: a.ecwDsM,
     leachingFormula: localized ? LeachingFormula.highFrequencyDrip : LeachingFormula.surfaceSprinkler,
     yieldPotentialPct: a.yieldPotentialPct.clamp(50.0, 100.0).toDouble(),
+  );
+  var input = inputWith(adjusted);
+  if (a.climateKc && !localized && crop.stages != null && crop.stages!.initial > 0) {
+    // the interval depends on Kc ini and Kc ini on the interval: a few passes
+    final texture = soilTable[a.soilKey]?.texture;
+    var kcIni = adjusted.kcIni;
+    for (var pass = 0; pass < 4; pass++) {
+      final next = wettingKcIni(input, planting, texture);
+      if (next == null || (next - kcIni).abs() < 0.005) break;
+      kcIni = next;
+      input = inputWith(adjusted.withKcIni(kcIni));
+    }
+  }
+  return input;
+}
+
+/// Kc ini of the crop of [input] from the irrigation of its initial stage:
+/// the interval and the net depth per event of the row of the planting
+/// month (the wetting interval and the infiltrated depth of FAO-56 eqs.
+/// 59–61 and Annex 7, through [kcIniFromWetting]; coarse soils by Figure 30a,
+/// the others by Figure 30b); null without that row.
+double? wettingKcIni(RequirementInput input, DateTime planting, SoilTexture? texture) {
+  final row = irrigationRequirement(input).monthly.where((r) => r.start.month == planting.month && r.cropDays > 0).firstOrNull;
+  if (row == null || row.etoMmDay <= 0) return null;
+  return kcIniFromWetting(
+    etoMmDay: row.etoMmDay,
+    wettingIntervalDays: row.intervalDays.toDouble(),
+    infiltrationDepthMm: math.max(row.netPerEventMm, 1.0),
+    texture: texture == SoilTexture.sand || texture == SoilTexture.loamySand ? SoilWettingTexture.coarse : SoilWettingTexture.mediumFine,
   );
 }
 

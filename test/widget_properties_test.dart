@@ -183,6 +183,11 @@ void main() {
     expect(ctrl.stations, 1);
     await type(tester, t('props.outputVolts'), '-1');
     expect(ctrl.outputVolts, 24);
+    // what one output and the controller deliver (AGR-12)
+    await type(tester, t('props.stationMaxA'), '0,75');
+    expect(ctrl.stationMaxA, 0.75);
+    await type(tester, t('props.totalMaxA'), '-2');
+    expect(ctrl.totalMaxA, 0, reason: 'negative = the typical rating');
     await add(tester, c, WireEntity(id: c.project.newId(), points: [const Pt(0, -10), const Pt(0, -20)]));
     expect(find.text(t('hint.wire')), findsOneWidget);
     final line = await add(tester, c, LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(3, 4)));
@@ -193,6 +198,42 @@ void main() {
     // the name field
     await type(tester, t('props.name'), 'Divisa');
     expect(line.name, 'Divisa');
+  });
+
+  testWidgets('area: the method sets Kr and Pw, the planting date is read back, salinity and climate Kc (AGR-01, 08, 09, 11)', (tester) async {
+    final c = await pumpShell(tester, example: false);
+    final t = c.t;
+    final a = await add(tester, c, AreaEntity(id: c.project.newId(), points: const [Pt(0, 0), Pt(100, 0), Pt(100, 100), Pt(0, 100)], useWaterBalance: true, wettedFraction: 0.4));
+    // a wetted fraction below 1 is drip: the method shows it, Kr from the cover or typed
+    expect((tester.widget(find.byKey(const Key('area_method'))) as SpecDropdown).value, 'localized');
+    await type(tester, t('req.groundCover'), '0,49');
+    expect(find.text('0.70'), findsOneWidget, reason: 'Kr = 0.1·√49');
+    await type(tester, t('area.kr'), '0,6');
+    expect(a.localizedKr, 0.6);
+    expect(find.text('0.60'), findsWidgets);
+    // sprinkler irrigation: no wetted fraction, no Kr
+    await pick(tester, t('req.method'), 'sprinkler');
+    expect(a.wettedFraction, 1);
+    expect(field(t('area.kr')), findsNothing);
+    // a crop of the table: the planting date as it was read
+    await pick(tester, t('req.crop'), 'crop.maize');
+    await type(tester, t('req.planting'), '15/09');
+    expect((tester.widget(find.byKey(const Key('area_planting_read'))) as Text).data, t('req.plantingRead', {'d': '15 ${t('mon.9')}'}));
+    await type(tester, t('req.planting'), '05/09');
+    expect((tester.widget(find.byKey(const Key('area_planting_read'))) as Text).data, t('req.plantingAmbiguous', {'d': '5 ${t('mon.9')}'}));
+    // the yield potential with saline water
+    expect(find.byKey(const Key('area_yield_potential')), findsNothing);
+    await type(tester, t('req.ecw'), '3');
+    await type(tester, t('req.yieldPotential'), '40');
+    expect(a.yieldPotentialPct, 50, reason: 'kept within 50–100 %');
+    final kc = find.byKey(const Key('area_climate_kc'));
+    expect(kc, findsOneWidget);
+    // below the fold of the panel
+    await tester.ensureVisible(kc);
+    await settle(tester, 1);
+    await tester.tap(kc);
+    await settle(tester, 2);
+    expect(a.climateKc, isFalse);
   });
 
   testWidgets('batch editing of every kind, mixed values and the layer of the selection', (tester) async {

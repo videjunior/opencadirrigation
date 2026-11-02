@@ -691,6 +691,8 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
           rainMm: [...r],
           dependableRainMm: d == null || d.every((x) => x == 0) ? null : [...d],
           solarKWhM2Day: s == null || s.every((x) => x == 0) ? null : [...s],
+          rhMinPct: cur?.rhMinPct,
+          windSpeed2mMs: cur?.windSpeed2mMs,
           // values typed over a download keep its credit but are no longer the service's
           source: eto != null || rain != null || cur == null ? 'manual' : cur.source,
           firstYear: cur?.firstYear ?? 0,

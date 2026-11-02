@@ -1,5 +1,6 @@
-/// Agronomy dialogs: the site climate (downloaded or typed), solar pumping,
-/// the drip wetted bulb and the landscape water budget.
+/// Agronomy dialogs: the site climate (downloaded, typed or from the normals
+/// of a station), solar pumping, the drip wetted bulb and the landscape
+/// water budget.
 library;
 
 import 'dart:math' as math;
@@ -7,6 +8,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../core/design/area_requirement.dart';
+import '../../../core/design/climate.dart';
+import '../../../core/design/crops.dart';
 import '../../../core/design/designer.dart' show areaRequirements;
 import '../../../core/design/solar_pumping.dart';
 import '../../../core/design/soils.dart';
@@ -38,7 +41,11 @@ Widget _cell(String s, {bool bold = false, Color? color}) => Padding(
 // ---------------------------------------------------------------- site climate
 
 /// Monthly climate of the site: downloaded from a public service for the
-/// georeferenced site, or typed and edited by hand; stored in the project.
+/// georeferenced site, typed and edited by hand, or worked out from the
+/// normals of a weather station (FAO-56 Penman-Monteith month by month, the
+/// missing data estimated as FAO-56 chapter 3 says); stored in the project.
+/// On OK the areas whose ETo is typed (no crop of the FAO-56 table) can take
+/// the ETo of the design month.
 Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
   final t = c.t;
   final cur = c.project.climate;
@@ -46,6 +53,9 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
   final rain = _months(cur?.rainMm);
   final dep = _months(cur?.dependableRainMm);
   final rs = _months(cur?.solarKWhM2Day);
+  // humidity and wind of the Kc adjustment (NaN = unknown)
+  final rhMin = _known(cur?.rhMinPct);
+  final wind = _known(cur?.windSpeed2mMs);
   var source = ClimateSource.openMeteo;
   var years = 10;
   var busy = false;
@@ -54,6 +64,16 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
   String? error;
   var info = cur;
   var gen = 0;
+  var tab = 0;
+  var fromStation = false;
+  final siteAtStart = c.siteLatLon;
+  final station = _StationNormals(latitudeDeg: siteAtStart?.$1 ?? cur?.latitudeDeg ?? 0);
+  // areas whose ETo is typed: the climate can fill it (the crop table uses the climate itself)
+  final typedEto = [
+    for (final a in c.project.entities.whereType<AreaEntity>())
+      if (a.useWaterBalance && !fao56Crops.containsKey(a.cropKey)) a,
+  ];
+  var fillAreas = typedEto.isNotEmpty;
   return showDialog<void>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -80,8 +100,11 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
               rain[m] = sc.rainMm[m];
               dep[m] = sc.dependableRainMm?[m] ?? sc.rainMm[m];
               rs[m] = sc.solarKWhM2Day?[m] ?? 0;
+              rhMin[m] = sc.rhMinPct?[m] ?? double.nan;
+              wind[m] = sc.windSpeed2mMs?[m] ?? double.nan;
             }
             info = sc;
+            fromStation = false;
             gen++;
           } catch (e) {
             error = c.describeError(e);
@@ -89,37 +112,217 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
           if (ctx.mounted) setState(() => busy = false);
         }
 
+        final peak = eto.fold(0.0, math.max);
+        final toFill = fillAreas && peak > 0
+            ? [
+                for (final a in typedEto)
+                  if ((a.etoMmDay - peak).abs() > 1e-9) a,
+              ]
+            : const <AreaEntity>[];
+
         void save() {
           final now = c.project.climate;
-          if (now != null && _same(eto, now.etoMmDay) && _same(rain, now.rainMm) && _same(dep, _months(now.dependableRainMm)) && _same(rs, _months(now.solarKWhM2Day))) return;
+          final unchanged =
+              now != null &&
+              _same(eto, now.etoMmDay) &&
+              _same(rain, now.rainMm) &&
+              _same(dep, _months(now.dependableRainMm)) &&
+              _same(rs, _months(now.solarKWhM2Day)) &&
+              _sameKnown(rhMin, now.rhMinPct) &&
+              _sameKnown(wind, now.windSpeed2mMs);
+          if (unchanged && toFill.isEmpty) return;
           // values typed over a download keep its credit but are no longer the service's
           final base = info;
           final edited = base == null || !_same(eto, base.etoMmDay) || !_same(rain, base.rainMm);
-          c.setClimate(
-            SiteClimate(
-              etoMmDay: [...eto],
-              rainMm: [...rain],
-              dependableRainMm: dep.any((v) => v > 0) ? [...dep] : null,
-              solarKWhM2Day: rs.any((v) => v > 0) ? [...rs] : null,
-              source: edited ? 'manual' : base.source,
-              firstYear: base?.firstYear ?? 0,
-              lastYear: base?.lastYear ?? 0,
-              latitudeDeg: site?.$1 ?? base?.latitudeDeg ?? 0,
-              longitudeDeg: site?.$2 ?? base?.longitudeDeg ?? 0,
-              retrieved: base?.retrieved ?? '',
-              attribution: base?.attribution ?? '',
-            ),
+          final sc = SiteClimate(
+            etoMmDay: [...eto],
+            rainMm: [...rain],
+            dependableRainMm: dep.any((v) => v > 0) ? [...dep] : null,
+            solarKWhM2Day: rs.any((v) => v > 0) ? [...rs] : null,
+            rhMinPct: SiteClimate.monthlyOrNull(rhMin),
+            windSpeed2mMs: SiteClimate.monthlyOrNull(wind),
+            source: fromStation ? 'station' : (edited ? 'manual' : base.source),
+            firstYear: base?.firstYear ?? 0,
+            lastYear: base?.lastYear ?? 0,
+            latitudeDeg: site?.$1 ?? base?.latitudeDeg ?? (fromStation ? station.latitudeDeg : 0),
+            longitudeDeg: site?.$2 ?? base?.longitudeDeg ?? 0,
+            retrieved: base?.retrieved ?? '',
+            attribution: base?.attribution ?? '',
+          );
+          // the climate and the ETo of the areas: one undo step
+          c.mutate(
+            () {
+              c.project.climate = sc;
+              for (final a in toFill) {
+                a.etoMmDay = peak;
+              }
+            },
+            invalidateResults: false,
+            label: 'hist.climate',
           );
         }
 
         Widget num(List<double> v, int m, {int decimals = 1}) => SizedBox(
           width: 72,
-          child: NumField(key: ValueKey('clim_${v.hashCode}_${m}_$gen'), label: '', value: v[m], decimals: decimals, onChanged: (x) => v[m] = x < 0 ? 0 : x),
+          child: NumField(key: ValueKey('clim_${v.hashCode}_${m}_$gen'), label: '', value: v[m], decimals: decimals, onChanged: (x) => setState(() => v[m] = x < 0 ? 0 : x)),
         );
+
+        // the normals of a station: FAO-56 Penman-Monteith month by month
+        final results = station.results();
+        void applyStation() => setState(() {
+          for (var m = 0; m < 12; m++) {
+            final r = results[m];
+            if (r == null) continue;
+            eto[m] = r.etoMmDay;
+            if (station.rain[m] != null) rain[m] = station.rain[m]!;
+            // FAO-56 eq. 63 with the vapour pressure of the month
+            rhMin[m] = (100 * r.eaKPa / saturationVapourPressureKPa(station.tMax[m]!)).clamp(0.0, 100.0).toDouble();
+            wind[m] = r.u2Ms;
+            if (rs[m] <= 0) rs[m] = r.rsMJ / mjPerKWh;
+          }
+          fromStation = true;
+          info = null;
+          gen++;
+          tab = 0;
+        });
+
+        Widget opt(String id, List<double?> v, int m) => _OptField(key: ValueKey('st_${id}_$m'), value: v[m], onChanged: (x) => setState(() => v[m] = x));
+
+        final monthly = <Widget>[
+          if (site == null)
+            Text(t('msg.climate_no_site'), style: TextStyle(fontSize: 12, color: Cad.warning))
+          else ...[
+            Text('${t('clim.site')}: ${fmt(site.$1, 4)}°, ${fmt(site.$2, 4)}°', style: const TextStyle(fontSize: 12)),
+            _row([
+              SpecDropdown<ClimateSource>(
+                label: t('clim.source'),
+                value: source.name,
+                items: ClimateSource.values,
+                labelOf: (s) => t('clim.src.${s.name}'),
+                idOf: (s) => s.name,
+                onChanged: (v) => setState(() => source = ClimateSource.values.byName(v!)),
+              ),
+              NumField(label: t('clim.years'), value: years.toDouble(), decimals: 0, onChanged: (v) => years = v.round().clamp(1, 40)),
+            ]),
+            Row(
+              children: [
+                FilledButton.icon(key: const Key('clim_download'), onPressed: busy ? null : download, icon: const Icon(Icons.cloud_download_outlined, size: 16), label: Text(t('clim.download'))),
+                const SizedBox(width: 8),
+                if (busy) ...[SizedBox(width: 120, child: LinearProgressIndicator(value: progress > 0 ? progress : null)), TextButton(onPressed: () => cancel = true, child: Text(t('cancel')))],
+              ],
+            ),
+          ],
+          if (error != null) Text(error!, style: TextStyle(fontSize: 12, color: Cad.warning)),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Table(
+              defaultColumnWidth: const IntrinsicColumnWidth(),
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                TableRow(
+                  children: [
+                    _cell(t('req.month'), bold: true),
+                    _cell('ETo (mm/d)', bold: true),
+                    _cell('${t('req.rain')} (mm)', bold: true),
+                    _cell('${t('clim.dependable')} (mm)', bold: true),
+                    _cell('${t('clim.radiation')} (kWh/m²/d)', bold: true),
+                    _cell('${t('clim.rhMin')} (%)', bold: true),
+                    _cell('${t('clim.wind2m')} (m/s)', bold: true),
+                  ],
+                ),
+                for (var m = 0; m < 12; m++)
+                  TableRow(children: [_cell(t('mon.${m + 1}')), num(eto, m, decimals: 2), num(rain, m), num(dep, m), num(rs, m, decimals: 2), num(rhMin, m, decimals: 0), num(wind, m)]),
+              ],
+            ),
+          ),
+          if (info != null && info!.attribution.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              '${info!.attribution}${info!.firstYear > 0 ? ' · ${info!.firstYear}–${info!.lastYear}' : ''}${info!.retrieved.isNotEmpty ? ' · ${info!.retrieved}' : ''}',
+              style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+            ),
+          ],
+          if (fromStation) Text(t('clim.src.station'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+          if (typedEto.isNotEmpty && peak > 0)
+            SwitchListTile(
+              key: const Key('clim_fill_areas'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(t('clim.fillAreas', {'e': fmt(peak, 2), 'n': '${typedEto.length}'}), style: const TextStyle(fontSize: 12)),
+              value: fillAreas,
+              onChanged: (v) => setState(() => fillAreas = v),
+            ),
+        ];
+
+        final ready = results.any((r) => r != null);
+        final stationPane = <Widget>[
+          Text(t('clim.station.hint'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+          _row([
+            NumField(key: const Key('st_lat'), label: t('clim.station.lat'), value: station.latitudeDeg, onChanged: (v) => setState(() => station.latitudeDeg = v.clamp(-89.9, 89.9).toDouble())),
+            NumField(
+              key: const Key('st_elev'),
+              label: t('clim.station.elev'),
+              value: station.elevationM,
+              decimals: 0,
+              onChanged: (v) => setState(() => station.elevationM = v.clamp(-400, 6000).toDouble()),
+            ),
+            NumField(key: const Key('st_zwind'), label: t('clim.station.windHeight'), value: station.windHeightM, onChanged: (v) => setState(() => station.windHeightM = v.clamp(0.5, 50).toDouble())),
+          ]),
+          SwitchListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: Text(t('clim.station.coastal'), style: const TextStyle(fontSize: 12)),
+            value: station.coastal,
+            onChanged: (v) => setState(() => station.coastal = v),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Table(
+              defaultColumnWidth: const IntrinsicColumnWidth(),
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                TableRow(
+                  children: [
+                    _cell(t('req.month'), bold: true),
+                    _cell(t('clim.station.tmax'), bold: true),
+                    _cell(t('clim.station.tmin'), bold: true),
+                    _cell(t('clim.station.rh'), bold: true),
+                    _cell(t('clim.station.wind'), bold: true),
+                    _cell(t('clim.station.sun'), bold: true),
+                    _cell('${t('req.rain')} (mm)', bold: true),
+                    _cell('ETo (mm/d)', bold: true),
+                    _cell(t('clim.station.estimated'), bold: true),
+                  ],
+                ),
+                for (var m = 0; m < 12; m++)
+                  TableRow(
+                    children: [
+                      _cell(t('mon.${m + 1}')),
+                      opt('tmax', station.tMax, m),
+                      opt('tmin', station.tMin, m),
+                      opt('rh', station.rhMean, m),
+                      opt('wind', station.wind, m),
+                      opt('sun', station.sunshine, m),
+                      opt('rain', station.rain, m),
+                      _cell(results[m] == null ? '-' : fmt(results[m]!.etoMmDay, 2), bold: true),
+                      _cell(results[m] == null ? '' : results[m]!.estimated.map((e) => t('clim.est.${e.name}')).join(', '), color: Cad.fg54),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          if (!ready) Text(t('clim.station.need'), style: TextStyle(fontSize: 11, color: Cad.warning)),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.tonal(key: const Key('clim_station_apply'), onPressed: ready ? applyStation : null, child: Text(t('clim.station.apply'))),
+          ),
+        ];
+
         return AlertDialog(
           title: Text(t('clim.title'), style: const TextStyle(fontSize: 15)),
           content: SizedBox(
-            width: dialogWidth(ctx, 640),
+            width: dialogWidth(ctx, 720),
             child: ScrollBody(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -127,65 +330,15 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
                 children: [
                   Text(t('clim.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
                   const SizedBox(height: 8),
-                  if (site == null)
-                    Text(t('msg.climate_no_site'), style: TextStyle(fontSize: 12, color: Cad.warning))
-                  else ...[
-                    Text('${t('clim.site')}: ${fmt(site.$1, 4)}°, ${fmt(site.$2, 4)}°', style: const TextStyle(fontSize: 12)),
-                    _row([
-                      SpecDropdown<ClimateSource>(
-                        label: t('clim.source'),
-                        value: source.name,
-                        items: ClimateSource.values,
-                        labelOf: (s) => t('clim.src.${s.name}'),
-                        idOf: (s) => s.name,
-                        onChanged: (v) => setState(() => source = ClimateSource.values.byName(v!)),
-                      ),
-                      NumField(label: t('clim.years'), value: years.toDouble(), decimals: 0, onChanged: (v) => years = v.round().clamp(1, 40)),
-                    ]),
-                    Row(
-                      children: [
-                        FilledButton.icon(
-                          key: const Key('clim_download'),
-                          onPressed: busy ? null : download,
-                          icon: const Icon(Icons.cloud_download_outlined, size: 16),
-                          label: Text(t('clim.download')),
-                        ),
-                        const SizedBox(width: 8),
-                        if (busy) ...[
-                          SizedBox(width: 120, child: LinearProgressIndicator(value: progress > 0 ? progress : null)),
-                          TextButton(onPressed: () => cancel = true, child: Text(t('cancel'))),
-                        ],
-                      ],
-                    ),
-                  ],
-                  if (error != null) Text(error!, style: TextStyle(fontSize: 12, color: Cad.warning)),
-                  const SizedBox(height: 8),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Table(
-                      defaultColumnWidth: const IntrinsicColumnWidth(),
-                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                      children: [
-                        TableRow(
-                          children: [
-                            _cell(t('req.month'), bold: true),
-                            _cell('ETo (mm/d)', bold: true),
-                            _cell('${t('req.rain')} (mm)', bold: true),
-                            _cell('${t('clim.dependable')} (mm)', bold: true),
-                            _cell('${t('clim.radiation')} (kWh/m²/d)', bold: true),
-                          ],
-                        ),
-                        for (var m = 0; m < 12; m++) TableRow(children: [_cell(t('mon.${m + 1}')), num(eto, m, decimals: 2), num(rain, m), num(dep, m), num(rs, m, decimals: 2)]),
-                      ],
-                    ),
+                  Wrap(
+                    spacing: 6,
+                    children: [
+                      ChoiceChip(key: const Key('clim_tab_monthly'), label: Text(t('clim.tab.monthly')), selected: tab == 0, onSelected: (_) => setState(() => tab = 0)),
+                      ChoiceChip(key: const Key('clim_tab_station'), label: Text(t('clim.tab.station')), selected: tab == 1, onSelected: (_) => setState(() => tab = 1)),
+                    ],
                   ),
-                  if (info != null && info!.attribution.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      '${info!.attribution}${info!.firstYear > 0 ? ' · ${info!.firstYear}–${info!.lastYear}' : ''}${info!.retrieved.isNotEmpty ? ' · ${info!.retrieved}' : ''}',
-                      style: TextStyle(fontSize: 10.5, color: Cad.fg54),
-                    ),
-                  ],
+                  const SizedBox(height: 6),
+                  ...(tab == 0 ? monthly : stationPane),
                 ],
               ),
             ),
@@ -218,8 +371,114 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
   );
 }
 
+/// The normals of a weather station typed in the climate dialog: monthly
+/// means of the daily maximum and minimum temperatures, mean relative
+/// humidity, wind at [windHeightM], bright sunshine and the monthly rain;
+/// null where the station has none (FAO-56 estimates it).
+class _StationNormals {
+  _StationNormals({required this.latitudeDeg});
+  double latitudeDeg;
+  double elevationM = 0;
+  double windHeightM = 2;
+  bool coastal = false;
+  final tMax = List<double?>.filled(12, null);
+  final tMin = List<double?>.filled(12, null);
+  final rhMean = List<double?>.filled(12, null);
+  final wind = List<double?>.filled(12, null);
+  final sunshine = List<double?>.filled(12, null);
+  final rain = List<double?>.filled(12, null);
+
+  /// FAO-56 Penman-Monteith ETo of every month (null for a month without
+  /// both temperatures; the soil heat flux from the neighbouring months).
+  List<Fao56Result?> results() {
+    final months = [
+      for (var m = 0; m < 12; m++)
+        if (tMax[m] != null && tMin[m] != null)
+          MonthlyClimate(
+            month: m + 1,
+            tMaxC: math.max(tMax[m]!, tMin[m]!),
+            tMinC: math.min(tMax[m]!, tMin[m]!),
+            rhMeanPct: rhMean[m]?.clamp(1.0, 100.0).toDouble(),
+            windSpeed2mMs: wind[m] == null ? null : windSpeedAt2m(math.max(0.0, wind[m]!), windHeightM),
+            sunshineHours: sunshine[m]?.clamp(0.0, 24.0).toDouble(),
+            rainMm: math.max(0.0, rain[m] ?? 0),
+          ),
+    ];
+    if (months.isEmpty) return List.filled(12, null);
+    return fao56MonthlySeries(months, latitudeDeg: latitudeDeg, elevationM: elevationM, kRs: coastal ? 0.19 : 0.16);
+  }
+}
+
+/// A number that may be left empty (null).
+class _OptField extends StatefulWidget {
+  const _OptField({super.key, required this.value, required this.onChanged});
+  final double? value;
+  final ValueChanged<double?> onChanged;
+
+  @override
+  State<_OptField> createState() => _OptFieldState();
+}
+
+class _OptFieldState extends State<_OptField> {
+  late final TextEditingController _c = TextEditingController(text: _fmt(widget.value));
+  final _focus = FocusNode();
+
+  String _fmt(double? v) => v == null ? '' : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1));
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _commit();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _OptField old) {
+    super.didUpdateWidget(old);
+    if (!_focus.hasFocus && old.value != widget.value) _c.text = _fmt(widget.value);
+  }
+
+  void _commit() {
+    final s = _c.text.trim();
+    if (s.isEmpty) {
+      if (widget.value != null) widget.onChanged(null);
+      return;
+    }
+    final v = parseNumber(s);
+    if (v == null) {
+      _c.text = _fmt(widget.value);
+      return;
+    }
+    if (v != widget.value) widget.onChanged(v);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 64,
+    child: TextField(
+      controller: _c,
+      focusNode: _focus,
+      decoration: const InputDecoration(isDense: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+      onSubmitted: (_) => _commit(),
+      style: const TextStyle(fontSize: 12),
+    ),
+  );
+}
+
 /// A copy of twelve monthly values (zeros when there are none).
 List<double> _months(List<double>? v) => [...(v ?? List.filled(12, 0.0))];
+
+/// Twelve monthly values, NaN for the unknown ones.
+List<double> _known(List<double>? v) => [...(v ?? List.filled(12, double.nan))];
 
 bool _same(List<double> a, List<double> b) {
   if (a.length != b.length) return false;
@@ -227,6 +486,12 @@ bool _same(List<double> a, List<double> b) {
     if ((a[i] - b[i]).abs() > 1e-9) return false;
   }
   return true;
+}
+
+/// [a] (NaN = unknown) against the stored [b] (null = unknown).
+bool _sameKnown(List<double> a, List<double>? b) {
+  final stored = SiteClimate.monthlyOrNull(a);
+  return stored == null ? b == null : (b != null && _same(stored, b));
 }
 
 // ---------------------------------------------------------------- solar pumping

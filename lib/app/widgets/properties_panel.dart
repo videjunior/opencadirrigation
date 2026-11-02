@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../core/design/agronomy.dart';
+import '../../core/design/area_water.dart';
 import '../../core/design/crops.dart';
 import '../../core/design/effective_rain.dart';
 import '../../core/design/pivot.dart' show PivotKind;
@@ -479,6 +480,9 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.stations'), value: k.stations.toDouble(), decimals: 0, onChanged: (x) => set(() => k.stations = x.round().clamp(1, 999))),
           NumField(label: t('props.outputVolts'), value: k.outputVolts, onChanged: (x) => set(() => k.outputVolts = x <= 0 ? k.outputVolts : x)),
           NumField(label: t('props.maxSimultaneous'), value: k.maxSimultaneous.toDouble(), decimals: 0, onChanged: (x) => set(() => k.maxSimultaneous = x.round().clamp(0, 99))),
+          // 1.6.0 AGR: what one output and the controller deliver
+          NumField(key: const Key('ctrl_station_amps'), label: t('props.stationMaxA'), value: k.stationMaxA, onChanged: (x) => set(() => k.stationMaxA = x < 0 ? 0 : x)),
+          NumField(key: const Key('ctrl_total_amps'), label: t('props.totalMaxA'), value: k.totalMaxA, onChanged: (x) => set(() => k.totalMaxA = x < 0 ? 0 : x)),
           NumField(label: '${t('props.pivotCost')} (${c.project.params.currency})', value: k.cost, onChanged: (x) => set(() => k.cost = x < 0 ? 0 : x)),
           SectionTitle(t('acc.title')),
           for (final kind in controllerAccessoryKinds) ...[
@@ -498,7 +502,8 @@ class PropertiesPanel extends StatelessWidget {
             KV(t('elec.used'), '${duty.used} / ${duty.stations}', color: duty.overloaded ? Cad.warning : null),
             KV(t('elec.common'), '${cat.wire(duty.commonWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(duty.commonWireM), 0)} ${u.lengthLabel}'),
             KV(t('elec.maxOpen'), '${duty.maxOpen}'),
-            KV(t('elec.peak'), '${fmt(duty.peakCurrentA, 2)} A'),
+            KV(t('elec.stationPeak'), '${fmt(duty.largestStationA, 2)} / ${fmt(duty.stationLimitA, 2)} A', color: duty.largestStationA > duty.stationLimitA + 1e-9 ? Cad.warning : null),
+            KV(t('elec.peak'), '${fmt(duty.peakCurrentA, 2)} / ${fmt(duty.totalLimitA, 2)} A', color: duty.peakCurrentA > duty.totalLimitA + 1e-9 ? Cad.warning : null),
           ],
         ]);
       case WireEntity w:
@@ -582,6 +587,7 @@ class PropertiesPanel extends StatelessWidget {
     final t = c.t;
     final u = c.units;
     final crop = cropWaterRequirements(c.project, c.results).where((x) => x.areaId == a.id).firstOrNull;
+    final localized = isLocalizedArea(a);
     return [
       KV(t('props.area'), '${fmt(u.areaFromSi(a.area), 3)} ${u.areaLabel}'),
       TextFieldRow(label: t('props.crop'), value: a.crop, onChanged: (x) => set(() => a.crop = x, inv: false)),
@@ -602,6 +608,27 @@ class PropertiesPanel extends StatelessWidget {
       ),
       NumField(label: t('props.efficiency'), value: a.efficiency, onChanged: (x) => set(() => a.efficiency = x.clamp(0.05, 1.0), inv: false)),
       NumField(label: t('props.emittersPerPlant'), value: a.emittersPerPlant.toDouble(), decimals: 0, onChanged: (x) => set(() => a.emittersPerPlant = x.round().clamp(0, 20))),
+      // the method sets Kr and Pw of localized irrigation (one rule for every
+      // report: ETc,loc = Kr·Kc·ETo, Pw only in the readily available water)
+      SpecDropdown<String>(
+        key: const Key('area_method'),
+        label: t('req.method'),
+        value: areaIrrigationMethod(a),
+        items: const ['sprinkler', 'localized', 'surface'],
+        labelOf: (k) => t('req.method.$k'),
+        idOf: (k) => k,
+        onChanged: (k) => set(() {
+          a.irrigationMethod = k ?? 'sprinkler';
+          // a wetted fraction belongs to localized irrigation only
+          if (a.irrigationMethod != 'localized') a.wettedFraction = 1;
+        }, inv: false),
+      ),
+      if (localized) ...[
+        NumField(label: t('props.wettedFraction'), value: a.wettedFraction, onChanged: (x) => set(() => a.wettedFraction = x.clamp(0.05, 1.0), inv: false)),
+        NumField(label: t('req.groundCover'), value: a.groundCover, onChanged: (x) => set(() => a.groundCover = x.clamp(0.0, 1.0).toDouble(), inv: false)),
+        NumField(key: const Key('area_kr'), label: t('area.kr'), value: a.localizedKr, onChanged: (x) => set(() => a.localizedKr = x <= 0 ? 0 : x.clamp(0.05, 1.0).toDouble(), inv: false)),
+        KV(t('area.krUsed'), fmt(areaKr(a), 2)),
+      ],
       SwitchListTile(
         dense: true,
         contentPadding: EdgeInsets.zero,
@@ -616,10 +643,11 @@ class PropertiesPanel extends StatelessWidget {
         NumField(label: t('props.awc'), value: a.awcMmPerM, decimals: 0, onChanged: (x) => set(() => a.awcMmPerM = x, inv: false)),
         NumField(label: t('props.rootDepth'), value: a.rootDepthM, onChanged: (x) => set(() => a.rootDepthM = x, inv: false)),
         NumField(label: t('props.mad'), value: a.mad, onChanged: (x) => set(() => a.mad = x.clamp(0.05, 0.95), inv: false)),
-        NumField(label: t('props.wettedFraction'), value: a.wettedFraction, onChanged: (x) => set(() => a.wettedFraction = x.clamp(0.05, 1.0), inv: false)),
-        KV(t('props.etc'), fmt(a.etcMmDay, 2)),
+        // ETc,loc of the design period (the crop table's month with a crop of the table)
+        KV(t('props.etc'), fmt(crop?.etcMmDay ?? a.etcMmDay * areaKr(a), 2)),
       ],
       if (crop != null) ...[
+        if (crop.month != null) KV(t('area.designMonth'), t('mon.${crop.month}')),
         KV(t('props.interval'), fmt(crop.intervalDays, 0)),
         KV(t('rep.grossEvent'), '${fmt(u.depthFromMm(crop.grossDepthMm), 2)} ${u.depthLabel}'),
         KV(t('rep.hoursEvent'), '${fmt(crop.hoursPerEvent, 2)} h'),
@@ -646,15 +674,22 @@ class PropertiesPanel extends StatelessWidget {
       ),
       if (a.cropKey.isNotEmpty) ...[
         TextFieldRow(label: t('req.planting'), value: a.plantingMonthDay, onChanged: (x) => set(() => a.plantingMonthDay = x.trim(), inv: false)),
-        SpecDropdown<String>(
-          label: t('req.method'),
-          value: a.irrigationMethod,
-          items: const ['sprinkler', 'localized', 'surface'],
-          labelOf: (k) => t('req.method.$k'),
-          idOf: (k) => k,
-          onChanged: (k) => set(() => a.irrigationMethod = k ?? 'sprinkler', inv: false),
-        ),
-        if (a.irrigationMethod == 'localized') NumField(label: t('req.groundCover'), value: a.groundCover, onChanged: (x) => set(() => a.groundCover = x.clamp(0.0, 1.0).toDouble(), inv: false)),
+        // how the date was read (DD/MM, MM-DD, month names; the FAO-56 month without one)
+        () {
+          final (date, how) = readPlantingDate(a, southern: siteIsSouthern(c.project));
+          final day = '${date.day} ${t('mon.${date.month}')}';
+          final (text, warn) = switch (how) {
+            PlantingRead.given => (t('req.plantingRead', {'d': day}), false),
+            PlantingRead.ambiguous => (t('req.plantingAmbiguous', {'d': day}), true),
+            PlantingRead.invalid => (t('req.plantingInvalid', {'d': day}), true),
+            PlantingRead.missing => (t('req.plantingDefault', {'d': day}), false),
+          };
+          return Text(
+            text,
+            key: const Key('area_planting_read'),
+            style: TextStyle(fontSize: 11, color: warn ? Cad.warning : Cad.fg54),
+          );
+        }(),
         SpecDropdown<String>(
           label: t('req.rainMethod'),
           value: a.rainMethod,
@@ -671,6 +706,22 @@ class PropertiesPanel extends StatelessWidget {
           onChanged: (x) => set(() => a.useDependableRain = x, inv: false),
         ),
         NumField(label: t('req.ecw'), value: a.ecwDsM, onChanged: (x) => set(() => a.ecwDsM = x < 0 ? 0 : x, inv: false)),
+        if (a.ecwDsM > 0)
+          NumField(
+            key: const Key('area_yield_potential'),
+            label: t('req.yieldPotential'),
+            value: a.yieldPotentialPct,
+            decimals: 0,
+            onChanged: (x) => set(() => a.yieldPotentialPct = x.clamp(50, 100).toDouble(), inv: false),
+          ),
+        SwitchListTile(
+          key: const Key('area_climate_kc'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(t('req.climateKc'), style: const TextStyle(fontSize: 12)),
+          value: a.climateKc,
+          onChanged: (x) => set(() => a.climateKc = x, inv: false),
+        ),
         if (c.project.climate == null) Text(t('req.noClimate'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
       ],
       SpecDropdown<String>(

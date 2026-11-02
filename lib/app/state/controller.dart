@@ -1505,6 +1505,9 @@ class ProjectController extends ChangeNotifier {
       rainMm: req.rainMm,
       dependableRainMm: req.dependableRainMm,
       solarKWhM2Day: rs.every((x) => x != null) ? [for (final x in rs) x!] : null,
+      // 1.6.0 AGR: RHmin and u2 for the Kc adjustment of FAO-56 eqs. 62 and 65
+      rhMinPct: SiteClimate.monthlyRhMin([for (final n in normals) (n.rhMinPct, n.tMaxC, n.tDewC, n.tMinC)]),
+      windSpeed2mMs: SiteClimate.monthlyOrNull([for (final n in normals) n.windSpeed2mMs]),
       source: source.name,
       firstYear: now.year - years,
       lastYear: now.year - 1,

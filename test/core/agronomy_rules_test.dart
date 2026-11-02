@@ -353,6 +353,54 @@ void main() {
     });
   });
 
+  group('crop coefficients of the site (AGR-09)', () {
+    // maize in a semi-arid climate: RHmin 30 %, u2 3 m/s
+    Project semiArid(AreaEntity a) =>
+        Project(entities: [a])..climate = SiteClimate(etoMmDay: List.filled(12, 6.0), rainMm: List.filled(12, 0.0), rhMinPct: List.filled(12, 30.0), windSpeed2mMs: List.filled(12, 3.0));
+
+    test('Kc mid and Kc end adjusted to the humidity and the wind (FAO-56 eqs. 62 and 65)', () {
+      final a = AreaEntity(id: 'm', points: square, cropKey: 'crop.maize', useWaterBalance: true, irrigationMethod: 'localized', wettedFraction: 0.5);
+      final curve = requirementInputOf(semiArid(a), a)!.cycles.single.curve;
+      // 1.20 + [0.04(3 − 2) − 0.004(30 − 45)]·(2/3)^0.3 ≈ 1.29
+      expect(curve.kcMid, closeTo(adjustKcForClimate(1.20, windSpeed2mMs: 3, rhMinPct: 30, heightM: 2), 1e-12));
+      expect(curve.kcMid, closeTo(1.29, 0.005));
+      expect(curve.kcEnd, closeTo(adjustKcForClimate(0.60, windSpeed2mMs: 3, rhMinPct: 30, heightM: 2), 1e-12));
+      // switched off, or a climate without humidity and wind: the table
+      a.climateKc = false;
+      expect(requirementInputOf(semiArid(a), a)!.cycles.single.curve.kcMid, 1.20);
+      a.climateKc = true;
+      final plain = Project(entities: [a])..climate = SiteClimate(etoMmDay: List.filled(12, 6.0), rainMm: List.filled(12, 0.0));
+      expect(requirementInputOf(plain, a)!.cycles.single.curve.kcMid, 1.20);
+    });
+
+    test('Kc ini of sprinkled crops from the interval and depth of the irrigations (FAO-56 Annex 7)', () {
+      // a shallow sandy bed watered every day or two
+      final a = AreaEntity(id: 'm', points: square, cropKey: 'crop.maize', useWaterBalance: true, soilKey: 'soil.sand', awcMmPerM: 40, rootDepthM: 0.3, mad: 0.5);
+      final p = semiArid(a);
+      final input = requirementInputOf(p, a)!;
+      final kcIni = input.cycles.single.curve.kcIni;
+      expect(kcIni, isNot(closeTo(0.30, 0.01)), reason: 'not the tabulated value');
+      // the fixed point: the Kc ini of the irrigations the table gives with it
+      final row = irrigationRequirement(input).monthly.firstWhere((r) => r.start.month == 4);
+      expect(
+        kcIni,
+        closeTo(kcIniFromWetting(etoMmDay: row.etoMmDay, wettingIntervalDays: row.intervalDays.toDouble(), infiltrationDepthMm: row.netPerEventMm, texture: SoilWettingTexture.coarse), 0.006),
+      );
+      expect(row.intervalDays, lessThanOrEqualTo(2));
+      expect(kcIni, greaterThan(0.5), reason: 'frequent wetting keeps the soil surface wet');
+      // drip keeps the table's Kc ini (its partial wetting is in Kr and Pw)
+      a
+        ..irrigationMethod = 'localized'
+        ..wettedFraction = 0.4;
+      expect(requirementInputOf(p, a)!.cycles.single.curve.kcIni, 0.30);
+      a
+        ..irrigationMethod = 'sprinkler'
+        ..wettedFraction = 1
+        ..climateKc = false;
+      expect(requirementInputOf(p, a)!.cycles.single.curve.kcIni, 0.30);
+    });
+  });
+
   group('programme times (AGR-17)', () {
     test('rounded to the minute before splitting; an end after midnight says so', () {
       expect(clockTime(6 + 1.9999), ('08:00', 0));

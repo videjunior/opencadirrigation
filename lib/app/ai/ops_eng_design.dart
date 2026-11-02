@@ -126,10 +126,8 @@ List<AgentTool> designManagementOperations(AgentToolbox b) {
           dayStartHour: a.number('day_start_hour', min: 0, max: 23) ?? 6,
           keepStartHours: a.flag('keep_start_hours') ?? false,
         );
-        String hhmm(double h) {
-          final hh = h.floor() % 24, mm = ((h - h.floor()) * 60).round();
-          return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
-        }
+        // rounded to the minute, "+1 d" after midnight
+        String hhmm(double h) => clockText(h);
 
         final out = <String>[
           if (c.results == null) 'No design results: the flows are estimated from the catalogue; run_design for the real ones.',

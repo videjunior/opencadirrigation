@@ -740,6 +740,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         title: t('reports.crop'),
         headers: [
           t('rep.area'),
+          t('area.designMonth'),
+          'Kr',
           'ETc (${u.depthPerDayLabel})',
           '${t('rep.raw')} (${u.depthLabel})',
           t('rep.interval'),
@@ -754,6 +756,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           for (final c in crops)
             [
               c.name,
+              c.month == null ? '-' : t('mon.${c.month}'),
+              RNum(c.kr, 2),
               RNum(u.depthFromMm(c.etcMmDay), 2),
               RNum(u.depthFromMm(c.rawMm), 2),
               RNum(c.intervalDays, 0),
@@ -1319,7 +1323,7 @@ List<ReportTable> mechanisedTables(Project project, DesignResults r, ReportLabel
     for (final tw in e.towers) {
       elRows.add([
         name,
-        tw.index,
+        tw.arm ? '${tw.index} (${t('mech.armTower')})' : tw.index,
         RNum(u.lengthFromSi(tw.radiusM), 0),
         RNum(u.lengthFromSi(tw.cableM), 0),
         RNum(tw.spanCurrentA, 1),

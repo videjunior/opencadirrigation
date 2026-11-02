@@ -5,6 +5,7 @@
 /// service or typed in, with their provenance.
 library;
 
+import '../design/climate.dart' show minRelativeHumidityPct;
 import '../design/irrigation_requirement.dart';
 
 class SiteClimate {
@@ -40,6 +41,13 @@ class SiteClimate {
 
   /// Twelve values when every month has one, else null.
   static List<double>? monthlyOrNull(List<double?> v) => v.length == 12 && v.every((x) => x != null && x.isFinite) ? [for (final x in v) x!] : null;
+
+  /// Monthly minimum relative humidity (%) of twelve months given as
+  /// (RHmin, Tmax, dew point, Tmin): the month's own value or, without it,
+  /// FAO-56 eq. 63 from the dew point and Tmax (eq. 64 with Tmin as the dew
+  /// point); null unless every month has one.
+  static List<double>? monthlyRhMin(List<(double?, double?, double?, double?)> months) =>
+      monthlyOrNull([for (final (rh, tMax, dew, tMin) in months) rh ?? (tMax != null && (dew ?? tMin) != null ? minRelativeHumidityPct(tMaxC: tMax, tDewC: dew, tMinC: tMin) : null)]);
 
   /// `openMeteo`, `nasaPower` or `manual`.
   final String source;

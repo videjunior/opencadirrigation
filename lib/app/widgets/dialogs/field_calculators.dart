@@ -521,6 +521,7 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
   final u = c.units;
   final params = c.project.params;
   var outlets = 40, spacing = 0.76, flow = 1e-3, first = -1.0, pipeMm = 250.0, hazenC = 150.0, slopePct = 0.0, inletHead = 0.0, cd = 0.61;
+  var fixedHoles = false;
   return showDialog<void>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -538,6 +539,7 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
             slope: slopePct / 100,
             inletHeadM: inletHead,
             dischargeCoefficient: cd,
+            fixedHoles: fixedHoles,
           ),
         );
         // the heads of a gated pipe are a few decimetres
@@ -588,10 +590,24 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
             ),
             NumField(label: t('gate.cd'), value: cd, decimals: 2, onChanged: (v) => setState(() => cd = v.clamp(0.1, 1.0).toDouble())),
           ]),
+          // punched holes that stay open: the flows of the holes, not the targets (AGR-23)
+          SwitchListTile(
+            key: const Key('gate_fixed'),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: Text(t('gate.fixedHoles'), style: const TextStyle(fontSize: 12)),
+            subtitle: Text(t('gate.fixedHolesHint'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+            value: fixedHoles,
+            onChanged: (v) => setState(() => fixedHoles = v),
+          ),
           SectionTitle(t('dens.results')),
           KV(t('gate.inletUsed'), pr(r.inletHeadM), color: r.inletHeadOk ? Cad.ok : Cad.warning),
           KV(t('gate.inletMin'), pr(r.minInletHeadM)),
           KV(t('gate.total'), '${fmt(u.flowFromSi(r.totalFlow), flowDecimals(u))} ${u.flowLabel}'),
+          if (r.fixedHoles) ...[
+            KV(t('gate.deliveredTotal'), '${fmt(u.flowFromSi(r.deliveredTotalFlow), flowDecimals(u))} ${u.flowLabel}', color: r.deliveredTotalFlow > r.totalFlow * 1.05 ? Cad.warning : null),
+            KV(t('gate.uniformity'), 'CU ${fmt(r.flowCu, 1)} % · ${t('gate.minOverMean')} ${fmt(r.minOverMeanFlow, 2)}', color: r.flowCu < 90 ? Cad.warning : null),
+          ],
           KV(t('gate.friction'), pr(r.frictionLossM)),
           KV(t('gate.elevation'), pr(r.elevationGainM)),
           KV(t('gate.velocity'), '${fmt(u.velocityFromSi(r.inletVelocity), 2)} ${u.velocityLabel}'),
@@ -609,6 +625,7 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
                 '${t('gate.hole')} (${u.diameterLabel})',
                 '${t('gate.opening')} (%)',
                 '${t('gate.fullFlow')} (${u.flowLabel})',
+                if (r.fixedHoles) '${t('gate.delivered')} (${u.flowLabel})',
               ],
               [
                 for (final g in r.gates)
@@ -623,6 +640,7 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
                     g.holeMm > 0 ? dia(g.holeMm) : '-',
                     g.holeMm > 0 ? fmt(g.openingPct, 0) : '-',
                     g.holeMm > 0 ? q(g.fullFlow) : '-',
+                    if (r.fixedHoles) q(g.deliveredFlow),
                   ],
               ],
               warn: [for (final g in r.gates) g.holeMm <= 0 || g.headM <= 0],

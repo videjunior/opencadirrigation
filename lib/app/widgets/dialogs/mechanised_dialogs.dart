@@ -627,6 +627,8 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
         ],
         if (p.grossDepthMm > 0)
           KV(t('mech.timerForDepth', {'d': _depth(p.grossDepthMm)}), '${fmt(pk.timerForDepth(p.grossDepthMm), 0)} %', color: p.grossDepthMm < pk.depthAt100Mm - 1e-9 ? Cad.warning : null),
+        if (pk.speedForCycleMPerMin > 0)
+          KV(t('mech.speedForCycle'), '${fmt(u.lengthFromSi(pk.speedForCycleMPerMin), 2)} $speedUnit', color: pk.speedForCycleMPerMin > pk.speedAt100MPerMin + 1e-9 ? Cad.warning : null),
         SectionTitle(t('reports.pivotTimer')),
         resultTable(
           ['${t('mech.timer')} (%)', '${t(hours)} (h)', '${t('mech.depth')} (${u.depthLabel})', '${t('mech.speed')} ($speedUnit)'],
@@ -671,7 +673,14 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
           onChanged: (v) => _set(() => m.cornerArmMaxDeg = v.clamp(0.0, 179.0).toDouble()),
         ),
         NumField(key: const Key('mech_arm_banks'), label: t('mech.armBanks'), value: m.cornerArmBanks.toDouble(), decimals: 0, onChanged: (v) => _set(() => m.cornerArmBanks = v.round().clamp(1, 30))),
+        NumField(
+          key: const Key('mech_arm_throw'),
+          label: _withUnit('mech.armThrowOwn', u.lengthLabel),
+          value: u.lengthFromSi(m.cornerArmThrowM ?? p.endThrowM),
+          onChanged: (v) => _set(() => m.cornerArmThrowM = math.max(0.0, u.lengthToSi(v))),
+        ),
       ], minWidth: 400),
+      _hintText(t('mech.armThrowHint')),
       if (_shapes.isEmpty)
         Text(t('mech.noClosedShapes'), style: _warnStyle)
       else
@@ -1009,7 +1018,16 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
             '${t('mech.dropStart')} (%)',
           ],
           [
-            for (final tw in e.towers) ['${tw.index}', _lenN(tw.radiusM, 0), _lenN(tw.cableM, 0), fmt(tw.spanCurrentA, 1), fmt(tw.volts, 0), fmt(tw.runningDropPct, 2), fmt(tw.startingDropPct, 2)],
+            for (final tw in e.towers)
+              [
+                tw.arm ? '${tw.index} (${t('mech.armTower')})' : '${tw.index}',
+                _lenN(tw.radiusM, 0),
+                _lenN(tw.cableM, 0),
+                fmt(tw.spanCurrentA, 1),
+                fmt(tw.volts, 0),
+                fmt(tw.runningDropPct, 2),
+                fmt(tw.startingDropPct, 2),
+              ],
           ],
           key: const Key('mech_towers_table'),
         ),

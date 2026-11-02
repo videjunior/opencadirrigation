@@ -634,6 +634,8 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
   var days = 7;
   var dayStart = 6.0;
   var keepStart = false;
+  // 1.6.0 AGR: the month of the programme (0 = the design month of every area)
+  var month = 0;
   var showAuto = false;
   final auto = AutoFlowOptions(firstStartHour: flows.isEmpty ? 6 : flows.first.startHour);
   Map<String, double>? demandQ;
@@ -648,11 +650,9 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
     StatefulBuilder(
       builder: (ctx, setState) {
         if (tab == 1) {
-          final prog = buildControllerProgram(project, c.results, days: days, dayStartHour: dayStart, keepStartHours: keepStart);
-          String hhmm(double h) {
-            final hh = h.floor() % 24, mm = ((h - h.floor()) * 60).round();
-            return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
-          }
+          final prog = buildControllerProgram(project, c.results, days: days, dayStartHour: dayStart, keepStartHours: keepStart, month: month == 0 ? null : month);
+          // rounded to the minute, "+1 d" for an end after midnight
+          String hhmm(double h) => clockText(h, t: c.t.call);
 
           return SizedBox(
             height: 460,
@@ -672,6 +672,15 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                 _row([
                   NumField(label: t('mgmt.days'), value: days.toDouble(), decimals: 0, onChanged: (v) => setState(() => days = v.round().clamp(1, 60))),
                   NumField(label: t('mgmt.dayStart'), value: dayStart, onChanged: (v) => setState(() => dayStart = v.clamp(0, 23))),
+                  SpecDropdown<int>(
+                    key: const Key('mgmt_month'),
+                    label: t('mgmt.month'),
+                    value: '$month',
+                    items: [for (var m = 0; m <= 12; m++) m],
+                    labelOf: (m) => m == 0 ? t('mgmt.monthDesign') : t('mon.$m'),
+                    idOf: (m) => '$m',
+                    onChanged: (v) => setState(() => month = int.tryParse(v ?? '') ?? 0),
+                  ),
                 ]),
                 SwitchListTile(
                   dense: true,
