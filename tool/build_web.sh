@@ -6,6 +6,9 @@
 # service worker filled in (web/sw.js, tool/gen_sw.dart). Run from anywhere:
 #   sh tool/build_web.sh [extra flutter build web arguments]
 # OCI_WEB_OUT=<folder> writes the build there instead of build/web.
+# OCI_SOURCE_MAPS=<folder> also writes the source maps, and moves them to
+# <folder>/<commit>-<date>/ (never deployed: they decipher the stack traces
+# users send; tool/release.dart keeps them next to the deploy folder).
 #
 # It refuses another Flutter than the one pubspec.yaml pins (environment.flutter):
 # the worker, the formatter and CanvasKit depend on it. OCI_ALLOW_OTHER_FLUTTER=1
@@ -43,6 +46,10 @@ if [ -n "$COMMIT" ] && [ -n "$(git status --porcelain --untracked-files=no 2>/de
   COMMIT="$COMMIT-dirty"
 fi
 DATE=$(date +%F)
+MAPS="${OCI_SOURCE_MAPS:-}"
+if [ -n "$MAPS" ]; then
+  set -- --source-maps "$@"
+fi
 echo "build web: Flutter ${FLUTTER:-?} (Dart ${DART:-?}) commit ${COMMIT:-?} date $DATE -> $OUT"
 flutter build web --release --no-web-resources-cdn --output "$OUT" \
   --dart-define=OCI_COMMIT="$COMMIT" \
@@ -54,6 +61,18 @@ flutter build web --release --no-web-resources-cdn --output "$OUT" \
 for f in "$OUT/flutter_bootstrap.js" "$OUT/flutter.js"; do
   perl -i -ne 'print unless m{^//# sourceMappingURL=flutter\.js\.map\s*$}' "$f"
 done
+# The source maps leave the build (the site never serves them), and the
+# files stop pointing at them.
+if [ -n "$MAPS" ]; then
+  DEST="$MAPS/${COMMIT:-nocommit}-$DATE"
+  mkdir -p "$DEST"
+  (cd "$OUT" && find . -name '*.map' -type f) | while read -r m; do
+    mkdir -p "$DEST/$(dirname "$m")"
+    mv "$OUT/$m" "$DEST/$m"
+  done
+  find "$OUT" -name '*.js' -type f -exec perl -i -ne 'print unless m{^//# sourceMappingURL=\S+\.map\s*$}' {} +
+  echo "source maps: $DEST"
+fi
 # version.json (written by flutter build, left to the network by the service
 # worker) also names the toolchain, the commit and the date of the build.
 perl -0pi -e 's/\}\s*\z/,"flutter_version":"'"$FLUTTER"'","dart_version":"'"$DART"'","commit":"'"$COMMIT"'","build_date":"'"$DATE"'"}\n/' "$OUT/version.json"
