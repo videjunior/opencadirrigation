@@ -22,6 +22,7 @@ import '../theme.dart';
 import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
+import 'cad_plus_menus.dart';
 import 'command_entry.dart';
 import 'ai/ai_panel.dart';
 import 'dialogs/agronomy_dialogs.dart';
@@ -348,6 +349,8 @@ class _MobileShellState extends State<MobileShell> {
             row(t('edt.join'), c.selection.isEmpty ? null : c.joinSelected, key: const Key('mobile_menu_join')),
             row(t('edt.explode'), c.selection.isEmpty ? null : c.explodeSelected, key: const Key('mobile_menu_explode')),
             row(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, key: const Key('mobile_menu_to_area')),
+            // 1.6.0 CAD+
+            ...cadPlusPhoneRows(context, c, row),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),

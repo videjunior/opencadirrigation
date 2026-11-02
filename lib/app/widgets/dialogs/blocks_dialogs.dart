@@ -13,6 +13,7 @@ import '../../../core/model/geometry.dart';
 import '../../../core/units.dart';
 import '../../state/controller.dart';
 import '../../tools/insert_block_tool.dart';
+import 'cad_plus_dialogs.dart' show exportBlockLibraryAction, importBlockLibraryAction;
 import '../fields.dart' show ScrollBody;
 import 'terrain_dialogs.dart' show dialogWidth;
 import '../../theme.dart';
@@ -47,6 +48,15 @@ Future<BlockDefinition?> showSaveBlockDialog(BuildContext context, ProjectContro
   final bx = TextEditingController(text: fmt(c.units.lengthFromSi(b.minX), 3)), by = TextEditingController(text: fmt(c.units.lengthFromSi(b.minY), 3));
   var base = _Base.corner;
   String? error;
+  // 1.6.0 CAD: the attributes found in the selection ({TAG} texts), the
+  // bill of materials, and whether a reference takes the selection's place
+  final tags = [
+    for (final e in selected)
+      if (e is TextEntity && attributeTextPattern.hasMatch(e.text.trim())) BlockAttributeDef.tagOf(attributeTextPattern.firstMatch(e.text.trim())!.group(1)!),
+  ];
+  final referenceable = selected.every((e) => isReferenceable(e) || e is BlockRefEntity);
+  var inBom = library.byName(name.text)?.inBom ?? false;
+  var replace = false;
   return showDialog<BlockDefinition>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -107,6 +117,34 @@ Future<BlockDefinition?> showSaveBlockDialog(BuildContext context, ProjectContro
                         Expanded(child: _field(by, 'Y (${c.units.lengthLabel})', key: const Key('blk_by'), number: true)),
                       ],
                     ),
+                  // 1.6.0 CAD
+                  const SizedBox(height: 6),
+                  Text(
+                    tags.isEmpty ? t('blkref.noTags') : t('blkref.tags', {'t': tags.join(', ')}),
+                    key: const Key('blk_tags'),
+                    style: TextStyle(fontSize: 11, color: Cad.fg54),
+                  ),
+                  CheckboxListTile(
+                    key: const Key('blk_in_bom'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(t('blkref.countInBom'), style: const TextStyle(fontSize: 12)),
+                    value: inBom,
+                    onChanged: (v) => setState(() => inBom = v ?? false),
+                  ),
+                  if (referenceable)
+                    CheckboxListTile(
+                      key: const Key('blk_replace'),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(t('blkref.replaceSelection'), style: const TextStyle(fontSize: 12)),
+                      value: replace,
+                      onChanged: (v) => setState(() => replace = v ?? false),
+                    )
+                  else
+                    Text(t('blkref.copiesOnly'), key: const Key('blk_copies_only'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                  if (exists && c.blockRefsOf(name.text.trim()).isNotEmpty)
+                    Text(t('blkref.redefineNote', {'n': '${c.blockRefsOf(name.text.trim()).length}'}), style: TextStyle(fontSize: 11, color: Cad.attention)),
                   if (error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
@@ -140,7 +178,10 @@ Future<BlockDefinition?> showSaveBlockDialog(BuildContext context, ProjectContro
                     }
                     at = Pt(c.units.lengthToSi(x), c.units.lengthToSi(y));
                 }
-                Navigator.pop(ctx, BlockDefinition.fromEntities(n, selected, at, description: desc.text.trim(), project: c.project));
+                final def = BlockDefinition.fromEntities(n, selected, at, description: desc.text.trim(), project: c.project, inBom: inBom);
+                // 1.6.0 CAD: where the reference that takes the selection's place goes
+                if (replace && def.canBeReferenced) _replacing[def] = at;
+                Navigator.pop(ctx, def);
               },
               child: Text(t('ok')),
             ),
@@ -163,6 +204,10 @@ Future<BlockInsertRequest?> showInsertBlockDialog(BuildContext context, ProjectC
   final ax = TextEditingController(text: fmt(c.units.lengthFromSi(centre.x), 3)), ay = TextEditingController(text: fmt(c.units.lengthFromSi(centre.y), 3));
   var pick = true;
   String? error;
+  // 1.6.0 CAD: as a reference (a block of drawing items), and the values of its attributes
+  var asReference = true;
+  final values = <String, TextEditingController>{};
+  TextEditingController valueOf(BlockAttributeDef a) => values.putIfAbsent(a.tag, () => TextEditingController(text: a.defaultValue));
   return showDialog<BlockInsertRequest>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -252,7 +297,53 @@ Future<BlockInsertRequest?> showInsertBlockDialog(BuildContext context, ProjectC
                           Expanded(child: _field(ay, 'Y (${c.units.lengthLabel})', key: const Key('blk_ay'), number: true)),
                         ],
                       ),
+                    // 1.6.0 CAD
+                    if (selected >= 0) ...[
+                      const SizedBox(height: 8),
+                      if (blocks[selected].canBeReferenced)
+                        SegmentedButton<bool>(
+                          key: const Key('blk_as'),
+                          segments: [
+                            ButtonSegment(value: true, label: Text(t('blkref.asReference'), style: const TextStyle(fontSize: 11))),
+                            ButtonSegment(value: false, label: Text(t('blkref.asCopies'), style: const TextStyle(fontSize: 11))),
+                          ],
+                          selected: {asReference},
+                          showSelectedIcon: false,
+                          onSelectionChanged: (s) => setState(() => asReference = s.first),
+                        )
+                      else
+                        Text(t('blkref.copiesOnly'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                      for (final a in blocks[selected].attributes)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: _field(valueOf(a), a.prompt.isEmpty || a.prompt == a.tag ? a.tag : '${a.prompt} (${a.tag})', key: Key('blk_attr_${a.tag}')),
+                        ),
+                    ],
                   ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton.icon(
+                          key: const Key('blk_library_import'),
+                          icon: const Icon(Icons.file_upload_outlined, size: 16),
+                          label: Text(t('blk.libraryImport'), style: const TextStyle(fontSize: 12)),
+                          onPressed: () async {
+                            await importBlockLibraryAction(c);
+                            if (ctx.mounted) setState(() {});
+                          },
+                        ),
+                        if (blocks.isNotEmpty)
+                          TextButton.icon(
+                            key: const Key('blk_library_export'),
+                            icon: const Icon(Icons.file_download_outlined, size: 16),
+                            label: Text(t('blk.libraryExport'), style: const TextStyle(fontSize: 12)),
+                            onPressed: () => exportBlockLibraryAction(c),
+                          ),
+                      ],
+                    ),
+                  ),
                   if (error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
@@ -277,7 +368,17 @@ Future<BlockInsertRequest?> showInsertBlockDialog(BuildContext context, ProjectC
                           return;
                         }
                         final at = pick ? null : Pt(c.units.lengthToSi(x!), c.units.lengthToSi(y!));
-                        Navigator.pop(ctx, BlockInsertRequest(block: blocks[selected], rotationDeg: r, scale: s, at: at));
+                        Navigator.pop(
+                          ctx,
+                          BlockInsertRequest(
+                            block: blocks[selected],
+                            rotationDeg: r,
+                            scale: s,
+                            at: at,
+                            values: {for (final a in blocks[selected].attributes) a.tag: valueOf(a).text},
+                            asReference: asReference,
+                          ),
+                        );
                       },
                 child: Text(t('blk.insert')),
               ),
@@ -335,8 +436,25 @@ class BlockPreviewPainter extends CustomPainter {
 /// keeps the block in [library] (the project's).
 Future<void> saveBlockAction(BuildContext context, ProjectController c, BlockLibrary library) async {
   final b = await showSaveBlockDialog(context, c, library);
-  if (b != null) c.saveBlock(library, b);
+  if (b == null) return;
+  // 1.6.0 CAD: the selection becomes a reference to the block when asked
+  final at = _replacing[b];
+  c.saveBlock(
+    library,
+    b,
+    replace: at == null
+        ? const []
+        : [
+            for (final e in c.project.entities)
+              if (c.selection.contains(e.id)) e,
+          ],
+    at: at,
+  );
 }
+
+/// 1.6.0 CAD: the base point of a block saved to replace the selection by
+/// a reference to it (set by the save dialog).
+final _replacing = Expando<Pt>('blockReplacing');
 
 /// Insert → Block: asks which block, how it is turned and scaled and
 /// where; a typed point inserts at once, otherwise the insert tool
@@ -345,7 +463,7 @@ Future<void> insertBlockAction(BuildContext context, ProjectController c, BlockL
   final r = await showInsertBlockDialog(context, c, library, onDelete: (name) => c.deleteBlock(library, name));
   if (r == null) return;
   if (r.at != null) {
-    c.insertBlock(r.block, r.at!, rotationDeg: r.rotationDeg, scale: r.scale);
+    c.insertBlock(r.block, r.at!, rotationDeg: r.rotationDeg, scale: r.scale, values: r.values, asReference: r.asReference, mirrored: r.mirrored);
     return;
   }
   pendingBlockInserts[c] = r;

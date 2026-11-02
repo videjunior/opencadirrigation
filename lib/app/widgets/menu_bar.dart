@@ -27,6 +27,7 @@ import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/selection_dialogs.dart';
+import 'cad_plus_menus.dart';
 import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
@@ -168,6 +169,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('file.saveAs'), () => saveProjectAction(context, c, saveAs: true), icon: Icons.save_as_outlined, key: const Key('menu_save_as')),
                     item(t('file.saveCopy'), () => saveCopyAction(context, c), icon: Icons.file_copy_outlined, key: const Key('menu_save_copy')),
                     item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_storage')),
+                    // 1.6.0 CAD+: compare with another copy, the comments of a copy
+                    ...cadPlusFileItems(context, c, item),
                   ],
                   child: Text(t('menu.file')),
                 ),
@@ -244,6 +247,8 @@ class AppMenuBar extends StatelessWidget {
                       ],
                       child: Text(t('edt.geometry')),
                     ),
+                    // 1.6.0 CAD+: lengthen, outline by a click, drawing order, blocks
+                    ...cadPlusEditItems(context, c, item),
                   ],
                   child: Text(t('menu.edit')),
                 ),
@@ -352,6 +357,8 @@ class AppMenuBar extends StatelessWidget {
                       ],
                       child: Text(t('view.theme')),
                     ),
+                    // 1.6.0 CAD+: object snaps, layer states and isolation
+                    ...cadPlusViewItems(context, c, item),
                   ],
                   child: Text(t('menu.view')),
                 ),
@@ -400,6 +407,8 @@ class AppMenuBar extends StatelessWidget {
                       ],
                       child: Text(t('gps.submenu')),
                     ),
+                    // 1.6.0 CAD+: dimension style, field photo
+                    ...cadPlusDrawItems(context, c, item),
                   ],
                   child: Text(t('menu.draw')),
                 ),

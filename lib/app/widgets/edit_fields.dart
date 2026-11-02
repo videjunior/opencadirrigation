@@ -11,6 +11,7 @@ import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/edit_commands.dart';
 import '../tools/tools.dart' show hintKeyOf;
+import 'cad_plus_fields.dart';
 import 'fields.dart';
 
 /// Vertices listed with their coordinates; the others are edited with the
@@ -193,6 +194,8 @@ List<Widget> editToolFields(ProjectController c, ToolId tool) {
         value: s.addToSelection,
         onChanged: (v) => upd(() => s.addToSelection = v),
       ),
+    // 1.6.0 CAD: Lengthen, the outline by a click inside, the field photo
+    ...cadPlusToolFields(c, tool),
     Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(t('hint.${hintKeyOf(tool)}'), style: TextStyle(color: Cad.fg54, fontSize: 11.5)),

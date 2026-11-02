@@ -18,6 +18,8 @@ import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/tools.dart';
+import '../tools/cad_plus_commands.dart';
+import 'cad_plus_fields.dart';
 import 'dialogs/mechanised_dialogs.dart';
 import 'edit_fields.dart';
 import 'fields.dart';
@@ -607,6 +609,8 @@ class PropertiesPanel extends StatelessWidget {
       case CommentEntity cm:
         items.addAll([
           if (cm.photo.isNotEmpty) _photo(cm),
+          // 1.6.0 CAD: a field photo from the camera or a file, no AI needed (PRD-08)
+          commentPhotoButtons(c, cm),
           TextFieldRow(label: t('props.text'), value: cm.text, maxLines: 4, onChanged: (x) => set(() => cm.text = x, inv: false)),
           TextFieldRow(label: t('props.author'), value: cm.author, onChanged: (x) => set(() => cm.author = x, inv: false)),
           TextFieldRow(label: t('props.date'), value: cm.date, onChanged: (x) => set(() => cm.date = x, inv: false)),
@@ -628,6 +632,9 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case AreaEntity a:
         items.addAll(_areaFields(a, set));
+      // 1.6.0 CAD: a block reference, its place and attribute values
+      case BlockRefEntity r:
+        items.addAll(blockRefFields(c, r));
       default:
         break;
     }
@@ -866,7 +873,9 @@ class PropertiesPanel extends StatelessWidget {
     for (final e in sel) {
       byType[ProjectController.toolKeyOf(e)] = (byType[ProjectController.toolKeyOf(e)] ?? 0) + 1;
     }
-    final dominant = byType.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+    // 1.6.0 CAD: the kind edited is the one chosen in the chips (else the most numerous)
+    final kinds = c.selectionKinds();
+    final dominant = kinds.isEmpty ? byType.entries.reduce((a, b) => a.value >= b.value ? a : b).key : c.batchKind(kinds);
     final items = <Widget>[
       Text(t('props.multi', {'n': '${sel.length}'}), style: const TextStyle(fontWeight: FontWeight.bold)),
       Text(byType.entries.map((e) => '${e.value} × ${t('tool.${e.key}')}').join(', '), style: TextStyle(fontSize: 11, color: Cad.fg54)),
@@ -884,6 +893,8 @@ class PropertiesPanel extends StatelessWidget {
 
     Widget mixedNote() => const SizedBox.shrink();
     items.add(SectionTitle(t('props.batch', {'n': '${byType[dominant]}', 'type': t('tool.$dominant')})));
+    // 1.6.0 CAD: the kinds of the selection, each edited on its own
+    if (kinds.length > 1) items.add(batchKindChips(c, kinds, dominant));
     switch (dominant) {
       case 'sprayline':
         final s = sel.whereType<SpraylineEntity>().toList();
@@ -1117,6 +1128,8 @@ class PropertiesPanel extends StatelessWidget {
       default:
         break;
     }
+    // 1.6.0 CAD: the fields the batch editor did not have
+    items.addAll(batchExtraFields(c, dominant));
     items.addAll([const SizedBox(height: 8), FilledButton.tonalIcon(onPressed: c.deleteSelected, icon: const Icon(Icons.delete_outline, size: 16), label: Text(t('edit.delete')))]);
     return ListView(padding: const EdgeInsets.all(8), children: items);
   }
@@ -1586,6 +1599,9 @@ class PropertiesPanel extends StatelessWidget {
         );
       // 1.6.0 EDT: the settings of the new editing and selection tools
       case ToolId.lasso || ToolId.fence || ToolId.fillet || ToolId.chamfer || ToolId.measure:
+        items.addAll(editToolFields(c, tool));
+      // 1.6.0 CAD
+      case ToolId.lengthen || ToolId.boundary || ToolId.fieldPhoto:
         items.addAll(editToolFields(c, tool));
       default:
         items.add(
