@@ -104,16 +104,41 @@ class ZoneItem {
   final String classKey;
 }
 
+/// Hydrozone of an irrigated area: its plant water use when it states one,
+/// else the water-use class of its crop coefficient (very low below 0.1,
+/// low to 0.35, moderate to 0.65, high above: the classes of the landscape
+/// species factors).
+String hydrozoneOf(AreaEntity a) {
+  if (a.plantWaterUse.isNotEmpty) return a.plantWaterUse;
+  final k = a.kc;
+  return k < 0.1 ? 'veryLow' : (k < 0.35 ? 'low' : (k < 0.65 ? 'moderate' : 'high'));
+}
+
 /// The heads of [layout] as zone items, keyed by their precipitation class
-/// (and family, when [byFamily]).
-List<ZoneItem> zoneItemsOf(LandscapeLayout layout, OutletSpec family, {bool byFamily = false}) => [
-  for (final h in layout.heads)
-    ZoneItem(
-      position: h.position,
-      flow: h.flow,
-      classKey: [precipitationClassOf(family, nozzle: family.nozzle(h.nozzleId), headM: layout.headM).name, if (byFamily) family.id].join(':'),
-    ),
-];
+/// (and family, when [byFamily]) and by the hydrozone of the irrigated area
+/// of [areas] each one waters ([hydrozoneOf]): sprays on a lawn in the sun
+/// and on a bed of shrubs never share a valve.
+List<ZoneItem> zoneItemsOf(LandscapeLayout layout, OutletSpec family, {bool byFamily = false, Iterable<AreaEntity> areas = const []}) {
+  final zones = [
+    for (final a in areas)
+      if (a.points.length >= 3) a,
+  ];
+  String? hydrozone(LayoutHead h) {
+    for (final a in zones) {
+      if (watersArea(h.position, a.points, arcDeg: h.arcDeg, orientationDeg: h.orientationDeg)) return hydrozoneOf(a);
+    }
+    return null;
+  }
+
+  return [
+    for (final h in layout.heads)
+      ZoneItem(
+        position: h.position,
+        flow: h.flow,
+        classKey: [precipitationClassOf(family, nozzle: family.nozzle(h.nozzleId), headM: layout.headM).name, if (byFamily) family.id, ?hydrozone(h)].join(':'),
+      ),
+  ];
+}
 
 /// Options of [zoneByFlow].
 class ZoningOptions {

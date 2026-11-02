@@ -1035,4 +1035,28 @@ void main() {
       expect(mixed(p), isTrue);
     });
   });
+
+  group('AUT-20 zoning by hydrozone', () {
+    test('sprays of a sunny lawn and of a shrub bed never share a valve', () {
+      final family = Catalog.defaultCatalog().outlet('spray')!;
+      final lot = rect(0, 0, 40, 20);
+      final lawn = AreaEntity(id: 'lawn', points: rect(0, 0, 20, 20), name: 'Lawn', kc: 0.8);
+      final bed = AreaEntity(id: 'bed', points: rect(20, 0, 40, 20), name: 'Shrubs', plantWaterUse: 'low');
+      expect(hydrozoneOf(lawn), 'high');
+      expect(hydrozoneOf(bed), 'low');
+      expect(hydrozoneOf(AreaEntity(id: 'x', points: lot, kc: 0.5)), 'moderate');
+      final l = layoutLandscape(outline: lot, family: family);
+      final z = zoneByFlow(zoneItemsOf(l, family, areas: [lawn, bed]), ZoningOptions(maxZoneFlow: 4 / 3600));
+      for (final g in z.zones) {
+        final sides = {
+          for (final i in g.items)
+            if (l.heads[i].position.x < 20 - 1e-6) 'lawn' else if (l.heads[i].position.x > 20 + 1e-6) 'bed',
+        };
+        expect(sides.length, lessThanOrEqualTo(1), reason: 'zone ${g.classKey} mixes the lawn and the bed');
+      }
+      // without the areas, one class: zones may straddle the two
+      final mixed = zoneByFlow(zoneItemsOf(l, family), ZoningOptions(maxZoneFlow: 4 / 3600));
+      expect(mixed.zones.map((g) => g.classKey).toSet(), hasLength(1));
+    });
+  });
 }

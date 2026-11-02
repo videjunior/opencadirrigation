@@ -546,7 +546,12 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     }
     final layout = laid!.$2;
     if (zoned?.$1 != zk) {
-      zoned = (zk, zoneOn && layout.heads.isNotEmpty ? zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone)) : null);
+      zoned = (
+        zk,
+        zoneOn && layout.heads.isNotEmpty
+            ? zoneByFlow(zoneItemsOf(layout, family, areas: c.project.entities.whereType<AreaEntity>()), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone))
+            : null,
+      );
     }
     final zoning = zoned!.$2;
     final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn && layout.heads.isNotEmpty) List<int>.generate(layout.heads.length, (i) => i)];
@@ -576,7 +581,12 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     if (zoned?.$1 != zk) {
       if (zoneOn) job.say(t('auto.step.zoning'));
       await job.pause();
-      zoned = (zk, zoneOn && layout.heads.isNotEmpty ? zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone)) : null);
+      zoned = (
+        zk,
+        zoneOn && layout.heads.isNotEmpty
+            ? zoneByFlow(zoneItemsOf(layout, family, areas: c.project.entities.whereType<AreaEntity>()), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone))
+            : null,
+      );
     }
     final zoning = zoned!.$2;
     final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn && layout.heads.isNotEmpty) List<int>.generate(layout.heads.length, (i) => i)];
