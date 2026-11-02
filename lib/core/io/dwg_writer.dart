@@ -421,13 +421,13 @@ class DwgWriter {
     final seen = {'0'};
     for (final l in doc.layers) {
       final n = l.name.trim();
-      if (n.isEmpty || !seen.add(n)) continue;
+      if (n.isEmpty || !seen.add(n.toLowerCase())) continue;
       layers.add(CadLayer(n, aci: l.color >= 1 && l.color <= 255 ? l.color : 7));
     }
     final ents = <CadEntity>[];
     for (final e in doc.entities) {
       final layer = e.layer.trim().isEmpty ? '0' : e.layer;
-      if (seen.add(layer)) layers.add(CadLayer(layer));
+      if (seen.add(layer.toLowerCase())) layers.add(CadLayer(layer));
       final color = e.color >= 1 && e.color <= 255 ? e.color : 256;
       final z = e.elevation ?? 0.0;
       switch (e.type) {
@@ -530,7 +530,7 @@ class DwgWriter {
   /// Writes entity [e] (type [type]) with its [data] and the [extra]
   /// handles that follow the common ones.
   void _ent(int handle, int type, CadEntity e, _Link link, void Function(_BitWriter w) data, [void Function(_BitWriter w)? extra]) {
-    final layer = _layerHandles[e.layer] ?? _H.layer0;
+    final layer = _layerHandles[e.layer.toLowerCase()] ?? _H.layer0;
     _add(
       handle,
       type,
@@ -770,7 +770,7 @@ class DwgWriter {
           },
         );
         if (!has) return;
-        final layer = _layerHandles[e.layer] ?? _H.layer0;
+        final layer = _layerHandles[e.layer.toLowerCase()] ?? _H.layer0;
         for (var i = 0; i < p.attribs.length; i++) {
           final a = ins.attribs[i];
           final ah = p.attribs[i];
@@ -996,7 +996,7 @@ class DwgWriter {
   }
 
   void _skeleton(List<CadLayer> layers, List<int> blockHeaders, int firstEntity, int lastEntity) {
-    final layerHandles = [for (final l in layers) _layerHandles[l.name]!];
+    final layerHandles = [for (final l in layers) _layerHandles[l.name.toLowerCase()]!];
     final dimstyles = [
       CadDimStyle.standard,
       for (final s in d.dimStyles)
@@ -1744,15 +1744,17 @@ class DwgWriter {
 
   Uint8List _build() {
     _bounds = d.extents;
-    // layers: '0' first, then the drawing's (unique names)
+    // layers: '0' first, then the drawing's (unique names: table names do not
+    // tell case apart, and entities find their layer by the name in any case)
     final layers = <CadLayer>[d.layers.firstWhere((l) => l.name == '0', orElse: () => const CadLayer('0'))];
+    final seenLayers = {'0'};
     for (final l in d.layers) {
-      if (l.name.trim().isEmpty || layers.any((x) => x.name == l.name)) continue;
+      if (l.name.trim().isEmpty || !seenLayers.add(l.name.toLowerCase())) continue;
       layers.add(l);
     }
     _layerHandles['0'] = _H.layer0;
     for (final l in layers.skip(1)) {
-      _layerHandles[l.name] = _nextHandle++;
+      _layerHandles[l.name.toLowerCase()] = _nextHandle++;
     }
     for (final lt in d.linetypes) {
       _ltypeHandles[lt.name] = _nextHandle++;

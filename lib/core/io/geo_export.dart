@@ -8,6 +8,8 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 
+import 'xml_text.dart';
+
 /// One exported geographic feature (a KML Placemark / GeoJSON Feature).
 class GeoFeature {
   GeoFeature({
@@ -20,6 +22,7 @@ class GeoFeature {
     this.description = '',
     Map<String, String>? data,
     this.fillAlpha = 0.3,
+    this.numeric = const {},
   }) : data = data ?? {};
 
   final String name;
@@ -39,6 +42,10 @@ class GeoFeature {
   /// Extra attributes (ExtendedData / GeoJSON properties).
   final Map<String, String> data;
   final double fillAlpha;
+
+  /// Keys of [data] that hold numbers: GeoJSON carries them as numbers (a
+  /// GIS can sort and filter them), KML as text.
+  final Set<String> numeric;
 }
 
 class KmlWriter {
@@ -136,8 +143,10 @@ class GeoJsonWriter {
         case 'Point':
           geometry = {'type': 'Point', 'coordinates': pos(f.coords.first)};
         case 'Polygon':
-          final ring = f.coords.map(pos).toList();
+          var ring = f.coords.map(pos).toList();
           if (ring.isNotEmpty && (ring.first[0] != ring.last[0] || ring.first[1] != ring.last[1])) ring.add(ring.first);
+          // RFC 7946 §3.1.6: the exterior ring runs counter-clockwise
+          if (_signedArea(ring) < 0) ring = ring.reversed.toList();
           geometry = {
             'type': 'Polygon',
             'coordinates': [ring],
@@ -147,7 +156,12 @@ class GeoJsonWriter {
       }
       feats.add({
         'type': 'Feature',
-        'properties': {'name': f.name, 'layer': f.folder, if (f.description.isNotEmpty) 'description': f.description, ...f.data},
+        'properties': {
+          'name': f.name,
+          'layer': f.folder,
+          if (f.description.isNotEmpty) 'description': f.description,
+          for (final MapEntry(:key, :value) in f.data.entries) key: f.numeric.contains(key) ? (num.tryParse(value) ?? value) : value,
+        },
         'geometry': geometry,
       });
     }
@@ -156,10 +170,21 @@ class GeoJsonWriter {
 }
 
 double _round(double v, int d) => double.parse(v.toStringAsFixed(d));
+
+/// Twice the signed area of a closed ring of (x, y, …) positions (positive
+/// counter-clockwise).
+double _signedArea(List<List<double>> ring) {
+  var a = 0.0;
+  for (var i = 0; i + 1 < ring.length; i++) {
+    a += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
+  }
+  return a;
+}
+
 String _deg(double v) => v.toStringAsFixed(8);
 String _n(double v) {
   final s = v.toStringAsFixed(3);
   return s.contains('.') ? s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '') : s;
 }
 
-String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+String _esc(String s) => xmlText(s);

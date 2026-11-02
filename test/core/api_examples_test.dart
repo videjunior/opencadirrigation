@@ -474,11 +474,11 @@ void main() {
       final dxf = DxfR2000Writer.write(drawing);
       final dwg = DwgWriter.writeDrawing(drawing);
       final t = I18n('en');
-      final r12 = ProjectExporter(project: project, results: results, labels: ReportLabels(t: t.call, has: t.has, warning: t.warning)).exportDrawing(DrawingFormat.dxfR12) as String;
+      final r12 = ProjectExporter(project: project, results: results, labels: ReportLabels(t: t.call, has: t.has, warning: t.warning)).exportDrawing(DrawingFormat.dxfR12) as Uint8List;
 
       expect(dxf, contains('AC1015'));
       expect(String.fromCharCodes(dwg.sublist(0, 6)), 'AC1015');
-      expect(r12, contains('AC1009'));
+      expect(latin1.decode(r12), contains('AC1009'));
       expect(DxfReader.parse(dxf).entities, isNotEmpty);
       expect(DwgReader.parse(dwg).document.entities, isNotEmpty);
       expect(drawing.entities.whereType<CadInsert>(), isNotEmpty);

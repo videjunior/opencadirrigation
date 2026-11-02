@@ -9,6 +9,7 @@ import 'package:archive/archive.dart';
 import 'package:xml/xml.dart';
 
 import 'safe_archive.dart';
+import 'xml_text.dart';
 
 class XlsxSheet {
   XlsxSheet({required this.name, required this.headers, required this.rows});
@@ -149,7 +150,7 @@ ${[for (var i = 1; i <= sheets.length; i++) '<Relationship Id="rId$i" Type="http
     return candidate;
   }
 
-  static String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  static String _esc(String s) => xmlText(s);
 }
 
 /// Minimal XLSX reader: worksheets with shared, inline or numeric cells

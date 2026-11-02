@@ -13,6 +13,7 @@ import 'package:image/image.dart' as img;
 import '../model/geometry.dart';
 import 'image_decode.dart';
 import 'plot.dart';
+import 'xml_text.dart';
 
 class SvgWriter {
   /// Print resolution of embedded images, dots per inch on paper.
@@ -157,5 +158,5 @@ class SvgWriter {
   }
 
   static String _id(String s) => s.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
-  static String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  static String _esc(String s) => xmlText(s);
 }
