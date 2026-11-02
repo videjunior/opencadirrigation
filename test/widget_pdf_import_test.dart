@@ -82,8 +82,8 @@ void main() {
     expect(find.byKey(const Key('pdfimp_preview')), findsOneWidget);
     expect(find.text('2 linhas, 1 textos, 0 imagens'), findsOneWidget);
     expect(find.text('Escala escrita na folha: 1:500'), findsOneWidget);
-    // 297 × 210 mm at 1:500
-    expect(find.text('No desenho: 148.5 × 105.0 m'), findsOneWidget);
+    // 297 × 210 mm at 1:500, in the notation of the language (UI-08)
+    expect(find.text('No desenho: 148,5 × 105,0 m'), findsOneWidget);
     final history = c.historyIndex;
     await tester.tap(find.byKey(const Key('pdfimp_ok')));
     await settle(tester);
@@ -124,8 +124,8 @@ void main() {
     await tester.enterText(field, '2000');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await settle(tester, 2);
-    // 209.9 × 297.0 mm (595 × 842 points) at 1:2000
-    expect(find.text('No desenho: 419.8 × 594.1 m'), findsOneWidget);
+    // 209.9 × 297.0 mm (595 × 842 points) at 1:2000, with the decimal comma of Portuguese (UI-08)
+    expect(find.text('No desenho: 419,8 × 594,1 m'), findsOneWidget);
     await tester.tap(find.byKey(const Key('pdfimp_ok')));
     await settle(tester);
     expect(tester.takeException(), isNull);

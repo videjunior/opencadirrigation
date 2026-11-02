@@ -355,7 +355,9 @@ void main() {
     await settle(tester);
     await typeInto(tester, 'pf_spans', '48,8');
     await typeInto(tester, 'pf_overhangs', '0');
-    expect(find.text('48.8'), findsOneWidget, reason: 'the list as it was read');
+    // the list as it was read, in the notation of the language (UI-08): one
+    // length with a decimal comma, not the two lengths "48; 8"
+    expect(find.text('48,8'), findsOneWidget, reason: 'the list as it was read');
     await tapKey(tester, 'pf_generate');
     final typed = c.project.entities.whereType<PivotEntity>().single;
     final fit = fitFullCirclePivot(field.points, PivotFitOptions(spanLengths: const [48.8], overhangs: const [0], endThrowM: 5));
