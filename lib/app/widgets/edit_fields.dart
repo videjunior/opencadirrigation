@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
@@ -143,6 +144,36 @@ List<Widget> editToolFields(ProjectController c, ToolId tool) {
         value: u.lengthFromSi(s.chamferDistance2),
         onChanged: (v) => upd(() => s.chamferDistance2 = v <= 0 ? s.chamferDistance2 : u.lengthToSi(v)),
       ),
+    ],
+    if (tool == ToolId.measure) ...[
+      SpecDropdown<MeasureMode>(
+        key: const Key('tool_measure_mode'),
+        label: t('meas.mode'),
+        value: s.measureMode.name,
+        items: MeasureMode.values,
+        labelOf: (m) => t('meas.${m.name}'),
+        idOf: (m) => m.name,
+        onChanged: (v) => upd(() => s.measureMode = MeasureMode.values.byName(v ?? 'distance')),
+      ),
+      SectionTitle(t('meas.last')),
+      if (s.lastMeasure == null)
+        Text(t('meas.none'), style: TextStyle(fontSize: 11.5, color: Cad.fg54))
+      else ...[
+        SelectableText(s.lastMeasure!.text(c), key: const Key('tool_measure_result'), style: const TextStyle(fontSize: 12)),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const Key('tool_measure_copy'),
+            icon: const Icon(Icons.copy_outlined, size: 16),
+            label: Text(t('meas.copy'), style: const TextStyle(fontSize: 12)),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: s.lastMeasure!.text(c)));
+              c.notify(t('meas.copied'));
+            },
+          ),
+        ),
+      ],
+      Text(t('meas.options'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
     ],
     if (tool == ToolId.lasso)
       SwitchListTile(

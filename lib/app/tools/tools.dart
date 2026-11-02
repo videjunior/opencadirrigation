@@ -12,6 +12,7 @@ import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import 'ai_mark_tool.dart';
+import 'edit_commands.dart';
 import 'edit_tools.dart';
 import 'insert_block_tool.dart';
 import 'typed_point.dart';
@@ -955,21 +956,73 @@ class AutoheadTool extends PolyTool {
   bool get keepsOnLeave => false;
 }
 
+/// Measure: two points (distance and direction), several points (the
+/// running length, Enter ends) or an outline (area and perimeter, Enter or
+/// C closes) — the mode in the panel, or typed: D, M, A. The last result
+/// stays on the drawing and in the panel, where it can be copied.
 class MeasureTool extends PolyTool {
   MeasureTool(super.c, super.host);
   @override
   ToolId get id => ToolId.measure;
   @override
   String get hintKey => 'hint.measure';
+
+  MeasureMode get mode => c.editSettings.measureMode;
   @override
-  int get requiredPoints => 2;
+  int get requiredPoints => mode == MeasureMode.distance ? 2 : 0;
+  @override
+  bool get closes => mode == MeasureMode.area;
+  @override
+  int get minPoints => mode == MeasureMode.area ? 3 : 2;
+
   @override
   void commit(List<Pt> points) {
-    final d = points[0].distanceTo(points[1]);
-    final dx = points[1].x - points[0].x, dy = points[1].y - points[0].y;
-    host.setStatus(
-      'Δ = ${c.units.lengthFromSi(d).toStringAsFixed(3)} ${c.units.lengthLabel}  (Δx ${c.units.lengthFromSi(dx).toStringAsFixed(2)}, Δy ${c.units.lengthFromSi(dy).toStringAsFixed(2)}, ${radToDeg(math.atan2(dy, dx)).toStringAsFixed(1)}°)',
-    );
+    final m = Measurement(mode, points);
+    c.editSettings.lastMeasure = m;
+    c.track('measure');
+    host.setStatus(m.text(c));
+    c.refresh();
+  }
+
+  /// D, M and A pick the mode (and drop the points in progress).
+  @override
+  bool onInput(String text) {
+    final next = switch (text) {
+      'D' => MeasureMode.distance,
+      'M' => MeasureMode.path,
+      'A' => MeasureMode.area,
+      _ => null,
+    };
+    if (next == null) return super.onInput(text);
+    pts.clear();
+    c.editSettings.measureMode = next;
+    c.notify(c.t('meas.${next.name}'));
+    return true;
+  }
+
+  @override
+  void paint(Canvas canvas, Camera cam) {
+    final last = c.editSettings.lastMeasure;
+    if (last != null && last.points.length >= 2) {
+      // the last result stays on the drawing
+      final p = Paint()
+        ..color = Cad.preview.withValues(alpha: 0.7)
+        ..strokeWidth = 1.5
+        ..style = PaintingStyle.stroke;
+      drawPolyline(canvas, cam, last.points, p, close: last.mode == MeasureMode.area);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: last.text(c),
+          style: TextStyle(fontSize: 11, color: Cad.preview, backgroundColor: Cad.overlay),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 420);
+      tp.paint(canvas, cam.toScreen(last.points.last) + const Offset(8, 6));
+    }
+    super.paint(canvas, cam);
+    if (mode == MeasureMode.area && pts.length >= 2 && cursor != null) {
+      host.setStatus(Measurement(mode, [...pts, cursor!]).text(c));
+    }
   }
 }
 

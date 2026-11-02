@@ -170,4 +170,20 @@ const _edt = <String, (String, String, String)>{
     'Cannot break here: choose a line, polyline, pipe, arc or circle and two points of it',
     'No se puede partir aquí: elija una línea, polilínea, tubería, arco o círculo y dos puntos de él',
   ),
+  // ---- the Measure tool (CAD-33)
+  'meas.mode': ('Modo de medida', 'Measuring mode', 'Modo de medición'),
+  'meas.distance': ('Distância (2 pontos)', 'Distance (2 points)', 'Distancia (2 puntos)'),
+  'meas.path': ('Comprimento acumulado (vários pontos)', 'Running length (several points)', 'Longitud acumulada (varios puntos)'),
+  'meas.area': ('Área e perímetro', 'Area and perimeter', 'Área y perímetro'),
+  'meas.last': ('Última medida', 'Last measurement', 'Última medida'),
+  'meas.none': ('Nenhuma medida ainda', 'No measurement yet', 'Ninguna medida todavía'),
+  'meas.copy': ('Copiar a medida', 'Copy the measurement', 'Copiar la medida'),
+  'meas.copied': ('Medida copiada', 'Measurement copied', 'Medida copiada'),
+  'meas.pathResult': ('L = {l} em {n} trechos', 'L = {l} over {n} segments', 'L = {l} en {n} tramos'),
+  'meas.areaResult': ('Área = {a} ({ha}) · perímetro = {p}', 'Area = {a} ({ha}) · perimeter = {p}', 'Área = {a} ({ha}) · perímetro = {p}'),
+  'meas.options': (
+    'Digite D (distância), M (vários pontos) ou A (área) para mudar o modo; Enter termina os modos de vários pontos',
+    'Type D (distance), M (several points) or A (area) to change the mode; Enter ends the modes of several points',
+    'Escriba D (distancia), M (varios puntos) o A (área) para cambiar el modo; Intro termina los modos de varios puntos',
+  ),
 };

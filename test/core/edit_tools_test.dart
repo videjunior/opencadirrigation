@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/shortcuts.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
+import 'package:opencadirrigation/app/tools/edit_commands.dart';
 import 'package:opencadirrigation/app/tools/edit_tools.dart';
 import 'package:opencadirrigation/app/tools/tools.dart';
 import 'package:opencadirrigation/app/tools/typed_point.dart';
@@ -118,6 +119,53 @@ void main() {
       clicks(pr, [Pt.zero, const Pt(10, 0)]);
       pr.leave();
       expect(c.profilePath, isNull, reason: 'the profile only opens with Enter');
+    });
+  });
+
+  group('measure: the result stays, running length, area and perimeter (CAD-33)', () {
+    void clicks(Tool t, List<Pt> pts) {
+      for (final p in pts) {
+        t.onMove(p);
+        t.onDown(p);
+      }
+    }
+
+    test('two points: the distance stays as the last measurement after the pointer moves on', () {
+      final me = tool(ToolId.measure);
+      clicks(me, [Pt.zero, const Pt(3, 4)]);
+      expect(host.status, 'Δ = 5.000 m  (Δx 3.00, Δy 4.00, 53.1°)');
+      me.onMove(const Pt(50, 50));
+      paint(me);
+      final last = c.editSettings.lastMeasure!;
+      expect(last.text(c), 'Δ = 5.000 m  (Δx 3.00, Δy 4.00, 53.1°)');
+      expect(c.project.entities, isEmpty, reason: 'measuring draws nothing in the project');
+    });
+
+    test('M: the running length of several points; A: area and perimeter of an outline', () {
+      final me = tool(ToolId.measure);
+      expect(me.onInput('M'), isTrue);
+      expect(c.editSettings.measureMode, MeasureMode.path);
+      clicks(me, [Pt.zero, const Pt(10, 0), const Pt(10, 5)]);
+      expect(c.editSettings.lastMeasure, isNull, reason: 'the path goes on until Enter');
+      me.onKey('Enter');
+      expect(c.editSettings.lastMeasure!.length, 15);
+      expect(c.editSettings.lastMeasure!.text(c), 'L = 15.00 m over 2 segments');
+      expect(me.onInput('A'), isTrue);
+      clicks(me, [Pt.zero, const Pt(20, 0), const Pt(20, 10)]);
+      me.onMove(const Pt(0, 10));
+      paint(me);
+      expect(host.status, contains('200.0 m²'), reason: 'the area follows the cursor');
+      clicks(me, [const Pt(0, 10)]);
+      expect(me.onInput('C'), isTrue, reason: 'C closes the outline');
+      final m = c.editSettings.lastMeasure!;
+      expect(m.area, 200);
+      expect(m.length, 60);
+      expect(m.text(c), 'Area = 200.0 m² (0.0200 ha) · perimeter = 60.00 m');
+      // in feet: square feet and acres
+      c.project.params.units = c.project.params.units.copyWith(length: LengthUnit.ft);
+      expect(m.text(c), startsWith('Area = 2152.8 ft² (0.0494 ac)'));
+      expect(me.onInput('D'), isTrue);
+      expect(c.editSettings.measureMode, MeasureMode.distance);
     });
   });
 

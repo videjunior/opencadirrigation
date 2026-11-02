@@ -29,6 +29,45 @@ class EditSettings {
   /// side (m).
   double chamferDistance1 = 1;
   double chamferDistance2 = 1;
+
+  /// What the Measure tool measures, and its last result (kept on the
+  /// drawing and in the panel until the next one).
+  MeasureMode measureMode = MeasureMode.distance;
+  Measurement? lastMeasure;
+}
+
+/// The modes of the Measure tool: two points, a path of several points
+/// (its length), an outline (its area and perimeter).
+enum MeasureMode { distance, path, area }
+
+/// One measurement: its mode and points.
+class Measurement {
+  const Measurement(this.mode, this.points);
+  final MeasureMode mode;
+  final List<Pt> points;
+
+  /// Length of the path (the perimeter of an outline).
+  double get length => polylineLength(mode == MeasureMode.area ? [...points, points.first] : points);
+
+  /// Area of an outline (m²), 0 for the other modes.
+  double get area => mode == MeasureMode.area ? polygonArea(points).abs() : 0;
+
+  /// The result in the display units of [c].
+  String text(ProjectController c) {
+    final u = c.units;
+    String len(double v, [int d = 2]) => '${u.lengthFromSi(v).toStringAsFixed(d)} ${u.lengthLabel}';
+    switch (mode) {
+      case MeasureMode.distance:
+        final a = points.first, b = points.last;
+        final dx = b.x - a.x, dy = b.y - a.y;
+        return 'Δ = ${len(a.distanceTo(b), 3)}  (Δx ${u.lengthFromSi(dx).toStringAsFixed(2)}, Δy ${u.lengthFromSi(dy).toStringAsFixed(2)}, ${radToDeg(math.atan2(dy, dx)).toStringAsFixed(1)}°)';
+      case MeasureMode.path:
+        return c.t('meas.pathResult', {'l': len(length), 'n': '${points.length - 1}'});
+      case MeasureMode.area:
+        final k = u.lengthFromSi(1);
+        return c.t('meas.areaResult', {'a': '${(area * k * k).toStringAsFixed(1)} ${u.lengthLabel}²', 'ha': '${u.areaFromSi(area).toStringAsFixed(4)} ${u.areaLabel}', 'p': len(length)});
+    }
+  }
 }
 
 /// Whether an edit of [e] changes the results of the design: the network,

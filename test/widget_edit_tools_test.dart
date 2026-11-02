@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
@@ -179,6 +180,29 @@ void main() {
     c.select(const []);
     await settle(tester, 2);
     expect(find.byKey(const Key('tool_fillet_radius')), findsOneWidget, reason: 'the radius in the panel of the tool');
+  });
+
+  testWidgets('the panel of Measure keeps the last result and copies it (CAD-33)', (tester) async {
+    final c = await pumpShell(tester);
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String?;
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+    c.setTool(ToolId.measure);
+    await settle(tester, 1);
+    expect(find.text(c.t('meas.none')), findsOneWidget);
+    c.keyTarget!.feedPoint(Pt.zero);
+    c.keyTarget!.feedPoint(const Pt(6, 8));
+    await settle(tester, 2);
+    // the pointer moving on does not take it away
+    c.keyTarget!.feedPoint(const Pt(30, 30));
+    await settle(tester, 1);
+    expect(find.byKey(const Key('tool_measure_result')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tool_measure_copy')));
+    await settle(tester, 1);
+    expect(copied, startsWith('Δ = 10.000 m'));
   });
 
   testWidgets('Edit → Move and Copy start the tools (CAD-06)', (tester) async {

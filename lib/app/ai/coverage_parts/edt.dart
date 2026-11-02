@@ -50,4 +50,8 @@ const coverageEdt = <String, String>{
   'menu:edt.toArea': 'n/a:pending-ai — convert_to_area {ids}: turn closed polylines, circles, hatches and closed splines into irrigated areas with the same outline',
   'panel:tools.filletRadius': 'n/a:pending-ai — fillet {id, at, other_id, other_at, radius}: round the corner between two sides (of two lines, or at a vertex of one item) with an arc',
   'panel:tools.chamferDistances': 'n/a:pending-ai — chamfer {id, at, other_id, other_at, d1, d2}: cut the corner between two sides with a straight segment',
+  // ---- the Measure tool (CAD-33)
+  'panel:tools.measureMode': 'tool:measure',
+  'panel:tools.measureResult': 'tool:measure',
+  'panel:tools.measureCopy': 'tool:measure',
 };
