@@ -127,7 +127,11 @@
     "prb.unit.parana": "name of a Brazilian river basin",
     "prb.unit.paranapanema": "name of a Brazilian river basin",
     "prb.unit.paraibaSul": "name of a Brazilian river basin",
-    "agb.water.ph": "symbol (some scripts write it with their own letters)"
+    "agb.water.ph": "symbol (some scripts write it with their own letters)",
+    "stake.desc.outlets": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
+    "stake.desc.valves": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
+    "stake.desc.devices": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
+    "stake.desc.pipeVertices": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII"
   },
   "provisionalEnglish": {
     "ai.key.privacy": "1.6.0: the visit statistics never run while the app is open (SIT-09)",
@@ -137,7 +141,7 @@
     "ja": ["ok"],
     "ur": ["compass.n", "compass.ne", "compass.e", "compass.se", "compass.s", "compass.sw", "compass.w", "compass.nw"]
   },
-  "maxSameAsEnglish": {"de": 88, "fr": 127, "ha": 48, "id": 82, "sw": 14, "tr": 16, "vi": 10},
+  "maxSameAsEnglish": {"de": 88, "fr": 127, "ha": 71, "id": 113, "sw": 14, "tr": 25, "vi": 10},
   "terms": {
     "pt": [
       {"concept": "submain", "use": "linha de derivação", "avoid": ["submain", "submains"]},
