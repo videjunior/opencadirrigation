@@ -143,7 +143,7 @@ void main() {
           'trigger': {'type': 'input_tokens', 'value': 80000},
           'keep': {'type': 'tool_uses', 'value': 4},
           'clear_at_least': {'type': 'input_tokens', 'value': 10000},
-          'exclude_tools': [],
+          // (no tool to keep in a request without tools: the field is left out)
         },
         {
           'type': 'compact_20260112',

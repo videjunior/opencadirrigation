@@ -583,17 +583,26 @@ class ToolImage {
 
 /// What a tool hands back to the model.
 class ToolOutput {
-  const ToolOutput(this.text, {this.images = const [], this.isError = false});
+  const ToolOutput(this.text, {this.images = const [], this.isError = false, this.spent = AiUsage.zero, this.spentCost = 0, this.spentModel = ''});
   factory ToolOutput.error(String text) => ToolOutput(text, isError: true);
   final String text;
   final List<ToolImage> images;
   final bool isError;
 
+  /// Tokens a tool billed to the task by asking a model of its own (a
+  /// cheaper model that read a long attachment for the main one), what they
+  /// cost (US$ at list prices) and that model's id: they count in the meter
+  /// and in the spending cap like the task's own requests.
+  final AiUsage spent;
+  final double spentCost;
+  final String spentModel;
+
   /// [text] cut at [maxChars], with a note of what was left out.
   String clipped(int maxChars) => text.length <= maxChars ? text : '${text.substring(0, maxChars)}\n… (${text.length - maxChars} more characters left out: ask for less, e.g. with a filter or paging)';
 
   /// This output with its text cut at [maxChars].
-  ToolOutput clip(int maxChars) => text.length <= maxChars ? this : ToolOutput(clipped(maxChars), images: images, isError: isError);
+  ToolOutput clip(int maxChars) =>
+      text.length <= maxChars ? this : ToolOutput(clipped(maxChars), images: images, isError: isError, spent: spent, spentCost: spentCost, spentModel: spentModel);
 }
 
 /// A tool as every provider describes it.
@@ -643,7 +652,16 @@ class AiReply {
     this.compacted = false,
     this.history,
     this.transformations = const [],
+    this.requestBytes = 0,
+    this.images = 0,
+    this.documents = 0,
   });
+
+  /// What the request of this answer carried: the characters of its body
+  /// (about its bytes: the JSON is mostly ASCII), and the pictures and the
+  /// PDFs in it (every one goes again with each request of the
+  /// conversation). 0 when the client did not count them.
+  final int requestBytes, images, documents;
 
   /// What the API did to the request before the model read it (Anthropic
   /// `input_transformations`): thinking blocks it dropped, each with the
@@ -705,7 +723,7 @@ class AiReply {
     return c;
   }
 
-  AiReply _copy({List<Map<String, dynamic>>? history, AiUsage? usage, List<(String, AiUsage)>? billed}) => AiReply(
+  AiReply _copy({List<Map<String, dynamic>>? history, AiUsage? usage, List<(String, AiUsage)>? billed, int? requestBytes, int? images, int? documents}) => AiReply(
     items: items,
     text: text,
     calls: calls,
@@ -719,9 +737,16 @@ class AiReply {
     compacted: compacted,
     history: history ?? this.history,
     transformations: transformations,
+    requestBytes: requestBytes ?? this.requestBytes,
+    images: images ?? this.images,
+    documents: documents ?? this.documents,
   );
 
   AiReply withHistory(List<Map<String, dynamic>> h) => _copy(history: h);
+
+  /// This answer with what its request carried ([requestBytes], [images],
+  /// [documents]).
+  AiReply withRequest({required int bytes, required int images, required int documents}) => _copy(requestBytes: bytes, images: images, documents: documents);
 
   /// This answer with the tokens of earlier attempts of the same request
   /// that did not finish ([spent], billed at [requested]'s prices) counted
@@ -834,6 +859,82 @@ AiEffort effortAfter(List<Map<String, dynamic>> history, AiEffort start) {
   return start;
 }
 
+/// The pictures and the documents (PDFs) in [o], a request's messages in
+/// either provider's format: blocks of type `image` / `input_image` and
+/// `document` / `input_file`, wherever they are (in tool results too).
+(int images, int documents) countMedia(Object? o) {
+  var images = 0, documents = 0;
+  void walk(Object? x) {
+    if (x is Map) {
+      final type = x['type'];
+      if (type == 'image' || type == 'input_image') {
+        images++;
+        return;
+      }
+      if (type == 'document' || type == 'input_file') {
+        documents++;
+        return;
+      }
+      for (final v in x.values) {
+        if (v is Map || v is List) walk(v);
+      }
+    } else if (x is List) {
+      for (final v in x) {
+        walk(v);
+      }
+    }
+  }
+
+  walk(o);
+  return (images, documents);
+}
+
+/// What a connection test found ([AiHttpClient.probe]): one small request
+/// to [model] with what the assistant's requests carry.
+class AiProbe {
+  const AiProbe({
+    required this.model,
+    this.error,
+    this.usage = AiUsage.zero,
+    this.cost = 0,
+    this.servedBy = '',
+    this.elapsed = Duration.zero,
+    this.limits = const {},
+    this.declined = const [],
+    this.text = '',
+    this.requestId,
+  });
+
+  /// The model tested.
+  final AiModel model;
+
+  /// Why the request failed; null when the model answered.
+  final AiError? error;
+  final AiUsage usage;
+
+  /// US$ at list prices (an estimate).
+  final double cost;
+
+  /// The model that answered (a server-side fallback may answer instead).
+  final String servedBy;
+  final Duration elapsed;
+
+  /// The account's rate limits as the answer's headers gave them (header
+  /// name without its provider prefix → value), when the API lets the page
+  /// read them.
+  final Map<String, String> limits;
+
+  /// Optional request fields the API turned down for this model: they are
+  /// left out of its requests from now on.
+  final List<String> declined;
+
+  /// The model's answer (a word or two).
+  final String text;
+  final String? requestId;
+
+  bool get ok => error == null;
+}
+
 /// The HTTP side every client shares: one key and transport, timeouts,
 /// retries with backoff (honouring `retry-after`), line-by-line reading of
 /// a streamed body, the size check before sending, and messages cleaned of
@@ -871,6 +972,75 @@ abstract class AiHttpClient implements AiClient {
 
   /// One attempt.
   Future<AiReply> attempt(AiRequest r, AiCancel cancel, AiStreamListener listener);
+
+  /// The headers of the last response that arrived (lower-case names).
+  Map<String, String> lastHeaders = const {};
+
+  /// The system prompt and the question of a connection test ([probe]).
+  static const probeSystem = 'Connection test of the OpenCADIrrigation assistant. Answer with one word.';
+  static const probeQuestion = 'Reply with the word OK.';
+
+  /// Output tokens a connection test may take (thinking counts in them).
+  static const probeTokens = 256;
+
+  /// The request of a connection test of [m]: what the assistant's requests
+  /// carry for it (thinking, the betas and their fields, compaction and the
+  /// clearing of old tool results, the cache breakpoints), without tools,
+  /// at the lowest effort and with a few output tokens.
+  AiRequest probeRequest(AiModel m) => AiRequest(
+    model: m,
+    system: probeSystem,
+    history: [
+      userMessage(const [AiTextPart(probeQuestion)]),
+    ],
+    effort: AiEffort.low,
+    maxTokens: probeTokens,
+    compactAt: m.compaction ? m.compactAt : null,
+  );
+
+  /// A connection test of [m]: one small request sent as the assistant's
+  /// are ([probeRequest], [send]), which tells whether the key, the account
+  /// and the model take what the assistant sends, what it cost, and the
+  /// account's rate limits when the answer's headers carry them. An
+  /// optional field the API turns down is left out from then on, as in
+  /// [send], and named in [AiProbe.declined]. Never throws.
+  Future<AiProbe> probe(AiModel m, {required AiCancel cancel}) async {
+    final watch = Stopwatch()..start();
+    final before = {...declined};
+    List<String> newly() => [
+      for (final d in declined.difference(before))
+        if (d.startsWith('${m.id}:')) d.substring(m.id.length + 1),
+    ];
+    lastHeaders = const {};
+    try {
+      final r = await send(probeRequest(m), cancel: cancel);
+      return AiProbe(
+        model: m,
+        usage: r.usage,
+        cost: r.cost(m),
+        servedBy: r.model,
+        elapsed: watch.elapsed,
+        limits: rateLimitsOf(lastHeaders),
+        declined: newly(),
+        text: r.text.trim(),
+        requestId: lastHeaders['request-id'] ?? lastHeaders['x-request-id'],
+      );
+    } on AiError catch (e) {
+      return AiProbe(model: m, error: e, usage: e.usage, cost: e.usage.cost(m), elapsed: watch.elapsed, limits: rateLimitsOf(lastHeaders), declined: newly(), requestId: e.requestId);
+    } catch (e) {
+      return AiProbe(model: m, error: AiError(AiErrorKind.unexpected, message: clean('${e.runtimeType}')), elapsed: watch.elapsed, declined: newly());
+    }
+  }
+
+  /// The rate limits in [headers]: `anthropic-ratelimit-*` and
+  /// `x-ratelimit-*`, by name without that prefix.
+  static Map<String, String> rateLimitsOf(Map<String, String> headers) => {
+    for (final e in headers.entries)
+      if (e.key.startsWith('anthropic-ratelimit-'))
+        e.key.substring('anthropic-ratelimit-'.length): e.value
+      else if (e.key.startsWith('x-ratelimit-'))
+        e.key.substring('x-ratelimit-'.length): e.value,
+  };
 
   /// Optional request fields a model turned down ("model id:field"), left
   /// out from then on in this session.
@@ -1075,6 +1245,7 @@ abstract class AiHttpClient implements AiClient {
     f.then(
       (r) {
         timer?.cancel();
+        lastHeaders = r.headers;
         if (!done.isCompleted) done.complete(r);
       },
       onError: (Object e) {

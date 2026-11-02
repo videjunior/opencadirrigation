@@ -111,6 +111,13 @@ class OpenAiClient extends AiHttpClient {
   Future<AiReply> attempt(AiRequest r, AiCancel cancel, AiStreamListener listener) async {
     final json = jsonEncode(body(r));
     AiHttpClient.checkSize(json);
+    // what the request carries, for the costs by step (the pictures pruned from it left out)
+    final (images, documents) = countMedia(pruneToolPictures(sinceCompactionItem(r.history)));
+    final reply = await _exchange(r, json, cancel, listener);
+    return reply.withRequest(bytes: json.length, images: images, documents: documents);
+  }
+
+  Future<AiReply> _exchange(AiRequest r, String json, AiCancel cancel, AiStreamListener listener) async {
     final req = AiHttpRequest(endpoint, headers(), json);
     final res = await open(req, r.model, cancel);
     final id = res.headers['x-request-id'];

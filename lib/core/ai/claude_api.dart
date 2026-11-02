@@ -352,10 +352,12 @@ class AnthropicClient extends AiHttpClient {
           'trigger': {'type': 'input_tokens', 'value': clearAt},
           'keep': {'type': 'tool_uses', 'value': keepToolUses},
           'clear_at_least': {'type': 'input_tokens', 'value': 10000},
-          'exclude_tools': [
-            for (final n in keptTools)
-              if (r.tools.any((t) => t.name == n)) n,
-          ],
+          // (left out when no tool of the request is to be kept: a request without tools)
+          if (r.tools.any((t) => keptTools.contains(t.name)))
+            'exclude_tools': [
+              for (final n in keptTools)
+                if (r.tools.any((t) => t.name == n)) n,
+            ],
         },
       if (compaction)
         {
@@ -480,6 +482,14 @@ class AnthropicClient extends AiHttpClient {
     // near the size the API takes: the old turns and their pictures go into a summary now
     if (_compact(r) && json.length * 3 > compactBytes && AiHttpClient.utf8Length(json) > compactBytes) json = jsonEncode(body(r, compactNow: true));
     AiHttpClient.checkSize(json);
+    // what the request carries, for the costs by step
+    final (images, documents) = countMedia(sinceCompaction(r.history));
+    final size = json.length;
+    final reply = await _exchange(r, json, cancel, listener);
+    return reply.withRequest(bytes: size, images: images, documents: documents);
+  }
+
+  Future<AiReply> _exchange(AiRequest r, String json, AiCancel cancel, AiStreamListener listener) async {
     final req = AiHttpRequest(endpoint, headers(r), json);
     final res = await open(req, r.model, cancel);
     final id = res.headers['request-id'];

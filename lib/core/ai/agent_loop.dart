@@ -264,9 +264,98 @@ class AgentToolCall {
   final ToolEffect effect;
   ToolCallState state = ToolCallState.running;
 
+  /// The user confirms this call whatever the mode (an export, a large
+  /// deletion, an address of the model's choosing…): never applied ahead
+  /// ([AgentEvents.autoApprove]).
+  bool confirm = false;
+
   /// The first line of the result (or of the error).
   String result = '';
   bool get isChange => effect != ToolEffect.read;
+}
+
+/// One request of a turn as the panel of costs shows it: the model that
+/// answered, its tokens (read from the cache, written to it, the input
+/// outside it, the output), what it cost, what the request carried (its
+/// size, the pictures and the PDFs in it) and the effort it ran at — what
+/// makes a task dear, and whether the cache works.
+class AgentStep {
+  const AgentStep({
+    required this.model,
+    required this.usage,
+    required this.cost,
+    this.bytes = 0,
+    this.images = 0,
+    this.documents = 0,
+    this.effort,
+    this.compacted = false,
+    this.failed = false,
+    this.subagent = false,
+    this.elapsed = Duration.zero,
+  });
+
+  /// Id of the model that answered (a fallback model's when one did).
+  final String model;
+  final AiUsage usage;
+
+  /// US$ at list prices (an estimate).
+  final double cost;
+
+  /// Characters of the request's body (about its bytes), and the pictures
+  /// and the PDFs it carried.
+  final int bytes, images, documents;
+
+  /// The effort the step ran at (null: not told).
+  final AiEffort? effort;
+
+  /// The server summarised the earlier conversation in this step.
+  final bool compacted;
+
+  /// An attempt that broke off or was refused, billed all the same.
+  final bool failed;
+
+  /// A request a tool made to a model of its own (a cheaper model that read
+  /// a long attachment).
+  final bool subagent;
+  final Duration elapsed;
+
+  /// Share of the input read from the cache (0–1).
+  double get cacheShare => usage.totalInput == 0 ? 0 : usage.cacheRead / usage.totalInput;
+
+  Map<String, Object?> toJson() => {
+    'm': model,
+    'u': [usage.input, usage.output, usage.cacheWrite, usage.cacheRead, usage.cacheWriteHour],
+    'c': cost,
+    if (bytes > 0) 'b': bytes,
+    if (images > 0) 'i': images,
+    if (documents > 0) 'd': documents,
+    if (effort != null) 'e': effort!.name,
+    if (compacted) 'k': true,
+    if (failed) 'f': true,
+    if (subagent) 's': true,
+    if (elapsed > Duration.zero) 't': elapsed.inMilliseconds,
+  };
+
+  /// A step as [toJson] wrote it; null when [j] is not one.
+  static AgentStep? fromJson(Object? j) {
+    if (j is! Map) return null;
+    final u = j['u'];
+    int at(int k) => u is List && k < u.length && u[k] is num ? (u[k] as num).toInt() : 0;
+    int n(String k) => j[k] is num ? (j[k] as num).toInt() : 0;
+    return AgentStep(
+      model: '${j['m'] ?? ''}',
+      usage: AiUsage(input: at(0), output: at(1), cacheWrite: at(2), cacheRead: at(3), cacheWriteHour: at(4)),
+      cost: j['c'] is num ? (j['c'] as num).toDouble() : 0,
+      bytes: n('b'),
+      images: n('i'),
+      documents: n('d'),
+      effort: AiEffort.values.where((e) => e.name == j['e']).firstOrNull,
+      compacted: j['k'] == true,
+      failed: j['f'] == true,
+      subagent: j['s'] == true,
+      elapsed: Duration(milliseconds: n('t')),
+    );
+  }
 }
 
 enum AgentStop { done, maxTokens, stepLimit, budget, cancelled, error }
@@ -288,7 +377,12 @@ class AgentTurn {
     this.prefixDrops = 0,
     this.effortDeclined = false,
     this.lightened = false,
+    this.stepStats = const [],
   });
+
+  /// Every request of the turn, and every request a tool made to a model of
+  /// its own, in order ([AgentStep]).
+  final List<AgentStep> stepStats;
 
   /// The models that answered, in order, each once (a server-side fallback
   /// may answer for the model asked for, and then go on for a while).
@@ -359,8 +453,40 @@ class AgentStatus {
 }
 
 class AgentEvents {
-  const AgentEvents({this.onText, this.onCall, this.onStatus, this.approve, this.onUsage, this.steer, this.afterRound, this.onCompacted, this.onProgress, this.onModel});
+  const AgentEvents({
+    this.onText,
+    this.onCall,
+    this.onStatus,
+    this.approve,
+    this.onUsage,
+    this.steer,
+    this.afterRound,
+    this.onCompacted,
+    this.onProgress,
+    this.onModel,
+    this.autoApprove,
+    this.onStep,
+    this.stageEffort,
+  });
   final void Function(String delta)? onText;
+
+  /// A change the user approved ahead (Apply the rest of this task): asked
+  /// before the card of a plain change (an undo step of the project) is
+  /// shown; true applies it at once. Never asked for an export, a request
+  /// to another service or a call the user always confirms
+  /// ([AgentToolCall.confirm]).
+  final bool Function(AgentToolCall call)? autoApprove;
+
+  /// A request of the turn ended (or a tool asked a model of its own): its
+  /// tokens, cost and what it carried.
+  final void Function(AgentStep step)? onStep;
+
+  /// The effort of the next step after a round of tools ([round]), the
+  /// model answering at [current] now: another level goes as an effort
+  /// message after the round's results, which keeps the cached
+  /// conversation (on the models that take one); null or [current] keeps
+  /// it.
+  final AiEffort? Function(List<AgentToolCall> round, AiEffort current)? stageEffort;
 
   /// The turn so far, as entries a conversation could end with (every tool
   /// call answered: those still to run as not run), after each change and
@@ -472,6 +598,17 @@ class AgentLoop {
     var prefixDrops = 0;
     final models = <String>[];
     var warnedBudget = false;
+    // the costs by step, and the effort message of a stage still to be
+    // taken by the API (its place in [kept]; -1: none), turned off for the
+    // rest of the turn once the API refused one
+    final stepStats = <AgentStep>[];
+    var stageAt = -1;
+    var stageOff = false;
+    void step(AgentStep s) {
+      stepStats.add(s);
+      events.onStep?.call(s);
+    }
+
     final stopped = Completer<Approval>();
     cancel.onCancel(() {
       if (!stopped.isCompleted) stopped.complete(Approval.stop);
@@ -533,6 +670,7 @@ class AgentLoop {
         prefixDrops: prefixDrops,
         effortDeclined: effortDeclined,
         lightened: lightened,
+        stepStats: stepStats,
       );
     }
 
@@ -549,6 +687,8 @@ class AgentLoop {
         ..addAll(api.toolResults(light, user: user, note: roundNote));
       roundResults = light;
       roundUser = user;
+      // (an effort message after the round left with it)
+      stageAt = -1;
       return true;
     }
 
@@ -568,6 +708,9 @@ class AgentLoop {
           final room = left <= 0 ? 0 : (left / price * 1e6).floor();
           if (room < model.maxOutput) maxTokens = room < minCappedOutput ? minCappedOutput : room;
         }
+        // the effort the step runs at: the last effort message's, else the request's own
+        final stepEffort = effortAfter(kept, effortAfter(past, requestEffort));
+        final watch = Stopwatch()..start();
         final AiReply reply;
         try {
           reply = await api.send(
@@ -603,6 +746,14 @@ class AgentLoop {
         } on AiError catch (e) {
           // attempts that broke off were billed all the same
           spend(e.usage, model);
+          if (!e.usage.isZero) step(AgentStep(model: model.id, usage: e.usage, cost: e.usage.cost(model), effort: stepEffort, failed: true, elapsed: watch.elapsed));
+          if (e.refusedContent && stageAt >= 0 && stageAt == kept.length - 1 && (e.message.contains('effort') || e.message.contains('output_config'))) {
+            // the effort message of a stage was turned down: the step goes again without it, at the effort it had
+            kept.removeAt(stageAt);
+            stageAt = -1;
+            stageOff = true;
+            continue;
+          }
           if (e.refusedContent && accepted == 0 && extra.isNotEmpty && !effortDeclined && (e.message.contains('effort') || e.message.contains('output_config'))) {
             // the effort message was turned down: the effort goes as the request's own
             requestEffort = effortAfter(extra, requestEffort);
@@ -630,6 +781,7 @@ class AgentLoop {
           return end(e.kind == AiErrorKind.cancelled ? AgentStop.cancelled : AgentStop.error, e);
         }
         accepted = kept.length;
+        stageAt = -1;
         final rewritten = reply.history;
         if (rewritten != null && rewritten.length == past.length + kept.length) {
           final n = past.length;
@@ -640,6 +792,19 @@ class AgentLoop {
         usage += reply.usage;
         cost += reply.cost(model);
         events.onUsage?.call(usage, cost);
+        step(
+          AgentStep(
+            model: reply.model.isEmpty ? model.id : reply.model,
+            usage: reply.usage,
+            cost: reply.cost(model),
+            bytes: reply.requestBytes,
+            images: reply.images,
+            documents: reply.documents,
+            effort: stepEffort,
+            compacted: reply.compacted,
+            elapsed: watch.elapsed,
+          ),
+        );
         prefixDrops += reply.prefixDrops;
         if (reply.model.isNotEmpty && !models.contains(reply.model)) {
           models.add(reply.model);
@@ -757,7 +922,10 @@ class AgentLoop {
             } catch (_) {
               // a call whose confirmation cannot be told is confirmed
             }
-            if (mode != AgentPermission.auto || confirm) {
+            call.confirm = confirm;
+            // a plain change the user approved ahead for the rest of the task
+            final ahead = !confirm && effect == ToolEffect.write && (events.autoApprove?.call(call) ?? false);
+            if ((mode != AgentPermission.auto || confirm) && !ahead) {
               call.state = ToolCallState.waiting;
               events.onCall?.call(call);
               events.onStatus?.call(AgentStatus.approval(name));
@@ -781,6 +949,13 @@ class AgentLoop {
           events.onStatus?.call(AgentStatus.tool(name, note: note));
           try {
             final out = await tool.run(input);
+            // a model the tool asked (a long attachment read by a cheaper one): billed to the task
+            if (!out.spent.isZero || out.spentCost > 0) {
+              usage += out.spent;
+              cost += out.spentCost;
+              events.onUsage?.call(usage, cost);
+              step(AgentStep(model: out.spentModel, usage: out.spent, cost: out.spentCost, subagent: true));
+            }
             finish(out.isError ? ToolCallState.failed : ToolCallState.done, out.text);
             if (effect == ToolEffect.write && !out.isError) lastChange = results.length;
             results.add(AiToolResult(id, out.clip(maxResultChars)));
@@ -824,6 +999,22 @@ class AgentLoop {
         kept.addAll(api.toolResults(roundResults, user: roundUser, note: roundNote));
         open = const [];
         results = [];
+        // the effort of the next step, by what this round did
+        final stage = events.stageEffort;
+        if (stage != null && !stageOff && going) {
+          final now = effortAfter(kept, effortAfter(past, requestEffort));
+          AiEffort? next;
+          try {
+            next = stage(round, now);
+          } catch (_) {
+            next = null;
+          }
+          final msg = next == null || next == now ? null : api.effortMessage(model, next);
+          if (msg != null) {
+            kept.add(msg);
+            stageAt = kept.length - 1;
+          }
+        }
         progress(changed: changed);
         if (stop || cancel.cancelled) return end(AgentStop.cancelled);
         if (last) return end(AgentStop.stepLimit);
