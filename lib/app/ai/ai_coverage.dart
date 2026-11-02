@@ -393,6 +393,7 @@ Map<String, String> _buildCoverage() {
     ...coverageSit,
     ...coverageEng,
     ...coveragePrd,
+    ...coverageEdt,
   };
   for (final e in commandAliases.entries) {
     final route = m[coverageKeyOf(e.value)];
