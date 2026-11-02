@@ -50,6 +50,8 @@ import '../units.dart';
 import 'air_valves.dart';
 import 'designer.dart';
 import 'network_builder.dart';
+// 1.6.0 MOT: reservoirs in the 24-hour simulation, air vessels in the transient
+import 'reservoir.dart';
 import 'results.dart';
 
 // ---------------------------------------------------------------- shared
@@ -881,6 +883,19 @@ class TransientStudy {
       }
     }
 
+    // 1.6.0 MOT: the air vessels drawn on the mainline (junctions holding
+    // one, PRD-31) protect their node: the gas of the steady state follows
+    // the polytropic law through the connection orifice
+    final vessels = <SurgeVessel>[];
+    for (final jn in project.entities.whereType<JunctionEntity>()) {
+      if (!jn.hasVessel || jn.scope != HydraulicScope.mainline) continue;
+      final node = model.nodes.values.where((n) => n.entityIds.contains(jn.id) && net.nodes.containsKey(n.id)).firstOrNull;
+      if (node == null) continue;
+      final total = jn.vesselLiters / 1000;
+      final gas = (jn.vesselGasLiters > 0 ? jn.vesselGasLiters : jn.vesselLiters / 3) / 1000;
+      vessels.add(SurgeVessel(nodeId: node.id, gasVolume: math.min(gas, 0.95 * total), totalVolume: total, connectionDiameter: math.max(jn.vesselConnectionMm, 10) / 1000));
+    }
+
     // the event
     final events = <TransientEvent>[];
     var span = closure;
@@ -969,7 +984,7 @@ class TransientStudy {
     ];
     final probes = [for (final id in nodeIds) TransientProbe.node(id), for (final id in pumpIds) TransientProbe.link(id)];
     final samples = math.max(50, math.min(options.samples, (600000 / math.max(1, probes.length)).floor()));
-    final sim = TransientModel.fromNetwork(net, steady, linkData: data, airValves: airValves).simulate(
+    final sim = TransientModel.fromNetwork(net, steady, linkData: data, airValves: airValves, surgeVessels: vessels).simulate(
       events: events,
       options: TransientOptions(
         duration: duration,
@@ -1862,6 +1877,7 @@ class EpsDay {
     this.pricePerKwh = 0,
     this.converged = true,
     this.messages = const [],
+    this.levels = const {},
   });
 
   /// Step start times (s after midnight) and the end of the day.
@@ -1882,8 +1898,13 @@ class EpsDay {
   final bool converged;
 
   /// `eps_pressure_deficit:<valve>`, `eps_flows_overlap:<flow>`,
-  /// `eps_not_converged:<hh:mm>`, `no_water_supply`.
+  /// `eps_not_converged:<hh:mm>`, `no_water_supply`,
+  /// `eps_reservoir_empty:<supply>`, `eps_reservoir_full:<supply>`.
   final List<String> messages;
+
+  /// 1.6.0 MOT: the water level (m, elevation) of the reservoir of every
+  /// supply that has one, at every time of [times].
+  final Map<String, List<double>> levels;
 
   Map<String, dynamic> toJson() => {
     't': _jl(times),
@@ -1900,6 +1921,7 @@ class EpsDay {
     'price': pricePerKwh,
     'conv': converged,
     'msg': messages,
+    if (levels.isNotEmpty) 'lv': {for (final e in levels.entries) e.key: _jl(e.value)},
   };
 
   static EpsDay fromJson(Map<String, dynamic> j) => EpsDay(
@@ -1917,6 +1939,7 @@ class EpsDay {
     pricePerKwh: _rd(j, 'price'),
     converged: j['conv'] as bool? ?? true,
     messages: _sl(j['msg']),
+    levels: {for (final e in ((j['lv'] as Map?) ?? const {}).entries) '${e.key}': _dl(e.value)},
   );
 }
 
@@ -2249,6 +2272,33 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
   }
   final eta = params.pumpEfficiency.clamp(0.05, 1.0).toDouble();
 
+  // 1.6.0 MOT: the reservoirs and dams behind the supplies (one free surface
+  // each, PRD-16): their level falls with what they deliver and rises with
+  // their inflow, carried from one block of the day to the next
+  final tanks = <String, (ReservoirStudy, String)>{}; // source node → (reservoir, supply id)
+  for (final e in sources.entries) {
+    if (e.value.length != 1 || e.value.first.$1 != e.key) continue;
+    final sid = model.nodes[e.key]?.supplyEntityId;
+    final sup = sid == null ? null : project.byId(sid);
+    if (sup is! WaterSupplyEntity || sup.calculatePressure || sup.reservoir == null) continue;
+    final study = reservoirStudy(project, sup, terrain: model.terrain);
+    if (study == null || study.curve.length < 2) continue;
+    tanks[e.key] = (study, sup.id);
+  }
+  final level = {for (final e in tanks.entries) e.key: e.value.$1.initialLevel};
+  final levels = {for (final t in tanks.values) t.$2: <double>[]};
+  // in the hours no flow runs the inflow alone fills them, up to the full level
+  void fill(double seconds) {
+    if (!(seconds > 0)) return;
+    for (final e in tanks.entries) {
+      final r = e.value.$1;
+      if (!(r.inflow > 0)) continue;
+      final tank = r.tankAt(e.key, initialLevel: level[e.key]);
+      final v = tank.volumeAt(tank.initialLevel) + r.inflow * seconds;
+      level[e.key] = r.bottom + math.min(tank.levelAt(v), tank.maxLevel);
+    }
+  }
+
   // The day runs in blocks of consecutive segments in which some flow runs.
   // Without tanks nothing carries over from one block to the next, and the
   // network at rest in between (every pump off, no demand) has no defined
@@ -2278,6 +2328,9 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
     lowM.add(double.nan);
     lowV.add(null);
     pumpPower.add(const {});
+    for (final e in tanks.entries) {
+      levels[e.value.$2]!.add(level[e.key]!);
+    }
   }
 
   var converged = true;
@@ -2285,8 +2338,10 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
   var cursor = 0.0;
   for (final (s, e) in blocks) {
     if (s > cursor + 1e-6) idle(cursor);
+    fill(s - cursor);
     final res = simulateEps(
       u,
+      tanks: [for (final e in tanks.entries) e.value.$1.tankAt(e.key, initialLevel: level[e.key])],
       schedules: [for (final w in linkWindows.entries) EpsSchedule.intervals(w.key, clip(w.value, s, e))],
       demandSchedules: [for (final w in nodeWindows.entries) EpsDemandSchedule(w.key, clip(w.value, s, e))],
       options: EpsOptions(
@@ -2306,6 +2361,10 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
         converged = false;
         final mm = (((s + rel) / 60).round()) % 1440;
         _addOnce(messages, 'eps_not_converged:${(mm ~/ 60).toString().padLeft(2, '0')}:${(mm % 60).toString().padLeft(2, '0')}');
+      } else if (tanks.containsKey(m.substring(m.indexOf(':') + 1)) && (m.startsWith('eps_tank_empty:') || m.startsWith('eps_tank_full:'))) {
+        // 1.6.0 MOT: a reservoir by its supply
+        final sid = tanks[m.substring(m.indexOf(':') + 1)]!.$2;
+        _addOnce(messages, m.startsWith('eps_tank_empty:') ? 'eps_reservoir_empty:$sid' : 'eps_reservoir_full:$sid');
       } else {
         _addOnce(messages, m);
       }
@@ -2370,10 +2429,20 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
       lowM.add(lm);
       lowV.add(lv);
       pumpPower.add(pp);
+      for (final te in tanks.entries) {
+        final ls = res.tankLevels[te.key];
+        levels[te.value.$2]!.add(te.value.$1.bottom + (ls != null && i < ls.length ? ls[i] : level[te.key]! - te.value.$1.bottom));
+      }
+    }
+    // the level at the end of the block goes on into the next one
+    for (final te in tanks.entries) {
+      final ls = res.tankLevels[te.key];
+      if (ls != null && ls.isNotEmpty) level[te.key] = te.value.$1.bottom + ls.last;
     }
     cursor = e;
   }
   if (cursor < day - 1e-6) idle(cursor);
+  fill(day - cursor);
   idle(day);
   for (final id in q.keys) {
     if (deficits.contains(id)) _addOnce(messages, 'eps_pressure_deficit:$id');
@@ -2457,5 +2526,6 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
     pricePerKwh: base,
     converged: converged,
     messages: messages,
+    levels: levels,
   );
 }

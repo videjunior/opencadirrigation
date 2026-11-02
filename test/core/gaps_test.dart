@@ -283,7 +283,9 @@ void main() {
       expect(t.elevationAt(const Pt(100, 100)), closeTo(100 + 20 * 0.1 + 20 * 0.2, 0.05));
     });
 
-    test('looped mainline sizing with LP adds the approximation note and still converges', () {
+    // 1.6.0 MOT: the LP keeps the energy balance of the loop for the flows it
+    // assumes (exact for them): no approximation note once the flows settle
+    test('looped mainline sizing with LP balances the loop and converges', () {
       final p = Project();
       // ring main with two valves and a supply
       final a = const Pt(0, 0), b = const Pt(100, 0), c = const Pt(100, 60), d = const Pt(0, 60);
@@ -301,7 +303,7 @@ void main() {
       final check = runDesignCheck(p);
       expect(check.issues.any((i) => i.code == 'looped_mainline'), isTrue);
       final r = Designer(p).designAll();
-      expect(r.messages, contains('lp_loops_approx'));
+      expect(r.messages, isNot(contains('lp_loops_approx')));
       expect(r.systemFlows.single.converged, isTrue);
       expect(r.systemFlows.single.valves.every((v) => v.deficit < 0.05), isTrue);
     });

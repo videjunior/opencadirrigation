@@ -101,6 +101,124 @@ class PumpCurve {
 
   PumpCurve withSpeed(double ratio) => _q == null ? PumpCurve(a: a, b: b, c: c, speedRatio: ratio) : PumpCurve._points(a, b, c, ratio, _q, _h, _d, _tail);
 
+  // ---- 1.6.0 MOT: pump stations (PRD-17)
+
+  /// Flow (m³/s) on the falling part of the curve where it gives [h]: none
+  /// at or above its highest head (its check valve holds it shut), the
+  /// runout at zero head or below.
+  double flowAt(double h) {
+    if (!(h < maxHead)) return 0;
+    final runout = runoutFlow;
+    var lo = peakFlow;
+    var hi = runout.isFinite ? runout : math.max(2 * lo, 1e-3);
+    if (!(h > 0) && runout.isFinite) return runout;
+    // a curve that never reaches zero head: as far as it gives more than h
+    for (var it = 0; it < 60 && !runout.isFinite && head(hi) > h; it++) {
+      hi *= 2;
+    }
+    for (var i = 0; i < 80; i++) {
+      final mid = (lo + hi) / 2;
+      if (head(mid) > h) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return (lo + hi) / 2;
+  }
+
+  /// The pumps of [curves] joined in parallel: at every head their flows
+  /// add, a pump whose top is below that head giving none (its check valve
+  /// holds it shut). The same curve n times is that curve with n times the
+  /// flow, exactly; different curves are followed through 41 points of the
+  /// sum by the monotone cubic of [fit].
+  static PumpCurve parallel(List<PumpCurve> curves) {
+    if (curves.isEmpty) return const PumpCurve(a: 0, b: 0, c: 0);
+    if (curves.length == 1) return curves.first;
+    if (_allSame(curves)) return curves.first._scaled(flow: curves.length.toDouble());
+    final top = curves.fold(0.0, (m, c) => math.max(m, c.maxHead));
+    if (!(top > 0)) return const PumpCurve(a: 0, b: 0, c: 0);
+    const n = 40;
+    final pts = <(double, double)>[];
+    for (var i = 0; i <= n; i++) {
+      final h = top * (n - i) / n;
+      pts.add((curves.fold(0.0, (s, c) => s + c.flowAt(h)), h));
+    }
+    return _sampled(pts);
+  }
+
+  /// The pumps of [curves] joined in series: at every flow their heads add
+  /// (a pump past its runout takes head away, as a loss). The same curve n
+  /// times is that curve with n times the head, exactly; different curves
+  /// go through 41 points of the sum, up to the largest runout.
+  static PumpCurve series(List<PumpCurve> curves) {
+    if (curves.isEmpty) return const PumpCurve(a: 0, b: 0, c: 0);
+    if (curves.length == 1) return curves.first;
+    if (_allSame(curves)) return curves.first._scaled(head: curves.length.toDouble());
+    var qMax = 0.0;
+    for (final c in curves) {
+      final r = c.runoutFlow;
+      if (r.isFinite) qMax = math.max(qMax, r);
+    }
+    if (!(qMax > 0)) qMax = 1;
+    // left of the top of a curve that rises first: the top, as the solver
+    double headOf(PumpCurve c, double q) => c.head(math.max(q, c.peakFlow));
+    const n = 40;
+    final pts = <(double, double)>[];
+    for (var i = 0; i <= n; i++) {
+      final q = qMax * i / n;
+      final h = curves.fold(0.0, (s, c) => s + headOf(c, q));
+      if (h <= 0) {
+        // the sum reaches zero head between the last point and this one
+        if (pts.isNotEmpty) {
+          final (q0, h0) = pts.last;
+          pts.add((q0 + (q - q0) * h0 / (h0 - h), 0));
+        }
+        break;
+      }
+      pts.add((q, h));
+    }
+    return _sampled(pts);
+  }
+
+  /// Whether every curve of [curves] is the same curve at the same speed.
+  static bool _allSame(List<PumpCurve> curves) {
+    final f = curves.first;
+    for (final c in curves.skip(1)) {
+      if (identical(c, f)) continue;
+      if (c.a != f.a || c.b != f.b || c.c != f.c || c.speedRatio != f.speedRatio || c._tail != f._tail) return false;
+      final q0 = f._q, q1 = c._q, h0 = f._h, h1 = c._h;
+      if ((q0 == null) != (q1 == null)) return false;
+      if (q0 == null || q1 == null || h0 == null || h1 == null) continue;
+      if (q0.length != q1.length) return false;
+      for (var i = 0; i < q0.length; i++) {
+        if (q0[i] != q1[i] || h0[i] != h1[i]) return false;
+      }
+    }
+    return true;
+  }
+
+  /// This curve with [flow] times the flow and [head] times the head at
+  /// every point (the same speed): n pumps in parallel or in series.
+  PumpCurve _scaled({double flow = 1, double head = 1}) {
+    final aa = a * head / (flow * flow), bb = b * head / flow, cc = c * head;
+    final qs = _q;
+    if (qs == null) return PumpCurve(a: aa, b: bb, c: cc, speedRatio: speedRatio);
+    return PumpCurve._points(aa, bb, cc, speedRatio, [for (final q in qs) q * flow], [for (final h in _h!) h * head], [for (final d in _d!) d * head / flow], _tail * head / flow);
+  }
+
+  /// The monotone cubic through sampled (Q, H) points of a station, heads
+  /// falling with the flow (points of the same flow at their mean head).
+  static PumpCurve _sampled(List<(double, double)> points) {
+    final byFlow = <double, List<double>>{};
+    for (final (q, h) in points) {
+      if (q.isFinite && h.isFinite && q >= 0) (byFlow[q] ??= []).add(math.max(h, 0));
+    }
+    final pts = [for (final e in byFlow.entries) (e.key, e.value.reduce((x, y) => x + y) / e.value.length)]..sort((x, y) => x.$1.compareTo(y.$1));
+    if (pts.length < 2) return fit(pts);
+    return _monotoneCubic(pts);
+  }
+
   /// The parabola A·Q² + B·Q + C (actual flow, speed included) that has the
   /// head and the slope of the curve at [q]: the curve itself for a
   /// parabola; for a curve [throughPoints] its tangent there with the

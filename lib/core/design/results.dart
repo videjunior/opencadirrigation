@@ -9,9 +9,12 @@ import '../model/geometry.dart';
 import 'electrical.dart';
 import 'mechanised.dart';
 import 'pivot.dart';
+// 1.6.0 MOT: pump stations and the real operation of the zones
+import 'results_mot.dart';
 
 export 'mechanised.dart' show MechanisedResult;
 export 'pivot.dart' show PivotResult, PivotTowerRow, PivotKind;
+export 'results_mot.dart';
 
 double _d(Map<String, dynamic> j, String k, [double def = 0]) => (j[k] as num?)?.toDouble() ?? def;
 List<double> _pt(Pt p) => p.toList();
@@ -580,6 +583,8 @@ class SystemFlowResult {
     required this.durationHours,
     this.annualEnergyCost = 0,
     this.heads = const [],
+    this.stations = const [],
+    this.operation = const [],
   });
   final String flowId;
   final String name;
@@ -595,6 +600,13 @@ class SystemFlowResult {
 
   /// Valve-in-head stations running in this flow.
   final List<VihDuty> heads;
+
+  /// 1.6.0 MOT: the pump stations of the mainline in this flow, pump by pump.
+  final List<StationDuty> stations;
+
+  /// 1.6.0 MOT: the zones and pivots run at the pressure the mainline gives
+  /// them (the design parameter realZoneOperation); empty when it is off.
+  List<ZoneOperation> operation;
   double get maxDeficit => valves.isEmpty ? 0 : valves.map((v) => v.deficit).reduce((a, b) => a > b ? a : b);
 
   Map<String, dynamic> toJson() => {
@@ -610,6 +622,8 @@ class SystemFlowResult {
     'dur': durationHours,
     'energy': annualEnergyCost,
     if (heads.isNotEmpty) 'vih': heads.map((h) => h.toJson()).toList(),
+    if (stations.isNotEmpty) 'stn': [for (final s in stations) s.toJson()],
+    if (operation.isNotEmpty) 'op': [for (final o in operation) o.toJson()],
   };
   static SystemFlowResult fromJson(Map<String, dynamic> j) => SystemFlowResult(
     flowId: j['id'] as String,
@@ -624,6 +638,14 @@ class SystemFlowResult {
     durationHours: _d(j, 'dur', 1),
     annualEnergyCost: _d(j, 'energy'),
     heads: [for (final h in (j['vih'] as List?) ?? const []) VihDuty.fromJson(h as Map<String, dynamic>)],
+    stations: [
+      for (final s in (j['stn'] as List?) ?? const [])
+        if (s is Map) StationDuty.fromJson(s.cast<String, dynamic>()),
+    ],
+    operation: [
+      for (final o in (j['op'] as List?) ?? const [])
+        if (o is Map) ZoneOperation.fromJson(o.cast<String, dynamic>()),
+    ],
   );
 }
 

@@ -38,6 +38,9 @@ import 'pump_selection.dart';
 import 'results.dart';
 import 'valve_in_head.dart';
 
+// 1.6.0 MOT: pump stations, the real operation of the zones, pilot valves
+part 'designer_mot.dart';
+
 /// Stage of a design run, reported through [DesignProgress].
 enum DesignStage { zones, mainline, splits, flushing, surge, bom }
 
@@ -99,6 +102,23 @@ class Designer {
 
   /// Valve-in-head stations (`valve_in_head.dart`).
   final VihStations vih;
+
+  // 1.6.0 MOT: state of the pump stations of designer_mot.dart: the stations
+  // of [_stationModel], the duty pumps each runs in the flow being analysed
+  // (none listed: every duty pump) and their joined curves
+  NetworkModel? _stationModel;
+  Map<String, (GLink, PumpEntity, PumpStation)> _stationsOf = const {};
+  final Map<String, int> _stationRunning = {};
+  final Map<String, PumpCurve> _stationCurves = {};
+
+  // 1.6.0 MOT: what the surge of a closure asks of the class of every
+  // computer-sized unit (designer_mot.dart: _learnSurge), and the high points
+  // of the mainline of [_hillModel]
+  final Map<String, (double, List<(double, double)>)> _surgeDuty = {};
+  NetworkModel? _hillModel;
+  Map<String, double> _hillsOf = const {};
+  NetworkModel? _alongModel;
+  Map<String, double> _alongOf = const {};
 
   NetworkModel? _headsModel;
   Map<String, (String, EmitterRef)> _headsOf = const {};
@@ -339,8 +359,10 @@ class Designer {
   List<PipeSpec> _candidates(GLink l) {
     final all = catalog.pipesFor(l.usage);
     final need = _requiredRating[l.entityId];
-    if (need == null) return all;
-    final ok = all.where((s) => s.pressureRatingM <= 0 || _rating(s) >= need - 1e-6).toList();
+    // 1.6.0 MOT: and the class that holds the surge of a closure in each pipe
+    final surge = _surgeDuty[l.entityId];
+    if (need == null && surge == null) return all;
+    final ok = all.where((s) => s.pressureRatingM <= 0 || (_rating(s) >= (need ?? 0) - 1e-6 && (surge == null || _rating(s) >= _surgeClassNeed(s, surge) - 1e-6))).toList();
     return ok.isEmpty ? all : ok;
   }
 
@@ -348,7 +370,8 @@ class Designer {
   /// below the operating pressure found in [pipes]; true when a unit got a
   /// new, higher requirement (another sizing pass is then worth it).
   bool _learnRatings(Iterable<PipeSegmentResult> pipes, Map<String, List<GLink>> units) {
-    var changed = false;
+    // 1.6.0 MOT: the static pressure plus the surge of a closure (classe ≥ estática + golpe)
+    var changed = params.checkSurge && _learnSurge(pipes, units);
     for (final p in pipes) {
       if (!units.containsKey(p.entityId)) continue;
       final spec = catalog.pipe(p.pipeSpecId);
@@ -422,7 +445,8 @@ class Designer {
         return HLink(id: l.id, from: l.from, to: l.to, kind: HLinkKind.fcv, fcvFlow: l.settingFlow, device: spec?.loss, tag: l);
       case GLinkKind.pump:
         final spec = catalog.pump(l.pumpSpecId);
-        return HLink(id: l.id, from: l.from, to: l.to, kind: HLinkKind.pump, pump: spec?.curve.withSpeed(_vfdSpeed[l.entityId] ?? l.speedRatio), tag: l);
+        // 1.6.0 MOT: a pump station runs on the curve of its running pumps
+        return HLink(id: l.id, from: l.from, to: l.to, kind: HLinkKind.pump, pump: _stationCurve(l) ?? spec?.curve.withSpeed(_vfdSpeed[l.entityId] ?? l.speedRatio), tag: l);
     }
   }
 
@@ -785,7 +809,9 @@ class Designer {
     if (nodeIds.length <= 1 || (model.zoneLinks[valveId]?.isEmpty ?? true)) {
       return _emptyZone(valveId, valve.zoneName, ['zone_empty']);
     }
-    var head = downstreamHead ?? valve.fixedDownstreamHeadM;
+    // 1.6.0 MOT: a reducing pilot set to a pressure holds the zone there
+    final fixedHead = valve.fixedDownstreamHeadM ?? _pilotHead(valve);
+    var head = downstreamHead ?? fixedHead;
     NetworkResult r;
     var saturated = false;
     // tapes with an inlet regulator do not follow the valve: they set a
@@ -865,7 +891,7 @@ class Designer {
         r = _zoneNetwork(valveId, head, true).solve();
       }
     }
-    if (detailed && downstreamHead == null && valve.fixedDownstreamHeadM == null && regs.isNotEmpty) {
+    if (detailed && downstreamHead == null && fixedHead == null && regs.isNotEmpty) {
       // raise the valve until every regulator gets the pressure it needs
       final m0 = _regulatorMargin(regs, r);
       if (m0 < 0) {
@@ -899,7 +925,7 @@ class Designer {
 
     // If the spread of pressures fits inside the allowable window but the
     // mean-targeted head leaves some outlets outside, centre the band.
-    if (downstreamHead == null && valve.fixedDownstreamHeadM == null && !saturated && !byRegulators) {
+    if (downstreamHead == null && fixedHead == null && !saturated && !byRegulators) {
       final (mn, mx, aMin, aMax) = _pressureSpread(valveId, r);
       if (mx - mn <= aMax - aMin + 1e-9 && (mn < aMin - 1e-6 || mx > aMax + 1e-6)) {
         final shift = (aMin + aMax) / 2 - (mn + mx) / 2;
@@ -1060,7 +1086,8 @@ class Designer {
       totalFlow: totalFlow,
       downstreamHead: head,
       valveLoss: valveLoss,
-      requiredUpstreamHead: head + valveLoss + (zn.elevation - mn.elevation),
+      // 1.6.0 MOT: a sustaining pilot asks the mainline for its setting at least
+      requiredUpstreamHead: _sustained(valve, head + valveLoss + (zn.elevation - mn.elevation)),
       minOutletPressure: minP,
       maxOutletPressure: maxP,
       allowedMin: allowMin,
@@ -1869,7 +1896,8 @@ class Designer {
   bool _regulates(String vid) {
     final v = project.byId(vid);
     if (v is! ControlValveEntity) return true;
-    return v.fixedDownstreamHeadM != null || catalog.valve(v.valveSpecId)?.kind == ValveKind.prv;
+    // 1.6.0 MOT: a reducing pilot holds the outlet too
+    return v.fixedDownstreamHeadM != null || catalog.valve(v.valveSpecId)?.kind == ValveKind.prv || v.pilot.reduces;
   }
 
   NetworkModel? _suctionModel;
@@ -1922,6 +1950,8 @@ class Designer {
   /// [elevation]. The range of the catalogue scales with the speed the pump
   /// turns at (a drive, or a curve of other mains): Q ∝ n.
   void _checkPump(GLink l, LinkResult lr, double inletPressure, double elevation, List<String> warnings) {
+    // 1.6.0 MOT: a pump station pump by pump
+    if (_checkStation(l, lr, inletPressure, elevation, warnings)) return;
     final spec = catalog.pump(l.pumpSpecId);
     final speed = _vfdSpeed[l.entityId] ?? l.speedRatio;
     if (spec != null) {
@@ -1971,6 +2001,13 @@ class Designer {
     final needs = _headNeeds(listed);
     final pressure = <String, double>{for (final s in supplies) s.id: s.calculatePressure ? 0.0 : s.designHeadM};
     _vfdSpeed.clear();
+    // 1.6.0 MOT: the duty pumps of every pump station that run in this flow
+    _stageStations(
+      () => _mainlineNetwork(pressure, demand, listed),
+      (r) => _demandDeficit(r, required, needs),
+      calculated: supplies.any((s) => s.calculatePressure),
+      tune: () => _tuneVfd(() => _mainlineNetwork(pressure, demand, listed), []),
+    );
     _tuneVfd(() => _mainlineNetwork(pressure, demand, listed), warnings);
     var r = _mainlineNetwork(pressure, demand, listed).solve();
     final calc = supplies.where((s) => s.calculatePressure).toList();
@@ -1985,6 +2022,8 @@ class Designer {
         final nr = r.nodes[node];
         if (nr != null) d = math.max(d, need - nr.pressure);
       }
+      // 1.6.0 MOT: the grade line above the pipe at the high points of the line
+      d = math.max(d, _hillDeficit(r));
       return d.isFinite ? d : 0;
     }
 
@@ -2151,6 +2190,12 @@ class Designer {
     for (final d in devices) {
       if (d.pumpHead > 0) {
         final l = model.linkById(d.linkId)!;
+        // 1.6.0 MOT: a pump station by its running pumps
+        final station = _stationEnergy(l, d.flow, d.pumpHead, hours);
+        if (station != null) {
+          energy += station;
+          continue;
+        }
         final entity = project.byId(l.entityId);
         energy += annualEnergyCost(
           flow: d.flow,
@@ -2178,8 +2223,12 @@ class Designer {
         if (path.isNotEmpty || from == worstNode) duty.pumpBoost = path.fold<double>(0, (s, l) => s + (pumpHead[l.id] ?? 0));
       }
     }
+    // 1.6.0 MOT: the pumps of every station in this flow
+    final stations = _stationDuties(r);
     // the speeds belong to this flow; sizing analyses run the pumps as drawn
+    // (and every duty pump of a station)
     _vfdSpeed.clear();
+    _stationRunning.clear();
     return SystemFlowResult(
       flowId: sf.id,
       name: sf.name,
@@ -2193,6 +2242,7 @@ class Designer {
       durationHours: sf.durationHours,
       annualEnergyCost: energy,
       heads: heads,
+      stations: stations,
     );
   }
 
@@ -2216,6 +2266,13 @@ class Designer {
     final needs = _headNeeds(listed);
     final pressure = <String, double>{for (final s in supplies) s.id: s.calculatePressure ? 0.0 : s.designHeadM};
     _vfdSpeed.clear();
+    // 1.6.0 MOT: the station pumps that run in this flow, as the design runs them
+    _stageStations(
+      () => _mainlineNetwork(pressure, demand, listed),
+      (r) => _demandDeficit(r, required, needs),
+      calculated: supplies.any((s) => s.calculatePressure),
+      tune: () => _tuneVfd(() => _mainlineNetwork(pressure, demand, listed), []),
+    );
     _tuneVfd(() => _mainlineNetwork(pressure, demand, listed), []);
     var net = _mainlineNetwork(pressure, demand, listed);
     var r = net.solve();
@@ -2230,7 +2287,8 @@ class Designer {
           final nr = r.nodes[node];
           if (nr != null) extra = math.max(extra, need - nr.pressure);
         }
-        return extra;
+        // 1.6.0 MOT: as the design, the grade line above the high points
+        return math.max(extra, _hillDeficit(r));
       }
 
       void solveAt(double extra) {
@@ -2248,6 +2306,7 @@ class Designer {
       }
     }
     _vfdSpeed.clear();
+    _stationRunning.clear();
     return (net, r, demand);
   }
 
@@ -2273,6 +2332,12 @@ class Designer {
   /// built on [mainlineNetworkFor]).
   String? demandNodeOf(String id) => _demandNode(id);
 
+  /// 1.6.0 MOT: the zones and pivots of [sf] (its design result [f]) at the
+  /// pressure the mainline really gives them, whatever
+  /// [DesignParameters.realZoneOperation] says (for the analyses on a
+  /// designed project).
+  List<ZoneOperation> realOperation(SystemFlow sf, SystemFlowResult f) => _operateFlow(sf, f);
+
   /// Mainline nodes of the heads of the scheduled valve-in-head stations
   /// that run in [sf] (for the analyses built on [mainlineNetworkFor] that
   /// close or follow them with their flow), with what each needs there.
@@ -2289,7 +2354,7 @@ class Designer {
   }
 
   /// Builds and solves the mainline LP over all system flows.
-  LpAssignment _lpMainline(Map<String, List<GLink>> units, List<SystemFlow> flows, double totalDur) {
+  LpAssignment _lpMainline(Map<String, List<GLink>> units, List<SystemFlow> flows, double totalDur, {bool loops = true}) {
     final supplies = _supplies;
     final supplyNodes = {for (final s in supplies) model.supplyNodes[s.id]!: s};
     final (parent, source, _) = _bfs(supplyNodes.keys, model.mainlineLinks);
@@ -2414,6 +2479,11 @@ class Designer {
         }
         if (lo.isFinite) constrain(id, lo, hi.isFinite ? hi : null, off);
       }
+      // 1.6.0 MOT: the grade line above the pipe at the high points of the
+      // line fed by a calculated supply (whose pump can be made to clear them)
+      for (final hp in _highPoints.keys) {
+        if ((supplyNodes[source[hp]]?.calculatePressure ?? false) && _flowsThrough(hp, r)) constrain(hp, 0, null, 0);
+      }
     }
     return lpSize(
       LpSizingInput(
@@ -2426,6 +2496,8 @@ class Designer {
         crf: _crf(),
         tradeCapital: params.tradeCapitalVsRunning,
         pipeCost: _pipeCost,
+        // 1.6.0 MOT: the energy balance round every loop, for the flows of each system flow
+        loops: loops ? [for (final r in flowResults) ..._loopConstraints(parent, source, unitOf, cands, r)] : const [],
       ),
     );
   }
@@ -2499,8 +2571,17 @@ class Designer {
     if (params.sizingMethod == SizingMethod.lp) {
       final pipeLinks = model.mainlineLinks.where((l) => model.linkById(l)?.kind == GLinkKind.pipe).length;
       final looped = pipeLinks >= model.mainlineNodes.length && model.mainlineNodes.isNotEmpty;
-      if (looped) _note('lp_loops_approx');
-      final a = _lpMainline(units, flows, totalDur);
+      // 1.6.0 MOT: the LP keeps the energy balance of every loop for the
+      // flows it assumes, so it is exact for them; the sizes are only an
+      // approximation when the flows do not settle, or when no sizes balance
+      // the loops (then sized as a tree, as before)
+      var loopsKept = looped;
+      var a = _lpMainline(units, flows, totalDur);
+      if (!a.feasible && looped) {
+        loopsKept = false;
+        a = _lpMainline(units, flows, totalDur, loops: false);
+      }
+      var settled = !looped;
       if (a.feasible) {
         _applyAssignment(a);
         lpDone = true;
@@ -2510,14 +2591,17 @@ class Designer {
         // with this LP at every step)
         for (var it = 0; looped && it < 4; it++) {
           final before = {for (final k in units.keys) k: _assigned[k]};
-          final next = _lpMainline(units, flows, totalDur);
+          final next = _lpMainline(units, flows, totalDur, loops: loopsKept);
           if (!next.feasible) break;
           _applyAssignment(next);
-          if (units.keys.every((k) => _assigned[k] == before[k])) break;
+          if (units.keys.every((k) => _assigned[k] == before[k])) {
+            settled = true;
+            break;
+          }
         }
-      } else {
-        _note('${_lpFailure(a)}:${_label('menu.mainline')}');
       }
+      if (looped && !(settled && loopsKept)) _note('lp_loops_approx');
+      if (!a.feasible) _note('${_lpFailure(a)}:${_label('menu.mainline')}');
     }
     // 2. deficit loop for fixed-pressure supplies
     var res = analyzeAll();
@@ -2689,6 +2773,8 @@ class Designer {
       zoneIndex: 0,
       run: () {
         results.invalidateCaches();
+        // 1.6.0 MOT: the zones at the pressure the mainline really gives them
+        _operateFlows();
         analyzeFlushing();
       },
     );
@@ -2698,6 +2784,8 @@ class Designer {
       zoneIndex: 0,
       run: () {
         checkSurge();
+        // 1.6.0 MOT: high points of the mainline without an air valve
+        _checkHighPoints();
         analyzeMachines();
       },
     );
@@ -3085,7 +3173,15 @@ class Designer {
         case PumpEntity p:
           final s = catalog.pump(p.pumpSpecId);
           if (s != null) add('bom.pumps', s.name, 'un', 1, s.cost, s.id, code: s.code, supplier: s.supplier, zone: zone);
+          // 1.6.0 MOT: the other pumps of a station, on duty and on standby
+          for (final u in p.station?.units ?? const <PumpUnit>[]) {
+            final us = catalog.pump(u.specId ?? p.pumpSpecId);
+            if (us != null) add('bom.pumps', us.name, 'un', 1, us.cost, us.id, code: us.code, supplier: us.supplier, zone: zone);
+          }
           if (p.hourMeter) add('bom.pumps', _label('acc.hourMeter'), 'un', 1, p.hourMeterCost, null, zone: zone);
+        // 1.6.0 MOT: an air vessel at a junction of the mainline (PRD-31)
+        case JunctionEntity j when j.hasVessel && j.scope == HydraulicScope.mainline:
+          add('bom.devices', '${_label('vessel.item')} ${fmt(j.vesselLiters, 0)} L', 'un', 1, j.vesselCost, null, zone: zone);
         case PivotEntity p:
           final r = results.pivots[p.id];
           final towers = r?.towerCount ?? p.towerPositions().length;
