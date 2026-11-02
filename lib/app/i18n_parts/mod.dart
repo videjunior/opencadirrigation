@@ -189,4 +189,18 @@ const _mod = <String, (String, String, String)>{
     'Elecciones olvidadas: los proyectos nuevos vuelven a la frecuencia y la moneda de la región, unidades métricas y los parámetros del programa.',
   ),
   'ai.op.new_project_defaults': ('Projetos novos: {n}', 'New projects: {n}', 'Proyectos nuevos: {n}'),
+  // ---- the catalogue editor in the units of the project (1.6.0 MOD, MOD-20)
+  'cat.idU': ('DI ({u})', 'ID ({u})', 'DI ({u})'),
+  'cat.pnU': ('PN ({u})', 'PN ({u})', 'PN ({u})'),
+  'cat.costFt': ('{c}/ft', '{c}/ft', '{c}/ft'),
+  'cat.spacingFt': ('Esp. ft', 'Spacing ft', 'Esp. ft'),
+  'cat.qMaxU': ('Q máx {u}', 'Max Q {u}', 'Q máx {u}'),
+  'cat.pointsU': ('Pontos (Q {q} @ H {h})', 'Points (Q {q} @ H {h})', 'Puntos (Q {q} @ H {h})'),
+  'cat.effPointsU': ('Rendimento (Q {q}@η %)', 'Efficiency (Q {q}@η %)', 'Rendimiento (Q {q}@η %)'),
+  'cat.npshPointsU': ('NPSH req. (Q {q}@{h})', 'NPSH req. (Q {q}@{h})', 'NPSH req. (Q {q}@{h})'),
+  'cat.unitsNote': (
+    'Valores nas unidades do projeto (o catálogo guarda mm, m e preço por metro); o CSV exportado também, com a unidade no nome de cada coluna, e a importação lê colunas assim ("dn_in", "rating_psi", "cost_per_ft", "points_gpm_ft"). As vazões dos emissores ficam em L/h.',
+    'Values in the units of the project (the catalogue keeps mm, m and prices per metre); the exported CSV too, with the unit in the name of each column, and the import reads such columns ("dn_in", "rating_psi", "cost_per_ft", "points_gpm_ft"). Emitter flows stay in L/h.',
+    'Valores en las unidades del proyecto (el catálogo guarda mm, m y precio por metro); el CSV exportado también, con la unidad en el nombre de cada columna, y la importación lee columnas así ("dn_in", "rating_psi", "cost_per_ft", "points_gpm_ft"). Los caudales de los emisores quedan en L/h.',
+  ),
 };
