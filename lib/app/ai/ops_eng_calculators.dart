@@ -86,6 +86,8 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
             hazenC: pipe.hazenC,
             roughness: pipe.roughness,
             kinematicViscosity: params.kinematicViscosity,
+            scobeyKs: pipe.scobeyKs,
+            manningN: pipe.manningN,
           );
           cv = n.cv;
           what = 'emitter ${o.id}/${n.id} every ${engN(spacing)} m on pipe ${pipe.id} (${pipe.name})';

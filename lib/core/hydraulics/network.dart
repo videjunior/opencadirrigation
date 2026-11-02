@@ -850,6 +850,26 @@ class HydraulicNetwork {
     var statusChanged = false;
     for (var k = 0; k < links.length; k++) {
       final l = links[k];
+      // a device whose loss has a constant part C (the head that opens
+      // it): closed while the head across it is below C, as a check valve
+      // with that cracking head (the step of its law at zero flow left an
+      // idle branch off by ±C and two fixed heads closer than C unsolved)
+      final opening = l.kind == HLinkKind.device ? (l.device?.c ?? 0) : 0.0;
+      if (opening > 0) {
+        final dh = heads[fromNode[k]] - heads[toNode[k]];
+        final push = l.checkValve ? dh : dh.abs();
+        final wasClosed = l.status == LinkStatus.closed;
+        // open with next to no flow: the branch is idle and the valve shut
+        if (!wasClosed && (push < opening - 1e-4 || q[k].abs() < 1e-9 || (l.checkValve && q[k] < -1e-6))) {
+          l.status = LinkStatus.closed;
+          q[k] = 0;
+          statusChanged = true;
+        } else if (wasClosed && push > opening + 1e-4) {
+          l.status = LinkStatus.open;
+          q[k] = dh < 0 ? -_qMin : _qMin;
+          statusChanged = true;
+        }
+      } else
       // check valves: on a pipe, or a device of its own (a check valve
       // placed on the mainline), which used to let water run backwards
       if ((l.kind == HLinkKind.pipe || l.kind == HLinkKind.device) && l.checkValve) {

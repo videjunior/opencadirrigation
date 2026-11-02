@@ -868,7 +868,17 @@ class _Simulation {
       // factor at 1 m/s instead
       final qr = flowForVelocity(velocity: 1, diameter: d);
       final opt = model.network.options;
-      final hf = frictionLoss(method: opt.method, flow: qr, diameter: d, length: l.length, c: l.hazenC, roughness: l.roughness, kinematicViscosity: opt.kinematicViscosity);
+      final hf = frictionLoss(
+        method: opt.method,
+        flow: qr,
+        diameter: d,
+        length: l.length,
+        c: l.hazenC,
+        roughness: l.roughness,
+        kinematicViscosity: opt.kinematicViscosity,
+        scobeyKs: l.scobeyKs,
+        manningN: l.manningN,
+      );
       final hm = l.minorK > 0 ? minorLoss(k: l.minorK, flow: qr, diameter: d) : 0.0;
       r = (hf + hm) / (qr * qr);
     }
@@ -1225,7 +1235,10 @@ class _Simulation {
         final calibrated = _flowing(q0) && dh0 * q0 > 0 && lr?.status != LinkStatus.closed;
         switch (l.kind) {
           case HLinkKind.prv:
-            // frozen at its steady opening, one-way
+          case HLinkKind.psv:
+          case HLinkKind.fcv:
+            // frozen at its steady opening, one-way (a PSV or an FCV was a
+            // two-way orifice that let water back during the transient)
             e.check = true;
             if (calibrated && q0 > 0) {
               e.rRef = dh0 / (q0 * q0);

@@ -41,6 +41,7 @@ import '../hydraulics/minor_losses.dart';
 import '../hydraulics/network.dart';
 import '../hydraulics/pump.dart';
 import '../hydraulics/transient.dart';
+import '../hydraulics/water_hammer.dart';
 import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
@@ -851,12 +852,16 @@ class TransientStudy {
       final rating = spec.ratingAt(params.waterTempC);
       ratingOf[l.id] = rating;
       specName[gl.entityId] = spec.name;
+      final wall = math.max(spec.wallThicknessMm, 0.5) / 1000;
       data[l.id] = TransientLinkData.fromPipe(
         diameter: spec.innerDiameter,
-        wallThickness: math.max(spec.wallThicknessMm, 0.5) / 1000,
+        wallThickness: wall,
         material: spec.material,
         length: gl.length,
         rating: rating > 0 ? rating : null,
+        // a thin wall collapses below the atmosphere by its buckling head
+        // (never filled in: only the vapour limit was checked)
+        minRating: -collapsePressureHead(diameter: spec.innerDiameter, wallThickness: wall, material: spec.material),
       );
     }
 

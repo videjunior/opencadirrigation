@@ -1482,6 +1482,8 @@ Future<void> showLateralCalculator(BuildContext context, ProjectController c) {
             hazenC: p.hazenC,
             roughness: p.roughness,
             kinematicViscosity: c.project.params.kinematicViscosity,
+            scobeyKs: p.scobeyKs,
+            manningN: p.manningN,
           );
           cv = n.cv;
         }

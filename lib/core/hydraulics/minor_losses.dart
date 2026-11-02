@@ -46,7 +46,9 @@ double minorLossFlowCoefficient({required double k, required double diameter}) {
 /// Equivalent pipe length for a fitting: Le = K·D/f.
 double equivalentLength({required double k, required double diameter, double f = 0.02}) => k * diameter / f;
 
-/// Head loss law of a valve/device: h = K·Q^n + C with Q in m³/s.
+/// Head loss law of a valve/device: h = K·Q^n + C with Q in m³/s. The
+/// constant part C is the head that opens the valve (a spring): the network
+/// solver keeps the device closed while the head across it is below C.
 class DeviceLossCurve {
   const DeviceLossCurve({required this.k, this.n = 2, this.c = 0});
   final double k;

@@ -44,7 +44,9 @@ class EmitterRef {
   final double allowedMax;
   final double cv;
 
-  /// Height of the emitter above the node (riser + burial depth).
+  /// Height of the emitter above the node: the riser of a head up to the
+  /// ground (with the burial depth of its pipe); 0 for the emitters of a
+  /// tape, which discharge at the tube.
   final double offset;
   final String label;
 
@@ -456,7 +458,10 @@ class NetworkBuilder {
               allowedMin: lo,
               allowedMax: hi,
               cv: spec.cv,
-              offset: t.depth,
+              // a buried tape discharges at the tube, at the node's own
+              // elevation (ground − depth): an offset of the depth put the
+              // emitters back at the surface (MOT-21)
+              offset: 0,
               label: spec.name,
               inlet: emitterAt.isEmpty,
             );

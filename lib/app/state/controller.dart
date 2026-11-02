@@ -2057,6 +2057,8 @@ class ProjectController extends ChangeNotifier {
         hazenC: p.adjustedC(pipe.hazenC),
         roughness: pipe.roughness,
         kinematicViscosity: p.kinematicViscosity,
+        scobeyKs: pipe.scobeyKs,
+        manningN: pipe.manningN,
       );
       nominal = e.headM;
       final (l, h) = nz.curve.headWindow(nominal, below: nz.flowTolBelow, above: nz.flowTolAbove);

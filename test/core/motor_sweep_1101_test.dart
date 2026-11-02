@@ -13,7 +13,12 @@ import 'package:opencadirrigation/core/design/network_builder.dart';
 import 'package:opencadirrigation/core/design/pump_selection.dart';
 import 'package:opencadirrigation/core/design/results.dart';
 import 'package:opencadirrigation/core/design/tariff.dart';
+import 'package:opencadirrigation/core/hydraulics/emitter.dart';
+import 'package:opencadirrigation/core/hydraulics/friction.dart';
+import 'package:opencadirrigation/core/hydraulics/lateral.dart';
+import 'package:opencadirrigation/core/hydraulics/minor_losses.dart';
 import 'package:opencadirrigation/core/hydraulics/network.dart';
+import 'package:opencadirrigation/core/hydraulics/transient.dart';
 import 'package:opencadirrigation/core/hydraulics/water_hammer.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
@@ -564,5 +569,134 @@ void main() {
     expect(cheap.shaftPowerKw, closeTo(waterDensity * gravity * cheap.operatingFlow * cheap.operatingHead / cat.pump('cheap')!.efficiencyAt(cheap.operatingFlow) / 1000, 1e-9));
     // a dear money (high capital recovery) makes the cheaper purchase win
     expect(rankPumps(cat, flow: 20 * h, head: 40, hoursPerYear: 50, costPerKwh: 0.2, crf: 0.5).first.spec.id, 'cheap');
+  });
+
+  test('MOT-19: a device whose loss has a constant part opens only above it', () {
+    // an idle branch behind such a valve rested off by ±C, two fixed heads
+    // closer than C had no solution
+    for (final c in [0.0, 0.2, 1.0, 2.4]) {
+      final n = HydraulicNetwork()
+        ..addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 40))
+        ..addNode(HNode(id: 'A'))
+        ..addNode(HNode(id: 'B'))
+        ..addNode(HNode(id: 'C'))
+        ..addNode(HNode(id: 'D', demand: 0.005))
+        ..addLink(HLink(id: 'p1', from: 'R', to: 'A', diameter: 0.1, length: 100))
+        ..addLink(
+          HLink(
+            id: 'mv',
+            from: 'A',
+            to: 'B',
+            kind: HLinkKind.device,
+            device: DeviceLossCurve(k: 5038070.0, n: 2.28, c: c),
+          ),
+        )
+        ..addLink(HLink(id: 'p2', from: 'B', to: 'C', diameter: 0.075, length: 200))
+        ..addLink(
+          HLink(
+            id: 'mv2',
+            from: 'A',
+            to: 'D',
+            kind: HLinkKind.device,
+            device: DeviceLossCurve(k: 5038070.0, n: 2.28, c: c),
+          ),
+        );
+      final r = n.solve();
+      expect(r.converged, isTrue);
+      expect(r.nodes['B']!.head, closeTo(r.nodes['A']!.head, 1e-6), reason: 'c = $c: the idle branch rests at the head before its valve');
+      expect(r.links['mv2']!.headLoss, closeTo(DeviceLossCurve(k: 5038070.0, n: 2.28, c: c).loss(0.005), 1e-6), reason: 'the working valve keeps its law');
+    }
+    final n = HydraulicNetwork()
+      ..addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 10.5))
+      ..addNode(HNode(id: 'A'))
+      ..addNode(HNode(id: 'R2', kind: HNodeKind.reservoir, fixedHead: 10))
+      ..addLink(HLink(id: 'dev', from: 'R', to: 'A', kind: HLinkKind.device, device: const DeviceLossCurve(k: 1000, n: 2, c: 1.0)))
+      ..addLink(HLink(id: 'p', from: 'A', to: 'R2', diameter: 0.05, length: 10));
+    final r = n.solve();
+    expect(r.converged, isTrue, reason: '0.5 m across a valve that opens at 1 m');
+    expect(r.links['dev']!.status, LinkStatus.closed);
+    expect(r.links['dev']!.flow.abs(), lessThan(1e-6));
+  });
+
+  test('MOT-20: the lateral calculator takes the Scobey and Manning coefficients of the pipe', () {
+    for (final (method, a, b) in [(FrictionMethod.scobey, 0.32, 0.40), (FrictionMethod.manning, 0.009, 0.010)]) {
+      LateralSpec lat(double v) => LateralSpec(
+        length: 100,
+        diameter: 0.025,
+        spacing: 2,
+        emitter: EmitterCurve.fromNominal(flow: 4 / 3.6e6 * 10, head: 20),
+        method: method,
+        scobeyKs: method == FrictionMethod.scobey ? v : 0.32,
+        manningN: method == FrictionMethod.manning ? v : 0.009,
+      );
+      final la = analyzeLateralFromEnd(lat(a), 15), lb = analyzeLateralFromEnd(lat(b), 15);
+      // Scobey loss ∝ Ks, Manning ∝ n²: the old fixed 0.40 / 0.010 gave 25 % / 23 % more than the design
+      final ratio = method == FrictionMethod.scobey ? b / a : (b / a) * (b / a);
+      expect(lb.frictionLoss / la.frictionLoss, closeTo(ratio, 0.02), reason: method.name);
+      // the default is the plastic pipe of the design
+      expect(const LateralSpec(length: 1, diameter: 0.02, spacing: 1, emitter: EmitterCurve(k: 1e-6, x: 0.5)).scobeyKs, 0.32);
+    }
+  });
+
+  test('MOT-21: the emitters of a buried tape discharge at the tube, not at the surface', () {
+    double head(double depth) {
+      final p = Project();
+      final b = generateBlock(
+        p,
+        BlockOptions(
+          polygon: const [Pt(0, 0), Pt(60, 0), Pt(60, 20), Pt(0, 20)],
+          direction: const Pt(1, 0),
+          lateralSpacing: 1.5,
+          isTape: true,
+          tapeSpecId: 'tape16_16_20',
+          tapeInletHeadM: 8,
+          submainPosition: SubmainPosition.start,
+          valveSpecId: 'ev50',
+          valvePosition: ValvePosition.centre,
+          submainStub: 1.5,
+          zoneName: 'Z',
+        ),
+      );
+      p.entities.addAll(b.all);
+      for (final t in b.laterals.whereType<TapeEntity>()) {
+        t.depth = depth;
+      }
+      p.entities.add(WaterSupplyEntity(id: 'tank', position: b.valve!.position + const Pt(-50, 0), name: 'Tank', calculatePressure: true));
+      p.entities.add(PipeEntity(id: 'main', points: [b.valve!.position + const Pt(-50, 0), b.valve!.position], scope: HydraulicScope.mainline, name: 'Main'));
+      return Designer(p).analyzeAll().zones.values.single.downstreamHead;
+    }
+
+    // 0.3 m deeper the emitters get 0.3 m more of the valve's head: the
+    // valve needs that much less (the offset of the depth put them back up)
+    expect(head(0.3), closeTo(head(0) - 0.3, 0.02));
+  });
+
+  test('MOT-26: the transient study checks thin walls for collapse; PSV and FCV keep water from flowing back', () {
+    // PVC (E = 3.0 GPa, ν = 0.38) with a wall of 1/41 of the mean diameter:
+    // p = 2E/(1 − ν²)·(t/Dm)³ = 6.0e9 / 0.8556 / 68 921 Pa = 101.75 kPa
+    final h = collapsePressureHead(diameter: 0.1, wallThickness: 0.0025, material: PipeMaterial.pvc);
+    expect(h * waterDensity * gravity, closeTo(2 * 3.0e9 / (1 - 0.38 * 0.38) / (41.0 * 41.0 * 41.0), 1));
+    expect(h, closeTo(10.39, 0.01));
+    // steel 1 m, 10 mm: 2·2e11/0.91·1e-6 → about 44 m
+    expect(collapsePressureHead(diameter: 0.99, wallThickness: 0.01, material: PipeMaterial.steel), closeTo(2 * 2.0e11 / 0.91 * 1e-6 / (waterDensity * gravity), 1e-6));
+    for (final kind in [HLinkKind.psv, HLinkKind.fcv]) {
+      final net = HydraulicNetwork();
+      net.addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 60));
+      net.addNode(HNode(id: 'A'));
+      net.addNode(HNode(id: 'B'));
+      net.addNode(HNode(id: 'N'));
+      net.addNode(HNode(id: 'O', kind: HNodeKind.reservoir, fixedHead: 0));
+      net.addLink(HLink(id: 'P1', from: 'R', to: 'A', diameter: 0.25, length: 600, hazenC: 130));
+      net.addLink(HLink(id: 'X', from: 'A', to: 'B', kind: kind, prvSetting: 5, fcvFlow: 1, device: const DeviceLossCurve(k: 50)));
+      net.addLink(HLink(id: 'P2', from: 'B', to: 'N', diameter: 0.25, length: 900, hazenC: 130));
+      net.addLink(HLink(id: 'V', from: 'N', to: 'O', kind: HLinkKind.device, device: const DeviceLossCurve(k: 9000)));
+      final steady = net.solve();
+      expect(steady.links['X']!.flow, greaterThan(0));
+      final r = TransientModel.fromNetwork(net, steady, linkData: {'P1': const TransientLinkData(celerity: 900), 'P2': const TransientLinkData(celerity: 900)}).simulate(
+        events: [TransientEvent.valveClosure('V')],
+        options: const TransientOptions(duration: 20, probes: [TransientProbe.link('X')]),
+      );
+      expect(r.seriesOf('X')!.flows.every((q) => q >= -1e-9), isTrue, reason: '$kind: no flow back through it');
+    }
   });
 }
