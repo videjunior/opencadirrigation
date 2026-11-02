@@ -9,4 +9,10 @@ const _aut = <String, (String, String, String)>{
     'Part of the polygon farther than one lateral spacing from every lateral',
     'Parte del polígono a más de una separación entre laterales de cualquier lateral',
   ),
+  // ---- templates
+  'warn.template_centreline_turn': (
+    'A linha central volta sobre si mesma (curva de mais de 150°): desenhe o fairway em dois trechos',
+    'The centreline turns back on itself (a bend of more than 150°): draw the fairway as two stretches',
+    'La línea central vuelve sobre sí misma (curva de más de 150°): dibuje el fairway en dos tramos',
+  ),
 };

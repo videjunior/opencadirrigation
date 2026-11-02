@@ -10,6 +10,7 @@ import 'package:opencadirrigation/core/design/block_generator.dart';
 import 'package:opencadirrigation/core/design/design_check.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
 import 'package:opencadirrigation/core/design/routing.dart';
+import 'package:opencadirrigation/core/design/templates.dart';
 import 'package:opencadirrigation/core/design/tree_rings.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
@@ -387,5 +388,100 @@ void main() {
       final m = routeMainline(const Pt(-5, 15), [const Pt(30, 15)], boundary: lot);
       expect(m.single.points, [const Pt(-5, 15), const Pt(30, 15)]);
     });
+  });
+
+  group('AUT-04 green template on a polygon of few vertices', () {
+    final rotor = Catalog.defaultCatalog().outlet('rotor')!;
+    test('a rectangle green gets the arcs of its densely drawn twin', () {
+      final four = golfGreenLayout(family: rotor, green: const [Pt(-9, -6), Pt(9, -6), Pt(9, 6), Pt(-9, 6)]);
+      final dense = golfGreenLayout(
+        family: rotor,
+        green: [
+          for (var i = 0; i <= 18; i++) Pt(-9.0 + i, -6),
+          for (var i = 1; i <= 12; i++) Pt(9, -6.0 + i),
+          for (var i = 1; i <= 18; i++) Pt(9.0 - i, 6),
+          for (var i = 1; i < 12; i++) Pt(-9, 6.0 - i),
+        ],
+      );
+      expect(four.heads.length, dense.heads.length);
+      for (var i = 0; i < four.heads.length; i++) {
+        expect(four.heads[i].arcDeg, closeTo(dense.heads[i].arcDeg, 3), reason: 'head $i');
+        expect(four.heads[i].arcDeg, greaterThan(90));
+      }
+      expect(four.metrics!.cu, greaterThan(75), reason: 'CU 11 % with 30° arcs at the corners before');
+      expect(four.metrics!.dryPct, lessThan(5));
+    });
+
+    test('a pentagon green has no 30° arcs', () {
+      final penta = golfGreenLayout(family: rotor, green: [for (var i = 0; i < 5; i++) Pt.polar(8, 2 * math.pi * i / 5)]);
+      expect(penta.heads.every((h) => h.arcDeg > 60), isTrue);
+      expect(penta.metrics!.cu, greaterThan(70));
+    });
+  });
+
+  group('AUT-17 corner heads keep the minimum distance', () {
+    for (final gap in [0.2, 0.5, 1.0, 2.0]) {
+      for (final fam in ['spray', 'rotor']) {
+        test('$fam, house $gap m from the lot line', () {
+          final family = Catalog.defaultCatalog().outlet(fam)!;
+          final o = LandscapeLayoutOptions();
+          final l = layoutLandscape(outline: rect(0, 0, 40, 30), exclusions: [rect(10, gap, 25, 12)], family: family, options: o);
+          var closest = double.infinity;
+          for (var i = 0; i < l.heads.length; i++) {
+            for (var j = i + 1; j < l.heads.length; j++) {
+              closest = math.min(closest, l.heads[i].position.distanceTo(l.heads[j].position));
+            }
+          }
+          expect(closest, greaterThanOrEqualTo(o.minSpacingFraction * l.spacing - 1e-6), reason: 'two heads 0.2 m apart before');
+          expect(l.metrics!.dryPct, lessThan(2));
+        });
+      }
+    }
+
+    test('an area smaller than the gap keeps one head opening into it', () {
+      for (final s in [0.5, 1.0]) {
+        final l = layoutLandscape(outline: rect(0, 0, s, s), family: Catalog.defaultCatalog().outlet('spray')!);
+        expect(l.heads, isNotEmpty);
+        expect(l.metrics!.dryPct, 0, reason: 'square $s m');
+      }
+    });
+  });
+
+  group('AUT-27 layout metrics of awkward areas', () {
+    test('Christiansen CU never below zero', () {
+      final region = LayoutRegion(rect(0, 0, 18, 12));
+      // one head in a corner throwing away from the area: almost all dry
+      final m = evaluateHeadLayout(region, [const LayoutHead(position: Pt(0, 0), arcDeg: 30, orientationDeg: 0, flow: 1e-4, radius: 10)]);
+      expect(m.cu, greaterThanOrEqualTo(0));
+    });
+
+    test('a strip narrower than the evaluation cell is still evaluated', () {
+      final l = layoutLandscape(outline: rect(0, 0, 50, 0.3), family: Catalog.defaultCatalog().outlet('spray')!);
+      expect(l.heads, isNotEmpty);
+      expect(l.metrics!.dryPct, lessThan(100), reason: 'CU 0 and all dry with heads before');
+      expect(l.metrics!.cu, greaterThan(50));
+    });
+  });
+
+  group('AUT-28 fairway centrelines that turn sharply', () {
+    final impact = Catalog.defaultCatalog().outlet('impact34')!;
+    test('a centreline that doubles back is refused', () {
+      final l = fairwayLayout(family: impact, centreline: const [Pt(0, 0), Pt(200, 0), Pt(0, 2)], width: 35);
+      expect(l.heads, isEmpty, reason: '723 heads over 5 km before');
+      expect(l.messages, contains('template_centreline_turn'));
+    });
+
+    for (final c in const [
+      [Pt(0, 0), Pt(200, 0), Pt(200, 150)],
+      [Pt(0, 0), Pt(200, 0), Pt(80, 120)],
+    ]) {
+      test('a dogleg keeps every head near the fairway (${c.last})', () {
+        final l = fairwayLayout(family: impact, centreline: c, width: 35);
+        expect(l.heads, isNotEmpty);
+        final b = Bounds.ofPoints(c).inflate(40);
+        expect(l.heads.every((h) => b.contains(h.position)), isTrue);
+        expect(l.metrics!.cu, greaterThan(85));
+      });
+    }
   });
 }

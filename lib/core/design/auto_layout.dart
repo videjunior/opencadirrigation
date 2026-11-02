@@ -981,7 +981,14 @@ LayoutMetrics evaluateHeadLayout(LayoutRegion region, List<LayoutHead> heads, {S
   ];
   if (region.isEmpty || sources.isEmpty) return LayoutMetrics.empty;
   final minR = sources.fold(double.infinity, (m, s) => math.min(m, s.radius));
-  final raster = _Raster(region, _rasterCell(region, cellSize > 0 ? cellSize : math.max(0.05, minR / 4), maxCells));
+  // a cell no wider than the area: a strip narrower than a quarter of the
+  // radius would otherwise have no cell centre inside it (CU 0, all dry)
+  var wanted = cellSize > 0 ? cellSize : math.max(0.05, minR / 4);
+  if (cellSize <= 0) {
+    final (_, rIn) = maximumInscribedCircle(region);
+    if (rIn > 0) wanted = math.min(wanted, math.max(0.01, rIn));
+  }
+  final raster = _Raster(region, _rasterCell(region, wanted, maxCells));
   final h = raster.h, nx = raster.nx, ny = raster.ny, o = raster.origin;
   final rate = Float64List(nx * ny);
   for (final s in sources) {
@@ -1010,7 +1017,9 @@ LayoutMetrics evaluateHeadLayout(LayoutRegion region, List<LayoutHead> heads, {S
   final total = sources.fold(0.0, (s, e) => s + e.flow);
   final st = densogramStats(values, h * h);
   return LayoutMetrics(
-    cu: st.cu,
+    // Christiansen's CU falls below zero when the mean deviation exceeds
+    // the mean (most of the area dry): 0 is the floor of the scale
+    cu: math.max(0.0, st.cu),
     du: st.du,
     sc: st.sc,
     dryPct: st.dryPct,
@@ -1352,6 +1361,10 @@ LandscapeLayout layoutLandscape({required List<Pt> outline, List<List<Pt>> exclu
       if (loop.isHole && loop.length < spacing) continue;
       for (final h in _loopHeads(loop, spacing, cornerDeg: o.cornerAngleDeg, minGap: minGap, minCornerArc: o.minCornerArcDeg)) {
         if (inSoft(h.p)) continue;
+        // the corner of a house or bed a little off the lot line (or off a
+        // corner of another loop) merges into the head already there: two
+        // heads never closer than the minimum gap
+        if (h.role == HeadRole.corner && grid.nearest(h.p, maxDistance: minGap - 1e-9) >= 0) continue;
         h.loop = k;
         // across a strip much narrower than the spacing (a house a few
         // metres from the lot line) one row of heads is enough: an edge head
@@ -1517,15 +1530,18 @@ List<_Head> _loopHeads(RegionLoop loop, double spacing, {required double cornerD
   // corners closer than the minimum gap along the loop form one corner
   // (a chamfer, a rounded corner drawn with a few segments)
   // (a group spans less than the gap from its first corner)
+  // (a group never turns through half a circle or more: the corners of an
+  // area smaller than the gap stay apart, each opening into the area)
   final groups = <List<int>>[];
+  double turnOf(Iterable<int> g) => g.fold(0.0, (s, i) => s + turns[i]);
   for (final c in corners) {
-    if (groups.isNotEmpty && loop.cum[c] - loop.cum[groups.last.first] < minGap) {
+    if (groups.isNotEmpty && loop.cum[c] - loop.cum[groups.last.first] < minGap && (turnOf(groups.last) + turns[c]).abs() < 180 - 1e-9) {
       groups.last.add(c);
     } else {
       groups.add([c]);
     }
   }
-  if (groups.length > 1 && total - loop.cum[groups.last.first] + loop.cum[groups.first.last] < minGap) {
+  if (groups.length > 1 && total - loop.cum[groups.last.first] + loop.cum[groups.first.last] < minGap && (turnOf(groups.last) + turnOf(groups.first)).abs() < 180 - 1e-9) {
     groups.first.insertAll(0, groups.removeLast());
   }
   final positions = <double>[];
