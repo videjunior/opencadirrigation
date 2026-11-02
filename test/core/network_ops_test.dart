@@ -117,7 +117,10 @@ void main() {
     // the flow of that zone alone in the design: its pump and supply pressure
     final f = orchardResults.systemFlows.firstWhere((f) => f.valves.single.valveId == valves.first.id);
     expect(head, closeTo(f.supplies.single.head + f.devices.fold(0.0, (s, dv) => s + math.max(0.0, dv.pumpHead)), 0.05));
-    expect(designerGroupHead(d, [for (final v in valves) v.id]), greaterThanOrEqualTo(head - 1e-6));
+    // all the zones at once: more flow; the pump of the example has surplus
+    // (the calculated supply stays at 0), so its head falls along its curve
+    // rather than rising (with the PN 80 bores of the default catalogue)
+    expect(designerGroupHead(d, [for (final v in valves) v.id]), inExclusiveRange(0, head + 1e-6));
     final groups = [for (final f in orchard.systemFlows) f.valveIds];
     final e = groupingEnergyKwh(groups, zones, (g) => designerGroupHead(d, g.map((z) => z.id)), efficiency: 0.65);
     expect(e, greaterThan(0));

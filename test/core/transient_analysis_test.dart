@@ -189,7 +189,9 @@ void main() {
     expect(s.speeds.last, lessThan(s.speeds.first));
     expect(s.pressures.reduce(math.min), lessThan(s.pressures.first - 1), reason: 'the downsurge at the discharge');
     // a heavier set runs down slower: a later check valve closure
-    final heavy = TransientStudy.on(study.mainline, options: const TransientStudyOptions(scenarios: {TransientScenario.pumpTrip}, inertia: 0.1)).analyze().runs.single;
+    // (at 0.1 kg·m² the pump keeps the flow going on the PN 80 bores of the
+    // default catalogue and the valve does not shut within the run)
+    final heavy = TransientStudy.on(study.mainline, options: const TransientStudyOptions(scenarios: {TransientScenario.pumpTrip}, inertia: 0.05)).analyze().runs.single;
     expect(heavy.checkValves[pump.id]!, greaterThan(trip.checkValves[pump.id]!));
     // 4 poles: the slower speed estimates a larger inertia
     final slow = TransientStudy.on(study.mainline, options: const TransientStudyOptions(scenarios: {TransientScenario.pumpTrip}, motorPoles: 4)).analyze().runs.single;
