@@ -571,7 +571,7 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
     engOp(
       b,
       name: 'gated_pipe',
-      description: 'Tools → Gated pipe: the opening of every gate of a gated pipe feeding furrows (or the standard hole), so each furrow gets its flow with the friction and the slope gate by gate, and the least inlet head that serves them all. It changes nothing. Inputs (defaults of the dialog): gates 1–2000 (40), gate_spacing_m 0.2–5 (0.76, the furrow spacing), flow_per_gate_lps 0.01–50 L/s (1), first_gate_m (distance of the first gate from the inlet; −1 = half a spacing), pipe_bore_mm 50–600 (250), hazen_c 60–160 (150), slope_pct −5…5 (0; positive falls away from the inlet), inlet_head_m 0–20 (0 = the least head), discharge_coefficient 0.1–1 (0.61). Output: the summary and the gate table.',
+      description: 'Tools → Gated pipe: the opening of every gate of a gated pipe feeding furrows (or the standard hole), so each furrow gets its flow with the friction and the slope gate by gate, and the least inlet head that serves them all. It changes nothing. Inputs (defaults of the dialog): gates 1–2000 (40), gate_spacing_m 0.2–5 (0.76, the furrow spacing), flow_per_gate_lps 0.01–50 L/s (1), first_gate_m (distance of the first gate from the inlet; −1 = half a spacing), pipe_bore_mm 50–600 (250), hazen_c 60–160 (150), slope_pct −5…5 (0; positive falls away from the inlet), inlet_head_m 0–20 (0 = the least head), discharge_coefficient 0.1–1 (0.61), fixed_holes (punched holes that stay fully open: each furrow gets the flow of its full hole at the head it has, found together with the friction along the pipe; default false = adjustable gates). Output: the summary (with fixed holes also the delivered total, the Christiansen uniformity of the furrow flows and the least flow over the mean) and the gate table.',
       schema: obj({
         'gates': int_('Number of gates, 1–2000; default 40.'),
         'gate_spacing_m': num_('Gate spacing, 0.2–5 m; default 0.76.'),
@@ -582,6 +582,7 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
         'slope_pct': num_('Slope along the pipe, −5…5 %; default 0.'),
         'inlet_head_m': num_('Head at the inlet, 0–20 m; 0 (default) = the least that serves every gate.'),
         'discharge_coefficient': num_('Gate discharge coefficient, 0.1–1; default 0.61.'),
+        'fixed_holes': bool_('Punched holes that stay fully open (default false: adjustable gates).'),
       }),
       run: (a, _) async {
         final p = b.p.params;
@@ -599,15 +600,19 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
             slope: (a.number('slope_pct', min: -5, max: 5) ?? 0) / 100,
             inletHeadM: a.number('inlet_head_m', min: 0, max: 20) ?? 0,
             dischargeCoefficient: a.number('discharge_coefficient', min: 0.1, max: 1) ?? 0.61,
+            fixedHoles: a.flag('fixed_holes') ?? false,
           ),
         );
+        final fixed = r.fixedHoles;
         return ToolOutput(
           [
                 'Inlet head used: ${engN(r.inletHeadM, 3)} m (least that serves every gate ${engN(r.minInletHeadM, 3)} m${r.inletHeadOk ? '' : ' — THE HEAD GIVEN IS TOO LOW'})',
                 'Total flow: ${engQ(r.totalFlow, 1)} (${engN(r.totalFlow * 1000, 1)} L/s)',
+                if (fixed)
+                  'Fixed holes, fully open: delivered ${engQ(r.deliveredTotalFlow, 1)} (${engN(r.deliveredTotalFlow * 1000, 1)} L/s${r.deliveredTotalFlow > r.totalFlow * 1.05 ? ', MORE THAN THE TARGETS' : ''}), uniformity of the furrow flows CU ${engN(r.flowCu, 1)} %${r.flowCu < 90 ? ' (LOW)' : ''}, least flow over the mean ${engN(r.minOverMeanFlow, 2)}',
                 'Friction loss ${engN(r.frictionLossM, 3)} m, elevation gain ${engN(r.elevationGainM, 3)} m, inlet velocity ${engN(r.inletVelocity, 2)} m/s',
                 engTable(
-                  ['gate', 'distance m', 'pipe flow L/s', 'head m', 'target L/s', 'opening mm²', 'equivalent Ø mm', 'hole mm', 'opening %', 'full-open L/s'],
+                  ['gate', 'distance m', 'pipe flow L/s', 'head m', 'target L/s', 'opening mm²', 'equivalent Ø mm', 'hole mm', 'opening %', 'full-open L/s', if (fixed) 'delivered L/s'],
                   [
                     for (final g in r.gates)
                       [
@@ -621,6 +626,7 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
                         g.holeMm > 0 ? engN(g.holeMm, 1) : '-',
                         g.holeMm > 0 ? engN(g.openingPct, 0) : '-',
                         g.holeMm > 0 ? engN(g.fullFlow * 1000, 2) : '-',
+                        if (fixed) engN(g.deliveredFlow * 1000, 2),
                       ],
                   ],
                 ),
@@ -665,12 +671,14 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
       b,
       name: 'set_site_climate',
       effect: ToolEffect.write,
-      description: 'Design → Site climate, typed by hand: stores the twelve monthly reference evapotranspiration (ETo), rain, dependable rain and solar irradiation values of the site in the project (the irrigation requirement, the crop and schedule reports and solar_pumping use them), or clears them. Use it for values from a local station or a study; download_climate fetches them from an online archive instead. Arrays not given keep the values the project has (zeros when it has none). One undo step. Inputs (12 numbers each, January first): eto_mm_day 0–20, rain_mm 0–2000 (per month), dependable_rain_mm 0–2000, solar_kwh_m2_day 0–15; clear true removes the climate. Output: the stored table.',
+      description: 'Design → Site climate, typed by hand: stores the twelve monthly reference evapotranspiration (ETo), rain, dependable rain and solar irradiation values of the site in the project (the irrigation requirement, the crop and schedule reports and solar_pumping use them), or clears them. Use it for values from a local station or a study; download_climate fetches them from an online archive instead. Arrays not given keep the values the project has (zeros when it has none). One undo step. Inputs (12 numbers each, January first): eto_mm_day 0–20, rain_mm 0–2000 (per month), dependable_rain_mm 0–2000, solar_kwh_m2_day 0–15, rh_min_pct 0–100 (mean daily minimum relative humidity) and wind_2m_ms 0–30 (mean wind at 2 m) — these two adjust the crop coefficients to the climate (FAO-56 eqs. 62 and 65; eto_from_station_normals works them out from the normals of a station); clear true removes the climate. Output: the stored table.',
       schema: obj({
         'eto_mm_day': numbers('Reference evapotranspiration, mm/day, Jan…Dec.', n: 12),
         'rain_mm': numbers('Rain, mm per month, Jan…Dec.', n: 12),
         'dependable_rain_mm': numbers('Dependable rain, mm per month, Jan…Dec.', n: 12),
         'solar_kwh_m2_day': numbers('Global horizontal irradiation, kWh/m²/day, Jan…Dec.', n: 12),
+        'rh_min_pct': numbers('Mean daily minimum relative humidity, %, Jan…Dec (the Kc adjustment).', n: 12),
+        'wind_2m_ms': numbers('Mean wind speed at 2 m, m/s, Jan…Dec (the Kc adjustment).', n: 12),
         'clear': bool_('Remove the site climate.'),
       }),
       run: (a, i) async {
@@ -684,7 +692,11 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
         final rain = engNumbers(i['rain_mm'], 'rain_mm', length: 12, min: 0, max: 2000);
         final dep = engNumbers(i['dependable_rain_mm'], 'dependable_rain_mm', length: 12, min: 0, max: 2000);
         final rs = engNumbers(i['solar_kwh_m2_day'], 'solar_kwh_m2_day', length: 12, min: 0, max: 15);
-        if (eto == null && rain == null && dep == null && rs == null) throw ToolInputError('Give at least one of eto_mm_day, rain_mm, dependable_rain_mm, solar_kwh_m2_day (or clear).');
+        final rhMin = engNumbers(i['rh_min_pct'], 'rh_min_pct', length: 12, min: 0, max: 100);
+        final u2 = engNumbers(i['wind_2m_ms'], 'wind_2m_ms', length: 12, min: 0, max: 30);
+        if (eto == null && rain == null && dep == null && rs == null && rhMin == null && u2 == null) {
+          throw ToolInputError('Give at least one of eto_mm_day, rain_mm, dependable_rain_mm, solar_kwh_m2_day, rh_min_pct, wind_2m_ms (or clear).');
+        }
         final site = c.siteLatLon;
         final e = eto ?? cur?.etoMmDay ?? List.filled(12, 0.0), r = rain ?? cur?.rainMm ?? List.filled(12, 0.0);
         final d = dep ?? cur?.dependableRainMm, s = rs ?? cur?.solarKWhM2Day;
@@ -693,8 +705,8 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
           rainMm: [...r],
           dependableRainMm: d == null || d.every((x) => x == 0) ? null : [...d],
           solarKWhM2Day: s == null || s.every((x) => x == 0) ? null : [...s],
-          rhMinPct: cur?.rhMinPct,
-          windSpeed2mMs: cur?.windSpeed2mMs,
+          rhMinPct: rhMin == null ? cur?.rhMinPct : [...rhMin],
+          windSpeed2mMs: u2 == null ? cur?.windSpeed2mMs : [...u2],
           // values typed over a download keep its credit but are no longer the service's
           source: eto != null || rain != null || cur == null ? 'manual' : cur.source,
           firstYear: cur?.firstYear ?? 0,
@@ -707,7 +719,7 @@ List<AgentTool> calculatorOperations(AgentToolbox b) {
         c.setClimate(sc);
         String row(List<double>? v) => v == null ? '-' : [for (final x in v) engN(x, 1)].join(' ');
         return ToolOutput(
-          'Site climate (${sc.source}), Jan…Dec:\nETo mm/day: ${row(sc.etoMmDay)}\nRain mm: ${row(sc.rainMm)}\nDependable rain mm: ${row(sc.dependableRainMm)}\nIrradiation kWh/m²/day: ${row(sc.solarKWhM2Day)}',
+          'Site climate (${sc.source}), Jan…Dec:\nETo mm/day: ${row(sc.etoMmDay)}\nRain mm: ${row(sc.rainMm)}\nDependable rain mm: ${row(sc.dependableRainMm)}\nIrradiation kWh/m²/day: ${row(sc.solarKWhM2Day)}\nRHmin %: ${row(sc.rhMinPct)}\nWind at 2 m, m/s: ${row(sc.windSpeed2mMs)}',
         );
       },
     ),

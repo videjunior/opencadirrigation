@@ -317,9 +317,14 @@ List<AgentTool> operationTools(AgentToolbox b) {
       summary: (i) {
         final v = (i['values'] as Map?) ?? const {};
         final text = t('ai.op.set_setting', {'n': v.entries.map((e) => '${e.key} = ${e.value}').join(', ')});
-        // where the custom base map would fetch its tiles from, in plain sight
-        final url = v['view.custom_tile_url'] is String ? v['view.custom_tile_url'] as String : (v['view.base_map'] == 'custom' ? b.c.customTileUrl : '');
-        return url.trim().isEmpty ? text : '$text — ${t('ai.ask.tileHost', {'h': aiHost(url)})}';
+        // where the custom base map, or the street map, would fetch its tiles from, in plain sight
+        final custom = v['view.custom_tile_url'] is String ? v['view.custom_tile_url'] as String : (v['view.base_map'] == 'custom' ? b.c.customTileUrl : '');
+        final streets = v['view.streets_tile_url'] is String ? v['view.streets_tile_url'] as String : '';
+        final hosts = {
+          for (final u in [custom, streets])
+            if (u.trim().isNotEmpty) aiHost(u),
+        };
+        return hosts.isEmpty ? text : '$text — ${t('ai.ask.tileHost', {'h': hosts.join(', ')})}';
       },
       handler: (i) async => ToolOutput(await setSettings(b, i['values'])),
     ),

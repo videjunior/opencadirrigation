@@ -491,7 +491,7 @@ String noTerrainText(AgentToolbox b) =>
 /// disabled one, a manufacturer's pack, a data sheet or the program's own
 /// catalogue.
 String catalogNextStep([String? kind]) =>
-    'Next: search_catalog {${kind == null ? 'kind' : 'kind "$kind"'}, include_disabled true} shows disabled items (edit_catalog action "enable" brings one back); run_operation list_catalog_packs, then add_catalog_pack, adds a manufacturer\'s models; edit_catalog action "add" adds one from a data sheet; run_operation catalog_default {action "reset"} restores the program\'s catalogue.';
+    'Next: search_catalog {${kind == null ? 'kind' : 'kind "$kind"'}, include_disabled true} shows disabled items (edit_catalog action "enable" brings one back); run_operation list_catalog_packs, then add_catalog_pack, adds a manufacturer\'s models; edit_catalog action "add" adds one from a data sheet; run_operation catalog_default {action "factory"} puts the program\'s own catalogue back ({action "load"}: the user\'s saved default).';
 
 /// Stored properties of [e] without its id, type, image data and photo.
 Map<String, Object?> entityJson(Entity e) {

@@ -114,14 +114,14 @@ class AiSetting {
 /// change — the project's settings, and what this browser keeps (the
 /// interface language, the theme, the program options) — refused in
 /// read-only and plan modes, and [confirm]ed whatever the mode when it
-/// fetches from an address of the model's choosing (the custom base map:
-/// its tiles would come from that host, every view of the user's screen
-/// telling it where the project is, the pictures coming back into the
-/// conversation) or changes how the program keeps the user's work
+/// fetches from an address of the model's choosing (the custom base map and
+/// the street map server: their tiles would come from that host, every
+/// view of the user's screen telling it where the project is, the pictures
+/// coming back into the conversation) or changes how the program keeps the user's work
 /// (`app.*`: the autosave).
 ({bool confirm})? settingImpact(String key, Object? value) {
   if (key.startsWith('params.') || key.startsWith('units.') || key.startsWith('project.') || key.startsWith('quote.')) return (confirm: false);
-  if (key == 'view.custom_tile_url' || (key == 'view.base_map' && value == 'custom')) return (confirm: true);
+  if (key == 'view.custom_tile_url' || key == 'view.streets_tile_url' || (key == 'view.base_map' && value == 'custom')) return (confirm: true);
   if (key.startsWith('app.')) return (confirm: true);
   if (key == 'view.language' || key == 'view.theme') return (confirm: false);
   return null;
@@ -347,6 +347,16 @@ List<AiSetting> aiSettings(AgentToolbox b, {Map<String, Object?> pending = const
       () => c.customTileUrl,
       (v) => c.setCustomTileUrl('$v'),
       validate: (v) => '$v'.trim().isEmpty || BaseMapLayer.isValidTemplate('$v') ? null : 'Not an XYZ template with {z}, {x} and {y}.',
+    ),
+    view(
+      'view.streets_tile_url',
+      'string',
+      'Tile server of the street map (View → Base map → Street map server): an XYZ template of OpenStreetMap tiles, e.g. https://example.com/osm/{z}/{x}/{y}.png; "" uses the OpenStreetMap Foundation\'s own server, run by volunteers, whose usage policy asks for no heavy use. Kept in this browser; always confirmed by the user (the street map then comes from that host).',
+      () => c.streetsTileUrl,
+      (v) => c.setStreetsTileUrl('$v'),
+      validate: (v) => '$v'.trim().isEmpty || BaseMapLayer.isValidTemplate('$v')
+          ? null
+          : (BaseMapLayer.isPlainHttp('$v') ? 'An http:// server is blocked by the browser on this site (HTTPS): use https://.' : 'Not an XYZ template with {z}, {x} and {y}.'),
     ),
     view(
       'view.theme',

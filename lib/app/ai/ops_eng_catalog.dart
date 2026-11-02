@@ -12,6 +12,7 @@ import 'dart:typed_data';
 
 import '../../core/api.dart';
 import '../io/catalog_packs.dart';
+import '../widgets/dialogs/more_dialogs.dart' show hasSavedDefaultCatalog;
 import 'agent_tools.dart';
 import 'ai_safety.dart';
 import 'ops_eng_common.dart';
@@ -576,53 +577,65 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
       effect: ToolEffect.write,
       // every action is confirmed: a preference of this browser, or the whole catalogue replaced
       confirm: (_) => true,
-      description: 'Design → Catalogue → Default catalogue: "save" keeps the project catalogue as the catalogue of new projects on this browser (a preference, not an undo step); "forget" drops the saved one (new projects get the program\'s catalogue again); "reset" replaces the project catalogue with the program\'s default catalogue for the language and currency and forgets the saved one (one undo step; results discarded). Every action is confirmed by the user. Input: action. Output: what was done.',
+      description: 'Design → Catalogue → the default catalogue, as the three buttons of the catalogue editor and "Use as default": "save" keeps the project catalogue as the catalogue of new projects on this browser (a preference, not an undo step); "load" puts that saved catalogue into this project (one undo step; results discarded; fails when none is saved); "factory" puts the program\'s own catalogue for the language and currency into this project (one undo step; results discarded) and keeps the saved default; "forget" drops the saved default (new projects get the program\'s catalogue again), the project\'s catalogue staying as it is. "reset" is the older name of "factory". Every action is confirmed by the user. Input: action. Output: what was done.',
       schema: obj(
         {
-          'action': str(null, ['save', 'forget', 'reset']),
+          'action': str(null, ['save', 'load', 'factory', 'forget', 'reset']),
         },
         required: ['action'],
       ),
       summary: (i) => engSummary(b, 'ai.op.catalog_default.${i['action']}', 'ai.op.catalog_default'),
       run: (a, _) async {
+        // the project catalogue replaced by [d]: one undo step, results discarded
+        void replace(Catalog d) {
+          engNotBusy(c);
+          b.change('catalog_default', () {
+            final cat = b.p.catalog;
+            cat.pipes
+              ..clear()
+              ..addAll(d.pipes);
+            cat.outlets
+              ..clear()
+              ..addAll(d.outlets);
+            cat.tapes
+              ..clear()
+              ..addAll(d.tapes);
+            cat.valves
+              ..clear()
+              ..addAll(d.valves);
+            cat.pumps
+              ..clear()
+              ..addAll(d.pumps);
+            cat.fittings
+              ..clear()
+              ..addAll(d.fittings);
+            cat.wires
+              ..clear()
+              ..addAll(d.wires);
+            return 1;
+          });
+        }
+
+        const after = 'Items of the drawing that pointed to removed ids need new ones (get_design_messages). Results discarded.';
         switch (a.str('action', required: true)) {
           case 'save':
             c.saveDefaultCatalog();
             return ToolOutput('The project catalogue (${b.p.catalog.itemCount} items) is now the catalogue of new projects.');
           case 'forget':
+            if (!hasSavedDefaultCatalog()) return const ToolOutput('No default catalogue was saved on this browser: new projects already get the program\'s catalogue.');
             c.clearDefaultCatalog();
-            return const ToolOutput('Saved default catalogue forgotten: new projects get the program\'s catalogue.');
+            return const ToolOutput('Saved default catalogue forgotten: new projects get the program\'s catalogue; this project\'s catalogue stays as it is.');
+          case 'load':
+            if (!hasSavedDefaultCatalog()) {
+              throw ToolInputError('No default catalogue is saved on this browser: action "save" keeps the project\'s catalogue as the default, "factory" puts the program\'s catalogue in.');
+            }
+            replace(c.defaultCatalog());
+            return ToolOutput('The default catalogue saved on this browser is now the project catalogue (${b.p.catalog.itemCount} items). $after');
           default:
-            engNotBusy(c);
-            final d = Catalog.defaultCatalog(lang: c.lang, currency: b.p.params.currencyCode);
-            b.change('catalog_default', () {
-              final cat = b.p.catalog;
-              cat.pipes
-                ..clear()
-                ..addAll(d.pipes);
-              cat.outlets
-                ..clear()
-                ..addAll(d.outlets);
-              cat.tapes
-                ..clear()
-                ..addAll(d.tapes);
-              cat.valves
-                ..clear()
-                ..addAll(d.valves);
-              cat.pumps
-                ..clear()
-                ..addAll(d.pumps);
-              cat.fittings
-                ..clear()
-                ..addAll(d.fittings);
-              cat.wires
-                ..clear()
-                ..addAll(d.wires);
-              return 1;
-            });
-            c.clearDefaultCatalog();
+            // factory (and its older name, reset): the saved default stays
+            replace(Catalog.defaultCatalog(lang: c.lang, currency: b.p.params.currencyCode));
             return ToolOutput(
-              'Catalogue reset to the program\'s default (${b.p.catalog.itemCount} items). Items of the drawing that pointed to removed ids need new ones (get_design_messages). Results discarded.',
+              'Catalogue reset to the program\'s default (${b.p.catalog.itemCount} items)${hasSavedDefaultCatalog() ? '; the default saved on this browser stays (action "load" brings it in, "forget" drops it)' : ''}. $after',
             );
         }
       },

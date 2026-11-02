@@ -3,6 +3,53 @@ part of '../i18n.dart';
 /// Strings added in 1.6.0 for the AI assistant: (pt, en, es), merged into the table after
 /// the base strings (a key repeated in another part is a compile-time error).
 const _ia = <String, (String, String, String)>{
+  // ---- operations for the functions of wave 1 (IA+)
+  // the geometry edits of the drawing
+  'ai.op.stretch_entities': ('Esticar o que está na janela', 'Stretch what lies in the window', 'Estirar lo que está en la ventana'),
+  'ai.op.fillet_corner': ('Arredondar o canto de {n}', 'Round the corner of {n}', 'Redondear la esquina de {n}'),
+  'ai.op.chamfer_corner': ('Chanfrar o canto de {n}', 'Chamfer the corner of {n}', 'Achaflanar la esquina de {n}'),
+  'ai.op.break_entity': ('Retirar um trecho de {n}', 'Break out a part of {n}', 'Quitar un tramo de {n}'),
+  'ai.op.join_entities': ('Unir {n} itens', 'Join {n} items', 'Unir {n} elementos'),
+  'ai.op.explode_entities': ('Explodir {n} itens', 'Explode {n} items', 'Descomponer {n} elementos'),
+  'ai.op.convert_to_area': ('Converter {n} contornos em áreas', 'Turn {n} outlines into areas', 'Convertir {n} contornos en áreas'),
+  // Save as copy and the browser storage
+  'ai.op.save_as_copy': (
+    'Salvar o projeto como uma cópia própria (novo arquivo)',
+    'Save the project as a copy of its own (a new file)',
+    'Guardar el proyecto como una copia propia (un archivo nuevo)',
+  ),
+  'ai.op.browser_storage': ('Ler o que o navegador guarda dos projetos', 'Read what the browser keeps of the projects', 'Leer lo que el navegador guarda de los proyectos'),
+  'ai.op.download_stored_projects': (
+    'Baixar todos os projetos guardados no navegador (ZIP)',
+    'Download every project kept in the browser (ZIP)',
+    'Descargar todos los proyectos guardados en el navegador (ZIP)',
+  ),
+  'ai.op.persist_storage': (
+    'Pedir ao navegador que mantenha o armazenamento do site',
+    'Ask the browser to keep the storage of the site',
+    'Pedir al navegador que conserve el almacenamiento del sitio',
+  ),
+  // the terms of the base maps
+  'ai.op.base_map_terms': ('Ler os termos dos mapas base', 'Read the terms of the base maps', 'Leer los términos de los mapas base'),
+  // the ETo of the site from the normals of a weather station
+  'ai.op.eto_from_station_normals': (
+    'Calcular a ETo pelas normais de uma estação',
+    'Work out the ETo from the normals of a station',
+    'Calcular la ETo con las normales de una estación',
+  ),
+  'ai.op.eto_from_station_normals.apply': (
+    'Calcular a ETo pelas normais de uma estação e guardá-la no clima do local',
+    'Work out the ETo from the normals of a station and keep it in the site climate',
+    'Calcular la ETo con las normales de una estación y guardarla en el clima del sitio',
+  ),
+  // the default catalogue: the user's saved one, the program's own
+  'ai.op.catalog_default.load': ('Carregar no projeto o meu catálogo padrão', 'Load my default catalogue into the project', 'Cargar en el proyecto mi catálogo predeterminado'),
+  'ai.op.catalog_default.factory': (
+    'Restaurar no projeto o catálogo de fábrica do programa',
+    'Restore the program\'s factory catalogue in the project',
+    'Restaurar en el proyecto el catálogo de fábrica del programa',
+  ),
+  // ---- (end of the wave 1 operations)
   // approval cards: where an address would fetch from
   'ai.ask.tileHost': ('os mapas viriam de {h}', 'map tiles would come from {h}', 'los mapas vendrían de {h}'),
   'ai.ask.fetchFrom': ('busca em {h}', 'fetched from {h}', 'se obtiene de {h}'),

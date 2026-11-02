@@ -183,7 +183,7 @@ List<AgentTool> machineOperations(AgentToolbox b) {
       b,
       name: 'set_pivot_machine',
       effect: ToolEffect.write,
-      description: 'Changes the mechanised-machine data of a centre pivot or linear move (the machine dialog), one undo step; the design results are discarded. Give only the fields to change (SI: m, mm, kW, V, degrees counter-clockwise from east). Package: regulated, nozzle_height_m (0 = on the pipe), span_arch_m, drop_bore_mm, nozzle_min / nozzle_max (numbered series 1–400, used without catalogue nozzles), end_gun auto|none|fullCircle|corners, end_gun_spec (gun id; "" clears), end_gun_radius_m (0 = from the gun), end_gun_booster. Drive: motor_rpm, center_gear_ratio, wheel_gear_ratio, tyre_diameter_m or tyre_size (sidewall size such as "11.2-38" or "320/85R38"), tower_speed_m_min (speed at 100 %, wins over the drive train), timer_pct 1–100, min_timer_pct 1–100. Corner arm (pivots): corner_arm_length_m (0 = none), corner_arm_overhang_m, corner_arm_max_deg 0–179, corner_arm_banks 1–30, guide_path (id of a closed shape along the field edge; "" clears), guide_offset_m, clockwise. Variable rate (pivots): vri_step_deg 0.5–90, vri_bank_edges_m (radii of the bank boundaries for zone control; [] = speed control), vri_zones ({closed shape id: target gross depth mm}; replaces the zones and drops the sectors), vri_sectors ([[start_deg, end_deg, depth_mm], …]; replaces the sectors and drops the zones). Electrical: voltage (three-phase V; 0 = off), tower_motor_kw, supply_cable_m, supply_cable_mm2 (0 = sized). Output: the new analysis summary (package and drive) and the messages; pivot_machine shows the rest.',
+      description: 'Changes the mechanised-machine data of a centre pivot or linear move (the machine dialog), one undo step; the design results are discarded. Give only the fields to change (SI: m, mm, kW, V, degrees counter-clockwise from east). Package: regulated, nozzle_height_m (0 = on the pipe), span_arch_m, drop_bore_mm, nozzle_min / nozzle_max (numbered series 1–400, used without catalogue nozzles), end_gun auto|none|fullCircle|corners, end_gun_spec (gun id; "" clears), end_gun_radius_m (0 = from the gun), end_gun_booster. Drive: motor_rpm, center_gear_ratio, wheel_gear_ratio, tyre_diameter_m or tyre_size (sidewall size such as "11.2-38" or "320/85R38"), tower_speed_m_min (speed at 100 %, wins over the drive train), timer_pct 1–100, min_timer_pct 1–100. Corner arm (pivots): corner_arm_length_m (0 = none), corner_arm_overhang_m, corner_arm_max_deg 0–179, corner_arm_banks 1–30, corner_arm_throw_m (throw of the arm\'s last sprinkler, 0–100 m; −1 = the machine\'s end throw, the default), guide_path (id of a closed shape along the field edge; "" clears), guide_offset_m, clockwise. Variable rate (pivots): vri_step_deg 0.5–90, vri_bank_edges_m (radii of the bank boundaries for zone control; [] = speed control), vri_zones ({closed shape id: target gross depth mm}; replaces the zones and drops the sectors), vri_sectors ([[start_deg, end_deg, depth_mm], …]; replaces the sectors and drops the zones). Electrical: voltage (three-phase V; 0 = off), tower_motor_kw, supply_cable_m, supply_cable_mm2 (0 = sized). Output: the new analysis summary (package and drive) and the messages; pivot_machine shows the rest.',
       schema: obj({
         'pivot': str('Id or name of the pivot or linear move.'),
         'regulated': bool_('Pressure-regulated package (default true).'),
@@ -208,6 +208,7 @@ List<AgentTool> machineOperations(AgentToolbox b) {
         'corner_arm_overhang_m': num_('0–50 m.'),
         'corner_arm_max_deg': num_('0–179°.'),
         'corner_arm_banks': int_('1–30.'),
+        'corner_arm_throw_m': num_('0–100 m; −1 = the machine\'s end throw.'),
         'guide_path': str('Closed shape id, or "" to clear.'),
         'guide_offset_m': num_('−200…200 m (inwards positive).'),
         'clockwise': bool_('Direction of travel of the machine (default counter-clockwise).'),
@@ -236,6 +237,7 @@ List<AgentTool> machineOperations(AgentToolbox b) {
           'corner_arm_overhang_m',
           'corner_arm_max_deg',
           'corner_arm_banks',
+          'corner_arm_throw_m',
           'guide_path',
           'guide_offset_m',
           'clockwise',
@@ -287,6 +289,11 @@ List<AgentTool> machineOperations(AgentToolbox b) {
         m.cornerArmOverhangM = n('corner_arm_overhang_m', 0, 50) ?? m.cornerArmOverhangM;
         m.cornerArmMaxDeg = n('corner_arm_max_deg', 0, 179) ?? m.cornerArmMaxDeg;
         m.cornerArmBanks = a.integer('corner_arm_banks', min: 1, max: 30) ?? m.cornerArmBanks;
+        // the arm's own throw; a negative value goes back to the end throw of the machine
+        if (a.has('corner_arm_throw_m')) {
+          final v = a.number('corner_arm_throw_m', min: -1, max: 100)!;
+          m.cornerArmThrowM = v < 0 ? null : v;
+        }
         if (a.has('guide_path')) {
           final g = a.str('guide_path')!;
           if (g.isEmpty) {
