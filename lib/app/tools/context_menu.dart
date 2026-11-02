@@ -184,8 +184,8 @@ Future<void> showCanvasContextMenu(BuildContext context, ProjectController c, Ca
       context: context,
       position: position,
       items: [
-        for (final m in snapModes)
-          PopupMenuItem<String>(key: Key('ctx_snap_$m'), value: m, height: 36, child: Text(c.t(snapModeKey(m)), style: const TextStyle(fontSize: 13))),
+        // the default height (48 px): a finger chooses the snap too
+        for (final m in snapModes) PopupMenuItem<String>(key: Key('ctx_snap_$m'), value: m, child: Text(c.t(snapModeKey(m)), style: const TextStyle(fontSize: 13))),
       ],
     );
     if (mode == null) return;
@@ -196,7 +196,9 @@ Future<void> showCanvasContextMenu(BuildContext context, ProjectController c, Ca
   }
   if (choice == 'attributes') {
     final r = c.selection.length == 1 ? c.entityById(c.selection.first) : null;
-    if (r is BlockRefEntity && context.mounted) await showBlockAttributesDialog(context, c, r);
+    if (r is! BlockRefEntity) return;
+    if (!context.mounted) return;
+    await showBlockAttributesDialog(context, c, r);
     return;
   }
   runCanvasMenu(c, target, choice);
