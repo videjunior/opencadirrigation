@@ -982,4 +982,57 @@ void main() {
       }
     });
   });
+
+  group('AUT-26 zones mixing emitters of different rates', () {
+    Project zone() {
+      final p = Project();
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-20, 0), calculatePressure: true));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-20, 0), const Pt(-2, 0)], scope: HydraulicScope.mainline));
+      p.entities.add(ControlValveEntity(id: p.newId(), position: const Pt(-2, 0), zoneName: 'A', valveSpecId: 'ev50'));
+      return p;
+    }
+
+    bool mixed(Project p) => runDesignCheck(p).issues.any((i) => i.code == 'zone_mixed_emitters');
+
+    /// Tapes [a] then [b], a metre apart, fed from a submain along x = 0.
+    Project tapes(String a, String b) {
+      final p = zone();
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-2, 0), const Pt(0, 0), const Pt(0, 1), const Pt(0, 2), const Pt(0, 3)], scope: HydraulicScope.zone));
+      for (var k = 0; k < 4; k++) {
+        p.entities.add(TapeEntity(id: p.newId(), points: [Pt(0, k.toDouble()), Pt(40, k.toDouble())], tapeSpecId: k < 2 ? a : b));
+      }
+      return p;
+    }
+
+    test('drip tapes of very different rates in one zone', () {
+      // 1.71 L/h every 0.2 m against 2.4 L/h every 0.75 m: 8.6 and 3.2 L/h a metre
+      expect(mixed(tapes('tape16_16_20', 'drip16_24_75')), isTrue, reason: 'drip was left out of the comparison before');
+      // 1.07 L/h every 0.3 m and 1.6 L/h every 0.5 m apply about the same
+      expect(mixed(tapes('tape16_10_30', 'drip16_16_50')), isFalse);
+    });
+
+    test('rotors of two nozzles, each spaced for its own throw, are no mix', () {
+      final p = zone();
+      final pts = <Pt>[const Pt(-2, 0)];
+      void grid(String nozzle, double s, double x0) {
+        for (var i = 0; i < 3; i++) {
+          for (var j = 0; j < 3; j++) {
+            final q = Pt(x0 + s * i, s * j);
+            pts.add(q);
+            p.entities.add(OutletEntity(id: p.newId(), position: q, outletSpecId: 'rotor', nozzleId: nozzle, headM: 25));
+          }
+        }
+      }
+
+      grid('r1.5', 8, 0); // 8 m throw on an 8 m grid
+      grid('r3', 10, 40); // 10 m throw on a 10 m grid
+      p.entities.add(PipeEntity(id: p.newId(), points: pts, scope: HydraulicScope.zone));
+      expect(mixed(p), isFalse, reason: 'flagged before: the rate of both was taken on the 10 m circle');
+      // sprays among rotors still are a mix
+      p.entities.add(OutletEntity(id: p.newId(), position: pts.last + const Pt(4, 0), outletSpecId: 'spray', nozzleId: 's12', headM: 20));
+      p.entities.add(OutletEntity(id: p.newId(), position: pts.last + const Pt(8, 0), outletSpecId: 'spray', nozzleId: 's12', headM: 20));
+      (p.entities.whereType<PipeEntity>().last).points.addAll([pts.last + const Pt(4, 0), pts.last + const Pt(8, 0)]);
+      expect(mixed(p), isTrue);
+    });
+  });
 }

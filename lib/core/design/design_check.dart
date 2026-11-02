@@ -96,12 +96,21 @@ DesignCheckReport runDesignCheck(Project project) {
     final emitters = nodes.fold<int>(0, (s, id) => s + (model.nodes[id]?.emitters.length ?? 0));
     if (nodes.length > 1 && emitters == 0) issues.add(CheckIssue('zone_no_emitters', CheckSeverity.error, entityIds: [v.id], value: v.zoneName));
   }
-  // ---- zones mixing drip with overhead emitters, or heads that apply
-  // water at very different rates (sprays with rotors, or part circles with
-  // the nozzle of a full circle): one valve cannot water them all right
+  // ---- zones mixing drip with overhead emitters, or emitters that apply
+  // water at very different rates (sprays with rotors, part circles without
+  // matched nozzles, tapes of 1 and 2 L/h, or 20 and 40 cm apart): one valve
+  // cannot water them all right. 1.6.0 AUT: the rate of every emitter is its
+  // flow over the ground it serves: a head its sector of the square of the
+  // distance to its nearest neighbour in the zone (within half and twice its
+  // own throw), a sprinkler of a spray line the outlet spacing by the
+  // distance to the next line, a tape the emitter spacing by the distance to
+  // the next tape, a dripper the square of the distance to the next one
   for (final v in valves) {
     final families = <bool>{}; // true = drip and bubblers, false = overhead
-    final heads = <(String, double, double, double)>[]; // family, flow, radius, arc
+    final heads = <(Pt, double, double, double)>[]; // position, flow, radius, arc
+    final lines = <String, (SpraylineEntity, double, double, double)>{}; // flow, radius, arc
+    final tapes = <String, TapeEntity>{};
+    final drippers = <(Pt, double)>[];
     for (final id in model.zoneNodes[v.id] ?? const <String>{}) {
       for (final em in model.nodes[id]?.emitters ?? const <EmitterRef>[]) {
         if (em.index == -2) continue; // open tape end of the flushing model
@@ -116,26 +125,64 @@ DesignCheckReport runDesignCheck(Project project) {
         if (kind == null || kind == OutletKind.demandPoint) continue;
         final drip = kind == OutletKind.dripper || kind == OutletKind.bubbler;
         families.add(drip);
+        final q = em.curve.flow(em.nominalHead);
+        if (drip) {
+          if (e is TapeEntity) tapes[e.id] = e;
+          if (e is OutletEntity && q > 0) drippers.add((e.position, q));
+          continue;
+        }
         final r = em.curve.radius(em.nominalHead);
-        if (drip || r <= 0) continue;
-        heads.add((specId ?? '', em.curve.flow(em.nominalHead), r, (spec?.nozzle(nozzleId)?.effectiveArcDeg(arc) ?? arc).clamp(1.0, 360.0).toDouble()));
+        if (r <= 0 || q <= 0) continue;
+        final a = (spec?.nozzle(nozzleId)?.effectiveArcDeg(arc) ?? arc).clamp(1.0, 360.0).toDouble();
+        if (e is OutletEntity) heads.add((e.position, q, r, a));
+        if (e is SpraylineEntity) lines[e.id] = (e, q, r, a);
       }
     }
-    // the spacing of a family is set by its longest throw: the rate of each
-    // head is its flow over its sector of that circle (matched part circles
-    // with smaller nozzles keep the rate of the full circles)
-    final familyRadius = <String, double>{};
-    for (final (f, _, r, _) in heads) {
-      familyRadius[f] = math.max(familyRadius[f] ?? 0, r);
+    final rates = <double>[], dripRates = <double>[];
+    for (final (p, q, r, a) in heads) {
+      var nn = double.infinity;
+      for (final (o, _, _, _) in heads) {
+        final d = o.distanceTo(p);
+        if (d > 1e-6 && d < nn) nn = d;
+      }
+      final s = nn.isFinite ? nn.clamp(0.5 * r, 2 * r).toDouble() : r;
+      rates.add(q / (s * s * a / 360));
     }
-    var rateMin = double.infinity, rateMax = 0.0;
-    for (final (f, q, _, arc) in heads) {
-      final r = familyRadius[f]!;
-      final rate = q / (math.pi * r * r * arc / 360);
-      rateMin = math.min(rateMin, rate);
-      rateMax = math.max(rateMax, rate);
+    double nearestLine(PolyEntity l, Iterable<PolyEntity> others) {
+      if (l.points.length < 2) return double.infinity;
+      final mid = pointAlongPolyline(l.points, polylineLength(l.points) / 2);
+      var best = double.infinity;
+      for (final o in others) {
+        if (identical(o, l) || o.points.length < 2) continue;
+        for (var i = 1; i < o.points.length; i++) {
+          best = math.min(best, distanceToSegment(mid, o.points[i - 1], o.points[i]));
+        }
+      }
+      return best;
     }
-    if (families.length > 1 || (rateMax > 0 && rateMax > mixedRateRatio * rateMin)) {
+
+    for (final (l, q, r, a) in lines.values) {
+      final across = nearestLine(l, [for (final x in lines.values) x.$1]);
+      final s = across.isFinite ? across.clamp(0.5 * r, 2 * r).toDouble() : r;
+      if (l.spacing > 0) rates.add(q / (l.spacing * s * a / 360));
+    }
+    for (final t in tapes.values) {
+      final spec = cat.tape(t.tapeSpecId);
+      if (spec == null || !(spec.emitterSpacingM > 0)) continue;
+      final across = nearestLine(t, tapes.values);
+      if (!across.isFinite || across < 0.05) continue;
+      dripRates.add(spec.emitter.flow(t.inletHeadM) / (spec.emitterSpacingM * across));
+    }
+    for (final (p, q) in drippers) {
+      var nn = double.infinity;
+      for (final (o, _) in drippers) {
+        final d = o.distanceTo(p);
+        if (d > 1e-6 && d < nn) nn = d;
+      }
+      if (nn.isFinite) dripRates.add(q / math.max(0.25, nn * nn));
+    }
+    bool spread(List<double> xs) => xs.length >= 2 && xs.reduce(math.max) > mixedRateRatio * xs.reduce(math.min);
+    if (families.length > 1 || spread(rates) || spread(dripRates)) {
       issues.add(CheckIssue('zone_mixed_emitters', CheckSeverity.warning, entityIds: [v.id], value: v.zoneName));
     }
   }
