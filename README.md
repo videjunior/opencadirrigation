@@ -84,7 +84,8 @@ students. The interactive tutorial and the example gallery let you start without
 
 ## Manual
 
-The manual is in [docs/manual/](docs/manual/README.md) (Portuguese: [docs/manual/pt-BR/](docs/manual/pt-BR/README.md)):
+The manual is in [docs/manual/](docs/manual/README.md) (Portuguese: [docs/manual/pt-BR/](docs/manual/pt-BR/README.md)), and on the
+site as the [user guide](https://opencadirrigation.com/manual/) ([in Portuguese](https://opencadirrigation.com/pt/manual/)):
 
 - [Five-minute start](docs/manual/getting-started.md): open the app, the example gallery, the URL parameters
 - [Design workflow](docs/manual/workflow.md): from the area to the reports, step by step
