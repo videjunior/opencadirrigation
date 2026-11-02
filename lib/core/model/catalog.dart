@@ -2,6 +2,7 @@
 /// default database. All hydraulic values are stored in SI.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 
 import '../hydraulics/emitter.dart';
@@ -960,8 +961,63 @@ class Catalog {
       wires: each('wires', (m) => WireSpec.fromJson(m, report: report)),
     );
     c.unreadable.addAll(aside);
-    c.extra = j.unread;
+    // a catalogue written as its difference from a default one
+    // ([toReducedJson]): the other items come back, in their places
+    final d = j['defaults'];
+    final full = d is Map
+        ? c._completedWith(Catalog.defaultCatalog(lang: d['lang'] is String ? d['lang'] as String : 'en', currency: d['currency'] is String ? d['currency'] as String : catalogPriceCurrency))
+        : c;
+    full.extra = j.unread;
+    return full;
+  }
+
+  /// This catalogue with the items of [base] it lacks, in [base]'s order
+  /// (its own version of an item where it has one, its items absent from
+  /// [base] after them).
+  Catalog _completedWith(Catalog base) {
+    List<T> merge<T>(List<T> mine, List<T> theirs, String Function(T) idOf) {
+      final byId = {for (final m in mine) idOf(m): m};
+      final baseIds = {for (final t in theirs) idOf(t)};
+      return [for (final t in theirs) byId[idOf(t)] ?? t, ...mine.where((m) => !baseIds.contains(idOf(m)))];
+    }
+
+    final c = Catalog(
+      pipes: merge(pipes, base.pipes, (x) => x.id),
+      outlets: merge(outlets, base.outlets, (x) => x.id),
+      tapes: merge(tapes, base.tapes, (x) => x.id),
+      valves: merge(valves, base.valves, (x) => x.id),
+      pumps: merge(pumps, base.pumps, (x) => x.id),
+      fittings: merge(fittings, base.fittings, (x) => x.id),
+      wires: merge(wires, base.wires, (x) => x.id),
+      finame: {...base.finame, ...finame},
+    );
+    c.unreadable.addAll(unreadable);
     return c;
+  }
+
+  /// This catalogue written as its difference from the default catalogue of
+  /// [lang] in [currency]: only the items [keep] names (those the drawing
+  /// uses) and those the default one lacks or has otherwise, with a
+  /// `defaults` marker; [fromJson] puts the other items back. The shipped
+  /// examples are stored so, at a fraction of the size.
+  Map<String, dynamic> toReducedJson({required String lang, required String currency, Set<String> keep = const {}}) {
+    final base = Catalog.defaultCatalog(lang: lang, currency: currency);
+    List<Map<String, dynamic>> only<T>(List<T> mine, T? Function(String) baseItem, String Function(T) idOf, Map<String, dynamic> Function(T) json) => [
+      for (final m in mine)
+        if (keep.contains(idOf(m)) || baseItem(idOf(m)) == null || jsonEncode(json(baseItem(idOf(m)) as T)) != jsonEncode(json(m))) json(m),
+    ];
+    final all = toJson();
+    return {
+      ...all,
+      'defaults': {'lang': lang, 'currency': currency},
+      'pipes': only<PipeSpec>(pipes, base.pipe, (x) => x.id, (x) => x.toJson()),
+      'outlets': only<OutletSpec>(outlets, base.outlet, (x) => x.id, (x) => x.toJson()),
+      'tapes': only<TapeSpec>(tapes, base.tape, (x) => x.id, (x) => x.toJson()),
+      'valves': only<ValveSpec>(valves, base.valve, (x) => x.id, (x) => x.toJson()),
+      'pumps': only<PumpSpec>(pumps, base.pump, (x) => x.id, (x) => x.toJson()),
+      'fittings': only<FittingSpec>(fittings, base.fitting, (x) => x.id, (x) => x.toJson()),
+      if (wires.isNotEmpty) 'wires': only<WireSpec>(wires, base.wire, (x) => x.id, (x) => x.toJson()),
+    };
   }
 
   /// Price per metre used by the economic sizing: the catalogue price, or

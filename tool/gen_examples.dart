@@ -79,11 +79,16 @@ void main() {
     final dir = Directory('examples/$lang')..createSync(recursive: true);
     for (final ex in exampleGallery) {
       final p = buildExample(ex.id, I18n(lang).call, lang: lang);
-      p.meta.uid = 'example-${ex.id.name}-$lang';
       p.meta.created = created;
       final j = p.toJson();
+      // no fixed identifier: every copy opened gets its own (its autosave,
+      // versions and AI conversation are its own)
+      (j['meta'] as Map<String, dynamic>).remove('uid');
+      // the catalogue as its difference from the default one of the
+      // language (the items the drawing uses), compact: a tenth of the size
+      j['catalog'] = p.catalog.toReducedJson(lang: lang, currency: p.params.currencyCode, keep: p.catalogIdsInUse);
       final f = File('${dir.path}/${ex.id.name}.oci.json');
-      f.writeAsStringSync('${const JsonEncoder.withIndent('  ').convert(j)}\n');
+      f.writeAsStringSync('${jsonEncode(j)}\n');
       n++;
       bytes += f.lengthSync();
     }
