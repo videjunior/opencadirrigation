@@ -28,6 +28,8 @@ import 'package:archive/archive.dart';
 import 'package:image/image.dart' as img;
 
 import 'fonts/pdf_fonts.dart';
+import 'icc_srgb.dart';
+import 'xml_text.dart';
 import 'fonts/subset.dart';
 import 'fonts/truetype.dart';
 import 'image_decode.dart';
@@ -96,11 +98,40 @@ class PdfImage {
 }
 
 class PdfDocument {
-  PdfDocument({this.title = '', this.author = '', this.subject = '', this.creator = 'OpenCADIrrigation', PdfFonts? fonts}) : fonts = fonts ?? PdfFonts.shared;
+  PdfDocument({this.title = '', this.author = '', this.subject = '', this.creator = 'OpenCADIrrigation', PdfFonts? fonts, this.pdfA = false, DateTime? now})
+    : fonts = fonts ?? PdfFonts.shared,
+      _now = now;
   final String title;
   final String author;
   final String subject;
   final String creator;
+
+  /// PDF/A-2b (ISO 19005-2, level B): PDF 1.7 with a file identifier, the
+  /// sRGB output intent (an ICC profile, icc_srgb.dart), XMP metadata that
+  /// agree with the document information, and every font embedded (the
+  /// text Helvetica would draw is drawn with the bundled Latin font, scaled
+  /// to Helvetica's widths so the layout does not move).
+  final bool pdfA;
+
+  /// The time of the document's dates (now when null).
+  final DateTime? _now;
+
+  /// The name of the layer list of the viewer; when set, [PdfPage.beginLayer]
+  /// puts what follows in an optional content group (ISO 32000-1, 8.11).
+  String? layerTitle;
+
+  /// Optional content groups by name, in their order of first use.
+  final Map<String, String> _layers = {};
+
+  /// Resource name of the group of layer [name].
+  String _layerResource(String name) => _layers[name] ??= 'OC${_layers.length + 1}';
+
+  /// Some text was drawn with Helvetica (a PDF/A document without its Latin
+  /// font registered keeps it, and then is not PDF/A).
+  bool _helveticaUsed = false;
+
+  /// A PDF/A document drew all its text with embedded fonts.
+  bool get fontsAllEmbedded => !_helveticaUsed;
 
   /// Fonts for the text Helvetica cannot draw (and for measuring it).
   final PdfFonts fonts;
@@ -254,6 +285,9 @@ class PdfDocument {
   /// Serialises the document. Content streams are Flate-compressed unless
   /// [compress] is false (handy for inspecting the output in tests).
   Uint8List build({bool compress = true}) {
+    // PDF/A only when every font is embedded: without the Latin font (it
+    // could not be loaded) the file is a plain PDF, not one that claims it
+    final pdfA = this.pdfA && !_helveticaUsed;
     final out = BytesBuilder(copy: false);
     final offsets = <int>[];
     void obj(int id, List<int> body) {
@@ -273,10 +307,13 @@ class PdfDocument {
           .takeBytes();
     }
 
-    out.add(latin1.encode('%PDF-1.4\n%âãÏÓ\n'));
+    // optional content (layers) and PDF/A need PDF 1.5 and 1.7
+    final layered = layerTitle != null && _layers.isNotEmpty;
+    out.add(latin1.encode('%PDF-${pdfA || layered ? '1.7' : '1.4'}\n%âãÏÓ\n'));
     final n = pages.length;
     // 1 catalog, 2 pages, 3 font, 4 bold font, 5 info, 2 objects per page, then
-    // 5 objects per embedded font, 1 or 2 per image and 1 per graphics state
+    // 5 objects per embedded font, 1 or 2 per image and 1 per graphics state,
+    // then the layers, the metadata and the output intent's profile
     var next = 6 + 2 * n;
     final fontIds = <String, int>{};
     for (final f in _fonts.values) {
@@ -292,27 +329,46 @@ class PdfDocument {
     for (final k in _alphaStates.keys) {
       stateIds[k] = next++;
     }
+    final layerIds = <String, int>{
+      if (layered)
+        for (final name in _layers.keys) name: next++,
+    };
+    final metadataId = pdfA ? next++ : 0, profileId = pdfA ? next++ : 0;
     final kids = [for (var i = 0; i < n; i++) '${6 + 2 * i} 0 R'].join(' ');
-    obj(1, latin1.encode('<< /Type /Catalog /Pages 2 0 R >>'));
+    final catalog = StringBuffer('<< /Type /Catalog /Pages 2 0 R');
+    if (layered) {
+      final refs = [for (final id in layerIds.values) '$id 0 R'].join(' ');
+      catalog.write(' /OCProperties << /OCGs [$refs] /D << /Name ${pdfTextString(layerTitle!)} /Order [$refs] /ON [$refs] /OFF [] /BaseState /ON >> >>');
+    }
+    if (pdfA) {
+      catalog.write(' /Metadata $metadataId 0 R /OutputIntents [<< /Type /OutputIntent /S /GTS_PDFA1 /OutputConditionIdentifier (sRGB IEC61966-2.1) /Info (sRGB IEC61966-2.1) /DestOutputProfile $profileId 0 R >>]');
+    }
+    catalog.write(' >>');
+    obj(1, latin1.encode(catalog.toString()));
     obj(2, latin1.encode('<< /Type /Pages /Kids [$kids] /Count $n >>'));
-    obj(3, latin1.encode('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'));
-    obj(4, latin1.encode('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'));
-    final now = DateTime.now();
+    // PDF/A: no font that is not embedded (the objects stay, empty)
+    final standardFonts = !pdfA || _helveticaUsed;
+    obj(3, latin1.encode(standardFonts ? '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>' : 'null'));
+    obj(4, latin1.encode(standardFonts ? '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>' : 'null'));
+    final now = _now ?? DateTime.now();
     String two(int v) => v.toString().padLeft(2, '0');
-    final date = 'D:${now.year}${two(now.month)}${two(now.day)}${two(now.hour)}${two(now.minute)}${two(now.second)}';
+    // PDF/A: the dates in UTC, the same in the information and the metadata
+    final u = pdfA ? now.toUtc() : now;
+    final date = 'D:${u.year}${two(u.month)}${two(u.day)}${two(u.hour)}${two(u.minute)}${two(u.second)}${pdfA ? 'Z' : ''}';
     obj(
       5,
       latin1.encode(
-        '<< /Title ${pdfTextString(title)} /Author ${pdfTextString(author)} /Subject ${pdfTextString(subject)} /Creator ${pdfTextString(creator)} /Producer (OpenCADIrrigation) /CreationDate ($date) >>',
+        '<< /Title ${pdfTextString(title)} /Author ${pdfTextString(author)} /Subject ${pdfTextString(subject)} /Creator ${pdfTextString(creator)} /Producer (OpenCADIrrigation) /CreationDate ($date)${pdfA ? ' /ModDate ($date)' : ''} >>',
       ),
     );
-    final fontRes = StringBuffer('/F1 3 0 R /F2 4 0 R');
+    final fontRes = StringBuffer(standardFonts ? '/F1 3 0 R /F2 4 0 R' : '');
     for (final f in _fonts.values) {
       fontRes.write(' /${f.resource} ${fontIds[f.name]} 0 R');
     }
     final extra = StringBuffer();
     if (_images.isNotEmpty) extra.write(' /XObject << ${[for (final im in _images) '/${im.resource} ${imageIds[im]} 0 R'].join(' ')} >>');
     if (_alphaStates.isNotEmpty) extra.write(' /ExtGState << ${[for (final e in _alphaStates.entries) '/${e.value} ${stateIds[e.key]} 0 R'].join(' ')} >>');
+    if (layered) extra.write(' /Properties << ${[for (final e in _layers.entries) '/${e.value} ${layerIds[e.key]} 0 R'].join(' ')} >>');
     final procSet = _images.isEmpty ? '[/PDF /Text]' : '[/PDF /Text /ImageB /ImageC]';
     final resources = '/Resources << /Font << $fontRes >>$extra /ProcSet $procSet >>';
     for (var i = 0; i < n; i++) {
@@ -361,6 +417,15 @@ class PdfDocument {
       final a = _num(e.key / 1000);
       obj(stateIds[e.key]!, latin1.encode('<< /Type /ExtGState /ca $a /CA $a >>'));
     }
+    for (final e in layerIds.entries) {
+      obj(e.value, latin1.encode('<< /Type /OCG /Name ${pdfTextString(e.key)} >>'));
+    }
+    if (pdfA) {
+      // the metadata stream is not compressed (ISO 19005-2, 6.6.2.1)
+      final xmp = utf8.encode(_xmp(u));
+      obj(metadataId, stream(' /Type /Metadata /Subtype /XML', xmp, flate: false));
+      obj(profileId, stream(' /N 3', srgbIccProfile()));
+    }
     final xref = out.length;
     final b = StringBuffer()
       ..write('xref\n0 ${offsets.length + 1}\n')
@@ -368,9 +433,58 @@ class PdfDocument {
     for (final o in offsets) {
       b.write('${o.toString().padLeft(10, '0')} 00000 n \n');
     }
-    b.write('trailer\n<< /Size ${offsets.length + 1} /Root 1 0 R /Info 5 0 R >>\nstartxref\n$xref\n%%EOF\n');
+    // PDF/A: the file identifier (a digest of the content)
+    final id = pdfA ? _fileId(out.toBytes()) : '';
+    b.write('trailer\n<< /Size ${offsets.length + 1} /Root 1 0 R /Info 5 0 R${pdfA ? ' /ID [<$id> <$id>]' : ''} >>\nstartxref\n$xref\n%%EOF\n');
     out.add(latin1.encode(b.toString()));
     return out.takeBytes();
+  }
+
+  /// A 16-byte identifier of [data]: four 32-bit FNV-1a digests of
+  /// different seeds, in hex (plain arithmetic, the same on the web).
+  static String _fileId(List<int> data) {
+    final h = [0x811C9DC5, 0x050C5D1F, 0x2B992DDF, 0x3D6A29B3];
+    // the start, the end and the length of a large file are enough to tell it apart
+    final n = data.length;
+    final sample = n <= 4 << 20 ? data : [...data.sublist(0, 2 << 20), ...data.sublist(n - (2 << 20)), ...latin1.encode('$n')];
+    for (final b in sample) {
+      for (var k = 0; k < 4; k++) {
+        var v = h[k];
+        final low = v % 256;
+        v = v - low + (low ^ ((b + 37 * k) & 0xFF));
+        // × 16777619 = 2^24 + 403, modulo 2^32
+        h[k] = ((v % 256) * 16777216 + v * 403) % 4294967296;
+      }
+    }
+    return [for (final v in h) v.toRadixString(16).toUpperCase().padLeft(8, '0')].join();
+  }
+
+  /// The XMP metadata of a PDF/A-2b document: its identification (part 2,
+  /// conformance B) and the document information, the dates in UTC as in
+  /// the information dictionary.
+  String _xmp(DateTime u) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    final date = '${u.year}-${two(u.month)}-${two(u.day)}T${two(u.hour)}:${two(u.minute)}:${two(u.second)}Z';
+    const x = xmlText;
+    return '<?xpacket begin="\u{FEFF}" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/">\n'
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
+        '<rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/" xmlns:dc="http://purl.org/dc/elements/1.1/" '
+        'xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">\n'
+        '<pdfaid:part>2</pdfaid:part>\n'
+        '<pdfaid:conformance>B</pdfaid:conformance>\n'
+        '<dc:format>application/pdf</dc:format>\n'
+        '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">${x(title)}</rdf:li></rdf:Alt></dc:title>\n'
+        '<dc:creator><rdf:Seq><rdf:li>${x(author)}</rdf:li></rdf:Seq></dc:creator>\n'
+        '<dc:description><rdf:Alt><rdf:li xml:lang="x-default">${x(subject)}</rdf:li></rdf:Alt></dc:description>\n'
+        '<xmp:CreatorTool>${x(creator)}</xmp:CreatorTool>\n'
+        '<xmp:CreateDate>$date</xmp:CreateDate>\n'
+        '<xmp:ModifyDate>$date</xmp:ModifyDate>\n'
+        '<pdf:Producer>OpenCADIrrigation</pdf:Producer>\n'
+        '</rdf:Description>\n'
+        '</rdf:RDF>\n'
+        '</x:xmpmeta>\n'
+        '<?xpacket end="w"?>';
   }
 
   /// Six capital letters identifying a subset (ISO 32000-1, 9.6.4).
@@ -497,6 +611,27 @@ class PdfPage {
 
   PdfFonts get _fonts => document?.fonts ?? PdfFonts.shared;
 
+  /// The layer of the drawing being drawn (see [beginLayer]).
+  String? _layer;
+
+  /// What follows belongs to layer [name] (an optional content group of the
+  /// document, when it has a [PdfDocument.layerTitle]) until [endLayer];
+  /// a new layer ends the one before.
+  void beginLayer(String name) {
+    final doc = document;
+    if (doc == null || doc.layerTitle == null || name == _layer) return;
+    endLayer();
+    _layer = name;
+    _ops.writeln('/OC /${doc._layerResource(name)} BDC');
+  }
+
+  /// Ends the layer [beginLayer] started.
+  void endLayer() {
+    if (_layer == null) return;
+    _layer = null;
+    _ops.writeln('EMC');
+  }
+
   void save() {
     _ops.writeln('q');
   }
@@ -613,9 +748,12 @@ class PdfPage {
       final w = line.width(size, bold: bold);
       dx = align == PdfAlign.center ? -w / 2 : -w;
     }
-    final simple = line.spans.length == 1 && line.spans.first.isWinAnsi;
+    // PDF/A embeds every font: no Helvetica, not even for the plain text
+    final pdfA = document?.pdfA ?? false;
+    final simple = !pdfA && line.spans.length == 1 && line.spans.first.isWinAnsi;
     final helvetica = bold ? '/F2' : '/F1';
     if (simple) {
+      document?._helveticaUsed = true;
       _ops.write('BT $helvetica ${_num(size)} Tf ');
     } else {
       _ops.write('BT ');
@@ -633,12 +771,32 @@ class PdfPage {
     }
     for (final span in line.spans) {
       if (span.isWinAnsi) {
+        final emb = pdfA ? fonts.embeddedWinAnsi(span) : null;
+        final use = emb == null ? null : document?._useFont(emb.fontName!);
+        if (emb != null && use != null) {
+          // the embedded Latin font at Helvetica's widths (the layout's):
+          // scaled horizontally to the run's width
+          final want = span.unitWidth(bold: bold), have = emb.glyphs!.advance / emb.unitsPerEm;
+          final tz = have > 0 ? 100 * want / have : 100.0;
+          if (bold) {
+            strokeColor(_fillColor < 0 ? 0xFF000000 : _fillColor);
+            lineWidth(size * 0.035);
+            _ops.write('2 Tr ');
+          }
+          _ops.write('${_num(tz)} Tz /${use.resource} ${_num(size)} Tf ');
+          _showGlyphs(use, emb, size);
+          _ops.write('100 Tz ');
+          if (bold) _ops.write('0 Tr ');
+          continue;
+        }
+        document?._helveticaUsed = true;
         _ops.write('$helvetica ${_num(size)} Tf ${PdfDocument.pdfString(span.text)} Tj ');
         continue;
       }
       final use = document?._useFont(span.fontName!);
       if (use == null) {
         // no document to embed into: draw what WinAnsi can
+        document?._helveticaUsed = true;
         _ops.write('$helvetica ${_num(size)} Tf ${PdfDocument.pdfString(span.text)} Tj ');
         continue;
       }

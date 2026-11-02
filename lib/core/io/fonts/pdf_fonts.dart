@@ -573,6 +573,28 @@ class PdfFonts {
   /// Width of [s] at [size] points.
   double textWidth(String s, double size, {bool bold = false}) => _allWinAnsi(s) ? helveticaWidth(s, bold: bold) * size / 1000 : layout(s).width(size, bold: bold);
 
+  /// The run [span] that Helvetica would draw, shaped with the bundled
+  /// Latin font instead (documents that embed every font: PDF/A); null when
+  /// that font is not registered.
+  PdfTextSpan? embeddedWinAnsi(PdfTextSpan span) {
+    final reg = _fonts[BundledFonts.latin];
+    if (reg == null) return null;
+    // a character the font lacks becomes what Helvetica would print (its
+    // approximation, "?" at worst), never the empty glyph PDF/A forbids
+    final b = StringBuffer();
+    for (final r in span.text.runes) {
+      if (r < 0x20 || reg.font.hasGlyph(r)) {
+        b.writeCharCode(r);
+      } else {
+        final a = winAnsiExtra[r];
+        b.writeCharCode(a != null && a < 0x80 ? a : 0x3F);
+      }
+    }
+    final text = b.toString();
+    final shaped = reg.shaping.shape(text, script: Script.latin, language: language, rtl: false);
+    return PdfTextSpan.glyphs(BundledFonts.latin, shaped, reg.font.unitsPerEm, text, span.start, span.end, false);
+  }
+
   /// [s] truncated at a cluster boundary with an ellipsis so that it fits
   /// in [maxWidth] points.
   String fit(String s, double maxWidth, double size, {bool bold = false}) {

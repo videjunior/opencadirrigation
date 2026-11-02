@@ -39,6 +39,11 @@ Map<String, Object?> _sheetProps() => {
   'legend': bool_('Legend (default true).'),
   'bom_on_sheet': bool_('Bill of materials beside the drawing (needs results; default true).'),
   'base_map': bool_('The base map shown on screen under the drawing, downloaded for everything the sheets show (needs a georeference and a base map shown; default true when available).'),
+  // 1.6.0 FMT: a sheet of any size, layers of the PDF viewer, PDF/A
+  'page_width_mm': num_('Width of a page "custom" (mm, 100–5000; default 914, a plotter roll).'),
+  'page_height_mm': num_('Height of a page "custom" (mm, 100–5000; default 1500).'),
+  'pdf_layers': bool_('PDF: one layer of the PDF viewer per layer of the project and the base map (default false).'),
+  'pdf_a': bool_('PDF: PDF/A-2b for archives (every font embedded, sRGB output intent, XMP metadata; default false).'),
 };
 
 /// The sheet options of [a] (shared fields but the base map).
@@ -53,6 +58,11 @@ SheetOptions _sheetOf(AgentToolbox b, ToolArgs a) {
     wettedRadii: a.flag('wetted_radii') ?? true,
     legend: a.flag('legend') ?? true,
     bomOnSheet: (a.flag('bom_on_sheet') ?? true) && c.results != null,
+    // 1.6.0 FMT
+    customWidthMm: a.number('page_width_mm', min: PageSize.minCustomMm, max: PageSize.maxCustomMm) ?? 914,
+    customHeightMm: a.number('page_height_mm', min: PageSize.minCustomMm, max: PageSize.maxCustomMm) ?? 1500,
+    pdfLayers: a.flag('pdf_layers') ?? false,
+    pdfA: a.flag('pdf_a') ?? false,
   );
 }
 
@@ -121,7 +131,11 @@ Map<String, Object?> _setProps() => {
 
 /// The texts [PdfSheetBuilder] may measure and draw for [o] (its fonts are
 /// loaded for them first, as for the PDF).
-Future<void> _sheetFonts(AgentToolbox b, SheetOptions o) => preparePdfFonts(pdfTexts(b.c, reports: o.includeReports || o.bomOnSheet || o.details.isNotEmpty || o.charts), language: b.c.lang);
+Future<void> _sheetFonts(AgentToolbox b, SheetOptions o) async {
+  await preparePdfFonts(pdfTexts(b.c, reports: o.includeReports || o.bomOnSheet || o.details.isNotEmpty || o.charts), language: b.c.lang);
+  // 1.6.0 FMT: PDF/A embeds every font, the Latin one included
+  if (o.pdfA) await ensurePdfLatinFont();
+}
 
 List<AgentTool> exportOperations(AgentToolbox b) {
   final c = b.c;
@@ -755,7 +769,7 @@ String _markName(SheetMarkKind k) => switch (k) {
 
 String _pct(double f) => '${(f * 100).round()} %';
 
-/// The next page size up (null for A0).
+/// The next page size up (null for A0, ANSI E, the elongated and the custom sizes).
 PageSize? _largerPage(PageSize p) => switch (p) {
   PageSize.a4 => PageSize.a3,
   PageSize.a3 => PageSize.a2,
@@ -764,9 +778,13 @@ PageSize? _largerPage(PageSize p) => switch (p) {
   PageSize.a0 => null,
   PageSize.letter => PageSize.tabloid,
   PageSize.tabloid => PageSize.a2,
+  // 1.6.0 FMT: the ANSI sheets, the elongated and the custom sizes
+  PageSize.ansiC => PageSize.ansiD,
+  PageSize.ansiD => PageSize.ansiE,
+  PageSize.ansiE || PageSize.a3x3 || PageSize.a3x4 || PageSize.a2x3 || PageSize.a1x3 || PageSize.a0x2 || PageSize.custom => null,
 };
 
-/// The next page size down (null for A4 and Letter).
+/// The next page size down (null for A4, Letter, the elongated and the custom sizes).
 PageSize? _smallerPage(PageSize p) => switch (p) {
   PageSize.a0 => PageSize.a1,
   PageSize.a1 => PageSize.a2,
@@ -774,4 +792,9 @@ PageSize? _smallerPage(PageSize p) => switch (p) {
   PageSize.a3 => PageSize.a4,
   PageSize.tabloid => PageSize.letter,
   PageSize.a4 || PageSize.letter => null,
+  // 1.6.0 FMT
+  PageSize.ansiE => PageSize.ansiD,
+  PageSize.ansiD => PageSize.ansiC,
+  PageSize.ansiC => PageSize.tabloid,
+  PageSize.a3x3 || PageSize.a3x4 || PageSize.a2x3 || PageSize.a1x3 || PageSize.a0x2 || PageSize.custom => null,
 };
