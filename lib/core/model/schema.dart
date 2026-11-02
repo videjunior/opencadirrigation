@@ -23,6 +23,7 @@ const fieldNotes = <String, String>{
   'name': 'name shown in the drawing and the reports',
   'p': 'position [x, y] (m)',
   'pts': 'vertices [[x, y], …] (m)',
+  'holes': 'islands of an area left out of it: closed polygons [[[x, y], …], …] (m)',
   'a': 'first point [x, y] (m)',
   'b': 'second point [x, y] (m)',
   'c': 'centre [x, y] (m); in a pipe item, the Hazen-Williams C',
@@ -140,7 +141,14 @@ Entity sampleEntity(EntityType type) => switch (type) {
   EntityType.pump => PumpEntity(id: 'e1', position: Pt.zero),
   EntityType.misc => MiscHydraulicEntity(id: 'e1', position: Pt.zero),
   EntityType.junction => JunctionEntity(id: 'e1', position: Pt.zero),
-  EntityType.area => AreaEntity(id: 'e1', points: const [Pt.zero, Pt(1, 0), Pt(1, 1)]),
+  // 1.6.0 MOD: with an island, so the schema shows its holes
+  EntityType.area => AreaEntity(
+    id: 'e1',
+    points: const [Pt.zero, Pt(1, 0), Pt(1, 1)],
+    holes: [
+      const [Pt(0.6, 0.1), Pt(0.9, 0.1), Pt(0.9, 0.4)],
+    ],
+  ),
   EntityType.pivot => PivotEntity(id: 'e1', center: Pt.zero),
   EntityType.controller => ControllerEntity(id: 'e1', position: Pt.zero),
   EntityType.wire => WireEntity(id: 'e1', points: const [Pt.zero, Pt(1, 0)]),

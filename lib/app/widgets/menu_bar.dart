@@ -10,6 +10,7 @@ import '../shortcuts.dart';
 import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../theme.dart';
+import '../tools/area_hole_commands.dart';
 import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import '../io/png_export.dart';
@@ -241,6 +242,9 @@ class AppMenuBar extends StatelessWidget {
                         item(t('edt.join'), c.selection.isEmpty ? null : c.joinSelected, shortcut: 'JOIN ⏎', key: const Key('menu_join')),
                         item(t('edt.explode'), c.selection.isEmpty ? null : c.explodeSelected, shortcut: 'X ⏎', key: const Key('menu_explode')),
                         item(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, shortcut: 'TOAREA ⏎', key: const Key('menu_to_area')),
+                        // 1.6.0 MOD: islands of the irrigated areas
+                        item(t('area.subtract'), c.selection.isEmpty ? null : c.subtractSelectedFromAreas, key: const Key('menu_area_subtract')),
+                        item(t('area.holes.clear'), c.selection.isEmpty ? null : c.clearSelectedAreaHoles, key: const Key('menu_area_holes_clear')),
                       ],
                       child: Text(t('edt.geometry')),
                     ),

@@ -405,6 +405,12 @@ final Map<String, TypeDoc> entityDocs = {
     'An irrigated field, lawn, bed or hydrozone (a closed polygon). The layout tools fill areas; the agronomy reports (crop water requirement, schedule, water budget) and the emitters per plant of the EU use the area holding a zone\'s emitters.',
     {
       'pts': const FieldDoc('polygon vertices [[x, y], …], at least 3, enclosing a surface', unit: 'm'),
+      // 1.6.0 MOD
+      'holes': const FieldDoc(
+        'islands inside the outline that are not irrigated (a pond, a building, a bed): closed polygons [[[x, y], …], …]; the area, the water it needs and the layout leave them out. Change them with the operations subtract_from_area and set_area_holes',
+        unit: 'm',
+        defText: 'none (no islands)',
+      ),
       'crop': const FieldDoc('crop name shown in the reports', panel: 'props.crop'),
       'ck': FieldDoc('FAO-56 crop key (read_manual "agronomy" lists each with its Kc); set kc, root and mad with it, as the panel does', values: [...fao56Crops.keys], panel: 'req.crop', def: ''),
       'im': const FieldDoc(

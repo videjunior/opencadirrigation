@@ -222,8 +222,9 @@ class AgentToolbox {
       MiscHydraulicEntity x => 'at ${pt(x.position)}, device ${x.valveSpecId ?? '-'} (${cat.valve(x.valveSpecId)?.kind.name ?? '?'}), ${x.scope.name}',
       JunctionEntity x => 'at ${pt(x.position)}, ${x.scope.name}',
       PivotEntity x => '${x.kind.name}, centre ${pt(x.center)}, ${x.kind == PivotKind.linear ? 'length' : 'radius'} ${n(x.radiusM, 1)} m${x.sectorDeg < 360 ? ', sector ${n(x.sectorDeg, 0)}°' : ''}',
+      // 1.6.0 MOD: the irrigated surface, the islands left out
       AreaEntity x =>
-        '${x.points.length} vertices, ${n(polygonArea(x.points).abs() / 1e4, 4)} ha${x.crop.isEmpty ? '' : ', crop "${x.crop}"'}${x.cropKey.isEmpty ? '' : ' (${x.cropKey})'}, bounds ${box(x.bounds)}',
+        '${x.points.length} vertices, ${n(x.area / 1e4, 4)} ha${x.holes.isEmpty ? '' : ' irrigated (${x.holes.length} islands left out)'}${x.crop.isEmpty ? '' : ', crop "${x.crop}"'}${x.cropKey.isEmpty ? '' : ' (${x.cropKey})'}, bounds ${box(x.bounds)}',
       ContourEntity x => 'z ${n(x.elevation, 2)} m, ${x.points.length} vertices${x.derived ? ' (generated)' : ''}',
       SpotHeightEntity x => 'at ${pt(x.position)}, z ${n(x.elevation, 2)} m',
       TextEntity x => 'at ${pt(x.position)}, "${short(x.text, 60)}"',

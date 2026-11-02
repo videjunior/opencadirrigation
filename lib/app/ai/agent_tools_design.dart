@@ -444,7 +444,8 @@ List<AgentTool> designTools(AgentToolbox b) {
       handler: (i) async {
         final a = ToolArgs(i);
         final area = _outline(b, a.str('area', required: true)!);
-        final ex = [for (final id in a.strings('exclusions')) _outline(b, id)];
+        // 1.6.0 MOD: the islands of the area stay dry too
+        final ex = [for (final id in a.strings('exclusions')) _outline(b, id), ...holesOf(b.find(a.str('area')!))];
         final family = _family(b, a.str('outlet'));
         final o = LandscapeLayoutOptions()
           ..headM = a.number('head_m', min: 0, max: 120) ?? 0

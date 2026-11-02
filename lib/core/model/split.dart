@@ -294,12 +294,45 @@ Entity? offsetEntity(Entity e, double d, String newId) {
     case TapeEntity t:
       return t.clone(newId: newId)..points = offsetPolyline(t.points, d);
     case AreaEntity a:
-      return a.clone(newId: newId)..points = _offsetClosed(a.points, d);
+      // 1.6.0 MOD: the islands move with the outline (they shrink as it grows)
+      return a.clone(newId: newId)
+        ..points = _offsetClosed(a.points, d)
+        ..holes = _offsetHoles(a, d);
     case SplineEntity s:
       return SplineEntity(id: newId, layer: s.layer, name: s.name, points: offsetPolyline(s.points, d), closed: s.closed);
     default:
       return null;
   }
+}
+
+/// The holes of [a] when its outline is offset by [d] (to the left of its
+/// drawing direction): each moves as far, the same way relative to the
+/// irrigated side, so they shrink as the outline grows; a hole that closes
+/// up (narrower than twice [d]) is left out.
+List<List<Pt>> _offsetHoles(AreaEntity a, double d) {
+  final outer = polygonArea(a.points) >= 0 ? 1.0 : -1.0;
+  final out = <List<Pt>>[];
+  for (final h in a.holes) {
+    if (h.length < 3) continue;
+    final before = polygonArea(h);
+    final moved = _offsetClosed(h, before >= 0 ? -d * outer : d * outer);
+    final after = polygonArea(moved);
+    if (moved.length < 3 || after * before <= 0 || after.abs() <= 1e-9) continue;
+    // a shrunk hole whose vertices come nearer its old outline than the
+    // offset has closed up (its sides crossed each other)
+    if (after.abs() <= before.abs() + 1e-9 && moved.any((q) => _ringDistance(q, h) < d.abs() * 0.999)) continue;
+    out.add(moved);
+  }
+  return out;
+}
+
+/// Distance from [q] to the closed ring [ring].
+double _ringDistance(Pt q, List<Pt> ring) {
+  var best = double.infinity;
+  for (var i = 0; i < ring.length; i++) {
+    best = math.min(best, distanceToSegment(q, ring[i], ring[(i + 1) % ring.length]));
+  }
+  return best;
 }
 
 List<Pt> _offsetClosed(List<Pt> pts, double d) {

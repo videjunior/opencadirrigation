@@ -560,6 +560,24 @@ class PdfPage {
     _paint(stroke, fill, close);
   }
 
+  /// Closed [rings] as one path (1.6.0 MOD): filled by the even-odd rule, so
+  /// the rings inside the first (the islands of an area) stay empty, and
+  /// stroked ring by ring.
+  void rings(List<List<(double, double)>> rings, {bool stroke = true, bool fill = false}) {
+    var any = false;
+    for (final r in rings) {
+      if (r.length < 2) continue;
+      _ops.write('${_num(r.first.$1)} ${_num(r.first.$2)} m ');
+      for (var i = 1; i < r.length; i++) {
+        _ops.write('${_num(r[i].$1)} ${_num(r[i].$2)} l ');
+      }
+      _ops.write('h ');
+      any = true;
+    }
+    if (!any) return;
+    _ops.writeln(fill && stroke ? 'B*' : (fill ? 'f*' : (stroke ? 'S' : 'n')));
+  }
+
   void line(double x1, double y1, double x2, double y2) => path([(x1, y1), (x2, y2)]);
 
   void rect(double x, double y, double w, double h, {bool stroke = true, bool fill = false}) {

@@ -24,6 +24,10 @@ abstract interface class SheetCanvas {
   /// Fill and stroke opacity of what follows (inside save/restore).
   void opacity(double alpha);
   void path(List<(double, double)> pts, {bool close = false, bool stroke = true, bool fill = false});
+
+  /// Closed [rings] as one path filled by the even-odd rule (the islands of
+  /// an area stay empty) and stroked ring by ring (1.6.0 MOD).
+  void rings(List<List<(double, double)>> rings, {bool stroke = true, bool fill = false});
   void line(double x1, double y1, double x2, double y2);
   void rect(double x, double y, double w, double h, {bool stroke = true, bool fill = false});
   void circle(double cx, double cy, double r, {bool stroke = true, bool fill = false});
@@ -66,6 +70,8 @@ class PdfSheetCanvas implements SheetCanvas {
   void opacity(double alpha) => page.opacity(alpha);
   @override
   void path(List<(double, double)> pts, {bool close = false, bool stroke = true, bool fill = false}) => page.path(pts, close: close, stroke: stroke, fill: fill);
+  @override
+  void rings(List<List<(double, double)>> rings, {bool stroke = true, bool fill = false}) => page.rings(rings, stroke: stroke, fill: fill);
   @override
   void line(double x1, double y1, double x2, double y2) => page.line(x1, y1, x2, y2);
   @override
@@ -149,6 +155,14 @@ class SheetPathOp extends SheetOp {
   final bool close, stroke, fill;
   @override
   void replay(SheetCanvas c) => c.path(points, close: close, stroke: stroke, fill: fill);
+}
+
+class SheetRingsOp extends SheetOp {
+  const SheetRingsOp(this.rings, {this.stroke = true, this.fill = false});
+  final List<List<(double, double)>> rings;
+  final bool stroke, fill;
+  @override
+  void replay(SheetCanvas c) => c.rings(rings, stroke: stroke, fill: fill);
 }
 
 class SheetRectOp extends SheetOp {
@@ -246,6 +260,9 @@ class SheetRecorder implements SheetCanvas {
   void opacity(double alpha) => _ops.add(SheetOpacityOp(alpha));
   @override
   void path(List<(double, double)> pts, {bool close = false, bool stroke = true, bool fill = false}) => _ops.add(SheetPathOp(List.unmodifiable(pts), close: close, stroke: stroke, fill: fill));
+  @override
+  void rings(List<List<(double, double)>> rings, {bool stroke = true, bool fill = false}) =>
+      _ops.add(SheetRingsOp(List.unmodifiable([for (final r in rings) List<(double, double)>.unmodifiable(r)]), stroke: stroke, fill: fill));
   @override
   void line(double x1, double y1, double x2, double y2) => path([(x1, y1), (x2, y2)]);
   @override

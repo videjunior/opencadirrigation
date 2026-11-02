@@ -111,4 +111,31 @@ const _mod = <String, (String, String, String)>{
     'Check the motor power on the manufacturer\'s data sheet; for continuous duty prefer a larger motor or a duty point with less flow.',
     'Verifique la potencia del motor en la ficha del fabricante; para operación continua, prefiera un motor mayor o un punto de operación con menos caudal.',
   ),
+  // ---- islands of irrigated areas (1.6.0 MOD, AUT-29)
+  'area.subtract': ('Subtrair da área', 'Subtract from area', 'Restar del área'),
+  'area.holes.clear': ('Remover as ilhas da área', 'Remove the islands of the area', 'Quitar las islas del área'),
+  'hist.subtractArea': ('Subtrair da área ({n})', 'Subtract from area ({n})', 'Restar del área ({n})'),
+  'hist.clearAreaHoles': ('Remover ilhas ({n})', 'Remove islands ({n})', 'Quitar islas ({n})'),
+  'area.subtract.noShape': (
+    'Selecione uma polilinha fechada, um círculo ou outra forma fechada para tirar da área (e a área, se a forma tocar mais de uma).',
+    'Select a closed polyline, a circle or another closed shape to take out of the area (and the area, when the shape touches more than one).',
+    'Seleccione una polilínea cerrada, un círculo u otra forma cerrada para quitar del área (y el área, si la forma toca más de una).',
+  ),
+  'area.subtract.noArea': ('Nenhuma área toca a forma selecionada.', 'No area meets the selected shape.', 'Ninguna área toca la forma seleccionada.'),
+  'area.subtract.missed': (
+    'A forma não corta a área: nada mudou (uma forma dentro de uma ilha já existente não muda a área).',
+    'The shape does not cut the area: nothing changed (a shape inside an island that is already there leaves the area as it was).',
+    'La forma no corta el área: nada cambió (una forma dentro de una isla ya existente no cambia el área).',
+  ),
+  'area.subtract.done': (
+    '{n} área(s) alterada(s), {m} peça(s): a forma virou ilha (ou recorte) e saiu do desenho.',
+    '{n} area(s) changed, {m} piece(s): the shape became an island (or a notch) and left the drawing.',
+    '{n} área(s) modificada(s), {m} pieza(s): la forma pasó a ser isla (o recorte) y salió del dibujo.',
+  ),
+  'area.holes.none': ('Nenhuma área selecionada tem ilhas.', 'No selected area has islands.', 'Ningún área seleccionada tiene islas.'),
+  'area.holes.cleared': ('Ilhas removidas de {n} área(s): o contorno inteiro é irrigado.', 'Islands removed from {n} area(s): the whole outline is irrigated.', 'Islas quitadas de {n} área(s): se riega todo el contorno.'),
+  'area.holes.info': ('Ilhas (não irrigadas)', 'Islands (not irrigated)', 'Islas (no regadas)'),
+  'area.holes.value': ('{n}, {a} fora da área de {g}', '{n}, {a} left out of {g}', '{n}, {a} fuera del área de {g}'),
+  'ai.op.subtract_from_area': ('Subtrair {n} da área', 'Subtract {n} from the area', 'Restar {n} del área'),
+  'ai.op.set_area_holes': ('Definir as ilhas da área {n}', 'Set the islands of area {n}', 'Definir las islas del área {n}'),
 };

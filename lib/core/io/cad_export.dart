@@ -99,6 +99,10 @@ class CadExport {
     _blocks.clear();
     _out = _entities;
     _dims = 0;
+    // 1.6.0 MOD: the areas with islands as hatches first, under everything
+    for (final e in project.entities) {
+      if (e is AreaEntity) _areaHatch(e);
+    }
     for (final e in project.entities) {
       _entity(e);
     }
@@ -245,6 +249,10 @@ class CadExport {
         _add(_insert(junctionBlock, layer, j.position, {'NAME': j.name}));
       case AreaEntity a:
         _add(CadPolyline(layer, a.points, closed: true));
+        // 1.6.0 MOD: the outlines of its islands
+        for (final h in a.holes) {
+          if (h.length >= 3) _add(CadPolyline(layer, h, closed: true));
+        }
       case PivotEntity pv:
         _pivot(pv, layer, labels);
       case ControllerEntity k:
@@ -260,6 +268,20 @@ class CadExport {
   (String, String) _outletItem(String specId, String? nozzleId) {
     final spec = project.catalog.outlet(specId);
     return (spec?.name ?? '', spec?.nozzle(nozzleId)?.name ?? '');
+  }
+
+  /// An area with islands as a solid hatch, the outline its boundary and
+  /// the holes its islands: the irrigated surface as one object, whose area
+  /// the CAD program gives without the holes (1.6.0 MOD).
+  void _areaHatch(AreaEntity a) {
+    if (a.holes.isEmpty || a.points.length < 3) return;
+    _add(
+      CadHatch(_layer(a.layer), [
+        CadLoop(a.points),
+        for (final h in a.holes)
+          if (h.length >= 3) CadLoop(h),
+      ], solid: true),
+    );
   }
 
   void _hatch(HatchEntity h, String layer) {

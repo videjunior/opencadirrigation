@@ -29,9 +29,23 @@ sealed class PlotItem {
 }
 
 class PlotPath extends PlotItem {
-  PlotPath({required super.layer, required super.color, required this.points, this.closed = false, this.widthMm = 0.25, this.dashed = false, this.fillColor, this.fillOpacity = 1});
+  PlotPath({
+    required super.layer,
+    required super.color,
+    required this.points,
+    this.closed = false,
+    this.widthMm = 0.25,
+    this.dashed = false,
+    this.fillColor,
+    this.fillOpacity = 1,
+    this.holes = const [],
+  });
   final List<Pt> points;
   final bool closed;
+
+  /// Closed rings cut out of the fill (the islands of an area, 1.6.0 MOD):
+  /// filled by the even-odd rule and stroked like the outline.
+  final List<List<Pt>> holes;
   final double widthMm;
   final bool dashed;
 
@@ -246,7 +260,7 @@ PlotScene buildPlotScene(
     if (!layersUsed.containsKey(layer)) layersUsed[layer] = colorOf(layer);
   }
 
-  void path(String layer, List<Pt> pts, {bool closed = false, double widthMm = 0.25, bool dashed = false, int? fill, double fillOpacity = 1, int? color}) {
+  void path(String layer, List<Pt> pts, {bool closed = false, double widthMm = 0.25, bool dashed = false, int? fill, double fillOpacity = 1, int? color, List<List<Pt>> holes = const []}) {
     if (pts.isEmpty) return;
     use(layer);
     final c = color ?? colorOf(layer);
@@ -260,6 +274,7 @@ PlotScene buildPlotScene(
         dashed: dashed,
         fillColor: fill == null || !dim ? fill : mutedColor(fill),
         fillOpacity: fillOpacity,
+        holes: holes,
       ),
     );
   }
@@ -305,16 +320,17 @@ PlotScene buildPlotScene(
   // over a picture under the drawing it stays translucent, as on the screen
   final underlay = rasters.isNotEmpty || items.isNotEmpty;
   (int, double) tint(int c, double alpha) => underlay ? (c, alpha) : (blendOverWhite(c, alpha), 1.0);
-  void tintedPath(String layer, List<Pt> pts, int c, double alpha, double widthMm) {
+  void tintedPath(String layer, List<Pt> pts, int c, double alpha, double widthMm, {List<List<Pt>> holes = const []}) {
     final (fill, a) = tint(c, alpha);
-    path(layer, pts, closed: true, widthMm: widthMm, fill: fill, fillOpacity: a);
+    path(layer, pts, closed: true, widthMm: widthMm, fill: fill, fillOpacity: a, holes: holes);
   }
 
   // pass 1: areas (fills under everything else)
   for (final e in project.entities.whereType<AreaEntity>()) {
     if (e.points.length < 3 || skip(e)) continue;
     final base = project.layerNamed(e.layer).color;
-    tintedPath(e.layer, e.points, printColor(base), 0.18, 0.25);
+    // 1.6.0 MOD: the islands stay white
+    tintedPath(e.layer, e.points, printColor(base), 0.18, 0.25, holes: [for (final h in e.holes) if (h.length >= 3) h]);
     if (labels) {
       // top-left corner inside the polygon, clear of the valve/laterals
       final b = Bounds.ofPoints(e.points);

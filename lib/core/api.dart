@@ -142,6 +142,7 @@ export 'io/svg.dart';
 export 'io/work_slicer.dart';
 export 'io/xlsx.dart';
 export 'io/xml_text.dart';
+export 'model/area_holes.dart';
 export 'model/blocks.dart';
 export 'model/catalog.dart';
 export 'model/catalog_check.dart';

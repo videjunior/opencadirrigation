@@ -22,6 +22,7 @@ import '../../../core/design/routing.dart';
 import '../../../core/design/templates.dart';
 import '../../../core/design/tree_rings.dart';
 import '../../../core/design/zoning.dart';
+import '../../../core/model/area_holes.dart' show holesOf;
 import '../../../core/model/catalog.dart';
 import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
@@ -267,7 +268,11 @@ class _Picked {
     if (shapes.isNotEmpty) {
       areaEntity = shapes.first.$1;
       area = shapes.first.$2;
-      others = [for (final s in shapes.skip(1)) s.$2];
+      others = [
+        for (final s in shapes.skip(1)) s.$2,
+        // 1.6.0 MOD: the islands of an area are exclusions as well
+        ...holesOf(areaEntity),
+      ];
     }
   }
 

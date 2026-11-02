@@ -432,7 +432,17 @@ class ShapefileWriter {
             flat([j.position], j.fixedElevation ?? _ground(j.position)),
           ], base(e));
         case AreaEntity a:
-          add(e, 'polygon', [flat(a.points)], {...base(e), 'AREA_HA': a.area / 10000, 'CROP': a.crop});
+          // 1.6.0 MOD: its islands as inner rings
+          add(
+            e,
+            'polygon',
+            [
+              flat(a.points),
+              for (final h in a.holes)
+                if (h.length >= 3) flat(h),
+            ],
+            {...base(e), 'AREA_HA': a.area / 10000, 'CROP': a.crop},
+          );
         case PivotEntity pv:
           final r = results?.pivots[pv.id];
           add(
@@ -513,9 +523,21 @@ class ShapefileWriter {
 
   // ------------------------------------------------------------------ binary writers
 
+  /// Whether [p] lies inside the ring [ring] (even-odd rule).
+  static bool _inRing((double, double) p, List<((double, double), double)> ring) {
+    var inside = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      final (xi, yi) = ring[i].$1;
+      final (xj, yj) = ring[j].$1;
+      if ((yi > p.$2) != (yj > p.$2) && p.$1 < (xj - xi) * (p.$2 - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  }
+
   /// Main file (.shp) and index (.shx) of [records]: per record its parts, per
-  /// part ((x, y), z). Polygon rings are closed and oriented clockwise
-  /// (outer rings) as the specification asks.
+  /// part ((x, y), z). Polygon rings are closed and oriented as the
+  /// specification asks: outer rings clockwise, holes (a later ring of the
+  /// record inside its first one: the islands of an area) counter-clockwise.
   static (Uint8List, Uint8List) writeShapes(ShpShapeType type, List<List<List<((double, double), double)>>> records) {
     final bodies = <Uint8List>[];
     var minX = double.infinity, minY = double.infinity, maxX = -double.infinity, maxY = -double.infinity, minZ = double.infinity, maxZ = -double.infinity;
@@ -523,8 +545,10 @@ class ShapefileWriter {
       var parts = rec;
       if (type == ShpShapeType.polygon || type == ShpShapeType.polygonZ) {
         parts = [
-          for (final ring in rec)
+          for (var k = 0; k < rec.length; k++)
             () {
+              final ring = rec[k];
+              final hole = k > 0 && ring.isNotEmpty && _inRing(ring.first.$1, rec.first);
               var r = List.of(ring);
               if (r.length >= 2 && (r.first.$1.$1 != r.last.$1.$1 || r.first.$1.$2 != r.last.$1.$2)) r.add(r.first);
               // shoelace: positive = counter-clockwise (y up)
@@ -532,7 +556,7 @@ class ShapefileWriter {
               for (var i = 0; i + 1 < r.length; i++) {
                 a += r[i].$1.$1 * r[i + 1].$1.$2 - r[i + 1].$1.$1 * r[i].$1.$2;
               }
-              if (a > 0) r = r.reversed.toList();
+              if (hole ? a < 0 : a > 0) r = r.reversed.toList();
               return r;
             }(),
         ];

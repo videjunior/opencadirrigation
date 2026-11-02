@@ -19,6 +19,7 @@ import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../examples.dart';
 import '../theme.dart';
+import '../tools/area_hole_commands.dart';
 import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
@@ -348,6 +349,9 @@ class _MobileShellState extends State<MobileShell> {
             row(t('edt.join'), c.selection.isEmpty ? null : c.joinSelected, key: const Key('mobile_menu_join')),
             row(t('edt.explode'), c.selection.isEmpty ? null : c.explodeSelected, key: const Key('mobile_menu_explode')),
             row(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, key: const Key('mobile_menu_to_area')),
+            // 1.6.0 MOD: islands of the irrigated areas
+            row(t('area.subtract'), c.selection.isEmpty ? null : c.subtractSelectedFromAreas, key: const Key('mobile_menu_area_subtract')),
+            row(t('area.holes.clear'), c.selection.isEmpty ? null : c.clearSelectedAreaHoles, key: const Key('mobile_menu_area_holes_clear')),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),

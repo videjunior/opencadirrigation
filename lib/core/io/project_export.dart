@@ -226,6 +226,10 @@ class ProjectExporter {
           ents.add(DxfEntity(type: 'POINT', layer: j.layer, points: [j.position]));
         case AreaEntity a:
           ents.add(DxfEntity(type: 'POLYLINE', layer: a.layer, points: a.points, closed: true));
+          // 1.6.0 MOD: the outlines of its islands
+          for (final h in a.holes) {
+            if (h.length >= 3) ents.add(DxfEntity(type: 'POLYLINE', layer: a.layer, points: h, closed: true));
+          }
         case PivotEntity pv:
           ents.add(DxfEntity(type: 'POLYLINE', layer: pv.layer, points: pv.outline(), closed: true));
           ents.add(DxfEntity(type: 'LINE', layer: pv.layer, points: [pv.center, pv.endPoint]));
@@ -269,7 +273,16 @@ class ProjectExporter {
 
     int col(String layer) => 0xFF000000 | (project.layerNamed(layer).color & 0xFFFFFF);
     List<(double, double, double)> ring(Pt c, double r, [int n = 36]) => [for (var i = 0; i <= n; i++) ll(c + Pt.polar(r, 2 * 3.141592653589793 * i / n))];
-    void add(Entity e, String type, List<(double, double, double)> coords, {String? name, String description = '', Map<String, String>? data, double fillAlpha = 0}) {
+    void add(
+      Entity e,
+      String type,
+      List<(double, double, double)> coords, {
+      String? name,
+      String description = '',
+      Map<String, String>? data,
+      double fillAlpha = 0,
+      List<List<(double, double, double)>> holes = const [],
+    }) {
       if (coords.isEmpty) return;
       out.add(
         GeoFeature(
@@ -283,6 +296,7 @@ class ProjectExporter {
           data: {'id': e.id, 'type': e.type.name, ...?data},
           fillAlpha: fillAlpha,
           numeric: _numericData,
+          holes: holes,
         ),
       );
     }
@@ -407,6 +421,11 @@ class ProjectExporter {
             description: '${fmt(a.area / 10000, 2)} ha${a.crop.isNotEmpty ? ' · ${a.crop}' : ''}',
             data: {'area_ha': fmt(a.area / 10000, 3), if (a.crop.isNotEmpty) 'crop': a.crop},
             fillAlpha: 0.3,
+            // 1.6.0 MOD: its islands as inner rings
+            holes: [
+              for (final h in a.holes)
+                if (h.length >= 3) h.map(ll).toList(),
+            ],
           );
         default:
           break;

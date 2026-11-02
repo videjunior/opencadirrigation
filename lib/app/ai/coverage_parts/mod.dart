@@ -2,4 +2,9 @@
 /// in lib/app/ai/ai_coverage.dart).
 library;
 
-const coverageMod = <String, String>{};
+const coverageMod = <String, String>{
+  // ---- islands of irrigated areas (AUT-29)
+  'menu:area.subtract': 'op:subtract_from_area',
+  'menu:area.holes.clear': 'op:set_area_holes',
+  'panel:properties.areaIslands': 'op:set_area_holes',
+};
