@@ -298,6 +298,7 @@ const adviceCodes = [
   // 1.6.0 MOT
   'zone_pressure_unreachable',
   'pump_below_min_flow',
+  'lp_iteration_limit',
 ];
 
 AdviceLevel _level(String code) => switch (code) {

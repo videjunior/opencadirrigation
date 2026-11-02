@@ -35,4 +35,20 @@ const _mot = <String, (String, String, String)>{
     'Choose a smaller pump, open more zones in the system flow, use a variable-speed drive or a bypass line.',
     'Elija una bomba más pequeña, junte más sectores en el turno, use un variador de frecuencia o una derivación de recirculación.',
   ),
+  // ---- LP sizing that stops at its iteration limit (MOT-08)
+  'warn.lp_iteration_limit': (
+    'LP interrompido no limite de iterações (método guloso usado)',
+    'LP stopped at its iteration limit (greedy method used)',
+    'LP detenido en el límite de iteraciones (se usó el método voraz)',
+  ),
+  'adv.lp_iteration_limit.why': (
+    'O dimensionamento por programação linear parou no limite de iterações antes de achar a solução: isso não quer dizer que não haja solução. O programa usou o método guloso (aumenta os tubos passo a passo), que dá um bom resultado, mas talvez não o mais barato.',
+    'The linear-programming sizing stopped at its iteration limit before it found the solution: that does not mean there is none. The program used the greedy method (upsizing step by step), which gives a good result but perhaps not the cheapest.',
+    'El dimensionamiento por programación lineal se detuvo en el límite de iteraciones antes de hallar la solución: eso no quiere decir que no haya solución. El programa usó el método voraz (aumenta las tuberías paso a paso), que da un buen resultado, pero quizá no el más barato.',
+  ),
+  'adv.lp_iteration_limit.how': (
+    'Divida o setor ou a linha principal em partes menores, ou habilite menos diâmetros candidatos no catálogo para o uso.',
+    'Split the zone or the mainline into smaller parts, or enable fewer candidate diameters in the catalogue for the use.',
+    'Divida el sector o la línea principal en partes menores, o habilite menos diámetros candidatos en el catálogo para el uso.',
+  ),
 };

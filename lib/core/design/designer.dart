@@ -27,6 +27,7 @@ import '../model/split.dart';
 import '../units.dart';
 import 'electrical.dart';
 import 'fittings.dart';
+import 'lp.dart';
 import 'lp_sizing.dart';
 import 'mechanised.dart';
 import 'network_builder.dart';
@@ -1295,6 +1296,10 @@ class Designer {
     return out;
   }
 
+  /// Message code of an LP that gave no sizing: infeasible, or stopped at
+  /// its iteration limit (which says nothing about feasibility).
+  static String _lpFailure(LpAssignment a) => a.message == LpStatus.iterationLimit.name ? 'lp_iteration_limit' : 'lp_infeasible';
+
   /// Builds and solves the zone LP with the current assignment for flows.
   LpAssignment _lpZone(String valveId, Map<String, List<GLink>> units, {Set<String> extraNodes = const {}}) {
     final (_, zoneNode) = model.valveNodes[valveId]!;
@@ -1441,7 +1446,7 @@ class Designer {
         }
         lpDone = true;
       } else {
-        _note('lp_infeasible:${valve.zoneName}');
+        _note('${_lpFailure(a)}:${valve.zoneName}');
         res = analyzeZone(valveId, detailed: false);
       }
     } else {
@@ -2259,7 +2264,7 @@ class Designer {
           if (units.keys.every((k) => _assigned[k] == before[k])) break;
         }
       } else {
-        _note('lp_infeasible:${_label('menu.mainline')}');
+        _note('${_lpFailure(a)}:${_label('menu.mainline')}');
       }
     }
     // 2. deficit loop for fixed-pressure supplies

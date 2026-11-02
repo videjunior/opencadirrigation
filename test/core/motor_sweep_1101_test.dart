@@ -2,11 +2,16 @@
 /// failed before its fix.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/core/design/block_generator.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
+import 'package:opencadirrigation/core/design/lp.dart';
+import 'package:opencadirrigation/core/design/lp_sizing.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
 import 'package:opencadirrigation/core/hydraulics/network.dart';
+import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
@@ -164,5 +169,59 @@ void main() {
       expect(r.links['p1']!.flow.abs(), lessThan(1e-6), reason: 'the rest of the network does not feed it');
       expect(r.nodes['A']!.head, closeTo(30, 1e-6));
     }
+  });
+
+  test('MOT-08: a feasible sizing LP of 50 units and 7 diameters is solved, not reported infeasible', () {
+    // pressure rows mixing losses of 0.3 to 900 m (the shape of lpSize):
+    // unscaled, the first phase stalled for 61 050 iterations (24 s) and the
+    // design fell back on the greedy method as if no sizing existed
+    final rnd = math.Random(1);
+    final specs = [
+      for (final (d, c) in [(26.0, 1.0), (32.0, 1.5), (40.0, 2.2), (50.0, 3.4), (63.0, 5.0), (75.0, 7.0), (100.0, 12.0)])
+        PipeSpec(id: 'p$d', name: 'p$d', nominalMm: d, innerDiameterMm: d * 0.9, costPerM: c),
+    ];
+    const nUnits = 50;
+    final units = [for (var i = 0; i < nUnits; i++) 'u$i'];
+    final len = {for (final u in units) u: 50.0 + rnd.nextDouble() * 100};
+    final constraints = <LpHeadConstraint>[];
+    for (var k = 0; k < nUnits * 3; k++) {
+      final u = k % nUnits;
+      final by = <String, Map<String, double>>{
+        for (final pu in <String>{'u0', 'u${(u ~/ 10) * 10}', 'u$u'}) pu: {for (final s in specs) s.id: 2000 / math.pow(s.innerDiameterMm, 4.871) * 1e6 * (0.5 + rnd.nextDouble())},
+      };
+      constraints.add(LpHeadConstraint(headVar: 0, lossByUnitSpec: by, minPressure: 10, maxPressure: 13 + rnd.nextDouble()));
+    }
+    // feasible: every window holds some head with the largest pipes
+    var lo = -double.infinity, hi = double.infinity;
+    for (final c in constraints) {
+      final l = c.lossByUnitSpec.values.fold(0.0, (s, m) => s + m['p100.0']!);
+      lo = math.max(lo, c.minPressure! + l);
+      hi = math.min(hi, c.maxPressure! + l);
+    }
+    expect(lo, lessThan(hi));
+    final sw = Stopwatch()..start();
+    final a = lpSize(
+      LpSizingInput(
+        units: units,
+        candidates: {for (final u in units) u: specs},
+        unitLength: len,
+        maxSizes: {for (final u in units) u: 2},
+        headVars: [LpHeadVar(energyPerMetre: 10)],
+        constraints: constraints,
+        crf: 0.1,
+        tradeCapital: true,
+      ),
+    );
+    expect(a.feasible, isTrue, reason: '${a.message} after ${a.iterations} iterations');
+    expect(a.iterations, lessThan(5000));
+    expect(sw.elapsedMilliseconds, lessThan(5000));
+    expect(a.heads.single, greaterThanOrEqualTo(lo - 1e-6), reason: 'no less head than the largest pipes need');
+    // an iteration limit is told apart from infeasibility
+    final p = LpProblem(0);
+    final x = p.addVariable(1), y = p.addVariable(1);
+    p.add({x: 1, y: 1}, LpSense.ge, 1);
+    p.add({x: 1, y: -1}, LpSense.eq, 0.25);
+    expect(solveLp(p, maxIterations: 0).status, LpStatus.iterationLimit);
+    expect(solveLp(p).status, LpStatus.optimal);
   });
 }

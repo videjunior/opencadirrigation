@@ -86,6 +86,21 @@ LpResult solveLp(LpProblem p, {double eps = 1e-9, int? maxIterations}) {
       if (j >= 0 && j < n) row[j] += v * flip;
     });
     row[cols] = rowRhs[i];
+    // each row divided by its largest coefficient (equilibration): the
+    // pressure rows of the sizing mix losses of 0.3 to 900 m, and unscaled
+    // the first phase stalled on degenerate pivots until the iteration limit
+    var big = 0.0;
+    for (var j = 0; j < n; j++) {
+      final a = row[j].abs();
+      if (a > big) big = a;
+    }
+    if (big > 0 && big != 1) {
+      final f = 1 / big;
+      for (var j = 0; j < n; j++) {
+        row[j] *= f;
+      }
+      row[cols] *= f;
+    }
     switch (rowSense[i]) {
       case LpSense.le:
         row[slackIdx] = 1;
