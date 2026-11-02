@@ -127,6 +127,10 @@ class NetworkOptions {
   /// Absolute Σ|ΔQ| threshold (m³/s) that also counts as converged, for
   /// networks carrying (almost) no flow, where the relative measure is noise.
   final double absoluteFlowTolerance;
+
+  /// Largest error (m) of the energy equation |hᵢ − hⱼ − h(Q)| over the
+  /// links and emitters once the flows have settled (EPANET 2.2's head
+  /// error); 0 = the flow test alone.
   final double headTolerance;
 }
 
@@ -292,6 +296,7 @@ class HydraulicNetwork {
 
     var converged = false;
     var iter = 0;
+    var refine = 0;
     var relErr = double.infinity;
     var lastErr = double.infinity;
     var damping = 1.0;
@@ -628,9 +633,18 @@ class HydraulicNetwork {
         }
         statusChanged = _checkLinkStatus(heads, fromNode, toNode, q, prvs: flowsConverged) || statusChanged;
       }
+      // the flows have settled: the energy equation must hold too, within
+      // headTolerance on every link and emitter (the head error test of
+      // EPANET 2.2). The flow test alone, dominated by the large flows, let
+      // drippers of 4·10⁻⁷ m³/s end centimetres off; a few more Newton steps
+      // settle them (at most [_maxHeadRefinements])
       if (flowsConverged && !statusChanged) {
-        converged = true;
-        break;
+        final tol = options.headTolerance;
+        if (!(tol > 0) || refine >= _maxHeadRefinements || _headError(nodeList, heads, fromNode, toNode, q, emitterFlow, emitterOpen, resting, resistance, minor, exponent, darcy) <= tol) {
+          converged = true;
+          break;
+        }
+        refine++;
       }
       // adaptive damping if diverging
       if (relErr > lastErr * 1.5 && iter > 3) {
@@ -643,6 +657,63 @@ class HydraulicNetwork {
     if (!converged) warnings.add('not_converged');
     if (cutOff != null) warnings.addAll(_cutOffWarnings(nodeList, fromNode, toNode, cutOff));
     return _results(nodeList, heads, fromNode, toNode, q, emitterFlow, emitterOpen, converged, iter, warnings, relErr);
+  }
+
+  /// Newton steps past the flow test to meet [NetworkOptions.headTolerance].
+  static const _maxHeadRefinements = 10;
+
+  /// Largest error (m) of the energy equation over the open links and the
+  /// open emitters for flows [q] and [heads]: |hᵢ − hⱼ − h(Q)| (the head
+  /// error test of EPANET 2.2).
+  double _headError(
+    List<HNode> nodeList,
+    Float64List heads,
+    Int32List fromNode,
+    Int32List toNode,
+    Float64List q,
+    Float64List emitterFlow,
+    Uint8List emitterOpen,
+    Uint8List resting,
+    Float64List resistance,
+    Float64List minor,
+    double exponent,
+    bool darcy,
+  ) {
+    var worst = 0.0;
+    for (var k = 0; k < links.length; k++) {
+      final l = links[k];
+      if (resting[fromNode[k]] == 1 && resting[toNode[k]] == 1) continue;
+      final dh = heads[fromNode[k]] - heads[toNode[k]];
+      double h;
+      switch (l.kind) {
+        case HLinkKind.pipe:
+          if (l.status == LinkStatus.closed) continue;
+          final r = darcy ? _pipeResistance(l, q[k]) : resistance[k];
+          final qa = q[k].abs();
+          final hh = r * math.pow(qa, exponent) + minor[k] * qa * qa;
+          h = q[k] < 0 ? -hh : hh;
+        case HLinkKind.device:
+          if (l.status == LinkStatus.closed) continue;
+          h = (l.device ?? const DeviceLossCurve(k: 0)).loss(q[k]);
+        case HLinkKind.pump:
+          final p = l.pump;
+          if (p == null || l.status == LinkStatus.closed) continue;
+          // as the coefficients: straight on beyond the runout
+          final qa = math.max(q[k].abs(), _qMin), runout = p.runoutFlow;
+          h = runout.isFinite && qa > runout ? -p.head(runout) + (qa - runout) * math.max(-p.gradient(runout), 1e-6) : -p.head(math.max(qa, p.peakFlow));
+        default:
+          continue;
+      }
+      worst = math.max(worst, (h - dh).abs());
+    }
+    for (var i = 0; i < nodeList.length; i++) {
+      final n = nodeList[i];
+      final em = n.emitter;
+      if (em == null || n.emitterCount <= 0 || emitterOpen[i] != 1 || resting[i] == 1 || n.kind != HNodeKind.junction) continue;
+      final (h, _) = _emitterLoss(em, n.emitterCount, emitterFlow[i]);
+      worst = math.max(worst, (h - (heads[i] - n.elevation - n.emitterOffset)).abs());
+    }
+    return worst;
   }
 
   /// Links that never let water through: a closed link, a pump without a

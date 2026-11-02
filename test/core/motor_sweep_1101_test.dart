@@ -762,4 +762,35 @@ void main() {
     expect(z.totalFlow, lessThan(0.75 * full), reason: 'below its 6 m the dripline does not keep its flow');
     expect(z.uniformity.eu, lessThan(99));
   });
+
+  test('MOT-23: the solver also checks the energy equation of every link and emitter (head tolerance)', () {
+    // a large draw next to small pressure-compensating drippers: the flow
+    // test, dominated by the large flow, passes long before the drippers'
+    // pressures settle (with a loose flow tolerance, 8 m off)
+    double worst(double headTolerance) {
+      final n = HydraulicNetwork(options: NetworkOptions(headTolerance: headTolerance, flowTolerance: 1e-2));
+      n.addNode(HNode(id: 'R', kind: HNodeKind.reservoir, fixedHead: 30));
+      n.addNode(HNode(id: 'A', demand: 0.05));
+      n.addLink(HLink(id: 'main', from: 'R', to: 'A', diameter: 0.2, length: 200));
+      final pc = EmitterCurve.fromNominal(flow: 2 / 3.6e6, head: 10, x: 0.03);
+      var prev = 'A';
+      for (var i = 0; i < 40; i++) {
+        n.addNode(HNode(id: 'E$i', elevation: i * 0.1, emitter: pc, emitterCount: 3));
+        n.addLink(HLink(id: 'l$i', from: prev, to: 'E$i', diameter: 0.012, length: 3));
+        prev = 'E$i';
+      }
+      final r = n.solve();
+      expect(r.converged, isTrue);
+      var e = 0.0;
+      for (var i = 0; i < 40; i++) {
+        final nr = r.nodes['E$i']!;
+        e = math.max(e, (pc.headForFlow(nr.emitterFlow / 3) - nr.pressure).abs());
+      }
+      return e;
+    }
+
+    expect(worst(0), greaterThan(1), reason: 'the flow test alone');
+    expect(worst(1e-4), lessThan(1e-4));
+    expect(const NetworkOptions().headTolerance, 1e-4, reason: 'on by default');
+  });
 }
