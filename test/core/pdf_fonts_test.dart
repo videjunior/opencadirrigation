@@ -55,7 +55,7 @@ void main() {
     test('metrics, cmap and composite glyphs of the bundled fonts', () {
       final latin = TrueTypeFont.parse(fontBytes(BundledFonts.latin));
       expect(latin.unitsPerEm, 1000);
-      expect(latin.numGlyphs, 2335);
+      expect(latin.numGlyphs, 2336);
       expect(latin.postScriptName, 'NotoSans-Regular');
       expect((latin.ascender, latin.descender, latin.capHeight), (1069, -293, 714));
       expect((latin.xMin, latin.yMin, latin.xMax, latin.yMax), (-602, -389, 1498, 1067));
@@ -69,8 +69,8 @@ void main() {
       expect(latin.components(128), [34, 65]);
       expect(latin.components(34), isEmpty);
       final sc = TrueTypeFont.parse(fontBytes(BundledFonts.simplifiedChinese));
-      expect(sc.numGlyphs, 4161);
-      expect(sc.glyphId(0x6C34), 2066); // 水
+      expect(sc.numGlyphs, 4171);
+      expect(sc.glyphId(0x6C34), 2069); // 水
       expect(sc.advanceWidth(sc.glyphId(0x4E2D)), 1000);
       final arabic = TrueTypeFont.parse(fontBytes(BundledFonts.arabic));
       expect(arabic.glyphId(0x0628), 590);

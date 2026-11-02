@@ -1,0 +1,9 @@
+# Python packages of tool/fonts (build_fonts.py, make_shaping_fixtures.py,
+# gen_unicode_data.py), pinned so that the subsets and the shaping fixtures
+# come out the same on every machine. Install in a virtual environment
+# outside the repository:
+#   python3 -m venv ~/venvs/ocifonts
+#   ~/venvs/ocifonts/bin/pip install -r tool/fonts/requirements.txt
+fonttools==4.68.0
+brotli==1.2.1
+uharfbuzz==0.57.0
