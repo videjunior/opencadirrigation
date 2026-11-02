@@ -19,7 +19,9 @@ library;
 import 'dart:math' as math;
 
 import '../model/catalog.dart';
+import '../model/entities.dart';
 import '../model/geometry.dart';
+import '../model/project.dart';
 import 'auto_layout.dart';
 
 /// How fast an emitter applies water: emitters of different classes never
@@ -50,6 +52,42 @@ PrecipitationClass precipitationClassOf(OutletSpec family, {NozzleSpec? nozzle, 
       final r = n.curve.radius(headM ?? n.defaultHeadM);
       return r > 0 && r < sprayRadiusLimit ? PrecipitationClass.spray : PrecipitationClass.rotor;
   }
+}
+
+/// Usual flow (m³/s) of one valve zone of [cls] in landscape and
+/// agricultural practice: a 1" valve on a house meter for sprays, a little
+/// more for rotors, a field block for drip, a gun alone.
+double typicalZoneFlow(PrecipitationClass cls) =>
+    switch (cls) {
+      PrecipitationClass.spray => 3.5,
+      PrecipitationClass.rotor => 5.0,
+      PrecipitationClass.microSprinkler => 3.0,
+      PrecipitationClass.bubbler => 2.0,
+      PrecipitationClass.drip => 2.0,
+      PrecipitationClass.gun => 30.0,
+      PrecipitationClass.other => 5.0,
+    } /
+    3600;
+
+/// The largest zone flow the automatic tools start from: the smaller of
+/// the largest design flow of the water supplies and the largest enabled
+/// control valve. Without a supply design flow the largest valve (300 m³/h
+/// in the default catalogue) would make a whole lawn one zone: the usual
+/// flow of the precipitation class of [family] (sprays by default) is taken
+/// instead, within the largest valve, and [typical] says so (the supply's
+/// flow is missing). Flows in m³/s.
+({double flow, double supply, double valve, bool typical}) defaultMaxZoneFlow(Project p, {OutletSpec? family, double? headM}) {
+  var supply = 0.0, valve = 0.0;
+  for (final w in p.entities.whereType<WaterSupplyEntity>()) {
+    supply = math.max(supply, w.designFlow);
+  }
+  for (final v in p.catalog.valves) {
+    if (v.enabled && v.kind == ValveKind.control) valve = math.max(valve, v.maxFlow);
+  }
+  if (supply > 0) return (flow: valve > 0 ? math.min(supply, valve) : supply, supply: supply, valve: valve, typical: false);
+  final cls = family == null ? PrecipitationClass.spray : precipitationClassOf(family, headM: headM);
+  final q = typicalZoneFlow(cls);
+  return (flow: valve > 0 ? math.min(q, valve) : q, supply: supply, valve: valve, typical: true);
 }
 
 /// One thing to put in a zone: a head, or a drip area (its centroid) with

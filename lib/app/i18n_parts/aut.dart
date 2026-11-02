@@ -7,6 +7,11 @@ const _aut = <String, (String, String, String)>{
   'auto.step.layout': ('Distribuindo os aspersores…', 'Laying out the heads…', 'Distribuyendo los aspersores…'),
   'auto.step.zoning': ('Agrupando em zonas…', 'Grouping into zones…', 'Agrupando en zonas…'),
   'auto.step.routing': ('Traçando os tubos: zona {n} de {m}…', 'Routing the pipes: zone {n} of {m}…', 'Trazando las tuberías: zona {n} de {m}…'),
+  'autolay.noSupplyFlow': (
+    'A fonte não tem vazão de projeto: as zonas partem de {q}, a vazão usual de uma zona desta família. Informe a vazão da fonte para zonear por ela.',
+    'The supply has no design flow: the zones start from {q}, the usual flow of a zone of this family. Enter the supply flow to zone by it.',
+    'La fuente no tiene caudal de diseño: las zonas parten de {q}, el caudal usual de una zona de esta familia. Indique el caudal de la fuente para zonificar por él.',
+  ),
   // ---- block generator
   'warn.block_uncovered': (
     'Parte do polígono a mais de uma entrelinha de qualquer lateral',

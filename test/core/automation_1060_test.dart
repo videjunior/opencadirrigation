@@ -23,6 +23,7 @@ import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/i18n.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/results.dart';
+import 'package:opencadirrigation/core/design/zoning.dart';
 
 List<Pt> rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
@@ -832,6 +833,31 @@ void main() {
       expect(rep.improved, isFalse, reason: 'kept as "better" before for being cheaper');
       expect(rep.rejected.map((f) => f.key), contains('fixed.lpSizing'));
       expect(p.params.sizingMethod, SizingMethod.greedy, reason: 'the step was taken back');
+    });
+  });
+
+  group('AUT-13 largest zone flow without the supply\'s flow', () {
+    test('the usual flow of the family, not the largest valve', () {
+      final p = Project();
+      final cat = p.catalog;
+      final supply = WaterSupplyEntity(id: p.newId(), position: Pt.zero, calculatePressure: true);
+      p.entities.add(supply);
+      final spray = defaultMaxZoneFlow(p, family: cat.outlet('spray'));
+      expect(spray.typical, isTrue);
+      expect(spray.flow * 3600, closeTo(3.5, 1e-9), reason: '300 m³/h (the 6" valve) before');
+      expect(defaultMaxZoneFlow(p, family: cat.outlet('rotor')).flow * 3600, closeTo(5, 1e-9));
+      // an L-shaped lawn of sprays (about 64 m³/h) falls in many zones, not one
+      final lawn = [const Pt(0, 0), const Pt(40, 0), const Pt(40, 15), const Pt(15, 15), const Pt(15, 50), const Pt(0, 50)];
+      final family = cat.outlet('spray')!;
+      final l = layoutLandscape(outline: lawn, family: family);
+      final z = zoneByFlow(zoneItemsOf(l, family), ZoningOptions(maxZoneFlow: spray.flow));
+      expect(z.zones.length, greaterThan(10));
+      expect(pickZoneValve(cat, z.maxFlow)?.id, 'ev25', reason: 'a 1" valve, not a 3" one');
+      // with the supply's flow, that one (within the largest valve)
+      supply.designFlow = 3 / 3600;
+      final given = defaultMaxZoneFlow(p, family: family);
+      expect(given.typical, isFalse);
+      expect(given.flow * 3600, closeTo(3, 1e-9));
     });
   });
 }

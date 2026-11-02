@@ -344,20 +344,6 @@ String _defaultFamily(ProjectController c, List<OutletSpec> families) {
   return families.firstOrNull?.id ?? '';
 }
 
-/// Default largest zone flow: the smaller of the largest water supply design
-/// flow and the largest enabled zone valve (either when only one is known);
-/// with both of them.
-(double, double, double) _zoneFlowDefault(Project p) {
-  var supply = 0.0, valve = 0.0;
-  for (final w in p.entities.whereType<WaterSupplyEntity>()) {
-    supply = math.max(supply, w.designFlow);
-  }
-  for (final v in p.catalog.valves) {
-    if (v.enabled && v.kind == ValveKind.control) valve = math.max(valve, v.maxFlow);
-  }
-  return (supply > 0 && valve > 0 ? math.min(supply, valve) : math.max(supply, valve), supply, valve);
-}
-
 /// The message codes of an engine module translated, each code once; the
 /// items a code points at (zones, blocks, rows) are named by [name] when
 /// there are a few, else counted by [count].
@@ -502,8 +488,10 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
   var autoDirection = true;
   var directionDeg = area == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(area)).angle));
   var zoneOn = false, routeOn = false;
-  final (zoneDefault, supplyFlow, valveFlow) = _zoneFlowDefault(c.project);
-  var maxZoneFlow = zoneDefault;
+  // the largest zone flow follows the family until the user types one
+  var zoneFlowTyped = false;
+  ({double flow, double supply, double valve, bool typical}) zoneDefault() => defaultMaxZoneFlow(c.project, family: c.project.catalog.outlet(familyId), headM: o.headM > 0 ? o.headM : null);
+  var maxZoneFlow = zoneDefault().flow;
   var itemsPerZone = 0;
   final sources = _sources(c, sel, mainlines: true);
   var sourceId = sources.first.id;
@@ -646,6 +634,7 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
             onChanged: (v) => setState(() {
               familyId = v ?? familyId;
               o.referenceNozzleId = null;
+              if (!zoneFlowTyped) maxZoneFlow = zoneDefault().flow;
             }),
           ),
           NumField(label: t('autolay.pressure', {'u': u.pressureLabel}), value: u.pressureFromHead(o.headM), onChanged: (v) => setState(() => o.headM = v > 0 ? u.pressureToHead(v) : 0)),
@@ -750,11 +739,18 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
                 key: const Key('al_zone_flow'),
                 label: t('autolay.maxZoneFlow', {'u': u.flowLabel}),
                 value: u.flowFromSi(maxZoneFlow),
-                onChanged: (v) => setState(() => maxZoneFlow = v > 0 ? u.flowToSi(v) : 0),
+                onChanged: (v) => setState(() {
+                  maxZoneFlow = v > 0 ? u.flowToSi(v) : 0;
+                  zoneFlowTyped = true;
+                }),
               ),
               NumField(label: t('autolay.itemsPerZone'), value: itemsPerZone.toDouble(), decimals: 0, onChanged: (v) => setState(() => itemsPerZone = v < 0 ? 0 : v.round())),
             ]),
-            _note(t('autolay.zoneFlowHint', {'s': supplyFlow > 0 ? _flow(u, supplyFlow) : '-', 'v': valveFlow > 0 ? _flow(u, valveFlow) : '-'}), color: Cad.fg54),
+            if (zoneDefault() case final zd) ...[
+              _note(t('autolay.zoneFlowHint', {'s': zd.supply > 0 ? _flow(u, zd.supply) : '-', 'v': zd.valve > 0 ? _flow(u, zd.valve) : '-'}), color: Cad.fg54),
+              // 1.6.0 AUT: without the supply's flow the zones start from a usual one
+              if (zd.typical) _note(t('autolay.noSupplyFlow', {'q': _flow(u, zd.flow)}), color: Cad.warning),
+            ],
           ],
           _switch(t('autolay.routing'), routeOn, (v) => setState(() => routeOn = v), key: const Key('al_routing')),
           if (routeOn)
@@ -1052,8 +1048,9 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
   var mode = SubdivisionMode.strips;
   var byFlow = false;
   var maxArea = 2e4;
-  final (zoneDefault, _, _) = _zoneFlowDefault(c.project);
-  var maxFlow = zoneDefault > 0 ? zoneDefault : 30 * m3sPerM3h;
+  // without the supply's flow, a usual field block (not the largest valve)
+  final zd = defaultMaxZoneFlow(c.project);
+  var maxFlow = zd.typical ? (zd.valve > 0 ? math.min(30 * m3sPerM3h, zd.valve) : 30 * m3sPerM3h) : zd.flow;
   var maxLateral = 0.0, road = 4.0, minWidth = 10.0;
   var centreFeed = false;
   var isTape = true;

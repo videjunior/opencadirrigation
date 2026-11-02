@@ -145,13 +145,10 @@ List<String> zoneNames(Project p, String prefix, int n) {
   return out;
 }
 
-/// The zone flow the dialogs propose: the smaller of the supply design flow
-/// and the largest control valve.
-double zoneFlowDefault(Project p) {
-  final supply = p.entities.whereType<WaterSupplyEntity>().fold(0.0, (m, s) => math.max(m, s.designFlow));
-  final valve = p.catalog.valves.where((v) => v.enabled && v.kind == ValveKind.control).fold(0.0, (m, v) => math.max(m, v.maxFlow));
-  return supply > 0 && valve > 0 ? math.min(supply, valve) : math.max(supply, valve);
-}
+/// The zone flow the dialogs propose ([defaultMaxZoneFlow]: the smaller of
+/// the supply design flow and the largest control valve, or the usual flow
+/// of a zone when the supply gives none).
+double zoneFlowDefault(Project p, [OutletSpec? family]) => defaultMaxZoneFlow(p, family: family).flow;
 
 /// The sprinkler family [id], else the one the dialogs pick.
 OutletSpec _family(AgentToolbox b, String? id) {
