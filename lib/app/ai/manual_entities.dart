@@ -338,6 +338,11 @@ final Map<String, TypeDoc> entityDocs = {
       'speed': const FieldDoc('speed ratio to the rated speed (affinity laws); outside 0.4–1.3 it is reported. With vfd it is the top speed', panel: 'props.speed'),
       'vfd': const FieldDoc('variable-speed drive: the outlet pressure it keeps in every system flow; 0 = fixed speed', unit: 'm', panel: 'props.vfdTarget', def: 0),
       'vmin': const FieldDoc('least speed ratio of the drive', panel: 'props.vfdMin', def: 0.5),
+      'meff': const FieldDoc(
+        'efficiency of the motor and its drive (0.05–1), wire to shaft: the energy of the design, the 24-hour simulation and the tariff schedule divide by it as well as by the pump curve\'s efficiency; 1 = the pump efficiency stands for the whole set',
+        panel: 'props.motorEfficiency',
+        def: 1,
+      ),
       'hm': const FieldDoc('hour meter fitted: its price for the bill of materials (the key present = fitted)', panel: 'acc.hourMeter', defText: 'none (no hour meter)'),
       'rot': _rot,
     },

@@ -10,7 +10,9 @@ import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/lp.dart';
 import 'package:opencadirrigation/core/design/lp_sizing.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
+import 'package:opencadirrigation/core/design/pump_selection.dart';
 import 'package:opencadirrigation/core/design/results.dart';
+import 'package:opencadirrigation/core/design/tariff.dart';
 import 'package:opencadirrigation/core/hydraulics/network.dart';
 import 'package:opencadirrigation/core/hydraulics/water_hammer.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
@@ -470,5 +472,97 @@ void main() {
     expect(plain.devices.where((d) => d.linkId.startsWith('reg_')), isEmpty);
     final inlets = [for (final o in plain.outlets.where((o) => o.index == 0)) o.pressure];
     expect(inlets.reduce(math.max) - inlets.reduce(math.min), greaterThan(1));
+  });
+
+  test('MOT-15: the motor and drive efficiency of a pump enters the energy of the design and of the tariff schedule alike', () {
+    (DesignResults, Project) run(double motor) {
+      final (p, _, supply, _) = _zone();
+      p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: false, designHeadM: 0.5, waterLevelOffsetM: 0));
+      p.entities.add(PumpEntity(id: 'pump', position: Pt(supply.x + 5, supply.y), pumpSpecId: 'pump_mid', name: 'Pump', motorEfficiency: motor));
+      return (Designer(p).designAll(), p);
+    }
+
+    final (one, p1) = run(1);
+    final (eighty, p2) = run(0.8);
+    expect(one.annualEnergyCost, greaterThan(0));
+    expect(eighty.annualEnergyCost, closeTo(one.annualEnergyCost / 0.8, 1e-6 * one.annualEnergyCost));
+    // the schedule takes the same power as the design: the curve at the
+    // operating point (it took the single efficiency) and the motor
+    final f = one.systemFlows.single;
+    final d = f.devices.firstWhere((x) => x.entityId == 'pump');
+    final spec = p1.catalog.pump('pump_mid')!;
+    final jobs1 = tariffJobsFromDesign(p1, one), jobs2 = tariffJobsFromDesign(p2, eighty);
+    final kw = waterDensity * gravity * d.flow * d.pumpHead / spec.efficiencyAt(d.flow, speed: d.speedRatio) / 1000;
+    expect(jobs1.single.powerKw, closeTo(kw, 1e-6 * kw));
+    expect(jobs2.single.powerKw, closeTo(jobs1.single.powerKw / 0.8, 1e-6 * kw));
+    // kept in the file only when given
+    final pump = p2.byId('pump')! as PumpEntity;
+    expect(pump.toJson()['meff'], 0.8);
+    expect((Entity.fromJson(pump.toJson()) as PumpEntity).motorEfficiency, 0.8);
+    expect((p1.byId('pump')! as PumpEntity).toJson().containsKey('meff'), isFalse);
+  });
+
+  test('MOT-16: the pump selection adds the head of the pumps in series once, not of every pump of the flow', () {
+    final (p, _, supply, _) = _zone();
+    p.entities.add(WaterSupplyEntity(id: 'tank', position: supply, name: 'Tank', calculatePressure: true));
+    // two pumps in parallel on a loop of the mainline next to the tank
+    final a = Pt(supply.x + 10, supply.y), b = Pt(supply.x + 30, supply.y);
+    p.entities.removeWhere((e) => e.id == 'main');
+    final valvePos = supply + const Pt(100, 0);
+    p.entities.add(PipeEntity(id: 'main0', points: [supply, a], scope: HydraulicScope.mainline, name: 'M0'));
+    p.entities.add(PipeEntity(id: 'up', points: [a, Pt(a.x, a.y + 5), Pt(b.x, b.y + 5), b], scope: HydraulicScope.mainline, name: 'Up'));
+    p.entities.add(PipeEntity(id: 'down', points: [a, Pt(a.x, a.y - 5), Pt(b.x, b.y - 5), b], scope: HydraulicScope.mainline, name: 'Down'));
+    p.entities.add(PipeEntity(id: 'main1', points: [b, valvePos], scope: HydraulicScope.mainline, name: 'M1'));
+    p.entities.add(PumpEntity(id: 'pa', position: Pt(supply.x + 20, supply.y + 5), pumpSpecId: 'pump_c15', name: 'A'));
+    p.entities.add(PumpEntity(id: 'pb', position: Pt(supply.x + 20, supply.y - 5), pumpSpecId: 'pump_c15', name: 'B'));
+    final r = Designer(p).designAll();
+    final f = r.systemFlows.single;
+    final heads = [for (final d in f.devices.where((d) => d.pumpHead > 0)) d.pumpHead];
+    expect(heads, hasLength(2), reason: 'both pumps run');
+    final duty = worstPumpDuty(r, 'tank')!;
+    final boost = duty.supply.pumpBoost!;
+    expect(heads.any((x) => (x - boost).abs() < 1e-6), isTrue, reason: 'the head of one of the two in parallel: $boost of $heads');
+    expect(duty.head, closeTo(duty.supply.requiredHead + boost, 1e-6), reason: 'it added both: +${heads.reduce((x, y) => x + y)} m');
+    final back = SupplyDuty.fromJson(duty.supply.toJson());
+    expect(back.pumpBoost, closeTo(duty.supply.pumpBoost!, 1e-12));
+  });
+
+  test('MOT-24: the pump ranking reads the efficiency curve at the share of each pump and annualises the purchase', () {
+    const h = m3sPerM3h;
+    final cat = Catalog(
+      pipes: [],
+      outlets: [],
+      tapes: [],
+      valves: [],
+      pumps: [
+        // the same curve; the cheap one is efficient only far from this duty
+        PumpSpec(
+          id: 'cheap',
+          name: 'cheap',
+          points: [(0.0, 50.0), (20 * h, 45.0), (40 * h, 35.0)],
+          efficiency: 0.75,
+          efficiencyPoints: [(0.0, 0.2), (20 * h, 0.4), (40 * h, 0.75)],
+          maxFlow: 40 * h,
+          cost: 1000,
+          powerKw: 7.5,
+        ),
+        PumpSpec(
+          id: 'dear',
+          name: 'dear',
+          points: [(0.0, 50.0), (20 * h, 45.0), (40 * h, 35.0)],
+          efficiency: 0.70,
+          efficiencyPoints: [(0.0, 0.3), (20 * h, 0.70), (40 * h, 0.6)],
+          maxFlow: 40 * h,
+          cost: 1600,
+          powerKw: 7.5,
+        ),
+      ],
+    );
+    final ranked = rankPumps(cat, flow: 20 * h, head: 40, hoursPerYear: 2000, costPerKwh: 0.2, crf: 0.1);
+    expect(ranked.first.spec.id, 'dear', reason: 'at 20 m³/h the cheap one runs at 40 %, not at its 75 %');
+    final cheap = ranked.firstWhere((c) => c.spec.id == 'cheap');
+    expect(cheap.shaftPowerKw, closeTo(waterDensity * gravity * cheap.operatingFlow * cheap.operatingHead / cat.pump('cheap')!.efficiencyAt(cheap.operatingFlow) / 1000, 1e-9));
+    // a dear money (high capital recovery) makes the cheaper purchase win
+    expect(rankPumps(cat, flow: 20 * h, head: 40, hoursPerYear: 50, costPerKwh: 0.2, crf: 0.5).first.spec.id, 'cheap');
   });
 }

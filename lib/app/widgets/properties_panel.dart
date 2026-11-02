@@ -230,6 +230,8 @@ class PropertiesPanel extends StatelessWidget {
           if (spec != null) KV('H0', '${fmt(u.pressureFromHead(spec.curve.withSpeed(p.speedRatio).shutoffHead), 1)} ${u.pressureLabel}'),
           NumField(label: pLabel('props.vfdTarget'), value: u.pressureFromHead(p.targetPressureM), onChanged: (x) => set(() => p.targetPressureM = x <= 0 ? 0 : u.pressureToHead(x))),
           if (p.targetPressureM > 0) NumField(label: t('props.vfdMin'), value: p.minSpeedRatio, onChanged: (x) => set(() => p.minSpeedRatio = x.clamp(0.1, 1.0).toDouble())),
+          // 1.6.0 MOT: the motor and its drive in the energy
+          NumField(label: t('props.motorEfficiency'), value: p.motorEfficiency, onChanged: (x) => set(() => p.motorEfficiency = x.clamp(0.05, 1.0).toDouble())),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,

@@ -96,15 +96,30 @@ SystemCurve systemCurveFromDuty({required double flow, required double head, req
   return SystemCurve(staticHead: stat, k: k);
 }
 
-/// Ranks the catalog pumps for a duty (Q, H). [staticHead] is the static
-/// lift (elevation + required valve pressure); when unknown 60 % of H is used.
+/// Capital recovery factor of the design parameters [p] (interest rate over
+/// the term): what [rankPumps] annualises the purchase of a pump with.
+double pumpRankingCrf(DesignParameters p) => capitalRecoveryFactor(p.interestRate, p.termYears);
+
+/// Efficiency from the wire to the water of an installed [pump] of model
+/// [spec] at flow [q] and [speed]: the efficiency curve of the pump at that
+/// point times the efficiency of its motor and drive; [fallback] (the pump
+/// efficiency of the parameters) without a catalogue pump. The design, the
+/// 24-hour simulation and the tariff schedule all use it.
+double wireToWaterEfficiency(PumpSpec? spec, PumpEntity? pump, double q, {double speed = 1, required double fallback}) =>
+    (spec?.efficiencyAt(q, speed: speed) ?? fallback) * (pump?.motorEfficiency ?? 1).clamp(0.05, 1.0);
+
+/// Head the pumps of flow [f] add on the way from supply [d] (the pumps in
+/// series to the valve or head that sets the pressure,
+/// [SupplyDuty.pumpBoost]); results without it sum every running pump, as
+/// before.
+double _boost(SystemFlowResult f, SupplyDuty d) => d.pumpBoost ?? f.devices.fold<double>(0, (sum, x) => sum + math.max(0, x.pumpHead));
+
 /// All pump duties of a supply, one per system flow (see [worstPumpDuty]).
 List<PumpDuty> pumpDuties(DesignResults r, String supplyId) {
   final out = <PumpDuty>[];
   for (final f in r.systemFlows) {
-    final boost = f.devices.fold<double>(0, (sum, d) => sum + math.max(0, d.pumpHead));
     for (final d in f.supplies) {
-      if (d.supplyId == supplyId) out.add(PumpDuty(supply: d, head: d.requiredHead + boost, flowName: f.name));
+      if (d.supplyId == supplyId) out.add(PumpDuty(supply: d, head: d.requiredHead + _boost(f, d), flowName: f.name));
     }
   }
   return out;
@@ -116,7 +131,11 @@ List<PumpDuty> pumpDuties(DesignResults r, String supplyId) {
 /// [requireSubmersible] (water deeper than the suction lift of a surface
 /// pump, see [suctionLiftTooDeep]) only submersible pumps are suitable.
 /// Curves measured at another frequency than the [mainsHz] mains are read
-/// at the speed the motor turns there.
+/// at the speed the motor turns there. The candidates are ordered by their
+/// annual cost: the purchase times the capital recovery factor [crf] of the
+/// design parameters plus the energy, each pump at its share of the flow
+/// on its efficiency curve (0.2, the default, ranks as five years of
+/// energy did).
 List<PumpCandidate> rankPumps(
   Catalog cat, {
   required double flow,
@@ -128,6 +147,7 @@ List<PumpCandidate> rankPumps(
   List<(double, double)> otherDuties = const [],
   bool requireSubmersible = false,
   double mainsHz = 60,
+  double crf = 0.2,
 }) {
   final out = <PumpCandidate>[];
   if (!(flow > 0) || !(head > 0)) return out; // no meaningful duty
@@ -152,7 +172,15 @@ List<PumpCandidate> rankPumps(
       final parallel = _ParallelCurve(curve, n);
       final op = _operatingPoint(parallel, sys, qMax: math.max(flow * 3, 0.01));
       final oq = op?.$1 ?? 0, oh = op?.$2 ?? 0;
-      final power = oq > 0 ? shaftPower(flow: oq, head: oh, efficiency: p.efficiency) / 1000 : 0.0;
+      // each of the n pumps at its share of the flow, on its efficiency curve
+      final power = oq > 0
+          ? shaftPower(
+                  flow: oq,
+                  head: oh,
+                  efficiency: p.efficiencyAt(oq / n, speed: speed),
+                ) /
+                1000
+          : 0.0;
       out.add(
         PumpCandidate(
           spec: p,
@@ -172,8 +200,8 @@ List<PumpCandidate> rankPumps(
   }
   out.sort((a, b) {
     if (a.suitable != b.suitable) return a.suitable ? -1 : 1;
-    final ca = a.spec.cost * a.parallelCount + a.annualEnergy * 5;
-    final cb = b.spec.cost * b.parallelCount + b.annualEnergy * 5;
+    final ca = a.spec.cost * a.parallelCount * crf + a.annualEnergy;
+    final cb = b.spec.cost * b.parallelCount * crf + b.annualEnergy;
     return ca.compareTo(cb);
   });
   return out;
@@ -222,10 +250,9 @@ class PumpDuty {
 PumpDuty? worstPumpDuty(DesignResults r, String supplyId) {
   PumpDuty? worst;
   for (final f in r.systemFlows) {
-    final boost = f.devices.fold<double>(0, (sum, d) => sum + math.max(0, d.pumpHead));
     for (final d in f.supplies) {
       if (d.supplyId != supplyId) continue;
-      final head = d.requiredHead + boost;
+      final head = d.requiredHead + _boost(f, d);
       if (worst == null || head > worst.head) worst = PumpDuty(supply: d, head: head, flowName: f.name);
     }
   }

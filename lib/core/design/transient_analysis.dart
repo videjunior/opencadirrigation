@@ -2192,7 +2192,10 @@ EpsDay simulateDayOn(MainlineFlows mainline, {EpsDayOptions options = const EpsD
           best = k;
         }
       }
-      return best < 0 ? (spec?.efficiency ?? params.pumpEfficiency) : (spec?.efficiencyAt(qBest, speed: w) ?? params.pumpEfficiency);
+      // the motor and its drive as well, as in the annual energy (MOT-15)
+      final pump = project.byId(gl?.entityId ?? '');
+      final motor = pump is PumpEntity ? pump.motorEfficiency.clamp(0.05, 1.0) : 1.0;
+      return motor * (best < 0 ? (spec?.efficiency ?? params.pumpEfficiency) : (spec?.efficiencyAt(qBest, speed: w) ?? params.pumpEfficiency));
     }
 
     if (distinct.length <= 1) {

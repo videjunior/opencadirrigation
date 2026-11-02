@@ -101,4 +101,6 @@ const _mot = <String, (String, String, String)>{
     'Use a pressure regulating valve (with a reducing pilot) or set the outlet pressure of the valve, or fit a regulator at the inlet of the zone.',
     'Use una válvula reguladora de presión (con piloto reductor) o indique la presión de salida de la válvula, o ponga un regulador a la entrada del sector.',
   ),
+  // ---- motor and drive efficiency of a pump (MOT-15)
+  'props.motorEfficiency': ('Rendimento do motor e do inversor (0–1)', 'Motor and drive efficiency (0–1)', 'Rendimiento del motor y del variador (0–1)'),
 };

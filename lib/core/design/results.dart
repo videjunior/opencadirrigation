@@ -371,10 +371,17 @@ class SupplyDuty {
     this.maxHead = 0,
     this.designFlow = 0,
     this.maxFlow = 0,
+    this.pumpBoost,
   });
   final String supplyId;
   final String name;
   final double flow;
+
+  /// Head (m) the running pumps add in series on the way from this supply
+  /// to the valve or head that sets its pressure (pumps in parallel count
+  /// once, boosters of other branches not at all); null when unknown. A pump
+  /// at the supply must add [requiredHead] plus this.
+  double? pumpBoost;
 
   /// Pressure head available at the supply (m).
   final double head;
@@ -408,6 +415,7 @@ class SupplyDuty {
     'mh': maxHead,
     'dq': designFlow,
     'mq': maxFlow,
+    if (pumpBoost != null) 'boost': pumpBoost,
   };
   static SupplyDuty fromJson(Map<String, dynamic> j) => SupplyDuty(
     supplyId: j['id'] as String,
@@ -421,6 +429,7 @@ class SupplyDuty {
     maxHead: _d(j, 'mh'),
     designFlow: _d(j, 'dq'),
     maxFlow: _d(j, 'mq'),
+    pumpBoost: (j['boost'] as num?)?.toDouble(),
   );
 }
 

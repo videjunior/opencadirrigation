@@ -32,6 +32,7 @@ import 'lp_sizing.dart';
 import 'mechanised.dart';
 import 'network_builder.dart';
 import 'pivot.dart';
+import 'pump_selection.dart';
 import 'results.dart';
 import 'valve_in_head.dart';
 
@@ -192,16 +193,18 @@ class Designer {
   /// Mainline node of the worst need of flow [f]: the valve or pivot, or the
   /// critical head of a scheduled valve-in-head station, furthest below what
   /// it needs (the first on a tie, valves first); null when it has none.
-  String? _worstNode(SystemFlowResult f) {
+  String? _worstNode(SystemFlowResult f) => _worstNodeOf(f.valves, f.heads);
+
+  String? _worstNodeOf(List<ValveDuty> valves, List<VihDuty> heads) {
     String? node;
     var most = -double.infinity;
-    for (final v in f.valves) {
+    for (final v in valves) {
       if (node == null || v.deficit > most) {
         node = _demandNode(v.valveId);
         most = v.deficit;
       }
     }
-    for (final h in f.heads) {
+    for (final h in heads) {
       if (h.scheduled && (node == null || h.deficit > most)) {
         node = _heads[h.criticalId]?.$1;
         most = h.deficit;
@@ -2136,14 +2139,31 @@ class Designer {
     for (final d in devices) {
       if (d.pumpHead > 0) {
         final l = model.linkById(d.linkId)!;
-        final spec = catalog.pump(l.pumpSpecId);
+        final entity = project.byId(l.entityId);
         energy += annualEnergyCost(
           flow: d.flow,
           head: d.pumpHead,
           hoursPerYear: hours,
           costPerKwh: params.powerCostPerKwh,
-          pumpEfficiency: spec?.efficiencyAt(d.flow, speed: d.speedRatio) ?? params.pumpEfficiency,
+          // the pump on its curve, and its motor and drive (MOT-15)
+          pumpEfficiency: wireToWaterEfficiency(catalog.pump(l.pumpSpecId), entity is PumpEntity ? entity : null, d.flow, speed: d.speedRatio, fallback: params.pumpEfficiency),
         );
+      }
+    }
+    // the pumps in series from each supply to the valve or head that sets
+    // its pressure: what a new pump at the supply must add besides them
+    // (the pump selection summed every pump of the flow, parallel ones and
+    // boosters of other branches too)
+    final worstNode = _worstNodeOf(valves, heads);
+    if (worstNode != null) {
+      final pumpHead = {
+        for (final d in devices)
+          if (d.pumpHead > 0) d.linkId: d.pumpHead,
+      };
+      for (final duty in duties) {
+        final from = model.supplyNodes[duty.supplyId];
+        final path = from == null ? const <GLink>[] : (from == worstNode ? const <GLink>[] : _path(from, worstNode, model.mainlineLinks));
+        if (path.isNotEmpty || from == worstNode) duty.pumpBoost = path.fold<double>(0, (s, l) => s + (pumpHead[l.id] ?? 0));
       }
     }
     // the speeds belong to this flow; sizing analyses run the pumps as drawn
