@@ -71,7 +71,7 @@ class BlockOptions {
 }
 
 class BlockResult {
-  BlockResult({required this.laterals, required this.submain, required this.valve, required this.stub, this.branches = const []});
+  BlockResult({required this.laterals, required this.submain, required this.valve, required this.stub, this.branches = const [], this.messages = const []});
   final List<Entity> laterals;
   final PipeEntity? submain;
   final ControlValveEntity? valve;
@@ -81,6 +81,10 @@ class BlockResult {
   /// several pieces (a U-shaped block, a curved row clipped in two), joined
   /// to [submain].
   final List<PipeEntity> branches;
+
+  /// Codes: `block_uncovered:<percent> %` (part of the polygon farther than
+  /// one lateral spacing from every lateral of a guided block).
+  final List<String> messages;
   List<Entity> get all => [...laterals, ?submain, ...branches, ?stub, ?valve];
 }
 
@@ -193,17 +197,19 @@ typedef _Feed = ({Pt p, double u, double v});
 
 /// Clips the infinite line through [origin] with direction [dir] against the
 /// polygon and returns the parameter intervals (t along dir) inside it.
+/// An edge crosses the line only when its ends lie on opposite sides of it
+/// (a vertex on the line counts on one side only), so a row through a
+/// vertex of the outline is cut once there, not twice.
 List<(double, double)> _clipLine(List<Pt> poly, Pt origin, Pt dir) {
   final ts = <double>[];
+  final n = dir.perpendicular;
+  final v0 = origin.dot(n), u0 = origin.dot(dir);
   for (var i = 0; i < poly.length; i++) {
     final a = poly[i], b = poly[(i + 1) % poly.length];
-    final e = b - a;
-    final denom = dir.cross(e);
-    if (denom.abs() < 1e-12) continue;
-    final ao = a - origin;
-    final t = ao.cross(e) / denom;
-    final u = ao.cross(dir) / denom;
-    if (u >= -1e-9 && u <= 1 + 1e-9) ts.add(t);
+    final va = a.dot(n) - v0, vb = b.dot(n) - v0;
+    if ((va > 0) == (vb > 0)) continue;
+    final ua = a.dot(dir) - u0, ub = b.dot(dir) - u0;
+    ts.add(ua + (ub - ua) * va / (va - vb));
   }
   ts.sort();
   final out = <(double, double)>[];
@@ -301,25 +307,57 @@ BlockResult generateBlock(Project project, BlockOptions o) {
 }
 
 /// Submain, branches, valve and stub of a block whose submain runs through
-/// [main]; the stub leaves the block along [outward].
-BlockResult _finishBlock(Project project, BlockOptions o, String zone, List<Entity> laterals, List<Pt> main, List<List<Pt>> branchLines, Pt outward) {
+/// [main]; the stub leaves the block along [outward]. With the submain in
+/// the middle of the block laterals leave it both ways, so the stub runs on
+/// along the submain out of the block (valve at its start or end), or, with
+/// the valve in the middle, starts between two rows instead of on the feed
+/// of one (it would lie on that row's lateral).
+BlockResult _finishBlock(Project project, BlockOptions o, String zone, List<Entity> laterals, List<Pt> main, List<List<Pt>> branchLines, Pt outward, {List<String> messages = const []}) {
   PipeEntity pipe(String name, List<Pt> pts) =>
       PipeEntity(id: project.newId(), name: name, points: pts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
   final submain = main.length >= 2 && polylineLength(main) > 1e-6 ? pipe('${o.submainLabel} $zone', main) : null;
   final branches = [for (var k = 0; k < branchLines.length; k++) pipe('${o.submainLabel} $zone (${k + 2})', branchLines[k])];
-  final anchor = switch (o.valvePosition) {
+  final total = polylineLength(main);
+  final centred = o.submainPosition == SubmainPosition.centre && main.length >= 2 && total > 1e-6;
+  var anchor = switch (o.valvePosition) {
     ValvePosition.start => main.first,
-    ValvePosition.centre => pointAlongPolyline(main, polylineLength(main) / 2),
+    ValvePosition.centre => pointAlongPolyline(main, total / 2),
     ValvePosition.end => main.last,
   };
+  var away = outward;
+  if (centred) {
+    switch (o.valvePosition) {
+      case ValvePosition.start:
+        away = (main.first - main[1]).normalized;
+      case ValvePosition.end:
+        away = (main.last - main[main.length - 2]).normalized;
+      case ValvePosition.centre:
+        // the feeds along the submain (the first point of every lateral on
+        // it): the anchor goes half way to the next feed when it sits on one
+        final stations = <double>[
+          for (final l in laterals)
+            if (l is PolyEntity && l.points.isNotEmpty)
+              if (polylineStationOf(main, l.points.first) case (final s, final q) when q.distanceTo(l.points.first) < 1e-6) s,
+        ]..sort();
+        final at = total / 2;
+        final gap = o.lateralSpacing / 4;
+        if (stations.any((s) => (s - at).abs() < gap)) {
+          final after = stations.where((s) => s > at + gap).firstOrNull;
+          final before = stations.lastWhere((s) => s < at - gap, orElse: () => -1);
+          final next = after ?? (before >= 0 ? before : null);
+          final on = stations.reduce((a, b) => (a - at).abs() <= (b - at).abs() ? a : b);
+          if (next != null) anchor = pointAlongPolyline(main, (on + next) / 2);
+        }
+    }
+  }
   PipeEntity? stub;
   var valvePos = anchor;
   if (o.submainStub > 0) {
-    valvePos = anchor + outward * o.submainStub;
+    valvePos = anchor + away * o.submainStub;
     stub = pipe('${o.stubLabel} $zone', [valvePos, anchor]);
   }
   final valve = ControlValveEntity(id: project.newId(), name: zone, position: valvePos, valveSpecId: o.valveSpecId, zoneName: zone);
-  return BlockResult(laterals: laterals, submain: submain, valve: valve, stub: stub, branches: branches);
+  return BlockResult(laterals: laterals, submain: submain, valve: valve, stub: stub, branches: branches, messages: messages);
 }
 
 enum GridPattern { square, triangular }
@@ -383,17 +421,216 @@ bool _onBoundary(Pt p, List<Pt> poly, [double tol = 1e-6]) {
   return false;
 }
 
+/// Signed distance from [q] to the polyline [line] (positive on its left,
+/// as [offsetPolyline] counts offsets): at a vertex the side is taken from
+/// the mean direction of its two segments.
+double _signedDistance(Pt q, List<Pt> line) {
+  var best = double.infinity, sign = 1.0;
+  for (var i = 1; i < line.length; i++) {
+    final a = line[i - 1], b = line[i];
+    final (cp, t) = closestPointOnSegment(q, a, b);
+    final d = cp.distanceTo(q);
+    if (d >= best) continue;
+    best = d;
+    var tangent = b - a;
+    if (t <= 1e-12 && i > 1) tangent = (a - line[i - 2]).normalized + tangent.normalized;
+    if (t >= 1 - 1e-12 && i + 1 < line.length) tangent = tangent.normalized + (line[i + 1] - b).normalized;
+    sign = tangent.cross(q - cp) >= 0 ? 1.0 : -1.0;
+  }
+  return best.isFinite ? best * sign : 0;
+}
+
+/// [pts] without the loops of a self-crossing offset (the swallowtail an
+/// offset on the inner side of a sharp bend makes, or two arms of a U offset
+/// past each other): where two segments cross, the vertices between them
+/// are dropped and the crossing joins the two parts.
+List<Pt> _withoutLoops(List<Pt> pts) {
+  var cur = pts;
+  for (var guard = 0; guard < 256; guard++) {
+    final n = cur.length;
+    if (n < 4) return cur;
+    // segments bucketed on a grid of about one segment a cell
+    final b = Bounds.ofPoints(cur);
+    final cell = math.max(polylineLength(cur) / (n - 1), math.max(b.width, b.height) / 1024) + 1e-9;
+    final buckets = <int, List<int>>{};
+    int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+    Iterable<int> keys(Pt a, Pt c) sync* {
+      final x0 = ((math.min(a.x, c.x) - b.minX) / cell).floor(), x1 = ((math.max(a.x, c.x) - b.minX) / cell).floor();
+      final y0 = ((math.min(a.y, c.y) - b.minY) / cell).floor(), y1 = ((math.max(a.y, c.y) - b.minY) / cell).floor();
+      for (var ix = x0; ix <= x1; ix++) {
+        for (var iy = y0; iy <= y1; iy++) {
+          yield key(ix, iy);
+        }
+      }
+    }
+
+    for (var s = 1; s < n; s++) {
+      for (final k in keys(cur[s - 1], cur[s])) {
+        (buckets[k] ??= []).add(s);
+      }
+    }
+    // the first segment that crosses a later one, and the last one it crosses
+    var cutI = -1, cutJ = -1;
+    Pt? at;
+    for (var i = 1; i < n && cutI < 0; i++) {
+      final a = cur[i - 1], c = cur[i];
+      final seen = <int>{};
+      for (final k in keys(a, c)) {
+        for (final j in buckets[k] ?? const <int>[]) {
+          if (j <= i + 1 || !seen.add(j)) continue;
+          final x = segmentIntersection(a, c, cur[j - 1], cur[j], eps: 1e-12);
+          if (x == null) continue;
+          if (j > cutJ) {
+            cutJ = j;
+            at = x;
+          }
+        }
+      }
+      if (cutJ > 0) cutI = i;
+    }
+    if (cutI < 0 || at == null) return cur;
+    cur = [...cur.sublist(0, cutI), at, ...cur.sublist(cutJ)];
+  }
+  return cur;
+}
+
+/// [pts] offset [d] metres to its left (negative: to its right), as
+/// [offsetPolyline] does, but a bend sharper than the mitre limit (the
+/// corner point farther than [mitreLimit]·|d| from the vertex) is rounded
+/// on its outer side, and the loops the offset makes on the inner side of
+/// tight bends are cut out: a centreline or guide that turns back stays
+/// [d] from itself instead of spiking kilometres away.
+List<Pt> offsetPolylineMitred(List<Pt> pts, double d, {double mitreLimit = 2}) {
+  final p = <Pt>[
+    for (var i = 0; i < pts.length; i++)
+      if (i == 0 || pts[i].distanceTo(pts[i - 1]) > 1e-9) pts[i],
+  ];
+  if (p.length < 2 || d == 0) return p;
+  final out = <Pt>[p.first + (p[1] - p.first).normalized.perpendicular * d];
+  for (var i = 1; i + 1 < p.length; i++) {
+    final e1 = (p[i] - p[i - 1]).normalized, e2 = (p[i + 1] - p[i]).normalized;
+    final n1 = e1.perpendicular, n2 = e2.perpendicular;
+    final m = n1 + n2;
+    final c = m.length / 2; // cosine of half the turn
+    if (c >= 1e-9 && 1 / c <= mitreLimit) {
+      out.add(p[i] + m.normalized * (d / c));
+      continue;
+    }
+    final turn = math.atan2(e1.cross(e2), e1.dot(e2));
+    if (d * turn < 0) {
+      // outer side: an arc of radius |d| round the vertex
+      final a0 = (n1 * d).angle;
+      final steps = math.max(2, (turn.abs() / (math.pi / 12)).ceil());
+      for (var k = 0; k <= steps; k++) {
+        out.add(p[i] + Pt.polar(d.abs(), a0 + turn * k / steps));
+      }
+    } else {
+      // inner side: the two offsets cross, the loop goes below
+      out
+        ..add(p[i] + n1 * d)
+        ..add(p[i] + n2 * d);
+    }
+  }
+  out.add(p.last + (p.last - p[p.length - 2]).normalized.perpendicular * d);
+  return _withoutLoops(out);
+}
+
+/// Share (0–1) of [poly] farther than [reach] from every polyline of
+/// [lines], on a grid of about [samples] points.
+double _uncoveredShare(List<Pt> poly, List<List<Pt>> lines, double reach, {int samples = 2500}) {
+  final b = Bounds.ofPoints(poly);
+  final area = polygonArea(poly).abs();
+  if (area <= 0 || b.isEmpty) return 0;
+  final h = math.max(math.sqrt(area / samples), 1e-6);
+  final segs = <(Pt, Pt)>[
+    for (final l in lines)
+      for (var i = 1; i < l.length; i++) (l[i - 1], l[i]),
+  ];
+  // segments bucketed by cells of the reach, so a point looks at its own
+  // cell and its neighbours only
+  final cell = math.max(reach, h);
+  final buckets = <int, List<int>>{};
+  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+  for (var s = 0; s < segs.length; s++) {
+    final (p, q) = segs[s];
+    final x0 = ((math.min(p.x, q.x) - b.minX) / cell).floor(), x1 = ((math.max(p.x, q.x) - b.minX) / cell).floor();
+    final y0 = ((math.min(p.y, q.y) - b.minY) / cell).floor(), y1 = ((math.max(p.y, q.y) - b.minY) / cell).floor();
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 100000) continue;
+    for (var ix = x0; ix <= x1; ix++) {
+      for (var iy = y0; iy <= y1; iy++) {
+        (buckets[key(ix, iy)] ??= []).add(s);
+      }
+    }
+  }
+  var inside = 0, dry = 0;
+  for (var y = b.minY + h / 2; y < b.maxY; y += h) {
+    for (var x = b.minX + h / 2; x < b.maxX; x += h) {
+      final q = Pt(x, y);
+      if (!pointInPolygon(q, poly)) continue;
+      inside++;
+      final ix = ((x - b.minX) / cell).floor(), iy = ((y - b.minY) / cell).floor();
+      var near = false;
+      for (var dx = -1; dx <= 1 && !near; dx++) {
+        for (var dy = -1; dy <= 1 && !near; dy++) {
+          for (final s in buckets[key(ix + dx, iy + dy)] ?? const <int>[]) {
+            if (distanceToSegment(q, segs[s].$1, segs[s].$2) <= reach) {
+              near = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!near) dry++;
+    }
+  }
+  return inside == 0 ? 0 : dry / inside;
+}
+
+/// A block of a guide leaves more than this share of its polygon farther
+/// than one lateral spacing from every lateral before it says so.
+const guidedUncoveredLimit = 0.02;
+
 /// Block whose laterals are offsets of a guide polyline (curved laterals).
+/// The guide is prolonged along its end segments past the polygon, and the
+/// offsets run from the polygon point farthest on one side of the guide to
+/// the one farthest on the other (signed distances to the guide itself, not
+/// to the chord of its ends), so that a contour that bends in a valley or
+/// covers only part of the field still gets laterals over all of it.
 BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
-  final guide = o.guide!;
   final poly = o.polygon;
-  if (poly.length < 3) return BlockResult(laterals: const [], submain: null, valve: null, stub: null);
+  final guide = <Pt>[
+    for (final q in o.guide!)
+      if (q.x.isFinite && q.y.isFinite) q,
+  ];
+  for (var i = guide.length - 1; i > 0; i--) {
+    if (guide[i].distanceTo(guide[i - 1]) < 1e-9) guide.removeAt(i);
+  }
+  if (poly.length < 3 || guide.length < 2) return BlockResult(laterals: const [], submain: null, valve: null, stub: null);
   final dir = (guide.last - guide.first).normalized;
   final perp = dir.length == 0 ? const Pt(0, 1) : dir.perpendicular;
-  // offsets needed to cover the polygon on both sides of the guide
+  // the guide prolonged past the polygon on both ends
+  final all = Bounds.ofPoints([...poly, ...guide]);
+  final reach = 2 * math.sqrt(all.width * all.width + all.height * all.height) + 1;
+  final prolonged = [guide.first - (guide[1] - guide.first).normalized * reach, ...guide, guide.last + (guide.last - guide[guide.length - 2]).normalized * reach];
+  // offsets needed to cover the polygon on both sides of the guide: the
+  // distance to a bent guide peaks along the edges and inside the polygon,
+  // not only at its vertices, so those are sampled too
   var vMin = double.infinity, vMax = -double.infinity;
-  for (final p in poly) {
-    final v = (p - guide.first).dot(perp);
+  final perimeter = polylineLength([...poly, poly.first]);
+  final pb = Bounds.ofPoints(poly);
+  final step = math.max(perimeter / 400, 1e-6);
+  final grid = math.max(math.max(pb.width, pb.height) / 24, 1e-6);
+  final samples = <Pt>[
+    for (var i = 0; i < poly.length; i++) ...[
+      poly[i],
+      for (var k = 1, m = (poly[i].distanceTo(poly[(i + 1) % poly.length]) / step).ceil(); k < m; k++) Pt.lerp(poly[i], poly[(i + 1) % poly.length], k / m),
+    ],
+    for (var y = pb.minY + grid / 2; y < pb.maxY; y += grid)
+      for (var x = pb.minX + grid / 2; x < pb.maxX; x += grid)
+        if (pointInPolygon(Pt(x, y), poly)) Pt(x, y),
+  ];
+  for (final p in samples) {
+    final v = _signedDistance(p, prolonged);
     vMin = math.min(vMin, v);
     vMax = math.max(vMax, v);
   }
@@ -402,10 +639,11 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
   final zone = o.zoneName ?? project.uniqueZoneName();
   final laterals = <Entity>[];
   final rows = <List<_Feed>>[];
+  final lines = <List<Pt>>[];
   var idx = 0;
   final g0 = guide.first;
   for (var v = vMin + first; v <= vMax - first / 2 + 1e-9; v += o.lateralSpacing) {
-    final line = offsetPolyline(guide, v);
+    final line = offsetPolylineMitred(prolonged, v);
     final row = <_Feed>[];
     for (final piece in clipPolylineToPolygon(line, poly, minLength: o.lateralSpacing / 4)) {
       final len = polylineLength(piece);
@@ -424,9 +662,12 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
           feed = pointAlongPolyline(piece, len / 2);
           parts = halves.length == 2 ? [halves[0].reversed.toList(), halves[1]] : [piece];
       }
-      row.add((p: feed, u: (feed - g0).dot(dir), v: v));
+      // across the rows in the frame of the guide's chord (where the
+      // submain steps between rows)
+      row.add((p: feed, u: (feed - g0).dot(dir), v: (feed - g0).dot(perp)));
       for (final pts in parts) {
         if (polylineLength(pts) < 1e-6) continue;
+        lines.add(pts);
         idx++;
         if (o.isTape) {
           laterals.add(TapeEntity(id: project.newId(), name: '${o.lateralPrefix}$idx', points: pts, tapeSpecId: o.tapeSpecId ?? '', inletHeadM: o.tapeInletHeadM));
@@ -464,5 +705,7 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
     SubmainPosition.end => uMax,
   };
   final (main, branchLines) = _submainLines(rows, poly, uRef: uRef, spacing: o.lateralSpacing, at: (u, v) => g0 + dir * u + perp * v);
-  return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir);
+  final dry = _uncoveredShare(poly, lines, o.lateralSpacing);
+  final messages = [if (dry > guidedUncoveredLimit) 'block_uncovered:${(dry * 100).toStringAsFixed(1)} %'];
+  return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir, messages: messages);
 }

@@ -265,7 +265,7 @@ TreeRingLayout layoutTreeRings({List<Pt>? area, List<Pt>? trees, required TreeRi
     uMax = math.max(uMax, t.dot(dir));
   }
   final half = math.max(1.5 * r, (o.plantSpacing > 0 ? o.plantSpacing : 2 * r + 1) / 2);
-  final uMid = (uMin + uMax) / 2;
+  final uMid = _centreFeed(all, dir, (uMin + uMax) / 2, 1.25 * r);
   final rings = <TreeRing>[];
   final laterals = <List<Pt>>[];
   final feeds = <Pt>[];
@@ -345,6 +345,33 @@ TreeRingLayout layoutTreeRings({List<Pt>? area, List<Pt>? trees, required TreeRi
     }
   }
   return TreeRingLayout(trees: all, rings: rings, laterals: laterals, submain: submain, stub: stub, valve: valve, kind: o.kind, direction: dir, messages: messages);
+}
+
+/// Where (u along [dir]) a submain across the middle of the rows feeds
+/// them: [mid] when no tree stands within [keep] of it, else the gap
+/// between two neighbouring trees nearest to it (with an odd number of
+/// trees a row the middle falls on a trunk, and a lateral starting there
+/// would run back over the one fed the other way).
+double _centreFeed(List<Pt> trees, Pt dir, double mid, double keep) {
+  final us = [for (final t in trees) t.dot(dir)]..sort();
+  double clearance(double u) => us.fold(double.infinity, (m, x) => math.min(m, (x - u).abs()));
+  if (clearance(mid) >= keep) return mid;
+  var best = mid, bestClear = clearance(mid);
+  var bestOff = double.infinity;
+  for (var i = 1; i < us.length; i++) {
+    if (us[i] - us[i - 1] < 1e-9) continue;
+    final u = (us[i] + us[i - 1]) / 2;
+    final c = clearance(u);
+    final off = (u - mid).abs();
+    // clear gaps first, the one nearest to the middle (ties: the lower u)
+    final better = c >= keep ? (bestClear < keep || off < bestOff - 1e-9) : (bestClear < keep && c > bestClear + 1e-9);
+    if (better) {
+      best = u;
+      bestClear = c;
+      bestOff = off;
+    }
+  }
+  return best;
 }
 
 /// Feed of a row at u = [u], moved back towards the [first] tree into the

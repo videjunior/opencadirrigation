@@ -2003,6 +2003,8 @@ class ProjectController extends ChangeNotifier {
     }, label: 'hist.block');
     if (r == null) return;
     select(r.all.map((e) => e.id));
+    // 1.6.0 AUT: a guided block that leaves part of the polygon dry says so
+    if (r.messages.isNotEmpty) notify(r.messages.map(t.warning).join(' · '));
   }
 
   void addSprinklerGrid(SprinklerGridOptions o) {
