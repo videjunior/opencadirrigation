@@ -100,6 +100,7 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 
+import '../io/image_decode.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
@@ -289,7 +290,10 @@ class VegetationImage {
   factory VegetationImage.fromEncoded(Uint8List bytes, List<Pt> corners, {int maxPixels = defaultMaxPixels, double minPixelM = defaultMinPixelM}) {
     img.Image? decoded;
     try {
-      decoded = img.decodeImage(bytes);
+      decoded = decodeImageSafe(bytes);
+    } on FormatException {
+      // image_too_large (beyond the decoder's pixel limit) or image_unreadable
+      rethrow;
     } catch (_) {
       decoded = null;
     }

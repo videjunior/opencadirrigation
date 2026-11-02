@@ -183,12 +183,14 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       var recovered = 0;
       if (widget.offerRecovery && mounted) recovered = await showRecoveryDialog(context, ws);
       if (!mounted) return;
-      // a project shared by link (#p=…) opens in a tab of its own
-      final shared = Uri.base.fragment.startsWith('p=') ? projectJsonFromLink('#${Uri.base.fragment}') : null;
-      if (shared != null) {
-        clearAddressFragment();
-        if (openJsonInTab(ws, shared) == null) c.notify(c.t('share.damaged'));
-      }
+      // a project shared by link (#p=…) opens in a tab of its own; the address
+      // loses it first, so a link that cannot be opened is not tried again
+      // when the page is reloaded or the tab restored
+      final fragment = Uri.base.fragment;
+      final linked = fragment.startsWith('p=');
+      if (linked) clearAddressFragment();
+      final shared = linked ? projectJsonFromLink('#$fragment') : null;
+      if (linked && (shared == null || openJsonInTab(ws, shared) == null)) c.notify(c.t('share.damaged'));
       final q = Uri.base.queryParameters;
       final example = exampleIdFromName(q['example']) ?? widget.startExample;
       final designLink = q['design'] == '1';

@@ -16,6 +16,7 @@ import 'io/project_store.dart';
 import 'state/controller.dart';
 import 'state/workspace.dart';
 import 'widgets/dialogs/export_dialogs.dart';
+import 'widgets/dialogs/import_progress_dialog.dart';
 import 'widgets/dialogs/pdf_import_dialog.dart';
 import 'theme.dart';
 
@@ -132,8 +133,9 @@ Future<void> importDrawingAction(BuildContext context, ProjectController c) asyn
     return;
   }
   try {
-    final summary = c.importFile(f.$1, f.$2);
-    c.notify('${c.t('msg.imported')}: $summary');
+    // large files are read in slices, with their progress and a cancel button
+    final summary = context.mounted ? await showImportProgressDialog(context, c, f.$1, f.$2) : c.importFile(f.$1, f.$2);
+    c.notify(summary == null ? c.t('fmt.import.cancelled') : '${c.t('msg.imported')}: $summary');
   } catch (e, st) {
     debugPrint('$e\n$st');
     c.notify(c.t('msg.error', {'e': c.describeError(e)}));

@@ -29,6 +29,7 @@ import 'datum.dart';
 import 'dem_tiff.dart' show DemSample;
 import 'geo.dart';
 import 'point_grid.dart';
+import 'work_slicer.dart';
 
 /// The public header block.
 class LasHeader {
@@ -427,6 +428,18 @@ class LasReader {
     // in pieces of 1 MB, as a file would arrive
     for (var o = 0; o < bytes.length; o += 1 << 20) {
       r.add(Uint8List.sublistView(bytes, o, math.min(o + (1 << 20), bytes.length)));
+    }
+    return r.close(georef: georef);
+  }
+
+  /// [read] in slices of [slicer] (the interface stays responsive and the
+  /// user can cancel).
+  static Future<LasImportResult> readAsync(Uint8List bytes, WorkSlicer slicer, {GeoReference? georef, Set<int>? classes = const {2}, int? maxPoints}) async {
+    if (bytes.length >= 4 && !(bytes[0] == 0x4C && bytes[1] == 0x41 && bytes[2] == 0x53 && bytes[3] == 0x46)) throw const FormatException('las_not_las');
+    final r = LasStreamReader(classes: classes, maxPoints: maxPoints);
+    for (var o = 0; o < bytes.length; o += 1 << 18) {
+      r.add(Uint8List.sublistView(bytes, o, math.min(o + (1 << 18), bytes.length)));
+      if (slicer.due) await slicer.pause(0.9 * o / bytes.length);
     }
     return r.close(georef: georef);
   }

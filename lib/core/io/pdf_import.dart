@@ -33,6 +33,7 @@ import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import 'cad_drawing.dart' show cadTableName;
+import 'image_decode.dart';
 import 'pdf_reader.dart';
 
 /// Metres on paper of one PDF unit (1/72 inch).
@@ -356,9 +357,18 @@ double _degrees(double a) {
   return d;
 }
 
+/// [bytes] decoded, or null when the decoder cannot or will not read them.
+img.Image? _decodeOrNull(Uint8List bytes) {
+  try {
+    return decodeImageSafe(bytes);
+  } on FormatException {
+    return null;
+  }
+}
+
 /// [bytes] (PNG or JPEG) turned upside down, in the same format.
 Uint8List? _flipVertical(Uint8List bytes, String mime) {
-  final im = img.decodeImage(bytes);
+  final im = _decodeOrNull(bytes);
   if (im == null) return null;
   final f = img.flipVertical(im);
   return mime == 'image/jpeg' ? img.encodeJpg(f, quality: 90) : img.encodePng(f);

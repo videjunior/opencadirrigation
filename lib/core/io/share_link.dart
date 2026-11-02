@@ -8,6 +8,8 @@ import 'dart:convert';
 
 import 'package:archive/archive.dart';
 
+import 'safe_archive.dart';
+
 /// The page that opens shared links.
 const shareLinkBase = 'https://opencadirrigation.com/';
 
@@ -36,17 +38,25 @@ String shareLinkFor(String projectJson, {String base = shareLinkBase}) {
   return '$base#p=$packed';
 }
 
+/// Most bytes the project of a link may expand to: far above any project
+/// that fits in a link (pictures and results are left out of them), far
+/// below what would stop a browser tab. A link carrying more (a "gzip
+/// bomb") is refused as damaged.
+const shareLinkMaxProjectBytes = 20 * 1024 * 1024;
+
 /// The project JSON a link (or its fragment) carries; null when it has
-/// none or it is damaged.
-String? projectJsonFromLink(String linkOrFragment) {
+/// none, it is damaged or it expands beyond [shareLinkMaxProjectBytes].
+String? projectJsonFromLink(String linkOrFragment, {int maxBytes = shareLinkMaxProjectBytes}) {
   final i = linkOrFragment.indexOf('p=');
   if (i < 0 || (i > 0 && !'#&'.contains(linkOrFragment[i - 1]))) return null;
   var data = linkOrFragment.substring(i + 2);
   final end = data.indexOf('&');
   if (end >= 0) data = data.substring(0, end);
+  // no longer than the sender accepts
+  if (data.length > shareLinkMaxLength) return null;
   try {
     final padded = data.padRight((data.length + 3) ~/ 4 * 4, '=');
-    return utf8.decode(const GZipDecoder().decodeBytes(base64Url.decode(padded)));
+    return utf8.decode(gunzipCapped(base64Url.decode(padded), maxBytes: maxBytes));
   } catch (_) {
     return null;
   }

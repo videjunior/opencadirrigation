@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 import '../model/geometry.dart';
+import 'image_decode.dart';
 import 'plot.dart';
 
 class SvgWriter {
@@ -131,10 +132,10 @@ class SvgWriter {
     var data = bytes;
     var type = isJpeg ? 'image/jpeg' : (isPng ? 'image/png' : mime);
     try {
-      final info = img.findDecoderForData(bytes)?.startDecode(bytes);
+      final info = pictureInfo(bytes);
       final tooBig = info != null && maxW > 0 && maxH > 0 && (info.width > maxW * 1.25 || info.height > maxH * 1.25);
       if (tooBig || !(isJpeg || isPng)) {
-        final decoded = img.decodeImage(bytes);
+        final decoded = decodeImageSafe(bytes);
         if (decoded == null) return null;
         var im = decoded;
         if (tooBig) {

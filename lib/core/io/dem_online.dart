@@ -22,6 +22,7 @@ import 'package:image/image.dart' as img;
 
 import '../model/geometry.dart';
 import 'geo.dart';
+import 'image_decode.dart';
 
 /// How a source is queried: point batches or raster tiles.
 enum DemKind { points, tiles }
@@ -371,7 +372,12 @@ class DemTile {
 
 /// Decodes a terrarium PNG tile (elevation = R·256 + G + B/256 − 32768).
 DemTile demDecodeTerrarium(List<int> png) {
-  final im = img.decodePng(png is Uint8List ? png : Uint8List.fromList(png));
+  img.Image? im;
+  try {
+    im = decodePngSafe(png is Uint8List ? png : Uint8List.fromList(png));
+  } on FormatException {
+    throw const FormatException('dem_bad_tile');
+  }
   if (im == null || im.width != demTileSize || im.height != demTileSize) throw const FormatException('dem_bad_tile');
   final z = Float32List(demTileSize * demTileSize);
   for (var y = 0; y < demTileSize; y++) {

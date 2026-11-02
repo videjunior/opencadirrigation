@@ -507,7 +507,7 @@ Uint8List? _alphaOf(_Interp it, Map<String, Object?> dict, int dw, int dh) {
         width = cols;
         bpc = 8;
       } else if (names[i] == 'DCTDecode') {
-        final im = img.decodeJpg(data);
+        final im = decodeJpgSafe(data);
         if (im == null) return null;
         data = im.convert(format: img.Format.uint8, numChannels: 1).toUint8List();
         width = im.width;
@@ -559,7 +559,7 @@ _Raster? _jpeg(_Interp it, Uint8List data, Map<String, Object?> dict, List<doubl
   final masked = doc._resolve(dict['SMask']) is _Stream || doc._resolve(dict['Mask']) is _Stream;
   final inverted = decode != null && decode.length >= 2 && decode[0] > decode[1];
   if (info != null && (info.$3 == 1 || info.$3 == 3) && !masked && !inverted) return _Raster(data, 'image/jpeg', info.$1, info.$2);
-  final im = img.decodeJpg(data);
+  final im = decodeJpgSafe(data);
   if (im == null) return info != null && info.$3 != 4 ? _Raster(data, 'image/jpeg', info.$1, info.$2) : null;
   var pic = im.convert(format: img.Format.uint8, numChannels: 3);
   if (inverted && info?.$3 != 4) pic = img.invert(pic);
@@ -620,7 +620,7 @@ _Raster? _jpeg(_Interp it, Uint8List data, Map<String, Object?> dict, List<doubl
   final byteAlign = doc._bool(p?['EncodedByteAlign']) ?? false;
   final compression = k < 0 ? 4 : (k == 0 ? 2 : 3);
   final tiff = _tiffAround(data, cols, rows, compression, (k > 0 ? 1 : 0) | (byteAlign ? 4 : 0));
-  final im = img.decodeTiff(tiff);
+  final im = decodeTiffSafe(tiff);
   if (im == null) throw const FormatException('ccitt');
   // white-is-zero photometric: white pixels come out 1, black 0, as the
   // filter writes them unless BlackIs1

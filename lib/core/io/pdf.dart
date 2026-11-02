@@ -30,6 +30,7 @@ import 'package:image/image.dart' as img;
 import 'fonts/pdf_fonts.dart';
 import 'fonts/subset.dart';
 import 'fonts/truetype.dart';
+import 'image_decode.dart';
 
 export 'fonts/pdf_fonts.dart' show BundledFonts, PdfFonts;
 
@@ -152,20 +153,31 @@ class PdfDocument {
   }
 
   PdfImage? _makeImage(Uint8List bytes, String mime, int? maxW, int? maxH) {
+    // a picture the decoder refuses (beyond its pixel limit, damaged) is left
+    // out of the sheet, as one it cannot read
+    try {
+      return _makeImageOf(bytes, mime, maxW, maxH);
+    } on FormatException catch (e) {
+      if (e.message == 'image_too_large' || e.message == 'image_unreadable') return null;
+      rethrow;
+    }
+  }
+
+  PdfImage? _makeImageOf(Uint8List bytes, String mime, int? maxW, int? maxH) {
     final name = 'Im${_images.length + 1}';
     final jpeg = jpegInfo(bytes);
     if (jpeg != null && (jpeg.$3 == 1 || jpeg.$3 == 3)) {
       final (w, h, comps) = jpeg;
       final scale = _downscale(w, h, maxW, maxH);
       if (scale >= 1) return PdfImage._(name, w, h, bytes, 'DCTDecode', comps == 1 ? 'DeviceGray' : 'DeviceRGB', null);
-      final decoded = img.decodeJpg(bytes);
+      final decoded = decodeJpgSafe(bytes);
       if (decoded == null) return null;
       final small = img.copyResize(decoded, width: math.max(1, (w * scale).round()), height: math.max(1, (h * scale).round()), interpolation: img.Interpolation.average);
       final again = Uint8List.fromList(img.encodeJpg(small, quality: 88));
       final info = jpegInfo(again);
       return PdfImage._(name, small.width, small.height, again, 'DCTDecode', info?.$3 == 1 ? 'DeviceGray' : 'DeviceRGB', null);
     }
-    var decoded = img.decodeImage(bytes);
+    var decoded = decodeImageSafe(bytes);
     if (decoded == null) return null;
     final scale = _downscale(decoded.width, decoded.height, maxW, maxH);
     if (scale < 1) {
