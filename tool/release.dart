@@ -354,7 +354,11 @@ String git(List<String> args) {
   return (r.stdout as String).trim();
 }
 
-List<String> dirtyFiles() => const LineSplitter().convert(git(['status', '--porcelain', '--untracked-files=no'])).where((l) => l.trim().isNotEmpty).toList();
+List<String> dirtyFiles() {
+  final r = Process.runSync('git', ['status', '--porcelain', '--untracked-files=no']);
+  if (r.exitCode != 0) throw ReleaseStop('git status: ${r.stderr}');
+  return const LineSplitter().convert(r.stdout as String).where((l) => l.trim().isNotEmpty).toList();
+}
 
 void requireCleanTree() {
   final dirty = dirtyFiles();
