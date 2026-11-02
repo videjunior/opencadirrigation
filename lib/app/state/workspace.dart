@@ -126,7 +126,9 @@ class ClipboardPayload {
   /// created). Pasting back into the source project offsets the copies so
   /// they are visible. Returns the new ids, which become the selection.
   List<String> pasteInto(ProjectController c) {
-    final same = sourceTab == c.tabId;
+    // (tab numbers are counted per window: a payload of another window's
+    // tab with this number but georeferenced elsewhere is another project)
+    final same = sourceTab == c.tabId && _sameGeoref(georef, c.project.meta.georef);
     final offset = same ? const Pt(2, -2) : Pt.zero;
     final ids = <String>[];
     // from the source drawing to this one: the same place of the map
@@ -173,6 +175,9 @@ class ClipboardPayload {
     return ids;
   }
 }
+
+bool _sameGeoref(GeoReference? a, GeoReference? b) =>
+    (a == null || b == null) ? a == b : a.zone == b.zone && a.north == b.north && (a.originEasting - b.originEasting).abs() < 1e-6 && (a.originNorthing - b.originNorthing).abs() < 1e-6;
 
 extension on ClipboardPayload {
   /// The transform that puts the copied entities on the same place of the

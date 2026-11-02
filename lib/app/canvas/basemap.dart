@@ -616,6 +616,8 @@ class BaseMapLayer extends ChangeNotifier {
       _epoch = o.epoch;
       _resetGoogle();
       _evict((k) => k.startsWith('custom/'));
+      // the street map server may have changed (View → Base map → Street map server)
+      _evict((k) => k.startsWith('streets/'));
     }
     if (_customUrl != o.customUrl) {
       _customUrl = o.customUrl;
