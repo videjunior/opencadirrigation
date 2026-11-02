@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/core/design/block_generator.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
+import 'package:opencadirrigation/core/hydraulics/network.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
@@ -139,6 +140,29 @@ void main() {
       // at the head found the zone already gets all the PRV lets through
       final more = Designer(p).analyzeZone(z.valveId, downstreamHead: z.downstreamHead + 20);
       expect(more.totalFlow, closeTo(z.totalFlow, 0.01 * z.totalFlow));
+    }
+  });
+
+  test('MOT-07: a demand behind a closed link is reported, not drawn through it', () {
+    for (final closed in [HLinkKind.closed, HLinkKind.fcv]) {
+      final n = HydraulicNetwork()
+        ..addNode(HNode(id: 'R', kind: HNodeKind.reservoir, elevation: 0, fixedHead: 30))
+        ..addNode(HNode(id: 'A', elevation: 0))
+        ..addNode(HNode(id: 'B', elevation: 2, demand: 0.002))
+        ..addNode(HNode(id: 'C', elevation: 1, demand: 0.001))
+        ..addLink(HLink(id: 'p1', from: 'R', to: 'A', diameter: 0.1, length: 100))
+        // an FCV set to no flow shuts like a closed link
+        ..addLink(HLink(id: 'v', from: 'A', to: 'B', kind: closed, fcvFlow: 0))
+        ..addLink(HLink(id: 'p2', from: 'B', to: 'C', diameter: 0.05, length: 10));
+      final r = n.solve();
+      expect(r.converged, isTrue);
+      expect(r.warnings, contains('demand_disconnected:B'), reason: '$closed: the largest demand of the part names it');
+      expect(r.warnings.where((w) => w.startsWith('demand_disconnected')), hasLength(1));
+      expect(r.nodes['B']!.pressure, 0, reason: 'it was −199 970 m');
+      expect(r.nodes['C']!.pressure, 0);
+      expect(r.links['v']!.flow.abs(), lessThan(1e-6));
+      expect(r.links['p1']!.flow.abs(), lessThan(1e-6), reason: 'the rest of the network does not feed it');
+      expect(r.nodes['A']!.head, closeTo(30, 1e-6));
     }
   });
 }

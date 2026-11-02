@@ -257,6 +257,21 @@ class HydraulicNetwork {
     final eGrad = Float64List(nodeCount);
     final eLoss = Float64List(nodeCount);
 
+    // Parts with a demand that no fixed head reaches through links that
+    // can ever open (a closed link, a pump without a curve, an FCV set to no
+    // flow): the demand cannot be met. Solved with the rest they drew it
+    // through the 10⁻⁸ conductance of the closed links, the nodes at
+    // −200 000 m with the solution converged; they rest empty instead, at
+    // zero pressure, their demand left out (`demand_disconnected:<node>`).
+    final cutOff = warnings.contains('no_fixed_head_node') ? null : _cutOffParts(nodeList, fromNode, toNode);
+    if (cutOff != null) {
+      for (var i = 0; i < nodeCount; i++) {
+        if (cutOff[i] == 0) continue;
+        emitterOpen[i] = 0;
+        emitterFlow[i] = 0;
+      }
+    }
+
     // What the iterations do not change: the friction exponent, and the
     // resistance (unless Darcy–Weisbach) and minor loss coefficient of each pipe.
     final exponent = switch (options.method) {
@@ -376,7 +391,7 @@ class HydraulicNetwork {
       }
 
       // parts at rest behind closed links take their level as known heads
-      if (_restingParts(nodeList, fromNode, toNode, heads, emitterOpen, resting, restLevel)) {
+      if (_restingParts(nodeList, fromNode, toNode, heads, emitterOpen, resting, restLevel, cutOff)) {
         for (var i = 0; i < nodeCount; i++) {
           if (resting[i] == 1) heads[i] = restLevel[i];
         }
@@ -626,7 +641,75 @@ class HydraulicNetwork {
       lastErr = relErr;
     }
     if (!converged) warnings.add('not_converged');
+    if (cutOff != null) warnings.addAll(_cutOffWarnings(nodeList, fromNode, toNode, cutOff));
     return _results(nodeList, heads, fromNode, toNode, q, emitterFlow, emitterOpen, converged, iter, warnings, relErr);
+  }
+
+  /// Links that never let water through: a closed link, a pump without a
+  /// curve, an FCV set to no flow.
+  static bool _neverOpen(HLink l) => l.kind == HLinkKind.closed || (l.kind == HLinkKind.pump && l.pump == null) || (l.kind == HLinkKind.fcv && l.fcvFlow <= 0);
+
+  /// Nodes (1) of the parts no fixed head reaches through links that can
+  /// open and that hold a demand; null when there are none.
+  Uint8List? _cutOffParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode) {
+    if (!links.any(_neverOpen)) return null;
+    final count = nodeList.length;
+    final parent = Int32List.fromList(List<int>.generate(count, (i) => i));
+    int find(int i) {
+      while (parent[i] != i) {
+        parent[i] = parent[parent[i]];
+        i = parent[i];
+      }
+      return i;
+    }
+
+    for (var k = 0; k < links.length; k++) {
+      if (_neverOpen(links[k])) continue;
+      final ra = find(fromNode[k]), rb = find(toNode[k]);
+      if (ra != rb) parent[ra] = rb;
+    }
+    final fed = Uint8List(count), wants = Uint8List(count);
+    for (var i = 0; i < count; i++) {
+      final n = nodeList[i];
+      if (n.kind != HNodeKind.junction) fed[find(i)] = 1;
+      if (n.demand != 0) wants[find(i)] = 1;
+    }
+    Uint8List? out;
+    for (var i = 0; i < count; i++) {
+      final r = find(i);
+      if (fed[r] == 1 || wants[r] == 0) continue;
+      (out ??= Uint8List(count))[i] = 1;
+    }
+    return out;
+  }
+
+  /// `demand_disconnected:<node>` for every part of [cutOff], at its node
+  /// of the largest demand.
+  List<String> _cutOffWarnings(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Uint8List cutOff) {
+    // the parts again (closed links apart), to name each one once
+    final count = nodeList.length;
+    final parent = Int32List.fromList(List<int>.generate(count, (i) => i));
+    int find(int i) {
+      while (parent[i] != i) {
+        parent[i] = parent[parent[i]];
+        i = parent[i];
+      }
+      return i;
+    }
+
+    for (var k = 0; k < links.length; k++) {
+      if (_neverOpen(links[k]) || cutOff[fromNode[k]] == 0 || cutOff[toNode[k]] == 0) continue;
+      final ra = find(fromNode[k]), rb = find(toNode[k]);
+      if (ra != rb) parent[ra] = rb;
+    }
+    final top = <int, int>{};
+    for (var i = 0; i < count; i++) {
+      if (cutOff[i] == 0) continue;
+      final r = find(i);
+      final best = top[r];
+      if (best == null || nodeList[i].demand.abs() > nodeList[best].demand.abs()) top[r] = i;
+    }
+    return [for (final i in top.values) 'demand_disconnected:${nodeList[i].id}'];
   }
 
   /// Plans of the last patterns solved, most recent first: the designer
@@ -650,7 +733,7 @@ class HydraulicNetwork {
   static const _statusCheckFrequency = 2;
   static const _maxStatusCheck = 10;
 
-  static bool _isClosedLink(HLink l) => l.kind == HLinkKind.closed || l.status == LinkStatus.closed || (l.kind == HLinkKind.pump && l.pump == null);
+  static bool _isClosedLink(HLink l) => l.status == LinkStatus.closed || _neverOpen(l);
 
   /// Links meeting at every node, each once and in link order, in CSR form:
   /// those of node i are at [start[i], start[i + 1]) after the n + 1 starts.
@@ -681,8 +764,9 @@ class HydraulicNetwork {
   /// with the rest, such a part left the system singular to rounding, its
   /// level held only by those conductances next to ones of 10⁷ inside it.
   /// Marks those nodes in [resting] with their level in [level]; false when
-  /// no part rests.
-  bool _restingParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Float64List heads, Uint8List emitterOpen, Uint8List resting, Float64List level) {
+  /// no part rests. The parts of [cutOff] (a demand no fixed head reaches)
+  /// rest too, empty: at zero pressure.
+  bool _restingParts(List<HNode> nodeList, Int32List fromNode, Int32List toNode, Float64List heads, Uint8List emitterOpen, Uint8List resting, Float64List level, Uint8List? cutOff) {
     resting.fillRange(0, resting.length, 0);
     var anyClosed = false;
     for (final l in links) {
@@ -711,11 +795,13 @@ class HydraulicNetwork {
     final busy = Uint8List(count);
     for (var i = 0; i < count; i++) {
       final n = nodeList[i];
+      if (cutOff != null && cutOff[i] == 1) continue;
       if (n.kind != HNodeKind.junction || n.demand != 0 || emitterOpen[i] == 1) busy[find(i)] = 1;
     }
     for (var k = 0; k < links.length; k++) {
       final l = links[k];
       if (_isClosedLink(l)) continue;
+      if (cutOff != null && cutOff[fromNode[k]] == 1) continue;
       if (l.kind == HLinkKind.pump || l.kind == HLinkKind.fcv || ((l.kind == HLinkKind.prv || l.kind == HLinkKind.psv) && l.status == LinkStatus.active)) {
         busy[find(fromNode[k])] = 1;
       }
@@ -753,7 +839,7 @@ class HydraulicNetwork {
       final r = find(i);
       if (rests[r] == 0) continue;
       resting[i] = 1;
-      level[i] = math.min(across[r] > 0 ? sum[r] / across[r] : top[r], lowestEmitter[r]);
+      level[i] = cutOff != null && cutOff[i] == 1 ? nodeList[i].elevation : math.min(across[r] > 0 ? sum[r] / across[r] : top[r], lowestEmitter[r]);
     }
     return true;
   }
@@ -858,7 +944,7 @@ class HydraulicNetwork {
         if (l.status != old) statusChanged = true;
         if (l.status == LinkStatus.closed) q[k] = 0;
       }
-      if (prvs && l.kind == HLinkKind.fcv) {
+      if (prvs && l.kind == HLinkKind.fcv && l.fcvFlow > 0) {
         // EPANET fcvstatus: active while there is head to push the setting;
         // open (less than the setting) when the head across turns negative
         final hi = heads[fromNode[k]], hj = heads[toNode[k]];
