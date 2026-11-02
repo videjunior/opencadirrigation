@@ -37,6 +37,8 @@ and report security problems privately ([SECURITY.md](SECURITY.md)). Portuguese:
   symbols, formulas), those a pack may leave in English, the ones waiting for a translation, and one name per concept
   in each language; `test/core/i18n_glossary_test.dart` fails on an English label in a non-Latin script, on more
   English labels in a Latin-script pack and on an avoided word.
+- Native speakers review a language in a spreadsheet with `dart run tool/i18n_review.dart export <code>` and
+  `import <file>` ([how](docs/manual/languages-and-site.md#native-speaker-review-of-the-translations)).
 - The site pages are in `tool/site.dart` (pt, en, es) and `tool/site/<code>.dart`; the legal pages in
   `tool/site/legal.dart`.
 - A string with characters the PDF fonts do not cover yet needs `tool/fonts/build_fonts.py`.

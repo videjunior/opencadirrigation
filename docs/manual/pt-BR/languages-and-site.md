@@ -18,7 +18,8 @@ carregadas uma vez por sessão. Os projetos de exemplo distribuídos existem nos
 (`examples/<código>/`).
 
 Um pacote é um JSON simples com três seções: `strings` (chave → texto), `tutorial` e `catalog`
-(texto de origem em inglês → texto). Tradutores podem revisá-lo sem tocar no código;
+(texto de origem em inglês → texto). Tradutores podem revisá-lo sem tocar no código, e falantes
+nativos o revisam numa planilha ([abaixo](#revisão-das-traduções-por-falantes-nativos));
 `test/core/i18n_packs_test.dart` verifica que cada pacote cobre todas as chaves com os mesmos
 marcadores.
 
@@ -102,3 +103,66 @@ seguem o manual em inglês), `web/humans.txt` e a chave IndexNow `web/<chave>.tx
 `dart run tool/indexnow.dart` pede ao Bing, ao Yandex e aos outros buscadores do IndexNow que
 rastreiem as páginas de novo (o índice do Bing também responde ao Copilot e à busca do ChatGPT);
 `--dry-run` mostra a requisição sem enviá-la.
+
+## Revisão das traduções por falantes nativos
+
+Os testes conferem em cada pacote as chaves que faltam, os marcadores e o glossário, mas só um
+falante nativo sabe dizer se um texto soa bem. `tool/i18n_review.dart` transforma um idioma numa
+planilha que o revisor preenche sem abrir JSON nem código, e traz o arquivo revisado de volta para o
+pacote:
+
+```bash
+dart run tool/i18n_review.dart export ha                  # build/i18n_review/i18n-review-ha.csv
+dart run tool/i18n_review.dart export all --format xlsx   # todos os idiomas menos o inglês, em XLSX
+dart run tool/i18n_review.dart import i18n-review-ha.xlsx --dry-run   # o que mudaria, sem gravar nada
+dart run tool/i18n_review.dart import i18n-review-ha.xlsx             # grava assets/i18n/ha.json
+```
+
+**O arquivo.** Uma linha por texto do idioma: a tabela de textos, o tutorial e os nomes do catálogo
+padrão (português e espanhol vêm das tabelas compiladas; o inglês é a origem e não é exportado). As
+colunas são `status`, `section` (`strings`, `tutorial`, `catalog`), `key` (a chave do texto; para o
+tutorial e o catálogo, o próprio texto em inglês), `english`, `current (<código>)` (a tradução que o
+idioma tem hoje), `review` e `comment` (vazias, para o revisor), `notes`, `context` (onde o texto
+aparece: os arquivos da interface que mostram a chave, o tutorial, o catálogo) e `order` (o lugar do
+texto no programa: ordenar por ela devolve cada texto para junto dos vizinhos). As linhas vêm das
+mais urgentes para as menos urgentes, pelo `status`: `missing` (ainda sem tradução: o app mostra
+inglês), `fix` (a tradução quebra uma regra: um marcador perdido, uma palavra que o glossário evita,
+um nome que deve ficar como em inglês), `provisional` (o texto em inglês mudou e o pacote espera uma
+tradução nova), `same-as-english` (deixado em inglês onde se espera uma tradução), `translated`,
+`may-stay-english` (uma sigla, um nome de método ou de arquivo que o glossário permite em inglês) e
+`keep-english` (nomes, símbolos e fórmulas, iguais em todos os idiomas). As notas dizem o que
+`tool/i18n/glossary.json` pede daquele texto: por que ele pode ou deve ficar em inglês, o termo a
+usar para um conceito que o texto em inglês cita e as palavras a evitar (*Glossary: “emitter” is
+“Auslass”, never “Emitter”…*), os marcadores a manter (`{n}`, `{name}`…) e, para um texto do
+tutorial ou do catálogo cujo inglês mudou, a tradução anterior como ponto de partida. O CSV segue a
+RFC 4180, em UTF-8 com a marca de ordem de bytes (BOM), para que os programas de planilha leiam
+todas as escritas. O XLSX tem as mesmas colunas na primeira aba e as instruções na segunda; é a
+escolha mais segura, porque um programa de planilha pode tomar por fórmula uma célula de CSV que
+começa com `+` ou `-`.
+
+**A revisão.** O revisor escreve um texto em `review` só onde a tradução atual falta, está errada ou
+pode melhorar, deixa as outras linhas vazias, pode ordenar, filtrar e mover as colunas, põe em
+`comment` qualquer pergunta para os mantenedores e devolve o arquivo salvo como XLSX ou como CSV em
+UTF-8. O separador ponto e vírgula ou tabulação, como alguns programas de planilha gravam, e o "texto
+Unicode" UTF-16 deles também são lidos; qualquer outra codificação é recusada em vez de adivinhada.
+
+**A importação.** `import` acha cada linha pela seção e pela chave, e tira o idioma do cabeçalho
+`current (<código>)`, de um nome de arquivo terminado em `-<código>.csv` ou `-<código>.xlsx`, ou de
+`--lang`. Ela recusa a revisão cujos marcadores não são os do texto em inglês, a que muda um texto
+que o glossário mantém em inglês (`untranslatable`), a que usa uma palavra que os `terms` do
+glossário evitam naquele idioma, uma seção ou uma chave que o programa não tem (a chave desconhecida
+é informada, nunca acrescentada), uma linha revisada duas vezes com textos diferentes e, num pacote,
+um texto deixado em inglês onde o `test/core/i18n_glossary_test.dart` espera uma tradução (numa
+escrita não latina; num pacote de escrita latina, além do seu `maxSameAsEnglish`). Ela mostra o que
+muda, o que fica e o que é recusado, com o motivo, avisa quando o texto em inglês ou a tradução
+mudaram desde a exportação, lista os comentários do revisor e não grava nada quando alguma revisão é
+recusada, a não ser com `--force-partial` (o código de saída continua 1); `--dry-run` não grava
+nada. O pacote é editado no lugar: um texto alterado é trocado onde está, uma chave que falta é
+inserida onde a tabela de textos a tem, com a indentação das vizinhas, e todo o resto do arquivo
+fica byte a byte como estava, então o diff de uma revisão mostra só as linhas revisadas. Português e
+espanhol vêm compilados no app (`lib/app/i18n.dart` e suas partes, `lib/app/tutorial/tutorial.dart`,
+`lib/core/model/catalog.dart`): as mudanças deles são listadas, cada uma com o arquivo, o texto
+antigo e o novo e a entrada para colar, e salvas ao lado do arquivo revisado como
+`<nome>.<código>-changes.txt`, para aplicar à mão. Depois de importar, rode
+`flutter test test/core/i18n_packs_test.dart test/core/i18n_glossary_test.dart`; a ferramenta em si
+é testada por `test/i18n_review_test.dart`.
