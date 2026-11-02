@@ -699,4 +699,23 @@ void main() {
       expect(r.seriesOf('X')!.flows.every((q) => q >= -1e-9), isTrue, reason: '$kind: no flow back through it');
     }
   });
+
+  test('MOT-25: pipes on a slope take their length along the ground, in the losses and in the bill of materials', () {
+    // a mainline of 100 m in plan rising 20 m: 102 m of pipe
+    final p = Project();
+    for (final (x, y, z) in [(-50.0, -50.0, 100.0), (-50.0, 50.0, 100.0), (150.0, -50.0, 140.0), (150.0, 50.0, 140.0)]) {
+      p.entities.add(SpotHeightEntity(id: p.newId(), position: Pt(x, y), elevation: z));
+    }
+    p.entities.add(WaterSupplyEntity(id: 'tank', position: Pt.zero, name: 'Tank', calculatePressure: true));
+    p.entities.add(PipeEntity(id: 'main', points: [Pt.zero, const Pt(100, 0)], scope: HydraulicScope.mainline, name: 'Main', pipeSpecId: 'pvc75', computerSized: false));
+    final m = NetworkBuilder(p).build();
+    final link = m.links.firstWhere((l) => l.entityId == 'main');
+    final a = m.nodes[link.from]!, b = m.nodes[link.to]!;
+    final dz = (b.ground - a.ground).abs();
+    expect(dz, greaterThan(15));
+    expect(link.length, closeTo(math.sqrt(100 * 100 + dz * dz), 1e-9));
+    final r = Designer(p).designAll();
+    final pvc = r.bom.firstWhere((l) => l.specId == 'pvc75');
+    expect(pvc.quantity, closeTo(link.length, 1e-9), reason: 'the pipe bought along the slope');
+  });
 }

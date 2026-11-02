@@ -775,6 +775,15 @@ class NetworkBuilder {
     return out;
   }
 
+  /// Length along the ground of a piece [plan] metres long in plan between
+  /// [a] and [b]: √(L² + Δz²) with the ground at both ends (the distance in
+  /// plan made the losses and the pipe bought 2 % short at a 20 % slope,
+  /// 12 % at 50 %).
+  static double _slopeLength(double plan, GNode a, GNode b) {
+    final dz = b.ground - a.ground;
+    return dz == 0 ? plan : math.sqrt(plan * plan + dz * dz);
+  }
+
   void _register(GLink l) {
     model.links.add(l);
     model.nodes[l.from]!.links.add(l);
@@ -788,7 +797,7 @@ class NetworkBuilder {
       a.entityIds.add(entityId);
       b.entityIds.add(entityId);
       if (a.id == b.id) continue;
-      final len = pts[i - 1].distanceTo(pts[i]);
+      final len = _slopeLength(pts[i - 1].distanceTo(pts[i]), a, b);
       final l = GLink(
         id: '${entityId}_${i - 1}',
         from: a.id,
@@ -878,7 +887,7 @@ class NetworkBuilder {
         scope: scope,
         entityId: entityId,
         segmentIndex: seg,
-        length: (dd - du).abs(),
+        length: _slopeLength((dd - du).abs(), up, down),
         pipeSpecId: pipeSpecId,
         tapeSpecId: tapeSpecId,
         computerSized: computerSized,
