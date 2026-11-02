@@ -194,6 +194,30 @@ void main() {
     }
   }
 
+  test('Backspace (the delete key of a Mac) erases the selection with the selection tool (CAD-32)', () {
+    final l = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(5, 0));
+    c.addEntity(l);
+    c.setTool(ToolId.select);
+    c.select([l.id]);
+    expect(press('Backspace'), isTrue);
+    expect(c.project.entities, isEmpty);
+    expect(canvas.calls.where((x) => x == 'tool:Backspace'), isEmpty);
+    // while a command is typed it edits the command
+    final m = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(5, 0));
+    c.addEntity(m);
+    c.select([m.id]);
+    typeCommand('lx');
+    press('Backspace');
+    expect(c.command, 'L');
+    expect(c.project.entities.length, 1);
+    press('Escape');
+    // with a drawing tool it takes back the last point
+    c.setTool(ToolId.polyline);
+    press('Backspace');
+    expect(canvas.calls.last, 'tool:Backspace');
+    expect(c.project.entities.length, 1);
+  });
+
   test('application keys: files, tabs, design and reports; blocked under a dialog', () {
     expect(press('s', ctrl: true), isTrue);
     expect(press('o', meta: true), isTrue);

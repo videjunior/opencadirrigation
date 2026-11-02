@@ -298,7 +298,7 @@ const shortcutGroups = <ShortcutGroup>[
     ('Ctrl+X', 'edit.clipCut'),
     ('Ctrl+V', 'edit.paste'),
     ('Ctrl+D', 'edit.copy'),
-    ('Del', 'edit.delete'),
+    ('Del  /  ⌫', 'edit.delete'),
     ('Esc', 'sc.cancel'),
     ('Enter', 'sc.finish'),
     ('Backspace', 'sc.undoPoint'),

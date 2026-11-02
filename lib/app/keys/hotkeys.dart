@@ -343,6 +343,12 @@ class Hotkeys {
           setCommand(c.command.substring(0, c.command.length - 1));
           return true;
         }
+        // the delete key of a Mac laptop sends Backspace: with the
+        // selection tool it erases the selection, as Delete does
+        if (c.activeTool == ToolId.select && c.selection.isNotEmpty) {
+          c.deleteSelected();
+          return true;
+        }
         k?.toolKey('Backspace');
         return true;
       case 'Delete':
