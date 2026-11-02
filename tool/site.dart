@@ -70,7 +70,7 @@ const firebaseProjectId = 'opencadirrigation';
 
 /// The plain-HTTP addresses of this computer a page served over HTTPS may
 /// still reach (lib/app/canvas/basemap.dart accepts them for map tiles).
-const _localServers = 'http://localhost:* http://127.0.0.1:* http://[::1]:*';
+const _localServers = 'http://localhost:* http://127.0.0.1:*';
 
 /// Content Security Policy of the entry and legal pages, as a meta element
 /// so that it travels with the pages (the hosting configuration,

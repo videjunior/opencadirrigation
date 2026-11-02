@@ -728,8 +728,16 @@ class ProjectController extends ChangeNotifier {
   void notify(String message) {
     lastMessage = message;
     messageSeq++;
+    _notifiedAt = DateTime.now();
     notifyListeners();
   }
+
+  /// When the last message was shown ([notify]).
+  DateTime? _notifiedAt;
+
+  /// The advice on the browser copies, held back while another message (a
+  /// design result) is still on the screen, so that it does not replace it.
+  Timer? _adviceTimer;
 
   /// Switches the interface language. A choice made by the user is saved
   /// ([persist]); a language taken from the page address (`?lang=`, `/pt/`)
@@ -1279,7 +1287,16 @@ class ProjectController extends ChangeNotifier {
       // once per browser: these copies are no backup (Safari erases them after a week away)
       if (!store.synchronous && getPref('store.advised') == null) {
         setPref('store.advised', '1');
-        notify(t(browserIsSafari ? 'store.adviceSafari' : 'store.advice'));
+        final advice = t(browserIsSafari ? 'store.adviceSafari' : 'store.advice');
+        final since = _notifiedAt == null ? null : DateTime.now().difference(_notifiedAt!);
+        if (since == null || since > const Duration(seconds: 6)) {
+          notify(advice);
+        } else {
+          _adviceTimer?.cancel();
+          _adviceTimer = Timer(const Duration(seconds: 6) - since, () {
+            if (!_disposed) notify(advice);
+          });
+        }
       }
       if (!o.versionKept && _versionWarned != uid) {
         _versionWarned = uid;
@@ -2242,6 +2259,7 @@ class ProjectController extends ChangeNotifier {
     if (_disposed) return;
     _autoTimer?.cancel();
     _autosaveTimer?.cancel();
+    _adviceTimer?.cancel();
     _gpsStop?.call();
     _gpsStop = null;
     _releaseWakeLock();
