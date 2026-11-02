@@ -61,7 +61,9 @@ void main() {
     final p = buildExample(ExampleId.orchard, i18n.call, lang: 'pt')..meta.georef = GeoReference.fromLatLonOrigin(-19.75, -47.93);
     final b = PdfSheetBuilder(project: p, t: i18n.call, units: p.params.units);
     final plain = b.recordSheet(const SheetOptions()).texts.toList();
-    expect(plain.where((s) => s.startsWith('E ') || s.startsWith('N ')), isEmpty);
+    // the values of the grid lines (the origin in the title block, "E …  N …",
+    // is printed on every georeferenced sheet)
+    expect(plain.where((s) => RegExp(r'^[EN] \d+$').hasMatch(s)), isEmpty);
     final sheet = b.recordSheet(const SheetOptions(grid: SheetGrid.both));
     final texts = sheet.texts.toList();
     expect(texts.where((s) => RegExp(r'^E \d+$').hasMatch(s)), isNotEmpty);
