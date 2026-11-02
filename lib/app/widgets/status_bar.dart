@@ -7,6 +7,7 @@ import '../tutorial/tutorial.dart';
 import '../version.dart';
 import '../theme.dart';
 import 'ai/ai_panel.dart';
+import 'dialogs/storage_dialog.dart';
 
 class StatusBar extends StatelessWidget {
   const StatusBar({super.key, required this.c, required this.status, required this.hint});
@@ -69,6 +70,22 @@ class StatusBar extends StatelessWidget {
                 c.autoRunning ? '⟳ ${t('design.autoRunning')}' : '⟳ ${t('design.autoOn')}',
                 key: const Key('auto_chip'),
                 style: TextStyle(fontSize: 11, color: c.autoRunning ? Cad.highlight : Cad.fg54),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+          // the copy in the browser failed: stays until a later one is kept
+          if (c.storeProblem case final problem?) ...[
+            Tooltip(
+              message: problem,
+              child: InkWell(
+                key: const Key('store_problem_chip'),
+                onTap: () => showStorageDialog(context, c),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(color: Cad.attention.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(3)),
+                  child: Text('⚠ ${t('store.problem')}', style: TextStyle(fontSize: 11, color: Cad.attention)),
+                ),
               ),
             ),
             const SizedBox(width: 12),

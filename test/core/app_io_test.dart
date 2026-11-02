@@ -62,16 +62,16 @@ void main() {
   group('LocalProjectStore', () {
     setUp(() => LocalProjectStore().clearAll());
 
-    test('save, list, versions, rename, recover and remove', () {
+    test('save, list, versions, rename, recover and remove', () async {
       final store = LocalProjectStore();
       store.save('u1', 'Um', '{"a":1}');
       store.save('u1', 'Um', '{"a":2}');
       store.save('u2', 'Dois', '{"b":1}', kind: 'autosave');
       expect(store.list().map((p) => p.uid).toSet(), {'u1', 'u2'});
-      expect(store.load('u1'), '{"a":2}');
+      expect(await store.load('u1'), '{"a":2}');
       final v = store.versions('u1');
       expect(v.length, greaterThanOrEqualTo(1));
-      expect(store.load('u1', version: v.first.version), isNotNull);
+      expect(await store.load('u1', version: v.first.version), isNotNull);
       expect(store.recoverable().map((p) => p.uid), ['u2']);
       store.acknowledge('u2');
       expect(store.recoverable(), isEmpty);
@@ -79,7 +79,7 @@ void main() {
       expect(store.list().firstWhere((p) => p.uid == 'u1').name, 'Um renomeado');
       store.remove('u1');
       expect(store.list().map((p) => p.uid), isNot(contains('u1')));
-      expect(store.load('u1'), isNull);
+      expect(await store.load('u1'), isNull);
       store.clearAll();
       expect(store.list(), isEmpty);
     });
@@ -147,7 +147,11 @@ void main() {
       expect(BaseMapLayer.customUrl('https://{s}.t.example/{z}/{x}/{-y}.png?key=k', 5, 3, 7), 'https://b.t.example/5/3/24.png?key=k');
       expect(BaseMapLayer.customUrl('https://{s:xyz}.t.example/{z}/{x}/{y}', 5, 4, 7), 'https://z.t.example/5/4/7');
       expect(BaseMapLayer.isValidTemplate('https://t.example/{z}/{x}/{y}.png'), isTrue);
-      expect(BaseMapLayer.isValidTemplate('http://t.example/{z}/{x}/{-y}.png'), isTrue);
+      // http:// is blocked by the browser on the HTTPS site (mixed content), except on this computer
+      expect(BaseMapLayer.isValidTemplate('http://t.example/{z}/{x}/{-y}.png'), isFalse);
+      expect(BaseMapLayer.isPlainHttp('http://t.example/{z}/{x}/{-y}.png'), isTrue);
+      expect(BaseMapLayer.isValidTemplate('http://localhost:8080/{z}/{x}/{-y}.png'), isTrue);
+      expect(BaseMapLayer.isPlainHttp('http://127.0.0.1/{z}/{x}/{y}.png'), isFalse);
       expect(BaseMapLayer.isValidTemplate('https://t.example/{z}/{x}.png'), isFalse);
       expect(BaseMapLayer.isValidTemplate('t.example/{z}/{x}/{y}.png'), isFalse);
       expect(BaseMapLayer.isValidTemplate(''), isFalse);

@@ -25,6 +25,7 @@ import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
+import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'dialogs/welcome_dialog.dart';
@@ -96,6 +97,9 @@ class AppMenuBar extends StatelessWidget {
                       menuChildren: [
                         if (recent.isEmpty) item(t('file.noRecent'), null),
                         for (final p in recent.take(8)) item(p.name.isEmpty ? p.uid : p.name, ws == null ? null : () => openStoredAction(ws!, p), key: Key('recent_${p.uid}')),
+                        // 1.6.0 CAD: what these copies are (kept in this browser only), and all of them at once
+                        const Divider(height: 1),
+                        item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_recent_storage')),
                       ],
                       child: Text(t('file.recent')),
                     ),
@@ -114,7 +118,15 @@ class AppMenuBar extends StatelessWidget {
                       onClose: _menuClosed,
                       key: const Key('menu_examples'),
                       leadingIcon: const Icon(Icons.auto_awesome_outlined, size: 16),
-                      menuChildren: [for (final ex in exampleGallery) item(t(ex.titleKey), () => loadExampleAction(c, ex.id), icon: exampleIcon(ex.id), key: Key('menu_example_${ex.id.name}'))],
+                      menuChildren: [
+                        for (final ex in exampleGallery)
+                          item(
+                            t(ex.titleKey),
+                            () => openExampleAction(context, c, ex.id, ws: ws),
+                            icon: exampleIcon(ex.id),
+                            key: Key('menu_example_${ex.id.name}'),
+                          ),
+                      ],
                       child: Text(t('file.examples')),
                     ),
                     const Divider(height: 1),
@@ -147,6 +159,11 @@ class AppMenuBar extends StatelessWidget {
                     item(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined, key: const Key('menu_share_link')),
                     item(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
                     item(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
+                    // 1.6.0 CAD
+                    const Divider(height: 1),
+                    item(t('file.saveAs'), () => saveProjectAction(context, c, saveAs: true), icon: Icons.save_as_outlined, key: const Key('menu_save_as')),
+                    item(t('file.saveCopy'), () => saveCopyAction(context, c), icon: Icons.file_copy_outlined, key: const Key('menu_save_copy')),
+                    item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_storage')),
                   ],
                   child: Text(t('menu.file')),
                 ),
@@ -263,6 +280,10 @@ class AppMenuBar extends StatelessWidget {
                         const Divider(height: 1),
                         RadioMenuButton<BaseMap>(value: BaseMap.custom, groupValue: c.baseMap, onChanged: (v) => selectBaseMap(context, c, v ?? BaseMap.none), child: Text(t('view.baseMap.custom'))),
                         item(t('view.baseMap.customUrl'), () => showCustomTilesDialog(context, c), icon: Icons.link, key: const Key('menu_custom_tiles')),
+                        // 1.6.0 CAD
+                        const Divider(height: 1),
+                        item(t('basemap.osm.menu'), () => showStreetsServerDialog(context, c), icon: Icons.dns_outlined, key: const Key('menu_osm_server')),
+                        item(t('basemap.terms.menu'), () => showBaseMapTermsDialog(context, c), icon: Icons.gavel_outlined, key: const Key('menu_map_terms')),
                       ],
                       child: Text(t('view.baseMap')),
                     ),
@@ -338,6 +359,8 @@ class AppMenuBar extends StatelessWidget {
                         item(t('gps.walkOutline'), c.gpsTrack == null ? null : () => c.finishGpsTrack(), icon: Icons.pentagon_outlined),
                         item(t('gps.walkLine'), c.gpsTrack == null ? null : () => c.finishGpsTrack(closed: false), icon: Icons.timeline),
                         item(t('gps.mark'), c.gpsPoint == null ? null : c.markGpsPoint, icon: Icons.add_location_alt_outlined, key: const Key('menu_gps_mark')),
+                        // 1.6.0 CAD
+                        item(t('gps.walkDiscard'), c.gpsTrack == null && !c.hasKeptWalk ? null : c.discardGpsTrack, icon: Icons.delete_sweep_outlined, key: const Key('menu_gps_walk_discard')),
                       ],
                       child: Text(t('gps.submenu')),
                     ),

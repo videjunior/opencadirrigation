@@ -11,13 +11,14 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart' as img;
 
 import '../../core/io/pdf_sheet.dart';
 import '../../core/io/plot.dart' show PlotRaster;
 import '../../core/model/geometry.dart';
 import '../ai/vision_tiles.dart';
+import '../canvas/basemap.dart';
 import '../state/controller.dart';
+import 'jpeg_encode.dart';
 
 /// Resolution of the base map on a PDF sheet (dots per inch on paper),
 /// finer than the aerial imagery of most farmland at the usual scales.
@@ -29,6 +30,12 @@ const sheetMapMaxSide = 4096.0;
 
 /// Most tiles downloaded for one base map.
 const sheetMapMaxTiles = 160;
+
+/// Most tiles of a server run by volunteers ([BaseMapLayer.sharedServer]:
+/// the OpenStreetMap Foundation's, OpenTopoMap) for one base map: their
+/// usage policies discourage bulk downloads, so a sheet takes a coarser
+/// level of them.
+const sheetMapMaxTilesShared = 24;
 
 /// [o] with the base map of [c] under its drawing sheets, at [dpi] on the
 /// sheet of the largest scale; [o] unchanged when the project has no
@@ -48,7 +55,8 @@ Future<SheetOptions> withSheetBaseMap(ProjectController c, SheetOptions o, {doub
   mpp = math.max(mpp, math.sqrt(world.width * world.height / sheetMapMaxPixels));
   TileMosaic? mosaic;
   try {
-    mosaic = await fetchMosaic(g: g, world: world, mpp: mpp, map: c.baseMap, fetcher: fetcher, googleKey: c.googleMapsKey, customUrl: c.customTileUrl, lang: c.lang, maxTiles: sheetMapMaxTiles);
+    final limit = BaseMapLayer.sharedServer(c.baseMap) ? sheetMapMaxTilesShared : sheetMapMaxTiles;
+    mosaic = await fetchMosaic(g: g, world: world, mpp: mpp, map: c.baseMap, fetcher: fetcher, googleKey: c.googleMapsKey, customUrl: c.customTileUrl, lang: c.lang, maxTiles: limit);
     // no finer than the tiles that came (coarser where the imagery stops)
     final (jpeg, covered) = await _compose(mosaic, world, math.max(mpp, mosaic.groundMpp));
     return o.copyWith(
@@ -83,8 +91,8 @@ Future<(Uint8List, Bounds)> _compose(TileMosaic m, Bounds world, double mpp) asy
   try {
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     if (data == null) throw StateError('the base map picture has no pixels');
-    final rgba = img.Image.fromBytes(width: w, height: h, bytes: data.buffer, bytesOffset: data.offsetInBytes, numChannels: 4, order: img.ChannelOrder.rgba);
-    final jpeg = img.encodeJpg(rgba, quality: 85);
+    // the browser's own encoder where there is one (the Dart one held the window for seconds)
+    final jpeg = await encodeJpegRgba(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes), w, h, quality: 85);
     return (jpeg, Bounds(world.minX, world.maxY - h * mpp, world.minX + w * mpp, world.maxY));
   } finally {
     image.dispose();

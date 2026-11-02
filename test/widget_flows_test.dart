@@ -296,7 +296,10 @@ void main() {
     await settle(tester);
     expect(c.project.entities.length, n);
     expect(c.dirty, isTrue);
-    expect(c.lastMessage, 'Versão 1 restaurada');
+    expect(c.lastMessage, 'Versão 1 restaurada (Ctrl+Z desfaz)');
+    // one undo step: the work as it was comes back
+    c.undo();
+    expect(c.project.entities.length, n + 1);
   });
 
   testWidgets('polar array: count, total angle and centre', (tester) async {

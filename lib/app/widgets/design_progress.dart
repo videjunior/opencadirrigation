@@ -8,8 +8,9 @@ import '../theme.dart';
 /// Compact progress card shown in a corner of the canvas while a design
 /// runs. It blocks nothing: the user keeps panning, zooming, selecting and
 /// reading reports meanwhile (the controller refuses edits until the run
-/// ends). Names the current stage (zone i of n, mainline, flushing…) and
-/// shows the fraction of steps completed.
+/// ends). Names the current stage (zone i of n, mainline, flushing…),
+/// shows the fraction of steps completed, and has a button that stops the
+/// design ([ProjectController.cancelDesign]).
 class DesignProgressOverlay extends StatelessWidget {
   const DesignProgressOverlay({super.key, required this.c, this.compact = false});
 
@@ -80,6 +81,16 @@ class DesignProgressOverlay extends StatelessWidget {
                     '${(fraction * 100).round()}%',
                     key: const Key('design_progress_pct'),
                     style: TextStyle(fontSize: 11, color: Cad.fg54),
+                  ),
+                  // stops the design (the worker is stopped; the project stays as it was)
+                  IconButton(
+                    key: const Key('design_cancel'),
+                    tooltip: t('design.cancel'),
+                    onPressed: c.cancelDesign,
+                    icon: const Icon(Icons.close, size: 16),
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   ),
                 ],
               ),

@@ -36,16 +36,18 @@ void main() {
     c.autoAnalyze = true;
     await settle(c);
     final specs = {for (final p in c.project.entities.whereType<PipeEntity>()) p.id: p.pipeSpecId};
-    c.addEntity(LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(5, 0)));
+    // (a spot height changes the terrain the results were computed over; a
+    // plain line or a note would keep them)
+    c.addEntity(SpotHeightEntity(id: c.project.newId(), position: const Pt(5, 0), elevation: 100));
     expect(c.results, isNull, reason: 'the edit invalidates the results');
     await settle(c);
     expect(c.results, isNotNull);
     expect(c.results!.method, 'analysis');
     expect({for (final p in c.project.entities.whereType<PipeEntity>()) p.id: p.pipeSpecId}, specs, reason: 'nothing is resized');
     // an edit while it runs: the overtaken analysis is dropped and redone
-    c.addEntity(LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(0, 5)));
+    c.addEntity(SpotHeightEntity(id: c.project.newId(), position: const Pt(0, 5), elevation: 100));
     await Future<void>.delayed(const Duration(milliseconds: 40));
-    c.addEntity(LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(5, 5)));
+    c.addEntity(SpotHeightEntity(id: c.project.newId(), position: const Pt(5, 5), elevation: 100));
     await settle(c);
     expect(c.results, isNotNull);
     expect(c.autoRunning, isFalse);

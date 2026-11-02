@@ -129,7 +129,7 @@ void masterValveTests() {
 }
 
 void storeCompressionTests() {
-  test('large projects are stored compressed and come back intact; small ones stay plain', () {
+  test('large projects are stored compressed and come back intact; small ones stay plain', () async {
     final store = LocalProjectStore();
     store.clearAll();
     final small = Project()..meta.name = 'small';
@@ -145,13 +145,13 @@ void storeCompressionTests() {
     expect(LocalProjectStore.decode(packed), bigJson);
     expect(LocalProjectStore.encode(small.toJsonString()), small.toJsonString());
     expect(LocalProjectStore.decode('gz:not base64!'), isNull);
-    store.save(big.meta.uid, 'big', bigJson);
-    expect(store.load(big.meta.uid), bigJson);
+    await store.save(big.meta.uid, 'big', bigJson);
+    expect(await store.load(big.meta.uid), bigJson);
     expect(store.versions(big.meta.uid).single.bytes, bigJson.length);
     // more than the cap uncompressed, well within it compressed
     final capped = LocalProjectStore(maxBytes: bigJson.length ~/ 2);
-    capped.save('x', 'x', bigJson, kind: 'autosave');
-    expect(capped.load('x'), bigJson);
+    expect((await capped.save('x', 'x', bigJson, kind: 'autosave')).ok, isTrue);
+    expect(await capped.load('x'), bigJson);
     store.clearAll();
   });
 }

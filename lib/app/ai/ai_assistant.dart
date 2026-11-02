@@ -1582,7 +1582,7 @@ class AiAssistant extends ChangeNotifier {
   static void resumePristine(ProjectController c) {
     final uid = getPref(pristinePref);
     if (uid == null || uid.isEmpty || uid == c.project.meta.uid || !keepConversations || !_pristine(c)) return;
-    if (c.store.load(uid) != null || c.store.versions(uid).isNotEmpty) return;
+    if (c.store.has(uid)) return;
     c.project.meta.uid = uid;
     c.refresh();
   }

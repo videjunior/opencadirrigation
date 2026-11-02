@@ -199,9 +199,10 @@ class CadPainter extends CustomPainter {
           : m.isGoogle && err != null
           ? (c.t('basemap.googleError', {'e': err}), Cad.attention)
           : m == BaseMap.custom && !BaseMapLayer.isValidTemplate(c.customTileUrl)
-          ? (c.t('basemap.customInvalid'), Cad.attention)
-          : (basemap!.attributionText(m), Cad.fg70);
-      if (text.isNotEmpty) _label(canvas, Offset(8, size.height - 36), text, size: 9, shift: Offset.zero, color: color);
+          ? (c.t(BaseMapLayer.isPlainHttp(c.customTileUrl) ? 'basemap.httpBlocked' : 'basemap.customInvalid'), Cad.attention)
+          : ('', Cad.fg70);
+      // (the credit of the source is a link over the canvas, see CadCanvas)
+      if (text.isNotEmpty) _label(canvas, Offset(8, size.height - 54), text, size: 10, shift: Offset.zero, color: color);
     }
     if (c.showGrid) _grid(canvas, size);
     final vis = cam.visible;

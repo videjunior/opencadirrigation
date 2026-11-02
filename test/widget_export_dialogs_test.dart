@@ -95,9 +95,15 @@ void main() {
     await settle(tester);
     await tester.tap(find.text(t('geo.remove')));
     await settle(tester);
+    // the removal is confirmed first (and is one undo step)
+    expect(find.text(t('geo.removeConfirm')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('geo_remove_ok')));
+    await settle(tester);
     expect(await result, isFalse);
     expect(c.project.meta.georef, isNull);
     expect(c.dirty, isTrue);
+    c.undo();
+    expect(c.project.meta.georef, isNotNull, reason: 'Ctrl+Z brings it back');
   });
 
   testWidgets('plot options: page, orientation, a typed scale and the check boxes', (tester) async {

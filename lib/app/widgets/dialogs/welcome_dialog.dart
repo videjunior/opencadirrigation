@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../actions.dart';
 import '../../examples.dart';
 import '../../state/controller.dart';
+import '../../state/workspace.dart';
 import '../../version.dart';
 import '../../theme.dart';
 
@@ -31,10 +32,11 @@ IconData exampleIcon(ExampleId id) => switch (id) {
   ExampleId.linear => Icons.linear_scale,
 };
 
-/// Shows the welcome dialog. Choosing an example loads it into [c] and
+/// Shows the welcome dialog. Choosing an example opens it (in [c] when its
+/// tab is blank, else in a new tab of [ws], see openExampleAction) and
 /// returns [WelcomeChoice.example]; the caller starts the tutorial when
 /// [WelcomeChoice.tutorial] comes back.
-Future<WelcomeChoice> showWelcomeDialog(BuildContext context, ProjectController c, {bool firstRun = false}) async {
+Future<WelcomeChoice> showWelcomeDialog(BuildContext context, ProjectController c, {bool firstRun = false, Workspace? ws}) async {
   final t = c.t;
   final r = await showDialog<WelcomeChoice>(
     context: context,
@@ -92,8 +94,8 @@ Future<WelcomeChoice> showWelcomeDialog(BuildContext context, ProjectController 
                         width: cardWidth,
                         open: t('welcome.open'),
                         onTap: () {
-                          loadExampleAction(c, ex.id);
                           Navigator.pop(ctx, WelcomeChoice.example);
+                          openExampleAction(context, c, ex.id, ws: ws);
                         },
                       ),
                   ],

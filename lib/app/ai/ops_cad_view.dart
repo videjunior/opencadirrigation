@@ -318,11 +318,12 @@ List<AgentTool> viewOperations(AgentToolbox b) {
         final list = c.store.list();
         final hit = list.where((p) => p.uid == ref).firstOrNull ?? list.where((p) => p.name.toLowerCase() == ref.toLowerCase()).firstOrNull;
         if (hit == null) throw ToolInputError('No kept project "$ref" (list_recent_projects).');
-        final json = c.store.load(hit.uid);
+        final json = await c.store.load(hit.uid);
         if (json == null) throw ToolInputError('The copy of "${hit.name}" could not be read.');
         final p = Project.fromJson(jsonDecode(json) as Map<String, dynamic>);
-        if (!opened(p)) throw ToolInputError('Tabs cannot be opened from here; tell the user to use File → Recent projects.');
+        // the kept copy itself (not a copy of it): acknowledged before it opens
         if (hit.kind == 'autosave') c.store.acknowledge(hit.uid);
+        if (!opened(p)) throw ToolInputError('Tabs cannot be opened from here; tell the user to use File → Recent projects.');
         return ToolOutput('Opened "${p.meta.name}" in a new tab $_background');
       },
     ),
@@ -346,12 +347,12 @@ List<AgentTool> viewOperations(AgentToolbox b) {
       name: 'restore_version',
       effectFor: (i) => i['in_new_tab'] == false ? ToolEffect.write : ToolEffect.read,
       confirm: (i) => i['in_new_tab'] == false,
-      description: 'Opens a saved version (list_versions) in a new tab in the background (default; the screen and you stay on your own project), or with in_new_tab false replaces your project with it as File → Versions → Restore does (its undo history starts again, so the user always confirms).',
+      description: 'Opens a saved version (list_versions) in a new tab in the background (default; the screen and you stay on your own project; the tab is a copy with an id of its own), or with in_new_tab false replaces your project with it as File → Versions → Restore does (one undo step, so the user can undo it; the user always confirms).',
       schema: obj({'version': int_('Version number from list_versions.'), 'in_new_tab': bool_('Default true.')}, required: ['version']),
       args: (i) => {'n': '${i['version']}'},
       run: (a, i) async {
         final v = a.integer('version', min: 0, required: true)!;
-        final json = c.store.load(c.project.meta.uid, version: v);
+        final json = await c.store.load(c.project.meta.uid, version: v);
         if (json == null) throw ToolInputError('No version $v of this project (list_versions).');
         if (a.flag('in_new_tab') ?? true) {
           final p = Project.fromJson(jsonDecode(json) as Map<String, dynamic>);
@@ -359,9 +360,8 @@ List<AgentTool> viewOperations(AgentToolbox b) {
           return ToolOutput('Version $v of "${p.meta.name}" opened in a new tab $_background');
         }
         cadNotBusy(b);
-        c.loadJson(json);
-        c.dirty = true;
-        return ToolOutput('Your project is now version $v (${c.project.entities.length} items; the undo history started again).');
+        if (!c.restoreVersionJson(json, version: v)) throw ToolInputError('Version $v could not be restored.');
+        return ToolOutput('Your project is now version $v (${c.project.entities.length} items; one undo step brings back the work as it was).');
       },
     ),
     // ------------------------------------------------ help

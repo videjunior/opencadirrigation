@@ -33,6 +33,7 @@ import 'package:flutter/foundation.dart';
 import '../../core/io/geo.dart';
 import '../../core/model/geometry.dart';
 import '../io/http.dart';
+import '../io/prefs.dart';
 import '../state/controller.dart';
 import 'camera.dart';
 
@@ -176,7 +177,7 @@ class BaseMapLayer extends ChangeNotifier {
   /// user's [key]; the custom map its [custom] template.
   static String url(BaseMap m, int z, int x, int y, {String session = '', String key = '', String custom = ''}) => switch (m) {
     BaseMap.none => '',
-    BaseMap.streets => 'https://tile.openstreetmap.org/$z/$x/$y.png',
+    BaseMap.streets => customUrl(streetsTemplate, z, x, y),
     BaseMap.topo => 'https://tile.opentopomap.org/$z/$x/$y.png',
     BaseMap.carto => 'https://basemaps.cartocdn.com/rastertiles/voyager/$z/$x/$y.png',
     BaseMap.satellite => _esri('World_Imagery', z, x, y),
@@ -235,11 +236,41 @@ class BaseMapLayer extends ChangeNotifier {
     return u.replaceAll('{z}', '$z').replaceAll('{x}', '$x').replaceAll('{-y}', '${(1 << z) - 1 - y}').replaceAll('{y}', '$y');
   }
 
-  /// A usable template: http(s) with the three tile placeholders, or a WMS
-  /// request with one of the extent placeholders.
+  /// The tile server of the street map ([BaseMap.streets]): the
+  /// OpenStreetMap Foundation's own (a service run by volunteers, whose
+  /// usage policy asks apps used by many people to arrange the heavy use
+  /// first) unless the user set another server of the same tiles (View →
+  /// Base map → Street map server), kept in this browser.
+  static const defaultStreetsTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static String? _streets;
+  static String get streetsTemplate => _streets ??= _streetsSaved();
+  static set streetsTemplate(String t) => _streets = t.trim().isEmpty || !isValidTemplate(t) ? defaultStreetsTemplate : t.trim();
+
+  static String _streetsSaved() {
+    final v = getPref('basemap.osmUrl')?.trim();
+    return v == null || v.isEmpty || !isValidTemplate(v) ? defaultStreetsTemplate : v;
+  }
+
+  /// Whether [m] comes from a server run by volunteers whose policy
+  /// discourages bulk downloads: the sheet exports take fewer of its tiles.
+  static bool sharedServer(BaseMap m) => (m == BaseMap.streets && streetsTemplate == defaultStreetsTemplate) || m == BaseMap.topo;
+
+  /// `http://` addresses other than this computer's: the browser blocks
+  /// them on the site, which is served over HTTPS (mixed content), and the
+  /// map would stay blank.
+  static bool isPlainHttp(String t) {
+    final s = t.trim();
+    return s.startsWith('http://') && !_localHttp(s);
+  }
+
+  static bool _localHttp(String s) => RegExp(r'^http://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?/').hasMatch(s);
+
+  /// A usable template: https (or http on this computer) with the three
+  /// tile placeholders, or a WMS request with one of the extent
+  /// placeholders.
   static bool isValidTemplate(String t) {
     final s = t.trim();
-    if (!s.startsWith(RegExp(r'https?://'))) return false;
+    if (!s.startsWith('https://') && !_localHttp(s)) return false;
     if (s.contains('{bbox}') || s.contains('{bbox-epsg-3857}') || s.contains('{bbox4326}')) return true;
     return s.contains('{z}') && s.contains('{x}') && (s.contains('{y}') || s.contains('{-y}'));
   }
@@ -254,6 +285,17 @@ class BaseMapLayer extends ChangeNotifier {
     BaseMap.satellite => 'Esri, Maxar, Earthstar Geographics',
     BaseMap.esriStreets || BaseMap.esriTopo => 'Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors',
     BaseMap.googleRoads || BaseMap.googleSatellite || BaseMap.googleHybrid || BaseMap.googleTerrain => 'Google',
+  };
+
+  /// The page with the copyright and the terms of each source, linked from
+  /// the credit shown over the map.
+  static String attributionUrl(BaseMap m) => switch (m) {
+    BaseMap.none || BaseMap.custom => '',
+    BaseMap.streets => 'https://www.openstreetmap.org/copyright',
+    BaseMap.topo => 'https://opentopomap.org/about',
+    BaseMap.carto => 'https://carto.com/attributions',
+    BaseMap.satellite || BaseMap.esriStreets || BaseMap.esriTopo => 'https://www.esri.com/en-us/legal/terms/full-master-agreement',
+    BaseMap.googleRoads || BaseMap.googleSatellite || BaseMap.googleHybrid || BaseMap.googleTerrain => 'https://cloud.google.com/maps-platform/terms',
   };
 
   /// Highest zoom requested from each source; closer views scale the tiles
@@ -574,6 +616,8 @@ class BaseMapLayer extends ChangeNotifier {
       _epoch = o.epoch;
       _resetGoogle();
       _evict((k) => k.startsWith('custom/'));
+      // the street map server may have changed (View → Base map → Street map server)
+      _evict((k) => k.startsWith('streets/'));
     }
     if (_customUrl != o.customUrl) {
       _customUrl = o.customUrl;

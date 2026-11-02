@@ -8,10 +8,12 @@ import 'app/i18n.dart';
 import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
 import 'app/io/links.dart';
+import 'app/io/page_lifecycle.dart';
 import 'app/io/unload.dart';
 import 'app/keys/hotkeys.dart';
 import 'app/keys/native_keys.dart';
 import 'app/shortcuts.dart';
+import 'app/state/app_errors.dart';
 import 'app/state/controller.dart';
 import 'app/state/workspace.dart';
 import 'app/theme.dart';
@@ -62,6 +64,9 @@ Future<void> main() async {
   // assets/i18n/<code>.json: fetch the start language before the first frame
   // so the interface never flashes English first.
   WidgetsFlutterBinding.ensureInitialized();
+  // an error nothing else caught: logged, the work copied in the browser,
+  // the user told once in a short message (see AppErrors)
+  AppErrors.install();
   useAssetLanguageLoader();
   await ensureLanguageLoaded(startLanguage());
   await warmUpFonts(startLanguage());
@@ -171,6 +176,21 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     // unsaved projects, and conversations with the assistant that are not kept
     // in this browser as they are now (keeping off, a turn running, a save not done)
     setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
+    // the copies in the browser when the page goes to the background (a phone
+    // may discard it there without another word) and, at once, when it goes away
+    watchPageLifecycle(
+      hidden: () {
+        for (final t in ws.tabs) {
+          t.autosaveIfChanged();
+        }
+      },
+      closing: () {
+        for (final t in ws.tabs) {
+          t.rescueNow();
+        }
+      },
+    );
+    AppErrors.attach(ws, (message) => _snack(message, long: true));
     _nativeKeys.install();
     // a file dropped on the window never replaces the app: it goes to the AI
     // panel (pasted pictures to its chat box)
@@ -180,14 +200,18 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       // visit; otherwise the saved choice or the machine language applies.
       final urlLang = Uri.base.queryParameters['lang'] ?? languageFromPath(Uri.base.pathSegments);
       if (urlLang != null) c.setLanguage(urlLang, persist: false);
+      // the browser store ready (texts of an older version moved, the copies
+      // written while the page was closing turned into recoverable copies)
+      await c.store.prepare();
       var recovered = 0;
       if (widget.offerRecovery && mounted) recovered = await showRecoveryDialog(context, ws);
       if (!mounted) return;
-      // a project shared by link (#p=…) opens in a tab of its own
+      // a project shared by link (#p=…) opens in a tab of its own, as a copy
+      // (the link carries the uid of whoever sent it)
       final shared = Uri.base.fragment.startsWith('p=') ? projectJsonFromLink('#${Uri.base.fragment}') : null;
       if (shared != null) {
         clearAddressFragment();
-        if (openJsonInTab(ws, shared) == null) c.notify(c.t('share.damaged'));
+        if (openJsonInTab(ws, shared, asCopy: true) == null) c.notify(c.t('share.damaged'));
       }
       final q = Uri.base.queryParameters;
       final example = exampleIdFromName(q['example']) ?? widget.startExample;
@@ -240,6 +264,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   @override
   void dispose() {
+    AppErrors.detach(ws);
     for (final t in _subscribed) {
       t.removeListener(_onController);
     }
@@ -268,7 +293,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   /// Help → Welcome and example gallery.
   Future<void> showWelcome() async {
-    final choice = await showWelcomeDialog(context, c);
+    final choice = await showWelcomeDialog(context, c, ws: ws);
     if (choice == WelcomeChoice.tutorial && mounted) startTutorial();
   }
 
@@ -457,27 +482,39 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       if (tab.messageSeq != last && tab.lastMessage != null) {
         _lastSeqByTab[tab.tabId] = tab.messageSeq;
         if (!identical(tab, c)) continue;
-        final msg = tab.lastMessage!;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          // phones: above the tool bar, so it never covers the tools
-          final compact = MediaQuery.sizeOf(context).width < mobileBreakpoint;
-          ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(
-              compact
-                  ? SnackBar(
-                      content: Text(msg, style: const TextStyle(fontSize: 12)),
-                      duration: const Duration(milliseconds: 2200),
-                      behavior: SnackBarBehavior.floating,
-                      margin: const EdgeInsets.fromLTRB(12, 0, 72, 100),
-                    )
-                  : SnackBar(content: Text(msg), duration: const Duration(seconds: 3), behavior: SnackBarBehavior.floating, width: 420),
-            );
-        });
+        _snack(tab.lastMessage!);
       }
     }
     if (mounted) setState(() {});
+  }
+
+  /// A short message at the bottom of the window ([long]: an error, shown
+  /// for longer).
+  void _snack(String msg, {bool long = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // phones: above the tool bar, so it never covers the tools
+      final compact = MediaQuery.sizeOf(context).width < mobileBreakpoint;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (messenger == null) return;
+      messenger
+        ..clearSnackBars()
+        ..showSnackBar(
+          compact
+              ? SnackBar(
+                  content: Text(msg, style: const TextStyle(fontSize: 12)),
+                  duration: Duration(milliseconds: long ? 6000 : 2200),
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.fromLTRB(12, 0, 72, 100),
+                )
+              : SnackBar(
+                  content: Text(msg),
+                  duration: Duration(seconds: long ? 8 : 3),
+                  behavior: SnackBarBehavior.floating,
+                  width: 420,
+                ),
+        );
+    });
   }
 
   // ---- ToolHost
