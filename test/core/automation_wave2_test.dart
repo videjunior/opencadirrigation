@@ -60,7 +60,9 @@ void main() {
       final parts = simplePolygonParts(spiked);
       expect(parts, hasLength(1));
       expect(polygonArea(parts.single), closeTo(100, 1e-9));
-      expect(splitSelfIntersecting(spiked).single.length, 4);
+      // (the vertex at the foot of the spike stays, on the top side)
+      expect(splitSelfIntersecting(spiked).single, hasLength(5));
+      expect(polygonSelfCrossingEdges(parts.single), isEmpty);
       // the slivers below the area asked for are dropped
       expect(splitSelfIntersecting(const [Pt(0, 0), Pt(10, 10), Pt(10, 0), Pt(0, 10)], minArea: 30), isEmpty);
     });
