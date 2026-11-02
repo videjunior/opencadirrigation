@@ -27,6 +27,6 @@ names them in English (`en/`).
 | `sugarcane` | Subsurface drip sugarcane — 2 zones · 3.2 ha · filter + pump | Two sugarcane blocks on 20 mm PC dripline buried 0.3 m deep, 180 m laterals, buried submains, reservoir, pump, screen filter and air valve. |
 | `gravity` | Gravity-fed drip — 2 zones · 1.2 ha · no pump | A reservoir 40 m above two drip-irrigated vegetable blocks, no pump: gate valve, pressure reducing valve and disc filter on the mainline; hillside contours. |
 | `pasture` | Sprinkler-irrigated pasture — 3 zones · 1.6 ha · 72 sprinklers | Three 72 × 72 m paddocks with impact-sprinkler spray lines at 12 × 18 m, submains with valves, reservoir, pump and check valve. |
-| `golf` | Golf hole — 4 zones · 64 heads · pond + pump | Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts. |
+| `golf` | Golf hole — 4 zones · 77 heads · pond + pump | Tee with sprays, fairway with rotors on a triangular grid (two zones) and green with rotors around the edge, pond with pump and night-time shifts. |
 | `sectorPivot` | Sector pivot with end gun — 1 pivot · 15.7 ha · pond + pump | A 250 m pivot on soybean sweeping 270°, leaving the farmstead quadrant free, with a 12 m³/h end gun; pond, 20 hp pump and gate valve. |
 | `linear` | Linear move — 1 linear · 32 ha · canal + pump | A 392 m lateral-move machine on wheat travelling 800 m along a canal, intake with a 30 hp pump and check valve; tower and sprinkler report. |
