@@ -7,19 +7,31 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../core/model/geometry.dart';
+import '../../core/model/entities.dart';
+import '../canvas/snapping.dart' show snapModeKey;
 import '../keys/canvas_keys.dart';
 import '../shortcuts.dart';
 import '../state/controller.dart';
+import '../widgets/dialogs/cad_plus_dialogs.dart' show showBlockAttributesDialog;
+import 'cad_plus_commands.dart';
 import 'edit_commands.dart';
 
 /// What the menu offers now (ids of [runCanvasMenu]): the stroke in
 /// progress, the tool, the selection, the view.
 List<String> canvasMenuChoices(ProjectController c, CanvasKeyTarget target) {
   final drawing = c.activeTool != ToolId.select && c.activeTool != ToolId.pan;
+  // 1.6.0 CAD: the attributes of a lone block reference
+  final lone = c.selection.length == 1 ? c.entityById(c.selection.first) : null;
   return [
     if (!target.toolIdle) ...['finish', 'undoPoint', 'cancel'] else if (drawing) 'leave',
+    // 1.6.0 CAD: a snap for the next point only
+    if (drawing) 'snapOnce',
     if (!drawing) 'repeat',
     if (c.selection.isNotEmpty) ...['move', 'copy', 'rotate', 'similar', 'zoomSelection', 'delete', 'deselect'],
+    // 1.6.0 CAD
+    if (lone is BlockRefEntity) 'attributes',
+    if (c.selection.isNotEmpty) 'isolate',
+    if (c.layersIsolated) 'unisolate',
     'addToSelection',
     'undo',
     'redo',
@@ -63,6 +75,11 @@ void runCanvasMenu(ProjectController c, CanvasKeyTarget target, String id) {
       c.redo();
     case 'zoomAll':
       c.zoomAll();
+    // 1.6.0 CAD
+    case 'isolate':
+      c.isolateLayers();
+    case 'unisolate':
+      c.unisolateLayers();
   }
   target.redraw();
 }
@@ -86,6 +103,11 @@ String canvasMenuLabel(ProjectController c, String id) {
     'addToSelection' => t('sel.addMode'),
     'undo' => t('edit.undo'),
     'redo' => t('edit.redo'),
+    // 1.6.0 CAD
+    'snapOnce' => t('snap.onceMenu'),
+    'attributes' => t('blkref.attributes'),
+    'isolate' => t('layer.isolate'),
+    'unisolate' => t('layer.unisolate'),
     _ => t('view.zoomAll'),
   };
 }
@@ -106,6 +128,11 @@ IconData _icon(String id) => switch (id) {
   'addToSelection' => Icons.library_add_check_outlined,
   'undo' => Icons.undo,
   'redo' => Icons.redo,
+  // 1.6.0 CAD
+  'snapOnce' => Icons.my_location,
+  'attributes' => Icons.list_alt,
+  'isolate' => Icons.filter_center_focus,
+  'unisolate' => Icons.layers_outlined,
   _ => Icons.fit_screen,
 };
 
@@ -147,8 +174,34 @@ Future<void> showCanvasContextMenu(BuildContext context, ProjectController c, Ca
     if (i > 0 && (ids[i] == 'repeat' || ids[i] == 'move' || ids[i] == 'addToSelection') && ids[i - 1] != 'repeat') items.add(const PopupMenuDivider(height: 8));
     items.add(entry(ids[i]));
   }
-  final choice = await showMenu<String>(context: context, position: RelativeRect.fromLTRB(global.dx, global.dy, global.dx + 1, global.dy + 1), items: items);
-  if (choice != null) runCanvasMenu(c, target, choice);
+  final position = RelativeRect.fromLTRB(global.dx, global.dy, global.dx + 1, global.dy + 1);
+  final choice = await showMenu<String>(context: context, position: position, items: items);
+  if (choice == null) return;
+  // 1.6.0 CAD: the snaps for the next point, and the attributes of a reference
+  if (choice == 'snapOnce') {
+    if (!context.mounted) return;
+    final mode = await showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        // the default height (48 px): a finger chooses the snap too
+        for (final m in snapModes) PopupMenuItem<String>(key: Key('ctx_snap_$m'), value: m, child: Text(c.t(snapModeKey(m)), style: const TextStyle(fontSize: 13))),
+      ],
+    );
+    if (mode == null) return;
+    c.snap.once = mode;
+    c.notify(c.t('cadp.snapOnce', {'k': c.t(snapModeKey(mode))}));
+    target.redraw();
+    return;
+  }
+  if (choice == 'attributes') {
+    final r = c.selection.length == 1 ? c.entityById(c.selection.first) : null;
+    if (r is! BlockRefEntity) return;
+    if (!context.mounted) return;
+    await showBlockAttributesDialog(context, c, r);
+    return;
+  }
+  runCanvasMenu(c, target, choice);
 }
 
 extension ContextMenuCommands on ProjectController {

@@ -119,8 +119,9 @@ Object? _settingValue(AiSetting s) {
 }
 
 /// Reads that record a step in the undo history without changing the
-/// project (the analysis takes a snapshot, as the user's Analyse does).
-const _recordsHistory = {'analyse_design', 'run_operation run_analysis'};
+/// project. Since 1.6.0 analyse_design is not one: an analysis that changes
+/// no item records no step (as the user's Analyse).
+const _recordsHistory = {'run_operation run_analysis'};
 
 void main() {
   late ProjectController c;

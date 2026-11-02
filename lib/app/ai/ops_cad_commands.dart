@@ -133,6 +133,10 @@ const toolInstead = <ToolId, String>{
   ToolId.breakTwo: 'run_operation break_entity {id, from, to}',
   // 1.6.0 AUT
   ToolId.traceImage: 'run_operation outline_from_image {at: [x, y]} (it traces the region on the satellite image and adds it as an area), or trace_region then create_entities',
+  // 1.6.0 CAD
+  ToolId.lengthen: 'run_operation lengthen_entity {id, at, mode, value}',
+  ToolId.boundary: 'run_operation boundary_at {at, as}',
+  ToolId.fieldPhoto: 'add_photo_comment {name, text, at} with the photo the user attached',
 };
 
 /// English names for the model.

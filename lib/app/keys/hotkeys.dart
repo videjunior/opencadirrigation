@@ -13,10 +13,15 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../core/io/typed_geo.dart';
+import '../../core/units.dart' show fmt;
 import '../../core/model/entities.dart';
 import '../actions.dart' show feedEnvelopeAction;
+import '../canvas/snapping.dart' show snapModeKey, snapOnceAliases;
 import '../shortcuts.dart';
+import '../tools/cad_plus_commands.dart';
 import '../tools/edit_commands.dart';
+import '../tools/insert_block_tool.dart' show editBlockAction;
 import '../tools/typed_point.dart';
 import '../state/controller.dart';
 
@@ -352,6 +357,11 @@ class Hotkeys {
     switch (e.key) {
       case ' ':
         if (e.repeat) return true;
+        // 1.6.0 CAD: a space inside a coordinate of the field (23S 456789 …, LL …)
+        if (c.command.isNotEmpty && _wantsPoint && typedGeoWantsSpace(c.command)) {
+          setCommand('${c.command} ');
+          return true;
+        }
         if (c.command.isNotEmpty) {
           runCommand();
           return true;
@@ -393,6 +403,18 @@ class Hotkeys {
         return true;
       case 'Delete':
         c.deleteSelected();
+        return true;
+      // 1.6.0 CAD: dynamic input — Tab keeps the length typed (or the one on
+      // the screen) and the angle is typed next (@length<angle)
+      case 'Tab':
+        final ref = k?.referencePoint, cur = k?.cursorPoint;
+        if (!_wantsPoint || ref == null || !c.cadPlus.dynamicInput || c.command.contains('<') || c.command.startsWith('@')) return false;
+        final typed = c.command;
+        if (typed.isNotEmpty && parseTypedValue(typed) == null) return false;
+        final length = typed.isNotEmpty ? typed : (cur == null ? null : fmt(c.units.lengthFromSi(ref.distanceTo(cur)), 3));
+        if (length == null) return false;
+        setCommand('@$length<');
+        c.track('dynamicInput');
         return true;
       case 'F8':
         c.snap.ortho = !c.snap.ortho;
@@ -494,15 +516,37 @@ class Hotkeys {
   /// `@dx,dy`, `@d<a` or a distance, see [parseTypedPoint]) or a command
   /// alias (see [commandAliases]).
   void runCommand() {
-    final cmd = c.command;
+    final cmd = c.command.trim();
     setCommand('');
     final k = c.keyTarget;
+    // 1.6.0 CAD: a snap for the next point only (END, MID, INT…; NON clears it)
+    final once = _wantsPoint ? snapOnceAliases[cmd] : null;
+    if (once != null) {
+      c.snap.once = once == 'none' ? null : once;
+      c.track('snapOnce');
+      c.notify(once == 'none' ? c.t('cadp.snapOnceOff') : c.t('cadp.snapOnce', {'k': c.t(snapModeKey(once))}));
+      return;
+    }
     // the active tool reads the text first: an option of its own (C closes
     // a polyline, U takes back its last point) or the value of its step
     // (the angle of Rotate, the factor of Scale, the distance of Offset)
     if (_wantsPoint && k != null && cmd.isNotEmpty && k.toolInput(cmd)) {
       c.track('toolInput');
       return;
+    }
+    // 1.6.0 CAD: coordinates of the field — UTM with or without its zone,
+    // latitude and longitude — through the georeference (PRD-26)
+    if (_wantsPoint && k != null && !commandAliases.containsKey(cmd)) {
+      final geo = parseTypedGeoPoint(cmd, c.project.meta.georef);
+      if (geo != null) {
+        if (geo.point == null) {
+          c.notify(c.t(geo.error!));
+        } else {
+          c.track('typedGeo');
+          k.feedPoint(geo.point!);
+        }
+        return;
+      }
     }
     if (_wantsPoint && k != null && !commandAliases.containsKey(cmd)) {
       final p = parseTypedPoint(cmd, reference: k.referencePoint, cursor: k.cursorPoint, toSi: c.units.lengthToSi);
@@ -602,6 +646,19 @@ class Hotkeys {
         c.explodeSelected();
       case CadAction.toArea:
         c.convertSelectedToArea();
+      // 1.6.0 CAD
+      case CadAction.isolateLayer:
+        c.isolateLayers();
+      case CadAction.unisolateLayers:
+        c.unisolateLayers();
+      case CadAction.toCurrentLayer:
+        c.moveSelectionToCurrentLayer();
+      case CadAction.bringToFront:
+        c.reorder();
+      case CadAction.sendToBack:
+        c.reorder(back: true);
+      case CadAction.editBlock:
+        editBlockAction(c);
     }
   }
 

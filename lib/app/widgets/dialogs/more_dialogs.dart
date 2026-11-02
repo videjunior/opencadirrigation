@@ -21,6 +21,7 @@ import '../../state/controller.dart';
 import '../../state/workspace.dart';
 import '../dem_view.dart';
 import '../fields.dart';
+import 'cad_plus_dialogs.dart' show openVersionInTabAction, showCompareDialog;
 import 'catalog_packs_dialog.dart';
 import '../../theme.dart';
 import '../../project_name.dart'; // 1.6.0 UI
@@ -474,7 +475,30 @@ Future<void> showVersionsDialog(BuildContext context, ProjectController c) {
                             dense: true,
                             title: Text(t('ver.item', {'v': '${v.version}', 'when': _when(v.savedAt)}), style: const TextStyle(fontSize: 12)),
                             subtitle: Text('${(v.bytes / 1024).toStringAsFixed(0)} kB${v.label.isNotEmpty ? ' · ${v.label}' : ''}', style: const TextStyle(fontSize: 10.5)),
-                            trailing: TextButton(key: Key('ver_restore_${v.version}'), onPressed: () => restore(ctx, v), child: Text(t('ver.restore'))),
+                            // 1.6.0 CAD: compare it with the drawing open, or open it in a tab of its own (PRD-11)
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextButton(key: Key('ver_restore_${v.version}'), onPressed: () => restore(ctx, v), child: Text(t('ver.restore'))),
+                                PopupMenuButton<String>(
+                                  key: Key('ver_more_${v.version}'),
+                                  tooltip: t('ver.more'),
+                                  icon: const Icon(Icons.more_vert, size: 18),
+                                  onSelected: (choice) async {
+                                    if (choice == 'compare') {
+                                      Navigator.pop(ctx);
+                                      await showCompareDialog(context, c, version: v);
+                                    } else if (await openVersionInTabAction(c, v) && ctx.mounted) {
+                                      Navigator.pop(ctx);
+                                    }
+                                  },
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(key: Key('ver_compare_${v.version}'), value: 'compare', child: Text(t('ver.compare'))),
+                                    PopupMenuItem(key: Key('ver_tab_${v.version}'), value: 'tab', child: Text(t('ver.openTab'))),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                       ],
                     ),

@@ -242,7 +242,9 @@ List<AgentTool> annotateOperations(AgentToolbox b) {
       group: 'blocks',
       name: 'insert_block',
       effect: ToolEffect.write,
-      description: 'Edit → Insert block (INSERT, IB) at a typed point: copies of block "name" with its base point at "at" (or at each of "points"), turned rotation_deg counter-clockwise and scaled; missing layers and catalogue items come with it. One undo step per insertion; returns the new ids (they become the selection).',
+      // 1.6.0 CAD: a block of drawing items goes in as a reference with its attribute values
+      description:
+          'Edit → Insert block (INSERT, IB) at a typed point: block "name" with its base point at "at" (or at each of "points"), turned rotation_deg counter-clockwise and scaled; missing layers and catalogue items come with it. A block of drawing items goes in as one reference (redefining the block changes it; "attributes" {TAG: value} fills its attributes) unless "as_copies" is true; a block with hydraulic or terrain items always as copies, which the design sees. One undo step per insertion; returns the new ids (they become the selection).',
       schema: obj(
         {
           'name': str('Block name (list_blocks).'),
@@ -250,6 +252,8 @@ List<AgentTool> annotateOperations(AgentToolbox b) {
           'points': pointsWith('Several insertion points instead of "at".', maxItems: 500),
           'rotation_deg': num_('Default 0.'),
           'scale': num_('0.001–1000 (default 1).'),
+          'as_copies': bool_('Copies instead of a reference (default false).'),
+          'attributes': {'type': 'object', 'description': 'Attribute values by tag, e.g. {"CODE": "CX-01"}.', 'additionalProperties': str()},
         },
         required: ['name'],
       ),
@@ -263,9 +267,11 @@ List<AgentTool> annotateOperations(AgentToolbox b) {
         if (at.isEmpty) throw ToolInputError('Give "at" (or "points").');
         final rot = a.number('rotation_deg') ?? 0;
         final sc = a.number('scale', min: 0.001, max: 1000) ?? 1;
+        final raw = i['attributes'];
+        final values = raw is Map ? {for (final x in raw.entries) BlockAttributeDef.tagOf('${x.key}'): '${x.value ?? ''}'} : const <String, String>{};
         final ids = <String>[];
         for (final p in at) {
-          ids.addAll(c.insertBlock(blk, p, rotationDeg: rot, scale: sc));
+          ids.addAll(c.insertBlock(blk, p, rotationDeg: rot, scale: sc, values: values, asReference: !(a.flag('as_copies') ?? false)));
         }
         if (ids.isEmpty) throw ToolInputError('Nothing inserted (an empty block, or a design is running).');
         return ToolOutput('Inserted "$name" ${at.length} time${at.length == 1 ? '' : 's'}.\n${cadMade(b, ids)}');

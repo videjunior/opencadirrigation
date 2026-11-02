@@ -59,7 +59,9 @@ class DesignRequest {
 
 /// Entities the design neither reads nor changes and that may carry large
 /// payloads (embedded images): kept on the UI side.
-bool isDesignPassive(Entity e) => e is ImageEntity;
+// 1.6.0 CAD: block references (drawing only; the bill of materials gets
+// their lines beside the design, see appendBlockBom)
+bool isDesignPassive(Entity e) => e is ImageEntity || e is BlockRefEntity;
 
 /// What comes back: the results plus the project's entities after the run
 /// (pipe sizes assigned, telescoped pipes split into pieces), the id

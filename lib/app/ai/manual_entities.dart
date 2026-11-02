@@ -229,6 +229,11 @@ const entitySamples = <String, Map<String, Object>>{
       [100, 0],
     ],
   },
+  // 1.6.0 CAD
+  'blockRef': {
+    'p': [0, 0],
+    'block': 'Block 1',
+  },
 };
 
 const _pts = FieldDoc('vertices [[x, y], …] in drawing order', unit: 'm');
@@ -687,6 +692,23 @@ final Map<String, TypeDoc> entityDocs = {
     },
     connects: 'A demand on the mainline at its first point: it must lie on a mainline pipe. List it in a system flow to run it.',
   ),
+  // 1.6.0 CAD
+  'blockRef': TypeDoc(
+    'Block reference',
+    'A user block placed in the drawing as a reference: it draws the block of the project\'s library (Edit → Insert block; insert_block), so redefining the block (redefine_block) changes every reference; explode_block_refs turns it into copies. Only drawing items go into a reference; its visible attributes are written on the drawing and a block marked for the bill of materials counts there.',
+    {
+      'p': const FieldDoc('base point [x, y]', unit: 'm'),
+      'block': const FieldDoc('name of the block in the project\'s library (list_blocks)', panel: 'blkref.block'),
+      'rot': const FieldDoc('rotation about the base point, counter-clockwise from east', unit: '°', panel: 'props.rotation', def: 0),
+      'sc': const FieldDoc('scale about the base point (above 0)', panel: 'blk.scale', def: 1),
+      'mir': const FieldDoc('reflected across the block\'s vertical axis before it is turned', def: false),
+      'attrs': const FieldDoc(
+        'values of the block\'s attributes by tag, e.g. {"CODE": "CX-01", "FLOW": "5 m³/h"}; a tag left out takes the block\'s default (set_block_attributes)',
+        panel: 'blkref.attributes',
+        defText: '{}',
+      ),
+    },
+  ),
 };
 
 /// Order of the index: the hydraulic network first.
@@ -695,7 +717,7 @@ const _groups = <String, List<String>>{
   'Hydraulic network': ['waterSupply', 'pump', 'misc', 'pipe', 'controlValve', 'sprayline', 'tape', 'outlet', 'junction', 'pivot', 'traveller', 'furrows'],
   'Fields and wiring': ['area', 'controller', 'wire'],
   'Terrain': ['contour', 'spotHeight', 'breakline'],
-  'Drawing and notes': ['line', 'polyline', 'spline', 'circle', 'arc', 'hatch', 'text', 'leader', 'symbol', 'comment'],
+  'Drawing and notes': ['line', 'polyline', 'spline', 'circle', 'arc', 'hatch', 'text', 'leader', 'symbol', 'comment', 'blockRef'],
   'Made by the drawing tools (read with get_entity)': ['dimension', 'angularDimension', 'radialDimension', 'ordinateDimension', 'image', 'revisionCloud'],
 };
 

@@ -1047,7 +1047,7 @@ int flowDecimals(Units u, {bool small = false}) => switch (u.flow) {
   FlowUnit.gpm => small ? 2 : 1,
 };
 
-int _pressureDecimals(Units u) => u.pressure == PressureUnit.bar ? 2 : 1;
+int _pressureDecimals(Units u) => u.pressure == PressureUnit.bar || u.pressure == PressureUnit.kgfcm2 ? 2 : 1;
 
 /// Plan of the corner arm: the field outline, the guide path, the circle of
 /// the last tower and the reach of the arm, fitted to the box (north up).

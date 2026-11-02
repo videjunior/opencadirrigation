@@ -9,6 +9,8 @@ import '../tutorial/tutorial.dart';
 import '../version.dart';
 import '../theme.dart';
 import 'ai/ai_panel.dart';
+import '../canvas/snapping.dart' show snapModeKey;
+import 'dialogs/cad_plus_dialogs.dart' show showSnapSettingsDialog;
 import 'dialogs/storage_dialog.dart';
 import 'layout_mode.dart';
 
@@ -148,6 +150,18 @@ class StatusBar extends StatelessWidget {
                   c.toolSettings.keepConnections = !c.toolSettings.keepConnections;
                   c.refresh();
                 }),
+              ),
+              // 1.6.0 CAD: the object snaps one by one (and a snap chosen for the next point)
+              Tooltip(
+                message: t('snap.settings'),
+                child: InkWell(
+                  key: const Key('status_snap_settings'),
+                  onTap: () => showSnapSettingsDialog(context, c),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    child: Text(c.snap.once == null ? '⋯' : '→ ${t(snapModeKey(c.snap.once!))}', style: TextStyle(fontSize: 11, color: c.snap.once == null ? Cad.fg54 : Cad.accentText)),
+                  ),
+                ),
               ),
             ],
           ),

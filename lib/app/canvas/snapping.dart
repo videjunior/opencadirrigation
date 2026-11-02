@@ -47,11 +47,14 @@ class Snapper {
       }
     }
     final locked = angleLock && reference != null;
-    if (!s.enabled) return SnapResult(p, lockKind, locked: locked);
+    // 1.6.0 CAD: a snap chosen for the next point works with the snap off
+    if (!s.enabled && s.once == null) return SnapResult(p, lockKind, locked: locked);
     final tol = s.tolerancePx / c.camera.scale;
     SnapResult? best;
     var bestScore = double.infinity;
     void consider(Pt q, String kind, double priority, String? id) {
+      // 1.6.0 CAD: only the snaps that are on (the pipes' "on" is "nearest")
+      if (!s.allows(kind == 'on' ? 'nearest' : kind)) return;
       final d = q.distanceTo(p);
       if (d > tol) return;
       final score = d * priority;
@@ -67,6 +70,7 @@ class Snapper {
     SnapResult? nearest;
     var nearestD = double.infinity;
     void considerNearest(Pt q, String? id) {
+      if (!s.allows('nearest')) return;
       final d = q.distanceTo(p);
       if (d > tol || d >= nearestD) return;
       nearestD = d;
@@ -84,8 +88,10 @@ class Snapper {
     // contours for their crossings took seconds)
     final win = Bounds(p.x - tol, p.y - tol, p.x + tol, p.y + tol);
     bool near(Pt a, Pt b) => !(math.max(a.x, b.x) < win.minX || math.min(a.x, b.x) > win.maxX || math.max(a.y, b.y) < win.minY || math.min(a.y, b.y) > win.maxY);
-    for (final e in c.entitiesIn(win)) {
-      if (ignoreSelection && c.selection.contains(e.id)) continue;
+    for (final e0 in c.entitiesIn(win)) {
+      if (ignoreSelection && c.selection.contains(e0.id)) continue;
+      // 1.6.0 CAD: a block reference snaps on the items it draws
+      for (final e in e0 is BlockRefEntity ? e0.expanded() : [e0]) {
       switch (e) {
         case PointEntity pe when e is! TextEntity:
           consider(pe.position, 'node', 0.4, e.id);
@@ -137,6 +143,7 @@ class Snapper {
         default:
           break;
       }
+      }
     }
     // intersections of what passes near the cursor
     for (var i = 0; i < segs.length; i++) {
@@ -187,7 +194,7 @@ class Snapper {
     final reach = tol * 25;
     SnapResult? ext;
     var extScore = double.infinity;
-    for (final e in c.entitiesIn(Bounds(p.x - reach, p.y - reach, p.x + reach, p.y + reach))) {
+    for (final e in s.allows('extension') ? c.entitiesIn(Bounds(p.x - reach, p.y - reach, p.x + reach, p.y + reach)) : const <Entity>[]) {
       if (ignoreSelection && c.selection.contains(e.id)) continue;
       final pts = switch (e) {
         LineEntity l => [l.a, l.b],
@@ -209,7 +216,7 @@ class Snapper {
       }
     }
     if (ext != null) return ext;
-    if (s.grid && s.gridSize > 0) {
+    if (s.grid && s.gridSize > 0 && s.once == null) {
       final g = s.gridSize;
       final q = Pt((p.x / g).round() * g, (p.y / g).round() * g);
       if (q.distanceTo(p) <= tol * 1.5) return SnapResult(q, 'grid', locked: locked);
@@ -274,3 +281,36 @@ Pt lockAngle(Pt raw, Pt reference, double stepDeg) {
   final along = d.x * dir.x + d.y * dir.y;
   return Pt(reference.x + dir.x * along, reference.y + dir.y * along);
 }
+
+/// 1.6.0 CAD: the names typed on the command line for a snap of the next
+/// point only (the usual three letters of CAD programs, and Portuguese
+/// and Spanish ones); NON clears it.
+const snapOnceAliases = <String, String>{
+  'END': 'endpoint',
+  'ENDP': 'endpoint',
+  'FIM': 'endpoint',
+  'EXTREMO': 'endpoint',
+  'MID': 'midpoint',
+  'MEIO': 'midpoint',
+  'MEDIO': 'midpoint',
+  'CEN': 'center',
+  'CENTRO': 'center',
+  'QUA': 'quadrant',
+  'QUAD': 'quadrant',
+  'NOD': 'node',
+  'NODE': 'node',
+  'INT': 'intersection',
+  'INTER': 'intersection',
+  'PER': 'perpendicular',
+  'PERP': 'perpendicular',
+  'TAN': 'tangent',
+  'TANG': 'tangent',
+  'NEA': 'nearest',
+  'PROX': 'nearest',
+  'EXT': 'extension',
+  'NON': 'none',
+  'NONE': 'none',
+};
+
+/// 1.6.0 CAD: i18n key naming the snap mode [mode] (one of [snapModes]).
+String snapModeKey(String mode) => mode == 'nearest' ? 'cadp.snapNearest' : 'snapk.$mode';

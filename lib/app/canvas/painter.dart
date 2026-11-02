@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../core/design/densogram.dart';
 import '../../core/model/slope_map.dart';
 import '../../core/design/results.dart';
+import '../../core/model/dim_style.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/label_rules.dart';
@@ -19,6 +20,7 @@ import '../tools/ai_mark_tool.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'camera.dart';
+import 'compare_overlay.dart';
 import 'scene_cache.dart';
 import 'snapping.dart';
 
@@ -403,8 +405,34 @@ class CadPainter extends CustomPainter {
         _feed(canvas, t.id, t.points);
       case RevisionCloudEntity rc:
         _unbatched(() => _revisionCloud(canvas, rc, color, selected));
+      // 1.6.0 CAD: a block reference draws its block where it is placed
+      case BlockRefEntity r:
+        _blockRef(canvas, r, color, selected);
       default:
         break;
+    }
+  }
+
+  /// 1.6.0 CAD: the items of the block of [r], each in its layer's colour
+  /// (all in [color] when selected), or a marker when the library has no
+  /// block of its name.
+  void _blockRef(Canvas canvas, BlockRefEntity r, Color color, bool selected) {
+    final items = r.expanded();
+    if (items.isEmpty) {
+      final o = cam.toScreen(r.position);
+      final p = _stroke(color, 1);
+      _seg(canvas, o + const Offset(-5, -5), o + const Offset(5, 5), p);
+      _seg(canvas, o + const Offset(-5, 5), o + const Offset(5, -5), p);
+      _ring(canvas, o, 7, p);
+      return;
+    }
+    for (final x in items) {
+      if (!_layer(x.layer).visible) continue;
+      if (x is HatchEntity) {
+        _hatch(canvas, x);
+        continue;
+      }
+      _drawLinear(canvas, x, selected ? color : _color(x, false, false), selected);
     }
   }
 
@@ -489,6 +517,8 @@ class CadPainter extends CustomPainter {
         );
       }
     }
+    // 1.6.0 CAD: the differences of a comparison with another copy
+    paintComparison(canvas, cam, c);
     // the user's marks for the AI assistant over everything drawn (its
     // pictures show them alike), and the mark being placed
     _aiMarks(canvas);
@@ -1535,14 +1565,61 @@ class CadPainter extends CustomPainter {
   }
 
   void _dimension(Canvas canvas, DimensionEntity d, Color color) {
+    // 1.6.0 CAD: the dimension style of the project (text, arrows, decimals, unit)
+    final st = c.project.dimStyle;
     final n = d.normal * d.offset;
     final a = cam.toScreen(d.a), b = cam.toScreen(d.b), a2 = cam.toScreen(d.a + n), b2 = cam.toScreen(d.b + n);
     final p = _stroke(color, 1);
     _seg(canvas, a, a2, p);
     _seg(canvas, b, b2, p);
     _seg(canvas, a2, b2, p);
+    _dimEnds(canvas, a2, b2, st, color);
+    final text = st.length(d.length, c.units);
+    if (st.textHeightM > 0) {
+      _dimWorldText(canvas, d.a + n, d.b + n, text, st.textHeightM, color);
+      return;
+    }
     final mid = Offset((a2.dx + b2.dx) / 2, (a2.dy + b2.dy) / 2);
-    _label(canvas, mid, '${fmt(c.units.lengthFromSi(d.length))} ${c.units.lengthLabel}', size: 10, color: color, shift: const Offset(-14, -14));
+    _label(canvas, mid, text, size: 10, color: color, shift: const Offset(-14, -14));
+  }
+
+  /// 1.6.0 CAD: the ends of a dimension line from [a] to [b] (screen), as
+  /// the style [st] draws them.
+  void _dimEnds(Canvas canvas, Offset a, Offset b, DimStyle st, Color color) {
+    if (st.arrow == DimArrow.none || (b - a).distance < 1e-6) return;
+    final len = st.textHeightM > 0 || st.arrowSizeM > 0 ? math.max(3.0, st.arrowFor(st.textHeightM > 0 ? st.textHeightM : 0.5) * cam.scale) : 8.0;
+    final u = (b - a) / (b - a).distance;
+    final nrm = Offset(-u.dy, u.dx);
+    for (final (tip, dir) in [(a, -u), (b, u)]) {
+      switch (st.arrow) {
+        case DimArrow.arrow:
+          final path = Path()
+            ..moveTo(tip.dx, tip.dy)
+            ..lineTo(tip.dx - dir.dx * len + nrm.dx * len * 0.35, tip.dy - dir.dy * len + nrm.dy * len * 0.35)
+            ..lineTo(tip.dx - dir.dx * len - nrm.dx * len * 0.35, tip.dy - dir.dy * len - nrm.dy * len * 0.35)
+            ..close();
+          canvas.drawPath(path, _fill(color));
+        case DimArrow.tick:
+          final k = (dir + nrm) * (len * 0.5);
+          _seg(canvas, tip - k, tip + k, _stroke(color, 1.4));
+        case DimArrow.dot:
+          canvas.drawCircle(tip, math.max(1.5, len * 0.25), _fill(color));
+        case DimArrow.none:
+          break;
+      }
+    }
+  }
+
+  /// 1.6.0 CAD: [text] [h] metres high over the dimension line [a]–[b]
+  /// (world), centred and readable (never upside down).
+  void _dimWorldText(Canvas canvas, Pt a, Pt b, String text, double h, Color color) {
+    var from = a, to = b;
+    if (to.x < from.x - 1e-9 || ((to.x - from.x).abs() <= 1e-9 && to.y < from.y)) (from, to) = (to, from);
+    final dir = (to - from).normalized;
+    if (dir.length == 0) return;
+    final w = h * 0.6 * text.length;
+    final at = Pt.lerp(from, to, 0.5) - dir * (w / 2) + dir.perpendicular * (h * 0.3);
+    _worldText(canvas, at, text, h, color, radToDeg(dir.angle));
   }
 
   void _angular(Canvas canvas, AngularDimensionEntity d, Color color) {
@@ -1561,14 +1638,23 @@ class CadPainter extends CustomPainter {
     if (d.diameter) _arrowHead(canvas, b, a, color);
     canvas.drawCircle(cam.toScreen(d.center), 2, _fill(color));
     final m = cam.toScreen(d.diameter ? d.center : Pt.lerp(d.center, d.point, 0.5));
-    _label(canvas, m, '${d.diameter ? 'Ø' : 'R'} ${fmt(c.units.lengthFromSi(d.value))} ${c.units.lengthLabel}', size: 10, color: color, shift: const Offset(4, -14));
+    // 1.6.0 CAD: decimals and unit of the dimension style
+    final st = c.project.dimStyle;
+    final text = '${d.diameter ? 'Ø' : 'R'} ${st.length(d.value, c.units)}';
+    if (st.textHeightM > 0) {
+      _dimWorldText(canvas, d.diameter ? d.center : Pt.lerp(d.center, d.point, 0.5), d.point, text, st.textHeightM, color);
+    } else {
+      _label(canvas, m, text, size: 10, color: color, shift: const Offset(4, -14));
+    }
   }
 
   void _ordinate(Canvas canvas, OrdinateDimensionEntity d, Color color) {
     _poly(canvas, d.leader, _stroke(color, 1));
     canvas.drawCircle(cam.toScreen(d.point), 2, _fill(color));
     final e = cam.toScreen(d.leaderEnd);
-    _label(canvas, e, '${d.xAxis ? 'X' : 'Y'} ${fmt(c.units.lengthFromSi(d.value))}', size: 10, color: color, shift: d.xAxis ? const Offset(-12, -16) : const Offset(4, -7));
+    // 1.6.0 CAD: decimals and unit of the dimension style (an ordinate writes no unit)
+    final st = c.project.dimStyle;
+    _label(canvas, e, '${d.xAxis ? 'X' : 'Y'} ${fmt(st.unitsFor(c.units).lengthFromSi(d.value), st.decimals)}', size: 10, color: color, shift: d.xAxis ? const Offset(-12, -16) : const Offset(4, -7));
   }
 
   /// Wire route: a dashed line (the routes of the valve wiring).

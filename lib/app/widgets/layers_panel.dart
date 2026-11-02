@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/model/entities.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import '../tools/cad_plus_commands.dart';
 import '../tools/edit_commands.dart';
+import 'dialogs/cad_plus_dialogs.dart' show showLayerStatesDialog;
 import 'layout_mode.dart';
 
 /// Layer list: visibility, lock, colour, current layer, add / rename / delete.
@@ -44,6 +46,14 @@ class LayersPanel extends StatelessWidget {
                 child: Text(t('layer.hint'), style: TextStyle(fontSize: 10, color: Cad.fg54)),
               ),
               IconButton(key: const Key('layer_add'), tooltip: t('layer.add'), icon: const Icon(Icons.add, size: 16), onPressed: () => _addLayer(context)),
+              // 1.6.0 CAD: isolate the layers of the selection (or the current one), and the named states
+              IconButton(
+                key: const Key('layer_panel_isolate'),
+                tooltip: c.layersIsolated ? t('layer.unisolate') : t('layer.isolate'),
+                icon: Icon(c.layersIsolated ? Icons.layers_outlined : Icons.filter_center_focus, size: 16),
+                onPressed: () => c.layersIsolated ? c.unisolateLayers() : c.isolateLayers(),
+              ),
+              IconButton(key: const Key('layer_panel_states'), tooltip: t('layer.states'), icon: const Icon(Icons.bookmarks_outlined, size: 16), onPressed: () => showLayerStatesDialog(context, c)),
             ],
           ),
         ),

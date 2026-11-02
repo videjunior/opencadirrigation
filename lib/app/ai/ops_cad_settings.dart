@@ -14,11 +14,13 @@ import '../../core/ai/agent_loop.dart';
 import '../../core/design/pivot.dart' show PivotKind;
 import '../../core/model/catalog.dart';
 import '../../core/model/entities.dart';
+import '../../core/model/lengthen.dart' show LengthenMode;
 import '../../core/units.dart';
 import '../canvas/basemap.dart' show BaseMapLayer;
 import '../i18n.dart' show languageNames, supportedLanguages;
 import '../state/controller.dart';
 import '../theme.dart';
+import '../tools/cad_plus_commands.dart';
 import '../widgets/reports_panel.dart' show reportTabKeys;
 import 'agent_tools.dart';
 import 'agent_tools_edit.dart' show parametersText;
@@ -110,7 +112,10 @@ class AiSetting {
 /// What setting [key] to [value] does beyond the screen, for the
 /// permissions of set_setting: null for a toggle of the view, the snapping
 /// or the defaults of the drawing tools of this page (a read: allowed in
-/// every mode, as nothing leaves the page or outlives it); otherwise a
+/// every mode, as nothing leaves the page; since 1.6.0 this browser
+/// remembers the snaps and the tool defaults for the next session, as it
+/// does when the user sets them, and they change back the same way);
+/// otherwise a
 /// change — the project's settings, and what this browser keeps (the
 /// interface language, the theme, the program options) — refused in
 /// read-only and plan modes, and [confirm]ed whatever the mode when it
@@ -417,6 +422,61 @@ List<AiSetting> aiSettings(AgentToolbox b, {Map<String, Object?> pending = const
       max: 90,
     ),
     view('snap.tolerance_px', 'number', 'Snap and pick distance on screen.', () => c.snap.tolerancePx, (v) => c.snap.tolerancePx = _d(v), unit: 'px', min: 1, max: 50),
+    // 1.6.0 CAD: the object snaps one by one (View → Snaps), the dynamic input, the touch magnifier, Lengthen and the outline by a click
+    for (final m in snapModes)
+      view(
+        'snap.mode_$m',
+        'boolean',
+        'Object snap "$m" on or off (View → Snaps; the others stay as they are).',
+        () => c.snap.modes.contains(m),
+        (v) => v == true ? c.snap.modes.add(m) : c.snap.modes.remove(m),
+      ),
+    view(
+      'snap.dynamic_input',
+      'boolean',
+      'Length and angle of the segment beside the cursor, typed there (Tab goes from the length to the angle).',
+      () => c.cadPlus.dynamicInput,
+      (v) => c.cadPlus.dynamicInput = v as bool,
+    ),
+    view(
+      'snap.touch_loupe',
+      'boolean',
+      'A magnifier over the finger while drawing on a touch screen; the point goes where the finger is lifted.',
+      () => c.cadPlus.touchLoupe,
+      (v) => c.cadPlus.touchLoupe = v as bool,
+    ),
+    tool(
+      'lengthen_mode',
+      'enum',
+      'How Lengthen (LEN) reads its value: a difference, a total length or a percentage.',
+      () => c.cadPlus.lengthenMode.name,
+      (v) => c.cadPlus.lengthenMode = LengthenMode.values.byName('$v'),
+      options: [for (final m in LengthenMode.values) m.name],
+    ),
+    tool(
+      'lengthen_value',
+      'number',
+      'The value of Lengthen: metres for a difference or a total, percent for a percentage.',
+      () => c.cadPlus.lengthenValue,
+      (v) => c.cadPlus.lengthenValue = _d(v),
+      min: -100000,
+      max: 100000,
+    ),
+    tool(
+      'boundary_as_area',
+      'boolean',
+      'The outline by a click inside (BO) makes an irrigated area instead of a closed polyline.',
+      () => c.cadPlus.boundaryAsArea,
+      (v) => c.cadPlus.boundaryAsArea = v as bool,
+    ),
+    AiSetting(
+      key: 'app.edit_during_design',
+      type: 'boolean',
+      description: 'The user may go on editing while a design runs; its results, then out of date, are discarded when it ends (View → Snaps and drawing). The assistant itself still waits for a design to end.',
+      read: () => c.editDuringDesign,
+      write: (v) => c.editDuringDesign = v as bool,
+      scope: SettingScope.app,
+    ),
     // ------------------------------------------------ program
     AiSetting(
       key: 'app.autosave',
