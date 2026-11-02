@@ -127,6 +127,10 @@ const toolInstead = <ToolId, String>{
   ToolId.fillet: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the arc vertices (or create_entities an arc between two lines)',
   ToolId.chamfer: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the two cut points',
   ToolId.breakTwo: 'run_operation split_entity {id, at} at both points, then delete_entities the piece between',
+  // 1.6.0 CAD
+  ToolId.lengthen: 'run_operation lengthen_entity {id, at, mode, value}',
+  ToolId.boundary: 'run_operation boundary_at {at, as}',
+  ToolId.fieldPhoto: 'add_photo_comment {name, text, at} with the photo the user attached',
 };
 
 /// English names for the model.

@@ -57,4 +57,23 @@ const coverageEdt = <String, String>{
   // ---- the menu of the drawing: right button, pen side button, finger held (CAD-34)
   'panel:canvas.contextMenu': 'tool:run_command',
   'panel:canvas.contextMenu.zoomSelection': 'tool:zoom_to',
+  // ---- 1.6.0 CAD+: lengthen, the outline by a click inside, the drawing order, the current layer
+  'tool:lengthen': 'op:lengthen_entity',
+  'tool:boundary': 'op:boundary_at',
+  'menu:tool.lengthen': 'op:lengthen_entity',
+  'menu:tool.boundary': 'op:boundary_at',
+  'panel:tools.lengthenMode': 'setting:tool.lengthen_mode',
+  'panel:tools.lengthenValue': 'setting:tool.lengthen_value',
+  'panel:tools.boundaryAsArea': 'setting:tool.boundary_as_area',
+  'action:bringToFront': 'op:draw_order',
+  'action:sendToBack': 'op:draw_order',
+  'menu:order.front': 'op:draw_order',
+  'menu:order.back': 'op:draw_order',
+  'action:toCurrentLayer': 'tool:update_entities',
+  'menu:layer.toCurrent': 'tool:update_entities',
+  // ---- text edited in place, a mixed selection edited kind by kind
+  'panel:canvas.textInPlace': 'tool:update_entities',
+  'panel:properties.batchKinds': 'tool:update_entities',
+  'panel:properties.batchOnlyKind': 'tool:select_entities',
+  'panel:properties.batchFields': 'tool:update_entities',
 };
