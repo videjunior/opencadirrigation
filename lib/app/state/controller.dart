@@ -32,6 +32,7 @@ import '../../core/io/geo.dart';
 import '../../core/io/geoimage.dart';
 import '../../core/io/geojson_reader.dart';
 import '../../core/io/gpx.dart';
+import '../../core/io/inmet_csv.dart' show dailyClimateOfSeries;
 import '../../core/io/kml.dart';
 import '../../core/io/landxml.dart';
 import '../../core/io/las.dart';
@@ -1969,6 +1970,8 @@ class ProjectController extends ChangeNotifier {
       longitudeDeg: ll.$2,
       retrieved: '${now.year}-${two(now.month)}-${two(now.day)}',
       attribution: source.attribution,
+      // 1.6.0 AGR: the days themselves, for the daily soil water balance
+      daily: dailyClimateOfSeries(series),
     );
     mutate(() => project.climate = sc, invalidateResults: false, label: 'hist.climate');
     return sc;
@@ -3136,7 +3139,10 @@ class ProjectController extends ChangeNotifier {
   int _densogramImageGen = 0;
 
   String get _densogramKey =>
-      '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.useMeasured}|${densogramOptions.windSpeed}|${densogramOptions.windTowardsDeg}|${densogramOptions.windDrift}|${densogramOptions.valveIds?.join(',')}';
+      '$_editSeq|${identityHashCode(project)}|${identityHashCode(results)}|${densogramOptions.cellSize}|${densogramOptions.profile.name}|${densogramOptions.useResults}|${densogramOptions.useMeasured}|${densogramOptions.windSpeed}|${densogramOptions.windTowardsDeg}|${densogramOptions.windDrift}|${densogramOptions.valveIds?.join(',')}|${_depthKey(densogramOptions.depthHours)}';
+
+  // 1.6.0 AGR: the hours of the depth densogram (one event of the programme)
+  static String _depthKey(Map<String, double>? h) => h == null ? '' : Object.hashAllUnordered([for (final e in h.entries) '${e.key}=${e.value}']).toString();
 
   /// Water applied by the sprinklers as laid out (recomputed when the
   /// drawing, the results or the options changed).

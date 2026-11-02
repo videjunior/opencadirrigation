@@ -16,9 +16,11 @@ import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
 import 'dialogs/agronomy_dialogs.dart';
+import 'dialogs/crop_plan_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/densogram_dialog.dart';
+import 'dialogs/water_balance_dialogs.dart';
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
 import 'dialogs/vegetation_dialog.dart';
@@ -478,6 +480,22 @@ class AppMenuBar extends StatelessWidget {
                     item(t('design.proposal'), () => showProposalDialog(context, c), icon: Icons.request_quote_outlined, key: const Key('menu_proposal')),
                     item(t('design.scenarios'), () => showScenariosDialog(context, c), icon: Icons.compare_outlined, key: const Key('menu_scenarios')),
                     item(t('clim.menu'), () => showSiteClimateDialog(context, c), icon: Icons.wb_sunny_outlined, key: const Key('menu_climate')),
+                    // 1.6.0 AGR: water balance, programme, runoff, fertigation by stage, field uniformity, user crops
+                    SubmenuButton(
+                      onOpen: _menuOpened,
+                      onClose: _menuClosed,
+                      key: const Key('menu_agronomy'),
+                      leadingIcon: const Icon(Icons.eco_outlined, size: 16),
+                      menuChildren: [
+                        item(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_water_balance')),
+                        item(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('menu_programme')),
+                        item(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('menu_runoff')),
+                        item(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('menu_fert_stages')),
+                        item(t('ft.menu'), () => showFieldUniformityDialog(context, c), icon: Icons.grid_on, key: const Key('menu_field_uniformity')),
+                        item(t('uc.menu'), () => showUserCropsDialog(context, c), icon: Icons.spa_outlined, key: const Key('menu_user_crops')),
+                      ],
+                      child: Text(t('agr.menu')),
+                    ),
                     SubmenuButton(
                       onOpen: _menuOpened,
                       onClose: _menuClosed,

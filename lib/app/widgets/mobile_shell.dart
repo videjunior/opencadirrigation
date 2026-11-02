@@ -34,6 +34,7 @@ import 'dialogs/welcome_dialog.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
+import 'dialogs/crop_plan_dialogs.dart';
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
@@ -43,6 +44,7 @@ import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
+import 'dialogs/water_balance_dialogs.dart';
 import 'history_panel.dart';
 import 'layout_mode.dart';
 import 'message_log.dart';
@@ -453,6 +455,13 @@ class _MobileShellState extends State<MobileShell> {
             row(t('fert.menu'), () => showFertigationDialog(context, c), icon: Icons.science_outlined, key: const Key('mobile_menu_fertigation')),
             row(t('wr.menu'), () => showWireRoutingDialog(context, c), icon: Icons.alt_route, key: const Key('mobile_menu_wire_routes')),
             row(t('clim.menu'), () => showSiteClimateDialog(context, c), icon: Icons.wb_sunny_outlined),
+            // 1.6.0 AGR
+            row(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('mobile_menu_water_balance')),
+            row(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('mobile_menu_programme')),
+            row(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('mobile_menu_runoff')),
+            row(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('mobile_menu_fert_stages')),
+            row(t('ft.menu'), () => showFieldUniformityDialog(context, c), icon: Icons.grid_on, key: const Key('mobile_menu_field_uniformity')),
+            row(t('uc.menu'), () => showUserCropsDialog(context, c), icon: Icons.spa_outlined, key: const Key('mobile_menu_user_crops')),
             row(t('zone.feedEnvelope'), c.selection.isEmpty ? null : () => feedEnvelopeAction(c), icon: Icons.straighten),
             row(t('dens.menu'), () => showDensogramDialog(context, c), icon: Icons.blur_on, key: const Key('mobile_menu_densogram')),
             row(t('zone.deviceOnLaterals'), c.selection.isEmpty ? null : () => showDeviceOnLateralsDialog(context, c), icon: Icons.settings_input_component_outlined),

@@ -44,6 +44,8 @@ const reportTabKeys = [
   'reports.pivotPackage',
   'reports.machines',
   'reports.vih',
+  // 1.6.0 AGR
+  'reports.agronomy',
 ];
 
 /// Report tab indices used in code.
@@ -186,6 +188,18 @@ class ReportsPanel extends StatelessWidget {
         return _stack(const [('pivotPackageSummary', 1), ('pivotPackage', 3), ('pivotTimer', 1)], emptyKey: 'msg.noPivotPackage');
       case 25:
         return _fromTable('vih', emptyKey: 'msg.noVih');
+      // 1.6.0 AGR: water balance, capacity, runoff, programme, fertigation, field tests
+      case 26:
+        return _stack(const [
+          ('waterBalance', 2),
+          ('capacity', 1),
+          ('machineRunoff', 2),
+          ('zoneRunoff', 1),
+          ('programmeStations', 2),
+          ('programmeRuns', 2),
+          ('fertigationStages', 2),
+          ('fieldTests', 1),
+        ], emptyKey: 'msg.noAgronomy');
       default:
         return _stack(const [('cornerArm', 1), ('vri', 1), ('pivotElectrical', 1)], emptyKey: 'msg.noMachineExtras');
     }
