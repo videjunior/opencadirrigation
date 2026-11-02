@@ -362,4 +362,60 @@ void measuredAndWindTests() {
     expect(c1.x - 50, closeTo(defaultWindDrift * 3 * 2 * r / 3, 0.15));
     expect((c1.y - 50).abs(), lessThan(0.1));
   });
+
+  group('scheduling coefficient over the driest contiguous 5 % (AGR-21)', () {
+    // 20 × 20 cells at 10 mm/h; 20 cells (5 %) at 5 mm/h
+    double mean(List<double> r) => r.reduce((a, b) => a + b) / r.length;
+
+    test('scattered dry cells: no dry window, SC near 1', () {
+      final rate = List<double>.filled(400, 10);
+      for (var k = 0; k < 400; k += 20) {
+        rate[k + (k ~/ 20) % 20] = 5;
+      }
+      final window = driestWindowMean(rate, 20, 20, (_) => true, 20)!;
+      final st = densogramStats(rate, 1, driestWindowMean: window);
+      // the scattered definition saw them as one dry spot: SC = 9.75 / 5 = 1.95
+      expect(densogramStats(rate, 1).sc, closeTo(mean(rate) / 5, 1e-9));
+      expect(st.sc, lessThan(1.3));
+      expect(st.sc, greaterThan(1));
+    });
+
+    test('a dry block of 5 % is the window: SC = mean / its rate', () {
+      final rate = List<double>.filled(400, 10);
+      for (var j = 3; j < 8; j++) {
+        for (var i = 5; i < 9; i++) {
+          rate[j * 20 + i] = 5;
+        }
+      }
+      final window = driestWindowMean(rate, 20, 20, (_) => true, 20)!;
+      expect(window, closeTo(5, 1e-12));
+      expect(densogramStats(rate, 1, driestWindowMean: window).sc, closeTo(mean(rate) / 5, 1e-9));
+    });
+
+    test('the window stays inside the target and turns to fit a strip', () {
+      // a strip one cell wide: only 20 × 1 windows fit
+      final rate = [for (var i = 0; i < 400; i++) i < 20 ? 3.0 + i : 99.0];
+      final w = driestWindowMean(rate, 20, 20, (k) => k < 20, 4);
+      expect(w, closeTo((3 + 4 + 5 + 6) / 4, 1e-12));
+      expect(driestWindowMean(rate, 20, 20, (_) => false, 4), isNull);
+    });
+
+    test('the map reports the window SC', () {
+      final p = Project();
+      p.entities.add(AreaEntity(id: 'a', points: const [Pt(0, 0), Pt(30, 0), Pt(30, 30), Pt(0, 30)]));
+      for (final x in [0.0, 15.0, 30.0]) {
+        for (final y in [0.0, 15.0, 30.0]) {
+          p.entities.add(OutletEntity(id: 'h${x.round()}_${y.round()}', position: Pt(x, y), outletSpecId: 'rotor', nozzleId: 'r3', headM: 30));
+        }
+      }
+      final d = computeDensogram(p);
+      final inside = [
+        for (var k = 0; k < d.rate.length; k++)
+          if (d.inside[k] == 1) d.rate[k],
+      ];
+      final w = driestWindowMean(d.rate, d.nx, d.ny, (k) => d.inside[k] == 1, (inside.length * 0.05).round())!;
+      expect(d.stats.sc, closeTo(d.stats.mean / w, 1e-9));
+      expect(d.stats.sc, lessThanOrEqualTo(densogramStats(inside, d.cell * d.cell).sc + 1e-9));
+    });
+  });
 }

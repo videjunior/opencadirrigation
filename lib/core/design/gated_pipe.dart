@@ -16,6 +16,12 @@
 ///   required area (an adjustable gate) or, for fixed holes, passing the
 ///   flow of the full hole. The minimum inlet head delivers the target
 ///   through the largest hole at the critical gate.
+/// * Fixed (punched) holes cannot be closed down: with [GatedPipeSpec.fixedHoles]
+///   the pipe is solved again with every gate an orifice of its full hole at
+///   the inlet head — the flows, the friction they cause and the heads
+///   along the pipe found together (fixed point of the energy balance) —
+///   and the furrows' flows are compared (Christiansen CU and the least over
+///   the mean flow).
 library;
 
 import 'dart:math' as math;
@@ -44,6 +50,7 @@ class GatedPipeSpec {
     this.inletHeadM = 0,
     this.dischargeCoefficient = 0.61,
     this.holeDiametersMm = standardGateHolesMm,
+    this.fixedHoles = false,
   });
 
   /// Number of gates and their spacing (the furrow spacing, m).
@@ -74,6 +81,10 @@ class GatedPipeSpec {
   final double dischargeCoefficient;
   final List<double> holeDiametersMm;
 
+  /// Punched holes that stay fully open: the flows are those of the holes
+  /// at the heads they get, not the targets.
+  final bool fixedHoles;
+
   double flowOf(int i) => i < targetFlows.length ? targetFlows[i] : targetFlow;
 }
 
@@ -90,7 +101,8 @@ class GateRow {
     required this.holeMm,
     required this.openingPct,
     required this.fullFlow,
-  });
+    double? deliveredFlow,
+  }) : deliveredFlow = deliveredFlow ?? targetFlow;
 
   /// 1-based gate number from the inlet and its distance (m).
   final int index;
@@ -111,7 +123,23 @@ class GateRow {
   final double openingPct;
   final double fullFlow;
 
-  Map<String, dynamic> toJson() => {'i': index, 'x': distanceM, 'qp': pipeFlow, 'h': headM, 'q': targetFlow, 'a': areaMm2, 'd': diameterMm, 'hole': holeMm, 'open': openingPct, 'qf': fullFlow};
+  /// Flow the gate delivers (m³/s): the target with adjustable gates, the
+  /// flow of the full hole at its head with fixed holes.
+  final double deliveredFlow;
+
+  Map<String, dynamic> toJson() => {
+    'i': index,
+    'x': distanceM,
+    'qp': pipeFlow,
+    'h': headM,
+    'q': targetFlow,
+    'a': areaMm2,
+    'd': diameterMm,
+    'hole': holeMm,
+    'open': openingPct,
+    'qf': fullFlow,
+    if ((deliveredFlow - targetFlow).abs() > 1e-15) 'qd': deliveredFlow,
+  };
   static GateRow fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
     return GateRow(
@@ -125,6 +153,7 @@ class GateRow {
       holeMm: d('hole'),
       openingPct: d('open'),
       fullFlow: d('qf'),
+      deliveredFlow: (j['qd'] as num?)?.toDouble(),
     );
   }
 }
@@ -140,8 +169,22 @@ class GatedPipeResult {
     required this.elevationGainM,
     required this.inletVelocity,
     required this.warnings,
+    this.fixedHoles = false,
+    this.deliveredTotalFlow = 0,
+    this.flowCu = 100,
+    this.minOverMeanFlow = 1,
   });
   final List<GateRow> gates;
+
+  /// Solved with fixed holes: the delivered flows are those of the holes.
+  final bool fixedHoles;
+
+  /// Flow entering the pipe (m³/s), Christiansen uniformity of the furrow
+  /// flows (%) and the least gate flow over the mean (with fixed holes;
+  /// the targets otherwise).
+  final double deliveredTotalFlow;
+  final double flowCu;
+  final double minOverMeanFlow;
 
   /// Inlet head used (m) and the smallest that delivers every target with the largest hole (m).
   final double inletHeadM;
@@ -167,6 +210,10 @@ class GatedPipeResult {
     'dz': elevationGainM,
     'v': inletVelocity,
     'warn': warnings,
+    if (fixedHoles) 'fixed': true,
+    if (fixedHoles) 'qd': deliveredTotalFlow,
+    if (fixedHoles) 'cu': flowCu,
+    if (fixedHoles) 'qmin': minOverMeanFlow,
   };
   static GatedPipeResult fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
@@ -179,6 +226,10 @@ class GatedPipeResult {
       elevationGainM: d('dz'),
       inletVelocity: d('v'),
       warnings: ((j['warn'] as List?) ?? const []).cast<String>(),
+      fixedHoles: j['fixed'] as bool? ?? false,
+      deliveredTotalFlow: (j['qd'] as num?)?.toDouble() ?? d('q'),
+      flowCu: (j['cu'] as num?)?.toDouble() ?? 100,
+      minOverMeanFlow: (j['qmin'] as num?)?.toDouble() ?? 1,
     );
   }
 }
@@ -269,14 +320,86 @@ GatedPipeResult designGatedPipe(GatedPipeSpec s, {String id = ''}) {
       ),
     );
   }
+  if (!s.fixedHoles || gates.isEmpty || gates.any((g) => g.targetFlow > 0 && g.holeMm <= 0)) {
+    return GatedPipeResult(
+      gates: gates,
+      inletHeadM: inlet,
+      minInletHeadM: hMin,
+      totalFlow: total,
+      frictionLossM: hfTotal,
+      elevationGainM: n > 0 ? s.slope * xs.last : 0,
+      inletVelocity: d > 0 ? velocity(flow: total, diameter: d) : 0,
+      warnings: warnings,
+      deliveredTotalFlow: total,
+    );
+  }
+  // fixed holes: every gate an orifice of its full hole; flows, friction and
+  // heads solved together at the inlet head (damped fixed point)
+  final area = [for (final g in gates) g.holeMm > 0 && g.targetFlow > 0 ? math.pi / 4 * math.pow(g.holeMm / 1000, 2) : 0.0];
+  var q = [for (final g in gates) g.fullFlow];
+  var heads = List<double>.filled(n, 0);
+  var past = List<double>.filled(n, 0);
+  var hf = 0.0;
+  for (var it = 0; it < 200; it++) {
+    final next = List<double>.filled(n, 0);
+    var downstream = q.fold(0.0, (a, b) => a + b);
+    var xPrev = 0.0, change = 0.0;
+    hf = 0.0;
+    for (var i = 0; i < n; i++) {
+      final len = xs[i] - xPrev;
+      final l = loss(downstream, len);
+      hf += l;
+      change += s.slope * len - l;
+      heads[i] = inlet + change;
+      past[i] = downstream;
+      next[i] = heads[i] > 0 ? cd * area[i] * math.sqrt(2 * gravity * heads[i]) : 0.0;
+      downstream -= q[i];
+      xPrev = xs[i];
+    }
+    var diff = 0.0, size = 0.0;
+    for (var i = 0; i < n; i++) {
+      diff += (next[i] - q[i]).abs();
+      size += next[i];
+      next[i] = 0.5 * (q[i] + next[i]);
+    }
+    q = next;
+    if (size <= 0 || diff <= 1e-10 * size) break;
+  }
+  if (heads.any((h) => h <= 0)) warn('gated_pipe_no_head');
+  final delivered = q.fold(0.0, (a, b) => a + b);
+  final open = [
+    for (var i = 0; i < n; i++)
+      if (area[i] > 0) q[i],
+  ];
+  final mean = open.isEmpty ? 0.0 : open.reduce((a, b) => a + b) / open.length;
+  final cu = mean > 0 ? 100 * (1 - open.fold(0.0, (s, v) => s + (v - mean).abs()) / (open.length * mean)) : 100.0;
   return GatedPipeResult(
-    gates: gates,
+    gates: [
+      for (var i = 0; i < n; i++)
+        GateRow(
+          index: gates[i].index,
+          distanceM: gates[i].distanceM,
+          pipeFlow: past[i],
+          headM: heads[i],
+          targetFlow: gates[i].targetFlow,
+          areaMm2: gates[i].areaMm2,
+          diameterMm: gates[i].diameterMm,
+          holeMm: gates[i].holeMm,
+          openingPct: area[i] > 0 ? 100 : 0,
+          fullFlow: area[i] > 0 && heads[i] > 0 ? cd * area[i] * math.sqrt(2 * gravity * heads[i]) : 0,
+          deliveredFlow: q[i],
+        ),
+    ],
     inletHeadM: inlet,
     minInletHeadM: hMin,
     totalFlow: total,
-    frictionLossM: hfTotal,
+    frictionLossM: hf,
     elevationGainM: n > 0 ? s.slope * xs.last : 0,
-    inletVelocity: d > 0 ? velocity(flow: total, diameter: d) : 0,
+    inletVelocity: d > 0 ? velocity(flow: delivered, diameter: d) : 0,
     warnings: warnings,
+    fixedHoles: true,
+    deliveredTotalFlow: delivered,
+    flowCu: cu,
+    minOverMeanFlow: mean > 0 ? open.reduce(math.min) / mean : 1,
   );
 }
