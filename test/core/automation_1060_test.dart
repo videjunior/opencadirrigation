@@ -630,4 +630,34 @@ void main() {
       }
     });
   });
+
+  group('AUT-06 routing one zone at a time', () {
+    test('the stepwise router gives what routeZones gives, a zone a step', () {
+      const building = [Pt(10, 10), Pt(20, 10), Pt(20, 20), Pt(10, 20)];
+      final zones = [
+        [const Pt(2, 2), const Pt(8, 3), const Pt(4, 8)],
+        [const Pt(25, 25), const Pt(28, 22), const Pt(30, 28)],
+        <Pt>[],
+        [const Pt(22, 5), const Pt(27, 4)],
+      ];
+      final o = RouteOptions(exclusions: [building], pointOfConnection: const Pt(-5, -5));
+      final whole = routeZones(zones, o);
+      final r = ZoneRouter(zones, o);
+      var steps = 0;
+      while (r.step()) {
+        steps++;
+        expect(r.routed, lessThanOrEqualTo(zones.length));
+      }
+      expect(steps, 3, reason: 'one step a zone with heads; the mainline comes with the last call');
+      expect(r.step(), isFalse);
+      final stepwise = r.result;
+      expect(stepwise.zones.length, whole.zones.length);
+      for (var z = 0; z < whole.zones.length; z++) {
+        expect(stepwise.zones[z].valve, whole.zones[z].valve);
+        expect([for (final p in stepwise.zones[z].pipes) p.points], [for (final p in whole.zones[z].pipes) p.points]);
+      }
+      expect([for (final p in stepwise.mainline) p.points], [for (final p in whole.mainline) p.points]);
+      expect(ZoneRouter(const [], o).step(), isFalse);
+    });
+  });
 }

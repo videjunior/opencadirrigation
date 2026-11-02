@@ -3,6 +3,10 @@ part of '../i18n.dart';
 /// Strings added in 1.6.0 for automatic design and the design assistant: (pt, en, es), merged into the table after
 /// the base strings (a key repeated in another part is a compile-time error).
 const _aut = <String, (String, String, String)>{
+  // ---- live summaries of the automatic tools
+  'auto.step.layout': ('Distribuindo os aspersores…', 'Laying out the heads…', 'Distribuyendo los aspersores…'),
+  'auto.step.zoning': ('Agrupando em zonas…', 'Grouping into zones…', 'Agrupando en zonas…'),
+  'auto.step.routing': ('Traçando os tubos: zona {n} de {m}…', 'Routing the pipes: zone {n} of {m}…', 'Trazando las tuberías: zona {n} de {m}…'),
   // ---- block generator
   'warn.block_uncovered': (
     'Parte do polígono a mais de uma entrelinha de qualquer lateral',

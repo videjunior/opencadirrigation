@@ -524,52 +524,99 @@ class _MinHeap {
 
 /// Routes the zones whose heads are [zoneHeads] (see the library comment).
 RoutingResult routeZones(List<List<Pt>> zoneHeads, RouteOptions o) {
-  final messages = <String>[];
-  final obstacles = _Obstacles(o.exclusions, math.max(0.05, o.obstacleMargin), boundary: o.boundary);
-  final all = <Pt>[for (final z in zoneHeads) ...z];
-  final b = Bounds.ofPoints([...all, ?o.pointOfConnection, ...?o.mainline]);
-  if (all.isEmpty || b.isEmpty) return RoutingResult(zones: const [], mainline: const [], messages: const [], crossings: 0);
-  final cell = pointGridCell(b, all.length + zoneHeads.length, minimum: 0.25);
-  // every head, by zone, for the clearance checks
-  final grid = PointGrid(cell, origin: Pt(b.minX, b.minY));
-  final owner = <int>[];
-  for (var z = 0; z < zoneHeads.length; z++) {
-    for (final h in zoneHeads[z]) {
-      grid.add(h);
-      owner.add(z);
+  final r = ZoneRouter(zoneHeads, o);
+  while (r.step()) {}
+  return r.result;
+}
+
+/// [routeZones] one zone at a time: [step] routes the next zone (the
+/// mainline after the last one), so that a caller can show the progress
+/// between steps, let the screen paint and stop when the inputs change.
+class ZoneRouter {
+  ZoneRouter(this.zoneHeads, this.options) : _obstacles = _Obstacles(options.exclusions, math.max(0.05, options.obstacleMargin), boundary: options.boundary) {
+    final o = options;
+    final all = <Pt>[for (final z in zoneHeads) ...z];
+    final b = Bounds.ofPoints([...all, ?o.pointOfConnection, ...?o.mainline]);
+    _empty = all.isEmpty || b.isEmpty;
+    final cell = _empty ? 1.0 : pointGridCell(b, all.length + zoneHeads.length, minimum: 0.25);
+    final origin = _empty ? Pt.zero : Pt(b.minX, b.minY);
+    _grid = PointGrid(cell, origin: origin);
+    _routed = _Segments(math.max(cell, 1.0), origin);
+    _bends = PointGrid(math.max(cell, 0.25), origin: origin);
+    if (_empty) return;
+    // every head, by zone, for the clearance checks
+    for (var z = 0; z < zoneHeads.length; z++) {
+      for (final h in zoneHeads[z]) {
+        _grid.add(h);
+        _owner.add(z);
+      }
+    }
+    _valves = _placeValves(zoneHeads, o, _obstacles, _grid, _owner, _messages);
+    for (var z = 0; z < _valves.length; z++) {
+      _grid.add(_valves[z]);
+      _owner.add(z);
     }
   }
-  final valves = _placeValves(zoneHeads, o, obstacles, grid, owner, messages);
-  for (var z = 0; z < valves.length; z++) {
-    grid.add(valves[z]);
-    owner.add(z);
-  }
-  final zones = <RoutedZone>[];
+
+  final List<List<Pt>> zoneHeads;
+  final RouteOptions options;
+  final _Obstacles _obstacles;
+  late final bool _empty;
+  late final PointGrid _grid;
+  final List<int> _owner = [];
+  final List<String> _messages = [];
+  List<Pt> _valves = const [];
+  final List<RoutedZone> _zones = [];
+
   // pipes routed so far: later zones go round them where they can
-  final routed = _Segments(math.max(cell, 1.0), Pt(b.minX, b.minY));
+  late final _Segments _routed;
+
   // the bends of the pipes routed so far (detours round an exclusion, a
   // dogleg round a head): a later zone never puts a vertex of its own on
   // one, since coincident vertices connect and would join the two zones
-  final bends = PointGrid(math.max(cell, 0.25), origin: Pt(b.minX, b.minY));
-  final bendOwner = <int>[];
-  for (var z = 0; z < zoneHeads.length; z++) {
-    if (zoneHeads[z].isEmpty) continue;
-    final rz = _routeZone(z, zoneHeads[z], valves[z], o, obstacles, grid, owner, messages, routed, bends, bendOwner);
-    final own = {...zoneHeads[z], valves[z]};
-    for (final pipe in rz.pipes) {
-      for (var i = 1; i < pipe.points.length; i++) {
-        routed.add(pipe.points[i - 1], pipe.points[i], z);
-      }
-      for (final q in pipe.points) {
-        if (own.contains(q)) continue;
-        bends.add(q);
-        bendOwner.add(z);
-      }
+  late final PointGrid _bends;
+  final List<int> _bendOwner = [];
+  int _next = 0;
+  List<RoutedPipe>? _mainline;
+
+  /// Zones routed so far.
+  int get routed => _next;
+
+  /// Routes the next zone, or the mainline after the last one; false once
+  /// everything is routed.
+  bool step() {
+    if (_empty || _mainline != null) return false;
+    final o = options;
+    while (_next < zoneHeads.length && zoneHeads[_next].isEmpty) {
+      _next++;
     }
-    zones.add(rz);
+    if (_next < zoneHeads.length) {
+      final z = _next++;
+      final rz = _routeZone(z, zoneHeads[z], _valves[z], o, _obstacles, _grid, _owner, _messages, _routed, _bends, _bendOwner);
+      final own = {...zoneHeads[z], _valves[z]};
+      for (final pipe in rz.pipes) {
+        for (var i = 1; i < pipe.points.length; i++) {
+          _routed.add(pipe.points[i - 1], pipe.points[i], z);
+        }
+        for (final q in pipe.points) {
+          if (own.contains(q)) continue;
+          _bends.add(q);
+          _bendOwner.add(z);
+        }
+      }
+      _zones.add(rz);
+      return true;
+    }
+    _mainline = o.mainline == null && o.pointOfConnection != null ? _mainlineTree(o.pointOfConnection!, [for (final z in _zones) z.valve], _obstacles) : <RoutedPipe>[];
+    return false;
   }
-  final mainline = o.mainline == null && o.pointOfConnection != null ? _mainlineTree(o.pointOfConnection!, [for (final z in zones) z.valve], obstacles) : <RoutedPipe>[];
-  return RoutingResult(zones: zones, mainline: mainline, messages: messages, crossings: _crossings([for (final z in zones) ...z.pipes, ...mainline]));
+
+  /// The routing (complete once [step] returned false).
+  RoutingResult get result {
+    if (_empty) return RoutingResult(zones: const [], mainline: const [], messages: const [], crossings: 0);
+    final mainline = _mainline ?? const <RoutedPipe>[];
+    return RoutingResult(zones: _zones, mainline: mainline, messages: _messages, crossings: _crossings([for (final z in _zones) ...z.pipes, ...mainline]));
+  }
 }
 
 /// A mainline tree from [pointOfConnection] to [valves] (or to pivot

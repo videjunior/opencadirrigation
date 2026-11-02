@@ -7,6 +7,7 @@
 /// shows its result live and generates it as one undo step.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -93,36 +94,114 @@ class _TooMany implements Exception {
   const _TooMany();
 }
 
+/// Thrown inside a stepwise computation whose inputs changed meanwhile.
+class _Cancelled implements Exception {
+  const _Cancelled();
+}
+
+/// A running stepwise computation of a [_Preview]: [pause] lets the screen
+/// paint between two steps and throws [_Cancelled] once the inputs changed
+/// (or the dialog closed); [say] shows how far it got.
+class _Job {
+  _Job(this._stale, this._say);
+  final bool Function() _stale;
+  final void Function(String text) _say;
+
+  bool get cancelled => _stale();
+
+  void say(String text) => _say(text);
+
+  Future<void> pause() async {
+    await Future<void>.delayed(Duration.zero);
+    if (_stale()) throw const _Cancelled();
+  }
+}
+
 /// The live result of a dialog. It is computed again only when the inputs
-/// (summed up in a key) change, and only after the frame that shows the
-/// change, so the dialog keeps up while a large area is laid out; meanwhile
-/// the last result stays on screen, marked as [stale].
+/// (summed up in a key) change, a moment after the last change (typing a
+/// few values in a row computes once) and after the frame that shows it,
+/// so the dialog keeps up while a large area is laid out; meanwhile the
+/// last result stays on screen, marked as [stale]. A stepwise computation
+/// ([watch]'s `steps`) gives the screen back between its steps, says how
+/// far it got and stops as soon as the inputs change again.
 class _Preview<T extends Object> {
+  /// Wait after a change before computing.
+  static const debounce = Duration(milliseconds: 150);
+
   String? _key, _wanted;
   T? value;
   Object? error;
 
+  /// What the running computation is doing ('' when none says).
+  String progress = '';
+  Timer? _timer;
+  int _generation = 0;
+
   bool get stale => _wanted != null;
 
-  T? watch(String key, T? Function() compute, BuildContext ctx, StateSetter setState) {
+  T? watch(String key, T? Function() compute, BuildContext ctx, StateSetter setState, {Future<T?> Function(_Job job)? steps}) {
     if (key == _key) {
-      _wanted = null;
+      if (_wanted != null) {
+        // back to the inputs on screen: drop what was pending
+        _timer?.cancel();
+        _generation++;
+        _wanted = null;
+        progress = '';
+      }
       return value;
     }
     if (key == _wanted) return value;
     _wanted = key;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!ctx.mounted || _wanted != key) return;
-      _run(key, compute);
-      setState(() {});
+    _timer?.cancel();
+    final gen = ++_generation;
+    bool gone() => gen != _generation || !ctx.mounted;
+    void refresh() {
+      if (ctx.mounted) setState(() {});
+    }
+
+    // the frame that shows the change (and the progress bar) is drawn
+    // before the timer fires
+    _timer = Timer(_key == null ? Duration.zero : debounce, () async {
+      if (gone()) return;
+      if (steps == null) {
+        _run(key, compute);
+        refresh();
+        return;
+      }
+      final job = _Job(gone, (text) {
+        if (gone()) return;
+        progress = text;
+        refresh();
+      });
+      try {
+        final v = await steps(job);
+        if (gone()) return;
+        value = v;
+        error = null;
+      } on _Cancelled {
+        return;
+      } catch (e) {
+        if (gone()) return;
+        value = null;
+        error = e;
+      }
+      _key = key;
+      if (_wanted == key) _wanted = null;
+      progress = '';
+      refresh();
     });
     return value;
   }
 
   /// The result for [key] now, computed at once when the inputs changed
-  /// since (generate pressed right after typing a value).
+  /// since (generate pressed right after typing a value); a computation
+  /// under way is dropped.
   T? now(String key, T? Function() compute) {
-    if (key != _key) _run(key, compute);
+    if (key != _key) {
+      _timer?.cancel();
+      _generation++;
+      _run(key, compute);
+    }
     return value;
   }
 
@@ -136,11 +215,14 @@ class _Preview<T extends Object> {
     }
     _key = key;
     if (_wanted == key) _wanted = null;
+    progress = '';
   }
 
-  /// Progress bar while stale and the error of the last computation.
+  /// Progress bar (and what the computation is doing) while stale, and the
+  /// error of the last computation.
   List<Widget> status(ProjectController c) => [
     if (stale) const Padding(padding: EdgeInsets.symmetric(vertical: 3), child: LinearProgressIndicator(minHeight: 2)),
+    if (stale && progress.isNotEmpty) _note(progress, color: Cad.fg54),
     if (error != null) _note(error is _TooMany ? c.t('auto.tooMany', {'n': '$_maxItems'}) : c.describeError(error!), color: Cad.warning),
   ];
 }
@@ -459,6 +541,13 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
   (String, LandscapeLayout)? laid;
   (String, ZoningResult?)? zoned;
 
+  ZoneRouter routerFor(LandscapeLayout layout, List<List<int>> groups) {
+    final src = _sourceOf(sources, sourceId);
+    return ZoneRouter([
+      for (final g in groups) [for (final i in g) layout.heads[i].position],
+    ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction, boundary: area));
+  }
+
   _LayoutPlan? compute() {
     final family = c.project.catalog.outlet(familyId);
     if (family == null || area == null) return null;
@@ -475,10 +564,42 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     final names = _zoneNames(c.project, t('name.zone'), groups.length);
     RoutingResult? routing;
     if (routeOn && groups.isNotEmpty) {
-      final src = _sourceOf(sources, sourceId);
-      routing = routeZones([
-        for (final g in groups) [for (final i in g) layout.heads[i].position],
-      ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction, boundary: area));
+      final router = routerFor(layout, groups);
+      while (router.step()) {}
+      routing = router.result;
+    }
+    return _LayoutPlan(family, layout, zoning, routing, groups, names);
+  }
+
+  // the same in steps, for the live summary: the screen is given back
+  // between the layout, the zoning and every zone routed, with the step on
+  // screen, and a change of the inputs stops it
+  Future<_LayoutPlan?> steps(_Job job) async {
+    final family = c.project.catalog.outlet(familyId);
+    if (family == null || area == null) return null;
+    final lk = layoutKey(), zk = zoningKey();
+    if (laid?.$1 != lk) {
+      job.say(t('auto.step.layout'));
+      await job.pause();
+      laid = (lk, layoutLandscape(outline: area, exclusions: sel.others, family: family, options: o.copy()..direction = autoDirection ? null : Pt.polar(1, degToRad(directionDeg))));
+    }
+    final layout = laid!.$2;
+    if (zoned?.$1 != zk) {
+      if (zoneOn) job.say(t('auto.step.zoning'));
+      await job.pause();
+      zoned = (zk, zoneOn && layout.heads.isNotEmpty ? zoneByFlow(zoneItemsOf(layout, family), ZoningOptions(maxZoneFlow: maxZoneFlow, maxItemsPerZone: itemsPerZone)) : null);
+    }
+    final zoning = zoned!.$2;
+    final groups = zoning != null ? [for (final z in zoning.zones) z.items] : [if (routeOn && layout.heads.isNotEmpty) List<int>.generate(layout.heads.length, (i) => i)];
+    final names = _zoneNames(c.project, t('name.zone'), groups.length);
+    RoutingResult? routing;
+    if (routeOn && groups.isNotEmpty) {
+      final router = routerFor(layout, groups);
+      do {
+        job.say(t('auto.step.routing', {'n': '${math.min(router.routed + 1, groups.length)}', 'm': '${groups.length}'}));
+        await job.pause();
+      } while (router.step());
+      routing = router.result;
     }
     return _LayoutPlan(family, layout, zoning, routing, groups, names);
   }
@@ -510,7 +631,7 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) {
         if (area == null || region == null) return _nothingSelected(ctx, c, t('autolay.title'), t('autolay.hint'), t('auto.noArea'));
-        final plan = preview.watch(key(), compute, ctx, setState);
+        final plan = preview.watch(key(), compute, ctx, setState, steps: steps);
         final family = c.project.catalog.outlet(familyId);
         final inputs = <Widget>[
           _note(t('autolay.hint')),
