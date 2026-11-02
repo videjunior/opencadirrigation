@@ -358,8 +358,9 @@ DesignCheckReport runDesignCheck(Project project) {
   issues.addAll(checkSelfCrossingAreas(project));
   issues.addAll(checkOverlappingLines(project, tol));
   // 1.6.0 AUT: sprinklers spaced too far apart, areas watered unevenly
-  issues.addAll(checkSprinklerSpacing(project, model));
-  issues.addAll(checkAreaUniformity(project));
+  final sprinklers = _sprinklerSources(project);
+  issues.addAll(checkSprinklerSpacing(project, model, sources: sprinklers));
+  issues.addAll(checkAreaUniformity(project, sources: sprinklers));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));
@@ -518,8 +519,8 @@ String _m(double v) => v >= 10 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 /// ([spacingLimitSquare], [spacingLimitNarrow], [spacingLimitWide]): dry
 /// spots between them that no run time makes up. The value gives the
 /// spacings, the wetted radius and the share of the diameter.
-List<CheckIssue> checkSprinklerSpacing(Project project, NetworkModel model) {
-  final sources = _sprinklerSources(project);
+List<CheckIssue> checkSprinklerSpacing(Project project, NetworkModel model, {List<SpraySource>? sources}) {
+  sources ??= _sprinklerSources(project);
   if (sources.length < 3) return const [];
   final byEntity = <String, List<SpraySource>>{};
   for (final s in sources) {
@@ -570,13 +571,13 @@ List<CheckIssue> checkSprinklerSpacing(Project project, NetworkModel model) {
 /// low-quarter DU below 60 % or more than 5 % of it getting less than half
 /// the mean. Areas a crop wets in part ([AreaEntity.wettedFraction] below
 /// 0.95) are left out.
-List<CheckIssue> checkAreaUniformity(Project project) {
+List<CheckIssue> checkAreaUniformity(Project project, {List<SpraySource>? sources}) {
   final areas = [
     for (final a in project.entities.whereType<AreaEntity>())
       if (a.points.length >= 3 && a.wettedFraction >= 0.95) a,
   ];
   if (areas.isEmpty) return const [];
-  final sources = _sprinklerSources(project);
+  sources ??= _sprinklerSources(project);
   if (sources.isEmpty) return const [];
   final out = <CheckIssue>[];
   for (final a in areas) {
@@ -588,7 +589,11 @@ List<CheckIssue> checkAreaUniformity(Project project) {
     if (near.length < 2) continue;
     final region = LayoutRegion(a.points);
     if (region.isEmpty) continue;
-    final m = evaluateSprayUniformity(region, near, maxCells: 40000);
+    // a quarter of the shortest throw, no coarser than a tenth of the area's
+    // size (the check runs after every edit: no inscribed-circle search)
+    final minR = near.fold(double.infinity, (m, s) => math.min(m, s.radius));
+    final cell = math.max(0.05, math.min(minR / 4, math.sqrt(region.area) / 10));
+    final m = evaluateSprayUniformity(region, near, cellSize: cell, maxCells: 40000);
     if (m.heads == 0 || m.areaM2 <= 0) continue;
     if (m.cu >= 75 && m.du >= 60 && m.dryPct <= 5) continue;
     out.add(
