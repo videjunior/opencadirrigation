@@ -5,6 +5,8 @@ library;
 
 import 'dart:math' as math;
 
+import 'read_report.dart' show KeyLog;
+
 /// A free line of the quote (services, travel, commissioning…).
 class ProposalExtra {
   ProposalExtra({this.description = '', this.unit = '', this.quantity = 1, this.unitPrice = 0});
@@ -37,8 +39,27 @@ class ProposalSettings {
     List<ProposalExtra>? extras,
     this.crews = 1,
     Map<String, double>? productivity,
+    this.mainlineDepthM = 0.6,
+    this.zoneDepthM = 0,
+    this.extra,
   }) : extras = extras ?? [],
        productivity = productivity ?? {};
+
+  // 1.6.0 AUT (AUT-25)
+  /// Burial depth (m, to the pipe axis) of the mainline pipes drawn without
+  /// one of their own (the routing draws them buried): their trenches and
+  /// the works schedule count them buried this deep (0.6 m by default, as
+  /// `defaultMainlineDepthM`; 0 = on the surface).
+  double mainlineDepthM;
+
+  /// Burial depth (m) of the zone pipes and submains drawn without one of
+  /// their own (0 = on the surface, the default); laterals and tapes stay
+  /// on the surface. The automatic tools bury the zone pipes they draw this
+  /// deep (0.4 m when 0).
+  double zoneDepthM;
+
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
 
   /// Margin over the cost of the materials (%), applied to every BOM line.
   double markupPct;
@@ -97,7 +118,10 @@ class ProposalSettings {
       beddingM == 0.1 &&
       annualBenefit == 0 &&
       crews == 1 &&
-      productivity.isEmpty;
+      productivity.isEmpty &&
+      mainlineDepthM == 0.6 &&
+      zoneDepthM == 0 &&
+      (extra?.isEmpty ?? true);
 
   /// Multiplies every amount of money by [factor] (currency conversion).
   void scalePrices(double factor) {
@@ -125,12 +149,17 @@ class ProposalSettings {
     if (extras.isNotEmpty) 'extras': [for (final x in extras) x.toJson()],
     if (crews != 1) 'crews': crews,
     if (productivity.isNotEmpty) 'prod': productivity,
+    if (mainlineDepthM != 0.6) 'mainD': mainlineDepthM,
+    if (zoneDepthM != 0) 'zoneD': zoneDepthM,
+    ...?extra,
   };
 
-  static ProposalSettings fromJson(Map<String, dynamic>? j) {
-    if (j == null) return ProposalSettings();
+  static ProposalSettings fromJson(Map<String, dynamic>? json) {
+    if (json == null) return ProposalSettings();
+    // the fields this version does not know are kept (written back as read)
+    final j = KeyLog(json);
     double d(String k, double def) => (j[k] as num?)?.toDouble() ?? def;
-    return ProposalSettings(
+    final s = ProposalSettings(
       markupPct: d('markup', 0),
       labourPct: d('labour', 0),
       trenchCostPerM3: d('trenchM3', 0),
@@ -149,6 +178,10 @@ class ProposalSettings {
         for (final e in ((j['prod'] as Map?) ?? const {}).entries)
           if (e.key is String && e.value is num && (e.value as num) > 0) e.key as String: (e.value as num).toDouble(),
       },
+      mainlineDepthM: math.max(0.0, d('mainD', 0.6)),
+      zoneDepthM: math.max(0.0, d('zoneD', 0)),
     );
+    s.extra = j.unread;
+    return s;
   }
 }

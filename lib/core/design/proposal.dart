@@ -35,9 +35,25 @@ const defaultMainlineDepthM = 0.6;
 /// they draw (laterals and tapes stay on the surface).
 const defaultZonePipeDepthM = 0.4;
 
-/// Burial depth (m) of [e] for its trench: its own, or for a mainline pipe
-/// without one [defaultMainlineDepthM]; 0 = on the surface.
-double burialDepth(PipeEntity e) => e.depth > 0 ? e.depth : (e.scope == HydraulicScope.mainline ? defaultMainlineDepthM : 0);
+/// Burial depth (m) of [e] for its trench: its own, or without one the
+/// default of its use in the quote settings [s] ([ProposalSettings.mainlineDepthM],
+/// [ProposalSettings.zoneDepthM]; without [s] a mainline pipe
+/// [defaultMainlineDepthM], a zone pipe on the surface); 0 = on the surface.
+double burialDepth(PipeEntity e, [ProposalSettings? s]) {
+  if (e.depth > 0) return e.depth;
+  if (e.scope == HydraulicScope.mainline) return s?.mainlineDepthM ?? defaultMainlineDepthM;
+  return s?.zoneDepthM ?? 0;
+}
+
+// 1.6.0 AUT (AUT-25): the depths the automatic tools give the pipes they draw
+/// Depth (m) the automatic tools bury the zone pipes and submains they
+/// draw: the project's default for zone pipes, [defaultZonePipeDepthM] when
+/// that is the surface.
+double autoZonePipeDepth(Project p) => p.proposal.zoneDepthM > 0 ? p.proposal.zoneDepthM : defaultZonePipeDepthM;
+
+/// Depth (m) the automatic tools bury the mainline they draw: the project's
+/// default for the mainline.
+double autoMainlineDepth(Project p) => p.proposal.mainlineDepthM;
 
 /// Trenches of every buried pipe of [project] (see [burialDepth]), grouped
 /// by use, diameter, width and depth: width [ProposalSettings.trenchWidthM]
@@ -46,7 +62,7 @@ double burialDepth(PipeEntity e) => e.depth > 0 ? e.depth : (e.scope == Hydrauli
 List<TrenchRow> trenchRows(Project project, ProposalSettings s) {
   final rows = <String, TrenchRow>{};
   for (final e in project.entities.whereType<PipeEntity>()) {
-    final burial = burialDepth(e);
+    final burial = burialDepth(e, s);
     if (burial <= 0 || e.points.length < 2) continue;
     final spec = project.catalog.pipe(e.pipeSpecId);
     final od = (spec?.nominalMm ?? 50) / 1000;
@@ -240,7 +256,7 @@ List<ScheduleTask> scheduleTasks(Project p, ProposalSettings s) {
       case AreaEntity a when a.points.length >= 3:
         areaHa += a.area / 10000;
       case PipeEntity pe:
-        if (pe.depth > 0 || pe.scope == HydraulicScope.mainline) {
+        if (burialDepth(pe, s) > 0) {
           buried += pe.length;
         } else {
           laterals += pe.length;

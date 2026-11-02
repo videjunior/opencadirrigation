@@ -94,7 +94,11 @@ class BlockResult {
   final List<PipeEntity> branches;
 
   /// Codes: `block_uncovered:<percent> %` (part of the polygon farther than
-  /// one lateral spacing from every lateral of a guided block).
+  /// one lateral spacing from every lateral of a guided block),
+  /// `block_guide_offset:<rows>` (rows of laterals of a guided block that lie
+  /// farther from the guide than the radius of its bends, or round a sharp
+  /// corner of it: their corners were rounded or their loops cut off, so
+  /// they are not plain parallel copies of the guide).
   final List<String> messages;
   List<Entity> get all => [...laterals, ?submain, ...branches, ?stub, ?valve];
 }
@@ -524,100 +528,14 @@ double _signedDistance(Pt q, List<Pt> line) {
   return best.isFinite ? best * sign : 0;
 }
 
-/// [pts] without the loops of a self-crossing offset (the swallowtail an
-/// offset on the inner side of a sharp bend makes, or two arms of a U offset
-/// past each other): where two segments cross, the vertices between them
-/// are dropped and the crossing joins the two parts.
-List<Pt> _withoutLoops(List<Pt> pts) {
-  var cur = pts;
-  for (var guard = 0; guard < 256; guard++) {
-    final n = cur.length;
-    if (n < 4) return cur;
-    // segments bucketed on a grid of about one segment a cell
-    final b = Bounds.ofPoints(cur);
-    final cell = math.max(polylineLength(cur) / (n - 1), math.max(b.width, b.height) / 1024) + 1e-9;
-    final buckets = <int, List<int>>{};
-    int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
-    Iterable<int> keys(Pt a, Pt c) sync* {
-      final x0 = ((math.min(a.x, c.x) - b.minX) / cell).floor(), x1 = ((math.max(a.x, c.x) - b.minX) / cell).floor();
-      final y0 = ((math.min(a.y, c.y) - b.minY) / cell).floor(), y1 = ((math.max(a.y, c.y) - b.minY) / cell).floor();
-      for (var ix = x0; ix <= x1; ix++) {
-        for (var iy = y0; iy <= y1; iy++) {
-          yield key(ix, iy);
-        }
-      }
-    }
-
-    for (var s = 1; s < n; s++) {
-      for (final k in keys(cur[s - 1], cur[s])) {
-        (buckets[k] ??= []).add(s);
-      }
-    }
-    // the first segment that crosses a later one, and the last one it crosses
-    var cutI = -1, cutJ = -1;
-    Pt? at;
-    for (var i = 1; i < n && cutI < 0; i++) {
-      final a = cur[i - 1], c = cur[i];
-      final seen = <int>{};
-      for (final k in keys(a, c)) {
-        for (final j in buckets[k] ?? const <int>[]) {
-          if (j <= i + 1 || !seen.add(j)) continue;
-          final x = segmentIntersection(a, c, cur[j - 1], cur[j], eps: 1e-12);
-          if (x == null) continue;
-          if (j > cutJ) {
-            cutJ = j;
-            at = x;
-          }
-        }
-      }
-      if (cutJ > 0) cutI = i;
-    }
-    if (cutI < 0 || at == null) return cur;
-    cur = [...cur.sublist(0, cutI), at, ...cur.sublist(cutJ)];
-  }
-  return cur;
-}
-
 /// [pts] offset [d] metres to its left (negative: to its right), as
-/// [offsetPolyline] does, but a bend sharper than the mitre limit (the
-/// corner point farther than [mitreLimit]·|d| from the vertex) is rounded
-/// on its outer side, and the loops the offset makes on the inner side of
-/// tight bends are cut out: a centreline or guide that turns back stays
-/// [d] from itself instead of spiking kilometres away.
-List<Pt> offsetPolylineMitred(List<Pt> pts, double d, {double mitreLimit = 2}) {
-  final p = <Pt>[
-    for (var i = 0; i < pts.length; i++)
-      if (i == 0 || pts[i].distanceTo(pts[i - 1]) > 1e-9) pts[i],
-  ];
-  if (p.length < 2 || d == 0) return p;
-  final out = <Pt>[p.first + (p[1] - p.first).normalized.perpendicular * d];
-  for (var i = 1; i + 1 < p.length; i++) {
-    final e1 = (p[i] - p[i - 1]).normalized, e2 = (p[i + 1] - p[i]).normalized;
-    final n1 = e1.perpendicular, n2 = e2.perpendicular;
-    final m = n1 + n2;
-    final c = m.length / 2; // cosine of half the turn
-    if (c >= 1e-9 && 1 / c <= mitreLimit) {
-      out.add(p[i] + m.normalized * (d / c));
-      continue;
-    }
-    final turn = math.atan2(e1.cross(e2), e1.dot(e2));
-    if (d * turn < 0) {
-      // outer side: an arc of radius |d| round the vertex
-      final a0 = (n1 * d).angle;
-      final steps = math.max(2, (turn.abs() / (math.pi / 12)).ceil());
-      for (var k = 0; k <= steps; k++) {
-        out.add(p[i] + Pt.polar(d.abs(), a0 + turn * k / steps));
-      }
-    } else {
-      // inner side: the two offsets cross, the loop goes below
-      out
-        ..add(p[i] + n1 * d)
-        ..add(p[i] + n2 * d);
-    }
-  }
-  out.add(p.last + (p.last - p[p.length - 2]).normalized.perpendicular * d);
-  return _withoutLoops(out);
-}
+/// [offsetPolyline] does, with a bend sharper than the mitre limit (the
+/// corner point farther than [mitreLimit]·|d| from the vertex) rounded on
+/// its outer side and the loops the offset makes on the inner side of
+/// tight bends cut out: a centreline or guide that turns back stays [d]
+/// from itself instead of spiking kilometres away. [report] counts the
+/// corners rounded and the loops cut.
+List<Pt> offsetPolylineMitred(List<Pt> pts, double d, {double mitreLimit = 2, OffsetReport? report}) => offsetPolyline(pts, d, miterLimit: mitreLimit, join: OffsetJoin.round, report: report);
 
 /// Share (0–1) of [poly] farther than [reach] from every polyline of
 /// [lines], on a grid of about [samples] points.
@@ -726,8 +644,11 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
   final lines = <List<Pt>>[];
   var idx = 0;
   final g0 = guide.first;
+  // 1.6.0 AUT: rows whose copy of the guide had to be rounded or cut (MOD-26)
+  var bent = 0;
   for (var v = vMin + first; v <= vMax - first / 2 + 1e-9; v += o.lateralSpacing) {
-    final line = offsetPolylineMitred(prolonged, v);
+    final report = OffsetReport();
+    final line = offsetPolylineMitred(prolonged, v, report: report);
     final row = <_Feed>[];
     for (final piece in [for (final part in clipPolylineToPolygon(line, poly, minLength: o.lateralSpacing / 4)) ..._outsideHoles(part, o.exclusions, minLength: o.lateralSpacing / 4)]) {
       final len = polylineLength(piece);
@@ -773,7 +694,10 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
         }
       }
     }
-    if (row.isNotEmpty) rows.add(row);
+    if (row.isNotEmpty) {
+      rows.add(row);
+      if (report.changed) bent++;
+    }
   }
   if (rows.isEmpty) return BlockResult(laterals: laterals, submain: null, valve: null, stub: null);
   // the submain side along the guide: its start, its end or the middle
@@ -790,6 +714,6 @@ BlockResult _generateGuidedBlock(Project project, BlockOptions o) {
   };
   final (main, branchLines) = _submainLines(rows, poly, uRef: uRef, spacing: o.lateralSpacing, at: (u, v) => g0 + dir * u + perp * v, holes: o.exclusions);
   final dry = _uncoveredShare(poly, lines, o.lateralSpacing, holes: o.exclusions);
-  final messages = [if (dry > guidedUncoveredLimit) 'block_uncovered:${(dry * 100).toStringAsFixed(1)} %'];
+  final messages = [if (dry > guidedUncoveredLimit) 'block_uncovered:${(dry * 100).toStringAsFixed(1)} %', if (bent > 0) 'block_guide_offset:$bent'];
   return _finishBlock(project, o, zone, laterals, main, branchLines, o.submainPosition == SubmainPosition.end ? dir : -dir, messages: messages);
 }

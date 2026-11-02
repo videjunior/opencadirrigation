@@ -610,6 +610,33 @@ String? _assignModel(Project p, Entity e, DesignResults? r, String Function(Stri
 /// A correction the caller leaves out of [runAutoFix] (true: not applied).
 typedef FixFilter = bool Function(Advice a, FixKind kind, DesignResults? results);
 
+// 1.6.0 AUT: every correction "fix automatically" makes, for the review
+// item by item (the user keeps some and leaves the others out)
+/// Identity of correction [kind] of the problem [a] across runs: the same
+/// problem of the same items with the same correction.
+String fixStepId(Advice a, FixKind kind) => '${a.key}|${kind.name}';
+
+/// One correction applied by [runAutoFix]: the problem, the correction, what
+/// it did and the round it was made in (1 = the first).
+class FixStep {
+  const FixStep(this.advice, this.kind, this.result, this.round);
+  final Advice advice;
+  final FixKind kind;
+  final FixResult result;
+  final int round;
+
+  /// See [fixStepId].
+  String get id => fixStepId(advice, kind);
+
+  /// The items the problem is about (where to look at it in the drawing).
+  List<String> get entityIds => advice.entityIds;
+}
+
+/// A [FixFilter] that applies only the corrections whose [fixStepId] is in
+/// [keep] (the review of "fix automatically" run again with the user's
+/// choice).
+FixFilter onlyFixSteps(Set<String> keep) => (a, kind, results) => !keep.contains(fixStepId(a, kind));
+
 /// Whether correction [kind] of [a] changes the system in a way the user
 /// must decide, so "fix automatically" lists it instead of applying it: a
 /// booster pump on a mains connection ([addsBoosterToMains]: it costs,
@@ -648,7 +675,17 @@ bool _connectNotForAuto(Project p, Advice a) {
 /// [results]). [attempted] collects the problems already tried, so a
 /// correction that did not help is not repeated; [skip] leaves out the
 /// corrections the caller keeps for later (none by default).
-List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? results, required Set<String> attempted, String Function(String key)? label, String lang = 'en', FixFilter? skip}) {
+List<FixResult> autoFixRound(
+  Project p,
+  List<Advice> advice, {
+  DesignResults? results,
+  required Set<String> attempted,
+  String Function(String key)? label,
+  String lang = 'en',
+  FixFilter? skip,
+  List<FixStep>? log,
+  int round = 1,
+}) {
   final candidates = [
     for (final a in advice)
       if (a.autoFixable && !attempted.contains('${a.key}|${a.fixes.first.name}') && !(skip?.call(a, a.fixes.first, results) ?? false) && !needsDecision(p, a, a.fixes.first, results)) a,
@@ -670,6 +707,7 @@ List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? res
     final res = applyFix(p, a, kind, results: results, label: label, lang: lang);
     if (res.ok) {
       out.add(res);
+      log?.add(FixStep(a, kind, res, round));
       touched.addAll(a.entityIds);
       // one pump / flow change per round: the next one needs new results
       if (kind == FixKind.choosePump || kind == FixKind.submersiblePump || kind == FixKind.splitFlows) break;
@@ -679,8 +717,11 @@ List<FixResult> autoFixRound(Project p, List<Advice> advice, {DesignResults? res
 }
 
 class AutoFixReport {
-  AutoFixReport(this.applied, this.remaining, this.results, this.rounds, {this.decisions = const []});
+  AutoFixReport(this.applied, this.remaining, this.results, this.rounds, {this.decisions = const [], this.steps = const []});
   final List<FixResult> applied;
+
+  /// The corrections of [applied] with their problems, in the order made.
+  final List<FixStep> steps;
   final List<Advice> remaining;
   final DesignResults? results;
   final int rounds;
@@ -706,13 +747,14 @@ Future<AutoFixReport> runAutoFix(
   FixFilter? skip,
 }) async {
   final applied = <FixResult>[];
+  final steps = <FixStep>[];
   final attempted = <String>{};
   var results = await design();
   var rounds = 0;
   for (; rounds < maxRounds; rounds++) {
     onRound?.call(rounds + 1);
     final advice = buildAdvice(p, results: results);
-    final done = autoFixRound(p, advice, results: results, attempted: attempted, label: label, lang: lang, skip: skip);
+    final done = autoFixRound(p, advice, results: results, attempted: attempted, label: label, lang: lang, skip: skip, log: steps, round: rounds + 1);
     if (done.isEmpty) break;
     applied.addAll(done);
     results = await design();
@@ -722,13 +764,19 @@ Future<AutoFixReport> runAutoFix(
     for (final a in remaining)
       if (a.autoFixable && (needsDecision(p, a, a.fixes.first, results) || (skip?.call(a, a.fixes.first, results) ?? false))) a,
   ];
-  return AutoFixReport(applied, remaining, results, rounds, decisions: decisions);
+  return AutoFixReport(applied, remaining, results, rounds, decisions: decisions, steps: steps);
 }
 
 // ---------------------------------------------------------------- optimisation
 
 class OptimizeOptions {
-  const OptimizeOptions({this.resizeFixedPipes = false, this.choosePumps = true, this.resizeValves = true});
+  const OptimizeOptions({this.resizeFixedPipes = false, this.choosePumps = true, this.resizeValves = true, this.replay});
+
+  /// 1.6.0 AUT: the changes of an earlier optimisation to make again as
+  /// they are — those the user kept in its review — instead of looking for
+  /// them: no search and no comparison, one design (the caller keeps the
+  /// result).
+  final List<OptimizeChange>? replay;
 
   /// Also let the design choose the pipes whose diameter the user fixed.
   final bool resizeFixedPipes;
@@ -781,11 +829,31 @@ class DesignScore {
   }
 }
 
+// 1.6.0 AUT: every change the optimisation keeps, for the review item by
+// item (the user keeps some and leaves the others out)
+/// One change of [runOptimize]: an identity across runs (`autoSizePipes`,
+/// `lpSizing`, `resizeValve:<valve id>`, `choosePump:<supply id>`), what it
+/// did, and how to make it again on the project as it was before the
+/// optimisation ([apply]: the same assignments, the pump chosen for the
+/// same duties).
+class OptimizeChange {
+  const OptimizeChange(this.id, this.result, this.apply, {this.entityIds = const []});
+  final String id;
+  final FixResult result;
+  final void Function(Project p) apply;
+
+  /// The items it changes (where to look at it in the drawing).
+  final List<String> entityIds;
+}
+
 class OptimizeReport {
-  OptimizeReport(this.before, this.after, this.applied, this.results, {this.rejected = const []});
+  OptimizeReport(this.before, this.after, this.applied, this.results, {this.rejected = const [], this.changes = const []});
   final DesignScore before;
   final DesignScore after;
   final List<FixResult> applied;
+
+  /// The changes of [applied], each to keep or leave out on its own.
+  final List<OptimizeChange> changes;
   final DesignResults? results;
 
   /// Changes tried and taken back because the design came out worse
@@ -829,12 +897,22 @@ Future<OptimizeReport> runOptimize(
 }) async {
   final start = baseline ?? await design();
   final before = DesignScore(start, buildAdvice(p, results: start));
+  // 1.6.0 AUT: the changes the user kept, made again as they were
+  final replay = options.replay;
+  if (replay != null) {
+    for (final ch in replay) {
+      ch.apply(p);
+    }
+    final r = await design();
+    return OptimizeReport(before, DesignScore(r, buildAdvice(p, results: r)), [for (final ch in replay) ch.result], r, changes: replay);
+  }
   var best = before;
   var current = start;
   // whether the controller's last design no longer describes [p] (a step was taken back)
   var stale = false;
   final applied = <FixResult>[], rejected = <FixResult>[];
-  Future<void> step(List<FixResult> Function() change) async {
+  final changes = <OptimizeChange>[];
+  Future<void> step(List<OptimizeChange> Function() change) async {
     final snapshot = p.toJson();
     final made = change();
     if (made.isEmpty) return;
@@ -843,43 +921,68 @@ Future<OptimizeReport> runOptimize(
     if (r != null && score.betterThan(best)) {
       best = score;
       current = r;
-      applied.addAll(made);
+      applied.addAll(made.map((m) => m.result));
+      changes.addAll(made);
       stale = false;
     } else {
       _restore(p, snapshot);
-      rejected.addAll(made);
+      rejected.addAll(made.map((m) => m.result));
       stale = true;
     }
   }
 
   // 1. pipes, sizing method and valves
   await step(() {
-    final made = <FixResult>[];
+    final made = <OptimizeChange>[];
     if (options.resizeFixedPipes) {
-      var n = 0;
+      final ids = <String>[];
       for (final e in p.entities) {
         if (e is PipeEntity && !e.computerSized) {
           e.computerSized = true;
-          n++;
+          ids.add(e.id);
         } else if (e is SpraylineEntity && !e.computerSized) {
           e.computerSized = true;
-          n++;
+          ids.add(e.id);
         }
       }
-      if (n > 0) made.add(FixResult.done('fixed.autoSizePipes', {'n': '$n'}));
+      if (ids.isNotEmpty) {
+        made.add(
+          OptimizeChange('autoSizePipes', FixResult.done('fixed.autoSizePipes', {'n': '${ids.length}'}), (q) {
+            for (final id in ids) {
+              switch (q.byId(id)) {
+                case PipeEntity e:
+                  e.computerSized = true;
+                case SpraylineEntity e:
+                  e.computerSized = true;
+                default:
+                  break;
+              }
+            }
+          }, entityIds: ids),
+        );
+      }
     }
     final params = p.params;
     if (params.sizingMethod != SizingMethod.lp || (params.powerCostPerKwh > 0 && !params.tradeCapitalVsRunning)) {
-      params.sizingMethod = SizingMethod.lp;
-      if (params.powerCostPerKwh > 0) params.tradeCapitalVsRunning = true;
-      made.add(const FixResult.done('fixed.lpSizing'));
+      void lp(Project q) {
+        q.params.sizingMethod = SizingMethod.lp;
+        if (q.params.powerCostPerKwh > 0) q.params.tradeCapitalVsRunning = true;
+      }
+
+      lp(p);
+      made.add(OptimizeChange('lpSizing', const FixResult.done('fixed.lpSizing'), lp));
     }
     if (options.resizeValves && current != null) {
       for (final v in p.entities.whereType<ControlValveEntity>().toList()) {
         final spec = fittingValve(p, current!, v.id);
         if (spec == null) continue;
         v.valveSpecId = spec.id;
-        made.add(FixResult.done('fixed.resizeValve', {'n': spec.name}));
+        final id = v.id, specId = spec.id;
+        made.add(
+          OptimizeChange('resizeValve:$id', FixResult.done('fixed.resizeValve', {'n': spec.name}), (q) {
+            if (q.byId(id) case final ControlValveEntity x) x.valveSpecId = specId;
+          }, entityIds: [id]),
+        );
       }
     }
     return made;
@@ -888,17 +991,24 @@ Future<OptimizeReport> runOptimize(
   if (options.choosePumps && current != null) {
     final r = current!;
     await step(() {
-      final made = <FixResult>[];
+      final made = <OptimizeChange>[];
       for (final s in p.entities.whereType<WaterSupplyEntity>().toList()) {
         final hasPump = p.entities.any((e) => e is PumpEntity && e.scope == HydraulicScope.mainline && e.position.distanceTo(s.position) < 50);
         if (!hasPump) continue;
         final res = choosePumpFor(p, r, s);
-        if (res.ok) made.add(res);
+        if (!res.ok) continue;
+        final id = s.id;
+        made.add(
+          OptimizeChange('choosePump:$id', res, (q) {
+            // the same duties: the same pump
+            if (q.byId(id) case final WaterSupplyEntity x) choosePumpFor(q, r, x);
+          }, entityIds: [id]),
+        );
       }
       return made;
     });
   }
   // the caller's results follow the project as it is left
   if (stale) current = await design();
-  return OptimizeReport(before, best, applied, current, rejected: rejected);
+  return OptimizeReport(before, best, applied, current, rejected: rejected, changes: changes);
 }

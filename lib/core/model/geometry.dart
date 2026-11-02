@@ -2,6 +2,7 @@
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 class Pt {
   const Pt(this.x, this.y);
@@ -116,7 +117,7 @@ double polylineLength(List<Pt> pts) {
 
 /// Signed area (positive when counter-clockwise). An outline that crosses
 /// itself (a "bow tie") adds its loops with opposite signs: see
-/// [polygonSelfCrossing].
+/// [polygonSelfCrossings].
 double polygonArea(List<Pt> pts) {
   if (pts.length < 3) return 0;
   var a = 0.0;
@@ -127,63 +128,203 @@ double polygonArea(List<Pt> pts) {
   return a / 2;
 }
 
-/// The first place where the closed outline [poly] crosses itself: edges
-/// i < j (edge k runs from vertex k to the next) that are not neighbours
-/// and the crossing point; null for a simple polygon. A sweep over the
-/// edges sorted by x keeps large outlines fast.
-(int, int, Pt)? polygonSelfCrossing(List<Pt> poly) {
-  var pts = poly;
-  if (pts.length > 1 && pts.first == pts.last) pts = pts.sublist(0, pts.length - 1);
-  final n = pts.length;
-  if (n < 4) return null;
-  final order = List<int>.generate(n, (i) => i)..sort((a, b) => math.min(pts[a].x, pts[(a + 1) % n].x).compareTo(math.min(pts[b].x, pts[(b + 1) % n].x)));
-  (int, int, Pt)? best;
-  for (var u = 0; u < n; u++) {
-    final i = order[u];
-    final a = pts[i], b = pts[(i + 1) % n];
-    final maxX = math.max(a.x, b.x);
-    for (var v = u + 1; v < n; v++) {
-      final j = order[v];
-      final c = pts[j], d = pts[(j + 1) % n];
-      if (math.min(c.x, d.x) > maxX) break;
-      final lo = math.min(i, j), hi = math.max(i, j);
-      if (hi - lo == 1 || (lo == 0 && hi == n - 1)) continue;
-      final x = segmentIntersection(a, b, c, d);
-      if (x == null) continue;
-      if (best == null || lo < best.$1 || (lo == best.$1 && hi < best.$2)) best = (lo, hi, x);
+/// [poly] without repeated or non-finite vertices nor a closing vertex equal
+/// to the first one, turned counter-clockwise (or clockwise when [ccw] is
+/// false).
+List<Pt> normalizePolygon(List<Pt> poly, {bool ccw = true}) {
+  final out = <Pt>[];
+  for (final p in poly) {
+    if (!p.x.isFinite || !p.y.isFinite) continue;
+    if (out.isNotEmpty && out.last.distanceTo(p) < 1e-9) continue;
+    out.add(p);
+  }
+  while (out.length > 1 && out.first.distanceTo(out.last) < 1e-9) {
+    out.removeLast();
+  }
+  if (out.length < 3) return out;
+  final a = polygonArea(out);
+  return (a < 0) == ccw ? out.reversed.toList() : out;
+}
+
+/// Grid buckets of segments, about one segment a cell, for the crossing
+/// searches of long outlines and offsets: [keys] gives the cells a segment
+/// covers.
+class _SegmentBuckets {
+  _SegmentBuckets(List<Pt> pts, double meanLength) : b = Bounds.ofPoints(pts) {
+    cell = math.max(meanLength, math.max(b.width, b.height) / 1024) + 1e-12;
+  }
+  final Bounds b;
+  late final double cell;
+  final cells = <int, List<int>>{};
+
+  static int _key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
+
+  Iterable<int> keys(Pt a, Pt c) sync* {
+    final x0 = ((math.min(a.x, c.x) - b.minX) / cell).floor(), x1 = ((math.max(a.x, c.x) - b.minX) / cell).floor();
+    final y0 = ((math.min(a.y, c.y) - b.minY) / cell).floor(), y1 = ((math.max(a.y, c.y) - b.minY) / cell).floor();
+    for (var ix = x0; ix <= x1; ix++) {
+      for (var iy = y0; iy <= y1; iy++) {
+        yield _key(ix, iy);
+      }
     }
+  }
+
+  void add(int segment, Pt a, Pt c) {
+    for (final k in keys(a, c)) {
+      (cells[k] ??= []).add(segment);
+    }
+  }
+}
+
+/// Where the closed outline [poly] crosses or touches itself: pairs of
+/// edges i < j that do not follow each other — edge k runs from vertex k of
+/// [poly] to the next one; repeated vertices count once, as their last
+/// copy, and a closing vertex equal to the first is the first — with the
+/// point where they meet: a proper crossing, a vertex resting on another
+/// edge, a vertex passed twice or a collinear overlap (an outline drawn by
+/// hand with a grip dragged across another side, or read from a file, may
+/// have them all). Empty for a simple polygon. The edges are bucketed on a
+/// grid, so long outlines are cheap. The one detector of the program:
+/// [polygonSelfCrossings], [polygonSelfCrossing], [simplePolygonParts] and
+/// [splitSelfIntersecting] are built on it.
+List<(int, int, Pt)> polygonSelfCrossingEdges(List<Pt> poly) {
+  // the distinct vertices, each with the index of its last copy in [poly]
+  final p = <Pt>[];
+  final at = <int>[];
+  for (var k = 0; k < poly.length; k++) {
+    final q = poly[k];
+    if (!q.x.isFinite || !q.y.isFinite) continue;
+    if (p.isNotEmpty && p.last.distanceTo(q) < 1e-9) {
+      at[at.length - 1] = k;
+      continue;
+    }
+    p.add(q);
+    at.add(k);
+  }
+  while (p.length > 1 && p.first.distanceTo(p.last) < 1e-9) {
+    p.removeLast();
+    at.removeLast();
+  }
+  final n = p.length;
+  if (n < 4) return const [];
+  final buckets = _SegmentBuckets(p, polylineLength([...p, p.first]) / n);
+  final scale = math.max(buckets.b.width, buckets.b.height);
+  final eps = math.max(1e-9, scale * 1e-9);
+  for (var i = 0; i < n; i++) {
+    buckets.add(i, p[i], p[(i + 1) % n]);
+  }
+  final out = <(int, int, Pt)>[];
+  for (var i = 0; i < n; i++) {
+    final a = p[i], c = p[(i + 1) % n];
+    final seen = <int>{};
+    for (final k in buckets.keys(a, c)) {
+      for (final j in buckets.cells[k] ?? const <int>[]) {
+        if (j <= i || !seen.add(j)) continue;
+        // neighbouring edges share a vertex: that is no crossing
+        if (j == i + 1 || (i == 0 && j == n - 1)) continue;
+        final x = segmentIntersection(a, c, p[j], p[(j + 1) % n], eps: 1e-12);
+        if (x != null) {
+          out.add((at[i], at[j], x));
+        } else if (distanceToSegment(p[j], a, c) <= eps || distanceToSegment(a, p[j], p[(j + 1) % n]) <= eps) {
+          // collinear overlap or a vertex resting on another edge
+          out.add((at[i], at[j], distanceToSegment(p[j], a, c) <= eps ? p[j] : a));
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/// The points where the closed polygon [poly] crosses or touches itself
+/// (see [polygonSelfCrossingEdges]); empty for a simple polygon.
+List<Pt> polygonSelfCrossings(List<Pt> poly) => [for (final x in polygonSelfCrossingEdges(poly)) x.$3];
+
+/// The first place where the closed outline [poly] crosses itself: the
+/// edges i < j (edge k runs from vertex k to the next) and the point, the
+/// pair with the lowest i (then the lowest j) of [polygonSelfCrossingEdges];
+/// null for a simple polygon.
+(int, int, Pt)? polygonSelfCrossing(List<Pt> poly) {
+  (int, int, Pt)? best;
+  for (final x in polygonSelfCrossingEdges(poly)) {
+    if (best == null || x.$1 < best.$1 || (x.$1 == best.$1 && x.$2 < best.$2)) best = x;
   }
   return best;
 }
 
-/// [poly] cut at its self-crossings into simple rings (a bow tie into its
-/// two triangles, a figure eight into its two loops), without the slivers
-/// of no area; the polygon itself when it is simple.
-List<List<Pt>> splitSelfIntersecting(List<Pt> poly, {double minArea = 1e-6}) {
-  var start = poly;
-  if (start.length > 1 && start.first == start.last) start = start.sublist(0, start.length - 1);
-  final out = <List<Pt>>[];
-  final todo = <List<Pt>>[start];
-  var guard = 0;
-  while (todo.isNotEmpty && guard++ < 10000) {
-    final r = todo.removeLast();
-    final cross = polygonSelfCrossing(r);
-    if (cross == null) {
-      if (r.length >= 3 && polygonArea(r).abs() > minArea) out.add(r);
+/// The simple loops a self-crossing outline [poly] encloses: walking it,
+/// each time it comes back to a crossing (or to a vertex it passed) the
+/// loop since then is cut off. Every part is counter-clockwise; a simple
+/// polygon comes back as itself (normalised). A bow tie gives its two
+/// triangles, a figure of eight its two rings.
+List<List<Pt>> simplePolygonParts(List<Pt> poly) {
+  final base = normalizePolygon(poly);
+  if (base.length < 3) return const [];
+  if (polygonSelfCrossingEdges(base).isEmpty) return [base];
+  final p = <Pt>[];
+  for (final q in poly) {
+    if (!q.x.isFinite || !q.y.isFinite) continue;
+    if (p.isNotEmpty && p.last.distanceTo(q) < 1e-9) continue;
+    p.add(q);
+  }
+  while (p.length > 1 && p.first.distanceTo(p.last) < 1e-9) {
+    p.removeLast();
+  }
+  final n = p.length;
+  final b = Bounds.ofPoints(p);
+  final eps = math.max(1e-9, math.max(b.width, b.height) * 1e-9);
+  // every edge with the points where other edges cross it, in order
+  final cuts = [for (var i = 0; i < n; i++) <(double, Pt)>[]];
+  for (var i = 0; i < n; i++) {
+    final a = p[i], c = p[(i + 1) % n];
+    for (var j = i + 2; j < n; j++) {
+      if (i == 0 && j == n - 1) continue;
+      final d0 = p[j], d1 = p[(j + 1) % n];
+      final x = segmentIntersection(a, c, d0, d1, eps: 1e-12);
+      if (x == null) continue;
+      final r = c - a, s = d1 - d0;
+      final ti = r.length > 0 ? (x - a).dot(r) / r.dot(r) : 0.0, tj = s.length > 0 ? (x - d0).dot(s) / s.dot(s) : 0.0;
+      if (ti > 1e-9 && ti < 1 - 1e-9) cuts[i].add((ti, x));
+      if (tj > 1e-9 && tj < 1 - 1e-9) cuts[j].add((tj, x));
+    }
+  }
+  final seq = <Pt>[
+    for (var i = 0; i < n; i++) ...[p[i], ...(cuts[i]..sort((x, y) => x.$1.compareTo(y.$1))).map((c) => c.$2)],
+  ];
+  // the walk: a point met again closes the loop since it was first met
+  final parts = <List<Pt>>[];
+  final stack = <Pt>[];
+  int? onStack(Pt q) {
+    for (var k = stack.length - 1; k >= 0; k--) {
+      if (stack[k].distanceTo(q) <= eps * 10) return k;
+    }
+    return null;
+  }
+
+  for (final q in [...seq, seq.first]) {
+    final k = onStack(q);
+    if (k != null) {
+      final loop = stack.sublist(k);
+      stack.removeRange(k + 1, stack.length);
+      if (loop.length >= 3) parts.add(loop);
       continue;
     }
-    final (i, j, x) = cross;
-    // a crossing on a vertex would repeat it: consecutive repeats dropped
-    List<Pt> ring(List<Pt> pts) => [
-      for (var k = 0; k < pts.length; k++)
-        if (pts[k].distanceTo(pts[(k + 1) % pts.length]) > 1e-9) pts[k],
-    ];
-    todo
-      ..add(ring([...r.sublist(0, i + 1), x, ...r.sublist(j + 1)]))
-      ..add(ring([x, ...r.sublist(i + 1, j + 1)]));
+    stack.add(q);
   }
-  return out.reversed.toList();
+  if (stack.length >= 3) parts.add(List.of(stack));
+  return [
+    for (final part in parts)
+      if (normalizePolygon(part) case final q when q.length >= 3 && polygonArea(q).abs() > eps) q,
+  ];
 }
+
+/// [poly] cut at its self-crossings into simple rings (a bow tie into its
+/// two triangles, a figure eight into its two loops; see
+/// [simplePolygonParts]), without the slivers of [minArea] m² or less; the
+/// polygon itself when it is simple.
+List<List<Pt>> splitSelfIntersecting(List<Pt> poly, {double minArea = 1e-6}) => [
+  for (final r in simplePolygonParts(poly))
+    if (polygonArea(r).abs() > minArea) r,
+];
 
 Pt polygonCentroid(List<Pt> pts) {
   if (pts.isEmpty) return Pt.zero;
@@ -281,72 +422,152 @@ List<List<Pt>> splitPolylineAt(List<Pt> pts, List<double> distances) {
   return pieces.where((p) => polylineLength(p) > 1e-9).toList();
 }
 
-/// Offsets a polyline laterally by [d] (positive = left of direction).
+/// How [offsetPolyline] turns the outer side of a bend sharper than its
+/// mitre limit.
+enum OffsetJoin {
+  /// Cut by two vertices (a bevel), as drafting offsets do.
+  bevel,
+
+  /// An arc of the offset distance round the vertex (every 15° at most), so
+  /// every point of the copy stays that far from the line: laterals and
+  /// rows of heads along a guide.
+  round,
+}
+
+/// What [offsetPolyline] had to change in a copy that could not follow its
+/// line as it is: outer corners bevelled or rounded, loops cut off (the
+/// offset goes past the radius of a bend, or two arms of a U offset past
+/// each other).
+class OffsetReport {
+  int corners = 0;
+  int loops = 0;
+  bool get changed => corners > 0 || loops > 0;
+}
+
+/// Offsets a polyline laterally by [d] (positive = left of direction): the
+/// one offset of the program (the Offset command, guided blocks of
+/// laterals, fairways and corridors).
 ///
 /// Each vertex goes to where its two offset segments meet (a mitre). On
 /// the outer side of a turn sharper than the mitre allows (a mitre longer
-/// than [miterLimit] × |d|) the corner is cut by two vertices (a bevel)
-/// instead of shooting out; on the inner side of a turn tighter than |d|
-/// the offset segments cross each other, and the loops that leaves (no
-/// longer than 4·|d|) are cut off, so the line never runs back over
-/// itself. Repeated vertices are dropped first (they have no direction).
-List<Pt> offsetPolyline(List<Pt> pts, double d, {double miterLimit = 2.5}) {
-  final p = <Pt>[];
-  for (final q in pts) {
-    if (p.isEmpty || p.last.distanceTo(q) > 1e-12) p.add(q);
-  }
+/// than [miterLimit] × |d|) the corner is cut by two vertices or rounded by
+/// an arc ([join]) instead of shooting out; on the inner side of such a
+/// turn both offset ends are kept and the loop they make goes below. The
+/// loops a copy makes inside bends tighter than |d| (or where two arms of a
+/// U offset past each other) are then cut out where the copy crosses
+/// itself, so it never runs back over itself — only those no longer than
+/// 4·|d| when the line itself crosses itself (its own crossings stay).
+/// Repeated vertices are dropped first (they have no direction). [report]
+/// counts the corners and loops changed.
+List<Pt> offsetPolyline(List<Pt> pts, double d, {double miterLimit = 2.5, OffsetJoin join = OffsetJoin.bevel, OffsetReport? report}) {
+  final p = <Pt>[
+    for (var i = 0; i < pts.length; i++)
+      if (i == 0 || pts[i].distanceTo(pts[i - 1]) > 1e-9) pts[i],
+  ];
   if (p.length < 2) return List.of(pts);
-  final out = <Pt>[];
-  for (var i = 0; i < p.length; i++) {
-    if (i == 0 || i == p.length - 1) {
-      final u = i == 0 ? p[1] - p[0] : p[i] - p[i - 1];
-      out.add(p[i] + u.normalized.perpendicular * d);
+  if (d == 0) return p;
+  final out = <Pt>[p.first + (p[1] - p.first).normalized.perpendicular * d];
+  for (var i = 1; i + 1 < p.length; i++) {
+    final e1 = (p[i] - p[i - 1]).normalized, e2 = (p[i + 1] - p[i]).normalized;
+    final n1 = e1.perpendicular, n2 = e2.perpendicular;
+    final m = n1 + n2;
+    final c = m.length / 2; // cosine of half the turn
+    if (c >= 1e-9 && 1 / c <= miterLimit) {
+      out.add(p[i] + m.normalized * (d / c));
       continue;
     }
-    final u1 = (p[i] - p[i - 1]).normalized, u2 = (p[i + 1] - p[i]).normalized;
-    final n1 = u1.perpendicular, n2 = u2.perpendicular;
-    final sum = n1 + n2;
-    // |n1 + n2| = 2·cos(θ/2) for a turn of θ
-    final cosHalf = sum.length / 2;
-    final outer = u1.cross(u2) * d < 0;
-    // inside the turn the mitre cuts |d|·tan(θ/2) off both segments: more
-    // than one of them is long and it would land beyond its far end
-    final sinHalf = math.sqrt(math.max(0.0, 1 - cosHalf * cosHalf));
-    final trim = cosHalf > 1e-9 ? d.abs() * sinHalf / cosHalf : double.infinity;
-    final tooShort = !outer && trim > math.min(p[i].distanceTo(p[i - 1]), p[i].distanceTo(p[i + 1]));
-    if (cosHalf < 1e-9 || (outer && 1 / cosHalf > miterLimit) || tooShort) {
+    final turn = math.atan2(e1.cross(e2), e1.dot(e2));
+    if (d * turn < 0) {
+      // outer side: a bevel, or an arc of radius |d| round the vertex
+      report?.corners++;
+      if (join == OffsetJoin.round) {
+        final a0 = (n1 * d).angle;
+        final steps = math.max(2, (turn.abs() / (math.pi / 12)).ceil());
+        for (var k = 0; k <= steps; k++) {
+          out.add(p[i] + Pt.polar(d.abs(), a0 + turn * k / steps));
+        }
+      } else {
+        out
+          ..add(p[i] + n1 * d)
+          ..add(p[i] + n2 * d);
+      }
+    } else {
+      // inner side: the two offsets cross, the loop goes below
       out
         ..add(p[i] + n1 * d)
         ..add(p[i] + n2 * d);
-    } else {
-      out.add(p[i] + sum.normalized * (d / cosHalf));
     }
   }
-  return _withoutOffsetLoops(out, 4 * d.abs());
+  out.add(p.last + (p.last - p[p.length - 2]).normalized.perpendicular * d);
+  return withoutPolylineLoops(out, maxLength: polylineSelfCrosses(p) ? 4 * d.abs() : null, report: report);
 }
 
-/// [pts] without the loops (a path of at most [maxLength] between two of
-/// its segments that cross) an offset leaves inside tight turns.
-List<Pt> _withoutOffsetLoops(List<Pt> pts, double maxLength) {
-  var l = pts;
-  for (var guard = 0; guard < 1000; guard++) {
-    (int, int, Pt)? cut;
-    for (var i = 0; i + 1 < l.length && cut == null; i++) {
-      var run = 0.0;
-      for (var j = i + 2; j + 1 < l.length; j++) {
-        run += l[j - 1].distanceTo(l[j]);
-        if (run > maxLength) break;
-        final x = segmentIntersection(l[i], l[i + 1], l[j], l[j + 1]);
-        if (x != null) {
-          cut = (i, j, x);
-          break;
-        }
+/// Whether the open polyline [pts] crosses itself (two segments that do not
+/// follow each other meet).
+bool polylineSelfCrosses(List<Pt> pts) {
+  final n = pts.length;
+  if (n < 4) return false;
+  final buckets = _SegmentBuckets(pts, polylineLength(pts) / (n - 1));
+  for (var s = 1; s < n; s++) {
+    buckets.add(s, pts[s - 1], pts[s]);
+  }
+  for (var i = 1; i < n; i++) {
+    final seen = <int>{};
+    for (final k in buckets.keys(pts[i - 1], pts[i])) {
+      for (final j in buckets.cells[k] ?? const <int>[]) {
+        if (j <= i + 1 || !seen.add(j)) continue;
+        if (segmentIntersection(pts[i - 1], pts[i], pts[j - 1], pts[j], eps: 1e-12) != null) return true;
       }
     }
-    if (cut == null) return l;
-    l = [...l.sublist(0, cut.$1 + 1), cut.$3, ...l.sublist(cut.$2 + 1)];
   }
-  return l;
+  return false;
+}
+
+/// [pts] without the loops of a self-crossing copy (the swallowtail an
+/// offset on the inner side of a sharp bend makes, or two arms of a U
+/// offset past each other): where a segment crosses later ones, the
+/// vertices up to the last one it crosses are dropped and the crossing
+/// joins the two parts. With [maxLength], only loops of at most that length
+/// between the two segments go. [report] counts the loops cut.
+List<Pt> withoutPolylineLoops(List<Pt> pts, {double? maxLength, OffsetReport? report}) {
+  var cur = pts;
+  for (var guard = 0; guard < 256; guard++) {
+    final n = cur.length;
+    if (n < 4) return cur;
+    // the path length to every vertex, for [maxLength]
+    final along = Float64List(n);
+    for (var s = 1; s < n; s++) {
+      along[s] = along[s - 1] + cur[s - 1].distanceTo(cur[s]);
+    }
+    final buckets = _SegmentBuckets(cur, along[n - 1] / (n - 1));
+    for (var s = 1; s < n; s++) {
+      buckets.add(s, cur[s - 1], cur[s]);
+    }
+    // the first segment that crosses a later one, and the last one it crosses
+    var cutI = -1, cutJ = -1;
+    Pt? at;
+    for (var i = 1; i < n && cutI < 0; i++) {
+      final a = cur[i - 1], c = cur[i];
+      final seen = <int>{};
+      for (final k in buckets.keys(a, c)) {
+        for (final j in buckets.cells[k] ?? const <int>[]) {
+          if (j <= i + 1 || !seen.add(j)) continue;
+          if (maxLength != null && along[j - 1] - along[i] > maxLength) continue;
+          final x = segmentIntersection(a, c, cur[j - 1], cur[j], eps: 1e-12);
+          if (x == null) continue;
+          if (j > cutJ) {
+            cutJ = j;
+            at = x;
+          }
+        }
+      }
+      if (cutJ > 0) cutI = i;
+    }
+    if (cutI < 0 || at == null) return cur;
+    report?.loops++;
+    cur = [...cur.sublist(0, cutI), at, ...cur.sublist(cutJ)];
+  }
+  return cur;
 }
 
 double degToRad(double d) => d * math.pi / 180;

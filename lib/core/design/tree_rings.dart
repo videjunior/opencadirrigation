@@ -20,6 +20,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import 'auto_layout.dart';
 import 'block_generator.dart' show SubmainPosition;
+import 'routing.dart' show DetourPlanner;
 
 /// What waters the tree.
 enum RingKind {
@@ -134,7 +135,9 @@ class TreeRingLayout {
 
   /// Codes: `rings_no_trees`, `rings_overlap` (rings of neighbouring trees
   /// touch: radius at least half the plant spacing), `rings_row_gap:<row>`
-  /// (a lateral crosses ground outside the area between two trees).
+  /// (a lateral crosses ground outside the area or an exclusion between two
+  /// trees and no way round was found), `rings_detour:<row>` (the lateral
+  /// goes round an exclusion or a notch of the area instead).
   final List<String> messages;
 
   int get dripperCount => rings.fold(0, (s, r) => s + r.drippers.length);
@@ -263,6 +266,9 @@ TreeRingLayout layoutTreeRings({List<Pt>? area, List<Pt>? trees, required TreeRi
     }
   }
   final region = area != null ? LayoutRegion(area, exclusions: o.exclusions) : null;
+  // 1.6.0 AUT (AUT-19): a lateral that would cross an exclusion (a pond, a
+  // well) or leave the area between two trees goes round instead
+  final detours = region != null || o.exclusions.isNotEmpty ? DetourPlanner(o.exclusions, margin: math.max(0.3, r), boundary: area) : null;
   // the feed of every row: the start of the row (or its end, or its middle)
   var uMin = double.infinity, uMax = -double.infinity;
   for (final t in all) {
@@ -308,14 +314,24 @@ TreeRingLayout layoutTreeRings({List<Pt>? area, List<Pt>? trees, required TreeRi
         if (e.length < 1e-9) e = run.length > 1 ? run.last - run.first : dir;
         e = e.normalized;
         final upstream = c - e * r, downstream = c + e * r;
+        var gap = false;
+        if (detours != null && !detours.isEmpty && detours.blocked(lateral.last, upstream)) {
+          final way = detours.path(lateral.last, upstream);
+          if (way == null || way.length < 2) {
+            gap = true;
+          } else {
+            lateral.addAll(way.sublist(1, way.length - 1));
+            if (!messages.contains('rings_detour:$k')) messages.add('rings_detour:$k');
+          }
+        } else if (region != null && i > 0) {
+          final mid = Pt.lerp(run[i - 1], c, 0.5);
+          gap = !region.contains(mid);
+        }
+        if (gap && !messages.contains('rings_row_gap:$k')) messages.add('rings_row_gap:$k');
         lateral
           ..add(upstream)
           ..add(downstream);
         rings.add(_ring(c, e, r, k, o));
-        if (region != null && i > 0) {
-          final mid = Pt.lerp(run[i - 1], c, 0.5);
-          if (!region.contains(mid) && !messages.contains('rings_row_gap:$k')) messages.add('rings_row_gap:$k');
-        }
       }
       laterals.add(_dedupe(lateral));
     }

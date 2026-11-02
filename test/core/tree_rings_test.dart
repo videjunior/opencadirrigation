@@ -120,9 +120,14 @@ void main() {
 
   test('rings that touch and rows that leave the area are reported', () {
     expect(layoutTreeRings(area: _rect(0, 0, 20, 10), options: TreeRingOptions(plantSpacing: 2, rowSpacing: 4, ringRadius: 1.2)).messages, contains('rings_overlap'));
+    // 1.6.0 AUT (AUT-19): a row cut by a notch of the area goes round it
+    // inside the area; only where no way round exists the gap is reported
     const u = [Pt(0, 0), Pt(40, 0), Pt(40, 20), Pt(28, 20), Pt(28, 8), Pt(12, 8), Pt(12, 20), Pt(0, 20)];
     final t = layoutTreeRings(area: u, options: TreeRingOptions(plantSpacing: 4, rowSpacing: 5));
-    expect(t.messages.any((m) => m.startsWith('rings_row_gap:')), isTrue);
+    expect(t.messages.any((m) => m.startsWith('rings_detour:')), isTrue);
+    expect(t.messages.any((m) => m.startsWith('rings_row_gap:')), isFalse);
+    final cut = layoutTreeRings(area: _rect(0, 0, 60, 20), options: TreeRingOptions(plantSpacing: 6, rowSpacing: 8, exclusions: [_rect(25, -5, 35, 25)]));
+    expect(cut.messages.any((m) => m.startsWith('rings_row_gap:')), isTrue, reason: 'a ditch across the whole field: no way round inside it');
     expect(layoutTreeRings(area: const [Pt(0, 0), Pt(1, 0), Pt(0, 1)], options: TreeRingOptions()).messages, ['rings_no_trees']);
   });
 }
