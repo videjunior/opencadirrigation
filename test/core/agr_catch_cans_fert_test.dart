@@ -131,9 +131,17 @@ void main() {
     });
 
     test('a tomato hectare: the doses split by the water use of each stage', () {
-      final a = AreaEntity(id: 'a', points: hectare, useWaterBalance: true, cropKey: 'crop.tomato', etoMmDay: 5);
+      // the table's Kc ini (0.6): irrigated every 12 days from planting
+      final a = AreaEntity(id: 'a', points: hectare, useWaterBalance: true, cropKey: 'crop.tomato', etoMmDay: 5, climateKc: false);
       final p = Project(entities: [a]);
       final plan = FertigationStagePlan(doseKgHa: [100, 52, 60]);
+      // with Kc ini from the wetting of the initial stage (AGR-09, the
+      // default) the 36 mm of RAW outlast the 30 days of the stage: no
+      // irrigation carries its share, and the plan says so
+      final wetting = AreaEntity(id: 'w', points: hectare, useWaterBalance: true, cropKey: 'crop.tomato', etoMmDay: 5);
+      final dry = fertigationSchedule(Project(entities: [wetting]), wetting, plan: plan)!;
+      expect(dry.stages.first.irrigations, 0);
+      expect(dry.warnings, ['fert_stage_no_irrigation:initial']);
       final s = fertigationSchedule(p, a, plan: plan)!;
       expect(s.areaHa, closeTo(1, 1e-9));
       expect(s.stages.map((x) => x.stage), [0, 1, 2, 3]);
