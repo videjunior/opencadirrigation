@@ -12,6 +12,7 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/i18n.dart';
+import 'package:opencadirrigation/core/design/block_generator.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/results.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
@@ -47,6 +48,30 @@ void _expectSame(Map<String, num> a, Map<String, num> b, String reason) {
 }
 
 Project _copy(Project p) => Project.fromJson(jsonDecode(jsonEncode(p.toJson())) as Map<String, dynamic>);
+
+/// [p] with every pipe, tape and sprayline drawn the other way round (the
+/// outlets of a sprayline stay where they were: its first outlet is then as
+/// far from the new start as its last one was from the old end).
+Project _reversed(Project p) {
+  final q = _copy(p);
+  for (final e in q.entities) {
+    switch (e) {
+      case PipeEntity l:
+        l.points = l.points.reversed.toList();
+      case TapeEntity l:
+        l.points = l.points.reversed.toList();
+      case SpraylineEntity s:
+        final n = s.outletCount;
+        final rest = s.length - (s.firstOutletDistance + (n - 1) * s.spacing);
+        if (n < 1 || rest <= 1e-9) continue;
+        s.points = s.points.reversed.toList();
+        s.offset = rest;
+      default:
+        break;
+    }
+  }
+  return q;
+}
 
 Project _moved(Project p, Pt by) {
   final q = _copy(p);
@@ -85,14 +110,83 @@ void main() {
       _expectSame(base, _figures(design(_copy(original))), 'saved and reopened');
       _expectSame(base, _figures(design(_moved(original, const Pt(1234.5, -987.25)))), 'moved');
       _expectSame(base, _figures(design(_moved(original, const Pt(523456.789, 7456789.123)))), 'moved to UTM coordinates');
-      final reversed = _copy(original);
-      for (final e in reversed.entities) {
-        if (e is PipeEntity) e.points = e.points.reversed.toList();
-      }
-      _expectSame(base, _figures(design(reversed)), 'pipes drawn the other way round');
+      _expectSame(base, _figures(design(_reversed(original))), 'pipes, tapes and spraylines drawn the other way round');
       for (final lang in ['pt', 'ar']) {
         final other = Designer(buildExample(id, I18n(lang).call, lang: lang), label: (k) => I18n(lang)(k)).designAll();
         _expectSame(_figures(design(_copy(original)), costs: false), _figures(other, costs: false), 'language $lang');
+      }
+    });
+  }
+
+  // MOT-02: the inlet pressure of a tape was read at the first emitter as
+  // drawn, the far end of a tape drawn from the edge of the field towards
+  // its submain (the valve went from 19.5 m to 42.2 m, the flow from 12.8 to
+  // 19.3 m³/h, the class of 14 tapes exceeded); the open end of the
+  // flushing landed next to the submain
+  for (final (name, tape, slope) in [('tapes', true, 0.0), ('spraylines', false, 0.0), ('tapes on a slope', true, 3.0)]) {
+    test('$name drawn towards their submain: the same zone, the same flushing', () {
+      Project block() {
+        final p = Project();
+        final poly = [const Pt(0, 0), const Pt(100, 0), const Pt(100, 30), const Pt(0, 30)];
+        final b = generateBlock(
+          p,
+          BlockOptions(
+            polygon: poly,
+            direction: const Pt(1, 0),
+            lateralSpacing: tape ? 1.5 : 4,
+            isTape: tape,
+            tapeSpecId: 'tape16_16_20',
+            tapeInletHeadM: 8,
+            outletSpecId: 'micro',
+            nozzleId: 'm50',
+            outletSpacing: 3.5,
+            headM: 15,
+            submainPosition: SubmainPosition.start,
+            valveSpecId: 'ev50',
+            valvePosition: ValvePosition.centre,
+            submainStub: 1.5,
+            zoneName: 'Z',
+          ),
+        );
+        p.entities.addAll(b.all);
+        final valve = b.valve!;
+        final supplyPos = valve.position + const Pt(-100, 0);
+        p.entities.add(PipeEntity(id: 'main', points: [supplyPos, valve.position], scope: HydraulicScope.mainline, name: 'Main'));
+        p.entities.add(WaterSupplyEntity(id: 'tank', position: supplyPos, name: 'Tank', calculatePressure: true, designHeadM: 0, waterLevelOffsetM: 0));
+        for (final (x, y) in [(-200.0, -200.0), (300.0, -200.0), (-200.0, 300.0), (300.0, 300.0)]) {
+          p.entities.add(SpotHeightEntity(id: p.newId(), position: Pt(x, y), elevation: 100 - slope / 100 * x));
+        }
+        return p;
+      }
+
+      final p = block();
+      final laterals = p.entities.where((e) => e is TapeEntity || e is SpraylineEntity).length;
+      expect(laterals, greaterThan(5));
+      final drawnBack = _reversed(p);
+      // only the laterals: the submain and the mainline as they were
+      for (final e in drawnBack.entities.whereType<PipeEntity>()) {
+        e.points = e.points.reversed.toList();
+      }
+      expect(drawnBack.entities.whereType<TapeEntity>().every((t) => t.points.first.x > t.points.last.x) || !tape, isTrue);
+      for (final analyse in [true, false]) {
+        DesignResults run(Project q) => analyse ? Designer(_copy(q)).analyzeAll() : Designer(_copy(q)).designAll();
+        final a = run(p), b = run(drawnBack);
+        _expectSame(_figures(a), _figures(b), analyse ? 'analysed' : 'designed');
+        if (tape) {
+          expect(b.flushing, hasLength(1));
+          expect(b.flushing.single.flow, closeTo(a.flushing.single.flow, 1e-6 * a.flushing.single.flow));
+          expect(b.flushing.single.requiredUpstreamHead, closeTo(a.flushing.single.requiredUpstreamHead, 1e-6 * math.max(1, a.flushing.single.requiredUpstreamHead)));
+        }
+        // the outlet results still go by the outlets as drawn: the group of
+        // the first outlet of a line is the one at its start
+        final za = a.zones.values.single, zb = b.zones.values.single;
+        for (final id in {for (final o in za.outlets) o.entityId}) {
+          final ra = za.outlets.where((o) => o.entityId == id).toList()..sort((x, y) => x.index.compareTo(y.index));
+          final rb = zb.outlets.where((o) => o.entityId == id).toList()..sort((x, y) => x.index.compareTo(y.index));
+          expect(rb.length, ra.length, reason: id);
+          expect(rb.first.index, 0, reason: id);
+          expect(rb.last.pressure, closeTo(ra.first.pressure, 1e-6 * math.max(1, ra.first.pressure.abs())), reason: '$id: the inlet group is now the last as drawn');
+        }
       }
     });
   }

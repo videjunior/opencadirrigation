@@ -17,7 +17,6 @@ import 'package:opencadirrigation/core/hydraulics/network.dart';
 import 'package:opencadirrigation/core/hydraulics/pump.dart';
 import 'package:opencadirrigation/core/io/catalog_io.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
-import 'package:opencadirrigation/core/model/catalog_packs.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';

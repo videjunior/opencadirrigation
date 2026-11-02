@@ -682,7 +682,8 @@ class Designer {
       if (head == null) continue;
       for (final e in n.emitters) {
         if (e.index == -2) continue; // flushing
-        if (e.index != 0 && _isTape(e.entityId)) continue;
+        // a tape by the pressure at its inlet (whichever way it was drawn)
+        if (!e.inlet && _isTape(e.entityId)) continue;
         final p = head - (n.elevation + e.offset);
         sumActual += p * e.count;
         sumNominal += e.nominalHead * e.count;

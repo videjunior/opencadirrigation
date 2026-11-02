@@ -25,11 +25,18 @@ class EmitterRef {
     required this.cv,
     this.offset = 0,
     this.label = '',
+    this.inlet = false,
   });
   final String entityId;
 
-  /// Outlet index within a sprayline/tape (−1 for single outlets).
+  /// Outlet index within a sprayline/tape (−1 for single outlets), counted
+  /// from the start of the line as drawn.
   final int index;
+
+  /// The group of outlets of a sprayline or tape next to its inlet (the end
+  /// joined to the submain, whichever way the line was drawn): its pressure
+  /// is the inlet pressure of a tape.
+  final bool inlet;
   final EmitterCurve curve;
   final int count;
   final double nominalHead;
@@ -236,7 +243,10 @@ class NetworkBuilder {
     // its segments (a scan of every segment made the build quadratic)
     final boxes = [for (final e in linear) _bounds(ptsOf(e))];
     final margin = 2 * tol + 1e-6;
-    void requestSplit(Pt p, Iterable<HydraulicScope> scopes, {String? exclude}) {
+    // Whether [p] lies on a pipe (not a lateral) of [scopes] other than
+    // [exclude]: the end of a lateral joined to its submain.
+    bool requestSplit(Pt p, Iterable<HydraulicScope> scopes, {String? exclude}) {
+      var onPipe = false;
       for (var k = 0; k < linear.length; k++) {
         final e = linear[k];
         if (e.id == exclude) continue;
@@ -246,12 +256,15 @@ class NetworkBuilder {
         final pts = ptsOf(e);
         for (var i = 1; i < pts.length; i++) {
           final (cp, t) = closestPointOnSegment(p, pts[i - 1], pts[i]);
-          if (cp.distanceTo(p) <= tol && t > 1e-9 && t < 1 - 1e-9) {
+          if (cp.distanceTo(p) > tol) continue;
+          if (e is PipeEntity) onPipe = true;
+          if (t > 1e-9 && t < 1 - 1e-9) {
             // not at a vertex: split
             if (pts[i - 1].distanceTo(p) > tol && pts[i].distanceTo(p) > tol) splitRequests[e.id]!.add(cp);
           }
         }
       }
+      return onPipe;
     }
 
     for (final e in project.entities) {
@@ -274,11 +287,34 @@ class NetworkBuilder {
           break;
       }
     }
+    // Items a lateral may start from (its inlet): valves, junctions, devices.
+    final feeders = <HydraulicScope, List<Pt>>{};
+    for (final e in project.entities) {
+      switch (e) {
+        case ControlValveEntity v:
+          (feeders[HydraulicScope.zone] ??= []).add(v.position);
+        case JunctionEntity j:
+          (feeders[j.scope] ??= []).add(j.position);
+        case MiscHydraulicEntity m:
+          (feeders[m.scope] ??= []).add(m.position);
+        case PumpEntity p:
+          (feeders[p.scope] ??= []).add(p.position);
+        default:
+          break;
+      }
+    }
+    bool fed(Pt p, HydraulicScope scope) => feeders[scope]?.any((f) => f.distanceTo(p) <= tol) ?? false;
+    // laterals (spraylines and tapes) joined to their submain at the end as
+    // drawn only: their emitters are numbered and grouped from that end
+    final inletAtEnd = <String>{};
     for (final e in linear) {
       final pts = ptsOf(e);
       if (pts.length < 2) continue;
-      requestSplit(pts.first, [scopeOf(e)], exclude: e.id);
-      requestSplit(pts.last, [scopeOf(e)], exclude: e.id);
+      final scope = scopeOf(e);
+      final atStart = requestSplit(pts.first, [scope], exclude: e.id);
+      final atEnd = requestSplit(pts.last, [scope], exclude: e.id);
+      if (e is! SpraylineEntity && e is! TapeEntity) continue;
+      if ((atEnd || fed(pts.last, scope)) && !(atStart || fed(pts.first, scope))) inletAtEnd.add(e.id);
     }
 
     // 2. build vertices (with splits) and links
@@ -335,7 +371,8 @@ class NetworkBuilder {
           final first = s.firstOutletDistance;
           final (lo, hi) = _window(nozzle, s.headM);
           final positions = [for (var i = 0; i < n; i++) first + i * s.spacing];
-          final lumps = _lump(positions, total);
+          final fromEnd = inletAtEnd.contains(e.id);
+          final lumps = _lump(positions, total, fromEnd: fromEnd);
           final emitterAt = <double, EmitterRef>{};
           for (final (d, cnt, idx) in lumps) {
             emitterAt[d] = EmitterRef(
@@ -349,9 +386,21 @@ class NetworkBuilder {
               cv: nozzle.cv,
               offset: s.riserHeight + outlet.riserHeightM + s.depth,
               label: nozzle.name,
+              inlet: emitterAt.isEmpty,
             );
           }
-          _addLateralLinks(e.id, pts, scope, emitterAt, usage: PipeUsage.lateral, pipeSpecId: spec?.id, computerSized: s.computerSized || spec == null, depth: s.depth, perEmitterK: 0.0);
+          _addLateralLinks(
+            e.id,
+            pts,
+            scope,
+            emitterAt,
+            usage: PipeUsage.lateral,
+            pipeSpecId: spec?.id,
+            computerSized: s.computerSized || spec == null,
+            depth: s.depth,
+            perEmitterK: 0.0,
+            inletAtEnd: fromEnd,
+          );
         case TapeEntity t:
           final spec = catalog.tape(t.tapeSpecId);
           if (spec == null) {
@@ -361,8 +410,12 @@ class NetworkBuilder {
           }
           final total = polylineLength(pts);
           final n = spec.emitterSpacingM > 0 ? (total / spec.emitterSpacingM).floor() : 0;
-          final positions = [for (var i = 1; i <= n; i++) i * spec.emitterSpacingM];
-          final lumps = _lump(positions, total);
+          // the emitters stand every spacing from the inlet: from the start
+          // as drawn, or from the end when the tape was drawn towards its
+          // submain (numbered from the start either way)
+          final fromEnd = inletAtEnd.contains(e.id);
+          final positions = fromEnd ? [for (var i = n; i >= 1; i--) total - i * spec.emitterSpacingM] : [for (var i = 1; i <= n; i++) i * spec.emitterSpacingM];
+          final lumps = _lump(positions, total, fromEnd: fromEnd);
           final lo = math.max(spec.minHeadM, t.inletHeadM * (1 - spec.tolBelowPct / 100));
           final hi = math.min(spec.maxHeadM, t.inletHeadM * (1 + spec.tolAbovePct / 100));
           final emitterAt = <double, EmitterRef>{};
@@ -378,6 +431,7 @@ class NetworkBuilder {
               cv: spec.cv,
               offset: t.depth,
               label: spec.name,
+              inlet: emitterAt.isEmpty,
             );
           }
           _addLateralLinks(
@@ -392,6 +446,7 @@ class NetworkBuilder {
             depth: t.depth,
             perEmitterK: spec.barbK,
             endFlow: t.flushingFlow,
+            inletAtEnd: fromEnd,
           );
         default:
           break;
@@ -655,12 +710,26 @@ class NetworkBuilder {
     return (math.max(lo, nozzle.minHeadM), math.min(hi, nozzle.maxHeadM));
   }
 
-  /// Groups outlet positions into at most [maxNodesPerLateral] lumps.
-  /// Returns (distance of lump centroid, count, first index).
-  List<(double, int, int)> _lump(List<double> positions, double total) {
+  /// Groups outlet positions (increasing) into at most [maxNodesPerLateral]
+  /// lumps, from the inlet: the first position, or with [fromEnd] the last.
+  /// Returns (distance of lump centroid, count, first index), the lump next
+  /// to the inlet first.
+  List<(double, int, int)> _lump(List<double> positions, double total, {bool fromEnd = false}) {
     if (positions.isEmpty) return [];
     final k = (positions.length / maxNodesPerLateral).ceil();
     final out = <(double, int, int)>[];
+    if (fromEnd) {
+      for (var end = positions.length; end > 0; end -= k) {
+        final start = math.max(0, end - k);
+        final cnt = end - start;
+        var sum = 0.0;
+        for (var j = end - 1; j >= start; j--) {
+          sum += positions[j];
+        }
+        out.add((math.max(sum / cnt, 0.0), cnt, start));
+      }
+      return out;
+    }
     for (var i = 0; i < positions.length; i += k) {
       final end = math.min(i + k, positions.length);
       final cnt = end - i;
@@ -719,6 +788,7 @@ class NetworkBuilder {
     double depth = 0,
     double perEmitterK = 0,
     double endFlow = 0,
+    bool inletAtEnd = false,
   }) {
     // Build a list of stations along the polyline: vertices + emitter lumps.
     final total = polylineLength(pts);
@@ -730,13 +800,17 @@ class NetworkBuilder {
     }
     stations.addAll(emitterAt.keys);
     final sorted = stations.toList()..sort();
+    // walked from the inlet (the end of a line drawn towards its submain),
+    // so the barb losses and the open end of the flushing come out the same
+    // whichever way the line was drawn; the links keep the drawn order
+    final walk = inletAtEnd ? sorted.reversed : sorted;
     GNode? prev;
     var prevD = 0.0;
-    var seg = 0;
     var emittersSince = 0;
-    for (final d in sorted) {
+    final made = <(GNode, GNode, double, double, Pt, Pt, int)>[];
+    for (final d in walk) {
       final p = pointAlongPolyline(pts, d);
-      final n = (prev != null && (d - prevD) < tol) ? prev : _nodeAt(p, scope);
+      final n = (prev != null && (d - prevD).abs() < tol) ? prev : _nodeAt(p, scope);
       n.entityIds.add(entityId);
       final em = emitterAt[d];
       if (em != null) {
@@ -744,30 +818,35 @@ class NetworkBuilder {
         emittersSince += em.count;
       }
       if (prev != null && prev.id != n.id) {
-        final l = GLink(
-          id: '${entityId}_${seg++}',
-          from: prev.id,
-          to: n.id,
-          kind: GLinkKind.pipe,
-          scope: scope,
-          entityId: entityId,
-          segmentIndex: seg - 1,
-          length: d - prevD,
-          pipeSpecId: pipeSpecId,
-          tapeSpecId: tapeSpecId,
-          computerSized: computerSized,
-          usage: usage,
-          minorK: perEmitterK * emittersSince,
-          depth: depth,
-          a: pointAlongPolyline(pts, prevD),
-          b: p,
-          emitterCountAlong: emittersSince,
-        );
-        _register(l);
+        made.add((prev, n, prevD, d, pointAlongPolyline(pts, prevD), p, emittersSince));
         emittersSince = 0;
       }
       prev = n;
       prevD = d;
+    }
+    var seg = 0;
+    for (final (up, down, du, dd, pu, pd, count) in inletAtEnd ? made.reversed : made) {
+      final l = GLink(
+        id: '${entityId}_$seg',
+        from: inletAtEnd ? down.id : up.id,
+        to: inletAtEnd ? up.id : down.id,
+        kind: GLinkKind.pipe,
+        scope: scope,
+        entityId: entityId,
+        segmentIndex: seg,
+        length: (dd - du).abs(),
+        pipeSpecId: pipeSpecId,
+        tapeSpecId: tapeSpecId,
+        computerSized: computerSized,
+        usage: usage,
+        minorK: perEmitterK * count,
+        depth: depth,
+        a: inletAtEnd ? pd : pu,
+        b: inletAtEnd ? pu : pd,
+        emitterCountAlong: count,
+      );
+      _register(l);
+      seg++;
     }
     if (endFlow > 0 && prev != null) {
       prev.emitters.add(
