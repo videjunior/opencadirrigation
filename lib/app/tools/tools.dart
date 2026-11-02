@@ -7,7 +7,7 @@ import '../../core/design/pivot.dart' show PivotKind;
 
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
-import '../../core/model/split.dart' show CutEdge;
+import '../../core/model/split.dart' show CutEdge, offsetEntity;
 import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
@@ -15,6 +15,7 @@ import 'ai_mark_tool.dart';
 import 'edit_commands.dart';
 import 'edit_tools.dart';
 import 'insert_block_tool.dart';
+import 'trace_image_tool.dart';
 import 'typed_point.dart';
 
 /// Dialog requests raised by tools and fulfilled by the widget layer.
@@ -1273,27 +1274,35 @@ class OffsetTool extends Tool {
     final e = c.project.byId(_target!);
     if (e == null) return;
     final d = c.toolSettings.offsetDistance;
-    Pt side = cursor!;
-    Entity? ghost;
+    final side = cursor!;
+    // 1.6.0 AUT: the ghost is the copy the command makes (offsetEntity, the
+    // program's one offset), on the side the controller picks
+    double sign;
     if (e is CircleEntity) {
-      ghost = CircleEntity(id: '', center: e.center, radius: math.max(1e-6, e.radius + (side.distanceTo(e.center) > e.radius ? d : -d)));
-      canvas.drawCircle(cam.toScreen(e.center), (ghost as CircleEntity).radius * cam.scale, previewPaint);
-      return;
-    }
-    final pts = e.linearPoints!;
-    var best = double.infinity;
-    var sign = 1.0;
-    final n = pts.length + (e.isClosedShape ? 1 : 0);
-    for (var i = 1; i < n; i++) {
-      final a = pts[i - 1], b = pts[i % pts.length];
-      final dist = distanceToSegment(side, a, b);
-      if (dist < best) {
-        best = dist;
-        sign = (b - a).cross(side - a) >= 0 ? 1 : -1;
+      sign = side.distanceTo(e.center) > e.radius ? 1 : -1;
+    } else if (e is ArcEntity) {
+      sign = side.distanceTo(e.center) > e.radius ? 1 : -1;
+    } else {
+      final pts = e.linearPoints;
+      if (pts == null || pts.length < 2) return;
+      var best = double.infinity;
+      sign = 1.0;
+      final n = pts.length + (e.isClosedShape ? 1 : 0);
+      for (var i = 1; i < n; i++) {
+        final a = pts[i - 1], b = pts[i % pts.length];
+        final dist = distanceToSegment(side, a, b);
+        if (dist < best) {
+          best = dist;
+          sign = (b - a).cross(side - a) >= 0 ? 1 : -1;
+        }
       }
     }
-    final off = offsetPolyline(e.isClosedShape ? [pts.last, ...pts, pts.first] : pts, sign * d);
-    drawPolyline(canvas, cam, e.isClosedShape ? off.sublist(1, off.length - 1) : off, previewPaint, close: e.isClosedShape);
+    final ghost = offsetEntity(e, sign * d, '');
+    if (ghost is CircleEntity) {
+      canvas.drawCircle(cam.toScreen(ghost.center), ghost.radius * cam.scale, previewPaint);
+    } else if (ghost?.linearPoints case final pts? when pts.length >= 2) {
+      drawPolyline(canvas, cam, pts, previewPaint, close: ghost!.isClosedShape);
+    }
     host.setStatus('${c.t('tool.offset')}: ${fmtLen(d)}');
   }
 }
@@ -1732,6 +1741,8 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.fillet => CornerTool(c, host, chamfer: false),
   ToolId.chamfer => CornerTool(c, host, chamfer: true),
   ToolId.breakTwo => BreakTool(c, host),
+  // 1.6.0 AUT
+  ToolId.traceImage => TraceImageTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1786,4 +1797,6 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.fillet => 'fillet',
   ToolId.chamfer => 'chamfer',
   ToolId.breakTwo => 'breakTwo',
+  // 1.6.0 AUT
+  ToolId.traceImage => 'traceImage',
 };

@@ -64,7 +64,17 @@ class ToolPalette extends StatelessWidget {
         (ToolId.breakTwo, Icons.link_off),
       ],
     ),
-    ('terrain', [(ToolId.contour, Icons.landscape_outlined), (ToolId.breakline, Icons.show_chart), (ToolId.spot, Icons.add_location_alt_outlined), (ToolId.area, Icons.grass)]),
+    (
+      'terrain',
+      [
+        (ToolId.contour, Icons.landscape_outlined),
+        (ToolId.breakline, Icons.show_chart),
+        (ToolId.spot, Icons.add_location_alt_outlined),
+        (ToolId.area, Icons.grass),
+        // 1.6.0 AUT: the outline traced on the satellite image
+        (ToolId.traceImage, Icons.auto_fix_high),
+      ],
+    ),
     (
       'zone',
       [

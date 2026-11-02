@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design/agronomy.dart';
 import '../../../core/design/block_generator.dart';
+import '../../../core/design/lateral_limit.dart' show defaultLateralFlowVariationPct, longestRowLength, terrainSlopeAlong; // 1.6.0 AUT
 import '../../../core/design/management.dart';
 import '../../../core/design/proposal.dart';
 import '../../../core/design/report_tables.dart' show RNum, scenarioMetricCell, scenarioMetricHeader;
@@ -33,6 +34,7 @@ import '../../state/controller.dart';
 import '../../version.dart';
 import '../../site_links.dart'; // 1.6.0 SIT
 import '../fields.dart';
+import '../lateral_limit_view.dart'; // 1.6.0 AUT
 
 Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<T>(
   context: context,
@@ -183,6 +185,16 @@ Future<void> showProposalDialog(BuildContext context, ProjectController c) {
                 NumField(label: '${t('proposal.trenchCost')} ($cur/m³)', value: s.trenchCostPerM3, onChanged: (v) => setState(() => s.trenchCostPerM3 = v)),
                 NumField(label: t('proposal.trenchWidth'), value: s.trenchWidthM, onChanged: (v) => setState(() => s.trenchWidthM = v < 0 ? 0 : v)),
                 NumField(label: t('proposal.bedding'), value: s.beddingM, onChanged: (v) => setState(() => s.beddingM = v < 0 ? 0 : v)),
+              ]),
+              // 1.6.0 AUT: how deep the pipes drawn without a depth of their own lie
+              _row([
+                NumField(
+                  key: const Key('proposal_mainline_depth'),
+                  label: t('proposal.mainlineDepth'),
+                  value: s.mainlineDepthM,
+                  onChanged: (v) => setState(() => s.mainlineDepthM = v.clamp(0, 5).toDouble()),
+                ),
+                NumField(key: const Key('proposal_zone_depth'), label: t('proposal.zoneDepth'), value: s.zoneDepthM, onChanged: (v) => setState(() => s.zoneDepthM = v.clamp(0, 5).toDouble())),
               ]),
               SectionTitle(t('reports.works')),
               Builder(
@@ -1056,6 +1068,11 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
     }
   }
   final u = c.units;
+  // 1.6.0 AUT: the computed maximum lateral length, on the slope of the terrain along the rows
+  var flowVariation = defaultLateralFlowVariationPct;
+  final terrain = c.project.buildTerrain();
+  final slopes = <String, double?>{};
+  double? slopeAlong(Pt dir) => slopes.putIfAbsent('${dir.x}|${dir.y}', () => terrainSlopeAlong(terrain, polygon, dir));
   return _show(
     context,
     c,
@@ -1103,7 +1120,7 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
                     }),
                   ),
                 _row([
-                  NumField(label: '${t('props.head')} (${u.pressureLabel})', value: u.pressureFromHead(headM), onChanged: (v) => headM = u.pressureToHead(v)),
+                  NumField(label: '${t('props.head')} (${u.pressureLabel})', value: u.pressureFromHead(headM), onChanged: (v) => setState(() => headM = u.pressureToHead(v))),
                   NumField(
                     label: '${t('dlg.emitterSpacing')} (${u.lengthLabel})',
                     value: u.lengthFromSi(outletSpacing),
@@ -1139,7 +1156,7 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
                     tapeInlet = cat.tape(tapeSpec)?.defaultInletHeadM ?? tapeInlet;
                   }),
                 ),
-                NumField(label: '${t('props.inlet')} (${u.pressureLabel})', value: u.pressureFromHead(tapeInlet), onChanged: (v) => tapeInlet = u.pressureToHead(v)),
+                NumField(label: '${t('props.inlet')} (${u.pressureLabel})', value: u.pressureFromHead(tapeInlet), onChanged: (v) => setState(() => tapeInlet = u.pressureToHead(v))),
               ],
               _row([
                 NumField(
@@ -1147,7 +1164,7 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
                   value: u.lengthFromSi(lateralSpacing),
                   onChanged: (v) => setState(() => lateralSpacing = v > 0 ? u.lengthToSi(v) : lateralSpacing),
                 ),
-                NumField(label: t('dlg.lateralDirection'), value: direction, decimals: 1, onChanged: (v) => direction = v, enabled: !useGuide),
+                NumField(label: t('dlg.lateralDirection'), value: direction, decimals: 1, onChanged: (v) => setState(() => direction = v), enabled: !useGuide),
               ]),
               if (guidePts != null && guidePts.length >= 2)
                 SwitchListTile(
@@ -1210,6 +1227,23 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
                 ),
               ]),
               NumField(label: '${t('dlg.stub')} (${u.lengthLabel})', value: u.lengthFromSi(stub), onChanged: (v) => stub = u.lengthToSi(v)),
+              // 1.6.0 AUT: the longest lateral the emitter, the slope and the flow variation allow
+              Builder(
+                builder: (_) {
+                  final dir = useGuide && guidePts != null ? (guidePts.last - guidePts.first).normalized : Pt.polar(1, degToRad(direction));
+                  final slope = slopeAlong(dir);
+                  return LateralLimitView(
+                    c: c,
+                    input: isTape
+                        ? tapeLimitInput(c.project, tapeSpec, tapeInlet, slope)
+                        : emitterLimitInput(c.project, outletSpec, nozzle, headM, lateralPipe, outletSpacing, slope, halfOffset: halfOffset),
+                    variationPct: flowVariation,
+                    onVariation: (v) => setState(() => flowVariation = v),
+                    feed: submainPos,
+                    longest: longestRowLength(polygon, dir, lateralSpacing, centre: submainPos == SubmainPosition.centre),
+                  );
+                },
+              ),
             ],
           ),
         );

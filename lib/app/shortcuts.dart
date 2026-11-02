@@ -189,6 +189,8 @@ const commandAliases = <String, Object>{
   'FILLET': ToolId.fillet, 'FIL': ToolId.fillet, 'CONCORDAR': ToolId.fillet, 'CONCORDANCIA': ToolId.fillet, 'EMPALME': ToolId.fillet,
   'CHA': ToolId.chamfer, 'CHAMFER': ToolId.chamfer, 'CHANFRO': ToolId.chamfer, 'CHANFRAR': ToolId.chamfer, 'CHAFLAN': ToolId.chamfer,
   'BREAK': ToolId.breakTwo, 'BK': ToolId.breakTwo, 'QUEBRAR': ToolId.breakTwo, 'PARTIR': ToolId.breakTwo, 'ROMPER': ToolId.breakTwo,
+  // 1.6.0 AUT: the outline traced on the satellite image
+  'WAND': ToolId.traceImage, 'TRACEIMAGE': ToolId.traceImage, 'VARINHA': ToolId.traceImage, 'CONTORNAR': ToolId.traceImage, 'VARITA': ToolId.traceImage,
 };
 
 /// Preferred (shortest) alias of a tool, for tooltips and menus.
