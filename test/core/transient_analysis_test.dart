@@ -19,6 +19,8 @@ import 'package:opencadirrigation/core/units.dart';
 
 import '../support/language_packs.dart';
 
+import '../support/perf.dart';
+
 /// A water supply at [supply], a mainline through [vertices] (PVC DN 100 by
 /// default) and zone valves at [valves], each feeding a demand point of
 /// [nozzle] 5 m beside the line. [spots] give the terrain (x, y, z).
@@ -78,7 +80,7 @@ void main() {
         expect(study.jobs, hasLength(study.mainline.flows.length * 3));
         final watch = Stopwatch()..start();
         final a = study.analyze();
-        expect(watch.elapsedMilliseconds, lessThan(20000));
+        expect(watch.elapsedMilliseconds, lessThan(perfBudgetMs(20000)));
         final ran = a.runs.where((x) => x.ran).toList();
         expect(ran.where((x) => x.scenario == TransientScenario.valveClosure), hasLength(study.mainline.flows.length));
         for (final run in ran) {
@@ -136,7 +138,7 @@ void main() {
           expect(a.messages, contains('transient_no_pump'), reason: 'the gravity line has no pump');
           expect(a.runs.where((x) => x.scenario == TransientScenario.pumpTrip).every((x) => !x.ran), isTrue);
         }
-      });
+      }, tags: perfTag);
     }
   });
 

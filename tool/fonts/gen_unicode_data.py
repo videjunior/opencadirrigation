@@ -13,8 +13,10 @@ files of the Unicode Character Database:
     BidiBrackets.txt            paired brackets (UAX #9 rule N0)
     Scripts.txt                 script of each character (text itemisation)
 
-Download them from https://www.unicode.org/Public/UCD/latest/ucd/ into a
-directory outside the repository and run, from the repository root:
+Download them from https://www.unicode.org/Public/18.0.0/ucd/ (the version
+of the committed tables, named in the header of unicode_data.dart; move to
+a newer one on purpose) into a directory outside the repository and run,
+from the repository root:
 
     python3 -I tool/fonts/gen_unicode_data.py --ucd ~/tmp/ucd
 

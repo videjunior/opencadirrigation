@@ -8,6 +8,8 @@ import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 
+import '../support/perf.dart';
+
 void main() {
   // 4 px per metre and a 10 px tolerance: snaps reach 2.5 m
   ProjectController controller(List<Entity> entities) {
@@ -86,7 +88,7 @@ void main() {
     ]);
     final sw = Stopwatch()..start();
     final x = Snapper(c).snap(const Pt(50.1, 50.1));
-    expect(sw.elapsedMilliseconds, lessThan(500));
+    expect(sw.elapsedMilliseconds, lessThan(perfBudgetMs(500)));
     near(x, 'intersection', const Pt(50, 50));
     near(Snapper(c).snap(const Pt(51.4, 50.2)), 'endpoint', const Pt(51.5, 50));
     // a short polyline as before: vertex, midpoint
@@ -98,5 +100,5 @@ void main() {
       LineEntity(id: 'l', a: const Pt(-10, 10), b: const Pt(10, 10)),
     ]);
     near(Snapper(box).snap(const Pt(0.5, 10.4)), 'intersection', const Pt(0, 10));
-  });
+  }, tags: perfTag);
 }

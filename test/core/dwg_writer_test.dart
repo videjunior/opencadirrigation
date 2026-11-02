@@ -11,6 +11,8 @@ import 'package:opencadirrigation/core/io/dxf.dart';
 import 'package:opencadirrigation/core/io/project_export.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 
+import '../support/external_tools.dart';
+
 void main() {
   test('CRC-16 matches the checksum AutoCAD wrote in the file header', () {
     final b = File('test/fixtures/example_2000.dwg').readAsBytesSync();
@@ -85,11 +87,7 @@ void main() {
   });
 
   test('LibreDWG accepts the file (skipped when dwgread is not installed)', () async {
-    final which = await Process.run('which', ['dwgread']);
-    if (which.exitCode != 0) {
-      markTestSkipped('dwgread not installed');
-      return;
-    }
+    if (!await hasTool('dwgread')) return;
     final dir = Directory.systemTemp.createTempSync('oci_dwg');
     final f = File('${dir.path}/sample.dwg')..writeAsBytesSync(DwgWriter.write(sample()));
     final read = await Process.run('dwgread', ['-v2', f.path]);

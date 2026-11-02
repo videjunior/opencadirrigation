@@ -1,0 +1,8 @@
+# SHA-256 of words the public repository must never carry (lowercase, ASCII
+# letters and digits): names of competing products and of third-party CAD
+# programs, kept as hashes so that the list does not cite them either.
+# tool/hooks/banned_names.dart checks the lines a commit adds against it and
+# against the plain list in .git/info/banned-words (one word per line, local
+# to a clone, never committed). Add a word: printf word | shasum -a 256
+50ff6c11a1aa77e39ac50d9a340388a5680699cc8cf32700d163469cabd9ff02
+50f08e64c5a6192c58961a72ca0b5fcb06f1a09d49e3d012619c2050b84c9b00

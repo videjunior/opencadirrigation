@@ -9,6 +9,8 @@ import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 
+import '../support/perf.dart';
+
 List<Pt> _rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 List<Pt> _circle(Pt c, double r, int n) => [for (var i = 0; i < n; i++) c + Pt.polar(r, 2 * math.pi * i / n)];
 
@@ -322,7 +324,7 @@ void main() {
       expect(l.heads.length, greaterThan(2000));
       expect(l.metrics!.cu, greaterThan(94));
       // generous for a debug test run (about 50 ms compiled)
-      expect(ms, lessThan(1500));
-    });
+      expect(ms, lessThan(perfBudgetMs(1500)));
+    }, tags: perfTag);
   });
 }

@@ -1,0 +1,55 @@
+# Line endings: text files are stored with LF and checked out with LF on every
+# platform, whatever core.autocrlf says. Several tests compare generated files
+# byte for byte (the site pages, the examples, lib/app/version.dart, the
+# shaping fixtures, exported DXF), and a CRLF checkout would fail them.
+* text=auto eol=lf
+
+# Test fixtures stay exactly as committed: some are CRLF on purpose (the
+# readers must take both line endings) and many are binary.
+test/fixtures/** -text
+
+# Binary formats: never converted, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.dwg binary
+*.dgn binary
+*.tif binary
+*.tiff binary
+*.las binary
+*.laz binary
+*.xlsx binary
+*.zip binary
+*.kmz binary
+*.pdf binary
+*.shp binary
+*.shx binary
+*.dbf binary
+*.gz binary
+*.wasm binary
+*.jar binary
+
+# Generated files: collapsed in GitHub diffs and left out of the language
+# statistics. Each one has a generator and a guard test that keeps it in step.
+web/design_worker.js linguist-generated
+examples/** linguist-generated
+web/index.html linguist-generated
+web/*/index.html linguist-generated
+web/404.html linguist-generated
+web/sitemap.xml linguist-generated
+web/robots.txt linguist-generated
+web/humans.txt linguist-generated
+web/llms.txt linguist-generated
+web/llms-full.txt linguist-generated
+lib/app/version.dart linguist-generated
+lib/core/io/fonts/unicode_data.dart linguist-generated
+docs/AI_TOOLS.md linguist-generated
+test/fixtures/shaping/*.json linguist-generated

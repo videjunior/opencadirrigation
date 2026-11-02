@@ -1,0 +1,29 @@
+# Dependabot: pull requests that update the Dart packages (pubspec.lock) and
+# the GitHub Actions of .github/workflows (pinned to commits). CI checks each
+# one: the worker bundle byte for byte, the examples and the whole suite, so
+# an update that changes results shows. The Flutter SDK itself is pinned in
+# pubspec.yaml (environment.flutter) and moves only by hand.
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "Dependências"
+    groups:
+      pub-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "CI"
+    groups:
+      actions:
+        patterns: ["*"]

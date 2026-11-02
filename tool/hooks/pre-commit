@@ -1,0 +1,35 @@
+#!/bin/sh
+# Pre-commit checks of OpenCADIrrigation, for the traps that otherwise only
+# memory guards. Enable them once per clone:
+#   git config core.hooksPath tool/hooks
+# Skip them for one commit with git commit --no-verify.
+#
+#   1. the staged Dart files are formatted (analysis_options.yaml: 200 columns);
+#   2. no added line carries a banned name (tool/hooks/banned_names.dart);
+#   3. a warning when the engine, the job protocol or the strings change
+#      without web/design_worker.js (CI and test/guards/worker_bundle_test.dart
+#      fail until it is rebuilt with sh tool/build_worker.sh).
+set -e
+cd "$(git rev-parse --show-toplevel)"
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+dart_files=$(printf '%s\n' "$staged" | grep '\.dart$' || true)
+if [ -n "$dart_files" ]; then
+  # shellcheck disable=SC2086
+  if ! dart format --output=none --set-exit-if-changed $dart_files >/dev/null; then
+    echo "pre-commit: these files are not formatted; run: dart format $(printf '%s ' $dart_files)" >&2
+    exit 1
+  fi
+fi
+
+if ! git diff --cached -U0 --no-color | dart tool/hooks/banned_names.dart; then
+  exit 1
+fi
+
+engine=$(printf '%s\n' "$staged" | grep -E '^(lib/core/|lib/worker/|lib/app/i18n\.dart$|lib/app/i18n_parts/|lib/app/state/design_job\.dart$)' || true)
+if [ -n "$engine" ] && ! printf '%s\n' "$staged" | grep -q '^web/design_worker\.js$'; then
+  echo "pre-commit: warning: the engine, the job protocol or the strings change without web/design_worker.js;" >&2
+  echo "            run sh tool/build_worker.sh and stage web/design_worker.js if it changes" >&2
+fi
+exit 0

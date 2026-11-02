@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="337mm" height="160mm" viewBox="0 0 337 160" font-family="Helvetica, Arial, sans-serif">
+<title>golden</title>
+<desc>OpenCADIrrigation · 1:200 · mm</desc>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<g id="AREAS" data-layer="AREAS" stroke-linecap="round" stroke-linejoin="round">
+<path d="M82 150L282 150L282 30L82 30Z" fill="#e1e5dd" stroke="#586c41" stroke-width="0.25"/>
+<text x="83.5" y="33.3" font-size="2.43" fill="#586c41" text-anchor="start" font-weight="bold">  0.10 ha</text>
+</g>
+<g id="WETTED_RADII" data-layer="WETTED_RADII" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="102" cy="130" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="152" cy="130" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="202" cy="130" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="252" cy="130" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="102" cy="90" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="152" cy="90" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="202" cy="90" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="252" cy="90" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="102" cy="50" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="152" cy="50" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="202" cy="50" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+<circle cx="252" cy="50" r="18.5" fill="#edf4f8" stroke="#1b78a2" stroke-width="0.13"/>
+</g>
+<g id="CONTROL_VALVES" data-layer="CONTROL_VALVES" stroke-linecap="round" stroke-linejoin="round">
+<path d="M70.5 91.05L73.5 88.95L73.5 91.05L70.5 88.95Z" fill="#8a5b15" stroke="#8a5b15" stroke-width="0.3"/>
+</g>
+<g id="WATER_SUPPLY" data-layer="WATER_SUPPLY" stroke-linecap="round" stroke-linejoin="round">
+<path d="M10 92L14 92L14 88L10 88Z" fill="#7e57c2" stroke="#7e57c2" stroke-width="0.3"/>
+<text x="12" y="90" font-size="3.24" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" font-weight="bold">W</text>
+</g>
+<g id="ZONE_PIPES" data-layer="ZONE_PIPES" stroke-linecap="round" stroke-linejoin="round">
+<path d="M72 130L262 130" fill="none" stroke="#2c6fa4" stroke-width="0.5"/>
+<path d="M72 90L262 90" fill="none" stroke="#2c6fa4" stroke-width="0.5"/>
+<path d="M72 50L262 50" fill="none" stroke="#2c6fa4" stroke-width="0.5"/>
+<path d="M72 130L72 50" fill="none" stroke="#2c6fa4" stroke-width="0.5"/>
+</g>
+<g id="MAINLINE_PIPES" data-layer="MAINLINE_PIPES" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 90L72 90" fill="none" stroke="#1e88e5" stroke-width="0.7"/>
+</g>
+<g id="TEXT" data-layer="TEXT" stroke-linecap="round" stroke-linejoin="round">
+<text x="152" y="20" font-size="13.5" fill="#606162" text-anchor="start">A1</text>
+</g>
+<g id="SYMBOLS" data-layer="SYMBOLS" stroke-linecap="round" stroke-linejoin="round">
+<path d="M322 120L321.659 117.412L320.66 115L319.071 112.929L317 111.34L314.588 110.341L312 110L309.412 110.341L307 111.34L304.929 112.929L303.34 115L302.341 117.412L302 120L302.341 122.588L303.34 125L304.929 127.071L307 128.66L309.412 129.659L312 130L314.588 129.659L317 128.66L319.071 127.071L320.66 125L321.659 122.588L322 120" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312.8 120L312.773 119.793L312.693 119.6L312.566 119.434L312.4 119.307L312.207 119.227L312 119.2L311.793 119.227L311.6 119.307L311.434 119.434L311.307 119.6L311.227 119.793L311.2 120L311.227 120.207L311.307 120.4L311.434 120.566L311.6 120.693L311.793 120.773L312 120.8L312.207 120.773L312.4 120.693L312.566 120.566L312.693 120.4L312.773 120.207L312.8 120" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312 120L319 113" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312 120L305 113" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312 120L312 130" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M327 60L326.489 56.118L324.99 52.5L322.607 49.393L319.5 47.01L315.882 45.511L312 45L308.118 45.511L304.5 47.01L301.393 49.393L299.01 52.5L297.511 56.118L297 60L297.511 63.882L299.01 67.5L301.393 70.607L304.5 72.99L308.118 74.489L312 75L315.882 74.489L319.5 72.99L322.607 70.607L324.99 67.5L326.489 63.882L327 60" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M313.2 60L313.159 59.689L313.039 59.4L312.849 59.151L312.6 58.961L312.311 58.841L312 58.8L311.689 58.841L311.4 58.961L311.151 59.151L310.961 59.4L310.841 59.689L310.8 60L310.841 60.311L310.961 60.6L311.151 60.849L311.4 61.039L311.689 61.159L312 61.2L312.311 61.159L312.6 61.039L312.849 60.849L313.039 60.6L313.159 60.311L313.2 60" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312 60L322.5 49.5" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312 60L301.5 49.5" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+<path d="M312 60L312 75" fill="none" stroke="#5b6366" stroke-width="0.3"/>
+</g>
+<g id="OUTLETS" data-layer="OUTLETS" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="102" cy="130" r="0.6" fill="#1b78a2"/>
+<circle cx="152" cy="130" r="0.6" fill="#1b78a2"/>
+<circle cx="202" cy="130" r="0.6" fill="#1b78a2"/>
+<circle cx="252" cy="130" r="0.6" fill="#1b78a2"/>
+<circle cx="102" cy="90" r="0.6" fill="#1b78a2"/>
+<circle cx="152" cy="90" r="0.6" fill="#1b78a2"/>
+<circle cx="202" cy="90" r="0.6" fill="#1b78a2"/>
+<circle cx="252" cy="90" r="0.6" fill="#1b78a2"/>
+<circle cx="102" cy="50" r="0.6" fill="#1b78a2"/>
+<circle cx="152" cy="50" r="0.6" fill="#1b78a2"/>
+<circle cx="202" cy="50" r="0.6" fill="#1b78a2"/>
+<circle cx="252" cy="50" r="0.6" fill="#1b78a2"/>
+</g>
+<g id="LABELS" data-layer="LABELS" stroke-linecap="round" stroke-linejoin="round">
+<text x="73.95" y="89.4" font-size="2.43" fill="#5e6264" text-anchor="start" font-weight="bold">A1</text>
+</g>
+</svg>

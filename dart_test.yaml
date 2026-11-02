@@ -1,0 +1,11 @@
+# Configuration of `flutter test` (package:test).
+tags:
+  # Tests with wall-clock budgets (test/support/perf.dart): they fail on a
+  # machine much slower than a developer's, so CI runs them apart, one file
+  # at a time, with OCI_PERF_SCALE=3 (`flutter test --tags perf
+  # --concurrency 1`) and the other jobs leave them out (`--exclude-tags perf`).
+  perf:
+    timeout: 3x
+  # Image comparisons (test/goldens): rebuild with
+  # `flutter test --update-goldens test/goldens` after a deliberate change.
+  golden:

@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+<!--
+  No App Sandbox: the app opens and saves files through its own file browser
+  (dart:io, lib/app/io/file_io_stub.dart), which inside the sandbox would see
+  only the app's container, and it reaches the network with dart:io (base
+  maps, terrain, climate, place search, the AI assistant). It is built from
+  the source and not distributed through the Mac App Store, which is the one
+  place that requires the sandbox. JIT and the local server are for the
+  debugger of debug and profile builds.
+-->
 <dict>
 	<key>com.apple.security.app-sandbox</key>
-	<true/>
+	<false/>
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>
 	<key>com.apple.security.network.server</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
 	<true/>
 </dict>
 </plist>

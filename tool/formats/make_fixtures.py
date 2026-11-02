@@ -4,8 +4,9 @@ libraries (ezdxf, pyshp, tifffile, Pillow, openpyxl) and LibreDWG, so the
 readers are exercised on files produced by other software, not by our own
 writers. test/core/formats_test.dart imports every file here.
 
-    pip install ezdxf pyshp openpyxl pillow tifffile numpy
-    python3 tool/formats/make_fixtures.py
+    python3 -m venv ~/venvs/ociformats
+    ~/venvs/ociformats/bin/pip install -r tool/formats/requirements.txt
+    ~/venvs/ociformats/bin/python -I tool/formats/make_fixtures.py
 
 The fixtures are committed; rerun only when adding cases.
 """

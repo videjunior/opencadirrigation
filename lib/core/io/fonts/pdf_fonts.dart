@@ -678,6 +678,15 @@ class PdfFonts {
     _ => [..._fonts.keys],
   };
 
+  /// The first registered font of [names] that has [c], or null.
+  String? _firstWith(List<String> names, int c) {
+    for (final name in names) {
+      final reg = _fonts[name];
+      if (reg != null && reg.font.hasGlyph(c)) return name;
+    }
+    return null;
+  }
+
   List<PdfTextSpan> _spansForGroup(String s, List<int> cps, List<int> at, List<int> script, int a, int b, int group, bool rtl, bool japanese) {
     // Latin, Greek and Cyrillic stay in Helvetica unless a letter needs another font
     var helvetica = false;
@@ -698,6 +707,15 @@ class PdfFonts {
     // font of every character (null: Helvetica)
     final font = List<String?>.filled(b - a, null);
     final chain = _chain(group, japanese);
+    // punctuation of a script at the edge of its run (the Arabic comma before
+    // a Latin word, the danda ending a sentence) is common and lands here
+    // with a chain that lacks it: the neighbouring scripts' fonts, then any
+    // registered font, come before Helvetica's "?"
+    final beyond = [
+      for (final k in [a - 1, b])
+        if (k >= 0 && k < cps.length && _groupOf(script[k]) != group) ..._chain(_groupOf(script[k]), japanese),
+      ..._fonts.keys,
+    ];
     for (var i = a; i < b; i++) {
       final c = cps[i];
       if (helvetica && isWinAnsi(c)) continue;
@@ -707,13 +725,8 @@ class PdfFonts {
       } else {
         // first font of the chain that has the character; none: Helvetica
         // (its WinAnsi approximation, or "?")
-        for (final name in chain) {
-          final reg = _fonts[name];
-          if (reg != null && reg.font.hasGlyph(c)) {
-            f = name;
-            break;
-          }
-        }
+        f = _firstWith(chain, c);
+        if (f == null && !isWinAnsi(c)) f = _firstWith(beyond, c);
       }
       font[i - a] = f;
     }

@@ -5,13 +5,23 @@ lxml (KML, SVG), json (GeoJSON, project, catalogue pack), openpyxl (XLSX),
 pypdf (PDF), csv and zipfile.
 
     flutter test test/core/formats_test.dart
-    python3 tool/formats/check_exports.py      # pip install ezdxf openpyxl lxml pypdf
+    python3 -I tool/formats/check_exports.py
 
-Exit code 1 when any check fails.
+with the packages of tool/formats/requirements.txt in a virtual environment
+outside the repository:
+
+    python3 -m venv ~/venvs/ociformats
+    ~/venvs/ociformats/bin/pip install -r tool/formats/requirements.txt
+    ~/venvs/ociformats/bin/python -I tool/formats/check_exports.py
+
+Exit code 1 when any check fails. Without LibreDWG (dwgread on the PATH)
+the DWG checks are skipped, unless OCI_REQUIRE_TOOLS names dwgread (CI's
+formats job): then its absence fails the run.
 """
 import csv
 import io
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -54,9 +64,16 @@ def check_dxf(path):
     return types
 
 
+def required_tools():
+    return {t.strip() for t in os.environ.get('OCI_REQUIRE_TOOLS', '').split(',') if t.strip()}
+
+
 def check_dwg(path):
     if not shutil.which('dwgread'):
-        print('  skip dwgread not installed')
+        if 'dwgread' in required_tools():
+            check(False, f'{path.name}: dwgread is required (OCI_REQUIRE_TOOLS) but not installed')
+        else:
+            print('  skip dwgread not installed')
         return
     r = subprocess.run(['dwgread', '-v2', str(path)], capture_output=True, text=True)
     log = r.stdout + r.stderr

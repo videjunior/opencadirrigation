@@ -7,6 +7,8 @@ import 'package:opencadirrigation/core/io/dem_online.dart';
 import 'package:opencadirrigation/core/io/geo.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 
+import '../support/perf.dart';
+
 /// Online DEM download: grid coverage, batch validation, concurrent download
 /// with retries and the datum check of the user's own elevation data.
 void main() {
@@ -227,31 +229,38 @@ void main() {
       final pts = demGrid(const Bounds(0, 0, 1000, 600), 25, geo); // 1025 points, 11 batches
       final starts = <DateTime>[];
       final waits = <Duration>[];
+      final events = <String>[];
+      // the window is real time: wide enough that a slow machine still sends
+      // the first batches inside it (OCI_PERF_SCALE widens it further)
+      final window = perfDuration(300);
       final zs = await demDownload(
         DemSource.openMeteo,
         pts,
         (url) async {
           starts.add(DateTime.now());
+          events.add('start');
           return answer(DemSource.openMeteo, url);
         },
         pointsPerMinute: 550,
-        budgetWindow: const Duration(milliseconds: 300),
-        onWait: waits.add,
+        budgetWindow: window,
+        onWait: (d) {
+          waits.add(d);
+          events.add('wait');
+        },
       );
       expect(zs.where((z) => z == null), isEmpty);
       expect(starts.length, 11);
-      // 5 batches (500 points) fit the budget at once; the rest wait for the window
-      final first = starts.first;
-      final immediate = starts.where((t) => t.difference(first).inMilliseconds < 150).length;
-      expect(immediate, 5);
+      // 5 batches (500 points) fit the budget at once; the 6th waits for the window
+      expect(events.indexOf('wait'), 5, reason: events.join(' '));
       expect(waits, isNotEmpty);
-      expect(starts.last.difference(first).inMilliseconds, greaterThanOrEqualTo(300));
+      final first = starts.first;
+      expect(starts.last.difference(first), greaterThanOrEqualTo(window));
       // never more than the budget inside any window
       for (final t in starts) {
-        final inWindow = starts.where((u) => u.difference(t).inMilliseconds >= 0 && u.difference(t).inMilliseconds < 300).length;
+        final inWindow = starts.where((u) => !u.isBefore(t) && u.difference(t) < window).length;
         expect(inWindow * 100, lessThanOrEqualTo(600));
       }
-    });
+    }, tags: perfTag);
 
     test('a rate-limited answer waits for the server instead of failing', () async {
       final pts = demGrid(const Bounds(0, 0, 100, 100), 25, geo);

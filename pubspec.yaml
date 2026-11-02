@@ -20,6 +20,13 @@ version: 1.5.2+13
 
 environment:
   sdk: ^3.13.3
+  # The exact Flutter release (Dart 3.13.7) the project is built, formatted and
+  # tested with: the design worker bundle, the formatter output and the
+  # CanvasKit build depend on it. CI (flutter-version-file), tool/build_web.sh,
+  # tool/release.dart and the worker guard test read it from here. Upgrading
+  # Flutter: change it, run `flutter pub get`, rebuild the worker and the
+  # suite, and commit everything together.
+  flutter: 3.47.9
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions

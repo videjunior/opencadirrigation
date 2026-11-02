@@ -1,0 +1,245 @@
+# Continuous integration: the checks a release depends on, on every push and
+# pull request. Flutter comes from pubspec.yaml (environment.flutter, exact),
+# the actions are pinned to commits, and nothing here needs a secret.
+#
+# Jobs:
+#   checks    analysis, formatting, the worker bundle and the generated files
+#   test      the suite in 4 shards with coverage (speed tests left out)
+#   perf      the speed tests (tag perf), one file at a time, with room
+#   coverage  the shards' coverage merged, by folder, with floors
+#   browser   the browser-only code (test/web) in Chrome
+#   web       the production build, its contents and the end-to-end smoke test
+#   formats   exported files read back by independent readers and LibreDWG
+name: CI
+
+on:
+  push:
+    branches: [main, 'versao-*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Analysis, format, worker and generated files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter --version
+      - name: Dependencies exactly as locked
+        run: flutter pub get --enforce-lockfile
+      - name: Analysis (no issue of any level)
+        run: dart analyze --fatal-infos lib test tool bin
+      - name: Formatting (analysis_options.yaml, 200 columns)
+        run: dart format --output=none --set-exit-if-changed lib test tool bin
+      - name: web/design_worker.js is the compiled worker of this commit
+        run: |
+          sh tool/build_worker.sh
+          git diff --exit-code --stat -- web/design_worker.js
+      - name: Generated files are up to date
+        run: |
+          dart run tool/gen_site.dart
+          dart run tool/gen_catalogs.dart --check
+          git diff --exit-code --stat
+      - name: Nothing left behind
+        run: test -z "$(git status --porcelain)" || { git status --porcelain; exit 1; }
+
+  test:
+    name: Tests (shard ${{ matrix.shard }} of 4)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: A test that loads every library (files no test reaches count at 0 %)
+        run: dart run tool/coverage.dart imports test/zz_all_libraries_test.dart
+      - name: flutter test
+        run: >-
+          flutter test --exclude-tags perf --total-shards 4 --shard-index ${{ matrix.shard }}
+          --coverage --coverage-path coverage/lcov-${{ matrix.shard }}.info
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lcov-${{ matrix.shard }}
+          path: coverage/lcov-${{ matrix.shard }}.info
+          retention-days: 14
+
+  perf:
+    name: Speed tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # budgets written for a developer machine (test/support/perf.dart)
+      OCI_PERF_SCALE: '3'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: flutter test --tags perf
+        run: |
+          flutter test --tags perf --concurrency 1 $(grep -rl 'tags: perfTag' test)
+
+  coverage:
+    name: Coverage by folder
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter pub get --enforce-lockfile
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: lcov-*
+          path: coverage
+          merge-multiple: true
+      # floors about 2 points under the coverage of 2026-11-02 (lib 93.3 %, lib/core 96.1 %, lib/app 89.6 %)
+      - name: Report and floors
+        run: >-
+          dart run tool/coverage.dart report coverage/lcov-*.info
+          --floor lib/core=94 --floor lib/app=87 --floor lib=91
+          --summary coverage/summary.md --merged coverage/lcov.info
+      - name: Summary
+        if: always()
+        run: test -f coverage/summary.md && cat coverage/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: coverage
+          path: |
+            coverage/lcov.info
+            coverage/summary.md
+          retention-days: 30
+
+  browser:
+    name: Browser-only code in Chrome
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: flutter test --platform chrome test/web
+        env:
+          CHROME_EXECUTABLE: /usr/bin/google-chrome
+        run: flutter test --platform chrome test/web
+
+  web:
+    name: Web build and end-to-end smoke test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Production build (tool/build_web.sh)
+        run: sh tool/build_web.sh
+      - name: The build is complete (service worker filled, commit in the label, no dangling source map)
+        run: dart run tool/release.dart verify-build build/web
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tool/e2e/package-lock.json
+      - run: npm ci --prefix tool/e2e
+      - name: End-to-end smoke test in Chrome
+        run: node tool/e2e/smoke.mjs build/web --chrome /usr/bin/google-chrome --shots e2e-shots
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: e2e-shots
+          path: e2e-shots
+          if-no-files-found: ignore
+          retention-days: 14
+
+  formats:
+    name: File formats read by independent readers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      # the LibreDWG checks must run here: a missing dwgread fails them
+      OCI_REQUIRE_TOOLS: dwgread
+      LIBREDWG_VERSION: '0.14'
+      LIBREDWG_SHA256: cb6ee0b078c6d9e0f09d66f1feac33ba6342df88ae544e9f9335fab475218351
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: stable
+          cache: true
+          pub-cache: true
+      - run: flutter pub get --enforce-lockfile
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: tool/formats/requirements.txt
+      - name: Python readers (tool/formats/requirements.txt)
+        run: python -m pip install -r tool/formats/requirements.txt
+      - name: LibreDWG from the cache
+        id: libredwg
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/libredwg
+          key: libredwg-${{ env.LIBREDWG_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+      - name: LibreDWG built from the GNU release (checked against its SHA-256)
+        if: steps.libredwg.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/libredwg"
+          cd "$RUNNER_TEMP/libredwg"
+          curl -fsSL -o libredwg.tar.gz "https://ftpmirror.gnu.org/libredwg/libredwg-$LIBREDWG_VERSION.tar.gz"
+          echo "$LIBREDWG_SHA256  libredwg.tar.gz" | sha256sum -c -
+          tar -xzf libredwg.tar.gz
+          cd "libredwg-$LIBREDWG_VERSION"
+          ./configure --prefix="$HOME/.local/libredwg" --disable-shared --disable-bindings --disable-python --disable-docs --disable-werror
+          make -j"$(nproc)"
+          make install
+      - run: echo "$HOME/.local/libredwg/bin" >> "$GITHUB_PATH"
+      - run: dwgread --version
+      - name: Format tests (LibreDWG required)
+        run: flutter test test/core/formats_test.dart test/core/formats_app_test.dart test/core/cad_export_test.dart test/core/dwg_writer_test.dart test/core/dwg_test.dart
+      - name: The exported files read back by ezdxf, LibreDWG, lxml, openpyxl and pypdf
+        run: python -I tool/formats/check_exports.py

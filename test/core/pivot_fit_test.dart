@@ -6,6 +6,8 @@ import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 
+import '../support/perf.dart';
+
 List<Pt> _rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
 /// Points of the wetted sector of [f] (on rings and rays) inside [field],
@@ -118,8 +120,8 @@ void main() {
     test('fast enough for a dialog', () {
       final sw = Stopwatch()..start();
       fitSectorPivot(const [Pt(0, 0), Pt(1200, 100), Pt(1100, 900), Pt(300, 1000), Pt(-100, 500)], PivotFitOptions(endThrowM: 20, obstacles: [_rect(500, 400, 600, 500)]));
-      expect(sw.elapsedMilliseconds, lessThan(3000));
-    });
+      expect(sw.elapsedMilliseconds, lessThan(perfBudgetMs(3000)));
+    }, tags: perfTag);
   });
 
   test('pivot entity of a full circle', () {
