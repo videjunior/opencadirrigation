@@ -19,6 +19,10 @@ import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/units.dart';
 import 'package:opencadirrigation/core/design/auto_fix.dart';
 import 'package:opencadirrigation/core/design/field_subdivision.dart';
+import 'package:opencadirrigation/app/examples.dart';
+import 'package:opencadirrigation/app/i18n.dart';
+import 'package:opencadirrigation/core/design/designer.dart';
+import 'package:opencadirrigation/core/design/results.dart';
 
 List<Pt> rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
@@ -658,6 +662,176 @@ void main() {
       }
       expect([for (final p in stepwise.mainline) p.points], [for (final p in whole.mainline) p.points]);
       expect(ZoneRouter(const [], o).step(), isFalse);
+    });
+  });
+
+  group('AUT-07 fix automatically and a booster pump on the mains', () {
+    test('no pump is put on a public network: the user decides it', () async {
+      final t = I18n('en');
+      final p = buildExample(ExampleId.garden, t.call, lang: 'en');
+      p.entities.removeWhere((e) => e is PumpEntity);
+      p.entities.whereType<WaterSupplyEntity>().first
+        ..calculatePressure = false
+        ..designHeadM = 15
+        ..maxHeadM = 40;
+      final rep = await runAutoFix(p, () async => Designer(p, label: t.call).designAll(), label: t.call);
+      expect(p.entities.whereType<PumpEntity>(), isEmpty, reason: 'a 1 hp pump was inserted on its own before');
+      expect(rep.applied.where((f) => f.key == 'fixed.insertPump'), isEmpty);
+      final pending = rep.decisions.where((a) => a.fixes.first == FixKind.choosePump).toList();
+      expect(pending, isNotEmpty, reason: 'listed for the user to decide');
+      expect(needsDecision(p, pending.first, FixKind.choosePump, rep.results), isTrue);
+      // the button applies it
+      expect(applyFix(p, pending.first, FixKind.choosePump, results: rep.results, label: t.call).key, 'fixed.insertPump');
+      expect(p.entities.whereType<PumpEntity>(), hasLength(1));
+    });
+  });
+
+  group('AUT-08 fix automatically and items off their pipe', () {
+    Project lawn(double tol, Pt head, {String zone = ''}) {
+      final p = Project();
+      p.params.connectTolerance = tol;
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-20, 0), calculatePressure: true));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-20, 0), const Pt(0, 0)], scope: HydraulicScope.mainline));
+      p.entities.add(ControlValveEntity(id: p.newId(), position: const Pt(0, 0), zoneName: 'A', valveSpecId: 'ev25'));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(30, 0)], scope: HydraulicScope.zone));
+      p.entities.add(OutletEntity(id: p.newId(), position: const Pt(30, 0), outletSpecId: 'rotor', nozzleId: 'r3', headM: 25, zoneName: 'A'));
+      p.entities.add(OutletEntity(id: p.newId(), position: head, outletSpecId: 'rotor', nozzleId: 'r3', headM: 25, zoneName: zone));
+      return p;
+    }
+
+    for (final (tol, y) in [(0.05, 1.8), (0.3, 5.0)]) {
+      test('a head $y m off the pipe stays where it is and gets a short pipe (tolerance $tol m)', () async {
+        final p = lawn(tol, Pt(15, y));
+        final head = p.entities.whereType<OutletEntity>().last;
+        final rep = await runAutoFix(p, () async => null);
+        expect(head.position, Pt(15, y), reason: 'moved ${y.toStringAsFixed(1)} m before');
+        expect(rep.applied.map((f) => f.key), contains('fixed.connectPipe'));
+        final stub = p.entities.whereType<PipeEntity>().last;
+        expect(stub.points.last, head.position);
+        expect(stub.points.first.y, closeTo(0, 1e-9));
+        expect(NetworkBuilder(p).build().unconnectedEntities, isNot(contains(head.id)));
+      });
+    }
+
+    test('a head of zone A is not piped to the pipe of zone B', () {
+      final p = lawn(0.05, const Pt(15, 1.5), zone: 'A');
+      // zone B's pipe passes nearer to the head
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-20, 3), const Pt(0, 3)], scope: HydraulicScope.mainline));
+      p.entities.add(ControlValveEntity(id: p.newId(), position: const Pt(0, 3), zoneName: 'B', valveSpecId: 'ev25'));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(0, 3), const Pt(30, 3)], scope: HydraulicScope.zone));
+      final head = p.entities.whereType<OutletEntity>().firstWhere((o) => o.position == const Pt(15, 1.5));
+      final plan = connectTarget(p, head)!;
+      expect(plan.pipe, isTrue);
+      expect(plan.to.y, closeTo(0, 1e-9), reason: 'its own zone A, 1.5 m away, not zone B 1.5 m away the other side');
+    });
+
+    test('a valve or a lateral end farther than twice the tolerance is left to the button', () async {
+      final p = lawn(0.05, const Pt(30, 0));
+      final valve = p.entities.whereType<ControlValveEntity>().single;
+      valve.position = const Pt(0, 1.5);
+      final rep = await runAutoFix(p, () async => null);
+      expect(valve.position, const Pt(0, 1.5), reason: 'moving a valve 1.5 m may change the zone it feeds');
+      expect(rep.applied.where((f) => f.key == 'fixed.connect'), isEmpty);
+      final left = rep.remaining.where((a) => a.code == 'unconnected' && a.entityIds.contains(valve.id)).toList();
+      expect(left.isEmpty || left.first.fixes.contains(FixKind.connect), isTrue, reason: 'the button still offers it');
+    });
+  });
+
+  group('AUT-09 dividing the zones into more system flows', () {
+    test('the user\'s names and first start are kept, the plan fits in a day or is refused', () {
+      final t = I18n('en');
+      final p = buildExample(ExampleId.golf, t.call, lang: 'en');
+      final r0 = Designer(p, label: t.call).designAll();
+      final s = p.entities.whereType<WaterSupplyEntity>().first;
+      final largest = r0.zones.values.map((z) => z.totalFlow).reduce(math.max);
+      s.designFlow = largest * 1.05;
+      for (final f in p.systemFlows) {
+        f.durationHours = 6;
+      }
+      final names = {for (final f in p.systemFlows) f.name};
+      final first = p.systemFlows.map((f) => f.startHour).reduce(math.min);
+      final r = Designer(p, label: t.call).designAll();
+      final plan = splitFlowsPlan(p, r, s, t.call)!;
+      expect(plan.every((f) => names.any((n) => f.name.startsWith(n))), isTrue, reason: 'names were "Flow N" before: ${plan.map((f) => f.name)}');
+      expect(plan.first.startHour, first);
+      expect(plan.every((f) => f.startHour >= 0 && f.startHour < 24), isTrue, reason: 'hours 28 and 34 before');
+      final valves = {for (final v in p.entities.whereType<ControlValveEntity>()) v.id};
+      expect({for (final f in plan) ...f.valveIds}.containsAll(valves), isTrue, reason: 'every zone in a flow');
+      final total = plan.fold(0.0, (a, f) => a + f.durationHours);
+      final a = buildAdvice(p, results: r).firstWhere(
+        (x) => x.fixes.contains(FixKind.splitFlows),
+        orElse: () => Advice(code: 'supply_flow_exceeded', raw: 'supply_flow_exceeded', level: AdviceLevel.warning, entityIds: [s.id]),
+      );
+      expect(needsDecision(p, a, FixKind.splitFlows, r), isTrue, reason: 'the user has flows of their own');
+      final res = applyFix(p, a, FixKind.splitFlows, results: r, label: t.call);
+      if (total > 24) {
+        expect(res.key, 'fixfail.flowsPastDay');
+      } else {
+        expect(res.ok, isTrue);
+      }
+      // longer flows than a day fit: refused with the hours it would take
+      for (final f in p.systemFlows) {
+        f.durationHours = 10;
+      }
+      final res2 = applyFix(p, a, FixKind.splitFlows, results: r, label: t.call);
+      expect(res2.key, 'fixfail.flowsPastDay');
+    });
+  });
+
+  group('AUT-10 supply design values above the maximums', () {
+    test('the design comes down to the limit, by hand only', () {
+      final p = Project();
+      final s = WaterSupplyEntity(id: p.newId(), position: Pt.zero, calculatePressure: false, designHeadM: 40, maxHeadM: 30, designFlow: 8 / 3600, maxFlow: 5 / 3600);
+      p.entities.add(s);
+      final a = buildAdvice(p).firstWhere((x) => x.code == 'supply_limits');
+      expect(a.fixes, [FixKind.capSupplyDesign]);
+      expect(a.autoFixable, isFalse, reason: 'it raised the well limit to the design flow on its own before');
+      expect(applyFix(p, a, FixKind.capSupplyDesign).ok, isTrue);
+      expect(s.maxFlow, closeTo(5 / 3600, 1e-12));
+      expect(s.designFlow, closeTo(5 / 3600, 1e-12));
+      expect(s.maxHeadM, 30);
+      expect(s.designHeadM, 30);
+      expect(buildAdvice(p).where((x) => x.code == 'supply_limits'), isEmpty);
+    });
+  });
+
+  group('AUT-11 optimisation and warnings', () {
+    DesignScore score(double cost, List<String> warnings, {int errors = 0}) {
+      final r = DesignResults(timestamp: DateTime(2026))
+        ..annualCapitalCost = cost
+        ..messages.addAll(warnings);
+      final advice = [
+        for (final w in warnings) Advice(code: w, raw: w, level: AdviceLevel.warning),
+        for (var i = 0; i < errors; i++) Advice(code: 'no_supply', raw: 'no_supply', level: AdviceLevel.error),
+      ];
+      return DesignScore(r, advice);
+    }
+
+    test('a cheaper design with a new warning is not better', () {
+      final base = score(1000, ['velocity_exceeded']);
+      expect(score(800, ['velocity_exceeded', 'surge_rating_exceeded']).betterThan(base), isFalse);
+      expect(score(800, ['velocity_exceeded', 'velocity_exceeded']).betterThan(base), isFalse, reason: 'one more of the same');
+      expect(score(800, ['velocity_exceeded']).betterThan(base), isTrue);
+      expect(score(1000, []).betterThan(base), isTrue, reason: 'as cheap, one warning less');
+      expect(score(1200, ['surge_rating_exceeded']).betterThan(score(900, ['surge_rating_exceeded'], errors: 1)), isTrue, reason: 'fewer errors first');
+      expect(score(800, ['velocity_exceeded', 'surge_rating_exceeded']).newWarnings(base), ['surge_rating_exceeded']);
+    });
+
+    test('a step that adds a warning is taken back, the project as it was', () async {
+      final p = Project();
+      p.params.sizingMethod = SizingMethod.greedy;
+      // a design whose LP sizing is cheaper but brings water hammer
+      Future<DesignResults?> fake() async {
+        final lp = p.params.sizingMethod == SizingMethod.lp;
+        final r = DesignResults(timestamp: DateTime(2026))..annualCapitalCost = lp ? 700 : 1000;
+        if (lp) r.messages.add('surge_rating_exceeded');
+        return r;
+      }
+
+      final rep = await runOptimize(p, fake, options: const OptimizeOptions(choosePumps: false, resizeValves: false));
+      expect(rep.improved, isFalse, reason: 'kept as "better" before for being cheaper');
+      expect(rep.rejected.map((f) => f.key), contains('fixed.lpSizing'));
+      expect(p.params.sizingMethod, SizingMethod.greedy, reason: 'the step was taken back');
     });
   });
 }

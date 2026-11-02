@@ -14,6 +14,7 @@ import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import 'design_check.dart';
+import 'management.dart' show AutoFlowOptions, autoSystemFlows;
 import 'network_builder.dart';
 import 'results.dart';
 import 'valve_in_head.dart';
@@ -91,7 +92,9 @@ enum FixKind {
   /// Sets the pump speed ratio back to 1.
   resetPumpSpeed,
 
-  /// Makes the maximum pressure / flow of a supply at least its design value.
+  /// Makes the maximum pressure / flow of a supply at least its design value
+  /// (no longer offered: a maximum is a physical limit of the well or of the
+  /// water company; see [capSupplyDesign]).
   fixSupplyLimits,
 
   /// Re-enables the default catalogue pipes for a usage with none enabled.
@@ -109,6 +112,11 @@ enum FixKind {
   /// Cuts an irrigated area whose outline crosses itself into the simple
   /// areas it encloses (same crop and settings, the first keeps the id).
   splitArea,
+
+  /// Lowers the design flow / pressure of a supply to its maximum (the
+  /// well or the water company cannot give more): the design then shows
+  /// what the system lacks instead of hiding it.
+  capSupplyDesign,
 }
 
 /// Corrections the "fix automatically" command may apply on its own: they
@@ -135,7 +143,6 @@ const autoSafeFixes = {
   FixKind.fixFlowDurations,
   FixKind.nominalEmitterHead,
   FixKind.resetPumpSpeed,
-  FixKind.fixSupplyLimits,
   FixKind.enablePipes,
   FixKind.enableWires,
   FixKind.controllerStations,
@@ -541,7 +548,7 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
   final first = ids.isEmpty ? null : p.byId(ids.first);
   switch (code) {
     case 'unconnected':
-      return first != null && canConnect(p, first) ? const [FixKind.connect] : const [];
+      return first != null && canConnect(p, first, model: first is OutletEntity ? net() : null) ? const [FixKind.connect] : const [];
     case 'zero_length':
       return const [FixKind.deleteItem];
     case 'tiny_segment':
@@ -589,7 +596,8 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
     case 'no_pipes_for_usage':
       return const [FixKind.enablePipes];
     case 'supply_limits':
-      return const [FixKind.fixSupplyLimits];
+      // 1.6.0 AUT: the maximum is the physical limit; the design value comes down to it
+      return const [FixKind.capSupplyDesign];
     case 'valve_not_in_flow':
       return const [FixKind.addMissingFlow];
     case 'flow_empty':
@@ -686,13 +694,16 @@ List<Pt> mainlineFreeEnds(Project p) {
 
 /// How [FixKind.connect] joins an item: [moved] gets its point [index]
 /// (−1: the position of a point item) set to [to]; [splitPipe], when set, is
-/// cut at [to] first so the joint is a vertex of both.
+/// cut at [to] first so the joint is a vertex of both. With [pipe] the item
+/// stays where it is and a short pipe (a swing joint) runs from it to [to]:
+/// a sprinkler left off the pipe keeps its place in the layout.
 class ConnectPlan {
-  const ConnectPlan(this.moved, this.index, this.to, [this.splitPipe]);
+  const ConnectPlan(this.moved, this.index, this.to, [this.splitPipe, this.pipe = false]);
   final Entity moved;
   final int index;
   final Pt to;
   final PipeEntity? splitPipe;
+  final bool pipe;
   double get distance => switch (moved) {
     PointEntity e => e.position.distanceTo(to),
     PolyEntity e => e.points[index].distanceTo(to),
@@ -700,8 +711,29 @@ class ConnectPlan {
   };
 }
 
+/// How far (m) the automatic correction moves an item to join it: a gap
+/// of about the connection tolerance (a vertex snapped a little off);
+/// farther items are joined by the button, as the user decides.
+double autoConnectReach(Project p) => math.max(0.05, 2 * p.params.connectTolerance);
+
+/// Zone (valve zone name) of every hydraulic entity the network puts in a
+/// zone.
+Map<String, String> entityZones(Project p, NetworkModel model) {
+  final out = <String, String>{};
+  for (final v in p.entities.whereType<ControlValveEntity>()) {
+    for (final lid in model.zoneLinks[v.id] ?? const <String>{}) {
+      final id = model.linkById(lid)?.entityId;
+      if (id != null) out.putIfAbsent(id, () => v.zoneName);
+    }
+  }
+  return out;
+}
+
 /// Where [FixKind.connect] would join [e], or null when nothing is in reach.
-ConnectPlan? connectTarget(Project p, Entity e) {
+/// A sprinkler of a zone is piped to the nearest zone pipe (of its own
+/// zone when it names one), never moved. [model] is the network of [p]
+/// when the caller has built it.
+ConnectPlan? connectTarget(Project p, Entity e, {NetworkModel? model}) {
   final reach = connectReach(p);
   final tol = math.max(p.params.connectTolerance, 1e-3);
   bool isVertex(PipeEntity pipe, Pt q) => pipe.points.any((v) => v.distanceTo(q) <= 1e-9);
@@ -744,6 +776,31 @@ ConnectPlan? connectTarget(Project p, Entity e) {
       }
     }
     if (best != null) return best;
+  }
+  if (e is OutletEntity && e.scope == HydraulicScope.zone) {
+    // 1.6.0 AUT: a head off its pipe gets a short pipe; it is not moved
+    final zones = e.zoneName.trim().isEmpty ? const <String, String>{} : entityZones(p, model ?? NetworkBuilder(p).build());
+    ConnectPlan? best;
+    var bd = reach;
+    for (final pipe in p.entities.whereType<PipeEntity>()) {
+      if (pipe.scope != HydraulicScope.zone || pipe.points.length < 2) continue;
+      final z = zones[pipe.id];
+      if (z != null && z.trim().toLowerCase() != e.zoneName.trim().toLowerCase()) continue;
+      final (_, cp) = polylineStationOf(pipe.points, e.position);
+      var target = cp;
+      for (final v in pipe.points) {
+        if (v.distanceTo(cp) <= math.max(0.25, 5 * tol) && v.distanceTo(e.position) <= reach) {
+          target = v;
+          break;
+        }
+      }
+      final d = target.distanceTo(e.position);
+      if (d < bd) {
+        bd = d;
+        best = ConnectPlan(e, -1, target, isVertex(pipe, target) ? null : pipe, true);
+      }
+    }
+    return best;
   }
   if (e is PointEntity) {
     final scope = e is ControlValveEntity ? HydraulicScope.mainline : e.hydraulicScope;
@@ -813,7 +870,7 @@ ConnectPlan? connectTarget(Project p, Entity e) {
   return null;
 }
 
-bool canConnect(Project p, Entity e) => connectTarget(p, e) != null;
+bool canConnect(Project p, Entity e, {NetworkModel? model}) => connectTarget(p, e, model: model) != null;
 
 /// Cheapest enabled pipe of the same use that withstands the pressure of
 /// [pipe] (steady, or steady plus water hammer with [surge]; class derated
@@ -865,58 +922,52 @@ ValveSpec? fittingValve(Project p, DesignResults r, String valveId) {
 }
 
 /// System flows regrouped so the flow of none exceeds the design flow of
-/// [supply] (first-fit decreasing by zone flow), or null when a single zone
-/// is already above it or the supply has no design flow.
+/// [supply], or null when a single zone is already above it or the supply
+/// has no design flow. The grouping is that of [autoSystemFlows]
+/// (first-fit decreasing, every zone and pivot, also those without a design
+/// result yet); each new flow keeps the name of the user's flow most of its
+/// zones came from and runs as long as the longest of them did, the first
+/// one at the hour the user's first flow started and the others one after
+/// the other ([applyFix] refuses a plan longer than a day).
 List<SystemFlow>? splitFlowsPlan(Project p, DesignResults r, WaterSupplyEntity supply, String Function(String key) label) {
   final cap = supply.designFlow;
   if (!(cap > 0)) return null;
   final flows = p.systemFlows;
-  final valveIds = flows.isNotEmpty
-      ? [for (final f in flows) ...f.valveIds]
-      : [...p.entities.whereType<ControlValveEntity>().map((v) => v.id), ...p.entities.whereType<PivotEntity>().map((v) => v.id)];
-  final demand = <String, double>{};
-  // the valve-in-head stations the flows schedule move with them
-  final heads = {
-    for (final e in r.vihStations.entries)
-      if (e.value.scheduled) e.key: e.value.flow,
-  };
-  for (final id in valveIds.toSet()) {
-    final q = r.zones[id]?.totalFlow ?? r.pivots[id]?.flow ?? heads[id];
-    if (q == null) continue;
-    if (q > cap + 1e-12) return null;
-    demand[id] = q;
-  }
-  if (demand.isEmpty) return null;
+  final first = flows.isEmpty ? 0.0 : flows.map((f) => f.startHour).reduce(math.min);
+  final plan = autoSystemFlows(
+    p,
+    AutoFlowOptions(maxFlow: cap, firstStartHour: first),
+    results: r,
+    label: label,
+  );
+  if (plan.flows.isEmpty || plan.oversized.isNotEmpty) return null;
   final durationOf = <String, double>{};
+  final flowOf = <String, SystemFlow>{};
   for (final f in flows) {
     for (final id in f.valveIds) {
       durationOf[id] = math.max(durationOf[id] ?? 0, f.durationHours > 0 ? f.durationHours : 1);
+      flowOf.putIfAbsent(id, () => f);
     }
   }
-  final order = demand.keys.toList()..sort((a, b) => demand[b]!.compareTo(demand[a]!));
-  final bins = <(List<String>, double)>[];
-  for (final id in order) {
-    var placed = false;
-    for (var i = 0; i < bins.length; i++) {
-      if (bins[i].$2 + demand[id]! <= cap + 1e-12) {
-        bins[i] = ([...bins[i].$1, id], bins[i].$2 + demand[id]!);
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) bins.add(([id], demand[id]!));
-  }
-  var start = flows.isEmpty ? 0.0 : flows.map((f) => f.startHour).reduce(math.min);
-  final taken = {for (final f in flows) f.id};
+  final usedNames = <String, int>{};
+  var start = first;
   final out = <SystemFlow>[];
-  for (var i = 0; i < bins.length; i++) {
-    final ids = bins[i].$1;
+  for (final f in plan.flows) {
+    final ids = f.valveIds;
     final dur = ids.map((id) => durationOf[id] ?? 1.0).reduce(math.max);
-    var id = 'sfa${i + 1}';
-    for (var k = 2; taken.contains(id); k++) {
-      id = 'sfa${i + 1}_$k';
+    // the user's flow that gave most of the zones lends its name
+    final votes = <SystemFlow, int>{};
+    for (final id in ids) {
+      final src = flowOf[id];
+      if (src != null) votes[src] = (votes[src] ?? 0) + 1;
     }
-    out.add(SystemFlow(id: id, name: '${label('name.flow')} ${i + 1}', valveIds: ids.toSet(), startHour: start, durationHours: dur));
+    var name = f.name;
+    if (votes.isNotEmpty) {
+      final src = votes.entries.reduce((x, y) => y.value > x.value ? y : x).key;
+      final k = usedNames[src.name] = (usedNames[src.name] ?? 0) + 1;
+      name = k == 1 ? src.name : '${src.name} ($k)';
+    }
+    out.add(SystemFlow(id: f.id, name: name, valveIds: {...ids}, startHour: start % 24, durationHours: dur));
     start += dur;
   }
   return out;

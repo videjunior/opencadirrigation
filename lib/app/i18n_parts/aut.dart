@@ -49,6 +49,26 @@ const _aut = <String, (String, String, String)>{
     'When they are the same item drawn twice, use the correction to keep only one. Otherwise delete or trim the repeated stretch, or move one of the pipes aside if they really are two lines in one trench.',
     'Cuando son el mismo elemento dibujado dos veces, use la corrección para dejar solo uno. Si no, borre o recorte el tramo repetido, o desplace una de las tuberías si de verdad son dos líneas en la misma zanja.',
   ),
+  // ---- fix automatically and optimise
+  'fixed.connectPipe': (
+    'tubo de {d} m ligando o aspersor ao tubo mais próximo (o aspersor ficou no lugar)',
+    '{d} m pipe joining the head to the nearest pipe (the head stays where it was)',
+    'tubería de {d} m que une el aspersor a la tubería más cercana (el aspersor queda en su lugar)',
+  ),
+  'fixfail.flowsPastDay': (
+    'os {n} turnos somariam {h} h, mais que um dia: reduza as durações ou aumente a vazão da fonte',
+    'the {n} system flows would take {h} h, more than a day: shorten them or raise the supply flow',
+    'los {n} turnos sumarían {h} h, más de un día: acorte las duraciones o aumente el caudal de la fuente',
+  ),
+  'fix.capSupplyDesign': ('Usar os máximos da fonte no projeto', 'Design with the supply maximums', 'Usar los máximos de la fuente en el diseño'),
+  'fixed.capSupplyDesign': (
+    'vazão e pressão de projeto da fonte reduzidas aos máximos que ela fornece',
+    'supply design flow and pressure lowered to the maximums it gives',
+    'caudal y presión de diseño de la fuente reducidos a los máximos que entrega',
+  ),
+  'adv.decisions': ('Precisa da sua decisão (não foi aplicado sozinho):', 'Needs your decision (not applied on its own):', 'Necesita su decisión (no se aplicó solo):'),
+  'opt.newWarnings': ('Avisos novos que impediram mudanças: {w}', 'New warnings that held changes back: {w}', 'Avisos nuevos que impidieron cambios: {w}'),
+  'opt.rejected': ('{n} mudança(s) desfeita(s) porque pioravam o projeto', '{n} change(s) taken back because they made the design worse', '{n} cambio(s) deshecho(s) porque empeoraban el diseño'),
   // ---- templates
   'warn.template_centreline_turn': (
     'A linha central volta sobre si mesma (curva de mais de 150°): desenhe o fairway em dois trechos',
