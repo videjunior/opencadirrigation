@@ -33,6 +33,7 @@ import 'package:opencadirrigation/core/io/xlsx.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/model/read_report.dart';
+import 'package:opencadirrigation/core/model/schema.dart';
 import 'package:opencadirrigation/core/units.dart';
 
 Future<void> main(List<String> args) async {
@@ -56,7 +57,7 @@ abstract final class OciExit {
   static const failed = 4;
 }
 
-const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom'];
+const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom', 'schema'];
 const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper'};
 const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version', 'no-results'};
 
@@ -74,6 +75,7 @@ Commands:
             and the errors of the design check; exit code 1 when there is any.
   export    Write the drawing in another format (--format, --out).
   bom       Size the design and print the bill of materials.
+  schema    Print the JSON Schema of the project file (built from the model; no file).
 
 Options:
   --out <file>        design: the designed project (.oci.json) with its results, as the app
@@ -172,6 +174,10 @@ Future<int> runOci(List<String> args, {StringSink? out, StringSink? err, String?
   if (command == null) {
     e.writeln('oci: unknown command ${a.positional.first} (one of ${_commands.join(', ')})');
     return OciExit.usage;
+  }
+  if (command == 'schema') {
+    o.writeln(const JsonEncoder.withIndent('  ').convert(projectJsonSchema()));
+    return OciExit.ok;
   }
   if (a.positional.length != 1) {
     e.writeln('oci: $command needs one project file (.oci.json)');

@@ -50,8 +50,9 @@ comando a usam; os 17 idiomas além de português, inglês e espanhol vêm dos p
 
 **A linha de comando.** `dart run bin/oci.dart --help` lista os comandos: `design`, `analyze`, `check` (código de saída 1
 quando há erros), `validate` (o que a leitura do arquivo teve de reparar; código de saída 1 quando houve algo), `export`
-(DXF, DWG, PDF, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, INP do EPANET) e `bom`, com as opções `--lang`,
-`--report`, `--results` e `--out`. `design --out` grava o projeto dimensionado com os resultados, como o aplicativo salva
+(DXF, DWG, PDF, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, INP do EPANET), `bom` e `schema` (o JSON Schema
+do arquivo de projeto, gerado do modelo: cada chave, seu tipo, sua unidade e o padrão de um projeto novo), com as opções
+`--lang`, `--report`, `--results` e `--out`. `design --out` grava o projeto dimensionado com os resultados, como o aplicativo salva
 (`--no-results` os deixa de fora).
 
 ## 2. Projetos e o dimensionamento

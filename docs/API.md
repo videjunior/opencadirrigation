@@ -49,8 +49,9 @@ design worker and the command line use it; the 17 languages beyond Portuguese, E
 
 **The command line.** `dart run bin/oci.dart --help` lists the commands: `design`, `analyze`, `check` (exit code 1 on
 errors), `validate` (what reading the file had to repair, exit code 1 when anything), `export` (DXF, DWG, PDF, SVG,
-KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, EPANET INP) and `bom`, with `--lang`, `--report`, `--results` and `--out`
-options. `design --out` writes the designed project with its results, as the app saves it (`--no-results` leaves them
+KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, EPANET INP), `bom` and `schema` (the JSON Schema of the project file,
+built from the model: every key, its type, its unit and the default of a new project), with `--lang`, `--report`,
+`--results` and `--out` options. `design --out` writes the designed project with its results, as the app saves it (`--no-results` leaves them
 out).
 
 ## 2. Projects and the design

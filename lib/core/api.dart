@@ -151,6 +151,7 @@ export 'model/proposal_settings.dart';
 export 'model/read_report.dart';
 export 'model/regional.dart';
 export 'model/scenario.dart';
+export 'model/schema.dart';
 export 'model/site_climate.dart';
 export 'model/slope_map.dart';
 export 'model/spatial_index.dart';
