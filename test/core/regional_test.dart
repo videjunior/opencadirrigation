@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
+import 'package:opencadirrigation/core/model/currency.dart';
+import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/model/regional.dart';
 import 'package:opencadirrigation/core/units.dart';
 
@@ -41,6 +43,26 @@ void main() {
     expect(ft.pressureToHead(100), closeTo(30.48, 1e-9));
     expect(ft.pressureLabel, 'ft H₂O');
     expect(Units.fromJson(ft.toJson()).pressure, PressureUnit.ftH2O);
+  });
+
+  test('the reference exchange rates say when they get old (MOD-30)', () {
+    final date = DateTime.parse(exchangeRatesDate);
+    expect(exchangeRatesAgeDays(date), 0);
+    expect(exchangeRatesStale(date.add(const Duration(days: 60))), isFalse);
+    expect(exchangeRatesStale(date.add(const Duration(days: 91))), isTrue);
+  });
+
+  test('a symbol of several currencies is told by the region, never guessed (MOD-30)', () {
+    expect(currencyCodeForSymbol(r'R$'), 'BRL');
+    expect(currencyCodeForSymbol('kr'), isNull, reason: 'Swedish, Norwegian or Danish krone');
+    expect(currencyCodeForSymbol('kr', region: 'NO'), 'NOK');
+    expect(currencyCodeForSymbol('kr', region: 'dk'), 'DKK');
+    expect(currencyCodeForSymbol('kr', region: 'BR'), isNull);
+    expect(currencyCodeForSymbol('Br', region: 'ET'), 'ETB');
+    // an old file with the symbol only: the currency stays unknown
+    final p = DesignParameters.fromJson({'currency': 'kr'});
+    expect(p.currencyCode, '');
+    expect(p.currency, 'kr');
   });
 
   test('new projects take the remembered frequency and units', () {

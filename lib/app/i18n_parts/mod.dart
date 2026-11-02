@@ -87,6 +87,12 @@ const _mod = <String, (String, String, String)>{
     'Valves: kv = flow coefficient (m³/h at 1 bar of loss), kcoef = K of K·v²/2g, k and n = the law h = k·Q^n (Q in m³/s). Class: ratingM in metres; pn in bar up to 25 and in metres above; a unit in the cell (bar, psi, kPa, MPa, m) wins. Without an id column, the same row imported again replaces its own item, never another one.',
     'Válvulas: kv = coeficiente de caudal (m³/h con 1 bar de pérdida), kcoef = K de K·v²/2g, k y n = la ley h = k·Q^n (Q en m³/s). Clase: ratingM en metros; pn en bar hasta 25 y en metros arriba; una unidad en la celda (bar, psi, kPa, MPa, m) prevalece. Sin columna id, la misma fila importada de nuevo sustituye su propio elemento, nunca otro.',
   ),
+  // ---- reference exchange rates (MOD-30)
+  'dlg.ratesStale': (
+    'As taxas de referência são de {d}, há {n} dias: confira a taxa atual antes de converter, sobretudo em moedas de inflação alta.',
+    'The reference rates are from {d}, {n} days ago: check the current rate before converting, above all for currencies of high inflation.',
+    'Las tasas de referencia son del {d}, hace {n} días: verifique la tasa actual antes de convertir, sobre todo en monedas de inflación alta.',
+  ),
   // ---- the motor of a pump at its duty point (MOD-16)
   'warn.pump_motor_overload': (
     'Bomba acima da potência do motor, mesmo com o fator de serviço',

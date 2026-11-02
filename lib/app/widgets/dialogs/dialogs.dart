@@ -544,6 +544,9 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
                 TextFieldRow(key: ValueKey('sym_${p.currencyCode}'), label: t('dlg.currencySymbol'), value: p.currency, onChanged: (v) => p.currency = v),
               ]),
               Text(t('dlg.currencyNote', {'d': exchangeRatesDate}), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+              // 1.6.0 MOD
+              if (exchangeRatesStale(DateTime.now()))
+                Text(t('dlg.ratesStale', {'d': exchangeRatesDate, 'n': '${exchangeRatesAgeDays(DateTime.now())}'}), style: TextStyle(fontSize: 10.5, color: Cad.warning)),
             ],
           ),
         );
@@ -1803,6 +1806,9 @@ Future<(bool, double, String)?> askCurrencyConversion(BuildContext context, Proj
             const SizedBox(height: 8),
             NumField(key: const Key('cur_rate'), label: t('dlg.rate', {'from': fromLabel, 'to': to}), value: rate, decimals: 6, onChanged: (v) => rate = v),
             Text(known == null ? t('dlg.rateUnknown') : t('dlg.rateSource', {'d': exchangeRatesDate}), style: TextStyle(fontSize: 10.5, color: Cad.fg38)),
+            // 1.6.0 MOD
+            if (known != null && exchangeRatesStale(DateTime.now()))
+              Text(t('dlg.ratesStale', {'d': exchangeRatesDate, 'n': '${exchangeRatesAgeDays(DateTime.now())}'}), style: TextStyle(fontSize: 10.5, color: Cad.warning)),
           ],
         ),
       ),
