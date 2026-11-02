@@ -197,12 +197,12 @@ palette and more.
   (`/manual/`, `/pt/manual/`).
 - **Help → Terms of the data**, with the credits on the sheets and in the report; **View → Base map → Keep the map of
   the area for the field**.
-- **Privacy and terms**: the site has a privacy policy and terms of use in every language (written in Portuguese,
-  English and Spanish so far), linked from the foot of the pages and from Help → About; About also says that a
+- **Privacy and terms**: the site has a privacy policy and terms of use in every language, linked from the foot of the pages and from Help → About; About also says that a
   qualified professional checks and signs a design made with the app.
-- **Visit statistics only with consent**: the pages ask once; Google Analytics is loaded only after *Accept* (Consent
-  Mode v2, everything denied by default) and never in a page where the app runs, so it cannot reach projects or keys.
-  *Cookie settings* at the foot of the pages changes the answer.
+- **Visit statistics in Consent Mode**: the pages and the app load Google Analytics in Consent Mode v2 (advertising
+  always denied); without consent it sets no cookie and sends notices without cookies (each page and each start of the
+  app), and the cookies come only after *Accept* on the notice the pages show once. *Cookie settings* at the foot of
+  the pages changes the answer, and declining deletes the cookies.
 - **Security**: a Content Security Policy in every page (scripts from the site only, no inline script), a versioned
   hosting configuration (`hosting/firebase.json`) with `Referrer-Policy`, `Permissions-Policy`, revalidation of the
   app files and a permanent redirect from `/en/`; the key warnings say who could read a remembered key.

@@ -165,7 +165,7 @@ const _ha = SiteText(
     ),
     (
       'Shin ana ajiye ayyukana a gajimare (cloud)?',
-      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a matsayin fayilolin .oci.json da kake ajiyewa duk inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a intanet, kuma OpenCADIrrigation ba shi da sabar da za ta iya riƙe kwafi. Haruffan kowane rubutu da alama suna fitowa daga wannan gidan yanar gizon kansa. Mai binciken gizo yana kaiwa ga wasu sabis: taswirorin bango, tsayin ƙasa da yanayi daga intanet, binciken adireshi, kundin da ake lodawa daga URL kuma, idan ka yi amfani da shi, mataimakin AI (mai ba da sabis ɗin da ka zaɓa kaɗai, Anthropic ko OpenAI) suna zuwa sabis ɗinsu idan ka yi amfani da su; kuma shafukan gidan yanar gizon suna ƙidaya ziyara da Google Analytics ne kawai idan ka amince, ba yayin da manhajar ke buɗe ba. Manufar sirri tana jera kowane sabis da abin da yake karɓa.',
+      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a matsayin fayilolin .oci.json da kake ajiyewa duk inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a intanet, kuma OpenCADIrrigation ba shi da sabar da za ta iya riƙe kwafi. Haruffan kowane rubutu da alama suna fitowa daga wannan gidan yanar gizon kansa. Mai binciken gizo yana kaiwa ga wasu sabis: taswirorin bango, tsayin ƙasa da yanayi daga intanet, binciken adireshi, kundin da ake lodawa daga URL kuma, idan ka yi amfani da shi, mataimakin AI (mai ba da sabis ɗin da ka zaɓa kaɗai, Anthropic ko OpenAI) suna zuwa sabis ɗinsu idan ka yi amfani da su; kuma gidan yanar gizon da manhajar suna ƙidaya ziyara da Google Analytics, ba tare da cookies ba sai idan ka amince da su. Manufar sirri tana jera kowane sabis da abin da yake karɓa.',
     ),
     (
       'Yaya ake lissafin ruwa?',
@@ -203,7 +203,7 @@ const _legalHa = LegalText(
     ]),
     LegalSection('A taƙaice', [
       '- Babu asusu kuma babu sabar OpenCADIrrigation a bayan manhajar: ayyuka, ajiya ta atomatik, sigogi, tattaunawar AI, maɓallai da zaɓuɓɓuka suna zama a mai binciken gizonka da kuma a fayilolin da kake ajiyewa.',
-      '- Ana tattara ƙididdigar ziyara (Google Analytics) ne kawai a shafukan gidan yanar gizon, kawai idan ka amince da ita, kuma ba yayin da manhajar ke buɗe ba.',
+      '- Ƙididdigar ziyara (Google Analytics) tana aiki a dukkan shafukan gidan yanar gizon da kuma a cikin manhajar: ba tare da amincewarka ba, ba ta saita wani cookie kuma ba ta ajiye lambar ganewa a na\'urarka; da amincewarka, tana amfani da cookies ɗinta.',
       '- Sabis ɗin da manhajar ke amfani da su don haruffa, taswirori, ƙasa, yanayi, binciken adireshi da mataimakin AI suna karɓar buƙatunka kai tsaye daga mai binciken gizonka idan ka yi amfani da su.',
     ]),
     LegalSection('Abin da ke zama a na\'urarka', [
@@ -212,10 +212,10 @@ const _legalHa = LegalText(
       'Hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin, bayan alamar #, wadda masu binciken gizo ba sa aikawa ga kowace sabar.',
     ]),
     LegalSection('Ƙididdigar ziyara da cookies', [
-      'Idan ka amince da ita a sanarwar gidan yanar gizon, shafukan gidan yanar gizon suna loda Google Analytics 4, wanda ke saita cookies _ga da _ga_<id> (suna ɗorewa har zuwa shekaru biyu) kuma yana rikodin shafukan da aka kalla, lokacin ziyara, shafin da ya kawo ka, nau\'in na\'ura da na mai binciken gizo, girman allo, harshe da kusan wurin da kake wanda Google ke samu daga adireshin IP (Google Analytics 4 ba ya ajiye adireshin IP).',
-      'Manufa: sanin mutane nawa ke ziyartar gidan yanar gizon da waɗanne shafuka da harsuna suke amfani da su, don inganta shi. Tushen doka: amincewarka. Ana riƙe bayanan har tsawon lokacin riƙewa da aka saita a Google Analytics, watanni 14 a mafi yawa.',
-      'Idan ka ƙi, ko ba ka amsa ba, ba a loda komai kuma ba a ƙidaya komai. Kana iya canza zaɓinka a kowane lokaci da Saitunan cookies, a ƙasan shafukan; ƙi yana share cookies na ƙididdiga na gidan yanar gizon.',
-      'Ƙididdigar ba ta taɓa aiki yayin da manhajar ke buɗe, shafin da ke riƙe ayyukanka da maɓallanka. Google Analytics sabis ne na Google ƙarƙashin sharuɗɗansa da manufar sirrinsa, kuma ana iya sarrafa bayanan a Amurka da wasu ƙasashe.',
+      'Dukkan shafukan gidan yanar gizon da manhajar suna loda Google Analytics 4 a yanayin amincewa (Consent Mode). Ba tare da amincewarka ba, ba ya saita wani cookie kuma ba ya ajiye lambar ganewa a na\'urarka: ga kowane shafin da aka kalla da kowane buɗe manhajar, yana aika wa Google saƙo ba tare da cookies ba mai ɗauke da lokaci, shafin da ya kawo ka, nau\'in na\'ura da na mai binciken gizo, girman allo, harshe da kusan wurin da kake wanda Google ke samu daga adireshin IP (Google Analytics 4 ba ya ajiye adireshin IP), wanda Google ke amfani da shi don ƙiyasta mutane nawa ke amfani da gidan yanar gizon da manhajar. Idan ka amince, yana kuma saita cookies _ga da _ga_<id> (suna ɗorewa har zuwa shekaru biyu), waɗanda ke ba shi damar gane ziyarar da za ka sake yi.',
+      'Manufa: sanin mutane nawa ke ziyartar gidan yanar gizon da amfani da manhajar, da waɗanne shafuka da harsuna suke amfani da su, don inganta su. Tushen doka: ga saƙonnin da ba su da cookies, halattacciyar buƙatar auna amfanin sabis na kyauta ba tare da ajiye komai a na\'urarka ba; ga cookies, amincewarka. Ana riƙe bayanan har tsawon lokacin riƙewa da aka saita a Google Analytics, watanni 14 a mafi yawa.',
+      'Idan ka ƙi, ko ba ka amsa ba, ba a saita wani cookie na ƙididdiga kuma saƙonnin da ba su da cookies ne kawai ake aikawa. Kana iya canza zaɓinka a kowane lokaci da Saitunan cookies, a ƙasan shafukan; ƙi yana share cookies na ƙididdiga na gidan yanar gizon.',
+      'Ƙididdigar tana aiki kuma yayin da manhajar ke buɗe, a shafin da ke riƙe ayyukanka kuma, idan ka zaɓi a tuna su, maɓallanka na AI: kamar kowane rubutun shirin (script) na gidan yanar gizon, rubutun shirin Google Analytics zai iya karanta ma\'ajiyar gidan yanar gizon a mai binciken gizonka, kuma yana aika wa Google bayanan da aka ambata a sama kaɗai. Google Analytics sabis ne na Google ƙarƙashin sharuɗɗansa da manufar sirrinsa, kuma ana iya sarrafa bayanan a Amurka da wasu ƙasashe.',
     ]),
     LegalSection('Ɗaukar nauyin gidan yanar gizo (hosting)', [
       'Firebase Hosting (Google) ne ke ba da gidan yanar gizon, wanda ke karɓar adireshin IP da bayanan fasaha na kowace buƙata (adireshin da aka nema, mai binciken gizo, lokaci) don isar da shafuka da kare sabis ɗin. Tushen doka: halattacciyar buƙatar gudanar da gidan yanar gizon cikin aminci. Ba a amfani da waɗannan bayanai don wani abu dabam ba.',
@@ -260,7 +260,8 @@ const _legalHa = LegalText(
   privacyLink: 'Sirri',
   termsLink: 'Sharuɗɗan amfani',
   cookieSettings: 'Saitunan cookies',
-  consentText: 'Shin wannan gidan yanar gizo zai iya ƙidaya ziyara da Google Analytics? Yana amfani da cookies kuma yana lodawa ne kawai idan ka amince; ba ya taɓa aiki yayin da manhajar ke buɗe.',
+  consentText:
+      'Shin gidan yanar gizon da manhajar za su iya amfani da cookies don ƙididdigar ziyara (Google Analytics)? Ba tare da su ba, ana ci gaba da ƙidaya ziyara, ba tare da cookie ko lambar ganewa ba.',
   consentAccept: 'Amince',
   consentDecline: 'Ƙi',
   updated: 'An sabunta a',

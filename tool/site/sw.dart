@@ -180,7 +180,7 @@ const _sw = SiteText(
     ),
     (
       'Je, miradi yangu huhifadhiwa kwenye wingu?',
-      'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na kama faili za .oci.json unazoziweka popote unapopenda; kiungo cha kushiriki hubeba mradi ndani ya anwani yenyewe, kwa hiyo hakuna kinachopakiwa mtandaoni, na OpenCADIrrigation haina seva ambayo ingeweza kuhifadhi nakala. Fonti za kila mfumo wa maandishi na za alama hutoka kwenye tovuti hii yenyewe. Kivinjari hufikia huduma nyingine: ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, utafutaji wa anwani, katalogi zinazopakiwa kutoka URL na, ukimtumia, msaidizi wa AI (mtoa huduma uliyemchagua tu, Anthropic au OpenAI) huenda kwenye huduma zao unapozitumia; na kurasa za tovuti huhesabu ziara kwa Google Analytics ukikubali tu, kamwe si wakati programu iko wazi. Sera ya faragha huorodhesha kila huduma na kile inachopokea.',
+      'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na kama faili za .oci.json unazoziweka popote unapopenda; kiungo cha kushiriki hubeba mradi ndani ya anwani yenyewe, kwa hiyo hakuna kinachopakiwa mtandaoni, na OpenCADIrrigation haina seva ambayo ingeweza kuhifadhi nakala. Fonti za kila mfumo wa maandishi na za alama hutoka kwenye tovuti hii yenyewe. Kivinjari hufikia huduma nyingine: ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, utafutaji wa anwani, katalogi zinazopakiwa kutoka URL na, ukimtumia, msaidizi wa AI (mtoa huduma uliyemchagua tu, Anthropic au OpenAI) huenda kwenye huduma zao unapozitumia; na tovuti na programu huhesabu ziara kwa Google Analytics, bila vidakuzi isipokuwa ukivikubali. Sera ya faragha huorodhesha kila huduma na kile inachopokea.',
     ),
     (
       'Ukokotoaji wa haidroliki hufanywaje?',
@@ -218,7 +218,7 @@ const _legalSw = LegalText(
     ]),
     LegalSection('Kwa ufupi', [
       '- Hakuna akaunti wala seva ya OpenCADIrrigation nyuma ya programu: miradi, uhifadhi otomatiki, matoleo, mazungumzo ya AI, funguo na mapendeleo hubaki kwenye kivinjari chako na kwenye faili unazohifadhi.',
-      '- Takwimu za ziara (Google Analytics) hukusanywa kwenye kurasa za tovuti tu, ukizikubali tu, na kamwe si wakati programu iko wazi.',
+      '- Takwimu za ziara (Google Analytics) huendeshwa kwenye kurasa zote za tovuti na ndani ya programu: bila ridhaa yako haziweki kidakuzi chochote wala kitambulisho chochote kwenye kifaa chako; kwa ridhaa yako, hutumia vidakuzi vyake.',
       '- Huduma ambazo programu hutumia kwa fonti, ramani, ardhi, hali ya hewa, utafutaji wa anwani na msaidizi wa AI hupokea maombi yako moja kwa moja kutoka kivinjari chako unapozitumia.',
     ]),
     LegalSection('Kinachobaki kwenye kifaa chako', [
@@ -227,10 +227,10 @@ const _legalSw = LegalText(
       'Kiungo cha kushiriki hubeba mradi ndani ya anwani, baada ya alama #, sehemu ambayo vivinjari havitumi kwa seva yoyote.',
     ]),
     LegalSection('Takwimu za ziara na vidakuzi', [
-      'Ukizikubali kwenye tangazo la tovuti, kurasa za tovuti hupakia Google Analytics 4, ambayo huweka vidakuzi _ga na _ga_<id> (hudumu hadi miaka miwili) na hurekodi kurasa zilizotazamwa, wakati wa ziara, ukurasa uliokuleta, aina ya kifaa na ya kivinjari, ukubwa wa skrini, lugha na mahali pa takriban ambapo Google hupakadiria kutoka anwani ya IP (Google Analytics 4 haihifadhi anwani ya IP).',
-      'Madhumuni: kujua ni watu wangapi hutembelea tovuti na ni kurasa na lugha zipi wanazotumia, ili kuiboresha. Msingi wa kisheria: ridhaa yako. Data huhifadhiwa kwa kipindi cha kuhifadhi kilichowekwa katika Google Analytics, kwa kiwango cha juu miezi 14.',
-      'Ukikataa, au usipojibu, hakuna kinachopakiwa na hakuna kinachohesabiwa. Unaweza kubadilisha chaguo lako wakati wowote kwa Mipangilio ya vidakuzi, chini ya kurasa; kukataa hufuta vidakuzi vya takwimu vya tovuti.',
-      'Takwimu kamwe haziendeshwi wakati programu iko wazi, ukurasa unaohifadhi miradi na funguo zako. Google Analytics ni huduma ya Google chini ya masharti na sera ya faragha yake yenyewe, na data zinaweza kuchakatwa nchini Marekani na katika nchi nyingine.',
+      'Kila ukurasa wa tovuti na programu hupakia Google Analytics 4 katika hali ya ridhaa (Consent Mode). Bila ridhaa yako haiweki kidakuzi chochote wala haihifadhi kitambulisho chochote kwenye kifaa chako: kwa kila ukurasa unaotazamwa na kila mara programu inapoanzishwa, hutuma kwa Google taarifa bila vidakuzi yenye wakati, ukurasa uliokuleta, aina ya kifaa na ya kivinjari, ukubwa wa skrini, lugha na mahali pa takriban ambapo Google hupakadiria kutoka anwani ya IP (Google Analytics 4 haihifadhi anwani ya IP), ambazo Google huzitumia kukadiria ni watu wangapi hutumia tovuti na programu. Ukikubali, huweka pia vidakuzi _ga na _ga_<id> (hudumu hadi miaka miwili), ambavyo huiwezesha kutambua ziara zako zinazofuata.',
+      'Madhumuni: kujua ni watu wangapi hutembelea tovuti na kutumia programu, na ni kurasa na lugha zipi wanazotumia, ili kuziboresha. Msingi wa kisheria: kwa taarifa bila vidakuzi, maslahi halali ya kupima matumizi ya huduma ya bure bila kuhifadhi chochote kwenye kifaa chako; kwa vidakuzi, ridhaa yako. Data huhifadhiwa kwa kipindi cha kuhifadhi kilichowekwa katika Google Analytics, kwa kiwango cha juu miezi 14.',
+      'Ukikataa, au usipojibu, hakuna kidakuzi cha takwimu kinachowekwa na hutumwa taarifa bila vidakuzi tu. Unaweza kubadilisha chaguo lako wakati wowote kwa Mipangilio ya vidakuzi, chini ya kurasa; kukataa hufuta vidakuzi vya takwimu vya tovuti.',
+      'Takwimu huendeshwa pia wakati programu iko wazi, kwenye ukurasa unaohifadhi miradi yako na, ukichagua zikumbukwe, funguo zako za AI: kama hati (script) yoyote ya tovuti, hati ya Google Analytics ingeweza kusoma hifadhi ya tovuti kwenye kivinjari chako, na hutuma kwa Google data zilizotajwa hapo juu tu. Google Analytics ni huduma ya Google chini ya masharti na sera ya faragha yake yenyewe, na data zinaweza kuchakatwa nchini Marekani na katika nchi nyingine.',
     ]),
     LegalSection('Upangishaji', [
       'Tovuti hutolewa na Firebase Hosting (Google), ambayo hupokea anwani ya IP na data za kiufundi za kila ombi (anwani iliyoombwa, kivinjari, wakati) ili kuwasilisha kurasa na kulinda huduma. Msingi wa kisheria: maslahi halali ya kuendesha tovuti kwa usalama. Data hizi hazitumiki kwa jambo jingine lolote.',
@@ -275,7 +275,7 @@ const _legalSw = LegalText(
   privacyLink: 'Faragha',
   termsLink: 'Masharti ya matumizi',
   cookieSettings: 'Mipangilio ya vidakuzi',
-  consentText: 'Je, tovuti hii inaweza kuhesabu ziara kwa Google Analytics? Hutumia vidakuzi na hupakiwa ukikubali tu; kamwe haiendeshwi wakati programu iko wazi.',
+  consentText: 'Je, tovuti na programu zinaweza kutumia vidakuzi kwa takwimu za ziara (Google Analytics)? Bila hivyo, ziara bado huhesabiwa, bila kidakuzi wala kitambulisho.',
   consentAccept: 'Kubali',
   consentDecline: 'Kataa',
   updated: 'Ilisasishwa mwisho',

@@ -204,8 +204,7 @@ como a tela faz, sem perguntar). Uma busca do local por endereço envia o endere
 OpenStreetMap (<code>nominatim.openstreetmap.org</code>), com a sua aprovação, a não ser que as alterações
 sejam aplicadas automaticamente. Cada chave fica na memória enquanto a página está aberta; com
 <em>Lembrar a chave neste dispositivo</em> ela é guardada no armazenamento do navegador, que qualquer
-script do site poderia ler (as estatísticas de visita do site nunca rodam numa página em que o app
-roda). As chaves nunca entram no arquivo do projeto, no autosave, nos links de compartilhamento
+script do site poderia ler, o das estatísticas de visita (Google Analytics) também. As chaves nunca entram no arquivo do projeto, no autosave, nos links de compartilhamento
 nem nas exportações, e cada uma só vai para a sua própria empresa. O ditado por voz envia o som da
 sua voz ao serviço de voz do navegador (o Chrome usa os servidores do Google, o Edge os da
 Microsoft e o Safari os da Apple), que devolve o texto; o app não grava nem guarda o áudio, e o
@@ -220,11 +219,14 @@ configurações do assistente, desliga isso e as apaga. Uma conversa exportada n
 fora a chave e as fotos que você anexou. O aviso quando o app está em segundo plano faz piscar o
 título da aba e, se você permitir, mostra notificações do sistema; nada dele sai da página. O que
 cada empresa faz com os pedidos é regido pelo seu acordo com ela.</li>
-<li><strong>Estatística de visitas</strong>: as páginas de opencadirrigation.com perguntam uma vez se podem contar
-as visitas e só carregam o Google Analytics 4 depois de <em>Aceitar</em> (Consent Mode v2: tudo negado
-por padrão, só a estatística liberada), nunca numa página em que o app roda, de modo que ele não
-alcança projetos nem chaves; <em>Recusar</em>, também depois em <em>Preferências de cookies</em> no rodapé das
-páginas, apaga os cookies dele. O ID de medição é definido quando as páginas são geradas
+<li><strong>Estatística de visitas</strong>: todas as páginas de opencadirrigation.com e o app carregam o Google
+Analytics 4 em Consent Mode v2: a publicidade fica sempre negada e, até o visitante aceitar, a
+estatística não grava cookie e manda ao Google avisos sem cookies (cada página vista, e um evento
+<code>app_start</code> quando o app inicia), de modo que dá para saber quantos visitantes e usuários há. As
+páginas perguntam uma vez se a estatística pode usar cookies; <em>Aceitar</em> liga os cookies <code>_ga</code> e
+<code>_ga_&lt;id&gt;</code>, e <em>Recusar</em>, também depois em <em>Preferências de cookies</em> no rodapé das páginas, os
+apaga. O aviso não aparece sobre o app. Como qualquer script do site, o da estatística roda na
+página que guarda os projetos e as chaves lembradas. O ID de medição é definido quando as páginas são geradas
 (<code>OCI_ANALYTICS_ID</code>, vazio para nenhum). A política de privacidade (<code>/privacy/</code>) e os termos de uso
 (<code>/terms/</code>) são gerados com as páginas, e Ajuda → Sobre leva a eles no idioma da interface.</li>
 <li><strong>Idioma e preferências</strong> (idioma escolhido, tema, tamanho e contraste da interface, as
@@ -270,9 +272,9 @@ onde o tutorial parou, as configurações do assistente) ficam nas preferências
     <p>OpenCADIrrigation 1.6.0 · <a href="https://github.com/videjunior/opencadirrigation">Código-fonte (licença MIT)</a> · <a href="https://opencadirrigation.com/pt/privacy/">Privacidade</a> · <a href="https://opencadirrigation.com/pt/terms/">Termos de uso</a> · <button type="button" class="oci-linkish" data-consent-open>Preferências de cookies</button> · Atualizado em <time datetime="2026-11-02">2026-11-02</time></p>
   </footer>
   <div class="oci-consent" id="oci-consent" role="region" aria-label="Preferências de cookies" lang="pt-BR" hidden>
-    <p>Este site pode contar as visitas com o Google Analytics? Ele usa cookies e só é carregado se você aceitar; nunca roda com o app aberto. <a href="https://opencadirrigation.com/pt/privacy/">Política de privacidade</a></p>
+    <p>O site e o app podem usar cookies para as estatísticas de visita (Google Analytics)? Sem eles, as visitas continuam sendo contadas, sem cookie e sem identificador. <a href="https://opencadirrigation.com/pt/privacy/">Política de privacidade</a></p>
     <div class="actions"><button type="button" data-consent="denied">Recusar</button><button type="button" data-consent="granted">Aceitar</button></div>
   </div>
-  <script src="/site.js?v=e68433d6" data-ga="G-3M0P4T8V2T" defer></script>
+  <script src="/site.js?v=833dc84c" data-ga="G-3M0P4T8V2T" defer></script>
 </body>
 </html>

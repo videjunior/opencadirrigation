@@ -201,7 +201,7 @@ goes out; the pictures download their tiles as the screen does, without asking).
 address sends the address to OpenStreetMap's Nominatim (<code>nominatim.openstreetmap.org</code>), on your
 approval unless changes apply automatically. Each key stays in memory while the page is open; with
 <em>Remember the key on this device</em> it is kept in the browser storage, which any script of the site
-could read (the site's visit statistics never run in a page where the app runs). The keys never
+could read, the visit statistics one (Google Analytics) included. The keys never
 enter the project file, the autosave, share links or exports, and each goes only to its own
 company. Voice dictation sends the sound of your voice to the browser's speech service (Chrome
 uses Google's servers, Edge Microsoft's and Safari Apple's), which returns the text; the app
@@ -216,10 +216,14 @@ turns this off and deletes them. A conversation exported to a file leaves the ke
 you attached out. The notice when the app is in the background blinks the title of the tab and, if
 you allow them, shows system notifications; nothing of it leaves the page. What each company does
 with the requests is governed by your agreement with it.</li>
-<li><strong>Visit statistics</strong>: the pages of opencadirrigation.com ask once whether visits may be counted
-and load Google Analytics 4 only after <em>Accept</em> (Consent Mode v2: everything denied by default,
-only the statistics granted), never in a page where the app runs, so it cannot reach projects or
-keys; <em>Decline</em>, also later with <em>Cookie settings</em> at the foot of the pages, deletes its cookies.
+<li><strong>Visit statistics</strong>: every page of opencadirrigation.com and the app load Google Analytics 4 in
+Consent Mode v2: advertising is always denied and, until the visitor accepts, the statistics set no
+cookie and send Google notices without cookies (each page viewed, and an <code>app_start</code> event when the
+app starts), so the number of visitors and users can be known. The pages ask once whether the
+statistics may use cookies; <em>Accept</em> turns on the cookies <code>_ga</code> and <code>_ga_&lt;id&gt;</code>, and <em>Decline</em>, also
+later with <em>Cookie settings</em> at the foot of the pages, deletes them. The notice is not shown over
+the app. Like any script of the site, the statistics script runs in the page that holds the
+projects and the remembered keys.
 The measurement id is set when the pages are generated (<code>OCI_ANALYTICS_ID</code>, empty for none). The
 privacy policy (<code>/privacy/</code>) and the terms of use (<code>/terms/</code>) are generated with the pages, and
 Help → About links them in the interface language.</li>
@@ -266,9 +270,9 @@ the tutorial stopped, the assistant's settings) are kept in the browser preferen
     <p>OpenCADIrrigation 1.6.0 · <a href="https://github.com/videjunior/opencadirrigation">Source code (MIT licence)</a> · <a href="https://opencadirrigation.com/privacy/">Privacy</a> · <a href="https://opencadirrigation.com/terms/">Terms of use</a> · <button type="button" class="oci-linkish" data-consent-open>Cookie settings</button> · Last updated <time datetime="2026-11-02">2026-11-02</time></p>
   </footer>
   <div class="oci-consent" id="oci-consent" role="region" aria-label="Cookie settings" lang="en" hidden>
-    <p>May this site count visits with Google Analytics? It uses cookies and loads only if you accept; it never runs while the app is open. <a href="https://opencadirrigation.com/privacy/">Privacy policy</a></p>
+    <p>May the site and the app use cookies for the visit statistics (Google Analytics)? Without them visits are still counted, with no cookie and no identifier. <a href="https://opencadirrigation.com/privacy/">Privacy policy</a></p>
     <div class="actions"><button type="button" data-consent="denied">Decline</button><button type="button" data-consent="granted">Accept</button></div>
   </div>
-  <script src="/site.js?v=e68433d6" data-ga="G-3M0P4T8V2T" defer></script>
+  <script src="/site.js?v=833dc84c" data-ga="G-3M0P4T8V2T" defer></script>
 </body>
 </html>

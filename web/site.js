@@ -28,7 +28,7 @@
     return;
   }
 
-  // ---- visit statistics, after consent
+  // ---- visit statistics: on every page and in the app, in Consent Mode (cookies only after "Accept")
   function readConsent() {
     try {
       var v = JSON.parse(localStorage.getItem(consentKey) || 'null');
@@ -52,29 +52,27 @@
       });
     });
   }
-  // never on a device that keeps an AI assistant key ("Remember the key on
-  // this device"): it is in this site's localStorage, which any script of
-  // the page can read, and the statistics script is the only one from elsewhere
-  function keepsAiKey() {
-    try {
-      return !!(localStorage.getItem('opencadirrigation.ai.key') || localStorage.getItem('opencadirrigation.ai.key.openai'));
-    } catch (e) {
-      return false;
-    }
+  // the address without its fragment: a share link carries the whole project after the #
+  function page() {
+    return location.origin + location.pathname + location.search;
   }
   function loadAnalytics() {
-    if (analytics || started || !analyticsId || keepsAiKey()) return;
+    // not on this computer (development, tests): only the published site is counted
+    if (analytics || !analyticsId || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return;
     analytics = true;
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
-    window.gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
-    window.gtag('consent', 'update', { analytics_storage: 'granted' });
+    // without an answer, or after "Decline", the statistics are counted without cookies
+    window.gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: readConsent() === 'granted' ? 'granted' : 'denied' });
     window.gtag('js', new Date());
-    window.gtag('config', analyticsId);
+    window.gtag('config', analyticsId, { page_location: page() });
     var tag = document.createElement('script');
     tag.async = true;
     tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(analyticsId);
     document.head.appendChild(tag);
+  }
+  function track(name) {
+    if (analytics) window.gtag('event', name, { page_location: page() });
   }
   function showBanner(show) {
     if (banner) banner.hidden = !show;
@@ -82,12 +80,8 @@
   function choose(c) {
     saveConsent(c);
     showBanner(false);
-    if (c === 'granted') {
-      loadAnalytics();
-    } else {
-      if (analytics) window.gtag('consent', 'update', { analytics_storage: 'denied' });
-      dropCookies();
-    }
+    if (analytics) window.gtag('consent', 'update', { analytics_storage: c });
+    if (c !== 'granted') dropCookies();
   }
   document.addEventListener('click', function (e) {
     var t = e.target.closest ? e.target.closest('[data-consent], [data-consent-open]') : null;
@@ -96,6 +90,7 @@
     if (t.hasAttribute('data-consent-open')) showBanner(true);
     else choose(t.getAttribute('data-consent'));
   });
+  loadAnalytics();
 
   // ---- the app, on an entry page
   function remember() {
@@ -112,6 +107,7 @@
     started = true;
     remember();
     showBanner(false);
+    track('app_start');
     landing.className += ' oci-starting';
     status.textContent = landing.getAttribute('data-loading');
     // The engine, the app code and the fonts (those of other scripts and the symbols too,
@@ -130,18 +126,13 @@
     }, 30000);
   }
   // The app buttons and example links open the app in this page (the app reads the query of the address);
-  // opened in a new tab, the app starts there by itself. With the statistics running here, the app opens
-  // in a fresh page, where they never run.
+  // opened in a new tab, the app starts there by itself.
   function onAppLink(e) {
     var a = e.target.closest ? e.target.closest('a[data-app]') : null;
     if (!a) return;
     remember();
     if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    if (analytics) {
-      location.assign(location.pathname + a.search);
-      return;
-    }
     history.replaceState(null, '', location.pathname + a.search);
     window.scrollTo(0, 0);
     start();
@@ -152,9 +143,6 @@
     window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
     if (wanted()) start();
   }
-  if (!started && analyticsId) {
-    var answer = readConsent();
-    if (answer === 'granted') loadAnalytics();
-    else if (answer === null) showBanner(true);
-  }
+  // the notice asks on the pages, not over the app
+  if (!started && analyticsId && readConsent() === null) showBanner(true);
 })();

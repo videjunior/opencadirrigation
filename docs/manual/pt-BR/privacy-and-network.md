@@ -65,8 +65,7 @@
   OpenStreetMap (`nominatim.openstreetmap.org`), com a sua aprovação, a não ser que as alterações
   sejam aplicadas automaticamente. Cada chave fica na memória enquanto a página está aberta; com
   *Lembrar a chave neste dispositivo* ela é guardada no armazenamento do navegador, que qualquer
-  script do site poderia ler (as estatísticas de visita do site nunca rodam numa página em que o app
-  roda). As chaves nunca entram no arquivo do projeto, no autosave, nos links de compartilhamento
+  script do site poderia ler, o das estatísticas de visita (Google Analytics) também. As chaves nunca entram no arquivo do projeto, no autosave, nos links de compartilhamento
   nem nas exportações, e cada uma só vai para a sua própria empresa. O ditado por voz envia o som da
   sua voz ao serviço de voz do navegador (o Chrome usa os servidores do Google, o Edge os da
   Microsoft e o Safari os da Apple), que devolve o texto; o app não grava nem guarda o áudio, e o
@@ -81,11 +80,14 @@
   fora a chave e as fotos que você anexou. O aviso quando o app está em segundo plano faz piscar o
   título da aba e, se você permitir, mostra notificações do sistema; nada dele sai da página. O que
   cada empresa faz com os pedidos é regido pelo seu acordo com ela.
-- **Estatística de visitas**: as páginas de opencadirrigation.com perguntam uma vez se podem contar
-  as visitas e só carregam o Google Analytics 4 depois de *Aceitar* (Consent Mode v2: tudo negado
-  por padrão, só a estatística liberada), nunca numa página em que o app roda, de modo que ele não
-  alcança projetos nem chaves; *Recusar*, também depois em *Preferências de cookies* no rodapé das
-  páginas, apaga os cookies dele. O ID de medição é definido quando as páginas são geradas
+- **Estatística de visitas**: todas as páginas de opencadirrigation.com e o app carregam o Google
+  Analytics 4 em Consent Mode v2: a publicidade fica sempre negada e, até o visitante aceitar, a
+  estatística não grava cookie e manda ao Google avisos sem cookies (cada página vista, e um evento
+  `app_start` quando o app inicia), de modo que dá para saber quantos visitantes e usuários há. As
+  páginas perguntam uma vez se a estatística pode usar cookies; *Aceitar* liga os cookies `_ga` e
+  `_ga_<id>`, e *Recusar*, também depois em *Preferências de cookies* no rodapé das páginas, os
+  apaga. O aviso não aparece sobre o app. Como qualquer script do site, o da estatística roda na
+  página que guarda os projetos e as chaves lembradas. O ID de medição é definido quando as páginas são geradas
   (`OCI_ANALYTICS_ID`, vazio para nenhum). A política de privacidade (`/privacy/`) e os termos de uso
   (`/terms/`) são gerados com as páginas, e Ajuda → Sobre leva a eles no idioma da interface.
 - **Idioma e preferências** (idioma escolhido, tema, tamanho e contraste da interface, as

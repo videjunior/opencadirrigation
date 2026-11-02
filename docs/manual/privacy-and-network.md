@@ -62,7 +62,7 @@
   address sends the address to OpenStreetMap's Nominatim (`nominatim.openstreetmap.org`), on your
   approval unless changes apply automatically. Each key stays in memory while the page is open; with
   *Remember the key on this device* it is kept in the browser storage, which any script of the site
-  could read (the site's visit statistics never run in a page where the app runs). The keys never
+  could read, the visit statistics one (Google Analytics) included. The keys never
   enter the project file, the autosave, share links or exports, and each goes only to its own
   company. Voice dictation sends the sound of your voice to the browser's speech service (Chrome
   uses Google's servers, Edge Microsoft's and Safari Apple's), which returns the text; the app
@@ -77,10 +77,14 @@
   you attached out. The notice when the app is in the background blinks the title of the tab and, if
   you allow them, shows system notifications; nothing of it leaves the page. What each company does
   with the requests is governed by your agreement with it.
-- **Visit statistics**: the pages of opencadirrigation.com ask once whether visits may be counted
-  and load Google Analytics 4 only after *Accept* (Consent Mode v2: everything denied by default,
-  only the statistics granted), never in a page where the app runs, so it cannot reach projects or
-  keys; *Decline*, also later with *Cookie settings* at the foot of the pages, deletes its cookies.
+- **Visit statistics**: every page of opencadirrigation.com and the app load Google Analytics 4 in
+  Consent Mode v2: advertising is always denied and, until the visitor accepts, the statistics set no
+  cookie and send Google notices without cookies (each page viewed, and an `app_start` event when the
+  app starts), so the number of visitors and users can be known. The pages ask once whether the
+  statistics may use cookies; *Accept* turns on the cookies `_ga` and `_ga_<id>`, and *Decline*, also
+  later with *Cookie settings* at the foot of the pages, deletes them. The notice is not shown over
+  the app. Like any script of the site, the statistics script runs in the page that holds the
+  projects and the remembered keys.
   The measurement id is set when the pages are generated (`OCI_ANALYTICS_ID`, empty for none). The
   privacy policy (`/privacy/`) and the terms of use (`/terms/`) are generated with the pages, and
   Help → About links them in the interface language.

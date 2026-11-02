@@ -211,12 +211,12 @@ de bloco, uma paleta de comandos e mais.
   (`/manual/`, `/pt/manual/`).
 - **Ajuda → Termos dos dados**, com os créditos nas pranchas e no relatório; **Ver → Mapa base → Guardar o mapa da
   área para o campo**.
-- **Privacidade e termos**: o site tem política de privacidade e termos de uso em todos os idiomas (escritos por
-  enquanto em português, inglês e espanhol), com link no rodapé das páginas e em Ajuda → Sobre; o Sobre também diz que
+- **Privacidade e termos**: o site tem política de privacidade e termos de uso em todos os idiomas, com link no rodapé das páginas e em Ajuda → Sobre; o Sobre também diz que
   um profissional habilitado confere e assina o projeto feito com o app.
-- **Estatísticas de visita só com consentimento**: as páginas perguntam uma vez; o Google Analytics só carrega depois
-  de *Aceitar* (Consent Mode v2, tudo negado por padrão) e nunca numa página em que o app roda, de modo que não
-  alcança projetos nem chaves. *Preferências de cookies*, no rodapé das páginas, muda a resposta.
+- **Estatísticas de visita em Consent Mode**: as páginas e o app carregam o Google Analytics em Consent Mode v2 (a
+  publicidade sempre negada); sem consentimento, ele não grava cookie e manda avisos sem cookies (cada página e cada
+  início do app), e os cookies só vêm depois de *Aceitar* no aviso que as páginas mostram uma vez. *Preferências de
+  cookies*, no rodapé das páginas, muda a resposta, e recusar apaga os cookies.
 - **Segurança**: uma Content Security Policy em cada página (scripts só do site, nenhum script inline), uma
   configuração de hospedagem versionada (`hosting/firebase.json`) com `Referrer-Policy`, `Permissions-Policy`,
   revalidação dos arquivos do app e redirecionamento permanente de `/en/`; os avisos das chaves dizem quem poderia ler

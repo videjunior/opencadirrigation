@@ -160,7 +160,7 @@ const _id = SiteText(
     ),
     (
       'Apakah proyek saya disimpan di cloud?',
-      'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana pun Anda mau; tautan berbagi membawa proyek di dalam alamat itu sendiri, sehingga tidak ada yang diunggah, dan OpenCADIrrigation tidak memiliki server yang dapat menyimpan salinannya. Fon untuk setiap aksara dan simbol berasal dari situs ini sendiri. Peramban memang menghubungi layanan lain: peta dasar, elevasi dan iklim online, pencarian alamat, katalog yang dimuat dari URL, dan, jika Anda memakainya, asisten AI (hanya penyedia yang Anda pilih, Anthropic atau OpenAI) menghubungi layanannya masing-masing saat Anda memakainya; dan halaman-halaman situs menghitung kunjungan dengan Google Analytics hanya jika Anda menyetujuinya, tidak pernah selama aplikasi terbuka. Kebijakan privasi mencantumkan setiap layanan dan apa yang diterimanya.',
+      'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana pun Anda mau; tautan berbagi membawa proyek di dalam alamat itu sendiri, sehingga tidak ada yang diunggah, dan OpenCADIrrigation tidak memiliki server yang dapat menyimpan salinannya. Fon untuk setiap aksara dan simbol berasal dari situs ini sendiri. Peramban memang menghubungi layanan lain: peta dasar, elevasi dan iklim online, pencarian alamat, katalog yang dimuat dari URL, dan, jika Anda memakainya, asisten AI (hanya penyedia yang Anda pilih, Anthropic atau OpenAI) menghubungi layanannya masing-masing saat Anda memakainya; dan situs serta aplikasi menghitung kunjungan dengan Google Analytics, tanpa cookie kecuali Anda menyetujuinya. Kebijakan privasi mencantumkan setiap layanan dan apa yang diterimanya.',
     ),
     (
       'Bagaimana perhitungan hidrauliknya?',
@@ -198,7 +198,7 @@ const _legalId = LegalText(
     ]),
     LegalSection('Singkatnya', [
       '- Tidak ada akun dan tidak ada server OpenCADIrrigation di balik aplikasi: proyek, simpan otomatis, versi, percakapan AI, kunci, dan preferensi tetap berada di peramban Anda dan di berkas yang Anda simpan.',
-      '- Statistik kunjungan (Google Analytics) hanya dikumpulkan di halaman-halaman situs, hanya jika Anda menyetujuinya, dan tidak pernah selama aplikasi terbuka.',
+      '- Statistik kunjungan (Google Analytics) berjalan di semua halaman situs dan di aplikasi: tanpa persetujuan Anda, statistik ini tidak menetapkan cookie dan tidak menyimpan pengenal apa pun di perangkat Anda; dengan persetujuan Anda, statistik ini memakai cookie-nya.',
       '- Layanan yang dipakai aplikasi untuk fon, peta, medan, iklim, pencarian alamat, dan asisten AI menerima permintaan Anda langsung dari peramban Anda saat Anda memakainya.',
     ]),
     LegalSection('Apa yang tetap berada di perangkat Anda', [
@@ -207,10 +207,10 @@ const _legalId = LegalText(
       'Tautan berbagi membawa proyek di dalam alamat, setelah tanda #, yang tidak dikirim peramban ke server mana pun.',
     ]),
     LegalSection('Statistik kunjungan dan cookie', [
-      'Jika Anda menyetujuinya pada pemberitahuan situs, halaman-halaman situs memuat Google Analytics 4, yang menetapkan cookie _ga dan _ga_<id> (berlaku hingga dua tahun) dan mencatat halaman yang dilihat, waktu kunjungan, halaman yang membawa Anda ke sini, jenis perangkat dan peramban, ukuran layar, bahasa, serta perkiraan lokasi yang diturunkan Google dari alamat IP (Google Analytics 4 tidak menyimpan alamat IP).',
-      'Tujuan: mengetahui berapa banyak orang yang mengunjungi situs serta halaman dan bahasa mana yang mereka pakai, untuk memperbaikinya. Dasar hukum: persetujuan Anda. Data disimpan selama masa retensi yang ditetapkan di Google Analytics, paling lama 14 bulan.',
-      'Jika Anda menolak, atau tidak menjawab, tidak ada yang dimuat dan tidak ada yang dihitung. Anda dapat mengubah pilihan kapan saja melalui Pengaturan cookie, di bagian bawah halaman; menolak akan menghapus cookie statistik situs.',
-      'Statistik tidak pernah berjalan selama aplikasi terbuka, yaitu halaman yang menyimpan proyek dan kunci Anda. Google Analytics adalah layanan Google dengan ketentuan dan kebijakan privasinya sendiri, dan datanya dapat diproses di Amerika Serikat dan di negara lain.',
+      'Semua halaman situs dan aplikasi memuat Google Analytics 4 dalam mode izin. Tanpa persetujuan Anda, Google Analytics tidak menetapkan cookie dan tidak menyimpan pengenal apa pun di perangkat Anda: untuk setiap halaman yang dilihat dan setiap kali aplikasi dibuka, Google Analytics mengirimkan kepada Google sinyal tanpa cookie yang berisi waktu, halaman yang membawa Anda ke sini, jenis perangkat dan peramban, ukuran layar, bahasa, serta perkiraan lokasi yang diturunkan Google dari alamat IP (Google Analytics 4 tidak menyimpan alamat IP), yang dipakai Google untuk memperkirakan berapa banyak orang yang memakai situs dan aplikasi. Jika Anda menyetujuinya, Google Analytics juga menetapkan cookie _ga dan _ga_<id> (berlaku hingga dua tahun), yang memungkinkannya mengenali kunjungan Anda berikutnya.',
+      'Tujuan: mengetahui berapa banyak orang yang mengunjungi situs dan memakai aplikasi, serta halaman dan bahasa mana yang mereka pakai, untuk memperbaiki keduanya. Dasar hukum: untuk sinyal tanpa cookie, kepentingan yang sah untuk mengukur penggunaan layanan gratis tanpa menyimpan apa pun di perangkat Anda; untuk cookie, persetujuan Anda. Data disimpan selama masa retensi yang ditetapkan di Google Analytics, paling lama 14 bulan.',
+      'Jika Anda menolak, atau tidak menjawab, tidak ada cookie statistik yang ditetapkan dan hanya sinyal tanpa cookie yang dikirim. Anda dapat mengubah pilihan kapan saja melalui Pengaturan cookie, di bagian bawah halaman; menolak akan menghapus cookie statistik situs.',
+      'Statistik juga berjalan selama aplikasi terbuka, yaitu di halaman yang menyimpan proyek Anda dan, jika Anda memilih untuk mengingatnya, kunci AI Anda: seperti skrip situs mana pun, skrip Google Analytics dapat membaca penyimpanan situs di peramban Anda, dan skrip itu hanya mengirimkan data di atas kepada Google. Google Analytics adalah layanan Google dengan ketentuan dan kebijakan privasinya sendiri, dan datanya dapat diproses di Amerika Serikat dan di negara lain.',
     ]),
     LegalSection('Hosting situs', [
       'Situs ini dilayani oleh Firebase Hosting (Google), yang menerima alamat IP dan data teknis setiap permintaan (alamat yang diminta, peramban, waktu) untuk mengirimkan halaman dan melindungi layanan. Dasar hukum: kepentingan yang sah untuk menjalankan situs dengan aman. Data ini tidak dipakai untuk hal lain.',
@@ -255,8 +255,7 @@ const _legalId = LegalText(
   privacyLink: 'Privasi',
   termsLink: 'Ketentuan penggunaan',
   cookieSettings: 'Pengaturan cookie',
-  consentText:
-      'Bolehkah situs ini menghitung kunjungan dengan Google Analytics? Google Analytics memakai cookie dan hanya dimuat jika Anda menyetujuinya; tidak pernah berjalan selama aplikasi terbuka.',
+  consentText: 'Bolehkah situs dan aplikasi memakai cookie untuk statistik kunjungan (Google Analytics)? Jika tidak, kunjungan tetap dihitung, tanpa cookie dan tanpa pengenal.',
   consentAccept: 'Setuju',
   consentDecline: 'Tolak',
   updated: 'Terakhir diperbarui',

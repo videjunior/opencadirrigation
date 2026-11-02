@@ -57,8 +57,8 @@ part 'site/zh.dart';
 const siteUrl = 'https://opencadirrigation.com/';
 
 /// Google Analytics measurement id of the site, written into the pages for
-/// `site.js`, which loads the statistics only after the visitor accepts
-/// them and never in a page where the app runs. A fork sets its own:
+/// `site.js`, which loads the statistics on every page and in the app, in
+/// Consent Mode (cookies only after the visitor accepts them). A fork sets its own:
 /// `OCI_ANALYTICS_ID=G-… dart run tool/gen_site.dart`; an empty one leaves
 /// the statistics and their notice out of the pages.
 final analyticsId = Platform.environment['OCI_ANALYTICS_ID'] ?? 'G-3M0P4T8V2T';
@@ -76,8 +76,7 @@ const _localServers = 'http://localhost:* http://127.0.0.1:*';
 /// so that it travels with the pages (the hosting configuration,
 /// [renderHostingConfig], adds what a meta element cannot carry). Scripts
 /// come only from the site (no inline script: the page logic is `site.js`)
-/// and, after the visitor accepts the statistics, from Google's tag
-/// manager; WebAssembly is compiled for CanvasKit; images, map tiles, the
+/// and from Google's tag manager (the visit statistics); WebAssembly is compiled for CanvasKit; images, map tiles, the
 /// elevation, climate and AI services and the catalogues by URL are
 /// fetched from any HTTPS address the user picks, and map tiles also from a
 /// server of one's own on this computer (http://localhost, the one plain
@@ -248,7 +247,7 @@ class SiteText {
 /// internet was reached only on request, which the fonts and the visit
 /// statistics contradicted).
 const faqCloudAnswerEn =
-    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The fonts of every script and symbol come from this site itself. The browser does reach other services: base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
+    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The fonts of every script and symbol come from this site itself. The browser does reach other services: base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the site and the app count visits with Google Analytics, with no cookie unless you accept them. The privacy policy lists each service and what it receives.';
 
 const _pt = SiteText(
   title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
@@ -391,7 +390,7 @@ const _pt = SiteText(
     ),
     (
       'Meus projetos ficam na nuvem?',
-      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. As fontes de todas as escritas e símbolos vêm do próprio site. O navegador acessa outros serviços: mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
+      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. As fontes de todas as escritas e símbolos vêm do próprio site. O navegador acessa outros serviços: mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e o site e o app contam as visitas com o Google Analytics, sem cookie a menos que você os aceite. A política de privacidade lista cada serviço e o que ele recebe.',
     ),
     (
       'Como é feito o cálculo hidráulico?',
@@ -723,7 +722,7 @@ const _es = SiteText(
     ),
     (
       '¿Mis proyectos se guardan en la nube?',
-      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. Las fuentes de todas las escrituras y símbolos vienen del propio sitio. El navegador sí accede a otros servicios: los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
+      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. Las fuentes de todas las escrituras y símbolos vienen del propio sitio. El navegador sí accede a otros servicios: los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y el sitio y la aplicación cuentan las visitas con Google Analytics, sin cookies a menos que usted las acepte. La política de privacidad enumera cada servicio y lo que recibe.',
     ),
     (
       '¿Cómo se hace el cálculo hidráulico?',
@@ -1222,12 +1221,11 @@ String siteScriptTag({bool absolute = true}) => '<script src="${absolute ? '/' :
 /// - on an entry page it starts the app when it is wanted (an app address,
 ///   the installed app, a visitor who has used it here before) and opens
 ///   it in place from the page's buttons and example links;
-/// - on every page it asks once whether visits may be counted; Google
-///   Analytics (Consent Mode v2, everything denied by default and only the
-///   statistics granted) is loaded after "Accept" and never in a page
-///   where the app runs, the page that holds the projects and the keys:
-///   with the statistics loaded, the app buttons open the app in a new
-///   page instead;
+/// - on every page and in the app it loads Google Analytics in Consent
+///   Mode v2: advertising always denied, the statistics cookies only after
+///   "Accept" (until then, and after "Decline", Google receives notices
+///   without cookies), and each start of the app is an `app_start` event;
+///   the notice asks once on the pages, not over the app;
 /// - a new visitor arriving at a default address of the hosting project is
 ///   sent to the site's own address (whoever has projects stored there stays:
 ///   the storage belongs to the address).
@@ -1264,7 +1262,7 @@ String renderSiteScript() {
     return;
   }
 
-  // ---- visit statistics, after consent
+  // ---- visit statistics: on every page and in the app, in Consent Mode (cookies only after "Accept")
   function readConsent() {
     try {
       var v = JSON.parse(localStorage.getItem(consentKey) || 'null');
@@ -1288,29 +1286,27 @@ String renderSiteScript() {
       });
     });
   }
-  // never on a device that keeps an AI assistant key ("Remember the key on
-  // this device"): it is in this site's localStorage, which any script of
-  // the page can read, and the statistics script is the only one from elsewhere
-  function keepsAiKey() {
-    try {
-      return !!(localStorage.getItem('opencadirrigation.ai.key') || localStorage.getItem('opencadirrigation.ai.key.openai'));
-    } catch (e) {
-      return false;
-    }
+  // the address without its fragment: a share link carries the whole project after the #
+  function page() {
+    return location.origin + location.pathname + location.search;
   }
   function loadAnalytics() {
-    if (analytics || started || !analyticsId || keepsAiKey()) return;
+    // not on this computer (development, tests): only the published site is counted
+    if (analytics || !analyticsId || /^(localhost|127\\.0\\.0\\.1|\\[::1\\])\$/.test(location.hostname)) return;
     analytics = true;
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
-    window.gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
-    window.gtag('consent', 'update', { analytics_storage: 'granted' });
+    // without an answer, or after "Decline", the statistics are counted without cookies
+    window.gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: readConsent() === 'granted' ? 'granted' : 'denied' });
     window.gtag('js', new Date());
-    window.gtag('config', analyticsId);
+    window.gtag('config', analyticsId, { page_location: page() });
     var tag = document.createElement('script');
     tag.async = true;
     tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(analyticsId);
     document.head.appendChild(tag);
+  }
+  function track(name) {
+    if (analytics) window.gtag('event', name, { page_location: page() });
   }
   function showBanner(show) {
     if (banner) banner.hidden = !show;
@@ -1318,12 +1314,8 @@ String renderSiteScript() {
   function choose(c) {
     saveConsent(c);
     showBanner(false);
-    if (c === 'granted') {
-      loadAnalytics();
-    } else {
-      if (analytics) window.gtag('consent', 'update', { analytics_storage: 'denied' });
-      dropCookies();
-    }
+    if (analytics) window.gtag('consent', 'update', { analytics_storage: c });
+    if (c !== 'granted') dropCookies();
   }
   document.addEventListener('click', function (e) {
     var t = e.target.closest ? e.target.closest('[data-consent], [data-consent-open]') : null;
@@ -1332,6 +1324,7 @@ String renderSiteScript() {
     if (t.hasAttribute('data-consent-open')) showBanner(true);
     else choose(t.getAttribute('data-consent'));
   });
+  loadAnalytics();
 
   // ---- the app, on an entry page
   function remember() {
@@ -1348,6 +1341,7 @@ String renderSiteScript() {
     started = true;
     remember();
     showBanner(false);
+    track('app_start');
     landing.className += ' oci-starting';
     status.textContent = landing.getAttribute('data-loading');
     // The engine, the app code and the fonts (those of other scripts and the symbols too,
@@ -1366,18 +1360,13 @@ String renderSiteScript() {
     }, 30000);
   }
   // The app buttons and example links open the app in this page (the app reads the query of the address);
-  // opened in a new tab, the app starts there by itself. With the statistics running here, the app opens
-  // in a fresh page, where they never run.
+  // opened in a new tab, the app starts there by itself.
   function onAppLink(e) {
     var a = e.target.closest ? e.target.closest('a[data-app]') : null;
     if (!a) return;
     remember();
     if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    if (analytics) {
-      location.assign(location.pathname + a.search);
-      return;
-    }
     history.replaceState(null, '', location.pathname + a.search);
     window.scrollTo(0, 0);
     start();
@@ -1388,11 +1377,8 @@ String renderSiteScript() {
     window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
     if (wanted()) start();
   }
-  if (!started && analyticsId) {
-    var answer = readConsent();
-    if (answer === 'granted') loadAnalytics();
-    else if (answer === null) showBanner(true);
-  }
+  // the notice asks on the pages, not over the app
+  if (!started && analyticsId && readConsent() === null) showBanner(true);
 })();
 ''';
 }

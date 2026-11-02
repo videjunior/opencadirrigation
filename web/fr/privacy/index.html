@@ -68,7 +68,7 @@
       <h2>En bref</h2>
       <ul>
         <li>Il n’y a ni compte ni serveur d’OpenCADIrrigation derrière l’application : les projets, les enregistrements automatiques, les versions, les conversations IA, les clés et les préférences restent dans votre navigateur et dans les fichiers que vous enregistrez.</li>
-        <li>Les statistiques de visite (Google Analytics) ne sont collectées que sur les pages du site, uniquement si vous les acceptez, et jamais pendant que l’application est ouverte.</li>
+        <li>Les statistiques de visite (Google Analytics) tournent sur toutes les pages du site et dans l’application : sans votre consentement, elles ne déposent aucun cookie et ne conservent aucun identifiant sur votre appareil ; avec celui-ci, elles utilisent leurs cookies.</li>
         <li>Les services que l’application utilise pour les polices, les cartes, le terrain, le climat, la recherche d’adresse et l’assistant IA reçoivent vos requêtes directement depuis votre navigateur quand vous les utilisez.</li>
       </ul>
     </section>
@@ -80,10 +80,10 @@
     </section>
     <section>
       <h2>Statistiques de visite et cookies</h2>
-      <p>Si vous les acceptez dans le bandeau du site, les pages du site chargent Google Analytics 4, qui dépose les cookies _ga et _ga_&lt;id&gt; (ils durent jusqu’à deux ans) et enregistre les pages vues, l’heure de la visite, la page qui vous a amené, le type d’appareil et de navigateur, la taille de l’écran, la langue et une localisation approximative que Google déduit de l’adresse IP (Google Analytics 4 ne conserve pas l’adresse IP).</p>
-      <p>Finalité : savoir combien de personnes visitent le site et quelles pages et langues elles utilisent, afin de l’améliorer. Base légale : votre consentement. Les données sont conservées pendant la durée de conservation définie dans Google Analytics, au plus 14 mois.</p>
-      <p>Si vous refusez, ou ne répondez pas, rien n’est chargé et rien n’est compté. Vous pouvez changer votre choix à tout moment avec Paramètres des cookies, en bas des pages ; refuser supprime les cookies de statistiques du site.</p>
-      <p>Les statistiques ne tournent jamais pendant que l’application est ouverte, la page qui contient vos projets et vos clés. Google Analytics est un service de Google soumis à ses propres conditions et à sa propre politique de confidentialité, et les données peuvent être traitées aux États-Unis et dans d’autres pays.</p>
+      <p>Toutes les pages du site et l’application chargent Google Analytics 4 en mode Consentement. Sans votre consentement, il ne dépose aucun cookie et n’enregistre aucun identifiant sur votre appareil : pour chaque page vue et chaque démarrage de l’application, il envoie à Google un signal sans cookies avec l’heure, la page qui vous a amené, le type d’appareil et de navigateur, la taille de l’écran, la langue et une localisation approximative que Google déduit de l’adresse IP (Google Analytics 4 ne conserve pas l’adresse IP), à partir duquel Google estime combien de personnes utilisent le site et l’application. Si vous acceptez, il dépose aussi les cookies _ga et _ga_&lt;id&gt; (ils durent jusqu’à deux ans), qui lui permettent de reconnaître vos visites suivantes.</p>
+      <p>Finalité : savoir combien de personnes visitent le site et utilisent l’application, et quelles pages et langues elles utilisent, afin de les améliorer. Base légale : pour les signaux sans cookies, l’intérêt légitime à mesurer l’utilisation d’un service gratuit sans rien enregistrer sur votre appareil ; pour les cookies, votre consentement. Les données sont conservées pendant la durée de conservation définie dans Google Analytics, au plus 14 mois.</p>
+      <p>Si vous refusez, ou ne répondez pas, aucun cookie de statistiques n’est déposé et seuls les signaux sans cookies sont envoyés. Vous pouvez changer votre choix à tout moment avec Paramètres des cookies, en bas des pages ; refuser supprime les cookies de statistiques du site.</p>
+      <p>Les statistiques tournent aussi pendant que l’application est ouverte, dans la page qui contient vos projets et, si vous choisissez de les mémoriser, vos clés API de l’IA : comme tout script du site, le script de Google Analytics pourrait lire le stockage du site dans votre navigateur, et il n’envoie à Google que les données ci-dessus. Google Analytics est un service de Google soumis à ses propres conditions et à sa propre politique de confidentialité, et les données peuvent être traitées aux États-Unis et dans d’autres pays.</p>
     </section>
     <section>
       <h2>Hébergement</h2>
@@ -118,9 +118,9 @@
     </footer>
   </main>
   <div class="oci-consent" id="oci-consent" role="region" aria-label="Paramètres des cookies" lang="fr" hidden>
-    <p>Ce site peut-il compter les visites avec Google Analytics ? Il utilise des cookies et ne se charge que si vous acceptez ; il ne tourne jamais pendant que l’application est ouverte. <a href="https://opencadirrigation.com/fr/privacy/">Politique de confidentialité</a></p>
+    <p>Le site et l’application peuvent-ils utiliser des cookies pour les statistiques de visite (Google Analytics) ? Sans eux, les visites sont tout de même comptées, sans cookie ni identifiant. <a href="https://opencadirrigation.com/fr/privacy/">Politique de confidentialité</a></p>
     <div class="actions"><button type="button" data-consent="denied">Refuser</button><button type="button" data-consent="granted">Accepter</button></div>
   </div>
-  <script src="/site.js?v=e68433d6" data-ga="G-3M0P4T8V2T" defer></script>
+  <script src="/site.js?v=833dc84c" data-ga="G-3M0P4T8V2T" defer></script>
 </body>
 </html>

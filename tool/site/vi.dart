@@ -145,7 +145,7 @@ const _vi = SiteText(
     ),
     (
       'Dự án của tôi có được lưu trên đám mây không?',
-      'Không. Dự án được lưu trong trình duyệt của bạn và dưới dạng tệp .oci.json mà bạn cất ở bất cứ đâu tùy ý; liên kết chia sẻ mang dự án ngay trong chính địa chỉ, nên không có gì được tải lên, và OpenCADIrrigation không có máy chủ nào có thể giữ bản sao. Phông chữ của mọi hệ chữ viết và ký hiệu đều lấy từ chính trang web này. Trình duyệt vẫn kết nối tới các dịch vụ khác: bản đồ nền, cao độ và khí hậu trực tuyến, tìm địa chỉ, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI (chỉ nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI) gửi yêu cầu tới dịch vụ của chúng khi bạn sử dụng; còn các trang của trang web chỉ đếm lượt truy cập bằng Google Analytics nếu bạn đồng ý, và không bao giờ khi ứng dụng đang mở. Chính sách quyền riêng tư liệt kê từng dịch vụ và những gì dịch vụ đó nhận được.',
+      'Không. Dự án được lưu trong trình duyệt của bạn và dưới dạng tệp .oci.json mà bạn cất ở bất cứ đâu tùy ý; liên kết chia sẻ mang dự án ngay trong chính địa chỉ, nên không có gì được tải lên, và OpenCADIrrigation không có máy chủ nào có thể giữ bản sao. Phông chữ của mọi hệ chữ viết và ký hiệu đều lấy từ chính trang web này. Trình duyệt vẫn kết nối tới các dịch vụ khác: bản đồ nền, cao độ và khí hậu trực tuyến, tìm địa chỉ, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI (chỉ nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI) gửi yêu cầu tới dịch vụ của chúng khi bạn sử dụng; còn trang web và ứng dụng đếm lượt truy cập bằng Google Analytics, không dùng cookie trừ khi bạn đồng ý. Chính sách quyền riêng tư liệt kê từng dịch vụ và những gì dịch vụ đó nhận được.',
     ),
     (
       'Tính toán thủy lực được thực hiện thế nào?',
@@ -183,7 +183,7 @@ const _legalVi = LegalText(
     ]),
     LegalSection('Tóm tắt', [
       '- Không có tài khoản và không có máy chủ nào của OpenCADIrrigation đứng sau ứng dụng: dự án, bản tự động lưu, phiên bản, cuộc trò chuyện với AI, khóa và tùy chọn đều nằm trong trình duyệt của bạn và trong các tệp bạn lưu.',
-      '- Thống kê lượt truy cập (Google Analytics) chỉ được thu thập trên các trang của trang web, chỉ khi bạn đồng ý, và không bao giờ khi ứng dụng đang mở.',
+      '- Thống kê lượt truy cập (Google Analytics) chạy trên mọi trang của trang web và trong ứng dụng: khi không có sự đồng ý của bạn, công cụ này không đặt cookie và không lưu mã nhận dạng nào trên thiết bị của bạn; khi có sự đồng ý, nó dùng cookie của mình.',
       '- Các dịch vụ mà ứng dụng dùng cho phông chữ, bản đồ, địa hình, khí hậu, tìm địa chỉ và trợ lý AI nhận yêu cầu trực tiếp từ trình duyệt của bạn khi bạn sử dụng chúng.',
     ]),
     LegalSection('Những gì nằm trên thiết bị của bạn', [
@@ -192,10 +192,10 @@ const _legalVi = LegalText(
       'Liên kết chia sẻ mang dự án bên trong địa chỉ, sau dấu #, phần mà trình duyệt không gửi tới bất kỳ máy chủ nào.',
     ]),
     LegalSection('Thống kê lượt truy cập và cookie', [
-      'Nếu bạn đồng ý trong thông báo của trang web, các trang của trang web sẽ tải Google Analytics 4; công cụ này đặt các cookie _ga và _ga_<id> (tồn tại tối đa hai năm) và ghi lại các trang đã xem, thời điểm truy cập, trang đã dẫn bạn tới, loại thiết bị và trình duyệt, kích thước màn hình, ngôn ngữ và vị trí gần đúng mà Google suy ra từ địa chỉ IP (Google Analytics 4 không lưu địa chỉ IP).',
-      'Mục đích: biết có bao nhiêu người truy cập trang web và họ dùng những trang và ngôn ngữ nào, để cải thiện trang. Cơ sở pháp lý: sự đồng ý của bạn. Dữ liệu được lưu trong thời hạn lưu giữ đặt trong Google Analytics, tối đa 14 tháng.',
-      'Nếu bạn từ chối, hoặc không trả lời, sẽ không có gì được tải và không có gì được đếm. Bạn có thể thay đổi lựa chọn bất cứ lúc nào bằng Cài đặt cookie, ở cuối các trang; từ chối sẽ xóa các cookie thống kê của trang web.',
-      'Thống kê không bao giờ chạy khi ứng dụng đang mở, tức trang chứa dự án và khóa của bạn. Google Analytics là dịch vụ của Google, có điều khoản và chính sách quyền riêng tư riêng, và dữ liệu có thể được xử lý tại Hoa Kỳ và các quốc gia khác.',
+      'Mọi trang của trang web và ứng dụng đều tải Google Analytics 4 ở chế độ đồng ý. Khi không có sự đồng ý của bạn, công cụ này không đặt cookie và không lưu mã nhận dạng nào trên thiết bị của bạn: với mỗi trang được xem và mỗi lần khởi động ứng dụng, nó gửi tới Google một tín hiệu không có cookie gồm thời điểm, trang đã dẫn bạn tới, loại thiết bị và trình duyệt, kích thước màn hình, ngôn ngữ và vị trí gần đúng mà Google suy ra từ địa chỉ IP (Google Analytics 4 không lưu địa chỉ IP), từ đó Google ước tính có bao nhiêu người dùng trang web và ứng dụng. Nếu bạn đồng ý, nó còn đặt các cookie _ga và _ga_<id> (tồn tại tối đa hai năm), giúp nhận ra những lần truy cập sau của bạn.',
+      'Mục đích: biết có bao nhiêu người truy cập trang web và dùng ứng dụng, và họ dùng những trang và ngôn ngữ nào, để cải thiện cả hai. Cơ sở pháp lý: đối với các tín hiệu không có cookie, lợi ích chính đáng trong việc đo lường mức sử dụng một dịch vụ miễn phí mà không lưu gì trên thiết bị của bạn; đối với cookie, sự đồng ý của bạn. Dữ liệu được lưu trong thời hạn lưu giữ đặt trong Google Analytics, tối đa 14 tháng.',
+      'Nếu bạn từ chối, hoặc không trả lời, sẽ không có cookie thống kê nào được đặt và chỉ các tín hiệu không có cookie được gửi đi. Bạn có thể thay đổi lựa chọn bất cứ lúc nào bằng Cài đặt cookie, ở cuối các trang; từ chối sẽ xóa các cookie thống kê của trang web.',
+      'Thống kê cũng chạy khi ứng dụng đang mở, tức trong trang chứa dự án của bạn và, nếu bạn chọn ghi nhớ, các khóa AI của bạn: như mọi tập lệnh của trang web, tập lệnh Google Analytics có thể đọc bộ nhớ của trang web trong trình duyệt của bạn, và nó chỉ gửi tới Google những dữ liệu nêu trên. Google Analytics là dịch vụ của Google, có điều khoản và chính sách quyền riêng tư riêng, và dữ liệu có thể được xử lý tại Hoa Kỳ và các quốc gia khác.',
     ]),
     LegalSection('Lưu trữ trang web', [
       'Trang web được phục vụ bởi Firebase Hosting (Google), dịch vụ nhận địa chỉ IP và dữ liệu kỹ thuật của mỗi yêu cầu (địa chỉ được yêu cầu, trình duyệt, thời điểm) để cung cấp các trang và bảo vệ dịch vụ. Cơ sở pháp lý: lợi ích chính đáng trong việc vận hành trang web an toàn. Các dữ liệu này không được dùng cho mục đích nào khác.',
@@ -240,7 +240,7 @@ const _legalVi = LegalText(
   privacyLink: 'Quyền riêng tư',
   termsLink: 'Điều khoản sử dụng',
   cookieSettings: 'Cài đặt cookie',
-  consentText: 'Trang web này có thể đếm lượt truy cập bằng Google Analytics không? Công cụ này dùng cookie và chỉ được tải nếu bạn đồng ý; nó không bao giờ chạy khi ứng dụng đang mở.',
+  consentText: 'Trang web và ứng dụng có thể dùng cookie cho thống kê lượt truy cập (Google Analytics) không? Khi không có cookie, lượt truy cập vẫn được đếm, mà không lưu mã nhận dạng nào.',
   consentAccept: 'Đồng ý',
   consentDecline: 'Từ chối',
   updated: 'Cập nhật lần cuối',
