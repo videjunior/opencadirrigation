@@ -34,11 +34,13 @@ const entityKeys = <String, List<String>>{
   'sprayline': ['pts', 'spec', 'auto', 'outlet', 'nozzle', 'head', 'sp', 'off', 'arc', 'riser', 'depth'],
   'tape': ['pts', 'spec', 'inlet', 'reg', 'submin', 'depth', 'flush'],
   'outlet': ['p', 'scope', 'outlet', 'nozzle', 'head', 'arc', 'rot', 'riser', 'zone'],
-  'controlValve': ['p', 'spec', 'zone', 'rot', 'fixed', 'depth'],
+  // 1.6.0 MOT: pilot, pr, ps (the pilot of a valve)
+  'controlValve': ['p', 'spec', 'zone', 'rot', 'fixed', 'depth', 'pilot', 'pr', 'ps'],
   'waterSupply': ['p', 'calc', 'dh', 'mh', 'dq', 'mq', 'wl'],
   'pump': ['p', 'spec', 'speed', 'rot', 'scope', 'hm', 'vfd', 'vmin', 'meff'],
-  'misc': ['p', 'spec', 'scope', 'set', 'rot', 'setq'],
-  'junction': ['p', 'scope', 'z'],
+  'misc': ['p', 'spec', 'scope', 'set', 'rot', 'setq', 'pilot', 'pr', 'ps'],
+  // 1.6.0 MOT: vl, vg, vd, vc (an air vessel at a junction of the mainline)
+  'junction': ['p', 'scope', 'z', 'vl', 'vg', 'vd', 'vc'],
   'pivot': [
     'p',
     'r',
@@ -127,10 +129,10 @@ final String entityLegend =
 - sprayline {pts, outlet (emitter id, required), nozzle (nozzle id; default the family's first), head (pressure at the emitters m), sp (emitter spacing m), off (first emitter's distance from the first point m; 0 = one spacing), arc (deg), riser (m), spec and auto (the lateral pipe, as for pipes), depth}: a lateral with emitters along it, measured from its first point; zone scope.
 - tape {pts, spec (tape id, required), inlet (inlet pressure m), depth, flush (end flow m³/s for the flushing analysis), reg and submin (kept with the item, not used by the analysis)}: drip tape or dripline with an emitter every tape spacing from its first point; zone scope.
 - outlet {p, outlet (emitter id, required), nozzle, head (m), arc (deg), rot (where the arc starts; it runs counter-clockwise), riser (m), scope (default "zone"; "mainline" = a valve-in-head head), zone (valve-in-head station name)}: one sprinkler; it must lie on a pipe or lateral of its scope.
-- controlValve {p, spec (control valve id; without one the zone has no valve loss and no flow check), zone (zone name, unique; default "Zone n"), fixed (downstream pressure m to analyse the zone at), rot, depth}: the mainline must reach p and the zone pipes start at p.
+- controlValve {p, spec (control valve id; without one the zone has no valve loss and no flow check), zone (zone name, unique; default "Zone n"), fixed (downstream pressure m to analyse the zone at), rot, depth, pilot ("none" | "reducing" | "sustaining" | "reducingSustaining"), pr (pressure m a reducing pilot holds after the valve; 0 = what the zone needs), ps (pressure m a sustaining pilot keeps before it)}: the mainline must reach p and the zone pipes start at p.
 - waterSupply {p, calc (default true: the design finds the pressure needed), dh (pressure m it gives when calc is false), mh (largest pressure m it can give; 0 = no limit), dq (design flow m³/s; 0 = unknown), mq (largest flow m³/s), wl (water level relative to the ground m: −8 in a well, +4 for a raised tank)}: the start of the mainline.
-- pump {p, spec (pump id), scope (default "mainline"), speed (speed ratio, default 1), vfd (outlet pressure m a variable-speed drive keeps; 0 = fixed speed), vmin (drive's least speed ratio), meff (motor and drive efficiency 0.05–1, default 1), hm (hour meter price; the key present = fitted), rot}; misc {p, spec (device id, required: filter, meter, PRV, PSV, FCV, check, backflow, gate, air or master valve), scope (default "mainline"), set (PRV/PSV pressure m), setq (FCV flow m³/s), rot}: both in line on a pipe of their scope.
-- junction {p, scope (default "zone"), z (fixed elevation m)}.
+- pump {p, spec (pump id), scope (default "mainline"), speed (speed ratio, default 1), vfd (outlet pressure m a variable-speed drive keeps; 0 = fixed speed), vmin (drive's least speed ratio), meff (motor and drive efficiency 0.05–1, default 1), hm (hour meter price; the key present = fitted), rot}; misc {p, spec (device id, required: filter, meter, PRV, PSV, FCV, check, backflow, gate, air or master valve), scope (default "mainline"), set (PRV/PSV pressure m), setq (FCV flow m³/s), rot, pilot, pr and ps (a pilot on a master, isolation or other valve, as for controlValve; pr 0 = the model's setting)}: both in line on a pipe of their scope.
+- junction {p, scope (default "zone"), z (fixed elevation m), vl (air vessel volume L on a mainline junction; 0 = none), vg (its gas volume L in the steady state; 0 = a third), vd (its connection bore mm, default 100), vc (its price)}.
 - pivot {p (centre, on the mainline), r (span pipe length m, required), kind (${PivotKind.values.map((k) => '"${k.name}"').join(' | ')}), ang (span direction deg), sector (deg), span (m between towers), travel (linear travel m), depth (gross mm per cycle), hours (per cycle), hend (end pressure m), qg and hg (end gun m³/s and m), throw (m), spec, idmm and c (span pipe), hp (pipe height m), ww (wetted width m), hm (machine losses m), imax (soil intake mm/h), zone, ssp (sprinkler spacing m), sspec and rspec (sprinkler and regulator ids), cost, tcost (per tower)}: a centre pivot or linear move.
 - controller {p, st (stations), v (output volts), sim (most stations at once; 0 = from the system flows), cost}; wire {pts}: a wire route along the trenches from a controller.
 - contour {pts, z}; spotHeight {p, z}; breakline {pts, zs (elevation per vertex, null = from the terrain)}.
@@ -526,6 +528,15 @@ final designParameters = <AgentParam>[
     min: 1,
     max: 8760,
     note: 'hours each zone runs a year: the weight of its inlet pressure in the zone sizing',
+  ),
+  // 1.6.0 MOT: the zones at the pressure the mainline really gives them
+  AgentParam(
+    'realZoneOperation',
+    'realOp',
+    '',
+    (p) => p.realZoneOperation,
+    (p, v) => p.realZoneOperation = v as bool,
+    note: 'after the design, every zone and pivot also runs at the pressure the mainline really gives it (get_report_table "operation")',
   ),
   AgentParam(
     'mainsHz',

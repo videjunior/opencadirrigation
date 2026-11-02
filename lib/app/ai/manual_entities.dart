@@ -223,6 +223,14 @@ const _pt = FieldDoc('position [x, y]', unit: 'm');
 const _depth = FieldDoc('burial depth: the nodes sit this far below the ground, so their pressure rises by it', unit: 'm', panel: 'props.depth');
 const _rot = FieldDoc('rotation of the symbol on the drawing, counter-clockwise from east (no hydraulic effect)', unit: '°');
 
+// 1.6.0 MOT: the pilot of a valve
+final _pilot = FieldDoc(
+  'pilot of the valve: "reducing" holds the pressure after it at pr (no surplus passes on), "sustaining" keeps the pressure before it at ps or more (the valve throttles its flow rather than let the line fall below), "reducingSustaining" both, "none" a plain valve',
+  values: [for (final v in ValvePilot.values) v.name],
+  panel: 'props.pilot',
+  def: 'none',
+);
+
 List<String> get _scopes => [for (final s in HydraulicScope.values) s.name];
 
 /// Every item type (by [EntityType] name) with the meaning of its keys.
@@ -308,6 +316,14 @@ final Map<String, TypeDoc> entityDocs = {
       ),
       'rot': _rot,
       'depth': _depth,
+      'pilot': _pilot,
+      'pr': const FieldDoc('pressure a reducing pilot holds after the valve: the zone is analysed at it; 0 = the pressure the design finds for the zone', unit: 'm', panel: 'props.pilotReduce', def: 0),
+      'ps': const FieldDoc(
+        'pressure a sustaining pilot keeps before the valve: the mainline must give the valve at least this when the zone runs, and in the real operation the valve throttles the zone to keep it',
+        unit: 'm',
+        panel: 'props.pilotSustain',
+        def: 0,
+      ),
     },
     connects: 'Makes a mainline node and a zone node at its position: the mainline must reach the position (a pipe vertex or interior point there, reached from a supply) and the zone pipes start there. The zone is everything reached from the zone node through zone items.',
   ),
@@ -327,6 +343,12 @@ final Map<String, TypeDoc> entityDocs = {
       unit: 'm',
       panel: 'props.waterLevel',
     ),
+    // 1.6.0 MOT: a reservoir or dam behind the supply (PRD-16)
+    'res': const FieldDoc(
+      'reservoir or dam: {outline (closed polyline or area id), kind ("excavated"; default terrain), full, min, init, bottom (elevations m), slope (H:V, default 2), inflow (m³/s)}; the supply node then stands at min (else full). Set it with run_operation set_reservoir',
+      panel: 'res.title',
+      defText: 'none',
+    ),
   }, connects: 'A mainline node at its position, standing at the water level: the mainline must start there (or pass through it). A supply without a pipe is unconnected.'),
   'pump': TypeDoc(
     'Pump',
@@ -345,6 +367,12 @@ final Map<String, TypeDoc> entityDocs = {
       ),
       'hm': const FieldDoc('hour meter fitted: its price for the bill of materials (the key present = fitted)', panel: 'acc.hourMeter', defText: 'none (no hour meter)'),
       'rot': _rot,
+      // 1.6.0 MOT: a pump station
+      'stn': const FieldDoc(
+        'pump station: {units: [{spec, sb}] the pumps after this one (spec = catalogue pump, default this one\'s model; sb true = standby), arr ("series"; default parallel), staged (false = every duty pump always runs)}. Set it with run_operation set_pump_station',
+        panel: 'pumpStation.title',
+        defText: 'none (a single pump)',
+      ),
     },
     connects: 'In line: it must lie on a pipe of its scope (vertex or interior, which it splits); the side nearer the supply (mainline) or the zone valve (zone) is the suction side. A submersible model sits at the water level of its supply.',
   ),
@@ -358,6 +386,9 @@ final Map<String, TypeDoc> entityDocs = {
       'set': const FieldDoc('PRV: pressure kept downstream; PSV: pressure kept upstream; 0 = the model\'s setting', unit: 'm', panel: 'props.setting'),
       'setq': const FieldDoc('FCV: the flow it lets through; 0 = the model\'s largest flow', unit: 'm³/s', panel: 'props.flowLimit', def: 0),
       'rot': _rot,
+      'pilot': _pilot,
+      'pr': const FieldDoc('pressure a reducing pilot holds after the valve (it works as a PRV); 0 = the model\'s setting', unit: 'm', panel: 'props.pilotReduce', def: 0),
+      'ps': const FieldDoc('pressure a sustaining pilot keeps before the valve (it works as a PSV; with a reducing pilot too, before it)', unit: 'm', panel: 'props.pilotSustain', def: 0),
     },
     connects: 'In line like a pump: it must lie on a pipe of its scope, which it splits.',
   ),
@@ -365,6 +396,16 @@ final Map<String, TypeDoc> entityDocs = {
     'p': _pt,
     'scope': FieldDoc('network it belongs to', values: _scopes, panel: 'props.scope'),
     'z': const FieldDoc('fixed elevation of that node instead of the terrain', unit: 'm', panel: 'props.elevationDem', defText: 'none (from the terrain)'),
+    // 1.6.0 MOT: an air vessel at a junction of the mainline (PRD-31)
+    'vl': const FieldDoc(
+      'mainline only: an air vessel (hydropneumatic tank) at the junction against the water hammer, its volume; the transient study simulates it, the bill of materials lists it; 0 = none',
+      unit: 'L',
+      panel: 'vessel.volume',
+      def: 0,
+    ),
+    'vg': const FieldDoc('gas volume of the vessel in the steady state; 0 = a third of its volume', unit: 'L', panel: 'vessel.gas', def: 0),
+    'vd': const FieldDoc('bore of the connection of the vessel to the pipe', unit: 'mm', panel: 'vessel.connection', def: 100),
+    'vc': const FieldDoc('price of the vessel for the bill of materials', panel: 'vessel.cost', def: 0),
   }, connects: 'A node of its scope at its position; it splits a pipe it lies on.'),
   'pivot': TypeDoc(
     'Centre pivot or linear move',

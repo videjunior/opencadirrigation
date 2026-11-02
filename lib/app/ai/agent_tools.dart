@@ -509,6 +509,9 @@ const reportTableKeys = [
   'outlets',
   'mainline',
   'devices',
+  // 1.6.0 MOT
+  'stations',
+  'operation',
   'vih',
   'flushing',
   'surge',

@@ -996,6 +996,19 @@ class _EpsDialogState extends State<_EpsDialog> {
           lines: [_Line(t('eps.power'), _cMax, steps(d.powerKw, (v) => v), step: true, fill: true)],
         ),
       ),
+      // 1.6.0 MOT: the water level of every reservoir through the day
+      for (final e in d.levels.entries)
+        SizedBox(
+          height: 170,
+          child: _Chart(
+            key: Key('eps_level_${e.key}'),
+            title: '${t('res.level')}: ${c.entityName(e.key)}',
+            yLabel: u.lengthLabel,
+            xFormat: hoursFmt,
+            decimals: 2,
+            lines: [_Line(t('res.level'), _cMin, steps(e.value, u.lengthFromSi))],
+          ),
+        ),
       SizedBox(
         height: 170,
         child: _Chart(

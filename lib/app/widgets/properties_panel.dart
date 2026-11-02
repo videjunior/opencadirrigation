@@ -19,6 +19,9 @@ import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/tools.dart';
 import 'dialogs/mechanised_dialogs.dart';
+// 1.6.0 MOT: pump stations, reservoirs
+import 'dialogs/pump_station_dialog.dart';
+import 'dialogs/reservoir_dialog.dart';
 import 'edit_fields.dart';
 import 'fields.dart';
 
@@ -278,6 +281,18 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (x) => set(() => v.fixedDownstreamHeadM = x <= 0 ? null : u.pressureToHead(x)),
           ),
           len('ui.depth', v.depth, (x) => v.depth = x),
+          // 1.6.0 MOT: the pilot of the valve (reducing, sustaining or both)
+          SpecDropdown<ValvePilot>(
+            key: const Key('valve_pilot'),
+            label: t('props.pilot'),
+            value: v.pilot.name,
+            items: ValvePilot.values,
+            labelOf: (x) => t('valvePilot.${x.name}'),
+            idOf: (x) => x.name,
+            onChanged: (x) => set(() => v.pilot = ValvePilot.values.asNameMap()[x] ?? ValvePilot.none),
+          ),
+          if (v.pilot.reduces) NumField(label: pLabel('props.pilotReduce'), value: u.pressureFromHead(v.pilotReduceM), onChanged: (x) => set(() => v.pilotReduceM = x <= 0 ? 0 : u.pressureToHead(x))),
+          if (v.pilot.sustains) NumField(label: pLabel('props.pilotSustain'), value: u.pressureFromHead(v.pilotSustainM), onChanged: (x) => set(() => v.pilotSustainM = x <= 0 ? 0 : u.pressureToHead(x))),
         ]);
       case WaterSupplyEntity w:
         items.addAll([
@@ -293,6 +308,14 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: qLabel('props.designFlow'), value: u.flowFromSi(w.designFlow), onChanged: (x) => set(() => w.designFlow = u.flowToSi(x))),
           NumField(label: qLabel('props.maxFlow'), value: u.flowFromSi(w.maxFlow), onChanged: (x) => set(() => w.maxFlow = u.flowToSi(x))),
           NumField(label: lLabel('ui.waterLevel'), value: u.lengthFromSi(w.waterLevelOffsetM), signed: true, onChanged: (x) => set(() => w.waterLevelOffsetM = u.lengthToSi(x))),
+          // 1.6.0 MOT: the reservoir or dam behind the supply (PRD-16)
+          KV(t('res.title'), w.reservoir == null ? t('res.none') : (c.project.byId(w.reservoir!.outlineId) == null ? t('res.noOutline') : t('res.set'))),
+          OutlinedButton.icon(
+            key: const Key('supply_reservoir'),
+            onPressed: locked ? null : () => showReservoirDialog(context, c, w),
+            icon: const Icon(Icons.water, size: 16),
+            label: Text(t('res.edit'), style: const TextStyle(fontSize: 12)),
+          ),
         ]);
       case PumpEntity p:
         final spec = cat.pump(p.pumpSpecId);
@@ -312,6 +335,14 @@ class PropertiesPanel extends StatelessWidget {
           if (p.targetPressureM > 0) NumField(label: t('props.vfdMin'), value: p.minSpeedRatio, onChanged: (x) => set(() => p.minSpeedRatio = x.clamp(0.1, 1.0).toDouble())),
           // 1.6.0 MOT: the motor and its drive in the energy
           NumField(label: t('props.motorEfficiency'), value: p.motorEfficiency, onChanged: (x) => set(() => p.motorEfficiency = x.clamp(0.05, 1.0).toDouble())),
+          // 1.6.0 MOT: the pump station the item stands for (PRD-17)
+          KV(t('pumpStation.title'), pumpStationSummary(c, p)),
+          OutlinedButton.icon(
+            key: const Key('pump_station'),
+            onPressed: locked ? null : () => showPumpStationDialog(context, c, p),
+            icon: const Icon(Icons.account_tree_outlined, size: 16),
+            label: Text(t('pumpStation.edit'), style: const TextStyle(fontSize: 12)),
+          ),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -339,11 +370,35 @@ class PropertiesPanel extends StatelessWidget {
             NumField(label: pLabel('props.sustain'), value: u.pressureFromHead(m.settingM > 0 ? m.settingM : spec!.defaultSettingM), onChanged: (x) => set(() => m.settingM = u.pressureToHead(x))),
           if (spec?.kind == ValveKind.fcv)
             NumField(label: qLabel('props.flowLimit'), value: u.flowFromSi(m.settingFlow > 0 ? m.settingFlow : spec!.maxFlow), onChanged: (x) => set(() => m.settingFlow = x <= 0 ? 0 : u.flowToSi(x))),
+          // 1.6.0 MOT: a pilot on a master, isolation or other valve
+          if (spec != null && const {ValveKind.master, ValveKind.isolation, ValveKind.other}.contains(spec.kind)) ...[
+            SpecDropdown<ValvePilot>(
+              key: const Key('misc_pilot'),
+              label: t('props.pilot'),
+              value: m.pilot.name,
+              items: ValvePilot.values,
+              labelOf: (x) => t('valvePilot.${x.name}'),
+              idOf: (x) => x.name,
+              onChanged: (x) => set(() => m.pilot = ValvePilot.values.asNameMap()[x] ?? ValvePilot.none),
+            ),
+            if (m.pilot.reduces)
+              NumField(label: pLabel('props.pilotReduce'), value: u.pressureFromHead(m.pilotReduceM > 0 ? m.pilotReduceM : spec.defaultSettingM), onChanged: (x) => set(() => m.pilotReduceM = x <= 0 ? 0 : u.pressureToHead(x))),
+            if (m.pilot.sustains) NumField(label: pLabel('props.pilotSustain'), value: u.pressureFromHead(m.pilotSustainM), onChanged: (x) => set(() => m.pilotSustainM = x <= 0 ? 0 : u.pressureToHead(x))),
+          ],
         ]);
       case JunctionEntity j:
         items.addAll([
           KV(t('props.scope'), t('scope.${j.scope.name}')),
           NumField(label: t('props.elevationDem'), value: j.fixedElevation ?? 0, onChanged: (x) => set(() => j.fixedElevation = x == 0 ? null : x)),
+          // 1.6.0 MOT: an air vessel at a junction of the mainline (PRD-31)
+          if (j.scope == HydraulicScope.mainline) ...[
+            NumField(key: const Key('junction_vessel'), label: t('vessel.volume'), value: j.vesselLiters, decimals: 0, onChanged: (x) => set(() => j.vesselLiters = x < 0 ? 0 : x)),
+            if (j.hasVessel) ...[
+              NumField(label: t('vessel.gas'), value: j.vesselGasLiters, decimals: 0, onChanged: (x) => set(() => j.vesselGasLiters = x.clamp(0, j.vesselLiters).toDouble())),
+              NumField(label: t('vessel.connection'), value: j.vesselConnectionMm, decimals: 0, onChanged: (x) => set(() => j.vesselConnectionMm = x.clamp(10, 1000).toDouble())),
+              NumField(label: '${t('vessel.cost')} (${c.project.params.currency})', value: j.vesselCost, onChanged: (x) => set(() => j.vesselCost = x < 0 ? 0 : x, inv: false)),
+            ],
+          ],
         ]);
       case BreaklineEntity bl:
         String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmtUi(bl.elevationOf(i), 2) : '-'].join('; ');

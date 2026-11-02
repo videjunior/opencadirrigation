@@ -505,6 +505,16 @@ Future<void> showDesignParamsDialog(BuildContext context, ProjectController c) {
                 onChanged: (v) => setState(() => p.checkSurge = v),
               ),
               NumField(label: t('dlg.closure'), value: p.valveClosureTimeS, onChanged: (v) => p.valveClosureTimeS = v),
+              // 1.6.0 MOT: the zones at the pressure the mainline really gives them
+              SwitchListTile(
+                key: const Key('param_realOp'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(t('dlg.realZoneOperation'), style: const TextStyle(fontSize: 12)),
+                subtitle: Text(t('dlg.realZoneOperationHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                value: p.realZoneOperation,
+                onChanged: (v) => setState(() => p.realZoneOperation = v),
+              ),
               SectionTitle(t('dlg.bom')),
               SwitchListTile(
                 dense: true,

@@ -166,7 +166,8 @@ void main() {
   });
 
   testWidgets('every design parameter of the project file is in the manual, with the key it really has', (tester) async {
-    final keys = DesignParameters(mainsHz: 50).toJson().keys.toSet();
+    // (1.6.0 MOT: realOp is written only when on)
+    final keys = DesignParameters(mainsHz: 50, realZoneOperation: true).toJson().keys.toSet();
     final known = {for (final p in designParameters) p.jsonKey, ...otherParameterKeys.keys};
     expect(keys.difference(known), isEmpty, reason: 'parameters missing from designParameters / otherParameterKeys');
     expect(known.difference(keys), isEmpty, reason: 'keys that are not in DesignParameters.toJson');
@@ -191,7 +192,8 @@ void main() {
     // codes written in the files that report to the advisor; the few other
     // snake_case strings there are listed
     const notCodes = {'depth_mm', 'end_deg', 'start_deg', 'target_mm', 'timer_pct'};
-    const files = ['designer', 'design_check', 'advisor', 'network_builder', 'pivot', 'mechanised', 'pivot_package', 'corner_arm', 'vri', 'pivot_electrical', 'electrical', 'valve_in_head'];
+    // (1.6.0 MOT: and the part of the designer for stations, operation and the profile)
+    const files = ['designer', 'designer_mot', 'design_check', 'advisor', 'network_builder', 'pivot', 'mechanised', 'pivot_package', 'corner_arm', 'vri', 'pivot_electrical', 'electrical', 'valve_in_head'];
     final raw = <String>{};
     for (final f in files) {
       final src = File('lib/core/design/$f.dart').readAsStringSync();
@@ -216,7 +218,8 @@ void main() {
   });
 
   testWidgets('the report tables, the tools and the example calls are in the manual and fit the tools', (tester) async {
-    final src = File('lib/core/design/report_tables.dart').readAsStringSync();
+    // (1.6.0 MOT: the station and real operation tables are in report_tables_mot.dart)
+    final src = [for (final f in ['report_tables', 'report_tables_mot']) File('lib/core/design/$f.dart').readAsStringSync()].join('\n');
     final keys = RegExp(r"key: '([a-zA-Z]+)'").allMatches(src).map((m) => m.group(1)!).toSet();
     expect(reportTableKeys.toSet(), keys, reason: 'reportTableKeys (agent_tools.dart) and buildReportTables differ');
     expect(reportTableNotes.keys.toSet(), keys);

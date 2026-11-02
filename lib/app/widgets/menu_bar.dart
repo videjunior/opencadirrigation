@@ -21,6 +21,8 @@ import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
+// 1.6.0 MOT: ageing and clogging
+import 'dialogs/life_scenarios_dialog.dart';
 import 'dialogs/vegetation_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
@@ -459,6 +461,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('od.menu'), () => showOnDemandDialog(context, c), icon: Icons.groups_outlined, shortcut: 'DEMAND ⏎', key: const Key('menu_on_demand')),
                     item(t('crit.menu'), () => showCriticalityDialog(context, c), icon: Icons.call_split, shortcut: 'CRIT ⏎', key: const Key('menu_criticality')),
                     item(t('cal.menu'), () => showCalibrationDialog(context, c), icon: Icons.tune, shortcut: 'CALIB ⏎', key: const Key('menu_calibration')),
+                    // 1.6.0 MOT: the design over its life (ageing and clogging)
+                    item(t('life.menu'), c.results == null ? null : () => showLifeScenariosDialog(context, c), icon: Icons.hourglass_bottom, key: const Key('menu_life')),
                     item(t('fert.menu'), () => showFertigationDialog(context, c), icon: Icons.science_outlined, shortcut: 'FERT ⏎', key: const Key('menu_fertigation')),
                     const Divider(height: 1),
                     item(t('tool.pivot'), () => c.setTool(ToolId.pivot), icon: Icons.radar, shortcut: 'PV ⏎', key: const Key('menu_pivot')),

@@ -245,7 +245,7 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
                                     TextButton(
                                       key: Key('pump_apply_${k.spec.id}'),
                                       onPressed: () {
-                                        _applyPump(c, s, k.spec, existing);
+                                        _applyPump(c, s, k.spec, existing, parallel: k.parallelCount);
                                         Navigator.pop(ctx);
                                       },
                                       child: Text(existing.isEmpty ? t('pump.insert') : t('pump.replace'), style: const TextStyle(fontSize: 11)),
@@ -269,7 +269,18 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
   );
 }
 
-void _applyPump(ProjectController c, WaterSupplyEntity s, PumpSpec spec, List<PumpEntity> existing) {
+void _applyPump(ProjectController c, WaterSupplyEntity s, PumpSpec spec, List<PumpEntity> existing, {int parallel = 1}) {
+  // 1.6.0 MOT: pumps in parallel become a pump station of equal pumps (the
+  // standby ones of a station kept, of the new model)
+  PumpStation? stationFor(PumpEntity? old) {
+    final units = [
+      for (var i = 1; i < parallel; i++) PumpUnit(),
+      for (final u in old?.station?.units ?? const <PumpUnit>[])
+        if (u.standby) PumpUnit(standby: true),
+    ];
+    return units.isEmpty ? null : PumpStation(units: units, staged: old?.station?.staged ?? true);
+  }
+
   // nearest existing pump to the supply, else a new one on the mainline pipe
   // leaving the supply (1.5 m along it)
   PumpEntity? target;
@@ -283,7 +294,10 @@ void _applyPump(ProjectController c, WaterSupplyEntity s, PumpSpec spec, List<Pu
   }
   if (target != null && best < 50) {
     final tp = target;
-    c.mutate(() => tp.pumpSpecId = spec.id);
+    c.mutate(() {
+      tp.pumpSpecId = spec.id;
+      tp.station = stationFor(tp);
+    });
   } else {
     Pt pos = s.position + const Pt(2, 0);
     for (final pipe in c.project.entities.whereType<PipeEntity>()) {
@@ -298,7 +312,7 @@ void _applyPump(ProjectController c, WaterSupplyEntity s, PumpSpec spec, List<Pu
       }
     }
     c.addPointItem(
-      PumpEntity(id: c.project.newId(), position: pos, pumpSpecId: spec.id),
+      PumpEntity(id: c.project.newId(), position: pos, pumpSpecId: spec.id, station: stationFor(null)),
       pos,
       scopes: [HydraulicScope.mainline],
     );

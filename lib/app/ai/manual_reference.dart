@@ -341,6 +341,9 @@ const reportTableNotes = <String, String>{
   'outlets': 'the emitters of each zone: count, flows, lowest and highest pressure and the window',
   'mainline': 'per system flow: each supply (flow, pressure available and needed) and each valve or pivot (flow, pressure available against needed, status)',
   'devices': 'pumps and in-line devices per system flow: flow, inlet and outlet pressure, head added or lost, pump speed and efficiency, suction',
+  // 1.6.0 MOT
+  'stations': 'every pump of each pump station per system flow (set_pump_station): running, off by the staging or on standby; flow, head, efficiency from the wire to the water, electric power',
+  'operation': 'the zones and pivots run at the pressure the mainline really gives them (the parameter realZoneOperation): design and real flow, share delivered, pressure needed and available, emitter pressures, EU, status',
   'vih': 'valve-in-head stations per system flow: heads, flow, pressures against the window',
   'flushing': 'flushing of the drip zones with the tape ends open: flow, pressures needed, end pressure and velocity',
   'surge': 'water hammer per pipe: velocity, wave celerity, surge, highest static pressure, class, closure and critical times',

@@ -29,6 +29,8 @@ import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
+// 1.6.0 MOT: ageing and clogging
+import 'dialogs/life_scenarios_dialog.dart';
 import 'dialogs/vegetation_dialog.dart';
 import 'dialogs/welcome_dialog.dart';
 import '../io/png_export.dart';
@@ -450,6 +452,8 @@ class _MobileShellState extends State<MobileShell> {
             row(t('od.menu'), () => showOnDemandDialog(context, c), icon: Icons.groups_outlined, key: const Key('mobile_menu_on_demand')),
             row(t('crit.menu'), () => showCriticalityDialog(context, c), icon: Icons.call_split, key: const Key('mobile_menu_criticality')),
             row(t('cal.menu'), () => showCalibrationDialog(context, c), icon: Icons.tune, key: const Key('mobile_menu_calibration')),
+            // 1.6.0 MOT: the design over its life (ageing and clogging)
+            row(t('life.menu'), c.results == null ? null : () => showLifeScenariosDialog(context, c), icon: Icons.hourglass_bottom, key: const Key('mobile_menu_life')),
             row(t('fert.menu'), () => showFertigationDialog(context, c), icon: Icons.science_outlined, key: const Key('mobile_menu_fertigation')),
             row(t('wr.menu'), () => showWireRoutingDialog(context, c), icon: Icons.alt_route, key: const Key('mobile_menu_wire_routes')),
             row(t('clim.menu'), () => showSiteClimateDialog(context, c), icon: Icons.wb_sunny_outlined),
