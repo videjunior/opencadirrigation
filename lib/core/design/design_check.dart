@@ -12,6 +12,7 @@ import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import 'electrical.dart';
+import 'model_checks.dart';
 import 'network_builder.dart';
 import 'valve_in_head.dart';
 
@@ -300,6 +301,8 @@ DesignCheckReport runDesignCheck(Project project) {
     final ids = idx > 0 ? w.substring(idx + 1).split(':') : const <String>[];
     issues.add(CheckIssue(code, code == 'elec_stations' || code == 'elec_voltage' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
+  // 1.6.0 MOD: elevations extrapolated beyond the terrain data, area outlines crossing themselves
+  issues.addAll(modelChecks(project));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));

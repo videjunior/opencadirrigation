@@ -114,7 +114,9 @@ double polylineLength(List<Pt> pts) {
   return l;
 }
 
-/// Signed area (positive when counter-clockwise).
+/// Signed area (positive when counter-clockwise). An outline that crosses
+/// itself (a "bow tie") adds its loops with opposite signs: see
+/// [polygonSelfCrossing].
 double polygonArea(List<Pt> pts) {
   if (pts.length < 3) return 0;
   var a = 0.0;
@@ -123,6 +125,64 @@ double polygonArea(List<Pt> pts) {
     a += p.cross(q);
   }
   return a / 2;
+}
+
+/// The first place where the closed outline [poly] crosses itself: edges
+/// i < j (edge k runs from vertex k to the next) that are not neighbours
+/// and the crossing point; null for a simple polygon. A sweep over the
+/// edges sorted by x keeps large outlines fast.
+(int, int, Pt)? polygonSelfCrossing(List<Pt> poly) {
+  var pts = poly;
+  if (pts.length > 1 && pts.first == pts.last) pts = pts.sublist(0, pts.length - 1);
+  final n = pts.length;
+  if (n < 4) return null;
+  final order = List<int>.generate(n, (i) => i)..sort((a, b) => math.min(pts[a].x, pts[(a + 1) % n].x).compareTo(math.min(pts[b].x, pts[(b + 1) % n].x)));
+  (int, int, Pt)? best;
+  for (var u = 0; u < n; u++) {
+    final i = order[u];
+    final a = pts[i], b = pts[(i + 1) % n];
+    final maxX = math.max(a.x, b.x);
+    for (var v = u + 1; v < n; v++) {
+      final j = order[v];
+      final c = pts[j], d = pts[(j + 1) % n];
+      if (math.min(c.x, d.x) > maxX) break;
+      final lo = math.min(i, j), hi = math.max(i, j);
+      if (hi - lo == 1 || (lo == 0 && hi == n - 1)) continue;
+      final x = segmentIntersection(a, b, c, d);
+      if (x == null) continue;
+      if (best == null || lo < best.$1 || (lo == best.$1 && hi < best.$2)) best = (lo, hi, x);
+    }
+  }
+  return best;
+}
+
+/// [poly] cut at its self-crossings into simple rings (a bow tie into its
+/// two triangles, a figure eight into its two loops), without the slivers
+/// of no area; the polygon itself when it is simple.
+List<List<Pt>> splitSelfIntersecting(List<Pt> poly, {double minArea = 1e-6}) {
+  var start = poly;
+  if (start.length > 1 && start.first == start.last) start = start.sublist(0, start.length - 1);
+  final out = <List<Pt>>[];
+  final todo = <List<Pt>>[start];
+  var guard = 0;
+  while (todo.isNotEmpty && guard++ < 10000) {
+    final r = todo.removeLast();
+    final cross = polygonSelfCrossing(r);
+    if (cross == null) {
+      if (r.length >= 3 && polygonArea(r).abs() > minArea) out.add(r);
+      continue;
+    }
+    final (i, j, x) = cross;
+    // a crossing on a vertex would repeat it: consecutive repeats dropped
+    List<Pt> ring(List<Pt> pts) => [
+      for (var k = 0; k < pts.length; k++)
+        if (pts[k].distanceTo(pts[(k + 1) % pts.length]) > 1e-9) pts[k],
+    ];
+    todo
+      ..add(ring([...r.sublist(0, i + 1), x, ...r.sublist(j + 1)]))
+      ..add(ring([x, ...r.sublist(i + 1, j + 1)]));
+  }
+  return out.reversed.toList();
 }
 
 Pt polygonCentroid(List<Pt> pts) {

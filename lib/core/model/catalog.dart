@@ -263,9 +263,17 @@ class OutletSpec {
   double riserHeightM;
   bool enabled;
 
+  /// The nozzle [id]: the first one when no id is given; null when the item
+  /// has no nozzle of that id (deleted, renamed, or heads pasted from a
+  /// project whose item of the same id has other nozzles), so the design
+  /// reports `nozzle_missing` instead of quietly using another nozzle.
   NozzleSpec? nozzle(String? id) {
     if (nozzles.isEmpty) return null;
-    return nozzles.firstWhere((n) => n.id == id, orElse: () => nozzles.first);
+    if (id == null || id.isEmpty) return nozzles.first;
+    for (final n in nozzles) {
+      if (n.id == id) return n;
+    }
+    return null;
   }
 
   /// Fields of a newer version, kept as read and written back.

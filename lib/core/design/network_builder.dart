@@ -325,7 +325,8 @@ class NetworkBuilder {
           final outlet = catalog.outlet(s.outletSpecId);
           final nozzle = outlet?.nozzle(s.nozzleId);
           if (outlet == null || nozzle == null) {
-            model.warnings.add('outlet_spec_missing:${e.id}');
+            // 1.6.0 MOD: the item is there but not that nozzle
+            model.warnings.add(outlet != null && outlet.nozzles.isNotEmpty ? 'nozzle_missing:${e.id}' : 'outlet_spec_missing:${e.id}');
             model.unconnectedEntities.add(e.id);
             continue;
           }
@@ -408,7 +409,8 @@ class NetworkBuilder {
             final outlet = catalog.outlet(o.outletSpecId);
             final nozzle = outlet?.nozzle(o.nozzleId);
             if (outlet == null || nozzle == null) {
-              model.warnings.add('outlet_spec_missing:${e.id}');
+              // 1.6.0 MOD: the item is there but not that nozzle
+              model.warnings.add(outlet != null && outlet.nozzles.isNotEmpty ? 'nozzle_missing:${e.id}' : 'outlet_spec_missing:${e.id}');
               continue;
             }
             final n = _nodeAt(o.position, o.scope, create: false);

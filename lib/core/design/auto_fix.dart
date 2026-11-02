@@ -368,6 +368,19 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
         n++;
       }
       return n == 0 ? const FixResult.failed('fixfail.noChange') : FixResult.done('fixed.resetPumpSpeed', {'n': '$n'});
+
+    // 1.6.0 MOD: the loops of an outline that crosses itself become areas
+    // of their own, with the data of the original
+    case FixKind.splitArea:
+      if (first is! AreaEntity) return const FixResult.failed('fixfail.notFound');
+      final rings = splitSelfIntersecting(first.points);
+      final idx = p.entities.indexOf(first);
+      if (rings.length < 2 || idx < 0) return const FixResult.failed('fixfail.noChange');
+      final parts = [for (var k = 0; k < rings.length; k++) (k == 0 ? first.clone() : first.clone(newId: p.newId()))..points = rings[k]];
+      p.entities
+        ..removeAt(idx)
+        ..insertAll(idx, parts);
+      return FixResult.done('fixed.splitArea', {'n': '${parts.length}'});
   }
 }
 

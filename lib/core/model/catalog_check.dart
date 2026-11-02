@@ -59,6 +59,19 @@ double pumpCurveShaftKw(PumpSpec p) {
   return worst;
 }
 
+/// How the motor of [spec] copes with the duty [flow] (m³/s) at [pumpHead]
+/// (m) and [speed] ratio, from the shaft power ρ·g·Q·H/η:
+/// `pump_motor_overload` above its rating times its service factor
+/// ([motorServiceFactor]), `pump_motor_sf` above the rating alone (1 % for
+/// the rounding of the curve), null within it or without a rated power.
+String? pumpMotorLoad(PumpSpec spec, double flow, double pumpHead, {double speed = 1}) {
+  if (!(spec.powerKw > 0) || !(flow > 0) || !(pumpHead > 0)) return null;
+  final kw = waterDensity * gravity * flow * pumpHead / spec.efficiencyAt(flow, speed: speed) / 1000;
+  if (kw > spec.powerKw * motorServiceFactor(spec.powerKw, submersible: spec.submersible) * 1.01) return 'pump_motor_overload';
+  if (kw > spec.powerKw * 1.01) return 'pump_motor_sf';
+  return null;
+}
+
 /// Largest hydraulic power (kW) along the curve of [p]: ρ·g·Q·H.
 double pumpCurveHydraulicKw(PumpSpec p) {
   var worst = 0.0;

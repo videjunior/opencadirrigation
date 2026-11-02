@@ -104,6 +104,10 @@ enum FixKind {
   /// Gives a controller the next standard number of stations that holds
   /// all the valves wired to it.
   controllerStations,
+
+  // 1.6.0 MOD
+  /// Cuts an area outline that crosses itself into simple areas.
+  splitArea,
 }
 
 /// Corrections the "fix automatically" command may apply on its own: they
@@ -216,6 +220,8 @@ String adviceCode(String raw) => switch (raw) {
   'corner_arm_no_path' || 'corner_arm_no_rate' || 'corner_arm_overrun' || 'corner_arm_short' || 'corner_arm_jump' => 'corner_arm',
   'vri_above_maximum' || 'vri_below_minimum' || 'vri_no_depth' => 'vri_limits',
   'pivot_elec_drop' || 'pivot_elec_no_towers' || 'pivot_elec_start_drop' => 'pivot_elec_drop',
+  // 1.6.0 MOD: a nozzle the catalogue item no longer has
+  'nozzle_missing' => 'spec_missing',
   _ => raw,
 };
 
@@ -295,6 +301,11 @@ const adviceCodes = [
   'vih_not_in_flow',
   'vih_pressure_deficit',
   'vih_pressure_high',
+  // 1.6.0 MOD
+  'outside_terrain',
+  'area_self_intersecting',
+  'pump_motor_overload',
+  'pump_motor_sf',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -324,6 +335,8 @@ AdviceLevel _level(String code) => switch (code) {
   'elec_voltage' ||
   'vih_pressure_deficit' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
+  // 1.6.0 MOD: a motor working within its service factor
+  'pump_motor_sf' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 
@@ -595,6 +608,9 @@ List<FixKind> _fixesFor(Project p, DesignResults? r, String code, String raw, Li
       return p.catalog.wires.any((w) => !w.enabled && w.ohmPerKm < thickest) ? const [FixKind.enableWires] : const [];
     case 'elec_stations':
       return const [FixKind.controllerStations];
+    // 1.6.0 MOD
+    case 'area_self_intersecting':
+      return first is AreaEntity ? const [FixKind.splitArea] : const [];
     default:
       return const [];
   }

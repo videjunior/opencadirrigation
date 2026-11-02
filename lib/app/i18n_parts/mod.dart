@@ -31,4 +31,67 @@ const _mod = <String, (String, String, String)>{
     'The project file is damaged or cut short (it is not valid JSON).',
     'El archivo del proyecto está dañado o incompleto (no es un JSON válido).',
   ),
+  // ---- design check: terrain coverage and area outlines (MOD-01, MOD-21)
+  'check.outside_terrain': (
+    'Itens fora da área dos dados de terreno: a cota é extrapolada',
+    'Items outside the area of the terrain data: their elevation is extrapolated',
+    'Elementos fuera del área de los datos de terreno: su cota se extrapola',
+  ),
+  'adv.outside_terrain.why': (
+    'A cota de um ponto fora do contorno dos dados (curvas, pontos cotados, MDE) é estimada pelos pontos mais próximos, como se o terreno ficasse plano além deles. Poço, bomba e adutora costumam ficar fora da área levantada, e alguns metros de erro na cota mudam a altura que a bomba precisa vencer.',
+    'The elevation of a point beyond the outline of the data (contours, spot heights, elevation model) is estimated from the nearest points, as if the ground stayed level past them. Wells, pumps and supply mains often lie outside the surveyed area, and a few metres of error in elevation change the head the pump must overcome.',
+    'La cota de un punto fuera del contorno de los datos (curvas, puntos acotados, MDE) se estima con los puntos más cercanos, como si el terreno siguiera plano más allá de ellos. Pozo, bomba y aductora suelen quedar fuera del área relevada, y unos metros de error en la cota cambian la altura que la bomba debe vencer.',
+  ),
+  'adv.outside_terrain.how': (
+    'Acrescente pontos cotados ou curvas que cubram esses itens (Terreno → Ponto cotado, ou baixe o modelo de elevação da área), ou fixe a cota do nó com uma junção.',
+    'Add spot heights or contours that cover these items (Terrain → Spot height, or download the elevation model of the area), or fix the node elevation with a junction.',
+    'Agregue puntos acotados o curvas que cubran esos elementos (Terreno → Punto acotado, o descargue el modelo de elevación del área), o fije la cota del nudo con una unión.',
+  ),
+  'check.area_self_intersecting': ('Contorno de área que cruza a si mesmo', 'Area outline that crosses itself', 'Contorno de área que se cruza a sí mismo'),
+  'adv.area_self_intersecting.why': (
+    'Num contorno em "8" ou em "gravata" as voltas se anulam no cálculo da área: o volume de rega, o tempo do programa e as áreas dos relatórios saem errados, e o gerador de blocos preenche só parte do campo.',
+    'In an outline shaped like an "8" or a bow tie the loops cancel out in the area: the irrigation volume, the programme time and the report areas come out wrong, and the block generator fills only part of the field.',
+    'En un contorno en "8" o en "corbata" las vueltas se anulan en el cálculo del área: el volumen de riego, el tiempo del programa y las áreas de los informes salen mal, y el generador de bloques llena solo parte del campo.',
+  ),
+  'adv.area_self_intersecting.how': (
+    'Divida o contorno em áreas simples (correção automática) ou arraste os vértices para que as arestas não se cruzem.',
+    'Split the outline into simple areas (automatic correction) or drag the vertices so the edges no longer cross.',
+    'Divida el contorno en áreas simples (corrección automática) o arrastre los vértices para que las aristas no se crucen.',
+  ),
+  'fix.splitArea': ('Dividir em áreas simples', 'Split into simple areas', 'Dividir en áreas simples'),
+  'fixed.splitArea': ('Área dividida em {n} áreas simples', 'Area split into {n} simple areas', 'Área dividida en {n} áreas simples'),
+  // ---- a nozzle the catalogue item no longer has (MOD-15)
+  'check.nozzle_missing': ('Bocal que não existe mais no item do catálogo', 'Nozzle no longer in the catalogue item', 'Boquilla que ya no existe en el elemento del catálogo'),
+  'warn.nozzle_missing': ('Bocal que não existe mais no item do catálogo', 'Nozzle no longer in the catalogue item', 'Boquilla que ya no existe en el elemento del catálogo'),
+  // ---- the motor of a pump at its duty point (MOD-16)
+  'warn.pump_motor_overload': (
+    'Bomba acima da potência do motor, mesmo com o fator de serviço',
+    'Pump above its motor power, even with the service factor',
+    'Bomba por encima de la potencia del motor, incluso con el factor de servicio',
+  ),
+  'adv.pump_motor_overload.why': (
+    'No ponto de operação, a potência no eixo (ρ·g·Q·H/η) passa da potência nominal do motor vezes o seu fator de serviço: o motor aquece, a proteção desarma ou ele queima.',
+    'At the duty point the shaft power (ρ·g·Q·H/η) exceeds the motor rating times its service factor: the motor overheats, its protection trips or it burns out.',
+    'En el punto de operación, la potencia en el eje (ρ·g·Q·H/η) supera la potencia nominal del motor por su factor de servicio: el motor se calienta, la protección se dispara o se quema.',
+  ),
+  'adv.pump_motor_overload.how': (
+    'Escolha uma bomba com motor maior, reduza a vazão do turno ou a altura manométrica, ou use um inversor de frequência com rotação menor.',
+    'Choose a pump with a larger motor, reduce the flow of the system flow or the head, or use a variable-speed drive at a lower speed.',
+    'Elija una bomba con motor mayor, reduzca el caudal del turno o la altura manométrica, o use un variador de frecuencia con menor velocidad.',
+  ),
+  'warn.pump_motor_sf': (
+    'Bomba acima da potência nominal do motor, dentro do fator de serviço',
+    'Pump above its motor rating, within the service factor',
+    'Bomba por encima de la potencia nominal del motor, dentro del factor de servicio',
+  ),
+  'adv.pump_motor_sf.why': (
+    'A potência no eixo no ponto de operação passa da potência nominal do motor, mas cabe no fator de serviço (1,15 nos motores comuns, mais nos submersos pequenos): o motor aguenta, com vida útil e rendimento menores.',
+    'The shaft power at the duty point exceeds the motor rating but stays within the service factor (1.15 for common motors, more for small submersible ones): the motor copes, with a shorter life and a lower efficiency.',
+    'La potencia en el eje en el punto de operación supera la potencia nominal del motor, pero cabe en el factor de servicio (1,15 en los motores comunes, más en los sumergibles pequeños): el motor aguanta, con menor vida útil y rendimiento.',
+  ),
+  'adv.pump_motor_sf.how': (
+    'Confira a potência do motor na ficha do fabricante; para operação contínua, prefira um motor maior ou um ponto de operação com menos vazão.',
+    'Check the motor power on the manufacturer\'s data sheet; for continuous duty prefer a larger motor or a duty point with less flow.',
+    'Verifique la potencia del motor en la ficha del fabricante; para operación continua, prefiera un motor mayor o un punto de operación con menos caudal.',
+  ),
 };

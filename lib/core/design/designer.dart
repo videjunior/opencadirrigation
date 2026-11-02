@@ -20,6 +20,7 @@ import '../hydraulics/pump.dart';
 import '../hydraulics/uniformity.dart';
 import '../hydraulics/water_hammer.dart';
 import '../model/catalog.dart';
+import '../model/catalog_check.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
@@ -1823,6 +1824,9 @@ class Designer {
           if (npshr != null && lr.flow > 0 && npshAvailable(inletPressure: ha - na.elevation, elevation: na.elevation, tempC: params.waterTempC) < npshr + npshMargin) {
             warnings.add('pump_npsh:${l.entityId}');
           }
+          // 1.6.0 MOD: the shaft power at the duty against the motor
+          final motor = spec == null ? null : pumpMotorLoad(spec, lr.flow, lr.pumpHead, speed: _vfdSpeed[l.entityId] ?? l.speedRatio);
+          if (motor != null) warnings.add('$motor:${l.entityId}');
         }
       }
     }
