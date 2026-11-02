@@ -87,7 +87,12 @@ void main() {
     expect(c.advice.where((a) => a.code == 'unconnected'), isEmpty);
     expect(c.lastMessage, contains('Corrigido'));
     expect(HistoryPanel.labelText(c, c.historyEntries.last.label), contains('Correção'));
-    expect(find.textContaining('Nenhum problema'), findsOneWidget);
+    // no problem left: the tab has no count and only the informative message
+    // of the intake without a flow meter stays (PRD-02, 1.6.0)
+    expect(find.text('Mensagens'), findsOneWidget);
+    expect(c.advice.map((a) => a.level), everyElement(AdviceLevel.info));
+    expect(find.textContaining('Item desconectado da rede'), findsNothing);
+    expect(find.textContaining('Captação sem medidor'), findsWidgets);
     // one undo step brings the problem back
     c.undo();
     await settle(tester);

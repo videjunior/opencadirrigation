@@ -215,6 +215,17 @@ void main() {
     expect(c.showReports, isFalse);
   });
 
+  test('stacked report tables keep their minimum: the room left by flex, else they scroll', () {
+    // room to spare: the minimums plus the rest shared 2 : 1 : 1
+    expect(stackedTableHeights(500, [100, 100, 100], [2, 1, 1]), [200, 150, 150]);
+    // a low panel: each keeps its minimum (the stack scrolls)
+    expect(stackedTableHeights(150, [100, 100, 100], [2, 1, 1]), [100, 100, 100]);
+    // the minimum of a table shows its tools, its header and the rows asked for
+    final one = ReportTableView.minHeight(TextScaler.noScaling, 1), three = ReportTableView.minHeight(TextScaler.noScaling, 3);
+    expect(three - one, 2 * ReportTableView.rowHeight);
+    expect(one, greaterThanOrEqualTo(48 + ReportTableView.headerHeight + ReportTableView.rowHeight));
+  });
+
   testWidgets('properties panel shows the fields of every entity type and edits them', (tester) async {
     final c = await pumpShell(tester);
     final valve = c.project.entities.whereType<ControlValveEntity>().first;

@@ -231,19 +231,15 @@ class ReportsPanel extends StatelessWidget {
     final tables = c.reportTables();
     final present = [
       for (final (k, f) in keys)
-        if (tables.where((x) => x.key == k).firstOrNull case final tb? when !tb.isEmpty) (k, f),
+        if (tables.where((x) => x.key == k).firstOrNull case final tb? when !tb.isEmpty) (tb, f),
     ];
     if (present.isEmpty) {
       return Center(
         child: Text(c.t(emptyKey ?? 'msg.noResults'), style: TextStyle(color: Cad.fg54)),
       );
     }
-    if (present.length == 1) return _fromTable(present.single.$1);
-    return Column(
-      children: [
-        for (var i = 0; i < present.length; i++) ...[if (i > 0) Container(height: 1, color: Cad.fg12), Expanded(flex: present[i].$2, child: _fromTable(present[i].$1))],
-      ],
-    );
+    if (present.length == 1) return _fromTable(present.single.$1.key);
+    return StackedReportTables([for (final (tb, f) in present) (rows: tb.rows.length, flex: f, caption: null, child: _fromTable(tb.key))]);
   }
 
   int _errorCount() => c.advice.where((a) => a.level == AdviceLevel.error).length;
@@ -299,23 +295,10 @@ class ReportsPanel extends StatelessWidget {
     ];
     if (below.isEmpty) return _fromTable('mainline');
     final main = tables.where((x) => x.key == 'mainline').firstOrNull;
-    return Column(
-      children: [
-        if (main != null && !main.isEmpty) Expanded(flex: main.rows.length + 1, child: _fromTable('mainline')),
-        for (final tb in below) ...[
-          Container(
-            width: double.infinity,
-            color: Cad.panel,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              tb.title,
-              style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600),
-            ),
-          ),
-          Expanded(flex: tb.rows.length + 1, child: _fromTable(tb.key)),
-        ],
-      ],
-    );
+    return StackedReportTables([
+      if (main != null && !main.isEmpty) (rows: main.rows.length, flex: main.rows.length + 1, caption: null, child: _fromTable('mainline')),
+      for (final tb in below) (rows: tb.rows.length, flex: tb.rows.length + 1, caption: tb.title, child: _fromTable(tb.key)),
+    ]);
   }
 
   Widget _profile() {
@@ -501,6 +484,80 @@ String toolNameOfEntity(Entity e) => ProjectController.toolKeyOf(e);
 /// filter keeps the rows that contain a text (or only the highlighted ones),
 /// and the visible rows are copied to the clipboard or saved as CSV; a row
 /// with an entity in [rowIds] selects and frames it through [onLocate].
+/// One table of a [StackedReportTables]: its row count, its share of the
+/// room left, an optional caption above it and the table itself.
+typedef StackedTable = ({int rows, int flex, String? caption, Widget child});
+
+/// The heights of tables stacked in [available] pixels: each gets its
+/// minimum ([mins]) and the room left is shared by [flex]. When the
+/// minimums do not fit, each keeps its minimum and the stack scrolls.
+List<double> stackedTableHeights(double available, List<double> mins, List<int> flex) {
+  final need = mins.fold(0.0, (a, b) => a + b);
+  final weight = flex.fold(0, (a, b) => a + math.max(1, b));
+  final extra = math.max(0.0, available - need);
+  return [for (var i = 0; i < mins.length; i++) mins[i] + extra * math.max(1, flex[i]) / weight];
+}
+
+/// Report tables one above the other (a tab may hold ten since 1.6.0):
+/// each keeps room for its tools, its header and up to three rows, the room
+/// left is shared by flex, and when a low panel cannot hold them all the
+/// tables scroll as one list instead of overflowing.
+class StackedReportTables extends StatelessWidget {
+  const StackedReportTables(this.tables, {super.key});
+  final List<StackedTable> tables;
+
+  /// Rows a table keeps in view at the least.
+  static const minRows = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final scaler = MediaQuery.textScalerOf(context);
+    final captionHeight = scaler.scale(11.5) * 1.5 + 8;
+    return LayoutBuilder(
+      builder: (context, box) {
+        const divider = 1.0;
+        final mins = [for (final tb in tables) ReportTableView.minHeight(scaler, math.min(tb.rows, minRows)) + (tb.caption != null ? captionHeight : 0)];
+        final dividers = [for (var i = 0; i < tables.length; i++) i > 0 && tables[i].caption == null ? divider : 0.0];
+        final available = box.maxHeight.isFinite ? box.maxHeight - dividers.fold(0.0, (a, b) => a + b) : 0.0;
+        final heights = stackedTableHeights(available, mins, [for (final tb in tables) tb.flex]);
+        return SingleChildScrollView(
+          key: const Key('report_stack'),
+          primary: false,
+          child: Column(
+            children: [
+              for (var i = 0; i < tables.length; i++) ...[
+                if (dividers[i] > 0) Container(height: divider, color: Cad.fg12),
+                SizedBox(
+                  height: heights[i],
+                  child: Column(
+                    children: [
+                      if (tables[i].caption case final caption?)
+                        Container(
+                          width: double.infinity,
+                          height: captionHeight,
+                          color: Cad.panel,
+                          alignment: AlignmentDirectional.centerStart,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      Expanded(child: tables[i].child),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class ReportTableView extends StatefulWidget {
   const ReportTableView({super.key, required this.headers, required this.rows, this.rowColors, this.rowIds, this.onLocate, this.title = '', this.tools = false});
 
@@ -527,6 +584,13 @@ class ReportTableView extends StatefulWidget {
   static const rowHeight = 26.0;
   static const headerHeight = 30.0;
   static const cellPadding = 8.0;
+
+  /// Height of the tool bar at the most (a finger's 48 px buttons, or a
+  /// filter field grown with the text size).
+  static double toolbarHeight(TextScaler s) => math.max(48.0, s.scale(12) * 1.5 + 22);
+
+  /// The least height of a table with its tools that shows [rows] rows.
+  static double minHeight(TextScaler s, int rows) => toolbarHeight(s) + math.max(headerHeight, s.scale(11) + 19) + rows * math.max(rowHeight, s.scale(11) + 15);
 
   /// Extra width so rounding never turns the widest cell into an ellipsis.
   static const slack = 4.0;

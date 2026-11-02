@@ -213,7 +213,8 @@ void main() {
     await settle(tester);
     expect(find.text('Zonas sem água'), findsOneWidget);
     expect(find.text('Linha ramificada: cada tubo corta o que está a jusante dele.'), findsOneWidget);
-    expect(find.text('100.0 %'), findsWidgets, reason: 'the riser cuts the whole flow off');
+    // with the decimal comma of Portuguese (UI-08)
+    expect(find.text('100,0 %'), findsWidgets, reason: 'the riser cuts the whole flow off');
     await close(tester);
   });
 

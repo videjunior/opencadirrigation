@@ -173,7 +173,8 @@ void main() {
       await type(ValueKey('st_tmin_$m'), '14,8');
     }
     await settle(tester, 2);
-    expect(find.text('4.56'), findsWidgets);
+    // with the decimal comma of Portuguese (UI-08)
+    expect(find.text('4,56'), findsWidgets);
     expect(find.textContaining('umidade pela Tmín'), findsWidgets);
     expect(find.textContaining('radiação pela amplitude térmica'), findsWidgets);
     expect(find.textContaining('vento de 2 m/s'), findsWidgets);
