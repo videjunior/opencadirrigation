@@ -162,4 +162,10 @@ const _ui = <String, (String, String, String)>{
   'ui.ruleColour': ('Cor da regra', 'Colour of the rule', 'Color de la regla'),
   'ui.removeRule': ('Remover esta regra', 'Remove this rule', 'Quitar esta regla'),
   'ui.removeNozzle': ('Remover este bocal', 'Remove this nozzle', 'Quitar esta boquilla'),
+  // ---- UI-27 the hint of a drawing tool on a touch screen
+  'hint.touchKeys': (
+    '✓ termina · ✕ cancela · ⌨ digita coordenadas e comprimentos',
+    '✓ finishes · ✕ cancels · ⌨ types coordinates and lengths',
+    '✓ termina · ✕ cancela · ⌨ escribe coordenadas y longitudes',
+  ),
 };

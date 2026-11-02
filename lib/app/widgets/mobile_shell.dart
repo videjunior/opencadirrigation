@@ -540,10 +540,12 @@ class _MobileShellState extends State<MobileShell> {
                           key: TutorialTargets.statusBar,
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(color: Cad.overlay, borderRadius: BorderRadius.circular(6)),
+                          // a drawing tool: what the buttons do in place of Enter, Esc and the keyboard (UI-27)
                           child: Text(
-                            c.command.isNotEmpty ? '${t('status.command')}: ${c.command}' : widget.hint,
+                            c.command.isNotEmpty ? '${t('status.command')}: ${c.command}' : (drawing ? '${widget.hint}\n${t('hint.touchKeys')}' : widget.hint),
+                            key: const Key('mobile_hint'),
                             style: TextStyle(fontSize: 11, color: Cad.fg70),
-                            maxLines: 2,
+                            maxLines: drawing ? 3 : 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

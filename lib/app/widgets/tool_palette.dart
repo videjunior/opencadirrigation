@@ -87,10 +87,11 @@ class ToolPalette extends StatelessWidget {
     final w = touchInput ? 44.0 : 36.0, h = touchInput ? 44.0 : 28.0;
     return LayoutBuilder(
       builder: (context, constraints) {
-        // one column when everything fits, otherwise two so the hydraulic
-        // groups stay visible without scrolling
+        // one column when everything fits, otherwise two (three with the
+        // finger-sized buttons) so the hydraulic groups stay visible without
+        // scrolling
         final needed = groups.fold<double>(0, (sum, g) => sum + 12 + g.$2.length * (h + 2));
-        final cols = constraints.maxHeight < needed ? 2 : 1;
+        final cols = constraints.maxHeight.isFinite && constraints.maxHeight > 0 ? (needed / constraints.maxHeight).ceil().clamp(1, 3) : 1;
         return Container(
           key: TutorialTargets.palette,
           width: 8 + cols * w + (cols - 1) * 2,
