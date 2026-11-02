@@ -41,6 +41,7 @@ class PaletteEntry {
   bool get enabled => run != null;
 
   late final String _label = foldSearch(label);
+  late final String _bare = foldSearch(_bareLabel(label));
   late final String _all = foldSearch('$label $path $shortcut $keywords');
   late final Set<String> _aliases = {
     for (final w in keywords.split(RegExp(r'[\s·,]+')))
@@ -60,10 +61,15 @@ String foldSearch(String s) {
   return b.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
 }
 
-/// The entries matching [query], best first: every word must appear; a
-/// label that starts with the query, a typed alias equal to it and a word
-/// of the label that starts with it come first; what cannot run now goes
-/// last.
+/// [label] as the menus name it: without the shortcut written after it
+/// ("Grade  (F7)") and without its "…".
+String _bareLabel(String label) => label.trim().replaceFirst(RegExp(r'\s+\([^)]*\)$'), '').replaceFirst(RegExp(r'…$'), '').trim();
+
+/// The entries matching [query], best first: every word must appear; the
+/// item the query names exactly ("grade" is View › Grid, before the
+/// sprinkler grid whose typed command is GRADE), then a label that starts
+/// with the query, a typed alias equal to it and a word of the label that
+/// starts with it; what cannot run now goes last.
 List<PaletteEntry> rankPalette(List<PaletteEntry> all, String query) {
   final q = foldSearch(query);
   if (q.isEmpty) return all;
@@ -72,6 +78,7 @@ List<PaletteEntry> rankPalette(List<PaletteEntry> all, String query) {
   for (final e in all) {
     if (!words.every(e._all.contains)) continue;
     var s = 0;
+    if (e._bare == q) s += 150;
     if (e._aliases.contains(q)) s += 120;
     if (e._label.startsWith(q)) s += 100;
     if (e._label.split(RegExp(r'[^\p{L}\p{N}]+', unicode: true)).any((w) => w.startsWith(words.first))) s += 40;
@@ -137,8 +144,7 @@ String Function(String label) englishLabels(I18n t) {
   }
   final en = I18n('en');
   return (label) {
-    final bare = label.trim().replaceFirst(RegExp(r'\s+\([^)]*\)$'), '').replaceFirst(RegExp(r'…$'), '').trim();
-    final k = back[bare];
+    final k = back[_bareLabel(label)];
     return k == null ? '' : en(k);
   };
 }
@@ -158,12 +164,13 @@ List<PaletteEntry> buildPaletteEntries(ProjectController c, {void Function(Strin
     for (final e in commandAliases.entries) {
       (byTarget[e.value] ??= []).add(e.key);
     }
-    final byLabel = <String, int>{for (var i = 0; i < out.length; i++) foldSearch(out[i].label): i};
+    // (a menu item written with its key, "Grid  (F7)", takes the aliases of its command too)
+    final byLabel = <String, int>{for (var i = 0; i < out.length; i++) foldSearch(_bareLabel(out[i].label)): i};
     for (final e in byTarget.entries) {
       final target = e.key;
       final label = target is ToolId ? t('tool.${target.name}') : t(actionLabelKey(target as CadAction));
       final aliases = e.value;
-      final at = byLabel[foldSearch(label.replaceFirst(RegExp(r'…$'), ''))] ?? byLabel[foldSearch(label)];
+      final at = byLabel[foldSearch(_bareLabel(label))];
       if (at != null) {
         final m = out[at];
         out[at] = PaletteEntry(label: m.label, path: m.path, shortcut: m.shortcut, icon: m.icon, checked: m.checked, run: m.run, keywords: '${m.keywords} ${aliases.join(' ')}');
