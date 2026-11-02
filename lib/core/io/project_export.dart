@@ -56,7 +56,7 @@ enum DrawingFormat {
   final String extension;
   final String mime;
   bool get needsGeoref => this == kml || this == kmz || this == geojson || this == gpx;
-  bool get isBinary => this == pdf || this == kmz || this == dwg || this == shp;
+  bool get isBinary => this == pdf || this == kmz || this == dwg || this == shp || this == dxfR12;
 }
 
 enum ReportFormat {
@@ -70,6 +70,10 @@ enum ReportFormat {
   final String mime;
   bool get isBinary => this == xlsx || this == pdf;
 }
+
+/// Keys of the feature attributes that hold numbers (GeoJSON carries them as
+/// numbers).
+const _numericData = {'length_m', 'ELEV', 'stations', 'used', 'outlets', 'spacing_m', 'flow', 'required_head', 'area_ha'};
 
 class ProjectExporter {
   ProjectExporter({required this.project, this.results, required this.labels, this.unconnected = const {}, Map<String, String>? layerNames, this.fonts}) : layerNames = layerNames ?? const {};
@@ -100,6 +104,10 @@ class ProjectExporter {
   /// (splines and symbols as polylines, hatches as outline and lines,
   /// dimensions as lines and text).
   String dxfR12() => DxfWriter.write(dxfDocument());
+
+  /// The bytes of [dxfR12]: code page 1252, as its header says (programs of
+  /// that age read no UTF-8).
+  Uint8List dxfR12Bytes() => DxfWriter.writeBytes(dxfDocument());
 
   /// R2000 DWG with the same native drawing as the DXF export.
   Uint8List dwg() => DwgWriter.writeDrawing(cadDrawing());
@@ -274,6 +282,7 @@ class ProjectExporter {
           description: description,
           data: {'id': e.id, 'type': e.type.name, ...?data},
           fillAlpha: fillAlpha,
+          numeric: _numericData,
         ),
       );
     }
@@ -474,7 +483,7 @@ class ProjectExporter {
   /// Drawing export by format; text formats return [String], binary [Uint8List].
   Object exportDrawing(DrawingFormat f, {SheetOptions sheet = const SheetOptions()}) => switch (f) {
     DrawingFormat.dxf => dxf(),
-    DrawingFormat.dxfR12 => dxfR12(),
+    DrawingFormat.dxfR12 => dxfR12Bytes(),
     DrawingFormat.dwg => dwg(),
     DrawingFormat.pdf => pdfSheet(sheet),
     DrawingFormat.svg => svg(sheet),

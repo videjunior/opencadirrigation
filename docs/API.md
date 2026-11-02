@@ -608,7 +608,7 @@ for (final insert in drawing.entities.whereType<CadInsert>().where((i) => i.attr
 final dxf = DxfR2000Writer.write(drawing);
 final dwg = DwgWriter.writeDrawing(drawing);
 final t = I18n('en');
-final r12 = ProjectExporter(project: project, results: results, labels: ReportLabels(t: t.call, has: t.has, warning: t.warning)).exportDrawing(DrawingFormat.dxfR12) as String;
+final r12 = ProjectExporter(project: project, results: results, labels: ReportLabels(t: t.call, has: t.has, warning: t.warning)).exportDrawing(DrawingFormat.dxfR12) as Uint8List;
 ```
 
 ### The AI assistant's clients and agent loop

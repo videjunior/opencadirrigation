@@ -33,6 +33,7 @@ import '../model/project.dart';
 import '../model/terrain.dart';
 import '../units.dart';
 import 'datum.dart';
+import 'safe_archive.dart';
 
 /// Shape types of the specification.
 enum ShpShapeType {
@@ -58,16 +59,21 @@ class ShapefileParts {
   final ShpShapeType shapeType;
   final int recordCount;
 
-  /// Splits a zip of shapefiles into their parts (by base name).
+  /// Splits a zip of shapefiles into their parts (by base name). Only the
+  /// parts of shapefiles are decompressed, each up to the ceiling of an
+  /// entry (`zip_too_large` beyond it).
   static List<ShapefileParts> unzip(Uint8List zip) {
-    final arc = ZipDecoder().decodeBytes(zip);
+    final arc = openZip(zip);
     final byBase = <String, Map<String, List<int>>>{};
+    const parts = {'shp', 'shx', 'dbf', 'prj', 'cpg'};
     for (final f in arc.files) {
       if (!f.isFile) continue;
       final name = f.name.split('/').last;
       final dot = name.lastIndexOf('.');
       if (dot <= 0) continue;
-      byBase.putIfAbsent(name.substring(0, dot), () => {})[name.substring(dot + 1).toLowerCase()] = f.content as List<int>;
+      final ext = name.substring(dot + 1).toLowerCase();
+      if (!parts.contains(ext)) continue;
+      byBase.putIfAbsent(name.substring(0, dot), () => {})[ext] = zipEntryBytes(f, maxBytes: ext == 'prj' || ext == 'cpg' ? 1 << 20 : maxArchiveEntryBytes);
     }
     final out = <ShapefileParts>[];
     byBase.forEach((base, files) {

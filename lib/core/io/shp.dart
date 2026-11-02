@@ -11,9 +11,11 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 
 import '../model/geometry.dart';
+import 'codepages.dart';
 import 'datum.dart';
 import 'dxf.dart';
 import 'geo.dart';
+import 'safe_archive.dart';
 
 class ShpImportResult {
   ShpImportResult({required this.document, required this.recordCount, required this.georef, required this.geographic, this.crs = '', this.warnings = const []});
@@ -28,27 +30,62 @@ class ShpImportResult {
 }
 
 class ShpReader {
-  /// Parses a .shp (optionally with .dbf rows and .prj text).
-  static ShpImportResult parse(Uint8List shp, {Uint8List? dbf, String? prj, String? cpg, GeoReference? georef, String layer = 'SHP'}) {
+  /// Parses a .shp (optionally with .dbf rows, .prj text and the .shx
+  /// index). A record whose length is damaged ends the reading with the
+  /// note `shp_truncated` (the index, when given, finds the records that
+  /// follow it).
+  static ShpImportResult parse(Uint8List shp, {Uint8List? dbf, String? prj, String? cpg, Uint8List? shx, GeoReference? georef, String layer = 'SHP'}) {
     final bd = ByteData.sublistView(shp);
     if (shp.length < 100 || bd.getInt32(0, Endian.big) != 9994) throw const FormatException('shp_bad_header');
-    final fileLength = bd.getInt32(24, Endian.big) * 2;
+    final fileLength = math.min(bd.getInt32(24, Endian.big) * 2, shp.length);
     final attrs = dbf != null ? _readDbf(dbf, cpg: cpg) : const <Map<String, String>>[];
     final elevField = attrs.isEmpty ? null : _elevationField(attrs.first.keys);
     final nameField = attrs.isEmpty ? null : _nameField(attrs.first.keys);
-    // records
+    final notes = <String>[];
+    // records: from the index when there is one, else one after the other
     final raw = <_Shape>[];
-    var off = 100;
     var rec = 0;
-    while (off + 8 <= fileLength && off + 8 <= shp.length) {
-      final len = bd.getInt32(off + 4, Endian.big) * 2;
-      final start = off + 8;
-      if (start + 4 > shp.length) break;
+    var damaged = false;
+    void record(int start, int len) {
+      if (len < 4 || start + len > shp.length) {
+        damaged = true;
+        return;
+      }
       final type = bd.getInt32(start, Endian.little);
-      raw.add(_parseShape(bd, start, type));
-      rec++;
-      off = start + len;
+      try {
+        raw.add(_parseShape(ByteData.sublistView(shp, start, start + len), 0, type));
+        rec++;
+      } on RangeError {
+        // a record whose counts run past its length
+        damaged = true;
+      }
     }
+
+    final index = shx != null && shx.length >= 100 && ByteData.sublistView(shx).getInt32(0, Endian.big) == 9994 ? ByteData.sublistView(shx) : null;
+    if (index != null) {
+      for (var at = 100; at + 8 <= shx!.length; at += 8) {
+        final offset = index.getInt32(at, Endian.big) * 2, len = index.getInt32(at + 4, Endian.big) * 2;
+        if (offset < 100 || offset + 8 > shp.length) {
+          damaged = true;
+          continue;
+        }
+        record(offset + 8, len);
+      }
+    } else {
+      var off = 100;
+      while (off + 8 <= fileLength) {
+        final len = bd.getInt32(off + 4, Endian.big) * 2;
+        final start = off + 8;
+        // a length of zero or less would never move on: the file is damaged
+        if (len <= 0 || start + len > shp.length) {
+          damaged = true;
+          break;
+        }
+        record(start, len);
+        off = start + len;
+      }
+    }
+    if (damaged) notes.add('shp_truncated');
     // the .prj (any datum, any UTM zone) or, without one, degrees recognised
     // by their range and precision; see GeoPlacement
     final allPts = raw.expand((s) => s.parts.expand((p) => p)).toList();
@@ -78,7 +115,7 @@ class ShpReader {
         }
       }
     }
-    return ShpImportResult(document: doc, recordCount: rec, georef: ref, geographic: isGeo, crs: prj != null ? _crsName(prj) : '', warnings: placement.warnings);
+    return ShpImportResult(document: doc, recordCount: rec, georef: ref, geographic: isGeo, crs: prj != null ? _crsName(prj) : '', warnings: [...placement.warnings, ...notes]);
   }
 
   /// True when every point fits the lat/lon range and at least half of them
@@ -104,22 +141,25 @@ class ShpReader {
   /// Parses a .zip holding .shp (+ .dbf, .prj, .cpg) or a raw .shp.
   static ShpImportResult parseAny(String name, Uint8List bytes, {GeoReference? georef}) {
     if (name.toLowerCase().endsWith('.zip')) {
-      final arc = ZipDecoder().decodeBytes(bytes);
-      ArchiveFile? shp, dbf, prj, cpg;
+      final arc = openZip(bytes);
+      ArchiveFile? shp, dbf, prj, cpg, shx;
       for (final f in arc) {
         final l = f.name.toLowerCase();
         if (l.endsWith('.shp')) shp ??= f;
         if (l.endsWith('.dbf')) dbf ??= f;
         if (l.endsWith('.prj')) prj ??= f;
         if (l.endsWith('.cpg')) cpg ??= f;
+        if (l.endsWith('.shx')) shx ??= f;
       }
       if (shp == null) throw const FormatException('shp_zip_no_shp');
       final layer = shp.name.split('/').last.replaceAll(RegExp(r'\.shp$', caseSensitive: false), '');
+      // only the parts of the shapefile, each up to the ceiling of an entry
       return parse(
-        Uint8List.fromList(shp.content as List<int>),
-        dbf: dbf != null ? Uint8List.fromList(dbf.content as List<int>) : null,
-        prj: prj != null ? latin1.decode(prj.content as List<int>) : null,
-        cpg: cpg != null ? latin1.decode(cpg.content as List<int>).trim() : null,
+        zipEntryBytes(shp),
+        dbf: dbf != null ? zipEntryBytes(dbf) : null,
+        prj: prj != null ? latin1.decode(zipEntryBytes(prj, maxBytes: 1 << 20)) : null,
+        cpg: cpg != null ? latin1.decode(zipEntryBytes(cpg, maxBytes: 1 << 16)).trim() : null,
+        shx: shx != null ? zipEntryBytes(shx) : null,
         georef: georef,
         layer: layer.isEmpty ? 'SHP' : layer,
       );
@@ -176,16 +216,21 @@ class ShpReader {
   /// GDAL) and Latin-1 otherwise (older GIS software).
   static List<Map<String, String>> _readDbf(Uint8List dbf, {String? cpg}) {
     if (dbf.length < 32) return const [];
-    final c = (cpg ?? '').toUpperCase();
+    final c = (cpg ?? '').toUpperCase().trim();
     final forceUtf8 = c.contains('UTF') || c.contains('65001');
-    final forceLatin = c.contains('1252') || c.contains('8859') || c.contains('LATIN');
+    // the code page the .cpg names ("1252", "CP1251", "ANSI 1250", "ISO-8859-1")
+    final named = RegExp(r'^(?:CP|ANSI|WINDOWS)?[ _-]?(\d{3,4})$').firstMatch(c)?.group(1);
+    final page = c.contains('8859') || c.contains('LATIN') ? 28591 : (named != null ? int.parse(named) : null);
+    final forced = page != null && supportedCodepages.contains(page) ? page : null;
     String decode(List<int> b) {
       if (forceUtf8) return utf8.decode(b, allowMalformed: true);
-      if (forceLatin) return latin1.decode(b);
+      if (forced != null) return decodeCodepage(b, forced);
       try {
         return utf8.decode(b);
       } catch (_) {
-        return latin1.decode(b);
+        // older GIS software: Windows' Western page (not Latin-1, which
+        // turns "–" and the curly quotes into control characters)
+        return decodeCodepage(b, 1252);
       }
     }
 
@@ -203,11 +248,14 @@ class ShpReader {
       off += 32;
     }
     final out = <Map<String, String>>[];
+    // a record of no length would repeat for every count of a damaged header
+    if (recLen <= 1) return out;
     var pos = headerLen;
     for (var r = 0; r < recCount && pos + recLen <= dbf.length; r++) {
       var p = pos + 1; // deletion flag
       final m = <String, String>{};
       for (final (name, len) in fields) {
+        if (p + len > pos + recLen) break;
         m[name] = decode(dbf.sublist(p, p + len)).trim();
         p += len;
       }

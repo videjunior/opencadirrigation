@@ -428,7 +428,7 @@ void main() {
   });
 
   group('damaged files', () {
-    test('an index error inside a reader becomes "file damaged", not a raw error', () {
+    test('a shapefile whose record runs past the end is read as far as it goes, with a note', () {
       final c = _fresh();
       // a .shp header with a valid code but records that run past the end
       final shp = ByteData(100 + 8 + 4)
@@ -439,9 +439,37 @@ void main() {
         ..setUint32(100, 1)
         ..setUint32(104, 500)
         ..setUint32(108, 3, Endian.little);
+      final s = c.importFile('broken.shp', shp.buffer.asUint8List());
+      expect(s, contains(c.t('warn.shp_truncated')));
+      expect(c.project.entities, isEmpty);
+    });
+
+    test('an index error inside a reader becomes "file damaged", not a raw error', () {
+      final c = _fresh();
+      // a point shapefile whose .dbf header claims more than the file holds
+      final shp = ByteData(100 + 8 + 20)
+        ..setUint32(0, 9994)
+        ..setUint32(24, (100 + 8 + 20) ~/ 2)
+        ..setUint32(28, 1000, Endian.little)
+        ..setUint32(32, 1, Endian.little)
+        ..setUint32(100, 1)
+        ..setUint32(104, 10)
+        ..setUint32(108, 1, Endian.little)
+        ..setFloat64(112, 500000, Endian.little)
+        ..setFloat64(120, 7500000, Endian.little);
+      final dbf = ByteData(40)
+        ..setUint8(0, 3)
+        ..setUint32(4, 1, Endian.little)
+        ..setUint16(8, 1000, Endian.little)
+        ..setUint16(10, 20, Endian.little);
+      final zip = ZipEncoder().encodeBytes(
+        Archive()
+          ..add(ArchiveFile.bytes('pocos.shp', shp.buffer.asUint8List()))
+          ..add(ArchiveFile.bytes('pocos.dbf', dbf.buffer.asUint8List())),
+      );
       Object? error;
       try {
-        c.importFile('broken.shp', shp.buffer.asUint8List());
+        c.importFile('pocos.zip', Uint8List.fromList(zip));
       } catch (e) {
         error = e;
       }
@@ -603,10 +631,12 @@ void main() {
         'EOF',
       ].join('\n');
       expect(c.importDxf(dxf), 2);
-      final spot = c.project.entities.whereType<SpotHeightEntity>().single;
-      expect(spot.elevation, 0);
+      // a point without a usable elevation is a marker, not a spot height at 0 m
+      expect(c.project.entities.whereType<SpotHeightEntity>(), isEmpty);
+      expect(c.project.entities.whereType<CircleEntity>().single.center, const Pt(1, 1));
       // whatever gets in, saving does not fail: the value is written as null
-      spot.elevation = double.nan;
+      final spot = SpotHeightEntity(id: c.project.newId(), position: const Pt(1, 1), elevation: double.nan);
+      c.project.entities.add(spot);
       final text = c.saveJson();
       expect(text, contains('"z": null'));
       expect(Project.fromJsonString(text).entities.whereType<SpotHeightEntity>().single.elevation, 0);

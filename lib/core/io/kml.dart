@@ -11,6 +11,7 @@ import 'package:xml/xml.dart';
 import '../model/geometry.dart';
 import 'dxf.dart';
 import 'geo.dart';
+import 'safe_archive.dart';
 
 class KmlImportResult {
   KmlImportResult({required this.document, required this.georef, required this.placemarkCount});
@@ -92,15 +93,15 @@ class KmlReader {
 
   /// Parses a KMZ archive (first .kml inside).
   static KmlImportResult parseKmz(Uint8List bytes, {GeoReference? georef}) {
-    final archive = ZipDecoder().decodeBytes(bytes);
+    final archive = openZip(bytes);
     ArchiveFile? kml;
     for (final f in archive.files) {
       if (f.name.toLowerCase() == 'doc.kml') kml = f;
     }
     kml ??= archive.files.where((f) => f.name.toLowerCase().endsWith('.kml')).firstOrNull;
     if (kml == null) throw const FormatException('kmz_no_kml');
-    final content = kml.content as List<int>;
-    return parse(utf8.decode(content, allowMalformed: true), georef: georef);
+    // the document only, and only up to the ceiling of an entry
+    return parse(utf8.decode(zipEntryBytes(kml), allowMalformed: true), georef: georef);
   }
 
   static void _walk(XmlElement el, String folder, List<_RawPlacemark> out) {

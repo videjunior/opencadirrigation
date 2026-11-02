@@ -1,9 +1,13 @@
 /// Georeferenced raster import: JPG/PNG with a world file (.jgw/.pgw/.wld,
-/// inside a .zip with the image), GeoTIFF (ModelPixelScale/ModelTiepoint or
-/// ModelTransformation tags, UTM or geographic CRS) and plain images placed
-/// by the user. TIFF pixels are re-encoded to PNG for the canvas.
+/// inside a .zip with the image and, when there is one, its .prj), GeoTIFF
+/// (ModelPixelScale/ModelTiepoint or ModelTransformation tags, the CRS of its
+/// GeoKeys: any datum and UTM zone the app knows, SIRGAS 2000, SAD 69 and
+/// Córrego Alegre included) and plain images placed by the user. TIFF pixels
+/// are re-encoded to PNG for the canvas. A raster in another zone or datum
+/// than the project is moved through latitude/longitude (see [GeoPlacement]).
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -11,7 +15,10 @@ import 'package:archive/archive.dart';
 import 'package:image/image.dart' as img;
 
 import '../model/geometry.dart';
+import 'datum.dart';
 import 'geo.dart';
+import 'image_decode.dart';
+import 'safe_archive.dart';
 
 class GeoImage {
   GeoImage({
@@ -26,7 +33,9 @@ class GeoImage {
     this.geographic = false,
     this.utmZone,
     this.utmNorth,
+    this.crs,
     this.source = '',
+    this.warnings = const [],
   });
 
   /// Encoded PNG/JPEG bytes for display.
@@ -43,13 +52,24 @@ class GeoImage {
   final bool geographic;
   final int? utmZone;
   final bool? utmNorth;
+
+  /// The CRS of the coordinates when the file names one (GeoKeys, .prj);
+  /// without it [geographic] and [utmZone] say what is known.
+  final CrsInfo? crs;
   final String source;
+
+  /// Notes for the import message (`crs_*` codes).
+  final List<String> warnings;
 
   bool get georeferenced => worldTopLeft != null && pixelSizeX != null && pixelSizeY != null;
 
   /// Width/height in map units when georeferenced.
   double get worldWidth => (pixelSizeX ?? 1) * widthPx;
   double get worldHeight => (pixelSizeY ?? 1).abs() * heightPx;
+
+  /// The coordinate system the placement uses: [crs], else WGS 84 degrees
+  /// or its UTM zone, else none (plain metres).
+  CrsInfo? get placementCrs => crs ?? (geographic ? CrsInfo.geographic() : (utmZone != null ? CrsInfo.utm(utmZone!, utmNorth ?? true) : null));
 }
 
 class GeoImageReader {
@@ -57,7 +77,7 @@ class GeoImageReader {
   static GeoImage read(String name, Uint8List bytes) {
     final lower = name.toLowerCase();
     if (lower.endsWith('.zip')) {
-      final arc = ZipDecoder().decodeBytes(bytes);
+      final arc = openZip(bytes);
       ArchiveFile? image, world, prj;
       for (final f in arc) {
         final l = f.name.toLowerCase();
@@ -66,13 +86,14 @@ class GeoImageReader {
         if (l.endsWith('.prj')) prj ??= f;
       }
       if (image == null) throw const FormatException('image_zip_no_image');
-      final base = read(image.name, Uint8List.fromList(image.content as List<int>));
+      // only the picture and its side files, each up to the ceiling of an entry
+      final base = read(image.name, zipEntryBytes(image));
       if (world == null) return base;
-      final w = parseWorldFile(String.fromCharCodes(world.content as List<int>));
+      final w = parseWorldFile(latin1.decode(zipEntryBytes(world, maxBytes: 1 << 20)));
       if (w == null) return base;
-      final prjText = prj != null ? String.fromCharCodes(prj.content as List<int>) : '';
-      final geo = prjText.contains('GEOGCS') && !prjText.contains('PROJCS');
-      final zone = RegExp(r'UTM[_ ]zone[_ ](\d+)([NS])', caseSensitive: false).firstMatch(prjText);
+      final prjText = prj != null ? latin1.decode(zipEntryBytes(prj, maxBytes: 1 << 20)) : '';
+      // the .prj names the CRS (any datum, zone or projection the app knows)
+      final crs = prjText.trim().isEmpty ? null : parseCrs(prjText);
       // x = A·col + B·row + C, y = D·col + E·row + F for pixel centres: the
       // column axis (A, D) gives the pixel size and rotation; the top-left
       // corner is half a pixel back along both axes
@@ -86,22 +107,19 @@ class GeoImageReader {
         pixelSizeX: math.sqrt(a * a + d * d),
         pixelSizeY: -math.sqrt(b * b + e * e),
         rotationDeg: radToDeg(atan2Safe(d, a)),
-        geographic: geo,
-        utmZone: zone != null ? int.parse(zone.group(1)!) : null,
-        utmNorth: zone != null ? zone.group(2)!.toUpperCase() == 'N' : null,
+        geographic: crs?.kind == CrsKind.geographic,
+        utmZone: crs?.utmZone,
+        utmNorth: crs?.utmZone != null ? crs!.north : null,
+        crs: crs,
         source: image.name,
+        warnings: crsNotes(crs),
       );
     }
     if (lower.endsWith('.tif') || lower.endsWith('.tiff')) return _readTiff(name, bytes);
-    final img.DecodeInfo? info;
-    try {
-      info = img.findDecoderForData(bytes)?.startDecode(bytes);
-    } on img.ImageException catch (e) {
-      // the decoder refuses headers beyond its own pixel limit by itself
-      throw FormatException(e.message.contains('exceed') ? 'image_too_large' : 'image_unreadable');
-    }
+    // the decoder refuses headers beyond its own pixel limit by itself
+    final info = pictureInfo(bytes);
     if (info != null) checkPixels(info.width, info.height);
-    final decoded = img.decodeImage(bytes);
+    final decoded = decodeImageSafe(bytes);
     if (decoded == null) throw const FormatException('image_unreadable');
     final mime = lower.endsWith('.png') ? 'image/png' : (lower.endsWith('.jpg') || lower.endsWith('.jpeg') ? 'image/jpeg' : 'image/png');
     final out = mime == 'image/png' || mime == 'image/jpeg' ? bytes : Uint8List.fromList(img.encodePng(decoded));
@@ -135,7 +153,7 @@ class GeoImageReader {
   static GeoImage _readTiff(String name, Uint8List bytes) {
     final tags = readTiffTags(bytes);
     checkTiffSize(tags);
-    final decoded = img.decodeTiff(bytes);
+    final decoded = decodeTiffSafe(bytes);
     if (decoded == null) throw const FormatException('image_unreadable');
     final png = Uint8List.fromList(img.encodePng(decoded));
     final g = tiffGeo(tags);
@@ -151,12 +169,17 @@ class GeoImageReader {
       geographic: g.geographic,
       utmZone: g.zone,
       utmNorth: g.north,
+      crs: g.crs,
       source: name,
+      warnings: g.georeferenced ? crsNotes(g.crs) : const [],
     );
   }
 
   /// Georeference carried by the GeoTIFF tags (ModelTransformation or
-  /// ModelPixelScale + ModelTiepoint, GeoKeys for the CRS).
+  /// ModelPixelScale + ModelTiepoint) and its CRS from the GeoKeys: the
+  /// projected CRS (key 3072) or the geographic one (2048, model type 2) by
+  /// their EPSG codes; a user-defined projection or a geocentric model is
+  /// named as a problem.
   static TiffGeo tiffGeo(TiffTags tags) {
     Pt? topLeft;
     double? sx, sy;
@@ -179,9 +202,7 @@ class GeoImageReader {
       topLeft = Pt(tie[3] - tie[0] * sx, tie[4] - tie[1] * sy);
     }
     final keys = tags.shorts[34735];
-    var geographic = false;
-    int? zone;
-    bool? north;
+    int? model, geographicCode, projectedCode;
     if (keys != null && keys.length >= 4) {
       final n = keys[3];
       for (var k = 0; k < n; k++) {
@@ -189,20 +210,27 @@ class GeoImageReader {
         if (o + 3 >= keys.length) break;
         final id = keys[o], loc = keys[o + 1], value = keys[o + 3];
         if (loc != 0) continue;
-        if (id == 1024 && value == 2) geographic = true;
-        if (id == 3072) {
-          if (value >= 32601 && value <= 32660) {
-            zone = value - 32600;
-            north = true;
-          } else if (value >= 32701 && value <= 32760) {
-            zone = value - 32700;
-            north = false;
-          }
-        }
-        if (id == 2048 && value == 4326 && zone == null) geographic = true;
+        if (id == 1024) model = value;
+        if (id == 2048) geographicCode = value;
+        if (id == 3072) projectedCode = value;
       }
     }
-    return TiffGeo(topLeft: topLeft, sx: sx, sy: sy, rot: rot, geographic: geographic, zone: zone, north: north);
+    CrsInfo? crs;
+    if (projectedCode != null && projectedCode > 0 && projectedCode != 32767) {
+      crs = crsFromEpsg(projectedCode);
+    } else if (model == 3) {
+      crs = const CrsInfo(kind: CrsKind.unknown, name: 'geocentric', problem: 'crs_geocentric');
+    } else if (model == 1 || (projectedCode == 32767)) {
+      // a projection defined key by key (not by a code): not supported
+      crs = const CrsInfo(kind: CrsKind.unknown, name: 'user-defined', problem: 'crs_projection_unsupported');
+    } else if (model == 2 || geographicCode != null) {
+      crs = geographicCode != null && geographicCode > 0 && geographicCode != 32767 ? crsFromEpsg(geographicCode) : CrsInfo.geographic();
+      // a code that is not geographic (a damaged key) gives no CRS
+      if (crs.kind != CrsKind.geographic && crs.recognised) crs = CrsInfo.geographic();
+    }
+    final geographic = crs?.kind == CrsKind.geographic;
+    final zone = crs?.utmZone;
+    return TiffGeo(topLeft: topLeft, sx: sx, sy: sy, rot: rot, geographic: geographic, zone: zone, north: zone != null ? crs!.north : null, crs: crs);
   }
 
   /// Baseline TIFF IFD reader for the geo tags (first IFD only).
@@ -255,7 +283,7 @@ class GeoImageReader {
 
 /// Georeference read from GeoTIFF tags.
 class TiffGeo {
-  const TiffGeo({this.topLeft, this.sx, this.sy, this.rot = 0, this.geographic = false, this.zone, this.north});
+  const TiffGeo({this.topLeft, this.sx, this.sy, this.rot = 0, this.geographic = false, this.zone, this.north, this.crs});
   final Pt? topLeft;
   final double? sx;
   final double? sy;
@@ -263,6 +291,9 @@ class TiffGeo {
   final bool geographic;
   final int? zone;
   final bool? north;
+
+  /// The CRS of the GeoKeys (null when the file has none).
+  final CrsInfo? crs;
   bool get georeferenced => topLeft != null && sx != null && sy != null;
 }
 
@@ -275,43 +306,45 @@ class TiffTags {
 
 double atan2Safe(double y, double x) => (y == 0 && x == 0) ? 0 : math.atan2(y, x);
 
+/// Notes for the import of a raster in [crs]: why it cannot be used (it is
+/// then read as plain metres), or the datum shift applied to place it.
+List<String> crsNotes(CrsInfo? crs) {
+  if (crs == null) return const [];
+  if (!crs.recognised) return [crs.problem ?? 'crs_unparsed'];
+  final d = crs.datum;
+  if (d != null && !d.isWgs84Compatible) return ['crs_datum_shift:${d.name}:${d.toleranceM}'];
+  return const [];
+}
+
 /// Places a georeferenced image in local drawing coordinates using (or
 /// creating) the project georeference. Returns (bottom-left, width, height,
 /// rotation, georef).
+///
+/// With a recognised CRS (geographic or projected, any datum and zone the
+/// app knows) the corners go through latitude/longitude into the project's
+/// zone, with the datum shift: a SIRGAS 2000 or SAD 69 raster, or one of
+/// another zone, lands where it belongs. Without a project georeference one
+/// is created from the bottom-left corner (origin rounded to 100 m). Other
+/// rasters keep their coordinates as metres, moved by the project origin
+/// when they are large.
 (Pt, double, double, double, GeoReference?) placeGeoImage(GeoImage g, GeoReference? georef) {
   if (!g.georeferenced) return (Pt.zero, g.widthPx.toDouble(), g.heightPx.toDouble(), 0, georef);
   final tl = g.worldTopLeft!;
   final sx = g.pixelSizeX!, sy = g.pixelSizeY!.abs();
-  if (g.geographic) {
-    // lon/lat degrees: convert the corners through the georef
-    final lonTL = tl.x, latTL = tl.y;
-    final lonBR = tl.x + sx * g.widthPx, latBR = tl.y - sy * g.heightPx;
-    final ref = georef ?? GeoReference.fromLatLonOrigin((latTL + latBR) / 2, (lonTL + lonBR) / 2);
-    Pt local(double lat, double lon) {
-      final u = latLonToUtm(lat, lon, zone: ref.zone);
-      var northing = u.northing;
-      if (ref.north && lat < 0) northing -= 10000000;
-      if (!ref.north && lat >= 0) northing += 10000000;
-      return Pt(u.easting - ref.originEasting, northing - ref.originNorthing);
-    }
-
-    final bl = local(latBR, lonTL), br = local(latBR, lonBR), tlp = local(latTL, lonTL);
-    final w = bl.distanceTo(br), h = bl.distanceTo(tlp);
-    final rot = radToDeg((br - bl).angle);
-    return (bl, w, h, rot, ref);
-  }
-  // projected metres (UTM when zone known): shift by the origin
-  var ref = georef;
-  if (ref == null && g.utmZone != null) {
-    ref = GeoReference(zone: g.utmZone!, north: g.utmNorth ?? true, originEasting: (tl.x / 100).round() * 100.0, originNorthing: ((tl.y - sy * g.heightPx) / 100).round() * 100.0);
-  }
-  final big = tl.x.abs() > 100000 || tl.y.abs() > 100000;
-  final ox = ref != null && big ? ref.originEasting : 0.0;
-  final oy = ref != null && big ? ref.originNorthing : 0.0;
   final w = sx * g.widthPx, h = sy * g.heightPx;
   final rot = g.rotationDeg;
-  // bottom-left from the top-left corner rotated
-  final down = Pt.polar(h, degToRad(rot) - math.pi / 2);
-  final bl = Pt(tl.x - ox, tl.y - oy) + down;
-  return (bl, w, h, rot, ref);
+  // corners in the file's coordinates: the column axis turned by the rotation
+  final u = Pt.polar(1, degToRad(rot)), v = u.perpendicular;
+  final blF = tl - v * h, brF = blF + u * w;
+  final crs = g.placementCrs;
+  if (crs != null && crs.recognised && crs.kind != CrsKind.local) {
+    final plan = GeoPlacement.plan(crs, [(blF.x, blF.y)], georef: georef);
+    final bl = plan.place(blF.x, blF.y), br = plan.place(brF.x, brF.y), tlp = plan.place(tl.x, tl.y);
+    return (bl, bl.distanceTo(br), bl.distanceTo(tlp), radToDeg((br - bl).angle), plan.georef ?? georef);
+  }
+  // projected metres of no known CRS: shift by the origin when large
+  final big = tl.x.abs() > 100000 || tl.y.abs() > 100000;
+  final ox = georef != null && big ? georef.originEasting : 0.0;
+  final oy = georef != null && big ? georef.originNorthing : 0.0;
+  return (Pt(blF.x - ox, blF.y - oy), w, h, rot, georef);
 }

@@ -389,9 +389,17 @@ void main() {
 
   group('survey points', () {
     test('degrees without a header are recognised by their decimals', () {
-      final r = PointsCsvReader.parse('-47.060110,-22.900120,600\n-47.060210,-22.900220,601\n-47.060310,-22.900320,602\n');
+      // both columns fit ±90°: latitude first, as typed and as map links
+      // give them, and said; with a project the order that lands near it
+      const lonLat = '-47.060110,-22.900120,600\n-47.060210,-22.900220,601\n-47.060310,-22.900320,602\n';
+      final assumed = PointsCsvReader.parse(lonLat);
+      expect(assumed.geographic, isTrue);
+      expect(assumed.warnings, contains('points_latlon_assumed:lat, lon'));
+      final r = PointsCsvReader.parse(lonLat, georef: GeoReference.fromLatLonOrigin(-22.9, -47.06));
       expect(r.geographic, isTrue);
       expect(r.georef!.zone, 23);
+      expect(r.warnings, contains('points_latlon_assumed:lon, lat'));
+      expect(r.document.entities.first.points.first.distanceTo(Pt.zero), lessThan(100));
       expect(r.count, 3);
       final metric = PointsCsvReader.parse('100.5,200.25,600\n110.5,210.25,601\n');
       expect(metric.geographic, isFalse, reason: 'millimetre coordinates are metres');

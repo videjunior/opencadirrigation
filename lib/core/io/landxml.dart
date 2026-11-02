@@ -44,6 +44,7 @@ import 'datum.dart';
 import 'dxf.dart';
 import 'geo.dart';
 import 'point_grid.dart';
+import 'xml_text.dart';
 
 /// A TIN read from a Surface Definition, in local coordinates.
 class LandXmlSurface {
@@ -667,5 +668,5 @@ class LandXmlWriter {
     return s == '-0' ? '0' : s;
   }
 
-  static String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  static String _esc(String s) => xmlText(s);
 }

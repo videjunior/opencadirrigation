@@ -8,6 +8,9 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:xml/xml.dart';
 
+import 'safe_archive.dart';
+import 'xml_text.dart';
+
 class XlsxSheet {
   XlsxSheet({required this.name, required this.headers, required this.rows});
   final String name;
@@ -147,7 +150,7 @@ ${[for (var i = 1; i <= sheets.length; i++) '<Relationship Id="rId$i" Type="http
     return candidate;
   }
 
-  static String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  static String _esc(String s) => xmlText(s);
 }
 
 /// Minimal XLSX reader: worksheets with shared, inline or numeric cells
@@ -156,10 +159,11 @@ ${[for (var i = 1; i <= sheets.length; i++) '<Relationship Id="rId$i" Type="http
 class XlsxReader {
   /// Every worksheet, first row as headers and the rest as rows.
   static List<XlsxSheet> read(Uint8List bytes) {
-    final archive = ZipDecoder().decodeBytes(bytes);
+    final archive = openZip(bytes);
     String? textOf(String name) {
       for (final f in archive.files) {
-        if (f.name == name || f.name == '/$name') return utf8.decode(f.content as List<int>, allowMalformed: true);
+        // each part only up to the ceiling of an entry (a small file can claim gigabytes)
+        if (f.name == name || f.name == '/$name') return utf8.decode(zipEntryBytes(f), allowMalformed: true);
       }
       return null;
     }
@@ -216,6 +220,8 @@ class XlsxReader {
           // the cell reference is optional: without it the cell follows the previous one
           final ref = c.getAttribute('r') ?? '';
           final col = ref.isEmpty ? cells.length : _columnIndex(ref);
+          // beyond the last column of the format (XFD) the reference is damaged
+          if (col > 16383) continue;
           while (cells.length < col) {
             cells.add(null);
           }

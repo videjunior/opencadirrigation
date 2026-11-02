@@ -19,7 +19,9 @@ import '../../core/design/network_builder.dart';
 import '../../core/design/report_tables.dart';
 import '../../core/design/results.dart';
 import '../../core/hydraulics/lateral.dart';
+import '../../core/io/cad_drawing.dart' show aciRgb;
 import '../../core/io/climate_online.dart';
+import '../../core/io/codepages.dart' show decodeTextBytes;
 import '../../core/io/dem_online.dart';
 import '../../core/io/dem_tiff.dart';
 import '../../core/io/dgn.dart';
@@ -39,6 +41,7 @@ import '../../core/io/shp.dart';
 import '../../core/io/pdf_import.dart';
 import '../../core/io/pdf_reader.dart';
 import '../../core/io/shp_writer.dart' show ShapefileParts;
+import '../../core/io/work_slicer.dart';
 import '../../core/model/catalog.dart';
 import '../../core/model/currency.dart';
 import '../../core/model/entities.dart';
@@ -621,10 +624,10 @@ class ProjectController extends ChangeNotifier {
   /// Workspace tab holding this project (0 = standalone).
   int tabId = 0;
 
-  /// Last drawing tool, reactivated with Enter while selecting (AutoCAD-style repeat).
+  /// Last drawing tool, reactivated with Enter while selecting (the usual CAD repeat).
   ToolId lastTool = ToolId.line;
 
-  /// Command typed on the canvas (AutoCAD-style aliases), shown in the status bar.
+  /// Command typed on the canvas (the usual CAD command aliases), shown in the status bar.
   String command = '';
 
   /// Shift is locking the segment being drawn to 0°/45°/90° (status bar chip).
@@ -3639,7 +3642,8 @@ class ProjectController extends ChangeNotifier {
   String importFile(String name, Uint8List bytes) {
     final geo = project.meta.georef, mark = _undo.isEmpty ? null : _undo.last;
     try {
-      return _importFile(name, bytes) + _tinNote();
+      _drawingNotes.clear();
+      return _withNotes(_importFile(name, bytes), _drawingNotes) + _tinNote();
     } on Error catch (e, st) {
       // a damaged file trips the readers' bounds (index, type, state
       // errors): tell the user so instead of the raw error
@@ -3649,6 +3653,48 @@ class ProjectController extends ChangeNotifier {
       // the georeference the import brought goes with its undo step
       _georefWithImport(geo, mark);
     }
+  }
+
+  /// [importFile] with the heavy readers (DXF, DWG, LAS) working in slices
+  /// of [slicer]: the interface stays responsive while a large file is read,
+  /// [WorkSlicer.onProgress] tells how far it got and [WorkSlicer.cancel]
+  /// stops it with [ImportCancelled], before anything changed in the project.
+  Future<String> importFileAsync(String name, Uint8List bytes, WorkSlicer slicer) async {
+    final lower = name.toLowerCase();
+    Object? read;
+    try {
+      if (lower.endsWith('.dwg')) {
+        read = await DwgReader.parseAsync(bytes, slicer);
+      } else if (lower.endsWith('.dxf')) {
+        read = await DxfReader.parseBytesAsync(bytes, slicer);
+      } else if (lower.endsWith('.las')) {
+        read = await LasReader.readAsync(bytes, slicer, georef: project.meta.georef);
+      }
+    } on Error catch (e, st) {
+      debugPrint('$e\n$st');
+      throw const FormatException('file_corrupt');
+    }
+    // the last moment to cancel: the drawing goes in next
+    await slicer.pause(1);
+    _read = read;
+    try {
+      return importFile(name, bytes);
+    } finally {
+      _read = null;
+    }
+  }
+
+  /// What [importFileAsync] read already (taken by the branch of its format).
+  Object? _read;
+
+  /// Notes of [importDrawing] (placement of the drawing) for the summary.
+  final List<String> _drawingNotes = [];
+
+  /// [summary] followed by the notes [codes] (after its own, if any).
+  String _withNotes(String summary, Iterable<String> codes) {
+    final list = {for (final w in codes) t.warning(w)}.toList();
+    if (list.isEmpty) return summary;
+    return summary.contains(' — ') ? '$summary; ${list.join('; ')}' : '$summary — ${list.join('; ')}';
   }
 
   String _importFile(String name, Uint8List bytes) {
@@ -3665,10 +3711,14 @@ class ProjectController extends ChangeNotifier {
       return t('pdfimp.done', {'n': '${r?.entities.length ?? 0}', 'l': '${r?.layers.length ?? 0}'}) + _importWarnings([...page.warnings, ...?r?.warnings]);
     }
     if (lower.endsWith('.dwg')) {
-      final r = DwgReader.parse(bytes);
+      final pre = _read;
+      final r = pre is DwgResult ? pre : DwgReader.parse(bytes);
       final n = importDrawing(r.document);
       final skipped = r.warnings.where((w) => w.startsWith('object_error') || w.startsWith('eof')).length;
-      return t('imp.dwg', {'v': r.version.toUpperCase(), 'n': '$n', 'l': '${r.document.layers.length}'}) + (skipped > 0 ? t('imp.skipped', {'n': '$skipped'}) : '');
+      // units not given, unsupported entities, blocks cut short…
+      return t('imp.dwg', {'v': r.version.toUpperCase(), 'n': '$n', 'l': '${r.document.layers.length}'}) +
+          (skipped > 0 ? t('imp.skipped', {'n': '$skipped'}) : '') +
+          _importWarnings(r.document.warnings);
     }
     if (lower.endsWith('.kmz')) {
       final r = KmlReader.parseKmz(bytes, georef: project.meta.georef);
@@ -3686,7 +3736,7 @@ class ProjectController extends ChangeNotifier {
       final r = PointsCsvReader.parse(_decodeText(bytes), georef: project.meta.georef);
       if (r.georef != null) project.meta.georef ??= r.georef;
       final n = importDrawing(r.document, asSpots: true);
-      return t('imp.points', {'n': '$n', 'geo': r.geographic ? ' (${project.meta.georef?.crsName ?? 'WGS84'})' : ''});
+      return t('imp.points', {'n': '$n', 'geo': r.geographic ? ' (${project.meta.georef?.crsName ?? 'WGS84'})' : ''}) + _importWarnings(r.warnings);
     }
     if (lower.endsWith('.zip') && _zipHas(bytes, '.shp')) {
       // every shapefile of the zip, each on the layer of its name
@@ -3696,7 +3746,7 @@ class ProjectController extends ChangeNotifier {
         final warnings = <String>{};
         var crs = '';
         for (final f in parts) {
-          final r = ShpReader.parse(f.shp, dbf: f.dbf, prj: f.prj, cpg: f.cpg, georef: project.meta.georef, layer: f.name);
+          final r = ShpReader.parse(f.shp, dbf: f.dbf, prj: f.prj, cpg: f.cpg, shx: f.shx.isEmpty ? null : f.shx, georef: project.meta.georef, layer: f.name);
           if (r.georef != null) project.meta.georef ??= r.georef;
           n += importDrawing(r.document, markers: true);
           records += r.recordCount;
@@ -3732,7 +3782,8 @@ class ProjectController extends ChangeNotifier {
     }
     if (lower.endsWith('.las') || lower.endsWith('.laz')) {
       // a point cloud: its ground points, thinned to a grid, become terrain
-      final r = LasReader.read(bytes, georef: project.meta.georef);
+      final pre = _read;
+      final r = pre is LasImportResult ? pre : LasReader.read(bytes, georef: project.meta.georef);
       if (r.georef != null) project.meta.georef ??= r.georef;
       final label = 'DEM $name';
       mutate(() {
@@ -3771,17 +3822,20 @@ class ProjectController extends ChangeNotifier {
         }, label: 'hist.dem');
         track('dem');
         zoomAll();
-        return t('imp.demTiff', {'n': '${dem.samples.length}', 'w': '${dem.widthPx}', 'h': '${dem.heightPx}', 'crs': dem.crsName});
+        return t('imp.demTiff', {'n': '${dem.samples.length}', 'w': '${dem.widthPx}', 'h': '${dem.heightPx}', 'crs': dem.crsName}) + _importWarnings(dem.warnings);
       }
     }
     if (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.tif') || lower.endsWith('.tiff') || lower.endsWith('.zip')) {
       final g = GeoImageReader.read(name, bytes);
       final e = importImage(g);
       zoomToEntity(e.id);
-      return t(g.georeferenced ? 'imp.imageGeo' : 'imp.image', {'w': '${g.widthPx}', 'h': '${g.heightPx}', 'crs': project.meta.georef?.crsName ?? '-'});
+      return t(g.georeferenced ? 'imp.imageGeo' : 'imp.image', {'w': '${g.widthPx}', 'h': '${g.heightPx}', 'crs': project.meta.georef?.crsName ?? '-'}) + _importWarnings(g.warnings);
     }
-    final n = importDrawing(DxfReader.parse(_decodeText(bytes)));
-    return t('imp.dxf', {'n': '$n'});
+    // the text in the file's code page ($DWGCODEPAGE) or UTF-8
+    final pre = _read;
+    final doc = pre is DxfDocument ? pre : DxfReader.parseBytes(bytes);
+    final n = importDrawing(doc);
+    return t('imp.dxf', {'n': '$n'}) + _importWarnings(doc.warnings);
   }
 
   /// The import's notes (coordinate system, unsupported parts) after its summary.
@@ -3796,41 +3850,48 @@ class ProjectController extends ChangeNotifier {
     return s.contains(ext);
   }
 
-  static String _decodeText(Uint8List bytes) {
-    try {
-      return utf8.decode(bytes);
-    } catch (_) {
-      return latin1.decode(bytes);
-    }
-  }
+  /// Text of a file: a byte order mark (UTF-8, UTF-16 — "Unicode text" of
+  /// spreadsheet programs) or UTF-16 told by its zero bytes, else UTF-8,
+  /// else code page 1252.
+  static String _decodeText(Uint8List bytes) => decodeTextBytes(bytes);
 
   /// Converts an imported drawing into project entities (contours and spot
   /// heights when elevations are present).
   ///
-  /// With [markers], points without an elevation (GPS waypoints, features of
-  /// a GeoJSON file) become small circles instead of spot heights at zero,
-  /// which would pull the terrain down.
-  int importDrawing(DxfDocument doc, {bool asSpots = false, bool markers = false}) {
+  /// Points without an elevation (GPS waypoints, the markers of a KML, the
+  /// points of a 2D drawing, a list of points without Z) become small
+  /// circles: a spot height at zero would pull the terrain down. ([asSpots]
+  /// and [markers] are kept for the callers that pass them.) Layers are
+  /// matched without regard to case, as CAD programs do ("Text" and "TEXT"
+  /// are one layer), and new ones take the colour (index or true colour)
+  /// and the off or frozen state of the file. A drawing in UTM coordinates
+  /// imported into a georeferenced project is moved by the project origin
+  /// (with a note); into a project without one, the note says so.
+  int importDrawing(DxfDocument doc, {bool asSpots = false, bool markers = true}) {
     final s = doc.unitScale;
+    final shift = _utmShift(doc);
+    Pt at(Pt p) => Pt(p.x * s - shift.x, p.y * s - shift.y);
     final list = <Entity>[];
     mutate(() {
+      final byKey = {for (final l in project.layers) l.name.toLowerCase(): l.name};
       for (final l in doc.layers) {
-        if (project.layers.every((x) => x.name != l.name)) {
-          project.layers.add(Layer(name: l.name, color: _aciToArgb(l.color)));
-        }
+        final key = l.name.toLowerCase();
+        if (byKey.containsKey(key)) continue;
+        project.layers.add(Layer(name: l.name, color: 0xFF000000 | (l.rgb ?? aciRgb(l.color)), visible: l.visible));
+        byKey[key] = l.name;
       }
       for (final e in doc.entities) {
         // a damaged file may hold "nan" or huge exponents: such geometry is
         // left out (it could neither be drawn nor saved)
         if (!_finiteGeometry(e)) continue;
-        final layer = e.layer;
+        final layer = byKey[e.layer.toLowerCase()] ?? e.layer;
         final elev = e.elevation != null && e.elevation!.isFinite ? e.elevation : null;
         switch (e.type) {
           case 'LINE':
-            list.add(LineEntity(id: project.newId(), layer: layer, name: e.name, a: e.points[0] * s, b: e.points[1] * s));
+            list.add(LineEntity(id: project.newId(), layer: layer, name: e.name, a: at(e.points[0]), b: at(e.points[1])));
           case 'POLYLINE':
             if (e.points.length < 2) break;
-            final pts = e.points.map((p) => p * s).toList();
+            final pts = e.points.map(at).toList();
             if (!e.closed && _looksLikeBreaklineLayer(layer)) {
               list.add(BreaklineEntity(id: project.newId(), layer: Layers.breaklines, name: e.name, points: pts, elevations: elev == null ? null : List.filled(pts.length, elev * s)));
             } else if (elev != null && elev != 0 && !e.closed && _looksLikeContourLayer(layer)) {
@@ -3841,34 +3902,27 @@ class ProjectController extends ChangeNotifier {
               list.add(PolylineEntity(id: project.newId(), layer: layer, name: e.name, points: pts, closed: e.closed));
             }
           case 'SPLINE':
-            if (e.points.length >= 2) list.add(SplineEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map((p) => p * s).toList(), closed: e.closed));
+            if (e.points.length >= 2) list.add(SplineEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map(at).toList(), closed: e.closed));
           case 'HATCH':
             if (e.points.length >= 3) {
-              list.add(
-                HatchEntity(
-                  id: project.newId(),
-                  layer: layer,
-                  name: e.name,
-                  points: e.points.map((p) => p * s).toList(),
-                  angleDeg: e.rotation,
-                  spacing: e.height > 0 ? e.height * s : 1,
-                  solid: e.solid,
-                ),
-              );
+              list.add(HatchEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map(at).toList(), angleDeg: e.rotation, spacing: e.height > 0 ? e.height * s : 1, solid: e.solid));
             }
           case 'CIRCLE':
-            list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: e.center! * s, radius: e.radius * s));
+            list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: at(e.center!), radius: e.radius * s));
           case 'ARC':
-            var sweep = (e.endAngle - e.startAngle);
-            if (sweep <= 0) sweep += 360;
-            list.add(ArcEntity(id: project.newId(), layer: layer, name: e.name, center: e.center! * s, radius: e.radius * s, startRad: degToRad(e.startAngle), sweepRad: degToRad(sweep)));
+            // one turn at most, whatever the angles of the file
+            final sweep = radToDeg(cadSweepRad(degToRad(e.startAngle), degToRad(e.endAngle)));
+            list.add(
+              ArcEntity(id: project.newId(), layer: layer, name: e.name, center: at(e.center!), radius: e.radius * s, startRad: degToRad(cadNormalizeDeg(e.startAngle)), sweepRad: degToRad(sweep)),
+            );
           case 'TEXT':
-            list.add(TextEntity(id: project.newId(), layer: layer, name: e.name, position: e.points[0] * s, text: e.text, height: e.height * s, rotationDeg: e.rotation));
+            list.add(TextEntity(id: project.newId(), layer: layer, name: e.name, position: at(e.points[0]), text: e.text, height: e.height * s, rotationDeg: e.rotation));
           case 'POINT':
-            if (markers && elev == null && !asSpots) {
-              list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: e.points[0] * s, radius: 0.5));
+            if (elev == null) {
+              // a place without an elevation: a marker, never a spot height at zero
+              list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: at(e.points[0]), radius: 0.5));
             } else {
-              list.add(SpotHeightEntity(id: project.newId(), layer: elev != null || asSpots ? Layers.spotHeights : layer, name: e.name, position: e.points[0] * s, elevation: (elev ?? 0) * s));
+              list.add(SpotHeightEntity(id: project.newId(), layer: Layers.spotHeights, name: e.name, position: at(e.points[0]), elevation: elev * s));
             }
         }
       }
@@ -3876,6 +3930,32 @@ class ProjectController extends ChangeNotifier {
     }, label: 'hist.import');
     zoomAll();
     return list.length;
+  }
+
+  /// Offset of a drawing whose coordinates are UTM ones (eastings of 100 to
+  /// 900 km, northings up to 10 000 km) for a georeferenced project: its
+  /// origin, when the drawing lands within 100 km of it (a note says the
+  /// drawing was moved, or that it lies far away and was kept). Raw CAD
+  /// coordinates only reach here that large: the GIS readers place theirs.
+  Pt _utmShift(DxfDocument doc) {
+    final b = doc.bounds;
+    if (b.isEmpty) return Pt.zero;
+    final s = doc.unitScale;
+    final cx = (b.minX + b.maxX) / 2 * s, cy = (b.minY + b.maxY) / 2 * s;
+    if (!cx.isFinite || !cy.isFinite || (cx.abs() <= 100000 && cy.abs() <= 100000)) return Pt.zero;
+    final utm = cx >= 100000 && cx <= 900000 && cy >= 0 && cy <= 10000000;
+    if (!utm) return Pt.zero;
+    final g = project.meta.georef;
+    if (g == null) {
+      _drawingNotes.add('cad_utm_no_georef');
+      return Pt.zero;
+    }
+    if ((cx - g.originEasting).abs() > 100000 || (cy - g.originNorthing).abs() > 100000) {
+      _drawingNotes.add('cad_far_from_georef');
+      return Pt.zero;
+    }
+    _drawingNotes.add('cad_moved_to_georef');
+    return Pt(g.originEasting, g.originNorthing);
   }
 
   static bool _finiteGeometry(DxfEntity e) {
@@ -3945,11 +4025,6 @@ class ProjectController extends ChangeNotifier {
   String reportCsv() => exporter().reportCsv();
 
   Map<String, dynamic> debugState() => {'entities': project.entities.length, 'selection': selection.length, 'results': results != null};
-
-  static int _aciToArgb(int aci) {
-    const table = <int, int>{1: 0xFFFF5252, 2: 0xFFFFEB3B, 3: 0xFF69F0AE, 4: 0xFF40C4FF, 5: 0xFF448AFF, 6: 0xFFE040FB, 7: 0xFFECEFF1, 8: 0xFF9E9E9E, 9: 0xFFBDBDBD};
-    return table[aci] ?? 0xFFB0BEC5;
-  }
 }
 
 double mathMax(double a, double b) => a > b ? a : b;

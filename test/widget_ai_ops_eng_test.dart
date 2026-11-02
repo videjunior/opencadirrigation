@@ -792,7 +792,8 @@ void main() {
     expect(latin1.decode(pdf.sublist(0, 5)), '%PDF-');
     final png = files.entries.firstWhere((e) => e.key.endsWith('.png')).value as Uint8List;
     expect(png.sublist(1, 4), utf8.encode('PNG'));
-    expect(files.entries.firstWhere((e) => e.key.endsWith('_r12.dxf')).value as String, contains('SECTION'));
+    // the R12 file is bytes in code page 1252, as its header says
+    expect(latin1.decode(files.entries.firstWhere((e) => e.key.endsWith('_r12.dxf')).value as Uint8List), contains('ANSI_1252'));
     expect(files.keys.where((k) => k.endsWith('.txt')), hasLength(1));
     expect(text, contains('detail sheets'));
     expect(clip, startsWith('https://opencadirrigation.com/'));

@@ -131,16 +131,24 @@ class GeoReference {
 }
 
 /// Reads a coordinate typed or pasted by the user and returns (lat, lon) in
-/// degrees, or null when the text is not understood. Accepted forms:
+/// degrees, or null when the text is not understood or can be read in more
+/// than one way. Accepted forms:
 /// - decimal degrees separated by a comma, a space or a semicolon, with a
 ///   dot or a comma as decimal separator: `-22.9068, -43.1729`,
-///   `-22,9068 -43,1729`;
-/// - hemisphere letters instead of signs: `22.9068 S 43.1729 W`;
-/// - degrees, minutes and seconds: `22°54'24.5"S 43°10'22.4"W`;
+///   `-22,9068 -43,1729` (a third number, an altitude, is ignored);
+/// - hemisphere letters instead of signs, after or before the value, in
+///   English or Portuguese/Spanish (O for west, L for east):
+///   `22.9068 S 43.1729 W`, `S 22.9068 O 43.1729`;
+/// - degrees, minutes and seconds, with marks or spaces:
+///   `22°54'24.5"S 43°10'22.4"W`, `S 22°54'24.5" W 43°10'22.4"`,
+///   `22 54 24.5 S, 43 10 22.4 W`;
+/// - degrees and decimal minutes (the notation of GPS receivers):
+///   `22°54.408'S 43°10.373'W`;
 /// - Google Maps / Earth links and `geo:` URIs (`@-22.9068,-43.1729,17z`,
 ///   `q=-22.9,-43.1`).
-/// Values are (lat, lon); when the first is out of the latitude range and
-/// the pair makes sense swapped (KML-style lon, lat), it is swapped.
+/// Values are (lat, lon); without hemisphere letters, when the first is out
+/// of the latitude range and the pair makes sense swapped (KML-style lon,
+/// lat), it is swapped.
 (double lat, double lon)? parseLatLon(String text) {
   var t = text.trim();
   if (t.isEmpty) return null;
@@ -148,47 +156,106 @@ class GeoReference {
   final at = RegExp(r'[@=]\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)').firstMatch(t);
   if (at != null) t = '${at.group(1)} ${at.group(2)}';
   t = t.replaceFirst(RegExp(r'^geo:', caseSensitive: false), '');
+  // numbers, degree / minute / second marks, standalone hemisphere letters
+  // (not the n of "lon", nor the Portuguese "e" of "and") and separators
+  final tokens = RegExp(r'''([-+]?\d+(?:[.,]\d+)?)|([°º˚])|(['′’])|(["″”])|(?<![A-Za-z])([NSEWOLnsw])(?![A-Za-z])|([;,])''').allMatches(t).toList();
+  final firstLetter = tokens.indexWhere((m) => m.group(5) != null), firstNumber = tokens.indexWhere((m) => m.group(1) != null);
+  // letters lead their values ("S 22 54") when one comes before any number
+  final leading = firstLetter >= 0 && (firstNumber < 0 || firstLetter < firstNumber);
+  final groups = <_Coord>[];
+  var cur = _Coord();
+  void close() {
+    if (cur.numbers.isNotEmpty || cur.hemisphere != null) groups.add(cur);
+    cur = _Coord();
+  }
 
-  final dms = RegExp(r'''(\d{1,3})\s*[°º]\s*(\d{1,2})\s*['′’]\s*(\d{1,2}(?:[.,]\d+)?)?\s*(?:["″”])?\s*([NSEWnsew])''');
-  final dmsMatches = dms.allMatches(t).toList();
-  double? lat, lon;
-  if (dmsMatches.length >= 2) {
-    for (final m in dmsMatches.take(2)) {
-      final d = double.parse(m.group(1)!), mi = double.parse(m.group(2)!);
-      final se = double.tryParse((m.group(3) ?? '0').replaceAll(',', '.')) ?? 0;
-      var v = d + mi / 60 + se / 3600;
-      final h = m.group(4)!.toUpperCase();
-      if (h == 'S' || h == 'W') v = -v;
-      if (h == 'N' || h == 'S') {
-        lat = v;
-      } else {
-        lon = v;
+  for (final m in tokens) {
+    if (m.group(1) != null) {
+      // a coordinate ends at its seconds
+      if (cur.numbers.length >= 3 || cur.afterSeconds) close();
+      cur.numbers.add(m.group(1)!);
+      cur.afterSeconds = false;
+    } else if (m.group(2) != null) {
+      // the number before a degree mark is the start of a coordinate
+      if (cur.numbers.length > 1) {
+        final d = cur.numbers.removeLast();
+        close();
+        cur.numbers.add(d);
       }
+      cur.marked = true;
+    } else if (m.group(3) != null) {
+      cur.marked = true;
+    } else if (m.group(4) != null) {
+      cur
+        ..marked = true
+        ..afterSeconds = true;
+    } else if (m.group(5) != null) {
+      final h = m.group(5)!.toUpperCase();
+      if (leading) {
+        close();
+        cur.hemisphere = h;
+      } else {
+        if (cur.numbers.isEmpty || cur.hemisphere != null) return null;
+        cur.hemisphere = h;
+        close();
+      }
+    } else {
+      close();
     }
-    if (lat == null || lon == null) return null;
-    return _validLatLon(lat, lon);
   }
+  close();
+  if (groups.length == 1 && groups.single.hemisphere == null && !groups.single.marked) {
+    // plain numbers: two decimal degrees (a third, an altitude, is left)
+    final n = groups.single.numbers;
+    final decimal = n.length >= 2 && n[0].contains(RegExp('[.,]')) && n[1].contains(RegExp('[.,]'));
+    if (n.length < 2 || n.length > 3 || (n.length == 3 && !decimal)) return null;
+    groups
+      ..clear()
+      ..addAll([_Coord()..numbers.add(n[0]), _Coord()..numbers.add(n[1])]);
+  } else if (groups.length == 3 && groups.every((g) => g.numbers.length == 1 && g.hemisphere == null && !g.marked)) {
+    groups.removeLast(); // latitude, longitude, altitude
+  }
+  if (groups.length != 2) return null;
+  // the role of each: by its letter, else the one left (in order)
+  bool? latOf(_Coord g) => g.hemisphere == null ? null : (g.hemisphere == 'N' || g.hemisphere == 'S');
+  final r0 = latOf(groups[0]), r1 = latOf(groups[1]);
+  final first = r0 ?? (r1 == null ? true : !r1), second = r1 ?? !first;
+  if (first == second) return null;
+  final v0 = groups[0].signedDegrees(), v1 = groups[1].signedDegrees();
+  if (v0 == null || v1 == null) return null;
+  final lat = first ? v0 : v1, lon = first ? v1 : v0;
+  // with letters there is no doubt which is which
+  if (r0 != null || r1 != null) return lat.abs() <= 90 && lon.abs() <= 180 ? (lat, lon) : null;
+  return _validLatLon(lat, lon);
+}
 
-  // decimal numbers: dot decimals first, then comma decimals, then integers
-  List<RegExpMatch> nums = RegExp(r'[-+]?\d+\.\d+').allMatches(t).toList();
-  if (nums.length < 2) nums = RegExp(r'[-+]?\d+,\d+').allMatches(t).toList();
-  if (nums.length < 2) nums = RegExp(r'[-+]?\d+').allMatches(t).toList();
-  if (nums.length < 2) return null;
-  final vals = <double>[];
-  for (var i = 0; i < 2; i++) {
-    final m = nums[i];
-    var v = double.parse(m.group(0)!.replaceAll(',', '.'));
-    // hemisphere letter right after the number (or just before it)
-    final after = t.substring(m.end, i + 1 < nums.length ? nums[i + 1].start : t.length);
-    final before = t.substring(i > 0 ? nums[i - 1].end : 0, m.start);
-    // a standalone letter only ("22.9 S", "S 22.9"), not the n of "lon"
-    final letter = RegExp(r'(?<![A-Za-z])[NSEWnsew](?![A-Za-z])').firstMatch(after)?.group(0) ?? RegExp(r'(?<![A-Za-z])[NSEWnsew](?![A-Za-z])(?=\s*$)').firstMatch(before)?.group(0);
-    final h = letter?.toUpperCase();
-    if (h == 'S' || h == 'W') v = -v.abs();
-    if (h == 'N' || h == 'E') v = v.abs();
-    vals.add(v);
+/// One coordinate being read by [parseLatLon]: its numbers (degrees,
+/// minutes, seconds), whether marks were seen and its hemisphere letter.
+class _Coord {
+  final numbers = <String>[];
+  String? hemisphere;
+  bool marked = false;
+  bool afterSeconds = false;
+
+  /// The angle in degrees, negative for S, W (O) or a minus sign; null when
+  /// the numbers do not make one (decimals before the last number, minutes
+  /// or seconds of 60 or more).
+  double? signedDegrees() {
+    if (numbers.isEmpty || numbers.length > 3) return null;
+    final v = <double>[];
+    for (var i = 0; i < numbers.length; i++) {
+      final x = double.tryParse(numbers[i].replaceAll(',', '.'));
+      if (x == null) return null;
+      if (i < numbers.length - 1 && numbers[i].contains(RegExp('[.,]'))) return null;
+      if (i > 0 && (x < 0 || x >= 60)) return null;
+      v.add(x);
+    }
+    final d = v[0].abs() + (v.length > 1 ? v[1] / 60 : 0) + (v.length > 2 ? v[2] / 3600 : 0);
+    final h = hemisphere;
+    // a hemisphere letter decides the sign
+    final negative = h == null ? numbers.first.startsWith('-') : (h == 'S' || h == 'W' || h == 'O');
+    return negative ? -d : d;
   }
-  return _validLatLon(vals[0], vals[1]);
 }
 
 (double, double)? _validLatLon(double lat, double lon) {

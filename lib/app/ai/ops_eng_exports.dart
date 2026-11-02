@@ -195,7 +195,7 @@ List<AgentTool> exportOperations(AgentToolbox b) {
       b,
       name: 'export_more_formats',
       effect: ToolEffect.export,
-      description: 'File → Export: the formats export_file does not list — "dxf_r12" (the plain DXF R12 for older CAD programs that do not read AutoCAD 2000 files), "gpx" (waypoints and tracks for a GPS receiver; needs a georeference) and "report_txt" (the design reports as plain text; needs design results). Always confirmed by the user (a download in the browser). Input: format. Output: the file name.',
+      description: 'File → Export: the formats export_file does not list — "dxf_r12" (the plain DXF R12 for older CAD programs that do not read R2000 files), "gpx" (waypoints and tracks for a GPS receiver; needs a georeference) and "report_txt" (the design reports as plain text; needs design results). Always confirmed by the user (a download in the browser). Input: format. Output: the file name.',
       schema: obj(
         {
           'format': str(null, ['dxf_r12', 'gpx', 'report_txt']),

@@ -30,6 +30,7 @@ import 'datum.dart';
 import 'dxf.dart';
 import 'geo.dart';
 import 'project_export.dart' show GeoReferenceMissing;
+import 'xml_text.dart';
 
 class GpxImportResult {
   GpxImportResult({required this.document, required this.georef, required this.waypointCount, required this.routeCount, required this.trackCount, required this.warnings});
@@ -268,5 +269,5 @@ class GpxWriter {
     return b.toString();
   }
 
-  static String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  static String _esc(String s) => xmlText(s);
 }

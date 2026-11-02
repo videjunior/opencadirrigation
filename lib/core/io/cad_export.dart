@@ -62,7 +62,14 @@ class CadExport {
   String get _suffix => units.length == LengthUnit.m ? '' : '<> ${units.lengthLabel}';
 
   /// The layer name in the drawing (a valid table name).
-  String _layer(String name) => _layerNames.putIfAbsent(name, () => cadTableName(name));
+  String _layer(String name) => _layerNames.putIfAbsent(name, () {
+    final n = cadTableName(name);
+    // table names do not tell case apart: "Tubos" and "TUBOS" are one layer
+    return _layerKeys.putIfAbsent(n.toLowerCase(), () => n);
+  });
+
+  /// The name each layer got, by its lower case.
+  final _layerKeys = <String, String>{};
 
   /// Adds [e] unless a coordinate or size is not a number (a damaged
   /// project): CAD programs reject files with NaN.
@@ -97,9 +104,19 @@ class CadExport {
     }
     // the user's blocks, ready to insert in the CAD program (their entities
     // are already in block coordinates)
+    final blockKeys = {for (final k in _blocks.keys) k.toLowerCase()};
     for (final b in project.blocks.blocks) {
-      final name = cadTableName(b.name, 'BLOCK');
-      if (b.isEmpty || _blocks.containsKey(name) || name.startsWith('*')) continue;
+      var name = cadTableName(b.name, 'BLOCK');
+      if (b.isEmpty || name.startsWith('*')) continue;
+      // block names do not tell case apart either: another spelling of a name taken gets a number
+      if (blockKeys.contains(name.toLowerCase())) {
+        var k = 2;
+        while (blockKeys.contains('${name}_$k'.toLowerCase())) {
+          k++;
+        }
+        name = '${name}_$k';
+      }
+      blockKeys.add(name.toLowerCase());
       final ents = <CadEntity>[];
       _out = ents;
       for (final e in b.entities) {

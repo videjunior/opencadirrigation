@@ -59,6 +59,7 @@ import 'package:image/image.dart' as img;
 
 import '../model/geometry.dart';
 import 'fonts/pdf_fonts.dart' show helveticaWidth;
+import 'image_decode.dart';
 
 part 'pdf_reader_fonts.dart';
 part 'pdf_reader_images.dart';
@@ -2377,6 +2378,9 @@ class _Interp {
           r = _decodeImage(this, dict, raw, res);
         } on _TooLarge {
           warnings.add('pdf_image_large');
+        } on FormatException catch (e) {
+          // beyond the pixel limit of the picture decoder, or damaged
+          warnings.add(e.message == 'image_too_large' ? 'pdf_image_large' : 'pdf_image_failed');
         } on _Unsupported catch (e) {
           warnings.add('pdf_image_format:${e.filter.replaceAll('Decode', '')}');
         } on Object {

@@ -105,11 +105,13 @@ class DxfR2000Writer {
   final Map<String, String> _ltypes = {}, _layers = {}, _dimstyles = {}, _br = {}, _blk = {}, _endblk = {};
   late final Bounds _ext = d.extents;
 
-  /// Layer '0' first (the format requires it), then the others once each.
+  /// Layer '0' first (the format requires it), then the others once each
+  /// (table names do not tell case apart: the first spelling is kept).
   late final List<CadLayer> _layerList = () {
     final out = [d.layers.firstWhere((l) => l.name == '0', orElse: () => const CadLayer('0'))];
+    final seen = {'0'};
     for (final l in d.layers) {
-      if (l.name.trim().isNotEmpty && out.every((x) => x.name != l.name)) out.add(l);
+      if (l.name.trim().isNotEmpty && seen.add(l.name.toLowerCase())) out.add(l);
     }
     return out;
   }();

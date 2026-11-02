@@ -1,17 +1,30 @@
 /// Minimal DXF reader/writer (ASCII). Reads LINE, LWPOLYLINE and POLYLINE
-/// (with bulges), CIRCLE, ARC, ELLIPSE, SPLINE (fit points, or the NURBS
-/// evaluated from its control points), HATCH (boundary paths of polylines,
-/// lines, arcs, ellipses and splines; pattern angle and spacing), SOLID,
-/// TRACE, TEXT, MTEXT (formatting codes dropped), visible ATTRIBs, LEADER
-/// (its line) and POINT entities with their layers, `\U+XXXX` characters
-/// and `%%` symbols decoded, and expands block references (INSERT, MINSERT,
-/// DIMENSION blocks); writes an R12-compatible file with a LAYER table (the
+/// (with bulges; polyface and polygon meshes by their vertices), CIRCLE,
+/// ARC, ELLIPSE, SPLINE (fit points, or the NURBS evaluated from its control
+/// points), HATCH (boundary paths of polylines, lines, arcs, ellipses and
+/// splines; pattern angle and spacing), SOLID, TRACE, 3DFACE (its corners as
+/// spot heights when it has elevations, else its outline), TEXT and ATTRIB
+/// (placed by their justification), MTEXT (paragraphs kept, formatting codes
+/// dropped, placed by its attachment point), MULTILEADER (text and leader
+/// lines), MLINE (its reference line), LEADER (its line) and POINT entities
+/// with their layers (colour, true colour, off and frozen), `\U+XXXX`
+/// characters and `%%` symbols decoded, and expands block references
+/// (INSERT, MINSERT, the blocks of DIMENSION and ACAD_TABLE). Paper space
+/// is left out. Writes an R12-compatible file with a LAYER table (the
 /// R2000 export with native entities is in `dxf_r2000.dart`).
+///
+/// The text is read group by group without being split into lines, and a
+/// stray line (a text value broken in two) only costs that line: the reader
+/// finds the next group code and says how many lines it skipped.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import '../model/geometry.dart';
+import 'codepages.dart';
+import 'work_slicer.dart';
 
 class DxfEntity {
   DxfEntity({
@@ -54,21 +67,52 @@ class DxfEntity {
 
   /// Solid fill (HATCH).
   final bool solid;
+
+  /// This entity with another [elevation].
+  DxfEntity withElevation(double? z) => DxfEntity(
+    type: type,
+    layer: layer,
+    points: points,
+    center: center,
+    radius: radius,
+    startAngle: startAngle,
+    endAngle: endAngle,
+    text: text,
+    height: height,
+    rotation: rotation,
+    closed: closed,
+    color: color,
+    elevation: z,
+    name: name,
+    solid: solid,
+  );
 }
 
 class DxfLayer {
-  DxfLayer(this.name, {this.color = 7});
+  DxfLayer(this.name, {this.color = 7, this.visible = true, this.rgb});
   final String name;
+
+  /// Colour index (1–255).
   final int color;
+
+  /// False for a layer the drawing has off or frozen.
+  final bool visible;
+
+  /// True colour (0xRRGGBB) when the layer has one.
+  final int? rgb;
 }
 
 class DxfDocument {
-  DxfDocument({List<DxfEntity>? entities, List<DxfLayer>? layers, this.unitScale = 1}) : entities = entities ?? [], layers = layers ?? [];
+  DxfDocument({List<DxfEntity>? entities, List<DxfLayer>? layers, this.unitScale = 1, List<String>? warnings}) : entities = entities ?? [], layers = layers ?? [], warnings = warnings ?? [];
   final List<DxfEntity> entities;
   final List<DxfLayer> layers;
 
   /// Multiplier from file units to metres ($INSUNITS), 1 if unknown.
   final double unitScale;
+
+  /// Notes for the import message (codes of `warn.*`, with a detail after
+  /// `:`): lines skipped, paper space left out, unsupported entities…
+  final List<String> warnings;
 
   Bounds get bounds {
     var b = Bounds.empty;
@@ -86,11 +130,14 @@ class DxfDocument {
 
 /// A block definition: entities in block coordinates plus nested references.
 class DxfBlock {
-  DxfBlock(this.name, this.base, this.entities, this.inserts);
+  DxfBlock(this.name, this.base, this.entities, this.inserts, {this.xref = false});
   final String name;
   final Pt base;
   final List<DxfEntity> entities;
   final List<DxfInsert> inserts;
+
+  /// An external reference (a drawing the file only points to).
+  final bool xref;
 }
 
 /// A block reference (INSERT / MINSERT / the anonymous block of a DIMENSION).
@@ -185,6 +232,41 @@ class Affine2 {
 /// directions (3D entities) are drawn as projected.
 bool ocsIsMirrored(double x, double y, double z) => z < 0 && x.abs() < 1 / 64 && y.abs() < 1 / 64;
 
+/// [deg] brought into [0, 360) (a damaged or radian value would otherwise
+/// sweep millions of turns); 0 when it is not a number.
+double cadNormalizeDeg(double deg) {
+  if (!deg.isFinite) return 0;
+  final r = deg % 360;
+  return r < 0 ? r + 360 : r;
+}
+
+/// The sweep from [a0] to [a1] (radians, counter-clockwise) within one
+/// turn: (0, 2π], a full turn when they coincide.
+double cadSweepRad(double a0, double a1) {
+  if (!a0.isFinite || !a1.isFinite) return 2 * math.pi;
+  var s = (a1 - a0) % (2 * math.pi);
+  if (s < 0) s += 2 * math.pi;
+  if (s <= 1e-12) s = 2 * math.pi;
+  return s;
+}
+
+/// Lower-left corner (the point the program draws a text from) of a text
+/// of [height] whose anchor is [anchor]: [hf] is the horizontal position of
+/// the anchor across the text (0 left, ½ centre, 1 right) and [vf] its
+/// height above that corner, as a fraction of the box. The box is the one
+/// the program draws: 0.6·height per character, 1.2·height per line.
+Pt cadTextBase(Pt anchor, String text, double height, double rotationDeg, double hf, double vf) {
+  final lines = text.split('\n');
+  var longest = 0;
+  for (final l in lines) {
+    longest = math.max(longest, l.length);
+  }
+  final w = 0.6 * height * longest;
+  final h = lines.length <= 1 ? height : 1.2 * height * lines.length;
+  final u = Pt.polar(1, degToRad(rotationDeg)), v = u.perpendicular;
+  return anchor - u * (w * hf) - v * (h * vf);
+}
+
 class _Vertex {
   _Vertex(this.x, this.y, [this.bulge = 0]);
   final double x;
@@ -192,122 +274,301 @@ class _Vertex {
   double bulge;
 }
 
-class DxfReader {
-  static double _unitScale(int insunits) => switch (insunits) {
-    1 => 0.0254, // inches
-    2 => 0.3048, // feet
-    4 => 0.001, // mm
-    5 => 0.01, // cm
-    6 => 1.0, // m
-    _ => 1.0,
-  };
+/// The groups (code, value) of a DXF text one after another, without the
+/// text being split into lines. A line where a group code should be that is
+/// not one (a text value broken over two lines, a hand edit) is skipped and
+/// counted in [resyncs]: the next line is tried as the code.
+class _Groups {
+  _Groups(String content) : s = !content.contains('\n') && content.contains('\r') ? content.replaceAll('\r', '\n') : content;
+  final String s;
+  int _pos = 0;
+  int resyncs = 0;
+  int code = 0;
+  String value = '';
+  bool _held = false;
 
-  static DxfDocument parse(String content) {
-    final lines = content.split(RegExp(r'\r?\n'));
-    final pairs = <(int, String)>[];
-    for (var i = 0; i + 1 < lines.length; i += 2) {
-      final code = int.tryParse(lines[i].trim());
-      if (code == null) continue;
-      pairs.add((code, lines[i + 1].trim()));
-    }
-    final layers = <DxfLayer>[];
-    final entities = <DxfEntity>[];
-    final inserts = <DxfInsert>[];
-    final blocks = <String, DxfBlock>{};
-    var insunits = 0;
-    var section = '';
-    var i = 0;
-    while (i < pairs.length) {
-      final (code, value) = pairs[i];
-      if (code == 0 && value == 'SECTION') {
-        section = i + 1 < pairs.length ? pairs[i + 1].$2 : '';
-        i += 2;
-        continue;
-      }
-      if (code == 0 && value == 'ENDSEC') {
-        section = '';
-        i++;
-        continue;
-      }
-      if (section == 'HEADER' && code == 9 && value == r'$INSUNITS') {
-        if (i + 1 < pairs.length && pairs[i + 1].$1 == 70) insunits = int.tryParse(pairs[i + 1].$2) ?? 0;
-        i++;
-        continue;
-      }
-      if (section == 'TABLES' && code == 0 && value == 'LAYER') {
-        String? name;
-        var color = 7;
-        var j = i + 1;
-        while (j < pairs.length && pairs[j].$1 != 0) {
-          if (pairs[j].$1 == 2) name = pairs[j].$2;
-          if (pairs[j].$1 == 62) color = int.tryParse(pairs[j].$2)?.abs() ?? 7;
-          j++;
-        }
-        if (name != null && name.isNotEmpty) layers.add(DxfLayer(name, color: color));
-        i = j;
-        continue;
-      }
-      if (section == 'BLOCKS' && code == 0 && value == 'BLOCK') {
-        var j = i + 1;
-        var name = '';
-        var bx = 0.0, by = 0.0;
-        while (j < pairs.length && pairs[j].$1 != 0) {
-          final (c, v) = pairs[j];
-          if (c == 2) name = v;
-          if (c == 10) bx = double.tryParse(v) ?? 0;
-          if (c == 20) by = double.tryParse(v) ?? 0;
-          j++;
-        }
-        final ents = <DxfEntity>[];
-        final ins = <DxfInsert>[];
-        while (j < pairs.length && !(pairs[j].$1 == 0 && (pairs[j].$2 == 'ENDBLK' || pairs[j].$2 == 'ENDSEC'))) {
-          j = pairs[j].$1 == 0 ? _readEntity(pairs, j, ents, ins) : j + 1;
-        }
-        if (j < pairs.length && pairs[j].$2 == 'ENDBLK') {
-          j++;
-          while (j < pairs.length && pairs[j].$1 != 0) {
-            j++;
-          }
-        }
-        if (name.isNotEmpty) blocks[name] = DxfBlock(name, Pt(bx, by), ents, ins);
-        i = j;
-        continue;
-      }
-      if (section == 'ENTITIES' && code == 0) {
-        i = _readEntity(pairs, i, entities, inserts);
-        continue;
-      }
-      i++;
-    }
-    expandInserts(inserts, blocks, entities);
-    return DxfDocument(entities: entities, layers: layers, unitScale: _unitScale(insunits));
+  double get fraction => s.isEmpty ? 1 : _pos / s.length;
+
+  String? _line() {
+    if (_pos >= s.length) return null;
+    final nl = s.indexOf('\n', _pos);
+    final end = nl < 0 ? s.length : nl;
+    var e = end;
+    if (e > _pos && s.codeUnitAt(e - 1) == 13) e--;
+    final line = s.substring(_pos, e);
+    _pos = nl < 0 ? s.length : nl + 1;
+    return line;
   }
 
-  /// Reads the entity whose type is at `pairs[i]` (a code 0) into [out], or
-  /// into [inserts] for block references, and returns the index of the next
-  /// code-0 pair.
-  static int _readEntity(List<(int, String)> pairs, int i, List<DxfEntity> out, List<DxfInsert> inserts) {
-    final type = pairs[i].$2;
-    var j = i + 1;
-    final props = <int, List<String>>{};
-    final verts = <_Vertex>[]; // LWPOLYLINE vertices in file order (10, 20, 42)
-    while (j < pairs.length && pairs[j].$1 != 0) {
-      final (c, v) = pairs[j];
-      props.putIfAbsent(c, () => []).add(v);
-      if (type == 'LWPOLYLINE') {
-        if (c == 10) {
-          verts.add(_Vertex(double.tryParse(v) ?? 0, 0));
-        } else if (c == 20 && verts.isNotEmpty) {
-          verts.last.y = double.tryParse(v) ?? 0;
-        } else if (c == 42 && verts.isNotEmpty) {
-          verts.last.bulge = double.tryParse(v) ?? 0;
-        }
-      }
-      j++;
+  /// Loads the next group; false at the end of the text.
+  bool next() {
+    if (_held) {
+      _held = false;
+      return true;
     }
+    while (true) {
+      final c = _line();
+      if (c == null) return false;
+      final t = c.trim();
+      final k = int.tryParse(t);
+      // group codes run from -5 to 1071
+      if (k == null || k < -5 || k > 1071) {
+        if (t.isNotEmpty) resyncs++;
+        continue;
+      }
+      final v = _line();
+      if (v == null) return false;
+      code = k;
+      value = v.trim();
+      return true;
+    }
+  }
+
+  /// The current group is read again by the next [next].
+  void hold() => _held = true;
+}
+
+/// Entity types read without geometry for the plan (viewports, attribute
+/// definitions of blocks, construction lines, lights, masks): left out
+/// without a note.
+const _silentTypes = {'VIEWPORT', 'SEQEND', 'VERTEX', 'ATTDEF', 'XLINE', 'RAY', 'LIGHT', 'SUN', 'WIPEOUT', 'ENDBLK', 'BLOCK'};
+
+class _DxfParser {
+  _DxfParser(String content) : g = _Groups(content);
+  final _Groups g;
+  final layers = <DxfLayer>[];
+  final entities = <DxfEntity>[];
+  final inserts = <DxfInsert>[];
+  final blocks = <String, DxfBlock>{};
+
+  /// Entity types left out, with their counts.
+  final skipped = <String, int>{};
+
+  /// Corners of the 3D faces already taken (millimetre grid), so a surface
+  /// of triangles gives each survey point once.
+  final _faceCorners = <(int, int)>{};
+  var paper = 0;
+  var insunits = 0;
+  var section = '';
+  var _done = false;
+
+  double get fraction => g.fraction;
+
+  static double _d(String v) => double.tryParse(v) ?? 0;
+
+  /// Reads up to [budget] records; true when the file is done.
+  bool step(int budget) {
+    for (var n = 0; n < budget; n++) {
+      if (_done || !g.next()) return _done = true;
+      if (g.code != 0) {
+        if (section == 'HEADER' && g.code == 9) _header(g.value);
+        continue;
+      }
+      final v = g.value;
+      switch (v) {
+        case 'SECTION':
+          section = '';
+          if (g.next()) {
+            if (g.code == 2) {
+              section = g.value.toUpperCase();
+            } else {
+              g.hold();
+            }
+          }
+        case 'ENDSEC':
+          section = '';
+        case 'EOF':
+          return _done = true;
+        default:
+          if (section == 'TABLES') {
+            if (v == 'LAYER') _layer();
+          } else if (section == 'BLOCKS') {
+            if (v == 'BLOCK') _block();
+          } else if (section == 'ENTITIES') {
+            _entity(v, entities, inserts, top: true);
+          }
+      }
+    }
+    return false;
+  }
+
+  void _header(String name) {
+    if (!g.next()) return;
+    if (g.code == 0 || g.code == 9) {
+      g.hold();
+      return;
+    }
+    if (name == r'$INSUNITS' && g.code == 70) insunits = int.tryParse(g.value) ?? 0;
+  }
+
+  /// The pairs of the current record up to the next code 0.
+  void _skipRecord() {
+    while (g.next()) {
+      if (g.code == 0) {
+        g.hold();
+        return;
+      }
+    }
+  }
+
+  void _layer() {
+    String? name;
+    var color = 7, flags = 0;
+    int? rgb;
+    while (g.next()) {
+      if (g.code == 0) {
+        g.hold();
+        break;
+      }
+      switch (g.code) {
+        case 2:
+          name = DxfReader.plainName(g.value);
+        case 62:
+          color = int.tryParse(g.value) ?? 7;
+        case 70:
+          flags = int.tryParse(g.value) ?? 0;
+        case 420:
+          rgb = int.tryParse(g.value);
+      }
+    }
+    if (name == null || name.isEmpty) return;
+    // a negative colour turns the layer off; flag 1 freezes it
+    final c = color.abs();
+    layers.add(DxfLayer(name, color: c >= 1 && c <= 255 ? c : 7, visible: color >= 0 && flags & 1 == 0, rgb: rgb == null ? null : rgb & 0xFFFFFF));
+  }
+
+  void _block() {
+    var name = '';
+    var bx = 0.0, by = 0.0;
+    var flags = 0;
+    while (g.next()) {
+      if (g.code == 0) {
+        g.hold();
+        break;
+      }
+      switch (g.code) {
+        case 2:
+          name = DxfReader.plainName(g.value);
+        case 10:
+          bx = _d(g.value);
+        case 20:
+          by = _d(g.value);
+        case 70:
+          flags = int.tryParse(g.value) ?? 0;
+      }
+    }
+    final ents = <DxfEntity>[];
+    final ins = <DxfInsert>[];
+    while (g.next()) {
+      if (g.code != 0) continue;
+      final t = g.value;
+      if (t == 'ENDBLK') {
+        _skipRecord();
+        break;
+      }
+      if (t == 'ENDSEC' || t == 'EOF') {
+        g.hold();
+        break;
+      }
+      _entity(t, ents, ins, top: false);
+    }
+    // the layouts other than the active one: paper space, not the plan
+    if (name.toLowerCase().startsWith('*paper_space')) {
+      paper += ents.length + ins.length;
+      return;
+    }
+    if (name.isNotEmpty) blocks[name] = DxfBlock(name, Pt(bx, by), ents, ins, xref: flags & 4 != 0);
+  }
+
+  /// Reads the entity of [type] whose code 0 was just read into [out], or
+  /// into [ins] for block references. [top]: an entity of the ENTITIES
+  /// section (where code 67 = 1 marks paper space).
+  void _entity(String type, List<DxfEntity> out, List<DxfInsert> ins, {required bool top}) {
+    final props = <int, List<String>>{};
+    final ordered = type == 'HATCH' || type == 'MULTILEADER' || type == 'MLEADER' ? <(int, String)>[] : null;
+    final verts = <_Vertex>[]; // LWPOLYLINE vertices in file order (10, 20, 42)
+    final lw = type == 'LWPOLYLINE';
+    while (g.next()) {
+      final c = g.code;
+      if (c == 0) {
+        g.hold();
+        break;
+      }
+      final v = g.value;
+      if (lw && (c == 10 || c == 20 || c == 42)) {
+        if (c == 10) {
+          verts.add(_Vertex(_d(v), 0));
+        } else if (verts.isNotEmpty) {
+          if (c == 20) {
+            verts.last.y = _d(v);
+          } else {
+            verts.last.bulge = _d(v);
+          }
+        }
+        continue;
+      }
+      ordered?.add((c, v));
+      (props[c] ??= []).add(v);
+    }
+    // a POLYLINE is followed by its VERTEX records up to SEQEND
+    final pv = type == 'POLYLINE' ? _polylineVertices() : null;
+    if (top && (props[67]?.first.trim() ?? '') == '1') {
+      if (!_silentTypes.contains(type)) paper++;
+      return;
+    }
+    _build(type, props, ordered, verts, pv, out, ins);
+  }
+
+  /// The vertices after a POLYLINE: positions (spline frame points and mesh
+  /// face records left out), bulges and elevations.
+  _PolyVertices _polylineVertices() {
+    final out = _PolyVertices();
+    while (g.next()) {
+      if (g.code != 0) continue;
+      if (g.value == 'VERTEX') {
+        double? x, y, z;
+        var bulge = 0.0, vflags = 0;
+        while (g.next()) {
+          if (g.code == 0) {
+            g.hold();
+            break;
+          }
+          switch (g.code) {
+            case 10:
+              x = double.tryParse(g.value);
+            case 20:
+              y = double.tryParse(g.value);
+            case 30:
+              z = double.tryParse(g.value);
+            case 42:
+              bulge = double.tryParse(g.value) ?? 0;
+            case 70:
+              vflags = int.tryParse(g.value) ?? 0;
+          }
+        }
+        // spline frame control points (16) are not on the curve; face
+        // records of a polyface mesh (128 without 64) hold no position
+        if (vflags & 16 != 0 || (vflags & 128 != 0 && vflags & 64 == 0)) continue;
+        if (x != null && y != null) {
+          out.points.add(_Vertex(x, y, bulge));
+          out.z.add(z);
+        }
+        continue;
+      }
+      if (g.value == 'SEQEND') {
+        _skipRecord();
+      } else {
+        g.hold();
+      }
+      break;
+    }
+    return out;
+  }
+
+  void _build(String type, Map<int, List<String>> props, List<(int, String)>? ordered, List<_Vertex> verts, _PolyVertices? pv, List<DxfEntity> out, List<DxfInsert> inserts) {
     double num(int c, [int idx = 0, double def = 0]) => double.tryParse(props[c]?.elementAtOrNull(idx) ?? '') ?? def;
     int flags(int c) => int.tryParse(props[c]?.first ?? '0') ?? 0;
-    final layer = props[8]?.first ?? '0';
+    final layer = DxfReader.plainName(props[8]?.first ?? '0');
     final color = int.tryParse(props[62]?.first ?? '') ?? 256;
     // extrusion (0, 0, −1): the object coordinates of the planar entities
     // (not the world coordinates of lines, points, splines, MTEXT, 3D
@@ -319,80 +580,43 @@ class DxfReader {
         out.add(DxfEntity(type: 'LINE', layer: layer, color: color, points: [Pt(num(10), num(20)), Pt(num(11), num(21))], elevation: props.containsKey(30) ? num(30) : null));
       case 'LWPOLYLINE':
         final closed = flags(70) & 1 == 1;
-        out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: _withBulges(verts, closed), closed: closed, elevation: props.containsKey(38) ? num(38) : null));
+        out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: DxfReader._withBulges(verts, closed), closed: closed, elevation: props.containsKey(38) ? num(38) : null));
       case 'POLYLINE':
-        final closed = flags(70) & 1 == 1;
-        final pv = <_Vertex>[];
+        final f = flags(70);
+        final closed = f & 1 == 1;
+        final v = pv ?? _PolyVertices();
+        if (f & (16 | 64) != 0) {
+          // polyface and polygon meshes: a surface (a survey's terrain), its vertices as spot heights
+          for (var k = 0; k < v.points.length; k++) {
+            _corner(Pt(v.points[k].x, v.points[k].y), v.z[k] ?? 0, layer, color, out);
+          }
+          break;
+        }
         double? zElev;
         var sameZ = true;
-        // consume VERTEX entities until SEQEND
-        var k = j;
-        while (k < pairs.length) {
-          if (pairs[k].$1 == 0) {
-            if (pairs[k].$2 == 'SEQEND') {
-              k++;
-              while (k < pairs.length && pairs[k].$1 != 0) {
-                k++;
-              }
-              break;
-            }
-            if (pairs[k].$2 == 'VERTEX') {
-              var m = k + 1;
-              double? x, y, z;
-              var bulge = 0.0, vflags = 0;
-              while (m < pairs.length && pairs[m].$1 != 0) {
-                final v = pairs[m].$2;
-                switch (pairs[m].$1) {
-                  case 10:
-                    x = double.tryParse(v);
-                  case 20:
-                    y = double.tryParse(v);
-                  case 30:
-                    z = double.tryParse(v);
-                  case 42:
-                    bulge = double.tryParse(v) ?? 0;
-                  case 70:
-                    vflags = int.tryParse(v) ?? 0;
-                }
-                m++;
-              }
-              // spline frame control points (flag 16) are not on the curve
-              if (x != null && y != null && vflags & 16 == 0) pv.add(_Vertex(x, y, bulge));
-              if (z != null) {
-                if (zElev == null) {
-                  zElev = z;
-                } else if ((zElev - z).abs() > 1e-9) {
-                  sameZ = false;
-                }
-              }
-              k = m;
-              continue;
-            }
-            break;
+        for (final z in v.z) {
+          if (z == null) continue;
+          if (zElev == null) {
+            zElev = z;
+          } else if ((zElev - z).abs() > 1e-9) {
+            sameZ = false;
           }
-          k++;
         }
-        j = k;
         // a 2D polyline carries its elevation in code 30; a 3D one in its vertices
         final own = props.containsKey(30) ? num(30) : null;
         final polyElev = own != null && own != 0 ? own : (sameZ && zElev != null && zElev != 0 ? zElev : own);
-        out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: _withBulges(pv, closed), closed: closed, elevation: polyElev));
+        out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: DxfReader._withBulges(v.points, closed), closed: closed, elevation: polyElev));
       case 'CIRCLE':
         out.add(DxfEntity(type: 'CIRCLE', layer: layer, color: color, center: Pt(num(10), num(20)), radius: num(40)));
       case 'ARC':
-        out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: Pt(num(10), num(20)), radius: num(40), startAngle: num(50), endAngle: num(51)));
+        out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: Pt(num(10), num(20)), radius: num(40), startAngle: cadNormalizeDeg(num(50)), endAngle: cadNormalizeDeg(num(51))));
       case 'ELLIPSE':
         // centre and major axis in world coordinates; the minor axis is
         // extrusion × major, the other side for an extrusion (0, 0, −1)
         final c = Pt(num(10), num(20)), major = Pt(num(11), num(21));
         final minor = major.perpendicular * num(40, 0, 1) * (mirrored ? -1 : 1);
         final a0 = num(41), a1 = num(42, 0, 2 * math.pi);
-        var sweep = a1 - a0;
-        if (sweep <= 1e-9) sweep += 2 * math.pi;
-        final full = sweep >= 2 * math.pi - 1e-9;
-        final n = math.max(8, (sweep / (math.pi / 18)).ceil());
-        final pts = [for (var k = 0; k <= (full ? n - 1 : n); k++) c + major * math.cos(a0 + sweep * k / n) + minor * math.sin(a0 + sweep * k / n)];
-        out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: full));
+        out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: DxfReader.ellipsePoints(c, major, minor, a0, a1), closed: cadSweepRad(a0, a1) >= 2 * math.pi - 1e-9));
       case 'SPLINE':
         // fit points: a smooth curve through them; else the NURBS curve of
         // the control points (degree, knots and weights)
@@ -404,11 +628,11 @@ class DxfReader {
           out.add(DxfEntity(type: 'SPLINE', layer: layer, color: color, points: [for (var k = 0; k < xs.length; k++) Pt(xs[k], ys[k])], closed: closed));
         } else {
           final ctrl = [for (var k = 0; k < math.min(cx.length, cy.length); k++) Pt(cx[k], cy[k])];
-          final pts = nurbsCurve(flags(71) > 0 ? flags(71) : 3, ctrl, knots: nums(40), weights: nums(41));
+          final pts = DxfReader.splineCurve(flags(71) > 0 ? flags(71) : 3, ctrl, knots: nums(40), weights: nums(41));
           if (pts.length >= 2) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: closed));
         }
       case 'HATCH':
-        _readHatch(pairs, i + 1, j, layer, color, out);
+        DxfReader._readHatch(ordered ?? const [], layer, color, out);
       case 'SOLID' || 'TRACE':
         // corners in 1-2-4-3 order ("bow-tie" numbering of the format)
         final q = [Pt(num(10), num(20)), Pt(num(11), num(21)), Pt(num(13, 0, num(12)), num(23, 0, num(22))), Pt(num(12), num(22))];
@@ -418,51 +642,99 @@ class DxfReader {
         }
         if (pts.length > 2 && pts.first.distanceTo(pts.last) < 1e-12) pts.removeLast();
         if (pts.length >= 3) out.add(DxfEntity(type: 'HATCH', layer: layer, color: color, points: pts, closed: true, solid: true));
-      case 'TEXT':
-      case 'MTEXT':
-      case 'ATTRIB':
+      case '3DFACE':
+        // a surface triangle (or quad) of a survey: its corners are spot
+        // heights; a flat face is drawn by its outline
+        final q = [for (var k = 0; k < 4; k++) (Pt(num(10 + k), num(20 + k)), num(30 + k))];
+        if (q.any((c) => c.$2 != 0)) {
+          for (final (p, z) in q) {
+            _corner(p, z, layer, color, out);
+          }
+        } else {
+          final pts = <Pt>[];
+          for (final (p, _) in q) {
+            if (pts.isEmpty || pts.last.distanceTo(p) > 1e-12) pts.add(p);
+          }
+          if (pts.length > 2 && pts.first.distanceTo(pts.last) < 1e-12) pts.removeLast();
+          if (pts.length >= 3) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: true));
+        }
+      case 'TEXT' || 'MTEXT' || 'ATTRIB':
         // invisible attributes are data, not drawing
         if (type == 'ATTRIB' && flags(70) & 1 == 1) break;
         // long MTEXT comes in code-3 chunks followed by the final code 1
         final raw = [...?props[3], ...?props[1]].join();
-        final txt = type == 'MTEXT' ? plainMText(raw) : plainText(raw);
-        // aligned TEXT/ATTRIB is positioned by its second point
-        final aligned = type != 'MTEXT' && (flags(72) != 0 || flags(73) != 0) && props.containsKey(11);
-        final pos = aligned ? Pt(num(11), num(21)) : Pt(num(10), num(20));
-        // MTEXT may give its direction as a vector instead of an angle
-        final rotation = type == 'MTEXT' && !props.containsKey(50) && props.containsKey(11) ? radToDeg(math.atan2(num(21), num(11))) : num(50);
-        out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [pos], text: txt, height: num(40, 0, 1), rotation: rotation));
+        final txt = type == 'MTEXT' ? DxfReader.plainMText(raw) : DxfReader.plainText(raw);
+        // a text needs a size to be drawn (0 means "the style's" to CAD programs)
+        final h40 = num(40, 0, 1);
+        final height = h40 > 0 && h40.isFinite ? h40 : 1.0;
+        if (type == 'MTEXT') {
+          // MTEXT may give its direction as a vector instead of an angle
+          final rotation = !props.containsKey(50) && props.containsKey(11) ? radToDeg(math.atan2(num(21), num(11))) : num(50);
+          // the attachment point (1 top left … 9 bottom right) is the insertion point
+          final a = flags(71).clamp(1, 9);
+          final col = (a - 1) % 3, row = (a - 1) ~/ 3;
+          final pos = cadTextBase(Pt(num(10), num(20)), txt, height, rotation, col / 2, (2 - row) / 2);
+          out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [pos], text: txt, height: height, rotation: rotation));
+        } else {
+          // justified TEXT/ATTRIB: placed from its alignment point (fitted and
+          // aligned texts run from the first point)
+          final h = flags(72), v = type == 'ATTRIB' ? flags(74) : flags(73);
+          final rotation = num(50);
+          var pos = Pt(num(10), num(20));
+          if ((h != 0 || v != 0) && h != 3 && h != 5 && props.containsKey(11)) {
+            final hf = h == 1 || h == 4 ? 0.5 : (h == 2 ? 1.0 : 0.0);
+            final vf = h == 4 ? 0.5 : (v == 2 ? 0.5 : (v == 3 ? 1.0 : 0.0));
+            pos = cadTextBase(Pt(num(11), num(21)), txt, height, rotation, hf, vf);
+          }
+          out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [pos], text: txt, height: height, rotation: rotation));
+        }
       case 'LEADER':
         // the leader line (its arrowhead and note are drawn by the program)
         final xs = props[10] ?? const <String>[], ys = props[20] ?? const <String>[];
         final pts = [for (var k = 0; k < math.min(xs.length, ys.length); k++) Pt(double.tryParse(xs[k]) ?? 0, double.tryParse(ys[k]) ?? 0)];
         if (pts.length >= 2) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts));
+      case 'MULTILEADER' || 'MLEADER':
+        DxfReader._readMLeader(ordered ?? const [], layer, color, out);
+      case 'MLINE':
+        // the reference line through its vertices
+        final xs = props[11] ?? const <String>[], ys = props[21] ?? const <String>[];
+        final pts = [for (var k = 0; k < math.min(xs.length, ys.length); k++) Pt(double.tryParse(xs[k]) ?? 0, double.tryParse(ys[k]) ?? 0)];
+        if (pts.length >= 2) out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: flags(71) & 2 != 0));
       case 'POINT':
         out.add(DxfEntity(type: 'POINT', layer: layer, color: color, points: [Pt(num(10), num(20))], elevation: props.containsKey(30) ? num(30) : null));
       case 'INSERT':
         inserts.add(
           DxfInsert(
-            name: props[2]?.first ?? '',
+            name: DxfReader.plainName(props[2]?.first ?? ''),
             layer: layer,
             color: color,
             position: Pt(num(10), num(20)),
             scaleX: num(41, 0, 1),
             scaleY: num(42, 0, 1),
             rotation: num(50),
-            cols: math.max(1, flags(70)),
-            rows: math.max(1, flags(71)),
+            cols: flags(70).clamp(1, 32767),
+            rows: flags(71).clamp(1, 32767),
             colSpacing: num(44),
             rowSpacing: num(45),
             ocsMirror: mirrored,
           ),
         );
-      case 'DIMENSION':
+      case 'DIMENSION' || 'ARC_DIMENSION' || 'LARGE_RADIAL_DIMENSION':
         // the dimension's geometry lives in an anonymous block, inserted at
         // the origin of the dimension's object coordinates
-        final block = props[2]?.first ?? '';
+        final block = DxfReader.plainName(props[2]?.first ?? '');
         if (block.isNotEmpty) inserts.add(DxfInsert(name: block, layer: layer, color: color, position: Pt.zero, ocsMirror: mirrored));
+      case 'ACAD_TABLE':
+        // a table is a reference to its anonymous block at the insertion point
+        final block = DxfReader.plainName(props[2]?.first ?? '');
+        if (block.isEmpty) {
+          skipped[type] = (skipped[type] ?? 0) + 1;
+          break;
+        }
+        final dir = props.containsKey(11) ? radToDeg(math.atan2(num(21), num(11, 0, 1))) : 0.0;
+        inserts.add(DxfInsert(name: block, layer: layer, color: color, position: Pt(num(10), num(20)), rotation: dir));
       default:
-        break;
+        if (!_silentTypes.contains(type)) skipped[type] = (skipped[type] ?? 0) + 1;
     }
     final planar = switch (type) {
       'CIRCLE' || 'ARC' || 'LWPOLYLINE' || 'HATCH' || 'SOLID' || 'TRACE' || 'TEXT' || 'ATTRIB' => true,
@@ -472,10 +744,222 @@ class DxfReader {
     };
     if (mirrored && planar) {
       for (var k = first; k < out.length; k++) {
-        out[k] = mirrorOcs(out[k]);
+        out[k] = DxfReader.mirrorOcs(out[k]);
       }
     }
-    return j;
+  }
+
+  /// A corner of a surface (3D face, mesh) as a spot height, once per place
+  /// in the drawing (top level) or every time (blocks).
+  void _corner(Pt p, double z, String layer, int color, List<DxfEntity> out) {
+    if (!p.x.isFinite || !p.y.isFinite || !z.isFinite) return;
+    if (identical(out, entities) && !_faceCorners.add(((p.x * 1000).round(), (p.y * 1000).round()))) return;
+    out.add(DxfEntity(type: 'POINT', layer: layer, color: color, points: [p], elevation: z));
+  }
+
+  DxfDocument finish() {
+    final w = <String>[];
+    if (g.resyncs > 0) w.add('dxf_resync:${g.resyncs}');
+    if (paper > 0) w.add('dxf_paper_space:$paper');
+    DxfReader.expandInserts(inserts, blocks, entities, warnings: w);
+    DxfReader.flatPointElevations(entities);
+    if (skipped.isNotEmpty) w.add('dxf_unsupported:${DxfReader.typeList(skipped)}');
+    return DxfDocument(entities: entities, layers: layers, unitScale: DxfReader._unitScale(insunits), warnings: w);
+  }
+}
+
+class _PolyVertices {
+  final points = <_Vertex>[];
+  final z = <double?>[];
+}
+
+/// Limits of the expansion of block references, against files (damaged or
+/// hostile) whose blocks insert themselves or each other exponentially.
+class _Expansion {
+  _Expansion(this.blocks, this.out) {
+    for (final b in blocks.values) {
+      _lower.putIfAbsent(b.name.toLowerCase(), () => b);
+    }
+    for (final e in out) {
+      points += math.max(1, e.points.length);
+    }
+  }
+  final Map<String, DxfBlock> blocks;
+  final List<DxfEntity> out;
+  final _lower = <String, DxfBlock>{};
+  final xrefs = <String>{};
+  final cycles = <String>{};
+  final stack = <String>[];
+  var points = 0;
+  var truncated = false;
+
+  bool get full => out.length >= DxfReader.maxEntities || points >= DxfReader.maxPoints;
+
+  DxfBlock? find(String name) => blocks[name] ?? _lower[name.toLowerCase()];
+
+  void run(List<DxfInsert> inserts, Affine2? outer, String? layer, int? color) {
+    if (stack.length >= DxfReader.maxNesting) {
+      truncated = true;
+      return;
+    }
+    for (final ins in inserts) {
+      if (full) {
+        truncated = true;
+        return;
+      }
+      final block = find(ins.name);
+      if (block == null) continue;
+      if (block.xref) {
+        xrefs.add(block.name);
+        continue;
+      }
+      // a block inside itself would never end
+      if (stack.contains(block.name)) {
+        cycles.add(block.name);
+        continue;
+      }
+      final insLayer = ins.layer == '0' && layer != null ? layer : ins.layer;
+      final insColor = ins.color == 0 && color != null ? color : ins.color;
+      var rows = ins.rows, cols = ins.cols;
+      if (rows * cols > DxfReader.maxCells) {
+        truncated = true;
+        cols = math.min(cols, DxfReader.maxCells);
+        rows = math.max(1, DxfReader.maxCells ~/ cols);
+      }
+      stack.add(block.name);
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          final local = ins.affine(block.base, c, r);
+          final t = outer == null ? local : outer.then(local);
+          for (final e in block.entities) {
+            // definition points of dimensions are not drawing geometry
+            if (e.type == 'POINT' && block.name.startsWith('*D')) continue;
+            if (full) {
+              truncated = true;
+              stack.removeLast();
+              return;
+            }
+            DxfReader._transformed(e, t, insLayer, insColor, out);
+            points += math.max(1, e.points.length);
+          }
+          run(block.inserts, t, insLayer, insColor);
+        }
+      }
+      stack.removeLast();
+    }
+  }
+}
+
+class DxfReader {
+  /// Most entities a drawing may hold once its blocks are expanded.
+  static const maxEntities = 1000000;
+
+  /// Most points (vertices) the expanded blocks may add.
+  static const maxPoints = 8000000;
+
+  /// Most cells of one MINSERT array.
+  static const maxCells = 250000;
+
+  /// Deepest nesting of blocks expanded.
+  static const maxNesting = 16;
+
+  static double _unitScale(int insunits) => switch (insunits) {
+    1 => 0.0254, // inches
+    2 => 0.3048, // feet
+    4 => 0.001, // mm
+    5 => 0.01, // cm
+    6 => 1.0, // m
+    7 => 1000.0, // km
+    8 => 2.54e-8, // microinches
+    9 => 2.54e-5, // mils
+    10 => 0.9144, // yards
+    13 => 1e-6, // microns
+    14 => 0.1, // decimetres
+    15 => 10.0, // decametres
+    16 => 100.0, // hectometres
+    21 => 1200 / 3937, // US survey feet
+    _ => 1.0,
+  };
+
+  /// Metres per drawing unit of an `$INSUNITS` code (1 when unitless or
+  /// unknown).
+  static double unitScaleOf(int insunits) => _unitScale(insunits);
+
+  /// Text of a DXF file: R2007 and later files are UTF-8; older ones are in
+  /// the code page of their `$DWGCODEPAGE` (1252 when none), unless their
+  /// bytes are valid UTF-8 (writers that ignore the code page). A byte order
+  /// mark (UTF-8, UTF-16) wins. [warnings] gets
+  /// `dxf_codepage_unsupported:<page>` for an East Asian page, read as 1252.
+  static String decode(Uint8List bytes, [List<String>? warnings]) {
+    if (byteOrderMark(bytes) != null || utf16WithoutBom(bytes) != null) return decodeTextBytes(bytes);
+    final head = latin1.decode(Uint8List.sublistView(bytes, 0, math.min(bytes.length, 65536)));
+    final ver = RegExp(r'\$ACADVER\s*\r?\n\s*1\s*\r?\n\s*(AC\d{4})').firstMatch(head)?.group(1);
+    final page = RegExp(r'\$DWGCODEPAGE\s*\r?\n\s*3\s*\r?\n\s*([^\r\n]+)').firstMatch(head)?.group(1)?.trim();
+    try {
+      return utf8.decode(bytes);
+    } on FormatException {
+      // R2007 and later are UTF-8 by definition: a damaged byte is only that
+      if (ver != null && ver.compareTo('AC1021') >= 0) return utf8.decode(bytes, allowMalformed: true);
+    }
+    var cp = page == null ? 1252 : (codepageFromName(page) ?? 1252);
+    if (!supportedCodepages.contains(cp)) {
+      warnings?.add('dxf_codepage_unsupported:$page');
+      cp = 1252;
+    }
+    return decodeCodepage(bytes, cp);
+  }
+
+  /// [parse] of the bytes of a file (see [decode]).
+  static DxfDocument parseBytes(Uint8List bytes) {
+    final w = <String>[];
+    final doc = parse(decode(bytes, w));
+    doc.warnings.insertAll(0, w);
+    return doc;
+  }
+
+  /// [parseBytes] in slices of [slicer] (the interface stays responsive and
+  /// the user can cancel).
+  static Future<DxfDocument> parseBytesAsync(Uint8List bytes, WorkSlicer slicer) async {
+    final w = <String>[];
+    final text = decode(bytes, w);
+    await slicer.pause(0.05);
+    final p = _DxfParser(text);
+    while (!p.step(512)) {
+      if (slicer.due) await slicer.pause(0.05 + 0.9 * p.fraction);
+    }
+    await slicer.pause(0.95);
+    final doc = p.finish();
+    doc.warnings.insertAll(0, w);
+    return doc;
+  }
+
+  static DxfDocument parse(String content) {
+    final p = _DxfParser(content);
+    while (!p.step(1 << 30)) {}
+    return p.finish();
+  }
+
+  /// Counts of entity types as a note (`3DSOLID ×2, IMAGE`).
+  static String typeList(Map<String, int> counts) => counts.entries.map((e) => e.value > 1 ? '${e.key} ×${e.value}' : e.key).join(', ');
+
+  /// Points of a 2D drawing are flat: a POINT at Z = 0 has no elevation
+  /// (it would pull the terrain to sea level) unless other points of its
+  /// layer have elevations, which makes zero a real one.
+  static void flatPointElevations(List<DxfEntity> entities) {
+    final measured = <String>{};
+    for (final e in entities) {
+      if (e.type == 'POINT' && e.elevation != null && e.elevation != 0) measured.add(e.layer);
+    }
+    for (var i = 0; i < entities.length; i++) {
+      final e = entities[i];
+      if (e.type == 'POINT' && e.elevation == 0 && !measured.contains(e.layer)) entities[i] = e.withElevation(null);
+    }
+  }
+
+  /// Layer and block names: `\U+XXXX` characters decoded.
+  static String plainName(String s) {
+    if (!s.contains(r'\U+') && !s.contains(r'\u+')) return s;
+    return s.replaceAllMapped(RegExp(r'\\[Uu]\+([0-9A-Fa-f]{4})'), (m) => String.fromCharCode(int.parse(m[1]!, radix: 16)));
   }
 
   /// TEXT and ATTRIB content as plain text: `\U+XXXX` characters (files in a
@@ -497,9 +981,10 @@ class DxfReader {
     return t.replaceAll('^ ', '^').replaceAll(RegExp(r'\^[@-_]'), ' ');
   }
 
-  /// MTEXT content as plain text: escaped characters (`\\` `\{` `\}`), line
-  /// breaks and non-breaking spaces as spaces, stacked fractions as `a/b`,
-  /// formatting codes and grouping braces dropped; then as [plainText].
+  /// MTEXT content as plain text: escaped characters (`\\` `\{` `\}`),
+  /// paragraph breaks (`\P`) as line breaks, non-breaking spaces as spaces,
+  /// stacked fractions as `a/b`, formatting codes and grouping braces
+  /// dropped; then as [plainText].
   static String plainMText(String s) {
     final out = StringBuffer();
     for (var i = 0; i < s.length; i++) {
@@ -514,8 +999,10 @@ class DxfReader {
         case '\\' || '{' || '}':
           out.write(code);
           i++;
-        case 'P' || '~':
-          // paragraph break, non-breaking space
+        case 'P':
+          out.write('\n');
+          i++;
+        case '~':
           out.write(' ');
           i++;
         case 'U' || 'M':
@@ -541,7 +1028,8 @@ class DxfReader {
           i++;
       }
     }
-    return plainText(out.toString()).trim();
+    // spaces around the paragraphs, not inside them
+    return plainText(out.toString()).split('\n').map((l) => l.trim()).join('\n').trim();
   }
 
   /// [e] read in the mirrored object coordinates of an extrusion
@@ -552,19 +1040,44 @@ class DxfReader {
     return out.single;
   }
 
-  /// Reads the HATCH whose group codes are `pairs[start..end)`: the boundary
-  /// paths become one hatch (the largest loop) plus closed polylines for
-  /// the other loops (islands); the first pattern line gives the angle and
+  /// Points of the elliptical arc of centre [c], axes [major] and [minor]
+  /// from parameter [a0] to [a1] (radians; at most one turn, one point
+  /// every 10°).
+  static List<Pt> ellipsePoints(Pt c, Pt major, Pt minor, double a0, double a1) {
+    final sweep = cadSweepRad(a0, a1);
+    final start = a0.isFinite ? a0 : 0.0;
+    final full = sweep >= 2 * math.pi - 1e-9;
+    final n = math.max(8, (sweep / (math.pi / 18)).ceil());
+    return [for (var k = 0; k <= (full ? n - 1 : n); k++) c + major * math.cos(start + sweep * k / n) + minor * math.sin(start + sweep * k / n)];
+  }
+
+  /// The NURBS curve of a spline with a sane degree (1–11) and number of
+  /// samples (damaged files give degrees of millions).
+  static List<Pt> splineCurve(int degree, List<Pt> control, {List<double> knots = const [], List<double> weights = const []}) {
+    if (control.length > 100000) return const [];
+    final p = degree.clamp(1, 11);
+    final samples = (control.length * 8).clamp(16, 20000);
+    return nurbsCurve(p, control, knots: knots.length == control.length + p + 1 ? knots : const [], weights: weights, samples: samples);
+  }
+
+  /// Reads the HATCH whose group codes are [pairs]: the boundary paths
+  /// become one hatch (the largest loop) plus closed polylines for the
+  /// other loops (islands); the first pattern line gives the angle and
   /// spacing of the hatch lines.
-  static void _readHatch(List<(int, String)> pairs, int start, int end, String layer, int color, List<DxfEntity> out) {
-    var k = start;
+  static void _readHatch(List<(int, String)> pairs, String layer, int color, List<DxfEntity> out) {
+    final end = pairs.length;
+    var k = 0;
     bool at(int code) => k < end && pairs[k].$1 == code;
     double rd(int code, [double def = 0]) {
       if (!at(code)) return def;
       return double.tryParse(pairs[k++].$2) ?? def;
     }
 
-    int ri(int code) => rd(code).round();
+    int ri(int code) {
+      final v = rd(code);
+      return v.isFinite ? v.round().clamp(-1 << 30, 1 << 30) : 0;
+    }
+
     var solid = false;
     var paths = 0;
     while (k < end) {
@@ -608,9 +1121,8 @@ class DxfReader {
               final r = rd(40), s = rd(50), en = rd(51);
               final ccw = rd(73, 1) != 0;
               // clockwise arcs are stored with mirrored angles
-              final a0 = degToRad(ccw ? s : -s), a1 = degToRad(ccw ? en : -en);
-              var sweep = ccw ? a1 - a0 : a0 - a1;
-              if (sweep <= 1e-12) sweep += 2 * math.pi;
+              final a0 = degToRad(cadNormalizeDeg(ccw ? s : -s)), a1 = degToRad(cadNormalizeDeg(ccw ? en : -en));
+              final sweep = ccw ? cadSweepRad(a0, a1) : cadSweepRad(a1, a0);
               final segs = math.max(4, (sweep / (math.pi / 18)).ceil());
               for (var q = 0; q <= segs; q++) {
                 loop.add(c + Pt.polar(r, ccw ? a0 + sweep * q / segs : a0 - sweep * q / segs));
@@ -620,9 +1132,8 @@ class DxfReader {
               final ratio = rd(40, 1), s = rd(50), en = rd(51);
               final ccw = rd(73, 1) != 0;
               final minor = major.perpendicular * ratio;
-              final a0 = degToRad(ccw ? s : -s), a1 = degToRad(ccw ? en : -en);
-              var sweep = ccw ? a1 - a0 : a0 - a1;
-              if (sweep <= 1e-12) sweep += 2 * math.pi;
+              final a0 = degToRad(cadNormalizeDeg(ccw ? s : -s)), a1 = degToRad(cadNormalizeDeg(ccw ? en : -en));
+              final sweep = ccw ? cadSweepRad(a0, a1) : cadSweepRad(a1, a0);
               final segs = math.max(8, (sweep / (math.pi / 18)).ceil());
               for (var q = 0; q <= segs; q++) {
                 final t = ccw ? a0 + sweep * q / segs : a0 - sweep * q / segs;
@@ -633,6 +1144,7 @@ class DxfReader {
               final rational = rd(73) != 0;
               rd(74);
               final nk = ri(95), nc = ri(96);
+              if (nk > 100000 || nc > 100000) return;
               final knots = [for (var q = 0; q < nk; q++) rd(40)];
               final ctrl = <Pt>[];
               final weights = <double>[];
@@ -643,7 +1155,7 @@ class DxfReader {
               // R2010+: fit data (a count on code 97 followed by 11/21)
               if (at(97) && k + 1 < end && pairs[k + 1].$1 == 11) {
                 final nf = ri(97);
-                for (var q = 0; q < nf; q++) {
+                for (var q = 0; q < nf && k < end; q++) {
                   rd(11);
                   rd(21);
                 }
@@ -652,7 +1164,7 @@ class DxfReader {
                 rd(13);
                 rd(23);
               }
-              loop.addAll(nurbsCurve(degree, ctrl, knots: knots, weights: weights));
+              loop.addAll(splineCurve(degree, ctrl, knots: knots, weights: weights));
             default:
               break;
           }
@@ -697,6 +1209,115 @@ class DxfReader {
     }
   }
 
+  /// Reads a MULTILEADER from its group codes [pairs]: the text of its
+  /// context data (placed by its attachment) and each leader line, from the
+  /// arrow to the landing and along the dogleg.
+  static void _readMLeader(List<(int, String)> pairs, String layer, int color, List<DxfEntity> out) {
+    var context = 0;
+    var inLeader = false, inLine = false;
+    String? text;
+    double? tx, ty, height, dirX, dirY, rotation;
+    var attach = 1;
+    double? lastX, lastY, dogX, dogY;
+    var dogLength = 0.0;
+    final lines = <List<Pt>>[];
+    var line = <Pt>[];
+    double? vx;
+    final leaderLines = <List<Pt>>[];
+    void closeLeader() {
+      final landing = lastX != null && lastY != null ? Pt(lastX, lastY) : null;
+      for (final l in leaderLines) {
+        final pts = [...l];
+        if (landing != null && (pts.isEmpty || pts.last.distanceTo(landing) > 1e-9)) pts.add(landing);
+        if (landing != null && dogX != null && dogY != null && dogLength > 0) pts.add(landing + Pt(dogX, dogY).normalized * dogLength);
+        if (pts.length >= 2) lines.add(pts);
+      }
+      leaderLines.clear();
+    }
+
+    for (final (c, v) in pairs) {
+      if (c == 300 && v.startsWith('CONTEXT_DATA')) {
+        context++;
+        continue;
+      }
+      if (c == 301 && context > 0) {
+        context--;
+        continue;
+      }
+      if (context == 0) continue;
+      if (c == 302 && v.startsWith('LEADER')) {
+        inLeader = true;
+        lastX = lastY = dogX = dogY = null;
+        dogLength = 0;
+        continue;
+      }
+      if (c == 303 && inLeader) {
+        closeLeader();
+        inLeader = false;
+        continue;
+      }
+      if (c == 304 && v.startsWith('LEADER_LINE')) {
+        inLine = true;
+        line = <Pt>[];
+        continue;
+      }
+      if (c == 305 && inLine) {
+        leaderLines.add(line);
+        inLine = false;
+        continue;
+      }
+      final d = double.tryParse(v);
+      if (inLine) {
+        if (c == 10) vx = d;
+        if (c == 20 && vx != null && d != null) line.add(Pt(vx, d));
+        continue;
+      }
+      if (inLeader) {
+        switch (c) {
+          case 10:
+            lastX = d;
+          case 20:
+            lastY = d;
+          case 11:
+            dogX = d;
+          case 21:
+            dogY = d;
+          case 40:
+            dogLength = d ?? 0;
+        }
+        continue;
+      }
+      switch (c) {
+        case 304:
+          text ??= v;
+        case 12:
+          tx = d;
+        case 22:
+          ty = d;
+        case 41:
+          height ??= d;
+        case 13:
+          dirX = d;
+        case 23:
+          dirY = d;
+        case 42:
+          rotation = d;
+        case 171:
+          attach = int.tryParse(v) ?? attach;
+      }
+    }
+    for (final l in lines) {
+      out.add(DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: l));
+    }
+    final t = text == null ? '' : plainMText(text);
+    if (t.isEmpty || tx == null || ty == null) return;
+    final h = height != null && height > 0 ? height : 1.0;
+    final rot = dirX != null && dirY != null && (dirX != 0 || dirY != 0) ? radToDeg(math.atan2(dirY, dirX)) : radToDeg(rotation ?? 0);
+    final a = attach.clamp(1, 9);
+    final pos = cadTextBase(Pt(tx, ty), t, h, rot, ((a - 1) % 3) / 2, (2 - (a - 1) ~/ 3) / 2);
+    out.add(DxfEntity(type: 'TEXT', layer: layer, color: color, points: [pos], text: t, height: h, rotation: rot));
+  }
+
   static List<Pt> _withBulges(List<_Vertex> v, bool closed) {
     final out = <Pt>[];
     for (var k = 0; k < v.length; k++) {
@@ -714,7 +1335,7 @@ class DxfReader {
   static List<Pt> bulgeArc(Pt p1, Pt p2, double bulge, {double stepRad = math.pi / 12}) {
     final chord = p2 - p1;
     final c = chord.length;
-    if (c < 1e-12 || bulge.abs() < 1e-9) return const [];
+    if (c < 1e-12 || bulge.abs() < 1e-9 || !bulge.isFinite) return const [];
     final theta = 4 * math.atan(bulge);
     final r = c / (2 * math.sin(theta.abs() / 2));
     final centre = Pt.lerp(p1, p2, 0.5) + chord.perpendicular * ((c / 2) / math.tan(theta / 2) / c);
@@ -726,27 +1347,17 @@ class DxfReader {
   /// Appends the entities of every block reference in [inserts] (and of the
   /// references nested in the blocks) to [out], transformed to world
   /// coordinates. Entities on layer 0 take the reference's layer and colour
-  /// BYBLOCK takes its colour, as CAD programs draw them.
-  static void expandInserts(List<DxfInsert> inserts, Map<String, DxfBlock> blocks, List<DxfEntity> out, {Affine2? outer, String? layer, int? color, int depth = 0}) {
-    if (depth > 8) return;
-    for (final ins in inserts) {
-      final block = blocks[ins.name];
-      if (block == null) continue;
-      final insLayer = ins.layer == '0' && layer != null ? layer : ins.layer;
-      final insColor = ins.color == 0 && color != null ? color : ins.color;
-      for (var r = 0; r < ins.rows; r++) {
-        for (var c = 0; c < ins.cols; c++) {
-          final local = ins.affine(block.base, c, r);
-          final t = outer == null ? local : outer.then(local);
-          for (final e in block.entities) {
-            // definition points of dimensions are not drawing geometry
-            if (e.type == 'POINT' && block.name.startsWith('*D')) continue;
-            _transformed(e, t, insLayer, insColor, out);
-          }
-          expandInserts(block.inserts, blocks, out, outer: t, layer: insLayer, color: insColor, depth: depth + 1);
-        }
-      }
-    }
+  /// BYBLOCK takes its colour, as CAD programs draw them. A block inside
+  /// itself is drawn once, a reference to an external drawing is reported
+  /// and the expansion stops at [maxEntities] / [maxPoints] (`warnings`:
+  /// `dxf_blocks_truncated`, `dxf_block_cycle:<names>`,
+  /// `dxf_xref_missing:<names>`).
+  static void expandInserts(List<DxfInsert> inserts, Map<String, DxfBlock> blocks, List<DxfEntity> out, {List<String>? warnings}) {
+    final x = _Expansion(blocks, out);
+    x.run(inserts, null, null, null);
+    if (x.truncated) warnings?.add('dxf_blocks_truncated');
+    if (x.cycles.isNotEmpty) warnings?.add('dxf_block_cycle:${x.cycles.take(5).join(', ')}');
+    if (x.xrefs.isNotEmpty) warnings?.add('dxf_xref_missing:${x.xrefs.take(8).join(', ')}');
   }
 
   static void _transformed(DxfEntity e, Affine2 t, String insLayer, int insColor, List<DxfEntity> out) {
@@ -769,12 +1380,22 @@ class DxfReader {
           );
         }
       case 'ARC':
-        var sweep = e.endAngle - e.startAngle;
-        if (sweep <= 0) sweep += 360;
+        final sweep = radToDeg(cadSweepRad(degToRad(e.startAngle), degToRad(e.endAngle)));
         if (t.isConformal) {
           // a mirror turns the arc clockwise: it now starts at the image of its end
           final start = t.mirrored ? t.dirDeg(e.startAngle + sweep) : t.dirDeg(e.startAngle);
-          out.add(DxfEntity(type: 'ARC', layer: layer, color: color, center: t.apply(e.center!), radius: e.radius * t.scale, startAngle: start, endAngle: start + sweep, elevation: e.elevation));
+          out.add(
+            DxfEntity(
+              type: 'ARC',
+              layer: layer,
+              color: color,
+              center: t.apply(e.center!),
+              radius: e.radius * t.scale,
+              startAngle: cadNormalizeDeg(start),
+              endAngle: cadNormalizeDeg(start + sweep),
+              elevation: e.elevation,
+            ),
+          );
         } else {
           final n = math.max(4, (sweep / 10).ceil());
           out.add(
@@ -836,25 +1457,70 @@ class DxfReader {
 }
 
 /// R12 writer (AC1009) of a [DxfDocument]: LINE, POLYLINE, CIRCLE, ARC,
-/// TEXT and POINT (with its elevation) on layers with a colour index. The
-/// R2000 export with native entities is in `dxf_r2000.dart`.
+/// TEXT and POINT (with its elevation) on layers with a colour index. Texts
+/// are in code page 1252 ([writeBytes]; characters outside it become `?`)
+/// and layer names follow the rule of the format (A–Z, 0–9, `$`, `-`, `_`,
+/// at most 31 characters: [r12LayerName]). The R2000 export with
+/// native entities is in `dxf_r2000.dart`.
 class DxfWriter {
   static String _n(double v) => v.isFinite ? v.toStringAsFixed(4) : '0.0000';
 
-  static String write(DxfDocument doc, {int insunits = 6}) {
+  /// [name] as an R12 layer name: accents dropped, upper case, other
+  /// characters as `_`, at most 31 characters ('0' when nothing is left).
+  static String r12LayerName(String name) {
+    const from = 'ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöùúûüýÿ';
+    const to = 'AAAAAACEEEEIIIINOOOOOUUUUYaaaaaaceeeeiiiinooooouuuuyy';
+    final b = StringBuffer();
+    for (final r in name.trim().runes) {
+      var ch = String.fromCharCode(r);
+      final i = from.indexOf(ch);
+      if (i >= 0) ch = to[i];
+      ch = ch.toUpperCase();
+      b.write(RegExp(r'^[A-Z0-9$_-]$').hasMatch(ch) ? ch : '_');
+    }
+    var s = b.toString();
+    if (s.length > 31) s = s.substring(0, 31);
+    return s.isEmpty ? '0' : s;
+  }
+
+  /// The R12 names of [layers], told apart once upper-cased and cut
+  /// (`TUBOS`, `TUBOS_2`).
+  static Map<String, String> r12LayerNames(Iterable<String> layers) {
+    final out = <String, String>{};
+    final used = <String>{};
+    for (final l in layers) {
+      if (out.containsKey(l)) continue;
+      final base = r12LayerName(l);
+      var n = base;
+      var k = 2;
+      while (!used.add(n)) {
+        final suffix = '_$k';
+        n = base.length + suffix.length > 31 ? base.substring(0, 31 - suffix.length) + suffix : base + suffix;
+        k++;
+      }
+      out[l] = n;
+    }
+    return out;
+  }
+
+  /// The file as text (the characters as they are; see [writeBytes] for the
+  /// bytes to save).
+  static String write(DxfDocument doc) {
+    final names = r12LayerNames(['0', ...doc.layers.map((l) => l.name), ...doc.entities.map((e) => e.layer)]);
+    String layerOf(String l) => names[l] ?? r12LayerName(l);
     final b = StringBuffer();
     void pair(int code, Object value) {
       b.writeln(code);
       // a line break inside a value would end the pair: texts stay on one line
-      b.writeln(value is String ? value.replaceAll(RegExp(r'[\r\n\t]+'), ' ').replaceAll(RegExp(r'[\x00-\x1F]'), '') : value);
+      b.writeln(value is String ? value.replaceAll(RegExp(r'[\r\n\t]+'), ' ').replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '') : value);
     }
 
     pair(0, 'SECTION');
     pair(2, 'HEADER');
     pair(9, r'$ACADVER');
     pair(1, 'AC1009');
-    pair(9, r'$INSUNITS');
-    pair(70, insunits);
+    pair(9, r'$DWGCODEPAGE');
+    pair(3, 'ANSI_1252');
     pair(0, 'ENDSEC');
     // the linetype the layers use, then the layers
     pair(0, 'SECTION');
@@ -872,10 +1538,14 @@ class DxfWriter {
     pair(0, 'ENDTAB');
     pair(0, 'TABLE');
     pair(2, 'LAYER');
-    pair(70, doc.layers.length);
+    final layers = <String, DxfLayer>{};
     for (final l in doc.layers) {
+      layers.putIfAbsent(layerOf(l.name), () => l);
+    }
+    pair(70, layers.length);
+    for (final MapEntry(key: name, value: l) in layers.entries) {
       pair(0, 'LAYER');
-      pair(2, l.name);
+      pair(2, name);
       pair(70, 0);
       pair(62, l.color);
       pair(6, 'CONTINUOUS');
@@ -885,10 +1555,11 @@ class DxfWriter {
     pair(0, 'SECTION');
     pair(2, 'ENTITIES');
     for (final e in doc.entities) {
+      final layer = layerOf(e.layer);
       switch (e.type) {
         case 'LINE':
           pair(0, 'LINE');
-          pair(8, e.layer);
+          pair(8, layer);
           if (e.color != 256) pair(62, e.color);
           pair(10, _n(e.points[0].x));
           pair(20, _n(e.points[0].y));
@@ -898,22 +1569,22 @@ class DxfWriter {
           pair(31, 0);
         case 'POLYLINE':
           pair(0, 'POLYLINE');
-          pair(8, e.layer);
+          pair(8, layer);
           if (e.color != 256) pair(62, e.color);
           pair(66, 1);
           pair(70, e.closed ? 1 : 0);
           for (final p in e.points) {
             pair(0, 'VERTEX');
-            pair(8, e.layer);
+            pair(8, layer);
             pair(10, _n(p.x));
             pair(20, _n(p.y));
             pair(30, 0);
           }
           pair(0, 'SEQEND');
-          pair(8, e.layer);
+          pair(8, layer);
         case 'CIRCLE':
           pair(0, 'CIRCLE');
-          pair(8, e.layer);
+          pair(8, layer);
           if (e.color != 256) pair(62, e.color);
           pair(10, _n(e.center!.x));
           pair(20, _n(e.center!.y));
@@ -921,7 +1592,7 @@ class DxfWriter {
           pair(40, _n(e.radius));
         case 'ARC':
           pair(0, 'ARC');
-          pair(8, e.layer);
+          pair(8, layer);
           if (e.color != 256) pair(62, e.color);
           pair(10, _n(e.center!.x));
           pair(20, _n(e.center!.y));
@@ -931,7 +1602,7 @@ class DxfWriter {
           pair(51, _n(e.endAngle));
         case 'TEXT':
           pair(0, 'TEXT');
-          pair(8, e.layer);
+          pair(8, layer);
           if (e.color != 256) pair(62, e.color);
           pair(10, _n(e.points[0].x));
           pair(20, _n(e.points[0].y));
@@ -941,7 +1612,7 @@ class DxfWriter {
           if (e.rotation != 0) pair(50, _n(e.rotation));
         case 'POINT':
           pair(0, 'POINT');
-          pair(8, e.layer);
+          pair(8, layer);
           if (e.color != 256) pair(62, e.color);
           pair(10, _n(e.points[0].x));
           pair(20, _n(e.points[0].y));
@@ -952,4 +1623,7 @@ class DxfWriter {
     pair(0, 'EOF');
     return b.toString();
   }
+
+  /// The bytes of the file: [write] in code page 1252, as the header says.
+  static Uint8List writeBytes(DxfDocument doc) => encodeCp1252(write(doc));
 }

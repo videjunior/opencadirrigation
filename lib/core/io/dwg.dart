@@ -1,10 +1,15 @@
 /// Pure-Dart reader for DWG files (R13/R14/R2000 uncompressed
 /// containers, the R2004/R2010–R2018 compressed container and the R2007
-/// Reed–Solomon interleaved container). Extracts layers and the entities
-/// relevant to an irrigation plan, producing a [DxfDocument]: LINE, CIRCLE,
-/// ARC, ELLIPSE, POINT, TEXT, MTEXT, LWPOLYLINE, 2D and 3D POLYLINE, SPLINE,
-/// HATCH, SOLID/TRACE, LEADER (as a polyline), INSERT/MINSERT with their
-/// blocks and the DIMENSION blocks.
+/// Reed–Solomon interleaved container). Extracts layers (colour, true
+/// colour, off and frozen) and the entities relevant to an irrigation plan,
+/// producing a [DxfDocument]: LINE, CIRCLE, ARC, ELLIPSE, POINT, TEXT and
+/// visible ATTRIB (placed by their justification), MTEXT (paragraphs kept,
+/// placed by its attachment), LWPOLYLINE, 2D and 3D POLYLINE, polyface and
+/// polygon meshes and 3DFACE (their corners as spot heights), SPLINE,
+/// HATCH, SOLID/TRACE, LEADER and MLINE (as polylines), INSERT/MINSERT with
+/// their blocks and the DIMENSION blocks. The drawing units come from the
+/// header variables (`$INSUNITS`, R2000 and later) and the texts of
+/// R13–R2004 files are read in the code page the file names.
 ///
 /// Based on the Open Design Alliance specification of the DWG format.
 library;
@@ -13,7 +18,10 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../model/geometry.dart';
+import 'cad_drawing.dart' show nearestAci;
+import 'codepages.dart';
 import 'dxf.dart';
+import 'work_slicer.dart';
 
 class DwgUnsupportedException implements Exception {
   DwgUnsupportedException(this.code, this.message);
@@ -24,13 +32,19 @@ class DwgUnsupportedException implements Exception {
 }
 
 class DwgResult {
-  DwgResult({required this.document, required this.version, required this.warnings, required this.typeCounts, required this.objectCount, this.debugLog = const []});
+  DwgResult({required this.document, required this.version, required this.warnings, required this.typeCounts, required this.objectCount, this.debugLog = const [], this.insunits});
   final DxfDocument document;
   final String version;
+
+  /// Diagnostics of the reader (objects that did not read, pages missing);
+  /// the notes for the user are in [DxfDocument.warnings].
   final List<String> warnings;
   final Map<String, int> typeCounts;
   final int objectCount;
   final List<String> debugLog;
+
+  /// `$INSUNITS` of the header (null when it could not be read).
+  final int? insunits;
 }
 
 enum DwgVersion { r13, r14, r2000, r2004, r2007, r2010, r2013, r2018 }
@@ -247,65 +261,50 @@ class _BitReader {
     return (code, v);
   }
 
-  /// Text (R13–R2004): length BS then bytes.
+  /// Code page of the R13–R2004 texts (the drawing's, from its header).
+  int codepage = 1252;
+
+  /// Text (R13–R2004): length BS then bytes in [codepage]. Every byte is
+  /// read, however long the text (a cut would leave the stream misaligned).
   String readTV() {
     final len = readBS();
-    if (len <= 0 || len > 4096) return '';
-    final b = List<int>.generate(len, (_) => readByte());
-    return String.fromCharCodes(b.where((c) => c != 0).map(_cp1252));
+    if (len <= 0) return '';
+    final b = <int>[];
+    for (var i = 0; i < len; i++) {
+      final c = readByte();
+      if (c != 0) b.add(c);
+    }
+    return decodeCodepage(b, codepage);
   }
 
   /// Unicode text (R2007+ string stream): length BS then UTF‑16LE units.
   String readTU() {
     final len = readBS();
-    if (len <= 0 || len > 4096) return '';
-    final units = List<int>.generate(len, (_) => readRS());
-    return String.fromCharCodes(units.where((c) => c != 0));
+    if (len <= 0) return '';
+    final units = <int>[];
+    for (var i = 0; i < len; i++) {
+      final u = readRS();
+      if (u != 0) units.add(u);
+    }
+    return String.fromCharCodes(units);
   }
 
   void skipBytes(int n) {
     pos += n * 8;
     if (pos > end) throw _Eof();
   }
-
-  static int _cp1252(int c) {
-    const map = {
-      0x80: 0x20AC,
-      0x82: 0x201A,
-      0x83: 0x0192,
-      0x84: 0x201E,
-      0x85: 0x2026,
-      0x86: 0x2020,
-      0x87: 0x2021,
-      0x88: 0x02C6,
-      0x89: 0x2030,
-      0x8A: 0x0160,
-      0x8B: 0x2039,
-      0x8C: 0x0152,
-      0x8E: 0x017D,
-      0x91: 0x2018,
-      0x92: 0x2019,
-      0x93: 0x201C,
-      0x94: 0x201D,
-      0x95: 0x2022,
-      0x96: 0x2013,
-      0x97: 0x2014,
-      0x98: 0x02DC,
-      0x99: 0x2122,
-      0x9A: 0x0161,
-      0x9B: 0x203A,
-      0x9C: 0x0153,
-      0x9E: 0x017E,
-      0x9F: 0x0178,
-    };
-    return map[c] ?? c;
-  }
 }
 
 class _Layer {
-  _Layer(this.name, this.color);
+  _Layer(this.name, this.color, {this.visible = true, this.rgb});
   final String name;
   final int color;
+
+  /// False when the layer is off or frozen.
+  final bool visible;
+
+  /// True colour (0xRRGGBB), R2004+.
+  final int? rgb;
 }
 
 class _Entity {
@@ -349,6 +348,9 @@ class _Entity {
   int rows = 1;
   double colSpacing = 0;
   double rowSpacing = 0;
+
+  /// 3DFACE: the elevations of the corners in [points].
+  List<double> cornerZ = const [];
 }
 
 /// A BLOCK_HEADER: name, base point and (per version) the handles of the
@@ -361,6 +363,9 @@ class _Block {
   int first = 0;
   int last = 0;
   List<int> owned = const [];
+
+  /// An external reference (or an overlay): a drawing the file only names.
+  bool xref = false;
 }
 
 class DwgReader {
@@ -383,6 +388,18 @@ class DwgReader {
   final List<String> debugLog = [];
   int _modelSpaceHandle = 0;
   final Set<int> _blockHeaders = {};
+
+  /// Notes for the user (codes of `warn.*`), carried by the document.
+  final List<String> _notes = [];
+
+  /// Entity types read but not drawn, with their counts.
+  final Map<String, int> _unsupported = {};
+
+  /// Code page of the R13–R2004 texts (byte 0x13 of the file).
+  int _codepage = 1252;
+
+  /// The AcDb:Header section (header variables), when found.
+  Uint8List? _header;
 
   /// Debug aid: handle whose parsing is traced into [debugLog].
   static int? traceHandle;
@@ -413,10 +430,44 @@ class DwgReader {
 
   static DwgResult parse(Uint8List bytes) => DwgReader._(bytes)._run();
 
+  /// [parse] in slices of [slicer] (the interface stays responsive and the
+  /// user can cancel).
+  static Future<DwgResult> parseAsync(Uint8List bytes, WorkSlicer slicer) async {
+    final r = DwgReader._(bytes);
+    r._open();
+    await slicer.pause(0.1);
+    final n = r.handleMap.length;
+    for (var i = 0; i < n; i++) {
+      r._readObjectAt(i);
+      if (slicer.due) await slicer.pause(0.1 + 0.8 * i / n);
+    }
+    await slicer.pause(0.9);
+    return r._build();
+  }
+
   DwgResult _run() {
+    _open();
+    for (var i = 0; i < handleMap.length; i++) {
+      _readObjectAt(i);
+    }
+    return _build();
+  }
+
+  /// Version, code page and container: the handle map and the object data.
+  void _open() {
     final v = versionOf(file);
     if (v == null) throw DwgUnsupportedException('notDwg', 'Not a recognised DWG file (version ${String.fromCharCodes(file.take(6))}).');
     ver = v;
+    // R13–R2004 texts are in the code page the header names (R2007+ are UTF-16)
+    if (ver.index < DwgVersion.r2007.index && file.length > 0x14) {
+      final n = file[0x13] + file[0x14] * 256;
+      final cp = codepageFromDwg(n);
+      if (cp != null && supportedCodepages.contains(cp)) {
+        _codepage = cp;
+      } else {
+        _notes.add('dwg_codepage_unsupported:${cp != null ? codepageName(cp) : n}');
+      }
+    }
     if (ver == DwgVersion.r2007) {
       _readR2007Container();
     } else if (ver.index <= DwgVersion.r2000.index) {
@@ -424,8 +475,6 @@ class DwgReader {
     } else {
       _readR2004Container();
     }
-    _readObjects();
-    return _build();
   }
 
   // ------------------------------------------------------------ containers
@@ -440,7 +489,9 @@ class DwgReader {
     for (var i = 0; i < numRecords && at + 9 <= file.length; i++) {
       final num = file[at];
       final seeker = _rl(file, at + 1);
+      final size = _rl(file, at + 5);
       if (num == 2) handlesSeeker = seeker;
+      if (num == 0 && seeker > 0 && seeker < file.length) _header = Uint8List.sublistView(file, seeker, math.min(file.length, seeker + math.max(size, 0)));
       at += 9;
     }
     if (handlesSeeker == null) throw DwgUnsupportedException('corrupt', 'Handles section not found.');
@@ -581,7 +632,11 @@ class DwgReader {
         pageList.add((_rl(sm, q), _rl(sm, q + 4), _rl(sm, q + 8) + _rl(sm, q + 12) * 4294967296));
         q += 16;
       }
-      if (name == 'AcDb:Handles' || name == 'AcDb:AcDbObjects') {
+      if (name == 'AcDb:Handles' || name == 'AcDb:AcDbObjects' || name == 'AcDb:Header') {
+        if (size <= 0 || size > 512 * 1024 * 1024) {
+          if (name == 'AcDb:Header') continue;
+          throw DwgUnsupportedException('corrupt', 'Section $name has an invalid size.');
+        }
         final buf = Uint8List(size);
         for (final (pageNum, dataSize, startOffset) in pageList) {
           final page = pages[pageNum];
@@ -597,6 +652,7 @@ class DwgReader {
         }
         if (name == 'AcDb:Handles') handles = buf;
         if (name == 'AcDb:AcDbObjects') objects = buf;
+        if (name == 'AcDb:Header') _header = buf;
       }
     }
     if (handles == null || objects == null) throw DwgUnsupportedException('corrupt', 'Object sections not found in the DWG.');
@@ -792,8 +848,11 @@ class DwgReader {
         q += 56;
       }
       debugLog.add('section "$name" size=$dataSize pages=${pageList.length}');
-      if (name != 'AcDb:Handles' && name != 'AcDb:AcDbObjects') continue;
-      if (dataSize <= 0 || dataSize > 512 * 1024 * 1024) throw DwgUnsupportedException('corrupt', 'Section $name has an invalid size.');
+      if (name != 'AcDb:Handles' && name != 'AcDb:AcDbObjects' && name != 'AcDb:Header') continue;
+      if (dataSize <= 0 || dataSize > 512 * 1024 * 1024) {
+        if (name == 'AcDb:Header') continue;
+        throw DwgUnsupportedException('corrupt', 'Section $name has an invalid size.');
+      }
       final buf = Uint8List(dataSize);
       for (final (off, id, uncomp, comp) in pageList) {
         final pg = pages[id];
@@ -813,6 +872,7 @@ class DwgReader {
       }
       if (name == 'AcDb:Handles') handles = buf;
       if (name == 'AcDb:AcDbObjects') objects = buf;
+      if (name == 'AcDb:Header') _header = buf;
     }
     if (handles == null || objects == null) throw DwgUnsupportedException('corrupt', 'Object sections not found in the DWG.');
     objData = objects;
@@ -1117,18 +1177,21 @@ class DwgReader {
 
   static bool _isEntity(int type) => (type >= 1 && type <= 47 && type != 42) || type == 74 || type == 77 || type == 78;
 
-  void _readObjects() {
-    for (final (h, off) in handleMap) {
-      if (off < 0 || off >= objData.length - 2) continue;
-      _stage = 'start';
-      try {
-        _readObject(h, off);
-        objectCount++;
-      } on _Eof {
-        warnings.add('eof_in_object:$h@$_stage');
-      } catch (e) {
-        warnings.add('object_error:$h@$_stage:$e');
-      }
+  /// Entity types of the format that carry no geometry the reader takes
+  /// (solids, regions, OLE frames…): counted for the import message.
+  static const _unsupportedTypes = {33: 'SHAPE', 37: 'REGION', 38: '3DSOLID', 39: 'BODY', 43: 'OLEFRAME', 46: 'TOLERANCE', 74: 'OLE2FRAME'};
+
+  void _readObjectAt(int i) {
+    final (h, off) = handleMap[i];
+    if (off < 0 || off >= objData.length - 2) return;
+    _stage = 'start';
+    try {
+      _readObject(h, off);
+      objectCount++;
+    } on _Eof {
+      warnings.add('eof_in_object:$h@$_stage');
+    } catch (e) {
+      warnings.add('object_error:$h@$_stage:$e');
     }
   }
 
@@ -1146,10 +1209,12 @@ class DwgReader {
     }
     _t(handle, 'offset=$offset size=$size start=$start bytes=${objData.sublist(start, math.min(start + 10, objData.length)).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}');
     final endByte = math.min(start + size, objData.length);
-    final br = _BitReader(objData, start, endByte + 1 <= objData.length ? endByte + 1 : endByte);
+    final br = _BitReader(objData, start, endByte + 1 <= objData.length ? endByte + 1 : endByte)..codepage = _codepage;
     _stage = 'type';
     final type = ver.index >= DwgVersion.r2010.index ? br.readBOT() : br.readBS();
     typeCounts['$type'] = (typeCounts['$type'] ?? 0) + 1;
+    final unsupported = _unsupportedTypes[type];
+    if (unsupported != null) _unsupported[unsupported] = (_unsupported[unsupported] ?? 0) + 1;
     _t(handle, 'type=$type hsSize=$handleStreamSize');
     final entity = _isEntity(type);
     int bitsize; // relative to start, position of handle stream
@@ -1167,15 +1232,20 @@ class DwgReader {
         type == 8 ||
         (type >= 20 && type <= 26) ||
         type == 1 ||
-        type == 10 ||
-        type == 11 ||
+        type == 2 ||
+        (type >= 10 && type <= 13) ||
         type == 15 ||
         type == 16 ||
         type == 17 ||
         type == 18 ||
         type == 19 ||
         type == 27 ||
+        type == 28 ||
+        type == 29 ||
+        type == 30 ||
         type == 44 ||
+        type == 45 ||
+        type == 47 ||
         type == 77 ||
         type == 31 ||
         type == 32 ||
@@ -1216,7 +1286,7 @@ class DwgReader {
     var xdicMissing = false;
     if (ver.index >= DwgVersion.r2004.index) xdicMissing = br.readB() == 1;
     if (ver.index >= DwgVersion.r2013.index) br.readB();
-    final name = strings != null ? strings.readTU() : br.readTV();
+    final name = DxfReader.plainName(strings != null ? strings.readTU() : br.readTV());
     _blockHeaders.add(handle);
     if (name.toLowerCase() == '*model_space') _modelSpaceHandle = handle;
     final block = _Block(handle, name);
@@ -1228,6 +1298,7 @@ class DwgReader {
       br.readB(); // has attribute definitions
       final isXref = br.readB() == 1;
       final isOverlaid = br.readB() == 1;
+      block.xref = isXref || isOverlaid;
       if (ver.index >= DwgVersion.r2000.index) br.readB(); // loaded
       var numOwned = 0;
       if (ver.index >= DwgVersion.r2004.index) numOwned = br.readBL();
@@ -1287,19 +1358,26 @@ class DwgReader {
     br.readBL(); // numreactors
     if (ver.index >= DwgVersion.r2004.index) br.readB(); // xdic missing
     if (ver.index >= DwgVersion.r2013.index) br.readB(); // ds binary data
-    final name = strings != null ? strings.readTU() : br.readTV();
+    final name = DxfReader.plainName(strings != null ? strings.readTU() : br.readTV());
     _t(handle, 'layer name="$name" datapos=${br.pos - (br.pos >> 3 << 3)}');
     _readTableXrefFlags(br);
+    var frozen = false, off = false;
     if (ver.index >= DwgVersion.r2000.index) {
-      br.readBS(); // flags
+      // frozen 1, off 2, frozen in new viewports 4, locked 8, plotted 16, lineweight
+      final flags = br.readBS();
+      frozen = flags & 1 != 0;
+      off = flags & 2 != 0;
     } else {
-      br.readB();
-      br.readB();
-      br.readB();
-      br.readB();
+      frozen = br.readB() == 1;
+      br.readB(); // on (the colour sign says it)
+      br.readB(); // frozen in new viewports
+      br.readB(); // locked
     }
-    final color = _readCMC(br);
-    _layers[handle] = _Layer(name.isEmpty ? '0' : name, color);
+    final (color, rgb) = _readColor(br);
+    // R13–R2000 also give an off layer a negative colour
+    if (color < 0) off = true;
+    final aci = color.abs();
+    _layers[handle] = _Layer(name.isEmpty ? '0' : name, aci >= 1 && aci <= 255 ? aci : 7, visible: !off && !frozen, rgb: rgb);
   }
 
   /// Xref flags of a table entry after its name: R13–R2004 store the
@@ -1315,26 +1393,52 @@ class DwgReader {
     }
   }
 
-  int _readCMC(_BitReader br) {
-    final index = br.readBS();
-    if (ver.index >= DwgVersion.r2004.index) {
-      br.readBL(); // rgb
-      final flags = br.readRC();
-      if (ver.index < DwgVersion.r2007.index) {
-        if (flags & 1 != 0) br.readTV();
-        if (flags & 2 != 0) br.readTV();
-      }
+  int _readCMC(_BitReader br) => _readColor(br).$1;
+
+  /// A colour (CMC): the colour index (negative for an off layer of R13–
+  /// R2000; 256 by layer, 0 by block) and, R2004+, the true colour. R2004+
+  /// keep the index in the low byte of the colour word when its method byte
+  /// is 0xC3 (the index field itself is then unused), a true colour under
+  /// method 0xC2 (drawn with the nearest index).
+  (int, int?) _readColor(_BitReader br) {
+    var index = br.readBS();
+    if (index > 32767) index -= 65536;
+    if (ver.index < DwgVersion.r2004.index) return (index, null);
+    final word = br.readBL();
+    final flags = br.readRC();
+    if (ver.index < DwgVersion.r2007.index) {
+      if (flags & 1 != 0) br.readTV();
+      if (flags & 2 != 0) br.readTV();
     }
-    return index;
+    return _colorWord(word, index);
   }
 
-  int _readENC(_BitReader br) {
-    if (ver.index < DwgVersion.r2004.index) return br.readBS();
+  /// Index and true colour of an R2004+ colour word ([index] when the word
+  /// gives none).
+  static (int, int?) _colorWord(int word, int index) {
+    final method = (word ~/ 16777216) & 0xFF;
+    final low = word % 16777216;
+    return switch (method) {
+      0xC0 => (256, null),
+      0xC1 => (0, null),
+      0xC2 => (nearestAci(low), low),
+      0xC3 => ((low & 0xFF) == 0 ? 7 : low & 0xFF, null),
+      _ => (index, null),
+    };
+  }
+
+  /// Entity colour (ENC): the index and whether a colour book entry (a
+  /// handle at the head of the handle stream) is referenced.
+  (int, bool) _readENC(_BitReader br) {
+    if (ver.index < DwgVersion.r2004.index) {
+      final i = br.readBS();
+      return (i > 32767 ? i - 65536 : i, false);
+    }
     final flags = br.readBS();
-    if (flags & 0x2000 != 0) br.readBL();
-    if (flags & 0x4000 != 0 && ver.index < DwgVersion.r2007.index) br.readTV();
-    if (flags & 0x8000 != 0) br.readBL();
-    return flags & 0x1FF;
+    var index = flags & 0x1FF;
+    if (flags & 0x8000 != 0) index = _colorWord(br.readBL(), index).$1;
+    if (flags & 0x2000 != 0) br.readBL(); // transparency
+    return (index, flags & 0x4000 != 0);
   }
 
   void _readEntity(_BitReader br, _BitReader? strings, int handle, int type, int start, int bitsize, int size) {
@@ -1356,16 +1460,16 @@ class DwgReader {
     if (ver.index < DwgVersion.r2000.index) isByLayerLt = br.readB() == 1;
     var noLinks = true;
     if (ver.index < DwgVersion.r2004.index) noLinks = br.readB() == 1;
-    final color = _readENC(br);
+    final (color, colorBook) = _readENC(br);
     br.readBD(); // ltype scale
-    var ltFlags = 0, psFlags = 0, matFlags = 0;
+    var ltFlags = 0, psFlags = 0, matFlags = 0, shadowFlags = 0;
     if (ver.index >= DwgVersion.r2000.index) {
       ltFlags = br.readBB();
       psFlags = br.readBB();
     }
     if (ver.index >= DwgVersion.r2007.index) {
       matFlags = br.readBB();
-      br.readRC(); // shadow flags
+      shadowFlags = br.readRC();
     }
     var vsFull = 0, vsFace = 0, vsEdge = 0;
     if (ver.index >= DwgVersion.r2010.index) {
@@ -1394,6 +1498,8 @@ class DwgReader {
     int firstVertex = 0, lastVertex = 0;
     void readCommonHandles() {
       _t(handle, 'handles start pos=${hr.pos - start * 8} bitsize=$bitsize');
+      // a colour book entry is referenced ahead of the other handles
+      if (colorBook) hr.readH();
       if (entmode == 0) owner = _absHandle(hr.readH(), handle);
       for (var i = 0; i < numReactors && i < 10000; i++) {
         hr.readH();
@@ -1413,6 +1519,7 @@ class DwgReader {
         if (psFlags == 3) hr.readH();
       }
       if (ver.index >= DwgVersion.r2007.index && matFlags == 3) hr.readH();
+      if (ver.index >= DwgVersion.r2007.index && shadowFlags == 3) hr.readH();
       if (vsFull == 1) hr.readH();
       if (vsFace == 1) hr.readH();
       if (vsEdge == 1) hr.readH();
@@ -1450,14 +1557,37 @@ class DwgReader {
         br.readBT(ver);
         e.ocsMirror = br.readBE(ver);
         if (type == 17) {
-          e.startAngle = br.readBD() * 180 / math.pi;
-          e.endAngle = br.readBD() * 180 / math.pi;
+          e.startAngle = cadNormalizeDeg(br.readBD() * 180 / math.pi);
+          e.endAngle = cadNormalizeDeg(br.readBD() * 180 / math.pi);
         }
         if (cz != 0) e.elevation = cz;
       case 27: // POINT
         final x = br.readBD(), y = br.readBD(), z = br.readBD();
         e.points = [Pt(x, y)];
-        if (z != 0) e.elevation = z;
+        // zero is kept: the layer decides whether it is a real elevation
+        e.elevation = z;
+      case 28: // 3DFACE: its corners (spot heights when it has elevations)
+        final q = <(Pt, double)>[];
+        if (ver.index < DwgVersion.r2000.index) {
+          for (var k = 0; k < 4; k++) {
+            q.add((Pt(br.readBD(), br.readBD()), br.readBD()));
+          }
+          br.readBS(); // invisible edges
+        } else {
+          final noFlags = br.readB() == 1;
+          final zZero = br.readB() == 1;
+          var x = br.readRD(), y = br.readRD(), z = zZero ? 0.0 : br.readRD();
+          q.add((Pt(x, y), z));
+          for (var k = 1; k < 4; k++) {
+            x = br.readDD(x);
+            y = br.readDD(y);
+            z = br.readDD(z);
+            q.add((Pt(x, y), z));
+          }
+          if (!noFlags) br.readBS();
+        }
+        e.points = [for (final c in q) c.$1];
+        e.cornerZ = [for (final c in q) c.$2];
       case 31: // SOLID
       case 32: // TRACE
         br.readBT(ver);
@@ -1484,13 +1614,9 @@ class DwgReader {
         final flip = br.readExtrusion();
         final ratio = br.readBD();
         final a0 = br.readBD(), a1 = br.readBD();
-        var sweep = a1 - a0;
-        if (sweep <= 1e-9) sweep += 2 * math.pi;
-        final full = sweep >= 2 * math.pi - 1e-9;
-        final n = math.max(8, (sweep / (math.pi / 18)).ceil());
         final minor = major.perpendicular * ratio * (flip ? -1 : 1);
-        e.points = [for (var k = 0; k <= (full ? n - 1 : n); k++) c + major * math.cos(a0 + sweep * k / n) + minor * math.sin(a0 + sweep * k / n)];
-        e.closed = full;
+        e.points = DxfReader.ellipsePoints(c, major, minor, a0, a1);
+        e.closed = cadSweepRad(a0, a1) >= 2 * math.pi - 1e-9;
       case 36: // SPLINE
         var scenario = br.readBL();
         if (ver.index >= DwgVersion.r2013.index) {
@@ -1518,7 +1644,7 @@ class DwgReader {
             ctrl.add(Pt(x, y));
             if (weighted) weights.add(br.readBD());
           }
-          e.points = nurbsCurve(degree, ctrl, knots: knots, weights: rational || weighted ? weights : const []);
+          e.points = DxfReader.splineCurve(degree, ctrl, knots: knots, weights: rational || weighted ? weights : const []);
         } else {
           br.readBD(); // fit tolerance
           for (var k = 0; k < 6; k++) {
@@ -1576,8 +1702,8 @@ class DwgReader {
                   final r = br.readBD(), s = br.readBD(), en = br.readBD();
                   final ccw = br.readB() == 1;
                   final a0 = ccw ? s : -s, a1 = ccw ? en : -en;
-                  var sweep = ccw ? a1 - a0 : a0 - a1;
-                  if (sweep <= 1e-12) sweep += 2 * math.pi;
+                  // one turn at most, whatever the angles say
+                  final sweep = ccw ? cadSweepRad(a0, a1) : cadSweepRad(a1, a0);
                   final n = math.max(4, (sweep / (math.pi / 18)).ceil());
                   for (var q = 0; q <= n; q++) {
                     loop.add(c + Pt.polar(r, ccw ? a0 + sweep * q / n : a0 - sweep * q / n));
@@ -1588,8 +1714,7 @@ class DwgReader {
                   final ccw = br.readB() == 1;
                   final minor = major.perpendicular * ratio;
                   final a0 = ccw ? s : -s, a1 = ccw ? en : -en;
-                  var sweep = ccw ? a1 - a0 : a0 - a1;
-                  if (sweep <= 1e-12) sweep += 2 * math.pi;
+                  final sweep = ccw ? cadSweepRad(a0, a1) : cadSweepRad(a1, a0);
                   final n = math.max(8, (sweep / (math.pi / 18)).ceil());
                   for (var q = 0; q <= n; q++) {
                     final t = ccw ? a0 + sweep * q / n : a0 - sweep * q / n;
@@ -1620,7 +1745,7 @@ class DwgReader {
                       }
                     }
                   }
-                  loop.addAll(nurbsCurve(degree, ctrl, knots: knots, weights: weights));
+                  loop.addAll(DxfReader.splineCurve(degree, ctrl, knots: knots, weights: weights));
                 default:
                   return; // unknown edge: the rest of the stream cannot be trusted
               }
@@ -1677,6 +1802,8 @@ class DwgReader {
         if (elev != 0) e.elevation = elev;
       case 10: // VERTEX_2D
       case 11: // VERTEX_3D
+      case 12: // VERTEX_MESH
+      case 13: // VERTEX_PFACE
         final vflags = br.readRC();
         final x = br.readBD(), y = br.readBD();
         _vertexZ[handle] = br.readBD();
@@ -1689,6 +1816,27 @@ class DwgReader {
           final bulge = br.readBD();
           if (bulge != 0) _vertexBulge[handle] = bulge;
         }
+        return;
+      case 29: // POLYLINE_PFACE and
+      case 30: // POLYLINE_MESH: a surface, its vertices become spot heights
+        if (type == 29) {
+          br.readBS(); // vertices
+          br.readBS(); // faces
+        } else {
+          for (var k = 0; k < 6; k++) {
+            br.readBS(); // flags, curve type, M and N counts and densities
+          }
+        }
+        var numOwnedMesh = 0;
+        if (ver.index >= DwgVersion.r2004.index) numOwnedMesh = br.readBL();
+        readCommonHandles();
+        if (ver.index >= DwgVersion.r2004.index) {
+          e.ownedVertices = [for (var i = 0; i < numOwnedMesh && i < 1000000; i++) _absHandle(hr.readH(), handle)];
+        } else {
+          e.firstVertex = _absHandle(hr.readH(), handle);
+          e.lastVertex = _absHandle(hr.readH(), handle);
+        }
+        _entities.add(_withLayer(e, layerHandle, owner));
         return;
       case 16: // POLYLINE_3D
         br.readRC(); // curve flags
@@ -1772,10 +1920,13 @@ class DwgReader {
         e.points = bulges.isEmpty ? pts : _tessellateBulges(pts, bulges, e.closed);
         if (elev != null && elev != 0) e.elevation = elev;
       case 1: // TEXT
+      case 2: // ATTRIB: a text, then its tag and flags
+        Pt ins, align;
+        int h, v;
         if (ver.index < DwgVersion.r2000.index) {
           final elev = br.readBD();
-          final ix = br.readRD(), iy = br.readRD();
-          final align = Pt(br.readRD(), br.readRD());
+          ins = Pt(br.readRD(), br.readRD());
+          align = Pt(br.readRD(), br.readRD());
           e.ocsMirror = br.readExtrusion();
           br.readBD(); // thickness
           br.readBD(); // oblique
@@ -1784,19 +1935,18 @@ class DwgReader {
           br.readBD(); // width factor
           e.text = DxfReader.plainText(br.readTV());
           br.readBS(); // generation
-          final h = br.readBS(), v = br.readBS();
-          // aligned text is positioned by its alignment point (as in DXF)
-          e.points = [h != 0 || v != 0 ? align : Pt(ix, iy)];
+          h = br.readBS();
+          v = br.readBS();
           if (elev != 0) e.elevation = elev;
         } else {
           final f = br.readRC();
           double elev = 0;
           if (f & 1 == 0) elev = br.readRD();
-          final ix = br.readRD(), iy = br.readRD();
-          Pt? align;
+          ins = Pt(br.readRD(), br.readRD());
+          align = ins;
           if (f & 2 == 0) {
-            final ax = br.readDD(ix);
-            align = Pt(ax, br.readDD(iy));
+            final ax = br.readDD(ins.x);
+            align = Pt(ax, br.readDD(ins.y));
           }
           e.ocsMirror = br.readBE(ver);
           br.readBT(ver);
@@ -1805,14 +1955,40 @@ class DwgReader {
           e.height = br.readRD();
           if (f & 16 == 0) br.readRD();
           e.text = DxfReader.plainText(strings != null ? strings.readTU() : br.readTV());
-          var h = 0, v = 0;
+          h = 0;
+          v = 0;
           if (f & 0x20 == 0) br.readBS(); // generation
           if (f & 0x40 == 0) h = br.readBS();
           if (f & 0x80 == 0) v = br.readBS();
-          // aligned text is positioned by its alignment point (as in DXF)
-          e.points = [(h != 0 || v != 0) && align != null ? align : Pt(ix, iy)];
           if (elev != 0) e.elevation = elev;
         }
+        if (type == 2) {
+          var multiline = false;
+          if (ver.index >= DwgVersion.r2010.index) br.readRC(); // class version
+          if (ver.index >= DwgVersion.r2018.index) multiline = br.readRC() > 1;
+          // a multiline attribute carries an MTEXT before its tag: taken as shown
+          if (!multiline) {
+            if (strings != null) {
+              strings.readTU();
+            } else {
+              br.readTV(); // tag
+            }
+            br.readBS(); // field length
+            // invisible attributes are data, not drawing
+            if (br.readRC() & 1 != 0) return;
+          }
+        }
+        // a text needs a size to be drawn (0 means "the style's" to CAD programs)
+        if (!(e.height > 0 && e.height.isFinite)) e.height = 1;
+        // justified texts are placed from their alignment point (fitted and
+        // aligned ones run from the first point), as the DXF reader does
+        var pos = ins;
+        if ((h != 0 || v != 0) && h != 3 && h != 5) {
+          final hf = h == 1 || h == 4 ? 0.5 : (h == 2 ? 1.0 : 0.0);
+          final vf = h == 4 ? 0.5 : (v == 2 ? 0.5 : (v == 3 ? 1.0 : 0.0));
+          pos = cadTextBase(align, e.text, e.height, e.rotation, hf, vf);
+        }
+        e.points = [pos];
       case 44: // MTEXT
         final ix = br.readBD(), iy = br.readBD();
         br.readBD();
@@ -1824,14 +2000,50 @@ class DwgReader {
         br.readBD(); // rect width
         if (ver.index >= DwgVersion.r2007.index) br.readBD(); // rect height
         e.height = br.readBD();
-        br.readBS(); // attachment
+        if (!(e.height > 0 && e.height.isFinite)) e.height = 1;
+        final attachment = br.readBS().clamp(1, 9);
         br.readBS(); // drawing dir
         br.readBD();
         br.readBD(); // extents
         final raw = strings != null ? strings.readTU() : br.readTV();
         e.text = DxfReader.plainMText(raw).trim();
         e.rotation = math.atan2(ay, ax) * 180 / math.pi;
-        e.points = [Pt(ix, iy)];
+        // the attachment point (1 top left … 9 bottom right) is the insertion point
+        final col = (attachment - 1) % 3, row = (attachment - 1) ~/ 3;
+        e.points = [cadTextBase(Pt(ix, iy), e.text, e.height, e.rotation, col / 2, (2 - row) / 2)];
+      case 47: // MLINE: its reference line
+        br.readBD(); // scale
+        br.readRC(); // justification
+        br.readBD();
+        br.readBD();
+        br.readBD(); // base point
+        br.readBD();
+        br.readBD();
+        br.readBD(); // extrusion
+        final openClosed = br.readBS();
+        final lines = br.readRC();
+        final nv = br.readBS();
+        final pts = <Pt>[];
+        for (var k = 0; k < nv && k < 100000; k++) {
+          final x = br.readBD(), y = br.readBD();
+          br.readBD();
+          for (var q = 0; q < 6; q++) {
+            br.readBD(); // vertex and miter directions
+          }
+          for (var l = 0; l < lines; l++) {
+            final ns = br.readBS();
+            for (var q = 0; q < ns; q++) {
+              br.readBD();
+            }
+            final na = br.readBS();
+            for (var q = 0; q < na; q++) {
+              br.readBD();
+            }
+          }
+          pts.add(Pt(x, y));
+        }
+        e.points = pts;
+        e.closed = openClosed == 3;
       case 20: // DIMENSION_ORDINATE … DIMENSION_DIAMETER: geometry lives in an
       case 21: // anonymous *D block in world coordinates, so only the handles
       case 22: // (dimstyle, block) are needed
@@ -1941,7 +2153,8 @@ class DwgReader {
       ..cols = e.cols
       ..rows = e.rows
       ..colSpacing = e.colSpacing
-      ..rowSpacing = e.rowSpacing;
+      ..rowSpacing = e.rowSpacing
+      ..cornerZ = e.cornerZ;
     return n;
   }
 
@@ -1973,6 +2186,230 @@ class DwgReader {
     return out;
   }
 
+  // ------------------------------------------------------------ header
+
+  /// `$INSUNITS` of the header variables (R2000 and later; R13 and R14 have
+  /// none), or null when the section is missing or does not read as the
+  /// format describes it: every variable before it is read in order, and
+  /// values that a misaligned read would scramble (scales, extents, the
+  /// GUIDs and flags after it) are checked.
+  int? _insunits() {
+    final sec = _header;
+    if (sec == null || sec.length < 64 || ver.index < DwgVersion.r2000.index) return null;
+    // the section starts with its sentinel (16 bytes) and size (RL); R2007+
+    // then give the size of the data in bits (RL), and files of a
+    // maintenance release above 3 (all R2018 ones) a high part of the size
+    // before it (both layouts are tried, the expected one first)
+    final candidates = <int>[];
+    if (ver.index >= DwgVersion.r2007.index) {
+      final maint = file.length > 0x12 ? file[0x12] : 0;
+      final hiFirst = maint > 3 || ver.index >= DwgVersion.r2018.index;
+      candidates.addAll(hiFirst ? [28, 24] : [24, 28]);
+    } else {
+      candidates.add(20);
+    }
+    for (final start in candidates) {
+      try {
+        final v = _headerVariables(_BitReader(sec, start, sec.length)..codepage = _codepage);
+        if (v != null) return v;
+      } on Object catch (e) {
+        // not this layout
+        debugLog.add('header@$start: $e');
+      }
+    }
+    return null;
+  }
+
+  int? _headerVariables(_BitReader r) {
+    final v = ver.index;
+    final r2004 = DwgVersion.r2004.index, r2007 = DwgVersion.r2007.index, r2010 = DwgVersion.r2010.index, r2013 = DwgVersion.r2013.index;
+    // R2007+ keep the texts in a string stream and the handles in a stream of
+    // their own: only the data stream is read here
+    void tv() {
+      if (v < r2007) r.readTV();
+    }
+
+    void h() {
+      if (v < r2007) r.readH();
+    }
+
+    void bits(int n) {
+      for (var i = 0; i < n; i++) {
+        r.readB();
+      }
+    }
+
+    void shorts(int n) {
+      for (var i = 0; i < n; i++) {
+        r.readBS();
+      }
+    }
+
+    void doubles(int n) {
+      for (var i = 0; i < n; i++) {
+        r.readBD();
+      }
+    }
+
+    bool fine(double x, double lo, double hi) => x.isFinite && x >= lo && x <= hi;
+    if (v >= r2013) r.readBLL(); // REQUIREDVERSIONS
+    for (var i = 0; i < 4; i++) {
+      if (!r.readBD().isFinite) return null; // unit ratios
+    }
+    if (v < r2007) {
+      for (var i = 0; i < 4; i++) {
+        r.readTV(); // unit names
+      }
+    }
+    r.readBL();
+    r.readBL();
+    if (v < r2004) h(); // current viewport entity header (R13–R2000)
+    bits(2); // DIMASO DIMSHO
+    bits(7); // PLINEGEN ORTHOMODE REGENMODE FILLMODE QTEXTMODE PSLTSCALE LIMCHECK
+    if (v >= r2004) r.readB();
+    bits(4); // USRTIMER SKPOLY ANGDIR SPLFRAME
+    bits(2); // MIRRTEXT WORLDVIEW
+    bits(3); // TILEMODE PLIMCHECK VISRETAIN
+    bits(2); // DISPSILH PELLIPSE
+    r.readBS(); // PROXYGRAPHICS
+    r.readBS(); // TREEDEPTH
+    shorts(4); // LUNITS LUPREC AUNITS AUPREC
+    r.readBS(); // ATTMODE
+    r.readBS(); // PDMODE
+    if (v >= r2004) {
+      r.readBL();
+      r.readBL();
+      r.readBL();
+    }
+    shorts(5); // USERI1–5
+    shorts(14); // SPLINESEGS … TEXTQLTY
+    final ltscale = r.readBD(), textsize = r.readBD();
+    doubles(7); // TRACEWID SKETCHINC FILLETRAD THICKNESS ANGBASE PDSIZE PLINEWID
+    doubles(9); // USERR1–5 CHAMFERA–D
+    final facetres = r.readBD();
+    r.readBD(); // CMLSCALE
+    final celtscale = r.readBD();
+    if (!fine(ltscale, 0, 1e12) || !fine(textsize, 0, 1e12) || !fine(facetres, 0, 100) || !fine(celtscale, 0, 1e12)) return null;
+    tv(); // MENU
+    for (var i = 0; i < 4; i++) {
+      r.readBL(); // TDUCREATE TDUUPDATE (days, milliseconds)
+    }
+    if (v >= r2004) {
+      r.readBL();
+      r.readBL();
+      r.readBL();
+    }
+    for (var i = 0; i < 4; i++) {
+      r.readBL(); // TDINDWG TDUSRTIMER
+    }
+    _readCMC(r); // CECOLOR
+    r.readH(); // HANDSEED (always in the data stream)
+    h(); // CLAYER
+    h(); // TEXTSTYLE
+    h(); // CELTYPE
+    h(); // DIMSTYLE
+    h(); // CMLSTYLE
+    r.readBD(); // PSVPSCALE
+    doubles(9); // PINSBASE PEXTMIN PEXTMAX
+    for (var i = 0; i < 4; i++) {
+      r.readRD(); // PLIMMIN PLIMMAX
+    }
+    r.readBD(); // PELEVATION
+    doubles(9); // PUCSORG PUCSXDIR PUCSYDIR
+    h(); // PUCSNAME
+    h(); // PUCSORTHOREF
+    r.readBS(); // PUCSORTHOVIEW
+    h(); // PUCSBASE
+    doubles(18); // PUCSORGTOP … PUCSORGBACK
+    doubles(3); // INSBASE
+    final ext = [for (var i = 0; i < 6; i++) r.readBD()]; // EXTMIN EXTMAX
+    if (ext.any((x) => !x.isFinite)) return null;
+    for (var i = 0; i < 4; i++) {
+      r.readRD(); // LIMMIN LIMMAX
+    }
+    r.readBD(); // ELEVATION
+    doubles(9); // UCSORG UCSXDIR UCSYDIR
+    h(); // UCSNAME
+    h(); // UCSORTHOREF
+    r.readBS(); // UCSORTHOVIEW
+    h(); // UCSBASE
+    doubles(18); // UCSORGTOP … UCSORGBACK
+    tv(); // DIMPOST
+    tv(); // DIMAPOST
+    final dimscale = r.readBD();
+    doubles(8); // DIMASZ … DIMTM
+    if (v >= r2007) {
+      doubles(2); // DIMFXL DIMJOGANG
+      r.readBS(); // DIMTFILL
+      _readCMC(r); // DIMTFILLCLR
+    }
+    bits(6); // DIMTOL DIMLIM DIMTIH DIMTOH DIMSE1 DIMSE2
+    shorts(3); // DIMTAD DIMZIN DIMAZIN
+    if (v >= r2007) r.readBS(); // DIMARCSYM
+    final dimtxt = r.readBD();
+    doubles(7); // DIMCEN … DIMGAP
+    if (!fine(dimscale, 0, 1e12) || !fine(dimtxt, 0, 1e12)) return null;
+    r.readBD(); // DIMALTRND
+    r.readB(); // DIMALT
+    r.readBS(); // DIMALTD
+    bits(4); // DIMTOFL DIMSAH DIMTIX DIMSOXD
+    _readCMC(r); // DIMCLRD
+    _readCMC(r); // DIMCLRE
+    _readCMC(r); // DIMCLRT
+    shorts(11); // DIMADEC … DIMJUST
+    bits(2); // DIMSD1 DIMSD2
+    shorts(4); // DIMTOLJ DIMTZIN DIMALTZ DIMALTTZ
+    r.readB(); // DIMUPT
+    r.readBS(); // DIMATFIT
+    if (v >= r2007) r.readB(); // DIMFXLON
+    if (v >= r2010) {
+      r.readB(); // DIMTXTDIRECTION
+      doubles(2); // DIMALTMZF DIMMZF
+    }
+    for (var i = 0; i < 5; i++) {
+      h(); // DIMTXSTY DIMLDRBLK DIMBLK DIMBLK1 DIMBLK2
+    }
+    shorts(2); // DIMLWD DIMLWE
+    for (var i = 0; i < 9; i++) {
+      h(); // table control objects
+    }
+    if (v < r2004) h(); // VX control (R13–R2000)
+    for (var i = 0; i < 3; i++) {
+      h(); // group, mline style and named object dictionaries
+    }
+    shorts(2); // TSTACKALIGN TSTACKSIZE
+    tv(); // HYPERLINKBASE
+    tv(); // STYLESHEET
+    for (var i = 0; i < 3; i++) {
+      h(); // layout, plot settings and plot style dictionaries
+    }
+    if (v >= r2004) {
+      h(); // material dictionary
+      h(); // colour dictionary
+    }
+    if (v >= r2007) h(); // visual style dictionary
+    if (v >= r2013) h();
+    r.readBL(); // FLAGS
+    final insunits = r.readBS();
+    final cepsntype = r.readBS();
+    if (insunits > 24 || cepsntype > 3) return null;
+    if (v < r2007) {
+      if (cepsntype == 3) r.readH();
+      // the GUIDs: a header read out of step gives no such text
+      for (var i = 0; i < 2; i++) {
+        final guid = r.readTV();
+        if (guid.isNotEmpty && !RegExp(r'^\{[0-9A-Fa-f-]{36}\}$').hasMatch(guid)) return null;
+      }
+    }
+    if (v >= r2004) {
+      r.readRC(); // SORTENTS
+      final indexctl = r.readRC(), hidetext = r.readRC(), xclipframe = r.readRC(), dimassoc = r.readRC(), halogap = r.readRC();
+      final obscolor = r.readBS(), intersectioncolor = r.readBS();
+      if (indexctl > 3 || hidetext > 2 || xclipframe > 2 || dimassoc > 2 || halogap > 100 || obscolor > 257 || intersectioncolor > 257) return null;
+    }
+    return insunits;
+  }
+
   // ------------------------------------------------------------ build
 
   DwgResult _build() {
@@ -1984,10 +2421,38 @@ class DwgReader {
     final layerList = <DxfLayer>[];
     final seen = <String>{};
     for (final l in _layers.values) {
-      if (seen.add(l.name)) layerList.add(DxfLayer(l.name, color: l.color >= 1 && l.color <= 255 ? l.color : 7));
+      if (seen.add(l.name)) layerList.add(DxfLayer(l.name, color: l.color >= 1 && l.color <= 255 ? l.color : 7, visible: l.visible, rgb: l.rgb));
     }
     String layerOf(_Entity e) => _layers[e.layerHandle]?.name ?? '0';
     int colorOf(_Entity e) => e.color == 0 ? 0 : (e.color >= 1 && e.color <= 255 ? e.color : 256);
+    // vertex handles in order: the vertices of an R13–R2000 polyline are a
+    // range of them (one sort, then a binary search per polyline)
+    final vertexHandles = _vertices.keys.toList()..sort();
+    int lowerBound(int h) {
+      var lo = 0, hi = vertexHandles.length;
+      while (lo < hi) {
+        final mid = (lo + hi) >> 1;
+        if (vertexHandles[mid] < h) {
+          lo = mid + 1;
+        } else {
+          hi = mid;
+        }
+      }
+      return lo;
+    }
+
+    List<int> verticesOf(_Entity e) {
+      if (e.ownedVertices.isNotEmpty) return e.ownedVertices.where((h) => _vertices[h] != null).toList();
+      if (e.lastVertex < e.firstVertex) return const [];
+      final out = <int>[];
+      for (var i = lowerBound(e.firstVertex); i < vertexHandles.length && vertexHandles[i] <= e.lastVertex; i++) {
+        out.add(vertexHandles[i]);
+      }
+      return out;
+    }
+
+    // corners of model space surfaces (3D faces, meshes) already taken
+    final corners = <(int, int)>{};
     DxfEntity? toDxf(_Entity e) {
       final layer = layerOf(e);
       final color = colorOf(e);
@@ -2001,11 +2466,21 @@ class DwgReader {
         case 27:
           return DxfEntity(type: 'POINT', layer: layer, color: color, points: e.points, elevation: e.elevation);
         case 1:
+        case 2:
         case 44:
           return e.text.isNotEmpty ? DxfEntity(type: 'TEXT', layer: layer, color: color, points: e.points, text: e.text, height: e.height, rotation: e.rotation, elevation: e.elevation) : null;
         case 77:
         case 45:
+        case 47:
           return e.points.length >= 2 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;
+        case 28:
+          // a flat face is drawn by its outline (faces with elevations are corners, see [surface])
+          final pts = <Pt>[];
+          for (final p in e.points) {
+            if (pts.isEmpty || pts.last.distanceTo(p) > 1e-12) pts.add(p);
+          }
+          if (pts.length > 2 && pts.first.distanceTo(pts.last) < 1e-12) pts.removeLast();
+          return pts.length >= 3 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: pts, closed: true) : null;
         case 35:
           return e.points.length >= 2 ? DxfEntity(type: 'POLYLINE', layer: layer, color: color, points: e.points, closed: e.closed, elevation: e.elevation) : null;
         case 36:
@@ -2018,9 +2493,7 @@ class DwgReader {
               : null;
         case 15:
         case 16:
-          final handles = e.ownedVertices.isNotEmpty
-              ? e.ownedVertices.where((h) => _vertices[h] != null).toList()
-              : (_vertices.keys.where((h) => h >= e.firstVertex && h <= e.lastVertex).toList()..sort());
+          final handles = verticesOf(e);
           var pts = [for (final h in handles) _vertices[h]!];
           final bulges = [for (final h in handles) _vertexBulge[h] ?? 0.0];
           if (e.type == 15 && bulges.any((b) => b != 0)) pts = _tessellateBulges(pts, bulges, e.closed);
@@ -2076,12 +2549,47 @@ class DwgReader {
     final inserts = <DxfInsert>[];
     final blockEntities = <int, List<DxfEntity>>{};
     final blockInserts = <int, List<DxfInsert>>{};
+    // a surface with elevations (3D face, polyface or polygon mesh): its
+    // corners as spot heights, each place once in model space
+    Iterable<DxfEntity> surface(_Entity e, bool model) sync* {
+      final layer = layerOf(e), color = colorOf(e);
+      final List<(Pt, double)> pts;
+      if (e.type == 28) {
+        pts = [for (var k = 0; k < e.points.length && k < e.cornerZ.length; k++) (e.points[k], e.cornerZ[k])];
+      } else {
+        pts = [for (final h in verticesOf(e)) (_vertices[h]!, _vertexZ[h] ?? 0)];
+      }
+      for (final (p, z) in pts) {
+        if (!p.x.isFinite || !p.y.isFinite || !z.isFinite) continue;
+        if (model && !corners.add(((p.x * 1000).round(), (p.y * 1000).round()))) continue;
+        yield DxfEntity(type: 'POINT', layer: layer, color: color, points: [p], elevation: z);
+      }
+    }
+
+    // where each entity lives: model space, a block, or nowhere (paper space)
+    bool inModelSpace(_Entity e) => e.entmode == 2 || (e.entmode == 0 && (e.owner == _modelSpaceHandle || (_modelSpaceHandle == 0 && !_blockHeaders.contains(e.owner))));
+    final insertSpace = <int, _Block?>{}; // INSERT handle → its block (null: model space)
+    final insertInModel = <int>{};
     for (final e in _entities) {
-      // model space: entmode 2, or entmode 0 owned by *Model_Space
-      final inModel = e.entmode == 2 || (e.entmode == 0 && (e.owner == _modelSpaceHandle || (_modelSpaceHandle == 0 && !_blockHeaders.contains(e.owner))));
+      if (e.type != 7 && e.type != 8) continue;
+      if (inModelSpace(e)) {
+        insertInModel.add(e.handle);
+      } else if (e.entmode != 1) {
+        insertSpace[e.handle] = blockFor(e);
+      }
+    }
+    for (final e in _entities) {
       final isInsert = e.type == 7 || e.type == 8 || (e.type >= 20 && e.type <= 26);
+      // attributes belong to their INSERT: drawn where it is
+      final ofInsert = e.type == 2 && e.entmode == 0 && (insertInModel.contains(e.owner) || insertSpace.containsKey(e.owner));
+      // model space: entmode 2, or entmode 0 owned by *Model_Space
+      final inModel = ofInsert ? insertInModel.contains(e.owner) : inModelSpace(e);
       // hatch islands become closed polylines next to the hatch
       Iterable<DxfEntity> converted() sync* {
+        if ((e.type == 28 && e.cornerZ.any((z) => z != 0)) || e.type == 29 || e.type == 30) {
+          yield* surface(e, inModel);
+          return;
+        }
         DxfEntity world(DxfEntity x) => e.ocsMirror ? DxfReader.mirrorOcs(x) : x;
         final d = toDxf(e);
         if (d == null) return;
@@ -2099,8 +2607,8 @@ class DwgReader {
         }
         continue;
       }
-      if (e.entmode == 1) continue; // paper space
-      final b = blockFor(e);
+      if (e.entmode == 1 && !ofInsert) continue; // paper space
+      final b = ofInsert ? insertSpace[e.owner] : blockFor(e);
       if (b == null) continue;
       if (isInsert) {
         blockInserts.putIfAbsent(b.handle, () => []).add(toInsert(e));
@@ -2108,16 +2616,24 @@ class DwgReader {
         blockEntities.putIfAbsent(b.handle, () => []).addAll(converted());
       }
     }
-    final blocksByName = {for (final b in _blocks.values) b.name: DxfBlock(b.name, b.base, blockEntities[b.handle] ?? const [], blockInserts[b.handle] ?? const [])};
-    DxfReader.expandInserts(inserts, blocksByName, ents);
+    final blocksByName = {for (final b in _blocks.values) b.name: DxfBlock(b.name, b.base, blockEntities[b.handle] ?? const [], blockInserts[b.handle] ?? const [], xref: b.xref)};
+    final notes = [..._notes];
+    DxfReader.expandInserts(inserts, blocksByName, ents, warnings: notes);
+    DxfReader.flatPointElevations(ents);
     for (final d in ents) {
       counts[d.type] = (counts[d.type] ?? 0) + 1;
     }
+    if (_unsupported.isNotEmpty) notes.add('dxf_unsupported:${DxfReader.typeList(_unsupported)}');
+    // the drawing's units ($INSUNITS); without them (R13/R14, a header that
+    // does not read) metres are assumed and the user is told
+    final insunits = _insunits();
+    if (insunits == null) notes.add('dwg_units_unknown');
     debugLog.add(
       'blockHeaders=${_blockHeaders.length} blocks=${[for (final b in _blocks.values.take(12)) '${b.name}@${b.handle}:base=${b.base},first=${b.first},last=${b.last},owned=${b.owned.length},ents=${blockEntities[b.handle]?.length ?? 0}']} inserts=${[for (final i in inserts.take(8)) '${i.name}@${i.position} s=${i.scaleX},${i.scaleY} r=${i.rotation}']} nonModel=${_entities.where((e) => e.entmode != 2).map((e) => 'h${e.handle}:t${e.type}:m${e.entmode}:o${e.owner}').take(8).toList()}',
     );
     return DwgResult(
-      document: DxfDocument(entities: ents, layers: layerList),
+      document: DxfDocument(entities: ents, layers: layerList, unitScale: DxfReader.unitScaleOf(insunits ?? 0), warnings: notes),
+      insunits: insunits,
       version: ver.name,
       warnings: warnings,
       typeCounts: counts,
