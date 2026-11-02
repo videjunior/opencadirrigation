@@ -89,6 +89,15 @@ class _Canvas implements CanvasKeyTarget {
   Pt? cursorPoint;
   @override
   void feedPoint(Pt p) => calls.add('point:${p.x},${p.y}');
+
+  /// The typed texts the tool takes (an option, a step value).
+  Set<String> takes = {};
+  @override
+  bool toolInput(String text) {
+    if (!takes.contains(text)) return false;
+    calls.add('input:$text');
+    return true;
+  }
 }
 
 void main() {
@@ -134,6 +143,34 @@ void main() {
     keys.handle(const HotkeyEvent('-'));
     expect(c.camera.scale, lessThan(scale));
     expect(c.command, '');
+  });
+
+  test('the active tool reads the typed text first (an option, a step value), then points and aliases', () {
+    c.setTool(ToolId.rotate);
+    canvas.takes = {'45', 'C'};
+    for (final ch in '45'.split('')) {
+      keys.handle(HotkeyEvent(ch));
+    }
+    keys.handle(const HotkeyEvent('Enter'));
+    expect(canvas.calls, contains('input:45'));
+    expect(canvas.calls.where((x) => x.startsWith('point:')), isEmpty, reason: 'not a distance along the cursor');
+    // an option letter wins over its alias (C would start the circle)
+    c.setTool(ToolId.polyline);
+    c.command = 'C';
+    keys.runCommand();
+    expect(canvas.calls, contains('input:C'));
+    expect(c.activeTool, ToolId.polyline);
+    // what the tool does not take is a point or an alias as before
+    c.command = 'L';
+    keys.runCommand();
+    expect(c.activeTool, ToolId.line);
+    // with the selection tool nothing is offered to the tool
+    c.setTool(ToolId.select);
+    canvas.calls.clear();
+    c.command = 'C';
+    keys.runCommand();
+    expect(canvas.calls, isEmpty);
+    expect(c.activeTool, ToolId.circle);
   });
 
   test('F10 cycles the polar tracking step', () {

@@ -13,6 +13,7 @@ import '../theme.dart';
 import 'ai_mark_tool.dart';
 import 'edit_tools.dart';
 import 'insert_block_tool.dart';
+import 'typed_point.dart';
 
 /// Dialog requests raised by tools and fulfilled by the widget layer.
 abstract class ToolHost {
@@ -62,6 +63,15 @@ abstract class Tool {
 
   /// key: 'Escape', 'Enter', 'Backspace'
   void onKey(String key) {}
+
+  /// Text typed on the command line while this tool is active, read before
+  /// it is taken as a point or a command alias: an option letter or the
+  /// value of the current step (an angle, a factor, a distance). True when
+  /// the tool took it.
+  bool onInput(String text) => false;
+
+  /// The tool is being replaced by another one (see [cancel]).
+  void leave() => cancel();
   void paint(Canvas canvas, Camera cam) {}
   void cancel() {}
 
@@ -282,7 +292,7 @@ class SelectTool extends Tool {
       final a = _downRaw!, b = p;
       if (a.distanceTo(b) > c.snap.tolerancePx / c.camera.scale) {
         final bounds = Bounds(math.min(a.x, b.x), math.min(a.y, b.y), math.max(a.x, b.x), math.max(a.y, b.y));
-        final crossing = b.x < a.x; // right-to-left = crossing (AutoCAD convention)
+        final crossing = b.x < a.x; // right-to-left = crossing, as in the programs of CAD
         final ids = c.pickWindow(bounds, crossing: crossing).map((e) => e.id);
         c.select(ids, add: _shift);
       }
@@ -967,8 +977,20 @@ class RotateTool extends TransformTool {
     c.rotateSelected(points[0], a, copy: copy);
   }
 
+  /// A number typed once the base point is in turns the selection by that
+  /// many degrees counter-clockwise, with or without the reference point.
+  @override
+  bool onInput(String text) {
+    final v = parseTypedValue(text);
+    if (v == null || pts.isEmpty || c.selection.isEmpty) return false;
+    if (v.abs() > 1e-9) c.rotateSelected(pts[0], degToRad(v), copy: ctrlDown || c.toolSettings.copyOnTransform);
+    pts.clear();
+    return true;
+  }
+
   @override
   Affine? preview() {
+    if (pts.length == 1) host.setStatus(c.t('edt.typeAngle'));
     if (pts.length == 2 && cursor != null) {
       final a = _angle([pts[0], pts[1], cursor!]);
       host.setStatus('${radToDeg(a).toStringAsFixed(2)}°');
@@ -1000,8 +1022,24 @@ class ScaleTool extends TransformTool {
     c.scaleSelected(points[0], f, copy: copy);
   }
 
+  /// A number typed once the base point is in is the factor itself, with
+  /// or without the reference point.
+  @override
+  bool onInput(String text) {
+    final v = parseTypedValue(text);
+    if (v == null || pts.isEmpty || c.selection.isEmpty) return false;
+    if (v <= 0) {
+      c.notify(c.t('edt.badValue'));
+      return true;
+    }
+    if ((v - 1).abs() > 1e-9) c.scaleSelected(pts[0], v, copy: ctrlDown || c.toolSettings.copyOnTransform);
+    pts.clear();
+    return true;
+  }
+
   @override
   Affine? preview() {
+    if (pts.length == 1) host.setStatus(c.t('edt.typeFactor'));
     if (pts.length == 2 && cursor != null) {
       final f = _factor([pts[0], pts[1], cursor!]);
       host.setStatus('× ${f.toStringAsFixed(3)}');
@@ -1061,11 +1099,26 @@ class OffsetTool extends Tool {
     if (key == 'Escape') cancel();
   }
 
+  /// A number typed at any step is the distance (display unit).
+  @override
+  bool onInput(String text) {
+    final v = parseTypedValue(text);
+    if (v == null) return false;
+    if (v <= 0) {
+      c.notify(c.t('edt.badValue'));
+      return true;
+    }
+    c.toolSettings.offsetDistance = c.units.lengthToSi(v);
+    c.notify(c.t('edt.offsetSet', {'d': fmtLen(c.toolSettings.offsetDistance)}));
+    return true;
+  }
+
   @override
   void cancel() => _target = null;
 
   @override
   void paint(Canvas canvas, Camera cam) {
+    if (_target == null && cursor != null) host.setStatus('${c.t('tool.offset')}: ${fmtLen(c.toolSettings.offsetDistance)} · ${c.t('edt.typeDistance')}');
     if (_target == null || cursor == null) return;
     final e = c.project.byId(_target!);
     if (e == null) return;

@@ -25,4 +25,18 @@ const _edt = <String, (String, String, String)>{
   'xy.vertices': ('Vértices', 'Vertices', 'Vértices'),
   'xy.vertex': ('Vértice {n}', 'Vertex {n}', 'Vértice {n}'),
   'xy.more': ('… mais {n} vértices: arraste as alças na prancheta', '… {n} more vertices: drag the grips on the drawing', '… {n} vértices más: arrastre los pinzamientos en el dibujo'),
+  // ---- values typed at the step of a tool (CAD-09)
+  'edt.typeAngle': (
+    'Digite o ângulo em graus e Enter, ou clique no ponto de referência',
+    'Type the angle in degrees and press Enter, or click the reference point',
+    'Escriba el ángulo en grados y pulse Intro, o haga clic en el punto de referencia',
+  ),
+  'edt.typeFactor': (
+    'Digite o fator de escala e Enter, ou clique no ponto de referência',
+    'Type the scale factor and press Enter, or click the reference point',
+    'Escriba el factor de escala y pulse Intro, o haga clic en el punto de referencia',
+  ),
+  'edt.typeDistance': ('digite outra distância e Enter', 'type another distance and press Enter', 'escriba otra distancia y pulse Intro'),
+  'edt.offsetSet': ('Distância do offset: {d}', 'Offset distance: {d}', 'Distancia del desfase: {d}'),
+  'edt.badValue': ('Valor inválido: digite um número maior que zero', 'Invalid value: type a number greater than zero', 'Valor no válido: escriba un número mayor que cero'),
 };

@@ -25,4 +25,9 @@ abstract class CanvasKeyTarget {
 
   /// Gives the active tool [p] as if it had been clicked there.
   void feedPoint(Pt p);
+
+  /// Gives the active tool the text typed on the command line before it is
+  /// read as a point or an alias (an option, the value of its step); true
+  /// when the tool took it.
+  bool toolInput(String text);
 }

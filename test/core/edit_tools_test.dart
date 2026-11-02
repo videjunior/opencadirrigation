@@ -9,6 +9,7 @@ import 'package:opencadirrigation/app/tools/tools.dart';
 import 'package:opencadirrigation/app/tools/typed_point.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
+import 'package:opencadirrigation/core/units.dart';
 
 /// Records what the tools ask of the widget layer.
 class _Host implements ToolHost {
@@ -45,6 +46,70 @@ void main() {
 
   /// A point typed on the command line while [t] waits for one.
   Pt typed(Tool t, String text) => parseTypedPoint(text, reference: t.referencePoint, cursor: t.cursor)!;
+
+  group('values typed at the step of a tool (CAD-09)', () {
+    test('rotate: a number after the base point is the angle, with or without the reference point', () {
+      c.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(10, 0)));
+      c.select(['l']);
+      final ro = tool(ToolId.rotate);
+      expect(ro.onInput('45'), isFalse, reason: 'no base point yet: not the angle');
+      ro.onDown(Pt.zero);
+      paint(ro);
+      expect(host.status, c.t('edt.typeAngle'));
+      expect(ro.onInput('@3,4'), isFalse, reason: 'a point is a point');
+      expect(ro.onInput('90'), isTrue);
+      var l = c.project.byId('l') as LineEntity;
+      expect(l.b.distanceTo(const Pt(0, 10)), lessThan(1e-9));
+      // base point, reference point, then the angle typed: 45°, not the
+      // direction of a point 45 m along the cursor
+      ro.onDown(Pt.zero);
+      ro.onDown(const Pt(0, 10));
+      ro.onMove(const Pt(-3, 0));
+      expect(ro.onInput('45'), isTrue);
+      l = c.project.byId('l') as LineEntity;
+      expect(l.b.x, closeTo(-10 * 0.7071067811865476, 1e-9));
+      expect(l.b.y, closeTo(10 * 0.7071067811865476, 1e-9));
+      expect(ro.referencePoint, isNull, reason: 'the rotation is done');
+    });
+
+    test('scale: a number after the base point is the factor itself', () {
+      c.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(10, 0)));
+      c.select(['l']);
+      final sc = tool(ToolId.scale);
+      sc.onDown(Pt.zero);
+      paint(sc);
+      expect(host.status, c.t('edt.typeFactor'));
+      expect(sc.onInput('2'), isTrue);
+      expect((c.project.byId('l') as LineEntity).b, const Pt(20, 0));
+      // with a reference point 4 m away, 3 is still a factor of 3 (not 3/4)
+      sc.onDown(Pt.zero);
+      sc.onDown(const Pt(4, 0));
+      expect(sc.onInput('3'), isTrue);
+      expect((c.project.byId('l') as LineEntity).b.x, closeTo(60, 1e-9));
+      final n = c.historyEntries.length;
+      sc.onDown(Pt.zero);
+      expect(sc.onInput('-1'), isTrue, reason: 'taken, refused with a message');
+      expect(c.lastMessage, c.t('edt.badValue'));
+      expect(c.historyEntries.length, n);
+    });
+
+    test('offset: a number at any step is the distance, in the display unit', () {
+      c.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(10, 0)));
+      final off = tool(ToolId.offset);
+      off.onMove(const Pt(5, 5));
+      paint(off);
+      expect(host.status, contains(c.t('edt.typeDistance')));
+      expect(off.onInput('3'), isTrue);
+      expect(c.toolSettings.offsetDistance, 3);
+      off.onDown(const Pt(5, 0.1));
+      off.onDown(const Pt(5, 5));
+      final copy = c.project.entities.whereType<LineEntity>().last;
+      expect(copy.a.y, closeTo(3, 1e-9));
+      c.project.params.units = c.project.params.units.copyWith(length: LengthUnit.ft);
+      expect(off.onInput('10'), isTrue);
+      expect(c.toolSettings.offsetDistance, closeTo(3.048, 1e-12));
+    });
+  });
 
   group('move and copy by base point (CAD-06)', () {
     test('aliases: M is Move, CO/CP/COPY the Copy tool; the clipboard keeps Ctrl+C and COPYCLIP', () {

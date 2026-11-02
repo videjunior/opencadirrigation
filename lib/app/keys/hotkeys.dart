@@ -328,7 +328,7 @@ class Hotkeys {
           return true;
         }
         if (c.activeTool == ToolId.select) {
-          // AutoCAD-style: Enter repeats the last drawing command
+          // as in the programs of CAD: Enter repeats the last drawing command
           c.setTool(c.lastTool);
           return true;
         }
@@ -413,7 +413,7 @@ class Hotkeys {
     }
     final ch = e.char;
     if (ch != null) {
-      // letters and digits build an AutoCAD-style command
+      // letters and digits build a command, as in the programs of CAD
       if (e.repeat) return true;
       setCommand(c.command + ch.toUpperCase());
       _scheduleAutoRun();
@@ -447,6 +447,13 @@ class Hotkeys {
     final cmd = c.command;
     setCommand('');
     final k = c.keyTarget;
+    // the active tool reads the text first: an option of its own (C closes
+    // a polyline, U takes back its last point) or the value of its step
+    // (the angle of Rotate, the factor of Scale, the distance of Offset)
+    if (_wantsPoint && k != null && cmd.isNotEmpty && k.toolInput(cmd)) {
+      c.track('toolInput');
+      return;
+    }
     if (_wantsPoint && k != null && !commandAliases.containsKey(cmd)) {
       final p = parseTypedPoint(cmd, reference: k.referencePoint, cursor: k.cursorPoint, toSi: c.units.lengthToSi);
       if (p != null) {

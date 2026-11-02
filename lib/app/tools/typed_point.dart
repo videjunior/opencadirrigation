@@ -4,7 +4,7 @@ import '../../core/model/geometry.dart';
 import '../../core/units.dart';
 
 /// A point typed on the command line while a tool waits for one, as in
-/// AutoCAD: `x,y` absolute, `@dx,dy` relative to the previous point,
+/// the programs of CAD: `x,y` absolute, `@dx,dy` relative to the previous point,
 /// `@d<a` polar (distance and angle in degrees, counter-clockwise from +x)
 /// and a bare distance `d` along the direction from the previous point to
 /// the cursor ("direct distance entry"). Values are in the display unit
@@ -45,3 +45,13 @@ Pt? parseTypedPoint(String text, {Pt? reference, Pt? cursor, double Function(dou
 }
 
 double _same(double v) => v;
+
+/// A bare number typed on the command line (an angle, a factor, a
+/// distance), in the display unit; null for a point (`x,y`, `@…`, `d<a`)
+/// or anything that is not a number.
+double? parseTypedValue(String text) {
+  final s = text.trim().replaceAll(' ', '');
+  if (s.isEmpty || RegExp(r'[,;<@]').hasMatch(s)) return null;
+  final v = parseNumber(s);
+  return v != null && v.isFinite ? v : null;
+}

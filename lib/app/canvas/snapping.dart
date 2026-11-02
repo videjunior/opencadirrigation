@@ -262,7 +262,7 @@ String snapKindKey(String kind) => kind == '45°' ? 'snapk.lock45' : 'snapk.$kin
 const polarCaptureDeg = 3.0;
 
 /// Projects [raw] onto the direction from [reference] nearest to a multiple
-/// of [stepDeg] degrees (Photoshop-style Shift constraint, AutoCAD ortho).
+/// of [stepDeg] degrees (the Shift constraint of drawing programs, the ortho mode of CAD programs).
 Pt lockAngle(Pt raw, Pt reference, double stepDeg) {
   final d = raw - reference;
   final len = math.sqrt(d.x * d.x + d.y * d.y);

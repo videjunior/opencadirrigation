@@ -371,6 +371,14 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     _redraw();
   }
 
+  // 1.6.0 EDT: options and step values typed on the command line
+  @override
+  bool toolInput(String text) {
+    final taken = _tool.onInput(text);
+    if (taken) _redraw();
+    return taken;
+  }
+
   @override
   void setSpaceHeld(bool held) => _spaceDown = held;
 

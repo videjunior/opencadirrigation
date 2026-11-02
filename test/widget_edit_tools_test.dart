@@ -79,6 +79,23 @@ void main() {
     expect((c.project.byId(p.id) as PipeEntity).points.last, const Pt(20, 20), reason: 'one undo step');
   });
 
+  testWidgets('a number typed after the base and reference points of Rotate is the angle (CAD-09)', (tester) async {
+    final c = await pumpShell(tester);
+    final dynamic shell = tester.state(find.byType(AppShell));
+    final l = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(10, 0));
+    c.addEntity(l);
+    c.select([l.id]);
+    c.setTool(ToolId.rotate);
+    await settle(tester, 1);
+    c.keyTarget!.feedPoint(Pt.zero);
+    c.keyTarget!.feedPoint(const Pt(10, 0));
+    shell.typeCommand('45');
+    await settle(tester, 1);
+    final b = (c.project.byId(l.id) as LineEntity).b;
+    expect(b.x, closeTo(7.0710678, 1e-6));
+    expect(b.y, closeTo(7.0710678, 1e-6));
+  });
+
   testWidgets('Edit → Move and Copy start the tools (CAD-06)', (tester) async {
     final c = await pumpShell(tester);
     await tester.tap(find.text('Edit'));
