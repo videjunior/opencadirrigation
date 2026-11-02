@@ -7,6 +7,7 @@ import '../../core/design/pivot.dart' show PivotKind;
 
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
+import '../../core/model/split.dart' show CutEdge;
 import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
@@ -1238,11 +1239,13 @@ class TrimTool extends Tool {
   @override
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
     final hit = c.pick(p, c.snap.tolerancePx / c.camera.scale);
-    if (hit == null || hit.linearPoints == null || hit.isClosedShape) return;
+    if (hit == null) return;
     if (shift) {
-      c.toggleSelect(hit.id);
+      // any outline is an edge: a closed polyline, an area, a circle
+      if (CutEdge.supports(hit)) c.toggleSelect(hit.id);
       return;
     }
+    if (hit.linearPoints == null || hit.isClosedShape) return;
     if (!c.trimAt(hit.id, p)) c.notify(c.t('msg.noIntersection'));
   }
 }
@@ -1260,11 +1263,13 @@ class ExtendTool extends Tool {
   @override
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
     final hit = c.pick(p, c.snap.tolerancePx / c.camera.scale);
-    if (hit == null || hit.linearPoints == null || hit.isClosedShape) return;
+    if (hit == null) return;
     if (shift) {
-      c.toggleSelect(hit.id);
+      // any outline is an edge: a closed polyline, an area, a circle
+      if (CutEdge.supports(hit)) c.toggleSelect(hit.id);
       return;
     }
+    if (hit.linearPoints == null || hit.isClosedShape) return;
     if (!c.extendAt(hit.id, p)) c.notify(c.t('msg.noIntersection'));
   }
 }

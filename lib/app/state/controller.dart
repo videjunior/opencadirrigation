@@ -1138,20 +1138,20 @@ class ProjectController extends ChangeNotifier {
     return out;
   }
 
-  /// Linear entities used as cutting/boundary edges: the selection when it
-  /// holds any (other than [exclude]), else every visible linear entity.
+  /// Entities used as cutting/boundary edges (lines, polylines with their
+  /// closing side, circles, arcs, splines along their curve): the selection
+  /// when it holds any (other than [exclude]), else every visible one.
   List<Entity> _boundaries(String exclude) {
-    final sel = project.entities.where((e) => selection.contains(e.id) && e.id != exclude && e.linearPoints != null).toList();
+    final sel = project.entities.where((e) => selection.contains(e.id) && e.id != exclude && CutEdge.supports(e)).toList();
     if (sel.isNotEmpty) return sel;
-    return visibleEntities().where((e) => e.id != exclude && e.linearPoints != null).toList();
+    return visibleEntities().where((e) => e.id != exclude && CutEdge.supports(e)).toList();
   }
 
   List<double> _cutStations(Entity target, List<Entity> boundaries) {
     final pts = target.linearPoints!;
     final cuts = <double>[];
     for (final b in boundaries) {
-      final bp = b.linearPoints!;
-      for (final p in polylineIntersections(pts, bp, closedA: target.isClosedShape, closedB: b.isClosedShape)) {
+      for (final p in CutEdge.of(b)?.crossings(pts, closedPts: target.isClosedShape) ?? const <Pt>[]) {
         cuts.add(polylineStationOf(pts, p).$1);
       }
     }
@@ -1181,9 +1181,9 @@ class ProjectController extends ChangeNotifier {
   bool extendAt(String id, Pt world) {
     final e = project.byId(id);
     if (e == null || _locked(e) || e.linearPoints == null || e.isClosedShape) return false;
-    final b = _boundaries(id).map((x) => x.linearPoints!).toList();
+    final edges = [for (final x in _boundaries(id)) ?CutEdge.of(x)];
     final copy = e.clone();
-    if (!extendLinearEntity(copy, world, b)) return false;
+    if (!extendLinearEntity(copy, world, const [], edges: edges)) return false;
     mutate(() {
       final idx = project.entities.indexOf(e);
       project.entities[idx] = copy;
