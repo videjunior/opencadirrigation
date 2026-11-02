@@ -652,11 +652,11 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
                 '-',
                 wireName(d.commonWireId),
                 d.maxOpen,
-                '${fmt(d.peakCurrentA, 2)} A',
-                d.overloaded ? labels.warning('elec_stations') : '',
+                '${fmt(d.peakCurrentA, 2)} A / ${fmt(d.totalLimitA, 2)} A',
+                [if (d.overloaded) labels.warning('elec_stations'), if (d.overcurrent) labels.warning('elec_overcurrent')].join('; '),
               ],
           ],
-          warn: [for (final run in el.runs) !run.ok, for (final d in el.controllers) d.overloaded],
+          warn: [for (final run in el.runs) !run.ok, for (final d in el.controllers) d.overloaded || d.overcurrent],
         ),
       );
     }

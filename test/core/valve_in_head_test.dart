@@ -64,7 +64,9 @@ Project _golf({
     p.systemFlows.add(SystemFlow(id: 'f${k + 1}', name: 'F${k + 1}', valveIds: {...flows[k]}, startHour: k == 0 ? 6 : 10, durationHours: k == 0 ? 2 : 1));
   }
   if (wired) {
-    p.entities.add(ControllerEntity(id: 'k', position: const Pt(-5, 0), stations: 6));
+    // a satellite rated for the four solenoids of a station (1.6 A an
+    // output, 2.5 A in all): a 24 V AC output of the usual 0.56 A is not
+    p.entities.add(ControllerEntity(id: 'k', position: const Pt(-5, 0), stations: 6, stationMaxA: 1.6, totalMaxA: 2.5));
     p.entities.add(WireEntity(id: 'w', points: [const Pt(-5, 0), Pt(wireTo, 0)]));
   }
   return p;
@@ -209,6 +211,19 @@ void main() {
     final pr = p.params;
     // A and B open together: four solenoids opening, four holding
     expect(duty.peakCurrentA, closeTo(4 * pr.solenoidInrushA + 4 * pr.solenoidHoldingA, 1e-12));
+    expect(duty.largestStationA, closeTo(4 * pr.solenoidInrushA, 1e-12));
+    expect(duty.overcurrent, isFalse);
+    // the same stations on a controller of the usual 24 V AC outputs: every
+    // station draws 1.48 A from a 0.56 A output, the flow 2.36 A from 1.5 A
+    final usual = _golf(wired: true);
+    final k = usual.entities.whereType<ControllerEntity>().single
+      ..stationMaxA = 0
+      ..totalMaxA = 0;
+    final elUsual = Designer(usual).designAll().electrical!;
+    expect(elUsual.warnings, containsAll(['elec_station_current:h1:h2:h3:h4', 'elec_station_current:h5:h6:h7:h8', 'elec_station_current:h9:h10:h11:h12', 'elec_overcurrent:${k.id}']));
+    expect(elUsual.controllers.single.overcurrent, isTrue);
+    expect(elUsual.controllers.single.stationLimitA, typicalStationCurrentA);
+    expect(runDesignCheck(usual).issues.where((i) => i.code == 'elec_overcurrent').single.entityIds, [k.id]);
     // voltage at the last head of A while it opens with B holding: on every
     // stretch the station conductor carries the heads of A beyond it, the
     // common one those of A opening and those of B holding
