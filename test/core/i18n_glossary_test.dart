@@ -91,10 +91,7 @@ void main() {
       final texts = switch (lang) {
         'pt' => {for (final k in I18n.keys) k: pt(k), for (final (i, s) in _tutorialTexts(1).indexed) 'tutorial #$i': s},
         'es' => {for (final k in I18n.keys) k: es(k), for (final (i, s) in _tutorialTexts(3).indexed) 'tutorial #$i': s},
-        _ => {
-          ...(_packs[lang]!['strings'] as Map).cast<String, String>(),
-          for (final t in (_packs[lang]!['tutorial'] as Map).entries) 'tutorial: ${t.key}': t.value as String,
-        },
+        _ => {...(_packs[lang]!['strings'] as Map).cast<String, String>(), for (final t in (_packs[lang]!['tutorial'] as Map).entries) 'tutorial: ${t.key}': t.value as String},
       };
       for (final concept in (terms[lang] as List).cast<Map<String, dynamic>>()) {
         for (final word in (concept['avoid'] as List).cast<String>()) {
