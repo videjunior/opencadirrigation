@@ -18,7 +18,6 @@ import '../../../core/design/wetted_bulb.dart';
 import '../../../core/io/climate_online.dart' show ClimateSource;
 import '../../../core/model/entities.dart';
 import '../../../core/model/site_climate.dart';
-import '../../../core/units.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
@@ -192,7 +191,7 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
           if (site == null)
             Text(t('msg.climate_no_site'), style: TextStyle(fontSize: 12, color: Cad.warning))
           else ...[
-            Text('${t('clim.site')}: ${fmt(site.$1, 4)}°, ${fmt(site.$2, 4)}°', style: const TextStyle(fontSize: 12)),
+            Text('${t('clim.site')}: ${fmtUi(site.$1, 4)}°, ${fmtUi(site.$2, 4)}°', style: const TextStyle(fontSize: 12)),
             _row([
               SpecDropdown<ClimateSource>(
                 label: t('clim.source'),
@@ -249,7 +248,7 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
               key: const Key('clim_fill_areas'),
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: Text(t('clim.fillAreas', {'e': fmt(peak, 2), 'n': '${typedEto.length}'}), style: const TextStyle(fontSize: 12)),
+              title: Text(t('clim.fillAreas', {'e': fmtUi(peak, 2), 'n': '${typedEto.length}'}), style: const TextStyle(fontSize: 12)),
               value: fillAreas,
               onChanged: (v) => setState(() => fillAreas = v),
             ),
@@ -305,7 +304,7 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
                       opt('wind', station.wind, m),
                       opt('sun', station.sunshine, m),
                       opt('rain', station.rain, m),
-                      _cell(results[m] == null ? '-' : fmt(results[m]!.etoMmDay, 2), bold: true),
+                      _cell(results[m] == null ? '-' : fmtUi(results[m]!.etoMmDay, 2), bold: true),
                       _cell(results[m] == null ? '' : results[m]!.estimated.map((e) => t('clim.est.${e.name}')).join(', '), color: Cad.fg54),
                     ],
                   ),
@@ -431,7 +430,7 @@ class _OptFieldState extends State<_OptField> {
   late final TextEditingController _c = TextEditingController(text: _fmt(widget.value));
   final _focus = FocusNode();
 
-  String _fmt(double? v) => v == null ? '' : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1));
+  String _fmt(double? v) => v == null ? '' : fmtUi(v, v == v.roundToDouble() ? 0 : 1);
 
   @override
   void initState() {
@@ -453,7 +452,7 @@ class _OptFieldState extends State<_OptField> {
       if (widget.value != null) widget.onChanged(null);
       return;
     }
-    final v = parseNumber(s);
+    final v = parseUiNumber(s);
     if (v == null) {
       _c.text = _fmt(widget.value);
       return;
@@ -592,10 +591,10 @@ Future<void> showSolarPumpingDialog(BuildContext context, ProjectController c) {
                               _cell(t('mon.${m.month}'), bold: m.month == res.criticalMonth),
                               num(volume, m.month - 1),
                               num(radiation, m.month - 1),
-                              _cell(fmt(m.peakSunHours, 2)),
-                              _cell(fmt(m.requiredKWp, 2), color: m.month == res.criticalMonth ? Cad.warning : null),
-                              _cell(fmt(m.pumpedM3Day, 1), color: m.pumpedM3Day + 1e-6 < m.demandM3Day ? Cad.warning : null),
-                              _cell(fmt(m.pumpingHours, 1)),
+                              _cell(fmtUi(m.peakSunHours, 2)),
+                              _cell(fmtUi(m.requiredKWp, 2), color: m.month == res.criticalMonth ? Cad.warning : null),
+                              _cell(fmtUi(m.pumpedM3Day, 1), color: m.pumpedM3Day + 1e-6 < m.demandM3Day ? Cad.warning : null),
+                              _cell(fmtUi(m.pumpingHours, 1)),
                             ],
                           ),
                       ],
@@ -603,9 +602,9 @@ Future<void> showSolarPumpingDialog(BuildContext context, ProjectController c) {
                   ),
                   SectionTitle(t('solar.result')),
                   KV(t('solar.critical'), res.criticalMonth == null ? '-' : t('mon.${res.criticalMonth}')),
-                  KV(t('solar.array'), '${res.modules} × ${fmt(modulePower, 0)} Wp = ${fmt(res.arrayKWp, 2)} kWp'),
-                  KV(t('solar.annual'), '${fmt(res.annualPumpedM3, 0)} m³ (${fmt(res.annualDemandM3, 0)} m³)'),
-                  KV(t('solar.grid'), '${fmt(res.annualGridKWh, 0)} kWh · $cur ${fmt(res.annualGridCost, 2)}'),
+                  KV(t('solar.array'), '${res.modules} × ${fmtUi(modulePower, 0)} Wp = ${fmtUi(res.arrayKWp, 2)} kWp'),
+                  KV(t('solar.annual'), '${fmtUi(res.annualPumpedM3, 0)} m³ (${fmtUi(res.annualDemandM3, 0)} m³)'),
+                  KV(t('solar.grid'), '${fmtUi(res.annualGridKWh, 0)} kWh · $cur ${fmtUi(res.annualGridCost, 2)}'),
                   if (res.warnings.isNotEmpty)
                     Text(
                       res.warnings.map((w) => c.t.warning(w, entityName: (m) => t('mon.$m'))).toSet().join('\n'),
@@ -658,10 +657,10 @@ Future<void> showWettedBulbDialog(BuildContext context, ProjectController c) {
                     NumField(label: t('bulb.lateralSpacing'), value: lateralSpacing, onChanged: (v) => setState(() => lateralSpacing = v <= 0 ? lateralSpacing : v)),
                   ]),
                   SectionTitle(t('dens.results')),
-                  KV(t('bulb.width'), '${fmt(b.widthM, 2)} m'),
-                  KV(t('bulb.depth'), '${fmt(b.depthM, 2)} m'),
-                  KV(t('bulb.wetted'), '${fmt(pw, 0)} %'),
-                  KV('Ksat', '${fmt(s.ksatMmH, 1)} mm/h'),
+                  KV(t('bulb.width'), '${fmtUi(b.widthM, 2)} m'),
+                  KV(t('bulb.depth'), '${fmtUi(b.depthM, 2)} m'),
+                  KV(t('bulb.wetted'), '${fmtUi(pw, 0)} %'),
+                  KV('Ksat', '${fmtUi(s.ksatMmH, 1)} mm/h'),
                   if (b.extrapolated) Text(t('bulb.extrapolated'), style: TextStyle(fontSize: 11, color: Cad.warning)),
                 ],
               ),
@@ -728,18 +727,18 @@ Future<void> showWaterBudgetDialog(BuildContext context, ProjectController c) {
                           TableRow(
                             children: [
                               _cell(areas[i].name.isNotEmpty ? areas[i].name : areas[i].id),
-                              _cell(fmt(zones[i].area, 0)),
-                              _cell(fmt(zones[i].plantFactor, 2)),
-                              _cell(fmt(zones[i].irrigationEfficiency, 2)),
-                              _cell(fmt(zones[i].etaf, 2)),
+                              _cell(fmtUi(zones[i].area, 0)),
+                              _cell(fmtUi(zones[i].plantFactor, 2)),
+                              _cell(fmtUi(zones[i].irrigationEfficiency, 2)),
+                              _cell(fmtUi(zones[i].etaf, 2)),
                             ],
                           ),
                       ],
                     ),
                     SectionTitle(t('dens.results')),
-                    KV('MAWA', '${fmt(wb.mawa / 1000, 1)} m³/${t('wb.year')}'),
-                    KV('ETWU', '${fmt(wb.etwu / 1000, 1)} m³/${t('wb.year')}', color: wb.etwu <= wb.mawa ? Cad.ok : Cad.warning),
-                    KV(t('wb.averageEtaf'), '${fmt(wb.averageEtaf, 2)} (≤ ${fmt(wb.etafLimit, 2)})', color: wb.averageEtaf <= wb.etafLimit + 1e-9 ? Cad.ok : Cad.warning),
+                    KV('MAWA', '${fmtUi(wb.mawa / 1000, 1)} m³/${t('wb.year')}'),
+                    KV('ETWU', '${fmtUi(wb.etwu / 1000, 1)} m³/${t('wb.year')}', color: wb.etwu <= wb.mawa ? Cad.ok : Cad.warning),
+                    KV(t('wb.averageEtaf'), '${fmtUi(wb.averageEtaf, 2)} (≤ ${fmtUi(wb.etafLimit, 2)})', color: wb.averageEtaf <= wb.etafLimit + 1e-9 ? Cad.ok : Cad.warning),
                     // cycle and soak: the daily depth split so the water soaks in
                     // instead of running off (the soil and slope of each area)
                     SectionTitle(t('wb.cycleSoak')),
@@ -764,11 +763,11 @@ Future<void> showWaterBudgetDialog(BuildContext context, ProjectController c) {
                                 return TableRow(
                                   children: [
                                     _cell(a.name.isNotEmpty ? a.name : a.id),
-                                    _cell(fmt(r.precipitationMmH, 1)),
-                                    _cell(fmt(r.grossDepthMm, 1)),
+                                    _cell(fmtUi(r.precipitationMmH, 1)),
+                                    _cell(fmtUi(r.grossDepthMm, 1)),
                                     _cell('${cs.cycles}'),
-                                    _cell(fmt(cs.runMinutesPerCycle, 0)),
-                                    _cell(cs.cycles > 1 ? fmt(cs.soakMinutes, 0) : '-'),
+                                    _cell(fmtUi(cs.runMinutesPerCycle, 0)),
+                                    _cell(cs.cycles > 1 ? fmtUi(cs.soakMinutes, 0) : '-'),
                                   ],
                                 );
                               }(),

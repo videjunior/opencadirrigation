@@ -52,6 +52,13 @@ import 'layers_panel.dart';
 import 'properties_panel.dart';
 import 'reports_panel.dart';
 import 'tool_palette.dart';
+import '../project_name.dart'; // 1.6.0 UI
+import '../ui_prefs.dart'; // 1.6.0 UI
+import 'dialogs/command_palette.dart' show PhoneMenuSearch; // 1.6.0 UI
+import 'dialogs/feedback_dialog.dart'; // 1.6.0 UI
+import 'dialogs/help_dialog.dart'; // 1.6.0 UI
+import 'dialogs/whats_new_dialog.dart'; // 1.6.0 UI
+import 'interface_menu.dart' show uiScalePercent; // 1.6.0 UI
 
 /// Screens narrower than this use the phone layout.
 const mobileBreakpoint = phoneMaxWidth;
@@ -145,6 +152,7 @@ class _MobileShellState extends State<MobileShell> {
                   Expanded(child: _tab(t('props.title'), index == 0, () => setState(() => index = 0))),
                   Expanded(child: _tab(t('view.layers'), index == 1, () => setState(() => index = 1))),
                   Expanded(child: _tab(t('hist.title'), index == 2, () => setState(() => index = 2))),
+                  HelpButton(c: c, topic: const ['properties', 'layers', 'history'][index.clamp(0, 2)], panel: true), // 1.6.0 UI
                   IconButton(tooltip: t('close'), icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
                 ],
               ),
@@ -234,7 +242,7 @@ class _MobileShellState extends State<MobileShell> {
     Widget tabRow(int i) {
       final tab = ws.tabs[i];
       final on = i == ws.active;
-      final name = tab.project.meta.name.trim().isEmpty ? t('name.newProject') : tab.project.meta.name;
+      final name = projectTitle(t, tab.project.meta.name);
       return ListTile(
         key: Key('mobile_tab_$i'),
         dense: true,
@@ -271,7 +279,9 @@ class _MobileShellState extends State<MobileShell> {
 
     _sheet(
       key: const Key('mobile_menu_sheet'),
-      ListView(
+      // 1.6.0 UI: the search at the top finds any row of the menu (the palette of the phone)
+      PhoneMenuSearch(
+        c: c,
         padding: const EdgeInsets.only(bottom: 24),
         children: [
           const SizedBox(height: 6),
@@ -292,7 +302,7 @@ class _MobileShellState extends State<MobileShell> {
           ),
           section(t('file.recent'), Icons.history, [
             if (recent.isEmpty) row(t('file.noRecent'), null),
-            for (final p in recent.take(8)) row(p.name.isEmpty ? p.uid : p.name, () => openStoredAction(ws, p), icon: Icons.description_outlined, key: Key('mobile_recent_${p.uid}')),
+            for (final p in recent.take(8)) row(storedProjectLabel(t, p), () => openStoredAction(ws, p), icon: Icons.description_outlined, key: Key('mobile_recent_${p.uid}')),
           ], key: const Key('mobile_menu_recent')),
           section(t('menu.file'), Icons.folder_outlined, [
             row(t('file.new'), () => confirmNew(context, c), icon: Icons.note_add_outlined),
@@ -421,6 +431,20 @@ class _MobileShellState extends State<MobileShell> {
               }),
             row(t('tools.units'), () => showUnitsDialog(context, c), icon: Icons.straighten),
             row(t('lbl.menu'), () => showLabelRulesDialog(context, c), icon: Icons.label_important_outline),
+            // 1.6.0 UI: the size and the contrast of the interface
+            row(
+              '${t('uiv.larger')} (${uiScalePercent(nextUiScale(up: true))})',
+              uiScale.value >= uiScales.last - 1e-6 ? null : () => setUiScale(nextUiScale(up: true)),
+              icon: Icons.zoom_in,
+              key: const Key('mobile_menu_ui_larger'),
+            ),
+            row(
+              '${t('uiv.smaller')} (${uiScalePercent(nextUiScale(up: false))})',
+              uiScale.value <= uiScales.first + 1e-6 ? null : () => setUiScale(nextUiScale(up: false)),
+              icon: Icons.zoom_out,
+              key: const Key('mobile_menu_ui_smaller'),
+            ),
+            check(t('uiv.contrast'), uiHighContrast.value, setHighContrast),
           ]),
           section(t('menu.design'), Icons.play_circle_outline, [
             row(t('design.params'), () => showDesignParamsDialog(context, c), icon: Icons.tune),
@@ -494,6 +518,10 @@ class _MobileShellState extends State<MobileShell> {
             row(t('help.welcome'), widget.onShowWelcome, icon: Icons.waving_hand_outlined),
             row(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
             row(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('mobile_menu_messages')),
+            // 1.6.0 UI: the manual, what is new and the report to the project
+            row(t('help.manual'), () => showHelpDialog(context, c), icon: Icons.menu_book_outlined, key: const Key('mobile_menu_manual')),
+            row(t('new.menu'), () => showWhatsNewDialog(context, c), icon: Icons.new_releases_outlined, key: const Key('mobile_menu_whats_new')),
+            row(t('fb.menu'), () => showFeedbackDialog(context, c), icon: Icons.bug_report_outlined, key: const Key('mobile_menu_feedback')),
             row(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
           ]),
         ],
@@ -525,7 +553,7 @@ class _MobileShellState extends State<MobileShell> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      c.project.meta.name.isEmpty ? t('app.title') : c.project.meta.name,
+                      projectTitle(t, c.project.meta.name),
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),

@@ -7,6 +7,9 @@ import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/more_dialogs.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/feedback_dialog.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/help_dialog.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/whats_new_dialog.dart';
 import 'package:opencadirrigation/app/widgets/message_log.dart';
 import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
 import 'package:opencadirrigation/app/state/workspace.dart';
@@ -62,6 +65,10 @@ void main() {
     'versions': showVersionsDialog,
     'messages': showMessageLogDialog,
     'about': showAboutDialogApp,
+    // 1.6.0 UI: the manual, the news and the report
+    'help': showHelpDialog,
+    'whatsNew': showWhatsNewDialog,
+    'feedback': showFeedbackDialog,
   };
 
   for (final (name, size, lang, scale) in const [

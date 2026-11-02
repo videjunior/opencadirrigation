@@ -16,6 +16,7 @@ import '../../core/io/sheet_canvas.dart';
 import '../state/controller.dart';
 import '../widgets/dialogs/export_dialogs.dart';
 import 'file_io.dart';
+import '../project_name.dart'; // 1.6.0 UI
 
 /// Largest raster the export makes (pixels); a sheet that would be larger
 /// at the chosen resolution gets a lower one (an A0 sheet at 300 dpi would
@@ -288,8 +289,7 @@ Future<void> exportSheetPngAction(BuildContext context, ProjectController c) asy
   }
   final o = await showPlotDialog(context, c, raster: true);
   if (o == null) return;
-  final name = c.project.meta.name.trim();
-  final file = '${(name.isEmpty ? c.t('name.newProject') : name).replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_')}.png';
+  final file = '${projectFileStem(c.t, c.project.meta.name)}.png';
   try {
     final png = await sheetPng(c, o);
     await saveBinaryFile(file, png, mime: 'image/png');

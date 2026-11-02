@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../state/workspace.dart';
 import '../theme.dart';
+import '../project_name.dart'; // 1.6.0 UI
 
 /// Row of open project tabs under the menu bar.
 class ProjectTabBar extends StatelessWidget {
@@ -48,7 +49,7 @@ class ProjectTabBar extends StatelessWidget {
   Widget _tab(BuildContext context, int i, dynamic t) {
     final c = ws.tabs[i];
     final active = i == ws.active;
-    final name = c.project.meta.name.trim().isEmpty ? c.t('name.newProject') : c.project.meta.name;
+    final name = projectTitle(c.t, c.project.meta.name);
     return InkWell(
       key: Key('tab_$i'),
       onTap: () => ws.select(i),

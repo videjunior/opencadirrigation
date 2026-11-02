@@ -149,11 +149,11 @@ Future<void> _show(
 /// The analyses work on a design: a short dialog saying what is missing.
 Future<void> _missing(BuildContext context, ProjectController c, String title, [String key = 'msg.noResults']) => _show(context, c, title, 420, (ctx, _) => _column([_hint(c.t(key))]));
 
-String _q(Units u, double v) => fmt(u.flowFromSi(v), u.flow == FlowUnit.lph ? 0 : 2);
-String _pr(Units u, double h) => fmt(u.pressureFromHead(h), 1);
-String _len(Units u, double m) => fmt(u.lengthFromSi(m), 1);
-String _pct(double x, [int decimals = 0]) => '${fmt(x * 100, decimals)} %';
-String _minutes(double s) => fmt(s / 60, 1);
+String _q(Units u, double v) => fmtUi(u.flowFromSi(v), u.flow == FlowUnit.lph ? 0 : 2);
+String _pr(Units u, double h) => fmtUi(u.pressureFromHead(h), 1);
+String _len(Units u, double m) => fmtUi(u.lengthFromSi(m), 1);
+String _pct(double x, [int decimals = 0]) => '${fmtUi(x * 100, decimals)} %';
+String _minutes(double s) => fmtUi(s / 60, 1);
 
 /// Hours and minutes of a duration in seconds ("2:05").
 String _hm(double s) {
@@ -290,7 +290,7 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
                 width: 70,
                 child: NumField(key: ValueKey('od_hours_${h.id}'), label: '', value: hours[h.id] ?? 0, decimals: 1, onChanged: (v) => change(() => hours[h.id] = v.clamp(0, 24).toDouble())),
               ),
-              _cell(fmt(cl.probabilities[h.id] ?? 0, 3)),
+              _cell(fmtUi(cl.probabilities[h.id] ?? 0, 3)),
               _cell(_pr(u, h.minPressure)),
               if (ch != null) ...[_cell(_pct(rel[h.id]?.reliability ?? 1, 1), color: (rel[h.id]?.reliability ?? 1) < 1 ? Cad.warning : Cad.ok), _cell(_pr(u, rel[h.id]?.maxDeficit ?? 0))],
             ],
@@ -306,14 +306,14 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
               _cell('${row.hydrants}'),
               _cell(_q(u, row.flow)),
               _cell(_q(u, row.designFlow)),
-              _cell(row.ratio.isFinite ? fmt(row.ratio, 2) : '∞', color: row.ratio > 1 + 1e-9 ? Cad.warning : null),
-              _cell(fmt(u.velocityFromSi(row.velocity), 2), color: row.velocity > vmax + 1e-9 ? Cad.warning : null),
+              _cell(row.ratio.isFinite ? fmtUi(row.ratio, 2) : '∞', color: row.ratio > 1 + 1e-9 ? Cad.warning : null),
+              _cell(fmtUi(u.velocityFromSi(row.velocity), 2), color: row.velocity > vmax + 1e-9 ? Cad.warning : null),
               _cell(t('od.rule.${row.rule.name}')),
             ],
         ],
       ),
       SectionTitle(t('dens.results')),
-      KV('U(Pq)', fmt(cl.u, 3)),
+      KV('U(Pq)', fmtUi(cl.u, 3)),
       KV(t('od.sourceFlow'), '${_q(u, source)} ${u.flowLabel} (${t('od.designPeak')} ${_q(u, peak)})', color: source > peak + 1e-9 ? Cad.warning : null),
       for (final e in need.entries)
         KV(t('od.supplyNeed', {'s': name(e.key)}), '${_pr(u, e.value)} / ${_pr(u, pressure[e.key] ?? 0)} ${u.pressureLabel}', color: e.value > (pressure[e.key] ?? 0) + 0.01 ? Cad.warning : Cad.ok),
@@ -342,7 +342,7 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
       if (ch != null) ...[
         KV(t('od.configs'), '${ch.configurations}'),
         KV(t('od.failShare'), _pct(1 - ch.satisfiedShare, 1), color: ch.satisfiedShare < 1 ? Cad.warning : Cad.ok),
-        KV(t('od.meanOpen'), '${fmt(ch.meanOpen, 1)} · ${_q(u, ch.meanDischarge)} ${u.flowLabel}'),
+        KV(t('od.meanOpen'), '${fmtUi(ch.meanOpen, 1)} · ${_q(u, ch.meanDischarge)} ${u.flowLabel}'),
         KV(t('od.unsatisfied'), '${_pct(ch.meanUnsatisfied, 1)} · ${_pct(ch.p90Unsatisfied, 1)} · ${_pct(ch.maxUnsatisfied, 1)}'),
         _codes(c, ch.codes, name),
       ],
@@ -441,7 +441,7 @@ Future<void> showTariffDialog(BuildContext context, ProjectController c) {
 
       final disc = f.irrigationDiscount;
       final s = schedule;
-      String money(double v) => '$cur ${fmt(v, 2)}';
+      String money(double v) => '$cur ${fmtUi(v, 2)}';
       return _column([
         _hint(t('tar.hint')),
         SectionTitle(t('tar.prices')),
@@ -523,7 +523,7 @@ Future<void> showTariffDialog(BuildContext context, ProjectController c) {
               onChanged: (v) => change(() => f.region = BrazilDiscountRegion.values.byName(v!)),
             ),
           ]),
-          _note(t('tar.brazilRule', {'pct': fmt((disc?.fraction ?? 0) * 100, 0)}), color: Cad.fg60),
+          _note(t('tar.brazilRule', {'pct': fmtUi((disc?.fraction ?? 0) * 100, 0)}), color: Cad.fg60),
         ],
         if (f.discount == 'custom') ...[
           _row([
@@ -554,17 +554,17 @@ Future<void> showTariffDialog(BuildContext context, ProjectController c) {
                   _cell(names[j.id] ?? j.id),
                   _cell(clockOf(j.startMinute)),
                   _cell(clockOf(j.endMinute)),
-                  _cell(fmt(j.minutes / 60, 2)),
-                  _cell(fmt(j.powerKw, 2)),
-                  _cell(fmt(j.energyKwh, 1)),
-                  _cell(fmt(j.windowMinutes / 60, 2)),
-                  _cell(fmt(j.cost, 2)),
-                  _cell(fmt(j.costWithoutDiscount, 2)),
+                  _cell(fmtUi(j.minutes / 60, 2)),
+                  _cell(fmtUi(j.powerKw, 2)),
+                  _cell(fmtUi(j.energyKwh, 1)),
+                  _cell(fmtUi(j.windowMinutes / 60, 2)),
+                  _cell(fmtUi(j.cost, 2)),
+                  _cell(fmtUi(j.costWithoutDiscount, 2)),
                 ],
             ],
           ),
           KV(t('tar.blocks'), s.blocks.isEmpty ? '—' : s.blocks.map((b) => '${clockOf(b.startMinute)}–${clockOf(b.endMinute)}').join(', ')),
-          KV(t('tar.energy'), '${money(s.energyCost)} · ${fmt(s.energyKwh, 1)} kWh'),
+          KV(t('tar.energy'), '${money(s.energyCost)} · ${fmtUi(s.energyKwh, 1)} kWh'),
           if (disc != null) KV(t('tar.withoutDiscount'), '${money(s.energyCostWithoutDiscount)} (${t('tar.saving')} ${money(s.discountSaving)})'),
           if (s.demandCost > 0) KV(t('tar.demandCost'), money(s.demandCost)),
           KV(t('tar.daily'), money(s.dailyCost), color: Cad.ok),
@@ -670,7 +670,7 @@ Future<void> showEnergyGroupingDialog(BuildContext context, ProjectController c)
           NumField(label: t('eg.efficiency'), value: efficiency, onChanged: (v) => change(() => efficiency = v.clamp(0.05, 1).toDouble())),
           _switch(t('eg.exact'), exact, (v) => change(() => exact = v)),
         ]),
-        _note(t('eg.currentFlows', {'n': '${p.systemFlows.length}', 'h': fmt(currentHours, 1)}), color: Cad.fg54),
+        _note(t('eg.currentFlows', {'n': '${p.systemFlows.length}', 'h': fmtUi(currentHours, 1)}), color: Cad.fg54),
         _runButton(const Key('eg_compute'), t('eg.compute'), Icons.bolt, busy, compute),
         if (g != null) ...[
           SectionTitle(t('eg.proposal')),
@@ -683,17 +683,17 @@ Future<void> showEnergyGroupingDialog(BuildContext context, ProjectController c)
                   _cell(g.groups[i].zoneIds.map(name).join(' + ')),
                   _cell(_q(u, g.groups[i].flow)),
                   _cell(_pr(u, g.groups[i].head)),
-                  _cell(fmt(g.groups[i].hours, 1)),
-                  _cell(fmt(g.groups[i].energyKwh, 1)),
-                  _cell(fmt(g.groups[i].energyKwh * price, 2)),
+                  _cell(fmtUi(g.groups[i].hours, 1)),
+                  _cell(fmtUi(g.groups[i].energyKwh, 1)),
+                  _cell(fmtUi(g.groups[i].energyKwh * price, 2)),
                 ],
             ],
           ),
-          KV(t('eg.currentEnergy'), '${fmt(currentKwh, 1)} kWh · $cur ${fmt(currentKwh * price, 2)}'),
-          KV(t('eg.baselineEnergy'), '${fmt(g.baselineEnergyKwh, 1)} kWh'),
-          KV(t('eg.proposedEnergy'), '${fmt(g.energyKwh, 1)} kWh · $cur ${fmt(g.energyKwh * price, 2)} · ${fmt(g.hours, 1)} h', color: Cad.ok),
+          KV(t('eg.currentEnergy'), '${fmtUi(currentKwh, 1)} kWh · $cur ${fmtUi(currentKwh * price, 2)}'),
+          KV(t('eg.baselineEnergy'), '${fmtUi(g.baselineEnergyKwh, 1)} kWh'),
+          KV(t('eg.proposedEnergy'), '${fmtUi(g.energyKwh, 1)} kWh · $cur ${fmtUi(g.energyKwh * price, 2)} · ${fmtUi(g.hours, 1)} h', color: Cad.ok),
           if (currentKwh > 0)
-            KV(t('eg.saving'), '${fmt(currentKwh - g.energyKwh, 1)} kWh (${_pct((currentKwh - g.energyKwh) / currentKwh, 1)})', color: g.energyKwh <= currentKwh + 1e-9 ? Cad.ok : Cad.warning),
+            KV(t('eg.saving'), '${fmtUi(currentKwh - g.energyKwh, 1)} kWh (${_pct((currentKwh - g.energyKwh) / currentKwh, 1)})', color: g.energyKwh <= currentKwh + 1e-9 ? Cad.ok : Cad.warning),
           _codes(c, g.codes, name),
         ],
       ]);
@@ -839,8 +839,8 @@ Future<void> showWireRoutingDialog(BuildContext context, ProjectController c) {
             KV(t('tw.length'), '${_len(u, path.routeM)} / ${_len(u, path.cableM)} ${u.lengthLabel}'),
             KV(t('tw.decoders'), _decoders(tw, path.controllerId)),
             KV(t('elec.maxOpen'), '${path.maxOpen}'),
-            KV(t('elec.peak'), '${fmt(path.peakCurrentA, 2)} A'),
-            KV(t('tw.worst'), '${fmt(path.worstVolts, 1)} V', color: path.worstVolts >= minVolts - 1e-9 ? Cad.ok : Cad.warning),
+            KV(t('elec.peak'), '${fmtUi(path.peakCurrentA, 2)} A'),
+            KV(t('tw.worst'), '${fmtUi(path.worstVolts, 1)} V', color: path.worstVolts >= minVolts - 1e-9 ? Cad.ok : Cad.warning),
             KV(t('tw.maxDistance'), path.maxDistanceM.isFinite ? '${_len(u, path.maxDistanceM)} ${u.lengthLabel}' : '∞'),
             if (path.sizes.isNotEmpty)
               _table(
@@ -849,7 +849,7 @@ Future<void> showWireRoutingDialog(BuildContext context, ProjectController c) {
                   for (final s in path.sizes)
                     [
                       _cell(wire(s.wireId), bold: s.wireId == path.wireId),
-                      _cell(fmt(s.worstVolts, 1), color: s.ok ? Cad.ok : Cad.warning),
+                      _cell(fmtUi(s.worstVolts, 1), color: s.ok ? Cad.ok : Cad.warning),
                       _cell(s.maxDistanceM.isFinite ? _len(u, s.maxDistanceM) : '∞'),
                     ],
                 ],
@@ -866,7 +866,7 @@ Future<void> showWireRoutingDialog(BuildContext context, ProjectController c) {
                     _cell(s.decoderId),
                     _cell(_len(u, s.routeM)),
                     _cell(_len(u, s.solenoidCableM)),
-                    _cell(fmt(s.volts, 1), color: s.ok ? null : Cad.warning),
+                    _cell(fmtUi(s.volts, 1), color: s.ok ? null : Cad.warning),
                   ],
               ],
             ),
@@ -1220,10 +1220,10 @@ Future<void> showCalibrationDialog(BuildContext context, ProjectController c) {
         _runButton(const Key('cal_run'), t('cal.run'), Icons.tune, busy, run),
         if (res != null) ...[
           SectionTitle(t('dens.results')),
-          if (res.scales.isNotEmpty) KV(t('cal.factor'), '${fmt(res.scales.single, 3)}${res.standardErrors.single.isFinite ? ' ± ${fmt(res.standardErrors.single, 3)}' : ''}'),
-          KV(t('cal.scale'), '${fmt(params.hazenCScale, 3)} → ${fmt(scale, 3)}', color: canApply() ? Cad.ok : null),
-          if (params.hazenCOffset != 0) KV(t('cal.offset'), '${fmt(params.hazenCOffset, 1)} → ${fmt(offset, 1)}'),
-          KV(t('cal.objective'), '${fmt(res.initialObjective, 2)} → ${fmt(res.objective, 2)}'),
+          if (res.scales.isNotEmpty) KV(t('cal.factor'), '${fmtUi(res.scales.single, 3)}${res.standardErrors.single.isFinite ? ' ± ${fmtUi(res.standardErrors.single, 3)}' : ''}'),
+          KV(t('cal.scale'), '${fmtUi(params.hazenCScale, 3)} → ${fmtUi(scale, 3)}', color: canApply() ? Cad.ok : null),
+          if (params.hazenCOffset != 0) KV(t('cal.offset'), '${fmtUi(params.hazenCOffset, 1)} → ${fmtUi(offset, 1)}'),
+          KV(t('cal.objective'), '${fmtUi(res.initialObjective, 2)} → ${fmtUi(res.objective, 2)}'),
           if (res.residuals.any((x) => x.kind == MeasurementKind.pressure)) KV(t('cal.rmse'), '${_pr(u, res.rmsePressure)} ${u.pressureLabel}'),
           if (res.residuals.isNotEmpty)
             _table(
@@ -1262,7 +1262,7 @@ Future<void> showCalibrationDialog(BuildContext context, ProjectController c) {
                   ..hazenCOffset = o;
                 c.commitSettingsEdit(edit);
                 Navigator.pop(ctx);
-                c.notify(t('cal.applied', {'s': fmt(s, 3)}));
+                c.notify(t('cal.applied', {'s': fmtUi(s, 3)}));
               },
         child: Text(t('cal.apply')),
       ),
@@ -1386,7 +1386,7 @@ Future<void> showFertigationDialog(BuildContext context, ProjectController c) {
           ],
         ),
         KV(t('fert.flow'), '${_q(u, s.flow)} ${u.flowLabel}'),
-        KV(t('fert.volume'), '${fmt(u.volumeFromM3(s.mainline.volume), 2)} ${u.volumeLabel}'),
+        KV(t('fert.volume'), '${fmtUi(u.volumeFromM3(s.mainline.volume), 2)} ${u.volumeLabel}'),
         KV(t('fert.farthest'), '${_minutes(s.farthestArrival)} / ${_minutes(s.fullArrival)} min'),
         _codes(c, s.mainline.codes, name),
         SectionTitle(t('fert.plan')),
@@ -1409,11 +1409,11 @@ Future<void> showFertigationDialog(BuildContext context, ProjectController c) {
           KV(t('fert.preTime'), _hm(plan.preWetting)),
           KV(t('fert.injectionTime'), _hm(plan.injection), color: plan.injection > 0 ? Cad.ok : Cad.warning),
           KV(t('fert.flushTime'), _hm(plan.flushing)),
-          KV(t('fert.product'), '${fmt(plan.productKg, 1)} kg'),
-          KV(t('fert.stockVolume'), '${fmt(plan.stockLitres, 1)} L'),
-          KV(t('fert.rate'), '${fmt(plan.injectionRate * 3.6e6, 1)} L/h'),
-          KV(t('fert.concentration'), '${fmt(plan.concentration * 1000, 0)} g/m³ (ppm)'),
-          if (plan.dilution > 0) KV(t('fert.dilution'), '1 : ${fmt(plan.dilution, 0)}'),
+          KV(t('fert.product'), '${fmtUi(plan.productKg, 1)} kg'),
+          KV(t('fert.stockVolume'), '${fmtUi(plan.stockLitres, 1)} L'),
+          KV(t('fert.rate'), '${fmtUi(plan.injectionRate * 3.6e6, 1)} L/h'),
+          KV(t('fert.concentration'), '${fmtUi(plan.concentration * 1000, 0)} g/m³ (ppm)'),
+          if (plan.dilution > 0) KV(t('fert.dilution'), '1 : ${fmtUi(plan.dilution, 0)}'),
           _codes(c, plan.codes, name),
         ],
         SectionTitle(t('fert.venturi')),
@@ -1449,7 +1449,7 @@ Future<void> showFertigationDialog(BuildContext context, ProjectController c) {
         if (venturi != null) ...[
           KV(t('fert.vRequired'), '${_pr(u, venturi.requiredDifferential)} ${u.pressureLabel}'),
           KV(t('fert.vAvailable'), '${_pr(u, venturi.availableDifferential)} ${u.pressureLabel}'),
-          if (venturi.suctionCapacity.isFinite) KV(t('fert.vSuction'), '${fmt(venturi.suctionCapacity * 3.6e6, 1)} L/h'),
+          if (venturi.suctionCapacity.isFinite) KV(t('fert.vSuction'), '${fmtUi(venturi.suctionCapacity * 3.6e6, 1)} L/h'),
           KV(t('fert.vResult'), t(venturi.ok ? 'fert.vOk' : 'fert.vFail'), color: venturi.ok ? Cad.ok : Cad.warning),
           _codes(c, venturi.codes, name),
         ],

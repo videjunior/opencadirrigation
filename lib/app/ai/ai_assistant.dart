@@ -54,6 +54,7 @@ import 'ai_safety.dart';
 import 'ai_transport.dart';
 import 'ops_cad_view.dart' show AiTab, AiWorkspaceHost;
 import 'view_snapshot.dart';
+import '../project_name.dart'; // 1.6.0 UI
 
 /// A file the user attached to the next message (a data sheet, a photo, a
 /// picture of the view, a drawing to import).
@@ -2680,7 +2681,7 @@ class _Host implements AgentHost, AiWorkspaceHost, AiNotesOrigin {
   List<AiTab> get tabs {
     final w = ws;
     if (w == null) return const [];
-    return [for (var i = 0; i < w.tabs.length; i++) AiTab(name: w.tabs[i].project.meta.name, dirty: w.tabs[i].dirty, active: i == w.active, own: identical(w.tabs[i], c))];
+    return [for (var i = 0; i < w.tabs.length; i++) AiTab(name: projectTitle(w.tabs[i].t, w.tabs[i].project.meta.name), dirty: w.tabs[i].dirty, active: i == w.active, own: identical(w.tabs[i], c))];
   }
 
   @override

@@ -13,9 +13,11 @@ import '../../../core/model/entities.dart' show PumpEntity;
 import '../../../core/units.dart';
 import '../../io/sheet_basemap.dart';
 import '../../state/controller.dart';
-import '../fields.dart' show ScrollBody, ScrollSizedBox, signedNumberKeyboard;
+import '../fields.dart' show ScrollBody, ScrollSizedBox, parseUiNumber, signedNumberKeyboard;
 import 'terrain_dialogs.dart' show dialogWidth;
 import '../../theme.dart';
+import '../sheet_preview.dart'; // 1.6.0 UI
+import 'help_dialog.dart' show helpTitle; // 1.6.0 UI
 
 /// Lets the user define (or edit/remove) the project's georeference.
 /// Returns true when a georeference is set on exit.
@@ -67,7 +69,7 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
           ),
         );
         return AlertDialog(
-          title: Text(t('geo.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('geo.title'), style: const TextStyle(fontSize: 15), topic: 'terrain'), // 1.6.0 UI
           content: ScrollSizedBox(
             width: 460,
             child: Column(
@@ -232,7 +234,7 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
         );
         SheetOptions result() {
           // "500", or the whole ratio typed ("1:500", "1/500")
-          final s = parseNumber(scaleCtl.text.split(RegExp(r'[:/]')).last);
+          final s = parseUiNumber(scaleCtl.text.split(RegExp(r'[:/]')).last.trim()); // 1.6.0 UI (UI-08): "1.500" is 1500 in Portuguese
           var res = fit || s == null || s <= 0 ? o.copyWith(clearScale: true) : o.copyWith(scale: s);
           if (raster) return res.copyWith(split: SheetSplit.single, windows: const [], details: const [], charts: false, includeReports: false, clearProfilePath: true, themes: const []);
           res = res.copyWith(
@@ -366,6 +368,9 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
             ],
             onChanged: (v) => setState(() => o = o.copyWith(grid: v)),
           ),
+          // 1.6.0 UI: the sheet (and each sheet of a set) as it will be exported
+          const Divider(height: 14),
+          SheetPreview(c: c, options: result, listen: scaleCtl),
         ];
         final sheets = raster
             ? const <Widget>[]
@@ -455,7 +460,7 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                 ),
               ];
         return AlertDialog(
-          title: Text(raster ? t('plot.pngTitle') : t('plot.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, raster ? t('plot.pngTitle') : t('plot.title'), style: const TextStyle(fontSize: 15), topic: 'sheets'), // 1.6.0 UI
           content: SizedBox(
             width: dialogWidth(ctx, raster ? 440 : (wide ? 760 : 440)),
             child: ScrollBody(

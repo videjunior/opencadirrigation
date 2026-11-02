@@ -23,6 +23,7 @@ import 'widgets/dialogs/export_dialogs.dart';
 import 'widgets/dialogs/import_progress_dialog.dart';
 import 'widgets/dialogs/pdf_import_dialog.dart';
 import 'theme.dart';
+import 'project_name.dart'; // 1.6.0 UI
 
 const pointScopeZone = HydraulicScope.zone;
 const pointScopeMain = HydraulicScope.mainline;
@@ -143,10 +144,7 @@ Future<void> pasteAction(Workspace ws) async {
   c.notify(n == 0 ? c.t('msg.clipboardEmpty') : '${c.t('msg.pasted', {'n': '$n'})}${onMap ? ' ${c.t('msg.pastedOnMap')}' : ''}');
 }
 
-String _safeName(ProjectController c) {
-  final n = c.project.meta.name.trim();
-  return (n.isEmpty ? c.t('name.newProject') : n).replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_');
-}
+String _safeName(ProjectController c) => projectFileStem(c.t, c.project.meta.name);
 
 /// File → Save (Ctrl+S): the project file, written again into the same
 /// file where the browser allows it (file system access, Chromium on the
@@ -183,7 +181,7 @@ Future<void> saveCopyAction(BuildContext context, ProjectController c) async {
   if (!c.editAllowed()) return;
   c.renewUid();
   final suffix = c.t('file.copyName', {'n': ''}).trim();
-  if (!c.project.meta.name.trimRight().endsWith(suffix)) c.project.meta.name = c.t('file.copyName', {'n': c.project.meta.name});
+  if (!c.project.meta.name.trimRight().endsWith(suffix)) c.project.meta.name = c.t('file.copyName', {'n': projectTitle(c.t, c.project.meta.name)});
   c.fileHandle = null;
   if (!context.mounted) return;
   await saveProjectAction(context, c, saveAs: true);

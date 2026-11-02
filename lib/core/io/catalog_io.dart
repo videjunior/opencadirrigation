@@ -416,8 +416,15 @@ class CatalogIo {
     final idC = col(['id']), nameC = col(['name', 'nome', 'nombre', 'description', 'descricao']);
     final costC = col(['cost', 'custo', 'costo', 'price', 'preco']);
     final supC = col(['supplier', 'fornecedor', 'proveedor']), codeC = col(['code', 'codigo', 'sku']), finameC = col(['finame', 'bndes']);
+    // 1.6.0 UI (UI-08): the decimal separator of the table, from the plain numbers that tell ("12,5", "1.234,5"):
+    // in a table of decimal commas a "1.250" is then 1250, not 1.25
+    final decimal = guessDecimalSeparator([
+      for (final l in lines.skip(1).take(1000))
+        for (final cell in splitLine(l, sep))
+          if (RegExp(r'^[^A-Za-z]*\d[^A-Za-z]*$').hasMatch(cell)) cell,
+    ]);
     // "1.234,56", "R$ 12,50", "35 m"…
-    double num(List<String> r, int i, [double def = 0]) => i >= 0 && i < r.length ? (parseNumber(r[i], lenient: true) ?? def) : def;
+    double num(List<String> r, int i, [double def = 0]) => i >= 0 && i < r.length ? (parseNumber(r[i], lenient: true, decimalSeparator: decimal) ?? def) : def;
     String str(List<String> r, int i, [String def = '']) => i >= 0 && i < r.length ? r[i] : def;
     // emitters along a tape: a spacing of 0 is a missing value
     double tapeSpacing(double v) => v > 0 ? v : 0.5;

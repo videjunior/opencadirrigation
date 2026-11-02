@@ -15,6 +15,7 @@ import '../io/pdf_font_loader.dart';
 import '../state/controller.dart';
 import '../widgets/advice_panel.dart' show adviceTitle;
 import 'agent_tools.dart';
+import '../project_name.dart'; // 1.6.0 UI
 import 'view_snapshot.dart' show CanvasSnapshots, HttpTileFetcher, TileFetcher, fetchBaseMap;
 
 // ---------------------------------------------------------------- helpers
@@ -1213,7 +1214,7 @@ List<AgentTool> designTools(AgentToolbox b) {
       handler: (i) async {
         final f = ToolArgs(i).str('format', required: true)!;
         if (b.p.entities.isEmpty) throw ToolInputError('The drawing is empty.');
-        final name = (b.p.meta.name.trim().isEmpty ? t('name.newProject') : b.p.meta.name.trim()).replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_');
+        final name = projectFileStem(t, b.p.meta.name);
         if (f == 'project') {
           await saveTextFile('$name.oci.json', c.saveJson());
           return ToolOutput('Saved $name.oci.json.');

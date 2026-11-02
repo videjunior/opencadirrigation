@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/actions.dart';
+import 'package:opencadirrigation/app/ai/ai_assistant.dart';
 import 'package:opencadirrigation/app/canvas/cad_canvas.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
@@ -168,6 +169,9 @@ void main() {
       await settle(tester);
       if (find.textContaining('Feito!').evaluate().isEmpty) failed.add(step.id);
       shell.tutorial.skip();
+      // (1.6.0 UI: the demos of the help and AI chapters leave the palette or the AI panel open)
+      Navigator.of(tester.element(find.byType(AppShell))).popUntil((r) => r.isFirst);
+      AiAssistant.panelOpen.value = false;
       (shell.ws as Workspace).closeTab(1);
       await settle(tester);
     }

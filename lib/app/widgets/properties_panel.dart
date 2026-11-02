@@ -14,7 +14,6 @@ import '../../core/design/valve_in_head.dart';
 import '../../core/model/catalog.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
-import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/tools.dart';
@@ -142,7 +141,7 @@ class PropertiesPanel extends StatelessWidget {
       case SpraylineEntity s:
         final outlet = cat.outlet(s.outletSpecId);
         items.addAll([
-          KV(t('props.length'), '${fmt(u.lengthFromSi(s.length))} ${u.lengthLabel}'),
+          KV(t('props.length'), '${fmtUi(u.lengthFromSi(s.length))} ${u.lengthLabel}'),
           KV(t('props.outlets'), '${s.outletCount}'),
           SpecDropdown<PipeSpec>(
             missingLabel: _missing((id) => cat.pipe(id)?.name),
@@ -197,7 +196,7 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case TapeEntity tp:
         items.addAll([
-          KV(t('props.length'), '${fmt(u.lengthFromSi(tp.length))} ${u.lengthLabel}'),
+          KV(t('props.length'), '${fmtUi(u.lengthFromSi(tp.length))} ${u.lengthLabel}'),
           SpecDropdown<TapeSpec>(
             missingLabel: _missing((id) => cat.tape(id)?.name),
             label: t('props.tape'),
@@ -248,8 +247,8 @@ class PropertiesPanel extends StatelessWidget {
               onChanged: (v) => set(() => o.nozzleId = v),
             ),
           NumField(label: pLabel('props.head'), value: u.pressureFromHead(o.headM), onChanged: (v) => set(() => o.headM = u.pressureToHead(v))),
-          if (nozzle != null) KV(t('result.flow'), '${fmt(u.flowFromSi(nozzle.curve.flow(o.headM)))} ${u.flowLabel}'),
-          if (nozzle != null && nozzle.curve.radiusA > 0) KV(t('props.radius'), '${fmt(u.lengthFromSi(nozzle.curve.radius(o.headM)))} ${u.lengthLabel}'),
+          if (nozzle != null) KV(t('result.flow'), '${fmtUi(u.flowFromSi(nozzle.curve.flow(o.headM)))} ${u.flowLabel}'),
+          if (nozzle != null && nozzle.curve.radiusA > 0) KV(t('props.radius'), '${fmtUi(u.lengthFromSi(nozzle.curve.radius(o.headM)))} ${u.lengthLabel}'),
           NumField(label: t('props.arc'), value: o.arcDeg, onChanged: (v) => set(() => o.arcDeg = v)),
           NumField(label: t('props.orientation'), value: o.orientationDeg, onChanged: (v) => set(() => o.orientationDeg = v, inv: false)),
           len('ui.riser', o.riserHeight, (v) => o.riserHeight = v),
@@ -308,7 +307,7 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (x) => set(() => p.pumpSpecId = x),
           ),
           NumField(label: t('props.speed'), value: p.speedRatio, onChanged: (x) => set(() => p.speedRatio = x)),
-          if (spec != null) KV('H0', '${fmt(u.pressureFromHead(spec.curve.withSpeed(p.speedRatio).shutoffHead), 1)} ${u.pressureLabel}'),
+          if (spec != null) KV('H0', '${fmtUi(u.pressureFromHead(spec.curve.withSpeed(p.speedRatio).shutoffHead), 1)} ${u.pressureLabel}'),
           NumField(label: pLabel('props.vfdTarget'), value: u.pressureFromHead(p.targetPressureM), onChanged: (x) => set(() => p.targetPressureM = x <= 0 ? 0 : u.pressureToHead(x))),
           if (p.targetPressureM > 0) NumField(label: t('props.vfdMin'), value: p.minSpeedRatio, onChanged: (x) => set(() => p.minSpeedRatio = x.clamp(0.1, 1.0).toDouble())),
           // 1.6.0 MOT: the motor and its drive in the energy
@@ -350,7 +349,7 @@ class PropertiesPanel extends StatelessWidget {
         String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmtUi(bl.elevationOf(i), 2) : '-'].join('; ');
         items.addAll([
           KV(t('props.vertices'), '${bl.points.length}'),
-          KV(t('props.length'), '${fmt(u.lengthFromSi(bl.length))} ${u.lengthLabel}'),
+          KV(t('props.length'), '${fmtUi(u.lengthFromSi(bl.length))} ${u.lengthLabel}'),
           TextFieldRow(
             key: const Key('breakline_zs'),
             label: t('props.breaklineZs'),
@@ -365,7 +364,7 @@ class PropertiesPanel extends StatelessWidget {
       case ContourEntity ct:
         items.addAll([
           NumField(label: t('props.elevation'), value: ct.elevation, onChanged: (x) => set(() => ct.elevation = x)),
-          KV(t('props.length'), '${fmt(u.lengthFromSi(ct.length))} ${u.lengthLabel}'),
+          KV(t('props.length'), '${fmtUi(u.lengthFromSi(ct.length))} ${u.lengthLabel}'),
           if (ct.derived) ...[
             Text(t('props.derived'), style: TextStyle(fontSize: 11, color: Cad.attention)),
             TextButton.icon(
@@ -404,7 +403,7 @@ class PropertiesPanel extends StatelessWidget {
             labelOf: (x) => x.name,
             idOf: (x) => x.id,
             allowNull: true,
-            nullLabel: '${fmt(pv.pipeInnerMm, 0)} mm, C ${fmt(pv.hazenC, 0)}',
+            nullLabel: '${fmtUi(pv.pipeInnerMm, 0)} mm, C ${fmtUi(pv.hazenC, 0)}',
             onChanged: (v) => set(() => pv.pipeSpecId = v),
           ),
           if (pv.pipeSpecId == null)
@@ -451,18 +450,18 @@ class PropertiesPanel extends StatelessWidget {
           ),
           KV(
             t('props.pivotArea'),
-            '${fmt(u.areaFromSi(pv.kind == PivotKind.pivot ? 3.141592653589793 * pv.irrigatedRadius * pv.irrigatedRadius * pv.sectorDeg / 360 : pv.irrigatedRadius * pv.travelM), 2)} ${u.areaLabel}',
+            '${fmtUi(u.areaFromSi(pv.kind == PivotKind.pivot ? 3.141592653589793 * pv.irrigatedRadius * pv.irrigatedRadius * pv.sectorDeg / 360 : pv.irrigatedRadius * pv.travelM), 2)} ${u.areaLabel}',
           ),
           if (r != null) ...[
             SectionTitle(t('props.pivotResults')),
-            KV(t('rep.flow'), '${fmt(u.flowFromSi(r.flow), 1)} ${u.flowLabel}'),
-            KV(t('props.pivotInlet'), '${fmt(u.pressureFromHead(r.inletHead), 1)} ${u.pressureLabel}'),
-            if (r.availableHead != null) KV(t('rep.pAvail'), '${fmt(u.pressureFromHead(r.availableHead!), 1)} ${u.pressureLabel}'),
-            KV(t('rep.hf'), '${fmt(u.pressureFromHead(r.frictionLoss), 2)} ${u.pressureLabel}'),
-            KV(t('rep.rise'), '${fmt(u.lengthFromSi(r.elevationRise), 2)} ${u.lengthLabel}'),
+            KV(t('rep.flow'), '${fmtUi(u.flowFromSi(r.flow), 1)} ${u.flowLabel}'),
+            KV(t('props.pivotInlet'), '${fmtUi(u.pressureFromHead(r.inletHead), 1)} ${u.pressureLabel}'),
+            if (r.availableHead != null) KV(t('rep.pAvail'), '${fmtUi(u.pressureFromHead(r.availableHead!), 1)} ${u.pressureLabel}'),
+            KV(t('rep.hf'), '${fmtUi(u.pressureFromHead(r.frictionLoss), 2)} ${u.pressureLabel}'),
+            KV(t('rep.rise'), '${fmtUi(u.lengthFromSi(r.elevationRise), 2)} ${u.lengthLabel}'),
             KV(t('rep.towers'), '${r.towerCount}'),
             KV(t('rep.sprinklers'), '${r.sprinklerCount}'),
-            KV(t('rep.appRatePeak'), '${fmt(u.depthFromMm(r.appRateEndPeak), 2)} ${u.depthRateLabel}'),
+            KV(t('rep.appRatePeak'), '${fmtUi(u.depthFromMm(r.appRateEndPeak), 2)} ${u.depthRateLabel}'),
             for (final w in r.warnings) Text(c.t.warning(w), style: TextStyle(fontSize: 11, color: Cad.warning)),
           ],
         ]);
@@ -479,12 +478,12 @@ class PropertiesPanel extends StatelessWidget {
       case ArcEntity a:
         items.addAll([
           len('ui.radius', a.radius, (x) => a.radius = x, inv: false),
-          KV(t('props.angle'), '${fmt(a.sweepRad * 180 / 3.141592653589793, 1)}°'),
-          KV(t('props.length'), '${fmt(u.lengthFromSi(a.length))} ${u.lengthLabel}'),
+          KV(t('props.angle'), '${fmtUi(a.sweepRad * 180 / 3.141592653589793, 1)}°'),
+          KV(t('props.length'), '${fmtUi(u.lengthFromSi(a.length))} ${u.lengthLabel}'),
         ]);
       case SplineEntity sp:
         items.addAll([
-          KV(t('props.length'), '${fmt(u.lengthFromSi(sp.length))} ${u.lengthLabel}'),
+          KV(t('props.length'), '${fmtUi(u.lengthFromSi(sp.length))} ${u.lengthLabel}'),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -495,7 +494,7 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case HatchEntity h:
         items.addAll([
-          KV(t('props.area'), '${fmt(u.areaFromSi(h.area), 3)} ${u.areaLabel}'),
+          KV(t('props.area'), '${fmtUi(u.areaFromSi(h.area), 3)} ${u.areaLabel}'),
           NumField(label: t('props.hatchAngle'), value: h.angleDeg, onChanged: (x) => set(() => h.angleDeg = x, inv: false)),
           len('ui.hatchSpacing', h.spacing, (x) => h.spacing = x, inv: false, nonPositive: () => 1),
           SwitchListTile(
@@ -521,8 +520,8 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case PolylineEntity pl:
         items.addAll([
-          if (pl.closed) KV(t('props.length'), '${fmt(u.lengthFromSi(pl.length))} ${u.lengthLabel}') else _lengthField(pl, pl.points),
-          if (pl.closed) KV(t('props.area'), '${fmt(u.areaFromSi(pl.area), 3)} ${u.areaLabel}'),
+          if (pl.closed) KV(t('props.length'), '${fmtUi(u.lengthFromSi(pl.length))} ${u.lengthLabel}') else _lengthField(pl, pl.points),
+          if (pl.closed) KV(t('props.area'), '${fmtUi(u.areaFromSi(pl.area), 3)} ${u.areaLabel}'),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -536,10 +535,10 @@ class PropertiesPanel extends StatelessWidget {
       case DimensionEntity d:
         items.add(NumField(label: t('props.dimOffset'), value: d.offset, onChanged: (x) => set(() => d.offset = x, inv: false)));
       case AngularDimensionEntity ad:
-        items.addAll([KV(t('props.angle'), '${fmt(ad.angleDeg, 2)}°'), len('ui.dimRadius', ad.radius, (x) => ad.radius = x, inv: false, nonPositive: () => 1)]);
+        items.addAll([KV(t('props.angle'), '${fmtUi(ad.angleDeg, 2)}°'), len('ui.dimRadius', ad.radius, (x) => ad.radius = x, inv: false, nonPositive: () => 1)]);
       case RadialDimensionEntity rd:
         items.addAll([
-          KV(rd.diameter ? t('props.diameter') : t('props.radius'), '${fmt(u.lengthFromSi(rd.value))} ${u.lengthLabel}'),
+          KV(rd.diameter ? t('props.diameter') : t('props.radius'), '${fmtUi(u.lengthFromSi(rd.value))} ${u.lengthLabel}'),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -550,7 +549,7 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case OrdinateDimensionEntity od:
         items.addAll([
-          KV(od.xAxis ? 'X' : 'Y', '${fmt(u.lengthFromSi(od.value))} ${u.lengthLabel}'),
+          KV(od.xAxis ? 'X' : 'Y', '${fmtUi(u.lengthFromSi(od.value))} ${u.lengthLabel}'),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -587,14 +586,14 @@ class PropertiesPanel extends StatelessWidget {
           if (duty != null) ...[
             SectionTitle(t('props.results')),
             KV(t('elec.used'), '${duty.used} / ${duty.stations}', color: duty.overloaded ? Cad.warning : null),
-            KV(t('elec.common'), '${cat.wire(duty.commonWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(duty.commonWireM), 0)} ${u.lengthLabel}'),
+            KV(t('elec.common'), '${cat.wire(duty.commonWireId)?.name ?? '—'}  ${fmtUi(u.lengthFromSi(duty.commonWireM), 0)} ${u.lengthLabel}'),
             KV(t('elec.maxOpen'), '${duty.maxOpen}'),
-            KV(t('elec.stationPeak'), '${fmt(duty.largestStationA, 2)} / ${fmt(duty.stationLimitA, 2)} A', color: duty.largestStationA > duty.stationLimitA + 1e-9 ? Cad.warning : null),
-            KV(t('elec.peak'), '${fmt(duty.peakCurrentA, 2)} / ${fmt(duty.totalLimitA, 2)} A', color: duty.peakCurrentA > duty.totalLimitA + 1e-9 ? Cad.warning : null),
+            KV(t('elec.stationPeak'), '${fmtUi(duty.largestStationA, 2)} / ${fmtUi(duty.stationLimitA, 2)} A', color: duty.largestStationA > duty.stationLimitA + 1e-9 ? Cad.warning : null),
+            KV(t('elec.peak'), '${fmtUi(duty.peakCurrentA, 2)} / ${fmtUi(duty.totalLimitA, 2)} A', color: duty.peakCurrentA > duty.totalLimitA + 1e-9 ? Cad.warning : null),
           ],
         ]);
       case WireEntity w:
-        items.addAll([KV(t('props.length'), '${fmt(u.lengthFromSi(w.length))} ${u.lengthLabel}'), Text(t('hint.wire'), style: TextStyle(color: Cad.fg54, fontSize: 11))]);
+        items.addAll([KV(t('props.length'), '${fmtUi(u.lengthFromSi(w.length))} ${u.lengthLabel}'), Text(t('hint.wire'), style: TextStyle(color: Cad.fg54, fontSize: 11))]);
       case LeaderEntity le:
         items.addAll([TextFieldRow(label: t('props.text'), value: le.text, onChanged: (x) => set(() => le.text = x, inv: false)), len('ui.textHeight', le.height, (x) => le.height = x, inv: false)]);
       case ImageEntity im:
@@ -675,7 +674,7 @@ class PropertiesPanel extends StatelessWidget {
     final crop = cropWaterRequirements(c.project, c.results).where((x) => x.areaId == a.id).firstOrNull;
     final localized = isLocalizedArea(a);
     return [
-      KV(t('props.area'), '${fmt(u.areaFromSi(a.area), 3)} ${u.areaLabel}'),
+      KV(t('props.area'), '${fmtUi(u.areaFromSi(a.area), 3)} ${u.areaLabel}'),
       TextFieldRow(label: t('props.crop'), value: a.crop, onChanged: (x) => set(() => a.crop = x, inv: false)),
       SpecDropdown<String>(
         label: t('props.kcPreset'),
@@ -714,7 +713,7 @@ class PropertiesPanel extends StatelessWidget {
         _fraction(t('req.groundCover'), a.groundCover, 0, 1, (x) => set(() => a.groundCover = x, inv: false)),
         // 0: from the ground cover
         _fraction(t('area.kr'), a.localizedKr, 0, 1, (x) => set(() => a.localizedKr = x <= 0 ? 0 : math.max(0.05, x), inv: false), key: const Key('area_kr')),
-        KV(t('area.krUsed'), fmt(areaKr(a), 2)),
+        KV(t('area.krUsed'), fmtUi(areaKr(a), 2)),
       ],
       SwitchListTile(
         dense: true,
@@ -731,13 +730,13 @@ class PropertiesPanel extends StatelessWidget {
         NumField(label: t('props.rootDepth'), value: a.rootDepthM, onChanged: (x) => set(() => a.rootDepthM = x, inv: false)),
         _fraction(t('props.mad'), a.mad, 0.05, 0.95, (x) => set(() => a.mad = x, inv: false), key: const Key('area_mad')),
         // ETc,loc of the design period (the crop table's month with a crop of the table)
-        KV(t('props.etc'), fmt(crop?.etcMmDay ?? a.etcMmDay * areaKr(a), 2)),
+        KV(t('props.etc'), fmtUi(crop?.etcMmDay ?? a.etcMmDay * areaKr(a), 2)),
       ],
       if (crop != null) ...[
         if (crop.month != null) KV(t('area.designMonth'), t('mon.${crop.month}')),
-        KV(t('props.interval'), fmt(crop.intervalDays, 0)),
-        KV(t('rep.grossEvent'), '${fmt(u.depthFromMm(crop.grossDepthMm), 2)} ${u.depthLabel}'),
-        KV(t('rep.hoursEvent'), '${fmt(crop.hoursPerEvent, 2)} h'),
+        KV(t('props.interval'), fmtUi(crop.intervalDays, 0)),
+        KV(t('rep.grossEvent'), '${fmtUi(u.depthFromMm(crop.grossDepthMm), 2)} ${u.depthLabel}'),
+        KV(t('rep.hoursEvent'), '${fmtUi(crop.hoursPerEvent, 2)} h'),
       ],
       // requirement by month and growth stage (FAO-56 crop table)
       SectionTitle(t('req.title')),
@@ -849,7 +848,7 @@ class PropertiesPanel extends StatelessWidget {
     final ok = res.where((r) => r.ok).toList();
     return [
       SectionTitle(t('props.envelope')),
-      Text(t('props.envelopeBest', {'f': (best.fraction * 100).round().toString(), 'v': '${fmt(u.pressureFromHead(best.variation), 1)} ${u.pressureLabel}'}), style: const TextStyle(fontSize: 11.5)),
+      Text(t('props.envelopeBest', {'f': (best.fraction * 100).round().toString(), 'v': '${fmtUi(u.pressureFromHead(best.variation), 1)} ${u.pressureLabel}'}), style: const TextStyle(fontSize: 11.5)),
       Text(
         ok.isEmpty ? t('props.envelopeNone') : t('props.envelopeRange', {'a': (ok.first.fraction * 100).round().toString(), 'b': (ok.last.fraction * 100).round().toString()}),
         style: TextStyle(fontSize: 11.5, color: ok.isEmpty ? Cad.warning : Cad.ok),
@@ -1160,14 +1159,14 @@ class PropertiesPanel extends StatelessWidget {
       final z = r.zones[e.id];
       if (z == null) return out..add(const Text('—'));
       out.addAll([
-        KV(t('result.flow'), '${fmt(u.flowFromSi(z.totalFlow))} ${u.flowLabel}'),
-        KV(t('props.downstream'), '${fmt(u.pressureFromHead(z.downstreamHead), 1)} ${u.pressureLabel}'),
-        KV(t('props.valveLoss'), '${fmt(u.pressureFromHead(z.valveLoss), 2)} ${u.pressureLabel}'),
-        KV(t('props.required'), '${fmt(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}'),
-        KV(t('props.emitterMinMax'), '${fmt(u.pressureFromHead(z.minOutletPressure), 1)} / ${fmt(u.pressureFromHead(z.maxOutletPressure), 1)}', color: z.withinWindow ? Cad.ok : Cad.warning),
-        KV(t('props.allowed'), '${fmt(u.pressureFromHead(z.allowedMin), 1)} / ${fmt(u.pressureFromHead(z.allowedMax), 1)}'),
-        KV(t('props.uniformity'), '${fmt(z.uniformity.cu, 1)} / ${fmt(z.uniformity.du, 1)} / ${fmt(z.uniformity.eu, 1)} %'),
-        if (z.overlapCu > 0) KV(t('rep.overlapCu'), fmt(z.overlapCu, 0)),
+        KV(t('result.flow'), '${fmtUi(u.flowFromSi(z.totalFlow))} ${u.flowLabel}'),
+        KV(t('props.downstream'), '${fmtUi(u.pressureFromHead(z.downstreamHead), 1)} ${u.pressureLabel}'),
+        KV(t('props.valveLoss'), '${fmtUi(u.pressureFromHead(z.valveLoss), 2)} ${u.pressureLabel}'),
+        KV(t('props.required'), '${fmtUi(u.pressureFromHead(z.requiredUpstreamHead), 1)} ${u.pressureLabel}'),
+        KV(t('props.emitterMinMax'), '${fmtUi(u.pressureFromHead(z.minOutletPressure), 1)} / ${fmtUi(u.pressureFromHead(z.maxOutletPressure), 1)}', color: z.withinWindow ? Cad.ok : Cad.warning),
+        KV(t('props.allowed'), '${fmtUi(u.pressureFromHead(z.allowedMin), 1)} / ${fmtUi(u.pressureFromHead(z.allowedMax), 1)}'),
+        KV(t('props.uniformity'), '${fmtUi(z.uniformity.cu, 1)} / ${fmtUi(z.uniformity.du, 1)} / ${fmtUi(z.uniformity.eu, 1)} %'),
+        if (z.overlapCu > 0) KV(t('rep.overlapCu'), fmtUi(z.overlapCu, 0)),
         for (final w in z.warnings)
           Text(
             c.t.warning(w, entityName: (id) => c.project.byId(id)?.name ?? id),
@@ -1177,11 +1176,11 @@ class PropertiesPanel extends StatelessWidget {
       final run = r.electrical?.runOf(e.id);
       if (run != null) {
         out.add(KV(t('elec.station'), '${c.project.byId(run.controllerId)?.name ?? run.controllerId} · ${run.station}'));
-        out.add(KV(t('elec.stationWire'), '${c.project.catalog.wire(run.stationWireId)?.name ?? '—'}  ${fmt(u.lengthFromSi(run.wireM), 0)} ${u.lengthLabel}'));
-        out.add(KV(t('elec.volts'), '${fmt(run.volts, 1)} V', color: run.ok ? Cad.ok : Cad.warning));
+        out.add(KV(t('elec.stationWire'), '${c.project.catalog.wire(run.stationWireId)?.name ?? '—'}  ${fmtUi(u.lengthFromSi(run.wireM), 0)} ${u.lengthLabel}'));
+        out.add(KV(t('elec.volts'), '${fmtUi(run.volts, 1)} V', color: run.ok ? Cad.ok : Cad.warning));
       }
       final fl = r.flushing.where((f) => f.valveId == e.id).firstOrNull;
-      if (fl != null) out.add(KV(t('reports.flushing'), '${fmt(u.flowFromSi(fl.flow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(fl.requiredUpstreamHead), 1)} ${u.pressureLabel}'));
+      if (fl != null) out.add(KV(t('reports.flushing'), '${fmtUi(u.flowFromSi(fl.flow), 1)} ${u.flowLabel} @ ${fmtUi(u.pressureFromHead(fl.requiredUpstreamHead), 1)} ${u.pressureLabel}'));
       return out;
     }
     final pipes = r.pipesByEntity[e.id];
@@ -1192,15 +1191,15 @@ class PropertiesPanel extends StatelessWidget {
       final pStart = pipes.first.pressureStart, pEnd = pipes.last.pressureEnd;
       out.addAll([
         KV(t('props.pipe'), pipes.first.pipeName),
-        KV(t('result.flow'), '${fmt(u.flowFromSi(qmax))} ${u.flowLabel}'),
-        KV(t('result.velocity'), '${fmt(u.velocityFromSi(vmax))} ${u.velocityLabel}', color: pipes.any((p) => p.overVelocity) ? Cad.warning : null),
-        KV(t('result.loss'), '${fmt(u.pressureFromHead(loss), 2)} ${u.pressureLabel}'),
-        KV(t('result.pStart'), '${fmt(u.pressureFromHead(pStart), 1)} ${u.pressureLabel}'),
-        KV(t('result.pEnd'), '${fmt(u.pressureFromHead(pEnd), 1)} ${u.pressureLabel}'),
+        KV(t('result.flow'), '${fmtUi(u.flowFromSi(qmax))} ${u.flowLabel}'),
+        KV(t('result.velocity'), '${fmtUi(u.velocityFromSi(vmax))} ${u.velocityLabel}', color: pipes.any((p) => p.overVelocity) ? Cad.warning : null),
+        KV(t('result.loss'), '${fmtUi(u.pressureFromHead(loss), 2)} ${u.pressureLabel}'),
+        KV(t('result.pStart'), '${fmtUi(u.pressureFromHead(pStart), 1)} ${u.pressureLabel}'),
+        KV(t('result.pEnd'), '${fmtUi(u.pressureFromHead(pEnd), 1)} ${u.pressureLabel}'),
       ]);
       final sr = r.surge.where((s) => s.entityId == e.id).firstOrNull;
       if (sr != null) {
-        out.add(KV(t('reports.surge'), '+${fmt(u.pressureFromHead(sr.surgeHead), 1)} → ${fmt(u.pressureFromHead(sr.totalHead), 1)} ${u.pressureLabel}', color: sr.exceeds ? Cad.warning : null));
+        out.add(KV(t('reports.surge'), '+${fmtUi(u.pressureFromHead(sr.surgeHead), 1)} → ${fmtUi(u.pressureFromHead(sr.totalHead), 1)} ${u.pressureLabel}', color: sr.exceeds ? Cad.warning : null));
       }
     }
     final outs = r.outletsByEntity[e.id];
@@ -1211,20 +1210,20 @@ class PropertiesPanel extends StatelessWidget {
       out.addAll([
         KV(
           '${t('result.pressure')} ${t('result.min')}/${t('result.max')}',
-          '${fmt(u.pressureFromHead(pmin), 1)} / ${fmt(u.pressureFromHead(pmax), 1)} ${u.pressureLabel}',
+          '${fmtUi(u.pressureFromHead(pmin), 1)} / ${fmtUi(u.pressureFromHead(pmax), 1)} ${u.pressureLabel}',
           color: outs.every((o) => o.inWindow) ? Cad.ok : Cad.warning,
         ),
-        KV(t('result.flow'), '${fmt(u.flowFromSi(q))} ${u.flowLabel}'),
+        KV(t('result.flow'), '${fmtUi(u.flowFromSi(q))} ${u.flowLabel}'),
       ]);
     }
     if (e is WaterSupplyEntity) {
       for (final f in r.systemFlows) {
         for (final d in f.supplies.where((d) => d.supplyId == e.id)) {
-          final surplus = d.surplusHead > 0.05 ? ' (${t('rep.surplus')} ${fmt(u.pressureFromHead(d.surplusHead), 1)})' : '';
+          final surplus = d.surplusHead > 0.05 ? ' (${t('rep.surplus')} ${fmtUi(u.pressureFromHead(d.surplusHead), 1)})' : '';
           out.add(
             KV(
               f.name,
-              '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} @ ${fmt(u.pressureFromHead(math.max(0, d.requiredHead)), 1)} ${u.pressureLabel}$surplus',
+              '${fmtUi(u.flowFromSi(d.flow))} ${u.flowLabel} @ ${fmtUi(u.pressureFromHead(math.max(0, d.requiredHead)), 1)} ${u.pressureLabel}$surplus',
               color: d.headExceedsMax || d.flowExceedsDesign ? Cad.warning : null,
             ),
           );
@@ -1238,13 +1237,13 @@ class PropertiesPanel extends StatelessWidget {
           out.add(
             KV(
               f.name,
-              e is PumpEntity ? '${fmt(u.flowFromSi(d.flow))} ${u.flowLabel} / H ${fmt(u.pressureFromHead(d.pumpHead), 1)}' : 'Δh ${fmt(u.pressureFromHead(d.headLoss), 2)} ${u.pressureLabel}',
+              e is PumpEntity ? '${fmtUi(u.flowFromSi(d.flow))} ${u.flowLabel} / H ${fmtUi(u.pressureFromHead(d.pumpHead), 1)}' : 'Δh ${fmtUi(u.pressureFromHead(d.headLoss), 2)} ${u.pressureLabel}',
             ),
           );
           out.add(
             KV(
               '  ${t('rep.pIn')} → ${t('rep.pOut')}',
-              '${fmt(u.pressureFromHead(d.upstreamPressure), 1)} → ${fmt(u.pressureFromHead(d.downstreamPressure), 1)} ${u.pressureLabel}',
+              '${fmtUi(u.pressureFromHead(d.upstreamPressure), 1)} → ${fmtUi(u.pressureFromHead(d.downstreamPressure), 1)} ${u.pressureLabel}',
               color: suction ? Cad.warning : null,
             ),
           );
@@ -1253,7 +1252,7 @@ class PropertiesPanel extends StatelessWidget {
       }
       for (final z in r.zones.values) {
         for (final d in z.devices.where((d) => d.entityId == e.id)) {
-          out.add(KV(z.zoneName, 'Δh ${fmt(u.pressureFromHead(d.headLoss), 2)} ${u.pressureLabel}'));
+          out.add(KV(z.zoneName, 'Δh ${fmtUi(u.pressureFromHead(d.headLoss), 2)} ${u.pressureLabel}'));
         }
       }
     }

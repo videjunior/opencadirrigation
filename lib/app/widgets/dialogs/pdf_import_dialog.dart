@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import '../../../core/io/pdf_import.dart';
 import '../../../core/io/pdf_reader.dart';
 import '../../../core/model/geometry.dart';
-import '../../../core/units.dart';
 import '../../io/prefs.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
@@ -213,7 +212,7 @@ Future<String?> showPdfImportDialog(BuildContext context, ProjectController c, S
           onChanged: enabled && !importing ? (v) => setState(() => on(v ?? false)) : null,
         );
         String pageLabel(PdfPageInfo p) =>
-            t('pdfimp.pageItem', {'i': '${p.index + 1}', 'w': fmt(p.widthMm, 0), 'h': fmt(p.heightMm, 0)}) + (p.rotation != 0 ? t('pdfimp.rotated', {'a': '${p.rotation}'}) : '');
+            t('pdfimp.pageItem', {'i': '${p.index + 1}', 'w': fmtUi(p.widthMm, 0), 'h': fmtUi(p.heightMm, 0)}) + (p.rotation != 0 ? t('pdfimp.rotated', {'a': '${p.rotation}'}) : '');
         final layerCount = cur?.layers.length ?? 0;
         final hiddenCount = cur?.layers.where((l) => !l.visible).length ?? 0;
         final body = <Widget>[
@@ -360,7 +359,7 @@ Future<String?> showPdfImportDialog(BuildContext context, ProjectController c, S
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              t('pdfimp.size', {'x': fmt(info.width * k, 1), 'y': fmt(info.height * k, 1)}),
+              t('pdfimp.size', {'x': fmtUi(info.width * k, 1), 'y': fmtUi(info.height * k, 1)}),
               key: const Key('pdfimp_size'),
               style: TextStyle(fontSize: 11, color: Cad.fg54),
             ),

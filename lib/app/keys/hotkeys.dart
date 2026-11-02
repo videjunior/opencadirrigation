@@ -167,6 +167,16 @@ abstract class HotkeyActions {
 
   /// Opens the quick-select dialog (QSELECT command).
   void quickSelect();
+
+  // 1.6.0 UI
+  /// Opens the command palette (Ctrl+K).
+  void commandPalette();
+
+  /// Enters or leaves focus mode, the drawing board alone (Ctrl+Alt+F).
+  void toggleFocusMode();
+
+  /// Opens Help → Manual (F1).
+  void help();
 }
 
 /// True when a text field has the keyboard focus (typing must not trigger
@@ -207,8 +217,9 @@ class Hotkeys {
   /// Keys the browser also binds (reload, save page, print…): consumed even
   /// when the app does nothing with them, so the page never reloads.
   static bool reservedByBrowser(HotkeyEvent e) {
-    if (e.key == 'F5' || e.key == 'F2' || e.key == 'F3' || e.key == 'F7' || e.key == 'F8' || e.key == 'F9') return true;
-    if (e.primary && !e.alt) return const {'s', 'o', 'p', 'i', 'd'}.contains(e.char);
+    if (e.key == 'F5' || e.key == 'F2' || e.key == 'F3' || e.key == 'F7' || e.key == 'F8' || e.key == 'F9' || e.key == 'F1') return true;
+    // (1.6.0 UI: Ctrl+K, which would put the browser's search in the address bar)
+    if (e.primary && !e.alt) return const {'s', 'o', 'p', 'i', 'd', 'k'}.contains(e.char);
     return false;
   }
 
@@ -259,6 +270,10 @@ class Hotkeys {
         case 'ArrowLeft':
           if (!blocked) actions.prevTab();
           return true;
+        // 1.6.0 UI
+        case 'KeyF':
+          if (!blocked) actions.toggleFocusMode();
+          return true;
       }
       return false;
     }
@@ -276,6 +291,10 @@ class Hotkeys {
         case 'p':
           if (!blocked) actions.exportPdf();
           return true;
+        // 1.6.0 UI
+        case 'k':
+          if (!blocked) actions.commandPalette();
+          return true;
       }
       return false;
     }
@@ -286,6 +305,10 @@ class Hotkeys {
         return true;
       case 'F2':
         if (!blocked) actions.toggleReports();
+        return true;
+      // 1.6.0 UI
+      case 'F1':
+        if (!blocked) actions.help();
         return true;
     }
     return false;

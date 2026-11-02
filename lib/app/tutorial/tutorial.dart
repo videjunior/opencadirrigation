@@ -82,6 +82,81 @@ abstract class TutorialHost {
 
   /// Runs a typed command alias through the real keyboard path.
   void typeCommand(String alias);
+
+  // 1.6.0 UI: the AI chapter (SIT-23) and the help chapter
+  /// The AI assistant is on the screen (its docked panel) or was opened in
+  /// the tutorial's tab (its sheet or dialog).
+  bool get assistantShown => false;
+
+  /// Opens the AI assistant with [prompt] written in its box: nothing is
+  /// sent to any AI service (the user may send it, with a key of their own).
+  void showAssistant({String? prompt}) {}
+
+  /// Opens the command palette (Ctrl+K).
+  void openPalette() {}
+
+  /// Opens Help → Manual.
+  void openManual() {}
+}
+
+/// The ways through the tutorial: every step, a short track for touch
+/// screens and quick tracks by kind of project that use the automatic tools
+/// (PRD-24).
+enum TutorialTrack { full, touch, drip, landscape, pivot }
+
+/// The steps of each track but [TutorialTrack.full], by id, in order.
+const tutorialTrackSteps = <TutorialTrack, List<String>>{
+  TutorialTrack.touch: [
+    'welcome',
+    'georef',
+    'satellite',
+    'demDownload',
+    'zoom',
+    'pan',
+    'zoomAll',
+    'select',
+    'window',
+    'undo',
+    'history',
+    'properties',
+    'delete',
+    'layers',
+    'line',
+    'polyline',
+    'commands',
+    'area',
+    'block',
+    'design',
+    'reports',
+    'messages',
+    'save',
+    'palette',
+    'aiOpen',
+    'shortcuts',
+  ],
+  TutorialTrack.drip: ['welcome', 'georef', 'satellite', 'demDownload', 'area', 'autoMenu', 'subdivide', 'design', 'check', 'fixOptimize', 'bom', 'sheets', 'aiOpen', 'shortcuts'],
+  TutorialTrack.landscape: ['welcome', 'georef', 'satellite', 'area', 'autoMenu', 'grid', 'design', 'check', 'schedule', 'budget', 'sheets', 'aiOpen', 'shortcuts'],
+  TutorialTrack.pivot: ['welcome', 'georef', 'satellite', 'demDownload', 'pivotFit', 'pivot', 'pivotSpans', 'design', 'mainlineTab', 'budget', 'sheets', 'aiOpen', 'shortcuts'],
+};
+
+/// The steps of [track] taken from [all] (the full list, in its order).
+List<TutorialStep> tutorialTrack(List<TutorialStep> all, TutorialTrack track) {
+  final ids = tutorialTrackSteps[track];
+  if (ids == null) return all;
+  final byId = {for (final s in all) s.id: s};
+  return [
+    for (final id in ids)
+      if (byId[id] case final s?) s,
+  ];
+}
+
+/// The chapters of [steps], in order of their first step.
+List<String> tutorialChapters(List<TutorialStep> steps) {
+  final out = <String>[];
+  for (final s in steps) {
+    if (s.chapter.isNotEmpty && !out.contains(s.chapter)) out.add(s.chapter);
+  }
+  return out;
 }
 
 class TutorialContext {
@@ -92,10 +167,48 @@ class TutorialContext {
 }
 
 class TutorialStep {
-  const TutorialStep({required this.id, required this.title, required this.body, this.chapter = '', this.target, this.action, this.prepare, this.demo, this.isDone});
+  const TutorialStep({
+    required this.id,
+    required this.title,
+    required this.body,
+    this.chapter = '',
+    this.target,
+    this.action,
+    this.prepare,
+    this.demo,
+    this.isDone,
+    this.touchAction,
+    this.touchBody,
+  });
   final String id;
   final String title;
   final String body;
+
+  /// What the phone layout does where [action] and [body] speak of the
+  /// mouse and the keyboard (☰, the round buttons, the bottom tool bar);
+  /// null: the same text (1.6.0 UI, UI-27).
+  final String? touchAction, touchBody;
+
+  /// This step with its touch-screen texts.
+  TutorialStep withTouch({String? action, String? body}) => TutorialStep(
+    id: id,
+    title: title,
+    body: this.body,
+    chapter: chapter,
+    target: target,
+    action: this.action,
+    prepare: prepare,
+    demo: demo,
+    isDone: isDone,
+    touchAction: action ?? touchAction,
+    touchBody: body ?? touchBody,
+  );
+
+  /// [action] on a touch screen ([touch]) or with mouse and keyboard.
+  String? actionFor({required bool touch}) => touch ? (touchAction ?? action) : action;
+
+  /// [body] on a touch screen ([touch]) or with mouse and keyboard.
+  String bodyFor({required bool touch}) => touch ? (touchBody ?? body) : body;
 
   /// Chapter name shown above the title.
   final String chapter;
@@ -114,10 +227,59 @@ class TutorialStep {
 class TutorialController extends ChangeNotifier {
   static const prefKey = 'tutorial_done';
 
+  /// Where the user stopped: `track|step id` (1.6.0 UI).
+  static const progressKey = 'tutorial_at';
+
   bool active = false;
   int index = 0;
   List<TutorialStep> steps = const [];
   final Map<String, Object?> memo = {};
+
+  /// The track followed and every step of the tutorial (to change track).
+  TutorialTrack track = TutorialTrack.full;
+  List<TutorialStep> all = const [];
+
+  /// The track and step where the user stopped last time (kept until the
+  /// last step is finished), or null.
+  static (TutorialTrack, String)? savedProgress() {
+    final v = getPref(progressKey);
+    if (v == null) return null;
+    final i = v.indexOf('|');
+    if (i <= 0 || i == v.length - 1) return null;
+    final track = TutorialTrack.values.where((t) => t.name == v.substring(0, i)).firstOrNull;
+    return track == null ? null : (track, v.substring(i + 1));
+  }
+
+  void _save() {
+    if (active && steps.isNotEmpty) setPref(progressKey, '${track.name}|${current.id}');
+  }
+
+  /// Follows [to] from its first step (or from step [stepId] of it).
+  void switchTrack(TutorialTrack to, {String? stepId}) {
+    track = to;
+    steps = tutorialTrack(all, to);
+    final at = stepId == null ? -1 : steps.indexWhere((s) => s.id == stepId);
+    index = at < 0 ? 0 : at;
+    memo.clear();
+    _save();
+    notifyListeners();
+  }
+
+  /// Goes to the first step of [chapter] in the track followed.
+  void goToChapter(String chapter) {
+    final i = steps.indexWhere((s) => s.chapter == chapter);
+    if (i >= 0) goTo(i);
+  }
+
+  /// Goes back to where the user stopped (the saved track and step).
+  bool resume() {
+    final p = savedProgress();
+    if (p == null) return false;
+    final (to, id) = p;
+    if (tutorialTrack(all, to).indexWhere((s) => s.id == id) < 0) return false;
+    switchTrack(to, stepId: id);
+    return true;
+  }
 
   /// Move on by itself shortly after a step is done.
   bool autoAdvance = true;
@@ -132,9 +294,11 @@ class TutorialController extends ChangeNotifier {
   /// Number of interactive steps and how many come before [index].
   int get interactiveCount => steps.where((s) => s.interactive).length;
 
-  void start(List<TutorialStep> s, {int startAt = 0}) {
-    steps = s;
-    index = startAt.clamp(0, s.length - 1);
+  void start(List<TutorialStep> s, {int startAt = 0, TutorialTrack track = TutorialTrack.full}) {
+    all = s;
+    this.track = track;
+    steps = tutorialTrack(s, track);
+    index = startAt.clamp(0, steps.length - 1);
     memo.clear();
     active = true;
     notifyListeners();
@@ -146,16 +310,19 @@ class TutorialController extends ChangeNotifier {
       return;
     }
     index++;
+    _save();
     notifyListeners();
   }
 
   void prev() {
     if (index > 0) index--;
+    _save();
     notifyListeners();
   }
 
   void goTo(int i) {
     index = i.clamp(0, steps.length - 1);
+    _save();
     notifyListeners();
   }
 
@@ -167,10 +334,19 @@ class TutorialController extends ChangeNotifier {
   void finish() {
     active = false;
     markDone();
+    // the end of the track reached: nothing left to continue
+    removePref(progressKey);
     notifyListeners();
   }
 
-  void skip() => finish();
+  /// Leaves the tutorial before its end: where the user stopped is kept for
+  /// "Continue where you stopped".
+  void skip() {
+    _save();
+    active = false;
+    markDone();
+    notifyListeners();
+  }
 }
 
 // ---------------------------------------------------------------- texts
@@ -205,6 +381,18 @@ const _texts = <String, _T>{
   'autoOn': _T('Avança sozinho ao concluir (clique para desligar)', 'Moves on by itself when done (click to turn off)', 'Avanza solo al terminar (clic para desactivar)'),
   'autoOff': _T('Avanço automático desligado (clique para ligar)', 'Auto-advance off (click to turn on)', 'Avance automático desactivado (clic para activar)'),
   'finishedTitle': _T('Tutorial concluído', 'Tutorial finished', 'Tutorial terminado'),
+  // 1.6.0 UI: chapters, tracks and where the user stopped
+  'chapterMenu': _T('Capítulos e trilhas', 'Chapters and tracks', 'Capítulos y recorridos'),
+  'chapters': _T('Capítulos', 'Chapters', 'Capítulos'),
+  'tracks': _T('Trilhas', 'Tracks', 'Recorridos'),
+  'trackFull': _T('Tutorial completo', 'Full tutorial', 'Tutorial completo'),
+  'trackTouch': _T('Trilha curta para o toque', 'Short track for touch screens', 'Recorrido corto para pantallas táctiles'),
+  'trackDrip': _T('Rápido: gotejamento num talhão', 'Quick: drip in a field', 'Rápido: goteo en una parcela'),
+  'trackLandscape': _T('Rápido: paisagismo', 'Quick: landscape', 'Rápido: paisajismo'),
+  'trackPivot': _T('Rápido: pivô central', 'Quick: centre pivot', 'Rápido: pivote central'),
+  'trackSteps': _T('{n} passos', '{n} steps', '{n} pasos'),
+  'resume': _T('Continuar de onde parou: {c}, passo {i}', 'Continue where you stopped: {c}, step {i}', 'Continuar donde lo dejó: {c}, paso {i}'),
+  'touchTrack': _T('No celular? Faça a trilha curta para o toque', 'On a phone? Take the short track for touch screens', '¿En el móvil? Haga el recorrido corto para pantallas táctiles'),
   'touchHint': _T(
     'No celular ou tablet: os menus ficam no ☰, o teclado é o botão ⌨ e "Mostrar" faz o passo por você.',
     'On a phone or tablet: the menus are under ☰, the keyboard is the ⌨ button and "Show me" does the step for you.',
@@ -242,6 +430,10 @@ List<TutorialStep> buildTutorialSteps(String lang) {
   final chHyd = t('Rede hidráulica', 'Hydraulic network', 'Red hidráulica');
   final chDesign = t('Projeto e resultados', 'Design and results', 'Diseño y resultados');
   final chFiles = t('Arquivos e ajuda', 'Files and help', 'Archivos y ayuda');
+  // 1.6.0 UI: the automatic tools and the documents (PRD-24); search, help and interface; the AI assistant
+  final chAuto = t('Projeto automático e documentos', 'Automatic design and documents', 'Diseño automático y documentos');
+  final chHelp = t('Busca, ajuda e interface', 'Search, help and interface', 'Búsqueda, ayuda e interfaz');
+  final chAi = t('Assistente de IA', 'AI assistant', 'Asistente de IA');
 
   // ---- helpers
   Pt base(TutorialContext x) {
@@ -357,7 +549,7 @@ List<TutorialStep> buildTutorialSteps(String lang) {
   final editTools = {ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe};
   final reportTab = reportTabKeys.indexOf;
 
-  return [
+  final steps = <TutorialStep>[
     TutorialStep(
       id: 'welcome',
       chapter: chMap,
@@ -1532,6 +1724,96 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       ),
       prepare: (x) => x.c.setTool(ToolId.select),
     ),
+    // ------------------------------------------------------------ 1.6.0 UI: automatic design and documents (PRD-24)
+    TutorialStep(
+      id: 'autoMenu',
+      chapter: chAuto,
+      title: t('Projeto automático', 'Automatic design', 'Diseño automático'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Projeto → Projeto automático faz a parte repetitiva a partir das áreas: o layout automático de aspersores (LAYOUT) distribui as cabeças e as zonas, os modelos de gramado esportivo e golfe (TPL) montam um campo inteiro de uma vez e os anéis de gotejamento (RINGS) contornam as árvores de um pomar. Cada um mostra uma prévia antes de aplicar, e Ctrl+Z desfaz o resultado. "Mostrar" abre o layout automático.',
+        'Design → Automatic design does the repetitive part from the areas: the automatic sprinkler layout (LAYOUT) places the heads and the zones, the sports turf and golf templates (TPL) lay out a whole field at once and the drip rings (RINGS) go around the trees of an orchard. Each shows a preview before applying, and Ctrl+Z undoes the result. "Show me" opens the automatic layout.',
+        'Diseño → Diseño automático hace la parte repetitiva a partir de las áreas: el diseño automático de aspersores (LAYOUT) distribuye las cabezas y las zonas, las plantillas de césped deportivo y golf (TPL) arman un campo entero de una vez y los anillos de goteo (RINGS) rodean los árboles de un huerto. Cada uno muestra una vista previa antes de aplicar, y Ctrl+Z deshace el resultado. «Mostrar» abre el diseño automático.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.typeCommand('LAYOUT'),
+    ),
+    TutorialStep(
+      id: 'subdivide',
+      chapter: chAuto,
+      title: t('Dividir um talhão', 'Subdivide a field', 'Dividir una parcela'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Projeto → Projeto automático → Dividir talhão em blocos (SUBDIV) corta um talhão grande em blocos de gotejamento ou de microaspersão, com a linha de derivação, as laterais e a válvula de cada um, respeitando o comprimento das laterais, as exclusões (lagos, galpões) e a vazão de cada turno; um talhão em U é dividido pelos braços.',
+        'Design → Automatic design → Subdivide a field into blocks (SUBDIV) cuts a large field into drip or micro-sprinkler blocks, with the submain, the laterals and the valve of each, keeping to the length of the laterals, the exclusions (ponds, sheds) and the flow of each shift; a U-shaped field is divided by its arms.',
+        'Diseño → Diseño automático → Dividir parcela en bloques (SUBDIV) corta una parcela grande en bloques de goteo o de microaspersión, con el portalaterales, las laterales y la válvula de cada uno, respetando la longitud de las laterales, las exclusiones (lagunas, galpones) y el caudal de cada turno; una parcela en U se divide por sus brazos.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.typeCommand('SUBDIV'),
+    ),
+    TutorialStep(
+      id: 'pivotFit',
+      chapter: chAuto,
+      title: t('Pivô no talhão', 'A pivot on the field', 'Pivote en la parcela'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Projeto → Projeto automático → Ajustar pivô ao talhão (PFIT) acha o centro e o raio do pivô central que mais cobrem a área desenhada; o pivô entra no projeto com as torres, os vãos e os aspersores, e a aba Pivôs dos relatórios resume a máquina depois do cálculo.',
+        'Design → Automatic design → Fit a pivot to the field (PFIT) finds the centre and radius of the centre pivot that cover the drawn area best; the pivot enters the design with its towers, spans and sprinklers, and the Pivots tab of the reports sums up the machine after the calculation.',
+        'Diseño → Diseño automático → Ajustar pivote a la parcela (PFIT) encuentra el centro y el radio del pivote central que mejor cubren el área dibujada; el pivote entra en el proyecto con sus torres, vanos y aspersores, y la pestaña Pivotes de los informes resume la máquina tras el cálculo.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.typeCommand('PFIT'),
+    ),
+    TutorialStep(
+      id: 'fixOptimize',
+      chapter: chAuto,
+      title: t('Corrigir e otimizar', 'Fix and optimise', 'Corregir y optimizar'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Depois de projetar, Projeto → Corrigir automaticamente (FIX) resolve os avisos que têm correção segura e pergunta nas decisões de projeto (pôr a bomba na rede pública, criar turnos novos), e Otimizar projeto (OPT) reduz o custo em etapas, trocando diâmetros e modelos sem criar avisos novos. Cada etapa mostra o que muda e se desfaz com Ctrl+Z.',
+        'After a design, Design → Fix automatically (FIX) clears the warnings that have a safe correction and asks at the design decisions (putting the pump on the public supply, creating new shifts), and Optimise design (OPT) cuts the cost in stages, changing diameters and models without new warnings. Each stage shows what changes and is undone with Ctrl+Z.',
+        'Tras diseñar, Diseño → Corregir automáticamente (FIX) resuelve los avisos que tienen una corrección segura y pregunta en las decisiones de diseño (poner la bomba en la red pública, crear turnos nuevos), y Optimizar diseño (OPT) baja el costo por etapas, cambiando diámetros y modelos sin crear avisos nuevos. Cada etapa muestra lo que cambia y se deshace con Ctrl+Z.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.typeCommand('FIX'),
+    ),
+    TutorialStep(
+      id: 'budget',
+      chapter: chAuto,
+      title: t('Orçamento, tarifa e alternativas', 'Quote, tariff and alternatives', 'Presupuesto, tarifa y alternativas'),
+      target: TutorialTargets.menuDesign,
+      body: t(
+        'Projeto → Orçamento comercial transforma a lista de materiais numa proposta (margens, mão de obra, itens extras, impostos e condições). Tarifa horária e horários dos turnos (TARIFF) põe os turnos nas horas de energia mais barata, e Alternativas do projeto compara versões do projeto em custo de implantação, energia e custo anual.',
+        'Design → Commercial quote turns the bill of materials into a proposal (margins, labour, extra items, taxes and terms). Time-of-use tariff and flow schedule (TARIFF) puts the shifts in the hours of cheaper energy, and Design alternatives compares versions of the design in installed cost, energy and annual cost.',
+        'Diseño → Presupuesto comercial convierte la lista de materiales en una propuesta (márgenes, mano de obra, ítems extra, impuestos y condiciones). Tarifa horaria y horarios de los turnos (TARIFF) pone los turnos en las horas de energía más barata, y Alternativas del proyecto compara versiones del diseño en costo de instalación, energía y costo anual.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.typeCommand('TARIFF'),
+    ),
+    TutorialStep(
+      id: 'sheets',
+      chapter: chAuto,
+      title: t('Pranchas e conjuntos de folhas', 'Sheets and sets of sheets', 'Láminas y conjuntos de hojas'),
+      target: TutorialTargets.menuFile,
+      body: t(
+        'Arquivo → Exportar desenho → PDF (Ctrl+P) monta a prancha com carimbo, legenda, norte e escala, e pode gerar um conjunto: uma folha por zona ou por área, a vista atual, folhas de detalhes (válvula, cabeçal, vala) e os gráficos e relatórios no fim. A pré-visualização mostra cada folha antes de exportar; PNG exporta a folha como imagem.',
+        'File → Export drawing → PDF (Ctrl+P) lays out the sheet with title block, legend, north arrow and scale, and can make a set: one sheet per zone or per area, the current view, detail sheets (valve, head works, trench) and the charts and reports at the end. The preview shows each sheet before the export; PNG exports the sheet as a picture.',
+        'Archivo → Exportar dibujo → PDF (Ctrl+P) arma la lámina con cajetín, leyenda, norte y escala, y puede generar un conjunto: una hoja por zona o por área, la vista actual, hojas de detalles (válvula, cabezal, zanja) y los gráficos e informes al final. La vista previa muestra cada hoja antes de exportar; PNG exporta la hoja como imagen.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+    ),
+    TutorialStep(
+      id: 'field',
+      chapter: chAuto,
+      title: t('GPS no campo e PDF importado', 'GPS in the field and imported PDF', 'GPS en campo y PDF importado'),
+      target: TutorialTargets.menuDraw,
+      body: t(
+        'No campo, Ver → GPS do aparelho mostra onde você está sobre o desenho, e Desenhar → GPS no campo grava um trajeto a pé e o transforma em área irrigada, contorno ou linha. Um levantamento em PDF vetorial entra por Arquivo → Importar como linhas e textos; Alinhar por 2 pontos o põe na escala e no lugar certos.',
+        'In the field, View → Device GPS shows where you are on the drawing, and Draw → GPS in the field records a walk and turns it into an irrigated area, an outline or a line. A survey in vector PDF comes in through File → Import as lines and texts; Align by 2 points puts it at the right scale and place.',
+        'En el campo, Ver → GPS del dispositivo muestra dónde está sobre el dibujo, y Dibujar → GPS en campo graba un recorrido a pie y lo convierte en área regada, contorno o línea. Un levantamiento en PDF vectorial entra por Archivo → Importar como líneas y textos; Alinear por 2 puntos lo pone en la escala y el lugar correctos.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+    ),
     // ------------------------------------------------------------ files and help
     ev(
       id: 'save',
@@ -1553,9 +1835,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Importar e exportar', 'Import and export', 'Importar y exportar'),
       target: TutorialTargets.menuFile,
       body: t(
-        'Importar (Ctrl+I) aceita DXF, DWG (versões 2000–2018), KML/KMZ, SHP, pontos CSV/XYZ e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF, DWG, PDF (prancha com carimbo, legenda e escala; Ctrl+P), SVG, KML/KMZ e GeoJSON. Exportar relatório gera CSV, TXT, XLSX ou PDF.',
-        'Import (Ctrl+I) accepts DXF, DWG (versions 2000–2018), KML/KMZ, SHP, CSV/XYZ points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF, DWG, PDF (plot sheet with title block, legend and scale; Ctrl+P), SVG, KML/KMZ and GeoJSON. Export report writes CSV, TXT, XLSX or PDF.',
-        'Importar (Ctrl+I) acepta DXF, DWG (versiones 2000–2018), KML/KMZ, SHP, puntos CSV/XYZ e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF, DWG, PDF (lámina con cajetín, leyenda y escala; Ctrl+P), SVG, KML/KMZ y GeoJSON. Exportar informe genera CSV, TXT, XLSX o PDF.',
+        'Importar (Ctrl+I) aceita DXF, DWG (versões 2000–2018), DGN, PDF vetorial, KML/KMZ, SHP, GeoJSON, GPX, LandXML, LAS, EPANET (.inp), pontos CSV/XYZ/PNEZD e imagens (JPG/PNG/GeoTIFF, com mapa base de satélite em Ver). Exportar desenho gera DXF (R2000 e R12), DWG, PDF (prancha com carimbo, legenda e escala, ou um conjunto de folhas; Ctrl+P), SVG, KML/KMZ, GeoJSON, Shapefile, GPX, LandXML, IFC, EPANET e PNG. Exportar relatório gera CSV, TXT, XLSX ou PDF.',
+        'Import (Ctrl+I) accepts DXF, DWG (versions 2000–2018), DGN, vector PDF, KML/KMZ, SHP, GeoJSON, GPX, LandXML, LAS, EPANET (.inp), CSV/XYZ/PNEZD points and images (JPG/PNG/GeoTIFF, with a satellite base map under View). Export drawing writes DXF (R2000 and R12), DWG, PDF (plot sheet with title block, legend and scale, or a set of sheets; Ctrl+P), SVG, KML/KMZ, GeoJSON, Shapefile, GPX, LandXML, IFC, EPANET and PNG. Export report writes CSV, TXT, XLSX or PDF.',
+        'Importar (Ctrl+I) acepta DXF, DWG (versiones 2000–2018), DGN, PDF vectorial, KML/KMZ, SHP, GeoJSON, GPX, LandXML, LAS, EPANET (.inp), puntos CSV/XYZ/PNEZD e imágenes (JPG/PNG/GeoTIFF, con mapa base satelital en Ver). Exportar dibujo genera DXF (R2000 y R12), DWG, PDF (lámina con cajetín, leyenda y escala, o un conjunto de hojas; Ctrl+P), SVG, KML/KMZ, GeoJSON, Shapefile, GPX, LandXML, IFC, EPANET y PNG. Exportar informe genera CSV, TXT, XLSX o PDF.',
       ),
     ),
     TutorialStep(
@@ -1590,47 +1872,105 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         'Archivo → Ejemplos abre 15 proyectos listos para diseñar: huerto, jardín, campo de fútbol, hortalizas en goteo, pivote central y sectorial, lateral de avance, invernadero, vivero, cafetal en curvas de nivel, banano, caña con goteo subterráneo, goteo por gravedad, pastura y hoyo de golf. Ayuda → Bienvenida y galería de ejemplos muestra la misma galería con descripciones. Archivo → Proyectos recientes reabre lo guardado en este navegador, y Ayuda → Acerca de muestra la versión del programa.',
       ),
     ),
-    // 1.6.0 SIT: the AI assistant (SIT-23); the steps explain, nothing goes to any AI service
+    // ------------------------------------------------------------ 1.6.0 UI: search, help and interface
+    ev(
+      id: 'palette',
+      chapter: chHelp,
+      title: t('Pesquisar comandos', 'Search commands', 'Buscar comandos'),
+      target: TutorialTargets.menuHelp,
+      body: t(
+        'Ctrl+K abre a paleta de comandos: digite parte do nome de qualquer menu, comando ou ajuste, em qualquer idioma (por exemplo "curva", "pdf" ou "contrast"), escolha com ↑ ↓ e Enter. Os comandos digitados (L, PL, LAYOUT…) aparecem nela também. No celular, a mesma busca fica no topo do menu ☰.',
+        'Ctrl+K opens the command palette: type part of the name of any menu, command or setting, in any language (for example "contour", "pdf" or "contraste"), choose with ↑ ↓ and Enter. The typed commands (L, PL, LAYOUT…) are in it too. On a phone the same search is at the top of the ☰ menu.',
+        'Ctrl+K abre la paleta de comandos: escriba parte del nombre de cualquier menú, comando o ajuste, en cualquier idioma (por ejemplo «curva», «pdf» o «contrast»), elija con ↑ ↓ e Intro. Los comandos escritos (L, PL, LAYOUT…) también están en ella. En el móvil, la misma búsqueda está arriba en el menú ☰.',
+      ),
+      action: t('Pressione Ctrl+K e procure "densograma"', 'Press Ctrl+K and look for "densogram"', 'Pulse Ctrl+K y busque «densograma»'),
+      event: 'palette',
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.openPalette(),
+    ),
+    TutorialStep(
+      id: 'manual',
+      chapter: chHelp,
+      title: t('Manual, ajuda e retorno', 'Manual, help and feedback', 'Manual, ayuda y comentarios'),
+      target: TutorialTargets.menuHelp,
+      body: t(
+        'Ajuda → Manual (F1) explica cada parte do programa, e o "?" no título das janelas e nos painéis abre o assunto daquela janela, com o capítulo completo do manual a um clique. Ajuda → Novidades mostra o que mudou na versão, e Ajuda → Relatar problema ou sugerir função prepara uma issue do GitHub com o diagnóstico, sem dados pessoais.',
+        'Help → Manual (F1) explains each part of the program, and the "?" in the title of the windows and in the panels opens the subject of that window, with the full chapter of the manual one click away. Help → What\'s new shows what changed in the version, and Help → Report a problem or suggest a feature prepares a GitHub issue with the diagnostics, without personal data.',
+        'Ayuda → Manual (F1) explica cada parte del programa, y el «?» en el título de las ventanas y en los paneles abre el tema de esa ventana, con el capítulo completo del manual a un clic. Ayuda → Novedades muestra lo que cambió en la versión, y Ayuda → Informar un problema o sugerir una función prepara un issue de GitHub con el diagnóstico, sin datos personales.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      demo: (x) => x.host.openManual(),
+    ),
+    TutorialStep(
+      id: 'interfacePrefs',
+      chapter: chHelp,
+      title: t('Tamanho, contraste e modo foco', 'Size, contrast and focus mode', 'Tamaño, contraste y modo foco'),
+      target: TutorialTargets.menuView,
+      body: t(
+        'Ver → Interface muda o tamanho de toda a interface sem mexer no zoom do navegador, liga o alto contraste (texto e bordas mais fortes, no tema escuro e no claro), recolhe o painel lateral e entra no modo foco (Ctrl+Alt+F), que esconde menus, paleta e painéis e deixa só a prancheta; Ctrl+K continua funcionando nele. A largura do painel lateral e a altura dos relatórios ficam guardadas.',
+        'View → Interface changes the size of the whole interface without touching the browser zoom, switches high contrast on (stronger text and borders, in the dark and in the light theme), folds the side panel away and enters focus mode (Ctrl+Alt+F), which hides menus, palette and panels and leaves only the drawing board; Ctrl+K still works in it. The width of the side panel and the height of the reports are kept.',
+        'Ver → Interfaz cambia el tamaño de toda la interfaz sin tocar el zoom del navegador, activa el alto contraste (texto y bordes más fuertes, en el tema oscuro y en el claro), recoge el panel lateral y entra en el modo foco (Ctrl+Alt+F), que oculta menús, paleta y paneles y deja solo el tablero; Ctrl+K sigue funcionando en él. El ancho del panel lateral y el alto de los informes quedan guardados.',
+      ),
+      prepare: (x) => x.c.setTool(ToolId.select),
+    ),
+    // 1.6.0 SIT + UI: the AI assistant (SIT-23): the first step watches the panel; the demos only write a
+    // request in its box, so nothing ever goes to an AI service from the tutorial
     TutorialStep(
       id: 'aiOpen',
-      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      chapter: chAi,
       title: t('Abrir o assistente de IA', 'Open the AI assistant', 'Abrir el asistente de IA'),
       target: TutorialTargets.statusBar,
       body: t(
-        'O assistente de IA é opcional e trabalha no projeto aberto com as mesmas ferramentas dos menus: distribui aspersores e gotejamento, traça tubos, dimensiona, corrige avisos e escreve o memorial. Abra-o em Projeto → Assistente de IA, pelo comando AI, pelo botão do robô na barra de status ou pelo endereço ?ai=1; o painel fica ao lado do desenho (embaixo, no celular). Nada é enviado antes de você clicar em Enviar.',
-        'The AI assistant is optional and works on the open project with the same tools as the menus: it lays out sprinklers and drip, routes pipes, sizes, fixes warnings and writes the report. Open it with Design → AI assistant, the AI command, the robot button in the status bar or the address ?ai=1; the panel sits beside the drawing (at the bottom on a phone). Nothing is sent before you press Send.',
-        'El asistente de IA es opcional y trabaja en el proyecto abierto con las mismas herramientas que los menús: distribuye aspersores y goteo, traza tuberías, dimensiona, corrige avisos y redacta la memoria. Ábralo en Diseño → Asistente de IA, con el comando AI, con el botón del robot en la barra de estado o con la dirección ?ai=1; el panel queda junto al dibujo (abajo, en el móvil). No se envía nada antes de pulsar Enviar.',
+        'O assistente de IA é opcional e trabalha no projeto aberto com as mesmas ferramentas dos menus: distribui aspersores e gotejamento, traça tubos, dimensiona, corrige avisos e escreve o memorial. Abra-o em Projeto → Assistente de IA, pelo comando AI, pelo botão do robô na barra de status ou pelo endereço ?ai=1; o painel fica ao lado do desenho (embaixo, no celular). Nada é enviado antes de você clicar em Enviar: "Mostrar" abre o painel com um pedido de exemplo escrito, sem enviá-lo.',
+        'The AI assistant is optional and works on the open project with the same tools as the menus: it lays out sprinklers and drip, routes pipes, sizes, fixes warnings and writes the report. Open it with Design → AI assistant, the AI command, the robot button in the status bar or the address ?ai=1; the panel sits beside the drawing (at the bottom on a phone). Nothing is sent before you press Send: "Show me" opens the panel with an example request written in it, without sending it.',
+        'El asistente de IA es opcional y trabaja en el proyecto abierto con las mismas herramientas que los menús: distribuye aspersores y goteo, traza tuberías, dimensiona, corrige avisos y redacta la memoria. Ábralo en Diseño → Asistente de IA, con el comando AI, con el botón del robot en la barra de estado o con la dirección ?ai=1; el panel queda junto al dibujo (abajo, en el móvil). No se envía nada antes de pulsar Enviar: «Mostrar» abre el panel con una petición de ejemplo escrita, sin enviarla.',
+      ),
+      action: t('Abra o assistente em Projeto → Assistente de IA', 'Open the assistant with Design → AI assistant', 'Abra el asistente en Diseño → Asistente de IA'),
+      touchAction: t('Toque no botão do robô, no alto da tela', 'Tap the robot button at the top of the screen', 'Toque el botón del robot arriba en la pantalla'),
+      prepare: (x) => x.c.setTool(ToolId.select),
+      isDone: (x) => x.host.assistantShown,
+      demo: (x) => x.host.showAssistant(
+        prompt: t('Distribua os aspersores do gramado e dimensione as zonas.', 'Lay out the lawn sprinklers and size the zones.', 'Distribuya los aspersores del césped y dimensione las zonas.'),
       ),
     ),
     TutorialStep(
       id: 'aiKey',
-      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      chapter: chAi,
       title: t('Chave, modelo e modo', 'Key, model and mode', 'Clave, modelo y modo'),
       body: t(
         'Nas configurações do assistente, escolha um modelo Claude (Anthropic) ou GPT (OpenAI) e cole a sua própria chave de API: ela fica só na memória, a não ser que você marque Lembrar a chave neste dispositivo, e cada pedido vai direto do navegador ao provedor, que cobra o uso na sua conta. O modo diz o que ele pode fazer: somente leitura, planejar primeiro, perguntar antes de cada alteração (o padrão) ou aplicar as alterações automaticamente; um limite de passos e um teto de gasto encerram uma tarefa longa.',
         'In the assistant\'s settings, choose a Claude (Anthropic) or GPT (OpenAI) model and paste your own API key: it stays in memory only, unless you tick Remember the key on this device, and every request goes straight from the browser to the provider, which bills your account. The mode says what it may do: read only, plan first, ask before each change (the default) or apply changes automatically; a step limit and a spending cap end a long task.',
         'En los ajustes del asistente, elija un modelo Claude (Anthropic) o GPT (OpenAI) y pegue su propia clave de API: queda solo en la memoria, a menos que marque Recordar la clave en este dispositivo, y cada petición va directamente del navegador al proveedor, que factura el uso en su cuenta. El modo indica lo que puede hacer: solo lectura, planificar primero, preguntar antes de cada cambio (por defecto) o aplicar los cambios automáticamente; un límite de pasos y un tope de gasto terminan una tarea larga.',
       ),
+      demo: (x) => x.host.showAssistant(),
     ),
     TutorialStep(
       id: 'aiAsk',
-      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      chapter: chAi,
       title: t('Pedir, aprovar e desfazer', 'Ask, approve and undo', 'Pedir, aprobar y deshacer'),
       body: t(
         'Escreva o que você quer com as suas palavras, por exemplo "distribua os aspersores do gramado e dimensione". Ele mostra o plano e pede aprovação a cada alteração (Aplicar ou Pular); você pode escrever enquanto ele trabalha e pará-lo a qualquer momento. Cada resposta se desfaz com um clique, e cada mensagem tem Voltar a este ponto. Um modelo pode errar: confira o trabalho dele como o de um colega.',
         'Write what you want in your own words, for example "lay out the lawn heads and size the zones". It shows its plan and asks for approval of each change (Apply or Skip); you can type while it works and stop it at any time. Every answer is undone in one click, and every message has Rewind to here. A model can be wrong: check its work as you would a colleague\'s.',
         'Escriba lo que quiere con sus propias palabras, por ejemplo "distribuye los aspersores del césped y dimensiona". Muestra el plan y pide aprobación para cada cambio (Aplicar u Omitir); puede escribir mientras trabaja y detenerlo en cualquier momento. Cada respuesta se deshace con un clic, y cada mensaje tiene Volver a este punto. Un modelo puede equivocarse: revise su trabajo como el de un colega.',
       ),
+      demo: (x) => x.host.showAssistant(
+        prompt: t(
+          'Por que esta zona tem pressão baixa? Corrija sem trocar a bomba.',
+          'Why is the pressure of this zone low? Fix it without changing the pump.',
+          '¿Por qué esta zona tiene presión baja? Corríjalo sin cambiar la bomba.',
+        ),
+      ),
     ),
     TutorialStep(
       id: 'aiReview',
-      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      chapter: chAi,
       title: t('Revisão, marcas e voz', 'Review, marks and voice', 'Revisión, marcas y voz'),
       body: t(
         '/review faz uma revisão do projeto inteiro sem alterar nada e responde com uma lista de verificação. Marcar ponto e Marcar linha mostram ao assistente onde você quer algo no desenho; o microfone dita a mensagem; arquivos, desenhos, folhas de dados em PDF e fotos de campo com GPS podem ser anexados, colados ou soltos no painel. As conversas ficam neste navegador (as 12 mais recentes de cada projeto) e nunca vão no arquivo do projeto.',
         '/review reviews the whole design without changing anything and answers with a checklist. Mark a point and Mark a line show the assistant where you want something on the drawing; the microphone dictates the message; files, drawings, PDF data sheets and field photos with GPS can be attached, pasted or dropped on the panel. Conversations stay in this browser (the 12 most recent of each project) and never go into the project file.',
         '/review revisa todo el diseño sin cambiar nada y responde con una lista de verificación. Marcar punto y Marcar línea muestran al asistente dónde quiere algo en el dibujo; el micrófono dicta el mensaje; archivos, dibujos, fichas técnicas en PDF y fotos de campo con GPS pueden adjuntarse, pegarse o soltarse en el panel. Las conversaciones quedan en este navegador (las 12 más recientes de cada proyecto) y nunca van al archivo del proyecto.',
       ),
+      demo: (x) => x.host.showAssistant(prompt: '/review'),
     ),
     TutorialStep(
       id: 'shortcuts',
@@ -1644,6 +1984,322 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       ),
       prepare: (x) => x.c.setTool(ToolId.select),
     ),
+  ];
+  // 1.6.0 UI (UI-27): on a phone the actions go through ☰, the round buttons and the bottom tool bar instead of the
+  // mouse and the keyboard: (action, body) of the touch screen, the body null where it holds for both
+  final touch = <String, (String, String?)>{
+    'georef': (
+      t(
+        'Abra ☰ → Arquivo → Georreferência, informe a latitude e a longitude da área e toque em OK',
+        'Open ☰ → File → Georeference, enter the site\'s latitude and longitude and tap OK',
+        'Abra ☰ → Archivo → Georreferencia, indique la latitud y la longitud del área y toque Aceptar',
+      ),
+      null,
+    ),
+    'satellite': (
+      t('No ☰ → Ver, toque em Mapa base: Satélite (Esri World Imagery)', 'In ☰ → View, tap Base map: Satellite (Esri World Imagery)', 'En ☰ → Ver, toque Mapa base: Satélite (Esri World Imagery)'),
+      null,
+    ),
+    'demDownload': (
+      t(
+        'Abra ☰ → Projeto → Baixar elevação da internet (MDT) e toque em Baixar',
+        'Open ☰ → Design → Download elevation from the internet (DEM) and tap Download',
+        'Abra ☰ → Diseño → Descargar elevación de internet (MDT) y toque Descargar',
+      ),
+      null,
+    ),
+    'zoom': (
+      t('Faça pinça com dois dedos sobre o desenho', 'Pinch with two fingers on the drawing', 'Haga pellizco con dos dedos sobre el dibujo'),
+      t(
+        'A pinça aproxima e afasta em torno dos dedos; os botões + e − no canto da prancheta fazem o mesmo.',
+        'Pinching zooms in and out around the fingers; the + and − buttons at the corner of the drawing board do the same.',
+        'El pellizco acerca y aleja alrededor de los dedos; los botones + y − en la esquina del tablero hacen lo mismo.',
+      ),
+    ),
+    'pan': (
+      t('Arraste o desenho com dois dedos', 'Drag the drawing with two fingers', 'Arrastre el dibujo con dos dedos'),
+      t(
+        'Dois dedos movem a vista; um dedo desenha ou seleciona, conforme a ferramenta. Mover vista, no grupo Navegar da barra de baixo, move a vista com um dedo só.',
+        'Two fingers pan the view; one finger draws or selects, depending on the tool. Pan, in the Navigate group of the bottom bar, pans with one finger.',
+        'Dos dedos mueven la vista; un dedo dibuja o selecciona, según la herramienta. Mover vista, en el grupo Navegar de la barra inferior, mueve la vista con un solo dedo.',
+      ),
+    ),
+    'zoomAll': (
+      t('Toque no botão de enquadrar, abaixo de + e −', 'Tap the zoom-all button, under + and −', 'Toque el botón de encuadrar, debajo de + y −'),
+      t(
+        'O botão de enquadrar, no canto da prancheta, e ☰ → Ver → Enquadrar tudo mostram o projeto inteiro.',
+        'The zoom-all button at the corner of the drawing board and ☰ → View → Zoom all show the whole design.',
+        'El botón de encuadrar, en la esquina del tablero, y ☰ → Ver → Encuadrar todo muestran todo el proyecto.',
+      ),
+    ),
+    'select': (
+      t('Toque numa válvula (triângulo laranja) ou num tubo', 'Tap a valve (orange triangle) or a pipe', 'Toque una válvula (triángulo naranja) o una tubería'),
+      t(
+        'Com Selecionar (grupo Navegar), toque num objeto. O botão Somar à seleção, entre os botões redondos, faz cada toque juntar mais um objeto; ✕ volta a Selecionar.',
+        'With Select (Navigate group), tap an object. The Add to selection button, among the round buttons, makes each tap add one more object; ✕ goes back to Select.',
+        'Con Seleccionar (grupo Navegar), toque un objeto. El botón Añadir a la selección, entre los botones redondos, hace que cada toque agregue otro objeto; ✕ vuelve a Seleccionar.',
+      ),
+    ),
+    'window': (
+      t(
+        'Toque e segure um ponto vazio e arraste uma janela sobre um bloco',
+        'Touch and hold an empty spot, then drag a window over a block',
+        'Mantenga pulsado un punto vacío y arrastre una ventana sobre un bloque',
+      ),
+      t(
+        'Com o dedo parado um instante num ponto vazio, arrastar abre uma janela: da esquerda para a direita ela pega o que fica inteiro dentro; da direita para a esquerda, tudo o que ela cruza.',
+        'With the finger held still for a moment on an empty spot, dragging opens a window: left to right it takes what lies fully inside; right to left, everything it crosses.',
+        'Con el dedo quieto un instante en un punto vacío, arrastrar abre una ventana: de izquierda a derecha toma lo que queda entero adentro; de derecha a izquierda, todo lo que cruza.',
+      ),
+    ),
+    'move': (
+      t('Arraste a seleção com um dedo para outro lugar', 'Drag the selection elsewhere with one finger', 'Arrastre la selección a otro lugar con un dedo'),
+      t(
+        'Arraste um objeto selecionado para movê-lo. Com um só objeto selecionado aparecem as alças: arraste um vértice, ou a alça do meio para inserir um vértice.',
+        'Drag a selected object to move it. With a single object selected, grips appear: drag a vertex, or the midpoint grip to insert one.',
+        'Arrastre un objeto seleccionado para moverlo. Con un solo objeto seleccionado aparecen los pinzamientos: arrastre un vértice, o el del medio para insertar uno.',
+      ),
+    ),
+    'undo': (
+      t('Toque em Desfazer (a seta curva) para desfazer o movimento', 'Tap Undo (the curved arrow) to undo the move', 'Toque Deshacer (la flecha curva) para deshacer el movimiento'),
+      t(
+        'O botão Desfazer, entre os botões redondos, desfaz a última ação, e ☰ → Editar tem Refazer. Toda edição, até o dimensionamento, se desfaz.',
+        'The Undo button, among the round buttons, undoes the last action, and ☰ → Edit has Redo. Every edit, sizing included, can be undone.',
+        'El botón Deshacer, entre los botones redondos, deshace la última acción, y ☰ → Editar tiene Rehacer. Toda edición, incluso el dimensionamiento, se deshace.',
+      ),
+    ),
+    'history': (t('Toque no botão Histórico (o relógio)', 'Tap the History button (the clock)', 'Toque el botón Historial (el reloj)'), null),
+    'properties': (
+      t('Selecione uma válvula, toque em Propriedades e mude o nome dela', 'Select a valve, tap Properties and change its name', 'Seleccione una válvula, toque Propiedades y cambie su nombre'),
+      null,
+    ),
+    'delete': (
+      t('Selecione algo e toque na lixeira', 'Select something and tap the bin', 'Seleccione algo y toque la papelera'),
+      t(
+        'A lixeira aparece entre os botões redondos quando há algo selecionado (ou ☰ → Editar → Excluir seleção). Desfazer traz de volta.',
+        'The bin shows among the round buttons while something is selected (or ☰ → Edit → Delete selection). Undo brings it back.',
+        'La papelera aparece entre los botones redondos cuando hay algo seleccionado (o ☰ → Editar → Eliminar selección). Deshacer lo trae de vuelta.',
+      ),
+    ),
+    'duplicate': (
+      t('Selecione um objeto e toque em ☰ → Editar → Duplicar seleção', 'Select an object and tap ☰ → Edit → Duplicate selection', 'Seleccione un objeto y toque ☰ → Editar → Duplicar selección'),
+      null,
+    ),
+    'selectAll': (t('Toque em ☰ → Editar → Selecionar tudo', 'Tap ☰ → Edit → Select all', 'Toque ☰ → Editar → Seleccionar todo'), null),
+    'layers': (t('Toque em Propriedades e abra a aba Camadas', 'Tap Properties and open the Layers tab', 'Toque Propiedades y abra la pestaña Capas'), null),
+    'snap': (
+      t('Toque em ☰ → Ver → Snap para alternar', 'Tap ☰ → View → Snap to toggle it', 'Toque ☰ → Ver → Snap para alternarlo'),
+      t(
+        'O snap prende o dedo a nós, pontas, meios e tubos: é assim que emissores e válvulas se ligam aos tubos. O ☰ → Ver também tem o encaixe na grade e a grade.',
+        'Snap holds the finger to nodes, ends, midpoints and pipes: this is how emitters and valves connect to pipes. ☰ → View also has the grid snap and the grid.',
+        'El snap sujeta el dedo a nodos, extremos, puntos medios y tuberías: así se conectan emisores y válvulas a las tuberías. ☰ → Ver también tiene el ajuste a la cuadrícula y la cuadrícula.',
+      ),
+    ),
+    'ortho': (t('Toque em ☰ → Ver → Orto para alternar', 'Tap ☰ → View → Ortho to toggle it', 'Toque ☰ → Ver → Orto para alternarlo'), null),
+    'line': (
+      t(
+        'Escolha Linha no grupo Desenhar da barra de baixo e toque em dois pontos',
+        'Pick Line in the Draw group of the bottom bar and tap two points',
+        'Elija Línea en el grupo Dibujar de la barra inferior y toque dos puntos',
+      ),
+      null,
+    ),
+    'shiftLock': (
+      t('Ligue ☰ → Ver → Rastreamento polar e desenhe uma linha', 'Switch ☰ → View → Polar tracking on and draw a line', 'Active ☰ → Ver → Rastreo polar y dibuje una línea'),
+      t(
+        'No toque não há Shift: o rastreamento polar (☰ → Ver: 15°, 30°, 45° ou 90°) prende cada trecho aos ângulos escolhidos a partir do ponto anterior.',
+        'There is no Shift on a touch screen: polar tracking (☰ → View: 15°, 30°, 45° or 90°) holds each segment to the chosen angles from the previous point.',
+        'En pantalla táctil no hay Mayús: el rastreo polar (☰ → Ver: 15°, 30°, 45° o 90°) sujeta cada tramo a los ángulos elegidos desde el punto anterior.',
+      ),
+    ),
+    'polyline': (
+      t('Escolha Polilinha (grupo Desenhar), toque em três pontos e em ✓', 'Pick Polyline (Draw group), tap three points and ✓', 'Elija Polilínea (grupo Dibujar), toque tres puntos y ✓'),
+      t(
+        'Toque nos vértices; ✓ Concluir termina a polilinha e ✕ Cancelar desiste dela.',
+        'Tap the vertices; ✓ Done ends the polyline and ✕ Cancel drops it.',
+        'Toque los vértices; ✓ Terminar acaba la polilínea y ✕ Cancelar la descarta.',
+      ),
+    ),
+    'circle': (
+      t('Escolha Círculo (grupo Desenhar) e toque no centro e no raio', 'Pick Circle (Draw group) and tap the centre and the radius', 'Elija Círculo (grupo Dibujar) y toque el centro y el radio'),
+      null,
+    ),
+    'text': (t('Escolha Texto (grupo Desenhar), toque no desenho e escreva', 'Pick Text (Draw group), tap the drawing and write', 'Elija Texto (grupo Dibujar), toque el dibujo y escriba'), null),
+    'dimension': (
+      t(
+        'Escolha Cota (grupo Desenhar) e toque em dois pontos e na posição da cota',
+        'Pick Dimension (Draw group) and tap two points and the dimension position',
+        'Elija Cota (grupo Dibujar) y toque dos puntos y la posición de la cota',
+      ),
+      null,
+    ),
+    'symbol': (t('Escolha Símbolo (grupo Desenhar) e toque onde inseri-lo', 'Pick Symbol (Draw group) and tap where to insert it', 'Elija Símbolo (grupo Dibujar) y toque dónde insertarlo'), null),
+    'commands': (
+      t('Toque em ⌨, digite REC e toque em Executar', 'Tap ⌨, type REC and tap Run', 'Toque ⌨, escriba REC y toque Ejecutar'),
+      t(
+        'O botão ⌨ abre a linha de comando com o teclado da tela: digite um alias (L, PL, C, REC, ZP, MP, SL, V, WS…), uma coordenada (25,10 · @5,0 · @25<90) ou um comprimento e toque em Executar.',
+        'The ⌨ button opens the command line with the on-screen keyboard: type an alias (L, PL, C, REC, ZP, MP, SL, V, WS…), a coordinate (25,10 · @5,0 · @25<90) or a length and tap Run.',
+        'El botón ⌨ abre la línea de comandos con el teclado de la pantalla: escriba un alias (L, PL, C, REC, ZP, MP, SL, V, WS…), una coordenada (25,10 · @5,0 · @25<90) o una longitud y toque Ejecutar.',
+      ),
+    ),
+    'editing': (t('Escolha Rotacionar, Espelhar ou Aparar no grupo Editar', 'Pick Rotate, Mirror or Trim in the Edit group', 'Elija Rotar, Simetría o Recortar en el grupo Editar'), null),
+    'contour': (
+      t(
+        'Escolha Curva de nível (grupo Terreno), toque nos pontos, em ✓ e confirme a elevação',
+        'Pick Contour (Terrain group), tap the points, ✓ and confirm the elevation',
+        'Elija Curva de nivel (grupo Terreno), toque los puntos, ✓ y confirme la elevación',
+      ),
+      null,
+    ),
+    'spot': (
+      t(
+        'Escolha Cota de ponto (grupo Terreno), toque num ponto e informe a elevação',
+        'Pick Spot height (Terrain group), tap a point and give the elevation',
+        'Elija Cota de punto (grupo Terreno), toque un punto e indique la elevación',
+      ),
+      null,
+    ),
+    'area': (
+      t('Escolha Área irrigada (grupo Terreno), toque nos cantos e em ✓', 'Pick Irrigated area (Terrain group), tap the corners and ✓', 'Elija Área regada (grupo Terreno), toque las esquinas y ✓'),
+      null,
+    ),
+    'supply': (
+      t('Escolha Fonte de água (grupo Principal) e toque onde ela fica', 'Pick Water supply (Mainline group) and tap where it is', 'Elija Fuente de agua (grupo Principal) y toque dónde está'),
+      null,
+    ),
+    'mainPipe': (
+      t(
+        'Escolha Tubo principal (grupo Principal), desenhe a partir da fonte nova e toque em ✓',
+        'Pick Mainline pipe (Mainline group), draw from the new supply and tap ✓',
+        'Elija Tubería principal (grupo Principal), dibuje desde la fuente nueva y toque ✓',
+      ),
+      null,
+    ),
+    'pump': (
+      t(
+        'Escolha Bomba (grupo Principal) e toque sobre o tubo principal',
+        'Pick Pump (Mainline group) and tap on the mainline pipe',
+        'Elija Bomba (grupo Principal) y toque sobre la tubería principal',
+      ),
+      null,
+    ),
+    'junction': (t('Toque em ⌨, execute J e toque sobre um tubo de zona', 'Tap ⌨, run J and tap on a zone pipe', 'Toque ⌨, ejecute J y toque sobre una tubería de zona'), null),
+    'valve': (
+      t(
+        'Escolha Válvula (grupo Zona) e toque na ponta do tubo principal',
+        'Pick Valve (Zone group) and tap the end of the mainline pipe',
+        'Elija Válvula (grupo Zona) y toque el extremo de la tubería principal',
+      ),
+      null,
+    ),
+    'zonePipe': (
+      t(
+        'Escolha Tubo de zona (grupo Zona), desenhe a partir da válvula e toque em ✓',
+        'Pick Zone pipe (Zone group), draw from the valve and tap ✓',
+        'Elija Tubería de zona (grupo Zona), dibuje desde la válvula y toque ✓',
+      ),
+      null,
+    ),
+    'sprayline': (
+      t(
+        'Escolha Lateral (grupo Zona), desenhe a partir da linha de derivação e toque em ✓',
+        'Pick Sprayline (Zone group), draw from the submain and tap ✓',
+        'Elija Lateral (grupo Zona), dibuje desde el portalaterales y toque ✓',
+      ),
+      null,
+    ),
+    'outlet': (
+      t('Escolha Emissor (grupo Zona) e toque sobre a linha de derivação', 'Pick Outlet (Zone group) and tap on the submain', 'Elija Emisor (grupo Zona) y toque sobre el portalaterales'),
+      null,
+    ),
+    'block': (
+      t(
+        'Escolha Bloco de laterais (grupo Zona), toque nos quatro cantos, em ✓ e confirme',
+        'Pick Lateral block (Zone group), tap the four corners, ✓ and confirm',
+        'Elija Bloque de laterales (grupo Zona), toque las cuatro esquinas, ✓ y confirme',
+      ),
+      null,
+    ),
+    'grid': (
+      t(
+        'Escolha Grade de aspersores (grupo Zona), toque nos cantos, em ✓ e confirme',
+        'Pick Sprinkler grid (Zone group), tap the corners, ✓ and confirm',
+        'Elija Malla de aspersores (grupo Zona), toque las esquinas, ✓ y confirme',
+      ),
+      null,
+    ),
+    'check': (t('Execute a verificação em ☰ → Projeto', 'Run the check from ☰ → Design', 'Ejecute la verificación desde ☰ → Diseño'), null),
+    'design': (t('Toque em ▶, no alto da tela', 'Tap ▶ at the top of the screen', 'Toque ▶ arriba en la pantalla'), null),
+    'designModes': (t('Em ☰ → Projeto, escolha Analisar (tamanhos atuais)', 'In ☰ → Design, choose Analyse (existing sizes)', 'En ☰ → Diseño, elija Analizar (tamaños actuales)'), null),
+    'overlay': (t('Em ☰ → Ver, escolha Colorir por pressão', 'In ☰ → View, choose Colour by pressure', 'En ☰ → Ver, elija Colorear por presión'), null),
+    'minMax': (t('Em ☰ → Ver, escolha Marcar pressão mín/máx por zona', 'In ☰ → View, choose Mark min/max pressure per zone', 'En ☰ → Ver, elija Marcar presión mín/máx por zona'), null),
+    'densogram': (
+      t('Abra ☰ → Projeto → Densograma e toque em Mostrar no desenho', 'Open ☰ → Design → Densogram and tap Show on the drawing', 'Abra ☰ → Diseño → Densograma y toque Mostrar en el dibujo'),
+      null,
+    ),
+    'reports': (
+      t('Toque no botão Relatórios (a tabela)', 'Tap the Reports button (the table)', 'Toque el botón Informes (la tabla)'),
+      t(
+        'O botão Relatórios abre o painel numa folha deslizante, com uma aba por assunto; arraste-a para baixo para fechar.',
+        'The Reports button opens the panel in a sliding sheet, with one tab per subject; drag it down to close it.',
+        'El botón Informes abre el panel en una hoja deslizante, con una pestaña por tema; arrástrela hacia abajo para cerrarla.',
+      ),
+    ),
+    'reportPipes': (t('Nos relatórios, toque na aba Tubos', 'In the reports, tap the Pipes tab', 'En los informes, toque la pestaña Tuberías'), null),
+    'bom': (t('Nos relatórios, toque na aba Lista de materiais', 'In the reports, tap the Bill of materials tab', 'En los informes, toque la pestaña Lista de materiales'), null),
+    'mainlineTab': (
+      t('Nos relatórios, toque na aba Linha principal/ponto de trabalho', 'In the reports, tap the Mainline/duty tab', 'En los informes, toque la pestaña Línea principal/punto de trabajo'),
+      null,
+    ),
+    'agronomy': (t('Nos relatórios, toque na aba Agronomia', 'In the reports, tap the Agronomy tab', 'En los informes, toque la pestaña Agronomía'), null),
+    'schedule': (t('Nos relatórios, toque na aba Programação', 'In the reports, tap the Schedule tab', 'En los informes, toque la pestaña Programación'), null),
+    'messages': (t('Nos relatórios, toque na aba Mensagens', 'In the reports, tap the Messages tab', 'En los informes, toque la pestaña Mensajes'), null),
+    'hgl': (
+      t(
+        'Selecione uma lateral e, nos relatórios, toque na aba Linha piezométrica',
+        'Select a lateral and, in the reports, tap the Hydraulic grade line tab',
+        'Seleccione una lateral y, en los informes, toque la pestaña Línea piezométrica',
+      ),
+      null,
+    ),
+    'feed': (
+      t(
+        'Selecione uma lateral e toque em ☰ → Projeto → Envelope de posição da linha de derivação',
+        'Select a lateral and tap ☰ → Design → Allowable submain position',
+        'Seleccione una lateral y toque ☰ → Diseño → Posición admisible del portalaterales',
+      ),
+      null,
+    ),
+    'profile': (t('Escolha Perfil (grupo Navegar), toque em dois pontos e em ✓', 'Pick Profile (Navigate group), tap two points and ✓', 'Elija Perfil (grupo Navegar), toque dos puntos y ✓'), null),
+    'pivot': (
+      t(
+        'Escolha Pivô (grupo Principal) e toque no ponto do pivô e no fim da lateral',
+        'Pick Pivot (Mainline group) and tap the pivot point and the end of the span',
+        'Elija Pivote (grupo Principal) y toque el punto del pivote y el fin de la lateral',
+      ),
+      null,
+    ),
+    'wiring': (
+      t(
+        'Escolha Controlador (grupo Elétrica) e toque perto das válvulas',
+        'Pick Controller (Electrical group) and tap near the valves',
+        'Elija Controlador (grupo Eléctrico) y toque cerca de las válvulas',
+      ),
+      null,
+    ),
+    'save': (
+      t('Toque no botão Salvar, no alto da tela', 'Tap the Save button at the top of the screen', 'Toque el botón Guardar arriba en la pantalla'),
+      t(
+        'Salvar baixa o projeto como JSON aberto (.oci.json), com os resultados; ☰ → Arquivo → Abrir projeto o abre de novo. O projeto também fica salvo sozinho neste navegador, e cada Salvar guarda uma versão (☰ → Arquivo → Histórico de versões).',
+        'Save downloads the project as open JSON (.oci.json), results included; ☰ → File → Open project opens it again. The project is also kept by itself in this browser, and every Save keeps a version (☰ → File → Version history).',
+        'Guardar descarga el proyecto como JSON abierto (.oci.json), con los resultados; ☰ → Archivo → Abrir proyecto lo abre de nuevo. El proyecto también queda guardado solo en este navegador, y cada Guardar conserva una versión (☰ → Archivo → Historial de versiones).',
+      ),
+    ),
+    'palette': (t('Abra ☰ e escreva "densograma" na busca do topo', 'Open ☰ and type "densogram" in the search at the top', 'Abra ☰ y escriba «densograma» en la búsqueda de arriba'), null),
+  };
+  return [
+    for (final s in steps)
+      if (touch[s.id] case (final action, final body)) s.withTouch(action: action, body: body) else s,
   ];
 }
 
@@ -1671,6 +2327,11 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
   Timer? _advance;
   int _advanceFor = -1;
 
+  /// 1.6.0 UI: some states notify nobody the overlay listens to (the AI
+  /// assistant opened in a sheet): looked at again now and then.
+  Timer? _poll;
+  bool _lastDone = false;
+
   @override
   void initState() {
     super.initState();
@@ -1678,10 +2339,19 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     widget.tutorial.addListener(_onChange);
     widget.controller.addListener(_onChange);
     WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
+    _poll = Timer.periodic(const Duration(milliseconds: 800), (_) => _pollDone());
+  }
+
+  void _pollDone() {
+    if (!mounted || !widget.tutorial.active) return;
+    final done = widget.tutorial.current.isDone?.call(_ctx) ?? false;
+    if (done != _lastDone) setState(() => _lastDone = done);
+    _checkDone();
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _advance?.cancel();
     widget.tutorial.removeListener(_onChange);
     widget.controller.removeListener(_onChange);
@@ -1766,7 +2436,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     if (!t.active) return const SizedBox.shrink();
     final step = t.current;
     final lang = widget.lang;
-    final done = step.isDone?.call(_ctx) ?? false;
+    final done = _lastDone = step.isDone?.call(_ctx) ?? false;
     final size = MediaQuery.sizeOf(context);
     final target = step.target != null ? _target : null;
     // Re-measure after this frame so window resizes and layout changes are
@@ -1815,11 +2485,11 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
               children: [
                 Row(
                   children: [
+                    // 1.6.0 UI: the chapter and the step open the chapters and the tracks
                     Expanded(
-                      child: Text(
-                        '${step.chapter.isEmpty ? '' : '${step.chapter} · '}${tutorialText('step', lang).replaceAll('{i}', '${t.index + 1}').replaceAll('{n}', '${t.steps.length}')}',
-                        style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1),
-                        overflow: TextOverflow.ellipsis,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: _chaptersMenu(step, lang),
                       ),
                     ),
                     Tooltip(
@@ -1854,7 +2524,8 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(step.body, style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText)),
+                        Text(step.bodyFor(touch: compact), style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText)),
+                        ..._starts(step, lang, compact),
                         // the phone: where the menus and the keyboard are (it scrolls with the text)
                         if (step.action != null && compact) ...[
                           const SizedBox(height: 6),
@@ -1883,7 +2554,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            done ? tutorialText(t.autoAdvance && !t.isLast ? 'doneNext' : 'done', lang) : '${tutorialText('action', lang)}: ${step.action}',
+                            done ? tutorialText(t.autoAdvance && !t.isLast ? 'doneNext' : 'done', lang) : '${tutorialText('action', lang)}: ${step.actionFor(touch: compact)}',
                             style: const TextStyle(fontSize: 12),
                           ),
                         ),
@@ -1974,7 +2645,103 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
       child: Align(alignment: Alignment.topLeft, child: card),
     );
   }
+  /// "Chapter · Step i of n ▾": a menu of the chapters of the track and of
+  /// the tracks (1.6.0 UI, PRD-24).
+  Widget _chaptersMenu(TutorialStep step, String lang) {
+    final t = widget.tutorial;
+    final header = '${step.chapter.isEmpty ? '' : '${step.chapter} · '}${tutorialText('step', lang).replaceAll('{i}', '${t.index + 1}').replaceAll('{n}', '${t.steps.length}')}';
+    final small = TextStyle(fontSize: 11, color: Cad.fg54);
+    return PopupMenuButton<String>(
+      key: const Key('tut_chapters'),
+      tooltip: tutorialText('chapterMenu', lang),
+      padding: EdgeInsets.zero,
+      onSelected: (v) {
+        if (v.startsWith('c:')) {
+          t.goToChapter(v.substring(2));
+        } else if (v.startsWith('t:')) {
+          t.switchTrack(TutorialTrack.values.byName(v.substring(2)));
+        }
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem<String>(enabled: false, height: 28, child: Text(tutorialText('chapters', lang), style: small)),
+        for (final ch in tutorialChapters(t.steps))
+          CheckedPopupMenuItem<String>(
+            key: Key('tut_chapter_$ch'),
+            value: 'c:$ch',
+            checked: ch == step.chapter,
+            child: Text(ch, style: const TextStyle(fontSize: 12.5)),
+          ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(enabled: false, height: 28, child: Text(tutorialText('tracks', lang), style: small)),
+        for (final tr in TutorialTrack.values)
+          CheckedPopupMenuItem<String>(
+            key: Key('tut_track_${tr.name}'),
+            value: 't:${tr.name}',
+            checked: tr == t.track,
+            child: Text('${tutorialTrackLabel(tr, lang)} · ${tutorialText('trackSteps', lang).replaceAll('{n}', '${tutorialTrack(t.all, tr).length}')}', style: const TextStyle(fontSize: 12.5)),
+          ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(header, style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1), overflow: TextOverflow.ellipsis),
+            ),
+            Icon(Icons.arrow_drop_down, size: 16, color: Cad.fg54),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// On the first step: continue where the user stopped, and on a phone the
+  /// short track for touch screens.
+  List<Widget> _starts(TutorialStep step, String lang, bool compact) {
+    final t = widget.tutorial;
+    if (t.index != 0) return const [];
+    final out = <Widget>[];
+    final saved = TutorialController.savedProgress();
+    if (saved != null) {
+      final (track, id) = saved;
+      final list = tutorialTrack(t.all, track);
+      final at = list.indexWhere((s) => s.id == id);
+      if (at > 0 && !(track == t.track && id == step.id)) {
+        out.addAll([
+          const SizedBox(height: 8),
+          FilledButton.tonalIcon(
+            key: const Key('tut_resume'),
+            onPressed: t.resume,
+            icon: const Icon(Icons.play_arrow, size: 16),
+            label: Text(tutorialText('resume', lang).replaceAll('{c}', list[at].chapter).replaceAll('{i}', '${at + 1}'), style: const TextStyle(fontSize: 12)),
+          ),
+        ]);
+      }
+    }
+    if (compact && t.track == TutorialTrack.full) {
+      out.addAll([
+        const SizedBox(height: 4),
+        TextButton.icon(
+          key: const Key('tut_touch_track'),
+          onPressed: () => t.switchTrack(TutorialTrack.touch),
+          icon: const Icon(Icons.touch_app_outlined, size: 16),
+          label: Text(tutorialText('touchTrack', lang), style: const TextStyle(fontSize: 12)),
+        ),
+      ]);
+    }
+    return out;
+  }
 }
+
+/// What the menu of the card calls [track].
+String tutorialTrackLabel(TutorialTrack track, String lang) => tutorialText(switch (track) {
+  TutorialTrack.full => 'trackFull',
+  TutorialTrack.touch => 'trackTouch',
+  TutorialTrack.drip => 'trackDrip',
+  TutorialTrack.landscape => 'trackLandscape',
+  TutorialTrack.pivot => 'trackPivot',
+}, lang);
 
 Widget _scrollIf(bool scroll, Widget child) => scroll ? SingleChildScrollView(child: child) : child;
 

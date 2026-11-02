@@ -85,11 +85,14 @@ class _TocEntry {
   final int page;
 }
 
+/// The project's name, "New project" in the current language when it has none (a new project keeps no name).
+String _projectName(DocContext ctx) => ctx.project.meta.name.trim().isEmpty ? ctx.t('name.newProject') : ctx.project.meta.name;
+
 class _DocWriter {
   _DocWriter(this.ctx, this.o)
     : fonts = ctx.fonts ?? PdfFonts.shared,
       doc = PdfDocument(
-        title: '${ctx.project.meta.name} - ${o.title.isNotEmpty ? o.title : docProfileTitle(ctx.t, o.profile)}',
+        title: '${_projectName(ctx)} - ${o.title.isNotEmpty ? o.title : docProfileTitle(ctx.t, o.profile)}',
         author: ctx.project.meta.titleBlock.responsible.isNotEmpty ? ctx.project.meta.titleBlock.responsible : ctx.project.meta.designer,
         subject: docProfileTitle(ctx.t, o.profile),
         fonts: ctx.fonts,
@@ -130,7 +133,7 @@ class _DocWriter {
     // header: the document's title and the project
     p.fillColor(_grey);
     p.text(left, top + 2, fonts.fit(title, avail * 0.55, 7.5), size: 7.5);
-    p.text(right, top + 2, fonts.fit(project.meta.name, avail * 0.4, 7.5), size: 7.5, align: PdfAlign.right);
+    p.text(right, top + 2, fonts.fit(_projectName(ctx), avail * 0.4, 7.5), size: 7.5, align: PdfAlign.right);
     p.strokeColor(_rule);
     p.lineWidth(0.5);
     p.dash(false);

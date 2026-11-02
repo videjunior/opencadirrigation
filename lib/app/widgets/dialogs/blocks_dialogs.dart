@@ -10,10 +10,9 @@ import 'package:flutter/material.dart';
 import '../../../core/model/blocks.dart';
 import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
-import '../../../core/units.dart';
 import '../../state/controller.dart';
 import '../../tools/insert_block_tool.dart';
-import '../fields.dart' show ScrollBody;
+import '../fields.dart' show ScrollBody, fmtUi, parseUiNumber; // 1.6.0 UI (UI-08): fmtUi, parseUiNumber
 import 'terrain_dialogs.dart' show dialogWidth;
 import '../../theme.dart';
 
@@ -44,7 +43,7 @@ Future<BlockDefinition?> showSaveBlockDialog(BuildContext context, ProjectContro
   final b = selected.fold(Bounds.empty, (a, e) => a.union(e.bounds));
   final name = TextEditingController(text: library.uniqueName(t('blk.default')));
   final desc = TextEditingController();
-  final bx = TextEditingController(text: fmt(c.units.lengthFromSi(b.minX), 3)), by = TextEditingController(text: fmt(c.units.lengthFromSi(b.minY), 3));
+  final bx = TextEditingController(text: fmtUi(c.units.lengthFromSi(b.minX), 3)), by = TextEditingController(text: fmtUi(c.units.lengthFromSi(b.minY), 3));
   var base = _Base.corner;
   String? error;
   return showDialog<BlockDefinition>(
@@ -133,7 +132,7 @@ Future<BlockDefinition?> showSaveBlockDialog(BuildContext context, ProjectContro
                   case _Base.center:
                     at = b.center;
                   case _Base.typed:
-                    final x = parseNumber(bx.text), y = parseNumber(by.text);
+                    final x = parseUiNumber(bx.text), y = parseUiNumber(by.text);
                     if (x == null || y == null) {
                       setState(() => error = t('blk.invalid'));
                       return;
@@ -160,7 +159,7 @@ Future<BlockInsertRequest?> showInsertBlockDialog(BuildContext context, ProjectC
   var selected = library.isEmpty ? -1 : 0;
   final rot = TextEditingController(text: '0'), scale = TextEditingController(text: '1');
   final centre = c.camera.center;
-  final ax = TextEditingController(text: fmt(c.units.lengthFromSi(centre.x), 3)), ay = TextEditingController(text: fmt(c.units.lengthFromSi(centre.y), 3));
+  final ax = TextEditingController(text: fmtUi(c.units.lengthFromSi(centre.x), 3)), ay = TextEditingController(text: fmtUi(c.units.lengthFromSi(centre.y), 3));
   var pick = true;
   String? error;
   return showDialog<BlockInsertRequest>(
@@ -270,8 +269,8 @@ Future<BlockInsertRequest?> showInsertBlockDialog(BuildContext context, ProjectC
                 onPressed: selected < 0
                     ? null
                     : () {
-                        final r = parseNumber(rot.text), s = parseNumber(scale.text);
-                        final x = parseNumber(ax.text), y = parseNumber(ay.text);
+                        final r = parseUiNumber(rot.text), s = parseUiNumber(scale.text);
+                        final x = parseUiNumber(ax.text), y = parseUiNumber(ay.text);
                         if (r == null || s == null || s <= 0 || (!pick && (x == null || y == null))) {
                           setState(() => error = t('blk.invalid'));
                           return;

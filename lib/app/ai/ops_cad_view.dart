@@ -89,7 +89,8 @@ Project blankProject(ProjectController c, {String? name}) {
   p.params.powerCostPerKwh = defaults.powerCostPerKwh * (rate ?? 1);
   p.params.currencyCode = code;
   p.params.currency = currencySymbol(code);
-  p.meta.name = (name ?? '').trim().isEmpty ? c.t('name.newProject') : name!.trim();
+  // 1.6.0 UI: unnamed unless named (the tab shows "New project" in the user's language)
+  p.meta.name = (name ?? '').trim();
   return p;
 }
 

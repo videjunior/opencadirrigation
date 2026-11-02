@@ -18,6 +18,7 @@ import 'painter.dart';
 import 'scene_cache.dart';
 import 'snapping.dart';
 import '../theme.dart';
+import '../widgets/layout_mode.dart' show touchInput; // 1.6.0 UI
 
 class CadCanvas extends StatefulWidget {
   const CadCanvas({super.key, required this.controller, required this.host, required this.focusNode, this.workspace, this.onArray});
@@ -544,11 +545,12 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
                       top: 8,
                       child: Column(
                         children: [
-                          _roundButton(Icons.add, () => c.zoomBy(1.25)),
+                          // 1.6.0 UI (UI-23): named for the screen reader and the pointer, finger-sized on touch screens
+                          _roundButton(Icons.add, () => c.zoomBy(1.25), c.t('view.zoomIn'), const Key('canvas_zoom_in')),
                           const SizedBox(height: 4),
-                          _roundButton(Icons.remove, () => c.zoomBy(0.8)),
+                          _roundButton(Icons.remove, () => c.zoomBy(0.8), c.t('view.zoomOut'), const Key('canvas_zoom_out')),
                           const SizedBox(height: 4),
-                          _roundButton(Icons.fit_screen, c.zoomAll),
+                          _roundButton(Icons.fit_screen, c.zoomAll, c.t('view.zoomAll'), const Key('canvas_zoom_all')),
                         ],
                       ),
                     ),
@@ -562,19 +564,31 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     );
   }
 
-  Widget _roundButton(IconData icon, VoidCallback onTap) => Material(
-    color: Cad.overlay,
-    shape: const CircleBorder(),
-    child: InkWell(
-      customBorder: const CircleBorder(),
-      onTap: onTap,
-      child: SizedBox(
-        width: math.max(28, 32),
-        height: 32,
-        child: Icon(icon, size: 16, color: Cad.fg70),
+  Widget _roundButton(IconData icon, VoidCallback onTap, String label, Key key) {
+    final side = touchInput ? 48.0 : 32.0;
+    return Tooltip(
+      message: label,
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: true,
+        label: label,
+        child: Material(
+          color: Cad.overlay,
+          shape: const CircleBorder(),
+          child: InkWell(
+            key: key,
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: SizedBox(
+              width: side,
+              height: side,
+              child: Icon(icon, size: touchInput ? 22 : 16, color: Cad.fg70),
+            ),
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// The credit of the base map over the canvas, as the sources ask: plain

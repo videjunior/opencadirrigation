@@ -12,6 +12,7 @@ import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
+import '../../project_name.dart'; // 1.6.0 UI
 
 Future<void> showDensogramDialog(BuildContext context, ProjectController c) {
   final t = c.t;
@@ -114,23 +115,25 @@ Future<void> showDensogramDialog(BuildContext context, ProjectController c) {
                     kv(t('dens.target'), t(d.masked ? 'dens.targetAreas' : 'dens.targetWetted')),
                     kv(
                       t('dens.area'),
-                      c.units.length == LengthUnit.ft ? '${fmt(s.areaM2 / 0.09290304, 0)} ft² (${fmt(c.units.areaFromSi(s.areaM2), 3)} ac)' : '${fmt(s.areaM2, 0)} m² (${fmt(s.areaM2 / 10000, 3)} ha)',
+                      c.units.length == LengthUnit.ft
+                          ? '${fmtUi(s.areaM2 / 0.09290304, 0)} ft² (${fmtUi(c.units.areaFromSi(s.areaM2), 3)} ac)'
+                          : '${fmtUi(s.areaM2, 0)} m² (${fmtUi(s.areaM2 / 10000, 3)} ha)',
                     ),
-                    kv(t('dens.cellUsed'), '${fmt(c.units.lengthFromSi(d.cell), 2)} ${c.units.lengthLabel}'),
+                    kv(t('dens.cellUsed'), '${fmtUi(c.units.lengthFromSi(d.cell), 2)} ${c.units.lengthLabel}'),
                     kv(t('dens.basis'), t(d.fromResults ? 'dens.fromResults' : 'dens.nominal')),
-                    kv(t('dens.mean'), '${fmt(c.units.depthFromMm(s.mean), 2)} ${c.units.depthRateLabel}'),
-                    kv(t('dens.minMax'), '${fmt(c.units.depthFromMm(s.min), 2)} / ${fmt(c.units.depthFromMm(s.max), 2)} ${c.units.depthRateLabel}'),
-                    kv('CU (Christiansen)', '${fmt(s.cu, 1)} %', color: grade(s.cu, 84, 75)),
-                    kv('DU (${t('dens.lowQuarter')})', '${fmt(s.du, 1)} %', color: grade(s.du, 75, 65)),
-                    kv(t('dens.sc'), s.sc.isFinite ? fmt(s.sc, 2) : '∞', color: s.sc <= 1.3 ? Cad.ok : (s.sc <= 1.5 ? Cad.warning : Cad.unconnected)),
-                    kv(t('dens.dry'), '${fmt(s.dryPct, 1)} %', color: s.dryPct <= 2 ? null : Cad.warning),
+                    kv(t('dens.mean'), '${fmtUi(c.units.depthFromMm(s.mean), 2)} ${c.units.depthRateLabel}'),
+                    kv(t('dens.minMax'), '${fmtUi(c.units.depthFromMm(s.min), 2)} / ${fmtUi(c.units.depthFromMm(s.max), 2)} ${c.units.depthRateLabel}'),
+                    kv('CU (Christiansen)', '${fmtUi(s.cu, 1)} %', color: grade(s.cu, 84, 75)),
+                    kv('DU (${t('dens.lowQuarter')})', '${fmtUi(s.du, 1)} %', color: grade(s.du, 75, 65)),
+                    kv(t('dens.sc'), s.sc.isFinite ? fmtUi(s.sc, 2) : '∞', color: s.sc <= 1.3 ? Cad.ok : (s.sc <= 1.5 ? Cad.warning : Cad.unconnected)),
+                    kv(t('dens.dry'), '${fmtUi(s.dryPct, 1)} %', color: s.dryPct <= 2 ? null : Cad.warning),
                     // every area against its own mean (zones of different rates)
                     if (d.areas.length > 1) ...[
                       SectionTitle(t('dens.targetAreas')),
                       for (var i = 0; i < d.areas.length; i++)
                         kv(
                           d.areas[i].name.isNotEmpty ? d.areas[i].name : '${t('tool.area')} ${i + 1}',
-                          '${fmt(c.units.depthFromMm(d.areas[i].stats.mean), 1)} ${c.units.depthRateLabel} · CU ${fmt(d.areas[i].stats.cu, 0)} % · DU ${fmt(d.areas[i].stats.du, 0)} %',
+                          '${fmtUi(c.units.depthFromMm(d.areas[i].stats.mean), 1)} ${c.units.depthRateLabel} · CU ${fmtUi(d.areas[i].stats.cu, 0)} % · DU ${fmtUi(d.areas[i].stats.du, 0)} %',
                           color: grade(d.areas[i].stats.cu, 84, 75),
                         ),
                     ],
@@ -144,7 +147,7 @@ Future<void> showDensogramDialog(BuildContext context, ProjectController c) {
           actions: [
             TextButton(
               key: const Key('dens_csv'),
-              onPressed: d.isEmpty ? null : () => saveTextFile('${c.project.meta.name}_densogram.csv', d.toCsv(), mime: 'text/csv'),
+              onPressed: d.isEmpty ? null : () => saveTextFile('${projectFileStem(c.t, c.project.meta.name)}_densogram.csv', d.toCsv(), mime: 'text/csv'),
               child: Text(t('dens.exportCsv')),
             ),
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
