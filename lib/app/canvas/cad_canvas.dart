@@ -113,9 +113,12 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   void _onController() {
     if (_tool.id != c.activeTool) {
-      _tool.cancel();
+      final old = _tool;
       _tool = createTool(c.activeTool, c, widget.host);
       _snap = null;
+      // 1.6.0 EDT: the old tool keeps a polyline in progress (CAD-10); the
+      // new one is in place first, as keeping it notifies again
+      old.leave();
     }
     _redraw();
   }
@@ -349,7 +352,12 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   // keys/hotkeys.dart), whatever widget has the focus.
   @override
   void toolKey(String key) {
-    _tool.onKey(key);
+    // 1.6.0 EDT: 'Cancel' (the Cancel button) drops what is in progress
+    if (key == 'Cancel') {
+      _tool.cancel();
+    } else {
+      _tool.onKey(key);
+    }
     _redraw();
   }
 

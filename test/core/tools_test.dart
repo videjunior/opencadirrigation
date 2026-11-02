@@ -140,7 +140,11 @@ void main() {
       clicks(pl3, [const Pt(0, 40), const Pt(5, 40)]);
       pl3.onKey('Escape');
       pl3.onKey('Enter');
-      expect(c.project.entities.whereType<PolylineEntity>().length, 2, reason: 'Esc dropped the points');
+      expect(c.project.entities.whereType<PolylineEntity>().length, 3, reason: 'Esc ends the polyline keeping what was drawn');
+      final pl4 = tool(ToolId.polyline);
+      clicks(pl4, [const Pt(0, 50)]);
+      pl4.onKey('Escape');
+      expect(c.project.entities.whereType<PolylineEntity>().length, 3, reason: 'one point is no polyline: dropped');
       final rect = tool(ToolId.rect);
       rect.onDown(const Pt(0, 0));
       rect.onMove(const Pt(4, 3));

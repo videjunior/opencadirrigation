@@ -6,7 +6,8 @@ part of '../i18n.dart';
 const _edt = <String, (String, String, String)>{
   // ---- move and copy by base point (CAD-06)
   'tool.move': ('Mover', 'Move', 'Mover'),
-  'tool.copy': ('Copiar', 'Copy', 'Copiar'),
+  // (the clipboard copy of the Edit menu is "Copiar" too: this one says how it works)
+  'tool.copy': ('Copiar com ponto-base', 'Copy with base point', 'Copiar con punto base'),
   'hint.move': (
     'Seleção: clique no ponto-base e no destino, ou digite @dx,dy, @d<ângulo ou a distância (Ctrl = copiar)',
     'Selection: click the base point and the destination, or type @dx,dy, @d<angle or the distance (Ctrl = copy)',
@@ -39,4 +40,6 @@ const _edt = <String, (String, String, String)>{
   'edt.typeDistance': ('digite outra distância e Enter', 'type another distance and press Enter', 'escriba otra distancia y pulse Intro'),
   'edt.offsetSet': ('Distância do offset: {d}', 'Offset distance: {d}', 'Distancia del desfase: {d}'),
   'edt.badValue': ('Valor inválido: digite um número maior que zero', 'Invalid value: type a number greater than zero', 'Valor no válido: escriba un número mayor que cero'),
+  // ---- polyline in progress (CAD-10)
+  'edt.closeNeeds3': ('Para fechar, clique ao menos 3 pontos', 'Click at least 3 points to close', 'Haga clic en al menos 3 puntos para cerrar'),
 };

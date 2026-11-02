@@ -409,7 +409,15 @@ abstract class PolyTool extends Tool {
   @override
   void onKey(String key) {
     if (key == 'Enter') finish();
-    if (key == 'Escape') cancel();
+    if (key == 'Escape') {
+      // Esc ends the command keeping what was drawn, as in the programs of
+      // CAD; a stroke too short for an item is dropped
+      if (keepsOnLeave && pts.length >= minPoints) {
+        finish();
+      } else {
+        cancel();
+      }
+    }
     if (key == 'Backspace' && pts.isNotEmpty) pts.removeLast();
   }
 
@@ -423,6 +431,59 @@ abstract class PolyTool extends Tool {
 
   @override
   void cancel() => pts.clear();
+
+  /// Esc and a change of tool keep a stroke long enough for its item: the
+  /// tools clicked until Enter whose item needs no dialog.
+  bool get keepsOnLeave => requiredPoints == 0;
+
+  /// The stroke can end as a closed shape (the C option).
+  bool get closable => requiredPoints == 0;
+
+  /// Another tool took over: the stroke in progress is kept (see
+  /// [keepsOnLeave]). The points are taken first, so the edit that keeps
+  /// them finds the tool empty.
+  @override
+  void leave() {
+    if (!keepsOnLeave || pts.length < minPoints) {
+      cancel();
+      return;
+    }
+    final p = List.of(pts);
+    pts.clear();
+    commit(p);
+  }
+
+  /// The options typed while a stroke is in progress win over the command
+  /// aliases of the same letters: C closes the stroke, U takes back its
+  /// last point.
+  @override
+  bool onInput(String text) {
+    if (pts.isEmpty) return false;
+    switch (text) {
+      case 'U':
+        pts.removeLast();
+        return true;
+      case 'C' when closable:
+        if (pts.length < 3) {
+          c.notify(c.t('edt.closeNeeds3'));
+          return true;
+        }
+        if (closes) {
+          finish();
+        } else {
+          final p = List.of(pts);
+          pts.clear();
+          commitClosed(p);
+        }
+        return true;
+    }
+    return false;
+  }
+
+  /// Commits [points] as a closed stroke: the first point again at the end
+  /// (a ring of pipe, a closed contour); a polyline and a spline close
+  /// themselves.
+  void commitClosed(List<Pt> points) => commit([...points, points.first]);
 
   @override
   void paint(Canvas canvas, Camera cam) {
@@ -455,6 +516,8 @@ class PolylineTool extends PolyTool {
   String get hintKey => 'hint.polyline';
   @override
   void commit(List<Pt> points) => c.addEntity(PolylineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points));
+  @override
+  void commitClosed(List<Pt> points) => c.addEntity(PolylineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points, closed: true));
 }
 
 class SplineTool extends PolyTool {
@@ -465,6 +528,8 @@ class SplineTool extends PolyTool {
   String get hintKey => 'hint.spline';
   @override
   void commit(List<Pt> points) => c.addEntity(SplineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points, closed: c.toolSettings.splineClosed));
+  @override
+  void commitClosed(List<Pt> points) => c.addEntity(SplineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points, closed: true));
   @override
   void paint(Canvas canvas, Camera cam) {
     final preview = [...pts, ?cursor];
@@ -716,6 +781,10 @@ class LeaderTool extends PolyTool {
   String get hintKey => 'hint.leader';
   @override
   void commit(List<Pt> points) => host.showLeaderDialog(points);
+  @override
+  bool get keepsOnLeave => false;
+  @override
+  bool get closable => false;
 }
 
 /// Breakline of the terrain: a polyline the triangulation keeps as edges;
@@ -846,6 +915,8 @@ class BlockTool extends PolyTool {
   int get minPoints => 3;
   @override
   void commit(List<Pt> points) => host.showBlockDialog(points);
+  @override
+  bool get keepsOnLeave => false;
 }
 
 class AutoheadTool extends PolyTool {
@@ -860,6 +931,8 @@ class AutoheadTool extends PolyTool {
   int get minPoints => 3;
   @override
   void commit(List<Pt> points) => host.showAutoheadDialog(points);
+  @override
+  bool get keepsOnLeave => false;
 }
 
 class MeasureTool extends PolyTool {
@@ -889,6 +962,10 @@ class ProfileTool extends PolyTool {
   String get hintKey => 'hint.profile';
   @override
   void commit(List<Pt> points) => c.setProfilePath(points);
+
+  /// The profile opens the reports panel: only Enter (or Done) shows it.
+  @override
+  bool get keepsOnLeave => false;
 
   /// Esc with no point started clears the profile shown on the drawing.
   @override
@@ -1284,6 +1361,8 @@ class RevisionCloudTool extends PolyTool {
   int get minPoints => 3;
   @override
   void commit(List<Pt> points) => host.showRevisionDialog(points);
+  @override
+  bool get keepsOnLeave => false;
 }
 
 class SymbolTool extends PointTool {

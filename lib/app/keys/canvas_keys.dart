@@ -5,7 +5,8 @@ library;
 import '../../core/model/geometry.dart';
 
 abstract class CanvasKeyTarget {
-  /// 'Escape', 'Enter' or 'Backspace' to the active tool, then repaint.
+  /// 'Escape', 'Enter' or 'Backspace' to the active tool, then repaint;
+  /// 'Cancel' drops what the tool has in progress (Esc may keep it).
   void toolKey(String key);
 
   /// No polyline in progress.

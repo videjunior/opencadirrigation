@@ -80,7 +80,7 @@ class _MobileShellState extends State<MobileShell> {
   void _toolKey(String key) {
     final k = c.keyTarget;
     k?.toolKey(key);
-    if (key == 'Escape' && c.activeTool != ToolId.select && (k?.toolIdle ?? true)) c.setTool(ToolId.select);
+    if ((key == 'Escape' || key == 'Cancel') && c.activeTool != ToolId.select && (k?.toolIdle ?? true)) c.setTool(ToolId.select);
     k?.redraw();
     c.refresh();
   }
@@ -461,7 +461,8 @@ class _MobileShellState extends State<MobileShell> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           if (drawing) _fab(const Key('mobile_done'), Icons.check, t('mob.done'), () => _toolKey('Enter'), color: Cad.okFill),
-                          if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Escape')),
+                          // 1.6.0 EDT: Cancel drops the stroke (Esc keeps it, CAD-10)
+                          if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Cancel')),
                           if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
                           _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
                           _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),

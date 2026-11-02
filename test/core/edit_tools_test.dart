@@ -47,6 +47,80 @@ void main() {
   /// A point typed on the command line while [t] waits for one.
   Pt typed(Tool t, String text) => parseTypedPoint(text, reference: t.referencePoint, cursor: t.cursor)!;
 
+  group('a polyline in progress is not lost (CAD-10)', () {
+    void clicks(Tool t, List<Pt> pts) {
+      for (final p in pts) {
+        t.onMove(p);
+        t.onDown(p);
+      }
+    }
+
+    test('Esc keeps a traced outline of 40 vertices; a stroke too short for its item is dropped', () {
+      final pl = tool(ToolId.polyline);
+      clicks(pl, [for (var i = 0; i < 40; i++) Pt(i * 1.0, (i % 2) * 3.0)]);
+      pl.onKey('Escape');
+      expect(c.project.entities.whereType<PolylineEntity>().single.points.length, 40);
+      expect(pl.idle, isTrue, reason: 'Esc then leaves the tool');
+      final ar = tool(ToolId.area);
+      clicks(ar, [Pt.zero, const Pt(5, 0)]);
+      ar.onKey('Escape');
+      expect(c.project.entities.whereType<AreaEntity>(), isEmpty, reason: 'two points are no area');
+      // the Cancel button drops the stroke (the canvas cancels the tool)
+      final p2 = tool(ToolId.polyline);
+      clicks(p2, [Pt.zero, const Pt(9, 9), const Pt(9, 0)]);
+      p2.cancel();
+      expect(c.project.entities.whereType<PolylineEntity>().length, 1);
+    });
+
+    test('C closes the stroke and U takes back its last point, before the aliases of those letters', () {
+      final pl = tool(ToolId.polyline);
+      expect(pl.onInput('C'), isFalse, reason: 'nothing in progress: C is the circle alias');
+      expect(pl.onInput('U'), isFalse, reason: 'nothing in progress: U is undo');
+      clicks(pl, [Pt.zero, const Pt(10, 0)]);
+      expect(pl.onInput('C'), isTrue, reason: 'taken: two points cannot close');
+      expect(c.lastMessage, c.t('edt.closeNeeds3'));
+      clicks(pl, [const Pt(10, 10), const Pt(20, 20)]);
+      expect(pl.onInput('U'), isTrue);
+      expect((pl as PolyTool).pts.last, const Pt(10, 10));
+      expect(pl.onInput('C'), isTrue);
+      final closed = c.project.entities.whereType<PolylineEntity>().single;
+      expect(closed.closed, isTrue);
+      expect(closed.points, [Pt.zero, const Pt(10, 0), const Pt(10, 10)]);
+      // a pipe closes as a ring: its first point again at the end
+      final pipe = tool(ToolId.mainPipe);
+      clicks(pipe, [const Pt(0, 50), const Pt(30, 50), const Pt(30, 80)]);
+      expect(pipe.onInput('C'), isTrue);
+      final ring = c.project.entities.whereType<PipeEntity>().single;
+      expect(ring.points.first, ring.points.last);
+      expect(ring.points.length, 4);
+      // an area closes by itself: C finishes it
+      final ar = tool(ToolId.area);
+      clicks(ar, [const Pt(0, 100), const Pt(20, 100), const Pt(20, 120)]);
+      expect(ar.onInput('C'), isTrue);
+      expect(c.project.entities.whereType<AreaEntity>().single.points.length, 3);
+      // the leader has no closed form: C is its alias
+      final le = tool(ToolId.leader);
+      clicks(le, [Pt.zero, const Pt(1, 1), const Pt(2, 0)]);
+      expect(le.onInput('C'), isFalse);
+    });
+
+    test('a change of tool keeps the stroke of a drawing tool; a dialog tool drops it without opening its dialog', () {
+      final pl = tool(ToolId.zonePipe);
+      clicks(pl, [Pt.zero, const Pt(10, 0), const Pt(10, 10)]);
+      pl.leave();
+      expect(c.project.entities.whereType<PipeEntity>().single.points.length, 3);
+      expect(pl.idle, isTrue);
+      final bl = tool(ToolId.block);
+      clicks(bl, [Pt.zero, const Pt(10, 0), const Pt(10, 10)]);
+      bl.leave();
+      expect(c.project.entities.length, 1, reason: 'no lateral block without its dialog');
+      final pr = tool(ToolId.profile);
+      clicks(pr, [Pt.zero, const Pt(10, 0)]);
+      pr.leave();
+      expect(c.profilePath, isNull, reason: 'the profile only opens with Enter');
+    });
+  });
+
   group('values typed at the step of a tool (CAD-09)', () {
     test('rotate: a number after the base point is the angle, with or without the reference point', () {
       c.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(10, 0)));

@@ -96,6 +96,30 @@ void main() {
     expect(b.y, closeTo(7.0710678, 1e-6));
   });
 
+  testWidgets('typing a letter that is an alias keeps the polyline in progress; C closes it (CAD-10)', (tester) async {
+    final c = await pumpShell(tester);
+    final dynamic shell = tester.state(find.byType(AppShell));
+    c.setTool(ToolId.polyline);
+    await settle(tester, 1);
+    for (final p in [Pt.zero, const Pt(10, 0), const Pt(10, 10)]) {
+      c.keyTarget!.feedPoint(p);
+    }
+    shell.typeCommand('L');
+    await settle(tester, 1);
+    expect(c.activeTool, ToolId.line);
+    expect(c.project.entities.whereType<PolylineEntity>().single.points, [Pt.zero, const Pt(10, 0), const Pt(10, 10)]);
+    // the C option of the polyline wins over the circle alias
+    c.setTool(ToolId.polyline);
+    await settle(tester, 1);
+    for (final p in [const Pt(0, 50), const Pt(10, 50), const Pt(10, 60)]) {
+      c.keyTarget!.feedPoint(p);
+    }
+    shell.typeCommand('C');
+    await settle(tester, 1);
+    expect(c.activeTool, ToolId.polyline);
+    expect(c.project.entities.whereType<PolylineEntity>().last.closed, isTrue);
+  });
+
   testWidgets('Edit → Move and Copy start the tools (CAD-06)', (tester) async {
     final c = await pumpShell(tester);
     await tester.tap(find.text('Edit'));
