@@ -37,6 +37,15 @@ void main() {
     expect(verifyBuild(dir.path), isEmpty);
   });
 
+  test('the entry page may start the app through site.js (no inline script under the CSP)', () {
+    goodBuild();
+    write('index.html', '<script src="site.js?v=1" defer></script>\n');
+    write('site.js', "boot.src = 'flutter_bootstrap.js';\n");
+    expect(verifyBuild(dir.path), isEmpty);
+    write('site.js', '// no app\n');
+    expect(verifyBuild(dir.path).join('\n'), contains('does not load flutter_bootstrap.js'));
+  });
+
   test('a plain flutter build web, stale parts and source maps are refused', () {
     goodBuild();
     write('sw.js', "const BUILD = '__OCI_BUILD__';\n");

@@ -271,7 +271,11 @@ List<String> verifyBuild(String dir, {bool release = false}) {
     if (t != null && RegExp(r'^//# sourceMappingURL=', multiLine: true).hasMatch(t)) problems.add('$f points at a source map the site does not serve');
   }
   final index = read('index.html');
-  if (index != null && !index.contains('flutter_bootstrap.js')) problems.add('index.html does not load flutter_bootstrap.js');
+  // the entry page loads site.js (no inline script, the CSP), which starts flutter_bootstrap.js on demand
+  final siteFile = File('$dir/site.js');
+  final siteJs = siteFile.existsSync() ? siteFile.readAsStringSync() : null;
+  final boots = index != null && (index.contains('flutter_bootstrap.js') || (index.contains('src="site.js') && (siteJs?.contains('flutter_bootstrap.js') ?? false)));
+  if (index != null && !boots) problems.add('index.html does not load flutter_bootstrap.js (directly or through site.js)');
   if (!Directory('$dir/canvaskit').existsSync()) problems.add('canvaskit/ is missing (the app must not depend on the CDN)');
   final worker = File('$dir/design_worker.js');
   if (worker.existsSync()) {
