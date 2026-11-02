@@ -10,6 +10,8 @@ import 'package:opencadirrigation/core/hydraulics/transient.dart';
 import 'package:opencadirrigation/core/hydraulics/water_hammer.dart';
 import 'package:opencadirrigation/core/units.dart';
 
+import '../support/perf.dart';
+
 /// Reservoir → pipe → valve discharging to the atmosphere, the classic
 /// water hammer system (Wylie & Streeter 1993).
 (HydraulicNetwork, NetworkResult) reservoirPipeValve({double head = 100, double length = 1000, double diameter = 0.5, double velocity = 1, double hazenC = 1e7}) {
@@ -785,17 +787,17 @@ void main() {
       watch.stop();
       expect(pipes, greaterThan(250));
       expect(r.maxWaveSpeedAdjustment, lessThanOrEqualTo(0.1 + 1e-12));
-      expect(watch.elapsedMilliseconds, lessThan(20000));
+      expect(watch.elapsedMilliseconds, lessThan(perfBudgetMs(20000)));
       expect(r.checkValveClosures.keys, contains('pump'));
       // a fine grid up to the work budget
       final watch2 = Stopwatch()..start();
       final fine = model.simulate(events: [TransientEvent.pumpTrip('pump', powerKw: 30, speedRpm: 2900)], options: const TransientOptions(duration: 60, maxTimeStep: 0.002));
       watch2.stop();
       expect(fine.steps * fine.reaches, lessThanOrEqualTo(4.4e7));
-      expect(watch2.elapsedMilliseconds, lessThan(60000));
+      expect(watch2.elapsedMilliseconds, lessThan(perfBudgetMs(60000)));
       // the coarse and fine envelopes agree at the pump discharge
       expect(fine.nodes['F0']!.minHead, closeTo(r.nodes['F0']!.minHead, 3));
       expect(fine.nodes['F0']!.maxHead, closeTo(r.nodes['F0']!.maxHead, 0.1 * (r.nodes['F0']!.maxHead - r.nodes['F0']!.minHead)));
-    });
+    }, tags: perfTag);
   });
 }

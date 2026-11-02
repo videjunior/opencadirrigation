@@ -7,6 +7,8 @@ import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/units.dart';
 
+import '../support/perf.dart';
+
 List<Pt> _rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
 /// Whether the members of [zone] are connected by links no longer than
@@ -122,6 +124,6 @@ void main() {
     // least the limit less one head)
     final total = items.fold(0.0, (s, i) => s + i.flow);
     expect(r.zones.length, lessThan(1.15 * total / ((4 - 0.7) * m3sPerM3h)));
-    expect(ms, lessThan(1500));
-  });
+    expect(ms, lessThan(perfBudgetMs(1500)));
+  }, tags: perfTag);
 }

@@ -8,6 +8,8 @@ import 'package:opencadirrigation/core/hydraulics/pump.dart';
 import 'package:opencadirrigation/core/hydraulics/sparse_solver.dart';
 import 'package:opencadirrigation/core/units.dart';
 
+import '../support/perf.dart';
+
 void main() {
   group('sparse solver', () {
     test('solves a small SPD system', () {
@@ -159,8 +161,8 @@ void main() {
       final r = net.solve();
       sw.stop();
       expect(r.converged, isTrue);
-      expect(sw.elapsedMilliseconds, lessThan(8000));
-    });
+      expect(sw.elapsedMilliseconds, lessThan(perfBudgetMs(8000)));
+    }, tags: perfTag);
   });
 
   group('lateral', () {

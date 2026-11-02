@@ -6,6 +6,8 @@ import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/units.dart';
 
+import '../support/perf.dart';
+
 List<Pt> _rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
 /// Graph of the vertices of [pipes]: (vertex count, edge count, connected).
@@ -173,8 +175,8 @@ void main() {
     ];
     final sw = Stopwatch()..start();
     final r = routeZones(zones, RouteOptions(pointOfConnection: const Pt(-10, -10), exclusions: [_rect(100, 100, 160, 140)], direction: layout.direction));
-    expect(sw.elapsedMilliseconds, lessThan(1500));
+    expect(sw.elapsedMilliseconds, lessThan(perfBudgetMs(1500)));
     expect(r.zones, hasLength(zones.length));
     expect(_graph(r.mainline).$3, isTrue);
-  });
+  }, tags: perfTag);
 }
