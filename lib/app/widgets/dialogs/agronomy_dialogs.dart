@@ -328,6 +328,14 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // while the download runs, Esc and a tap outside do not close the dialog (its Cancel stops it)
+                  PopScope(
+                    canPop: !busy,
+                    onPopInvokedWithResult: (didPop, _) {
+                      if (!didPop) c.notify(t('ui.downloadRunning'));
+                    },
+                    child: const SizedBox.shrink(),
+                  ),
                   Text(t('clim.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
                   const SizedBox(height: 8),
                   Wrap(
@@ -352,7 +360,7 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
                 },
                 child: Text(t('clim.clear')),
               ),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+            TextButton(key: const Key('clim_cancel'), onPressed: busy ? () => setState(() => cancel = true) : () => Navigator.pop(ctx), child: Text(t('cancel'))),
             FilledButton(
               key: const Key('clim_ok'),
               onPressed: busy

@@ -447,7 +447,8 @@ void main() {
       expect(identical(b, w.current), isTrue);
       expect(openJsonInTab(w, '{"format": "nope"}'), isNull);
       expect(w.tabs.length, 2, reason: 'the tab opened for the bad file is closed again');
-      expect(w.current.lastMessage, startsWith('Erro'));
+      // (says the file is no project and to import it, not the raw exception: UI-28)
+      expect(w.current.lastMessage, contains('.oci.json'));
     });
 
     test('recent projects open once: an open one is brought to the front', () async {

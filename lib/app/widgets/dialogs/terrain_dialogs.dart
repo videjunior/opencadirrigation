@@ -82,7 +82,7 @@ Future<void> showElevationDialog(BuildContext context, ProjectController c, Enti
                   key: const Key('elev_value'),
                   controller: ctl,
                   autofocus: true,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                  keyboardType: signedNumberKeyboard,
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\-]'))],
                   decoration: InputDecoration(labelText: t('elev.value'), isDense: true),
                   onSubmitted: (_) => apply(ctx),
@@ -180,12 +180,20 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
 
         return AlertDialog(
           title: Text(t('dem.online.title'), style: const TextStyle(fontSize: 15)),
-          content: SizedBox(
+          content: ScrollSizedBox(
             width: dialogWidth(ctx, 460),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // while the download runs, Esc and a tap outside do not close the dialog (its Cancel stops it)
+                PopScope(
+                  canPop: !busy,
+                  onPopInvokedWithResult: (didPop, _) {
+                    if (!didPop) c.notify(t('ui.downloadRunning'));
+                  },
+                  child: const SizedBox.shrink(),
+                ),
                 Text(t('dem.online.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
                 const SizedBox(height: 8),
                 if (geo == null) ...[
@@ -451,7 +459,7 @@ Future<void> showDesignCheckDialog(BuildContext context, ProjectController c) {
             const SizedBox(height: 4),
             // the same assistant as the Messages tab: why, how to fix, corrections
             Expanded(
-              child: AdvicePanel(c: c, listKey: const Key('check_list')),
+              child: AdvicePanel(c: c, listKey: const Key('check_list'), onLocated: () => Navigator.pop(ctx)),
             ),
           ],
         ),

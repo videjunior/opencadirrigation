@@ -58,9 +58,16 @@ Future<void> openProjectAction(BuildContext context, ProjectController c) async 
     // copy, so that copy stays offered (see ProjectController.openProject)
     c.loadJson(f.$2);
   } catch (e) {
-    c.notify(c.t('msg.error', {'e': c.describeError(e)}));
+    c.notify(openErrorMessage(c, e));
   }
 }
+
+/// What to tell when a file did not open as a project: one that is no
+/// project (a renamed drawing, damaged JSON, another kind of JSON) says to
+/// import it instead; anything else with the program's own wording.
+String openErrorMessage(ProjectController c, Object e) => e is FormatException || e is TypeError || e is ArgumentError || e is NoSuchMethodError
+    ? c.t('msg.notProject', {'m': '${c.t('menu.file')} → ${c.t('file.importDrawing').replaceAll(RegExp(r'\s*\(.*\)'), '').replaceAll('…', '').trim()}'})
+    : c.t('msg.error', {'e': c.describeError(e)});
 
 /// Opens a project file into the current tab when it is still blank,
 /// otherwise in a new tab.
@@ -83,7 +90,7 @@ ProjectController? openJsonInTab(Workspace ws, String json, {bool fromStore = fa
     return target;
   } catch (e) {
     if (!reuse) ws.closeTab(ws.tabs.indexOf(target));
-    ws.current.notify(cur.t('msg.error', {'e': cur.describeError(e)}));
+    ws.current.notify(openErrorMessage(ws.current, e));
     return null;
   }
 }
@@ -288,9 +295,13 @@ Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
   }
 }
 
-/// Exports the design report (needs results).
+/// The report tables with the project's own data that need no design.
+const _noDesignTables = {'water', 'crop', 'schedule', 'comments', 'revisions', 'scenarios', 'requirement', 'requirementTotals', 'licensing', 'trench'};
+
+/// Exports the report: every table there is (without a design, the ones
+/// that need none: water, crops, comments, revisions, requirements…).
 Future<void> exportReportAction(BuildContext context, ProjectController c, ReportFormat f) async {
-  if (c.results == null) {
+  if (c.results == null && !c.reportTables().any((t) => _noDesignTables.contains(t.key) && !t.isEmpty)) {
     c.notify(c.t('msg.needResults'));
     return;
   }

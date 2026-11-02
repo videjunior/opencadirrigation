@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show appBuildName, appBuildNumber;
 
@@ -39,6 +41,9 @@ import 'app/widgets/dialogs/blocks_dialogs.dart';
 import 'app/widgets/dialogs/selection_dialogs.dart';
 import 'app/widgets/dialogs/welcome_dialog.dart';
 import 'app/widgets/mobile_shell.dart';
+import 'app/widgets/command_entry.dart';
+import 'app/widgets/layout_mode.dart';
+import 'app/widgets/message_log.dart';
 import 'app/widgets/design_progress.dart';
 import 'app/widgets/history_panel.dart';
 import 'app/widgets/layers_panel.dart';
@@ -167,6 +172,15 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   int _sideTabIndex = 0;
   double _reportsHeight = 220;
 
+  /// The arrangement of the last build (phone, narrow or wide).
+  ShellLayout _layout = ShellLayout.wide;
+
+  /// Narrow windows: the side panel drawer is open over the drawing.
+  bool _sideOpen = false;
+
+  /// Touch screens: the command line for the on-screen keyboard is open.
+  bool _commandOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -176,6 +190,11 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     ws.addListener(_onWorkspace);
     _syncSubscriptions();
     tutorial.addListener(_onTutorial);
+    // a finger or a mouse: the touch layout and the ⌨ button follow it (a new
+    // shell starts from what the platform suggests)
+    lastPointerKind.value = null;
+    startPointerKindTracking();
+    lastPointerKind.addListener(_onPointerKind);
     // unsaved projects, and conversations with the assistant that are not kept
     // in this browser as they are now (keeping off, a turn running, a save not done)
     setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
@@ -232,9 +251,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final tutorialLink = tut != null && tut > 0;
       // ?ai=1 (the site's "Open the AI assistant" button, the app shortcut)
       final aiLink = q['ai'] == '1';
-      // an example only when the address asks for one (the tutorial and the
-      // designed sample work on the orchard); otherwise the app starts empty
-      if (example != null || designLink || tutorialLink) loadExampleAction(c, example ?? ExampleId.orchard);
+      // an example only when the address asks for one (the designed sample
+      // works on the orchard; the tutorial opens its own); otherwise the app
+      // starts empty
+      if (example != null || designLink) loadExampleAction(c, example ?? ExampleId.orchard);
       if (designLink) c.runDesign();
       if (tutorialLink && mounted) {
         startTutorial(startAt: tut - 1);
@@ -282,6 +302,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     }
     ws.removeListener(_onWorkspace);
     tutorial.removeListener(_onTutorial);
+    lastPointerKind.removeListener(_onPointerKind);
+    stopPointerKindTracking();
     _nativeKeys.dispose();
     AiFileDrop.instance.uninstall();
     hotkeys.dispose();
@@ -297,10 +319,25 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     if (mounted) setState(() {});
   }
 
+  void _onPointerKind() {
+    // (the pointer is pressed during a frame's input handling: rebuild after it)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  /// Help → Interactive tutorial (also the welcome's "Start tutorial" and
+  /// `?tutorial=N`): the orchard example in a tab of its own — the blank tab
+  /// of a fresh start is used, any other project stays as it is in its tab —
+  /// so the steps find what they talk about and their "Show me" demos never
+  /// change the user's work.
   void startTutorial({int startAt = 0}) {
-    c.select(const []);
-    c.setTool(ToolId.select);
-    tutorial.start(buildTutorialSteps(c.lang), startAt: startAt);
+    final cur = c;
+    final target = cur.project.entities.isEmpty && !cur.dirty ? cur : ws.addTab();
+    loadExampleAction(target);
+    target.select(const []);
+    target.setTool(ToolId.select);
+    tutorial.start(buildTutorialSteps(target.lang), startAt: startAt);
   }
 
   /// Help → Welcome and example gallery.
@@ -372,26 +409,41 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   bool dismissModal() {
     final r = appRouteObserver.top;
     if (r is PopupRoute && r.barrierDismissible) {
-      appNavigatorKey.currentState?.pop();
+      appNavigatorKey.currentState?.maybePop();
       return true;
     }
     return false;
   }
 
-  @override
-  void runDesign() => c.runDesign();
+  /// The application keys (Ctrl+S, Ctrl+O, Ctrl+I, Ctrl+P, F5) act on what
+  /// the user sees: the field being typed in gives the focus up first (it
+  /// commits its value on focus loss, in a microtask) and [action] runs
+  /// after that, so the number just typed is saved, exported or designed.
+  void _afterFieldCommit(VoidCallback action) {
+    if (!editableTextFocused()) {
+      action();
+      return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    Future<void>.delayed(Duration.zero, () {
+      if (mounted) action();
+    });
+  }
 
   @override
-  void save() => saveProjectAction(context, c);
+  void runDesign() => _afterFieldCommit(() => c.runDesign());
 
   @override
-  void open() => openProjectInTabAction(context, ws);
+  void save() => _afterFieldCommit(() => saveProjectAction(context, c));
 
   @override
-  void import() => importDrawingAction(context, c);
+  void open() => _afterFieldCommit(() => openProjectInTabAction(context, ws));
 
   @override
-  void exportPdf() => exportDrawingAction(context, c, DrawingFormat.pdf);
+  void import() => _afterFieldCommit(() => importDrawingAction(context, c));
+
+  @override
+  void exportPdf() => _afterFieldCommit(() => exportDrawingAction(context, c, DrawingFormat.pdf));
 
   @override
   void newTab() => ws.addTab();
@@ -497,6 +549,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final last = _lastSeqByTab[tab.tabId] ?? 0;
       if (tab.messageSeq != last && tab.lastMessage != null) {
         _lastSeqByTab[tab.tabId] = tab.messageSeq;
+        // every message is kept (Help → Recent messages), also those of the other tabs
+        logMessage(tab.project.meta.name.trim().isEmpty ? tab.t('name.newProject') : tab.project.meta.name, tab.lastMessage!);
         if (!identical(tab, c)) continue;
         _snack(tab.lastMessage!);
       }
@@ -505,29 +559,35 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   }
 
   /// A short message at the bottom of the window ([long]: an error, shown
-  /// for longer).
+  /// for longer), long enough to be read and with the list of all of them
+  /// (Help → Recent messages) one tap away.
   void _snack(String msg, {bool long = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // phones: above the tool bar, so it never covers the tools
-      final compact = MediaQuery.sizeOf(context).width < mobileBreakpoint;
       final messenger = ScaffoldMessenger.maybeOf(context);
       if (messenger == null) return;
+      // phones: above the tool bar, so it never covers the tools
+      final compact = shellLayoutOf(context) == ShellLayout.phone;
+      final more = SnackBarAction(key: const Key('snack_messages'), label: c.t('ui.messagesShort'), onPressed: () => showMessageLogDialog(context, c));
       messenger
         ..clearSnackBars()
         ..showSnackBar(
           compact
               ? SnackBar(
                   content: Text(msg, style: const TextStyle(fontSize: 12)),
-                  duration: Duration(milliseconds: long ? 6000 : 2200),
+                  duration: Duration(milliseconds: long ? 6000 : 3500),
+                  persist: false,
+                  action: more,
                   behavior: SnackBarBehavior.floating,
                   margin: const EdgeInsets.fromLTRB(12, 0, 72, 100),
                 )
               : SnackBar(
                   content: Text(msg),
-                  duration: Duration(seconds: long ? 8 : 3),
+                  duration: Duration(seconds: long ? 8 : 6),
+                  persist: false,
+                  action: more,
                   behavior: SnackBarBehavior.floating,
-                  width: 420,
+                  width: 480,
                 ),
         );
     });
@@ -577,17 +637,29 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   @override
   void showSideTab(int index) {
-    if (_sideTabIndex == index) return;
-    setState(() => _sideTabIndex = index);
+    // narrow windows: the panel the tutorial (or a menu) asks for comes out of its drawer
+    final open = _layout == ShellLayout.narrow && !_sideOpen;
+    if (_sideTabIndex == index && !open) return;
+    setState(() {
+      _sideTabIndex = index;
+      if (open) _sideOpen = true;
+    });
   }
 
   @override
-  void saveProject() => saveProjectAction(context, c);
+  void saveProject() => _afterFieldCommit(() => saveProjectAction(context, c));
 
   @override
   void typeCommand(String alias) {
     hotkeys.setCommand(alias.toUpperCase());
     hotkeys.runCommand();
+  }
+
+  /// A command line typed without a keyboard (the ⌨ field of touch
+  /// screens): an alias, a point or a distance, run as Enter would.
+  void typeCommandLine(String text) {
+    if (text.trim().isEmpty) return;
+    typeCommand(text.trim());
   }
 
   @override
@@ -600,9 +672,12 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   @override
   Widget build(BuildContext context) {
     final t = c.t;
-    final compact = MediaQuery.sizeOf(context).width < mobileBreakpoint;
+    // the arrangement follows the width, the height and the pointer: a phone
+    // held sideways gets the touch layout, a tablet in portrait the side
+    // panel in a drawer
+    final layout = _layout = shellLayoutOf(context);
     final canvas = CadCanvas(key: ValueKey('canvas${c.tabId}'), controller: c, host: this, focusNode: canvasFocus, workspace: ws, onArray: () => showArrayDialog(context, c));
-    if (compact) {
+    if (layout == ShellLayout.phone) {
       return Stack(
         children: [
           MobileShell(
@@ -620,6 +695,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
             onStartTutorial: startTutorial,
             onShowWelcome: showWelcome,
             onCloseTab: () => _closeTab(ws.active),
+            onCloseTabAt: _closeTab,
+            onCommand: typeCommandLine,
             onDesignCheck: designCheck,
           ),
           if (tutorial.active)
@@ -629,13 +706,48 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         ],
       );
     }
+    final narrow = layout == ShellLayout.narrow;
+    final height = MediaQuery.sizeOf(context).height;
+    // the reports never take more than half of what is left for the drawing
+    final reportsHeight = _reportsHeight.clamp(120.0, math.max(120.0, (height - 140) * 0.5)).toDouble();
+    final sidePanel = Column(
+      children: [
+        Container(
+          key: TutorialTargets.sideTabs,
+          height: _barHeight(context, 30),
+          color: Cad.panel,
+          child: Row(
+            children: [
+              _sideTab(t('props.title'), _sideTabIndex == 0, () => showSideTab(0)),
+              _sideTab(t('view.layers'), _sideTabIndex == 1, () => showSideTab(1)),
+              _sideTab(t('hist.title'), _sideTabIndex == 2, () => showSideTab(2), key: const Key('side_tab_history')),
+              if (narrow)
+                IconButton(
+                  key: const Key('side_drawer_close'),
+                  tooltip: t('ui.sideClose'),
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.chevron_right, size: 18),
+                  onPressed: () => setState(() => _sideOpen = false),
+                ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: switch (_sideTabIndex) {
+            1 => LayersPanel(c: c),
+            2 => HistoryPanel(c: c),
+            _ => PropertiesPanel(c: c),
+          },
+        ),
+      ],
+    );
     return Scaffold(
       body: Stack(
         children: [
           Column(
             children: [
               SizedBox(
-                height: 36,
+                height: _barHeight(context, 36),
                 child: AppMenuBar(c: c, ws: ws, onStartTutorial: startTutorial, onShowWelcome: showWelcome, onCloseTab: () => _closeTab(ws.active)),
               ),
               ProjectTabBar(ws: ws, onClose: _closeTab, onAdd: () => ws.addTab()),
@@ -655,33 +767,76 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                                   child: KeyedSubtree(key: TutorialTargets.canvas, child: canvas),
                                 ),
                                 // non-blocking progress card: the workspace stays usable while a design runs
-                                if (c.busy) Positioned(right: 12, bottom: 12, child: DesignProgressOverlay(c: c)),
+                                if (c.busy)
+                                  Positioned(
+                                    right: narrow ? 56 : 12,
+                                    bottom: 12,
+                                    child: DesignProgressOverlay(c: c),
+                                  ),
+                                // touch screens wide enough for this layout (tablets): typed commands without a keyboard
+                                if (touchInput && !_commandOpen)
+                                  Positioned(
+                                    left: 8,
+                                    bottom: 8,
+                                    child: FloatingActionButton.small(
+                                      key: const Key('command_button'),
+                                      heroTag: null,
+                                      tooltip: t('cmd.open'),
+                                      backgroundColor: Cad.overlayStrong,
+                                      foregroundColor: Cad.fg,
+                                      onPressed: () => setState(() => _commandOpen = true),
+                                      child: const Icon(Icons.keyboard_outlined),
+                                    ),
+                                  ),
+                                // narrow windows: the side panel is a drawer over the drawing
+                                if (narrow && !_sideOpen)
+                                  PositionedDirectional(
+                                    end: 0,
+                                    top: 8,
+                                    child: Material(
+                                      color: Cad.overlayStrong,
+                                      borderRadius: const BorderRadiusDirectional.horizontal(start: Radius.circular(8)),
+                                      child: IconButton(key: const Key('side_drawer_open'), tooltip: t('ui.sideOpen'), icon: const Icon(Icons.tune), onPressed: () => setState(() => _sideOpen = true)),
+                                    ),
+                                  ),
+                                if (narrow && _sideOpen)
+                                  PositionedDirectional(
+                                    end: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: 300,
+                                    child: Material(key: TutorialTargets.sidePanel, elevation: 8, color: Cad.panel, child: sidePanel),
+                                  ),
                               ],
                             ),
                           ),
+                          if (_commandOpen) CommandEntry(c: c, onRun: typeCommandLine, onClose: () => setState(() => _commandOpen = false)),
                           if (c.showReports) ...[
                             GestureDetector(
                               behavior: HitTestBehavior.opaque,
-                              onVerticalDragUpdate: (d) => setState(() => _reportsHeight = (_reportsHeight - d.delta.dy).clamp(120, 600)),
+                              onVerticalDragUpdate: (d) => setState(() => _reportsHeight = (reportsHeight - d.delta.dy).clamp(120, 600).toDouble()),
                               child: MouseRegion(
                                 cursor: SystemMouseCursors.resizeRow,
-                                child: SizedBox(height: 5, child: ColoredBox(color: Cad.divider)),
+                                child: SizedBox(
+                                  height: touchInput ? 12 : 5,
+                                  child: ColoredBox(color: Cad.divider),
+                                ),
                               ),
                             ),
                             SizedBox(
                               key: TutorialTargets.reportsBar,
-                              height: _reportsHeight,
+                              height: reportsHeight,
                               child: ReportsPanel(c: c),
                             ),
                           ] else
                             SizedBox(
                               key: TutorialTargets.reportsBar,
-                              height: 22,
+                              height: _barHeight(context, 22),
                               child: InkWell(
                                 onTap: () => setState(() => c.showReports = true),
                                 child: Container(
                                   color: Cad.panel,
-                                  alignment: Alignment.centerLeft,
+                                  alignment: AlignmentDirectional.centerStart,
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
                                   child: Text('▲ ${t('menu.reports')}', style: TextStyle(fontSize: 11, color: Cad.fg60)),
                                 ),
@@ -690,66 +845,41 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                         ],
                       ),
                     ),
-                    const VerticalDivider(width: 1),
-                    SizedBox(
-                      key: TutorialTargets.sidePanel,
-                      width: 300,
-                      child: Column(
-                        children: [
-                          Container(
-                            key: TutorialTargets.sideTabs,
-                            height: 30,
-                            color: Cad.panel,
-                            child: Row(
-                              children: [
-                                _sideTab(t('props.title'), _sideTabIndex == 0, () => showSideTab(0)),
-                                _sideTab(t('view.layers'), _sideTabIndex == 1, () => showSideTab(1)),
-                                _sideTab(t('hist.title'), _sideTabIndex == 2, () => showSideTab(2), key: const Key('side_tab_history')),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: switch (_sideTabIndex) {
-                              1 => LayersPanel(c: c),
-                              2 => HistoryPanel(c: c),
-                              _ => PropertiesPanel(c: c),
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                    if (!narrow) ...[const VerticalDivider(width: 1), SizedBox(key: TutorialTargets.sidePanel, width: 300, child: sidePanel)],
                     // the AI assistant, docked so the drawing stays in view while it works
-                    ValueListenableBuilder<bool>(
-                      valueListenable: AiAssistant.panelOpen,
-                      builder: (_, open, _) => open
-                          ? ValueListenableBuilder<int>(
-                              valueListenable: AiAssistant.activity,
-                              builder: (_, _, _) {
-                                // the panel stays with an assistant that works or waits in another tab
-                                final own = AiAssistant.peek(c);
-                                final away = own != null && (own.busy || own.waiting)
-                                    ? null
-                                    : AiAssistant.live.where((a) => !identical(a.c, c) && ws.tabs.contains(a.c) && (a.busy || a.waiting)).firstOrNull;
-                                final pc = away?.c ?? c;
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const VerticalDivider(width: 1),
-                                    SizedBox(
-                                      width: aiPanelWidth,
-                                      child: AiAgentPanel(
-                                        key: ValueKey('ai_panel_${pc.tabId}'),
-                                        c: pc,
-                                        onClose: AiAssistant.togglePanel,
-                                        onShowTab: away == null ? null : () => ws.select(ws.tabs.indexOf(pc)),
+                    // (narrow windows open it in a sheet instead: see assistantDocks)
+                    if (!narrow)
+                      ValueListenableBuilder<bool>(
+                        valueListenable: AiAssistant.panelOpen,
+                        builder: (_, open, _) => open
+                            ? ValueListenableBuilder<int>(
+                                valueListenable: AiAssistant.activity,
+                                builder: (_, _, _) {
+                                  // the panel stays with an assistant that works or waits in another tab
+                                  final own = AiAssistant.peek(c);
+                                  final away = own != null && (own.busy || own.waiting)
+                                      ? null
+                                      : AiAssistant.live.where((a) => !identical(a.c, c) && ws.tabs.contains(a.c) && (a.busy || a.waiting)).firstOrNull;
+                                  final pc = away?.c ?? c;
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const VerticalDivider(width: 1),
+                                      SizedBox(
+                                        width: aiPanelWidth,
+                                        child: AiAgentPanel(
+                                          key: ValueKey('ai_panel_${pc.tabId}'),
+                                          c: pc,
+                                          onClose: AiAssistant.togglePanel,
+                                          onShowTab: away == null ? null : () => ws.select(ws.tabs.indexOf(pc)),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+                                    ],
+                                  );
+                                },
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                   ],
                 ),
               ),
@@ -768,6 +898,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       ),
     );
   }
+
+  /// A bar of [base] logical pixels that grows with the text size the user
+  /// chose (the system or browser font setting), so its text is never cut.
+  static double _barHeight(BuildContext context, double base) => math.max(base, MediaQuery.textScalerOf(context).scale(base * 0.5) + base * 0.5);
 
   Widget _sideTab(String label, bool on, VoidCallback onTap, {Key? key}) => Expanded(
     child: InkWell(

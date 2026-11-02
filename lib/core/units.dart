@@ -177,12 +177,61 @@ String fmt(double v, [int decimals = 2]) {
   return s;
 }
 
+/// Interface languages that write the decimal separator as a comma
+/// ("12,5"); the others (English, Chinese, Japanese, the languages of India,
+/// Arabic and Urdu in Latin digits, Hausa, Swahili) write a point.
+const decimalCommaLanguages = {'pt', 'es', 'de', 'fr', 'id', 'tr', 'ru', 'vi'};
+
+/// The decimal separator of the interface language [lang]: ',' or '.'.
+String decimalSeparatorOf(String lang) => decimalCommaLanguages.contains(lang) ? ',' : '.';
+
+/// [fmt] in the notation of the interface language [lang]: the same digits
+/// with a decimal comma where the language writes one ("12,50" in
+/// Portuguese, "12.50" in English). Only for the screen: files, exports
+/// and the AI keep [fmt]'s decimal point.
+String fmtLocale(double v, int decimals, String lang) {
+  final s = fmt(v, decimals);
+  return decimalSeparatorOf(lang) == ',' ? s.replaceAll('.', ',') : s;
+}
+
+/// The numbers inside [text] (built with [fmt]) in the notation of [lang]:
+/// "12.5 m @ 3.25 bar" becomes "12,5 m @ 3,25 bar" in Portuguese. A number
+/// with more than one point ("1.6.0"), one with a point and a comma
+/// ("1,234.5", a price already formatted) or one inside a word ("e12.5")
+/// is left as it is.
+String localizeNumbers(String text, String lang) {
+  if (decimalSeparatorOf(lang) == '.' || !text.contains('.')) return text;
+  return text.replaceAllMapped(_decimalPoint, (m) => '${m[1]},${m[2]}');
+}
+
+final _decimalPoint = RegExp(r'(?<![\w.,])(\d+)\.(\d+)(?![\w.]|,\d)');
+
+/// Whether [text] reads two ways for a language whose decimal separator is
+/// [decimalSeparator]: a single separator of the other kind followed by
+/// exactly three digits ("2.000" or "1,500"), which is a thousands
+/// separator in one notation and a decimal one in the other. [parseNumber]
+/// then follows [decimalSeparator]; a field shows the other reading too.
+bool numberIsAmbiguous(String text, String decimalSeparator) {
+  final other = decimalSeparator == ',' ? '.' : ',';
+  return RegExp('^[-+]?[1-9]\\d{0,2}\\$other\\d{3}\$').hasMatch(text.trim());
+}
+
 /// Parses a number written in any usual notation: a decimal point or comma
-/// and thousands separators ("1.234,56", "1,234.56", "1 234,5"). A single
-/// separator is the decimal one ("12,5" = "12.5"). With [lenient], the first
-/// number inside other text is taken ("R$ 1.234,56", "35 m"); otherwise the
-/// whole text must be the number. Null when there is none.
-double? parseNumber(String text, {bool lenient = false}) {
+/// and thousands separators ("1.234,56", "1,234.56", "1 234,5"). With
+/// [lenient], the first number inside other text is taken ("R$ 1.234,56",
+/// "35 m"); otherwise the whole text must be the number. Null when there
+/// is none.
+///
+/// A single separator is the decimal one ("12,5" = "12.5" = 12.5), except
+/// with [decimalSeparator], the one of the language the user types in: a
+/// single separator of the other kind followed by exactly three digits is
+/// then a thousands separator ("2.000" is 2000 with ',', "1,500" is 1500
+/// with '.'; see [numberIsAmbiguous]), any other is still decimal ("2.5"
+/// is 2.5 in Portuguese).
+double? parseNumber(String text, {bool lenient = false, String? decimalSeparator}) {
+  if (decimalSeparator != null && !lenient && numberIsAmbiguous(text, decimalSeparator)) {
+    return double.tryParse(text.trim().replaceAll(RegExp('[.,]'), ''));
+  }
   final plain = double.tryParse(text.trim());
   // "NaN" and "Infinity" parse in Dart but are no value a field can hold
   // (a project with them could not be saved)
@@ -197,12 +246,39 @@ double? parseNumber(String text, {bool lenient = false}) {
     // the last separator is the decimal one
     final decimalComma = t.lastIndexOf(',') > t.lastIndexOf('.');
     t = decimalComma ? t.replaceAll('.', '').replaceAll(',', '.') : t.replaceAll(',', '');
+  } else if (decimalSeparator != null && numberIsAmbiguous(t, decimalSeparator)) {
+    t = t.replaceAll(RegExp('[.,]'), '');
   } else if (commas > 0) {
     t = commas == 1 ? t.replaceAll(',', '.') : t.replaceAll(',', '');
   } else if (dots > 1) {
     t = t.replaceAll('.', '');
   }
   return double.tryParse(t);
+}
+
+/// The decimal separator a column of numbers read from a file uses, from
+/// the values that tell ("1.234,5", "12,25", "0.5"): ',' or '.', or null
+/// when none tells (only integers, or only "d.ddd" / "d,ddd" values, which
+/// read both ways). For the import of tables whose notation is not known.
+String? guessDecimalSeparator(Iterable<String> values) {
+  var comma = 0, point = 0;
+  for (final raw in values) {
+    final v = raw.trim();
+    final lastComma = v.lastIndexOf(','), lastPoint = v.lastIndexOf('.');
+    if (lastComma >= 0 && lastPoint >= 0) {
+      lastComma > lastPoint ? comma++ : point++;
+    } else if (lastComma >= 0 || lastPoint >= 0) {
+      final sep = lastComma >= 0 ? ',' : '.';
+      if (sep.allMatches(v).length > 1) {
+        // "1.234.567": thousands
+        sep == ',' ? point++ : comma++;
+      } else if (!numberIsAmbiguous(v, sep == ',' ? '.' : ',')) {
+        sep == ',' ? comma++ : point++;
+      }
+    }
+  }
+  if (comma == point) return null;
+  return comma > point ? ',' : '.';
 }
 
 /// Rows of numbers pasted or typed as a table (one row per line): fields

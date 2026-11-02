@@ -122,7 +122,7 @@ void main() {
     await tapText(tester, 'Fechar');
     await openMenu(tester, 'Ferramentas', 'Golpe de aríete…');
     expect(find.text(c.t('dlg.resultJoukowsky').toUpperCase()), findsOneWidget);
-    await enterField(tester, 'Velocidade (m/s)', '3');
+    await enterField(tester, 'Variação de velocidade (m/s)', '3');
     await tapText(tester, 'Fechar');
   });
 

@@ -5,10 +5,13 @@
 /// properties, layers and reports panels as bottom sheets.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/io/project_export.dart';
 import '../../core/model/entities.dart';
+import '../../core/model/terrain.dart';
 import '../actions.dart';
 import '../i18n.dart';
 import '../shortcuts.dart';
@@ -19,6 +22,7 @@ import '../theme.dart';
 import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
+import 'command_entry.dart';
 import 'ai/ai_panel.dart';
 import 'dialogs/agronomy_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
@@ -40,13 +44,15 @@ import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'history_panel.dart';
+import 'layout_mode.dart';
+import 'message_log.dart';
 import 'layers_panel.dart';
 import 'properties_panel.dart';
 import 'reports_panel.dart';
 import 'tool_palette.dart';
 
 /// Screens narrower than this use the phone layout.
-const mobileBreakpoint = 700.0;
+const mobileBreakpoint = phoneMaxWidth;
 
 class MobileShell extends StatefulWidget {
   const MobileShell({
@@ -59,6 +65,8 @@ class MobileShell extends StatefulWidget {
     this.onShowWelcome,
     required this.onCloseTab,
     required this.onDesignCheck,
+    this.onCloseTabAt,
+    this.onCommand,
   });
   final ProjectController c;
   final Workspace ws;
@@ -71,12 +79,23 @@ class MobileShell extends StatefulWidget {
   final VoidCallback onCloseTab;
   final VoidCallback onDesignCheck;
 
+  /// Closes the tab at an index (asking first when it has unsaved changes);
+  /// null closes it at once.
+  final void Function(int index)? onCloseTabAt;
+
+  /// Runs a typed command line (alias, point or distance) as the keyboard
+  /// does; null hides the ⌨ button.
+  final ValueChanged<String>? onCommand;
+
   @override
   State<MobileShell> createState() => _MobileShellState();
 }
 
 class _MobileShellState extends State<MobileShell> {
   String _group = 'draw';
+
+  /// The command line for the on-screen keyboard is open.
+  bool _commandOpen = false;
 
   ProjectController get c => widget.c;
 
@@ -93,7 +112,15 @@ class _MobileShellState extends State<MobileShell> {
     isScrollControlled: true,
     backgroundColor: Cad.panel,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
-    builder: (ctx) => SizedBox(key: key, height: MediaQuery.sizeOf(ctx).height * height, child: child),
+    builder: (ctx) {
+      // above the on-screen keyboard: the sheet takes what the keyboard leaves
+      final mq = MediaQuery.of(ctx);
+      final room = mq.size.height - mq.viewInsets.bottom - mq.padding.top - 8;
+      return Padding(
+        padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
+        child: SizedBox(key: key, height: math.max(120.0, math.min(mq.size.height * height, room)), child: child),
+      );
+    },
   );
 
   void _openProperties({int tab = 0}) {
@@ -116,7 +143,7 @@ class _MobileShellState extends State<MobileShell> {
                   Expanded(child: _tab(t('props.title'), index == 0, () => setState(() => index = 0))),
                   Expanded(child: _tab(t('view.layers'), index == 1, () => setState(() => index = 1))),
                   Expanded(child: _tab(t('hist.title'), index == 2, () => setState(() => index = 2))),
-                  IconButton(icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
+                  IconButton(tooltip: t('close'), icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.pop(ctx)),
                 ],
               ),
               Expanded(
@@ -141,9 +168,11 @@ class _MobileShellState extends State<MobileShell> {
     c.showReports = true;
     _sheet(
       key: const Key('mobile_reports_sheet'),
-      ListenableBuilder(
-        listenable: c,
-        builder: (_, _) => ReportsPanel(c: c),
+      Builder(
+        builder: (ctx) => ListenableBuilder(
+          listenable: c,
+          builder: (_, _) => ReportsPanel(c: c, onClose: () => Navigator.of(ctx).pop(), onLocated: () => Navigator.of(ctx).pop()),
+        ),
       ),
       height: 0.85,
     ).then((_) {
@@ -196,9 +225,48 @@ class _MobileShellState extends State<MobileShell> {
       leading: Icon(icon, size: 18),
       title: Text(title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold)),
       initiallyExpanded: open,
-      childrenPadding: const EdgeInsets.only(left: 12),
+      childrenPadding: const EdgeInsetsDirectional.only(start: 12),
       children: children,
     );
+    // the open tabs (the phone has no tab bar) and the projects kept in this browser
+    Widget tabRow(int i) {
+      final tab = ws.tabs[i];
+      final on = i == ws.active;
+      final name = tab.project.meta.name.trim().isEmpty ? t('name.newProject') : tab.project.meta.name;
+      return ListTile(
+        key: Key('mobile_tab_$i'),
+        dense: true,
+        selected: on,
+        leading: Icon(on ? Icons.radio_button_checked : Icons.radio_button_unchecked, size: 18),
+        title: Text('${tab.dirty ? '• ' : ''}$name', style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
+        trailing: IconButton(
+          key: Key('mobile_tab_close_$i'),
+          tooltip: t('tab.close'),
+          icon: const Icon(Icons.close, size: 18),
+          onPressed: () {
+            close();
+            final at = widget.onCloseTabAt;
+            if (at != null) {
+              at(i);
+            } else {
+              ws.closeTab(i);
+            }
+          },
+        ),
+        onTap: () {
+          close();
+          ws.select(i);
+        },
+      );
+    }
+
+    final recent = c.store.list();
+    void polarStep() {
+      c.snap.nextPolarStep();
+      c.track('polar');
+      c.refresh();
+    }
+
     _sheet(
       key: const Key('mobile_menu_sheet'),
       ListView(
@@ -212,11 +280,27 @@ class _MobileShellState extends State<MobileShell> {
               decoration: BoxDecoration(color: Cad.fg24, borderRadius: BorderRadius.circular(2)),
             ),
           ),
+          // 1.6.0 UI: tabs and recent projects
+          section(
+            '${t('mob.tabs')} (${ws.tabs.length})',
+            Icons.tab_outlined,
+            [for (var i = 0; i < ws.tabs.length; i++) tabRow(i), row(t('file.newTab'), () => ws.addTab(), icon: Icons.add)],
+            key: const Key('mobile_menu_tabs'),
+            open: ws.tabs.length > 1,
+          ),
+          section(t('file.recent'), Icons.history, [
+            if (recent.isEmpty) row(t('file.noRecent'), null),
+            for (final p in recent.take(8)) row(p.name.isEmpty ? p.uid : p.name, () => openStoredAction(ws, p), icon: Icons.description_outlined, key: Key('mobile_recent_${p.uid}')),
+          ], key: const Key('mobile_menu_recent')),
           section(t('menu.file'), Icons.folder_outlined, [
             row(t('file.new'), () => confirmNew(context, c), icon: Icons.note_add_outlined),
             row(t('file.open'), () => openProjectInTabAction(context, ws), icon: Icons.folder_open),
             row(t('file.save'), () => saveProjectAction(context, c), icon: Icons.save_outlined),
             row(t('file.versions'), () => showVersionsDialog(context, c), icon: Icons.layers_outlined),
+            check(t('file.autosave'), c.autosaveEnabled, (v) {
+              c.autosaveEnabled = v;
+              c.refresh();
+            }),
             for (final ex in exampleGallery) row('${t('file.examples')}: ${t(ex.titleKey)}', () => openExampleAction(context, c, ex.id, ws: ws), icon: exampleIcon(ex.id)),
             row(t('file.importDrawing'), () => importDrawingAction(context, c), icon: Icons.upload_file),
             row(t('file.georefImage'), c.selectedEntity == null ? null : () => showImageGeorefDialog(context, c), icon: Icons.image_outlined),
@@ -224,11 +308,7 @@ class _MobileShellState extends State<MobileShell> {
             for (final f in DrawingFormat.values) row('${t('file.exportDrawing')}: ${t('exp.${f.name}')}', () => exportDrawingAction(context, c, f), icon: Icons.download),
             row('${t('file.exportDrawing')}: ${t('exp.png')}', () => exportSheetPngAction(context, c), icon: Icons.image_outlined, key: const Key('mobile_menu_export_png')),
             for (final f in ReportFormat.values)
-              row(
-                '${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}',
-                c.results == null ? null : () => exportReportAction(context, c, f),
-                icon: Icons.table_view,
-              ),
+              row('${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}', () => exportReportAction(context, c, f), icon: Icons.table_view),
             row(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined),
             row(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
             row(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
@@ -303,6 +383,15 @@ class _MobileShellState extends State<MobileShell> {
               c.snap.ortho = v;
               c.refresh();
             }),
+            check(t('mob.gridSnap'), c.snap.grid, (v) {
+              c.snap.grid = v;
+              c.refresh();
+            }),
+            row(t('mob.polar', {'s': c.snap.polarStepDeg > 0 ? '${c.snap.polarStepDeg.round()}°' : t('mob.off')}), polarStep, icon: Icons.track_changes, key: const Key('mobile_menu_polar')),
+            check(t('view.grips'), c.showGrips, (v) {
+              c.showGrips = v;
+              c.refresh();
+            }),
             check(t('status.keepLinks'), c.toolSettings.keepConnections, (v) {
               c.toolSettings.keepConnections = v;
               c.refresh();
@@ -337,6 +426,12 @@ class _MobileShellState extends State<MobileShell> {
             row(t('terrain.generateContours'), () => showGenerateContoursDialog(context, c), icon: Icons.gesture),
             row(t('design.dem3d'), () => showDemDialog(context, c), icon: Icons.view_in_ar_outlined),
             row(t('terrain.clearProfile'), c.profilePath == null ? null : c.clearProfile, icon: Icons.close),
+            for (final m in TerrainMethod.values)
+              check(t(m == TerrainMethod.tin ? 'terrain.tin' : 'terrain.idw'), c.project.params.terrainMethod == m, (_) {
+                final edit = c.beginSettingsEdit('hist.params');
+                c.project.params.terrainMethod = m;
+                c.commitSettingsEdit(edit);
+              }),
             row(t('design.check'), widget.onDesignCheck, icon: Icons.fact_check_outlined, key: const Key('mobile_menu_check')),
             row(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, key: const Key('mobile_menu_autofix')),
             row('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, key: const Key('mobile_menu_optimize')),
@@ -392,6 +487,7 @@ class _MobileShellState extends State<MobileShell> {
             row(t('help.tutorial'), widget.onStartTutorial, icon: Icons.school_outlined),
             row(t('help.welcome'), widget.onShowWelcome, icon: Icons.waving_hand_outlined),
             row(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
+            row(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('mobile_menu_messages')),
             row(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
           ]),
         ],
@@ -409,13 +505,16 @@ class _MobileShellState extends State<MobileShell> {
       body: SafeArea(
         child: Column(
           children: [
-            // top bar
+            // top bar (48 px: the buttons are finger-sized)
             Container(
-              height: 44,
+              height: 48,
               color: Cad.panel,
               child: Row(
                 children: [
-                  IconButton(key: const Key('mobile_menu'), tooltip: t('mob.menu'), icon: const Icon(Icons.menu), onPressed: _openMenu),
+                  KeyedSubtree(
+                    key: TutorialTargets.mobileMenu,
+                    child: IconButton(key: const Key('mobile_menu'), tooltip: t('mob.menu'), icon: const Icon(Icons.menu), onPressed: _openMenu),
+                  ),
                   Image.asset('assets/brand/logo-mark.png', height: 22, filterQuality: FilterQuality.medium),
                   const SizedBox(width: 6),
                   Expanded(
@@ -427,7 +526,7 @@ class _MobileShellState extends State<MobileShell> {
                   ),
                   if (c.busy)
                     const Padding(
-                      padding: EdgeInsets.only(right: 8),
+                      padding: EdgeInsetsDirectional.only(end: 8),
                       child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
                     ),
                   // 1.6.0 CAD: the copy in the browser failed (stays until one is kept)
@@ -471,10 +570,12 @@ class _MobileShellState extends State<MobileShell> {
                           key: TutorialTargets.statusBar,
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(color: Cad.overlay, borderRadius: BorderRadius.circular(6)),
+                          // a drawing tool: what the buttons do in place of Enter, Esc and the keyboard (UI-27)
                           child: Text(
-                            c.command.isNotEmpty ? '${t('status.command')}: ${c.command}' : widget.hint,
+                            c.command.isNotEmpty ? '${t('status.command')}: ${c.command}' : (drawing ? '${widget.hint}\n${t('hint.touchKeys')}' : widget.hint),
+                            key: const Key('mobile_hint'),
                             style: TextStyle(fontSize: 11, color: Cad.fg70),
-                            maxLines: 2,
+                            maxLines: drawing ? 3 : 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -491,11 +592,18 @@ class _MobileShellState extends State<MobileShell> {
                           if (drawing) _fab(const Key('mobile_done'), Icons.check, t('mob.done'), () => _toolKey('Enter'), color: Cad.okFill),
                           // 1.6.0 EDT: Cancel drops the stroke (Esc keeps it, CAD-10)
                           if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Cancel')),
+                          if (widget.onCommand != null) _fab(const Key('mobile_command'), Icons.keyboard_outlined, t('cmd.open'), () => setState(() => _commandOpen = !_commandOpen)),
                           if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
                           _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
                           _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
-                          _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
-                          _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                          KeyedSubtree(
+                            key: TutorialTargets.mobileProps,
+                            child: _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
+                          ),
+                          KeyedSubtree(
+                            key: TutorialTargets.mobileReports,
+                            child: _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                          ),
                           // 1.6.0 EDT: taps add to the selection, as Shift does (CAD-17)
                           if (usesAddToSelection(c.activeTool))
                             _fab(
@@ -512,6 +620,8 @@ class _MobileShellState extends State<MobileShell> {
                 ),
               ),
             ),
+            // typed commands and coordinates, above the on-screen keyboard
+            if (_commandOpen && widget.onCommand != null) CommandEntry(c: c, onRun: widget.onCommand!, onClose: () => setState(() => _commandOpen = false)),
             // tool bar: group tabs + tools of the group
             Container(
               key: TutorialTargets.palette,
@@ -520,7 +630,7 @@ class _MobileShellState extends State<MobileShell> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    height: 34,
+                    height: 48,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
@@ -602,8 +712,8 @@ class _MobileShellState extends State<MobileShell> {
           customBorder: const CircleBorder(),
           onTap: onTap,
           child: SizedBox(
-            width: 44,
-            height: 44,
+            width: 48,
+            height: 48,
             child: Stack(
               alignment: Alignment.center,
               children: [

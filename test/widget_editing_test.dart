@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencadirrigation/app/widgets/layers_panel.dart';
 import 'package:opencadirrigation/app/canvas/cad_canvas.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
@@ -186,7 +187,11 @@ void main() {
     expect(c.project.layerNamed(Layers.drawing).locked, isTrue);
     await tester.tap(find.byKey(const Key('layer_lock_DRAWING')));
     await settle(tester);
-    await tester.tap(find.byKey(const Key('layer_row_TEXT')));
+    // (a tap on the name: the row's buttons are finger-sized now)
+    final name = find.descendant(of: find.byKey(const Key('layer_row_TEXT')), matching: find.byType(Text)).first;
+    await tester.ensureVisible(name);
+    await settle(tester);
+    await tester.tap(name);
     await settle(tester);
     expect(c.project.currentLayer, Layers.text);
     await tester.tap(find.byKey(const Key('layer_color_TEXT')));
@@ -200,6 +205,13 @@ void main() {
     await tester.tap(find.text('OK'));
     await settle(tester);
     expect(c.project.findLayer('ESTRADAS'), isNotNull);
+    // (the new layer is at the end of the list)
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('layer_del_ESTRADAS')),
+      200,
+      scrollable: find.descendant(of: find.byType(LayersPanel), matching: find.byType(Scrollable)).first,
+    );
+    await settle(tester);
     await tester.tap(find.byKey(const Key('layer_del_ESTRADAS')));
     await settle(tester);
     expect(c.project.findLayer('ESTRADAS'), isNull);

@@ -26,6 +26,50 @@ class PropertiesPanel extends StatelessWidget {
   const PropertiesPanel({super.key, required this.c});
   final ProjectController c;
 
+  /// The label of a catalogue item the list does not offer (UI-10): its name
+  /// marked "(switched off)" while it is in the catalogue, else its id
+  /// marked "(not in the catalogue)" — never another item in its place.
+  String Function(String) _missing(String? Function(String id) nameOf) => (id) {
+    final n = nameOf(id);
+    return n == null ? '$id ${c.t('props.notInCatalog')}' : '$n ${c.t('props.disabled')}';
+  };
+
+  /// A fraction (0–1) as a field (UI-12): 85 typed is read as 85 % (0.85),
+  /// and a value out of [min]..[max] is cut to the range with a message, not
+  /// in silence.
+  Widget _fraction(String label, double value, double min, double max, void Function(double v) apply, {Key? key}) => NumField(
+    key: key,
+    label: label.contains('0–1') ? label : '$label (0–1)',
+    value: value,
+    onChanged: (x) {
+      final f = x > 1 && x <= 100 ? x / 100 : x;
+      final cut = f.clamp(min, max).toDouble();
+      if (cut != f) c.notify(c.t('ui.fractionCut', {'v': fmtUi(f, 2), 'r': '${fmtUi(min, 2)}–${fmtUi(max, 2)}', 'n': fmtUi(cut, 2)}));
+      apply(cut);
+    },
+  );
+
+  /// The length of a line, an open polyline or a pipe as a field: the last
+  /// vertex moves along the last segment (what is joined to it goes along
+  /// when "Keep connections" is on), so an exact length can be typed and
+  /// corrected later, also without a keyboard command.
+  Widget _lengthField(Entity e, List<Pt> pts) {
+    final t = c.t, u = c.units;
+    return NumField(
+      key: const Key('props_length'),
+      label: '${t('props.length')} (${u.lengthLabel})',
+      value: u.lengthFromSi(polylineLength(pts)),
+      onChanged: (v) {
+        final end = endForLength(pts, u.lengthToSi(v));
+        if (end == null) {
+          c.notify(t('props.lengthNo'));
+          return;
+        }
+        c.setGrip(e.id, pts.length - 1, end, keepConnections: c.toolSettings.keepConnections);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = c.t;
@@ -43,7 +87,7 @@ class PropertiesPanel extends StatelessWidget {
             child: Text(t('tool.${ProjectController.toolKeyOf(e)}'), style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
           IconButton(icon: const Icon(Icons.center_focus_strong, size: 16), tooltip: t('props.zoomTo'), onPressed: () => c.zoomToEntity(e.id)),
-          IconButton(icon: const Icon(Icons.delete_outline, size: 16), onPressed: c.deleteSelected),
+          IconButton(icon: const Icon(Icons.delete_outline, size: 16), tooltip: t('edit.delete'), onPressed: c.deleteSelected),
         ],
       ),
       if (locked) Text(t('props.locked'), style: TextStyle(fontSize: 11, color: Cad.amber)),
@@ -54,13 +98,24 @@ class PropertiesPanel extends StatelessWidget {
     String pLabel(String k) => '${t(k)} (${u.pressureLabel})';
     String qLabel(String k) => '${t(k)} (${u.flowLabel})';
     String lLabel(String k) => '${t(k)} (${u.lengthLabel})';
+    // a length in metres in the display unit (ft with US units); [nonPositive]
+    // gives what a value <= 0 becomes (null: the value is kept as it is)
+    Widget len(String key, double m, void Function(double m) apply, {bool inv = true, double? Function()? nonPositive}) => NumField(
+      label: lLabel(key),
+      value: u.lengthFromSi(m),
+      onChanged: (x) {
+        final v = x <= 0 && nonPositive != null ? nonPositive() : u.lengthToSi(x);
+        if (v != null) set(() => apply(v), inv: inv);
+      },
+    );
 
     switch (e) {
       case PipeEntity p:
         items.addAll([
           KV(t('props.scope'), t('scope.${p.scope.name}')),
-          KV(t('props.length'), '${fmt(u.lengthFromSi(p.length))} ${u.lengthLabel}'),
+          _lengthField(p, p.points),
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pipe'),
             value: p.pipeSpecId,
             items: cat.pipesFor(p.scope == HydraulicScope.zone ? PipeUsage.zone : PipeUsage.mainline),
@@ -70,7 +125,8 @@ class PropertiesPanel extends StatelessWidget {
             nullLabel: t('auto'),
             onChanged: (v) => set(() {
               p.pipeSpecId = v;
-              if (v == null) p.computerSized = true;
+              // a pipe chosen is a pipe kept: "Automatic" sizes it again
+              p.computerSized = v == null;
             }),
           ),
           SwitchListTile(
@@ -80,7 +136,7 @@ class PropertiesPanel extends StatelessWidget {
             value: p.computerSized,
             onChanged: (v) => set(() => p.computerSized = v),
           ),
-          NumField(label: t('props.depth'), value: p.depth, onChanged: (v) => set(() => p.depth = v)),
+          len('ui.depth', p.depth, (v) => p.depth = v),
         ]);
       case SpraylineEntity s:
         final outlet = cat.outlet(s.outletSpecId);
@@ -88,6 +144,7 @@ class PropertiesPanel extends StatelessWidget {
           KV(t('props.length'), '${fmt(u.lengthFromSi(s.length))} ${u.lengthLabel}'),
           KV(t('props.outlets'), '${s.outletCount}'),
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pipe'),
             value: s.pipeSpecId,
             items: cat.pipesFor(PipeUsage.lateral),
@@ -97,7 +154,7 @@ class PropertiesPanel extends StatelessWidget {
             nullLabel: t('auto'),
             onChanged: (v) => set(() {
               s.pipeSpecId = v;
-              if (v == null) s.computerSized = true;
+              s.computerSized = v == null;
             }),
           ),
           SwitchListTile(
@@ -108,6 +165,7 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (v) => set(() => s.computerSized = v),
           ),
           SpecDropdown<OutletSpec>(
+            missingLabel: _missing((id) => cat.outlet(id)?.name),
             label: t('props.outlet'),
             value: s.outletSpecId,
             items: cat.outlets.where((o) => o.enabled).toList(),
@@ -119,19 +177,28 @@ class PropertiesPanel extends StatelessWidget {
             }),
           ),
           if (outlet != null)
-            SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: s.nozzleId, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => set(() => s.nozzleId = v)),
+            SpecDropdown<NozzleSpec>(
+              missingLabel: _missing((id) => null),
+              label: t('props.nozzle'),
+              value: s.nozzleId,
+              items: outlet.nozzles,
+              labelOf: (x) => x.name,
+              idOf: (x) => x.id,
+              onChanged: (v) => set(() => s.nozzleId = v),
+            ),
           NumField(label: pLabel('props.head'), value: u.pressureFromHead(s.headM), onChanged: (v) => set(() => s.headM = u.pressureToHead(v))),
           NumField(label: lLabel('props.spacing'), value: u.lengthFromSi(s.spacing), onChanged: (v) => set(() => s.spacing = v > 0 ? u.lengthToSi(v) : s.spacing)),
           NumField(label: lLabel('props.offset'), value: u.lengthFromSi(s.offset), onChanged: (v) => set(() => s.offset = u.lengthToSi(v))),
           NumField(label: t('props.arc'), value: s.arcDeg, onChanged: (v) => set(() => s.arcDeg = v)),
-          NumField(label: t('props.riser'), value: s.riserHeight, onChanged: (v) => set(() => s.riserHeight = v)),
-          NumField(label: t('props.depth'), value: s.depth, onChanged: (v) => set(() => s.depth = v)),
+          len('ui.riser', s.riserHeight, (v) => s.riserHeight = v),
+          len('ui.depth', s.depth, (v) => s.depth = v),
           ..._envelope(e.id),
         ]);
       case TapeEntity tp:
         items.addAll([
           KV(t('props.length'), '${fmt(u.lengthFromSi(tp.length))} ${u.lengthLabel}'),
           SpecDropdown<TapeSpec>(
+            missingLabel: _missing((id) => cat.tape(id)?.name),
             label: t('props.tape'),
             value: tp.tapeSpecId,
             items: cat.tapes.where((x) => x.enabled).toList(),
@@ -148,7 +215,7 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (v) => set(() => tp.regulated = v),
           ),
           NumField(label: pLabel('props.submainMin'), value: u.pressureFromHead(tp.submainMinHeadM), onChanged: (v) => set(() => tp.submainMinHeadM = u.pressureToHead(v)), enabled: tp.regulated),
-          NumField(label: t('props.depth'), value: tp.depth, onChanged: (v) => set(() => tp.depth = v)),
+          len('ui.depth', tp.depth, (v) => tp.depth = v),
           NumField(label: qLabel('props.flushingFlow'), value: u.flowFromSi(tp.flushingFlow), onChanged: (v) => set(() => tp.flushingFlow = u.flowToSi(v))),
           ..._envelope(e.id),
         ]);
@@ -158,6 +225,7 @@ class PropertiesPanel extends StatelessWidget {
         items.addAll([
           KV(t('props.scope'), t('scope.${o.scope.name}')),
           SpecDropdown<OutletSpec>(
+            missingLabel: _missing((id) => cat.outlet(id)?.name),
             label: t('props.outlet'),
             value: o.outletSpecId,
             items: cat.outlets.where((x) => x.enabled).toList(),
@@ -169,13 +237,21 @@ class PropertiesPanel extends StatelessWidget {
             }),
           ),
           if (outlet != null)
-            SpecDropdown<NozzleSpec>(label: t('props.nozzle'), value: o.nozzleId, items: outlet.nozzles, labelOf: (x) => x.name, idOf: (x) => x.id, onChanged: (v) => set(() => o.nozzleId = v)),
+            SpecDropdown<NozzleSpec>(
+              missingLabel: _missing((id) => null),
+              label: t('props.nozzle'),
+              value: o.nozzleId,
+              items: outlet.nozzles,
+              labelOf: (x) => x.name,
+              idOf: (x) => x.id,
+              onChanged: (v) => set(() => o.nozzleId = v),
+            ),
           NumField(label: pLabel('props.head'), value: u.pressureFromHead(o.headM), onChanged: (v) => set(() => o.headM = u.pressureToHead(v))),
           if (nozzle != null) KV(t('result.flow'), '${fmt(u.flowFromSi(nozzle.curve.flow(o.headM)))} ${u.flowLabel}'),
           if (nozzle != null && nozzle.curve.radiusA > 0) KV(t('props.radius'), '${fmt(u.lengthFromSi(nozzle.curve.radius(o.headM)))} ${u.lengthLabel}'),
           NumField(label: t('props.arc'), value: o.arcDeg, onChanged: (v) => set(() => o.arcDeg = v)),
           NumField(label: t('props.orientation'), value: o.orientationDeg, onChanged: (v) => set(() => o.orientationDeg = v, inv: false)),
-          NumField(label: t('props.riser'), value: o.riserHeight, onChanged: (v) => set(() => o.riserHeight = v)),
+          len('ui.riser', o.riserHeight, (v) => o.riserHeight = v),
           // valve-in-head: its station and the system flows that run it
           if (o.scope == HydraulicScope.mainline) ...[
             TextFieldRow(key: const Key('vih_station'), label: t('props.vihStation'), value: o.zoneName, onChanged: (x) => set(() => o.zoneName = x)),
@@ -187,6 +263,7 @@ class PropertiesPanel extends StatelessWidget {
         items.addAll([
           TextFieldRow(label: t('props.zone'), value: v.zoneName, onChanged: (x) => set(() => v.zoneName = x, inv: false)),
           SpecDropdown<ValveSpec>(
+            missingLabel: _missing((id) => cat.valve(id)?.name),
             label: t('props.valve'),
             value: v.valveSpecId,
             items: cat.valves.where((x) => x.enabled && x.kind == ValveKind.control).toList(),
@@ -200,7 +277,7 @@ class PropertiesPanel extends StatelessWidget {
             value: v.fixedDownstreamHeadM == null ? 0 : u.pressureFromHead(v.fixedDownstreamHeadM!),
             onChanged: (x) => set(() => v.fixedDownstreamHeadM = x <= 0 ? null : u.pressureToHead(x)),
           ),
-          NumField(label: t('props.depth'), value: v.depth, onChanged: (x) => set(() => v.depth = x)),
+          len('ui.depth', v.depth, (x) => v.depth = x),
         ]);
       case WaterSupplyEntity w:
         items.addAll([
@@ -215,12 +292,13 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: pLabel('props.maxHead'), value: u.pressureFromHead(w.maxHeadM), onChanged: (x) => set(() => w.maxHeadM = u.pressureToHead(x))),
           NumField(label: qLabel('props.designFlow'), value: u.flowFromSi(w.designFlow), onChanged: (x) => set(() => w.designFlow = u.flowToSi(x))),
           NumField(label: qLabel('props.maxFlow'), value: u.flowFromSi(w.maxFlow), onChanged: (x) => set(() => w.maxFlow = u.flowToSi(x))),
-          NumField(label: t('props.waterLevel'), value: w.waterLevelOffsetM, onChanged: (x) => set(() => w.waterLevelOffsetM = x)),
+          NumField(label: lLabel('ui.waterLevel'), value: u.lengthFromSi(w.waterLevelOffsetM), signed: true, onChanged: (x) => set(() => w.waterLevelOffsetM = u.lengthToSi(x))),
         ]);
       case PumpEntity p:
         final spec = cat.pump(p.pumpSpecId);
         items.addAll([
           SpecDropdown<PumpSpec>(
+            missingLabel: _missing((id) => cat.pump(id)?.name),
             label: t('props.pump'),
             value: p.pumpSpecId,
             items: cat.pumps.where((x) => x.enabled).toList(),
@@ -248,6 +326,7 @@ class PropertiesPanel extends StatelessWidget {
         items.addAll([
           KV(t('props.scope'), t('scope.${m.scope.name}')),
           SpecDropdown<ValveSpec>(
+            missingLabel: _missing((id) => cat.valve(id)?.name),
             label: t('props.misc'),
             value: m.valveSpecId,
             items: cat.valves.where((x) => x.enabled && x.kind != ValveKind.control).toList(),
@@ -267,7 +346,7 @@ class PropertiesPanel extends StatelessWidget {
           NumField(label: t('props.elevationDem'), value: j.fixedElevation ?? 0, onChanged: (x) => set(() => j.fixedElevation = x == 0 ? null : x)),
         ]);
       case BreaklineEntity bl:
-        String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmt(bl.elevationOf(i), 2) : '-'].join('; ');
+        String zText() => [for (var i = 0; i < bl.points.length; i++) bl.elevationOf(i).isFinite ? fmtUi(bl.elevationOf(i), 2) : '-'].join('; ');
         items.addAll([
           KV(t('props.vertices'), '${bl.points.length}'),
           KV(t('props.length'), '${fmt(u.lengthFromSi(bl.length))} ${u.lengthLabel}'),
@@ -277,7 +356,7 @@ class PropertiesPanel extends StatelessWidget {
             value: zText(),
             onChanged: (x) => set(() {
               final parts = x.split(';');
-              bl.elevations = [for (var i = 0; i < bl.points.length; i++) i < parts.length ? (parseNumber(parts[i].trim()) ?? double.nan) : double.nan];
+              bl.elevations = [for (var i = 0; i < bl.points.length; i++) i < parts.length ? (parseUiNumber(parts[i].trim()) ?? double.nan) : double.nan];
             }),
           ),
           Text(t('props.breaklineHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
@@ -311,12 +390,13 @@ class PropertiesPanel extends StatelessWidget {
             }),
           ),
           TextFieldRow(label: t('props.zone'), value: pv.zoneName, onChanged: (x) => set(() => pv.zoneName = x, inv: false)),
-          NumField(label: t('props.pivotRadius'), value: pv.radiusM, onChanged: (x) => set(() => pv.radiusM = x <= 0 ? pv.radiusM : x)),
-          NumField(label: t('props.pivotSpan'), value: pv.spanLengthM, onChanged: (x) => set(() => pv.spanLengthM = x <= 0 ? pv.spanLengthM : x)),
-          if (pv.kind == PivotKind.linear) NumField(label: t('props.pivotTravel'), value: pv.travelM, onChanged: (x) => set(() => pv.travelM = x)),
+          len('ui.pivotRadius', pv.radiusM, (x) => pv.radiusM = x, nonPositive: () => null),
+          len('ui.pivotSpan', pv.spanLengthM, (x) => pv.spanLengthM = x, nonPositive: () => null),
+          if (pv.kind == PivotKind.linear) len('ui.pivotTravel', pv.travelM, (x) => pv.travelM = x),
           if (pv.kind == PivotKind.pivot) NumField(label: t('props.pivotSector'), value: pv.sectorDeg, onChanged: (x) => set(() => pv.sectorDeg = x.clamp(1, 360))),
           NumField(label: t('props.pivotAngle'), value: pv.angleDeg, onChanged: (x) => set(() => pv.angleDeg = x, inv: false)),
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pivotPipe'),
             value: pv.pipeSpecId,
             items: cat.pipesFor(PipeUsage.mainline),
@@ -326,22 +406,24 @@ class PropertiesPanel extends StatelessWidget {
             nullLabel: '${fmt(pv.pipeInnerMm, 0)} mm, C ${fmt(pv.hazenC, 0)}',
             onChanged: (v) => set(() => pv.pipeSpecId = v),
           ),
-          if (pv.pipeSpecId == null) NumField(label: t('props.pivotPipeId'), value: pv.pipeInnerMm, onChanged: (x) => set(() => pv.pipeInnerMm = x)),
+          if (pv.pipeSpecId == null)
+            NumField(label: '${t('ui.pivotPipeId')} (${u.diameterLabel})', value: u.diameterFromSi(pv.pipeInnerMm / 1000), onChanged: (x) => set(() => pv.pipeInnerMm = u.diameterToSi(x) * 1000)),
           if (pv.pipeSpecId == null) NumField(label: t('props.pivotC'), value: pv.hazenC, decimals: 0, onChanged: (x) => set(() => pv.hazenC = x)),
-          NumField(label: t('props.pivotHeight'), value: pv.pipeHeightM, onChanged: (x) => set(() => pv.pipeHeightM = x)),
+          len('ui.pivotHeight', pv.pipeHeightM, (x) => pv.pipeHeightM = x),
           NumField(label: pLabel('props.pivotEndP'), value: u.pressureFromHead(pv.endPressureM), onChanged: (x) => set(() => pv.endPressureM = u.pressureToHead(x))),
           NumField(label: qLabel('props.pivotGunQ'), value: u.flowFromSi(pv.endGunFlow), onChanged: (x) => set(() => pv.endGunFlow = u.flowToSi(x))),
           if (pv.endGunFlow > 0) NumField(label: pLabel('props.pivotGunP'), value: u.pressureFromHead(pv.endGunPressureM), onChanged: (x) => set(() => pv.endGunPressureM = u.pressureToHead(x))),
-          NumField(label: t('props.pivotThrow'), value: pv.endThrowM, onChanged: (x) => set(() => pv.endThrowM = x)),
-          NumField(label: t('props.pivotDepth'), value: pv.grossDepthMm, onChanged: (x) => set(() => pv.grossDepthMm = x)),
+          len('ui.pivotThrow', pv.endThrowM, (x) => pv.endThrowM = x),
+          NumField(label: '${t('ui.pivotDepth')} (${u.depthLabel})', value: u.depthFromMm(pv.grossDepthMm), onChanged: (x) => set(() => pv.grossDepthMm = u.depthToMm(x))),
           NumField(label: t('props.pivotHours'), value: pv.hoursPerCycle, onChanged: (x) => set(() => pv.hoursPerCycle = x)),
-          NumField(label: t('props.pivotWidth'), value: pv.wettedWidthM, onChanged: (x) => set(() => pv.wettedWidthM = x)),
-          NumField(label: t('props.pivotLoss'), value: pv.machineLossM, onChanged: (x) => set(() => pv.machineLossM = x)),
-          NumField(label: t('props.pivotMaxRate'), value: pv.maxAppRateMmH, onChanged: (x) => set(() => pv.maxAppRateMmH = x)),
+          len('ui.pivotWidth', pv.wettedWidthM, (x) => pv.wettedWidthM = x),
+          NumField(label: pLabel('ui.pivotLoss'), value: u.pressureFromHead(pv.machineLossM), onChanged: (x) => set(() => pv.machineLossM = u.pressureToHead(x))),
+          NumField(label: '${t('ui.pivotMaxRate')} (${u.depthRateLabel})', value: u.depthFromMm(pv.maxAppRateMmH), onChanged: (x) => set(() => pv.maxAppRateMmH = u.depthToMm(x))),
           NumField(label: '${t('props.pivotCost')} (${c.project.params.currency})', value: pv.machineCost, onChanged: (x) => set(() => pv.machineCost = x)),
           NumField(label: '${t('props.pivotTowerCost')} (${c.project.params.currency})', value: pv.towerCost, onChanged: (x) => set(() => pv.towerCost = x)),
-          NumField(label: t('props.pivotSprSpacing'), value: pv.sprinklerSpacingM, onChanged: (x) => set(() => pv.sprinklerSpacingM = x <= 0 ? pv.sprinklerSpacingM : x)),
+          len('ui.pivotSprSpacing', pv.sprinklerSpacingM, (x) => pv.sprinklerSpacingM = x, nonPositive: () => null),
           SpecDropdown<OutletSpec>(
+            missingLabel: _missing((id) => cat.outlet(id)?.name),
             label: t('props.pivotSprinkler'),
             value: pv.sprinklerSpecId,
             items: cat.outlets.where((o) => o.enabled && o.kind != OutletKind.demandPoint).toList(),
@@ -351,6 +433,7 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (v) => set(() => pv.sprinklerSpecId = v),
           ),
           SpecDropdown<ValveSpec>(
+            missingLabel: _missing((id) => cat.valve(id)?.name),
             label: t('props.pivotRegulator'),
             value: pv.regulatorSpecId,
             items: cat.valves.where((x) => x.enabled && x.kind == ValveKind.prv).toList(),
@@ -367,7 +450,7 @@ class PropertiesPanel extends StatelessWidget {
           ),
           KV(
             t('props.pivotArea'),
-            '${fmt((pv.kind == PivotKind.pivot ? 3.141592653589793 * pv.irrigatedRadius * pv.irrigatedRadius * pv.sectorDeg / 360 : pv.irrigatedRadius * pv.travelM) / 10000, 2)} ha',
+            '${fmt(u.areaFromSi(pv.kind == PivotKind.pivot ? 3.141592653589793 * pv.irrigatedRadius * pv.irrigatedRadius * pv.sectorDeg / 360 : pv.irrigatedRadius * pv.travelM), 2)} ${u.areaLabel}',
           ),
           if (r != null) ...[
             SectionTitle(t('props.pivotResults')),
@@ -375,7 +458,7 @@ class PropertiesPanel extends StatelessWidget {
             KV(t('props.pivotInlet'), '${fmt(u.pressureFromHead(r.inletHead), 1)} ${u.pressureLabel}'),
             if (r.availableHead != null) KV(t('rep.pAvail'), '${fmt(u.pressureFromHead(r.availableHead!), 1)} ${u.pressureLabel}'),
             KV(t('rep.hf'), '${fmt(u.pressureFromHead(r.frictionLoss), 2)} ${u.pressureLabel}'),
-            KV(t('rep.rise'), '${fmt(r.elevationRise, 2)} m'),
+            KV(t('rep.rise'), '${fmt(u.lengthFromSi(r.elevationRise), 2)} ${u.lengthLabel}'),
             KV(t('rep.towers'), '${r.towerCount}'),
             KV(t('rep.sprinklers'), '${r.sprinklerCount}'),
             KV(t('rep.appRatePeak'), '${fmt(u.depthFromMm(r.appRateEndPeak), 2)} ${u.depthRateLabel}'),
@@ -387,14 +470,14 @@ class PropertiesPanel extends StatelessWidget {
       case TextEntity tx:
         items.addAll([
           TextFieldRow(label: t('props.text'), value: tx.text, onChanged: (x) => set(() => tx.text = x, inv: false)),
-          NumField(label: t('props.textHeight'), value: tx.height, onChanged: (x) => set(() => tx.height = x, inv: false)),
+          len('ui.textHeight', tx.height, (x) => tx.height = x, inv: false),
           NumField(label: t('props.rotation'), value: tx.rotationDeg, onChanged: (x) => set(() => tx.rotationDeg = x, inv: false)),
         ]);
       case CircleEntity ci:
-        items.add(NumField(label: t('props.radius'), value: ci.radius, onChanged: (x) => set(() => ci.radius = x, inv: false)));
+        items.add(len('ui.radius', ci.radius, (x) => ci.radius = x, inv: false));
       case ArcEntity a:
         items.addAll([
-          NumField(label: t('props.radius'), value: a.radius, onChanged: (x) => set(() => a.radius = x, inv: false)),
+          len('ui.radius', a.radius, (x) => a.radius = x, inv: false),
           KV(t('props.angle'), '${fmt(a.sweepRad * 180 / 3.141592653589793, 1)}°'),
           KV(t('props.length'), '${fmt(u.lengthFromSi(a.length))} ${u.lengthLabel}'),
         ]);
@@ -413,7 +496,7 @@ class PropertiesPanel extends StatelessWidget {
         items.addAll([
           KV(t('props.area'), '${fmt(u.areaFromSi(h.area), 3)} ${u.areaLabel}'),
           NumField(label: t('props.hatchAngle'), value: h.angleDeg, onChanged: (x) => set(() => h.angleDeg = x, inv: false)),
-          NumField(label: t('props.hatchSpacing'), value: h.spacing, onChanged: (x) => set(() => h.spacing = x <= 0 ? 1 : x, inv: false)),
+          len('ui.hatchSpacing', h.spacing, (x) => h.spacing = x, inv: false, nonPositive: () => 1),
           SwitchListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -432,12 +515,12 @@ class PropertiesPanel extends StatelessWidget {
             idOf: (k) => k.name,
             onChanged: (x) => set(() => sy.kind = SymbolKind.values.byName(x!), inv: false),
           ),
-          NumField(label: t('props.symbolSize'), value: sy.size, onChanged: (x) => set(() => sy.size = x <= 0 ? 1 : x, inv: false)),
+          len('ui.symbolSize', sy.size, (x) => sy.size = x, inv: false, nonPositive: () => 1),
           NumField(label: t('props.rotation'), value: sy.rotationDeg, onChanged: (x) => set(() => sy.rotationDeg = x, inv: false)),
         ]);
       case PolylineEntity pl:
         items.addAll([
-          KV(t('props.length'), '${fmt(u.lengthFromSi(pl.length))} ${u.lengthLabel}'),
+          if (pl.closed) KV(t('props.length'), '${fmt(u.lengthFromSi(pl.length))} ${u.lengthLabel}') else _lengthField(pl, pl.points),
           if (pl.closed) KV(t('props.area'), '${fmt(u.areaFromSi(pl.area), 3)} ${u.areaLabel}'),
           SwitchListTile(
             dense: true,
@@ -448,11 +531,11 @@ class PropertiesPanel extends StatelessWidget {
           ),
         ]);
       case LineEntity l:
-        items.add(KV(t('props.length'), '${fmt(u.lengthFromSi(l.length))} ${u.lengthLabel}'));
+        items.add(_lengthField(l, [l.a, l.b]));
       case DimensionEntity d:
         items.add(NumField(label: t('props.dimOffset'), value: d.offset, onChanged: (x) => set(() => d.offset = x, inv: false)));
       case AngularDimensionEntity ad:
-        items.addAll([KV(t('props.angle'), '${fmt(ad.angleDeg, 2)}°'), NumField(label: t('props.dimRadius'), value: ad.radius, onChanged: (x) => set(() => ad.radius = x <= 0 ? 1 : x, inv: false))]);
+        items.addAll([KV(t('props.angle'), '${fmt(ad.angleDeg, 2)}°'), len('ui.dimRadius', ad.radius, (x) => ad.radius = x, inv: false, nonPositive: () => 1)]);
       case RadialDimensionEntity rd:
         items.addAll([
           KV(rd.diameter ? t('props.diameter') : t('props.radius'), '${fmt(u.lengthFromSi(rd.value))} ${u.lengthLabel}'),
@@ -512,15 +595,12 @@ class PropertiesPanel extends StatelessWidget {
       case WireEntity w:
         items.addAll([KV(t('props.length'), '${fmt(u.lengthFromSi(w.length))} ${u.lengthLabel}'), Text(t('hint.wire'), style: TextStyle(color: Cad.fg54, fontSize: 11))]);
       case LeaderEntity le:
-        items.addAll([
-          TextFieldRow(label: t('props.text'), value: le.text, onChanged: (x) => set(() => le.text = x, inv: false)),
-          NumField(label: t('props.textHeight'), value: le.height, onChanged: (x) => set(() => le.height = x, inv: false)),
-        ]);
+        items.addAll([TextFieldRow(label: t('props.text'), value: le.text, onChanged: (x) => set(() => le.text = x, inv: false)), len('ui.textHeight', le.height, (x) => le.height = x, inv: false)]);
       case ImageEntity im:
         items.addAll([
           KV(t('props.source'), im.source),
-          NumField(label: t('props.imageWidth'), value: im.width, onChanged: (x) => set(() => im.width = x <= 0 ? 1 : x, inv: false)),
-          NumField(label: t('props.imageHeight'), value: im.height, onChanged: (x) => set(() => im.height = x <= 0 ? 1 : x, inv: false)),
+          len('ui.imageWidth', im.width, (x) => im.width = x, inv: false, nonPositive: () => 1),
+          len('ui.imageHeight', im.height, (x) => im.height = x, inv: false, nonPositive: () => 1),
           NumField(label: t('props.rotation'), value: im.rotationDeg, onChanged: (x) => set(() => im.rotationDeg = x, inv: false)),
           NumField(label: t('props.opacity'), value: im.opacity, onChanged: (x) => set(() => im.opacity = x.clamp(0.05, 1.0), inv: false)),
         ]);
@@ -611,7 +691,7 @@ class PropertiesPanel extends StatelessWidget {
           }, inv: false);
         },
       ),
-      NumField(label: t('props.efficiency'), value: a.efficiency, onChanged: (x) => set(() => a.efficiency = x.clamp(0.05, 1.0), inv: false)),
+      _fraction(t('props.efficiency'), a.efficiency, 0.05, 1.0, (x) => set(() => a.efficiency = x, inv: false), key: const Key('area_efficiency')),
       NumField(label: t('props.emittersPerPlant'), value: a.emittersPerPlant.toDouble(), decimals: 0, onChanged: (x) => set(() => a.emittersPerPlant = x.round().clamp(0, 20))),
       // the method sets Kr and Pw of localized irrigation (one rule for every
       // report: ETc,loc = Kr·Kc·ETo, Pw only in the readily available water)
@@ -629,9 +709,10 @@ class PropertiesPanel extends StatelessWidget {
         }, inv: false),
       ),
       if (localized) ...[
-        NumField(label: t('props.wettedFraction'), value: a.wettedFraction, onChanged: (x) => set(() => a.wettedFraction = x.clamp(0.05, 1.0), inv: false)),
-        NumField(label: t('req.groundCover'), value: a.groundCover, onChanged: (x) => set(() => a.groundCover = x.clamp(0.0, 1.0).toDouble(), inv: false)),
-        NumField(key: const Key('area_kr'), label: t('area.kr'), value: a.localizedKr, onChanged: (x) => set(() => a.localizedKr = x <= 0 ? 0 : x.clamp(0.05, 1.0).toDouble(), inv: false)),
+        _fraction(t('props.wettedFraction'), a.wettedFraction, 0.05, 1.0, (x) => set(() => a.wettedFraction = x, inv: false)),
+        _fraction(t('req.groundCover'), a.groundCover, 0, 1, (x) => set(() => a.groundCover = x, inv: false)),
+        // 0: from the ground cover
+        _fraction(t('area.kr'), a.localizedKr, 0, 1, (x) => set(() => a.localizedKr = x <= 0 ? 0 : math.max(0.05, x), inv: false), key: const Key('area_kr')),
         KV(t('area.krUsed'), fmt(areaKr(a), 2)),
       ],
       SwitchListTile(
@@ -647,7 +728,7 @@ class PropertiesPanel extends StatelessWidget {
         NumField(label: t('props.kc'), value: a.kc, onChanged: (x) => set(() => a.kc = x, inv: false)),
         NumField(label: t('props.awc'), value: a.awcMmPerM, decimals: 0, onChanged: (x) => set(() => a.awcMmPerM = x, inv: false)),
         NumField(label: t('props.rootDepth'), value: a.rootDepthM, onChanged: (x) => set(() => a.rootDepthM = x, inv: false)),
-        NumField(label: t('props.mad'), value: a.mad, onChanged: (x) => set(() => a.mad = x.clamp(0.05, 0.95), inv: false)),
+        _fraction(t('props.mad'), a.mad, 0.05, 0.95, (x) => set(() => a.mad = x, inv: false), key: const Key('area_mad')),
         // ETc,loc of the design period (the crop table's month with a crop of the table)
         KV(t('props.etc'), fmt(crop?.etcMmDay ?? a.etcMmDay * areaKr(a), 2)),
       ],
@@ -790,7 +871,7 @@ class PropertiesPanel extends StatelessWidget {
       Text(t('props.multi', {'n': '${sel.length}'}), style: const TextStyle(fontWeight: FontWeight.bold)),
       Text(byType.entries.map((e) => '${e.value} × ${t('tool.${e.key}')}').join(', '), style: TextStyle(fontSize: 11, color: Cad.fg54)),
       const SizedBox(height: 4),
-      _layerField(sel.first),
+      _layerField(sel.first, mixed: sel.any((e) => e.layer != sel.first.layer)),
     ];
     String pLabel(String k) => '${t(k)} (${u.pressureLabel})';
     String lLabel(String k) => '${t(k)} (${u.lengthLabel})';
@@ -801,7 +882,7 @@ class PropertiesPanel extends StatelessWidget {
       return list.every((v) => v == first) ? first : null;
     }
 
-    Widget mixedNote() => Text(t('props.mixed'), style: TextStyle(fontSize: 10.5, color: Cad.fg38));
+    Widget mixedNote() => const SizedBox.shrink();
     items.add(SectionTitle(t('props.batch', {'n': '${byType[dominant]}', 'type': t('tool.$dominant')})));
     switch (dominant) {
       case 'sprayline':
@@ -814,6 +895,7 @@ class PropertiesPanel extends StatelessWidget {
         final outletSpec = outlet != null ? cat.outlet(outlet) : null;
         items.addAll([
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pipe'),
             value: pipe,
             items: cat.pipesFor(PipeUsage.lateral),
@@ -823,10 +905,11 @@ class PropertiesPanel extends StatelessWidget {
             nullLabel: pipe == null && s.any((e) => e.pipeSpecId != null) ? t('props.mixed') : t('auto'),
             onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) {
               e.pipeSpecId = v;
-              if (v == null) e.computerSized = true;
+              e.computerSized = v == null;
             }),
           ),
           SpecDropdown<OutletSpec>(
+            missingLabel: _missing((id) => cat.outlet(id)?.name),
             label: t('props.outlet'),
             value: outlet,
             items: cat.outlets.where((o) => o.enabled).toList(),
@@ -844,6 +927,7 @@ class PropertiesPanel extends StatelessWidget {
           ),
           if (outletSpec != null)
             SpecDropdown<NozzleSpec>(
+              missingLabel: _missing((id) => null),
               label: t('props.nozzle'),
               value: nozzle,
               items: outletSpec.nozzles,
@@ -853,11 +937,17 @@ class PropertiesPanel extends StatelessWidget {
               nullLabel: t('props.mixed'),
               onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) => e.nozzleId = v),
             ),
-          NumField(label: pLabel('props.head'), value: head == null ? 0 : u.pressureFromHead(head), onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) => e.headM = u.pressureToHead(v))),
+          NumField(
+            label: pLabel('props.head'),
+            value: head == null ? 0 : u.pressureFromHead(head),
+            mixed: head == null,
+            onChanged: (v) => c.mutateSelected<SpraylineEntity>((e) => e.headM = u.pressureToHead(v)),
+          ),
           if (head == null) mixedNote(),
           NumField(
             label: lLabel('props.spacing'),
             value: spacing == null ? 0 : u.lengthFromSi(spacing),
+            mixed: spacing == null,
             onChanged: (v) {
               if (v > 0) c.mutateSelected<SpraylineEntity>((e) => e.spacing = u.lengthToSi(v));
             },
@@ -870,6 +960,7 @@ class PropertiesPanel extends StatelessWidget {
         final inlet = common(s.map((e) => e.inletHeadM));
         items.addAll([
           SpecDropdown<TapeSpec>(
+            missingLabel: _missing((id) => cat.tape(id)?.name),
             label: t('props.tape'),
             value: spec,
             items: cat.tapes.where((x) => x.enabled).toList(),
@@ -881,7 +972,12 @@ class PropertiesPanel extends StatelessWidget {
               if (v != null) c.mutateSelected<TapeEntity>((e) => e.tapeSpecId = v);
             },
           ),
-          NumField(label: pLabel('props.inlet'), value: inlet == null ? 0 : u.pressureFromHead(inlet), onChanged: (v) => c.mutateSelected<TapeEntity>((e) => e.inletHeadM = u.pressureToHead(v))),
+          NumField(
+            label: pLabel('props.inlet'),
+            value: inlet == null ? 0 : u.pressureFromHead(inlet),
+            mixed: inlet == null,
+            onChanged: (v) => c.mutateSelected<TapeEntity>((e) => e.inletHeadM = u.pressureToHead(v)),
+          ),
           if (inlet == null) mixedNote(),
         ]);
       case 'zonePipe':
@@ -892,6 +988,7 @@ class PropertiesPanel extends StatelessWidget {
         final depth = common(s.map((e) => e.depth));
         items.addAll([
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pipe'),
             value: spec,
             items: cat.pipesFor(scope == HydraulicScope.zone ? PipeUsage.zone : PipeUsage.mainline),
@@ -901,7 +998,7 @@ class PropertiesPanel extends StatelessWidget {
             nullLabel: spec == null && s.any((e) => e.pipeSpecId != null) ? t('props.mixed') : t('auto'),
             onChanged: (v) => c.mutateSelected<PipeEntity>((e) {
               e.pipeSpecId = v;
-              if (v == null) e.computerSized = true;
+              e.computerSized = v == null;
             }),
           ),
           SwitchListTile(
@@ -911,7 +1008,7 @@ class PropertiesPanel extends StatelessWidget {
             value: s.every((e) => e.computerSized),
             onChanged: (v) => c.mutateSelected<PipeEntity>((e) => e.computerSized = v),
           ),
-          NumField(label: t('props.depth'), value: depth ?? 0, onChanged: (v) => c.mutateSelected<PipeEntity>((e) => e.depth = v)),
+          NumField(label: lLabel('ui.depth'), value: u.lengthFromSi(depth ?? 0), mixed: depth == null, onChanged: (v) => c.mutateSelected<PipeEntity>((e) => e.depth = u.lengthToSi(v))),
           if (depth == null) mixedNote(),
         ]);
       case 'outlet':
@@ -923,6 +1020,7 @@ class PropertiesPanel extends StatelessWidget {
         final outletSpec = outlet != null ? cat.outlet(outlet) : null;
         items.addAll([
           SpecDropdown<OutletSpec>(
+            missingLabel: _missing((id) => cat.outlet(id)?.name),
             label: t('props.outlet'),
             value: outlet,
             items: cat.outlets.where((o) => o.enabled).toList(),
@@ -940,6 +1038,7 @@ class PropertiesPanel extends StatelessWidget {
           ),
           if (outletSpec != null)
             SpecDropdown<NozzleSpec>(
+              missingLabel: _missing((id) => null),
               label: t('props.nozzle'),
               value: nozzle,
               items: outletSpec.nozzles,
@@ -949,9 +1048,14 @@ class PropertiesPanel extends StatelessWidget {
               nullLabel: t('props.mixed'),
               onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.nozzleId = v),
             ),
-          NumField(label: pLabel('props.head'), value: head == null ? 0 : u.pressureFromHead(head), onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.headM = u.pressureToHead(v))),
+          NumField(
+            label: pLabel('props.head'),
+            value: head == null ? 0 : u.pressureFromHead(head),
+            mixed: head == null,
+            onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.headM = u.pressureToHead(v)),
+          ),
           if (head == null) mixedNote(),
-          NumField(label: t('props.arc'), value: arc ?? 0, onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.arcDeg = v)),
+          NumField(label: t('props.arc'), value: arc ?? 0, mixed: arc == null, onChanged: (v) => c.mutateSelected<OutletEntity>((e) => e.arcDeg = v)),
           // valve-in-head heads: one station for all of them
           if (s.every((e) => e.scope == HydraulicScope.mainline))
             TextFieldRow(
@@ -966,6 +1070,7 @@ class PropertiesPanel extends StatelessWidget {
         final spec = common(s.map((e) => e.valveSpecId));
         items.add(
           SpecDropdown<ValveSpec>(
+            missingLabel: _missing((id) => cat.valve(id)?.name),
             label: t('props.valve'),
             value: spec,
             items: cat.valves.where((x) => x.enabled && x.kind == ValveKind.control).toList(),
@@ -979,21 +1084,35 @@ class PropertiesPanel extends StatelessWidget {
       case 'contour':
         final s = sel.whereType<ContourEntity>().toList();
         final z = common(s.map((e) => e.elevation));
-        items.addAll([NumField(label: t('props.elevation'), value: z ?? 0, onChanged: (v) => c.mutateSelected<ContourEntity>((e) => e.elevation = v)), if (z == null) mixedNote()]);
+        items.add(NumField(label: t('props.elevation'), value: z ?? 0, mixed: z == null, onChanged: (v) => c.mutateSelected<ContourEntity>((e) => e.elevation = v)));
       case 'spot':
         final s = sel.whereType<SpotHeightEntity>().toList();
         final z = common(s.map((e) => e.elevation));
-        items.addAll([NumField(label: t('props.elevation'), value: z ?? 0, onChanged: (v) => c.mutateSelected<SpotHeightEntity>((e) => e.elevation = v)), if (z == null) mixedNote()]);
+        items.add(NumField(label: t('props.elevation'), value: z ?? 0, mixed: z == null, onChanged: (v) => c.mutateSelected<SpotHeightEntity>((e) => e.elevation = v)));
       case 'text':
         final s = sel.whereType<TextEntity>().toList();
         final h = common(s.map((e) => e.height));
-        items.add(NumField(label: t('props.textHeight'), value: h ?? 1, onChanged: (v) => c.mutateSelected<TextEntity>((e) => e.height = v, invalidateResults: false)));
+        items.add(
+          NumField(
+            label: lLabel('ui.textHeight'),
+            value: u.lengthFromSi(h ?? 1),
+            mixed: h == null,
+            onChanged: (v) {
+              if (v > 0) c.mutateSelected<TextEntity>((e) => e.height = u.lengthToSi(v), invalidateResults: false);
+            },
+          ),
+        );
       case 'area':
         final s = sel.whereType<AreaEntity>().toList();
         final eff = common(s.map((e) => e.efficiency));
         items.addAll([
-          NumField(label: t('props.efficiency'), value: eff ?? 0.9, onChanged: (v) => c.mutateSelected<AreaEntity>((e) => e.efficiency = v.clamp(0.05, 1.0), invalidateResults: false)),
-          NumField(label: t('props.eto'), value: common(s.map((e) => e.etoMmDay)) ?? 5, onChanged: (v) => c.mutateSelected<AreaEntity>((e) => e.etoMmDay = v, invalidateResults: false)),
+          _fraction(t('props.efficiency'), eff ?? 0.9, 0.05, 1.0, (v) => c.mutateSelected<AreaEntity>((e) => e.efficiency = v, invalidateResults: false)),
+          NumField(
+            label: t('props.eto'),
+            value: common(s.map((e) => e.etoMmDay)) ?? 5,
+            mixed: common(s.map((e) => e.etoMmDay)) == null,
+            onChanged: (v) => c.mutateSelected<AreaEntity>((e) => e.etoMmDay = v, invalidateResults: false),
+          ),
         ]);
       default:
         break;
@@ -1011,12 +1130,15 @@ class PropertiesPanel extends StatelessWidget {
     return vih.flowsOf(s, p.systemFlows).map((f) => f.name).join(', ');
   }
 
-  Widget _layerField(Entity e) => SpecDropdown<String>(
+  Widget _layerField(Entity e, {bool mixed = false}) => SpecDropdown<String>(
     label: c.t('props.layer'),
-    value: e.layer,
+    value: mixed ? null : e.layer,
     items: c.project.layers.map((l) => l.name).toList(),
     labelOf: (s) => s,
     idOf: (s) => s,
+    allowNull: mixed,
+    nullLabel: c.t('props.mixed'),
+    missingLabel: (id) => '$id ${c.t('props.noLayer')}',
     onChanged: (v) {
       if (v == null) return;
       c.mutate(() {
@@ -1070,7 +1192,7 @@ class PropertiesPanel extends StatelessWidget {
       out.addAll([
         KV(t('props.pipe'), pipes.first.pipeName),
         KV(t('result.flow'), '${fmt(u.flowFromSi(qmax))} ${u.flowLabel}'),
-        KV(t('result.velocity'), '${fmt(vmax)} m/s', color: pipes.any((p) => p.overVelocity) ? Cad.warning : null),
+        KV(t('result.velocity'), '${fmt(u.velocityFromSi(vmax))} ${u.velocityLabel}', color: pipes.any((p) => p.overVelocity) ? Cad.warning : null),
         KV(t('result.loss'), '${fmt(u.pressureFromHead(loss), 2)} ${u.pressureLabel}'),
         KV(t('result.pStart'), '${fmt(u.pressureFromHead(pStart), 1)} ${u.pressureLabel}'),
         KV(t('result.pEnd'), '${fmt(u.pressureFromHead(pEnd), 1)} ${u.pressureLabel}'),
@@ -1155,6 +1277,7 @@ class PropertiesPanel extends StatelessWidget {
       case ToolId.zonePipe:
         items.add(
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pipe'),
             value: s.zonePipeSpecId,
             items: cat.pipesFor(PipeUsage.zone),
@@ -1168,6 +1291,7 @@ class PropertiesPanel extends StatelessWidget {
       case ToolId.mainPipe:
         items.add(
           SpecDropdown<PipeSpec>(
+            missingLabel: _missing((id) => cat.pipe(id)?.name),
             label: t('props.pipe'),
             value: s.mainPipeSpecId,
             items: cat.pipesFor(PipeUsage.mainline),
@@ -1185,6 +1309,7 @@ class PropertiesPanel extends StatelessWidget {
         items.addAll([
           if (tool == ToolId.sprayline)
             SpecDropdown<PipeSpec>(
+              missingLabel: _missing((id) => cat.pipe(id)?.name),
               label: t('props.pipe'),
               value: s.lateralPipeSpecId,
               items: cat.pipesFor(PipeUsage.lateral),
@@ -1195,6 +1320,7 @@ class PropertiesPanel extends StatelessWidget {
               onChanged: (v) => upd(() => s.lateralPipeSpecId = v),
             ),
           SpecDropdown<OutletSpec>(
+            missingLabel: _missing((id) => cat.outlet(id)?.name),
             label: t('props.outlet'),
             value: s.outletSpecId,
             items: cat.outlets.where((o) => o.enabled).toList(),
@@ -1209,6 +1335,7 @@ class PropertiesPanel extends StatelessWidget {
           ),
           if (outlet != null)
             SpecDropdown<NozzleSpec>(
+              missingLabel: _missing((id) => null),
               label: t('props.nozzle'),
               value: s.nozzleId,
               items: outlet.nozzles,
@@ -1236,6 +1363,7 @@ class PropertiesPanel extends StatelessWidget {
       case ToolId.tape:
         items.addAll([
           SpecDropdown<TapeSpec>(
+            missingLabel: _missing((id) => cat.tape(id)?.name),
             label: t('props.tape'),
             value: s.tapeSpecId,
             items: cat.tapes.where((x) => x.enabled).toList(),
@@ -1251,6 +1379,7 @@ class PropertiesPanel extends StatelessWidget {
       case ToolId.valve:
         items.addAll([
           SpecDropdown<ValveSpec>(
+            missingLabel: _missing((id) => cat.valve(id)?.name),
             label: t('props.valve'),
             value: s.valveSpecId,
             items: cat.valves.where((x) => x.enabled && x.kind == ValveKind.control).toList(),
@@ -1263,6 +1392,7 @@ class PropertiesPanel extends StatelessWidget {
       case ToolId.pump:
         items.addAll([
           SpecDropdown<PumpSpec>(
+            missingLabel: _missing((id) => cat.pump(id)?.name),
             label: t('props.pump'),
             value: s.pumpSpecId,
             items: cat.pumps.where((x) => x.enabled).toList(),
@@ -1277,6 +1407,7 @@ class PropertiesPanel extends StatelessWidget {
         final spec = cat.valve(s.miscSpecId);
         items.addAll([
           SpecDropdown<ValveSpec>(
+            missingLabel: _missing((id) => cat.valve(id)?.name),
             label: t('props.misc'),
             value: s.miscSpecId,
             items: cat.valves.where((x) => x.enabled && x.kind != ValveKind.control).toList(),
@@ -1499,4 +1630,16 @@ class PropertiesPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Where the last vertex of [pts] goes for the path to measure [length]
+/// (along the last segment); null when the last segment would vanish or
+/// turn back, or has no direction.
+Pt? endForLength(List<Pt> pts, double length) {
+  if (pts.length < 2 || !length.isFinite) return null;
+  final a = pts[pts.length - 2], seg = pts.last - a;
+  if (seg.length < 1e-9) return null;
+  final last = length - (polylineLength(pts) - seg.length);
+  if (last <= 1e-6) return null;
+  return a + seg.normalized * last;
 }

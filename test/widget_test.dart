@@ -132,9 +132,7 @@ void main() {
     setPref('lang', 'pt');
     await pumpApp(tester, autoTutorial: false);
     final shell = tester.state(find.byType(AppShell)) as dynamic;
-    final ProjectController c = shell.c as ProjectController;
-    c.autosaveEnabled = false;
-    c.designRunner = InThreadDesignRunner();
+    (shell.c as ProjectController).autosaveEnabled = false;
     // the terrain step downloads elevation tiles: a fake server answers
     final tileLoader = ProjectController.demTileLoader;
     addTearDown(() => ProjectController.demTileLoader = tileLoader);
@@ -144,8 +142,12 @@ void main() {
     for (var i = 0; i < steps.length; i++) {
       final step = steps[i];
       if (!step.interactive || step.id == 'save') continue;
-      // fresh state for every step
-      loadExampleAction(c);
+      // fresh state for every step: the tutorial opens its orchard in a tab of its own
+      shell.startTutorial(startAt: i);
+      final ProjectController c = shell.c as ProjectController;
+      expect((shell.ws as Workspace).tabs, hasLength(2), reason: 'the tab with the example the app opened stays as it was');
+      c.autosaveEnabled = false;
+      c.designRunner = InThreadDesignRunner();
       c.baseMap = BaseMap.none;
       c.clearResults();
       c.select(const []);
@@ -154,7 +156,6 @@ void main() {
       c.overlay = OverlayMode.velocity;
       shell.openReports(false);
       shell.showLayersTab(false);
-      shell.startTutorial(startAt: i);
       shell.tutorial.setAutoAdvance(false);
       await settle(tester);
       expect(find.text(step.title), findsAtLeastNWidgets(1), reason: step.id);
@@ -167,6 +168,7 @@ void main() {
       await settle(tester);
       if (find.textContaining('Feito!').evaluate().isEmpty) failed.add(step.id);
       shell.tutorial.skip();
+      (shell.ws as Workspace).closeTab(1);
       await settle(tester);
     }
     expect(failed, isEmpty, reason: 'steps whose demo did not complete them');

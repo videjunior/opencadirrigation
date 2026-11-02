@@ -60,6 +60,10 @@ class _AiStartDialogState extends State<AiStartDialog> {
   bool fromOsm = false;
   String? whereError;
 
+  /// The text whose search failed or found nothing: pressing a button again
+  /// with it goes on without a place (it can be georeferenced later).
+  String? _failed;
+
   ProjectController get c => widget.c;
 
   @override
@@ -120,11 +124,17 @@ class _AiStartDialogState extends State<AiStartDialog> {
         picked = found.isEmpty ? null : 0;
         _searched = text;
         fromOsm = true;
-        whereError = found.isEmpty ? t('start.notFound') : null;
+        whereError = found.isEmpty ? t('start.notFoundGoOn') : null;
+        _failed = found.isEmpty ? text : null;
       });
       return found.isNotEmpty;
     } on PlaceSearchError {
-      if (mounted) setState(() => whereError = t('start.searchFailed'));
+      if (mounted) {
+        setState(() {
+          whereError = t('start.searchFailedGoOn');
+          _failed = text;
+        });
+      }
       return false;
     } finally {
       if (mounted) setState(() => searching = false);
@@ -133,9 +143,10 @@ class _AiStartDialogState extends State<AiStartDialog> {
 
   Future<void> _finish(bool ai) async {
     final text = where.text.trim();
-    if (text.isNotEmpty && _searched != text) {
+    if (text.isNotEmpty && _searched != text && _failed != text) {
       // typed but not searched yet: find it first; with several matches the
-      // user picks one and presses again
+      // user picks one and presses again (and after a failed search, pressing
+      // again goes on without a place)
       final ok = await _search();
       if (!ok || hits.length > 1 || !mounted) return;
     }
@@ -220,6 +231,25 @@ class _AiStartDialogState extends State<AiStartDialog> {
                     whereError!,
                     key: const Key('start_where_error'),
                     style: TextStyle(fontSize: 12, color: Cad.unconnected),
+                  ),
+                ),
+              if (_failed != null && _failed == where.text.trim())
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    key: const Key('start_skip_place'),
+                    onPressed: () {
+                      where.clear();
+                      setState(() {
+                        hits = const [];
+                        picked = null;
+                        _searched = null;
+                        whereError = null;
+                        _failed = null;
+                      });
+                    },
+                    icon: const Icon(Icons.location_off_outlined, size: 16),
+                    label: Text(t('start.skipPlace')),
                   ),
                 ),
               if (hits.length > 1)

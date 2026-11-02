@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../state/workspace.dart';
@@ -13,8 +15,10 @@ class ProjectTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ws.current.t;
+    // (grows with the text size the user chose, so the names are never cut)
+    final height = math.max(28.0, MediaQuery.textScalerOf(context).scale(11.5) + 16);
     return Container(
-      height: 28,
+      height: height,
       color: Cad.panelAlt,
       child: Row(
         children: [
@@ -29,7 +33,11 @@ class ProjectTabBar extends StatelessWidget {
             child: InkWell(
               key: const Key('tab_add'),
               onTap: onAdd,
-              child: SizedBox(width: 30, height: 28, child: Icon(Icons.add, size: 16, color: Cad.fg70)),
+              child: SizedBox(
+                width: 30,
+                height: height,
+                child: Icon(Icons.add, size: 16, color: Cad.fg70),
+              ),
             ),
           ),
         ],
@@ -46,12 +54,12 @@ class ProjectTabBar extends StatelessWidget {
       onTap: () => ws.select(i),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 220),
-        padding: const EdgeInsets.only(left: 12, right: 4),
+        padding: const EdgeInsetsDirectional.only(start: 12, end: 4),
         decoration: BoxDecoration(
           color: active ? Cad.panel : Colors.transparent,
-          border: Border(
+          border: BorderDirectional(
             bottom: BorderSide(color: active ? Cad.accent : Colors.transparent, width: 2),
-            right: BorderSide(color: Cad.divider),
+            end: BorderSide(color: Cad.divider),
           ),
         ),
         child: Row(

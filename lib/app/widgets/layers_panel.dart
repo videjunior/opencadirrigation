@@ -4,6 +4,7 @@ import '../../core/model/entities.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/edit_commands.dart';
+import 'layout_mode.dart';
 
 /// Layer list: visibility, lock, colour, current layer, add / rename / delete.
 class LayersPanel extends StatelessWidget {
@@ -40,7 +41,7 @@ class LayersPanel extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(t('layer.hint'), style: TextStyle(fontSize: 10, color: Cad.fg38)),
+                child: Text(t('layer.hint'), style: TextStyle(fontSize: 10, color: Cad.fg54)),
               ),
               IconButton(key: const Key('layer_add'), tooltip: t('layer.add'), icon: const Icon(Icons.add, size: 16), onPressed: () => _addLayer(context)),
             ],
@@ -56,66 +57,61 @@ class LayersPanel extends StatelessWidget {
                   onTap: () => c.setCurrentLayer(l.name),
                   onDoubleTap: () => _renameLayer(context, l.name),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: Row(
                       children: [
-                        Icon(c.project.currentLayer == l.name ? Icons.radio_button_checked : Icons.radio_button_off, size: 12, color: c.project.currentLayer == l.name ? Cad.accent : Cad.fg24),
-                        const SizedBox(width: 4),
-                        InkWell(
-                          key: Key('layer_vis_${l.name}'),
-                          onTap: () => c.toggleLayer(l.name),
-                          child: Icon(l.visible ? Icons.visibility : Icons.visibility_off, size: 14, color: l.visible ? Cad.fg70 : Cad.fg24),
+                        Semantics(
+                          selected: c.project.currentLayer == l.name,
+                          label: t('layer.current'),
+                          child: Icon(
+                            c.project.currentLayer == l.name ? Icons.radio_button_checked : Icons.radio_button_off,
+                            size: 12,
+                            color: c.project.currentLayer == l.name ? Cad.accent : Cad.fg54,
+                          ),
                         ),
-                        const SizedBox(width: 4),
-                        InkWell(
-                          key: Key('layer_lock_${l.name}'),
-                          onTap: () => c.setLayerLocked(l.name, !l.locked),
-                          child: Icon(l.locked ? Icons.lock : Icons.lock_open, size: 13, color: l.locked ? Cad.amber : Cad.fg24),
+                        // targets a finger can hit, each saying what it does and to which layer
+                        _iconButton(
+                          Key('layer_vis_${l.name}'),
+                          t('layer.toggleVis', {'l': l.name}),
+                          l.visible ? Icons.visibility : Icons.visibility_off,
+                          l.visible ? Cad.fg70 : Cad.fg54,
+                          () => c.toggleLayer(l.name),
+                          toggled: l.visible,
                         ),
-                        const SizedBox(width: 6),
-                        InkWell(
-                          key: Key('layer_color_${l.name}'),
-                          onTap: () => _pickColor(context, l.name, l.color),
-                          child: Container(
-                            width: 12,
-                            height: 12,
+                        _iconButton(
+                          Key('layer_lock_${l.name}'),
+                          t('layer.toggleLock', {'l': l.name}),
+                          l.locked ? Icons.lock : Icons.lock_open,
+                          l.locked ? Cad.amber : Cad.fg54,
+                          () => c.setLayerLocked(l.name, !l.locked),
+                          toggled: l.locked,
+                        ),
+                        _target(
+                          Key('layer_color_${l.name}'),
+                          t('layer.colorOf', {'l': l.name}),
+                          () => _pickColor(context, l.name, l.color),
+                          Container(
+                            width: 14,
+                            height: 14,
                             decoration: BoxDecoration(
                               color: Color(l.color),
                               borderRadius: BorderRadius.circular(2),
-                              border: Border.all(color: Cad.fg24),
+                              border: Border.all(color: Cad.fg54),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             t.has('layer.${l.name}') ? '${t('layer.${l.name}')} · ${l.name}' : l.name,
-                            style: TextStyle(fontSize: 11, color: l.visible ? Cad.fg : Cad.fg38),
+                            style: TextStyle(fontSize: 11, color: l.visible ? Cad.fg : Cad.fg54),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         // 1.6.0 EDT: select the items of the layer (CAD-25)
-                        InkWell(
-                          key: Key('layer_select_${l.name}'),
-                          onTap: () => c.selectOnLayer(l.name),
-                          child: Tooltip(
-                            message: t('sel.onLayer'),
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: Icon(Icons.select_all, size: 13, color: Cad.fg38),
-                            ),
-                          ),
-                        ),
-                        Text('${counts[l.name] ?? 0}', style: TextStyle(fontSize: 10, color: Cad.fg38)),
-                        if (!Layers.all.contains(l.name))
-                          InkWell(
-                            key: Key('layer_del_${l.name}'),
-                            onTap: () => c.removeLayer(l.name),
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 4),
-                              child: Icon(Icons.close, size: 12, color: Cad.fg38),
-                            ),
-                          ),
+                        _iconButton(Key('layer_select_${l.name}'), t('sel.onLayer'), Icons.select_all, Cad.fg54, () => c.selectOnLayer(l.name)),
+                        Text('${counts[l.name] ?? 0}', style: TextStyle(fontSize: 10, color: Cad.fg54)),
+                        if (!Layers.all.contains(l.name)) _iconButton(Key('layer_del_${l.name}'), t('layer.remove', {'l': l.name}), Icons.close, Cad.fg54, () => c.removeLayer(l.name)),
                       ],
                     ),
                   ),
@@ -126,6 +122,33 @@ class LayersPanel extends StatelessWidget {
       ],
     );
   }
+
+  /// A tap target of at least 40 px (48 with a finger) with [tip] as its
+  /// tooltip and its name for screen readers.
+  static Widget _target(Key key, String tip, VoidCallback onTap, Widget child, {bool? toggled}) {
+    final size = touchInput ? 48.0 : 40.0;
+    return Semantics(
+      button: true,
+      toggled: toggled,
+      label: tip,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: tip,
+        child: InkWell(
+          key: key,
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Center(child: child),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _iconButton(Key key, String tip, IconData icon, Color color, VoidCallback onTap, {bool? toggled}) => _target(key, tip, onTap, Icon(icon, size: 16, color: color), toggled: toggled);
 
   Future<void> _addLayer(BuildContext context) async {
     final name = await _askName(context, c.t('layer.add'), '');

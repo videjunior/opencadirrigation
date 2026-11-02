@@ -14,6 +14,7 @@ import '../../../core/model/entities.dart';
 import '../../../core/model/geometry.dart';
 import '../../../core/units.dart';
 import '../../io/file_io.dart';
+import '../../io/prefs.dart';
 import '../../io/project_store.dart';
 import '../../io/window_locks.dart';
 import '../../state/controller.dart';
@@ -23,16 +24,16 @@ import '../fields.dart';
 import 'catalog_packs_dialog.dart';
 import '../../theme.dart';
 
-Future<void> _show(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<void>(
+Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<T>(
   context: context,
   builder: (ctx) {
     final compact = MediaQuery.sizeOf(ctx).width < 700;
-    // the content scrolls by itself (see the dialogs.dart helper)
+    // the content always scrolls (see the dialogs.dart helper)
     return AlertDialog(
       title: Text(title, style: const TextStyle(fontSize: 15)),
       content: SizedBox(
         width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width,
-        child: compact && body is! ScrollBody ? ScrollBody(child: body) : body,
+        child: body is ScrollBody ? body : ScrollBody(child: body),
       ),
       actions: actions ?? [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
     );
@@ -562,7 +563,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
   final cur = c.project.params.currency;
   var tab = CatalogGroup.pipes;
   final edit = c.beginSettingsEdit('hist.catalog');
-  return _show(
+  return _show<bool>(
     context,
     c,
     t('design.catalog'),
@@ -604,12 +605,86 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
 
         Widget removeBtn(String id, String name, VoidCallback remove) => IconButton(
           key: Key('cat_rm_$id'),
+          tooltip: t('cat.remove'),
           icon: const Icon(Icons.delete_outline, size: 15),
           onPressed: () async {
             if (await confirmRemove(id, name)) setState(remove);
           },
         );
         Widget dupBtn(VoidCallback dup) => IconButton(icon: const Icon(Icons.copy_outlined, size: 15), tooltip: t('cat.duplicate'), onPressed: () => setState(dup));
+
+        // an item switched off while objects use it: they keep it (UI-10)
+        void warnDisabled(String id, bool on) {
+          final n = used[id] ?? 0;
+          if (!on && n > 0) c.notify(t('cat.disabledInUse', {'n': '$n'}));
+        }
+
+        List<String> ids(Catalog k) => [
+          for (final x in k.pipes) x.id,
+          for (final x in k.outlets) x.id,
+          for (final x in k.tapes) x.id,
+          for (final x in k.valves) x.id,
+          for (final x in k.pumps) x.id,
+          for (final x in k.fittings) x.id,
+          for (final x in k.wires) x.id,
+        ];
+
+        /// Asks before the project catalogue is replaced by [d], saying what
+        /// leaves it: the items [d] does not have and how many objects of
+        /// the drawing use them (they keep the id and lose the model).
+        Future<bool> confirmReplace(String title, Catalog d) async {
+          final keep = ids(d).toSet();
+          final lost = [
+            for (final id in ids(cat))
+              if (!keep.contains(id)) id,
+          ];
+          final inUse = lost.where((id) => (used[id] ?? 0) > 0).toList();
+          final objects = inUse.fold<int>(0, (n, id) => n + used[id]!);
+          final ok = await showDialog<bool>(
+            context: ctx,
+            builder: (dc) => AlertDialog(
+              title: Text(title, style: const TextStyle(fontSize: 15)),
+              content: Text(
+                [
+                  lost.isEmpty ? t('cat.replaceNoLoss') : t('cat.replaceLoss', {'n': '${lost.length}'}),
+                  if (inUse.isNotEmpty) t('cat.replaceInUse', {'n': '${inUse.length}', 'm': '$objects'}),
+                  t('cat.replaceUndo'),
+                ].join('\n\n'),
+                key: const Key('cat_replace_text'),
+                style: const TextStyle(fontSize: 12),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dc, false), child: Text(t('cancel'))),
+                FilledButton(key: const Key('cat_replace_ok'), onPressed: () => Navigator.pop(dc, true), child: Text(t('cat.replace'))),
+              ],
+            ),
+          );
+          return ok == true;
+        }
+
+        void replaceWith(Catalog d) {
+          cat.pipes
+            ..clear()
+            ..addAll(d.pipes);
+          cat.outlets
+            ..clear()
+            ..addAll(d.outlets);
+          cat.tapes
+            ..clear()
+            ..addAll(d.tapes);
+          cat.valves
+            ..clear()
+            ..addAll(d.valves);
+          cat.pumps
+            ..clear()
+            ..addAll(d.pumps);
+          cat.fittings
+            ..clear()
+            ..addAll(d.fittings);
+          cat.wires
+            ..clear()
+            ..addAll(d.wires);
+        }
 
         void addItem() {
           setState(() {
@@ -697,7 +772,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final p in cat.pipes)
               [
-                Checkbox(value: p.enabled, onChanged: (v) => setState(() => p.enabled = v ?? true)),
+                Checkbox(
+                  value: p.enabled,
+                  onChanged: (v) => setState(() {
+                    p.enabled = v ?? true;
+                    warnDisabled(p.id, p.enabled);
+                  }),
+                ),
                 _cell(p.name, (v) => p.name = v),
                 _num(p.nominalMm, (v) => p.nominalMm = v),
                 _num(p.innerDiameterMm, (v) => p.innerDiameterMm = v),
@@ -718,7 +799,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
             for (final o in cat.outlets)
               for (final n in o.nozzles)
                 [
-                  Checkbox(value: o.enabled, onChanged: (v) => setState(() => o.enabled = v ?? true)),
+                  Checkbox(
+                    value: o.enabled,
+                    onChanged: (v) => setState(() {
+                      o.enabled = v ?? true;
+                      warnDisabled(o.id, o.enabled);
+                    }),
+                  ),
                   identical(n, o.nozzles.first) ? _cell(o.name, (v) => o.name = v) : Text(o.name, style: TextStyle(fontSize: 11, color: Cad.fg38)),
                   _cell(n.name, (v) => n.name = v),
                   _num(n.curve.k / m3sPerLph, (v) => n.curve = EmitterCurve(k: v * m3sPerLph, x: n.curve.x, radiusA: n.curve.radiusA, radiusB: n.curve.radiusB), decimals: 3),
@@ -772,7 +859,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                       if (identical(n, o.nozzles.first))
                         removeBtn(o.id, o.name, () => cat.outlets.remove(o))
                       else
-                        IconButton(icon: const Icon(Icons.remove, size: 15), onPressed: () => setState(() => o.nozzles.remove(n))),
+                        IconButton(tooltip: t('ui.removeNozzle'), icon: const Icon(Icons.remove, size: 15), onPressed: () => setState(() => o.nozzles.remove(n))),
                     ],
                   ),
                 ],
@@ -796,7 +883,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final tp in cat.tapes)
               [
-                Checkbox(value: tp.enabled, onChanged: (v) => setState(() => tp.enabled = v ?? true)),
+                Checkbox(
+                  value: tp.enabled,
+                  onChanged: (v) => setState(() {
+                    tp.enabled = v ?? true;
+                    warnDisabled(tp.id, tp.enabled);
+                  }),
+                ),
                 _cell(tp.name, (v) => tp.name = v),
                 _num(tp.innerDiameterMm, (v) => tp.innerDiameterMm = v),
                 _num(tp.emitterSpacingM, (v) => tp.emitterSpacingM = v > 0 ? v : tp.emitterSpacingM),
@@ -819,7 +912,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final v in cat.valves)
               [
-                Checkbox(value: v.enabled, onChanged: (x) => setState(() => v.enabled = x ?? true)),
+                Checkbox(
+                  value: v.enabled,
+                  onChanged: (x) => setState(() {
+                    v.enabled = x ?? true;
+                    warnDisabled(v.id, v.enabled);
+                  }),
+                ),
                 _cell(v.name, (x) => v.name = x),
                 SizedBox(
                   width: 110,
@@ -849,7 +948,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final p in cat.pumps)
               [
-                Checkbox(value: p.enabled, onChanged: (x) => setState(() => p.enabled = x ?? true)),
+                Checkbox(
+                  value: p.enabled,
+                  onChanged: (x) => setState(() {
+                    p.enabled = x ?? true;
+                    warnDisabled(p.id, p.enabled);
+                  }),
+                ),
                 _cell(p.name, (x) => p.name = x),
                 _cell(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2, 1)}').join(', '), (x) {
                   final pts = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
@@ -884,7 +989,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final f in cat.fittings)
               [
-                Checkbox(value: f.enabled, onChanged: (x) => setState(() => f.enabled = x ?? true)),
+                Checkbox(
+                  value: f.enabled,
+                  onChanged: (x) => setState(() {
+                    f.enabled = x ?? true;
+                    warnDisabled(f.id, f.enabled);
+                  }),
+                ),
                 _cell(f.name, (x) => f.name = x),
                 SizedBox(
                   width: 120,
@@ -921,7 +1032,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             for (final w in cat.wires)
               [
-                Checkbox(value: w.enabled, onChanged: (x) => setState(() => w.enabled = x ?? true)),
+                Checkbox(
+                  value: w.enabled,
+                  onChanged: (x) => setState(() {
+                    w.enabled = x ?? true;
+                    warnDisabled(w.id, w.enabled);
+                  }),
+                ),
                 _cell(w.name, (x) => w.name = x),
                 _num(w.sectionMm2, (x) {
                   // a new section keeps the copper resistance unless it was edited
@@ -939,21 +1056,27 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
               ],
           ],
         );
+        // a phone: the buttons wrap into more lines and the table keeps its room
+        // (the dialog's content scrolls)
+        final narrow = MediaQuery.sizeOf(ctx).width < 700;
         return SizedBox(
-          height: 520,
+          height: narrow ? 820 : 520,
           child: Column(
             children: [
-              SegmentedButton<CatalogGroup>(
-                segments: [
-                  for (final g in CatalogGroup.values)
-                    ButtonSegment(
-                      value: g,
-                      label: Text(t('cat.${g.name}'), style: const TextStyle(fontSize: 11.5)),
-                    ),
-                ],
-                selected: {tab},
-                onSelectionChanged: (v) => setState(() => tab = v.first),
-                style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SegmentedButton<CatalogGroup>(
+                  segments: [
+                    for (final g in CatalogGroup.values)
+                      ButtonSegment(
+                        value: g,
+                        label: Text(t('cat.${g.name}'), style: const TextStyle(fontSize: 11.5)),
+                      ),
+                  ],
+                  selected: {tab},
+                  onSelectionChanged: (v) => setState(() => tab = v.first),
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                ),
               ),
               const SizedBox(height: 6),
               Wrap(
@@ -999,37 +1122,51 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                     },
                     child: Text(t('cat.setDefault')),
                   ),
+                  // three separate choices: the factory catalogue in this project, the
+                  // user's saved default in this project, forgetting that default
                   OutlinedButton(
-                    onPressed: () {
+                    key: const Key('cat_factory'),
+                    onPressed: () async {
                       final d = Catalog.defaultCatalog(lang: c.lang, currency: c.project.params.currencyCode);
-                      setState(() {
-                        cat.pipes
-                          ..clear()
-                          ..addAll(d.pipes);
-                        cat.outlets
-                          ..clear()
-                          ..addAll(d.outlets);
-                        cat.tapes
-                          ..clear()
-                          ..addAll(d.tapes);
-                        cat.valves
-                          ..clear()
-                          ..addAll(d.valves);
-                        cat.pumps
-                          ..clear()
-                          ..addAll(d.pumps);
-                        cat.fittings
-                          ..clear()
-                          ..addAll(d.fittings);
-                        cat.wires
-                          ..clear()
-                          ..addAll(d.wires);
-                      });
-                      c.clearDefaultCatalog();
-                      c.notify(t('msg.catalogReset'));
+                      if (!await confirmReplace(t('cat.factory'), d)) return;
+                      setState(() => replaceWith(d));
+                      c.notify(t('msg.catalogFactory'));
                     },
-                    child: Text(t('cat.reset')),
+                    child: Text(t('cat.factory')),
                   ),
+                  if (hasSavedDefaultCatalog()) ...[
+                    OutlinedButton(
+                      key: const Key('cat_load_default'),
+                      onPressed: () async {
+                        final d = c.defaultCatalog();
+                        if (!await confirmReplace(t('cat.loadDefault'), d)) return;
+                        setState(() => replaceWith(d));
+                        c.notify(t('msg.catalogDefaultLoaded'));
+                      },
+                      child: Text(t('cat.loadDefault')),
+                    ),
+                    OutlinedButton(
+                      key: const Key('cat_forget_default'),
+                      onPressed: () async {
+                        final ok = await showDialog<bool>(
+                          context: ctx,
+                          builder: (d) => AlertDialog(
+                            title: Text(t('cat.forgetDefault'), style: const TextStyle(fontSize: 15)),
+                            content: Text(t('cat.forgetConfirm'), style: const TextStyle(fontSize: 12)),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(d, false), child: Text(t('cancel'))),
+                              FilledButton(key: const Key('cat_forget_ok'), onPressed: () => Navigator.pop(d, true), child: Text(t('cat.forget'))),
+                            ],
+                          ),
+                        );
+                        if (ok != true) return;
+                        c.clearDefaultCatalog();
+                        setState(() {});
+                        c.notify(t('msg.catalogDefaultForgotten'));
+                      },
+                      child: Text(t('cat.forgetDefault')),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 6),
@@ -1063,19 +1200,33 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
       },
     ),
     actions: [
-      FilledButton(
+      TextButton(
+        key: const Key('cat_cancel'),
         onPressed: () {
           FocusManager.instance.primaryFocus?.unfocus();
-          Navigator.pop(context);
+          Navigator.pop(context, false);
+        },
+        child: Text(t('cancel')),
+      ),
+      FilledButton(
+        key: const Key('cat_ok'),
+        onPressed: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.pop(context, true);
         },
         child: Text(t('ok')),
       ),
     ],
     width: 1000,
-  ).then((_) async {
-    // however the dialog closes, the edits become one undo step
+  ).then((ok) async {
+    // OK: the edits become one undo step; Cancel, Esc or a tap outside put
+    // the catalogue back as it was (after the field being typed in commits)
     await Future<void>.delayed(Duration.zero);
-    c.commitSettingsEdit(edit);
+    if (ok == true) {
+      c.commitSettingsEdit(edit);
+    } else {
+      c.cancelSettingsEdit(edit);
+    }
   });
 }
 
@@ -1286,3 +1437,7 @@ Widget _num(double v, ValueChanged<double> onChanged, {int decimals = 2}) => Siz
   width: 80,
   child: NumField(label: '', value: v, decimals: decimals, onChanged: onChanged),
 );
+
+/// Whether the user saved a catalogue as the default of new projects (in
+/// this browser).
+bool hasSavedDefaultCatalog() => getPref('catalog.default') != null;

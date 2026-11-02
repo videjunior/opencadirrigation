@@ -206,7 +206,7 @@ class _AdviceCardState extends State<AdviceCard> {
       decoration: BoxDecoration(
         color: Cad.panel,
         borderRadius: BorderRadius.circular(4),
-        border: Border(left: BorderSide(color: color, width: 3)),
+        border: BorderDirectional(start: BorderSide(color: color, width: 3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +214,7 @@ class _AdviceCardState extends State<AdviceCard> {
           InkWell(
             onTap: _locatable ? _locate : () => setState(() => open = !open),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 6, 4, 4),
+              padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 4, 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -238,7 +238,7 @@ class _AdviceCardState extends State<AdviceCard> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(26, 0, 8, 4),
+            padding: const EdgeInsetsDirectional.fromSTEB(26, 0, 8, 4),
             child: Wrap(
               spacing: 6,
               runSpacing: 4,
@@ -276,7 +276,7 @@ class _AdviceCardState extends State<AdviceCard> {
   }
 
   Widget _para(String label, String text, Color color) => Padding(
-    padding: const EdgeInsets.fromLTRB(30, 0, 10, 4),
+    padding: const EdgeInsetsDirectional.fromSTEB(30, 0, 10, 4),
     child: Text.rich(
       TextSpan(
         children: [

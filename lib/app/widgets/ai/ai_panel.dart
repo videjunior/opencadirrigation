@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../../ai/ai_assistant.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
+import '../layout_mode.dart';
 import 'ai_drop.dart';
 import 'ai_views.dart';
 
@@ -206,7 +207,8 @@ class AiPanelButton extends StatelessWidget {
         return IconButton(
           key: const Key('ai_panel_button'),
           tooltip: ai.waiting ? c.t('ai.panel.waiting') : c.t(open ? 'ai.panel.hide' : 'ai.panel.show'),
-          visualDensity: VisualDensity.compact,
+          // (48 px for a finger, compact for a mouse)
+          visualDensity: touchInput ? VisualDensity.standard : VisualDensity.compact,
           isSelected: onPressed == null && open,
           color: onPressed == null && open ? Cad.accentText : Cad.fg60,
           onPressed: onPressed ?? AiAssistant.togglePanel,

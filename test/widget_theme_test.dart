@@ -91,14 +91,13 @@ void main() {
     return r;
   }
 
-  test('the dark palette is the original look, colour for colour', () {
+  test('the dark palette is the original look, colour for colour (the faint text and the reds raised to AA)', () {
     const p = CadPalette.dark;
     for (final (token, original) in [
       (p.fg, Colors.white),
       (p.fg70, Colors.white70),
       (p.fg60, Colors.white60),
       (p.fg54, Colors.white54),
-      (p.fg38, Colors.white38),
       (p.fg30, Colors.white30),
       (p.fg24, Colors.white24),
       (p.fg12, Colors.white12),
@@ -113,7 +112,7 @@ void main() {
     }
     expect(p.scrim, Colors.black.withValues(alpha: 0.5));
     expect([p.canvas, p.gridMinor, p.gridMajor, p.axis, p.selection, p.hover, p.snap, p.preview, p.unconnected, p.warning, p.ok].map((x) => x.toARGB32()), [
-      0xFF14171B, 0xFF20262D, 0xFF2B333C, 0xFF3B4650, 0xFFFFD54F, 0xFF80DEEA, 0xFF69F0AE, 0xFFB0BEC5, 0xFFFF1744, 0xFFFFA726, 0xFF66BB6A, //
+      0xFF14171B, 0xFF20262D, 0xFF2B333C, 0xFF3B4650, 0xFFFFD54F, 0xFF80DEEA, 0xFF69F0AE, 0xFFB0BEC5, 0xFFFF6E6E, 0xFFFFA726, 0xFF66BB6A, //
     ]);
     final th = buildCadTheme(Brightness.dark);
     expect(th.brightness, Brightness.dark);
@@ -161,6 +160,35 @@ void main() {
     // white on the filled accents
     for (final f in [p.accentFill, p.okFill, p.accent]) {
       expect(_contrast(Colors.white, f), greaterThanOrEqualTo(4.2));
+    }
+  });
+
+  // the dark theme (the one everyone sees first) too: hints of 10–11 px in
+  // fg38 gave 3.6:1 and the error red 4.3:1 on the panels (UI-24)
+  test('the dark palette keeps WCAG AA for the text on its surfaces', () {
+    const p = CadPalette.dark;
+    final surfaces = {
+      'panel': p.panel,
+      'panelAlt': p.panelAlt,
+      'menu': p.menu,
+      'dialog': p.dialog,
+      'card': p.card,
+      'cardHigh': p.cardHigh,
+      'background': p.background,
+      'raised': p.raised,
+      'bubble': p.bubble,
+      'tintInfo': p.tintInfo,
+      'tintWarning': p.tintWarning,
+    };
+    final text = {
+      'fg': p.fg, 'fg87': p.fg87, 'fg70': p.fg70, 'fg60': p.fg60, 'fg54': p.fg54, 'fg38': p.fg38, 'bodyText': p.bodyText, 'accentText': p.accentText, 'accentIcon': p.accentIcon, //
+      'info': p.info, 'codeText': p.codeText, 'ok': p.ok, 'okAlt': p.okAlt, 'positive': p.positive, 'warning': p.warning, 'caution': p.caution, 'attention': p.attention, //
+      'amber': p.amber, 'highlight': p.highlight, 'error': p.error, 'unconnected': p.unconnected,
+    };
+    for (final s in surfaces.entries) {
+      for (final f in text.entries) {
+        expect(_contrast(Color.alphaBlend(f.value, s.value), s.value), greaterThanOrEqualTo(4.5), reason: '${f.key} on ${s.key}');
+      }
     }
   });
 

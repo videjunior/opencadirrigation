@@ -16,6 +16,7 @@ import '../../core/model/geometry.dart';
 import '../../core/units.dart';
 import '../io/prefs.dart';
 import '../state/controller.dart';
+import '../widgets/layout_mode.dart';
 import '../widgets/reports_panel.dart';
 import '../theme.dart';
 
@@ -47,6 +48,23 @@ class TutorialTargets {
   static final reportsBar = GlobalKey(debugLabel: 'reportsBar');
   static final statusToggles = GlobalKey(debugLabel: 'statusToggles');
   static final statusBar = GlobalKey(debugLabel: 'statusBar');
+
+  // the phone layout: the ☰ menu and the floating buttons stand in for the
+  // desktop's menus, side panel and reports bar
+  static final mobileMenu = GlobalKey(debugLabel: 'mobileMenu');
+  static final mobileProps = GlobalKey(debugLabel: 'mobileProps');
+  static final mobileReports = GlobalKey(debugLabel: 'mobileReports');
+
+  /// What the phone shows instead of [target] when [target] is not on the
+  /// screen (the menus are under ☰, the side panel and the reports behind
+  /// their buttons).
+  static GlobalKey? phoneStandIn(GlobalKey target) {
+    if (identical(target, sidePanel) || identical(target, sideTabs)) return mobileProps;
+    if (identical(target, reportsBar)) return mobileReports;
+    if (identical(target, paletteNav) || identical(target, paletteDraw) || identical(target, paletteTerrain) || identical(target, paletteZone) || identical(target, paletteMain)) return palette;
+    if (identical(target, canvas) || identical(target, palette) || identical(target, runButton) || identical(target, saveButton) || identical(target, statusBar)) return null;
+    return mobileMenu;
+  }
 }
 
 /// What the tutorial can ask the app shell to do.
@@ -187,6 +205,11 @@ const _texts = <String, _T>{
   'autoOn': _T('Avança sozinho ao concluir (clique para desligar)', 'Moves on by itself when done (click to turn off)', 'Avanza solo al terminar (clic para desactivar)'),
   'autoOff': _T('Avanço automático desligado (clique para ligar)', 'Auto-advance off (click to turn on)', 'Avance automático desactivado (clic para activar)'),
   'finishedTitle': _T('Tutorial concluído', 'Tutorial finished', 'Tutorial terminado'),
+  'touchHint': _T(
+    'No celular ou tablet: os menus ficam no ☰, o teclado é o botão ⌨ e "Mostrar" faz o passo por você.',
+    'On a phone or tablet: the menus are under ☰, the keyboard is the ⌨ button and "Show me" does the step for you.',
+    'En el móvil o la tableta: los menús están en ☰, el teclado es el botón ⌨ y "Mostrar" hace el paso por usted.',
+  ),
   'finishedBody': _T(
     'Você pode reabrir este tutorial em Ajuda → Tutorial interativo. Bom projeto!',
     'You can reopen this tutorial from Help → Interactive tutorial. Happy designing!',
@@ -340,9 +363,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       chapter: chMap,
       title: t('Visão geral', 'Overview', 'Visión general'),
       body: t(
-        'Menus no topo, paleta de ferramentas à esquerda, canvas CAD no centro, propriedades e camadas à direita, barra de status embaixo. Um pomar de exemplo com dois blocos já está carregado. Todo projeto começa pelo lugar: primeiro você localiza a área, põe o mapa de satélite sob o desenho e baixa o relevo da internet. Cada passo deste tutorial pede uma ação e reconhece quando você a fez; "Mostrar" faz por você.',
-        'Menus at the top, tool palette on the left, CAD canvas in the centre, properties and layers on the right, status bar at the bottom. An example orchard with two blocks is loaded. Every design starts from the place: first you locate the site, put the satellite map under the drawing and download the terrain from the internet. Each step of this tutorial asks for an action and recognises when you have done it; "Show me" does it for you.',
-        'Menús arriba, paleta de herramientas a la izquierda, lienzo CAD en el centro, propiedades y capas a la derecha, barra de estado abajo. Ya está cargado un huerto de ejemplo con dos bloques. Todo proyecto empieza por el lugar: primero ubica el área, pone el mapa satelital bajo el dibujo y descarga el relieve de internet. Cada paso de este tutorial pide una acción y reconoce cuando la hizo; "Mostrar" la hace por usted.',
+        'Menus no topo, paleta de ferramentas à esquerda, canvas CAD no centro, propriedades e camadas à direita, barra de status embaixo. O tutorial abriu um pomar de exemplo com dois blocos numa aba só dele: o que você fizer aqui não muda os seus projetos, que continuam nas outras abas. Todo projeto começa pelo lugar: primeiro você localiza a área, põe o mapa de satélite sob o desenho e baixa o relevo da internet. Cada passo deste tutorial pede uma ação e reconhece quando você a fez; "Mostrar" faz por você.',
+        'Menus at the top, tool palette on the left, CAD canvas in the centre, properties and layers on the right, status bar at the bottom. The tutorial opened an example orchard with two blocks in a tab of its own: what you do here does not change your projects, which stay in the other tabs. Every design starts from the place: first you locate the site, put the satellite map under the drawing and download the terrain from the internet. Each step of this tutorial asks for an action and recognises when you have done it; "Show me" does it for you.',
+        'Menús arriba, paleta de herramientas a la izquierda, lienzo CAD en el centro, propiedades y capas a la derecha, barra de estado abajo. El tutorial abrió un huerto de ejemplo con dos bloques en una pestaña propia: lo que haga aquí no cambia sus proyectos, que siguen en las otras pestañas. Todo proyecto empieza por el lugar: primero ubica el área, pone el mapa satelital bajo el dibujo y descarga el relieve de internet. Cada paso de este tutorial pide una acción y reconoce cuando la hizo; "Mostrar" la hace por usted.',
       ),
     ),
     // ------------------------------------------------------------ map and terrain
@@ -1142,9 +1165,9 @@ List<TutorialStep> buildTutorialSteps(String lang) {
       title: t('Catálogos de fabricantes', 'Manufacturer catalogues', 'Catálogos de fabricantes'),
       target: TutorialTargets.menuDesign,
       body: t(
-        'Em Projeto → Catálogo, "Catálogos de fabricantes…" lista pacotes com produtos representativos (tubos, emissores, fitas, válvulas, bombas): os embutidos no app e os carregados agora. Adicione um pacote ao projeto, importe um arquivo .oci.cat ou carregue-o por URL (um pacote ou um índice index.json). O catálogo também importa JSON, CSV ou Excel, exporta Excel/CSV/JSON e exporta o seu próprio catálogo como pacote para compartilhar. "Usar como padrão para novos projetos" e "Restaurar padrão" controlam o catálogo inicial.',
-        'In Design → Catalog, "Manufacturer catalogues…" lists packs of representative products (pipes, outlets, tapes, valves, pumps): those bundled with the app and those loaded now. Add a pack to the project, import an .oci.cat file or load it from a URL (a pack or an index.json). The catalog also imports JSON, CSV or Excel, exports Excel/CSV/JSON and exports your own catalogue as a pack to share. "Use as default for new projects" and "Restore default" control the starting catalogue.',
-        'En Diseño → Catálogo, "Catálogos de fabricantes…" lista paquetes con productos representativos (tuberías, emisores, cintas, válvulas, bombas): los incluidos en la app y los cargados ahora. Añada un paquete al proyecto, importe un archivo .oci.cat o cárguelo por URL (un paquete o un índice index.json). El catálogo también importa JSON, CSV o Excel, exporta Excel/CSV/JSON y exporta su propio catálogo como paquete para compartir. "Usar como predeterminado en proyectos nuevos" y "Restaurar predeterminado" controlan el catálogo inicial.',
+        'Em Projeto → Catálogo, "Catálogos de fabricantes…" lista pacotes com produtos representativos (tubos, emissores, fitas, válvulas, bombas): os embutidos no app e os carregados agora. Adicione um pacote ao projeto, importe um arquivo .oci.cat ou carregue-o por URL (um pacote ou um índice index.json). O catálogo também importa JSON, CSV ou Excel, exporta Excel/CSV/JSON e exporta o seu próprio catálogo como pacote para compartilhar. "Usar como padrão para novos projetos" guarda o catálogo inicial dos próximos projetos, "Carregar meu padrão" e "Esquecer meu padrão" o trazem de volta ou o apagam, e "Restaurar o catálogo de fábrica" põe neste projeto o catálogo do programa (todos pedem confirmação).',
+        'In Design → Catalog, "Manufacturer catalogues…" lists packs of representative products (pipes, outlets, tapes, valves, pumps): those bundled with the app and those loaded now. Add a pack to the project, import an .oci.cat file or load it from a URL (a pack or an index.json). The catalog also imports JSON, CSV or Excel, exports Excel/CSV/JSON and exports your own catalogue as a pack to share. "Use as default for new projects" keeps the starting catalogue of the next projects, "Load my default" and "Forget my default" bring it back or delete it, and "Restore the factory catalog" puts the program\'s catalogue in this project (each asks first).',
+        'En Diseño → Catálogo, "Catálogos de fabricantes…" lista paquetes con productos representativos (tuberías, emisores, cintas, válvulas, bombas): los incluidos en la app y los cargados ahora. Añada un paquete al proyecto, importe un archivo .oci.cat o cárguelo por URL (un paquete o un índice index.json). El catálogo también importa JSON, CSV o Excel, exporta Excel/CSV/JSON y exporta su propio catálogo como paquete para compartir. "Usar como predeterminado en proyectos nuevos" guarda el catálogo inicial de los próximos proyectos, "Cargar mi predeterminado" y "Olvidar mi predeterminado" lo traen de vuelta o lo borran, y "Restaurar el catálogo de fábrica" pone en este proyecto el catálogo del programa (todos piden confirmación).',
       ),
     ),
     TutorialStep(
@@ -1717,7 +1740,9 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
 
   void _measure() {
     if (!mounted || !widget.tutorial.active) return;
-    final key = widget.tutorial.current.target;
+    var key = widget.tutorial.current.target;
+    // the phone has no menu bar, side panel or reports bar: their stand-ins
+    if (key != null && key.currentContext == null) key = TutorialTargets.phoneStandIn(key);
     Rect? r;
     final ctx = key?.currentContext;
     if (ctx != null) {
@@ -1769,7 +1794,8 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
 
   Widget _card(BuildContext context, TutorialStep step, bool done, Size size, Rect? target, String lang) {
     final t = widget.tutorial;
-    final compact = size.width < 700;
+    // (the phone layout also on a phone held sideways)
+    final compact = shellLayoutOf(context) == ShellLayout.phone;
     final cardW = compact ? size.width - 24 : 400.0;
     final cardH = math.min(compact ? 300.0 : 440.0, size.height - 24);
     final card = Material(
@@ -1780,111 +1806,130 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
         constraints: BoxConstraints(maxWidth: cardW, maxHeight: cardH),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${step.chapter.isEmpty ? '' : '${step.chapter} · '}${tutorialText('step', lang).replaceAll('{i}', '${t.index + 1}').replaceAll('{n}', '${t.steps.length}')}',
-                      style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Tooltip(
-                    message: tutorialText(t.autoAdvance ? 'autoOn' : 'autoOff', lang),
-                    child: InkWell(
-                      key: const Key('tut_auto'),
-                      onTap: () => t.setAutoAdvance(!t.autoAdvance),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(t.autoAdvance ? Icons.fast_forward : Icons.pause_circle_outline, size: 16, color: t.autoAdvance ? Cad.ok : Cad.fg54),
+          // a phone: the whole card scrolls (its buttons wrap into more lines)
+          child: _scrollIf(
+            compact,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${step.chapter.isEmpty ? '' : '${step.chapter} · '}${tutorialText('step', lang).replaceAll('{i}', '${t.index + 1}').replaceAll('{n}', '${t.steps.length}')}',
+                        style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                  Tooltip(
-                    message: tutorialText('skipAll', lang),
-                    child: InkWell(
-                      key: const Key('tut_close'),
-                      onTap: t.skip,
-                      borderRadius: BorderRadius.circular(12),
-                      child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, size: 16)),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Text(step.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Text(step.body, style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText)),
-                ),
-              ),
-              if (step.action != null) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: (done ? Cad.ok : Cad.accent).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: (done ? Cad.ok : Cad.accent).withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(done ? Icons.check_circle : Icons.touch_app_outlined, size: 16, color: done ? Cad.ok : Cad.accent),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          done ? tutorialText(t.autoAdvance && !t.isLast ? 'doneNext' : 'done', lang) : '${tutorialText('action', lang)}: ${step.action}',
-                          style: const TextStyle(fontSize: 12),
+                    Tooltip(
+                      message: tutorialText(t.autoAdvance ? 'autoOn' : 'autoOff', lang),
+                      child: InkWell(
+                        key: const Key('tut_auto'),
+                        onTap: () => t.setAutoAdvance(!t.autoAdvance),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(t.autoAdvance ? Icons.fast_forward : Icons.pause_circle_outline, size: 16, color: t.autoAdvance ? Cad.ok : Cad.fg54),
                         ),
                       ),
-                    ],
+                    ),
+                    Tooltip(
+                      message: tutorialText('skipAll', lang),
+                      child: InkWell(
+                        key: const Key('tut_close'),
+                        onTap: t.skip,
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, size: 16)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(step.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                _flexIf(
+                  !compact,
+                  SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(step.body, style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText)),
+                        // the phone: where the menus and the keyboard are (it scrolls with the text)
+                        if (step.action != null && compact) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            tutorialText('touchHint', lang),
+                            key: const Key('tut_touch_hint'),
+                            style: TextStyle(fontSize: 11, color: Cad.fg60),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-              ],
-              const SizedBox(height: 8),
-              LinearProgressIndicator(value: (t.index + 1) / t.steps.length, minHeight: 3, backgroundColor: Cad.fg12),
-              const SizedBox(height: 8),
-              OverflowBar(
-                alignment: MainAxisAlignment.end,
-                overflowAlignment: OverflowBarAlignment.end,
-                spacing: 2,
-                overflowSpacing: 4,
-                children: [
-                  TextButton(
-                    key: const Key('tut_skip_all'),
-                    onPressed: t.skip,
-                    style: TextButton.styleFrom(foregroundColor: Cad.fg60, visualDensity: VisualDensity.compact),
-                    child: Text(tutorialText('skipAll', lang), style: const TextStyle(fontSize: 12)),
-                  ),
-                  if (step.demo != null)
-                    TextButton.icon(
-                      key: const Key('tut_demo'),
-                      onPressed: () => step.demo!(_ctx),
-                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                      icon: const Icon(Icons.play_circle_outline, size: 16),
-                      label: Text(tutorialText('demo', lang), style: const TextStyle(fontSize: 12)),
+                if (step.action != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: (done ? Cad.ok : Cad.accent).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: (done ? Cad.ok : Cad.accent).withValues(alpha: 0.5)),
                     ),
-                  TextButton(
-                    key: const Key('tut_prev'),
-                    onPressed: t.index > 0 ? t.prev : null,
-                    style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                    child: Text(tutorialText('prev', lang), style: const TextStyle(fontSize: 12)),
-                  ),
-                  FilledButton(
-                    key: const Key('tut_next'),
-                    onPressed: t.next,
-                    style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
-                    child: Text(t.isLast ? tutorialText('finish', lang) : tutorialText('next', lang), style: const TextStyle(fontSize: 12)),
+                    child: Row(
+                      children: [
+                        Icon(done ? Icons.check_circle : Icons.touch_app_outlined, size: 16, color: done ? Cad.ok : Cad.accent),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            done ? tutorialText(t.autoAdvance && !t.isLast ? 'doneNext' : 'done', lang) : '${tutorialText('action', lang)}: ${step.action}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-              ),
-            ],
+                const SizedBox(height: 8),
+                LinearProgressIndicator(value: (t.index + 1) / t.steps.length, minHeight: 3, backgroundColor: Cad.fg12),
+                const SizedBox(height: 8),
+                OverflowBar(
+                  alignment: MainAxisAlignment.end,
+                  overflowAlignment: OverflowBarAlignment.end,
+                  spacing: 2,
+                  overflowSpacing: 4,
+                  children: [
+                    TextButton(
+                      key: const Key('tut_skip_all'),
+                      onPressed: t.skip,
+                      style: TextButton.styleFrom(foregroundColor: Cad.fg60, visualDensity: VisualDensity.compact),
+                      child: Text(tutorialText('skipAll', lang), style: const TextStyle(fontSize: 12)),
+                    ),
+                    if (step.demo != null)
+                      TextButton.icon(
+                        key: const Key('tut_demo'),
+                        onPressed: () => step.demo!(_ctx),
+                        style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                        icon: const Icon(Icons.play_circle_outline, size: 16),
+                        label: Text(tutorialText('demo', lang), style: const TextStyle(fontSize: 12)),
+                      ),
+                    TextButton(
+                      key: const Key('tut_prev'),
+                      onPressed: t.index > 0 ? t.prev : null,
+                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                      child: Text(tutorialText('prev', lang), style: const TextStyle(fontSize: 12)),
+                    ),
+                    FilledButton(
+                      key: const Key('tut_next'),
+                      onPressed: t.next,
+                      style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+                      child: Text(t.isLast ? tutorialText('finish', lang) : tutorialText('next', lang), style: const TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1893,12 +1938,15 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     const margin = 12.0;
     double left, top;
     if (compact) {
-      // phones: pinned to the bottom, above the tool bar
+      // phones: above the tool bar, or under the top bar when what the step
+      // points at (the floating buttons, the tool bar) is in the lower half
+      final low = target == null || target.center.dy > size.height / 2;
       return Positioned(
         left: margin,
         right: margin,
-        bottom: 100,
-        child: Align(alignment: Alignment.bottomLeft, child: card),
+        top: low ? 56 : null,
+        bottom: low ? null : 100,
+        child: Align(alignment: low ? Alignment.topLeft : Alignment.bottomLeft, child: card),
       );
     }
     if (target == null) {
@@ -1927,6 +1975,10 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     );
   }
 }
+
+Widget _scrollIf(bool scroll, Widget child) => scroll ? SingleChildScrollView(child: child) : child;
+
+Widget _flexIf(bool flex, Widget child) => flex ? Flexible(child: child) : child;
 
 class _SpotlightPainter extends CustomPainter {
   _SpotlightPainter(this.target);

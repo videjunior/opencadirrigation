@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -8,6 +10,7 @@ import '../version.dart';
 import '../theme.dart';
 import 'ai/ai_panel.dart';
 import 'dialogs/storage_dialog.dart';
+import 'layout_mode.dart';
 
 class StatusBar extends StatelessWidget {
   const StatusBar({super.key, required this.c, required this.status, required this.hint});
@@ -21,7 +24,9 @@ class StatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = c.t;
-    Widget toggle(String label, bool on, VoidCallback onTap) => InkWell(
+    Widget toggle(String label, bool on, VoidCallback onTap) => _Toggle(
+      label: label,
+      on: on,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -31,10 +36,11 @@ class StatusBar extends StatelessWidget {
       ),
     );
     return Container(
-      height: 24,
+      // (grows with the text size the user chose, so the text is never cut)
+      height: math.max(24.0, MediaQuery.textScalerOf(context).scale(11) + 13),
       color: Cad.panel,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
+      child: _StatusRow(
         children: [
           Expanded(
             child: Text(
@@ -112,7 +118,7 @@ class StatusBar extends StatelessWidget {
             const SizedBox(width: 12),
           ],
           // (on narrow windows the assistant stays in the Design menu and the AI command)
-          if (MediaQuery.sizeOf(context).width >= 1000) ...[AiPanelButton(c: c), const SizedBox(width: 8)],
+          if (assistantDocks(context)) ...[AiPanelButton(c: c), const SizedBox(width: 8)],
           Row(
             key: TutorialTargets.statusToggles,
             mainAxisSize: MainAxisSize.min,
@@ -148,7 +154,14 @@ class StatusBar extends StatelessWidget {
           const SizedBox(width: 8),
           ValueListenableBuilder(
             valueListenable: status,
-            builder: (_, _, _) => Text('${c.project.entities.length} ent.  1:${(1 / c.camera.scale * 100).toStringAsFixed(0)}', style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            builder: (_, _, _) => Tooltip(
+              message: t('ui.scaleTip'),
+              child: Text(
+                '${c.project.entities.length} ent.  1:${screenScaleDenominator(c.camera.scale).round()}',
+                key: const Key('status_scale'),
+                style: TextStyle(fontSize: 11, color: Cad.fg54),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Tooltip(
@@ -164,3 +177,56 @@ class StatusBar extends StatelessWidget {
     );
   }
 }
+
+/// A toggle of the status bar: its fill says whether it is on, and so does
+/// its semantics (the screen reader says "on" / "off").
+class _Toggle extends StatelessWidget {
+  const _Toggle({required this.label, required this.on, required this.onTap, required this.child});
+  final String label;
+  final bool on;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    toggled: on,
+    label: label,
+    excludeSemantics: true,
+    child: InkWell(onTap: onTap, child: child),
+  );
+}
+
+/// The row of the status bar: the hint (its first child, [Expanded]) takes
+/// what is left, and the indicators and toggles after it scroll instead of
+/// overflowing a narrow window (their end stays in view).
+class _StatusRow extends StatelessWidget {
+  const _StatusRow({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => Row(
+      children: [
+        children.first,
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: math.max(0, box.maxWidth - 120)),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            child: Row(mainAxisSize: MainAxisSize.min, children: children.sublist(1)),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Millimetres one logical pixel measures on a screen of 96 dots per inch
+/// (the reference pixel of the CSS and of Flutter).
+const screenMmPerPixel = 25.4 / 96;
+
+/// N of the scale 1:N the drawing has on the screen at [pixelsPerMetre]
+/// (the camera scale): one metre of the drawing over the millimetres it
+/// takes on the screen.
+double screenScaleDenominator(double pixelsPerMetre) => pixelsPerMetre <= 0 ? double.infinity : 1000 / (pixelsPerMetre * screenMmPerPixel);

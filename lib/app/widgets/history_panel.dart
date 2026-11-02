@@ -99,7 +99,7 @@ class HistoryPanel extends StatelessWidget {
                       Text(_time(e.time), style: TextStyle(fontSize: 9.5, color: e.future ? Cad.fg24 : Cad.fg38)),
                       if (e.current)
                         Padding(
-                          padding: EdgeInsets.only(left: 4),
+                          padding: EdgeInsetsDirectional.only(start: 4),
                           child: Icon(Icons.chevron_left, size: 12, color: Cad.accentText),
                         ),
                     ],
