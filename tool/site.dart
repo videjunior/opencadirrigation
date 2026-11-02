@@ -62,7 +62,7 @@ const siteUrl = 'https://opencadirrigation.com/';
 /// `OCI_ANALYTICS_ID=G-… dart run tool/gen_site.dart`; an empty one leaves
 /// the statistics and their notice out of the pages.
 final analyticsId = Platform.environment['OCI_ANALYTICS_ID'] ?? 'G-3M0P4T8V2T';
-const siteLastMod = '2026-10-31';
+const siteLastMod = '2026-11-02';
 
 /// The Firebase project that serves the site: its default addresses
 /// (`<id>.web.app`, `<id>.firebaseapp.com`) send a new visitor to [siteUrl].
