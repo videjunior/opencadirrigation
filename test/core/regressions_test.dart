@@ -462,9 +462,11 @@ void main() {
         ..setUint32(4, 1, Endian.little)
         ..setUint16(8, 1000, Endian.little)
         ..setUint16(10, 20, Endian.little);
-      final zip = ZipEncoder().encodeBytes(Archive()
-        ..add(ArchiveFile.bytes('pocos.shp', shp.buffer.asUint8List()))
-        ..add(ArchiveFile.bytes('pocos.dbf', dbf.buffer.asUint8List())));
+      final zip = ZipEncoder().encodeBytes(
+        Archive()
+          ..add(ArchiveFile.bytes('pocos.shp', shp.buffer.asUint8List()))
+          ..add(ArchiveFile.bytes('pocos.dbf', dbf.buffer.asUint8List())),
+      );
       Object? error;
       try {
         c.importFile('pocos.zip', Uint8List.fromList(zip));

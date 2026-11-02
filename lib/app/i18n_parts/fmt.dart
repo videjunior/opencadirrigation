@@ -16,7 +16,11 @@ const _fmt = <String, (String, String, String)>{
   ),
   // ---- import notes (after the summary; a detail follows in parentheses)
   'warn.dxf_resync': ('linhas fora do formato puladas', 'lines out of the format skipped', 'líneas fuera del formato omitidas'),
-  'warn.dxf_paper_space': ('entidades do espaço papel (carimbo, molduras) deixadas de fora', 'paper space entities (title block, frames) left out', 'entidades del espacio papel (rótulo, marcos) dejadas fuera'),
+  'warn.dxf_paper_space': (
+    'entidades do espaço papel (carimbo, molduras) deixadas de fora',
+    'paper space entities (title block, frames) left out',
+    'entidades del espacio papel (rótulo, marcos) dejadas fuera',
+  ),
   'warn.dxf_unsupported': ('entidades sem suporte deixadas de fora', 'unsupported entities left out', 'entidades no admitidas dejadas fuera'),
   'warn.dxf_blocks_truncated': (
     'blocos inseridos em excesso: desenho cortado no limite',
