@@ -103,9 +103,10 @@ void main() {
 /// Characters the bundled fonts leave out on purpose: they appear only in
 /// strings of the interface that no PDF prints, by key.
 const interfaceOnly = <int, (String, Set<String>)>{
-  0x2630: ('the ☰ menu button of the phone layout', {'sc.mobile'}),
-  0x2715: ('the ✕ cancel button of the drawing hint on touch screens', {'hint.touchKeys'}),
-  0x2328: ('the ⌨ command button of the drawing hint on touch screens', {'hint.touchKeys'}),
+  // 1.6.0 UI+: the manual's phone topic and the news of 1.6.0 name it too (dialogs only)
+  0x2630: ('the ☰ menu button of the phone layout', {'sc.mobile', 'help.b.phone', 'new.v160.palette', 'new.v160.touch'}),
+  0x2715: ('the ✕ cancel button of the drawing hint on touch screens', {'hint.touchKeys', 'help.b.phone'}),
+  0x2328: ('the ⌨ command button of the drawing hint on touch screens', {'hint.touchKeys', 'help.b.shortcuts', 'help.b.phone', 'new.v160.touch'}),
 };
 
 /// Every string of [lang], by key: the compiled table for pt, en and es, the

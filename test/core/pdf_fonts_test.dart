@@ -69,8 +69,8 @@ void main() {
       expect(latin.components(128), [34, 65]);
       expect(latin.components(34), isEmpty);
       final sc = TrueTypeFont.parse(fontBytes(BundledFonts.simplifiedChinese));
-      expect(sc.numGlyphs, 4171);
-      expect(sc.glyphId(0x6C34), 2069); // 水
+      expect(sc.numGlyphs, 4173); // 1.6.0: two hanzi more (铵 桉)
+      expect(sc.glyphId(0x6C34), 2070); // 水
       expect(sc.advanceWidth(sc.glyphId(0x4E2D)), 1000);
       final arabic = TrueTypeFont.parse(fontBytes(BundledFonts.arabic));
       expect(arabic.glyphId(0x0628), 590);
