@@ -116,15 +116,16 @@ Map<String, int> countTypes(Iterable<String> types) {
 /// What our DWG reader gives for a drawing our DXF reader reads as [dxf]:
 /// splines come as their curve (the DWG keeps the control points only) and
 /// leaders are not read from DWG.
+/// The counts the DWG reader gives for a drawing whose DXF reads as [dxf]:
+/// splines with control points come back as polylines (leaders read as
+/// polylines in both).
 Map<String, int> dwgCountsFor(Map<String, int> dxf, CadDrawing d) {
   final m = Map.of(dxf);
   final splines = d.entities.whereType<CadSpline>().length + d.blocks.expand((b) => b.entities).whereType<CadSpline>().length;
-  final leaders = d.entities.whereType<CadLeader>().length;
   if (splines > 0) {
     m['SPLINE'] = m['SPLINE']! - splines;
     m['POLYLINE'] = (m['POLYLINE'] ?? 0) + splines;
   }
-  if (leaders > 0) m['POLYLINE'] = m['POLYLINE']! - leaders;
   m.removeWhere((_, v) => v == 0);
   return m;
 }
@@ -351,7 +352,8 @@ void main() {
         texts,
         containsAll([
           'Zona 1 – açude {x} 50% Ж',
-          'linha 1 linha 2',
+          // the paragraphs of a multiline text stay apart
+          'linha 1\nlinha 2',
           'Setor 1',
           'Poço',
           'Nota',

@@ -382,10 +382,12 @@ void main() {
             for (final x in [60.0, 64.0, 68.0]) Pt(x, y),
         ]),
       );
-      // a left text sits on its insertion point, a centred one on its alignment point
+      // a left text sits on its insertion point; a centred one (72 = 1,
+      // 73 = 2) is placed so its middle falls on its alignment point (20, −5)
       for (final doc in [dxf, dwg]) {
         expect(doc.singleWhere((e) => e.text == 'Esquerda').points.single, near(const Pt(0, -5), 1e-9));
-        expect(doc.singleWhere((e) => e.text == 'Centro').points.single, near(const Pt(20, -5), 1e-9));
+        expect(doc.singleWhere((e) => e.text == 'Centro').points.single, near(cadTextBase(const Pt(20, -5), 'Centro', 1, 0, 0.5, 0.5), 1e-9));
+        expect(doc.singleWhere((e) => e.text == 'Centro').points.single, near(const Pt(20 - 0.6 * 6 / 2, -5.5), 1e-9));
       }
     });
   });
@@ -428,9 +430,10 @@ void main() {
       expect(blockArc.center, near(const Pt(-30, 0), 1e-9));
       expect(blockArc.startAngle, closeTo(90, 1e-9));
       expect(blockArc.endAngle, closeTo(180, 1e-9));
-      // LINE and MTEXT are in world coordinates whatever the extrusion
+      // LINE and MTEXT are in world coordinates whatever the extrusion (the
+      // MTEXT hangs from its top-left attachment point at (60, 0))
       expect(one('LINE', (e) => e.points.first.distanceTo(Pt.zero) < 1e-9).points.last, near(const Pt(1, 1), 1e-9));
-      expect(one('TEXT', (e) => e.text == 'WCS').points.single, near(const Pt(60, 0), 1e-9));
+      expect(one('TEXT', (e) => e.text == 'WCS').points.single, near(const Pt(60, -1), 1e-9));
     }
 
     test('DXF written by ezdxf', () {
