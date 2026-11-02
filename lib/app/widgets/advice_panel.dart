@@ -4,6 +4,7 @@ import '../../core/design/advisor.dart';
 import '../../core/design/auto_fix.dart';
 import '../../core/units.dart';
 import '../state/controller.dart';
+import '../state/fix_review.dart'; // 1.6.0 AUT
 import '../theme.dart';
 import 'dialogs/ai_assistant_dialog.dart' show askAiAboutAdvice;
 import 'dialogs/terrain_dialogs.dart' show dialogWidth;
@@ -327,79 +328,124 @@ Future<void> showAutoFixDialog(BuildContext context, ProjectController c) async 
   }
   if (report == null || !context.mounted) return;
   final r = report;
-  await showDialog<void>(
+  // 1.6.0 AUT: every correction with its box; the ones unticked are left out
+  final keep = {for (final s in r.steps) s.id};
+  final again = await showDialog<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(t('adv.summaryTitle'), style: const TextStyle(fontSize: 15)),
-      content: SizedBox(
-        width: dialogWidth(ctx, 520),
-        child: SingleChildScrollView(
-          key: const Key('autofix_summary'),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(r.applied.isEmpty ? t('adv.summaryNone') : t('adv.summaryApplied', {'n': '${r.applied.length}'}), style: const TextStyle(fontSize: 12.5)),
-              const SizedBox(height: 6),
-              for (final f in r.applied)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.check, size: 15, color: Cad.ok),
-                      const SizedBox(width: 6),
-                      Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
-                    ],
-                  ),
-                ),
-              // 1.6.0 AUT: what the user decides (a booster on the mains, new system flows)
-              if (r.decisions.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(t('adv.decisions'), style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
-                for (final a in r.decisions)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      children: [
-                        Icon(Icons.help_outline, size: 15, color: Cad.warning),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(adviceTitle(c, a), style: const TextStyle(fontSize: 12))),
-                        TextButton(
-                          key: Key('decide_${a.fixes.first.name}_${a.key.hashCode}'),
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            c.applyAdviceFix(a, a.fixes.first);
-                          },
-                          child: Text(t('fix.${a.fixes.first.name}', {'d': fmt(connectReach(c.project), 1)}), style: const TextStyle(fontSize: 11.5)),
-                        ),
-                      ],
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        final partial = r.steps.isNotEmpty && r.steps.any((s) => !keep.contains(s.id));
+        return AlertDialog(
+          title: Text(t('adv.summaryTitle'), style: const TextStyle(fontSize: 15)),
+          content: SizedBox(
+            width: dialogWidth(ctx, 520),
+            child: SingleChildScrollView(
+              key: const Key('autofix_summary'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(r.applied.isEmpty ? t('adv.summaryNone') : t('adv.summaryApplied', {'n': '${r.applied.length}'}), style: const TextStyle(fontSize: 12.5)),
+                  if (r.steps.isNotEmpty) Text(t('adv.reviewHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                  const SizedBox(height: 6),
+                  for (var i = 0; i < r.steps.length; i++)
+                    reviewRow(
+                      c,
+                      t(r.steps[i].result.key, r.steps[i].result.args),
+                      keep.contains(r.steps[i].id),
+                      (on) => setState(() => on ? keep.add(r.steps[i].id) : keep.remove(r.steps[i].id)),
+                      r.steps[i].entityIds,
+                      key: Key('autofix_step_$i'),
                     ),
+                  // 1.6.0 AUT: what the user decides (a booster on the mains, new system flows)
+                  if (r.decisions.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(t('adv.decisions'), style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                    for (final a in r.decisions)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.help_outline, size: 15, color: Cad.warning),
+                            const SizedBox(width: 6),
+                            Expanded(child: Text(adviceTitle(c, a), style: const TextStyle(fontSize: 12))),
+                            TextButton(
+                              key: Key('decide_${a.fixes.first.name}_${a.key.hashCode}'),
+                              onPressed: () {
+                                Navigator.pop(ctx, false);
+                                c.applyAdviceFix(a, a.fixes.first);
+                              },
+                              child: Text(t('fix.${a.fixes.first.name}', {'d': fmt(connectReach(c.project), 1)}), style: const TextStyle(fontSize: 11.5)),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                  const SizedBox(height: 10),
+                  Text(
+                    r.errors + r.warnings == 0 ? t('adv.allClear') : t('adv.remaining', {'e': '${r.errors}', 'w': '${r.warnings}'}),
+                    style: TextStyle(fontSize: 12.5, color: r.errors == 0 ? Cad.ok : Cad.warning),
                   ),
-              ],
-              const SizedBox(height: 10),
-              Text(
-                r.errors + r.warnings == 0 ? t('adv.allClear') : t('adv.remaining', {'e': '${r.errors}', 'w': '${r.warnings}'}),
-                style: TextStyle(fontSize: 12.5, color: r.errors == 0 ? Cad.ok : Cad.warning),
+                  const SizedBox(height: 6),
+                  Text(t('adv.undoHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                ],
               ),
-              const SizedBox(height: 6),
-              Text(t('adv.undoHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
-            ],
+            ),
           ),
-        ),
-      ),
-      actions: [
-        if (r.applied.isNotEmpty)
-          TextButton(
-            onPressed: () {
-              c.undo();
-              Navigator.pop(ctx);
-            },
-            child: Text(t('adv.undoAll')),
-          ),
-        FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
-      ],
+          actions: [
+            if (r.applied.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  c.undo();
+                  Navigator.pop(ctx, false);
+                },
+                child: Text(t('adv.undoAll')),
+              ),
+            if (partial)
+              FilledButton(key: const Key('autofix_keep'), onPressed: () => Navigator.pop(ctx, true), child: Text(t('adv.keepChecked', {'n': '${keep.length}'})))
+            else
+              FilledButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('close'))),
+          ],
+        );
+      },
     ),
+  );
+  if (again != true || !context.mounted) return;
+  // the project back as it was, and only the corrections kept made again
+  final nav2 = Navigator.of(context);
+  final redoing = _progress(context, c, t('adv.fixAll'));
+  AutoFixReport? kept;
+  try {
+    kept = await c.keepAutoFixSteps(r, keep);
+  } finally {
+    nav2.pop();
+    await redoing;
+  }
+  c.notify(kept == null ? t('adv.keptNone') : t('adv.keptSome', {'n': '${kept.applied.length}', 'm': '${r.steps.length - kept.applied.length}'}));
+}
+
+/// 1.6.0 AUT: one correction or change of a review: its box (ticked: kept),
+/// what it did and a button that selects its items on the drawing.
+Widget reviewRow(ProjectController c, String text, bool on, ValueChanged<bool> onChanged, List<String> ids, {Key? key}) {
+  final present = [
+    for (final id in ids)
+      if (c.project.byId(id) != null) id,
+  ];
+  return Row(
+    key: key,
+    children: [
+      Checkbox(value: on, onChanged: (v) => onChanged(v ?? false)),
+      Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: on ? null : Cad.fg54))),
+      if (present.isNotEmpty)
+        IconButton(
+          tooltip: c.t('adv.showOnDrawing'),
+          icon: const Icon(Icons.center_focus_strong, size: 18),
+          onPressed: () {
+            c.select(present);
+            c.zoomToEntity(present.first);
+          },
+        ),
+    ],
   );
 }
 
@@ -490,9 +536,12 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
       ),
     ],
   );
-  await showDialog<void>(
+  // 1.6.0 AUT: the changes kept, to review one by one
+  final keep = {for (final ch in r.changes) ch.id};
+  final again = await showDialog<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
       title: Text(t('opt.title'), style: const TextStyle(fontSize: 15)),
       content: SizedBox(
         width: dialogWidth(ctx, 520),
@@ -538,20 +587,33 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
                   ),
                 if (r.rejected.isNotEmpty) Text(t('opt.rejected', {'n': '${r.rejected.length}'}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
               ],
+              // 1.6.0 AUT: every change kept with its box; the ones unticked are left out
               if (r.improved && r.applied.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                for (final f in r.applied)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.check, size: 15, color: Cad.ok),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
-                      ],
+                if (r.changes.isNotEmpty) Text(t('opt.reviewHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                if (r.changes.isEmpty)
+                  for (final f in r.applied)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.check, size: 15, color: Cad.ok),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
+                        ],
+                      ),
+                    )
+                else
+                  for (var i = 0; i < r.changes.length; i++)
+                    reviewRow(
+                      c,
+                      t(r.changes[i].result.key, r.changes[i].result.args),
+                      keep.contains(r.changes[i].id),
+                      (on) => setState(() => on ? keep.add(r.changes[i].id) : keep.remove(r.changes[i].id)),
+                      r.changes[i].entityIds,
+                      key: Key('optimize_change_$i'),
                     ),
-                  ),
               ],
               const SizedBox(height: 8),
               Text(t('opt.note'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
@@ -564,12 +626,32 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
           TextButton(
             onPressed: () {
               c.undo();
-              Navigator.pop(ctx);
+              Navigator.pop(ctx, false);
             },
             child: Text(t('opt.undo')),
           ),
-        FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
+        if (r.improved && r.changes.any((ch) => !keep.contains(ch.id)))
+          FilledButton(key: const Key('optimize_keep'), onPressed: () => Navigator.pop(ctx, true), child: Text(t('adv.keepChecked', {'n': '${keep.length}'})))
+        else
+          FilledButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('close'))),
       ],
     ),
+    ),
+  );
+  if (again != true || !context.mounted) return;
+  // the project back as it was, and only the changes kept made again
+  final nav2 = Navigator.of(context);
+  final redoing = _progress(context, c, t('opt.title'));
+  OptimizeReport? kept;
+  try {
+    kept = await c.keepOptimizeChanges(r, keep);
+  } finally {
+    nav2.pop();
+    await redoing;
+  }
+  c.notify(
+    kept == null
+        ? t('adv.keptNone')
+        : t('opt.keptSome', {'n': '${kept.applied.length}', 'm': '${r.changes.length - kept.applied.length}', 'a': money(kept.after.annualTotal), 'b': money(r.before.annualTotal)}),
   );
 }

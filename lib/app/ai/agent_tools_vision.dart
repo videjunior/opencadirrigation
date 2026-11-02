@@ -490,7 +490,8 @@ Future<ToolOutput> _previewTool(AgentToolbox b, ToolArgs a) async {
         lines.add(
           '${s.label} polygon, ${s.pts.length} vertices: area ${fmt(area, 1)} m² (${fmt(area / 1e4, 4)} ha), perimeter ${fmt(polylineLength([...s.pts, s.pts.first]), 2)} m; pts ${_json(s.pts)}',
         );
-        final cross = _selfCrossing(s.pts);
+        // 1.6.0 AUT: the program's one self-crossing detector
+        final cross = polygonSelfCrossing(s.pts);
         if (cross != null) warnings.add('${s.label}: its outline crosses itself (edges ${cross.$1 + 1} and ${cross.$2 + 1}); reorder the vertices.');
         if (area < 1e-6) warnings.add('${s.label}: the polygon has no area (its points are in a line).');
       case 'polyline':
@@ -526,21 +527,6 @@ Future<ToolOutput> _previewTool(AgentToolbox b, ToolArgs a) async {
     ],
   );
   return out;
-}
-
-/// The first pair of non-adjacent edges of the closed outline [pts] that
-/// cross, or null.
-(int, int)? _selfCrossing(List<Pt> pts) {
-  final n = pts.length;
-  if (n < 4 || n > 600) return null;
-  for (var i = 0; i < n; i++) {
-    final a = pts[i], b = pts[(i + 1) % n];
-    for (var j = i + 2; j < n; j++) {
-      if (i == 0 && j == n - 1) continue;
-      if (segmentIntersection(a, b, pts[j], pts[(j + 1) % n]) != null) return (i, j);
-    }
-  }
-  return null;
 }
 
 void _paintShapes(Canvas canvas, PictureFrame f, List<_Shape> shapes) {

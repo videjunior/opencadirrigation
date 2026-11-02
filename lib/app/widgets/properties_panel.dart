@@ -20,6 +20,7 @@ import '../theme.dart';
 import '../tools/tools.dart';
 import 'dialogs/mechanised_dialogs.dart';
 import 'edit_fields.dart';
+import 'trace_image_fields.dart'; // 1.6.0 AUT
 import 'fields.dart';
 
 class PropertiesPanel extends StatelessWidget {
@@ -1587,6 +1588,9 @@ class PropertiesPanel extends StatelessWidget {
       // 1.6.0 EDT: the settings of the new editing and selection tools
       case ToolId.lasso || ToolId.fence || ToolId.fillet || ToolId.chamfer || ToolId.measure:
         items.addAll(editToolFields(c, tool));
+      // 1.6.0 AUT: the outline traced on the satellite image
+      case ToolId.traceImage:
+        items.addAll(traceImageFields(c));
       default:
         items.add(
           Padding(

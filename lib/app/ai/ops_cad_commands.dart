@@ -127,6 +127,8 @@ const toolInstead = <ToolId, String>{
   ToolId.fillet: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the arc vertices (or create_entities an arc between two lines)',
   ToolId.chamfer: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the two cut points',
   ToolId.breakTwo: 'run_operation split_entity {id, at} at both points, then delete_entities the piece between',
+  // 1.6.0 AUT
+  ToolId.traceImage: 'run_operation outline_from_image {at: [x, y]} (it traces the region on the satellite image and adds it as an area), or trace_region then create_entities',
 };
 
 /// English names for the model.

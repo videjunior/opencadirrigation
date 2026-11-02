@@ -378,6 +378,7 @@ class AppMenuBar extends StatelessWidget {
                       ToolId.contour,
                       ToolId.spot,
                       ToolId.area,
+                      ToolId.traceImage, // 1.6.0 AUT
                       ToolId.measure,
                       ToolId.profile,
                       ToolId.comment,

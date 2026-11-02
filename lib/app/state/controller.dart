@@ -66,6 +66,7 @@ import '../io/window_locks.dart';
 import '../keys/canvas_keys.dart';
 import 'ai_marks.dart';
 import 'design_runner.dart';
+import 'outline_check.dart';
 
 /// Language of the interface: the app lays itself out right to left for
 /// the languages written that way (see [rtlLanguages]).
@@ -132,7 +133,9 @@ enum ToolId {
   stretch,
   fillet,
   chamfer,
-  breakTwo;
+  breakTwo,
+  // 1.6.0 AUT: the outline of a field traced on the satellite image (trace_image_tool.dart)
+  traceImage;
 
   /// One of the tools that mark the drawing for the AI assistant.
   bool get isAiMark => this == aiMarkPoint || this == aiMarkLine;
@@ -1335,10 +1338,17 @@ class ProjectController extends ChangeNotifier {
     return _pivotOutlineIds = ids;
   }
 
-  void addEntity(Entity e) => mutate(() => project.entities.add(e), invalidateResults: affectsResults(e), label: 'hist.add|${toolKeyOf(e)}');
+  void addEntity(Entity e) {
+    mutate(() => project.entities.add(e), invalidateResults: affectsResults(e), label: 'hist.add|${toolKeyOf(e)}');
+    // 1.6.0 AUT: an area drawn crossing itself is said at once (AUT-05)
+    warnSelfCrossingAreas(this, [e]);
+  }
+
   void addEntities(Iterable<Entity> es, {String? label}) {
     final list = es.toList();
     mutate(() => project.entities.addAll(list), invalidateResults: anyAffectsResults(list), label: label ?? 'hist.addMany|${list.length}');
+    // 1.6.0 AUT
+    warnSelfCrossingAreas(this, list);
   }
 
   /// Adds a point hydraulic item and, when enabled, splits the pipe under it
@@ -1709,6 +1719,8 @@ class ProjectController extends ChangeNotifier {
       invalidateResults: affectsResults(e) || anyAffectsResults(joined),
       label: 'hist.grip',
     );
+    // 1.6.0 AUT: a vertex dragged across another side of an area (AUT-05)
+    warnSelfCrossingAreas(this, [e]);
   }
 
   double get _junctionTolerance => math.max(project.params.connectTolerance, 1e-6);
@@ -1754,6 +1766,8 @@ class ProjectController extends ChangeNotifier {
     if (e is! PolyEntity || _locked(e)) return;
     if (e.points.length <= 2) return;
     mutate(() => e.removeVertex(index), invalidateResults: affectsResults(e), label: 'hist.vertexRemove');
+    // 1.6.0 AUT (AUT-05)
+    warnSelfCrossingAreas(this, [e]);
   }
 
   /// Applies [fn] to every selected entity of type [T] (batch properties).
@@ -2489,7 +2503,9 @@ class ProjectController extends ChangeNotifier {
         baseline: base,
         label: t.call,
       );
-      if (!report.improved) {
+      // 1.6.0 AUT: the changes the user kept in the review stay as they are
+      final kept = report.improved || options.replay != null;
+      if (!kept) {
         // nothing gained: back to the project as it was
         _backTo(st, redo, base);
       } else {
@@ -2497,7 +2513,7 @@ class ProjectController extends ChangeNotifier {
         _editSeq++;
       }
       showReports = true;
-      notify(report.improved ? t('opt.kept') : t('opt.reverted'));
+      notify(kept ? t('opt.kept') : t('opt.reverted'));
       return report;
     } on DesignCancelled {
       _backTo(st, redo, base);
