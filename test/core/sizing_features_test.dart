@@ -125,7 +125,11 @@ void main() {
       final crops = cropWaterRequirements(p, d.results);
       expect(crops.length, 2);
       for (final c in crops) {
-        expect(c.etcMmDay, closeTo(5.5 * 0.7, 1e-9));
+        // ETc,loc = Kr·Kc·ETo: the micro-sprinkler block wets the whole ground
+        // (Kr 1); since 1.6.0 the vines of the drip block shade a quarter of it,
+        // Kr = 0.1·√25 = 0.5 (Keller & Bliesner 1990)
+        expect(c.kr, c.localized ? closeTo(0.5, 1e-9) : 1);
+        expect(c.etcMmDay, closeTo(5.5 * 0.7 * c.kr, 1e-9));
         expect(c.intervalDays, greaterThanOrEqualTo(1));
         expect(c.hoursPerEvent, greaterThan(0));
       }

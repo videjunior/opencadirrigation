@@ -172,7 +172,15 @@ void main() {
       expect(r.days, hasLength(150));
       expect(r.days.first.date, DateTime.utc(2001, 4, 1));
       expect({for (final d in r.days) d.stage}, {0, 1, 2, 3});
-      expect(r.days.first.kc, closeTo(0.3, 1e-9));
+      // Kc ini follows the wetting of the initial stage (AGR-09, on by
+      // default): this deep soil, wetted at planting, needs no irrigation in
+      // the 30 days of the stage (FAO-56 Annex 7, heavy wetting, medium soil)
+      expect(r.days.first.kc, closeTo(kcIniFromWetting(etoMmDay: 5, wettingIntervalDays: 30, infiltrationDepthMm: 40), 1e-9));
+      expect(r.days.first.kc, inExclusiveRange(0.15, 0.3));
+      // the table's Kc ini with the adjustment off
+      a.climateKc = false;
+      expect(areaWaterBalance(p, a)!.days.first.kc, closeTo(0.3, 1e-9));
+      a.climateKc = true;
       expect(r.ky, fao33SeasonalKy['crop.maize']);
       // p follows the ETc of the day (Table 22 note 2): a day can start just
       // above a RAW that fell overnight, nothing more
