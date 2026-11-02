@@ -4592,9 +4592,9 @@ const _base = <String, (String, String, String)>{
   ),
   'lic.category': ('Categoria', 'Category', 'Categoría'),
   'lic.limits': ('Faixas da categoria', 'Category limits', 'Rangos de la categoría'),
-  'lic.limits.sprinkler': ('A < 100 ha; B 100–1000 ha; C > 1000 ha', 'A < 100 ha; B 100–1000 ha; C > 1000 ha', 'A < 100 ha; B 100–1000 ha; C > 1000 ha'),
+  'lic.limits.sprinkler': ('A < 100 ha; B 100–500 ha; C > 500 ha', 'A < 100 ha; B 100–500 ha; C > 500 ha', 'A < 100 ha; B 100–500 ha; C > 500 ha'),
   'lic.limits.localized': ('A < 500 ha; B 500–1000 ha; C > 1000 ha', 'A < 500 ha; B 500–1000 ha; C > 1000 ha', 'A < 500 ha; B 500–1000 ha; C > 1000 ha'),
-  'lic.limits.surface': ('A < 50 ha; B 50–100 ha; C > 100 ha', 'A < 50 ha; B 50–100 ha; C > 100 ha', 'A < 50 ha; B 50–100 ha; C > 100 ha'),
+  'lic.limits.surface': ('A < 50 ha; B 50–500 ha; C > 500 ha', 'A < 50 ha; B 50–500 ha; C > 500 ha', 'A < 50 ha; B 50–500 ha; C > 500 ha'),
   'lic.project': ('Projeto (maior categoria)', 'Project (highest category)', 'Proyecto (mayor categoría)'),
   'lic.note': (
     'Classificação informativa: confirme a vigência da resolução e as exigências do órgão ambiental estadual',

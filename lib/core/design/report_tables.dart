@@ -1355,17 +1355,18 @@ List<ReportTable> mechanisedTables(Project project, DesignResults r, ReportLabel
 }
 
 /// Category (A, B or C) of an irrigation project for the environmental
-/// licensing of Brazilian Resolution CONAMA 284/2001 (annex): by the
-/// irrigated area of the property and the method — sprinkler below 100 ha,
-/// up to 1 000 ha, beyond; micro-irrigation below 500 ha, up to 1 000 ha,
-/// beyond; surface below 50 ha, up to 100 ha, beyond. Informative: the
-/// validity of the resolution and the rules of each state agency must be
-/// checked.
+/// licensing of Brazilian Resolution CONAMA 284/2001, by the irrigated area
+/// of the property and the method, as in the table of its Art. 1º:
+/// sprinkler A below 100 ha, B from 100 to 500 ha, C beyond 500 ha;
+/// localized (micro-irrigation) A below 500 ha, B from 500 to 1 000 ha, C
+/// beyond 1 000 ha; surface A below 50 ha, B from 50 to 500 ha, C beyond
+/// 500 ha. Informative: the validity of the resolution and the rules of each
+/// state agency must be checked.
 String conamaCategory(String method, double hectares) {
   final (a, b) = switch (method) {
     'localized' => (500.0, 1000.0),
-    'surface' => (50.0, 100.0),
-    _ => (100.0, 1000.0),
+    'surface' => (50.0, 500.0),
+    _ => (100.0, 500.0),
   };
   return hectares < a ? 'A' : (hectares <= b ? 'B' : 'C');
 }
