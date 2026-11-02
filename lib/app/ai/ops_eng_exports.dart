@@ -15,9 +15,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
-import '../../core/ai/image_prep.dart' show encodeJpegRgba;
 import '../../core/api.dart';
-import '../../core/io/sheet_check.dart';
 import '../actions.dart' show pdfTexts;
 import '../i18n.dart' show I18n;
 import '../io/pdf_font_loader.dart';
