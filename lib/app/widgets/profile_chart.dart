@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/units.dart';
 import '../theme.dart';
+import 'fields.dart' show fmtUi; // 1.6.0 UI (UI-08)
 
 /// Ground elevation profile along a path: (station, elevation) samples,
 /// optionally with the pipe line (below the ground by its depth) and the
@@ -110,7 +111,7 @@ class _ProfilePainter extends CustomPainter {
       final o = pt(0, y);
       canvas.drawLine(Offset(left, o.dy), Offset(left + width, o.dy), gridPaint);
       final tp = TextPainter(
-        text: TextSpan(text: fmt(y, 1), style: txt),
+        text: TextSpan(text: fmtUi(y, 1), style: txt),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(left - tp.width - 4, o.dy - tp.height / 2));
@@ -120,7 +121,7 @@ class _ProfilePainter extends CustomPainter {
       final o = pt(x, yMin);
       canvas.drawLine(Offset(o.dx, top), Offset(o.dx, top + h), gridPaint);
       final tp = TextPainter(
-        text: TextSpan(text: '${fmt(u.lengthFromSi(x), 0)} ${u.lengthLabel}', style: txt),
+        text: TextSpan(text: '${fmtUi(u.lengthFromSi(x), 0)} ${u.lengthLabel}', style: txt),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(o.dx - tp.width / 2, top + h + 4));
@@ -176,7 +177,7 @@ class _ProfilePainter extends CustomPainter {
       canvas.drawCircle(o, 3.5, Paint()..color = col);
       final tp = TextPainter(
         text: TextSpan(
-          text: fmt(p.$2, 2),
+          text: fmtUi(p.$2, 2),
           style: TextStyle(color: col, fontSize: 10),
         ),
         textDirection: TextDirection.ltr,
@@ -237,12 +238,12 @@ class _ProfilePainter extends CustomPainter {
           ..strokeWidth = 1,
       );
       canvas.drawCircle(o, 4, Paint()..color = Cad.fg);
-      var text = '${w.stationLabel} ${fmt(u.lengthFromSi(x), 1)} ${u.lengthLabel}   ${fmt(z, 2)} m';
+      var text = '${w.stationLabel} ${fmtUi(u.lengthFromSi(x), 1)} ${u.lengthLabel}   ${fmtUi(z, 2)} m';
       final hg = w.hgl;
       if (hg != null && hg.length >= 2 && x <= hg.last.$1 + 1e-9) {
         final head = _interp(hg, x);
         final pz = w.pipe != null && w.pipe!.length >= 2 ? _interp(w.pipe!, x) : z;
-        text += '   ${w.pressureLabel} ${fmt(u.pressureFromHead(head - pz), 1)} ${u.pressureLabel}';
+        text += '   ${w.pressureLabel} ${fmtUi(u.pressureFromHead(head - pz), 1)} ${u.pressureLabel}';
       }
       final t = TextPainter(
         text: TextSpan(

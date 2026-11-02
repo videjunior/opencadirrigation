@@ -283,7 +283,7 @@ class _VegetationDialogState extends State<VegetationDialog> {
   double _areaFrom(double m2) => _imperial ? m2 / (metersPerFoot * metersPerFoot) : m2;
   double _areaTo(double v) => _imperial ? v * metersPerFoot * metersPerFoot : v;
   String get _areaLabel => _imperial ? 'ft²' : 'm²';
-  String _surface(double m2) => '${fmt(_areaFrom(m2), _areaFrom(m2) >= 100 ? 0 : 1)} $_areaLabel';
+  String _surface(double m2) => '${fmtUi(_areaFrom(m2), _areaFrom(m2) >= 100 ? 0 : 1)} $_areaLabel';
 
   // ------------------------------------------------------------ view
 
@@ -384,14 +384,14 @@ class _VegetationDialogState extends State<VegetationDialog> {
         note(t('veg.licence'), color: Cad.fg54),
       ],
       SectionTitle(t('veg.detection')),
-      Text(auto == null ? t('veg.thresholdTitle') : t('veg.threshold', {'t': fmt(auto + _o.thresholdOffset, 3), 'a': fmt(auto, 3)}), style: const TextStyle(fontSize: 12)),
+      Text(auto == null ? t('veg.thresholdTitle') : t('veg.threshold', {'t': fmtUi(auto + _o.thresholdOffset, 3), 'a': fmtUi(auto, 3)}), style: const TextStyle(fontSize: 12)),
       Slider(
         key: const Key('veg_threshold'),
         value: _o.thresholdOffset.clamp(-0.15, 0.15).toDouble(),
         min: -0.15,
         max: 0.15,
         divisions: 60,
-        label: '${_o.thresholdOffset >= 0 ? '+' : ''}${fmt(_o.thresholdOffset, 3)}',
+        label: '${_o.thresholdOffset >= 0 ? '+' : ''}${fmtUi(_o.thresholdOffset, 3)}',
         onChanged: (v) => _changed(() => _o.thresholdOffset = v),
       ),
       note(t('veg.thresholdHint'), color: Cad.fg54),
@@ -431,7 +431,7 @@ class _VegetationDialogState extends State<VegetationDialog> {
           min: -0.5,
           max: 0.5,
           divisions: 20,
-          label: fmt(-_o.treeBias, 2),
+          label: fmtUi(-_o.treeBias, 2),
           onChanged: (v) => _changed(() => _o.treeBias = -v),
         ),
         note(t('veg.treeLimitHint'), color: Cad.fg54),
@@ -582,8 +582,8 @@ class _VegetationDialogState extends State<VegetationDialog> {
           ],
         ),
         SectionTitle(t('auto.summary')),
-        KV(t('veg.resolution'), '${fmt(im.pixelSizeM * 100, 1)} cm · ${im.width} × ${im.height} px'),
-        KV(t('veg.vegetated'), '${fmt(r.vegetatedFraction * 100, 1)} %'),
+        KV(t('veg.resolution'), '${fmtUi(im.pixelSizeM * 100, 1)} cm · ${im.width} × ${im.height} px'),
+        KV(t('veg.vegetated'), '${fmtUi(r.vegetatedFraction * 100, 1)} %'),
         for (final cls in VegetationClass.values)
           if (r.of(cls).isNotEmpty) KV(t('veg.class.${cls.name}'), '${r.of(cls).length} · ${_surface(r.areaOf(cls))}'),
         if (r.exclusions.isNotEmpty) KV(t('veg.exclusions'), '${r.exclusions.length} · ${_surface(r.exclusions.fold(0.0, (s, h) => s + h.area))}'),

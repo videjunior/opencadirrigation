@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/terrain.dart';
-import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import 'fields.dart' show fmtUi; // 1.6.0 UI (UI-08)
 
 /// Rotatable 3D view of the DEM (shaded mesh, painter's algorithm) with the
 /// pipes and laterals draped on the surface.
@@ -45,7 +45,7 @@ class _DemViewState extends State<DemView> {
             Expanded(
               child: Slider(value: _exaggeration, min: 0.5, max: 10, divisions: 19, label: '${_exaggeration.toStringAsFixed(1)}×', onChanged: (v) => setState(() => _exaggeration = v)),
             ),
-            Text(t('dem.range', {'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+            Text(t('dem.range', {'a': fmtUi(lo, 1), 'b': fmtUi(hi, 1)}), style: TextStyle(fontSize: 11, color: Cad.fg54)),
           ],
         ),
         Expanded(

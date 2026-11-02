@@ -54,7 +54,7 @@ class PointsCsvReader {
     return l.split(_sep).where((s) => s.isNotEmpty).toList();
   }
 
-  static double? _num(String s) => parseNumber(s.replaceAll('"', ''));
+  static double? _num(String s, [String? decimalSeparator]) => parseNumber(s.replaceAll('"', ''), decimalSeparator: decimalSeparator);
 
   /// Header names by the column they name.
   static const _xNames = {
@@ -203,12 +203,22 @@ class PointsCsvReader {
       return i < 0 ? 0 : t.length - i - 1;
     }
 
+    // 1.6.0 UI (UI-08): the decimal separator of the columns, from the values that tell ("12,5", "1.234,5"): in a
+    // file of decimal commas a "1.250" is then 1250, not 1.25 (none tells: each value as it reads best)
+    final cells = <String>[];
+    for (var i = start; i < lines.length && cells.length < 6000; i++) {
+      final c = _split(lines[i]);
+      for (final k in [xi, yi, zi]) {
+        if (k != null && k < c.length) cells.add(c[k].replaceAll('"', ''));
+      }
+    }
+    final decimal = guessDecimalSeparator(cells);
     for (var i = start; i < lines.length; i++) {
       final c = _split(lines[i]);
       if (c.length <= (xi > yi ? xi : yi)) continue;
-      final x = _num(c[xi]), y = _num(c[yi]);
+      final x = _num(c[xi], decimal), y = _num(c[yi], decimal);
       if (x == null || y == null) continue;
-      final z = zi != null && zi < c.length ? _num(c[zi]) : null;
+      final z = zi != null && zi < c.length ? _num(c[zi], decimal) : null;
       final name = ni != null && ni < c.length ? c[ni].replaceAll('"', '') : '';
       if (decimals(c[xi]) >= 5 && decimals(c[yi]) >= 5) manyDecimals++;
       rows.add((x, y, z, name));

@@ -212,7 +212,7 @@ class _ChartPainter extends CustomPainter {
       final o = pt(xMin, y);
       canvas.drawLine(Offset(left, o.dy), Offset(left + width, o.dy), grid);
       final tp = TextPainter(
-        text: TextSpan(text: fmt(y, w.decimals), style: txt),
+        text: TextSpan(text: fmtUi(y, w.decimals), style: txt),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(left - tp.width - 4, o.dy - tp.height / 2));
@@ -222,7 +222,7 @@ class _ChartPainter extends CustomPainter {
       final o = pt(x, yMin);
       canvas.drawLine(Offset(o.dx, top), Offset(o.dx, top + h), grid);
       final tp = TextPainter(
-        text: TextSpan(text: w.xFormat?.call(x) ?? fmt(x, 0), style: txt),
+        text: TextSpan(text: w.xFormat?.call(x) ?? fmtUi(x, 0), style: txt),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(o.dx - tp.width / 2, top + h + 4));
@@ -310,12 +310,12 @@ class _ChartPainter extends CustomPainter {
         ..color = Cad.fg30
         ..strokeWidth = 1,
     );
-    final lines = <String>[w.xFormat?.call(x) ?? fmt(x, 1)];
+    final lines = <String>[w.xFormat?.call(x) ?? fmtUi(x, 1)];
     for (final l in items) {
       final y = _at(l, x);
       if (!y.isFinite) continue;
       canvas.drawCircle(pt(x, y), 3, Paint()..color = l.color);
-      lines.add('${l.label}: ${fmt(y, w.decimals)}');
+      lines.add('${l.label}: ${fmtUi(y, w.decimals)}');
     }
     final t = TextPainter(
       text: TextSpan(
@@ -509,7 +509,7 @@ class _TransientDialogState extends State<_TransientDialog> {
                     label: t('tr.motor'),
                     value: '$_poles',
                     items: const [2, 4],
-                    labelOf: (p) => t('tr.polesN', {'n': '$p', 'rpm': fmt(TransientStudyOptions.speedForPoles(p, c.project.params.mainsHz), 0)}),
+                    labelOf: (p) => t('tr.polesN', {'n': '$p', 'rpm': fmtUi(TransientStudyOptions.speedForPoles(p, c.project.params.mainsHz), 0)}),
                     idOf: (p) => '$p',
                     onChanged: (v) => setState(() => _poles = int.tryParse(v ?? '') ?? 2),
                   ),
@@ -563,7 +563,7 @@ class _TransientDialogState extends State<_TransientDialog> {
     final t = c.t;
     if (a.runs.isEmpty) return [_hint(t('tr.none'))];
     final run = a.runs[_run.clamp(0, a.runs.length - 1)];
-    String p(double h) => '${fmt(u.pressureFromHead(h), 1)} ${u.pressureLabel}';
+    String p(double h) => '${fmtUi(u.pressureFromHead(h), 1)} ${u.pressureLabel}';
     final over = a.pipes.where((x) => x.overRating).length, vac = a.pipes.where((x) => x.vacuum).length;
     final out = <Widget>[
       SectionTitle(t('dens.results')),
@@ -592,8 +592,8 @@ class _TransientDialogState extends State<_TransientDialog> {
       KV(t('tr.maxSurge'), '${p(run.maxSurge)}${run.maxSurgeEntity == null ? '' : ' · ${c.entityName(run.maxSurgeEntity!)}'}'),
       if (worstPipe != null) KV(t('tr.maxPressure'), '${p(worstPipe.maxPressure)} · ${c.entityName(worstPipe.entityId)}', color: worstPipe.overRating ? Cad.warning : null),
       if (lowPipe != null) KV(t('tr.minPressure'), '${p(lowPipe.minPressure)} · ${c.entityName(lowPipe.entityId)}', color: lowPipe.vacuum ? Cad.warning : null),
-      if (run.checkValves.isNotEmpty) KV(t('tr.checkValve'), [for (final e in run.checkValves.entries) '${_nameOf(c, e.key)} ${fmt(e.value, 2)} s'].join(' · ')),
-      KV(t('tr.timeStep'), '${fmt(run.timeStep * 1000, 1)} ms · ${fmt(run.duration, 0)} s · ${run.steps}'),
+      if (run.checkValves.isNotEmpty) KV(t('tr.checkValve'), [for (final e in run.checkValves.entries) '${_nameOf(c, e.key)} ${fmtUi(e.value, 2)} s'].join(' · ')),
+      KV(t('tr.timeStep'), '${fmtUi(run.timeStep * 1000, 1)} ms · ${fmtUi(run.duration, 0)} s · ${run.steps}'),
       SectionTitle(t('tr.profile')),
       SizedBox(height: 240, child: _profileChart(run, u)),
       SectionTitle(t('tr.series')),
@@ -616,7 +616,7 @@ class _TransientDialogState extends State<_TransientDialog> {
       key: const Key('tr_profile'),
       title: t('tr.profile'),
       yLabel: '${t('tr.head')} (${u.lengthLabel})',
-      xFormat: (v) => '${fmt(v, 0)} ${u.lengthLabel}',
+      xFormat: (v) => '${fmtUi(v, 0)} ${u.lengthLabel}',
       lines: [
         _Line(t('tr.lg.ground'), _cGround, [for (final p in pr) (x(p.chainage), y(p.ground))], width: 1, fill: true),
         _Line(t('tr.lg.pipe'), _cPipe, [for (final p in pr) (x(p.chainage), y(p.elevation))], width: 2),
@@ -642,7 +642,7 @@ class _TransientDialogState extends State<_TransientDialog> {
   Widget _pipeTable(TransientRun run, Units u) {
     final t = c.t;
     final rows = [...run.pipes]..sort((a, b) => (b.overRating || b.vacuum ? 1 : 0).compareTo(a.overRating || a.vacuum ? 1 : 0));
-    String p(double h) => fmt(u.pressureFromHead(h), 1);
+    String p(double h) => fmtUi(u.pressureFromHead(h), 1);
     return _table([
       [
         _cell(t('rep.entity'), bold: true),
@@ -818,7 +818,7 @@ class _AirValveDialogState extends State<_AirValveDialog> {
 
   List<List<Widget>> _rows(AirValveStudy s, Units u) {
     final t = c.t;
-    String mm(double m) => m > 0 ? fmt(u.diameterFromSi(m), u.diameterLabel == 'mm' ? 0 : 2) : '—';
+    String mm(double m) => m > 0 ? fmtUi(u.diameterFromSi(m), u.diameterLabel == 'mm' ? 0 : 2) : '—';
     return [
       [
         _cell('#', bold: true),
@@ -838,7 +838,7 @@ class _AirValveDialogState extends State<_AirValveDialog> {
           return [
             _cell('${i + 1}'),
             _cell(c.entityName(v.pipeEntityId ?? '')),
-            _cell(fmt(u.lengthFromSi(v.chainage), 0), mono: true),
+            _cell(fmtUi(u.lengthFromSi(v.chainage), 0), mono: true),
             _cell(t('av.type.${v.type.name}')),
             _cell([for (final r in v.reasons) t('av.reason.${r.code}')].join(', ')),
             _cell(mm(v.sizing.largeOrifice), mono: true),
@@ -969,12 +969,12 @@ class _EpsDialogState extends State<_EpsDialog> {
     }
 
     List<(double, double)> steps(List<double> v, double Function(double) f) => [for (var i = 0; i < d.times.length && i < v.length; i++) (d.times[i] / 3600, v[i].isFinite ? f(v[i]) : double.nan)];
-    String hoursFmt(double x) => '${fmt(x, 0)} h';
+    String hoursFmt(double x) => '${fmtUi(x, 0)} h';
     return [
       SectionTitle(t('dens.results')),
-      KV(t('eps.dayEnergy'), '${fmt(d.energyKwh, 1)} kWh'),
-      KV(t('eps.dayCost'), '$cur ${fmt(d.cost, 2)}'),
-      KV(t('eps.dayVolume'), '${fmt(u.volumeFromM3(d.volume), 1)} ${u.volumeLabel}'),
+      KV(t('eps.dayEnergy'), '${fmtUi(d.energyKwh, 1)} kWh'),
+      KV(t('eps.dayCost'), '$cur ${fmtUi(d.cost, 2)}'),
+      KV(t('eps.dayVolume'), '${fmtUi(u.volumeFromM3(d.volume), 1)} ${u.volumeLabel}'),
       SizedBox(
         height: 170,
         child: _Chart(
@@ -1022,13 +1022,13 @@ class _EpsDialogState extends State<_EpsDialog> {
           for (final p in d.pumps)
             [
               _cell(p.calculated ? t('eps.calcSupply', {'n': _nameOf(c, p.entityId)}) : _nameOf(c, p.entityId)),
-              _cell(fmt(p.energyKwh, 2), mono: true),
-              _cell(fmt(p.cost, 2), mono: true),
-              _cell(fmt(p.hoursOn, 2), mono: true),
-              _cell(fmt(u.volumeFromM3(p.volume), 1), mono: true),
-              _cell('${fmt(p.maxPowerKw, 2)} kW', mono: true),
+              _cell(fmtUi(p.energyKwh, 2), mono: true),
+              _cell(fmtUi(p.cost, 2), mono: true),
+              _cell(fmtUi(p.hoursOn, 2), mono: true),
+              _cell(fmtUi(u.volumeFromM3(p.volume), 1), mono: true),
+              _cell('${fmtUi(p.maxPowerKw, 2)} kW', mono: true),
             ],
-          [_cell(t('rep.totalRow'), bold: true), _cell(fmt(d.energyKwh, 2), bold: true, mono: true), _cell(fmt(d.cost, 2), bold: true, mono: true), _cell(''), _cell(''), _cell('')],
+          [_cell(t('rep.totalRow'), bold: true), _cell(fmtUi(d.energyKwh, 2), bold: true, mono: true), _cell(fmtUi(d.cost, 2), bold: true, mono: true), _cell(''), _cell(''), _cell('')],
         ]),
       SectionTitle(t('eps.hourly')),
       _table([
@@ -1046,16 +1046,16 @@ class _EpsDialogState extends State<_EpsDialog> {
             [
               _cell('${hh(h.hour * 3600.0)}–${hh((h.hour + 1) * 3600.0)}'),
               _cell(h.flows.map(_flowName).join(', ')),
-              _cell(fmt(u.flowFromSi(h.flow), 2), mono: true),
-              _cell(fmt(h.powerKw, 2), mono: true),
-              _cell(fmt(h.energyKwh, 2), mono: true),
+              _cell(fmtUi(u.flowFromSi(h.flow), 2), mono: true),
+              _cell(fmtUi(h.powerKw, 2), mono: true),
+              _cell(fmtUi(h.energyKwh, 2), mono: true),
               _cell(
-                fmt(h.cost, 2),
+                fmtUi(h.cost, 2),
                 mono: true,
                 color: _peakFactor != 1 && EpsDayOptions(peakStartHour: _peakStart, peakEndHour: _peakEnd).inPeak(h.hour + 0.5) ? Cad.warning : null,
               ),
               _cell(
-                h.lowestPressure.isFinite ? '${fmt(u.pressureFromHead(h.lowestPressure), 1)} (${_nameOf(c, h.lowestValve)})' : '—',
+                h.lowestPressure.isFinite ? '${fmtUi(u.pressureFromHead(h.lowestPressure), 1)} (${_nameOf(c, h.lowestValve)})' : '—',
                 mono: true,
                 color: h.lowestMargin.isFinite && h.lowestMargin < -0.05 ? Cad.warning : null,
               ),

@@ -46,7 +46,7 @@ AlertDialog _frame(BuildContext ctx, ProjectController c, String title, double w
   actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
 );
 
-String _pct(double fraction) => '${fmt(fraction * 100, 1)} %';
+String _pct(double fraction) => '${fmtUi(fraction * 100, 1)} %';
 
 // ---------------------------------------------------------------- travelling gun
 
@@ -108,8 +108,8 @@ Future<void> showTravellerCalculator(BuildContext context, ProjectController c) 
           ),
         );
         final pd = u.pressure == PressureUnit.bar ? 2 : 1;
-        String len(double m, [int d = 1]) => '${fmt(u.lengthFromSi(m), d)} ${u.lengthLabel}';
-        String pr(double h) => '${fmt(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
+        String len(double m, [int d = 1]) => '${fmtUi(u.lengthFromSi(m), d)} ${u.lengthLabel}';
+        String pr(double h) => '${fmtUi(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
         final dd = u.depthLabel == 'in' ? 2 : 1;
         final speedUnit = '${u.lengthLabel}/min';
         return _frame(ctx, c, t('trav.title'), 760, [
@@ -251,27 +251,27 @@ Future<void> showTravellerCalculator(BuildContext context, ProjectController c) 
           SectionTitle(t('dens.results')),
           KV(
             t('trav.laneSpacing'),
-            t('trav.spacingValue', {'s': len(r.laneSpacingM), 'p': fmt(r.laneSpacingPct, 0), 'r': fmt(r.recommendedPct, 0)}),
+            t('trav.spacingValue', {'s': len(r.laneSpacingM), 'p': fmtUi(r.laneSpacingPct, 0), 'r': fmtUi(r.recommendedPct, 0)}),
             color: r.warnings.contains('traveller_lane_wide') ? Cad.warning : null,
           ),
           KV(t('trav.lanesCount'), '${r.lanes}'),
           KV(t('trav.runLength'), len(r.laneLengthM, 0)),
           KV(
             t('trav.speed'),
-            r.speedMPerMin > 0 ? '${fmt(u.lengthFromSi(r.speedMPerMin), 2)} $speedUnit (${fmt(u.lengthFromSi(r.speedMPerMin * 60), 0)} ${u.lengthLabel}/h)' : '-',
+            r.speedMPerMin > 0 ? '${fmtUi(u.lengthFromSi(r.speedMPerMin), 2)} $speedUnit (${fmtUi(u.lengthFromSi(r.speedMPerMin * 60), 0)} ${u.lengthLabel}/h)' : '-',
             color: r.warnings.contains('traveller_speed_range') ? Cad.warning : null,
           ),
-          KV(t('mech.depth'), '${fmt(u.depthFromMm(r.grossDepthMm), dd)} ${u.depthLabel}'),
-          KV(t('trav.travelHours'), '${fmt(r.travelHours, 1)} h'),
-          KV(t('trav.laneHours'), '${fmt(r.laneHours, 1)} h'),
-          KV(t('trav.cycle'), t('trav.cycleValue', {'h': fmt(r.cycleHours, 1), 'd': fmt(r.cycleDays, 1)})),
-          KV(t('trav.areaLane'), '${fmt(u.areaFromSi(r.areaPerLaneM2), 2)} ${u.areaLabel}'),
-          KV(t('trav.volumeLane'), '${fmt(u.volumeFromM3(r.volumePerLaneM3), 0)} ${u.volumeLabel}'),
-          KV(t('trav.appRate'), '${fmt(u.depthFromMm(r.applicationRateMmH), dd)} ${u.depthRateLabel}', color: r.warnings.contains('traveller_app_rate') ? Cad.warning : null),
+          KV(t('mech.depth'), '${fmtUi(u.depthFromMm(r.grossDepthMm), dd)} ${u.depthLabel}'),
+          KV(t('trav.travelHours'), '${fmtUi(r.travelHours, 1)} h'),
+          KV(t('trav.laneHours'), '${fmtUi(r.laneHours, 1)} h'),
+          KV(t('trav.cycle'), t('trav.cycleValue', {'h': fmtUi(r.cycleHours, 1), 'd': fmtUi(r.cycleDays, 1)})),
+          KV(t('trav.areaLane'), '${fmtUi(u.areaFromSi(r.areaPerLaneM2), 2)} ${u.areaLabel}'),
+          KV(t('trav.volumeLane'), '${fmtUi(u.volumeFromM3(r.volumePerLaneM3), 0)} ${u.volumeLabel}'),
+          KV(t('trav.appRate'), '${fmtUi(u.depthFromMm(r.applicationRateMmH), dd)} ${u.depthRateLabel}', color: r.warnings.contains('traveller_app_rate') ? Cad.warning : null),
           KV(t('trav.hoseFriction'), pr(r.hoseFrictionM)),
-          KV(t('trav.hoseVelocity'), '${fmt(u.velocityFromSi(r.hoseVelocity), 2)} ${u.velocityLabel}'),
+          KV(t('trav.hoseVelocity'), '${fmtUi(u.velocityFromSi(r.hoseVelocity), 2)} ${u.velocityLabel}'),
           KV(t('trav.inlet'), pr(r.inletHeadM)),
-          KV(t('trav.power'), '${fmt(r.hydraulicPowerKw, 2)} / ${fmt(r.shaftPowerKw, 2)} kW'),
+          KV(t('trav.power'), '${fmtUi(r.hydraulicPowerKw, 2)} / ${fmtUi(r.shaftPowerKw, 2)} kW'),
           SectionTitle(t('rep.warnings')),
           ...messageLines(c, r.warnings),
         ]);
@@ -319,10 +319,10 @@ Future<void> showSurfaceIrrigationCalculator(BuildContext context, ProjectContro
         String qLabel() => furrow ? u.flowLabel : '${u.flowLabel}/${u.lengthLabel}';
         double qShown(double q) => furrow ? u.flowFromSi(q) : u.flowFromSi(q) * perWidth;
         double qSi(double v) => furrow ? u.flowToSi(v) : u.flowToSi(v) / perWidth;
-        String q(double v) => '${fmt(qShown(v), flowDecimals(u, small: true))} ${qLabel()}';
+        String q(double v) => '${fmtUi(qShown(v), flowDecimals(u, small: true))} ${qLabel()}';
         final dd = u.depthLabel == 'in' ? 2 : 1;
-        String depth(double m) => '${fmt(u.depthFromMm(m * 1000), dd)} ${u.depthLabel}';
-        String minutes(double s) => s.isFinite ? '${fmt(s / 60, 0)} min' : t('surf.incomplete');
+        String depth(double m) => '${fmtUi(u.depthFromMm(m * 1000), dd)} ${u.depthLabel}';
+        String minutes(double s) => s.isFinite ? '${fmtUi(s / 60, 0)} min' : t('surf.incomplete');
         final families = [for (final f in nrcsIntakeFamiliesInitial) f.family];
         // whole furrows across the field, or the field width of borders
         final count = fieldWidth > 0 && spacing > 0 ? math.max(1, (fieldWidth / spacing).round()) : 0;
@@ -404,7 +404,7 @@ Future<void> showSurfaceIrrigationCalculator(BuildContext context, ProjectContro
                 label: t('surf.family'),
                 value: '$family',
                 items: families,
-                labelOf: (f) => '${fmt(f, 2)} in/h (${fmt(f * 25.4, 1)} mm/h)',
+                labelOf: (f) => '${fmtUi(f, 2)} in/h (${fmtUi(f * 25.4, 1)} mm/h)',
                 idOf: (f) => '$f',
                 onChanged: (v) => setState(() => family = double.parse(v!)),
               ),
@@ -450,7 +450,7 @@ Future<void> showSurfaceIrrigationCalculator(BuildContext context, ProjectContro
             Text(t('warn.surface_no_advance'), style: TextStyle(fontSize: 12, color: Cad.warning))
           else ...[
             KV(t(design ? 'surf.best' : (furrow ? 'surf.inflow' : 'surf.inflowWidth')), q(e.inflow)),
-            if (design) KV(t('surf.inflowRange'), '${fmt(qShown(d!.minInflow), flowDecimals(u, small: true))} – ${q(d.maxInflow)}'),
+            if (design) KV(t('surf.inflowRange'), '${fmtUi(qShown(d!.minInflow), flowDecimals(u, small: true))} – ${q(d.maxInflow)}'),
             KV(t('surf.advance'), minutes(e.advanceS), color: e.complete ? null : Cad.warning),
             KV(t('surf.cutoffResult'), minutes(e.cutoffS)),
             if (system == SurfaceSystem.border) KV(t('surf.recession'), minutes(e.recessionS)),
@@ -460,17 +460,20 @@ Future<void> showSurfaceIrrigationCalculator(BuildContext context, ProjectContro
             KV(t('surf.du'), _pct(e.lowQuarterDu)),
             KV(t('surf.deepPerc'), _pct(e.deepPercolationRatio)),
             KV(t('surf.tailwater'), _pct(e.tailwaterRatio)),
-            KV(t('surf.depths'), '${fmt(u.depthFromMm(e.meanDepthM * 1000), dd)} / ${fmt(u.depthFromMm(e.minDepthM * 1000), dd)} / ${fmt(u.depthFromMm(e.maxDepthM * 1000), dd)} ${u.depthLabel}'),
+            KV(
+              t('surf.depths'),
+              '${fmtUi(u.depthFromMm(e.meanDepthM * 1000), dd)} / ${fmtUi(u.depthFromMm(e.minDepthM * 1000), dd)} / ${fmtUi(u.depthFromMm(e.maxDepthM * 1000), dd)} ${u.depthLabel}',
+            ),
             KV(
               t(furrow ? 'surf.appliedFurrow' : 'surf.appliedWidth'),
-              furrow ? '${fmt(u.volumeFromM3(e.appliedM3), 2)} ${u.volumeLabel}' : '${fmt(u.volumeFromM3(e.appliedM3) * perWidth, 2)} ${u.volumeLabel}/${u.lengthLabel}',
+              furrow ? '${fmtUi(u.volumeFromM3(e.appliedM3), 2)} ${u.volumeLabel}' : '${fmtUi(u.volumeFromM3(e.appliedM3) * perWidth, 2)} ${u.volumeLabel}/${u.lengthLabel}',
             ),
             if (fieldWidth > 0)
               KV(
                 t('surf.totalFlow'),
                 furrow
-                    ? '${fmt(u.flowFromSi(e.inflow * count), flowDecimals(u))} ${u.flowLabel} ($count ${t('surf.furrows')})'
-                    : '${fmt(u.flowFromSi(e.inflow * fieldWidth), flowDecimals(u))} ${u.flowLabel}',
+                    ? '${fmtUi(u.flowFromSi(e.inflow * count), flowDecimals(u))} ${u.flowLabel} ($count ${t('surf.furrows')})'
+                    : '${fmtUi(u.flowFromSi(e.inflow * fieldWidth), flowDecimals(u))} ${u.flowLabel}',
               ),
           ],
           if (design && d!.rows.isNotEmpty) ...[
@@ -488,13 +491,13 @@ Future<void> showSurfaceIrrigationCalculator(BuildContext context, ProjectContro
               [
                 for (final row in d.rows)
                   [
-                    fmt(qShown(row.inflow), flowDecimals(u, small: true)),
-                    row.advanceS.isFinite ? fmt(row.advanceS / 60, 0) : '-',
-                    row.cutoffS.isFinite ? fmt(row.cutoffS / 60, 0) : '-',
-                    fmt(row.efficiency * 100, 1),
-                    fmt(row.lowQuarterDu * 100, 1),
-                    fmt(row.tailwaterRatio * 100, 1),
-                    fmt(row.deepPercolationRatio * 100, 1),
+                    fmtUi(qShown(row.inflow), flowDecimals(u, small: true)),
+                    row.advanceS.isFinite ? fmtUi(row.advanceS / 60, 0) : '-',
+                    row.cutoffS.isFinite ? fmtUi(row.cutoffS / 60, 0) : '-',
+                    fmtUi(row.efficiency * 100, 1),
+                    fmtUi(row.lowQuarterDu * 100, 1),
+                    fmtUi(row.tailwaterRatio * 100, 1),
+                    fmtUi(row.deepPercolationRatio * 100, 1),
                   ],
               ],
               warn: [for (final row in d.rows) !row.cutoffS.isFinite],
@@ -550,11 +553,11 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
           PressureUnit.psi => 3,
           PressureUnit.ftH2O => 2,
         };
-        String pr(double h) => '${fmt(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
+        String pr(double h) => '${fmtUi(u.pressureFromHead(h), pd)} ${u.pressureLabel}';
         final inch = u.diameter == DiameterUnit.inch;
-        String dia(double mm) => fmt(u.diameterFromSi(mm / 1000), inch ? 3 : 1);
+        String dia(double mm) => fmtUi(u.diameterFromSi(mm / 1000), inch ? 3 : 1);
         final areaUnit = inch ? 'in²' : 'mm²';
-        String q(double v) => fmt(u.flowFromSi(v), flowDecimals(u, small: true));
+        String q(double v) => fmtUi(u.flowFromSi(v), flowDecimals(u, small: true));
         return _frame(ctx, c, t('gate.title'), 760, [
           _hintText(t('gate.hint')),
           fieldGrid([
@@ -604,14 +607,14 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
           SectionTitle(t('dens.results')),
           KV(t('gate.inletUsed'), pr(r.inletHeadM), color: r.inletHeadOk ? Cad.ok : Cad.warning),
           KV(t('gate.inletMin'), pr(r.minInletHeadM)),
-          KV(t('gate.total'), '${fmt(u.flowFromSi(r.totalFlow), flowDecimals(u))} ${u.flowLabel}'),
+          KV(t('gate.total'), '${fmtUi(u.flowFromSi(r.totalFlow), flowDecimals(u))} ${u.flowLabel}'),
           if (r.fixedHoles) ...[
-            KV(t('gate.deliveredTotal'), '${fmt(u.flowFromSi(r.deliveredTotalFlow), flowDecimals(u))} ${u.flowLabel}', color: r.deliveredTotalFlow > r.totalFlow * 1.05 ? Cad.warning : null),
-            KV(t('gate.uniformity'), 'CU ${fmt(r.flowCu, 1)} % · ${t('gate.minOverMean')} ${fmt(r.minOverMeanFlow, 2)}', color: r.flowCu < 90 ? Cad.warning : null),
+            KV(t('gate.deliveredTotal'), '${fmtUi(u.flowFromSi(r.deliveredTotalFlow), flowDecimals(u))} ${u.flowLabel}', color: r.deliveredTotalFlow > r.totalFlow * 1.05 ? Cad.warning : null),
+            KV(t('gate.uniformity'), 'CU ${fmtUi(r.flowCu, 1)} % · ${t('gate.minOverMean')} ${fmtUi(r.minOverMeanFlow, 2)}', color: r.flowCu < 90 ? Cad.warning : null),
           ],
           KV(t('gate.friction'), pr(r.frictionLossM)),
           KV(t('gate.elevation'), pr(r.elevationGainM)),
-          KV(t('gate.velocity'), '${fmt(u.velocityFromSi(r.inletVelocity), 2)} ${u.velocityLabel}'),
+          KV(t('gate.velocity'), '${fmtUi(u.velocityFromSi(r.inletVelocity), 2)} ${u.velocityLabel}'),
           if (r.gates.isNotEmpty) ...[
             SectionTitle(t('gate.gates')),
             resultTable(
@@ -632,14 +635,14 @@ Future<void> showGatedPipeCalculator(BuildContext context, ProjectController c) 
                 for (final g in r.gates)
                   [
                     '${g.index}',
-                    fmt(u.lengthFromSi(g.distanceM), 2),
+                    fmtUi(u.lengthFromSi(g.distanceM), 2),
                     q(g.pipeFlow),
-                    fmt(u.pressureFromHead(g.headM), pd),
+                    fmtUi(u.pressureFromHead(g.headM), pd),
                     q(g.targetFlow),
-                    fmt(inch ? g.areaMm2 / 645.16 : g.areaMm2, inch ? 3 : 0),
+                    fmtUi(inch ? g.areaMm2 / 645.16 : g.areaMm2, inch ? 3 : 0),
                     dia(g.diameterMm),
                     g.holeMm > 0 ? dia(g.holeMm) : '-',
-                    g.holeMm > 0 ? fmt(g.openingPct, 0) : '-',
+                    g.holeMm > 0 ? fmtUi(g.openingPct, 0) : '-',
                     g.holeMm > 0 ? q(g.fullFlow) : '-',
                     if (r.fixedHoles) q(g.deliveredFlow),
                   ],

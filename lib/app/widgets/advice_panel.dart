@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/advisor.dart';
 import '../../core/design/auto_fix.dart';
-import '../../core/units.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import 'fields.dart' show fmtUi; // 1.6.0 UI (UI-08)
 import 'dialogs/ai_assistant_dialog.dart' show askAiAboutAdvice;
 import 'dialogs/terrain_dialogs.dart' show dialogWidth;
 import 'reports_panel.dart' show toolNameOfEntity;
@@ -200,7 +200,7 @@ class _AdviceCardState extends State<AdviceCard> {
     final t = c.t;
     final a = widget.advice;
     final color = adviceColor(a.level);
-    final reach = fmt(connectReach(c.project), 1);
+    final reach = fmtUi(connectReach(c.project), 1);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
@@ -371,7 +371,7 @@ Future<void> showAutoFixDialog(BuildContext context, ProjectController c) async 
                             Navigator.pop(ctx);
                             c.applyAdviceFix(a, a.fixes.first);
                           },
-                          child: Text(t('fix.${a.fixes.first.name}', {'d': fmt(connectReach(c.project), 1)}), style: const TextStyle(fontSize: 11.5)),
+                          child: Text(t('fix.${a.fixes.first.name}', {'d': fmtUi(connectReach(c.project), 1)}), style: const TextStyle(fontSize: 11.5)),
                         ),
                       ],
                     ),
@@ -465,7 +465,7 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
   if (report == null || !context.mounted) return;
   final r = report;
   final cur = c.project.params.currency;
-  String money(double v) => '$cur ${fmt(v, 0)}';
+  String money(double v) => '$cur ${fmtUi(v, 0)}';
   TableRow row(String label, String before, String after, {bool better = false}) => TableRow(
     children: [
       Padding(
