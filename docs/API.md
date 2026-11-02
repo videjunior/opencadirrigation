@@ -47,6 +47,7 @@ only the Dart SDK (`test/guards/engine_package_test.dart` checks that every libr
 ```sh
 dart tool/engine_package.dart build/engine
 cd build/engine && dart pub get && dart run bin/oci.dart --help
+dart compile exe bin/oci.dart -o oci   # one executable, no SDK needed to run it
 ```
 
 Another Dart package then depends on it by path (`opencadirrigation: {path: ../build/engine}`).

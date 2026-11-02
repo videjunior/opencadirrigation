@@ -49,6 +49,7 @@ está nele):
 ```sh
 dart tool/engine_package.dart build/engine
 cd build/engine && dart pub get && dart run bin/oci.dart --help
+dart compile exe bin/oci.dart -o oci   # um executável, que roda sem o SDK
 ```
 
 Outro pacote Dart então depende dele por caminho (`opencadirrigation: {path: ../build/engine}`).
