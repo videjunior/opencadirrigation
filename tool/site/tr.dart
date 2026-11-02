@@ -147,7 +147,10 @@ const _tr = SiteText(
       'Çevrimdışı çalışır mı?',
       'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 20 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
     ),
-    ('Projelerim bulutta mı saklanıyor?', faqCloudAnswerEn),
+    (
+      'Projelerim bulutta mı saklanıyor?',
+      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde sakladığınız .oci.json dosyaları olarak kaydedilir; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey yüklenmez ve OpenCADIrrigation’ın kopya saklayabilecek bir sunucusu yoktur. Her yazı sisteminin ve simgenin yazı tipleri bu sitenin kendisinden gelir. Tarayıcı yine de başka hizmetlere bağlanır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, adres arama, URL’den yüklenen kataloglar ve kullanırsanız yapay zekâ asistanı (yalnızca seçtiğiniz sağlayıcı, Anthropic veya OpenAI) siz kullandığınızda kendi hizmetlerine bağlanır; sitenin sayfaları da ziyaretleri yalnızca kabul ederseniz Google Analytics ile sayar, uygulama açıkken asla saymaz. Gizlilik politikası her hizmeti ve neyi aldığını listeler.',
+    ),
     (
       'Hidrolik hesap nasıl yapılır?',
       'Sürtünme kayıpları Hazen-Williams, Darcy-Weisbach, Scobey veya Manning ile, damlatıcılar q = k·Hˣ ile hesaplanır ve tüm şebeke EPANET’in yöntemi olan Global Gradient Algorithm ile çözülür. Borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde doğrusal programlamayla boyutlandırılır; ayrıca üniformite (CU, DU, EU), yıkama ve karakteristikler yöntemiyle geçici rejimler (vana kapanması, ani pompa durması, hava tahliye vanaları) kontrol edilir, basınçların ve enerji maliyetinin 24 saatlik simülasyonu da yapılır.',
@@ -172,4 +175,78 @@ const _tr = SiteText(
   notFoundTitle: 'Sayfa bulunamadı',
   notFoundText: 'Bu adres sitede yok. OpenCADIrrigation tek bir uygulamadır; ana sayfadan açın.',
   notFoundHome: 'OpenCADIrrigation’a git',
+);
+
+const _legalTr = LegalText(
+  privacyTitle: 'Gizlilik politikası',
+  privacyLead: 'OpenCADIrrigation’ın neyi sakladığı, neyi gönderdiği ve kime gönderdiği, sade bir dille.',
+  privacy: [
+    LegalSection('Sorumlu kim', [
+      'opencadirrigation.com sitesi ve OpenCADIrrigation uygulaması, bu sayfada açıklanan kişisel verilerin veri sorumlusu olan OpenCADIrrigation bakımcısı tarafından yayımlanır.',
+      'İletişim: projenin deposunda bir issue açın ([github.com/videjunior/opencadirrigation/issues]($contactUrl)). Herkese açık olmaması gereken bir konu için, issue’ya kişisel veri yazmadan, orada özel bir iletişim kanalı isteyin.',
+    ]),
+    LegalSection('Kısaca', [
+      '- Uygulamanın arkasında OpenCADIrrigation’a ait ne bir hesap ne de bir sunucu vardır: projeler, otomatik kayıtlar, sürümler, yapay zekâ sohbetleri, anahtarlar ve tercihler tarayıcınızda ve kaydettiğiniz dosyalarda kalır.',
+      '- Ziyaret istatistikleri (Google Analytics) yalnızca sitenin sayfalarında, yalnızca kabul ederseniz toplanır ve uygulama açıkken asla toplanmaz.',
+      '- Uygulamanın yazı tipleri, haritalar, arazi, iklim, adres arama ve yapay zekâ asistanı için kullandığı hizmetler, siz kullandığınızda isteklerinizi doğrudan tarayıcınızdan alır.',
+    ]),
+    LegalSection('Cihazınızda kalanlar', [
+      'Otomatik kayıt, son projeler, her projenin son 10 sürümü, en son 24 yapay zekâ sohbeti (resimleri ve küçük ekleriyle), hatırlanmasını seçtiğiniz API anahtarları, Google Maps anahtarı, arayüz dili, tema ve diğer tercihler tarayıcınızın depolama alanında (localStorage ve IndexedDB) saklanır; uygulamanın bir kopyası da çevrimdışı açılabilmesi için tarayıcının önbelleğinde durur. Bunları başka hiç kimse almaz ve bizde kopyaları yoktur.',
+      'Siz silene kadar kalırlar: asistanın ayarlarındaki “Sohbetleri bu tarayıcıda sakla” seçeneğini kapatmak sohbetlerin saklanmasını durdurur ve onları siler; tarayıcıda site verilerini temizlemek ise her şeyi siler. Tarayıcı, yer azaldığında veya Safari’de birkaç hafta ziyaret edilmediğinde bunları kendiliğinden de silebilir; bu yüzden projelerinizi .oci.json dosyaları olarak saklayın.',
+      'Paylaşım bağlantısı projeyi adresin içinde, tarayıcıların hiçbir sunucuya göndermediği # işaretinden sonra taşır.',
+    ]),
+    LegalSection('Ziyaret istatistikleri ve çerezler', [
+      'Sitenin bildiriminde kabul ederseniz sitenin sayfaları Google Analytics 4’ü yükler; bu hizmet _ga ve _ga_<id> çerezlerini yerleştirir (en fazla iki yıl kalırlar) ve görüntülenen sayfaları, ziyaretin saatini, sizi getiren sayfayı, cihaz ve tarayıcı türünü, ekran boyutunu, dili ve Google’ın IP adresinden çıkardığı yaklaşık konumu kaydeder (Google Analytics 4 IP adresini saklamaz).',
+      'Amaç: siteyi iyileştirmek için kaç kişinin siteyi ziyaret ettiğini ve hangi sayfaları ve dilleri kullandığını bilmek. Hukuki dayanak: açık rızanız. Veriler Google Analytics’te ayarlanan saklama süresi boyunca, en fazla 14 ay saklanır.',
+      'Reddederseniz veya yanıt vermezseniz hiçbir şey yüklenmez ve hiçbir şey sayılmaz. Seçiminizi istediğiniz zaman sayfaların altındaki Çerez ayarları ile değiştirebilirsiniz; reddetmek sitenin istatistik çerezlerini siler.',
+      'İstatistikler, projelerinizi ve anahtarlarınızı tutan sayfa olan uygulama açıkken asla çalışmaz. Google Analytics, kendi koşullarına ve gizlilik politikasına tabi bir Google hizmetidir; veriler Amerika Birleşik Devletleri’nde ve başka ülkelerde işlenebilir.',
+    ]),
+    LegalSection('Barındırma', [
+      'Site Firebase Hosting (Google) tarafından sunulur; bu hizmet sayfaları iletmek ve hizmeti korumak için her isteğin IP adresini ve teknik verilerini (istenen adres, tarayıcı, saat) alır. Hukuki dayanak: siteyi güvenli biçimde işletmekteki meşru menfaat. Bu veriler başka hiçbir amaçla kullanılmaz.',
+      'Uygulama ve her yazı sisteminin ve simgenin yazı tipleri dahil (Çince, Japonca, Arapça ve Hint yazıları, oklar, emoji) tüm yazı tipleri de bu siteden gelir: hiçbir yazı tipi hizmetine bağlanılmaz.',
+    ]),
+    LegalSection('Kullandığınızda tarayıcınızın bağlandığı hizmetler', [
+      '- Altlık haritalar: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (kendi anahtarınızla) veya ayarladığınız adres, IP adresini ve ekrandaki harita alanını alır.',
+      '- Çevrimiçi yükseklik ve iklim: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData ve NASA POWER alanın koordinatlarını alır, projeden başka hiçbir şey almaz.',
+      '- Adres arama: Nominatim (OpenStreetMap) yazdığınız adresi alır.',
+      '- URL’den yüklenen kataloglar: o adresin sunucusu.',
+      '- Yapay zekâ asistanı (isteğe bağlı): kendi anahtarınızla Anthropic veya OpenAI. Gönder’e basmadan hiçbir şey gönderilmez; bastığınızda iletiniz, eklediğiniz dosyalar, işaretlediğiniz proje verileri, önceki iletiler ve asistan çalışırken kullandığı araçların sonuçları (çizimin resimleri dahil) gider. O şirketin bunlarla ne yapacağını onunla yaptığınız sözleşme belirler ve kullanım ücretini şirket hesabınıza yansıtır.',
+      '- Sesle dikte: tarayıcının konuşma tanıma özelliği sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple).',
+      'Bu hizmetlerin her birinin kendi gizlilik politikası vardır ve verileri ülkenizin dışında işleyebilir.',
+    ]),
+    LegalSection('Haklarınız', [
+      'Brezilya’da LGPD, Avrupa Birliği’nde ve Birleşik Krallık’ta GDPR ve benzeri yasalar uyarınca kişisel verilerinizin işlenip işlenmediğinin doğrulanmasını, verilerinize erişimi, bunların düzeltilmesini ve silinmesini ve paylaşımı hakkında bilgi isteyebilir, bir işlemeye itiraz edebilir ve rızanızı geri çekebilirsiniz.',
+      'Sizi adınızla tanımlayan hiçbir veri tutmuyoruz: istatistikler takma adlıdır, geri kalan her şey sizin denetiminizde, tarayıcınızdadır. Her türlü talep için yukarıdaki iletişim yolunu kullanın. Veri koruma otoritenize de şikâyette bulunabilirsiniz (Türkiye’de Kişisel Verileri Koruma Kurumu, Brezilya’da ANPD).',
+    ]),
+    LegalSection('Değişiklikler', ['Bu politika değiştiğinde sayfanın altındaki tarih de değişir.']),
+  ],
+  termsTitle: 'Kullanım koşulları',
+  termsLead: 'OpenCADIrrigation özgür bir yazılımdır. Onu kullanmak bu koşulları kabul etmek demektir.',
+  terms: [
+    LegalSection('Yazılım', [
+      'OpenCADIrrigation, MIT lisansı ([opensource.org/license/mit]($licenseUrl)) altında özgür ve açık kaynaklı bir yazılımdır. Onu profesyonel ve ticari işler dahil her amaçla kullanabilir, bu lisans kapsamında kopyalayabilir, değiştirebilir ve dağıtabilirsiniz. Ücret de hesap da yoktur.',
+    ]),
+    LegalSection('Bir tasarım yardımcısı: tasarımı uzman imzalar', [
+      'Uygulama sulama sistemlerini çizmeye, hesaplamaya ve belgelemeye yardım eder. Sonuçları (boru çapları, basınçlar, debiler, düzgünlük, programlar, malzeme listeleri, teklifler ve raporlar ile yapay zekâ asistanının yaptığı iş) girdiğiniz verilere, katalog ve saha verilerine ve gerçeği basitleştiren modellere bağlıdır ve hata içerebilir.',
+      'Kullanmadan önce bunları kontrol edin. Uygulamayla yapılan bir tasarım, yerel mevzuatın gerektirdiği şekilde teknik sorumluluğunu üstlenen yetkin bir uzman tarafından gözden geçirilmeli, onaylanmalı ve imzalanmalıdır (Brezilya’da ilgili ART, yani teknik sorumluluk kaydıyla).',
+    ]),
+    LegalSection('Garanti yoktur', [
+      'Yazılım, ticari elverişlilik, belirli bir amaca uygunluk ve hak ihlali bulunmaması garantileri dahil, açık veya örtük hiçbir garanti olmaksızın “olduğu gibi” sağlanır. Yazarlar veya telif hakkı sahipleri, yazılımdan veya kullanımından doğan hiçbir talep, zarar veya başka bir yükümlülükten hiçbir durumda sorumlu tutulamaz (MIT lisansının koşulları).',
+    ]),
+    LegalSection('Başkalarının verileri ve hizmetleri', [
+      'Haritalar, görüntüler, yükseklik, iklim, adres arama ve üretici katalogları, kendi koşulları ve lisanslarıyla üçüncü taraflardan gelir (uygulamada Yardım → Hakkında’ya bakın). Katalog verileri yayımlanmış tablolardan alınır ve güncelliğini yitirmiş olabilir: satın almadan önce modelleri, eğrileri ve fiyatları güncel veri sayfalarıyla doğrulayın.',
+      'Profesyonel işlerde her kaynağı kendi koşulları içinde kullanın: uygulamadaki Yardım → Veri kullanım koşulları, her birinin ücretsiz kullanımının neye izin verdiğini söyler. Bazı ücretsiz hizmetler yalnızca ticari olmayan kullanım içindir (ücretsiz Open-Meteo hizmetleri ve CARTO altlık haritaları); bu yüzden uygulama varsayılan olarak iklimi NASA POWER’dan, yüksekliği Terrain Tiles’tan indirir. OpenStreetMap Vakfı’nın karo sunucusu yoğun kullanımı ve çevrimdışı kullanım için alan indirmeyi yasaklar; bu yüzden arazi için saklanan harita yalnızca daha önce gösterilmiş karoları kullanır. Paftalar, PDF’ler ve rapor her kaynağın atfını taşır: işi teslim ederken veya yayımlarken bunu koruyun.',
+      'İsteğe bağlı yapay zekâ asistanı, Anthropic veya OpenAI’daki kendi hesabınızla, o şirketin koşulları altında çalışır ve kullanımı o şirket faturalandırır. Bir model yanılabilir: önerdiği değişiklikleri bilerek onaylayın ve yaptığı işi kontrol edin.',
+    ]),
+    LegalSection('İçeriğiniz', ['Projeleriniz, çizimleriniz, görüntüleriniz ve dosyalarınız size aittir: bunlardan ve içe aktardıklarınızı kullanma hakkına sahip olmaktan siz sorumlusunuz.']),
+    LegalSection('İletişim', ['Sorular ve sorunlar: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Verilerinizin nasıl işlendiği: gizlilik politikası.']),
+  ],
+  privacyLink: 'Gizlilik',
+  termsLink: 'Kullanım koşulları',
+  cookieSettings: 'Çerez ayarları',
+  consentText: 'Bu site ziyaretleri Google Analytics ile sayabilir mi? Çerez kullanır ve yalnızca kabul ederseniz yüklenir; uygulama açıkken asla çalışmaz.',
+  consentAccept: 'Kabul et',
+  consentDecline: 'Reddet',
+  updated: 'Son güncelleme',
+  home: 'OpenCADIrrigation’a git',
 );

@@ -1,10 +1,10 @@
 part of '../site.dart';
 
 // The privacy policy, the terms of use and the consent notice of the site.
-// Portuguese, English and Spanish are written here; every other language
-// shows the English text until it is translated: its pages then say
-// lang="en", are not indexed and name the English page as canonical, and
-// the notice and the footer links of its entry page are in English too.
+// Portuguese, English and Spanish are written here, the other 17 languages
+// at the end of their tool/site/<code>.dart. A language without its own
+// text would show the English one: its pages would then say lang="en", not
+// be indexed and name the English page as canonical.
 // The controller is "the maintainer of OpenCADIrrigation", reached through
 // the issues of the repository.
 
@@ -80,7 +80,7 @@ const _legalEn = LegalText(
       '- The services the app uses for fonts, maps, terrain, climate, address search and the AI assistant receive your requests straight from your browser when you use them.',
     ]),
     LegalSection('What stays on your device', [
-      'The autosave, the recent projects, the last 10 versions of each project, the 12 most recent AI conversations of each project (with their pictures and small attachments), the API keys you choose to remember, the Google Maps key, the interface language, the theme and the other preferences are kept in your browser\'s storage (localStorage and IndexedDB), and a copy of the app in its cache, so that it starts offline. Nobody else receives them, and we have no copy.',
+      'The autosave, the recent projects, the last 10 versions of each project, the 24 most recent AI conversations (with their pictures and small attachments), the API keys you choose to remember, the Google Maps key, the interface language, the theme and the other preferences are kept in your browser\'s storage (localStorage and IndexedDB), and a copy of the app in its cache, so that it starts offline. Nobody else receives them, and we have no copy.',
       'They stay until you delete them: Keep conversations in this browser, in the assistant\'s settings, turns the conversations off and deletes them, and clearing the site data in the browser deletes everything. A browser may also delete them by itself when space runs short or, in Safari, after some weeks without a visit, so keep your projects as .oci.json files.',
       'A share link carries the project inside the address, after the #, which browsers do not send to any server.',
     ]),
@@ -154,7 +154,7 @@ const _legalPt = LegalText(
       '- Os serviços que o app usa para fontes, mapas, terreno, clima, busca de endereços e o assistente de IA recebem os pedidos direto do seu navegador quando você os usa.',
     ]),
     LegalSection('O que fica no seu aparelho', [
-      'O autossalvamento, os projetos recentes, as 10 últimas versões de cada projeto, as 12 conversas mais recentes da IA de cada projeto (com as imagens e os anexos pequenos), as chaves de API que você escolher lembrar, a chave do Google Maps, o idioma, o tema e as demais preferências ficam no armazenamento do navegador (localStorage e IndexedDB), e uma cópia do app fica no cache dele, para abrir sem internet. Ninguém mais os recebe, e nós não temos cópia.',
+      'O autossalvamento, os projetos recentes, as 10 últimas versões de cada projeto, as 24 conversas mais recentes da IA (com as imagens e os anexos pequenos), as chaves de API que você escolher lembrar, a chave do Google Maps, o idioma, o tema e as demais preferências ficam no armazenamento do navegador (localStorage e IndexedDB), e uma cópia do app fica no cache dele, para abrir sem internet. Ninguém mais os recebe, e nós não temos cópia.',
       'Eles ficam até você apagá-los: Guardar as conversas neste navegador, nas configurações do assistente, desliga e apaga as conversas, e limpar os dados do site no navegador apaga tudo. O navegador também pode apagá-los sozinho quando falta espaço ou, no Safari, depois de algumas semanas sem visita; por isso guarde os projetos em arquivos .oci.json.',
       'Um link de compartilhamento leva o projeto dentro do endereço, depois do #, que os navegadores não enviam a nenhum servidor.',
     ]),
@@ -228,7 +228,7 @@ const _legalEs = LegalText(
       '- Los servicios que la aplicación usa para fuentes, mapas, terreno, clima, búsqueda de direcciones y el asistente de IA reciben las peticiones directamente desde su navegador cuando usted los usa.',
     ]),
     LegalSection('Lo que queda en su dispositivo', [
-      'El guardado automático, los proyectos recientes, las 10 últimas versiones de cada proyecto, las 12 conversaciones más recientes de la IA de cada proyecto (con sus imágenes y adjuntos pequeños), las claves de API que decida recordar, la clave de Google Maps, el idioma, el tema y las demás preferencias se guardan en el almacenamiento del navegador (localStorage e IndexedDB), y una copia de la aplicación en su caché, para abrir sin conexión. Nadie más los recibe, y nosotros no tenemos copia.',
+      'El guardado automático, los proyectos recientes, las 10 últimas versiones de cada proyecto, las 24 conversaciones más recientes de la IA (con sus imágenes y adjuntos pequeños), las claves de API que decida recordar, la clave de Google Maps, el idioma, el tema y las demás preferencias se guardan en el almacenamiento del navegador (localStorage e IndexedDB), y una copia de la aplicación en su caché, para abrir sin conexión. Nadie más los recibe, y nosotros no tenemos copia.',
       'Se conservan hasta que usted los borre: Guardar las conversaciones en este navegador, en los ajustes del asistente, desactiva y borra las conversaciones, y borrar los datos del sitio en el navegador lo elimina todo. El navegador también puede borrarlos por sí solo cuando falta espacio o, en Safari, tras algunas semanas sin visitas; por eso guarde sus proyectos en archivos .oci.json.',
       'Un enlace para compartir lleva el proyecto dentro de la dirección, después del #, que los navegadores no envían a ningún servidor.',
     ]),
@@ -288,7 +288,29 @@ const _legalEs = LegalText(
   home: 'Ir a OpenCADIrrigation',
 );
 
-const _legalTexts = {'pt': _legalPt, 'en': _legalEn, 'es': _legalEs};
+const _legalTexts = {
+  'pt': _legalPt,
+  'en': _legalEn,
+  'es': _legalEs,
+  // 1.6.0: the other 17 languages, written in tool/site/<code>.dart
+  'zh': _legalZh,
+  'hi': _legalHi,
+  'ar': _legalAr,
+  'fr': _legalFr,
+  'bn': _legalBn,
+  'ru': _legalRu,
+  'ur': _legalUr,
+  'id': _legalId,
+  'de': _legalDe,
+  'ja': _legalJa,
+  'mr': _legalMr,
+  'vi': _legalVi,
+  'te': _legalTe,
+  'ha': _legalHa,
+  'tr': _legalTr,
+  'pa': _legalPa,
+  'sw': _legalSw,
+};
 
 /// Whether [code] has its own legal texts; the other languages show the
 /// English ones until they are translated.

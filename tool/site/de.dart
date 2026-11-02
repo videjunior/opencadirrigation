@@ -39,7 +39,7 @@ const _de = SiteText(
     ),
     (
       'Automatischer Entwurf und Dimensionierung',
-      'Lateralblöcke und Regnerraster mit einem Klick, Regneranordnung mit angepasster Niederschlagsrate, Zoneneinteilung nach Durchfluss, Verlegung von Rohren und Ventilen, Aufteilung von Feldern in Blöcke, Einpassen von Pivots und Vegetationserkennung in Luftbildern; Rohrdimensionierung per linearer Optimierung unter Einhaltung des Druckfensters der Emitter und der Druckstufe der Rohre, mit Abwägung zwischen Rohr- und Energiekosten.',
+      'Lateralblöcke und Regnerraster mit einem Klick, Regneranordnung mit angepasster Niederschlagsrate, Zoneneinteilung nach Durchfluss, Verlegung von Rohren und Ventilen, Aufteilung von Feldern in Blöcke, Einpassen von Pivots und Vegetationserkennung in Luftbildern; Rohrdimensionierung per linearer Optimierung unter Einhaltung des Druckfensters der Auslässe und der Druckstufe der Rohre, mit Abwägung zwischen Rohr- und Energiekosten.',
     ),
     (
       'Vollwertiges CAD',
@@ -47,11 +47,11 @@ const _de = SiteText(
     ),
     (
       'Hydraulisches Netz',
-      'Wasserquellen, Pumpen mit fester und variabler Drehzahl, Hauptleitung, Zonen-, Druckminder-, Druckhalte- und Durchflussregelventile, Regner mit integriertem Ventil, Laterale mit Emittern, Tropfbänder, Filter und Wasserzähler, dazu Center-Pivots und Linearanlagen mit ihrem Regnerpaket, Schlauchtrommelmaschinen und Oberflächenbewässerung.',
+      'Wasserquellen, Pumpen mit fester und variabler Drehzahl, Hauptleitung, Zonen-, Druckminder-, Druckhalte- und Durchflussregelventile, Regner mit integriertem Ventil, Laterale mit Auslässen, Tropfbänder, Filter und Wasserzähler, dazu Center-Pivots und Linearanlagen mit ihrem Regnerpaket, Schlauchtrommelmaschinen und Oberflächenbewässerung.',
     ),
     (
       'Validierte Hydraulik',
-      'Hazen-Williams, Darcy-Weisbach, Scobey und Manning, Einzelverluste der verwendeten Formteile, Emitter q = k·Hˣ, Netzberechnung mit dem Global Gradient Algorithm (wie in EPANET), Pumpenkennlinien mit NPSH, Druckstoßberechnung nach dem Charakteristikenverfahren mit Be-/Entlüftungsventilen und eine 24-Stunden-Simulation mit Energietarifen.',
+      'Hazen-Williams, Darcy-Weisbach, Scobey und Manning, Einzelverluste der verwendeten Formteile, Auslässe q = k·Hˣ, Netzberechnung mit dem Global Gradient Algorithm (wie in EPANET), Pumpenkennlinien mit NPSH, Druckstoßberechnung nach dem Charakteristikenverfahren mit Be-/Entlüftungsventilen und eine 24-Stunden-Simulation mit Energietarifen.',
     ),
     (
       'Gelände, Klima und Agronomie',
@@ -59,7 +59,7 @@ const _de = SiteText(
     ),
     (
       'Berichte, Pläne und Material',
-      'Zonen, Rohre, Emitter, Gleichmäßigkeit (CU, DU, EU), Programm des Steuergeräts und Ventilverkabelung; Stückliste mit Formteilen und Angebot mit Arbeitskosten, Steuern und Amortisationszeit; PDF-Plansätze mit Baudetails und Diagrammen in jeder der 20 Sprachen und alle Tabellen als Excel-, CSV- und TXT-Datei.',
+      'Zonen, Rohre, Auslässe, Gleichmäßigkeit (CU, DU, EU), Programm des Steuergeräts und Ventilverkabelung; Stückliste mit Formteilen und Angebot mit Arbeitskosten, Steuern und Amortisationszeit; PDF-Plansätze mit Baudetails und Diagrammen in jeder der 20 Sprachen und alle Tabellen als Excel-, CSV- und TXT-Datei.',
     ),
     (
       'Datenaustausch',
@@ -154,10 +154,13 @@ const _de = SiteText(
       'Funktioniert es offline?',
       'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 20 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
     ),
-    ('Werden meine Projekte in der Cloud gespeichert?', faqCloudAnswerEn),
+    (
+      'Werden meine Projekte in der Cloud gespeichert?',
+      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie aufbewahren, wo Sie möchten; ein Freigabelink trägt das Projekt in der Adresse selbst, sodass nichts hochgeladen wird, und OpenCADIrrigation hat keinen Server, der eine Kopie aufbewahren könnte. Die Schriften für alle Schriftsysteme und Symbole kommen von dieser Website selbst. Andere Dienste erreicht der Browser durchaus: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, Adresssuche, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent (nur der von Ihnen gewählte Anbieter, Anthropic oder OpenAI) wenden sich an ihre Dienste, wenn Sie sie verwenden; und die Seiten der Website zählen Besuche mit Google Analytics nur, wenn Sie zustimmen, nie während die App geöffnet ist. Die Datenschutzerklärung nennt jeden Dienst und was er erhält.',
+    ),
     (
       'Wie wird die Hydraulik berechnet?',
-      'Reibungsverluste nach Hazen-Williams, Darcy-Weisbach, Scobey oder Manning, Emitter nach q = k·Hˣ und das gesamte Netz mit dem Global Gradient Algorithm, dem Verfahren von EPANET. Die Rohrdurchmesser werden per linearer Optimierung innerhalb des Druckfensters der Emitter und der Druckstufe der Rohre bestimmt; außerdem prüft die Berechnung Gleichmäßigkeit (CU, DU, EU), Spülung und Druckstöße nach dem Charakteristikenverfahren (Ventilschließung, Pumpenausfall, Be-/Entlüftungsventile), mit einer 24-Stunden-Simulation von Drücken und Energiekosten.',
+      'Reibungsverluste nach Hazen-Williams, Darcy-Weisbach, Scobey oder Manning, Auslässe nach q = k·Hˣ und das gesamte Netz mit dem Global Gradient Algorithm, dem Verfahren von EPANET. Die Rohrdurchmesser werden per linearer Optimierung innerhalb des Druckfensters der Auslässe und der Druckstufe der Rohre bestimmt; außerdem prüft die Berechnung Gleichmäßigkeit (CU, DU, EU), Spülung und Druckstöße nach dem Charakteristikenverfahren (Ventilschließung, Pumpenausfall, Be-/Entlüftungsventile), mit einer 24-Stunden-Simulation von Drücken und Energiekosten.',
     ),
     (
       'Funktioniert es mit anderen CAD-Programmen?',
@@ -179,4 +182,78 @@ const _de = SiteText(
   notFoundTitle: 'Seite nicht gefunden',
   notFoundText: 'Diese Adresse gibt es auf dieser Website nicht. OpenCADIrrigation ist eine einzige Anwendung; öffnen Sie sie über die Startseite.',
   notFoundHome: 'Zu OpenCADIrrigation',
+);
+
+const _legalDe = LegalText(
+  privacyTitle: 'Datenschutzerklärung',
+  privacyLead: 'Was OpenCADIrrigation speichert, was es sendet und an wen, in einfachen Worten.',
+  privacy: [
+    LegalSection('Wer verantwortlich ist', [
+      'Die Website opencadirrigation.com und die App OpenCADIrrigation werden vom Maintainer von OpenCADIrrigation veröffentlicht, der Verantwortlicher für die auf dieser Seite beschriebenen personenbezogenen Daten ist.',
+      'Kontakt: Eröffnen Sie ein Issue im Repository des Projekts ([github.com/videjunior/opencadirrigation/issues]($contactUrl)). Für ein Anliegen, das nicht öffentlich sein sollte, bitten Sie dort um einen privaten Kanal, ohne personenbezogene Daten in das Issue zu schreiben.',
+    ]),
+    LegalSection('Kurz gesagt', [
+      '- Hinter der App stehen weder ein Konto noch ein Server von OpenCADIrrigation: Projekte, automatische Speicherungen, Versionen, KI-Unterhaltungen, Schlüssel und Einstellungen bleiben in Ihrem Browser und in den Dateien, die Sie speichern.',
+      '- Besuchsstatistiken (Google Analytics) werden nur auf den Seiten der Website erhoben, nur wenn Sie zustimmen, und nie, während die App geöffnet ist.',
+      '- Die Dienste, die die App für Schriften, Karten, Gelände, Klima, Adresssuche und den KI-Assistenten nutzt, erhalten Ihre Anfragen direkt von Ihrem Browser, wenn Sie sie verwenden.',
+    ]),
+    LegalSection('Was auf Ihrem Gerät bleibt', [
+      'Die automatische Speicherung, die zuletzt geöffneten Projekte, die letzten 10 Versionen jedes Projekts, die 24 neuesten KI-Unterhaltungen (mit ihren Bildern und kleinen Anhängen), die API-Schlüssel, die Sie sich merken lassen, der Google-Maps-Schlüssel, die Sprache der Oberfläche, das Design und die übrigen Einstellungen werden im Speicher Ihres Browsers abgelegt (localStorage und IndexedDB), und eine Kopie der App in seinem Cache, damit sie offline startet. Niemand sonst erhält sie, und wir haben keine Kopie.',
+      'Sie bleiben, bis Sie sie löschen: „Gespräche in diesem Browser behalten“ in den Einstellungen des Assistenten schaltet die Unterhaltungen ab und löscht sie, und das Löschen der Websitedaten im Browser löscht alles. Ein Browser kann sie auch von selbst löschen, wenn der Platz knapp wird, oder, in Safari, nach einigen Wochen ohne Besuch; bewahren Sie Ihre Projekte daher als .oci.json-Dateien auf.',
+      'Ein Freigabelink trägt das Projekt in der Adresse, nach dem #, den Browser an keinen Server senden.',
+    ]),
+    LegalSection('Besuchsstatistiken und Cookies', [
+      'Wenn Sie im Hinweis der Website zustimmen, laden die Seiten der Website Google Analytics 4, das die Cookies _ga und _ga_<id> setzt (sie bestehen bis zu zwei Jahre) und die aufgerufenen Seiten, den Zeitpunkt des Besuchs, die verweisende Seite, die Art von Gerät und Browser, die Bildschirmgröße, die Sprache und einen ungefähren Standort erfasst, den Google aus der IP-Adresse ableitet (Google Analytics 4 speichert die IP-Adresse nicht).',
+      'Zweck: zu wissen, wie viele Menschen die Website besuchen und welche Seiten und Sprachen sie nutzen, um sie zu verbessern. Rechtsgrundlage: Ihre Einwilligung. Die Daten werden für die in Google Analytics eingestellte Aufbewahrungsdauer gespeichert, höchstens 14 Monate.',
+      'Wenn Sie ablehnen oder nicht antworten, wird nichts geladen und nichts gezählt. Sie können Ihre Wahl jederzeit mit Cookie-Einstellungen am Fuß der Seiten ändern; die Ablehnung löscht die Statistik-Cookies der Website.',
+      'Die Statistik läuft nie, während die App geöffnet ist, die Seite mit Ihren Projekten und Schlüsseln. Google Analytics ist ein Dienst von Google mit eigenen Bedingungen und eigener Datenschutzerklärung, und die Daten können in den Vereinigten Staaten und in anderen Ländern verarbeitet werden.',
+    ]),
+    LegalSection('Hosting', [
+      'Die Website wird über Firebase Hosting (Google) bereitgestellt, das die IP-Adresse und die technischen Daten jeder Anfrage (angefragte Adresse, Browser, Zeit) erhält, um die Seiten auszuliefern und den Dienst zu schützen. Rechtsgrundlage: das berechtigte Interesse am sicheren Betrieb der Website. Diese Daten werden für nichts anderes verwendet.',
+      'Die App und alle ihre Schriften, einschließlich derer für jedes Schriftsystem und jedes Symbol (chinesische, japanische, arabische und indische Schriften, Pfeile, Emoji), kommen ebenfalls von dieser Website: Es wird kein Schriftendienst kontaktiert.',
+    ]),
+    LegalSection('Dienste, die Ihr Browser kontaktiert, wenn Sie sie nutzen', [
+      '- Hintergrundkarten: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (mit Ihrem eigenen Schlüssel) oder die von Ihnen festgelegte Adresse erhalten die IP-Adresse und den Kartenausschnitt auf dem Bildschirm.',
+      '- Online-Geländehöhen und -Klima: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData und NASA POWER erhalten die Koordinaten des Gebiets, sonst nichts vom Projekt.',
+      '- Adresssuche: Nominatim (OpenStreetMap) erhält die Adresse, die Sie eingeben.',
+      '- Per URL geladene Kataloge: der Server dieser Adresse.',
+      '- KI-Assistent (optional): Anthropic oder OpenAI, mit Ihrem eigenen Schlüssel. Nichts wird gesendet, bevor Sie auf Senden drücken; dann Ihre Nachricht, die angehängten Dateien, die angehakten Projektdaten, die früheren Nachrichten und, während er arbeitet, die Ergebnisse der Werkzeuge, die er verwendet, einschließlich Bildern der Zeichnung. Ihre Vereinbarung mit diesem Unternehmen regelt, was es damit tut, und es rechnet über Ihr Konto ab.',
+      '- Sprachdiktat: Die Spracherkennung des Browsers sendet den Ton an den Hersteller des Browsers (Google bei Chrome, Microsoft bei Edge, Apple bei Safari).',
+      'Jeder dieser Dienste hat eine eigene Datenschutzerklärung und kann Daten außerhalb Ihres Landes verarbeiten.',
+    ]),
+    LegalSection('Ihre Rechte', [
+      'Nach der LGPD in Brasilien, der DSGVO in der Europäischen Union und im Vereinigten Königreich und ähnlichen Gesetzen können Sie Bestätigung, Auskunft, Berichtigung, Löschung und Informationen über die Weitergabe Ihrer personenbezogenen Daten verlangen, einer Verarbeitung widersprechen und Ihre Einwilligung widerrufen.',
+      'Wir speichern keine Daten, die Sie namentlich identifizieren: Die Statistik ist pseudonym, und alles andere liegt in Ihrem Browser, unter Ihrer Kontrolle. Für jedes Anliegen nutzen Sie den Kontakt oben. Sie können sich auch bei Ihrer Datenschutzaufsichtsbehörde beschweren (in Brasilien bei der ANPD).',
+    ]),
+    LegalSection('Änderungen', ['Wenn sich diese Erklärung ändert, ändert sich auch das Datum am Fuß der Seite.']),
+  ],
+  termsTitle: 'Nutzungsbedingungen',
+  termsLead: 'OpenCADIrrigation ist freie Software. Wer sie nutzt, akzeptiert diese Bedingungen.',
+  terms: [
+    LegalSection('Die Software', [
+      'OpenCADIrrigation ist freie Open-Source-Software unter der MIT-Lizenz ([opensource.org/license/mit]($licenseUrl)). Sie dürfen sie für jeden Zweck nutzen, auch für berufliche und kommerzielle Arbeit, und sie unter dieser Lizenz kopieren, ändern und weitergeben. Es gibt keine Gebühr und kein Konto.',
+    ]),
+    LegalSection('Eine Planungshilfe: Die Fachperson unterzeichnet die Planung', [
+      'Die App hilft, Bewässerungsanlagen zu zeichnen, zu berechnen und zu dokumentieren. Ihre Ergebnisse (Rohrdurchmesser, Drücke, Durchflüsse, Gleichmäßigkeit, Zeitpläne, Stücklisten, Angebote und Berichte sowie die Arbeit des KI-Assistenten) hängen von den eingegebenen Daten, von Katalog- und Standortdaten und von Modellen ab, die die Wirklichkeit vereinfachen, und sie können Fehler enthalten.',
+      'Prüfen Sie sie, bevor Sie sie verwenden. Eine mit der App erstellte Planung muss von einer qualifizierten Fachperson geprüft, freigegeben und unterzeichnet werden, die dafür die technische Verantwortung übernimmt, wie es das örtliche Recht verlangt (in Brasilien mit der entsprechenden ART, dem Nachweis der technischen Verantwortung).',
+    ]),
+    LegalSection('Keine Gewährleistung', [
+      'Die Software wird „wie besehen“ bereitgestellt, ohne jegliche ausdrückliche oder stillschweigende Gewährleistung, einschließlich der Gewährleistung der Marktgängigkeit, der Eignung für einen bestimmten Zweck und der Nichtverletzung von Rechten Dritter. In keinem Fall haften die Autoren oder Urheberrechtsinhaber für Ansprüche, Schäden oder sonstige Haftung, die sich aus der Software oder ihrer Nutzung ergeben (die Bedingungen der MIT-Lizenz).',
+    ]),
+    LegalSection('Daten und Dienste Dritter', [
+      'Karten, Luftbilder, Höhen, Klima, Adresssuche und die Herstellerkataloge stammen von Dritten, unter deren eigenen Bedingungen und Lizenzen (siehe Hilfe → Info in der App). Katalogdaten sind veröffentlichten Tabellen entnommen und können veraltet sein: Bestätigen Sie Modelle, Kennlinien und Preise vor dem Kauf anhand der aktuellen Datenblätter.',
+      'Nutzen Sie bei beruflicher Arbeit jede Quelle im Rahmen ihrer Bedingungen: Hilfe → Bedingungen der Daten in der App sagt, was die freie Nutzung jeder Quelle erlaubt. Einige kostenlose Dienste sind nur für nichtkommerzielle Nutzung bestimmt (die kostenlosen Dienste von Open-Meteo und die Hintergrundkarten von CARTO), daher lädt die App das Klima standardmäßig von NASA POWER und die Höhen von Terrain Tiles; der Kachelserver der OpenStreetMap Foundation verbietet intensive Nutzung und das Herunterladen von Gebieten zur Offline-Nutzung, daher verwendet die für das Feld gespeicherte Karte nur die bereits angezeigten Kacheln. Die Blätter, die PDFs und der Bericht tragen den Quellenvermerk jeder Quelle: Behalten Sie ihn bei, wenn Sie die Arbeit abgeben oder veröffentlichen.',
+      'Der optionale KI-Assistent läuft über Ihr eigenes Konto bei Anthropic oder OpenAI, unter den Bedingungen dieses Unternehmens, das die Nutzung abrechnet. Ein Modell kann sich irren: Genehmigen Sie die vorgeschlagenen Änderungen bewusst und prüfen Sie seine Arbeit.',
+    ]),
+    LegalSection('Ihre Inhalte', ['Ihre Projekte, Zeichnungen, Bilder und Dateien gehören Ihnen: Sie sind dafür verantwortlich und dafür, das Recht zu haben, das zu nutzen, was Sie importieren.']),
+    LegalSection('Kontakt', ['Fragen und Probleme: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Wie Ihre Daten behandelt werden: die Datenschutzerklärung.']),
+  ],
+  privacyLink: 'Datenschutz',
+  termsLink: 'Nutzungsbedingungen',
+  cookieSettings: 'Cookie-Einstellungen',
+  consentText: 'Darf diese Website Besuche mit Google Analytics zählen? Es verwendet Cookies und wird nur geladen, wenn Sie zustimmen; es läuft nie, während die App geöffnet ist.',
+  consentAccept: 'Akzeptieren',
+  consentDecline: 'Ablehnen',
+  updated: 'Zuletzt aktualisiert',
+  home: 'Zu OpenCADIrrigation',
 );

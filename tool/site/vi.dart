@@ -143,7 +143,10 @@ const _vi = SiteText(
       'Có dùng được ngoại tuyến không?',
       'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 20 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
     ),
-    ('Dự án của tôi có được lưu trên đám mây không?', faqCloudAnswerEn),
+    (
+      'Dự án của tôi có được lưu trên đám mây không?',
+      'Không. Dự án được lưu trong trình duyệt của bạn và dưới dạng tệp .oci.json mà bạn cất ở bất cứ đâu tùy ý; liên kết chia sẻ mang dự án ngay trong chính địa chỉ, nên không có gì được tải lên, và OpenCADIrrigation không có máy chủ nào có thể giữ bản sao. Phông chữ của mọi hệ chữ viết và ký hiệu đều lấy từ chính trang web này. Trình duyệt vẫn kết nối tới các dịch vụ khác: bản đồ nền, cao độ và khí hậu trực tuyến, tìm địa chỉ, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI (chỉ nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI) gửi yêu cầu tới dịch vụ của chúng khi bạn sử dụng; còn các trang của trang web chỉ đếm lượt truy cập bằng Google Analytics nếu bạn đồng ý, và không bao giờ khi ứng dụng đang mở. Chính sách quyền riêng tư liệt kê từng dịch vụ và những gì dịch vụ đó nhận được.',
+    ),
     (
       'Tính toán thủy lực được thực hiện thế nào?',
       'Tổn thất ma sát theo Hazen-Williams, Darcy-Weisbach, Scobey hoặc Manning, đầu tưới theo q = k·Hˣ và toàn bộ mạng được giải bằng Global Gradient Algorithm, phương pháp của EPANET. Đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống; thiết kế còn kiểm tra độ đồng đều (CU, DU, EU), xả rửa ống và nước va theo phương pháp đường đặc trưng (đóng van, bơm dừng đột ngột, van xả khí), kèm mô phỏng 24 giờ về áp suất và chi phí năng lượng.',
@@ -168,4 +171,78 @@ const _vi = SiteText(
   notFoundTitle: 'Không tìm thấy trang',
   notFoundText: 'Địa chỉ này không tồn tại trên trang web. OpenCADIrrigation là một ứng dụng duy nhất; hãy mở từ trang chủ.',
   notFoundHome: 'Đến OpenCADIrrigation',
+);
+
+const _legalVi = LegalText(
+  privacyTitle: 'Chính sách quyền riêng tư',
+  privacyLead: 'OpenCADIrrigation lưu gì, gửi gì và gửi cho ai, nói bằng lời đơn giản.',
+  privacy: [
+    LegalSection('Ai chịu trách nhiệm', [
+      'Trang web opencadirrigation.com và ứng dụng OpenCADIrrigation do người duy trì OpenCADIrrigation phát hành; người này là bên kiểm soát dữ liệu cá nhân được mô tả trên trang này.',
+      'Liên hệ: mở một issue trong kho mã nguồn của dự án ([github.com/videjunior/opencadirrigation/issues]($contactUrl)). Với vấn đề không nên công khai, hãy yêu cầu một kênh riêng tại đó, nhưng không ghi dữ liệu cá nhân trong issue.',
+    ]),
+    LegalSection('Tóm tắt', [
+      '- Không có tài khoản và không có máy chủ nào của OpenCADIrrigation đứng sau ứng dụng: dự án, bản tự động lưu, phiên bản, cuộc trò chuyện với AI, khóa và tùy chọn đều nằm trong trình duyệt của bạn và trong các tệp bạn lưu.',
+      '- Thống kê lượt truy cập (Google Analytics) chỉ được thu thập trên các trang của trang web, chỉ khi bạn đồng ý, và không bao giờ khi ứng dụng đang mở.',
+      '- Các dịch vụ mà ứng dụng dùng cho phông chữ, bản đồ, địa hình, khí hậu, tìm địa chỉ và trợ lý AI nhận yêu cầu trực tiếp từ trình duyệt của bạn khi bạn sử dụng chúng.',
+    ]),
+    LegalSection('Những gì nằm trên thiết bị của bạn', [
+      'Bản tự động lưu, các dự án gần đây, 10 phiên bản gần nhất của mỗi dự án, 24 cuộc trò chuyện AI gần nhất (kèm ảnh và tệp đính kèm nhỏ), các khóa API bạn chọn ghi nhớ, khóa Google Maps, ngôn ngữ giao diện, chủ đề và các tùy chọn khác được lưu trong bộ nhớ của trình duyệt (localStorage và IndexedDB), và một bản sao của ứng dụng nằm trong bộ nhớ đệm của trình duyệt để có thể khởi động khi ngoại tuyến. Không ai khác nhận được chúng, và chúng tôi không có bản sao nào.',
+      'Chúng được giữ cho đến khi bạn xóa: tùy chọn Giữ các cuộc trò chuyện trong trình duyệt này, trong phần cài đặt của trợ lý, sẽ tắt và xóa các cuộc trò chuyện, còn xóa dữ liệu của trang web trong trình duyệt sẽ xóa mọi thứ. Trình duyệt cũng có thể tự xóa chúng khi thiếu dung lượng hoặc, trên Safari, sau vài tuần không truy cập, vì vậy hãy giữ dự án của bạn dưới dạng tệp .oci.json.',
+      'Liên kết chia sẻ mang dự án bên trong địa chỉ, sau dấu #, phần mà trình duyệt không gửi tới bất kỳ máy chủ nào.',
+    ]),
+    LegalSection('Thống kê lượt truy cập và cookie', [
+      'Nếu bạn đồng ý trong thông báo của trang web, các trang của trang web sẽ tải Google Analytics 4; công cụ này đặt các cookie _ga và _ga_<id> (tồn tại tối đa hai năm) và ghi lại các trang đã xem, thời điểm truy cập, trang đã dẫn bạn tới, loại thiết bị và trình duyệt, kích thước màn hình, ngôn ngữ và vị trí gần đúng mà Google suy ra từ địa chỉ IP (Google Analytics 4 không lưu địa chỉ IP).',
+      'Mục đích: biết có bao nhiêu người truy cập trang web và họ dùng những trang và ngôn ngữ nào, để cải thiện trang. Cơ sở pháp lý: sự đồng ý của bạn. Dữ liệu được lưu trong thời hạn lưu giữ đặt trong Google Analytics, tối đa 14 tháng.',
+      'Nếu bạn từ chối, hoặc không trả lời, sẽ không có gì được tải và không có gì được đếm. Bạn có thể thay đổi lựa chọn bất cứ lúc nào bằng Cài đặt cookie, ở cuối các trang; từ chối sẽ xóa các cookie thống kê của trang web.',
+      'Thống kê không bao giờ chạy khi ứng dụng đang mở, tức trang chứa dự án và khóa của bạn. Google Analytics là dịch vụ của Google, có điều khoản và chính sách quyền riêng tư riêng, và dữ liệu có thể được xử lý tại Hoa Kỳ và các quốc gia khác.',
+    ]),
+    LegalSection('Lưu trữ trang web', [
+      'Trang web được phục vụ bởi Firebase Hosting (Google), dịch vụ nhận địa chỉ IP và dữ liệu kỹ thuật của mỗi yêu cầu (địa chỉ được yêu cầu, trình duyệt, thời điểm) để cung cấp các trang và bảo vệ dịch vụ. Cơ sở pháp lý: lợi ích chính đáng trong việc vận hành trang web an toàn. Các dữ liệu này không được dùng cho mục đích nào khác.',
+      'Ứng dụng và mọi phông chữ của nó, kể cả phông của mọi hệ chữ viết và ký hiệu (chữ Trung, chữ Nhật, chữ Ả Rập và các hệ chữ Ấn Độ, mũi tên, emoji), cũng đến từ trang web này: không dịch vụ phông chữ nào được kết nối.',
+    ]),
+    LegalSection('Các dịch vụ mà trình duyệt của bạn kết nối khi bạn sử dụng chúng', [
+      '- Bản đồ nền: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (với khóa của riêng bạn) hoặc địa chỉ bạn đặt nhận địa chỉ IP và vùng bản đồ trên màn hình.',
+      '- Cao độ và khí hậu trực tuyến: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData và NASA POWER nhận tọa độ của khu vực, không nhận gì khác của dự án.',
+      '- Tìm địa chỉ: Nominatim (OpenStreetMap) nhận địa chỉ bạn gõ.',
+      '- Danh mục tải từ URL: máy chủ của địa chỉ đó.',
+      '- Trợ lý AI (tùy chọn): Anthropic hoặc OpenAI, với khóa của riêng bạn. Không có gì được gửi trước khi bạn bấm Gửi; sau đó, tin nhắn của bạn, các tệp bạn đính kèm, dữ liệu dự án bạn đánh dấu, các tin nhắn trước đó và, trong khi trợ lý làm việc, kết quả của các công cụ nó dùng, kể cả ảnh bản vẽ, sẽ được gửi đi. Thỏa thuận giữa bạn và công ty đó quy định những gì công ty làm với các dữ liệu này, và công ty tính phí vào tài khoản của bạn.',
+      '- Nhập liệu bằng giọng nói: tính năng nhận dạng giọng nói của trình duyệt gửi âm thanh tới nhà sản xuất trình duyệt (Google trên Chrome, Microsoft trên Edge, Apple trên Safari).',
+      'Mỗi dịch vụ này có chính sách quyền riêng tư riêng và có thể xử lý dữ liệu bên ngoài quốc gia của bạn.',
+    ]),
+    LegalSection('Quyền của bạn', [
+      'Theo LGPD ở Brazil, GDPR ở Liên minh châu Âu và Vương quốc Anh, và các luật tương tự, bạn có thể yêu cầu xác nhận, truy cập, chỉnh sửa, xóa và cung cấp thông tin về việc chia sẻ dữ liệu cá nhân của mình, phản đối một hoạt động xử lý và rút lại sự đồng ý.',
+      'Chúng tôi không giữ dữ liệu nào nêu tên bạn: số liệu thống kê được giả danh hóa, và mọi thứ khác nằm trong trình duyệt của bạn, dưới sự kiểm soát của bạn. Với bất kỳ yêu cầu nào, hãy dùng kênh liên hệ ở trên. Bạn cũng có thể khiếu nại tới cơ quan bảo vệ dữ liệu của mình (ở Brazil là ANPD).',
+    ]),
+    LegalSection('Thay đổi', ['Khi chính sách này thay đổi, ngày ở cuối trang cũng thay đổi theo.']),
+  ],
+  termsTitle: 'Điều khoản sử dụng',
+  termsLead: 'OpenCADIrrigation là phần mềm tự do. Sử dụng phần mềm đồng nghĩa với việc chấp nhận các điều khoản này.',
+  terms: [
+    LegalSection('Phần mềm', [
+      'OpenCADIrrigation là phần mềm tự do, mã nguồn mở theo giấy phép MIT ([opensource.org/license/mit]($licenseUrl)). Bạn có thể dùng nó cho bất kỳ mục đích nào, kể cả công việc chuyên nghiệp và thương mại, và sao chép, sửa đổi, phân phối nó theo giấy phép đó. Không có phí và không cần tài khoản.',
+    ]),
+    LegalSection('Công cụ hỗ trợ thiết kế: người có chuyên môn ký thiết kế', [
+      'Ứng dụng giúp vẽ, tính toán và lập hồ sơ cho hệ thống tưới. Các kết quả của nó (cỡ ống, áp suất, lưu lượng, độ đồng đều, lịch tưới, bảng kê vật tư, báo giá và báo cáo, cũng như công việc của trợ lý AI) phụ thuộc vào dữ liệu bạn nhập, dữ liệu danh mục và địa điểm, và các mô hình vốn đơn giản hóa thực tế, nên có thể có sai sót.',
+      'Hãy kiểm tra chúng trước khi sử dụng. Một thiết kế lập bằng ứng dụng phải được một người có chuyên môn phù hợp xem xét, phê duyệt và ký; người này chịu trách nhiệm kỹ thuật về thiết kế theo quy định pháp luật tại nơi thực hiện (ở Brazil, kèm ART, giấy ghi nhận trách nhiệm kỹ thuật, tương ứng).',
+    ]),
+    LegalSection('Không bảo đảm', [
+      'Phần mềm được cung cấp “nguyên trạng”, không có bất kỳ bảo đảm nào, dù rõ ràng hay ngụ ý, bao gồm cả bảo đảm về khả năng thương mại, sự phù hợp cho một mục đích cụ thể và không vi phạm quyền. Trong mọi trường hợp, tác giả hoặc chủ sở hữu bản quyền không chịu trách nhiệm đối với bất kỳ khiếu nại, thiệt hại hay trách nhiệm pháp lý nào khác phát sinh từ phần mềm hoặc việc sử dụng phần mềm (các điều khoản của giấy phép MIT).',
+    ]),
+    LegalSection('Dữ liệu và dịch vụ của bên khác', [
+      'Bản đồ, ảnh, cao độ, khí hậu, tìm địa chỉ và danh mục của nhà sản xuất đến từ bên thứ ba, theo điều khoản và giấy phép riêng của họ (xem Trợ giúp → Giới thiệu trong ứng dụng). Dữ liệu danh mục được lấy từ các bảng đã công bố và có thể đã lỗi thời: hãy xác nhận mẫu, đường đặc tính và giá theo bảng thông số hiện hành trước khi mua.',
+      'Trong công việc chuyên nghiệp, hãy dùng mỗi nguồn trong phạm vi điều khoản của nó: Trợ giúp → Điều khoản dữ liệu trong ứng dụng cho biết việc dùng miễn phí từng nguồn được phép đến đâu. Một số dịch vụ miễn phí chỉ dành cho mục đích phi thương mại (các dịch vụ miễn phí của Open-Meteo và bản đồ nền CARTO), vì vậy theo mặc định ứng dụng tải khí hậu từ NASA POWER và cao độ từ Terrain Tiles; máy chủ ô bản đồ của OpenStreetMap Foundation cấm dùng nhiều và tải cả vùng để dùng ngoại tuyến, vì vậy bản đồ lưu cho hiện trường chỉ dùng các ô đã hiển thị. Các tờ bản vẽ, PDF và báo cáo mang ghi công của mọi nguồn: hãy giữ lại khi bàn giao hoặc công bố sản phẩm.',
+      'Trợ lý AI tùy chọn chạy trên tài khoản riêng của bạn tại Anthropic hoặc OpenAI, theo điều khoản của công ty đó, và công ty đó tính phí sử dụng. Mô hình có thể sai: hãy phê duyệt các thay đổi nó đề xuất khi đã hiểu rõ và kiểm tra công việc của nó.',
+    ]),
+    LegalSection('Nội dung của bạn', ['Dự án, bản vẽ, hình ảnh và tệp của bạn thuộc về bạn: bạn chịu trách nhiệm về chúng và về việc có quyền sử dụng những gì bạn nhập vào.']),
+    LegalSection('Liên hệ', ['Câu hỏi và sự cố: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Cách dữ liệu của bạn được xử lý: xem chính sách quyền riêng tư.']),
+  ],
+  privacyLink: 'Quyền riêng tư',
+  termsLink: 'Điều khoản sử dụng',
+  cookieSettings: 'Cài đặt cookie',
+  consentText: 'Trang web này có thể đếm lượt truy cập bằng Google Analytics không? Công cụ này dùng cookie và chỉ được tải nếu bạn đồng ý; nó không bao giờ chạy khi ứng dụng đang mở.',
+  consentAccept: 'Đồng ý',
+  consentDecline: 'Từ chối',
+  updated: 'Cập nhật lần cuối',
+  home: 'Đến OpenCADIrrigation',
 );

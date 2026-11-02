@@ -131,17 +131,19 @@
     "stake.desc.outlets": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
     "stake.desc.valves": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
     "stake.desc.devices": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
-    "stake.desc.pipeVertices": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII"
+    "stake.desc.pipeVertices": "point code of a stake-out file: capitals without accents, since surveying instruments show ASCII",
+    "prb.ref.3": "bibliographic reference of an English publication",
+    "prb.ref.4": "bibliographic reference of an English publication",
+    "prb.ref.7": "bibliographic reference of an English publication",
+    "prd.grid.e": "east letter of the coordinate grid",
+    "prd.grid.w": "west letter of the coordinate grid"
   },
-  "provisionalEnglish": {
-    "ai.key.privacy": "1.6.0: the visit statistics never run while the app is open (SIT-09)",
-    "basemap.googleKey.privacy": "1.6.0: the key can be read by the site's scripts; restrict it (SIT-09)"
-  },
+  "provisionalEnglish": {},
   "perLanguageAllowed": {
     "ja": ["ok"],
     "ur": ["compass.n", "compass.ne", "compass.e", "compass.se", "compass.s", "compass.sw", "compass.w", "compass.nw"]
   },
-  "maxSameAsEnglish": {"de": 88, "fr": 127, "ha": 71, "id": 113, "sw": 14, "tr": 25, "vi": 10},
+  "maxSameAsEnglish": {"de": 126, "fr": 127, "ha": 71, "id": 113, "sw": 25, "tr": 25, "vi": 10},
   "terms": {
     "pt": [
       {"concept": "submain", "use": "linha de derivação", "avoid": ["submain", "submains"]},

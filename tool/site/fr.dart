@@ -170,7 +170,10 @@ const _fr = SiteText(
       'Fonctionne-t-il hors ligne ?',
       'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 20 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
     ),
-    ('Mes projets sont-ils stockés dans le cloud ?', faqCloudAnswerEn),
+    (
+      'Mes projets sont-ils stockés dans le cloud ?',
+      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous conservez où vous voulez ; un lien de partage transporte le projet dans l’adresse elle-même, si bien que rien n’est téléversé, et OpenCADIrrigation n’a aucun serveur qui pourrait en garder une copie. Les polices de toutes les écritures et de tous les symboles viennent de ce site lui-même. Le navigateur contacte toutefois d’autres services : les fonds de carte, l’altitude et le climat en ligne, la recherche d’adresse, les catalogues chargés par URL et, si vous l’utilisez, l’assistant IA (uniquement le fournisseur que vous avez choisi, Anthropic ou OpenAI) s’adressent à leurs services quand vous les utilisez ; et les pages du site ne comptent les visites avec Google Analytics que si vous l’acceptez, jamais pendant que l’application est ouverte. La politique de confidentialité liste chaque service et ce qu’il reçoit.',
+    ),
     (
       'Comment l’hydraulique est-elle calculée ?',
       'Pertes de charge par Hazen-Williams, Darcy-Weisbach, Scobey ou Manning, distributeurs selon q = k·Hˣ et réseau complet résolu par le Global Gradient Algorithm, la méthode d’EPANET. Les conduites sont dimensionnées par programmation linéaire dans la plage de pression des distributeurs et selon la classe de pression des tubes, et le calcul vérifie aussi l’uniformité (CU, DU, EU), le rinçage et les régimes transitoires par la méthode des caractéristiques (fermeture des vannes, disjonction des pompes, ventouses), avec une simulation sur 24 heures des pressions et du coût de l’énergie.',
@@ -195,4 +198,78 @@ const _fr = SiteText(
   notFoundTitle: 'Page introuvable',
   notFoundText: 'Cette adresse n’existe pas sur ce site. OpenCADIrrigation est une application unique ; ouvrez-la depuis la page d’accueil.',
   notFoundHome: 'Aller à OpenCADIrrigation',
+);
+
+const _legalFr = LegalText(
+  privacyTitle: 'Politique de confidentialité',
+  privacyLead: 'Ce qu’OpenCADIrrigation conserve, ce qu’il envoie et à qui, en termes simples.',
+  privacy: [
+    LegalSection('Qui est responsable', [
+      'Le site opencadirrigation.com et l’application OpenCADIrrigation sont publiés par le mainteneur d’OpenCADIrrigation, qui est le responsable du traitement des données personnelles décrites sur cette page.',
+      'Contact : ouvrez un ticket (issue) dans le dépôt du projet ([github.com/videjunior/opencadirrigation/issues]($contactUrl)). Pour une question qui ne doit pas être publique, demandez-y un canal privé, sans écrire de données personnelles dans le ticket.',
+    ]),
+    LegalSection('En bref', [
+      '- Il n’y a ni compte ni serveur d’OpenCADIrrigation derrière l’application : les projets, les enregistrements automatiques, les versions, les conversations IA, les clés et les préférences restent dans votre navigateur et dans les fichiers que vous enregistrez.',
+      '- Les statistiques de visite (Google Analytics) ne sont collectées que sur les pages du site, uniquement si vous les acceptez, et jamais pendant que l’application est ouverte.',
+      '- Les services que l’application utilise pour les polices, les cartes, le terrain, le climat, la recherche d’adresse et l’assistant IA reçoivent vos requêtes directement depuis votre navigateur quand vous les utilisez.',
+    ]),
+    LegalSection('Ce qui reste sur votre appareil', [
+      'L’enregistrement automatique, les projets récents, les 10 dernières versions de chaque projet, les 24 conversations IA les plus récentes (avec leurs images et leurs petites pièces jointes), les clés API que vous choisissez de mémoriser, la clé Google Maps, la langue de l’interface, le thème et les autres préférences sont conservés dans le stockage de votre navigateur (localStorage et IndexedDB), et une copie de l’application dans son cache, pour qu’elle démarre hors ligne. Personne d’autre ne les reçoit, et nous n’en avons aucune copie.',
+      'Ils restent jusqu’à ce que vous les supprimiez : l’option « Garder les conversations dans ce navigateur », dans les réglages de l’assistant, désactive les conversations et les supprime, et effacer les données du site dans le navigateur supprime tout. Un navigateur peut aussi les supprimer de lui-même quand l’espace vient à manquer ou, dans Safari, après quelques semaines sans visite ; conservez donc vos projets dans des fichiers .oci.json.',
+      'Un lien de partage transporte le projet dans l’adresse, après le #, que les navigateurs n’envoient à aucun serveur.',
+    ]),
+    LegalSection('Statistiques de visite et cookies', [
+      'Si vous les acceptez dans le bandeau du site, les pages du site chargent Google Analytics 4, qui dépose les cookies _ga et _ga_<id> (ils durent jusqu’à deux ans) et enregistre les pages vues, l’heure de la visite, la page qui vous a amené, le type d’appareil et de navigateur, la taille de l’écran, la langue et une localisation approximative que Google déduit de l’adresse IP (Google Analytics 4 ne conserve pas l’adresse IP).',
+      'Finalité : savoir combien de personnes visitent le site et quelles pages et langues elles utilisent, afin de l’améliorer. Base légale : votre consentement. Les données sont conservées pendant la durée de conservation définie dans Google Analytics, au plus 14 mois.',
+      'Si vous refusez, ou ne répondez pas, rien n’est chargé et rien n’est compté. Vous pouvez changer votre choix à tout moment avec Paramètres des cookies, en bas des pages ; refuser supprime les cookies de statistiques du site.',
+      'Les statistiques ne tournent jamais pendant que l’application est ouverte, la page qui contient vos projets et vos clés. Google Analytics est un service de Google soumis à ses propres conditions et à sa propre politique de confidentialité, et les données peuvent être traitées aux États-Unis et dans d’autres pays.',
+    ]),
+    LegalSection('Hébergement', [
+      'Le site est servi par Firebase Hosting (Google), qui reçoit l’adresse IP et les données techniques de chaque requête (adresse demandée, navigateur, heure) pour fournir les pages et protéger le service. Base légale : l’intérêt légitime à faire fonctionner le site en toute sécurité. Ces données ne servent à rien d’autre.',
+      'L’application et toutes ses polices, y compris celles de toutes les écritures et de tous les symboles (écritures chinoise, japonaise, arabe et indiennes, flèches, emoji), viennent aussi de ce site : aucun service de polices n’est contacté.',
+    ]),
+    LegalSection('Services que votre navigateur contacte quand vous les utilisez', [
+      '- Fonds de carte : OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (avec votre propre clé) ou l’adresse que vous définissez reçoivent l’adresse IP et la zone de la carte affichée à l’écran.',
+      '- Altitude et climat en ligne : Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData et NASA POWER reçoivent les coordonnées de la zone, rien d’autre du projet.',
+      '- Recherche d’adresse : Nominatim (OpenStreetMap) reçoit l’adresse que vous tapez.',
+      '- Catalogues chargés par URL : le serveur de cette adresse.',
+      '- Assistant IA (facultatif) : Anthropic ou OpenAI, avec votre propre clé. Rien n’est envoyé avant que vous n’appuyiez sur Envoyer ; partent alors votre message, les fichiers que vous joignez, les données du projet que vous cochez, les messages précédents et, pendant qu’il travaille, les résultats des outils qu’il utilise, images du dessin comprises. Votre accord avec cette entreprise régit ce qu’elle en fait, et elle facture votre compte.',
+      '- Dictée vocale : la reconnaissance vocale du navigateur envoie le son à l’éditeur du navigateur (Google dans Chrome, Microsoft dans Edge, Apple dans Safari).',
+      'Chacun de ces services a sa propre politique de confidentialité et peut traiter des données hors de votre pays.',
+    ]),
+    LegalSection('Vos droits', [
+      'En vertu de la LGPD au Brésil, du RGPD dans l’Union européenne et au Royaume-Uni, et de lois similaires, vous pouvez demander la confirmation, l’accès, la rectification et l’effacement de vos données personnelles ainsi que des informations sur leur partage, vous opposer à un traitement et retirer votre consentement.',
+      'Nous ne détenons aucune donnée qui vous identifie : les statistiques sont pseudonymes, et tout le reste se trouve dans votre navigateur, sous votre contrôle. Pour toute demande, utilisez le contact ci-dessus. Vous pouvez aussi adresser une réclamation à votre autorité de protection des données (au Brésil, l’ANPD).',
+    ]),
+    LegalSection('Modifications', ['Quand cette politique change, la date en bas de la page change aussi.']),
+  ],
+  termsTitle: 'Conditions d’utilisation',
+  termsLead: 'OpenCADIrrigation est un logiciel libre et gratuit. L’utiliser implique d’accepter ces conditions.',
+  terms: [
+    LegalSection('Le logiciel', [
+      'OpenCADIrrigation est un logiciel gratuit et open source sous licence MIT ([opensource.org/license/mit]($licenseUrl)). Vous pouvez l’utiliser à toutes fins, travaux professionnels et commerciaux compris, et le copier, le modifier et le distribuer selon cette licence. Il n’y a ni frais ni compte.',
+    ]),
+    LegalSection('Une aide à la conception : le professionnel signe le projet', [
+      'L’application aide à dessiner, calculer et documenter des systèmes d’irrigation. Ses résultats (diamètres des tuyaux, pressions, débits, uniformité, programmes d’arrosage, nomenclatures, devis et rapports, ainsi que le travail de l’assistant IA) dépendent des données que vous saisissez, des données du catalogue et du site et de modèles qui simplifient la réalité, et ils peuvent contenir des erreurs.',
+      'Vérifiez-les avant de les utiliser. Un projet réalisé avec l’application doit être revu, approuvé et signé par un professionnel qualifié, qui en assume la responsabilité technique comme l’exige la loi du lieu (au Brésil, avec l’ART correspondante, l’attestation de responsabilité technique).',
+    ]),
+    LegalSection('Absence de garantie', [
+      'Le logiciel est fourni « en l’état », sans garantie d’aucune sorte, expresse ou implicite, y compris les garanties de qualité marchande, d’adéquation à un usage particulier et d’absence de contrefaçon. En aucun cas les auteurs ou les titulaires des droits d’auteur ne pourront être tenus responsables de toute réclamation, de tout dommage ou de toute autre responsabilité découlant du logiciel ou de son utilisation (les termes de la licence MIT).',
+    ]),
+    LegalSection('Données et services de tiers', [
+      'Les cartes, l’imagerie, l’altitude, le climat, la recherche d’adresse et les catalogues de fabricants proviennent de tiers, selon leurs propres conditions et licences (voir Aide → À propos dans l’application). Les données des catalogues sont tirées de tableaux publiés et peuvent être périmées : confirmez les modèles, les courbes et les prix avec les fiches techniques en vigueur avant d’acheter.',
+      'Dans un travail professionnel, utilisez chaque source dans le respect de ses conditions : Aide → Conditions des données, dans l’application, indique ce que permet l’usage gratuit de chacune. Certains services gratuits sont réservés à un usage non commercial (les services gratuits d’Open-Meteo et les fonds de carte CARTO), c’est pourquoi l’application télécharge par défaut le climat depuis NASA POWER et l’altitude depuis Terrain Tiles ; le serveur de tuiles de l’OpenStreetMap Foundation interdit l’usage intensif et le téléchargement de zones pour un usage hors ligne, si bien que la carte conservée pour le terrain n’utilise que les tuiles déjà affichées. Les planches, les PDF et le rapport portent le crédit de chaque source : conservez-le lorsque vous livrez ou publiez le travail.',
+      'L’assistant IA facultatif fonctionne avec votre propre compte chez Anthropic ou OpenAI, selon les conditions de cette entreprise, qui en facture l’utilisation. Un modèle peut se tromper : validez en connaissance de cause les modifications qu’il propose et vérifiez son travail.',
+    ]),
+    LegalSection('Votre contenu', ['Vos projets, dessins, images et fichiers vous appartiennent : vous en êtes responsable, ainsi que du droit d’utiliser ce que vous importez.']),
+    LegalSection('Contact', ['Questions et problèmes : [github.com/videjunior/opencadirrigation/issues]($contactUrl). La façon dont vos données sont traitées : la politique de confidentialité.']),
+  ],
+  privacyLink: 'Confidentialité',
+  termsLink: 'Conditions d’utilisation',
+  cookieSettings: 'Paramètres des cookies',
+  consentText: 'Ce site peut-il compter les visites avec Google Analytics ? Il utilise des cookies et ne se charge que si vous acceptez ; il ne tourne jamais pendant que l’application est ouverte.',
+  consentAccept: 'Accepter',
+  consentDecline: 'Refuser',
+  updated: 'Dernière mise à jour',
+  home: 'Aller à OpenCADIrrigation',
 );

@@ -178,7 +178,10 @@ const _sw = SiteText(
       'Je, inafanya kazi bila intaneti?',
       'Ndiyo, baada ya kutembelea tovuti mara ya kwanza: programu huhifadhi nakala yake kwenye kivinjari (takriban MB 20, mara moja kwa kila toleo), hivyo wakati ujao programu iliyosakinishwa au tovuti hufunguka na kufanya kazi bila intaneti, ofisini au shambani. Ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, katalogi zinazopakiwa kutoka URL na msaidizi wa AI bado vinahitaji muunganisho wa intaneti; toleo jipya hupakuliwa chinichini na hutumika kuanzia mara inayofuata.',
     ),
-    ('Je, miradi yangu huhifadhiwa kwenye wingu?', faqCloudAnswerEn),
+    (
+      'Je, miradi yangu huhifadhiwa kwenye wingu?',
+      'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na kama faili za .oci.json unazoziweka popote unapopenda; kiungo cha kushiriki hubeba mradi ndani ya anwani yenyewe, kwa hiyo hakuna kinachopakiwa mtandaoni, na OpenCADIrrigation haina seva ambayo ingeweza kuhifadhi nakala. Fonti za kila mfumo wa maandishi na za alama hutoka kwenye tovuti hii yenyewe. Kivinjari hufikia huduma nyingine: ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, utafutaji wa anwani, katalogi zinazopakiwa kutoka URL na, ukimtumia, msaidizi wa AI (mtoa huduma uliyemchagua tu, Anthropic au OpenAI) huenda kwenye huduma zao unapozitumia; na kurasa za tovuti huhesabu ziara kwa Google Analytics ukikubali tu, kamwe si wakati programu iko wazi. Sera ya faragha huorodhesha kila huduma na kile inachopokea.',
+    ),
     (
       'Ukokotoaji wa haidroliki hufanywaje?',
       'Upotevu wa msuguano kwa Hazen-Williams, Darcy-Weisbach, Scobey au Manning, vitoa-maji kwa q = k·Hˣ, na mtandao wote hutatuliwa kwa Global Gradient Algorithm, mbinu inayotumiwa na EPANET. Mabomba hupimwa kwa linear programming ndani ya dirisha la shinikizo la vitoa-maji na daraja la shinikizo la mabomba, na usanifu pia hukagua usawa (CU, DU, EU), usafishaji na hali za mpito kwa method of characteristics (kufungwa kwa vali, kusimama ghafla kwa pampu, vali za hewa), pamoja na uigaji wa saa 24 wa shinikizo na gharama ya nishati.',
@@ -203,4 +206,78 @@ const _sw = SiteText(
   notFoundTitle: 'Ukurasa haukupatikana',
   notFoundText: 'Anwani hiyo haipo kwenye tovuti hii. OpenCADIrrigation ni programu moja; ifungue kutoka ukurasa wa mwanzo.',
   notFoundHome: 'Nenda OpenCADIrrigation',
+);
+
+const _legalSw = LegalText(
+  privacyTitle: 'Sera ya faragha',
+  privacyLead: 'Kile ambacho OpenCADIrrigation huhifadhi, kile inachotuma na kwa nani, kwa maneno rahisi.',
+  privacy: [
+    LegalSection('Anayewajibika', [
+      'Tovuti opencadirrigation.com na programu ya OpenCADIrrigation huchapishwa na mtunzaji wa OpenCADIrrigation, ambaye ndiye mdhibiti wa data binafsi zilizoelezwa kwenye ukurasa huu.',
+      'Mawasiliano: fungua suala (issue) kwenye hazina ya mradi ([github.com/videjunior/opencadirrigation/issues]($contactUrl)). Kwa jambo lisilopaswa kuwa la umma, omba hapo njia ya faragha, bila kuandika data binafsi kwenye suala hilo.',
+    ]),
+    LegalSection('Kwa ufupi', [
+      '- Hakuna akaunti wala seva ya OpenCADIrrigation nyuma ya programu: miradi, uhifadhi otomatiki, matoleo, mazungumzo ya AI, funguo na mapendeleo hubaki kwenye kivinjari chako na kwenye faili unazohifadhi.',
+      '- Takwimu za ziara (Google Analytics) hukusanywa kwenye kurasa za tovuti tu, ukizikubali tu, na kamwe si wakati programu iko wazi.',
+      '- Huduma ambazo programu hutumia kwa fonti, ramani, ardhi, hali ya hewa, utafutaji wa anwani na msaidizi wa AI hupokea maombi yako moja kwa moja kutoka kivinjari chako unapozitumia.',
+    ]),
+    LegalSection('Kinachobaki kwenye kifaa chako', [
+      'Uhifadhi otomatiki, miradi ya hivi karibuni, matoleo 10 ya mwisho ya kila mradi, mazungumzo 24 ya karibuni zaidi ya AI (pamoja na picha zake na viambatisho vidogo), funguo za API unazochagua zikumbukwe, ufunguo wa Google Maps, lugha ya kiolesura, mandhari na mapendeleo mengine huhifadhiwa kwenye hifadhi ya kivinjari chako (localStorage na IndexedDB), na nakala ya programu huhifadhiwa kwenye akiba yake, ili ifunguke bila intaneti. Hakuna mtu mwingine anayevipokea, na sisi hatuna nakala.',
+      'Hubaki hadi uvifute: Hifadhi mazungumzo kwenye kivinjari hiki, katika mipangilio ya msaidizi, huzima mazungumzo na kuyafuta, na kufuta data za tovuti kwenye kivinjari hufuta kila kitu. Kivinjari kinaweza pia kuvifuta chenyewe nafasi ikipungua au, katika Safari, baada ya wiki kadhaa bila kutembelewa, kwa hiyo hifadhi miradi yako kama faili za .oci.json.',
+      'Kiungo cha kushiriki hubeba mradi ndani ya anwani, baada ya alama #, sehemu ambayo vivinjari havitumi kwa seva yoyote.',
+    ]),
+    LegalSection('Takwimu za ziara na vidakuzi', [
+      'Ukizikubali kwenye tangazo la tovuti, kurasa za tovuti hupakia Google Analytics 4, ambayo huweka vidakuzi _ga na _ga_<id> (hudumu hadi miaka miwili) na hurekodi kurasa zilizotazamwa, wakati wa ziara, ukurasa uliokuleta, aina ya kifaa na ya kivinjari, ukubwa wa skrini, lugha na mahali pa takriban ambapo Google hupakadiria kutoka anwani ya IP (Google Analytics 4 haihifadhi anwani ya IP).',
+      'Madhumuni: kujua ni watu wangapi hutembelea tovuti na ni kurasa na lugha zipi wanazotumia, ili kuiboresha. Msingi wa kisheria: ridhaa yako. Data huhifadhiwa kwa kipindi cha kuhifadhi kilichowekwa katika Google Analytics, kwa kiwango cha juu miezi 14.',
+      'Ukikataa, au usipojibu, hakuna kinachopakiwa na hakuna kinachohesabiwa. Unaweza kubadilisha chaguo lako wakati wowote kwa Mipangilio ya vidakuzi, chini ya kurasa; kukataa hufuta vidakuzi vya takwimu vya tovuti.',
+      'Takwimu kamwe haziendeshwi wakati programu iko wazi, ukurasa unaohifadhi miradi na funguo zako. Google Analytics ni huduma ya Google chini ya masharti na sera ya faragha yake yenyewe, na data zinaweza kuchakatwa nchini Marekani na katika nchi nyingine.',
+    ]),
+    LegalSection('Upangishaji', [
+      'Tovuti hutolewa na Firebase Hosting (Google), ambayo hupokea anwani ya IP na data za kiufundi za kila ombi (anwani iliyoombwa, kivinjari, wakati) ili kuwasilisha kurasa na kulinda huduma. Msingi wa kisheria: maslahi halali ya kuendesha tovuti kwa usalama. Data hizi hazitumiki kwa jambo jingine lolote.',
+      'Programu na fonti zake zote, zikiwemo zile za kila mfumo wa maandishi na za alama (Kichina, Kijapani, Kiarabu na maandishi ya India, mishale, emoji), pia hutoka kwenye tovuti hii: hakuna huduma ya fonti inayofikiwa.',
+    ]),
+    LegalSection('Huduma ambazo kivinjari chako huwasiliana nazo unapozitumia', [
+      '- Ramani za msingi: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (kwa ufunguo wako mwenyewe) au anwani unayoweka hupokea anwani ya IP na eneo la ramani lililo kwenye skrini.',
+      '- Mwinuko na hali ya hewa mtandaoni: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData na NASA POWER hupokea kuratibu za eneo, si kingine chochote cha mradi.',
+      '- Utafutaji wa anwani: Nominatim (OpenStreetMap) hupokea anwani unayoandika.',
+      '- Katalogi zinazopakiwa kutoka URL: seva ya anwani hiyo.',
+      '- Msaidizi wa AI (wa hiari): Anthropic au OpenAI, kwa ufunguo wako mwenyewe. Hakuna kinachotumwa kabla hujabonyeza Tuma; kisha hutumwa ujumbe wako, faili unazoambatisha, data ya mradi unayoiwekea alama, ujumbe wa awali na, wakati msaidizi anafanya kazi, matokeo ya zana anazotumia, zikiwemo picha za mchoro. Makubaliano yako na kampuni hiyo ndiyo huongoza kile inachofanya navyo, na kampuni hiyo hutoza matumizi kwenye akaunti yako.',
+      '- Imla kwa sauti: utambuzi wa sauti wa kivinjari hutuma sauti kwa kampuni iliyotengeneza kivinjari (Google kwenye Chrome, Microsoft kwenye Edge, Apple kwenye Safari).',
+      'Kila moja ya huduma hizi ina sera yake ya faragha na inaweza kuchakata data nje ya nchi yako.',
+    ]),
+    LegalSection('Haki zako', [
+      'Chini ya LGPD nchini Brazili, GDPR katika Umoja wa Ulaya na Uingereza, na sheria zinazofanana, unaweza kuomba uthibitisho, ufikiaji, usahihishaji, ufutaji na taarifa kuhusu ushirikishaji wa data zako binafsi, kupinga uchakataji fulani na kuondoa ridhaa yako.',
+      'Hatuhifadhi data zinazokutambulisha kwa jina: takwimu hutumia vitambulisho visivyo majina (pseudonymous), na kila kitu kingine kiko kwenye kivinjari chako, chini ya udhibiti wako. Kwa ombi lolote, tumia mawasiliano yaliyo hapo juu. Unaweza pia kuwasilisha malalamiko kwa mamlaka ya ulinzi wa data ya nchi yako (nchini Kenya, ODPC; nchini Tanzania, PDPC; nchini Brazili, ANPD).',
+    ]),
+    LegalSection('Mabadiliko', ['Sera hii ikibadilika, tarehe iliyo chini ya ukurasa hubadilika pia.']),
+  ],
+  termsTitle: 'Masharti ya matumizi',
+  termsLead: 'OpenCADIrrigation ni programu huria. Kuitumia kunamaanisha kukubali masharti haya.',
+  terms: [
+    LegalSection('Programu', [
+      'OpenCADIrrigation ni programu ya bure na huria chini ya leseni ya MIT ([opensource.org/license/mit]($licenseUrl)). Unaweza kuitumia kwa madhumuni yoyote, ikiwemo kazi ya kitaaluma na ya kibiashara, na kuinakili, kuibadilisha na kuisambaza chini ya leseni hiyo. Hakuna ada wala akaunti.',
+    ]),
+    LegalSection('Kisaidizi cha usanifu: mtaalamu ndiye husaini usanifu', [
+      'Programu husaidia kuchora, kukokotoa na kuandika nyaraka za mifumo ya umwagiliaji. Matokeo yake (vipimo vya mabomba, shinikizo, mitiririko, usawa, ratiba, orodha za vifaa, nukuu za bei na ripoti, pamoja na kazi ya msaidizi wa AI) hutegemea data unazoweka, data za katalogi na za mahali, na modeli zinazorahisisha uhalisia, na yanaweza kuwa na makosa.',
+      'Yakague kabla ya kuyatumia. Usanifu uliofanywa kwa programu hii lazima ukaguliwe, uidhinishwe na usainiwe na mtaalamu aliyehitimu, anayebeba uwajibikaji wa kiufundi wa usanifu huo kama sheria ya mahali inavyotaka (nchini Brazili, pamoja na ART husika, hati ya uwajibikaji wa kiufundi).',
+    ]),
+    LegalSection('Hakuna dhamana', [
+      'Programu hutolewa “kama ilivyo”, bila dhamana ya aina yoyote, iwe ya wazi au ya kudokezwa, zikiwemo dhamana za kufaa kuuzwa, kufaa kwa madhumuni fulani na kutokiuka haki za wengine. Kwa hali yoyote waandishi au wenye hakimiliki hawatawajibika kwa dai lolote, uharibifu au dhima nyingine inayotokana na programu au matumizi yake (masharti ya leseni ya MIT).',
+    ]),
+    LegalSection('Data na huduma za wengine', [
+      'Ramani, picha za angani, mwinuko, hali ya hewa, utafutaji wa anwani na katalogi za watengenezaji hutoka kwa wahusika wengine, chini ya masharti na leseni zao wenyewe (tazama Msaada → Kuhusu katika programu). Data za katalogi huchukuliwa kutoka majedwali yaliyochapishwa na huenda zimepitwa na wakati: thibitisha mifano, mikunjo na bei kwenye karatasi za data za sasa kabla ya kununua.',
+      'Katika kazi ya kitaaluma, tumia kila chanzo ndani ya masharti yake: Msaada → Masharti ya data katika programu hueleza kile ambacho matumizi ya bure ya kila kimoja huruhusu. Baadhi ya huduma za bure ni kwa matumizi yasiyo ya kibiashara tu (huduma za bure za Open-Meteo na ramani za msingi za CARTO), kwa hiyo programu hupakua hali ya hewa kutoka NASA POWER na mwinuko kutoka Terrain Tiles kwa chaguomsingi; seva ya vigae ya OpenStreetMap Foundation inakataza matumizi makubwa na kupakua maeneo kwa matumizi bila mtandao, kwa hiyo ramani inayohifadhiwa kwa matumizi ya shambani hutumia tu vigae vilivyokwisha kuonyeshwa. Karatasi, PDF na ripoti hubeba utambuzi wa kila chanzo: ubakize unapowasilisha au kuchapisha kazi.',
+      'Msaidizi wa AI, ambaye ni wa hiari, hufanya kazi kwa akaunti yako mwenyewe ya Anthropic au OpenAI, chini ya masharti ya kampuni hiyo, na kampuni hiyo ndiyo hutoza matumizi. Modeli inaweza kukosea: idhinisha mabadiliko inayopendekeza kwa ufahamu na ukague kazi yake.',
+    ]),
+    LegalSection('Maudhui yako', ['Miradi, michoro, picha na faili zako ni mali yako: unawajibika kwazo na kwa kuwa na haki ya kutumia unachoingiza.']),
+    LegalSection('Mawasiliano', ['Maswali na matatizo: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Jinsi data zako zinavyoshughulikiwa: sera ya faragha.']),
+  ],
+  privacyLink: 'Faragha',
+  termsLink: 'Masharti ya matumizi',
+  cookieSettings: 'Mipangilio ya vidakuzi',
+  consentText: 'Je, tovuti hii inaweza kuhesabu ziara kwa Google Analytics? Hutumia vidakuzi na hupakiwa ukikubali tu; kamwe haiendeshwi wakati programu iko wazi.',
+  consentAccept: 'Kubali',
+  consentDecline: 'Kataa',
+  updated: 'Ilisasishwa mwisho',
+  home: 'Nenda OpenCADIrrigation',
 );
