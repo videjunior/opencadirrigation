@@ -374,7 +374,8 @@ class _InpBuilder {
       if (vn != null && nodes.contains(vn.$2)) labels.add((v.position, v.zoneName.isEmpty ? v.id : v.zoneName));
     }
     final g = project.meta.georef;
-    final crs = g != null ? projectUtmCrs(g, datum: GeodeticDatum.sirgas2000) : CrsInfo.local;
+    // 1.6.0 PRD: the datum the georeference names (SIRGAS 2000 in Brazil)
+    final crs = g != null ? projectUtmCrs(g, datum: g.effectiveDatum) : CrsInfo.local;
     final text = _write(scopeLabel, exponent, g);
     return EpanetExport(text: text, warnings: warnings.toList(), nodeIds: nodeIds, linkIds: linkIds, reversedLinks: reversed, emitterExponent: exponent, crs: crs);
   }

@@ -15,6 +15,7 @@ import 'cad_drawing.dart';
 import 'cad_export.dart';
 import 'dwg_writer.dart';
 import 'dxf.dart';
+import 'datum.dart' show GeodeticDatum;
 import 'dxf_r2000.dart';
 import 'epanet_inp.dart';
 import 'geo.dart';
@@ -490,12 +491,17 @@ class ProjectExporter {
     DrawingFormat.kml => kml(),
     DrawingFormat.kmz => kmz(),
     DrawingFormat.geojson => geoJson(),
-    DrawingFormat.shp => ShapefileWriter(project: project, results: results, layerNames: layerNames).zip(),
+    // 1.6.0 PRD: the datum the georeference names (SIRGAS 2000 by default in Brazil)
+    DrawingFormat.shp => ShapefileWriter(project: project, results: results, layerNames: layerNames, datum: _datum).zip(),
     DrawingFormat.gpx => GpxWriter.write(project, results: results, layerNames: layerNames),
-    DrawingFormat.landxml => LandXmlWriter.write(project, results: results),
-    DrawingFormat.ifc => IfcWriter.write(project, results: results, fileName: '${project.meta.name}.ifc').text,
+    DrawingFormat.landxml => LandXmlWriter.write(project, results: results, datum: _datum),
+    DrawingFormat.ifc => IfcWriter.write(project, results: results, fileName: '${project.meta.name}.ifc', datum: _datum).text,
     DrawingFormat.inp => EpanetWriter.write(project, results: results).text,
   };
+
+  /// 1.6.0 PRD: the datum named in the projected files (SHP, LandXML, IFC):
+  /// the georeference's, SIRGAS 2000 without one (the numbers are the same).
+  GeodeticDatum get _datum => project.meta.georef?.effectiveDatum ?? GeodeticDatum.sirgas2000;
 
   Object exportReport(ReportFormat f) => switch (f) {
     ReportFormat.csv => reportCsv(),

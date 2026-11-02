@@ -35,6 +35,11 @@ import '../model/project.dart';
 import 'block_generator.dart' show GridPattern;
 import 'densogram.dart';
 
+// 1.6.0 AUT: the outline helpers live in the geometry library (one
+// self-crossing detector for the program); shown here for the importers
+// of this library.
+export '../model/geometry.dart' show normalizePolygon, polygonSelfCrossings, simplePolygonParts;
+
 // ---------------------------------------------------------------- small helpers
 
 /// Angle (degrees, in [0, 360)) of [a] reduced to one turn.
@@ -51,150 +56,6 @@ double ccwAngleDeg(Pt from, Pt to) {
   var a = radToDeg(math.atan2(from.cross(to), from.dot(to)));
   if (a <= 1e-9) a += 360;
   return a;
-}
-
-/// [poly] without repeated or non-finite vertices nor a closing vertex equal
-/// to the first one, turned counter-clockwise (or clockwise when [ccw] is
-/// false).
-List<Pt> normalizePolygon(List<Pt> poly, {bool ccw = true}) {
-  final out = <Pt>[];
-  for (final p in poly) {
-    if (!p.x.isFinite || !p.y.isFinite) continue;
-    if (out.isNotEmpty && out.last.distanceTo(p) < 1e-9) continue;
-    out.add(p);
-  }
-  while (out.length > 1 && out.first.distanceTo(out.last) < 1e-9) {
-    out.removeLast();
-  }
-  if (out.length < 3) return out;
-  final a = polygonArea(out);
-  return (a < 0) == ccw ? out.reversed.toList() : out;
-}
-
-/// Crossings of the closed polygon [poly] with itself: where two edges that
-/// do not follow each other cross or touch, and the vertices it passes
-/// twice (an outline drawn by hand with a grip dragged across another
-/// side, or read from a file, may do both). Empty for a simple polygon.
-/// The edges are bucketed on a grid, so long outlines are cheap.
-List<Pt> polygonSelfCrossings(List<Pt> poly) {
-  final p = <Pt>[];
-  for (final q in poly) {
-    if (!q.x.isFinite || !q.y.isFinite) continue;
-    if (p.isNotEmpty && p.last.distanceTo(q) < 1e-9) continue;
-    p.add(q);
-  }
-  while (p.length > 1 && p.first.distanceTo(p.last) < 1e-9) {
-    p.removeLast();
-  }
-  final n = p.length;
-  if (n < 4) return const [];
-  final b = Bounds.ofPoints(p);
-  final scale = math.max(b.width, b.height);
-  final eps = math.max(1e-9, scale * 1e-9);
-  final cell = math.max(polylineLength([...p, p.first]) / n, scale / 1024) + 1e-12;
-  final buckets = <int, List<int>>{};
-  int key(int ix, int iy) => (ix + 1048576) * 2097152 + (iy + 1048576);
-  Iterable<int> keys(Pt a, Pt c) sync* {
-    final x0 = ((math.min(a.x, c.x) - b.minX) / cell).floor(), x1 = ((math.max(a.x, c.x) - b.minX) / cell).floor();
-    final y0 = ((math.min(a.y, c.y) - b.minY) / cell).floor(), y1 = ((math.max(a.y, c.y) - b.minY) / cell).floor();
-    for (var ix = x0; ix <= x1; ix++) {
-      for (var iy = y0; iy <= y1; iy++) {
-        yield key(ix, iy);
-      }
-    }
-  }
-
-  for (var i = 0; i < n; i++) {
-    for (final k in keys(p[i], p[(i + 1) % n])) {
-      (buckets[k] ??= []).add(i);
-    }
-  }
-  final out = <Pt>[];
-  for (var i = 0; i < n; i++) {
-    final a = p[i], c = p[(i + 1) % n];
-    final seen = <int>{};
-    for (final k in keys(a, c)) {
-      for (final j in buckets[k] ?? const <int>[]) {
-        if (j <= i || !seen.add(j)) continue;
-        // neighbouring edges share a vertex: that is no crossing
-        if (j == i + 1 || (i == 0 && j == n - 1)) continue;
-        final x = segmentIntersection(a, c, p[j], p[(j + 1) % n], eps: 1e-12);
-        if (x != null) {
-          out.add(x);
-        } else if (distanceToSegment(p[j], a, c) <= eps || distanceToSegment(a, p[j], p[(j + 1) % n]) <= eps) {
-          // collinear overlap or a vertex resting on another edge
-          out.add(distanceToSegment(p[j], a, c) <= eps ? p[j] : a);
-        }
-      }
-    }
-  }
-  return out;
-}
-
-/// The simple loops a self-crossing outline [poly] encloses: walking it,
-/// each time it comes back to a crossing (or to a vertex it passed) the
-/// loop since then is cut off. Every part is counter-clockwise; a simple
-/// polygon comes back as itself (normalised). A bow tie gives its two
-/// triangles, a figure of eight its two rings.
-List<List<Pt>> simplePolygonParts(List<Pt> poly) {
-  final base = normalizePolygon(poly);
-  if (base.length < 3) return const [];
-  if (polygonSelfCrossings(base).isEmpty) return [base];
-  final p = <Pt>[];
-  for (final q in poly) {
-    if (!q.x.isFinite || !q.y.isFinite) continue;
-    if (p.isNotEmpty && p.last.distanceTo(q) < 1e-9) continue;
-    p.add(q);
-  }
-  while (p.length > 1 && p.first.distanceTo(p.last) < 1e-9) {
-    p.removeLast();
-  }
-  final n = p.length;
-  final b = Bounds.ofPoints(p);
-  final eps = math.max(1e-9, math.max(b.width, b.height) * 1e-9);
-  // every edge with the points where other edges cross it, in order
-  final cuts = [for (var i = 0; i < n; i++) <(double, Pt)>[]];
-  for (var i = 0; i < n; i++) {
-    final a = p[i], c = p[(i + 1) % n];
-    for (var j = i + 2; j < n; j++) {
-      if (i == 0 && j == n - 1) continue;
-      final d0 = p[j], d1 = p[(j + 1) % n];
-      final x = segmentIntersection(a, c, d0, d1, eps: 1e-12);
-      if (x == null) continue;
-      final r = c - a, s = d1 - d0;
-      final ti = r.length > 0 ? (x - a).dot(r) / r.dot(r) : 0.0, tj = s.length > 0 ? (x - d0).dot(s) / s.dot(s) : 0.0;
-      if (ti > 1e-9 && ti < 1 - 1e-9) cuts[i].add((ti, x));
-      if (tj > 1e-9 && tj < 1 - 1e-9) cuts[j].add((tj, x));
-    }
-  }
-  final seq = <Pt>[
-    for (var i = 0; i < n; i++) ...[p[i], ...(cuts[i]..sort((x, y) => x.$1.compareTo(y.$1))).map((c) => c.$2)],
-  ];
-  // the walk: a point met again closes the loop since it was first met
-  final parts = <List<Pt>>[];
-  final stack = <Pt>[];
-  int? onStack(Pt q) {
-    for (var k = stack.length - 1; k >= 0; k--) {
-      if (stack[k].distanceTo(q) <= eps * 10) return k;
-    }
-    return null;
-  }
-
-  for (final q in [...seq, seq.first]) {
-    final k = onStack(q);
-    if (k != null) {
-      final loop = stack.sublist(k);
-      stack.removeRange(k + 1, stack.length);
-      if (loop.length >= 3) parts.add(loop);
-      continue;
-    }
-    stack.add(q);
-  }
-  if (stack.length >= 3) parts.add(List.of(stack));
-  return [
-    for (final part in parts)
-      if (normalizePolygon(part) case final q when q.length >= 3 && polygonArea(q).abs() > eps) q,
-  ];
 }
 
 /// Direction of the longest edge of the closed polygon [poly] (the x axis
@@ -1118,8 +979,9 @@ double _rasterCell(LayoutRegion region, double wanted, int maxCells) {
 
 /// Uniformity of [heads] over [region] with the densogram model: the water
 /// of every head spread over its sector with [profile], Christiansen CU,
-/// low-quarter DU, scheduling coefficient and dry share inside the region
-/// (see `densogramStats`), and the share thrown outside it. [cellSize] 0 =
+/// low-quarter DU, scheduling coefficient (over the driest contiguous 5 %
+/// of the region, as the densogram computes it) and dry share inside the
+/// region (see `densogramStats`), and the share thrown outside it. [cellSize] 0 =
 /// a quarter of the smallest wetted radius, coarser beyond [maxCells].
 LayoutMetrics evaluateHeadLayout(LayoutRegion region, List<LayoutHead> heads, {SprayProfile profile = SprayProfile.triangular, double cellSize = 0, int maxCells = 250000}) => evaluateSprayUniformity(
   region,
@@ -1164,14 +1026,18 @@ LayoutMetrics evaluateSprayUniformity(LayoutRegion region, List<SpraySource> sou
     }
   }
   final values = <double>[];
+  // 1.6.0 AUT (AGR-21): the rates in mm/h on the grid, for the driest
+  // contiguous window of the scheduling coefficient
+  final mmh = Float64List(nx * ny);
   var inside = 0.0;
   for (var k = 0; k < rate.length; k++) {
     if (raster.mask[k] == 0) continue;
-    values.add(rate[k] * 1000 * 3600);
+    mmh[k] = rate[k] * 1000 * 3600;
+    values.add(mmh[k]);
     inside += rate[k] * h * h;
   }
   final total = sources.fold(0.0, (s, e) => s + e.flow);
-  final st = densogramStats(values, h * h);
+  final st = densogramStats(values, h * h, driestWindowMean: driestWindowMean(mmh, nx, ny, (k) => raster.mask[k] != 0, (values.length * 0.05).round()));
   return LayoutMetrics(
     // Christiansen's CU falls below zero when the mean deviation exceeds
     // the mean (most of the area dry): 0 is the floor of the scale

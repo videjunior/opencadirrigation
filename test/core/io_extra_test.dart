@@ -129,7 +129,8 @@ void main() {
       final (e, n) = g.toUtm(10, -20);
       expect(e, closeTo(g.originEasting + 10, 1e-9));
       expect(n, closeTo(g.originNorthing - 20, 1e-9));
-      expect(g.crsName, 'WGS84 / UTM 23S');
+      // 1.6.0 PRD: a site in Brazil is named on SIRGAS 2000
+      expect(g.crsName, 'SIRGAS 2000 / UTM 23S');
       final back = GeoReference.fromJson(g.toJson());
       expect((back.zone, back.north, back.originEasting, back.originNorthing), (g.zone, g.north, g.originEasting, g.originNorthing));
     });

@@ -44,6 +44,8 @@ import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
+import 'dialogs/document_package_dialog.dart'; // 1.6.0 PRD
+import 'dialogs/title_block_dialog.dart'; // 1.6.0 PRD
 import 'history_panel.dart';
 import 'layout_mode.dart';
 import 'message_log.dart';
@@ -310,8 +312,12 @@ class _MobileShellState extends State<MobileShell> {
             row('${t('file.exportDrawing')}: ${t('exp.png')}', () => exportSheetPngAction(context, c), icon: Icons.image_outlined, key: const Key('mobile_menu_export_png')),
             for (final f in ReportFormat.values)
               row('${t('file.exportReport')}: ${t(f == ReportFormat.pdf ? 'exp.reportPdf' : 'exp.${f.name}')}', () => exportReportAction(context, c, f), icon: Icons.table_view),
+            // 1.6.0 PRD
+            row(t('prd.menu.package'), () => showDocumentPackageDialog(context, c), icon: Icons.picture_as_pdf_outlined, key: const Key('mobile_menu_document_package')),
             row(t('file.shareLink'), () => shareLinkAction(context, c), icon: Icons.share_outlined),
             row(t('file.details'), () => showProjectDetailsDialog(context, c), icon: Icons.info_outline),
+            // 1.6.0 PRD
+            row(t('prd.menu.titleBlock'), () => showTitleBlockDialog(context, c), icon: Icons.badge_outlined, key: const Key('mobile_menu_title_block')),
             row(t('file.georef'), () => showGeoreferenceDialog(context, c), icon: Icons.public),
             row(t('file.newTab'), () => ws.addTab(), icon: Icons.tab_outlined),
             row(t('file.closeTab'), widget.onCloseTab, icon: Icons.tab_unselected),

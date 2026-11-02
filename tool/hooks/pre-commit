@@ -5,7 +5,9 @@
 # Skip them for one commit with git commit --no-verify.
 #
 #   1. the staged Dart files are formatted (analysis_options.yaml: 200 columns);
-#   2. no added line carries a banned name (tool/hooks/banned_names.dart);
+#   2. no added line carries a banned name (the one list of the editorial
+#      rule, tool/hooks/banned-names.sha256, which
+#      test/editorial_names_test.dart checks the whole repository with);
 #   3. a warning when the engine, the job protocol or the strings change
 #      without web/design_worker.js (CI and test/guards/worker_bundle_test.dart
 #      fail until it is rebuilt with sh tool/build_worker.sh).

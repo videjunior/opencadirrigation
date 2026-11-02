@@ -636,6 +636,27 @@ class ZoneRouter {
 List<RoutedPipe> routeMainline(Pt pointOfConnection, List<Pt> valves, {List<List<Pt>> exclusions = const [], double obstacleMargin = 0.5, List<Pt>? boundary}) =>
     _mainlineTree(pointOfConnection, valves, _Obstacles(exclusions, math.max(0.05, obstacleMargin), boundary: boundary));
 
+/// Ways round exclusions (and inside a lot [boundary]) for the pipes other
+/// generators draw: the laterals of tree rings that would cross a pond
+/// between two trees of a row. The shortest way through the corners of the
+/// exclusions pushed out by [margin], as the zone and mainline routing go
+/// round them.
+class DetourPlanner {
+  DetourPlanner(List<List<Pt>> exclusions, {double margin = 0.5, List<Pt>? boundary}) : _o = _Obstacles(exclusions, math.max(0.05, margin), boundary: boundary);
+  final _Obstacles _o;
+
+  /// Nothing to go round.
+  bool get isEmpty => _o.isEmpty;
+
+  /// Whether the straight segment ab crosses an exclusion (or leaves the
+  /// boundary between two points inside it).
+  bool blocked(Pt a, Pt b) => _o.blocked(a, b);
+
+  /// The shortest polyline from [a] to [b] round the exclusions ([a, b]
+  /// when nothing is in the way); null when no way is found.
+  List<Pt>? path(Pt a, Pt b) => _o.path(a, b);
+}
+
 /// Valve of every zone.
 List<Pt> _placeValves(List<List<Pt>> zoneHeads, RouteOptions o, _Obstacles obstacles, PointGrid heads, List<int> owner, List<String> messages) {
   final n = zoneHeads.length;

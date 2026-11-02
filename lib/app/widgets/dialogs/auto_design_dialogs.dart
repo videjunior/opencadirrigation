@@ -16,8 +16,9 @@ import '../../../core/design/auto_layout.dart';
 import '../../../core/design/block_generator.dart';
 import '../../../core/design/densogram.dart' show SprayProfile, sprayProfileKey;
 import '../../../core/design/field_subdivision.dart';
+import '../../../core/design/lateral_limit.dart'; // 1.6.0 AUT
 import '../../../core/design/pivot_fit.dart';
-import '../../../core/design/proposal.dart' show defaultMainlineDepthM, defaultZonePipeDepthM;
+import '../../../core/design/proposal.dart' show autoMainlineDepth, autoZonePipeDepth;
 import '../../../core/design/routing.dart';
 import '../../../core/design/templates.dart';
 import '../../../core/design/tree_rings.dart';
@@ -30,6 +31,7 @@ import '../../../core/units.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
+import '../lateral_limit_view.dart'; // 1.6.0 AUT
 import 'terrain_dialogs.dart' show dialogWidth;
 
 /// Opens the automatic design dialog named [name] (`autoLayout`, `template`,
@@ -498,6 +500,34 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
   var sourceId = sources.first.id;
   var placement = ValvePlacement.nearZone;
   final preview = _Preview<_LayoutPlan>();
+  // 1.6.0 AUT: the longest run of heads a zone pipe allows, on the slope of the terrain along the rows
+  var flowVariation = defaultLateralFlowVariationPct;
+  final terrain = c.project.buildTerrain();
+  final slopes = <String, double?>{};
+  double? slopeAlong(Pt dir) => area == null ? null : slopes.putIfAbsent('${dir.x}|${dir.y}', () => terrainSlopeAlong(terrain, area, dir));
+  LateralLimitInput? runOf(_LayoutPlan plan) {
+    final l = plan.layout, p = c.project;
+    final ref = plan.family.nozzles.where((n) => n.id == l.referenceNozzleId).firstOrNull;
+    if (ref == null || !(l.spacing > 0) || l.heads.isEmpty) return null;
+    // the pipe the design would give the first stretch of the largest zone
+    var q = plan.groups.isEmpty ? l.totalFlow : 0.0;
+    for (var z = 0; z < plan.groups.length; z++) {
+      q = math.max(q, plan.flowOf(z));
+    }
+    final pipe = pipeForFlow(p.catalog, PipeUsage.zone, q, p.params.maxZoneVelocity);
+    if (pipe == null) return null;
+    final slope = slopeAlong(l.direction);
+    return LateralLimitInput(
+      key: 'layout|${ref.id}|${l.headM}|${pipe.id}|${l.spacing}|$slope',
+      spec: emitterLateralSpec(ref.curve, pipe, l.spacing, p.params),
+      nominalHeadM: l.headM,
+      minHeadM: ref.minHeadM > 0 ? ref.minHeadM : null,
+      maxHeadM: ref.maxHeadM > 0 ? ref.maxHeadM : null,
+      slopePct: slope,
+      maxVelocity: p.params.maxZoneVelocity,
+      pipeName: pipe.name,
+    );
+  }
 
   String layoutKey() => [
     familyId,
@@ -620,8 +650,8 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
           p,
           zoneNames: plan.names,
           valveSpecIds: [for (var z = 0; z < plan.groups.length; z++) pickZoneValve(p.catalog, plan.flowOf(z))?.id],
-          depth: defaultZonePipeDepthM,
-          mainlineDepth: defaultMainlineDepthM,
+          depth: autoZonePipeDepth(p),
+          mainlineDepth: autoMainlineDepth(p),
         ),
       ];
       p.entities.addAll(out);
@@ -806,6 +836,14 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
               KV(t('scope.mainline'), _len(u, routing.mainlineLength)),
               KV(t('autolay.crossings'), '${routing.crossings}', color: routing.crossings > 0 ? Cad.warning : null),
             ],
+            // 1.6.0 AUT: the longest path from a valve against the run of heads a zone pipe allows
+            LateralLimitView(
+              c: c,
+              input: runOf(plan),
+              variationPct: flowVariation,
+              onVariation: (v) => setState(() => flowVariation = v),
+              longest: routing == null || routing.zones.isEmpty ? null : routing.zones.fold<double>(0, (m, z) => math.max(m, z.maxPathLength)),
+            ),
             _messageBlock([
               ..._messages(c, plan.layout.messages, count: (n) => _headCount(c, n)),
               if (zoning != null) ..._messages(c, zoning.messages, count: (n) => _headCount(c, n)),
@@ -1087,6 +1125,11 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
   var sourceId = sources.first.id;
   var mainlineOn = false;
   final preview = _Preview<_FieldPlan>();
+  // 1.6.0 AUT: the computed maximum lateral length, on the slope of the terrain along the rows
+  var flowVariation = defaultLateralFlowVariationPct;
+  final terrain = c.project.buildTerrain();
+  final slopes = <String, double?>{};
+  double? slopeAlong(Pt dir) => field == null ? null : slopes.putIfAbsent('${dir.x}|${dir.y}', () => terrainSlopeAlong(terrain, field, dir));
 
   String key() => [
     autoDirection,
@@ -1184,7 +1227,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
             submainLabel: t('name.submain'),
             stubLabel: t('name.stub'),
             lateralPrefix: t('name.lateral'),
-            submainDepth: defaultZonePipeDepthM,
+            submainDepth: autoZonePipeDepth(p),
             exclusions: sel.others,
           ),
         );
@@ -1193,7 +1236,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
       }
       if (mainlineOn && poc != null && valves.isNotEmpty) {
         for (final m in routeMainline(poc, valves, boundary: field)) {
-          out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline, depth: defaultMainlineDepthM));
+          out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline, depth: autoMainlineDepth(p)));
         }
       }
       p.entities.addAll(out);
@@ -1255,7 +1298,24 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
               value: u.areaFromSi(maxArea),
               onChanged: (v) => setState(() => maxArea = v > 0 ? v / u.areaFromSi(1) : maxArea),
             ),
-          len(lenLabel('subdiv.maxLateral'), maxLateral, (v) => maxLateral = v <= 0 ? 0 : math.max(10, v), zero: true),
+          len(lenLabel('subdiv.maxLateral'), maxLateral, (v) => maxLateral = v <= 0 ? 0 : math.max(10, v), zero: true, key: const Key('fs_max_lateral')),
+          // 1.6.0 AUT: the longest lateral the emitter, the slope and the flow variation allow, to fill in the field above
+          Builder(
+            builder: (_) {
+              final dir = autoDirection ? longestEdgeDirection(normalizePolygon(field)) : Pt.polar(1, degToRad(directionDeg));
+              final slope = slopeAlong(dir);
+              final blocks = plan?.subdivision.blocks ?? const <FieldBlock>[];
+              return LateralLimitView(
+                c: c,
+                input: isTape ? tapeLimitInput(c.project, tapeSpec, tapeInlet, slope) : emitterLimitInput(c.project, outletSpec, nozzle, headM, lateralPipe, outletSpacing, slope),
+                variationPct: flowVariation,
+                onVariation: (v) => setState(() => flowVariation = v),
+                feed: centreFeed ? SubmainPosition.centre : null,
+                longest: blocks.isEmpty ? null : blocks.fold<double>(0, (m, b) => math.max(m, b.lateralLength)),
+                onUse: (l) => setState(() => maxLateral = math.max(10, l)),
+              );
+            },
+          ),
           _row([len(lenLabel('subdiv.road'), road, (v) => road = v, zero: true), len(lenLabel('subdiv.minWidth'), minWidth, (v) => minWidth = math.max(2, v))]),
           _switch(t('subdiv.centreFeed'), centreFeed, (v) => setState(() => centreFeed = v)),
           SectionTitle(t('dlg.laterals')),

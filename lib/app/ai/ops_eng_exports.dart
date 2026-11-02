@@ -39,6 +39,11 @@ Map<String, Object?> _sheetProps() => {
   'legend': bool_('Legend (default true).'),
   'bom_on_sheet': bool_('Bill of materials beside the drawing (needs results; default true).'),
   'base_map': bool_('The base map shown on screen under the drawing, downloaded for everything the sheets show (needs a georeference and a base map shown; default true when available).'),
+  // 1.6.0 PRD
+  'grid': str(
+    'Coordinate grid over the drawing: utm (eastings/northings of the zone; local X/Y without a georeference), geographic (parallels and meridians in degrees, needs a georeference), both; default none.',
+    [for (final g in SheetGrid.values) g.name],
+  ),
 };
 
 /// The sheet options of [a] (shared fields but the base map).
@@ -53,6 +58,8 @@ SheetOptions _sheetOf(AgentToolbox b, ToolArgs a) {
     wettedRadii: a.flag('wetted_radii') ?? true,
     legend: a.flag('legend') ?? true,
     bomOnSheet: (a.flag('bom_on_sheet') ?? true) && c.results != null,
+    // 1.6.0 PRD
+    grid: SheetGrid.values.byName(a.str('grid') ?? 'none'),
   );
 }
 
@@ -76,6 +83,11 @@ Map<String, Object?> _setProps() => {
   'current_view': bool_('Add a sheet of the user\'s current view.'),
   'details': arr(str(null, ['all', for (final k in DetailKind.values) k.name]), 'Construction detail sheets.'),
   'charts': bool_('Chart pages (grade lines, profiles, pump curves).'),
+  // 1.6.0 PRD
+  'themes': arr(
+    str(null, [for (final th in SheetTheme.values) th.name]),
+    'Thematic sheets of the terrain after the drawing sheets: slope (the slope classes with the area of each, and the classes of each irrigated area) and aspect (the direction the ground faces); they need terrain data.',
+  ),
 };
 
 /// The set of sheets [a] asks for (export_sheet_pdf, preview_sheet), the
@@ -115,6 +127,11 @@ Map<String, Object?> _setProps() => {
     charts: charts,
     profilePath: charts ? c.profilePath : null,
     clearProfilePath: !charts || c.profilePath == null,
+    // 1.6.0 PRD
+    themes: [
+      for (final th in SheetTheme.values)
+        if (a.strings('themes').contains(th.name)) th,
+    ],
   );
   return (o, (a.flag('charts') ?? false) && !chartsAvailable);
 }
@@ -148,7 +165,11 @@ List<AgentTool> exportOperations(AgentToolbox b) {
         final file = '${engStem(c)}.pdf';
         await engFileSink(c, file, DrawingFormat.pdf.mime, data);
         final split = o.split;
-        final extra = (split == SheetSplit.zones ? zoneMembers(b.p, c.results).length : (split == SheetSplit.areas ? areaZones(b.p, const {}).length : 0)) + o.windows.length;
+        final extra =
+            (split == SheetSplit.zones ? zoneMembers(b.p, c.results).length : (split == SheetSplit.areas ? areaZones(b.p, const {}).length : 0)) +
+            o.windows.length +
+            // 1.6.0 PRD: the thematic sheets of the terrain
+            builder.sheetPlan(o).where((s) => s.theme != null).length;
         return ToolOutput(
           'Saved $file: ${1 + extra} drawing sheets (${o.page.label} ${o.landscape ? 'landscape' : 'portrait'}, 1:${engN(o.scale ?? builder.sheetScale(o), 0)}${o.scale == null ? ' to fit' : ''}), ${builder.detailSheets(o).length} detail sheets${o.includeReports ? ', report pages' : ''}${o.charts ? ', chart pages' : ''}${o.rasters.isEmpty ? '' : ', base map under the drawing'}.${noCharts ? ' No charts: they need design results, a profile path or a catalogue pump.' : ''}',
         );

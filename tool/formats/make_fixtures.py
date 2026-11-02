@@ -27,7 +27,8 @@ import tifffile
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'test' / 'fixtures' / 'formats'
+# OCI_FIXTURES_OUT writes elsewhere (to compare a run with the committed files)
+OUT = Path(os.environ['OCI_FIXTURES_OUT']) if os.environ.get('OCI_FIXTURES_OUT') else ROOT / 'test' / 'fixtures' / 'formats'
 OUT.mkdir(parents=True, exist_ok=True)
 
 # Brasília, UTM zone 23S (metres) – the same reference point as the other tests
@@ -243,6 +244,39 @@ for version, name in (('R2000', 'client_r2000.dxf'), ('R12', 'client_r12.dxf'), 
 # millimetres: $INSUNITS = 4 and every coordinate ×1000
 client_drawing('R2010', units=4, scale=1000.0).saveas(OUT / 'client_mm_r2010.dxf')
 print('  client_mm_r2010.dxf')
+
+
+def to_dwg(dxf_name, dwg_name):
+    """The DWG R2000 LibreDWG's dxf2dwg writes from the DXF fixture
+    [dxf_name] (left as it is when dxf2dwg is not installed)."""
+    if not shutil.which('dxf2dwg'):
+        print(f'  {dwg_name}: dxf2dwg not installed, not rewritten')
+        return
+    target = OUT / dwg_name
+    if target.exists():
+        target.unlink()
+    r = subprocess.run(['dxf2dwg', '--as', 'r2000', '-y', '-o', str(target), str(OUT / dxf_name)], capture_output=True, text=True)
+    print(f'  {target.name} ({target.stat().st_size} bytes)' if r.returncode == 0 and target.exists() else f'  {target.name}: dxf2dwg failed ({r.returncode}) {r.stderr[-300:]}')
+
+
+# the units of the DWG header (FMT-02): the drawing in millimetres as a DWG
+to_dwg('client_mm_r2010.dxf', 'client_mm_r2000.dwg')
+
+# code pages (FMT-12, FMT-27): a DXF R2000 written in Windows-1251
+# ($DWGCODEPAGE ANSI_1251), with a Cyrillic layer and text, as the CAD
+# programs of that locale write it (by hand: ezdxf writes R2000 files in
+# the code page of the header too, but adds tables the case does not need),
+# and the DWG LibreDWG converts it to
+CP1251_DXF = (
+    '  0\nSECTION\n  2\nHEADER\n  9\n$ACADVER\n  1\nAC1015\n  9\n$DWGCODEPAGE\n  3\nANSI_1251\n  9\n$INSUNITS\n 70\n6\n  0\nENDSEC\n'
+    '  0\nSECTION\n  2\nTABLES\n  0\nTABLE\n  2\nLAYER\n 70\n1\n  0\nLAYER\n  2\nТрубы\n 70\n0\n 62\n3\n  6\nCONTINUOUS\n  0\nENDTAB\n  0\nENDSEC\n'
+    '  0\nSECTION\n  2\nENTITIES\n'
+    '  0\nLINE\n  8\nТрубы\n 10\n0\n 20\n0\n 30\n0\n 11\n10\n 21\n0\n 31\n0\n'
+    '  0\nTEXT\n  8\nТрубы\n 10\n0\n 20\n5\n 30\n0\n 40\n1\n  1\nЗадвижка №1\n'
+    '  0\nENDSEC\n  0\nEOF\n'
+)
+write('cp1251_r2000.dxf', CP1251_DXF.encode('cp1251'))
+to_dwg('cp1251_r2000.dxf', 'cp1251_r2000.dwg')
 
 if shutil.which('dxf2dwg'):
     for ver in ('r2000',):
