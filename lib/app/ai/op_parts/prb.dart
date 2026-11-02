@@ -57,8 +57,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       b,
       group: 'engineering',
       name: 'permit_table',
-      description:
-          'Reports → Technical documents → Water permit table: for every water supply (point of abstraction) the fields a water-use permit application asks for — its coordinates on SIRGAS 2000 (degrees, minutes and seconds, decimal degrees, UTM with the EPSG code; blank without a georeference), the kind of source, water body, basin, municipality, register and permit numbers, status, the purpose, irrigation methods, crops and area it waters, its pumps (model, rated power in kW and cv, duty flow and head, hour meter), whether it has a flow meter — and the monthly regime as the federal permits write it: flow (m³/h), hours a day, days a month, m³/day, m³/month and the gross requirement of the areas, never below it; plus the capacity check against the peak month, the federal floor of 300 m³/ha (Resolution ANA 1.939/2017, when on), and the self-monitoring obligation of Resolution ANA 188/2024 for the chosen management unit. Volumes in SI whatever the display units. Change the permit data and the regime with set_permit_info; export the document with export_document "permit". Input: source (id or name; omitted: all). Output: the fields, the monthly table and the remarks of each source.',
+      description: 'Reports → Technical documents → Water permit table: for every water supply (point of abstraction) the fields a water-use permit application asks for — its coordinates on SIRGAS 2000 (degrees, minutes and seconds, decimal degrees, UTM with the EPSG code; blank without a georeference), the kind of source, water body, basin, municipality, register and permit numbers, status, the purpose, irrigation methods, crops and area it waters, its pumps (model, rated power in kW and cv, duty flow and head, hour meter), whether it has a flow meter — and the monthly regime as the federal permits write it: flow (m³/h), hours a day, days a month, m³/day, m³/month and the gross requirement of the areas, never below it; plus the capacity check against the peak month, the federal floor of 300 m³/ha (Resolution ANA 1.939/2017, when on), and the self-monitoring obligation of Resolution ANA 188/2024 for the chosen management unit. Volumes in SI whatever the display units. Change the permit data and the regime with set_permit_info; export the document with export_document "permit". Input: source (id or name; omitted: all). Output: the fields, the monthly table and the remarks of each source.',
       schema: obj({'source': str('Water supply id or name; omitted: every source.')}),
       run: (a, _) async {
         final st = buildPermitStudy(b.p, c.results, cropName: c.exporter().labels.category);
@@ -90,15 +89,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
           );
           final rows = [
             for (var m = 0; m < 12; m++)
-              [
-                engMonths[m],
-                engN(src.flowM3h[m], 1),
-                engN(src.hoursPerDay[m], 1),
-                src.daysPerMonth[m],
-                engN(src.volumeDayM3[m], 1),
-                engN(src.volumeMonthM3[m], 0),
-                engN(src.needM3[m], 0),
-              ],
+              [engMonths[m], engN(src.flowM3h[m], 1), engN(src.hoursPerDay[m], 1), src.daysPerMonth[m], engN(src.volumeDayM3[m], 1), engN(src.volumeMonthM3[m], 0), engN(src.needM3[m], 0)],
           ];
           final table = engTable(const ['Month', 'Q m³/h', 'h/day', 'days', 'm³/day', 'm³/month', 'need m³'], rows);
           out.write('\n$table');
@@ -121,8 +112,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       group: 'engineering',
       name: 'set_permit_info',
       effect: ToolEffect.write,
-      description:
-          'Reports → Technical documents → Water permit table, its fields: the permit data of one water supply (kind surface|groundwater, water_body, basin, municipality, registry — the number in the register of water users, CNARH in Brazil —, permit_number, status project|operation) and the regime of the table (fixed_hours_per_day: the pumping hours a day written in every month, 0 = the days with irrigation and the hours they need; max_hours_per_day for the capacity check, default 21; federal_floor: the 300 m³/ha a month floor of Resolution ANA 1.939/2017; monitoring_unit: the management unit of the self-monitoring thresholds of Resolution ANA 188/2024, Annex I, "other" for the remaining federal units and the state units). Give "source" (id or name) for the source fields. One undo step; the design results are kept. Output: what was set.',
+      description: 'Reports → Technical documents → Water permit table, its fields: the permit data of one water supply (kind surface|groundwater, water_body, basin, municipality, registry — the number in the register of water users, CNARH in Brazil —, permit_number, status project|operation) and the regime of the table (fixed_hours_per_day: the pumping hours a day written in every month, 0 = the days with irrigation and the hours they need; max_hours_per_day for the capacity check, default 21; federal_floor: the 300 m³/ha a month floor of Resolution ANA 1.939/2017; monitoring_unit: the management unit of the self-monitoring thresholds of Resolution ANA 188/2024, Annex I, "other" for the remaining federal units and the state units). Give "source" (id or name) for the source fields. One undo step; the design results are kept. Output: what was set.',
       schema: obj({
         'source': str('Water supply id or name (for the source fields).'),
         'kind': str('Kind of source.', SourcePermitInfo.kinds),
@@ -188,8 +178,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       group: 'engineering',
       name: 'document_text',
       args: (i) => {'n': _docTitle(b, i['document'])},
-      description:
-          'Reports → Technical documents: one of the documents built from the project without the AI, as Markdown — the water permit table (permit), the descriptive and calculation memorial (memorial: identification, objective, areas and crops, climate and water requirement, water source, design criteria, the formulas of the engine with their sources, zones, network, pumping and energy, operation, checks, materials, notes, references), the operation and maintenance plan (om: start-up, pressure test, pressure sheet of every zone, flushing, filters, chlorination, off-season, schedule by component, self-monitoring, spare parts), the budget by compositions (budget: items, compositions of labour and equipment, BDI, hourly costs, physical-financial schedule) or the life-cycle cost of the alternatives (lcc). Read it to review, summarise or rewrite it for the user; the texts the designer adds are set with set_memorial_texts, the figures with the set_… operations, and the file is written with export_document. Inputs: document, max_chars (default 20000). Output: the Markdown text.',
+      description: 'Reports → Technical documents: one of the documents built from the project without the AI, as Markdown — the water permit table (permit), the descriptive and calculation memorial (memorial: identification, objective, areas and crops, climate and water requirement, water source, design criteria, the formulas of the engine with their sources, zones, network, pumping and energy, operation, checks, materials, notes, references), the operation and maintenance plan (om: start-up, pressure test, pressure sheet of every zone, flushing, filters, chlorination, off-season, schedule by component, self-monitoring, spare parts), the budget by compositions (budget: items, compositions of labour and equipment, BDI, hourly costs, physical-financial schedule) or the life-cycle cost of the alternatives (lcc). Read it to review, summarise or rewrite it for the user; the texts the designer adds are set with set_memorial_texts, the figures with the set_… operations, and the file is written with export_document. Inputs: document, max_chars (default 20000). Output: the Markdown text.',
       schema: obj({'document': docs, 'max_chars': int_('Most characters returned, 1000–100000 (default 20000).')}, required: ['document']),
       run: (a, _) async {
         final key = a.str('document', required: true)!;
@@ -204,9 +193,14 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       name: 'export_document',
       effect: ToolEffect.export,
       args: (i) => {'n': _docTitle(b, i['document'])},
-      description:
-          'Reports → Technical documents → Export: writes one of the documents (permit, memorial, om, budget, lcc — see document_text) as a file: pdf (A4 pages with header and page numbers; the permit table, the budget and the life-cycle cost in landscape), xlsx (a sheet with the text and one per table, numbers as numbers), csv (semicolons, to paste into a form) or md (Markdown, to edit). Always confirmed by the user (a download in the browser). Inputs: document, format. Output: the file name.',
-      schema: obj({'document': docs, 'format': str('File format.', [for (final f in DocFormat.values) f.name])}, required: ['document', 'format']),
+      description: 'Reports → Technical documents → Export: writes one of the documents (permit, memorial, om, budget, lcc — see document_text) as a file: pdf (A4 pages with header and page numbers; the permit table, the budget and the life-cycle cost in landscape), xlsx (a sheet with the text and one per table, numbers as numbers), csv (semicolons, to paste into a form) or md (Markdown, to edit). Always confirmed by the user (a download in the browser). Inputs: document, format. Output: the file name.',
+      schema: obj(
+        {
+          'document': docs,
+          'format': str('File format.', [for (final f in DocFormat.values) f.name]),
+        },
+        required: ['document', 'format'],
+      ),
       run: (a, _) async {
         final key = a.str('document', required: true)!;
         if (!techDocumentKeys.contains(key)) throw ToolInputError('"document" must be one of ${techDocumentKeys.join(', ')}.');
@@ -223,8 +217,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       b,
       group: 'engineering',
       name: 'life_cycle_cost',
-      description:
-          'Reports → Technical documents → Life-cycle cost: compares the current design (with results) and every alternative saved with Design → Alternatives over N years — LCC = I + Repl − Res + E + W + OM&R, every term a present value at the discount rate (NIST Handbook 135): the investment (the quote total, or the bill of materials), the replacement of each category of parts at the end of its life, the residual value at the end, the energy of the design (raised by the escalation), the water at its price and the yearly maintenance — with the equivalent annual cost, the cost per hectare a year and per m³, and the rank. Alternatives saved without results count their capital in one category (marked approximate). Change the horizon, rates, water price and the life and maintenance of the categories with set_life_cycle_settings. No input. Output: the settings and the table of the alternatives.',
+      description: 'Reports → Technical documents → Life-cycle cost: compares the current design (with results) and every alternative saved with Design → Alternatives over N years — LCC = I + Repl − Res + E + W + OM&R, every term a present value at the discount rate (NIST Handbook 135): the investment (the quote total, or the bill of materials), the replacement of each category of parts at the end of its life, the residual value at the end, the energy of the design (raised by the escalation), the water at its price and the yearly maintenance — with the equivalent annual cost, the cost per hectare a year and per m³, and the rank. Alternatives saved without results count their capital in one category (marked approximate). Change the horizon, rates, water price and the life and maintenance of the categories with set_life_cycle_settings. No input. Output: the settings and the table of the alternatives.',
       schema: obj({}),
       run: (a, _) async {
         final st = buildLifeCycleStudy(b.p, c.results, currentName: t('prb.lcc.current'));
@@ -259,8 +252,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       group: 'engineering',
       name: 'set_life_cycle_settings',
       effect: ToolEffect.write,
-      description:
-          'Reports → Technical documents → Life-cycle cost, its settings: years (1–100, default 20), discount_pct (% a year; use_design_interest true = back to the interest of the design parameters), energy_escalation_pct (real rise of the energy price a year), water_price (project currency per m³), residual (credit the value left at the end), life {category: years} and maintenance {category: % of its cost a year} by category of the bill of materials (bom.pipes, bom.fittings, bom.takeoffs, bom.risers, bom.tapes, bom.outlets, bom.valves, bom.devices, bom.pumps, bom.pivots, bom.electrical, other), reset_categories (back to the reference values). One undo step; the results are kept. Output: what was set.',
+      description: 'Reports → Technical documents → Life-cycle cost, its settings: years (1–100, default 20), discount_pct (% a year; use_design_interest true = back to the interest of the design parameters), energy_escalation_pct (real rise of the energy price a year), water_price (project currency per m³), residual (credit the value left at the end), life {category: years} and maintenance {category: % of its cost a year} by category of the bill of materials (bom.pipes, bom.fittings, bom.takeoffs, bom.risers, bom.tapes, bom.outlets, bom.valves, bom.devices, bom.pumps, bom.pivots, bom.electrical, other), reset_categories (back to the reference values). One undo step; the results are kept. Output: what was set.',
       schema: obj({
         'years': int_('1–100.'),
         'discount_pct': num_('0–100 % a year.'),
@@ -325,8 +317,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       group: 'engineering',
       name: 'set_memorial_texts',
       effect: ToolEffect.write,
-      description:
-          'Reports → Technical documents → Memorial, its texts: objective (the objective and scope, printed before the generated objective) and notes (closing remarks). The rest of the memorial comes from the project (document_text "memorial" reads it). An empty text clears it. One undo step. Output: what was set.',
+      description: 'Reports → Technical documents → Memorial, its texts: objective (the objective and scope, printed before the generated objective) and notes (closing remarks). The rest of the memorial comes from the project (document_text "memorial" reads it). An empty text clears it. One undo step. Output: what was set.',
       schema: obj({'objective': str('Objective and scope.'), 'notes': str('Closing remarks.')}),
       run: (a, _) async {
         engNotBusy(c);
@@ -345,8 +336,7 @@ List<AgentTool> opsPrb(AgentToolbox b) {
       group: 'engineering',
       name: 'set_om_settings',
       effect: ToolEffect.write,
-      description:
-          'Reports → Technical documents → Operation and maintenance plan, the figures the project does not hold: filter_delta_m (rise of the pressure loss of a filter over its clean loss that calls for cleaning, metres of water, default 5), chlorine_product_pct (available chlorine of the product, default 10), chlorine_continuous_mg_l (default 1) and chlorine_shock_mg_l (default 10) for the injection rates of every system flow, spares_pct (spare parts as % of what is installed, default 2). One undo step. Output: what was set.',
+      description: 'Reports → Technical documents → Operation and maintenance plan, the figures the project does not hold: filter_delta_m (rise of the pressure loss of a filter over its clean loss that calls for cleaning, metres of water, default 5), chlorine_product_pct (available chlorine of the product, default 10), chlorine_continuous_mg_l (default 1) and chlorine_shock_mg_l (default 10) for the injection rates of every system flow, spares_pct (spare parts as % of what is installed, default 2). One undo step. Output: what was set.',
       schema: obj({
         'filter_delta_m': num_('0.1–50 m.'),
         'chlorine_product_pct': num_('0.1–100 %.'),
@@ -371,7 +361,10 @@ List<AgentTool> opsPrb(AgentToolbox b) {
           if (spares != null) s.sparesPct = spares;
           return true;
         }, invalidate: false);
-        return ToolOutput('Set ${[for (final k in i.keys) if (i[k] != null) k].join(', ')}. document_text "om" shows the plan.');
+        return ToolOutput(
+          'Set ${[for (final k in i.keys)
+            if (i[k] != null) k].join(', ')}. document_text "om" shows the plan.',
+        );
       },
     ),
     // ---------------------------------------------------------------- budget by compositions (PRD-21)

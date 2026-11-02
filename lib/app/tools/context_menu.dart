@@ -185,7 +185,12 @@ Future<void> showCanvasContextMenu(BuildContext context, ProjectController c, Ca
       position: position,
       items: [
         // the default height (48 px): a finger chooses the snap too
-        for (final m in snapModes) PopupMenuItem<String>(key: Key('ctx_snap_$m'), value: m, child: Text(c.t(snapModeKey(m)), style: const TextStyle(fontSize: 13))),
+        for (final m in snapModes)
+          PopupMenuItem<String>(
+            key: Key('ctx_snap_$m'),
+            value: m,
+            child: Text(c.t(snapModeKey(m)), style: const TextStyle(fontSize: 13)),
+          ),
       ],
     );
     if (mode == null) return;

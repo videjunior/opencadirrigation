@@ -147,7 +147,11 @@ const _motReservoir = <String, (String, String, String)>{
   'res.remove': ('Tirar o reservatório', 'Remove the reservoir', 'Quitar el embalse'),
   'hist.reservoir': ('Reservatório', 'Reservoir', 'Embalse'),
   'warn.reservoir_no_outline': ('Reservatório sem contorno fechado', 'Reservoir without a closed outline', 'Embalse sin contorno cerrado'),
-  'warn.reservoir_full_below_bottom': ('O nível cheio do reservatório está abaixo do fundo', 'The full level of the reservoir is below its bottom', 'El nivel lleno del embalse está por debajo del fondo'),
+  'warn.reservoir_full_below_bottom': (
+    'O nível cheio do reservatório está abaixo do fundo',
+    'The full level of the reservoir is below its bottom',
+    'El nivel lleno del embalse está por debajo del fondo',
+  ),
   'warn.eps_reservoir_empty': ('O reservatório esvaziou durante o dia', 'The reservoir ran dry during the day', 'El embalse se vació durante el día'),
   'warn.eps_reservoir_full': ('O reservatório encheu e verteu durante o dia', 'The reservoir filled and spilled during the day', 'El embalse se llenó y vertió durante el día'),
   'ai.op.set_reservoir': ('Definir o reservatório da fonte {n}', 'Set the reservoir of the supply {n}', 'Definir el embalse de la fuente {n}'),
@@ -188,7 +192,11 @@ const _motScenarios = <String, (String, String, String)>{
   'life.supplyHead': ('Pressão que as fontes precisam dar', 'Pressure the supplies must give', 'Presión que deben dar las fuentes'),
   'life.pumpHead': ('Maior altura de bomba', 'Highest pump head', 'Mayor altura de bomba'),
   'life.energy': ('Energia por ano', 'Energy a year', 'Energía por año'),
-  'life.note.life_no_design': ('Calcule o projeto primeiro: a comparação parte dos tubos do projeto.', 'Run the design first: the comparison starts from the pipes of the design.', 'Calcule el proyecto primero: la comparación parte de las tuberías del proyecto.'),
+  'life.note.life_no_design': (
+    'Calcule o projeto primeiro: a comparação parte dos tubos do projeto.',
+    'Run the design first: the comparison starts from the pipes of the design.',
+    'Calcule el proyecto primero: la comparación parte de las tuberías del proyecto.',
+  ),
   'life.note.life_method_not_aged': (
     'Com Scobey ou Manning a perda nos tubos não envelhece aqui (só o C de Hazen-Williams e a rugosidade de Darcy-Weisbach); o entupimento vale.',
     'With Scobey or Manning the pipe losses do not age here (only the Hazen-Williams C and the Darcy-Weisbach roughness do); the clogging applies.',
@@ -227,7 +235,11 @@ const _motPlus = <String, (String, String, String)>{
   'pumpStation.add': ('Acrescentar bomba', 'Add a pump', 'Añadir bomba'),
   'pumpStation.remove': ('Tirar esta bomba', 'Remove this pump', 'Quitar esta bomba'),
   'pumpStation.duty': ('Operação em cada turno (último cálculo)', 'Operation in each system flow (latest design)', 'Operación en cada turno (último cálculo)'),
-  'pumpStation.noResults': ('Calcule o projeto para ver o ponto de operação de cada bomba.', 'Run the design to see the operating point of each pump.', 'Calcule el proyecto para ver el punto de operación de cada bomba.'),
+  'pumpStation.noResults': (
+    'Calcule o projeto para ver o ponto de operação de cada bomba.',
+    'Run the design to see the operating point of each pump.',
+    'Calcule el proyecto para ver el punto de operación de cada bomba.',
+  ),
   'pumpStation.running': ('{n} de {duty} bombas em serviço ligadas', '{n} of {duty} duty pumps on', '{n} de {duty} bombas en servicio encendidas'),
   'pumpStation.on': ('ligada', 'on', 'encendida'),
   'pumpStation.off': ('desligada', 'off', 'apagada'),
@@ -239,7 +251,11 @@ const _motPlus = <String, (String, String, String)>{
   'ai.op.set_pump_station': ('Configurar a estação de bombeamento {n}', 'Set up the pump station {n}', 'Configurar la estación de bombeo {n}'),
   'ai.op.pump_stations': ('Ler as estações de bombeamento', 'Read the pump stations', 'Leer las estaciones de bombeo'),
   // ---- real operation of the zones at the pressure the mainline gives them
-  'dlg.realZoneOperation': ('Operação real dos setores (pela pressão que a linha principal entrega)', 'Real operation of the zones (at the pressure the mainline delivers)', 'Operación real de los sectores (con la presión que entrega la línea principal)'),
+  'dlg.realZoneOperation': (
+    'Operação real dos setores (pela pressão que a linha principal entrega)',
+    'Real operation of the zones (at the pressure the mainline delivers)',
+    'Operación real de los sectores (con la presión que entrega la línea principal)',
+  ),
   'dlg.realZoneOperationHint': (
     'Depois do cálculo, cada setor e pivô de cada turno também funciona com a pressão que de fato chega à válvula: os emissores entregam o que essa pressão permite, uma válvula que não regula passa a sobra adiante, e a linha e as bombas se acomodam nas vazões que resultam. O resultado sai na tabela de operação real.',
     'After the design, every zone and pivot of each system flow also runs at the pressure that really reaches its valve: the emitters deliver what that pressure allows, a valve that does not regulate passes the surplus on, and the line and the pumps settle at the flows that follow. The result is in the real operation table.',
@@ -258,7 +274,11 @@ const _motPlus = <String, (String, String, String)>{
   'valvePilot.reducing': ('Redutor de pressão', 'Pressure reducing', 'Reductor de presión'),
   'valvePilot.sustaining': ('Sustentador de pressão', 'Pressure sustaining', 'Sostenedor de presión'),
   'valvePilot.reducingSustaining': ('Redutor e sustentador', 'Reducing and sustaining', 'Reductor y sostenedor'),
-  'props.pilotReduce': ('Pressão mantida a jusante (piloto redutor; 0 = a do cálculo)', 'Pressure held after the valve (reducing pilot; 0 = the design\'s)', 'Presión mantenida aguas abajo (piloto reductor; 0 = la del cálculo)'),
+  'props.pilotReduce': (
+    'Pressão mantida a jusante (piloto redutor; 0 = a do cálculo)',
+    'Pressure held after the valve (reducing pilot; 0 = the design\'s)',
+    'Presión mantenida aguas abajo (piloto reductor; 0 = la del cálculo)',
+  ),
   'props.pilotSustain': ('Pressão mantida a montante (piloto sustentador)', 'Pressure kept before the valve (sustaining pilot)', 'Presión mantenida aguas arriba (piloto sostenedor)'),
   // ---- the profile of the mainline in the design: high points and air valves
   'warn.air_valve_missing': ('Ponto alto da linha principal sem ventosa', 'High point of the mainline without an air valve', 'Punto alto de la línea principal sin ventosa'),

@@ -72,7 +72,21 @@ void main() {
 
   setUp(() async {
     LocalProjectStore().clearAll();
-    for (final k in ['ai.model', 'ai.effort', 'ai.mode', 'ai.steps', 'ai.parts', 'ai.cap', 'ai.compact', 'ai.instructions', 'ai.keepChats', 'ai.stageEffort', 'ai.attention', 'ai.notify', AiAssistant.titlesPref]) {
+    for (final k in [
+      'ai.model',
+      'ai.effort',
+      'ai.mode',
+      'ai.steps',
+      'ai.parts',
+      'ai.cap',
+      'ai.compact',
+      'ai.instructions',
+      'ai.keepChats',
+      'ai.stageEffort',
+      'ai.attention',
+      'ai.notify',
+      AiAssistant.titlesPref,
+    ]) {
       removePref(k);
     }
     setPref('ai.showChanges', 'off');
@@ -195,7 +209,10 @@ void main() {
 
   testWidgets('a task that waits or ends in the background: the title blinks, and a system notification when allowed', (tester) async {
     AiAttention.notify = true;
-    final claude = FakeClaude([(_) => FakeReply.tools([('create_entities', area('A', 0))]), (_) => FakeReply.text('Drawn.')]);
+    final claude = FakeClaude([
+      (_) => FakeReply.tools([('create_entities', area('A', 0))]),
+      (_) => FakeReply.text('Drawn.'),
+    ]);
     AiAssistant.debugTransport = claude.call;
     c.project.meta.name = 'Orchard';
     await open(tester);

@@ -262,7 +262,11 @@ const _agr = <String, (String, String, String)>{
     'No soil in the area under the pivot point: choose the soil of the area or type the family and the storage.',
     'Sin suelo en el área bajo el punto del pivote: elija el suelo del área o escriba la familia y el almacenamiento.',
   ),
-  'ro.none': ('Nada a analisar: sem máquinas nem áreas de aspersores com solo.', 'Nothing to analyse: no machine and no sprinkler area with a soil.', 'Nada que analizar: sin máquinas ni áreas de aspersores con suelo.'),
+  'ro.none': (
+    'Nada a analisar: sem máquinas nem áreas de aspersores com solo.',
+    'Nothing to analyse: no machine and no sprinkler area with a soil.',
+    'Nada que analizar: sin máquinas ni áreas de aspersores con suelo.',
+  ),
   'ro.worst': ('Pior ponto', 'Worst point', 'Peor punto'),
   'ro.machine': ('Máquina', 'Machine', 'Máquina'),
   'ro.radius': ('Raio', 'Radius', 'Radio'),

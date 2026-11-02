@@ -143,7 +143,12 @@ LateralRun maxLateralRun(
   // (result, the limit it passes, or null when it holds)
   (LateralRun, LateralLimitBy?) at(int n) {
     final l = lengthOf(n);
-    final r = analyzeLateralForMeanPressure(spec.copyWith(length: l), nominalHeadM, elevationAt: z, manufacturerCv: manufacturerCv);
+    final r = analyzeLateralForMeanPressure(
+      spec.copyWith(length: l),
+      nominalHeadM,
+      elevationAt: z,
+      manufacturerCv: manufacturerCv,
+    );
     var qMin = double.infinity, qMax = 0.0;
     for (final p in r.points) {
       qMin = math.min(qMin, p.emitterFlow);
@@ -194,15 +199,16 @@ LateralRun maxLateralRun(
     if (n == cap) break;
   }
   if (bad == null) return best;
+  var fail = bad;
   // bisection between the last that holds and the first that fails
-  while (bad - good > 1) {
-    final mid = (good + bad) ~/ 2;
+  while (fail - good > 1) {
+    final mid = (good + fail) ~/ 2;
     final r = at(mid);
     if (r.$2 == null) {
       good = mid;
       best = r.$1;
     } else {
-      bad = mid;
+      fail = mid;
       why = r.$2;
     }
   }
@@ -323,9 +329,7 @@ double longestRowLength(List<Pt> polygon, Pt direction, double spacing, {List<Li
     for (final piece in clipPolylineToPolygon(line, polygon)) {
       var parts = [piece];
       for (final h in exclusions) {
-        parts = [
-          for (final p in parts) ..._outside(p, h),
-        ];
+        parts = [for (final p in parts) ..._outside(p, h)];
       }
       for (final p in parts) {
         best = math.max(best, polylineLength(p));

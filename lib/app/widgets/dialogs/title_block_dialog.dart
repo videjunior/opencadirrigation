@@ -97,20 +97,11 @@ Future<void> showTitleBlockDialog(BuildContext context, ProjectController c) asy
                   children: [
                     Text(t('prd.tb.hint'), style: TextStyle(fontSize: 12, color: Cad.fg70, height: 1.35)),
                     SectionTitle(t('prd.tb.secProject')),
-                    _fieldRow([
-                      text('client', t('dlg.client'), m.client, (v) => m.client = v),
-                      text('site', t('prd.tb.property'), m.site, (v) => m.site = v),
-                    ]),
-                    _fieldRow([
-                      text('municipality', t('prd.tb.municipality'), tb.municipality, (v) => tb.municipality = v),
-                      text('car', t('prd.tb.carLong'), tb.car, (v) => tb.car = v),
-                    ]),
+                    _fieldRow([text('client', t('dlg.client'), m.client, (v) => m.client = v), text('site', t('prd.tb.property'), m.site, (v) => m.site = v)]),
+                    _fieldRow([text('municipality', t('prd.tb.municipality'), tb.municipality, (v) => tb.municipality = v), text('car', t('prd.tb.carLong'), tb.car, (v) => tb.car = v)]),
                     text('permit', t('prd.tb.permitLong'), tb.waterPermit, (v) => tb.waterPermit = v),
                     SectionTitle(t('prd.tb.secLead')),
-                    _fieldRow([
-                      text('responsible', t('prd.tb.responsible'), tb.responsible, (v) => tb.responsible = v),
-                      text('designer', t('dlg.designer'), m.designer, (v) => m.designer = v),
-                    ]),
+                    _fieldRow([text('responsible', t('prd.tb.responsible'), tb.responsible, (v) => tb.responsible = v), text('designer', t('dlg.designer'), m.designer, (v) => m.designer = v)]),
                     _fieldRow([
                       text('council', t('prd.tb.council'), tb.council, (v) => tb.council = v),
                       text('registration', t('prd.tb.registrationNo'), tb.registration, (v) => tb.registration = v),
@@ -125,7 +116,11 @@ Future<void> showTitleBlockDialog(BuildContext context, ProjectController c) asy
                         decoration: InputDecoration(labelText: t('prd.tb.stage'), isDense: true),
                         style: TextStyle(fontSize: 12, color: Cad.fg),
                         items: [
-                          for (final s in ProjectStage.values) DropdownMenuItem(value: s, child: Text(t('prd.stage.${s.name}'), style: const TextStyle(fontSize: 12))),
+                          for (final s in ProjectStage.values)
+                            DropdownMenuItem(
+                              value: s,
+                              child: Text(t('prd.stage.${s.name}'), style: const TextStyle(fontSize: 12)),
+                            ),
                         ],
                         onChanged: (v) => setState(() => tb.stage = v ?? ProjectStage.none),
                       ),
@@ -149,7 +144,10 @@ Future<void> showTitleBlockDialog(BuildContext context, ProjectController c) asy
                           Container(
                             key: const Key('tb_logo_preview'),
                             padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Cad.fg24)),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Cad.fg24),
+                            ),
                             child: Image.memory(tb.logo!, height: 48, fit: BoxFit.contain, gaplessPlayback: true, errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48)),
                           ),
                         OutlinedButton.icon(
@@ -166,8 +164,7 @@ Future<void> showTitleBlockDialog(BuildContext context, ProjectController c) asy
                             setState(() {});
                           },
                         ),
-                        if (tb.logo != null)
-                          TextButton(key: const Key('tb_logo_remove'), onPressed: () => setState(() => tb.logo = null), child: Text(t('prd.tb.logoRemove'))),
+                        if (tb.logo != null) TextButton(key: const Key('tb_logo_remove'), onPressed: () => setState(() => tb.logo = null), child: Text(t('prd.tb.logoRemove'))),
                       ],
                     ),
                     Padding(
@@ -210,12 +207,7 @@ Future<void> showTitleBlockDialog(BuildContext context, ProjectController c) asy
               ),
             ),
             actions: [
-              if (defaults != null)
-                TextButton(
-                  key: const Key('tb_defaults_fill'),
-                  onPressed: () => setState(() => tb.adoptOwner(defaults)),
-                  child: Text(t('prd.tb.defaultsFill')),
-                ),
+              if (defaults != null) TextButton(key: const Key('tb_defaults_fill'), onPressed: () => setState(() => tb.adoptOwner(defaults)), child: Text(t('prd.tb.defaultsFill'))),
               TextButton(
                 key: const Key('tb_defaults_save'),
                 onPressed: () {

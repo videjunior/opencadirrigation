@@ -98,9 +98,7 @@ class PdfImage {
 }
 
 class PdfDocument {
-  PdfDocument({this.title = '', this.author = '', this.subject = '', this.creator = 'OpenCADIrrigation', PdfFonts? fonts, this.pdfA = false, DateTime? now})
-    : fonts = fonts ?? PdfFonts.shared,
-      _now = now;
+  PdfDocument({this.title = '', this.author = '', this.subject = '', this.creator = 'OpenCADIrrigation', PdfFonts? fonts, this.pdfA = false, this._now}) : fonts = fonts ?? PdfFonts.shared;
   final String title;
   final String author;
   final String subject;
@@ -341,7 +339,9 @@ class PdfDocument {
       catalog.write(' /OCProperties << /OCGs [$refs] /D << /Name ${pdfTextString(layerTitle!)} /Order [$refs] /ON [$refs] /OFF [] /BaseState /ON >> >>');
     }
     if (pdfA) {
-      catalog.write(' /Metadata $metadataId 0 R /OutputIntents [<< /Type /OutputIntent /S /GTS_PDFA1 /OutputConditionIdentifier (sRGB IEC61966-2.1) /Info (sRGB IEC61966-2.1) /DestOutputProfile $profileId 0 R >>]');
+      catalog.write(
+        ' /Metadata $metadataId 0 R /OutputIntents [<< /Type /OutputIntent /S /GTS_PDFA1 /OutputConditionIdentifier (sRGB IEC61966-2.1) /Info (sRGB IEC61966-2.1) /DestOutputProfile $profileId 0 R >>]',
+      );
     }
     catalog.write(' >>');
     obj(1, latin1.encode(catalog.toString()));

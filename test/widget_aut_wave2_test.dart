@@ -380,9 +380,11 @@ void main() {
     expect(c.project.entities, hasLength(count), reason: 'put back as it was');
     final id = RegExp(r'^- (\S+): ', multiLine: true).firstMatch(preview!.text)!.group(1)!;
     ToolOutput? applied;
-    op('auto_fix_selected').run({
-      'keep': [id],
-    }).then((v) => applied = v);
+    op('auto_fix_selected')
+        .run({
+          'keep': [id],
+        })
+        .then((v) => applied = v);
     for (var i = 0; i < 2000 && applied == null; i++) {
       await tester.pump(const Duration(milliseconds: 20));
     }

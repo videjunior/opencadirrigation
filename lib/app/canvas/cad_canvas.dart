@@ -676,7 +676,10 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
                   Text('$label ', style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(border: Border.all(color: active ? Cad.accent : Cad.fg24), borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: active ? Cad.accent : Cad.fg24),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                     child: Text(value, style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
                   ),
                   const SizedBox(width: 6),
@@ -698,7 +701,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   Widget _loupe(Offset at) {
     const s = 128.0, gap = 40.0;
     final size = c.camera.size;
-    final left = (at.dx - s / 2).clamp(0.0, math.max(0.0, size.width - s));
+    final left = (at.dx - s / 2).clamp(0.0, math.max(0.0, size.width - s)).toDouble();
     var top = at.dy - s - gap;
     if (top < 0) top = math.min(at.dy + gap, math.max(0.0, size.height - s));
     final centre = Offset(left + s / 2, top + s / 2);

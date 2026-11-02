@@ -44,7 +44,11 @@ Future<void> showStakeoutDialog(BuildContext context, ProjectController c) async
         final points = stakeoutPointsOf(c, kinds, firstNumber: first.round());
         Widget note(String s, {Key? key}) => Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Text(s, key: key, style: TextStyle(fontSize: 11.5, color: Cad.attention)),
+          child: Text(
+            s,
+            key: key,
+            style: TextStyle(fontSize: 11.5, color: Cad.attention),
+          ),
         );
         return AlertDialog(
           title: Text(t('stake.title'), style: const TextStyle(fontSize: 15)),
@@ -64,7 +68,11 @@ Future<void> showStakeoutDialog(BuildContext context, ProjectController c) async
                     decoration: InputDecoration(labelText: t('stake.order'), isDense: true),
                     style: TextStyle(fontSize: 12, color: Cad.fg),
                     items: [
-                      for (final o in StakeoutOrder.values) DropdownMenuItem(value: o, child: Text(o.name.toUpperCase(), style: const TextStyle(fontSize: 12))),
+                      for (final o in StakeoutOrder.values)
+                        DropdownMenuItem(
+                          value: o,
+                          child: Text(o.name.toUpperCase(), style: const TextStyle(fontSize: 12)),
+                        ),
                     ],
                     onChanged: (v) => setState(() => order = v ?? order),
                   ),
@@ -82,7 +90,14 @@ Future<void> showStakeoutDialog(BuildContext context, ProjectController c) async
                   Row(
                     children: [
                       Expanded(
-                        child: NumField(key: const Key('stake_first'), label: t('stake.firstNumber'), value: first, decimals: 0, signed: false, onChanged: (v) => setState(() => first = v.clamp(0, 1e9).toDouble())),
+                        child: NumField(
+                          key: const Key('stake_first'),
+                          label: t('stake.firstNumber'),
+                          value: first,
+                          decimals: 0,
+                          signed: false,
+                          onChanged: (v) => setState(() => first = v.clamp(0, 1e9).toDouble()),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -93,7 +108,11 @@ Future<void> showStakeoutDialog(BuildContext context, ProjectController c) async
                           decoration: InputDecoration(labelText: t('stake.decimals'), isDense: true),
                           style: TextStyle(fontSize: 12, color: Cad.fg),
                           items: [
-                            for (final d in const [2, 3, 4]) DropdownMenuItem(value: d, child: Text('$d', style: const TextStyle(fontSize: 12))),
+                            for (final d in const [2, 3, 4])
+                              DropdownMenuItem(
+                                value: d,
+                                child: Text('$d', style: const TextStyle(fontSize: 12)),
+                              ),
                           ],
                           onChanged: (v) => setState(() => decimals = v ?? decimals),
                         ),
@@ -101,7 +120,11 @@ Future<void> showStakeoutDialog(BuildContext context, ProjectController c) async
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(points.isEmpty ? t('stake.none') : t('stake.count', {'n': '${points.length}'}), key: const Key('stake_count'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  Text(
+                    points.isEmpty ? t('stake.none') : t('stake.count', {'n': '${points.length}'}),
+                    key: const Key('stake_count'),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
                   if (c.project.meta.georef == null) note(t('stake.noGeoref'), key: const Key('stake_no_georef')),
                   if (!hasTerrain) note(t('stake.noTerrain'), key: const Key('stake_no_terrain')),
                 ],
@@ -117,6 +140,10 @@ Future<void> showStakeoutDialog(BuildContext context, ProjectController c) async
     ),
   );
   if (ok != true) return;
-  final text = stakeoutCsv(stakeoutPointsOf(c, kinds, firstNumber: first.round()), order: order, decimals: decimals);
+  final text = stakeoutCsv(
+    stakeoutPointsOf(c, kinds, firstNumber: first.round()),
+    order: order,
+    decimals: decimals,
+  );
   await deliverExport(c, stakeoutFileName(c), 'text/csv', () => text);
 }

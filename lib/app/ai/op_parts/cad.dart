@@ -80,8 +80,7 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'edit',
       name: 'lengthen_entity',
       effect: ToolEffect.write,
-      description:
-          'Edit → Lengthen (LEN): changes the length of a line, open polyline, pipe, lateral, tape, wire, contour or arc at its end nearest to "at": mode "delta" adds "value" metres (negative shortens), "total" makes it "value" metres long, "percent" makes it "value" % of its length. A longer item grows along its end segment (an arc along its circle); a lateral keeps its outlets where they were. One undo step.',
+      description: 'Edit → Lengthen (LEN): changes the length of a line, open polyline, pipe, lateral, tape, wire, contour or arc at its end nearest to "at": mode "delta" adds "value" metres (negative shortens), "total" makes it "value" metres long, "percent" makes it "value" % of its length. A longer item grows along its end segment (an arc along its circle); a lateral keeps its outlets where they were. One undo step.',
       schema: obj(
         {
           'id': str('Item (id or name).'),
@@ -109,12 +108,14 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'edit',
       name: 'boundary_at',
       effect: ToolEffect.write,
-      description:
-          'Edit → Outline by a click inside (BO): the smallest region around "at" that the visible lines, polylines, arcs, circles and outlines close becomes a closed polyline on the current layer ("as": "polyline", the default) or an irrigated area ("area"). Fails when the lines leave a gap there. One undo step; returns the new item and its area.',
-      schema: obj({
-        'at': pointWith('A point inside the region (m).'),
-        'as': str('What to make (default "polyline").', ['polyline', 'area']),
-      }, required: ['at']),
+      description: 'Edit → Outline by a click inside (BO): the smallest region around "at" that the visible lines, polylines, arcs, circles and outlines close becomes a closed polyline on the current layer ("as": "polyline", the default) or an irrigated area ("area"). Fails when the lines leave a gap there. One undo step; returns the new item and its area.',
+      schema: obj(
+        {
+          'at': pointWith('A point inside the region (m).'),
+          'as': str('What to make (default "polyline").', ['polyline', 'area']),
+        },
+        required: ['at'],
+      ),
       args: (i) => {'n': '${i['as'] ?? 'polyline'}'},
       run: (a, i) async {
         cadNotBusy(b);
@@ -129,8 +130,7 @@ List<AgentTool> opsCad(AgentToolbox b) {
       b,
       group: 'layers',
       name: 'layer_states',
-      description:
-          'View → Layers → Layer states: lists the named states of the layers kept in the project (which layers are shown and locked), and whether layers are isolated now. save_layer_state keeps one, restore_layer_state puts one back.',
+      description: 'View → Layers → Layer states: lists the named states of the layers kept in the project (which layers are shown and locked), and whether layers are isolated now. save_layer_state keeps one, restore_layer_state puts one back.',
       schema: obj({}),
       run: (a, i) async {
         final states = b.p.layerStates;
@@ -192,17 +192,19 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'layers',
       name: 'isolate_layers',
       effect: ToolEffect.write,
-      description:
-          'View → Layers → Isolate (LAYISO): shows only the layers given (default: those of the selection, else the current layer), remembering how every layer was; unisolate_layers puts them back. Not an undo step.',
+      description: 'View → Layers → Isolate (LAYISO): shows only the layers given (default: those of the selection, else the current layer), remembering how every layer was; unisolate_layers puts them back. Not an undo step.',
       schema: obj({'layers': arr(str(), 'Layer names to keep shown.', 100)}),
-      args: (i) => {'n': '${(i['layers'] as List?)?.join(', ') ?? ''}'},
+      args: (i) => {'n': (i['layers'] as List?)?.join(', ') ?? ''},
       run: (a, i) async {
         final names = a.strings('layers');
         for (final n in names) {
           if (b.p.findLayer(n) == null) throw ToolInputError('No layer "$n" (list_layers).');
         }
         final shown = c.isolateLayers(names.isEmpty ? null : names);
-        return ToolOutput('$shown layer${shown == 1 ? '' : 's'} shown: ${[for (final l in b.p.layers) if (l.visible) l.name].join(', ')}.');
+        return ToolOutput(
+          '$shown layer${shown == 1 ? '' : 's'} shown: ${[for (final l in b.p.layers)
+            if (l.visible) l.name].join(', ')}.',
+        );
       },
     ),
     cadOp(
@@ -214,7 +216,10 @@ List<AgentTool> opsCad(AgentToolbox b) {
       schema: obj({}),
       run: (a, i) async {
         c.unisolateLayers();
-        return ToolOutput('Layers shown: ${[for (final l in b.p.layers) if (l.visible) l.name].join(', ')}.');
+        return ToolOutput(
+          'Layers shown: ${[for (final l in b.p.layers)
+            if (l.visible) l.name].join(', ')}.',
+        );
       },
     ),
     // ------------------------------------------------ drawing order
@@ -223,12 +228,14 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'edit',
       name: 'draw_order',
       effect: ToolEffect.write,
-      description:
-          'Edit → Drawing order (TOFRONT, TOBACK): brings the items to the front of the drawing ("to": "front") or sends them behind the others ("back") — a picture under the drawing, a hatch or an area over another of its kind. One undo step.',
-      schema: obj({
-        'ids': idsWith('Items (ids or names).', maxItems: 2000),
-        'to': str('Where to (default "front").', ['front', 'back']),
-      }, required: ['ids']),
+      description: 'Edit → Drawing order (TOFRONT, TOBACK): brings the items to the front of the drawing ("to": "front") or sends them behind the others ("back") — a picture under the drawing, a hatch or an area over another of its kind. One undo step.',
+      schema: obj(
+        {
+          'ids': idsWith('Items (ids or names).', maxItems: 2000),
+          'to': str('Where to (default "front").', ['front', 'back']),
+        },
+        required: ['ids'],
+      ),
       args: many,
       run: (a, i) async {
         cadNotBusy(b);
@@ -244,8 +251,7 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'annotate',
       name: 'dim_style',
       effectFor: (i) => i.keys.any((k) => k != 'reset') || i['reset'] == true ? ToolEffect.write : ToolEffect.read,
-      description:
-          'Draw → Dimension style: with no input, reads the style of every dimension of the project; with fields, sets them (one undo step): "text_height_m" (0 = the size of the labels), "arrow" (none, arrow, tick, dot), "arrow_size_m" (0 = the text height), "decimals" (0–6), "unit" (m, cm, mm, ft, inch; "project" follows the project), "show_unit"; "reset" true goes back to the program\'s style.',
+      description: 'Draw → Dimension style: with no input, reads the style of every dimension of the project; with fields, sets them (one undo step): "text_height_m" (0 = the size of the labels), "arrow" (none, arrow, tick, dot), "arrow_size_m" (0 = the text height), "decimals" (0–6), "unit" (m, cm, mm, ft, inch; "project" follows the project), "show_unit"; "reset" true goes back to the program\'s style.',
       schema: obj({
         'text_height_m': num_('Text height in metres of the drawing (0 = label size).'),
         'arrow': str('Ends of the dimension lines.', [for (final x in DimArrow.values) x.name]),
@@ -287,12 +293,14 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'blocks',
       name: 'set_block_attributes',
       effect: ToolEffect.write,
-      description:
-          'Sets attribute values of a block reference (a code, a flow, a name the block asks for): "values" {TAG: value}; a value equal to the block\'s default is not kept, "" clears it. The visible attributes are written on the drawing; a block of the bill of materials counts its references by code. One undo step.',
-      schema: obj({
-        'id': str('The block reference (id or name).'),
-        'values': {'type': 'object', 'description': 'Attribute values by tag, e.g. {"CODE": "CX-01"}.', 'additionalProperties': str()},
-      }, required: ['id', 'values']),
+      description: 'Sets attribute values of a block reference (a code, a flow, a name the block asks for): "values" {TAG: value}; a value equal to the block\'s default is not kept, "" clears it. The visible attributes are written on the drawing; a block of the bill of materials counts its references by code. One undo step.',
+      schema: obj(
+        {
+          'id': str('The block reference (id or name).'),
+          'values': {'type': 'object', 'description': 'Attribute values by tag, e.g. {"CODE": "CX-01"}.', 'additionalProperties': str()},
+        },
+        required: ['id', 'values'],
+      ),
       args: one,
       run: (a, i) async {
         cadNotBusy(b);
@@ -317,24 +325,29 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'blocks',
       name: 'define_block_attributes',
       effect: ToolEffect.write,
-      description:
-          'Sets the attributes of block "name" (what each reference fills in: tag, prompt, default, visible, height_m, and [x, y] in block coordinates — by default one under the other right of the block) and whether its references count in the bill of materials ("in_bom"; a CODE attribute gives the item code, PRICE the unit price). Every reference follows. One undo step.',
-      schema: obj({
-        'name': str('Block name (list_blocks).'),
-        'attributes': arr(
-          obj({
-            'tag': str('Tag, e.g. CODE, FLOW.'),
-            'prompt': str(),
-            'default': str(),
-            'visible': bool_('Written on the drawing (default true).'),
-            'height_m': num_('Text height (default 0.5).'),
-            'at': pointWith('Where its value is written, in block coordinates.'),
-          }, required: ['tag']),
-          'The attributes, in order (they replace the block\'s).',
-          50,
-        ),
-        'in_bom': bool_('The references count in the bill of materials.'),
-      }, required: ['name']),
+      description: 'Sets the attributes of block "name" (what each reference fills in: tag, prompt, default, visible, height_m, and [x, y] in block coordinates — by default one under the other right of the block) and whether its references count in the bill of materials ("in_bom"; a CODE attribute gives the item code, PRICE the unit price). Every reference follows. One undo step.',
+      schema: obj(
+        {
+          'name': str('Block name (list_blocks).'),
+          'attributes': arr(
+            obj(
+              {
+                'tag': str('Tag, e.g. CODE, FLOW.'),
+                'prompt': str(),
+                'default': str(),
+                'visible': bool_('Written on the drawing (default true).'),
+                'height_m': num_('Text height (default 0.5).'),
+                'at': pointWith('Where its value is written, in block coordinates.'),
+              },
+              required: ['tag'],
+            ),
+            'The attributes, in order (they replace the block\'s).',
+            50,
+          ),
+          'in_bom': bool_('The references count in the bill of materials.'),
+        },
+        required: ['name'],
+      ),
       args: (i) => {'n': '${i['name']}'},
       run: (a, i) async {
         cadNotBusy(b);
@@ -372,7 +385,8 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'blocks',
       name: 'explode_block_refs',
       effect: ToolEffect.write,
-      description: 'Edit → Blocks → Explode references: turns block references into copies of what they draw (their attributes become texts), which then change one by one. One undo step; returns the new ids.',
+      description:
+          'Edit → Blocks → Explode references: turns block references into copies of what they draw (their attributes become texts), which then change one by one. One undo step; returns the new ids.',
       schema: obj({'ids': idsWith('Block references (ids or names).', maxItems: 2000)}, required: ['ids']),
       args: many,
       run: (a, i) async {
@@ -389,12 +403,14 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'blocks',
       name: 'edit_block_in_place',
       effect: ToolEffect.write,
-      description:
-          'Edit → Blocks → Edit block in place (BEDIT), in steps: "start" with the reference "id" turns it into copies (they become the selection; change them with the other operations), "save" makes the selected items (or the copies) the block\'s new definition — every reference of the block follows — and "cancel" undoes the edit. One undo step each.',
-      schema: obj({
-        'step': str('start, save or cancel.', ['start', 'save', 'cancel']),
-        'id': str('The block reference to edit (step "start").'),
-      }, required: ['step']),
+      description: 'Edit → Blocks → Edit block in place (BEDIT), in steps: "start" with the reference "id" turns it into copies (they become the selection; change them with the other operations), "save" makes the selected items (or the copies) the block\'s new definition — every reference of the block follows — and "cancel" undoes the edit. One undo step each.',
+      schema: obj(
+        {
+          'step': str('start, save or cancel.', ['start', 'save', 'cancel']),
+          'id': str('The block reference to edit (step "start").'),
+        },
+        required: ['step'],
+      ),
       args: (i) => {'n': '${i['step']}'},
       run: (a, i) async {
         cadNotBusy(b);
@@ -435,8 +451,7 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'blocks',
       name: 'import_block_library',
       effect: ToolEffect.write,
-      description:
-          'Edit → Blocks → Import a library: the blocks of a block library file (.oci-blocks.json) or of a project file the user attached, by its file name, go into the project\'s library; a block of a name already there is redefined (its references follow). One undo step.',
+      description: 'Edit → Blocks → Import a library: the blocks of a block library file (.oci-blocks.json) or of a project file the user attached, by its file name, go into the project\'s library; a block of a name already there is redefined (its references follow). One undo step.',
       schema: obj({'file': str('File name of the attachment.')}, required: ['file']),
       args: (i) => {'n': '${i['file']}'},
       run: (a, i) async {
@@ -458,8 +473,7 @@ List<AgentTool> opsCad(AgentToolbox b) {
       b,
       group: 'review',
       name: 'compare_project',
-      description:
-          'File → Compare with…: what changed between another copy of this project — a version kept in the browser ("version", from list_versions or the versions dialog), another open tab ("tab", its name) or a project file the user attached ("file") — and the drawing open: items added, removed and changed (by id, with the fields that differ), the settings that differ and the main figures of both (lengths, outlets, valves, areas and, with results, flow, pressures and cost). "show" true frames the differences on the drawing until the next edit.',
+      description: 'File → Compare with…: what changed between another copy of this project — a version kept in the browser ("version", from list_versions or the versions dialog), another open tab ("tab", its name) or a project file the user attached ("file") — and the drawing open: items added, removed and changed (by id, with the fields that differ), the settings that differ and the main figures of both (lengths, outlets, valves, areas and, with results, flow, pressures and cost). "show" true frames the differences on the drawing until the next edit.',
       schema: obj({
         'version': int_('A version of this project kept in the browser.'),
         'tab': str('The name of another open tab.'),
@@ -506,8 +520,7 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'review',
       name: 'import_review_comments',
       effect: ToolEffect.write,
-      description:
-          'File → Bring back the comments of a copy: the review comments and revision clouds of a copy of this project sent for review and returned (a project file the user attached) come into the drawing — one of the same id is updated (text, resolved, photo, place), one at the same place with the same text is already there, the others are added. One undo step; returns how many came.',
+      description: 'File → Bring back the comments of a copy: the review comments and revision clouds of a copy of this project sent for review and returned (a project file the user attached) come into the drawing — one of the same id is updated (text, resolved, photo, place), one at the same place with the same text is already there, the others are added. One undo step; returns how many came.',
       schema: obj({'file': str('File name of the attached project file.')}, required: ['file']),
       args: (i) => {'n': '${i['file']}'},
       run: (a, i) async {
@@ -540,13 +553,8 @@ List<AgentTool> opsCad(AgentToolbox b) {
       group: 'review',
       name: 'set_comment_photo',
       effect: ToolEffect.write,
-      description:
-          'Puts a photo the user attached on an existing review comment (or replaces its photo): a small copy is kept with the comment; "move" true takes the comment to where the photo\'s GPS says (needs a georeference). add_photo_comment makes a new comment instead. One undo step.',
-      schema: obj({
-        'id': str('The comment (id or name).'),
-        'file': str('File name of the attached photo.'),
-        'move': bool_('Move the comment to the photo\'s GPS position.'),
-      }, required: ['id', 'file']),
+      description: 'Puts a photo the user attached on an existing review comment (or replaces its photo): a small copy is kept with the comment; "move" true takes the comment to where the photo\'s GPS says (needs a georeference). add_photo_comment makes a new comment instead. One undo step.',
+      schema: obj({'id': str('The comment (id or name).'), 'file': str('File name of the attached photo.'), 'move': bool_('Move the comment to the photo\'s GPS position.')}, required: ['id', 'file']),
       args: one,
       run: (a, i) async {
         cadNotBusy(b);

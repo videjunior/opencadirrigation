@@ -448,12 +448,14 @@ CrsInfo userDefinedCrs(GeoKeys k) {
     return CrsInfo(kind: c.kind, datum: datum, projection: c.projection, epsg: c.epsg, name: c.name);
   }
   final unitCode = k.ints[3076];
-  final unit = k.doubles[3077] ?? switch (unitCode) {
-    9002 => 0.3048,
-    9003 => 1200 / 3937,
-    9036 => 1000.0,
-    _ => 1.0,
-  };
+  final unit =
+      k.doubles[3077] ??
+      switch (unitCode) {
+        9002 => 0.3048,
+        9003 => 1200 / 3937,
+        9036 => 1000.0,
+        _ => 1.0,
+      };
   final method = switch (k.ints[3075]) {
     1 => 'transverse_mercator',
     8 => 'lambert_conformal_conic_2sp',

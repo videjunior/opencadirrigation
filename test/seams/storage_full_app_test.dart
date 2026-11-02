@@ -41,9 +41,7 @@ void main() {
         expect(await store.load(p.uid, version: v.version), isNotNull, reason: '${p.name} v${v.version}');
       }
     }
-    final listed = {
-      for (final p in store.list()) p.uid,
-    };
+    final listed = {for (final p in store.list()) p.uid};
     expect(store.storedChars, lessThanOrEqualTo(bodies.usedChars), reason: 'the index counts only texts that are kept (${listed.length} projects)');
   }
 

@@ -822,17 +822,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
         );
 
         Widget pipes() => _catTable(
-          [
-            t('cat.use'),
-            t('cat.name'),
-            dnLabel('cat.dn'),
-            idLabel,
-            t('cat.c'),
-            pnLabel,
-            costLabel,
-            '${t('cat.supplier')} / ${t('cat.code')} / FINAME',
-            '',
-          ],
+          [t('cat.use'), t('cat.name'), dnLabel('cat.dn'), idLabel, t('cat.c'), pnLabel, costLabel, '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''],
           [
             for (final p in cat.pipes)
               [
@@ -972,7 +962,17 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ],
         );
         Widget valves() => _catTable(
-          [t('cat.use'), t('cat.name'), t('cat.type'), dnLabel('cat.dn'), t('cat.kLoss'), t('cat.n'), m3h ? t('cat.qMax') : t('cat.qMaxU', {'u': u.flowLabel}), cur, ''],
+          [
+            t('cat.use'),
+            t('cat.name'),
+            t('cat.type'),
+            dnLabel('cat.dn'),
+            t('cat.kLoss'),
+            t('cat.n'),
+            m3h ? t('cat.qMax') : t('cat.qMaxU', {'u': u.flowLabel}),
+            cur,
+            '',
+          ],
           [
             for (final v in cat.valves)
               [
@@ -1096,15 +1096,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ],
         );
         Widget wires() => _catTable(
-          [
-            t('cat.use'),
-            t('cat.name'),
-            t('cat.mm2'),
-            t('cat.ohmKm'),
-            costLabel,
-            '${t('cat.supplier')} / ${t('cat.code')} / FINAME',
-            '',
-          ],
+          [t('cat.use'), t('cat.name'), t('cat.mm2'), t('cat.ohmKm'), costLabel, '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''],
           [
             for (final w in cat.wires)
               [

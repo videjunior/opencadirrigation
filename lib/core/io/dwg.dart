@@ -2674,23 +2674,24 @@ class DwgReader {
     for (final e in _entities) {
       if (e.type == 2 && e.entmode == 0 && e.attribTag.isNotEmpty) (attributesOf[e.owner] ??= {})[e.attribTag] = e.text.trim();
     }
-    DxfInsert toInsert(_Entity e) => DxfInsert(
-      name: _blocks[e.blockHandle]?.name ?? '',
-      layer: layerOf(e),
-      color: colorOf(e),
-      position: e.points.first,
-      scaleX: e.scaleX,
-      scaleY: e.scaleY,
-      rotation: e.rotation,
-      cols: math.max(1, e.cols),
-      rows: math.max(1, e.rows),
-      colSpacing: e.colSpacing,
-      rowSpacing: e.rowSpacing,
-      ocsMirror: e.ocsMirror,
-    )
-      ..z = e.elevation
-      ..xdata = e.xdata
-      ..attributes.addAll(attributesOf[e.handle] ?? const {});
+    DxfInsert toInsert(_Entity e) =>
+        DxfInsert(
+            name: _blocks[e.blockHandle]?.name ?? '',
+            layer: layerOf(e),
+            color: colorOf(e),
+            position: e.points.first,
+            scaleX: e.scaleX,
+            scaleY: e.scaleY,
+            rotation: e.rotation,
+            cols: math.max(1, e.cols),
+            rows: math.max(1, e.rows),
+            colSpacing: e.colSpacing,
+            rowSpacing: e.rowSpacing,
+            ocsMirror: e.ocsMirror,
+          )
+          ..z = e.elevation
+          ..xdata = e.xdata
+          ..attributes.addAll(attributesOf[e.handle] ?? const {});
     // block membership: owned lists (R2004+), owner handle, or the handle range (R13–R2000)
     final blockOfHandle = <int, _Block>{};
     for (final b in _blocks.values) {

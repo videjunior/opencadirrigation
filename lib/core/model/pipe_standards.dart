@@ -416,7 +416,9 @@ const _en12201Prices = PipePriceBook(
     (250, 34.2, 167.07),
   ],
   fitOnlyText: 'the SDR 7.4 rows F.006 included',
-  misprints: {'sdr17': {90}},
+  misprints: {
+    'sdr17': {90},
+  },
   misprintText: 'but F.004.004, 90 × 5.4 mm, printed at the price of the SDR 11 pipe of that size and taken as a misprint',
 );
 

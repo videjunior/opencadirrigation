@@ -141,7 +141,11 @@ Future<BlockDefinition?> showSaveBlockDialog(BuildContext context, ProjectContro
                       onChanged: (v) => setState(() => replace = v ?? false),
                     )
                   else
-                    Text(t('blkref.copiesOnly'), key: const Key('blk_copies_only'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                    Text(
+                      t('blkref.copiesOnly'),
+                      key: const Key('blk_copies_only'),
+                      style: TextStyle(fontSize: 11, color: Cad.fg54),
+                    ),
                   if (exists && c.blockRefsOf(name.text.trim()).isNotEmpty)
                     Text(t('blkref.redefineNote', {'n': '${c.blockRefsOf(name.text.trim()).length}'}), style: TextStyle(fontSize: 11, color: Cad.attention)),
                   if (error != null)

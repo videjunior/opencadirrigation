@@ -792,18 +792,20 @@ Iterable<AnalysisStep> randomCheckSteps(
   final n = hyd.length;
   if (n == 0) {
     codes.add('random_no_hydrants');
-    done(RandomCheckResult(
-      hydrants: const [],
-      configurations: 0,
-      satisfiedConfigurations: 0,
-      meanUnsatisfied: 0,
-      p90Unsatisfied: 0,
-      maxUnsatisfied: 0,
-      meanOpen: 0,
-      meanDischarge: 0,
-      notConverged: 0,
-      codes: codes,
-    ));
+    done(
+      RandomCheckResult(
+        hydrants: const [],
+        configurations: 0,
+        satisfiedConfigurations: 0,
+        meanUnsatisfied: 0,
+        p90Unsatisfied: 0,
+        maxUnsatisfied: 0,
+        meanOpen: 0,
+        meanDischarge: 0,
+        notConverged: 0,
+        codes: codes,
+      ),
+    );
     return;
   }
   final count = options.configurations > 0 ? options.configurations : math.max(200, n + 1);
@@ -912,18 +914,20 @@ Iterable<AnalysisStep> randomCheckSteps(
     );
   }
   puh.sort();
-  done(RandomCheckResult(
-    hydrants: out,
-    configurations: count,
-    satisfiedConfigurations: satisfiedConfigs,
-    meanUnsatisfied: puh.fold(0.0, (a, b) => a + b) / puh.length,
-    p90Unsatisfied: percentile(puh, 0.90),
-    maxUnsatisfied: puh.last,
-    meanOpen: openSum / count,
-    meanDischarge: dischargeSum / count,
-    notConverged: notConverged,
-    codes: codes,
-  ));
+  done(
+    RandomCheckResult(
+      hydrants: out,
+      configurations: count,
+      satisfiedConfigurations: satisfiedConfigs,
+      meanUnsatisfied: puh.fold(0.0, (a, b) => a + b) / puh.length,
+      p90Unsatisfied: percentile(puh, 0.90),
+      maxUnsatisfied: puh.last,
+      meanOpen: openSum / count,
+      meanDischarge: dischargeSum / count,
+      notConverged: notConverged,
+      codes: codes,
+    ),
+  );
 }
 
 /// Quantile [q] (0..1) of the ascending [sorted] values, linear between

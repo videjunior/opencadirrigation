@@ -335,7 +335,12 @@ final Map<String, TypeDoc> entityDocs = {
       'rot': _rot,
       'depth': _depth,
       'pilot': _pilot,
-      'pr': const FieldDoc('pressure a reducing pilot holds after the valve: the zone is analysed at it; 0 = the pressure the design finds for the zone', unit: 'm', panel: 'props.pilotReduce', def: 0),
+      'pr': const FieldDoc(
+        'pressure a reducing pilot holds after the valve: the zone is analysed at it; 0 = the pressure the design finds for the zone',
+        unit: 'm',
+        panel: 'props.pilotReduce',
+        def: 0,
+      ),
       'ps': const FieldDoc(
         'pressure a sustaining pilot keeps before the valve: the mainline must give the valve at least this when the zone runs, and in the real operation the valve throttles the zone to keep it',
         unit: 'm',

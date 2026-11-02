@@ -109,18 +109,19 @@ String _solarText(AgentToolbox b, SolarDesign? r) {
       'head_m ${engN(s.headM, 1)} (0 = design), dc_ac_ratio ${engN(s.dcAcRatio)}, simultaneity ${engN(s.simultaneity)}, fio_b_pct ${engN(s.fioBSharePct, 1)}, billing_year ${s.billingYear}, grandfathered ${s.grandfathered}.';
   if (r == null) return '$head\nSolar pumping is off (mode "off").';
   return [
-    head,
-    '${r.mode.name}: ${r.modules} × ${engN(r.moduleWp, 0)} Wp = ${engN(r.arrayKWp, 2)} kWp, ${engN(r.areaM2, 0)} m², ${r.mode == SolarMode.offGrid ? 'pump drive' : 'inverter'} ${engN(r.inverterKw, 1)} kW, tilt ${engN(r.tiltDeg, 0)}°, '
-        'head ${engN(r.headM, 1)} m, wire-to-water ${engN(r.efficiency, 3)}; yield ${engN(r.yieldKWhPerKWp, 0)} kWh/kWp, generation ${engN(r.generationKWh, 0)} kWh/a, pumping ${engN(r.consumptionKWh, 0)} kWh/a'
-        '${r.mode == SolarMode.gridTied ? '; used as generated ${engN(r.selfConsumedKWh, 0)}, compensated ${engN(r.compensatedKWh, 0)} (Fio B paid ${engN(r.fioBPaidPct, 0)} %), left over ${engN(r.excessKWh, 0)} kWh' : ''}'
-        '${r.criticalMonth == null ? '' : '; critical month ${r.criticalMonth}'}. Energy cost on the grid ${engN(r.gridCost, 2)}, with the array ${engN(r.netCost, 2)}, saving ${engN(r.saving, 2)} ${b.p.params.currency}/year.',
-    engTable(
-      ['month', 'sun hours', 'demand m³/d', 'pumped m³/d', 'generation kWh'],
-      [
-        for (final m in r.months) [engMonths[m.month - 1], engN(m.peakSunHours, 2), engN(m.demandM3Day, 1), engN(m.pumpedM3Day, 1), engN(m.generationKWh, 0)],
-      ],
-    ),
-  ].join('\n') + engCodes(b, r.warnings, name: (m) => m);
+        head,
+        '${r.mode.name}: ${r.modules} × ${engN(r.moduleWp, 0)} Wp = ${engN(r.arrayKWp, 2)} kWp, ${engN(r.areaM2, 0)} m², ${r.mode == SolarMode.offGrid ? 'pump drive' : 'inverter'} ${engN(r.inverterKw, 1)} kW, tilt ${engN(r.tiltDeg, 0)}°, '
+            'head ${engN(r.headM, 1)} m, wire-to-water ${engN(r.efficiency, 3)}; yield ${engN(r.yieldKWhPerKWp, 0)} kWh/kWp, generation ${engN(r.generationKWh, 0)} kWh/a, pumping ${engN(r.consumptionKWh, 0)} kWh/a'
+            '${r.mode == SolarMode.gridTied ? '; used as generated ${engN(r.selfConsumedKWh, 0)}, compensated ${engN(r.compensatedKWh, 0)} (Fio B paid ${engN(r.fioBPaidPct, 0)} %), left over ${engN(r.excessKWh, 0)} kWh' : ''}'
+            '${r.criticalMonth == null ? '' : '; critical month ${r.criticalMonth}'}. Energy cost on the grid ${engN(r.gridCost, 2)}, with the array ${engN(r.netCost, 2)}, saving ${engN(r.saving, 2)} ${b.p.params.currency}/year.',
+        engTable(
+          ['month', 'sun hours', 'demand m³/d', 'pumped m³/d', 'generation kWh'],
+          [
+            for (final m in r.months) [engMonths[m.month - 1], engN(m.peakSunHours, 2), engN(m.demandM3Day, 1), engN(m.pumpedM3Day, 1), engN(m.generationKWh, 0)],
+          ],
+        ),
+      ].join('\n') +
+      engCodes(b, r.warnings, name: (m) => m);
 }
 
 /// The water design as text.
@@ -135,18 +136,22 @@ String _waterText(AgentToolbox b, WaterQualityResult? r) {
   if (r == null) return '$head\nNo analysis yet: give at least one value with set_water_quality.';
   final safe = b.p.catalog.valve(r.safetyFilterId);
   return [
-    head,
-    engTable(['parameter', 'value', 'clogging hazard (Nakayama 1982)'], [
-      for (final h in r.hazards) [h.key, engN(h.value, 3), h.risk.name],
-    ]),
-    'Overall hazard ${r.overall.name}; Langelier index ${r.lsi == null ? '-' : engN(r.lsi!, 2)}; dissolved solids ${engN(r.tdsMgL, 0)} mg/L.',
-    'Filtration for ${engN(r.designFlowM3h, 1)} m³/h: emitter passage ${engN(r.passageMm, 2)} mm → opening ${engN(r.openingUm, 0)} µm (${r.mesh} mesh); '
-        '${r.media ? 'media filters ${r.mediaTanks} × Ø ${engN(r.tankDiameterM * 1000, 0)} mm at ${engN(r.mediaFlux, 0)} m³/h/m² + ' : ''}${r.discFilter ? 'disc' : 'screen'} filter'
-        '${safe == null ? '' : ' (${r.safetyFilters} × ${safe.id} ${safe.name})'}; filters drawn ${r.drawnFilters} (${engN(r.drawnCapacityM3h, 1)} m³/h).',
-    'Chlorination ${r.chlorination.name}: demand ${engN(r.chlorineDemandMgL, 2)} mg/L, dose ${engN(r.chlorineDoseMgL, 2)} mg/L, hypochlorite ${engN(r.hypochloriteLph, 2)} L/h, ${engN(r.hypochloriteLYear, 0)} L/year.',
-    if (r.acidTargetPh != null)
-      'Acid to pH ${engN(r.acidTargetPh!, 1)}: ${engN(r.acidMeqL, 2)} meq/L, ${engN(r.acidMlM3, 1)} mL/m³ of ${w.acid.name}, ${engN(r.acidLph, 2)} L/h, ${engN(r.acidLYear, 0)} L/year.',
-  ].join('\n') + engCodes(b, r.warnings);
+        head,
+        engTable(
+          ['parameter', 'value', 'clogging hazard (Nakayama 1982)'],
+          [
+            for (final h in r.hazards) [h.key, engN(h.value, 3), h.risk.name],
+          ],
+        ),
+        'Overall hazard ${r.overall.name}; Langelier index ${r.lsi == null ? '-' : engN(r.lsi!, 2)}; dissolved solids ${engN(r.tdsMgL, 0)} mg/L.',
+        'Filtration for ${engN(r.designFlowM3h, 1)} m³/h: emitter passage ${engN(r.passageMm, 2)} mm → opening ${engN(r.openingUm, 0)} µm (${r.mesh} mesh); '
+            '${r.media ? 'media filters ${r.mediaTanks} × Ø ${engN(r.tankDiameterM * 1000, 0)} mm at ${engN(r.mediaFlux, 0)} m³/h/m² + ' : ''}${r.discFilter ? 'disc' : 'screen'} filter'
+            '${safe == null ? '' : ' (${r.safetyFilters} × ${safe.id} ${safe.name})'}; filters drawn ${r.drawnFilters} (${engN(r.drawnCapacityM3h, 1)} m³/h).',
+        'Chlorination ${r.chlorination.name}: demand ${engN(r.chlorineDemandMgL, 2)} mg/L, dose ${engN(r.chlorineDoseMgL, 2)} mg/L, hypochlorite ${engN(r.hypochloriteLph, 2)} L/h, ${engN(r.hypochloriteLYear, 0)} L/year.',
+        if (r.acidTargetPh != null)
+          'Acid to pH ${engN(r.acidTargetPh!, 1)}: ${engN(r.acidMeqL, 2)} meq/L, ${engN(r.acidMlM3, 1)} mL/m³ of ${w.acid.name}, ${engN(r.acidLph, 2)} L/h, ${engN(r.acidLYear, 0)} L/year.',
+      ].join('\n') +
+      engCodes(b, r.warnings);
 }
 
 /// The two-wire design as text.
@@ -161,26 +166,27 @@ String _twoWireText(AgentToolbox b, TwoWireResult? r) {
     caps[d.capacity] = (caps[d.capacity] ?? 0) + 1;
   }
   return [
-    head,
-    engTable(
-      ['controller', 'wire', 'route m', 'cable m', 'decoders', 'most open', 'peak A', 'worst V', 'largest distance m'],
-      [
-        for (final x in r.paths)
+        head,
+        engTable(
+          ['controller', 'wire', 'route m', 'cable m', 'decoders', 'most open', 'peak A', 'worst V', 'largest distance m'],
           [
-            x.controllerId,
-            x.wireId ?? '-',
-            engN(x.routeM, 0),
-            engN(x.cableM, 0),
-            '${x.decoders}',
-            '${x.maxOpen}',
-            engN(x.peakCurrentA, 2),
-            engN(x.worstVolts, 1),
-            x.maxDistanceM.isFinite ? engN(x.maxDistanceM, 0) : '∞',
+            for (final x in r.paths)
+              [
+                x.controllerId,
+                x.wireId ?? '-',
+                engN(x.routeM, 0),
+                engN(x.cableM, 0),
+                '${x.decoders}',
+                '${x.maxOpen}',
+                engN(x.peakCurrentA, 2),
+                engN(x.worstVolts, 1),
+                x.maxDistanceM.isFinite ? engN(x.maxDistanceM, 0) : '∞',
+              ],
           ],
-      ],
-    ),
-    'Decoders by outputs: ${caps.isEmpty ? 'none' : (caps.keys.toList()..sort()).map((k) => '${caps[k]} × $k').join(', ')}; grounding points ${r.grounds.length}; stations ${r.stations.length}.',
-  ].join('\n') + engCodes(b, r.warnings);
+        ),
+        'Decoders by outputs: ${caps.isEmpty ? 'none' : (caps.keys.toList()..sort()).map((k) => '${caps[k]} × $k').join(', ')}; grounding points ${r.grounds.length}; stations ${r.stations.length}.',
+      ].join('\n') +
+      engCodes(b, r.warnings);
 }
 
 /// The lanes and furrow sets analysed (the design's when it ran).
@@ -266,8 +272,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       b,
       group: _group,
       name: 'pump_house_electrics',
-      description:
-          'Reads the electrical design of the pump house (Design → Pump house electrics) as the dialog shows it on the last design: for every electric pump the motor (kW, IE3 efficiency, power factor), rated and design current, the starting method (direct, star-delta, soft-starter, frequency drive) and its current, the feeder cable by ampacity (NBR 5410 Tables 36-40), running drop (6.2.7) and starting drop (10 % at the starter, 6.5.1.3.3), the protective conductor and the short-circuit current (IEC 60909); the transformer or generator, the demand, the installed load and the tariff group; and the supply of every pivot with an electrical design (span cable ampacity and AWG, collector ring, end tower). Works without design results (the pumps at their curve). No input.',
+      description: 'Reads the electrical design of the pump house (Design → Pump house electrics) as the dialog shows it on the last design: for every electric pump the motor (kW, IE3 efficiency, power factor), rated and design current, the starting method (direct, star-delta, soft-starter, frequency drive) and its current, the feeder cable by ampacity (NBR 5410 Tables 36-40), running drop (6.2.7) and starting drop (10 % at the starter, 6.5.1.3.3), the protective conductor and the short-circuit current (IEC 60909); the transformer or generator, the demand, the installed load and the tariff group; and the supply of every pivot with an electrical design (span cable ampacity and AWG, collector ring, end tower). Works without design results (the pumps at their curve). No input.',
       schema: obj({}),
       run: (a, _) async => ToolOutput(_pumpHouseText(b, await engSoon(() => designPumpHouse(b.p, c.results)))),
     ),
@@ -276,8 +281,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       group: _group,
       name: 'set_pump_house',
       effect: ToolEffect.write,
-      description:
-          'Changes the pump house electrical settings (one undo step; the design results are discarded and the bill of materials then lists the feeders, starter panels and transformer). Give only what changes: enabled (include it in the design), voltage (V), supply (ownTransformer | lowVoltage | generator), insulation (pvc | xlpe), method (b1 conduit on a wall | c on a wall or plain tray | d duct in the ground | e multicore in free air), ambient_c (air, soil for d), grouping (0.3-1), service_factor, direct_max_kw (largest direct start the utility allows), soft_multiple (soft-starter current × rated), default_length_m, max_running_drop_pct (0 = NBR 5410), uk_pct (0 = typical), loading_pct, other_kva, include_pivots, clearing_s, upstream_mva (0 = infinite), panel_cost, transformer_cost, pumps ({pump id or name: {length_m, starter auto|direct|starDelta|softStarter|vfd, motor_kw (0 = from the duty), efficiency, power_factor, electric}}). Output: the new design (pump_house_electrics).',
+      description: 'Changes the pump house electrical settings (one undo step; the design results are discarded and the bill of materials then lists the feeders, starter panels and transformer). Give only what changes: enabled (include it in the design), voltage (V), supply (ownTransformer | lowVoltage | generator), insulation (pvc | xlpe), method (b1 conduit on a wall | c on a wall or plain tray | d duct in the ground | e multicore in free air), ambient_c (air, soil for d), grouping (0.3-1), service_factor, direct_max_kw (largest direct start the utility allows), soft_multiple (soft-starter current × rated), default_length_m, max_running_drop_pct (0 = NBR 5410), uk_pct (0 = typical), loading_pct, other_kva, include_pivots, clearing_s, upstream_mva (0 = infinite), panel_cost, transformer_cost, pumps ({pump id or name: {length_m, starter auto|direct|starDelta|softStarter|vfd, motor_kw (0 = from the duty), efficiency, power_factor, electric}}). Output: the new design (pump_house_electrics).',
       schema: obj({
         'enabled': bool_(),
         'voltage': num_('110-1000 V.'),
@@ -352,8 +356,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       b,
       group: _group,
       name: 'solar_design',
-      description:
-          'Reads the solar pumping of the design (Design → Solar pumping of the design): an off-grid PV pumping array sized for the month of largest need (IEC 62253), or a grid-tied array whose energy offsets the pumping under net metering (Lei 14.300/2022, the Fio B paid on the credits by the year billed), with modules, kWp, area, inverter or pump drive, the yearly yield and generation, the pumping energy, the energy cost on the grid and with the array, and the month table. The irradiation comes from the site climate (set_site_climate or the climate download). No input.',
+      description: 'Reads the solar pumping of the design (Design → Solar pumping of the design): an off-grid PV pumping array sized for the month of largest need (IEC 62253), or a grid-tied array whose energy offsets the pumping under net metering (Lei 14.300/2022, the Fio B paid on the credits by the year billed), with modules, kWp, area, inverter or pump drive, the yearly yield and generation, the pumping energy, the energy cost on the grid and with the array, and the month table. The irradiation comes from the site climate (set_site_climate or the climate download). No input.',
       schema: obj({}),
       run: (a, _) async => ToolOutput(_solarText(b, await engSoon(() => designSolar(b.p, c.results)))),
     ),
@@ -362,8 +365,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       group: _group,
       name: 'set_solar_design',
       effect: ToolEffect.write,
-      description:
-          'Changes the solar pumping of the design (one undo step; the results are discarded, and after run_design the bill of materials lists the modules, structure and inverter and the energy cost of the design carries the solar compensation). Give only what changes: mode (off | offGrid | gridTied), module_wp, module_area_m2, tilt_deg (-1 = the latitude), azimuth_deg (from the equator, west positive), oversize, soiling, converter_efficiency, motor_pump_efficiency (0 = from the design), head_m (0 = from the design), dc_ac_ratio, simultaneity (0-1 share used as generated), fio_b_pct (share of the Fio B in the tariff), billing_year, grandfathered (access asked before 7 Jan 2023), module_price, inverter_price_per_kw, structure_price. Output: the new solar design.',
+      description: 'Changes the solar pumping of the design (one undo step; the results are discarded, and after run_design the bill of materials lists the modules, structure and inverter and the energy cost of the design carries the solar compensation). Give only what changes: mode (off | offGrid | gridTied), module_wp, module_area_m2, tilt_deg (-1 = the latitude), azimuth_deg (from the equator, west positive), oversize, soiling, converter_efficiency, motor_pump_efficiency (0 = from the design), head_m (0 = from the design), dc_ac_ratio, simultaneity (0-1 share used as generated), fio_b_pct (share of the Fio B in the tariff), billing_year, grandfathered (access asked before 7 Jan 2023), module_price, inverter_price_per_kw, structure_price. Output: the new solar design.',
       schema: obj({
         'mode': str(null, [for (final k in SolarMode.values) k.name]),
         'module_wp': num_('10-1000 Wp.'),
@@ -416,8 +418,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       b,
       group: _group,
       name: 'water_quality',
-      description:
-          'Reads the water analysis and what it asks of the system (Design → Water quality and filtration): the clogging hazard of every parameter (Nakayama 1982: suspended solids, pH, dissolved solids, iron, manganese, hydrogen sulfide, bacteria), the Langelier index, the filtration for the design flow (opening from the smallest emitter passage, mesh, media filters and their tanks, the catalogue safety filter, the filters drawn), the chlorination (oxidation demand, dose, hypochlorite L/h and per year) and the acid to the target pH (meq/L, mL/m³, L/h). No input.',
+      description: 'Reads the water analysis and what it asks of the system (Design → Water quality and filtration): the clogging hazard of every parameter (Nakayama 1982: suspended solids, pH, dissolved solids, iron, manganese, hydrogen sulfide, bacteria), the Langelier index, the filtration for the design flow (opening from the smallest emitter passage, mesh, media filters and their tanks, the catalogue safety filter, the filters drawn), the chlorination (oxidation demand, dose, hypochlorite L/h and per year) and the acid to the target pH (meq/L, mL/m³, L/h). No input.',
       schema: obj({}),
       run: (a, _) async => ToolOutput(_waterText(b, designWaterQuality(b.p, c.results))),
     ),
@@ -426,8 +427,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       group: _group,
       name: 'set_water_quality',
       effect: ToolEffect.write,
-      description:
-          'Changes the water analysis and the treatment (one undo step; the results are discarded, and after run_design the report and the bill of materials carry the filtration and the injectors). Give only what changes: source (well | surface | reservoir | municipal), ph, ec_ds_m, tds_mg_l, tss_mg_l, iron_mg_l, manganese_mg_l, sulfide_mg_l, calcium_mg_l, bicarbonate_mg_l, bacteria_per_ml, temperature_c, emitter_passage_mm (0 = by the emitters), mesh_ratio, chlorination (auto | none | continuous | intermittent), residual_mg_l, shock_mg_l, shock_minutes, shocks_per_month, hypochlorite_pct, acid_target_ph, acid (sulfuric | hydrochloric | nitric | phosphoric), filter_cost, injector_cost; clear (keys of the analysis to set to "not analysed"). Output: the new water design.',
+      description: 'Changes the water analysis and the treatment (one undo step; the results are discarded, and after run_design the report and the bill of materials carry the filtration and the injectors). Give only what changes: source (well | surface | reservoir | municipal), ph, ec_ds_m, tds_mg_l, tss_mg_l, iron_mg_l, manganese_mg_l, sulfide_mg_l, calcium_mg_l, bicarbonate_mg_l, bacteria_per_ml, temperature_c, emitter_passage_mm (0 = by the emitters), mesh_ratio, chlorination (auto | none | continuous | intermittent), residual_mg_l, shock_mg_l, shock_minutes, shocks_per_month, hypochlorite_pct, acid_target_ph, acid (sulfuric | hydrochloric | nitric | phosphoric), filter_cost, injector_cost; clear (keys of the analysis to set to "not analysed"). Output: the new water design.',
       schema: obj({
         'source': str(null, [for (final k in WaterSource.values) k.name]),
         'ph': num_('0-14.'),
@@ -453,7 +453,9 @@ List<AgentTool> opsAgb(AgentToolbox b) {
         'acid': str(null, [for (final k in AcidProduct.values) k.name]),
         'filter_cost': num_(),
         'injector_cost': num_(),
-        'clear': arr(str(null, const ['ph', 'ec_ds_m', 'tds_mg_l', 'tss_mg_l', 'iron_mg_l', 'manganese_mg_l', 'sulfide_mg_l', 'calcium_mg_l', 'bicarbonate_mg_l', 'bacteria_per_ml', 'acid_target_ph'])),
+        'clear': arr(
+          str(null, const ['ph', 'ec_ds_m', 'tds_mg_l', 'tss_mg_l', 'iron_mg_l', 'manganese_mg_l', 'sulfide_mg_l', 'calcium_mg_l', 'bicarbonate_mg_l', 'bacteria_per_ml', 'acid_target_ph']),
+        ),
       }),
       run: (a, i) async {
         if (i.isEmpty) throw ToolInputError('Give at least one value to change.');
@@ -520,8 +522,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       b,
       group: _group,
       name: 'two_wire_system',
-      description:
-          'Reads the two-wire (decoder) wiring of the project (Zone → Two-wire system) with its settings: for every controller the wire of the pair, the route and cable length, the decoders, the most stations open, the peak current, the worst decoder voltage and the largest distance the wire allows; the decoders by outputs, the grounding points and the messages. When two-wire is on, the bill of materials lists these instead of the station wires. No input.',
+      description: 'Reads the two-wire (decoder) wiring of the project (Zone → Two-wire system) with its settings: for every controller the wire of the pair, the route and cable length, the decoders, the most stations open, the peak current, the worst decoder voltage and the largest distance the wire allows; the decoders by outputs, the grounding points and the messages. When two-wire is on, the bill of materials lists these instead of the station wires. No input.',
       schema: obj({}),
       run: (a, _) async => ToolOutput(_twoWireText(b, designTwoWire(b.p, flows: wiringFlows(b.p), spec: twoWireSpecOf(b.p.agb.twoWire)))),
     ),
@@ -530,8 +531,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       group: _group,
       name: 'set_two_wire',
       effect: ToolEffect.write,
-      description:
-          'Changes the two-wire settings (one undo step; the results are discarded). Give only what changes: enabled (two-wire in the design and the bill of materials), output_volts, min_volts, idle_ma (decoder idle current), solenoid_reach_m, ground_every_decoders, ground_every_m, decoder_prices ({"1": price, "2": …, "4": …, "6": …}), arrester_price. Output: the two-wire design with the new settings.',
+      description: 'Changes the two-wire settings (one undo step; the results are discarded). Give only what changes: enabled (two-wire in the design and the bill of materials), output_volts, min_volts, idle_ma (decoder idle current), solenoid_reach_m, ground_every_decoders, ground_every_m, decoder_prices ({"1": price, "2": …, "4": …, "6": …}), arrester_price. Output: the two-wire design with the new settings.',
       schema: obj({
         'enabled': bool_(),
         'output_volts': num_('1-100 V.'),
@@ -576,8 +576,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       name: 'multi_pivot_layout',
       effectFor: (i) => i['apply'] == false ? ToolEffect.read : ToolEffect.write,
       args: (i) => {'n': '${i['field'] ?? ''}'},
-      description:
-          'Arranges several centre pivots of standard spans in a property outline (Design → Automatic → Several pivots): the arrangement that irrigates the most area (the largest first, and lattices of equal machines grown where they stand), with a clearance between wetted circles and from the boundary, avoiding the obstacles and the pivots drawn, within the flow allowed, and the common mainline from the first water supply (minimum spanning tree). Inputs: field (closed shape id or name; default the selection), obstacles (closed shape ids), end_throw_m, clearance_m, min_radius_m, max_pivots, min_spans, max_spans, max_flow_m3h (0 = no limit; default the largest flow of the water supply), depth_mm and hours (gross depth per revolution for each flow), corners (part-circle pivots in the corners left), mainline (draw the pipes, default true), apply (default true; false only reports). Output: the machines (centre, radius, towers, area, flow), coverage, total flow, mainline length.',
+      description: 'Arranges several centre pivots of standard spans in a property outline (Design → Automatic → Several pivots): the arrangement that irrigates the most area (the largest first, and lattices of equal machines grown where they stand), with a clearance between wetted circles and from the boundary, avoiding the obstacles and the pivots drawn, within the flow allowed, and the common mainline from the first water supply (minimum spanning tree). Inputs: field (closed shape id or name; default the selection), obstacles (closed shape ids), end_throw_m, clearance_m, min_radius_m, max_pivots, min_spans, max_spans, max_flow_m3h (0 = no limit; default the largest flow of the water supply), depth_mm and hours (gross depth per revolution for each flow), corners (part-circle pivots in the corners left), mainline (draw the pipes, default true), apply (default true; false only reports). Output: the machines (centre, radius, towers, area, flow), coverage, total flow, mainline length.',
       schema: obj({
         'field': str('Closed shape of the property.'),
         'obstacles': arr(str(), 'Closed shapes to keep clear of.'),
@@ -597,8 +596,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       run: (a, i) async {
         final (fieldId, field) = _field(b, a.str('field'), 'property');
         final obstacles = <List<Pt>>[
-          for (final ref in a.strings('obstacles'))
-            closedOutlineOf(b.p, b.find(ref).id) ?? (throw ToolInputError('obstacles: "$ref" is not a closed shape.')),
+          for (final ref in a.strings('obstacles')) closedOutlineOf(b.p, b.find(ref).id) ?? (throw ToolInputError('obstacles: "$ref" is not a closed shape.')),
           for (final p in b.p.entities.whereType<PivotEntity>()) p.outline(),
         ];
         final depth = a.number('depth_mm', min: 0.5, max: 100) ?? 8;
@@ -666,8 +664,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       name: 'traveller_lanes',
       effectFor: (i) => i['apply'] == false ? ToolEffect.read : ToolEffect.write,
       args: (i) => {'n': '${i['field'] ?? ''}'},
-      description:
-          'Lays travelling-gun (hose reel) lanes across a field (Mainline → Traveller lanes): parallel lanes in a direction, spaced by the NRCS NEH 623 wind table for the gun\'s wetted diameter (or a given spacing), each starting at a hydrant on the field edge and running the hose length; every lane is a traveller item, a demand on the mainline at its hydrant. Inputs: field (closed shape; default the selection), angle_deg (lane direction, counter-clockwise from east; default across the longest edge), gun and nozzle (catalogue gun), gun_flow_m3h and wetted_diameter_m (without a gun), gun_pressure_m, sector_deg, hose_m (0 = the run), hose_bore_mm, drive_loss_m, lane_width_m (0 = table), depth_mm, wind (none | light | moderate | strong), setup_h, hours_per_day, machine (reel label), machine_cost, hydrant_cost, hydrant_line (draw a mainline through the hydrants, default true), flows (one system flow per lane, default true), apply (default true; false only reports). Change one lane later with update_entities (type traveller).',
+      description: 'Lays travelling-gun (hose reel) lanes across a field (Mainline → Traveller lanes): parallel lanes in a direction, spaced by the NRCS NEH 623 wind table for the gun\'s wetted diameter (or a given spacing), each starting at a hydrant on the field edge and running the hose length; every lane is a traveller item, a demand on the mainline at its hydrant. Inputs: field (closed shape; default the selection), angle_deg (lane direction, counter-clockwise from east; default across the longest edge), gun and nozzle (catalogue gun), gun_flow_m3h and wetted_diameter_m (without a gun), gun_pressure_m, sector_deg, hose_m (0 = the run), hose_bore_mm, drive_loss_m, lane_width_m (0 = table), depth_mm, wind (none | light | moderate | strong), setup_h, hours_per_day, machine (reel label), machine_cost, hydrant_cost, hydrant_line (draw a mainline through the hydrants, default true), flows (one system flow per lane, default true), apply (default true; false only reports). Change one lane later with update_entities (type traveller).',
       schema: obj({
         'field': str('Closed shape of the field.'),
         'angle_deg': num_('Lane direction, degrees from east.'),
@@ -775,8 +772,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       name: 'furrow_set',
       effectFor: (i) => i['apply'] == false ? ToolEffect.read : ToolEffect.write,
       args: (i) => {'n': '${i['line'] ?? ''}'},
-      description:
-          'Draws a furrow set fed from a head line (Mainline → Furrows with gated pipe): the furrows run from the line (its first point is the inlet on the mainline) to one side; the FAO 45 volume balance finds the inflow per furrow of the highest efficiency (or the one given) and the cutoff for the depth, and the gated pipe of the farthest set the pressure at the inlet. Inputs: line (line or polyline id or name; default the selection), right (furrows to the right), length_m, spacing_m, slope, family (NRCS intake family in/h), manning, depth_mm, inflow_lps (0 = best), per_set (0 = all), gated (default true; false = head ditch with siphons), pipe_bore_mm, pipe_cost, gate_cost, flow (a system flow for it, default true), apply (default true; false only reports). Change it later with update_entities (type furrows).',
+      description: 'Draws a furrow set fed from a head line (Mainline → Furrows with gated pipe): the furrows run from the line (its first point is the inlet on the mainline) to one side; the FAO 45 volume balance finds the inflow per furrow of the highest efficiency (or the one given) and the cutoff for the depth, and the gated pipe of the farthest set the pressure at the inlet. Inputs: line (line or polyline id or name; default the selection), right (furrows to the right), length_m, spacing_m, slope, family (NRCS intake family in/h), manning, depth_mm, inflow_lps (0 = best), per_set (0 = all), gated (default true; false = head ditch with siphons), pipe_bore_mm, pipe_cost, gate_cost, flow (a system flow for it, default true), apply (default true; false only reports). Change it later with update_entities (type furrows).',
       schema: obj({
         'line': str('Head line (line or polyline).'),
         'right': bool_(),
@@ -841,8 +837,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
       b,
       group: _group,
       name: 'field_machines',
-      description:
-          'Reads the traveller lanes and furrow sets of the drawing as the report shows them: per lane the reel, run, spacing, flow, speed, depth, travel and lane hours, application rate, hose loss, the head needed at the hydrant and the head the design leaves there; per furrow set the furrows, sets, inflow, advance and cutoff, the hours of an irrigation, efficiency, uniformity, tailwater and the inlet heads. Uses the design results when there are; else analyses the items as drawn (no available heads). No input.',
+      description: 'Reads the traveller lanes and furrow sets of the drawing as the report shows them: per lane the reel, run, spacing, flow, speed, depth, travel and lane hours, application rate, hose loss, the head needed at the hydrant and the head the design leaves there; per furrow set the furrows, sets, inflow, advance and cutoff, the hours of an irrigation, efficiency, uniformity, tailwater and the inlet heads. Uses the design results when there are; else analyses the items as drawn (no available heads). No input.',
       schema: obj({}),
       run: (a, _) async => ToolOutput(await engSoon(() => _fieldMachinesText(b))),
     ),

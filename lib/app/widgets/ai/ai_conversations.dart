@@ -98,8 +98,19 @@ class _ConversationsState extends State<_Conversations> {
                 future: list,
                 builder: (context, snap) {
                   final items = snap.data;
-                  if (items == null) return const Padding(padding: EdgeInsets.all(12), child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
-                  if (items.isEmpty) return Text(t('ai.conv.none'), key: const Key('ai_conv_none'), style: TextStyle(fontSize: 12, color: Cad.fg54));
+                  if (items == null) {
+                    return const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    );
+                  }
+                  if (items.isEmpty) {
+                    return Text(
+                      t('ai.conv.none'),
+                      key: const Key('ai_conv_none'),
+                      style: TextStyle(fontSize: 12, color: Cad.fg54),
+                    );
+                  }
                   return ListView(
                     shrinkWrap: true,
                     children: [
@@ -111,10 +122,7 @@ class _ConversationsState extends State<_Conversations> {
                           selected: x.current,
                           leading: Icon(x.current ? Icons.chat_bubble : Icons.chat_bubble_outline, size: 18),
                           title: Text(x.title.isEmpty ? t('ai.conv.untitled') : x.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5)),
-                          subtitle: Text(
-                            [_when(x.saved), if (x.current) t('ai.conv.current')].join(' · '),
-                            style: TextStyle(fontSize: 11, color: Cad.fg54),
-                          ),
+                          subtitle: Text([_when(x.saved), if (x.current) t('ai.conv.current')].join(' · '), style: TextStyle(fontSize: 11, color: Cad.fg54)),
                           onTap: x.current || busy
                               ? null
                               : () async {

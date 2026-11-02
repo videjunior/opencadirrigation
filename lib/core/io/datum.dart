@@ -478,9 +478,7 @@ class AlbersEqualArea extends MapProjection {
       for (var i = 0; i < 25; i++) {
         final s = math.sin(phi), c = math.cos(phi);
         final w = 1 - e2 * s * s;
-        final d = e < 1e-12
-            ? (q / 2 - s) / c
-            : w * w / (2 * c) * (q / (1 - e2) - s / w + 1 / (2 * e) * math.log((1 - e * s) / (1 + e * s)));
+        final d = e < 1e-12 ? (q / 2 - s) / c : w * w / (2 * c) * (q / (1 - e2) - s / w + 1 / (2 * e) * math.log((1 - e * s) / (1 + e * s)));
         phi += d;
         if (d.abs() < 1e-14) break;
       }

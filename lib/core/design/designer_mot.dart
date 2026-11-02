@@ -358,9 +358,7 @@ extension _MotDesign on Designer {
     ];
     if (ids.isEmpty) return const [];
     final listed = sf.valveIds;
-    final pressure = <String, double>{
-      for (final s in supplies) s.id: s.calculatePressure ? (f.supplies.where((d) => d.supplyId == s.id).firstOrNull?.head ?? 0) : s.designHeadM,
-    };
+    final pressure = <String, double>{for (final s in supplies) s.id: s.calculatePressure ? (f.supplies.where((d) => d.supplyId == s.id).firstOrNull?.head ?? 0) : s.designHeadM};
     final demand = {for (final vid in ids) vid: _demandOf(vid).$1};
     final required = {for (final vid in ids) vid: _demandOf(vid).$2};
     final needs = _headNeeds(listed);
@@ -408,9 +406,7 @@ extension _MotDesign on Designer {
       final z = results.zones[vid];
       if (z == null) {
         final pv = results.pivots[vid]!;
-        out.add(
-          ZoneOperation(valveId: vid, zoneName: pv.name, designFlow: pv.flow, flow: fit[vid]!.$1 * math.sqrt(math.max(h, 0)), requiredHead: pv.inletHead, availableHead: avail, pivot: true),
-        );
+        out.add(ZoneOperation(valveId: vid, zoneName: pv.name, designFlow: pv.flow, flow: fit[vid]!.$1 * math.sqrt(math.max(h, 0)), requiredHead: pv.inletHead, availableHead: avail, pivot: true));
         continue;
       }
       final zr = analyzeZone(vid, downstreamHead: math.max(h, 0));

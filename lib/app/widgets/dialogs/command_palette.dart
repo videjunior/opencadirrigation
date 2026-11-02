@@ -42,7 +42,10 @@ class PaletteEntry {
 
   late final String _label = foldSearch(label);
   late final String _all = foldSearch('$label $path $shortcut $keywords');
-  late final Set<String> _aliases = {for (final w in keywords.split(RegExp(r'[\s·,]+'))) if (w.isNotEmpty) foldSearch(w)};
+  late final Set<String> _aliases = {
+    for (final w in keywords.split(RegExp(r'[\s·,]+')))
+      if (w.isNotEmpty) foldSearch(w),
+  };
 }
 
 /// [s] in lower case without accents, for searching.
@@ -354,7 +357,11 @@ class _CommandPaletteState extends State<CommandPalette> {
                 if (shown.isEmpty)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    child: Text(t('pal.none', {'q': query.text.trim()}), key: const Key('palette_none'), style: TextStyle(color: Cad.fg60)),
+                    child: Text(
+                      t('pal.none', {'q': query.text.trim()}),
+                      key: const Key('palette_none'),
+                      style: TextStyle(color: Cad.fg60),
+                    ),
                   )
                 else
                   SizedBox(
@@ -402,8 +409,19 @@ class _CommandPaletteState extends State<CommandPalette> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(e.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: e.enabled ? Cad.fg : Cad.fg38)),
-                    if (sub.isNotEmpty) Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+                    Text(
+                      e.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, color: e.enabled ? Cad.fg : Cad.fg38),
+                    ),
+                    if (sub.isNotEmpty)
+                      Text(
+                        sub,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 10.5, color: Cad.fg54),
+                      ),
                   ],
                 ),
               ),
@@ -459,13 +477,7 @@ class _PhoneMenuSearchState extends State<PhoneMenuSearch> {
           isDense: true,
           prefixIcon: const Icon(Icons.search, size: 18),
           hintText: t('pal.phone'),
-          suffixIcon: query.text.isEmpty
-              ? null
-              : IconButton(
-                  tooltip: t('pal.clear'),
-                  icon: const Icon(Icons.close, size: 18),
-                  onPressed: () => setState(query.clear),
-                ),
+          suffixIcon: query.text.isEmpty ? null : IconButton(tooltip: t('pal.clear'), icon: const Icon(Icons.close, size: 18), onPressed: () => setState(query.clear)),
         ),
         style: const TextStyle(fontSize: 13.5),
         onChanged: (v) => setState(() {

@@ -435,7 +435,9 @@ Widget reviewRow(ProjectController c, String text, bool on, ValueChanged<bool> o
     key: key,
     children: [
       Checkbox(value: on, onChanged: (v) => onChanged(v ?? false)),
-      Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: on ? null : Cad.fg54))),
+      Expanded(
+        child: Text(text, style: TextStyle(fontSize: 12, color: on ? null : Cad.fg54)),
+      ),
       if (present.isNotEmpty)
         IconButton(
           tooltip: c.t('adv.showOnDrawing'),
@@ -542,100 +544,100 @@ Future<void> showOptimizeDialog(BuildContext context, ProjectController c) async
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
-      title: Text(t('opt.title'), style: const TextStyle(fontSize: 15)),
-      content: SizedBox(
-        width: dialogWidth(ctx, 520),
-        child: SingleChildScrollView(
-          key: const Key('optimize_summary'),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(r.improved ? t('opt.kept') : t('opt.reverted'), style: TextStyle(fontSize: 12.5, color: r.improved ? Cad.ok : Cad.fg70)),
-              const SizedBox(height: 8),
-              Table(
-                columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
-                children: [
-                  TableRow(
-                    children: [
-                      const SizedBox(),
-                      Text(
-                        t('opt.before'),
-                        textAlign: TextAlign.right,
-                        style: TextStyle(fontSize: 11.5, color: Cad.fg54),
-                      ),
-                      Text(
-                        t('opt.after'),
-                        textAlign: TextAlign.right,
-                        style: TextStyle(fontSize: 11.5, color: Cad.fg54),
-                      ),
-                    ],
-                  ),
-                  row(t('opt.capital'), money(r.before.capital), money(r.after.capital), better: r.after.capital < r.before.capital - 0.5),
-                  row(t('opt.energy'), money(r.before.energy), money(r.after.energy), better: r.after.energy < r.before.energy - 0.5),
-                  row(t('opt.annual'), money(r.before.annualTotal), money(r.after.annualTotal), better: r.after.annualTotal < r.before.annualTotal - 0.5),
-                  row(t('opt.problems'), '${r.before.errors} / ${r.before.warnings}', '${r.after.errors} / ${r.after.warnings}', better: r.after.errors < r.before.errors),
-                ],
-              ),
-              // 1.6.0 AUT: warnings the optimised design would add, and what was taken back for them
-              if (r.newWarnings.isNotEmpty || r.rejected.isNotEmpty) ...[
+        title: Text(t('opt.title'), style: const TextStyle(fontSize: 15)),
+        content: SizedBox(
+          width: dialogWidth(ctx, 520),
+          child: SingleChildScrollView(
+            key: const Key('optimize_summary'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(r.improved ? t('opt.kept') : t('opt.reverted'), style: TextStyle(fontSize: 12.5, color: r.improved ? Cad.ok : Cad.fg70)),
                 const SizedBox(height: 8),
-                if (r.newWarnings.isNotEmpty)
-                  Text(
-                    t('opt.newWarnings', {'w': r.newWarnings.map((code) => t.has('check.$code') ? t('check.$code') : (t.has('warn.$code') ? t('warn.$code') : code)).join('; ')}),
-                    style: TextStyle(fontSize: 12, color: Cad.warning),
-                  ),
-                if (r.rejected.isNotEmpty) Text(t('opt.rejected', {'n': '${r.rejected.length}'}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
-              ],
-              // 1.6.0 AUT: every change kept with its box; the ones unticked are left out
-              if (r.improved && r.applied.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                if (r.changes.isNotEmpty) Text(t('opt.reviewHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
-                if (r.changes.isEmpty)
-                  for (final f in r.applied)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.check, size: 15, color: Cad.ok),
-                          const SizedBox(width: 6),
-                          Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
-                        ],
-                      ),
-                    )
-                else
-                  for (var i = 0; i < r.changes.length; i++)
-                    reviewRow(
-                      c,
-                      t(r.changes[i].result.key, r.changes[i].result.args),
-                      keep.contains(r.changes[i].id),
-                      (on) => setState(() => on ? keep.add(r.changes[i].id) : keep.remove(r.changes[i].id)),
-                      r.changes[i].entityIds,
-                      key: Key('optimize_change_$i'),
+                Table(
+                  columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
+                  children: [
+                    TableRow(
+                      children: [
+                        const SizedBox(),
+                        Text(
+                          t('opt.before'),
+                          textAlign: TextAlign.right,
+                          style: TextStyle(fontSize: 11.5, color: Cad.fg54),
+                        ),
+                        Text(
+                          t('opt.after'),
+                          textAlign: TextAlign.right,
+                          style: TextStyle(fontSize: 11.5, color: Cad.fg54),
+                        ),
+                      ],
                     ),
+                    row(t('opt.capital'), money(r.before.capital), money(r.after.capital), better: r.after.capital < r.before.capital - 0.5),
+                    row(t('opt.energy'), money(r.before.energy), money(r.after.energy), better: r.after.energy < r.before.energy - 0.5),
+                    row(t('opt.annual'), money(r.before.annualTotal), money(r.after.annualTotal), better: r.after.annualTotal < r.before.annualTotal - 0.5),
+                    row(t('opt.problems'), '${r.before.errors} / ${r.before.warnings}', '${r.after.errors} / ${r.after.warnings}', better: r.after.errors < r.before.errors),
+                  ],
+                ),
+                // 1.6.0 AUT: warnings the optimised design would add, and what was taken back for them
+                if (r.newWarnings.isNotEmpty || r.rejected.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  if (r.newWarnings.isNotEmpty)
+                    Text(
+                      t('opt.newWarnings', {'w': r.newWarnings.map((code) => t.has('check.$code') ? t('check.$code') : (t.has('warn.$code') ? t('warn.$code') : code)).join('; ')}),
+                      style: TextStyle(fontSize: 12, color: Cad.warning),
+                    ),
+                  if (r.rejected.isNotEmpty) Text(t('opt.rejected', {'n': '${r.rejected.length}'}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                ],
+                // 1.6.0 AUT: every change kept with its box; the ones unticked are left out
+                if (r.improved && r.applied.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  if (r.changes.isNotEmpty) Text(t('opt.reviewHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                  if (r.changes.isEmpty)
+                    for (final f in r.applied)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.check, size: 15, color: Cad.ok),
+                            const SizedBox(width: 6),
+                            Expanded(child: Text(t(f.key, f.args), style: const TextStyle(fontSize: 12))),
+                          ],
+                        ),
+                      )
+                  else
+                    for (var i = 0; i < r.changes.length; i++)
+                      reviewRow(
+                        c,
+                        t(r.changes[i].result.key, r.changes[i].result.args),
+                        keep.contains(r.changes[i].id),
+                        (on) => setState(() => on ? keep.add(r.changes[i].id) : keep.remove(r.changes[i].id)),
+                        r.changes[i].entityIds,
+                        key: Key('optimize_change_$i'),
+                      ),
+                ],
+                const SizedBox(height: 8),
+                Text(t('opt.note'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
               ],
-              const SizedBox(height: 8),
-              Text(t('opt.note'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
-            ],
+            ),
           ),
         ),
+        actions: [
+          if (r.improved)
+            TextButton(
+              onPressed: () {
+                c.undo();
+                Navigator.pop(ctx, false);
+              },
+              child: Text(t('opt.undo')),
+            ),
+          if (r.improved && r.changes.any((ch) => !keep.contains(ch.id)))
+            FilledButton(key: const Key('optimize_keep'), onPressed: () => Navigator.pop(ctx, true), child: Text(t('adv.keepChecked', {'n': '${keep.length}'})))
+          else
+            FilledButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('close'))),
+        ],
       ),
-      actions: [
-        if (r.improved)
-          TextButton(
-            onPressed: () {
-              c.undo();
-              Navigator.pop(ctx, false);
-            },
-            child: Text(t('opt.undo')),
-          ),
-        if (r.improved && r.changes.any((ch) => !keep.contains(ch.id)))
-          FilledButton(key: const Key('optimize_keep'), onPressed: () => Navigator.pop(ctx, true), child: Text(t('adv.keepChecked', {'n': '${keep.length}'})))
-        else
-          FilledButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('close'))),
-      ],
-    ),
     ),
   );
   if (again != true || !context.mounted) return;

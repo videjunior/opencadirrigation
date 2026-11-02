@@ -87,7 +87,10 @@ void main() {
     final a = ThemeMap.of(p, SheetTheme.aspect)!;
     expect(a.areas[6] / a.mappedArea, greaterThan(0.9), reason: 'west sector');
     // no terrain: no thematic sheet
-    final none = PdfSheetBuilder(project: Project()..entities.add(AreaEntity(id: 'a1', points: const [Pt(0, 0), Pt(10, 0), Pt(10, 10)])), t: i18n.call);
+    final none = PdfSheetBuilder(
+      project: Project()..entities.add(AreaEntity(id: 'a1', points: const [Pt(0, 0), Pt(10, 0), Pt(10, 10)])),
+      t: i18n.call,
+    );
     expect(none.sheetCount(o), 1);
   });
 }

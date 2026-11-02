@@ -36,7 +36,11 @@ Future<void> showFieldMapDialog(BuildContext context, ProjectController c) async
             children: [
               Text(t('fieldmap.explain'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
               const SizedBox(height: 8),
-              Text(what, key: const Key('fieldmap_what'), style: TextStyle(fontSize: 12, color: ready ? null : Cad.warning)),
+              Text(
+                what,
+                key: const Key('fieldmap_what'),
+                style: TextStyle(fontSize: 12, color: ready ? null : Cad.warning),
+              ),
               const SizedBox(height: 6),
               Text(t('fieldmap.tip'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             ],

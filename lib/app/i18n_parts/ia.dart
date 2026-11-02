@@ -32,11 +32,7 @@ const _ia = <String, (String, String, String)>{
   // the terms of the base maps
   'ai.op.base_map_terms': ('Ler os termos dos mapas base', 'Read the terms of the base maps', 'Leer los términos de los mapas base'),
   // the ETo of the site from the normals of a weather station
-  'ai.op.eto_from_station_normals': (
-    'Calcular a ETo pelas normais de uma estação',
-    'Work out the ETo from the normals of a station',
-    'Calcular la ETo con las normales de una estación',
-  ),
+  'ai.op.eto_from_station_normals': ('Calcular a ETo pelas normais de uma estação', 'Work out the ETo from the normals of a station', 'Calcular la ETo con las normales de una estación'),
   'ai.op.eto_from_station_normals.apply': (
     'Calcular a ETo pelas normais de uma estação e guardá-la no clima do local',
     'Work out the ETo from the normals of a station and keep it in the site climate',
@@ -141,11 +137,7 @@ const _ia = <String, (String, String, String)>{
     'Conexión OK: {m} respondió en {s} s, con {i} tokens de entrada y {o} de salida (≈ US\$ {c}).',
   ),
   'ai.test.failed': ('A conexão com {m} falhou: {e}', 'The connection to {m} failed: {e}', 'La conexión con {m} falló: {e}'),
-  'ai.test.limits': (
-    'Restam, neste minuto: {r} pedidos e {k} tokens.',
-    'Left this minute: {r} requests and {k} tokens.',
-    'Quedan, en este minuto: {r} pedidos y {k} tokens.',
-  ),
+  'ai.test.limits': ('Restam, neste minuto: {r} pedidos e {k} tokens.', 'Left this minute: {r} requests and {k} tokens.', 'Quedan, en este minuto: {r} pedidos y {k} tokens.'),
   'ai.test.noLimits': (
     'Os limites da conta não vieram na resposta (o navegador pode não mostrá-los).',
     'The account\'s limits did not come with the answer (the browser may not show them).',

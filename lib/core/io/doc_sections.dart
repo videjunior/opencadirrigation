@@ -89,9 +89,7 @@ List<DocBlock> _summary(DocContext ctx) {
   final mainline = length((e) => e is PipeEntity && e.scope == HydraulicScope.mainline);
   final zonePipes = length((e) => e is PipeEntity && e.scope == HydraulicScope.zone);
   final laterals = length((e) => e is SpraylineEntity || e is TapeEntity);
-  final pumps = <String>{
-    for (final e in p.entities.whereType<PumpEntity>()) p.catalog.pump(e.pumpSpecId)?.name ?? (e.name.isEmpty ? t('tool.pump') : e.name),
-  };
+  final pumps = <String>{for (final e in p.entities.whereType<PumpEntity>()) p.catalog.pump(e.pumpSpecId)?.name ?? (e.name.isEmpty ? t('tool.pump') : e.name)};
   final crops = <String>{
     for (final a in p.entities.whereType<AreaEntity>())
       if (a.crop.trim().isNotEmpty) a.crop.trim(),
@@ -140,10 +138,7 @@ List<DocBlock> _criteria(DocContext ctx) {
       (t('dlg.minorPct'), p.applyMinorLosses ? '${fmt(p.minorLossPct, 0)} %' : '-'),
     ]),
     DocHeading(t('prd.doc.standards')),
-    DocTable(
-      ReportTable(key: 'prdCriteria', title: t('prd.doc.standards'), headers: [t('prd.doc.criterion'), t('prd.doc.references')], rows: rows),
-      standards: false,
-    ),
+    DocTable(ReportTable(key: 'prdCriteria', title: t('prd.doc.standards'), headers: [t('prd.doc.criterion'), t('prd.doc.references')], rows: rows), standards: false),
   ];
 }
 
@@ -375,14 +370,7 @@ final prdDocumentSections = <DocSection>[
     available: (c) => _has(c, const ['bomZones']),
     build: (c) => c.tablesOf(const ['bomZones']),
   ),
-  DocSection(
-    id: 'prd.quote',
-    titleKey: 'prd.doc.sec.quote',
-    profiles: const {_p: 400},
-    needsResults: true,
-    available: (c) => _has(c, const ['proposal']),
-    build: _quote,
-  ),
+  DocSection(id: 'prd.quote', titleKey: 'prd.doc.sec.quote', profiles: const {_p: 400}, needsResults: true, available: (c) => _has(c, const ['proposal']), build: _quote),
   DocSection(
     id: 'prd.works',
     titleKey: 'prd.doc.sec.works',

@@ -38,11 +38,7 @@ const _prd = <String, (String, String, String)>{
   'prd.sheet.sector': ('Direção', 'Direction', 'Dirección'),
   'prd.sheet.flat': ('Plano (< 1 %)', 'Flat (< 1 %)', 'Llano (< 1 %)'),
   'prd.sheet.byArea': ('Por área irrigada', 'By irrigated area', 'Por área regada'),
-  'prd.sheet.seeReport': (
-    '… mais áreas no relatório (Declividade por área irrigada)',
-    '… more areas in the report (Slope by irrigated area)',
-    '… más áreas en el informe (Pendiente por área regada)',
-  ),
+  'prd.sheet.seeReport': ('… mais áreas no relatório (Declividade por área irrigada)', '… more areas in the report (Slope by irrigated area)', '… más áreas en el informe (Pendiente por área regada)'),
   // ---- report: slope by irrigated area
   'prd.rep.slope': ('Declividade por área irrigada', 'Slope by irrigated area', 'Pendiente por área regada'),
   'prd.rep.slopeMean': ('Declividade média (%)', 'Mean slope (%)', 'Pendiente media (%)'),

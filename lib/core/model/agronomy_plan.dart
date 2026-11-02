@@ -366,7 +366,9 @@ class BalanceSettings {
     return BalanceSettings(
       trigger: enumByName(BalanceTrigger.values, j['trigger'] ?? BalanceTrigger.depletion.name, BalanceTrigger.depletion, report: report, key: 'balance.trigger'),
       intervalDays: _i(j['every'], 3).clamp(1, 60),
-      allowedDepletion: [for (final x in _doubles(j['mad'], length: 4) ?? const [0.0, 0.0, 0.0, 0.0]) x.clamp(0.0, 0.95).toDouble()],
+      allowedDepletion: [
+        for (final x in _doubles(j['mad'], length: 4) ?? const [0.0, 0.0, 0.0, 0.0]) x.clamp(0.0, 0.95).toDouble(),
+      ],
       refillPct: _d(j['refill'], 100).clamp(10.0, 100.0).toDouble(),
       initialDepletionPct: _d(j['dr0'], 0).clamp(0.0, 100.0).toDouble(),
       rainEventsPerMonth: _i(j['rainEvents'], 4).clamp(1, 31),
@@ -387,13 +389,19 @@ class FertProduct {
   final bool ionic;
 
   /// Share (0–1) of nutrient [k] (0 = N, 1 = P₂O₅, 2 = K₂O).
-  double share(int k) => (switch (k) {
-    0 => nPct,
-    1 => p2o5Pct,
-    _ => k2oPct,
-  }).clamp(0.0, 100.0) / 100;
+  double share(int k) =>
+      (switch (k) {
+        0 => nPct,
+        1 => p2o5Pct,
+        _ => k2oPct,
+      }).clamp(0.0, 100.0) /
+      100;
 
-  Map<String, dynamic> toJson() => {'name': name, 'g': [nPct, p2o5Pct, k2oPct], if (!ionic) 'ionic': false};
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'g': [nPct, p2o5Pct, k2oPct],
+    if (!ionic) 'ionic': false,
+  };
 
   static FertProduct fromJson(Map<String, dynamic> j) {
     final g = _doubles(j['g'], length: 3) ?? const [0.0, 0.0, 0.0];
@@ -455,11 +463,15 @@ class FertigationStagePlan {
     final share = j['share'];
     List<List<double>>? rows;
     if (share is List && share.length == 4) {
-      rows = [for (final r in share) _doubles(r, length: 3) ?? const [25.0, 25.0, 25.0]];
+      rows = [
+        for (final r in share) _doubles(r, length: 3) ?? const [25.0, 25.0, 25.0],
+      ];
     }
     final prods = j['products'];
     return FertigationStagePlan(
-      doseKgHa: [for (final x in _doubles(j['dose'], length: 3) ?? const [0.0, 0.0, 0.0]) x.clamp(0.0, 5000.0).toDouble()],
+      doseKgHa: [
+        for (final x in _doubles(j['dose'], length: 3) ?? const [0.0, 0.0, 0.0]) x.clamp(0.0, 5000.0).toDouble(),
+      ],
       sharePct: rows,
       products: prods is List && prods.length == 3 ? [for (final p in prods) FertProduct.fromJson(_map(p) ?? const {})] : null,
       everyNth: _i(j['every'], 1).clamp(1, 30),
@@ -472,11 +484,7 @@ class FertigationStagePlan {
 /// Common fertilizers for N, P₂O₅ and K₂O, by their usual grades: urea
 /// (45-0-0, a non-electrolyte), monoammonium phosphate (11-52-0) and
 /// potassium chloride (0-0-60). Grades vary with the maker: the label wins.
-const defaultFertProducts = [
-  FertProduct(name: 'urea', nPct: 45, ionic: false),
-  FertProduct(name: 'map', nPct: 11, p2o5Pct: 52),
-  FertProduct(name: 'kcl', k2oPct: 60),
-];
+const defaultFertProducts = [FertProduct(name: 'urea', nPct: 45, ionic: false), FertProduct(name: 'map', nPct: 11, p2o5Pct: 52), FertProduct(name: 'kcl', k2oPct: 60)];
 
 // ---------------------------------------------------------------- field evaluation
 
@@ -626,12 +634,7 @@ class AgronomyPlan {
   }
 
   bool get isDefault =>
-      userCrops.isEmpty &&
-      programme.isDefault &&
-      balance.values.every((b) => b.isDefault) &&
-      fertigation.values.every((f) => f.isEmpty) &&
-      fieldTests.isEmpty &&
-      (extra?.isEmpty ?? true);
+      userCrops.isEmpty && programme.isDefault && balance.values.every((b) => b.isDefault) && fertigation.values.every((f) => f.isEmpty) && fieldTests.isEmpty && (extra?.isEmpty ?? true);
 
   Map<String, dynamic> toJson() => {
     ...?extra,

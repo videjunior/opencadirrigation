@@ -209,18 +209,19 @@ void main() {
       final fake = FakeClaude([(_) => FakeReply.tools(calls), (_) => FakeReply.text('done')]);
       AgentTurn? out;
       await tester.runAsync(() async {
-        out = await AgentLoop(
-          api: AnthropicClient(apiKey: 'sk-ant-test', transport: fake.call, sleep: (_) async {}),
-          tools: ops,
-        ).run(
-          model: AiModel.opus55,
-          system: 's',
-          history: const [],
-          user: AnthropicFormat.user([AiTextPart('go')]),
-          permission: AgentPermission.auto,
-          cancel: AiCancel(),
-          events: AgentEvents(approve: (call) async => Approval.apply),
-        );
+        out =
+            await AgentLoop(
+              api: AnthropicClient(apiKey: 'sk-ant-test', transport: fake.call, sleep: (_) async {}),
+              tools: ops,
+            ).run(
+              model: AiModel.opus55,
+              system: 's',
+              history: const [],
+              user: AnthropicFormat.user([AiTextPart('go')]),
+              permission: AgentPermission.auto,
+              cancel: AiCancel(),
+              events: AgentEvents(approve: (call) async => Approval.apply),
+            );
       });
       return (fake.lastUserText(1), out!);
     }

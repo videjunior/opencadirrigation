@@ -219,16 +219,7 @@ RequirementInput? requirementInputOf(Project p, AreaEntity a, {double applicatio
   final tableP = crop.depletionFraction;
   CropCycle cycleWith(KcCurve curve) => fao56Crops.containsKey(a.cropKey)
       ? CropCycle.fromTable(a.cropKey, planting: planting, kr: areaKr(a), curve: curve, rootDepthM: a.rootDepthM, depletionFraction: a.mad)
-      : CropCycle(
-          cropKey: a.cropKey,
-          curve: curve,
-          planting: planting,
-          kr: areaKr(a),
-          rootDepthM: a.rootDepthM,
-          depletionFraction: a.mad,
-          eceThreshold: crop.eceThreshold,
-          eceMax: crop.eceMax,
-        );
+      : CropCycle(cropKey: a.cropKey, curve: curve, planting: planting, kr: areaKr(a), rootDepthM: a.rootDepthM, depletionFraction: a.mad, eceThreshold: crop.eceThreshold, eceMax: crop.eceMax);
   RequirementInput inputWith(KcCurve curve) => RequirementInput(
     areaId: a.id,
     areaM2: a.area,

@@ -22,10 +22,7 @@ class SideDock extends StatelessWidget {
   final Key? panelKey;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-    valueListenable: uiSideFolded,
-    builder: (context, folded, _) => folded ? _strip(context) : _docked(context),
-  );
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(valueListenable: uiSideFolded, builder: (context, folded, _) => folded ? _strip(context) : _docked(context));
 
   Widget _strip(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
@@ -36,12 +33,7 @@ class SideDock extends StatelessWidget {
         width: touchInput ? 48 : 30,
         color: Cad.panel,
         alignment: Alignment.topCenter,
-        child: IconButton(
-          key: const Key('side_unfold'),
-          tooltip: c.t('ui.sideOpen'),
-          icon: const Icon(Icons.chevron_left, size: 18),
-          onPressed: () => setSideFolded(false),
-        ),
+        child: IconButton(key: const Key('side_unfold'), tooltip: c.t('ui.sideOpen'), icon: const Icon(Icons.chevron_left, size: 18), onPressed: () => setSideFolded(false)),
       ),
     ],
   );

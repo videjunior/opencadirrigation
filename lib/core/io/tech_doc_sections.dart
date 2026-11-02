@@ -32,10 +32,7 @@ const _p = DocProfile.proposal, _l = DocProfile.permit, _m = DocProfile.memorial
 /// sub-section as a bold line, followed by its content.
 List<DocBlock> techDocumentBlocks(TechDocument doc, {Set<String> skip = const {}}) => [
   for (final s in doc.sections)
-    if (!skip.contains(s.key)) ...[
-      if (s.level <= 1) DocHeading(s.title) else DocParagraph(s.title, bold: true),
-      for (final b in s.blocks) ..._docBlocks(b),
-    ],
+    if (!skip.contains(s.key)) ...[if (s.level <= 1) DocHeading(s.title) else DocParagraph(s.title, bold: true), for (final b in s.blocks) ..._docBlocks(b)],
 ];
 
 /// [b] as blocks of a package: a formula is its expression in bold, the
@@ -46,11 +43,7 @@ List<DocBlock> _docBlocks(TechBlock b) => switch (b) {
   TechBullets x when x.numbered => [for (var i = 0; i < x.items.length; i++) DocParagraph('${i + 1}. ${x.items[i]}')],
   TechBullets x => [DocBullets(x.items)],
   TechFields x => [DocFields(x.rows)],
-  TechFormula x => [
-    DocParagraph(x.expression, bold: true),
-    if (x.where.isNotEmpty) DocFields(x.where),
-    if (x.source.isNotEmpty) DocNote(x.source),
-  ],
+  TechFormula x => [DocParagraph(x.expression, bold: true), if (x.where.isNotEmpty) DocFields(x.where), if (x.source.isNotEmpty) DocNote(x.source)],
   TechNote x => [if (x.warning) DocParagraph(x.text, bold: true) else DocNote(x.text)],
   TechTable x => [DocTable(x.table), if (x.note.isNotEmpty) DocNote(x.note)],
 };
@@ -90,12 +83,7 @@ final prbDocumentSections = <DocSection>[
     optional: const {_l},
     build: (c) => techDocumentBlocks(buildMemorial(c.project, c.results, c.labels), skip: const {'identification'}),
   ),
-  DocSection(
-    id: 'prb.om',
-    titleKey: 'prb.om.title',
-    profiles: const {_o: 160},
-    build: (c) => techDocumentBlocks(buildOmPlan(c.project, c.results, c.labels)),
-  ),
+  DocSection(id: 'prb.om', titleKey: 'prb.om.title', profiles: const {_o: 160}, build: (c) => techDocumentBlocks(buildOmPlan(c.project, c.results, c.labels))),
   DocSection(
     id: 'prb.budget',
     titleKey: 'prb.bud.title',

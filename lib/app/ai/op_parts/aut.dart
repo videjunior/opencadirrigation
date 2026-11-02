@@ -28,13 +28,10 @@ String _run(LateralRun r) => r.emitters == 0
     : '${_len(r.length)} (${r.emitters} emitters, inlet ${fmt(r.inletHeadM, 2)} m, flow ${fmt(r.inletFlow * 3600, 3)} m³/h, flow variation ${fmt(r.flowVariationPct, 1)} %, pressure ${fmt(r.minHeadM, 2)}–${fmt(r.maxHeadM, 2)} m, limited by ${r.limitedBy.name})';
 
 /// The changes "fix automatically" made, one line each with its id.
-String _steps(AgentToolbox b, List<FixStep> steps) => [
-  for (final s in steps) '- ${s.id}: ${b.t(s.result.key, s.result.args)}${s.entityIds.isEmpty ? '' : ' (items ${s.entityIds.take(8).join(', ')})'}',
-].join('\n');
+String _steps(AgentToolbox b, List<FixStep> steps) =>
+    [for (final s in steps) '- ${s.id}: ${b.t(s.result.key, s.result.args)}${s.entityIds.isEmpty ? '' : ' (items ${s.entityIds.take(8).join(', ')})'}'].join('\n');
 
-String _changes(AgentToolbox b, List<OptimizeChange> changes) => [
-  for (final ch in changes) '- ${ch.id}: ${b.t(ch.result.key, ch.result.args)}',
-].join('\n');
+String _changes(AgentToolbox b, List<OptimizeChange> changes) => [for (final ch in changes) '- ${ch.id}: ${b.t(ch.result.key, ch.result.args)}'].join('\n');
 
 OptimizeOptions _optOptions(ToolArgs a) =>
     OptimizeOptions(choosePumps: a.flag('choose_pumps') ?? true, resizeValves: a.flag('resize_valves') ?? true, resizeFixedPipes: a.flag('resize_fixed_pipes') ?? false);
@@ -142,8 +139,7 @@ List<AgentTool> opsAut(AgentToolbox b) {
     OpTool(
       group: 'engineering',
       name: 'preview_auto_fix',
-      description:
-          'What "Fix automatically" would correct, item by item, without keeping it: runs the corrections (designing between rounds), lists each with its id, then puts the project back as it was (the corrections stay one redo step away). Use it to show the user the list and ask which to keep; then auto_fix_selected with the ids they keep. A booster pump on a mains connection is listed among the decisions, never applied. Output: the corrections with ids and what is left.',
+      description: 'What "Fix automatically" would correct, item by item, without keeping it: runs the corrections (designing between rounds), lists each with its id, then puts the project back as it was (the corrections stay one redo step away). Use it to show the user the list and ask which to keep; then auto_fix_selected with the ids they keep. A booster pump on a mains connection is listed among the decisions, never applied. Output: the corrections with ids and what is left.',
       inputSchema: obj({}),
       effect: ToolEffect.write,
       summary: (_) => t('ai.op.preview_auto_fix'),
@@ -163,8 +159,7 @@ List<AgentTool> opsAut(AgentToolbox b) {
     OpTool(
       group: 'engineering',
       name: 'auto_fix_selected',
-      description:
-          '"Fix automatically" with only the corrections whose ids preview_auto_fix listed in keep (the others left out, as the user ticks them in the review of the dialog): the corrections are made in rounds with the design between them, so one that only comes up after a correction left out does not happen. One undo step. Output: the corrections applied and the messages left.',
+      description: '"Fix automatically" with only the corrections whose ids preview_auto_fix listed in keep (the others left out, as the user ticks them in the review of the dialog): the corrections are made in rounds with the design between them, so one that only comes up after a correction left out does not happen. One undo step. Output: the corrections applied and the messages left.',
       inputSchema: obj({'keep': arr(str(), 'Ids of the corrections to make (from preview_auto_fix).', 200)}, required: ['keep']),
       effect: ToolEffect.write,
       summary: (i) => t('ai.op.auto_fix_selected', {'n': '${(i['keep'] as List?)?.length ?? 0}'}),
@@ -183,8 +178,7 @@ List<AgentTool> opsAut(AgentToolbox b) {
     OpTool(
       group: 'engineering',
       name: 'preview_optimize',
-      description:
-          'What "Optimise" would change, item by item, without keeping it: runs the optimisation (the changes kept only when the design gets cheaper without new errors or warnings), lists each change with its id and the before/after scores, then puts the project back as it was. Use it to show the user the list; then optimize_selected with the ids to keep. Inputs as optimize_design.',
+      description: 'What "Optimise" would change, item by item, without keeping it: runs the optimisation (the changes kept only when the design gets cheaper without new errors or warnings), lists each change with its id and the before/after scores, then puts the project back as it was. Use it to show the user the list; then optimize_selected with the ids to keep. Inputs as optimize_design.',
       inputSchema: obj({
         'choose_pumps': bool_('Pick the pump of each pumped supply (default true).'),
         'resize_valves': bool_('Pick the zone valves by flow (default true).'),
@@ -206,14 +200,16 @@ List<AgentTool> opsAut(AgentToolbox b) {
     OpTool(
       group: 'engineering',
       name: 'optimize_selected',
-      description:
-          '"Optimise" keeping only the changes whose ids preview_optimize listed in keep: the optimisation runs, then the project goes back to before it and only those changes are made again (the same valves, the pump chosen for the same duties) and designed. One undo step. Output: the changes kept and the before/after scores.',
-      inputSchema: obj({
-        'keep': arr(str(), 'Ids of the changes to keep (from preview_optimize).', 200),
-        'choose_pumps': bool_('As in preview_optimize (default true).'),
-        'resize_valves': bool_('As in preview_optimize (default true).'),
-        'resize_fixed_pipes': bool_('As in preview_optimize (default false).'),
-      }, required: ['keep']),
+      description: '"Optimise" keeping only the changes whose ids preview_optimize listed in keep: the optimisation runs, then the project goes back to before it and only those changes are made again (the same valves, the pump chosen for the same duties) and designed. One undo step. Output: the changes kept and the before/after scores.',
+      inputSchema: obj(
+        {
+          'keep': arr(str(), 'Ids of the changes to keep (from preview_optimize).', 200),
+          'choose_pumps': bool_('As in preview_optimize (default true).'),
+          'resize_valves': bool_('As in preview_optimize (default true).'),
+          'resize_fixed_pipes': bool_('As in preview_optimize (default false).'),
+        },
+        required: ['keep'],
+      ),
       effect: ToolEffect.write,
       summary: (i) => t('ai.op.optimize_selected', {'n': '${(i['keep'] as List?)?.length ?? 0}'}),
       handler: (i) async {
@@ -232,16 +228,18 @@ List<AgentTool> opsAut(AgentToolbox b) {
     OpTool(
       group: 'site',
       name: 'outline_from_image',
-      description:
-          'The Draw → Trace on image tool (WAND): traces the region of the aerial image around the point at — a field, a lawn, a pond, a yard — by image processing (as trace_region does) and adds it to the project at once as an irrigated area (output "area", default) or a closed polyline, one undo step. tolerance (ΔE 1–80, default automatic), blur_m (0.2–10, default 1; 3–6 for orchards and wide rows) and detail_m (simplification, 0.05–20 m) as in trace_region; name names the area. Needs a georeference and the online imagery. Output: the new id, its area, vertices and how sure the boundary is.',
-      inputSchema: obj({
-        'at': {...point, 'description': 'A point inside the region, [x, y] in metres.'},
-        'output': str('What the outline becomes (default area).', ['area', 'polyline']),
-        'tolerance': num_('Colour tolerance in ΔE, 1–80 (default automatic).'),
-        'blur_m': num_('Side of the box the colours are averaged over, 0.2–10 m (default 1).'),
-        'detail_m': num_('Simplification of the outline, 0.05–20 m (default about a pixel).'),
-        'name': str('Name of the new area.'),
-      }, required: ['at']),
+      description: 'The Draw → Trace on image tool (WAND): traces the region of the aerial image around the point at — a field, a lawn, a pond, a yard — by image processing (as trace_region does) and adds it to the project at once as an irrigated area (output "area", default) or a closed polyline, one undo step. tolerance (ΔE 1–80, default automatic), blur_m (0.2–10, default 1; 3–6 for orchards and wide rows) and detail_m (simplification, 0.05–20 m) as in trace_region; name names the area. Needs a georeference and the online imagery. Output: the new id, its area, vertices and how sure the boundary is.',
+      inputSchema: obj(
+        {
+          'at': {...point, 'description': 'A point inside the region, [x, y] in metres.'},
+          'output': str('What the outline becomes (default area).', ['area', 'polyline']),
+          'tolerance': num_('Colour tolerance in ΔE, 1–80 (default automatic).'),
+          'blur_m': num_('Side of the box the colours are averaged over, 0.2–10 m (default 1).'),
+          'detail_m': num_('Simplification of the outline, 0.05–20 m (default about a pixel).'),
+          'name': str('Name of the new area.'),
+        },
+        required: ['at'],
+      ),
       effect: ToolEffect.write,
       summary: (_) => t('ai.op.outline_from_image'),
       handler: (i) async {
@@ -288,8 +286,7 @@ List<AgentTool> opsAut(AgentToolbox b) {
     OpTool(
       group: 'engineering',
       name: 'set_trench_depths',
-      description:
-          'Quote settings (Design → Proposal, Trenches): how deep the pipes drawn without a depth of their own lie, for the trench volumes, their cost and the works schedule: mainline_depth_m (default 0.6; 0 = on the surface) and zone_depth_m (zone pipes and submains; default 0 = on the surface; laterals and tapes always on the surface). The automatic tools also bury the pipes they draw this deep (zone pipes 0.4 m while zone_depth_m is 0). Output: the depths now.',
+      description: 'Quote settings (Design → Proposal, Trenches): how deep the pipes drawn without a depth of their own lie, for the trench volumes, their cost and the works schedule: mainline_depth_m (default 0.6; 0 = on the surface) and zone_depth_m (zone pipes and submains; default 0 = on the surface; laterals and tapes always on the surface). The automatic tools also bury the pipes they draw this deep (zone pipes 0.4 m while zone_depth_m is 0). Output: the depths now.',
       inputSchema: obj({'mainline_depth_m': num_('0–5 m.'), 'zone_depth_m': num_('0–5 m.')}),
       effect: ToolEffect.write,
       summary: (_) => t('ai.op.set_trench_depths'),
@@ -304,7 +301,9 @@ List<AgentTool> opsAut(AgentToolbox b) {
           return 1;
         }, invalidate: false);
         final q = b.p.proposal;
-        return ToolOutput('Pipes without a depth of their own: mainline ${fmt(q.mainlineDepthM, 2)} m, zone pipes ${q.zoneDepthM > 0 ? '${fmt(q.zoneDepthM, 2)} m' : 'on the surface'} (report table "trench" and the quote).');
+        return ToolOutput(
+          'Pipes without a depth of their own: mainline ${fmt(q.mainlineDepthM, 2)} m, zone pipes ${q.zoneDepthM > 0 ? '${fmt(q.zoneDepthM, 2)} m' : 'on the surface'} (report table "trench" and the quote).',
+        );
       },
     ),
   ];

@@ -83,7 +83,12 @@ Future<void> showReservoirDialog(BuildContext context, ProjectController c, Wate
                     children: [
                       SizedBox(
                         width: 180,
-                        child: NumField(key: const Key('res_full'), label: '${t('res.full')} (${u.lengthLabel})', value: u.lengthFromSi(work.fullLevelM), onChanged: (v) => setState(() => work.fullLevelM = u.lengthToSi(v))),
+                        child: NumField(
+                          key: const Key('res_full'),
+                          label: '${t('res.full')} (${u.lengthLabel})',
+                          value: u.lengthFromSi(work.fullLevelM),
+                          onChanged: (v) => setState(() => work.fullLevelM = u.lengthToSi(v)),
+                        ),
                       ),
                       SizedBox(
                         width: 180,
@@ -133,7 +138,11 @@ Future<void> showReservoirDialog(BuildContext context, ProjectController c, Wate
                   if (study == null || study.curve.isEmpty)
                     Text(t('res.noOutline'), style: TextStyle(fontSize: 11.5, color: Cad.warning))
                   else ...[
-                    for (final m in study.messages) Text(t.warning(m, entityName: c.entityName), style: TextStyle(fontSize: 11, color: Cad.warning)),
+                    for (final m in study.messages)
+                      Text(
+                        t.warning(m, entityName: c.entityName),
+                        style: TextStyle(fontSize: 11, color: Cad.warning),
+                      ),
                     KV(t('res.bottomFound'), lengthText(study.bottom)),
                     KV(t('res.surface'), '${fmtUi(u.areaFromSi(study.surfaceArea), 2)} ${u.areaLabel}'),
                     KV(t('res.volume'), vol(study.volume)),
@@ -155,8 +164,7 @@ Future<void> showReservoirDialog(BuildContext context, ProjectController c, Wate
                               _cell('${t('res.volume')} (${u.volumeLabel})', bold: true),
                             ],
                           ),
-                          for (final r in rows)
-                            TableRow(children: [_cell(fmtUi(u.lengthFromSi(r.level), 2)), _cell(fmtUi(u.areaFromSi(r.area), 3)), _cell(fmtUi(u.volumeFromM3(r.volume), 1))]),
+                          for (final r in rows) TableRow(children: [_cell(fmtUi(u.lengthFromSi(r.level), 2)), _cell(fmtUi(u.areaFromSi(r.area), 3)), _cell(fmtUi(u.volumeFromM3(r.volume), 1))]),
                         ],
                       ),
                     ),

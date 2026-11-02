@@ -37,17 +37,7 @@ import 'safe_archive.dart';
 
 /// The days of one station read from one or more files.
 class StationFile {
-  const StationFile({
-    required this.name,
-    required this.code,
-    this.latitudeDeg,
-    this.longitudeDeg,
-    this.elevationM,
-    required this.days,
-    required this.hourly,
-    required this.rows,
-    this.files = 1,
-  });
+  const StationFile({required this.name, required this.code, this.latitudeDeg, this.longitudeDeg, this.elevationM, required this.days, required this.hourly, required this.rows, this.files = 1});
   final String name;
   final String code;
   final double? latitudeDeg, longitudeDeg, elevationM;
@@ -302,33 +292,10 @@ StationFile parseInmetCsv(String text, {double windHeightM = 10, double? latitud
       dew = _mean(a.dew);
     }
     final u2 = wind == null ? null : windSpeedAt2m(wind, windHeightM);
-    var day = ClimateDay(
-      date: d,
-      tMaxC: tMax,
-      tMinC: tMin,
-      tDewC: dew,
-      rhMaxPct: rhMax,
-      rhMinPct: rhMin,
-      rhMeanPct: rhMean,
-      windSpeed2mMs: u2,
-      solarMJm2: rad,
-      rainMm: rain,
-    );
+    var day = ClimateDay(date: d, tMaxC: tMax, tMinC: tMin, tDewC: dew, rhMaxPct: rhMax, rhMinPct: rhMin, rhMeanPct: rhMean, windSpeed2mMs: u2, solarMJm2: rad, rainMm: rain);
     final eto = lat == null ? null : dailyPenmanMonteith(day, latitudeDeg: lat, elevationM: elev ?? 0, sunshineHours: a.sunshine);
     if (eto != null) {
-      day = ClimateDay(
-        date: d,
-        tMaxC: tMax,
-        tMinC: tMin,
-        tDewC: dew,
-        rhMaxPct: rhMax,
-        rhMinPct: rhMin,
-        rhMeanPct: rhMean,
-        windSpeed2mMs: u2,
-        solarMJm2: rad,
-        rainMm: rain,
-        etoMmDay: eto,
-      );
+      day = ClimateDay(date: d, tMaxC: tMax, tMinC: tMin, tDewC: dew, rhMaxPct: rhMax, rhMinPct: rhMin, rhMeanPct: rhMean, windSpeed2mMs: u2, solarMJm2: rad, rainMm: rain, etoMmDay: eto);
     }
     days.add(day);
   }
@@ -347,7 +314,14 @@ List<StationFile> readStationFiles(Uint8List bytes, {double windHeightM = 10, do
     for (final f in openZip(bytes).files) {
       if (!f.isFile || !f.name.toLowerCase().endsWith('.csv')) continue;
       try {
-        out.add(parseInmetCsv(decodeTextBytes(zipEntryBytes(f, maxBytes: 64 << 20)), windHeightM: windHeightM, latitudeDeg: latitudeDeg, elevationM: elevationM));
+        out.add(
+          parseInmetCsv(
+            decodeTextBytes(zipEntryBytes(f, maxBytes: 64 << 20)),
+            windHeightM: windHeightM,
+            latitudeDeg: latitudeDeg,
+            elevationM: elevationM,
+          ),
+        );
       } on FormatException catch (e) {
         if (e.message == 'zip_too_large') rethrow;
       }

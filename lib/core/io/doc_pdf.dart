@@ -13,7 +13,6 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../translate.dart';
 import 'doc_package.dart';
-import 'fonts/pdf_fonts.dart';
 import 'pdf.dart';
 import 'pdf_sheet.dart';
 import 'plot_charts.dart';
@@ -376,7 +375,14 @@ class _DocWriter {
       for (var i = 0; i < lines.length; i++) {
         if (lines[i].trim().isEmpty) continue;
         page.fillColor(i == 0 ? _ink : _grey);
-        page.text((x0 + x1) / 2, yy, fonts.fit(lines[i], x1 - x0, i == 0 ? 9.5 : 8.5, bold: i == 0), size: i == 0 ? 9.5 : 8.5, bold: i == 0, align: PdfAlign.center);
+        page.text(
+          (x0 + x1) / 2,
+          yy,
+          fonts.fit(lines[i], x1 - x0, i == 0 ? 9.5 : 8.5, bold: i == 0),
+          size: i == 0 ? 9.5 : 8.5,
+          bold: i == 0,
+          align: PdfAlign.center,
+        );
         yy -= 11.5;
       }
       y = yy - 10;
@@ -438,8 +444,7 @@ class _DocWriter {
       total = widths.fold(0.0, (s, w) => s + w);
     }
     List<List<String>> cellLines(List<Object> r) => [
-      for (var i = 0; i < n; i++)
-        i < r.length && r[i] is! RBar ? (wrapCol.contains(i) ? _wrap(fonts, '${r[i]}', widths[i] - 2 * pad, size) : [fonts.fit('${r[i]}', widths[i] - 2 * pad, size)]) : [''],
+      for (var i = 0; i < n; i++) i < r.length && r[i] is! RBar ? (wrapCol.contains(i) ? _wrap(fonts, '${r[i]}', widths[i] - 2 * pad, size) : [fonts.fit('${r[i]}', widths[i] - 2 * pad, size)]) : [''],
     ];
     final headerLines = [for (var i = 0; i < n; i++) _wrap(fonts, tb.headers[i], widths[i] - 2 * pad, size, bold: true)];
     final headerRows = headerLines.fold(1, (m, l) => math.max(m, l.length));

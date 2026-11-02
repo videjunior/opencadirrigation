@@ -601,8 +601,7 @@ class ToolOutput {
   String clipped(int maxChars) => text.length <= maxChars ? text : '${text.substring(0, maxChars)}\n… (${text.length - maxChars} more characters left out: ask for less, e.g. with a filter or paging)';
 
   /// This output with its text cut at [maxChars].
-  ToolOutput clip(int maxChars) =>
-      text.length <= maxChars ? this : ToolOutput(clipped(maxChars), images: images, isError: isError, spent: spent, spentCost: spentCost, spentModel: spentModel);
+  ToolOutput clip(int maxChars) => text.length <= maxChars ? this : ToolOutput(clipped(maxChars), images: images, isError: isError, spent: spent, spentCost: spentCost, spentModel: spentModel);
 }
 
 /// A tool as every provider describes it.
@@ -1028,7 +1027,12 @@ abstract class AiHttpClient implements AiClient {
     } on AiError catch (e) {
       return AiProbe(model: m, error: e, usage: e.usage, cost: e.usage.cost(m), elapsed: watch.elapsed, limits: rateLimitsOf(lastHeaders), declined: newly(), requestId: e.requestId);
     } catch (e) {
-      return AiProbe(model: m, error: AiError(AiErrorKind.unexpected, message: clean('${e.runtimeType}')), elapsed: watch.elapsed, declined: newly());
+      return AiProbe(
+        model: m,
+        error: AiError(AiErrorKind.unexpected, message: clean('${e.runtimeType}')),
+        elapsed: watch.elapsed,
+        declined: newly(),
+      );
     }
   }
 
@@ -1036,10 +1040,7 @@ abstract class AiHttpClient implements AiClient {
   /// `x-ratelimit-*`, by name without that prefix.
   static Map<String, String> rateLimitsOf(Map<String, String> headers) => {
     for (final e in headers.entries)
-      if (e.key.startsWith('anthropic-ratelimit-'))
-        e.key.substring('anthropic-ratelimit-'.length): e.value
-      else if (e.key.startsWith('x-ratelimit-'))
-        e.key.substring('x-ratelimit-'.length): e.value,
+      if (e.key.startsWith('anthropic-ratelimit-')) e.key.substring('anthropic-ratelimit-'.length): e.value else if (e.key.startsWith('x-ratelimit-')) e.key.substring('x-ratelimit-'.length): e.value,
   };
 
   /// Optional request fields a model turned down ("model id:field"), left

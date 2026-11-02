@@ -107,10 +107,7 @@ void main() {
 
     test('MOD-26: a guided block whose rows go round a sharp bend of the guide says so', () {
       Project p() => Project();
-      BlockResult block(List<Pt> guide) => generateBlock(
-        p(),
-        BlockOptions(polygon: _rect(0, -20, 100, 40), direction: const Pt(1, 0), lateralSpacing: 5, guide: guide, isTape: true, tapeSpecId: 'x'),
-      );
+      BlockResult block(List<Pt> guide) => generateBlock(p(), BlockOptions(polygon: _rect(0, -20, 100, 40), direction: const Pt(1, 0), lateralSpacing: 5, guide: guide, isTape: true, tapeSpecId: 'x'));
       final bent = block(const [Pt(0, 0), Pt(80, 0), Pt(0, 30)]);
       expect(bent.laterals, isNotEmpty);
       expect(bent.messages.any((m) => m.startsWith('block_guide_offset:')), isTrue, reason: '${bent.messages}');
@@ -123,7 +120,12 @@ void main() {
     // one spray head in the middle of a 40 m square, 25 m of throw: the four
     // corners stay dry, 2.8 % of the lawn in four spots
     final region = LayoutRegion(_rect(-20, -20, 20, 20));
-    final m = evaluateSprayUniformity(region, [const SpraySource(entityId: 'h', p: Pt.zero, flow: 1e-3, radius: 25)], profile: SprayProfile.uniform, cellSize: 0.5);
+    final m = evaluateSprayUniformity(
+      region,
+      [const SpraySource(entityId: 'h', p: Pt.zero, flow: 1e-3, radius: 25)],
+      profile: SprayProfile.uniform,
+      cellSize: 0.5,
+    );
     expect(m.dryPct, closeTo(2.83, 0.6));
     // over the driest 5 % wherever they lie it would be about 2.2; one window
     // of 5 % holds a single corner and some wet ground
@@ -135,7 +137,10 @@ void main() {
     test('the lateral goes round a pond between two trees of its row', () {
       final area = _rect(0, 0, 60, 20);
       final pond = _rect(22, 6, 38, 14);
-      final t = layoutTreeRings(area: area, options: TreeRingOptions(plantSpacing: 6, rowSpacing: 8, exclusions: [pond]));
+      final t = layoutTreeRings(
+        area: area,
+        options: TreeRingOptions(plantSpacing: 6, rowSpacing: 8, exclusions: [pond]),
+      );
       expect(t.trees.every((q) => !pointInPolygon(q, pond)), isTrue);
       expect(t.messages.any((m) => m.startsWith('rings_detour:')), isTrue, reason: '${t.messages}');
       expect(t.messages.where((m) => m.startsWith('rings_row_gap:')), isEmpty);
@@ -200,7 +205,13 @@ void main() {
 
   group('the computed longest lateral', () {
     // a drip tape of 1 L/h every 0.3 m at 10 m, 16 mm
-    final tape = TapeSpec(id: 't', name: 'T', innerDiameterMm: 16, emitterSpacingM: 0.3, emitter: EmitterCurve.fromNominal(flow: 1e-3 / 3600, head: 10));
+    final tape = TapeSpec(
+      id: 't',
+      name: 'T',
+      innerDiameterMm: 16,
+      emitterSpacingM: 0.3,
+      emitter: EmitterCurve.fromNominal(flow: 1e-3 / 3600, head: 10),
+    );
     final spec = tapeLateralSpec(tape, DesignParameters());
 
     double qVar(double length) {
@@ -232,7 +243,13 @@ void main() {
     });
 
     test('a compensating tape is limited by its pressure window', () {
-      final pc = TapeSpec(id: 'pc', name: 'PC', innerDiameterMm: 16, emitterSpacingM: 0.3, emitter: const EmitterCurve(k: 1e-3 / 3600 / 1.07, x: 0.03, compensationHead: 6));
+      final pc = TapeSpec(
+        id: 'pc',
+        name: 'PC',
+        innerDiameterMm: 16,
+        emitterSpacingM: 0.3,
+        emitter: const EmitterCurve(k: 1e-3 / 3600 / 1.07, x: 0.03, compensationHead: 6),
+      );
       final r = maxLateralRun(tapeLateralSpec(pc, DesignParameters()), nominalHeadM: 10, minHeadM: 6, maxHeadM: 25);
       expect(r.limitedBy, LateralLimitBy.pressure);
       expect(r.minHeadM, greaterThanOrEqualTo(6 - 1e-9));

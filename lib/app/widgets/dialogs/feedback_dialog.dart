@@ -111,9 +111,8 @@ const feedbackMaxEncodedBody = 6000;
     text = '${text.substring(0, lo)}\n…';
   }
   final problem = kind == FeedbackKind.problem;
-  final uri = Uri.parse('$appRepositoryUrl/issues/new').replace(
-    queryParameters: {'template': problem ? 'bug_report.md' : 'feature_request.md', 'labels': problem ? 'bug' : 'enhancement', 'title': title.trim(), 'body': text},
-  );
+  final uri = Uri.parse('$appRepositoryUrl/issues/new')
+      .replace(queryParameters: {'template': problem ? 'bug_report.md' : 'feature_request.md', 'labels': problem ? 'bug' : 'enhancement', 'title': title.trim(), 'body': text});
   return (uri.toString(), cut);
 }
 
@@ -202,13 +201,7 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
                 runSpacing: 4,
                 children: [
                   for (final (k, icon, label) in [(FeedbackKind.problem, Icons.bug_report_outlined, 'fb.problem'), (FeedbackKind.idea, Icons.lightbulb_outline, 'fb.idea')])
-                    ChoiceChip(
-                      key: Key('feedback_kind_${k.name}'),
-                      avatar: Icon(icon, size: 16),
-                      label: Text(t(label)),
-                      selected: kind == k,
-                      onSelected: (_) => setState(() => kind = k),
-                    ),
+                    ChoiceChip(key: Key('feedback_kind_${k.name}'), avatar: Icon(icon, size: 16), label: Text(t(label)), selected: kind == k, onSelected: (_) => setState(() => kind = k)),
                 ],
               ),
               const SizedBox(height: 10),
@@ -219,13 +212,7 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 8),
-              TextField(
-                key: const Key('feedback_details'),
-                controller: details,
-                minLines: 3,
-                maxLines: 8,
-                decoration: box(t(kind == FeedbackKind.problem ? 'fb.what' : 'fb.need')),
-              ),
+              TextField(key: const Key('feedback_details'), controller: details, minLines: 3, maxLines: 8, decoration: box(t(kind == FeedbackKind.problem ? 'fb.what' : 'fb.need'))),
               if (kind == FeedbackKind.problem) ...[
                 const SizedBox(height: 8),
                 TextField(key: const Key('feedback_steps'), controller: steps, minLines: 2, maxLines: 6, decoration: box(t('fb.steps'))),
@@ -237,7 +224,10 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
                 key: const Key('feedback_diag'),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: Cad.inset, borderRadius: BorderRadius.circular(6)),
-                child: SelectableText(diag.join('\n'), style: TextStyle(fontSize: 11.5, height: 1.4, fontFamily: 'monospace', color: Cad.codeText)),
+                child: SelectableText(
+                  diag.join('\n'),
+                  style: TextStyle(fontSize: 11.5, height: 1.4, fontFamily: 'monospace', color: Cad.codeText),
+                ),
               ),
               const SizedBox(height: 4),
               Text(t('fb.diagNote'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
@@ -246,12 +236,7 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
         ),
       ),
       actions: [
-        TextButton.icon(
-          key: const Key('feedback_save'),
-          onPressed: () => saveProjectAction(context, c),
-          icon: const Icon(Icons.save_outlined, size: 16),
-          label: Text(t('fb.saveProject')),
-        ),
+        TextButton.icon(key: const Key('feedback_save'), onPressed: () => saveProjectAction(context, c), icon: const Icon(Icons.save_outlined, size: 16), label: Text(t('fb.saveProject'))),
         TextButton.icon(key: const Key('feedback_copy'), onPressed: () => _copy(context), icon: const Icon(Icons.copy, size: 16), label: Text(t('fb.copy'))),
         TextButton(key: const Key('feedback_close'), onPressed: () => Navigator.pop(context), child: Text(t('close'))),
         Tooltip(

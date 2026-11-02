@@ -219,18 +219,7 @@ ReservoirStudy? reservoirStudy(Project p, WaterSupplyEntity s, {Terrain? terrain
   }
   final minLevel = (spec.minLevelM ?? bottom).clamp(bottom, top).toDouble();
   final initial = (spec.initialLevelM ?? top).clamp(bottom, top).toDouble();
-  return ReservoirStudy(
-    supplyId: s.id,
-    curve: curve,
-    bottom: bottom,
-    fullLevel: top,
-    minLevel: minLevel,
-    initialLevel: initial,
-    inflow: spec.inflow,
-    cut: cut,
-    dailyDemand: daily,
-    messages: messages,
-  );
+  return ReservoirStudy(supplyId: s.id, curve: curve, bottom: bottom, fullLevel: top, minLevel: minLevel, initialLevel: initial, inflow: spec.inflow, cut: cut, dailyDemand: daily, messages: messages);
 }
 
 /// Distance (m) from [p] to the nearest edge of the closed [polygon].

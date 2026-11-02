@@ -62,7 +62,11 @@ Future<void> showWhatsNewDialog(BuildContext context, ProjectController c, {bool
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (afterUpdate) ...[
-                Text(t('new.updated', {'v': appVersion}), key: const Key('whats_new_updated'), style: TextStyle(fontSize: 12.5, color: Cad.accentText)),
+                Text(
+                  t('new.updated', {'v': appVersion}),
+                  key: const Key('whats_new_updated'),
+                  style: TextStyle(fontSize: 12.5, color: Cad.accentText),
+                ),
                 const SizedBox(height: 10),
               ],
               for (final k in whatsNewKeys(version))
@@ -85,12 +89,7 @@ Future<void> showWhatsNewDialog(BuildContext context, ProjectController c, {bool
         ),
       ),
       actions: [
-        TextButton.icon(
-          key: const Key('whats_new_all'),
-          onPressed: () => openExternalLink(changelogUrl(c.lang)),
-          icon: const Icon(Icons.open_in_new, size: 16),
-          label: Text(t('new.all')),
-        ),
+        TextButton.icon(key: const Key('whats_new_all'), onPressed: () => openExternalLink(changelogUrl(c.lang)), icon: const Icon(Icons.open_in_new, size: 16), label: Text(t('new.all'))),
         FilledButton(key: const Key('whats_new_close'), onPressed: () => Navigator.pop(ctx), child: Text(t('close'))),
       ],
     ),

@@ -302,10 +302,7 @@ SolarDesign? designSolar(Project p, DesignResults? results, {double? gridCost}) 
   final year = DateTime.now().year;
   int days(int m) => DateTime.utc(year, m + 1).difference(DateTime.utc(year, m)).inDays;
   // irradiation on the array and the performance ratio of every month
-  final ht = [
-    for (var m = 1; m <= 12; m++)
-      tiltedMonthlyIrradiationKWhM2(horizontalKWhM2Day: h[m - 1], latitudeDeg: lat, month: m, tiltDeg: tilt, azimuthFromEquatorDeg: s.azimuthFromEquatorDeg),
-  ];
+  final ht = [for (var m = 1; m <= 12; m++) tiltedMonthlyIrradiationKWhM2(horizontalKWhM2Day: h[m - 1], latitudeDeg: lat, month: m, tiltDeg: tilt, azimuthFromEquatorDeg: s.azimuthFromEquatorDeg)];
   final pr = pvPerformanceRatio(soiling: s.soiling, wiring: s.wiring, mismatch: s.mismatch);
   final yieldPerKWp = [for (var m = 1; m <= 12; m++) ht[m - 1] * pr * days(m)].fold(0.0, (a, b) => a + b);
   final wp = s.moduleWp > 0 ? s.moduleWp : 550.0;

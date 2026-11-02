@@ -92,57 +92,57 @@ class Snapper {
       if (ignoreSelection && c.selection.contains(e0.id)) continue;
       // 1.6.0 CAD: a block reference snaps on the items it draws
       for (final e in e0 is BlockRefEntity ? e0.expanded() : [e0]) {
-      switch (e) {
-        case PointEntity pe when e is! TextEntity:
-          consider(pe.position, 'node', 0.4, e.id);
-        case LineEntity l:
-          consider(l.a, 'endpoint', 0.5, e.id);
-          consider(l.b, 'endpoint', 0.5, e.id);
-          consider(Pt.lerp(l.a, l.b, 0.5), 'midpoint', 0.8, e.id);
-          segs.add((l.a, l.b, e.id));
-        case PolyEntity pl:
-          final pts = pl.points;
-          final straight = e is! SplineEntity;
-          final hydraulic = e is PipeEntity || e is SpraylineEntity || e is TapeEntity;
-          for (var i = 0; i < pts.length; i++) {
-            if (win.contains(pts[i])) consider(pts[i], 'endpoint', 0.5, e.id);
-            if (i > 0 && near(pts[i - 1], pts[i])) {
-              consider(Pt.lerp(pts[i - 1], pts[i], 0.5), 'midpoint', 0.8, e.id);
-              if (straight) segs.add((pts[i - 1], pts[i], e.id));
-              if (hydraulic) {
-                final (cp, _) = closestPointOnSegment(p, pts[i - 1], pts[i]);
-                consider(cp, 'on', 1.0, e.id);
+        switch (e) {
+          case PointEntity pe when e is! TextEntity:
+            consider(pe.position, 'node', 0.4, e.id);
+          case LineEntity l:
+            consider(l.a, 'endpoint', 0.5, e.id);
+            consider(l.b, 'endpoint', 0.5, e.id);
+            consider(Pt.lerp(l.a, l.b, 0.5), 'midpoint', 0.8, e.id);
+            segs.add((l.a, l.b, e.id));
+          case PolyEntity pl:
+            final pts = pl.points;
+            final straight = e is! SplineEntity;
+            final hydraulic = e is PipeEntity || e is SpraylineEntity || e is TapeEntity;
+            for (var i = 0; i < pts.length; i++) {
+              if (win.contains(pts[i])) consider(pts[i], 'endpoint', 0.5, e.id);
+              if (i > 0 && near(pts[i - 1], pts[i])) {
+                consider(Pt.lerp(pts[i - 1], pts[i], 0.5), 'midpoint', 0.8, e.id);
+                if (straight) segs.add((pts[i - 1], pts[i], e.id));
+                if (hydraulic) {
+                  final (cp, _) = closestPointOnSegment(p, pts[i - 1], pts[i]);
+                  consider(cp, 'on', 1.0, e.id);
+                }
               }
             }
-          }
-          if (e is PolylineEntity && e.closed && pts.length > 2) {
-            final (cp, _) = closestPointOnSegment(p, pts.last, pts.first);
-            considerNearest(cp, e.id);
-          }
-          if (((e is PolylineEntity && e.closed) || e is AreaEntity || e is HatchEntity) && pts.length > 2 && near(pts.last, pts.first)) segs.add((pts.last, pts.first, e.id));
-        case CircleEntity ci:
-          consider(ci.center, 'center', 0.6, e.id);
-          for (var q = 0; q < 4; q++) {
-            consider(ci.center + Pt.polar(ci.radius, q * math.pi / 2), 'quadrant', 0.55, e.id);
-          }
-          final dir = (p - ci.center).normalized;
-          considerNearest(ci.center + dir * ci.radius, e.id);
-          rings.add((ci.center, ci.radius, 0, 2 * math.pi, e.id));
-        case ArcEntity ar:
-          consider(ar.startPoint, 'endpoint', 0.5, e.id);
-          consider(ar.endPoint, 'endpoint', 0.5, e.id);
-          consider(ar.midPoint, 'midpoint', 0.8, e.id);
-          consider(ar.center, 'center', 0.6, e.id);
-          for (var q = 0; q < 4; q++) {
-            final a = q * math.pi / 2;
-            if (_onArc(a, ar.startRad, ar.sweepRad)) consider(ar.center + Pt.polar(ar.radius, a), 'quadrant', 0.55, e.id);
-          }
-          final a = (p - ar.center).angle;
-          if (_onArc(a, ar.startRad, ar.sweepRad)) considerNearest(ar.center + Pt.polar(ar.radius, a), e.id);
-          rings.add((ar.center, ar.radius, ar.startRad, ar.sweepRad, e.id));
-        default:
-          break;
-      }
+            if (e is PolylineEntity && e.closed && pts.length > 2) {
+              final (cp, _) = closestPointOnSegment(p, pts.last, pts.first);
+              considerNearest(cp, e.id);
+            }
+            if (((e is PolylineEntity && e.closed) || e is AreaEntity || e is HatchEntity) && pts.length > 2 && near(pts.last, pts.first)) segs.add((pts.last, pts.first, e.id));
+          case CircleEntity ci:
+            consider(ci.center, 'center', 0.6, e.id);
+            for (var q = 0; q < 4; q++) {
+              consider(ci.center + Pt.polar(ci.radius, q * math.pi / 2), 'quadrant', 0.55, e.id);
+            }
+            final dir = (p - ci.center).normalized;
+            considerNearest(ci.center + dir * ci.radius, e.id);
+            rings.add((ci.center, ci.radius, 0, 2 * math.pi, e.id));
+          case ArcEntity ar:
+            consider(ar.startPoint, 'endpoint', 0.5, e.id);
+            consider(ar.endPoint, 'endpoint', 0.5, e.id);
+            consider(ar.midPoint, 'midpoint', 0.8, e.id);
+            consider(ar.center, 'center', 0.6, e.id);
+            for (var q = 0; q < 4; q++) {
+              final a = q * math.pi / 2;
+              if (_onArc(a, ar.startRad, ar.sweepRad)) consider(ar.center + Pt.polar(ar.radius, a), 'quadrant', 0.55, e.id);
+            }
+            final a = (p - ar.center).angle;
+            if (_onArc(a, ar.startRad, ar.sweepRad)) considerNearest(ar.center + Pt.polar(ar.radius, a), e.id);
+            rings.add((ar.center, ar.radius, ar.startRad, ar.sweepRad, e.id));
+          default:
+            break;
+        }
       }
     }
     // intersections of what passes near the cursor

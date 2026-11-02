@@ -22,7 +22,6 @@ library;
 
 import 'dart:math' as math;
 
-import '../design/pivot.dart' show PivotKind;
 import '../model/blocks.dart' show resolveBlockRefs;
 import '../model/dim_style.dart';
 import '../design/results.dart';
@@ -359,10 +358,7 @@ class CadExport {
               r.position,
               scale: r.scale,
               rotationDeg: r.rotationDeg,
-              attribs: [
-                for (final a in d.attributes)
-                  CadAttrib(a.tag, r.attribute(a.tag), t.apply(a.position), a.height * r.scale, rotationDeg: r.rotationDeg + a.rotationDeg, invisible: !a.visible),
-              ],
+              attribs: [for (final a in d.attributes) CadAttrib(a.tag, r.attribute(a.tag), t.apply(a.position), a.height * r.scale, rotationDeg: r.rotationDeg + a.rotationDeg, invisible: !a.visible)],
             ),
           );
         }

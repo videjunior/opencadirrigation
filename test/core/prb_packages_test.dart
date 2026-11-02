@@ -19,8 +19,13 @@ final en = I18n('en');
   return (p, Designer(p, label: (k) => en(k)).designAll());
 }
 
-DocContext contextOf(Project p, DesignResults? r, DocProfile profile) =>
-    DocContext(project: p, results: r, labels: ReportLabels(t: en.call, has: en.has, warning: en.warning), profile: profile, date: DateTime(2026, 11, 2));
+DocContext contextOf(Project p, DesignResults? r, DocProfile profile) => DocContext(
+  project: p,
+  results: r,
+  labels: ReportLabels(t: en.call, has: en.has, warning: en.warning),
+  profile: profile,
+  date: DateTime(2026, 11, 2),
+);
 
 /// The technical documents of 1.6.0 PRB (permit table, memorial, operation
 /// and maintenance plan, budget by compositions, life-cycle cost) as

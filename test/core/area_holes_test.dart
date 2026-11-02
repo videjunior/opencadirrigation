@@ -85,29 +85,27 @@ void main() {
       expect(back.extra, isNull, reason: 'a field this version knows, not one kept as unknown');
       // a ring too short is dropped, a vertex without coordinates too
       final report = ProjectReadReport();
-      final damaged =
-          Entity.fromJson({
-                'type': 'area',
-                'id': 'a2',
-                'pts': [
-                  [0, 0],
-                  [10, 0],
-                  [10, 10],
-                ],
-                'holes': [
-                  [
-                    [1, 1],
-                    [2, 1],
-                  ],
-                  [
-                    [6, 2],
-                    [8, 2],
-                    [null, 3],
-                    [8, 4],
-                  ],
-                ],
-              }, report: report)
-              as AreaEntity;
+      final damaged = Entity.fromJson({
+        'type': 'area',
+        'id': 'a2',
+        'pts': [
+          [0, 0],
+          [10, 0],
+          [10, 10],
+        ],
+        'holes': [
+          [
+            [1, 1],
+            [2, 1],
+          ],
+          [
+            [6, 2],
+            [8, 2],
+            [null, 3],
+            [8, 4],
+          ],
+        ],
+      }, report: report) as AreaEntity;
       expect(damaged.holes.length, 1);
       expect(damaged.holes.single.length, 3);
       expect(report.droppedVertices, 1);

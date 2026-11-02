@@ -83,19 +83,9 @@ List<Widget> traceImageFields(ProjectController c) {
       spacing: 8,
       runSpacing: 4,
       children: [
-        FilledButton.icon(
-          key: const Key('wand_commit'),
-          onPressed: s.hasPreview && !s.busy ? () => s.commit(c) : null,
-          icon: const Icon(Icons.check, size: 16),
-          label: Text(t('wand.commit')),
-        ),
+        FilledButton.icon(key: const Key('wand_commit'), onPressed: s.hasPreview && !s.busy ? () => s.commit(c) : null, icon: const Icon(Icons.check, size: 16), label: Text(t('wand.commit'))),
         OutlinedButton(key: const Key('wand_discard'), onPressed: s.hasPreview || s.busy ? () => s.discard(c) : null, child: Text(t('wand.discard'))),
-        OutlinedButton.icon(
-          key: const Key('wand_view'),
-          onPressed: s.busy ? null : () => unawaited(s.traceView(c)),
-          icon: const Icon(Icons.select_all, size: 16),
-          label: Text(t('wand.view')),
-        ),
+        OutlinedButton.icon(key: const Key('wand_view'), onPressed: s.busy ? null : () => unawaited(s.traceView(c)), icon: const Icon(Icons.select_all, size: 16), label: Text(t('wand.view'))),
       ],
     ),
   ];

@@ -39,7 +39,6 @@ import '../model/project.dart';
 import 'area_water.dart';
 import 'designer.dart' show areaRequirements;
 import 'mechanised.dart' show pivotSpecOf;
-import 'pivot.dart';
 import 'results.dart';
 import 'soils.dart';
 import 'surface_irrigation.dart';

@@ -133,7 +133,7 @@ extension BlockCommands on ProjectController {
           final gone = {for (final e in replace) e.id};
           final idx = project.entities.indexWhere((e) => gone.contains(e.id));
           project.entities.removeWhere((e) => gone.contains(e.id));
-          final r = BlockRefEntity(id: project.newId(), layer: project.currentLayer, position: at!, blockName: b.name)..definition = b;
+          final r = BlockRefEntity(id: project.newId(), layer: project.currentLayer, position: at, blockName: b.name)..definition = b;
           project.entities.insert(idx < 0 ? project.entities.length : idx, r);
           return r.id;
         }
@@ -268,16 +268,20 @@ extension BlockCommands on ProjectController {
     final d = r.definition ?? project.blocks.byName(r.blockName);
     if (d == null || project.isLocked(r.layer)) return false;
     // the attribute texts are left out: the definition keeps its attributes
-    final copies = mutate(() {
-      final idx = project.entities.indexOf(r);
-      d.addLayersTo(project);
-      final place = r.placement;
-      final out = [for (final e in d.entities) e.transformed(place).clone(newId: project.newId())];
-      project.entities
-        ..removeAt(idx)
-        ..insertAll(idx, out);
-      return out;
-    }, invalidateResults: d.inBom, label: 'hist.blockEdit|${d.name}');
+    final copies = mutate(
+      () {
+        final idx = project.entities.indexOf(r);
+        d.addLayersTo(project);
+        final place = r.placement;
+        final out = [for (final e in d.entities) e.transformed(place).clone(newId: project.newId())];
+        project.entities
+          ..removeAt(idx)
+          ..insertAll(idx, out);
+        return out;
+      },
+      invalidateResults: d.inBom,
+      label: 'hist.blockEdit|${d.name}',
+    );
     if (copies == null) return false;
     _blockEdits[this] = BlockEditSession(d.name, r.placement, r.rotationDeg, r.scale, r.mirrored, r.position, r.layer, Map.of(r.attributes), {for (final e in copies) e.id});
     select(copies.map((e) => e.id));

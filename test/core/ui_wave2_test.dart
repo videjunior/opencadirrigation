@@ -163,7 +163,10 @@ void main() {
     });
 
     test('each subject links to a chapter and a section that exist, in English and in Portuguese', () {
-      String anchors(String path) => [for (final l in File(path).readAsLinesSync()) if (l.startsWith('#')) githubAnchor(l.replaceFirst(RegExp(r'^#+\s*'), ''))].join('\n');
+      String anchors(String path) => [
+        for (final l in File(path).readAsLinesSync())
+          if (l.startsWith('#')) githubAnchor(l.replaceFirst(RegExp(r'^#+\s*'), '')),
+      ].join('\n');
       for (final h in helpTopics) {
         final enFile = 'docs/manual/${h.chapter}.md', ptFile = 'docs/manual/pt-BR/${h.chapter}.md';
         expect(File(enFile).existsSync() && File(ptFile).existsSync(), isTrue, reason: h.chapter);

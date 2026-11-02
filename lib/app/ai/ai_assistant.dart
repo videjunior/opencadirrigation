@@ -2712,9 +2712,7 @@ class AiAssistant extends ChangeNotifier {
       source = h;
       exportDropped = n;
     }
-    var history = [
-      for (final m in source) _jsonOf[m] ??= clean(jsonEncode(m)),
-    ];
+    var history = [for (final m in source) _jsonOf[m] ??= clean(jsonEncode(m))];
     // the files attached, the latest first, up to keptFileBytes in all (an export: no pictures)
     final kept = <String>{};
     var bytes = 0;

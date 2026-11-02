@@ -47,7 +47,10 @@ void main() {
       expect(r.annualEnergyCost, closeTo(s.netCost, 1e-9), reason: 'the design energy cost carries the compensation');
       expect(r.annualEnergyCost, lessThan(grid.annualEnergyCost));
       expect(s.gridCost, closeTo(grid.annualEnergyCost, 1e-6));
-      final lines = [for (final l in r.bom) if (l.category == 'bom.solar') l];
+      final lines = [
+        for (final l in r.bom)
+          if (l.category == 'bom.solar') l,
+      ];
       expect(lines.where((l) => l.description.startsWith(t('agb.bom.module'))).single.quantity, s.modules);
       expect(lines.where((l) => l.description.startsWith(t('agb.bom.inverter'))), hasLength(1));
       final tables = buildReportTables(project: p, results: r, labels: labels());
@@ -66,7 +69,13 @@ void main() {
       expect(s.inverterKw, greaterThan(0));
       // the array gives the motor its input at full sun (IEC 62253)
       expect(s.arrayKWp * (1 - 0.03) * (1 - 0.02) * (1 - 0.02) * 0.95, greaterThanOrEqualTo(s.inverterKw * 0.99));
-      expect([for (final l in r.bom) if (l.category == 'bom.solar') l.description].any((d) => d.startsWith(t('agb.bom.pumpDrive'))), isTrue);
+      expect(
+        [
+          for (final l in r.bom)
+            if (l.category == 'bom.solar') l.description,
+        ].any((d) => d.startsWith(t('agb.bom.pumpDrive'))),
+        isTrue,
+      );
       final back = AgbResults.fromJson(jsonDecode(jsonEncode(r.agb!.toJson())) as Map<String, dynamic>);
       expect(back.solar!.modules, s.modules);
       expect(back.solar!.months.length, 12);
@@ -130,7 +139,10 @@ void main() {
       expect(w.acidTargetPh, 6.5);
       expect(w.acidMlM3, closeTo(acidMlPerM3(AcidProduct.sulfuric, w.acidMeqL), 1e-9));
       expect(w.drawnFilters, greaterThan(0), reason: 'the orchard has its filter drawn');
-      final water = [for (final l in r.bom) if (l.category == 'bom.water') l.description];
+      final water = [
+        for (final l in r.bom)
+          if (l.category == 'bom.water') l.description,
+      ];
       expect(water.where((d) => d.startsWith(t('agb.bom.injector'))), hasLength(2), reason: 'chlorine and acid');
       expect(water.where((d) => d.startsWith(t('agb.bom.media'))), isEmpty, reason: 'filters drawn: the station is the designer\'s');
       final tables = buildReportTables(project: p, results: r, labels: labels());

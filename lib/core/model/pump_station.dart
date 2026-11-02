@@ -76,8 +76,11 @@ class PumpStation {
     if (json is! Map) return null;
     final j = KeyLog(json.cast<String, dynamic>());
     final units = [for (final u in (j['units'] as List?) ?? const []) PumpUnit.fromJson(u)];
-    final s = PumpStation(units: units, arrangement: enumByName(PumpArrangement.values, j['arr'], PumpArrangement.parallel, report: report, key: 'arr'), staged: j['staged'] as bool? ?? true)
-      ..extra = j.unread;
+    final s = PumpStation(
+      units: units,
+      arrangement: enumByName(PumpArrangement.values, j['arr'], PumpArrangement.parallel, report: report, key: 'arr'),
+      staged: j['staged'] as bool? ?? true,
+    )..extra = j.unread;
     return s.isEmpty && s.extra == null ? null : s;
   }
 }

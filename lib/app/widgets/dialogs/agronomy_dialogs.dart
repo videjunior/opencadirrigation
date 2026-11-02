@@ -250,7 +250,11 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
               NumField(label: t('clim.years'), value: years.toDouble(), decimals: 0, onChanged: (v) => years = v.round().clamp(1, 40)),
             ]),
             // 1.6.0 SIT: what the free service of the source allows (PRD-06)
-            Text(t('clim.terms.${source.name}'), key: const Key('clim_terms'), style: TextStyle(fontSize: 10.5, color: source == ClimateSource.openMeteo ? Cad.warning : Cad.fg54)),
+            Text(
+              t('clim.terms.${source.name}'),
+              key: const Key('clim_terms'),
+              style: TextStyle(fontSize: 10.5, color: source == ClimateSource.openMeteo ? Cad.warning : Cad.fg54),
+            ),
             Row(
               children: [
                 FilledButton.icon(key: const Key('clim_download'), onPressed: busy ? null : download, icon: const Icon(Icons.cloud_download_outlined, size: 16), label: Text(t('clim.download'))),
@@ -267,12 +271,7 @@ Future<void> showSiteClimateDialog(BuildContext context, ProjectController c) {
               runSpacing: 4,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                OutlinedButton.icon(
-                  key: const Key('clim_inmet'),
-                  onPressed: busy ? null : importStation,
-                  icon: const Icon(Icons.file_open_outlined, size: 16),
-                  label: Text(t('clim.inmet.import')),
-                ),
+                OutlinedButton.icon(key: const Key('clim_inmet'), onPressed: busy ? null : importStation, icon: const Icon(Icons.file_open_outlined, size: 16), label: Text(t('clim.inmet.import'))),
                 Text(t('clim.inmet.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
               ],
             ),

@@ -150,14 +150,8 @@ void main() {
     });
 
     test('a wall thinner than the table, a class too high for the wall, a wrong size are caught', () {
-      PipeSpec pvc(double wall, double pnBar, {int dn = 110, double? bore}) => PipeSpec(
-        id: 'x',
-        name: 'x',
-        nominalMm: dn.toDouble(),
-        innerDiameterMm: bore ?? dn.toDouble() - 2 * wall,
-        wallThicknessMm: wall,
-        pressureRatingM: pnBar / barPerMeterHead,
-      );
+      PipeSpec pvc(double wall, double pnBar, {int dn = 110, double? bore}) =>
+          PipeSpec(id: 'x', name: 'x', nominalMm: dn.toDouble(), innerDiameterMm: bore ?? dn.toDouble() - 2 * wall, wallThicknessMm: wall, pressureRatingM: pnBar / barPerMeterHead);
       final pn8 = iso1452Standard.seriesOf('pn8'), pn10 = iso1452Standard.seriesOf('pn10');
       expect(pipeStandardIssues(pvc(4.2, 10), pn10, 110), isEmpty);
       expect(pipeStandardIssues(pvc(3.9, 10), pn10, 110), contains(startsWith('wall_below_table:x')));
@@ -173,7 +167,12 @@ void main() {
       final pe = PipeSpec(id: 'pe', name: 'pe', nominalMm: 110, innerDiameterMm: 96.8, wallThicknessMm: 6.6, material: PipeMaterial.pehd, pressureRatingM: 16 / barPerMeterHead);
       expect(pipeStandardIssues(pe, en12201Standard.seriesOf('sdr17'), 110).single, startsWith('class_above_wall:pe'));
       // a catalogue: only the pipes of the standards are looked at
-      final c = Catalog(pipes: [pvc(4.2, 10), PipeSpec(id: 'iso1452_pn10_110', name: 'thin', nominalMm: 110, innerDiameterMm: 102.2, wallThicknessMm: 3.9, pressureRatingM: 101.97)]);
+      final c = Catalog(
+        pipes: [
+          pvc(4.2, 10),
+          PipeSpec(id: 'iso1452_pn10_110', name: 'thin', nominalMm: 110, innerDiameterMm: 102.2, wallThicknessMm: 3.9, pressureRatingM: 101.97),
+        ],
+      );
       final issues = standardCatalogIssues(c);
       expect(issues.length, 2);
       expect(issues[0], startsWith('wall_below_table:iso1452_pn10_110'));

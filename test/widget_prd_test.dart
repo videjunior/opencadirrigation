@@ -261,10 +261,20 @@ void main() {
       final done = await exportOp.run({'profile': 'permit', 'recipient': 'IGAM', 'base_map': false});
       expect(done.text, startsWith('Exported '));
       expect(files.keys.single, endsWith('.pdf'));
-      await expectLater(exportOp.run({'profile': 'memorial', 'sections': ['nope']}), throwsA(isA<ToolInputError>()));
+      await expectLater(
+        exportOp.run({
+          'profile': 'memorial',
+          'sections': ['nope'],
+        }),
+        throwsA(isA<ToolInputError>()),
+      );
       // the sheets: grid and the slope sheet
       files.clear();
-      final sheets = await box.operations.firstWhere((o) => o.name == 'export_sheet_pdf').run({'grid': 'both', 'themes': ['slope'], 'base_map': false});
+      final sheets = await box.operations.firstWhere((o) => o.name == 'export_sheet_pdf').run({
+        'grid': 'both',
+        'themes': ['slope'],
+        'base_map': false,
+      });
       expect(sheets.isError, isFalse, reason: sheets.text);
       expect(files, hasLength(1));
     });

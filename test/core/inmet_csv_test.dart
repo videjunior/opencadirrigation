@@ -32,9 +32,7 @@ void main() {
         final temp = 15 + hourOfDay / 2;
         final rain = local.day == 1 ? 1.0 : 0.0;
         final sun = hourOfDay >= 8 && hourOfDay <= 19 ? '1000' : '';
-        b.writeln(
-          '2019/01/${two(d)};${two(h)}00 UTC;${comma(rain)};887,7;$sun;${comma(temp)};12,0;${comma(temp + 0.5)};${comma(temp - 0.5)};80;40;60;90;5,0;2,0;',
-        );
+        b.writeln('2019/01/${two(d)};${two(h)}00 UTC;${comma(rain)};887,7;$sun;${comma(temp)};12,0;${comma(temp + 0.5)};${comma(temp - 0.5)};80;40;60;90;5,0;2,0;');
       }
     }
     return b.toString();
@@ -42,9 +40,7 @@ void main() {
 
   /// A year of daily BDMEP rows: [rain] mm every day.
   String bdmep(int year, {double rain = 1}) {
-    final b = StringBuffer(
-      'Nome: BRASILIA\nCodigo Estacao: 83377\nLatitude: -15.78\nLongitude: -47.92\nAltitude: 1159.54\nSituacao: Operante\nPeriodicidade da Medicao: Diaria\n\n',
-    );
+    final b = StringBuffer('Nome: BRASILIA\nCodigo Estacao: 83377\nLatitude: -15.78\nLongitude: -47.92\nAltitude: 1159.54\nSituacao: Operante\nPeriodicidade da Medicao: Diaria\n\n');
     b.writeln(
       'Data Medicao;PRECIPITACAO TOTAL, DIARIO(mm);TEMPERATURA MAXIMA, DIARIA(°C);TEMPERATURA MINIMA, DIARIA(°C);'
       'UMIDADE RELATIVA DO AR, MEDIA DIARIA(%);UMIDADE RELATIVA DO AR, MINIMA DIARIA(%);VENTO, VELOCIDADE MEDIA DIARIA(m/s);',

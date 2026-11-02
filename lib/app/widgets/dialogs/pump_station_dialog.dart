@@ -116,7 +116,12 @@ Future<void> showPumpStationDialog(BuildContext context, ProjectController c, Pu
                       label: Text(t('pumpStation.add'), style: const TextStyle(fontSize: 12)),
                     ),
                   ),
-                  KV(t('pumpStation.title'), work.isEmpty ? t('pumpStation.single') : t('pumpStation.summary', {'duty': '${work.dutyCount}', 'standby': '${work.standbyCount}', 'arr': t('pumpStation.${work.arrangement.name}')})),
+                  KV(
+                    t('pumpStation.title'),
+                    work.isEmpty
+                        ? t('pumpStation.single')
+                        : t('pumpStation.summary', {'duty': '${work.dutyCount}', 'standby': '${work.standbyCount}', 'arr': t('pumpStation.${work.arrangement.name}')}),
+                  ),
                   SectionTitle(t('pumpStation.duty')),
                   if (duties.isEmpty)
                     Text(t('pumpStation.noResults'), style: TextStyle(fontSize: 11.5, color: Cad.fg54))

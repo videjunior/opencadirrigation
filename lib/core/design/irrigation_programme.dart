@@ -343,9 +343,7 @@ List<ProgrammeStation> programmeStations(
   }
   if (members.isEmpty) return const [];
   final runs = results?.electrical?.runs ?? const [];
-  final ctrlName = {
-    for (final c in p.entities.whereType<ControllerEntity>()) c.id: c.name.isNotEmpty ? c.name : c.id,
-  };
+  final ctrlName = {for (final c in p.entities.whereType<ControllerEntity>()) c.id: c.name.isNotEmpty ? c.name : c.id};
   final demandFlow = <String, double>{
     for (final z in results?.zones.values ?? const <ZoneResult>[]) z.valveId: z.totalFlow,
     for (final e in results?.pivots.entries ?? const <MapEntry<String, PivotResult>>[]) e.key: e.value.flow,

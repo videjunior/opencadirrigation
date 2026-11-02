@@ -144,10 +144,7 @@ List<TutorialStep> tutorialTrack(List<TutorialStep> all, TutorialTrack track) {
   final ids = tutorialTrackSteps[track];
   if (ids == null) return all;
   final byId = {for (final s in all) s.id: s};
-  return [
-    for (final id in ids)
-      if (byId[id] case final s?) s,
-  ];
+  return [for (final id in ids) ?byId[id]];
 }
 
 /// The chapters of [steps], in order of their first step.
@@ -167,19 +164,7 @@ class TutorialContext {
 }
 
 class TutorialStep {
-  const TutorialStep({
-    required this.id,
-    required this.title,
-    required this.body,
-    this.chapter = '',
-    this.target,
-    this.action,
-    this.prepare,
-    this.demo,
-    this.isDone,
-    this.touchAction,
-    this.touchBody,
-  });
+  const TutorialStep({required this.id, required this.title, required this.body, this.chapter = '', this.target, this.action, this.prepare, this.demo, this.isDone, this.touchAction, this.touchBody});
   final String id;
   final String title;
   final String body;
@@ -2487,10 +2472,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                   children: [
                     // 1.6.0 UI: the chapter and the step open the chapters and the tracks
                     Expanded(
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: _chaptersMenu(step, lang),
-                      ),
+                      child: Align(alignment: AlignmentDirectional.centerStart, child: _chaptersMenu(step, lang)),
                     ),
                     Tooltip(
                       message: tutorialText(t.autoAdvance ? 'autoOn' : 'autoOff', lang),
@@ -2524,7 +2506,10 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(step.bodyFor(touch: compact), style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText)),
+                        Text(
+                          step.bodyFor(touch: compact),
+                          style: TextStyle(fontSize: 12.5, height: 1.45, color: Cad.bodyText),
+                        ),
                         ..._starts(step, lang, compact),
                         // the phone: where the menus and the keyboard are (it scrolls with the text)
                         if (step.action != null && compact) ...[
@@ -2645,6 +2630,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
       child: Align(alignment: Alignment.topLeft, child: card),
     );
   }
+
   /// "Chapter · Step i of n ▾": a menu of the chapters of the track and of
   /// the tracks (1.6.0 UI, PRD-24).
   Widget _chaptersMenu(TutorialStep step, String lang) {
@@ -2687,7 +2673,11 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
-              child: Text(header, style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1), overflow: TextOverflow.ellipsis),
+              child: Text(
+                header,
+                style: TextStyle(fontSize: 10.5, color: Cad.fg54, letterSpacing: 1),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             Icon(Icons.arrow_drop_down, size: 16, color: Cad.fg54),
           ],

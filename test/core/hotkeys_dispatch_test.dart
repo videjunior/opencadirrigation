@@ -470,7 +470,14 @@ void main() {
           expect(c.lastMessage, c.t('edt.notClosed'), reason: e.key);
         // 1.6.0 CAD
         case CadAction.isolateLayer:
-          expect([for (final l in c.project.layers) if (l.visible) l.name], [c.project.currentLayer], reason: e.key);
+          expect(
+            [
+              for (final l in c.project.layers)
+                if (l.visible) l.name,
+            ],
+            [c.project.currentLayer],
+            reason: e.key,
+          );
         case CadAction.unisolateLayers:
           expect(c.layersIsolated, isFalse, reason: e.key);
           expect(c.project.layers.every((l) => l.visible), isTrue, reason: e.key);

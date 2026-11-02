@@ -42,7 +42,12 @@ void main() {
     final ws = Workspace(systemClipboard: false);
     ws.current.autosaveEnabled = false;
     await ws.current.setLanguage('en', persist: false);
-    await tester.pumpWidget(MaterialApp(theme: buildCadTheme(), home: const Scaffold(body: SizedBox.expand())));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildCadTheme(),
+        home: const Scaffold(body: SizedBox.expand()),
+      ),
+    );
     final context = tester.element(find.byType(SizedBox).last);
 
     await handleLaunch(context, ws, LaunchRequest(files: [LaunchFile('north.oci.json', bytes(projectJson('North field')))]));
@@ -68,7 +73,12 @@ void main() {
     final ws = Workspace(systemClipboard: false);
     ws.current.autosaveEnabled = false;
     await ws.current.setLanguage('en', persist: false);
-    await tester.pumpWidget(MaterialApp(theme: buildCadTheme(), home: const Scaffold(body: SizedBox.expand())));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildCadTheme(),
+        home: const Scaffold(body: SizedBox.expand()),
+      ),
+    );
     final context = tester.element(find.byType(SizedBox).last);
     await handleLaunch(context, ws, const LaunchRequest(shared: true, failed: true));
     expect(ws.current.lastMessage, ws.current.t('launch.shareFailed'));

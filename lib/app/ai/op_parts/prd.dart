@@ -70,8 +70,7 @@ List<AgentTool> opsPrd(AgentToolbox b) {
       b,
       group: 'documents',
       name: 'get_title_block',
-      description:
-          'Reads the professional title block of the sheets and of the covers of the document packages (File → Title block): company and logo, technical lead, professional council (CREA, CAU, CFTA, CFT or another) and registration, the number of the record of technical responsibility (ART at CREA, RRT at CAU, TRT at CFTA/CFT), CAR, water permit (outorga), municipality/state, stage, drawing number, date of issue and the revision table, with the client, property and designer of the project details. Read-only.',
+      description: 'Reads the professional title block of the sheets and of the covers of the document packages (File → Title block): company and logo, technical lead, professional council (CREA, CAU, CFTA, CFT or another) and registration, the number of the record of technical responsibility (ART at CREA, RRT at CAU, TRT at CFTA/CFT), CAR, water permit (outorga), municipality/state, stage, drawing number, date of issue and the revision table, with the client, property and designer of the project details. Read-only.',
       schema: obj({}),
       run: (a) async => ToolOutput(_titleBlockText(b)),
     ),
@@ -80,8 +79,7 @@ List<AgentTool> opsPrd(AgentToolbox b) {
       group: 'documents',
       name: 'set_title_block',
       effect: ToolEffect.write,
-      description:
-          'Changes the title block of the sheets and covers (File → Title block), only the fields given: client, property (the site of the project details), designer, company, responsible (the technical lead who signs), council (CREA, CAU, CFTA, CFT or another body), registration (number with the state, e.g. "SP 5060123456"), record (the ART/RRT/TRT number), car, water_permit, municipality ("Uberaba/MG"), stage, drawing_number (sheet n of a set prints as "<number>-0n"), issue_date (YYYY-MM-DD; "" = the day of export), revisions (replaces the table: [{revision, date, description, by}]), add_revision ({revision default the next one, date default today, description, by}), logo_attachment (the file name of a picture the user attached: PNG or JPEG, scaled to 512 px), remove_logo, fill_from_defaults (fills the empty company, logo, responsible, council and registration from the user\'s saved defaults), save_as_defaults (keeps company, logo, responsible, council and registration in this browser for new projects; not a change of the project). Empty text clears a field. One undo step; the design results stay.',
+      description: 'Changes the title block of the sheets and covers (File → Title block), only the fields given: client, property (the site of the project details), designer, company, responsible (the technical lead who signs), council (CREA, CAU, CFTA, CFT or another body), registration (number with the state, e.g. "SP 5060123456"), record (the ART/RRT/TRT number), car, water_permit, municipality ("Uberaba/MG"), stage, drawing_number (sheet n of a set prints as "<number>-0n"), issue_date (YYYY-MM-DD; "" = the day of export), revisions (replaces the table: [{revision, date, description, by}]), add_revision ({revision default the next one, date default today, description, by}), logo_attachment (the file name of a picture the user attached: PNG or JPEG, scaled to 512 px), remove_logo, fill_from_defaults (fills the empty company, logo, responsible, council and registration from the user\'s saved defaults), save_as_defaults (keeps company, logo, responsible, council and registration in this browser for new projects; not a change of the project). Empty text clears a field. One undo step; the design results stay.',
       schema: obj({
         'client': str(),
         'property': str(),
@@ -205,11 +203,13 @@ List<AgentTool> opsPrd(AgentToolbox b) {
       group: 'site',
       name: 'set_datum',
       effect: ToolEffect.write,
-      description:
-          'Names the datum of the georeference (File → Georeference → Datum): "auto" (by the site: SIRGAS 2000 in South and Central America, ETRS89 in Europe, WGS84 elsewhere), "sirgas2000", "wgs84", "etrs89" or "nad83". They agree at the accuracy of a project map, so no coordinate moves: the datum names the coordinates on the sheets (title block, grid) and in the SHP, LandXML, IFC and EPANET files. Needs a georeference (set_site). One undo step.',
-      schema: obj({
-        'datum': str(null, ['auto', for (final d in projectDatums) d.name]),
-      }, required: ['datum']),
+      description: 'Names the datum of the georeference (File → Georeference → Datum): "auto" (by the site: SIRGAS 2000 in South and Central America, ETRS89 in Europe, WGS84 elsewhere), "sirgas2000", "wgs84", "etrs89" or "nad83". They agree at the accuracy of a project map, so no coordinate moves: the datum names the coordinates on the sheets (title block, grid) and in the SHP, LandXML, IFC and EPANET files. Needs a georeference (set_site). One undo step.',
+      schema: obj(
+        {
+          'datum': str(null, ['auto', for (final d in projectDatums) d.name]),
+        },
+        required: ['datum'],
+      ),
       run: (a) async {
         final g = b.p.meta.georef;
         if (g == null) throw ToolInputError('The project has no georeference: set_site first.');
@@ -229,8 +229,7 @@ List<AgentTool> opsPrd(AgentToolbox b) {
       b,
       group: 'documents',
       name: 'list_document_packages',
-      description:
-          'Lists the document packages of File → Export document package — proposal (to the client), permit (water permit and licensing), installation, memorial (technical report), operation (operation and maintenance) — with their sections in order: id, title, whether it is in the package by default or optional, and whether the project can make it now (some need the design results or data such as terrain, pivots or wiring). Read-only.',
+      description: 'Lists the document packages of File → Export document package — proposal (to the client), permit (water permit and licensing), installation, memorial (technical report), operation (operation and maintenance) — with their sections in order: id, title, whether it is in the package by default or optional, and whether the project can make it now (some need the design results or data such as terrain, pivots or wiring). Read-only.',
       schema: obj({
         'profile': str('Only this package.', [for (final p in DocProfile.values) p.name]),
       }),
@@ -240,7 +239,7 @@ List<AgentTool> opsPrd(AgentToolbox b) {
         for (final p in DocProfile.values) {
           if (only != null && p.name != only) continue;
           final ctx = documentContextOf(c, p);
-          out.writeln('${p.name} — ${docProfileTitle(t, p)}:');
+          out.writeln('${p.name} — ${docProfileTitle(t.call, p)}:');
           for (final s in profileSections(p)) {
             final state = s.canBuild(ctx) ? 'available' : (s.needsResults && c.results == null ? 'needs the design results' : 'no data in the project');
             out.writeln('  ${s.id} | ${t(s.titleKey)} | ${s.optional.contains(p) ? 'optional' : 'default'} | $state');
@@ -255,16 +254,18 @@ List<AgentTool> opsPrd(AgentToolbox b) {
       group: 'documents',
       name: 'export_document_package',
       effect: ToolEffect.export,
-      description:
-          'File → Export document package: one PDF for one reader — proposal, permit, installation, memorial or operation (list_document_packages gives their sections) — with a cover from the title block (logo, company, client, property, technical lead, records), contents, numbered sections with the report tables and the standards of their criteria, the drawing sheets on their own paper (the permit with the slope sheet and the coordinate grid, the installation with a sheet per zone and the construction details) and the signature block (with the client\'s acceptance in a proposal). Inputs: profile, sections (ids; default the package\'s own), title (the cover\'s; default the package\'s name), recipient (who it is addressed to), sheet_page (paper of the drawings, default a3), base_map (the base map shown on screen under the sheets; default true when there is one). Always confirmed by the user (a download).',
-      schema: obj({
-        'profile': str(null, [for (final p in DocProfile.values) p.name]),
-        'sections': arr(str(), 'Section ids (list_document_packages).', 40),
-        'title': str(),
-        'recipient': str(),
-        'sheet_page': str(null, [for (final p in PageSize.values) p.name]),
-        'base_map': bool_(),
-      }, required: ['profile']),
+      description: 'File → Export document package: one PDF for one reader — proposal, permit, installation, memorial or operation (list_document_packages gives their sections) — with a cover from the title block (logo, company, client, property, technical lead, records), contents, numbered sections with the report tables and the standards of their criteria, the drawing sheets on their own paper (the permit with the slope sheet and the coordinate grid, the installation with a sheet per zone and the construction details) and the signature block (with the client\'s acceptance in a proposal). Inputs: profile, sections (ids; default the package\'s own), title (the cover\'s; default the package\'s name), recipient (who it is addressed to), sheet_page (paper of the drawings, default a3), base_map (the base map shown on screen under the sheets; default true when there is one). Always confirmed by the user (a download).',
+      schema: obj(
+        {
+          'profile': str(null, [for (final p in DocProfile.values) p.name]),
+          'sections': arr(str(), 'Section ids (list_document_packages).', 40),
+          'title': str(),
+          'recipient': str(),
+          'sheet_page': str(null, [for (final p in PageSize.values) p.name]),
+          'base_map': bool_(),
+        },
+        required: ['profile'],
+      ),
       run: (a) async {
         if (b.p.entities.isEmpty) throw ToolInputError(t('msg.nothingToExport'));
         final p = DocProfile.values.byName(a.str('profile', required: true)!);
@@ -282,7 +283,12 @@ List<AgentTool> opsPrd(AgentToolbox b) {
         final mapAvailable = b.p.meta.georef != null && c.baseMap != BaseMap.none && c.baseMapSnapshot != null;
         if ((a.flag('base_map') ?? true) && mapAvailable && sections.any((s) => s.id == 'prd.sheets')) {
           final snaps = b.snapshots;
-          ctx = documentContextOf(c, p, page: page, withMap: await withSheetBaseMap(c, docSheetOptions(ctx), fetcher: snaps is CanvasSnapshots ? snaps.tiles : const HttpTileFetcher()));
+          ctx = documentContextOf(
+            c,
+            p,
+            page: page,
+            withMap: await withSheetBaseMap(c, docSheetOptions(ctx), fetcher: snaps is CanvasSnapshots ? snaps.tiles : const HttpTileFetcher()),
+          );
         }
         await preparePdfFonts([...pdfTexts(c, reports: true), o.title, o.recipient], language: c.lang);
         final pack = buildDocumentPackage(ctx, o);

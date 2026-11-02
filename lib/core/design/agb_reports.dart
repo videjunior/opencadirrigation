@@ -155,13 +155,7 @@ List<ReportTable> agbReportTables(Project project, DesignResults? results, Repor
       ReportTable(
         key: 'solarMonths',
         title: t('agb.rep.solarMonths'),
-        headers: [
-          t('req.month'),
-          t('solar.sunHours'),
-          if (!grid) '${t('solar.volume')} (m³/d)',
-          if (!grid) '${t('solar.pumped')} (m³/d)',
-          '${t('agb.rep.generation')} (kWh)',
-        ],
+        headers: [t('req.month'), t('solar.sunHours'), if (!grid) '${t('solar.volume')} (m³/d)', if (!grid) '${t('solar.pumped')} (m³/d)', '${t('agb.rep.generation')} (kWh)'],
         rows: [
           for (final m in sol.months) [t('mon.${m.month}'), RNum(m.peakSunHours, 2), if (!grid) RNum(m.demandM3Day, 1), if (!grid) RNum(m.pumpedM3Day, 1), RNum(m.generationKWh, 0)],
         ],

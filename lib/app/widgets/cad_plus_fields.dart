@@ -245,7 +245,11 @@ List<Widget> cadPlusToolFields(ProjectController c, ToolId tool) {
         decimals: 3,
         onChanged: (v) => upd(() => s.lengthenValue = s.lengthenMode == LengthenMode.percent ? v : u.lengthToSi(v)),
       ),
-      Text(lengthenValueText(c), key: const Key('tool_lengthen_text'), style: TextStyle(fontSize: 11.5, color: Cad.fg54)),
+      Text(
+        lengthenValueText(c),
+        key: const Key('tool_lengthen_text'),
+        style: TextStyle(fontSize: 11.5, color: Cad.fg54),
+      ),
     ],
     ToolId.boundary => [
       SwitchListTile(
@@ -257,9 +261,7 @@ List<Widget> cadPlusToolFields(ProjectController c, ToolId tool) {
         onChanged: (v) => upd(() => s.boundaryAsArea = v),
       ),
     ],
-    ToolId.fieldPhoto => [
-      Text(pendingFieldPhotos[c]?.name ?? '', style: const TextStyle(fontSize: 12)),
-    ],
+    ToolId.fieldPhoto => [Text(pendingFieldPhotos[c]?.name ?? '', style: const TextStyle(fontSize: 12))],
     _ => const [],
   };
 }

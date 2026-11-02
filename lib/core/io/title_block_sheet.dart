@@ -201,7 +201,13 @@ void drawProTitleBlock(
       page.text(px(x + pad), px(top - 2.4), fonts.fit(cell.caption.toUpperCase(), px(cw - 2 * pad), 5), size: 5);
       page.fillColor(_ink);
       final valueY = top - 2.4 - 1.2 - cell.size * 0.72 / ptPerMm - 0.6;
-      page.text(px(x + pad), px(valueY), fonts.fit(cell.value, px(cw - 2 * pad), cell.size, bold: cell.bold), size: cell.size, bold: cell.bold);
+      page.text(
+        px(x + pad),
+        px(valueY),
+        fonts.fit(cell.value, px(cw - 2 * pad), cell.size, bold: cell.bold),
+        size: cell.size,
+        bold: cell.bold,
+      );
       if (cell.note.isNotEmpty && valueY - 2.6 > top - ch + 0.6) {
         page.fillColor(_grey);
         page.text(px(x + pad), px(valueY - 2.6), fonts.fit(cell.note, px(cw - 2 * pad), 5.5), size: 5.5);

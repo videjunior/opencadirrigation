@@ -193,7 +193,21 @@ void main() {
     // snake_case strings there are listed
     const notCodes = {'depth_mm', 'end_deg', 'start_deg', 'target_mm', 'timer_pct'};
     // (1.6.0 MOT: and the part of the designer for stations, operation and the profile)
-    const files = ['designer', 'designer_mot', 'design_check', 'advisor', 'network_builder', 'pivot', 'mechanised', 'pivot_package', 'corner_arm', 'vri', 'pivot_electrical', 'electrical', 'valve_in_head'];
+    const files = [
+      'designer',
+      'designer_mot',
+      'design_check',
+      'advisor',
+      'network_builder',
+      'pivot',
+      'mechanised',
+      'pivot_package',
+      'corner_arm',
+      'vri',
+      'pivot_electrical',
+      'electrical',
+      'valve_in_head',
+    ];
     final raw = <String>{};
     for (final f in files) {
       final src = File('lib/core/design/$f.dart').readAsStringSync();
@@ -219,7 +233,9 @@ void main() {
 
   testWidgets('the report tables, the tools and the example calls are in the manual and fit the tools', (tester) async {
     // (1.6.0 MOT: the station and real operation tables are in report_tables_mot.dart)
-    final src = [for (final f in ['report_tables', 'report_tables_mot']) File('lib/core/design/$f.dart').readAsStringSync()].join('\n');
+    final src = [
+      for (final f in ['report_tables', 'report_tables_mot']) File('lib/core/design/$f.dart').readAsStringSync(),
+    ].join('\n');
     final keys = RegExp(r"key: '([a-zA-Z]+)'").allMatches(src).map((m) => m.group(1)!).toSet();
     expect(reportTableKeys.toSet(), keys, reason: 'reportTableKeys (agent_tools.dart) and buildReportTables differ');
     expect(reportTableNotes.keys.toSet(), keys);

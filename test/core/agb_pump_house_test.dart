@@ -121,14 +121,21 @@ void main() {
     expect(ph.sourceKva, greaterThanOrEqualTo(ph.sourceKvaRequired - 1e-9));
     expect(standardTransformerKva, contains(ph.sourceKva));
     // the bill: feeder, protective conductor, panel and transformer
-    final elec = [for (final l in r.bom) if (l.category == 'bom.electrical') l.description];
+    final elec = [
+      for (final l in r.bom)
+        if (l.category == 'bom.electrical') l.description,
+    ];
     expect(elec.where((d) => d.startsWith(t('agb.bom.feeder'))), hasLength(ph.circuits.length));
     expect(elec.where((d) => d.startsWith(t('agb.bom.panel'))), hasLength(ph.circuits.length));
     expect(elec.where((d) => d.startsWith(t('agb.bom.transformer'))), hasLength(1));
     expect(r.bom.length, greaterThan(before.bom.length));
     expect(r.annualEnergyCost, closeTo(before.annualEnergyCost, 1e-6), reason: 'the electrics change no energy');
     // the report tables
-    final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: t.call, has: t.has, warning: t.warning));
+    final tables = buildReportTables(
+      project: p,
+      results: r,
+      labels: ReportLabels(t: t.call, has: t.has, warning: t.warning),
+    );
     expect(tables.where((x) => x.key == 'pumpHouse').single.rows, hasLength(ph.circuits.length));
     expect(tables.where((x) => x.key == 'pumpHouseSupply'), hasLength(1));
     // the results and the settings survive their files
@@ -175,7 +182,10 @@ void main() {
     expect(s.spanAmpacityA, cableAmpacity(s.spanCableMm2, CableInsulation.pvc, CableMethod.e));
     expect(s.awg, awgFor(s.spanMinMm2 > s.spanCableMm2 ? s.spanMinMm2 : s.spanCableMm2));
     expect(r.agb!.pumpHouse!.circuits, isEmpty, reason: 'the pump house itself stays off');
-    final pivotLines = [for (final l in r.bom) if (l.category == 'bom.pivots') l.description];
+    final pivotLines = [
+      for (final l in r.bom)
+        if (l.category == 'bom.pivots') l.description,
+    ];
     expect(pivotLines.where((d) => d.contains(t('agb.bom.ring'))), hasLength(1));
     expect(pivotLines.where((d) => d.contains(t('agb.bom.endTower'))), hasLength(1));
     expect(agbEnergyCost(r), r.annualEnergyCost);

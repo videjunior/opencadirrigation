@@ -321,7 +321,11 @@ List<Widget> _sourceFields(ProjectController c, PermitSource src, SourcePermitIn
     KV(t('prb.permit.months'), [for (final m in src.months) t('prb.mon.$m')].join(', ')),
     if (src.lat != null) KV(t('prb.permit.lat'), permitDms(src.lat!, t('compass.n'), t('compass.s'))),
     if (src.lon != null) KV(t('prb.permit.lon'), permitDms(src.lon!, t('compass.e'), t('compass.w'))),
-    for (final w in src.warnings) _hint(permitWarningText(w, t.call, src: src, s: c.project.deliverables.permit, name: c.entityName), color: w == 'permit_federal_floor' ? null : Cad.attention),
+    for (final w in src.warnings)
+      _hint(
+        permitWarningText(w, t.call, src: src, s: c.project.deliverables.permit, name: c.entityName),
+        color: w == 'permit_federal_floor' ? null : Cad.attention,
+      ),
   ];
 }
 
@@ -497,13 +501,7 @@ Future<void> showLifeCycleDialog(BuildContext context, ProjectController c) {
             decimals: 1,
             onChanged: (v) => setState(() => s.energyEscalationPct = v.clamp(-50, 50).toDouble()),
           ),
-          NumField(
-            key: const Key('prb_lcc_water'),
-            label: t('prb.dlg.waterPrice', {'c': cur}),
-            value: s.waterPrice,
-            decimals: 3,
-            onChanged: (v) => setState(() => s.waterPrice = math.max(0.0, v)),
-          ),
+          NumField(key: const Key('prb_lcc_water'), label: t('prb.dlg.waterPrice', {'c': cur}), value: s.waterPrice, decimals: 3, onChanged: (v) => setState(() => s.waterPrice = math.max(0.0, v))),
         ]),
         _switch(t('prb.dlg.rateFromParams'), s.discountPct == null, (v) => setState(() => s.discountPct = v ? null : p.params.interestRate * 100), key: const Key('prb_lcc_rate_params')),
         if (s.discountPct != null)

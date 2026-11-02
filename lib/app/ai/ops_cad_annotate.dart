@@ -243,8 +243,7 @@ List<AgentTool> annotateOperations(AgentToolbox b) {
       name: 'insert_block',
       effect: ToolEffect.write,
       // 1.6.0 CAD: a block of drawing items goes in as a reference with its attribute values
-      description:
-          'Edit → Insert block (INSERT, IB) at a typed point: block "name" with its base point at "at" (or at each of "points"), turned rotation_deg counter-clockwise and scaled; missing layers and catalogue items come with it. A block of drawing items goes in as one reference (redefining the block changes it; "attributes" {TAG: value} fills its attributes) unless "as_copies" is true; a block with hydraulic or terrain items always as copies, which the design sees. One undo step per insertion; returns the new ids (they become the selection).',
+      description: 'Edit → Insert block (INSERT, IB) at a typed point: block "name" with its base point at "at" (or at each of "points"), turned rotation_deg counter-clockwise and scaled; missing layers and catalogue items come with it. A block of drawing items goes in as one reference (redefining the block changes it; "attributes" {TAG: value} fills its attributes) unless "as_copies" is true; a block with hydraulic or terrain items always as copies, which the design sees. One undo step per insertion; returns the new ids (they become the selection).',
       schema: obj(
         {
           'name': str('Block name (list_blocks).'),

@@ -34,7 +34,13 @@ void main() {
       expect(w, hasLength(365));
       expect(w.first.date, DateTime.utc(2001, 1, 1));
       // 31 days, four events: the 4th, 12th, 20th and 28th
-      expect([for (final d in w.take(31)) if (d.rainMm > 0) d.date.day], [4, 12, 20, 28]);
+      expect(
+        [
+          for (final d in w.take(31))
+            if (d.rainMm > 0) d.date.day,
+        ],
+        [4, 12, 20, 28],
+      );
       expect(w[3].rainMm, 10);
       expect(w.fold(0.0, (s, d) => s + d.rainMm), closeTo(480, 1e-9));
       expect(w.every((d) => d.etoMm == 5), isTrue);
@@ -106,10 +112,20 @@ void main() {
     });
 
     test('rain below a fifth of the ETo only wets the surface', () {
-      final light = soilWaterBalance(input(BalanceSettings(), normals: ClimateNormals(etoMmDay: List.filled(12, 5.0), rainMm: List.filled(12, 2.0))));
+      final light = soilWaterBalance(
+        input(
+          BalanceSettings(),
+          normals: ClimateNormals(etoMmDay: List.filled(12, 5.0), rainMm: List.filled(12, 2.0)),
+        ),
+      );
       expect(light.rainMm, closeTo(24, 1e-9));
       expect(light.effectiveRainMm, 0);
-      final wet = soilWaterBalance(input(BalanceSettings(), normals: ClimateNormals(etoMmDay: List.filled(12, 5.0), rainMm: List.filled(12, 40.0))));
+      final wet = soilWaterBalance(
+        input(
+          BalanceSettings(),
+          normals: ClimateNormals(etoMmDay: List.filled(12, 5.0), rainMm: List.filled(12, 40.0)),
+        ),
+      );
       expect(wet.effectiveRainMm, closeTo(480, 1e-9));
       expect(wet.netMm, lessThan(1800));
       expect(wet.closureErrorMm, closeTo(0, 1e-9));
@@ -155,7 +171,7 @@ void main() {
       final r = areaWaterBalance(p, a)!;
       expect(r.days, hasLength(150));
       expect(r.days.first.date, DateTime.utc(2001, 4, 1));
-      expect([for (final d in r.days) d.stage].toSet(), {0, 1, 2, 3});
+      expect({for (final d in r.days) d.stage}, {0, 1, 2, 3});
       expect(r.days.first.kc, closeTo(0.3, 1e-9));
       expect(r.ky, fao33SeasonalKy['crop.maize']);
       // p follows the ETc of the day (Table 22 note 2): a day can start just
@@ -172,8 +188,7 @@ void main() {
     test('a year of the daily series of the site', () {
       final days = [for (var i = 0; i < 730; i++) (DateTime.utc(2018).add(Duration(days: i)), 5.0, DateTime.utc(2018).add(Duration(days: i)).year == 2019 && i % 7 == 0 ? 15.0 : 0.0)];
       final a = AreaEntity(id: 'a', points: square, useWaterBalance: true, etoMmDay: 5, kc: 1, awcMmPerM: 100, rootDepthM: 1, mad: 0.5, efficiency: 0.8);
-      final p = Project(entities: [a])
-        ..climate = SiteClimate(etoMmDay: List.filled(12, 5.0), rainMm: List.filled(12, 0.0), daily: DailyClimate.fromDays(days));
+      final p = Project(entities: [a])..climate = SiteClimate(etoMmDay: List.filled(12, 5.0), rainMm: List.filled(12, 0.0), daily: DailyClimate.fromDays(days));
       expect(balanceYears(p), [2018, 2019]);
       final y2018 = areaWaterBalance(p, a, settings: BalanceSettings(year: 2018))!;
       final y2019 = areaWaterBalance(p, a, settings: BalanceSettings(year: 2019))!;

@@ -40,7 +40,9 @@ void main() {
   AgronomyPlan full() => AgronomyPlan(
     userCrops: [passionFruit()],
     programme: ProgrammeSettings(windowStartHour: 20, windowHours: 10, cycleSoak: true, seasonalPct: List.filled(12, 80.0), inReports: true),
-    balance: {'a': BalanceSettings(trigger: BalanceTrigger.interval, intervalDays: 4, allowedDepletion: [0, 0, 0.6, 0.7], refillPct: 80, year: 2019, ky: 1.2)},
+    balance: {
+      'a': BalanceSettings(trigger: BalanceTrigger.interval, intervalDays: 4, allowedDepletion: [0, 0, 0.6, 0.7], refillPct: 80, year: 2019, ky: 1.2),
+    },
     fertigation: {
       'a': FertigationStagePlan(
         doseKgHa: [120, 60, 90],
@@ -53,7 +55,9 @@ void main() {
         everyNth: 2,
       ),
     },
-    fieldTests: [FieldTest(id: 'ft1', name: 'Zona 1', date: '2026-11-01', zoneId: 'v1', origin: const Pt(1.5, 1.5), cols: 2, values: [100, null, 120, 110])],
+    fieldTests: [
+      FieldTest(id: 'ft1', name: 'Zona 1', date: '2026-11-01', zoneId: 'v1', origin: const Pt(1.5, 1.5), cols: 2, values: [100, null, 120, 110]),
+    ],
   );
 
   group('agronomy plan in the project file', () {
@@ -70,7 +74,10 @@ void main() {
     });
 
     test('every part survives a save and a reopen', () {
-      final p = Project(entities: [AreaEntity(id: 'a', points: square)], agronomy: full());
+      final p = Project(
+        entities: [AreaEntity(id: 'a', points: square)],
+        agronomy: full(),
+      );
       final json = jsonEncode(p.toJson());
       final back = Project.fromJsonString(json);
       expect(jsonEncode(back.agronomy.toJson()), jsonEncode(p.agronomy.toJson()));
@@ -96,7 +103,13 @@ void main() {
       final plan = AgronomyPlan.fromJson({
         'crops': [
           {'id': 'not an id!', 'name': 'x'},
-          {'id': 'cacau', 'name': 'Cacau', 'kc': [0.9, 1.05, 1.05], 'days': [0, 0, 0, 0], 'future': 7},
+          {
+            'id': 'cacau',
+            'name': 'Cacau',
+            'kc': [0.9, 1.05, 1.05],
+            'days': [0, 0, 0, 0],
+            'future': 7,
+          },
           {'id': 'cacau', 'name': 'Second'},
           'not an object',
         ],
@@ -127,7 +140,10 @@ void main() {
     test('an area on a crop of the user takes its curve and planting month', () {
       final uc = passionFruit();
       final a = AreaEntity(id: 'a', points: square, cropKey: uc.key, useWaterBalance: true, irrigationMethod: 'localized', wettedFraction: 0.5, groundCover: 0.6);
-      final p = Project(entities: [a], agronomy: AgronomyPlan(userCrops: [uc]));
+      final p = Project(
+        entities: [a],
+        agronomy: AgronomyPlan(userCrops: [uc]),
+      );
       final data = cropDataOf(p, uc.key)!;
       expect(data.key, 'user.maracuja');
       expect(data.kcMid, 1.1);

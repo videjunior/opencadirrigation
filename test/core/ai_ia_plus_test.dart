@@ -107,13 +107,10 @@ void main() {
     ];
     expect(countMedia(msgs), (2, 1));
     final f = FakeClaude([(_) => FakeReply.text('I see it.')]);
-    final turn = await AgentLoop(api: api(f), tools: const []).run(
-      model: AiModel.sonnet55,
-      system: 's',
-      history: const [],
-      user: AnthropicFormat.user([const AiImagePart('image/png', 'AAAA'), const AiTextPart('look')]),
-      cancel: AiCancel(),
-    );
+    final turn = await AgentLoop(
+      api: api(f),
+      tools: const [],
+    ).run(model: AiModel.sonnet55, system: 's', history: const [], user: AnthropicFormat.user([const AiImagePart('image/png', 'AAAA'), const AiTextPart('look')]), cancel: AiCancel());
     expect(turn.stepStats.single.images, 1);
     expect(turn.stepStats.single.documents, 0);
   });
@@ -127,21 +124,28 @@ void main() {
       (_) => FakeReply.text('Drawn and saved.'),
     ]);
     final asked = <String>[];
-    final turn = await AgentLoop(api: api(f), tools: [tool('draw', effect: ToolEffect.write), tool('save', effect: ToolEffect.export)]).run(
-      model: AiModel.opus55,
-      system: 's',
-      history: const [],
-      user: user('go'),
-      permission: AgentPermission.ask,
-      cancel: AiCancel(),
-      events: AgentEvents(
-        autoApprove: (_) => true,
-        approve: (call) async {
-          asked.add(call.name);
-          return Approval.apply;
-        },
-      ),
-    );
+    final turn =
+        await AgentLoop(
+          api: api(f),
+          tools: [
+            tool('draw', effect: ToolEffect.write),
+            tool('save', effect: ToolEffect.export),
+          ],
+        ).run(
+          model: AiModel.opus55,
+          system: 's',
+          history: const [],
+          user: user('go'),
+          permission: AgentPermission.ask,
+          cancel: AiCancel(),
+          events: AgentEvents(
+            autoApprove: (_) => true,
+            approve: (call) async {
+              asked.add(call.name);
+              return Approval.apply;
+            },
+          ),
+        );
     expect(ran, ['draw', 'save']);
     expect(asked, ['save'], reason: 'an export is confirmed whatever was approved ahead');
     expect(turn.calls.firstWhere((x) => x.name == 'save').confirm, isTrue);
@@ -155,7 +159,10 @@ void main() {
       (_) => FakeReply.text('Drawn.'),
     ]);
     final cards = <String>[];
-    await AgentLoop(api: api(g), tools: [tool('draw', effect: ToolEffect.write)]).run(
+    await AgentLoop(
+      api: api(g),
+      tools: [tool('draw', effect: ToolEffect.write)],
+    ).run(
       model: AiModel.opus55,
       system: 's',
       history: const [],
@@ -240,7 +247,12 @@ void main() {
     ]);
     final turn = await AgentLoop(
       api: api(f),
-      tools: [tool('read', out: (_) => ToolOutput('the answer', spent: spent, spentCost: spent.cost(AiModel.haiku55), spentModel: 'claude-haiku-5-5'))],
+      tools: [
+        tool(
+          'read',
+          out: (_) => ToolOutput('the answer', spent: spent, spentCost: spent.cost(AiModel.haiku55), spentModel: 'claude-haiku-5-5'),
+        ),
+      ],
     ).run(model: AiModel.opus55, system: 's', history: const [], user: user('go'), cancel: AiCancel());
     final sub = turn.stepStats.where((s) => s.subagent).single;
     expect(sub.model, 'claude-haiku-5-5');
@@ -287,10 +299,7 @@ void main() {
   });
 
   test('the connection test names the fields the account turns down (left out from then on) and the errors', () async {
-    final f = FakeClaude([
-      (_) => FakeReply.error(400, 'invalid_request_error', 'thinking.display: unknown beta thinking-display-updates-2026-08-18'),
-      (_) => FakeReply.text('OK'),
-    ]);
+    final f = FakeClaude([(_) => FakeReply.error(400, 'invalid_request_error', 'thinking.display: unknown beta thinking-display-updates-2026-08-18'), (_) => FakeReply.text('OK')]);
     final p = await api(f).probe(AiModel.sonnet55, cancel: AiCancel());
     expect(p.ok, isTrue);
     expect(p.declined, ['display']);

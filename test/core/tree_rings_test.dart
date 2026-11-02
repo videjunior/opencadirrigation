@@ -126,7 +126,10 @@ void main() {
     final t = layoutTreeRings(area: u, options: TreeRingOptions(plantSpacing: 4, rowSpacing: 5));
     expect(t.messages.any((m) => m.startsWith('rings_detour:')), isTrue);
     expect(t.messages.any((m) => m.startsWith('rings_row_gap:')), isFalse);
-    final cut = layoutTreeRings(area: _rect(0, 0, 60, 20), options: TreeRingOptions(plantSpacing: 6, rowSpacing: 8, exclusions: [_rect(25, -5, 35, 25)]));
+    final cut = layoutTreeRings(
+      area: _rect(0, 0, 60, 20),
+      options: TreeRingOptions(plantSpacing: 6, rowSpacing: 8, exclusions: [_rect(25, -5, 35, 25)]),
+    );
     expect(cut.messages.any((m) => m.startsWith('rings_row_gap:')), isTrue, reason: 'a ditch across the whole field: no way round inside it');
     expect(layoutTreeRings(area: const [Pt(0, 0), Pt(1, 0), Pt(0, 1)], options: TreeRingOptions()).messages, ['rings_no_trees']);
   });

@@ -406,15 +406,8 @@ class _Grouper {
   }
 
   /// Moves and swaps while they improve the score (by the formula, or with
-  /// [exact] by [groupHead] until [GroupingOptions.maxHeadCalls] calls).
-  List<List<int>> _improve(List<List<int>> start, {bool exact = false}) {
-    late List<List<int>> out;
-    runSteps(_improveSteps(start, (g) => out = g, exact: exact));
-    return out;
-  }
-
-  /// The search of [_improve] as steps (trials out of the budget), the
-  /// groups handed to [done].
+  /// [exact] by [groupHead] until [GroupingOptions.maxHeadCalls] calls), as
+  /// steps (trials out of the budget), the groups handed to [done].
   Iterable<AnalysisStep> _improveSteps(List<List<int>> start, void Function(List<List<int>> groups) done, {bool exact = false}) sync* {
     var groups = [
       for (final g in start) [...g],

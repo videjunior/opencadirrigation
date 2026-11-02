@@ -111,7 +111,11 @@ class _SheetPreviewState extends State<SheetPreview> {
         insetPadding: const EdgeInsets.all(16),
         child: InteractiveViewer(
           maxScale: 8,
-          child: SizedBox(width: w, height: w * s.height / s.width, child: CustomPaint(painter: SheetPainter(s))),
+          child: SizedBox(
+            width: w,
+            height: w * s.height / s.width,
+            child: CustomPaint(painter: SheetPainter(s)),
+          ),
         ),
       );
     },
@@ -157,7 +161,10 @@ class _SheetPreviewState extends State<SheetPreview> {
                 child: Container(
                   width: w,
                   height: h,
-                  decoration: BoxDecoration(border: Border.all(color: Cad.divider), boxShadow: [BoxShadow(color: Cad.scrim, blurRadius: 4)]),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Cad.divider),
+                    boxShadow: [BoxShadow(color: Cad.scrim, blurRadius: 4)],
+                  ),
                   child: CustomPaint(painter: SheetPainter(s)),
                 ),
               ),
@@ -172,7 +179,9 @@ class _SheetPreviewState extends State<SheetPreview> {
       children: [
         Row(
           children: [
-            Expanded(child: Text(t('prev.title'), style: TextStyle(fontSize: 12, color: Cad.fg70))),
+            Expanded(
+              child: Text(t('prev.title'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+            ),
             if (count > 1) ...[
               IconButton(
                 key: const Key('sheet_preview_prev'),

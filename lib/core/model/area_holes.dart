@@ -59,7 +59,9 @@ bool fitsAsHole(AreaEntity a, List<Pt> cut) {
 List<AreaEntity>? subtractFromArea(AreaEntity a, List<Pt> cut, String Function() newId) {
   if (cut.length < 3 || polygonArea(cut).abs() < 1e-9 || a.points.length < 3) return null;
   if (fitsAsHole(a, cut)) {
-    return [a.clone()..holes = [...a.holes.map(List<Pt>.of), List.of(cut)]];
+    return [
+      a.clone()..holes = [...a.holes.map(List<Pt>.of), List.of(cut)],
+    ];
   }
   if (!Bounds.ofPoints(cut).intersects(Bounds.ofPoints(a.points))) return null;
   final before = a.area;

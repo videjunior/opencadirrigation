@@ -36,13 +36,7 @@ extension InsertProjectCommand on ProjectController {
       if (r.paste.renamedItems.isNotEmpty) t('insert.renamed', {'n': '${r.paste.renamedItems.length}'}),
       if (r.paste.rate != null) t('insert.converted', {'c': f.project.params.currencyCode, 't': project.params.currencyCode}),
     ];
-    final what = t('insert.done', {
-      'n': '${r.ids.length}',
-      'f': name.isEmpty ? f.project.meta.name : name,
-      'l': '${r.layers}',
-      's': '${r.flows}',
-      'b': '${r.blocks}',
-    });
+    final what = t('insert.done', {'n': '${r.ids.length}', 'f': name.isEmpty ? f.project.meta.name : name, 'l': '${r.layers}', 's': '${r.flows}', 'b': '${r.blocks}'});
     notify(notes.isEmpty ? what : '$what — ${notes.join('; ')}');
     return r;
   }

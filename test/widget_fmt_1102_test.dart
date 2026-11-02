@@ -232,7 +232,13 @@ void main() {
       expect(c.project.entities.whereType<SpotHeightEntity>(), hasLength(3));
       expect(c.project.meta.georef!.zone, 23);
       await expectLater(op('import_points_attachment').run({'name': 'none.csv'}), throwsA(isA<ToolInputError>()));
-      await expectLater(op('import_points_attachment').run({'name': 'rio.csv', 'columns': {'x': -1}}), throwsA(isA<ToolInputError>()));
+      await expectLater(
+        op('import_points_attachment').run({
+          'name': 'rio.csv',
+          'columns': {'x': -1},
+        }),
+        throwsA(isA<ToolInputError>()),
+      );
     });
 
     testWidgets('the stake-out points as a file, and the downloads kept', (tester) async {

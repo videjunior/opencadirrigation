@@ -61,9 +61,7 @@ extension ProjectLayerStates on Project {
   List<LayerState> get layerStates {
     final raw = extra?['layerStates'];
     if (raw is! List) return const [];
-    return _states[raw] ??= List.unmodifiable([
-      for (final x in raw) ?LayerState.fromJson(x),
-    ]);
+    return _states[raw] ??= List.unmodifiable([for (final x in raw) ?LayerState.fromJson(x)]);
   }
 
   set layerStates(List<LayerState> v) {

@@ -424,10 +424,7 @@ Future<List<TariffSchedule>> scheduleSeasonsAsync(
     late TariffSchedule one;
     final steps = _Scheduler(jobsFor(seasons[i]), seasons[i], options).steps((s) => one = s);
     // the progress over every season: each the same share
-    await runStepsAsync(
-      steps.map((x) => (i * 1000 + (x.$2 > 0 ? 1000 * x.$1 ~/ x.$2 : 0), seasons.length * 1000)),
-      control,
-    );
+    await runStepsAsync(steps.map((x) => (i * 1000 + (x.$2 > 0 ? 1000 * x.$1 ~/ x.$2 : 0), seasons.length * 1000)), control);
     out.add(one);
   }
   return out;

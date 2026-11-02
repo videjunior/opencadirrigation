@@ -51,7 +51,11 @@ void main() {
     test('criticality: the same result a step at a time, progress up to the total, and a cancel stops it', () async {
       final sync = analyzeCriticality(ring(), requiredPressure: required);
       final seen = <(int, int)>[];
-      final async = await analyzeCriticalityAsync(ring(), requiredPressure: required, control: AnalysisControl(onProgress: (d, t) => seen.add((d, t))));
+      final async = await analyzeCriticalityAsync(
+        ring(),
+        requiredPressure: required,
+        control: AnalysisControl(onProgress: (d, t) => seen.add((d, t))),
+      );
       expect(jsonEncode(async.toJson()), jsonEncode(sync.toJson()));
       expect(seen.map((s) => s.$1), [0, 1, 2, 3, 4]);
       expect(seen.every((s) => s.$2 == 5), isTrue);
@@ -71,7 +75,12 @@ void main() {
       const options = RandomCheckOptions(configurations: 40);
       final sync = checkRandomConfigurations(net, hydrants, options: options);
       final steps = <int>[];
-      final async = await checkRandomConfigurationsAsync(net, hydrants, options: options, control: AnalysisControl(onProgress: (d, _) => steps.add(d)));
+      final async = await checkRandomConfigurationsAsync(
+        net,
+        hydrants,
+        options: options,
+        control: AnalysisControl(onProgress: (d, _) => steps.add(d)),
+      );
       expect(jsonEncode(async.toJson()), jsonEncode(sync.toJson()));
       expect(steps.length, 40);
       await expectLater(checkRandomConfigurationsAsync(net, hydrants, options: options, control: cancelAfter(5, [])), throwsA(isA<AnalysisCancelled>()));
@@ -84,7 +93,9 @@ void main() {
         l.hazenC = 120;
       }
       final r = truth.solve();
-      final pressures = [for (final id in ['B', 'D']) PressureMeasurement(nodeId: id, pressure: r.nodes[id]!.pressure, sigma: 0.1)];
+      final pressures = [
+        for (final id in ['B', 'D']) PressureMeasurement(nodeId: id, pressure: r.nodes[id]!.pressure, sigma: 0.1),
+      ];
       final sync = calibrateRoughness(ring(), pressures: pressures);
       final async = await calibrateRoughnessAsync(ring(), pressures: pressures, control: AnalysisControl());
       expect(async.scales.single, closeTo(sync.scales.single, 1e-12));

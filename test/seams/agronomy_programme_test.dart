@@ -167,10 +167,7 @@ void main() {
           expect(c.grossDepthMm / c.intervalDays, closeTo(row.grossMmDay, 1e-9), reason: why);
         }
         for (final e in wateredBy.entries) {
-          final areas = [
-            for (final id in e.value)
-              if (inMonth[id] case final c?) c,
-          ];
+          final areas = [for (final id in e.value) ?inMonth[id]];
           if (areas.isEmpty) continue;
           final interval = monthly.intervalDays[e.key]!;
           expect(monthly.perFlowHours[e.key], closeTo(areas.fold(0.0, (m, c) => math.max(m, c.dailyHours * interval)), 1e-9), reason: '${ex.id.name} flow ${e.key} month $month');

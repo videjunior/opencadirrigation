@@ -685,7 +685,13 @@ class AppMenuBar extends StatelessWidget {
                     item(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
                     // 1.6.0 UI
                     item(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('menu_messages')),
-                    item(t('pal.menu'), () => showCommandPalette(context, c, runAlias: onCommand), icon: Icons.search, shortcut: 'Ctrl+K', key: const Key('menu_palette')),
+                    item(
+                      t('pal.menu'),
+                      () => showCommandPalette(context, c, runAlias: onCommand),
+                      icon: Icons.search,
+                      shortcut: 'Ctrl+K',
+                      key: const Key('menu_palette'),
+                    ),
                     item(t('help.manual'), () => showHelpDialog(context, c), icon: Icons.menu_book_outlined, shortcut: 'F1', key: const Key('menu_manual')),
                     item(t('new.menu'), () => showWhatsNewDialog(context, c), icon: Icons.new_releases_outlined, key: const Key('menu_whats_new')),
                     item(t('fb.menu'), () => showFeedbackDialog(context, c), icon: Icons.bug_report_outlined, key: const Key('menu_feedback')),

@@ -87,22 +87,27 @@ AgbResults? designAgb(Project p, DesignResults r, {List<Set<String>> flows = con
   final hasPivotElectrics = r.mechanised.values.any((m) => m.electrical != null);
   final ph = s.pumpHouse.enabled || hasPivotElectrics ? designPumpHouse(p, r) : null;
   // a pump house switched off still reports the pivots' supply
-  final pumpHouse = ph == null || s.pumpHouse.enabled ? ph : PumpHouseResult(
-    voltage: ph.voltage,
-    supply: ph.supply,
-    circuits: const [],
-    pivots: ph.pivots,
-    runningKva: 0,
-    demandKw: 0,
-    installedKw: 0,
-    largestStartKva: 0,
-    sourceKvaRequired: 0,
-    sourceKva: 0,
-    ukPct: 0,
-    ik3SourceKa: double.infinity,
-    tariffGroup: ph.tariffGroup,
-    warnings: [for (final w in ph.warnings) if (w.startsWith('agb_pivot_')) w],
-  );
+  final pumpHouse = ph == null || s.pumpHouse.enabled
+      ? ph
+      : PumpHouseResult(
+          voltage: ph.voltage,
+          supply: ph.supply,
+          circuits: const [],
+          pivots: ph.pivots,
+          runningKva: 0,
+          demandKw: 0,
+          installedKw: 0,
+          largestStartKva: 0,
+          sourceKvaRequired: 0,
+          sourceKva: 0,
+          ukPct: 0,
+          ik3SourceKa: double.infinity,
+          tariffGroup: ph.tariffGroup,
+          warnings: [
+            for (final w in ph.warnings)
+              if (w.startsWith('agb_pivot_')) w,
+          ],
+        );
   final solar = designSolar(p, r);
   final water = designWaterQuality(p, r);
   final tw = s.twoWire.enabled ? designTwoWire(p, flows: flows, spec: twoWireSpecOf(s.twoWire)) : null;

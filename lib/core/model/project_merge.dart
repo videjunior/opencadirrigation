@@ -92,14 +92,7 @@ InsertProjectResult insertProject(Project p, Project src, {Pt offset = Pt.zero})
     placement = InsertPlacement.georeferenceTaken;
   }
   // ---- the entities, through the paste
-  final paste = pasteEntities(
-    p,
-    [for (final e in src.entities) e.toJson()],
-    catalog: catalogSubset(src.catalog, src.entities),
-    currency: src.params.currencyCode,
-    offset: offset,
-    place: place,
-  );
+  final paste = pasteEntities(p, [for (final e in src.entities) e.toJson()], catalog: catalogSubset(src.catalog, src.entities), currency: src.params.currencyCode, offset: offset, place: place);
   for (final id in paste.ids) {
     final e = p.byId(id);
     if (e != null) p.layerNamed(e.layer);
@@ -111,10 +104,7 @@ InsertProjectResult insertProject(Project p, Project src, {Pt offset = Pt.zero})
   for (final f in src.systemFlows) {
     final runs = <String>{
       for (final v in f.valveIds)
-        if (paste.idMap[v] case final mapped?)
-          mapped
-        else if (v.startsWith(vihPrefix))
-          '$vihPrefix${paste.renamedStations[v.substring(vihPrefix.length)] ?? v.substring(vihPrefix.length)}',
+        if (paste.idMap[v] case final mapped?) mapped else if (v.startsWith(vihPrefix)) '$vihPrefix${paste.renamedStations[v.substring(vihPrefix.length)] ?? v.substring(vihPrefix.length)}',
     };
     if (runs.isEmpty) continue;
     var id = f.id;

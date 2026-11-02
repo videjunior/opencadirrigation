@@ -162,9 +162,19 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         final names = zoneNames(b.p, t('name.zone'), groups.length);
         final (poc, mainline) = _connection(b, a.str('connection'));
         final routing = routeOn && groups.isNotEmpty
-            ? routeZones([
-                for (final g in groups) [for (final k in g) layout.heads[k].position],
-              ], RouteOptions(exclusions: ex, mainline: mainline, pointOfConnection: poc, placement: ValvePlacement.values.byName(a.str('placement') ?? 'nearZone'), direction: layout.direction, boundary: area))
+            ? routeZones(
+                [
+                  for (final g in groups) [for (final k in g) layout.heads[k].position],
+                ],
+                RouteOptions(
+                  exclusions: ex,
+                  mainline: mainline,
+                  pointOfConnection: poc,
+                  placement: ValvePlacement.values.byName(a.str('placement') ?? 'nearZone'),
+                  direction: layout.direction,
+                  boundary: area,
+                ),
+              )
             : null;
         final zoneOf = <int, int>{
           for (var z = 0; z < groups.length; z++)

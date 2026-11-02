@@ -333,7 +333,17 @@ PlotScene buildPlotScene(
     if (e.points.length < 3 || skip(e)) continue;
     final base = project.layerNamed(e.layer).color;
     // 1.6.0 MOD: the islands stay white
-    tintedPath(e.layer, e.points, printColor(base), 0.18, 0.25, holes: [for (final h in e.holes) if (h.length >= 3) h]);
+    tintedPath(
+      e.layer,
+      e.points,
+      printColor(base),
+      0.18,
+      0.25,
+      holes: [
+        for (final h in e.holes)
+          if (h.length >= 3) h,
+      ],
+    );
     if (labels) {
       // top-left corner inside the polygon, clear of the valve/laterals
       final b = Bounds.ofPoints(e.points);
@@ -388,13 +398,7 @@ PlotScene buildPlotScene(
       case RadialDimensionEntity rd:
         path(rd.layer, [rd.start, rd.point], widthMm: 0.18);
         // 1.6.0 CAD: the dimension style (text height, decimals, unit)
-        text(
-          rd.layer,
-          rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5),
-          '${rd.diameter ? 'Ø' : 'R'} ${dims.length(rd.value, units)}',
-          heightMm: dimH,
-          anchor: PlotAnchor.bottomCenter,
-        );
+        text(rd.layer, rd.diameter ? rd.center : Pt.lerp(rd.center, rd.point, 0.5), '${rd.diameter ? 'Ø' : 'R'} ${dims.length(rd.value, units)}', heightMm: dimH, anchor: PlotAnchor.bottomCenter);
       case OrdinateDimensionEntity od:
         path(od.layer, od.leader, widthMm: 0.18);
         text(

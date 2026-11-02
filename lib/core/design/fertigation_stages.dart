@@ -163,7 +163,10 @@ FertigationSchedule? fertigationSchedule(Project p, AreaEntity a, {FertigationSt
     final water = gross / 1000 * a.area;
     final inject = (pl.injectionPct.clamp(5.0, 100.0) / 100).toDouble();
     final productKg = perEventKg.fold(0.0, (t, v) => t + v);
-    final ionicKg = [for (var k = 0; k < 3; k++) if (pl.products[k].ionic) perEventKg[k]].fold(0.0, (t, v) => t + v);
+    final ionicKg = [
+      for (var k = 0; k < 3; k++)
+        if (pl.products[k].ionic) perEventKg[k],
+    ].fold(0.0, (t, v) => t + v);
     final conc = water > 0 ? productKg / (water * inject) : 0.0;
     final ecRise = water > 0 ? 1000 * ionicKg / (water * inject) / 640 : 0.0;
     final hours = rate > 0 ? gross / rate : 0.0;

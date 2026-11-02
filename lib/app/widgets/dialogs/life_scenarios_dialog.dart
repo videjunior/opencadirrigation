@@ -99,23 +99,53 @@ Future<void> showLifeScenariosDialog(BuildContext context, ProjectController c) 
                     children: [
                       SizedBox(
                         width: 150,
-                        child: NumField(key: const Key('life_years'), label: t('life.years'), value: o.years, decimals: 0, onChanged: (v) => change(_with(o, years: v.clamp(0, 100).toDouble()))),
+                        child: NumField(
+                          key: const Key('life_years'),
+                          label: t('life.years'),
+                          value: o.years,
+                          decimals: 0,
+                          onChanged: (v) => change(_with(o, years: v.clamp(0, 100).toDouble())),
+                        ),
                       ),
                       SizedBox(
                         width: 150,
-                        child: NumField(key: const Key('life_closs'), label: t('life.cLoss'), value: o.cLossPerYear, decimals: 2, onChanged: (v) => change(_with(o, cLoss: v.clamp(0, 10).toDouble()))),
+                        child: NumField(
+                          key: const Key('life_closs'),
+                          label: t('life.cLoss'),
+                          value: o.cLossPerYear,
+                          decimals: 2,
+                          onChanged: (v) => change(_with(o, cLoss: v.clamp(0, 10).toDouble())),
+                        ),
                       ),
                       SizedBox(
                         width: 150,
-                        child: NumField(key: const Key('life_rough'), label: t('life.roughness'), value: o.roughnessMmPerYear, decimals: 3, onChanged: (v) => change(_with(o, rough: v.clamp(0, 1).toDouble()))),
+                        child: NumField(
+                          key: const Key('life_rough'),
+                          label: t('life.roughness'),
+                          value: o.roughnessMmPerYear,
+                          decimals: 3,
+                          onChanged: (v) => change(_with(o, rough: v.clamp(0, 1).toDouble())),
+                        ),
                       ),
                       SizedBox(
                         width: 150,
-                        child: NumField(key: const Key('life_clog'), label: t('life.clogging'), value: 100 * o.clogging, decimals: 0, onChanged: (v) => change(_with(o, clog: (v / 100).clamp(0, 0.9).toDouble()))),
+                        child: NumField(
+                          key: const Key('life_clog'),
+                          label: t('life.clogging'),
+                          value: 100 * o.clogging,
+                          decimals: 0,
+                          onChanged: (v) => change(_with(o, clog: (v / 100).clamp(0, 0.9).toDouble())),
+                        ),
                       ),
                       SizedBox(
                         width: 150,
-                        child: NumField(key: const Key('life_cv'), label: t('life.cv'), value: o.cvIncrease, decimals: 3, onChanged: (v) => change(_with(o, cv: v.clamp(0, 0.5).toDouble()))),
+                        child: NumField(
+                          key: const Key('life_cv'),
+                          label: t('life.cv'),
+                          value: o.cvIncrease,
+                          decimals: 3,
+                          onChanged: (v) => change(_with(o, cv: v.clamp(0, 0.5).toDouble())),
+                        ),
                       ),
                     ],
                   ),
@@ -143,12 +173,7 @@ Future<void> showLifeScenariosDialog(BuildContext context, ProjectController c) 
                       child: Table(
                         defaultColumnWidth: const IntrinsicColumnWidth(),
                         children: [
-                          TableRow(
-                            children: [
-                              const SizedBox.shrink(),
-                              for (final k in LifeCase.values) _cell(t('life.case.${k.name}'), bold: true),
-                            ],
-                          ),
+                          TableRow(children: [const SizedBox.shrink(), for (final k in LifeCase.values) _cell(t('life.case.${k.name}'), bold: true)]),
                           for (final (label, cells) in rows) TableRow(children: [_cell(label), for (final x in cells) _cell(x)]),
                         ],
                       ),
@@ -169,10 +194,5 @@ Widget _cell(String s, {bool bold = false}) => Padding(
   child: Text(s, style: TextStyle(fontSize: 11.5, fontWeight: bold ? FontWeight.w600 : null)),
 );
 
-LifeOptions _with(LifeOptions o, {double? years, double? cLoss, double? rough, double? clog, double? cv}) => LifeOptions(
-  years: years ?? o.years,
-  cLossPerYear: cLoss ?? o.cLossPerYear,
-  roughnessMmPerYear: rough ?? o.roughnessMmPerYear,
-  clogging: clog ?? o.clogging,
-  cvIncrease: cv ?? o.cvIncrease,
-);
+LifeOptions _with(LifeOptions o, {double? years, double? cLoss, double? rough, double? clog, double? cv}) =>
+    LifeOptions(years: years ?? o.years, cLossPerYear: cLoss ?? o.cLossPerYear, roughnessMmPerYear: rough ?? o.roughnessMmPerYear, clogging: clog ?? o.clogging, cvIncrease: cv ?? o.cvIncrease);

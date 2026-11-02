@@ -133,7 +133,11 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
                   style: TextStyle(fontSize: 12, color: Cad.fg),
                   items: [
                     DropdownMenuItem<GeodeticDatum?>(value: null, child: Text(t('prd.geo.datumAuto'), style: const TextStyle(fontSize: 12))),
-                    for (final d in projectDatums) DropdownMenuItem<GeodeticDatum?>(value: d, child: Text(projectDatumLabel(d), style: const TextStyle(fontSize: 12))),
+                    for (final d in projectDatums)
+                      DropdownMenuItem<GeodeticDatum?>(
+                        value: d,
+                        child: Text(projectDatumLabel(d), style: const TextStyle(fontSize: 12)),
+                      ),
                   ],
                   onChanged: (v) => setState(() => datum = v),
                 ),
@@ -445,7 +449,14 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                   check(
                     t('prd.plot.theme.${th.name}'),
                     terrain && o.themes.contains(th),
-                    (v) => setState(() => o = o.copyWith(themes: [for (final x in SheetTheme.values) if (x == th ? v : o.themes.contains(x)) x])),
+                    (v) => setState(
+                      () => o = o.copyWith(
+                        themes: [
+                          for (final x in SheetTheme.values)
+                            if (x == th ? v : o.themes.contains(x)) x,
+                        ],
+                      ),
+                    ),
                     enabled: terrain,
                     key: Key('plot_theme_${th.name}'),
                   ),

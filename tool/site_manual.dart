@@ -1022,12 +1022,24 @@ class _Inline {
   int _autolink(int start) {
     final uri = _autolinkUri.matchAsPrefix(s, start);
     if (uri != null) {
-      nodes.add(_Node(_Kind.link, children: [_Node(_Kind.text, text: uri[1]!)], href: link(uri[1]!)));
+      nodes.add(
+        _Node(
+          _Kind.link,
+          children: [_Node(_Kind.text, text: uri[1]!)],
+          href: link(uri[1]!),
+        ),
+      );
       return uri.end;
     }
     final email = _autolinkEmail.matchAsPrefix(s, start);
     if (email != null) {
-      nodes.add(_Node(_Kind.link, children: [_Node(_Kind.text, text: email[1]!)], href: link('mailto:${email[1]}')));
+      nodes.add(
+        _Node(
+          _Kind.link,
+          children: [_Node(_Kind.text, text: email[1]!)],
+          href: link('mailto:${email[1]}'),
+        ),
+      );
       return email.end;
     }
     nodes.add(_Node(_Kind.text, text: '<'));

@@ -58,7 +58,11 @@ void main() {
       final boot = File('${build.path}/flutter_bootstrap.js').readAsStringSync();
       expect(boot, contains("var fonts = 'fonts/';"));
       expect(boot, isNot(contains(fontsMarker)));
-      await expectLater(installSiteFonts(build, cache: cache, download: download), throwsA(isA<SiteFontsError>()), reason: 'filled in once');
+      await expectLater(
+        installSiteFonts(build, cache: cache, download: download),
+        throwsA(isA<SiteFontsError>()),
+        reason: 'filled in once',
+      );
       // the next build takes them from the cache
       File('web/flutter_bootstrap.js').copySync('${build.path}/flutter_bootstrap.js');
       Directory('${build.path}/fonts').deleteSync(recursive: true);

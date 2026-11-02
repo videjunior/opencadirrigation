@@ -133,7 +133,11 @@ const _mod = <String, (String, String, String)>{
     '{n} área(s) modificada(s), {m} pieza(s): la forma pasó a ser isla (o recorte) y salió del dibujo.',
   ),
   'area.holes.none': ('Nenhuma área selecionada tem ilhas.', 'No selected area has islands.', 'Ningún área seleccionada tiene islas.'),
-  'area.holes.cleared': ('Ilhas removidas de {n} área(s): o contorno inteiro é irrigado.', 'Islands removed from {n} area(s): the whole outline is irrigated.', 'Islas quitadas de {n} área(s): se riega todo el contorno.'),
+  'area.holes.cleared': (
+    'Ilhas removidas de {n} área(s): o contorno inteiro é irrigado.',
+    'Islands removed from {n} area(s): the whole outline is irrigated.',
+    'Islas quitadas de {n} área(s): se riega todo el contorno.',
+  ),
   'area.holes.info': ('Ilhas (não irrigadas)', 'Islands (not irrigated)', 'Islas (no regadas)'),
   'area.holes.value': ('{n}, {a} fora da área de {g}', '{n}, {a} left out of {g}', '{n}, {a} fuera del área de {g}'),
   'ai.op.subtract_from_area': ('Subtrair {n} da área', 'Subtract {n} from the area', 'Restar {n} del área'),

@@ -426,7 +426,9 @@ class _Session {
     final code = (a.values['currency'] ?? catalogPriceCurrency).toUpperCase();
     final currency = currencyByCode(code);
     if (currency == null) throw _UsageError('unknown currency $code (an ISO 4217 code: BRL, USD, EUR…)');
-    final project = Project(catalog: Catalog.defaultCatalog(lang: lang, currency: code));
+    final project = Project(
+      catalog: Catalog.defaultCatalog(lang: lang, currency: code),
+    );
     final defaults = DesignParameters();
     final rate = exchangeRate(defaults.currencyCode, code);
     project.params

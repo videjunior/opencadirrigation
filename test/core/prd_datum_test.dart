@@ -12,7 +12,10 @@ import 'package:opencadirrigation/core/model/project.dart';
 
 final i18n = I18n('en');
 
-ProjectExporter exporterOf(Project p) => ProjectExporter(project: p, labels: ReportLabels(t: i18n.call, has: i18n.has, warning: i18n.warning));
+ProjectExporter exporterOf(Project p) => ProjectExporter(
+  project: p,
+  labels: ReportLabels(t: i18n.call, has: i18n.has, warning: i18n.warning),
+);
 
 /// The datum of a project's georeference (1.6.0 PRD): named by the user or
 /// by the site, written only when chosen, used on the sheets and in the

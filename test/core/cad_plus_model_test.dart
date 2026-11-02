@@ -143,7 +143,13 @@ void main() {
       expect(back.attributes.first.position, const Pt(0, 1.5));
       expect(back.inBom, isTrue);
       // a block with a hydraulic item is inserted as copies
-      expect(BlockDefinition(name: 'x', entities: [OutletEntity(id: 'o', position: Pt.zero, outletSpecId: 'm')]).canBeReferenced, isFalse);
+      expect(
+        BlockDefinition(
+          name: 'x',
+          entities: [OutletEntity(id: 'o', position: Pt.zero, outletSpecId: 'm')],
+        ).canBeReferenced,
+        isFalse,
+      );
     });
 
     test('a reference draws its block where it is placed, turned, scaled and mirrored, and follows a redefinition', () {
@@ -169,7 +175,12 @@ void main() {
         expect(mo.points.any((x) => x.distanceTo(q) < 1e-9), isTrue, reason: '$q');
       }
       // redefined: the reference draws the new block
-      p.blocks.put(BlockDefinition(name: 'Valve box', entities: [LineEntity(id: 'l', a: Pt.zero, b: const Pt(5, 0))]));
+      p.blocks.put(
+        BlockDefinition(
+          name: 'Valve box',
+          entities: [LineEntity(id: 'l', a: Pt.zero, b: const Pt(5, 0))],
+        ),
+      );
       resolveBlockRefs(p);
       expect((r.expanded().single as LineEntity).b.distanceTo(const Pt(10, 20)), lessThan(1e-9));
       // a missing block: a small marker, nothing drawn
@@ -183,14 +194,40 @@ void main() {
       final r = BlockRefEntity(id: 'r', position: const Pt(1, 2), blockName: 'B', rotationDeg: 30, scale: 2, mirrored: true, attributes: {'CODE': 'X'});
       final back = Entity.fromJson(jsonDecode(jsonEncode(r.toJson())) as Map<String, dynamic>) as BlockRefEntity;
       expect(back.toJson(), r.toJson());
-      expect(Entity.fromJson({'type': 'blockRef', 'id': 'q', 'p': [0, 0]}).toJson(), {'type': 'blockRef', 'id': 'q', 'layer': Layers.drawing, 'p': [0.0, 0.0], 'block': ''});
-      expect(Entity.fromJson({'type': 'blockRef', 'id': 'q', 'p': [0, 0], 'sc': -3}) as BlockRefEntity, isA<BlockRefEntity>().having((x) => x.scale, 'scale', 1));
+      expect(
+        Entity.fromJson({
+          'type': 'blockRef',
+          'id': 'q',
+          'p': [0, 0],
+        }).toJson(),
+        {
+          'type': 'blockRef',
+          'id': 'q',
+          'layer': Layers.drawing,
+          'p': [0.0, 0.0],
+          'block': '',
+        },
+      );
+      expect(
+        Entity.fromJson({
+          'type': 'blockRef',
+          'id': 'q',
+          'p': [0, 0],
+          'sc': -3,
+        }) as BlockRefEntity,
+        isA<BlockRefEntity>().having((x) => x.scale, 'scale', 1),
+      );
     });
 
     test('the bill of materials counts the references of a block marked for it, by code and price', () {
       final p = Project();
       p.blocks.put(valveBox());
-      p.blocks.put(BlockDefinition(name: 'North', entities: [LineEntity(id: 'n', a: Pt.zero, b: const Pt(0, 1))]));
+      p.blocks.put(
+        BlockDefinition(
+          name: 'North',
+          entities: [LineEntity(id: 'n', a: Pt.zero, b: const Pt(0, 1))],
+        ),
+      );
       p.entities.addAll([
         BlockRefEntity(id: 'r1', position: Pt.zero, blockName: 'Valve box', attributes: {'CODE': 'VB-01', 'PRICE': '120.5'}),
         BlockRefEntity(id: 'r2', position: const Pt(5, 0), blockName: 'Valve box', attributes: {'CODE': 'VB-01', 'PRICE': '120.5'}),
@@ -208,7 +245,10 @@ void main() {
       final p = Project();
       p.blocks.put(valveBox());
       p.entities.add(BlockRefEntity(id: 'r', position: const Pt(10, 0), blockName: 'Valve box', attributes: {'CODE': 'VB-09'}));
-      final ex = ProjectExporter(project: p, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w));
+      final ex = ProjectExporter(
+        project: p,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+      );
       final d = ex.cadDrawing();
       final ins = d.entities.whereType<CadInsert>().single;
       expect(ins.block, 'Valve box');
@@ -224,7 +264,10 @@ void main() {
       final q = Project();
       q.blocks.put(valveBox());
       q.entities.add(BlockRefEntity(id: 'm', position: Pt.zero, blockName: 'Valve box', mirrored: true));
-      final mq = ProjectExporter(project: q, labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w)).cadDrawing();
+      final mq = ProjectExporter(
+        project: q,
+        labels: ReportLabels(t: (k, [a]) => k, has: (_) => false, warning: (w) => w),
+      ).cadDrawing();
       expect(mq.entities.whereType<CadInsert>(), isEmpty);
       expect(mq.entities.whereType<CadPolyline>(), isNotEmpty);
     });

@@ -135,11 +135,7 @@ class Glossary {
         for (final e in map('terms').entries)
           e.key: [
             for (final t in (e.value as List).cast<Map<String, dynamic>>())
-              GlossaryTerm(
-                concept: '${t['concept']}',
-                use: '${t['use']}',
-                avoid: [for (final w in (t['avoid'] as List?) ?? const []) '$w'],
-              ),
+              GlossaryTerm(concept: '${t['concept']}', use: '${t['use']}', avoid: [for (final w in (t['avoid'] as List?) ?? const []) '$w']),
           ],
       },
     );
@@ -226,8 +222,16 @@ class ReviewContext {
         'catalog': column(catalog, (c) => c.$2),
       },
       compiled: {
-        'pt': {'strings': {for (final k in keys) k: pt(k)}, 'tutorial': column(tutorial, (c) => c.$1), 'catalog': column(catalog, (c) => c.$1)},
-        'es': {'strings': {for (final k in keys) k: es(k)}, 'tutorial': column(tutorial, (c) => c.$3), 'catalog': column(catalog, (c) => c.$3)},
+        'pt': {
+          'strings': {for (final k in keys) k: pt(k)},
+          'tutorial': column(tutorial, (c) => c.$1),
+          'catalog': column(catalog, (c) => c.$1),
+        },
+        'es': {
+          'strings': {for (final k in keys) k: es(k)},
+          'tutorial': column(tutorial, (c) => c.$3),
+          'catalog': column(catalog, (c) => c.$3),
+        },
       },
       definedIn: definedIn,
       usedIn: usedIn,
@@ -639,9 +643,8 @@ String decodeReviewText(List<int> bytes) {
 }
 
 /// UTF-16 [bytes] after their byte order mark.
-String _utf16(List<int> bytes, {required bool littleEndian}) => String.fromCharCodes([
-  for (var i = 2; i + 1 < bytes.length; i += 2) littleEndian ? bytes[i] | (bytes[i + 1] << 8) : (bytes[i] << 8) | bytes[i + 1],
-]);
+String _utf16(List<int> bytes, {required bool littleEndian}) =>
+    String.fromCharCodes([for (var i = 2; i + 1 < bytes.length; i += 2) littleEndian ? bytes[i] | (bytes[i + 1] << 8) : (bytes[i] << 8) | bytes[i + 1]]);
 
 /// The table of a review file: the sheet of an XLSX workbook that has the
 /// section, key and review columns, or CSV text ([decodeReviewText], [parseCsv]).

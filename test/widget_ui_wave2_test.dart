@@ -23,7 +23,6 @@ import 'package:opencadirrigation/app/widgets/layout_mode.dart';
 import 'package:opencadirrigation/app/widgets/menu_bar.dart';
 import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
 import 'package:opencadirrigation/core/io/pdf_sheet.dart';
-import 'package:opencadirrigation/core/io/sheet_set.dart' show SheetSplit;
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/main.dart';
@@ -271,7 +270,10 @@ void main() {
           theme: buildCadTheme(b),
           builder: (context, child) => UiScaled(child: child!),
           home: const Scaffold(
-            body: Align(alignment: Alignment.topLeft, child: SizedBox(key: k, width: 100, height: 40)),
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(key: k, width: 100, height: 40),
+            ),
           ),
         ),
       ),

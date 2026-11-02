@@ -51,16 +51,9 @@ class ReservoirSpec {
   /// the full level; null while the full level is not set.
   double? get designLevelM => fullLevelM != 0 ? (minLevelM ?? fullLevelM) : null;
 
-  ReservoirSpec copy() => ReservoirSpec(
-    outlineId: outlineId,
-    kind: kind,
-    fullLevelM: fullLevelM,
-    minLevelM: minLevelM,
-    initialLevelM: initialLevelM,
-    bottomM: bottomM,
-    sideSlope: sideSlope,
-    inflow: inflow,
-  )..extra = extra;
+  ReservoirSpec copy() =>
+      ReservoirSpec(outlineId: outlineId, kind: kind, fullLevelM: fullLevelM, minLevelM: minLevelM, initialLevelM: initialLevelM, bottomM: bottomM, sideSlope: sideSlope, inflow: inflow)
+        ..extra = extra;
 
   Map<String, dynamic> toJson() => {
     ...?extra,

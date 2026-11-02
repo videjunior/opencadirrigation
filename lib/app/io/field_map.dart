@@ -100,16 +100,7 @@ Future<FieldMap> keepFieldMap(ProjectController c, {TileFetcher? fetcher, SeenTi
   final source = fetcher ?? (how == FieldMapSource.download ? const HttpTileFetcher() : SeenTileFetcher(seen ?? seenTiles));
   final TileMosaic mosaic;
   try {
-    mosaic = await fetchMosaic(
-      g: g,
-      world: area,
-      mpp: mpp,
-      map: m,
-      fetcher: source,
-      customUrl: c.customTileUrl,
-      lang: c.lang,
-      maxTiles: how == FieldMapSource.download ? fieldMapMaxTiles : 4000,
-    );
+    mosaic = await fetchMosaic(g: g, world: area, mpp: mpp, map: m, fetcher: source, customUrl: c.customTileUrl, lang: c.lang, maxTiles: how == FieldMapSource.download ? fieldMapMaxTiles : 4000);
   } on MapUnavailable {
     throw FieldMapError(how == FieldMapSource.seen ? 'fieldmap.err.notSeen' : 'fieldmap.err.download');
   }
@@ -128,11 +119,15 @@ Future<FieldMap> keepFieldMap(ProjectController c, {TileFetcher? fetcher, SeenTi
       data: jpeg,
       source: '$baseMapPictureMark $credit',
     );
-    final added = c.mutate(() {
-      // under everything else of the drawing, like an imported picture
-      c.project.entities.insert(0, image);
-      return true;
-    }, invalidateResults: false, label: 'hist.fieldMap');
+    final added = c.mutate(
+      () {
+        // under everything else of the drawing, like an imported picture
+        c.project.entities.insert(0, image);
+        return true;
+      },
+      invalidateResults: false,
+      label: 'hist.fieldMap',
+    );
     if (added != true) throw const FieldMapError('fieldmap.err.busy');
     return FieldMap(image, tiles: mosaic.tiles.length, missing: mosaic.missing, zoom: mosaic.zoom);
   } finally {

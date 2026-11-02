@@ -109,19 +109,10 @@ class BlockRefEntity extends Entity with PointEntity {
   }
 
   @override
-  BlockRefEntity clone({String? newId}) => BlockRefEntity(
-    id: newId ?? id,
-    layer: layer,
-    name: name,
-    position: position,
-    blockName: blockName,
-    rotationDeg: rotationDeg,
-    scale: scale,
-    mirrored: mirrored,
-    attributes: Map.of(attributes),
-  )
-    ..definition = definition
-    ..extra = extra;
+  BlockRefEntity clone({String? newId}) =>
+      BlockRefEntity(id: newId ?? id, layer: layer, name: name, position: position, blockName: blockName, rotationDeg: rotationDeg, scale: scale, mirrored: mirrored, attributes: Map.of(attributes))
+        ..definition = definition
+        ..extra = extra;
 
   @override
   BlockRefEntity translated(Pt d) => clone()..position = position + d;

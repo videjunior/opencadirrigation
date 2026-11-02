@@ -93,10 +93,7 @@ Future<void> showMultiPivotDialog(BuildContext context, ProjectController c) {
   final shapes = _selectedShapes(c);
   if (shapes.isEmpty) return _show(context, c, t('agb.mp.title'), 460, (ctx, _) => _column([_hint(t('agb.mp.needField'))]));
   final field = shapes.first.$2;
-  final obstacles = [
-    for (final s in shapes.skip(1)) s.$2,
-    for (final p in c.project.entities.whereType<PivotEntity>()) p.outline(),
-  ];
+  final obstacles = [for (final s in shapes.skip(1)) s.$2, for (final p in c.project.entities.whereType<PivotEntity>()) p.outline()];
   final source = c.project.entities.whereType<WaterSupplyEntity>().firstOrNull;
   final supply = source?.position;
   // the flow the water right allows: the largest flow of the supply when given
@@ -239,12 +236,7 @@ List<Widget> _travellerFields(ProjectController c, TravellerEntity e, void Funct
     if (gun != null)
       SpecDropdown<NozzleSpec>(label: t('agb.trav.nozzle'), value: e.gunNozzleId, items: gun.nozzles, labelOf: (n) => n.name, idOf: (n) => n.id, onChanged: (v) => set(() => e.gunNozzleId = v)),
     if (gun == null)
-      NumField(
-        label: '${t('rep.flow')} (${u.flowLabel})',
-        value: u.flowFromSi(e.gunFlow),
-        decimals: 2,
-        onChanged: (v) => set(() => e.gunFlow = u.flowToSi(v).clamp(1e-5, 1).toDouble()),
-      ),
+      NumField(label: '${t('rep.flow')} (${u.flowLabel})', value: u.flowFromSi(e.gunFlow), decimals: 2, onChanged: (v) => set(() => e.gunFlow = u.flowToSi(v).clamp(1e-5, 1).toDouble())),
     if (gun == null)
       NumField(
         label: '${t('agb.trav.wettedDiameter')} (${u.lengthLabel})',

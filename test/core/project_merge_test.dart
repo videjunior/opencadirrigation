@@ -36,8 +36,18 @@ Project _source() {
     PolylineEntity(id: p.newId(), layer: 'POND', points: _rect(2, 2, 4, 4), closed: true),
   ]);
   p.systemFlows.add(SystemFlow(id: 'f1', name: 'Flow 1', valveIds: {valve.id}));
-  p.blocks.put(BlockDefinition(name: 'Kit', entities: [LineEntity(id: 'k1', a: Pt.zero, b: const Pt(1, 0))]));
-  p.blocks.put(BlockDefinition(name: 'Manifold', entities: [LineEntity(id: 'm1', a: Pt.zero, b: const Pt(2, 0))]));
+  p.blocks.put(
+    BlockDefinition(
+      name: 'Kit',
+      entities: [LineEntity(id: 'k1', a: Pt.zero, b: const Pt(1, 0))],
+    ),
+  );
+  p.blocks.put(
+    BlockDefinition(
+      name: 'Manifold',
+      entities: [LineEntity(id: 'm1', a: Pt.zero, b: const Pt(2, 0))],
+    ),
+  );
   return p;
 }
 
@@ -49,8 +59,18 @@ Project _target() {
   final v = ControlValveEntity(id: p.newId(), position: const Pt(50, 50), zoneName: 'Garden');
   p.entities.add(v);
   p.systemFlows.add(SystemFlow(id: 'f1', name: 'Flow 1', valveIds: {v.id}));
-  p.blocks.put(BlockDefinition(name: 'Kit', entities: [LineEntity(id: 'k1', a: Pt.zero, b: const Pt(1, 0))]));
-  p.blocks.put(BlockDefinition(name: 'Manifold', entities: [LineEntity(id: 'm9', a: Pt.zero, b: const Pt(3, 0))]));
+  p.blocks.put(
+    BlockDefinition(
+      name: 'Kit',
+      entities: [LineEntity(id: 'k1', a: Pt.zero, b: const Pt(1, 0))],
+    ),
+  );
+  p.blocks.put(
+    BlockDefinition(
+      name: 'Manifold',
+      entities: [LineEntity(id: 'm9', a: Pt.zero, b: const Pt(3, 0))],
+    ),
+  );
   return p;
 }
 

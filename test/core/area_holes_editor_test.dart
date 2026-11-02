@@ -28,10 +28,7 @@ void main() {
   String lastLabel() => c.historyEntries.where((h) => h.current).single.label;
 
   test('a closed polyline inside the lawn becomes its island; undo brings both back', () {
-    c.addEntities([
-      AreaEntity(id: 'lawn', name: 'Lawn', points: _rect(0, 0, 40, 30)),
-      PolylineEntity(id: 'pond', points: _rect(10, 10, 20, 20), closed: true),
-    ]);
+    c.addEntities([AreaEntity(id: 'lawn', name: 'Lawn', points: _rect(0, 0, 40, 30)), PolylineEntity(id: 'pond', points: _rect(10, 10, 20, 20), closed: true)]);
     // only the shape selected: the area it lies in is cut
     c.select(['pond']);
     expect(c.subtractSelectedFromAreas(), 1);
@@ -54,11 +51,7 @@ void main() {
   });
 
   test('a shape that misses the area is no undo step; nothing closed selected says so', () {
-    c.addEntities([
-      AreaEntity(id: 'lawn', points: _rect(0, 0, 40, 30)),
-      PolylineEntity(id: 'far', points: _rect(50, 50, 60, 60), closed: true),
-      LineEntity(id: 'line', a: Pt.zero, b: const Pt(5, 5)),
-    ]);
+    c.addEntities([AreaEntity(id: 'lawn', points: _rect(0, 0, 40, 30)), PolylineEntity(id: 'far', points: _rect(50, 50, 60, 60), closed: true), LineEntity(id: 'line', a: Pt.zero, b: const Pt(5, 5))]);
     final steps = c.historyEntries.length;
     c.select(['far', 'lawn']);
     expect(c.subtractSelectedFromAreas(), 0);
@@ -72,10 +65,7 @@ void main() {
   });
 
   test('a strip across the field splits it in two areas', () {
-    c.addEntities([
-      AreaEntity(id: 'field', name: 'Field', points: _rect(0, 0, 40, 30)),
-      PolylineEntity(id: 'road', points: _rect(18, -5, 22, 35), closed: true),
-    ]);
+    c.addEntities([AreaEntity(id: 'field', name: 'Field', points: _rect(0, 0, 40, 30)), PolylineEntity(id: 'road', points: _rect(18, -5, 22, 35), closed: true)]);
     c.select(['road', 'field']);
     expect(c.subtractSelectedFromAreas(), 1);
     final areas = c.project.entities.whereType<AreaEntity>().toList();

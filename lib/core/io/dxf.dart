@@ -801,20 +801,19 @@ class _DxfParser {
       case 'INSERT':
         inserts.add(
           DxfInsert(
-              name: DxfReader.plainName(props[2]?.first ?? ''),
-              layer: layer,
-              color: color,
-              position: Pt(num(10), num(20)),
-              scaleX: num(41, 0, 1),
-              scaleY: num(42, 0, 1),
-              rotation: num(50),
-              cols: flags(70).clamp(1, 32767),
-              rows: flags(71).clamp(1, 32767),
-              colSpacing: num(44),
-              rowSpacing: num(45),
-              ocsMirror: mirrored,
-            )
-            ..z = props.containsKey(30) ? num(30) : null,
+            name: DxfReader.plainName(props[2]?.first ?? ''),
+            layer: layer,
+            color: color,
+            position: Pt(num(10), num(20)),
+            scaleX: num(41, 0, 1),
+            scaleY: num(42, 0, 1),
+            rotation: num(50),
+            cols: flags(70).clamp(1, 32767),
+            rows: flags(71).clamp(1, 32767),
+            colSpacing: num(44),
+            rowSpacing: num(45),
+            ocsMirror: mirrored,
+          )..z = props.containsKey(30) ? num(30) : null,
         );
       case 'DIMENSION' || 'ARC_DIMENSION' || 'LARGE_RADIAL_DIMENSION':
         // the dimension's geometry lives in an anonymous block, inserted at

@@ -49,11 +49,7 @@ const _tracePixels = 1000000;
 List<BaseMap> traceMaps(ProjectController c) {
   final key = (c.googleMapsKey ?? '').isNotEmpty;
   final shown = c.baseMap;
-  return [
-    if (isAerialMap(shown) && (!shown.isGoogle || key)) shown,
-    if (key && shown != BaseMap.googleSatellite) BaseMap.googleSatellite,
-    if (shown != BaseMap.satellite) BaseMap.satellite,
-  ];
+  return [if (isAerialMap(shown) && (!shown.isGoogle || key)) shown, if (key && shown != BaseMap.googleSatellite) BaseMap.googleSatellite, if (shown != BaseMap.satellite) BaseMap.satellite];
 }
 
 /// The pixels a trace grew on: the image and how it maps to the world.
@@ -85,18 +81,7 @@ Future<SnapshotImage> renderTracePixels(ProjectController c, VisionRenderer rend
   final maps = traceMaps(c);
   final img = await renderer.render(
     c,
-    VisionSpec(
-      world: frame,
-      maxSide: 1100,
-      maxPixels: _tracePixels,
-      maps: maps,
-      drawing: false,
-      grid: GridDensity.none,
-      background: false,
-      tiles: tiles,
-      onScreenFallback: false,
-      keepPixels: true,
-    ),
+    VisionSpec(world: frame, maxSide: 1100, maxPixels: _tracePixels, maps: maps, drawing: false, grid: GridDensity.none, background: false, tiles: tiles, onScreenFallback: false, keepPixels: true),
   );
   if (img.map == null || img.rgba == null) throw const ImageTraceError('wand.noImagery');
   return img;
@@ -295,10 +280,7 @@ class TraceImageSession {
   /// Makes the outline (or the fields) on show items of the project, one
   /// undo step; returns how many.
   int commit(ProjectController c) {
-    final shapes = [
-      if (preview != null) preview!.outline,
-      for (final f in fields) f.outline,
-    ];
+    final shapes = [if (preview != null) preview!.outline, for (final f in fields) f.outline];
     if (shapes.isEmpty || busy) return 0;
     // the fields of a view are areas; one outline what the output says
     final asArea = fields.isNotEmpty || output == TraceOutput.area;
@@ -388,10 +370,7 @@ class TraceImageTool extends Tool {
 
   @override
   void paint(Canvas canvas, Camera cam) {
-    final shapes = [
-      if (s.preview != null) s.preview!.outline,
-      for (final f in s.fields) f.outline,
-    ];
+    final shapes = [if (s.preview != null) s.preview!.outline, for (final f in s.fields) f.outline];
     if (shapes.isEmpty) return;
     final fill = Paint()..color = Cad.preview.withValues(alpha: 0.18);
     final line = Paint()

@@ -61,15 +61,7 @@ class WaterHazard {
 }
 
 /// Class bounds of Nakayama (1982): (moderate from, severe above).
-const clogBounds = <String, (double, double)>{
-  'tss': (50, 100),
-  'ph': (7, 8),
-  'tds': (500, 2000),
-  'mn': (0.1, 1.5),
-  'fe': (0.1, 1.5),
-  'h2s': (0.5, 2),
-  'bact': (10000, 50000),
-};
+const clogBounds = <String, (double, double)>{'tss': (50, 100), 'ph': (7, 8), 'tds': (500, 2000), 'mn': (0.1, 1.5), 'fe': (0.1, 1.5), 'h2s': (0.5, 2), 'bact': (10000, 50000)};
 
 ClogRisk clogRiskOf(String key, double v) {
   final b = clogBounds[key]!;

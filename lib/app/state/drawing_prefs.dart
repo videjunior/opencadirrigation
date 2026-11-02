@@ -37,7 +37,10 @@ Map<String, dynamic> drawingSettingsJson(ProjectController c) {
       'ortho': s.ortho,
       'tol': s.tolerancePx,
       'polar': s.polarStepDeg,
-      'modes': [for (final m in snapModes) if (s.modes.contains(m)) m],
+      'modes': [
+        for (final m in snapModes)
+          if (s.modes.contains(m)) m,
+      ],
     },
     'tool': {
       'author': t.commentAuthor,

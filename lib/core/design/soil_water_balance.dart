@@ -314,10 +314,7 @@ BalanceResult soilWaterBalance(BalanceInput input) {
       }
     } else {
       final byDate = {for (final w in input.weather) w.date: w};
-      period = [
-        for (var i = 0; i < n; i++)
-          if (byDate[start.add(Duration(days: i))] case final w?) w,
-      ];
+      period = [for (var i = 0; i < n; i++) ?byDate[start.add(Duration(days: i))]];
       if (period.length < n) warnings.add('wb_series_short');
     }
   }

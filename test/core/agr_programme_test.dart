@@ -20,9 +20,7 @@ void main() {
     test('cycles of one flow leave room for the next flow during the soak', () {
       final day = DateTime(2026, 1, 5);
       ScheduleEntry entry(String id, double hours) => ScheduleEntry(day: day, flowId: id, flowName: id, startHour: 0, durationHours: hours, zones: [id], flow: 0);
-      final runs = layoutProgrammeDay(day, [entry('A', 1.5), entry('B', 0.5)], {
-        'A': const FlowCycles(flowId: 'A', cycles: 3, runMinutes: 30, soakMinutes: 60, runoffFree: true),
-      }, 6);
+      final runs = layoutProgrammeDay(day, [entry('A', 1.5), entry('B', 0.5)], {'A': const FlowCycles(flowId: 'A', cycles: 3, runMinutes: 30, soakMinutes: 60, runoffFree: true)}, 6);
       // A1 06:00–06:30, B 06:30–07:00 while A soaks, A2 at 07:30, A3 at 09:00
       expect([for (final r in runs) '${r.flowId}${r.cycle}/${r.cycles}'], ['A1/3', 'B1/1', 'A2/3', 'A3/3']);
       expect([for (final r in runs) r.startHour], [6.0, 6.5, 7.5, 9.0]);

@@ -234,9 +234,7 @@ const _legalHa = LegalText(
       'Ƙarƙashin LGPD a Brazil, GDPR a Tarayyar Turai da Birtaniya, da dokoki makamantansu, kana iya neman tabbatarwa, samun dama, gyara, sharewa da bayani game da raba bayanan sirrinka, ka ƙi wani sarrafawa kuma ka janye amincewarka.',
       'Ba mu riƙe bayanan da ke bayyana ko kai wane ne: ƙididdigar ba ta ɗauke da sunanka (pseudonymous), kuma duk sauran suna a mai binciken gizonka, ƙarƙashin ikonka. Don kowace buƙata, yi amfani da hanyar tuntuɓa da ke sama. Kana kuma iya kai ƙara ga hukumar kare bayanai ta ƙasarka (a Brazil, ANPD).',
     ]),
-    LegalSection('Canje-canje', [
-      'Idan wannan manufa ta canza, kwanan watan da ke ƙasan shafin ma yana canzawa.',
-    ]),
+    LegalSection('Canje-canje', ['Idan wannan manufa ta canza, kwanan watan da ke ƙasan shafin ma yana canzawa.']),
   ],
   termsTitle: 'Sharuɗɗan amfani',
   termsLead: 'OpenCADIrrigation manhaja ce mai \'yanci (free software). Amfani da ita yana nufin ka amince da waɗannan sharuɗɗa.',
@@ -256,12 +254,8 @@ const _legalHa = LegalText(
       'A aikin ƙwararru, yi amfani da kowane tushe cikin sharuɗɗansa: Taimako → Sharuɗɗan bayanai a manhajar yana faɗin abin da amfani kyauta na kowanne ya yarda. Wasu sabis na kyauta don amfani ba na kasuwanci ba ne kawai (sabis na kyauta na Open-Meteo da taswirorin tushe na CARTO), don haka manhajar tana sauke yanayi daga NASA POWER da tsayin ƙasa daga Terrain Tiles a matsayin tsoho; sabar tiles ta OpenStreetMap Foundation tana hana amfani mai yawa da sauke wurare don amfani ba tare da intanet ba, don haka taswirar da aka riƙe don gona tana amfani da tiles da aka riga aka nuna kawai. Takardu, PDF da rahoto suna ɗauke da yabon kowane tushe: riƙe shi idan ka miƙa ko ka wallafa aikin.',
       'Mataimakin AI na zaɓi yana aiki a kan asusunka na Anthropic ko OpenAI, ƙarƙashin sharuɗɗan wannan kamfani, kuma wannan kamfani ne ke caji amfanin. Samfuri na iya yin kuskure: amince da canje-canjen da yake bayarwa da sani kuma ka duba aikinsa.',
     ]),
-    LegalSection('Abubuwanka', [
-      'Ayyukanka, zane-zane, hotuna da fayilolinka naka ne: kai ke da alhakinsu da kuma tabbatar da cewa kana da haƙƙin amfani da abin da kake shigowa da shi.',
-    ]),
-    LegalSection('Tuntuɓa', [
-      'Tambayoyi da matsaloli: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Yadda ake sarrafa bayananka: manufar sirri.',
-    ]),
+    LegalSection('Abubuwanka', ['Ayyukanka, zane-zane, hotuna da fayilolinka naka ne: kai ke da alhakinsu da kuma tabbatar da cewa kana da haƙƙin amfani da abin da kake shigowa da shi.']),
+    LegalSection('Tuntuɓa', ['Tambayoyi da matsaloli: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Yadda ake sarrafa bayananka: manufar sirri.']),
   ],
   privacyLink: 'Sirri',
   termsLink: 'Sharuɗɗan amfani',

@@ -223,7 +223,12 @@ const _geoLine = 0xFFA0825A, _geoText = 0xFF5C4325;
   var seconds = 0;
   final utm = grid.hasUtm ? utmGridLines(georef, view, metres = utmGridStep(unitsPerMm)) : const <GridLine>[];
   final geo = grid.hasGeographic && georef != null
-      ? graticuleLines(georef, view, seconds = graticuleStepSeconds(unitsPerMm), label: (v, lat) => dmsText(v, latitude: lat, stepSeconds: seconds, t: t))
+      ? graticuleLines(
+          georef,
+          view,
+          seconds = graticuleStepSeconds(unitsPerMm),
+          label: (v, lat) => dmsText(v, latitude: lat, stepSeconds: seconds, t: t),
+        )
       : const <GridLine>[];
   if (geo.isEmpty) seconds = 0;
   if (utm.isEmpty) metres = 0;

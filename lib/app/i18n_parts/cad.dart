@@ -414,8 +414,16 @@ const _cad = <String, (String, String, String)>{
   'ver.openTab': ('Abrir numa aba nova', 'Open in a new tab', 'Abrir en una pestaña nueva'),
   'cmt.importMenu': ('Trazer comentários de uma cópia…', 'Bring back the comments of a copy…', 'Traer los comentarios de una copia…'),
   'cmt.notProject': ('{n} não é um arquivo de projeto.', '{n} is not a project file.', '{n} no es un archivo de proyecto.'),
-  'cmt.nothing': ('Nada novo: os {n} comentários e nuvens da cópia já estão no desenho.', 'Nothing new: the {n} comments and clouds of the copy are in the drawing already.', 'Nada nuevo: los {n} comentarios y nubes de la copia ya están en el dibujo.'),
-  'cmt.imported': ('Comentários da cópia: {a} novo(s), {u} atualizado(s), {k} já estavam', 'Comments of the copy: {a} added, {u} updated, {k} already here', 'Comentarios de la copia: {a} nuevo(s), {u} actualizado(s), {k} ya estaban'),
+  'cmt.nothing': (
+    'Nada novo: os {n} comentários e nuvens da cópia já estão no desenho.',
+    'Nothing new: the {n} comments and clouds of the copy are in the drawing already.',
+    'Nada nuevo: los {n} comentarios y nubes de la copia ya están en el dibujo.',
+  ),
+  'cmt.imported': (
+    'Comentários da cópia: {a} novo(s), {u} atualizado(s), {k} já estavam',
+    'Comments of the copy: {a} added, {u} updated, {k} already here',
+    'Comentarios de la copia: {a} nuevo(s), {u} actualizado(s), {k} ya estaban',
+  ),
   'hist.importReview': ('Trazer comentários ({n})', 'Bring back comments ({n})', 'Traer comentarios ({n})'),
   // ---- the field photo of a comment, no AI needed (PRD-08)
   'photo.menu': ('Foto de campo…', 'Field photo…', 'Foto de campo…'),
@@ -425,7 +433,11 @@ const _cad = <String, (String, String, String)>{
   'photo.notPicture': ('{n} não é uma imagem que o programa lê.', '{n} is not a picture the program reads.', '{n} no es una imagen que el programa lee.'),
   'photo.pinned': ('Foto {n} presa num comentário', 'Photo {n} pinned in a comment', 'Foto {n} fijada en un comentario'),
   'photo.set': ('Foto {n} no comentário', 'Photo {n} on the comment', 'Foto {n} en el comentario'),
-  'photo.setMoved': ('Foto {n} no comentário, que foi para a posição do GPS da foto', 'Photo {n} on the comment, moved to the photo\'s GPS position', 'Foto {n} en el comentario, movido a la posición GPS de la foto'),
+  'photo.setMoved': (
+    'Foto {n} no comentário, que foi para a posição do GPS da foto',
+    'Photo {n} on the comment, moved to the photo\'s GPS position',
+    'Foto {n} en el comentario, movido a la posición GPS de la foto',
+  ),
   'photo.clickNoGeoref': (
     'O projeto não tem georreferência: clique onde a foto foi tirada.',
     'The project has no georeference: click where the photo was taken.',

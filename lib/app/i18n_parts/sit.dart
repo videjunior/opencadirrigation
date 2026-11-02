@@ -143,7 +143,11 @@ const _sit = <String, (String, String, String)>{
     'Los términos de Google no permiten guardar sus mapas. Use otro mapa base, su propia ortofoto o su propio servidor de teselas.',
   ),
   'fieldmap.err.busy': ('Um cálculo está em andamento: espere terminar.', 'A design is running: wait until it finishes.', 'Hay un cálculo en curso: espere a que termine.'),
-  'fieldmap.err.noArea': ('Não há área para o mapa: desenhe o projeto ou enquadre a área na tela.', 'There is no area for the map: draw the project or frame the area on screen.', 'No hay área para el mapa: dibuje el proyecto o encuadre el área en la pantalla.'),
+  'fieldmap.err.noArea': (
+    'Não há área para o mapa: desenhe o projeto ou enquadre a área na tela.',
+    'There is no area for the map: draw the project or frame the area on screen.',
+    'No hay área para el mapa: dibuje el proyecto o encuadre el área en la pantalla.',
+  ),
   'fieldmap.err.notSeen': (
     'Esta página ainda não mostrou blocos do mapa nesta área: aproxime e percorra a área com o mapa base visível e tente de novo.',
     'This page has not shown map tiles over this area yet: zoom in and pan over the area with the base map on, then try again.',
@@ -154,8 +158,16 @@ const _sit = <String, (String, String, String)>{
     'The tiles of your server could not be downloaded (no network, or an invalid template).',
     'No se pudieron descargar las teselas de su servidor (sin red o plantilla no válida).',
   ),
-  'fieldmap.policy.seen': ('só os blocos já mostrados por esta página, nenhum baixado', 'only the tiles this page has already shown, none downloaded', 'solo las teselas que esta página ya mostró, ninguna descargada'),
-  'fieldmap.policy.download': ('os blocos da área baixados do servidor do próprio usuário', 'the tiles of the area downloaded from the user\'s own server', 'las teselas del área descargadas del servidor del propio usuario'),
+  'fieldmap.policy.seen': (
+    'só os blocos já mostrados por esta página, nenhum baixado',
+    'only the tiles this page has already shown, none downloaded',
+    'solo las teselas que esta página ya mostró, ninguna descargada',
+  ),
+  'fieldmap.policy.download': (
+    'os blocos da área baixados do servidor do próprio usuário',
+    'the tiles of the area downloaded from the user\'s own server',
+    'las teselas del área descargadas del servidor del propio usuario',
+  ),
   'fieldmap.policy.refused': ('nada (sem mapa base, ou termos que não permitem)', 'nothing (no base map, or terms that do not allow it)', 'nada (sin mapa base, o términos que no lo permiten)'),
   'hist.fieldMap': ('Mapa guardado para o campo', 'Map kept for the field', 'Mapa guardado para el campo'),
   'ai.op.keep_field_map': ('Guardar o mapa da área para o campo', 'Keep the map of the area for the field', 'Guardar el mapa del área para el campo'),

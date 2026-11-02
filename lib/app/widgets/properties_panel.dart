@@ -296,7 +296,8 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (x) => set(() => v.pilot = ValvePilot.values.asNameMap()[x] ?? ValvePilot.none),
           ),
           if (v.pilot.reduces) NumField(label: pLabel('props.pilotReduce'), value: u.pressureFromHead(v.pilotReduceM), onChanged: (x) => set(() => v.pilotReduceM = x <= 0 ? 0 : u.pressureToHead(x))),
-          if (v.pilot.sustains) NumField(label: pLabel('props.pilotSustain'), value: u.pressureFromHead(v.pilotSustainM), onChanged: (x) => set(() => v.pilotSustainM = x <= 0 ? 0 : u.pressureToHead(x))),
+          if (v.pilot.sustains)
+            NumField(label: pLabel('props.pilotSustain'), value: u.pressureFromHead(v.pilotSustainM), onChanged: (x) => set(() => v.pilotSustainM = x <= 0 ? 0 : u.pressureToHead(x))),
         ]);
       case WaterSupplyEntity w:
         items.addAll([
@@ -388,8 +389,13 @@ class PropertiesPanel extends StatelessWidget {
               onChanged: (x) => set(() => m.pilot = ValvePilot.values.asNameMap()[x] ?? ValvePilot.none),
             ),
             if (m.pilot.reduces)
-              NumField(label: pLabel('props.pilotReduce'), value: u.pressureFromHead(m.pilotReduceM > 0 ? m.pilotReduceM : spec.defaultSettingM), onChanged: (x) => set(() => m.pilotReduceM = x <= 0 ? 0 : u.pressureToHead(x))),
-            if (m.pilot.sustains) NumField(label: pLabel('props.pilotSustain'), value: u.pressureFromHead(m.pilotSustainM), onChanged: (x) => set(() => m.pilotSustainM = x <= 0 ? 0 : u.pressureToHead(x))),
+              NumField(
+                label: pLabel('props.pilotReduce'),
+                value: u.pressureFromHead(m.pilotReduceM > 0 ? m.pilotReduceM : spec.defaultSettingM),
+                onChanged: (x) => set(() => m.pilotReduceM = x <= 0 ? 0 : u.pressureToHead(x)),
+              ),
+            if (m.pilot.sustains)
+              NumField(label: pLabel('props.pilotSustain'), value: u.pressureFromHead(m.pilotSustainM), onChanged: (x) => set(() => m.pilotSustainM = x <= 0 ? 0 : u.pressureToHead(x))),
           ],
         ]);
       case JunctionEntity j:

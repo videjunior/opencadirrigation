@@ -48,7 +48,7 @@ DocContext documentContextOf(ProjectController c, DocProfile profile, {PageSize 
 String documentPackageFileName(ProjectController c, DocProfile p) {
   String safe(String s) => s.replaceAll(RegExp(r'[^\w\-]+', unicode: true), '_');
   final n = c.project.meta.name.trim();
-  return '${safe(n.isEmpty ? c.t('name.newProject') : n)}_${safe(docProfileTitle(c.t, p))}.pdf';
+  return '${safe(n.isEmpty ? c.t('name.newProject') : n)}_${safe(docProfileTitle(c.t.call, p))}.pdf';
 }
 
 /// Builds package [o] for [c] (the base map under the sheets when
@@ -125,7 +125,11 @@ Future<void> showDocumentPackageDialog(BuildContext context, ProjectController c
                       decoration: InputDecoration(labelText: t('prd.pkg.profile'), isDense: true),
                       style: TextStyle(fontSize: 12, color: Cad.fg),
                       items: [
-                        for (final x in DocProfile.values) DropdownMenuItem(value: x, child: Text(docProfileTitle(t, x), style: const TextStyle(fontSize: 12))),
+                        for (final x in DocProfile.values)
+                          DropdownMenuItem(
+                            value: x,
+                            child: Text(docProfileTitle(t.call, x), style: const TextStyle(fontSize: 12)),
+                          ),
                       ],
                       onChanged: (v) => setState(() {
                         p = v ?? p;
@@ -140,7 +144,7 @@ Future<void> showDocumentPackageDialog(BuildContext context, ProjectController c
                     TextField(
                       key: const Key('pkg_title'),
                       controller: title,
-                      decoration: InputDecoration(labelText: t('prd.pkg.docTitle'), hintText: docProfileTitle(t, p), isDense: true),
+                      decoration: InputDecoration(labelText: t('prd.pkg.docTitle'), hintText: docProfileTitle(t.call, p), isDense: true),
                       style: const TextStyle(fontSize: 12),
                     ),
                     TextField(
@@ -157,7 +161,11 @@ Future<void> showDocumentPackageDialog(BuildContext context, ProjectController c
                       decoration: InputDecoration(labelText: t('prd.pkg.sheetPage'), isDense: true),
                       style: TextStyle(fontSize: 12, color: Cad.fg),
                       items: [
-                        for (final x in PageSize.values) DropdownMenuItem(value: x, child: Text('${x.label}  (${x.shortMm.round()} × ${x.longMm.round()} mm)', style: const TextStyle(fontSize: 12))),
+                        for (final x in PageSize.values)
+                          DropdownMenuItem(
+                            value: x,
+                            child: Text('${x.label}  (${x.shortMm.round()} × ${x.longMm.round()} mm)', style: const TextStyle(fontSize: 12)),
+                          ),
                       ],
                       onChanged: (v) => setState(() => page = v ?? page),
                     ),

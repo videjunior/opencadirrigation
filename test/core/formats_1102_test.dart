@@ -273,7 +273,48 @@ void main() {
 
     test('the keys of a Lambert conformal conic and of a polyconic projection', () {
       TiffTags tags(int method, List<double> d) => TiffTags()
-        ..shorts[34735] = [1, 1, 0, 9, 1024, 0, 1, 1, 3072, 0, 1, 32767, 2050, 0, 1, 6674, 3075, 0, 1, method, 3078, 34736, 1, 0, 3079, 34736, 1, 1, 3080, 34736, 1, 2, 3081, 34736, 1, 3, 3082, 34736, 1, 4]
+        ..shorts[34735] = [
+          1,
+          1,
+          0,
+          9,
+          1024,
+          0,
+          1,
+          1,
+          3072,
+          0,
+          1,
+          32767,
+          2050,
+          0,
+          1,
+          6674,
+          3075,
+          0,
+          1,
+          method,
+          3078,
+          34736,
+          1,
+          0,
+          3079,
+          34736,
+          1,
+          1,
+          3080,
+          34736,
+          1,
+          2,
+          3081,
+          34736,
+          1,
+          3,
+          3082,
+          34736,
+          1,
+          4,
+        ]
         ..doubles[34736] = d;
       final lcc = GeoImageReader.tiffGeo(tags(8, [49, 44, 3, 46.5, 700000])).crs!;
       expect(lcc.recognised, isTrue);
@@ -701,7 +742,10 @@ void main() {
 
     test('an EPSG code, and the UTM of the project needs a georeference', () {
       const text = 'x y z\n5641804.98 9568677.47 800\n5641834.98 9568677.47 801\n';
-      final r = PointsCsvReader.parseWith(text, const PointsImportOptions(separator: PointsSeparator.space, header: true, roles: [PointsRole.x, PointsRole.y, PointsRole.z], crs: PointsCrsKind.epsg, epsg: 10857));
+      final r = PointsCsvReader.parseWith(
+        text,
+        const PointsImportOptions(separator: PointsSeparator.space, header: true, roles: [PointsRole.x, PointsRole.y, PointsRole.z], crs: PointsCrsKind.epsg, epsg: 10857),
+      );
       final (lat, lon) = r.georef!.toLatLon(r.document.entities.first.points.single.x, r.document.entities.first.points.single.y);
       expect(lat, closeTo(-15.78, 1e-5));
       expect(lon, closeTo(-47.93, 1e-5));
@@ -730,7 +774,10 @@ void main() {
 
     test('rows without both coordinates are counted, not imported', () {
       const text = 'x;y;z\n1;2;3\n;;\nabc;5;6\n4;5;6\n';
-      final r = PointsCsvReader.parseWith(text, const PointsImportOptions(separator: PointsSeparator.semicolon, header: true, roles: [PointsRole.x, PointsRole.y, PointsRole.z], crs: PointsCrsKind.local));
+      final r = PointsCsvReader.parseWith(
+        text,
+        const PointsImportOptions(separator: PointsSeparator.semicolon, header: true, roles: [PointsRole.x, PointsRole.y, PointsRole.z], crs: PointsCrsKind.local),
+      );
       expect(r.count, 2);
       expect(r.warnings, contains('points_skipped:2'));
     });

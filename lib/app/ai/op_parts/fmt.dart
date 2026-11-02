@@ -37,7 +37,10 @@ Map<String, Object?> _pointsProps() => {
   'header': bool_('The first line (after skip) names the columns; omitted = told from it.'),
   'skip': int_('Lines left out at the start (default 0).'),
   'columns': obj({for (final k in _roles.keys) k: int_('0-based index of the column with the point ${k == 'x' ? 'easting' : (k == 'y' ? 'northing' : k)}.')}),
-  'crs': str('Coordinate system: auto (degrees told by their range, large metres moved by the project origin), local metres, project_utm (the UTM zone of the project georeference), geographic (lat/lon on datum), utm (zone/north on datum), epsg (code).', _crs.keys.toList()),
+  'crs': str(
+    'Coordinate system: auto (degrees told by their range, large metres moved by the project origin), local metres, project_utm (the UTM zone of the project georeference), geographic (lat/lon on datum), utm (zone/north on datum), epsg (code).',
+    _crs.keys.toList(),
+  ),
   'datum': str('Datum of geographic or utm (default wgs84; SIRGAS 2000 agrees with it).', [for (final d in GeodeticDatum.values) d.name]),
   'zone': int_('UTM zone 1–60 (crs utm).'),
   'north': bool_('Northern hemisphere (crs utm; default false).'),
@@ -74,7 +77,9 @@ PointsImportOptions _options(AgentToolbox b, ToolArgs a, String text) {
     // the columns as the reader takes them with the lines and the separator given
     o = o.copyWith(roles: PointsCsvReader.rolesFor(text, o, georef: b.p.meta.georef));
   }
-  if (o.crs == PointsCrsKind.projectUtm && b.p.meta.georef == null) throw ToolInputError('crs "project_utm" needs a project georeference: set_site or set_georeference first, or give the zone (crs "utm").');
+  if (o.crs == PointsCrsKind.projectUtm && b.p.meta.georef == null) {
+    throw ToolInputError('crs "project_utm" needs a project georeference: set_site or set_georeference first, or give the zone (crs "utm").');
+  }
   return o;
 }
 
@@ -101,13 +106,7 @@ String _rolesText(PointsImportOptions o) {
 }
 
 /// The stake-out kinds as JSON names.
-const _kinds = {
-  'outlets': StakeoutKind.outlets,
-  'valves': StakeoutKind.valves,
-  'devices': StakeoutKind.devices,
-  'pipe_vertices': StakeoutKind.pipeVertices,
-  'lateral_ends': StakeoutKind.lateralEnds,
-};
+const _kinds = {'outlets': StakeoutKind.outlets, 'valves': StakeoutKind.valves, 'devices': StakeoutKind.devices, 'pipe_vertices': StakeoutKind.pipeVertices, 'lateral_ends': StakeoutKind.lateralEnds};
 
 List<AgentTool> opsFmt(AgentToolbox b) {
   final c = b.c;
@@ -115,8 +114,7 @@ List<AgentTool> opsFmt(AgentToolbox b) {
     engOp(
       b,
       name: 'preview_points_attachment',
-      description:
-          'The import wizard of File → Import for a points file the user attached (CSV, TXT, XYZ, PTS, PNEZD), without importing: its first lines split into columns, the choices the reader would make (separator, header, the role of each column, degrees or metres), how many points those choices read and where they land (latitude/longitude of their centre, the distance from the project area). Check it before import_points_attachment when the order of the columns or the coordinate system is not obvious (latitude and longitude both within ±90°, eastings and northings without a header). Inputs as import_points_attachment.',
+      description: 'The import wizard of File → Import for a points file the user attached (CSV, TXT, XYZ, PTS, PNEZD), without importing: its first lines split into columns, the choices the reader would make (separator, header, the role of each column, degrees or metres), how many points those choices read and where they land (latitude/longitude of their centre, the distance from the project area). Check it before import_points_attachment when the order of the columns or the coordinate system is not obvious (latitude and longitude both within ±90°, eastings and northings without a header). Inputs as import_points_attachment.',
       schema: obj(_pointsProps(), required: ['name']),
       run: (a, _) async {
         final (name, text) = await _attached(b, a);
@@ -148,8 +146,7 @@ List<AgentTool> opsFmt(AgentToolbox b) {
       b,
       name: 'import_points_attachment',
       effect: ToolEffect.write,
-      description:
-          'File → Import of a points file the user attached, with the choices of the import wizard: encoding, separator, decimal mark, header, lines to skip, the column of each role (name, x = easting, y = northing, z, lat, lon, description; 0-based) and the coordinate system (auto, local, project_utm, geographic on a datum, utm zone/hemisphere on a datum, an EPSG code: Albers, Lambert and polyconic systems included). Points with an elevation become spot heights of the terrain, the others markers; a geographic or UTM file creates the georeference when the project has none. One undo step. Look first with preview_points_attachment when unsure.',
+      description: 'File → Import of a points file the user attached, with the choices of the import wizard: encoding, separator, decimal mark, header, lines to skip, the column of each role (name, x = easting, y = northing, z, lat, lon, description; 0-based) and the coordinate system (auto, local, project_utm, geographic on a datum, utm zone/hemisphere on a datum, an EPSG code: Albers, Lambert and polyconic systems included). Points with an elevation become spot heights of the terrain, the others markers; a geographic or UTM file creates the georeference when the project has none. One undo step. Look first with preview_points_attachment when unsure.',
       schema: obj(_pointsProps(), required: ['name']),
       summary: (i) => b.t('ai.op.import_points_attachment', {'n': '${i['name'] ?? ''}'}),
       run: (a, _) async {
@@ -167,8 +164,7 @@ List<AgentTool> opsFmt(AgentToolbox b) {
       b,
       name: 'export_stakeout_points',
       effect: ToolEffect.export,
-      description:
-          'File → Export drawing → Stake-out points: the comma-separated list a total station or a GNSS RTK receiver loads directly, one line per point (number, northing, easting, elevation, description in pnezd order, or easting before northing in penzd), with the UTM coordinates of the project (local ones without a georeference) and the terrain elevation (empty without terrain data). Kinds: outlets (sprinklers, emitters, the outlets of laterals), valves, devices (pumps, supplies, filters, junctions, controllers), pipe_vertices, lateral_ends; default all but lateral_ends. Always confirmed by the user (a download).',
+      description: 'File → Export drawing → Stake-out points: the comma-separated list a total station or a GNSS RTK receiver loads directly, one line per point (number, northing, easting, elevation, description in pnezd order, or easting before northing in penzd), with the UTM coordinates of the project (local ones without a georeference) and the terrain elevation (empty without terrain data). Kinds: outlets (sprinklers, emitters, the outlets of laterals), valves, devices (pumps, supplies, filters, junctions, controllers), pipe_vertices, lateral_ends; default all but lateral_ends. Always confirmed by the user (a download).',
       schema: obj({
         'order': str('Column order; default pnezd.', [for (final o in StakeoutOrder.values) o.name]),
         'kinds': arr(str(null, _kinds.keys.toList()), 'What goes into the list.'),
@@ -194,8 +190,7 @@ List<AgentTool> opsFmt(AgentToolbox b) {
     engOp(
       b,
       name: 'data_cache_info',
-      description:
-          'File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem) and of the climate series (climate): count, size, since when, where (the browser database or a folder), and whether new downloads are kept. Kept downloads make download_terrain and the climate download read from the device instead of the network.',
+      description: 'File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem) and of the climate series (climate): count, size, since when, where (the browser database or a folder), and whether new downloads are kept. Kept downloads make download_terrain and the climate download read from the device instead of the network.',
       schema: obj({}),
       run: (a, _) async {
         final dc = appDataCache();

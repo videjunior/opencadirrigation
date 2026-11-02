@@ -117,7 +117,11 @@ List<(AreaEntity, SlopeClassAreas)> areaSlopeClasses(Project p, [SlopeMap? map])
       if (a.points.length >= 3) a,
   ];
   final key = <Object>[
-    for (final a in areas) ...[a, a.points.length, for (final q in a.points) ...[q.x, q.y]],
+    for (final a in areas) ...[
+      a,
+      a.points.length,
+      for (final q in a.points) ...[q.x, q.y],
+    ],
   ];
   final known = _areaClasses[m];
   if (known != null && known.$1.length == key.length) {
@@ -146,14 +150,7 @@ ReportTable? slopeClassesTable(Project p, Translate t) {
   var noData = 0.0, size = 0.0, weighted = 0.0, mapped = 0.0, max = 0.0;
   final out = <List<Object>>[];
   for (final (a, s) in rows) {
-    out.add([
-      a.name.isEmpty ? t('tool.area') : a.name,
-      area(a.area),
-      RNum(s.meanPct, 1),
-      RNum(s.maxPct, 1),
-      for (final v in s.byClass) area(v),
-      area(s.noData),
-    ]);
+    out.add([a.name.isEmpty ? t('tool.area') : a.name, area(a.area), RNum(s.meanPct, 1), RNum(s.maxPct, 1), for (final v in s.byClass) area(v), area(s.noData)]);
     for (var k = 0; k < total.length; k++) {
       total[k] += s.byClass[k];
     }

@@ -41,7 +41,10 @@ class ComparedFigure {
   final String key;
   final double? before, after;
   final String unit;
-  bool get differs => before != after && !(before != null && after != null && (before - after).abs() < 1e-9);
+  bool get differs {
+    final b = before, a = after;
+    return b != a && !(b != null && a != null && (b - a).abs() < 1e-9);
+  }
 }
 
 class ProjectComparison {
@@ -159,9 +162,8 @@ ReviewMerge mergeReview(Project into, Project from, {double tol = 0.5}) {
         continue;
       }
       into.entities[into.entities.indexOf(same)] = e.clone();
-      out
-        ..updated++
-        ..ids.add(e.id);
+      out.updated++;
+      out.ids.add(e.id);
       continue;
     }
     final twin = into.entities.any(
@@ -178,9 +180,8 @@ ReviewMerge mergeReview(Project into, Project from, {double tol = 0.5}) {
     final copy = e.clone(newId: into.newId());
     if (into.findLayer(copy.layer) == null) into.layerNamed(copy.layer);
     into.entities.add(copy);
-    out
-      ..added++
-      ..ids.add(copy.id);
+    out.added++;
+    out.ids.add(copy.id);
   }
   return out;
 }

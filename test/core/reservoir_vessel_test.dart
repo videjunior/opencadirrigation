@@ -17,11 +17,8 @@ import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 
 /// A closed square outline of side [side] centred at [c].
-PolylineEntity square(String id, Pt c, double side) => PolylineEntity(
-  id: id,
-  points: [c + Pt(-side / 2, -side / 2), c + Pt(side / 2, -side / 2), c + Pt(side / 2, side / 2), c + Pt(-side / 2, side / 2)],
-  closed: true,
-);
+PolylineEntity square(String id, Pt c, double side) =>
+    PolylineEntity(id: id, points: [c + Pt(-side / 2, -side / 2), c + Pt(side / 2, -side / 2), c + Pt(side / 2, side / 2), c + Pt(-side / 2, side / 2)], closed: true);
 
 /// A micro-sprinkler zone fed by a pump from a supply 100 m away; [onSupply]
 /// sets the supply up, [vessel] puts an air vessel just after the pump.
@@ -88,7 +85,11 @@ void main() {
         p.entities.add(SpotHeightEntity(id: p.newId(), position: Pt(x, y), elevation: z));
       }
       p.entities.add(PolylineEntity(id: 'dam', points: const [Pt(0, 0), Pt(100, 0), Pt(100, 100), Pt(0, 100)], closed: true));
-      final s = WaterSupplyEntity(id: 'src', position: const Pt(50, 50), reservoir: ReservoirSpec(outlineId: 'dam', fullLevelM: 105, minLevelM: 99));
+      final s = WaterSupplyEntity(
+        id: 'src',
+        position: const Pt(50, 50),
+        reservoir: ReservoirSpec(outlineId: 'dam', fullLevelM: 105, minLevelM: 99),
+      );
       p.entities.add(s);
       final st = reservoirStudy(p, s)!;
       expect(st.bottom, closeTo(95, 0.2));
@@ -114,7 +115,11 @@ void main() {
       // 500 m³ drawn, 240 m³ flowing in a day
       expect(st.autonomyDays, closeTo(1500 / 260, 1e-9));
       expect(st.fillHours, closeTo(150, 1e-9));
-      final s = WaterSupplyEntity(id: 's', position: Pt.zero, reservoir: ReservoirSpec(outlineId: 'o', kind: ReservoirKind.excavated, fullLevelM: 12, minLevelM: 10, inflow: 0.01));
+      final s = WaterSupplyEntity(
+        id: 's',
+        position: Pt.zero,
+        reservoir: ReservoirSpec(outlineId: 'o', kind: ReservoirKind.excavated, fullLevelM: 12, minLevelM: 10, inflow: 0.01),
+      );
       final back = Entity.fromJson(jsonDecode(jsonEncode(s.toJson())) as Map<String, dynamic>) as WaterSupplyEntity;
       expect(back.reservoir!.kind, ReservoirKind.excavated);
       expect(back.reservoir!.minLevelM, 10);
@@ -173,7 +178,11 @@ void main() {
     test('the transient study puts it into the model: a pump trip falls less after it', () {
       double lowest(Project p) {
         final r = Designer(p).designAll();
-        final a = TransientStudy(p, results: r, options: const TransientStudyOptions(scenarios: {TransientScenario.pumpTrip})).analyze();
+        final a = TransientStudy(
+          p,
+          results: r,
+          options: const TransientStudyOptions(scenarios: {TransientScenario.pumpTrip}),
+        ).analyze();
         return a.pipes.where((e) => e.entityId == 'main').map((e) => e.minPressure).reduce(math.min);
       }
 

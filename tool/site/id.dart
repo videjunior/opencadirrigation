@@ -255,7 +255,8 @@ const _legalId = LegalText(
   privacyLink: 'Privasi',
   termsLink: 'Ketentuan penggunaan',
   cookieSettings: 'Pengaturan cookie',
-  consentText: 'Bolehkah situs ini menghitung kunjungan dengan Google Analytics? Google Analytics memakai cookie dan hanya dimuat jika Anda menyetujuinya; tidak pernah berjalan selama aplikasi terbuka.',
+  consentText:
+      'Bolehkah situs ini menghitung kunjungan dengan Google Analytics? Google Analytics memakai cookie dan hanya dimuat jika Anda menyetujuinya; tidak pernah berjalan selama aplikasi terbuka.',
   consentAccept: 'Setuju',
   consentDecline: 'Tolak',
   updated: 'Terakhir diperbarui',

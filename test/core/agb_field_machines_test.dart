@@ -146,13 +146,23 @@ void main() {
       }
       expect(r.systemFlows.firstWhere((x) => x.flowId == 'f3').totalFlow, closeTo(f.setFlow, 1e-6));
       // the bill: one reel for both lanes, two hydrants, the gated pipe and its gates
-      final trav = [for (final l in r.bom) if (l.category == 'bom.travellers') l];
+      final trav = [
+        for (final l in r.bom)
+          if (l.category == 'bom.travellers') l,
+      ];
       expect(trav.where((l) => l.description.startsWith(t('agb.bom.traveller'))).single.quantity, 1);
       expect(trav.where((l) => l.description == t('agb.bom.hydrant')).single.quantity, 2);
-      final surface = [for (final l in r.bom) if (l.category == 'bom.surface') l];
+      final surface = [
+        for (final l in r.bom)
+          if (l.category == 'bom.surface') l,
+      ];
       expect(surface.where((l) => l.description.startsWith(t('agb.bom.gatedPipe'))).single.quantity, closeTo(100, 1e-9));
       expect(surface.where((l) => l.description == t('agb.bom.gate')).single.quantity, 111);
-      final tables = buildReportTables(project: p, results: r, labels: ReportLabels(t: t.call, has: t.has, warning: t.warning));
+      final tables = buildReportTables(
+        project: p,
+        results: r,
+        labels: ReportLabels(t: t.call, has: t.has, warning: t.warning),
+      );
       expect(tables.where((x) => x.key == 'travellers').single.rows, hasLength(2));
       expect(tables.where((x) => x.key == 'furrows').single.rows, hasLength(1));
       final back = DesignResults.fromJson(jsonDecode(jsonEncode(r.toJson())) as Map<String, dynamic>);

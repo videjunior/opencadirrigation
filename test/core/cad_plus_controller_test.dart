@@ -141,7 +141,13 @@ void main() {
     c.addEntity(line);
     c.select([line.id]);
     c.isolateLayers();
-    expect([for (final l in c.project.layers) if (l.visible) l.name], [names[3]]);
+    expect(
+      [
+        for (final l in c.project.layers)
+          if (l.visible) l.name,
+      ],
+      [names[3]],
+    );
     expect(c.project.currentLayer, names[3]);
     expect(c.layersIsolated, isTrue);
     c.unisolateLayers();
@@ -192,10 +198,7 @@ void main() {
   group('block references', () {
     BlockDefinition box() => BlockDefinition.fromEntities(
       'Box',
-      [
-        LineEntity(id: 'a', a: Pt.zero, b: const Pt(2, 0)),
-        TextEntity(id: 'b', position: const Pt(0, 1), text: '{CODE=B-00}', height: 0.5),
-      ],
+      [LineEntity(id: 'a', a: Pt.zero, b: const Pt(2, 0)), TextEntity(id: 'b', position: const Pt(0, 1), text: '{CODE=B-00}', height: 0.5)],
       Pt.zero,
       inBom: true,
     );
@@ -210,7 +213,15 @@ void main() {
       expect(c.pick(const Pt(11, 10), 0.2)?.id, r.id);
       final other = c.insertBlock(c.project.blocks.byName('Box')!, const Pt(0, 50)).single;
       // redefined: both references draw the longer line
-      c.saveBlock(c.project.blocks, BlockDefinition(name: 'Box', entities: [LineEntity(id: 'x', a: Pt.zero, b: const Pt(5, 0))], attributes: box().attributes, inBom: true));
+      c.saveBlock(
+        c.project.blocks,
+        BlockDefinition(
+          name: 'Box',
+          entities: [LineEntity(id: 'x', a: Pt.zero, b: const Pt(5, 0))],
+          attributes: box().attributes,
+          inBom: true,
+        ),
+      );
       expect(c.lastMessage, c.t('blkref.redefined', {'b': 'Box', 'n': '2'}));
       for (final (id, end) in [(r.id, const Pt(15, 10)), (other, const Pt(5, 50))]) {
         final ref = c.project.byId(id)! as BlockRefEntity;
@@ -229,7 +240,10 @@ void main() {
     });
 
     test('a block with hydraulic items goes in as copies; deleting a block keeps its references as copies', () {
-      final valves = BlockDefinition(name: 'Valves', entities: [ControlValveEntity(id: 'v', position: Pt.zero)]);
+      final valves = BlockDefinition(
+        name: 'Valves',
+        entities: [ControlValveEntity(id: 'v', position: Pt.zero)],
+      );
       c.saveBlock(c.project.blocks, valves);
       expect(c.project.entities.length, 0);
       final copies = c.insertBlock(valves, const Pt(3, 3));
@@ -280,8 +294,14 @@ void main() {
       c.saveBlock(c.project.blocks, box());
       final ref = c.insertBlock(c.project.blocks.byName('Box')!, Pt.zero).single;
       final lib = [
-        BlockDefinition(name: 'Box', entities: [LineEntity(id: 'x', a: Pt.zero, b: const Pt(0, 9))]),
-        BlockDefinition(name: 'New', entities: [LineEntity(id: 'y', a: Pt.zero, b: const Pt(1, 0))]),
+        BlockDefinition(
+          name: 'Box',
+          entities: [LineEntity(id: 'x', a: Pt.zero, b: const Pt(0, 9))],
+        ),
+        BlockDefinition(
+          name: 'New',
+          entities: [LineEntity(id: 'y', a: Pt.zero, b: const Pt(1, 0))],
+        ),
       ];
       expect(c.importBlockLibrary(lib), 2);
       expect(c.project.blocks.length, 2);
@@ -341,7 +361,12 @@ void main() {
     });
 
     test('a block reference snaps on the items it draws', () {
-      c.project.blocks.put(BlockDefinition(name: 'B', entities: [LineEntity(id: 'q', a: Pt.zero, b: const Pt(0, 4))]));
+      c.project.blocks.put(
+        BlockDefinition(
+          name: 'B',
+          entities: [LineEntity(id: 'q', a: Pt.zero, b: const Pt(0, 4))],
+        ),
+      );
       c.addEntity(BlockRefEntity(id: c.project.newId(), position: const Pt(20, 0), blockName: 'B'));
       final r = Snapper(c).snap(const Pt(20.2, 3.9));
       expect(r.kind, 'endpoint');
@@ -408,15 +433,35 @@ void main() {
     test('lengthen, outline, drawing order and dimension style', () async {
       final l = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(10, 0));
       c.addEntity(l);
-      expect(await run('lengthen_entity', {'id': l.id, 'at': [10, 0], 'mode': 'delta', 'value': 5}), contains('15.00 m'));
+      expect(
+        await run('lengthen_entity', {
+          'id': l.id,
+          'at': [10, 0],
+          'mode': 'delta',
+          'value': 5,
+        }),
+        contains('15.00 m'),
+      );
       c.addEntities([
         LineEntity(id: c.project.newId(), a: const Pt(-1, 20), b: const Pt(11, 20)),
         LineEntity(id: c.project.newId(), a: const Pt(10, 19), b: const Pt(10, 31)),
         LineEntity(id: c.project.newId(), a: const Pt(11, 30), b: const Pt(-1, 30)),
         LineEntity(id: c.project.newId(), a: const Pt(0, 31), b: const Pt(0, 19)),
       ]);
-      expect(await run('boundary_at', {'at': [5, 25], 'as': 'area'}), contains('100.00 m²'));
-      expect(await run('draw_order', {'ids': [l.id], 'to': 'back'}), contains('back'));
+      expect(
+        await run('boundary_at', {
+          'at': [5, 25],
+          'as': 'area',
+        }),
+        contains('100.00 m²'),
+      );
+      expect(
+        await run('draw_order', {
+          'ids': [l.id],
+          'to': 'back',
+        }),
+        contains('back'),
+      );
       expect(c.project.entities.first.id, l.id);
       expect(await run('dim_style', {}), contains('2 decimals'));
       expect(await run('dim_style', {'decimals': 1, 'unit': 'cm', 'arrow': 'tick'}), contains('1 decimals'));
@@ -426,14 +471,46 @@ void main() {
     test('layer states, isolation, block attributes, comparison with a tab-less project', () async {
       expect(await run('save_layer_state', {'name': 'Elec'}), contains('Elec'));
       expect(await run('layer_states', {}), contains('"Elec"'));
-      expect(await run('isolate_layers', {'layers': [Layers.drawing]}), contains(Layers.drawing));
+      expect(
+        await run('isolate_layers', {
+          'layers': [Layers.drawing],
+        }),
+        contains(Layers.drawing),
+      );
       expect(await run('unisolate_layers', {}), contains('shown'));
-      c.saveBlock(c.project.blocks, BlockDefinition(name: 'T', entities: [LineEntity(id: 'z', a: Pt.zero, b: const Pt(1, 0))], attributes: const [BlockAttributeDef(tag: 'CODE')]));
+      c.saveBlock(
+        c.project.blocks,
+        BlockDefinition(
+          name: 'T',
+          entities: [LineEntity(id: 'z', a: Pt.zero, b: const Pt(1, 0))],
+          attributes: const [BlockAttributeDef(tag: 'CODE')],
+        ),
+      );
       final ref = c.insertBlock(c.project.blocks.byName('T')!, Pt.zero).single;
-      expect(await run('set_block_attributes', {'id': ref, 'values': {'code': 'K-1'}}), contains('CODE=K-1'));
-      expect(await run('define_block_attributes', {'name': 'T', 'attributes': [{'tag': 'flow'}], 'in_bom': true}), contains('FLOW'));
+      expect(
+        await run('set_block_attributes', {
+          'id': ref,
+          'values': {'code': 'K-1'},
+        }),
+        contains('CODE=K-1'),
+      );
+      expect(
+        await run('define_block_attributes', {
+          'name': 'T',
+          'attributes': [
+            {'tag': 'flow'},
+          ],
+          'in_bom': true,
+        }),
+        contains('FLOW'),
+      );
       expect(c.project.blocks.byName('T')!.inBom, isTrue);
-      expect(await run('explode_block_refs', {'ids': [ref]}), contains('Exploded 1'));
+      expect(
+        await run('explode_block_refs', {
+          'ids': [ref],
+        }),
+        contains('Exploded 1'),
+      );
       await expectLater(run('compare_project', {}), throwsA(isA<ToolInputError>()));
     });
   });

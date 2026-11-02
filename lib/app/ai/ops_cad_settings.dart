@@ -472,7 +472,8 @@ List<AiSetting> aiSettings(AgentToolbox b, {Map<String, Object?> pending = const
     AiSetting(
       key: 'app.edit_during_design',
       type: 'boolean',
-      description: 'The user may go on editing while a design runs; its results, then out of date, are discarded when it ends (View → Snaps and drawing). The assistant itself still waits for a design to end.',
+      description:
+          'The user may go on editing while a design runs; its results, then out of date, are discarded when it ends (View → Snaps and drawing). The assistant itself still waits for a design to end.',
       read: () => c.editDuringDesign,
       write: (v) => c.editDuringDesign = v as bool,
       scope: SettingScope.app,

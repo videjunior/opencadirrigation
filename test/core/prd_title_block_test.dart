@@ -148,7 +148,12 @@ void main() {
   });
 
   group('the sheets', () {
-    PdfSheetBuilder builder(Project p) => PdfSheetBuilder(project: p, results: Designer(p, label: (k) => i18n(k)).designAll(), t: i18n.call, units: p.params.units);
+    PdfSheetBuilder builder(Project p) => PdfSheetBuilder(
+      project: p,
+      results: Designer(p, label: (k) => i18n(k)).designAll(),
+      t: i18n.call,
+      units: p.params.units,
+    );
 
     test('the professional title block prints every field, the logo and SIRGAS 2000', () {
       final p = professional();

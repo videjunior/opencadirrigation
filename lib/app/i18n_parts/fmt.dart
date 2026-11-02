@@ -82,11 +82,7 @@ const _fmt = <String, (String, String, String)>{
     'imagen superpuesta en cuadrilátero puesta como rectángulo',
   ),
   'warn.kml_overlay_unreadable': ('imagem sobreposta ilegível deixada de fora', 'unreadable overlay picture left out', 'imagen superpuesta ilegible dejada fuera'),
-  'warn.dxf_survey_points': (
-    'pontos de levantamento em blocos lidos como cotas',
-    'survey points in blocks read as spot heights',
-    'puntos de levantamiento en bloques leídos como cotas',
-  ),
+  'warn.dxf_survey_points': ('pontos de levantamento em blocos lidos como cotas', 'survey points in blocks read as spot heights', 'puntos de levantamiento en bloques leídos como cotas'),
   'warn.points_skipped': ('linhas sem coordenadas puladas', 'lines without coordinates skipped', 'líneas sin coordenadas omitidas'),
   'imp.err.tiff_compression_unsupported': (
     'TIFF numa compressão não suportada: salve-o sem compressão, em LZW, Deflate, PackBits ou JPEG',

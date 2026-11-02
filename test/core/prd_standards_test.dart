@@ -7,7 +7,6 @@ import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/report_standards.dart';
 import 'package:opencadirrigation/core/design/report_tables.dart';
 import 'package:opencadirrigation/core/io/pdf.dart';
-import 'package:opencadirrigation/core/io/pdf_sheet.dart';
 import 'package:opencadirrigation/core/io/project_export.dart';
 
 /// The standards of the criteria of the reports (1.6.0 PRD): every table
@@ -40,7 +39,11 @@ void main() {
   test('the reports of a design carry them: PDF, CSV and text', () {
     final p = buildExample(ExampleId.orchard, pt.call, lang: 'pt');
     final r = Designer(p, label: (k) => pt(k)).designAll();
-    final ex = ProjectExporter(project: p, results: r, labels: ReportLabels(t: pt.call, has: pt.has, warning: pt.warning));
+    final ex = ProjectExporter(
+      project: p,
+      results: r,
+      labels: ReportLabels(t: pt.call, has: pt.has, warning: pt.warning),
+    );
     final tables = ex.reportTables();
     final zones = tables.firstWhere((t) => t.key == 'zones');
     expect(zones.standards, contains('ASABE EP405.1'));

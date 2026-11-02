@@ -98,7 +98,14 @@ void main() {
         id: 'p',
         position: Pt.zero,
         pumpSpecId: 'pump_c1',
-        station: PumpStation(units: [PumpUnit(), PumpUnit(specId: 'pump_c2', standby: true)], arrangement: PumpArrangement.series, staged: false),
+        station: PumpStation(
+          units: [
+            PumpUnit(),
+            PumpUnit(specId: 'pump_c2', standby: true),
+          ],
+          arrangement: PumpArrangement.series,
+          staged: false,
+        ),
       );
       final j = jsonDecode(jsonEncode(s.toJson())) as Map<String, dynamic>;
       expect(j['stn'], {
@@ -174,7 +181,11 @@ void main() {
     });
 
     test('in series every pump carries the flow and the heads add', () {
-      final p = stationProject(width: 30, height: 18, station: PumpStation(units: [PumpUnit()], arrangement: PumpArrangement.series, staged: false));
+      final p = stationProject(
+        width: 30,
+        height: 18,
+        station: PumpStation(units: [PumpUnit()], arrangement: PumpArrangement.series, staged: false),
+      );
       final r = Designer(p).designAll();
       final d = dutyOf(r);
       final c = p.catalog.pump('pump_c1')!.curve;

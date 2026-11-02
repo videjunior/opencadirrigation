@@ -95,7 +95,11 @@ void main() {
     final spots = <(double, double, double)>[for (final (x, y) in corners) (x, y, 100 + x * 0.013 - y * 0.021 + (x * y) * 1e-4)];
     Terrain terrain(Iterable<(double, double, double)> s) => Terrain(samples: [for (final (x, y, z) in s) TerrainSample(Pt(x, y), z)]);
     final base = terrain(spots);
-    for (final order in [spots.reversed.toList(), [...spots.skip(4), ...spots.take(4)], [...spots]..shuffle(math.Random(3))]) {
+    for (final order in [
+      spots.reversed.toList(),
+      [...spots.skip(4), ...spots.take(4)],
+      [...spots]..shuffle(math.Random(3)),
+    ]) {
       final other = terrain(order);
       for (var x = 1.0; x < 80; x += 6.5) {
         for (var y = 1.0; y < 50; y += 4.5) {

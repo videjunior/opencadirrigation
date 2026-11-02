@@ -71,13 +71,10 @@ void main() {
       expect(statuses, [...statuses]..sort());
       final byOrder = [...rows]..sort((a, b) => a.order - b.order);
       expect([for (final r in byOrder) r.order], [for (var i = 1; i <= rows.length; i++) i]);
-      expect(
-        [
-          for (final r in byOrder)
-            if (r.section == 'strings') r.key,
-        ],
-        I18n.keys.toList(),
-      );
+      expect([
+        for (final r in byOrder)
+          if (r.section == 'strings') r.key,
+      ], I18n.keys.toList());
       for (final r in rows.where((r) => r.status == ReviewStatus.missing)) {
         expect(ha[r.section]![r.key]?.trim() ?? '', isEmpty, reason: r.key);
       }
@@ -102,9 +99,17 @@ void main() {
       final dir = Directory.systemTemp.createTempSync('oci_i18n_export_');
       try {
         final out = StringBuffer();
-        expect(runReviewCli(['export', 'all', '--out', dir.path], out: out, err: out), 0, reason: '$out');
+        expect(
+          runReviewCli(['export', 'all', '--out', dir.path], out: out, err: out),
+          0,
+          reason: '$out',
+        );
         expect(dir.listSync().whereType<File>().map((f) => f.uri.pathSegments.last).toSet(), {for (final l in reviewLanguages) reviewFileName(l)});
-        expect(runReviewCli(['export', 'te', '--format', 'xlsx', '--out', dir.path], out: out, err: out), 0, reason: '$out');
+        expect(
+          runReviewCli(['export', 'te', '--format', 'xlsx', '--out', dir.path], out: out, err: out),
+          0,
+          reason: '$out',
+        );
         expect(reviewEntries(readReviewTable(File('${dir.path}/${reviewFileName('te', format: 'xlsx')}').readAsBytesSync())).lang, 'te');
         expect(runReviewCli(['export', 'en', '--out', dir.path], out: out, err: out), 2);
       } finally {
@@ -291,14 +296,19 @@ void main() {
     });
 
     test('a text left in English, a row reviewed twice, a stale export and the limit of a Latin-script pack', () {
-      final r = applyReview('hi', [
-        const ReviewEntry(section: 'strings', key: 'menu.file', review: 'File'),
-        const ReviewEntry(section: 'strings', key: 'menu.edit', review: 'संपादन १'),
-        const ReviewEntry(section: 'strings', key: 'menu.edit', review: 'संपादन २'),
-        const ReviewEntry(section: 'strings', key: 'menu.view', review: '  दृश्य बदलें \n', english: 'Old view'),
-        const ReviewEntry(section: 'strings', key: 'ok', review: 'OK'),
-        const ReviewEntry(section: 'tutorial', key: 'Start tutorial', review: '', comment: 'fine as it is'),
-      ], ctx, pack: pack('hi'));
+      final r = applyReview(
+        'hi',
+        [
+          const ReviewEntry(section: 'strings', key: 'menu.file', review: 'File'),
+          const ReviewEntry(section: 'strings', key: 'menu.edit', review: 'संपादन १'),
+          const ReviewEntry(section: 'strings', key: 'menu.edit', review: 'संपादन २'),
+          const ReviewEntry(section: 'strings', key: 'menu.view', review: '  दृश्य बदलें \n', english: 'Old view'),
+          const ReviewEntry(section: 'strings', key: 'ok', review: 'OK'),
+          const ReviewEntry(section: 'tutorial', key: 'Start tutorial', review: '', comment: 'fine as it is'),
+        ],
+        ctx,
+        pack: pack('hi'),
+      );
       expect([for (final x in r.rejected) x.entry.key], ['menu.file', 'menu.edit', 'menu.edit']);
       expect(r.rejected.first.reasons.join(), contains('Same as English'));
       expect(r.rejected[1].reasons.join(), contains('more than once'));

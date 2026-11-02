@@ -110,10 +110,7 @@ class _AiStepCostsState extends State<AiStepCosts> {
                 for (var k = 0; k < steps.length; k++)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2),
-                    child: Text(
-                      aiStepText(widget.c, steps, k),
-                      style: TextStyle(fontSize: 10.5, color: steps[k].failed ? Cad.warning : Cad.fg60),
-                    ),
+                    child: Text(aiStepText(widget.c, steps, k), style: TextStyle(fontSize: 10.5, color: steps[k].failed ? Cad.warning : Cad.fg60)),
                   ),
                 Text(t('ai.steps.hint'), style: TextStyle(fontSize: 10, color: Cad.fg54)),
               ],

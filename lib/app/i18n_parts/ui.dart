@@ -173,11 +173,7 @@ const _ui = <String, (String, String, String)>{
   // ==== 1.6.0 wave 2 ====
   // ---- the command palette (Ctrl+K; the search at the top of the phone menu)
   'pal.menu': ('Pesquisar comandos…', 'Search commands…', 'Buscar comandos…'),
-  'pal.hint': (
-    'Um menu, comando ou ajuste, em qualquer idioma',
-    'A menu, command or setting, in any language',
-    'Un menú, comando o ajuste, en cualquier idioma',
-  ),
+  'pal.hint': ('Um menu, comando ou ajuste, em qualquer idioma', 'A menu, command or setting, in any language', 'Un menú, comando o ajuste, en cualquier idioma'),
   'pal.none': ('Nada encontrado para "{q}".', 'Nothing found for "{q}".', 'No se encontró nada para «{q}».'),
   'pal.commands': ('Comandos digitados', 'Typed commands', 'Comandos escritos'),
   'pal.settings': ('Ajustes', 'Settings', 'Ajustes'),

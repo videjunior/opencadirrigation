@@ -13,7 +13,6 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import 'advisor.dart';
-import 'auto_layout.dart' show simplePolygonParts;
 import 'electrical.dart';
 import 'network_builder.dart';
 import 'pump_selection.dart';
@@ -638,7 +637,8 @@ class FixStep {
 /// A [FixFilter] that applies only the corrections whose [fixStepId] is in
 /// [keep] (the review of "fix automatically" run again with the user's
 /// choice).
-FixFilter onlyFixSteps(Set<String> keep) => (a, kind, results) => !keep.contains(fixStepId(a, kind));
+FixFilter onlyFixSteps(Set<String> keep) =>
+    (a, kind, results) => !keep.contains(fixStepId(a, kind));
 
 /// Whether correction [kind] of [a] changes the system in a way the user
 /// must decide, so "fix automatically" lists it instead of applying it: a
@@ -697,10 +697,10 @@ List<FixResult> autoFixRound(
     for (final a in candidates)
       if (!resultFixes.contains(a.fixes.first)) a,
   ];
-  final round = drawing.isNotEmpty ? drawing : [if (results != null) ...candidates];
+  final batch = drawing.isNotEmpty ? drawing : [if (results != null) ...candidates];
   final out = <FixResult>[];
   final touched = <String>{};
-  for (final a in round) {
+  for (final a in batch) {
     // two problems on the same item: the second waits for the next round
     if (a.entityIds.any(touched.contains)) continue;
     final kind = a.fixes.first;

@@ -30,8 +30,13 @@ final en = I18n('en');
   return (p, Designer(p, label: (k) => en(k)).designAll());
 }
 
-DocContext contextOf(Project p, DesignResults? r, DocProfile profile) =>
-    DocContext(project: p, results: r, labels: ReportLabels(t: en.call, has: en.has, warning: en.warning), profile: profile, date: DateTime(2026, 11, 2));
+DocContext contextOf(Project p, DesignResults? r, DocProfile profile) => DocContext(
+  project: p,
+  results: r,
+  labels: ReportLabels(t: en.call, has: en.has, warning: en.warning),
+  profile: profile,
+  date: DateTime(2026, 11, 2),
+);
 
 int pages(List<int> pdf) => int.parse(RegExp(r'/Count (\d+)').firstMatch(latin1.decode(pdf))!.group(1)!);
 
@@ -68,7 +73,10 @@ void main() {
           if (defaultSectionIds(profile, ctx).contains(s.id)) s.id,
       ]);
       // the contents: the sections numbered in order, after the cover and the contents page
-      final level1 = [for (final e in pack.contents) if (!e.$1.contains('.')) e];
+      final level1 = [
+        for (final e in pack.contents)
+          if (!e.$1.contains('.')) e,
+      ];
       expect([for (final e in level1) e.$1], [for (var i = 1; i <= level1.length; i++) '$i']);
       expect(level1.first.$3, greaterThanOrEqualTo(3));
       for (var i = 1; i < pack.contents.length; i++) {
@@ -116,7 +124,11 @@ void main() {
         id: 'test.memorial',
         titleKey: 'prd.doc.sec.criteria',
         profiles: const {DocProfile.memorial: 150, DocProfile.permit: 210},
-        build: (c) => const [DocHeading('Descriptive memorial'), DocParagraph('The system irrigates the orchard.'), DocBullets(['first', 'second'])],
+        build: (c) => const [
+          DocHeading('Descriptive memorial'),
+          DocParagraph('The system irrigates the orchard.'),
+          DocBullets(['first', 'second']),
+        ],
       ),
     );
     addTearDown(() => unregisterDocumentSection('test.memorial'));

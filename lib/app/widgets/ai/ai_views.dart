@@ -1558,7 +1558,11 @@ class _AiSettingsViewState extends State<AiSettingsView> {
         if (!key)
           Text(t('ai.test.needKey', {'p': m.provider.company}), style: TextStyle(fontSize: 10.5, color: Cad.fg54))
         else if (p != null)
-          Text(ai.probeText(p), key: const Key('ai_test_result'), style: TextStyle(fontSize: 11, color: p.ok ? Cad.ok : Cad.unconnected))
+          Text(
+            ai.probeText(p),
+            key: const Key('ai_test_result'),
+            style: TextStyle(fontSize: 11, color: p.ok ? Cad.ok : Cad.unconnected),
+          )
         else
           Text(t('ai.test.hint'), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
       ],
@@ -1584,7 +1588,11 @@ class _AiSettingsViewState extends State<AiSettingsView> {
     if (p == 'denied') {
       return Padding(
         padding: const EdgeInsetsDirectional.only(start: 16, bottom: 4),
-        child: Text(t('ai.attn.denied'), key: const Key('ai_notify_denied'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+        child: Text(
+          t('ai.attn.denied'),
+          key: const Key('ai_notify_denied'),
+          style: TextStyle(fontSize: 11, color: Cad.fg54),
+        ),
       );
     }
     return Align(
@@ -1892,12 +1900,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
                   label: Text(t('ai.transcript.save')),
                 ),
                 // 1.6.0 IA: the project's conversations, and a conversation to or from a file
-                OutlinedButton.icon(
-                  key: const Key('ai_conv_list'),
-                  onPressed: () => showAiConversations(context, c, ai),
-                  icon: const Icon(Icons.history, size: 16),
-                  label: Text(t('ai.conv.title')),
-                ),
+                OutlinedButton.icon(key: const Key('ai_conv_list'), onPressed: () => showAiConversations(context, c, ai), icon: const Icon(Icons.history, size: 16), label: Text(t('ai.conv.title'))),
                 OutlinedButton.icon(
                   key: const Key('ai_conv_export_file'),
                   onPressed: ai.busy || !ai.items.any((it) => it.kind != AiItemKind.notice) ? null : () => aiExportConversation(c, ai),

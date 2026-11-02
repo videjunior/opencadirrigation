@@ -78,9 +78,14 @@ Future<void> showDataCacheDialog(BuildContext context, ProjectController c, {Dat
                             child: Text.rich(
                               TextSpan(
                                 children: [
-                                  TextSpan(text: '${t('cache.$k')}: ', style: const TextStyle(fontWeight: FontWeight.w600)),
                                   TextSpan(
-                                    text: t('cache.entries', {'n': '${stats[k]!.count}', 's': _size(stats[k]!.bytes)}) + (stats[k]!.oldest == null ? '' : ' · ${t('cache.oldest', {'d': _day(stats[k]!.oldest!)})}'),
+                                    text: '${t('cache.$k')}: ',
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  TextSpan(
+                                    text:
+                                        t('cache.entries', {'n': '${stats[k]!.count}', 's': _size(stats[k]!.bytes)}) +
+                                        (stats[k]!.oldest == null ? '' : ' · ${t('cache.oldest', {'d': _day(stats[k]!.oldest!)})}'),
                                   ),
                                 ],
                               ),

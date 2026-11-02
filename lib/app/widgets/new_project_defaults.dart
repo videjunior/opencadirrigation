@@ -34,12 +34,7 @@ class _NewProjectDefaultsState extends State<NewProjectDefaults> {
         Wrap(
           spacing: 8,
           children: [
-            TextButton.icon(
-              key: const Key('npd_save'),
-              icon: const Icon(Icons.bookmark_add_outlined, size: 16),
-              label: Text(t('npd.save')),
-              onPressed: () => setState(c.saveParamsAsDefault),
-            ),
+            TextButton.icon(key: const Key('npd_save'), icon: const Icon(Icons.bookmark_add_outlined, size: 16), label: Text(t('npd.save')), onPressed: () => setState(c.saveParamsAsDefault)),
             TextButton.icon(
               key: const Key('npd_clear'),
               icon: const Icon(Icons.restart_alt, size: 16),

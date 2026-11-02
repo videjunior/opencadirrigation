@@ -165,7 +165,12 @@ Future<void> showLayerStatesDialog(BuildContext context, ProjectController c) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (states.isEmpty) Text(t('layer.statesNone'), key: const Key('layer_states_none'), style: TextStyle(fontSize: 12, color: Cad.fg70)),
+            if (states.isEmpty)
+              Text(
+                t('layer.statesNone'),
+                key: const Key('layer_states_none'),
+                style: TextStyle(fontSize: 12, color: Cad.fg70),
+              ),
             for (final st in states)
               ListTile(
                 key: Key('layer_state_${st.name}'),
@@ -312,7 +317,9 @@ Future<void> showDimStyleDialog(BuildContext context, ProjectController c) async
     ),
     width: 440,
     actions: [
-      Builder(builder: (ctx) => TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel')))),
+      Builder(
+        builder: (ctx) => TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+      ),
       Builder(
         builder: (ctx) => TextButton(key: const Key('dim_reset'), onPressed: () => Navigator.pop(ctx, false), child: Text(t('dim.reset'))),
       ),
@@ -449,9 +456,7 @@ Future<void> showComparisonDialog(BuildContext context, ProjectController c, Pro
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              cmp.isEmpty
-                  ? t('cmp.same')
-                  : t('cmp.summary', {'a': '${cmp.count(ChangeKind.added)}', 'r': '${cmp.count(ChangeKind.removed)}', 'c': '${cmp.count(ChangeKind.changed)}'}),
+              cmp.isEmpty ? t('cmp.same') : t('cmp.summary', {'a': '${cmp.count(ChangeKind.added)}', 'r': '${cmp.count(ChangeKind.removed)}', 'c': '${cmp.count(ChangeKind.changed)}'}),
               key: const Key('cmp_summary'),
               style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
             ),
@@ -472,7 +477,10 @@ Future<void> showComparisonDialog(BuildContext context, ProjectController c, Pro
                     children: [
                       Text(t('cmp.fig.${f.key}'), style: const TextStyle(fontSize: 11.5)),
                       Text(fig(f, f.before), style: const TextStyle(fontSize: 11.5)),
-                      Text(fig(f, f.after), style: TextStyle(fontSize: 11.5, fontWeight: f.differs ? FontWeight.bold : FontWeight.normal, color: f.differs ? Cad.attention : null)),
+                      Text(
+                        fig(f, f.after),
+                        style: TextStyle(fontSize: 11.5, fontWeight: f.differs ? FontWeight.bold : FontWeight.normal, color: f.differs ? Cad.attention : null),
+                      ),
                     ],
                   ),
               ],
@@ -602,7 +610,9 @@ Future<void> showBlockAttributesDialog(BuildContext context, ProjectController c
     ),
     width: 420,
     actions: [
-      Builder(builder: (ctx) => TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel')))),
+      Builder(
+        builder: (ctx) => TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+      ),
       Builder(
         builder: (ctx) => FilledButton(key: const Key('blkref_attr_ok'), onPressed: () => Navigator.pop(ctx, true), child: Text(t('ok'))),
       ),

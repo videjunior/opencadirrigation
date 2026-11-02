@@ -107,7 +107,9 @@ List<ReportCriterion> criteriaOf(String key) => [
 String standardsNote(String key, Translate t) {
   final cs = criteriaOf(key);
   if (cs.isEmpty) return '';
-  return t('prd.std.note', {'list': [for (final c in cs) '${t('prd.std.${c.key}')} — ${c.refs.join(', ')}'].join('; ')});
+  return t('prd.std.note', {
+    'list': [for (final c in cs) '${t('prd.std.${c.key}')} — ${c.refs.join(', ')}'].join('; '),
+  });
 }
 
 /// Writes the standards note of every table of [tables] into its

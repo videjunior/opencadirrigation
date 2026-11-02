@@ -260,7 +260,10 @@ Future<void> showFertigationStagesDialog(BuildContext context, ProjectController
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t('fst.title'), style: const TextStyle(fontSize: 15)),
-        content: SizedBox(width: dialogWidth(ctx, 420), child: Text(t('swb.noAreas'), style: const TextStyle(fontSize: 12.5))),
+        content: SizedBox(
+          width: dialogWidth(ctx, 420),
+          child: Text(t('swb.noAreas'), style: const TextStyle(fontSize: 12.5)),
+        ),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('close')))],
       ),
     );
@@ -312,13 +315,7 @@ Future<void> showFertigationStagesDialog(BuildContext context, ProjectController
             for (var s = 0; s < 4; s++)
               _grid(ctx, [
                 for (var k = 0; k < 3; k++)
-                  num(
-                    'share${s}_$k',
-                    '${t('fst.stage.${fertStageNames[s]}')} · ${nutrients[k]} (%)',
-                    plan.sharePct![s][k],
-                    (v) => plan.sharePct![s][k] = v.clamp(0, 100).toDouble(),
-                    decimals: 0,
-                  ),
+                  num('share${s}_$k', '${t('fst.stage.${fertStageNames[s]}')} · ${nutrients[k]} (%)', plan.sharePct![s][k], (v) => plan.sharePct![s][k] = v.clamp(0, 100).toDouble(), decimals: 0),
               ]),
           const SizedBox(height: 4),
           Text(t('fst.products'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
@@ -616,10 +613,12 @@ Future<void> showFieldUniformityDialog(BuildContext context, ProjectController c
               }),
             ),
             if (e != null) ...[
-              KV(t('ft.measured'), '${fmtUi(e.measuredStats.mean, 2)} ${ft.kind == FieldTestKind.cans ? 'mm' : 'L/h'} · CU ${fmtUi(e.measuredStats.cu, 1)} % · DU ${fmtUi(e.measuredStats.du, 1)} % · US ${fmtUi(e.measuredStats.us, 1)} %'),
+              KV(
+                t('ft.measured'),
+                '${fmtUi(e.measuredStats.mean, 2)} ${ft.kind == FieldTestKind.cans ? 'mm' : 'L/h'} · CU ${fmtUi(e.measuredStats.cu, 1)} % · DU ${fmtUi(e.measuredStats.du, 1)} % · US ${fmtUi(e.measuredStats.us, 1)} %',
+              ),
               if (ft.kind == FieldTestKind.cans) KV(t('ft.rate'), '${fmtUi(e.meanRateMmH, 2)} mm/h'),
-              if (e.predictedStats.count > 0)
-                KV(t('ft.design'), '${fmtUi(e.predictedStats.mean, 2)} mm · CU ${fmtUi(e.predictedStats.cu, 1)} % · DU ${fmtUi(e.predictedStats.du, 1)} %'),
+              if (e.predictedStats.count > 0) KV(t('ft.design'), '${fmtUi(e.predictedStats.mean, 2)} mm · CU ${fmtUi(e.predictedStats.cu, 1)} % · DU ${fmtUi(e.predictedStats.du, 1)} %'),
               if (e.designMean > 0) KV(t('ft.meanRatio'), '${fmtUi(100 * e.meanRatio, 0)} %', color: (e.meanRatio - 1).abs() > 0.1 ? Cad.caution : Cad.ok),
               if (ft.kind == FieldTestKind.cans && ft.cols > 0)
                 SizedBox(

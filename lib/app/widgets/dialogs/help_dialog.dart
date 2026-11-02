@@ -244,7 +244,11 @@ class _HelpDialogState extends State<HelpDialog> {
                   Icon(Icons.menu_book_outlined, size: 20, color: Cad.accentText),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(t('help.title'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      t('help.title'),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   IconButton(key: const Key('help_close'), tooltip: t('close'), icon: const Icon(Icons.close, size: 18), onPressed: () => Navigator.of(context).pop()),
                 ],
@@ -323,26 +327,26 @@ class _TopicPage extends StatelessWidget {
               Icon(topic.icon, size: 20, color: Cad.accentIcon),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(t('help.t.${topic.id}'), key: const Key('help_page_title'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                child: Text(
+                  t('help.t.${topic.id}'),
+                  key: const Key('help_page_title'),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          SelectableText(t('help.b.${topic.id}'), key: const Key('help_page_body'), style: TextStyle(fontSize: 13, height: 1.5, color: Cad.bodyText)),
+          SelectableText(
+            t('help.b.${topic.id}'),
+            key: const Key('help_page_body'),
+            style: TextStyle(fontSize: 13, height: 1.5, color: Cad.bodyText),
+          ),
           const SizedBox(height: 14),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: OutlinedButton.icon(
-              key: const Key('help_chapter'),
-              onPressed: () => openExternalLink(url),
-              icon: const Icon(Icons.open_in_new, size: 16),
-              label: Text(t('help.chapter')),
-            ),
+            child: OutlinedButton.icon(key: const Key('help_chapter'), onPressed: () => openExternalLink(url), icon: const Icon(Icons.open_in_new, size: 16), label: Text(t('help.chapter'))),
           ),
-          if (!manualSpeaks(c.lang)) ...[
-            const SizedBox(height: 6),
-            Text(t('help.chapterLang'), style: TextStyle(fontSize: 11.5, color: Cad.fg54)),
-          ],
+          if (!manualSpeaks(c.lang)) ...[const SizedBox(height: 6), Text(t('help.chapterLang'), style: TextStyle(fontSize: 11.5, color: Cad.fg54))],
         ],
       ),
     );

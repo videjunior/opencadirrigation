@@ -19,7 +19,6 @@ import 'dart:math' as math;
 
 import '../hydraulics/uniformity.dart';
 import '../model/agronomy_plan.dart';
-import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
 import 'agronomy.dart';
@@ -35,7 +34,11 @@ Map<String, double> eventHoursByEntity(Project p, DesignResults? results, {int? 
   final prog = buildControllerProgram(p, results, days: 1, month: month);
   final model = NetworkBuilder(p).build();
   final vih = VihStations.of(p);
-  final flows = p.systemFlows.isNotEmpty ? {for (final f in p.systemFlows) f.id: f.valveIds} : {'auto': {...model.zoneNodes.keys, ...vih.heads.keys}};
+  final flows = p.systemFlows.isNotEmpty
+      ? {for (final f in p.systemFlows) f.id: f.valveIds}
+      : {
+          'auto': {...model.zoneNodes.keys, ...vih.heads.keys},
+        };
   final out = <String, double>{};
   for (final e in flows.entries) {
     final h = prog.perFlowHours[e.key] ?? 0.0;
@@ -183,7 +186,11 @@ FieldEvaluation evaluateFieldTest(Project p, FieldTest test, {DesignResults? res
     );
   }
   final depths = [for (final v in test.values) v == null ? null : canDepthMm(v, test.canMouthMm)];
-  final map = computeDensogram(p, results: results, options: DensogramOptions(valveIds: test.zoneId.isEmpty ? null : {test.zoneId}));
+  final map = computeDensogram(
+    p,
+    results: results,
+    options: DensogramOptions(valveIds: test.zoneId.isEmpty ? null : {test.zoneId}),
+  );
   final predicted = <double?>[
     for (var k = 0; k < test.values.length; k++)
       if (test.values[k] == null) null else (map.isEmpty ? 0.0 : map.rateAt(test.position(k)) * test.durationH),

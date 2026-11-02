@@ -190,13 +190,7 @@ class _LateralLimitViewState extends State<LateralLimitView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionTitle(t('latmax.title')),
-        NumField(
-          key: const Key('latmax_variation'),
-          label: t('latmax.variation'),
-          value: widget.variationPct,
-          decimals: 1,
-          onChanged: (v) => widget.onVariation(v.clamp(1, 50).toDouble()),
-        ),
+        NumField(key: const Key('latmax_variation'), label: t('latmax.variation'), value: widget.variationPct, decimals: 1, onChanged: (v) => widget.onVariation(v.clamp(1, 50).toDouble())),
         if (i == null)
           _text(t('latmax.noLateral'), Cad.fg54)
         else ...[
@@ -204,15 +198,10 @@ class _LateralLimitViewState extends State<LateralLimitView> {
           if (i.pipeName != null) KV(t('latmax.pipe'), i.pipeName!),
           if (stale) const Padding(padding: EdgeInsets.symmetric(vertical: 3), child: LinearProgressIndicator(minHeight: 2)),
           if (r != null) ...[
-            if ((slope ?? 0).abs() < 1e-9)
-              KV(t('latmax.level'), run(r.uphill))
-            else ...[
-              KV(t('latmax.uphill'), run(r.uphill)),
-              KV(t('latmax.downhill'), run(r.downhill)),
-            ],
+            if ((slope ?? 0).abs() < 1e-9) KV(t('latmax.level'), run(r.uphill)) else ...[KV(t('latmax.uphill'), run(r.uphill)), KV(t('latmax.downhill'), run(r.downhill))],
             if (limit != null) _text(t('latmax.by.${limit.limitedBy.name}'), Cad.fg54),
             if (widget.longest != null && widget.longest! > 0) KV(t('latmax.longest'), len(widget.longest!), color: tooLong ? Cad.warning : null),
-            if (tooLong) _text(t('latmax.tooLong', {'l': len(widget.longest!), 'm': len(limit!.length)}), Cad.warning),
+            if (tooLong) _text(t('latmax.tooLong', {'l': len(widget.longest!), 'm': len(limit.length)}), Cad.warning),
             if (widget.onUse != null && limit != null && limit.emitters > 0)
               Align(
                 alignment: AlignmentDirectional.centerStart,

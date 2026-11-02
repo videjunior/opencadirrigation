@@ -236,19 +236,7 @@ Future<void> showPumpHouseDialog(BuildContext context, ProjectController c) {
         SectionTitle(t('dens.results')),
         if (r.circuits.isNotEmpty)
           resultTable(
-            [
-              t('agb.rep.pump'),
-              'kW',
-              'A',
-              t('agb.rep.starter'),
-              '${t('agb.rep.startCurrent')} (A)',
-              'mm²',
-              'PE',
-              'Iz (A)',
-              '${t('agb.rep.dropRun')} %',
-              '${t('agb.rep.dropStart')} %',
-              'Ik (kA)',
-            ],
+            [t('agb.rep.pump'), 'kW', 'A', t('agb.rep.starter'), '${t('agb.rep.startCurrent')} (A)', 'mm²', 'PE', 'Iz (A)', '${t('agb.rep.dropRun')} %', '${t('agb.rep.dropStart')} %', 'Ik (kA)'],
             [
               for (final x in r.circuits)
                 [
@@ -468,7 +456,7 @@ Future<void> showWaterQualityDialog(BuildContext context, ProjectController c) {
           NumField(label: '${t('agb.water.shockMinutes')} (min)', value: w.shockMinutes, decimals: 0, onChanged: (v) => set(() => w.shockMinutes = v.clamp(0, 600).toDouble())),
           NumField(label: t('agb.water.shocksPerMonth'), value: w.shocksPerMonth, decimals: 0, onChanged: (v) => set(() => w.shocksPerMonth = v.clamp(0, 31).toDouble())),
           NumField(label: '${t('agb.water.hypochlorite')} (%)', value: w.hypochloritePct, decimals: 1, onChanged: (v) => set(() => w.hypochloritePct = v.clamp(0.5, 20).toDouble())),
-          opt('acidph', t('agb.water.acidPh'), w.acidTargetPh, (x) => w.acidTargetPh = x == null ? null : x.clamp(2, 9).toDouble(), 1),
+          opt('acidph', t('agb.water.acidPh'), w.acidTargetPh, (x) => w.acidTargetPh = x?.clamp(2, 9).toDouble(), 1),
           SpecDropdown<AcidProduct>(
             label: t('agb.rep.acid'),
             value: w.acid.name,
@@ -559,8 +547,7 @@ Future<void> showTwoWireDialog(BuildContext context, ProjectController c) {
             decimals: 0,
             onChanged: (v) => set(() => s.groundEveryM = u.lengthToSi(v).clamp(0, 10000).toDouble()),
           ),
-          for (final k in const [1, 2, 4, 6])
-            NumField(label: '${t('agb.bom.decoder')} $k ($cur)', value: s.decoderPrices[k] ?? 0, onChanged: (v) => set(() => s.decoderPrices[k] = v < 0 ? 0 : v)),
+          for (final k in const [1, 2, 4, 6]) NumField(label: '${t('agb.bom.decoder')} $k ($cur)', value: s.decoderPrices[k] ?? 0, onChanged: (v) => set(() => s.decoderPrices[k] = v < 0 ? 0 : v)),
           NumField(label: '${t('agb.bom.arrester')} ($cur)', value: s.arresterPrice, onChanged: (v) => set(() => s.arresterPrice = v < 0 ? 0 : v)),
         ], minWidth: 160),
         if (r == null) _hint(t('agb.tw.noRoutes')),

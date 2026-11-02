@@ -154,22 +154,14 @@ const _aut = <String, (String, String, String)>{
   'latmax.level': ('Lateral máxima (em nível)', 'Longest lateral (level)', 'Lateral máximo (a nivel)'),
   'latmax.uphill': ('Lateral máxima subindo', 'Longest lateral uphill', 'Lateral máximo en subida'),
   'latmax.downhill': ('Lateral máxima descendo', 'Longest lateral downhill', 'Lateral máximo en bajada'),
-  'latmax.by.flowVariation': (
-    'Limitada pela variação de vazão dos emissores.',
-    'Limited by the flow variation of the emitters.',
-    'Limitado por la variación de caudal de los emisores.',
-  ),
+  'latmax.by.flowVariation': ('Limitada pela variação de vazão dos emissores.', 'Limited by the flow variation of the emitters.', 'Limitado por la variación de caudal de los emisores.'),
   'latmax.by.pressure': (
     'Limitada pela faixa de pressão do emissor (ou da fita).',
     'Limited by the pressure range of the emitter (or the tape).',
     'Limitado por el rango de presión del emisor (o de la cinta).',
   ),
   'latmax.by.velocity': ('Limitada pela velocidade máxima da água no tubo.', 'Limited by the highest water velocity in the pipe.', 'Limitado por la velocidad máxima del agua en la tubería.'),
-  'latmax.by.maxLength': (
-    'Sem limite prático até 1000 m.',
-    'No practical limit up to 1000 m.',
-    'Sin límite práctico hasta 1000 m.',
-  ),
+  'latmax.by.maxLength': ('Sem limite prático até 1000 m.', 'No practical limit up to 1000 m.', 'Sin límite práctico hasta 1000 m.'),
   'latmax.by.none': ('Nenhum emissor fica dentro dos limites.', 'No emitter stays within the limits.', 'Ningún emisor queda dentro de los límites.'),
   'latmax.longest': ('Lateral mais longa do desenho', 'Longest lateral of the drawing', 'Lateral más largo del dibujo'),
   'latmax.tooLong': (
@@ -217,7 +209,11 @@ const _aut = <String, (String, String, String)>{
     'The satellite image did not load here (offline, or no imagery in this region): nothing to trace.',
     'La imagen satelital no cargó aquí (sin internet o sin imagen en esta región): nada que contornear.',
   ),
-  'wand.noData': ('O ponto está onde a imagem não tem dados: clique bem dentro da região.', 'The point lies where the image has no data: click well inside the region.', 'El punto está donde la imagen no tiene datos: haga clic bien dentro de la región.'),
+  'wand.noData': (
+    'O ponto está onde a imagem não tem dados: clique bem dentro da região.',
+    'The point lies where the image has no data: click well inside the region.',
+    'El punto está donde la imagen no tiene datos: haga clic bien dentro de la región.',
+  ),
   'wand.tooSmall': (
     'A região tem só alguns pixels: clique bem dentro dela ou aumente a tolerância.',
     'The region is only a few pixels: click well inside it or raise the tolerance.',
@@ -234,10 +230,26 @@ const _aut = <String, (String, String, String)>{
     'No clear boundary (the colours change gradually): check it and set the tolerance.',
     'Sin borde nítido (los colores cambian de a poco): revíselo y ajuste la tolerancia.',
   ),
-  'wand.edge': ('A região chega à borda da área analisada: pode continuar além.', 'The region reaches the edge of the area searched: it may go on beyond.', 'La región llega al borde del área analizada: puede seguir más allá.'),
-  'wand.gaps': ('Parte da imagem não carregou: o contorno pode parar onde faltam blocos.', 'Part of the image did not load: the outline may stop where tiles are missing.', 'Parte de la imagen no cargó: el contorno puede detenerse donde faltan teselas.'),
-  'wand.holes': ('{n} buraco(s) dentro (árvores, construções, água) foram preenchidos.', '{n} hole(s) inside (trees, buildings, water) were filled.', '{n} hueco(s) dentro (árboles, construcciones, agua) se rellenaron.'),
-  'wand.onEdge': ('O clique parece estar numa borda: clique bem dentro da região.', 'The click seems to lie on an edge: click well inside the region.', 'El clic parece estar en un borde: haga clic bien dentro de la región.'),
+  'wand.edge': (
+    'A região chega à borda da área analisada: pode continuar além.',
+    'The region reaches the edge of the area searched: it may go on beyond.',
+    'La región llega al borde del área analizada: puede seguir más allá.',
+  ),
+  'wand.gaps': (
+    'Parte da imagem não carregou: o contorno pode parar onde faltam blocos.',
+    'Part of the image did not load: the outline may stop where tiles are missing.',
+    'Parte de la imagen no cargó: el contorno puede detenerse donde faltan teselas.',
+  ),
+  'wand.holes': (
+    '{n} buraco(s) dentro (árvores, construções, água) foram preenchidos.',
+    '{n} hole(s) inside (trees, buildings, water) were filled.',
+    '{n} hueco(s) dentro (árboles, construcciones, agua) se rellenaron.',
+  ),
+  'wand.onEdge': (
+    'O clique parece estar numa borda: clique bem dentro da região.',
+    'The click seems to lie on an edge: click well inside the region.',
+    'El clic parece estar en un borde: haga clic bien dentro de la región.',
+  ),
   'wand.traced': ('Contorno: {a}, {n} vértices, tolerância {t} ΔE.', 'Outline: {a}, {n} vertices, tolerance {t} ΔE.', 'Contorno: {a}, {n} vértices, tolerancia {t} ΔE.'),
   'wand.next': ('Enter (✓) cria, Esc descarta.', 'Enter (✓) makes it, Esc drops it.', 'Enter (✓) lo crea, Esc lo descarta.'),
   'wand.created': ('{n} contorno(s) adicionado(s) ao projeto.', '{n} outline(s) added to the project.', '{n} contorno(s) añadido(s) al proyecto.'),

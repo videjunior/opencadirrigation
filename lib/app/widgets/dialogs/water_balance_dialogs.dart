@@ -56,7 +56,10 @@ Future<void> _message(BuildContext context, ProjectController c, String title, S
   context: context,
   builder: (ctx) => AlertDialog(
     title: Text(title, style: const TextStyle(fontSize: 15)),
-    content: SizedBox(width: dialogWidth(ctx, 420), child: Text(text, style: const TextStyle(fontSize: 12.5))),
+    content: SizedBox(
+      width: dialogWidth(ctx, 420),
+      child: Text(text, style: const TextStyle(fontSize: 12.5)),
+    ),
     actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(c.t('close')))],
   ),
 );
@@ -142,9 +145,7 @@ Future<void> showWaterBalanceDialog(BuildContext context, ProjectController c) {
           if (s.trigger == BalanceTrigger.depletion) ...[
             const SizedBox(height: 4),
             Text(t('swb.deficitHint'), style: TextStyle(fontSize: 11, color: Cad.fg60)),
-            _pairs(ctx, [
-              for (var k = 0; k < 4; k++) num('mad$k', t('fst.stage.${fertStageNames[k]}'), s.allowedDepletion[k], (v) => s.allowedDepletion[k] = v.clamp(0, 0.95).toDouble()),
-            ]),
+            _pairs(ctx, [for (var k = 0; k < 4; k++) num('mad$k', t('fst.stage.${fertStageNames[k]}'), s.allowedDepletion[k], (v) => s.allowedDepletion[k] = v.clamp(0, 0.95).toDouble())]),
           ],
           const SizedBox(height: 8),
           if (r == null || r.days.isEmpty)
@@ -180,13 +181,7 @@ Future<void> showWaterBalanceDialog(BuildContext context, ProjectController c) {
             ),
             Wrap(
               spacing: 10,
-              children: [
-                _legend(Cad.accent, t('swb.depletion')),
-                _legend(Cad.caution, 'RAW'),
-                _legend(Cad.error, 'TAW'),
-                _legend(Cad.info, t('req.rain')),
-                _legend(Cad.ok, t('swb.irrigation')),
-              ],
+              children: [_legend(Cad.accent, t('swb.depletion')), _legend(Cad.caution, 'RAW'), _legend(Cad.error, 'TAW'), _legend(Cad.info, t('req.rain')), _legend(Cad.ok, t('swb.irrigation'))],
             ),
             const SizedBox(height: 6),
             _table(
@@ -265,7 +260,10 @@ class BalanceChartPainter extends CustomPainter {
       final yy = top + h * k / 4;
       canvas.drawLine(Offset(left, yy), Offset(left + w, yy), gridPaint);
       final tp = TextPainter(
-        text: TextSpan(text: fmtUi(scale * k / 4, 0), style: TextStyle(fontSize: 9, color: text)),
+        text: TextSpan(
+          text: fmtUi(scale * k / 4, 0),
+          style: TextStyle(fontSize: 9, color: text),
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(left - tp.width - 3, yy - tp.height / 2));
@@ -301,7 +299,10 @@ class BalanceChartPainter extends CustomPainter {
       if (m == lastMonth) continue;
       lastMonth = m;
       final tp = TextPainter(
-        text: TextSpan(text: '$m', style: TextStyle(fontSize: 9, color: text)),
+        text: TextSpan(
+          text: '$m',
+          style: TextStyle(fontSize: 9, color: text),
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(x(i), top + h + 2));
@@ -520,7 +521,11 @@ Future<void> showIrrigationProgrammeDialog(BuildContext context, ProjectControll
           KV(t('prog.capacity'), '${fmtUi(cap.totalHours, 2)} / ${fmtUi(cap.windowHours, 1)} h/d', color: cap.ok ? Cad.ok : Cad.caution),
           for (final m in cap.machines) KV(m.name, '${fmtUi(m.capacityMmDay, 2)} / ${fmtUi(m.peakGrossMmDay, 2)} mm/d', color: m.short ? Cad.caution : Cad.ok),
           for (final x in prog.cycles.values) KV(nameOf(x.flowId), '${x.cycles} × ${fmtUi(x.runMinutes, 0)} min / ${fmtUi(x.soakMinutes, 0)} min'),
-          for (final w in prog.warnings) Text(c.t.warning(w, entityName: nameOf), style: TextStyle(fontSize: 11, color: Cad.caution)),
+          for (final w in prog.warnings)
+            Text(
+              c.t.warning(w, entityName: nameOf),
+              style: TextStyle(fontSize: 11, color: Cad.caution),
+            ),
           for (final tb in tables) ...[SectionTitle(tb.title), _table(tb, height: tb.key == 'programmeStations' ? 180 : 200, onLocate: (id) => _locate(c, id))],
           Wrap(
             spacing: 8,

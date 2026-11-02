@@ -49,15 +49,17 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
     return n;
   }
 
-  final itemsSchema = obj({'ids': idsWith('Items (ids or names).', maxItems: 5000), 'selected': bool_('The current selection instead of "ids" (e.g. the items of an import, which come in selected).')});
+  final itemsSchema = obj({
+    'ids': idsWith('Items (ids or names).', maxItems: 5000),
+    'selected': bool_('The current selection instead of "ids" (e.g. the items of an import, which come in selected).'),
+  });
   return [
     cadOp(
       b,
       group: 'edit',
       name: 'stretch_entities',
       effect: ToolEffect.write,
-      description:
-          'Stretches the drawing like the Stretch tool (STRETCH): what lies inside the crossing window "bbox" moves by dx, dy — the vertices of lines, polylines, pipes, laterals, tapes, contours, wires and area outlines inside it move while those outside stay (the items stretch), an item wholly inside moves whole, a point item, circle, arc or pivot moves with its centre or position, the points of a dimension move — e.g. to lengthen a field and its laterals, or to move the end of a run of pipe. "ids" limits it to those items, as a selection does for the tool; items on locked or hidden layers stay. One undo step; returns the items changed.',
+      description: 'Stretches the drawing like the Stretch tool (STRETCH): what lies inside the crossing window "bbox" moves by dx, dy — the vertices of lines, polylines, pipes, laterals, tapes, contours, wires and area outlines inside it move while those outside stay (the items stretch), an item wholly inside moves whole, a point item, circle, arc or pivot moves with its centre or position, the points of a dimension move — e.g. to lengthen a field and its laterals, or to move the end of a run of pipe. "ids" limits it to those items, as a selection does for the tool; items on locked or hidden layers stay. One undo step; returns the items changed.',
       schema: obj(
         {
           'bbox': {...bbox, 'description': '[minX, minY, maxX, maxY] in metres: the crossing window.'},
@@ -104,8 +106,7 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
       group: 'edit',
       name: 'fillet_corner',
       effect: ToolEffect.write,
-      description:
-          'Rounds a corner with an arc like the Fillet tool (FILLET): two sides of one polyline-like item (polyline, pipe, lateral, tape, wire, contour, area outline) that meet at a vertex — leave other_id out (or give the same id), with a point on each side — or the end sides of two lines or open items, each trimmed or extended to the corner, the arc between them a drawing arc (vertices of the first item when both are pipes, wires… of one kind). radius_m 0 makes a sharp corner (the two trimmed or extended to meet). The points pick the sides: one on (or near) each side, away from the corner. One undo step; fails when the sides are in line, too short for the radius, or not end sides. Returns the items changed and the arc added.',
+      description: 'Rounds a corner with an arc like the Fillet tool (FILLET): two sides of one polyline-like item (polyline, pipe, lateral, tape, wire, contour, area outline) that meet at a vertex — leave other_id out (or give the same id), with a point on each side — or the end sides of two lines or open items, each trimmed or extended to the corner, the arc between them a drawing arc (vertices of the first item when both are pipes, wires… of one kind). radius_m 0 makes a sharp corner (the two trimmed or extended to meet). The points pick the sides: one on (or near) each side, away from the corner. One undo step; fails when the sides are in line, too short for the radius, or not end sides. Returns the items changed and the arc added.',
       schema: obj(
         {
           'id': str('Item of the first side (id or name).'),
@@ -124,8 +125,7 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
       group: 'edit',
       name: 'chamfer_corner',
       effect: ToolEffect.write,
-      description:
-          'Cuts a corner with a straight segment like the Chamfer tool (CHAMFER): the corner between two sides picked by a point on each — two sides of one polyline-like item meeting at a vertex (leave other_id out), or the end sides of two lines or open items, trimmed or extended to the corner — cut d1_m from the corner along the first side and d2_m along the second (a drawing line between them, or vertices of the first item when both are pipes, wires… of one kind). One undo step; fails when a side is shorter than its distance or the sides are in line. Returns the items changed and the line added.',
+      description: 'Cuts a corner with a straight segment like the Chamfer tool (CHAMFER): the corner between two sides picked by a point on each — two sides of one polyline-like item meeting at a vertex (leave other_id out), or the end sides of two lines or open items, trimmed or extended to the corner — cut d1_m from the corner along the first side and d2_m along the second (a drawing line between them, or vertices of the first item when both are pipes, wires… of one kind). One undo step; fails when a side is shorter than its distance or the sides are in line. Returns the items changed and the line added.',
       schema: obj(
         {
           'id': str('Item of the first side (id or name).'),
@@ -145,9 +145,11 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
       group: 'edit',
       name: 'break_entity',
       effect: ToolEffect.write,
-      description:
-          'Breaks an item at two points like the Break at two points tool (BREAK): the part between the points of it nearest to "from" and "to" is taken out — an open line, polyline, pipe, lateral, tape, contour or wire leaves two pieces (one when a point is at an end; from = to cuts it in two there, as split_entity does), a closed polyline becomes an open one without the part from "from" to "to" in the order of its vertices, a circle becomes an arc (the part counter-clockwise from "from" to "to" goes), an arc up to two arcs. Areas, hatches and revision clouds stay whole. One undo step; the pieces become the selection; returns their ids.',
-      schema: obj({'id': str('Item to break (id or name).'), 'from': pointWith('First point (m): the nearest point of the item.'), 'to': pointWith('Second point (m).')}, required: ['id', 'from', 'to']),
+      description: 'Breaks an item at two points like the Break at two points tool (BREAK): the part between the points of it nearest to "from" and "to" is taken out — an open line, polyline, pipe, lateral, tape, contour or wire leaves two pieces (one when a point is at an end; from = to cuts it in two there, as split_entity does), a closed polyline becomes an open one without the part from "from" to "to" in the order of its vertices, a circle becomes an arc (the part counter-clockwise from "from" to "to" goes), an arc up to two arcs. Areas, hatches and revision clouds stay whole. One undo step; the pieces become the selection; returns their ids.',
+      schema: obj(
+        {'id': str('Item to break (id or name).'), 'from': pointWith('First point (m): the nearest point of the item.'), 'to': pointWith('Second point (m).')},
+        required: ['id', 'from', 'to'],
+      ),
       args: (i) => {'n': '${i['id']}'},
       run: (a, i) async {
         cadNotBusy(b);
@@ -164,8 +166,7 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
       group: 'edit',
       name: 'join_entities',
       effect: ToolEffect.write,
-      description:
-          'Joins items whose ends meet into one item per chain, like Edit → Join (JOIN): lines, open polylines and arcs of the drawing into a polyline (closed when the chain comes back to its start); pipes of one scope, catalogue item, sizing and depth into one pipe; wires; contours of the same elevation; breaklines. A pipe joint with a valve, an outlet or another network item on it is not crossed. Each chain keeps the id, layer and name of its first item. One undo step; the joined items become the selection; returns their ids.',
+      description: 'Joins items whose ends meet into one item per chain, like Edit → Join (JOIN): lines, open polylines and arcs of the drawing into a polyline (closed when the chain comes back to its start); pipes of one scope, catalogue item, sizing and depth into one pipe; wires; contours of the same elevation; breaklines. A pipe joint with a valve, an outlet or another network item on it is not crossed. Each chain keeps the id, layer and name of its first item. One undo step; the joined items become the selection; returns their ids.',
       schema: itemsSchema,
       args: count,
       binder: (i) => cadBindSelected(b, i),
@@ -186,8 +187,7 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
       group: 'edit',
       name: 'explode_entities',
       effect: ToolEffect.write,
-      description:
-          'Explodes items into their pieces, like Edit → Explode (X): a polyline into its lines (the closing one too), a hatch and a revision cloud into their outline, a spline into a polyline along its curve, a leader into its polyline and its text, a pipe, lateral, tape, contour, wire or breakline into one item per segment (the outlets of a lateral stay where they were). The first piece keeps the item\'s id. One undo step; the pieces become the selection; returns their ids.',
+      description: 'Explodes items into their pieces, like Edit → Explode (X): a polyline into its lines (the closing one too), a hatch and a revision cloud into their outline, a spline into a polyline along its curve, a leader into its polyline and its text, a pipe, lateral, tape, contour, wire or breakline into one item per segment (the outlets of a lateral stay where they were). The first piece keeps the item\'s id. One undo step; the pieces become the selection; returns their ids.',
       schema: itemsSchema,
       args: count,
       binder: (i) => cadBindSelected(b, i),
@@ -203,8 +203,7 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
       group: 'edit',
       name: 'convert_to_area',
       effect: ToolEffect.write,
-      description:
-          'Turns closed outlines into irrigated areas with the same outline, like Edit → Convert to area (TOAREA): closed polylines, hatches, revision clouds, closed splines (their curve), circles (a polygon of many sides) and open polylines whose ends meet. Each area keeps the id and the name of its outline (or gets "Area n"); set its crop, soil and the rest with update_entities. One undo step; the areas become the selection; returns their ids.',
+      description: 'Turns closed outlines into irrigated areas with the same outline, like Edit → Convert to area (TOAREA): closed polylines, hatches, revision clouds, closed splines (their curve), circles (a polygon of many sides) and open polylines whose ends meet. Each area keeps the id and the name of its outline (or gets "Area n"); set its crop, soil and the rest with update_entities. One undo step; the areas become the selection; returns their ids.',
       schema: itemsSchema,
       args: count,
       binder: (i) => cadBindSelected(b, i),
@@ -212,7 +211,9 @@ List<AgentTool> geometryEditOperations(AgentToolbox b) {
         cadNotBusy(b);
         final n = onItems(cadEditableOrSelection(b, a), c.convertSelectedToArea);
         if (n == 0) {
-          throw ToolInputError('No area made: none of these items is a closed outline (a closed polyline, hatch, cloud, closed spline, circle, or a polyline whose ends meet); areas stay as they are.');
+          throw ToolInputError(
+            'No area made: none of these items is a closed outline (a closed polyline, hatch, cloud, closed spline, circle, or a polyline whose ends meet); areas stay as they are.',
+          );
         }
         return ToolOutput(cadMade(b, [...c.selection], verb: 'Made'));
       },
@@ -259,10 +260,7 @@ Future<ToolOutput> _corner(AgentToolbox b, ToolArgs a, {required bool chamfer}) 
     );
   }
   final added = cadAdded(b, before);
-  final kept = [
-    first.id,
-    if (!identical(first, other)) other.id,
-  ].where((id) => b.p.byId(id) != null);
+  final kept = [first.id, if (!identical(first, other)) other.id].where((id) => b.p.byId(id) != null);
   return ToolOutput(
     '${chamfer ? 'Chamfered' : 'Rounded'} the corner: ${kept.join(', ')} changed${added.isEmpty ? '' : '; added ${[for (final id in added) '$id (${b.kindOf(b.p.byId(id)!)})'].join(', ')}'}.',
   );
@@ -284,8 +282,7 @@ List<AgentTool> storageOperations(AgentToolbox b) {
       group: 'file',
       name: 'save_as_copy',
       effect: ToolEffect.export,
-      description:
-          'File → Save as copy: the open project becomes a copy of its own — a new uid, so its copy in this browser, its saved versions and its recent entry no longer mix with the original\'s, which stays as it was — named as the menu names a copy ("<name> (copy)" in the user\'s language, or "name"), then its project file (.oci.json) is saved for the user (a download in the browser). Use it before trying an alternative on a project the user wants to keep as it is. Always confirmed by the user. Output: the new name and uid, and the file.',
+      description: 'File → Save as copy: the open project becomes a copy of its own — a new uid, so its copy in this browser, its saved versions and its recent entry no longer mix with the original\'s, which stays as it was — named as the menu names a copy ("<name> (copy)" in the user\'s language, or "name"), then its project file (.oci.json) is saved for the user (a download in the browser). Use it before trying an alternative on a project the user wants to keep as it is. Always confirmed by the user. Output: the new name and uid, and the file.',
       schema: obj({'name': str('Name of the copy (default: the project\'s name marked as a copy).')}),
       run: (a, i) async {
         cadNotBusy(b);
@@ -311,8 +308,7 @@ List<AgentTool> storageOperations(AgentToolbox b) {
       b,
       group: 'file',
       name: 'browser_storage',
-      description:
-          'File → Browser storage: what this browser keeps of the projects — where (the IndexedDB of this browser, its localStorage, or memory), the storage used of the quota, whether the browser keeps it when space runs short (persistent), a problem keeping this project, and each project kept: name, uid, kind (autosave: the copy of work not saved to a file; saved: the copy of the last save), when, size and saved versions. These copies are not a backup: the project file is (download_stored_projects downloads them all as one ZIP; persist_storage asks the browser to keep them). Read-only.',
+      description: 'File → Browser storage: what this browser keeps of the projects — where (the IndexedDB of this browser, its localStorage, or memory), the storage used of the quota, whether the browser keeps it when space runs short (persistent), a problem keeping this project, and each project kept: name, uid, kind (autosave: the copy of work not saved to a file; saved: the copy of the last save), when, size and saved versions. These copies are not a backup: the project file is (download_stored_projects downloads them all as one ZIP; persist_storage asks the browser to keep them). Read-only.',
       schema: obj({}),
       run: (a, i) async {
         final store = c.store;
@@ -364,8 +360,7 @@ List<AgentTool> storageOperations(AgentToolbox b) {
       group: 'file',
       name: 'download_stored_projects',
       effect: ToolEffect.export,
-      description:
-          'File → Browser storage → Download all (ZIP): every project this browser keeps, as one ZIP of their project files ("<name> (<uid>).oci.json", the saved versions in versions/) — the way to back them up or to move them to another browser or device. Always confirmed by the user (a download). Input: versions (also the saved versions; default true). Output: the file name and how many projects.',
+      description: 'File → Browser storage → Download all (ZIP): every project this browser keeps, as one ZIP of their project files ("<name> (<uid>).oci.json", the saved versions in versions/) — the way to back them up or to move them to another browser or device. Always confirmed by the user (a download). Input: versions (also the saved versions; default true). Output: the file name and how many projects.',
       schema: obj({'versions': bool_('Also the saved versions (default true).')}),
       run: (a, i) async {
         final kept = c.store.list();
@@ -384,15 +379,15 @@ List<AgentTool> storageOperations(AgentToolbox b) {
       effect: ToolEffect.write,
       // a choice about the user's browser: always the user's say-so
       confirm: (_) => true,
-      description:
-          'File → Browser storage → Ask to keep it: asks the browser to keep this site\'s storage (the copies of the projects, their versions and the assistant\'s conversations) when it runs short of space. Chromium browsers decide by themselves; Firefox shows the user its own question. Always confirmed by the user first; changes nothing in the project. Output: whether the browser keeps the storage now.',
+      description: 'File → Browser storage → Ask to keep it: asks the browser to keep this site\'s storage (the copies of the projects, their versions and the assistant\'s conversations) when it runs short of space. Chromium browsers decide by themselves; Firefox shows the user its own question. Always confirmed by the user first; changes nothing in the project. Output: whether the browser keeps the storage now.',
       schema: obj({}),
       run: (a, i) async {
         if (await storagePersisted() == true) return const ToolOutput('The browser already keeps this site\'s storage (persistent): nothing to ask.');
         final r = await requestPersistentStorage();
         return ToolOutput(switch (r) {
           true => 'Granted: the browser keeps this site\'s storage when it runs short of space.',
-          false => 'Not granted${browserIsFirefox ? ' (the user declined Firefox\'s question, or it was dismissed)' : ' (the browser decides by itself: a site used more often, or installed as an app, is usually granted)'}. The project file stays the backup.',
+          false =>
+            'Not granted${browserIsFirefox ? ' (the user declined Firefox\'s question, or it was dismissed)' : ' (the browser decides by itself: a site used more often, or installed as an app, is usually granted)'}. The project file stays the backup.',
           null => 'This browser (or this build of the program) cannot be asked.',
         });
       },
@@ -401,8 +396,7 @@ List<AgentTool> storageOperations(AgentToolbox b) {
       b,
       group: 'view',
       name: 'base_map_terms',
-      description:
-          'View → Base map → Terms of the maps: who provides each base map, what its terms allow and the links to them, as the dialog lists them, with the base map on screen and the street map server in use — to tell the user what a map may be used for (a printed sheet, a commercial project). Read-only.',
+      description: 'View → Base map → Terms of the maps: who provides each base map, what its terms allow and the links to them, as the dialog lists them, with the base map on screen and the street map server in use — to tell the user what a map may be used for (a printed sheet, a commercial project). Read-only.',
       schema: obj({}),
       run: (a, i) async {
         final sources = <(BaseMap, String, String, String)>[
@@ -443,8 +437,7 @@ List<AgentTool> stationClimateOperations(AgentToolbox b) {
       name: 'eto_from_station_normals',
       effect: ToolEffect.read,
       effectFor: (i) => i['apply'] == true ? ToolEffect.write : ToolEffect.read,
-      description:
-          'Design → Site climate → Station normals: the monthly grass reference evapotranspiration (ETo) by FAO-56 Penman-Monteith from the climatological normals of a weather station, month by month with the soil heat flux from the neighbouring months, estimating what the station lacks as FAO-56 chapter 3 says (humidity from Tmin as the dew point, radiation from the temperature range, wind 2 m/s). Each monthly input is 12 values, January first, null for a month without data: tmax_c and tmin_c (mean daily maximum and minimum, °C; a month needs both), rh_mean_pct (mean relative humidity), wind_ms (mean wind) measured at wind_height_m (default 2 m), sunshine_h (mean daily bright sunshine), rain_mm (monthly rain); latitude_deg (default the site\'s), elevation_m (the station\'s; default 0), coastal (near the coast or a large lake: kRs 0.19 instead of 0.16). It changes nothing unless apply is true: then the result goes into the site climate, one undo step, source "station" — the ETo, the rain where given, the minimum relative humidity (FAO-56 eq. 63) and the wind at 2 m that adjust the crop coefficients, and the irradiation where the project has none; the months without both temperatures keep their values. Output: the monthly table (ETo mm/day and mm/month, Rs, RHmin, u2, rain, what was estimated) and the ETo of the year.',
+      description: 'Design → Site climate → Station normals: the monthly grass reference evapotranspiration (ETo) by FAO-56 Penman-Monteith from the climatological normals of a weather station, month by month with the soil heat flux from the neighbouring months, estimating what the station lacks as FAO-56 chapter 3 says (humidity from Tmin as the dew point, radiation from the temperature range, wind 2 m/s). Each monthly input is 12 values, January first, null for a month without data: tmax_c and tmin_c (mean daily maximum and minimum, °C; a month needs both), rh_mean_pct (mean relative humidity), wind_ms (mean wind) measured at wind_height_m (default 2 m), sunshine_h (mean daily bright sunshine), rain_mm (monthly rain); latitude_deg (default the site\'s), elevation_m (the station\'s; default 0), coastal (near the coast or a large lake: kRs 0.19 instead of 0.16). It changes nothing unless apply is true: then the result goes into the site climate, one undo step, source "station" — the ETo, the rain where given, the minimum relative humidity (FAO-56 eq. 63) and the wind at 2 m that adjust the crop coefficients, and the irradiation where the project has none; the months without both temperatures keep their values. Output: the monthly table (ETo mm/day and mm/month, Rs, RHmin, u2, rain, what was estimated) and the ETo of the year.',
       schema: obj(
         {
           'tmax_c': numbers('Mean daily maximum temperature, °C, Jan…Dec (null: no data).', n: 12),

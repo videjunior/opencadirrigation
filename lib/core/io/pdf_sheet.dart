@@ -1019,8 +1019,7 @@ class PdfSheetBuilder {
     page.text(px(xc + wc / 2), px(y0 + 4), fonts.fit(t('pdf.generated', {'d': dateString(DateTime.now())}), px(wc - 4), 5.5), size: 5.5, align: PdfAlign.center);
   }
 
-  String _pageLabel(SheetOptions o) =>
-      o.page == PageSize.custom ? '${fmt(o.widthMm, 0)} × ${fmt(o.heightMm, 0)} mm' : '${o.page.label} ${o.landscape ? t('plot.landscape') : t('plot.portrait')}';
+  String _pageLabel(SheetOptions o) => o.page == PageSize.custom ? '${fmt(o.widthMm, 0)} × ${fmt(o.heightMm, 0)} mm' : '${o.page.label} ${o.landscape ? t('plot.landscape') : t('plot.portrait')}';
 
   // ------------------------------------------------------------------ details
 

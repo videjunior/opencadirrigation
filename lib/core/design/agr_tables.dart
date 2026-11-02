@@ -218,7 +218,13 @@ ReportTable? capacityTable(Project p, DesignResults? results, ReportLabels label
     ids.add(f.areaId);
   }
   if (c.flows.isNotEmpty) {
-    rows.add([t('cap.total', {'w': fmtHours(c.windowHours)}), RNum(c.totalHours, 2), '', '', c.flowsFit ? t('cap.fits') : t('cap.short')]);
+    rows.add([
+      t('cap.total', {'w': fmtHours(c.windowHours)}),
+      RNum(c.totalHours, 2),
+      '',
+      '',
+      c.flowsFit ? t('cap.fits') : t('cap.short'),
+    ]);
     warn.add(!c.flowsFit);
     ids.add(null);
   }
@@ -291,15 +297,7 @@ List<ReportTable> programmeTablesOf(IrrigationProgramme prog, ReportLabels label
         headers: [t('sch.date'), t('sch.flow'), t('sch.zones'), t('prog.cycle'), t('sch.start'), t('sch.end'), t('sch.duration')],
         rows: [
           for (final r in prog.runs)
-            [
-              r.day.toIso8601String().substring(0, 10),
-              r.flowName,
-              r.zones.join(' + '),
-              '${r.cycle}/${r.cycles}',
-              hhmm(r.startHour),
-              hhmm(r.endHour),
-              RNum(r.durationHours, 2),
-            ],
+            [r.day.toIso8601String().substring(0, 10), r.flowName, r.zones.join(' + '), '${r.cycle}/${r.cycles}', hhmm(r.startHour), hhmm(r.endHour), RNum(r.durationHours, 2)],
         ],
       ),
     );

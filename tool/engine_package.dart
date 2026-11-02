@@ -33,9 +33,7 @@ String enginePubspec(String appPubspec) {
   String? field(String pattern) => RegExp(pattern, multiLine: true).firstMatch(appPubspec)?.group(1)?.trim();
   final version = field(r'^version:\s*(\S+)') ?? '0.0.0';
   final sdk = field(r'^\s+sdk:\s*(\^?[0-9][^\s#]*)') ?? '^3.0.0';
-  final deps = [
-    for (final p in enginePackages) '  $p: ${field('^\\s+$p:\\s*(\\S+)') ?? 'any'}',
-  ];
+  final deps = [for (final p in enginePackages) '  $p: ${field('^\\s+$p:\\s*(\\S+)') ?? 'any'}'];
   return [
     'name: opencadirrigation',
     'description: "The OpenCADIrrigation engine in pure Dart (no Flutter): projects, design, hydraulics, file formats and the oci command line."',
