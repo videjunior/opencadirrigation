@@ -41,6 +41,8 @@ import 'dart:typed_data';
 import '../hydraulics/pump.dart';
 import '../model/entities.dart';
 import '../model/project.dart';
+// 1.6.0 MOT: progress and cancel (UI-19)
+import 'analysis_control.dart';
 import 'pump_selection.dart';
 import 'results.dart';
 
@@ -397,6 +399,39 @@ TariffSchedule scheduleJobs(List<TariffJob> jobs, TariffSeason season, {Schedule
 List<TariffSchedule> scheduleSeasons(Tariff tariff, List<TariffJob> Function(TariffSeason season) jobsFor, {ScheduleOptions options = const ScheduleOptions()}) => [
   for (final s in tariff.seasons) scheduleJobs(jobsFor(s), s, options: options),
 ];
+
+/// 1.6.0 MOT (UI-19): [scheduleJobs] a cap on the peak power at a time, the
+/// event loop given a turn between them; [control] hears the progress and
+/// can stop it ([AnalysisCancelled]).
+Future<TariffSchedule> scheduleJobsAsync(List<TariffJob> jobs, TariffSeason season, {ScheduleOptions options = const ScheduleOptions(), AnalysisControl? control}) async {
+  late TariffSchedule out;
+  await runStepsAsync(_Scheduler(jobs, season, options).steps((s) => out = s), control);
+  return out;
+}
+
+/// 1.6.0 MOT (UI-19): [scheduleSeasons] a season and a power cap at a time,
+/// the event loop given a turn between them; [control] hears the progress
+/// and can stop it ([AnalysisCancelled]).
+Future<List<TariffSchedule>> scheduleSeasonsAsync(
+  Tariff tariff,
+  List<TariffJob> Function(TariffSeason season) jobsFor, {
+  ScheduleOptions options = const ScheduleOptions(),
+  AnalysisControl? control,
+}) async {
+  final out = <TariffSchedule>[];
+  final seasons = tariff.seasons;
+  for (var i = 0; i < seasons.length; i++) {
+    late TariffSchedule one;
+    final steps = _Scheduler(jobsFor(seasons[i]), seasons[i], options).steps((s) => one = s);
+    // the progress over every season: each the same share
+    await runStepsAsync(
+      steps.map((x) => (i * 1000 + (x.$2 > 0 ? 1000 * x.$1 ~/ x.$2 : 0), seasons.length * 1000)),
+      control,
+    );
+    out.add(one);
+  }
+  return out;
+}
 
 /// Jobs for the system flows of [p] from the design [results]: the daily
 /// duration of every flow and its power, the shaft power of the calculated
@@ -1116,6 +1151,14 @@ class _Scheduler {
   }
 
   TariffSchedule run() {
+    late TariffSchedule out;
+    runSteps(steps((s) => out = s));
+    return out;
+  }
+
+  /// [run] as steps, one per cap on the power of the peak bands; the
+  /// schedule goes to [done].
+  Iterable<AnalysisStep> steps(void Function(TariffSchedule schedule) done) sync* {
     final n = jobs.length;
     final total = minutes.fold(0.0, (a, b) => a + b);
     if (options.maxHoursPerDay > 0 && total / 60 > options.maxHoursPerDay + 1e-9) violations.add('tariff_hours_exceeded');
@@ -1133,7 +1176,9 @@ class _Scheduler {
     _Plan? best;
     var bestTotal = double.infinity;
     var exact = true;
-    for (final cap in caps) {
+    for (var ci = 0; ci < caps.length; ci++) {
+      yield (ci, caps.length);
+      final cap = caps[ci];
       final (plan, ex) = _search(cap);
       if (plan == null) continue;
       final order = plan.order;
@@ -1187,16 +1232,18 @@ class _Scheduler {
     for (final j in js) {
       if (j.peakMinutes > 0) violations.add('tariff_peak_use:${j.id}');
     }
-    return TariffSchedule(
-      seasonId: season.id,
-      jobs: js,
-      blocks: _blocks(clockFlags),
-      energyCost: js.fold(0.0, (s, j) => s + j.cost),
-      energyCostWithoutDiscount: js.fold(0.0, (s, j) => s + j.costWithoutDiscount),
-      demandCost: _demand(js),
-      baselineCost: baseline,
-      exact: exact && best != null,
-      violations: violations,
+    done(
+      TariffSchedule(
+        seasonId: season.id,
+        jobs: js,
+        blocks: _blocks(clockFlags),
+        energyCost: js.fold(0.0, (s, j) => s + j.cost),
+        energyCostWithoutDiscount: js.fold(0.0, (s, j) => s + j.costWithoutDiscount),
+        demandCost: _demand(js),
+        baselineCost: baseline,
+        exact: exact && best != null,
+        violations: violations,
+      ),
     );
   }
 }

@@ -38,6 +38,8 @@ import 'dart:math' as math;
 
 import '../model/project.dart';
 import '../units.dart';
+// 1.6.0 MOT: progress and cancel (UI-19)
+import 'analysis_control.dart';
 import 'management.dart';
 import 'results.dart';
 
@@ -152,6 +154,20 @@ class EnergyGroupingResult {
 /// Groups [zones] for the least pumping energy (see the library comment).
 EnergyGroupingResult groupZonesForEnergy(List<EnergyZone> zones, {GroupingOptions options = const GroupingOptions(), double Function(List<EnergyZone> group)? groupHead}) =>
     _Grouper(zones, options, groupHead).run();
+
+/// 1.6.0 MOT (UI-19): [groupZonesForEnergy] a trial at a time, the event
+/// loop given a turn between them; [control] hears the progress (trials of
+/// the search budget) and can stop it ([AnalysisCancelled]).
+Future<EnergyGroupingResult> groupZonesForEnergyAsync(
+  List<EnergyZone> zones, {
+  GroupingOptions options = const GroupingOptions(),
+  double Function(List<EnergyZone> group)? groupHead,
+  AnalysisControl? control,
+}) async {
+  late EnergyGroupingResult out;
+  await runStepsAsync(_Grouper(zones, options, groupHead).steps((r) => out = r), control);
+  return out;
+}
 
 /// Zones of a design: every zone result of [results] with its flow, required
 /// head at the valve and valve elevation, the hours of the system flow that
@@ -392,6 +408,14 @@ class _Grouper {
   /// Moves and swaps while they improve the score (by the formula, or with
   /// [exact] by [groupHead] until [GroupingOptions.maxHeadCalls] calls).
   List<List<int>> _improve(List<List<int>> start, {bool exact = false}) {
+    late List<List<int>> out;
+    runSteps(_improveSteps(start, (g) => out = g, exact: exact));
+    return out;
+  }
+
+  /// The search of [_improve] as steps (trials out of the budget), the
+  /// groups handed to [done].
+  Iterable<AnalysisStep> _improveSteps(List<List<int>> start, void Function(List<List<int>> groups) done, {bool exact = false}) sync* {
     var groups = [
       for (final g in start) [...g],
     ];
@@ -419,6 +443,7 @@ class _Grouper {
             final from = [...groups[a]]..removeAt(x);
             final to = b == groups.length ? [z] : [...groups[b], z];
             if (!_fits(to)) continue;
+            yield (tries, budget);
             final cand = [
               for (var k = 0; k < groups.length; k++)
                 if (k == a) from else if (k == b) to else groups[k],
@@ -445,6 +470,7 @@ class _Grouper {
               final ga = [...groups[a]]..[x] = groups[b][y];
               final gb = [...groups[b]]..[y] = groups[a][x];
               if (!_fits(ga) || !_fits(gb)) continue;
+              yield (tries, budget);
               final cand = [for (var k = 0; k < groups.length; k++) k == a ? ga : (k == b ? gb : groups[k])];
               final s = scoreOf(cand);
               if (_better(s, score)) {
@@ -458,7 +484,7 @@ class _Grouper {
         }
       }
     }
-    return groups;
+    done(groups);
   }
 
   List<EnergyGroup> _groups(List<List<int>> groups) {
@@ -479,6 +505,13 @@ class _Grouper {
   }
 
   EnergyGroupingResult run() {
+    late EnergyGroupingResult out;
+    runSteps(steps((r) => out = r));
+    return out;
+  }
+
+  /// [run] as steps, the result handed to [done].
+  Iterable<AnalysisStep> steps(void Function(EnergyGroupingResult result) done) sync* {
     for (var i = 0; i < zones.length; i++) {
       if (_oversized(i)) codes.add('grouping_oversized:${zones[i].id}');
     }
@@ -486,15 +519,19 @@ class _Grouper {
     final contiguous = _contiguous();
     var start = ffd;
     if (contiguous != null && _better(_score(contiguous), _score(ffd))) start = contiguous;
-    var best = _improve(start);
+    var best = start;
+    yield* _improveSteps(start, (g) => best = g);
     // refine with the caller's heads when given
-    if (groupHead != null) best = _improve(best, exact: true);
+    if (groupHead != null) {
+      final first = best;
+      yield* _improveSteps(first, (g) => best = g, exact: true);
+    }
     final (violation, _) = _score(best);
     if (violation > 0) {
       if (options.maxGroups > 0 && best.length > options.maxGroups) codes.add('grouping_groups_exceeded');
       if (options.maxHours > 0 && best.fold(0.0, (s, g) => s + _hours(g)) > options.maxHours + 1e-9) codes.add('grouping_hours_exceeded');
     }
-    return EnergyGroupingResult(groups: _groups(best), baseline: _groups(ffd), codes: codes);
+    done(EnergyGroupingResult(groups: _groups(best), baseline: _groups(ffd), codes: codes));
   }
 }
 

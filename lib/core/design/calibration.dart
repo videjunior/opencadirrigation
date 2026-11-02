@@ -17,6 +17,8 @@ import 'dart:math' as math;
 import '../hydraulics/friction.dart';
 import '../hydraulics/network.dart';
 import '../model/catalog.dart';
+// 1.6.0 MOT: progress and cancel (UI-19)
+import 'analysis_control.dart';
 import 'criticality.dart';
 import 'network_builder.dart';
 
@@ -194,6 +196,39 @@ CalibrationResult calibrateRoughness(
   Map<String, int>? groupOf,
   CalibrationOptions options = const CalibrationOptions(),
 }) {
+  late CalibrationResult out;
+  runSteps(calibrationSteps(net, (r) => out = r, pressures: pressures, flows: flows, groups: groups, groupOf: groupOf, options: options));
+  return out;
+}
+
+/// 1.6.0 MOT (UI-19): [calibrateRoughness] an iteration at a time, the
+/// event loop given a turn between them; [control] hears the progress and
+/// can stop it ([AnalysisCancelled]).
+Future<CalibrationResult> calibrateRoughnessAsync(
+  HydraulicNetwork net, {
+  List<PressureMeasurement> pressures = const [],
+  List<FlowMeasurement> flows = const [],
+  int groups = 1,
+  Map<String, int>? groupOf,
+  CalibrationOptions options = const CalibrationOptions(),
+  AnalysisControl? control,
+}) async {
+  late CalibrationResult out;
+  await runStepsAsync(calibrationSteps(net, (r) => out = r, pressures: pressures, flows: flows, groups: groups, groupOf: groupOf, options: options), control);
+  return out;
+}
+
+/// The steps of [calibrateRoughness], one per iteration of its search (out
+/// of the most it may take); the result goes to [done].
+Iterable<AnalysisStep> calibrationSteps(
+  HydraulicNetwork net,
+  void Function(CalibrationResult result) done, {
+  List<PressureMeasurement> pressures = const [],
+  List<FlowMeasurement> flows = const [],
+  int groups = 1,
+  Map<String, int>? groupOf,
+  CalibrationOptions options = const CalibrationOptions(),
+}) sync* {
   final codes = <String>[];
   final ng = math.max(1, groups);
   final lo = math.min(options.minScale, options.maxScale), hi = math.max(options.minScale, options.maxScale);
@@ -252,7 +287,8 @@ CalibrationResult calibrateRoughness(
   if (measured.isEmpty) codes.add('calibration_no_measurements');
   final before = model(ones);
   if (measured.isEmpty || net.options.method != FrictionMethod.hazenWilliams) {
-    return _result(ones, List.filled(ng, double.nan), sq(residual(ones)), sq(residual(ones)), 0, evaluations, pm, fm, measured, before, before, sigma, false, codes);
+    done(_result(ones, List.filled(ng, double.nan), sq(residual(ones)), sq(residual(ones)), 0, evaluations, pm, fm, measured, before, before, sigma, false, codes));
+    return;
   }
   final f0 = sq([for (var i = 0; i < before.length; i++) (before[i] - measured[i]) / sigma[i]]);
   // groups that can move: with pipes and with measurements depending on them
@@ -296,6 +332,7 @@ CalibrationResult calibrateRoughness(
     var x1 = b - phi * (b - a), x2 = a + phi * (b - a);
     var f1 = f(x1), f2 = f(x2);
     while (iterations < options.maxIterations) {
+      yield (iterations, options.maxIterations);
       iterations++;
       if (b - a <= options.tolerance * math.max(1.0, (a + b).abs() / 2)) {
         converged = true;
@@ -321,6 +358,7 @@ CalibrationResult calibrateRoughness(
     var f = sq(r);
     var lambda = 1e-3;
     while (iterations < options.maxIterations) {
+      yield (iterations, options.maxIterations);
       iterations++;
       final jac = _jacobian(residual, s, r, free, lo, hi);
       final p = free.length;
@@ -413,7 +451,7 @@ CalibrationResult calibrateRoughness(
   }
   final after = model(s);
   if (anyNotConverged) codes.add('calibration_not_converged');
-  return _result(s, se, f0, fs, iterations, evaluations, pm, fm, measured, before, after, sigma, converged, codes);
+  done(_result(s, se, f0, fs, iterations, evaluations, pm, fm, measured, before, after, sigma, converged, codes));
 }
 
 CalibrationResult _result(

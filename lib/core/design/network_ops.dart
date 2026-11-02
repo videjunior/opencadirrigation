@@ -18,6 +18,8 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../units.dart';
 import 'agronomy.dart';
+// 1.6.0 MOT: progress and cancel (UI-19)
+import 'analysis_control.dart';
 import 'calibration.dart';
 import 'criticality.dart';
 import 'designer.dart';
@@ -450,8 +452,28 @@ class CriticalityView {
 /// of the flow needing the pressure head of its design at its node. Null
 /// without a water supply.
 CriticalityView? criticalityOf(Designer d, DesignResults r, SystemFlow sf, {bool pressureDriven = true}) {
+  CriticalityView? out;
+  runSteps(criticalityOfSteps(d, r, sf, (v) => out = v, pressureDriven: pressureDriven));
+  return out;
+}
+
+/// 1.6.0 MOT (UI-19): [criticalityOf] a pipe at a time, the event loop
+/// given a turn between them; [control] hears the progress and can stop it
+/// ([AnalysisCancelled]).
+Future<CriticalityView?> criticalityOfAsync(Designer d, DesignResults r, SystemFlow sf, {bool pressureDriven = true, AnalysisControl? control}) async {
+  CriticalityView? out;
+  await runStepsAsync(criticalityOfSteps(d, r, sf, (v) => out = v, pressureDriven: pressureDriven), control);
+  return out;
+}
+
+/// The steps of [criticalityOf]; the view (null without a water supply)
+/// goes to [done].
+Iterable<AnalysisStep> criticalityOfSteps(Designer d, DesignResults r, SystemFlow sf, void Function(CriticalityView? view) done, {bool pressureDriven = true}) sync* {
   final built = d.mainlineNetworkFor(sf);
-  if (built == null) return null;
+  if (built == null) {
+    done(null);
+    return;
+  }
   final at = <String, List<String>>{};
   final required = <String, double>{};
   for (final id in sf.valveIds) {
@@ -462,7 +484,8 @@ CriticalityView? criticalityOf(Designer d, DesignResults r, SystemFlow sf, {bool
     required[node] = math.max(required[node] ?? 0, duty.$2);
   }
   final net = built.$1;
-  final res = analyzeCriticality(net, requiredPressure: required, pressureDriven: pressureDriven);
+  late CriticalityResult res;
+  yield* criticalitySteps(net, (x) => res = x, requiredPressure: required, pressureDriven: pressureDriven);
   final links = {for (final l in net.links) l.id: l};
   final rows = <CriticalityRow>[];
   for (final s in res.ranked) {
@@ -480,7 +503,7 @@ CriticalityView? criticalityOf(Designer d, DesignResults r, SystemFlow sf, {bool
       ),
     );
   }
-  return CriticalityView(result: res, rows: rows, demandsAt: at);
+  done(CriticalityView(result: res, rows: rows, demandsAt: at));
 }
 
 // ---------------------------------------------------------------- calibration
@@ -560,8 +583,42 @@ FieldCalibration? calibrateFromField(
   List<FieldReading> flows = const [],
   CalibrationOptions options = const CalibrationOptions(),
 }) {
+  FieldCalibration? out;
+  runSteps(calibrateFromFieldSteps(d, sf, (c) => out = c, pressures: pressures, flows: flows, options: options));
+  return out;
+}
+
+/// 1.6.0 MOT (UI-19): [calibrateFromField] an iteration at a time, the event
+/// loop given a turn between them; [control] hears the progress and can
+/// stop it ([AnalysisCancelled]).
+Future<FieldCalibration?> calibrateFromFieldAsync(
+  Designer d,
+  SystemFlow sf, {
+  List<FieldReading> pressures = const [],
+  List<FieldReading> flows = const [],
+  CalibrationOptions options = const CalibrationOptions(),
+  AnalysisControl? control,
+}) async {
+  FieldCalibration? out;
+  await runStepsAsync(calibrateFromFieldSteps(d, sf, (c) => out = c, pressures: pressures, flows: flows, options: options), control);
+  return out;
+}
+
+/// The steps of [calibrateFromField]; the calibration (null without a water
+/// supply) goes to [done].
+Iterable<AnalysisStep> calibrateFromFieldSteps(
+  Designer d,
+  SystemFlow sf,
+  void Function(FieldCalibration? calibration) done, {
+  List<FieldReading> pressures = const [],
+  List<FieldReading> flows = const [],
+  CalibrationOptions options = const CalibrationOptions(),
+}) sync* {
   final built = d.mainlineNetworkFor(sf);
-  if (built == null) return null;
+  if (built == null) {
+    done(null);
+    return;
+  }
   final (net0, res0, _) = built;
   final net = copyNetwork(net0);
   final points = {for (final m in measurePoints(d)) m.entityId: m};
@@ -596,8 +653,9 @@ FieldCalibration? calibrateFromField(
     fm.add(FlowMeasurement(linkId: out.id, flow: out.from == node ? rd.value : -rd.value, sigma: rd.sigma));
     entityOf[out.id] = rd.entityId;
   }
-  final r = calibrateRoughness(net, pressures: pm, flows: fm, options: options);
-  return FieldCalibration(result: r, network: net, entityOf: entityOf, boundary: boundary);
+  late CalibrationResult r;
+  yield* calibrationSteps(net, (x) => r = x, pressures: pm, flows: fm, options: options);
+  done(FieldCalibration(result: r, network: net, entityOf: entityOf, boundary: boundary));
 }
 
 /// The Hazen-Williams C scale and offset that multiply every C of the

@@ -19,6 +19,8 @@ import 'dart:math' as math;
 
 import '../hydraulics/emitter.dart';
 import '../hydraulics/network.dart';
+// 1.6.0 MOT: progress and cancel (UI-19)
+import 'analysis_control.dart';
 
 /// Deep copy of [net]: new [HNode] and [HLink] objects with the same data, so
 /// a scenario can change demands, emitters, roughness or statuses without
@@ -380,6 +382,42 @@ CriticalityResult analyzeCriticality(
   bool treeShortcut = true,
   double minDeficit = 0.01,
 }) {
+  late CriticalityResult out;
+  runSteps(criticalitySteps(net, (r) => out = r, requiredPressure: requiredPressure, linkIds: linkIds, pressureDriven: pressureDriven, treeShortcut: treeShortcut, minDeficit: minDeficit));
+  return out;
+}
+
+/// 1.6.0 MOT (UI-19): [analyzeCriticality] a failure at a time, the event
+/// loop given a turn between them; [control] hears the progress and can
+/// stop it ([AnalysisCancelled]).
+Future<CriticalityResult> analyzeCriticalityAsync(
+  HydraulicNetwork net, {
+  Map<String, double> requiredPressure = const {},
+  Iterable<String>? linkIds,
+  bool pressureDriven = true,
+  bool treeShortcut = true,
+  double minDeficit = 0.01,
+  AnalysisControl? control,
+}) async {
+  late CriticalityResult out;
+  await runStepsAsync(
+    criticalitySteps(net, (r) => out = r, requiredPressure: requiredPressure, linkIds: linkIds, pressureDriven: pressureDriven, treeShortcut: treeShortcut, minDeficit: minDeficit),
+    control,
+  );
+  return out;
+}
+
+/// The steps of [analyzeCriticality], one per link closed; the result goes
+/// to [done].
+Iterable<AnalysisStep> criticalitySteps(
+  HydraulicNetwork net,
+  void Function(CriticalityResult result) done, {
+  Map<String, double> requiredPressure = const {},
+  Iterable<String>? linkIds,
+  bool pressureDriven = true,
+  bool treeShortcut = true,
+  double minDeficit = 0.01,
+}) sync* {
   final codes = <String>[];
   final base = copyNetwork(net);
   final r0 = base.solve();
@@ -447,12 +485,15 @@ CriticalityResult analyzeCriticality(
   final (baseDeficits, baseUnmet, _) = evaluate(copyNetwork(net));
   final linkById = {for (final l in net.links) l.id: l};
   final scenarios = <CriticalityScenario>[];
-  for (final id
-      in linkIds ??
-          [
-            for (final l in net.links)
-              if (l.kind == HLinkKind.pipe) l.id,
-          ]) {
+  final ids =
+      linkIds?.toList() ??
+      [
+        for (final l in net.links)
+          if (l.kind == HLinkKind.pipe) l.id,
+      ];
+  for (var step = 0; step < ids.length; step++) {
+    yield (step, ids.length);
+    final id = ids[step];
     if (!linkById.containsKey(id)) {
       codes.add('criticality_unknown_link:$id');
       continue;
@@ -485,7 +526,7 @@ CriticalityResult analyzeCriticality(
     if (!converged) codes.add('criticality_not_converged:$id');
     scenarios.add(CriticalityScenario(linkId: id, cutOffNodes: cut, cutOffDemand: cutQ, unmetDemand: unmet, deficits: deficits, solved: true, converged: converged));
   }
-  return CriticalityResult(scenarios: scenarios, totalDemand: total, baseDeficits: baseDeficits, baseUnmet: baseUnmet, tree: tree, codes: codes);
+  done(CriticalityResult(scenarios: scenarios, totalDemand: total, baseDeficits: baseDeficits, baseUnmet: baseUnmet, tree: tree, codes: codes));
 }
 
 /// Shortfall of the intact network left among the nodes in [reach] (the

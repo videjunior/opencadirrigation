@@ -49,6 +49,8 @@ import 'dart:math' as math;
 import '../hydraulics/friction.dart';
 import '../hydraulics/minor_losses.dart';
 import '../hydraulics/network.dart';
+// 1.6.0 MOT: progress and cancel (UI-19)
+import 'analysis_control.dart';
 import 'criticality.dart';
 
 /// Combined multiple-recursive random number generator MRG32k3a (L'Ecuyer
@@ -749,6 +751,35 @@ class RandomCheckResult {
 /// sources keep the heads of [net] (the set-point head); [net] is not
 /// changed.
 RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> hydrants, {RandomCheckOptions options = const RandomCheckOptions(), Map<String, double>? probabilities}) {
+  late RandomCheckResult out;
+  runSteps(randomCheckSteps(net, hydrants, (r) => out = r, options: options, probabilities: probabilities));
+  return out;
+}
+
+/// 1.6.0 MOT (UI-19): [checkRandomConfigurations] a configuration at a time,
+/// the event loop given a turn between them; [control] hears the progress
+/// and can stop it ([AnalysisCancelled]).
+Future<RandomCheckResult> checkRandomConfigurationsAsync(
+  HydraulicNetwork net,
+  List<Hydrant> hydrants, {
+  RandomCheckOptions options = const RandomCheckOptions(),
+  Map<String, double>? probabilities,
+  AnalysisControl? control,
+}) async {
+  late RandomCheckResult out;
+  await runStepsAsync(randomCheckSteps(net, hydrants, (r) => out = r, options: options, probabilities: probabilities), control);
+  return out;
+}
+
+/// The steps of [checkRandomConfigurations], one per configuration; the
+/// result goes to [done].
+Iterable<AnalysisStep> randomCheckSteps(
+  HydraulicNetwork net,
+  List<Hydrant> hydrants,
+  void Function(RandomCheckResult result) done, {
+  RandomCheckOptions options = const RandomCheckOptions(),
+  Map<String, double>? probabilities,
+}) sync* {
   final codes = <String>[];
   final hyd = <Hydrant>[];
   for (final h in hydrants) {
@@ -761,7 +792,7 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
   final n = hyd.length;
   if (n == 0) {
     codes.add('random_no_hydrants');
-    return RandomCheckResult(
+    done(RandomCheckResult(
       hydrants: const [],
       configurations: 0,
       satisfiedConfigurations: 0,
@@ -772,7 +803,8 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
       meanDischarge: 0,
       notConverged: 0,
       codes: codes,
-    );
+    ));
+    return;
   }
   final count = options.configurations > 0 ? options.configurations : math.max(200, n + 1);
   final rng = Mrg32k3a(options.seed);
@@ -794,6 +826,7 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
   var openSum = 0.0, dischargeSum = 0.0;
   final perm = List<int>.generate(n, (i) => i);
   for (var c = 0; c < count; c++) {
+    yield (c, count);
     final open = <int>[];
     if (q0 > 0) {
       // Fisher-Yates shuffle, then hydrants in that order until the discharge
@@ -879,7 +912,7 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
     );
   }
   puh.sort();
-  return RandomCheckResult(
+  done(RandomCheckResult(
     hydrants: out,
     configurations: count,
     satisfiedConfigurations: satisfiedConfigs,
@@ -890,7 +923,7 @@ RandomCheckResult checkRandomConfigurations(HydraulicNetwork net, List<Hydrant> 
     meanDischarge: dischargeSum / count,
     notConverged: notConverged,
     codes: codes,
-  );
+  ));
 }
 
 /// Quantile [q] (0..1) of the ascending [sorted] values, linear between
