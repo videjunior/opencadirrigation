@@ -234,8 +234,13 @@ class Designer {
     final r = analyzePivot(spec, id: p.id, name: name, groundRiseAt: rise, nozzles: nozzles);
     // the mainline feeds what the sprinkler package needs: its regulators,
     // drops and nozzles may ask for more than the plain machine hydraulics
-    final pkg = analyzeMechanised(project, p, terrain: terrain).package;
-    if (pkg.requiredInletHeadM > 0 && pkg.designFlow > 0) return r.withInlet(flow: pkg.designFlow, inletHead: pkg.requiredInletHeadM);
+    final mech = analyzeMechanised(project, p, terrain: terrain);
+    final pkg = mech.package;
+    // a corner arm adds its banks (all on, the arm extended) to the machine,
+    // whose package then ends at the hinge
+    final arm = mech.cornerArm;
+    final armFlow = arm == null || arm.steps.isEmpty ? 0.0 : math.max(0.0, arm.peakFlow - arm.mainFlow);
+    if (pkg.requiredInletHeadM > 0 && pkg.designFlow > 0) return r.withInlet(flow: pkg.designFlow + armFlow, inletHead: pkg.requiredInletHeadM);
     return r;
   }
 

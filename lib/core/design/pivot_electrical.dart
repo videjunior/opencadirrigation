@@ -20,9 +20,12 @@
 ///   subtransient reactance X''d feeding a locked rotor (IEEE Std 399,
 ///   motor-starting studies; IEEE Std 446, generator sizing), rounded up to
 ///   a standard rating.
-/// * Average power at a timer setting: a tower keeps aligned with the last
-///   one, so it runs a share of the time proportional to its radius; the
-///   last tower runs the timer fraction (Keller & Bliesner 1990, ch. 16).
+/// * Average power at a timer setting: a pivot tower keeps aligned with the
+///   last one, so it runs a share of the time proportional to its radius;
+///   the last tower runs the timer fraction (Keller & Bliesner 1990, ch. 16).
+///   Every tower of a linear move travels the same distance and runs the
+///   timer fraction; so does the drive tower of a corner arm, which follows
+///   the guide with the last regular tower.
 library;
 
 import 'dart:math' as math;
@@ -90,10 +93,19 @@ class PivotElectricalSpec {
     this.allowedDip = 0.2,
     this.generatorLoading = 0.8,
     this.timerPct = 100,
+    this.linear = false,
+    this.armTowerRadiiM = const [],
   });
 
-  /// Distance of every drive tower from the pivot point (m); a corner arm's towers may be added.
+  /// Distance of every drive tower from the pivot point (m).
   final List<double> towerRadiiM;
+
+  /// A linear move: every tower runs the timer fraction.
+  final bool linear;
+
+  /// Drive towers of a corner arm (m from the pivot point, the arm
+  /// extended: the worst case for the drops), after the regular towers.
+  final List<double> armTowerRadiiM;
 
   /// Tower motors: rated output (kW; 0.37–1.1 kW are usual), efficiency, power factor,
   /// locked-rotor to full-load current and the power factor while starting.
@@ -159,7 +171,11 @@ class PivotTowerElectrical {
     required this.volts,
     required this.runningDropPct,
     required this.startingDropPct,
+    this.arm = false,
   });
+
+  /// The drive tower of a corner arm.
+  final bool arm;
 
   /// 1-based tower number, distance from the pivot point (m) and cable length to it (m).
   final int index;
@@ -174,10 +190,19 @@ class PivotTowerElectrical {
   final double runningDropPct;
   final double startingDropPct;
 
-  Map<String, dynamic> toJson() => {'i': index, 'r': radiusM, 'l': cableM, 'a': spanCurrentA, 'v': volts, 'du': runningDropPct, 'dus': startingDropPct};
+  Map<String, dynamic> toJson() => {'i': index, 'r': radiusM, 'l': cableM, 'a': spanCurrentA, 'v': volts, 'du': runningDropPct, 'dus': startingDropPct, if (arm) 'arm': true};
   static PivotTowerElectrical fromJson(Map<String, dynamic> j) {
     double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
-    return PivotTowerElectrical(index: (j['i'] as num?)?.toInt() ?? 0, radiusM: d('r'), cableM: d('l'), spanCurrentA: d('a'), volts: d('v'), runningDropPct: d('du'), startingDropPct: d('dus'));
+    return PivotTowerElectrical(
+      index: (j['i'] as num?)?.toInt() ?? 0,
+      radiusM: d('r'),
+      cableM: d('l'),
+      spanCurrentA: d('a'),
+      volts: d('v'),
+      runningDropPct: d('du'),
+      startingDropPct: d('dus'),
+      arm: j['arm'] as bool? ?? false,
+    );
   }
 }
 
@@ -309,7 +334,9 @@ PivotElectricalResult designPivotElectrical(PivotElectricalSpec s, {String id = 
     if (!warnings.contains(c)) warnings.add(c);
   }
 
-  final radii = [...s.towerRadiiM.where((r) => r > 0)]..sort();
+  final regular = [...s.towerRadiiM.where((r) => r > 0)]..sort();
+  final armTowers = {...s.armTowerRadiiM.where((r) => r > 0)};
+  final radii = [...regular, ...armTowers]..sort();
   if (radii.isEmpty) warn('pivot_elec_no_towers');
   final u = s.voltage;
   final im = motorCurrent(kw: s.motorKw, voltage: u, efficiency: s.motorEfficiency, powerFactor: s.motorPowerFactor);
@@ -425,6 +452,7 @@ PivotElectricalResult designPivotElectrical(PivotElectricalSpec s, {String id = 
         volts: u - running[t],
         runningDropPct: 100 * running[t] / u,
         startingDropPct: 100 * startAt[t] / u,
+        arm: armTowers.contains(radii[t]) && !regular.contains(radii[t]),
       ),
     );
   }
@@ -437,13 +465,15 @@ PivotElectricalResult designPivotElectrical(PivotElectricalSpec s, {String id = 
   }
   final genNeed = math.max(s.generatorLoading > 0 ? kva / s.generatorLoading : kva, generatorKvaForStart(startingKva: startKva, reactance: s.generatorReactance, dip: s.allowedDip));
   final gen = standardGeneratorKva.firstWhere((g) => g >= genNeed - 1e-9, orElse: () => genNeed);
-  // average input at the timer setting
-  final rLast = radii.isEmpty ? 1.0 : radii.last;
+  // average input at the timer setting: the share of the time each tower
+  // runs (pivot towers by radius, linear towers and the arm tower alike)
+  final rLast = regular.isEmpty ? 1.0 : regular.last;
   final timer = s.timerPct.clamp(0.0, 100.0) / 100;
   var avg = s.auxiliaryKw + (s.otherMotorKw > 0 ? s.otherMotorKw / s.otherMotorEfficiency : 0.0) + (boosterKw > 0 ? boosterKw / s.boosterMotorEfficiency : 0.0);
-  for (final r in radii) {
-    avg += s.motorKw / s.motorEfficiency * timer * r / rLast;
+  for (final r in regular) {
+    avg += s.motorKw / s.motorEfficiency * timer * (s.linear ? 1.0 : r / rLast);
   }
+  avg += armTowers.where((r) => !regular.contains(r)).length * s.motorKw / s.motorEfficiency * timer;
   return PivotElectricalResult(
     towers: towers,
     cableMm2: chosen,
