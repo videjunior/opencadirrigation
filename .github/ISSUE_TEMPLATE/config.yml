@@ -3,6 +3,9 @@ contact_links:
   - name: Report a security vulnerability
     url: https://github.com/videjunior/opencadirrigation/security/advisories/new
     about: Privately, not in a public issue (see SECURITY.md).
-  - name: Manual
-    url: https://github.com/videjunior/opencadirrigation/blob/main/docs/manual/README.md
-    about: How the app works, its formats, privacy and known limitations.
+  - name: Questions, ideas and translations
+    url: https://github.com/videjunior/opencadirrigation/discussions
+    about: Ask, suggest, show a project or review a translation in the Discussions (a defect goes in an issue).
+  - name: User guide
+    url: https://opencadirrigation.com/manual/
+    about: How the app works, its formats, privacy and known limitations (also in docs/manual).

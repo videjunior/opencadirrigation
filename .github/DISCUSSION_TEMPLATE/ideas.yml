@@ -1,0 +1,43 @@
+# Category "Ideas" (slug: ideas). A function, a report, a format or a catalogue the app should have.
+title: "[Idea] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. Ideas are discussed here first; once one is clear, it becomes an issue.
+        The [user guide](https://opencadirrigation.com/manual/) and its [known limitations](https://opencadirrigation.com/manual/limitations/) say what the app does today.
+  - type: textarea
+    id: task
+    attributes:
+      label: What you want to do
+      description: The design task, as you would describe it to a colleague.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How you do it today
+      description: By hand, in a spreadsheet, not at all…
+  - type: textarea
+    id: help
+    attributes:
+      label: What would help
+      description: The function, report or option you have in mind, with an example (a drawing, a table, a standard or a reference) if you have one.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Drawing and editing
+        - Hydraulics and sizing
+        - Automatic design
+        - Agronomy and scheduling
+        - Pivots and machines
+        - Reports, sheets and export
+        - Import and file formats
+        - AI assistant
+        - Phone, tablet and field use
+        - Languages and translations
+        - Other
