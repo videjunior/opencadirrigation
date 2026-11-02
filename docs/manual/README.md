@@ -12,8 +12,11 @@ the release checklist are in [CONTRIBUTING.md](../../CONTRIBUTING.md).
 1. [Component catalogue](catalogue.md): pipes, emitters, valves, pumps, prices and manufacturer packs
 1. [Terrain](terrain.md): contours, spot heights, the terrain model, online elevation
 1. [Calculation and sizing](calculation.md): parameters, calculation steps, design check and assistant, analyses
+1. [Agronomy and irrigation scheduling](agronomy.md): daily water balance, irrigation programme, runoff, fertigation by stage, field uniformity, user crops
+1. [Power, water and machines](power-water-machines.md): pump house electrics, solar pumping, water quality, two-wire, several pivots, travellers and furrows
 1. [AI assistant](ai-assistant.md): what the optional assistant does, what it sends and how it is controlled
 1. [Reports, plotting and export](reports-and-export.md): reports panel, PDF sheets, quote, exports
+1. [Title block and technical documents](technical-documents.md): title block, datum, document packages, permit table, memorial, O&M plan, budget, life-cycle cost
 1. [File formats](file-formats.md): the project file and every import and export format
 1. [Storage, privacy and network access](privacy-and-network.md): what stays in the browser, what goes out and to whom
 1. [Languages and site](languages-and-site.md): the 20 languages, the site, the offline start and the hosting

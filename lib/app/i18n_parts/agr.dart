@@ -191,7 +191,7 @@ const _agr = <String, (String, String, String)>{
     'No agronomy tables: areas with a water balance, a soil, machines, a fertigation plan or a field evaluation bring them here.',
     'Sin tablas de agronomía: áreas con balance hídrico, suelo, máquinas, plan de fertirriego o evaluación de campo las traen aquí.',
   ),
-  'reports.agronomy': ('Agronomia', 'Agronomy', 'Agronomía'),
+  'reports.agronomy': ('Manejo da irrigação', 'Irrigation management', 'Manejo del riego'),
   'hist.waterBalance': ('Balanço hídrico da área', 'Water balance of the area', 'Balance hídrico del área'),
   'hist.programme': ('Programa de rega', 'Irrigation programme', 'Programa de riego'),
   'hist.userCrops': ('Culturas do usuário', 'User crops', 'Cultivos del usuario'),

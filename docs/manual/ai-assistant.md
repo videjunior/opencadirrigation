@@ -45,30 +45,37 @@ button does the same).
 
 ## How it works
 
-The agent keeps a to-do list of the task, asks you questions as cards with
-options when something is missing (the task waits for the answers), presents its plan, and works
-through the program's own tools: 73 tools sent with every request, 102 more operations it finds and
-runs (`find_operations`, `run_operation`), any menu command (`run_command`, the dialogs run without
-opening) and 134 settings (`get_setting`, `set_setting`). It reads the same numbers as the reports,
-changes the project through the same functions as the menus and dialogs (drawing, network,
-catalogue, system flows, the design, its corrections, the automatic layouts, the analyses, the
-quote, exports), keeps the project's **AI notes** (requirements, your answers and decisions, saved
-in the project file and editable in the settings, each update one undo step), reads the design
-playbook of the project type (12, written from the gallery examples) and the example projects,
-finds the site from an address (OpenStreetMap Nominatim: at most one search a second and 8 per
-conversation), sets the georeference and the base map, downloads the terrain and the climate
-through the app's own downloads, and imports the drawings and GIS files you attach. It can also
-read a data sheet you attach (PDF, image or text, up to 20 MB) and add its items to the catalogue,
-checked before they go in, and write the project's technical report, which can be copied or put on
-the drawing as text. [docs/AI_TOOLS.md](../../docs/AI_TOOLS.md), generated from the coverage map, lists
-what it reaches: of the 1677 functions a user can reach (command actions, drawing tools, aliases,
-menu items, dialogs and their options, panel fields, status bar, view options), 1637 are covered,
-40 have no meaning for the AI (each with its reason) and none is missing; a test fails when a new
-command, tool, menu item or dialog has no route. The system prompt states the network rules, the
-design run and the permissions and indexes a reference manual the model reads when it needs it
-(`read_manual`, 20 topics generated from the code: items and their fields, design parameters,
-message codes, tools and operations, the engine's values, and a worked example replayed against the
-real tools); the prompt and the tool definitions are cached between requests.
+The agent keeps a to-do list of the task, asks you questions as cards with options when something is
+missing (the task waits for the answers), presents its plan, and works through the program's own
+tools: 75 tools sent with every request, 205 more operations it finds and runs (`find_operations`,
+`run_operation`), any menu command (`run_command`, the dialogs run without opening) and about 150
+settings (`get_setting`, `set_setting`), so it reaches the functions of 1.6.0 too (pump stations,
+reservoirs, the agronomy dialogs, the power and water analyses, the technical documents and the
+title block, block references, layer states, comparisons, the points wizard and stake-out points,
+islands of areas, inserting a project) and the editing commands (stretch, fillet, chamfer, break,
+join, explode, convert to area). It reads the same numbers as the reports, changes the project
+through the same functions as the menus and dialogs (drawing, network, catalogue, system flows, the
+design, its corrections, the automatic layouts, the analyses, the quote, exports), keeps the
+project's **AI notes** (requirements, your answers and decisions, saved in the project file and
+editable in the settings, each update one undo step), reads the design playbook of the project type
+(12, written from the gallery examples) and the example projects, finds the site from an address
+(OpenStreetMap Nominatim: at most one search a second and 8 per conversation), sets the georeference
+and the base map, downloads the terrain and the climate through the app's own downloads, and imports
+the drawings and GIS files you attach. It can also read a data sheet you attach (PDF, image or text,
+up to 20 MB) and add its items to the catalogue, checked before they go in, and write the project's
+technical report, which can be copied or put on the drawing as text. A long attachment is not put in
+the message: the model reads the parts it needs (`read_attachment`) or has the smaller model of the
+same company (Claude Haiku 5.5 or GPT-6 Luna) read up to 200 pages or 20 000 lines of it and answer
+its question (`summarize_attachment`), whose tokens count in the meter and the spending cap.
+[docs/AI_TOOLS.md](../../docs/AI_TOOLS.md), generated from the coverage map, lists what it reaches:
+every function a user can reach (command actions, drawing tools, aliases, menu items, dialogs and
+their options, panel fields, status bar, view options) is covered or marked as having no meaning for
+the AI, each with its reason; a test fails when a new command, tool, menu item or dialog has no
+route. The system prompt states the network rules, the design run and the permissions and indexes a
+reference manual the model reads when it needs it (`read_manual`, 20 topics generated from the code:
+items and their fields, design parameters, message codes, tools and operations, the engine's values,
+and a worked example replayed against the real tools); the prompt and the tool definitions are
+cached between requests.
 
 ## Vision
 
@@ -134,31 +141,61 @@ brings its conversation back as it was, and the model goes on with the exact ear
 answer the closing page cut short shows as stopped, with **Try again**. Rewinding a restored
 conversation takes back only the conversation (the project's undo history does not survive a reload).
 
+A project can keep several conversations: **Conversations of the project** in the panel lists them,
+the most recent first, by their first message; a new conversation leaves the current one in the list,
+and any of them opens again or is deleted. `/new` starts a new one keeping the current, `/clear`
+deletes the current. The browser keeps the 24 most recently saved conversations of all projects. A
+conversation exports to a JSON file and imports back, without the key (taken out of every text) and
+without the photos you attached (a note stands in their place); an imported conversation goes on with
+the program's own system prompt, so import only conversations of yours. The same project open in two
+tabs of the browser keeps the conversation of the first one only, and the second says so.
+
 ## Control
 
-What it may do is set in the settings: **read only**; **plan first** (it explores with
-reads only and presents a plan; changes start once you approve it); **ask before each change** (the
-default: a card with Apply, Skip and Stop, also for each request to another service); or **apply
-changes automatically** (saving a file, setting the georeference and deleting more than 20 items
-are still confirmed). You can type while it works (the message reaches it at its next step) and
-stop it at any time. Approving a plan with "apply automatically" runs that task without asking; the
-mode chosen in the settings stays for the next tasks. After an error or a stop the answer offers
-**Try again** (the same message, when nothing of it reached the model) or **Continue**, and the
-settings when the fix is there (a key refused, a model the key cannot use). Every answer that changed the project is one history entry with **Undo these
-changes**, and every message has **Rewind to here**, which takes the project (through the undo
-history) and the conversation back to before it. A task ends at its step limit (50 by default, up
-to 200) or at its spending cap (US$ 2 by default at list prices, with a warning at 80 % and a
+What it may do is set in the settings: **read only**; **plan first** (it explores with reads only
+and presents a plan; changes start once you approve it); **ask before each change** (the default: a
+card with Apply, Skip and Stop, also for each request to another service, where Enter applies and
+Esc skips, and **Apply the rest of this task** applies this change and the next ordinary ones of the
+task without asking, large deletions, requests to other services and exports still confirmed); or
+**apply changes automatically** (saving a file, setting the georeference and deleting more than 20
+items are still confirmed). The card runs exactly what it showed: the input of a call is fixed when
+it is planned, and so is the selection it acts on. Settings are classed by their effect: a view
+switch is a read, a custom map server and the program's own settings are changes always confirmed,
+with the host shown. What you change on the drawing while it works stays apart from its changes,
+which are steps of their own in Edit → Undo, before and after yours. You can type while it works
+(the message reaches it at its next step) and stop it at any time. Approving a plan with "apply
+automatically" runs that task without asking; the mode chosen in the settings stays for the next
+tasks. After an error or a stop the answer offers **Try again** (the same message, when nothing of
+it reached the model) or **Continue**, and the settings when the fix is there (a key refused, a
+model the key cannot use). Every answer that changed the project is one history entry with **Undo
+these changes**, and every message has **Rewind to here**, which takes the project (through the undo
+history) and the conversation back to before it. A task ends at its step limit (50 by default, up to
+200) or at its spending cap (US$ 2 by default at list prices, with a warning at 80 % and a
 **Continue** button for another cap). The cap is the app's own: the model is shown no token
 countdown (a task budget made it stop early and suggest a new conversation), and its instructions
-say there is ample context. Long conversations are summarised on the company's
-server (Anthropic from 150 000 input tokens, after clearing old tool results from 80 000 while
-keeping the notes, the plan and the to-do list; OpenAI from 200 000, with older pictures dropped
-from the request); a setting turns this off. Quick commands: `/new`, `/design`, `/check`,
+say there is ample context. Under every answer, **Costs by step** lists each request of the turn:
+the tokens read from and written to the cache, those outside it, the output, the pictures and PDFs,
+the effort and what made a step dearer (the cache not used, a change of model or effort, a large
+request); `/cost` says the share read from the cache. Long conversations are summarised on the
+company's server (Anthropic from 150 000 input tokens, after clearing old tool results from 80 000
+while keeping the notes, the plan and the to-do list; OpenAI from 200 000, with older pictures
+dropped from the request); a setting turns this off. Quick commands: `/new`, `/design`, `/check`,
 `/review`, `/report`, `/quote`, `/export`, `/plan`, `/clear` and `/cost`. `/review` runs read-only
 whatever the mode: the model looks at the zones, the messages marked at their items and the
-pressures and velocities over the drawing, reads the messages and the report tables, and answers with
-a checklist (OK, attention or problem, with the figures and where to fix each point), changing nothing. Standing instructions in the
-settings apply to every conversation ("always PVC PN 80 on the mainline"), and the conversation
-saves as Markdown. Conversations are not saved with the project, so shared files and links never
-carry the chat or its pictures. What is sent, when, and how the keys are kept: [section
-12](privacy-and-network.md).
+pressures and velocities over the drawing, reads the messages and the report tables, and answers
+with a checklist (OK, attention or problem, with the figures and where to fix each point), changing
+nothing. Standing instructions in the settings apply to every conversation ("always PVC PN 80 on the
+mainline"), and the conversation saves as Markdown. Conversations are not saved with the project, so
+shared files and links never carry the chat or its pictures. What is sent, when, and how the keys
+are kept: [Storage, privacy and network access](privacy-and-network.md).
+
+The settings also have **Test the connection** to the model chosen (one minimal request along the
+same path as the real ones: whether the key, the account and the model accept it, the time, the
+tokens, the cost, the limits of the account and any field it refused), **Adjust the effort to each
+stage** (Claude models: after a round of plain edits and reads only, the next step runs at low
+effort; planning, designing, checking, pictures and errors go back to the effort chosen, and the
+cached conversation stays), *Tell me when the app is in the background* (the title of the tab blinks
+when the task waits for your approval, questions or a plan, or ends while you are in another tab or
+window) and *Allow system notifications* for the same. The project's content (its notes, texts and
+names) reaches the model as data, never as instructions, and AI notes that came with a file written
+in another browser are read as information until you choose *Use as mine*.

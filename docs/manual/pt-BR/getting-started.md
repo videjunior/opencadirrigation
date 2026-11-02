@@ -6,7 +6,12 @@
    no OpenStreetMap, ou coordenadas; o projeto é georreferenciado ali, no mapa de satélite) e **se
    você quer projetar com o assistente de IA**.
 2. Desenhe a área, deixe o assistente projetar ou abra um exemplo pronto: Ajuda → Boas-vindas e
-   galeria de exemplos (com o **tutorial interativo**, 80 passos) ou Arquivo → Exemplos.
+   galeria de exemplos (com o **tutorial interativo**, 90 passos) ou Arquivo → Exemplos. O tutorial
+   abre numa aba própria; o seu cartão tem um menu de capítulos e trilhas (o tutorial completo, uma
+   trilha curta para o toque e trilhas rápidas de gotejamento num talhão, de paisagismo e de pivô
+   central) e continua de onde você parou. Ctrl+K (Ajuda → Pesquisar comandos…) acha qualquer menu,
+   comando ou ajuste pelo nome, e Ajuda → Manual (F1), ou o **?** de uma janela ou painel, explica
+   cada parte do programa com o seu capítulo deste manual a um clique.
 3. Pressione **F5** (ou o botão ▶ no canto superior direito). O cálculo roda fora da thread da
    interface; um cartão de progresso mostra a etapa atual (zona a zona, linha principal, lavagem,
    golpe de aríete, materiais). A tela continua utilizável durante o cálculo.
@@ -47,7 +52,8 @@ Todo exemplo com válvulas tem também a parte elétrica: um controlador junto �
 cabeçal de controle) e as rotas de fios ao lado da linha principal até cada válvula. O cálculo dá
 a cada válvula uma estação e uma bitola, verifica a tensão no solenoide e põe fios, controlador e
 conectores na lista de materiais (aba Elétrico). Os exemplos de pivô e linear não têm válvulas
-solenoides para ligar.
+solenoides para ligar. As áreas de gotejamento e de microaspersão levam a cobertura do solo da sua
+cultura ([Agronomia e manejo da irrigação](agronomy.md#os-exemplos-da-galeria)).
 
 Os exemplos abrem pela tela de boas-vindas (Ajuda → Boas-vindas e galeria de exemplos…), pelo
 menu Arquivo → Exemplos e pela URL. Os mesmos projetos estão em [examples/](../../../examples/) como
@@ -61,7 +67,7 @@ mesmo desenho em todas, com nomes, culturas e itens de catálogo no idioma da pa
 | `?example=garden` | Abre o exemplo indicado (`orchard`, `garden`, `sportsField`, `rowCrop`, `pivot`, `greenhouse`, `nursery`, `coffee`, `bananas`, `sugarcane`, `gravity`, `pasture`, `golf`, `sectorPivot`, `linear`). |
 | `?design=1` | Projeta ao carregar. |
 | `?ai=1` | Abre o assistente de IA ao lado do desenho (o botão "Abrir o assistente de IA" do site e o atalho do app). |
-| `?tutorial=N` | Abre o tutorial interativo no passo N (de 1 a 76). |
+| `?tutorial=N` | Abre o tutorial interativo no passo N (de 1 a 90). |
 | `?lang=pt` (qualquer código de [Idiomas e site](languages-and-site.md)) | Idioma desta visita (não altera a preferência salva). |
 | `/pt/`, `/es/`, `/de/`, … | Página de entrada de cada idioma sob o seu código (os 20), com o mesmo efeito de `?lang` (a página raiz é a inglesa). |
 | `#p=…` | Um projeto compartilhado por link (Arquivo → Compartilhar por link…): abre como cópia numa aba nova. A parte depois do `#` nunca é enviada a nenhum servidor. |

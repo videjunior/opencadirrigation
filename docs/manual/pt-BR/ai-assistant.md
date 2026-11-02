@@ -46,31 +46,39 @@ encaixado faz o mesmo).
 
 ## Como funciona
 
-O agente mantém uma lista de tarefas, faz perguntas em cartões com opções quando
-falta algo (a tarefa espera as respostas), apresenta o seu plano e trabalha pelas ferramentas do
-próprio programa: 73 ferramentas enviadas em todo pedido, mais 102 operações que ele encontra e
-executa (`find_operations`, `run_operation`), qualquer comando dos menus (`run_command`, com os
-diálogos executados sem abrir) e 134 configurações (`get_setting`, `set_setting`). Ele lê os mesmos
-números dos relatórios, altera o projeto pelas mesmas funções dos menus e diálogos (desenho, rede,
-catálogo, turnos, o cálculo, as suas correções, os layouts automáticos, as análises, o orçamento,
-exportações), mantém as **notas de IA** do projeto (requisitos, as suas respostas e decisões,
-gravadas no arquivo do projeto e editáveis nas configurações, cada atualização um passo de
-desfazer), lê o manual de procedimentos do tipo de projeto (12, escritos a partir dos exemplos da
-galeria) e os projetos de exemplo, encontra o local a partir de um endereço (Nominatim do
-OpenStreetMap: no máximo uma busca por segundo e 8 por conversa), define a georreferência e o mapa
-base, baixa o terreno e o clima pelos downloads do próprio app e importa os desenhos e arquivos de
-GIS que você anexar. Ele também lê uma ficha técnica anexada (PDF, imagem ou texto, até 20 MB) e põe
-os itens dela no catálogo, conferidos antes de entrar, e escreve o memorial descritivo do projeto,
-que pode ser copiado ou posto no desenho como texto. [docs/AI_TOOLS.md](../../../docs/AI_TOOLS.md), gerado a
-partir do mapa de cobertura, lista o que ele alcança: das 1677 funções que um usuário alcança (ações
-de comando, ferramentas de desenho, aliases, itens de menu, diálogos e suas opções, campos dos
-painéis, barra de status, opções de vista), 1637 estão cobertas, 40 não fazem sentido para a IA
-(cada uma com o motivo) e nenhuma falta; um teste falha quando um comando, ferramenta, item de menu
-ou diálogo novo não tem rota. O prompt de sistema traz as regras da rede, o cálculo e as permissões
-e indexa um manual de referência que o modelo lê quando precisa (`read_manual`, 20 tópicos gerados a
-partir do código: itens e seus campos, parâmetros de projeto, códigos de mensagem, ferramentas e
-operações, os valores do motor, e um exemplo resolvido refeito com as ferramentas reais); o prompt e
-as definições das ferramentas ficam em cache entre os pedidos.
+O agente mantém uma lista de tarefas, faz perguntas em cartões com opções quando falta algo (a
+tarefa espera as respostas), apresenta o seu plano e trabalha pelas ferramentas do próprio programa:
+75 ferramentas enviadas em todo pedido, mais 205 operações que ele encontra e executa
+(`find_operations`, `run_operation`), qualquer comando dos menus (`run_command`, com os diálogos
+executados sem abrir) e cerca de 150 configurações (`get_setting`, `set_setting`), de modo que ele
+alcança também as funções da 1.6.0 (estações de bombeamento, reservatórios, os diálogos de
+agronomia, as análises de energia e água, os documentos técnicos e o carimbo, referências de bloco,
+estados de camadas, comparações, o assistente de pontos e os pontos para locação, ilhas das áreas,
+inserir projeto) e os comandos de edição (esticar, concordar, chanfrar, quebrar, unir, explodir,
+converter em área). Ele lê os mesmos números dos relatórios, altera o projeto pelas mesmas funções
+dos menus e diálogos (desenho, rede, catálogo, turnos, o cálculo, as suas correções, os layouts
+automáticos, as análises, o orçamento, exportações), mantém as **notas de IA** do projeto
+(requisitos, as suas respostas e decisões, gravadas no arquivo do projeto e editáveis nas
+configurações, cada atualização um passo de desfazer), lê o manual de procedimentos do tipo de
+projeto (12, escritos a partir dos exemplos da galeria) e os projetos de exemplo, encontra o local a
+partir de um endereço (Nominatim do OpenStreetMap: no máximo uma busca por segundo e 8 por
+conversa), define a georreferência e o mapa base, baixa o terreno e o clima pelos downloads do
+próprio app e importa os desenhos e arquivos de GIS que você anexar. Ele também lê uma ficha técnica
+anexada (PDF, imagem ou texto, até 20 MB) e põe os itens dela no catálogo, conferidos antes de
+entrar, e escreve o memorial descritivo do projeto, que pode ser copiado ou posto no desenho como
+texto. Um anexo longo não vai na mensagem: o modelo lê as partes de que precisa (`read_attachment`)
+ou pede ao modelo menor da mesma empresa (Claude Haiku 5.5 ou GPT-6 Luna) que leia até 200 páginas
+ou 20 000 linhas dele e responda à sua pergunta (`summarize_attachment`), cujos tokens contam no
+medidor e no teto de gasto. [docs/AI_TOOLS.md](../../../docs/AI_TOOLS.md), gerado a partir do mapa
+de cobertura, lista o que ele alcança: toda função que um usuário alcança (ações de comando,
+ferramentas de desenho, aliases, itens de menu, diálogos e suas opções, campos dos painéis, barra de
+status, opções de vista) está coberta ou marcada como sem sentido para a IA, cada uma com o motivo;
+um teste falha quando um comando, ferramenta, item de menu ou diálogo novo não tem rota. O prompt de
+sistema traz as regras da rede, o cálculo e as permissões e indexa um manual de referência que o
+modelo lê quando precisa (`read_manual`, 20 tópicos gerados a partir do código: itens e seus campos,
+parâmetros de projeto, códigos de mensagem, ferramentas e operações, os valores do motor, e um
+exemplo resolvido refeito com as ferramentas reais); o prompt e as definições das ferramentas ficam
+em cache entre os pedidos.
 
 ## Visão
 
@@ -139,34 +147,65 @@ antes; uma resposta que o fechamento da página interrompeu aparece como parada,
 novo**. Voltar no tempo numa conversa restaurada desfaz só a conversa (o histórico de desfazer do
 projeto não sobrevive a uma recarga).
 
+Um projeto pode guardar várias conversas: **Conversas do projeto**, no painel, as lista, a mais
+recente primeiro, pela primeira mensagem; uma conversa nova deixa a atual na lista, e qualquer uma
+delas abre de novo ou é apagada. `/new` começa uma nova guardando a atual, `/clear` apaga a atual. O
+navegador guarda as 24 conversas salvas mais recentemente, de todos os projetos. Uma conversa é
+exportada num arquivo JSON e importada de volta, sem a chave (tirada de todo texto) e sem as fotos
+que você anexou (uma nota fica no lugar delas); uma conversa importada continua com o prompt de
+sistema do próprio programa, então importe só conversas suas. O mesmo projeto aberto em duas abas do
+navegador guarda só a conversa da primeira, e a segunda avisa.
+
 ## Controle
 
-O que ele pode fazer é definido nas configurações: **somente leitura**; **planejar
-primeiro** (ele explora só com leituras e apresenta um plano; as alterações começam depois que você
-o aprovar); **perguntar antes de cada alteração** (o padrão: um cartão com Aplicar, Pular e Parar,
-também para cada consulta a outro serviço); ou **aplicar alterações automaticamente** (salvar um
-arquivo, definir a georreferência e excluir mais de 20 itens continuam pedindo confirmação). Você
-pode escrever enquanto ele trabalha (a mensagem chega a ele na próxima etapa) e pará-lo a qualquer
-momento. Aprovar um plano com "aplicar automaticamente" roda aquela tarefa sem perguntar; o modo
-escolhido nas configurações continua valendo para as próximas. Depois de um erro ou de uma parada, a
-resposta oferece **Tentar de novo** (a mesma mensagem, quando nada dela chegou ao modelo) ou
-**Continuar**, e as configurações quando a correção está lá (uma chave recusada, um modelo que a chave
-não pode usar). Cada resposta que alterou o projeto é uma entrada do histórico com **Desfazer estas
-alterações**, e cada mensagem tem **Voltar a este ponto**, que leva o projeto (pelo histórico de
-desfazer) e a conversa de volta a antes dela. Uma tarefa termina no limite de etapas (50 por padrão,
-até 200) ou no teto de gasto (US$ 2 por padrão a preços de lista, com aviso em 80 % e um botão
-**Continuar** para mais um teto). O teto é do próprio app: o modelo não vê nenhuma contagem de
-tokens (um orçamento de tarefa fazia ele parar cedo e sugerir uma conversa nova), e as instruções
-dele dizem que há contexto de sobra. Conversas longas são resumidas no servidor da
-empresa (na Anthropic a partir de 150 000 tokens de entrada, depois de limpar resultados antigos de
-ferramentas a partir de 80 000, guardando as notas, o plano e a lista de tarefas; na OpenAI a partir
-de 200 000, tirando do pedido as imagens mais antigas); uma configuração desliga isso. Comandos
-rápidos: `/new`, `/design`, `/check`, `/review`, `/report`, `/quote`, `/export`, `/plan`, `/clear` e
-`/cost`. `/review` roda em modo somente leitura qualquer que seja o modo: o modelo olha as zonas, as
-mensagens marcadas nos itens e as pressões e velocidades sobre o desenho, lê as mensagens e as tabelas
-de relatório e responde com uma lista de verificação (OK, atenção ou problema, com os números e onde
-corrigir cada ponto), sem alterar nada.
+O que ele pode fazer é definido nas configurações: **somente leitura**; **planejar primeiro** (ele
+explora só com leituras e apresenta um plano; as alterações começam depois que você o aprovar);
+**perguntar antes de cada alteração** (o padrão: um cartão com Aplicar, Pular e Parar, também para
+cada consulta a outro serviço, em que Enter aplica e Esc pula, e **Aplicar o resto da tarefa**
+aplica esta alteração e as próximas alterações comuns da tarefa sem perguntar, com exclusões
+grandes, consultas a outros serviços e exportações ainda confirmadas); ou **aplicar alterações
+automaticamente** (salvar um arquivo, definir a georreferência e excluir mais de 20 itens continuam
+pedindo confirmação). O cartão executa exatamente o que mostrou: a entrada de uma chamada fica
+fixada quando ela é planejada, e também a seleção sobre a qual ela age. As configurações são
+classificadas pelo efeito: um interruptor de vista é uma leitura, um servidor de mapa personalizado
+e as configurações do próprio programa são alterações sempre confirmadas, com o host à vista. O que
+você muda no desenho enquanto ele trabalha fica separado das alterações dele, que são passos
+próprios em Editar → Desfazer, antes e depois dos seus. Você pode escrever enquanto ele trabalha (a
+mensagem chega a ele na próxima etapa) e pará-lo a qualquer momento. Aprovar um plano com "aplicar
+automaticamente" roda aquela tarefa sem perguntar; o modo escolhido nas configurações continua
+valendo para as próximas. Depois de um erro ou de uma parada, a resposta oferece **Tentar de novo**
+(a mesma mensagem, quando nada dela chegou ao modelo) ou **Continuar**, e as configurações quando a
+correção está lá (uma chave recusada, um modelo que a chave não pode usar). Cada resposta que
+alterou o projeto é uma entrada do histórico com **Desfazer estas alterações**, e cada mensagem tem
+**Voltar a este ponto**, que leva o projeto (pelo histórico de desfazer) e a conversa de volta a
+antes dela. Uma tarefa termina no limite de etapas (50 por padrão, até 200) ou no teto de gasto (US$
+2 por padrão a preços de lista, com aviso em 80 % e um botão **Continuar** para mais um teto). O
+teto é do próprio app: o modelo não vê nenhuma contagem de tokens (um orçamento de tarefa fazia ele
+parar cedo e sugerir uma conversa nova), e as instruções dele dizem que há contexto de sobra. Sob
+cada resposta, **Custos por passo** lista cada pedido da vez: os tokens lidos do cache e gravados
+nele, os de fora dele, a saída, as imagens e os PDFs, o esforço e o que encareceu um passo (cache
+não usado, troca de modelo ou de esforço, pedido grande); `/cost` diz a fração lida do cache.
+Conversas longas são resumidas no servidor da empresa (na Anthropic a partir de 150 000 tokens de
+entrada, depois de limpar resultados antigos de ferramentas a partir de 80 000, guardando as notas,
+o plano e a lista de tarefas; na OpenAI a partir de 200 000, tirando do pedido as imagens mais
+antigas); uma configuração desliga isso. Comandos rápidos: `/new`, `/design`, `/check`, `/review`,
+`/report`, `/quote`, `/export`, `/plan`, `/clear` e `/cost`. `/review` roda em modo somente leitura
+qualquer que seja o modo: o modelo olha as zonas, as mensagens marcadas nos itens e as pressões e
+velocidades sobre o desenho, lê as mensagens e as tabelas de relatório e responde com uma lista de
+verificação (OK, atenção ou problema, com os números e onde corrigir cada ponto), sem alterar nada.
 Instruções permanentes nas configurações valem para todas as conversas ("sempre PVC PN 80 na
 adutora"), e a conversa pode ser salva em Markdown. As conversas não são salvas com o projeto, de
 modo que arquivos e links compartilhados nunca levam a conversa nem as suas imagens. O que é
-enviado, quando, e como as chaves são guardadas: [Armazenamento, privacidade e rede](privacy-and-network.md).
+enviado, quando, e como as chaves são guardadas:
+[Armazenamento, privacidade e rede](privacy-and-network.md).
+
+As configurações também têm **Testar a conexão** com o modelo escolhido (um pedido mínimo pelo mesmo
+caminho dos reais: se a chave, a conta e o modelo o aceitam, o tempo, os tokens, o custo, os limites
+da conta e algum campo recusado), **Ajustar o esforço a cada etapa** (modelos Claude: depois de uma
+rodada só de edições e leituras simples, o passo seguinte roda com esforço baixo; planejar,
+calcular, conferir, imagens e erros voltam ao esforço escolhido, e a conversa em cache se mantém),
+*Avisar quando o app estiver em segundo plano* (o título da aba pisca quando a tarefa espera a sua
+aprovação, perguntas ou um plano, ou termina, enquanto você está em outra aba ou janela) e *Permitir
+notificações do sistema* para o mesmo. O conteúdo do projeto (as notas, os textos e os nomes) chega
+ao modelo como dado, nunca como instrução, e notas de IA que vieram com um arquivo escrito em outro
+navegador são lidas como informação até você escolher *Usar como minhas*.

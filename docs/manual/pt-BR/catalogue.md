@@ -16,6 +16,14 @@ e acessórios**, **bombas**, **conexões** e **fios**. Todos os valores hidrául
 Qualquer item também pode trazer o código FINAME com que está credenciado para financiamento no
 BNDES; a lista de materiais e o orçamento o mostram.
 
+O editor mostra e recebe os valores nas unidades do projeto e os guarda em SI: num projeto em
+unidades americanas, diâmetros em polegadas, classes e pressões na unidade de pressão (psi, bar,
+kPa, ft H₂O), espaçamentos e preços por pé, as vazões das válvulas e as curvas da bomba (Q@H,
+rendimento, NPSH) em gpm; um projeto métrico padrão não muda. O CSV exportado também sai nas
+unidades do projeto, com a unidade no nome de cada coluna (`nominal_in`, `rating_psi`, `spacing_ft`,
+`maxQ_gpm`, `points_gpm_psi`, `cost_per_ft`), e a importação lê essas colunas e as de listas de preço
+("DN (in)", "PN (psi)", "Cost (per ft)", `q_gph`).
+
 O **catálogo padrão** traz 17 tubos (PE 16–50 mm, PVC DN 35–250, PEAD 110 e 160, aço 6"), 10 famílias
 de emissores (gotejadores PC e turbulentos, microaspersores, borbulhador PC, aspersor de impacto,
 canhão, rotor e spray de jardim, ponto de demanda), 6 fitas e tubos gotejadores, 36 válvulas e
@@ -24,11 +32,25 @@ de vazão), 18 bombas (centrífugas de 1 a 100 cv, submersas de 3 a 30 cv) e cer
 geradas para cada diâmetro nominal (luvas, cotovelos de 90° e 45°, tês, cruzetas, tampões,
 adaptadores e reduções, mais conectores de lateral, finais de linha e tubos de subida) e 12 fios de
 cobre (1 a 10 mm² habilitados, AWG 18 a 8 desabilitados: habilite-os onde a bitola AWG é a norma),
-com nomes traduzidos e preços ilustrativos.
+com nomes traduzidos e preços ilustrativos. Os tubos de PVC PN 80 têm os diâmetros internos e as
+paredes da NBR 14312 até DN 150 e da ISO 1452-2 S 12,5 acima, os de PE PN 6 a parede do PE 80 SDR 21,
+os bocais do aspersor de impacto um coeficiente de descarga de 0,96 e cada bomba um motor que a sua
+curva cabe. Uma verificação de plausibilidade roda sobre o catálogo padrão e todos os pacotes: a
+tensão de anel de uma parede termoplástica contra a sua classe, um bocal que não passa mais que um
+orifício ideal do seu diâmetro, a potência hidráulica dentro de 0,85 da do motor com o seu fator de
+serviço (NEMA MG 1).
 
 O editor (Projeto → Catálogo de componentes…) edita, duplica e remove itens, importa e exporta JSON,
 CSV por grupo e **Excel** (exporte, preencha preços na planilha e importe de volta), define o
-catálogo padrão para novos projetos e restaura o original.
+catálogo padrão para novos projetos (*Usar como padrão para novos projetos*) e, como ações separadas
+que perguntam antes, dizendo quantos itens saem e quantos objetos os usam, *Restaurar o catálogo de
+fábrica…*, *Carregar meu padrão…* e *Esquecer meu padrão…*. Uma linha importada sem id ganha um id
+estável (pelo fornecedor, código e nome), então a mesma linha importada de novo atualiza o próprio
+item e nunca o de outra lista; substituir um item que o desenho usa é avisado, e linhas sem diâmetro,
+curva ou seção ficam de fora com aviso. O CSV segue a RFC 4180; a coluna `kv` é o coeficiente de vazão
+das fichas técnicas (Δp = (Q/Kv)² bar) e `kcoef` o K de K·v²/2g; um PN sem unidade até 25 é perguntado
+(bar ou metros de coluna d'água). Um item desativado ou removido que o desenho ainda usa aparece como
+ele mesmo, marcado, nas Propriedades.
 
 ## Preços e moeda
 
@@ -69,7 +91,18 @@ as tabelas não a trazem). Cada pacote lista os documentos de origem (`sources`)
 zero; um pacote com preços informa a moeda (`currency`) e é convertido para a moeda do projeto ao
 ser adicionado; uma bomba informa a frequência em que a sua curva foi medida (`hz`), de modo que em
 outra rede (Parâmetros de projeto) uma bomba de rotação fixa gira na proporção. Eles ficam em
-[catalogs/](../../../catalogs/) como arquivos JSON, um por fabricante, mais um `index.json`. Pelo diálogo
+[catalogs/](../../../catalogs/) como arquivos JSON, um por fabricante, mais um `index.json`.
+
+Cinco pacotes genéricos, sem marca, trazem tubos termoplásticos por norma: `iso1452` (PVC-U pela
+ISO 1452-2, PN 6 a 16), `en12201` (PE 100 pela EN 12201-2, SDR 26 a 11), `is4985` (PVC-U pela IS 4985,
+classes 1 a 6) e `is4984` (PE 100 e PE 80 pela IS 4984), dn 20 a 315 mm, 415 tubos gerados pelo
+`tool/gen_catalogs.dart` a partir das tabelas das normas com cada parede conferida contra a sua
+classe, e `astm` (PVC em polegadas pela ASTM D2241, SDR 21 e 26, e D1785, Schedule 40 e 80). Os quatro
+primeiros trazem preços de referência com a sua fonte e data (`pricesSource`, `pricesDate`), mostradas
+no diálogo *Catálogos de fabricantes…* e para o assistente de IA: a tabela de preços agrícolas de 2024
+da região da Sardenha (EUR, fornecido e assentado) para os pacotes ISO e EN e a tabela de preços
+2023-24 da Maharashtra Jeevan Pradhikaran (INR, fornecimento) para os pacotes IS, as linhas publicadas
+como impressas e os outros tamanhos por um ajuste pela massa por metro. Pelo diálogo
 *Catálogos de fabricantes…* você adiciona um pacote ao projeto, importa um arquivo `.oci.cat` ou
 carrega um pacote ou um índice inteiro por URL, o que permite a qualquer revenda ou comunidade manter
 o próprio repositório. O catálogo do projeto também é exportado nesse formato. O formato completo,

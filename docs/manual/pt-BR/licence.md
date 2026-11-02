@@ -11,7 +11,6 @@ qualificado deve conferir o projeto antes da execução (a licença não dá gar
 | [`xml`](https://pub.dev/packages/xml) | KML, GPX, LandXML e XLSX | MIT |
 | [`archive`](https://pub.dev/packages/archive) | KMZ, XLSX, shapefiles compactados, streams do PDF, links de compartilhamento e projetos guardados comprimidos | MIT |
 | [`image`](https://pub.dev/packages/image) | imagens raster, imagens nos PDFs, detecção de vegetação e os arquivos da marca | MIT |
-| [`cupertino_icons`](https://pub.dev/packages/cupertino_icons) | fonte de ícones | MIT |
 | CanvasKit (Skia) | renderização, servida pelo site junto com o app | BSD-3-Clause |
 | Material Icons, Roboto, Noto | fontes da interface (Roboto servida com o app; Noto servida pelo site em `fonts/`, baixada sob demanda para outras escritas e guardada para uso sem rede) | Apache-2.0, SIL OFL 1.1 |
 | Subconjuntos Noto Sans em `assets/fonts` (latino, Math, árabe, devanágari, bengali, gurmukhi, télugo, SC, JP) | texto dos PDFs em todas as escritas da interface | SIL OFL 1.1 ([assets/fonts/OFL.txt](../../../assets/fonts/OFL.txt)) |

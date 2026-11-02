@@ -1,13 +1,14 @@
 # Desenvolvimento
 
-Requisitos: Flutter estável recente (desenvolvido com 3.47, Dart 3.13). Sem dependências nativas.
+Requisitos: Flutter 3.47.9 (Dart 3.13.7), fixado no `pubspec.yaml`: o `flutter pub get` recusa outra versão, e o
+bundle do worker, a saída do formatador e o build do CanvasKit dependem dela. Sem dependências nativas.
 
 ```bash
 git clone https://github.com/videjunior/opencadirrigation.git
 cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # cerca de 1.900 testes: motor, modelo, formatos, interface
+flutter test                       # cerca de 3.000 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
@@ -17,7 +18,9 @@ tool/build_web.sh                  # build de publicação: worker + flutter bui
                                    # preenchido (tool/gen_sw.dart); OCI_WEB_OUT=<pasta> grava o build em outro lugar
 flutter build web --release        # build simples (sem commit/data, CanvasKit da CDN do Google, sem abertura sem
                                    # rede: o sw.js dele remove a si mesmo; build/web, web/CNAME guarda o domínio)
-dart run bin/oci.dart --help       # linha de comando: design, analyze, check, export, bom de projetos .oci.json
+dart run bin/oci.dart --help       # linha de comando: import, new, set, pack add, design, analyze, check, validate,
+                                   # export, bom e schema de projetos .oci.json (docs/API.pt-BR.md)
+dart tool/engine_package.dart build/engine   # o motor como pacote sem Flutter (só precisa do SDK do Dart)
 dart run tool/gen_version.dart     # regenera lib/app/version.dart após mudar `version:` no pubspec.yaml
 dart run tool/gen_site.dart        # páginas do site (index em inglês, /pt/, /es/, /de/, … sitemap, 404, robots, llms.txt)
 dart run tool/indexnow.dart        # depois de publicar: pede aos buscadores do IndexNow (Bing…) novo rastreio
@@ -30,13 +33,24 @@ python3 tool/fonts/build_fonts.py       # refaz os subconjuntos Noto de assets/f
 python3 tool/fonts/gen_unicode_data.py  # regenera lib/core/io/fonts/unicode_data.dart a partir do Unicode Character Database
 python3 tool/fonts/make_shaping_fixtures.py  # regrava test/fixtures/shaping com o HarfBuzz (uharfbuzz)
 UPDATE_AI_TOOLS_DOC=1 flutter test test/widget_ai_coverage_test.dart  # regenera docs/AI_TOOLS.md a partir do mapa de cobertura
+flutter test --platform chrome test/web          # o código *_web.dart num Chrome de verdade
+flutter test --update-goldens test/goldens       # regrava as imagens golden
+dart run tool/release.dart status                # o checklist de lançamento (prepare, build, publish, live, verify-build)
+dart run tool/i18n_review.dart export <código>   # um idioma em planilha para falantes nativos (e import)
+git config core.hooksPath tool/hooks             # o hook de pre-commit: formatação, nomes proibidos, worker velho
+npm ci --prefix tool/e2e                         # uma vez: o teste de fumaça de ponta a ponta e o seu playwright-core
+npm exec --prefix tool/e2e -- playwright-core install webkit firefox   # uma vez: os builds fixados de WebKit e Firefox
+node tool/e2e/smoke.mjs build/web --browser chromium,webkit,firefox     # o teste de fumaça de um build de produção
 ```
 
 A linha de comando roda o motor do app na VM do Dart, sem Flutter nem navegador: `design`
 dimensiona e analisa um projeto (e grava o projeto dimensionado, os resultados e todas as tabelas
 dos relatórios), `analyze` mantém os diâmetros como desenhados, `check` lista os problemas e
-termina com código 1 quando há um erro, `export` grava qualquer formato de desenho e `bom` mostra a
-lista de materiais, em qualquer um dos 20 idiomas (`--lang`).
+termina com código 1 quando há um erro, `validate` diz o que a leitura do arquivo teve de reparar,
+`export` grava qualquer formato de desenho, `bom` mostra a lista de materiais e `schema` o JSON Schema
+do arquivo de projeto, em qualquer um dos 20 idiomas (`--lang`); `import`, `new`, `set` e `pack add`
+fazem e alteram projetos, e os comandos que leem projetos aceitam vários arquivos ou pastas de uma
+vez, com `--out-dir` ([docs/API.pt-BR.md](../../../docs/API.pt-BR.md#1-usando-o-motor)).
 
 As saídas commitadas da maioria dos geradores têm testes de guarda (as páginas do site, o modelo do
 service worker, os exemplos, os catálogos, a versão e a tabela de ferramentas da IA): quando uma
@@ -72,7 +86,7 @@ nem testados, e celulares e tablets usam o app web (instalável como PWA).
 
 ## Testes
 
-`flutter test` roda cerca de 1.900 testes em alguns minutos (o número cresce a cada versão). O que
+`flutter test` roda cerca de 3.000 testes em alguns minutos (o número cresce a cada versão). O que
 cada grupo garante:
 
 | Arquivo | Cobertura |
@@ -125,11 +139,49 @@ cada grupo garante:
 | `core/ai_api_fixes_test.dart`, `core/ai_transport_io_test.dart`, `core/ai_image_prep_test.dart` | O assistente contra falhas roteirizadas das APIs (pedidos recusados e grandes demais, erros do serviço, tempos esgotados e transmissões interrompidas, cada um com o que é mantido e reenviado); o transporte do desktop contra um servidor na máquina (envio, transmissão, um cancelamento fecha a conexão); imagens anexadas tipadas pelos bytes, endireitadas, reduzidas aos limites do modelo e recodificadas dentro do tamanho |
 | `core/app_logic_test.dart` | Lógica do app sem widgets: aliases de comando, rótulos traduzidos das ações, navegação do tutorial, o observador de rotas, o executor do cálculo sem workers, arquivos do desktop e assets de idioma |
 | `widget_ai_*.dart` (os arquivos não citados acima) | A tela de início do assistente, a ajuda para iniciantes, o comportamento do chat e o Markdown, as mensagens de erro, as marcas no mapa, a voz, as fotos de campo, colar e soltar, as conversas guardadas, `/review`, a prévia da prancha e as imagens que ele envia |
-| `editorial_names_test.dart` | A regra editorial: nenhum produto concorrente em nenhum lugar do repositório e nenhum produto de CAD na interface, no site e na documentação, conferidos pelo SHA-256 para que o teste não cite nenhum |
+| `editorial_names_test.dart` | A regra editorial: nenhum produto concorrente em nenhum lugar do repositório e nenhum produto de CAD na interface, no site e na documentação, conferidos pelo SHA-256 contra a lista única `tool/hooks/banned-names.sha256` (a mesma do hook de pre-commit) para que o teste não cite nenhum |
 | `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto; gerenciamento com pivôs e turnos automáticos, diálogos fechados por fora, densograma, ferramentas de controlador e fio com a aba Elétrico, cotas de ordenada e de diâmetro, a aba Fios do catálogo, campos numéricos que rejeitam um valor; as propriedades de cada tipo de entidade, edição em lote e os resultados da seleção; a leitura do gráfico de perfil; navegação por roda, trackpad, botão do meio e dois dedos; diálogos de georreferência e de plotagem; menus da linha principal e do celular; o diálogo de turnos; os diálogos de projeto automático, agronomia, máquinas mecanizadas, operação da rede, transientes, importação de PDF, folhas e blocos e vegetação, cada um aplicando num passo de desfazer e cabendo num celular de 390 × 844; o layout da direita para a esquerda do árabe e do urdu, os rótulos condicionais, o indicador do GPS, a ferramenta de linha de quebra e os materiais da seleção |
 | `widget_theme_test.dart` | A paleta escura é o visual original, cor por cor; a paleta clara mantém o contraste WCAG AA dos textos sobre as suas superfícies; Ver → Tema troca no lugar (mesma janela, projeto e seleção), também pelo menu do celular, e as folhas são montadas no tema claro; uma camada branca é desenhada quase preta no canvas claro enquanto as plotagens ficam iguais; a escolha é salva e aplicada na abertura; Seguir o sistema acompanha o brilho da plataforma ao vivo; as imagens para o assistente de IA mantêm o canvas escuro |
 | `web_metadata_test.dart`, `version_test.dart`, `web_offline_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt; as páginas de entrada carregam o app sob demanda; versão do app coerente com o pubspec.yaml, o gerador e o site; `test/web_offline_test.dart` cobre o gerador do service worker, os templates e o script de build |
-| `flutter_test_config.dart` | Roda em volta de cada arquivo de teste: o arquivo falha quando a interface pediu uma chave de texto que a tabela não tem |
+| `flutter_test_config.dart` | Roda em volta de cada arquivo de teste: o arquivo falha quando a interface pediu uma chave de texto que a tabela não tem, e nenhum teste chega à rede (só à interface de loopback) |
+| `seams/agronomy_programme_test.dart`, `seams/paste_merge_test.dart`, `seams/storage_full_app_test.dart` | Testes que atravessam módulos: para os 15 exemplos da galeria, a tabela de água, a necessidade da cultura, a tabela FAO-56 e o programa do controlador dão a mesma necessidade por área; um projeto inteiro colado na aba de um vizinho com outra moeda e outra georreferência cai no lugar, com os preços na moeda do destino, calcula igual e sai com um desfazer; o app com o armazenamento do navegador cheio abre espaço com versões e projetos salvos em arquivo, nunca com o trabalho não salvo, e mantém o aviso até uma cópia caber |
+| `guards/*_test.dart` | O pacote do motor traz tudo o que alcança; `lib/core` não importa Flutter; as imagens geradas da marca e a data do site; os hooks e a lista única de nomes proibidos; nenhuma rede; todo caractere de todo texto do PDF tem fonte; a ferramenta de lançamento; o worker de cálculo refeito byte a byte |
+| `core/pump_station_test.dart`, `core/real_operation_test.dart`, `core/reservoir_vessel_test.dart`, `core/sizing_plus_test.dart`, `core/analysis_control_test.dart`, `widget_mot_plus_test.dart` | Estações de bombeamento em paralelo ou em série, em serviço ou de reserva, escalonadas pela vazão, com o ponto, a energia e a lista de cada bomba; a operação real dos setores e os pilotos das válvulas; a curva do reservatório, os seus dias de demanda e o nível em 24 horas, o vaso de ar nos transientes; o golpe na classe de cada tubo, a linha piezométrica sobre os pontos altos, os anéis; análises um passo por vez com os mesmos resultados, canceladas, e os cenários de envelhecimento e entupimento; os seus diálogos no celular |
+| `core/soil_water_balance_test.dart`, `core/agr_plan_test.dart`, `core/agr_runoff_capacity_test.dart`, `core/agr_programme_test.dart`, `core/agr_catch_cans_fert_test.dart`, `core/inmet_csv_test.dart`, `widget_agr_plus_test.dart` | Um balanço hídrico feito à mão, sequeiro com Ky, déficit regulado, intervalo fixo e reposição parcial; o plano agronômico no arquivo; as famílias de infiltração do NRCS, o escoamento por passagem, a capacidade em 24 h e numa janela; ciclo e pausa, uma janela curta e um ajuste sazonal digitado; latas coletoras, CU e DU, fertirrigação por estágio; arquivos horários do INMET e do BDMEP; os seis diálogos no celular, em árabe e com o texto em dobro |
+| `core/agb_pump_house_test.dart`, `core/agb_solar_water_test.dart`, `core/agb_field_machines_test.dart`, `widget_agb_test.dart` | A elétrica da casa de bombas e a alimentação dos pivôs no cálculo, no relatório e na lista; o bombeamento solar e o seu custo de energia; a qualidade da água e o tratamento; dois fios na lista; vários pivôs com a sua linha principal; faixas de carretel e sulcos como demandas; cada diálogo um passo de desfazer |
+| `core/prd_*_test.dart`, `core/permit_test.dart`, `core/memorial_om_test.dart`, `core/budget_lcc_test.dart`, `core/tech_doc_test.dart`, `core/prb_packages_test.dart`, `widget_prd_test.dart`, `widget_deliverables_test.dart` | O carimbo, o datum dado pelo usuário ou pelo local, a quadrícula de coordenadas, a folha e as classes de declividade, as normas sob cada tabela, os pacotes de documentos; o regime da outorga mês a mês, o memorial e o plano de O&M iguais para o mesmo projeto, o orçamento e o custo do ciclo de vida; os escritores dos documentos (Markdown, CSV, XLSX, PDF) |
+| `core/cad_plus_core_test.dart`, `core/cad_plus_model_test.dart`, `core/cad_plus_controller_test.dart`, `widget_cad_plus_test.dart` | Aparar com cortes só nas pontas, Alongar, o contorno por clique interno; coordenadas de campo digitadas, kgf/cm², o estilo de cota e os estados de camadas no arquivo, referências de bloco com atributos, a comparação de cópias; o texto editado no lugar, a lupa, a entrada dinâmica, os snaps um a um |
+| `core/formats_1102_test.dart`, `core/projections_1102_test.dart`, `widget_fmt_1102_test.dart` | GeoTIFF grandes e otimizados para a nuvem por blocos, sobreposições de imagem do KMZ, blocos de levantamento, ida e volta do XDATA, páginas de código CJK, PDF/A-2b e camadas, folhas personalizadas; Albers, Lambert e policônica contra os exemplos resolvidos de Snyder (1987); o assistente de pontos, os pontos para locação, os downloads guardados e a pergunta antes de um link grande |
+| `core/area_holes_test.dart`, `core/area_holes_editor_test.dart`, `core/project_merge_test.dart`, `core/pipe_standards_test.dart`, `core/catalog_units_test.dart`, `core/new_project_prefs_test.dart`, `core/cli_projects_test.dart`, `core/tin_order_test.dart`, `guards/engine_package_test.dart` | Ilhas fora da área, da água, do layout e das imagens e levadas pelas exportações; Inserir projeto; os pacotes por norma e os seus preços; o catálogo nas unidades do projeto; com o que os projetos novos começam; a linha de comando fazendo e alterando projetos; um TIN independente da ordem dos itens; o motor como pacote |
+| `core/automation_wave2_test.dart`, `widget_aut_wave2_test.dart`, `core/ai_ia_plus_test.dart`, `widget_ai_ia_plus_test.dart`, `core/ui_wave2_test.dart`, `widget_ui_wave2_test.dart` | Um detector de autointerseção e um deslocamento só, o comprimento máximo da lateral, a revisão item a item do Corrigir e do Otimizar, o contorno pela imagem contra blocos sintéticos; os custos por passo, Aplicar o resto da tarefa, o esforço por etapa, as conversas de um projeto; a aba sem nome, a paleta de comandos, o manual e os seus capítulos, as Novidades, o relato de problema |
+| `site_manual_test.dart`, `site_fonts_test.dart`, `web_js_test.dart`, `launch_actions_test.dart`, `data_credits_test.dart`, `field_map_test.dart`, `i18n_review_test.dart`, `web_docs_test.dart` | As páginas do guia do usuário (âncoras, links, texto, metadados, sitemap), as fontes servidas pelo site, os scripts do service worker e do bootstrap no Node, abrir arquivos com o app instalado, os créditos dos dados de terceiros, o mapa guardado para o campo, os arquivos da revisão de traduções, os links e títulos da documentação |
+
+## Verificações além da suíte de testes
+
+- **CI** (GitHub Actions, `.github/workflows/ci.yml`, ações fixadas por commit, Flutter lido do
+  `pubspec.yaml`): análise sem nenhum aviso, formatação, o worker de cálculo byte a byte, os geradores
+  sem diferença, a suíte em quatro fatias com pisos de cobertura por pasta (os testes de tempo,
+  marcados `perf`, à parte com folga), os testes de navegador no Chrome, um build de produção conferido
+  por `tool/release.dart verify-build` com o teste de fumaça de ponta a ponta, e um trabalho de formatos
+  com pacotes de Python fixados e o LibreDWG; um trabalho em matriz roda a mesma fumaça no WebKit e no
+  Firefox sobre esse build. O Dependabot propõe atualizações dos pacotes e das ações.
+- **Teste de fumaça de ponta a ponta** (`tool/e2e/smoke.mjs`, `playwright-core` fixado): num build de
+  produção (`sh tool/build_web.sh`), o app abre um exemplo e o calcula no Web Worker, mostra a versão
+  do build, instala o seu service worker e abre de novo sem rede, envia uma mensagem do assistente de
+  IA com a chave do usuário a uma imitação da API (nada sai da máquina), percebe um worker de cálculo
+  de outro build e carrega o deste, e não mostra nenhum erro de página. `--browser
+  chromium,webkit,firefox` usa o Chrome instalado e os builds de WebKit e Firefox que a versão fixada
+  determina; uma verificação que um navegador não consegue rodar é informada como pulada, nunca como
+  aprovada.
+- **Imagens golden** (`test/goldens`, marca `golden`): a prancheta clara e escura, linhas finas densas
+  numa tela 2×, um diálogo no celular e o SVG de uma prancha, comparados com tolerância ao serrilhado de
+  outras plataformas.
+- **Hooks** (`git config core.hooksPath tool/hooks`): o hook de pre-commit recusa arquivos Dart
+  preparados que não estejam formatados e qualquer nome proibido nas linhas que um commit acrescenta
+  (a lista única `tool/hooks/banned-names.sha256`, mais uma lista local em texto claro em
+  `.git/info/banned-words`), e avisa de um worker de cálculo não recompilado.
+- `test/seams/` reúne os testes que atravessam módulos (agronomia e programa, colagem entre projetos,
+  armazenamento do navegador cheio), ao lado dos testes de cada módulo.
 
 Armadilhas conhecidas ao escrever testes de widget: o cálculo é assíncrono de verdade e deve rodar
 dentro de `tester.runAsync`; títulos de diálogo podem estar em maiúsculas; o canvas precisa de um

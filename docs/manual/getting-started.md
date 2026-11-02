@@ -6,7 +6,12 @@
    found on OpenStreetMap, or coordinates; the project is georeferenced there, on the satellite map)
    and **whether to design with the AI assistant**.
 2. Draw the area, let the assistant design it, or open a ready example: Help → Welcome and example
-   gallery (with the **interactive tutorial**, 80 steps) or File → Examples.
+   gallery (with the **interactive tutorial**, 90 steps) or File → Examples. The tutorial opens in a tab
+   of its own; its card has a menu of chapters and tracks (the full tutorial, a short track for touch
+   screens and quick tracks for drip in a field, a landscape and a centre pivot) and continues where
+   you stopped. Ctrl+K (Help → Search commands…) finds any menu, command or setting by its name, and
+   Help → Manual (F1), or the **?** of a window or panel, explains each part of the program with its
+   chapter of this manual one click away.
 3. Press **F5** (or the ▶ button at the top right). The calculation runs off the interface thread;
    a progress card shows the current step (zone by zone, mainline, flushing, water hammer,
    materials). The screen stays usable while it runs.
@@ -46,7 +51,9 @@
 Every example with valves also has its electrical part: a controller by the pump (or the control
 head) and the wire routes beside the mainline to every valve. The design gives each valve a station
 and a wire size, checks the solenoid voltage and adds wires, controller and connectors to the bill
-of materials (Electrical tab). The pivot and linear examples have no solenoid valves to wire.
+of materials (Electrical tab). The pivot and linear examples have no solenoid valves to wire. The drip
+and micro-sprinkler areas take the ground cover of their crop
+([Agronomy and irrigation scheduling](agronomy.md#the-gallery-examples)).
 
 Examples open from the welcome screen (Help → Welcome and example gallery…), from the File →
 Examples menu and from the URL. The same projects are in [examples/](../../examples/) as `.oci.json`
@@ -60,7 +67,7 @@ drawing everywhere, with the names, crops and catalogue items in that language.
 | `?example=garden` | Opens the given example (`orchard`, `garden`, `sportsField`, `rowCrop`, `pivot`, `greenhouse`, `nursery`, `coffee`, `bananas`, `sugarcane`, `gravity`, `pasture`, `golf`, `sectorPivot`, `linear`). |
 | `?design=1` | Designs on load. |
 | `?ai=1` | Opens the AI assistant beside the drawing (the site's "Open the AI assistant" button and the app shortcut). |
-| `?tutorial=N` | Opens the interactive tutorial at step N (1 to 76). |
+| `?tutorial=N` | Opens the interactive tutorial at step N (1 to 90). |
 | `?lang=pt` (any code of [Languages and site](languages-and-site.md)) | Language for this visit (does not change the saved preference). |
 | `/pt/`, `/es/`, `/de/`, … | Entry page of each language under its code (all 20), with the same effect as `?lang` (the root page is the English one). |
 | `#p=…` | A project shared by link (File → Share by link…): it opens as a copy in a new tab. The part after `#` is never sent to any server. |

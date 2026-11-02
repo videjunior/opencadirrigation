@@ -8,7 +8,8 @@ VM do Dart, e seus próprios scripts podem chamá-lo. Esta página percorre essa
 dimensionamento, ler os resultados, os relatórios e as exportações, o solver hidráulico sozinho e os módulos mais novos
 (transientes, simulação de período estendido, ventosas, automação do traçado, estações valve-in-head, bombas e a frequência
 da rede elétrica, detecção de vegetação, agronomia, máquinas mecanizadas, formatos de arquivo, plantas em PDF, o desenho
-CAD nativo e o cliente do assistente de IA).
+CAD nativo e o cliente do assistente de IA) e as bibliotecas que a 1.6.0 acrescentou (estações de bombeamento,
+reservatórios, o balanço hídrico diário, energia e água, documentos técnicos, edição e arquivos).
 
 Cada trecho abaixo é executado, exatamente como aparece, por `test/core/api_examples_test.dart`, que também falha quando
 esta página mostra uma linha de código que os testes não executam. Os caminhos são relativos à raiz do repositório. O
@@ -32,7 +33,8 @@ import 'package:opencadirrigation/core/api.dart';
 ```
 
 `lib/core/api.dart` exporta todas as bibliotecas de `lib/core`, exceto os detalhes internos da composição de texto do PDF
-(`io/fonts/*`, menos `pdf_fonts.dart`) e o solver de matrizes esparsas (`hydraulics/sparse_solver.dart`);
+(`io/fonts/*`, menos `pdf_fonts.dart`), o solver de matrizes esparsas (`hydraulics/sparse_solver.dart`) e as tabelas das
+páginas de código do leste asiático (`io/codepages_cjk_data.dart`, carregadas sob demanda pelo `codepages.dart`);
 `test/core/api_exports_test.dart` falha quando falta alguma. Importar as bibliotecas individuais
 (`core/model/project.dart`, `core/design/designer.dart`, …) também funciona e é o que o aplicativo faz. O motor não faz entrada nem saída por conta
 própria: os leitores recebem textos ou bytes, os gravadores os devolvem, e quem chama decide de onde vêm e para onde vão.
@@ -270,7 +272,7 @@ project.meta.georef = GeoReference.fromLatLonOrigin(-22.9068, -43.1729);
 final kml = exporter.exportDrawing(DrawingFormat.kml) as String;
 ```
 
-- `DrawingFormat`: `dxf`, `dwg` (AutoCAD 2000), `pdf` (prancha plotada), `svg`, `kml`, `kmz`, `geojson`, `shp`
+- `DrawingFormat`: `dxf`, `dwg` (DWG R2000), `pdf` (prancha plotada), `svg`, `kml`, `kmz`, `geojson`, `shp`
   (shapefiles num zip), `gpx`, `landxml`, `ifc` (IFC4) e `inp` (EPANET). KML, KMZ, GeoJSON e GPX precisam de
   georreferência (`project.meta.georef`; `GeoReference.fromLatLonOrigin` põe a origem do desenho numa posição WGS84) e
   lançam `GeoReferenceMissing` sem ela.
@@ -619,7 +621,7 @@ final crs = parseCrs('EPSG:31983');
 
 | Formato | Leitura | Gravação |
 |---|---|---|
-| DXF | `DxfReader.parse(String)` | `DxfR2000Writer.write(CadDrawing)` (AutoCAD 2000), `DxfWriter.write(DxfDocument)` (R12) |
+| DXF | `DxfReader.parse(String)` | `DxfR2000Writer.write(CadDrawing)` (DXF R2000), `DxfWriter.write(DxfDocument)` (R12) |
 | DWG (R13 a 2018 / 2000) | `DwgReader.parse(Uint8List)` | `DwgWriter.writeDrawing(CadDrawing)`, `DwgWriter.write(DxfDocument)` |
 | PDF | `PdfReader.open(Uint8List)` → `readPage`, `pdfPageEntities` / `addPdfPage` | pranchas pelo `ProjectExporter` |
 | DGN V7 | `DgnReader.parse(Uint8List)` | |
@@ -671,9 +673,11 @@ As exportações DXF e DWG partilham um único desenho nativo, `CadDrawing` (`io
 cor, cor verdadeira e tipo de linha, estilos de cota, definições de bloco com definições de atributo, e as entidades que
 os programas de CAD editam como tais (polilinhas leves com arcos, splines, hachuras, texto multilinha, cotas com os seus
 blocos anônimos, chamadas, referências de bloco com atributos). `CadExport(project).build()` o monta a partir de um projeto
-(é o `cadDrawing()` do exportador), `DxfR2000Writer.write` o grava como DXF do AutoCAD 2000 (AC1015) e
-`DwgWriter.writeDrawing` como DWG do AutoCAD 2000. Símbolos e itens hidráulicos são referências a pequenos blocos cujos
-atributos levam o nome, o item do catálogo, o bocal, a zona e as estações. `DrawingFormat.dxfR12` mantém as primitivas do
+(é o `cadDrawing()` do exportador), `DxfR2000Writer.write` o grava como DXF R2000 (AC1015) e `DwgWriter.writeDrawing`
+como DWG R2000, que os programas de CAD que leem DXF/DWG R2000 abrem. Símbolos e itens hidráulicos são referências a
+pequenos blocos cujos atributos levam o nome, o item do catálogo, o bocal, a zona e as estações, e cada tubo, lateral,
+fita e item hidráulico leva os seus dados hidráulicos como dados estendidos (`io/cad_xdata.dart`), que a importação do
+app lê de volta como rede. `DrawingFormat.dxfR12` mantém as primitivas do
 R12 para programas mais antigos.
 
 ```dart
@@ -739,6 +743,33 @@ cifrados da OpenAI — e um resultado para cada chamada de ferramenta); `turn.st
 `error` com um `AiError`). `AiClient.send` sozinho faz uma requisição em fluxo, com novas tentativas em sobrecarga, limite
 de taxa, erro de servidor, erro de rede, tempo esgotado e fluxo interrompido (enquanto nada da resposta foi mostrado). Os nomes da primeira versão, só da Anthropic (`ClaudeApi`, `ClaudeModel`, `ClaudeCancel`…),
 continuam como apelidos.
+
+### Acrescentado na 1.6.0
+
+As bibliotecas que a 1.6.0 acrescentou ao `lib/core/api.dart` (os blocos marcados `// 1.6.0` nele e as bibliotecas das
+áreas de motor, formatos e modelo), por assunto. Elas seguem as convenções do resto do motor: funções sobre um `Project`
+e os seus `DesignResults`, configurações gravadas no arquivo do projeto só quando diferem das de um projeto novo (campos
+de uma versão mais nova preservados como lidos), tabelas de relatório montadas como as outras (o painel de relatórios e
+todo exportador mostram os mesmos números) e as análises longas escritas em passos. A linha de comando que faz e altera
+projetos e o motor como pacote sem Flutter estão em [Usando o motor](#1-usando-o-motor).
+
+| Assunto | Bibliotecas | Pontos de entrada |
+|---|---|---|
+| Estações de bombeamento, pilotos de válvula, operação real dos setores | `model/pump_station.dart`, `model/valve_pilot.dart`, `design/results_mot.dart`, `design/report_tables_mot.dart` | `PumpEntity.station` (`PumpStation`, `PumpUnit`, `PumpArrangement`), resolvida sobre `PumpCurve.parallel` e `PumpCurve.series`; `PumpEntity.flywheelKgm2`; `ControlValveEntity.pilot` e `MiscHydraulicEntity.pilot` (`ValvePilot`); `DesignParameters.realZoneOperation`; `StationDuty`, `StationUnitDuty` e `ZoneOperation` nos resultados; `motReportTables` |
+| Reservatórios, vasos de ar, envelhecimento e entupimento, progresso e cancelamento | `model/reservoir.dart`, `design/reservoir.dart`, `design/life_scenarios.dart`, `design/analysis_control.dart` | `WaterSupplyEntity.reservoir` (`ReservoirSpec`) e `reservoirStudy` (a curva cota–área–volume, `ReservoirStudy.tankAt` para o período estendido); `JunctionEntity.vesselLiters` para os transientes; `lifeScenarios` e `lifeScenariosAsync` (`LifeOptions`, `LifeFigures`); `runSteps` e `runStepsAsync` com um `AnalysisControl` que cancela (`AnalysisCancelled`) |
+| Comprimento máximo da lateral | `design/lateral_limit.dart` | `maxLateralRun`, `maxLateralRunsBothWays`, `tapeLateralSpec`, `emitterLateralSpec`, `terrainSlopeAlong` |
+| Agronomia | `design/soil_water_balance.dart`, `design/irrigation_programme.dart`, `design/runoff_potential.dart`, `design/system_capacity.dart`, `design/catch_cans.dart`, `design/fertigation_stages.dart`, `design/agr_tables.dart`, `io/inmet_csv.dart`, `model/agronomy_plan.dart` | `soilWaterBalance`, `areaWaterBalance`; `buildIrrigationProgramme`, `programmeRunsCsv`, `programmeStationsCsv`; `machineRunoff`, `zoneRunoff`; `systemCapacity`; `depthDensogram`, `canGridOver`, `evaluateFieldTest`; `fertigationSchedule`; `parseInmetCsv`, `readStationFiles`, `stationClimate`; `Project.agronomy` (`AgronomyPlan`, `UserCrop`); `agronomyPlusTables` |
+| Energia, água e máquinas | `design/agb_design.dart`, `design/pump_house.dart`, `design/solar_design.dart`, `design/water_quality.dart`, `design/multi_pivot.dart`, `design/field_machines.dart`, `design/agb_reports.dart`, `model/agb_settings.dart` | `designAgb` (a etapa do cálculo, com os resultados em `DesignResults.agb` e as linhas da lista por `agbBomLines`), `designPumpHouse`, `designSolar`, `designWaterQuality`, `layoutPivots`, `layoutTravellerLanes`, `analyzeTravellerLane`, `analyzeFurrowSet`; `Project.agb` (`AgbSettings`); `agbReportTables` |
+| Carimbo, pranchas, normas, pacotes de documentos | `model/title_block.dart`, `io/title_block_sheet.dart`, `io/sheet_grid.dart`, `io/sheet_theme.dart`, `io/doc_package.dart`, `io/doc_pdf.dart`, `io/doc_sections.dart`, `design/report_standards.dart`, `design/slope_report.dart` | `ProjectMeta.titleBlock` (`TitleBlock`), `drawProTitleBlock`; `utmGridLines`, `graticuleLines`, `drawSheetGrid`; `ThemeMap`; `buildDocumentPackage` (`DocPackageOptions`, `DocProfile`), `registerDocumentSection`; `reportCriteria`, `attachStandards`; `slopeClassAreas`, `slopeClassesTable` |
+| Documentos técnicos | `design/permit.dart`, `design/memorial.dart`, `design/om_plan.dart`, `design/budget.dart`, `design/life_cycle.dart`, `io/tech_doc.dart`, `io/tech_doc_sections.dart`, `model/deliverables.dart` | `buildPermitStudy`, `permitDocument`; `buildMemorial`; `buildOmPlan`; `buildBudget`, `budgetDocument`; `buildLifeCycleStudy`, `lifeCycleDocument`; `TechDocument` e os seus escritores (`techDocumentPdf`, Markdown, CSV e XLSX); `prbDocumentSections` para os pacotes; `Project.deliverables` (`DeliverableSettings`) |
+| Edições do desenho | `model/edit_ops.dart`, `model/lengthen.dart`, `model/boundary.dart`, `model/dim_style.dart`, `model/layer_states.dart`, `model/project_compare.dart`, `io/typed_geo.dart` | `joinChains`, `explodeEntity`, `filletBetween`, `chamferVertex`, `stretchEntity`, `breakEntity`; `lengthenEntity`; `boundaryAround`; `DimStyle`; `LayerState`; `compareProjects`, `mergeReview`; `parseTypedGeoPoint` |
+| Modelo e catálogos | `model/area_holes.dart`, `model/project_merge.dart`, `model/paste.dart`, `model/pipe_standards.dart`, `model/regional.dart`, `model/schema.dart`, `model/read_report.dart`, `design/area_water.dart`, `design/model_checks.dart` | `AreaEntity.holes`, `subtractFromArea`, `subtractFromAreas`; `insertProject`; `pasteEntities`; `pipeStandards`, `standardPack`, `standardCatalogPacks`; `mainsHzForLocale`, `unitsForLocale`; `projectJsonSchema`; `ProjectReadReport`; `areaWaterBasis`; `modelChecks` |
+| Arquivos | `io/drawing_import.dart`, `io/import_async.dart`, `io/work_slicer.dart`, `io/safe_archive.dart`, `io/tiff_raster.dart`, `io/cad_xdata.dart`, `io/codepages.dart`, `io/stakeout.dart`, `io/data_cache.dart`, `io/data_credits.dart`, `io/icc_srgb.dart`, `io/image_decode.dart`, `io/xml_text.dart`, `io/sheet_check.dart` | `importFileInto`, `importDrawingInto`; `readImportAsync`; `WorkSlicer`; `openZip`, `gunzipCapped`; `TiffFile`, `TiffRaster`, `TiffReducer`, `TiffGridSampler`; `hydraulicXdata`, `readHydraulicXdata`, `restoreHydraulic`; `decodeCodepage`, `loadCjkCodepages`; `stakeoutPoints`, `stakeoutCsv`; `DataCache` (sobre um `DataCacheStore`); `projectDataCredits`, `sheetCredits`; `srgbIccProfile`; `SheetReview` |
+| Também exportadas agora | `design/region_trace.dart`, `ai/image_prep.dart` | `traceRegion`, `traceRegions` (contornos que crescem a partir de um ponto numa imagem aérea); `prepareModelImage` (imagens ajustadas ao que os modelos recebem) |
+
+As projeções além da transversa de Mercator (cônica equivalente de Albers, cônica conforme de Lambert, policônica) ficam
+em `io/datum.dart` com o resto dos sistemas de coordenadas (o `parseCrs` as lê), e o datum da georreferência de um
+projeto é `GeoReference.datum`, ou o do local (`GeoReference.effectiveDatum`, `defaultProjectDatum`).
 
 ## 6. Convenções
 

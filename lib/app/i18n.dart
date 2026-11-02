@@ -6779,9 +6779,9 @@ const _base = <String, (String, String, String)>{
   ),
   'ai.keep': ('Guardar as conversas neste navegador', 'Keep conversations in this browser', 'Guardar las conversaciones en este navegador'),
   'ai.keep.hint': (
-    'Ao recarregar a página, ou ao abrir o projeto de novo mais tarde, a conversa dele volta e o assistente continua de onde parou. Elas ficam só no armazenamento deste navegador, com as imagens e os arquivos pequenos anexados (nunca as suas chaves); as 12 mais recentes são guardadas. Desligado: nada é guardado, e o que estava guardado é apagado.',
-    'A reload, or the project opened again later, brings its conversation back, and the assistant goes on from there. They stay in this browser\'s storage only, with their pictures and small attached files (never your keys); the 12 most recent are kept. Off: nothing is kept, and what was kept is deleted.',
-    'Al recargar la página, o al abrir el proyecto de nuevo más tarde, su conversación vuelve y el asistente sigue desde ahí. Quedan solo en el almacenamiento de este navegador, con sus imágenes y los archivos pequeños adjuntos (nunca sus claves); se guardan las 12 más recientes. Desactivado: no se guarda nada, y lo guardado se borra.',
+    'Ao recarregar a página, ou ao abrir o projeto de novo mais tarde, a conversa dele volta e o assistente continua de onde parou. Elas ficam só no armazenamento deste navegador, com as imagens e os arquivos pequenos anexados (nunca as suas chaves); as 24 mais recentes são guardadas. Desligado: nada é guardado, e o que estava guardado é apagado.',
+    'A reload, or the project opened again later, brings its conversation back, and the assistant goes on from there. They stay in this browser\'s storage only, with their pictures and small attached files (never your keys); the 24 most recent are kept. Off: nothing is kept, and what was kept is deleted.',
+    'Al recargar la página, o al abrir el proyecto de nuevo más tarde, su conversación vuelve y el asistente sigue desde ahí. Quedan solo en el almacenamiento de este navegador, con sus imágenes y los archivos pequeños adjuntos (nunca sus claves); se guardan las 24 más recientes. Desactivado: no se guarda nada, y lo guardado se borra.',
   ),
   'ai.keep.delete': ('Apagar as conversas guardadas', 'Delete saved conversations', 'Borrar las conversaciones guardadas'),
   'ai.keep.deleteConfirm': (

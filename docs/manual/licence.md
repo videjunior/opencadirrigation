@@ -11,7 +11,6 @@ check a design before it is built (the licence carries no warranty).
 | [`xml`](https://pub.dev/packages/xml) | KML, GPX, LandXML and XLSX | MIT |
 | [`archive`](https://pub.dev/packages/archive) | KMZ, XLSX, zipped shapefiles, PDF streams, compressed share links and stored projects | MIT |
 | [`image`](https://pub.dev/packages/image) | raster images, images in PDFs, vegetation detection and the brand assets | MIT |
-| [`cupertino_icons`](https://pub.dev/packages/cupertino_icons) | icon font | MIT |
 | CanvasKit (Skia) | rendering, served by the site with the app | BSD-3-Clause |
 | Material Icons, Roboto, Noto | interface fonts (Roboto served with the app; Noto served by the site under `fonts/`, fetched on demand for other scripts and kept for offline use) | Apache-2.0, SIL OFL 1.1 |
 | Noto Sans subsets in `assets/fonts` (Latin, Math, Arabic, Devanagari, Bengali, Gurmukhi, Telugu, SC, JP) | text of the PDFs in every interface script | SIL OFL 1.1 ([assets/fonts/OFL.txt](../../assets/fonts/OFL.txt)) |

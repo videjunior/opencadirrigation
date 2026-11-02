@@ -19,7 +19,8 @@ your computer. Released under the [MIT licence](LICENSE.md).
    tutorial straight from the page). It runs in Chrome, Edge, Firefox and Safari, on desktop, tablet and phone, and
    installs as an app that starts without a network after the first visit.
 2. Say where the area is (an address or coordinates) and whether to design with the AI assistant, or open a ready
-   example: Help → Welcome and example gallery, with the **interactive tutorial**.
+   example: Help → Welcome and example gallery, with the **interactive tutorial** (90 steps in chapters). Ctrl+K finds
+   any menu, command or setting, and F1 opens the manual.
 3. Draw the area and the network, or let the generators or the assistant do it; press **F5** to design.
 4. Read the results in the **Reports** panel (F2) and export PDF sheets, DXF, DWG, Excel and more; save the project
    with **Ctrl+S** (`.oci.json`).
@@ -34,43 +35,61 @@ A single application covering the whole cycle of a pressurised irrigation design
   open project with the program's own tools: it answers questions, asks what is missing, plans,
   draws, designs, checks and reports, with your approval and an undo for every answer
   ([AI assistant](docs/manual/ai-assistant.md)); nothing is sent until you press Send.
-- **2D CAD drawing** with layers, snaps, typed coordinates, dimensions, hatches, symbols, user
-  blocks, review comments and revision clouds, and typed command aliases (L, PL, C, ZE…) as in desktop
-  CAD programs.
-- **Hydraulic network** drawn on top of the CAD: water supplies, pumps (fixed or variable speed),
-  mainline, zone valves, laterals with emitters, drip tapes and driplines, filters, pressure
-  regulators, pressure-sustaining valves, hydrants with flow limiters, meters, junctions,
-  valve-in-head sprinklers, centre pivots and linear moves.
+- **2D CAD drawing** with layers and layer states, snaps one by one, typed and field coordinates (UTM,
+  latitude and longitude, azimuths and bearings), dimensions with a project style, hatches, symbols, user
+  blocks and block references with attributes, review comments, revision clouds and field photos, comparison
+  of two copies, and typed command aliases (L, PL, C, ZE…) as in desktop CAD programs.
+- **Hydraulic network** drawn on top of the CAD: water supplies (also from a reservoir or dam), pumps
+  (fixed or variable speed, or a pump station in parallel or in series with standby units), mainline,
+  zone valves with reducing or sustaining pilots, laterals with emitters, drip tapes and driplines,
+  filters, pressure regulators, pressure-sustaining valves, hydrants with flow limiters, meters, junctions
+  and air vessels, valve-in-head sprinklers, centre pivots and linear moves, traveller lanes and furrows;
+  irrigated areas with islands.
 - **Hydraulic engine** in pure Dart: Hazen-Williams, Darcy-Weisbach, Scobey or Manning friction,
   minor losses (a share of the length or the bends and tees of the drawing), emitters
   `q = k·H^x`, network solver by the Global Gradient Algorithm (the one used by EPANET), pumps,
   pressure-reducing, pressure-sustaining and flow-control valves, tape flushing, water hammer by
-  the method of characteristics and a 24-hour extended-period simulation.
+  the method of characteristics, a 24-hour extended-period simulation with the level of reservoirs,
+  the real operation of the zones at the pressure the mainline gives them, and the design aged and
+  clogged.
 - **Automatic sizing** of laterals, submains and mainline by linear programming (annualised pipe
-  cost plus energy, emitter pressure window, pipe pressure class at the water temperature,
-  telescoping) or by the classic maximum-velocity method.
+  cost plus energy, emitter pressure window, pipe pressure class at the water temperature and with
+  the water hammer, the energy balance of every loop, telescoping) or by the classic maximum-velocity
+  method.
 - **Automatic design**: landscape head layout with zoning and routing of pipes and valves, field
-  subdivision into blocks, orchard drip rings, sports and golf templates, pivot fit, and
-  vegetation detected in aerial imagery.
-- **Agronomy and operation**: site climate (downloaded or typed), FAO-56 crops with growth stages,
-  soils, effective rain and leaching, requirement tables, valve wiring (conventional or two-wire),
-  time-of-use tariffs, on-demand networks, fertigation, mechanised machines and surface
-  irrigation.
+  subdivision into blocks with the longest lateral computed, orchard drip rings, sports and golf
+  templates, pivot fit and several pivots in a property, fields traced on the satellite image,
+  vegetation detected in aerial imagery, and corrections and optimisation reviewed item by item.
+- **Agronomy and operation**: site climate (downloaded, typed or from INMET station files), FAO-56
+  crops with growth stages and your own crops, soils, effective rain and leaching, requirement
+  tables, a daily soil water balance with regulated deficit, the controller programme with an
+  irrigation window and cycle and soak, runoff potential, fertigation by stage, uniformity tests in
+  the field, valve wiring (conventional or two-wire), time-of-use tariffs, on-demand networks,
+  mechanised machines and surface irrigation.
+- **Power and water**: pump house electrics (motors, starters, feeders, short circuit, transformer),
+  solar pumping in the design, water quality with its filters, chlorination and acid.
 - **Terrain**: contour lines, spot heights, breaklines, digital terrain model by triangulation,
   LAS point clouds and LandXML surfaces, elevation downloaded from the internet for a coordinate,
   slope maps, profiles and hydraulic grade line.
 - **Outputs**: reports of zones, pipes, emitters, system flows, bill of materials with fittings,
-  water requirements and controller programme; PDF sheets in every interface script (sets per
-  zone, construction details, charts); a commercial quote; DXF and DWG (R2000, native
-  entities), SVG, PNG, KML, KMZ, GeoJSON, shapefile, GPX, LandXML, IFC 4, EPANET, Excel, CSV.
-- **Open manufacturer catalogues** in JSON, loadable by file or URL.
-- **Command line and engine API**: `bin/oci.dart` designs, checks and exports projects without a
-  browser; `lib/core/api.dart` gives the whole engine in one import ([docs/API.md](docs/API.md)).
+  water requirements and controller programme, each table with the standards of its criteria; PDF
+  sheets in every interface script (sets per zone, construction details, charts, coordinate grid,
+  slope and aspect sheets, a professional title block with the technical lead, any paper size,
+  PDF/A-2b); document packages by reader and technical documents (water permit table, memorial,
+  operation and maintenance plan, budget by unit-cost compositions, life-cycle cost); a commercial
+  quote; DXF and DWG (R2000, native entities, hydraulic data), SVG, PNG, KML, KMZ, GeoJSON,
+  shapefile, GPX, LandXML, IFC 4, EPANET, stake-out points, Excel, CSV.
+- **Open catalogues** in JSON, loadable by file or URL: manufacturer packs and generic pipes by
+  standard (ISO 1452, EN 12201, IS 4985, IS 4984, ASTM).
+- **Command line and engine API**: `bin/oci.dart` imports drawings, starts, changes, designs, checks
+  and exports projects without a browser, one or many at a time; `lib/core/api.dart` gives the whole
+  engine in one import, also as a Dart package without Flutter ([docs/API.md](docs/API.md)).
 
 ## Who it is for
 
 Agricultural and landscape irrigation designers, agronomists, engineers, dealers, teachers and
-students. The interactive tutorial and the example gallery let you start without reading a manual.
+students. The interactive tutorial (with quick tracks for drip, landscape and pivots) and the example
+gallery let you start without reading a manual.
 
 ## Principles
 
@@ -95,8 +114,11 @@ site as the [user guide](https://opencadirrigation.com/manual/) ([in Portuguese]
 - [Component catalogue](docs/manual/catalogue.md): pipes, emitters, valves, pumps, prices and manufacturer packs
 - [Terrain](docs/manual/terrain.md): contours, spot heights, the terrain model, online elevation
 - [Calculation and sizing](docs/manual/calculation.md): parameters, calculation steps, design check and assistant, analyses
+- [Agronomy and irrigation scheduling](docs/manual/agronomy.md): daily water balance, irrigation programme, runoff, fertigation by stage, field uniformity
+- [Power, water and machines](docs/manual/power-water-machines.md): pump house electrics, solar pumping, water quality, two-wire, several pivots
 - [AI assistant](docs/manual/ai-assistant.md): what the optional assistant does, what it sends and how it is controlled
 - [Reports, plotting and export](docs/manual/reports-and-export.md): reports panel, PDF sheets, quote, exports
+- [Title block and technical documents](docs/manual/technical-documents.md): professional title block, document packages, permit table, memorial, budget
 - [File formats](docs/manual/file-formats.md): the project file and every import and export format
 - [Storage, privacy and network access](docs/manual/privacy-and-network.md): what stays in the browser, what goes out and to whom
 - [Languages and site](docs/manual/languages-and-site.md): the 20 languages, the site, the offline start and the hosting

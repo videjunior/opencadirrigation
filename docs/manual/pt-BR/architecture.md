@@ -1,7 +1,8 @@
 # Arquitetura do código
 
 ```
-bin/oci.dart                linha de comando: design, analyze, check, export e bom de projetos .oci.json
+bin/oci.dart                linha de comando: import, new, set, pack add, design, analyze, check, validate,
+                            export, bom e schema de projetos .oci.json, um ou vários de uma vez
 lib/
   core/                     Dart puro, sem Flutter (roda no worker, no isolate, nas ferramentas e na CLI)
     api.dart                o motor inteiro numa importação (docs/API.pt-BR.md)
@@ -37,6 +38,17 @@ lib/
       blocks.dart, label_rules.dart, scenario.dart, proposal_settings.dart, site_climate.dart,
       pivot_machine.dart      blocos do usuário, rótulos condicionais, alternativas, configurações do
                               orçamento, clima do local, dados da máquina do pivô
+      agronomy_plan.dart, agb_settings.dart, deliverables.dart, title_block.dart, pump_station.dart,
+      reservoir.dart, valve_pilot.dart, dim_style.dart, layer_states.dart
+                              configurações guardadas no projeto desde a 1.6.0: plano agronômico, energia
+                              e água, documentos técnicos, carimbo, estações de bombeamento,
+                              reservatórios, pilotos de válvula, estilo de cota, estados de camadas
+      area_holes.dart, boundary.dart, lengthen.dart, edit_ops.dart, paste.dart, project_merge.dart,
+      project_compare.dart    ilhas das áreas, contorno por clique interno, alongar, edições de geometria,
+                              colagem, inserir projeto, comparação de duas cópias
+      pipe_standards.dart, catalog_check.dart, regional.dart, read_report.dart, schema.dart
+                              tubos por norma, plausibilidade do catálogo, padrões por região, leitura
+                              tolerante com o seu relatório, JSON Schema do arquivo de projeto
     design/                 projetista
       network_builder.dart    entidades → grafo hidráulico (nós, trechos, zonas, agregação de emissores,
                               conexões)
@@ -75,6 +87,21 @@ lib/
                               operação: vazões de Clément, horários pela tarifa, agrupamento por
                               energia, N−1, calibração, fertirrigação
       proposal.dart           orçamento comercial, valas, retorno, cronograma de obra
+      soil_water_balance.dart, irrigation_programme.dart, runoff_potential.dart, system_capacity.dart,
+      catch_cans.dart, fertigation_stages.dart, agr_tables.dart
+                              balanço hídrico diário, programa do controlador, escoamento, capacidade
+                              contra o pico, uniformidade no campo, fertirrigação por estágio, as
+                              tabelas de relatório deles
+      pump_house.dart, solar_design.dart, water_quality.dart, multi_pivot.dart, field_machines.dart,
+      agb_design.dart, agb_reports.dart
+                              elétrica da casa de bombas, bombeamento solar, qualidade da água, vários
+                              pivôs, faixas de carretel e sulcos, rodando como etapa do cálculo
+      permit.dart, memorial.dart, om_plan.dart, budget.dart, life_cycle.dart, report_standards.dart,
+      slope_report.dart       documentos técnicos, as normas dos relatórios, declividade por área
+      life_scenarios.dart, reservoir.dart, analysis_control.dart, lateral_limit.dart, region_trace.dart
+                              envelhecimento e entupimento, estudo do reservatório, progresso e
+                              cancelamento das análises, comprimento máximo da lateral, contornos
+                              traçados em imagem aérea
       design_check.dart       verificação de projeto
       advisor.dart            problemas explicados, configurações impossíveis, correções aplicáveis
       auto_fix.dart           correções, corrigir automaticamente, otimização
@@ -95,7 +122,19 @@ lib/
                               bidi, dados Unicode, o registro de fontes do PDF
       shp_writer.dart, geo_export.dart, ifc.dart, xlsx.dart, catalog_io.dart, project_export.dart
                               shapefile, KML/GeoJSON, IFC 4, Excel, catálogos, despacho das exportações
-      geo.dart, datum.dart    UTM, datums (SIRGAS 2000, SAD 69, Córrego Alegre), reconhecimento de sistemas
+      geo.dart, datum.dart    UTM, datums (SIRGAS 2000, SAD 69, Córrego Alegre), o datum do local, projeções
+                              (Albers, cônica conforme de Lambert, policônica), reconhecimento de sistemas
+      drawing_import.dart, import_async.dart, work_slicer.dart, safe_archive.dart, tiff_raster.dart,
+      cad_xdata.dart, codepages.dart, typed_geo.dart, stakeout.dart, data_cache.dart, data_credits.dart
+                              desenhos para dentro de um projeto (também para a linha de comando),
+                              leitura em fatias, limites de zip, TIFF grandes, XDATA hidráulico, páginas
+                              de código, coordenadas de campo digitadas, pontos para locação, downloads
+                              guardados, créditos de terceiros
+      doc_package.dart, doc_pdf.dart, doc_sections.dart, tech_doc.dart, tech_doc_sections.dart,
+      title_block_sheet.dart, sheet_grid.dart, sheet_theme.dart, sheet_check.dart, icc_srgb.dart
+                              pacotes de documentos, documentos técnicos, carimbo profissional,
+                              quadrícula de coordenadas, folhas de declividade e de exposição, conferência
+                              da folha, perfil sRGB do PDF/A
       dem_online.dart, climate_online.dart, share_link.dart
                               elevação e clima online, projetos num link
     ai/                     assistente de IA opcional, duas empresas atrás de uma só interface
@@ -122,9 +161,10 @@ lib/
     widgets/                menus, paleta, painéis, relatórios, gráficos, diálogos, layout compacto, e
                             ai/: o painel encaixado da IA e as suas vistas (conversa, dados enviados,
                             configurações)
-    ai/                     o agente de uma aba: 73 ferramentas e 102 operações sobre o controller e o
-                            motor (agent_tools*, agent_ops*, ops_*), o mapa de cobertura
-                            (ai_coverage.dart), o prompt de sistema, o manual e os procedimentos,
+    ai/                     o agente de uma aba: 75 ferramentas e 205 operações sobre o controller e o
+                            motor (agent_tools*, agent_ops*, ops_*, op_parts/ por área), o mapa de
+                            cobertura (ai_coverage.dart, coverage_parts/), o prompt de sistema, o
+                            manual e os procedimentos,
                             visão (imagens, tiles, terreno), transportes (fetch, HttpClient),
                             aprovações, voltar e desfazer
     tutorial/               tutorial interativo
@@ -132,7 +172,8 @@ lib/
                             GPS, fontes do PDF, exportação PNG de uma prancha
     actions.dart            ações de arquivo, área de transferência e exportação compartilhadas por menus, paleta e atalhos
     examples.dart           galeria de exemplos
-    i18n.dart               tabela de textos pt/en/es, lista de idiomas e carregamento sob demanda dos pacotes
+    i18n.dart               tabela de textos pt/en/es (com as partes por área em i18n_parts/), lista de
+                            idiomas e carregamento sob demanda dos pacotes
     i18n_assets.dart        lê assets/i18n/<código>.json para o idioma escolhido
     shortcuts.dart          aliases de comando (pt/en/es) e tabela de atalhos
     theme.dart              paletas escura e clara (CadPalette, 76 cores lidas por Cad.*), a regra de
@@ -144,9 +185,15 @@ catalogs/                   pacotes de fabricantes (JSON) e índice
 docs/                       estudo técnico, a API do motor (API.md, API.pt-BR.md) e o que a IA alcança
                             (AI_TOOLS.md, gerado)
 examples/                   projetos de exemplo, uma pasta por idioma da interface (20)
-tool/                       geradores: site, catálogos, exemplos, marca, versão, service worker; builds do
-                            worker e da web; fontes e fixtures de formatação de texto (tool/fonts)
-test/                       testes do motor, do modelo, dos formatos e da interface
+tool/                       geradores: site (com o guia do usuário), catálogos, exemplos, marca, versão,
+                            service worker; builds do worker e da web; fontes e fixtures de formatação
+                            de texto (tool/fonts); o motor como pacote sem Flutter (engine_package.dart);
+                            o checklist de lançamento (release.dart); a revisão das traduções
+                            (i18n_review.dart); o hook de pre-commit e a lista de nomes proibidos
+                            (hooks/); o teste de fumaça de ponta a ponta (e2e/)
+test/                       testes do motor, do modelo, dos formatos e da interface; guards/ (arquivos
+                            gerados, worker, pureza do motor, rede), seams/ (testes que atravessam
+                            módulos), goldens/, web/
 web/                        páginas, manifest, ícones, robots, sitemap, worker compilado, abertura sem rede
                             (sw.js, offline.js)
 ```

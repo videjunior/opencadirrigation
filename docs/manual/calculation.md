@@ -7,11 +7,21 @@
 | Hydraulics | Friction formula: Hazen-Williams (default), Darcy-Weisbach, Scobey or Manning; water temperature 20 °C (viscosity, vapour pressure and the derating of PVC and PE pressure classes); local losses as 5 % of the length (default) or the K of the bends and tees found in the drawing, enabled; C scale and offset (ageing); connection tolerance 0.05 m; at most 100 lumped nodes per lateral |
 | Maximum velocities | 2.0 m/s in laterals, 1.5 m/s in zone pipes, 2.0 m/s in the mainline |
 | Sizing | LP method (default) or velocity + pressure window (greedy); diameters per lateral (1), per submain (3) and per mainline (3); maximum pressure variation in the zone (0 = derived from the emitter flow tolerance); emitters per plant (1) |
-| Economics | Interest 10 %, term 10 years, energy 0.75 per kWh, pump efficiency 65 %, 2000 h/year for the mainline and 500 h/year per zone, capital × energy trade-off enabled, currency of the region or language (see *Prices and currency*); mains frequency 60 Hz (a fixed-speed pump whose curve was measured at another frequency turns in proportion: a 60 Hz curve on 50 Hz mains runs at 5/6 of the speed and 69 % of the head) |
-| Flushing and safety | Tape flushing velocity 0.3 m/s with 1 m minimum pressure at the open end; water hammer check enabled with valve closure time (0 = instantaneous) |
+| Economics | Interest 10 %, term 10 years, energy 0.75 per kWh, pump efficiency 65 %, 2000 h/year for the mainline and 500 h/year per zone, capital × energy trade-off enabled, currency of the region or language (see *Prices and currency*); mains frequency of the region, 50 or 60 Hz (a fixed-speed pump whose curve was measured at another frequency turns in proportion: a 60 Hz curve on 50 Hz mains runs at 5/6 of the speed and 69 % of the head) |
+| Flushing and safety | Tape flushing velocity 0.3 m/s with 1 m minimum pressure at the open end; water hammer check enabled with valve closure time (0 = instantaneous); real operation of the zones, off (when on, after the design every zone and pivot of each system flow also runs at the pressure that really reaches its valve, and the Mainline tab shows the table) |
 | Materials | Automatic fitting selection enabled; 6 m pipe sticks to count couplers |
 | Terrain | Triangulation (default) or inverse-distance interpolation; contour densification 5 m |
 | Electrical | 24 V AC solenoids: inrush current 0.37 A, holding current 0.22 A, minimum voltage at the solenoid 20 V; wire slack 10 % over the route length |
+
+**New projects**, the last section of the dialog, says what the next new projects start with and
+where each value comes from (the region of the machine, your choice or the program's default): the
+mains frequency (60 Hz in North and Central America, the Caribbean, Brazil, Colombia, Venezuela,
+Ecuador, Peru, Guyana, Suriname, Saudi Arabia, Korea, Taiwan, the Philippines, Japan, several
+Pacific islands and Liberia, 50 Hz elsewhere) and the currency of the region unless you chose them,
+and the units you chose (US units never come from the region alone). *Use these parameters for new
+projects* keeps every parameter of the open project (velocities, losses, economics…) as the template
+of the next ones, which keep the currency of their catalogue (an energy price kept in another
+currency is converted); *Back to the region's defaults* forgets the choices.
 
 ## Calculation steps
 
@@ -27,11 +37,14 @@
      emitters at minimum and maximum pressure become constraints and the LP runs again (up to four
      rounds);
    - **pressure class**: the LP and the greedy steps offer each unit only the pipes whose class, at
-     the water temperature, withstands the pressure the analysis found there (PVC loses part of
-     its class above 25 °C and PE above 20 °C); when a pass ends with a pipe below its pressure,
+     the water temperature, withstands the pressure the analysis found there plus the water hammer
+     of the screening of step 6 (PVC loses part of its class above 25 °C and PE above 20 °C); when a
+     pass ends with a pipe below its pressure,
      the unit's requirement rises and the zone is sized again (up to three passes). With nothing
      in the catalogue strong enough the unit is sized as before and the class is reported exceeded;
-   - **repair**: greedy diameter increase along the critical path until the window is met;
+   - **repair**: greedy diameter increase along the critical path until the window is met (when the
+     elevation range of the emitters alone exceeds the window, no pipe is bought for it and the
+     zone says so: `zone_slope_exceeds_window`);
    - **rationalisation**: non-increasing diameters from upstream to downstream and telescoping
      within the limit of diameters per unit;
    - **detailed analysis**: non-linear network with pressure-dependent emitters; the pressure
@@ -45,21 +58,31 @@
 3. **Mainline**, per system flow: demand and required pressure of every valve, pivot (what its
    sprinkler package needs) and scheduled valve-in-head station, LP over all flows with the energy
    cost weighted by the hours of each and the same pressure-class passes; in a looped mainline the
-   sizes decide how the flow splits, so the LP is solved again with the flows of the new sizes
-   until the choice settles (up to four more times). Then the analysis of every flow with pumps
+   LP holds the energy balance of every loop for the flows it sizes for, and since the sizes decide
+   how the flow splits it is solved again with the flows of the new sizes until the choice settles
+   (up to four more times; a note of approximation is left only when the flows do not settle). With
+   a calculated supply, the grade line is kept above the pipe at the high points of the profile (in
+   the LP and in the analysis), and a high point without an air valve is pointed out
+   (`air_valve_missing`, information). Then the analysis of every flow with pumps
    (operating point; a variable-speed drive finds the speed that holds its target outlet pressure;
-   the NPSH available is compared with the pump's curve), pressure-reducing, pressure-sustaining
+   the NPSH available is compared with the pump's curve; a pump station runs the duty pumps the flow
+   needs, staged by flow, on the joint curve of those running, with the duty of each), valves with
+   reducing or sustaining pilots, pressure-reducing, pressure-sustaining
    and flow-control valves, check valves and fixed- or calculated-pressure supplies; duty of every
-   supply (flow, available pressure, required pressure, deficit) and annual energy.
+   supply (flow, available pressure, required pressure, deficit) and annual energy. With the real
+   operation of the zones on, every zone and pivot then runs at the pressure the mainline delivers
+   to it, as an equivalent emitter behind its valve (a regulating valve holds its setting, a
+   sustaining pilot its upstream pressure), adjusted until the zone and the line agree.
 4. **Telescoping**: pipes with more than one diameter are split into entities, largest diameter
    upstream, and the affected zones are re-analysed.
 5. **Flushing**: every zone with tapes is analysed with the ends open at the flushing velocity;
    reports the flushing flow, the required valve and upstream pressure, number of tapes, minimum end
    pressure and maximum velocity.
-6. **Water hammer**: for the worst segment of every pipe, wave celerity from material and wall,
-   Joukowsky surge for the operating velocity, critical time 2L/a and comparison of the maximum
-   static pressure plus surge with the pipe rating, taking the closure time into account (the full
-   transient analysis is Mainline → Hydraulic transients…, below).
+6. **Water hammer**: along the path of the water from the supply (from the valve, in a zone), every
+   point of a pipe gets Michaud's envelope at its distance x, min(a·ΔV/g, 2·x·ΔV/(g·T)), with the
+   wave celerity a from the material and wall and the closure time T, over the static pressure
+   there; the worst point of each entity is compared with the pipe rating and the report shows the
+   path used (the full transient analysis is Mainline → Hydraulic transients…, below).
 7. **Mechanised machines**: the sprinkler package and timer chart of every centre pivot and linear
    move and, when their data are given, the corner arm, the variable-rate prescription and the
    electrical design (see *Mechanised machines and field calculators*).
@@ -82,11 +105,18 @@
    risers) and the electrical items (wires by size, controllers and their accessories, two
    waterproof connectors per valve), with costs, FINAME codes where the catalogue has them,
    annualised cost (capital recovery factor) and energy; also split by sector (Materials by sector)
-   and for the current selection (Edit → Materials of the selection…).
+   and for the current selection (Edit → Materials of the selection…). The standby pumps of pump
+   stations, the air vessels, the block references marked to count, the traveller lanes and furrows
+   and, when they are switched on, the parts of the pump house electrics, the solar array and the
+   two-wire system ([Power, water and machines](power-water-machines.md)) are listed too. Pipe
+   lengths run along the ground (√(L² + Δz²) with the terrain at both ends), in the losses as in the
+   bill of materials.
 
 The calculation runs in a **Web Worker** in the browser (or in an isolate on desktop) and returns
 the resized entities and the results to the interface; while it runs, editing is blocked so that
-no change is lost, but navigation, reports and other tabs stay free. With Design → Analyse
+no change is lost (unless *Edit while the design runs* is on in View → Snaps and drawing…: the
+design then works on a copy and its results, out of date, are discarded), but navigation, reports
+and other tabs stay free; the progress card has a Cancel. With Design → Analyse
 automatically while editing, a moment after every edit the design is analysed again without
 sizing, so pressures, flows and messages follow the drawing (a chip in the status bar shows it).
 
@@ -110,6 +140,11 @@ sizing, so pressures, flows and messages follow the drawing (a chip in the statu
 | `zone_dead_end`, `area_no_emitters`, `no_terrain`, `looped_mainline`, `no_hydraulics` | information | Situations worth a look that do not prevent the calculation |
 | `elec_stations`, `elec_voltage` | error | Controller with fewer stations than valves wired to it; solenoid voltage below the minimum even with the thickest enabled wire |
 | `elec_unwired`, `elec_wire_orphan`, `elec_ctrl_unwired`, `elec_no_controller`, `elec_no_wires`, `elec_simultaneous` | warning | Valve without a wire to a controller; route reaching no controller; controller off the routes; routes without a controller; no wire enabled in the catalogue; a system flow opening more valves than the controller drives at once |
+| `area_self_intersect` | error | An irrigated area whose outline crosses itself (its area, and its water, come out wrong); the correction splits it into simple areas |
+| `pipes_overlap`, `outside_terrain`, `zone_spacing_wide`, `area_uniformity_low` | warning | Pipes or laterals on top of each other; items more than 10 m outside the terrain data (extrapolated elevation); full-circle sprinklers farther apart than their throw allows; an area watered unevenly by its sprinklers (densogram: CU below 75 %, DU below 60 % or more than 5 % of the area getting less than half the mean) |
+| `area_rate_exceeds_soil`, `area_eto_climate`, `area_planting_date`, `area_leaching_infeasible` | warning | Sprinklers applying more than the soil and its slope take in; an ETo typed on an area that differs from the site climate; a planting date ambiguous or not a date; water too saline for the crop |
+| `capacity_below_peak`, `pivot_capacity_below_peak`, `pivot_runoff` | warning | The system, or a machine, short of the peak demand in the irrigation window; runoff under a machine ([Agronomy and irrigation scheduling](agronomy.md#checks)) |
+| `supply_no_meter` | information | A water source with no flow meter nor hour meter, which the self-monitoring of a water permit asks for |
 
 ## Calculation messages
 
@@ -119,8 +154,15 @@ hammer), valve outside its flow range, pump off its curve, NPSH available below 
 requires, a variable-speed drive that cannot reach its target pressure or would need less than its
 minimum speed, supply flow or pressure exceeded, pressure deficit at a valve, pivot or valve-in-head
 station (or a station above its window, or in no flow), infeasible LP (with the greedy method taking
-over), looped mainline (the LP sizes it on tree paths and repeats; the final analysis checks),
-missing catalogue components, pivot application rate above the soil limit, among others.
+over), looped mainline (the LP holds the energy balance of every loop and repeats with the new flows;
+the final analysis checks),
+missing catalogue components, pivot application rate above the soil limit, a pump below the
+minimum flow of its curve or above its motor power, the LP stopped at its iteration limit (the greedy
+method then sizes), the elevation range of a zone beyond the emitter window, a zone that a regulating
+device keeps below its nominal pressure, pressure below the atmosphere in a pipe (the grade line under
+it), surplus pressure at a zone valve that does not regulate, a station or a system flow drawing more
+current than the controller gives, the flows of a day that do
+not fit the irrigation window, among others.
 
 ## Design assistant: explanations and one-click corrections
 
@@ -138,29 +180,37 @@ flows, emitter pressures outside the nozzle range, pump speeds out of range.
   life-cycle cost, replace a surface pump that cannot lift the water with a submersible one, a pipe
   of a higher pressure class, a valve of the right size, split the zones into more system flows,
   restore default parameters, add the zones left out to a flow, the nominal emitter pressure, a
-  controller with enough stations (the next standard size), enable the catalogue wires, and
-  more.
+  controller with enough stations (the next standard size), enable the catalogue wires, split an
+  area that crosses itself into simple areas, keep one of two pipes drawn over each other, join a
+  loose sprinkler to the nearest pipe by a short pipe, design with the supply maximums, and more.
 - **Fix automatically** (Design menu, `FIX`): safe corrections and designs in rounds until nothing
-  more can be fixed, all in one undo step, with a summary of what changed and what needs a decision.
+  more can be fixed, all in one undo step, with a summary of what changed and what needs a decision
+  (a pump on public mains, new system flows: never applied on their own).
 - **Optimise design** (Design menu, `OPT`): lowest annual cost (annualised investment + energy)
   that meets every requirement — LP sizing, the smallest suitable valves and the pump with the
-  lowest life-cycle cost; kept only when it improves, with a before / after comparison.
+  lowest life-cycle cost — in steps, each kept only when it improves and brings no new warning, with
+  a before / after comparison.
+- Both list every correction or change with a tick box and a button that shows it on the drawing:
+  *Keep only the ticked ones* takes the project back and makes only those again, in one undo step.
 - After a design with errors the Messages tab opens by itself and shows how many problems there are.
 
 ## Analyses of the mainline and of the operation
 
 These run on the designed project (each says what is missing when there is no design or no water
 supply); what they propose (inserted air valves, start hours, system flows, wire routes, a C
-factor) is applied as one undo step.
+factor) is applied as one undo step. The long ones (on-demand operation, criticality, calibration,
+the tariff schedule, the energy grouping, the design over its life) show their progress and stop
+with Cancel.
 
 | Analysis | Menu, alias | What it does |
 |---|---|---|
-| Hydraulic transients | Mainline, `SURGE` | Method of characteristics on the mainline of every system flow: the zone valves closing in the closure time, a power failure tripping the pumps (inertia estimated from power and speed, check valves closing on reverse flow) and an isolation valve closing; wave celerity from each pipe's wall, vapour cavities (column separation), the air valves drawn acting as combination valves; head and pressure envelopes per pipe against its class and against vacuum, the profile along the critical path, time series at the pump and at the worst point, and findings. |
+| Hydraulic transients | Mainline, `SURGE` | Method of characteristics on the mainline of every system flow: the zone valves closing in the closure time, a power failure tripping the pumps (inertia estimated from power and speed, plus the flywheel of the pump; check valves closing on reverse flow) and an isolation valve closing; wave celerity from each pipe's wall, vapour cavities (column separation), the air valves drawn acting as combination valves and the air vessels of the mainline junctions; head and pressure envelopes per pipe against its class and against vacuum, the profile along the critical path, time series at the pump and at the worst point, and findings. It stops with Cancel between runs. |
 | Air valves | Mainline, `AV` | Profile of every path from a supply to an end of the mainline and the air valves AWWA M51 practice asks for (high points, slope changes, long runs, pump discharge, check valves, line ends, low grade line, transient vacuum), sized by the orifice air flow, inserted with the catalogue item that fits. |
-| 24-hour simulation | Mainline, `EPS` | The system flows over a day at their start hours and durations, every pump on while a flow it serves runs; energy and cost per pump and hour at the tariff of the parameters, with an optional peak band. |
+| 24-hour simulation | Mainline, `EPS` | The system flows over a day at their start hours and durations, every pump on while a flow it serves runs; energy and cost per pump and hour at the tariff of the parameters, with an optional peak band; the level of every reservoir or dam of a supply falls and rises with its inflow. |
 | On-demand operation | Mainline, `DEMAND` | Design flows of a branched network of hydrants by Clément's formula and the check against random configurations of open hydrants (FAO 59): reliability and pressure deficits per hydrant; hydrants may have flow limiters. |
 | Pipe criticality | Mainline, `CRIT` | Every pipe closed in turn (N−1): the demand cut off and the demand the remaining pressures cannot deliver, pipes ranked. |
 | Roughness calibration | Mainline, `CALIB` | Hazen-Williams C factors (one, or one per material group) fitted to pressures and flows read in the field, by weighted least squares with the network solver in the loop. |
+| The design over its life | Mainline | The designed project analysed again with its pipes after years of use: the pipes rougher (the Hazen-Williams C falling by so many points a year, the Darcy-Weisbach roughness growing by so many millimetres a year), the emitters partly clogged (less flow, more manufacturing variation) and both, beside the new design: flows, emitter pressures, EU and CU, zones out of their window, the pressure the valves lack, what the supplies and pumps must give and the energy, to show the margin of the design. |
 | Fertigation | Mainline, `FERT` | Travel times of a product injected at the supply or the pump to every valve and on to the farthest emitter, the injection plan (pre-wetting, injection, flushing), amounts for a dose per hectare and the check of a venturi injector. |
 | Time-of-use tariff and flow schedule | Design, `TARIFF` | Energy price by band of the day, demand charges and seasons, and the Brazilian rural irrigation discount (a window of up to 8 h 30 min a day in up to three blocks, never between 17:00 and 21:30, ANEEL Normative Resolution 1,000/2021, art. 186, and MME Normative Ordinance 137/2026); the start hours of least daily cost. |
 | Group zones for energy | Design, `EGROUP` | Zones (and pivots and valve-in-head stations) grouped into system flows of similar required head, so the pump does not give every zone the pressure of the most demanding one; compared with the grouping by flow. |
@@ -169,8 +219,14 @@ factor) is applied as one undo step.
 ## Agronomy, mechanised machines and field calculators
 
 - **Site climate** (Design → Site climate…): monthly normals of ETo (FAO Penman-Monteith), rain
-  (mean and dependable) and solar radiation, downloaded for the site from Open-Meteo (historical
-  weather, ERA5) or NASA POWER, or typed in, kept in the project with their source.
+  (mean and dependable), solar radiation, minimum humidity and wind at 2 m, downloaded for the site
+  from NASA POWER (the default, free for any use) or Open-Meteo (historical weather, ERA5; for
+  non-commercial use), read from an INMET station file, worked out from the normals of a station, or
+  typed in, kept in the project with their source. The daily soil water balance, the irrigation
+  programme, fertigation by stage, field uniformity and user crops are in
+  [Agronomy and irrigation scheduling](agronomy.md); the pump house electrics, solar pumping in the
+  design, water quality, two-wire wiring, several pivots, traveller lanes and furrows in
+  [Power, water and machines](power-water-machines.md).
 - **Crop requirement** (report tab): every irrigated area with a crop of the FAO-56 table gets its
   table by month and growth stage from the site climate, its soil (12 USDA texture classes), the
   effective rain method (USDA-SCS, FAO/AGLW, FAO empirical, a share of the rain), the leaching

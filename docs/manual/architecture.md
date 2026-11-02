@@ -1,7 +1,8 @@
 # Code architecture
 
 ```
-bin/oci.dart                command line: design, analyze, check, export and bom for .oci.json projects
+bin/oci.dart                command line: import, new, set, pack add, design, analyze, check, validate,
+                            export, bom and schema for .oci.json projects, one or many at a time
 lib/
   core/                     pure Dart, no Flutter (runs in the worker, in the isolate, the tools and the CLI)
     api.dart                the whole engine in one import (docs/API.md)
@@ -34,6 +35,17 @@ lib/
       blocks.dart, label_rules.dart, scenario.dart, proposal_settings.dart, site_climate.dart,
       pivot_machine.dart      user blocks, conditional labels, alternatives, quote settings, site climate,
                               pivot machine data
+      agronomy_plan.dart, agb_settings.dart, deliverables.dart, title_block.dart, pump_station.dart,
+      reservoir.dart, valve_pilot.dart, dim_style.dart, layer_states.dart
+                              settings kept in the project since 1.6.0: agronomy plan, power and water,
+                              technical documents, title block, pump stations, reservoirs, valve pilots,
+                              dimension style, layer states
+      area_holes.dart, boundary.dart, lengthen.dart, edit_ops.dart, paste.dart, project_merge.dart,
+      project_compare.dart    islands of areas, outline by a click inside, lengthen, geometry edits,
+                              paste, insert project, comparison of two copies
+      pipe_standards.dart, catalog_check.dart, regional.dart, read_report.dart, schema.dart
+                              pipes by standard, catalogue plausibility, defaults by region, tolerant
+                              reading with its report, JSON Schema of the project file
     design/                 designer
       network_builder.dart    entities → hydraulic graph (nodes, links, zones, emitter lumping, fittings)
       designer.dart           orchestration: zones, mainline, pressure classes, telescoping, flushing,
@@ -69,6 +81,19 @@ lib/
                               operation: Clément flows, tariff schedule, energy grouping, N−1,
                               calibration, fertigation
       proposal.dart           commercial quote, trenches, payback, construction schedule
+      soil_water_balance.dart, irrigation_programme.dart, runoff_potential.dart, system_capacity.dart,
+      catch_cans.dart, fertigation_stages.dart, agr_tables.dart
+                              daily water balance, controller programme, runoff, capacity against the
+                              peak, field uniformity, fertigation by stage, their report tables
+      pump_house.dart, solar_design.dart, water_quality.dart, multi_pivot.dart, field_machines.dart,
+      agb_design.dart, agb_reports.dart
+                              pump house electrics, solar pumping, water quality, several pivots,
+                              traveller lanes and furrows, run as a step of the design
+      permit.dart, memorial.dart, om_plan.dart, budget.dart, life_cycle.dart, report_standards.dart,
+      slope_report.dart       technical documents, the standards of the reports, slope by area
+      life_scenarios.dart, reservoir.dart, analysis_control.dart, lateral_limit.dart, region_trace.dart
+                              ageing and clogging, reservoir study, progress and cancel of the analyses,
+                              longest lateral, outlines traced on aerial imagery
       design_check.dart       design check
       advisor.dart            problems explained, impossible settings, corrections that apply
       auto_fix.dart           corrections, fix automatically, optimisation
@@ -88,7 +113,17 @@ lib/
                               Unicode data, the PDF font registry
       shp_writer.dart, geo_export.dart, ifc.dart, xlsx.dart, catalog_io.dart, project_export.dart
                               shapefile, KML/GeoJSON, IFC 4, Excel, catalogues, export dispatch
-      geo.dart, datum.dart    UTM, datums (SIRGAS 2000, SAD 69, Córrego Alegre), CRS recognition
+      geo.dart, datum.dart    UTM, datums (SIRGAS 2000, SAD 69, Córrego Alegre), the datum of the site,
+                              projections (Albers, Lambert conformal conic, polyconic), CRS recognition
+      drawing_import.dart, import_async.dart, work_slicer.dart, safe_archive.dart, tiff_raster.dart,
+      cad_xdata.dart, codepages.dart, typed_geo.dart, stakeout.dart, data_cache.dart, data_credits.dart
+                              drawings into a project (also for the command line), reading in slices,
+                              zip limits, large TIFFs, hydraulic XDATA, code pages, typed field
+                              coordinates, stake-out points, downloads kept, third-party credits
+      doc_package.dart, doc_pdf.dart, doc_sections.dart, tech_doc.dart, tech_doc_sections.dart,
+      title_block_sheet.dart, sheet_grid.dart, sheet_theme.dart, sheet_check.dart, icc_srgb.dart
+                              document packages, technical documents, professional title block,
+                              coordinate grid, slope and aspect sheets, sheet check, sRGB profile of PDF/A
       dem_online.dart, climate_online.dart, share_link.dart
                               online elevation and climate, projects in a link
     ai/                     optional AI assistant, two companies behind one interface
@@ -112,9 +147,10 @@ lib/
     keys/                   shortcut dispatcher and native listener
     widgets/                menus, palette, panels, reports, charts, dialogs, compact layout, and
                             ai/: the docked AI panel and its views (conversation, data sent, settings)
-    ai/                     the agent of a tab: 73 tools and 102 operations over the controller and
-                            the engine (agent_tools*, agent_ops*, ops_*), the coverage map
-                            (ai_coverage.dart), the system prompt, the manual and the playbooks,
+    ai/                     the agent of a tab: 75 tools and 205 operations over the controller and
+                            the engine (agent_tools*, agent_ops*, ops_*, op_parts/ by area), the
+                            coverage map (ai_coverage.dart, coverage_parts/), the system prompt, the
+                            manual and the playbooks,
                             vision (pictures, tiles, terrain), transports (fetch, HttpClient),
                             approvals, rewind and undo
     tutorial/               interactive tutorial
@@ -122,7 +158,8 @@ lib/
                             GPS, PDF fonts, PNG export of a sheet
     actions.dart            file, clipboard and export actions shared by menus, palette and aliases
     examples.dart           example gallery
-    i18n.dart               pt/en/es text table, language list and on-demand loading of the packs
+    i18n.dart               pt/en/es text table (with its parts by area in i18n_parts/), language list
+                            and on-demand loading of the packs
     i18n_assets.dart        reads assets/i18n/<code>.json for the chosen language
     shortcuts.dart          command aliases (pt/en/es) and the shortcut table
     theme.dart              dark and light palettes (CadPalette, 76 colour tokens read through Cad.*),
@@ -134,9 +171,14 @@ catalogs/                   manufacturer packs (JSON) and index
 docs/                       technical study, the engine API (API.md, API.pt-BR.md) and what the AI
                             reaches (AI_TOOLS.md, generated)
 examples/                   example projects, one folder per interface language (20)
-tool/                       generators: site, catalogues, examples, brand, version, service worker; worker
-                            and web builds; fonts and shaping fixtures (tool/fonts)
-test/                       engine, model, format and interface tests
+tool/                       generators: site (with the user guide), catalogues, examples, brand, version,
+                            service worker; worker and web builds; fonts and shaping fixtures
+                            (tool/fonts); the engine as a package without Flutter (engine_package.dart);
+                            the release checklist (release.dart); translation review (i18n_review.dart);
+                            the pre-commit hook and the list of forbidden names (hooks/); the
+                            end-to-end smoke test (e2e/)
+test/                       engine, model, format and interface tests; guards/ (generated files, worker,
+                            engine purity, network), seams/ (tests across modules), goldens/, web/
 web/                        pages, manifest, icons, robots, sitemap, compiled worker, offline start
                             (sw.js, offline.js)
 ```

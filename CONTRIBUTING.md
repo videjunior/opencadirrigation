@@ -11,7 +11,23 @@ and report security problems privately ([SECURITY.md](SECURITY.md)). Portuguese:
   wide: plain `dart format <files>` keeps it.
 - Rebuild `web/design_worker.js` with `tool/build_worker.sh` after changing `lib/core` or the string table, and run
   the generator a failing guard test names (site pages, examples, catalogues, the AI tools table…).
-- Every fixed defect gets a test that fails without the fix.
+- Every fixed defect gets a test that fails without the fix. A test that crosses modules (the agronomy tables and the
+  controller programme, a paste between projects, the browser storage full) goes to `test/seams/`, beside the tests of
+  each module.
+- Enable the pre-commit hook once with `git config core.hooksPath tool/hooks`: it refuses unformatted Dart files and the
+  forbidden names (see the editorial rule) in the lines a commit adds, and warns about a design worker not rebuilt.
+- To check a production build (`sh tool/build_web.sh`) in real browsers, run the end-to-end smoke test in Chromium,
+  WebKit and Firefox, as CI does (an example designed in the Web Worker, the version, the offline start, the AI
+  assistant against a fake API, a design worker of another build, no page error):
+
+  ```sh
+  npm ci --prefix tool/e2e
+  npm exec --prefix tool/e2e -- playwright-core install webkit firefox
+  node tool/e2e/smoke.mjs build/web --browser chromium,webkit,firefox
+  ```
+
+  The first two commands run once (the WebKit and Firefox builds are pinned by the `playwright-core` version of
+  `tool/e2e/package.json`); a check a browser cannot run is reported as skipped, never as passed.
 - The development setup, the commands and the test map are in [docs/manual/development.md](docs/manual/development.md).
 
 ## What goes where
