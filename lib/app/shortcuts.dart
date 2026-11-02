@@ -1,11 +1,11 @@
-/// Keyboard shortcuts and AutoCAD-style command aliases.
+/// Keyboard shortcuts and command aliases, as in the programs of CAD.
 ///
 /// With the drawing focused, letters typed on the canvas build a command
 /// (shown in the status bar); Enter or Space runs it, Esc clears it. The
-/// aliases follow AutoCAD where an equivalent exists (L, PL, C, A, SPL, H,
-/// T, D, DAN, DRA, LE, ME, Z/ZE, E, CO, RO, MI, SC, O, TR, EX, AR, U…) and
-/// add irrigation tools (ZP, MP, SL, DT, O, V, WS, PU, B, AH, CUT…).
-/// Portuguese/Spanish spellings are accepted too.
+/// aliases are the usual ones of CAD programs where an equivalent exists
+/// (L, PL, C, A, SPL, H, T, D, DAN, DRA, LE, ME, Z/ZE, E, M, CO, RO, MI,
+/// SC, O, TR, EX, AR, U…) and add irrigation tools (ZP, MP, SL, DT, O, V,
+/// WS, PU, B, AH, CUT…). Portuguese/Spanish spellings are accepted too.
 library;
 
 import 'i18n.dart';
@@ -100,7 +100,8 @@ const commandAliases = <String, Object>{
   'CUT': ToolId.cutPipe, 'CUTPIPE': ToolId.cutPipe, 'CORTAR': ToolId.cutPipe, 'BR': ToolId.cutPipe,
   'ARRAY': CadAction.array, 'ARR': CadAction.array, 'MATRIZ': CadAction.array,
   'E': CadAction.erase, 'ERASE': CadAction.erase, 'DEL': CadAction.erase, 'APAGAR': CadAction.erase,
-  'CO': CadAction.copy, 'CP': CadAction.copy, 'COPY': CadAction.copy, 'COPIAR': CadAction.copy,
+  // the clipboard (Ctrl+C); CO, CP, COPY and COPIAR are the Copy tool (1.6.0)
+  'COPYCLIP': CadAction.copy, 'CLIPCOPY': CadAction.copy,
   'RECORTAR': CadAction.cut, 'CLIPCUT': CadAction.cut,
   'PA': CadAction.paste, 'PASTE': CadAction.paste, 'COLAR': CadAction.paste, 'PEGAR': CadAction.paste,
   'U': CadAction.undo, 'UNDO': CadAction.undo,
@@ -166,6 +167,9 @@ const commandAliases = <String, Object>{
   'REP': CadAction.reports, 'REPORTS': CadAction.reports, 'RELATORIOS': CadAction.reports,
   'SAVE': CadAction.save, 'QSAVE': CadAction.save, 'SALVAR': CadAction.save,
   'OPEN': CadAction.open, 'ABRIR': CadAction.open,
+  // 1.6.0 EDT: editing by base point, selection filters and geometry edits
+  'M': ToolId.move, 'MOVE': ToolId.move, 'MOVER': ToolId.move,
+  'CO': ToolId.copy, 'CP': ToolId.copy, 'COPY': ToolId.copy, 'COPIAR': ToolId.copy,
 };
 
 /// Preferred (shortest) alias of a tool, for tooltips and menus.
@@ -329,7 +333,9 @@ const shortcutGroups = <ShortcutGroup>[
     ('WBLOCK · SB', 'blk.save'),
     ('INSERT · IB', 'blk.insert'),
     ('E · ERASE', 'edit.delete'),
-    ('CO · CP · COPY', 'edit.clipCopy'),
+    ('M · MOVE', 'tool.move'),
+    ('CO · CP · COPY', 'tool.copy'),
+    ('COPYCLIP', 'edit.clipCopy'),
     ('CLIPCUT', 'edit.clipCut'),
     ('PA · PASTE', 'edit.paste'),
     ('U · UNDO  /  REDO', 'edit.undo'),

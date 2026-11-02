@@ -191,6 +191,10 @@ class AppMenuBar extends StatelessWidget {
                       ],
                       child: Text(t('edit.transform')),
                     ),
+                    // 1.6.0 EDT: editing by base point
+                    const Divider(height: 1),
+                    tool(ToolId.move),
+                    tool(ToolId.copy),
                   ],
                   child: Text(t('menu.edit')),
                 ),

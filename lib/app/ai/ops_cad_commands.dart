@@ -118,6 +118,9 @@ const toolInstead = <ToolId, String>{
   ToolId.insertBlock: 'run_operation insert_block {name, at}',
   ToolId.aiMarkPoint: 'nothing to call: these are the user\'s marks for the AI, read in the user\'s message and seen in your pictures (orange, labelled A, B…)',
   ToolId.aiMarkLine: 'nothing to call: these are the user\'s marks for the AI, read in the user\'s message and seen in your pictures (orange, labelled A, B…)',
+  // 1.6.0 EDT
+  ToolId.move: 'transform_entities {ids, operation: "move", dx, dy}',
+  ToolId.copy: 'transform_entities {ids, operation: "copy", dx, dy} (once per copy)',
 };
 
 /// English names for the model.

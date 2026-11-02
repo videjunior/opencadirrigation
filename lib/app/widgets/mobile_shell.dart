@@ -251,6 +251,8 @@ class _MobileShellState extends State<MobileShell> {
             ),
             row(t('edit.array'), c.selection.isEmpty ? null : () => showArrayDialog(context, c)),
             for (final id in [ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe]) row(toolLabel(t, id), () => c.setTool(id)),
+            // 1.6.0 EDT: editing by base point
+            for (final id in [ToolId.move, ToolId.copy]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),

@@ -114,7 +114,10 @@ enum ToolId {
   insertBlock,
   // the user's marks for the AI assistant (ai_marks.dart): no project items
   aiMarkPoint,
-  aiMarkLine;
+  aiMarkLine,
+  // 1.6.0 EDT: move and copy by base point (edit_tools.dart)
+  move,
+  copy;
 
   /// One of the tools that mark the drawing for the AI assistant.
   bool get isAiMark => this == aiMarkPoint || this == aiMarkLine;

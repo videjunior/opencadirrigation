@@ -11,6 +11,7 @@ import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import 'ai_mark_tool.dart';
+import 'edit_tools.dart';
 import 'insert_block_tool.dart';
 
 /// Dialog requests raised by tools and fulfilled by the widget layer.
@@ -897,6 +898,9 @@ abstract class TransformTool extends Tool {
   TransformTool(super.c, super.host);
   final List<Pt> pts = [];
   bool _ctrl = false;
+
+  /// Ctrl (Cmd) was held on the last click.
+  bool get ctrlDown => _ctrl;
   @override
   Pt? get referencePoint => pts.isEmpty ? null : pts.first;
 
@@ -1510,6 +1514,9 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.revisionCloud => RevisionCloudTool(c, host),
   ToolId.insertBlock => InsertBlockTool(c, host, ToolId.insertBlock),
   ToolId.aiMarkPoint || ToolId.aiMarkLine => AiMarkTool(c, host, id),
+  // 1.6.0 EDT
+  ToolId.move => MoveTool(c, host),
+  ToolId.copy => CopyTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1555,4 +1562,7 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.insertBlock => 'insertBlock',
   ToolId.aiMarkPoint => 'aiMarkPoint',
   ToolId.aiMarkLine => 'aiMarkLine',
+  // 1.6.0 EDT
+  ToolId.move => 'move',
+  ToolId.copy => 'copy',
 };
